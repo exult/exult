@@ -287,8 +287,8 @@ void Shamino object#(0x402) ()
 				{
 					say("@And disregard the rules of the Test of Knighthood? ",
 						avatartitle, ", I am shocked.@");
-					npcSpeakIfNearby(SCHMED, "@Thou must go alone.@");
-					delayedBark(SCHMED, "@Alone!@", 0);
+					npcSpeakIfNearby(SHMED, "@Thou must go alone.@");
+					delayedBark(SHMED, "@Alone!@", 0);
 					delayedBark(SHAMINO, "@Shocked!@", 2);
 					abort;
 				}
