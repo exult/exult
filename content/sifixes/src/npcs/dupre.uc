@@ -182,8 +182,8 @@ void Dupre object#(0x401) ()
 				{
 					say("@But Sir Shmed said that the Test is only for one, ",
 						avatar_title, "! I cannot come with thee.@");
-					npcSpeakIfNearby(SCHMED, "@Thou must enter alone, stranger.@");
-					delayedBark(SCHMED, "@Alone!@", 0);
+					npcSpeakIfNearby(SHMED, "@Thou must enter alone, stranger.@");
+					delayedBark(SHMED, "@Alone!@", 0);
 					delayedBark(DUPRE, "@Be brave!@", 0);
 					abort;
 				}
