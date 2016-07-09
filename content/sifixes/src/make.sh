@@ -27,7 +27,7 @@ if [[ -e "usecode.uc" ]] ; then
 	echo "Compiling Usecode..."
 	ucc -o ../data/usecode usecode.uc
 	if [[ $? -eq 0 ]] ; then
-		echo "Usecode has been successfuly compiled!"
+		echo "Usecode has been successfully compiled!"
 	else
 		echo "There were error(s) compiling usecode!"
 	fi
