@@ -39,7 +39,7 @@ void Scroll shape#(0x31D) ()
 			say("And further comments by Iolo, since being freed from that vile Monitorian prison cell!");
         if (!gflags[IOLO_MADE_EQUIPMENT_LIST])
             say ("~~"); // Iolo's comment gets to three lines.
-		say(""); // removed two ~s
+		say(""); // removed two ~
 
 		if (gflags[STORM_PINECONE]) // Avatar items
 		{
