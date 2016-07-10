@@ -26,7 +26,7 @@ void Neyobi object#(0x493) ()
         if (!NEYOBI->get_item_flag(SI_ZOMBIE)) // If she is no longer sick.
             {
             AVATAR->item_say("@Good morning, little one!@");
-		        delayedBark(NEYOBI, "@Tee hee hee hee!@", 3); // Per original usecode. Does not appear, Bug 1957.
+	    delayedBark(NEYOBI, "@Tee hee hee hee!@", 3); // Per original usecode. Does not appear, Bug 1957.
             // This next if section is a hack to get around having to edit the NPC on the map.
             // Otherwise we would only need to take her out of the WAIT activity.
             if (!NEYOBI->get_item_flag(MET)) // If we haven't met her yet, give her a schedule.
