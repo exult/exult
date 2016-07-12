@@ -86,6 +86,12 @@
 #include "npcs/gwenno.uc"
 // Prevents resurrecting companions after banes are released
 #include "npcs/thoxa.uc"
+// Give Neyobi a schedule post-cure
+#include "npcs/neyobi.uc"
+// Fixes a flag to allow Delin to talk about Batlin
+#include "npcs/delin.uc"
+// Fixes a flag to allow Edrin to talk about Siranush being real
+#include "npcs/edrin.uc"
 
 // For curing Cantra, from exult/content/si; modified to allow companions
 // to thank you (and rejoin) after you cure them but before Xenka returns
