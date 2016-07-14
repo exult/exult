@@ -174,7 +174,7 @@ void Scroll shape#(0x31D) ()
  				// say("One of the common shields used by the Pikemen of Monitor.");
 				say("A sturdy shield belonging to Luther of Monitor.");
  				// Added a brand new one:
-			else if (gflags[HAS_CLUE_MONITOR_SIHELD])
+			else if (gflags[HAS_CLUE_MONITOR_SHIELD])
 				say("A shield from Monitor which possibly belongs to Luther.");
 			else
 				say("An inexpensive shield, sturdy and suitable for battle.");
