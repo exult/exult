@@ -25,7 +25,7 @@ void Kylista object#(0x436) () // NPC 54
 	{
 		if (!KYLISTA->get_cont_items(SHAPE_BREAST_PLATE, QUALITY_ANY, FRAME_ANY)) // If Kylista does not have the breastplate.
             {   // And no one is currently on trial OR Kylista has not been arrested after the trial.
-            if ((!(gflags[0x0173] || gflags[0x0174] || gflags[0x0175])) || ((gflags[0x0170] && gflags[0x0172]) && (gflags[0x016E]))) 
+            if ((!(gflags[0x0173] || gflags[0x0174] || gflags[0x0175])) || ((gflags[0x0170] && gflags[0x0172] && gflags[0x016E]))) 
                 {
                 if (gflags[KNOWS_BREAST_PLATE_OWNER]) // If we know she's the rightful owner, flag 660.
                     {
