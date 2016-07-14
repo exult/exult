@@ -12,8 +12,8 @@
  *  return it to her. She also will set the flag if you ask her about it
  *  without having it carried by the party, or if you refuse to return it.
  *
- *  Depending on the outcome of the Fawn Trial, Kylista may be arrested
- *  or not. If she is, you cannot ask about the breastplate anyway as the
+ *  Depending on the outcome of the Fawn Trial, Kylista may be arrested.
+ *  If she is, you cannot ask about the breastplate anyway as the
  *  post-arrest conversation does not check for the breastplate flags.
  *
  *  2016-07-13 Written by Knight Captain
