@@ -16,7 +16,7 @@
  *  If she is, you cannot ask about the breastplate anyway as the
  *  post-arrest conversation does not check for the breastplate flags.
  *
- *  2016-07-13 Written by Knight Captain
+ *  2016-07-14 Written by Knight Captain
  */
  
 void Kylista object#(0x436) () // NPC 54
@@ -24,19 +24,12 @@ void Kylista object#(0x436) () // NPC 54
 	if (event == STARTED_TALKING) // DoubleClick would also work here.
 	{
 		if (!KYLISTA->get_cont_items(SHAPE_BREAST_PLATE, QUALITY_ANY, FRAME_ANY)) // If Kylista does not have the breastplate.
-            {
-            if (!(gflags[0x0173] || gflags[0x0174] || gflags[0x0175])) // And no one is currently on trial.
-                { // The next if line is taken from the original usecode to check if Kylista was arrested after the trial.
-                  // Flag 368 (0x170) is reused in the original code, which is first set during the offending audience with Iolo,
-                  // but unset during the recess between sessions, and then set again after the trial completes.
-                  // Flag 370 (0x172) is the recess flag, which is never unset.
-                  // Flag 366 (0x16E) is the Innocence flag, which never reveals the charade behind the Oracle.
-                if ((gflags[0x0170] && gflags[0x0172]) && (gflags[0x016E])) // And Kylista has not been arrested.
+            {   // And no one is currently on trial OR Kylista has not been arrested after the trial.
+            if ((!(gflags[0x0173] || gflags[0x0174] || gflags[0x0175])) || ((gflags[0x0170] && gflags[0x0172]) && (gflags[0x016E]))) 
+                {
+                if (gflags[KNOWS_BREAST_PLATE_OWNER]) // If we know she's the rightful owner, flag 660.
                     {
-                    if (gflags[KNOWS_BREAST_PLATE_OWNER]) // And we know she's the rightful owner, flag 660.
-                        {
-                        gflags[KNOWS_BREAST_PLATE_OWNER] = false; // We clear the flag so we can ask her about it.
-                        }
+                    gflags[KNOWS_BREAST_PLATE_OWNER] = false; // We clear the flag so we can ask her about it.
                     }
                 }
             }
