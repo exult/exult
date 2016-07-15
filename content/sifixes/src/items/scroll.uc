@@ -16,17 +16,34 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *  2016 07 07 List updated to display items in the order the party finds them,
+ *  2016-07-07 List updated to display items in the order the party finds them,
  *  instead of the original haphazard list. Order is Avatar, Shamino, Dupre, Iolo.
  *  Also fixes the spacing so adding companion-authors does not push text down.
+ *
+ *  2016-07-15 Added Quality 122 section to allow accusing Marsten of betraying
+ *  his city, and if Pomdirgun is dead, sets the flag Monitor NPCs check.
  */
 
-void Scroll shape#(0x31D) ()
+void Scroll shape#(0x31D) () // 797
 {
 	var quality = get_item_quality();
 	UI_play_sound_effect2(0x5E, item);
 	book_mode();
-	if (quality == 0xBD) // Quality 189
+    if (quality == 0x7A) // Quality 122, found in the Goblin King's treasure room, signed by Marsten, Lord of Monitor.
+	{
+        gflags[0x36] = true; // Marsten can be accused.
+        if (UI_get_item_flag(GOBLIN_KING, DEAD)) // If the Goblin King is dead.
+        {
+            gflags[0xCC] = true; // Conversations in Monitor will reflect his death.
+            // Needs to be added to si_gflags.uc as: POMDIRGUN_IS_DEAD
+            // If set, changes or adds conversation with Harnna, Shazzana, Standarr, Templar, Brendann, Caladin,
+            // and also looks to add a bark about it to Brendann. No one outside of Monitor checks this,
+            // so the dialog in Fawn won’t change. Similar to the original Origin bug with Harnna and the Strange Coins,
+            // if Flag 204 is set you can repeatedly ask Standarr about Pomdirgun, the option does not get removed.
+        }
+    }
+    
+	if (quality == 0xBD) // Quality 189, the Equipment Scroll.
 	{
 
 		say("The list of items which we found ourselves with after the storm:~"); // removed one ~
