@@ -46,7 +46,7 @@ enum events
 	                       // This is called repeatedly, with a random delay
 	                       // between each call
 	DOUBLECLICK = 1,       // Object is double-clicked on
-	SCRIPTED = 2,          // Function is called from inside a sript{} block
+	SCRIPTED = 2,          // Function is called from inside a script{} block
 	                       // (very common)
 	EGG = 3,               // Object is an egg that just hatched (triggered by
 	                       // egg activation conditions)
@@ -203,12 +203,12 @@ enum item_flags
 	                          // and whether the NPC's real name or shape name
 	                          // is displayed when they are single-clicked on.
 	SI_TOURNAMENT = 29,       // Call usecode (eventid = 7)
-	SI_ZOMBIE = 30,           // Used for sick neyobi.
+	SI_ZOMBIE = 30,           // Used for sick Neyobi, Cantra, post-Bane companions.
 
 	POLYMORPH = 32,           // Do not set this flag directly; use the
 	                          // UI_set_polymorph intrinsic instead.
 	TATTOOED = 33,
-	READ = 34,                // guess (SI).
+	READ = 34,                // Can read non-Latin alphabet scrolls, books, signs.
 	ISPETRA = 35,             // guess
 	FREEZE = 37,              // SI.  pretty sure.
 	NAKED = 38                // Exult. Makes the avatar naked given its skin.
