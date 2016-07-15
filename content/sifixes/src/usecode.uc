@@ -87,7 +87,6 @@
 // Prevents resurrecting companions after banes are released
 #include "npcs/thoxa.uc"
 
-
 // For curing Cantra, from exult/content/si; modified to allow companions
 // to thank you (and rejoin) after you cure them but before Xenka returns
 #include "items/bucket_cure.uc"
