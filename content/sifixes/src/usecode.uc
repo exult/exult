@@ -92,6 +92,8 @@
 #include "npcs/delin.uc"
 // Fixes a flag to allow Edrin to talk about Siranush being real
 #include "npcs/edrin.uc"
+// Clears a flag to allow asking Kylista about the breastplate
+#include "npcs/kylista.uc"
 
 // For curing Cantra, from exult/content/si; modified to allow companions
 // to thank you (and rejoin) after you cure them but before Xenka returns
