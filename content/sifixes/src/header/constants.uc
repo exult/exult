@@ -257,7 +257,8 @@ enum schedules
 	SHY = 20,                 // Tries to keep out of the Avatar's way - will
 	                          // flee until out of a certain range.
 	LAB = 21,
-	THIEF = 22,               // ??
+	THIEF = 22,               // Approaches the party and will take gold from the Avatar's
+				  // backpack, then will bark "Greetings!" in SI.
 	WAITER = 23,
 	SPECIAL = 24,             // ??
 	KID_GAMES = 25,           // Tag! Thou art it! And so forth.
@@ -265,9 +266,9 @@ enum schedules
 	EAT_AT_INN = 26,          // same as Eat, only with different barks.
 	DUEL = 27,
 	SPAR = 27,
-	PREACH = 28,
+	PREACH = 28,		  // Broken in SI, Leon resets to Loiter after trying it.
 	PATROL = 29,              // This tells the AI to follow a particular set of
-	                          // patrol waypoints
+	                          // patrol waypoints, used with the path shape.
 	DESK_WORK = 30,
 	FOLLOW_AVATAR = 31        // That most noble of pursuits. Like WAIT, this
 	                          // completely overrides the NPC's schedule list.
