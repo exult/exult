@@ -32,12 +32,12 @@ void Scroll shape#(0x31D) ()
 	book_mode();
 	// Found in the Goblin King's treasure room, signed by Marsten, Lord of Monitor.
 	if (quality == 0x7A)
-	{   // Marsten can be accused.
+	{	// Marsten can be accused.
 		gflags[CAN_ACCUSE_MARSTEN] = true; 
 		// If the Goblin King is dead.
 		if (UI_get_item_flag(GOBLIN_KING, DEAD))
-		{
-			gflags[POMDIRGUN_IS_DEAD] = true; // Conversations in Monitor will reflect his death.
+		{	// Conversations in Monitor will reflect his death.
+			gflags[POMDIRGUN_IS_DEAD] = true;
 		}
 	}
 
