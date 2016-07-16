@@ -166,7 +166,7 @@ extern void unfreezeAvatar 0x9AA ();
  *	 immediate schedule to WAIT (right then and there) and -- if they
  *	 are in the party -- to EAT_AT_INN in the kitchen at Monk isle.
  */
-extern void setNewSchecules 0x9AC (var npc, var posx, var posy, var activity);
+extern void setNewSchedules 0x9AC (var npc, var posx, var posy, var activity);
 
 // Makes the NPC ask where to wait when kicked from the party
 // (or, in some cases, simply says where he will be later):
