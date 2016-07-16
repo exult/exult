@@ -27,14 +27,14 @@ void Kylista object#(0x436) () // NPC 54
 		if (!KYLISTA->get_cont_items(SHAPE_BREAST_PLATE, QUALITY_ANY, FRAME_ANY)) 
 		{   
 			// And no one is currently on trial OR Kylista has not been arrested after the trial.
-            if ((!(gflags[DUPRE_ACCUSED] || gflags[IOLO_ACCUSED] || gflags[SHAMINO_ACCUSED])) || ((gflags[AUDIENCE_WITH_YELINDA] && gflags[FAWN_TRIAL_DONE] && gflags[ORACLE_SET_TO_INNOCENT]))) 
-                {
-                if (gflags[KNOWS_BREAST_PLATE_OWNER]) // If we know she's the rightful owner, flag 660.
-                    {
-                    gflags[KNOWS_BREAST_PLATE_OWNER] = false; // We clear the flag so we can ask her about it.
-                    }
-                }
-            }
-    }
-    Kylista.original();
+			if ((!(gflags[DUPRE_ACCUSED] || gflags[IOLO_ACCUSED] || gflags[SHAMINO_ACCUSED])) || ((gflags[AUDIENCE_WITH_YELINDA] && gflags[FAWN_TRIAL_DONE] && gflags[ORACLE_SET_TO_INNOCENT]))) 
+				{
+				if (gflags[KNOWS_BREAST_PLATE_OWNER]) // If we know she's the rightful owner, flag 660.
+					{
+					gflags[KNOWS_BREAST_PLATE_OWNER] = false; // We clear the flag so we can ask her about it.
+					}
+				}
+			}
+	}
+	Kylista.original();
 }
