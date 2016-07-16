@@ -5,7 +5,17 @@
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
  *
- *  There is a very minor flag, only checked by Delin, that allows you to
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+ 
+/*  There is a very minor flag, only checked by Delin, that allows you to
  *  ask him about Batlin. It looks like it should have been set by Jendon
  *  per the flag order but that bit was removed sometime during SI's dev.
  *  Since setting flag 344 happens after asking Jendon about Batlin it is
@@ -18,10 +28,10 @@ void Delin object#(0x42F) () // NPC 47
 {
 	if (event == STARTED_TALKING) // DoubleClick would also work here.
 	{
-		if (gflags[0x0158]) // 344 Ask_Delin_About_Batlin is not defined in si_flags.uc yet.
-            {
-            gflags[0x0156] = true; // 342 AskedAboutDaemonArtifacts is not defined either.
-            }
-    }
-    Delin.original();
+		if (gflags[ASKED_JENDON_DAEMON_ARTIFACTS]) // 344
+		{
+			gflags[ASK_DELIN_ABOUT_BATLIN] = true; // 342
+		}
+	}
+	Delin.original();
 }
