@@ -145,7 +145,7 @@ void BatlinAtWallOfLights object#(0x73B) ()
 			var objpos = [0x6B + 3 * npc, 0x36, 0];
 
 			npc->move_object(objpos);
-			setNewSchecules(npc, objpos[X], objpos[Y], WAIT);
+			setNewSchedules(npc, objpos[X], objpos[Y], WAIT);
 			
 			var baneframe = npc->get_item_frame();
 			var baneobj = newbaneshape->create_new_object2(pos);
