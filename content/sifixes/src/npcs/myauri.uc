@@ -25,12 +25,10 @@
 
 void Myauri object#(0x492) () // NPC 146
 {
-	if (event == STARTED_TALKING) // DoubleClick would also work here.
+	if (event == STARTED_TALKING)
 	{
-		if (!MYAURI->get_item_flag(MET)) // If we have not met Myauri,
-            {
-            MYAURI->set_item_flag(MET); // Now we have.
-            }
+		MYAURI->set_item_flag(MET);
     }
     Myauri.original();
 }
+
