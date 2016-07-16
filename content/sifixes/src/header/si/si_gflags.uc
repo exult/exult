@@ -142,6 +142,10 @@ enum Monitor_traitor_subplot
 	FOUND_CANTRAS_FATHER = 0xC6,
 	TOLD_HARNNA_FOUND_SCROLL = 0xC7,
 	POMDIRGUN_IS_DEAD = 0xCC
+	// If set, changes or adds conversation with Harnna, Shazzana, Standarr, Templar, Brendann, Caladin,
+	// and also looks to add a bark about it to Brendann. No one outside of Monitor checks this,
+	// so the dialog in Fawn won’t change. Similar to the original Origin bug with Harnna and the Strange Coins,
+	// if Flag 204 is set you can repeatedly ask Standarr about Pomdirgun, the option does not get removed.
 };
 
 enum Kidnapping_of_Cantra_subplot
