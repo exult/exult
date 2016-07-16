@@ -195,7 +195,17 @@ enum Free_Iolo_subplot
 enum Fawn_townplot
 {
 	ASKED_JENDON_DAEMON_ARTIFACTS = 0x156,
-	ASK_DELIN_ABOUT_BATLIN = 0x158
+	ASK_DELIN_ABOUT_BATLIN = 0x158,
+	ORACLE_SET_TO_INNOCENT = 0x16E,
+	ORACLE_SET_TO_CORRUPT = 0x16F, 
+	// Dual-use flag, set on the start of the audience cutscene, unset during the
+	// recess between trial sessions, and re-set again after the trial concludes:
+	AUDIENCE_WITH_YELINDA = 0x170,
+	FAWN_TRIAL_RECESS = 0x171,
+	FAWN_TRIAL_FIRST_HALF_DONE = 0x172
+	DUPRE_ACCUSED = 0x173,
+	IOLO_ACCUSED = 0x174,
+	SHAMINO_ACCUSED = 0x175
 };
 
 enum Sleeping_Bull_townplot
