@@ -202,7 +202,7 @@ enum Fawn_townplot
 	// recess between trial sessions, and re-set again after the trial concludes:
 	AUDIENCE_WITH_YELINDA = 0x170,
 	FAWN_TRIAL_RECESS = 0x171,
-	FAWN_TRIAL_FIRST_HALF_DONE = 0x172
+	FAWN_TRIAL_DONE = 0x172,
 	DUPRE_ACCUSED = 0x173,
 	IOLO_ACCUSED = 0x174,
 	SHAMINO_ACCUSED = 0x175
