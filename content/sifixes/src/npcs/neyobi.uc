@@ -14,7 +14,7 @@
  *  2016-07-09 Written by Knight Captain
  */
  
-void Neyobi object#(0x493) () 
+void Neyobi object#(0x493) ()
 {
 	if (event == DOUBLECLICK)
 	{
@@ -29,7 +29,7 @@ void Neyobi object#(0x493) ()
 			delayedBark(NEYOBI, "@Tee hee hee hee!@", 3);
 			// This next if section is a better way to give her a schedule than editing her on the map.
 			if (!NEYOBI->get_item_flag(MET)) // If we haven't met her yet, give her a schedule.
-				{        
+				{
 				NEYOBI->set_new_schedules([MIDNIGHT		, MORNING	, AFTERNOON		, EVENING	, NIGHT	],
 											[WANDER		, SLEEP		, LOITER		, WANDER	, LOITER	],
 											[0x408,0x3A4, 0x3F5,0x36A, 0x3EC,0x359, 0x3B6,0x35E, 0x473,0x350]);
@@ -58,8 +58,8 @@ void Neyobi object#(0x493) ()
 				else
 					say("@It mean 'little dew drops' and also mean my name. Neyobi! Me!@"); // No
    
-			case "What art thou doing?" (remove): 
-				say("@Early today I play! I like look at clouds! Other day I saw one that look like penguin! Later, mother and Baiyanda teach lessons.@");    
+			case "What art thou doing?" (remove):
+				say("@Early today I play! I like look at clouds! Other day I saw one that look like penguin! Later, mother and Baiyanda teach lessons.@");
 				add(["mother", "Baiyanda", "lessons"]);
  
 			case "mother" (remove):
@@ -72,8 +72,8 @@ void Neyobi object#(0x493) ()
 				say("@She healer, and smartest person in whole world!@"); // Says this otherwise.
 
 			case "lessons" (remove):
-				say("@Mother tells me the stories of the old days. She also teach me language of Men. She say Gwani very good at learn languages. Especially young ones.@"); 
-				say("@Baiyanda teach me about plants and things.@"); 
+				say("@Mother tells me the stories of the old days. She also teach me language of Men. She say Gwani very good at learn languages. Especially young ones.@");
+				say("@Baiyanda teach me about plants and things.@");
 
 			case "bye":
 				UI_remove_npc_face0();
