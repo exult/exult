@@ -23,12 +23,12 @@
  *  2016-07-15 Written by Knight Captain
  */
 
-void Myauri object#(0x492) () // NPC 146
+void Myauri object#(0x492) ()
 {
 	if (event == STARTED_TALKING)
 	{
 		MYAURI->set_item_flag(MET);
-    }
-    Myauri.original();
+	}
+	Myauri.original();
 }
 
