@@ -79,7 +79,7 @@ enum Monitor_townplot
 	CALLED_LUTHER_BRAGGART = 0xAF,
 	CALLED_LUTHER_REPULSIVE = 0xB0,
 	CALLED_LUTHER_BULLY = 0xB1,
-	LUTHER_CHALLENDE = 0x43,
+	LUTHER_CHALLENGED = 0x43,
 	DEFEATED_LUTHER = 0x41,
 
 	KNOWS_ABOUT_MONITOR_CLANS = 0x7F,
@@ -134,12 +134,19 @@ enum Monitor_traitor_subplot
 	TELL_SPEKTOR_ABOUT_TRAITOR = 0xB3,
 	KNOW_MARSTEN_IS_TRAITOR = 0x93,
 	KNOW_SPEKTOR_IS_TRAITOR = 0x94,
+	CAN_ACCUSE_MARSTEN = 0x36,
 	PROVED_MARSTEN_IS_TRAITOR = 0x38,
 	PROVED_SPEKTOR_IS_TRAITOR = 0x92,
 	SPEKTOR_ADMITS_HIS_CRIMES = 0xB4,
 	HAVE_SPEKTOR_KEY = 0xC1,
 	FOUND_CANTRAS_FATHER = 0xC6,
-	TOLD_HARNNA_FOUND_SCROLL = 0xC7
+	TOLD_HARNNA_FOUND_SCROLL = 0xC7,
+	// If 0xCC is set, changes or adds conversation with Harnna, Shazzana, Standarr, Templar, Brendann, Caladin,
+	// and also looks to add a bark about it to Brendann. No one outside of Monitor checks this,
+	// so the dialog in Fawn won’t change. Similar to the original Origin bug with Harnna and the Strange Coins,
+	// if Flag 204 is set you can repeatedly ask Standarr about Pomdirgun, the option does not get removed.
+	POMDIRGUN_IS_DEAD = 0xCC
+
 };
 
 enum Kidnapping_of_Cantra_subplot
@@ -184,6 +191,22 @@ enum Free_Iolo_subplot
 	PAID_IOLO_FINE = 0xB9,
 	BRENDANN_GAVE_JAIL_KEY = 0xC4,
 	MARSTEN_GAVE_JAIL_KEY = 0xCD
+};
+
+enum Fawn_townplot
+{
+	ASKED_JENDON_DAEMON_ARTIFACTS = 0x156,
+	ASK_DELIN_ABOUT_BATLIN = 0x158,
+	ORACLE_SET_TO_INNOCENT = 0x16E,
+	ORACLE_SET_TO_CORRUPT = 0x16F, 
+	// Dual-use flag, set on the start of the audience cutscene, unset during the
+	// recess between trial sessions, and re-set again after the trial concludes:
+	AUDIENCE_WITH_YELINDA = 0x170,
+	FAWN_TRIAL_RECESS = 0x171,
+	FAWN_TRIAL_DONE = 0x172,
+	DUPRE_ACCUSED = 0x173,
+	IOLO_ACCUSED = 0x174,
+	SHAMINO_ACCUSED = 0x175
 };
 
 enum Sleeping_Bull_townplot
@@ -239,7 +262,8 @@ enum Spellbook_subplot
 enum Gorlab_swamp_townplot
 {
 	EDRIN_DREAMS_OF_SIRANUSH = 0xF3,
-	EDRIN_KNOWS_SIRANUSH_IS_REAL = 0x213
+	EDRIN_KNOWS_SIRANUSH_IS_REAL = 0x213,
+	DREAM_REALM_COMPLETE = 0x2DB
 };
 
 // The quotes are from http://www.it-he.org
@@ -318,7 +342,7 @@ enum Teleport_storm_objects
 	ASK_SIMON_ABOUT_STRANGEWINE = 0xA1,
 	ASK_SPEKTOR_ABOUT_STRANGECOINS = 0xA2,
 	ASK_RENFRY_ABOUT_HAND = 0xA3,
-
+	
 	// Flags for the teleport storm items:
 	STORM_PINECONE = 0x27A,
 	STORM_BLUE_EGG = 0x283,

@@ -1,5 +1,5 @@
 ========================================================
-Miscelaneous fixes to Serpent Isle Usecode
+Miscellaneous fixes to Serpent Isle Usecode
 ========================================================
 
 0	Table of Contents
@@ -17,7 +17,7 @@ Miscelaneous fixes to Serpent Isle Usecode
 -----------------------
 Author: Marzo Sette Torres Junior
 e-mail: marzojr@taskmail.com.br
-version: 0.15.09
+version: 0.15.12
 
 	This modification fixes a few of the Usecode bugs that plague Ultima VII:
 	Serpent Isle. I have tested it *only* with Silver Seed installed; while it
@@ -178,6 +178,19 @@ version: 0.15.09
 	    
 6	Version history
 -------------------
+version 0.15.12 - 2016-07-15
+	- The equipment scroll has been respaced and reordered to reflect the
+	  order the companions rejoin the party. Avatar, Shamino, Dupre, Iolo.
+	- Delin can be asked about Batlin after you ask Jendon about daemon artifacts.
+	- Edrin's response about his dreams and Siranush will change if you have 
+	  completed the Dream Realm.
+	- Neyobi the Gwani child now has a schedule once cured and woken up by double
+	  clicking on her. She will now accompany her mother and Baiyanda around.
+	- Kylista can be asked about the breastplate even if you know she owns it.
+	- Reading the evidence against Marsten will allow you to accuse him.
+	- Reading the same scroll will also set a flag if Pomdirgun is dead, which
+	  will change 6 conversations in Monitor.
+	- Iolo will return to pacing his cell after you talk with him in Monitor's jail.  
 version: 0.15.11
 	- Fixed spell incantation runes in spellbook and spell scrolls.
 version: 0.15.10

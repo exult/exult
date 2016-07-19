@@ -182,7 +182,7 @@ enum temple_of_discipline
 	GUARD3 = -86,
 	GUARD5 = -88,
 	GUARD6 = -89,
-	GUARD7 = -90,	// The dead one (can be brought back)
+	GUARD7 = -90, // The dead one (can be brought back)
 	GUARD8 = -91
 };
 
@@ -247,8 +247,8 @@ enum goblin_camp
 	JOHNSON = -285 //Captive pikeman
 };
 
-// Bull Tower residents, the five goblins you must kill to free the tower
-enum bull_tower
+// Fawn Tower residents, the five goblins you must kill to free the tower
+enum fawn_tower
 {
 	GOBL19 = -119,
 	GOBL21 = -120,
@@ -292,7 +292,7 @@ enum skullcrusher
 	GUARD19 = -187,
 	GUARD20 = -188,
 	GUARD21 = -189,
-	GUARD17 = -190,
+	GUARD17 = -190, // Western gate guard
 	VASCULIO = -294
 };
 
@@ -303,7 +303,7 @@ enum gwanni_npcs
 	BWUNDIAI = -144,
 	MWAERNO = -145,
 	MYAURI = -146,
-	NEYOBI = -147, //Gwani child
+	NEYOBI = -147, // Gwani child
 	YENANI = -148,
 	GILWOYAI = -153,
 	KAPYUNDI = -154
@@ -329,7 +329,7 @@ enum northernforest_npcs
 	MORGHRIM = -159,
 	HOUND_OF_DOSKAR = -269,
 	HAZARD = -275,
-	SONAR = -276 // Wolf known as Windrunner
+	SONAR = -276 // Timberwolf known as Windrunner
 };
 
 // Freedom residents
@@ -402,9 +402,9 @@ enum batlingoons_npcs
 {
 	// Batlin is actually a monster in this game, not a real person... err, NPC.
 	// SELINA = -44, // Defined above
-	BRUNT = -127,
-	DEADEYE = -128,
-	PALOS = -272
+	BRUNT = -127, // Fighter
+	DEADEYE = -128, // Pirate
+	PALOS = -272 // Gargoyle
 };
 
 // All other NPCs

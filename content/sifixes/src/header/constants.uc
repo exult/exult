@@ -46,7 +46,7 @@ enum events
 	                       // This is called repeatedly, with a random delay
 	                       // between each call
 	DOUBLECLICK = 1,       // Object is double-clicked on
-	SCRIPTED = 2,          // Function is called from inside a sript{} block
+	SCRIPTED = 2,          // Function is called from inside a script{} block
 	                       // (very common)
 	EGG = 3,               // Object is an egg that just hatched (triggered by
 	                       // egg activation conditions)
@@ -203,12 +203,12 @@ enum item_flags
 	                          // and whether the NPC's real name or shape name
 	                          // is displayed when they are single-clicked on.
 	SI_TOURNAMENT = 29,       // Call usecode (eventid = 7)
-	SI_ZOMBIE = 30,           // Used for sick neyobi.
+	SI_ZOMBIE = 30,           // Used for sick Neyobi, Cantra, post-Bane companions.
 
 	POLYMORPH = 32,           // Do not set this flag directly; use the
 	                          // UI_set_polymorph intrinsic instead.
 	TATTOOED = 33,
-	READ = 34,                // guess (SI).
+	READ = 34,                // Can read non-Latin alphabet scrolls, books, signs.
 	ISPETRA = 35,             // guess
 	FREEZE = 37,              // SI.  pretty sure.
 	NAKED = 38                // Exult. Makes the avatar naked given its skin.
@@ -257,7 +257,8 @@ enum schedules
 	SHY = 20,                 // Tries to keep out of the Avatar's way - will
 	                          // flee until out of a certain range.
 	LAB = 21,
-	THIEF = 22,               // ??
+	THIEF = 22,               // Approaches the party and will take gold from the Avatar's
+				  // backpack, then will bark "Greetings!" in SI.
 	WAITER = 23,
 	SPECIAL = 24,             // ??
 	KID_GAMES = 25,           // Tag! Thou art it! And so forth.
@@ -265,9 +266,9 @@ enum schedules
 	EAT_AT_INN = 26,          // same as Eat, only with different barks.
 	DUEL = 27,
 	SPAR = 27,
-	PREACH = 28,
+	PREACH = 28,		  // Broken in SI, Leon resets to Loiter after trying it.
 	PATROL = 29,              // This tells the AI to follow a particular set of
-	                          // patrol waypoints
+	                          // patrol waypoints, used with the path shape.
 	DESK_WORK = 30,
 	FOLLOW_AVATAR = 31        // That most noble of pursuits. Like WAIT, this
 	                          // completely overrides the NPC's schedule list.
