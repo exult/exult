@@ -181,6 +181,7 @@ version: 0.15.13
 6	Version history
 -------------------
 version 0.15.13 - 2016-08-03
+	- Draxinar's second riddle now spells correct correctly.
 	- Draxinar's last of four riddles now accepts the correct answer of 13.
 	  The prior accepted-but-wrong answer now gives a new unique response.
 version 0.15.12 - 2016-07-15
