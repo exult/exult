@@ -43,6 +43,8 @@
 
 // From here down, all functions have preassigned function numbers:
 
+// Fixes spelling in Draxinar's second riddle
+#include "misc/draxinar_earrings_riddle.uc"
 // Fixes the incorrect answer to Draxinar's last riddle
 #include "misc/draxinar_cloth_riddle.uc"
 // Fixes a few bugs in the cleanup of Fawn Tower
