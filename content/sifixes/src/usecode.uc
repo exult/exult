@@ -43,6 +43,8 @@
 
 // From here down, all functions have preassigned function numbers:
 
+// Fixes the incorrect answer to Draxinar's last riddle
+#include "misc/draxinar_cloth_riddle.uc"
 // Fixes a few bugs in the cleanup of Fawn Tower
 #include "misc/fawn_tower_cleanup.uc"
 // Fixes a few bugs when returning the shield to Luther
