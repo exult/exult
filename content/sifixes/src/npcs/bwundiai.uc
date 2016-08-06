@@ -1,29 +1,29 @@
 /*	Copyright (C) 2016  The Exult Team
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ *	This program is free software; you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation; either version 2 of the License, or
+ *	(at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program; if not, write to the Free Software
+ *	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
 /*	Bwundiai is the first Gwani you meet, and his only schedule is TALK
  *	until you talk to him. Then he gets a normal schedule. He had incorrect
  *	checks for Gwani cloaks and	pelts that were to give you an angry greeting.
  *	They were corrected by Malignant Manor and moved into a new function.
- *  In order to avoid the incorrect checks, and resolve his endless TALK
+ 	In order to avoid the incorrect checks, and resolve his endless TALK
  *	when you first meet him if you have pelts or cloaks, his entire 
  *	STARTED_TALKING code has been re-written.
  *
- *  2016-07-05 Written by Malignant Manor
+ *	2016-07-05 Written by Malignant Manor
  *	2016-07-17 Knight Captain added full conversation so bad checks are skipped.
  */
 
