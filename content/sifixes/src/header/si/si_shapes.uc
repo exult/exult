@@ -242,7 +242,8 @@ enum armor_shapes
 	SHAPE_BELT_OF_STRENGTH = 996,
 	SHAPE_GAUNTLETS_OF_QUICKNESS = 1001,
 	SHAPE_SOFT_HELM = 1004,					// Includes fur hats and the Serpent Crown, Living Toupee
-	SHAPE_LEATHER_HELM = 1004				// Legacy
+	SHAPE_LEATHER_HELM = 1004,				// Legacy
+	SHAPE_HELM_OF_LIGHT = 1013
 };
 
 enum money_shapes
