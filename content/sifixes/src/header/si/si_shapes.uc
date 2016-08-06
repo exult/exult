@@ -50,7 +50,7 @@ enum animals_shapes
 	SHAPE_CHICKEN = 498,
 	SHAPE_COW = 500,
 	SHAPE_DEER = 502,
-	SHAPE_FISH = 509,						// Swims
+	SHAPE_FISH = 509,					// Swims
 	SHAPE_FOX = 510,
 	SHAPE_INSECTS = 517,
 	SHAPE_RAT = 523,
@@ -58,7 +58,7 @@ enum animals_shapes
 	SHAPE_WOLF = 537,
 	SHAPE_BIRD = 716,
 	SHAPE_SNOW_LEOPARD = 754,
-	SHAPE_PARROT = 772,						// Not on post
+	SHAPE_PARROT = 772,					// Not on post
 	SHAPE_RABBIT = 811,
 	SHAPE_SHEEP = 970
 };
@@ -114,7 +114,7 @@ enum undead_shapes
 	SHAPE_UNDEAD = 494,
 	SHAPE_SKELETON = 528,
 	SHAPE_GHOST_MAN = 853,
-	SHAPE_LICHE = 981						// Aram Dol
+	SHAPE_LICHE = 981					// Aram Dol
 };
 
 enum goblin_shapes
@@ -124,7 +124,7 @@ enum goblin_shapes
 	SHAPE_GOBLIN_691 = 691,					// Correct offsets, vuln to magic, can't yell
 	SHAPE_GOBLIN_725 = 725,					// Missing offsets so does not appear to hold weapons
 	SHAPE_FEMALE_GOBLIN = 744,
-	SHAPE_GOBLIN2 = 691						// Legacy
+	SHAPE_GOBLIN2 = 691					// Legacy
 };
 
 // Weapons - Special
@@ -133,13 +133,13 @@ enum special_weapon_shapes
 	SHAPE_MAGEBANE_SWORD = 231,				// Magic damage, takes away opponent's magic
 	SHAPE_BRASS_HAMMER = 508,				// Used in Furnace Test
 	SHAPE_WOODEN_SWORD = 520,
-	SHAPE_DRAGONSLAYER_SWORD = 535,			// Normal damage
+	SHAPE_DRAGONSLAYER_SWORD = 535,				// Normal damage
 	SHAPE_MAGIC_SWORD = 547,				// Magic Damage, Lucky
 	SHAPE_LIGHTNING_WHIP = 549,				// Magic damage
 	SHAPE_FIRE_SWORD = 551,					// Fire damage
 	SHAPE_MAGIC_AXE = 552,					// Magic damage
 	SHAPE_FIREDOOM_STAFF = 553,				// Magic damage
-	SHAPE_JUGGERNAUT_HAMMER = 557,			// Magic damage
+	SHAPE_JUGGERNAUT_HAMMER = 557,				// Magic damage
 	SHAPE_POISON_DAGGER = 564,
 	SHAPE_SWORD_OF_DEFENSE = 567,
 	SHAPE_GLASS_SWORD = 604,
@@ -213,7 +213,7 @@ enum armor_shapes
 	SHAPE_DUPRE_SHIELD = 490,
 	SHAPE_CHAIN_COIF = 539,
 	SHAPE_GREAT_HELM = 541,
-	SHAPE_HELM = 542,						// Crested, plumed, Viking
+	SHAPE_HELM = 542,					// Crested, plumed, Viking
 	SHAPE_BUCKLER = 543,
 	SHAPE_CURVED_HEATER = 545,
 	SHAPE_LEATHER_ARMOUR = 569,
@@ -229,7 +229,7 @@ enum armor_shapes
 	SHAPE_GAUNTLETS = 580,
 	SHAPE_DOOR_SHIELD = 585,
 	SHAPE_BRASS_SHIELD = 586,
-	SHAPE_BOOTS = 587,						// All varieties
+	SHAPE_BOOTS = 587,					// All varieties
 	SHAPE_KITE_SHIELD = 609,
 	SHAPE_SERPENT_EARRINGS = 635,
 	SHAPE_SERPENT_ARMOUR = 638,
@@ -267,7 +267,7 @@ enum movable_item_shapes
 	SHAPE_PUMICE = 267,
 	SHAPE_TWIGS = 278,
 	SHAPE_BRUSH = 285,
-	SHAPE_DRUM = 286,						// Includes drumsticks
+	SHAPE_DRUM = 286,					// Includes drumsticks
 	SHAPE_SPECIAL_RING = 296,				// Invisibility, Regeneration, Blink, Reagents
 	SHAPE_PLAINRING = 296,					// Per original si_shapes.uc
 	SHAPE_UTENSIL = 300,
@@ -287,7 +287,6 @@ enum movable_item_shapes
 	SHAPE_GWANI_AMULET = 479,				// Includes claw from Knight's Test
 	SHAPE_KEY_RING = 485,
 	SHAPE_MAGIC_HARP = 506,
-	SHAPE_BODY_SKELETON = 507,				// Includes Gwani bodies
 	SHAPE_BROKEN_DISH = 546,
 	SHAPE_SCEPTRE = 548,
 	SHAPE_SERPENT_JAWBONE = 555,
@@ -302,7 +301,7 @@ enum movable_item_shapes
 	SHAPE_CUP = 628,
 	SHAPE_KEY = 641,
 	SHAPE_BOOK = 642,
-	SHAPE_SLEEPING_POWDER = 648,			// Includes Dust of Invisibility and Strange Potion
+	SHAPE_SLEEPING_POWDER = 648,				// Includes Dust of Invisibility and Strange Potion
 	SHAPE_ARTIFACT = 649,					// Plot Items
 	SHAPE_SEXTANT = 650,
 	SHAPE_BALE_OF_WOOL = 653,
@@ -312,7 +311,7 @@ enum movable_item_shapes
 	SHAPE_STOCKINGS = 677,
 	SHAPE_JAR = 681,
 	SHAPE_GLASS_ITEM = 682,
-	SHAPE_SERPENT_CARVING = 688,			// Includes purple and gold statues
+	SHAPE_SERPENT_CARVING = 688,				// Includes purple and gold statues
 	SHAPE_LUTE = 692,
 	SHAPE_WHISTLE = 693,
 	SHAPE_PODIUM_V = 697,
@@ -323,7 +322,7 @@ enum movable_item_shapes
 	SHAPE_DEAD_BABY = 730,					// Diapers can still be used on him.
 	SHAPE_HARP = 745,
 	SHAPE_LAB_APPARATUS = 749,				// Offically alchemist apparatus
-	SHAPE_ALCHEMY_APPARATUS = 749,			// Legacy name
+	SHAPE_ALCHEMY_APPARATUS = 749,				// Legacy name
 	SHAPE_MUSIC_BOX = 752,
 	SHAPE_CALTROPS = 756,					// And broken glass that causes damage
 	SHAPE_SPELLBOOK = 761,
@@ -334,7 +333,7 @@ enum movable_item_shapes
 	SHAPE_BODY_PART = 799,
 	SHAPE_BUCKET = 810,
 	SHAPE_DIAPER = 822,
-	SHAPE_ARTISTS_EQUIPMENT = 823,			// Paintbrush
+	SHAPE_ARTISTS_EQUIPMENT = 823,				// Paintbrush
 	SHAPE_PITCHER = 824,
 	SHAPE_BANDAGE = 827,
 	SHAPE_EASEL = 837,
@@ -344,12 +343,12 @@ enum movable_item_shapes
 	SHAPE_CLOTH = 851,
 	SHAPE_KITCHEN_ITEMS = 863,
 	SHAPE_CHAIR = 873,
-	SHAPE_RING = 887,						// Alyssand's and Serpent Ring
+	SHAPE_RING = 887,					// Alyssand's and Serpent Ring
 	SHAPE_BLOOD = 912,
-	SHAPE_SPILL = 912,						// Legacy
+	SHAPE_SPILL = 912,					// Legacy
 	SHAPE_URN = 914,
 	SHAPE_SERPENT_SCEPTRE = 926,
-	SHAPE_PHILANDERERS_FRIEND = 929,		// Wand of Stone
+	SHAPE_PHILANDERERS_FRIEND = 929,			// Wand of Stone
 	SHAPE_POT = 944,
 	SHAPE_AMULET = 955,
 	SHAPE_FUR_PELT = 977,
@@ -362,6 +361,7 @@ enum dead_body_shapes
 	SHAPE_BODY_402 = 402,					// 31 frames with SS
 	SHAPE_BODY_414 = 414,					// Dead 3 companions
 	SHAPE_BODIES_2 = 414,					// From original si_shapes.uc
+	SHAPE_BODY_SKELETON = 507,				// Includes Gwani bodies
 	SHAPE_BODY_762 = 762,					// Mostly animals and monsters
 	SHAPE_BODY_778 = 778,					// Larger monsters, dragons
 	SHAPE_BODY_892 = 892					// With glowing cat
@@ -390,7 +390,7 @@ enum too_big_to_move
 	SHAPE_MIRROR_V = 268,					// Tall mirror
 	SHAPE_DOOR_HORIZONTAL = 270,
 	SHAPE_PAINTING_H = 282,
-	SHAPE_DESK_V = 283,						// Includes blue desk
+	SHAPE_DESK_V = 283,					// Includes blue desk
 	SHAPE_SUNDIAL = 284,
 	SHAPE_SEAT = 292,
 	SHAPE_TAPESTRY_V = 293,					// Includes paintings
@@ -418,10 +418,10 @@ enum too_big_to_move
 	SHAPE_DOOR_VERTICAL2 = 433,
 	SHAPE_CASK_H = 343,
 	SHAPE_LIT_SCONCE = 435,
-	SHAPE_LAMP_LIGHT_EFFECT = 440,			// Created by street lamps
+	SHAPE_LAMP_LIGHT_EFFECT = 440,				// Created by street lamps
 	SHAPE_WELL = 471,
 	SHAPE_WALL_OF_LIGHTS_BLUE = 473,
-	SHAPE_WALL_OF_LIGHTS_GREEN = 475,		// Unused
+	SHAPE_WALL_OF_LIGHTS_GREEN = 475,			// Unused
 	SHAPE_SCONCE = 481,
 	SHAPE_MAGIC_LENS = 505,
 	SHAPE_CRYSTAL_BALL = 519,				// Includes Moon's Eye
@@ -453,21 +453,21 @@ enum too_big_to_move
 	SHAPE_FORGE_FIREPIT = 739,
 	SHAPE_WINE_PRESS = 740,					// With animation
 	SHAPE_WATER_TROUGH_H = 741,
-	SHAPE_BLACK_SERPENT_STATUE = 743,		// With animation
+	SHAPE_BLACK_SERPENT_STATUE = 743,			// With animation
 	SHAPE_PILLAR_WITH_FACES = 746,
 	SHAPE_ICE_BLOCK = 755,
 	SHAPE_BELL = 759,
 	SHAPE_PILLAR_3 = 777,
 	SHAPE_WEB_OF_FATE = 784,
-	SHAPE_COLUMN = 785,						// 1x1 Pillar
+	SHAPE_COLUMN = 785,					// 1x1 Pillar
 	SHAPE_LEVER = 787,
 	SHAPE_SWITCH = 788,
-	SHAPE_ASSIMILATION_MACHINE = 789,		// Erstam's
+	SHAPE_ASSIMILATION_MACHINE = 789,			// Erstam's
 	SHAPE_ENGINE = 790,
 	SHAPE_MANTLE = 795,
 	SHAPE_CAMPFIRE = 796,					// Human head version was unused in SI
 	SHAPE_PAINTING_V = 821,
-	SHAPE_FIRE = 825,						// Non-magical fire
+	SHAPE_FIRE = 825,					// Non-magical fire
 	SHAPE_MIRROR_H = 848,					// Tall mirror
 	SHAPE_TAPESTRY_H = 849,
 	SHAPE_FENCING_DUMMY = 860,
@@ -485,17 +485,17 @@ enum npc_shapes
 {
 	SHAPE_MONK_RED_SASH = 179,
 	SHAPE_GWANI_1 = 214,
-	SHAPE_MAGE_IN_RED_GRAY_HAIR = 226,		// Melino
+	SHAPE_MAGE_IN_RED_GRAY_HAIR = 226,			// Melino
 	SHAPE_PIKEMAN = 228,
 	SHAPE_NAKED_MAN_BROWN_HAIR = 229,
-	SHAPE_NAKED_WOMAN_BLONDE_HAIR = 230,	// Cindy
+	SHAPE_NAKED_WOMAN_BLONDE_HAIR = 230,			// Cindy
 	SHAPE_JESTER = 247,
 	SHAPE_XENKAN_MONK = 250,				// Thoxa, Karnax, etc.
 	SHAPE_MALE_RANGER = 259,				// Ernesto
 	SHAPE_TOWNSMAN = 265,					// Simon
-	SHAPE_NOBLEWOMAN_IN_GREEN = 274,		// Yelinda
+	SHAPE_NOBLEWOMAN_IN_GREEN = 274,			// Yelinda
 	SHAPE_GIRL_KNIGHT = 299,				// Cantra
-	SHAPE_MAN_WITHOUT_SHIRT = 304,			// Standarr
+	SHAPE_MAN_WITHOUT_SHIRT = 304,				// Standarr
 	SHAPE_ANTI_SHAMINO = 317,
 	SHAPE_ANTISHAMINO = 317,				// Legacy, from original si_shapes.uc
 	SHAPE_BATLIN = 318,
@@ -506,42 +506,42 @@ enum npc_shapes
 	SHAPE_MAGE_IN_ORANGE = 401,				// Ensorcio
 	SHAPE_UGLY_OLD_WOMAN = 446,				// Mosh
 	SHAPE_NOBLEMAN = 451,					// Marsten
-	SHAPE_FEMALE_SHOPKEEPER = 454, 			// Harnna
-	SHAPE_MALE_SHOPKEEPER = 455,			// Krayg
-	SHAPE_GYPSY = 457,						// Hawk
-	SHAPE_PIRATE = 458,						// Kalen
+	SHAPE_FEMALE_SHOPKEEPER = 454, 				// Harnna
+	SHAPE_MALE_SHOPKEEPER = 455,				// Krayg
+	SHAPE_GYPSY = 457,					// Hawk
+	SHAPE_PIRATE = 458,					// Kalen
 	SHAPE_FEMALE_RANGER = 461,				// Julia
-	SHAPE_FIGHTER_GENERIC = 462,			// Templar (BG Sentri)
+	SHAPE_FIGHTER_GENERIC = 462,				// Templar (BG Sentri)
 	SHAPE_PALADIN = 464,					// Caladin, Jorvin
 	SHAPE_IOLO = 465,
 	SHAPE_STRANGER = 468,					// Renfry
 	SHAPE_WOMAN_REDHEAD = 469,				// Cellia
 	SHAPE_BOY_IN_BLUE = 472,				// Freli
-	SHAPE_WINGED_GARGOYLE = 480,			// Zhelkas
+	SHAPE_WINGED_GARGOYLE = 480,				// Zhelkas
 	SHAPE_SHAMINO = 487,
 	SHAPE_DUPRE = 488,
 	SHAPE_PRIESTESS = 560,					// Kylista
-	SHAPE_FIGHTER_GREENHELM = 565,			// Brendann
+	SHAPE_FIGHTER_GREENHELM = 565,				// Brendann
 	SHAPE_OLD_MAN = 581,					// Gustacio
 	SHAPE_VAMPIRE = 588,					// Vasculio
 	SHAPE_FEMALE_PIKEMAN = 647,				// Shazzana
-	SHAPE_WOMAN_IN_BLUE_BLONDE = 652,		// Lydia
-	SHAPE_FEMALE_AUTOMATON = 658,			// Petra
+	SHAPE_WOMAN_IN_BLUE_BLONDE = 652,			// Lydia
+	SHAPE_FEMALE_AUTOMATON = 658,				// Petra
 	SHAPE_SKINLESS_WOMAN = 660,				// Yelinda post-Banes
-	SHAPE_DARK_FEMALE_MONK = 665,			// Witches in Silver Seed
+	SHAPE_DARK_FEMALE_MONK = 665,				// Witches in Silver Seed
 	SHAPE_GWENNO = 669,
-	SHAPE_GUARD = 720,						// Flicken
+	SHAPE_GUARD = 720,					// Flicken
 	SHAPE_MALE_AVATAR = 721,				// Avatar from BG per prior notes
-	SHAPE_BRASS_AUTOMATON = 734,			// Silver Seed automatons
-	SHAPE_WENCH = 742,						// Lucilla
+	SHAPE_BRASS_AUTOMATON = 734,				// Silver Seed automatons
+	SHAPE_WENCH = 742,					// Lucilla
 	SHAPE_AUTOMATON = 747,					// Steel silver-colored automatons
-	SHAPE_FEMALE_MAGE_IN_PINK = 766,		// Rotoluncia, Sabrina in MoF
+	SHAPE_FEMALE_MAGE_IN_PINK = 766,			// Rotoluncia, Sabrina in MoF
 	SHAPE_LORD_BRITISH = 793,
-	SHAPE_FIGHTER_DARKSKIN = 805,			// Shmed
+	SHAPE_FIGHTER_DARKSKIN = 805,				// Shmed
 	SHAPE_MAGE_IN_BLACK = 809,				// Andral, Mortegro
 	SHAPE_MAGE_IN_BLUE = 814,				// Filbercio
-	SHAPE_BOYDON = 815,						// 'monster'
-	SHAPE_FIGHTER_IN_ORANGE = 816,			// Luther
+	SHAPE_BOYDON = 815,					// 'monster'
+	SHAPE_FIGHTER_IN_ORANGE = 816,				// Luther
 	SHAPE_MAGE_IN_BROWN = 817,				// Fedabiblio
 	SHAPE_COUNSELOR = 818,					// Zulith
 	SHAPE_MAN_WITH_BERET = 830,				// Spektor
@@ -550,7 +550,7 @@ enum npc_shapes
 	SHAPE_GWANI_CHILD = 867,				// Neyobi
 	SHAPE_HOUND_OF_DOSKAR = 874,
 	SHAPE_WINGLESS_GARGOYLE = 883,
-	SHAPE_FEMALE_MAGE_IN_GREEN = 888,		// Columna
+	SHAPE_FEMALE_MAGE_IN_GREEN = 888,			// Columna
 	SHAPE_MAD_IOLO = 880,
 	SHAPE_NAKED_BROWN_MAN = 891,
 	SHAPE_NAKED_BLACK_MAN = 893,
@@ -562,15 +562,12 @@ enum npc_shapes
 	SHAPE_NAKED_BLONDE_WOMAN = 930,
 	SHAPE_NAKED_BLACK_WOMAN = 933,
 	SHAPE_NAKED_BROWN_WOMAN = 938,
-	SHAPE_AUTOMATON_WITH_CAPE = 945,		// Isstanar
+	SHAPE_AUTOMATON_WITH_CAPE = 945,			// Isstanar
 	SHAPE_HEALER = 946,
 	SHAPE_OPHIDIAN_SOLDIER = 947,
 	SHAPE_CATMAN = 957,
 	SHAPE_FEMALE_AVATAR = 989,				// Avatar from BG per prior notes
-	SHAPE_FEMALE_MAGE_IN_BLUE_GREEN = 1015,	// Elissa
-	
-	SHAPE_KNIGHT_OF_MONITOR = 1038,			// Caladin custom artwork
-	SHAPE_PIKEMAN_DARK = 1048				// Johnson custom artwork
+	SHAPE_FEMALE_MAGE_IN_BLUE_GREEN = 1015,			// Elissa
 
 	// NPCs with unique appearances
 	// These are the "old" avatar shapes:
