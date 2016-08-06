@@ -48,17 +48,20 @@
 // Fixes the incorrect answer to Draxinar's last riddle
 #include "misc/draxinar_cloth_riddle.uc"
 // Fixes a few bugs in the cleanup of Fawn Tower
-#include "misc/fawn_tower_cleanup.uc"
-// Fixes a few bugs when returning the shield to Luther
-#include "misc/luther_return_shield.uc"
-// Fixes a few bugs in the exchanged item list
 #include "misc/exchanged_item_list.uc"
 // Prevents Companions from being "resurrected" after banes are released,
 // Dupre from being resurrected after sacrifice and Gwenno from talking
 // to the Avatar while insane
-#include "misc/resurrect.uc"
+#include "misc/fawn_tower_cleanup.uc"
+// Fixes the broken native gwaniCloakCheck
+#include "misc/gwani_cloak_check.uc"
 // Fixes a few wrongly identified locations
 #include "misc/location_ids.uc"
+// Fixes a few bugs when returning the shield to Luther
+#include "misc/luther_return_shield.uc"
+// Fixes a few bugs in the exchanged item list
+#include "misc/resurrect.uc"
+
 
 // Inn keys are now deleted/doors locked
 #include "misc/inn_keys.uc"
@@ -100,6 +103,10 @@
 #include "npcs/kylista.uc"
 // Fixes setting the Met flag so his name appears on single-click
 #include "npcs/myauri.uc"
+// Fixes the gwaniCloakCheck and endless Talk activity, and sets the Met flag
+#include "npcs/bwundiai.uc"
+// Fixes the gwaniCloakCheck and improves the party's reply if only he notices
+#include "npcs/mwaerno.uc"
 
 // For curing Cantra, from exult/content/si; modified to allow companions
 // to thank you (and rejoin) after you cure them but before Xenka returns
