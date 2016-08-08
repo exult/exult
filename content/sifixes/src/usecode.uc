@@ -47,24 +47,23 @@
 #include "misc/draxinar_earrings_riddle.uc"
 // Fixes the incorrect answer to Draxinar's last riddle
 #include "misc/draxinar_cloth_riddle.uc"
-// Fixes a few bugs in the cleanup of Fawn Tower
+// Fixes a few bugs in the exchanged item list
 #include "misc/exchanged_item_list.uc"
-// Prevents Companions from being "resurrected" after banes are released,
-// Dupre from being resurrected after sacrifice and Gwenno from talking
-// to the Avatar while insane
+// Fixes a few bugs in the cleanup of Fawn Tower
 #include "misc/fawn_tower_cleanup.uc"
 // Fixes the broken native gwaniCloakCheck
 #include "misc/gwani_cloak_check.uc"
+// Inn keys are now deleted/doors locked
+#include "misc/inn_keys.uc"
 // Fixes a few wrongly identified locations
 #include "misc/location_ids.uc"
 // Fixes a few bugs when returning the shield to Luther
 #include "misc/luther_return_shield.uc"
-// Fixes a few bugs in the exchanged item list
+// Prevents Companions from being "resurrected" after banes are released,
+// Dupre from being resurrected after sacrifice and Gwenno from talking
+// to the Avatar while insane
 #include "misc/resurrect.uc"
 
-
-// Inn keys are now deleted/doors locked
-#include "misc/inn_keys.uc"
 // Set bear skull flag when Shamino sees the bear
 #include "misc/egg_starting_hints.uc"
 // Modifies the bane holocaust to give inn keys to innkeepers
