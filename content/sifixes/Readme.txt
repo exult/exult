@@ -180,12 +180,14 @@ version: 0.15.13
 	    
 6	Version history
 -------------------
-version 0.15.13 - 2016-08-06
+version 0.15.13 - 2016-08-08
 	- Draxinar's second riddle now spells correct correctly.
 	- Draxinar's last of four riddles now accepts the correct answer of 13.
 	  The prior accepted-but-wrong answer now gives a new unique response.
 	- Bwundiai and Mwaerno now use a fixed check for Gwani furs in the party,
 	  and the party will respond differently if two Gwani are nearby or only one.
+	- The automatons in Skullcrusher now confront the Avatar upon entry, when
+	  reaching the exit door, and approaching both sets of brass doors inside.
 version 0.15.12 - 2016-07-15
 	- The equipment scroll has been respaced and reordered to reflect the
 	  order the companions rejoin the party. Avatar, Shamino, Dupre, Iolo.
