@@ -463,3 +463,15 @@ enum damage_types
 	ETHEREAL_DAMAGE = 4,
 	SONIC_DAMAGE = 5
 };
+
+// Alignments are used to determine who to attack when IN_COMBAT
+// if a specific target is not otherwise specified.
+// These may be different in BG with 0 and 1 switched.
+enum alignments
+{
+	NEUTRAL = 0,			// Will not get involved unless attacked.
+	GOOD = 1,			// Will attack both Evil and Chaotic.
+	EVIL = 2,			// Will attack both Good and Chaotic.
+	CHAOTIC = 3			// Will attack both Good and Evil.
+					// Any number above 3 will make the NPC attack himself, and should not be used.
+};
