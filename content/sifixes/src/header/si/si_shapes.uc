@@ -568,7 +568,7 @@ enum npc_shapes
 	SHAPE_OPHIDIAN_SOLDIER = 947,
 	SHAPE_CATMAN = 957,
 	SHAPE_FEMALE_AVATAR = 989,				// Avatar from BG per prior notes
-	SHAPE_FEMALE_MAGE_IN_BLUE_GREEN = 1015,			// Elissa
+	SHAPE_FEMALE_MAGE_IN_BLUE_GREEN = 1015			// Elissa
 
 	// NPCs with unique appearances
 	// These are the "old" avatar shapes:
