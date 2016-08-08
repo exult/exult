@@ -297,9 +297,10 @@ enum skullcrusher
 };
 
 // Gwani Village residents
-enum gwanni_npcs
+enum gwani_npcs
 {
-	BAYANDA = -143,
+	BAYANDA = -143, // Incorrect spell, legacy
+	BAIYANDA = -143,
 	BWUNDIAI = -144,
 	MWAERNO = -145,
 	MYAURI = -146,
