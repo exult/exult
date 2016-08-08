@@ -168,6 +168,10 @@ extern void unfreezeAvatar 0x9AA ();
  */
 extern void setNewSchedules 0x9AC (var npc, var posx, var posy, var activity);
 
+// Sets a single NPC to attack the party, 
+// and changes that NPC's alignment to Evil.
+extern void attackParty 0x9AD (var npc);
+
 // Makes the NPC ask where to wait when kicked from the party
 // (or, in some cases, simply says where he will be later):
 extern void npcAskWhereToWait 0x9B4 (var npcnum);

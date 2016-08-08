@@ -17,7 +17,7 @@ Miscellaneous fixes to Serpent Isle Usecode
 -----------------------
 Author: Marzo Sette Torres Junior
 e-mail: marzojr@taskmail.com.br
-version: 0.15.12
+version: 0.15.13
 
 	This modification fixes a few of the Usecode bugs that plague Ultima VII:
 	Serpent Isle. I have tested it *only* with Silver Seed installed; while it
@@ -30,6 +30,8 @@ version: 0.15.12
 	never know about it otherwise... The healing of Cantra was written by Jeff
 	Freedman (aka "DrCode"), and has been split into the files "npcs/cantra.uc"
 	and "items/bucketcure.uc".
+	
+	Knight Captain has provided fixes to version 0.15.12 and later editions.
 
 	Everything else has been my own work, although the structure of the mod is
 	based on Alun Bestor's Quests and Iteractions mod. Many fixes were based on
@@ -178,6 +180,14 @@ version: 0.15.12
 	    
 6	Version history
 -------------------
+version 0.15.13 - 2016-08-08
+	- Draxinar's second riddle now spells correct correctly.
+	- Draxinar's last of four riddles now accepts the correct answer of 13.
+	  The prior accepted-but-wrong answer now gives a new unique response.
+	- Bwundiai and Mwaerno now use a fixed check for Gwani furs in the party,
+	  and the party will respond differently if two Gwani are nearby or only one.
+	- The automatons in Skullcrusher now confront the Avatar upon entry, when
+	  reaching the exit door, and approaching both sets of brass doors inside.
 version 0.15.12 - 2016-07-15
 	- The equipment scroll has been respaced and reordered to reflect the
 	  order the companions rejoin the party. Avatar, Shamino, Dupre, Iolo.
