@@ -266,6 +266,14 @@ enum Gorlab_swamp_townplot
 	DREAM_REALM_COMPLETE = 0x2DB
 };
 
+enum Skullcrusher_townplot
+{
+	// Yenani gave you a valuable secret, the password to open the gate to Skullcrusher.
+	KNOW_SKULLCRUSHER_PASSWORD = 613,
+	// New for SIfixes, set when the Skullcrusher automatons receive non-waiting schedules.
+	SKULLCRUSHER_AUTOMATONS = 614
+};
+
 // The quotes are from http://www.it-he.org
 enum Bane_flags
 {
