@@ -216,7 +216,8 @@ enum Sleeping_Bull_townplot
 
 enum Moonshade_townplot
 {
-	a
+	// In the unmodified game, this is set when he dies so he is not respawned.
+	ERNESTO_IS_DEAD = 0x120
 };
 
 enum Gustacios_experiment_subplot
