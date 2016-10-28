@@ -1,5 +1,4 @@
 /*
- *
  *	Copyright (C) 2006  The Exult Team
  *
  *	This program is free software; you can redistribute it and/or modify
@@ -17,12 +16,22 @@
  *	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-/*
- *	Called at the first meeting with Thoxa, when you meet her at the dream world
- *	and when she appears before the Banes are released. The SI devs must have
- *	been running out of available functions... or maybe out of time to search for
- *	them.
+/*	A list of externally-called code, typically original Usecode that will
+ *	later referenced in other modified code.
  */
+
+// Silver Seed Shapes
+extern void funcCapedAutomaton shape#(945) ();
+extern void funcHealer shape#(946) ();
+extern void funcOphidianSoldier shape#(947) ();
+extern void funcCatMan shape#(957) ();
+extern void funcMadMan shape#(975) ();
+extern void funcGreenDragon shape#(978) ();
+extern void funcMageWomanBlueGreen shape#(1015) ();
+
+// Calls the first encounter with Thoxa, again in the Dream Realm, and in
+// Skullcrusher are done through this function. The SI devs must have been
+// running out of available functions, or maybe out of time to search for them.
 extern void gwaniChild shape#(0x363) ();
 
 // Calls the ring (???) usecode, which promptly forwards to a function
