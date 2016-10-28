@@ -1,5 +1,4 @@
 /*
- *
  *  Copyright (C) 2006  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -216,7 +215,9 @@ enum Sleeping_Bull_townplot
 
 enum Moonshade_townplot
 {
-	a
+	// In the unmodified game, this is only set when he dies.
+	// Used to prevent respawning him.
+	ERNESTO_IS_DEAD = 0x120
 };
 
 enum Gustacios_experiment_subplot
