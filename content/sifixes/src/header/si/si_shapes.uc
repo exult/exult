@@ -576,4 +576,25 @@ enum npc_shapes
 	// SHAPE_FEMALE_AVATAR = 989,
 };
 
+// Spell shapes are used as inventory items for non-party spellcasters.
+// These should disappear on the death of the NPC so they party cannot use them.
+enum spell_shapes
+{
+	SHAPE_IGNITE = 280,
+	SHAPE_CURSE = 281,
+	SHAPE_SWORDSTRIKE = 287,
+	SHAPE_DISPEL_MAGIC = 339,
+	SHAPE_LONGER_IGNITE = 397,				// Unnamed, 0 damage
+	SHAPE_MULTICOLOR_TELEKINESIS = 398,		// Not used in game?
+	SHAPE_PARALYZE = 408,
+	SHAPE_TELEKINESIS = 443,
+	SHAPE_DEATH_BOLT = 527,
+	SHAPE_DOUSE = 540,
+	SHAPE_UNNAMED_FIRE_BOLT = 676,			// Unnamed, 8 damage
+	SHAPE_BLUE_LIGHTNING_BOLT = 731,		// Unnamed, 7 damage
+	SHAPE_LIGHTNING_BOLT = 807,
+	SHAPE_FIRE_BOLT = 856,					// 10 damage
+	SHAPE_DRAGON_BREATH = 857
+};
+
 const int FRAME_DRIED_FISH = 31;
