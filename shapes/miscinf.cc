@@ -105,6 +105,7 @@ public:
 		src.ignore(off);
 		string ret;
 		getline(src, ret, '/');
+		src.unget();
 		return ret;
 	}
 };
@@ -305,7 +306,7 @@ public:
 	                         bool for_patch, int version) {
 		ignore_unused_variable_warning(index, for_patch, version);
 		Usecode_function_data entry;
-		int type = ReadInt(src);
+		int type = ReadInt(src, 0);
 		if (src.peek() == ':') {
 			string name = ReadStr(src);
 			entry.fun_id = usecode->find_function(name.c_str(), true);
