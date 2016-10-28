@@ -22,7 +22,7 @@
  *	2016-08-21 Written by Knight Captain
  */
 
-void removeSpellShapes (var npc)
+void removeSpellShapes 0x9C3 (var npc) // Newly assigned number, unused in original Usecode.
 {
 	var spell;
 	var spells = [SHAPE_IGNITE, SHAPE_CURSE, SHAPE_SWORDSTRIKE, SHAPE_DISPEL_MAGIC, SHAPE_LONGER_IGNITE,

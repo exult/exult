@@ -567,6 +567,7 @@ enum npc_shapes
 	SHAPE_HEALER = 946,
 	SHAPE_OPHIDIAN_SOLDIER = 947,
 	SHAPE_CATMAN = 957,
+	SHAPE_MADMAN = 975,						// Shal 'The Fiend'
 	SHAPE_FEMALE_AVATAR = 989,				// Avatar from BG per prior notes
 	SHAPE_FEMALE_MAGE_IN_BLUE_GREEN = 1015	// Elissa
 
