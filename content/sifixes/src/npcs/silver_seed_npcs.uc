@@ -68,7 +68,7 @@ void Elissa object#(0x4EB) ()
 	// Elissa needs DEATH code to remove her spells shapes.
 	else if (event == DEATH)
 	{
-		removeAllSpellShapes(item);
+		removeSpellShapes(item);
 		UI_clear_item_flag(item, 0x001D);
 		UI_reduce_health(item, 0x0032, 0x0000);
 	}
@@ -132,7 +132,7 @@ void Shal object#(0x4EE) ()
 	
 	else if (event == DEATH)
 	{
-		removeAllSpellShapes(item);
+		removeSpellShapes(item);
 		UI_clear_item_flag(item, 0x001D);
 		UI_reduce_health(item, 60, 0x0000);
 	}
@@ -192,7 +192,7 @@ void Draxinar object#(0x4F0) ()
 
 	else if (event == DEATH)
 	{
-		removeAllSpellShapes(item);
+		removeSpellShapes(item);
 		UI_clear_item_flag(item, 0x001D);
 		UI_reduce_health(item, 0x0032, 0x0000);
 	}

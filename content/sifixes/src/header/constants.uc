@@ -131,9 +131,10 @@ enum day_periods
  */
 enum wildcards
 {
-	SHAPE_ANY	= -359,
-	QUALITY_ANY	= -359,
-	FRAME_ANY	= -359
+	SHAPE_ANY		= -359,
+	QUALITY_ANY		= -359,
+	QUANTITY_ANY	= -359,
+	FRAME_ANY		= -359
 };
 
 // tick multipliers, for use with UI_advance_time or script statements

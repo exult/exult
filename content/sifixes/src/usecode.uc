@@ -44,50 +44,6 @@
 // From here down, all functions have preassigned function numbers:
 
 
-// NPCs
-// She now really gives dried fish when asked
-#include "npcs/baiyanda.uc"
-// Fixes the gwaniCloakCheck and endless Talk activity, and sets the Met flag
-#include "npcs/bwundiai.uc"
-// For curing Cantra, from exult/content/si
-#include "npcs/cantra.uc"
-// Fixes a flag to allow Delin to talk about Batlin
-#include "npcs/delin.uc"
-// Dupre now refuses to leave in Spinebreaker mountains
-#include "npcs/dupre.uc"
-// Fixes a flag to allow Edrin to talk about Siranush being real
-#include "npcs/edrin.uc"
-// Ernesto is now a real NPC with dialog that changes depending on items you have
-#include "npcs/ernesto.uc"
-// Fixes fur cap/misplaced item list bug
-#include "npcs/frigidazzi.uc"
-// Removes the False Chaos Hierophant bug
-#include "npcs/ghost.uc"
-// Gives the inn keys to Simon before he dies
-#include "npcs/goblin_simon.uc"
-// Fixes the diamond necklace so she accepts the correct one
-#include "npcs/gwenno.uc"
-// Iolo now refuses to leave in Spinebreaker mountains
-#include "npcs/iolo.uc"
-// Clears a flag to allow asking Kylista about the breastplate
-#include "npcs/kylista.uc"
-// Fixes the gwaniCloakCheck and improves the party's reply if only he notices
-#include "npcs/mwaerno.uc"
-// Fixes setting the Met flag so his name appears on single-click
-#include "npcs/myauri.uc"
-// Give Neyobi a schedule post-cure
-#include "npcs/neyobi.uc"
-// Fixing the exchanged item list; also, Shamino now refuses to leave when you
-// are in the Spinebreaker mountains
-#include "npcs/shamino.uc"
-// Silver Seed NPCs are now standard numbered NPCs
-#include "npcs/silver_seed_npcs.uc"
-// Brings the automatons in Skullcrusher to life
-#include "npcs/skullcrusher_automatons.uc"
-// Prevents resurrecting companions after the Banes are released
-#include "npcs/thoxa.uc"
-
-
 // Miscellaneous
 // Fixes the incorrect answer to Draxinar's last riddle
 #include "misc/draxinar_cloth_riddle.uc"
@@ -138,7 +94,7 @@
 
 // Eggs
 // Set bear skull flag when Shamino sees the bear
-#include "misc/egg_starting_hints.uc"
+#include "eggs/egg_starting_hints.uc"
 // Modifies the bane holocaust to give inn keys to innkeepers
 #include "eggs/egg_bane_holocaust.uc"
 // Prevents player from taking companions to dream world
@@ -162,3 +118,47 @@
 #include "cutscenes/monitor_banquet.uc"
 // Absolutely force companions to be there and force-kills them after
 #include "cutscenes/wall_of_lights.uc"
+
+
+// NPCs
+// She now really gives dried fish when asked
+#include "npcs/baiyanda.uc"
+// Fixes the gwaniCloakCheck and endless Talk activity, and sets the Met flag
+#include "npcs/bwundiai.uc"
+// For curing Cantra, from exult/content/si
+#include "npcs/cantra.uc"
+// Fixes a flag to allow Delin to talk about Batlin
+#include "npcs/delin.uc"
+// Dupre now refuses to leave in Spinebreaker mountains
+#include "npcs/dupre.uc"
+// Fixes a flag to allow Edrin to talk about Siranush being real
+#include "npcs/edrin.uc"
+// Ernesto is now a real NPC with dialog that changes depending on items you have
+#include "npcs/ernesto.uc"
+// Fixes fur cap/misplaced item list bug
+#include "npcs/frigidazzi.uc"
+// Removes the False Chaos Hierophant bug
+#include "npcs/ghost.uc"
+// Gives the inn keys to Simon before he dies
+#include "npcs/goblin_simon.uc"
+// Fixes the diamond necklace so she accepts the correct one
+#include "npcs/gwenno.uc"
+// Iolo now refuses to leave in Spinebreaker mountains
+#include "npcs/iolo.uc"
+// Clears a flag to allow asking Kylista about the breastplate
+#include "npcs/kylista.uc"
+// Fixes the gwaniCloakCheck and improves the party's reply if only he notices
+#include "npcs/mwaerno.uc"
+// Fixes setting the Met flag so his name appears on single-click
+#include "npcs/myauri.uc"
+// Give Neyobi a schedule post-cure
+#include "npcs/neyobi.uc"
+// Fixing the exchanged item list; also, Shamino now refuses to leave when you
+// are in the Spinebreaker mountains
+#include "npcs/shamino.uc"
+// Silver Seed NPCs are now standard numbered NPCs
+#include "npcs/silver_seed_npcs.uc"
+// Brings the automatons in Skullcrusher to life
+#include "npcs/skullcrusher_automatons.uc"
+// Prevents resurrecting companions after the Banes are released
+#include "npcs/thoxa.uc"
