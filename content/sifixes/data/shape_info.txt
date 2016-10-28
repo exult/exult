@@ -1,0 +1,8 @@
+#	Exult 1.5.0git text message file.	Written by ExultStudio.
+%%section version
+:6
+%%endsection
+%%section actor_flags
+:691/1/0/0/0/0/0/0/1
+:725/1/0/0/0/0/0/0/1
+%%endsection
