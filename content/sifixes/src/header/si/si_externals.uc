@@ -17,7 +17,7 @@
  */
 
 /*	A list of externally-called code, typically original Usecode that will
- *	later referenced in other modified code.
+ *	later be referenced in other modified code.
  */
 
 // Silver Seed Shapes
