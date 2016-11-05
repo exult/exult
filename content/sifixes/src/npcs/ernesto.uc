@@ -129,7 +129,14 @@ void Ernesto object#(0x4E9) ()
 						say("@And here in Moonshade, I'm afraid, Mundanes are little better than chattel.@");
 					
 			case "slippers" (remove):
-				say("@Too small for me, I'm afraid. I don't think that these belong to any of the Rangers. Thou couldst ask Bucia.@");
+				if (hasItemCount(PARTY, 1, SHAPE_BOOTS, QUALITY_ANY, 5))
+				{
+					say("@Too small for me, I'm afraid. I don't think that these belong to any of the Rangers. Thou couldst ask Bucia.@");
+				}
+				else
+				{	
+					say("@I don't think what thou describe would belong to any of the Rangers. Thou couldst ask Bucia.@");
+				}
 				add("Bucia");
 				
 				case "Bucia" (remove):
@@ -141,7 +148,7 @@ void Ernesto object#(0x4E9) ()
 						say("@Thou canst find almost anything there. But remember, Bucia loves to talk. Don't say that I didn't warn thee.@");
 					
 			case "strange wine" (remove):
-				if (hasItemCount(PARTY, 1, 616, QUALITY_ANY, 16))
+				if (hasItemCount(PARTY, 1, SHAPE_BOTTLE, QUALITY_ANY, 16))
 				{
 					say("@'Tis our wine, sure enough! Can't fool my nose after all these years working with the Mad Mage's wine press!@");
 					say("@I wonder if this was the bottle that disappeared... Thou shouldst ask my commander about the wine.@");
@@ -158,7 +165,7 @@ void Ernesto object#(0x4E9) ()
 
 			case "brown bottle" (remove):
 				// Adding a new check since the original code does not have one.
-				if (hasItemCount(PARTY, 1, 616, QUALITY_ANY, 9))
+				if (hasItemCount(PARTY, 1, SHAPE_BOTTLE, QUALITY_ANY, 9))
 				{
 					say("@Hmmm. I can't recall having seen a bottle like this one. But then I don't generally try any vintages but our own.@");
 					say("@Thou shouldst ask Julia, though. If anyone would know, it would be Julia.@");
