@@ -1,0 +1,8 @@
+Windows users will find it easier to copy the 
+latest versions of these files into this folder:
+
+expack.exe
+ucc.exe
+
+Use make.bat to compile your mod. The window for
+it will close on its own if there are no errors.
