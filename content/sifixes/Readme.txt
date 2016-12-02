@@ -17,7 +17,7 @@ Miscellaneous fixes to Serpent Isle Usecode
 -----------------------
 Author: Marzo Sette Torres Junior
 e-mail: marzojr@taskmail.com.br
-version: 0.15.13
+version: 0.15.14
 
 	This modification fixes a few of the Usecode bugs that plague Ultima VII:
 	Serpent Isle. I have tested it *only* with Silver Seed installed; while it
@@ -180,6 +180,9 @@ version: 0.15.13
 	    
 6	Version history
 -------------------
+version 0.15.14 - 2016-12-02
+	- Fixed the existing teleporter egg out of the gridiron football field,
+	  going to the intended location outside of Pothos' house/island: 2265,1919.
 version 0.15.13 - 2016-08-08
 	- Draxinar's second riddle now spells correct correctly.
 	- Draxinar's last of four riddles now accepts the correct answer of 13.
