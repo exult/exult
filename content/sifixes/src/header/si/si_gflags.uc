@@ -103,7 +103,7 @@ enum Find_Batlin_subplot
 {
 	ASKED_ANDRAL_ABOUT_ROBBERY = 0x58,
 	ASKED_STANDARR_ABOUT_BRUNT = 0x8D,
-	KNOWS_BATLIS_WAS_IN_MONITOR = 0x8E,
+	KNOWS_BATLIN_WAS_IN_MONITOR = 0x8E,
 	ASKED_SHAZZANA_ABOUT_SAILOR = 0xA8
 };
 
@@ -128,7 +128,9 @@ enum Monitor_traitor_subplot
 	ASKED_KRAYG_ABOUT_RUINS = 0xA6,
 	TRIED_SIMONS_ALE = 0xB8,
 	GOBLIN_SIMON_DEAD = 0x44,
-	KNOWS_GOBLINS_HIDEOUT = 0xC0,
+	PICKED_UP_BROWN_BOTTLE = 0x45,			// Set when you pick up the brown bottle
+	KNOWS_GOBLIN_MONOLITH = 0xC0,			// Set only by Krayg the Provisioner
+	FOUND_BROWN_BOTTLE = 0xC8,				// Set when you see the brown bottle by the monolith
 	HAVE_HELM_OF_MONITOR = 0x2C,
 	// Didn't investigate enough:
 	TELL_SPEKTOR_ABOUT_TRAITOR = 0xB3,
@@ -153,7 +155,7 @@ enum Kidnapping_of_Cantra_subplot
 {
 	KNOWS_CANTRA_IS_MISSING = 0x79,
 	WILL_FIND_CANTRA = 0x5B,
-	CURED_CANTRA = 0x47,     // Flag when Cantra is cured.
+	CURED_CANTRA = 0x47,					// Flag when Cantra is cured.
 	TOLD_CANTRA_IS_ALIVE = 0x96
 };
 
@@ -170,6 +172,7 @@ enum Knights_Test_subplot
 	GAVE_WOLF_TO_CELIA = 0x7D,
 	HAVE_WOLF_CLOAK = 0x7E,
 	GAVE_WOLF_TO_LUCILLA = 0x91,
+	GOT_TATTOOED = 0x3E,						// The Avatar is visibly a Monitorian
 	MONITOR_BANQUET_STARTED = 0xBF,
 	AVATAR_IS_KNIGHT = 0x48
 };
@@ -216,7 +219,10 @@ enum Sleeping_Bull_townplot
 
 enum Moonshade_townplot
 {
-	a
+	// In the unmodified game, this is set when he dies so he is not respawned.
+	ERNESTO_IS_DEAD = 0x120,
+	AFTER_FREEDOM_NEWS = 0x135,
+	HAVE_CHILL_SPELL = 0x14B
 };
 
 enum Gustacios_experiment_subplot
@@ -239,6 +245,7 @@ enum Rotoluncia_subplot
 {
 	HAVE_TALKING_SCROLL = 0xD7,
 	SCROLL_SPEAKS = 0xE9,
+	COMPANION_KIDNAPPED = 0xEA,					// Set when the Companion disappears
 	CAN_USE_FILBERCIOS_BARGE = 0xEC
 };
 
@@ -288,10 +295,7 @@ enum Bane_flags
 };
 
 const int SHAMINO_RESURRECTED_BY_MONKS = 0x12B;
-const int AFTER_FREEDOM_NEWS = 0x135;
 const int SHAMINO_TELEPORTED_BY_MONKS = 0x13A;
-
-const int HAVE_CHILL_SPELL = 0x14B;
 
 const int CLEARED_FAWN_TOWER = 0x14E;
 const int FAWN_TRIAL_DONE_FIRST_DAY = 0x170;
@@ -321,7 +325,6 @@ enum Serpent_Speech
 };
 
 enum Bard_songs    // Songs (Byrin and Iolo):
-
 {
 	HEARD_BEATRIX_SONG = 0x1D3,
 	HEARD_MOUNTAIN_SONG = 0x1D4,
@@ -350,6 +353,12 @@ enum Teleport_storm_objects
 	ASK_SIMON_ABOUT_STRANGEWINE = 0xA1,
 	ASK_SPEKTOR_ABOUT_STRANGECOINS = 0xA2,
 	ASK_RENFRY_ABOUT_HAND = 0xA3,
+	
+	// Ask people in Moonshade about these items:
+	ASK_MAGES_ABOUT_SLIPPERS = 0x114,			// Set by asking Bucia about the slippers
+	KNOW_SLIPPERS_ARE_MUNDANE = 0x115,			// Set by asking Bucia, Melino, or Pothos
+	ASK_ERNESTO_ABOUT_SHIELD = 0x118,			// Set by asking Bucia
+	HAS_CLUE_FISHNET_STOCKINGS = 0x11B,			// Only checked by Julia, never set.
 
 	// Flags for the teleport storm items:
 	STORM_PINECONE = 0x27A,

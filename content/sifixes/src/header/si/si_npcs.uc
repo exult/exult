@@ -36,21 +36,21 @@ enum party_members
 	DUPRE = -1,
 	SHAMINO = -2,
 	IOLO = -3,
-	GWENNO = -149, // Joins after Dupre becomes a pile of ashes
+	GWENNO = -149,			// Joins after Dupre becomes a pile of ashes
 
 	// Serpent Isle:
-	BOYDON = -34, // Created at Mad Mage Isle, remains until he dies
+	BOYDON = -34,			// Created at Mad Mage Isle, remains until he dies
 
 	// Temporary NPCs:
 	// Both join in Temple of Tolerance, both die soon after:
 	MORTEGRO = -26,
 	SETHYS = -152,
 
-	PETRA = -28, // Joins for Temple of Discipline, remains until kicked out
+	PETRA = -28,			// Joins for Temple of Discipline, remains until kicked out
 
-	SELINA = -44, // Joins for the Mint subquest, leaves after
+	SELINA = -44,			// Joins for the Mint subquest, leaves after
 
-	WILFRED = -45, // Joins after banes, bolts if hurt too badly
+	WILFRED = -45,			// Joins after banes, bolts if hurt too badly
 
 	// Joins in freedom (leaves after) and again after banes until you kill
 	// the Death Knight
@@ -61,51 +61,52 @@ enum party_members
 // Moonshade residents
 enum moonshade_npcs
 {
-	ANDRIO = -4, // Mageling
-	SERV_01 = -5, // Melino and Columna's automaton
-	SERV_02 = -6, // Gustacio's
-	SERV_03 = -7, // Torrissio's
-	SERV_04 = -8, // Ducio's baker
-	SERV_05 = -9, // Ducio's blacksmith
-	SERV_06 = -10, // MageLord's
-	SERV_07 = -11, // Rotoluncia's
-	SERV_08 = -12, // Flindo's
-	BUCIA = -13, // Shopkeeper
+	ANDRIO = -4,			// Mageling
+	SERV_01 = -5,			// Melino and Columna's automaton
+	SERV_02 = -6,			// Gustacio's
+	SERV_03 = -7,			// Torrissio's
+	SERV_04 = -8,			// Ducio's baker
+	SERV_05 = -9,			// Ducio's blacksmith
+	SERV_06 = -10,			// MageLord's
+	SERV_07 = -11,			// Rotoluncia's
+	SERV_08 = -12,			// Flindo's, in shop
+	BUCIA = -13,			// Shopkeeper
 	COLUMNA = -14,
 	DUCIO = -15,
 	EDRIN = -16,
 	FEDABIBLIO = -17,
 	FILBERCIO = -18,
-	FRELI = -19, // Child
+	FRELI = -19,			// Child
 	FRIGIDAZZI = -20,
 	GOBLIN_MESSENGER = -21, // Frigidazzi's servant
 	GUSTACIO = -22,
-	JULIA = -23, // Commanders of the Rangers
+	JULIA = -23,			// Commander of the Rangers
 	MELINO = -24,
-	AUTO_MESSENGER = -25,
-	// MORTEGRO = -26, // Defined above
-	MOSH = -27, // Rat woman
-	// PETRA = -28, // Defined above
+	AUTO_MESSENGER = -25,	// Rotoluncia's messenger
+	// MORTEGRO = -26,		// Defined above
+	MOSH = -27,				// Rat woman
+	// PETRA = -28,			// Defined above
 	POTHOS = -29,
-	ROCCO = -30, // Innkeeper
+	ROCCO = -30,			// Innkeeper
 	ROTOLUNCIA = -31,
 	TOPO = -32,
 	TORRISSIO = -33,
-	SERV09 = -191, // Stefano's
-	SERV10 = -192, // Mortegro's
-	SERV11 = -193, // Seminarium's
-	SERV12 = -194,  // Pothos' downstairs automaton
-	MUSIC01 = -198, // Blue Boar musician
-	MUSIC02 = -199, // Blue Boar musician
-	MUSIC03 = -200, // Blue Boar musician
-	SERV_SEW = -206, // Ducio's seamster
-	AUTOGUARD = -216 // Pothos' patrolling automaton
+	SERV09 = -191,			// Stefano's
+	SERV10 = -192,			// Mortegro's
+	SERV11 = -193,			// Seminarium's
+	SERV12 = -194,			// Pothos' downstairs automaton
+	MUSIC01 = -198,			// Blue Boar musician
+	MUSIC02 = -199,			// Blue Boar musician
+	MUSIC03 = -200,			// Blue Boar musician
+	SERV_SEW = -206,		// Ducio's seamster
+	AUTOGUARD = -216,		// Pothos' patrolling automaton
+	ERNESTO = -233			// Ranger, second in command.
 };
 
 // Mad Mage Isle residents
 enum madmage_npcs
 {
-	// BOYDON = -34, // Defined above
+	// BOYDON = -34,		// Defined above
 	ERSTAM = -35,
 	VASEL = -36
 };
@@ -118,86 +119,89 @@ enum sleepingbull_npcs
 	BYRIN = -39,
 	HAWK = -40,
 	DEVRA = -41,
-	FLINDO = -42, // Visiting from Moonshade
+	FLINDO = -42,			// Visiting from Moonshade
 	KANE = -43,
-	// SELINA = -44, // Defined as one of Batlin's goons, below
-	// WILFRED = -45, // Defined above
-	ENSORCIO = -81 // Exile from Moonshade
+	// SELINA = -44,		// Defined as one of Batlin's goons, below
+	// WILFRED = -45,		// Defined above
+	ENSORCIO = -81			// Exile from Moonshade
 };
 
-// Fawn residents, including the Fellowship members
 enum fawn_npcs
 {
-	ALYSSAND = -46, // Fawn shopkeeper / seamstress
-	DELIN = -47, // Fawn shopkeeper
-	DELPHYNIA = -48, // Fawn horticulturalist
-	GARTH = -49, // Fawn great captain
-	JOTH = -50, // Fawn great captain
-	VOLDIN = -51, // Fawn great captain
-	JENDON = -52, // Fawn innkeeper
-	JORVIN = -53, // Fawn security
-	KYLISTA = -54, // Fawn priestess
-	YELINDA = -55, // Fawn leader
-	LEON = -56, // Fellowship leader
-	KALEN = -57, // Fellowship pirate
-	OLON = -58, // Fawn sailor
-	RUGGS = -59, // Fellowship
-	SCOTS = -60, // Fellowship mapmaker
-	ZULITH = -61, // Fawn chancellor
-	BUSTER = -260 // Fawn dog
+	ALYSSAND = -46,			// Shopkeeper / seamstress
+	DELIN = -47,			// Shopkeeper
+	DELPHYNIA = -48,		// Horticulturalist
+	GARTH = -49,			// Great Captain
+	JOTH = -50,				// Great Captain
+	VOLDIN = -51,			// Great Captain
+	JENDON = -52,			// Innkeeper and bartender
+	JORVIN = -53,			// Security
+	KYLISTA = -54,			// Priestess
+	YELINDA = -55,			// Leader of Fawn
+	OLON = -58,				// Sailor
+	ZULITH = -61,			// Chancellor
+	BUSTER = -260			// Olon's dog
 };
 
+enum fawn_fellowship_npcs
+{
+	LEON = -56,				// Leader
+	KALEN = -57,			// Pirate
+	RUGGS = -59,			// Soldier
+	SCOTS = -60				// Mapmaker
+};
+	
 // Monitor residents
 enum monitor_npcs
 {
-	ANDRAL = -62, // Sculptor, Leopard
-	CALADIN = -63, // Leader of the Bears
-	CANTRA = -64, // Child, not yet a knight
-	CELLIA = -65, // Furrier, Wolf
-	G_SIMON = -66, // Simon the Goblin
-	HARNNA = -67, // Farmer and Healer, Leopard
-	KRAYG = -68, // Provisioner, Wolf
-	MARSTEN = -69, // Leader of the Leopards
-	LUCILLA = -70, // Waitress, Wolf
-	LUTHER = -71, // Braggart, Bear
-	LYDIA = -72, // Tattoos, Bear
-	RENFRY = -73, // Crematorium, Wolf
-	SHAZZANA = -74, // Trainer, Leopard
-	SHMED = -75, // Knight's Test, Wolf
-	SIMON = -76, // Simon in disguise, Bear
-	SPEKTOR = -77, // Treasurer, Leopard
-	STANDARR = -78, // Blacksmith, Leopard
-	TEMPLAR = -79, // Goblin expert, Bear
-	FLICKEN = -80, // West gate guard, Bear
-	BRENDANN = -150, // Leader of the Wolves
-	SMUDGE = -261 // Cat
+	ANDRAL = -62,			// Sculptor, Leopard
+	CALADIN = -63,			// Leader of the Bears
+	CANTRA = -64,			// Child, not yet a knight
+	CELLIA = -65,			// Furrier, Wolf
+	G_SIMON = -66,			// Simon the Goblin
+	HARNNA = -67,			// Farmer and Healer, Leopard
+	KRAYG = -68,			// Provisioner, Wolf
+	MARSTEN = -69,			// Leader of the Leopards
+	LUCILLA = -70,			// Waitress, Wolf
+	LUTHER = -71,			// Braggart, Bear
+	LYDIA = -72,			// Tattoos, Bear
+	RENFRY = -73,			// Crematorium, Wolf
+	SHAZZANA = -74,			// Trainer, Leopard
+	SHMED = -75,			// Knight's Test, Wolf
+	SIMON = -76,			// Simon in disguise, Bear
+	SPEKTOR = -77,			// Treasurer, Leopard
+	STANDARR = -78,			// Blacksmith, Leopard
+	TEMPLAR = -79,			// Goblin expert, Bear
+	FLICKEN = -80,			// West gate guard, Bear
+	BRENDANN = -150,		// Leader of the Wolves
+	SMUDGE = -261			// Cat
 };
 
 // Automatons in the temple of discipline
 enum temple_of_discipline
 {
 	LORD_OF_DISCIPLINE = -82, // Failing automaton
-	ACID_AUTOMATON = -83, // Another failing automaton
+	ACID_AUTOMATON = -83,	// Another failing automaton
 	GUARD1 = -84,
 	GUARD3 = -86,
 	GUARD5 = -88,
 	GUARD6 = -89,
-	GUARD7 = -90, // The dead one (can be brought back)
+	GUARD7 = -90,			// The dead one (can be brought back)
 	GUARD8 = -91
 };
 
 // Furnace residents
 enum furnace
 {
-	AUTO1 = -85,
+	AUTO1 = -85,			// Arena combatants
 	AUTO2 = -87,
 	AUTO3 = -92,
 	AUTO4 = -93,
-	ZHELKAS = -170,
+	ZHELKAS = -170,			// Winged Gargoyle
 	THIEF1 = -176,
 	THIEF2 = -177,
 	THIEF3 = -183,
-	KEY_GUY = -259 // Troll, has key to Serpent Staff
+	KEY_GUY = -259			// Troll, has key to Serpent Staff
 };
 
 // Automatons from temple of logic
@@ -219,7 +223,6 @@ enum temple_of_ethicality
 	ETH_AUTOMATON = -100,
 	MAN_IN_FIRE = -151
 };
-
 
 // Goblin camp residents
 enum goblin_camp
@@ -244,7 +247,7 @@ enum goblin_camp
 	GOBL18 = -118,
 	GOBLIN_KING = -265,
 	CHUCK = -274,
-	JOHNSON = -285 //Captive pikeman
+	JOHNSON = -285			//Captive pikeman
 };
 
 // Fawn Tower residents, the five goblins you must kill to free the tower
@@ -274,12 +277,12 @@ enum dream_world
 // Spinebreaker residents
 enum spinebreaker
 {
-	BUTLER = -125, // The hierophant's butler
-	GUARD_11 = -126, // Greets you with Batlin's voice
-	// BRUNT = -127, // Defined below
-	// DEADEYE = -128, // Defined below
-	PASSWORD = -129, // Asks for the password at entrance
-	METAL_MAN = -202 // Asks about The Structure of Order
+	BUTLER = -125, 			// The hierophant's butler
+	GUARD_11 = -126,		// Greets you with Batlin's voice
+	// BRUNT = -127,		// Defined below
+	// DEADEYE = -128,		// Defined below
+	PASSWORD = -129,		// Asks for the password at entrance
+	METAL_MAN = -202		// Asks about The Structure of Order
 };
 
 // Skullcrusher residents
@@ -292,8 +295,8 @@ enum skullcrusher
 	GUARD19 = -187,
 	GUARD20 = -188,
 	GUARD21 = -189,
-	GUARD17 = -190, // Western gate guard
-	VASCULIO = -294
+	GUARD17 = -190,			// Western gate guard
+	VASCULIO = -294			// Vampire
 };
 
 // Gwani Village residents
@@ -303,8 +306,8 @@ enum gwani_npcs
 	BWUNDIAI = -144,
 	MWAERNO = -145,
 	MYAURI = -146,
-	NEYOBI = -147, // Gwani child
-	YENANI = -148,
+	NEYOBI = -147,			// Gwani child
+	YENANI = -148,			// Chieftaness
 	GILWOYAI = -153,
 	KAPYUNDI = -154
 };
@@ -312,11 +315,11 @@ enum gwani_npcs
 // Residents from temple of tolerance
 enum temple_of_tolerance
 {
-	// SETHYS = -152, // Defined above
-	YEARL = -267, // Snow leopard
-	BRENDA = -268, // Naga
-	MEELOSE = -273, // Wildman
-	EMMIT = -279 // Ratman
+	// SETHYS = -152,		// Defined above
+	YEARL = -267,			// Snow leopard
+	BRENDA = -268,			// Naga
+	MEELOSE = -273,			// Wildman
+	EMMIT = -279			// Ratman
 };
 
 // Great Northern Forest residents
@@ -329,7 +332,8 @@ enum northernforest_npcs
 	MORGHRIM = -159,
 	HOUND_OF_DOSKAR = -269,
 	HAZARD = -275,
-	SONAR = -276 // Timberwolf known as Windrunner
+	SONAR = -276,			// Timberwolf known as Windrunner
+	WINDRUNNER = -276		// Renamed to match dialog	
 };
 
 // Freedom residents
@@ -359,31 +363,31 @@ enum test_of_purity
 	SEX_03 = -173,
 	SEX_04 = -174,
 	SEX_05 = -175,
-	CLONE_IOLO = -178, // Also appears in Dream World
+	CLONE_IOLO = -178,		// Also appears in Dream World
 	CLONE_SHAMINO = -179,
 	CLONE_DUPRE = -180
 };
 
 // Shamino's castle
-enum shamino_castle
+enum shaminos_castle
 {
 	HENCH1 = -205,
-	HENCH2 = -203, // Starts at House of the Dead
-	HENCH3 = -204 // Starts at House of the Dead
+	HENCH2 = -203,			// Starts at House of the Dead
+	HENCH3 = -204			// Starts at House of the Dead
 };
 
 // Monk Isle residents
 enum monkisle_npcs
 {
-	KARNAX = -207,
+	KARNAX = -207,			// Leader
 	SILENT2 = -208,
-	MIGGIM = -209,
+	MIGGIM = -209,			// Librarian
 	SILENT3 = -210,
 	THOXA = -211,
 	BRACCUS = -212,
 	DRAXTA = -213,
 	SILENT1 = -214,
-	XENKA = -215
+	XENKA = -215			// Visionary
 };
 
 // Residents of Castle of the White Dragon
@@ -398,52 +402,56 @@ enum white_dragon_castle
 };
 
 // Batlin's goons
-enum batlingoons_npcs
+enum batlins_goons_npcs
 {
 	// Batlin is actually a monster in this game, not a real person... err, NPC.
-	// SELINA = -44, // Defined above
-	BRUNT = -127, // Fighter
-	DEADEYE = -128, // Pirate
-	PALOS = -272 // Gargoyle
+	// SELINA = -44,		// Defined above
+	BRUNT = -127,			// Fighter
+	DEADEYE = -128,			// Pirate
+	PALOS = -272			// Gargoyle
+};
+
+enum mint_ambush_npcs
+{
+	LOAF1 = -221,			// Starts at the House of the Dead
+	LOAF2 = -223,			// Starts at the House of the Dead
+	LOAF3 = -224,			// Starts at the House of the Dead
+	LOAF4 = -225,			// Starts at the House of the Dead
+	LOAF5 = -226,			// Starts at the House of the Dead
+	LOAF6 = -227			// Starts at the House of the Dead
 };
 
 // All other NPCs
 enum misc_npcs
 {
-	GUARD12 = -130, // Automaton, starts at House of the Dead
-	GUARD13 = -131, // Automaton, starts at House of the Dead
-	GUARD14 = -132, // Automaton, starts at House of the Dead
-	GUARD15 = -133, // Automaton, starts at House of the Dead
-	GUARD16 = -134, // Automaton, starts at House of the Dead
-	ZOMBIE01 = -135, // Gwani, starts at House of the Dead
-	ZOMBIE02 = -136, // Gwani, starts at House of the Dead
-	ZOMBIE03 = -137, // Gwani, starts at House of the Dead
-	ZOMBIE04 = -138, // Gwani, starts at House of the Dead
-	ZOMBIE05 = -139, // Gwani, starts at House of the Dead
-	DED_AUTOMATON = -185, // Automaton, in the middle of ocean
-	PERRY_STOKES = -195, // The software pirate
-	IAUTO = -197, // Automaton, starts at House of the Dead
-	DEATH_KNIGHT = -222, // Starts at the House of the Dead
-	LOAF1 = -221, // Starts at the House of the Dead
-	LOAF2 = -223, // Starts at the House of the Dead
-	LOAF3 = -224, // Starts at the House of the Dead
-	LOAF4 = -225, // Starts at the House of the Dead
-	LOAF5 = -226, // Starts at the House of the Dead
-	LOAF6 = -227, // Starts at the House of the Dead
-	AUTO_2 = -228, // Automaton, starts at the House of the Dead
-	AUTO_3 = -229, // Automaton, starts at the House of the Dead
-	AUTO_4 = -230, // Automaton, starts at the House of the Dead
-	LARRY = -231, // Automaton, starts at the House of the Dead
-	STAN = -232, // Automaton, starts at the House of the Dead
-	SUPER_GOBLIN = -256, // At the tree leading to Goblin Camp
-	BILLY_CAIN = -257, // Goblin, SW of knight's test
-	STEVE_POWERS = -258, // Goblin, SE of Sleeping Bull Inn, along north coast
-	HENCH_MAN = -270, // Starts at the House of the Dead
-	HENCHMAN = -271, // Starts at the House of the Dead
-	ELSI = -278, // Cow, north of Mint
-	CRUSTY = -281, // Clown, SW of Captain Stokes tower
-	PIBB = -284, // Starts at the House of the Dead
-	CINDY = -287, // Naked girl S of turtle-summoning bell
-	DBEYER = -293, // Gargoyle, starts at the House of the Dead
-	FITCH = -295 // Trapper, the one dying at the edge of the Ice Plains
+	GUARD12 = -130,			// Automaton, starts at House of the Dead
+	GUARD13 = -131,			// Automaton, starts at House of the Dead
+	GUARD14 = -132,			// Automaton, starts at House of the Dead
+	GUARD15 = -133,			// Automaton, starts at House of the Dead
+	GUARD16 = -134,			// Automaton, starts at House of the Dead
+	ZOMBIE01 = -135,		// Gwani, starts at House of the Dead
+	ZOMBIE02 = -136,		// Gwani, starts at House of the Dead
+	ZOMBIE03 = -137,		// Gwani, starts at House of the Dead
+	ZOMBIE04 = -138,		// Gwani, starts at House of the Dead
+	ZOMBIE05 = -139,		// Gwani, starts at House of the Dead
+	DED_AUTOMATON = -185,	// Automaton, in the middle of ocean
+	PERRY_STOKES = -195,	// The software pirate
+	IAUTO = -197,			// Automaton, starts at House of the Dead
+	DEATH_KNIGHT = -222,	// Starts at the House of the Dead
+	AUTO_2 = -228,			// Automaton, starts at the House of the Dead
+	AUTO_3 = -229,			// Automaton, starts at the House of the Dead
+	AUTO_4 = -230,			// Automaton, starts at the House of the Dead
+	LARRY = -231,			// Automaton, starts at the House of the Dead
+	STAN = -232,			// Automaton, starts at the House of the Dead
+	SUPER_GOBLIN = -256,	// At the tree leading to Goblin Camp
+	BILLY_CAIN = -257,		// Goblin, SW of knight's test
+	STEVE_POWERS = -258,	// Goblin, SE of Sleeping Bull Inn, along north coast
+	HENCH_MAN = -270,		// Starts at the House of the Dead
+	HENCHMAN = -271,		// Starts at the House of the Dead
+	ELSI = -278,			// Cow, north of Mint
+	CRUSTY = -281,			// Clown, SW of Captain Stokes tower
+	PIBB = -284,			// Starts at the House of the Dead
+	CINDY = -287,			// Naked girl S of turtle-summoning bell
+	DBEYER = -293,			// Gargoyle, starts at the House of the Dead
+	FITCH = -295			// Trapper, the one dying at the edge of the Ice Plains
 };

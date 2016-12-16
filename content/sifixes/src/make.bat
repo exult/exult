@@ -1,7 +1,8 @@
 @if "%1"=="--skipflexes" @goto usecode
 @expack.exe > NUL: 2>&1
 @if errorlevel 9009 (
-	@echo expack was not found; please add it to your PATH environment variable
+	@echo expack was not found; please copy it to this folder
+	@echo or add it to your PATH environment variable
 	@echo and run this script again.
 	@echo.
 	@exit
@@ -16,7 +17,8 @@
 @if exist usecode.uc (
 	@ucc.exe -o usecode %0 > NUL: 2>&1
 	@if errorlevel 9009 (
-		@echo ucc was not found; please add it to your PATH environment variable
+		@echo ucc was not found; please copy it to this folder
+		@echo or add it to your PATH environment variable
 		@echo and run this script again.
 		@echo.
 		@exit
@@ -29,5 +31,6 @@
 		@pause
 	) else (
 		@echo Usecode has been successfully compiled!
+		@pause
 	)
 )
