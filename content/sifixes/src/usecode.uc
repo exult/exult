@@ -37,6 +37,8 @@
 #include "header/si/si_shapes.uc"
 // SI NPCs
 #include "header/si/si_npcs.uc"
+// SI Faces
+#include "header/si/si_faces.uc"
 
 // New functions
 #include "header/functions.uc"
@@ -74,6 +76,8 @@
 #include "misc/egg_gwani_attack.uc"
 // Gives the automatons in Skullcrusher normal schedules
 #include "misc/egg_skullcrusher_automatons.uc"
+// Prevents duplicates of Ernesto
+#include "eggs/spawn_ernesto.uc"
 
 // Dupre now refuses to leave in Spinebreaker mountains
 #include "npcs/dupre.uc"
@@ -112,6 +116,8 @@
 #include "npcs/mwaerno.uc"
 // Brings the automatons in Skullcrusher to life
 #include "npcs/skullcrusher_automatons.uc"
+// Adds missing item checks and post-Banes response
+#include "npcs/ernesto.uc"
 
 // For curing Cantra, from exult/content/si; modified to allow companions
 // to thank you (and rejoin) after you cure them but before Xenka returns

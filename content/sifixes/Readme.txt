@@ -17,7 +17,7 @@ Miscellaneous fixes to Serpent Isle Usecode
 -----------------------
 Author: Marzo Sette Torres Junior
 e-mail: marzojr@taskmail.com.br
-version: 0.15.14
+version: 0.15.15
 
 	This modification fixes a few of the Usecode bugs that plague Ultima VII:
 	Serpent Isle. I have tested it *only* with Silver Seed installed; while it
@@ -180,6 +180,26 @@ version: 0.15.14
 	    
 6	Version history
 -------------------
+version 0.15.15 - 2016-12-15
+	- Added Ernesto as a standard NPC to fix the duplication of him by eggs.
+	  His conversation has been improved to check for items he is asked about.
+	- Ernesto's spawn eggs have been disabled via code.
+	- Ernesto has been equiped with a magic bow and lucky arrows to distingush
+	  him from the other Rangers. He also has leather gear and approprate stats.
+	- Fixed Topo's broken lunch schedule so he goes to the inn to eat.
+	- Fixed Julia's schedule so she sleeps in the Rangers' tower at 
+	  2148,1814,6 to avoid her teleporting to Hawk's room as her
+	  intended bed in the barracks is taken by a spawned sleeping Ranger.
+	- Julia now has a key to that tower, and a backpack to hold the key.
+	- Removed a nocturnal egg that creates a sleeping Ranger from
+	  2179,1844 so he does not compete for the bed Ernesto sleeps in.
+	- Moved the chairs in the Rangers' mess hall so they can sit on the south
+	  side of the table. Also moved the mislayered plates and existing untouched
+	  food from the table, and placed simpler plates at each seat, and wine glasses.
+	- Moved an inn chair at 2243,1805 south a tile to line up with the table so
+	  Ernesto can eat there.
+	- Moved a cobweb in Shamino's Castle at 1810,1012,1 so the nightstand
+	  can be opened easily rather than finding the one uncovered pixel.
 version 0.15.14 - 2016-12-02
 	- Fixed the existing teleporter egg out of the gridiron football field,
 	  going to the intended location outside of Pothos' house/island: 2265,1919.
