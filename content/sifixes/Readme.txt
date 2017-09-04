@@ -17,7 +17,7 @@ Miscellaneous fixes to Serpent Isle Usecode
 -----------------------
 Author: Marzo Sette Torres Junior
 e-mail: marzojr@taskmail.com.br
-version: 0.15.14
+version: 0.15.15
 
 	This modification fixes a few of the Usecode bugs that plague Ultima VII:
 	Serpent Isle. I have tested it *only* with Silver Seed installed; while it
@@ -180,6 +180,9 @@ version: 0.15.14
 	    
 6	Version history
 -------------------
+version 0.15.15 - 2017-09-03
+	- Fixed paperdoll art for the moonsilk and fishnet stockings to cover toes.
+	- Fixed sprite art for the blue "teleport here" to completed clipped circles.
 version 0.15.14 - 2016-12-02
 	- Fixed the existing teleporter egg out of the gridiron football field,
 	  going to the intended location outside of Pothos' house/island: 2265,1919.
