@@ -145,8 +145,8 @@ using std::string;
 using std::endl;
 
 LowLevelMidiDriver::LowLevelMidiDriver() :
-MidiDriver(), mutex(0), cbmutex(0),cond(0),
-global_volume(255), thread(0)
+MidiDriver(), mutex(nullptr), cbmutex(nullptr),cond(nullptr),
+global_volume(255), thread(nullptr)
 {
 }
 
@@ -424,7 +424,7 @@ void LowLevelMidiDriver::sendComMessage(ComMessage& message)
 
 void LowLevelMidiDriver::waitTillNoComMessages()
 {
-	while (peekComMessageType()) yield ();
+	while (thread && peekComMessageType()) yield ();
 }
 
 void LowLevelMidiDriver::lockComMessage()
