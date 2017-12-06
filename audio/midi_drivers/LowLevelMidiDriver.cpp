@@ -145,8 +145,8 @@ using std::string;
 using std::endl;
 
 LowLevelMidiDriver::LowLevelMidiDriver() :
-MidiDriver(), mutex(nullptr), cbmutex(nullptr),cond(nullptr),
-global_volume(255), thread(nullptr)
+MidiDriver(), mutex(0), cbmutex(0),cond(0),
+global_volume(255), thread(0)
 {
 }
 
