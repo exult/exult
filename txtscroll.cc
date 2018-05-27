@@ -56,7 +56,7 @@ TextScroller::TextScroller(const char *archive, int index, Font *fnt, Shape *shp
 	shapes = shp;
 	U7object *txtobj;
 	// Hack to patch MAINSHP_FLX.
-	if (!memcmp(archive, MAINSHP_FLX, sizeof(MAINSHP_FLX) - 1))
+	if (!strncmp(archive, MAINSHP_FLX, sizeof(MAINSHP_FLX) - 1))
 		txtobj = new U7multiobject(archive, PATCH_MAINSHP, index);
 	else
 		txtobj = new U7object(archive, index);
