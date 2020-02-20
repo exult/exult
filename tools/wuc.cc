@@ -2,8 +2,6 @@
 #include <cstdlib>
 #include <cstring>
 
-using namespace std;
-
 #include "uctools.h"
 
 static opcode_desc push_table[] = {
