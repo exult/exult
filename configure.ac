@@ -109,6 +109,14 @@ case "$host_os" in
 		;;
 esac
 
+if echo $host_os | grep "cygwin\|mingw" > /dev/null 2>&1; then
+	AC_CHECK_TOOL([WINDRES], [windres])
+	if test "x$WINDRES" = "x"; then
+		AC_MSG_ERROR([windres could not be found, please make sure this program is within your path.])
+	fi
+fi
+AC_SUBST(WINDRES)
+
 AM_CONDITIONAL(MACOSX, test x$ARCH = xmacosx)
 
 # ---------------------------------------------------------------------
