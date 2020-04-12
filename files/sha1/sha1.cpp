@@ -42,7 +42,7 @@ namespace sha1
         inline unsigned int rol(const unsigned int value,
                 const unsigned int steps)
         {
-            return ((value << steps) | (value >> (32 - steps)));
+            return (value << steps) | (value >> (32 - steps));
         }
 
         // Sets the first 16 integers in the buffert to zero.

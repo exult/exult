@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef OBJLIST_H
 #define OBJLIST_H
 
+#include <memory>
 #include "shapeid.h"
 
 template<class T>
@@ -35,33 +36,28 @@ class T_Object_iterator_backwards;
 template<class T>
 class T_Object_list {
 	friend class T_Object_iterator<T>;
-	friend class T_Flat_object_iterator<T, class L>;
-	friend class T_Object_iterator_backwards<T, class L>;
-
-	T first;        // ->first in (circular) chain.
-	unsigned short iter_count;  // # of iterators.
+	friend class T_Flat_object_iterator<T *, class L>;
+	friend class T_Object_iterator_backwards<T *, class L>;
+	using TShared = std::shared_ptr<T>;
+	TShared first;        // ->first in (circular) chain.
+	unsigned short iter_count = 0;  // # of iterators.
 public:
-	T_Object_list(T f = 0) : first(f), iter_count(0)
+	T_Object_list(T *f = nullptr) : first(f)
 	{  }
 	// Delete the chain.
 	~T_Object_list() {
-		if (!first)
-			return;
-		T objects = first;
-		T obj;
-		do {
-			obj = objects;
-			objects = obj->next;
-			delete obj;
-		} while (objects != first);
+		if (first) {
+		    T *last = first->prev;
+			last->next = nullptr;		/* Release so objects get freed.	*/
+		}
 	}
 	// Report iterator problem.
 	void report_problem() const {
 		std::cerr << "Danger! Danger! Object list modified while being iterated." << std::endl;
 		std::cerr.flush();
 	}
-	int is_empty() const {
-		return first == 0;
+	bool is_empty() const {
+		return first == nullptr;
 	}
 	void add_iterator() {
 		iter_count++;
@@ -69,48 +65,49 @@ public:
 	void remove_iterator() {
 		iter_count--;
 	}
-	T get_first() const {
-		return first;
+	T *get_first() const {
+		return first.get();
 	}
 	// Insert at head of chain.
-	void insert(T nobj) {
+	void insert(TShared nobj) {
 		if (iter_count)
 			report_problem();
-		if (!first)     // First one.
-			nobj->next = nobj->prev = nobj;
-		else {
+		if (!first) {    // First one.
+			nobj->next = nobj;
+			nobj->prev = nobj.get();
+		} else {
 			nobj->next = first;
 			nobj->prev = first->prev;
 			first->prev->next = nobj;
-			first->prev = nobj;
+			first->prev = nobj.get();
 		}
 		first = nobj;
 	}
 	// Insert before given obj.
-	void insert_before(T nobj, T before) {
+	void insert_before(TShared nobj, T *before) {
 		if (iter_count)
 			report_problem();
-		if (nobj == before) {
+		if (nobj.get() == before) {
 			std::cerr << "Danger! Danger! Object being placed before itself." << std::endl;
 			std::cerr.flush();
 			return;
 		}
-		nobj->next = before;
+		nobj->next = before->shared_from_this();
 		nobj->prev = before->prev;
 		before->prev->next = nobj;
-		before->prev = nobj;
-		first = before == first ? nobj : first;
+		before->prev = nobj.get();
+		first = before == first.get() ? nobj : first;
 	}
 	// Append.
-	void append(T nobj) {
+	void append(TShared nobj) {
 		insert(nobj);
 		first = nobj->next;
 	}
-	void remove(T dobj) {
+	void remove(T *dobj) {
 		if (iter_count)
 			report_problem();
-		if (dobj == first)
-			first = dobj->next != first ? dobj->next : 0;
+		if (dobj == first.get())
+			first = dobj->next != first ? dobj->next : nullptr;
 		dobj->next->prev = dobj->prev;
 		dobj->prev->next = dobj->next;
 	}
@@ -118,7 +115,7 @@ public:
 
 
 class Game_object;
-typedef T_Object_list<Game_object *> Object_list;
+using Object_list = T_Object_list<Game_object>;
 
 
 #endif

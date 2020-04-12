@@ -26,7 +26,7 @@
  ** are used anyway.
  **/
 
-typedef unsigned int COMPONENT;
+using COMPONENT = unsigned int;
 
 
 // fill `row' with the the disassembled color components from the original
@@ -81,8 +81,8 @@ void Scale_2xBilinear(
 	// reallocating space on each call, as new[]s are usually very
 	// expensive; we do allow it to grow though
 	static int buff_size = 0;
-	static COMPONENT *rgb_row_cur  = 0;
-	static COMPONENT *rgb_row_next = 0;
+	static COMPONENT *rgb_row_cur  = nullptr;
+	static COMPONENT *rgb_row_next = nullptr;
 	if (buff_size < sline_pixels + 1) {
 		delete [] rgb_row_cur;
 		delete [] rgb_row_next;
@@ -185,8 +185,8 @@ void Scale_2xBilinearPlus(
 	// reallocating space on each call, as new[]s are usually very
 	// expensive; we do allow it to grow though
 	static int buff_size = 0;
-	static COMPONENT *rgb_row_cur  = 0;
-	static COMPONENT *rgb_row_next = 0;
+	static COMPONENT *rgb_row_cur  = nullptr;
+	static COMPONENT *rgb_row_next = nullptr;
 	if (buff_size < sline_pixels + 1) {
 		delete [] rgb_row_cur;
 		delete [] rgb_row_next;

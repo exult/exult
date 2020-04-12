@@ -44,7 +44,7 @@ PlayMode *play_mode_list[] = {
 #ifdef DEFAULT_PLAY_MODE
 	DEFAULT_PLAY_MODE,
 #endif
-	0
+	nullptr
 };
 
 #ifdef DEFAULT_PLAY_MODE

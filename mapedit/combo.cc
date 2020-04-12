@@ -41,6 +41,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 using std::cout;
 using std::endl;
+using std::unique_ptr;
+using std::make_unique;
 
 class Game_object;
 
@@ -70,7 +72,7 @@ void ExultStudio::open_combo_window(
 	}
 	Shapes_vga_file *svga = static_cast<Shapes_vga_file *>(vgafile->get_ifile());
 	delete combowin;        // Delete old (svga may have changed).
-	combowin = new Combo_editor(svga, palbuf);
+	combowin = new Combo_editor(svga, palbuf.get());
 	combowin->show(true);
 	// Set edit-mode to pick.
 	GtkWidget *mitem = glade_xml_get_widget(app_xml, "pick_for_combo1");
@@ -230,8 +232,8 @@ Rectangle Combo::get_member_footprint(
 	Combo_member *m = members[i];
 	// Get tile dims.
 	const Shape_info &info = shapes_file->get_info(m->shapenum);
-	int xtiles = info.get_3d_xtiles(m->framenum),
-	    ytiles = info.get_3d_ytiles(m->framenum);
+	int xtiles = info.get_3d_xtiles(m->framenum);
+	int ytiles = info.get_3d_ytiles(m->framenum);
 	// Get tile footprint.
 	Rectangle box(m->tx - xtiles + 1, m->ty - ytiles + 1,
 	              xtiles, ytiles);
@@ -300,9 +302,9 @@ void Combo::add(
 	}
 	// Get tile dims.
 	const Shape_info &info = shapes_file->get_info(shnum);
-	int xtiles = info.get_3d_xtiles(frnum),
-	    ytiles = info.get_3d_ytiles(frnum),
-	    ztiles = info.get_3d_height();
+	int xtiles = info.get_3d_xtiles(frnum);
+	int ytiles = info.get_3d_ytiles(frnum);
+	int ztiles = info.get_3d_height();
 	// Get tile footprint.
 	Rectangle box(tx - xtiles + 1, ty - ytiles + 1, xtiles, ytiles);
 	if (members.empty())        // First one?
@@ -324,8 +326,8 @@ void Combo::add(
 	members.push_back(memb);
 	// Figure visible top-left tile, with
 	//   1 to spare.
-	int vtx = tx - xtiles - 2 - (tz + ztiles + 1) / 2,
-	    vty = ty - ytiles - 2 - (tz + ztiles + 1) / 2;
+	int vtx = tx - xtiles - 2 - (tz + ztiles + 1) / 2;
+	int vty = ty - ytiles - 2 - (tz + ztiles + 1) / 2;
 	if (vtx < starttx)      // Adjust our starting point.
 		starttx = vtx;
 	if (vty < startty)
@@ -376,7 +378,8 @@ void Combo::draw(
     int selected,           // Index of 'selected' item, or -1.
     int xoff, int yoff      // Offset within draw.
 ) {
-	int selx = -1000, sely = -1000;
+	int selx = -1000;
+	int sely = -1000;
 	bool selfound = false;
 	for (std::vector<Combo_member *>::iterator it = members.begin();
 	        it != members.end(); ++it) {
@@ -384,11 +387,11 @@ void Combo::draw(
 		// Figure pixels up-left for lift.
 		int lft = m->tz * (c_tilesize / 2);
 		// Figure relative tile.
-		int mtx = m->tx - starttx,
-		    mty = m->ty - startty;
+		int mtx = m->tx - starttx;
+		int mty = m->ty - startty;
 		// Hot spot:
-		int x = mtx * c_tilesize - lft,
-		    y = mty * c_tilesize - lft;
+		int x = mtx * c_tilesize - lft;
+		int y = mty * c_tilesize - lft;
 		Shape_frame *shape = shapes_file->get_shape(m->shapenum,
 		                     m->framenum);
 		if (!shape)
@@ -428,10 +431,10 @@ int Combo::find(
 		// Figure pixels up-left for lift.
 		int lft = m->tz * (c_tilesize / 2);
 		// Figure relative tile.
-		int mtx = m->tx - starttx,
-		    mty = m->ty - startty;
-		int x = mtx * c_tilesize - lft,
-		    y = mty * c_tilesize - lft;
+		int mtx = m->tx - starttx;
+		int mty = m->ty - startty;
+		int x = mtx * c_tilesize - lft;
+		int y = mty * c_tilesize - lft;
 		Shape_frame *frame = shapes_file->get_shape(
 		                         m->shapenum, m->framenum);
 		if (frame && frame->has_point(mx - x, my - y))
@@ -446,15 +449,15 @@ int Combo::find(
  *  Output: Allocated buffer containing result.
  */
 
-unsigned char *Combo::write(
+unique_ptr<unsigned char[]> Combo::write(
     int &datalen            // Actual length of data in buf. is
     //   returned here.
 ) {
 	int namelen = name.length();    // Name length.
 	// Room for our data + members.
-	unsigned char *buf = new unsigned char[namelen + 1 +
-	                                       7 * 4 + members.size() * (5 * 4)];
-	unsigned char *ptr = buf;
+	auto buf = make_unique<unsigned char[]>(namelen + 1 +
+	                                       7 * 4 + members.size() * (5 * 4));
+	unsigned char *ptr = buf.get();
 	Serial_out out(ptr);
 	out << name;
 	out << hot_index << starttx << startty;
@@ -465,7 +468,7 @@ unsigned char *Combo::write(
 		out << m->tx << m->ty << m->tz << m->shapenum <<
 		    m->framenum;
 	}
-	datalen = ptr - buf;        // Return actual length.
+	datalen = ptr - buf.get();        // Return actual length.
 	return buf;
 }
 
@@ -487,7 +490,11 @@ const unsigned char *Combo::read(
 	short cnt;
 	in << cnt;          // # members to follow.
 	for (int i = 0; i < cnt; i++) {
-		short tx, ty, tz, shapenum, framenum;
+		short tx;
+		short ty;
+		short tz;
+		short shapenum;
+		short framenum;
 		in << tx << ty << tz << shapenum << framenum;
 		Combo_member *memb = new Combo_member(tx, ty, tz,
 		                                      shapenum, framenum);
@@ -574,8 +581,8 @@ void Combo_editor::render_area(
 ) {
 	Shape_draw::configure();    // Setup the first time.
 	// Get dims.
-	int draww = draw->allocation.width,
-	    drawh = draw->allocation.height;
+	int draww = draw->allocation.width;
+	int drawh = draw->allocation.height;
 	GdkRectangle all;
 	if (!area) {
 		all.x = all.y = 0;
@@ -605,8 +612,8 @@ void Combo_editor::set_controls(
 		studio->set_spin("combo_order", 0, false);
 		studio->set_sensitive("combo_remove", false);
 	} else {
-		int draww = draw->allocation.width,
-		    drawh = draw->allocation.height;
+		int draww = draw->allocation.width;
+		int drawh = draw->allocation.height;
 		studio->set_sensitive("combo_locx", true);
 		studio->set_spin("combo_locx", m->tx - combo->starttx,
 		                 0, draww / c_tilesize);
@@ -633,7 +640,8 @@ gint Combo_editor::mouse_press(
 	if (event->button != 1)
 		return FALSE;       // Handling left-click.
 	// Get mouse position, draw dims.
-	int mx = static_cast<int>(event->x), my = static_cast<int>(event->y);
+	int mx = static_cast<int>(event->x);
+	int my = static_cast<int>(event->y);
 	selected = combo->find(mx, my); // Find it (or -1 if not found).
 	set_controls();
 	render();
@@ -697,8 +705,12 @@ void Combo_editor::add(
     bool toggle
 ) {
 	Game_object *addr;
-	int tx, ty, tz;
-	int shape, frame, quality;
+	int tx;
+	int ty;
+	int tz;
+	int shape;
+	int frame;
+	int quality;
 	std::string name;
 	if (!Object_in(data, datalen, addr, tx, ty, tz, shape, frame,
 	               quality, name)) {
@@ -740,10 +752,9 @@ void Combo_editor::save(
 	}
 	flex_info->set_modified();
 	int len;            // Serialize.
-	unsigned char *newbuf = combo->write(len);
+	auto newbuf = combo->write(len);
 	// Update or append file data.
-	flex_info->set(file_index == -1 ? flex_info->size() : file_index,
-	               reinterpret_cast<char *>(newbuf), len);
+	flex_info->set(file_index == -1 ? flex_info->size() : file_index, std::move(newbuf), len);
 	Combo_chooser *browser = dynamic_cast<Combo_chooser *>(
 	                             studio->get_browser());
 	if (browser)            // Browser open?
@@ -836,14 +847,14 @@ void Combo_chooser::load(
 	Shape_file_info *svga_info =
 	    ExultStudio::get_instance()->get_vgafile();
 	Shapes_vga_file *svga = svga_info ?
-	                        static_cast<Shapes_vga_file *>(svga_info->get_ifile()) : 0;
+	                        static_cast<Shapes_vga_file *>(svga_info->get_ifile()) : nullptr;
 	combos.resize(num_combos);  // Set size of list.
 	if (!svga)
 		num_combos = 0;
 	// Read them all in.
 	for (unsigned i = 0; i < num_combos; i++) {
 		size_t len;
-		unsigned char *buf = reinterpret_cast<unsigned char *>(flex_info->get(i, len));
+		unsigned char *buf = flex_info->get(i, len);
 		Combo *combo = new Combo(svga);
 		combo->read(buf, len);
 		combos[i] = combo;  // Store in list.
@@ -857,14 +868,16 @@ void Combo_chooser::load(
 void Combo_chooser::render(
 ) {
 	// Look for selected frame.
-	int selcombo = -1, new_selected = -1;
+	int selcombo = -1;
+	int new_selected = -1;
 	if (selected >= 0)      // Save selection info.
 		selcombo = info[selected].num;
 	// Remove "selected" message.
 	//gtk_statusbar_pop(GTK_STATUSBAR(sbar), sbar_sel);
 	delete [] info;         // Delete old info. list.
 	// Get drawing area dimensions.
-	gint winw = draw->allocation.width, winh = draw->allocation.height;
+	gint winw = draw->allocation.width;
+	gint winh = draw->allocation.height;
 	// Provide more than enough room.
 	info = new Combo_info[256];
 	info_cnt = 0;           // Count them.
@@ -872,7 +885,8 @@ void Combo_chooser::render(
 	iwin->fill8(255);       // Background color.
 	int index = index0;
 	// We'll always show 128x128.
-	const int combow = 128, comboh = 128;
+	const int combow = 128;
+	const int comboh = 128;
 	int total_cnt = get_count();
 	int y = border;
 	// Show bottom if at least 1/2 vis.
@@ -974,8 +988,8 @@ void Combo_chooser::drag_data_get(
 	                           foot.x + foot.w - 1 - hot->tx,
 	                           foot.y + foot.h - 1 - hot->ty, cnt, ents);
 	assert(len <= buflen);
-#ifdef WIN32
-	windragdata *wdata = (windragdata *)seldata;
+#ifdef _WIN32
+	windragdata *wdata = reinterpret_cast<windragdata*>(seldata);
 	wdata->assign(info, len, buf);
 #else
 	// Make us owner of xdndselection.
@@ -1099,7 +1113,7 @@ Combo_chooser::Combo_chooser(
 ) : Object_browser(g, flinfo),
 	Shape_draw(i, palbuf, gtk_drawing_area_new()),
 	flex_info(flinfo), index0(0),
-	info(0), info_cnt(0), sel_changed(0) {
+	info(nullptr), info_cnt(0), sel_changed(nullptr) {
 	load();             // Init. from file data.
 	// Put things in a vert. box.
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
@@ -1111,7 +1125,7 @@ Combo_chooser::Combo_chooser(
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
 	// A frame looks nice.
-	GtkWidget *frame = gtk_frame_new(NULL);
+	GtkWidget *frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
 	gtk_widget_show(frame);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
@@ -1140,7 +1154,7 @@ Combo_chooser::Combo_chooser(
 	// Mouse motion.
 	gtk_signal_connect(GTK_OBJECT(draw), "drag_begin",
 	                   GTK_SIGNAL_FUNC(drag_begin), this);
-#ifdef WIN32
+#ifdef _WIN32
 // required to override GTK+ Drag and Drop
 	gtk_signal_connect(GTK_OBJECT(draw), "motion_notify_event",
 	                   GTK_SIGNAL_FUNC(win32_drag_motion), this);
@@ -1292,7 +1306,8 @@ gint Combo_chooser::configure(
 	chooser->Shape_draw::configure();
 	chooser->render();
 	// Set new scroll amounts.
-	int w = event->width, h = event->height;
+	int w = event->width;
+	int h = event->height;
 	int per_row = (w - border) / (128 + border);
 	int num_rows = (h - border) / (128 + border);
 	int page_size = per_row * num_rows;
@@ -1302,11 +1317,7 @@ gint Combo_chooser::configure(
 	adj->page_increment = page_size;
 	adj->page_size = page_size;
 	gtk_signal_emit_by_name(GTK_OBJECT(adj), "changed");
-#if 0   /* ++++++Later */
-	if (chooser->group)     // Filtering?
-		chooser->enable_drop(); // Can drop combos here.
-#endif
-	return (TRUE);
+	return TRUE;
 }
 
 /*
@@ -1322,10 +1333,10 @@ gint Combo_chooser::expose(
 	Combo_chooser *chooser = static_cast<Combo_chooser *>(data);
 	chooser->show(event->area.x, event->area.y, event->area.width,
 	              event->area.height);
-	return (TRUE);
+	return TRUE;
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 /*
  *  Dragging in win32.
@@ -1346,14 +1357,14 @@ gint Combo_chooser::win32_drag_motion(
 
 		// This call allows us to recycle the data transfer initialization code.
 		//  It's clumsy, but far easier to maintain.
-		drag_data_get(NULL, NULL, (GtkSelectionData *) &wdata,
+		drag_data_get(nullptr, nullptr, reinterpret_cast<GtkSelectionData*>(&wdata),
 		              U7_TARGET_COMBOID, 0, data);
 
 		POINT pnt;
 		GetCursorPos(&pnt);
 
-		Windropsource idsrc(0, pnt.x, pnt.y);
-		LPDATAOBJECT idobj = (LPDATAOBJECT) new Winstudioobj(wdata);
+		Windropsource idsrc(nullptr, pnt.x, pnt.y);
+		LPDATAOBJECT idobj = new Winstudioobj(wdata);
 		DWORD dndout;
 
 		HRESULT res = DoDragDrop(idobj, &idsrc, DROPEFFECT_COPY, &dndout);
@@ -1396,10 +1407,10 @@ gint Combo_chooser::mouse_press(
 
 	if (event->button == 4) {
 		chooser->scroll(true);
-		return(TRUE);
+		return TRUE;
 	} else if (event->button == 5) {
 		chooser->scroll(false);
-		return(TRUE);
+		return TRUE;
 	}
 
 	int old_selected = chooser->selected;
@@ -1409,7 +1420,7 @@ gint Combo_chooser::mouse_press(
 		            static_cast<int>(event->x), static_cast<int>(event->y))) {
 			// Found the box?
 			// Indicate we can drag.
-#ifdef WIN32
+#ifdef _WIN32
 // Here, we have to override GTK+'s Drag and Drop, which is non-OLE and
 // usually stucks outside the program window. I think it's because
 // the dragged shape only receives mouse motion events when the new mouse pointer
@@ -1434,8 +1445,8 @@ gint Combo_chooser::mouse_press(
 	}
 	if (event->button == 3)
 		gtk_menu_popup(GTK_MENU(chooser->create_popup()),
-		               0, 0, 0, 0, event->button, event->time);
-	return (TRUE);
+		               nullptr, nullptr, nullptr, nullptr, event->button, event->time);
+	return TRUE;
 }
 
 /*

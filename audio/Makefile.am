@@ -1,7 +1,7 @@
 AM_CPPFLAGS = -I$(srcdir)/../headers -I$(srcdir)/.. -I$(srcdir)/../imagewin -I$(srcdir)/../shapes \
 		-I$(srcdir)/../objs -I$(srcdir)/../files -I$(srcdir)/../gumps \
 		-I$(srcdir)/../conf -I$(srcdir)/midi_drivers -I../files -I../conf \
-		$(SDL_CFLAGS) $(VORBIS_CFLAGS) $(OGG_CFLAGS) $(KMID_INCLUDES) \
+		$(SDL_CFLAGS) $(VORBIS_CFLAGS) $(OGG_CFLAGS) \
 		$(INCDIRS) $(WINDOWING_SYSTEM) $(DEBUG_FLAGS) $(CPPFLAGS)
 
 SUBDIRS = midi_drivers

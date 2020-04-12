@@ -25,6 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef INCL_CITERATE
 #define INCL_CITERATE   1
 
+#include "rect.h"
+
 /*
  *  Here's an iterator that takes a rectangle of tiles, and sequentially
  *  returns the interesection of that rectangle with each chunk that it
@@ -55,7 +57,7 @@ public:
 	int get_next(Rectangle &intersect, int &cx, int &cy) {
 		if (curcx == stopcx) {  // End of row?
 			if (curcy == stopcy)
-				return (0);
+				return 0;
 			else {
 				tiles.y -= c_tiles_per_chunk;
 				tiles.x = start_tx;
@@ -72,7 +74,7 @@ public:
 		cy = curcy;
 		curcx = INCR_CHUNK(curcx);
 		tiles.x -= c_tiles_per_chunk;
-		return (1);
+		return 1;
 	}
 };
 

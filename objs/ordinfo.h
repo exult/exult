@@ -40,9 +40,7 @@ public:
 	const Shape_info &info;       // Info. about shape.
 	int tx, ty, tz;         // Absolute tile coords.
 	int xs, ys, zs;         // Tile dimensions.
-#if 1   /* For experimental compare(). */
 	int xleft, xright, ynear, yfar, zbot, ztop;
-#endif
 private:
 	void init(const Game_object *obj) {
 		Tile_coord t = obj->get_tile();
@@ -53,7 +51,6 @@ private:
 		xs = info.get_3d_xtiles(frnum);
 		ys = info.get_3d_ytiles(frnum);
 		zs = info.get_3d_height();
-#if 1   /* For experimental compare(). */
 		xleft = tx - xs + 1;
 		xright = tx;
 		yfar = ty - ys + 1;
@@ -62,7 +59,6 @@ private:
 		zbot = tz;
 		if (!zs)        // Flat?
 			zbot--;
-#endif
 	}
 public:
 	// Create from scratch.

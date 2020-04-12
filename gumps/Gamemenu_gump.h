@@ -16,38 +16,58 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _GAMEMENU_GUMP_H
-#define _GAMEMENU_GUMP_H
+#ifndef GAMEMENU_GUMP_H
+#define GAMEMENU_GUMP_H
 
 #include "Modal_gump.h"
+
+#include <array>
+#include <memory>
 
 class Gump_button;
 
 class Gamemenu_gump : public Modal_gump {
-	UNREPLICATABLE_CLASS_I(Gamemenu_gump, Modal_gump(0, 0, 0, 0))
+	UNREPLICATABLE_CLASS(Gamemenu_gump)
 
 private:
-	Gump_button *buttons[6];
+	enum button_ids {
+	    id_first = 0,
+	    id_load_save = id_first,
+	    id_video_options,
+	    id_audio_options,
+	    id_gameplay_options,
+	    id_misc_options,
+	    id_input,
+	    id_quit,
+	    id_count
+	};
+	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
 
 public:
 	Gamemenu_gump();
-	virtual ~Gamemenu_gump();
 
 	// Paint it and its contents.
-	virtual void paint();
-	virtual void close() {
-		done = 1;
+	void paint() override;
+	void close() override {
+		done = true;
 	}
 	// Handle events:
-	virtual bool mouse_down(int mx, int my, int button);
-	virtual bool mouse_up(int mx, int my, int button);
+	bool mouse_down(int mx, int my, int button) override;
+	bool mouse_up(int mx, int my, int button) override;
 
 	void quit(bool return_to_menu = false);
+	void quit_exult() {
+		quit(false);
+	}
+	void quit_to_menu() {
+		quit(true);
+	}
 	void loadsave();
 	void video_options();
 	void audio_options();
 	void gameplay_options();
 	void misc_options();
+	void input_options();
 
 	static void do_exult_menu();
 };

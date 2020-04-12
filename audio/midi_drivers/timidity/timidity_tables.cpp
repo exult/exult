@@ -363,7 +363,7 @@ sint8 *iplookup;
 
 #endif
 
-void init_tables(void)
+void init_tables()
 {
 #ifdef LOOKUP_HACK
 	int i,j,v;

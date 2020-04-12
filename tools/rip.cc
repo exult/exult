@@ -12,26 +12,28 @@ using namespace std;
 #endif
 #endif
 
-void rebuild(void) ATTR_NORET;
+void rebuild() ATTR_NORET;
 
-void rebuild(void) {
+void rebuild() {
 	unsigned int c;
 	char s[10];
 	char filename[18];
 	char *pos;
 	char *err;
-	FILE *fi = fopen("index", "r"), *fi2, *fo = fopen("usecode", "wb");
-	if (fi == NULL) {
+	FILE *fi = fopen("index", "r");
+	FILE *fi2;
+	FILE *fo = fopen("usecode", "wb");
+	if (fi == nullptr) {
 		printf("Can't open index file.\n");
 		exit(0);
 	}
-	if (fo == NULL) {
+	if (fo == nullptr) {
 		printf("Can't create usecode file.\n");
 		exit(0);
 	}
 	while (!feof(fi)) {
 		err = fgets(s, 10, fi);
-		assert(err != NULL);
+		assert(err != nullptr);
 
 		strcpy(filename, s);
 		pos = strchr(filename, '\n');
@@ -40,7 +42,7 @@ void rebuild(void) {
 		if (!feof(fi)) {
 			s[strlen(s) - 1] = 0;
 			printf("Writing function: %s... ", s);
-			if ((fi2 = fopen(filename, "rb")) == NULL) {
+			if ((fi2 = fopen(filename, "rb")) == nullptr) {
 				printf("Can't open file %s\n", filename);
 				exit(0);
 			}
@@ -57,15 +59,20 @@ void rebuild(void) {
 }
 
 int main(int argc, char *argv[]) {
-	unsigned short fn, fnc;
+	unsigned short fn;
+	unsigned short fnc;
 	unsigned short temp;
-	unsigned fs, fsc;
-	unsigned int i, put = 0;
+	unsigned fs;
+	unsigned fsc;
+	unsigned int i;
+	unsigned int put = 0;
 	int number;
 	int extended;
 	char s[10];
 	char filename[18];
-	FILE *fi, *fo, *fo2;
+	FILE *fi;
+	FILE *fo;
+	FILE *fo2;
 	size_t err;
 
 	printf("Wody's Rip v0.005\nCopyright (c) 1999 Wody Dragon (a.k.a. Wouter Dijkslag)\n");
@@ -89,15 +96,15 @@ int main(int argc, char *argv[]) {
 	} else
 		sscanf(argv[1], "%x", reinterpret_cast<unsigned int *>(&number));
 
-	if ((fi = fopen("usecode", "rb+")) == NULL) {
+	if ((fi = fopen("usecode", "rb+")) == nullptr) {
 		printf("Can't open usecode file.\n");
 		exit(0);
 	}
-	if ((fo2 = fopen("index", "w")) == NULL) {
+	if ((fo2 = fopen("index", "w")) == nullptr) {
 		printf("Can't create index file.\n");
 		exit(0);
 	}
-	while (1) {
+	while (true) {
 		if (fread(&fn, 2, 1, fi) != 1) break;
 		if (fn == 0xFFFF) {
 			extended = 1;
@@ -121,7 +128,7 @@ int main(int argc, char *argv[]) {
 		if (number == -1 || number == fn) {
 			if (!put) {
 				printf("Writing function: %s... ", s);
-				if ((fo = fopen(filename, "wb")) == NULL) {
+				if ((fo = fopen(filename, "wb")) == nullptr) {
 					printf("Can't open file %s\n", filename);
 					exit(0);
 				}
@@ -143,7 +150,7 @@ int main(int argc, char *argv[]) {
 				printf("done\n");
 			} else {
 				printf("Reading function: %s... ", s);
-				if ((fo = fopen(filename, "rb")) == NULL) {
+				if ((fo = fopen(filename, "rb")) == nullptr) {
 					printf("Can't open file %s\n", filename);
 					exit(0);
 				}

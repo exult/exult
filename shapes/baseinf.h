@@ -67,7 +67,7 @@ protected:
 	    Have_static = 4,
 	    Is_invalid = 8
 	};
-	Info_bit_flags info_flags;
+	Info_bit_flags info_flags = All_clear;
 	void set_flag(bool tf, int flag) {
 		if (tf)
 			info_flags = static_cast<Info_bit_flags>(info_flags | flag);
@@ -79,12 +79,10 @@ protected:
 	}
 public:
 	friend class Shape_info;
-	Base_info() : info_flags(All_clear) {
+	Base_info() = default;
+	Base_info(bool patch) : info_flags(patch ? From_patch : All_clear) {
 	}
-	Base_info(bool patch) : info_flags(All_clear) {
-		set_patch(patch);
-	}
-	Base_info(bool mod, bool patch, bool inv, bool st) : info_flags(All_clear) {
+	Base_info(bool mod, bool patch, bool inv, bool st) {
 		set_modified(mod);
 		set_patch(patch);
 		set_invalid(inv);

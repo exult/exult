@@ -74,7 +74,7 @@ void Keyring::addkey(int qual) {
 }
 
 bool Keyring::checkkey(int qual) {
-	return (keys.find(qual) != keys.end());
+	return keys.find(qual) != keys.end();
 }
 
 bool Keyring::removekey(int qual) {

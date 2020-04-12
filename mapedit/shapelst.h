@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "objbrowse.h"
 #include "shapedraw.h"
 #include "rect.h"
+#include <memory>
 #include <vector>
 #include <ctime>
 
@@ -44,7 +45,6 @@ class Shape_entry {
 	short shapenum, framenum;   // The given shape/frame.
 	Rectangle box;          // Box where drawn.
 public:
-	Shape_entry() {  }
 	void set(int shnum, int frnum, int rx, int ry, int rw, int rh) {
 		shapenum = static_cast<short>(shnum);
 		framenum = static_cast<short>(frnum);
@@ -57,12 +57,9 @@ public:
  */
 class Shape_row {
 	friend class Shape_chooser;
-	short height;           // In pixels.
+	short height = 0;       // In pixels.
 	long y;                 // Absolute y-coord. in pixels.
 	unsigned index0;        // Index of 1st Shape_entry in row.
-public:
-	Shape_row() : height(0)
-	{  }
 };
 
 /*
@@ -89,38 +86,38 @@ class Shape_chooser: public Object_browser, public Shape_draw {
 	void (*sel_changed)();      // Called when selection changes.
 	// List of files being edited by an
 	//   external program (Gimp, etc.)
-	static std::vector<Editing_file *> editing_files;
+	static std::vector<std::unique_ptr<Editing_file>> editing_files;
 	static int check_editing_timer; // For monitoring files being edited.
 	// Blit onto screen.
-	virtual void show(int x, int y, int w, int h);
-	virtual void show() {
+	void show(int x, int y, int w, int h) override;
+	void show() override {
 		Shape_chooser::show(0, 0,
 		                    draw->allocation.width, draw->allocation.height);
 	}
 	void tell_server_shape();   // Tell Exult what shape is selected.
 	void select(int new_sel);   // Show new selection.
-	virtual void render();      // Draw list.
-	virtual void set_background_color(guint32 c) {
+	void render() override;      // Draw list.
+	void set_background_color(guint32 c) override {
 		Shape_draw::set_background_color(c);
 	}
-	virtual void setup_info(bool savepos = true);
+	void setup_info(bool savepos = true) override;
 	void setup_shapes_info();
 	void setup_frames_info();
 	void scroll_to_frame();     // Scroll so sel. frame is visible.
 	int find_shape(int shnum);  // Find index for given shape.
 	void goto_index(unsigned index); // Get desired index in view.
-	virtual int get_selected_id() {
+	int get_selected_id() override {
 		return selected < 0 ? -1 : info[selected].shapenum;
 	}
 	void scroll_row_vertical(unsigned newrow);
-	void scroll_vertical(int newindex); // Scroll.
+	void scroll_vertical(int newoffset); // Scroll.
 	void setup_vscrollbar();    // Set new scroll amounts.
 	void setup_hscrollbar(int newmax);
-	virtual GtkWidget *create_popup();  // Popup menu.
+	GtkWidget *create_popup() override;  // Popup menu.
 public:
 	Shape_chooser(Vga_file *i, unsigned char *palbuf, int w, int h,
-	              Shape_group *g = 0, Shape_file_info *fi = 0);
-	virtual ~Shape_chooser();
+	              Shape_group *g = nullptr, Shape_file_info *fi = nullptr);
+	~Shape_chooser() override;
 	void set_shapes_file(Shapes_vga_file *sh) {
 		shapes_file = sh;
 	}
@@ -129,27 +126,17 @@ public:
 	}
 	void shape_dropped_here(int file, int shapenum, int framenum);
 	int get_count();        // Get # shapes we can display.
-	virtual void search(const char *srch, int dir);
-	virtual void locate(bool upwards);  // Locate shape on game map.
+	void search(const char *search, int dir) override;
+	void locate(bool upwards) override;  // Locate shape on game map.
 	// Turn off selection.
 	void unselect(bool need_render = true);
 	void update_statusbar();
-	int is_selected() {     // Is a shape selected?
+	bool is_selected() {     // Is a shape selected?
 		return selected >= 0;
 	}
 	void set_selected_callback(void (*fun)()) {
 		sel_changed = fun;
 	}
-#if 0   /* ++++Unused */
-	// Get selected shape, or return 0.
-	int get_selected(int &shapenum, int &framenum) {
-		if (selected == -1)
-			return (0);
-		shapenum = info[selected].shapenum;
-		framenum = info[selected].framenum;
-		return (1);
-	}
-#endif
 	unsigned get_num_cols(unsigned rownum) {
 		return ((rownum < rows.size() - 1) ? rows[rownum + 1].index0
 		        : info.size()) - rows[rownum].index0;
@@ -193,7 +180,7 @@ public:
 	void del_frame();
 	// Give dragged shape.
 	static void drag_data_get(GtkWidget *widget, GdkDragContext *context,
-	                          GtkSelectionData *selection_data, guint info, guint time, gpointer data);
+	                          GtkSelectionData *seldata, guint info, guint time, gpointer data);
 	// Someone else selected.
 	static gint selection_clear(GtkWidget *widget,
 	                            GdkEventSelection *event, gpointer data);
@@ -206,7 +193,7 @@ public:
 	static void frame_changed(GtkAdjustment *adj, gpointer data);
 	static void all_frames_toggled(GtkToggleButton *btn,
 	                               gpointer user_data);
-#ifdef WIN32
+#ifdef _WIN32
 	static gint win32_drag_motion(GtkWidget *widget, GdkEventMotion *event,
 	                              gpointer data);
 #else

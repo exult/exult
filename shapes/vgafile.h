@@ -29,6 +29,7 @@
 #include "common_types.h"
 #include "exult_constants.h"
 #include "imagebuf.h"
+#include <memory>
 #include <vector>
 #include <utility>
 #include <string>
@@ -36,123 +37,87 @@
 
 class IDataSource;
 class ODataSource;
-class IStreamDataSource;
 class Shape;
 class Image_buffer8;
-class GL_texshape;
-class GL_manager;
 class Palette;
-
-#ifdef HAVE_OPENGL
-#include "glshape.h"
-
-#define GLRENDER    if (glman) glman->paint(this, px, py); else
-#define GLTRANSLUCENT   if (glman) glman->paint(this, px, py, xforms, xfcnt); \
-	else
-#define GLTRANSFORM if (glman) glman->paint_transformed(this, px, py, xform); \
-	else
-#define GLREMAPPED  if (glman) glman->paint_remapped(this, px, py, trans); else
-#define GLOUTLINE   if (glman) glman->paint_outline(this, px, py, color); else
-#else
-#define GLRENDER
-#define GLTRANSLUCENT
-#define GLTRANSFORM
-#define GLREMAPPED
-#define GLOUTLINE
-#endif
 
 /*
  *  A shape from "shapes.vga":
  */
 class Shape_frame {
-	unsigned char *data;        // The actual data.
-#ifdef HAVE_OPENGL
-	GL_texshape *glshape;       // OpenGL texture for painting this.
-	GL_texshape *gloutline;     // OpenGL texture for painting outline of this.
-#endif
-	int datalen;
+	std::unique_ptr<unsigned char[]> data;        // The actual data.
+	int datalen = 0;
 	short xleft;            // Extent to left of origin.
 	short xright;           // Extent to right.
 	short yabove;           // Extent above origin.
 	short ybelow;           // Extent below origin.
 	bool rle;           // Run-length encoded.
-	static GL_manager *glman;   // One to rule them all.
 	static Image_buffer8 *scrwin;   // Screen window to render to.
 
-	Shape_frame *reflect();     // Create new frame, reflected.
 	// Create RLE data & store in frame.
 	void create_rle(unsigned char *pixels, int w, int h);
 	// Create from RLE entry.
 	void get_rle_shape(IDataSource *shapes, long filepos, long len);
 
 public:
-	friend class Game_window;
-	friend class Shape_manager;
-	friend class Shape;
-	friend class Shape_file;
-	friend class GL_texshape;
-	friend class GL_manager;
-	Shape_frame()
-		: data(0),
-#ifdef HAVE_OPENGL
-		  glshape(0), gloutline(0),
-#endif
-		  datalen(0)
-	{  }
+	Shape_frame() = default;
 	// Create frame from data.
 	Shape_frame(unsigned char *pixels, int w, int h, int xoff, int yoff,
 	            bool setrle);
-	static void set_to_render(Image_buffer8 *w, GL_manager *gl = 0) {
+	Shape_frame(std::unique_ptr<unsigned char[]> pixels, int w, int h, int xoff, int yoff,
+	            bool setrle);
+	std::unique_ptr<Shape_frame> reflect();     // Create new frame, reflected.
+	static void set_to_render(Image_buffer8 *w) {
 		scrwin = w;
-		glman = gl;
 	}
 	unsigned char *get_data() {
-		return data;
+		return data.get();
 	}
 	unsigned char get_topleft_pix(unsigned char def = 255) const;
 	bool is_rle() const {
 		return rle;
 	}
+	void write(ODataSource& out) const;  // Write out.
+	void save(ODataSource *shape_source) const;
 	// Convert raw image to RLE.
-	static unsigned char *encode_rle(unsigned char *pixels, int w, int h,
+	static std::unique_ptr<unsigned char[]> encode_rle(unsigned char *pixels, int w, int h,
 	                                 int xoff, int yoff, int &datalen);
 	// Read in shape/frame.
 	unsigned int read(IDataSource *shapes, uint32 shapeoff,
 	                  uint32 shapelen, int frnum);
 	// Paint into given buffer.
-	void paint_rle(Image_buffer8 *win, int px, int py);
-	void paint_rle_remapped(Image_buffer8 *win, int px, int py, const unsigned char *trans);
-	void paint(Image_buffer8 *win, int px, int py);
-	void paint_rle_translucent(Image_buffer8 *win, int px, int py,
+	void paint_rle(Image_buffer8 *win, int xoff, int yoff);
+	void paint_rle_remapped(Image_buffer8 *win, int xoff, int yoff, const unsigned char *trans);
+	void paint(Image_buffer8 *win, int xoff, int yoff);
+	void paint_rle_translucent(Image_buffer8 *win, int xoff, int yoff,
 	                           const Xform_palette *xforms, int xfcnt);
-	void paint_rle_transformed(Image_buffer8 *win, int px, int py,
+	void paint_rle_transformed(Image_buffer8 *win, int xoff, int yoff,
 	                           const Xform_palette &xform);
-	void paint_rle_outline(Image_buffer8 *win, int px, int py,
+	void paint_rle_outline(Image_buffer8 *win, int xoff, int yoff,
 	                       unsigned char color);
 	// Paint to screen.
 	void paint_rle(int px, int py) {
-		GLRENDER  paint_rle(scrwin, px, py);
+		paint_rle(scrwin, px, py);
 	}
 	void paint_rle_remapped(int px, int py, unsigned char *trans) {
-		GLREMAPPED  paint_rle_remapped(scrwin, px, py, trans);
+		paint_rle_remapped(scrwin, px, py, trans);
 	}
 	void paint(int px, int py) {
-		GLRENDER  paint(scrwin, px, py);
+		paint(scrwin, px, py);
 	}
-	// ++++++GL versions of these needed:
 	void paint_rle_translucent(int px, int py,
 	                           const Xform_palette *xforms, int xfcnt) {
-		GLTRANSLUCENT  paint_rle_translucent(
+		paint_rle_translucent(
 		    scrwin, px, py, xforms, xfcnt);
 	}
 	void paint_rle_transformed(int px, int py, const Xform_palette &xform) {
-		GLTRANSFORM  paint_rle_transformed(scrwin, px, py, xform);
+		paint_rle_transformed(scrwin, px, py, xform);
 	}
 	void paint_rle_outline(int px, int py, unsigned char color) {
-		GLOUTLINE  paint_rle_outline(scrwin, px, py, color);
+		paint_rle_outline(scrwin, px, py, color);
 	}
 
-	int has_point(int x, int y) const;    // Is a point within the shape?
+	bool has_point(int x, int y) const;    // Is a point within the shape?
 	int get_width() const {     // Get dimensions.
 		return xleft + xright + 1;
 	}
@@ -175,18 +140,14 @@ public:
 	int get_size() const {
 		return datalen;
 	}
-	int is_empty() const {
-		return data[0] == 0 && data[1] == 0;
+	bool is_empty() const {
+		return !data || (data[0] == 0 && data[1] == 0);
 	}
-	virtual ~Shape_frame() {
-#ifdef HAVE_OPENGL
-		if (glshape)
-			glshape->disassociate();
-		if (gloutline)
-			gloutline->disassociate();
-#endif
-		delete [] data;
-	}
+	virtual ~Shape_frame() noexcept = default;
+	Shape_frame(const Shape_frame&) = delete;
+	Shape_frame& operator=(const Shape_frame&) = delete;
+	Shape_frame(Shape_frame&&) noexcept = default;
+	Shape_frame& operator=(Shape_frame&&) noexcept = default;
 };
 
 /*
@@ -194,65 +155,63 @@ public:
  */
 class Shape {
 protected:
-	Shape_frame **frames;       // List of ->'s to frames.
-	unsigned int frames_size;   // Size of 'frames' (incl. reflects).
-	unsigned int num_frames;    // # of frames (not counting reflects).
-	bool modified;
-	bool from_patch;
+	std::vector<std::unique_ptr<Shape_frame>> frames;       // List of ->'s to frames.
+	unsigned int num_frames = 0;    // # of frames (not counting reflects).
+	bool modified = false;
+	bool from_patch = false;
 	// Create reflected frame.
-	Shape_frame *reflect(std::vector<std::pair<IDataSource *, bool> > const &shapes, int shnum,
-	                     int frnum, std::vector<int> const &counts);
-	void enlarge(int newsize);  // Increase 'frames'.
+	Shape_frame *reflect(std::vector<std::pair<std::unique_ptr<IDataSource>, bool>> const &shapes, int shapenum,
+	                     int framenum, std::vector<int> const &counts);
 	void create_frames_list(int nframes);
 	// Read in shape/frame.
-	Shape_frame *read(std::vector<std::pair<IDataSource *, bool> > const &shapes, int shnum,
-	                  int frnum, std::vector<int> const &counts, int src = -1);
+	Shape_frame *read(std::vector<std::pair<std::unique_ptr<IDataSource>, bool>> const &shapes, int shapenum,
+	                  int framenum, std::vector<int> const &counts, int src = -1);
 	// Store shape that was read.
-	Shape_frame *store_frame(Shape_frame *frame, int framenum);
-public:
-	friend class Vga_file;
+	Shape_frame *store_frame(std::unique_ptr<Shape_frame> frame, int framenum);
 
-	Shape() : frames(0), frames_size(0), num_frames(0),
-		modified(false), from_patch(false)
-	{  }
-	Shape(Shape_frame *fr);
-	Shape(int n);           // Create with given #frames.
-	virtual ~Shape();
+public:
+	Shape() = default;
+	explicit Shape(std::unique_ptr<Shape_frame> fr);
+	explicit Shape(int n);           // Create with given #frames.
+	Shape(const Shape&) = delete;
+	Shape& operator=(const Shape&) = delete;
+	Shape(Shape&&) noexcept = default;
+	Shape& operator=(Shape&&) noexcept = default;
+	virtual ~Shape() noexcept = default;
 	void reset();
-	void take(Shape *s2);       // Take frames from another shape.
 	void load(IDataSource *shape_source);
-	void write(std::ostream &out);  // Write out.
+	void write(ODataSource& out) const;  // Write out.
 	void set_modified() {
 		modified = true;
 	}
-	bool get_modified() {
+	bool get_modified() const {
 		return modified;
 	}
 	void set_from_patch() {
 		from_patch = true;
 	}
-	bool get_from_patch() {
+	bool get_from_patch() const {
 		return from_patch;
 	}
-	Shape_frame *get(std::vector<std::pair<IDataSource *, bool> > const &shapes, int shnum,
+	Shape_frame *get(std::vector<std::pair<std::unique_ptr<IDataSource>, bool>> const &shapes, int shnum,
 	                 int frnum, std::vector<int> const &counts, int src = -1) {
-		return (frames && frnum < static_cast<int>(frames_size) &&
-		        frames[frnum]) ? frames[frnum] :
-		       read(shapes, shnum, frnum, counts, src);
+		return (size_t(frnum) < frames.size() && frames[frnum])
+		       ? frames[frnum].get()
+		       : read(shapes, shnum, frnum, counts, src);
 	}
-	int get_num_frames() {
+	int get_num_frames() const {
 		return num_frames;
 	}
 	Shape_frame *get_frame(int framenum) {
-		return 0 <= framenum &&
-		       static_cast<unsigned int>(framenum) < frames_size
-		       ? frames[framenum] : 0L;
+		return 0 <= framenum && size_t(framenum) < frames.size()
+		       ? frames[framenum].get()
+		       : nullptr;
 	}
 	void resize(int newsize);   // Modify #frames.
 	// Set frame.
-	void set_frame(Shape_frame *f, int framenum);
+	void set_frame(std::unique_ptr<Shape_frame> f, int framenum);
 	// Add/insert frame.
-	void add_frame(Shape_frame *f, int framenum);
+	void add_frame(std::unique_ptr<Shape_frame> f, int framenum);
 	void del_frame(int framenum);
 };
 
@@ -262,17 +221,19 @@ public:
  */
 class Shape_file : public Shape {
 public:
-	Shape_file(const char *nm);
-	Shape_file(Shape_frame *fr): Shape(fr) {}
-	Shape_file(IDataSource *shape_source);
-	Shape_file();
-	virtual ~Shape_file() {}
+	explicit Shape_file(const char *nm);
+	explicit Shape_file(std::unique_ptr<Shape_frame> fr): Shape(std::move(fr)) {}
+	explicit Shape_file(IDataSource *shape_source);
+	Shape_file() = default;
+	Shape_file(Shape_file&& other) noexcept = default;
+	Shape_file& operator=(Shape_file&& other) noexcept = default;
+	~Shape_file() noexcept final = default;
 	void load(const char *nm);
 	void load(IDataSource *shape_source) {
 		Shape::load(shape_source);
 	}
-	int get_size();
-	void save(ODataSource *shape_source);
+	int get_size() const;
+	void save(ODataSource *shape_source) const;
 };
 
 /*
@@ -285,50 +246,48 @@ protected:
 		int pointer_offset;
 		int source_offset;
 	};
-	std::vector<std::ifstream *> files;
-	std::vector<char *> buffers;
-	std::vector<std::pair<IDataSource *, bool> > shape_sources;
-	std::vector<std::ifstream *> imported_files;
-	std::vector<char *> imported_buffers;
-	std::vector<std::pair<IDataSource *, bool> > imported_sources;
+	std::vector<std::pair<std::unique_ptr<IDataSource>, bool>> shape_sources;
+	std::vector<std::pair<std::unique_ptr<IDataSource>, bool>> imported_sources;
 	std::map<int, imported_map> imported_shape_table;
-	int u7drag_type;        // # from u7drag.h, or -1.
-	int num_shapes;         // Total # of shapes.
+	int u7drag_type = -1;           // # from u7drag.h, or -1.
 	std::vector<int> shape_cnts;    // Total # of shapes in each file.
 	std::vector<int> imported_cnts; // Total # of shapes in each file.
-	Shape *shapes;              // List of ->'s to shapes' lists
-	std::vector<Shape *> imported_shapes;   // List of ->'s to shapes' lists
-	bool flex;          // This is the normal case (all .vga
+	std::vector<Shape> shapes;              // List of ->'s to shapes' lists
+	std::vector<Shape> imported_shapes;     // List of ->'s to shapes' lists
+	bool flex = true;          // This is the normal case (all .vga
 	//   files).  If false, file is a
 	//   single shape, like 'pointers.shp'.
 	// In this case, all frames are pre-
 	//   loaded.
+
 public:
-	Vga_file(const char *nm, int u7drag = -1, const char *nm2 = 0);
-	Vga_file(std::vector<std::pair<std::string, int> > const &sources, int u7drag = -1);
+	explicit Vga_file(const char *nm, int u7drag = -1, const char *nm2 = nullptr);
+	explicit Vga_file(std::vector<std::pair<std::string, int>> const &sources, int u7drag = -1);
 	Vga_file();
 	int get_u7drag_type() const {
 		return u7drag_type;
 	}
 	IDataSource *U7load(
 	    std::pair<std::string, int> const &resource,
-	    std::vector<std::ifstream *> &fs,
-	    std::vector<char *> &bs,
-	    std::vector<std::pair<IDataSource *, bool> > &shps);
-	bool load(const char *nm, const char *nm2 = 0, bool resetimports = false);
-	bool load(std::vector<std::pair<std::string, int> > const &sources, bool resetimports = false);
+	    std::vector<std::pair<std::unique_ptr<IDataSource>, bool>> &shps);
+	bool load(const char *nm, const char *nm2 = nullptr, bool resetimports = false);
+	bool load(std::vector<std::pair<std::string, int>> const &sources, bool resetimports = false);
 	bool import_shapes(std::pair<std::string, int> const &source,
-	                   std::vector<std::pair<int, int> > const &imports);
+	                   std::vector<std::pair<int, int>> const &imports);
 	bool is_shape_imported(int shnum);
 	bool get_imported_shape_data(int shnum, imported_map &data);
 	void reset();
 	void reset_imports();
-	virtual ~Vga_file();
+	virtual ~Vga_file() noexcept;
+	Vga_file(const Vga_file&) = delete;
+	Vga_file& operator=(const Vga_file&) = delete;
+	Vga_file(Vga_file&&) noexcept = default;
+	Vga_file& operator=(Vga_file&&) noexcept = default;
 	int get_num_shapes() const {
-		return num_shapes;
+		return shapes.size();
 	}
-	int is_good() const {
-		return shapes != 0;
+	bool is_good() const {
+		return !shapes.empty();
 	}
 	bool is_flex() const {
 		return flex;
@@ -341,11 +300,11 @@ public:
 			// The shape is imported from another file.
 			// Import table was set but the source could not be opened.
 			if (data.pointer_offset < 0)
-				return 0;
-			r = (imported_shapes[data.pointer_offset]->get(imported_sources,
+				return nullptr;
+			r = (imported_shapes[data.pointer_offset].get(imported_sources,
 			        data.realshape, framenum, imported_cnts, data.source_offset));
 		} else {
-			assert(shapes != 0); // Because if shapes is NULL
+			assert(!shapes.empty()); // Because if shapes is nullptr
 			// here, we won't die on the deref
 			// but we will return rubbish.
 			// I've put this assert in _before_ you know...
@@ -360,26 +319,26 @@ public:
 		imported_map data;
 		bool is_imported = get_imported_shape_data(shapenum, data);
 		if (is_imported)
-			assert(imported_shapes.size()); // For safety.
+			assert(!imported_shapes.empty()); // For safety.
 		else
-			assert(shapes != 0);
+			assert(!shapes.empty());
 		// Load all frames into memory
 		int count = get_num_frames(shapenum);
 		for (int i = 1; i < count; i++)
 			get_shape(shapenum, i);
 		if (is_imported)
-			return imported_shapes[data.pointer_offset];
+			return &imported_shapes[data.pointer_offset];
 		else
-			return shapes + shapenum;
+			return &shapes[shapenum];
 	}
 	// Get # frames for a shape.
 	int get_num_frames(int shapenum) {
 		get_shape(shapenum, 0); // Force it into memory.
 		imported_map data;
 		if (get_imported_shape_data(shapenum, data))
-			return imported_shapes[data.pointer_offset]->num_frames;
+			return imported_shapes[data.pointer_offset].get_num_frames();
 		else
-			return shapes[shapenum].num_frames;
+			return shapes[shapenum].get_num_frames();
 	}
 	// Create new shape (or del old).
 	virtual Shape *new_shape(int shapenum);

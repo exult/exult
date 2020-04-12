@@ -34,7 +34,7 @@ using std::istream;
 
 Usecode_function::Usecode_function(
     istream &file
-) : orig(0) {
+) : orig(nullptr) {
 	id = Read2(file);
 
 	// support for our extended usecode format. (32 bit lengths and ids)

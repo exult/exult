@@ -100,7 +100,7 @@ bool Disk_button::activate(
 Combat_button::Combat_button(Gump *par, int px, int py)
 	: Gump_button(par, game->get_shape("gumps/combat"),
 	              px, py) {
-	set_pushed(gwin->in_combat() != 0);
+	set_pushed(gwin->in_combat());
 }
 
 /*
@@ -112,7 +112,7 @@ bool Combat_button::activate(
 ) {
 	if (button != 1) return false;
 	gwin->toggle_combat();
-	set_pushed(gwin->in_combat() != 0);
+	set_pushed(gwin->in_combat());
 	parent->paint();
 	return true;
 }
@@ -123,7 +123,7 @@ bool Combat_button::activate(
 
 void Combat_button::paint(
 ) {
-	set_pushed(gwin->in_combat() != 0);
+	set_pushed(gwin->in_combat());
 	Gump_button::paint();
 }
 
@@ -210,6 +210,6 @@ bool Cstats_button::activate(
 ) {
 	if (button != 1) return false;
 	int cnt = partyman->get_count();
-	gumpman->add_gump(0, game->get_shape("gumps/cstats/1") + cnt);
+	gumpman->add_gump(nullptr, game->get_shape("gumps/cstats/1") + cnt);
 	return true;
 }

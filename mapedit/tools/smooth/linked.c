@@ -21,7 +21,7 @@ node *create_node() {
 	node *new_node;
 	if ((new_node = (node *)malloc(sizeof(node))) == NULL) {
 		fprintf(stderr, "ERROR: Couldn't allocate memory");
-		return(NULL);
+		return NULL;
 	}
 	new_node->plugin_apply = NULL;
 	new_node->next = NULL;
@@ -31,7 +31,7 @@ node *create_node() {
 		printf("node created\n");
 		fflush(stdout);
 	}
-	return(new_node);
+	return new_node;
 }
 
 int delete_node(node *n) {
@@ -51,10 +51,10 @@ int delete_node(node *n) {
 			val = plug_unload(n->handle);
 		}
 		free(n);
-		return(val);
+		return val;
 	} else {
 		// n == NULL!!!!!! You silly boy!!!
-		return(-1);
+		return -1;
 	}
 }
 
@@ -64,7 +64,7 @@ int delete_list(node *list_head) {
 		list_head = cursor->next;
 		if (delete_node(cursor) < 0) {
 			fprintf(stderr, "ERROR: problem with delete node!\n");
-			return(-1);
+			return -1;
 		} // some problem
 		if (g_statics.debug > 2) {
 			printf("node deleted\n");
@@ -72,7 +72,7 @@ int delete_list(node *list_head) {
 		}
 		cursor = list_head;
 	}
-	return(0);
+	return 0;
 }
 
 int add_tail_list(node *list_head, node *new_node) {
@@ -86,12 +86,12 @@ int add_tail_list(node *list_head, node *new_node) {
 		// cursor->next == NULL
 		cursor->next = new_node;
 	}
-	return(1);
+	return 1;
 }
 
 node *add_head_list(node *list_head, node *new_node) {
 	// return the address of the start of the new list.
 	// this should be called this way: list_head = add_head_list(list_head,my_new_node);
 	new_node->next = list_head;
-	return(new_node);
+	return new_node;
 }

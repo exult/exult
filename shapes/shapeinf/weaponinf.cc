@@ -119,11 +119,6 @@ bool Weapon_info::read(
 	// Shape to strike with, or projectile
 	//   shape if shoot/throw.
 	projectile = Read2(ptr);    // What a projectile fired will look like.
-#if 0
-	extern char const *get_item_name(unsigned num);
-	cout << dec << "Weapon " //  << get_item_name(shapenum)
-	     << '(' << shapenum << ')' << endl;
-#endif
 	damage = *ptr++;
 	unsigned char flags0 = *ptr++;
 	m_lucky = flags0 & 1;
@@ -140,15 +135,6 @@ bool Weapon_info::read(
 	m_need_target = (flags1 >> 1) & 1;
 	missile_speed = (flags1 >> 2) & 3;
 	rotation_speed = (flags1 >> 4) & 15;
-#if 0
-	// Testing if 'throwable'.  Looks like ammo==-3 => throwable UNLESS
-	//   uses == 0.
-	extern char const *get_item_name(unsigned num);
-	if ((ammo == -3) != (uses == 1 || uses == 2))
-		cout << "Shape #" << shapenum << "(" << get_item_name(shapenum)
-		     << ") has ammo = " << ammo << " and uses = "
-		     << (int) uses << endl;
-#endif
 	unsigned char flags2 = *ptr++;
 	actor_frames = (flags2 & 15);
 	int speed = (flags2 >> 5) & 7;

@@ -26,7 +26,7 @@ namespace Pentagram {
 	class WavAudioSample : public RawAudioSample
 	{
 	public:
-		WavAudioSample(uint8* buffer, uint32 size);
+		WavAudioSample(std::unique_ptr<uint8[]> buffer, uint32 size);
 
 		static bool isThis(IDataSource *ds);
 	};

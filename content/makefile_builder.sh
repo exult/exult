@@ -17,7 +17,7 @@
 # Exult SVN.
 
 # Find all cfg files.
-find . -mindepth 2 -iname "*.cfg" | while read cfgfile; do
+find . -mindepth 2 -iname "*.cfg" | while read -r cfgfile; do
 	# Strip initial ./ from cfg name.
 	cfgfile="${cfgfile#./}"
 	# Get the dir we will process now.
@@ -101,7 +101,7 @@ ${moddir}dir=\$(U7PATH)/$basedest/mods
 	destdir_mingw="\$(${moddir}dir)/$installdir"
 
 	# Get usecode dependencies.
-	sources=$(find $moddir -iname "*.uc" | while read f; do echo "	${f#$moddir/}	\\"; done | sort)
+	sources=$(find $moddir -iname "*.uc" | while read -r f; do echo "	${f#$moddir/}	\\"; done | sort)
 	if [[ -n "$sources" ]]; then
 		locoutput="USECODE_OBJECTS = \\
 ${sources%\\*}"
@@ -126,7 +126,7 @@ ${patchdir}usecode: \$(UCC) \$(USECODE_OBJECTS)
 	infiles=$(find $moddir -iname "*.in" | grep -v "Makefile.in" | sort)
 	for f in $infiles; do
 		# Get first line of script for the destination file name.
-		read flexname < $f
+		read -r flexname < $f
 		# Warning: I am taking a shortcut here and assuming that expack will
 		# place the destination flex file in the patch dir we found earlier.
 		# This is because I don't want to have to figure out which dir the
@@ -138,7 +138,7 @@ ${patchdir}usecode: \$(UCC) \$(USECODE_OBJECTS)
 		fnamep="${patchdir}$fpath"
 		skippedfirst="no"
 		# Parse, format and sort dependencies.
-		flist=$(cat $f | while read g; do if [[ "$skippedfirst" == "no" ]]; then skippedfirst="yes"; else echo "	${sourcedir}graphics/${g#:*:}	\\"; fi; done | sort)
+		flist=$(cat $f | while read -r g; do if [[ "$skippedfirst" == "no" ]]; then skippedfirst="yes"; else echo "	${sourcedir}graphics/${g#:*:}	\\"; fi; done | sort)
 		if [[ -n "$flist" ]]; then
 			fnameu=$(echo "${fpath//./_}_OBJECTS" | tr "[:lower:]" "[:upper:]")
 			locoutput="
@@ -203,13 +203,13 @@ $datafiles_mingw"
 				fi
 				echo "${moddir}${dirrule}_DATA = \\" >> $modmakefile_am
 				# Format and sort file list for automake makefile.
-				infiles_am=$(echo "$dirfiles" | while read f; do echo "	${f#$moddir/}	\\"; done | sort)
+				infiles_am=$(echo "$dirfiles" | while read -r f; do echo "	${f#$moddir/}	\\"; done | sort)
 				datafiles_am="$datafiles_am$infiles_am"
 				datafiles_am="${datafiles_am%\\*}"
 				echo "$datafiles_am
 " >> $modmakefile_am
 				# Format and sort file list for MinGW makefile.
-				infiles_mingw=$(echo "$dirfiles" | while read f; do dest="${f#$moddir/}"; echo "	cp $dest $destdir_mingw/$dest"; done | sort)
+				infiles_mingw=$(echo "$dirfiles" | while read -r f; do dest="${f#$moddir/}"; echo "	cp $dest $destdir_mingw/$dest"; done | sort)
 				datafiles_mingw="$datafiles_mingw$infiles_mingw"
 			fi
 			datafiles_am=""

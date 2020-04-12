@@ -23,6 +23,15 @@
 
 #include "u7drag.h"
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#if defined(USE_EXULTSTUDIO) && !defined(_WIN32)
+
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
 const unsigned long max_types = 15;
 
 /*
@@ -76,5 +85,7 @@ public:
 	void client_msg(XClientMessageEvent &cev);
 	void select_msg(XSelectionEvent &sev);
 };
+
+#endif
 
 #endif

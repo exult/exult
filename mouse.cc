@@ -22,7 +22,6 @@
 #  include <config.h>
 #endif
 
-#include "sdl-compat.h"
 #include "SDL_mouse.h"
 #include "SDL_timer.h"
 #include "mouse.h"
@@ -42,6 +41,15 @@
 using std::max;
 #endif
 
+static inline bool should_hide_frame(int frame) {
+#ifdef __IPHONEOS__
+	return frame == 0 || (frame >=8 && frame <= 47);
+#else
+	ignore_unused_variable_warning(frame);
+	return false;
+#endif
+}
+
 short Mouse::short_arrows[8] = {8, 9, 10, 11, 12, 13, 14, 15};
 short Mouse::med_arrows[8] = {16, 17, 18, 19, 20, 21, 22, 23};
 short Mouse::long_arrows[8] = {24, 25, 26, 27, 28, 29, 30, 31};
@@ -49,7 +57,7 @@ short Mouse::long_arrows[8] = {24, 25, 26, 27, 28, 29, 30, 31};
 short Mouse::short_combat_arrows[8] = {32, 33, 34, 35, 36, 37, 38, 39};
 short Mouse::med_combat_arrows[8] = {40, 41, 42, 43, 44, 45, 46, 47};
 
-Mouse *Mouse::mouse = 0;
+Mouse *Mouse::mouse = nullptr;
 bool Mouse::mouse_update = false;
 
 /*
@@ -58,7 +66,7 @@ bool Mouse::mouse_update = false;
 
 Mouse::Mouse(
     Game_window *gw         // Where to draw.
-) : gwin(gw), iwin(gwin->get_win()), backup(0), box(0, 0, 0, 0), dirty(0, 0, 0, 0), cur_framenum(0), cur(0), avatar_speed(100 * gwin->get_std_delay() / slow_speed_factor) {
+) : gwin(gw), iwin(gwin->get_win()), box(0, 0, 0, 0), dirty(0, 0, 0, 0), cur_framenum(0), cur(nullptr), avatar_speed(100 * gwin->get_std_delay() / slow_speed_factor) {
 	SDL_GetMouseState(&mousex, &mousey);
 	iwin->screen_to_game(mousex, mousey, gwin->get_fastmouse(), mousex, mousey);
 	if (is_system_path_defined("<PATCH>") && U7exists(PATCH_POINTERS))
@@ -72,7 +80,7 @@ Mouse::Mouse(
 Mouse::Mouse(
     Game_window *gw,        // Where to draw.
     IDataSource &shapes
-) : gwin(gw), iwin(gwin->get_win()), backup(0), box(0, 0, 0, 0), dirty(0, 0, 0, 0), cur_framenum(0), cur(0), avatar_speed(100 * gwin->get_std_delay() / slow_speed_factor) {
+) : gwin(gw), iwin(gwin->get_win()), box(0, 0, 0, 0), dirty(0, 0, 0, 0), cur_framenum(0), cur(nullptr), avatar_speed(100 * gwin->get_std_delay() / slow_speed_factor) {
 	SDL_GetMouseState(&mousex, &mousey);
 	iwin->screen_to_game(mousex, mousey, gwin->get_fastmouse(), mousex, mousey);
 	pointers.load(&shapes);
@@ -82,11 +90,17 @@ Mouse::Mouse(
 
 void Mouse::Init() {
 	int cnt = pointers.get_num_frames();
-	int maxleft = 0, maxright = 0, maxabove = 0, maxbelow = 0;
+	int maxleft = 0;
+	int maxright = 0;
+	int maxabove = 0;
+	int maxbelow = 0;
 	for (int i = 0; i < cnt; i++) {
 		Shape_frame *frame = pointers.get_frame(i);
-		int xleft = frame->get_xleft(), xright = frame->get_xright();
-		int yabove = frame->get_yabove(), ybelow = frame->get_ybelow();
+		assert(frame != nullptr);
+		int xleft = frame->get_xleft();
+		int xright = frame->get_xright();
+		int yabove = frame->get_yabove();
+		int ybelow = frame->get_ybelow();
 		if (xleft > maxleft)
 			maxleft = xleft;
 		if (xright > maxright)
@@ -96,7 +110,8 @@ void Mouse::Init() {
 		if (ybelow > maxbelow)
 			maxbelow = ybelow;
 	}
-	int maxw = maxleft + maxright, maxh = maxabove + maxbelow;
+	int maxw = maxleft + maxright;
+	int maxh = maxabove + maxbelow;
 	// Create backup buffer.
 	backup = iwin->create_buffer(maxw, maxh);
 	box.w = maxw;
@@ -106,27 +121,19 @@ void Mouse::Init() {
 }
 
 /*
- *  Delete.
- */
-
-Mouse::~Mouse(
-) {
-	delete backup;
-}
-
-/*
  *  Show the mouse.
  */
 
 void Mouse::show(
 ) {
+	if (should_hide_frame(cur_framenum)) {
+		hide();
+		return;
+	}
 	if (!onscreen) {
 		onscreen = true;
 		// Save background.
-#ifdef HAVE_OPENGL
-		if (!GL_manager::get_instance())
-#endif
-			iwin->get(backup, box.x, box.y);
+		iwin->get(backup.get(), box.x, box.y);
 		// Paint new location.
 //		cur->paint_rle(iwin->get_ib8(), mousex, mousey);
 		cur->paint_rle(mousex, mousey);
@@ -148,13 +155,10 @@ void Mouse::move(int x, int y) {
 		warp = true;
 	}
 	if (warp && gwin->get_fastmouse()) {
-		int wx, wy;
+		int wx;
+		int wy;
 		gwin->get_win()->game_to_screen(x, y, gwin->get_fastmouse(), wx, wy);
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 		SDL_WarpMouseInWindow(gwin->get_win()->get_screen_window(), wx, wy);
-#else
-		SDL_WarpMouse(wx, wy);
-#endif
 	}
 #ifdef DEBUG
 	if (onscreen)
@@ -183,6 +187,8 @@ void Mouse::set_shape0(
 	box.x = mousex - cur->get_xleft();
 	box.y = mousey - cur->get_yabove();
 	dirty = dirty.add(box);     // Update dirty area.
+	if (should_hide_frame(cur_framenum))
+		hide();
 }
 
 /*
@@ -209,7 +215,7 @@ void Mouse::flash_shape(
 	hide();
 	set_shape(flash);
 	show();
-	gwin->show(1);
+	gwin->show(true);
 	SDL_Delay(600);
 	hide();
 	gwin->paint();
@@ -254,14 +260,6 @@ void Mouse::set_speed_cursor() {
 		case Cheat::paint_chunks:
 			cursor = med_combat_arrows[0];
 			break;   // Med. N red arrow.
-#if 0
-		case Cheat::select:
-			cursor = short_arrows[7];
-			break;        // Short NW green.
-		case Cheat::hide:
-			cursor = redx;
-			break;
-#endif
 		case Cheat::combo_pick:
 			cursor = greenselect;
 			break;
@@ -272,7 +270,8 @@ void Mouse::set_speed_cursor() {
 	} else if (Combat::is_paused())
 		cursor = short_combat_arrows[0];    // Short N red arrow.
 	if (cursor == dontchange) {
-		int ax, ay;         // Get Avatar/barge screen location.
+		int ax;
+		int ay;         // Get Avatar/barge screen location.
 		Barge_object *barge = gwin->get_moving_barge();
 		if (barge) {
 			// Use center of barge.
@@ -282,15 +281,16 @@ void Mouse::set_speed_cursor() {
 		} else
 			gwin->get_shape_location(gwin->get_main_actor(), ax, ay);
 
-		int dy = ay - mousey, dx = mousex - ax;
+		int dy = ay - mousey;
+		int dx = mousex - ax;
 		Direction dir = Get_direction_NoWrap(dy, dx);
 		Rectangle gamewin_dims = gwin->get_game_rect();
 		float speed_section = max(max(-static_cast<float>(dx) / ax, static_cast<float>(dx) / (gamewin_dims.w - ax)), max(static_cast<float>(dy) / ay, -static_cast<float>(dy) / (gamewin_dims.h - ay)));
 		bool nearby_hostile = gwin->is_hostile_nearby();
 		bool has_active_nohalt_scr = false;
-		Usecode_script *scr = 0;
+		Usecode_script *scr = nullptr;
 		Actor *act = gwin->get_main_actor();
-		while ((scr = Usecode_script::find_active(act, scr)) != 0)
+		while ((scr = Usecode_script::find_active(act, scr)) != nullptr)
 			// We should only be here is scripts are nohalt, but just
 			// in case...
 			if (scr->is_no_halt()) {

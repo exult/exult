@@ -34,8 +34,8 @@ protected:
 	static class Palette *pal;
 	static class Gump_manager *gumpman;
 	static class Party_manager *partyman;
-	static class FileSystem *pent_filesys;
 	friend class Game_window;
+
 public:
 	static void init(Game_window *g);
 };

@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Sign_gump::Sign_gump(
     int shapenum,
     int nlines          // # of text lines.
-) : Gump(0, shapenum), num_lines(nlines), serpentine(false) {
+) : Gump(nullptr, shapenum), num_lines(nlines), serpentine(false) {
 	// THIS IS A HACK, but don't ask me why this is like this,
 	if (Game::get_game_type() == SERPENT_ISLE && shapenum == 49) {
 		// check for avatar read here
@@ -84,32 +84,25 @@ void Sign_gump::add_text(
 	Main_actor *avatar = gwin->get_main_actor();
 
 	if (!serpentine && avatar->get_flag(Obj_flags::read)) {
-		for (unsigned i = 0; i < txt.size(); i++) {
-			if (txt[i] == 40) {
-				lines[line] += 'T';
-				lines[line] += 'H';
-			} else if (txt[i] == 41) {
-				lines[line] += 'E';
-				lines[line] += 'E';
-			} else if (txt[i] == 42) {
-				lines[line] += 'N';
-				lines[line] += 'G';
-			} else if (txt[i] == 43) {
-				lines[line] += 'E';
-				lines[line] += 'A';
-			} else if (txt[i] == 44) {
-				lines[line] += 'S';
-				lines[line] += 'T';
-			} else if (txt[i] == '|') {
+		for (const auto& ch : txt) {
+			if (ch == '(') {
+				lines[line] += "TH";
+			} else if (ch == ')') {
+				lines[line] += "EE";
+			} else if (ch == '*') {
+				lines[line] += "NG";
+			} else if (ch == '+') {
+				lines[line] += "EA";
+			} else if (ch == ',') {
+				lines[line] += "ST";
+			} else if (ch == '|') {
 				lines[line] += ' ';
-			} else if (txt[i] >= 'a')
-				lines[line] += txt[i] - 32;
-			else
-				lines[line] += txt[i];
+			} else {
+				lines[line] += static_cast<char>(std::toupper(static_cast<unsigned char>(ch)));
+			}
 		}
 	} else {
 		lines[line] = txt;
-
 	}
 }
 

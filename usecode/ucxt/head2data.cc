@@ -22,11 +22,11 @@ using std::setw;
 using std::ios;
 using std::ofstream;
 
-#ifndef __STRING
+#ifndef TO_STRING
 #if defined __STDC__ && __STDC__
-#define __STRING(x) #x
+#define TO_STRING(x) #x
 #else
-#define __STRING(x) "x"
+#define TO_STRING(x) "x"
 #endif
 #endif
 
@@ -54,7 +54,7 @@ void bg_out(const string &fname) {
 	o << setfill('0') << setbase(16);
 	o.setf(ios::uppercase);
 
-#define USECODE_INTRINSIC_PTR(NAME) std::string(__STRING(NAME))
+#define USECODE_INTRINSIC_PTR(NAME) std::string(TO_STRING(NAME))
 	std::string bgut[] = {
 #include "bgintrinsics.h"
 	};
@@ -76,7 +76,7 @@ void si_out(const string &fname) {
 	o << setfill('0') << setbase(16);
 	o.setf(ios::uppercase);
 
-#define USECODE_INTRINSIC_PTR(NAME) std::string(__STRING(NAME))
+#define USECODE_INTRINSIC_PTR(NAME) std::string(TO_STRING(NAME))
 	std::string siut[] = {
 #include "siintrinsics.h"
 	};
@@ -99,7 +99,7 @@ void sibeta_out(const string &fname) {
 	o << setfill('0') << setbase(16);
 	o.setf(ios::uppercase);
 
-#define USECODE_INTRINSIC_PTR(NAME) std::string(__STRING(NAME))
+#define USECODE_INTRINSIC_PTR(NAME) std::string(TO_STRING(NAME))
 	std::string sibut[] = {
 #include "sibetaintrinsics.h"
 	};

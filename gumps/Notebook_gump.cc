@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Notebook_gump.h"
 #include "Gump_button.h"
+#include "Gump_manager.h"
 #include "exult_flx.h"
 #include "game.h"
 #include "gamewin.h"
@@ -33,6 +34,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "fnames.h"
 #include "cheat.h"
 #include "U7file.h"
+#include "Gump_manager.h"
+#include "exult.h"
+#include "touchui.h"
 
 using std::ofstream;
 using std::ifstream;
@@ -40,11 +44,12 @@ using std::ostream;
 using std::endl;
 using std::string;
 using std::cout;
+using std::vector;
 
 vector<One_note *> Notebook_gump::notes;
 bool Notebook_gump::initialized = false;    // Set when read in.
 bool Notebook_gump::initialized_auto_text = false;
-Notebook_gump *Notebook_gump::instance = 0;
+Notebook_gump *Notebook_gump::instance = nullptr;
 vector<Notebook_top> Notebook_gump::page_info;
 vector<string> Notebook_gump::auto_text;
 
@@ -56,20 +61,23 @@ vector<string> Notebook_gump::auto_text;
 
 const int font = 4;         // Small black.
 const int vlead = 1;            // Extra inter-line spacing.
+#ifdef __IPHONEOS__
+const int pagey = 7;           // Top of text area of page.
+#else
 const int pagey = 10;           // Top of text area of page.
+#endif
 const int lpagex = 36, rpagex = 174;    // X-coord. of text area of page.
 
 class One_note {
-	int day, hour, minute;      // Game time when note was written.
-	int tx, ty;         // Tile coord. where written.
-	string text;         // Text, 0-delimited.
-	int gflag;          // >=0 if created automatically when
+	int day = 0, hour = 0, minute = 0;      // Game time when note was written.
+	int tx = 0, ty = 0;         // Tile coord. where written.
+	string text;                // Text, 0-delimited.
+	int gflag = -1;             // >=0 if created automatically when
 	//   the global flag was set.
-	bool is_new;            // Newly created at cur. time/place.
+	bool is_new = false;        // Newly created at cur. time/place.
 public:
 	friend class Notebook_gump;
-	One_note() : day(0), hour(0), minute(0), tx(0), ty(0), gflag(-1), is_new(false)
-	{  }
+	One_note() = default;
 	void set_time(int d, int h, int m) {
 		day = d;
 		hour = h;
@@ -92,7 +100,7 @@ public:
 		gflag = gf;
 		is_new = isnew;
 	}
-	One_note(int d, int h, int m, int x, int y, const string &txt = 0, int gf = -1, bool isnew = false) {
+	One_note(int d, int h, int m, int x, int y, const string &txt = "", int gf = -1, bool isnew = false) {
 		set(d, h, m, x, y, txt, gf, isnew);
 	}
 	// Insert text.
@@ -156,12 +164,12 @@ public:
 		  leftright(lr)
 	{  }
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
-	virtual bool push(int button) {
+	bool activate(int button = 1) override;
+	bool push(int button) override {
 		ignore_unused_variable_warning(button);
 		return false;
 	}
-	virtual void unpush(int button) {
+	void unpush(int button) override {
 		ignore_unused_variable_warning(button);
 	}
 };
@@ -186,15 +194,6 @@ void Notebook_gump::initialize(
 ) {
 	initialized = true;
 	read();
-#if 0
-	// ++++TESTING:
-	notes.push_back(new One_note(1, 1, 10, 10, 10,
-	                             "Note  #1\nHello"));
-	notes.push_back(new One_note(2, 2, 20, 20, 20,
-	                                 "Note  #2\nworld.\n\nHow are you?"));
-	notes.push_back(new One_note(3, 3, 30, 30, 30,
-	                                 "Note #3"));
-#endif
 }
 
 /*
@@ -223,10 +222,6 @@ void Notebook_gump::add_new(
 ) {
 	Game_clock *clk = gwin->get_clock();
 	Tile_coord t = gwin->get_main_actor()->get_tile();
-#if 0
-	int lat = (t.tx - 0x3a5) / 10,  // +++++(May have these switched.)
-	    lng = (t.ty - 0x46e) / 10;
-#endif
 	One_note *note = new One_note(clk->get_day(), clk->get_hour(),
 	                              clk->get_minute(), t.tx, t.ty, text, gflag);
 	note->is_new = true;
@@ -238,8 +233,12 @@ void Notebook_gump::add_new(
  */
 
 Notebook_gump::Notebook_gump(
-) : Gump(0, EXULT_FLX_NOTEBOOK_SHP, SF_EXULT_FLX), curnote(0),
-	curpage(0), updnx(0) {
+) : Gump(nullptr,
+#ifdef __IPHONEOS__
+	//on iOS the Notebook gump needs to be aligned with the top
+	5, -2,
+#endif
+	EXULT_FLX_NOTEBOOK_SHP, SF_EXULT_FLX) {
 	handles_kbd = true;
 	cursor.offset = 0;
 	cursor.x = cursor.y = -1;
@@ -249,7 +248,9 @@ Notebook_gump::Notebook_gump(
 	if (page_info.empty())
 		page_info.push_back(Notebook_top(0, 0));
 	// Where to paint page marks:
-	const int lpagex = 35, rpagex = 298, lrpagey = 12;
+	const int lpagex = 35;
+	const int rpagex = 298;
+	const int lrpagey = 12;
 	leftpage = new Notebook_page_button(this, lpagex, lrpagey, 0);
 	rightpage = new Notebook_page_button(this, rpagex, lrpagey, 1);
 	add_new("");          // Add new note to end.
@@ -259,8 +260,14 @@ Notebook_gump *Notebook_gump::create(
 ) {
 	if (!initialized)
 		initialize();
-	if (!instance)
+	if (!instance) {
 		instance = new Notebook_gump;
+		if (touchui != nullptr) {
+			touchui->hideGameControls();
+			if (!SDL_IsTextInputActive())
+				SDL_StartTextInput();
+		}
+	}
 	return instance;
 }
 
@@ -281,7 +288,14 @@ Notebook_gump::~Notebook_gump(
 	delete leftpage;
 	delete rightpage;
 	if (this == instance)
-		instance = 0;
+		instance = nullptr;
+	if (touchui != nullptr) {
+		Gump_manager *gumpman = gwin->get_gump_man();
+		if (!gumpman->gump_mode())
+			touchui->showGameControls();
+		if (SDL_IsTextInputActive())
+			SDL_StopTextInput();
+	}
 }
 
 /*
@@ -308,12 +322,18 @@ bool Notebook_gump::paint_page(
 		}
 		snprintf(buf, sizeof(buf), "Day %d, %02d:%02d%s",
 		         note->day, h ? h : 12, note->minute, ampm);
-		sman->paint_text(2, buf, x + box.x, y + pagey);
+#ifdef __IPHONEOS__
+		const int fontnum = 4;
+		const int yoffset = 0;
+#else
+		const int fontnum = 2;
+		const int yoffset = 4;
+#endif
+		sman->paint_text(fontnum, buf, x + box.x, y + pagey);
 		//when cheating show location of entry (in dec - could use sextant postions)
 		if (cheat()) {
-			snprintf(buf, sizeof(buf), "%d, %d",
-			         note->tx, note->ty);
-			sman->paint_text(4, buf, x + box.x + 80, y + pagey - 4);
+			snprintf(buf, sizeof(buf), "%d, %d", note->tx, note->ty);
+			sman->paint_text(4, buf, x + box.x + 80, y + pagey - yoffset);
 		}
 		// Use bright green for automatic text.
 		gwin->get_win()->fill8(sman->get_special_pixel(
@@ -324,7 +344,7 @@ bool Notebook_gump::paint_page(
 	cursor.offset -= offset;
 	int endoff = sman->paint_text_box(font, str, x + box.x,
 	                                  y + box.y, box.w, box.h, vlead,
-	                                  false, false, -1, find_cursor ? &cursor : 0);
+	                                  false, false, -1, find_cursor ? &cursor : nullptr);
 	cursor.offset += offset;
 	if (endoff > 0) {       // All painted?
 		// Value returned is height.
@@ -339,7 +359,7 @@ bool Notebook_gump::paint_page(
 	}
 	offset = str - note->text.c_str();  // Return offset past end.
 	// Watch for exactly filling page.
-	return (endoff > 0 && endoff < box.h);
+	return endoff > 0 && endoff < box.h;
 }
 
 /*
@@ -387,7 +407,7 @@ Gump_button *Notebook_gump::on_button(
 	int topleft = curpage & ~1;
 	int notenum = page_info[topleft].notenum;
 	if (notenum < 0)
-		return 0;
+		return nullptr;
 	int offset = page_info[topleft].offset;
 	Rectangle box = Get_text_area(false, offset == 0);  // Left page.
 	One_note *note = notes[notenum];
@@ -399,11 +419,13 @@ Gump_button *Notebook_gump::on_button(
 		cursor.offset = offset + coff;
 		paint();
 		updnx = cursor.x - x - lpagex;
+		if (!SDL_IsTextInputActive())
+			SDL_StartTextInput();
 	} else {
 		offset += -coff;        // New offset.
 		if (offset >= static_cast<int>(note->text.length())) {
 			if (notenum == static_cast<int>(notes.size()) - 1)
-				return 0;   // No more.
+				return nullptr;   // No more.
 			note = notes[++notenum];
 			offset = 0;
 		}
@@ -419,9 +441,11 @@ Gump_button *Notebook_gump::on_button(
 			cursor.offset = offset + coff;
 			paint();
 			updnx = cursor.x - x - rpagex;
+			if (!SDL_IsTextInputActive())
+				SDL_StartTextInput();
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 /*
@@ -536,7 +560,8 @@ void Notebook_gump::down_arrow(
 		cursor.y = y + box.y - ht;
 	}
 	box.shift(x, y);        // Window coords.
-	int mx = box.x + updnx + 1, my = cursor.y + ht + ht / 2;
+	int mx = box.x + updnx + 1;
+	int my = cursor.y + ht + ht / 2;
 	int notenum = page_info[curpage].notenum;
 	One_note *note = notes[notenum];
 	int coff = sman->find_cursor(font, note->text.c_str() + offset, box.x,
@@ -569,7 +594,8 @@ void Notebook_gump::up_arrow(
 	}
 	Rectangle box = Get_text_area((curpage % 2) != 0, offset == 0);
 	box.shift(x, y);        // Window coords.
-	int mx = box.x + updnx + 1, my = cursor.y - ht / 2;
+	int mx = box.x + updnx + 1;
+	int my = cursor.y - ht / 2;
 	One_note *note = notes[notenum];
 	int coff = sman->find_cursor(font, note->text.c_str() + offset, box.x,
 	                             box.y, box.w, box.h, mx, my, vlead);
@@ -586,12 +612,9 @@ bool Notebook_gump::handle_kbd_event(
     void *vev
 ) {
 	SDL_Event &ev = *static_cast<SDL_Event *>(vev);
+	uint16 unicode = 0; // Unicode is way different in SDL2
+	Gump_manager::translate_numpad(ev.key.keysym.sym, unicode, ev.key.keysym.mod);
 	int chr = ev.key.keysym.sym;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	//int unicode = 0; // Unicode is way different in SDL2
-#else
-	int unicode = ev.key.keysym.unicode;
-#endif
 
 	if (ev.type == SDL_KEYUP)
 		return true;        // Ignoring key-up at present.
@@ -657,15 +680,8 @@ bool Notebook_gump::handle_kbd_event(
 		change_page(1);
 		break;
 	default:
-#if 1 && !SDL_VERSION_ATLEAST(2, 0, 0)   /* Assumes unicode is enabled. */
-		if ((unicode & 0xFF80) == 0)
-			chr = unicode & 0x7F;
-		else
-			chr = 0;
-#else
 		if (ev.key.keysym.mod & KMOD_SHIFT)
 			chr = toupper(chr);
-#endif
 		if (chr < ' ')
 			return false;       // Ignore other special chars.
 		if (chr >= 256 || !isascii(chr))
@@ -744,24 +760,23 @@ void Notebook_gump::read(
 	Configuration::KeyTypeList note_nds;
 	string basekey = "notebook";
 	conf.getsubkeys(note_nds, basekey);
-	One_note *note = 0;
+	One_note *note = nullptr;
 	for (Configuration::KeyTypeList::iterator it = note_nds.begin();
 	        it != note_nds.end(); ++it) {
 		Configuration::KeyType notend = *it;
-#if 0
-		cout << note_pair.first << ": " << endl;
-		cout << note_pair.second << endl;
-#endif
 		if (notend.first == "note") {
 			note = new One_note();
 			notes.push_back(note);
 		} else if (notend.first == "note/time") {
-			int d, h, m;
+			int d;
+			int h;
+			int m;
 			sscanf(notend.second.c_str(), "%d:%d:%d", &d, &h, &m);
 			if (note)
 				note->set_time(d, h, m);
 		} else if (notend.first == "note/place") {
-			int x, y;
+			int x;
+			int y;
 			sscanf(notend.second.c_str(), "%d:%d", &x, &y);
 			if (note)
 				note->set_loc(x, y);
@@ -811,15 +826,11 @@ void Notebook_gump::read_auto_text(
 			notesfile.close();
 		} else {
 			const str_int_pair &resource = game->get_resource("config/autonotes");
-			U7object txtobj(resource.str, resource.num);
-			size_t len;
-			char *txt = txtobj.retrieve(len);
-			if (txt && len > 0) {
-				IBufferDataSource buf(txt, len);
+			IExultDataSource buf(resource.str, resource.num);
+			if (buf.good()) {
 				cout << "Loading default autonotes" << endl;
 				Read_text_msg_file(&buf, auto_text);
 			}
-			delete[] txt;
 		}
 	}
 }

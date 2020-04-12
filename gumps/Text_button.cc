@@ -145,7 +145,7 @@ void Text_button::paint() {
 	    iwin->get_ib8(), text.c_str(), px + text_x + offset, py + text_y + offset);
 }
 
-int Text_button::on_widget(int mx, int my) const {
+bool Text_button::on_widget(int mx, int my) const {
 	int px = x;
 	int py = y;
 
@@ -154,7 +154,7 @@ int Text_button::on_widget(int mx, int my) const {
 		py += parent->get_y();
 	}
 
-	if (mx < px || mx >= px + width) return 0;
-	if (my < py || my >= py + height) return 0;
-	return 1;
+	if (mx < px || mx >= px + width) return false;
+	if (my < py || my >= py + height) return false;
+	return true;
 }

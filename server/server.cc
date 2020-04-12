@@ -47,15 +47,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cstdio>
 #include <cstdlib>
 
-#ifdef _AIX
-#include <strings.h>
-#endif
-
 #if HAVE_NETDB_H
 #include <netdb.h>
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <sys/un.h>
 #endif
 
@@ -77,7 +73,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "debugserver.h"
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "servewin32.h"
 #include "cheat.h"
 #endif
@@ -92,11 +88,6 @@ extern int xfd;             // X-windows fd.
 int listen_socket = -1;         // Listen here for map-editor.
 int client_socket = -1;         // Socket to the map-editor.
 int highest_fd = -1;            // Largest fd + 1.
-
-#ifdef __sun__
-// Solaris doesn't know PF_LOCAL
-#define PF_LOCAL PF_UNIX
-#endif
 
 /*
  *  Set the 'highest_fd' value to 1 + <largest fd>.
@@ -119,7 +110,7 @@ void Server_init(
 ) {
 	// Get location of socket file.
 	std::string servename = get_system_path(EXULT_SERVER);
-#ifndef WIN32
+#ifndef _WIN32
 	// Make sure it isn't there.
 	unlink(servename.c_str());
 #ifdef HAVE_GETADDRINFOX
@@ -141,7 +132,7 @@ void Server_init(
 	listen_socket = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 #else
 	// Deprecated
-	listen_socket = socket(PF_LOCAL, SOCK_STREAM, 0);
+	listen_socket = socket(PF_UNIX, SOCK_STREAM, 0);
 #endif
 	if (listen_socket < 0)
 		perror("Failed to open map-editor socket");
@@ -186,7 +177,7 @@ void Server_init(
 
 void Server_close(
 ) {
-#ifdef WIN32
+#ifdef _WIN32
 	Exult_server::close_pipe();
 	listen_socket = client_socket = -1;
 #else
@@ -264,7 +255,7 @@ static void Handle_client_message(
 		int tnum = Read2(ptr);
 		int cx = Read2s(ptr);
 		int cy = Read2s(ptr);
-		bool up = *ptr++ ? true : false;
+		bool up = *ptr++ != 0;
 		bool okay = gwin->get_map()->locate_terrain(tnum, cx, cy, up);
 		unsigned char *wptr = &data[2];
 		// Set back reply.
@@ -278,7 +269,7 @@ static void Handle_client_message(
 	}
 	case Exult_server::swap_terrain: {
 		int tnum = Read2(ptr);
-		bool okay = gwin->get_map()->swap_terrains(tnum);
+		bool okay = Game_map::swap_terrains(tnum);
 		unsigned char *wptr = &data[2];
 		*wptr++ = okay ? 1 : 0;
 		Exult_server::Send_data(client_socket,
@@ -287,8 +278,8 @@ static void Handle_client_message(
 	}
 	case Exult_server::insert_terrain: {
 		int tnum = Read2s(ptr);
-		bool dup = *ptr++ ? true : false;
-		bool okay = gwin->get_map()->insert_terrain(tnum, dup);
+		bool dup = *ptr++ != 0;
+		bool okay = Game_map::insert_terrain(tnum, dup);
 		unsigned char *wptr = &data[3];
 		*wptr++ = okay ? 1 : 0;
 		Exult_server::Send_data(client_socket,
@@ -297,7 +288,7 @@ static void Handle_client_message(
 	}
 	case Exult_server::delete_terrain: {
 		int tnum = Read2s(ptr);
-		bool okay = gwin->get_map()->delete_terrain(tnum);
+		bool okay = Game_map::delete_terrain(tnum);
 		unsigned char *wptr = &data[2];
 		*wptr++ = okay ? 1 : 0;
 		Exult_server::Send_data(client_socket,
@@ -309,7 +300,7 @@ static void Handle_client_message(
 		int tnum = Read2s(ptr);
 		unsigned char *wptr = &data[2];
 		Write2(wptr, gwin->get_map()->get_num_chunk_terrains());
-		Chunk_terrain *ter = gwin->get_map()->get_terrain(tnum);
+		Chunk_terrain *ter = Game_map::get_terrain(tnum);
 		// Serialize it.
 		wptr += ter->write_flats(wptr, Game_map::is_v2_chunks());
 		Exult_server::Send_data(client_socket,
@@ -326,9 +317,9 @@ static void Handle_client_message(
 		                              "Terrain-Editing Enabled"
 		                             };
 		if (onoff == 0)     // End/commit.
-			gwin->get_map()->commit_terrain_edits();
+			Game_map::commit_terrain_edits();
 		else if (onoff == -1)
-			gwin->get_map()->abort_terrain_edits();
+			Game_map::abort_terrain_edits();
 		if (onoff >= -1 && onoff <= 1)
 			gwin->get_effects()->center_text(msgs[onoff + 1]);
 		gwin->set_all_dirty();
@@ -389,7 +380,7 @@ static void Handle_client_message(
 		int shnum = Read2(ptr);
 		int frnum = Read2s(ptr);
 		int qual = Read2s(ptr);
-		bool up = *ptr++ ? true : false;
+		bool up = *ptr++ != 0;
 		bool okay = gwin->locate_shape(shnum, up, frnum, qual);
 		unsigned char *wptr = &data[6];     // Send back reply.
 		wptr++;          // Skip 'up' flag.
@@ -421,7 +412,7 @@ static void Handle_client_message(
 			*wptr++ = npc->is_unused();
 			std::string nm = npc->get_npc_name();
 			strcpy(reinterpret_cast<char *>(wptr), nm.c_str());
-			// Point past ending NULL.
+			// Point past ending nullptr.
 			wptr += strlen(reinterpret_cast<char *>(wptr)) + 1;
 		} else
 			Write2(wptr, static_cast<unsigned short>(-1));
@@ -441,7 +432,7 @@ static void Handle_client_message(
 	}
 	case Exult_server::edit_selected: {
 		unsigned char basic = *ptr;
-		const Game_object_vector &sel = cheat.get_selected();
+		const Game_object_shared_vector &sel = cheat.get_selected();
 		if (!sel.empty()) {
 			if (basic)      // Basic obj. props?
 				sel.back()->Game_object::edit();
@@ -520,7 +511,7 @@ static void Handle_client_message(
 void Server_delay(
     Message_handler handle_message
 ) {
-#ifndef WIN32
+#ifndef _WIN32
 	fd_set rfds;
 	struct timeval timer;
 	timer.tv_sec = 0;
@@ -532,14 +523,14 @@ void Server_delay(
 	if (client_socket >= 0)
 		FD_SET(client_socket, &rfds);
 	// Wait for timeout or event.
-	if (select(highest_fd, &rfds, 0, 0, &timer) > 0) {
+	if (select(highest_fd, &rfds, nullptr, nullptr, &timer) > 0) {
 		// Something's come in.
 		if (listen_socket >= 0 && FD_ISSET(listen_socket, &rfds)) {
 			// New client connection.
 			// For now, just one at a time.
 			if (client_socket >= 0)
 				close(client_socket);
-			client_socket = accept(listen_socket, 0, 0);
+			client_socket = accept(listen_socket, nullptr, nullptr);
 			cout << "Accept returned client_socket = " <<
 			     client_socket << endl;
 			// Non-blocking.

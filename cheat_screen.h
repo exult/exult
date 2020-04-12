@@ -19,6 +19,8 @@
 #ifndef CHEAT_SCREEN_H
 #define CHEAT_SCREEN_H
 
+#include "palette.h"
+
 class Game_window;
 class Image_buffer8;
 class Font;
@@ -26,19 +28,18 @@ class Game_clock;
 class Actor;
 
 class CheatScreen {
-	Actor           *grabbed;
+	Actor           *grabbed = nullptr;
 	static const char   *schedules[33];
 	static const char   *flag_names[64];
 	static const char   *alignments[4];
+
 public:
-	CheatScreen();
-	~CheatScreen();
 	void    show_screen();
 	void    SetGrabbedActor(Actor *g) {
 		grabbed = g;
 	}
 	void    ClearThisGrabbedActor(Actor *g) const {
-		if (g == grabbed) g = 0;
+		if (g == grabbed) g = nullptr;
 	}
 private:
 	enum Cheat_Prompt {
@@ -85,12 +86,12 @@ private:
 	    CP_HexYCoord = 38,
 	    CP_EnterValueNoCancel = 39
 	};
-	Game_window *gwin;
-	Image_buffer8 *ibuf;
-	Font *font;
-	Game_clock *clock;
-	int maxx, maxy;
-	int centerx, centery;
+	Game_window *gwin = nullptr;
+	Image_buffer8 *ibuf = nullptr;
+	Font *font = nullptr;
+	Game_clock *clock = nullptr;
+	int maxx = 0, maxy = 0;
+	int centerx = 0, centery = 0;
 	Palette pal;
 
 	void SharedPrompt(char *input, const Cheat_Prompt &mode);

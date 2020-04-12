@@ -29,21 +29,23 @@ class KeyBinder;
 class Tile_coord;
 class Paintable;
 class GameManager;
+class ShortcutBar_gump;
+class TouchUI;
 
 /*
  *  Get a click, or, optionally, a keyboard char.
  *
- *  Output: 0 if user hit ESC.
+ *  Output: false if user hit ESC.
  *      Chr gets keyboard char., or 0 if it's was a mouse click.
  */
 extern bool g_waiting_for_click;
 
-extern int Get_click(
+extern bool Get_click(
     int &x, int &y,         // Location returned (if not ESC).
     Mouse::Mouse_shapes shape,  // Mouse shape to use.
-    char *chr = 0,          // Char. returned if not null.
+    char *chr = nullptr,          // Char. returned if not null.
     bool drag_ok = false,       // Can drag while here.
-    Paintable *paint = 0,       // Paint over everything else.
+    Paintable *paint = nullptr,       // Paint over everything else.
     bool rotate_colors = false      // If the palette colors should rotate.
 );
 
@@ -81,11 +83,11 @@ enum setup_video_type {
     SET_CONFIG = 3          // sets the config settings (doesn't write)
 };
 
-typedef enum {
+enum quitting_time_enum {
     QUIT_TIME_NO = 0,
     QUIT_TIME_YES = 1,
     QUIT_TIME_RESTART = 2
-} quitting_time_enum;
+} ;
 
 extern KeyBinder *keybinder;
 extern Configuration *config;
@@ -93,9 +95,7 @@ extern GameManager *gamemanager;
 
 extern quitting_time_enum quitting_time;
 
-extern class ShortcutBar_gump *g_shortcutBar;
-#ifdef __IPHONEOS__
-extern class KeyboardButton_gump *gkeybb;
-#endif
+extern ShortcutBar_gump *g_shortcutBar;
+extern TouchUI *touchui;
 
 #endif

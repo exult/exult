@@ -16,16 +16,18 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _MISCOPTIONS_GUMP_H
-#define _MISCOPTIONS_GUMP_H
+#ifndef MISCOPTIONS_GUMP_H
+#define MISCOPTIONS_GUMP_H
 
 #include "Modal_gump.h"
+#include <array>
+#include <memory>
 #include <string>
 
 class Gump_button;
 
 class MiscOptions_gump : public Modal_gump {
-	UNREPLICATABLE_CLASS_I(MiscOptions_gump, Modal_gump(0, 0, 0, 0))
+	UNREPLICATABLE_CLASS(MiscOptions_gump)
 
 private:
 	int difficulty;         // Setting for the buttons.
@@ -41,13 +43,15 @@ private:
 	int sc_enabled;
 	int sc_outline;
 	bool sb_hide_missing;
-	std::string *sc_outline_txt;
+	std::vector<std::string> sc_outline_txt;
 
 	enum button_ids {
 	    id_first = 0,
 	    id_ok = id_first,
 	    id_cancel,
+#ifndef __IPHONEOS__
 	    id_scroll_mouse,
+#endif
 	    id_menu_intro,
 	    id_usecode_intro,
 	    id_alternate_drop,
@@ -61,25 +65,70 @@ private:
 	    id_charmDiff,
 	    id_count
 	};
-	Gump_button *buttons[id_count];
+	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
 
 public:
 	MiscOptions_gump();
-	virtual ~MiscOptions_gump();
 
 	// Paint it and its contents.
-	virtual void paint();
-	virtual void close();
+	void paint() override;
+	void close() override;
 
 	// Handle events:
-	virtual bool mouse_down(int mx, int my, int button);
-	virtual bool mouse_up(int mx, int my, int button);
-
-	void toggle(Gump_button *btn, int state);
+	bool mouse_down(int mx, int my, int button) override;
+	bool mouse_up(int mx, int my, int button) override;
 
 	void load_settings();
 	void save_settings();
 	void cancel();
+
+	void toggle_scroll_mouse(int state) {
+		scroll_mouse = state;
+	}
+
+	void toggle_menu_intro(int state) {
+		menu_intro = state;
+	}
+
+	void toggle_usecode_intro(int state) {
+		usecode_intro = state;
+	}
+
+	void toggle_sc_enabled(int state) {
+		sc_enabled = state;
+	}
+
+	void toggle_sc_outline(int state) {
+		sc_outline = state;
+	}
+
+	void toggle_sb_hide_missing(int state) {
+		sb_hide_missing = state;
+	}
+
+	void toggle_difficulty(int state) {
+		difficulty = state;
+	}
+
+	void toggle_show_hits(int state) {
+		show_hits = state;
+	}
+
+	void toggle_mode(int state) {
+		mode = state;
+	}
+
+	void toggle_charmDiff(int state) {
+		charmDiff = state;
+	}
+
+	void toggle_alternate_drop(int state) {
+		alternate_drop = state;
+	}
+
+	void toggle_allow_autonotes(int state) {
+		allow_autonotes = state;
+	}
 };
 
 #endif

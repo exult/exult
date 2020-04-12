@@ -22,9 +22,10 @@
 #include <string>
 #include <vector>
 
-class Game_window;
-class Shape_file;
 class Font;
+class Game_window;
+class Shape;
+class Shape_file;
 class Palette;
 
 class TextScroller {

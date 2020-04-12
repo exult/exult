@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _FACE_BUTTON_H_
-#define _FACE_BUTTON_H_
+#ifndef FACE_BUTTON_H
+#define FACE_BUTTON_H
 
 #include "Gump_button.h"
 
@@ -33,21 +33,20 @@ protected:
 	bool translucent;
 public:
 	Face_button(Gump *par, int px, int py, Actor *a);
-	virtual ~Face_button() {  }
-	virtual Actor *get_actor() {
+	Actor *get_actor() {
 		return actor;
 	}
-	virtual void double_clicked(int x, int y);
-	virtual bool activate(int button) {
+	void double_clicked(int x, int y) override;
+	bool activate(int button) override {
 		return button == 1;
 	}
 
-	virtual void paint();
-	virtual bool push(int button) {
+	void paint() override;
+	bool push(int button) override {
 		return button == 1;
 	}
-	virtual void unpush(int) {}
-	virtual void update_widget();
+	void unpush(int) override {}
+	void update_widget() override;
 };
 
 #endif

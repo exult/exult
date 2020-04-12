@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _COMBATSTATS_GUMP_H_
-#define _COMBATSTATS_GUMP_H_
+#ifndef COMBATSTATS_GUMP_H
+#define COMBATSTATS_GUMP_H
 
 #include "Gump.h"
 #include "misc_buttons.h"
@@ -30,20 +30,19 @@ class Actor;
  *  A rectangular area showing party combat statistics:
  */
 class CombatStats_gump : public Gump {
-	UNREPLICATABLE_CLASS_I(CombatStats_gump, Gump())
+	UNREPLICATABLE_CLASS(CombatStats_gump)
 
 public:
 	CombatStats_gump(int initx, int inity);
-	virtual ~CombatStats_gump();
 	// Add object.
-	virtual int add(Game_object *obj, int mx = -1, int my = -1,
-	                int sx = -1, int sy = -1, bool dont_check = false,
-	                bool combine = false) {
+	bool add(Game_object *obj, int mx = -1, int my = -1,
+	        int sx = -1, int sy = -1, bool dont_check = false,
+	        bool combine = false) override {
 		ignore_unused_variable_warning(obj, mx, my, sx, sy, dont_check, combine);
-		return 0;    // Can't drop onto it.
+		return false;    // Can't drop onto it.
 	}
 	// Paint it and its contents.
-	virtual void paint();
+	void paint() override;
 
 private:
 	Actor *party[9];

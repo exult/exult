@@ -49,6 +49,7 @@
 #include "gump_utils.h"
 #include "AudioMixer.h"
 #include "mappatch.h"
+#include "touchui.h"
 
 #include "imagewin/imagewin.h"
 #include "imagewin/ArbScaler.h"
@@ -60,12 +61,8 @@ using std::abs;
 using std::rand;
 using std::strchr;
 using std::strlen;
-
-#ifdef __IPHONEOS__
-#include "data/exult_iphone_flx.h"
-#include "iphone_gumps.h"
-#endif
-
+using std::unique_ptr;
+using std::make_unique;
 
 enum {
     ultima_text_shp = 0x0D,
@@ -142,7 +139,7 @@ BG_Game::BG_Game()
 		const char *exultflx = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
 		const char *gameflx = BUNDLE_CHECK(BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX);
 
-		add_resource("files/shapes/count", 0, 9);
+		add_resource("files/shapes/count", nullptr, 9);
 		add_resource("files/shapes/0", SHAPES_VGA, 0);
 		add_resource("files/shapes/1", FACES_VGA, 0);
 		add_resource("files/shapes/2", GUMPS_VGA, 0);
@@ -165,7 +162,7 @@ BG_Game::BG_Game()
 		add_resource("config/avatar_data", gameflx, EXULT_BG_FLX_AVATAR_DATA_TXT);
 		add_resource("config/autonotes", gameflx, EXULT_BG_FLX_AUTONOTES_TXT);
 
-		add_resource("palettes/count", 0, 18);
+		add_resource("palettes/count", nullptr, 18);
 		add_resource("palettes/0", PALETTES_FLX, 0);
 		add_resource("palettes/1", PALETTES_FLX, 1);
 		add_resource("palettes/2", PALETTES_FLX, 2);
@@ -204,7 +201,7 @@ BG_Game::BG_Game()
 		add_resource("palettes/patch/16", PATCH_INTROPAL, 4);
 		add_resource("palettes/patch/17", PATCH_INTROPAL, 5);
 
-		add_resource("xforms/count", 0, 20);
+		add_resource("xforms/count", nullptr, 20);
 		add_resource("xforms/0", XFORMTBL, 0);
 		add_resource("xforms/1", XFORMTBL, 1);
 		add_resource("xforms/2", XFORMTBL, 2);
@@ -319,9 +316,6 @@ BG_Game::BG_Game()
 		                                     Tile_coord(811, 955, 5), 874, 0, 0)));
 }
 
-BG_Game::~BG_Game() {
-}
-
 class UserSkipException : public UserBreakException {
 };
 
@@ -371,15 +365,6 @@ void BG_Game::play_intro() {
 
 	// TODO: check/fix other resolutions
 
-	// these backups store the area under the guardian shapes being drawn
-	// the cbackups are 'clean' backups, ie. just background
-	// the others may have other shapes on them, if those are static
-	Image_buffer *backup, *backup2, *backup3;
-	Image_buffer *cbackup, *cbackup2, *cbackup3;
-
-	backup = backup2 = backup3 = 0;
-	cbackup = cbackup2 = cbackup3 = 0;
-
 	try {
 		/********************************************************************
 		 Lord British Presents
@@ -411,17 +396,8 @@ void BG_Game::play_intro() {
 
 		scene_moongate();
 	} catch (const UserBreakException &/*x*/) {
-		// Waste disposal
-		FORGET_OBJECT(backup);
-		FORGET_OBJECT(backup2);
-		FORGET_OBJECT(backup3);
-		FORGET_OBJECT(cbackup);
-		FORGET_OBJECT(cbackup2);
-		FORGET_OBJECT(cbackup3);
 	}
 
-	gl_clear_win();
-	enable_direct_gl_render();
 	// Fade out the palette...
 	pal->fade_out(c_fade_out_time);
 
@@ -438,101 +414,94 @@ void BG_Game::scene_lord_british() {
 	 *  Eric Wasylishen, Jun. 19, 2006.
 	 */
 
-	WAITDELAY(1500); // - give a little space between exult title music
-	//     and LB presents screen
+	try {
+		WAITDELAY(1500); // - give a little space between exult title music
+		//     and LB presents screen
 
 
-	// Lord British presents...  (sh. 0x11)
-	pal->load(INTROPAL_DAT, PATCH_INTROPAL, 3);
-	sman->paint_shape(topx, topy, shapes.get_shape(lord_british_shp, 0));
+		// Lord British presents...  (sh. 0x11)
+		pal->load(INTROPAL_DAT, PATCH_INTROPAL, 3);
+		sman->paint_shape(topx, topy, shapes.get_shape(lord_british_shp, 0));
 
-	pal->fade_in(c_fade_in_time);
-	if (1 == wait_delay(2000))
-		throw UserBreakException();
-	pal->fade_out(c_fade_out_time);
+		pal->fade_in(c_fade_in_time);
+		if (1 == wait_delay(2000))
+			throw UserBreakException();
+		pal->fade_out(c_fade_out_time);
+	} catch (const UserSkipException &/*x*/) {
+	}
 	gwin->clear_screen(true);
 }
 
-
-#define BUTTERFLY_FRAME_DURATION    23 // - used to be 16.. too fast.
-
-#define BUTTERFLY_SUB_FRAMES    3
-
-#ifdef HAVE_OPENGL
-#define BUTTERFLY_BACKGROUND()  do {    \
-		if (GL_manager::get_instance()) {   \
-			sman->paint_shape(topx,topy,shapes.get_shape(trees_shp,0)); \
-			sman->paint_shape(topx+160,topy+50,shapes.get_shape(ultima_text_shp,0));    \
-		}   \
-	} while(0)
-#else
-#define BUTTERFLY_BACKGROUND()  do {    } while(0)
-#endif
-
-
-#define BUTTERFLY(x,y,frame,delay)  do {    \
-		BUTTERFLY_BACKGROUND(); \
-		win->get(backup, topx + (x) - butterfly->get_xleft(),   \
-		         topy + (y) - butterfly->get_yabove());  \
-		sman->paint_shape(topx + (x), topy + (y), shapes.get_shape(butterfly_shp, frame));  \
-		win->show();    \
-		WAITDELAY(delay);   \
-		win->put(backup, topx + (x) - butterfly->get_xleft(),   \
-		         topy + (y) - butterfly->get_yabove());  \
-	} while(0)
-
-#define BUTTERFLY_FLAP()    do {    \
-		if ((rand() % 5)<4) {   \
-			if (frame == 3) \
-				dir = -1;   \
-			else if (frame == 0)    \
-				dir = +1;   \
-			frame += dir;   \
-		} } while(0)
-
-static int butterfly_x[] = {
-	6, 18, 30, 41, 52, 62, 70, 78, 86, 95,
-	104, 113, 122, 132, 139, 146, 151, 155, 157, 158,
-	157, 155, 151, 146, 139, 132, 124, 116, 108, 102,
-	96, 93, 93, 93, 95, 99, 109, 111, 118, 125,
-	132, 140, 148, 157, 164, 171, 178, 184, 190, 196,
-	203, 211, 219, 228, 237, 246, 254, 259, 262, 264,
-	265, 265, 263, 260, 256, 251, 245, 239, 232, 226,
-	219, 212, 208, 206, 206, 209, 212, 216, 220, 224,
-	227, 234, 231, 232, 233, 233, 233, 233, 234, 236,
-	239, 243, 247, 250, 258, 265
-};
-
-static int butterfly_y[] = {
-	155, 153, 151, 150, 149, 148, 148, 148, 148, 149,
-	150, 150, 150, 149, 147, 142, 137, 131, 125, 118,
-	110, 103, 98, 94, 92, 91, 91, 91, 92, 95,
-	99, 104, 110, 117, 123, 127, 131, 134, 135, 135,
-	135, 135, 135, 134, 132, 129, 127, 123, 119, 115,
-	112, 109, 104, 102, 101, 102, 109, 109, 114, 119,
-	125, 131, 138, 144, 149, 152, 156, 158, 159, 159,
-	158, 155, 150, 144, 137, 130, 124, 118, 112, 105,
-	99, 93, 86, 80, 73, 66, 59, 53, 47, 42,
-	38, 35, 32, 29, 26, 25
-};
-
-static const int butterfly_num_coords = sizeof(butterfly_x) / sizeof(int);
-
-static int butterfly_end_frames[] = { 3, 4, 3, 4, 3, 2, 1, 0 };
-static int butterfly_end_delay[] = { 167, 416, 250, 416, 416, 416, 416, 333 };
-
-
 void BG_Game::scene_butterfly() {
-	Image_buffer *backup = 0;
-	Shape_frame *butterfly = 0;
-	int i, j, frame, dir = 0;
+	constexpr static const int frame_duration = 23; // - used to be 16.. too fast.
+	constexpr static const int frame_count = 3;
+
+	constexpr static int butterfly_x[] = {
+		  6,  18,  30,  41,  52,  62,  70,  78,  86,  95,
+		104, 113, 122, 132, 139, 146, 151, 155, 157, 158,
+		157, 155, 151, 146, 139, 132, 124, 116, 108, 102,
+		 96,  93,  93,  93,  95,  99, 109, 111, 118, 125,
+		132, 140, 148, 157, 164, 171, 178, 184, 190, 196,
+		203, 211, 219, 228, 237, 246, 254, 259, 262, 264,
+		265, 265, 263, 260, 256, 251, 245, 239, 232, 226,
+		219, 212, 208, 206, 206, 209, 212, 216, 220, 224,
+		227, 234, 231, 232, 233, 233, 233, 233, 234, 236,
+		239, 243, 247, 250, 258, 265
+	};
+
+	constexpr static int butterfly_y[] = {
+		155, 153, 151, 150, 149, 148, 148, 148, 148, 149,
+		150, 150, 150, 149, 147, 142, 137, 131, 125, 118,
+		110, 103,  98,  94,  92,  91,  91,  91,  92,  95,
+		 99, 104, 110, 117, 123, 127, 131, 134, 135, 135,
+		135, 135, 135, 134, 132, 129, 127, 123, 119, 115,
+		112, 109, 104, 102, 101, 102, 109, 109, 114, 119,
+		125, 131, 138, 144, 149, 152, 156, 158, 159, 159,
+		158, 155, 150, 144, 137, 130, 124, 118, 112, 105,
+		 99,  93,  86,  80,  73,  66,  59,  53,  47,  42,
+		 38,  35,  32,  29,  26,  25
+	};
+
+	constexpr static const int butterfly_num_coords = array_size(butterfly_x);
+
+	constexpr static const int butterfly_end_frames[] = {
+		  3,   4,   3,   4,   3,   2,   1,   0
+	};
+	constexpr static const int butterfly_end_delay[] = {
+		167, 416, 250, 416, 416, 416, 416, 333
+	};
+
+	int frame;
+	int dir = 0;
+
+	auto DrawButterfly = [&](int x, int y, int frame, int delay, Image_buffer *backup, Shape_frame *butterfly) {
+		// Draw butterfly
+		win->get(backup, topx + x - butterfly->get_xleft(),
+				topy + y - butterfly->get_yabove());
+		sman->paint_shape(topx + x, topy + y, shapes.get_shape(butterfly_shp, frame));
+		win->show();
+		WAITDELAY(delay);
+		win->put(backup, topx + x - butterfly->get_xleft(),
+				topy + y - butterfly->get_yabove());
+	};
+
+	auto ButterflyFlap = [&]() {
+		if ((rand() % 5)<4) {
+			if (frame == 3) {
+				dir = -1;
+			} else if (frame == 0) {
+				dir = +1;
+			}
+			frame += dir;
+		}
+	};
 
 	try {
 		pal->load(INTROPAL_DAT, PATCH_INTROPAL, 4);
 
 		// Load the butterfly shape
-		butterfly = shapes.get_shape(butterfly_shp, 0);
-		backup = win->create_buffer(butterfly->get_width(), butterfly->get_height());
+		Shape_frame *butterfly(shapes.get_shape(butterfly_shp, 0));
+		unique_ptr<Image_buffer> backup(win->create_buffer(butterfly->get_width(), butterfly->get_height()));
 
 		// Start playing the birdsongs while still faded out
 		Audio::get_ptr()->start_music(bird_song_midi, false, INTROMUS);
@@ -548,7 +517,6 @@ void BG_Game::scene_butterfly() {
 		// Finally fade in
 		pal->fade_in(c_fade_in_time);
 
-
 		WAITDELAY(4000);
 
 		win->show();
@@ -559,38 +527,38 @@ void BG_Game::scene_butterfly() {
 		// Move the butterfly along its path
 		//
 		frame = 0;
-		Sint32 delay = BUTTERFLY_FRAME_DURATION;
+		Sint32 delay = frame_duration;
 		Sint32 ticks = SDL_GetTicks();
-		for (i = 0; i < butterfly_num_coords - 1; ++i) {
-			for (j = 0; j < BUTTERFLY_SUB_FRAMES; ++j) {
+		for (int i = 0; i < butterfly_num_coords - 1; ++i) {
+			for (int j = 0; j < frame_count; ++j) {
 
 				ticks = SDL_GetTicks();
-				int x = butterfly_x[i] + j * (butterfly_x[i + 1] - butterfly_x[i]) / BUTTERFLY_SUB_FRAMES;
-				int y = butterfly_y[i] + j * (butterfly_y[i + 1] - butterfly_y[i]) / BUTTERFLY_SUB_FRAMES;
-				BUTTERFLY(x, y, frame, delay);
+				int x = butterfly_x[i] + j * (butterfly_x[i + 1] - butterfly_x[i]) / frame_count;
+				int y = butterfly_y[i] + j * (butterfly_y[i + 1] - butterfly_y[i]) / frame_count;
+				DrawButterfly(x, y, frame, delay, backup.get(), butterfly);
 
 				// Flap the wings; but not always, so that the butterfly "glides" from time to time
-				BUTTERFLY_FLAP();
+				ButterflyFlap();
 
 				// Calculate the difference between the time we wanted to spent and the time
 				// we actually spent; then adjust 'delay' accordingly
 				ticks = SDL_GetTicks() - ticks;
-				delay = (delay + (2 * BUTTERFLY_FRAME_DURATION - ticks)) / 2;
+				delay = (delay + (2 * frame_duration - ticks)) / 2;
 
 				// ... but maybe we also have to skip frames..
 				if (delay < 0) {
 					// Calculate how many frames we should skip
-					int frames_to_skip = (-delay) / BUTTERFLY_FRAME_DURATION + 1;
-					int new_index = i * BUTTERFLY_SUB_FRAMES + j + frames_to_skip;
-					i = new_index / BUTTERFLY_SUB_FRAMES;
-					j = new_index % BUTTERFLY_SUB_FRAMES;
+					int frames_to_skip = (-delay) / frame_duration + 1;
+					int new_index = i * frame_count + j + frames_to_skip;
+					i = new_index / frame_count;
+					j = new_index % frame_count;
 
 					// Did we skip over the end?
 					if (i >= butterfly_num_coords - 1)
 						break;
 
 					while (frames_to_skip--)
-						BUTTERFLY_FLAP();
+						ButterflyFlap();
 
 					delay = 0;
 				}
@@ -598,11 +566,12 @@ void BG_Game::scene_butterfly() {
 		}
 
 		// Finally, let it flutter a bit on the end spot
-		for (i = 0; i < 8; i++) {
-			BUTTERFLY(butterfly_x[butterfly_num_coords - 1],
-			          butterfly_y[butterfly_num_coords - 1],
-			          butterfly_end_frames[i],
-			          butterfly_end_delay[i]);
+		for (int i = 0; i < 8; i++) {
+			DrawButterfly(butterfly_x[butterfly_num_coords - 1],
+			              butterfly_y[butterfly_num_coords - 1],
+			              butterfly_end_frames[i],
+			              butterfly_end_delay[i],
+						  backup.get(), butterfly);
 		}
 
 		WAITDELAY(1000);
@@ -610,83 +579,36 @@ void BG_Game::scene_butterfly() {
 		// Wait till the music finished playing
 		while (Audio::get_ptr()->is_track_playing(bird_song_midi))
 			WAITDELAY(20);
-		FORGET_OBJECT(backup);
 	} catch (const UserSkipException &/*x*/) {
-		// Waste disposal
-		FORGET_OBJECT(backup);
-	} catch (const UserBreakException &/*x*/) {
-		// Waste disposal
-		FORGET_OBJECT(backup);
-		throw;
 	}
 }
 
 #define FLASH_SHAPE1(x,y,shape,frame,delay)  do {    \
 		sman->paint_shape((x),(y),shapes.get_shape((shape),(frame)));   \
-		non_gl_blit();  \
+		win->show();  \
 		WAITDELAYCYCLE1((delay));    \
-		win->put(backup,(x)-s->get_xleft(),(y)-s->get_yabove());    \
+		win->put(backup.get(),(x)-s->get_xleft(),(y)-s->get_yabove());    \
 	} while(0)
 
 #define FLASH_SHAPE2(x,y,shape,frame,delay)  do {    \
 		sman->paint_shape((x),(y),shapes.get_shape((shape),(frame)));   \
-		non_gl_blit();  \
+		win->show();  \
 		WAITDELAYCYCLE4((delay));    \
-		win->put(backup,(x)-s->get_xleft(),(y)-s->get_yabove());    \
+		win->put(backup.get(),(x)-s->get_xleft(),(y)-s->get_yabove());    \
 	} while(0)
 
-#define EYES_DIST       12
-#define FORHEAD_DIST    49
-
-static int text_times[] = {
-	250, 1700, 5250, 8200, 10550, 12900, 16000, 19950, 22700, 27200, 32400,
-		36400, 39650, 42400
-};
-
-static const int text_num_frames = sizeof(text_times) / sizeof(int);
-
-static const char surfacing_data[] = {
-	0x03, 0x00, 0x02,	// Eyebrows -> neutral
-	0x03, 0x00, 0x05,	// Eyes -> half-open
-	0x15, 0x00, 0x04,	// Eyes -> fully open
-	0x33, 0x00, 0x07,	// Eyes -> Look down
-	0x54, 0x00, 0x04,	// Eyes -> fully open
-	0x77, 0x00, 0x00
-};
-
-// Lookup table for translating lipsynch data. The table is indexed by the
-// current frame-1, then by read lipsynch data-1.
-static const int eye_frame_LUT[6][9] = {
-//   1, 2, 3, 4, 5, 6, 7, 8, 9		// Last eye frame (or the one before, if it was 10)
-	{1, 2, 3, 1, 2, 3, 1, 2, 3},	// 1: Change eyebrows to angry
-	{4, 5, 6, 4, 5, 6, 4, 5, 6},	// 2: Change eyebrows to neutral
-	{7, 8, 9, 7, 8, 9, 7, 8, 9},	// 3: Change eyebrows to raised
-	{1, 1, 1, 4, 4, 4, 7, 7, 7},	// 4: Change eyes to fully open
-	{2, 2, 2, 5, 5, 5, 8, 8, 8},	// 5: Change eyes to half-open
-	{3, 3, 3, 6, 6, 6, 9, 9, 9},	// 6: Change eyes to fully closed
-};
 
 class LipSynchReader {
-	char * data;
+	std::unique_ptr<IBufferDataView> data;
 	const unsigned char *ptr;
 	const unsigned char *eptr;
 public:
-	LipSynchReader() {
-		U7multiobject lipdata(MAINSHP_FLX, PATCH_MAINSHP, 0x0F);
-		size_t len;
-		data = lipdata.retrieve(len);
-		ptr = reinterpret_cast<unsigned char *>(data);
-		eptr = ptr + len;
-	}
-	LipSynchReader(char const *pp, int len) {
-		data = new char[len];
-		memcpy(data, pp, len);
-		ptr = reinterpret_cast<unsigned char *>(data);
-		eptr = ptr + len;
-	}
-	~LipSynchReader() {
-		delete [] data;
-	}
+	LipSynchReader()
+		: data(std::make_unique<IExultDataSource>(MAINSHP_FLX, PATCH_MAINSHP, 0x0F)),
+		  ptr(data->getPtr()), eptr(ptr + data->getSize()) {}
+	LipSynchReader(char const *pp, int len)
+		: data(std::make_unique<IBufferDataView>(pp, len)),
+		  ptr(data->getPtr()), eptr(ptr + data->getSize()) {}
 	bool have_events() const {
 		return ptr < eptr;
 	}
@@ -701,6 +623,17 @@ public:
 		}
 	}
 	void translate_code(int code, int &mouth, int &eyes, int &lasteyes) {
+		// Lookup table for translating lipsynch data. The table is indexed by the
+		// current frame-1, then by read lipsynch data-1.
+		constexpr static const int eye_frame_LUT[6][9] = {
+		//   1, 2, 3, 4, 5, 6, 7, 8, 9		// Last eye frame (or the one before, if it was 10)
+			{1, 2, 3, 1, 2, 3, 1, 2, 3},	// 1: Change eyebrows to angry
+			{4, 5, 6, 4, 5, 6, 4, 5, 6},	// 2: Change eyebrows to neutral
+			{7, 8, 9, 7, 8, 9, 7, 8, 9},	// 3: Change eyebrows to raised
+			{1, 1, 1, 4, 4, 4, 7, 7, 7},	// 4: Change eyes to fully open
+			{2, 2, 2, 5, 5, 5, 8, 8, 8},	// 5: Change eyes to half-open
+			{3, 3, 3, 6, 6, 6, 9, 9, 9},	// 6: Change eyes to fully closed
+		};
 		// Set based on code read
 		if (code > 8) {
 			// This changes mouth frame
@@ -717,104 +650,135 @@ public:
 	}
 };
 
+// Simple RAII wrapper for SDL_FreeSurface
+class SDL_SurfaceOwner {
+	SDL_Surface* surf;
+public:
+	SDL_SurfaceOwner(Image_buffer *src, SDL_Surface *draw)
+		: surf(SDL_CreateRGBSurfaceFrom(src->get_bits(),
+										src->get_height(), src->get_width(),
+										draw->format->BitsPerPixel,
+										src->get_line_width(),
+										draw->format->Rmask,
+										draw->format->Gmask,
+										draw->format->Bmask,
+										draw->format->Amask)) {}
+	~SDL_SurfaceOwner() noexcept {
+		SDL_FreeSurface(surf);
+	}
+	SDL_Surface* get() noexcept {
+		return surf;
+	}
+};
+
+// Simple RAII wrapper for managing window clip
+class WinClip {
+	Image_window8 *window;
+public:
+	WinClip(Image_window8 *win, int cx, int cy, int wid, int hgt)
+		: window(win) {
+		window->set_clip(cx, cy, wid, hgt);
+	}
+	~WinClip() noexcept {
+		window->clear_clip();
+	}
+};
+
+// Simple RAII wrapper for stopping speech
+struct SpeechManager {
+	SpeechManager(const char *fname, const char *fpatch, bool wait) {
+		if (Audio::get_ptr()->is_audio_enabled() &&
+					Audio::get_ptr()->is_speech_enabled()) {
+			Audio::get_ptr()->playfile(fname, fpatch, wait);
+		}
+	}
+	~SpeechManager() noexcept {
+		Audio::get_ptr()->stop_speech();
+	}
+};
+
 void BG_Game::scene_guardian() {
-	Image_buffer *backup = 0, *backup2 = 0, *backup3 = 0;
-	Image_buffer *cbackup = 0, *cbackup2 = 0, *cbackup3 = 0;
-	Image_buffer *plasma;
-	char *txt = 0;
+	constexpr static const int Eyes_Dist = 12;
+	constexpr static const int Forehead_Dist = 49;
+
+	constexpr static const int text_times[] = {
+		250, 1700, 5250, 8200, 10550, 12900, 16000, 19950, 22700, 27200, 32400,
+		36400, 39650, 42400
+	};
+
+	constexpr static const int text_num_frames = array_size(text_times);
+
+	constexpr static const char surfacing_data[] = {
+		0x03, 0x00, 0x02,	// Eyebrows -> neutral
+		0x03, 0x00, 0x05,	// Eyes -> half-open
+		0x15, 0x00, 0x04,	// Eyes -> fully open
+		0x33, 0x00, 0x07,	// Eyes -> Look down
+		0x54, 0x00, 0x04,	// Eyes -> fully open
+		0x77, 0x00, 0x00
+	};
 
 	try {
-		char *txt_ptr, *txt_end, *next_txt;
-		Shape_frame *s, *s2, *s3;
 		Uint32 ticks;
-		int i;
+		{
+			// create buffer containing a blue 'plasma' screen
+			unique_ptr<Image_buffer> plasma(win->create_buffer(win->get_full_width(),
+		                            win->get_full_height()));
+			gwin->plasma(win->get_full_width(), win->get_full_height(), win->get_start_x(), win->get_start_y(), 16, 16 + 76);
+			win->get(plasma.get(), win->get_start_x(), win->get_start_y());
 
-		// create buffer containing a blue 'plasma' screen
-		plasma = win->create_buffer(win->get_full_width(),
-		                            win->get_full_height());
-		gwin->plasma(win->get_full_width(), win->get_full_height(), win->get_start_x(), win->get_start_y(), 16, 16 + 76);
-		win->get(plasma, win->get_start_x(), win->get_start_y());
+			pal->load(INTROPAL_DAT, PATCH_INTROPAL, 2);
+			pal->set_color(1, 0, 0, 0); //UGLY hack... set font background to black
+			pal->apply();
 
-		pal->load(INTROPAL_DAT, PATCH_INTROPAL, 2);
-		pal->set_color(1, 0, 0, 0); //UGLY hack... set font background to black
-		pal->apply();
+			//play static SFX
+			Audio::get_ptr()->play_sound_effect(115, AUDIO_MAX_VOLUME, 0, 0);
 
-		//play static SFX
-		Audio::get_ptr()->play_sound_effect(115, AUDIO_MAX_VOLUME, 0, 0);
+			//
+			// Show some "static" alternating with the blue plasma
+			//
+			// TODO: Is this the right kind of static? Dosbox shows a mostly black
+			//      with an ocassional white pixel static - but is this what it
+			//      was really like?
 
-		//
-		// Show some "static" alternating with the blue plasma
-		//
-		// TODO: Is this the right kind of static? Dosbox shows a mostly black
-		//      with an ocassional white pixel static - but is this what it
-		//      was really like?
-
-		// TODO: have the static sound effect play for every time there's static in the intro
-		ticks = SDL_GetTicks();
-		while (1) {
-			win->get_ibuf()->fill_static(0, 7, 15);
-#ifdef HAVE_OPENGL
-			if (GL_manager::get_instance())
-				Delay();
-			else
-#endif
+			// TODO: have the static sound effect play for every time there's static in the intro
+			ticks = SDL_GetTicks();
+			while (true) {
+				win->get_ibuf()->fill_static(0, 7, 15);
 				win->show();
-			WAITDELAYCYCLE1(2);
-#ifdef HAVE_OPENGL
-			if (GL_manager::get_instance())
-				Delay();
-#endif
-			if (SDL_GetTicks() > ticks + 400)//400)
-				break;
-		}
+				WAITDELAYCYCLE1(2);
+				if (SDL_GetTicks() > ticks + 400)//400)
+					break;
+			}
 
-		win->put(plasma, win->get_start_x(), win->get_start_y());
-		non_gl_blit();
-		WAITDELAYCYCLE1(200);
+			win->put(plasma.get(), win->get_start_x(), win->get_start_y());
+			win->show();
+			WAITDELAYCYCLE1(200);
 
-		ticks = SDL_GetTicks();
-		while (1) {
-			win->get_ibuf()->fill_static(0, 7, 15);
-#ifdef HAVE_OPENGL
-			if (GL_manager::get_instance())
-				Delay();
-			else
-#endif
+			ticks = SDL_GetTicks();
+			while (true) {
+				win->get_ibuf()->fill_static(0, 7, 15);
 				win->show();
-			WAITDELAYCYCLE1(2);
-#ifdef HAVE_OPENGL
-			if (GL_manager::get_instance())
-				Delay();
-#endif
-			if (SDL_GetTicks() > ticks + 200)
-				break;
-		}
+				WAITDELAYCYCLE1(2);
+				if (SDL_GetTicks() > ticks + 200)
+					break;
+			}
 
-		win->put(plasma, win->get_start_x(), win->get_start_y());
-		non_gl_blit();
-		WAITDELAYCYCLE1(200);
+			win->put(plasma.get(), win->get_start_x(), win->get_start_y());
+			win->show();
+			WAITDELAYCYCLE1(200);
 
-		ticks = SDL_GetTicks();
-		while (1) {
-			win->get_ibuf()->fill_static(0, 7, 15);
-#ifdef HAVE_OPENGL
-			if (GL_manager::get_instance())
-				Delay();
-			else
-#endif
+			ticks = SDL_GetTicks();
+			while (true) {
+				win->get_ibuf()->fill_static(0, 7, 15);
 				win->show();
-			WAITDELAYCYCLE1(2);
-#ifdef HAVE_OPENGL
-			if (GL_manager::get_instance())
-				Delay();
-#endif
-			if (SDL_GetTicks() > ticks + 100)
-				break;
-		}
+				WAITDELAYCYCLE1(2);
+				if (SDL_GetTicks() > ticks + 100)
+					break;
+			}
 
-		win->put(plasma, win->get_start_x(), win->get_start_y());
-		non_gl_blit();
-		FORGET_OBJECT(plasma);
+			win->put(plasma.get(), win->get_start_x(), win->get_start_y());
+			win->show();
+		}
 
 		//
 		// Start background music
@@ -828,227 +792,216 @@ void BG_Game::scene_guardian() {
 		//
 
 		// TODO: Play the 'bloop' sound for each popup
-		s = shapes.get_shape(0x21, 0);
-		backup = win->create_buffer(s->get_width(), s->get_height());
-		win->get(backup, centerx - 53 - s->get_xleft(), centery - 68 - s->get_yabove());
-		disable_direct_gl_render();
-		for (i = 8; i >= -8; i--)
-			FLASH_SHAPE2(centerx - 53, centery - 68, 0x21, 1 + abs(i), 80);
-		FORGET_OBJECT(backup);
+		{
+			Shape_frame *s = shapes.get_shape(0x21, 0);
+			unique_ptr<Image_buffer> backup(win->create_buffer(s->get_width(), s->get_height()));
+			win->get(backup.get(), centerx - 53 - s->get_xleft(), centery - 68 - s->get_yabove());
+			for (int i = 8; i >= -8; i--)
+				FLASH_SHAPE2(centerx - 53, centery - 68, 0x21, 1 + abs(i), 80);
+		}
 		WAITDELAYCYCLE1(2000);
-
 
 		//
 		// Second 'popup' (sh. 0x22)
 		//
-		s = shapes.get_shape(0x22, 0);
-		backup = win->create_buffer(s->get_width(), s->get_height());
-		win->get(backup, centerx - s->get_xleft(), centery - 45 - s->get_yabove());
-		for (i = 9; i >= -9; i--)
-			FLASH_SHAPE2(centerx, centery - 45, 0x22, 9 - abs(i), 80);
-		FORGET_OBJECT(backup);
+		{
+			Shape_frame *s = shapes.get_shape(0x22, 0);
+			unique_ptr<Image_buffer> backup(win->create_buffer(s->get_width(), s->get_height()));
+			win->get(backup.get(), centerx - s->get_xleft(), centery - 45 - s->get_yabove());
+			for (int i = 9; i >= -9; i--)
+				FLASH_SHAPE2(centerx, centery - 45, 0x22, 9 - abs(i), 80);
+		}
 		WAITDELAYCYCLE1(2000);
-
 
 		//
 		// Successful 'popup' (sh. 0x23)
 		//
-		s = shapes.get_shape(0x23, 0);
-		backup = win->create_buffer(s->get_width(), s->get_height());
-		cbackup = win->create_buffer(s->get_width(), s->get_height());
+		{
+			Shape_frame *s = shapes.get_shape(0x23, 0);
+			unique_ptr<Image_buffer> backup(win->create_buffer(s->get_width(), s->get_height()));
+			unique_ptr<Image_buffer> cbackup(win->create_buffer(s->get_width(), s->get_height()));
 
-		win->get(cbackup, centerx - s->get_xleft(), centery - s->get_yabove());
-		sman->paint_shape(centerx, centery, s); // frame 0 is static background
-		win->get(backup, centerx - s->get_xleft(), centery - s->get_yabove());
-		for (i = 1; i < 16; i++)
-			FLASH_SHAPE2(centerx, centery, 0x23, i, 70);
+			win->get(cbackup.get(), centerx - s->get_xleft(), centery - s->get_yabove());
+			sman->paint_shape(centerx, centery, s); // frame 0 is static background
+			win->get(backup.get(), centerx - s->get_xleft(), centery - s->get_yabove());
+			for (int i = 1; i < 16; i++)
+				FLASH_SHAPE2(centerx, centery, 0x23, i, 70);
 
-		sman->paint_shape(centerx, centery, shapes.get_shape(0x23, 15));
-		non_gl_blit();
+			sman->paint_shape(centerx, centery, shapes.get_shape(0x23, 15));
+			win->show();
 
-		WAITDELAYCYCLE1(500);    // - show his face for half a second
-		// before he opens his eyes.
+			WAITDELAYCYCLE1(500);    // - show his face for half a second
+			// before he opens his eyes.
 
-		win->put(cbackup, centerx - s->get_xleft(), centery - s->get_yabove());
-
-		FORGET_OBJECT(backup);
-		FORGET_OBJECT(cbackup);
+			win->put(cbackup.get(), centerx - s->get_xleft(), centery - s->get_yabove());
+		}
 		//
 		// Actual appearance
 		//
 
-
 		// mouth
-		s = shapes.get_shape(guardian_mouth_shp, 0);
-		backup = win->create_buffer(s->get_width(), s->get_height());
-		cbackup = win->create_buffer(s->get_width(), s->get_height());
-		win->get(cbackup, centerx - s->get_xleft(), centery - s->get_yabove());
-		sman->paint_shape(centerx, centery, s); // frame 0 is background
-		win->get(backup, centerx - s->get_xleft(), centery - s->get_yabove());
-		// eyes
-		s2 = shapes.get_shape(guardian_eyes_shp, 0);
-		backup2 = win->create_buffer(s2->get_width(), s2->get_height());
-		cbackup2 = win->create_buffer(s2->get_width(), s2->get_height());
-		win->get(cbackup2, centerx - s2->get_xleft(),
-		         centery - EYES_DIST - s2->get_yabove());
-		sman->paint_shape(centerx, centery - EYES_DIST, s2); // frame 0 is background
-		win->get(backup2, centerx - s2->get_xleft(),
-		         centery - EYES_DIST - s2->get_yabove());
-		// forehead
-		s3 = shapes.get_shape(guardian_forehead_shp, 0);
-		cbackup3 = win->create_buffer(s3->get_width(), s3->get_height());
-		win->get(cbackup3, centerx - s3->get_xleft(),
-		         centery - FORHEAD_DIST - s3->get_yabove());
-		sman->paint_shape(centerx, centery - FORHEAD_DIST, s3); // forehead isn't animated
+		{
+			Shape_frame *s = shapes.get_shape(guardian_mouth_shp, 0);
+			unique_ptr<Image_buffer> backup(win->create_buffer(s->get_width(), s->get_height()));
+			unique_ptr<Image_buffer> cbackup(win->create_buffer(s->get_width(), s->get_height()));
+			win->get(cbackup.get(), centerx - s->get_xleft(), centery - s->get_yabove());
+			sman->paint_shape(centerx, centery, s); // frame 0 is background
+			win->get(backup.get(), centerx - s->get_xleft(), centery - s->get_yabove());
+			// eyes
+			Shape_frame *s2 = shapes.get_shape(guardian_eyes_shp, 0);
+			unique_ptr<Image_buffer> backup2(win->create_buffer(s2->get_width(), s2->get_height()));
+			unique_ptr<Image_buffer> cbackup2(win->create_buffer(s2->get_width(), s2->get_height()));
+			win->get(cbackup2.get(), centerx - s2->get_xleft(),
+					centery - Eyes_Dist - s2->get_yabove());
+			sman->paint_shape(centerx, centery - Eyes_Dist, s2); // frame 0 is background
+			win->get(backup2.get(), centerx - s2->get_xleft(),
+					centery - Eyes_Dist - s2->get_yabove());
+			// forehead
+			Shape_frame *s3 = shapes.get_shape(guardian_forehead_shp, 0);
+			unique_ptr<Image_buffer> cbackup3(win->create_buffer(s3->get_width(), s3->get_height()));
+			win->get(cbackup3.get(), centerx - s3->get_xleft(),
+					centery - Forehead_Dist - s3->get_yabove());
+			sman->paint_shape(centerx, centery - Forehead_Dist, s3); // forehead isn't animated
 
-		// prepare Guardian speech
-		Font *font = fontManager.get_font("GUARDIAN_FONT");
-		U7multiobject textobj(MAINSHP_FLX, PATCH_MAINSHP, 0x0D);
-		size_t txt_len;
-		next_txt = txt_ptr = txt = textobj.retrieve(txt_len);
+			// prepare Guardian speech
+			{
+				Font *font = fontManager.get_font("GUARDIAN_FONT");
+				U7multiobject textobj(MAINSHP_FLX, PATCH_MAINSHP, 0x0D);
+				size_t txt_len;
+				auto txt = textobj.retrieve(txt_len);
+				char *txt_ptr;
+				char *txt_end;
+				char *next_txt;
+				next_txt = txt_ptr = reinterpret_cast<char*>(txt.get());
 
-		int txt_height = font->get_text_height();
-		int txt_ypos = gwin->get_height() - txt_height - 16;
+				int txt_height = font->get_text_height();
+				int txt_ypos = gwin->get_height() - txt_height - 16;
 
-		// backup text area
-		backup3 = win->create_buffer(win->get_full_width(), txt_height);
-		win->get(backup3, win->get_start_x(), txt_ypos);
+				// backup text area
+				unique_ptr<Image_buffer> backup3(win->create_buffer(win->get_full_width(), txt_height));
+				win->get(backup3.get(), win->get_start_x(), txt_ypos);
 
-		// Lipsynching
-		int eye_frame = 3, last_eye_frame = 3;
-		int mouth_frame = 1;
-		int text_index = -1;
-		int next_time, next_code;
-		LipSynchReader lipsync;
-		LipSynchReader surfacing(surfacing_data, sizeof(surfacing_data));
+				// Lipsynching
+				int eye_frame = 3;
+				int last_eye_frame = 3;
+				int mouth_frame = 1;
+				int text_index = -1;
+				int next_time;
+				int next_code;
+				LipSynchReader lipsync;
+				LipSynchReader surfacing(surfacing_data, sizeof(surfacing_data));
 
-		int time = 0;
-		unsigned long start = SDL_GetTicks();
+				int time = 0;
+				unsigned long start = SDL_GetTicks();
 
-		bool speech = Audio::get_ptr()->is_audio_enabled() &&
-		              Audio::get_ptr()->is_speech_enabled();
-		bool speech_n_subs = Audio::get_ptr()->is_speech_with_subs();
-		bool need_to_play_speech = speech; // speech timing can screw up due
+				bool speech = Audio::get_ptr()->is_audio_enabled() &&
+				              Audio::get_ptr()->is_speech_enabled();
+				bool want_subs = !speech || Audio::get_ptr()->is_speech_with_subs();
 
-#define ERASE_TEXT() do { \
-		win->put(backup3, win->get_start_x(), txt_ypos); \
-	} while(0)
+				auto AdvanceTextPointer = [&]() {
+					txt_ptr = next_txt;
+					txt_end = strchr(txt_ptr, '\r');
+					*txt_end = '\0';
+					next_txt = txt_end+2;
+				};
+				auto EraseAndDraw = [&](Image_buffer *backup, Shape_frame *fra, int shnum, int frnum, int dist) {
+					win->put(backup, centerx - fra->get_xleft(),
+									centery - dist - fra->get_yabove());
+					sman->paint_shape(centerx, centery - dist,
+									shapes.get_shape(shnum, frnum));
+				};
+				auto DrawSpeech = [&]() {
+					// Erase text
+					win->put(backup3.get(), win->get_start_x(), txt_ypos);
+					// Erase and redraw eyes
+					EraseAndDraw(backup2.get(), s2, guardian_eyes_shp, eye_frame, Eyes_Dist);
+					// Erase and redraw mouth
+					EraseAndDraw(backup.get(), s, guardian_mouth_shp, mouth_frame, 0);
+					if (text_index > 0 && text_index < text_num_frames) {
+						// Draw text
+						font->center_text(win->get_ib8(), centerx, txt_ypos, txt_ptr);
+					}
+				};
 
-#define DRAW_TEXT() if (!speech || speech_n_subs) \
-		do { \
-			font->center_text(win->get_ib8(), centerx, txt_ypos, txt_ptr); \
-		} while (0)
-
-#define ADVANCE_TEXT_POINTER() do { \
-		txt_ptr = next_txt;     \
-		txt_end = strchr(txt_ptr, '\r');\
-		*txt_end = '\0';        \
-		next_txt = txt_end+2;       \
-	} while (0)
-
-#define ERASE_AND_DRAW_EYES() do { \
-		win->put(backup2, centerx - s2->get_xleft(),    \
-		         centery-EYES_DIST - s2->get_yabove());  \
-		sman->paint_shape(centerx,centery-EYES_DIST,    \
-		                  shapes.get_shape(guardian_eyes_shp, eye_frame));    \
-	} while (0)
-
-#define ERASE_AND_DRAW_MOUTH() do { \
-		win->put(backup, centerx - s->get_xleft(),  \
-		         centery - s->get_yabove());     \
-		sman->paint_shape(centerx,centery,      \
-		                  shapes.get_shape(guardian_mouth_shp, mouth_frame));   \
-	} while (0)
-
-#define DRAW_SPEECH() do { \
-		ERASE_TEXT();       \
-		ERASE_AND_DRAW_EYES();  \
-		ERASE_AND_DRAW_MOUTH(); \
-		if (text_index > 0) \
-			DRAW_TEXT();    \
-	} while (0)
-
-		// First event needs to be read here
-		surfacing.get_event(next_time, next_code);
-		DRAW_SPEECH();
-		// before speech
-		while (time < 2000) {
-			if (surfacing.have_events() && time >= next_time) {
-				surfacing.translate_code(next_code, mouth_frame, eye_frame, last_eye_frame);
+				// First event needs to be read here
 				surfacing.get_event(next_time, next_code);
-				DRAW_SPEECH();
-			}
+				DrawSpeech();
+				// before speech
+				while (time < 2000) {
+					if (surfacing.have_events() && time >= next_time) {
+						surfacing.translate_code(next_code, mouth_frame, eye_frame, last_eye_frame);
+						surfacing.get_event(next_time, next_code);
+						DrawSpeech();
+					}
 
-			non_gl_blit();
-			WAITDELAYCYCLE5(15);
-			non_gl_blit();
-			time = (SDL_GetTicks() - start);
-		}
+					win->show();
+					WAITDELAYCYCLE5(15);
+					win->show();
+					time = (SDL_GetTicks() - start);
+				}
 
-		if (need_to_play_speech) {
-			Audio::get_ptr()->playfile(INTROSND, PATCH_INTROSND, false);
-		}
 
-		time = 0;
-		start = SDL_GetTicks();
+				SpeechManager mngr(INTROSND, PATCH_INTROSND, false);
+				time = 0;
+				start = SDL_GetTicks();
 
-		// First event needs to be read here
-		lipsync.get_event(next_time, next_code);
-		text_index = 0;
-		// start speech
-		while (time < 47537) {
-			if (next_code && lipsync.have_events() && time >= next_time) {
-				lipsync.translate_code(next_code, mouth_frame, eye_frame, last_eye_frame);
+				// First event needs to be read here
 				lipsync.get_event(next_time, next_code);
-				DRAW_SPEECH();
+				if (want_subs) {
+					text_index = 0;
+				} else {
+					text_index = text_num_frames;	// Disable subtitles
+				}
+				// start speech
+				while (time < 47537) {
+					bool need_redraw = false;
+					if (next_code && lipsync.have_events() && time >= next_time) {
+						lipsync.translate_code(next_code, mouth_frame, eye_frame, last_eye_frame);
+						lipsync.get_event(next_time, next_code);
+						need_redraw = true;
+					}
+
+					if (text_index < text_num_frames && time >= text_times[text_index]) {
+						text_index++;
+						AdvanceTextPointer();
+						need_redraw = true;
+					}
+					if (need_redraw) {
+						DrawSpeech();
+					}
+					win->show();
+					WAITDELAYCYCLE6(15);
+					win->show();
+					time = (SDL_GetTicks() - start);
+				}
+
+				win->show();
+				WAITDELAYCYCLE6(1000);
+				win->show();
+
+				win->put(backup3.get(), 0, txt_ypos);
+				win->put(cbackup.get(), centerx - s->get_xleft(), centery - s->get_yabove());
+				win->put(cbackup2.get(), centerx - s2->get_xleft(),
+						centery - Eyes_Dist - s2->get_yabove());
+				win->put(cbackup3.get(), centerx - s3->get_xleft(),
+						centery - Forehead_Dist - s3->get_yabove());
 			}
 
-			if (text_index < text_num_frames && time >= text_times[text_index]) {
-				text_index++;
-				ADVANCE_TEXT_POINTER();
-				DRAW_SPEECH();
+			// G. disappears again (sp. 0x23 again)
+			{
+				Shape_frame *s = shapes.get_shape(0x23, 0);
+				unique_ptr<Image_buffer> backup(win->create_buffer(s->get_width(), s->get_height()));
+				unique_ptr<Image_buffer> cbackup(win->create_buffer(s->get_width(), s->get_height()));
+				win->get(cbackup.get(), centerx - s->get_xleft(), centery - s->get_yabove());
+				sman->paint_shape(centerx, centery, s); // frame 0 is background
+				win->get(backup.get(), centerx - s->get_xleft(), centery - s->get_yabove());
+				for (int i = 15; i > 0; i--)
+					FLASH_SHAPE2(centerx, centery, 0x23, i, 70);
+				win->put(cbackup.get(), centerx - s->get_xleft(), centery - s->get_yabove());
 			}
 
-			non_gl_blit();
-			WAITDELAYCYCLE6(15);
-			non_gl_blit();
-			time = (SDL_GetTicks() - start);
+			win->show();
 		}
-
-		non_gl_blit();
-		WAITDELAYCYCLE6(1000);
-		non_gl_blit();
-
-		win->put(backup3, 0, txt_ypos);
-		win->put(cbackup, centerx - s->get_xleft(), centery - s->get_yabove());
-		win->put(cbackup2, centerx - s2->get_xleft(),
-		         centery - EYES_DIST - s2->get_yabove());
-		win->put(cbackup3, centerx - s3->get_xleft(),
-		         centery - FORHEAD_DIST - s3->get_yabove());
-
-		FORGET_ARRAY(txt);
-		FORGET_OBJECT(backup);
-		FORGET_OBJECT(backup2);
-		FORGET_OBJECT(backup3);
-		FORGET_OBJECT(cbackup);
-		FORGET_OBJECT(cbackup2);
-		FORGET_OBJECT(cbackup3);
-
-		// G. disappears again (sp. 0x23 again)
-		s = shapes.get_shape(0x23, 0);
-		backup = win->create_buffer(s->get_width(), s->get_height());
-		cbackup = win->create_buffer(s->get_width(), s->get_height());
-		win->get(cbackup, centerx - s->get_xleft(), centery - s->get_yabove());
-		sman->paint_shape(centerx, centery, s); // frame 0 is background
-		win->get(backup, centerx - s->get_xleft(), centery - s->get_yabove());
-		for (i = 15; i > 0; i--)
-			FLASH_SHAPE2(centerx, centery, 0x23, i, 70);
-		win->put(cbackup, centerx - s->get_xleft(), centery - s->get_yabove());
-		FORGET_OBJECT(backup);
-		FORGET_OBJECT(cbackup);
-
-		non_gl_blit();
-		enable_direct_gl_render();
 		WAITDELAYCYCLE1(1200);
 
 		Audio::get_ptr()->stop_music();
@@ -1058,32 +1011,22 @@ void BG_Game::scene_guardian() {
 		//
 
 		ticks = SDL_GetTicks();
-		while (1) {
+		while (true) {
 			win->get_ibuf()->fill_static(0, 7, 15);
-#ifdef HAVE_OPENGL
-			if (GL_manager::get_instance())
-				Delay();
-			else
-#endif
-				win->show();
+			win->show();
 			WAITDELAYCYCLE1(2);
-#ifdef HAVE_OPENGL
-			if (GL_manager::get_instance())
-				Delay();
-#endif
 			if (SDL_GetTicks() > ticks + 400)
 				break;
 		}
 
 		gwin->clear_screen(true);
-		gl_clear_win();
 
 		//
 		// White dot
 		//
-		s = shapes.get_shape(0x14, 0);
-		backup = win->create_buffer(s->get_width() + 2, s->get_height() + 2);
-		win->get(backup, centerx - 1, centery - 1);
+		Shape_frame *s = shapes.get_shape(0x14, 0);
+		unique_ptr<Image_buffer> backup(win->create_buffer(s->get_width() + 2, s->get_height() + 2));
+		win->get(backup.get(), centerx - 1, centery - 1);
 
 		ticks = SDL_GetTicks();
 		while (true) {
@@ -1094,51 +1037,17 @@ void BG_Game::scene_guardian() {
 			if (SDL_GetTicks() - ticks > 800)
 				break;
 		}
-		FORGET_OBJECT(backup);
-		gl_clear_win();
 	} catch (const UserSkipException &/*x*/) {
-		// Waste disposal
-		Audio::get_ptr()->stop_speech();
-		FORGET_ARRAY(txt);
-		FORGET_OBJECT(backup);
-		FORGET_OBJECT(backup2);
-		FORGET_OBJECT(backup3);
-		FORGET_OBJECT(cbackup);
-		FORGET_OBJECT(cbackup2);
-		FORGET_OBJECT(cbackup3);
-		FORGET_OBJECT(plasma);
-		gl_clear_win();
-		enable_direct_gl_render();
-	} catch (const UserBreakException &x) {
-		// Waste disposal
-		Audio::get_ptr()->stop_speech();
-		FORGET_ARRAY(txt);
-		FORGET_OBJECT(backup);
-		FORGET_OBJECT(backup2);
-		FORGET_OBJECT(backup3);
-		FORGET_OBJECT(cbackup);
-		FORGET_OBJECT(cbackup2);
-		FORGET_OBJECT(cbackup3);
-		FORGET_OBJECT(plasma);
-		gl_clear_win();
-		enable_direct_gl_render();
-
-		throw;
 	}
 }
 
 void BG_Game::scene_desk() {
-	Shape_frame *s;
-	Image_buffer *backup = 0;
-	int i;
-	int hits;
-
 	try {
 		Audio::get_ptr()->start_music(home_song_midi, false, INTROMUS);
 
 		gwin->clear_screen();
 		// Clip it to 320x200 region
-		win->set_clip(centerx - 160, centery - 100, 320, 200);
+		WinClip clip(win, centerx - 160, centery - 100, 320, 200);
 
 		pal->load(INTROPAL_DAT, PATCH_INTROPAL, 1);
 		pal->apply();
@@ -1153,24 +1062,24 @@ void BG_Game::scene_desk() {
 		sman->paint_shape(centerx + 12, centery - 22, shapes.get_shape(0x14, 0));
 
 		// Zoom out from zoomed in screen
-		Image_buffer *unzoomed = win->create_buffer(320, 200);
-		win->get(unzoomed, 0 + (win->get_game_width() - 320) / 2, 0 + (win->get_game_height() - 200) / 2);
-		Image_buffer *zoomed = win->create_buffer(320, 200);
+		{
+			unique_ptr<Image_buffer> unzoomed(win->create_buffer(320, 200));
+			win->get(unzoomed.get(), 0 + (win->get_game_width() - 320) / 2, 0 + (win->get_game_height() - 200) / 2);
+			unique_ptr<Image_buffer> zoomed(win->create_buffer(320, 200));
 
-		const Image_window::ScalerInfo &scaler = Image_window::Scalers[Image_window::point];
+			const Image_window::ScalerInfo &scaler = Image_window::Scalers[Image_window::point];
 
-		SDL_Surface *draw_surface = win->get_draw_surface();
-		SDL_Surface *unzoomed_surf = SDL_CreateRGBSurfaceFrom(unzoomed->get_bits(), unzoomed->get_height(), unzoomed->get_width(), draw_surface->format->BitsPerPixel, unzoomed->get_line_width(), draw_surface->format->Rmask, draw_surface->format->Gmask, draw_surface->format->Bmask, draw_surface->format->Amask);
-		SDL_Surface *zoomed_surf = SDL_CreateRGBSurfaceFrom(zoomed->get_bits(), zoomed->get_height(), zoomed->get_width(), draw_surface->format->BitsPerPixel, zoomed->get_line_width(), draw_surface->format->Rmask, draw_surface->format->Gmask, draw_surface->format->Bmask, draw_surface->format->Amask);
+			SDL_Surface *draw_surface = win->get_draw_surface();
+			SDL_SurfaceOwner unzoomed_surf(unzoomed.get(), draw_surface);
+			SDL_SurfaceOwner zoomed_surf(zoomed.get(), draw_surface);
 
-		try {
 			const int zx = 88;
 			const int zy = 22;
 			const int zw = 166;
 			const int zh = 112;
 
 			uint32 next_ticks = SDL_GetTicks() + 10;
-			for (i = 0; i < 40; i++) {
+			for (int i = 0; i < 40; i++) {
 				int sw = zw + (320 - zw) * i / 40;
 				int sh = zh + (200 - zh) * i / 40;
 				int sx = zx + (0 - zx) * i / 40;
@@ -1178,70 +1087,46 @@ void BG_Game::scene_desk() {
 
 				// frame drop?
 				if (next_ticks > SDL_GetTicks()) {
-					scaler.arb->Scale(unzoomed_surf, sx, sy, sw, sh, zoomed_surf, 0, 0, 320, 200, true);
-					win->put(zoomed, 0 + (win->get_game_width() - 320) / 2, 0 + (win->get_game_height() - 200) / 2);
-					non_gl_blit();
+					scaler.arb->Scale(unzoomed_surf.get(), sx, sy, sw, sh, zoomed_surf.get(), 0, 0, 320, 200, true);
+					win->put(zoomed.get(), 0 + (win->get_game_width() - 320) / 2, 0 + (win->get_game_height() - 200) / 2);
+					win->show();
 					int delta = next_ticks - SDL_GetTicks();
 					if (delta < 0) delta = 0;
 					WAITDELAY(delta);
 				}
 				next_ticks += 10;
 			}
-		} catch (const UserBreakException &x) {
-			SDL_FreeSurface(unzoomed_surf);
-			SDL_FreeSurface(zoomed_surf);
-			FORGET_OBJECT(unzoomed);
-			FORGET_OBJECT(zoomed);
-			throw;
+
+			win->put(unzoomed.get(), 0 + (win->get_game_width() - 320) / 2, 0 + (win->get_game_height() - 200) / 2);
+			win->show();
 		}
-
-		win->put(unzoomed, 0 + (win->get_game_width() - 320) / 2, 0 + (win->get_game_height() - 200) / 2);
-		win->show();
-
-		SDL_FreeSurface(unzoomed_surf);
-		SDL_FreeSurface(zoomed_surf);
-		FORGET_OBJECT(unzoomed);
-		FORGET_OBJECT(zoomed);
-
 
 		// draw arm hitting pc (sh. 0x0C)
-		s = shapes.get_shape(0x0C, 0);
-#ifdef HAVE_OPENGL
-		if (!GL_manager::get_instance())
-#endif
-			backup = win->create_buffer(s->get_width(), s->get_height());
+		{
+			Shape_frame *s = shapes.get_shape(0x0C, 0);
+			auto backup = win->create_buffer(s->get_width(), s->get_height());
 
-		// TODO: add stuff on screen while hitting (static, butterfly scene, black)
+			// TODO: add stuff on screen while hitting (static, butterfly scene, black)
 
-		for (hits = 0; hits < 3; hits++) {
-			WAITDELAY(100);
-			for (i = 0; i < 5; i++) { //was i<9
-#ifdef HAVE_OPENGL
-				if (!GL_manager::get_instance())
-#endif
-					win->get(backup, centerx - 96 - 30 * abs(i % 4 - 2) - s->get_xleft(),
-					         centery + 100 - s->get_yabove());
-				sman->paint_shape(centerx - 96 - 30 * abs(i % 4 - 2), centery + 100, s);
-				win->show();
-#ifdef HAVE_OPENGL
-				if (GL_manager::get_instance()) {
-					sman->paint_shape(centerx, centery, shapes.get_shape(0x09, 0));
-					sman->paint_shape(centerx, centery, shapes.get_shape(0x0A, 0));
-				} else
-#endif
-					win->put(backup, centerx - 96 - 30 * abs(i % 4 - 2) - s->get_xleft(),
-					         centery + 100 - s->get_yabove());
-				WAITDELAY(80);
+			for (int hits = 0; hits < 3; hits++) {
+				WAITDELAY(100);
+				for (int i = 0; i < 5; i++) { //was i<9
+					win->get(backup.get(), centerx - 96 - 30 * abs(i % 4 - 2) - s->get_xleft(),
+							centery + 100 - s->get_yabove());
+					sman->paint_shape(centerx - 96 - 30 * abs(i % 4 - 2), centery + 100, s);
+					win->show();
+					win->put(backup.get(), centerx - 96 - 30 * abs(i % 4 - 2) - s->get_xleft(),
+							centery + 100 - s->get_yabove());
+					WAITDELAY(80);
+				}
+
 			}
 
+			// screen comes back up (sh. 0x1D)
+			sman->paint_shape(centerx + 12, centery - 22, shapes.get_shape(0x1D, 0));
+			win->show();
+			WAITDELAY(1300);
 		}
-
-		// screen comes back up (sh. 0x1D)
-		sman->paint_shape(centerx + 12, centery - 22, shapes.get_shape(0x1D, 0));
-		win->show();
-		WAITDELAY(1300); //
-
-		FORGET_OBJECT(backup);
 
 		// "Something is obviously amiss"
 		sman->paint_shape(centerx, centery + 50, shapes.get_shape(0x15, 0));
@@ -1251,7 +1136,7 @@ void BG_Game::scene_desk() {
 		// TODO: misaligned?
 
 		// scroll right (sh. 0x06: map to the right of the monitor)
-		for (i = 0; i <= 194; i += 2) { //was += 4
+		for (int i = 0; i <= 194; i += 2) { //was += 4
 			sman->paint_shape(centerx - i, centery, shapes.get_shape(0x07, 0));
 			sman->paint_shape(centerx - i, centery, shapes.get_shape(0x09, 0));
 			sman->paint_shape(centerx - i, centery, shapes.get_shape(0x08, 0));
@@ -1270,9 +1155,8 @@ void BG_Game::scene_desk() {
 		}
 
 		WAITDELAY(1500);
-		disable_direct_gl_render();
 		// scroll down (sh. 0x0B: mouse + orb of moons, below map)
-		for (i = 0; i <= 50; i += 2) {
+		for (int i = 0; i <= 50; i += 2) {
 			sman->paint_shape(centerx - 194, centery - i,
 			                  shapes.get_shape(0x07, 0));
 			sman->paint_shape(centerx - 194, centery - i,
@@ -1289,7 +1173,7 @@ void BG_Game::scene_desk() {
 			                  shapes.get_shape(0x0B, 0));
 			// "The mystical Orb beckons you"
 			sman->paint_shape(centerx, topy, shapes.get_shape(0x17, 0));
-			non_gl_blit();
+			win->show();
 			WAITDELAYCYCLE2(110);
 		}
 
@@ -1302,32 +1186,18 @@ void BG_Game::scene_desk() {
 		sman->paint_shape(topx + 319, topy + 149, shapes.get_shape(0x0B, 0));
 		// "It has opened gateways to Britannia in the past"
 		sman->paint_shape(centerx, topy, shapes.get_shape(0x18, 0));
-		non_gl_blit();
+		win->show();
 
 		WAITDELAYCYCLE2(3200);
 		pal->fade_out(100);
 		gwin->clear_screen(true);
-		gl_clear_win();
-		enable_direct_gl_render();
 	} catch (const UserSkipException &/*x*/) {
-		win->clear_clip();
-		FORGET_OBJECT(backup);
-		enable_direct_gl_render();
-	} catch (const UserBreakException &x) {
-		win->clear_clip();
-		// Waste disposal
-		FORGET_OBJECT(backup);
-		enable_direct_gl_render();
-		throw;
 	}
 }
 
 void BG_Game::scene_moongate() {
 	// sh. 0x02, 0x03, 0x04, 0x05: various parts of moongate
 	// sh. 0x00, 0x01: parting trees before clearing
-
-	int i;
-
 	gwin->clear_screen(false);
 	pal->load(INTROPAL_DAT, PATCH_INTROPAL, 5);
 	pal->apply();
@@ -1342,9 +1212,8 @@ void BG_Game::scene_moongate() {
 
 	WAITDELAY(4000);
 
-	disable_direct_gl_render();
 	// Bushes move out of the way
-	for (i = 50; i >= -170; i -= 2) { // was for(i=120;i>=-170;i-=6)
+	for (int i = 50; i >= -170; i -= 2) { // was for(i=120;i>=-170;i-=6)
 		sman->paint_shape(centerx + 1, centery + 1,
 		                  shapes.get_shape(0x02, 0));
 		sman->paint_shape(centerx + 1, centery + 1,
@@ -1367,9 +1236,8 @@ void BG_Game::scene_moongate() {
 			sman->paint_shape(centerx, centery + 50, shapes.get_shape(0x1C, 0));
 		}
 
-		non_gl_blit();
+		win->show();
 		WAITDELAYCYCLE3(80);
-
 	}
 
 	// Wait till the music finished playing
@@ -1377,59 +1245,45 @@ void BG_Game::scene_moongate() {
 		WAITDELAYCYCLE3(50);
 
 	// zoom (run) into moongate
-
 	sman->paint_shape(centerx + 1, centery + 1, shapes.get_shape(0x02, 0));
 	sman->paint_shape(centerx + 1, centery + 1, shapes.get_shape(0x03, 0));
 	sman->paint_shape(centerx + 1, centery + 1, shapes.get_shape(0x04, 0));
 	sman->paint_shape(centerx + 1, centery + 1, shapes.get_shape(0x05, 0));
 
-	Image_buffer *unzoomed = win->create_buffer(320, 200);
-	win->get(unzoomed, 0 + (win->get_game_width() - 320) / 2, 0 + (win->get_game_height() - 200) / 2);
-	Image_buffer *zoomed = win->create_buffer(320, 200);
+	unique_ptr<Image_buffer> unzoomed(win->create_buffer(320, 200));
+	win->get(unzoomed.get(), 0 + (win->get_game_width() - 320) / 2, 0 + (win->get_game_height() - 200) / 2);
+	unique_ptr<Image_buffer> zoomed(win->create_buffer(320, 200));
 
 	const Image_window::ScalerInfo &scaler = Image_window::Scalers[Image_window::point];
 
 	SDL_Surface *draw_surface = win->get_draw_surface();
-	SDL_Surface *unzoomed_surf = SDL_CreateRGBSurfaceFrom(unzoomed->get_bits(), unzoomed->get_height(), unzoomed->get_width(), draw_surface->format->BitsPerPixel, unzoomed->get_line_width(), draw_surface->format->Rmask, draw_surface->format->Gmask, draw_surface->format->Bmask, draw_surface->format->Amask);
-	SDL_Surface *zoomed_surf = SDL_CreateRGBSurfaceFrom(zoomed->get_bits(), zoomed->get_height(), zoomed->get_width(), draw_surface->format->BitsPerPixel, zoomed->get_line_width(), draw_surface->format->Rmask, draw_surface->format->Gmask, draw_surface->format->Bmask, draw_surface->format->Amask);
 
-	try {
-		const int zx = 151;
-		const int zy = 81;
-		const int zw = 5;
-		const int zh = 4;
+	SDL_SurfaceOwner unzoomed_surf(unzoomed.get(), draw_surface);
+	SDL_SurfaceOwner zoomed_surf(zoomed.get(), draw_surface);
 
-		uint32 next_ticks = SDL_GetTicks() + 10;
-		for (i = 159; i >= 0; i--) {
-			int sw = zw + (320 - zw) * i / 160;
-			int sh = zh + (200 - zh) * i / 160;
-			int sx = zx + (0 - zx) * i / 160;
-			int sy = zy + (0 - zy) * i / 160;
+	const int zx = 151;
+	const int zy = 81;
+	const int zw = 5;
+	const int zh = 4;
 
-			// frame drop?
-			if (next_ticks > SDL_GetTicks()) {
-				scaler.arb->Scale(unzoomed_surf, sx, sy, sw, sh, zoomed_surf, 0, 0, 320, 200, true);
-				win->put(zoomed, 0 + (win->get_game_width() - 320) / 2, 0 + (win->get_game_height() - 200) / 2);
-				non_gl_blit();
-				int delta = next_ticks - SDL_GetTicks();
-				if (delta < 0) delta = 0;
-				WAITDELAYCYCLE3(delta);
-			}
-			next_ticks += 5;
+	uint32 next_ticks = SDL_GetTicks() + 10;
+	for (int i = 159; i >= 0; i--) {
+		int sw = zw + (320 - zw) * i / 160;
+		int sh = zh + (200 - zh) * i / 160;
+		int sx = zx + (0 - zx) * i / 160;
+		int sy = zy + (0 - zy) * i / 160;
+
+		// frame drop?
+		if (next_ticks > SDL_GetTicks()) {
+			scaler.arb->Scale(unzoomed_surf.get(), sx, sy, sw, sh, zoomed_surf.get(), 0, 0, 320, 200, true);
+			win->put(zoomed.get(), 0 + (win->get_game_width() - 320) / 2, 0 + (win->get_game_height() - 200) / 2);
+			win->show();
+			int delta = next_ticks - SDL_GetTicks();
+			if (delta < 0) delta = 0;
+			WAITDELAYCYCLE3(delta);
 		}
-	} catch (const UserBreakException &x) {
-		SDL_FreeSurface(unzoomed_surf);
-		SDL_FreeSurface(zoomed_surf);
-		FORGET_OBJECT(unzoomed);
-		FORGET_OBJECT(zoomed);
-		throw;
+		next_ticks += 5;
 	}
-	SDL_FreeSurface(unzoomed_surf);
-	SDL_FreeSurface(zoomed_surf);
-	FORGET_OBJECT(unzoomed);
-	FORGET_OBJECT(zoomed);
-
-	enable_direct_gl_render();
 }
 
 Shape_frame *BG_Game::get_menu_shape() {
@@ -1463,8 +1317,6 @@ public:
 	ExVoiceBuffer(const char *f, const char *p, int i)
 		: file(f), patch(p), index(i), played(false)
 	{ }
-	~ExVoiceBuffer()
-	{ }
 	bool can_play() const {
 		return file || patch;
 	}
@@ -1473,15 +1325,14 @@ public:
 bool ExVoiceBuffer::play_it() {
 	size_t  size;
 	U7multiobject voc(file, patch, index);
-	uint8 *buffer = reinterpret_cast<uint8 *>(voc.retrieve(size));
-	uint8 *buf = buffer;
+	auto buffer = voc.retrieve(size);
+	uint8 *buf = buffer.get();
 	if (!memcmp(buf, "voc", sizeof("voc") - 1)) {
 		// IFF junk.
 		buf += 8;
 		size -= 8;
 	}
 	Audio::get_ptr()->copy_and_play(buf, size, false);
-	FORGET_ARRAY(buffer);
 	played = true;
 
 	return false;
@@ -1493,8 +1344,7 @@ void BG_Game::end_game(bool success) {
 	Font *font = fontManager.get_font("MENU_FONT");
 
 	if (!success) {
-		TextScroller text(MAINSHP_FLX, 0x15,
-		                  font, 0);
+		TextScroller text(MAINSHP_FLX, 0x15, font, nullptr);
 		gwin->clear_screen();
 		pal->load(INTROPAL_DAT, PATCH_INTROPAL, 0);
 		for (sint32 i = 0; i < text.get_count(); i++) {
@@ -1527,18 +1377,10 @@ void BG_Game::end_game(bool success) {
 
 	bool speech = Audio::get_ptr()->is_audio_enabled() &&
 	              Audio::get_ptr()->is_speech_enabled();
-	bool speech_n_subs = Audio::get_ptr()->is_speech_with_subs();
-
-	// Fli Buffers
-	size_t  flisize;
-	char    *fli_b[3];
+	bool want_subs = !speech || Audio::get_ptr()->is_speech_with_subs();
 
 	// Clear screen
 	gwin->clear_screen(true);
-
-	U7multiobject flic1(ENDGAME, PATCH_ENDGAME, 0);
-	U7multiobject flic2(ENDGAME, PATCH_ENDGAME, 1);
-	U7multiobject flic3(ENDGAME, PATCH_ENDGAME, 2);
 
 	ExVoiceBuffer speech1(ENDGAME, PATCH_ENDGAME, 7);
 	ExVoiceBuffer speech2(ENDGAME, PATCH_ENDGAME, 8);
@@ -1553,41 +1395,30 @@ void BG_Game::end_game(bool success) {
 	cout << "Shape in Endgame.dat has " << sf.get_num_frames() << endl;
 	*/
 
-	fli_b[0] = flic1.retrieve(flisize);
-	playfli fli1(fli_b[0] + 8, flisize - 8);
-
-	fli_b[1] = flic2.retrieve(flisize);
-	playfli fli2(fli_b[1] + 8, flisize - 8);
-
-	fli_b[2] = flic3.retrieve(flisize);
-	playfli fli3(fli_b[2] + 8, flisize - 8);
+	// Fli Buffers
+	playfli fli1(ENDGAME, PATCH_ENDGAME, 0);
+	playfli fli2(ENDGAME, PATCH_ENDGAME, 1);
+	playfli fli3(ENDGAME, PATCH_ENDGAME, 2);
 
 	fli1.play(win, 0, 0, 0);
 
 	// Start endgame music.
 	if (midi) midi->start_music(ENDSCORE_XMI, 1, false);
 
-	// A little hack
-	bool do_break = false;
-	do {
-
+	try {
 		for (unsigned int i = 0; i < 240; i++) {
 			next = fli1.play(win, 0, 1, next);
 			if (wait_delay(0)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		for (unsigned int i = 1; i < 150; i++) {
 			next = fli1.play(win, i, i + 1, next);
 			if (wait_delay(0)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		if (speech) speech1.play_it();
 		Font *endfont2 = fontManager.get_font("END2_FONT");
@@ -1598,18 +1429,15 @@ void BG_Game::end_game(bool success) {
 		int height = topy + 200 - endfont2->get_text_height() * 2;
 		int width = (gwin->get_width() - endfont2->get_text_width(message)) / 2;
 
-		disable_direct_gl_render();
 		for (unsigned int i = 150; i < 204; i++) {
 			next = fli1.play(win, i, i, next);
-			if (!speech || speech_n_subs)
+			if (want_subs)
 				endfont2->draw_text(ibuf, width, height, message);
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		// Set new music
 		if (midi) midi->start_music(ENDSCORE_XMI, 2, false);
@@ -1623,21 +1451,19 @@ void BG_Game::end_game(bool success) {
 
 		for (unsigned int i = 0; i < 100; i++) {
 			next = fli2.play(win, i, i, next);
-			if (!speech  || speech_n_subs)
+			if (want_subs)
 				endfont2->draw_text(ibuf, width, height, message);
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		Palette *pal = fli2.get_palette();
 		next = SDL_GetTicks();
 		for (unsigned int i = 1000 + next; next < i; next += 10) {
 			// Speed related frame skipping detection
-			int skip_frame = Game_window::get_instance()->get_frame_skipping() && SDL_GetTicks() >= next;
+			bool skip_frame = Game_window::get_instance()->get_frame_skipping() && SDL_GetTicks() >= next;
 			while (SDL_GetTicks() < next)
 				;
 			if (!skip_frame) {
@@ -1645,19 +1471,11 @@ void BG_Game::end_game(bool success) {
 				pal->apply();
 			}
 			if (wait_delay(0, 0, 1)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
-		enable_direct_gl_render();
-#ifdef HAVE_OPENGL
-		if (GL_manager::get_instance())
-			pal->set(0, 80, true);
-		else
-#endif
-			pal->set_brightness(80);    // Set readable brightness
+		pal->set_brightness(80);    // Set readable brightness
 		// Text message 1
 
 		// Paint backgound black
@@ -1676,18 +1494,14 @@ void BG_Game::end_game(bool success) {
 		// Display text for 3 seconds
 		for (unsigned int i = 0; i < 30; i++) {
 			if (wait_delay(100)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		// Fade out for 1 sec (50 cycles)
 		pal->fade(50, 0, 0);
 
-
 		// Now the second text message
-
 
 		// Paint backgound black
 		win->fill8(0);
@@ -1704,22 +1518,19 @@ void BG_Game::end_game(bool success) {
 		// Display text for approx 3 seonds
 		for (unsigned int i = 0; i < 30; i++) {
 			if (wait_delay(100)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		// Fade out for 1 sec (50 cycles)
 		pal->fade(50, 0, 0);
 
-		disable_direct_gl_render();
 		next = fli3.play(win, 0, 0, next);
 		pal = fli3.get_palette();
 		next = SDL_GetTicks();
 		for (unsigned int i = 1000 + next; next < i; next += 10) {
 			// Speed related frame skipping detection
-			int skip_frame = Game_window::get_instance()->get_frame_skipping() && SDL_GetTicks() >= next;
+			bool skip_frame = Game_window::get_instance()->get_frame_skipping() && SDL_GetTicks() >= next;
 			while (SDL_GetTicks() < next)
 				;
 			if (!skip_frame) {
@@ -1727,11 +1538,9 @@ void BG_Game::end_game(bool success) {
 				pal->apply();
 			}
 			if (wait_delay(0, 0, 1)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		if (speech) speech3.play_it();
 
@@ -1745,24 +1554,21 @@ void BG_Game::end_game(bool success) {
 		for (unsigned int i = next + 28000; i > next;) {
 			for (unsigned int j = 0; j < static_cast<unsigned>(finfo.frames); j++) {
 				next = fli3.play(win, j, j, next);
-				if (!speech || speech_n_subs) {
+				if (want_subs) {
 					for (m = 0; m < 8; m++)
 						endfont3->center_text(ibuf, centerx, starty + endfont3->get_text_height()*m, get_text_msg(txt_screen0 + m));
 				}
-				non_gl_blit();
+				win->show();
 				if (wait_delay(10, 0, 1)) {
-					do_break = true;
-					break;
+					throw UserSkipException();
 				}
 			}
 		}
-		if (do_break) break;
-		enable_direct_gl_render();
 
 		next = SDL_GetTicks();
 		for (unsigned int i = 1000 + next; next < i; next += 10) {
 			// Speed related frame skipping detection
-			int skip_frame = Game_window::get_instance()->get_frame_skipping() && SDL_GetTicks() >= next;
+			bool skip_frame = Game_window::get_instance()->get_frame_skipping() && SDL_GetTicks() >= next;
 			while (SDL_GetTicks() < next)
 				;
 			if (!skip_frame) {
@@ -1770,24 +1576,16 @@ void BG_Game::end_game(bool success) {
 				pal->apply();
 			}
 			if (wait_delay(0, 0, 1)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		// Text Screen 1
-
-#ifdef HAVE_OPENGL
-		if (GL_manager::get_instance())
-			pal->set(0, 80, true);
-		else
-#endif
-			pal->set_brightness(80);    // Set readable brightness
+		pal->set_brightness(80);    // Set readable brightness
 
 		// Paint backgound black
 		win->fill8(0);
-		
+
 		//Because of the German version we have to fit 11 lines of height 20 into a screen of 200 pixels
 		//so starty has needs to be a tiny bit in the negative but not -10
 		starty = (gwin->get_height() - normal->get_text_height() * 11) / 2.5;
@@ -1803,16 +1601,15 @@ void BG_Game::end_game(bool success) {
 		// Display text for 20 seconds (only 10 at the moment)
 		for (unsigned int i = 0; i < 100; i++) {
 			if (wait_delay(100)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		// Fade out for 1 sec (50 cycles)
 		pal->fade(50, 0, 0);
 
-		if (wait_delay(10)) break;
+		if (wait_delay(10))
+			throw UserSkipException();
 
 		// Text Screen 2
 
@@ -1832,16 +1629,15 @@ void BG_Game::end_game(bool success) {
 		// Display text for 20 seonds (only 8 at the moment)
 		for (unsigned int i = 0; i < 80; i++) {
 			if (wait_delay(100)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		// Fade out for 1 sec (50 cycles)
 		pal->fade(50, 0, 0);
 
-		if (wait_delay(10)) break;
+		if (wait_delay(10))
+			throw UserSkipException();
 
 		// Text Screen 3
 
@@ -1861,16 +1657,15 @@ void BG_Game::end_game(bool success) {
 		// Display text for 20 seonds (only 8 at the moment)
 		for (unsigned int i = 0; i < 80; i++) {
 			if (wait_delay(100)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		// Fade out for 1 sec (50 cycles)
 		pal->fade(50, 0, 0);
 
-		if (wait_delay(10)) break;
+		if (wait_delay(10))
+			throw UserSkipException();
 
 		// Text Screen 4
 
@@ -1890,11 +1685,9 @@ void BG_Game::end_game(bool success) {
 		// Display text for 10 seonds (only 5 at the moment)
 		for (unsigned int i = 0; i < 50; i++) {
 			if (wait_delay(100)) {
-				do_break = true;
-				break;
+				throw UserSkipException();
 			}
 		}
-		if (do_break) break;
 
 		// Fade out for 1 sec (50 cycles)
 		pal->fade(50, 0, 0);
@@ -1902,7 +1695,7 @@ void BG_Game::end_game(bool success) {
 		//TODO: only when finishing a game and not when viewed from menu
 		if (when not in menu) {
 			if (wait_delay(10)) break;
-		
+
 			// Congratulations
 
 			// Paint backgound black
@@ -1924,18 +1717,17 @@ void BG_Game::end_game(bool success) {
 			// Display text for 20 seonds (only 8 at the moment)
 			for (unsigned int i = 0; i < 80; i++) {
 				if (wait_delay(100)) {
-					do_break = true;
-					break;
+					throw UserSkipException();
 				}
 			}
-			if (do_break) break;
 
 			// Fade out for 1 sec (50 cycles)
 			pal->fade(50, 0, 0);
 		}
 #endif
 
-	} while (0);
+	} catch (const UserSkipException &/*x*/) {
+	}
 
 	if (midi) {
 		midi->stop_music();
@@ -1945,10 +1737,6 @@ void BG_Game::end_game(bool success) {
 	audio->stop_music();
 
 	gwin->clear_screen(true);
-	FORGET_ARRAY(fli_b[0]);
-	FORGET_ARRAY(fli_b[1]);
-	FORGET_ARRAY(fli_b[2]);
-	enable_direct_gl_render();
 }
 
 void BG_Game::show_quotes() {
@@ -1975,8 +1763,6 @@ void BG_Game::show_credits() {
 }
 
 bool BG_Game::new_game(Vga_file &shapes) {
-	SDL_EnableUNICODE(1);
-
 	int menuy = topy + 110;
 	Font *font = fontManager.get_font("MENU_FONT");
 
@@ -2016,9 +1802,9 @@ bool BG_Game::new_game(Vga_file &shapes) {
 	Palette *pal = gwin->get_pal();
 	// This should work because the palette in exult_bg.flx is
 	// a single-file object.
-	pal->load(INTROPAL_DAT,
+	pal->load(File_spec(INTROPAL_DAT, 6),
 	          File_spec(get_resource("files/gameflx").str, EXULT_BG_FLX_U7MENUPAL_PAL),
-	          PATCH_INTROPAL, 6);
+	          File_spec(PATCH_INTROPAL, 6), 0);
 	Palette *oldpal = new Palette();
 	oldpal->load(INTROPAL_DAT, PATCH_INTROPAL, 6);
 
@@ -2027,57 +1813,88 @@ bool BG_Game::new_game(Vga_file &shapes) {
 	oldpal->create_palette_map(pal, transto);
 	delete oldpal;
 	pal->apply(true);
-#ifdef __IPHONEOS__
-	gkeybb->autopaint = false;
-#endif
 	do {
 		Delay();
-		if (redraw || GL_manager::get_instance()) {
+		if (redraw) {
 			gwin->clear_screen();
-			sman->paint_shape(topx, topy, shapes.get_shape(0x2, 0), 0, transto);
-			sman->paint_shape(topx + 10, menuy + 10, shapes.get_shape(0xC, selected == 0), 0, transto);
+			sman->paint_shape(topx, topy, shapes.get_shape(0x2, 0), false, transto);
+			sman->paint_shape(topx + 10, menuy + 10, shapes.get_shape(0xC, selected == 0), false, transto);
 			Shape_frame *sex_shape = shapes.get_shape(0xA, selected == 1);
-			sman->paint_shape(topx + 10, menuy + 25, sex_shape, 0, transto);
+			sman->paint_shape(topx + 10, menuy + 25, sex_shape, false, transto);
 			int sex_width = sex_shape->get_width() + 10;
 			if (sex_width > 35) sex_width += 25;
 			else sex_width = 60;
 
-			sman->paint_shape(topx + sex_width, menuy + 25, shapes.get_shape(0xB, skindata->is_female), 0, transto);
+			sman->paint_shape(topx + sex_width, menuy + 25, shapes.get_shape(0xB, skindata->is_female), false, transto);
 
 			Shape_frame *portrait = faces_vga.get_shape(skindata->face_shape, skindata->face_frame);
 			sman->paint_shape(topx + 290, menuy + 61, portrait);
 
-			sman->paint_shape(topx + 10, topy + 180, shapes.get_shape(0x8, selected == 2), 0, transto);
-			sman->paint_shape(centerx + 10, topy + 180, shapes.get_shape(0x7, selected == 3), 0, transto);
+			sman->paint_shape(topx + 10, topy + 180, shapes.get_shape(0x8, selected == 2), false, transto);
+			sman->paint_shape(centerx + 10, topy + 180, shapes.get_shape(0x7, selected == 3), false, transto);
 			if (selected == 0)
 				snprintf(disp_name, max_name_len + 2, "%s_", npc_name);
 			else
 				snprintf(disp_name, max_name_len + 2, "%s", npc_name);
 			font->draw_text(ibuf, topx + 60, menuy + 10, disp_name, transto);
-#ifdef __IPHONEOS__
-			gkeybb->paint();
-#endif
 			gwin->get_win()->show();
 			redraw = false;
 		}
+
 		while (SDL_PollEvent(&event)) {
-#ifdef __IPHONEOS__
-			if (gkeybb->handle_event(&event))
-				redraw = true;
-#endif
 			Uint16 keysym_unicode = 0;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 			bool isTextInput = false;
-			if (event.type == SDL_TEXTINPUT) {
+			if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+				SDL_Rect rectName   = { topx + 10,    menuy + 10, 130,  16 };
+				SDL_Rect rectSex    = { topx + 10,    menuy + 25, 130,  16 };
+				SDL_Rect rectOnward = { topx + 10,    topy + 180, 130,  16 };
+				SDL_Rect rectReturn = { centerx + 10, topy + 180, 130,  16 };
+				SDL_Point point;
+				gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), point.x, point.y);
+				if (SDL_EnclosePoints(&point, 1, &rectName, nullptr)) {
+					if (event.type == SDL_MOUSEBUTTONDOWN) {
+						selected = 0;
+					} else if (selected == 0 && touchui != nullptr) {
+						touchui->promptForName(npc_name);
+					}
+					redraw = true;
+				} else if (SDL_EnclosePoints(&point, 1, &rectSex, nullptr)) {
+					if (event.type == SDL_MOUSEBUTTONDOWN) {
+						selected = 1;
+					} else if (selected == 1) {
+						skindata = Shapeinfo_lookup::GetNextSelSkin(skindata, si_installed, true);
+					}
+					redraw = true;
+				} else if (SDL_EnclosePoints(&point, 1, &rectOnward, nullptr)) {
+					if (event.type == SDL_MOUSEBUTTONDOWN) {
+						selected = 2;
+					} else if (selected == 2) {
+						editing = false;
+						ok = true;
+					}
+					redraw = true;
+				} else if (SDL_EnclosePoints(&point, 1, &rectReturn, nullptr)) {
+					if (event.type == SDL_MOUSEBUTTONDOWN) {
+						selected = 3;
+					} else if (selected == 3) {
+						editing = false;
+						ok = false;
+					}
+					redraw = true;
+				}
+			} else if (event.type == TouchUI::eventType) {
+				if (event.user.code == TouchUI::EVENT_CODE_TEXT_INPUT) {
+					if (selected == 0 && event.user.data1 != nullptr) {
+						strcpy(npc_name, static_cast<char*>(event.user.data1));
+						redraw = true;
+					}
+				}
+			} else if (event.type == SDL_TEXTINPUT) {
 				isTextInput = true;
 				event.type = SDL_KEYDOWN;
 				event.key.keysym.sym = SDLK_UNKNOWN;
 				keysym_unicode = event.text.text[0];
-   #if !(SDL_VERSION_ATLEAST(2, 0, 0))
-				event.key.keysym.unicode = keysym_unicode;
-   #endif
 			}
-#endif
 			if (event.type == SDL_KEYDOWN) {
 				redraw = true;
 				switch (event.key.keysym.sym) {
@@ -2129,25 +1946,15 @@ bool BG_Game::new_game(Vga_file &shapes) {
 					} else
 						editing = ok = false;
 					break;
-#ifdef __IPHONEOS__
-				case SDLK_DELETE:
-#endif
 				case SDLK_BACKSPACE:
 					if (selected == 0 && strlen(npc_name) > 0)
 						npc_name[strlen(npc_name) - 1] = 0;
 					break;
 				default: {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 					if ((isTextInput && selected == 0) || (!isTextInput && keysym_unicode > +'~' && selected == 0))
-#else
-					if (selected == 0) // on the text input field?
-#endif
 					{
 						int len = strlen(npc_name);
 						char chr = 0;
-#if !(SDL_VERSION_ATLEAST(2, 0, 0))
-						keysym_unicode = event.key.keysym.unicode;
-#endif
 						if ((keysym_unicode & 0xFF80) == 0)
 							chr = keysym_unicode & 0x7F;
 
@@ -2171,9 +1978,6 @@ bool BG_Game::new_game(Vga_file &shapes) {
 #ifdef DEBUG
 		std::cout << "Skin is: " << skindata->skin_id << " Sex is: " << skindata->is_female << std::endl;
 #endif
-#ifdef __IPHONEOS__
-		gkeybb->autopaint = true;
-#endif
 		set_avskin(skindata->skin_id);
 		set_avname(npc_name);
 		set_avsex(skindata->is_female);
@@ -2185,7 +1989,5 @@ bool BG_Game::new_game(Vga_file &shapes) {
 		sman->paint_shape(topx, topy, shapes.get_shape(0x2, 0));
 		pal->apply();
 	}
-
-	SDL_EnableUNICODE(0);
 	return ok;
 }

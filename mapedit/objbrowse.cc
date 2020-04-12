@@ -2,7 +2,7 @@
 #  include <config.h>
 #endif
 
-#include <ctype.h>
+#include <cctype>
 #include <gdk/gdkkeysyms.h>
 #include "objbrowse.h"
 #include "shapegroup.h"
@@ -16,10 +16,8 @@ using EStudio::Add_menu_item;
 using EStudio::Create_arrow_button;
 
 Object_browser::Object_browser(Shape_group *grp, Shape_file_info *fi)
-	: selected(-1), index0(0), vscroll(0), hscroll(0), group(grp), popup(0),
-	  file_info(fi), find_text(0), loc_down(0), loc_up(0), loc_q(0), loc_f(0),
-	  move_down(0), move_up(0), config_width(0), config_height(0) {
-	widget = 0;
+	: group(grp), file_info(fi) {
+	widget = nullptr;
 }
 
 Object_browser::~Object_browser() {
@@ -39,11 +37,15 @@ bool Object_browser::search_name(
     const char *nm,
     const char *srch
 ) {
-	char first = tolower(*srch);
+	auto safe_tolower = [](const char ch) {
+		return static_cast<char>(tolower(static_cast<unsigned char>(ch)));
+	};
+	char first = safe_tolower(*srch);
 	while (*nm) {
-		if (tolower(*nm) == first) {
-			const char *np = nm + 1, *sp = srch + 1;
-			while (*sp && tolower(*np) == tolower(*sp)) {
+		if (safe_tolower(*nm) == first) {
+			const char *np = nm + 1;
+			const char *sp = srch + 1;
+			while (*sp && safe_tolower(*np) == safe_tolower(*sp)) {
 				sp++;
 				np++;
 			}
@@ -131,7 +133,8 @@ void File_selector_ok(
 	                             GTK_WIDGET(btn)));
 	const char *fname = gtk_file_selection_get_filename(fsel);
 	File_sel_okay_fun fun = reinterpret_cast<File_sel_okay_fun>(
-	                        gtk_object_get_user_data(GTK_OBJECT(fsel)));
+	                        	reinterpret_cast<uintptr_t>(
+									gtk_object_get_user_data(GTK_OBJECT(fsel))));
 	if (fname && *fname && fun)
 		(*fun)(fname, user_data);
 }
@@ -148,7 +151,9 @@ GtkFileSelection *Create_file_selection(
 	GtkFileSelection *fsel = GTK_FILE_SELECTION(gtk_file_selection_new(
 	                             title));
 	gtk_window_set_modal(GTK_WINDOW(fsel), true);
-	gtk_object_set_user_data(GTK_OBJECT(fsel), reinterpret_cast<void *>(ok_handler));
+	gtk_object_set_user_data(GTK_OBJECT(fsel),
+							reinterpret_cast<void *>(
+	                        	reinterpret_cast<uintptr_t>(ok_handler)));
 	gtk_signal_connect(GTK_OBJECT(fsel->ok_button), "clicked",
 	                   GTK_SIGNAL_FUNC(File_selector_ok), user_data);
 	// Destroy when done.
@@ -304,7 +309,7 @@ on_move_up(GtkButton       *button,
 GtkWidget *Object_browser::create_controls(
     int controls            // Browser_control flags.
 ) {
-	GtkWidget *topframe = gtk_frame_new(NULL);
+	GtkWidget *topframe = gtk_frame_new(nullptr);
 	gtk_widget_show(topframe);
 
 	// Everything goes in here.

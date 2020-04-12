@@ -16,16 +16,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _NOTEBOOK_GUMP_H_
-#define _NOTEBOOK_GUMP_H_
+#ifndef NOTEBOOK_GUMP_H
+#define NOTEBOOK_GUMP_H
 
 #include "Gump.h"
 #include "font.h"
 #include <string>
 #include <vector>
-
-using std::string;
-using std::vector;
 
 class One_note;
 
@@ -45,18 +42,18 @@ public:
  *  A notebook gump represents the in-game journal.
  */
 class Notebook_gump : public Gump {
-	UNREPLICATABLE_CLASS_I(Notebook_gump, Gump())
-	static vector<One_note *> notes;// The text.
+	UNREPLICATABLE_CLASS(Notebook_gump)
+	static std::vector<One_note *> notes;// The text.
 	// Indexed by page#.
-	static vector<Notebook_top> page_info;
+	static std::vector<Notebook_top> page_info;
 	static Notebook_gump *instance;
 	static bool initialized;
 	static bool initialized_auto_text;
-	static vector<string> auto_text;// Auto-text for global flags.
-	int curnote;            // Current note # being edited.
-	int curpage;            // Current page # (from 0).
+	static std::vector<std::string> auto_text;// Auto-text for global flags.
+	int curnote = 0;            // Current note # being edited.
+	int curpage = 0;            // Current page # (from 0).
 	Cursor_info cursor;     // Cursor loc. within current note.
-	int updnx;          // X-coord. for up/down arrows.
+	int updnx = 0;          // X-coord. for up/down arrows.
 	// Page turners:
 	Gump_button *leftpage, *rightpage;
 	// Add new note.
@@ -64,9 +61,9 @@ class Notebook_gump : public Gump {
 	bool paint_page(Rectangle const &box, One_note *note, int &offset,
 	                int pagenum);
 	bool need_next_page() const {
-		return (curpage % 2 == 1 && curpage < static_cast<int>(page_info.size()) - 1 &&
+		return curpage % 2 == 1 && curpage < static_cast<int>(page_info.size()) - 1 &&
 		        page_info[curpage + 1].offset > 0 &&
-		        cursor.offset >= page_info[curpage + 1].offset);
+		        cursor.offset >= page_info[curpage + 1].offset;
 	}
 	void prev_page();
 	void next_page();
@@ -76,7 +73,7 @@ class Notebook_gump : public Gump {
 	void down_arrow();
 public:
 	Notebook_gump();
-	virtual ~Notebook_gump();
+	~Notebook_gump() override;
 	static void clear();
 	static Notebook_gump *create();
 	static Notebook_gump *get_instance() {
@@ -84,17 +81,17 @@ public:
 	}
 	void change_page(int delta);    // Page forward/backward.
 	// Is a given point on a button?
-	virtual Gump_button *on_button(int mx, int my);
-	virtual void paint();       // Paint it and its contents.
-	virtual bool handle_kbd_event(void *ev);
-	static void add_gflag_text(int gflag, const string &text);
+	Gump_button *on_button(int mx, int my) override;
+	void paint() override;       // Paint it and its contents.
+	bool handle_kbd_event(void *ev) override;
+	static void add_gflag_text(int gflag, const std::string &text);
 	static void add_gflag_text(int gflag) {
 		if (!initialized_auto_text)
 			read_auto_text();
 		if (gflag < static_cast<int>(auto_text.size()) && auto_text[gflag].size())
 			add_gflag_text(gflag, auto_text[gflag]);
 	}
-	virtual bool is_draggable() const {
+	bool is_draggable() const override {
 		return false;
 	}
 	static void initialize();

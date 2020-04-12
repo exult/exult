@@ -60,7 +60,6 @@ void Handle_client_debug_message(int &fd) {
 		// maybe reply something like "unable to handle message" ?
 		break;
 	}
-
 }
 
 void Handle_debug_message(unsigned char *data, int datalen) {
@@ -68,7 +67,7 @@ void Handle_debug_message(unsigned char *data, int datalen) {
 	Usecode_machine *ucm = Game_window::get_instance()->get_usecode();
 	Usecode_internal *uci = dynamic_cast<Usecode_internal *>(ucm);
 
-	if (uci == 0)
+	if (uci == nullptr)
 		return; // huh?
 
 	Exult_server::Debug_msg_type id = static_cast<Exult_server::Debug_msg_type>(data[0]);
@@ -111,7 +110,7 @@ void Handle_debug_message(unsigned char *data, int datalen) {
 				                frame->call_chain,
 				                frame->call_depth,
 				                frame->eventid,
-				                reinterpret_cast<uintptr>(frame->caller_item),
+				                reinterpret_cast<uintptr>(frame->caller_item.get()),
 				                frame->num_args,
 				                frame->num_vars,
 				                frame->locals);
@@ -121,8 +120,7 @@ void Handle_debug_message(unsigned char *data, int datalen) {
 		case Exult_server::dbg_get_stack: {
 			Usecode_value zeroval(0);
 			stringstream dataio(ios::in|ios::out|ios::binary);
-			std::ostream *dataout = &dataio;
-			OStreamDataSource ds(dataout);
+			OStreamDataSource ds(&dataio);
 			ds.write1(static_cast<unsigned char>(Exult_server::dbg_stack));
 			int stacksize = uci->get_stack_size();
 			ds.write2(stacksize);
@@ -213,8 +211,6 @@ void Handle_debug_message(unsigned char *data, int datalen) {
 	default:
 		break;
 	}
-
 }
-
 
 #endif

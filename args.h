@@ -16,17 +16,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _ARGS_H_
-#define _ARGS_H_
+#ifndef ARGS_H
+#define ARGS_H
 
 // Handy argument processor. I'm certain the implementation could be better
 // but it suffices quite well at the moment.
 
 #include "common_types.h"
-
-#ifdef __DECCXX
-#  undef declare
-#endif
 
 #include <string>
 #include <vector>
@@ -46,16 +42,13 @@ class   Args {
 			int dival;
 			uint32 duval;
 		};
-		enum { no_type = 0, type_bool, type_string, type_int, type_unsigned } valuetype;
-		Opts() : option(""), sval(0), dsval(0), valuetype(no_type) {}
-		~Opts() {}
+		enum { no_type = 0, type_bool, type_string, type_int, type_unsigned } valuetype = no_type;
+		Opts() : sval(nullptr), dsval(nullptr) {}
 	};
 	std::vector<Opts> options;
 public:
-	Args() {}
-	~Args() {}
 	void    declare(const char *s, bool *b, bool defval = true);
-	void    declare(const char *s, std::string *b, const char *defval = 0);
+	void    declare(const char *s, std::string *b, const char *defval = nullptr);
 	void    declare(const char *s, int *b, int defval = 0);
 	void    declare(const char *s, uint32 *b, uint32 defval = 0);
 	void    process(int argc, char **argv);

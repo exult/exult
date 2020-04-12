@@ -124,8 +124,8 @@ struct zip_internal {
 static linkedlist_datablock_internal *allocate_new_datablock() {
 	linkedlist_datablock_internal *ldi;
 	ldi = new linkedlist_datablock_internal();
-	if (ldi != NULL) {
-		ldi->next_datablock = NULL ;
+	if (ldi != nullptr) {
+		ldi->next_datablock = nullptr ;
 		ldi->filled_in_this_block = 0 ;
 		ldi->avail_in_this_block = SIZEDATA_INDATABLOCK ;
 	}
@@ -133,7 +133,7 @@ static linkedlist_datablock_internal *allocate_new_datablock() {
 }
 
 static void free_datablock(linkedlist_datablock_internal *ldi) {
-	while (ldi != NULL) {
+	while (ldi != nullptr) {
 		linkedlist_datablock_internal *ldinext = ldi->next_datablock;
 		delete ldi;
 		ldi = ldinext;
@@ -141,27 +141,19 @@ static void free_datablock(linkedlist_datablock_internal *ldi) {
 }
 
 static void init_linkedlist(linkedlist_data *ll) {
-	ll->first_block = ll->last_block = NULL;
+	ll->first_block = ll->last_block = nullptr;
 }
-
-/* Currently not being used */
-#if 0
-static void free_linkedlist(linkedlist_data *ll) {
-	free_datablock(ll->first_block);
-	ll->first_block = ll->last_block = NULL;
-}
-#endif
 
 static int add_data_in_datablock(linkedlist_data *ll, const void *buf, uLong len) {
 	linkedlist_datablock_internal *ldi;
 	const unsigned char *from_copy;
 
-	if (ll == NULL)
+	if (ll == nullptr)
 		return ZIP_INTERNALERROR;
 
-	if (ll->last_block == NULL) {
+	if (ll->last_block == nullptr) {
 		ll->first_block = ll->last_block = allocate_new_datablock();
-		if (ll->first_block == NULL)
+		if (ll->first_block == nullptr)
 			return ZIP_INTERNALERROR;
 	}
 
@@ -175,7 +167,7 @@ static int add_data_in_datablock(linkedlist_data *ll, const void *buf, uLong len
 
 		if (ldi->avail_in_this_block == 0) {
 			ldi->next_datablock = allocate_new_datablock();
-			if (ldi->next_datablock == NULL)
+			if (ldi->next_datablock == nullptr)
 				return ZIP_INTERNALERROR;
 			ldi = ldi->next_datablock ;
 			ll->last_block = ldi;
@@ -198,22 +190,6 @@ static int add_data_in_datablock(linkedlist_data *ll, const void *buf, uLong len
 	}
 	return ZIP_OK;
 }
-
-
-/* Currently not being used */
-#if 0
-static int write_datablock(FILE *fout, linkedlist_data *ll) {
-	linkedlist_datablock_internal *ldi;
-	ldi = ll->first_block;
-	while (ldi != NULL) {
-		if (ldi->filled_in_this_block > 0)
-			if (fwrite(ldi->data, ldi->filled_in_this_block, 1, fout) != 1)
-				return ZIP_ERRNO;
-		ldi = ldi->next_datablock;
-	}
-	return ZIP_OK;
-}
-#endif
 
 /****************************************************************************/
 
@@ -267,7 +243,7 @@ extern zipFile ZEXPORT zipOpen(const char *pathname, int append) {
 	zip_internal ziinit;
 	zip_internal *zi;
 
-	ziinit.filezip = NULL;
+	ziinit.filezip = nullptr;
 
 	/* Start changes by Ryan Nunn to fix append mode bug */
 
@@ -276,12 +252,12 @@ extern zipFile ZEXPORT zipOpen(const char *pathname, int append) {
 		ziinit.filezip = fopen(pathname, "r+b");
 
 	/* If not append, or failed, use wb */
-	if (ziinit.filezip == NULL)
+	if (ziinit.filezip == nullptr)
 		ziinit.filezip = fopen(pathname, "wb");
 
 	/* Still doesn't exist, means can't create */
-	if (ziinit.filezip == NULL)
-		return NULL;
+	if (ziinit.filezip == nullptr)
+		return nullptr;
 
 	/* Make sure we are at the end of the file */
 	fseek(ziinit.filezip, 0, SEEK_END);
@@ -314,7 +290,7 @@ extern int ZEXPORT zipOpenNewFileInZip(zipFile file,
 	uInt i;
 	int err = ZIP_OK;
 
-	if (file == NULL)
+	if (file == nullptr)
 		return ZIP_PARAMERROR;
 	if ((method != 0) && (method != Z_DEFLATED))
 		return ZIP_PARAMERROR;
@@ -326,17 +302,17 @@ extern int ZEXPORT zipOpenNewFileInZip(zipFile file,
 	}
 
 
-	if (filename == NULL)
+	if (filename == nullptr)
 		filename = "-";
 
-	if (comment == NULL)
+	if (comment == nullptr)
 		size_comment = 0;
 	else
 		size_comment = strlen(comment);
 
 	size_filename = strlen(filename);
 
-	if (zipfi == NULL)
+	if (zipfi == nullptr)
 		file->ci.dosDate = 0;
 	else {
 		if (zipfi->dosDate != 0)
@@ -376,12 +352,12 @@ extern int ZEXPORT zipOpenNewFileInZip(zipFile file,
 	ziplocal_putValue_inmemory(file->ci.central_header + 32, size_comment, 2);
 	ziplocal_putValue_inmemory(file->ci.central_header + 34, 0, 2); /*disk nm start*/
 
-	if (zipfi == NULL)
+	if (zipfi == nullptr)
 		ziplocal_putValue_inmemory(file->ci.central_header + 36, 0, 2);
 	else
 		ziplocal_putValue_inmemory(file->ci.central_header + 36, zipfi->internal_fa, 2);
 
-	if (zipfi == NULL)
+	if (zipfi == nullptr)
 		ziplocal_putValue_inmemory(file->ci.central_header + 38, 0, 4);
 	else
 		ziplocal_putValue_inmemory(file->ci.central_header + 38, zipfi->external_fa, 4);
@@ -398,7 +374,7 @@ extern int ZEXPORT zipOpenNewFileInZip(zipFile file,
 	for (i = 0; i < size_comment; i++)
 		*(file->ci.central_header + SIZECENTRALHEADER + size_filename +
 		  size_extrafield_global + i) = *(filename + i);
-	if (file->ci.central_header == NULL)
+	if (file->ci.central_header == nullptr)
 		return ZIP_INTERNALERROR;
 
 	/* write the local header */
@@ -444,9 +420,9 @@ extern int ZEXPORT zipOpenNewFileInZip(zipFile file,
 	file->ci.stream.total_out = 0;
 
 	if ((err == ZIP_OK) && (file->ci.method == Z_DEFLATED)) {
-		file->ci.stream.zalloc = static_cast<alloc_func>(0);
-		file->ci.stream.zfree = static_cast<free_func>(0);
-		file->ci.stream.opaque = 0;
+		file->ci.stream.zalloc = nullptr;
+		file->ci.stream.zfree = nullptr;
+		file->ci.stream.opaque = nullptr;
 
 		err = deflateInit2(&file->ci.stream, level,
 		                   Z_DEFLATED, -MAX_WBITS, DEF_MEM_LEVEL, 0);
@@ -464,7 +440,7 @@ extern int ZEXPORT zipOpenNewFileInZip(zipFile file,
 extern int ZEXPORT zipWriteInFileInZip(zipFile file, const voidp buf, unsigned len) {
 	int err = ZIP_OK;
 
-	if (file == NULL)
+	if (file == nullptr)
 		return ZIP_PARAMERROR;
 
 	if (file->in_opened_file_inzip == 0)
@@ -490,7 +466,8 @@ extern int ZEXPORT zipWriteInFileInZip(zipFile file, const voidp buf, unsigned l
 			file->ci.pos_in_buffered_data += (file->ci.stream.total_out - uTotalOutBefore) ;
 
 		} else {
-			uInt copy_this, i;
+			uInt copy_this;
+			uInt i;
 			if (file->ci.stream.avail_in < file->ci.stream.avail_out)
 				copy_this = file->ci.stream.avail_in;
 			else
@@ -516,7 +493,7 @@ extern int ZEXPORT zipWriteInFileInZip(zipFile file, const voidp buf, unsigned l
 extern int ZEXPORT zipCloseFileInZip(zipFile file) {
 	int err = ZIP_OK;
 
-	if (file == NULL)
+	if (file == nullptr)
 		return ZIP_PARAMERROR;
 
 	if (file->in_opened_file_inzip == 0)
@@ -594,14 +571,14 @@ extern int ZEXPORT zipClose(zipFile file, const char *global_comment) {
 	uLong size_centraldir = 0;
 	uLong centraldir_pos_inzip ;
 	uInt size_global_comment;
-	if (file == NULL)
+	if (file == nullptr)
 		return ZIP_PARAMERROR;
 
 	if (file->in_opened_file_inzip == 1) {
 		err = zipCloseFileInZip(file);
 	}
 
-	if (global_comment == NULL)
+	if (global_comment == nullptr)
 		size_global_comment = 0;
 	else
 		size_global_comment = strlen(global_comment);
@@ -610,7 +587,7 @@ extern int ZEXPORT zipClose(zipFile file, const char *global_comment) {
 	centraldir_pos_inzip = ftell(file->filezip);
 	if (err == ZIP_OK) {
 		linkedlist_datablock_internal *ldi = file->central_dir.first_block ;
-		while (ldi != NULL) {
+		while (ldi != nullptr) {
 			if ((err == ZIP_OK) && (ldi->filled_in_this_block > 0))
 				if (fwrite(ldi->data, ldi->filled_in_this_block,
 				           1, file->filezip) != 1)

@@ -37,12 +37,12 @@ public:
 	ALSAMidiDriver();
 
 protected:
-	virtual int			open();
-	virtual void		close();
-	virtual void		send(uint32 message);
-//	virtual void		yield();
-	virtual void		send_sysex(uint8 status, const uint8 *msg,
-								   uint16 length);
+	int			open() override;
+	void		close() override;
+	void		send(uint32 b) override;
+//	void		yield() override;
+	void		send_sysex(uint8 status, const uint8 *msg,
+								   uint16 length) override;
 
 	std::string devname;
 	bool isOpen;

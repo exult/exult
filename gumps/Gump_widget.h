@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _GUMP_WIDGET_H_
-#define _GUMP_WIDGET_H_
+#ifndef GUMP_WIDGET_H
+#define GUMP_WIDGET_H
 
 #include "exceptions.h"
 #include "gump_types.h"
@@ -32,11 +32,11 @@ class Game_window;
  *  A gump widget, such as a button or text field:
  */
 class Gump_widget : public ShapeID {
-	UNREPLICATABLE_CLASS_I(Gump_widget, ShapeID())
+	UNREPLICATABLE_CLASS(Gump_widget)
 
 protected:
-	Gump_widget() : parent(0) {  }
-	Gump *parent;       // Who this is in.
+	Gump_widget() = default;
+	Gump *parent = nullptr;       // Who this is in.
 	short x, y;         // Coords. relative to parent.
 
 public:
@@ -48,14 +48,13 @@ public:
 	{  }
 	virtual Gump_widget *clone(Gump *par) {
 		ignore_unused_variable_warning(par);
-		return 0;
+		return nullptr;
 	}
-	virtual ~Gump_widget() {  }
 	// Is a given point on the widget?
-	virtual int on_widget(int mx, int my) const;
-	virtual int on_button(int mx, int my) const {
+	virtual bool on_widget(int mx, int my) const;
+	virtual bool on_button(int mx, int my) const {
 		ignore_unused_variable_warning(mx, my);
-		return 0;
+		return false;
 	}
 	virtual void paint();
 

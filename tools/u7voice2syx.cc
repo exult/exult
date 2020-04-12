@@ -42,7 +42,7 @@ Send patches using: 2,tnum,24,50,24,0,1,0 (enables reverb)
 char sysex_buffer[8 + 256 + 2];
 
 const uint32 sysex_data_start = 8;      // Data starts at byte 8
-const uint32 sysex_max_data_size = 256;
+//const uint32 sysex_max_data_size = 256;
 
 
 //
@@ -53,16 +53,16 @@ const uint32 rhythm_base = 0x030110;    // Note, these are 7 bit!
 const uint32 rhythm_mem_size = 4;
 
 const uint32 rhythm_first_note = 24;
-const uint32 rhythm_num_notes = 64;
+//const uint32 rhythm_num_notes = 64;
 
 // Memory offset based on index in the table
 inline uint32 rhythm_mem_offset(uint32 index_num) {
-	return index_num * 4;
+	return index_num * rhythm_mem_size;
 }
 
 // Memory offset based on note key num
 inline uint32 rhythm_mem_offset_note(uint32 rhythm_note_num) {
-	return (rhythm_note_num - rhythm_first_note) * 4;
+	return (rhythm_note_num - rhythm_first_note) * rhythm_mem_size;
 }
 
 struct RhythmSetupData {
@@ -119,7 +119,7 @@ const PatchMemData patch_template = {
 // System Area Consts
 //
 const uint32 system_base = 0x100000;    // Note, these are 7 bit!
-const uint32 system_mem_size = 0x17;    // Display is 20 ASCII characters (32-127)
+//const uint32 system_mem_size = 0x17;    // Display is 20 ASCII characters (32-127)
 #include <cstddef>
 #ifndef offsetof	// Broken <cstddef>? Just in case...
 #   define offsetof(type, field) reinterpret_cast<uintptr>(&(static_cast<type *>(0)->field))
@@ -188,9 +188,9 @@ RhythmSetupData U7PercussionData[] = {
 };
 
 
-// If data is NULL, then it is assumed that sysex_buffer already contains the data
+// If data is nullptr, then it is assumed that sysex_buffer already contains the data
 // address_base is 7-bit, while address_offset is 8 bit!
-std::size_t fill_sysex_buffer(uint32 address_base, uint16 address_offset, uint32 len, const void *data = 0) {
+std::size_t fill_sysex_buffer(uint32 address_base, uint16 address_offset, uint32 len, const void *data = nullptr) {
 	// SysEx status
 	sysex_buffer[0] = static_cast<char>(0xF0);
 
@@ -229,7 +229,9 @@ std::size_t fill_sysex_buffer(uint32 address_base, uint16 address_offset, uint32
 
 int main(int argc, char *argv[]) {
 	ignore_unused_variable_warning(argc, argv);
-	uint32 i, j, patch_num;
+	uint32 i;
+	uint32 j;
+	uint32 patch_num;
 	std::size_t num_to_write;
 
 	char name[11];
@@ -267,20 +269,17 @@ int main(int argc, char *argv[]) {
 			FlexFile f(filename);
 
 			std::cout << "Reading data..." << std::endl;
-			std::size_t size;
-			char *data = f.retrieve(0, size);
 
-			if (!size)
-				throw(exult_exception("No data in index 0"));
-
-			// Create us a IBufferDataSource
-			IBufferDataSource ds(data, size);
+			// Create us a data source
+			IBufferDataSource ds = f.retrieve(0);
+			if (!ds.good())
+				throw exult_exception("No data in index 0");
 
 			uint32 num_timbres = ds.read1();
 			std::cout << num_timbres << " custom timbres..." << std::endl;
 
 			if (ds.getSize() != 247 * num_timbres + 1)
-				throw(exult_exception("File size didn't match timbre count. Wont convert."));
+				throw exult_exception("File size didn't match timbre count. Wont convert.");
 
 			std::cout << "Opening " << outname << " for writing..." << std::endl;
 			std::ofstream sysex_file;

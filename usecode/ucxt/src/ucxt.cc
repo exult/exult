@@ -55,7 +55,6 @@
 // include xml configuration stuff
 #include "Configuration.h"
 #include "exult_constants.h"
-const std::string c_empty_string; // Ob for exult_constants.h
 
 /* Functions */
 void usage();
@@ -79,10 +78,10 @@ int main(int argc, char **argv) {
 	if (uc.options.verbose) cout << "Parameters parsed..." << endl;
 
 	// attempt to find an exult.cfg file... _somewhere_
-	if (uc.options.noconf == false) {
+	if (!uc.options.noconf) {
 		if (uc.options.verbose) cout << "Loading exult configuration file..." << endl;
 		setup_program_paths();
-		if (config->read_config_file("exult.cfg") == false) {
+		if (!config->read_config_file("exult.cfg")) {
 			cout << "Failed to locate exult.cfg. Run exult before running ucxt or use the -nc switch. Exiting." << endl;
 			exit(1);
 		}
@@ -102,7 +101,7 @@ int main(int argc, char **argv) {
 	// yes, it's a hack to fix an eldritch bug I could't find... it seems appropriate
 	// FIXME: Problem nolonger exists. Probably should put some 'nice' code in it's place.
 	std::ofstream outputstream;
-	std::streambuf *coutbuf = 0;
+	std::streambuf *coutbuf = nullptr;
 	if (!uc.output_redirect().empty()) {
 		U7open(outputstream, uc.output_redirect().c_str(), false);
 		if (outputstream.fail()) {
@@ -134,9 +133,9 @@ int main(int argc, char **argv) {
 }
 
 void open_usecode_file(UCData &uc, const Configuration &config) {
-	GameManager *gamemanager = 0;
+	GameManager *gamemanager = nullptr;
 	string u8path;
-	if (uc.options.noconf == false) {
+	if (!uc.options.noconf) {
 		gamemanager = new GameManager(true);
 		config.value("config/disk/game/pagan/path", u8path);
 	}
@@ -179,14 +178,17 @@ void open_usecode_file(UCData &uc, const Configuration &config) {
 	const string mucc_sic("SERPENT");
 	const string mucc_u8l("pagan");
 	const string mucc_u8c("PAGAN");
-	string path, ucspecial, mucc_l, mucc_c;
+	string path;
+	string ucspecial;
+	string mucc_l;
+	string mucc_c;
 
 	if (uc.options.game_bg() || uc.options.game_fov()
 	    || uc.options.game_si() || uc.options.game_ss()
 	    || uc.options.game_sib()) {
 		string game;
 		if (gamemanager) {
-			ModManager *basegame = 0;
+			ModManager *basegame = nullptr;
 			if (uc.options.game_bg()) {
 				basegame = gamemanager->get_bg();
 				game = "BG";
@@ -264,7 +266,7 @@ void open_usecode_file(UCData &uc, const Configuration &config) {
 	// an icky exception chain for those who don't use .exult.cfg
 	if (!uc.input_usecode_file().empty())
 		uc.open_usecode(uc.input_usecode_file());
-	else if (uc.options.noconf == false) {
+	else if (!uc.options.noconf) {
 		uc.open_usecode(path + mucc_ll);
 		if (uc.fail())
 			uc.open_usecode(path + mucc_cl);

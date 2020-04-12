@@ -115,7 +115,7 @@ C_EXPORT gboolean on_egg_monster_draw_expose_event(
 	ExultStudio::get_instance()->show_egg_monster(
 	    event->area.x, event->area.y, event->area.width,
 	    event->area.height);
-	return (TRUE);
+	return TRUE;
 }
 
 /*
@@ -160,7 +160,7 @@ static void Egg_monster_dropped(
 		static_cast<ExultStudio *>(udata)->set_egg_monster(shape, frame);
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 static void Drop_dragged_shape(int shape, int frame, int x, int y, void *data) {
 	ignore_unused_variable_warning(x, y);
@@ -187,7 +187,7 @@ void ExultStudio::open_egg_window(
 		eggwin = glade_xml_get_widget(app_xml, "egg_window");
 		if (vgafile && palbuf) {
 			egg_monster_draw = new Shape_draw(vgafile->get_ifile(),
-			                                  palbuf,
+			                                  palbuf.get(),
 			                                  glade_xml_get_widget(app_xml, "egg_monster_draw"));
 			egg_monster_draw->enable_drop(Egg_monster_dropped,
 			                              this);
@@ -197,7 +197,7 @@ void ExultStudio::open_egg_window(
 		                                app_xml, "egg_status")), "Egg Editor");
 	}
 	// Init. egg address to null.
-	gtk_object_set_user_data(GTK_OBJECT(eggwin), 0);
+	gtk_object_set_user_data(GTK_OBJECT(eggwin), nullptr);
 	// Make 'apply' sensitive.
 	gtk_widget_set_sensitive(glade_xml_get_widget(app_xml,
 	                         "egg_apply_btn"), true);
@@ -214,9 +214,9 @@ void ExultStudio::open_egg_window(
 	}
 	gtk_widget_show(eggwin);
 
-#ifdef WIN32
+#ifdef _WIN32
 	if (first_time || !eggdnd)
-		Windnd::CreateStudioDropDest(eggdnd, egghwnd, Drop_dragged_shape, NULL, NULL, (void *) this);
+		Windnd::CreateStudioDropDest(eggdnd, egghwnd, Drop_dragged_shape, nullptr, nullptr, this);
 #endif
 }
 
@@ -228,7 +228,7 @@ void ExultStudio::close_egg_window(
 ) {
 	if (eggwin) {
 		gtk_widget_hide(eggwin);
-#ifdef WIN32
+#ifdef _WIN32
 		Windnd::DestroyStudioDropDest(eggdnd, egghwnd);
 #endif
 	}
@@ -245,14 +245,22 @@ int ExultStudio::init_egg_window(
     int datalen
 ) {
 	Egg_object *addr;
-	int tx, ty, tz;
-	int shape, frame;
+	int tx;
+	int ty;
+	int tz;
+	int shape;
+	int frame;
 	int type;
 	int criteria;
 	int probability;
 	int distance;
-	bool nocturnal, once, hatched, auto_reset;
-	int data1, data2, data3;
+	bool nocturnal;
+	bool once;
+	bool hatched;
+	bool auto_reset;
+	int data1;
+	int data2;
+	int data3;
 	string str1;
 	if (!Egg_object_in(data, datalen, addr, tx, ty, tz, shape, frame,
 	                   type, criteria, probability, distance,
@@ -343,7 +351,8 @@ int ExultStudio::init_egg_window(
 		set_spin("btnegg_distance", data1 & 0xff);
 		break;
 	case 11: {          // Intermap:
-		int mapnum = data1 & 0xff, schunk = data1 >> 8;
+		int mapnum = data1 & 0xff;
+		int schunk = data1 >> 8;
 		set_spin("intermap_mapnum", mapnum);
 		set_entry("intermap_x",
 		          (schunk % 12)*c_tiles_per_schunk + (data2 & 0xff), true);
@@ -384,8 +393,11 @@ int ExultStudio::save_egg_window(
 ) {
 	cout << "In save_egg_window()" << endl;
 	// Get egg (null if creating new).
-	int tx = -1, ty = -1, tz = -1;  // +++++For now.
-	int shape = -1, frame = -1; // For now.
+	int tx = -1;
+	int ty = -1;
+	int tz = -1;  // +++++For now.
+	int shape = -1;
+	int frame = -1; // For now.
 	int type = -1;
 	GtkWidget *notebook = glade_xml_get_widget(app_xml, "notebook1");
 	if (notebook)           // 1st is monster (1).
@@ -398,16 +410,18 @@ int ExultStudio::save_egg_window(
 	int criteria = get_optmenu("criteria");
 	int probability = get_spin("probability");
 	int distance = get_spin("distance");
-	bool nocturnal = get_toggle("nocturnal"),
-	     once = get_toggle("once"),
-	     hatched = get_toggle("hatched"),
-	     auto_reset = get_toggle("autoreset");
-	int data1 = -1, data2 = -1, data3 = 0;
+	bool nocturnal = get_toggle("nocturnal");
+	bool once = get_toggle("once");
+	bool hatched = get_toggle("hatched");
+	bool auto_reset = get_toggle("autoreset");
+	int data1 = -1;
+	int data2 = -1;
+	int data3 = 0;
 	string str1;
 	switch (type) {         // Set notebook page.
 	case 1: {           // Monster:
-		int shnum = get_num_entry("monst_shape"),
-		    frnum = get_num_entry("monst_frame");
+		int shnum = get_num_entry("monst_shape");
+		int frnum = get_num_entry("monst_frame");
 		if (shnum >= 1024 or frnum >= 64) {
 			data3 = shnum;
 			data2 = frnum & 0xff;
@@ -420,11 +434,11 @@ int ExultStudio::save_egg_window(
 	break;
 	case 2:             // Jukebox:
 		data1 = (get_spin("juke_song") & 0xff) +
-		        (get_toggle("juke_cont") << 8);
+		        (get_toggle("juke_cont") ? (1 << 8) : 0);
 		break;
 	case 3:             // Sound effect:
 		data1 = (get_spin("sfx_number") & 0xff) +
-		        (get_toggle("sfx_cont") << 8);
+		        (get_toggle("sfx_cont") ? (1 << 8) : 0);
 		break;
 	case 4:             // Voice:
 		data1 = get_spin("speech_number") & 0xff;
@@ -443,13 +457,13 @@ int ExultStudio::save_egg_window(
 	case 7:             // Teleport:
 		if (get_toggle("teleport_coord")) {
 			// Abs. coords.
-			int tx = get_num_entry("teleport_x"),
-			    ty = get_num_entry("teleport_y"),
-			    tz = get_num_entry("teleport_z");
+			int tx = get_num_entry("teleport_x");
+			int ty = get_num_entry("teleport_y");
+			int tz = get_num_entry("teleport_z");
 			data3 = tz;
 			data2 = (tx & 0xff) + ((ty & 0xff) << 8);
-			int sx = tx / c_tiles_per_schunk,
-			    sy = ty / c_tiles_per_schunk;
+			int sx = tx / c_tiles_per_schunk;
+			int sy = ty / c_tiles_per_schunk;
 			data1 = 255 + ((sy * 12 + sx) << 8);
 		} else          // Egg #.
 			data1 = get_spin("teleport_eggnum") & 0xff;
@@ -465,14 +479,14 @@ int ExultStudio::save_egg_window(
 		data1 = get_spin("btnegg_distance") & 0xff;
 		break;
 	case 11: {          // Intermap.
-		int tx = get_num_entry("intermap_x"),
-		    ty = get_num_entry("intermap_y"),
-		    tz = get_num_entry("intermap_z"),
-		    mapnum = get_spin("intermap_mapnum");
+		int tx = get_num_entry("intermap_x");
+		int ty = get_num_entry("intermap_y");
+		int tz = get_num_entry("intermap_z");
+		int mapnum = get_spin("intermap_mapnum");
 		data3 = tz;
 		data2 = (tx & 0xff) + ((ty & 0xff) << 8);
-		int sx = tx / c_tiles_per_schunk,
-		    sy = ty / c_tiles_per_schunk;
+		int sx = tx / c_tiles_per_schunk;
+		int sy = ty / c_tiles_per_schunk;
 		data1 = mapnum + ((sy * 12 + sx) << 8);
 		break;
 	}

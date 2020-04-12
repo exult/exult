@@ -17,7 +17,6 @@ libimagewin_la_SOURCES = \
 	iwin8.h \
 	savepcx.cc \
 	manip.h \
-	scale_gl.cc \
 	scale_2x.cc \
 	scale_2x.h \
 	scale_bilinear.cc \

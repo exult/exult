@@ -29,7 +29,7 @@ private:
 	int     move_flags;
 public:
 	Pathfinder_client(int mf) : move_flags(mf) {  }
-	virtual ~Pathfinder_client() {  }
+	virtual ~Pathfinder_client() = default;
 	// Figure when to give up.
 	virtual int get_max_cost(int cost_to_goal);
 	// Figure cost for a single step.
@@ -37,7 +37,7 @@ public:
 	// Estimate cost between two points.
 	virtual int estimate_cost(Tile_coord const &from, Tile_coord const &to) = 0;
 	// Is tile at the goal?
-	virtual int at_goal(Tile_coord const &tile, Tile_coord const &goal);
+	virtual bool at_goal(Tile_coord const &tile, Tile_coord const &goal);
 
 	int get_move_flags() {
 		return move_flags;
@@ -56,11 +56,10 @@ protected:
 	Tile_coord dest;        // Destination.
 public:
 	// Find a path from sx,sy,sz to dx,dy,dz
-	// Return 0 if no path can be traced.
-	// Return !0 if path found
-	PathFinder() : src(), dest()
-	{  }
-	virtual int NewPath(Tile_coord const &s, Tile_coord const &d,
+	// Return false if no path can be traced.
+	// Return true if path found
+	PathFinder() = default;
+	virtual bool NewPath(Tile_coord const &s, Tile_coord const &d,
 	                    Pathfinder_client *client) = 0;
 	// Retrieve starting point (set by subclasses).
 	Tile_coord get_src() {
@@ -71,21 +70,21 @@ public:
 		return dest;
 	}
 	// Retrieve the coordinates of the next step on the path
-	virtual int GetNextStep(Tile_coord &n, bool &done) = 0;
-	int GetNextStep(Tile_coord &n) {
+	virtual bool GetNextStep(Tile_coord &n, bool &done) = 0;
+	bool GetNextStep(Tile_coord &n) {
 		// If you don't care about last step.
 		bool d;
 		return GetNextStep(n, d);
 	}
 	// Set to retrieve in opposite order.
-	virtual int set_backwards() {
-		return 0;    // Default: Can't do it.
+	virtual bool set_backwards() {
+		return false;    // Default: Can't do it.
 	}
-	virtual int following_smart_path() { // Astar?
-		return 0;
+	virtual bool following_smart_path() { // Astar?
+		return false;
 	}
 	virtual int get_num_steps() = 0;// # of steps left to take.
-	virtual ~PathFinder();
+	virtual ~PathFinder() = default;
 };
 
 #endif

@@ -106,7 +106,7 @@ int plugin_parse(char *line) {
 
 	glob_idx++;
 
-	return(0);
+	return 0;
 }
 
 int calculate(Uint8 col_num, unsigned int my_x, unsigned int my_y) {
@@ -117,10 +117,10 @@ int calculate(Uint8 col_num, unsigned int my_x, unsigned int my_y) {
 
 	if (my_x > 191 || my_y > 191) {
 		//    printf("out of bounds\n");
-		return(0);
+		return 0;
 	} else {
 		ret = my_getpixel(my_g_stat.image_in, my_x, my_y);
-		return(ret == col_num);
+		return ret == col_num;
 	}
 }
 
@@ -148,7 +148,7 @@ int has_around(char *col_name) {
 	long int val = strtol(col_name, (char **)NULL, 16);
 	//  printf("checking if %d = %d: %d\n",a,val,a == val);
 
-	return (a == val || b == val || c == val || d == val || e == val || f == val || g == val || h == val);
+	return a == val || b == val || c == val || d == val || e == val || f == val || g == val || h == val;
 }
 
 char *plugin_apply(char colour[6], glob_variables *g_var) {
@@ -176,15 +176,15 @@ char *plugin_apply(char colour[6], glob_variables *g_var) {
 
 	if (loc_idx >= glob_idx) {
 		fprintf(stderr, "WARNING: loc_idx >= glob_idx. This should never happen\n");
-		return(colour); // colour is not in table, so we don't treat it. This should never happen.
+		return colour; // colour is not in table, so we don't treat it. This should never happen.
 	}
 
 	if (strncasecmp(col[loc_idx][1], a_star, 1) == 0 || has_around(col[loc_idx][1])) {
 		calc_value = (1 * calculate(col_num, my_g_var.global_x, (my_g_var.global_y - 1))) + (2 * calculate(col_num, (my_g_var.global_x + 1), my_g_var.global_y)) + (4 * calculate(col_num, my_g_var.global_x, (my_g_var.global_y + 1))) + (8 * calculate(col_num, (my_g_var.global_x - 1), my_g_var.global_y));
 
 		if (my_g_stat.debug > 4) printf("calc_value is %u at (%d,%d) -- col_num = %u\n", calc_value, my_g_var.global_x, my_g_var.global_y, col_num);
-		return(col[loc_idx][calc_value + 2]); // the first 2 cells are taken by slave and trigger
+		return col[loc_idx][calc_value + 2]; // the first 2 cells are taken by slave and trigger
 	} else {
-		return(colour);
+		return colour;
 	}
 }

@@ -33,6 +33,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ignore_unused_variable_warning.h"
 
 using std::ifstream;
+using std::string;
+using std::vector;
 
 /*  Columns in our table. */
 enum { NAME_COL, NUM_COL, TYPE_COL, N_COLS };
@@ -168,26 +170,29 @@ static gint ucbrowser_compare_func(
     GtkTreeIter  *b,
     gpointer      userdata
 ) {
-	gint colnum = GPOINTER_TO_INT(userdata);
+	gint colnum = *static_cast<gint*>(userdata);
 	gint ret = 0;
-	gchar *name1 = 0, *name2 = 0;
+	gchar *name1 = nullptr;
+	gchar *name2 = nullptr;
 	gtk_tree_model_get(model, a, colnum, &name1, -1);
 	gtk_tree_model_get(model, b, colnum, &name2, -1);
 
-	if (name1 == NULL || name2 == NULL) {
-		if (name1 == NULL && name2 == NULL)
+	if (name1 == nullptr || name2 == nullptr) {
+		if (name1 == nullptr && name2 == nullptr)
 			ret = 0;
 		else
-			ret = (name1 == NULL) ? -1 : 1;
+			ret = (name1 == nullptr) ? -1 : 1;
 	} else
 		ret = g_utf8_collate(name1, name2);
-#if 0   /* This was in the example, but it causes crashes. */
-	g_free(name1);
-	g_free(name2);
-#endif
 	return ret;
 }
 
+extern "C" {
+	void gint_deleter(gpointer data) {
+		gint *ptr = static_cast<gint*>(data);
+		delete ptr;
+	}
+}
 /*
  *  Create usecode browser window.
  */
@@ -218,26 +223,29 @@ Usecode_browser::Usecode_browser(
 	gtk_tree_view_set_model(GTK_TREE_VIEW(tree), GTK_TREE_MODEL(model));;
 	// Set up sorting.
 	GtkTreeSortable *sortable = GTK_TREE_SORTABLE(model);
+	gint *iname = new gint(NAME_COL);
+	gint *inum = new gint(NUM_COL);
+	gint *itype = new gint (TYPE_COL);
 	gtk_tree_sortable_set_sort_func(sortable, SORTID_NAME,
-	                                ucbrowser_compare_func, GINT_TO_POINTER(NAME_COL), NULL);
+	                                ucbrowser_compare_func, iname, gint_deleter);
 	gtk_tree_sortable_set_sort_func(sortable, SORTID_NUM,
-	                                ucbrowser_compare_func, GINT_TO_POINTER(NUM_COL), NULL);
+	                                ucbrowser_compare_func, inum , gint_deleter);
 	gtk_tree_sortable_set_sort_func(sortable, SORTID_TYPE,
-	                                ucbrowser_compare_func, GINT_TO_POINTER(TYPE_COL), NULL);
+	                                ucbrowser_compare_func, itype, gint_deleter);
 	// Create each column.
 	GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
 	GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(
-	                             "Name", renderer, "text", NAME_COL, NULL);
+	                             "Name", renderer, "text", NAME_COL, nullptr);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
 	gtk_tree_view_column_set_sort_column_id(col, SORTID_NAME);
 	renderer = gtk_cell_renderer_text_new();
 	col = gtk_tree_view_column_new_with_attributes(
-	          "Number", renderer, "text", NUM_COL, NULL);
+	          "Number", renderer, "text", NUM_COL, nullptr);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
 	gtk_tree_view_column_set_sort_column_id(col, SORTID_NUM);
 	renderer = gtk_cell_renderer_text_new();
 	col = gtk_tree_view_column_new_with_attributes(
-	          "Type", renderer, "text", TYPE_COL, NULL);
+	          "Type", renderer, "text", TYPE_COL, nullptr);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
 	gtk_tree_view_column_set_sort_column_id(col, SORTID_TYPE);
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), TRUE);
@@ -329,7 +337,7 @@ void Usecode_browser::setup_list(
 	for (siter = syms.begin(); siter != syms.end(); ++siter) {
 		Usecode_symbol *sym = *siter;
 		Usecode_symbol::Symbol_kind kind = sym->get_kind();
-		const char *kindstr = 0;
+		const char *kindstr = nullptr;
 		const char *nm = sym->get_name();
 		if (!nm[0])
 			continue;
@@ -360,7 +368,7 @@ void Usecode_browser::setup_list(
 		char num[20];
 		sprintf(num, "%05xH", sym->get_val());
 		GtkTreeIter iter;
-		gtk_tree_store_append(model, &iter, NULL);
+		gtk_tree_store_append(model, &iter, nullptr);
 		gtk_tree_store_set(model, &iter, NAME_COL, nm,
 		                   NUM_COL, num, TYPE_COL, kindstr, -1);
 	}

@@ -23,11 +23,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef INCL_DATA_UTILS
 #define INCL_DATA_UTILS 1
 
-#include <sstream>
+#include <algorithm>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <algorithm>
 #include "exult_constants.h"
 #include "utils.h"
 #include "U7obj.h"
@@ -35,16 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "msgfile.h"
 #include "fnames.h"
 #include "ignore_unused_variable_warning.h"
-using std::istream;
-using std::ifstream;
-using std::istringstream;
-using std::ostream;
-using std::ofstream;
-using std::string;
-using std::vector;
-using std::map;
-using std::endl;
-using std::ios;
 
 /*
  *  Generic vector data handler routines.
@@ -98,27 +88,28 @@ void invalidate_vector(std::vector<T> &vec) {
 
 template <typename T>
 void clean_vector(std::vector<T> &vec) {
-	typename std::vector<T>::iterator it;
-	for (it = vec.begin(); it != vec.end(); ++it)
-		if (it->is_invalid() && !it->have_static())
-			it = vec.erase(it);
+	vec.erase(std::remove_if(vec.begin(), vec.end(),
+		[](T& elem) {
+			return elem.is_invalid() || !elem.have_static();
+		}
+		), vec.end());
 }
 
 template <class T, typename U>
 static const T *Search_vector_data_single_wildcard(
-    const vector<T> &vec,
+    const std::vector<T> &vec,
     int src,
     U T::*dat
 ) {
 	if (vec.empty())    // Not found.
-		return 0;
+		return nullptr;
 	T inf;
 	inf.*dat = src;
-	typename vector<T>::const_iterator it;
+	typename std::vector<T>::const_iterator it;
 	// Try finding exact match first.
 	it = std::lower_bound(vec.begin(), vec.end(), inf);
 	if (it == vec.end())    // Nowhere to be found.
-		return 0;
+		return nullptr;
 	else if (*it == inf && !it->is_invalid())   // Have it already.
 		return &*it;
 	// Try wildcard shape.
@@ -126,27 +117,27 @@ static const T *Search_vector_data_single_wildcard(
 	it = std::lower_bound(it, vec.end(), inf);
 	if (it == vec.end() || *it != inf   // It just isn't there...
 	        || it->is_invalid())   // ... or it is invalid.
-		return 0;
+		return nullptr;
 	else    // At last!
 		return &*it;
 }
 
 template <class T>
 static const T *Search_vector_data_double_wildcards(
-    const vector<T> &vec,
+    const std::vector<T> &vec,
     int frame, int quality,
     short T::*fr, short T::*qual
 ) {
 	if (vec.empty())
-		return 0;   // No name.
+		return nullptr;   // No name.
 	T inf;
 	inf.*fr = frame;
 	inf.*qual = quality;
-	typename vector<T>::const_iterator it;
+	typename std::vector<T>::const_iterator it;
 	// Try finding exact match first.
 	it = std::lower_bound(vec.begin(), vec.end(), inf);
 	if (it == vec.end())    // Nowhere to be found.
-		return 0;
+		return nullptr;
 	else if (*it == inf && !it->is_invalid())   // Have it already.
 		return &*it;
 	// We only have to search forward for a match.
@@ -156,7 +147,7 @@ static const T *Search_vector_data_double_wildcards(
 			inf.*qual = -1;
 			it = std::lower_bound(it, vec.end(), inf);
 			if (it == vec.end())    // Nowhere to be found.
-				return 0;
+				return nullptr;
 			else if (*it == inf && !it->is_invalid())   // We got it!
 				return &*it;
 		}
@@ -166,7 +157,7 @@ static const T *Search_vector_data_double_wildcards(
 		inf.*fr = -1;
 		it = std::lower_bound(it, vec.end(), inf);
 		if (it == vec.end())    // Nowhere to be found.
-			return 0;
+			return nullptr;
 		else if (*it == inf && !it->is_invalid())   // We got it!
 			return &*it;
 		inf.*qual = -1;
@@ -176,7 +167,7 @@ static const T *Search_vector_data_double_wildcards(
 	it = std::lower_bound(it, vec.end(), inf);
 	if (it == vec.end() || *it != inf || *it != inf // It just isn't there...
 	        || it->is_invalid())   // ... or it is invalid.
-		return 0;
+		return nullptr;
 	else    // At last!
 		return &*it;
 }
@@ -188,7 +179,7 @@ template <typename T>
 T *set_info(bool tf, T *&pt) {
 	if (!tf) {
 		delete pt;
-		pt = 0;
+		pt = nullptr;
 	} else if (!pt)
 		pt = new T();
 	return pt;
@@ -242,7 +233,7 @@ public:
 	Base_reader(bool h)
 		:   haveversion(h)
 	{  }
-	virtual ~Base_reader() {  }
+	virtual ~Base_reader() = default;
 	// Text data file.
 	void parse(std::vector<std::string> &strings, int version, bool patch, Exult_Game game) {
 		for (size_t j = 0; j < strings.size(); j++) {
@@ -278,11 +269,10 @@ public:
 		    : BUNDLE_CHECK(BUNDLE_EXULT_SI_FLX, EXULT_SI_FLX);
 		U7object txtobj(flexfile, resource);
 		std::size_t len;
-		char *txt = txtobj.retrieve(len);
-		std::string databuf(txt, len);
+		auto txt = txtobj.retrieve(len);
+		std::string databuf(reinterpret_cast<char*>(txt.get()), len);
 		std::istringstream strin(databuf, std::ios::in | std::ios::binary);
 		read_binary_internal(strin, false, game);
-		delete [] txt;
 	}
 };
 
@@ -328,8 +318,8 @@ protected:
 	Functor reader;
 	Transform postread;
 	ReadID idread;
-	virtual void read_data(std::istream &in, size_t index, int version,
-	                       bool patch, Exult_Game game, bool binary) {
+	void read_data(std::istream &in, size_t index, int version,
+	               bool patch, Exult_Game game, bool binary) override {
 		int id = idread(in, index, version, binary);
 		if (id >= 0) {
 			Info &inf = info[id];
@@ -340,8 +330,6 @@ protected:
 public:
 	Functor_multidata_reader(std::map<int, Info> &nfo, bool h = false)
 		:   Base_reader(h), info(nfo)
-	{  }
-	virtual ~Functor_multidata_reader()
 	{  }
 };
 
@@ -354,8 +342,8 @@ protected:
 	Info &info;
 	Functor reader;
 	Transform postread;
-	virtual void read_data(std::istream &in, size_t index, int version,
-	                       bool patch, Exult_Game game, bool binary) {
+	void read_data(std::istream &in, size_t index, int version,
+	               bool patch, Exult_Game game, bool binary) override {
 		ignore_unused_variable_warning(index, binary);
 		reader(in, version, patch, game, info);
 		postread(in, version, patch, game, info);
@@ -363,8 +351,6 @@ protected:
 public:
 	Functor_data_reader(Info &nfo, bool h = false)
 		:   Base_reader(h), info(nfo)
-	{  }
-	virtual ~Functor_data_reader()
 	{  }
 };
 
@@ -474,7 +460,7 @@ public:
 		if (cls->is_invalid() && pt) {
 			// 'Delete old' flag.
 			delete pt;
-			pt = 0;
+			pt = nullptr;
 			delete cls;
 			return false;
 		}
@@ -532,13 +518,9 @@ static void Read_text_data_file(
 		const char *flexfile =
 		    bg ? BUNDLE_CHECK(BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX)
 		    : BUNDLE_CHECK(BUNDLE_EXULT_SI_FLX, EXULT_SI_FLX);
-		U7object txtobj(flexfile, resource);
-		std::size_t len;
-		char *txt = txtobj.retrieve(len);
-		IBufferDataSource ds(txt, len);
+		IExultDataSource ds(flexfile, resource);
 		static_version = Read_text_msg_file_sections(&ds,
 		                 static_strings, sections, numsections);
-		delete [] txt;
 	} else {
 		try {
 			snprintf(buf, 50, "<STATIC>/%s.txt", fname);
@@ -591,7 +573,7 @@ public:
 	Base_writer(const char *s, int v = -1)
 		:   name(s), version(v), cnt(-1)
 	{  }
-	virtual ~Base_writer() {  }
+	virtual ~Base_writer() = default;
 	int check() {
 		// Return cached value, if any.
 		return cnt > -1 ? cnt : cnt = check_write();
@@ -633,7 +615,7 @@ protected:
 	std::map<int, Info> &info;
 	const int numshapes;
 	Functor writer;
-	virtual int check_write() {
+	int check_write() override {
 		int num = 0;
 		for (typename std::map<int, Info>::iterator it = info.begin();
 		        it != info.end(); ++it)
@@ -641,7 +623,7 @@ protected:
 				num++;
 		return num;
 	}
-	virtual void write_data(std::ostream &out, Exult_Game game) {
+	void write_data(std::ostream &out, Exult_Game game) override {
 		for (typename std::map<int, Info>::iterator it = info.begin();
 		        it != info.end(); ++it)
 			if (writer(it->second))
@@ -653,7 +635,6 @@ public:
 		:   Base_writer(s, v), info(nfo), numshapes(n) {
 		check();
 	}
-	virtual ~Functor_multidata_writer() {  }
 };
 
 /*
@@ -664,10 +645,10 @@ class Functor_data_writer : public Base_writer {
 protected:
 	Info &info;
 	Functor writer;
-	virtual int check_write() {
+	int check_write() override {
 		return writer(info) ? 1 : 0;
 	}
-	virtual void write_data(std::ostream &out, Exult_Game game) {
+	void write_data(std::ostream &out, Exult_Game game) override {
 		if (writer(info))
 			writer(out, -1, game, info);
 	}
@@ -676,7 +657,6 @@ public:
 		:   Base_writer(s, v), info(nfo) {
 		check();
 	}
-	virtual ~Functor_data_writer() {  }
 };
 
 

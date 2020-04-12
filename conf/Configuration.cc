@@ -27,30 +27,22 @@
 
 #include <cassert>
 #include <cstdio>
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include <cstdlib>
 #include <cctype>
 #include <fstream>
-#ifdef HAVE_SSTREAM
 #include <sstream>
-#endif
 
 using std::atoi;
 using std::endl;
 using std::string;
 using std::ostream;
 using std::perror;
-#ifdef WIN32
+#ifdef _WIN32
 using std::cerr;
 #endif
-
-// isspace could be a macro
-#ifndef isspace
-#if defined(_MSC_VER) && (_MSC_VER > 1400)
 using std::isspace;
-#endif
-#endif
 
 #define TRACE_CONF 0
 
@@ -86,7 +78,7 @@ void    Configuration::value(const string &key, int &ret, int defaultvalue) cons
 
 bool    Configuration::key_exists(const string &key) const {
 	const XMLnode *sub = xmltree->subtree(key);
-	return sub != 0;
+	return sub != nullptr;
 }
 
 void    Configuration::set(const string &key, const string &value, bool write_out) {
@@ -105,7 +97,8 @@ void    Configuration::set(const string &key, const string &value, bool write_ou
 }
 
 void    Configuration::set(const char *key, const char *value, bool write_out) {
-	string  k(key), v(value);
+	string  k(key);
+	string  v(value);
 	set(k, v, write_out);
 }
 
@@ -115,7 +108,8 @@ void    Configuration::set(const char *key, const string &value, bool write_out)
 }
 
 void    Configuration::set(const char *key, int value, bool write_out) {
-	string  k(key), v;
+	string  k(key);
+	string  v;
 	char    buf[32];
 
 	snprintf(buf, 32, "%d", value);
@@ -132,7 +126,7 @@ void    Configuration::remove(const string &key, bool write_out) {
 bool    Configuration::read_config_string(const string &s) {
 	const string&  sbuf(s);
 	size_t  nn = 0;
-	while (isspace(s[nn])) ++nn;
+	while (isspace(static_cast<char>(s[nn]))) ++nn;
 
 	assert(s[nn] == '<');
 	++nn;
@@ -143,13 +137,13 @@ bool    Configuration::read_config_string(const string &s) {
 }
 
 static inline bool is_path_absolute(const string &path) {
-	return ((path.find("./") == 0) || (path.find("../") == 0) || (path[0] == '/')
-#if defined(WIN32)
+	return (path.find("./") == 0) || (path.find("../") == 0) || (path[0] == '/')
+#if defined(_WIN32)
 	        || (path.find(".\\") == 0) || (path.find("..\\") == 0) || (path[0] == '\\')
 	        || (std::isalpha(path[0]) && path[1] == ':' &&
 	            (path[2] == '/' || path[2] == '\\'))
 #endif
-	       );
+	       ;
 }
 
 bool    Configuration::read_config_file(const string &input_filename, const string &root) {
@@ -162,9 +156,9 @@ bool    Configuration::read_config_file(const string &input_filename, const stri
 	// a slash or with two dots and a slash.
 	// Or if it's not a relative path.
 	if (!is_path_absolute(get_system_path(input_filename))) {
-#if (defined(XWIN) || defined(MACOSX) || defined(WIN32))
+#if (defined(XWIN) || defined(MACOSX) || defined(_WIN32) || defined(__IPHONEOS__))
 		fname = "<CONFIG>/";
-#   if (defined(XWIN) && !defined(MACOSX))
+#   if (defined(XWIN) && !defined(MACOSX) && !defined(__IPHONEOS__))
 		fname += ".";
 #   endif
 		fname += input_filename;
@@ -173,13 +167,7 @@ bool    Configuration::read_config_file(const string &input_filename, const stri
 		fname = input_filename;
 #endif
 
-#ifdef __IPHONEOS__
-		//if (!U7exists(fname.c_str()))
-		//{
-		U7copy(input_filename.c_str(), get_system_path(fname.c_str()).c_str());
-		//}
-#endif
-#if defined(WIN32)
+#if defined(_WIN32)
 		// Note: this first check misses some cases of path equality, but it
 		// does eliminates some spurious warnings.
 		if (fname != input_filename && U7exists(input_filename.c_str())
@@ -204,7 +192,7 @@ bool    Configuration::read_config_file(const string &input_filename, const stri
 				     << "' is being ignored in favor of file '"
 				     << fname << "'." << endl;
 		}
-#endif // WIN32
+#endif // _WIN32
 	}
 	return read_abs_config_file(fname, root);
 }
@@ -231,7 +219,8 @@ bool Configuration::read_abs_config_file(const string &input_filename, const str
 	if (ifile.fail())
 		return false;
 
-	string  sbuf, line;
+	string  sbuf;
+	string  line;
 	// copies the entire contents of the input file into sbuf
 	getline(ifile, line);
 	while (ifile.good()) {
@@ -250,7 +239,7 @@ bool Configuration::read_abs_config_file(const string &input_filename, const str
 }
 
 
-string  Configuration::dump(void) {
+string  Configuration::dump() {
 	return xmltree->dump();
 }
 
@@ -259,7 +248,7 @@ ostream &Configuration::dump(ostream &o, const string &indentstr) {
 	return o;
 }
 
-void Configuration::write_back(void) {
+void Configuration::write_back() {
 	if (!is_file)
 		return; // Don't write back if not from a file
 

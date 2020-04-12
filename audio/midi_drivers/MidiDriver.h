@@ -19,7 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef MIDIDRIVER_H_INCLUDED
 #define MIDIDRIVER_H_INCLUDED
 
+#include "common_types.h"
 #include "ignore_unused_variable_warning.h"
+#include <string>
 
 class XMidiEventList;
 class IDataSource;
@@ -28,8 +30,7 @@ class IDataSource;
 class	MidiDriver
 {
 protected:
-	bool					initialized;
-	MidiDriver() : initialized(false) { }
+	bool initialized = false;
 
 public:
 	//! Midi driver desription
@@ -136,7 +137,7 @@ public:
 	}
 
 	//! Destructor
-	virtual ~MidiDriver() { }
+	virtual ~MidiDriver() = default;
 
 	//
 	// Statics to Initialize Midi Drivers and to get info
@@ -152,7 +153,7 @@ public:
 	//! Create an Instance of a MidiDriver
 	//! \param driverName Name of the prefered driver to create
 	//! \return The created MidiDriver instance
-	static MidiDriver	*createInstance(const std::string& driverName,uint32 sample_rate,bool stereo);
+	static MidiDriver	*createInstance(const std::string& desired_driver,uint32 sample_rate,bool stereo);
 
 protected:
 	//! Get a configuration setting for the midi driver

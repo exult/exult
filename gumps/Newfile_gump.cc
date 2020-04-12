@@ -41,6 +41,8 @@
 #include "Text_button.h"
 #include "miscinf.h"
 #include "array_size.h"
+#include "touchui.h"
+#include "Gump_manager.h"
 
 using std::atoi;
 using std::cout;
@@ -127,72 +129,17 @@ static const char *canceltext = "CANCEL";
 /*
  *  One of our buttons.
  */
-class Newfile_button : public Gump_button {
-public:
-	Newfile_button(Gump *par, int px, int py, int shapenum)
-		: Gump_button(par, shapenum, px, py, SF_EXULT_FLX)
-	{ }
-	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
-};
-
-class Newfile_Textbutton : public Text_button {
-public:
-	Newfile_Textbutton(Gump *par, const string& text, int px, int py, int width)
-		: Text_button(par, text, px, py, width)
-	{ }
-
-	virtual bool activate(int button = 1);
-};
-
-/*
- *  Clicked a 'load' or 'save' button.
- */
-
-bool Newfile_button::activate(
-    int button
-) {
-	if (button != 1) return false;
-	int shapenum = get_shapenum();
-	if (shapenum == EXULT_FLX_SAV_DOWNDOWN_SHP)
-		static_cast<Newfile_gump *>(parent)->scroll_page(1);
-	else if (shapenum == EXULT_FLX_SAV_DOWN_SHP)
-		static_cast<Newfile_gump *>(parent)->scroll_line(1);
-	else if (shapenum == EXULT_FLX_SAV_UP_SHP)
-		static_cast<Newfile_gump *>(parent)->scroll_line(-1);
-	else if (shapenum == EXULT_FLX_SAV_UPUP_SHP)
-		static_cast<Newfile_gump *>(parent)->scroll_page(-1);
-	return true;
-}
-
-bool Newfile_Textbutton::activate(int button) {
-	if (button != 1) return false;
-	if (text == loadtext)
-		static_cast<Newfile_gump *>(parent)->load();
-	else if (text == savetext)
-		static_cast<Newfile_gump *>(parent)->save();
-	else if (text == deletetext)
-		static_cast<Newfile_gump *>(parent)->delete_file();
-	else if (text == canceltext)
-		parent->close();
-	return true;
-}
+using Newfile_button = CallbackButton<Newfile_gump>;
+using Newfile_Textbutton = CallbackTextButton<Newfile_gump>;
 
 /*
  *  Create the load/save box.
  */
 
-
 Newfile_gump::Newfile_gump(
-) : Modal_gump(0, gwin->get_width() / 2 - 160,
+) : Modal_gump(nullptr, gwin->get_width() / 2 - 160,
 	               gwin->get_height() / 2 - 100,
-	               EXULT_FLX_SAVEGUMP_SHP, SF_EXULT_FLX),
-	restored(0), games(0), num_games(0), first_free(0),
-	cur_shot(0), cur_details(0), cur_party(0),
-	gd_shot(0), gd_details(0), gd_party(0),
-	screenshot(0), details(0), party(0), is_readable(false), filename(0),
-	list_position(-2), selected(-3), cursor(0), slide_start(-1)
-
+	               EXULT_FLX_SAVEGUMP_SHP, SF_EXULT_FLX)
 {
 	set_object_area(Rectangle(0, 0, 320, 200), -22, 190); //+++++ ???
 
@@ -200,22 +147,27 @@ Newfile_gump::Newfile_gump(
 
 	gwin->get_tqueue()->pause(SDL_GetTicks());
 	back = gwin->get_win()->create_buffer(gwin->get_width(), gwin->get_height());
-	gwin->get_win()->get(back, 0, 0);
-
-	// Load/Save/Delete
-	buttons[0] = buttons[1] = buttons[2] = 0;
+	gwin->get_win()->get(back.get(), 0, 0);
 
 	// Cancel
-	buttons[3] = new Newfile_Textbutton(this, canceltext,
-	                                    btn_cols[3], btn_rows[0], 59);
+	buttons[id_close] = std::make_unique<Newfile_Textbutton>(this, &Newfile_gump::close,
+	        canceltext, btn_cols[3], btn_rows[0], 59);
 
 	// Scrollers.
-	buttons[4] = new Newfile_button(this, btn_cols[4], btn_rows[1], EXULT_FLX_SAV_UPUP_SHP);
-	buttons[5] = new Newfile_button(this, btn_cols[4], btn_rows[2], EXULT_FLX_SAV_UP_SHP);
-	buttons[6] = new Newfile_button(this, btn_cols[4], btn_rows[3], EXULT_FLX_SAV_DOWN_SHP);
-	buttons[7] = new Newfile_button(this, btn_cols[4], btn_rows[4], EXULT_FLX_SAV_DOWNDOWN_SHP);
+	buttons[id_page_up] = std::make_unique<Newfile_button>(this, &Newfile_gump::page_up,
+	        EXULT_FLX_SAV_UPUP_SHP, btn_cols[4], btn_rows[1], SF_EXULT_FLX);
+	buttons[id_line_up] = std::make_unique<Newfile_button>(this, &Newfile_gump::line_up,
+	        EXULT_FLX_SAV_UP_SHP, btn_cols[4], btn_rows[2], SF_EXULT_FLX);
+	buttons[id_line_down] = std::make_unique<Newfile_button>(this, &Newfile_gump::line_down,
+	        EXULT_FLX_SAV_DOWN_SHP, btn_cols[4], btn_rows[3], SF_EXULT_FLX);
+	buttons[id_page_down] = std::make_unique<Newfile_button>(this, &Newfile_gump::page_down,
+	        EXULT_FLX_SAV_DOWNDOWN_SHP, btn_cols[4], btn_rows[4], SF_EXULT_FLX);
 
 	LoadSaveGameDetails();
+	if (touchui != nullptr) {
+		touchui->hideGameControls();
+		touchui->hideButtonControls();
+	}
 }
 
 /*
@@ -225,13 +177,12 @@ Newfile_gump::Newfile_gump(
 Newfile_gump::~Newfile_gump(
 ) {
 	gwin->get_tqueue()->resume(SDL_GetTicks());
-	size_t i;
-	for (i = 0; i < array_size(buttons); i++)
-		delete buttons[i];
-
 	FreeSaveGameDetails();
-
-	delete back;
+	if (touchui != nullptr) {
+		touchui->showButtonControls();
+		if (!gumpman->gump_mode() || (!gumpman->modal_gump_mode() && gumpman->gumps_dont_pause_game()))
+			touchui->showGameControls();
+	}
 }
 
 /*
@@ -257,12 +208,9 @@ void Newfile_gump::load() {
 	// Reset Selection
 	selected = -3;
 
-	delete buttons[0];
-	buttons[0] = 0;
-	delete buttons[1];
-	buttons[1] = 0;
-	delete buttons[2];
-	buttons[2] = 0;
+	buttons[id_load].reset();
+	buttons[id_save].reset();
+	buttons[id_delete].reset();
 
 	//Reread save game details (quick save gets overwritten)
 	//FreeSaveGameDetails();
@@ -297,12 +245,9 @@ void Newfile_gump::save() {
 	// Reset everything
 	selected = -3;
 
-	delete buttons[0];
-	buttons[0] = 0;
-	delete buttons[1];
-	buttons[1] = 0;
-	delete buttons[2];
-	buttons[2] = 0;
+	buttons[id_load].reset();
+	buttons[id_save].reset();
+	buttons[id_delete].reset();
 
 	FreeSaveGameDetails();
 	LoadSaveGameDetails();
@@ -326,7 +271,7 @@ void Newfile_gump::delete_file() {
 		return;
 
 	U7remove(games[selected].filename);
-	filename = 0;
+	filename = nullptr;
 	is_readable = false;
 
 	cout << "Deleted Save game #" << selected << " (" << games[selected].filename << ") successfully." << endl;
@@ -334,12 +279,9 @@ void Newfile_gump::delete_file() {
 	// Reset everything
 	selected = -3;
 
-	delete buttons[0];
-	buttons[0] = 0;
-	delete buttons[1];
-	buttons[1] = 0;
-	delete buttons[2];
-	buttons[2] = 0;
+	buttons[id_load].reset();
+	buttons[id_save].reset();
+	buttons[id_delete].reset();
 
 	FreeSaveGameDetails();
 	LoadSaveGameDetails();
@@ -388,7 +330,7 @@ void Newfile_gump::PaintSaveName(int line) {
 		text = "Quick Save";
 	else if (actual_game == -2 && selected != -2)
 		text = "Empty Slot";
-	else if (actual_game != selected || buttons[0])
+	else if (actual_game != selected || buttons[id_load])
 		text = games[actual_game].savename;
 	else
 		text = newname;
@@ -409,9 +351,7 @@ void Newfile_gump::PaintSaveName(int line) {
 		icon.paint_shape(x + fieldx + iconx,
 		                 y + fieldy + icony + line * (fieldh + fieldgap));
 	}
-
 }
-
 
 /*
  *  Paint on screen.
@@ -430,8 +370,9 @@ void Newfile_gump::paint(
 		PaintSaveName(i);
 
 	// Paint Buttons
-	for (i = 0; i < 8; i++) if (buttons[i])
-			buttons[i]->paint();
+	for (auto& btn : buttons)
+		if (btn)
+			btn->paint();
 
 	// Paint scroller
 
@@ -547,14 +488,15 @@ bool Newfile_gump::mouse_down(
 
 	pushed = Gump::on_button(mx, my);
 	// Try buttons at bottom.
-	if (!pushed) for (size_t i = 0; i < array_size(buttons); i++)
-			if (buttons[i] && buttons[i]->on_button(mx, my)) {
-				pushed = buttons[i];
+	if (!pushed)
+		for (auto& btn : buttons)
+			if (btn && btn->on_button(mx, my)) {
+				pushed = btn.get();
 				break;
 			}
 
 	if (pushed) {       // On a button?
-		if (!pushed->push(button)) pushed = 0;
+		if (!pushed->push(button)) pushed = nullptr;
 		return true;
 	}
 
@@ -605,6 +547,7 @@ bool Newfile_gump::mouse_down(
 
 	if (hit == -1) return true;
 
+	last_selected = selected;
 	if (hit + list_position >= num_games || hit + list_position < -2 || selected == hit + list_position) return true;
 
 #ifdef DEBUG
@@ -620,54 +563,51 @@ bool Newfile_gump::mouse_down(
 		want_load = false;
 		want_delete = false;
 		want_save = false;
-		screenshot = cur_shot;
+		screenshot = cur_shot.get();
 		details = cur_details;
 		party = cur_party;
 		newname[0] = 0;
 		cursor = 0;
 		is_readable = true;
-		filename = 0;
+		filename = nullptr;
 	} else if (selected == -1) {
 		want_delete = false;
-		screenshot = gd_shot;
+		screenshot = gd_shot.get();
 		details = gd_details;
 		party = gd_party;
 		strcpy(newname, "Quick Save");
 		cursor = -1; // No cursor
 		is_readable = true;
-		filename = 0;
+		filename = nullptr;
 	} else {
-		screenshot = games[selected].screenshot;
+		screenshot = games[selected].screenshot.get();
 		details = games[selected].details;
 		party = games[selected].party;
 		strcpy(newname, games[selected].savename);
-		cursor = strlen(newname);
+		cursor = static_cast<int>(strlen(newname));
 		is_readable = want_load = games[selected].readable;
 		filename = games[selected].filename;
 	}
 
-	if (!buttons[0] && want_load)
-		buttons[0] = new Newfile_Textbutton(this, loadtext,
-		                                    btn_cols[1], btn_rows[0], 39);
-	else if (buttons[0] && !want_load) {
-		delete buttons[0];
-		buttons[0] = 0;
+	if (!buttons[id_load] && want_load)
+		buttons[id_load] = std::make_unique<Newfile_Textbutton>(this, &Newfile_gump::load,
+		        loadtext, btn_cols[1], btn_rows[0], 39);
+	else if (buttons[id_load] && !want_load) {
+		buttons[id_load].reset();
 	}
 
-	if (!buttons[1] && want_save)
-		buttons[1] = new Newfile_Textbutton(this, savetext,
-		                                    btn_cols[0], btn_rows[0], 40);
-	else if (buttons[1] && !want_save) {
-		delete buttons[1];
-		buttons[1] = 0;
+	if (!buttons[id_save] && want_save)
+		buttons[id_save] = std::make_unique<Newfile_Textbutton>(this, &Newfile_gump::save,
+		        savetext, btn_cols[0], btn_rows[0], 40);
+	else if (buttons[id_save] && !want_save) {
+		buttons[id_save].reset();
 	}
 
-	if (!buttons[2] && want_delete)
-		buttons[2] = new Newfile_Textbutton(this, deletetext,
-		                                    btn_cols[2], btn_rows[0], 59);
-	else if (buttons[2] && !want_delete) {
-		delete buttons[2];
-		buttons[2] = 0;
+	if (!buttons[id_delete] && want_delete)
+		buttons[id_delete] = std::make_unique<Newfile_Textbutton>(this, &Newfile_gump::delete_file,
+		        deletetext, btn_cols[2], btn_rows[0], 59);
+	else if (buttons[id_delete] && !want_delete) {
+		buttons[id_delete].reset();
 	}
 
 	paint();            // Repaint.
@@ -691,14 +631,19 @@ bool Newfile_gump::mouse_up(
 		pushed->unpush(button);
 		if (pushed->on_button(mx, my))
 			pushed->activate(button);
-		pushed = 0;
+		pushed = nullptr;
 	}
+	if (touchui != nullptr && ((selected == -2 && last_selected != -4) || (selected >= 0 && selected == last_selected))) {
+		touchui->promptForName(newname);
+	}
+	//reset so the prompt doesn't pop up on closing
+	last_selected = -4;
 
 	return true;
 }
 
 void Newfile_gump::mousewheel_up() {
-	SDLMod mod = SDL_GetModState();
+	SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT)
 		scroll_page(-1);
 	else
@@ -706,7 +651,7 @@ void Newfile_gump::mousewheel_up() {
 }
 
 void Newfile_gump::mousewheel_down() {
-	SDLMod mod = SDL_GetModState();
+	SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT)
 		scroll_page(1);
 	else
@@ -751,6 +696,33 @@ void Newfile_gump::mouse_drag(
 	}
 }
 
+void Newfile_gump::text_input(const char *text) {
+	if (cursor == -1 || strlen(text) >= MAX_SAVEGAME_NAME_LEN - 1)
+		return;
+	if (strcmp(text, newname) == 0) // Not changed
+		return;
+
+	strcpy(newname, text);
+	cursor = static_cast<int>(strlen(text));
+
+	if (newname[id_load] && !buttons[id_save]) {
+		buttons[id_save] = std::make_unique<Newfile_Textbutton>(this, &Newfile_gump::save,
+		        savetext, btn_cols[0], btn_rows[0], 40);
+		buttons[id_save]->paint();
+	}
+
+	// Remove Load and Delete Button
+	buttons[id_load].reset();
+	buttons[id_delete].reset();
+
+	screenshot = cur_shot.get();
+	details = cur_details;
+	party = cur_party;
+
+	paint();
+	gwin->set_painted();
+}
+
 /*
  *  Handle character that was typed.
  */
@@ -764,55 +736,47 @@ void Newfile_gump::text_input(int chr, int unicode) {
 		return;
 
 	switch (chr) {
-
 	case SDLK_RETURN:       // If only 'Save', do it.
 	case SDLK_KP_ENTER:
-		if (!buttons[0] && buttons[1]) {
-			if (buttons[1]->push(1)) {
-				gwin->show(1);
-				buttons[1]->unpush(1);
-				gwin->show(1);
-				buttons[1]->activate(1);
+		if (!buttons[id_load] && buttons[id_save]) {
+			if (buttons[id_save]->push(1)) {
+				gwin->show(true);
+				buttons[id_save]->unpush(1);
+				gwin->show(true);
+				buttons[id_save]->activate(1);
 			}
 		}
 		update_details = true;
 		break;
-#ifdef __IPHONEOS__
-	case SDLK_DELETE:
-#endif
+
 	case SDLK_BACKSPACE:
 		if (BackspacePressed()) {
 			// Can't restore/delete now.
-			delete buttons[0];
-			delete buttons[2];
-			buttons[0] = buttons[2] = 0;
+			buttons[id_load].reset();
+			buttons[id_delete].reset();
 
 			// If no chars cant save either
 			if (!newname[0]) {
-				delete buttons[1];
-				buttons[1] = 0;
+				buttons[id_save].reset();
 			}
 			update_details = true;
 		}
 		break;
 
-#ifndef __IPHONEOS__
 	case SDLK_DELETE:
 		if (DeletePressed()) {
 			// Can't restore/delete now.
-			delete buttons[0];
-			delete buttons[2];
-			buttons[0] = buttons[2] = 0;
+			buttons[id_load].reset();
+			buttons[id_delete].reset();
 
 			// If no chars cant save either
 			if (!newname[0]) {
-				delete buttons[1];
-				buttons[1] = 0;
+				buttons[id_save].reset();
 			}
 			update_details = true;
 		}
 		break;
-#endif
+
 	case SDLK_LEFT:
 		repaint = MoveCursor(-1);
 		break;
@@ -830,28 +794,23 @@ void Newfile_gump::text_input(int chr, int unicode) {
 		break;
 
 	default:
-		if ((unicode & 0xFF80) == 0)
-			chr = unicode & 0x7F;
-		else
-			chr = 0;
+		ignore_unused_variable_warning(unicode);
 		if (chr < ' ')
 			return;         // Ignore other special chars.
 
 		if (chr < 256 && isascii(chr)) {
 			if (AddCharacter(chr)) {
 				// Added first character?  Need 'Save' button.
-				if (newname[0] && !buttons[1]) {
-					buttons[1] = new Newfile_Textbutton(this, savetext,
-					                                    btn_cols[0],
-					                                    btn_rows[0], 40);
-					buttons[1]->paint();
+				if (newname[0] && !buttons[id_save]) {
+					buttons[id_save] = std::make_unique<Newfile_Textbutton>(this, &Newfile_gump::save,
+					        savetext, btn_cols[0], btn_rows[0], 40);
+					buttons[id_save]->paint();
 				}
 
 				// Remove Load and Delete Button
-				if (buttons[0] || buttons[2]) {
-					delete buttons[0];
-					delete buttons[2];
-					buttons[0] = buttons[2] = 0;
+				if (buttons[id_load] || buttons[id_delete]) {
+					buttons[id_load].reset();
+					buttons[id_delete].reset();
 				}
 				update_details = true;
 			}
@@ -861,7 +820,7 @@ void Newfile_gump::text_input(int chr, int unicode) {
 
 	// This sets the game details to the cur set
 	if (update_details) {
-		screenshot = cur_shot;
+		screenshot = cur_shot.get();
 		details = cur_details;
 		party = cur_party;
 		repaint = true;
@@ -916,7 +875,6 @@ int Newfile_gump::AddCharacter(char c) {
 void Newfile_gump::LoadSaveGameDetails() {
 	int     i;
 
-
 	// Gamedat Details
 	gwin->get_saveinfo(gd_shot, gd_details, gd_party);
 
@@ -927,7 +885,7 @@ void Newfile_gump::LoadSaveGameDetails() {
 	cur_details = new SaveGame_Details;
 	memset(cur_details, 0, sizeof(SaveGame_Details));
 
-	gwin->get_win()->put(back, 0, 0);
+	gwin->get_win()->put(back.get(), 0, 0);
 
 	if (gd_details) cur_details->save_count = gd_details->save_count;
 	else cur_details->save_count = 0;
@@ -937,7 +895,7 @@ void Newfile_gump::LoadSaveGameDetails() {
 	cur_details->game_hour = gclock->get_hour();
 	cur_details->game_minute = gclock->get_minute();
 
-	time_t t = time(0);
+	time_t t = time(nullptr);
 	struct tm *timeinfo = localtime(&t);
 
 	cur_details->real_day = timeinfo->tm_mday;
@@ -976,7 +934,7 @@ void Newfile_gump::LoadSaveGameDetails() {
 	}
 
 	party = cur_party;
-	screenshot = cur_shot;
+	screenshot = cur_shot.get();
 	details = cur_details;
 
 	// Now read save game details
@@ -1029,35 +987,27 @@ void Newfile_gump::LoadSaveGameDetails() {
 }
 
 void Newfile_gump::FreeSaveGameDetails() {
-	delete cur_shot;
-	cur_shot = 0;
+	cur_shot.reset();
 	delete cur_details;
-	cur_details = 0;
+	cur_details = nullptr;
 	delete [] cur_party;
-	cur_party = 0;
+	cur_party = nullptr;
 
-	delete gd_shot;
-	gd_shot = 0;
+	gd_shot.reset();
 	delete gd_details;
-	gd_details = 0;
+	gd_details = nullptr;
 	delete [] gd_party;
-	gd_party = 0;
+	gd_party = nullptr;
 
-	filename = 0;
+	filename = nullptr;
 
 	// The SaveInfo struct will delete everything that it's got allocated
 	// So we don't need to worry about that
 	delete [] games;
-	games = 0;
+	games = nullptr;
 }
 
 // Save Info Methods
-
-// Constructor
-Newfile_gump::SaveInfo::SaveInfo() : num(0), filename(0), savename(0), readable(true),
-	details(0), party(0), screenshot(0) {
-
-}
 
 // Destructor
 Newfile_gump::SaveInfo::~SaveInfo() {
@@ -1065,16 +1015,15 @@ Newfile_gump::SaveInfo::~SaveInfo() {
 	delete [] savename;
 	delete details;
 	delete [] party;
-	delete screenshot;
 }
 
 // Set Sequence Number
 void Newfile_gump::SaveInfo::SetSeqNumber() {
 	int i;
 
-	for (i = strlen(filename) - 1; !isdigit(filename[i]); i--)
+	for (i = strlen(filename) - 1; !isdigit(static_cast<unsigned char>(filename[i])); i--)
 		;
-	for (; isdigit(filename[i]); i--)
+	for (; isdigit(static_cast<unsigned char>(filename[i])); i--)
 		;
 
 	num = atoi(filename + i + 1);

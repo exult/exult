@@ -22,7 +22,7 @@
 
 #include <iostream>
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -44,7 +44,6 @@ void getVersionInfo(std::ostream &out) {
 	/*
 	 * 2. Build time
 	 */
-
 
 #if (defined(__TIME__) || defined(__DATE__))
 	out << "Built at: ";
@@ -106,24 +105,6 @@ void getVersionInfo(std::ostream &out) {
 	out << "USECODE_DEBUGGER";
 #endif
 
-#ifdef WANT_ALTERNATE_ALLOCATOR
-	if (!firstoption) out << ", ";
-	firstoption = false;
-	out << "WANT_ALTERNATE_ALLOCATOR";
-#endif
-
-#ifdef INITIALISE_ALLOCATED_BLOCKS
-	if (!firstoption) out << ", ";
-	firstoption = false;
-	out << "INITIALISE_ALLOCATED_BLOCKS";
-#endif
-
-#ifdef POISON_ALLOCATED_BLOCKS
-	if (!firstoption) out << ", ";
-	firstoption = false;
-	out << "POISON_ALLOCATED_BLOCKS";
-#endif
-
 #ifdef NO_SDL_PARACHUTE
 	if (!firstoption) out << ", ";
 	firstoption = false;
@@ -136,12 +117,6 @@ void getVersionInfo(std::ostream &out) {
 	out << "HAVE_ZIP_SUPPORT";
 #endif
 
-#ifdef HAVE_OPENGL
-	if (!firstoption) out << ", ";
-	firstoption = false;
-	out << "HAVE_OPENGL";
-#endif
-
 #ifdef ENABLE_MIDISFX
 	if (!firstoption) out << ", ";
 	firstoption = false;
@@ -150,44 +125,28 @@ void getVersionInfo(std::ostream &out) {
 
 	out << std::endl;
 
-
 	/*
 	 * 4. Compiler used to create this binary
 	 */
 
 	out << "Compiler: ";
-	// GCC
-#if (defined(__GNUC__))
-	out << "gcc";
-#  if defined(__VERSION__)
-	out << ", version: " << __VERSION__;
-#  elif (defined(__GNUC_MINOR__))
-	out << ", version " << __GNUC__ << "." << __GNUC_MINOR__;
-#    if (defined(__GNUC_PATCHLEVEL__))
-	out << "." << __GNUC_PATCHLEVEL__;
-#    endif
-#  endif
-
-	// Microsoft C/C++ Compiler (used by MSVC)
-#elif (defined(_MSC_FULL_VER))
-	out << "Microsoft C/C++ Compiler, version: " << (_MSC_FULL_VER / 1000000) << "."
-	    << ((_MSC_FULL_VER / 10000) % 100) << "."
-	    << (_MSC_FULL_VER % 10000);
-#elif (defined(_MSC_VER))
-	out << "Microsoft C/C++ Compiler, version: " << (_MSC_VER / 100) << "." << (_MSC_VER % 100);
-
-	// Metrowerks CodeWarrior
-#elif (defined(__MWERKS__))
-	out << "Metrowerks CodeWarrior, version: ";
-	out << ((__MWERKS__ & 0xf000) >> 12) << ".";
-	out << ((__MWERKS__ & 0x0f00) >> 8) << ".";
-	out << (__MWERKS__ & 0xff);
+#ifdef __INTEL_COMPILER
+#	define COMPILER __VERSION__
+#elif defined(__clang__)
+#	define COMPILER "GCC " __VERSION__
+#elif defined(__GNUC__)
+#	define COMPILER "GCC " __VERSION__
+#elif defined(_MSC_FULL_VER)
+#	define COMPILER "Microsoft C/C++ Compiler " \
+                    << (_MSC_FULL_VER / 10'000'000) << '.' \
+                    << ((_MSC_FULL_VER / 100'000) % 100) << '.'   \
+                    << ((_MSC_FULL_VER % 100'000))
 #else
-	out << "Unknown";
+#	define COMPILER "unknown compiler"
 #endif
 
-	out << std::endl;
-
+	out << COMPILER << std::endl;
+#undef COMPILER
 
 	/*
 	 * 5. Platform
@@ -213,7 +172,7 @@ void getVersionInfo(std::ostream &out) {
 	out << ver;
 #elif (defined(__sun__) || defined(__sun))
 	out << "Solaris";
-#elif (defined(WIN32))
+#elif (defined(_WIN32))
 	out << "Windows ";
 	{
 		// Get the version
@@ -230,15 +189,14 @@ void getVersionInfo(std::ostream &out) {
 			else if (info.dwMajorVersion == 5 && info.dwMinorVersion == 2) out << 2003;
 			else if (info.dwMajorVersion == 6 && info.dwMinorVersion == 0) out << "Vista";
 			else if (info.dwMajorVersion == 6 && info.dwMinorVersion == 1) out << "7";
+			else if (info.dwMajorVersion == 6 && info.dwMinorVersion == 2) out << "8";
+			// Note: Without the proper manifest file, GetVersionEx will lie about these.
+			else if (info.dwMajorVersion == 6 && info.dwMinorVersion == 3) out << "8.1";
+			else if (info.dwMajorVersion == 10 && info.dwMinorVersion == 0) out << "10";
 			else out << "Unknown NT";
 
 			if (info.szCSDVersion[0]) out << " " << info.szCSDVersion;
 		}
-#ifdef VER_PLATFORM_WIN32_CE
-		else if (info.dwPlatformId == VER_PLATFORM_WIN32_CE) {
-			out << "CE";
-		}
-#endif
 		else if (info.dwMajorVersion == 4 && info.dwMinorVersion == 0) {
 			out << 95;
 			if (info.szCSDVersion[1] != ' ') out << info.szCSDVersion;
@@ -253,6 +211,8 @@ void getVersionInfo(std::ostream &out) {
 	}
 #elif (defined(MACOSX))
 	out << "Mac OS X";
+#elif (defined(__IPHONEOS__))
+	out << "iOS";
 #elif (defined(NETBSD))
 	out << "NetBSD";
 #else
@@ -260,5 +220,4 @@ void getVersionInfo(std::ostream &out) {
 #endif
 
 	out << std::endl;
-
 }

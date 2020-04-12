@@ -18,15 +18,17 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _STACKFRAME_H
-#define _STACKFRAME_H
+#ifndef STACKFRAME_H
+#define STACKFRAME_H
 
 #include "common_types.h"
+#include "useval.h"
 #include <iosfwd>
+#include <memory>
 
-class Usecode_function;
 class Game_object;
-class Usecode_value;
+class Usecode_function;
+using Game_object_shared = std::shared_ptr<Game_object>;
 
 class Stack_frame {
 public:
@@ -53,7 +55,7 @@ public:
 	Usecode_value *locals;
 
 	int eventid;
-	Game_object *caller_item;
+	Game_object_shared caller_item;
 
 	Usecode_value *save_sp;
 
@@ -66,6 +68,6 @@ public:
 	}
 };
 
-std::ostream &operator<<(std::ostream &out, Stack_frame &val);
+std::ostream &operator<<(std::ostream &out, Stack_frame &frame);
 
 #endif

@@ -20,8 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#include "sdl-compat.h"
-#include SDL_BYTEORDERH
+#include "SDL_endian.h"
 
 #include <cassert>
 #include <iostream>
@@ -97,15 +96,17 @@ unsigned int read1(FILE *f) {
 }
 
 unsigned int read2(FILE *f) {
-	unsigned char b0, b1;
+	unsigned char b0;
+	unsigned char b1;
 	b0 = fgetc(f);
 	b1 = fgetc(f);
-	return (b0 + (b1 << 8));
+	return b0 + (b1 << 8);
 }
 
 /* Flauschepelz */
 signed int read2signed(FILE *f) {
-	unsigned char b0, b1;
+	unsigned char b0;
+	unsigned char b1;
 	signed int i0;
 	b0 = fgetc(f);
 	b1 = fgetc(f);
@@ -113,33 +114,44 @@ signed int read2signed(FILE *f) {
 	if (i0 >= 32768) {
 		i0 = i0 - 65536;
 	}
-	return (i0);
+	return i0;
 }
 
 unsigned int read4(FILE *f) {
-	unsigned char b0, b1, b2, b3;
+	unsigned char b0;
+	unsigned char b1;
+	unsigned char b2;
+	unsigned char b3;
 	b0 = fgetc(f);
 	b1 = fgetc(f);
 	b2 = fgetc(f);
 	b3 = fgetc(f);
-	return (b0 + (b1 << 8) + (b2 << 16) + (b3 << 24));
+	return b0 + (b1 << 8) + (b2 << 16) + (b3 << 24);
 }
 
 
 u7shape *load_shape(char *filename) {
 	FILE *fp;
-	int file_size, shape_size, hdr_size;
+	int file_size;
+	int shape_size;
+	int hdr_size;
 	uint8 *pixptr/*, *eod*/;
 	int frame_offset;
 	int slice;
-	int slice_type, slice_length;
-	int block_type, block_length;
-	int max_leftX = -1, max_rightX = -1;
-	int max_leftY = -1, max_rightY = -1;
-	int offsetX, offsetY;
+	int slice_type;
+	int slice_length;
+	int block_type;
+	int block_length;
+	int max_leftX = -1;
+	int max_rightX = -1;
+	int max_leftY = -1;
+	int max_rightY = -1;
+	int offsetX;
+	int offsetY;
 	uint8 block;
 	uint8 pix;
-	int i, j;
+	int i;
+	int j;
 	size_t err;
 
 	int temp_int;
@@ -147,7 +159,7 @@ u7shape *load_shape(char *filename) {
 	fp = fopen(filename, "rb");
 	if (!fp) {
 		cerr << "Can't open " << filename << endl;
-		return 0;
+		return nullptr;
 	}
 	fseek(fp, 0, SEEK_END);
 	file_size = ftell(fp);
@@ -266,7 +278,10 @@ u7shape *load_shape(char *filename) {
 	shape->width = width;
 	shape->height = height;
 
-	int srcx, srcy, dstx, dsty;
+	int srcx;
+	int srcy;
+	int dstx;
+	int dsty;
 
 	for (i = 0; i < shape->num_frames; i++) {
 		frame = &shape->frames[i];
@@ -297,7 +312,7 @@ uint8 *load_palette(char *filename) {
 	fp = fopen(filename, "rb");
 	if (!fp) {
 		cerr << "Can't open " << filename << endl;
-		return 0;
+		return nullptr;
 	}
 
 	uint8 *palette = new uint8[768];
@@ -324,7 +339,7 @@ uint8 *load_palette(char *filename) {
 		cerr << "Not a valid palette file: " << filename << endl;
 		delete [] palette;
 		fclose(fp);
-		return 0;
+		return nullptr;
 	}
 	fclose(fp);
 
@@ -332,7 +347,9 @@ uint8 *load_palette(char *filename) {
 }
 
 static void writeline(FILE *dst, uint8 *buffer, int bytes) {
-	uint8 value, count, tmp;
+	uint8 value;
+	uint8 count;
+	uint8 tmp;
 	uint8 *finish = buffer + bytes;
 
 	while (buffer < finish) {
@@ -410,7 +427,8 @@ void save_image(uint8 *pixels, uint8 *palette, int width, int height, char *file
 int main(int argc, char *argv[]) {
 	char *palfilename ;
 	char *infilename;
-	char *outprefix, outfilename[255];
+	char *outprefix;
+	char outfilename[255];
 	u7shape *sh;
 	uint8 *palette;
 

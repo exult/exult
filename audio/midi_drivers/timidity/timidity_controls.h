@@ -82,12 +82,12 @@ struct ControlMode {
 
 	int (*open)(int using_stdin, int using_stdout);
 	void (*pass_playing_list)(int number_of_files, char *list_of_files[]);
-	void (*close)(void);
+	void (*close)();
 	int (*read)(sint32 *valp);
 	int (*cmsg)(int type, int verbosity_level, const char *fmt, ...) ATTR_PRINTF(3,4);
 
-	void (*refresh)(void);
-	void (*reset)(void);
+	void (*refresh)();
+	void (*reset)();
 	void (*file_name)(char *name);
 	void (*total_time)(int tt);
 	void (*current_time)(int ct);

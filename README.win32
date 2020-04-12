@@ -40,120 +40,187 @@ Notes
 		You have to set them in autoexec.bat using the "set" command.
 
 
-To build in Windows using MinGW
------------------------------------
-(Thanks to Travis Howell)
+To build in Windows using MSYS2/MinGW64
+---------------------------------------
 
-Download various MinGW packages from:
-http://sourceforge.net/projects/mingw/files/MinGW/Base/binutils/binutils-2.21/binutils-2.21-3-mingw32-bin.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/gcc/Version4/gcc-4.6.2-1/gcc-core-4.6.2-1-mingw32-bin.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/gcc/Version4/gcc-4.6.2-1/libgcc-4.6.2-1-mingw32-dll-1.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/gcc/Version4/gcc-4.6.2-1/gcc-c%2B%2B-4.6.2-1-mingw32-bin.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/gcc/Version4/gcc-4.6.2-1/libstdc%2B%2B-4.6.2-1-mingw32-dll-6.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/gmp/gmp-5.0.1-1/gmp-5.0.1-1-mingw32-dev.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/gmp/gmp-5.0.1-1/libgmp-5.0.1-1-mingw32-dll-10.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/gcc/Version4/gcc-4.6.2-1/libgomp-4.6.2-1-mingw32-dll-1.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/gettext/gettext-0.17-1/libintl-0.17-1-mingw32-dll-8.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/libiconv/libiconv-1.13.1-1/libiconv-1.13.1-1-mingw32-dev.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/libiconv/libiconv-1.13.1-1/libiconv-1.13.1-1-mingw32-dll-2.tar.lzma/download
-https://sourceforge.net/projects/mingw/files/MinGW/Base/mingwrt/mingwrt-3.20/mingwrt-3.20-mingw32-dev.tar.gz/download
-https://sourceforge.net/projects/mingw/files/MinGW/Base/mingwrt/mingwrt-3.20/mingwrt-3.20-mingw32-dll.tar.gz/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/mpc/mpc-0.8.1-1/mpc-0.8.1-1-mingw32-dev.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/mpc/mpc-0.8.1-1/libmpc-0.8.1-1-mingw32-dll-2.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/mpfr/mpfr-2.4.1-1/mpfr-2.4.1-1-mingw32-dev.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/mpfr/mpfr-2.4.1-1/libmpfr-2.4.1-1-mingw32-dll-1.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/pthreads-w32/pthreads-w32-2.8.0-3/pthreads-w32-2.8.0-3-mingw32-dev.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/pthreads-w32/pthreads-w32-2.8.0-3/libpthread-2.8.0-3-mingw32-dll-2.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/gcc/Version4/gcc-4.6.2-1/libssp-4.6.2-1-mingw32-dll-0.tar.lzma/download
-http://sourceforge.net/projects/mingw/files/MinGW/Base/w32api/w32api-3.17/w32api-3.17-2-mingw32-dev.tar.lzma/download
+Download latest MSYS2:
+	32-bit Windows:
+		http://repo.msys2.org/distrib/msys2-i686-latest.exe
+	64-bit Windows:
+		http://repo.msys2.org/distrib/msys2-x86_64-latest.exe
 
-Install MinGW packages:
-Create a directory called mingw in the root directory of drive (ie C:\MinGW\ )
-Extract all the mingw packages to the mingw directory
+Install it somewhere, then start it from Start Menu. Run the following command:
+	pacman -Syyu --noconfirm
 
-Download and install MSYS from:
-	http://prdownloads.sourceforge.net/mingw/MSYS-1.0.10.exe
+Reply 'Y' when you have to. At some point, you will be asked to close and reopen
+the shell. Do so.
 
-Download the SDL2 binaries & headers from:
-	http://exult.sourceforge.net/snapshots/exult_sdl2_win32.zip
-Unzip this file into the main directory of Exult source code. (it should add a
-SDL subdirectory)
+Now it is time to make a choice: whether to build Exult on 32- or 64-bit: start
+the corresponding shell ("MSYS2 MinGW 32-bit" or "MSYS2 MinGW 64-bit") from the
+start menu. Please note that, at the time of this writing, the 64-bit Windows
+version of Exult is completely untested.
 
-NOTE: Our developer packages were compiled with GCC 4.6.2, and might not work with
-later GCC versions, due to backwards compatibility been broken between GCC versions.
+When the shell starts, issue the following commands:
+	32-bit:
+		pacman -S --noconfirm --needed base-devel git \
+				mingw-w64-i686-toolchain \
+				mingw-w64-i686-binutils
+	64-bit:
+		pacman -S --noconfirm --needed base-devel git \
+				mingw-w64-x86_64-toolchain \
+				mingw-w64-x86_64-binutils
 
-Download the other required developer tools from:
-	http://exult.sourceforge.net/snapshots/exult_dev_win32.zip
-Unzip this file into the MinGW directory.
+This installs the toolchain for building everything. Now, you must install
+the required libraries for building each component. The commands given below
+assume you have not installed any of the others, and can be used independently.
 
-If you want to compile Exult Studio get the additional required developer tools
-from the following address:
-	http://exult.sourceforge.net/snapshots/exult_studio_dev_win32.zip
-Unzip this file into the MinGW directory. This file contains various files that
-are required for compiling and running Exult Studio, such as GTK+ libraries. If
-this file is your only source for GTK+, you will want to execute the next step.
+To build Exult, you must install the following:
+	32-bit:
+		pacman -S --noconfirm --needed \
+				mingw-w64-i686-SDL2 \
+				mingw-w64-i686-fluidsynth \
+				mingw-w64-i686-libogg \
+				mingw-w64-i686-libvorbis \
+				mingw-w64-i686-zlib
+	64-bit:
+		pacman -S --noconfirm --needed \
+				mingw-w64-x86_64-SDL2 \
+				mingw-w64-x86_64-fluidsynth \
+				mingw-w64-x86_64-libogg \
+				mingw-w64-x86_64-libvorbis \
+				mingw-w64-x86_64-zlib
 
-For Exult Studio, you may have to set a couple of environment variables that
-will tell were are the files it needs to run. This step is crucial if your only
-source for GTK+ runtime files is the Exult Studio developer tools package.
-However, if the GTK_BASEPATH already exists and is set to a valid directory, you
-likely have GTK+ installed already and can skip this step entirely.
-	-	GTK_BASEPATH: Set this variable to the full path of your GTK+ directory.
-		Example:
-			If you used the Exult Studio developer tools above, this is the
-			directory to which you unzipped the files: your MinGW directory.
-	-	PATH: You will want to *append* to this variable. The text you want to
-		append is '%GTK_BASEPATH%\bin' (without the single-quotes); but first,
-		make sure that this text is not already in there. To append it, add a
-		semi-colon (;) at the end of the text (if one is not already there) then
-		append '%GTK_BASEPATH%\bin' (again, without the single-quotes).
-		Example:
-			This value:
-				%SystemRoot%\system32;%SystemRoot%;
-			gets changed to this:
-				%SystemRoot%\system32;%SystemRoot%;%GTK_BASEPATH%\bin
-Your environment will then be set so that you can run Exult Studio.
+To build the Exult tools, you must install the following:
+	32-bit:
+		pacman -S --noconfirm --needed mingw-w64-i686-SDL2_image
+	64-bit:
+		pacman -S --noconfirm --needed mingw-w64-x86_64-SDL2_image
 
-Start MSYS
+To build Exult Studio, you must install the following:
+	32-bit:
+		pacman -S --noconfirm --needed \
+				mingw-w64-i686-gtk2 \
+				mingw-w64-i686-libxml2 \
+				mingw-w64-i686-libglade \
+				mingw-w64-i686-freetype \
+				mingw-w64-i686-zlib
+	64-bit:
+		pacman -S --noconfirm --needed \
+				mingw-w64-x86_64-gtk2 \
+				mingw-w64-x86_64-libxml2 \
+				mingw-w64-x86_64-libglade \
+				mingw-w64-x86_64-freetype \
+				mingw-w64-x86_64-zlib
+
+To build the Gimp Plug-In, you must install the following:
+	32-bit:
+		pacman -S --noconfirm --needed \
+				mingw-w64-i686-gtk2 \
+				mingw-w64-i686-gimp
+	64-bit:
+		pacman -S --noconfirm --needed \
+				mingw-w64-x86_64-gtk2 \
+				mingw-w64-x86_64-gimp
+
+You now have everything needed to build any of the components you want.
+
+	**Warning**
+	The Gimp plug-in must be compiled with the same architecture of the version
+	of Gimp which you use. That is: if you use 32-bit Gimp, you must compile
+	the 32-bit version of the plug-in, and likewise for 64-bit Gimp.
 
 Change to the directory where you unpacked the Exult source code.
-(ie cd C:/exult )
+(ie cd C:/exult)
 
-Open makefile.mingw from the Exult directory in a text editor and change
+Open Makefile.mingw from the Exult directory in a text editor and change
 C:/Ultima7 to the directory you want Exult to be installed to.
-(ie C:/Games/Ultima7 )
+(ie C:/Games/Ultima7)
+
+You can also change C:/GimpPlugin to the direcroty you want the Gimp Plug-in
+to be installed to. This depends on the version of Gimp you use:
+	Gimp 2.8:
+		C:/Users/<username>/.gimp-2.8/plug-ins
+	Gimp 2.10 and newer:
+		C:/Users/<username>/AppData/Roaming/GIMP/<version>/plug-ins
 
 If you are compiling Exult Studio, it will be installed to the same directory
 that Exult when you compile it. You can change that directory in the same way.
 
 To compile and install Exult, type the command
-	make -f makefile.mingw install
+	make -f Makefile.mingw install
 
 To compile and install the Exult Tools, type the command
-	make -f makefile.mingw toolsinstall
+	make -f Makefile.mingw toolsinstall
 
 To compile and install Exult Studio, type the command
-	make -f makefile.mingw studioinstall
+	make -f Makefile.mingw studioinstall
+
+To compile and install the Gimp Plug-In, type the command
+	make -f Makefile.mingw plugininstall
 
 If you want to make more than one, you can combine the commands; for example,
 to build Exult and the Exult Tools, you can type the command
-	make -f makefile.mingw install toolsinstall
+	make -f Makefile.mingw install toolsinstall
 
-Exult Studio requires several files to run properly. The best way to deal with
-these requirements is to set environment variables, as described above (the last
-step before 'Start MSYS'). Another way is to copy several files and directories
-to the same directory as the Exult Studio executable; the easiet way would be to
-simply extract the Exult Studio developer tools to this directory; not all of
-those files are required, but this way is easier than figuring out which are
-required and which are not.
-
-Once compile has finished and been installed exit MSYS
+Once compile has finished and been installed exit MSYS2
 
 Run Exult.exe and enjoy the game :-)
+
+	**Windows XP Compatibility**
+	There is a host of issues that prevent executables built with the above
+	instructions from working on Windows XP. The easiest to get around is
+	SDL2 image, which is needed by mockup and smooth tools. If you don't use
+	these tools, you don't need to do anything.
+
+	If you *do* use them, you can get them working by replacing the SDL2
+	image DLLs from MSYS2 by the official ones:
+		https://www.libsdl.org/projects/SDL_image/
+	
+	There are more problems to handle to get Exult and Exult Studio running on
+	Windows XP. The first issue is that latest GLIB has dropped support for it;
+	the most recent version that retains Windows XP support is 2.54.3. In the
+	following, replace '/path/to/exult/source' by the actual path to Exult's
+	source code, then issue the following commands:
+		pacman -S --noconfirm --needed python zlib-devel \
+				libffi-devel gettext-devel
+		http://ftp.acc.umu.se/pub/gnome/sources/glib/2.54/glib-2.54.3.tar.xz
+		tar -xf glib-2.54.3.tar.xz
+		cd glib-2.54.3
+		patch -p1 < /path/to/exult/source/win32/glib-xp.patch
+		CPPFLAGS="-march=i686 -D_WIN32_WINNT=0x0501" ./configure
+				--prefix=$(MSYSTEM_PREFIX) --with-python=$(which python)
+		make
+	
+	Once it finishes building, grab the following DLLs for Exult:
+		glib/.libs/libglib-2.0-0.dll
+		gmodule/.libs/libgmodule-2.0-0.dll
+
+	Exult Studio needs the following DLLs:
+		gio/.libs/libgio-2.0-0.dll
+		glib/.libs/libglib-2.0-0.dll
+		gmodule/.libs/libgmodule-2.0-0.dll
+		gobject/.libs/libgobject-2.0-0.dll
+
+	For Eult Studio, we will need to do a few more things. First, we need a
+	version of libHarfBuzz without DWRITE support. Here is how to build it:
+		wget https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-2.1.3.tar.bz2
+		tar -xf harfbuzz-2.1.3.tar.bz2
+		cd harfbuzz-2.1.3/
+		./configure --prefix=$(MSYSTEM_PREFIX)
+		make
+
+	Once that finishes, grab the following DLL for Exult Studio:
+		src/.libs/libharfbuzz-0.dll
+	
+	And that's all: Exult, Tools, and Exult Studio will now work on Windows XP.
 
 
 To build in Windows using MSVC 6.0
 ----------------------------------
+
+NOTE: These instructions probably don't work anymore.
+      We need to create new solutions for more modern Visual Studio
+      and get Exult compiling.
 
 1) Download SDL and ZLib for Win32/MSVC6. Add their Include and Library
 directories to MSVC's Search Directories (Tools->Options->Directories).

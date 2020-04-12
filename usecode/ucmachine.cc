@@ -29,8 +29,7 @@
 #include "conversation.h"
 
 
-Usecode_machine::Usecode_machine(
-) : keyring(0), conv(0) {
+Usecode_machine::Usecode_machine() {
 	// Clear global flags.
 	std::memset(gflags, 0, sizeof(gflags));
 	conv = new Conversation;

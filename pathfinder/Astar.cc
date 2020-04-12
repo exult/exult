@@ -26,52 +26,52 @@
 /*
  *  Find path from source to destination.
  *
- *  Output: 1 if successful, else 0.
+ *  Output: true if successful, else false.
  */
-int Astar::NewPath(Tile_coord const &s, Tile_coord const &d, Pathfinder_client *client) {
+bool Astar::NewPath(Tile_coord const &s, Tile_coord const &d, Pathfinder_client *client) {
 	extern Tile_coord *Find_path(Tile_coord const &, Tile_coord const &,
 	                             Pathfinder_client * client, int & plen);
 	src = s;            // Store start, destination.
 	dest = d;
 	path.clear();       // Clear out old path, if there.
 	Tile_coord *t = Find_path(s, d, client, pathlen);
-	bool success = (t != 0);
+	bool success = (t != nullptr);
 	for (int i = 0; i < pathlen; i++)
 		path.push_back(t[i]);
 	delete [] t;    // Discard temporary storage
 	next_index = 0;
 	dir = 1;
 	stop = pathlen;
-	return (success);
+	return success;
 }
 
 /*
  *  Get next point on path to go to (in tile coords).
  *
- *  Output: 0 if all done.
+ *  Output: false if all done.
  */
-int Astar::GetNextStep(Tile_coord &n, bool &done) {
+bool Astar::GetNextStep(Tile_coord &n, bool &done) {
 	if (next_index == stop) {
 		done = true;
-		return (0);
+		return false;
 	}
 	n = path[next_index];
 	next_index += dir;
 	done = (next_index == stop);
-	return 1;
+	return true;
 }
 
 /*
  *  Set to traverse backwards.
  *
- *  Output: 1 always (we succeeded).
+ *  Output: true always (we succeeded).
  */
-int Astar::set_backwards(
+bool Astar::set_backwards(
 ) {
 	dir = -1;
 	stop = -1;
 	next_index = pathlen - 1;
-	return 1;
+	return true;
 }
 
 /*
@@ -81,11 +81,3 @@ int Astar::get_num_steps(
 ) {
 	return (stop - next_index) * dir;
 }
-
-/*
- *  Delete.
- */
-Astar::~Astar(
-) {
-}
-

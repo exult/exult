@@ -20,13 +20,14 @@
 #ifdef USE_FLUIDSYNTH_MIDI
 
 #include "LowLevelMidiDriver.h"
+#include "common_types.h"
 #include <fluidsynth.h>
 #include <stack>
 
 class FluidSynthMidiDriver : public LowLevelMidiDriver {
 private:
-	fluid_settings_t *_settings;
-	fluid_synth_t *_synth;
+	fluid_settings_t *_settings = nullptr;
+	fluid_synth_t *_synth = nullptr;
 	std::stack<int> _soundFont;
 
 	const static MidiDriverDesc	desc;
@@ -36,23 +37,22 @@ private:
 
 public:
 	static const MidiDriverDesc* getDesc() { return &desc; }
-	FluidSynthMidiDriver();
 
 protected:
 	// Because GCC complains about casting from const to non-const...
 	void setInt(const char *name, int val);
-	void setNum(const char *name, double num);
-	void setStr(const char *name, const char *str);
+	void setNum(const char *name, double val);
+	void setStr(const char *name, const char *val);
 
 	// LowLevelMidiDriver implementation
-	virtual int open();
-	virtual void close();
-	virtual void send(uint32 b);
-	virtual void lowLevelProduceSamples(sint16 *samples, uint32 num_samples);
+	int open() override;
+	void close() override;
+	void send(uint32 b) override;
+	void lowLevelProduceSamples(sint16 *samples, uint32 num_samples) override;
 
 	// MidiDriver overloads
-	virtual bool		isSampleProducer() { return true; }
-	virtual bool		noTimbreSupport() { return true; }
+	bool		isSampleProducer() override { return true; }
+	bool		noTimbreSupport() override { return true; }
 };
 
 

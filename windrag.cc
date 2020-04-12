@@ -6,8 +6,7 @@
 * but instead at
 *  http://ftp.se.kde.org/pub/vendor/microsoft/Softlib/MSLFILES/
 */
-
-#if defined(WIN32) && defined(USE_EXULTSTUDIO)
+#if defined(_WIN32) && defined(USE_EXULTSTUDIO)
 
 #include <iostream>
 
@@ -34,8 +33,8 @@ void Windnd::CreateStudioDropDest(Windnd  *&windnd, HWND &hWnd,
 void Windnd::DestroyStudioDropDest(Windnd  *&windnd, HWND &hWnd) {
 	RevokeDragDrop(hWnd);
 	delete windnd;
-	windnd = 0;
-	hWnd = 0;
+	windnd = nullptr;
+	hWnd = nullptr;
 }
 
 // IDropTarget implementation
@@ -48,9 +47,9 @@ Windnd::Windnd(
     Drop_chunk_handler_fun cfun,
     Drop_npc_handler_fun npcfun,
     Drop_combo_handler_fun combfun
-) : gamewin(hgwnd), udata(0), move_shape_handler(movefun),
+) : gamewin(hgwnd), udata(nullptr), move_shape_handler(movefun),
 	move_combo_handler(movecmbfun), shape_handler(shapefun),
-	chunk_handler(cfun), npc_handler(npcfun), face_handler(0),
+	chunk_handler(cfun), npc_handler(npcfun), face_handler(nullptr),
 	combo_handler(combfun), drag_id(-1) {
 	std::memset(&data, 0, sizeof(data));
 	m_cRef = 1;
@@ -59,34 +58,31 @@ Windnd::Windnd(
 Windnd::Windnd(HWND hgwnd, Drop_shape_handler_fun shapefun,
                Drop_chunk_handler_fun cfun, Drop_shape_handler_fun ffun, void *d
               )
-	: gamewin(hgwnd), udata(d), move_shape_handler(0), move_combo_handler(0),
+	: gamewin(hgwnd), udata(d), move_shape_handler(nullptr), move_combo_handler(nullptr),
 	  shape_handler(shapefun), chunk_handler(cfun),
-	  face_handler(ffun), combo_handler(0), drag_id(-1) {
+	  face_handler(ffun), combo_handler(nullptr), drag_id(-1) {
 	std::memset(&data, 0, sizeof(data));
 	m_cRef = 1;
 }
 
-Windnd::~Windnd() {
-}
-
 STDMETHODIMP
 Windnd::QueryInterface(REFIID iid, void **ppvObject) {
-	*ppvObject = NULL;
+	*ppvObject = nullptr;
 	if (IID_IUnknown == iid || IID_IDropTarget == iid)
 		*ppvObject = this;
-	if (NULL == *ppvObject)
+	if (nullptr == *ppvObject)
 		return E_NOINTERFACE;
 	static_cast<LPUNKNOWN>(*ppvObject)->AddRef();
 	return NOERROR;
 }
 
 STDMETHODIMP_(ULONG)
-Windnd::AddRef(void) {
+Windnd::AddRef() {
 	return ++m_cRef;
 }
 
 STDMETHODIMP_(ULONG)
-Windnd::Release(void) {
+Windnd::Release() {
 	if (0 != --m_cRef)
 		return m_cRef;
 	delete this;
@@ -109,7 +105,7 @@ Windnd::DragEnter(IDataObject *pDataObject,
 
 	FORMATETC fetc;
 	fetc.cfFormat = CF_EXULT;
-	fetc.ptd = NULL;
+	fetc.ptd = nullptr;
 	fetc.dwAspect = DVASPECT_CONTENT;
 	fetc.lindex = -1;
 	fetc.tymed = TYMED_HGLOBAL;
@@ -187,7 +183,7 @@ Windnd::DragOver(DWORD grfKeyState,
 }
 
 STDMETHODIMP
-Windnd::DragLeave(void) {
+Windnd::DragLeave() {
 	if (move_shape_handler)
 		move_shape_handler(-1, -1, 0, 0, prevx, prevy, true);
 
@@ -218,7 +214,7 @@ Windnd::Drop(IDataObject *pDataObject,
 	// retrieve the dragged data
 	FORMATETC fetc;
 	fetc.cfFormat = CF_EXULT;
-	fetc.ptd = NULL;
+	fetc.ptd = nullptr;
 	fetc.dwAspect = DVASPECT_CONTENT;
 	fetc.lindex = -1;
 	fetc.tymed = TYMED_HGLOBAL;
@@ -235,7 +231,9 @@ Windnd::Drop(IDataObject *pDataObject,
 	int id = wdd.get_id();
 
 	if (id == U7_TARGET_SHAPEID) {
-		int file, shape, frame;
+		int file;
+		int shape;
+		int frame;
 		Get_u7_shapeid(wdd.get_data(), file, shape, frame);
 		if (file == U7_SHAPE_SHAPES) {
 			if (shape_handler) (*shape_handler)(shape, frame, pnt.x, pnt.y, udata);
@@ -245,14 +243,17 @@ Windnd::Drop(IDataObject *pDataObject,
 	} else if (id == U7_TARGET_NPCID) {
 		int npcnum;
 		Get_u7_npcid(wdd.get_data(), npcnum);
-		if (npc_handler) (*npc_handler)(npcnum, pnt.x, pnt.y, 0);
+		if (npc_handler) (*npc_handler)(npcnum, pnt.x, pnt.y, nullptr);
 	} else if (id == U7_TARGET_CHUNKID) {
 		int chunknum;
 		Get_u7_chunkid(wdd.get_data(), chunknum);
 		if (chunk_handler) (*chunk_handler)(chunknum, pnt.x, pnt.y, udata);
 	} else if (id == U7_TARGET_COMBOID) {
-		int xtiles, ytiles;
-		int right, below, cnt;
+		int xtiles;
+		int ytiles;
+		int right;
+		int below;
+		int cnt;
 		U7_combo_data *combo;
 		Get_u7_comboid(wdd.get_data(), xtiles, ytiles, right, below, cnt, combo);
 		if (combo_handler) (*combo_handler)(cnt, combo, pnt.x, pnt.y, udata);
@@ -265,49 +266,21 @@ Windnd::Drop(IDataObject *pDataObject,
 bool Windnd::is_valid(IDataObject *pDataObject) {
 	FORMATETC fetc;
 	fetc.cfFormat = CF_EXULT;
-	fetc.ptd = NULL;
+	fetc.ptd = nullptr;
 	fetc.dwAspect = DVASPECT_CONTENT;
 	fetc.lindex = -1;
 	fetc.tymed = TYMED_HGLOBAL;
 
-	if (FAILED(pDataObject->QueryGetData(&fetc))) {
-		return false;
-	} else {
-		return true;
-	}
+	return SUCCEEDED(pDataObject->QueryGetData(&fetc));
 }
 
 // IDropSource implementation
 
 Windropsource::Windropsource(HBITMAP pdrag_bitmap, int x0, int y0)
 	: drag_bitmap(pdrag_bitmap) {
-	m_cRef = 1;
-	drag_shape = 0;
-
-#if 0
-	// doesn't work yet
-	SIZE bsize;
-	GetBitmapDimensionEx(drag_bitmap, &bsize);
-	bsize.cx = 32;
-	bsize.cy = 32;
-	int shw = bsize.cx, shh = bsize.cy;
-	drag_shape = CreateWindowEx(WS_EX_TRANSPARENT,
-	                            "STATIC",
-	                            NULL,
-	                            WS_POPUP, // | SS_OWNERDRAW, /*SS_OWNERDRAW,*/
-	                            x0, y0,
-	                            shw, shh,
-	                            GetForegroundWindow(), // TODO: owner window
-	                            NULL,
-	                            (HINSTANCE)GetWindowLong(GetForegroundWindow(), GWL_HINSTANCE),
-	                            NULL);
-
-	if (FAILED(drag_shape)) {
-		g_warning("Create Window FAILED !");
-	}
-#else
 	ignore_unused_variable_warning(x0, y0);
-#endif
+	m_cRef = 1;
+	drag_shape = nullptr;
 }
 
 Windropsource::~Windropsource() {
@@ -316,24 +289,24 @@ Windropsource::~Windropsource() {
 
 STDMETHODIMP
 Windropsource::QueryInterface(REFIID iid, void **ppvObject) {
-	*ppvObject = NULL;
+	*ppvObject = nullptr;
 	if (IID_IUnknown == iid || IID_IDropSource == iid)
 		*ppvObject = this;
-	if (NULL == *ppvObject)
+	if (nullptr == *ppvObject)
 		return E_NOINTERFACE;
 	static_cast<LPUNKNOWN>(*ppvObject)->AddRef();
 	return NOERROR;
 }
 
 STDMETHODIMP_(ULONG)
-Windropsource::AddRef(void) {
+Windropsource::AddRef() {
 	m_cRef = m_cRef + 1;
 
 	return m_cRef;
 }
 
 STDMETHODIMP_(ULONG)
-Windropsource::Release(void) {
+Windropsource::Release() {
 	if (0 != --m_cRef)
 		return m_cRef;
 	delete this;
@@ -345,17 +318,6 @@ Windropsource::QueryContinueDrag(
     BOOL fEscapePressed,
     DWORD grfKeyState
 ) {
-#if 0
-	// doesn't work yet
-	POINT pnt;
-	GetCursorPos(&pnt);
-
-	MoveWindow(drag_shape,
-	           pnt.x, pnt.y,
-	           shw, shh,
-	           true);
-#endif
-
 	if (fEscapePressed)
 		return DRAGDROP_S_CANCEL;
 	else if (!(grfKeyState & MK_LBUTTON))
@@ -377,31 +339,27 @@ Windropsource::GiveFeedback(
 Winstudioobj::Winstudioobj(windragdata pdata)
 	: data(pdata) {
 	m_cRef = 1;
-	drag_image = 0;
+	drag_image = nullptr;
 }
-
-Winstudioobj::~Winstudioobj() {
-}
-
 
 STDMETHODIMP
 Winstudioobj::QueryInterface(REFIID iid, void **ppvObject) {
-	*ppvObject = NULL;
+	*ppvObject = nullptr;
 	if (IID_IUnknown == iid || IID_IDataObject == iid)
 		*ppvObject = this;
-	if (NULL == *ppvObject)
+	if (nullptr == *ppvObject)
 		return E_NOINTERFACE;
 	static_cast<LPUNKNOWN>(*ppvObject)->AddRef();
 	return NOERROR;
 }
 
 STDMETHODIMP_(ULONG)
-Winstudioobj::AddRef(void) {
+Winstudioobj::AddRef() {
 	return ++m_cRef;
 }
 
 STDMETHODIMP_(ULONG)
-Winstudioobj::Release(void) {
+Winstudioobj::Release() {
 	if (0 != --m_cRef)
 		return m_cRef;
 	delete this;
@@ -419,8 +377,8 @@ Winstudioobj::GetData(
 	unsigned char *ldata;
 
 	pmedium->tymed = 0;
-	pmedium->pUnkForRelease = NULL;
-	pmedium->hGlobal = NULL;
+	pmedium->pUnkForRelease = nullptr;
+	pmedium->hGlobal = nullptr;
 
 	// This method is called by the drag-drop target to obtain the data
 	// that is being dragged.
@@ -473,7 +431,7 @@ Winstudioobj::GetCanonicalFormatEtc(
     FORMATETC *pFormatetcOut
 ) {
 	ignore_unused_variable_warning(pFormatetcIn);
-	pFormatetcOut->ptd = NULL;
+	pFormatetcOut->ptd = nullptr;
 	return E_NOTIMPL;
 }
 
@@ -506,11 +464,11 @@ Winstudioobj::EnumFormatEtc(
 		fmtetc.cfFormat = CF_EXULT;
 		fmtetc.dwAspect = DVASPECT_CONTENT;
 		fmtetc.tymed = TYMED_HGLOBAL;
-		fmtetc.ptd = NULL;
+		fmtetc.ptd = nullptr;
 		fmtetc.lindex = -1;
 
 		*ppenumFormatetc = OleStdEnumFmtEtc_Create(1, &fmtetc);
-		if (*ppenumFormatetc == NULL)
+		if (*ppenumFormatetc == nullptr)
 		sc = E_OUTOFMEMORY;*/
 		sc = E_NOTIMPL;
 

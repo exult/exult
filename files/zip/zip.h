@@ -59,7 +59,7 @@ extern "C" {
 #endif
 
 struct zip_internal;
-typedef zip_internal *zipFile;
+using zipFile = zip_internal *;
 
 #define ZIP_OK                                  (0)
 #define ZIP_ERRNO               (Z_ERRNO)
@@ -92,7 +92,7 @@ typedef zip_internal *zipFile;
 	       an Unix computer "zlib/zlib111.zip".
 	     if the file pathname exist and append=1, the zip will be created at the end
 	       of the file. (useful if the file contain a self extractor code)
-	     If the zipfile cannot be opened, the return value is NULL.
+	     If the zipfile cannot be opened, the return value is nullptr.
 	     Else, the return value is a zipFile Handle, usable with other function
 	       of this zip package.
 	*/
@@ -109,13 +109,13 @@ typedef zip_internal *zipFile;
 	                                       int level);
 	/*
 	  Open a file in the ZIP for writing.
-	  filename : the filename in zip (if NULL, '-' without quote will be used
+	  filename : the filename in zip (if nullptr, '-' without quote will be used
 	  *zipfi contain supplemental information
-	  if extrafield_local!=NULL and size_extrafield_local>0, extrafield_local
+	  if extrafield_local!=nullptr and size_extrafield_local>0, extrafield_local
 	    contains the extrafield data the the local header
-	  if extrafield_global!=NULL and size_extrafield_global>0, extrafield_global
+	  if extrafield_global!=nullptr and size_extrafield_global>0, extrafield_global
 	    contains the extrafield data the the local header
-	  if comment != NULL, comment contain the comment string
+	  if comment != nullptr, comment contain the comment string
 	  method contain the compression method (0 for store, Z_DEFLATED for deflate)
 	  level contain the level of compression (can be Z_DEFAULT_COMPRESSION)
 	*/

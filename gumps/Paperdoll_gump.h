@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _PAPERDOLL_GUMP_H_
-#define _PAPERDOLL_GUMP_H_
+#ifndef PAPERDOLL_GUMP_H
+#define PAPERDOLL_GUMP_H
 
 #include "Gump.h"
 
@@ -35,7 +35,7 @@ class Paperdoll_npc;
 
 class Paperdoll_gump : public Gump {
 private:
-	UNREPLICATABLE_CLASS_I(Paperdoll_gump, Gump())
+	UNREPLICATABLE_CLASS(Paperdoll_gump)
 
 protected:
 
@@ -105,21 +105,21 @@ public:
 	Paperdoll_gump(Container_game_object *cont, int initx, int inity,
 	               int shnum);
 
-	virtual ~Paperdoll_gump();
+	~Paperdoll_gump() override;
 
 	// Is a given point on a button?
-	virtual Gump_button *on_button(int mx, int my);
+	Gump_button *on_button(int mx, int my) override;
 
 	// Find the object the mouse is over
-	virtual Game_object *find_object(int mx, int my);
+	Game_object *find_object(int mx, int my) override;
 
 	// Add object.
-	virtual int add(Game_object *obj, int mx = -1, int my = -1,
+	bool add(Game_object *obj, int mx = -1, int my = -1,
 	                int sx = -1, int sy = -1, bool dont_check = false,
-	                bool combine = false);
+	                bool combine = false) override;
 
 	// Paint it and its contents.
-	virtual void paint();
+	void paint() override;
 
 
 	//
@@ -141,7 +141,7 @@ public:
 	void paint_arms(const Rectangle &box, const Paperdoll_npc *info);
 
 	// What are we holding?
-	int get_arm_type(void);
+	int get_arm_type();
 
 
 	//
@@ -166,7 +166,7 @@ public:
 	// Generic Method to check a shape
 	bool check_shape(int px, int py, int shape, int frame, ShapeFile file);
 
-	virtual Container_game_object *find_actor(int mx, int my);
+	Container_game_object *find_actor(int mx, int my) override;
 };
 
 #endif

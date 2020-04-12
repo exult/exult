@@ -37,8 +37,6 @@
 #define MessageBoxDebug(a,b,c,d)
 #endif
 
-const std::string c_empty_string;
-
 char *config_defaults[] = {
 	"config/disk/game/blackgate/keys",  "(default)",
 	"config/disk/game/serpentisle/keys",    "(default)",
@@ -346,8 +344,8 @@ extern "C" {
 
 		MessageBoxDebug(hwnd, lpszValue, "LaunchApp", MB_OK);
 
-		CreateProcess(NULL, lpszValue, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL,
-		              *lpIValue == 1 ? p : NULL, &si, &pi);
+		CreateProcess(nullptr, lpszValue, nullptr, nullptr, FALSE, NORMAL_PRIORITY_CLASS, nullptr,
+		              *lpIValue == 1 ? p : nullptr, &si, &pi);
 
 		return 0;
 	}

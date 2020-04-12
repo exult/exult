@@ -103,7 +103,7 @@ int plugin_parse(char *line) {
 
 	glob_idx++;
 
-	return(0);
+	return 0;
 }
 
 int calculate(Uint8 col_num, unsigned int my_x, unsigned int my_y) {
@@ -114,10 +114,10 @@ int calculate(Uint8 col_num, unsigned int my_x, unsigned int my_y) {
 
 	if (my_x > 191 || my_y > 191) {
 		//    printf("out of bounds\n");
-		return(0);
+		return 0;
 	} else {
 		ret = my_getpixel(my_g_stat.image_in, my_x, my_y);
-		return(ret == col_num);
+		return ret == col_num;
 	}
 }
 
@@ -146,7 +146,7 @@ int has_around(char *col_name) {
 	long int val = strtol(col_name, (char **)NULL, 16);
 	//  printf("checking if %ld = %ld (%s): %d\n",a,val,col_name,a == val);
 
-	return (a == val || b == val || c == val || d == val || e == val || f == val || g == val || h == val);
+	return a == val || b == val || c == val || d == val || e == val || f == val || g == val || h == val;
 }
 // UP TO HERE
 /*****************************************************************************/
@@ -178,7 +178,7 @@ char *plugin_apply(char colour[6], glob_variables *g_var) {
 
 	if (loc_idx >= glob_idx) {
 		fprintf(stderr, "WARNING: loc_idx >= glob_idx. This should never happen\n");
-		return(colour); // colour is not in table, so we don't treat it. This should never happen.
+		return colour; // colour is not in table, so we don't treat it. This should never happen.
 	} else {
 		//    fprintf(stderr,"found an entry in col for %s at %d\n",colour,loc_idx);
 		//    fprintf(stderr,"col[%d][1] = %s\n",loc_idx,col[loc_idx][1]);
@@ -197,7 +197,7 @@ char *plugin_apply(char colour[6], glob_variables *g_var) {
 			// this combinaison is not authorised for modifying.
 			// we must have at least one on North or South or both AND one on East or West or both
 			if (my_g_stat.debug > 3) printf("trigger present but not authorised combinaison a=%d b=%d c=%d d=%d\n", a, b, c, d);
-			return(colour);
+			return colour;
 		}
 
 		calc_value = (int)(1 + (2.4 * a) + (-2.1 * b) + (1.1 * c) + (3.1 * d) + 0.5);
@@ -206,7 +206,7 @@ char *plugin_apply(char colour[6], glob_variables *g_var) {
 
 		if (calc_value != 6) {
 			// not the center chunk with a trigger on one of the corners
-			return(col[loc_idx][calc_value + 2]); // the first 2 cells are taken by slave and trigger
+			return col[loc_idx][calc_value + 2]; // the first 2 cells are taken by slave and trigger
 		} else {
 			// in this case, the chunk is a center chunk with a trigger on one corner
 			unsigned short int i, j, k, l;
@@ -220,15 +220,15 @@ char *plugin_apply(char colour[6], glob_variables *g_var) {
 
 			if (i + j + k + l != 1) {
 				// not exactly one trigger at the corners. This is not allowed
-				return(colour);
+				return colour;
 			} else {
 				calc_value = 8 + 1 * i + 2 * j + 3 * k + 4 * l;
-				return(col[loc_idx][calc_value + 2]);
+				return col[loc_idx][calc_value + 2];
 			}
 		}
 	} else {
 		// there is no trigger around this chunk
 		//    printf("no trig around\n");
-		return(colour);
+		return colour;
 	}
 }

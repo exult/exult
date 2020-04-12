@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <fstream>
 #include <unistd.h>
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 #include <cstring>
 #include <cstdlib>
@@ -62,7 +62,7 @@ int main(
 	extern FILE *yyin;
 	const char *src;
 	char outbuf[256];
-	char *outname = 0;
+	char *outname = nullptr;
 	static const char *optstring = "o:I:s";
 	Uc_function::Intrinsic_type ty = Uc_function::unset;
 	opterr = 0;         // Don't let getopt() print errs.
@@ -102,13 +102,6 @@ int main(
 	}
 	Uc_location::set_cur(src, 0);
 	Uc_function::set_intrinsic_type(ty);
-#if 0
-//++++TESTING
-	int tok;
-	extern int yylex();
-	while ((tok = yylex()) != EOF)
-		printf("%d\n", tok);
-#endif
 	yyparse();
 	if (yyin != stdin) fclose(yyin);
 	int errs = Uc_location::get_num_errors();

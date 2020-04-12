@@ -16,17 +16,17 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _MIDI_H_
-#define _MIDI_H_
+#ifndef MIDI_H
+#define MIDI_H
 
 #include <vector>
 #include <string>
 
-#include <vorbis/codec.h>
-
 #include "common_types.h"
-
+#include "exult_constants.h"
+#include "exceptions.h"
 #include "fnames.h"
+#include "XMidiFile.h"
 
 class MidiDriver;
 
@@ -39,8 +39,7 @@ namespace Pentagram {
 class	MyMidiPlayer
 {
 public:
-
-	enum TimberLibrary {
+	enum TimbreLibrary {
 		TIMBRE_LIB_GM		= 0,	// General Midi/GS output mode
 		TIMBRE_LIB_INTRO	= 1,	// Intro
 		TIMBRE_LIB_MAINMENU	= 2,	// Main Menu
@@ -48,22 +47,23 @@ public:
 		TIMBRE_LIB_ENDGAME	= 4		// Endgame
 	};
 
-
 	MyMidiPlayer();
 	~MyMidiPlayer();
 
+	UNREPLICATABLE_CLASS(MyMidiPlayer)
+
 	void			destroyMidiDriver();
 
-	void			start_music(int num,bool continuous=false,std::string flex=MAINMUS);
-	void			start_music(std::string fname,int num,bool continuous=false);
-	void			stop_music();
+	void			start_music(int num,bool repeat=false,std::string flex=MAINMUS);
+	void			start_music(std::string fname,int num,bool repeat=false);
+	void			stop_music(bool quitting = false);
 
 	bool			is_track_playing(int num);
 	int				get_current_track();
-	int				is_repeating() { return repeating; }
+	bool			is_repeating() { return repeating; }
 	
-	void			set_timbre_lib(TimberLibrary lib);
-	TimberLibrary	get_timbre_lib() { return timbre_lib; }
+	void			set_timbre_lib(TimbreLibrary lib);
+	TimbreLibrary	get_timbre_lib() { return timbre_lib; }
 	
 	void			set_midi_driver(const std::string& desired_driver, bool use_oggs);
 	std::string		get_midi_driver() { return midi_driver_name; }
@@ -86,39 +86,31 @@ public:
 	bool			is_adlib(); // Check for adlib
 
 private:
+	bool			repeating = false;
+	int				current_track = -1;
 
-	MyMidiPlayer(const MyMidiPlayer &m) ; // Cannot call
-	MyMidiPlayer &operator=(const MyMidiPlayer &); // Cannot call
-
-	bool			repeating;
-	int				current_track;
-
-	std::string		midi_driver_name;
-	MidiDriver *	midi_driver;
-	bool			initialized;
+	std::string		midi_driver_name = "default";
+	MidiDriver *	midi_driver = nullptr;
+	bool			initialized = false;
 	bool			init_device(bool timbre_load = false);
 
-
-	TimberLibrary	timbre_lib;
+	TimbreLibrary	timbre_lib = TIMBRE_LIB_GM;
 	std::string		timbre_lib_filename;
-	int				timbre_lib_index;
-	int				timbre_lib_game;
-	int				music_conversion;
-	int				effects_conversion;
+	int				timbre_lib_index = 0;
+	int				timbre_lib_game = NONE;
+	int				music_conversion = XMIDIFILE_CONVERT_MT32_TO_GM;
+	int				effects_conversion = XMIDIFILE_CONVERT_GS127_TO_GS;
 	int				setup_timbre_for_track(std::string &str);
 	
 	// Ogg Stuff
-	bool			ogg_enabled;
-	sint32			ogg_instance_id;
+	bool			ogg_enabled = false;
+	sint32			ogg_instance_id = -1;
 
 	bool				ogg_play_track(const std::string& filename, int num, bool repeat);
 	bool				ogg_is_playing();
 	void				ogg_stop_track();
 
 	void				ogg_mix(sint16 *stream, uint32 bytes);
-
-
-
 };
 
 #endif

@@ -24,6 +24,8 @@
 
 #if defined(USE_HQ2X_SCALER) || defined(USE_HQ3X_SCALER) || defined(USE_HQ4X_SCALER)
 
+#include <cstdlib>
+
 /**
  ** Note: This file should only be included by source files that use the
  ** templates below; the templates will only be instantiated when they
@@ -140,7 +142,9 @@ inline void Interp10(Dest_pixel *pc, int c1, int c2, int c3,
 #define PTYPES              Dest_pixel,Manip_pixels
 
 static int RGBtoYUV(unsigned int r, unsigned int g, unsigned int b) {
-	int Y, u, v;
+	int Y;
+	int u;
+	int v;
 	Y = (r + g + b) >> 2;
 	u = 128 + ((r - b) >> 2);
 	v = 128 + ((-r + 2 * g - b) >> 3);
@@ -148,13 +152,13 @@ static int RGBtoYUV(unsigned int r, unsigned int g, unsigned int b) {
 }
 
 inline bool Diff(int YUV1, int YUV2) {
-	return ((abs((YUV1 & Ymask) - (YUV2 & Ymask)) > trY) ||
-	        (abs((YUV1 & Umask) - (YUV2 & Umask)) > trU) ||
-	        (abs((YUV1 & Vmask) - (YUV2 & Vmask)) > trV));
+	return (std::abs((YUV1 & Ymask) - (YUV2 & Ymask)) > trY) ||
+	       (std::abs((YUV1 & Umask) - (YUV2 & Umask)) > trU) ||
+	       (std::abs((YUV1 & Vmask) - (YUV2 & Vmask)) > trV);
 }
 
 template<class Manip_pixels>
-inline int hqx_init(int *w, int *c, int *yuv, unsigned char *from,
+inline int hqx_init(int *w, int *c, int *yuv, const unsigned char *from,
                     int x, int sline_pixels, int prevline, int nextline,
                     Manip_pixels &manip) {
 	int k;
@@ -184,7 +188,9 @@ inline int hqx_init(int *w, int *c, int *yuv, unsigned char *from,
 	}
 
 	for (k = 1; k <= 9; k++) {
-		unsigned int r, g, b;
+		unsigned int r;
+		unsigned int g;
+		unsigned int b;
 		manip.split_source(w[k], r, g, b);
 		// The following is so the Interp routines work correctly.
 		r &= ~3;

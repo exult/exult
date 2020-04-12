@@ -27,7 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "baseinf.h"
 #include "exult_constants.h"
-using std::istream;
+
+#include <iosfwd>
 
 class Shape_info;
 
@@ -40,9 +41,7 @@ class Warmth_info : public Base_info {
 	char    warmth;
 public:
 	friend class Shape_info;
-	Warmth_info()
-		: Base_info()
-	{  }
+	Warmth_info() = default;
 	Warmth_info(short f, char w, bool p = false, bool m = false,
 	            bool s = false, bool inv = false)
 		: Base_info(m, p, inv, s), frame(f), warmth(w)
@@ -72,7 +71,7 @@ public:
 		}
 	}
 	bool operator<(const Warmth_info &other) const {
-		return (static_cast<unsigned short>(frame) < static_cast<unsigned short>(other.frame));
+		return static_cast<unsigned short>(frame) < static_cast<unsigned short>(other.frame);
 	}
 	bool operator==(const Warmth_info &other) const {
 		return this == &other || (!(*this < other) && !(other < *this));

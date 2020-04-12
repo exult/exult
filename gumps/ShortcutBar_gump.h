@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _SHORTCUTBAR_GUMP_H
-#define _SHORTCUTBAR_GUMP_H
+#ifndef SHORTCUTBAR_GUMP_H
+#define SHORTCUTBAR_GUMP_H
 
 
 #include "SDL.h"
@@ -63,20 +63,20 @@ struct ShortcutBarButtonItem {
 class ShortcutBar_gump: public Gump {
 public:
 	ShortcutBar_gump(int placex = 0, int placey = 0);
-	~ShortcutBar_gump();
+	~ShortcutBar_gump() override;
 	int handle_event(SDL_Event *event);
-	void paint();
+	void paint() override;
 
 	// Don't close on end_gump_mode
-	virtual bool is_persistent() const {
+	bool is_persistent() const override {
 		return true;
 	}
 	// Can't be dragged with mouse
-	virtual bool is_draggable() const {
+	bool is_draggable() const override {
 		return false;
 	}
 	// Show the hand cursor
-	virtual bool no_handcursor() const {
+	bool no_handcursor() const override {
 		return true;
 	}
 
@@ -88,7 +88,7 @@ public:
 	int gamey;
 	void onUserEvent(SDL_Event *event);
 // add dirty region, if dirty
-	virtual void update_gump();
+	void update_gump() override;
 	void set_changed() { has_changed = true; }
 	void check_for_updates(int shnum);
 

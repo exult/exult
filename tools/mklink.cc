@@ -16,8 +16,6 @@
 using namespace std;
 
 // Info about one usecode function
-typedef struct usecode_func usecode_func;
-
 struct usecode_func {
 	vector<uint16> called;	// List of called functions
 	uint32 where;			// Location in usecode

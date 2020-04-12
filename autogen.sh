@@ -48,13 +48,13 @@ fi
 
 aclocalincludes=""
 if test -d "/usr/local/share/aclocal"; then
-  if test "/usr/local/share/aclocal" != `aclocal --print-ac-dir`; then
+  if test "/usr/local/share/aclocal" != $(aclocal --print-ac-dir); then
     aclocalincludes="$aclocalincludes -I /usr/local/share/aclocal"
   fi
 fi
 
 #if test -d "$HOME/share/aclocal"; then
-#  if test "$HOME/share/aclocal" != `aclocal --print-ac-dir`; then
+#  if test "$HOME/share/aclocal" != $(aclocal --print-ac-dir); then
 #    aclocalincludes="$aclocalincludes -I $HOME/share/aclocal"
 #  fi
 #fi
@@ -64,7 +64,7 @@ rm -f configure config.log config.guess config.sub config.cache
 rm -f libtool ltmain.sh missing mkinstalldirs install-sh
 rm -f autoconfig.h.in
 rm -f config.status aclocal.m4
-rm -f `find . -name 'Makefile.in'`
+rm -f $(find . -name 'Makefile.in')
 rm -f audio/midi_drivers/Makefile audio/Makefile conf/Makefile data/Makefile \
       debian/Makefile desktop/Makefile docs/Makefile files/zip/Makefile \
       files/Makefile flic/Makefile gumps/Makefile imagewin/Makefile \
@@ -74,15 +74,12 @@ rm -f audio/midi_drivers/Makefile audio/Makefile conf/Makefile data/Makefile \
       usecode/ucxt/include/Makefile usecode/ucxt/src/Makefile \
       usecode/ucxt/Makefile usecode/Makefile gamemgr/Makefile Makefile
 
-
-# touch the configure.ac file to force rebuilding configure
-touch configure.ac
-
 # Regenerate everything
 aclocal $aclocalincludes
-$libtoolize --force --copy
+$libtoolize --copy
+autoconf
 autoheader
 automake --add-missing --copy --gnu
-autoconf 
 
 echo "You are now ready to run ./configure"
+

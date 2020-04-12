@@ -31,17 +31,14 @@ Boston, MA  02111-1307, USA.
 #include <cstring>
 
 #include "SDL_video.h"
-#include "sdl-compat.h"
 #include "iwin8.h"
 #include "common_types.h"
 #include "gamma.h"
-#include <limits.h>
-#ifdef HAVE_OPENGL
-#include "shapes/glshape.h"
-#endif
-
+#include <climits>
 #include <algorithm>
 using std::rotate;
+using std::unique_ptr;
+using std::make_unique;
 
 GammaTable<uint8> Image_window8::GammaRed(256);
 GammaTable<uint8> Image_window8::GammaBlue(256);
@@ -49,14 +46,10 @@ GammaTable<uint8> Image_window8::GammaGreen(256);
 
 Image_window8::Image_window8(unsigned int w, unsigned int h, unsigned int gwidth, unsigned int gheight,
                              int scl, bool fs, int sclr, Image_window::FillMode fillmode, unsigned int fillsclr)
-	: Image_window(new Image_buffer8(0, 0, static_cast<Image_buffer8 *>(0)), w, h, gwidth, gheight,
+	: Image_window(new Image_buffer8(0, 0, nullptr), w, h, gwidth, gheight,
 	               scl, fs, sclr, fillmode, fillsclr) {
 	ib8 = static_cast<Image_buffer8 *>(ibuf);
 }
-
-Image_window8::~Image_window8() {
-}
-
 
 void Image_window8::get_gamma(float &r, float &g, float &b) {
 	r = GammaRed.get_gamma();
@@ -80,7 +73,7 @@ inline unsigned char Get_color8(
     int brightness          // 100=normal.
 ) {
 	uint32 c = (static_cast<uint32>(val) * brightness * 255L) / (100 * maxval);
-	return (c <= 255L ? static_cast<unsigned char>(c) : 255);
+	return c <= 255L ? static_cast<unsigned char>(c) : 255;
 }
 
 /*
@@ -99,10 +92,10 @@ void Image_window8::set_palette(
 		colors2[i].g = colors[i * 3 + 1]  = GammaGreen[Get_color8(rgbs[3 * i + 1], maxval, brightness)];
 		colors2[i].b = colors[i * 3 + 2]  = GammaBlue[Get_color8(rgbs[3 * i + 2], maxval, brightness)];
 	}
-	SDL_SETCOLORS(paletted_surface, colors2, 0, 256);
+	SDL_SetPaletteColors(paletted_surface->format->palette, colors2, 0, 256);
 
 	if (paletted_surface != draw_surface)
-		SDL_SETCOLORS(draw_surface, colors2, 0, 256);
+		SDL_SetPaletteColors(draw_surface->format->palette, colors2, 0, 256);
 }
 
 /*
@@ -117,7 +110,8 @@ void Image_window8::rotate_colors(
 	first *= 3;
 	num *= 3;
 	int cnt = abs(num);
-	unsigned char  *start = colors + first, *finish = start + cnt;
+	unsigned char  *start = colors + first;
+	unsigned char  *finish = start + cnt;
 	if (num > 0) {
 		// Shift upward.
 		rotate(start, finish - 3, finish);
@@ -133,10 +127,10 @@ void Image_window8::rotate_colors(
 			colors2[i].g = colors[i * 3 + 1];
 			colors2[i].b = colors[i * 3 + 2];
 		}
-		SDL_SETCOLORS(paletted_surface, colors2, 0, 256);
+		SDL_SetPaletteColors(paletted_surface->format->palette, colors2, 0, 256);
 
 		if (paletted_surface != draw_surface)
-			SDL_SETCOLORS(draw_surface, colors2, 0, 256);
+			SDL_SetPaletteColors(draw_surface->format->palette, colors2, 0, 256);
 	}
 }
 
@@ -145,57 +139,24 @@ static inline int pow2(int x) {
 }
 
 //a nearest-average-colour 1/3 scaler
-unsigned char *Image_window8::mini_screenshot() {
+unique_ptr<unsigned char[]> Image_window8::mini_screenshot() {
 	int i;
-	if (!paletted_surface) return 0;
-
-	unsigned char *buf = new Uint8[96 * 60];
-	const int w = 3 * 96, h = 3 * 60;
-#ifdef HAVE_OPENGL
-	if (GL_manager::get_instance()) {
-		int width = ibuf->get_width(), height = ibuf->get_height();
-		GL_manager *glman = GL_manager::get_instance();
-		const unsigned char *pixels = glman->get_unscaled_rgb(width, height, true, true);
-		for (int y = 0; y < h; y += 3)
-			for (int x = 0; x < w; x += 3) {
-				//calculate average colour
-				int r = 0, g = 0, b = 0;
-				for (i = 0; i < 3; i++)
-					for (int j = 0; j < 3; j++) {
-						int pix = width * (j + y + (height - h) / 2) +
-						          (i + x + (width  - w) / 2);
-						r += pixels[3 * pix + 0];
-						g += pixels[3 * pix + 1];
-						b += pixels[3 * pix + 2];
-					}
-				r = r / 9;
-				g = g / 9;
-				b = b / 9;
-
-				//find nearest-colour in non-rotating palette
-				int bestdist = INT_MAX, bestindex = -1;
-				for (i = 0; i < 224; i++) {
-					int dist = pow2(colors[3 * i + 0] - r)
-					           + pow2(colors[3 * i + 1] - g)
-					           + pow2(colors[3 * i + 2] - b);
-					if (dist < bestdist) {
-						bestdist = dist;
-						bestindex = i;
-					}
-				}
-				buf[y * w / 9 + x / 3] = bestindex;
-			}
-		delete [] pixels;
-		return buf;
+	if (!paletted_surface) {
+		return nullptr;
 	}
-#endif
+
+	auto buf = make_unique<Uint8[]>(96 * 60);
+	const int w = 3 * 96;
+	const int h = 3 * 60;
 	const unsigned char *pixels = ibuf->get_bits();
 	int pitch = ibuf->get_line_width();
 
 	for (int y = 0; y < h; y += 3)
 		for (int x = 0; x < w; x += 3) {
 			//calculate average colour
-			int r = 0, g = 0, b = 0;
+			int r = 0;
+			int g = 0;
+			int b = 0;
 			for (i = 0; i < 3; i++)
 				for (int j = 0; j < 3; j++) {
 					int pix = pixels[pitch * (j + y + (get_game_height() - h) / 2) +
@@ -209,7 +170,8 @@ unsigned char *Image_window8::mini_screenshot() {
 			b = b / 9;
 
 			//find nearest-colour in non-rotating palette
-			int bestdist = INT_MAX, bestindex = -1;
+			int bestdist = INT_MAX;
+			int bestindex = -1;
 			for (i = 0; i < 224; i++) {
 				int dist = pow2(colors[3 * i + 0] - r)
 				           + pow2(colors[3 * i + 1] - g)

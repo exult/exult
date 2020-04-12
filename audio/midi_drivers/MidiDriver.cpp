@@ -31,21 +31,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "FluidSynthMidiDriver.h"
 
 // Legacy Exult Midi Drivers
-#ifdef PENTAGRAM_IN_EXULT
 #include "MT32EmuMidiDriver.h"
-#include "mixer_midiout.h"
-#include "forked_player.h"
-#include "KMIDI.h"
-#endif
 
-
-#ifdef PENTAGRAM_IN_EXULT
 #include "Configuration.h"
-#else
-#include "SettingManager.h"
-#endif
 
-static MidiDriver *Disabled_CreateInstance() { return 0; }
+static MidiDriver *Disabled_CreateInstance() { return nullptr; }
 
 static const MidiDriver::MidiDriverDesc Disabled_desc = 
 		MidiDriver::MidiDriverDesc ("Disabled", Disabled_CreateInstance);
@@ -83,18 +73,6 @@ static void InitMidiDriverVector()
 #ifdef USE_FLUIDSYNTH_MIDI
 	midi_drivers.push_back(FluidSynthMidiDriver::getDesc());
 #endif
-#ifdef USE_LIBK_MIDI
-	midi_drivers.push_back(Mixer_MidiOut::getDesc());
-#endif
-#ifdef USE_LIBK_MIDI
-	midi_drivers.push_back(KMIDI::getDesc());
-#endif
-#ifdef USE_FORKED_PLAYER_MIDI
-	midi_drivers.push_back(forked_player::getDesc());
-#endif
-#ifdef USE_MIXER_MIDI
-	midi_drivers.push_back(Mixer_MidiOut::getDesc());
-#endif
 
 	midi_drivers.push_back(&Disabled_desc);
 }
@@ -122,7 +100,7 @@ MidiDriver *MidiDriver::createInstance(const std::string& desired_driver,uint32 
 {
 	InitMidiDriverVector();
 
-	MidiDriver *new_driver = 0;
+	MidiDriver *new_driver = nullptr;
 
 	const char * drv = desired_driver.c_str();
 
@@ -145,7 +123,7 @@ MidiDriver *MidiDriver::createInstance(const std::string& desired_driver,uint32 
 					if (new_driver->initMidiDriver(sample_rate,stereo)) {
 						pout << "Failed!" << std::endl;
 						delete new_driver;
-						new_driver = 0; 
+						new_driver = nullptr; 
 					} 
 					else
 					{
@@ -176,22 +154,19 @@ MidiDriver *MidiDriver::createInstance(const std::string& desired_driver,uint32 
 
 				// Oh well, try the next one
 				delete new_driver;
-				new_driver = 0; 
+				new_driver = nullptr; 
 			}
 		}
 	}
 	else
 	{
-		new_driver = 0; // silence :-)
+		new_driver = nullptr; // silence :-)
 	}
 
-	pout << "Midi Output: " << (new_driver!=0?"Enabled":"Disabled") << std::endl;
+	pout << "Midi Output: " << (new_driver!=nullptr?"Enabled":"Disabled") << std::endl;
 
 	return new_driver;
 }
-
-
-#ifdef PENTAGRAM_IN_EXULT
 
 std::string MidiDriver::getConfigSetting(std::string const &name,
 										 std::string const &defaultval)
@@ -204,16 +179,3 @@ std::string MidiDriver::getConfigSetting(std::string const &name,
 	return val;
 }
 
-#else
-
-std::string MidiDriver::getConfigSetting(std::string name,
-										 std::string defaultval)
-{
-	std::string val;
-	if (!SettingManager::get_instance()->get(name,val))
-		val = defaultval;
-
-	return val;
-}
-
-#endif

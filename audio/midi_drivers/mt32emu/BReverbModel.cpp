@@ -99,7 +99,7 @@ const BReverbSettings &BReverbModel::getCM32L_LAPCSettings(const ReverbMode mode
 	static const BReverbSettings REVERB_MODE_0_SETTINGS = {MODE_0_NUMBER_OF_ALLPASSES, MODE_0_ALLPASSES, MODE_0_NUMBER_OF_COMBS, MODE_0_COMBS, MODE_0_OUTL, MODE_0_OUTR, MODE_0_COMB_FACTOR, MODE_0_COMB_FEEDBACK, MODE_0_DRY_AMP, MODE_0_WET_AMP, MODE_0_LPF_AMP};
 	static const BReverbSettings REVERB_MODE_1_SETTINGS = {MODE_1_NUMBER_OF_ALLPASSES, MODE_1_ALLPASSES, MODE_1_NUMBER_OF_COMBS, MODE_1_COMBS, MODE_1_OUTL, MODE_1_OUTR, MODE_1_COMB_FACTOR, MODE_1_COMB_FEEDBACK, MODE_1_DRY_AMP, MODE_1_WET_AMP, MODE_1_LPF_AMP};
 	static const BReverbSettings REVERB_MODE_2_SETTINGS = {MODE_2_NUMBER_OF_ALLPASSES, MODE_2_ALLPASSES, MODE_2_NUMBER_OF_COMBS, MODE_2_COMBS, MODE_2_OUTL, MODE_2_OUTR, MODE_2_COMB_FACTOR, MODE_2_COMB_FEEDBACK, MODE_2_DRY_AMP, MODE_2_WET_AMP, MODE_2_LPF_AMP};
-	static const BReverbSettings REVERB_MODE_3_SETTINGS = {MODE_3_NUMBER_OF_ALLPASSES, NULL, MODE_3_NUMBER_OF_COMBS, MODE_3_DELAY, MODE_3_OUTL, MODE_3_OUTR, MODE_3_COMB_FACTOR, MODE_3_COMB_FEEDBACK, MODE_3_DRY_AMP, MODE_3_WET_AMP, 0};
+	static const BReverbSettings REVERB_MODE_3_SETTINGS = {MODE_3_NUMBER_OF_ALLPASSES, nullptr, MODE_3_NUMBER_OF_COMBS, MODE_3_DELAY, MODE_3_OUTL, MODE_3_OUTR, MODE_3_COMB_FACTOR, MODE_3_COMB_FEEDBACK, MODE_3_DRY_AMP, MODE_3_WET_AMP, 0};
 
 	static const BReverbSettings * const REVERB_SETTINGS[] = {&REVERB_MODE_0_SETTINGS, &REVERB_MODE_1_SETTINGS, &REVERB_MODE_2_SETTINGS, &REVERB_MODE_3_SETTINGS};
 
@@ -168,7 +168,7 @@ const BReverbSettings &BReverbModel::getMT32Settings(const ReverbMode mode) {
 	static const BReverbSettings REVERB_MODE_0_SETTINGS = {MODE_0_NUMBER_OF_ALLPASSES, MODE_0_ALLPASSES, MODE_0_NUMBER_OF_COMBS, MODE_0_COMBS, MODE_0_OUTL, MODE_0_OUTR, MODE_0_COMB_FACTOR, MODE_0_COMB_FEEDBACK, MODE_0_DRY_AMP, MODE_0_WET_AMP, MODE_0_LPF_AMP};
 	static const BReverbSettings REVERB_MODE_1_SETTINGS = {MODE_1_NUMBER_OF_ALLPASSES, MODE_1_ALLPASSES, MODE_1_NUMBER_OF_COMBS, MODE_1_COMBS, MODE_1_OUTL, MODE_1_OUTR, MODE_1_COMB_FACTOR, MODE_1_COMB_FEEDBACK, MODE_1_DRY_AMP, MODE_1_WET_AMP, MODE_1_LPF_AMP};
 	static const BReverbSettings REVERB_MODE_2_SETTINGS = {MODE_2_NUMBER_OF_ALLPASSES, MODE_2_ALLPASSES, MODE_2_NUMBER_OF_COMBS, MODE_2_COMBS, MODE_2_OUTL, MODE_2_OUTR, MODE_2_COMB_FACTOR, MODE_2_COMB_FEEDBACK, MODE_2_DRY_AMP, MODE_2_WET_AMP, MODE_2_LPF_AMP};
-	static const BReverbSettings REVERB_MODE_3_SETTINGS = {MODE_3_NUMBER_OF_ALLPASSES, NULL, MODE_3_NUMBER_OF_COMBS, MODE_3_DELAY, MODE_3_OUTL, MODE_3_OUTR, MODE_3_COMB_FACTOR, MODE_3_COMB_FEEDBACK, MODE_3_DRY_AMP, MODE_3_WET_AMP, 0};
+	static const BReverbSettings REVERB_MODE_3_SETTINGS = {MODE_3_NUMBER_OF_ALLPASSES, nullptr, MODE_3_NUMBER_OF_COMBS, MODE_3_DELAY, MODE_3_OUTL, MODE_3_OUTR, MODE_3_COMB_FACTOR, MODE_3_COMB_FEEDBACK, MODE_3_DRY_AMP, MODE_3_WET_AMP, 0};
 
 	static const BReverbSettings * const REVERB_SETTINGS[] = {&REVERB_MODE_0_SETTINGS, &REVERB_MODE_1_SETTINGS, &REVERB_MODE_2_SETTINGS, &REVERB_MODE_3_SETTINGS};
 
@@ -202,7 +202,7 @@ RingBuffer::RingBuffer(Bit32u newsize) : size(newsize), index(0) {
 
 RingBuffer::~RingBuffer() {
 	delete[] buffer;
-	buffer = NULL;
+	buffer = nullptr;
 }
 
 Sample RingBuffer::next() {
@@ -213,7 +213,7 @@ Sample RingBuffer::next() {
 }
 
 bool RingBuffer::isEmpty() const {
-	if (buffer == NULL) return true;
+	if (buffer == nullptr) return true;
 
 #if MT32EMU_USE_FLOAT_SAMPLES
 	Sample max = 0.001f;
@@ -326,7 +326,7 @@ void TapDelayCombFilter::setOutputPositions(const Bit32u useOutL, const Bit32u u
 }
 
 BReverbModel::BReverbModel(const ReverbMode mode, const bool mt32CompatibleModel) :
-	allpasses(NULL), combs(NULL),
+	allpasses(nullptr), combs(nullptr),
 	currentSettings(mt32CompatibleModel ? getMT32Settings(mode) : getCM32L_LAPCSettings(mode)),
 	tapDelayMode(mode == REVERB_MODE_TAP_DELAY) {}
 
@@ -354,35 +354,35 @@ void BReverbModel::open() {
 }
 
 void BReverbModel::close() {
-	if (allpasses != NULL) {
+	if (allpasses != nullptr) {
 		for (Bit32u i = 0; i < currentSettings.numberOfAllpasses; i++) {
-			if (allpasses[i] != NULL) {
+			if (allpasses[i] != nullptr) {
 				delete allpasses[i];
-				allpasses[i] = NULL;
+				allpasses[i] = nullptr;
 			}
 		}
 		delete[] allpasses;
-		allpasses = NULL;
+		allpasses = nullptr;
 	}
-	if (combs != NULL) {
+	if (combs != nullptr) {
 		for (Bit32u i = 0; i < currentSettings.numberOfCombs; i++) {
-			if (combs[i] != NULL) {
+			if (combs[i] != nullptr) {
 				delete combs[i];
-				combs[i] = NULL;
+				combs[i] = nullptr;
 			}
 		}
 		delete[] combs;
-		combs = NULL;
+		combs = nullptr;
 	}
 }
 
 void BReverbModel::mute() {
-	if (allpasses != NULL) {
+	if (allpasses != nullptr) {
 		for (Bit32u i = 0; i < currentSettings.numberOfAllpasses; i++) {
 			allpasses[i]->mute();
 		}
 	}
-	if (combs != NULL) {
+	if (combs != nullptr) {
 		for (Bit32u i = 0; i < currentSettings.numberOfCombs; i++) {
 			combs[i]->mute();
 		}
@@ -390,7 +390,7 @@ void BReverbModel::mute() {
 }
 
 void BReverbModel::setParameters(Bit8u time, Bit8u level) {
-	if (combs == NULL) return;
+	if (combs == nullptr) return;
 	level &= 7;
 	time &= 7;
 	if (tapDelayMode) {
@@ -417,7 +417,7 @@ void BReverbModel::setParameters(Bit8u time, Bit8u level) {
 }
 
 bool BReverbModel::isActive() const {
-	if (combs == NULL) {
+	if (combs == nullptr) {
 		return false;
 	}
 	for (Bit32u i = 0; i < currentSettings.numberOfAllpasses; i++) {
@@ -434,7 +434,7 @@ bool BReverbModel::isMT32Compatible(const ReverbMode mode) const {
 }
 
 void BReverbModel::process(const Sample *inLeft, const Sample *inRight, Sample *outLeft, Sample *outRight, Bit32u numSamples) {
-	if (combs == NULL) {
+	if (combs == nullptr) {
 		Synth::muteSampleBuffer(outLeft, numSamples);
 		Synth::muteSampleBuffer(outRight, numSamples);
 		return;
@@ -465,10 +465,10 @@ void BReverbModel::process(const Sample *inLeft, const Sample *inRight, Sample *
 		if (tapDelayMode) {
 			TapDelayCombFilter *comb = static_cast<TapDelayCombFilter *> (*combs);
 			comb->process(dry);
-			if (outLeft != NULL) {
+			if (outLeft != nullptr) {
 				*(outLeft++) = weirdMul(comb->getLeftOutput(), wetLevel, 0xFF);
 			}
-			if (outRight != NULL) {
+			if (outRight != nullptr) {
 				*(outRight++) = weirdMul(comb->getRightOutput(), wetLevel, 0xFF);
 			}
 		} else {
@@ -493,7 +493,7 @@ void BReverbModel::process(const Sample *inLeft, const Sample *inRight, Sample *
 			combs[2]->process(link);
 			combs[3]->process(link);
 
-			if (outLeft != NULL) {
+			if (outLeft != nullptr) {
 				Sample outL2 = combs[2]->getOutputAt(currentSettings.outLPositions[1]);
 				Sample outL3 = combs[3]->getOutputAt(currentSettings.outLPositions[2]);
 #if MT32EMU_USE_FLOAT_SAMPLES
@@ -510,7 +510,7 @@ void BReverbModel::process(const Sample *inLeft, const Sample *inRight, Sample *
 #endif
 				*(outLeft++) = weirdMul(outSample, wetLevel, 0xFF);
 			}
-			if (outRight != NULL) {
+			if (outRight != nullptr) {
 				Sample outR1 = combs[1]->getOutputAt(currentSettings.outRPositions[0]);
 				Sample outR2 = combs[2]->getOutputAt(currentSettings.outRPositions[1]);
 				Sample outR3 = combs[3]->getOutputAt(currentSettings.outRPositions[2]);

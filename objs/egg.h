@@ -28,6 +28,8 @@ class   Missile_launcher;
 #include "iregobjs.h"
 #include "ignore_unused_variable_warning.h"
 
+using Egg_object_shared = std::shared_ptr<Egg_object>;
+
 /*
  *  Here's a class for eggs and paths; i.e., objects that generally aren't
  *  visible.
@@ -39,11 +41,10 @@ public:
 	                    unsigned int tiley, unsigned int lft = 0)
 		: Ireg_game_object(shapenum, framenum, tilex, tiley, lft)
 	{  }
-	virtual ~Egglike_game_object() {  }
 	// Render.
-	virtual void paint();
+	void paint() override;
 	// Can this be clicked on?
-	virtual int is_findable();
+	bool is_findable() override;
 };
 
 /*
@@ -63,12 +64,12 @@ protected:
 	unsigned char solid_area;   // 1 if area is solid, 0 if outline.
 	Animator *animator;     // Controls animation.
 	void init_field(unsigned char ty);
-	static Egg_object *create_egg(bool animated,
+	static Egg_object_shared create_egg(bool animated,
 	                              int shnum, int frnum, unsigned int tx,
 	                              unsigned int ty, unsigned int tz,
 	                              unsigned short itype,
 	                              unsigned char prob, short data1, short data2, short data3,
-	                              const char *str1 = 0);
+	                              const char *str1 = nullptr);
 public:
 	friend class Button_egg;
 	enum Egg_types {        // Types of eggs:
@@ -108,7 +109,7 @@ public:
 	    external_criteria = 7   // Appears on Isle of Avatar.  Guessing
 	                        //   these set off all nearby.
 	};
-	static Egg_object *create_egg(unsigned char *entry, int entlen,
+	static Egg_object_shared create_egg(const unsigned char *entry, int entlen,
 	                              bool animated, int shnum, int frnum, unsigned int tx,
 	                              unsigned int ty, unsigned int tz);
 	// Create normal eggs.
@@ -120,7 +121,7 @@ public:
 	Egg_object(int shapenum, int framenum, unsigned int tilex,
 	           unsigned int tiley, unsigned int lft,
 	           unsigned char ty);
-	virtual ~Egg_object();
+	~Egg_object() override;
 	virtual void set_area();        // Set up active area.
 	int get_distance() const {
 		return distance;
@@ -138,10 +139,10 @@ public:
 		ignore_unused_variable_warning(s);
 	}
 	// Can this be clicked on?
-	virtual int is_findable();
+	bool is_findable() override;
 	virtual void set(int crit, int dist);
 	// Can it be activated?
-	virtual int is_active(Game_object *obj,
+	virtual bool is_active(Game_object *obj,
 	                      int tx, int ty, int tz, int from_tx, int from_ty);
 
 	Rectangle get_area() const { // Get active area.
@@ -152,10 +153,10 @@ public:
 	}
 	void set_animator(Animator *a);
 	void stop_animation();
-	virtual void paint();
+	void paint() override;
 	// Run usecode function.
-	virtual void activate(int event = 1);
-	virtual bool edit();        // Edit in ExultStudio.
+	void activate(int event = 1) override;
+	bool edit() override;        // Edit in ExultStudio.
 	// Saved from ExultStudio.
 	static void update_from_studio(unsigned char *data, int datalen);
 	virtual void hatch_now(Game_object *obj, bool must) {
@@ -164,29 +165,28 @@ public:
 	virtual void hatch(Game_object *obj, bool must = false);
 	void print_debug();
 	static void set_weather(int weather, int len = 15,
-	                        Game_object *egg = 0);
+	                        Game_object *egg = nullptr);
 	// Move to new abs. location.
-	virtual void move(int newtx, int newty, int newlift, int newmap = -1);
+	void move(int newtx, int newty, int newlift, int newmap = -1) override;
 	// Remove/delete this object.
-	virtual void remove_this(int nodel = 0);
-	virtual int is_egg() const { // An egg?
+	void remove_this(Game_object_shared *keep = nullptr) override;
+	int is_egg() const override { // An egg?
 		return 1;
 	}
 	// Write out to IREG file.
-	virtual void write_ireg(ODataSource *out);
+	void write_ireg(ODataSource *out) override;
 	// Get size of IREG. Returns -1 if can't write to buffer
-	virtual int get_ireg_size();
+	int get_ireg_size() override;
 
 	virtual void reset() {
 		flags &= ~(1 << hatched);
 	}
 
-	virtual Egg_object *as_egg() {
+	Egg_object *as_egg() override {
 		return this;
 	}
 
 };
-
 
 /*
  *  Fields are activated like eggs.
@@ -197,18 +197,18 @@ class Field_object : public Egg_object {
 public:
 	Field_object(int shapenum, int framenum, unsigned int tilex,
 	             unsigned int tiley, unsigned int lft, unsigned char ty);
-	virtual void paint();
+	void paint() override;
 	// Run usecode function.
-	virtual void activate(int event = 1);
-	virtual void hatch(Game_object *obj, bool must = false);
+	void activate(int event = 1) override;
+	void hatch(Game_object *obj, bool must = false) override;
 	// Write out to IREG file.
-	virtual void write_ireg(ODataSource *out);
+	void write_ireg(ODataSource *out) override;
 	// Get size of IREG. Returns -1 if can't write to buffer
-	virtual int get_ireg_size();
-	virtual int is_findable() {
+	int get_ireg_size() override;
+	bool is_findable() override {
 		return Ireg_game_object::is_findable();
 	}
-	virtual bool edit() {
+	bool edit() override {
 		return Ireg_game_object::edit();
 	}
 	static void update_from_studio(unsigned char *data, int datalen) {
@@ -226,26 +226,26 @@ public:
 	              unsigned int tiley, unsigned int lft);
 
 	// Run usecode function.
-	virtual void activate(int event = 1);
-	virtual void hatch(Game_object *obj, bool must = false);
+	void activate(int event = 1) override;
+	void hatch(Game_object *obj, bool must = false) override;
 
 	// Can it be activated?
-	virtual int is_active(Game_object *obj,
-	                      int tx, int ty, int tz, int from_tx, int from_ty);
+	bool is_active(Game_object *obj,
+	              int tx, int ty, int tz, int from_tx, int from_ty) override;
 
-	virtual void set_area();        // Set up active area.
+	void set_area() override;        // Set up active area.
 
 	// Render.
-	virtual void paint();
+	void paint() override;
 	// Can this be clicked on?
-	virtual int is_findable() {
+	bool is_findable() override {
 		return Ireg_game_object::is_findable();
 	}
 
-	virtual void write_ireg(ODataSource *out);
+	void write_ireg(ODataSource *out) override;
 	// Get size of IREG. Returns -1 if can't write to buffer
-	virtual int get_ireg_size();
-	virtual bool edit() {
+	int get_ireg_size() override;
+	bool edit() override {
 		return Ireg_game_object::edit();
 	}
 	static void update_from_studio(unsigned char *data, int datalen) {

@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#include <stdio.h>
+#include <cstdio>
 #include <cassert>
 
 #include "ucstmt.h"
@@ -211,7 +211,7 @@ void Uc_trycatch_statement::gen(
 		sprintf(buf, "_tmperror_%d", cnt++);
 		// Create a 'tmp' variable.
 		catch_var = fun->add_symbol(buf);
-		assert(catch_var != 0);
+		assert(catch_var != nullptr);
 	}
 	// Generate error variable assignment (push is handled by abort/throw)
 	blocks.push_back(catch_block);
@@ -621,7 +621,7 @@ static void Call_intrinsic(
     Basic_block *end,           // Fictitious exit block for function.
     map<string, Basic_block *> &labels, // Label map for goto statements.
     Uc_intrinsic_symbol *intr,  // What to call.
-    Uc_expression *parm0 = 0    // Parm, or null.
+    Uc_expression *parm0 = nullptr    // Parm, or null.
 ) {
 	// Create parms. list.
 	Uc_array_expression *parms = new Uc_array_expression;
@@ -772,7 +772,7 @@ void Uc_converse_statement::gen(
 	WriteOp(past_conv, UC_CONVERSELOC);
 	conv_top->set_targets(UC_CONVERSE, conv_body, past_conv);
 	// Generate loop body.
-	Uc_converse_case_statement *def = 0;
+	Uc_converse_case_statement *def = nullptr;
 	for (std::vector<Uc_statement *>::const_iterator it = cases.begin();
 	        it != cases.end(); ++it) {
 		Uc_converse_case_statement *stmt =
@@ -893,7 +893,7 @@ void Uc_switch_statement::gen(
 	ignore_unused_variable_warning(exit);
 	Uc_var_expression *var = new Uc_var_expression(cond->need_var(curr, fun));
 	vector<Basic_block *> case_blocks;
-	Basic_block *def_case = 0;
+	Basic_block *def_case = nullptr;
 	for (size_t i = 0; i < cases.size(); i++) {
 		Uc_switch_case_statement *stmt =
 		    dynamic_cast<Uc_switch_case_statement *>(cases[i]);

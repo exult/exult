@@ -33,20 +33,20 @@ class Paintable;
 
 class  Gump_manager : public Game_singletons {
 	struct Gump_list {
-		Gump        *gump;
-		Gump_list   *next;
+		Gump        *gump = nullptr;
+		Gump_list   *next = nullptr;
 
-		Gump_list() : gump(0), next(0) { }
-		Gump_list(Gump *g) : gump(g), next(0) { }
+		Gump_list() = default;
+		Gump_list(Gump *g) : gump(g) { }
 	};
 
-	Gump_list   *open_gumps;
-	Gump        *kbd_focus; // This gump gets kbd strokes.
+	Gump_list   *open_gumps = nullptr;
+	Gump        *kbd_focus = nullptr; // This gump gets kbd strokes.
 	// So we can test for 'gump mode' quickly:
-	int     non_persistent_count;
-	int modal_gump_count;
-	bool    right_click_close;
-	bool    dont_pause_game;    // NEVER SET THIS MANUALLY! YOU MUST
+	int     non_persistent_count = 0;
+	int modal_gump_count = 0;
+	bool    right_click_close = true;
+	bool    dont_pause_game = false;    // NEVER SET THIS MANUALLY! YOU MUST
 	// CALL set_gumps_dont_pause_game.
 public:
 	void add_gump(Gump *gump);      // Add a single gump to screen
@@ -69,13 +69,14 @@ public:
 	Gump *find_gump(int x, int y, bool pers = true);// Find gump x,y is in
 	Gump *find_gump(const Game_object *obj);  // Find gump that object is in
 	// Find gump for object obj:
-	Gump *find_gump(const Game_object *obj, int shapenum);
+	Gump *find_gump(const Game_object *owner, int shapenum);
 
 	void update_gumps();
 	void paint(bool modal);
 
 	bool double_clicked(int x, int y, Game_object *&obj);
 	bool handle_kbd_event(void *ev);
+	static void translate_numpad(SDL_Keycode& code, uint16& unicode, uint16 mod);
 
 	inline bool can_right_click_close() {
 		return right_click_close;
@@ -89,11 +90,11 @@ public:
 	}
 	void set_gumps_dont_pause_game(bool p);
 
-	int okay_to_quit();
+	bool okay_to_quit();
 	int prompt_for_number(int minval, int maxval, int step, int def,
-	                      Paintable *paint = 0);
-	int do_modal_gump(Modal_gump *, Mouse::Mouse_shapes,
-	                  Paintable *paint = 0);
+	                      Paintable *paint = nullptr);
+	bool do_modal_gump(Modal_gump *, Mouse::Mouse_shapes,
+	                  Paintable *paint = nullptr);
 	void paint_num(int num, int x, int y);
 
 	Gump_manager();
@@ -102,7 +103,7 @@ public:
 	}
 
 private:
-	int handle_modal_gump_event(Modal_gump *gump, SDL_Event &event);
+	bool handle_modal_gump_event(Modal_gump *gump, SDL_Event &event);
 };
 
 #endif // GUMP_MANAGER_INCLUDED

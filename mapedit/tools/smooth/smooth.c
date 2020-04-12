@@ -62,15 +62,6 @@ void clean_up(int ret) {
 	exit(ret);
 }
 
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-int __stdcall WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,  LPSTR lpCmdLine, int iShowCmd) {
-	SDL_SetModuleHandle(GetModuleHandle(NULL));
-	return main(__argc, __argv);
-}
-#endif
-
 int main(int argc, char **argv) {
 
 	FILE *config;
@@ -133,5 +124,5 @@ int main(int argc, char **argv) {
 	SDL_Quit();
 	printf("Done!\n");
 	clean_up(0);
-	return(0); // to avoid warnings
+	return 0; // to avoid warnings
 }

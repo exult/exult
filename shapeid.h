@@ -41,9 +41,6 @@ enum ShapeFile {
     SF_GAME_FLX,        // <DATA>/bg_data.flx or <DATA>/si_data.flx
     // Not yet
     //SF_FONTS_VGA,     // <STATIC>/fonts.vga
-#ifdef __IPHONEOS__
-    SF_IPHONE_FLX,
-#endif
     SF_OTHER,       // Other unknown FLX
     SF_COUNT        // # of preceding entries.
 };
@@ -60,17 +57,18 @@ class Shape_manager : public Game_singletons {
 	static Shape_manager *instance; // There shall be only one.
 	Shapes_vga_file shapes;     // Main 'shapes.vga' file.
 	Vga_file files[static_cast<int>(SF_COUNT)]; // The files we manage.
-	Fonts_vga_file *fonts;      // "fonts.vga" file.
+	Fonts_vga_file *fonts = nullptr;      // "fonts.vga" file.
 	std::vector<Xform_palette> xforms;  // Transforms translucent colors
 	//   0xf4 through 0xfe.
 	Xform_palette *invis_xform; // For showing invisible NPC's.
 	unsigned char special_pixels[NPIXCOLORS];   // Special colors.
-	bool can_have_paperdolls;   // Set true if the SI paperdoll file
+	bool can_have_paperdolls = false;   // Set true if the SI paperdoll file
 	//   is found when playing BG
-	bool paperdolls_enabled;    // True if paperdolls are on.
-	bool got_si_shapes; // Set true if the SI shapes file
+	bool paperdolls_enabled = false;    // True if paperdolls are on.
+	bool got_si_shapes = false; // Set true if the SI shapes file
 	//   is found when playing BG
 	void read_shape_info();
+
 public:
 	friend class ShapeID;
 	Shape_manager();
@@ -110,10 +108,10 @@ public:
 
 	// Paint shape in window.
 	void paint_shape(int xoff, int yoff, Shape_frame *shape,
-	                 int translucent = 0, unsigned char *trans = 0) {
-		if (!shape || !shape->data)
-			CERR("NULL SHAPE!!!");
-		else if (!shape->rle)
+	                 bool translucent = false, unsigned char *trans = nullptr) {
+		if (!shape || !shape->get_data())
+			CERR("nullptr SHAPE!!!");
+		else if (!shape->is_rle())
 			shape->paint(xoff, yoff);
 		else if (trans)
 			shape->paint_rle_remapped(xoff, yoff, trans);
@@ -140,7 +138,7 @@ public:
 	// Paint text using "fonts.vga".
 	int paint_text_box(int fontnum, const char *text, int x, int y, int w,
 	                   int h, int vert_lead = 0, bool pbreak = false,
-	                   bool center = false, int shading = -1, Cursor_info *cursor = 0);
+	                   bool center = false, int shading = -1, Cursor_info *cursor = nullptr);
 	int paint_text(int fontnum, const char *text, int xoff, int yoff);
 	int paint_text(int fontnum, const char *text, int textlen,
 	               int xoff, int yoff);
@@ -163,36 +161,36 @@ public:
  *  as a 2-byte quantity.
  */
 class ShapeID : public Game_singletons {
-	short shapenum;         // Shape #.
-	signed char framenum;       // Frame # within shape.
-	mutable char has_trans;
-	ShapeFile shapefile;
-	mutable Shape_frame *shape;
-	mutable Shape_info *info;
+	short shapenum = -1;             // Shape #.
+	signed char framenum = -1;       // Frame # within shape.
+	mutable bool has_trans = false;
+	ShapeFile shapefile = SF_SHAPES_VGA;
+	mutable Shape_frame *shape = nullptr;
+	mutable Shape_info *info = nullptr;
 
 	Shape_frame *cache_shape() const;
 
 public:
 	// Read from buffer & incr. ptr.
-	ShapeID(unsigned char  *&data)
-		: has_trans(0), shapefile(SF_SHAPES_VGA), shape(0), info(0) {
+	ShapeID(unsigned char  *&data) {
 		unsigned char l = *data++;
 		unsigned char h = *data++;
 		shapenum = l + 256 * (h & 0x3);
 		framenum = h >> 2;
 	}
 	// Create "end-of-list"/invalid entry.
-	ShapeID() : shapenum(-1), framenum(-1), has_trans(0),
-		shapefile(SF_SHAPES_VGA), shape(0), info(0)
-	{  }
+	ShapeID() = default;
 
-	virtual ~ShapeID()
-	{  }
+	ShapeID(const ShapeID&) = default;
+	ShapeID& operator=(const ShapeID&) = default;
+	ShapeID(ShapeID&&) noexcept = default;
+	ShapeID& operator=(ShapeID&&) noexcept = default;
+	virtual ~ShapeID() = default;
 	// End-of-list or invalid?
-	int is_invalid() const {
+	bool is_invalid() const {
 		return shapenum == -1;
 	}
-	int is_eol() const {
+	bool is_eol() const {
 		return is_invalid();
 	}
 
@@ -206,39 +204,38 @@ public:
 		return shapefile;
 	}
 	inline Shape_frame *get_shape() const {
-		return (shape != 0) ? shape : cache_shape();
+		return (shape != nullptr) ? shape : cache_shape();
 	}
-	inline void set_translucent(int trans) {
+	inline void set_translucent(bool trans) {
 		has_trans = trans;
 	}
 	inline bool is_translucent() const {
-		if (shape == 0) cache_shape();
-		return has_trans != 0;
+		if (shape == nullptr) cache_shape();
+		return has_trans;
 	}
 	// Set to given shape.
 	void set_shape(int shnum, int frnum) {
 		shapenum = shnum;
 		framenum = frnum;
-		shape = 0;
-		info = 0;
+		shape = nullptr;
+		info = nullptr;
 	}
 	ShapeID(int shnum, int frnum, ShapeFile shfile = SF_SHAPES_VGA) :
-		shapenum(shnum), framenum(frnum), has_trans(0),
-		shapefile(shfile), shape(0), info(0)
+		shapenum(shnum), framenum(frnum), shapefile(shfile)
 	{  }
 
 	void set_shape(int shnum) { // Set shape, but keep old frame #.
 		shapenum = shnum;
-		shape = 0;
-		info = 0;
+		shape = nullptr;
+		info = nullptr;
 	}
 	void set_frame(int frnum) { // Set to new frame.
 		framenum = frnum;
-		shape = 0;
+		shape = nullptr;
 	}
 	void set_file(ShapeFile shfile) { // Set to new flex
 		shapefile = shfile;
-		shape = 0;
+		shape = nullptr;
 	}
 
 	void paint_shape(int xoff, int yoff, bool force_trans = false) {
@@ -272,7 +269,7 @@ public:
 class Paintable {
 public:
 	virtual void paint() = 0;
-	virtual ~Paintable() {  }
+	virtual ~Paintable() = default;
 };
 
 #endif

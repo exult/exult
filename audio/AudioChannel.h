@@ -29,50 +29,54 @@ class AudioChannel
 	// We have:
 	// 1x decompressor size
 	// 2x frame size
-	uint8			*playdata;			//
-	uint32			playdata_size;
-	uint32			decompressor_size;	// Persistent data for the decompressor
-	uint32			frame_size;			// 
+	std::unique_ptr<uint8[]> playdata;
+	void			*decomp = nullptr;
+	uint8			*frames[2]{};
+	uint32			playdata_size = 0;
 
 	uint32			sample_rate;
 	bool			stereo;
 
-	sint32			loop;
-	AudioSample		*sample;
+	sint32			loop = 0;
+	AudioSample		*sample = nullptr;
 
 	// Info for sampling
-	uint32			frame_evenodd;	// which buffer is 'frame0'
-	uint32			frame0_size;	// Size of the frame0 buffer in samples
-	uint32			frame1_size;	// Size of the frame1 buffer in samples
-	uint32			position;		// Position in frame0 buffer
+	uint32			frame_evenodd = 0;	// which buffer is 'frame0'
+	uint32			frame0_size = 0;	// Size of the frame0 buffer in samples
+	uint32			frame1_size = 0;	// Size of the frame1 buffer in samples
+	uint32			position = 0;		// Position in frame0 buffer
 	int				lvol, rvol;		// 0-256
 	int				distance;		// 0 - 256
 	int				balance;		// -256 - 256
 	uint32			pitch_shift;	// 0x10000 = no shift
 	int				priority;		// anything. 
-	bool			paused;			// true/false
+	bool			paused = false;		// true/false
 
-	sint32			instance_id;	// Unique id for this channel
+	sint32			instance_id = -1;	// Unique id for this channel
 
 public:
 	AudioChannel(uint32 sample_rate, bool stereo);
-	~AudioChannel(void);
+	~AudioChannel();
+	AudioChannel(const AudioChannel&) = delete;
+	AudioChannel(AudioChannel&&) = default;
+	AudioChannel& operator=(const AudioChannel&) = delete;
+	AudioChannel& operator=(AudioChannel&&) = default;
 
 	void stop()
 	{
 		if (sample)
 		{
 			if (playdata)
-				sample->freeDecompressor(playdata);
+				sample->freeDecompressor(decomp);
 			sample->Release();
-			sample = 0;
+			sample = nullptr;
 		}
 	}
 
 	void playSample(AudioSample *sample, int loop, int priority, bool paused, uint32 pitch_shift, int lvol, int rvol, sint32 instance_id);
 	void resampleAndMix(sint16 *stream, uint32 bytes);
 
-	bool isPlaying() { return sample != 0; }
+	bool isPlaying() const { return sample != nullptr; }
 
 	void setPitchShift(int pitch_shift_) { pitch_shift = pitch_shift_; }
 	uint32 getPitchShift() const { return pitch_shift; }
@@ -94,11 +98,11 @@ public:
 
 	void calculate2DVolume(int &lvol, int &rvol);
 
-	AudioSample *getSample() { return sample; }
+	AudioSample *getSample() const { return sample; }
 
-	sint32 getInstanceId() { return instance_id; }
+	sint32 getInstanceId() const { return instance_id; }
+
 private:
-
 	//
 	void DecompressNextFrame();
 
@@ -107,11 +111,11 @@ private:
 	//
 	class CubicInterpolator {
 		protected:
-			int x0, x1, x2, x3;
+			int x0 = 0, x1 = 0, x2 = 0, x3 = 0;
 			int a, b, c, d;
 			
 		public:
-			CubicInterpolator() : x0(0), x1(0), x2(0), x3(0)
+			CubicInterpolator()
 			{ 
 				updateCoefficients();
 			}
@@ -190,20 +194,17 @@ private:
 	// Resampler stuff
 	CubicInterpolator	interp_l;
 	CubicInterpolator	interp_r;
-	int					fp_pos;
-	int					fp_speed;
+	int					fp_pos = 0;
+	int					fp_speed = 0;
 
-	void resampleFrameM8toS(sint16 *&samples, uint32 &bytes);
-	void resampleFrameM8toM(sint16 *&samples, uint32 &bytes);
-	void resampleFrameS8toM(sint16 *&samples, uint32 &bytes);
-	void resampleFrameS8toS(sint16 *&samples, uint32 &bytes);
-	void resampleFrameM16toS(sint16 *&samples, uint32 &bytes);
-	void resampleFrameM16toM(sint16 *&samples, uint32 &bytes);
-	void resampleFrameS16toM(sint16 *&samples, uint32 &bytes);
-	void resampleFrameS16toS(sint16 *&samples, uint32 &bytes);
-
-
-
+	void resampleFrameM8toS(sint16 *&stream, uint32 &bytes);
+	void resampleFrameM8toM(sint16 *&stream, uint32 &bytes);
+	void resampleFrameS8toM(sint16 *&stream, uint32 &bytes);
+	void resampleFrameS8toS(sint16 *&stream, uint32 &bytes);
+	void resampleFrameM16toS(sint16 *&stream, uint32 &bytes);
+	void resampleFrameM16toM(sint16 *&stream, uint32 &bytes);
+	void resampleFrameS16toM(sint16 *&stream, uint32 &bytes);
+	void resampleFrameS16toS(sint16 *&stream, uint32 &bytes);
 };
 
 }

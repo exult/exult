@@ -85,8 +85,10 @@ int recompute_envelope(int v)
 
 void apply_envelope_to_amp(int v)
 {
-	float lamp=voice[v].left_amp, ramp;
-	sint32 la,ra;
+	float lamp=voice[v].left_amp;
+	float ramp;
+	sint32 la;
+	sint32 ra;
 	if (voice[v].panned == PANNED_MYSTERY)
 	{
 		ramp=voice[v].right_amp;
@@ -201,9 +203,8 @@ static int update_signal(int v)
 static void mix_mystery_signal(sample_t *sp, sint32 *lp, int v, int count)
 {
 	Voice *vp = voice + v;
-	final_volume_t 
-		left=vp->left_mix, 
-	right=vp->right_mix;
+	final_volume_t left=vp->left_mix;
+	final_volume_t right=vp->right_mix;
 	int cc;
 	sample_t s;
 
@@ -377,9 +378,8 @@ static void mix_mono_signal(sample_t *sp, sint32 *lp, int v, int count)
 
 static void mix_mystery(sample_t *sp, sint32 *lp, int v, int count)
 {
-	final_volume_t 
-		left=voice[v].left_mix, 
-	right=voice[v].right_mix;
+	final_volume_t left=voice[v].left_mix;
+	final_volume_t right=voice[v].right_mix;
 	sample_t s;
 
 	while (count--)
@@ -436,7 +436,10 @@ static void ramp_out(sample_t *sp, sint32 *lp, int v, sint32 c)
 {
 
 	/* should be final_volume_t, but uint8 gives trouble. */
-	sint32 left, right, li, ri;
+	sint32 left;
+	sint32 right;
+	sint32 li;
+	sint32 ri;
 
 	sample_t s=0; /* silly warning about uninitialized s */
 

@@ -35,7 +35,6 @@ It has been partly rewritten to use an SDL surface as input.
 #include "SDL_video.h"
 #include "SDL_endian.h"
 #include <iostream>
-#include "sdl-compat.h"
 
 using std::cout;
 using std::endl;
@@ -56,7 +55,7 @@ using std::endl;
 #define htoql(x) qtohl(x)
 #define htoqs(x) qtohs(x)
 
-typedef struct PCX_Header {
+struct PCX_Header {
 	Uint8 manufacturer;
 	Uint8 version;
 	Uint8 compression;
@@ -71,10 +70,12 @@ typedef struct PCX_Header {
 	Sint16 bytesperline;
 	Sint16 color;
 	Uint8 filler[58];
-} PCX_Header;
+};
 
 static void writeline(SDL_RWops *dst, Uint8 *buffer, int bytes) {
-	Uint8 value, count, tmp;
+	Uint8 value;
+	Uint8 count;
+	Uint8 tmp;
 	Uint8 *finish = buffer + bytes;
 
 	while (buffer < finish) {
@@ -110,8 +111,10 @@ static void save_8(SDL_RWops *dst, int width, int height,
 
 
 static void save_24(SDL_RWops *dst, int width, int height,
-                    int pitch, Uint8 *buffer) {
-	int x, y, c;
+                    int pitch, const Uint8 *buffer) {
+	int x;
+	int y;
+	int c;
 	Uint8 *line;
 
 	line = new Uint8[width];
@@ -129,11 +132,14 @@ static void save_24(SDL_RWops *dst, int width, int height,
 }
 
 static bool save_image(SDL_Surface *surface, SDL_RWops *dst) {
-	Uint8 *cmap = 0;
+	Uint8 *cmap = nullptr;
 	Uint8 *pixels;
 	Uint8 tmp;
-	int width, height, pitch;
-	int colors = 0, i;
+	int width;
+	int height;
+	int pitch;
+	int colors = 0;
+	int i;
 	PCX_Header header;
 
 	width = surface->w;
@@ -209,7 +215,7 @@ bool SavePCX_RW(SDL_Surface *saveme, SDL_RWops *dst, bool freedst) {
 
 	cout << "Taking screenshot...";
 
-	surface = NULL;
+	surface = nullptr;
 	if (dst) {
 		if (saveme->format->palette) {
 			if (saveme->format->BitsPerPixel == 8) {
@@ -244,7 +250,7 @@ bool SavePCX_RW(SDL_Surface *saveme, SDL_RWops *dst, bool freedst) {
 #endif
 			                               0);
 
-			if (surface != NULL) {
+			if (surface != nullptr) {
 				bounds.x = 0;
 				bounds.y = 0;
 				bounds.w = saveme->w;
@@ -254,7 +260,7 @@ bool SavePCX_RW(SDL_Surface *saveme, SDL_RWops *dst, bool freedst) {
 					SDL_FreeSurface(surface);
 					cout << "Couldn't convert image to 24 bpp for screenshot";
 					found_error = true;
-					surface = NULL;
+					surface = nullptr;
 				}
 			}
 		}

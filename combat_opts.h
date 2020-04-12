@@ -21,6 +21,8 @@
 #ifndef COMBAT_OPTS_H
 #define COMBAT_OPTS_H   1
 
+#include "singles.h"
+
 /*
  *  Combat options:
  */

@@ -14,8 +14,8 @@ if BUILD_MODS
 MODSDIR=content
 endif
 
-SUBDIRS =  files conf data shapes imagewin flic pathfinder \
-	gamemgr usecode tools audio gumps objs server \
+SUBDIRS =  files conf data shapes imagewin pathfinder \
+	gamemgr flic usecode tools audio gumps objs server \
 	mapedit desktop docs $(MODSDIR)
 
 bin_PROGRAMS = exult
@@ -38,8 +38,6 @@ exult_SOURCES =	\
 	combat.h	\
 	combat_opts.h	\
 	common_types.h	\
-	delobjs.cc	\
-	delobjs.h	\
 	dir.cc		\
 	dir.h		\
 	drag.cc		\
@@ -97,6 +95,8 @@ exult_SOURCES =	\
 	shapeid.cc	\
 	shapeid.h	\
 	singles.h	\
+	touchui.cc	\
+	touchui.h	\
 	tiles.h		\
 	tqueue.cc	\
 	tqueue.h	\
@@ -116,11 +116,12 @@ EXULTLIBS = \
 	audio/libaudio.la	\
 	audio/midi_drivers/libmididrv.la	\
 	audio/midi_drivers/timidity/libtimidity.la	\
-	$(EXTRA_EXULTLIBS)	\
-	flic/libflic.la		\
+	$(EXTRA_EXULTLIBS)		\
 	conf/libconf.la		\
 	imagewin/libimagewin.la	\
 	server/libserver.la \
+	gamemgr/libgamemgr.la	\
+	flic/libflic.la \
 	usecode/libusecode.la	\
 	shapes/libshapes.la \
 	shapes/shapeinf/libshapeinf.la \
@@ -128,13 +129,12 @@ EXULTLIBS = \
 	gumps/libgumps.la \
 	files/libu7file.la \
 	files/sha1/libsha1.la \
-	files/zip/libminizip.la \
-	gamemgr/libgamemgr.la
+	files/zip/libminizip.la
 
 exult_LDADD = \
 	$(EXULTLIBS) \
-	$(SDL_LIBS) $(KMID_LIBS) $(SYSLIBS) $(x_libraries) $(ICON_FILE) \
-	$(ZLIB_LIBS) $(OPENGL_LIBS) $(VORBIS_LIBS) $(VORBISFILE_LIBS) $(OGG_LIBS)
+	$(SDL_LIBS) $(SYSLIBS) $(x_libraries) $(ICON_FILE) \
+	$(ZLIB_LIBS) $(VORBIS_LIBS) $(VORBISFILE_LIBS) $(OGG_LIBS)
 
 exult_DEPENDENCIES = $(ICON_FILE) $(EXULTLIBS)
 
@@ -149,7 +149,6 @@ EXTRA_DIST = 	\
 	Makefile.mingw \
 	Makefile.studio.mingw \
 	Info.plist.in \
-	Info-ios.plist.in \
 	exult.spec \
 	windrag.cc	\
 	windrag.h \
@@ -241,33 +240,13 @@ if WITH_OSX_CODE_SIGNATURE
 	codesign -f -s "$(OSX_CODE_SIGNATURE)" $(bundle_name)
 endif
 
-iosbundle: ${EXE_TARGET}
-	mkdir -p $(bundle_name)/data/
-	echo "APPL????" > $(bundle_name)/PkgInfo
-	$(INSTALL_DATA) Info-ios.plist $(bundle_name)/Info.plist
-	$(INSTALL_PROGRAM) $< $(bundle_name)/
-	$(INSTALL_DATA) $(srcdir)/macosx/exult.icns $(bundle_name)/
-	$(INSTALL_DATA) $(srcdir)/data/exult.flx $(bundle_name)/data
-	$(INSTALL_DATA) $(srcdir)/data/exult_bg.flx $(bundle_name)/data
-	$(INSTALL_DATA) $(srcdir)/data/exult_si.flx $(bundle_name)/data
-	$(INSTALL_DATA) $(srcdir)/data/exult_iphone.flx $(bundle_name)/data
-	$(INSTALL_DATA) $(srcdir)/AUTHORS $(bundle_name)
-	$(INSTALL_DATA) $(srcdir)/COPYING $(bundle_name)
-	$(INSTALL_DATA) $(srcdir)/FAQ $(bundle_name)
-	$(INSTALL_DATA) $(srcdir)/NEWS $(bundle_name)
-	$(INSTALL_DATA) $(srcdir)/README $(bundle_name)
-	$(INSTALL_DATA) $(srcdir)/README.MacOSX $(bundle_name)
-if WITH_OSX_CODE_SIGNATURE
-	codesign -f -s "$(OSX_CODE_SIGNATURE)" $(bundle_name)
-endif
-
 install-exec-local: bundle
 	mkdir -p $(DESTDIR)/Applications/
 	cp -r $(bundle_name) $(DESTDIR)/Applications/
 
 osxdmg: bundle
-	mkdir Exult-snapshot
-	mkdir ./Exult-snapshot/images
+	mkdir -p Exult-snapshot
+	mkdir -p ./Exult-snapshot/images
 	cp $(srcdir)/AUTHORS ./Exult-snapshot/Authors
 	cp $(srcdir)/COPYING ./Exult-snapshot/License
 	cp $(srcdir)/NEWS ./Exult-snapshot/News
@@ -283,7 +262,7 @@ osxdmg: bundle
 	SetFile -t ttro -c ttxt ./Exult-snapshot/License
 	SetFile -t ttro -c ttxt ./Exult-snapshot/News
 	SetFile -t ttro -c ttxt ./Exult-snapshot/ReadMe.MacOSX
-	CpMac -r $(bundle_name) ./Exult-snapshot/
+	cp -R $(bundle_name) ./Exult-snapshot/
 	hdiutil create -ov -format UDZO -imagekey zlib-level=9 -fs HFS+ \
 					-srcfolder Exult-snapshot \
 					-volname "Exult Git snapshot$(REVISION)" \
@@ -298,5 +277,5 @@ else
 install-exec-local:
 
 clean-local:
-	
+
 endif

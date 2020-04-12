@@ -37,7 +37,12 @@
 
 template <class Source_pixel, class Dest_pixel, class Manip_pixels>
 inline Dest_pixel Interpolate_2xSaI(Source_pixel colorA, Source_pixel colorB, const Manip_pixels &manip) {
-	unsigned int r0, r1, g0, g1, b0, b1;
+	unsigned int r0;
+	unsigned int r1;
+	unsigned int g0;
+	unsigned int g1;
+	unsigned int b0;
+	unsigned int b1;
 	manip.split_source(colorA, r0, g0, b0);
 	manip.split_source(colorB, r1, g1, b1);
 	int r = (r0 + r1) >> 1;
@@ -48,8 +53,15 @@ inline Dest_pixel Interpolate_2xSaI(Source_pixel colorA, Source_pixel colorB, co
 
 template <class Source_pixel, class Dest_pixel, class Manip_pixels>
 inline Dest_pixel OInterpolate_2xSaI(Source_pixel colorA, Source_pixel colorB, Source_pixel colorC, const Manip_pixels &manip) {
-	unsigned int r0, r1, g0, g1, b0, b1;
-	unsigned int r2, g2, b2;
+	unsigned int r0;
+	unsigned int r1;
+	unsigned int g0;
+	unsigned int g1;
+	unsigned int b0;
+	unsigned int b1;
+	unsigned int r2;
+	unsigned int g2;
+	unsigned int b2;
 	manip.split_source(colorA, r0, g0, b0);
 	manip.split_source(colorB, r1, g1, b1);
 	manip.split_source(colorC, r2, g2, b2);
@@ -61,8 +73,18 @@ inline Dest_pixel OInterpolate_2xSaI(Source_pixel colorA, Source_pixel colorB, S
 
 template <class Source_pixel, class Dest_pixel, class Manip_pixels>
 inline Dest_pixel QInterpolate_2xSaI(Source_pixel colorA, Source_pixel colorB, Source_pixel colorC, Source_pixel colorD, const Manip_pixels &manip) {
-	unsigned int r0, r1, g0, g1, b0, b1;
-	unsigned int r2, r3, g2, g3, b2, b3;
+	unsigned int r0;
+	unsigned int r1;
+	unsigned int g0;
+	unsigned int g1;
+	unsigned int b0;
+	unsigned int b1;
+	unsigned int r2;
+	unsigned int r3;
+	unsigned int g2;
+	unsigned int g3;
+	unsigned int b2;
+	unsigned int b3;
 	manip.split_source(colorA, r0, g0, b0);
 	manip.split_source(colorB, r1, g1, b1);
 	manip.split_source(colorC, r2, g2, b2);
@@ -122,7 +144,8 @@ void Scale_2xSaI(
 	}
 	// Init offset to prev. line, next 2.
 	int prev1_yoff = srcy ? sline_pixels : 0;
-	int next1_yoff = sline_pixels, next2_yoff = 2 * sline_pixels;
+	int next1_yoff = sline_pixels;
+	int next2_yoff = 2 * sline_pixels;
 	// Figure threshholds for counters.
 	int ybeforelast = sheight - 2 - srcy;
 	int xbeforelast = sline_pixels - 2 - srcx;
@@ -137,15 +160,29 @@ void Scale_2xSaI(
 		Source_pixel *bP = srcPtr;
 		Dest_pixel *dP = dstPtr;
 		int prev1_xoff = srcx ? 1 : 0;
-		int next1_xoff = 1, next2_xoff = 2;
+		int next1_xoff = 1;
+		int next2_xoff = 2;
 
 		for (int x = 0; x < srcw; x++) {
-			Source_pixel colorA, colorB;
-			Source_pixel colorC, colorD,
-			             colorE, colorF, colorG, colorH,
-			             colorI, colorJ, colorK, colorL,
-			             colorM, colorN, colorO/*, colorP*/;
-			Dest_pixel product, product1, product2, orig;
+			Source_pixel colorA;
+			Source_pixel colorB;
+			Source_pixel colorC;
+			Source_pixel colorD;
+			Source_pixel colorE;
+			Source_pixel colorF;
+			Source_pixel colorG;
+			Source_pixel colorH;
+			Source_pixel colorI;
+			Source_pixel colorJ;
+			Source_pixel colorK;
+			Source_pixel colorL;
+			Source_pixel colorM;
+			Source_pixel colorN;
+			Source_pixel colorO/*, colorP*/;
+			Dest_pixel product;
+			Dest_pixel product1;
+			Dest_pixel product2;
+			Dest_pixel orig;
 
 			// Last/next-to-last row?
 			if (x >= xbeforelast) {
@@ -329,22 +366,37 @@ void Scale_Super2xSaI(
 		Dest_pixel *dP = dstPtr;
 
 		for (int x = 0; x < srcw; x++) {
-			Source_pixel color4, color5, color6;
-			Source_pixel color1, color2, color3;
-			Source_pixel colorA0, colorA1, colorA2, colorA3,
-			             colorB0, colorB1, colorB2, colorB3,
-			             colorS1, colorS2;
-			Dest_pixel product1a, product1b,
-			           product2a, product2b;
+			Source_pixel color4;
+			Source_pixel color5;
+			Source_pixel color6;
+			Source_pixel color1;
+			Source_pixel color2;
+			Source_pixel color3;
+			Source_pixel colorA0;
+			Source_pixel colorA1;
+			Source_pixel colorA2;
+			Source_pixel colorA3;
+			Source_pixel colorB0;
+			Source_pixel colorB1;
+			Source_pixel colorB2;
+			Source_pixel colorB3;
+			Source_pixel colorS1;
+			Source_pixel colorS2;
+			Dest_pixel product1a;
+			Dest_pixel product1b;
+			Dest_pixel product2a;
+			Dest_pixel product2b;
 
 			//---------------------------------------  B0 B1 B2 B3
 			//                                         4  5  6  S2
 			//                                         1  2  3  S1
 			//                                         A0 A1 A2 A3
 			//--------------------------------------
-			int add1, add2;
+			int add1;
+			int add2;
 			int sub1;
-			int nextl1, nextl2;
+			int nextl1;
+			int nextl2;
 			int prevl1;
 
 			if (x == 0)
@@ -541,22 +593,35 @@ void Scale_SuperEagle(
 		Dest_pixel *dP = dstPtr;
 
 		for (int x = 0; x < srcw; x++) {
-			Source_pixel color4, color5, color6;
-			Source_pixel color1, color2, color3;
-			Source_pixel /*colorA0,*/ colorA1, colorA2, /*colorA3,*/
-			             /*colorB0,*/ colorB1, colorB2, /*colorB3,*/
-			             colorS1, colorS2;
-			Dest_pixel product1a, product1b,
-			           product2a, product2b;
+			Source_pixel color4;
+			Source_pixel color5;
+			Source_pixel color6;
+			Source_pixel color1;
+			Source_pixel color2;
+			Source_pixel color3;
+			Source_pixel /*colorA0,*/ colorA1;
+			Source_pixel /*colorA0,*/ colorA2;
+			Source_pixel /*colorA0,*/ /*colorA3,*/
+			             /*colorB0,*/ colorB1;
+			Source_pixel /*colorA0,*/ colorB2;
+			Source_pixel /*colorA0,*/ /*colorB3,*/
+			             colorS1;
+			Source_pixel /*colorA0,*/ colorS2;
+			Dest_pixel product1a;
+			Dest_pixel product1b;
+			Dest_pixel product2a;
+			Dest_pixel product2b;
 
 			//---------------------------------------  B0 B1 B2 B3
 			//                                         4  5  6  S2
 			//                                         1  2  3  S1
 			//                                         A0 A1 A2 A3
 			//--------------------------------------
-			int add1, add2;
+			int add1;
+			int add2;
 			int sub1;
-			int nextl1, nextl2;
+			int nextl1;
+			int nextl2;
 			int prevl1;
 
 			if (x == 0)

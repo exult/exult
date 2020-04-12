@@ -120,12 +120,12 @@ inline UsecodeOps &operator&=(UsecodeOps &lhs, int rhs) {
 
 inline UsecodeOps operator|(UsecodeOps const &lhs, int rhs) {
 	UsecodeOps ret = lhs;
-	return (ret |= rhs);
+	return ret |= rhs;
 }
 
 inline UsecodeOps operator&(UsecodeOps const &lhs, int rhs) {
 	UsecodeOps ret = lhs;
-	return (ret &= rhs);
+	return ret &= rhs;
 }
 
 #endif

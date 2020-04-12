@@ -24,19 +24,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifndef INCL_BASICBLOCK
 
-#include <vector>
-#include <set>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <set>
+#include <vector>
+#include "common_types.h"
 #include "ucexpr.h"
-using std::vector;
-using std::set;
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::hex;
-using std::setw;
-using std::setfill;
 
 class Basic_block;
 
@@ -49,7 +42,7 @@ class Basic_block;
 class Opcode {
 protected:
 	UsecodeOps opcode;
-	vector<char> params;
+	std::vector<char> params;
 	bool is_jump;
 public:
 	Opcode(UsecodeOps op) : opcode(op) {
@@ -149,18 +142,18 @@ public:
 	void WriteParam4(unsigned int val) {
 		Write4(params, val);
 	}
-	void write(vector<char> &out) {
+	void write(std::vector<char> &out) {
 		Write1(out, static_cast<uint32>(opcode));
 		out.insert(out.end(), params.begin(), params.end());
 	}
 #ifdef DEBUG    // For debugging.
 	void write_text() const {
-		cout << setw(2) << setfill('0') << static_cast<int>(opcode) << ' ';
-		for (vector<char>::const_iterator it = params.begin();
+		std::cout << std::setw(2) << std::setfill('0') << static_cast<int>(opcode) << ' ';
+		for (std::vector<char>::const_iterator it = params.begin();
 		        it != params.end(); ++it)
-			cout << setw(2) << setfill('0') << static_cast<int>(static_cast<unsigned char>(*it)) << ' ';
+			std::cout << std::setw(2) << std::setfill('0') << static_cast<int>(static_cast<unsigned char>(*it)) << ' ';
 		if (is_jump)
-			cout << "<offset>";
+			std::cout << "<offset>";
 	}
 #endif
 	int get_size() const {  // Total size, including offset.
@@ -211,21 +204,21 @@ class Basic_block {
 	friend void WriteJumpParam2(Basic_block *dest, unsigned short val);
 	friend void WriteJumpParam4(Basic_block *dest, unsigned int val);
 protected:
-	set<Basic_block *> predecessors;        // Blocks that came before this.
-	int index;              // Block index in the fun_blocks array *or*
+	std::set<Basic_block *> predecessors;        // Blocks that came before this.
+	int index = 0;              // Block index in the fun_blocks array *or*
 	// -1 for the starting ("phantom") block.
 
-	Basic_block *taken;     // For conditional jumps, block taken to by true
+	Basic_block *taken = nullptr;     // For conditional jumps, block taken to by true
 	// condition (fall-through); for unconditional jumps, block
 	// to jump to; for all others, the next (fall-through) block.
-	int taken_index;        // Index in the fun_blocks array, filled after
+	int taken_index = -1;        // Index in the fun_blocks array, filled after
 	// cleaning up unreachable blocks.
-	Basic_block *ntaken;    // For conditional jumps, block taken to by false
+	Basic_block *ntaken = nullptr;    // For conditional jumps, block taken to by false
 	// condition (jump); for all others, this is zero.
-	int ntaken_index;       // Index in the fun_blocks array, filled after
+	int ntaken_index = -1;       // Index in the fun_blocks array, filled after
 	// cleaning up unreachable blocks.
 
-	Opcode *jmp_op; // 0 for no instruction (fall-through) to taken
+	Opcode *jmp_op = nullptr; // 0 for no instruction (fall-through) to taken
 	// block; otherwise, one of:
 	//  conditional jumps:
 	//      UC_JNE, UC_CMPS, UC_CONVERSE, UC_LOOPTOP, UC_LOOPTOPS, UC_LOOPTOPTHV,
@@ -234,22 +227,19 @@ protected:
 	//      UC_JMP
 	// or the 32-bit versions of these instructions.
 
-	vector<Opcode *> instructions;  // The instructions of the block
-	bool reachable;
+	std::vector<Opcode *> instructions;  // The instructions of the block
+	bool reachable = false;
 public:
-	Basic_block()
-		:   index(0), taken(0), taken_index(-1), ntaken(0), ntaken_index(-1),
-		    jmp_op(0), reachable(false) {
+	Basic_block() {
 		instructions.reserve(100);
 	}
-	Basic_block(int ind, Basic_block *t = 0, Basic_block *n = 0, UsecodeOps ins = UC_INVALID)
-		:   index(ind), taken(t), taken_index(-1), ntaken(n), ntaken_index(-1),
-		    jmp_op(new Opcode(ins)), reachable(false) {
+	Basic_block(int ind, Basic_block *t = nullptr, Basic_block *n = nullptr, UsecodeOps ins = UC_INVALID)
+		:   index(ind), taken(t), ntaken(n), jmp_op(new Opcode(ins)) {
 		if (index != -1) instructions.reserve(100);
 	}
 	~Basic_block() {
 		predecessors.clear();
-		for (vector<Opcode *>::iterator it = instructions.begin();
+		for (std::vector<Opcode *>::iterator it = instructions.begin();
 		        it != instructions.end(); ++it)
 			delete *it;
 		instructions.clear();
@@ -266,7 +256,7 @@ public:
 	}
 	void clear_jump() {
 		delete jmp_op;
-		jmp_op = 0;
+		jmp_op = nullptr;
 	}
 	UsecodeOps get_last_instruction() const {
 		return instructions.size() ? instructions.back()->get_opcode() : UC_INVALID;
@@ -278,7 +268,7 @@ public:
 		return jmp_op ? jmp_op->is_32bit() : false;
 	}
 	bool does_not_jump() const {
-		return jmp_op == 0;
+		return jmp_op == nullptr;
 	}
 	bool ends_in_return() const {
 		return instructions.size() && instructions.back()->is_return();
@@ -291,7 +281,7 @@ public:
 	}
 	int get_block_size() const {
 		int size = get_jump_size();
-		for (vector<Opcode *>::const_iterator it = instructions.begin();
+		for (std::vector<Opcode *>::const_iterator it = instructions.begin();
 		        it != instructions.end(); ++it) {
 			const Opcode *op = *it;
 			size += op->get_size();
@@ -319,7 +309,7 @@ public:
 		return !jmp_op && taken && (taken->index == -1);
 	}
 	bool is_forced_target() const {
-		for (set<Basic_block *>::const_iterator it = predecessors.begin();
+		for (std::set<Basic_block *>::const_iterator it = predecessors.begin();
 		        it != predecessors.end(); ++it) {
 			Basic_block *block = *it;
 			if (!block->is_jump_block() && !block->is_fallthrough_block())
@@ -387,7 +377,7 @@ public:
 			ntaken->predecessors.erase(this);
 		ntaken = dest;
 	}
-	void set_targets(UsecodeOps op, Basic_block *t = 0, Basic_block *n = 0) {
+	void set_targets(UsecodeOps op, Basic_block *t = nullptr, Basic_block *n = nullptr) {
 		clear_jump();
 		if (op != UC_INVALID)
 			jmp_op = new Opcode(op);
@@ -397,15 +387,15 @@ public:
 	void unlink_descendants() {
 		if (taken) {
 			taken->predecessors.erase(this);
-			taken = 0;
+			taken = nullptr;
 		}
 		if (ntaken) {
 			ntaken->predecessors.erase(this);
-			ntaken = 0;
+			ntaken = nullptr;
 		}
 	}
 	void link_predecessors() {
-		for (set<Basic_block *>::iterator it = predecessors.begin();
+		for (std::set<Basic_block *>::iterator it = predecessors.begin();
 		        it != predecessors.end(); ++it) {
 			Basic_block *block = *it;
 			if (block->taken == this)
@@ -415,22 +405,22 @@ public:
 		}
 	}
 	void unlink_predecessors() {
-		for (set<Basic_block *>::iterator it = predecessors.begin();
+		for (std::set<Basic_block *>::iterator it = predecessors.begin();
 		        it != predecessors.end(); ++it) {
 			Basic_block *block = *it;
 			if (block->taken == this) {
-				block->taken = 0;
+				block->taken = nullptr;
 				block->taken_index = -1;
 			}
 			if (block->ntaken == this) {
-				block->ntaken = 0;
+				block->ntaken = nullptr;
 				block->ntaken_index = -1;
 			}
 		}
 		predecessors.clear();
 	}
 	void link_through_block() {
-		for (set<Basic_block *>::iterator it = predecessors.begin();
+		for (std::set<Basic_block *>::iterator it = predecessors.begin();
 		        it != predecessors.end(); ++it) {
 			Basic_block *pred = *it;
 			// Do NOT use set_taken, set_ntaken!
@@ -447,7 +437,7 @@ public:
 					taken->predecessors.insert(pred);
 					pred->ntaken = taken;
 				} else
-					pred->ntaken = 0;
+					pred->ntaken = nullptr;
 			}
 		}
 		predecessors.clear();
@@ -463,10 +453,10 @@ public:
 		set_ntaken(safetaken->ntaken);
 		// Prevent these from being deleted.
 		safetaken->instructions.clear();
-		safetaken->jmp_op = 0;
+		safetaken->jmp_op = nullptr;
 	}
-	void write(vector<char> &out) {
-		for (vector<Opcode *>::iterator it = instructions.begin();
+	void write(std::vector<char> &out) {
+		for (std::vector<Opcode *>::iterator it = instructions.begin();
 		        it != instructions.end(); ++it) {
 			Opcode *op = *it;
 			op->write(out);
@@ -476,18 +466,18 @@ public:
 	}
 #ifdef DEBUG    // For debugging.
 	void check() const {
-		cout << hex << setw(8) << setfill('0') << this
-		     << '\t' << setw(8) << setfill('0') << taken
-		     << '\t' << setw(8) << setfill('0') << ntaken
-		     << '\t';
-		for (vector<Opcode *>::const_iterator it = instructions.begin();
+		std::cout << std::hex << std::setw(8) << std::setfill('0') << this
+		          << '\t' << std::setw(8) << std::setfill('0') << taken
+		          << '\t' << std::setw(8) << std::setfill('0') << ntaken
+		          << '\t';
+		for (std::vector<Opcode *>::const_iterator it = instructions.begin();
 		        it != instructions.end(); ++it)
 			(*it)->write_text();
 		if (jmp_op)
 			jmp_op->write_text();
 		else
-			cout << "<no jump>";
-		cout << endl;
+			std::cout << "<no jump>";
+		std::cout << std::endl;
 	}
 #endif
 };

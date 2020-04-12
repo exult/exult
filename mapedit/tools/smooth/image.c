@@ -33,7 +33,7 @@ int img_read(char *filein) {
 	if (g_statics.image_in == NULL) {
 		fprintf(stderr, "ERROR: %s\n", SDL_GetError());
 		SDL_FreeRW(rw);
-		return(-1);
+		return -1;
 	}
 
 	// check if image is in 8bpp format
@@ -42,14 +42,14 @@ int img_read(char *filein) {
 		fprintf(stderr, "ERROR: the image file is not in 8 bpp. Please convert it.\n");
 		SDL_FreeSurface(g_statics.image_in);
 		SDL_FreeRW(rw);
-		return(-1);
+		return -1;
 	}
 
 	if (g_statics.image_in->w != 192 || g_statics.image_in->h != 192) {
 		fprintf(stderr, "ERROR: The image file is not 192x192 pixels. Please modify it.\n");
 		SDL_FreeSurface(g_statics.image_in);
 		SDL_FreeRW(rw);
-		return(-1);
+		return -1;
 	}
 
 	if (g_statics.debug > 1) {
@@ -59,7 +59,7 @@ int img_read(char *filein) {
 
 	if ((g_variables.image_out = SDL_CreateRGBSurfaceFrom(g_statics.image_in->pixels, g_statics.image_in->w, g_statics.image_in->h, g_statics.image_in->pitch, g_statics.image_in->format->BitsPerPixel, 0, 0, 0, 0)) == NULL) {
 		fprintf(stderr, "ERROR: %s", SDL_GetError());
-		return(-1);
+		return -1;
 	}
 
 	// need to convert the image using proper values for format, since there is a strong likelyhood to have more colours in the palette than for image_in.
@@ -71,7 +71,7 @@ int img_read(char *filein) {
 
 	// a bit of clean up
 	SDL_FreeRW(rw);
-	return(0);
+	return 0;
 }
 
 int img_write(char *img_out) {
@@ -82,7 +82,7 @@ int img_write(char *img_out) {
 	}
 	if (!strcmp(img_out, "-")) { // img_out is set to be stdout
 		fprintf(stderr, "ERROR: Can't write output to stdout.\n");
-		return(-1);
+		return -1;
 	}
 	if (strncasecmp(img_out + strlen(img_out) - 4, ".bmp", 4)) { // img_out does not end in .bmp
 		fprintf(stderr, "WARNING: it seems the output file does not end with .bmp. Creating a BMP anyways.\n");
@@ -90,9 +90,9 @@ int img_write(char *img_out) {
 
 	if (SDL_SaveBMP(g_variables.image_out, img_out) < 0) {
 		fprintf(stderr, "ERROR: %s", SDL_GetError());
-		return(-1);
+		return -1;
 	}
-	return(0);
+	return 0;
 }
 
 Uint8 getpixel(SDL_Surface *surface, int x, int y) {
@@ -126,17 +126,17 @@ char *transform(int index) {
 	        g_variables.image_out->format->palette->colors[index].b\
 	       );
 
-	if (action_table[index] != NULL) {
+	cursor = action_table[index];
+	if (cursor != NULL) {
 		// there is some apply functions to take care of
-		cursor = action_table[index];
-		while (cursor != NULL) {
+		do {
 			tmp_func = cursor->plugin_apply;
 			tmp = (*tmp_func)(ret, &g_variables);
 			cursor = cursor->next;
-		}
-		return(tmp);
+		} while (cursor != NULL);
+		return tmp;
 	} else {
-		return(ret);
+		return ret;
 	}
 }
 
@@ -160,9 +160,9 @@ Uint8 palette_rw(char *col) {
 		g_variables.image_out->format->palette->colors[ncol].g = g;
 		g_variables.image_out->format->palette->colors[ncol].b = b;
 		g_variables.image_out->format->palette->ncolors++;
-		return(ncol);
+		return ncol;
 	} else {
-		return(idx);
+		return idx;
 	}
 }
 
@@ -182,6 +182,6 @@ int process_image() {
 			SDL_UnlockSurface(g_variables.image_out);
 		}
 	}
-	return(1);
+	return 1;
 }
 

@@ -16,8 +16,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _CONVERSATION_H
-#define _CONVERSATION_H
+#ifndef CONVERSATION_H
+#define CONVERSATION_H
 
 #include "rect.h"
 #include "singles.h"
@@ -32,16 +32,14 @@ class Game_window;
 
 class Conversation : public Game_singletons, public Paintable {
 public:
-	Conversation();
-	virtual ~Conversation();
+	~Conversation() override;
 
 private:
-
-	Npc_face_info *face_info[2];    // NPC's on-screen faces in convers.
-	int num_faces;
-	int last_face_shown;        // Index of last npc face shown.
-	Rectangle avatar_face;      // Area take by Avatar in conversation.
-	Rectangle *conv_choices;    // Choices during a conversation.
+	Npc_face_info *face_info[2] = {nullptr, nullptr};    // NPC's on-screen faces in convers.
+	int num_faces = 0;
+	int last_face_shown = 0;        // Index of last npc face shown.
+	Rectangle avatar_face = {0, 0, 0, 0};      // Area take by Avatar in conversation.
+	Rectangle *conv_choices = nullptr;    // Choices during a conversation.
 
 	std::vector<std::string> answers;
 	std::deque< std::vector<std::string> > answer_stack;
@@ -68,12 +66,12 @@ public:
 	void set_slot(int i) {
 		last_face_shown = i;    // SI.
 	}
-	virtual void paint();           // Paint entire conversation.
+	void paint() override;           // Paint entire conversation.
 	void paint_faces(bool text = false);
 
 	void add_answer(Usecode_value &val);
 	void remove_answer(Usecode_value &val);
-	void clear_answers(void);
+	void clear_answers();
 	int locate_answer(const char *str);
 	const char *get_answer(int num) {
 		return answers[num].c_str();

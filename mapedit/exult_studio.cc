@@ -2,7 +2,7 @@
 #  include <config.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "utils.h"
 #endif
 
@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 	ExultStudio studio(argc, argv);
 	studio.run();
 
-#ifdef WIN32
+#ifdef _WIN32
 	cleanup_output("studio_");
 #endif
 

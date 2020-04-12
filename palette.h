@@ -59,8 +59,7 @@ class Palette {
 	static unsigned char border[3];
 public:
 	Palette();
-	Palette(Palette *pal);      // Copy constructor.
-	~Palette();
+	Palette(Palette *pal);      // "Copy" constructor.
 	void take(Palette *pal);    // Copies a palette into another.
 	// Fade palette in/out.
 	void fade(int cycles, int inout, int pal_num = -1);
@@ -86,12 +85,12 @@ public:
 
 	void apply(bool repaint = true);
 	void load(const File_spec &fname0, int index,
-	          const char *xfname = 0, int xindex = -1);
+	          const char *xfname = nullptr, int xindex = -1);
 	void load(const File_spec &fname0, const File_spec &fname1,
-	          int index, const char *xfname = 0, int xindex = -1);
+	          int index, const char *xfname = nullptr, int xindex = -1);
 	void load(const File_spec &fname0, const File_spec &fname1,
 	          const File_spec &fname2, int index,
-	          const char *xfname = 0, int xindex = -1);
+	          const char *xfname = nullptr, int xindex = -1);
 	void set_brightness(int bright);
 	void set_max_val(int max);
 	int get_max_val();

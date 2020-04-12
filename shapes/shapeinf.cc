@@ -57,29 +57,12 @@ using std::vector;
 using std::cerr;
 using std::endl;
 
-Shape_info::Shape_info()
-	: modified_flags(), frompatch_flags(), have_static_flags(),
-	  weight(0), volume(0), weapon_offsets(0), armor(0), weapon(0), ammo(0),
-	  monstinf(0), sfxinf(0), aniinf(0), explosion(0), body(0), npcpaperdoll(0),
-	  gump_shape(-1), gump_font(-1), monster_food(-1), shape_flags(0),
-	  mountain_top(0), barge_type(0), actor_flags(0), field_type(-1),
-	  ready_type(-1), alt_ready1(-1), alt_ready2(-1), spell_flag(false),
-	  occludes_flag(false) {
-	tfa[0] = tfa[1] = tfa[2] = shpdims[0] = shpdims[1] = 0;
-	dims[0] = dims[1] = dims[2] = 0;
-}
+Shape_info::Shape_info() = default;
 
 /*
  *  Not supported:
  */
-Shape_info::Shape_info(const Shape_info &other)
-	: modified_flags(0), frompatch_flags(0), have_static_flags(0),
-	  weight(0), volume(0), weapon_offsets(0), armor(0), weapon(0), ammo(0),
-	  monstinf(0), sfxinf(0), aniinf(0), explosion(0), body(0), npcpaperdoll(0),
-	  gump_shape(-1), gump_font(-1), monster_food(-1), shape_flags(0),
-	  mountain_top(0), barge_type(0), actor_flags(0), field_type(-1),
-	  ready_type(-1), alt_ready1(-1), alt_ready2(-1), spell_flag(false),
-	  occludes_flag(false) {
+Shape_info::Shape_info(const Shape_info &other) {
 	copy(other);
 }
 Shape_info &Shape_info::operator = (const Shape_info &other) {
@@ -147,19 +130,19 @@ void Shape_info::copy(
 		weapon_offsets = new unsigned char[64];
 		memcpy(weapon_offsets, inf2.weapon_offsets, 64);
 	} else
-		weapon_offsets = 0;
+		weapon_offsets = nullptr;
 	delete armor;
-	armor = inf2.armor ? new Armor_info(*inf2.armor) : 0;
+	armor = inf2.armor ? new Armor_info(*inf2.armor) : nullptr;
 	delete ammo;
-	ammo = inf2.ammo ? new Ammo_info(*inf2.ammo) : 0;
+	ammo = inf2.ammo ? new Ammo_info(*inf2.ammo) : nullptr;
 	delete weapon;
-	weapon = inf2.weapon ? new Weapon_info(*inf2.weapon) : 0;
+	weapon = inf2.weapon ? new Weapon_info(*inf2.weapon) : nullptr;
 	delete monstinf;
-	monstinf = inf2.monstinf ? new Monster_info(*inf2.monstinf) : 0;
+	monstinf = inf2.monstinf ? new Monster_info(*inf2.monstinf) : nullptr;
 	if (!skip_dolls || !npcpaperdoll) {
 		delete npcpaperdoll;
 		npcpaperdoll = inf2.npcpaperdoll ?
-		               new Paperdoll_npc(*inf2.npcpaperdoll) : 0;
+		               new Paperdoll_npc(*inf2.npcpaperdoll) : nullptr;
 	}
 	if (!skip_dolls || objpaperdoll.empty())
 		copy_vector_info(inf2.objpaperdoll, objpaperdoll);
@@ -171,13 +154,13 @@ void Shape_info::copy(
 	copy_vector_info(inf2.warminf, warminf);
 
 	delete sfxinf;
-	sfxinf = inf2.sfxinf ? new SFX_info(*inf2.sfxinf) : 0;
+	sfxinf = inf2.sfxinf ? new SFX_info(*inf2.sfxinf) : nullptr;
 	delete explosion;
-	explosion = inf2.explosion ? new Explosion_info(*inf2.explosion) : 0;
+	explosion = inf2.explosion ? new Explosion_info(*inf2.explosion) : nullptr;
 	delete aniinf;
-	aniinf = inf2.aniinf ? new Animation_info(*inf2.aniinf) : 0;
+	aniinf = inf2.aniinf ? new Animation_info(*inf2.aniinf) : nullptr;
 	delete body;
-	body = inf2.body ? new Body_info(*inf2.body) : 0;
+	body = inf2.body ? new Body_info(*inf2.body) : nullptr;
 }
 
 /*
@@ -401,7 +384,7 @@ int Shape_info::get_object_flags(int frame, int qual) const {
 
 const Paperdoll_item *Shape_info::get_item_paperdoll(int frame, int spot) const {
 	if (objpaperdoll.empty())
-		return 0;   // No paperdoll.
+		return nullptr;   // No paperdoll.
 	Paperdoll_item inf;
 	inf.world_frame = frame;
 	if (spot == both_hands)
@@ -417,7 +400,7 @@ const Paperdoll_item *Shape_info::get_item_paperdoll(int frame, int spot) const 
 	// Try finding exact match first.
 	it = std::lower_bound(objpaperdoll.begin(), objpaperdoll.end(), inf);
 	if (it == objpaperdoll.end())   // Nowhere to be found.
-		return 0;
+		return nullptr;
 	else if (*it == inf && !it->is_invalid())   // Have it already.
 		return &*it;
 	// Time for wildcard world frame.
@@ -425,7 +408,7 @@ const Paperdoll_item *Shape_info::get_item_paperdoll(int frame, int spot) const 
 	it = std::lower_bound(it, objpaperdoll.end(), inf);
 	if (it == objpaperdoll.end() || *it != inf  // It just isn't there...
 	        || it->is_invalid())   // ... or it is invalid.
-		return 0;
+		return nullptr;
 	else    // At last!
 		return &*it;
 }

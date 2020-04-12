@@ -26,14 +26,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#ifdef WIN32
-#include "Windrag.h"
+#ifdef _WIN32
+#include "windrag.h"
 #endif
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wparentheses"
+#if !defined(__llvm__) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#else
+#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
+#endif
 #endif  // __GNUC__
 #include <gtk/gtk.h>
 #ifdef XWIN
@@ -125,14 +131,16 @@ void Chunk_chooser::select(
 void Chunk_chooser::render(
 ) {
 	// Look for selected frame.
-	int selchunk = -1, new_selected = -1;
+	int selchunk = -1;
+	int new_selected = -1;
 	if (selected >= 0)      // Save selection info.
 		selchunk = info[selected].num;
 	// Remove "selected" message.
 	//gtk_statusbar_pop(GTK_STATUSBAR(sbar), sbar_sel);
 	delete [] info;         // Delete old info. list.
 	// Get drawing area dimensions.
-	gint winw = draw->allocation.width, winh = draw->allocation.height;
+	gint winw = draw->allocation.width;
+	gint winh = draw->allocation.height;
 	// Provide more than enough room.
 	info = new Chunk_info[256];
 	info_cnt = 0;           // Count them.
@@ -140,7 +148,8 @@ void Chunk_chooser::render(
 	iwin->fill8(255);       // Background color.
 	int index = index0;
 	// 16x16 tiles, each 8x8 pixels.
-	const int chunkw = 128, chunkh = 128;
+	const int chunkw = 128;
+	const int chunkh = 128;
 	int total_cnt = get_count();
 	int y = border;
 	// Show bottom if at least 1/4 vis.
@@ -273,7 +282,8 @@ void Chunk_chooser::render_chunk(
 		int x = c_tilesize;
 		for (int tx = 0; tx < c_tiles_per_chunk; tx++,
 		        x += c_tilesize) {
-			int shapenum, framenum;
+			int shapenum;
+			int framenum;
 			unsigned char l = *data++;
 			unsigned char h = *data++;
 			if (!headersz) {
@@ -313,7 +323,8 @@ gint Chunk_chooser::configure(
 	chooser->Shape_draw::configure();
 	chooser->render();
 	// Set new scroll amounts.
-	int w = event->width, h = event->height;
+	int w = event->width;
+	int h = event->height;
 	int per_row = (w - border) / (128 + border);
 	int num_rows = (h - border) / (128 + border);
 	int page_size = per_row * num_rows;
@@ -326,7 +337,7 @@ gint Chunk_chooser::configure(
 	if (chooser->group)     // Filtering?
 		chooser->enable_drop(); // Can drop chunks here.
 
-	return (TRUE);
+	return TRUE;
 }
 
 
@@ -343,14 +354,14 @@ gint Chunk_chooser::expose(
 	Chunk_chooser *chooser = static_cast<Chunk_chooser *>(data);
 	chooser->show(event->area.x, event->area.y, event->area.width,
 	              event->area.height);
-	return (TRUE);
+	return TRUE;
 }
 
 /*
  *  Handle a mouse button press event.
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 
 static bool win32_button = false;
 
@@ -368,14 +379,14 @@ gint Chunk_chooser::win32_drag_motion(
 
 		// This call allows us to recycle the data transfer initialization code.
 		//  It's clumsy, but far easier to maintain.
-		drag_data_get(NULL, NULL, (GtkSelectionData *) &wdata,
+		drag_data_get(nullptr, nullptr, reinterpret_cast<GtkSelectionData*>(&wdata),
 		              U7_TARGET_CHUNKID, 0, data);
 
 		POINT pnt;
 		GetCursorPos(&pnt);
 
-		Windropsource idsrc(0, pnt.x, pnt.y);
-		LPDATAOBJECT idobj = (LPDATAOBJECT) new Winstudioobj(wdata);
+		Windropsource idsrc(nullptr, pnt.x, pnt.y);
+		LPDATAOBJECT idobj = new Winstudioobj(wdata);
 		DWORD dndout;
 
 		HRESULT res = DoDragDrop(idobj, &idsrc, DROPEFFECT_COPY, &dndout);
@@ -414,10 +425,10 @@ gint Chunk_chooser::mouse_press(
 
 	if (event->button == 4) {
 		chooser->scroll(true);
-		return(TRUE);
+		return TRUE;
 	} else if (event->button == 5) {
 		chooser->scroll(false);
-		return(TRUE);
+		return TRUE;
 	}
 
 	//int old_selected = chooser->selected;
@@ -429,7 +440,7 @@ gint Chunk_chooser::mouse_press(
 //			if (i == old_selected)
 //				return TRUE;
 			// Indicate we can dra.
-#ifdef WIN32
+#ifdef _WIN32
 // Here, we have to override GTK+'s Drag and Drop, which is non-OLE and
 // usually stucks outside the program window. I think it's because
 // the dragged shape only receives mouse motion events when the new mouse pointer
@@ -450,9 +461,9 @@ gint Chunk_chooser::mouse_press(
 	if (i == chooser->info_cnt && event->button == 1)
 		chooser->unselect(true);// Nothing under mouse.
 	else if (event->button == 3)
-		gtk_menu_popup(GTK_MENU(chooser->create_popup()), 0, 0, 0, 0,
+		gtk_menu_popup(GTK_MENU(chooser->create_popup()), nullptr, nullptr, nullptr, nullptr,
 		               event->button, event->time);
-	return (TRUE);
+	return TRUE;
 }
 
 /*
@@ -490,8 +501,8 @@ void Chunk_chooser::drag_data_get(
 	Chunk_info &shinfo = chooser->info[chooser->selected];
 	int len = Store_u7_chunkid(buf, shinfo.num);
 	cout << "Setting selection data (" << shinfo.num << ')' << endl;
-#ifdef WIN32
-	windragdata *wdata = (windragdata *)seldata;
+#ifdef _WIN32
+	windragdata *wdata = reinterpret_cast<windragdata*>(seldata);
 	wdata->assign(info, len, buf);
 #else
 	// Make us owner of xdndselection.
@@ -532,46 +543,6 @@ gint Chunk_chooser::drag_begin(
 	Chunk_chooser *chooser = static_cast<Chunk_chooser *>(data);
 	if (chooser->selected < 0)
 		return FALSE;       // ++++Display a halt bitmap.
-#if 0
-	// Get ->chunk.
-	Chunk_info &shinfo = chooser->info[chooser->selected];
-	Chunk_frame *chunk = chooser->ifile->get_chunk(shinfo.chunknum,
-	                     shinfo.framenum);
-	if (!chunk)
-		return FALSE;
-	int w = chunk->get_width(), h = chunk->get_height(),
-	    xright = chunk->get_xright(), ybelow = chunk->get_ybelow();
-	Image_buffer8 tbuf(w, h);   // Create buffer to render to.
-	tbuf.fill8(0xff);       // Fill with 'transparent' pixel.
-	unsigned char *tbits = tbuf.get_bits();
-	chunk->paint(&tbuf, w - 1 - xright, h - 1 - ybelow);
-	// Put chunk on a pixmap.
-	GdkPixmap *pixmap = gdk_pixmap_new(widget->window, w, h, -1);
-	gdk_draw_indexed_image(pixmap, chooser->drawgc, 0, 0, w, h,
-	                       GDK_RGB_DITHER_NORMAL, tbits,
-	                       tbuf.get_line_width(), chooser->palette);
-	int mask_stride = (w + 7) / 8;  // Round up to nearest byte.
-	char *mdata = new char[mask_stride * h];
-	for (int y = 0; y < h; y++) // Do each row.
-		// Do each byte.
-		for (int b = 0; b < mask_stride; b++) {
-			char bits = 0;
-			unsigned char *vals = tbits + y * w + b * 8;
-			for (int i = 0; i < 8; i++)
-				if (vals[i] != 0xff)
-					bits |= (1 << i);
-			mdata[y * mask_stride + b] = bits;
-		}
-	GdkBitmap *mask = gdk_bitmap_create_from_data(widget->window,
-	                  mdata, w, h);
-	delete mdata;
-	// This will be the chunk dragged.
-	gtk_drag_set_icon_pixmap(context,
-	                         gdk_window_get_colormap(widget->window), pixmap, mask,
-	                         w - 2 - xright, h - 2 - ybelow);
-	gdk_pixmap_unref(pixmap);
-	gdk_bitmap_unref(mask);
-#endif
 	return TRUE;
 }
 
@@ -612,7 +583,7 @@ void Chunk_chooser::enable_drop(
 		return;
 	drop_enabled = true;
 	gtk_widget_realize(draw);//???????
-#ifndef WIN32
+#ifndef _WIN32
 	GtkTargetEntry tents[1];
 	tents[0].target = const_cast<char *>(U7_TARGET_CHUNKID_NAME);
 	tents[0].flags = 0;
@@ -733,7 +704,7 @@ static void on_delete(
 GtkWidget *Chunk_chooser::create_popup(
 ) {
 	create_popup_internal(true); // Create popup with groups, files.
-	if (group != 0)         // Filtering?  Skip the rest.
+	if (group != nullptr)         // Filtering?  Skip the rest.
 		return popup;
 	GtkWidget *mitem = Add_menu_item(popup, "New...");
 	GtkWidget *new_menu = gtk_menu_new();
@@ -762,8 +733,8 @@ Chunk_chooser::Chunk_chooser(
     Shape_group *g          // Filter, or null.
 ) : Object_browser(g), Shape_draw(i, palbuf, gtk_drawing_area_new()),
 	chunkfile(cfile), chunksz(c_tiles_per_chunk *c_tiles_per_chunk * 2),
-	headersz(0), info(0), info_cnt(0), locate_cx(-1), locate_cy(-1),
-	drop_enabled(false), to_del(-1), sel_changed(0) {
+	headersz(0), info(nullptr), info_cnt(0), locate_cx(-1), locate_cy(-1),
+	drop_enabled(false), to_del(-1), sel_changed(nullptr) {
 	static char v2hdr[] = { -1, -1, -1, -1, 'e', 'x', 'l', 't',
 	                        0, 0
 	                      };
@@ -789,7 +760,7 @@ Chunk_chooser::Chunk_chooser(
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
 	// A frame looks nice.
-	GtkWidget *frame = gtk_frame_new(NULL);
+	GtkWidget *frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
 	gtk_widget_show(frame);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
@@ -813,7 +784,7 @@ Chunk_chooser::Chunk_chooser(
 	// Mouse motion.
 	gtk_signal_connect(GTK_OBJECT(draw), "drag_begin",
 	                   GTK_SIGNAL_FUNC(drag_begin), this);
-#ifdef WIN32
+#ifdef _WIN32
 // required to override GTK+ Drag and Drop
 	gtk_signal_connect(GTK_OBJECT(draw), "motion_notify_event",
 	                   GTK_SIGNAL_FUNC(win32_drag_motion), this);
@@ -833,11 +804,6 @@ Chunk_chooser::Chunk_chooser(
 	                       num_chunks, 1,
 	                       4, 1.0);
 	vscroll = gtk_vscrollbar_new(GTK_ADJUSTMENT(chunk_adj));
-#if 0
-	// Update window when it stops.
-	gtk_range_set_update_policy(GTK_RANGE(vscroll),
-	                            GTK_UPDATE_DELAYED);
-#endif
 	gtk_box_pack_start(GTK_BOX(hbox), vscroll, FALSE, TRUE, 0);
 	// Set scrollbar handler.
 	gtk_signal_connect(GTK_OBJECT(chunk_adj), "value_changed",
@@ -915,7 +881,7 @@ void Chunk_chooser::end_terrain_editing(
 	// Clear out cache of chunks.
 	for (int i = 0; i < num_chunks; i++) {
 		delete chunklist[i];
-		chunklist[i] = 0;
+		chunklist[i] = nullptr;
 	}
 	render();
 	show();
@@ -962,7 +928,8 @@ void Chunk_chooser::locate(
 	unsigned char data[Exult_server::maxlength];
 	unsigned char *ptr = &data[0];
 	int tnum = info[selected].num;  // Terrain #.
-	int cx = locate_cx, cy = locate_cy;
+	int cx = locate_cx;
+	int cy = locate_cy;
 	if (dir == 0) {
 		cx = cy = -1;
 	} else if (dir == -1)
@@ -1062,7 +1029,7 @@ void Chunk_chooser::insert_response(
 	ignore_unused_variable_warning(datalen);
 	const unsigned char *ptr = data;
 	int tnum = static_cast<short>(Read2(ptr));
-	bool dup = *ptr++ ? true : false;
+	bool dup = *ptr++ != 0;
 	if (!*ptr)
 		EStudio::Alert("Terrain insert failed.");
 	else {

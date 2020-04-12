@@ -37,7 +37,7 @@ Face_button::Face_button(Gump *par, int px, int py, Actor *a)
 	}
 	if (!npcinfo) {
 		const Shape_info &inf = ShapeID::get_info(a->get_shape_real());
-		npcinfo = inf.get_npc_paperdoll_safe(a->get_type_flag(Actor::tf_sex) != 0);
+		npcinfo = inf.get_npc_paperdoll_safe(a->get_type_flag(Actor::tf_sex));
 	}
 
 	set_shape(npcinfo->get_head_shape());
@@ -73,7 +73,7 @@ void Face_button::update_widget() {
 	}
 	if (!npcinfo) {
 		const Shape_info &inf = ShapeID::get_info(actor->get_shape_real());
-		npcinfo = inf.get_npc_paperdoll_safe(actor->get_type_flag(Actor::tf_sex) != 0);
+		npcinfo = inf.get_npc_paperdoll_safe(actor->get_type_flag(Actor::tf_sex));
 	}
 
 	if (get_shapenum() != npcinfo->get_head_shape() ||

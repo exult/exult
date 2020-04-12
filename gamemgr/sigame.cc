@@ -42,16 +42,15 @@
 #include "gump_utils.h"
 #include "ignore_unused_variable_warning.h"
 #include "array_size.h"
+#include "exult.h"
+#include "touchui.h"
 
 using std::cout;
 using std::endl;
 using std::rand;
 using std::strlen;
-#ifdef __IPHONEOS__
-#include "data/exult_iphone_flx.h"
-#include "exult.h"
-#include "iphone_gumps.h"
-#endif
+using std::unique_ptr;
+using std::make_unique;
 
 SI_Game::SI_Game() {
 	if (!read_game_xml()) {
@@ -116,7 +115,7 @@ SI_Game::SI_Game() {
 		const char *exultflx = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
 		const char *gameflx = BUNDLE_CHECK(BUNDLE_EXULT_SI_FLX, EXULT_SI_FLX);
 
-		add_resource("files/shapes/count", 0, 8);
+		add_resource("files/shapes/count", nullptr, 8);
 		add_resource("files/shapes/0", SHAPES_VGA, 0);
 		add_resource("files/shapes/1", FACES_VGA, 0);
 		add_resource("files/shapes/2", GUMPS_VGA, 0);
@@ -136,7 +135,7 @@ SI_Game::SI_Game() {
 		add_resource("config/avatar_data", gameflx, EXULT_SI_FLX_AVATAR_DATA_TXT);
 		add_resource("config/autonotes", gameflx, EXULT_SI_FLX_AUTONOTES_TXT);
 
-		add_resource("palettes/count", 0, 14);
+		add_resource("palettes/count", nullptr, 14);
 		add_resource("palettes/0", PALETTES_FLX, 0);
 		add_resource("palettes/1", PALETTES_FLX, 1);
 		add_resource("palettes/2", PALETTES_FLX, 2);
@@ -169,7 +168,7 @@ SI_Game::SI_Game() {
 		add_resource("palettes/patch/13", PATCH_MAINSHP, 1);
 		add_resource("palettes/patch/14", PATCH_MAINSHP, 26);
 
-		add_resource("xforms/count", 0, 20);
+		add_resource("xforms/count", nullptr, 20);
 		add_resource("xforms/0", XFORMTBL, 0);
 		add_resource("xforms/1", XFORMTBL, 1);
 		add_resource("xforms/2", XFORMTBL, 2);
@@ -237,11 +236,8 @@ SI_Game::SI_Game() {
 
 }
 
-SI_Game::~SI_Game() {
-}
-
 // Little weighted random function for lightning on the castle
-static int get_frame(void) {
+static int get_frame() {
 	int num = rand() % 9;
 
 	if (num >= 8) return 2;
@@ -256,13 +252,9 @@ void SI_Game::play_intro() {
 	if (midi) midi->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_INTRO);
 
 	int next = 0;
-	size_t  flisize;
-	char    *fli_b = 0;
-	uint8   *buffer = 0;
 	size_t  size;
-	size_t  shapesize;
-	char   *shape_buf = 0;
-	int     i, j;
+	int     i;
+	int     j;
 	Font *sifont = fontManager.get_font("SIINTRO_FONT");
 
 	bool speech = audio->is_audio_enabled() &&
@@ -273,62 +265,53 @@ void SI_Game::play_intro() {
 
 	// Lord British presents...
 	try {
-		U7multiobject lbflic(INTRO_DAT, PATCH_INTRO, 0);
-		fli_b = lbflic.retrieve(flisize);
-		playfli fli0(fli_b + 8, flisize - 8);
+		playfli fli0(INTRO_DAT, PATCH_INTRO, 0);
 		fli0.info();
 
-		disable_direct_gl_render();
 		for (j = 0; j < 20; j++) {
 			next = fli0.play(win, 0, 0, next, j * 5);
-			non_gl_blit();
+			win->show();
 			wait_delay(0, 0, 1);
 		}
 
-
 		next = fli0.play(win, 0, 0, next, 100);
-		non_gl_blit();
+		win->show();
 
 		if (wait_delay(3000, 0, 1))
 			throw UserBreakException();
 
 		for (j = 20; j; j--) {
 			next = fli0.play(win, 0, 0, next, j * 5);
-			non_gl_blit();
+			win->show();
 			wait_delay(0, 0, 1);
 		}
-
-
-		FORGET_ARRAY(fli_b);
 
 		if (wait_delay(0, 0, 1))
 			throw UserBreakException();
 
 		gwin->clear_screen(true);
 
-
 		// Castle Outside
 
 		// Start Music
 		audio->start_music(R_SINTRO, 0, false);
 
+		unique_ptr<unsigned char[]> buffer;
 		// Thunder, note we use the buffer again later so it's not freed here
 		if (speech) {
 			U7multiobject voc_thunder(INTRO_DAT, PATCH_INTRO, 15);
-			buffer = reinterpret_cast<uint8 *>(voc_thunder.retrieve(size));
-			audio->copy_and_play(buffer + 8, size - 8, false);
+			buffer = voc_thunder.retrieve(size);
+			audio->copy_and_play(buffer.get() + 8, size - 8, false);
 		}
 
-		U7multiobject flic(INTRO_DAT, PATCH_INTRO, 1);
-		fli_b = flic.retrieve(flisize);
-		playfli fli1(fli_b + 8, flisize - 8);
+		playfli fli1(INTRO_DAT, PATCH_INTRO, 1);
 		fli1.info();
 
 		fli1.play(win, 0, 1, 0, 0);
 
 		next = SDL_GetTicks();
 		int prev = -1;
-		int     num;
+		int num;
 
 		for (j = 0; j < 20; j++) {
 			num = get_frame();
@@ -338,7 +321,7 @@ void SI_Game::play_intro() {
 
 			prev = num;
 			next += 75;
-			non_gl_blit();
+			win->show();
 			if (wait_delay(1, 0, 1))
 				throw UserBreakException();
 
@@ -357,7 +340,7 @@ void SI_Game::play_intro() {
 
 			prev = num;
 			next += 75;
-			non_gl_blit();
+			win->show();
 			if (wait_delay(1, 0, 1))
 				throw UserBreakException();
 
@@ -371,13 +354,13 @@ void SI_Game::play_intro() {
 
 			// Thunder again, we free the buffer here
 			if (speech && j == 5) {
-				audio->copy_and_play(buffer + 8, size - 8, false);
-				FORGET_ARRAY(buffer);
+				audio->copy_and_play(buffer.get() + 8, size - 8, false);
+				buffer.reset();
 			}
 
 			prev = num;
 			next += 75;
-			non_gl_blit();
+			win->show();
 			if (wait_delay(1, 0, 1))
 				throw UserBreakException();
 
@@ -395,7 +378,7 @@ void SI_Game::play_intro() {
 
 			prev = num;
 			next += 75;
-			non_gl_blit();
+			win->show();
 			if (wait_delay(1, 0, 1))
 				throw UserBreakException();
 
@@ -403,12 +386,11 @@ void SI_Game::play_intro() {
 
 		for (j = 20; j; j--) {
 			next = fli1.play(win, 0, 0, next, j * 5);
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 
 		}
-		FORGET_ARRAY(fli_b);
 
 		if (wait_delay(0))
 			throw UserBreakException();
@@ -417,14 +399,12 @@ void SI_Game::play_intro() {
 		gwin->clear_screen(true);
 
 		// Guard walks in
-		U7multiobject flic2(INTRO_DAT, PATCH_INTRO, 2);
-		fli_b = flic2.retrieve(flisize);
-		playfli fli2(fli_b + 8, flisize - 8);
+		playfli fli2(INTRO_DAT, PATCH_INTRO, 2);
 		fli2.info();
 
 		for (j = 0; j < 20; j++) {
 			next = fli2.play(win, 0, 0, next, j * 5);
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
@@ -432,7 +412,7 @@ void SI_Game::play_intro() {
 		// Guard walks in
 		for (j = 0; j < 37; j++) {
 			next = fli2.play(win, j, j, next);
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
@@ -440,11 +420,9 @@ void SI_Game::play_intro() {
 		// Guard walks in
 		if (speech && !jive) {
 			U7multiobject voc_my_leige(INTRO_DAT, PATCH_INTRO, 16);
-			buffer = reinterpret_cast<uint8 *>(voc_my_leige.retrieve(size));
-			audio->copy_and_play(buffer + 8, size - 8, false);
-			FORGET_ARRAY(buffer);
+			auto buffer = voc_my_leige.retrieve(size);
+			audio->copy_and_play(buffer.get() + 8, size - 8, false);
 		}
-
 
 		for (; j < 55; j++) {
 			next = fli2.play(win, j, j, next);
@@ -454,22 +432,21 @@ void SI_Game::play_intro() {
 			else if (!speech || speech_n_subs)
 				sifont->draw_text(ibuf, centerx + 30, centery + 87, get_text_msg(my_leige));
 
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
 
 		next = fli2.play(win, j, j, next);
-		non_gl_blit();
+		win->show();
 		wait_delay(0, 0, 1);
 
 		const char *all_we[2] = { get_text_msg(all_we0), get_text_msg(all_we0 + 1) };
 
 		if (speech && !jive) {
 			U7multiobject voc_all_we(INTRO_DAT, PATCH_INTRO, 17);
-			buffer = reinterpret_cast<uint8 *>(voc_all_we.retrieve(size));
-			audio->copy_and_play(buffer + 8, size - 8, false);
-			FORGET_ARRAY(buffer);
+			auto buffer = voc_all_we.retrieve(size);
+			audio->copy_and_play(buffer.get() + 8, size - 8, false);
 		}
 
 		for (; j < 73; j++) {
@@ -480,7 +457,7 @@ void SI_Game::play_intro() {
 				sifont->draw_text(ibuf, centerx + 160 - sifont->get_text_width(all_we[1]), centery + 87, all_we[1]);
 			}
 
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
@@ -497,13 +474,12 @@ void SI_Game::play_intro() {
 			sifont->draw_text(ibuf, centerx + 150 - sifont->get_text_width(and_a[1]), centery + 87, and_a[1]);
 		}
 
-		non_gl_blit();
+		win->show();
 		j++;
 
 		for (i = 0; i < 290; i++)
 			if (wait_delay(10, 0, 1))
 				throw UserBreakException();
-
 
 		fli2.play(win, j, j);
 		j++;
@@ -514,9 +490,8 @@ void SI_Game::play_intro() {
 
 		if (speech && !jive) {
 			U7multiobject voc_indeed(INTRO_DAT, PATCH_INTRO, 18);
-			buffer = reinterpret_cast<uint8 *>(voc_indeed.retrieve(size));
-			audio->copy_and_play(buffer + 8, size - 8, false);
-			FORGET_ARRAY(buffer);
+			auto buffer = voc_indeed.retrieve(size);
+			audio->copy_and_play(buffer.get() + 8, size - 8, false);
 		}
 
 		next = fli2.play(win, j, j);
@@ -532,7 +507,7 @@ void SI_Game::play_intro() {
 				sifont->draw_text(ibuf, topx + 40, centery + 87, get_text_msg(indeed + 1));
 			}
 
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
@@ -541,15 +516,11 @@ void SI_Game::play_intro() {
 			if (wait_delay(10))
 				throw UserBreakException();
 
-		FORGET_ARRAY(fli_b);
-
 		// Do this! Prevents palette corruption
 		gwin->clear_screen(true);
 
 		// Scroll opens
-		U7multiobject flic3(INTRO_DAT, PATCH_INTRO, 3);
-		fli_b = flic3.retrieve(flisize);
-		playfli fli3(fli_b + 8, flisize - 8);
+		playfli fli3(INTRO_DAT, PATCH_INTRO, 3);
 		fli3.info();
 
 		next = 0;
@@ -557,18 +528,16 @@ void SI_Game::play_intro() {
 		// Scroll opens
 		for (j = 0; j < 20; j++) {
 			next = fli3.play(win, j, j, next) + 20;
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
 
-
 		// 'Stand Back'
 		if (speech && !jive) {
 			U7multiobject voc_stand_back(INTRO_DAT, PATCH_INTRO, 19);
-			buffer = reinterpret_cast<uint8 *>(voc_stand_back.retrieve(size));
-			audio->copy_and_play(buffer + 8, size - 8, false);
-			FORGET_ARRAY(buffer);
+			auto buffer = voc_stand_back.retrieve(size);
+			audio->copy_and_play(buffer.get() + 8, size - 8, false);
 		}
 
 		for (; j < 61; j++) {
@@ -579,36 +548,31 @@ void SI_Game::play_intro() {
 			else if (!speech || speech_n_subs)
 				sifont->draw_text(ibuf, topx + 70, centery + 60, get_text_msg(stand_back));
 
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
-
-		FORGET_ARRAY(fli_b);
 
 		// Do this! Prevents palette corruption
 		gwin->clear_screen(true);
 
 		// Big G speaks
-		U7multiobject flic4(INTRO_DAT, PATCH_INTRO, 4);
-		fli_b = flic4.retrieve(flisize);
-		playfli fli4(fli_b + 8, flisize - 8);
+		playfli fli4(INTRO_DAT, PATCH_INTRO, 4);
 		fli4.info();
 
-		U7multiobject introshapes(INTRO_DAT, PATCH_INTRO, 30);
-		shape_buf = introshapes.retrieve(shapesize);
-		IBufferDataSource gshape_ds(shape_buf + 8, shapesize - 8);
+		IExultDataSource gshape_ds(INTRO_DAT, PATCH_INTRO, 30);
+		char name[9] = {0};
+		gshape_ds.read(name, 8);
 		Shape_frame *sf;
 
 		Shape_file gshape(&gshape_ds);
 
-		cout << "Shape in intro.dat has " << gshape.get_num_frames() << endl;
+		cout << "Shape '" << name << "' in intro.dat has " << gshape.get_num_frames() << endl;
 
 		if (speech && !jive) {
 			U7multiobject voc_big_g(INTRO_DAT, PATCH_INTRO, 20);
-			buffer = reinterpret_cast<uint8 *>(voc_big_g.retrieve(size));
-			audio->copy_and_play(buffer + 8, size - 8, false);
-			FORGET_ARRAY(buffer);
+			auto buffer = voc_big_g.retrieve(size);
+			audio->copy_and_play(buffer.get() + 8, size - 8, false);
 		}
 
 		next = 0;
@@ -646,7 +610,7 @@ void SI_Game::play_intro() {
 				sifont->center_text(ibuf, centerx, centery + 87, get_text_msg(there_i + 1));
 			}
 
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
@@ -657,35 +621,29 @@ void SI_Game::play_intro() {
 			if (sf)
 				sman->paint_shape(centerx - 36, centery, sf);
 
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
-
-		FORGET_ARRAY(shape_buf);
-		FORGET_ARRAY(fli_b);
 
 		// Do this! Prevents palette corruption
 		gwin->clear_screen(true);
 
 		// Tis LBs's Worst fear
-		U7multiobject flic5(INTRO_DAT, PATCH_INTRO, 5);
-		fli_b = flic5.retrieve(flisize);
-		playfli fli5(fli_b + 8, flisize - 8);
+		playfli fli5(INTRO_DAT, PATCH_INTRO, 5);
 		fli5.info();
 
 		for (j = 0; j < 20; j++) {
 			next = fli5.play(win, 0, 0, next, j * 5);
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
 
 		if (speech && !jive) {
 			U7multiobject voc_tis_my(INTRO_DAT, PATCH_INTRO, 21);
-			buffer = reinterpret_cast<uint8 *>(voc_tis_my.retrieve(size));
-			audio->copy_and_play(buffer + 8, size - 8, false);
-			FORGET_ARRAY(buffer);
+			auto buffer = voc_tis_my.retrieve(size);
+			audio->copy_and_play(buffer.get() + 8, size - 8, false);
 		}
 
 		for (j = 0; j < 61; j++) {
@@ -698,38 +656,30 @@ void SI_Game::play_intro() {
 				sifont->center_text(ibuf, centerx, centery + 87, get_text_msg(tis_my + 2));
 			}
 
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
-
-		FORGET_ARRAY(fli_b);
 
 		// Do this! Prevents palette corruption
 		gwin->clear_screen(true);
 
 		// Boat 1
-		U7multiobject flic6(INTRO_DAT, PATCH_INTRO, 6);
-		fli_b = flic6.retrieve(flisize);
-		playfli fli6(fli_b + 8, flisize - 8);
+		playfli fli6(INTRO_DAT, PATCH_INTRO, 6);
 		fli6.info();
 
 		for (j = 0; j < 61; j++) {
 			next = fli6.play(win, j, j, next) + 30;
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
-
-		FORGET_ARRAY(fli_b);
 
 		// Do this! Prevents palette corruption
 		gwin->clear_screen(true);
 
 		// Boat 2
-		U7multiobject flic7(INTRO_DAT, PATCH_INTRO, 7);
-		fli_b = flic7.retrieve(flisize);
-		playfli fli7(fli_b + 8, flisize - 8);
+		playfli fli7(INTRO_DAT, PATCH_INTRO, 7);
 		fli7.info();
 
 		const char *zot = "Zot!";
@@ -740,57 +690,43 @@ void SI_Game::play_intro() {
 			if (j > 55 && jive)
 				sifont->center_text(ibuf, centerx, centery + 74, zot);
 
-			non_gl_blit();
+			win->show();
 			if (wait_delay(0, 0, 1))
 				throw UserBreakException();
 		}
-
-		FORGET_ARRAY(fli_b);
 
 		// Do this! Prevents palette corruption
 		gwin->clear_screen(true);
 
 		// Ultima VII Part 2
-		U7multiobject flic8(INTRO_DAT, PATCH_INTRO, 8);
-		fli_b = flic8.retrieve(flisize);
-		playfli fli8(fli_b + 8, flisize - 8);
+		playfli fli8(INTRO_DAT, PATCH_INTRO, 8);
 		fli8.info();
 
 		for (j = 0; j < 20; j++) {
 			next = fli8.play(win, 0, 0, next, j * 5);
-			non_gl_blit();
+			win->show();
 			wait_delay(0, 0, 1);
 		}
 
-
 		next = fli8.play(win, 0, 0, next, 100);
-		non_gl_blit();
+		win->show();
 		wait_delay(0, 0, 1);
 
 		for (i = 0; i < 300; i++)
 			if (wait_delay(10))
 				throw UserBreakException();
 
-
 		for (j = 20; j; j--) {
 			next = fli8.play(win, 0, 0, next, j * 5);
-			non_gl_blit();
+			win->show();
 			wait_delay(0, 0, 1);
 		}
-
-		FORGET_ARRAY(fli_b);
-		enable_direct_gl_render();
 	} catch (const UserBreakException &/*x*/) {
-		FORGET_ARRAY(shape_buf);
-		FORGET_ARRAY(fli_b);
-		FORGET_ARRAY(buffer);
-		enable_direct_gl_render();
 	}
 
 	// Fade out the palette...
 //	pal.fade_out(c_fade_out_time);
 // this doesn't work right ATM since the FLIC player has its own palette handling
-
 
 	// ... and clean the screen.
 	gwin->clear_screen(true);
@@ -823,21 +759,20 @@ void SI_Game::show_journey_failed() {
 
 // ExCineEvent
 struct ExCineEvent {
-	uint32          time;   // Time to start, In MS
-	const char      *file;
-	const char      *patch;
+	uint32      time;   // Time to start, In MS
+	const char *file;
+	const char *patch;
 	int         index;
 
-	virtual bool    play_it(Image_window *win, uint32 time) = 0;        // Return true if screen updated
+	virtual bool play_it(Image_window *win, uint32 time) = 0;        // Return true if screen updated
 
 	bool can_play() {
-		return file != 0;
+		return file != nullptr;
 	}
 
 	ExCineEvent(uint32 t, const char *f, const char *p, int i) :
 		time(t), file(f), patch(p), index(i)  { }
-
-	virtual ~ExCineEvent() { }
+	virtual ~ExCineEvent() noexcept = default;
 };
 
 //
@@ -846,91 +781,70 @@ struct ExCineEvent {
 
 struct ExCineFlic : public ExCineEvent {
 private:
-	int start;      // First frame to play
-	int count;      // Number of frames
-	bool    repeat;     // Repeat?
-	int cur;        // Frame currently being displayed (note, it's not the actual frame)
-	int speed;      // Speed of playback (ms per frame)
+	int  start;      // First frame to play
+	int  count;      // Number of frames
+	bool repeat;     // Repeat?
+	int  cur;        // Frame currently being displayed (note, it's not the actual frame)
+	int  speed;      // Speed of playback (ms per frame)
 
 	// Data info
-	U7object    *flic_obj;
-	size_t      size;
-	char        *buffer;
-	playfli     *player;
+	std::unique_ptr<playfli> player;
 
 public:
-	virtual bool    play_it(Image_window *win, uint32 t);
+	bool play_it(Image_window *win, uint32 t) override;
 
-	void        load_flic(void);
-	void        free_flic(void);
+	void load_flic();
+	void free_flic();
 
-	void        fade_out(int cycles);
+	void fade_out(int cycles);
 
 	ExCineFlic(uint32 time, const char *file, const char *patch,
 	           int i, int s, int c, bool r, int spd) :
 		ExCineEvent(time, file, patch, i), start(s), count(c), repeat(r),
-		cur(-1), speed(spd), flic_obj(0), size(0), buffer(0), player(0) { }
+		cur(-1), speed(spd), player(nullptr) { }
 
-	ExCineFlic(uint32 time) : ExCineEvent(time, 0, 0, 0), start(0), count(0),
+	ExCineFlic(uint32 time) : ExCineEvent(time, nullptr, nullptr, 0), start(0), count(0),
 		repeat(false), cur(0), speed(0),
-		flic_obj(0), size(0), buffer(0), player(0) { }
-
-	virtual ~ExCineFlic() {
-		free_flic();
-	}
+		player(nullptr) { }
 };
 
 void ExCineFlic::load_flic() {
 	free_flic();
-
 	COUT("Loading " << file << ":" << index);
-
 	if (patch)
-		flic_obj = new U7multiobject(file, patch, index);
+		player = make_unique<playfli>(file, patch, index);
 	else
-		flic_obj = new U7object(file, index);
-
-	buffer = flic_obj->retrieve(size);
-
-	player = new playfli(buffer + 8, size - 8);
+		player = make_unique<playfli>(file, index);
 	player->info();
 }
 
 void ExCineFlic::free_flic() {
 	COUT("Freeing " << file << ":" << index);
-
-	FORGET_OBJECT(player);
-	FORGET_ARRAY(buffer);
-	size = 0;
-	FORGET_OBJECT(flic_obj);
+	player.reset();
 }
 
-bool    ExCineFlic::play_it(Image_window *win, uint32 t) {
-	if (t < time) return false;
+bool ExCineFlic::play_it(Image_window *win, uint32 t) {
+	if (t < time)
+		return false;
 
 	if (cur + 1 < count || repeat) {
-
 		// Only advance frame if we can
 		uint32 time_next = time + (cur + 1) * speed;
 		if (time_next <= t) {
 			cur++;
-
 			// The actual frame number
 			int actual = start + (cur % count);
-
 			player->play(win, actual, actual, 0);
-
 			return true;
 		}
 	}
-
 	player->put_buffer(win);
-
 	return false;
 }
 
 void ExCineFlic::fade_out(int cycles) {
-	if (player) player->get_palette()->fade_out(cycles);
+	if (player)
+		player->get_palette()->fade_out(cycles);
 }
 
 //
@@ -939,30 +853,27 @@ void ExCineFlic::fade_out(int cycles) {
 
 struct ExCineVoc : public ExCineEvent {
 private:
-	bool        played;
+	bool played;
 
 public:
-	virtual bool    play_it(Image_window *win, uint32 t);
+	bool play_it(Image_window *win, uint32 t) override;
 
-	ExCineVoc(uint32 time, const char *file, const char *patch, int index) :
-		ExCineEvent(time, file, patch, index), played(false) { }
-
-	virtual ~ExCineVoc() { }
+	ExCineVoc(uint32 time, const char *file, const char *patch, int index)
+		: ExCineEvent(time, file, patch, index), played(false) { }
 };
 
 bool ExCineVoc::play_it(Image_window *win, uint32 t) {
 	ignore_unused_variable_warning(win, t);
-	size_t  size;
+	size_t size;
 	U7multiobject voc(file, patch, index);
-	uint8 *buffer = reinterpret_cast<uint8 *>(voc.retrieve(size));
-	uint8 *buf = buffer;
+	auto buffer = voc.retrieve(size);
+	uint8 *buf = buffer.get();
 	if (!memcmp(buf, "win", sizeof("win") - 1)) {
 		// IFF junk.
 		buf += 8;
 		size -= 8;
 	}
 	Audio::get_ptr()->copy_and_play(buf, size, false);
-	FORGET_ARRAY(buffer);
 	played = true;
 
 	return false;
@@ -975,8 +886,8 @@ struct ExSubEvent {
 	const int num_subs;
 	Font *    sub_font;
 
-	ExSubEvent(uint32 t, const int first, const int cnt, Font *fnt) :
-		time(t), first_sub(first), num_subs(cnt), sub_font(fnt) { }
+	ExSubEvent(uint32 t, const int first, const int cnt, Font *fnt)
+		: time(t), first_sub(first), num_subs(cnt), sub_font(fnt) { }
 
 	void show_sub(Image_buffer8 *ibuf, int centerx, int centery) {
 		int suby;
@@ -1124,8 +1035,8 @@ void SI_Game::end_game(bool success) {
 	};
 	int last_flic = 7;
 	int cur_flic = -1;
-	ExCineFlic *flic = 0;
-	ExCineFlic *pal_flic = 0;
+	ExCineFlic *flic = nullptr;
+	ExCineFlic *pal_flic = nullptr;
 
 	// Voc List
 	ExCineVoc vocs[] = {
@@ -1166,15 +1077,12 @@ void SI_Game::end_game(bool success) {
 	int start_time = SDL_GetTicks();
 	bool showing_subs = false;
 
-	while (1) {
-
+	while (true) {
 		uint32 time = SDL_GetTicks() - start_time;
 
 		// Need to go to the next flic?
 		if (cur_flic < last_flic && flics[cur_flic + 1].time <= time) {
-
 			bool next_play = flics[cur_flic + 1].can_play();
-
 			// Can play the new one, don't need the old one anymore
 			if (next_play) {
 				// Free it
@@ -1184,7 +1092,7 @@ void SI_Game::end_game(bool success) {
 				if (pal_flic && pal_flic != flic)
 					pal_flic->free_flic();
 
-				pal_flic = 0;
+				pal_flic = nullptr;
 			}
 			// Set palette to prev if required
 			else if (flic && flic->can_play()) {
@@ -1214,7 +1122,7 @@ void SI_Game::end_game(bool success) {
 			ExCineVoc& voc = vocs[cur_voc];
 
 			// Just play it!
-			voc.play_it(NULL, time);
+			voc.play_it(nullptr, time);
 			//else COUT("Teminator ");
 			COUT("voc at time: " << voc.time);
 		}
@@ -1249,11 +1157,7 @@ void SI_Game::end_game(bool success) {
 			subs[cur_sub].show_sub(ibuf, centerx, centery);
 		}
 
-		if (updated
-#ifdef HAVE_OPENGL
-		        && !GL_manager::get_instance()
-#endif
-		   )
+		if (updated)
 			win->show();
 
 		if (wait_delay(0, 0, 1)) {
@@ -1297,8 +1201,6 @@ void SI_Game::show_credits() {
 }
 
 bool SI_Game::new_game(Vga_file &shapes) {
-	SDL_EnableUNICODE(1);
-
 	int menuy = topy + 110;
 	Font *font = fontManager.get_font("MENU_FONT");
 
@@ -1322,17 +1224,9 @@ bool SI_Game::new_game(Vga_file &shapes) {
 	Skin_data *skindata =
 	    Shapeinfo_lookup::GetSkinInfoSafe(
 	        defskin->default_skin, defskin->default_female, true);
-#ifdef __IPHONEOS__
-	gkeybb->autopaint = false;
-#endif
 	do {
 		Delay();
-#ifdef HAVE_OPENGL
-		if (redraw || GL_manager::get_instance())
-#else
-		if (redraw)
-#endif
-		{
+		if (redraw) {
 			gwin->clear_screen();
 			sman->paint_shape(topx, topy, shapes.get_shape(0x2, 0));
 			sman->paint_shape(topx + 10, menuy + 10, shapes.get_shape(0xC, selected == 0));
@@ -1348,30 +1242,63 @@ bool SI_Game::new_game(Vga_file &shapes) {
 			else
 				snprintf(disp_name, max_len + 2, "%s", npc_name);
 			font->draw_text(ibuf, topx + 60, menuy + 10, disp_name);
-#ifdef __IPHONEOS__
-			gkeybb->paint();
-#endif
 			gwin->get_win()->show();
 			redraw = false;
 		}
 		while (SDL_PollEvent(&event)) {
-#ifdef __IPHONEOS__
-			if (gkeybb->handle_event(&event))
-				redraw = true;
-#endif
 			Uint16 keysym_unicode = 0;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 			bool isTextInput = false;
-			if (event.type == SDL_TEXTINPUT) {
+			if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+				SDL_Rect rectName   = { topx + 10,    menuy + 10, 130,  16 };
+				SDL_Rect rectSex    = { topx + 10,    menuy + 25, 130,  16 };
+				SDL_Rect rectOnward = { topx + 10,    topy + 180, 130,  16 };
+				SDL_Rect rectReturn = { centerx + 10, topy + 180, 130,  16 };
+				SDL_Point point;
+				gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), point.x, point.y);
+				if (SDL_EnclosePoints(&point, 1, &rectName, nullptr)) {
+					if (event.type == SDL_MOUSEBUTTONDOWN) {
+						selected = 0;
+					} else if (selected == 0 && touchui != nullptr) {
+						touchui->promptForName(npc_name);
+					}
+					redraw = true;
+				} else if (SDL_EnclosePoints(&point, 1, &rectSex, nullptr)) {
+					if (event.type == SDL_MOUSEBUTTONDOWN) {
+						selected = 1;
+					} else if (selected == 1) {
+						skindata = Shapeinfo_lookup::GetNextSelSkin(skindata, true, true);
+					}
+					redraw = true;
+				} else if (SDL_EnclosePoints(&point, 1, &rectOnward, nullptr)) {
+					if (event.type == SDL_MOUSEBUTTONDOWN) {
+						selected = 2;
+					} else if (selected == 2) {
+						editing = false;
+						ok = true;
+					}
+					redraw = true;
+				} else if (SDL_EnclosePoints(&point, 1, &rectReturn, nullptr)) {
+					if (event.type == SDL_MOUSEBUTTONDOWN) {
+						selected = 3;
+					} else if (selected == 3) {
+						editing = false;
+						ok = false;
+					}
+					redraw = true;
+				}
+			} else if (event.type == TouchUI::eventType) {
+				if (event.user.code == TouchUI::EVENT_CODE_TEXT_INPUT) {
+					if (selected == 0 && event.user.data1 != nullptr) {
+						strcpy(npc_name, static_cast<char*>(event.user.data1));
+						redraw = true;
+					}
+				}
+			} else if (event.type == SDL_TEXTINPUT) {
 				isTextInput = true;
 				event.type = SDL_KEYDOWN;
 				event.key.keysym.sym = SDLK_UNKNOWN;
 				keysym_unicode = event.text.text[0];
-   #if !(SDL_VERSION_ATLEAST(2, 0, 0))
-				event.key.keysym.unicode = keysym_unicode;
-   #endif
 			}
-#endif
 			if (event.type == SDL_KEYDOWN) {
 				redraw = true;
 				switch (event.key.keysym.sym) {
@@ -1423,25 +1350,15 @@ bool SI_Game::new_game(Vga_file &shapes) {
 					} else
 						editing = ok = false;
 					break;
-#ifdef __IPHONEOS__
-				case SDLK_DELETE:
-#endif
 				case SDLK_BACKSPACE:
 					if (selected == 0 && strlen(npc_name) > 0)
 						npc_name[strlen(npc_name) - 1] = 0;
 					break;
 				default: {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 					if ((isTextInput && selected == 0) || (!isTextInput && keysym_unicode > +'~' && selected == 0))
-#else
-					if (selected == 0) // on the text input field?
-#endif
 					{
 						int len = strlen(npc_name);
 						char chr = 0;
-#if !(SDL_VERSION_ATLEAST(2, 0, 0))
-						keysym_unicode = event.key.keysym.unicode;
-#endif
 						if ((keysym_unicode & 0xFF80) == 0)
 							chr = keysym_unicode & 0x7F;
 
@@ -1464,9 +1381,6 @@ bool SI_Game::new_game(Vga_file &shapes) {
 #ifdef DEBUG
 		std::cout << "Skin is: " << skindata->skin_id << " Sex is: " << skindata->is_female << std::endl;
 #endif
-#ifdef __IPHONEOS__
-		gkeybb->autopaint = true;
-#endif
 		set_avskin(skindata->skin_id);
 		set_avname(npc_name);
 		set_avsex(skindata->is_female);
@@ -1475,8 +1389,5 @@ bool SI_Game::new_game(Vga_file &shapes) {
 		ok = gwin->init_gamedat(true);
 	} else
 		sman->paint_shape(topx, topy, shapes.get_shape(0x2, 0));
-
-	SDL_EnableUNICODE(0);
-
 	return ok;
 }

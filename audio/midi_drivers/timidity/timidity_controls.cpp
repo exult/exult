@@ -43,7 +43,7 @@ ControlMode *ctl_list[]={
 #ifdef SDL
 	&sdl_control_mode,
 #endif
-	0
+	nullptr
 };
 
 ControlMode *ctl=DEFAULT_CONTROL_MODE;

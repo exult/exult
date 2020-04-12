@@ -23,11 +23,7 @@
 #include "ucdata.h"
 #include "ucfunc.h"
 #include <set>
-#ifdef HAVE_SSTREAM
 #include <sstream>
-#else
-#include <strstream>
-#endif
 #include <algorithm>
 #include <iomanip>
 #include <cctype>
@@ -38,7 +34,7 @@
 
 #include "ops.h"
 
-#if 0
+#ifdef DEBUG_UCXT
 #define DEBUG_INDENT
 #define DEBUG_PARSE
 #define DEBUG_PARSE2
@@ -54,10 +50,6 @@
 #undef DEBUG_PRINT
 #define DEBUG_READ_PAIR(X, Y)
 #endif
-
-//#define DEBUG_PARSE2
-//#define DEBUG_PARSE2a
-//#define DEBUG_PRINT
 
 using std::ostream;
 using std::ifstream;
@@ -278,7 +270,7 @@ void UCFunc::output_ucs_opcode(ostream &o, const FuncMap &funcmap, const vector<
 void UCFunc::output_ucs_node(ostream &o, const FuncMap &funcmap, UCNode *ucn, const map<unsigned int, string> &intrinsics, unsigned int indent, const UCOptions &options, Usecode_symbol_table *symtbl) {
 	if (!ucn->nodelist.empty()) tab_indent(indent, o) << '{' << endl;
 
-	if (ucn->ucc != 0)
+	if (ucn->ucc != nullptr)
 		output_asm_opcode(tab_indent(indent, o), funcmap, opcode_table_data, intrinsics, *(ucn->ucc), options, symtbl);
 
 	if (!ucn->nodelist.empty())
@@ -331,7 +323,7 @@ void UCFunc::parse_ucs_pass1(vector<UCNode *> &nodes) {
 
 	// collect jump references
 	for (unsigned int i = 0; i < nodes.size(); i++) {
-		if (nodes[i]->ucc != 0) {
+		if (nodes[i]->ucc != nullptr) {
 			unsigned int isjump = 0;
 			for (vector<pair<unsigned int, unsigned int> >::iterator op = opcode_jumps.begin(); op != opcode_jumps.end(); ++op)
 				if (op->first == nodes[i]->ucc->_id) {
@@ -349,7 +341,7 @@ void UCFunc::parse_ucs_pass1(vector<UCNode *> &nodes) {
 	gotoset.push_back(GotoSet());
 
 	for (unsigned int i = 0; i < nodes.size(); i++) {
-		if (nodes[i]->ucc != 0) {
+		if (nodes[i]->ucc != nullptr) {
 			if (count(jumps.begin(), jumps.end(), nodes[i]->ucc->_offset)) {
 				gotoset.push_back(nodes[i]->ucc);
 			} else
@@ -381,7 +373,7 @@ vector<UCc *> UCFunc::parse_ucs_pass2a(vector<pair<UCc *, bool> >::reverse_itera
 		output_asm_opcode(tab_indent(3, cout), *this, funcmap, opcode_table_data, intrinsics, *(current->first));
 #endif
 
-		if (current->second == false) {
+		if (!current->second) {
 			if ((opcode_table_data[current->first->_id].num_pop != 0) || (opcode_table_data[current->first->_id].flag_call_effect) ||
 			        (opcode_table_data[current->first->_id].flag_new_effect) || (opcode_table_data[current->first->_id].flag_method_effect) ||
 			        (opcode_table_data[current->first->_id].flag_function_effect)) {
@@ -508,7 +500,7 @@ vector<UCc *> UCFunc::parse_ucs_pass2a(vector<pair<UCc *, bool> >::reverse_itera
 					}
 				}
 			}
-			if ((opsneeded != 0) && (current->second == false)) {
+			if ((opsneeded != 0) && (!current->second)) {
 				if (opcode_table_data[current->first->_id].flag_not_param) {
 					continue;
 				}
@@ -580,11 +572,11 @@ vector<UCc *> UCFunc::parse_ucs_pass2a(vector<pair<UCc *, bool> >::reverse_itera
 				}
 
 				// if we've found all the ops we were searching for, return them
-				if (opsneeded != 0 && current->second == false) {
+				if (opsneeded != 0 && !current->second) {
 					if (opsneeded >= 0 && opsfound < opsneeded) {
 						cout << "DID NOT FIND ALL OPCODE PARAMETERS." << endl;
 					}
-					while (++current != vec.rend() && current->second == true) {
+					while (++current != vec.rend() && current->second) {
 						current->second = false;
 					}
 					return vucc;
@@ -804,11 +796,7 @@ static void print_number(char c, std::stringstream &str, const vector<unsigned i
 }
 
 string demunge_ocstring(UCFunc &ucf, const FuncMap &funcmap, const string &asmstr, const map<unsigned int, string> &intrinsics, const UCc &op, bool ucs_output, Usecode_symbol_table *symtbl) {
-#ifdef HAVE_SSTREAM
 	std::stringstream str;
-#else
-	std::strstream str;
-#endif
 	str << std::setfill('0') << std::setbase(16);
 	str.setf(ios::uppercase);
 	size_t  len = asmstr.length();
@@ -959,7 +947,7 @@ string demunge_ocstring(UCFunc &ucf, const FuncMap &funcmap, const string &asmst
 					funcname = fmp->second.funcname;
 					funcid = params[t - 1];
 				} else if (c == 'm') {
-					assert(symtbl != 0);
+					assert(symtbl != nullptr);
 					i++;
 					c = asmstr[i];
 					unsigned int t = charnum2uint(c);
@@ -1195,12 +1183,12 @@ void readbin_U7UCFunc(
 
 	if (symtbl) {
 		Usecode_symbol *sym = (*symtbl)[ucf._funcid];
-		Usecode_class_symbol *class_sym = 0;
+		Usecode_class_symbol *class_sym = nullptr;
 		// No symbol? Try looking inside class definitions.
 		if (!sym) {
 			for (int ii = 0; ii < symtbl->get_num_classes(); ii++) {
 				Usecode_class_symbol *cls = symtbl->get_class(ii);
-				assert(cls != 0);
+				assert(cls != nullptr);
 				sym = (*cls)[ucf._funcid];
 				if (sym) {
 					class_sym = cls;
@@ -1237,12 +1225,6 @@ void readbin_U7UCFunc(
 		f.seekg(ucf._datasize, ios::cur); // paranoia
 	}
 
-#if 0
-	if (ucf._funcid == _search_func)
-		for (map<unsigned int, string>::iterator i = ucf._data.begin(); i != ucf._data.end(); ++i)
-			cout << i->first << "\t" << i->second << endl;
-#endif
-
 	// process code segment
 	{
 		//streampos start_of_code_seg = f.tellg(); // what's this used for?
@@ -1272,7 +1254,7 @@ void readbin_U7UCFunc(
 		    which are stored in the file as 16bit shorts, with the exception of
 		    an ext32 function header, where the _datasize is a 32bit structure */
 		unsigned int code_size = ucf._funcsize - ucf._datasize - ((4 + ucf._num_externs) * SIZEOF_USHORT);
-		if (ucf.ext32 == true) code_size -= 2;
+		if (ucf.ext32) code_size -= 2;
 
 		DEBUG_READ_PAIR("Code Size: ", code_size);
 
@@ -1303,12 +1285,12 @@ void readbin_U7UCFunc(
 
 			/* if we're an opcode that sets a return value, we need to mark the
 			    function as one that returns a value */
-			if (otd.flag_return == true)
+			if (otd.flag_return)
 				ucf.return_var = true;
 
 			/* if we're an opcode that causes the function to abort, mark it as
 			    such */
-			if (otd.flag_abort == true)
+			if (otd.flag_abort)
 				ucf.aborts = true;
 
 			/* if we're a function debugging opcode, set the debuging flag, and
@@ -1333,7 +1315,7 @@ void readbin_U7UCFunc(
 					     ++it, i++) {
 						std::string varname = it->second;
 						if (!varname.empty()) {
-							if (std::isdigit(varname[0]))
+							if (std::isdigit(static_cast<unsigned char>(varname[0])))
 								varname = UCFunc::VARPREFIX + varname;
 							else if (varname == "item")
 								varname = "_item";

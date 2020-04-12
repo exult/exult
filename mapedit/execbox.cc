@@ -36,7 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 using std::cout;
 using std::endl;
 
-#ifndef WIN32
+#ifndef _WIN32
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -51,7 +51,7 @@ using std::endl;
 
 Exec_process::Exec_process(
 ) : child_stdin(-1), child_stdout(-1), child_stderr(-1),
-	child_pid(-1), stdout_tag(-1), stderr_tag(-1), reader(0) {
+	child_pid(-1), stdout_tag(-1), stderr_tag(-1), reader(nullptr) {
 }
 
 /*
@@ -110,7 +110,7 @@ void Exec_process::read_from_child(
 	if (!check_child(exit_code)) {  // Child done?
 		kill_child();       // Clean up.
 		if (reader)     // Tell client.
-			(*reader)(0, 0, exit_code, reader_data);
+			(*reader)(nullptr, 0, exit_code, reader_data);
 	}
 }
 
@@ -169,7 +169,9 @@ bool Exec_process::exec(
 	reader = rfun;          // Store callback.
 	reader_data = udata;
 	// Pipes for talking to child:
-	int stdin_pipe[2], stdout_pipe[2], stderr_pipe[2];
+	int stdin_pipe[2];
+	int stdout_pipe[2];
+	int stderr_pipe[2];
 	stdin_pipe[0] = stdin_pipe[1] = stdout_pipe[0] = stdout_pipe[1] =
 	                                    stderr_pipe[0] = stderr_pipe[1] = -1;
 	kill_child();           // Kill running process.
@@ -281,7 +283,7 @@ void Exec_box::show_status(
  */
 
 static void Exec_callback(
-    char *data,         // Data read, or NULL.
+    char *data,         // Data read, or nullptr.
     int datalen,            // Length, or 0 if child exited.
     int exit_code,          // Exit code if datalen = 0.
     void *user_data         // ->Exex_box
@@ -290,7 +292,7 @@ static void Exec_callback(
 	box->read_from_child(data, datalen, exit_code);
 }
 void Exec_box::read_from_child(
-    char *data,         // Data read, or NULL.
+    char *data,         // Data read, or nullptr.
     int datalen,            // Length, or 0 if child exited.
     int exit_code           // Exit code if datalen = 0.
 ) {
@@ -330,9 +332,7 @@ bool Exec_box::exec(
 ) {
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer(box);
 	gtk_text_buffer_set_text(buffer, "", 0);    // Clear out old text
-	if (!executor->exec(file, argv, Exec_callback, this))
-		return false;
-	return true;
+	return executor->exec(file, argv, Exec_callback, this);
 }
 
 /*

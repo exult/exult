@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __IFF_H_
-#define __IFF_H_
+#ifndef IFF_H
+#define IFF_H
 
 #include <vector>
 #include <string>
@@ -40,8 +40,6 @@ public:
 		char    form_magic[4];
 		uint32  size;
 		char    data_type[4];
-		IFFhdr()
-		{  }
 	};
 	struct  IFFobject {
 		char    type[4];
@@ -52,11 +50,6 @@ public:
 		char    name[8];
 		// char    data[]; // Variable
 	};
-	struct Reference {
-		size_t  offset;
-		uint32  size;
-		Reference() : offset(0), size(0) {}
-	};
 
 protected:
 	//  The IFF's header. ++++ Unused????
@@ -64,33 +57,30 @@ protected:
 	/// List of objects in the IFF file.
 	std::vector<Reference> object_list;
 
-	virtual void index_file();
+	void index_file() override;
+	Reference get_object_reference(uint32 objnum) const override {
+		return object_list[objnum];
+	}
+
 public:
 	/// Basic constructor.
 	/// @param spec File name and object index pair.
-	IFF(const File_spec &spec)
+	explicit IFF(const File_spec &spec)
 		: U7file(spec)
 	{  }
-	virtual ~IFF()
-	{   }
 
-	virtual size_t number_of_objects(void) {
+	size_t number_of_objects() override {
 		return object_list.size();
 	}
-	virtual char *retrieve(uint32 objnum, std::size_t &len);
-	virtual const char *get_archive_type() {
+	const char *get_archive_type() override {
 		return "IFF";
 	}
 
 	static bool is_iff(IDataSource *in);
 	static bool is_iff(const std::string& fname);
-private:
-	/// No default constructor
-	IFF();
-	UNREPLICATABLE_CLASS_I(IFF, U7file(""))
 };
 
-typedef U7DataFile<IFF> IFFFile;
-typedef U7DataBuffer<IFF> IFFBuffer;
+using IFFFile = U7DataFile<IFF>;
+using IFFBuffer = U7DataBuffer<IFF>;
 
 #endif

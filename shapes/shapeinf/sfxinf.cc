@@ -23,9 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "utils.h"
+
+#include <cstdlib>
 #include "exult_constants.h"
 #include "sfxinf.h"
 #include "ignore_unused_variable_warning.h"
+
 using std::istream;
 
 bool SFX_info::read(
@@ -51,3 +54,19 @@ bool SFX_info::read(
 	}
 	return true;
 }
+
+bool SFX_info::time_to_play() const {
+	return rand() % 100 < chance;
+}
+int SFX_info::get_next_sfx(int &last) const {
+	if (range > 1) {
+		if (random)
+			return sfxnum + (rand() % range);
+		else {
+			last = (last + 1) % range;
+			return sfxnum + last;
+		}
+	}
+	return sfxnum;
+}
+

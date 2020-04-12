@@ -64,10 +64,9 @@ static void Read_flex(
 	strings.resize(cnt);
 	for (int i = 0; i < cnt; i++) {
 		size_t len;
-		const char *ptr = in.retrieve(i, len);
+		auto ptr = in.retrieve(i, len);
 		if (len) {     // Not empty?
-			strings[i] = ptr;
-			delete [] ptr;
+			strings[i] = reinterpret_cast<char*>(ptr.get());
 		}
 	}
 }
@@ -81,19 +80,14 @@ static void Write_flex(
     const char *title,          // For the header.
     vector<string> &strings     // Okay if some are null.
 ) {
-	ofstream out;
-	U7open(out, filename);      // May throw exception.
+	OFileDataSource out(filename);      // May throw exception.
 	Flex_writer writer(out, title, strings.size());
-	for (vector<string>::const_iterator it = strings.begin();
-	        it != strings.end(); ++it) {
-		const string &str = *it;
+	for (auto& str : strings) {
 		if (!str.empty())
-			out << str;
-		out.put(0); // 0-delimit.
-		writer.mark_section_done();
+			writer.write_object(str.c_str(), str.size() + 1);
+		else
+			writer.empty_object();
 	}
-	if (!writer.close())
-		throw file_write_exception(filename);
 }
 
 /*

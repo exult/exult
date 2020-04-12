@@ -22,6 +22,11 @@
 #define FIND_NEARBY_H
 
 #include "citerate.h"
+#include "chunks.h"
+#include "gamemap.h"
+#include "gamewin.h"
+#include "objs.h"
+#include "objiter.h"
 #include "ignore_unused_variable_warning.h"
 
 /*
@@ -86,7 +91,8 @@ int Game_object::find_nearby(
 	// Stay within world.
 	Chunk_intersect_iterator next_chunk(bounds);
 	Rectangle tiles;
-	int cx, cy;
+	int cx;
+	int cy;
 	while (next_chunk.get_next(tiles, cx, cy)) {
 		// Go through objects.
 		Map_chunk *chunk = gmap->get_chunk(cx, cy);
@@ -94,7 +100,7 @@ int Game_object::find_nearby(
 		tiles.y += cy * c_tiles_per_chunk;
 		Object_iterator next(chunk->get_objects());
 		Game_object *obj;
-		while ((obj = next.get_next()) != 0) {
+		while ((obj = next.get_next()) != nullptr) {
 			// Check shape.
 			if (shapenum >= 0) {
 				if (obj->get_shapenum() != shapenum)
@@ -118,7 +124,7 @@ int Game_object::find_nearby(
 		}
 	}
 	// Return # added.
-	return (vec.size() - vecsize);
+	return vec.size() - vecsize;
 }
 
 #endif

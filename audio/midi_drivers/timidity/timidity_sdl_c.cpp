@@ -49,7 +49,7 @@ namespace NS_TIMIDITY {
 #endif
 #endif
 
-static void ctl_refresh(void);
+static void ctl_refresh();
 static void ctl_total_time(int tt);
 static void ctl_master_volume(int mv);
 static void ctl_file_name(char *name);
@@ -61,9 +61,9 @@ static void ctl_expression(int channel, int val);
 static void ctl_panning(int channel, int val);
 static void ctl_sustain(int channel, int val);
 static void ctl_pitch_bend(int channel, int val);
-static void ctl_reset(void);
+static void ctl_reset();
 static int ctl_open(int using_stdin, int using_stdout);
-static void ctl_close(void);
+static void ctl_close();
 static int ctl_read(sint32 *valp);
 static int cmsg(int type, int verbosity_level, const char *fmt, ...) ATTR_PRINTF(3,4);
 
@@ -76,7 +76,7 @@ ControlMode ctl=
 {
 	"SDL interface", 's',
 	OF_NORMAL,0,0,
-	ctl_open,NULL, ctl_close, ctl_read, cmsg,
+	ctl_open,nullptr, ctl_close, ctl_read, cmsg,
 	ctl_refresh, ctl_reset, ctl_file_name, ctl_total_time, ctl_current_time,
 	ctl_note,
 	ctl_master_volume, ctl_program, ctl_volume,
@@ -90,7 +90,7 @@ static int ctl_open(int using_stdin, int using_stdout)
 	return 0;
 }
 
-static void ctl_close(void)
+static void ctl_close()
 {
 	ctl.opened=0;
 }
@@ -114,7 +114,7 @@ static int cmsg(int type, int verbosity_level, const char *fmt, ...)
 	return 0;
 }
 
-static void ctl_refresh(void) { }
+static void ctl_refresh() { }
 
 static void ctl_total_time(int tt) {
 	ignore_unused_variable_warning(tt);
@@ -160,7 +160,7 @@ static void ctl_pitch_bend(int channel, int val) {
 	ignore_unused_variable_warning(channel, val);
 }
 
-static void ctl_reset(void) {}
+static void ctl_reset() {}
 
 #ifdef NS_TIMIDITY
 }

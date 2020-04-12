@@ -1,4 +1,4 @@
-VERSION=1.5.0git
+VERSION=1.6.0
 
 MAIN_OBJS=actions.o \
 	actorio.o \
@@ -8,7 +8,6 @@ MAIN_OBJS=actions.o \
 	cheat.o \
 	cheat_screen.o \
 	combat.o \
-	delobjs.o \
 	dir.o \
 	drag.o \
 	effects.o \
@@ -34,6 +33,7 @@ MAIN_OBJS=actions.o \
 	readnpcs.o \
 	schedule.o \
 	shapeid.o \
+	touchui.o \
 	tqueue.o \
 	txtscroll.o \
 	version.o \
@@ -93,11 +93,8 @@ MIDI_DRV_OBJS=\
 	audio/midi_drivers/FluidSynthMidiDriver.o \
 	audio/midi_drivers/fmopl.o \
 	audio/midi_drivers/FMOplMidiDriver.o \
-	audio/midi_drivers/forked_player.o \
-	audio/midi_drivers/KMIDI.o \
 	audio/midi_drivers/LowLevelMidiDriver.o \
 	audio/midi_drivers/MidiDriver.o \
-	audio/midi_drivers/mixer_midiout.o \
 	audio/midi_drivers/MT32EmuMidiDriver.o \
 	audio/midi_drivers/TimidityMidiDriver.o \
 	audio/midi_drivers/UnixSeqMidiDriver.o \
@@ -107,7 +104,7 @@ MIDI_DRV_OBJS=\
 	audio/midi_drivers/XMidiFile.o \
 	audio/midi_drivers/XMidiSequence.o \
 	$(TIMIDITY_OBJS) \
-	$(MT32EMU_OBJS) 
+	$(MT32EMU_OBJS)
 
 AUDIO_OBJS=\
 	audio/Audio.o \
@@ -169,6 +166,7 @@ GUMPS_OBJS= \
 	gumps/Gump_widget.o \
 	gumps/Gump_ToggleButton.o \
 	gumps/ShortcutBar_gump.o \
+	gumps/ItemMenu_gump.o \
 	gumps/Jawbone_gump.o \
 	gumps/misc_buttons.o \
 	gumps/Newfile_gump.o \
@@ -181,6 +179,7 @@ GUMPS_OBJS= \
 	gumps/Stats_gump.o \
 	gumps/Text_button.o \
 	gumps/Text_gump.o \
+	gumps/InputOptions_gump.o \
 	gumps/VideoOptions_gump.o \
 	gumps/Yesno_gump.o
 
@@ -191,7 +190,6 @@ IMAGEWIN_OBJS=\
 	imagewin/imagewin.o \
 	imagewin/iwin8.o \
 	imagewin/savepcx.o \
-	imagewin/scale_gl.o \
 	imagewin/scale_2x.o \
 	imagewin/scale_2xSaI.o \
 	imagewin/scale_bilinear.o \
@@ -213,15 +211,10 @@ IMAGEWIN_OBJS=\
 #NMake Line\
 !if 0
 
-ifndef OPENGL_OBJS
-	OPENGL_OBJS= 
-endif
-
 #NMake Line\
 !else
 
 #NMake Line\
-OPENGL_OBJS= $(OPENGL_OBJS)
 
 #NMake Line\
 !endif
@@ -250,8 +243,7 @@ SHAPES_OBJS= \
 	shapes/shapeinf/objdollinf.o \
 	shapes/shapeinf/sfxinf.o \
 	shapes/shapeinf/warminf.o \
-	shapes/shapeinf/weaponinf.o \
-	$(OPENGL_OBJS)
+	shapes/shapeinf/weaponinf.o
 
 OBJS_OBJS= \
 	objs/animate.o \
@@ -263,14 +255,15 @@ OBJS_OBJS= \
 	objs/iregobjs.o \
 	objs/jawbone.o \
 	objs/mappatch.o \
-	objs/objclient.o \
-	objs/objiter.o \
 	objs/objnames.o \
 	objs/objs.o \
 	objs/spellbook.o \
 	objs/virstone.o
 
 USECODE_OBJS= \
+	usecode/debugserver.o \
+	usecode/ucdebugging.o \
+	usecode/ucserial.o \
 	usecode/conversation.o \
 	usecode/intrinsics.o \
 	usecode/keyring.o \
@@ -347,7 +340,7 @@ EXULT_BG_FLX_OBJECTS = \
 	data/bg/container.dat \
 	data/bg/autonotes.txt
 
-EXULT_SI_FLX = data/exult_si.flx data/exult_si_flx.h 
+EXULT_SI_FLX = data/exult_si.flx data/exult_si_flx.h
 EXULT_SI_FLX_OBJECTS = \
 	data/si/flx.in \
 	data/si/SImap.shp \
@@ -463,7 +456,7 @@ gumps/ShortcutBar_gump.o : gumps/ShortcutBar_gump.cc $(EXULT_FLX)
 gumps/Stats_gump.o : gumps/Stats_gump.cc $(EXULT_FLX)
 
 gumps/VideoOptions_gump.o : gumps/VideoOptions_gump.cc $(EXULT_FLX)
-  
+
 gamemgr/bggame.o : gamemgr/bggame.cc $(EXULT_BG_FLX)
 
 gamemgr/sigame.o : gamemgr/sigame.cc $(EXULT_SI_FLX)
@@ -481,19 +474,19 @@ expack$(EXEEXT) : tools/expack.o $(FILE_OBJS)
 	$(CXX) $(LDFLAGS) -o $(@) tools/expack.o $(FILE_OBJS)
 
 $(EXULT_FLX): expack$(EXEEXT) $(EXULT_FLX_OBJECTS)
-	expack$(EXEEXT) -i data/flx.in
+	$(SRC)/expack$(EXEEXT) -i data/flx.in
 
 $(EXULT_BG_FLX): expack$(EXEEXT) $(EXULT_BG_FLX_OBJECTS)
-	expack$(EXEEXT) -i data/bg/flx.in
+	$(SRC)/expack$(EXEEXT) -i data/bg/flx.in
 
 $(EXULT_SI_FLX): expack$(EXEEXT) $(EXULT_SI_FLX_OBJECTS)
-	expack$(EXEEXT) -i data/si/flx.in
+	$(SRC)/expack$(EXEEXT) -i data/si/flx.in
 
 $(BG_PAPERDOLL): expack$(EXEEXT) $(EXULT_BG_PAPERDOL_VGA_OBJECTS)
-	expack$(EXEEXT) -i data/bg/bg_paperdol.in
+	$(SRC)/expack$(EXEEXT) -i data/bg/bg_paperdol.in
 
 $(BG_MR_FACES): expack$(EXEEXT) $(EXULT_BG_MR_FACES_VGA_OBJECTS)
-	expack$(EXEEXT) -i data/bg/bg_mr_faces.in
+	$(SRC)/expack$(EXEEXT) -i data/bg/bg_mr_faces.in
 
 cmanip$(EXEEXT) : tools/cmanip.o $(CONF_OBJS) $(FILE_OBJS)
 	$(CXX) $(LDFLAGS) -o $(@) tools/cmanip.o $(CONF_OBJS) $(FILE_OBJS)
@@ -521,19 +514,19 @@ mklink$(EXEEXT) : tools/mklink.o
 	$(CXX) $(LDFLAGS) -o $(@) tools/mklink.o
 
 mockup$(EXEEXT): mapedit/tools/mockup/main.o
-	$(CC) $(LDFLAGS) -o $(@) mapedit/tools/mockup/main.o $(SDL_IMAGE_LIBS)
+	$(CC) $(LDFLAGS) -o $(@) mapedit/tools/mockup/main.o $(subst -mwindows,-mconsole,$(SDL_IMAGE_LIBS))
 
 rip$(EXEEXT) : tools/rip.o
 	$(CXX) $(LDFLAGS) -o $(@) tools/rip.o
 
 libsmooth_randomize$(LIBEXT): mapedit/tools/smooth/plugins/plugin_randomize.o
-	$(CXX) -shared -o $(@) mapedit/tools/smooth/plugins/plugin_randomize.o $(SDL_LIBS) -static -lstdc++
+	$(CXX) -shared -o $(@) mapedit/tools/smooth/plugins/plugin_randomize.o $(subst -mwindows,-mconsole,$(SDL_LIBS)) $(LDFLAGS)
 
 libsmooth_smooth$(LIBEXT): mapedit/tools/smooth/plugins/plugin_smooth.o
-	$(CXX) -shared -o $(@) mapedit/tools/smooth/plugins/plugin_smooth.o $(SDL_LIBS) -static -lstdc++
+	$(CXX) -shared -o $(@) mapedit/tools/smooth/plugins/plugin_smooth.o $(subst -mwindows,-mconsole,$(SDL_LIBS)) $(LDFLAGS)
 
 libsmooth_stream$(LIBEXT): mapedit/tools/smooth/plugins/plugin_stream.o
-	$(CXX) -shared -o $(@) mapedit/tools/smooth/plugins/plugin_stream.o $(SDL_LIBS) -static -lstdc++
+	$(CXX) -shared -o $(@) mapedit/tools/smooth/plugins/plugin_stream.o $(subst -mwindows,-mconsole,$(SDL_LIBS)) $(LDFLAGS)
 
 SMOOTH_OBJS=\
 	mapedit/tools/smooth/config.o \
@@ -544,7 +537,7 @@ SMOOTH_OBJS=\
 	mapedit/tools/smooth/smooth.o
 
 smooth$(EXEEXT) : $(SMOOTH_OBJS)
-	$(CC) $(LDFLAGS) -o $(@) $(SMOOTH_OBJS) $(SDL_IMAGE_LIBS)
+	$(CC) $(LDFLAGS) -o $(@) $(SMOOTH_OBJS) $(subst -mwindows,-mconsole,$(SDL_IMAGE_LIBS))
 
 shp2pcx$(EXEEXT) : tools/shp2pcx.o
 	$(CXX) $(LDFLAGS) -o $(@) tools/shp2pcx.o
@@ -575,12 +568,12 @@ UCC_OBJS=\
 	usecode/compiler/ucclass.o
 
 ucc$(EXEEXT) : $(UCC_OBJS) files/utils.h usecode/bgintrinsics.h usecode/siintrinsics.h usecode/sibetaintrinsics.h usecode/opcodes.h usecode/ucsymtbl.h
-	$(CXX) $(LDFLAGS) -o $(@) $(UCC_OBJS) -liberty
+	$(CXX) $(LDFLAGS) -o $(@) $(UCC_OBJS)
 
 ucparse.cc: usecode/compiler/ucparse.yy
 	bison -d usecode/compiler/ucparse.yy -o ucparse.c
 	mv ucparse.c ucparse.cc
- 
+
 uclex.cc: usecode/compiler/uclex.ll
 	flex usecode/compiler/uclex.ll
 	mv lex.yy.c uclex.cc
@@ -604,21 +597,29 @@ CONFREGRESS_OBJS=$(CONF_OBJS) conf/xmain.o files/utils.o
 confregress$(EXEEXT)  : $(CONFREGRESS_OBJS)
 	$(CXX) $(LDFLAGS) -o $(@) $(CONFREGRESS_OBJS)
 
+TOOL_OBJS=tools/expack.o $(FILE_OBJS) tools/cmanip.o tools/ipack.o $(IPACK_OBJS) \
+	mapedit/tools/mockup/main.o tools/mklink.o tools/rip.o tools/shp2pcx.o \
+	tools/splitshp.o $(SMOOTH_OBJS) mapedit/tools/smooth/plugins/plugin_smooth.o \
+	mapedit/tools/smooth/plugins/plugin_randomize.o mapedit/tools/smooth/plugins/plugin_stream.o \
+	tools/textpack.o tools/u7voice2syx.o tools/wuc.o $(UCXT_OBJS) $(UCC_OBJS) \
+	$(CONFREGRESS_OBJS) usecode/ucxt/head2data.o
+
 head2data.o : usecode/ucxt/head2data.cc usecode/bgintrinsics.h usecode/siintrinsics.h usecode/sibetaintrinsics.h
 
 head2data$(EXEEXT) : usecode/ucxt/head2data.o $(FILE_OBJS) usecode/bgintrinsics.h usecode/siintrinsics.h usecode/sibetaintrinsics.h
 	$(CXX) $(LDFLAGS) -o $(@) usecode/ucxt/head2data.o $(FILE_OBJS)
 
-head2data.test: 
-	head2data data/u7bgintrinsics.data data/u7siintrinsics.data data/u7sibetaintrinsics.data
+head2data.test: head2data$(EXEEXT)
+	$(SRC)/head2data$(EXEEXT) data/u7bgintrinsics.data data/u7siintrinsics.data data/u7sibetaintrinsics.data
 
 clean:
-	rm -f $(OBJS) tools/expack.o $(EXEC) expack$(EXEEXT) tools/ipack.o ipack$(EXEEXT) data/exult.flx data/exult_flx.h data/exult_bg.flx data/exult_bg_flx.h data/exult_si.flx data/exult_si_flx.h data/bg/bg_paperdol.vga data/bg/bg_mr_faces.vga data/bg/bg_paperdol_vga.h data/bg/bg_mr_faces_vga.h
+	rm -f $(OBJS) $(OBJS:%.o=%.d) tools/expack.o $(EXEC) expack$(EXEEXT) tools/ipack.o ipack$(EXEEXT) data/exult.flx data/exult_flx.h data/exult_bg.flx data/exult_bg_flx.h data/exult_si.flx data/exult_si_flx.h data/bg/bg_paperdol.vga data/bg/bg_mr_faces.vga data/bg/bg_paperdol_vga.h data/bg/bg_mr_faces_vga.h
 
 tools:  expack$(EXEEXT) cmanip$(EXEEXT) ipack$(EXEEXT) mklink$(EXEEXT) mockup$(EXEEXT) rip$(EXEEXT) shp2pcx$(EXEEXT) smooth$(EXEEXT) splitshp$(EXEEXT) textpack$(EXEEXT) wuc$(EXEEXT) u7voice2syx$(EXEEXT) ucc$(EXEEXT) ucxt$(EXEEXT)  \
-	 head2data$(EXEEXT) head2data.test libsmooth_randomize$(LIBEXT) libsmooth_smooth$(LIBEXT) libsmooth_stream$(LIBEXT)
+	 $(SRC)/head2data$(EXEEXT) head2data.test libsmooth_randomize$(LIBEXT) libsmooth_smooth$(LIBEXT) libsmooth_stream$(LIBEXT)
 
 toolsclean:
+	rm -f $(TOOL_OBJS:%.o=%.d)
 	rm -f tools/expack.o expack$(EXEEXT) $(FILE_OBJS)
 	rm -f tools/cmanip.o cmanip$(EXEEXT)
 	rm -f tools/ipack.o ipack$(EXEEXT) $(IPACK_OBJS)

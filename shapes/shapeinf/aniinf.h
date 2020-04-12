@@ -27,7 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "baseinf.h"
 #include "exult_constants.h"
-using std::istream;
+
+#include <iosfwd>
 
 class Shape_info;
 
@@ -54,9 +55,7 @@ private:
 public:
 	friend class Shape_info;
 	static Animation_info *create_from_tfa(int type, int nframes);
-	Animation_info()
-		: Base_info()
-	{  }
+	Animation_info() = default;
 	Animation_info(AniType t, int count = -1, int rec = 0, int freeze = 100,
 	               int delay = 1, int sfxi = 0) {
 		set(t, count, rec, freeze, delay, sfxi);

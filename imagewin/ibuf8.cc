@@ -46,7 +46,9 @@ void Image_buffer8::copy(
     int srcw, int srch,     // Dimensions to copy.
     int destx, int desty        // Where to copy to.
 ) {
-	int ynext, yfrom, yto;      // Figure y stuff.
+	int ynext;
+	int yfrom;
+	int yto;      // Figure y stuff.
 	if (srcy >= desty) {    // Moving up?
 		ynext = line_width;
 		yfrom = srcy;
@@ -74,8 +76,10 @@ void Image_buffer8::get(
     Image_buffer *dest,     // Copy to here.
     int srcx, int srcy      // Upper-left corner of source rect.
 ) {
-	int srcw = dest->width, srch = dest->height;
-	int destx = 0, desty = 0;
+	int srcw = dest->width;
+	int srch = dest->height;
+	int destx = 0;
+	int desty = 0;
 	// Constrain to window's space. (Note
 	//   convoluted use of clip().)
 	if (!clip(destx, desty, srcw, srch, srcx, srcy))
@@ -150,7 +154,8 @@ void Image_buffer8::fill8(
     int srcw, int srch,
     int destx, int desty
 ) {
-	int srcx = 0, srcy = 0;
+	int srcx = 0;
+	int srcy = 0;
 	// Constrain to window's space.
 	if (!clip(srcx, srcy, srcw, srch, destx, desty))
 		return;
@@ -195,7 +200,8 @@ void Image_buffer8::copy8(
 		return;
 	}
 
-	int srcx = 0, srcy = 0;
+	int srcx = 0;
+	int srcy = 0;
 	int src_width = srcw;       // Save full source width.
 	// Constrain to window's space.
 	if (!clip(srcx, srcy, srcw, srch, destx, desty))
@@ -319,7 +325,8 @@ void Image_buffer8::fill_translucent8(
     int destx, int desty,
     const Xform_palette &xform        // Transform table.
 ) {
-	int srcx = 0, srcy = 0;
+	int srcx = 0;
+	int srcy = 0;
 	// Constrain to window's space.
 	if (!clip(srcx, srcy, srcw, srch, destx, desty))
 		return;
@@ -342,7 +349,8 @@ void Image_buffer8::copy_transparent8(
     int srcw, int srch,     // Dimensions of source.
     int destx, int desty
 ) {
-	int srcx = 0, srcy = 0;
+	int srcx = 0;
+	int srcy = 0;
 	int src_width = srcw;       // Save full source width.
 	// Constrain to window's space.
 	if (!clip(srcx, srcy, srcw, srch, destx, desty))
@@ -674,7 +682,10 @@ unsigned char *Image_buffer8::rgba(
 			*ptr32++ = 0;
 			continue;
 		}
-		unsigned char r, g, b, a; // Pieces of the color.
+		unsigned char r;
+		unsigned char g;
+		unsigned char b;
+		unsigned char a; // Pieces of the color.
 		if (pix >= first_translucent && pix <= last_translucent) {
 			// Get actual color & alpha from tbl.
 			const Xform_palette &xf = xforms[pix - first_translucent];

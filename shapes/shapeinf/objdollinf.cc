@@ -35,7 +35,7 @@ bool Paperdoll_item::read(
 ) {
 	ignore_unused_variable_warning(game);
 	world_frame = ReadInt(in);
-	translucent = ReadInt(in) ? true : false;
+	translucent = ReadInt(in) != 0;
 	spot = ReadInt(in);
 	int ty = ReadInt(in);
 	if (ty == -255) {
@@ -60,7 +60,7 @@ bool Paperdoll_item::read(
 		}
 	else
 		type = ty;
-	gender = ReadInt(in) ? true : false;
+	gender = ReadInt(in) != 0;
 	shape = ReadInt(in);
 	frame[0] = ReadInt(in);
 	// Not all items have all entries; those that need, do, though.

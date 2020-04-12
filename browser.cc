@@ -31,14 +31,6 @@
 #include "shapeid.h"
 #include "keys.h"
 
-#ifndef HAVE_SNPRINTF
-extern int snprintf(char *, size_t, const char *, /*args*/ ...);
-namespace std {
-using ::snprintf;
-}
-#else
-#endif
-
 ShapeBrowser::ShapeBrowser() {
 	num_shapes = 0;
 	current_shape = 0;
@@ -46,7 +38,7 @@ ShapeBrowser::ShapeBrowser() {
 	current_frame = 0;
 	num_files = game->get_resource("files/shapes/count").num;
 	current_file = 0;
-	shapes = 0;
+	shapes = nullptr;
 	num_palettes = game->get_resource("palettes/count").num;
 	current_palette = 0;
 	num_xforms = game->get_resource("xforms/count").num;
@@ -57,7 +49,7 @@ ShapeBrowser::~ShapeBrowser() {
 	delete shapes;
 }
 
-static void handle_key(int shift, int &value, int max, int amt = 1) {
+static void handle_key(bool shift, int &value, int max, int amt = 1) {
 	if (max == 0) return;
 
 	if (shift)
@@ -113,8 +105,7 @@ void ShapeBrowser::browse_shapes() {
 			} else
 				pal.load(pal_tuple.str, patch_tuple.str, pal_tuple.num);
 
-			if (GL_manager::get_instance())
-				pal.apply();
+			pal.apply();
 			font->paint_text_fixedwidth(ibuf, "Show [K]eys", 2, maxy - 50, 8);
 
 			snprintf(buf, 255, "VGA File: '%s'", fname);
@@ -168,24 +159,20 @@ void ShapeBrowser::browse_shapes() {
 					                       gwin->get_height() / 2 - frame->get_yabove() - 1);
 
 					//draw shape
-					sman->paint_shape(gwin->get_width() / 2, gwin->get_height() / 2, frame, 1);
+					sman->paint_shape(gwin->get_width() / 2, gwin->get_height() / 2, frame, true);
 
 				} else
 					font->draw_text(ibuf, centerx - 20, centery - 5, "No Shape");
 			} else
 				font->draw_text(ibuf, centerx - 20, centery - 5, "No Shape");
 
-
-			if (GL_manager::get_instance())
-				gwin->get_win()->show();
-			else
-				pal.apply();
+			pal.apply();
 			redraw = false;
 		}
 		SDL_WaitEvent(&event);
 		if (event.type == SDL_KEYDOWN) {
 			redraw = true;
-			int shift = event.key.keysym.mod & KMOD_SHIFT;
+			bool shift = event.key.keysym.mod & KMOD_SHIFT;
 			//int ctrl = event.key.keysym.mod & KMOD_CTRL;
 			switch (event.key.keysym.sym) {
 			case SDLK_ESCAPE:
@@ -218,11 +205,11 @@ void ShapeBrowser::browse_shapes() {
 				}
 				break;
 			case SDLK_UP:
-				handle_key(1, current_shape, num_shapes);
+				handle_key(true, current_shape, num_shapes);
 				current_frame = 0;
 				break;
 			case SDLK_DOWN:
-				handle_key(0, current_shape, num_shapes);
+				handle_key(false, current_shape, num_shapes);
 				current_frame = 0;
 				break;
 			case SDLK_j:    // Jump by 20.
@@ -231,11 +218,11 @@ void ShapeBrowser::browse_shapes() {
 				current_frame = 0;
 				break;
 			case SDLK_PAGEUP:
-				handle_key(1, current_shape, num_shapes, 20);
+				handle_key(true, current_shape, num_shapes, 20);
 				current_frame = 0;
 				break;
 			case SDLK_PAGEDOWN:
-				handle_key(0, current_shape, num_shapes, 20);
+				handle_key(false, current_shape, num_shapes, 20);
 				current_frame = 0;
 				break;
 				// Frames
@@ -243,10 +230,10 @@ void ShapeBrowser::browse_shapes() {
 				handle_key(shift, current_frame, num_frames);
 				break;
 			case SDLK_LEFT:
-				handle_key(1, current_frame, num_frames);
+				handle_key(true, current_frame, num_frames);
 				break;
 			case SDLK_RIGHT:
-				handle_key(0, current_frame, num_frames);
+				handle_key(false, current_frame, num_frames);
 				break;
 			case SDLK_k:
 				keybinder->ShowBrowserKeys();

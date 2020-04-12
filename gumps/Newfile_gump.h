@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define NEWFILE_GUMP_H
 
 #include "Modal_gump.h"
+#include <array>
+#include <memory>
 
 class Shape_file;
 class Image_buffer;
@@ -82,30 +84,42 @@ struct SaveGame_Party {
  *  The file save/load box:
  */
 class Newfile_gump : public Modal_gump {
-	UNREPLICATABLE_CLASS_I(Newfile_gump, Modal_gump(0, 0, 0, 0))
+	UNREPLICATABLE_CLASS(Newfile_gump)
 
 public:
 	struct SaveInfo {
 
-		int         num;
-		char            *filename;
-		char            *savename;
-		bool            readable;
-		SaveGame_Details    *details;
-		SaveGame_Party      *party;
-		Shape_file      *screenshot;
+		int         num = 0;
+		char            *filename = nullptr;
+		char            *savename = nullptr;
+		bool            readable = true;
+		SaveGame_Details    *details = nullptr;
+		SaveGame_Party      *party = nullptr;
+		std::unique_ptr<Shape_file> screenshot;
 
 		static int      CompareGames(const void *a, const void *b);
 		int         CompareThis(const SaveInfo *other) const;
 		void            SetSeqNumber();
 
-		SaveInfo();
 		~SaveInfo();
 
 	};
 
 protected:
-	Gump_button *buttons[8];    // 2 sets of 4 buttons
+	enum button_ids {
+		id_first = 0,
+		id_load = id_first,
+		id_save,
+		id_delete,
+		id_close,
+		id_page_up,
+		id_line_up,
+		id_line_down,
+		id_page_down,
+		id_count
+	};
+	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
+
 	static const short btn_cols[5]; // x-coord of each button.
 	static const short btn_rows[5]; // y-coord of each button.
 
@@ -138,33 +152,34 @@ protected:
 
 	static const char *months[12];  // Names of the months
 
-	unsigned char restored;     // Set to 1 if we restored a game.
+	unsigned char restored = 0;     // Set to 1 if we restored a game.
 
-	Image_buffer    *back;
+	std::unique_ptr<Image_buffer> back;
 
-	SaveInfo    *games;     // The list of savegames
-	int     num_games;  // Number of save games
-	int     first_free; // The number of the first free savegame
+	SaveInfo    *games = nullptr;     // The list of savegames
+	int     num_games = 0;  // Number of save games
+	int     first_free = 0; // The number of the first free savegame
 
-	Shape_file *cur_shot;       // Screenshot for current game
-	SaveGame_Details *cur_details;  // Details of current game
-	SaveGame_Party *cur_party;  // Party of current game
+	std::unique_ptr<Shape_file> cur_shot;     // Screenshot for current game
+	SaveGame_Details *cur_details = nullptr;  // Details of current game
+	SaveGame_Party *cur_party = nullptr;      // Party of current game
 
 	// Gamedat is being used as a 'quicksave'
-	Shape_file *gd_shot;        // Screenshot in Gamedat
-	SaveGame_Details *gd_details;   // Details in Gamedat
-	SaveGame_Party *gd_party;   // Parts in Gamedat
+	int last_selected;      // keeping track of the selected line for iOS
+	std::unique_ptr<Shape_file> gd_shot;      // Screenshot in Gamedat
+	SaveGame_Details *gd_details = nullptr;   // Details in Gamedat
+	SaveGame_Party *gd_party = nullptr;       // Parts in Gamedat
 
-	Shape_file *screenshot;     // The picture to be drawn
-	SaveGame_Details *details;  // The game details to show
-	SaveGame_Party *party;      // The party to show
-	bool is_readable;       // Is the save game readable
-	const char *filename;       // Filename of the savegame, if exists
+	Shape_file *screenshot = nullptr;     // The picture to be drawn
+	SaveGame_Details *details = nullptr;  // The game details to show
+	SaveGame_Party *party = nullptr;      // The party to show
+	bool is_readable = false;             // Is the save game readable
+	const char *filename = nullptr;       // Filename of the savegame, if exists
 
-	int list_position;      // The position in the savegame list (top game)
-	int selected;       // The savegame that has been selected (num in list)
-	int cursor;         // The position of the cursor
-	int slide_start;        // Pixel (v) where a slide started
+	int list_position = -2;      // The position in the savegame list (top game)
+	int selected = -3;           // The savegame that has been selected (num in list)
+	int cursor = 0;              // The position of the cursor
+	int slide_start = -1;        // Pixel (v) where a slide started
 	char    newname[MAX_SAVEGAME_NAME_LEN]; // The new name for the game
 
 	int BackspacePressed();
@@ -179,7 +194,7 @@ protected:
 
 public:
 	Newfile_gump();
-	virtual ~Newfile_gump();
+	~Newfile_gump() override;
 
 	void load();            // 'Load' was clicked.
 	void save();            // 'Save' was clicked.
@@ -188,22 +203,39 @@ public:
 	void scroll_line(int dir);  // Scroll Line Button Pressed
 	void scroll_page(int dir);  // Scroll Page Button Pressed.
 
+	void line_up() {
+		scroll_line(-1);
+	}
+
+	void line_down() {
+		scroll_line(1);
+	}
+
+	void page_up() {
+		scroll_page(-1);
+	}
+
+	void page_down() {
+		scroll_page(1);
+	}
+
 	int restored_game() {   // 1 if user restored.
 		return restored;
 	}
 	// Paint it and its contents.
-	virtual void paint();
-	virtual void close() {
-		done = 1;
+	void paint() override;
+	void close() override {
+		done = true;
 	}
 	// Handle events:
-	virtual bool mouse_down(int mx, int my, int button);
-	virtual bool mouse_up(int mx, int my, int button);
-	virtual void mouse_drag(int mx, int my);
-	virtual void text_input(int chr, int unicode); // Character typed.
+	void text_input(const char *text) override; // Character typed.
+	bool mouse_down(int mx, int my, int button) override;
+	bool mouse_up(int mx, int my, int button) override;
+	void mouse_drag(int mx, int my) override;
+	void text_input(int chr, int unicode) override; // Character typed.
 
-	virtual void mousewheel_up();
-	virtual void mousewheel_down();
+	void mousewheel_up() override;
+	void mousewheel_down() override;
 };
 
 #endif //NEWFILE_GUMP_H

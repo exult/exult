@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "pent_include.h"
 #include "CoreMidiDriver.h"
+#include "ignore_unused_variable_warning.h"
 
 #ifdef USE_CORE_MIDI
 
@@ -32,7 +33,7 @@ CoreMidiDriver::CoreMidiDriver() :
 	mClient(0), mOutPort(0), mDest(0)
 {
 	OSStatus err;
-	err = MIDIClientCreate(CFSTR("Pentagram MIDI Driver for OS X"), NULL, NULL, &mClient);
+	err = MIDIClientCreate(CFSTR("Pentagram MIDI Driver for OS X"), nullptr, nullptr, &mClient);
 
 }
 
@@ -59,7 +60,7 @@ int CoreMidiDriver::open() {
 		MIDIEndpointRef dest = MIDIGetDestination(i);
 		std::string destname = "Unknown / Invalid";
 		if (dest) {
-			CFStringRef midiname = 0;
+			CFStringRef midiname = nullptr;
 			if(MIDIObjectGetStringProperty(dest, kMIDIPropertyDisplayName, &midiname) == noErr) {
 				const char *s = CFStringGetCStringPtr(midiname, kCFStringEncodingMacRoman);
 				if (s)
@@ -150,11 +151,12 @@ void CoreMidiDriver::send(uint32 b) {
 }
 
 void CoreMidiDriver::send_sysex(uint8 status, const uint8 *msg, uint16 length) {
+	ignore_unused_variable_warning(status);
 	assert(mOutPort != 0);
 	assert(mDest != 0);
 
 	uint8 buf[384];
-	MIDIPacketList *packetList = (MIDIPacketList *)buf;
+	MIDIPacketList *packetList = reinterpret_cast<MIDIPacketList *>(buf);
 	MIDIPacket *packet = packetList->packet;
 
 	assert(sizeof(buf) >= sizeof(UInt32) + sizeof(MIDITimeStamp) + sizeof(UInt16) + length + 2);
@@ -190,4 +192,4 @@ void CoreMidiDriver::yield()
 	sched_yield();
 }
 
-#endif // MACOSX
+#endif // USE_CORE_MIDI

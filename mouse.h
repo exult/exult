@@ -18,14 +18,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _MOUSE_H_
-#define _MOUSE_H_
+#ifndef MOUSE_H
+#define MOUSE_H
 
 #include "rect.h"
 #include "dir.h"
 #include "iwin8.h"
 #include "vgafile.h"
-#include "glshape.h"
 #include "gamewin.h"
 
 /*
@@ -36,7 +35,7 @@ protected:
 	Shape_file pointers;        // Pointers from 'pointers.shp'.
 	Game_window *gwin;      // Where to draw.
 	Image_window8 *iwin;        // From gwin.
-	Image_buffer *backup;       // Stores image below mouse shape.
+	std::unique_ptr<Image_buffer> backup;       // Stores image below mouse shape.
 	Rectangle box;          // Area backed up.
 	Rectangle dirty;        // Dirty area from mouse move.
 	int mousex, mousey;     // Last place where mouse was.
@@ -98,16 +97,12 @@ public:
 
 	Mouse(Game_window *gw);
 	Mouse(Game_window *gw, IDataSource &shapes);
-	~Mouse();
 
 	void show();            // Paint it.
 	void hide() {       // Restore area under mouse.
 		if (onscreen) {
 			onscreen = false;
-#ifdef HAVE_OPENGL
-			if (!GL_manager::get_instance())
-#endif
-				iwin->put(backup, box.x, box.y);
+			iwin->put(backup.get(), box.x, box.y);
 			dirty = box;    // Init. dirty to box.
 		}
 	}
@@ -123,36 +118,34 @@ public:
 	}
 	void move(int x, int y);    // Move to new location (mouse motion).
 	void blit_dirty() {     // Blit dirty area.
-		// But not in OpenGL.
-		if (!GL_manager::get_instance())
-			iwin->show(dirty.x - 1, dirty.y - 1, dirty.w + 2,
-			           dirty.h + 2);
+		iwin->show(dirty.x - 1, dirty.y - 1, dirty.w + 2,
+					dirty.h + 2);
 	}
 	void set_location(int x, int y);// Set to given location.
 	// Flash desired shape for 1/2 sec.
 	void flash_shape(Mouse_shapes flash);
 	// Set to short arrow.
 	int get_short_arrow(Direction dir) {
-		return (short_arrows[static_cast<int>(dir)]);
+		return short_arrows[static_cast<int>(dir)];
 	}
 	// Set to medium arrow.
 	int get_medium_arrow(Direction dir) {
-		return (med_arrows[static_cast<int>(dir)]);
+		return med_arrows[static_cast<int>(dir)];
 	}
 	// Set to long arrow.
 	int get_long_arrow(Direction dir) {
-		return (long_arrows[static_cast<int>(dir)]);
+		return long_arrows[static_cast<int>(dir)];
 	}
 	// Set to short combat mode arrow.
 	int get_short_combat_arrow(Direction dir) {
-		return (short_combat_arrows[static_cast<int>(dir)]);
+		return short_combat_arrows[static_cast<int>(dir)];
 	}
 	// Set to medium combat mode arrow.
 	int get_medium_combat_arrow(Direction dir) {
-		return (med_combat_arrows[static_cast<int>(dir)]);
+		return med_combat_arrows[static_cast<int>(dir)];
 	}
 
-	unsigned char is_onscreen() {
+	bool is_onscreen() {
 		return onscreen;
 	}
 

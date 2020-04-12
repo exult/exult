@@ -28,8 +28,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wparentheses"
+#if !defined(__llvm__) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#else
+#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
+#endif
 #endif  // __GNUC__
 #include <gtk/gtk.h>
 #ifdef XWIN
@@ -46,8 +52,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "utils.h"
 #include <iostream>
 #include <iomanip>
-#include <ctype.h>
-#include <stdio.h>
+#include <cctype>
+#include <cstdio>
 #include <cstring>
 #include "studio.h"
 #include "shapefile.h"
@@ -61,6 +67,7 @@ using   std::ostream;
 using   std::ofstream;
 using   std::setw;
 using   std::ifstream;
+using   std::make_unique;
 using   EStudio::Prompt;
 using   EStudio::Alert;
 
@@ -73,9 +80,9 @@ static void Write_palette(
     GdkRgbCmap *pal         // Palette to write.
 ) {
 	for (int i = 0; i < 256; i++) {
-		int r = (pal->colors[i] >> 16) & 255,
-		    g = (pal->colors[i] >> 8) & 255,
-		    b = pal->colors[i] & 255;
+		int r = (pal->colors[i] >> 16) & 255;
+		int g = (pal->colors[i] >> 8) & 255;
+		int b = pal->colors[i] & 255;
 		buf[3 * i] = r / 4; // Range 0-63.
 		buf[3 * i + 1] = g / 4;
 		buf[3 * i + 2] = b / 4;
@@ -134,8 +141,7 @@ void Palette_edit::load(
 	else {
 		for (unsigned pnum = 0; pnum < cnt; pnum++) {
 			size_t len;
-			unsigned char *buf = reinterpret_cast<unsigned char *>(
-			                     flex_info->get(pnum, len));
+			unsigned char *buf = flex_info->get(pnum, len);
 			guint32 colors[256];
 			for (size_t i = 0; i < len / 3; i++)
 				colors[i] = (buf[3 * i] << 16) * 4 +
@@ -153,7 +159,8 @@ void Palette_edit::load(
 
 void Palette_edit::render(
 ) {
-	int neww = draw->allocation.width, newh = draw->allocation.height;
+	int neww = draw->allocation.width;
+	int newh = draw->allocation.height;
 	// Changed size?
 	if (neww != width || newh != height) {
 		delete [] image;
@@ -162,9 +169,11 @@ void Palette_edit::render(
 		image = new guchar[width * height];
 	}
 	// Figure cell size.
-	int eachw = width / 16, eachh = height / 16;
+	int eachw = width / 16;
+	int eachh = height / 16;
 	// Figure extra pixels.
-	int extraw = width % 16, extrah = height % 16;
+	int extraw = width % 16;
+	int extrah = height % 16;
 	int color = 0;          // Color index.
 	int cury = 0;
 	unsigned char *out = image;
@@ -178,7 +187,8 @@ void Palette_edit::render(
 			}
 	}
 	if (selected >= 0) {    // Update selected box.
-		int selx = selected % 16, sely = selected / 16;
+		int selx = selected % 16;
+		int sely = selected / 16;
 		selected_box.x = selx * eachw;
 		selected_box.y = sely * eachh;
 		selected_box.w = eachw;
@@ -209,7 +219,7 @@ int Palette_edit::color_closed(
 	ignore_unused_variable_warning(dlg, event);
 	cout << "color_closed" << endl;
 	Palette_edit *paled = static_cast<Palette_edit *>(data);
-	paled->colorsel = 0;
+	paled->colorsel = nullptr;
 	return FALSE;
 }
 
@@ -225,7 +235,7 @@ void Palette_edit::color_cancel(
 	Palette_edit *paled = static_cast<Palette_edit *>(data);
 	if (paled->colorsel)
 		gtk_widget_destroy(GTK_WIDGET(paled->colorsel));
-	paled->colorsel = 0;
+	paled->colorsel = nullptr;
 }
 
 /*
@@ -239,12 +249,12 @@ void Palette_edit::color_okay(
 	ignore_unused_variable_warning(dlg);
 	Palette_edit *paled = static_cast<Palette_edit *>(data);
 	if (paled->colorsel) {
-		gdouble rgb[3];
+		gdouble rgb[4];
 		gtk_color_selection_get_color(
 		    GTK_COLOR_SELECTION(paled->colorsel->colorsel), rgb);
-		unsigned char r = static_cast<unsigned char>(rgb[0] * 256),
-		              g = static_cast<unsigned char>(rgb[1] * 256),
-		              b = static_cast<unsigned char>(rgb[2] * 256);
+		unsigned char r = static_cast<unsigned char>(rgb[0] * 256);
+		unsigned char g = static_cast<unsigned char>(rgb[1] * 256);
+		unsigned char b = static_cast<unsigned char>(rgb[2] * 256);
 		if (paled->selected >= 0)
 			paled->palettes[paled->cur_pal]->colors[
 			    paled->selected] =
@@ -255,7 +265,7 @@ void Palette_edit::color_okay(
 		paled->render();
 		paled->show();
 	}
-	paled->colorsel = 0;
+	paled->colorsel = nullptr;
 }
 
 /*
@@ -308,7 +318,7 @@ gint Palette_edit::configure(
 		                          (255 << 16) + (255 << 8));
 	}
 	paled->render();
-	return (TRUE);
+	return TRUE;
 }
 
 /*
@@ -324,7 +334,7 @@ gint Palette_edit::expose(
 	Palette_edit *paled = static_cast<Palette_edit *>(data);
 	paled->show(event->area.x, event->area.y, event->area.width,
 	            event->area.height);
-	return (TRUE);
+	return TRUE;
 }
 
 /*
@@ -340,20 +350,25 @@ gint Palette_edit::mouse_press(
 	Palette_edit *paled = static_cast<Palette_edit *>(data);
 
 	if (event->button == 4 || event->button == 5) // mouse wheel
-		return (TRUE);
+		return TRUE;
 
 	if (paled->colorsel)
-		return (TRUE);      // Already editing a color.
+		return TRUE;      // Already editing a color.
 	int old_selected = paled->selected;
-	int width = paled->width, height = paled->height;
-	int eventx = static_cast<int>(event->x), eventy = static_cast<int>(event->y);
+	int width = paled->width;
+	int height = paled->height;
+	int eventx = static_cast<int>(event->x);
+	int eventy = static_cast<int>(event->y);
 	// Figure cell size.
-	int eachw = width / 16, eachh = height / 16;
+	int eachw = width / 16;
+	int eachh = height / 16;
 	// Figure extra pixels.
-	int extraw = width % 16, extrah = height % 16;
+	int extraw = width % 16;
+	int extrah = height % 16;
 	int extrax = extraw * (eachw + 1); // Total length of extra-sized boxes.
 	int extray = extrah * (eachh + 1);
-	int selx, sely;         // Gets box indices.
+	int selx;
+	int sely;         // Gets box indices.
 	if (eventx < extrax)
 		selx = eventx / (eachw + 1);
 	else
@@ -373,8 +388,8 @@ gint Palette_edit::mouse_press(
 	}
 	if (event->button == 3)
 		gtk_menu_popup(GTK_MENU(paled->create_popup()),
-		               0, 0, 0, 0, event->button, event->time);
-	return (TRUE);
+		               nullptr, nullptr, nullptr, nullptr, event->button, event->time);
+	return TRUE;
 }
 
 /*
@@ -391,24 +406,6 @@ void Palette_edit::drag_data_get(
 ) {
 	ignore_unused_variable_warning(widget, context, seldata, info, time, data);
 	cout << "In DRAG_DATA_GET" << endl;
-#if 0
-	Palette_edit *paled = static_cast<Palette_edit *>(data);
-	if (paled->selected < 0 || info != U7_TARGET_SHAPEID)
-		return;         // Not sure about this.
-	guchar buf[30];
-	int file = U7_SHAPE_SHAPES; // +++++For now.
-	const Shape_info &shinfo = paled->info[paled->selected];
-	int len = Store_u7_shapeid(buf, file, shinfo.shapenum,
-	                           shinfo.framenum);
-	cout << "Setting selection data (" << shinfo.shapenum <<
-	     '/' << shinfo.framenum << ')' << endl;
-	// Make us owner of xdndselection.
-	//gtk_selection_owner_set(widget, gdk_atom_intern("XdndSelection", 0),
-	//                          time);
-	// Set data.
-	gtk_selection_data_set(seldata,
-	                       gdk_atom_intern(U7_TARGET_SHAPEID_NAME, 0), 8, buf, len);
-#endif
 }
 
 /*
@@ -524,7 +521,7 @@ on_down_btn_clicked(GtkButton       *button,
 GtkWidget *Palette_edit::create_controls(
 ) {
 	// Create main box.
-	GtkWidget *topframe = gtk_frame_new(NULL);
+	GtkWidget *topframe = gtk_frame_new(nullptr);
 	gtk_widget_show(topframe);
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
 	gtk_widget_show(vbox);
@@ -654,7 +651,7 @@ void Palette_edit::setup(
 	gtk_widget_show(vbox);
 	set_widget(vbox);
 	// A frame looks nice.
-	GtkWidget *frame = gtk_frame_new(NULL);
+	GtkWidget *frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
 	gtk_widget_show(frame);
 	gtk_box_pack_start(GTK_BOX(vbox), frame, TRUE, TRUE, 0);
@@ -735,10 +732,10 @@ void Palette_edit::new_palette(
 void Palette_edit::update_flex(
     int pnum            // Palette # to send to file.
 ) {
-	unsigned char *buf = new unsigned char[3 * 256];
-	Write_palette(buf, palettes[pnum]);
+	auto buf = make_unique<unsigned char[]>(3 * 256);
+	Write_palette(buf.get(), palettes[pnum]);
 	// Update or append file data.
-	flex_info->set(pnum, reinterpret_cast<char *>(buf), 3 * 256);
+	flex_info->set(pnum, std::move(buf), 3 * 256);
 	flex_info->set_modified();
 }
 
@@ -748,9 +745,9 @@ void Palette_edit::update_flex(
 
 Palette_edit::Palette_edit(
     Flex_file_info *flinfo      // Flex-file info.
-) : Object_browser(0, flinfo),
-	flex_info(flinfo), image(0), width(0), height(0),
-	cur_pal(0), colorsel(0) {
+) : Object_browser(nullptr, flinfo),
+	flex_info(flinfo), image(nullptr), width(0), height(0),
+	cur_pal(0), colorsel(nullptr) {
 	load();             // Load from file.
 	setup();
 }
@@ -904,9 +901,9 @@ void Palette_edit::export_palette(
 			break;
 	int last_color = i;
 	for (i = 0; i <= last_color; i++) {
-		int r = (pal->colors[i] >> 16) & 255,
-		    g = (pal->colors[i] >> 8) & 255,
-		    b = pal->colors[i] & 255;
+		int r = (pal->colors[i] >> 16) & 255;
+		int g = (pal->colors[i] >> 8) & 255;
+		int b = pal->colors[i] & 255;
 		out << setw(3) << r << ' ' << setw(3) << g << ' ' <<
 		    setw(3) << b << endl;
 	}
@@ -942,11 +939,13 @@ void Palette_edit::import_palette(
 		in.getline(buf, sizeof(buf));
 		char *ptr = &buf[0];
 		// Skip spaces.
-		while (ptr < buf + sizeof(buf) && *ptr && isspace(*ptr))
+		while (ptr < buf + sizeof(buf) && *ptr && isspace(static_cast<unsigned char>(*ptr)))
 			ptr++;
 		if (*ptr == '#')
 			continue;   // Comment.
-		int r, g, b;
+		int r;
+		int g;
+		int b;
 		if (sscanf(buf, "%d %d %d", &r, &g, &b) == 3)
 			pal->colors[i++] = (r << 16) + (g << 8) + b;
 	}

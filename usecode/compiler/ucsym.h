@@ -33,7 +33,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <map>
 #include <vector>
 #include <iostream>
-using std::vector;
 #include "opcodes.h"
 #include "ignore_unused_variable_warning.h"
 
@@ -52,7 +51,7 @@ inline bool is_int_32bit(int val) {
 }
 
 inline bool is_sint_32bit(int val) {
-	return (val < -32768 || val > 32767);
+	return val < -32768 || val > 32767;
 }
 
 /*
@@ -83,8 +82,7 @@ public:
 	friend class Uc_scope;
 	Uc_symbol(const char *nm) : name(nm)
 	{  }
-	virtual ~Uc_symbol()
-	{  }
+	virtual ~Uc_symbol() = default;
 	const char *get_name() {
 		return name.c_str();
 	}
@@ -95,17 +93,17 @@ public:
 	// Generate function/procedure call.
 	virtual int gen_call(Basic_block *out, Uc_function *fun, bool orig,
 	                     Uc_expression *item, Uc_array_expression *parms,
-	                     bool retvalue, Uc_class *scope_vtbl = 0);
+	                     bool retvalue, Uc_class *scope_vtbl = nullptr);
 	virtual int get_string_offset() { // Get offset in text_data.
 		return -1;
 	}
 	// Return var/int expression.
 	virtual Uc_expression *create_expression();
 	virtual Uc_class *get_cls() const {
-		return 0;
+		return nullptr;
 	}
 	virtual Uc_struct_symbol *get_struct() const {
-		return 0;
+		return nullptr;
 	}
 	virtual bool is_static() const {
 		return false;
@@ -138,16 +136,16 @@ public:
 		offset = off;
 	}
 	// Gen. code to put result on stack.
-	virtual int gen_value(Basic_block *out);
+	int gen_value(Basic_block *out) override;
 	// Gen. to assign from stack.
-	virtual int gen_assign(Basic_block *out);
+	int gen_assign(Basic_block *out) override;
 	// Return var/int expression.
-	virtual Uc_expression *create_expression();
+	Uc_expression *create_expression() override;
 	virtual int is_object_function(bool error = true) const;
 	virtual void set_is_obj_fun(int s) {
 		is_obj_fun = s;
 	}
-	virtual int get_sym_type() const {
+	int get_sym_type() const override {
 		return Uc_symbol::Variable;
 	}
 };
@@ -165,10 +163,10 @@ public:
 		: Uc_var_symbol(nm, off), type(t)
 	{  }
 	/*
-	    virtual int get_sym_type() const
+	    int get_sym_type() const override
 	        { return Uc_symbol::Struct; }
 	*/
-	virtual Uc_struct_symbol *get_struct() const {
+	Uc_struct_symbol *get_struct() const override {
 		return type;
 	}
 };
@@ -183,11 +181,11 @@ public:
 	Uc_class_inst_symbol(const char *nm, Uc_class *c, int off)
 		: Uc_var_symbol(nm, off), cls(c)
 	{  }
-	virtual Uc_expression *create_expression();
-	virtual Uc_class *get_cls() const {
+	Uc_expression *create_expression() override;
+	Uc_class *get_cls() const override {
 		return cls;
 	}
-	virtual int get_sym_type() const {
+	int get_sym_type() const override {
 		return Uc_symbol::Class;
 	}
 };
@@ -200,10 +198,10 @@ public:
 	Uc_static_var_symbol(const char *nm, int off) : Uc_var_symbol(nm, off)
 	{  }
 	// Gen. code to put result on stack.
-	virtual int gen_value(Basic_block *out);
+	int gen_value(Basic_block *out) override;
 	// Gen. to assign from stack.
-	virtual int gen_assign(Basic_block *out);
-	virtual bool is_static() const {
+	int gen_assign(Basic_block *out) override;
+	bool is_static() const override {
 		return true;
 	}
 };
@@ -221,10 +219,10 @@ public:
 		: Uc_static_var_symbol(nm, off), type(t)
 	{  }
 	/*
-	    virtual int get_sym_type() const
+	    int get_sym_type() const override
 	        { return Uc_symbol::Struct; }
 	*/
-	virtual Uc_struct_symbol *get_struct() const {
+	Uc_struct_symbol *get_struct() const override {
 		return type;
 	}
 };
@@ -239,11 +237,11 @@ public:
 	Uc_static_class_symbol(const char *nm, Uc_class *c, int off)
 		: Uc_static_var_symbol(nm, off), cls(c)
 	{  }
-	virtual Uc_expression *create_expression();
-	virtual Uc_class *get_cls() const {
+	Uc_expression *create_expression() override;
+	Uc_class *get_cls() const override {
 		return cls;
 	}
-	virtual int get_sym_type() const {
+	int get_sym_type() const override {
 		return Uc_symbol::Class;
 	}
 };
@@ -260,35 +258,35 @@ public:
 		: Uc_var_symbol(nm, v->get_offset()), var(v)
 	{  }
 	// Gen. code to put result on stack.
-	virtual int gen_value(Basic_block *out) {
+	int gen_value(Basic_block *out) override {
 		return var->gen_value(out);
 	}
 	// Gen. to assign from stack.
-	virtual int gen_assign(Basic_block *out) {
+	int gen_assign(Basic_block *out) override {
 		return var->gen_assign(out);
 	}
 	// Return var/int expression.
-	virtual bool is_static() const {
+	bool is_static() const override {
 		return var->is_static();
 	}
-	virtual int is_object_function(bool error = true) const {
+	int is_object_function(bool error = true) const override {
 		ignore_unused_variable_warning(error);
 		return var->is_object_function();
 	}
-	virtual void set_is_obj_fun(int s) {
+	void set_is_obj_fun(int s) override {
 		var->set_is_obj_fun(s);
 	}
-	virtual Uc_symbol *get_sym() {
+	Uc_symbol *get_sym() override {
 		return var;
 	}
-	virtual int get_sym_type() const {
+	int get_sym_type() const override {
 		return Uc_symbol::Variable;
 	}
-	virtual Uc_struct_symbol *get_struct() const {
-		return 0;
+	Uc_struct_symbol *get_struct() const override {
+		return nullptr;
 	}
-	virtual Uc_class *get_cls() const {
-		return 0;
+	Uc_class *get_cls() const override {
+		return nullptr;
 	}
 };
 
@@ -304,10 +302,10 @@ public:
 		: Uc_alias_symbol(nm, v), type(t)
 	{  }
 	/*
-	    virtual int get_sym_type() const
+	    int get_sym_type() const override
 	        { return Uc_symbol::Struct; }
 	*/
-	virtual Uc_struct_symbol *get_struct() const {
+	Uc_struct_symbol *get_struct() const override {
 		return type;
 	}
 };
@@ -323,17 +321,17 @@ public:
 	Uc_class_alias_symbol(const char *nm, Uc_var_symbol *v, Uc_class *c)
 		: Uc_alias_symbol(nm, v), cls(c)
 	{  }
-	virtual int get_sym_type() const {
+	int get_sym_type() const override {
 		return Uc_symbol::Class;
 	}
-	virtual Uc_class *get_cls() const {
+	Uc_class *get_cls() const override {
 		return cls;
 	}
-	virtual int is_object_function(bool error = true) const {
+	int is_object_function(bool error = true) const override {
 		ignore_unused_variable_warning(error);
 		return false;
 	}
-	virtual void set_is_obj_fun(int s) {
+	void set_is_obj_fun(int s) override {
 		ignore_unused_variable_warning(s);
 	}
 };
@@ -347,7 +345,7 @@ public:
 	Uc_class_symbol(const char *nm, Uc_class *c) : Uc_symbol(nm), cls(c)
 	{  }
 	static Uc_class_symbol *create(char *nm, Uc_class *c);
-	Uc_class *get_cls() const {
+	Uc_class *get_cls() const override {
 		return cls;
 	}
 };
@@ -358,14 +356,14 @@ public:
  *  usecode variable -- this is left to Exult.
  */
 class Uc_struct_symbol : public Uc_symbol {
-	typedef std::map<const char *, int, String_compare> Var_map;
+	using Var_map = std::map<const char *, int, String_compare>;
 	Var_map vars;
 	int num_vars;           // # member variables.
 public:
 	Uc_struct_symbol(const char *nm)
 		: Uc_symbol(nm), num_vars(0)
 	{  }
-	~Uc_struct_symbol();
+	~Uc_struct_symbol() override;
 	int add(const char *nm) {
 		if (is_dup(nm))
 			return 0;
@@ -398,10 +396,10 @@ public:
 	Uc_class_var_symbol(const char *nm, int off) : Uc_var_symbol(nm, off)
 	{  }
 	// Gen. code to put result on stack.
-	virtual int gen_value(Basic_block *out);
+	int gen_value(Basic_block *out) override;
 	// Gen. to assign from stack.
-	virtual int gen_assign(Basic_block *out);
-	virtual int get_sym_type() const {
+	int gen_assign(Basic_block *out) override;
+	int get_sym_type() const override {
 		return Uc_symbol::Member_var;
 	}
 };
@@ -417,9 +415,9 @@ public:
 	Uc_class_struct_var_symbol(const char *nm, Uc_struct_symbol *t, int off)
 		: Uc_class_var_symbol(nm, off), type(t)
 	{  }
-	//virtual int get_sym_type() const
+	//int get_sym_type() const override
 	//  { return Uc_symbol::Member_struct; }
-	virtual Uc_struct_symbol *get_struct() const {
+	Uc_struct_symbol *get_struct() const override {
 		return type;
 	}
 };
@@ -441,16 +439,16 @@ public:
 			value = static_cast<int>(v & 0xffffffff);
 	}
 	// Gen. code to put result on stack.
-	virtual int gen_value(Basic_block *out);
+	int gen_value(Basic_block *out) override;
 	// Return var/int expression.
-	virtual Uc_expression *create_expression();
+	Uc_expression *create_expression() override;
 	int get_value() const {
 		return value;
 	}
 	UsecodeOps get_opcode() const {
 		return opcode;
 	}
-	virtual int get_sym_type() const {
+	int get_sym_type() const override {
 		return Uc_symbol::Constant;
 	}
 };
@@ -465,13 +463,13 @@ public:
 	Uc_string_symbol(const char *nm, int off) : Uc_symbol(nm), offset(off)
 	{  }
 	// Gen. code to put result on stack.
-	virtual int gen_value(Basic_block *out);
-	virtual int get_string_offset() { // Get offset in text_data.
+	int gen_value(Basic_block *out) override;
+	int get_string_offset() override { // Get offset in text_data.
 		return offset;
 	}
 	// Return var/int expression.
-	virtual Uc_expression *create_expression();
-	virtual int get_sym_type() const {
+	Uc_expression *create_expression() override;
+	int get_sym_type() const override {
 		return Uc_symbol::String;
 	}
 };
@@ -493,9 +491,9 @@ public:
 		return num_parms;
 	}
 	// Generate function/procedure call.
-	virtual int gen_call(Basic_block *out, Uc_function *fun, bool orig,
-	                     Uc_expression *item, Uc_array_expression *parms,
-	                     bool retvalue, Uc_class *scope_vtbl = 0);
+	int gen_call(Basic_block *out, Uc_function *fun, bool orig,
+	             Uc_expression *item, Uc_array_expression *parms,
+	             bool retvalue, Uc_class *scope_vtbl = nullptr) override;
 };
 
 /*
@@ -524,7 +522,7 @@ public:
 		Uc_class *cls;
 	};
 	// Keep track of #'s used.
-	typedef std::map<int, Uc_function_symbol *> Sym_nums;
+	using Sym_nums = std::map<int, Uc_function_symbol *>;
 private:
 	static Sym_nums nums_used;
 	// Note:  offset = Usecode fun. #.
@@ -545,7 +543,7 @@ public:
 	                   int shp = 0, Function_kind kind = utility_fun);
 	static Uc_function_symbol *create(char *nm, int num,
 	                                  std::vector<Uc_var_symbol *> &p, bool is_extern = false,
-	                                  Uc_scope *scope = 0, Function_kind kind = utility_fun);
+	                                  Uc_scope *scope = nullptr, Function_kind kind = utility_fun);
 	const std::vector<Uc_var_symbol *> &get_parms() {
 		return parms;
 	}
@@ -583,11 +581,11 @@ public:
 		return inherited;
 	}
 	// Return var/int expression.
-	virtual Uc_expression *create_expression();
+	Uc_expression *create_expression() override;
 	// Generate function/procedure call.
-	virtual int gen_call(Basic_block *out, Uc_function *fun, bool orig,
-	                     Uc_expression *item, Uc_array_expression *parms,
-	                     bool retvalue, Uc_class *scope_vtbl = 0);
+	int gen_call(Basic_block *out, Uc_function *fun, bool orig,
+	             Uc_expression *item, Uc_array_expression *parms,
+	             bool retvalue, Uc_class *scope_vtbl = nullptr) override;
 	static void set_last_num(int n) {
 		last_num = n;
 		new_auto_num = true;
@@ -595,7 +593,7 @@ public:
 	static Uc_function_symbol *search_num(int ucnum) {
 		Sym_nums::const_iterator it = nums_used.find(ucnum);
 		if (it == nums_used.end())  // Unused?  That's good.
-			return 0;
+			return nullptr;
 		return (*it).second;
 	}
 	virtual bool has_ret() const {
@@ -615,11 +613,11 @@ public:
 		ret_type = struct_ret;
 		ret_sym.str = s;
 	}
-	virtual Uc_class *get_cls() const {
-		return ret_type == class_ret ? ret_sym.cls : 0;
+	Uc_class *get_cls() const override {
+		return ret_type == class_ret ? ret_sym.cls : nullptr;
 	}
-	virtual Uc_struct_symbol *get_struct() const {
-		return ret_type == struct_ret ? ret_sym.str : 0;
+	Uc_struct_symbol *get_struct() const override {
+		return ret_type == struct_ret ? ret_sym.str : nullptr;
 	}
 	virtual Function_kind get_function_type() const {
 		return type;
@@ -632,7 +630,7 @@ public:
 class Uc_scope {
 	Uc_scope *parent;       // ->parent.
 	// For finding syms. by name.
-	typedef std::map<const char *, Uc_symbol *, String_compare> Sym_map;
+	using Sym_map = std::map<const char *, Uc_symbol *, String_compare>;
 	Sym_map symbols;
 	std::vector<Uc_scope *> scopes; // Scopes within.
 public:
@@ -645,7 +643,7 @@ public:
 	Uc_symbol *search(const char *nm) { // Look in this scope.
 		Sym_map::const_iterator it = symbols.find(nm);
 		if (it == symbols.end())
-			return 0;
+			return nullptr;
 		else
 			return (*it).second;
 	}
@@ -660,7 +658,7 @@ public:
 		return newscope;
 	}
 	// Add a function decl.
-	int add_function_symbol(Uc_function_symbol *fun, Uc_scope *parent = 0);
+	int add_function_symbol(Uc_function_symbol *fun, Uc_scope *parent = nullptr);
 	bool is_dup(const char *nm);      // Already declared?
 };
 
@@ -669,7 +667,7 @@ public:
  */
 class Uc_design_unit {
 public:
-	virtual ~Uc_design_unit() { }
+	virtual ~Uc_design_unit() = default;
 	virtual void gen(std::ostream &out) = 0;    // Generate Usecode.
 	virtual Usecode_symbol *create_sym() = 0;
 	virtual bool is_class() const {

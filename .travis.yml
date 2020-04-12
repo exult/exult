@@ -14,80 +14,18 @@ env:
     - secure: "l8bkMxAIg9/95ZQh+Rq5V+1LInw55vlKaZIEgpqZ5nKDkcVVt4U0zGRCQKuUVZzV/TOt5ClOqxnZDgvQCpPtcyMriuBXTAeS/cP7zaTP10wkrq2saSfaLsJwiRIjnNeDtoIJQM8c/II5Vu7rqA9R1t1ejG9gcdHakH9tJnVU4N+ys9qvgIExJKhjSamuZdpoMuvXENE4arKyghhy+ZR+cJEzYkS3CcEQ894nBabdDyFlu+FLLDAwCF1apv/6dzMYRWwogFlkvjZ81G4joYUrQMozaGd+MRJ0kDgPnDEJFsqF/GC7sRZbp9Kvws4ZXdw15+e0u3jcfZgcDuXVuM+TaLGXMAWm9kuz3xj6DHDUYU7Epeg1I4riT9c/PEtYyLsE0wSD3z36erN2dlMxRuaR7awFBLlL63LERWCFES2n4Ulap2mTaJjRjjEJwQ8vB4W7B3SuOyCYJq3X64p44bD3m4fWPcAqCv1DN295JR9+nSRcMsPySkKbgSFtUPoJfayK27GEnF9YAuqcpgf+cbZNxsjcfYzhPD7GcLhyi1gS3+e5eq98EvF+uPA1HTYlhkS0jWypo1XDnFOjYJ59v+rNwpCvnAsSH0rKnks1wfsVytTD2KUb09HqRNdh3Gklr3AVWHSi6ru2MRk6IKt2IQl988SMj/bx1h5qtP8fOB1iKg4="
     - MAKEFLAGS="-j 2"
 
-matrix:
-  include:
-    ##########################################################################
-    # Coverity with GCC on Linux
-    ##########################################################################
-    - os: linux
-      env: MATRIX_EVAL="export CXX=g++-8 && export CC=gcc-8" EXTRA_OPT="--with-sdl=sdl2" DO_COVERITY=1
-
-    ##########################################################################
-    # Clang on OSX
-    # Travis seems to take longer to start OSX instances,
-    # so leave this first for the overall build to be faster
-    ##########################################################################
-    - os: osx
-      env: MATRIX_EVAL="export CXX=clang++ && export CC=clang" EXTRA_OPT="--with-sdl=sdl12" DO_COVERITY=0
-      compiler: clang
-
-    - os: osx
-      env: MATRIX_EVAL="export CXX=clang++ && export CC=clang"EXTRA_OPT="--with-sdl=sdl2" DO_COVERITY=0
-      compiler: clang
-
-    ##########################################################################
-    # Clang on Linux
-    ##########################################################################
-    - os: linux
-      env: MATRIX_EVAL="export CXX=clang++-7 && export CC=clang-7" EXTRA_OPT="--with-sdl=sdl12" DO_COVERITY=0
-
-    - os: linux
-      env: MATRIX_EVAL="export CXX=clang++-7 && export CC=clang-7" EXTRA_OPT="--with-sdl=sdl2" DO_COVERITY=0
-
-    ##########################################################################
-    # GCC on Linux
-    ##########################################################################
-    - os: linux
-      env: MATRIX_EVAL="export CXX=g++-8 && export CC=gcc-8" EXTRA_OPT="--with-debug=messages --with-sdl=sdl12" DO_COVERITY=0
-
-    - os: linux
-      env: MATRIX_EVAL="export CXX=g++-8 && export CC=gcc-8" EXTRA_OPT="--with-debug=messages --with-sdl=sdl2" DO_COVERITY=0
-
-    - os: linux
-      env: MATRIX_EVAL="export CXX=g++-8 && export CC=gcc-8" EXTRA_OPT="--with-sdl=sdl12" DO_COVERITY=0
-
-    - os: linux
-      env: MATRIX_EVAL="export CXX=g++-8 && export CC=gcc-8" EXTRA_OPT="--with-sdl=sdl2" DO_COVERITY=0
-
-before_install:
-  # Exit immediately if the branch is the "coverity_scan" branch and DO_COVERITY is "0"
-  - if [ "$TRAVIS_BRANCH" == "coverity_scan" -a "${DO_COVERITY}" = "0" ] ; then exit 0; fi
-  # Exit immediately if the branch is not the "coverity_scan" branch and DO_COVERITY is "1"
-  - eval "${MATRIX_EVAL}"
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get -qq update; fi
-  - if [ "$TRAVIS_BRANCH" != "coverity_scan" -a "${DO_COVERITY}" = "1" ] ; then exit 0; fi
-  - if [ "$DO_COVERITY" = "1" ]; then echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca- ; fi
-
-install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" -a "$TRAVIS_BRANCH" != "coverity_scan" ]; then source .travis/install-osx.sh; fi
-
 addons:
   apt:
-    sources:
+    sources: &common_sources
       - ubuntu-toolchain-r-test
-      - llvm-toolchain-trusty-7
-    packages:
-      - clang-7
-      - g++-8
-      - libsdl1.2-dev
-      - libsdl2-dev
+    packages: &common_depends
       - libx11-dev
       - zlib1g-dev
-      - libgl1-mesa-dev
       - libogg-dev
       - libvorbis-dev
       - libasound2-dev
       - libfluidsynth-dev
+      - libsdl2-dev
       - libsdl-ttf2.0-dev
       - libpng-dev
       - libfreetype6-dev
@@ -106,20 +44,107 @@ addons:
       - libgnomeui-dev
       - timidity
       - libgimp2.0-dev
-  coverity_scan:
-    project:
-      name: "exult/exult"
-      description: "Exult is an open source engine for Ultima 7 and Serpent Isle."
-    notification_email: marzojr@gmail.com
-    build_command_prepend: "./autogen.sh && ./configure --with-debug=messages --disable-oggtest --disable-vorbistest --enable-exult-studio --enable-exult-studio-support --enable-mt32emu --enable-zip-support --enable-shared --enable-opengl --enable-midi-sfx --enable-gimp-plugin --enable-gnome-shp-thumbnailer --enable-compiler --enable-mods --with-usecode-debugger=yes --with-sdl=sdl2"
-    build_command:   "make"
-    branch_pattern: coverity_scan
 
-script: if [ "$TRAVIS_BRANCH" != "coverity_scan" ]; then .travis/script.sh; fi
+matrix:
+  include:
+    ##########################################################################
+    # Coverity with GCC on Linux
+    ##########################################################################
+    - os: linux
+      compiler: gcc
+      env: MATRIX_EVAL="export CXX=g++ && export CC=gcc" EXTRA_OPT="" DO_COVERITY=1
+      addons:
+        apt:
+          sources: *common_sources
+          packages:
+            - *common_depends
+            - g++-7
+        coverity_scan:
+          project:
+            name: "exult/exult"
+            description: "Exult is an open source engine for Ultima 7 and Serpent Isle."
+          notification_email: marzojr@gmail.com
+          build_command_prepend: "./autogen.sh && ./configure --with-debug=messages --disable-oggtest --disable-vorbistest --enable-exult-studio --enable-exult-studio-support --enable-mt32emu --enable-zip-support --enable-shared --enable-midi-sfx --enable-gimp-plugin --enable-gnome-shp-thumbnailer --enable-compiler --enable-mods --with-usecode-debugger=yes"
+          build_command:   "make"
+          branch_pattern: coverity_scan
+      before_script:
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 1000
+        - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 1000
+
+    ##########################################################################
+    # Clang on OSX
+    # Travis seems to take longer to start OSX instances,
+    # so leave this first for the overall build to be faster
+    ##########################################################################
+    - os: osx
+      compiler: clang
+      env: MATRIX_EVAL="export CXX=clang++ && export CC=clang"EXTRA_OPT="" DO_COVERITY=0
+
+    ##########################################################################
+    # Clang on Linux
+    ##########################################################################
+    - os: linux
+      compiler: clang
+      env: MATRIX_EVAL="export CXX=clang++ && export CC=clang" EXTRA_OPT="" DO_COVERITY=0
+      addons:
+        apt:
+          sources: llvm-toolchain-xenial-7
+          packages:
+            - *common_depends
+            - clang-7
+      before_script:
+        - sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-7 1000
+        - sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-7 1000
+
+    ##########################################################################
+    # GCC on Linux
+    ##########################################################################
+    - os: linux
+      compiler: gcc
+      env: MATRIX_EVAL="export CXX=g++ && export CC=gcc" EXTRA_OPT="--with-debug=messages" DO_COVERITY=0
+      addons:
+        apt:
+          sources: *common_sources
+          packages:
+            - *common_depends
+            - g++-8
+      before_script:
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 1000
+        - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 1000
+
+    - os: linux
+      compiler: gcc
+      env: MATRIX_EVAL="export CXX=g++ && export CC=gcc" EXTRA_OPT="" DO_COVERITY=0
+      addons:
+        apt:
+          sources: *common_sources
+          packages:
+            - *common_depends
+            - g++-8
+      before_script:
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 1000
+        - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 1000
+
+before_install:
+  # Exit immediately if the branch is the "coverity_scan" branch and DO_COVERITY is "0"
+  - if [ "$TRAVIS_BRANCH" == "coverity_scan" -a "${DO_COVERITY}" == "0" ] ; then exit 0; fi
+  # Exit immediately if the branch is not the "coverity_scan" branch and DO_COVERITY is "1"
+  - eval "${MATRIX_EVAL}"
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get -qq update; fi
+  - if [ "$TRAVIS_BRANCH" != "coverity_scan" -a "${DO_COVERITY}" == "1" ] ; then exit 0; fi
+  - if [ "$DO_COVERITY" == "1" ]; then echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca- ; fi
+
+install:
+  - if [ "$TRAVIS_OS_NAME" = "osx" -a "$TRAVIS_BRANCH" != "coverity_scan" ]; then source .travis/install-osx.sh; fi
+
+script: if [ "$TRAVIS_BRANCH" != "coverity_scan" ]; then .travis/script.sh; elif [ -e cov-int/scm_log.txt ] ; then cat cov-int/scm_log.txt; fi
 
 notifications:
-  email: false
-  irc: "chat.freenode.net/#exult"
-  on_success: change
-  on_failure: always
-
+  email:
+    on_failure: always
+    on_success: change
+  irc:
+    channels:
+      - "chat.freenode.net/#exult"
+    on_failure: always
+    on_success: change

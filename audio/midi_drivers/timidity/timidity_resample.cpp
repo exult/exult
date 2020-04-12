@@ -54,7 +54,8 @@ namespace NS_TIMIDITY {
 		v2=src[(ofs>>FRACTION_BITS)+1];\
 		*dest++ = static_cast<sample_t>(v1 + (((v2-v1) * (ofs & FRACTION_MASK)) >> FRACTION_BITS));
 # endif
-#  define INTERPVARS sample_t v1, v2
+#  define INTERPVARS sample_t v1;	\
+                     sample_t v2
 #else
 /* Earplugs recommended for maximum listening enjoyment */
 #  define RESAMPLATION *dest++=src[ofs>>FRACTION_BITS];
@@ -74,16 +75,13 @@ static sample_t *rs_plain(int v, sint32 *countptr)
 	/* Play sample until end, then free the voice. */
 
 	INTERPVARS;
-	Voice 
-		*vp=&voice[v];
-	sample_t 
-		*dest=resample_buffer,
-	*src=vp->sample->data;
-	sint32 
-		ofs=vp->sample_offset,
-	incr=vp->sample_increment,
-	le=vp->sample->data_length,
-	count=*countptr;
+	Voice *vp=&voice[v];
+	sample_t *dest=resample_buffer;
+	sample_t *src=vp->sample->data;
+	sint32 ofs=vp->sample_offset;
+	sint32 incr=vp->sample_increment;
+	sint32 le=vp->sample->data_length;
+	sint32 count=*countptr;
 
 #ifdef PRECALC_LOOPS
 	sint32 i;
@@ -141,14 +139,12 @@ static sample_t *rs_loop(Voice *vp, sint32 count)
 	/* Play sample until end-of-loop, skip back and continue. */
 
 	INTERPVARS;
-	sint32 
-		ofs=vp->sample_offset, 
-	incr=vp->sample_increment,
-	le=vp->sample->loop_end, 
-	ll=le - vp->sample->loop_start;
-	sample_t
-		*dest=resample_buffer,
-	*src=vp->sample->data;
+	sint32 ofs=vp->sample_offset;
+	sint32 incr=vp->sample_increment;
+	sint32 le=vp->sample->loop_end;
+	sint32 ll=le - vp->sample->loop_start;
+	sample_t *dest=resample_buffer;
+	sample_t *src=vp->sample->data;
 
 #ifdef PRECALC_LOOPS
 	sint32 i;
@@ -189,20 +185,17 @@ static sample_t *rs_loop(Voice *vp, sint32 count)
 static sample_t *rs_bidir(Voice *vp, sint32 count)
 {
 	INTERPVARS;
-	sint32 
-		ofs=vp->sample_offset,
-	incr=vp->sample_increment,
-	le=vp->sample->loop_end,
-	ls=vp->sample->loop_start;
-	sample_t 
-		*dest=resample_buffer, 
-	*src=vp->sample->data;
+	sint32 ofs=vp->sample_offset;
+	sint32 incr=vp->sample_increment;
+	sint32 le=vp->sample->loop_end;
+	sint32 ls=vp->sample->loop_start;
+	sample_t *dest=resample_buffer;
+	sample_t *src=vp->sample->data;
 
 #ifdef PRECALC_LOOPS
-	sint32
-		le2 = le<<1, 
-	ls2 = ls<<1,
-	i;
+	sint32 le2 = le<<1;
+	sint32 ls2 = ls<<1;
+	sint32 i;
 	/* Play normally until inside the loop region */
 
 	if (ofs <= ls) 
@@ -309,7 +302,8 @@ static int vib_phase_to_inc_ptr(int phase)
 static sint32 update_vibrato(Voice *vp, int sign)
 {
 	sint32 depth;
-	int phase, pb;
+	int phase;
+	int pb;
 	double a;
 
 	if (vp->vibrato_phase++ >= 2*VIBRATO_SAMPLE_INCREMENTS-1)
@@ -377,16 +371,13 @@ static sample_t *rs_vib_plain(int v, sint32 *countptr)
 
 	INTERPVARS;
 	Voice *vp=&voice[v];
-	sample_t 
-		*dest=resample_buffer, 
-	*src=vp->sample->data;
-	sint32 
-		le=vp->sample->data_length,
-	ofs=vp->sample_offset, 
-	incr=vp->sample_increment, 
-	count=*countptr;
-	int 
-		cc=vp->vibrato_control_counter;
+	sample_t *dest=resample_buffer;
+	sample_t *src=vp->sample->data;
+	sint32 le=vp->sample->data_length;
+	sint32 ofs=vp->sample_offset;
+	sint32 incr=vp->sample_increment;
+	sint32 count=*countptr;
+	int cc=vp->vibrato_control_counter;
 
 	/* This has never been tested */
 
@@ -423,16 +414,13 @@ static sample_t *rs_vib_loop(Voice *vp, sint32 count)
 	/* Play sample until end-of-loop, skip back and continue. */
 
 	INTERPVARS;
-	sint32 
-		ofs=vp->sample_offset, 
-	incr=vp->sample_increment, 
-	le=vp->sample->loop_end,
-	ll=le - vp->sample->loop_start;
-	sample_t 
-		*dest=resample_buffer, 
-	*src=vp->sample->data;
-	int 
-		cc=vp->vibrato_control_counter;
+	sint32 ofs=vp->sample_offset;
+	sint32 incr=vp->sample_increment;
+	sint32 le=vp->sample->loop_end;
+	sint32 ll=le - vp->sample->loop_start;
+	sample_t *dest=resample_buffer;
+	sample_t *src=vp->sample->data;
+	int cc=vp->vibrato_control_counter;
 
 #ifdef PRECALC_LOOPS
 	sint32 i;
@@ -492,24 +480,19 @@ static sample_t *rs_vib_loop(Voice *vp, sint32 count)
 static sample_t *rs_vib_bidir(Voice *vp, sint32 count)
 {
 	INTERPVARS;
-	sint32 
-		ofs=vp->sample_offset, 
-	incr=vp->sample_increment,
-	le=vp->sample->loop_end, 
-	ls=vp->sample->loop_start;
-	sample_t 
-		*dest=resample_buffer, 
-	*src=vp->sample->data;
-	int 
-		cc=vp->vibrato_control_counter;
+	sint32 ofs=vp->sample_offset;
+	sint32 incr=vp->sample_increment;
+	sint32 le=vp->sample->loop_end;
+	sint32 ls=vp->sample->loop_start;
+	sample_t *dest=resample_buffer;
+	sample_t *src=vp->sample->data;
+	int cc=vp->vibrato_control_counter;
 
 #ifdef PRECALC_LOOPS
-	sint32
-		le2=le<<1,
-	ls2=ls<<1,
-	i;
-	int
-		vibflag = 0;
+	sint32 le2=le<<1;
+	sint32 ls2=ls<<1;
+	sint32 i;
+	int vibflag = 0;
 
 	/* Play normally until inside the loop region */
 	while (count && (ofs <= ls)) 
@@ -687,10 +670,20 @@ sample_t *resample_voice(int v, sint32 *countptr)
 
 void pre_resample(Sample * sp)
 {
-	double a, xdiff;
-	sint32 incr, ofs, newlen, count;
-	sint16 *newdata, *dest, *src = sp->data;
-	sint16 v1, v2, v3, v4, *vptr;
+	double a;
+	double xdiff;
+	sint32 incr;
+	sint32 ofs;
+	sint32 newlen;
+	sint32 count;
+	sint16 *newdata;
+	sint16 *dest;
+	sint16 *src = sp->data;
+	sint16 v1;
+	sint16 v2;
+	sint16 v3;
+	sint16 v4;
+	sint16 *vptr;
 	static const char note_name[12][3] =
 	{
 		"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"

@@ -16,15 +16,19 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _UCSCHED_H
-#define _UCSCHED_H
+#ifndef UCSCHED_H
+#define UCSCHED_H
+
+#include <memory>
+
+#include "databuf.h"
+#include "tqueue.h"
+#include "tiles.h"
 
 class Game_object;
 class Usecode_value;
 class Usecode_internal;
-
-#include "tqueue.h"
-#include "databuf.h"
+using Game_object_weak = std::weak_ptr<Game_object>;
 
 /*
  *  A class for executing usecode at a scheduled time:
@@ -33,7 +37,7 @@ class Usecode_script : public Time_sensitive {
 	static int count;       // Total # of these around.
 	static Usecode_script *first;// ->chain of all of them.
 	Usecode_script *next, *prev;    // Next/prev. in global chain.
-	Game_object *obj;       // From objval.
+	Game_object_weak obj;       // From objval.
 	Usecode_value *code;        // Array of code to execute.
 	int cnt;            // Length of arrval.
 	int i;              // Current index.
@@ -47,8 +51,8 @@ class Usecode_script : public Time_sensitive {
 	Usecode_script(Game_object *item, Usecode_value *cd, int findex,
 	               int nhalt, int del);
 public:
-	Usecode_script(Game_object *o, Usecode_value *cd = 0);
-	virtual ~Usecode_script();
+	Usecode_script(Game_object *o, Usecode_value *cd = nullptr);
+	~Usecode_script() override;
 	void start(long delay = 1); // Start after 'delay' msecs.
 	long get_delay() const {
 		return delay;
@@ -57,12 +61,12 @@ public:
 	bool is_no_halt() const {   // Is the 'no_halt' flag set?
 		return no_halt;
 	}
-	int is_activated() const {  // Started already?
+	bool is_activated() const {  // Started already?
 		return i > 0;
 	}
 	void add(int v1);       // Append new instructions:
 	void add(int v1, int v2);
-	void add(int v1, const char *str);
+	void add(int v1, std::string str);
 	void add(int *vals, int cnt);
 	Usecode_script &operator<<(int v) {
 		add(v);
@@ -73,16 +77,19 @@ public:
 	static int get_count() {
 		return count;
 	}
+	int get_length() {
+		return cnt;
+	}
 	// Find for given item.
 	static Usecode_script *find(const Game_object *srch,
-	                            Usecode_script *last_found = 0);
+	                            Usecode_script *last_found = nullptr);
 	static Usecode_script *find_active(const Game_object *srch,
-	                                   Usecode_script *last_found = 0);
+	                                   Usecode_script *last_found = nullptr);
 	static void terminate(const Game_object *obj);
 	static void clear();        // Delete all.
 	// Remove all whose objs. are too far.
-	static void purge(Tile_coord const &pos, int dist);
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	static void purge(Tile_coord const &spot, int dist);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 	int exec(Usecode_internal *usecode, bool finish);
 	// Move object in given direction.
 	void step(Usecode_internal *usecode, int dir, int dz);

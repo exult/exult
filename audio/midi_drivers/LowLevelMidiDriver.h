@@ -25,9 +25,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class XMidiEventList;
 class XMidiSequence;
 
+#include <cstring>
 #include <queue>
 #include <SDL.h>
 #include <SDL_thread.h>
+#include "common_types.h"
 #include "ignore_unused_variable_warning.h"
 
 //! Specifies the max number of simultaneous playing sequences supported
@@ -44,27 +46,26 @@ class XMidiSequence;
 class	LowLevelMidiDriver : public MidiDriver, private XMidiSequenceHandler
 {
 public:
-	LowLevelMidiDriver();
-	virtual ~LowLevelMidiDriver();
+	~LowLevelMidiDriver() override;
 
 	// MidiDriver Implementation
-	virtual int			initMidiDriver(uint32 sample_rate, bool stereo);
-	virtual void		destroyMidiDriver();
-	virtual int			maxSequences();
-	virtual void		setGlobalVolume(int vol);
+	int			initMidiDriver(uint32 samp_rate, bool stereo) override;
+	void		destroyMidiDriver() override;
+	int			maxSequences() override;
+	void		setGlobalVolume(int vol) override;
 
-	virtual void		startSequence(int seq_num, XMidiEventList *list, bool repeat, int vol, int branch = -1);
-	virtual void		finishSequence(int seq_num);
-	virtual void		pauseSequence(int seq_num);
-	virtual void		unpauseSequence(int seq_num);
-	virtual void		setSequenceVolume(int seq_num, int vol);
-	virtual void		setSequenceSpeed(int seq_num, int speed);
-	virtual bool		isSequencePlaying(int seq_num);
-	virtual uint32		getSequenceCallbackData(int seq_num);
+	void		startSequence(int seq_num, XMidiEventList *list, bool repeat, int vol, int branch = -1) override;
+	void		finishSequence(int seq_num) override;
+	void		pauseSequence(int seq_num) override;
+	void		unpauseSequence(int seq_num) override;
+	void		setSequenceVolume(int seq_num, int vol) override;
+	void		setSequenceSpeed(int seq_num, int speed) override;
+	bool		isSequencePlaying(int seq_num) override;
+	uint32		getSequenceCallbackData(int seq_num) override;
 
-	virtual void		produceSamples(sint16 *samples, uint32 bytes);
+	void		produceSamples(sint16 *samples, uint32 bytes) override;
 
-	virtual void		loadTimbreLibrary(IDataSource*, TimbreLibraryType type);
+	void		loadTimbreLibrary(IDataSource*, TimbreLibraryType type) override;
 
 	static bool			precacheTimbresOnStartup;
 	static bool			precacheTimbresOnPlay;
@@ -178,9 +179,9 @@ private:
 
 	// Communications
 	std::queue<ComMessage>	messages;
-	SDL_mutex				*mutex;
-	SDL_mutex				*cbmutex;
-	SDL_cond                *cond;
+	SDL_mutex				*mutex = nullptr;
+	SDL_mutex				*cbmutex = nullptr;
+	SDL_cond                *cond = nullptr;
 	sint32					peekComMessageType();
 	void					sendComMessage(ComMessage& message);
 	void					waitTillNoComMessages();
@@ -192,7 +193,7 @@ private:
 	sint32					callback_data[LLMD_NUM_SEQ];	// Only set by thread
 
 	// Shared Data
-	int						global_volume;
+	int						global_volume = 255;
 	uint32					xmidi_clock;					// Xmidi clock, returned by getTickCount
 	int						chan_locks[16];					// Which seq a chan has been locked by
 	int						chan_map[LLMD_NUM_SEQ][16];		// Maps from locked logical chan to phyiscal
@@ -205,7 +206,7 @@ private:
 	uint32					samples_per_iteration;
 
 	// Thread Based Only Data
-	SDL_Thread				*thread;
+	SDL_Thread				*thread = nullptr;
 
 	// Timbre Banks
 	struct MT32Timbre {
@@ -246,7 +247,7 @@ private:
 
 	void					loadXMidiTimbreLibrary(IDataSource *ds);
 	void					extractTimbreLibrary(XMidiEventList *eventlist);
-    void					uploadTimbre(int bank, int timbre);
+    void					uploadTimbre(int bank, int patch);
 	void					setPatchBank(int bank, int patch);
 	void					loadRhythm(const MT32Rhythm &rhythm, int note);
 	void					loadRhythmTemp(int temp);
@@ -271,10 +272,10 @@ private:
 	void					destroySoftwareSynth();
 
 	// XMidiSequenceHandler implementation
-	virtual void			sequenceSendEvent(uint16 sequence_id, uint32 message);
-	virtual void			sequenceSendSysEx(uint16 sequence_id, uint8 status, const uint8 *msg, uint16 length);
-	virtual uint32			getTickCount(uint16 sequence_id);
-	virtual void			handleCallbackTrigger(uint16 sequence_id, uint8 data);
+	void			sequenceSendEvent(uint16 sequence_id, uint32 message) override;
+	void			sequenceSendSysEx(uint16 sequence_id, uint8 status, const uint8 *msg, uint16 length) override;
+	uint32			getTickCount(uint16 sequence_id) override;
+	void			handleCallbackTrigger(uint16 sequence_id, uint8 data) override;
 
 	int						protectChannel(uint16 sequence_id, int chan, bool protect);
 	int						lockChannel(uint16 sequence_id, int chan, bool lock);

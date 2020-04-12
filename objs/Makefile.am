@@ -1,7 +1,8 @@
 AM_CPPFLAGS = -I$(srcdir)/../headers -I$(srcdir)/.. -I$(srcdir)/../imagewin -I$(srcdir)/../shapes \
 		-I$(srcdir)/../pathfinder -I$(srcdir)/../files \
 		-I$(srcdir)/../server -I$(srcdir)/../gumps -I$(srcdir)/../shapes/shapeinf \
-		-I$(srcdir)/../audio -I$(srcdir)/../usecode $(SDL_CFLAGS) $(VORBIS_CFLAGS) $(OGG_CFLAGS) \
+		-I$(srcdir)/../audio -I$(srcdir)/../audio/midi_drivers -I$(srcdir)/../usecode \
+		$(SDL_CFLAGS) $(VORBIS_CFLAGS) $(OGG_CFLAGS) \
 		$(INCDIRS) $(WINDOWING_SYSTEM) $(DEBUG_FLAGS) $(CPPFLAGS)
 
 noinst_LTLIBRARIES = libobjs.la
@@ -26,8 +27,6 @@ libobjs_la_SOURCES = \
 	iregobjs.h \
 	mappatch.cc \
 	mappatch.h \
-	objclient.cc \
-	objclient.h \
 	objiter.h \
 	objiter.cc \
 	objlist.h \

@@ -46,7 +46,7 @@ public:
 
 class Part {
 private:
-	// Direct pointer to sysex-addressable memory dedicated to this part (valid for parts 1-8, NULL for rhythm)
+	// Direct pointer to sysex-addressable memory dedicated to this part (valid for parts 1-8, nullptr for rhythm)
 	TimbreParam *timbreTemp;
 
 	// 0=Part 1, .. 7=Part 8, 8=Rhythm

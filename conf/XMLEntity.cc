@@ -60,6 +60,7 @@ const string    &XMLnode::reference(const string &h, bool &exists) {
 	}
 
 	exists = false;
+	static const std::string c_empty_string;
 	return c_empty_string;
 }
 
@@ -84,7 +85,7 @@ const XMLnode *XMLnode::subtree(const string &h) const {
 		}
 	}
 
-	return 0;
+	return nullptr;
 }
 
 
@@ -381,7 +382,7 @@ bool XMLnode::searchpairs(KeyTypeList &ktl, const string &basekey, const string 
 		/* Else, keep searching for the key under it's subnodes */
 		else
 			for (std::vector<XMLnode *>::iterator i = nodelist.begin(); i != nodelist.end(); ++i)
-				if ((*i)->searchpairs(ktl, basekey, currkey + id + '/', pos) == true)
+				if ((*i)->searchpairs(ktl, basekey, currkey + id + '/', pos))
 					return true;
 	}
 	return false;

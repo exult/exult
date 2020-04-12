@@ -27,20 +27,6 @@
 #include <SDL_timer.h>
 
 /*
- *  Be sure no copies are still in queue when deleted.
- */
-
-Time_sensitive::~Time_sensitive(
-) {
-#if 0   /*+++++++For finding bugs. */
-	if (queue_cnt > 0) {
-		char *p = 0;
-		char c = *p;        // Force crash.
-	}
-#endif
-}
-
-/*
  *  Remove all entries.
  */
 
@@ -85,9 +71,7 @@ void Time_queue::add(
 }
 
 bool    operator <(const Queue_entry &q1, const Queue_entry &q2) {
-	if (q1.time < q2.time)
-		return true;
-	return false;
+	return q1.time < q2.time;
 }
 
 /*
@@ -109,7 +93,7 @@ int Time_queue::remove(
 			return 1;
 		}
 	}
-	return (0);         // Not found.
+	return 0;         // Not found.
 }
 
 /*
@@ -132,7 +116,7 @@ int Time_queue::remove(
 			return 1;
 		}
 	}
-	return (0);         // Not found.
+	return 0;         // Not found.
 }
 
 /*
@@ -258,10 +242,10 @@ int Time_queue_iterator::operator()(
 	        (*iter).handler != this_obj)
 		++iter;
 	if (iter == tqueue->data.end())
-		return (0);
+		return 0;
 	obj = (*iter).handler;      // Return fields.
 	data = (*iter).udata;
 	++iter;             // On to the next.
-	return (1);
+	return 1;
 }
 

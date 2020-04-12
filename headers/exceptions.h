@@ -22,6 +22,7 @@
 #include <cerrno>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 /*
  *  Base class of all our exceptions, providing a storage for the error message
@@ -31,15 +32,13 @@ class   exult_exception : public std::exception {
 	std::string  what_;
 	int errno_;
 public:
-	exult_exception(const char *what_arg): what_(what_arg), errno_(errno) {  }
-	exult_exception(const std::string &what_arg): what_(what_arg), errno_(errno) {  }
-	const char *what() const throw() {
+	explicit exult_exception(std::string what_arg): what_(std::move(what_arg)), errno_(errno) {  }
+	const char *what() const noexcept override {
 		return what_.c_str();
 	}
-	int get_errno(void) const {
+	int get_errno() const {
 		return errno_;
 	}
-	virtual ~exult_exception() throw() {}
 };
 
 
@@ -50,8 +49,8 @@ public:
 class quit_exception : public exult_exception {
 	int result_;
 public:
-	quit_exception(int result = 0): exult_exception("Quit"), result_(result) {  }
-	int get_result(void) const {
+	explicit quit_exception(int result = 0): exult_exception("Quit"), result_(result) {  }
+	int get_result() const {
 		return result_;
 	}
 };
@@ -62,16 +61,14 @@ public:
 
 class replication_exception : public exult_exception {
 public:
-	replication_exception(const char *what_arg): exult_exception(what_arg) {  }
-	replication_exception(const std::string &what_arg): exult_exception(what_arg) {  }
+	explicit replication_exception(std::string what_arg): exult_exception(std::move(what_arg)) {  }
 };
 
 // Some handy macros which you can use to make a class non-replicable
-#define UNREPLICATABLE_CLASS(NAME)  NAME(const NAME &) { throw replication_exception( #NAME " cannot be replicated"); } \
-	NAME &operator=(const NAME &) { throw replication_exception( #NAME " cannot be replicated"); return *this; }
-
-#define UNREPLICATABLE_CLASS_I(NAME,INIT)   NAME(const NAME &) : INIT { throw replication_exception( #NAME " cannot be replicated"); } \
-	NAME &operator=(const NAME &) { throw replication_exception( #NAME " cannot be replicated"); return *this; }
+#define UNREPLICATABLE_CLASS(NAME)  NAME(const NAME &) = delete; \
+	NAME &operator=(const NAME &) = delete; \
+	NAME(NAME &&) = delete; \
+	NAME &operator=(NAME &&) = delete;
 
 
 
@@ -81,31 +78,30 @@ public:
 
 class file_exception : public exult_exception {
 public:
-	file_exception(const char *what_arg): exult_exception(what_arg) {  }
-	file_exception(const std::string &what_arg): exult_exception(what_arg) {  }
+	explicit file_exception(std::string what_arg): exult_exception(std::move(what_arg)) {  }
 };
 
 class   file_open_exception : public file_exception {
 	static const std::string  prefix_;
 public:
-	file_open_exception(const std::string &file): file_exception("Error opening file " + file) {  }
+	explicit file_open_exception(const std::string &file): file_exception("Error opening file " + file) {  }
 };
 
 class   file_write_exception : public file_exception {
 	static const std::string  prefix_;
 public:
-	file_write_exception(const std::string &file): file_exception("Error writing to file " + file) {  }
+	explicit file_write_exception(const std::string &file): file_exception("Error writing to file " + file) {  }
 };
 
 class   file_read_exception : public file_exception {
 	static const std::string  prefix_;
 public:
-	file_read_exception(const std::string &file): file_exception("Error reading from file " + file) {  }
+	explicit file_read_exception(const std::string &file): file_exception("Error reading from file " + file) {  }
 };
 
 class   wrong_file_type_exception : public file_exception {
 public:
-	wrong_file_type_exception(const std::string &file, const std::string &type): file_exception("File " + file + " is not of type " + type) {  }
+	explicit wrong_file_type_exception(const std::string &file, const std::string &type): file_exception("File " + file + " is not of type " + type) {  }
 };
 
 

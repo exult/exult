@@ -84,8 +84,7 @@ void Object_sfx::Play(Game_object *obj, int sfx, int delay) {
 }
 
 Object_sfx::Object_sfx(Game_object *o, int s)
-	: obj(o), sfx(s), channel(-1) {
-	add_client(obj);
+	: obj(weak_from_obj(o)), sfx(s), channel(-1) {
 }
 
 void Object_sfx::stop_playing() {
@@ -99,7 +98,6 @@ void Object_sfx::stop() {
 	while (gwin->get_tqueue()->remove(this))
 		;
 	stop_playing();
-	remove_clients();
 	delete this;
 }
 
@@ -107,21 +105,7 @@ void Object_sfx::dequeue() {
 	Time_sensitive::dequeue();
 	if (!in_queue()) {
 		stop_playing();
-		remove_clients();
 		delete this;
-	}
-}
-
-void Object_sfx::notify_object_gone(Game_object *o) {
-	if (obj == o) {
-		kill_client_list();
-		Game_object *outer = obj->get_outermost();
-		if (outer == obj)
-			obj = 0;    // Use last_pos.
-		else {
-			obj = outer;
-			add_client(obj);
-		}
 	}
 }
 
@@ -135,11 +119,12 @@ void Object_sfx::handle_event(
 	//bool active = channel != -1 ? mixer->isPlaying(channel) : false;
 
 	Game_object *outer;
-	if (obj) {
-		outer = obj->get_outermost();
+	Game_object_shared obj_ptr = obj.lock();
+	if (obj_ptr) {
+		outer = obj_ptr->get_outermost();
 		last_pos = outer->get_center_tile();
 	} else
-		outer = 0;
+		outer = nullptr;
 
 	/*
 	if (outer->is_pos_invalid())// || (distance >= 0 && !active))
@@ -211,7 +196,7 @@ void Shape_sfx::update(
 
 	AudioMixer *mixer = AudioMixer::get_instance();
 
-	int active[2] = {0, 0};
+	bool active[2] = {false, false};
 	for (size_t i = 0; i < array_size(channel); i++) {
 		if (channel[i] != -1)
 			active[i] = mixer->isPlaying(channel[i]);
@@ -287,8 +272,10 @@ Animator *Animator::create(
 
 Animator::~Animator(
 ) {
-	while (gwin->get_tqueue()->remove(this))
-		;
+	if (gwin->get_tqueue()) {
+		while (gwin->get_tqueue()->remove(this))
+			;
+	}
 	if (objsfx) {
 		objsfx->stop();
 		delete objsfx;
@@ -304,7 +291,7 @@ void Animator::start_animation(
 	// Clean out old entry if there.
 	gwin->get_tqueue()->remove(this);
 	gwin->get_tqueue()->add(Game::get_ticks() + 20, this, gwin);
-	animating = 1;
+	animating = true;
 }
 
 /*
@@ -442,7 +429,7 @@ void Frame_animator::handle_event(
 		obj->set_frame(last_frame = framenum);
 		if (!dirty_first && !gwin->add_dirty(obj)) {
 			// No longer on screen.
-			animating = 0;
+			animating = false;
 			// Stop playing sound.
 			if (objsfx)
 				objsfx->stop();
@@ -500,7 +487,7 @@ void Sfx_animator::handle_event(
 	Rectangle rect = gwin->clip_to_win(gwin->get_shape_rect(obj));
 	if (rect.w <= 0 || rect.h <= 0) {
 		// No longer on screen.
-		animating = 0;
+		animating = false;
 		// Stop playing sound.
 		if (objsfx)
 			objsfx->stop();
@@ -548,7 +535,7 @@ void Wiggle_animator::handle_event(
 	Game_window *gwin = reinterpret_cast<Game_window *>(udata);
 	if (!gwin->add_dirty(obj)) {
 		// No longer on screen.
-		animating = 0;
+		animating = false;
 		return;
 	}
 	Tile_coord t = obj->get_tile(); // Get current position.

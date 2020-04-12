@@ -54,7 +54,8 @@ inline int Game_object::get_cyi() const {
 
 void Ireg_game_object::paint(
 ) {
-	int x, y;
+	int x;
+	int y;
 	gwin->get_shape_location(this, x, y);
 	if (flags & (1L << Obj_flags::invisible))
 		paint_invisible(x, y);
@@ -86,20 +87,18 @@ void Ireg_game_object::move(
  */
 
 void Ireg_game_object::remove_this(
-    int nodel           // 1 to not delete.
+    Game_object_shared *keep     // Non-null to not delete.
 ) {
 	// Do this before all else.
-	if (!nodel)
-		remove_clients();
+	if (!keep) {
+		cheat.clear_this_grabbed_actor(this->as_actor());   // Could be an actor
+	} else
+	    *keep = shared_from_this();
 	if (owner)          // In a bag, box, or person.
 		owner->remove(this);
 	else {              // In the outside world.
 		if (chunk)
 			chunk->remove(this);
-	}
-	if (!nodel) {
-		cheat.clear_this_grabbed_actor(this->as_actor());   // Could be an actor
-		gwin->delete_object(this);
 	}
 }
 
@@ -107,7 +106,7 @@ void Ireg_game_object::remove_this(
  *  Can this be dragged?
  */
 
-int Ireg_game_object::is_dragable(
+bool Ireg_game_object::is_dragable(
 ) const {
 	// 0 weight means 'too heavy'.
 	return get_info().get_weight() > 0;
@@ -125,7 +124,8 @@ unsigned char *Ireg_game_object::write_common_ireg(
     unsigned char *buf      // Buffer to be filled.
 ) {
 	unsigned char *endptr;
-	int shapenum = get_shapenum(), framenum = get_framenum();
+	int shapenum = get_shapenum();
+	int framenum = get_framenum();
 	if (shapenum >= 1024 || framenum >= 64) {
 		*buf++ = IREG_EXTENDED;
 		norm_len++;
@@ -134,6 +134,9 @@ unsigned char *Ireg_game_object::write_common_ireg(
 		buf[5] = framenum;
 		endptr = buf + 6;
 	} else {
+		if (get_lift() > 15) {
+			*buf++ = IREG_EXTENDED2;
+		}
 		buf[3] = shapenum & 0xff;
 		buf[4] = ((shapenum >> 8) & 3) | (framenum << 2);
 		endptr = buf + 5;
@@ -159,19 +162,19 @@ void Ireg_game_object::write_ireg(
 ) {
 	unsigned char buf[20];      // 10-byte entry;
 	uint8 *ptr = write_common_ireg(10, buf);
-	*ptr++ = (get_lift() & 15) << 4;
+	*ptr++ = nibble_swap(get_lift());
 	*ptr = get_quality();
 	const Shape_info &info = get_info();
 	if (info.has_quality_flags()) {
 		// Store 'quality_flags'.
-		*ptr = get_flag((Obj_flags::invisible) != 0) +
-		       ((get_flag(Obj_flags::okay_to_take) != 0) << 3);
+		*ptr = (get_flag(Obj_flags::invisible) ? 1 : 0) +
+				(get_flag(Obj_flags::okay_to_take) ? (1 << 3) : 0);
 	}
 	// Special case for 'quantity' items:
 	else if (get_flag(Obj_flags::okay_to_take) && info.has_quantity())
 		*ptr |= 0x80;
 	++ptr;
-	*ptr++ = (get_flag(Obj_flags::is_temporary) != 0);
+	*ptr++ = (get_flag(Obj_flags::is_temporary));
 	*ptr++ = 0;         // Filler, I guess.
 	*ptr++ = 0;
 	*ptr++ = 0;

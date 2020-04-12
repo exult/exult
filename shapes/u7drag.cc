@@ -46,7 +46,7 @@ int Store_u7_shapeid(
 	*ptr++ = file;
 	Write2(ptr, shape);
 	*ptr++ = frame;
-	return (ptr - data);
+	return ptr - data;
 }
 
 /*
@@ -77,7 +77,7 @@ int Store_u7_chunkid(
 ) {
 	unsigned char *ptr = data;
 	Write2(ptr, cnum);
-	return (ptr - data);
+	return ptr - data;
 }
 
 void Get_u7_chunkid(
@@ -100,7 +100,7 @@ int Store_u7_npcid(
 ) {
 	unsigned char *ptr = data;
 	Write2(ptr, npcnum);
-	return (ptr - data);
+	return ptr - data;
 }
 
 void Get_u7_npcid(
@@ -139,7 +139,7 @@ int Store_u7_comboid(
 		Write2(ptr, ents[i].shape);
 		*ptr++ = static_cast<unsigned char>(ents[i].frame);
 	}
-	return (ptr - data);
+	return ptr - data;
 }
 
 /*

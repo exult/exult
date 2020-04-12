@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef COREMIDIDRIVER_H_INCLUDED
 #define COREMIDIDRIVER_H_INCLUDED
 
-#ifdef MACOSX
+#if defined(MACOSX) || defined(__IPHONEOS__)
 #define USE_CORE_MIDI
 
 #include "LowLevelMidiDriver.h"
@@ -46,12 +46,12 @@ public:
 	~CoreMidiDriver();
 
 protected:
-	virtual int			open();
-	virtual void		close();
-	virtual void		send(uint32 message);
-	virtual void		send_sysex(uint8 status, const uint8 *msg, uint16 length);
-	virtual void		increaseThreadPriority();
-	virtual void		yield();
+	int			open() override;
+	void		close() override;
+	void		send(uint32 message) override;
+	void		send_sysex(uint8 status, const uint8 *msg, uint16 length) override;
+	void		increaseThreadPriority() override;
+	void		yield() override;
 };
 
 #endif //MACOSX

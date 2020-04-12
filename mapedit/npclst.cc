@@ -26,15 +26,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#ifdef WIN32
-#include "Windrag.h"
+#ifdef _WIN32
+#include "windrag.h"
 #include <windows.h>
 #endif
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wparentheses"
+#if !defined(__llvm__) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#else
+#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
+#endif
 #endif  // __GNUC__
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -47,7 +53,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "gtk_redefines.h"
 
 #include <glib.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <sys/stat.h>
 #include <unistd.h>
 #include "npclst.h"
@@ -174,7 +180,8 @@ void Npc_chooser::setup_shapes_info(
 	int x = 0;
 	int curr_y = 0;
 	int row_h = 0;
-	int total_cnt = get_count(), num_shapes = ifile->get_num_shapes();
+	int total_cnt = get_count();
+	int num_shapes = ifile->get_num_shapes();
 	//   filter (group).
 	rows.resize(1);         // Start 1st row.
 	rows[0].index0 = 0;
@@ -189,8 +196,8 @@ void Npc_chooser::setup_shapes_info(
 		Shape_frame *shape = ifile->get_shape(shapenum, 0);
 		if (!shape)
 			continue;
-		int sh = shape->get_height(),
-		    sw = shape->get_width();
+		int sh = shape->get_height();
+		int sw = shape->get_width();
 		// Check if we've exceeded max width
 		if (x + sw > winw && x) {   // But don't leave row empty.
 			// Next line.
@@ -229,7 +236,8 @@ void Npc_chooser::goto_index(
 	Rectangle winrect(0, voffset, config_width, config_height);
 	if (winrect.has_point(midx, midy))
 		return;
-	unsigned start = 0, count = rows.size();
+	unsigned start = 0;
+	unsigned count = rows.size();
 	while (count > 1) {     // Binary search.
 		unsigned mid = start + count / 2;
 		if (index < rows[mid].index0)
@@ -261,7 +269,8 @@ int Npc_chooser::find_npc(
 				return i;
 		return -1;
 	}
-	unsigned start = 0, count = info.size();
+	unsigned start = 0;
+	unsigned count = info.size();
 	while (count > 1) {     // Binary search.
 		unsigned mid = start + count / 2;
 		if (npcnum < info[mid].npcnum)
@@ -305,7 +314,7 @@ gint Npc_chooser::configure(
 		render();       // Same size?  Just render it.
 	if (group)          // Filtering?
 		enable_drop();      // Can drop NPCs here.
-	return (TRUE);
+	return TRUE;
 }
 
 /*
@@ -321,14 +330,14 @@ gint Npc_chooser::expose(
 	Npc_chooser *chooser = static_cast<Npc_chooser *>(data);
 	chooser->show(event->area.x, event->area.y, event->area.width,
 	              event->area.height);
-	return (TRUE);
+	return TRUE;
 }
 
 /*
  *  Handle a mouse drag event.
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 
 static bool win32_button = false;
 
@@ -346,14 +355,14 @@ gint Npc_chooser::win32_drag_motion(
 
 		// This call allows us to recycle the data transfer initialization code.
 		//  It's clumsy, but far easier to maintain.
-		drag_data_get(NULL, NULL, (GtkSelectionData *) &wdata,
+		drag_data_get(nullptr, nullptr, reinterpret_cast<GtkSelectionData*>(&wdata),
 		              U7_TARGET_NPCID, 0, data);
 
 		POINT pnt;
 		GetCursorPos(&pnt);
 
-		Windropsource idsrc(0, pnt.x, pnt.y);
-		LPDATAOBJECT idobj = (LPDATAOBJECT) new Winstudioobj(wdata);
+		Windropsource idsrc(nullptr, pnt.x, pnt.y);
+		LPDATAOBJECT idobj = new Winstudioobj(wdata);
 		DWORD dndout;
 
 		HRESULT res = DoDragDrop(idobj, &idsrc, DROPEFFECT_COPY, &dndout);
@@ -393,20 +402,22 @@ gint Npc_chooser::mouse_press(
 	if (event->button == 4) {
 		if (row0 > 0)
 			scroll_row_vertical(row0 - 1);
-		return(TRUE);
+		return TRUE;
 	} else if (event->button == 5) {
 		scroll_row_vertical(row0 + 1);
-		return(TRUE);
+		return TRUE;
 	}
-	int old_selected = selected, new_selected = -1;
+	int old_selected = selected;
+	int new_selected = -1;
 	unsigned i;              // Search through entries.
 	unsigned infosz = info.size();
-	int absx = static_cast<int>(event->x), absy = static_cast<int>(event->y) + voffset;
+	int absx = static_cast<int>(event->x);
+	int absy = static_cast<int>(event->y) + voffset;
 	for (i = rows[row0].index0; i < infosz; i++) {
 		if (info[i].box.has_point(absx, absy)) {
 			// Found the box?
 			// Indicate we can drag.
-#ifdef WIN32
+#ifdef _WIN32
 // Here, we have to override GTK+'s Drag and Drop, which is non-OLE and
 // usually stucks outside the program window. I think it's because
 // the dragged shape only receives mouse motion events when the new mouse pointer
@@ -435,8 +446,8 @@ gint Npc_chooser::mouse_press(
 	}
 	if (event->button == 3)
 		gtk_menu_popup(GTK_MENU(create_popup()),
-		               0, 0, 0, 0, event->button, event->time);
-	return (TRUE);
+		               nullptr, nullptr, nullptr, nullptr, event->button, event->time);
+	return TRUE;
 }
 
 /*
@@ -470,16 +481,6 @@ on_npc_draw_key_press(GtkEntry   *entry,
                       gpointer    user_data) {
 	ignore_unused_variable_warning(entry, event, user_data);
 	//Npc_chooser *chooser = static_cast<Npc_chooser *>(user_data);
-#if 0
-	switch (event->keyval) {
-	case GDK_Delete:
-		chooser->del_frame();
-		return TRUE;
-	case GDK_Insert:
-		chooser->new_frame();
-		return TRUE;
-	}
-#endif
 	return FALSE;           // Let parent handle it.
 }
 
@@ -492,7 +493,8 @@ void Npc_chooser::edit_npc(
 	ExultStudio *studio = ExultStudio::get_instance();
 	int npcnum = info[selected].npcnum;
 	//Estudio_npc &npc = get_npcs()[npcnum];
-	unsigned char buf[Exult_server::maxlength], *ptr;
+	unsigned char buf[Exult_server::maxlength];
+	unsigned char *ptr;
 	ptr = &buf[0];
 	Write2(ptr, npcnum);
 	if (!studio->send_to_server(Exult_server::edit_npc, buf, ptr - buf))
@@ -541,8 +543,8 @@ void Npc_chooser::drag_data_get(
 	int npcnum = chooser->info[chooser->selected].npcnum;
 	int len = Store_u7_npcid(buf, npcnum);
 	cout << "Setting selection data (" << npcnum << ')' << endl;
-#ifdef WIN32
-	windragdata *wdata = (windragdata *)seldata;
+#ifdef _WIN32
+	windragdata *wdata = reinterpret_cast<windragdata*>(seldata);
 	wdata->assign(info, len, buf);
 #else
 	// Make us owner of xdndselection.
@@ -630,7 +632,7 @@ void Npc_chooser::enable_drop(
 		return;
 	drop_enabled = true;
 	gtk_widget_realize(draw);//???????
-#ifndef WIN32
+#ifndef _WIN32
 	GtkTargetEntry tents[1];
 	tents[0].target = const_cast<char *>(U7_TARGET_NPCID_NAME);
 	tents[0].flags = 0;
@@ -779,7 +781,7 @@ void Npc_chooser::search(
 	for (i = start; i != stop; i += dir) {
 		unsigned npcnum = info[i].npcnum;
 		const char *nm = npcnum < npcs.size() ?
-		                 npcs[npcnum].name.c_str() : 0;
+		                 npcs[npcnum].name.c_str() : nullptr;
 		if (nm && search_name(nm, srch))
 			break;      // Found it.
 	}
@@ -855,7 +857,7 @@ Npc_chooser::Npc_chooser(
 	Shape_draw(i, palbuf, gtk_drawing_area_new()),
 	info(0), rows(0), row0(0),
 	row0_voffset(0), total_height(0),
-	voffset(0), status_id(-1), drop_enabled(false), sel_changed(0) {
+	voffset(0), status_id(-1), drop_enabled(false), sel_changed(nullptr) {
 	rows.reserve(40);
 	// Put things in a vert. box.
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
@@ -867,7 +869,7 @@ Npc_chooser::Npc_chooser(
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
 	// A frame looks nice.
-	GtkWidget *frame = gtk_frame_new(NULL);
+	GtkWidget *frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
 	gtk_widget_show(frame);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
@@ -896,7 +898,7 @@ Npc_chooser::Npc_chooser(
 	// Mouse motion.
 	gtk_signal_connect(GTK_OBJECT(draw), "drag_begin",
 	                   GTK_SIGNAL_FUNC(drag_begin), this);
-#ifdef WIN32
+#ifdef _WIN32
 // required to override GTK+ Drag and Drop
 	gtk_signal_connect(GTK_OBJECT(draw), "motion_notify_event",
 	                   GTK_SIGNAL_FUNC(win32_drag_motion), this);

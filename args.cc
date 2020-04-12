@@ -114,7 +114,7 @@ void    Args::process(int argc, char **argv) {
 						cerr << "Data not specified for argument '" << options[j].option << "'. Using default." << endl;
 						break;
 					}
-					*(options[j].ival) = strtol(argv[i], 0, 10);
+					*(options[j].ival) = strtol(argv[i], nullptr, 10);
 				}
 				break;
 			}
@@ -126,7 +126,7 @@ void    Args::process(int argc, char **argv) {
 						cerr << "Data not specified for argument '" << options[j].option << "'. Using default." << endl;
 						break;
 					}
-					*(options[j].uval) = strtoul(argv[i], 0, 10);
+					*(options[j].uval) = strtoul(argv[i], nullptr, 10);
 				}
 				break;
 			}

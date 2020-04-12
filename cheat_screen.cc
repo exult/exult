@@ -43,6 +43,8 @@
 #include "miscinf.h"
 #include "gump_utils.h"
 #include "ignore_unused_variable_warning.h"
+#include "touchui.h"
+#include "Gump_manager.h"
 
 const char *CheatScreen::schedules[33] = {
 	"Combat",
@@ -86,7 +88,7 @@ const char *CheatScreen::flag_names[64] = {
 	"charmed",      // 0x02
 	"cursed",       // 0x03
 	"dead",         // 0x04
-	0,          // 0x05
+	nullptr,          // 0x05
 	"in_party",     // 0x06
 	"paralyzed",        // 0x07
 
@@ -102,16 +104,16 @@ const char *CheatScreen::flag_names[64] = {
 	"dont_move/bg_dont_render",     // 0x10
 	"si_on_moving_barge",   // 0x11
 	"is_temporary",     // 0x12
-	0,          // 0x13
+	nullptr,          // 0x13
 	"sailor",          // 0x14
 	"okay_to_land",     // 0x15
 	"dont_render/bg_dont_move", // 0x16
 	"in_dungeon",   // 0x17
 
-	0,          // 0x18
+	nullptr,          // 0x18
 	"confused",     // 0x19
 	"in_motion",        // 0x1A
-	0,         // 0x1B
+	nullptr,         // 0x1B
 	"met",          // 0x1C
 	"tournament",   // 0x1D
 	"si_zombie",    // 0x1E
@@ -124,34 +126,34 @@ const char *CheatScreen::flag_names[64] = {
 	"si_lizard_king",  // 0x24
 	"freeze",       // 0x25
 	"naked",    // 0x26
-	0,          // 0x27
+	nullptr,          // 0x27
 
-	0,          // 0x28
-	0,          // 0x29
-	0,          // 0x2A
-	0,          // 0x2B
-	0,          // 0x2C
-	0,          // 0x2D
-	0,          // 0x2E
-	0,          // 0x2F
+	nullptr,          // 0x28
+	nullptr,          // 0x29
+	nullptr,          // 0x2A
+	nullptr,          // 0x2B
+	nullptr,          // 0x2C
+	nullptr,          // 0x2D
+	nullptr,          // 0x2E
+	nullptr,          // 0x2F
 
-	0,          // 0x30
-	0,          // 0x31
-	0,          // 0x32
-	0,          // 0x33
-	0,          // 0x34
-	0,          // 0x35
-	0,          // 0x36
-	0,          // 0x37
+	nullptr,          // 0x30
+	nullptr,          // 0x31
+	nullptr,          // 0x32
+	nullptr,          // 0x33
+	nullptr,          // 0x34
+	nullptr,          // 0x35
+	nullptr,          // 0x36
+	nullptr,          // 0x37
 
-	0,          // 0x38
-	0,          // 0x39
-	0,          // 0x3A
-	0,          // 0x3B
-	0,          // 0x3C
-	0,          // 0x3D
-	0,          // 0x3E
-	0,          // 0x3F
+	nullptr,          // 0x38
+	nullptr,          // 0x39
+	nullptr,          // 0x3A
+	nullptr,          // 0x3B
+	nullptr,          // 0x3C
+	nullptr,          // 0x3D
+	nullptr,          // 0x3E
+	nullptr,          // 0x3F
 };
 
 const char *CheatScreen::alignments[4] = {
@@ -163,20 +165,12 @@ const char *CheatScreen::alignments[4] = {
 
 static int Find_highest_map(
 ) {
-	int n = 0, next;
+	int n = 0;
+	int next;
 	while ((next = Find_next_map(n + 1, 10)) != -1)
 		n = next;
 	return n;
 }
-
-CheatScreen::CheatScreen()
- : grabbed(NULL), gwin(NULL), ibuf(NULL), font(NULL), clock(NULL),
-   maxx(0), maxy(0), centerx(0), centery(0) {
-}
-
-CheatScreen::~CheatScreen() {
-}
-
 
 void CheatScreen::show_screen() {
 	gwin = Game_window::get_instance();
@@ -187,6 +181,10 @@ void CheatScreen::show_screen() {
 	maxy = gwin->get_height();
 	centerx = maxx / 2;
 	centery = maxy / 2;
+	if (touchui != nullptr) {
+		touchui->hideGameControls();
+		SDL_StartTextInput();
+	}
 
 	// Pause the game
 	gwin->get_tqueue()->pause(SDL_GetTicks());
@@ -205,6 +203,15 @@ void CheatScreen::show_screen() {
 	// Reset the palette
 	clock->reset();
 	clock->set_palette();
+	if (touchui != nullptr) {
+		Gump_manager *gumpman = gwin->get_gump_man();
+		if (!gumpman->gump_mode()) {
+			touchui->showGameControls();
+		}
+		if (SDL_IsTextInputActive()) {
+			SDL_StopTextInput();
+		}
+	}
 }
 
 
@@ -219,189 +226,233 @@ void CheatScreen::show_screen() {
 void CheatScreen::SharedPrompt(char *input, const Cheat_Prompt &mode) {
 	char buf[512];
 
-	font->paint_text_fixedwidth(ibuf, "Select->", 0, maxy - 18, 8);
+#ifdef __IPHONEOS__
+	const int prompt = 81;
+	const int promptmes = 90;
+	const int offsetx = 15;
+#else
+	const int prompt = maxy - 18;
+	const int promptmes = maxy - 9;
+	const int offsetx = 0;
+#endif
+	font->paint_text_fixedwidth(ibuf, "Select->", offsetx, prompt, 8);
 
 	if (input && std::strlen(input)) {
-		font->paint_text_fixedwidth(ibuf, input, 64, maxy - 18, 8);
-		font->paint_text_fixedwidth(ibuf, "_", 64 + std::strlen(input) * 8, maxy - 18, 8);
+		font->paint_text_fixedwidth(ibuf, input, 64 + offsetx , prompt, 8);
+		font->paint_text_fixedwidth(ibuf, "_", 64 + offsetx + std::strlen(input) * 8, prompt, 8);
 	} else
-		font->paint_text_fixedwidth(ibuf, "_", 64, maxy - 18, 8);
+		font->paint_text_fixedwidth(ibuf, "_", 64 + offsetx, prompt, 8);
 
 	// ...and Prompt Message
 	switch (mode) {
 	default:
 	case CP_Command:
-		font->paint_text_fixedwidth(ibuf, "Enter Command.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Command.", offsetx, promptmes, 8);
 		break;
 
 	case CP_HitKey:
-		font->paint_text_fixedwidth(ibuf, "Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_NotAvail:
-		font->paint_text_fixedwidth(ibuf, "Not yet available. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Not yet available. Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_InvalidNPC:
-		font->paint_text_fixedwidth(ibuf, "Invalid NPC. Hit a key", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Invalid NPC. Hit a key", offsetx, promptmes, 8);
 		break;
 
 	case CP_InvalidCom:
-		font->paint_text_fixedwidth(ibuf, "Invalid Command. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Invalid Command. Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_Canceled:
-		font->paint_text_fixedwidth(ibuf, "Canceled. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Canceled. Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_ClockSet:
-		font->paint_text_fixedwidth(ibuf, "Clock Set. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Clock Set. Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_InvalidTime:
-		font->paint_text_fixedwidth(ibuf, "Invalid Time. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Invalid Time. Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_InvalidShape:
-		font->paint_text_fixedwidth(ibuf, "Invalid Shape. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Invalid Shape. Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_InvalidValue:
-		font->paint_text_fixedwidth(ibuf, "Invalid Value. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Invalid Value. Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_Created:
-		font->paint_text_fixedwidth(ibuf, "Item Created. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Item Created. Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_ShapeSet:
-		font->paint_text_fixedwidth(ibuf, "Shape Set. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Shape Set. Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_ValueSet:
-		font->paint_text_fixedwidth(ibuf, "Clock Set. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Clock Set. Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_NameSet:
-		font->paint_text_fixedwidth(ibuf, "Name Changed. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Name Changed. Hit a key.", offsetx, promptmes, 8);
 		break;
 
 	case CP_WrongShapeFile:
-		font->paint_text_fixedwidth(ibuf, "Wrong shape file. Must be SHAPES.VGA. Hit a key.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Wrong shape file. Must be SHAPES.VGA.", offsetx, promptmes, 8);
 		break;
 
 
 	case CP_ChooseNPC:
-		font->paint_text_fixedwidth(ibuf, "Which NPC? (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Which NPC? (-1 to cancel.)", offsetx, promptmes, 8);
 		break;
 
 	case CP_EnterValue:
-		font->paint_text_fixedwidth(ibuf, "Enter Value. (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Value. (-1 to cancel.)", offsetx, promptmes, 8);
 		break;
 
 	case CP_EnterValueNoCancel:
-		font->paint_text_fixedwidth(ibuf, "Enter Value.", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Value.", offsetx, promptmes, 8);
 		break;
 
 	case CP_Minute:
-		font->paint_text_fixedwidth(ibuf, "Enter Minute. (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Minute. (-1 to cancel.)", offsetx, promptmes, 8);
 		break;
 
 	case CP_Hour:
-		font->paint_text_fixedwidth(ibuf, "Enter Hour. (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Hour. (-1 to cancel.)", offsetx, promptmes, 8);
 		break;
 
 	case CP_Day:
-		font->paint_text_fixedwidth(ibuf, "Enter Day. (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Day. (-1 to cancel.)", offsetx, promptmes, 8);
 		break;
 
 	case CP_Shape:
-		font->paint_text_fixedwidth(ibuf, "Enter Shape (B=Browse or -1=Cancel)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Shape (B=Browse or -1=Cancel)", offsetx, promptmes, 8);
 		break;
 
 	case CP_Activity:
-		font->paint_text_fixedwidth(ibuf, "Enter Activity 0-31. (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Activity 0-31. (-1 to cancel.)", offsetx, promptmes, 8);
 		break;
 
 	case CP_XCoord:
-		snprintf(buf, 512, "Enter X Coord. Max %i (-1 to cancel.)", c_num_tiles);
-		font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 9, 8);
+		snprintf(buf, 512, "Enter X Coord. Max %i (-1 to cancel)", c_num_tiles);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8);
 		break;
 
 	case CP_YCoord:
-		snprintf(buf, 512, "Enter Y Coord. Max %i (-1 to cancel.)", c_num_tiles);
-		font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 9, 8);
+		snprintf(buf, 512, "Enter Y Coord. Max %i (-1 to cancel)", c_num_tiles);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8);
 		break;
 
 	case CP_Lift:
-		font->paint_text_fixedwidth(ibuf, "Enter Lift. (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Lift. (-1 to cancel)", offsetx, promptmes, 8);
 		break;
 
 	case CP_GFlagNum: {
 		char buf[50];
-		snprintf(buf, 50, "Enter Global Flag 0-%d. (-1 to cancel.)", c_last_gflag);
-		font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 9, 8);
+		snprintf(buf, 50, "Enter Global Flag 0-%d. (-1 to cancel)", c_last_gflag);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8);
 		break;
 	}
 
 	case CP_NFlagNum:
-		font->paint_text_fixedwidth(ibuf, "Enter NPC Flag 0-63. (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter NPC Flag 0-63. (-1 to cancel)", offsetx, promptmes, 8);
 		break;
 
 	case CP_TempNum:
-		font->paint_text_fixedwidth(ibuf, "Enter Temperature 0-63. (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Temperature 0-63. (-1 to cancel)", offsetx, promptmes, 8);
 		break;
 
 	case CP_NLatitude:
-		font->paint_text_fixedwidth(ibuf, "Enter Latitude value. Max 113 (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Latitude. Max 113 (-1 to cancel)", offsetx, promptmes, 8);
 		break;
 
 	case CP_SLatitude:
-		font->paint_text_fixedwidth(ibuf, "Enter Latitude value. Max 193 (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Latitude. Max 193 (-1 to cancel)", offsetx, promptmes, 8);
 		break;
 
 	case CP_WLongitude:
-		font->paint_text_fixedwidth(ibuf, "Enter Longitude value. Max 93 (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Longitude. Max 93 (-1 to cancel)", offsetx, promptmes, 8);
 		break;
 
 	case CP_ELongitude:
-		font->paint_text_fixedwidth(ibuf, "Enter Longitude value. Max 213 (-1 to cancel.)", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter Longitude. Max 213 (-1 to cancel)", offsetx, promptmes, 8);
 		break;
 
 	case CP_Name:
-		font->paint_text_fixedwidth(ibuf, "Enter a new Name...", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Enter a new Name...", offsetx, promptmes, 8);
 		break;
 
 	case CP_NorthSouth:
-		font->paint_text_fixedwidth(ibuf, "Latitude [N]orth or [S]outh?", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Latitude [N]orth or [S]outh?", offsetx, promptmes, 8);
 		break;
 
 	case CP_WestEast:
-		font->paint_text_fixedwidth(ibuf, "Longitude [W]est or [E]ast?", 0, maxy - 9, 8);
+		font->paint_text_fixedwidth(ibuf, "Longitude [W]est or [E]ast?", offsetx, promptmes, 8);
 		break;
 
 	case CP_HexXCoord:
-		snprintf(buf, 512, "Enter X Coord. Max %04x (-1 to cancel.)", c_num_tiles);
-		font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 9, 8);
+		snprintf(buf, 512, "Enter X Coord. Max %04x (-1 to cancel)", c_num_tiles);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8);
 		break;
 
 	case CP_HexYCoord:
-		snprintf(buf, 512, "Enter Y Coord. Max %04x (-1 to cancel.)", c_num_tiles);
-		font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 9, 8);
+		snprintf(buf, 512, "Enter Y Coord. Max %04x (-1 to cancel)", c_num_tiles);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8);
 		break;
 
+	}
+}
+
+static int SDLScanCodeToInt(SDL_Keycode sym) {
+	switch (sym) {
+	case SDLK_KP_0:
+		return '0';
+	case SDLK_KP_1:
+		return '1';
+	case SDLK_KP_2:
+		return '2';
+	case SDLK_KP_3:
+		return '3';
+	case SDLK_KP_4:
+		return '4';
+	case SDLK_KP_5:
+		return '5';
+	case SDLK_KP_6:
+		return '6';
+	case SDLK_KP_7:
+		return '7';
+	case SDLK_KP_8:
+		return '8';
+	case SDLK_KP_9:
+		return '9';
+	default:
+		return -1;
 	}
 }
 
 bool CheatScreen::SharedInput(char *input, int len, int &command, Cheat_Prompt &mode, bool &activate) {
 	SDL_Event event;
 
-	while (1) {
+	while (true) {
 		Delay();
 		while (SDL_PollEvent(&event)) {
+			// Touch on the cheat screen will bring up the keyboard
+			if (event.type == SDL_MOUSEBUTTONDOWN) {
+				if (SDL_IsTextInputActive())
+					SDL_StopTextInput();
+				else
+					SDL_StartTextInput();
+			}
+
 			if (event.type != SDL_KEYDOWN)
 				continue;
-			SDL_keysym &key = event.key.keysym;
+			SDL_Keysym &key = event.key.keysym;
 
 			if ((key.sym == SDLK_s) && (key.mod & KMOD_ALT) && (key.mod & KMOD_CTRL)) {
 				make_screenshot(true);
@@ -424,16 +475,16 @@ bool CheatScreen::SharedInput(char *input, int len, int &command, Cheat_Prompt &
 					activate = true;
 				} else if ((key.sym == '-' || key.sym == SDLK_KP_MINUS) && !input[0]) {
 					input[0] = '-';
-				} else if ((key.sym >= '0' && key.sym <= 'f')) {
+				} else if (std::isxdigit(key.sym)) {
 					int curlen = std::strlen(input);
 					if (curlen < (len - 1)) {
-						input[curlen] = key.sym;
+						input[curlen] = std::tolower(key.sym);
 						input[curlen + 1] = 0;
 					}
-				} else if ((key.sym >= SDLK_KP1 && key.sym <= SDLK_KP9) || key.sym == SDLK_KP0) {
+				} else if ((key.sym >= SDLK_KP_1 && key.sym <= SDLK_KP_9) || key.sym == SDLK_KP_0) {
 					int curlen = std::strlen(input);
 					if (curlen < (len - 1)) {
-						int sym = key.sym == SDLK_KP0 ? '0' : (key.sym - SDLK_KP1 + '1');
+						int sym = SDLScanCodeToInt(key.sym);
 						input[curlen] = sym;
 						input[curlen + 1] = 0;
 					}
@@ -444,15 +495,11 @@ bool CheatScreen::SharedInput(char *input, int len, int &command, Cheat_Prompt &
 			} else if (mode >= CP_Name) {      // Want Text input (len chars)
 				if (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER) {
 					activate = true;
-				} else if ((key.sym >= '0' && key.sym <= 'z') || key.sym == ' ') {
+				} else if (std::isalnum(key.sym) || key.sym == ' ') {
 					int curlen = std::strlen(input);
 					char chr = key.sym;
 					if (key.mod & KMOD_SHIFT) {
-#if (defined(OPENBSD) || defined(CYGWIN))
-						if ((chr >= 'a') && (chr <= 'z')) chr -= 32;
-#else
-						chr = std::toupper(chr);
-#endif
+						chr = static_cast<char>(std::toupper(static_cast<unsigned char>(chr)));
 					}
 					if (curlen < (len - 1)) {
 						input[curlen] = chr;
@@ -475,16 +522,16 @@ bool CheatScreen::SharedInput(char *input, int len, int &command, Cheat_Prompt &
 					activate = true;
 				} else if ((key.sym == '-' || key.sym == SDLK_KP_MINUS) && !input[0]) {
 					input[0] = '-';
-				} else if ((key.sym >= '0' && key.sym <= '9')) {
+				} else if (std::isdigit(key.sym)) {
 					int curlen = std::strlen(input);
 					if (curlen < (len - 1)) {
 						input[curlen] = key.sym;
 						input[curlen + 1] = 0;
 					}
-				} else if ((key.sym >= SDLK_KP1 && key.sym <= SDLK_KP9) || key.sym == SDLK_KP0) {
+				} else if ((key.sym >= SDLK_KP_1 && key.sym <= SDLK_KP_9) || key.sym == SDLK_KP_0) {
 					int curlen = std::strlen(input);
 					if (curlen < (len - 1)) {
-						int sym = key.sym == SDLK_KP0 ? '0' : (key.sym - SDLK_KP1 + '1');
+						int sym = SDLScanCodeToInt(key.sym);
 						input[curlen] = sym;
 						input[curlen + 1] = 0;
 					}
@@ -502,10 +549,7 @@ bool CheatScreen::SharedInput(char *input, int len, int &command, Cheat_Prompt &
 			}
 			return false;
 		}
-		if (GL_manager::get_instance())
-			gwin->get_win()->show();
-		else
-			gwin->paint_dirty();
+		gwin->paint_dirty();
 	}
 	return false;
 }
@@ -555,10 +599,21 @@ void CheatScreen::NormalLoop() {
 
 void CheatScreen::NormalDisplay() {
 	char    buf[512];
+#ifdef __IPHONEOS__
+	const int offsetx = 15;
+	const int offsety1 = 108;
+	const int offsety2 = 54;
+	const int offsety3 = 0;
+#else
+	const int offsetx = 0;
+	const int offsety1 = 0;
+	const int offsety2 = 0;
+	const int offsety3 = 45;
+#endif
 	int curmap = gwin->get_map()->get_num(); 
 	Tile_coord t = gwin->get_main_actor()->get_tile();
 
-	font->paint_text_fixedwidth(ibuf, "Colourless' Advanced Option Cheat Screen", 0, 0, 8);
+	font->paint_text_fixedwidth(ibuf, "Colourless' Advanced Option Cheat Screen", 0, offsety1, 8);
 
 	if (Game::get_game_type() == BLACK_GATE)
 		snprintf(buf, 512, "Running \"Ultima 7: The Black Gate\"");
@@ -567,11 +622,10 @@ void CheatScreen::NormalDisplay() {
 	else
 		snprintf(buf, 512, "Running Unknown Game Type %i", Game::get_game_type());
 
-	font->paint_text_fixedwidth(ibuf, buf, 0, 18, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 18, 8);
 
 	snprintf(buf, 512, "Exult Version %s", VERSION);
-	font->paint_text_fixedwidth(ibuf, buf, 0, 27, 8);
-
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 27, 8);
 
 
 	snprintf(buf, 512, "Current time: %i:%02i %s  Day: %i",
@@ -579,84 +633,99 @@ void CheatScreen::NormalDisplay() {
 	         clock->get_minute(),
 	         clock->get_hour() < 12 ? "AM" : "PM",
 	         clock->get_day());
-	font->paint_text_fixedwidth(ibuf, buf, 0, 45, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety3, 8);
 
 	int longi = ((t.tx - 0x3A5) / 10);
 	int lati = ((t.ty - 0x46E) / 10);
-	snprintf(buf, 512, "Coordinates   %d %s %d %s, Map #%d",
+	snprintf(buf, 512, "Coordinates %d %s %d %s, Map #%d",
 		abs(lati), (lati < 0 ? "North" : "South"),
 		abs(longi), (longi < 0 ? "West" : "East"), curmap);
-	font->paint_text_fixedwidth(ibuf, buf, 0, 63, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 63 - offsety2, 8);
 
 	snprintf(buf, 512, "Coords in hex (%04x, %04x, %02x)",
 	         t.tx, t.ty, t.tz);
-	font->paint_text_fixedwidth(ibuf, buf, 0, 72, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 72 - offsety2, 8);
 
 	snprintf(buf, 512, "Coords in dec (%04i, %04i, %02i)",
 	         t.tx, t.ty, t.tz);
-	font->paint_text_fixedwidth(ibuf, buf, 0, 81, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 81 - offsety2, 8);
 }
 
 void CheatScreen::NormalMenu() {
 	char    buf[512];
+#ifdef __IPHONEOS__
+	const int offsetx = 15;
+	const int offsety1 = 73;
+	const int offsety2 = 55;
+	const int offsetx1 = 160;
+	const int offsety4 = 36;
+	const int offsety5 = 72;
+#else
+	const int offsetx = 0;
+	const int offsety1 = 0;
+	const int offsety2 = 0;
+	const int offsetx1 = 0;
+	const int offsety4 = maxy - 45;
+	const int offsety5 = maxy - 36;
+#endif
 
 	// Left Column
 
 	// Use
+#ifndef __IPHONEOS__
+	// Paperdolls can be toggled in the gumps, no need here for iOS
 	Shape_manager *sman = Shape_manager::get_instance();
 	if (sman->can_use_paperdolls() && sman->are_paperdolls_enabled())
 		snprintf(buf, 512, "[P]aperdolls..: Yes");
 	else
 		snprintf(buf, 512, "[P]aperdolls..:  No");
 	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 99, 8);
+#endif
 
 	// GodMode
 	snprintf(buf, 512, "[G]od Mode....: %3s", cheat.in_god_mode() ? "On" : "Off");
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 90, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 90, 8);
 
 	// Archwizzard Mode
 	snprintf(buf, 512, "[W]izard Mode.: %3s", cheat.in_wizard_mode() ? "On" : "Off");
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 81, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 81, 8);
 
 	// Infravision
 	snprintf(buf, 512, "[I]nfravision.: %3s", cheat.in_infravision() ? "On" : "Off");
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 72, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 72, 8);
 
 	// Hackmover
 	snprintf(buf, 512, "[H]ack Mover..: %3s", cheat.in_hack_mover() ? "Yes" : "No");
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 63, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 63, 8);
 
 	// Eggs
 	snprintf(buf, 512, "[E]ggs Visible: %3s", gwin->paint_eggs ? "Yes" : "No");
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 54, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 54, 8);
 
 	// Set Time
-	font->paint_text_fixedwidth(ibuf, "[S]et Time", 0, maxy - 45, 8);
+	font->paint_text_fixedwidth(ibuf, "[S]et Time", offsetx + offsetx1, offsety4, 8);
 
+#ifndef __IPHONEOS__
+	// for iOS taking the liberty of leaving that out
 	// Time Rate
 	snprintf(buf, 512, "[+-] Time Rate: %3i", clock->get_time_rate());
 	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 36, 8);
+#endif
 
 
 	// Right Column
 
 	// NPC Tool
-	font->paint_text_fixedwidth(ibuf, "[N]PC Tool", 160, maxy - 99, 8);
+	font->paint_text_fixedwidth(ibuf, "[N]PC Tool", offsetx + 160, maxy - offsety2 - 99, 8);
 
 	// Global Flag Modify
-	font->paint_text_fixedwidth(ibuf, "[F]lag Modifier", 160, maxy - 90, 8);
+	font->paint_text_fixedwidth(ibuf, "[F]lag Modifier", offsetx + 160, maxy - offsety2 - 90, 8);
 
 	// Teleport
-	font->paint_text_fixedwidth(ibuf, "[T]eleport", 160, maxy - 81, 8);
-
-#if 0
-	// Create Item
-	font->paint_text_fixedwidth(ibuf, "[C]reate Item", 160, maxy - 72, 8);
-#endif
+	font->paint_text_fixedwidth(ibuf, "[T]eleport", offsetx + 160, maxy - offsety2 - 81, 8);
 
 	// eXit
-	font->paint_text_fixedwidth(ibuf, "[X]it", 160, maxy - 36, 8);
-
+	font->paint_text_fixedwidth(ibuf, "[X]it", offsetx + 160, offsety5, 8);
 }
 
 void CheatScreen::NormalActivate(char *input, int &command, Cheat_Prompt &mode) {
@@ -721,13 +790,6 @@ void CheatScreen::NormalActivate(char *input, int &command, Cheat_Prompt &mode) 
 		else if (!input[0]) NPCLoop(-1);
 		else mode = NPCLoop(npc);
 		break;
-
-#if 0
-		// Create
-	case 'c':
-		mode = CP_NotAvail;
-		break;
-#endif
 
 		// Global Flag Editor
 	case 'f':
@@ -824,18 +886,22 @@ bool CheatScreen::NormalCheck(char *input, int &command, Cheat_Prompt &mode, boo
 
 void CheatScreen::ActivityDisplay() {
 	char    buf[512];
-	int i;
+#ifdef __IPHONEOS__
+	const int offsety1 = 99;
+#else
+	const int offsety1 = 0;
+#endif
 
-	for (i = 0; i < 11; i++) {
+	for (int i = 0; i < 11; i++) {
 		snprintf(buf, 512, "%2i %s", i, schedules[i]);
-		font->paint_text_fixedwidth(ibuf, buf, 0, i * 9, 8);
+		font->paint_text_fixedwidth(ibuf, buf, 0, i * 9 + offsety1, 8);
 
 		snprintf(buf, 512, "%2i %s", i + 11, schedules[i + 11]);
-		font->paint_text_fixedwidth(ibuf, buf, 112, i * 9, 8);
+		font->paint_text_fixedwidth(ibuf, buf, 112, i * 9 + offsety1, 8);
 
 		if (i != 10) {
 			snprintf(buf, 512, "%2i %s", i + 22, schedules[i + 22]);
-			font->paint_text_fixedwidth(ibuf, buf, 224, i * 9, 8);
+			font->paint_text_fixedwidth(ibuf, buf, 224, i * 9 + offsety1, 8);
 		}
 	}
 
@@ -855,9 +921,10 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 	int command;
 	bool activate = false;
 
-	int day = 0, hour = 0;
+	int day = 0;
+	int hour = 0;
 
-	while (1) {
+	while (true) {
 		gwin->clear_screen();
 
 		// First the display
@@ -920,6 +987,15 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 
 CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 	bool looping = true;
+#ifdef __IPHONEOS__
+	const int offsetx = 15;
+	const int offsety1 = 83;
+	const int offsety2 = 72;
+#else
+	const int offsetx = 0;
+	const int offsety1 = 0;
+	const int offsety2 = maxy - 36;
+#endif
 
 	// This is for the prompt message
 	Cheat_Prompt mode = CP_Command;
@@ -938,29 +1014,31 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 	while (looping) {
 		gwin->clear_screen();
 
-
+#ifdef __IPHONEOS__
+		// on iOS we want lean and mean, so begone NormalDisplay
+		font->paint_text_fixedwidth(ibuf, "Global Flags", 15, 0, 8);
+#else
 		NormalDisplay();
-
+#endif
 
 		// First the info
 		snprintf(buf, 512, "Global Flag %i", num);
-		font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 99, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 99, 8);
 
 		snprintf(buf, 512, "Flag is %s", usecode->get_global_flag(num) ? "SET" : "UNSET");
-		font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 90, 8);
-
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 90, 8);
 
 		// Now the Menu Column
-		if (!usecode->get_global_flag(num)) font->paint_text_fixedwidth(ibuf, "[S]et Flag", 160, maxy - 99, 8);
-		else font->paint_text_fixedwidth(ibuf, "[U]nset Flag", 160, maxy - 99, 8);
+		if (!usecode->get_global_flag(num)) font->paint_text_fixedwidth(ibuf, "[S]et Flag", offsetx + 160, maxy - offsety1 - 99, 8);
+		else font->paint_text_fixedwidth(ibuf, "[U]nset Flag", offsetx + 160, maxy - offsety1 - 99, 8);
 
 		// Change Flag
-		font->paint_text_fixedwidth(ibuf, "[*] Change Flag", 0, maxy - 72, 8);
-		if (num > 0 && num < c_last_gflag) font->paint_text_fixedwidth(ibuf, "[+-] Scroll Flags", 0, maxy - 63, 8);
-		else if (num == 0) font->paint_text_fixedwidth(ibuf, "[+] Scroll Flags", 0, maxy - 63, 8);
-		else font->paint_text_fixedwidth(ibuf, "[-] Scroll Flags", 0, maxy - 63, 8);
 
-		font->paint_text_fixedwidth(ibuf, "[X]it", 0, maxy - 36, 8);
+		font->paint_text_fixedwidth(ibuf, "[*] Change Flag", offsetx, maxy - offsety1 - 72, 8);
+		if (num > 0 && num < c_last_gflag) font->paint_text_fixedwidth(ibuf, "[+-] Scroll Flags", offsetx, maxy - offsety1 - 63, 8);
+		else if (num == 0) font->paint_text_fixedwidth(ibuf, "[+] Scroll Flags", offsetx, maxy - offsety1 - 63, 8);
+		else font->paint_text_fixedwidth(ibuf, "[-] Scroll Flags", offsetx, maxy - offsety1 - 63, 8);
+		font->paint_text_fixedwidth(ibuf, "[X]it", offsetx, offsety2, 8);
 
 		// Finally the Prompt...
 		SharedPrompt(input, mode);
@@ -1100,6 +1178,13 @@ CheatScreen::Cheat_Prompt CheatScreen::NPCLoop(int num) {
 
 void CheatScreen::NPCDisplay(Actor *actor, int &num) {
 	char    buf[512];
+#ifdef __IPHONEOS__
+	const int offsetx = 15;
+	const int offsety1 = 73;
+#else
+	const int offsetx = 0;
+	const int offsety1 = 0;
+#endif
 	if (actor) {
 		Tile_coord t = actor->get_tile();
 
@@ -1110,107 +1195,108 @@ void CheatScreen::NPCDisplay(Actor *actor, int &num) {
 		// Now the info
 		std::string namestr = actor->get_npc_name();
 		snprintf(buf, 512, "NPC %i - %s", num, namestr.c_str());
-		font->paint_text_fixedwidth(ibuf, buf, 0, 0, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, 0, 8);
 
 		snprintf(buf, 512, "Loc (%04i, %04i, %02i)",
 		         t.tx, t.ty, t.tz);
-		font->paint_text_fixedwidth(ibuf, buf, 0, 9, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, 9, 8);
 
 		snprintf(buf, 512, "Shape %04i:%02i  %s", actor->get_shapenum(), actor->get_framenum(), actor->get_flag(Obj_flags::met) ? "Met" : "Not Met");
-		font->paint_text_fixedwidth(ibuf, buf, 0, 18, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, 18, 8);
 
 		snprintf(buf, 512, "Current Activity: %2i - %s", actor->get_schedule_type(), schedules[actor->get_schedule_type()]);
-		font->paint_text_fixedwidth(ibuf, buf, 0, 36, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 36, 8);
 
 		snprintf(buf, 512, "Experience: %i", actor->get_property(Actor::exp));
-		font->paint_text_fixedwidth(ibuf, buf, 0, 45, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 45, 8);
+
 		snprintf(buf, 512, "Level: %i", actor->get_level());
-		font->paint_text_fixedwidth(ibuf, buf, 144, 45, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx + 144, offsety1 + 45, 8);
 
 		snprintf(buf, 512, "Training: %2i  Health: %2i", actor->get_property(Actor::training), actor->get_property(Actor::health));
-		font->paint_text_fixedwidth(ibuf, buf, 0, 54, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 54, 8);
 
 		if (num != -1) {
 			int ucitemnum = 0x10000 - num;
 			if (!num) ucitemnum = 0xfe9c;
 			snprintf(buf, 512, "Usecode item %4x function %x", ucitemnum, actor->get_usecode());
-			font->paint_text_fixedwidth(ibuf, buf, 0, 63, 8);
+			font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 63, 8);
 		} else {
 			snprintf(buf, 512, "Usecode function %x", actor->get_usecode());
-			font->paint_text_fixedwidth(ibuf, buf, 0, 63, 8);
+			font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 63, 8);
 		}
 
 		if (actor->get_flag(Obj_flags::charmed))
 			snprintf(buf, 512, "Alignment: %s (orig: %s)", alignments[actor->get_effective_alignment()], alignments[actor->get_alignment()]);
 		else
 			snprintf(buf, 512, "Alignment: %s", alignments[actor->get_alignment()]);
-		font->paint_text_fixedwidth(ibuf, buf, 0, 72, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 72, 8);
 
 		if (actor->get_polymorph() != -1) {
 			snprintf(buf, 512, "Polymorphed from %04i", actor->get_polymorph());
-			font->paint_text_fixedwidth(ibuf, buf, 0, 81, 8);
+			font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 81, 8);
 		}
 	} else {
 		snprintf(buf, 512, "NPC %i - Invalid NPC!", num);
-		font->paint_text_fixedwidth(ibuf, buf, 0, 0, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, 0, 8);
 	}
 }
 
 void CheatScreen::NPCMenu(Actor *actor, int &num) {
 	ignore_unused_variable_warning(num);
+#ifdef __IPHONEOS__
+	const int offsetx = 15;
+	const int offsety1 = 74;
+	const int offsetx2 = 15;
+	const int offsety2 = 72;
+	const int offsetx3 = 175;
+	const int offsety3 = 63;
+	const int offsety4 = 72;
+#else
+	const int offsetx = 0;
+	const int offsety1 = 0;
+	const int offsetx2 = 0;
+	const int offsety2 = maxy - 36;
+	const int offsetx3 = offsetx + 160;
+	const int offsety3 = maxy - 45;
+	const int offsety4 = maxy - 36;
+#endif
 	// Left Column
 
-#if 0
-	// Attack Mode
-	if (actor) font->paint_text_fixedwidth(ibuf, "[A]ttack Mode", 0, maxy - 99, 8);
-#endif
-
 	// Business Activity
-	if (actor) font->paint_text_fixedwidth(ibuf, "[B]usiness Activity", 0, maxy - 99, 8);
+	if (actor) font->paint_text_fixedwidth(ibuf, "[B]usiness Activity", offsetx, maxy - offsety1 - 99, 8);
 
 	// Change Shape
-	if (actor) font->paint_text_fixedwidth(ibuf, "[C]hange Shape", 0, maxy - 90, 8);
+	if (actor) font->paint_text_fixedwidth(ibuf, "[C]hange Shape", offsetx, maxy - offsety1 - 90, 8);
 
 	// XP
-	if (actor) font->paint_text_fixedwidth(ibuf, "[E]xperience", 0, maxy - 81, 8);
+	if (actor) font->paint_text_fixedwidth(ibuf, "[E]xperience", offsetx, maxy - offsety1 - 81, 8);
 
 	// NPC Flags
-	if (actor) font->paint_text_fixedwidth(ibuf, "[N]pc Flags", 0, maxy - 72, 8);
+	if (actor) font->paint_text_fixedwidth(ibuf, "[N]pc Flags", offsetx, maxy - offsety1 - 72, 8);
 
 	// Name
-	if (actor) font->paint_text_fixedwidth(ibuf, "[1] Name", 0, maxy - 63, 8);
-
-#if 0
-	// draw Weapon
-	if (actor) font->paint_text_fixedwidth(ibuf, "[D]raw Weapon", 0, maxy - 45, 8);
-#endif
+	if (actor) font->paint_text_fixedwidth(ibuf, "[1] Name", offsetx, maxy - offsety1 - 63, 8);
 
 	// eXit
-	font->paint_text_fixedwidth(ibuf, "[X]it", 0, maxy - 36, 8);
-
+	font->paint_text_fixedwidth(ibuf, "[X]it", offsetx2, offsety2, 8);
 
 	// Right Column
 
 	// Stats
-	if (actor) font->paint_text_fixedwidth(ibuf, "[S]tats", 160, maxy - 99, 8);
-
-#if 0
-	// Target
-	if (actor) font->paint_text_fixedwidth(ibuf, "[Z] Target", 160, maxy - 90, 8);
-#endif
+	if (actor) font->paint_text_fixedwidth(ibuf, "[S]tats", offsetx + 160, maxy - offsety1 - 99, 8);
 
 	// Training Points
-	if (actor) font->paint_text_fixedwidth(ibuf, "[2] Training Points", 160, maxy - 90, 8);
+	if (actor) font->paint_text_fixedwidth(ibuf, "[2] Training Points", offsetx + 160, maxy - offsety1 - 90, 8);
 
 	// Teleport
-	if (actor) font->paint_text_fixedwidth(ibuf, "[T]eleport", 160, maxy - 81, 8);
+	if (actor) font->paint_text_fixedwidth(ibuf, "[T]eleport", offsetx + 160, maxy - offsety1 - 81, 8);
 
 	// Change NPC
-	font->paint_text_fixedwidth(ibuf, "[*] Change NPC", 160, maxy - 45, 8);
+	font->paint_text_fixedwidth(ibuf, "[*] Change NPC", offsetx3, offsety3, 8);
 
 	// Change NPC
-	font->paint_text_fixedwidth(ibuf, "[+-] Scroll NPCs", 160, maxy - 36, 8);
-
+	font->paint_text_fixedwidth(ibuf, "[+-] Scroll NPCs", offsetx3, offsety4, 8);
 }
 
 void CheatScreen::NPCActivate(char *input, int &command, Cheat_Prompt &mode, Actor *actor, int &num) {
@@ -1235,12 +1321,6 @@ void CheatScreen::NPCActivate(char *input, int &command, Cheat_Prompt &mode, Act
 		else if (i == -1) mode = CP_Canceled;
 		else if (input[0]) num = i;
 	} else if (actor) switch (command) {
-#if 0
-		case 'a':   // Attack mode
-			mode = CP_NotAvail;
-			break;
-#endif
-
 		case 'b':   // Business
 			BusinessLoop(actor);
 			break;
@@ -1249,27 +1329,14 @@ void CheatScreen::NPCActivate(char *input, int &command, Cheat_Prompt &mode, Act
 			FlagLoop(actor);
 			break;
 
-#if 0
-		case 'd':   // draw weapon
-			mode = CP_NotAvail;
-			break;
-#endif
-
 		case 's':   // stats
 			StatLoop(actor);
 			break;
-
-#if 0
-		case 'z':   // Target
-			mode = CP_NotAvail;
-			break;
-#endif
 
 		case 't':   // Teleport
 			Game_window::get_instance()->teleport_party(actor->get_tile(),
 			        false, actor->get_map_num());
 			break;
-
 
 		case 'e':   // Experience
 			if (i < 0) mode = CP_Canceled;
@@ -1398,7 +1465,9 @@ bool CheatScreen::NPCCheck(char *input, int &command, Cheat_Prompt &mode, bool &
 //
 
 void CheatScreen::FlagLoop(Actor *actor) {
+#ifndef __IPHONEOS__
 	int num = actor->get_npc_num();
+#endif
 	bool looping = true;
 
 	// This is for the prompt message
@@ -1415,8 +1484,10 @@ void CheatScreen::FlagLoop(Actor *actor) {
 	while (looping) {
 		gwin->clear_screen();
 
+#ifndef __IPHONEOS__
 		// First the display
 		NPCDisplay(actor, num);
+#endif
 
 		// Now the Menu Column
 		FlagMenu(actor);
@@ -1441,83 +1512,92 @@ void CheatScreen::FlagLoop(Actor *actor) {
 
 void CheatScreen::FlagMenu(Actor *actor) {
 	char    buf[512];
+#ifdef __IPHONEOS__
+	const int offsetx = 10;
+	const int offsetx1 = 6;
+	const int offsety1 = 92;
+#else
+	const int offsetx = 0;
+	const int offsetx1 = 0;
+	const int offsety1 = 0;
+#endif
 
 	// Left Column
 
 	// Asleep
 	snprintf(buf, 512, "[A] Asleep.%c", actor->get_flag(Obj_flags::asleep) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 108, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 108, 8);
 
 	// Charmed
 	snprintf(buf, 512, "[B] Charmd.%c", actor->get_flag(Obj_flags::charmed) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 99, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 99, 8);
 
 	// Cursed
 	snprintf(buf, 512, "[C] Cursed.%c", actor->get_flag(Obj_flags::cursed) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 90, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 90, 8);
 
 	// Paralyzed
 	snprintf(buf, 512, "[D] Prlyzd.%c", actor->get_flag(Obj_flags::paralyzed) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 81, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 81, 8);
 
 	// Poisoned
 	snprintf(buf, 512, "[E] Poisnd.%c", actor->get_flag(Obj_flags::poisoned) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 72, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 72, 8);
 
 	// Protected
 	snprintf(buf, 512, "[F] Prtctd.%c", actor->get_flag(Obj_flags::protection) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 63, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 63, 8);
 
 	// Advanced Editor
-	font->paint_text_fixedwidth(ibuf, "[*] Advanced", 0, maxy - 45, 8);
+	font->paint_text_fixedwidth(ibuf, "[*] Advanced", offsetx, maxy - offsety1 - 45, 8);
 
 	// Exit
-	font->paint_text_fixedwidth(ibuf, "[X]it", 0, maxy - 36, 8);
+	font->paint_text_fixedwidth(ibuf, "[X]it", offsetx, maxy - offsety1 - 36, 8);
 
 
 	// Center Column
 
 	// Party
 	snprintf(buf, 512, "[I] Party..%c", actor->get_flag(Obj_flags::in_party) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 104, maxy - 108, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 104, maxy - offsety1 - 108, 8);
 
 	// Invisible
 	snprintf(buf, 512, "[J] Invsbl.%c", actor->get_flag(Obj_flags::invisible) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 104, maxy - 99, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 104, maxy - offsety1 - 99, 8);
 
 	// Fly
 	snprintf(buf, 512, "[K] Fly....%c", actor->get_type_flag(Actor::tf_fly) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 104, maxy - 90, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 104, maxy - offsety1 - 90, 8);
 
 	// Walk
 	snprintf(buf, 512, "[L] Walk...%c", actor->get_type_flag(Actor::tf_walk) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 104, maxy - 81, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 104, maxy - offsety1 - 81, 8);
 
 	// Swim
 	snprintf(buf, 512, "[M] Swim...%c", actor->get_type_flag(Actor::tf_swim) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 104, maxy - 72, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 104, maxy - offsety1 - 72, 8);
 
 	// Ethereal
 	snprintf(buf, 512, "[N] Ethrel.%c", actor->get_type_flag(Actor::tf_ethereal) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 104, maxy - 63, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 104, maxy - offsety1 - 63, 8);
 
 	// Protectee
 	snprintf(buf, 512, "[O] Prtcee.%c", '?');
-	font->paint_text_fixedwidth(ibuf, buf, 104, maxy - 54, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 104, maxy - offsety1 - 54, 8);
 
 	// Conjured
 	snprintf(buf, 512, "[P] Conjrd.%c", actor->get_type_flag(Actor::tf_conjured) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 104, maxy - 45, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 104, maxy - offsety1 - 45, 8);
 
 	// Tournament (Original is SI only -- allowing for BG in Exult)
 	snprintf(buf, 512, "[3] Tourna.%c", actor->get_flag(
 	             Obj_flags::tournament) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 104, maxy - 36, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 104, maxy - offsety1 - 36, 8);
 
 	// Naked (AV ONLY)
 	if (!actor->get_npc_num()) {
 		snprintf(buf, 512, "[7] Naked..%c", actor->get_flag(Obj_flags::naked) ? 'Y' : 'N');
-		font->paint_text_fixedwidth(ibuf, buf, 104, maxy - 27, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 104, maxy - offsety1 - 27, 8);
 	}
 
 
@@ -1525,65 +1605,65 @@ void CheatScreen::FlagMenu(Actor *actor) {
 
 	// Summoned
 	snprintf(buf, 512, "[Q] Summnd.%c", actor->get_type_flag(Actor::tf_summonned) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 108, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 108, 8);
 
 	// Bleeding
 	snprintf(buf, 512, "[R] Bleedn.%c", actor->get_type_flag(Actor::tf_bleeding) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 99, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 99, 8);
 
 	if (!actor->get_npc_num()) { // Avatar
 		// Sex
 		snprintf(buf, 512, "[S] Sex....%c", actor->get_type_flag(Actor::tf_sex) ? 'F' : 'M');
-		font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 90, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 90, 8);
 
 		// Skin
 		snprintf(buf, 512, "[1] Skin...%d", actor->get_skin_color());
-		font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 81, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 81, 8);
 
 		// Read
 		snprintf(buf, 512, "[4] Read...%c", actor->get_flag(Obj_flags::read) ? 'Y' : 'N');
-		font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 72, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 72, 8);
 	} else { // Not Avatar
 		// Met
 		snprintf(buf, 512, "[T] Met....%c", actor->get_flag(Obj_flags::met) ? 'Y' : 'N');
-		font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 90, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 90, 8);
 
 		// NoCast
 		snprintf(buf, 512, "[U] NoCast.%c", actor->get_flag(
 		             Obj_flags::no_spell_casting) ? 'Y' : 'N');
-		font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 81, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 81, 8);
 
 		// ID
 		snprintf(buf, 512, "[V] ID#:%02i", actor->get_ident());
-		font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 72, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 72, 8);
 	}
 
 	// Freeze
 	snprintf(buf, 512, "[W] Freeze.%c", actor->get_flag(
 	             Obj_flags::freeze) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 63, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 63, 8);
 
 	// Party
 	if (actor->is_in_party()) {
 		// Temp
 		snprintf(buf, 512, "[Y] Temp: %02i",
 		         actor->get_temperature());
-		font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 54, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 54, 8);
 
 		// Conjured
 		snprintf(buf, 512, "Warmth: %04i",
 		         actor->figure_warmth());
-		font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 45, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 45, 8);
 	}
 
 	// Polymorph
 	snprintf(buf, 512, "[2] Polymo.%c", actor->get_flag(Obj_flags::polymorph) ? 'Y' : 'N');
-	font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 36, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 36, 8);
 
 	// Patra (AV SI ONLY)
 	if (!actor->get_npc_num()) {
 		snprintf(buf, 512, "[5] Petra..%c", actor->get_flag(Obj_flags::petra) ? 'Y' : 'N');
-		font->paint_text_fixedwidth(ibuf, buf, 208, maxy - 27, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 27, 8);
 	}
 
 }
@@ -1777,7 +1857,7 @@ void CheatScreen::FlagActivate(char *input, int &command, Cheat_Prompt &mode, Ac
 	case '1':   // Skin color
 		actor->set_skin_color(
 		    Shapeinfo_lookup::GetNextSkin(
-		        actor->get_skin_color(), actor->get_type_flag(Actor::tf_sex) != 0,
+		        actor->get_skin_color(), actor->get_type_flag(Actor::tf_sex),
 		        Shape_manager::get_instance()->have_si_shapes()));
 		break;
 
@@ -2008,22 +2088,40 @@ void CheatScreen::BusinessLoop(Actor *actor) {
 void CheatScreen::BusinessDisplay(Actor *actor) {
 	char    buf[512];
 	Tile_coord t = actor->get_tile();
+#ifdef __IPHONEOS__
+	const int offsetx = 10;
+	const int offsety1 = 20;
+	const int offsetx2 = 161;
+	const int offsety2 = 8;
+#else
+	const int offsetx = 0;
+	const int offsety1 = 0;
+	const int offsetx2 = offsetx;
+	const int offsety2 = 16;
+#endif
 
 	// Now the info
 	std::string namestr = actor->get_npc_name();
-	snprintf(buf, 512, "NPC %i - %s", actor->get_npc_num(), namestr.c_str());
-	font->paint_text_fixedwidth(ibuf, buf, 0, 0, 8);
+	snprintf(buf, 512, "NPC %i - %s - Schedules:", actor->get_npc_num(), namestr.c_str());
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 0, 8);
 
 	snprintf(buf, 512, "Loc (%04i, %04i, %02i)", t.tx, t.ty, t.tz);
 	font->paint_text_fixedwidth(ibuf, buf, 0, 8, 8);
 
-	snprintf(buf, 512, "Current Activity:  %2i - %s", actor->get_schedule_type(), schedules[actor->get_schedule_type()]);
-	font->paint_text_fixedwidth(ibuf, buf, 0, 16, 8);
+#ifdef __IPHONEOS__
+	const char activity_msg[] = "-Act: %2i %s";
+#else
+	const char activity_msg[] = "Current Activity:  %2i - %s";
+#endif
+	snprintf(buf, 512, activity_msg, actor->get_schedule_type(), schedules[actor->get_schedule_type()]);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx2, offsety2, 8);
 
 
 	// Avatar can't have schedules
 	if (actor->get_npc_num() > 0) {
-		font->paint_text_fixedwidth(ibuf, "Schedules:", 0, 28, 8);
+#ifndef __IPHONEOS__
+		font->paint_text_fixedwidth(ibuf, "Schedules:", offsetx, 16, 8);
+#endif
 
 		Schedule_change *scheds;
 		int num;
@@ -2044,39 +2142,43 @@ void CheatScreen::BusinessDisplay(Actor *actor) {
 			y[time] = tile.ty;
 		}
 
-		font->paint_text_fixedwidth(ibuf, "12 AM:", 0, 36, 8);
-		font->paint_text_fixedwidth(ibuf, " 3 AM:", 0, 44, 8);
-		font->paint_text_fixedwidth(ibuf, " 6 AM:", 0, 52, 8);
-		font->paint_text_fixedwidth(ibuf, " 9 AM:", 0, 60, 8);
-		font->paint_text_fixedwidth(ibuf, "12 PM:", 0, 68, 8);
-		font->paint_text_fixedwidth(ibuf, " 3 PM:", 0, 76, 8);
-		font->paint_text_fixedwidth(ibuf, " 6 PM:", 0, 84, 8);
-		font->paint_text_fixedwidth(ibuf, " 9 PM:", 0, 92, 8);
+		font->paint_text_fixedwidth(ibuf, "12 AM:", offsetx, 36 - offsety1, 8);
+		font->paint_text_fixedwidth(ibuf, " 3 AM:", offsetx, 44 - offsety1, 8);
+		font->paint_text_fixedwidth(ibuf, " 6 AM:", offsetx, 52 - offsety1, 8);
+		font->paint_text_fixedwidth(ibuf, " 9 AM:", offsetx, 60 - offsety1, 8);
+		font->paint_text_fixedwidth(ibuf, "12 PM:", offsetx, 68 - offsety1, 8);
+		font->paint_text_fixedwidth(ibuf, " 3 PM:", offsetx, 76 - offsety1, 8);
+		font->paint_text_fixedwidth(ibuf, " 6 PM:", offsetx, 84 - offsety1, 8);
+		font->paint_text_fixedwidth(ibuf, " 9 PM:", offsetx, 92 - offsety1, 8);
 
 		for (i = 0; i < 8; i++) if (types[i] != -1) {
 				snprintf(buf, 512, "%2i (%4i,%4i) - %s", types[i], x[i], y[i], schedules[types[i]]);
-				font->paint_text_fixedwidth(ibuf, buf, 56, 36 + i * 8, 8);
+				font->paint_text_fixedwidth(ibuf, buf, offsetx + 56, (36  - offsety1) + i * 8, 8);
 			}
 	}
 }
 
 void CheatScreen::BusinessMenu(Actor *actor) {
 	// Left Column
-
+#ifdef __IPHONEOS__
+	const int offsetx = 10;
+#else
+	const int offsetx = 0;
+#endif
 	// Might break on monster npcs?
 	if (actor->get_npc_num() > 0) {
-		font->paint_text_fixedwidth(ibuf, "12 AM: [A] Set  [I] Location  [1] Clear", 0, maxy - 96, 8);
-		font->paint_text_fixedwidth(ibuf, " 3 AM: [B] Set  [J] Location  [2] Clear", 0, maxy - 88, 8);
-		font->paint_text_fixedwidth(ibuf, " 6 AM: [C] Set  [K] Location  [3] Clear", 0, maxy - 80, 8);
-		font->paint_text_fixedwidth(ibuf, " 9 AM: [D] Set  [L] Location  [4] Clear", 0, maxy - 72, 8);
-		font->paint_text_fixedwidth(ibuf, "12 PM: [E] Set  [M] Location  [5] Clear", 0, maxy - 64, 8);
-		font->paint_text_fixedwidth(ibuf, " 3 PM: [F] Set  [N] Location  [6] Clear", 0, maxy - 56, 8);
-		font->paint_text_fixedwidth(ibuf, " 6 PM: [G] Set  [O] Location  [7] Clear", 0, maxy - 48, 8);
-		font->paint_text_fixedwidth(ibuf, " 9 PM: [H] Set  [P] Location  [8] Clear", 0, maxy - 40, 8);
+		font->paint_text_fixedwidth(ibuf, "12 AM: [A] Set [I] Location [1] Clear", offsetx, maxy - 96, 8);
+		font->paint_text_fixedwidth(ibuf, " 3 AM: [B] Set [J] Location [2] Clear", offsetx, maxy - 88, 8);
+		font->paint_text_fixedwidth(ibuf, " 6 AM: [C] Set [K] Location [3] Clear", offsetx, maxy - 80, 8);
+		font->paint_text_fixedwidth(ibuf, " 9 AM: [D] Set [L] Location [4] Clear", offsetx, maxy - 72, 8);
+		font->paint_text_fixedwidth(ibuf, "12 PM: [E] Set [M] Location [5] Clear", offsetx, maxy - 64, 8);
+		font->paint_text_fixedwidth(ibuf, " 3 PM: [F] Set [N] Location [6] Clear", offsetx, maxy - 56, 8);
+		font->paint_text_fixedwidth(ibuf, " 6 PM: [G] Set [O] Location [7] Clear", offsetx, maxy - 48, 8);
+		font->paint_text_fixedwidth(ibuf, " 9 PM: [H] Set [P] Location [8] Clear", offsetx, maxy - 40, 8);
 
-		font->paint_text_fixedwidth(ibuf, "[S]et Current Activity [X]it [R]evert", 0, maxy - 30, 8);
+		font->paint_text_fixedwidth(ibuf, "[S]et Current Activity [X]it [R]evert", offsetx, maxy - 30, 8);
 	} else
-		font->paint_text_fixedwidth(ibuf, "[S]et Current Activity [X]it", 0, maxy - 30, 8);
+		font->paint_text_fixedwidth(ibuf, "[S]et Current Activity [X]it", offsetx, maxy - 30, 8);
 }
 
 void CheatScreen::BusinessActivate(char *input, int &command, Cheat_Prompt &mode, Actor *actor, int &time, int &prev) {
@@ -2210,7 +2312,6 @@ bool CheatScreen::BusinessCheck(char *input, int &command, Cheat_Prompt &mode, b
 		mode = CP_Activity;
 		break;
 
-
 		// X and Escape leave
 	case SDLK_ESCAPE:
 	case 'x':
@@ -2232,7 +2333,9 @@ bool CheatScreen::BusinessCheck(char *input, int &command, Cheat_Prompt &mode, b
 //
 
 void CheatScreen::StatLoop(Actor *actor) {
-	int num = actor->get_npc_num();
+#ifndef __IPHONEOS__
+    int num = actor->get_npc_num();
+#endif
 	bool looping = true;
 
 	// This is for the prompt message
@@ -2249,8 +2352,10 @@ void CheatScreen::StatLoop(Actor *actor) {
 	while (looping) {
 		gwin->clear_screen();
 
+#ifndef __IPHONEOS__
 		// First the display
 		NPCDisplay(actor, num);
+#endif
 
 		// Now the Menu Column
 		StatMenu(actor);
@@ -2275,45 +2380,51 @@ void CheatScreen::StatLoop(Actor *actor) {
 
 void CheatScreen::StatMenu(Actor *actor) {
 	char    buf[512];
+#ifdef __IPHONEOS__
+	const int offsetx = 15;
+	const int offsety1 = 92;
+#else
+	const int offsetx = 0;
+	const int offsety1 = 0;
+#endif
 
 	// Left Column
 
 	// Dexterity
 	snprintf(buf, 512, "[D]exterity....%3i", actor->get_property(Actor::dexterity));
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 108, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 108 , 8);
 
 	// Food Level
 	snprintf(buf, 512, "[F]ood Level...%3i", actor->get_property(Actor::food_level));
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 99, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 99, 8);
 
 	// Intelligence
 	snprintf(buf, 512, "[I]ntellicence.%3i", actor->get_property(Actor::intelligence));
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 90, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 90, 8);
 
 	// Strength
 	snprintf(buf, 512, "[S]trength.....%3i", actor->get_property(Actor::strength));
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 81, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 81, 8);
 
 	// Combat Skill
 	snprintf(buf, 512, "[C]ombat Skill.%3i", actor->get_property(Actor::combat));
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 72, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 72, 8);
 
 	// Hit Points
 	snprintf(buf, 512, "[H]it Points...%3i", actor->get_property(Actor::health));
-	font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 63, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 63, 8);
 
 	// Magic
-		// Magic Points
-		snprintf(buf, 512, "[M]agic Points.%3i", actor->get_property(Actor::magic));
-		font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 54, 8);
+	// Magic Points
+	snprintf(buf, 512, "[M]agic Points.%3i", actor->get_property(Actor::magic));
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 54, 8);
 
-		// Mana
-		snprintf(buf, 512, "[V]ana Level...%3i", actor->get_property(Actor::mana));
-		font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 45, 8);
+	// Mana
+	snprintf(buf, 512, "[V]ana Level...%3i", actor->get_property(Actor::mana));
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 45, 8);
 
 	// Exit
-	font->paint_text_fixedwidth(ibuf, "[X]it", 0, maxy - 36, 8);
-
+	font->paint_text_fixedwidth(ibuf, "[X]it", offsetx, maxy - offsety1 - 36, 8);
 
 }
 
@@ -2417,9 +2528,17 @@ bool CheatScreen::StatCheck(char *input, int &command, Cheat_Prompt &mode, bool 
 //
 
 CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor *actor) {
+#ifdef __IPHONEOS__
+	const int offsetx = 15;
+	const int offsety1 = 83;
+	const int offsety2 = 72;
+#else
 	int npc_num = actor->get_npc_num();
+	const int offsetx = 0;
+	const int offsety1 = 0;
+	const int offsety2 = maxy - 36;
+#endif
 	bool looping = true;
-
 	// This is for the prompt message
 	Cheat_Prompt mode = CP_Command;
 
@@ -2435,7 +2554,9 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor *actor) {
 	while (looping) {
 		gwin->clear_screen();
 
+#ifndef __IPHONEOS__
 		NPCDisplay(actor, npc_num);
+#endif
 
 		if (num < 0) num = 0;
 		else if (num > 63) num = 63;
@@ -2445,24 +2566,23 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor *actor) {
 			snprintf(buf, 512, "NPC Flag %i: %s", num, flag_names[num]);
 		else
 			snprintf(buf, 512, "NPC Flag %i", num);
-
-		font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 108, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 108, 8);
 
 		snprintf(buf, 512, "Flag is %s", actor->get_flag(num) ? "SET" : "UNSET");
-		font->paint_text_fixedwidth(ibuf, buf, 0, maxy - 90, 8);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 90, 8);
 
 
 		// Now the Menu Column
-		if (!actor->get_flag(num)) font->paint_text_fixedwidth(ibuf, "[S]et Flag", 160, maxy - 90, 8);
-		else font->paint_text_fixedwidth(ibuf, "[U]nset Flag", 160, maxy - 90, 8);
+		if (!actor->get_flag(num)) font->paint_text_fixedwidth(ibuf, "[S]et Flag", offsetx + 160, maxy - offsety1 - 90, 8);
+		else font->paint_text_fixedwidth(ibuf, "[U]nset Flag", offsetx + 160, maxy - offsety1 - 90, 8);
 
 		// Change Flag
-		font->paint_text_fixedwidth(ibuf, "[*] Change Flag", 0, maxy - 72, 8);
-		if (num > 0 && num < 63) font->paint_text_fixedwidth(ibuf, "[+-] Scroll Flags", 0, maxy - 63, 8);
-		else if (num == 0) font->paint_text_fixedwidth(ibuf, "[+] Scroll Flags", 0, maxy - 63, 8);
-		else font->paint_text_fixedwidth(ibuf, "[-] Scroll Flags", 0, maxy - 63, 8);
+		font->paint_text_fixedwidth(ibuf, "[*] Change Flag", offsetx, maxy - offsety1 - 72, 8);
+		if (num > 0 && num < 63) font->paint_text_fixedwidth(ibuf, "[+-] Scroll Flags", offsetx, maxy - offsety1 - 63, 8);
+		else if (num == 0) font->paint_text_fixedwidth(ibuf, "[+] Scroll Flags", offsetx, maxy - offsety1 - 63, 8);
+		else font->paint_text_fixedwidth(ibuf, "[-] Scroll Flags", offsetx, maxy - offsety1 - 63, 8);
 
-		font->paint_text_fixedwidth(ibuf, "[X]it", 0, maxy - 36, 8);
+		font->paint_text_fixedwidth(ibuf, "[X]it", offsetx, offsety2, 8);
 
 		// Finally the Prompt...
 		SharedPrompt(input, mode);
@@ -2606,53 +2726,87 @@ void CheatScreen::TeleportDisplay() {
 	char    buf[512];
 	Tile_coord t = gwin->get_main_actor()->get_tile();
 	int curmap = gwin->get_map()->get_num();
-	int highest = Find_highest_map(); 
+	int highest = Find_highest_map();
+#ifdef __IPHONEOS__
+	const int offsetx = 15;
+	const int offsety1 = 54;
+#else
+	const int offsetx = 0;
+	const int offsety1 = 0;
+#endif
 
-	font->paint_text_fixedwidth(ibuf, "Teleport Menu", 0, 0, 8);
-	font->paint_text_fixedwidth(ibuf, "Dangerous - use with care!", 0, 18, 8);
+#ifdef __IPHONEOS__
+	font->paint_text_fixedwidth(ibuf, "Teleport Menu - Dangerous!", offsetx, 0, 8);
+#else
+	font->paint_text_fixedwidth(ibuf, "Teleport Menu", offsetx, 0, 8);
+	font->paint_text_fixedwidth(ibuf, "Dangerous - use with care!", offsetx, 18, 8);
+#endif
 
 	int longi = ((t.tx - 0x3A5) / 10);
 	int lati = ((t.ty - 0x46E) / 10);
+#ifdef __IPHONEOS__
+	snprintf(buf, 512, "Coords %d %s %d %s, Map #%d of %d",
+		abs(lati), (lati < 0 ? "North" : "South"),
+		abs(longi), (longi < 0 ? "West" : "East"), curmap, highest);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 9, 8);
+#else
 	snprintf(buf, 512, "Coordinates   %d %s %d %s",
 		abs(lati), (lati < 0 ? "North" : "South"),
 		abs(longi), (longi < 0 ? "West" : "East"));
-	font->paint_text_fixedwidth(ibuf, buf, 0, 63, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 63, 8);
+#endif
 
 	snprintf(buf, 512, "Coords in hex (%04x, %04x, %02x)",
 	         t.tx, t.ty, t.tz);
-	font->paint_text_fixedwidth(ibuf, buf, 0, 72, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 72 - offsety1, 8);
 
 	snprintf(buf, 512, "Coords in dec (%04i, %04i, %02i)",
 	         t.tx, t.ty, t.tz);
-	font->paint_text_fixedwidth(ibuf, buf, 0, 81, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 81 - offsety1, 8);
 
-
+#ifndef __IPHONEOS__
 	snprintf(buf, 512, "On Map #%d of %d",
 	         curmap, highest);
-	font->paint_text_fixedwidth(ibuf, buf, 0, 90, 8);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 90, 8);
+#endif
 }
 
 
 void CheatScreen::TeleportMenu() {
-	// Left Column
 
+#ifdef __IPHONEOS__
+	const int offsetx = 15;
+	const int offsety1 = 64;
+	const int offsetx2 = 175;
+	const int offsety2 = 63;
+	const int offsety3 = 72;
+#else
+	const int offsetx = 0;
+	const int offsety1 = 0;
+	const int offsetx2 = offsetx;
+	const int offsety2 = maxy - 63;
+	const int offsety3 = maxy - 36;
+#endif
+
+	// Left Column
 	// Geo
-	font->paint_text_fixedwidth(ibuf, "[G]eographic Coordinates", 0, maxy - 99, 8);
+	font->paint_text_fixedwidth(ibuf, "[G]eographic Coordinates", offsetx, maxy - offsety1 - 99, 8);
+
 
 	// Hex
-	font->paint_text_fixedwidth(ibuf, "[H]exadecimal Coordinates", 0, maxy - 90, 8);
+	font->paint_text_fixedwidth(ibuf, "[H]exadecimal Coordinates", offsetx, maxy - offsety1 - 90, 8);
 
 	// Dec
-	font->paint_text_fixedwidth(ibuf, "[D]ecimal Coordinates", 0, maxy - 81, 8);
+	font->paint_text_fixedwidth(ibuf, "[D]ecimal Coordinates", offsetx, maxy - offsety1 - 81, 8);
 
 	// NPC
-	font->paint_text_fixedwidth(ibuf, "[N]PC Number", 0, maxy - 72, 8);
+	font->paint_text_fixedwidth(ibuf, "[N]PC Number", offsetx, maxy - offsety1 - 72, 8);
 
 	// Map
-		font->paint_text_fixedwidth(ibuf, "[M]ap Number", 0, maxy - 63, 8);
+	font->paint_text_fixedwidth(ibuf, "[M]ap Number", offsetx2, offsety2, 8);
 
 	// eXit
-	font->paint_text_fixedwidth(ibuf, "[X]it", 0, maxy - 36, 8);
+	font->paint_text_fixedwidth(ibuf, "[X]it", offsetx, offsety3, 8);
 }
 
 void CheatScreen::TeleportActivate(char *input, int &command, Cheat_Prompt &mode, int &prev) {
@@ -2729,7 +2883,7 @@ void CheatScreen::TeleportActivate(char *input, int &command, Cheat_Prompt &mode
 		break;
 
 	case 'h':   // hex X coord
-		i = strtol(input, 0, 16);
+		i = strtol(input, nullptr, 16);
 		if (i < -1 || i > c_num_tiles) mode = CP_InvalidValue;
 		else if (i == -1) mode = CP_Canceled;
 		else if (!input[0]) {
@@ -2743,7 +2897,7 @@ void CheatScreen::TeleportActivate(char *input, int &command, Cheat_Prompt &mode
 		break;
 
 	case 'i':   // hex Y coord
-		i = strtol(input, 0, 16);
+		i = strtol(input, nullptr, 16);
 		if (i < -1 || i > c_num_tiles) mode = CP_InvalidValue;
 		else if (i == -1) mode = CP_Canceled;
 		else if (!input[0]) {

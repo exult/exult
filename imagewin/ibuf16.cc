@@ -66,7 +66,8 @@ void Image_buffer16::fill16(
     int srcw, int srch,
     int destx, int desty
 ) {
-	int srcx = 0, srcy = 0;
+	int srcx = 0;
+	int srcy = 0;
 	// Constrain to window's space.
 	if (!clip(srcx, srcy, srcw, srch, destx, desty))
 		return;
@@ -88,7 +89,9 @@ void Image_buffer16::fill_line16(
     int srcw,
     int destx, int desty
 ) {
-	int srcx = 0, srcy = 0, srch = 1;
+	int srcx = 0;
+	int srcy = 0;
+	int srch = 1;
 	// Constrain to window's space.
 	if (!clip(srcx, srcy, srcw, srch, destx, desty))
 		return;
@@ -106,7 +109,8 @@ void Image_buffer16::copy16(
     int srcw, int srch,     // Dimensions of source.
     int destx, int desty
 ) {
-	int srcx = 0, srcy = 0;
+	int srcx = 0;
+	int srcy = 0;
 	int src_width = srcw;       // Save full source width.
 	// Constrain to window's space.
 	if (!clip(srcx, srcy, srcw, srch, destx, desty))
@@ -132,7 +136,9 @@ void Image_buffer16::copy(
     int srcw, int srch,     // Dimensions to copy.
     int destx, int desty        // Where to copy to.
 ) {
-	int ynext, yfrom, yto;      // Figure y stuff.
+	int ynext;
+	int yfrom;
+	int yto;      // Figure y stuff.
 	if (srcy >= desty) {    // Moving up?
 		ynext = line_width;
 		yfrom = srcy;
@@ -160,8 +166,10 @@ void Image_buffer16::get(
     Image_buffer *dest,     // Copy to here.
     int srcx, int srcy      // Upper-left corner of source rect.
 ) {
-	int srcw = dest->get_width(), srch = dest->get_height();
-	int destx = 0, desty = 0;
+	int srcw = dest->get_width();
+	int srch = dest->get_height();
+	int destx = 0;
+	int desty = 0;
 	// Constrain to window's space. (Note
 	//   convoluted use of clip().)
 	if (!clip(destx, desty, srcw, srch, srcx, srcy))
@@ -230,7 +238,7 @@ inline unsigned char Get_color16(
 ) {
 	unsigned int c = (static_cast<unsigned int>(val) * brightness * 32) /
 	                 (100 * (maxval + 1));
-	return (c < 32 ? c : 31);
+	return c < 32 ? c : 31;
 }
 
 /*
@@ -262,7 +270,8 @@ void Image_buffer16::rotate_colors(
 ) {
 	ignore_unused_variable_warning(upd);
 	int cnt = abs(num);
-	unsigned short *start = palette + first, *finish = start + cnt;
+	unsigned short *start = palette + first;
+	unsigned short *finish = start + cnt;
 	if (num > 0) {
 		// Shift upward.
 		rotate(start, finish - 1, finish);
@@ -282,7 +291,8 @@ void Image_buffer16::copy8(
     int srcw, int srch,     // Dimensions of source.
     int destx, int desty
 ) {
-	int srcx = 0, srcy = 0;
+	int srcx = 0;
+	int srcy = 0;
 	int src_width = srcw;       // Save full source width.
 	// Constrain to window's space.
 	if (!clip(srcx, srcy, srcw, srch, destx, desty))
@@ -308,7 +318,9 @@ void Image_buffer16::copy_line8(
     int srcw,           // Width to copy.
     int destx, int desty
 ) {
-	int srcx = 0, srcy = 0, srch = 1;
+	int srcx = 0;
+	int srcy = 0;
+	int srch = 1;
 	// Constrain to window's space.
 	if (!clip(srcx, srcy, srcw, srch, destx, desty))
 		return;
@@ -328,7 +340,8 @@ void Image_buffer16::copy_transparent8(
     int srcw, int srch,     // Dimensions of source.
     int destx, int desty
 ) {
-	int srcx = 0, srcy = 0;
+	int srcx = 0;
+	int srcy = 0;
 	int src_width = srcw;       // Save full source width.
 	// Constrain to window's space.
 	if (!clip(srcx, srcy, srcw, srch, destx, desty))

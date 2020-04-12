@@ -19,14 +19,12 @@
 
 class SoundTester
 	{
-	int song;
-	int sfx;
-	int voice;
-	int active;
-	bool repeat;
+	int song = 0;
+	int sfx = 0;
+	int voice = 0;
+	int active = 0;
+	bool repeat = true;
 public:
-		SoundTester();
-		~SoundTester();
 		void test_sound();
 	};
 	

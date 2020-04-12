@@ -23,7 +23,6 @@
 #include <cstring>
 #include <cstdlib>
 
-#include "sdl-compat.h"
 #include "common_types.h"
 #include "files/U7file.h"
 #include "gamewin.h"
@@ -34,12 +33,8 @@
 
 #include "SDL_timer.h"
 #include "SDL_events.h"
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-#  include "SDL_stdinc.h"
-#  include "SDL_scancode.h"
-#else
-#  include "SDL_keysym.h"
-#endif
+#include "SDL_stdinc.h"
+#include "SDL_scancode.h"
 
 using std::atoi;
 using std::size_t;
@@ -47,30 +42,30 @@ using std::strchr;
 using std::string;
 using std::strlen;
 using std::strncmp;
+using std::unique_ptr;
+using std::make_unique;
 using std::vector;
 
 TextScroller::TextScroller(const char *archive, int index, Font *fnt, Shape *shp) {
 	font = fnt;
 	shapes = shp;
-	U7object *txtobj;
+	unique_ptr<U7object> txtobj;
 	// Hack to patch MAINSHP_FLX.
 	if (!strncmp(archive, MAINSHP_FLX, sizeof(MAINSHP_FLX) - 1))
-		txtobj = new U7multiobject(archive, PATCH_MAINSHP, index);
+		txtobj = make_unique<U7multiobject>(archive, PATCH_MAINSHP, index);
 	else
-		txtobj = new U7object(archive, index);
+		txtobj = make_unique<U7object>(archive, index);
 	size_t len;
-	const char  CR = '\r', LF = '\n';
+	const char  CR = '\r';
+	const char  LF = '\n';
 
-	char *txt, *ptr, *end;
-	txt = txtobj->retrieve(len);
-	delete txtobj;
+	unique_ptr<unsigned char[]> txt = txtobj->retrieve(len);
 	if (!txt || len <= 0) {
-		delete [] txt;
 		text = new vector<string>();
 		return;
 	}
-	ptr = txt;
-	end = ptr + len;
+	char *ptr = reinterpret_cast<char*>(txt.get());
+	char *end = ptr + len;
 
 	text = new vector<string>();
 	while (ptr < end) {
@@ -86,7 +81,6 @@ TextScroller::TextScroller(const char *archive, int index, Font *fnt, Shape *shp
 		} else
 			break;
 	}
-	delete [] txt;
 }
 
 TextScroller::~TextScroller() {
@@ -162,7 +156,7 @@ int TextScroller::show_line(Game_window *gwin, int left, int right, int y, int i
 			}
 			char numerical[4] = {0, 0, 0, 0};
 			char *num = numerical;
-			while (*ptr >= '0' && *ptr <= '9')
+			while (std::isdigit(static_cast<unsigned char>(*ptr)))
 				*num++ = *ptr++;
 			*txtptr++ = atoi(numerical);
 		} else
@@ -178,7 +172,7 @@ int TextScroller::show_line(Game_window *gwin, int left, int right, int y, int i
 
 bool TextScroller::run(Game_window *gwin) {
 	gwin->clear_screen();
-	gwin->show(1);
+	gwin->show(true);
 
 	int topx = (gwin->get_width() - 320) / 2;
 	int topy = (gwin->get_height() - 200) / 2;
@@ -188,7 +182,7 @@ bool TextScroller::run(Game_window *gwin) {
 	unsigned int maxlines = text->size();
 	if (!maxlines) {
 		gwin->clear_screen();
-		gwin->show(1);
+		gwin->show(true);
 		return false;
 	}
 	bool looping = true;
@@ -218,7 +212,7 @@ bool TextScroller::run(Game_window *gwin) {
 			}
 		} while (ypos < endy);
 //		pal.apply();
-		gwin->show(1);
+		gwin->show(true);
 		do {
 			// this could be a problem when too many events are produced
 			while (SDL_PollEvent(&event)) {
@@ -248,7 +242,7 @@ bool TextScroller::run(Game_window *gwin) {
 		starty--;
 	}
 	gwin->clear_screen();
-	gwin->show(1);
+	gwin->show(true);
 	return complete;
 }
 

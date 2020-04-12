@@ -26,7 +26,7 @@ class Actor;
 class Portrait_button;
 
 class Face_stats : public Gump {
-	UNREPLICATABLE_CLASS_I(Face_stats, Gump(0, 0, 0, 0, SF_GUMPS_VGA))
+	UNREPLICATABLE_CLASS(Face_stats)
 	// Only allow for one to be made
 	static Face_stats   *self;
 	static int      mode;
@@ -47,36 +47,36 @@ class Face_stats : public Gump {
 	Rectangle   region;
 
 public:
-	virtual ~Face_stats();
+	~Face_stats() override;
 	// Is a given point on a button?
-	virtual Gump_button *on_button(int mx, int my);
-	virtual void paint();
+	Gump_button *on_button(int mx, int my) override;
+	void paint() override;
 	// Don't close on end_gump_mode
-	virtual bool is_persistent() const {
+	bool is_persistent() const override {
 		return true;
 	}
 	// Can't be dragged with mouse
-	virtual bool is_draggable() const {
+	bool is_draggable() const override {
 		return false;
 	}
 	// Show the hand cursor
-	virtual bool no_handcursor() const {
+	bool no_handcursor() const override {
 		return true;
 	}
 
-	virtual Rectangle get_rect() const {
+	Rectangle get_rect() const override {
 		return region;
 	}
-	virtual bool has_point(int x, int y) const;
+	bool has_point(int x, int y) const override;
 
 	// add dirty region, if dirty
-	virtual void update_gump();
+	void update_gump() override;
 
-	virtual int add(Game_object *obj, int mx = -1, int my = -1,
-	                int sx = -1, int sy = -1, bool dont_check = false,
-	                bool combine = false);
+	bool add(Game_object *obj, int mx = -1, int my = -1,
+	        int sx = -1, int sy = -1, bool dont_check = false,
+	        bool combine = false) override;
 
-	virtual Container_game_object *find_actor(int mx, int my);
+	Container_game_object *find_actor(int mx, int my) override;
 
 	static int get_state() {
 		return self ? mode : -1;

@@ -31,34 +31,30 @@ class ArbScaler {
 protected:
 
 	// Basic scaler function template
-	typedef bool (*ScalerFunc)(SDL_Surface *tex, sint32 sx, sint32 sy, sint32 sw, sint32 sh,
-	                           uint8 *pixel, sint32 dw, sint32 dh, sint32 pitch, bool clamp_src);
+	using ScalerFunc = bool (*)(SDL_Surface *tex, sint32 sx, sint32 sy, sint32 sw, sint32 sh,
+	                            uint8 *pixel, sint32 dw, sint32 dh, sint32 pitch, bool clamp_src);
 
 	//
 	// Basic scaler functions (filled in by the scalers constructor)
 	//
-	ScalerFunc  Scale8To8;
-	ScalerFunc  Scale8To555;
-	ScalerFunc  Scale8To565;
-	ScalerFunc  Scale8To16;
-	ScalerFunc  Scale8To32;
+	ScalerFunc  Scale8To8 = nullptr;
+	ScalerFunc  Scale8To555 = nullptr;
+	ScalerFunc  Scale8To565 = nullptr;
+	ScalerFunc  Scale8To16 = nullptr;
+	ScalerFunc  Scale8To32 = nullptr;
 
-	ScalerFunc  Scale555To555;
-	ScalerFunc  Scale565To565;
-	ScalerFunc  Scale16To16;
-	ScalerFunc  Scale32To32;
+	ScalerFunc  Scale555To555 = nullptr;
+	ScalerFunc  Scale565To565 = nullptr;
+	ScalerFunc  Scale16To16 = nullptr;
+	ScalerFunc  Scale32To32 = nullptr;
 
 public:
-	ArbScaler() : Scale8To8(0), Scale8To555(0), Scale8To565(0), Scale8To16(0), Scale8To32(0),
-		Scale555To555(0), Scale565To565(0), Scale16To16(0), Scale32To32(0)
-	{ }
-
 	virtual const char     *ScalerName() const = 0;         //< Name Of the Scaler (1 word)
 	virtual const char     *ScalerDesc() const = 0;         //< Desciption of the Scaler
 	virtual const char     *ScalerCopyright() const = 0;    //< Scaler Copyright info
 
 	bool Support8bpp(int srcfmt) {
-		return (srcfmt == 8 && Scale8To8);
+		return srcfmt == 8 && Scale8To8;
 	}
 
 	bool Support16bpp(int srcfmt) {
@@ -88,7 +84,7 @@ public:
 					Manip8to565 manip(src_format->palette->colors, dst_format);
 					return Scale8To565(texture, sx, sy, sw, sh,  pixel, dw, dh, pitch, clamp_src);
 				} else if (src_format->BytesPerPixel == 2 && Scale565To565) {
-					Manip565to565 manip(0, dst_format);
+					Manip565to565 manip(nullptr, dst_format);
 					return Scale565To565(texture, sx, sy, sw, sh,  pixel, dw, dh, pitch, clamp_src);
 				}
 			} else if ((r == 0x7c00 && g == 0x3e0 && b == 0x1f) || (b == 0x7c00 && g == 0x3e0 && r == 0x1f)) {
@@ -96,7 +92,7 @@ public:
 					Manip8to555 manip(src_format->palette->colors, dst_format);
 					return Scale8To555(texture, sx, sy, sw, sh,  pixel, dw, dh, pitch, clamp_src);
 				} else if (src_format->BytesPerPixel == 2 && Scale555To555) {
-					Manip555to555 manip(0, dst_format);
+					Manip555to555 manip(nullptr, dst_format);
 					return Scale555To555(texture, sx, sy, sw, sh,  pixel, dw, dh, pitch, clamp_src);
 				}
 			}
@@ -105,7 +101,7 @@ public:
 				Manip8to16 manip(src_format->palette->colors, dst_format);
 				return Scale8To16(texture, sx, sy, sw, sh,  pixel, dw, dh, pitch, clamp_src);
 			} else if (src_format->BytesPerPixel == 2 && Scale16To16) {
-				Manip16to16 manip(0, dst_format);
+				Manip16to16 manip(nullptr, dst_format);
 				return Scale16To16(texture, sx, sy, sw, sh,  pixel, dw, dh, pitch, clamp_src);
 			}
 		} else if (dst_format->BitsPerPixel == 32) {
@@ -113,12 +109,12 @@ public:
 				Manip8to32 manip(src_format->palette->colors, dst_format);
 				return Scale8To32(texture, sx, sy, sw, sh,  pixel, dw, dh, pitch, clamp_src);
 			} else if (src_format->BytesPerPixel == 4 && Scale32To32) {
-				Manip32to32 manip(0, dst_format);
+				Manip32to32 manip(nullptr, dst_format);
 				return Scale32To32(texture, sx, sy, sw, sh,  pixel, dw, dh, pitch, clamp_src);
 			}
 		} else if (dst_format->BitsPerPixel == 8) {
 			if (src_format->BitsPerPixel == 8 && Scale8To8) {
-				Manip8to8 manip(0, dst_format);
+				Manip8to8 manip(nullptr, dst_format);
 				return Scale8To8(texture, sx, sy, sw, sh,  pixel, dw, dh, pitch, clamp_src);
 			}
 		}
@@ -126,7 +122,7 @@ public:
 		return false;
 	}
 
-	virtual ~ArbScaler() { }
+	virtual ~ArbScaler() = default;
 };
 
 }

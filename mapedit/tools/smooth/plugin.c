@@ -6,7 +6,7 @@
  */
 
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <dlfcn.h>
 #endif
 #include <stdio.h>
@@ -18,7 +18,7 @@
 char *plug_error() {
 
 	// Colourless: Unix specific part. Add your #def here
-#ifdef WIN32
+#ifdef _WIN32
 	HRESULT hRes;
 
 	hRes = GetLastError();
@@ -39,7 +39,7 @@ char *plug_error() {
 	} else
 		return 0;
 #else
-	return(dlerror());
+	return dlerror();
 #endif
 }
 
@@ -47,17 +47,17 @@ libhandle_t plug_load(char *plug_name) {
 	libhandle_t a_hdl;
 
 	// Colourless: Unix specific part. Add your #def here
-#ifdef WIN32
+#ifdef _WIN32
 	a_hdl = LoadLibrary(plug_name);
 #else
 	a_hdl = dlopen(plug_name, RTLD_LAZY);
 #endif
 	if (!a_hdl) {
 		fprintf(stderr, "%s\n", plug_error());
-		return(NULL);
+		return NULL;
 	}
 
-	return(a_hdl);
+	return a_hdl;
 
 }
 
@@ -65,16 +65,16 @@ int plug_unload(libhandle_t a_hdl) {
 	// in linux, dlclose return 0 when success and non-zero on error, so let's invert that to be consistant with the rest
 	// in Windows, FreeLibrary returns 0 on failure, non zero on success
 	// Colourless: Unix specific part. Add your #def here
-#ifdef WIN32
+#ifdef _WIN32
 	return FreeLibrary(a_hdl);
 #else
-	return(!dlclose(a_hdl));
+	return !dlclose(a_hdl);
 #endif
 }
 
 void *plug_load_func(libhandle_t a_hdl, char *func_name) {
 	// Colourless: Unix specific part. Add your #def here
-#ifdef WIN32
+#ifdef _WIN32
 	// Need to add _ to the start of the function names in windows
 //	TCHAR strProcName[256] = "_";
 //	strncat(strProcName, func_name, 256);
@@ -82,7 +82,7 @@ void *plug_load_func(libhandle_t a_hdl, char *func_name) {
 	*(FARPROC*)&ret = GetProcAddress(a_hdl, func_name);
 	return ret;
 #else
-	return(dlsym(a_hdl, func_name));
+	return dlsym(a_hdl, func_name);
 #endif
 }
 
@@ -110,12 +110,12 @@ int add_plugin_apply(int col_index, libhandle_t a_hdl) {
 
 	if ((error = plug_error()) != NULL)  {
 		fprintf(stderr, "%s\n", error);
-		return(-1);
+		return -1;
 	}
 	if ((new_node = create_node()) == NULL) {
 		// problem
 		fprintf(stderr, "Couldn't create node\n");
-		return(-1);
+		return -1;
 	}
 	new_node->plugin_apply = apply;
 
@@ -133,7 +133,7 @@ int add_plugin_apply(int col_index, libhandle_t a_hdl) {
 		cursor->next = new_node;
 	}
 	// all done
-	return(0);
+	return 0;
 }
 
 
@@ -144,9 +144,9 @@ int add_plugin_parse(char *line, libhandle_t a_hdl) {
 	*(void**)&teach = plug_load_func(a_hdl, "plugin_parse");
 	if ((error = plug_error()) != NULL) {
 		fprintf(stderr, "%s\n", error);
-		return(-1);
+		return -1;
 	}
-	return((*teach)(line));
+	return (*teach)(line);
 }
 
 node *add_handle(libhandle_t a_hdl, node *list) {
@@ -159,12 +159,12 @@ node *add_handle(libhandle_t a_hdl, node *list) {
 	if ((new_head = create_node()) == NULL) {
 		// problem
 		fprintf(stderr, "WARNING: couldn't create node\n");
-		return(NULL);
+		return NULL;
 	} else {
 		new_head->next = list;
 		new_head->handle = a_hdl;
 	}
 
-	return(new_head);
+	return new_head;
 }
 

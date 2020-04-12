@@ -30,8 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <vector>
 #include <cassert>
 
-const std::string c_empty_string;
-
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -41,9 +39,9 @@ using std::pair;
 
 enum DoOps { DoAdd, DoRem, DoGet };
 
-typedef pair<DoOps, vector<string> > DoListPair;
+using DoListPair = pair<DoOps, vector<string>>;
 
-typedef vector<DoListPair> DoList;
+using DoList = vector<DoListPair>;
 
 DoList          dolist;
 Configuration   *config = new Configuration();
@@ -144,13 +142,13 @@ void process_ops() {
 			assert(i->second.size() == 2);
 			if (verbose) {
 				string s;
-				assert(config != 0);
+				assert(config != nullptr);
 				config->value(i->second[0].c_str(), s, "---nil---");
 				cerr << "Original value of " << i->second[0] << " was " << s << endl;
 
 			}
 
-			assert(config != 0);
+			assert(config != nullptr);
 			config->set(i->second[0].c_str(), i->second[1].c_str(), false);
 
 			if (verbose)
@@ -160,13 +158,13 @@ void process_ops() {
 			assert(i->second.size() == 1);
 			if (verbose) {
 				string s;
-				assert(config != 0);
+				assert(config != nullptr);
 				config->value(i->second[0].c_str(), s, "---nil---");
 				cerr << "Original value was " << i->second[0] << " was " << s << endl;
 
 			}
 
-			assert(config != 0);
+			assert(config != nullptr);
 			config->set(i->second[0].c_str(), "", false);
 
 			if (verbose)
@@ -176,13 +174,13 @@ void process_ops() {
 			assert(i->second.size() == 1);
 			if (verbose) {
 				string s;
-				assert(config != 0);
+				assert(config != nullptr);
 				config->value(i->second[0].c_str(), s, "unknown");
 				cerr << "Return value for " << i->second[0] << " is " << s << endl;
 
 			}
 
-			assert(config != 0);
+			assert(config != nullptr);
 			//config->set(i->second[0].c_str(), "", false);
 			string s;
 			config->value(i->second[0].c_str(), s, "unknown");
@@ -208,12 +206,12 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	assert(config != 0);
+	assert(config != nullptr);
 	config->read_config_file(config_file_name);
 
 	process_ops();
 
-	assert(config != 0);
+	assert(config != nullptr);
 	config->write_back();
 
 	return 0;

@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "uctools.h"
+#include "array_size.h"
 
 static opcode_desc push_table[] = {
 	{"true", 0, 0x13, 0, 0},
@@ -27,7 +28,7 @@ static const char *compiler_table[] = {
 
 char token[TOKEN_LENGTH], *token2, curlabel[256], indata;
 int pass,offset;
-unsigned byte, word, funcnum, datasize, codesize;
+unsigned byteval, word, funcnum, datasize, codesize;
 int extended;
 
 char labels[MAX_LABELS][10];
@@ -87,18 +88,18 @@ void add_label() {
 	offsets[lindex++] = offset;
 }
 
-int get_label(void) {
+int get_label() {
 	unsigned i;
 	for (i = 0; i < lindex; i++) {
 		if (!strcasecmp(token, labels[i]))
-			return(offsets[i]);
+			return offsets[i];
 	}
 	printf("Warning: label '%s' does not exist.\n", token);
 	if (token[0] == 'L')
 		sscanf(token, "L%x", &word);
 	else
 		sscanf(token, "%x", &word);
-	return(word);
+	return word;
 }
 
 void check_jump_label_16(int label) {
@@ -115,14 +116,15 @@ int find_intrinsic(const char **func_table, unsigned funsize, const char *name) 
 	unsigned i;
 	for (i = 0; i < funsize; i++) {
 		if (!strcasecmp(name, func_table[i]))
-			return(i);
+			return i;
 	}
 	printf("Warning: intrinsic '%s' does not exist.\n", name);
-	return(0);
+	return 0;
 }
 
 void read_token(FILE *fi) {
-	int i = 0, c = 32;
+	int i = 0;
+	int c = 32;
 	while (((c == ' ') || (c == '\t') || (c == '\n') || (c == ',')) && (!feof(fi)))
 		c = fgetc(fi);
 	while (!((c == ' ') || (c == '\t') || (c == '\n') || (c == ',')) && (!feof(fi))) {
@@ -157,10 +159,11 @@ void read_token(FILE *fi) {
 }
 
 int main(int argc,char *argv[]) {
-	unsigned i, opsize = sizeof(opcode_table) / sizeof(opcode_desc),
-	       pushsize = sizeof(push_table) / sizeof(opcode_desc),
-	       popsize = sizeof(pop_table) / sizeof(opcode_desc),
-	       compsize = sizeof(compiler_table) / sizeof(char *);
+	unsigned i;
+	unsigned opsize = array_size(opcode_table);
+	unsigned pushsize = array_size(push_table);
+	unsigned popsize = array_size(pop_table);
+	unsigned compsize = array_size(compiler_table);
 	int label;
 	const char **func_table = bg_intrinsic_table;
 	int funsize = bg_intrinsic_size;
@@ -188,11 +191,11 @@ int main(int argc,char *argv[]) {
 	lindex = 0;
 	for (pass = 0; pass < 2; pass++) {
 		//          printf("Pass %d\n",pass+1);
-		if ((fi = fopen(argv[findex], "r")) == NULL) {
+		if ((fi = fopen(argv[findex], "r")) == nullptr) {
 			printf("Can't open infile for reading\n");
 			exit(0);
 		}
-		if ((fo = fopen(argv[findex + 1], "wb")) == NULL) {
+		if ((fo = fopen(argv[findex + 1], "wb")) == nullptr) {
 			printf("Can't open outfile for writing\n");
 			exit(0);
 		}
@@ -247,8 +250,8 @@ int main(int argc,char *argv[]) {
 					for (i = 1; i < strlen(token); i++)
 						emit_byte(token[i]);
 				else {
-					sscanf(token, "%x", &byte);
-					emit_byte(byte);
+					sscanf(token, "%x", &byteval);
+					emit_byte(byteval);
 				}
 			} else if (!strcasecmp(token, "dw")) {
 				read_token(fi);
@@ -274,7 +277,7 @@ int main(int argc,char *argv[]) {
 							case op_call:
 								emit_byte(i);
 								read_token(fi);
-								if ((token2 = strchr(token, '@')) != NULL) {
+								if ((token2 = strchr(token, '@')) != nullptr) {
 									*token2++ = 0;
 									if (token[0] != '_')
 										word = find_intrinsic(func_table, funsize, token);
@@ -415,15 +418,6 @@ int main(int argc,char *argv[]) {
 								break;
 							case op_sloop:
 							case op_static_sloop:
-#if 0
-								emit_byte(0x2E);
-								if (pass == 0) {
-									sscanf(curlabel, "%x:", &word);
-									sprintf(token, "%04X:", word + 1);
-									printf("adding sloop label %s (curlabel=%s)\n", token, curlabel);
-									add_label();
-								}
-#endif
 								emit_byte(0x02);
 								read_token(fi);
 								sscanf(token, "[%x]", &word);
@@ -447,15 +441,6 @@ int main(int argc,char *argv[]) {
 									emit_word(-1);
 								break;
 							case op_sloop32:
-#if 0
-								emit_byte(0xAE);
-								if (pass == 0) {
-									sscanf(curlabel, "%x:", &word);
-									sprintf(token, "%04X:", word + 1);
-									printf("adding sloop label %s (curlabel=%s)\n", token, curlabel);
-									add_label();
-								}
-#endif
 								emit_byte(0x82);
 								read_token(fi);
 								sscanf(token, "[%x]", &word);

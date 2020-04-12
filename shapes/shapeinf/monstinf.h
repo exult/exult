@@ -39,14 +39,12 @@ class Shapes_vga_file;
  *  An element from 'equip.dat', describing a monster's equipment:
  */
 class Equip_element {
-	unsigned short shapenum;    // What to create, or 0 for nothing.
-	unsigned char probability;  // 0-100:  probabilit of creation.
-	unsigned char quantity;     // # to create.
+	unsigned short shapenum = 0;    // What to create, or 0 for nothing.
+	unsigned char probability = 0;  // 0-100:  probabilit of creation.
+	unsigned char quantity = 0;     // # to create.
 public:
 	friend class Monster_info;
 	friend class Monster_actor;
-	Equip_element() : shapenum(0), probability(0), quantity(0)
-	{  }
 	void set(int shnum, int prob, int quant) {
 		shapenum = shnum;
 		probability = prob;
@@ -71,8 +69,6 @@ class Equip_record {
 public:
 	friend class Monster_info;
 	friend class Monster_actor;
-	Equip_record()
-	{  }
 	// Set i'th element.
 	void set(int i, int shnum, int prob, int quant) {
 		elements[i].set(shnum, prob, quant);
@@ -127,7 +123,6 @@ class Monster_info : public Base_info {
 public:
 	friend class Shape_info;
 	friend class Monster_actor;
-	Monster_info() {  }
 	// Read in from file.
 	bool read(std::istream &in, int version, Exult_Game game);
 	// Write out.

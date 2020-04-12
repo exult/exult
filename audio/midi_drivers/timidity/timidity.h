@@ -33,13 +33,13 @@ namespace NS_TIMIDITY {
 struct MidiSong;
 
 //extern int Timidity_Init(int rate, int format, int channels, int samples);
-extern char *Timidity_Error(void);
+extern char *Timidity_Error();
 extern void Timidity_SetVolume(int volume);
 extern int Timidity_PlaySome(void *stream, int samples);
 extern MidiSong *Timidity_LoadSong(char *midifile);
 extern void Timidity_Start(MidiSong *song);
-extern int Timidity_Active(void);
-extern void Timidity_Stop(void);
+extern int Timidity_Active();
+extern void Timidity_Stop();
 extern void Timidity_FreeSong(MidiSong *song);
 
 
@@ -53,7 +53,7 @@ extern void Timidity_FreeSong(MidiSong *song);
 
 int Timidity_Init_Simple(int rate, int samples, sint32 encoding);
 void Timidity_DeInit();
-extern void Timidity_FinalInit(bool patches[128], bool drums[128]);
+extern void Timidity_FinalInit(const bool patches[128], const bool drums[128]);
 extern void Timidity_PlayEvent(unsigned char status, int a, int b);
 extern void Timidity_GenerateSamples(void *stream, int samples);
 
@@ -68,7 +68,7 @@ extern void Timidity_GenerateSamples(void *stream, int samples);
 /* When a patch file can't be opened, one of these extensions is
    appended to the filename and the open is tried again.
  */
-#define PATCH_EXT_LIST { ".pat", 0 }
+#define PATCH_EXT_LIST { ".pat", nullptr }
 
 /* Acoustic Grand Piano seems to be the usual default instrument. */
 #define DEFAULT_PROGRAM 0
@@ -243,14 +243,14 @@ extern void Timidity_GenerateSamples(void *stream, int samples);
 #define AMP_BITS (15-GUARD_BITS)
 
 #ifdef LOOKUP_HACK
-   typedef sint8 sample_t;
-   typedef uint8 final_volume_t;
+   using sample_t = sint8;
+   using final_volume_t = uint8;
 #  define FINAL_VOLUME(v) (~_l2u[v])
 #  define MIXUP_SHIFT 5
 #  define MAX_AMP_VALUE 4095
 #else
-   typedef sint16 sample_t;
-   typedef sint32 final_volume_t;
+   using sample_t = sint16;
+   using final_volume_t = sint32;
 #  define FINAL_VOLUME(v) (v)
 #  define MAX_AMP_VALUE ((1<<(AMP_BITS+1))-1)
 #endif

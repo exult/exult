@@ -25,40 +25,29 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace Pentagram {
 
-AudioSample::AudioSample(uint8 *buffer_, uint32 size_) : 
+AudioSample::AudioSample(std::unique_ptr<uint8[]> buffer_, uint32 size_) : 
 		sample_rate(0), bits(0), stereo(false), 
-		frame_size(0), decompressor_size(0), length(0), 
-		buffer_size(size_), buffer(buffer_), refcount(1)
+		frame_size(0), decompressor_size(0), decompressor_align(0), length(0), 
+		buffer_size(size_), buffer(std::move(buffer_)), refcount(1)
 {
 }
-
-AudioSample::~AudioSample(void)
+AudioSample *AudioSample::createAudioSample(std::unique_ptr<uint8[]> data, uint32 size)
 {
-	delete [] buffer;
-}
-
-AudioSample *AudioSample::createAudioSample(uint8 *data, uint32 size)
-{
-	IBufferDataSource ds(data,size);
+	IBufferDataView ds(data, size);
 
 	if (VocAudioSample::isThis(&ds))
 	{
-		return new VocAudioSample(data,size);
+		return new VocAudioSample(std::move(data), size);
 	}
 	else if (WavAudioSample::isThis(&ds))
 	{
-		return new WavAudioSample(data,size);
+		return new WavAudioSample(std::move(data), size);
 	}
 	else if (OggAudioSample::isThis(&ds))
 	{
-		return new OggAudioSample(data,size);
+		return new OggAudioSample(std::move(data), size);
 	}
-	else
-	{
-		delete [] data;
-	}
-
-	return 0;
+	return nullptr;
 }
 
 }

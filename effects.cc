@@ -49,6 +49,7 @@ using namespace Pentagram;
 using std::rand;
 using std::string;
 using std::strlen;
+using std::vector;
 
 int Cloud::randcnt = 0;
 int Lightning_effect::active = 0;
@@ -121,7 +122,7 @@ void Effects_manager::add_effect(
     Special_effect *effect
 ) {
 	effect->next = effects;     // Insert into chain.
-	effect->prev = 0;
+	effect->prev = nullptr;
 	if (effect->next)
 		effect->next->prev = effect;
 	effects = effect;
@@ -135,7 +136,7 @@ void Effects_manager::add_text_effect(
     Text_effect *effect
 ) {
 	effect->next = texts;       // Insert into chain.
-	effect->prev = 0;
+	effect->prev = nullptr;
 	if (effect->next)
 		effect->next->prev = effect;
 	texts = effect;
@@ -337,7 +338,7 @@ Sprites_effect::Sprites_effect(
     int delay,          // Delay (msecs) before starting.
     int frm,            // Starting frame.
     int rps             // Reps, or <0 to go through frames.
-) : sprite(num, frm, SF_SPRITES_VGA), item(0), pos(p),
+) : sprite(num, frm, SF_SPRITES_VGA), pos(p),
 	xoff(0), yoff(0), deltax(dx), deltay(dy), reps(rps) {
 	Game_window *gwin = Game_window::get_instance();
 	frames = sprite.get_num_frames();
@@ -356,9 +357,9 @@ Sprites_effect::Sprites_effect(
     int dx, int dy,         // Add to offset on each frame.
     int frm,            // Starting frame.
     int rps             // Reps, or <0 to go through frames.
-) : sprite(num, frm, SF_SPRITES_VGA), item(it), xoff(xf),
+) : sprite(num, frm, SF_SPRITES_VGA), item(weak_from_obj(it)), xoff(xf),
 	yoff(yf), deltax(dx), deltay(dy), reps(rps) {
-	pos = item->get_tile();
+	pos = it->get_tile();
 	Game_window *gwin = Game_window::get_instance();
 	frames = sprite.get_num_frames();
 	// Start immediately.
@@ -403,8 +404,9 @@ void Sprites_effect::handle_event(
 	}
 	add_dirty(frame_num);       // Clear out old.
 	gwin->set_painted();
-	if (item)           // Following actor?
-		pos = item->get_tile();
+    Game_object_shared item_obj = item.lock();
+	if (item_obj)           // Following actor?
+		pos = item_obj->get_tile();
 	xoff += deltax;         // Add deltas.
 	yoff += deltay;
 	frame_num++;            // Next frame.
@@ -460,19 +462,20 @@ Explosion_effect::Explosion_effect(
     //   -1 for default(704 = powder keg).
     int proj,       // Projectile for e.g., burst arrows, 0 otherwise
     Game_object *att    //who is responsible for the explosion
-    //  or 0 for default
+    //  or nullptr for default
     //Different sprites for different explosion types
 ) : Sprites_effect(get_explosion_shape(weap, proj), p, 0, 0, delay),
-	explode(exp), weapon(weap >= 0 ? weap : (proj >= 0 ? proj : 704)),
+	explode(weak_from_obj(exp)),
+	weapon(weap >= 0 ? weap : (proj >= 0 ? proj : 704)),
 	projectile(proj), exp_sfx(get_explosion_sfx(weap, proj)),
-	attacker(att) {
+	attacker(weak_from_obj(att)) {
 	//if (exp && exp->get_shapenum() == 704)  // powderkeg
 	if (exp && exp->get_info().is_explosive())  // powderkeg
 		exp->set_quality(1); // mark as detonating
 
-	if (!attacker || !attacker->as_actor())
+	if (!att || !att->as_actor())
 		// Blame avatar: if we have no living attacker.
-		attacker = gwin->get_main_actor();
+		attacker = weak_from_obj(gwin->get_main_actor());
 }
 
 
@@ -486,19 +489,28 @@ void Explosion_effect::handle_event(
 	}
 	if (frnum == frames / 4) {
 		// this was in ~Explosion_effect before
-		if (explode && !explode->is_pos_invalid()) {
-			Game_window::get_instance()->add_dirty(explode);
-			explode->remove_this();
-			explode = 0;
+		Game_object_shared exp_obj = explode.lock();
+		if (exp_obj && !exp_obj->is_pos_invalid()) {
+			Game_window::get_instance()->add_dirty(exp_obj.get());
+			exp_obj->remove_this();
+			explode = Game_object_weak();
 		}
 		Shape_frame *shape = sprite.get_shape();
 		int width = shape->get_width();     //Get the sprite's width
 		Game_object_vector vec; // Find objects near explosion.
 		Game_object::find_nearby(vec, pos, c_any_shapenum,
 		                         width / (2 * c_tilesize), 0);
-		for (Game_object_vector::const_iterator it = vec.begin(); it != vec.end(); ++it) {
-			Game_object *obj = *it;
-			obj->attacked(attacker, weapon, projectile, true);
+        // Objects could disappear due to Avatar being killed and teleported.
+		vector<Game_object_weak> cvec(vec.size());
+		Game_object::obj_vec_to_weak(cvec, vec);
+		for (vector<Game_object_weak>::const_iterator it = cvec.begin();
+													  it != cvec.end(); ++it) {
+			Game_object_shared obj = (*it).lock();
+			if (obj) {
+			    Game_object_shared att_obj = attacker.lock();
+			    obj->attacked(att_obj.get(), weapon, projectile,
+													   		   true);
+			}
 		}
 	}
 	Sprites_effect::handle_event(curtime, udata);
@@ -540,29 +552,31 @@ void Projectile_effect::init(
 		no_blocking = no_blocking || ainfo->no_blocking();
 		autohit = autohit || ainfo->autohits();
 	}
-	if (attacker) {         // Try to set start better.
-		int dir = target ?
-		          attacker->get_direction(target) :
-		          attacker->get_direction(d);
-		pos = attacker->get_missile_tile(dir);
+	Game_object_shared att_obj = attacker.lock();
+	Game_object_shared tgt_obj = target.lock();
+	if (att_obj) {         // Try to set start better.
+		int dir = tgt_obj ?
+		          att_obj->get_direction(tgt_obj.get()) :
+		          att_obj->get_direction(d);
+		pos = att_obj->get_missile_tile(dir);
 	} else
 		pos = s;            // Get starting position.
 
 	Tile_coord dst = d;
-	if (target)         // Try to set end better.
-		dst = target->get_center_tile();
+	if (tgt_obj)         // Try to set end better.
+		dst = tgt_obj->get_center_tile();
 	else
 		dst.tz = pos.tz;
 	path = new Zombie();        // Create simple pathfinder.
 	// Find path.  Should never fail.
 	bool explodes = (winfo && winfo->explodes()) || (ainfo && ainfo->explodes());
 	if (explodes && ainfo && ainfo->is_homing())
-		path->NewPath(pos, pos, 0); //A bit of a hack, I know...
+		path->NewPath(pos, pos, nullptr); //A bit of a hack, I know...
 	else {
-		path->NewPath(pos, dst, 0);
-		if (attacker) {
+		path->NewPath(pos, dst, nullptr);
+		if (att_obj) {
 			// Getprojectile  out of shooter's volume.
-			Block vol = attacker->get_block();
+			Block vol = att_obj->get_block();
 			Tile_coord t;
 			bool done;
 			while (path->GetNextStep(t, done))
@@ -590,7 +604,8 @@ void Projectile_effect::set_sprite_shape(
 	frames = sprite.get_num_frames();
 	if (frames >= 24) {     // Use frames 8-23, for direction
 		//   going clockwise from North.
-		Tile_coord src = path->get_src(), dest = path->get_dest();
+		Tile_coord src = path->get_src();
+		Tile_coord dest = path->get_dest();
 		int dir = Get_dir16(src, dest);
 		sprite.set_frame(8 + dir);
 	}
@@ -613,7 +628,8 @@ Projectile_effect::Projectile_effect(
     int spr,            // Shape to render on-screen or -1 for none.
     int attpts,         // Attack points of projectile.
     int spd             // Projectile speed, or -1 to use default.
-) : attacker(att), target(to), weapon(weap), projectile_shape(proj),
+) : attacker(weak_from_obj(att)), target(weak_from_obj(to)),
+    weapon(weap), projectile_shape(proj),
 	sprite(spr, 0), return_path(false),  skip_render(spr < 0),
 	speed(spd), attval(attpts), autohit(false) {
 	init(att->get_tile(), to->get_tile());
@@ -632,7 +648,8 @@ Projectile_effect::Projectile_effect(
     int attpts,         // Attack points of projectile.
     int spd,            // Projectile speed, or -1 to use default.
     bool retpath            // Return of a boomerang.
-) : attacker(att), target(0), weapon(weap), projectile_shape(proj),
+) : attacker(weak_from_obj(att)), weapon(weap),
+	projectile_shape(proj),
 	sprite(spr, 0), return_path(retpath), skip_render(spr < 0),
 	speed(spd), attval(attpts), autohit(false) {
 	init(att->get_tile(), d);
@@ -651,7 +668,8 @@ Projectile_effect::Projectile_effect(
     int attpts,         // Attack points of projectile.
     int spd,            // Projectile speed, or -1 to use default.
     bool retpath            // Return of a boomerang.
-) : attacker(0), target(to), weapon(weap), projectile_shape(proj),
+) : target(weak_from_obj(to)),
+	weapon(weap), projectile_shape(proj),
 	sprite(spr, 0), return_path(retpath), skip_render(spr < 0),
 	speed(spd), attval(attpts), autohit(false) {
 	init(s, to->get_tile());
@@ -689,7 +707,7 @@ inline void Projectile_effect::add_dirty(
  *  @return target hit, or 0.
  */
 
-inline Game_object *Find_target(
+inline Game_object_shared Find_target(
     Game_window *gwin,
     Tile_coord pos
 ) {
@@ -699,8 +717,9 @@ inline Game_object *Find_target(
 	Tile_coord dest = pos;      // This gets modified.
 	if (!Map_chunk::is_blocked(pos, 1, MOVE_FLY, 0) &&
 	        dest == pos)
-		return (0);
-	return Game_object::find_blocking(pos);
+		return nullptr;
+    Game_object *ptr = Game_object::find_blocking(pos);
+	return shared_from_obj(ptr);
 }
 
 /**
@@ -721,22 +740,27 @@ void Projectile_effect::handle_event(
 		sprite.set_frame(new_frame > 23 ? ((new_frame - 8) % 16) + 8 : new_frame);
 	}
 	bool path_finished = false;
+	Game_object_shared att_obj = attacker.lock();
+	Game_object_shared tgt_obj = target.lock();
 	for (int i = 0; i < speed; i++) {
 		// This speeds up the missile.
-		path_finished = (path->GetNextStep(pos) == 0) ||    // Get next spot.
-		                // If missile egg, detect target.
-		                (!target && !no_blocking && (target = Find_target(gwin, pos)) != 0);
-		if (path_finished)
+		path_finished = !path->GetNextStep(pos) ||    // Get next spot.
+		           // If missile egg, detect target.
+		       (!tgt_obj && !no_blocking &&
+			   			 (tgt_obj = Find_target(gwin, pos)) != nullptr);
+		if (path_finished) {
+		    target = Game_object_weak(tgt_obj);
 			break;
+		}
 	}
 	const Ammo_info *ainf = ShapeID::get_info(projectile_shape).get_ammo_info();
 	if (path_finished) {
 		// Done?
 		bool explodes = (winf && winf->explodes()) || (ainf && ainf->explodes());
 		if (return_path) {  // Returned a boomerang?
-			Ireg_game_object *obj =
+			Ireg_game_object_shared obj =
 			    gmap->create_ireg_object(sprite.get_shapenum(), 0);
-			if (!target || !target->add(obj)) {
+			if (!tgt_obj || !tgt_obj->add(obj.get())) {
 				obj->set_flag(Obj_flags::okay_to_take);
 				obj->set_flag(Obj_flags::is_temporary);
 				obj->move(pos.tx, pos.ty, pos.tz, -1);
@@ -744,42 +768,43 @@ void Projectile_effect::handle_event(
 		} else if (explodes) { // Do this here (don't want to explode
 			// returning weapon).
 			Tile_coord offset;
-			if (target)
-				offset = Tile_coord(0, 0, target->get_info().get_3d_height() / 2);
+			if (tgt_obj)
+				offset = Tile_coord(0, 0, tgt_obj->get_info().get_3d_height() / 2);
 			else
 				offset = Tile_coord(0, 0, 0);
 			if (ainf && ainf->is_homing())
 				eman->add_effect(new Homing_projectile(weapon,
-				                                       attacker, target, pos, pos + offset));
+	                        att_obj.get(), tgt_obj.get(), pos, pos + offset));
 			else
 				eman->add_effect(new Explosion_effect(pos + offset,
-				                                      0, 0, weapon, projectile_shape, attacker));
-			target = 0; // Takes care of attack.
+			                 nullptr, 0, weapon, projectile_shape, att_obj.get()));
+			target = Game_object_weak(); // Takes care of attack.
 		} else {
 			// Not teleported away ?
 			bool returns = (winf && winf->returns()) || (ainf && ainf->returns());
 			bool hit = false;
-			if (target && attacker != target &&
+			if (tgt_obj && att_obj != tgt_obj &&
 			        // Aims for center tile, so check center tile.
-			        target->get_center_tile().distance(pos) < 3) {
-				hit = autohit || target->try_to_hit(attacker, attval);
+			        tgt_obj->get_center_tile().distance(pos) < 3) {
+				hit = autohit || tgt_obj->try_to_hit(att_obj.get(), attval);
 				if (hit) {
-					target->play_hit_sfx(weapon, true);
-					target->attacked(attacker, weapon, projectile_shape, false);
+					tgt_obj->play_hit_sfx(weapon, true);
+					tgt_obj->attacked(att_obj.get(),
+									weapon, projectile_shape, false);
 				}
 			} else {
 				// Hack warning: this exists solely to make Mind Blast (SI)
 				// work as it does in the original when you target the
 				// avatar with the spell.
 				if (winf && winf->get_usecode() > 0)
-					ucmachine->call_usecode(winf->get_usecode(), 0,
+					ucmachine->call_usecode(winf->get_usecode(), nullptr,
 					                        Usecode_machine::weapon);
 			}
-			if (returns && attacker &&  // boomerangs
-			        attacker->distance(pos) < 50) {
+			if (returns && att_obj &&  // boomerangs
+			        att_obj->distance(pos) < 50) {
 				// not teleported away
 				Projectile_effect *proj = new Projectile_effect(
-				    pos, attacker, weapon, projectile_shape,
+				    pos, att_obj.get(), weapon, projectile_shape,
 				    sprite.get_shapenum(), attval, speed, true);
 				proj->set_speed(speed);
 				proj->set_sprite_shape(sprite.get_shapenum());
@@ -791,19 +816,19 @@ void Projectile_effect::handle_event(
 				if (!winf)
 					drop = true;
 				else if (ainf) {
-					int ammo = winf->get_ammo_consumed(),
-					    type = ainf->get_drop_type();
+					int ammo = winf->get_ammo_consumed();
+					int type = ainf->get_drop_type();
 					drop = (ammo >= 0 || ammo == -3) &&
 					       (type == Ammo_info::always_drop ||
 					        (!hit && type != Ammo_info::never_drop));
 				}
 				if (drop) {
 					Tile_coord dpos = Map_chunk::find_spot(pos, 3,
-					                                       sprite.get_shapenum(), 0, 1);
+					                              sprite.get_shapenum(), 0, 1);
 					if (dpos.tx != -1) {
-						Game_object *aobj = gmap->create_ireg_object(
+						Game_object_shared aobj = gmap->create_ireg_object(
 						                        sprite.get_shapenum(), 0);
-						if (!attacker || attacker->get_flag(Obj_flags::is_temporary))
+						if (!att_obj || att_obj->get_flag(Obj_flags::is_temporary))
 							aobj->set_flag(Obj_flags::is_temporary);
 						aobj->set_flag(Obj_flags::okay_to_take);
 						aobj->move(dpos);
@@ -849,11 +874,11 @@ Homing_projectile::Homing_projectile(   // A better name is welcome...
 	next_damage_time(0), sfx(ShapeID::get_info(shnum).get_explosion_sfx()),
 	channel(-1) {
 	weapon = shnum;
-	attacker = att;
+	attacker = weak_from_obj(att);
 	pos = sp;
 	dest = tp;
-	target = trg ? trg->as_actor() : 0;
-	stationary = target ? false : true; //If true, the sprite will 'park' at dest
+	target = trg ? trg->as_actor() : nullptr;
+	stationary = target == nullptr; //If true, the sprite will 'park' at dest
 	Game_window *gwin = Game_window::get_instance();
 	frames = sprite.get_num_frames();
 	// Go for 20 seconds.
@@ -894,8 +919,9 @@ void Homing_projectile::handle_event(
 	if ((target && !target->is_dead()) || stationary) {
 		//Move to target/destination if needed
 		Tile_coord tpos = stationary ? dest : target->get_tile();
-		int deltax = tpos.tx - pos.tx, deltay = tpos.ty - pos.ty,
-		    deltaz = tpos.tz +
+		int deltax = tpos.tx - pos.tx;
+		int deltay = tpos.ty - pos.ty;
+		int deltaz = tpos.tz +
 		             (stationary ? 0 : target->get_info().get_3d_height() / 2) - pos.tz;
 		int absx = deltax >= 0 ? deltax : -deltax;
 		int absy = deltay >= 0 ? deltay : -deltay;
@@ -913,7 +939,7 @@ void Homing_projectile::handle_event(
 		//The target has been killed; find another one
 		Actor_vector npcs;  // Find NPC's.
 		Game_object::find_nearby_actors(npcs, pos, -1, 30);
-		Actor *nearest = 0;
+		Actor *nearest = nullptr;
 		uint32 bestdist = 100000;
 		for (Actor_vector::const_iterator it = npcs.begin();
 		        it != npcs.end(); ++it) {
@@ -921,7 +947,9 @@ void Homing_projectile::handle_event(
 			if (!npc->is_in_party() && !npc->is_dead() &&
 			        (npc->get_effective_alignment() >= Actor::evil)) {
 				Tile_coord npos = npc->get_tile();
-				int dx = npos.tx - pos.tx, dy = npos.ty - pos.ty, dz = npos.tz - pos.tz;
+				int dx = npos.tx - pos.tx;
+				int dy = npos.ty - pos.ty;
+				int dz = npos.tz - pos.tz;
 				uint32 dist = dx * dx + dy * dy + dz * dz;
 				if (dist < bestdist) {
 					bestdist = dist;
@@ -939,10 +967,12 @@ void Homing_projectile::handle_event(
 		for (Actor_vector::const_iterator it = npcs.begin();
 		        it != npcs.end(); ++it) {
 			Actor *npc = *it;
-			if (!npc->is_in_party())
+			if (!npc->is_in_party()) {
 				//Still powerful, but no longer overkill...
 				//also makes the enemy react, which is good
-				npc->attacked(attacker, weapon, weapon, true);
+				Game_object_shared att_obj = attacker.lock();
+				npc->attacked(att_obj.get(), weapon, weapon, true);
+			}
 		}
 	}
 	sprite.set_frame((sprite.get_framenum() + 1) % frames);
@@ -981,14 +1011,15 @@ void Homing_projectile::paint(
 
 Rectangle Text_effect::Figure_text_pos() {
 	Game_window *gwin = Game_window::get_instance();
-	if (item) {
+    Game_object_shared item_obj = item.lock();
+	if (item_obj) {
 		Gump_manager *gumpman = gwin->get_gump_man();
 		// See if it's in a gump.
-		Gump *gump = gumpman->find_gump(item);
+		Gump *gump = gumpman->find_gump(item_obj.get());
 		if (gump)
-			return gump->get_shape_rect(item);
+			return gump->get_shape_rect(item_obj.get());
 		else {
-			Game_object *outer = item->get_outermost();
+			Game_object *outer = item_obj->get_outermost();
 			if (!outer->get_chunk()) return pos;
 			Rectangle r = gwin->get_shape_rect(outer);
 			r.x -= gwin->get_scrolltx_lo();
@@ -996,7 +1027,8 @@ Rectangle Text_effect::Figure_text_pos() {
 			return r;
 		}
 	} else {
-		int x, y;
+		int x;
+		int y;
 		gwin->get_shape_location(tpos, x, y);
 		return Rectangle(x, y, c_tilesize, c_tilesize);
 	}
@@ -1044,7 +1076,7 @@ void Text_effect::init(
 Text_effect::Text_effect(
     const string &m,        // A copy is made.
     Game_object *it         // Item text is on, or null.
-) : next(0), prev(0), msg(m), item(it), pos(Figure_text_pos()), num_ticks(0) {
+) : next(nullptr), prev(nullptr), msg(m), item(weak_from_obj(it)), pos(Figure_text_pos()), num_ticks(0) {
 	init();
 }
 
@@ -1055,7 +1087,7 @@ Text_effect::Text_effect(
 Text_effect::Text_effect(
     const string &m,        // A copy is made.
     int t_x, int t_y        // Abs. tile coords.
-) : next(0), prev(0), msg(m), item(0), tpos(t_x, t_y, 0), pos(Figure_text_pos()), num_ticks(0) {
+) : next(nullptr), prev(nullptr), msg(m), tpos(t_x, t_y, 0), pos(Figure_text_pos()), num_ticks(0) {
 	init();
 }
 
@@ -1135,12 +1167,12 @@ Weather_effect::Weather_effect(
  *  @param  dist    Distance in tiles to cancel at.
  */
 
-int Weather_effect::out_of_range(
+bool Weather_effect::out_of_range(
     Tile_coord &avpos,
     int dist
 ) {
 	if (eggloc.tx == -1)        // Not created by an egg?
-		return 0;
+		return false;
 	return eggloc.distance(avpos) >= dist;
 }
 
@@ -1181,7 +1213,7 @@ protected:
 		ignore_unused_variable_warning(drop, x, y, w, h, ascrollx, ascrolly);
 	}
 public:
-	virtual ~Particledrop() {  }
+	virtual ~Particledrop() = default;
 	void move
 	(
 	    Particle &drop,
@@ -1189,10 +1221,12 @@ public:
 	    int w, int h
 	) {
 		int frame = drop.get_framenum();
-		uint32 ascrollx = scrolltx * static_cast<uint32>(c_tilesize),
-		       ascrolly = scrollty * static_cast<uint32>(c_tilesize);
-		int ax = drop.get_ax(), ay = drop.get_ay();
-		int x = ax - ascrollx, y = ay - ascrolly;
+		uint32 ascrollx = scrolltx * static_cast<uint32>(c_tilesize);
+		uint32 ascrolly = scrollty * static_cast<uint32>(c_tilesize);
+		int ax = drop.get_ax();
+		int ay = drop.get_ay();
+		int x = ax - ascrollx;
+		int y = ay - ascrolly;
 		// Still on screen?  Restore pix.
 		if (frame >= 0 && x >= 0 && y >= 0 && x < w && y < h) {
 			Game_window *gwin = Game_window::get_instance();
@@ -1207,10 +1241,12 @@ public:
 	    int scrolltx, int scrollty,
 	    int w, int h
 	) {
-		uint32 ascrollx = scrolltx * static_cast<uint32>(c_tilesize),
-		       ascrolly = scrollty * static_cast<uint32>(c_tilesize);
-		int ax = drop.get_ax(), ay = drop.get_ay();
-		int x = ax - ascrollx, y = ay - ascrolly;
+		uint32 ascrollx = scrolltx * static_cast<uint32>(c_tilesize);
+		uint32 ascrolly = scrollty * static_cast<uint32>(c_tilesize);
+		int ax = drop.get_ax();
+		int ay = drop.get_ay();
+		int x = ax - ascrollx;
+		int y = ay - ascrolly;
 		// Still on screen?  Restore pix.
 		if (x >= 0 && y >= 0 && x < w && y < h) {
 			Game_window *gwin = Game_window::get_instance();
@@ -1244,8 +1280,8 @@ static inline void set_frame(Particle &drop) {
 template<int fra0, int fraN, int delta, bool randomize>
 class Basicdrop : public Particledrop {
 protected:
-	virtual void do_move(Particle &drop, int x, int y, int w, int h,
-	                     int ascrollx, int ascrolly) {
+	void do_move(Particle &drop, int x, int y, int w, int h,
+	                     int ascrollx, int ascrolly) override {
 		set_frame<fra0, fraN, randomize>(drop);
 		// Time to restart?
 		if (x < 0 || x >= w || y < 0 || y >= h) {
@@ -1257,10 +1293,10 @@ protected:
 };
 
 // This looks slightly cooler:
-//typedef Basicdrop< 3, 6, 6, false> Raindrop;
-typedef Basicdrop< 3, 7, 6, false> Raindrop;
-typedef Basicdrop<13, 20, 1, false> Snowflake;
-typedef Basicdrop<21, 27, 12, true > Sparkle;
+//using Raindrop = Basicdrop< 3, 6, 6, false>;
+using Raindrop = Basicdrop< 3, 7, 6, false>;
+using Snowflake = Basicdrop<13, 20, 1, false>;
+using Sparkle = Basicdrop<21, 27, 12, true>;
 
 /*
  *  Raining.
@@ -1291,16 +1327,16 @@ protected:
 	}
 public:
 	Rain_effect(int duration, int delay = 0,
-	            int ndrops = MAXDROPS, int n = -1, Game_object *egg = 0)
+	            int ndrops = MAXDROPS, int n = -1, Game_object *egg = nullptr)
 		: Weather_effect(duration, delay, n, egg),
 		  num_drops(ndrops), gradual(ndrops == 0)
 	{  }
 	// Execute when due.
-	virtual void handle_event
+	void handle_event
 	(
 	    unsigned long curtime,      // Current time of day.
 	    uintptr udata
-	) {
+	) override {
 		Game_window *gwin = Game_window::get_instance();
 
 		// Gradual start/end.
@@ -1310,10 +1346,11 @@ public:
 		        !gumpman->showing_gumps(true)) {
 			// Don't show rain inside buildings!
 			Image_window8 *win = gwin->get_win();
-			int w = win->get_game_width(), h = win->get_game_height();
+			int w = win->get_game_width();
+			int h = win->get_game_height();
 			// Get transform table.
-			int scrolltx = gwin->get_scrolltx(),
-			    scrollty = gwin->get_scrollty();
+			int scrolltx = gwin->get_scrolltx();
+			int scrollty = gwin->get_scrollty();
 			// Move drops.
 			for (int i = 0; i < num_drops; i++)
 				do_drop.move(drops[i], scrolltx, scrollty, w, h);
@@ -1327,16 +1364,17 @@ public:
 		gwin->get_tqueue()->add(curtime + 100, this, udata);
 	}
 	// Render.
-	virtual void paint
+	void paint
 	(
-	) {
+	) override {
 		if (gwin->is_main_actor_inside())
 			return;         // Inside.
 		// Get transform table.
-		int scrolltx = gwin->get_scrolltx(),
-		    scrollty = gwin->get_scrollty();
+		int scrolltx = gwin->get_scrolltx();
+		int scrollty = gwin->get_scrollty();
 		Image_window8 *win = gwin->get_win();
-		int w = win->get_game_width(), h = win->get_game_height();
+		int w = win->get_game_width();
+		int h = win->get_game_height();
 		for (int i = 0; i < num_drops; i++)
 			do_drop.paint(drops[i], scrolltx, scrollty, w, h);
 		gwin->set_painted();
@@ -1593,7 +1631,8 @@ inline void Cloud::next(
 		start_time = Game::get_ticks() + 2000 * randcnt + rand() % 500;
 		count = max_count;
 		cloud.set_frame(rand() % cloud.get_num_frames());
-		int x, y;       // Get screen pos.
+		int x;
+		int y;       // Get screen pos.
 		set_start_pos(shape, w, h, x, y);
 		wx = x + scrollx;
 		wy = y + scrolly;
@@ -1648,7 +1687,8 @@ Clouds_effect::Clouds_effect(
 	}
 	for (int i = 0; i < num_clouds; i++) {
 		// Modify speed of some.
-		int deltax = dx, deltay = dy;
+		int deltax = dx;
+		int deltay = dy;
 		if (rand() % 2 == 0) {
 			deltax += deltax / 2;
 			deltay += deltay / 2;
@@ -1673,7 +1713,8 @@ void Clouds_effect::handle_event(
 		gwin->set_all_dirty();
 		return;
 	}
-	int w = gwin->get_width(), h = gwin->get_height();
+	int w = gwin->get_width();
+	int h = gwin->get_height();
 	for (int i = 0; i < num_clouds; i++)
 		clouds[i]->next(gwin, curtime, w, h);
 	gwin->get_tqueue()->add(curtime + delay, this, udata);
@@ -1718,8 +1759,10 @@ void Earthquake::handle_event(
 
 	Game_window *gwin = Game_window::get_instance();
 	Image_window *win = gwin->get_win();
-	int w = win->get_game_width(), h = win->get_game_height();
-	int sx = 0, sy = 0;
+	int w = win->get_game_width();
+	int h = win->get_game_height();
+	int sx = 0;
+	int sy = 0;
 	int dx = rand() % 9 - 4;
 	int dy = rand() % 9 - 4;
 	if (dx > 0)
@@ -1757,9 +1800,11 @@ void Earthquake::handle_event(
 Fire_field_effect::Fire_field_effect(
     Tile_coord const &t         // Where to create it.
 ) {
-	field = gmap->create_ireg_object(895, 0);
-	field->set_flag(Obj_flags::is_temporary);
-	field->move(t.tx, t.ty, t.tz);
+    Game_object_shared field_shared = gmap->create_ireg_object(895, 0);
+	Game_object *field_obj = field_shared.get();
+	field = Game_object_weak(field_shared);
+	field_obj->set_flag(Obj_flags::is_temporary);
+	field_obj->move(t.tx, t.ty, t.tz);
 	gwin->get_tqueue()->add(Game::get_ticks() + 3000 + rand() % 2000, this);
 }
 
@@ -1771,18 +1816,20 @@ void Fire_field_effect::handle_event(
     unsigned long curtime,      // Current time of day.
     uintptr udata
 ) {
-	int frnum = field->get_framenum();
+	Game_object_shared field_obj = field.lock();
+	int frnum = field_obj ? field_obj->get_framenum() : 0;
 	if (frnum == 0) {       // All done?
-		field->remove_this();
+	    if (field_obj)
+		    field_obj->remove_this();
 		eman->remove_effect(this);
 	} else {
 		if (frnum > 3) {    // Starting to wind down?
-			field->as_egg()->stop_animation();
+			field_obj->as_egg()->stop_animation();
 			frnum = 3;
 		} else
 			frnum--;
-		gwin->add_dirty(field);
-		field->set_frame(frnum);
+		gwin->add_dirty(field_obj.get());
+		field_obj->set_frame(frnum);
 		gwin->get_tqueue()->add(curtime + gwin->get_std_delay(), this, udata);
 	}
 }

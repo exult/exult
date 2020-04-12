@@ -27,8 +27,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wparentheses"
+#if !defined(__llvm__) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#else
+#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
+#endif
 #endif  // __GNUC__
 #include <gtk/gtk.h>
 #ifdef __GNUC__
@@ -38,11 +44,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class Exec_box;
 class Exec_process;
 // Called when child is done:
-typedef void (*Exec_done_fun)(int exit_code, Exec_box *box,
-                              gpointer user_data);
+using Exec_done_fun = void (*)(int exit_code, Exec_box *box,
+                               gpointer user_data);
 
 
-#ifndef WIN32
+#ifndef _WIN32
 
 /*
  *  A class for executing a child process and capturing its output in a
@@ -53,8 +59,8 @@ public:
 	// Function called when data is read
 	//   from child.  If datalen == 0,
 	//   child is done & exit_code is set.
-	typedef void (*Reader_fun)(char *data, int datalen, int exit_code,
-	                           gpointer user_data);
+	using Reader_fun = void (*)(char *data, int datalen, int exit_code,
+	                            gpointer user_data);
 private:
 	// Pipes for talking to child:
 	int child_stdin, child_stdout, child_stderr;
@@ -78,10 +84,8 @@ public:
 
 class Exec_process {
 public:
-	typedef void (*Reader_fun)(char *data, int datalen, int exit_code,
-	                           gpointer user_data);
-	Exec_process() {}
-	~Exec_process() {}
+	using Reader_fun = void (*)(char *data, int datalen, int exit_code,
+	                            gpointer user_data);
 	void kill_child() {}
 	void read_from_child(int id) {
 		ignore_unused_variable_warning(id);
@@ -110,8 +114,8 @@ class Exec_box {
 	Exec_done_fun done_fun;     // Called when child has exited.
 	gpointer user_data;     // Passed to done_fun.
 public:
-	Exec_box(GtkTextView *b, GtkStatusbar *s, Exec_done_fun dfun = 0,
-	         gpointer udata = 0);
+	Exec_box(GtkTextView *b, GtkStatusbar *s, Exec_done_fun dfun = nullptr,
+	         gpointer udata = nullptr);
 	~Exec_box();
 	void show_status(const char *msg);  // Set status bar.
 	// Handle data from child.

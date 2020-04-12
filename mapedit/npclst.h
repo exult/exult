@@ -46,7 +46,6 @@ class Npc_entry {
 	short npcnum;
 	Rectangle box;          // Box where drawn.
 public:
-	Npc_entry() {  }
 	void set(int num, int rx, int ry, int rw, int rh) {
 		npcnum = num;
 		box = Rectangle(rx, ry, rw, rh);
@@ -58,12 +57,9 @@ public:
  */
 class Npc_row {
 	friend class Npc_chooser;
-	short height;           // In pixels.
+	short height = 0;       // In pixels.
 	long y;                 // Absolute y-coord. in pixels.
 	unsigned index0;        // Index of 1st Npc_entry in row.
-public:
-	Npc_row() : height(0)
-	{  }
 };
 
 /*
@@ -84,40 +80,40 @@ class Npc_chooser: public Object_browser, public Shape_draw {
 	bool drop_enabled;      // So we only do it once.
 	void (*sel_changed)();      // Called when selection changes.
 	// Blit onto screen.
-	virtual void show(int x, int y, int w, int h);
-	virtual void show() {
+	void show(int x, int y, int w, int h) override;
+	void show() override {
 		Npc_chooser::show(0, 0,
 		                  draw->allocation.width, draw->allocation.height);
 	}
 	void select(int new_sel);   // Show new selection.
-	virtual void render();      // Draw list.
-	virtual void set_background_color(guint32 c) {
+	void render() override;      // Draw list.
+	void set_background_color(guint32 c) override {
 		Shape_draw::set_background_color(c);
 	}
-	virtual void setup_info(bool savepos = true);
+	void setup_info(bool savepos = true) override;
 	void setup_shapes_info();
 	int find_npc(int npcnum);   // Find index for given NPC.
 	void goto_index(unsigned index); // Get desired index in view.
-	virtual int get_selected_id() {
+	int get_selected_id() override {
 		return selected;
 	}
 	void scroll_row_vertical(unsigned newrow);
-	void scroll_vertical(int newindex); // Scroll.
+	void scroll_vertical(int newoffset); // Scroll.
 	void setup_vscrollbar();    // Set new scroll amounts.
-	virtual GtkWidget *create_popup();  // Popup menu.
+	GtkWidget *create_popup() override;  // Popup menu.
 public:
 	Npc_chooser(Vga_file *i, unsigned char *palbuf, int w, int h,
-	            Shape_group *g = 0, Shape_file_info *fi = 0);
-	virtual ~Npc_chooser();
+	            Shape_group *g = nullptr, Shape_file_info *fi = nullptr);
+	~Npc_chooser() override;
 	int get_count();        // Get # shapes we can display.
 	std::vector<Estudio_npc> &get_npcs();
-	virtual void search(const char *srch, int dir);
-	virtual void locate(bool upwards);  // Locate NPC on game map.
+	void search(const char *srch, int dir) override;
+	void locate(bool upwards) override;  // Locate NPC on game map.
 	// Turn off selection.
 	void unselect(bool need_render = true);
 	void update_npc(int num);
 	void update_statusbar();
-	int is_selected() {     // Is a shape selected?
+	bool is_selected() {     // Is a shape selected?
 		return selected >= 0;
 	}
 	void set_selected_callback(void (*fun)()) {
@@ -136,7 +132,7 @@ public:
 	gint mouse_press(GtkWidget *widget, GdkEventButton *event);
 	// Give dragged shape.
 	static void drag_data_get(GtkWidget *widget, GdkDragContext *context,
-	                          GtkSelectionData *selection_data, guint info, guint time, gpointer data);
+	                          GtkSelectionData *seldata, guint info, guint time, gpointer data);
 	void edit_npc();
 	// Someone else selected.
 	static gint selection_clear(GtkWidget *widget,
@@ -146,12 +142,12 @@ public:
 	// Handler for drop.
 	static void drag_data_received(GtkWidget *widget,
 	                               GdkDragContext *context, gint x, gint y,
-	                               GtkSelectionData *selection_data, guint info, guint time,
+	                               GtkSelectionData *seldata, guint info, guint time,
 	                               gpointer udata);
 	void enable_drop();
 	// Handle scrollbar.
 	static void vscrolled(GtkAdjustment *adj, gpointer data);
-#ifdef WIN32
+#ifdef _WIN32
 	static gint win32_drag_motion(GtkWidget *widget, GdkEventMotion *event,
 	                              gpointer data);
 #else

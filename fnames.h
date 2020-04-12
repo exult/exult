@@ -26,7 +26,8 @@
 // depending on the OS
 #define USER_CONFIGURATION_FILE "exult.cfg"
 
-#if defined(MACOSX) && !defined(EXULT_DATADIR)
+// without that define utils.cc errors with a "use of undeclared identifier EXULT_DATADIR"
+#if (defined(MACOSX) || defined(__IPHONEOS__)) && !defined(EXULT_DATADIR)
 #define EXULT_DATADIR   "data"
 #endif
 
@@ -161,10 +162,6 @@
 #define BUNDLE_EXULT_BG_FLX "<BUNDLE>/exult_bg.flx"
 #define BUNDLE_EXULT_SI_FLX "<BUNDLE>/exult_si.flx"
 #define BUNDLE_EXULT_GAM_FLX "<BUNDLE>/exult_%s.flx"
-
-#ifdef __IPHONEOS__
-#define IPHONE_FLX "<DATA>/exult_iphone.flx"
-#endif
 
 #define AUTONOTES   "autonotes.txt"
 #define PATCH_AUTONOTES "<PATCH>/autonotes.txt"

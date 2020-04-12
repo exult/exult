@@ -50,9 +50,9 @@ public:
 	friend class Npc_invisibility_timer;
 	friend class Npc_protection_timer;
 	friend class Npc_flag_timer;
-	Npc_timer_list(Actor *n) : npc(n), hunger(0), poison(0), sleep(0),
-		invisibility(0), protection(0), might(0), curse(0),
-		charm(0), paralyze(0)
+	Npc_timer_list(Actor *n) : npc(n), hunger(nullptr), poison(nullptr), sleep(nullptr),
+		invisibility(nullptr), protection(nullptr), might(nullptr), curse(nullptr),
+		charm(nullptr), paralyze(nullptr)
 	{  }
 	~Npc_timer_list();
 	void start_hunger();

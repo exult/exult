@@ -71,24 +71,25 @@ int Actor_action::handle_event_safely(
 /**
  *  Set to walk from one point to another the dumb way.
  *
- *  @return     this, or 0 if unsuccessful.
+ *  @return     this, or nullptr if unsuccessful.
  */
 
 Actor_action *Actor_action::walk_to_tile(
-    Actor * /* npc */,
+    Actor *npc,       // Ignored.
     Tile_coord const &src,
     Tile_coord const &dest,
-    int /* dist */,         // Ignored.
-    bool /* ignnpc */       // Ignored
+    int dist,         // Ignored.
+    bool ignnpc       // Ignored.
 ) {
+	ignore_unused_variable_warning(npc, dist, ignnpc);
 	Zombie *path = new Zombie();
 	get_party = false;
 	// Set up new path.
-	if (path->NewPath(src, dest, 0))
+	if (path->NewPath(src, dest, nullptr))
 		return new Path_walking_actor_action(path);
 	else {
 		delete path;
-		return 0;
+		return nullptr;
 	}
 }
 
@@ -151,12 +152,11 @@ Path_walking_actor_action::Path_walking_actor_action(
     PathFinder *p,          // Pathfinder, or 0 for Astar.
     int maxblk,         // Max. retries when blocked.
     int pers            // Keeps retrying this many times.
-) : reached_end(false), path(p), deleted(false), speed(0),
-	from_offscreen(false), subseq(0), blocked(0), max_blocked(maxblk),
-	blocked_frame(0), persistence(pers) {
+) : path(p), max_blocked(maxblk), persistence(pers) {
 	if (!path)
 		path = new Astar();
-	Tile_coord src = path->get_src(), dest = path->get_dest();
+	Tile_coord src = path->get_src();
+	Tile_coord dest = path->get_dest();
 	original_dir = static_cast<int>(Get_direction4(
 	                                    src.ty - dest.ty, dest.tx - src.tx));
 }
@@ -169,7 +169,7 @@ Path_walking_actor_action::~Path_walking_actor_action(
 ) {
 	delete path;
 	delete subseq;
-	subseq = 0;         // (Debugging).
+	subseq = nullptr;         // (Debugging).
 	original_dir = -1;
 }
 
@@ -177,7 +177,7 @@ Path_walking_actor_action::~Path_walking_actor_action(
  *  Create action for walking to given destination using Astar.
  *  Note:  This is a static method.
  *
- *  @return     Action if successful, else 0.
+ *  @return     Action if successful, else nullptr.
  */
 
 Path_walking_actor_action *Path_walking_actor_action::create_path(
@@ -191,7 +191,7 @@ Path_walking_actor_action *Path_walking_actor_action::create_path(
 		return new Path_walking_actor_action(path);
 	else {
 		delete path;
-		return 0;
+		return nullptr;
 	}
 }
 
@@ -208,16 +208,13 @@ int Path_walking_actor_action::handle_event(
 		int delay = subseq->handle_event(actor);
 		if (delay)
 			return delay;   // Still going.
-		set_subseq(0);
+		set_subseq(nullptr);
 		// He was stopped, so restore speed.
 		actor->set_frame_time(speed);
 		return speed;       // Come back in a moment.
 	}
 	Tile_coord tile;
 	if (blocked) {
-#if 0
-		std::cout << "Actor " << actor->get_name() << " blocked.  Retrying." << std::endl;
-#endif
 		if (actor->step(blocked_tile, blocked_frame)) {
 			// Successful?
 			if (deleted) return 0;
@@ -237,7 +234,7 @@ int Path_walking_actor_action::handle_event(
 			Game_object *block = Game_object::find_blocking(blocked_tile);
 			Actor *blk;
 			// Being blocked by an NPC?
-			if (block && (blk = block->as_actor()) != 0) {
+			if (block && (blk = block->as_actor()) != nullptr) {
 				// Try to create a new path -- the old one might be blocked
 				// due to (say) the previously 'non-blocking' NPC now being
 				// in a blocking state.
@@ -313,7 +310,7 @@ int Path_walking_actor_action::handle_event(
 	        !cheat.in_map_editor() &&   // And NOT map-editing?
 	        actor->is_sentient()) {
 		Game_object *door = Game_object::find_door(tile);
-		if (door != 0 && door->is_closed_door() &&
+		if (door != nullptr && door->is_closed_door() &&
 		        // Make sure it's not locked!
 		        door->get_framenum() % 4 < 2)
 
@@ -336,10 +333,10 @@ int Path_walking_actor_action::handle_event(
  *  Open door that's blocking the NPC, and set action to walk past and
  *  close it.
  *
- *  @return     1 if successful.
+ *  @return     true if successful.
  */
 
-int Path_walking_actor_action::open_door(
+bool Path_walking_actor_action::open_door(
     Actor *actor,
     Game_object *door
 ) {
@@ -389,9 +386,9 @@ int Path_walking_actor_action::open_door(
 		                                              sizeof(frames)),
 		                                      new Activate_actor_action(door),
 		                                      new Frames_actor_action(&standframe, 1))));
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 /**
@@ -412,7 +409,7 @@ void Path_walking_actor_action::stop(
 /**
  *  Set to walk from one point to another, using the same pathfinder.
  *
- *  @return     this, or 0 if unsuccessful.
+ *  @return     this, or nullptr if unsuccessful.
  */
 
 Actor_action *Path_walking_actor_action::walk_to_tile(
@@ -433,11 +430,11 @@ Actor_action *Path_walking_actor_action::walk_to_tile(
 		if (dest.tx == dest.ty) { // Completely off-screen?
 			Offscreen_pathfinder_client cost(npc, ignnpc);
 			if (!path->NewPath(src, dest, &cost))
-				return 0;
+				return nullptr;
 		} else {
 			Onecoord_pathfinder_client cost(npc, ignnpc);
 			if (!path->NewPath(src, dest, &cost))
-				return 0;
+				return nullptr;
 		}
 	}
 	// How about from source?
@@ -447,20 +444,20 @@ Actor_action *Path_walking_actor_action::walk_to_tile(
 			// Aim from NPC's current pos.
 			Offscreen_pathfinder_client cost(npc, npc->get_tile(), ignnpc);
 			if (!path->NewPath(dest, src, &cost))
-				return 0;
+				return nullptr;
 		} else {
 			Onecoord_pathfinder_client cost(npc, ignnpc);
 			if (!path->NewPath(dest, src, &cost))
-				return 0;
+				return nullptr;
 		}
 		from_offscreen = true;
 		// Set to go backwards.
 		if (!path->set_backwards())
-			return 0;
+			return nullptr;
 	} else {
 		Actor_pathfinder_client cost(npc, dist, ignnpc);
 		if (!path->NewPath(src, dest, &cost))
-			return 0;
+			return nullptr;
 	}
 	// Reset direction (but not index).
 	original_dir = static_cast<int>(Get_direction4(
@@ -474,20 +471,20 @@ Actor_action *Path_walking_actor_action::walk_to_tile(
  *  @return     0 if none.
  */
 
-int Path_walking_actor_action::get_dest(
+bool Path_walking_actor_action::get_dest(
     Tile_coord &dest        // Returned here.
 ) const {
 	dest = path->get_dest();
-	return 1;
+	return true;
 }
 
 /**
  *  Following an Astar path?
  */
 
-int Path_walking_actor_action::following_smart_path(
+bool Path_walking_actor_action::following_smart_path(
 ) const {
-	return path != 0 && path->following_smart_path();
+	return path != nullptr && path->following_smart_path();
 }
 
 /**
@@ -500,8 +497,8 @@ Approach_actor_action::Approach_actor_action(
     int gdist,          // Stop when this close to dest.
     bool for_proj           // Check for projectile path.
 ) : Path_walking_actor_action(p, 0),    // (Stop if blocked.)
-	dest_obj(d), goal_dist(gdist), orig_dest_pos(d->get_tile()), cur_step(0),
-	for_projectile(for_proj) {
+	dest_obj(weak_from_obj(d)), goal_dist(gdist),
+	orig_dest_pos(d->get_tile()), cur_step(0), for_projectile(for_proj) {
 	// Get length of path.
 	int nsteps = path->get_num_steps();
 	//cout << "Approach nsteps is " << nsteps << "." << endl;
@@ -515,7 +512,7 @@ Approach_actor_action::Approach_actor_action(
  *  Create action for walking towards a given (moving) object using Astar.
  *  Note:  This is a static method.
  *
- *  @return     Action if successful, else 0.
+ *  @return     Action if successful, else nullptr.
  */
 
 Approach_actor_action *Approach_actor_action::create_path(
@@ -530,7 +527,7 @@ Approach_actor_action *Approach_actor_action::create_path(
 		return new Approach_actor_action(path, dest, gdist);
 	else {
 		delete path;
-		return 0;
+		return nullptr;
 	}
 }
 
@@ -544,22 +541,23 @@ int Approach_actor_action::handle_event(
     Actor *actor
 ) {
 	int delay = Path_walking_actor_action::handle_event(actor);
-	if (!delay || deleted)          // Done or blocked.
+	Game_object_shared dest_ptr = dest_obj.lock();
+	if (!dest_ptr || !delay || deleted)          // Done or blocked.
 		return 0;
 	// Close enough?
-	if (goal_dist >= 0 && actor->distance(dest_obj) <= goal_dist)
+	if (goal_dist >= 0 && actor->distance(dest_ptr.get()) <= goal_dist)
 		return 0;
 	if (++cur_step == check_step) { // Time to check.
 #ifdef DEBUG
 		cout << actor->get_name() <<
 		     " approach: Dist. to dest is " <<
-		     actor->distance(dest_obj) <<
+		     actor->distance(dest_ptr.get()) <<
 		     endl;
 #endif
-		if (dest_obj->distance(orig_dest_pos) > 2)
+		if (dest_ptr->distance(orig_dest_pos) > 2)
 			return 0;   // Moved too much, so stop.
 		if (for_projectile &&
-		        Fast_pathfinder_client::is_straight_path(actor, dest_obj))
+		        Fast_pathfinder_client::is_straight_path(actor, dest_ptr.get()))
 			return 0;   // Can fire projectile.
 		// Figure next check.
 		int nsteps = path->get_num_steps();
@@ -579,7 +577,7 @@ If_else_path_actor_action::If_else_path_actor_action(
     Tile_coord const &dest,
     Actor_action *s,
     Actor_action *f
-) : Path_walking_actor_action(0, 6),    // Maxblk = 6.
+) : Path_walking_actor_action(nullptr, 6),    // Maxblk = 6.
 	succeeded(false), failed(false), done(false),
 	success(s), failure(f) {
 	if (!walk_to_tile(actor, actor->get_tile(), dest)) {
@@ -683,6 +681,14 @@ int Move_actor_action::handle_event(
 }
 
 /**
+ *  Activate an actor at a given time.
+ */
+Activate_actor_action::Activate_actor_action(
+    Game_object *o
+) : obj(weak_from_obj(o))
+	{  }
+
+/**
  *  Handle a time event.
  *
  *  @return     0 if done with this action, else delay for next frame.
@@ -692,9 +698,21 @@ int Activate_actor_action::handle_event(
     Actor *actor
 ) {
 	ignore_unused_variable_warning(actor);
-	obj->activate();
+	Game_object_shared obj_ptr = obj.lock();
+	if (obj_ptr)
+	    obj_ptr->activate();
 	return 0;           // That's all.
 }
+
+/**
+ *  Create usecode action.
+ */
+Usecode_actor_action::Usecode_actor_action(
+    int f,
+	Game_object *i,
+	int ev
+) : fun(f), item(weak_from_obj(i)), eventid(ev)
+	{  }
 
 /**
  *  Handle a time event.
@@ -707,9 +725,12 @@ int Usecode_actor_action::handle_event(
 ) {
 	ignore_unused_variable_warning(actor);
 	Game_window *gwin = Game_window::get_instance();
-	gwin->get_usecode()->call_usecode(fun, item,
-	                                  static_cast<Usecode_machine::Usecode_events>(eventid));
-	gwin->set_all_dirty();      // Clean up screen.
+    Game_object_shared item_ptr = item.lock();
+	if (item_ptr) {
+	    gwin->get_usecode()->call_usecode(fun, item_ptr.get(),
+	                    static_cast<Usecode_machine::Usecode_events>(eventid));
+	    gwin->set_all_dirty();      // Clean up screen.
+	}
 	return 0;           // That's all.
 }
 
@@ -722,9 +743,10 @@ Frames_actor_action::Frames_actor_action(
     int c,              // Count.
     int spd,            // Frame delay in 1/1000 secs.
     Game_object *o
-) : cnt(c), index(0), speed(spd), obj(o) {
+) : cnt(c), index(0), speed(spd), obj(weak_from_obj(o)) {
 	frames = new signed char[cnt];
 	std::memcpy(frames, f, cnt);
+	use_actor = (o == nullptr);
 }
 
 /**
@@ -735,9 +757,10 @@ Frames_actor_action::Frames_actor_action(
     char f,             // Frames.  -1 means don't change.
     int spd,            // Frame delay in 1/1000 secs.
     Game_object *o
-) : cnt(1), index(0), speed(spd), obj(o) {
+) : cnt(1), index(0), speed(spd), obj(weak_from_obj(o)) {
 	frames = new signed char[1];
 	frames[0] = f;
+	use_actor = (o == nullptr);
 }
 
 /**
@@ -749,8 +772,8 @@ Frames_actor_action::Frames_actor_action(
 int Frames_actor_action::handle_event(
     Actor *actor
 ) {
-	Game_object *o = obj;
-	if (index == cnt)
+	Game_object_shared o = obj.lock();
+	if (index == cnt || (!o && !use_actor))
 		return 0;       // Done.
 	int frnum = frames[index++];    // Get frame.
 	if (frnum >= 0) {
@@ -777,7 +800,7 @@ Sequence_actor_action::Sequence_actor_action(
 	actions[1] = a1;
 	actions[2] = a2;
 	actions[3] = a3;
-	actions[4] = 0;         // 0-delimit.
+	actions[4] = nullptr;         // 0-delimit.
 }
 
 /**
@@ -823,8 +846,8 @@ Object_animate_actor_action::Object_animate_actor_action(
     Game_object *o,
     int cy,             // # of cycles.
     int spd             // Time between frames.
-) : obj(o), cycles(cy), speed(spd) {
-	nframes = obj->get_num_frames();
+) : obj(weak_from_obj(o)), cycles(cy), speed(spd) {
+	nframes = o->get_num_frames();
 }
 
 Object_animate_actor_action::Object_animate_actor_action(
@@ -832,7 +855,7 @@ Object_animate_actor_action::Object_animate_actor_action(
     int nfr,
     int cy,
     int spd
-) : obj(o), nframes(nfr), cycles(cy), speed(spd)
+) : obj(weak_from_obj(o)), nframes(nfr), cycles(cy), speed(spd)
 { }
 
 
@@ -843,12 +866,14 @@ Object_animate_actor_action::Object_animate_actor_action(
 int Object_animate_actor_action::handle_event(
     Actor *actor
 ) {
+    Game_object_shared obj_ptr = obj.lock();
 	ignore_unused_variable_warning(actor);
-	if (!cycles) return 0;
-	int frnum = (obj->get_framenum() + 1) % nframes;
+	if (!obj_ptr || !cycles)
+	    return 0;
+	int frnum = (obj_ptr->get_framenum() + 1) % nframes;
 	if (!frnum)         // New cycle?
 		--cycles;
-	obj->change_frame(frnum);
+	obj_ptr->change_frame(frnum);
 	return cycles ? speed : 0;
 }
 
@@ -857,13 +882,14 @@ int Object_animate_actor_action::handle_event(
  */
 Pickup_actor_action::Pickup_actor_action(Game_object *o, int spd,
 													bool del)
-	: obj(o), pickup(1), speed(spd), cnt(0),
-	  objpos(obj->get_tile()), dir(0), temp(false), to_del(del) {
+	: obj(weak_from_obj(o)), pickup(1), speed(spd), cnt(0),
+	  objpos(o->get_tile()), dir(0), temp(false), to_del(del) {
 }
 // To put down an object:
 Pickup_actor_action::Pickup_actor_action(Game_object *o, Tile_coord const &opos,
         int spd, bool t)
-	: obj(o), pickup(0), speed(spd), cnt(0), objpos(opos), dir(0), temp(t), to_del(false) {
+	: obj(weak_from_obj(o)), pickup(0), speed(spd), cnt(0), objpos(opos),
+	  dir(0), temp(t), to_del(false) {
 }
 
 /**
@@ -874,7 +900,11 @@ int Pickup_actor_action::handle_event(
     Actor *actor
 ) {
 	Game_window *gwin = Game_window::get_instance();
+	Game_object_shared keep;
+	Game_object_shared obj_ptr = obj.lock();
 	int frnum = -1;
+	if (!obj_ptr)
+	    return 0;		// It's gone!  So we're done.
 	switch (cnt) {
 	case 0:             // Face object.
 		dir = actor->get_direction(objpos);
@@ -882,31 +912,30 @@ int Pickup_actor_action::handle_event(
 		cnt++;
 		break;
 	case 1: {            // Bend down.
-		int tz = pickup ? obj->get_lift() : objpos.tz;
+		int tz = pickup ? obj_ptr->get_lift() : objpos.tz;
 		frnum = (tz >= actor->get_lift() + 2) ?
 			  ((rand()%2) ? Actor::reach1_frame : Actor::reach2_frame) :
 			  Actor::bow_frame;
 		frnum = actor->get_dir_framenum(dir, frnum);
 		cnt++;
 		if (pickup) {
-			if (actor->distance(obj) > 8) {
+			if (actor->distance(obj_ptr.get()) > 8) {
 				// No longer nearby.
-				actor->notify_object_gone(obj);
 				break;
 			}
-			gwin->add_dirty(obj);
+			gwin->add_dirty(obj_ptr.get());
 			if (to_del) {
-				obj->remove_this();		// Delete it.
+				obj_ptr->remove_this();		// Delete it.
 			} else {
-				obj->remove_this(1);
-				actor->add(obj, true);
+				obj_ptr->remove_this(&keep);
+				actor->add(obj_ptr.get(), true);
 			}
 		} else {
-			obj->remove_this(1);
-			obj->move(objpos);
+			obj_ptr->remove_this(&keep);
+			obj_ptr->move(objpos);
 			if (temp)
-				obj->set_flag(Obj_flags::is_temporary);
-			gwin->add_dirty(obj);
+				obj_ptr->set_flag(Obj_flags::is_temporary);
+			gwin->add_dirty(obj_ptr.get());
 		}
 		}
 		break;
@@ -957,7 +986,7 @@ Change_actor_action::Change_actor_action(
     int sh,
     int fr,
     int ql
-) : obj(o), shnum(sh), frnum(fr), qual(ql) {
+) : obj(weak_from_obj(o)), shnum(sh), frnum(fr), qual(ql) {
 }
 
 /**
@@ -969,9 +998,12 @@ int Change_actor_action::handle_event(
 ) {
 	ignore_unused_variable_warning(actor);
 	Game_window *gwin = Game_window::get_instance();
-	gwin->add_dirty(obj);
-	obj->set_shape(shnum, frnum);
-	obj->set_quality(qual);
-	gwin->add_dirty(obj);
+	Game_object_shared obj_ptr = obj.lock();
+	if (obj_ptr) {
+		gwin->add_dirty(obj_ptr.get());
+		obj_ptr->set_shape(shnum, frnum);
+		obj_ptr->set_quality(qual);
+		gwin->add_dirty(obj_ptr.get());
+	}
 	return 0;
 }

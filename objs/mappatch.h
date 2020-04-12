@@ -55,14 +55,14 @@ public:
 	friend class Map_patch_collection;
 	Map_patch(Object_spec s) : spec(s)
 	{  }
-	virtual ~Map_patch() {  }
+	virtual ~Map_patch() = default;
 	Game_object *find();        // Find matching object.
 	virtual bool apply() = 0;   // Perform action.
 };
 
 // Sigh, this is needed to prevent compiler error with MSVC
-typedef std::list<Map_patch *> Map_patch_list;
-typedef std::map<int, Map_patch_list> Map_patch_map;
+using Map_patch_list = std::list<Map_patch *>;
+using Map_patch_map = std::map<int, Map_patch_list>;
 
 /*
  *  Remove an object.
@@ -72,7 +72,7 @@ class Map_patch_remove : public Map_patch {
 public:
 	Map_patch_remove(Object_spec s, bool a = false) : Map_patch(s), all(a)
 	{  }
-	virtual bool apply();       // Perform action.
+	bool apply() override;       // Perform action.
 };
 
 /*
@@ -83,7 +83,7 @@ class Map_patch_modify : public Map_patch {
 public:
 	Map_patch_modify(Object_spec s, Object_spec m) : Map_patch(s), mod(m)
 	{  }
-	virtual bool apply();       // Perform action.
+	bool apply() override;       // Perform action.
 };
 
 /*
@@ -92,8 +92,6 @@ public:
 class Map_patch_collection {
 	Map_patch_map patches;
 public:
-	Map_patch_collection()
-	{  }
 	~Map_patch_collection();
 	void add(Map_patch *p);     // Add a patch.
 	void apply(int schunk);     // Apply for given superchunk.

@@ -32,27 +32,6 @@ using std::ifstream;
 using std::size_t;
 
 /**
- *  Retrieves the contents of a FLAT "file".
- *  @param objnum   Ignored.
- *  @param len  Length of the data buffer or zero in any failure.
- *  @return A buffer created with new[] containing the file data,
- *  or null in any failure.
- */
-char *Flat::retrieve(uint32 objnum, size_t &len) {
-	ignore_unused_variable_warning(objnum);
-	if (!data || !data->good()) {
-		len = 0;
-		return 0;
-	}
-	data->seek(0);
-	len = data->getSize();
-	char *buffer = new char[len];
-	data->read(buffer, len);
-
-	return buffer;
-}
-
-/**
  *  Verifies if a datasource is a FLAT file.
  *  @param in   DataSource containing the data we wish to investigate.
  *  @return If the datasource is non-null and good, true; false otherwise.

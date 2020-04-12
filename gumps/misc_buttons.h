@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _MISC_BUTTONS_H_
-#define _MISC_BUTTONS_H_
+#ifndef MISC_BUTTONS_H
+#define MISC_BUTTONS_H
 
 #include "Gump_button.h"
 
@@ -29,12 +29,12 @@ class Actor;
 class Checkmark_button : public Gump_button {
 public:
 	Checkmark_button(Gump *par, int px, int py);
-	virtual Gump_widget *clone(Gump *par) {
+	Gump_widget *clone(Gump *par) override {
 		return new Checkmark_button(par, x, y);
 	}
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
-	virtual bool is_checkmark() const {
+	bool activate(int button = 1) override;
+	bool is_checkmark() const override {
 		return true;
 	}
 };
@@ -45,11 +45,11 @@ public:
 class Heart_button : public Gump_button {
 public:
 	Heart_button(Gump *par, int px, int py);
-	virtual Gump_widget *clone(Gump *par) {
+	Gump_widget *clone(Gump *par) override {
 		return new Heart_button(par, x, y);
 	}
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
+	bool activate(int button = 1) override;
 };
 
 /*
@@ -58,11 +58,11 @@ public:
 class Disk_button : public Gump_button {
 public:
 	Disk_button(Gump *par, int px, int py);
-	virtual Gump_widget *clone(Gump *par) {
+	Gump_widget *clone(Gump *par) override {
 		return new Disk_button(par, x, y);
 	}
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
+	bool activate(int button = 1) override;
 };
 
 /*
@@ -71,12 +71,12 @@ public:
 class Combat_button : public Gump_button {
 public:
 	Combat_button(Gump *par, int px, int py);
-	virtual Gump_widget *clone(Gump *par) {
+	Gump_widget *clone(Gump *par) override {
 		return new Combat_button(par, x, y);
 	}
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
-	virtual void paint();
+	bool activate(int button = 1) override;
+	void paint() override;
 };
 
 /*
@@ -86,11 +86,11 @@ class Halo_button : public Gump_button {
 	Actor *actor;           // Who this represents.
 public:
 	Halo_button(Gump *par, int px, int py, Actor *a);
-	virtual Gump_widget *clone(Gump *par) {
+	Gump_widget *clone(Gump *par) override {
 		return new Halo_button(par, x, y, actor);
 	}
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
+	bool activate(int button = 1) override;
 };
 
 /*
@@ -100,11 +100,11 @@ class Combat_mode_button : public Gump_button {
 	Actor *actor;           // Who this represents.
 public:
 	Combat_mode_button(Gump *par, int px, int py, Actor *a);
-	virtual Gump_widget *clone(Gump *par) {
+	Gump_widget *clone(Gump *par) override {
 		return new Combat_mode_button(par, x, y, actor);
 	}
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
+	bool activate(int button = 1) override;
 };
 
 /*
@@ -113,12 +113,12 @@ public:
 class Cstats_button : public Gump_button {
 public:
 	Cstats_button(Gump *par, int px, int py);
-	virtual Gump_widget *clone(Gump *par) {
+	Gump_widget *clone(Gump *par) override {
 		return new Cstats_button(par, x, y);
 	}
 
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
+	bool activate(int button = 1) override;
 };
 
 #endif

@@ -16,16 +16,18 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _AUDIOOPTIONS_GUMP_H
-#define _AUDIOOPTIONS_GUMP_H
+#ifndef AUDIOOPTIONS_GUMP_H
+#define AUDIOOPTIONS_GUMP_H
 
 #include "Modal_gump.h"
+#include <array>
+#include <memory>
 #include <string>
 
 class Gump_button;
 
 class AudioOptions_gump : public Modal_gump {
-	UNREPLICATABLE_CLASS_I(AudioOptions_gump, Modal_gump(0, 0, 0, 0))
+	UNREPLICATABLE_CLASS(AudioOptions_gump)
 
 private:
 	enum button_ids {
@@ -47,7 +49,7 @@ private:
 	    id_speech_enabled,
 	    id_count
 	};
-	Gump_button *buttons[id_count];
+	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
 
 	bool speaker_type; // only mono and stereo atm
 	bool o_speaker_type;
@@ -86,15 +88,14 @@ private:
 
 public:
 	AudioOptions_gump();
-	virtual ~AudioOptions_gump();
 
 	// Paint it and its contents.
-	virtual void paint();
-	virtual void close();
+	void paint() override;
+	void close() override;
 
 	// Handle events:
-	virtual bool mouse_down(int mx, int my, int button);
-	virtual bool mouse_up(int mx, int my, int button);
+	bool mouse_down(int mx, int my, int button) override;
+	bool mouse_up(int mx, int my, int button) override;
 
 	void toggle(Gump_button *btn, int state);
 	void rebuild_buttons();
@@ -105,6 +106,47 @@ public:
 	void load_settings();
 	void save_settings();
 	void cancel();
+
+	void toggle_audio_enabled(int state) {
+		audio_enabled = state;
+		rebuild_buttons();
+	}
+	void toggle_sample_rate(int state) {
+		sample_rate = state;
+	}
+	void toggle_speaker_type(int state) {
+		speaker_type = state;
+	}
+	void toggle_music_enabled(int state) {
+		midi_enabled = state;
+		rebuild_midi_buttons();
+	}
+	void toggle_music_digital(int state) {
+		midi_ogg_enabled = state;
+	}
+	void toggle_midi_driver(int state) {
+		midi_driver = state;
+		rebuild_mididriveroption_buttons();
+		paint();
+	}
+	void toggle_music_looping(int state) {
+		midi_looping = state;
+	}
+	void toggle_midi_conv(int state) {
+		midi_conversion = state;
+	}
+	void toggle_midi_effects(int state) {
+		midi_reverb_chorus = state;
+	}
+	void toggle_sfx_enabled(int state) {
+		sfx_enabled = state;
+		rebuild_sfx_buttons();
+		paint();
+	}
+	void toggle_sfx_pack(int state);
+	void toggle_speech_enabled(int state) {
+		speech_enabled = state;
+	}
 };
 
 #endif

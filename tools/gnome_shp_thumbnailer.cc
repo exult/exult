@@ -223,7 +223,7 @@ static void Write_thumbnail(
     int w, int h,           // Width, height of rendered image.
     int size                // Desired thumbnail size
 ) {
-	assert(data != 0);
+	assert(data != nullptr);
 	cout << "Writing " << filename << endl;
 	int w1 = w, h1 = h;
 	if (w > size || h > size)
@@ -246,7 +246,7 @@ static void Write_thumbnail(
 		// These few lines are all that create dependencies on gdk-pixbuf and
 		// libgnomeui.
 		GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(bits, GDK_COLORSPACE_RGB,
-		                    true, 8, w1, h1, 4 * w1, NULL, NULL);
+		                    true, 8, w1, h1, 4 * w1, nullptr, nullptr);
 		GdkPixbuf *smallpixbuf = gnome_thumbnail_scale_down_pixbuf(pixbuf,
 		                         size, size);
 		// Write out to the .png.

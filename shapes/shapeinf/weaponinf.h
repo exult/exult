@@ -27,7 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "baseinf.h"
 #include "exult_constants.h"
-using std::istream;
+
+#include <iosfwd>
 
 class Shape_info;
 
@@ -88,7 +89,6 @@ private:
 	short sfx, hitsfx;      // Sound when using/hit, or -1.
 public:
 	friend class Shape_info;
-	Weapon_info() : Base_info() {  }
 	// Read in from file.
 	bool read(std::istream &in, int version, Exult_Game game);
 	// Write out.

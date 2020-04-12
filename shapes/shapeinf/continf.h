@@ -27,7 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "baseinf.h"
 #include "exult_constants.h"
-using std::istream;
+
+#include <iosfwd>
 
 class Shape_info;
 
@@ -40,9 +41,7 @@ class Content_rules : public Base_info {
 	bool    accept;
 public:
 	friend class Shape_info;
-	Content_rules()
-		: Base_info()
-	{  }
+	Content_rules() = default;
 	Content_rules(int sh, bool a, bool p = false, bool m = false,
 	              bool st = false, bool inv = false) {
 		set(sh, a, p, m, st, inv);
@@ -74,16 +73,16 @@ public:
 	bool accepts_shape() const {
 		return accept;
 	}
-	void set_accept(int tf) {
-		if (accept != (tf != 0)) {
+	void set_accept(bool tf) {
+		if (accept != tf) {
 			set_modified(true);
-			accept = (tf != 0);
+			accept = tf;
 		}
 	}
 	bool operator<(const Content_rules &other) const {
-		unsigned short shp1 = static_cast<unsigned short>(shape),
-		               shp2 = static_cast<unsigned short>(other.shape);
-		return (shp1 < shp2);
+		unsigned short shp1 = static_cast<unsigned short>(shape);
+		unsigned short shp2 = static_cast<unsigned short>(other.shape);
+		return shp1 < shp2;
 	}
 	bool operator==(const Content_rules &other) const {
 		return this == &other || (!(*this < other) && !(other < *this));

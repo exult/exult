@@ -21,8 +21,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wparentheses"
+#if !defined(__llvm__) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#else
+#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
+#endif
 #endif  // __GNUC__
 #include <gtk/gtk.h>
 #ifdef __GNUC__
@@ -41,28 +47,28 @@ class Object_browser {
 private:
 	GtkWidget *widget;
 protected:
-	int selected;           // Index of user-selected entry,
+	int selected = -1;           // Index of user-selected entry,
 	//   counting from the top-left entry
 	//   currently rendered.
-	int index0;         // Index of top-leftmost in
+	int index0 = 0;         // Index of top-leftmost in
 	//   displayed list.
-	GtkWidget *vscroll;     // Vertical scrollbar.
-	GtkWidget *hscroll;     // Horizontal scrollbar.
-	Shape_group *group;     // Non-null to use filter.
-	GtkWidget *popup;       // Popup menu in draw area.
-	Shape_file_info *file_info; // Our creator (or null).
-	GtkWidget *find_text;       // For searching.
-	GtkWidget *loc_down, *loc_up;   // 'Locate' buttons.
-	GtkWidget *loc_q;       // 'Locate' quality/quantity.
-	GtkWidget *loc_f;       // 'Locate' frame
+	GtkWidget *vscroll = nullptr;         // Vertical scrollbar.
+	GtkWidget *hscroll = nullptr;         // Horizontal scrollbar.
+	Shape_group *group;                   // Non-null to use filter.
+	GtkWidget *popup = nullptr;           // Popup menu in draw area.
+	Shape_file_info *file_info;           // Our creator (or null).
+	GtkWidget *find_text = nullptr;       // For searching.
+	GtkWidget *loc_down = nullptr, *loc_up = nullptr;   // 'Locate' buttons.
+	GtkWidget *loc_q = nullptr;       // 'Locate' quality/quantity.
+	GtkWidget *loc_f = nullptr;       // 'Locate' frame
 	// 'Move' buttons:
-	GtkWidget *move_down, *move_up;
-	int config_width, config_height;// For storing prev. dims.
+	GtkWidget *move_down = nullptr, *move_up = nullptr;
+	int config_width = 0, config_height = 0;// For storing prev. dims.
 
 	void set_widget(GtkWidget *w);
 	static bool search_name(const char *nm, const char *srch);
 public:
-	Object_browser(Shape_group *grp = 0, Shape_file_info *fi = 0);
+	Object_browser(Shape_group *grp = nullptr, Shape_file_info *fi = nullptr);
 	virtual ~Object_browser();
 
 	GtkWidget *get_widget();
@@ -134,7 +140,7 @@ public:
 
 // File-selector utility:
 // Callback for file-selector 'ok':
-typedef void (*File_sel_okay_fun)(const char *, gpointer);
+using File_sel_okay_fun = void (*)(const char *, gpointer);
 GtkFileSelection *Create_file_selection(
     const char *title,
     File_sel_okay_fun ok_handler,

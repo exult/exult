@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _JAWBONE_H_
-#define _JAWBONE_H_
+#ifndef JAWBONE_H
+#define JAWBONE_H
 
 #include "contain.h"
 #include "ignore_unused_variable_warning.h"
@@ -31,19 +31,17 @@ public:
 	               char res = 0)
 		: Container_game_object(shapenum, framenum, tilex, tiley, lft, res), toothcount(0)
 	{ }
-	Jawbone_object() : Container_game_object() {  }
-
-	//virtual ~Jawbone_object() { }
+	Jawbone_object() = default;
 
 	// Add an object.
-	virtual bool add(Game_object *obj, bool dont_check = false,
-	                 bool combine = false, bool noset = false);
+	bool add(Game_object *obj, bool dont_check = false,
+	         bool combine = false, bool noset = false) override;
 	// Remove an object.
-	virtual void remove(Game_object *obj);
+	void remove(Game_object *obj) override;
 
 	// Under attack. -> do nothing
-	virtual Game_object *attacked(Game_object *attacker, int weapon_shape = -1,
-	                              int ammo_shape = -1, bool explosion = false) {
+	Game_object *attacked(Game_object *attacker, int weapon_shape = -1,
+	                      int ammo_shape = -1, bool explosion = false) override {
 		ignore_unused_variable_warning(attacker, weapon_shape, ammo_shape, explosion);
 		return this;
 	}

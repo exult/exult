@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _YESNO_GUMP_H_
-#define _YESNO_GUMP_H_
+#ifndef YESNO_GUMP_H
+#define YESNO_GUMP_H
 
 #include <string>
 
@@ -31,33 +31,32 @@ class Yesno_button;
  *  A yes/no box.
  */
 class Yesno_gump : public Modal_gump {
-	UNREPLICATABLE_CLASS_I(Yesno_gump, Modal_gump(0, 0, 0, 0))
+	UNREPLICATABLE_CLASS(Yesno_gump)
 
 protected:
 	static short yesx, yesnoy, nox; // Coords. of the buttons.
 	std::string text;           // Text of question.  It is drawn in
 	//   object_area.
 	const char *fontname;
-	int answer;         // 1 for yes, 0 for no.
+	bool answer;         // 1 for yes, 0 for no.
 	void set_answer(int y) {    // Done from 'yes'/'no' button.
 		answer = (y != 0);
-		done = 1;
+		done = true;
 	}
 
 public:
 	friend class Yesno_button;
 	Yesno_gump(const std::string &txt, const char *font = "SMALL_BLACK_FONT");
-	virtual ~Yesno_gump();
-	int get_answer() {
+	bool get_answer() {
 		return answer;
 	}
 	// Paint it and its contents.
-	virtual void paint();
+	void paint() override;
 	// Handle events:
-	virtual bool mouse_down(int mx, int my, int button);
-	virtual bool mouse_up(int mx, int my, int button);
-	virtual void key_down(int chr); // Character typed.
-	static int ask(const char *txt, const char *font = "SMALL_BLACK_FONT"); // Ask question, get answer.
+	bool mouse_down(int mx, int my, int button) override;
+	bool mouse_up(int mx, int my, int button) override;
+	void key_down(int chr) override; // Character typed.
+	static bool ask(const char *txt, const char *font = "SMALL_BLACK_FONT"); // Ask question, get answer.
 };
 
 class Countdown_gump : public Yesno_gump {
@@ -67,8 +66,8 @@ class Countdown_gump : public Yesno_gump {
 public:
 	Countdown_gump(const std::string &txt, int timeout, const char *font);
 
-	virtual bool run();
+	bool run() override;
 
-	static int ask(const char *txt, int timeout, const char *font = "SMALL_BLACK_FONT"); // Ask question, get answer, timeout to no after timeout seconds
+	static bool ask(const char *txt, int timeout, const char *font = "SMALL_BLACK_FONT"); // Ask question, get answer, timeout to no after timeout seconds
 };
 #endif

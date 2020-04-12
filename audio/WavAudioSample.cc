@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 using namespace Pentagram;
 
 
-WavAudioSample::WavAudioSample(uint8* buffer, uint32 size) : RawAudioSample(buffer,0,0,false,false)
+WavAudioSample::WavAudioSample(std::unique_ptr<uint8[]> buffer_, uint32 size) : RawAudioSample(std::move(buffer_),0,0,false,false)
 {
 	uint32 pos_fmt = 0;
 	uint32 size_fmt = 0;
@@ -33,7 +33,7 @@ WavAudioSample::WavAudioSample(uint8* buffer, uint32 size) : RawAudioSample(buff
 	uint32 pos_data = 0;
 	uint32 size_data = 0;
 
-	IBufferDataSource ds (buffer,size);
+	IBufferDataView ds(buffer,size);
 
 	char buf[4];
 
@@ -100,14 +100,7 @@ WavAudioSample::WavAudioSample(uint8* buffer, uint32 size) : RawAudioSample(buff
 	byte_swap = true;
 #endif
 
-	if (bits == 16) 
-	{
-		signeddata = true;
-	}
-	else
-	{
-		signeddata = false;
-	}
+	signeddata = bits == 16;
 }
 
 bool WavAudioSample::isThis(IDataSource *ds)

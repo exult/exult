@@ -65,7 +65,7 @@ public:
 		return *this;
 	}
 	Serial_in &operator<<(bool &v) {
-		v = *buf++ ? true : false;
+		v = *buf++ != 0;
 		return *this;
 	}
 	Serial_in &operator<<(std::string &s);
@@ -89,7 +89,7 @@ extern int Object_out(
     int quality,
     std::string name
 );
-extern int Object_in(
+extern bool Object_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     Game_object *&addr,        // Address.
@@ -111,7 +111,7 @@ extern int Container_out(
     unsigned char resistance,
     bool invisible, bool okay_to_take
 );
-extern int Container_in(
+extern bool Container_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     Container_game_object *&addr,        // Address.
@@ -134,7 +134,7 @@ extern int Barge_object_out(
     int ytiles,
     int dir
 );
-extern int Barge_object_in(
+extern bool Barge_object_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     Barge_object *&addr,        // Address.
@@ -163,7 +163,7 @@ extern int Egg_object_out(
     int data1, int data2, int data3,
     std::string str1
 );
-extern int Egg_object_in(
+extern bool Egg_object_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     Egg_object *&addr,        // Address.
@@ -199,7 +199,7 @@ int Npc_actor_out(
     short ident,
     int usecode,
     std::string usecodefun,
-    int *properties,        // 12 entries.
+    int (&properties)[12],        // 12 entries.
     short attack_mode,
     short alignment,
     unsigned long oflags,       // Object flags.
@@ -208,7 +208,7 @@ int Npc_actor_out(
     short num_schedules,        // # of schedule changes.
     Serial_schedule *schedules  // Schedule changes.
 );
-int Npc_actor_in(
+bool Npc_actor_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     Actor *&addr,        // Address.
@@ -219,7 +219,7 @@ int Npc_actor_in(
     short &ident,
     int &usecode,
     std::string &usecodefun,
-    int *properties,        // Must have room for 12.
+    int (&properties)[12],        // Must have room for 12.
     short &attack_mode,
     short &alignment,
     unsigned long &oflags,      // Object flags.
@@ -239,7 +239,7 @@ extern int Game_info_out(
     bool map_modified,      // Map was changed.
     int edit_mode           // Mode we're in.
 );
-extern int Game_info_in(
+extern bool Game_info_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     int &version,           // Server/client version.

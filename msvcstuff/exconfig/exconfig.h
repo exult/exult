@@ -17,6 +17,3 @@
 #endif
 
 #include <windows.h>
-
-
-extern const std::string c_empty_string;

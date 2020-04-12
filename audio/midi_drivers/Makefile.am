@@ -9,7 +9,7 @@ endif
 AM_CPPFLAGS = -I$(srcdir)/../../headers -I$(srcdir)/../../conf -I$(srcdir)/../.. \
 		-I$(srcdir)/.. -I$(srcdir)/../../files -I$(srcdir)/../../imagewin \
 		-I../../conf -I../../files -I../../objs -I$(srcdir)/../../shapes \
-		$(SDL_CFLAGS) $(KMID_INCLUDES) $(INCDIRS) $(WINDOWING_SYSTEM) \
+		$(SDL_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 		$(MT32EMUFLAGS) \
 		$(DEBUG_FLAGS) $(CPPFLAGS)
 
@@ -30,16 +30,10 @@ libmididrv_la_SOURCES =	\
 	fmopl.h			\
 	FMOplMidiDriver.cpp	\
 	FMOplMidiDriver.h	\
-	forked_player.cc	\
-	forked_player.h		\
-	KMIDI.cc		\
-	KMIDI.h			\
 	LowLevelMidiDriver.cpp	\
 	LowLevelMidiDriver.h	\
 	MidiDriver.cpp		\
 	MidiDriver.h		\
-	mixer_midiout.cc	\
-	mixer_midiout.h		\
 	$(MT32EMUDRV)	\
 	TimidityMidiDriver.cpp	\
 	TimidityMidiDriver.h	\

@@ -206,7 +206,7 @@ static int RATE_0[16]=
 static int num_lock = 0;
 
 /* work table */
-static void *cur_chip = NULL;	/* current chip point */
+static void *cur_chip = nullptr;	/* current chip point */
 /* currenct chip state */
 /* static OPLSAMPLE  *bufL,*bufR; */
 static OPL_CH *S_CH;
@@ -515,7 +515,10 @@ inline void OPL_CALC_CH(OPL_CH *CH) {
 /* ---------- calcrate rythm block ---------- */
 #define WHITE_NOISE_db 6.0
 inline void OPL_CALC_RH(OPL_CH *CH) {
-	uint32 env_tam, env_sd, env_top, env_hh;
+	uint32 env_tam;
+	uint32 env_sd;
+	uint32 env_top;
+	uint32 env_hh;
 	// This code used to do int(OPL->rnd.getRandomBit() * (WHITE_NOISE_db / EG_STEP)),
 	// but EG_STEP = 96.0/EG_ENT, and WHITE_NOISE_db=6.0. So, that's equivalent to
 	// int(OPL->rnd.getRandomBit() * EG_ENT/16). We know that EG_ENT is 4096, or 1024,
@@ -632,8 +635,10 @@ static void init_timetables(FM_OPL *OPL, int ARRATE, int DRRATE) {
 }
 
 /* ---------- generic table initialize ---------- */
-static int OPLOpenTable(void) {
-	uint32 s, t, i;
+static int OPLOpenTable() {
+	uint32 s;
+	uint32 t;
+	uint32 i;
 	double rate;
 	int j;
 	double pom;
@@ -701,7 +706,7 @@ static int OPLOpenTable(void) {
 	return 1;
 }
 
-static void OPLCloseTable( void ) {
+static void OPLCloseTable() {
 	delete [] TL_TABLE;
 	delete [] SIN_TABLE;
 	delete [] AMS_TABLE;
@@ -936,12 +941,12 @@ void OPLWriteReg(FM_OPL *OPL, int r, int v) {
 }
 
 /* lock/unlock for common table */
-static int OPL_LockTable(void) {
+static int OPL_LockTable() {
 	num_lock++;
 	if (num_lock>1)
 		return 0;
 	/* first time */
-	cur_chip = NULL;
+	cur_chip = nullptr;
 	/* allocate total level table (128kb space) */
 	if (!OPLOpenTable()) {
 		num_lock--;
@@ -950,13 +955,13 @@ static int OPL_LockTable(void) {
 	return 0;
 }
 
-static void OPL_UnLockTable(void) {
+static void OPL_UnLockTable() {
 	if (num_lock)
 		num_lock--;
 	if (num_lock)
 		return;
 	/* last time */
-	cur_chip = NULL;
+	cur_chip = nullptr;
 	OPLCloseTable();
 }
 
@@ -972,7 +977,8 @@ void YM3812UpdateOne_Mono(FM_OPL *OPL, sint16 *buffer, int length) {
 	uint32 amsCnt = OPL->amsCnt;
 	uint32 vibCnt = OPL->vibCnt;
 	uint8 rythm = OPL->rythm & 0x20;
-	OPL_CH *CH, *R_CH;
+	OPL_CH *CH;
+	OPL_CH *R_CH;
 
 	if (OPL != cur_chip) {
 		cur_chip = OPL;
@@ -1022,7 +1028,8 @@ void YM3812UpdateOne_Stereo(FM_OPL *OPL, sint16 *buffer, int length) {
 	uint32 amsCnt = OPL->amsCnt;
 	uint32 vibCnt = OPL->vibCnt;
 	uint8 rythm = OPL->rythm & 0x20;
-	OPL_CH *CH, *R_CH;
+	OPL_CH *CH;
+	OPL_CH *R_CH;
 
 	if (OPL != cur_chip) {
 		cur_chip = OPL;
@@ -1085,7 +1092,8 @@ void YM3812UpdateOne_Stereo(FM_OPL *OPL, sint16 *buffer, int length) {
 
 /* ---------- reset a chip ---------- */
 void OPLResetChip(FM_OPL *OPL) {
-	int c,s;
+	int c;
+	int s;
 	int i;
 
 	/* reset chip */
@@ -1122,7 +1130,7 @@ FM_OPL *OPLCreate(int type, int clock, int rate) {
 	int max_ch = 9; /* normaly 9 channels */
 
 	if (OPL_LockTable() == -1)
-		return NULL;
+		return nullptr;
 	/* allocate OPL state space */
 	state_size  = sizeof(FM_OPL);
 	state_size += sizeof(OPL_CH) * max_ch;

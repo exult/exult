@@ -16,11 +16,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _GUMP_TOGGLEBUTTON_H
-#define _GUMP_TOGGLEBUTTON_H
+#ifndef GUMP_TOGGLEBUTTON_H
+#define GUMP_TOGGLEBUTTON_H
 
 #include "Gump_button.h"
 #include "Text_button.h"
+
+#include <string>
+#include <vector>
 
 /*
  * A button that toggles shape when pushed
@@ -35,9 +38,9 @@ public:
 		set_frame(2 * selectionnum);
 	}
 
-	virtual bool push(int button);
-	virtual void unpush(int button);
-	virtual bool activate(int button = 1);
+	bool push(int button) override;
+	void unpush(int button) override;
+	bool activate(int button = 1) override;
 
 	int getselection() const {
 		return get_framenum() / 2;
@@ -54,22 +57,26 @@ private:
 
 class Gump_ToggleTextButton : public Text_button {
 public:
-	Gump_ToggleTextButton(Gump *par, std::string *s,  int selectionnum, int numsel,
+	Gump_ToggleTextButton(Gump *par, const std::vector<std::string>& s,  int selectionnum,
 	                      int px, int py, int width, int height = 0)
 		: Text_button(par, "", px, py, width, height),
-		  numselections(numsel), selections(s) {
+		  selections(s) {
+		set_frame(selectionnum);
+		text = selections[selectionnum];
+		init();
+	}
+	Gump_ToggleTextButton(Gump *par, std::vector<std::string>&& s,  int selectionnum,
+	                      int px, int py, int width, int height = 0)
+		: Text_button(par, "", px, py, width, height),
+		  selections(std::move(s)) {
 		set_frame(selectionnum);
 		text = selections[selectionnum];
 		init();
 	}
 
-	virtual ~Gump_ToggleTextButton() {
-		delete [] selections;
-	}
-
-	virtual bool push(int button);
-	virtual void unpush(int button);
-	virtual bool activate(int button = 1);
+	bool push(int button) override;
+	void unpush(int button) override;
+	bool activate(int button = 1) override;
 
 	int getselection() const {
 		return get_framenum();
@@ -77,9 +84,27 @@ public:
 	virtual void toggle(int state) = 0;
 
 private:
-	int numselections;
-	std::string *selections;
+	std::vector<std::string> selections;
 };
 
+template <typename Parent>
+class CallbackToggleTextButton : public Gump_ToggleTextButton {
+public:
+	using CallbackType = void (Parent::*)(int state);
+
+	template <typename... Ts>
+	CallbackToggleTextButton(Parent* par, CallbackType&& callback, Ts&&... args)
+		: Gump_ToggleTextButton(par, std::forward<Ts>(args)...),
+		  parent(par), on_toggle(std::forward<CallbackType>(callback)) {}
+
+	void toggle(int state) override {
+		(parent->*on_toggle)(state);
+		parent->paint();
+	}
+
+private:
+	Parent* parent;
+	CallbackType on_toggle;
+};
 
 #endif

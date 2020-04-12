@@ -68,10 +68,9 @@ StepoverBreakpoint::StepoverBreakpoint(Stack_frame *frame)
 }
 
 bool StepoverBreakpoint::check(Stack_frame *frame) const {
-	return ((frame->call_chain == call_chain &&
+	return (frame->call_chain == call_chain &&
 	         frame->call_depth <= call_depth) ||
-
-	        (frame->call_chain < call_chain));
+	        (frame->call_chain < call_chain);
 }
 
 FinishBreakpoint::FinishBreakpoint(Stack_frame *frame)
@@ -81,18 +80,14 @@ FinishBreakpoint::FinishBreakpoint(Stack_frame *frame)
 }
 
 bool FinishBreakpoint::check(Stack_frame *frame) const {
-	return ((frame->call_chain == call_chain &&
+	return (frame->call_chain == call_chain &&
 	         frame->call_depth < call_depth) ||
-
-	        (frame->call_chain < call_chain));
+	        (frame->call_chain < call_chain);
 }
 
 
 
 int Breakpoints::lastID = 0;
-
-Breakpoints::Breakpoints() {
-}
 
 Breakpoints::~Breakpoints() {
 	std::list<Breakpoint *>::iterator iter;
@@ -126,12 +121,12 @@ int Breakpoints::check(Stack_frame *frame) {
 			breakID = (*iter)->id;
 			if ((*iter)->once) {
 				delete(*iter);
-				(*iter) = 0;
+				(*iter) = nullptr;
 			}
 		}
 	}
 
-	breaks.remove(static_cast<Breakpoint *>(0)); // delete all NULLs from the list
+	breaks.remove(nullptr); // delete all nullptr from the list
 
 	return breakID;
 }
@@ -155,11 +150,11 @@ bool Breakpoints::remove(int id) {
 		if ((*iter)->id == id) {
 			found = true;
 			delete(*iter);
-			(*iter) = 0;
+			(*iter) = nullptr;
 		}
 	}
 
-	breaks.remove(static_cast<Breakpoint *>(0)); // delete all NULLs from the list
+	breaks.remove(nullptr); // delete all nullptr from the list
 
 	return found;
 }

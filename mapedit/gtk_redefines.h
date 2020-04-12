@@ -73,23 +73,23 @@ inline T1 *gtk_cast(T2 *obj) {
 #if defined(g_list_previous) || defined(g_list_next)
 #  undef g_list_previous
 #  undef g_list_next
-#define g_list_previous(list)           ((list) ? (gtk_cast<GList>((list))->prev) : NULL)
-#define g_list_next(list)               ((list) ? (gtk_cast<GList>((list))->next) : NULL)
+#define g_list_previous(list)           ((list) ? (gtk_cast<GList>((list))->prev) : nullptr)
+#define g_list_next(list)               ((list) ? (gtk_cast<GList>((list))->next) : nullptr)
 #endif /* defined(g_list_previous) || defined(g_list_next) */
 
 #if defined(gtk_menu_append) || defined(gtk_menu_prepend) || defined(gtk_menu_insert)
 #  undef gtk_menu_append
 #  undef gtk_menu_prepend
 #  undef gtk_menu_insert
-#  define gtk_menu_append(menu,child)       gtk_menu_shell_append  (gtk_cast<GtkMenuShell>((menu)),(child))
-#  define gtk_menu_prepend(menu,child)      gtk_menu_shell_prepend (gtk_cast<GtkMenuShell>((menu)),(child))
-#  define gtk_menu_insert(menu,child,pos)   gtk_menu_shell_insert (gtk_cast<GtkMenuShell>((menu)),(child),(pos))
+#  define gtk_menu_append(menu,child)     gtk_menu_shell_append (gtk_cast<GtkMenuShell>((menu)),(child))
+#  define gtk_menu_prepend(menu,child)    gtk_menu_shell_prepend(gtk_cast<GtkMenuShell>((menu)),(child))
+#  define gtk_menu_insert(menu,child,pos) gtk_menu_shell_insert (gtk_cast<GtkMenuShell>((menu)),(child),(pos))
 #endif /* defined(gtk_menu_append) || defined(gtk_menu_prepend) || defined(gtk_menu_insert) */
 
 #ifdef g_signal_connect
 #  undef g_signal_connect
 #define g_signal_connect(instance, detailed_signal, c_handler, data) \
-    g_signal_connect_data ((instance), (detailed_signal), (c_handler), (data), NULL, static_cast<GConnectFlags>(0))
+    g_signal_connect_data ((instance), (detailed_signal), (c_handler), (data), nullptr, static_cast<GConnectFlags>(0))
 #endif /* g_signal_connect */
 
 #ifdef g_utf8_next_char
@@ -97,14 +97,21 @@ inline T1 *gtk_cast(T2 *obj) {
 #define g_utf8_next_char(p)   ((p) + g_utf8_skip[*reinterpret_cast<const guchar *>((p))])
 #endif /* g_utf8_next_char */
 
-#ifdef GPOINTER_TO_INT
-#  undef GPOINTER_TO_INT
-#define GPOINTER_TO_INT(p)    static_cast<gint>(reinterpret_cast<glong>((p)))
-#endif /* GPOINTER_TO_INT */
+#ifdef G_LOG_DOMAIN
+#  undef G_LOG_DOMAIN
+#  define G_LOG_DOMAIN    nullptr
+#endif
 
-#ifdef GINT_TO_POINTER
-#  undef GINT_TO_POINTER
-#define GINT_TO_POINTER(i)    reinterpret_cast<gpointer>(static_cast<glong>((i)))
-#endif /* GINT_TO_POINTER */
+#ifdef	gtk_signal_connect
+#  undef gtk_signal_connect
+#  define gtk_signal_connect(object,name,func,func_data)                                 \
+    gtk_signal_connect_full((object), (name), (func), nullptr, (func_data), nullptr, 0, 0)
+#endif
+
+#ifdef gtk_signal_connect_object
+#undef gtk_signal_connect_object
+#  define gtk_signal_connect_object(object,name,func,slot_object)                        \
+    gtk_signal_connect_full ((object), (name), (func), nullptr, (slot_object), nullptr, 1, 0)
+#endif
 
 #endif

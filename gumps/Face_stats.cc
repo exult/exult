@@ -50,22 +50,22 @@ class Stat_bar : public Gump_button {
 	int     max_val;
 public:
 	Stat_bar(Gump *par, int px, int py, Actor *a, int s, int m, unsigned char c);
-	virtual void double_clicked(int x, int y);
-	virtual void paint();
+	void double_clicked(int x, int y) override;
+	void paint() override;
 
-	virtual bool activate(int button) {
+	bool activate(int button) override {
 		return button == 1;
 	}
-	virtual bool push(int button) {
+	bool push(int button) override {
 		return button == 1;
 	}
-	virtual void unpush(int button) {
+	void unpush(int button) override {
 		ignore_unused_variable_warning(button);
 	}
 	// update dirty region, if required
-	virtual void update_widget();
+	void update_widget() override;
 
-	virtual bool is_draggable() {
+	bool is_draggable() override {
 		return false;
 	}
 };
@@ -132,32 +132,32 @@ protected:
 	Stat_bar    *hp;        // Bar for HP
 	Stat_bar    *mana;      // Bar for MANA
 	bool        hit;
-	int     pois;
-	int     prot;
-	int     para;
-	int     charm;
-	int     curse;
+	bool        pois;
+	bool        prot;
+	bool        para;
+	bool        charm;
+	bool        curse;
 public:
 	Portrait_button(Gump *par, int px, int py, Actor *a);
-	virtual ~Portrait_button();
-	virtual void double_clicked(int x, int y);
-	virtual void paint();
+	~Portrait_button() override;
+	void double_clicked(int x, int y) override;
+	void paint() override;
 
 	// update dirty region, if required
-	virtual void update_widget();
+	void update_widget() override;
 
-	virtual int on_button(int mx, int my) const;
+	bool on_button(int mx, int my) const override;
 
-	virtual Rectangle get_rect();
+	Rectangle get_rect() override;
 
-	virtual bool is_draggable() {
+	bool is_draggable() override {
 		return false;
 	}
 };
 
 
 Portrait_button::Portrait_button(Gump *par, int px, int py, Actor *a)
-	: Face_button(par, px + 14, py - 20, a), hp(0), mana(0) {
+	: Face_button(par, px + 14, py - 20, a), hp(nullptr), mana(nullptr) {
 	hp = new Stat_bar(par, px + 4, py - 10, a, Actor::health, Actor::strength, PALETTE_INDEX_RED);
 
 	if (actor->get_effective_prop(Actor::magic) > 0)
@@ -187,7 +187,7 @@ void Portrait_button::double_clicked(int x, int y) {
 		actor->show_inventory();
 }
 
-int Portrait_button::on_button(int x, int y) const {
+bool Portrait_button::on_button(int x, int y) const {
 	if (hp && hp->on_button(x, y))
 		return true;
 	else if (mana && mana->on_button(x, y))
@@ -284,10 +284,10 @@ Rectangle Portrait_button::get_rect() {
  *  Face_stats
  */
 
-Face_stats::Face_stats() : Gump(0, 0, 0, 0, SF_GUMPS_VGA) {
+Face_stats::Face_stats() : Gump(nullptr, 0, 0, 0, SF_GUMPS_VGA) {
 	for (int i = 1; i < 8; i++) {
 		npc_nums[i] = -1;
-		party[i] = 0;
+		party[i] = nullptr;
 	}
 
 
@@ -298,7 +298,7 @@ Face_stats::~Face_stats() {
 	delete_buttons();
 
 	gwin->set_all_dirty();
-	self = 0;
+	self = nullptr;
 }
 
 /*
@@ -320,8 +320,7 @@ Gump_button *Face_stats::on_button(int mx, int my) {
 		if (party[i] && party[i]->on_button(mx, my))
 			return party[i];
 
-
-	return 0;
+	return nullptr;
 }
 
 // add dirty region, if dirty
@@ -337,7 +336,7 @@ void Face_stats::delete_buttons() {
 	for (int i = 0; i < 8; i++) {
 		if (party[i]) {
 			delete party[i];
-			party[i] = 0;
+			party[i] = nullptr;
 		}
 		npc_nums[i] = -1;
 	}
@@ -366,11 +365,13 @@ void Face_stats::create_buttons() {
 
 	for (i = 0; i < party_size; i++) {
 		int num = partyman->get_member(i);
+		Actor *act = gwin->get_npc(num);
+		assert(act != nullptr);
 		// Show faces if in SI, or if paperdolls are allowed
 		if (sman->can_use_paperdolls() ||
 		        // Otherwise, show faces also if the character
 		        // has paperdoll information
-		        gwin->get_npc(num)->get_info().get_npc_paperdoll())
+		        act->get_info().get_npc_paperdoll())
 			++num_to_paint;
 	}
 
@@ -392,6 +393,7 @@ void Face_stats::create_buttons() {
 	for (i = 0; i < party_size; i++) {
 		npc_nums[i + 1] = partyman->get_member(i);
 		Actor *act = gwin->get_npc(npc_nums[i + 1]);
+		assert(act != nullptr);
 		// Show faces if in SI, or if paperdolls are allowed
 		if (sman->can_use_paperdolls() ||
 		        // Otherwise, show faces also if the character
@@ -400,7 +402,7 @@ void Face_stats::create_buttons() {
 			pos += width;
 			party[i + 1] = new Portrait_button(this, pos, 0, gwin->get_npc(npc_nums[i + 1]));
 		} else {
-			party[i + 1] = 0;
+			party[i + 1] = nullptr;
 		}
 	}
 
@@ -426,10 +428,10 @@ bool Face_stats::has_point(int x, int y) const {
  *  is calculated by 'paint()'.  If they're all -2, it's assumed that
  *  obj->cx, obj->cy are already correct.
  *
- *  Output: 0 if cannot add it.
+ *  Output: false if cannot add it.
  */
 
-int Face_stats::add(
+bool Face_stats::add(
     Game_object *obj,
     int mx, int my,         // Mouse location.
     int sx, int sy,         // Screen location of obj's hotspot.
@@ -438,26 +440,26 @@ int Face_stats::add(
     //   cause obj to be deleted.
 ) {
 	if (sx < 0 && sy < 0 && my < 0 && mx < 0)
-		return 0;
+		return false;
 
 	for (int i = 0; i < 8; i++)
 		if (party[i] && party[i]->on_button(mx, my))
 			return party[i]->get_actor()->add(obj, dont_check, combine);
 
-	return (0);
+	return false;
 }
 
 Container_game_object *Face_stats::find_actor(int mx, int my) {
 	for (int i = 0; i < 8; i++) if (party[i] && party[i]->on_button(mx, my))
 		return party[i]->get_actor();
 
-	return 0;
+	return nullptr;
 }
 
 // Statics
 
 int Face_stats::mode = 0;
-Face_stats *Face_stats::self = 0;
+Face_stats *Face_stats::self = nullptr;
 
 // Creates if doesn't already exist
 void Face_stats::CreateGump() {

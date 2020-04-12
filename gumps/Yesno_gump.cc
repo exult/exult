@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gump_button.h"
 #include "Gump_manager.h"
 #include "font.h"
+#include "exult.h"
+#include "touchui.h"
 
 #include <cstring>
 
@@ -55,7 +57,7 @@ public:
 		                isyes(yes)
 	{  }
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
+	bool activate(int button = 1) override;
 };
 
 
@@ -78,18 +80,10 @@ bool Yesno_button::activate(
 
 Yesno_gump::Yesno_gump(
     const std::string &txt, const char *font
-) : Modal_gump(0, game->get_shape("gumps/yesnobox")), text(txt), fontname(font), answer(-1) {
+) : Modal_gump(nullptr, game->get_shape("gumps/yesnobox")), text(txt), fontname(font), answer(-1) {
 	set_object_area(Rectangle(6, 5, 116, 32));
 	add_elem(new Yesno_button(this, yesx, yesnoy, 1));
 	add_elem(new Yesno_button(this, nox, yesnoy, 0));
-}
-
-/*
- *  Done with yes/no box.
- */
-
-Yesno_gump::~Yesno_gump(
-) {
 }
 
 /*
@@ -104,6 +98,9 @@ void Yesno_gump::paint(
 	// Paint text.
 	fontManager.get_font(fontname)->paint_text_box(gwin->get_win()->get_ib8(), text.c_str(),
 	        x + object_area.x, y + object_area.y, object_area.w, object_area.h, 2);
+	if (touchui != nullptr) {
+		touchui->showButtonControls();
+	}
 	gwin->set_painted();
 }
 
@@ -134,7 +131,7 @@ bool Yesno_gump::mouse_up(
 		pushed->unpush(button);
 		if (pushed->on_button(mx, my))
 			pushed->activate(button);
-		pushed = 0;
+		pushed = nullptr;
 	}
 	return true;
 }
@@ -156,25 +153,26 @@ void Yesno_gump::key_down(int chr) {
  *  Output: 1 if yes, 0 if no or ESC.
  */
 
-int Yesno_gump::ask(
+bool Yesno_gump::ask(
     const char *txt,            // What to ask.
     const char *font
 ) {
-	Yesno_gump *dlg = new Yesno_gump(txt, font);
-	int answer;
-	if (!gumpman->do_modal_gump(dlg, Mouse::hand))
-		answer = 0;
+	Yesno_gump dlg(txt, font);
+	bool answer;
+	if (!gumpman->do_modal_gump(&dlg, Mouse::hand))
+		answer = false;
 	else
-		answer = dlg->get_answer();
-	delete dlg;
-	return (answer);
+		answer = dlg.get_answer();
+	if (touchui != nullptr && gumpman->gump_mode())
+		touchui->hideButtonControls();
+	return answer;
 }
 
 
 
 Countdown_gump::Countdown_gump(const std::string &txt, int timeout, const char *font) :
 	Yesno_gump(std::string(), font), text_fmt(txt), timer(timeout) {
-	answer = 0;
+	answer = false;
 	start_time = SDL_GetTicks();
 }
 
@@ -193,13 +191,14 @@ bool Countdown_gump::run() {
 	return true;
 }
 
-int Countdown_gump::ask(const char *txt, int timeout, const char *font) {
-	Countdown_gump *dlg = new Countdown_gump(txt, timeout, font);
-	int answer;
-	if (!gumpman->do_modal_gump(dlg, Mouse::hand))
-		answer = 0;
+bool Countdown_gump::ask(const char *txt, int timeout, const char *font) {
+	Countdown_gump dlg(txt, timeout, font);
+	bool answer;
+	if (!gumpman->do_modal_gump(&dlg, Mouse::hand))
+		answer = false;
 	else
-		answer = dlg->get_answer();
-	delete dlg;
-	return (answer);
+		answer = dlg.get_answer();
+	if (touchui != nullptr && gumpman->gump_mode())
+		touchui->hideButtonControls();
+	return answer;
 }

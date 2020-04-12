@@ -43,7 +43,7 @@ PartialManager::PartialManager(Synth *useSynth, Part **useParts) {
 PartialManager::~PartialManager(void) {
 	for (unsigned int i = 0; i < synth->getPartialCount(); i++) {
 		delete partialTable[i];
-		if (freePolys[i] != NULL) delete freePolys[i];
+		if (freePolys[i] != nullptr) delete freePolys[i];
 	}
 	delete[] partialTable;
 	delete[] freePolys;
@@ -79,7 +79,7 @@ unsigned int PartialManager::setReserve(Bit8u *rset) {
 }
 
 Partial *PartialManager::allocPartial(int partNum) {
-	Partial *outPartial = NULL;
+	Partial *outPartial = nullptr;
 
 	// Get the first inactive partial
 	for (unsigned int partialNum = 0; partialNum < synth->getPartialCount(); partialNum++) {
@@ -88,7 +88,7 @@ Partial *PartialManager::allocPartial(int partNum) {
 			break;
 		}
 	}
-	if (outPartial != NULL) {
+	if (outPartial != nullptr) {
 		outPartial->activate(partNum);
 	}
 	return outPartial;
@@ -257,7 +257,7 @@ bool PartialManager::freePartials(unsigned int needed, int partNum) {
 
 const Partial *PartialManager::getPartial(unsigned int partialNum) const {
 	if (partialNum > synth->getPartialCount() - 1) {
-		return NULL;
+		return nullptr;
 	}
 	return partialTable[partialNum];
 }
@@ -265,12 +265,12 @@ const Partial *PartialManager::getPartial(unsigned int partialNum) const {
 Poly *PartialManager::assignPolyToPart(Part *part) {
 	if (firstFreePolyIndex < synth->getPartialCount()) {
 		Poly *poly = freePolys[firstFreePolyIndex];
-		freePolys[firstFreePolyIndex] = NULL;
+		freePolys[firstFreePolyIndex] = nullptr;
 		firstFreePolyIndex++;
 		poly->setPart(part);
 		return poly;
 	}
-	return NULL;
+	return nullptr;
 }
 
 void PartialManager::polyFreed(Poly *poly) {
@@ -279,14 +279,14 @@ void PartialManager::polyFreed(Poly *poly) {
 		for (Bit32u partNum = 0; partNum < 9; partNum++) {
 			const Poly *activePoly = synth->getPart(partNum)->getFirstActivePoly();
 			Bit32u polyCount = 0;
-			while (activePoly != NULL) {
+			while (activePoly != nullptr) {
 				activePoly = activePoly->getNext();
 				polyCount++;
 			}
 			synth->printDebug("Part: %i, active poly count: %i\n", partNum, polyCount);
 		}
 	}
-	poly->setPart(NULL);
+	poly->setPart(nullptr);
 	firstFreePolyIndex--;
 	freePolys[firstFreePolyIndex] = poly;
 }

@@ -39,7 +39,7 @@ Image_buffer::Image_buffer(
     int dpth            // Depth (bits/pixel).
 ) : width(w), height(h),
 	offset_x(0), offset_y(0),
-	depth(dpth), bits(0), line_width(w),
+	depth(dpth), bits(nullptr), line_width(w),
 	clipx(0), clipy(0),
 	clipw(w), cliph(h) {
 	switch (depth) {        // What depth?

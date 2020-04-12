@@ -90,7 +90,7 @@ using std::rand;
 using std::string;
 using std::swap;
 
-Actor *Actor::editing = 0;
+Actor *Actor::editing = nullptr;
 
 extern bool combat_trace;
 
@@ -174,8 +174,32 @@ uint8 visible_frames[16] = {
 	Actor::ready_frame
 };   // Can't strech arms outward.
 
-Frames_sequence *Actor::avatar_frames[4] = {0, 0, 0, 0};
-Frames_sequence *Actor::npc_frames[4] = {0, 0, 0, 0};
+
+// Set up actor's frame lists.
+// Most NPC's walk with a 'stand'
+//   frame between steps.
+const int FRAME_NUM = 5;
+uint8 npc_north_framenums[FRAME_NUM] = { 0,  1,  0,  2,  0},
+      npc_south_framenums[FRAME_NUM] = {16, 17, 16, 18, 16},
+      npc_east_framenums[FRAME_NUM] = {48, 49, 48, 50, 48},
+      npc_west_framenums[FRAME_NUM] = {32, 33, 32, 34, 32};
+static Frames_sequence npc_north_frames(FRAME_NUM, npc_north_framenums);
+static Frames_sequence npc_south_frames(FRAME_NUM, npc_south_framenums);
+static Frames_sequence npc_east_frames(FRAME_NUM, npc_east_framenums);
+static Frames_sequence npc_west_frames(FRAME_NUM, npc_west_framenums);
+// Avatar just walks left, right.
+uint8 avatar_north_framenums[3] = {0, 1, 2},
+      avatar_south_framenums[3] = {16, 17, 18},
+      avatar_east_framenums[3] = {48, 49, 50},
+      avatar_west_framenums[3] = {32, 33, 34};
+static Frames_sequence avatar_north_frames(3, avatar_north_framenums);
+static Frames_sequence avatar_south_frames(3, avatar_south_framenums);
+static Frames_sequence avatar_east_frames(3, avatar_east_framenums);
+static Frames_sequence avatar_west_frames(3, avatar_west_framenums);
+
+Frames_sequence *Actor::avatar_frames[4] = {nullptr, nullptr, nullptr, nullptr};
+Frames_sequence *Actor::npc_frames[4] = {nullptr, nullptr, nullptr, nullptr};
+
 const signed char sea_serpent_attack_frames[] = {1, 2, 3};
 const signed char reach_attack_frames1[] = {3, 6};
 const signed char raise_attack_frames1[] = {3, 4, 6};
@@ -187,7 +211,7 @@ const signed char fast_swing_attack_frames2[] = {3, 8, 9};
 const signed char slow_swing_attack_frames2[] = {3, 7, 8, 9};
 
 // inline int Is_attack_frame(int i) { return i >= 3 && i <= 9; }
-inline int Is_attack_frame(int i) {
+inline bool Is_attack_frame(int i) {
 	return i == 6 || i == 9;
 }
 inline int Get_dir_from_frame(int i) {
@@ -200,7 +224,7 @@ inline int Get_dir_from_frame(int i) {
 class Actor_attributes {
 	/// The attribute names. These are shared among all actors.
 	static std::set<string> *strings;
-	typedef std::map<const char *, int> Att_map;
+	using Att_map = std::map<const char *, int>;
 	/// The attribute name > value map.
 	Att_map map;
 public:
@@ -240,7 +264,7 @@ public:
 			attlist.push_back(*it);
 	}
 };
-std::set<string> *Actor_attributes::strings = 0;
+std::set<string> *Actor_attributes::strings = nullptr;
 
 /**
  *  Get/create timers.
@@ -266,7 +290,7 @@ void Actor::init(
 	for (i = 0; i < array_size(properties); i++)
 		properties[i] = 0;
 	for (i = 0; i < array_size(spots); i++)
-		spots[i] = 0;
+		spots[i] = nullptr;
 }
 
 /**
@@ -280,7 +304,7 @@ Game_object *Actor::find_best_ammo(
     int family,
     int needed
 ) {
-	Game_object *best = 0;
+	Game_object *best = nullptr;
 	int best_strength = -20;
 	Game_object_vector vec;     // Get list of all possessions.
 	vec.reserve(50);
@@ -366,10 +390,10 @@ Game_object *Actor::find_weapon_ammo(
     bool recursive
 ) {
 	if (weapon < 0)
-		return 0;
+		return nullptr;
 	const Weapon_info *winf = ShapeID::get_info(weapon).get_weapon_info();
 	if (!winf)
-		return 0;
+		return nullptr;
 	int family = winf->get_ammo_consumed();
 	if (family >= 0) {
 		Game_object *aobj = get_readied(quiver);
@@ -378,7 +402,7 @@ Game_object *Actor::find_weapon_ammo(
 			return aobj;        // Already readied.
 		else if (recursive)
 			return find_best_ammo(family, needed);
-		return 0;
+		return nullptr;
 	}
 
 	// Search readied weapons first.
@@ -399,7 +423,7 @@ Game_object *Actor::find_weapon_ammo(
 	}
 
 	// Now recursively search all contents.
-	return recursive ? Container_game_object::find_weapon_ammo(weapon) : 0;
+	return recursive ? Container_game_object::find_weapon_ammo(weapon) : nullptr;
 }
 
 /**
@@ -413,12 +437,16 @@ void Actor::swap_ammo(
 	Game_object *aobj = get_readied(quiver);
 	if (aobj == newammo)
 		return;         // Already what we need.
-	if (aobj)           // Something there already?
-		aobj->remove_this(1);   // Remove it.
-	newammo->remove_this(1);
-	add(newammo, 1);        // Should go to the right place.
+						// Keep these from getting deleted:
+    Game_object_shared aobj_shared;
+    Game_object_shared newammo_shared;
+    if (aobj) {           // Something there already?
+		aobj->remove_this(&aobj_shared);   // Remove it.
+	}
+	newammo->remove_this(&newammo_shared);
+	add(newammo, true);        // Should go to the right place.
 	if (aobj)           // Put back old ammo.
-		add(aobj, 1);
+		add(aobj, true);
 }
 
 /**
@@ -434,15 +462,15 @@ void Actor::swap_ammo(
 static inline bool Is_weapon_usable(
     Actor *npc,
     Game_object *bobj,
-    Game_object **ammo = 0,
+    Game_object **ammo = nullptr,
     bool recursive = true
 ) {
 	if (ammo)
-		*ammo = 0;
+		*ammo = nullptr;
 	const Weapon_info *winf = bobj->get_info().get_weapon_info();
 	if (!winf)
 		return false;       // Not a weapon.
-	Game_object *aobj = 0;  // Check ranged first.
+	Game_object *aobj = nullptr;  // Check ranged first.
 	int need_ammo = npc->get_weapon_ammo(bobj->get_shapenum(),
 	                                     winf->get_ammo_consumed(), winf->get_projectile(),
 	                                     true, &aobj, recursive);
@@ -477,13 +505,10 @@ bool Actor::ready_ammo(
 	int ammo = winf->get_ammo_consumed();
 	if (ammo < 0) {
 		// Ammo not needed.
-		if (winf->uses_charges() && info.has_quality() &&
-		        weapon->get_quality() <= 0)
-			return false;   // Uses charges, but none left.
-		else
-			return true;
+		return !(winf->uses_charges() && info.has_quality() &&
+		        weapon->get_quality() <= 0);   // Uses charges, but none left.
 	}
-	Game_object *found = 0;
+	Game_object *found = nullptr;
 	// Try non-recursive search for ammo first.
 	bool usable = Is_weapon_usable(this, weapon, &found, false);
 	if (usable) // Ammo is available and ready.
@@ -510,15 +535,17 @@ bool Actor::ready_best_shield(
 		if (is_in_party() || inf.get_armor() || inf.get_armor_immunity())
 			return inf.get_armor() || inf.get_armor_immunity();
 	}
-	Game_object *old_rhand = 0;
+	Game_object *old_rhand = nullptr;
+	Game_object_shared rhand_keep;
+	Game_object_shared best_keep;
 	if (spots[rhand]) {     // remove old offhand item
 		old_rhand = spots[rhand];
-		old_rhand->remove_this(1);
+		old_rhand->remove_this(&rhand_keep);
 	}
 	Game_object_vector vec;     // Get list of all possessions.
 	vec.reserve(50);
 	get_objects(vec, c_any_shapenum, c_any_qual, c_any_framenum);
-	Game_object *best = 0;
+	Game_object *best = nullptr;
 	int best_strength = -20;
 	for (Game_object_vector::const_iterator it = vec.begin();
 	        it != vec.end(); ++it) {
@@ -543,14 +570,14 @@ bool Actor::ready_best_shield(
 	}
 	if (!best) {
 		if (old_rhand)  // add offhand item back to where it was
-			add(old_rhand, 1);
+			add(old_rhand, true);
 		return false;
 	}
 	// Spot is free already.
-	best->remove_this(1);
-	add(best, 1);           // Should go to the right place.
+	best->remove_this(&best_keep);
+	add(best, true);           // Should go to the right place.
 	if (old_rhand && old_rhand != best) // don't add twice
-		add(old_rhand, 1);
+		add(old_rhand, true);
 	return true;
 }
 
@@ -563,7 +590,7 @@ bool Actor::ready_best_shield(
 bool Actor::ready_best_weapon(
 ) {
 	int points;
-	if (Actor::get_weapon(points) != 0 && ready_ammo()) {
+	if (Actor::get_weapon(points) != nullptr && ready_ammo()) {
 		ready_best_shield();
 		return true;        // Already have one.
 	}
@@ -578,12 +605,17 @@ bool Actor::ready_best_weapon(
 	Game_object_vector vec;     // Get list of all possessions.
 	vec.reserve(50);
 	get_objects(vec, c_any_shapenum, c_any_qual, c_any_framenum);
-	Game_object *best = 0, *best_ammo = 0;
+	Game_object *best = nullptr;
+	Game_object *best_ammo = nullptr;
+	Game_object_shared keep1;
+	Game_object_shared keep2;
+	Game_object_shared best_keep;
 	int best_strength = -20;
 	int wtype = backpack;
 	for (Game_object_vector::const_iterator it = vec.begin();
 	        it != vec.end(); ++it) {
-		Game_object *obj = *it, *ammo_obj = 0;
+		Game_object *obj = *it;
+		Game_object *ammo_obj = nullptr;
 		if (obj->inside_locked())
 			continue;
 		const Shape_info &info = obj->get_info();
@@ -602,7 +634,7 @@ bool Actor::ready_best_weapon(
 		if (strength > best_strength) {
 			wtype = ready;
 			best = obj;
-			best_ammo = ammo_obj != obj ? ammo_obj : 0;
+			best_ammo = ammo_obj != obj ? ammo_obj : nullptr;
 			best_strength = strength;
 		}
 	}
@@ -611,20 +643,21 @@ bool Actor::ready_best_weapon(
 		return false;
 	}
 	// If nothing is in left hand, nothing will happen.
-	Game_object *remove1 = spots[lhand], *remove2 = 0;
-	if (wtype == both_hands)
+	Game_object* remove1 = spots[lhand];
+	Game_object* remove2 = nullptr;
+	if (wtype == both_hands && spots[rhand])
 		remove2 = spots[rhand];
 	// Prevent double removal and double add (can corrupt objects list).
 	// No need for similar check for remove1 as we wouldn't be here
 	// if remove1 were a weapon we could use.
 	if (remove2 == best)
-		remove2 = 0;
+		remove2 = nullptr;
 	// Free the spot(s).
 	if (remove1)
-		remove1->remove_this(1);
+		remove1->remove_this(&keep1);
 	if (remove2)
-		remove2->remove_this(1);
-	best->remove_this(1);
+		remove2->remove_this(&keep2);
+	best->remove_this(&best_keep);
 	if (wtype == rhand) // tell it the correct ready spot
 		add_readied(best, lhand);
 	else
@@ -644,13 +677,14 @@ bool Actor::ready_best_weapon(
  */
 
 bool Actor::empty_hand(
-    Game_object *obj
+    Game_object *obj,
+    Game_object_shared *keep
 ) {
 	if (!obj)
 		return true;
 	static int chkspots[] = {belt, backpack};
 	add_dirty();
-	obj->remove_this(1);
+	obj->remove_this(keep);
 	for (size_t i = 0; i < array_size(chkspots); i++)
 		if (add_readied(obj, chkspots[i], true, true))      // Slot free?
 			return true;
@@ -665,10 +699,11 @@ bool Actor::empty_hand(
 void Actor::empty_hands(
 ) {
 	Game_object *obj = spots[lhand];
-	if (!empty_hand(obj))
+	Game_object_shared keep;
+	if (!empty_hand(obj, &keep))
 		add(obj, true);
 	obj = spots[rhand];
-	if (!empty_hand(obj))
+	if (!empty_hand(obj, &keep))
 		add(obj, true);
 }
 
@@ -690,15 +725,17 @@ int Actor::get_effective_weapon_shape(
 
 /**
  *  Add dirty rectangle(s).
- *  @return Returns 0 if not on screen.
+ *  @return Returns false if not on screen.
  */
-int Actor::add_dirty(
-    int figure_rect         // Recompute weapon rectangle.
+bool Actor::add_dirty(
+    bool figure_rect         // Recompute weapon rectangle.
 ) {
 	if (!gwin->add_dirty(this))
-		return 0;
+		return false;
 	if (figure_rect || get_casting_mode() == Actor::show_casting_frames) {
-		int weapon_x, weapon_y, weapon_frame;
+		int weapon_x;
+		int weapon_y;
+		int weapon_frame;
 		if (figure_weapon_pos(weapon_x, weapon_y, weapon_frame)) {
 			int shnum = get_effective_weapon_shape();
 
@@ -714,13 +751,14 @@ int Actor::add_dirty(
 	}
 	if (weapon_rect.w > 0) {    // Repaint weapon area too.
 		Rectangle r = weapon_rect;
-		int xoff, yoff;
+		int xoff;
+		int yoff;
 		gwin->get_shape_location(this, xoff, yoff);
 		r.shift(xoff, yoff);
 		r.enlarge(c_tilesize / 2);
 		gwin->add_dirty(gwin->clip_to_win(r));
 	}
-	return 1;
+	return true;
 }
 
 /**
@@ -743,7 +781,7 @@ void Actor::change_frame(
 	}
 	rest_time = 0;
 	set_frame(frnum);
-	add_dirty(1);           // Set to repaint new.
+	add_dirty(true);           // Set to repaint new.
 }
 
 /**
@@ -751,10 +789,10 @@ void Actor::change_frame(
  *  @param t Tile to step to. Tz is possibly updated by this function.
  *  @param f Pointer to tile we are stepping from, or null for current tile.
  *  @param move_flags Additional movement flags to consider for step.
- *  @return Returns 1 if so, else 0.
+ *  @return Returns true if so, else false.
  */
 
-int Actor::is_blocked(
+bool Actor::is_blocked(
     Tile_coord &t,          // Tz possibly updated.
     Tile_coord *f,          // Step from here, or curpos if null.
     const int move_flags
@@ -762,7 +800,8 @@ int Actor::is_blocked(
 	const Shape_info &info = get_info();
 	// Get dim. in tiles.
 	int frame = get_framenum();
-	int xtiles = info.get_3d_xtiles(frame), ytiles = info.get_3d_ytiles(frame);
+	int xtiles = info.get_3d_xtiles(frame);
+	int ytiles = info.get_3d_ytiles(frame);
 	int ztiles = info.get_3d_height();
 	t.fixme();
 	if (xtiles == 1 && ytiles == 1) { // Simple case?
@@ -770,7 +809,7 @@ int Actor::is_blocked(
 		                       t.tx / c_tiles_per_chunk, t.ty / c_tiles_per_chunk);
 		nlist->setup_cache();
 		int new_lift;
-		int blocked = nlist->is_blocked(ztiles, t.tz,
+		bool blocked = nlist->is_blocked(ztiles, t.tz,
 		                                t.tx % c_tiles_per_chunk, t.ty % c_tiles_per_chunk,
 		                                new_lift, move_flags | get_type_flags());
 		t.tz = new_lift;
@@ -825,9 +864,9 @@ Game_object *Actor::find_blocking(
 			if (base.has_world_point(i, j))
 				continue;
 			else if ((block = Game_object::find_blocking(
-			                      Tile_coord(i, j, get_tile().tz))) != 0)
+			                      Tile_coord(i, j, get_tile().tz))) != nullptr)
 				return block;
-	return 0;
+	return nullptr;
 }
 
 /**
@@ -845,7 +884,8 @@ inline void Actor::movef(
     int new_sx, int new_sy, int new_frame,
     int new_lift
 ) {
-	if (old_chunk)          // Remove from current chunk.
+    Game_object_shared keep = shared_from_this();
+    if (old_chunk)          // Remove from current chunk.
 		old_chunk->remove(this);
 	set_shape_pos(new_sx, new_sy);
 	if (new_frame >= 0)
@@ -870,19 +910,19 @@ Actor::Actor(
     int uc
 ) : name(nm), usecode(uc),
 	usecode_assigned(false), usecode_name(""), unused(false),
-	npc_num(num), face_num(num), party_id(-1), atts(0), temperature(0),
-	shape_save(-1), oppressor(-1), target(0),
-	casting_mode(false), casting_shape(-1),
-	target_object(0), target_tile(Tile_coord(-1, -1, 0)), attack_weapon(-1),
+	npc_num(num), face_num(num), party_id(-1), atts(nullptr), temperature(0),
+	shape_save(-1), oppressor(-1),
+	casting_mode(not_casting), casting_shape(-1),
+	target_tile(Tile_coord(-1, -1, 0)), attack_weapon(-1),
 	attack_mode(nearest),
-	schedule_type(Schedule::loiter), next_schedule(255), schedule(0),
+	schedule_type(Schedule::loiter), next_schedule(255), schedule(nullptr),
 	restored_schedule(-1), dormant(true), hit(false), combat_protected(false),
 	user_set_attack(false), alignment(0), charmalign(0), two_handed(false),
 	two_fingered(false), use_scabbard(false), use_neck(false),
 	light_sources(0), usecode_dir(0), type_flags(0),
 	gear_immunities(0), gear_powers(0), ident(0),
-	skin_color(-1), action(0),
-	frame_time(0), step_index(0), qsteps(0), timers(0),
+	skin_color(-1), action(nullptr),
+	frame_time(0), step_index(0), qsteps(0), timers(nullptr),
 	weapon_rect(0, 0, 0, 0), rest_time(0) {
 	set_shape(shapenum, 0);
 	init();
@@ -896,6 +936,8 @@ Actor::Actor(
 Actor::~Actor(
 ) {
 	purge_deleted_actions();
+	if (in_queue() && gwin->get_tqueue())
+		gwin->get_tqueue()->remove(this);
 	delete schedule;
 	delete action;
 	delete timers;
@@ -912,7 +954,8 @@ void Actor::refigure_gear() {
 	                                  feet, rfinger, rhand, torso, amulet,
 	                                  earrings, cloak, gloves
 	                                 };
-	int powers = 0, immune = 0;
+	int powers = 0;
+	int immune = 0;
 	light_sources = 0;
 	for (size_t i = 0; i < array_size(locs); i++) {
 		Game_object *worn = spots[static_cast<int>(locs[i])];
@@ -1075,7 +1118,7 @@ int Actor::get_attack_frames(
 		unsigned char frame_flags;  // Get Actor_frame flags.
 		const Weapon_info *winfo;
 		if (weapon >= 0 &&
-		        (winfo = ShapeID::get_info(weapon).get_weapon_info()) != 0)
+		        (winfo = ShapeID::get_info(weapon).get_weapon_info()) != nullptr)
 			frame_flags = winfo->get_actor_frames(projectile);
 		else                // Default to normal swing.
 			frame_flags = projectile ? Weapon_info::reach : Weapon_info::fast_swing;
@@ -1093,6 +1136,7 @@ int Actor::get_attack_frames(
 			cnt = sizeof(fast_swing_attack_frames1);
 			break;
 		case Weapon_info::slow_swing:
+		default:
 			which = slow_swing_attack_frames;
 			cnt = sizeof(slow_swing_attack_frames1);
 			break;
@@ -1122,34 +1166,14 @@ int Actor::get_attack_frames(
 void Actor::init_default_frames(
 ) {
 	// Set up actor's frame lists.
-	// Most NPC's walk with a 'stand'
-	//   frame between steps.
-	const int FRAME_NUM = 5;
-	uint8 npc_north_frames[FRAME_NUM] = { 0,  1,  0,  2,  0},
-	                                    npc_south_frames[FRAME_NUM] = {16, 17, 16, 18, 16},
-	                                            npc_east_frames[FRAME_NUM] = {48, 49, 48, 50, 48},
-	                                                    npc_west_frames[FRAME_NUM] = {32, 33, 32, 34, 32};
-	npc_frames[static_cast<int>(north) / 2] =
-	    new Frames_sequence(FRAME_NUM, npc_north_frames);
-	npc_frames[static_cast<int>(south) / 2] =
-	    new Frames_sequence(FRAME_NUM, npc_south_frames);
-	npc_frames[static_cast<int>(east) / 2] =
-	    new Frames_sequence(FRAME_NUM, npc_east_frames);
-	npc_frames[static_cast<int>(west) / 2] =
-	    new Frames_sequence(FRAME_NUM, npc_west_frames);
-	// Avatar just walks left, right.
-	uint8 avatar_north_frames[3] = {0, 1, 2},
-	                               avatar_south_frames[3] = {16, 17, 18},
-	                                       avatar_east_frames[3] = {48, 49, 50},
-	                                               avatar_west_frames[3] = {32, 33, 34};
-	avatar_frames[static_cast<int>(north) / 2] =
-	    new Frames_sequence(3, avatar_north_frames);
-	avatar_frames[static_cast<int>(south) / 2] =
-	    new Frames_sequence(3, avatar_south_frames);
-	avatar_frames[static_cast<int>(east) / 2] =
-	    new Frames_sequence(3, avatar_east_frames);
-	avatar_frames[static_cast<int>(west) / 2] =
-	    new Frames_sequence(3, avatar_west_frames);
+	npc_frames[static_cast<int>(north) / 2] = &npc_north_frames;
+	npc_frames[static_cast<int>(south) / 2] = &npc_south_frames;
+	npc_frames[static_cast<int>(east) / 2] =  &npc_east_frames;
+	npc_frames[static_cast<int>(west) / 2] =  &npc_west_frames;
+	avatar_frames[static_cast<int>(north) / 2] = &avatar_north_frames;
+	avatar_frames[static_cast<int>(south) / 2] = &avatar_south_frames;
+	avatar_frames[static_cast<int>(east) / 2] =  &avatar_east_frames;
+	avatar_frames[static_cast<int>(west) / 2] =  &avatar_west_frames;
 }
 
 /*
@@ -1177,7 +1201,7 @@ void Actor::set_action(
 ) {
 	if (newact != action) {
 		Actor_action *todel;
-		if (action && (todel = action->kill()) != 0)
+		if (action && (todel = action->kill()) != nullptr)
 			deletedactions.push_back(todel);
 		action = newact;
 	}
@@ -1195,17 +1219,6 @@ void Actor::purge_deleted_actions() {
 		deletedactions.pop_back();
 		delete act;
 	}
-}
-
-/*
- *  Notify scheduler that an object it may be using has disappeared.
- */
-
-void Actor::notify_object_gone(
-    Game_object *obj
-) {
-	if (schedule)
-		schedule->object_gone(obj);
 }
 
 /*
@@ -1348,8 +1361,8 @@ void Actor::follow(
 			return;     // In formation, & close enough.
 //		cout << "Follow:  Leader is stopped" << endl;
 		// +++++For formation, why not get correct positions?
-		static int xoffs[10] = { -1, 1, -2, 2, -3, 3, -4, 4, -5, 5},
-		                       yoffs[10] = {1, -1, 2, -2, 3, -3, 4, -4, 5, -5};
+		static int xoffs[10] = { -1, 1, -2, 2, -3, 3, -4, 4, -5, 5};
+		static int yoffs[10] = {1, -1, 2, -2, 3, -3, 4, -4, 5, -5};
 		goal.tx += xoffs[party_id] + 1 - rand() % 3;
 		goal.ty += yoffs[party_id] + 1 - rand() % 3;
 		dist = 1;
@@ -1458,13 +1471,13 @@ void Actor::get_tile_info(
     Game_window *gwin,
     Map_chunk *nlist,   // Chunk.
     int tx, int ty,         // Tile within chunk.
-    int &water,         // Returns 1 if water.
-    int &poison         // Returns 1 if poison.
+    bool &water,         // Returns 1 if water.
+    bool &poison         // Returns 1 if poison.
 ) {
 	ignore_unused_variable_warning(gwin);
 	ShapeID flat = nlist->get_flat(tx, ty);
 	if (flat.get_shapenum() == -1)
-		water = poison = 0;
+		water = poison = false;
 	else {
 		const Shape_info &finfo = flat.get_info();
 		water = finfo.is_water();
@@ -1473,13 +1486,13 @@ void Actor::get_tile_info(
 		if (poison && actor) {
 			if ((actor->gear_powers &
 			        (Frame_flags::swamp_safe | Frame_flags::poison_safe)) != 0)
-				poison = 0;
+				poison = false;
 			else {      // Not protected by gear?
 				// Safe from poisoning?
 				const Monster_info *minf =
 				    actor->get_info().get_monster_info();
 				if (minf && minf->poison_safe())
-					poison = 0;
+					poison = false;
 			}
 		}
 	}
@@ -1493,16 +1506,16 @@ void Actor::set_target(
     Game_object *obj,
     bool start_combat       // If true, set sched. to combat.
 ) {
-	target = obj;
+	target = weak_from_obj(obj);
 	bool im_party = is_in_party() || this == gwin->get_main_actor();
 	if (start_combat && !im_party &&
 	        (schedule_type != Schedule::combat || !schedule))
 		set_schedule_type(Schedule::combat);
-	Actor *opponent = obj ? obj->as_actor() : 0;
+	Actor *opponent = obj ? obj->as_actor() : nullptr;
 	if (opponent)
 		opponent->set_oppressor(get_npc_num());
 	// Pure guess.
-	Actor *oppr = oppressor >= 0 ? gwin->get_npc(oppressor) : 0;
+	Actor *oppr = oppressor >= 0 ? gwin->get_npc(oppressor) : nullptr;
 	if (oppr && (oppr->get_target() != this ||
 	             oppr->get_schedule_type() != Schedule::combat))
 		oppressor = -1;
@@ -1516,9 +1529,9 @@ void Actor::set_target(
 
 bool Actor::fits_in_spot(Game_object *obj, int spot) {
 	const Shape_info &inf = obj->get_info();
-	int rtype = inf.get_ready_type(),
-	    alt1 = inf.get_alt_ready1(),
-	    alt2 = inf.get_alt_ready2();
+	int rtype = inf.get_ready_type();
+	int alt1 = inf.get_alt_ready1();
+	int alt2 = inf.get_alt_ready2();
 	bool can_scabbard = (alt1 == scabbard || alt2 == scabbard);
 	bool can_neck = (rtype == neck || alt1 == neck || alt2 == neck);
 	if (spot == both_hands)
@@ -1694,13 +1707,13 @@ void Actor::restore_schedule(
 
 void Actor::set_schedule_type(
     int new_schedule_type,
-    Schedule *newsched      // New sched., or 0 to create here.
+    Schedule *newsched      // New sched., or nullptr to create here.
 ) {
 	// Don't stop path_run_usecode unless it is done.
-	If_else_path_actor_action *act = action ? action->as_usecode_path() : 0;
+	If_else_path_actor_action *act = action ? action->as_usecode_path() : nullptr;
 	if (!act || act->is_done()) {
 		stop();             // Stop moving
-		set_action(0);      // Clear out old action.
+		set_action(nullptr);      // Clear out old action.
 	}
 	if (schedule)           // Finish up old if necessary.
 		schedule->ending(new_schedule_type);
@@ -1896,7 +1909,7 @@ void Actor::set_schedule_and_loc(int new_schedule_type, Tile_coord const &dest,
 	schedule_loc = dest;
 	next_schedule = new_schedule_type;
 	if (schedule_type == Schedule::walk_to_schedule)
-		set_action(0);  // Force NPC to go to the right place.
+		set_action(nullptr);  // Force NPC to go to the right place.
 	schedule_type = Schedule::walk_to_schedule;
 	delete schedule;
 	schedule = new Walk_to_schedule(this, dest, next_schedule, delay);
@@ -1964,7 +1977,8 @@ void Actor::paint(
 ) {
 	int flag = GAME_BG ? Obj_flags::bg_dont_render : Obj_flags::dont_render;
 	if (cheat.in_map_editor() || !(flags & (1L << flag))) {
-		int xoff, yoff;
+		int xoff;
+		int yoff;
 		gwin->get_shape_location(this, xoff, yoff);
 		bool invis = flags & (1L << Obj_flags::invisible);
 		if (invis && party_id < 0 && npc_num != 0)
@@ -2001,7 +2015,9 @@ void Actor::paint(
  */
 void Actor::paint_weapon(
 ) {
-	int weapon_x, weapon_y, weapon_frame;
+	int weapon_x;
+	int weapon_y;
+	int weapon_frame;
 	if (figure_weapon_pos(weapon_x, weapon_y, weapon_frame)) {
 		int shnum = get_effective_weapon_shape();
 		ShapeID wsid(shnum, weapon_frame);
@@ -2013,7 +2029,8 @@ void Actor::paint_weapon(
 		// Set dirty area rel. to NPC.
 		weapon_rect = gwin->get_shape_rect(wshape, weapon_x, weapon_y);
 		// Paint the weapon shape using the actor's coordinates
-		int xoff, yoff;
+		int xoff;
+		int yoff;
 		gwin->get_shape_location(this, xoff, yoff);
 		xoff += weapon_x;
 		yoff += weapon_y;
@@ -2030,7 +2047,7 @@ void Actor::paint_weapon(
  *  Figure weapon drawing info.  We need this in advance to set the dirty
  *  rectangle.
  *
- *  Output: 0 if don't need to paint weapon.
+ *  Output: false if don't need to paint weapon.
  */
 /* Weapon frames:
     0 - normal item
@@ -2040,14 +2057,16 @@ void Actor::paint_weapon(
     4 - attacking (pointing south)
 */
 
-int Actor::figure_weapon_pos(
+bool Actor::figure_weapon_pos(
     int &weapon_x, int &weapon_y,   // Pos. rel. to NPC.
     int &weapon_frame
 ) {
-	unsigned char actor_x, actor_y;
-	unsigned char wx, wy;
-	if ((spots[lhand] == 0) && (get_casting_mode() != Actor::show_casting_frames))
-		return 0;
+	unsigned char actor_x;
+	unsigned char actor_y;
+	unsigned char wx;
+	unsigned char wy;
+	if ((spots[lhand] == nullptr) && (get_casting_mode() != Actor::show_casting_frames))
+		return false;
 	// Get offsets for actor shape
 	int myframe = get_framenum();
 	get_info().get_weapon_offset(myframe & 0x1f, actor_x,
@@ -2105,16 +2124,9 @@ int Actor::figure_weapon_pos(
 		if (myframe & 32)
 			swap(weapon_x, weapon_y);
 		// Combat frames are already done.
-#if 0   /* +++++Philanderer's Wand looks strange. */
-		// Watch for valid frame.
-		int nframes = gwin->get_shape_num_frames(
-		                  weapon->get_shapenum());
-		if ((weapon_frame & 31) >= nframes)
-			weapon_frame = (nframes - 1) | (weapon_frame & 32);
-#endif
-		return 1;
+		return true;
 	} else
-		return 0;
+		return false;
 }
 
 /*
@@ -2170,7 +2182,7 @@ bool Actor::edit(
 #ifdef USE_EXULTSTUDIO
 	if (client_socket >= 0 &&   // Talking to ExultStudio?
 	        cheat.in_map_editor()) {
-		editing = 0;
+		editing = nullptr;
 		Tile_coord t = get_tile();
 		int num_schedules;  // Set up schedule-change list.
 		Schedule_change *changes;
@@ -2209,14 +2221,20 @@ void Actor::update_from_studio(
 ) {
 #ifdef USE_EXULTSTUDIO
 	Actor *npc;
-	int tx, ty, tz;
-	int shape, frame, face;
+	int tx;
+	int ty;
+	int tz;
+	int shape;
+	int frame;
+	int face;
 	std::string name;
-	short npc_num, ident;
+	short npc_num;
+	short ident;
 	int usecode;
 	std::string usecodefun;
 	int properties[12];
-	short attack_mode, alignment;
+	short attack_mode;
+	short alignment;
 	unsigned long oflags;       // Object flags.
 	unsigned long xflags;       // Extra object flags.
 	unsigned long type_flags;   // Movement flags.
@@ -2233,10 +2251,11 @@ void Actor::update_from_studio(
 		cout << "Npc from ExultStudio is not being edited" << endl;
 		return;
 	}
-	editing = 0;
+	editing = nullptr;
 	if (!npc) {         // Create a new one?
-		int x, y;
-		if (!Get_click(x, y, Mouse::hand, 0)) {
+		int x;
+		int y;
+		if (!Get_click(x, y, Mouse::hand, nullptr)) {
 			if (client_socket >= 0)
 				Exult_server::Send_data(client_socket, Exult_server::cancel);
 			return;
@@ -2246,11 +2265,9 @@ void Actor::update_from_studio(
 		npc->usecode_name = usecodefun;
 		if (!usecodefun.empty())
 			npc->usecode = ucmachine->find_function(usecodefun.c_str(), true);
-		if (npc_num >= 256 && npc->usecode != -1 &&
-		        npc->usecode != 0x400 + npc_num)
-			npc->usecode_assigned = true;
-		else
-			npc->usecode_assigned = false;
+		npc->usecode_assigned = npc_num >= 256 && npc->usecode != -1 &&
+
+		        npc->usecode != 0x400 + npc_num;
 
 		npc->set_invalid(); // Set to invalid position.
 		int lift;       // Try to drop at increasing hts.
@@ -2273,11 +2290,9 @@ void Actor::update_from_studio(
 			npc->usecode = ucmachine->find_function(usecodefun.c_str(), true);
 		else
 			npc->usecode = usecode;
-		if (npc_num >= 256 && npc->usecode != -1 &&
-		        npc->usecode != 0x400 + npc_num)
-			npc->usecode_assigned = true;
-		else
-			npc->usecode_assigned = false;
+		npc->usecode_assigned = npc_num >= 256 && npc->usecode != -1 &&
+
+		        npc->usecode != 0x400 + npc_num;
 
 		npc->set_npc_name(name.c_str());
 	}
@@ -2298,7 +2313,7 @@ void Actor::update_from_studio(
 	npc->type_flags = type_flags;
 	npc->set_actor_shape();
 	Schedule_change *scheds = num_schedules ?
-	                          new Schedule_change[num_schedules] : 0;
+	                          new Schedule_change[num_schedules] : nullptr;
 	for (i = 0; i < num_schedules; i++)
 		scheds[i].set(schedules[i].tx, schedules[i].ty,
 		              schedules[i].tz,
@@ -2353,20 +2368,20 @@ int Actor::inventory_shapenum() {
 /*
  *  Drop another onto this.
  *
- *  Output: 0 to reject, 1 to accept.
+ *  Output: false to reject, true to accept.
  */
 
-int Actor::drop(
+bool Actor::drop(
     Game_object *obj        // MAY be deleted (if combined).
 ) {
 	if (is_in_party()) { // In party?
-		int res = add(obj, false, true);// We'll take it, and combine.
+		bool res = add(obj, false, true);// We'll take it, and combine.
 		int ind = find_readied(obj);
 		if (ind >= 0)
 			call_readied_usecode(ind, obj, Usecode_machine::readied);
 		return res;
 	} else
-		return 0;
+		return false;
 }
 
 /*
@@ -2416,13 +2431,8 @@ void Actor::set_property(
 		break;
 	}
 	case food_level:
-#if 0
-		if (val > 36)       // Looks like max. in usecode.
-			val = 36;       // ++++Never seems to get this high, though (marzo)
-#else
 		if (val > 31)       // Never seems to get above this.
 			val = 31;
-#endif
 		else if (val < 0)
 			val = 0;
 		properties[prop] = val;
@@ -2461,23 +2471,26 @@ void Actor::set_property(
  *  A class whose whole purpose is to stop casting mode.
  */
 class Clear_casting : public Time_sensitive {
+    Game_object_weak actor;
 public:
-	Clear_casting()
+	Clear_casting(Actor *a) : actor(weak_from_obj(a))
 	{  }
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
-void Clear_casting::handle_event(unsigned long curtime, uintptr udata) {
+void Clear_casting::handle_event(unsigned long curtime, uintptr) {
 	ignore_unused_variable_warning(curtime);
-	Actor *a = reinterpret_cast<Actor *>(udata);
-	a->add_dirty();
-	a->hide_casting_frames();
-	a->add_dirty();
+	Actor_shared a = std::static_pointer_cast<Actor>(actor.lock());
+	if (a) {
+	    a->add_dirty();
+	    a->hide_casting_frames();
+	    a->add_dirty();
+	}
 	delete this;
 }
 
 void Actor::end_casting_mode(int delay) {
-	Clear_casting *c = new Clear_casting();
+	Clear_casting *c = new Clear_casting(this);
 	gwin->get_tqueue()->add(Game::get_ticks() + 2 * delay, c, this);
 }
 
@@ -2485,17 +2498,20 @@ void Actor::end_casting_mode(int delay) {
  *  A class whose whole purpose is to clear the 'hit' flag.
  */
 class Clear_hit : public Time_sensitive {
+    Game_object_weak actor;
 public:
-	Clear_hit()
+	Clear_hit(Actor *a) : actor(weak_from_obj(a))
 	{  }
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
-void Clear_hit::handle_event(unsigned long curtime, uintptr udata) {
+void Clear_hit::handle_event(unsigned long curtime, uintptr) {
 	ignore_unused_variable_warning(curtime);
-	Actor *a = reinterpret_cast<Actor *>(udata);
-	a->hit = false;
-	a->add_dirty();
+	Actor_shared a = std::static_pointer_cast<Actor>(actor.lock());
+	if (a) {
+	    a->hit = false;
+	    a->add_dirty();
+	}
 	delete this;
 }
 
@@ -2529,7 +2545,7 @@ void Actor::fight_back(
 	// as the case may be) of the same alignment when attacked by other NPCs,
 	// not just when the avatar & party attack. Although this is tricky to
 	// test (except, maybe, by exploiting the agressive U7 & SI duel schedule.
-	Actor *npc = attacker ? attacker->as_actor() : 0;
+	Actor *npc = attacker ? attacker->as_actor() : nullptr;
 	// No attacker, or friendly fire, should not cause a fight.
 	if (!npc || get_effective_alignment() == npc->get_effective_alignment())
 		return;
@@ -2545,24 +2561,26 @@ void Actor::fight_back(
 				party[i]->set_schedule_type(Schedule::combat);
 		}
 	}
-	if (!target && !is_in_party())
+	if (!target.lock() && !is_in_party())
 		set_target(npc, npc->get_schedule_type() != Schedule::duel);
 	// Being a bully?
 	if (npc->is_in_party() && !is_in_party() && is_sentient()) {
-		Actor *witness = this, *closest = 0;
+		Actor *witness = this;
+		Actor *closest = nullptr;
 		int align = get_effective_alignment();
 		// Attack avatar if the NPC is not disabled...
 		if (can_act() ||
 		        // ... or if there is a sympathetic witness or local guard...
-		        (witness = gwin->find_witness(closest, align)) != 0 ||
+		        (witness = gwin->find_witness(closest, align)) != nullptr ||
 		        // ... or if there is someone sympathetic nearby who heard it.
-		        ((witness = closest) != 0 && rand() % 10 == 0)) {
+		        ((witness = closest) != nullptr && rand() % 10 == 0)) {
 			static long lastcall = 0L;  // Last time yelled.
 			long curtime = SDL_GetTicks();
 			long delta = curtime - lastcall;
 			// Call if 10 secs. has passed or by the luck of the die.
 			if ((delta > 10000) || (rand() % 20 == 0)) {
-				int numguards = 0, gshape = Game_window::get_guard_shape();
+				int numguards = 0;
+				int gshape = Game_window::get_guard_shape();
 				// No guards in dungeons or if gshape < 0.
 				if (!gwin->is_in_dungeon() && gshape >= 0 &&
 				        // And only neutral NPCs and guards call more guards.
@@ -2675,7 +2693,7 @@ int Actor::apply_damage(
 		// Flash red outline.
 		hit = true;
 		add_dirty();
-		Clear_hit *c = new Clear_hit();
+		Clear_hit *c = new Clear_hit(this);
 		gwin->get_tqueue()->add(Game::get_ticks() + 200, c, this);
 		// Attack back.
 		fight_back(attacker);
@@ -2704,7 +2722,7 @@ int Actor::reduce_health(
 		return 0;
 
 	const Monster_info *minf = get_info().get_monster_info_safe();
-	Actor *npc = attacker ? attacker->as_actor() : 0;
+	Actor *npc = attacker ? attacker->as_actor() : nullptr;
 
 	// Monster immunities DO affect UI_reduce_health, unlike
 	// armor immunities.
@@ -2741,7 +2759,7 @@ int Actor::reduce_health(
 	else {
 		hit = true;     // Flash red outline.
 		add_dirty();
-		Clear_hit *c = new Clear_hit();
+		Clear_hit *c = new Clear_hit(this);
 		gwin->get_tqueue()->add(Game::get_ticks() + 200, c, this);
 	}
 	if (oldhp >= maxhp / 2 && val < maxhp / 2 && rand() % 2 != 0) {
@@ -2755,16 +2773,13 @@ int Actor::reduce_health(
 	const int blood = 912;      // ++++TAG for future de-hard-coding.
 	// Bleed only for normal damage.
 	if (type == Weapon_data::normal_damage && !minf->cant_bleed()
-#if 0
-	        delta >= 3 && rand() % 2
-#else   // Trying something new. Seems to match originals better, but
+	        // Trying something new. Seems to match originals better, but
 	        // it is hard to judge accurately (although 10 or more hits
 	        // *always* cause bleeding).
 	        && rand() % 10 < delta
-#endif
 	        && find_nearby(vec, blood, 1, 0) < 2) {
 		// Create blood where actor stands.
-		Game_object *bobj = gmap->create_ireg_object(blood, 0);
+		Game_object_shared bobj = gmap->create_ireg_object(blood, 0);
 		bobj->set_flag(Obj_flags::is_temporary);
 		bobj->move(get_tile());
 	}
@@ -2884,7 +2899,7 @@ int Actor::reduce_health(
 	else if (val <= 0 && !get_flag(Obj_flags::asleep)) {
 		Combat_schedule::stop_attacking_npc(this);
 		set_flag(Obj_flags::asleep);
-	} else if (npc && !target && !in_party) {
+	} else if (npc && !target.lock() && !in_party) {
 		set_target(npc, npc->get_schedule_type() != Schedule::duel);
 		set_oppressor(npc->get_npc_num());
 	}
@@ -2928,7 +2943,7 @@ void Actor::lay_down(bool die) {
 	else if ((get_framenum() & 0xf) == Actor::sleep_frame)
 		return;
 
-	set_action(0);
+	set_action(nullptr);
 	Usecode_script *scr = new Usecode_script(this);
 	(*scr) << Ucscript::finish << (Ucscript::npc_frame + Actor::standing);
 	if (GAME_SI && get_shapenum() == 832) { // SI Frost serpent
@@ -2966,7 +2981,7 @@ int Actor::get_property(int prop) const {
 	else if (prop == Actor::missile_weapon) {
 		// Seems to give the same results as in the originals.
 		Game_object *weapon = get_readied(lhand);
-		const Weapon_info *winf = weapon ? weapon->get_info().get_weapon_info() : 0;
+		const Weapon_info *winf = weapon ? weapon->get_info().get_weapon_info() : nullptr;
 		if (!winf)
 			return 0;
 		return winf->get_uses() >= 2;
@@ -3048,7 +3063,8 @@ void Actor::read_attributes(
     const unsigned char *buf,     // Attribute/value pairs.
     int len
 ) {
-	const unsigned char *ptr = buf, *endbuf = buf + len;
+	const unsigned char *ptr = buf;
+	const unsigned char *endbuf = buf + len;
 	while (ptr < endbuf) {
 		const char *att = reinterpret_cast<const char *>(ptr);
 		ptr += strlen(att) + 1;
@@ -3065,7 +3081,7 @@ void Actor::read_attributes(
 void Actor::force_sleep() {
 	flags |= (static_cast<uint32>(1) << Obj_flags::asleep);
 	need_timers()->start_sleep();
-	set_action(0);      // Stop what you're doing.
+	set_action(nullptr);      // Stop what you're doing.
 	lay_down(false);    // Lie down.
 }
 
@@ -3092,9 +3108,9 @@ void Actor::set_flag(
 			break;
 		// Set timer to wake in a few secs.
 		if (this != avatar && avatar->get_target() == this)
-			avatar->set_target(0);
+			avatar->set_target(nullptr);
 		need_timers()->start_sleep();
-		set_action(0);      // Stop what you're doing.
+		set_action(nullptr);      // Stop what you're doing.
 		lay_down(false);    // Lie down.
 		break;
 	case Obj_flags::poisoned:
@@ -3121,7 +3137,7 @@ void Actor::set_flag(
 		need_timers()->start_charm();
 		// Actual alignment shift must be done elsewhere.
 		Combat_schedule::stop_attacking_npc(this);
-		set_target(0);      // Need new opponent if in combat.
+		set_target(nullptr);      // Need new opponent if in combat.
 		break;
 	case Obj_flags::paralyzed:
 		if (minf->paralysis_safe() || minf->power_safe() ||
@@ -3139,7 +3155,7 @@ void Actor::set_flag(
 	case Obj_flags::dont_move:
 	case Obj_flags::bg_dont_move:
 		stop();         // Added 7/6/03.
-		set_action(0);  // Force actor to stop current action.
+		set_action(nullptr);  // Force actor to stop current action.
 		break;
 	case Obj_flags::naked: {
 		// set_polymorph needs this, and there are no problems
@@ -3213,7 +3229,7 @@ void Actor::clear_flag(
 	} else if (flag == Obj_flags::charmed) {
 		reset_effective_alignment();
 		Combat_schedule::stop_attacking_npc(this);
-		set_target(0);          // Need new opponent.
+		set_target(nullptr);          // Need new opponent.
 	} else if (flag == Obj_flags::bg_dont_move || flag == Obj_flags::dont_move)
 		// Start again after a little while
 		start_std();
@@ -3238,11 +3254,11 @@ void Actor::clear_type_flag(
  *  Get flags.
  */
 
-int Actor::get_type_flag(
+bool Actor::get_type_flag(
     int flag
 ) const {
 	return (flag >= 0 && flag < 16) ? (type_flags & (static_cast<uint32>(1) << flag))
-	       != 0 : 0;
+	       != 0 : false;
 }
 /*
  *  SetFlags
@@ -3325,8 +3341,8 @@ void Actor::call_readied_usecode(
 bool Actor::in_usecode_control() const {
 	if (get_flag(Obj_flags::dont_render) || get_flag(Obj_flags::dont_move))
 		return true;
-	Usecode_script *scr = 0;
-	while ((scr = Usecode_script::find_active(this, scr)) != 0)
+	Usecode_script *scr = nullptr;
+	while ((scr = Usecode_script::find_active(this, scr)) != nullptr)
 		// no_halt scripts seem not to prevent movement.
 		if (!scr->is_no_halt())
 			return true;
@@ -3340,8 +3356,9 @@ bool Actor::in_usecode_control() const {
  *  a missile flying towards target), false otherwise
  */
 bool Actor::usecode_attack() {
+    Game_object_shared tobj = target_object.lock();
 	return Combat_schedule::attack_target(
-	           this, target_object, target_tile, attack_weapon);
+	           this, tobj.get(), target_tile, attack_weapon);
 }
 
 /*
@@ -3374,7 +3391,7 @@ void Actor::remove(
 		call_readied_usecode(index, obj, Usecode_machine::unreadied);
 	Container_game_object::remove(obj);
 	if (index >= 0) {
-		spots[index] = 0;
+		spots[index] = nullptr;
 		if (index == rhand || index == lhand)
 			two_handed = false;
 		if (index == rfinger || index == lfinger)
@@ -3477,35 +3494,37 @@ bool Actor::add(
 /*
  *  Add to given spot.
  *
- *  Output: 1 if successful, else 0.
+ *  Output: true if successful, else false.
  */
 
-int Actor::add_readied(
+bool Actor::add_readied(
     Game_object *obj,
     int index,          // Spot #.
-    int dont_check,
-    int force_pos,
+    bool dont_check,
+    bool force_pos,
     bool noset
 ) {
 	// Is Out of range?
 	if (index < 0 || index >= static_cast<int>(array_size(spots)))
-		return 0;
+		return false;
 
 	// Already something there? Try to drop into it.
 	// +++++Danger:  drop() can potentially delete the object.
 //	if (spots[index]) return spots[index]->drop(obj);
-	if (spots[index]) return spots[index]->add(obj, dont_check != 0);
+	if (spots[index]) return spots[index]->add(obj, dont_check);
 
-	int prefered, alt1, alt2;
+	int prefered;
+	int alt1;
+	int alt2;
 
 	// Get the preferences
 	get_prefered_slots(obj, prefered, alt1, alt2);
 
 	// Check Prefered
-	if (!fits_in_spot(obj, index) && !force_pos) return 0;
+	if (!fits_in_spot(obj, index) && !force_pos) return false;
 
 	// No room, or too heavy.
-	if (!Container_game_object::add(obj, true)) return 0;
+	if (!Container_game_object::add(obj, true)) return false;
 
 	// Set the spot to this object
 	spots[index] = obj;
@@ -3542,7 +3561,7 @@ int Actor::add_readied(
 
 	if (index == lhand && schedule && !noset)
 		schedule->set_weapon(); // Tell combat-schedule about it.
-	return 1;
+	return true;
 }
 
 /*
@@ -3569,7 +3588,7 @@ int Actor::find_readied(
 Game_object *Actor::get_readied(int index) const {
 	return index >= 0 &&
 	       index < static_cast<int>(array_size(spots)) ?
-	       spots[index] : 0;
+	       spots[index] : nullptr;
 }
 
 /*
@@ -3587,10 +3606,10 @@ void Actor::change_member_shape(
 /*
  *  Step aside to a free tile, or try to swap places.
  *
- *  Output: 1 if successful, else 0.
+ *  Output: true if successful, else false.
  */
 
-int Actor::move_aside(
+bool Actor::move_aside(
     Actor *for_actor,       // Moving aside for this one.
     int dir             // Direction to avoid (0-7).
 ) {
@@ -3600,27 +3619,27 @@ int Actor::move_aside(
 	// Also, don't move if the other actor is moving, as this may break
 	// pathfinding.
 	if (get_schedule_type() == Schedule::combat || get_frame_time())
-		return 0;
+		return false;
 	// Do not move aside if sitting, bending over, kneeling or sleeping.
 	int frnum = get_framenum() & 0xf;
 	if (frnum >= sit_frame && frnum <= sleep_frame)
-		return 0;
+		return false;
 
 	Tile_coord cur = get_tile();
 	Tile_coord to(-1, -1, -1);
 	int d = 8;
 	// Try orthogonal directions first.
 	to = cur.get_neighbor((dir + 2) % 8);
-	if (!is_blocked(to, 0, get_type_flags()))
+	if (!is_blocked(to, nullptr, get_type_flags()))
 		d = (dir + 2) % 8;
 	else {
 		to = cur.get_neighbor((dir + 6) % 8);
-		if (!is_blocked(to, 0, get_type_flags()))
+		if (!is_blocked(to, nullptr, get_type_flags()))
 			d = (dir + 6) % 8;
 		else {
 			for (int i = 0; i < 4; i++) {   // Try diagonals now.
 				to = cur.get_neighbor(2 * i + 1);
-				if (!is_blocked(to, 0, get_type_flags())) {
+				if (!is_blocked(to, nullptr, get_type_flags())) {
 					d = 2 * i + 1;
 					break;
 				}
@@ -3710,12 +3729,6 @@ bool Actor::can_speak() const {
 }
 
 bool Actor::is_sentient() const {
-#if 0
-	// +++++Check for intelligence; guessing how to do it.
-	if (get_info().get_shape_class() == Shape_info::human ||
-	        get_effective_prop(Actor::intelligence) >= 6)
-		return true;
-#endif
 	// Try based on average monster intelligence (prevents some random animals
 	// from opening doors or assisting in battle).
 	const Monster_info *minf = get_info().get_monster_info_safe();
@@ -3729,34 +3742,20 @@ bool Actor::is_sentient() const {
 const Weapon_info *Actor::get_weapon(
     int &points,
     int &shape,
-    Game_object  *&obj      // ->weapon itself returned, or 0.
+    Game_object  *&obj      // ->weapon itself returned, or nullptr.
 ) {
 	points = 1;         // Bare hands = 1.
 	shape = -1;         // Bare hands.
-	const Weapon_info *winf = 0;
+	const Weapon_info *winf = nullptr;
 	Game_object *weapon = spots[static_cast<int>(lhand)];
 	obj = weapon;
 	if (weapon) {
-		if ((winf = weapon->get_info().get_weapon_info()) != 0) {
+		if ((winf = weapon->get_info().get_weapon_info()) != nullptr) {
 			points = winf->get_damage();
 			shape = weapon->get_shapenum();
 			return winf;
 		}
 	}
-#if 0   /* (jsf: 17july2005) I don't think we should look at right hand. */
-	// Try right hand.
-	weapon = spots[static_cast<int>(rhand)];
-	if (weapon) {
-		const Weapon_info *rwinf = weapon->get_info().get_weapon_info();
-		int rpoints;
-		if (rwinf && (rpoints = rwinf->get_damage()) > points) {
-			winf = rwinf;
-			points = rpoints;
-			shape = weapon->get_shapenum();
-			obj = weapon;
-		}
-	}
-#endif
 	return winf;
 }
 
@@ -3784,7 +3783,7 @@ bool Actor::roll_to_win(
  */
 
 inline int Get_effective_prop(
-    Actor *npc,         // ...or NULL.
+    Actor *npc,         // ...or nullptr.
     Actor::Item_properties prop,    // Property #.
     int defval = 0          // Default val if npc==0.
 ) {
@@ -3807,7 +3806,7 @@ int Actor::figure_hit_points(
 	// godmode effects:
 	if (were_party && cheat.in_god_mode())
 		return 0;
-	Actor *npc = attacker ? attacker->as_actor() : 0;
+	Actor *npc = attacker ? attacker->as_actor() : nullptr;
 	bool theyre_party = npc &&
 	                    (npc->party_id != -1 || npc->npc_num == 0);
 	bool instant_death = (cheat.in_god_mode() && theyre_party);
@@ -3822,15 +3821,16 @@ int Actor::figure_hit_points(
 	if (weapon_shape >= 0)
 		winf = ShapeID::get_info(weapon_shape).get_weapon_info();
 	else
-		winf = 0;
+		winf = nullptr;
 	if (ammo_shape >= 0)
 		ainf = ShapeID::get_info(ammo_shape).get_ammo_info();
 	else
-		ainf = 0;
+		ainf = nullptr;
 	if (!winf && weapon_shape < 0)
-		winf = npc ? npc->get_weapon(wpoints) : 0;
+		winf = npc ? npc->get_weapon(wpoints) : nullptr;
 
-	int usefun = -1, powers = 0;
+	int usefun = -1;
+	int powers = 0;
 	int type = Weapon_data::normal_damage;
 	bool explodes = false;
 
@@ -3855,12 +3855,13 @@ int Actor::figure_hit_points(
 		// Time to explode.
 		Tile_coord offset(0, 0, get_info().get_3d_height() / 2);
 		eman->add_effect(new Explosion_effect(get_tile() + offset,
-		                                      0, 0, weapon_shape, ammo_shape, attacker));
+		                                      nullptr, 0, weapon_shape, ammo_shape, attacker));
 		// The explosion will handle the damage.
 		return -1;
 	}
 
-	int expval = 0, hits = 0;
+	int expval = 0;
+	int hits = 0;
 	bool nodamage = (powers & (Weapon_data::no_damage)) != 0;
 	if (wpoints && instant_death)
 		wpoints = 127;
@@ -3874,9 +3875,9 @@ int Actor::figure_hit_points(
 	if (powers && (hits || !wpoints || nodamage)) {
 		// Protection prevents powers.
 		if (!get_flag(Obj_flags::protection)) {
-			int attint = Get_effective_prop(npc, Actor::intelligence, 16),
-			    defstr = Get_effective_prop(this, Actor::strength),
-			    defint = Get_effective_prop(this, Actor::intelligence);
+			int attint = Get_effective_prop(npc, Actor::intelligence, 16);
+			int defstr = Get_effective_prop(this, Actor::strength);
+			int defint = Get_effective_prop(this, Actor::intelligence);
 
 			// These rolls are bourne from statistical analisys and are,
 			// as far as I can tell, how the game works.
@@ -3901,7 +3902,8 @@ int Actor::figure_hit_points(
 				// Take away all mana.
 				set_property(static_cast<int>(Actor::mana), 0);
 				int num_spells = 0;
-				Game_object_vector vec, spells;
+				Game_object_vector vec;
+				Game_object_vector spells;
 				vec.reserve(50);
 				spells.reserve(50);
 				get_objects(vec, c_any_shapenum, c_any_qual, c_any_framenum);
@@ -3929,7 +3931,7 @@ int Actor::figure_hit_points(
 						say(first_magebane_struck, last_magebane_struck);
 					}
 					// Tell schedule we need a new weapon.
-					if (schedule && spots[lhand] == 0)
+					if (schedule && spots[lhand] == nullptr)
 						schedule->set_weapon();
 				}
 			}
@@ -3971,7 +3973,7 @@ bool Actor::try_to_hit(
     int attval
 ) {
 	int defval = get_effective_prop(static_cast<int>(combat)) +
-	             get_flag(Obj_flags::protection) ? 3 : 0;
+	             (get_flag(Obj_flags::protection) ? 3 : 0);
 	if (combat_trace) {
 		string name = "<trap>";
 		if (attacker)
@@ -4004,8 +4006,8 @@ Game_object *Actor::attacked(
 	if (is_dead() ||        // Already dead?
 	        // Or party member of dead Avatar?
 	        (party_id >= 0 && gwin->get_main_actor()->is_dead()))
-		return 0;
-	Actor *npc = attacker ? attacker->as_actor() : 0;
+		return nullptr;
+	Actor *npc = attacker ? attacker->as_actor() : nullptr;
 	if (npc)
 		set_oppressor(npc->get_npc_num());
 	if (npc && npc->get_schedule_type() == Schedule::duel)
@@ -4038,7 +4040,7 @@ Game_object *Actor::attacked(
 	}
 
 	if (attacker && (is_dead() || properties[static_cast<int>(health)] < 0))
-		return 0;
+		return nullptr;
 	return this;
 }
 
@@ -4047,7 +4049,7 @@ Game_object *Actor::attacked(
  *  for the dragon Draco.
  */
 
-static int Is_draco(
+static bool Is_draco(
     Actor *dragon
 ) {
 	Game_object_vector vec;     // Gets list.
@@ -4067,9 +4069,9 @@ void Actor::die(
 	//(fixes a resurrection bug).
 	if (is_dead())
 		return;
-	set_action(0);
+	set_action(nullptr);
 	delete schedule;
-	schedule = 0;
+	schedule = nullptr;
 	gwin->get_tqueue()->remove(this);// Remove from time queue.
 	Actor::set_flag(Obj_flags::dead);// IMPORTANT:  Set this before moving
 	//   objs. so Usecode(eventid=6) isn't called.
@@ -4088,10 +4090,6 @@ void Actor::die(
 	//properties[static_cast<int>(health)] = -50;
 	const Shape_info &info = get_info();
 	const Monster_info *minfo = info.get_monster_info();
-#if 0   // ++++ Trying new thing.
-	remove_this(1);         // Remove (but don't delete this).
-	set_invalid();
-#else
 	bool frost_serp = GAME_SI && get_shapenum() == 832;
 	if ((frost_serp && (get_framenum() & 0xf) == Actor::sit_frame)
 	        || (get_framenum() & 0xf) == Actor::sleep_frame) {
@@ -4100,8 +4098,8 @@ void Actor::die(
 		scr->start();
 	} else  // Laying down to die.
 		lay_down(true);
-#endif
 
+	std::shared_ptr<Dead_body> body_keep;
 	Dead_body *body;        // See if we need a body.
 	if (info.has_body_info() && (!minfo || !minfo->has_no_body())) {
 		// Get body shape/frame.
@@ -4109,22 +4107,18 @@ void Actor::die(
 		int frnum = info.get_body_frame();  // Default 3.
 		// Reflect if NPC reflected.
 		frnum |= (get_framenum() & 32);
-#if 0   // ++++ Trying new thing.
-		body = new Dead_body(shnum, frnum, 0, 0, 0,
+		body_keep = std::make_shared<Dead_body>(shnum, frnum, 0, 0, 0,
 		                     npc_num > 0 ? npc_num : -1);
-#else
-		body = new Dead_body(shnum, 0, 0, 0, 0,
-		                     npc_num > 0 ? npc_num : -1);
+		body = body_keep.get();
 		Shape_frame *shp;
-		if ((shp = body->get_shape()) != 0 && shp->is_empty()) {
+		bool have_body_shape = (shp = body->get_shape()) != nullptr && shp->is_empty();
+		if (have_body_shape) {
 			// Note: only do this if target shape is an actual
-			// body shape.
+			// body shape (frame 0 empty).
 			Usecode_script *scr = new Usecode_script(body);
 			(*scr) << Ucscript::delay_ticks << 4 << Ucscript::frame << frnum;
 			scr->start();
-		} else
-			body->set_frame(frnum);
-#endif
+		}
 		if (npc_num > 0) {
 			// Originals would use body->set_quality(2) instead
 			// for bodies of dead monsters. What we must do for
@@ -4137,12 +4131,11 @@ void Actor::die(
 			body->set_flag(Obj_flags::is_temporary);
 		// Remove NPC from map to prevent the body
 		// from colliding with it.
-		Game_object::remove_this(1);
-		int old_body_frame = body->get_framenum();	// Fix for #1925
-		body->set_frame(frnum);			// Fix for #1925
+		Game_object_shared keep_this;
+		Game_object::remove_this(&keep_this);
 		const Shape_info &binf = body->get_info();
-		int dx = binf.get_3d_xtiles(frnum) - info.get_3d_xtiles(get_framenum()),
-		    dy = binf.get_3d_ytiles(frnum) - info.get_3d_ytiles(get_framenum());
+		int dx = binf.get_3d_xtiles(frnum) - info.get_3d_xtiles(get_framenum());
+		int dy = binf.get_3d_ytiles(frnum) - info.get_3d_ytiles(get_framenum());
 		Tile_coord bp;
 		// First, try matching corners of the NPC with corners of the body.
 		bp = Map_chunk::find_spot(pos + Tile_coord(0,  0, 0), 0, shnum, frnum, 0);
@@ -4152,36 +4145,31 @@ void Actor::die(
 			bp = Map_chunk::find_spot(pos + Tile_coord(0, dy, 0), 0, shnum, frnum, 0);
 		if (bp.tx == -1)
 			bp = Map_chunk::find_spot(pos + Tile_coord(dx, dy, 0), 0, shnum, frnum, 0);
-		// Try to find a spot within 1 tile.
-		// ++++ Places MoF automaton in odd places.
-		//if (bp.tx == -1)
-		//  bp = Map_chunk::find_spot(pos, 1, shnum, frnum, 2);
 		// If still no spot, force to NPC pos, even if blocked.
 		if (bp.tx == -1)
 			bp = pos;
 		// Add NPC back.
 		Game_object::move(pos);
 		body->move(bp);
-		body->set_frame(old_body_frame); // Fix for #1925
+		if (have_body_shape) {
+			body->set_frame(0); // Make body invisible
+		}
 	} else
-		body = 0;
+		body = nullptr;
 	Game_object *item;      // Move/remove all the items.
-	Game_object_vector tooheavy;    // Some shouldn't be moved.
-	while ((item = objects.get_first()) != 0) {
+	Game_object_shared_vector tooheavy;    // Some shouldn't be moved.
+	while ((item = objects.get_first()) != nullptr) {
+	    Game_object_shared item_keep = shared_from_obj(item);
 		remove(item);
 		item->set_invalid();
-#if 1       // Guessing it is spells that get deleted.
 		if (item->get_info().is_spell())
-#else
-		if (!item->is_dragable())
-#endif
 		{
-			tooheavy.push_back(item);
+			tooheavy.push_back(item_keep);
 			continue;
 		}
 		if (body) {
 		    item->set_shape_pos(255, 255);	// So it gets placed.
-			body->add(item, 1);// Always succeed at adding.
+			body->add(item, true);// Always succeed at adding.
 		} else {          // No body?  Drop on ground.
 			item->set_flag_recursively(Obj_flags::okay_to_take);
 			Tile_coord pos2 = Map_chunk::find_spot(pos, 5,
@@ -4189,25 +4177,25 @@ void Actor::die(
 			if (pos.tx != -1)
 				item->move(pos2);
 			else        // No room anywhere.
-				tooheavy.push_back(item);
+				tooheavy.push_back(item_keep);
 		}
 	}
 	if (body)           // Okay to take its contents.
 		body->set_flag_recursively(Obj_flags::okay_to_take);
 
 	// Put the heavy ones back.
-	for (Game_object_vector::const_iterator it = tooheavy.begin();
+	for (Game_object_shared_vector::const_iterator it = tooheavy.begin();
 	        it != tooheavy.end(); ++it)
-		add(*it, 1);
+		add((*it).get(), true);
 	if (body)
 		gwin->add_dirty(body);
 	add_dirty();            // Want to repaint area.
 	delete_contents();      // remove what's left of inventory
-	Actor *npc = attacker ? attacker->as_actor() : 0;
+	Actor *npc = attacker ? attacker->as_actor() : nullptr;
 	if (npc) {
 		// Set oppressor and cause nearby NPCs to attack attacker.
 		fight_back(attacker);
-		set_target(0, false);
+		set_target(nullptr, false);
 		set_schedule_type(Schedule::wander);
 
 		// Is this a bad guy?
@@ -4222,22 +4210,23 @@ void Actor::die(
 /*
  *  Create another monster of the same type as this, and adjacent.
  *
- *  Output: ->monster, or 0 if failed.
+ *  Output: ->monster, or nullptr if failed.
  */
 
-Monster_actor *Actor::clone(
+Game_object_shared Actor::clone(
 ) {
 	const Shape_info &info = get_info();
 	// Base distance on greater dim.
 	int frame = get_framenum();
-	int xs = info.get_3d_xtiles(frame), ys = info.get_3d_ytiles(frame);
+	int xs = info.get_3d_xtiles(frame);
+	int ys = info.get_3d_ytiles(frame);
 	// Find spot.
 	Tile_coord pos = Map_chunk::find_spot(get_tile(),
 	                                      xs > ys ? xs : ys, get_shapenum(), 0, 1);
 	if (pos.tx < 0)
-		return 0;       // Failed.
+		return nullptr;       // Failed.
 	// Create, temporary & with equip.
-	Monster_actor *monst = Monster_actor::create(
+	Game_object_shared monst = Monster_actor::create(
 	                           get_shapenum(), pos, get_schedule_type(),
 	                           get_effective_alignment(), true, true);
 	return monst;
@@ -4292,7 +4281,7 @@ void Actor::mend_wounds(
 /*
  *  Restore from body.  It must not be owned by anyone.
  *
- *  Output: ->actor if successful, else 0.
+ *  Output: ->actor if successful, else nullptr.
  */
 
 Actor *Actor::resurrect(
@@ -4302,12 +4291,13 @@ Actor *Actor::resurrect(
 	if (body) {
 		if (body->get_owner() ||    // Must be on ground.
 		        npc_num <= 0 || gwin->get_body(npc_num) != body)
-			return 0;
-		gwin->set_body(npc_num, 0); // Clear from gwin's list.
+			return nullptr;
+		gwin->set_body(npc_num, nullptr); // Clear from gwin's list.
 		Game_object *item;      // Get back all the items.
-		while ((item = body->get_objects().get_first()) != 0) {
+		while ((item = body->get_objects().get_first()) != nullptr) {
+		    Game_object_shared keep = item->shared_from_this();
 			body->remove(item);
-			add(item, 1);       // Always succeed at adding.
+			add(item, true);       // Always succeed at adding.
 		}
 		gwin->add_dirty(body);      // Need to repaint here.
 		pos = body->get_tile();
@@ -4360,7 +4350,7 @@ bool Actor::is_really_blocked(
 	if (block->move_aside(this, get_direction(block)))
 		return false;
 	// (May have swapped places.)  If okay, try one last time.
-	return t != get_tile() && is_blocked(t, 0, force ? MOVE_ALL : 0);
+	return t != get_tile() && is_blocked(t, nullptr, force ? MOVE_ALL : 0);
 }
 
 /*
@@ -4384,7 +4374,7 @@ void Main_actor::handle_event(
 			if (!frame_time)    // Not a path. Add a delay anyway.
 				frame_time = gwin->get_std_delay();
 			delay = frame_time;
-			set_action(0);
+			set_action(nullptr);
 		}
 
 		gwin->get_tqueue()->add(
@@ -4430,10 +4420,10 @@ void Main_actor::get_followers(
 /*
  *  Step onto an adjacent tile.
  *
- *  Output: 0 if blocked.
+ *  Output: false if blocked.
  */
 
-int Main_actor::step(
+bool Main_actor::step(
     Tile_coord t,           // Tile to step onto.
     int frame,          // New frame #.
     bool force
@@ -4441,18 +4431,21 @@ int Main_actor::step(
 	rest_time = 0;          // Reset counter.
 	t.fixme();
 	// Get chunk.
-	int cx = t.tx / c_tiles_per_chunk, cy = t.ty / c_tiles_per_chunk;
+	int cx = t.tx / c_tiles_per_chunk;
+	int cy = t.ty / c_tiles_per_chunk;
 	// Get rel. tile coords.
-	int tx = t.tx % c_tiles_per_chunk, ty = t.ty % c_tiles_per_chunk;
+	int tx = t.tx % c_tiles_per_chunk;
+	int ty = t.ty % c_tiles_per_chunk;
 	Map_chunk *nlist = gmap->get_chunk(cx, cy);
-	int water, poison;      // Get tile info.
+	bool water;
+	bool poison;      // Get tile info.
 	get_tile_info(this, gwin, nlist, tx, ty, water, poison);
-	if (is_blocked(t, 0, force ? MOVE_ALL : 0)) {
+	if (is_blocked(t, nullptr, force ? MOVE_ALL : 0)) {
 		if (is_really_blocked(t, force)) {
 			if (schedule)       // Tell scheduler.
 				schedule->set_blocked(t);
 			stop();
-			return 0;
+			return false;
 		}
 	}
 	if (poison && t.tz == 0)
@@ -4465,7 +4458,7 @@ int Main_actor::step(
 	Tile_coord oldtile = get_tile();
 	// Move it.
 	Actor::movef(olist, nlist, tx, ty, frame, t.tz);
-	add_dirty(1);           // Set to update new.
+	add_dirty(true);           // Set to update new.
 	// In a new chunk?
 	if (olist != nlist)
 		Main_actor::switched_chunks(olist, nlist);
@@ -4483,7 +4476,7 @@ int Main_actor::step(
 	nlist->activate_eggs(this, t.tx, t.ty, t.tz,
 	                     oldtile.tx, oldtile.ty);
 	quake_on_walk();
-	return 1;
+	return true;
 }
 
 /*
@@ -4494,8 +4487,12 @@ void Main_actor::switched_chunks(
     Map_chunk *olist,   // Old chunk, or null.
     Map_chunk *nlist    // New chunk.
 ) {
-	int newcx = nlist->get_cx(), newcy = nlist->get_cy();
-	int xfrom, xto, yfrom, yto; // Get range of chunks.
+	int newcx = nlist->get_cx();
+	int newcy = nlist->get_cy();
+	int xfrom;
+	int xto;
+	int yfrom;
+	int yto; // Get range of chunks.
 	if (!olist ||           // No old, or new map?  Use all 9.
 	        olist->get_map() != nlist->get_map()) {
 		xfrom = newcx > 0 ? newcx - 1 : newcx;
@@ -4503,7 +4500,8 @@ void Main_actor::switched_chunks(
 		yfrom = newcy > 0 ? newcy - 1 : newcy;
 		yto = newcy < c_num_chunks - 1 ? newcy + 1 : newcy;
 	} else {
-		int oldcx = olist->get_cx(), oldcy = olist->get_cy();
+		int oldcx = olist->get_cx();
+		int oldcy = olist->get_cy();
 		if (newcx == oldcx + 1) {
 			xfrom = newcx;
 			xto = newcx < c_num_chunks - 1 ? newcx + 1 : newcx;
@@ -4550,7 +4548,8 @@ void Main_actor::move(
 	Map_chunk *nlist = get_chunk();
 	if (nlist != olist)
 		Main_actor::switched_chunks(olist, nlist);
-	int tx = get_tx(), ty = get_ty();
+	int tx = get_tx();
+	int ty = get_ty();
 	gwin->set_ice_dungeon(nlist->is_ice_dungeon(tx, ty));
 	if (gwin->set_above_main_actor(nlist->is_roof(tx, ty, newlift)))
 		gwin->set_in_dungeon(nlist->has_dungeon() ?
@@ -4660,10 +4659,6 @@ void Actor::set_polymorph_default() {
 
 int Actor::get_shape_real(
 ) const {
-#if 0   /* Messes up start of BG after earthquake if you use an SI shape */
-	if (Game::get_game_type() == BLACK_GATE)
-		return get_shapenum();
-#endif
 	if (npc_num != 0)       // Not the avatar?
 		return shape_save != -1 ? shape_save : get_shapenum();
 	// Taking guess (6/18/01):
@@ -4699,7 +4694,7 @@ Npc_actor::Npc_actor(
     int uc
 ) : Actor(nm, shapenum, num, uc), nearby(false),
 	num_schedules(0),
-	schedules(0) {
+	schedules(nullptr) {
 }
 
 /*
@@ -4708,12 +4703,6 @@ Npc_actor::Npc_actor(
 
 Npc_actor::~Npc_actor(
 ) {
-	// If we are here, then the NPC is being deleted due to the map being
-	// deleted. This means that objects all around are being deleted.
-	// So we **CANNOT** let the schedule, if any, notify anything that it
-	// no longer needs it. The schedule itself if destroyed in Actor::~Actor.
-	if (schedule)
-		schedule->kill_client_list();
 	delete [] schedules;
 }
 
@@ -4944,22 +4933,6 @@ void Npc_actor::activate(
 		return;
 	// Converse, etc.
 	Actor::activate(event);
-#if 0   /* +++Sometimes causes former companions to wander off. */
-	//++++++ This might no longer be needed.  Need to test.++++++ (jsf)
-	// Want to get BG actors from start
-	//   to their regular schedules:
-	int i;              // Past 6:00pm first day?
-	if (gclock->get_total_hours() >= 18 ||
-	        Game::get_game_type() == SERPENT_ISLE ||
-	        // Or no schedule change.
-	        (i = find_schedule_change(gclock->get_hour() / 3)) < 0 ||
-	        // Or schedule is already correct?
-	        schedules[i].get_type() == schedule_type)
-		return;
-	cout << "Setting '" << get_name() << "' to 1st schedule" << endl;
-	// Maybe a delay here?  Okay for now.
-	update_schedule(gclock->get_hour() / 3);
-#endif
 }
 
 /*
@@ -4982,7 +4955,7 @@ void Npc_actor::handle_event(
 	// ... but not if the NPC is not on the map (breaks pathfinding
 	// from offscreen if NPC not on map).
 	if (get_map() && get_map() != gwin->get_map()) {
-		set_action(0);
+		set_action(nullptr);
 		dormant = true;
 		if (schedule)
 			schedule->im_dormant();
@@ -5024,7 +4997,7 @@ void Npc_actor::handle_event(
 				if (!frame_time)    // Not a path. Add a delay anyway.
 					frame_time = gwin->get_std_delay();
 				delay = frame_time;
-				set_action(0);
+				set_action(nullptr);
 			}
 		}
 		gwin->get_tqueue()->add(
@@ -5035,33 +5008,36 @@ void Npc_actor::handle_event(
 /*
  *  Step onto an adjacent tile.
  *
- *  Output: 0 if blocked (or paralyzed).
+ *  Output: false if blocked (or paralyzed).
  *      Dormant is set if off screen.
  */
 
-int Npc_actor::step(
+bool Npc_actor::step(
     Tile_coord t,           // Tile to step onto.
     int frame,          // New frame #.
     bool force
 ) {
 	if (get_flag(Obj_flags::paralyzed) || get_map() != gmap)
-		return 0;
+		return false;
 	Tile_coord oldtile = get_tile();
 	// Get old chunk.
 	t.fixme();
 	// Get chunk.
-	int cx = t.tx / c_tiles_per_chunk, cy = t.ty / c_tiles_per_chunk;
+	int cx = t.tx / c_tiles_per_chunk;
+	int cy = t.ty / c_tiles_per_chunk;
 	// Get rel. tile coords.
-	int tx = t.tx % c_tiles_per_chunk, ty = t.ty % c_tiles_per_chunk;
+	int tx = t.tx % c_tiles_per_chunk;
+	int ty = t.ty % c_tiles_per_chunk;
 	// Get ->new chunk.
 	Map_chunk *nlist = gmap->get_chunk_safely(cx, cy);
 	if (!nlist) {       // Shouldn't happen!
 		stop();
-		return 0;
+		return false;
 	}
-	int water, poison;      // Get tile info.
+	bool water;
+	bool poison;      // Get tile info.
 	get_tile_info(this, gwin, nlist, tx, ty, water, poison);
-	if (is_blocked(t, 0, force ? MOVE_ALL : 0)) {
+	if (is_blocked(t, nullptr, force ? MOVE_ALL : 0)) {
 		if (is_really_blocked(t, force)) {
 			if (schedule)       // Tell scheduler.
 				schedule->set_blocked(t);
@@ -5071,7 +5047,7 @@ int Npc_actor::step(
 			        // And > a screenful away?
 			        distance(gwin->get_camera_actor()) > 1 + c_screen_tile_size)
 				dormant = true; // Go dormant.
-			return 0;       // Done.
+			return false;       // Done.
 		}
 	}
 	if (poison && t.tz == 0)
@@ -5088,7 +5064,7 @@ int Npc_actor::step(
 	nlist->activate_eggs(this, t.tx, t.ty, t.tz, oldtile.tx, oldtile.ty);
 
 	// Offscreen, but not in party?
-	if (!add_dirty(1) && party_id < 0 &&
+	if (!add_dirty(true) && party_id < 0 &&
 	        // And > a screenful away?
 	        distance(gwin->get_camera_actor()) > 1 + c_screen_tile_size &&
 	        //++++++++Try getting rid of the 'talk' line:
@@ -5097,10 +5073,10 @@ int Npc_actor::step(
 		// No longer on screen.
 		stop();
 		dormant = true;
-		return 0;
+		return false;
 	}
 	quake_on_walk();
-	return 1;           // Add back to queue for next time.
+	return true;           // Add back to queue for next time.
 }
 
 /*
@@ -5109,20 +5085,20 @@ int Npc_actor::step(
  */
 
 void Npc_actor::remove_this(
-    int nodel           // 1 to not delete.
+    Game_object_shared *keep     // Non-null to not delete.
 ) {
-	set_action(0);
+	set_action(nullptr);
 //	delete schedule; // Problems in SI monster creation.
-//	schedule = 0;
+//	schedule = nullptr;
 // Messes up resurrection   num_schedules = 0;
 	gwin->get_tqueue()->remove(this);// Remove from time queue.
 	gwin->remove_nearby_npc(this);  // Remove from nearby list.
 	// Store old chunk list.
 	Map_chunk *olist = get_chunk();
-	Actor::remove_this(1);  // Remove, but don't ever delete an NPC
-	Npc_actor::switched_chunks(olist, 0);
+	Actor::remove_this(keep);  // Remove, but don't ever delete an NPC
+	Npc_actor::switched_chunks(olist, nullptr);
 	set_invalid();
-	if (!nodel && npc_num > 0)  // Really going?
+	if (!keep && npc_num > 0)  // Really going?
 		unused = true;      // Mark unused if a numbered NPC.
 }
 
@@ -5204,11 +5180,11 @@ void Dead_body::write_ireg(
 	int npc = get_live_npc_num();   // If body, get source.
 	// Here, store NPC # more simply.
 	Write2(ptr, npc);   // Allowing larger range of NPC bodies.
-	*ptr++ = (get_lift() & 15) << 4; // Lift
+	*ptr++ = nibble_swap(get_lift()); // Lift
 	*ptr++ = static_cast<unsigned char>(get_obj_hp());      // Resistance.
 	// Flags:  B0=invis. B3=okay_to_take.
-	*ptr++ = (get_flag(Obj_flags::invisible) != 0) +
-	         ((get_flag(Obj_flags::okay_to_take) != 0) << 3);
+	*ptr++ = (get_flag(Obj_flags::invisible) ? 1 : 0) +
+	         (get_flag(Obj_flags::okay_to_take) ? (1 << 3) : 0);
 	out->write(reinterpret_cast<char *>(buf), ptr - buf);
 	write_contents(out);        // Write what's contained within.
 	// Write scheduled usecode.
@@ -5229,13 +5205,5 @@ Frames_sequence::Frames_sequence(
 }
 
 Main_actor::~Main_actor() {
-	// For improving Valgrind's signal-to-noise ratio.
-	FORGET_OBJECT(npc_frames[static_cast<int>(north) / 2]);
-	FORGET_OBJECT(npc_frames[static_cast<int>(south) / 2]);
-	FORGET_OBJECT(npc_frames[static_cast<int>(east) / 2]);
-	FORGET_OBJECT(npc_frames[static_cast<int>(west) / 2]);
-	FORGET_OBJECT(avatar_frames[static_cast<int>(north) / 2]);
-	FORGET_OBJECT(avatar_frames[static_cast<int>(south) / 2]);
-	FORGET_OBJECT(avatar_frames[static_cast<int>(east) / 2]);
-	FORGET_OBJECT(avatar_frames[static_cast<int>(west) / 2]);
+
 }

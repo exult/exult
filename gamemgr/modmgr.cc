@@ -38,16 +38,17 @@
 #include "databuf.h"
 #include "crc.h"
 
+#ifdef HAVE_ZIP_SUPPORT
+#include "files/zip/unzip.h"
+#include "files/zip/zip.h"
+#endif
+
 using std::ifstream;
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
 using std::vector;
-
-#if 0
-#define DEBUG_PATHS 1
-#endif
 
 // BaseGameInfo: Generic information and functions common to mods and games
 void BaseGameInfo::setup_game_paths() {
@@ -110,7 +111,13 @@ ModInfo::ModInfo(
 	configfile = cfg;
 	Configuration modconfig(configfile, "modinfo");
 
-	string config_path, default_dir, modversion, savedir, patchdir, sourcedir, gamedatdir;
+	string config_path;
+	string default_dir;
+	string modversion;
+	string savedir;
+	string patchdir;
+	string sourcedir;
+	string gamedatdir;
 
 	config_path = "mod_info/mod_title";
 	default_dir = mod;
@@ -131,9 +138,12 @@ ModInfo::ModInfo(
 		// Required version is missing; assume the mod to be incompatible
 		compatible = false;
 	else {
-		const char *ptrmod = modversion.c_str(), *ptrver = VERSION;
-		char *eptrmod, *eptrver;
-		int modver = strtol(ptrmod, &eptrmod, 0), exver = strtol(ptrver, &eptrver, 0);
+		const char *ptrmod = modversion.c_str();
+		const char *ptrver = VERSION;
+		char *eptrmod;
+		char *eptrver;
+		int modver = strtol(ptrmod, &eptrmod, 0);
+		int exver = strtol(ptrver, &eptrver, 0);
 
 		// Assume compatibility:
 		compatible = true;
@@ -153,7 +163,8 @@ ModInfo::ModInfo(
 				if (modver > exver)
 					compatible = false;
 				else if (modver == exver) {
-					string mver(to_uppercase(eptrmod)), ever(to_uppercase(eptrver));
+					string mver(to_uppercase(eptrmod));
+					string ever(to_uppercase(eptrver));
 					// Release vs CVS:
 					if (mver == "CVS" && ever == "R")
 						compatible = false;
@@ -162,13 +173,14 @@ ModInfo::ModInfo(
 		}
 	}
 
-	string tagstr(to_uppercase(static_cast<const string>(mod_title))),
-	       system_path_tag(path_prefix + "_" + tagstr),
-	       mods_dir("<" + path_prefix + "_MODS>"),
-	       data_directory(mods_dir + "/" + mod_title),
-	       mods_save_dir("<" + path_prefix + "_SAVEGAME>/mods"),
-	       savedata_directory(mods_save_dir + "/" + mod_title),
-	       mods_macro("__MODS__"), mod_path_macro("__MOD_PATH__");
+	string tagstr(to_uppercase(static_cast<const string>(mod_title)));
+	string system_path_tag(path_prefix + "_" + tagstr);
+	string mods_dir("<" + path_prefix + "_MODS>");
+	string data_directory(mods_dir + "/" + mod_title);
+	string mods_save_dir("<" + path_prefix + "_SAVEGAME>/mods");
+	string savedata_directory(mods_save_dir + "/" + mod_title);
+	string mods_macro("__MODS__");
+	string mod_path_macro("__MOD_PATH__");
 
 	// Read codepage first.
 	config_path = "mod_info/codepage";
@@ -225,11 +237,6 @@ ModInfo::ModInfo(
 #endif
 }
 
-#ifdef HAVE_ZIP_SUPPORT
-#include "files/zip/unzip.h"
-#include "files/zip/zip.h"
-#endif
-
 /*
  *  Return string from IDENTITY in a savegame.
  *	Also needed by ES.
@@ -239,8 +246,7 @@ ModInfo::ModInfo(
  *      "*" if older savegame.
  */
 string get_game_identity(const char *savename, const string &title) {
-	char *game_identity = 0;
-	ifstream in_stream;
+	char *game_identity = nullptr;
 	if (!U7exists(savename))
 		return title;
 	if (!Flex::is_flex(savename))
@@ -254,8 +260,8 @@ string get_game_identity(const char *savename, const string &title) {
 				return "*";      // Old game.  Return wildcard.
 			} else {
 				unz_file_info file_info;
-				unzGetCurrentFileInfo(unzipfile, &file_info, NULL,
-				                      0, NULL, 0, NULL, 0);
+				unzGetCurrentFileInfo(unzipfile, &file_info, nullptr,
+				                      0, nullptr, 0, nullptr, 0);
 				game_identity = new char[file_info.uncompressed_size + 1];
 
 				if (unzOpenCurrentFile(unzipfile) != UNZ_OK) {
@@ -275,24 +281,23 @@ string get_game_identity(const char *savename, const string &title) {
 		return title.c_str();
 #endif
 	else {
-		U7open(in_stream, savename);        // Open file.
-		IStreamDataSource in(&in_stream);
+		IFileDataSource in(savename);
 
 		in.seek(0x54);          // Get to where file count sits.
-		int numfiles = in.read4();
+		size_t numfiles = in.read4();
 		in.seek(0x80);          // Get to file info.
 		// Read pos., length of each file.
-		int *finfo = new int[2 * numfiles];
-		int i;
-		for (i = 0; i < numfiles; i++) {
+		auto finfo = std::make_unique<uint32[]>(2 * numfiles);
+		for (size_t i = 0; i < numfiles; i++) {
 			finfo[2 * i] = in.read4();  // The position, then the length.
 			finfo[2 * i + 1] = in.read4();
 		}
-		for (i = 0; i < numfiles; i++) { // Now read each file.
+		for (size_t i = 0; i < numfiles; i++) { // Now read each file.
 			// Get file length.
-			int len = finfo[2 * i + 1] - 13;
-			if (len <= 0)
+			size_t len = finfo[2 * i + 1];
+			if (len <= 13)
 				continue;
+			len -= 13;
 			in.seek(finfo[2 * i]);  // Get to it.
 			char fname[50];     // Set up name.
 			in.read(fname, 13);
@@ -302,8 +307,6 @@ string get_game_identity(const char *savename, const string &title) {
 				break;
 			}
 		}
-		in_stream.close();
-		delete [] finfo;
 	}
 	if (!game_identity)
 		return title;
@@ -325,9 +328,12 @@ ModManager::ModManager(const string &name, const string &menu, bool needtitle,
 
 	// We will NOT trust config with these values.
 	// We MUST NOT use path tags at this point yet!
-	string game_path, static_dir, base_cfg_path("config/disk/game/" + cfgname);
+	string game_path;
+	string static_dir;
+	string base_cfg_path("config/disk/game/" + cfgname);
 	{
-		string default_dir, config_path;
+		string default_dir;
+		string config_path;
 
 		// ++++ These path settings are for that game data which requires only
 		// ++++ read access. They default to a subdirectory of:
@@ -431,7 +437,11 @@ ModManager::ModManager(const string &name, const string &menu, bool needtitle,
 	add_system_path("<" + path_prefix + "_STATIC>", static_dir);
 
 	{
-		string src_dir, patch_dir, mods_dir, default_dir, config_path;
+		string src_dir;
+		string patch_dir;
+		string mods_dir;
+		string default_dir;
+		string config_path;
 
 		// <mods> setting: default is "$game_path/mods".
 		config_path = base_cfg_path + "/mods";
@@ -500,7 +510,7 @@ ModInfo *ModManager::find_mod(const string &name) {
 	        it != modlist.end(); ++it)
 		if (it->get_mod_title() == name)
 			return &*it;
-	return 0;
+	return nullptr;
 }
 
 int ModManager::find_mod_index(const string &name) {
@@ -522,13 +532,13 @@ void ModManager::add_mod(const string &mod, const string &modconfig) {
 // Exult, returns a reference to the mod; otherwise, returns the mod's parent game.
 // Outputs error messages is the mod is not found or is not compatible.
 BaseGameInfo *ModManager::get_mod(const string &name, bool checkversion) {
-	ModInfo *newgame = 0;
+	ModInfo *newgame = nullptr;
 	if (has_mods())
 		newgame = find_mod(name);
 	if (newgame) {
 		if (checkversion && !newgame->is_mod_compatible()) {
 			cerr << "Mod '" << name << "' is not compatible with this version of Exult." << endl;
-			return 0;
+			return nullptr;
 		}
 	}
 	if (!newgame)
@@ -543,9 +553,13 @@ BaseGameInfo *ModManager::get_mod(const string &name, bool checkversion) {
  *  game is selected.
  */
 void ModManager::get_game_paths(const string &game_path) {
-	string saveprefix(get_system_path("<SAVEHOME>") + "/" + cfgname),
-	       default_dir, config_path, gamedat_dir, static_dir, savegame_dir,
-	       base_cfg_path("config/disk/game/" + cfgname);
+	string saveprefix(get_system_path("<SAVEHOME>") + "/" + cfgname);
+	string default_dir;
+	string config_path;
+	string gamedat_dir;
+	string static_dir;
+	string savegame_dir;
+	string base_cfg_path("config/disk/game/" + cfgname);
 
 	// ++++ All of these are directories with read/write requirements.
 	// ++++ They default to a directory in the current user's profile,
@@ -580,10 +594,11 @@ void ModManager::get_game_paths(const string &game_path) {
 // GameManager: class that manages the installed games
 GameManager::GameManager(bool silent) {
 	games.clear();
-	bg = fov = si = ss = sib = 0;
+	bg = fov = si = ss = sib = nullptr;
 
 	// Search for games defined in exult.cfg:
-	string config_path("config/disk/game"), game_title;
+	string config_path("config/disk/game");
+	string game_title;
 	std::vector<string> gamestrs = config->listkeys(config_path, false);
 	std::vector<string> checkgames;
 	checkgames.reserve(checkgames.size()+5);	// +5 in case the four below are not in the cfg.
@@ -603,13 +618,18 @@ GameManager::GameManager(bool silent) {
 	}
 
 	games.reserve(checkgames.size());
-	int bgind = -1, fovind = -1, siind = -1, ssind = -1, sibind = -1;
+	int bgind = -1;
+	int fovind = -1;
+	int siind = -1;
+	int ssind = -1;
+	int sibind = -1;
 
 	for (std::vector<string>::iterator it = checkgames.begin();
 	        it != checkgames.end(); ++it) {
 		string gameentry = *it;
 		// Load the paths for all games found:
-		string base_title = gameentry, new_title;
+		string base_title = gameentry;
+		string new_title;
 		to_uppercase(base_title);
 		base_title += "\nMissing Title";
 		config->value(config_path + "/" + gameentry + "/title",
@@ -673,7 +693,7 @@ void GameManager::print_found(
 	to_uppercase(cfgstr);
 	snprintf(path, sizeof(path), "<%s_STATIC>/", cfgstr.c_str());
 
-	if (game == 0) {
+	if (game == nullptr) {
 		if (!silent)
 			cout << title << "   : not found ("
 			     << get_system_path(path) << ")" << endl;
@@ -696,7 +716,6 @@ void GameManager::print_found(
 		cout << flex << " : not found ("
 		     << get_system_path(path)
 		     << ")" << endl;
-
 }
 
 ModManager *GameManager::find_game(const string &name) {
@@ -704,7 +723,7 @@ ModManager *GameManager::find_game(const string &name) {
 	        it != games.end(); ++it)
 		if (it->get_cfgname() == name)
 			return &*it;
-	return 0;
+	return nullptr;
 }
 
 int GameManager::find_game_index(const string &name) {

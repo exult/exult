@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _SPELLBOOK_GUMP_H_
-#define _SPELLBOOK_GUMP_H_
+#ifndef SPELLBOOK_GUMP_H
+#define SPELLBOOK_GUMP_H
 
 #include "Gump.h"
 
@@ -34,8 +34,7 @@ int sign(T val) {
  */
 class Spelltype_gump : public Gump {
 public:
-	Spelltype_gump(int shnum) : Gump(0, shnum) {  }
-	virtual ~Spelltype_gump() {  }
+	Spelltype_gump(int shnum) : Gump(nullptr, shnum) {  }
 	// Perform spell.
 	virtual void do_spell(int spell) = 0;
 	// Set bookmark.
@@ -63,18 +62,18 @@ class Spellbook_gump : public Spelltype_gump {
 public:
 	friend class Bookmark_button;
 	Spellbook_gump(Spellbook_object *b);
-	virtual ~Spellbook_gump();
-	virtual void do_spell(int spell);   // Perform spell.
+	~Spellbook_gump() override;
+	void do_spell(int spell) override;   // Perform spell.
 	void change_page(int delta);    // Page forward/backward.
-	virtual void select_spell(int spell);   // Set bookmark.
-	virtual Game_object *get_owner();// Get object this belongs to.
+	void select_spell(int spell) override;   // Set bookmark.
+	Game_object *get_owner() override;// Get object this belongs to.
 	// Is a given point on a button?
-	virtual Gump_button *on_button(int mx, int my);
+	Gump_button *on_button(int mx, int my) override;
 	// Paint button.
-	virtual void paint_button(Gump_button *btn);
+	void paint_button(Gump_button *btn);
 	// Paint it and its contents.
-	virtual void paint();
-	virtual bool handle_kbd_event(void *ev);
+	void paint() override;
+	bool handle_kbd_event(void *ev) override;
 };
 
 /*
@@ -86,17 +85,17 @@ class Spellscroll_gump : public Spelltype_gump {
 	int spwidth, spheight;      // Dimensions of a spell shape.
 public:
 	Spellscroll_gump(Game_object *s);
-	virtual ~Spellscroll_gump();
-	virtual void do_spell(int spell);   // Perform spell.
-	virtual void select_spell(int)
+	~Spellscroll_gump() override;
+	void do_spell(int spell) override;   // Perform spell.
+	void select_spell(int) override
 	{  }
-	virtual Game_object *get_owner();// Get object this belongs to.
+	Game_object *get_owner() override;// Get object this belongs to.
 	// Is a given point on a button?
-	virtual Gump_button *on_button(int mx, int my);
+	Gump_button *on_button(int mx, int my) override;
 	// Paint button.
-	virtual void paint_button(Gump_button *btn);
+	void paint_button(Gump_button *btn);
 	// Paint it and its contents.
-	virtual void paint();
+	void paint() override;
 };
 
 #endif

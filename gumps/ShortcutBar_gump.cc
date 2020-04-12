@@ -62,7 +62,7 @@ Game_object *is_party_item(
 			return obj;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 void ShortcutBar_gump::check_for_updates(int shnum) {
@@ -241,7 +241,7 @@ void ShortcutBar_gump::createButtons() {
 void ShortcutBar_gump::deleteButtons() {
 	for (int i = 0; i < numButtons; i++) {
 		delete buttonItems[i].shapeId;
-		buttonItems[i].shapeId = NULL;
+		buttonItems[i].shapeId = nullptr;
 	}
 	startx = 0;
 	resx = 0;
@@ -261,7 +261,7 @@ ShortcutBar_gump::ShortcutBar_gump
 (
     int placex,
     int placey
-) : Gump(0, placex, placey, EXULT_FLX_TRANSPARENTMENU_SHP, SF_EXULT_FLX) {
+) : Gump(nullptr, placex, placey, EXULT_FLX_TRANSPARENTMENU_SHP, SF_EXULT_FLX) {
 	/*static bool init = false;
 	assert(init == 0); // Protect against re-entry
 	init = true;*/
@@ -305,21 +305,16 @@ void ShortcutBar_gump::paint() {
 
 int ShortcutBar_gump::handle_event(SDL_Event *event) {
 	Game_window *gwin = Game_window::get_instance();
-	// When the Save/Load menu is open, don't handle events
-	if (gumpman->modal_gump_mode() || gwin->get_usecode()->in_usecode() || g_waiting_for_click)
+	// When the Save/Load menu is open, or the notebook, don't handle events
+	if (gumpman->modal_gump_mode() || gwin->get_usecode()->in_usecode() || g_waiting_for_click
+		|| Notebook_gump::get_instance())
 		return 0;
 
 	if (event->type == SDL_MOUSEBUTTONDOWN || event->type == SDL_MOUSEBUTTONUP) {
-		int x, y;
+		int x;
+		int y;
 		gwin->get_win()->screen_to_game(event->button.x, event->button.y,
 		                                gwin->get_fastmouse(), x, y);
-
-#if 0
-		std::cout << "clicks:" << static_cast<int>(event->button.clicks) << ", x,y: "
-			<< x << "," << y << " locx,locy: " << locx << "," << locy
-			<< " widthXheight: " << width << "X" << height << std::endl;
-#endif
-
 		if (x >= startx && x <= (locx + width) && y >= starty && y <= (starty + height)) {
 			if (event->type == SDL_MOUSEBUTTONDOWN) {
 				mouse_down(event, x, y);
@@ -374,7 +369,7 @@ void ShortcutBar_gump::onUserEvent(SDL_Event *event) {
 				lastClickedButton = -1;
 				if (timerId) {
 					SDL_RemoveTimer(timerId);
-					timerId = 0;
+					timerId = SDL_TimerID{};
 				}
 			}
 			break;
@@ -399,7 +394,7 @@ void ShortcutBar_gump::mouse_up(SDL_Event *event, int mx, int my) {
 		 */
 		if (timerId) {
 			SDL_RemoveTimer(timerId);
-			timerId = 0;
+			timerId = SDL_TimerID{};
 		}
 		lastClickedButton = -1;
 
@@ -411,11 +406,7 @@ void ShortcutBar_gump::mouse_up(SDL_Event *event, int mx, int my) {
 		 * have no idea if we are going to get another one.
 		 * So we delay the handler.
 		 */
-#if SDL_VERSION_ATLEAST(2,0,2)
 		if (event->button.clicks >= 2) {
-#else
-		if (0) { // FIXME add a way to doubleclick
-#endif
 			onItemClicked(i, true);
 		} else {
 			lastClickedButton = i;
@@ -434,9 +425,9 @@ void ShortcutBar_gump::onItemClicked(int index, bool doubleClicked) {
 	switch (buttonItems[index].type) {
 		case SB_ITEM_DISK: {
 			if (doubleClicked)
-				ActionFileGump(NULL); // save_restore
+				ActionFileGump(nullptr); // save_restore
 			else
-				ActionCloseOrMenu(NULL); // close_or_menu
+				ActionCloseOrMenu(nullptr); // close_or_menu
 			break;
 		} case SB_ITEM_BACKPACK: {
 			const int j = -1;
@@ -449,13 +440,13 @@ void ShortcutBar_gump::onItemClicked(int index, bool doubleClicked) {
 			if (doubleClicked && cheat())
 				cheat.cheat_screen(); // cheat_screen
 			else if (!doubleClicked)
-				ActionNotebook(NULL); // notebook
+				ActionNotebook(nullptr); // notebook
 			break;
 		} case SB_ITEM_KEY: {
 			if (doubleClicked) // Lockpicks
 				gwin->activate_item(627); // useitem 627
 			else
-				ActionTryKeys(NULL); // try_keys
+				ActionTryKeys(nullptr); // try_keys
 			break;
 		} case SB_ITEM_KEYRING: {
 			if (doubleClicked) // Lockpicks
@@ -467,16 +458,16 @@ void ShortcutBar_gump::onItemClicked(int index, bool doubleClicked) {
 			if (doubleClicked && cheat())
 				cheat.map_teleport(); // map_teleport
 			else if (!doubleClicked)
-				gwin->activate_item(178); // useitem 178
+				gwin->activate_item(178, 0); // useitem 178, frame 0
 			break;
 		} case SB_ITEM_TOGGLE_COMBAT: {
-			ActionCombat(NULL); // toggle_combat
+			ActionCombat(nullptr); // toggle_combat
 			break;
 		} case SB_ITEM_TARGET: {
 			if (doubleClicked && cheat()) {
-				ActionTeleportTargetMode(NULL); // target_mode_teleport
+				ActionTeleportTargetMode(nullptr); // target_mode_teleport
 			} else if (!doubleClicked) {
-				ActionTarget(NULL); // target_mode
+				ActionTarget(nullptr); // target_mode
 			}
 			break;
 		} case SB_ITEM_JAWBONE: {
@@ -484,14 +475,14 @@ void ShortcutBar_gump::onItemClicked(int index, bool doubleClicked) {
 			break;
 		} case SB_ITEM_FEED: {
 			if(doubleClicked) {
-				ActionUseHealingItems(NULL); // use_healing_items
+				ActionUseHealingItems(nullptr); // use_healing_items
 			} else if (GAME_SI) {
 				int params[2];
 				params[0] = 1557;
 				params[1] = 0;
 				ActionCallUsecode(params); // call_usecode 1557 0
 			} else {
-				ActionUseFood(NULL); // usefood
+				ActionUseFood(nullptr); // usefood
 			}
 			break;
 		} default: {

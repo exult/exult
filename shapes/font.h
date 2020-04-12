@@ -18,6 +18,7 @@
 #define FONT_H
 
 #include "hash_utils.h"
+#include <memory>
 
 class Image_buffer8;
 class Shape_file;
@@ -45,23 +46,23 @@ struct Cursor_info {
  */
 class Font {
 private:
-	int hor_lead;
-	int ver_lead;
-	Shape_file *font_shapes;
-	IDataSource *font_data;
-	char *font_buf;
-	char *orig_font_buf;
-	int  highest, lowest;
+	int hor_lead = 0;
+	int ver_lead = 0;
+	std::unique_ptr<Shape_file> font_shapes;
+	int  highest = 0, lowest = 0;
 
 	void calc_highlow();
 	void clean_up();
-	int load_internal(const U7multiobject &font_obj, int hlead, int vlead);
+	int load_internal(IDataSource& data, int hlead, int vlead);
+
 public:
 	Font();
 	Font(const File_spec &fname0, int index, int hlead = 0, int vlead = 1);
 	Font(const File_spec &fname0, const File_spec &fname1, int index,
 	     int hlead = 0, int vlead = 1);
-	~Font();
+	Font(Font&&) noexcept = default;
+	Font& operator=(Font&&) noexcept = default;
+	~Font() noexcept = default;
 	int load(const File_spec &fname0, int index, int hlead = 0, int vlead = 1);
 	int load(const File_spec &fname0, const File_spec &fname1, int index,
 	         int hlead = 0, int vlead = 1);
@@ -69,10 +70,10 @@ public:
 	int paint_text_box(Image_buffer8 *win,
 	                   const char *text, int x, int y, int w,
 	                   int h, int vert_lead = 0, bool pbreak = false,
-	                   bool center = false, Cursor_info *cursor = 0);
+	                   bool center = false, Cursor_info *cursor = nullptr);
 	int paint_text(Image_buffer8 *win,
 	               const char *text, int xoff, int yoff,
-	               unsigned char *trans = 0);
+	               unsigned char *trans = nullptr);
 	int paint_text(Image_buffer8 *win,
 	               const char *text, int textlen, int xoff, int yoff);
 	int paint_text_box_fixedwidth(Image_buffer8 *win,
@@ -93,12 +94,12 @@ public:
 	int find_xcursor(const char *text, int textlen, int cx);
 
 	int draw_text(Image_buffer8 *win, int x, int y, const char *s,
-	              unsigned char *trans = 0) {
+	              unsigned char *trans = nullptr) {
 		return paint_text(win, s, x, y, trans);
 	}
 	int draw_text_box(Image_buffer8 *win,
 	                  int x, int y, int w, int h, const char *s) {
-		return paint_text_box(win, s, x, y, w, h, 0, 0);
+		return paint_text_box(win, s, x, y, w, h, 0, false);
 	}
 	int center_text(Image_buffer8 *iwin, int x, int y, const char *s);
 };
@@ -108,13 +109,9 @@ public:
  */
 class FontManager {
 private:
-#ifndef DONT_HAVE_HASH_MAP
-	unordered_map<const char *, Font *, hashstr, eqstr> fonts;
-#else
-	std::map<const char *, Font *, ltstr> fonts;
-#endif
+	std::unordered_map<const char *, Font *, hashstr, eqstr> fonts;
+
 public:
-	FontManager();
 	~FontManager();
 	void add_font(const char *name, const File_spec &fname0,
 	              int index, int hlead = 0, int vlead = 1);

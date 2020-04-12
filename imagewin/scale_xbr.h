@@ -27,6 +27,8 @@
 #ifdef USE_XBR_SCALER
 
 #include "ignore_unused_variable_warning.h"
+#include <cstddef>
+#include <cstdlib>
 
 #define XBR_VARIANT 4   // Tweaked xBR-z (Zenju's version)
 //#define XBR_VARIANT 3  // xBR-C: Hyllian's "squared flavor" version
@@ -66,8 +68,7 @@ template <class Manip_pixels, int tol>
 struct RGBColor {
 	unsigned int  r,  g,  b;
 	unsigned int dr, dg, db;
-	RGBColor()
-	{       }
+	RGBColor() = default;
 	RGBColor(unsigned char c, const Manip_pixels &manip) {
 		set(c, manip);
 	}
@@ -99,14 +100,14 @@ struct RGBColor {
 	}
 	// See http://www.compuphase.com/cmetric.htm
 	int dist(RGBColor<Manip_pixels, tol> const &other) const {
-		return abs(static_cast<int>(dr - other.dr)) +
-		       abs(static_cast<int>(dg - other.dg)) +
-		       abs(static_cast<int>(db - other.db));
+		return std::abs(static_cast<int>(dr - other.dr)) +
+		       std::abs(static_cast<int>(dg - other.dg)) +
+		       std::abs(static_cast<int>(db - other.db));
 	}
 	bool equals(RGBColor<Manip_pixels, tol> const &other) const {
-		return abs(static_cast<int>(dr - other.dr)) <= (tol *  9)
-		       && abs(static_cast<int>(dg - other.dg)) <= (tol * 16)
-		       && abs(static_cast<int>(db - other.db)) <= (tol *  4);
+		return std::abs(static_cast<int>(dr - other.dr)) <= (tol *  9)
+		       && std::abs(static_cast<int>(dg - other.dg)) <= (tol * 16)
+		       && std::abs(static_cast<int>(db - other.db)) <= (tol *  4);
 	}
 	template <unsigned int N, unsigned int M>
 	inline void blend(RGBColor<Manip_pixels, tol> const &other) {
@@ -270,11 +271,11 @@ void Scale_xBR(
 	// reallocating space on each call, as new[]s are usually very
 	// expensive; we do allow it to grow though
 	static int buff_size = 0;
-	static RGBColor<Manip_pixels, 2> *rgb_row_minus_2  = 0;
-	static RGBColor<Manip_pixels, 2> *rgb_row_minus_1  = 0;
-	static RGBColor<Manip_pixels, 2> *rgb_row_current  = 0;
-	static RGBColor<Manip_pixels, 2> *rgb_row_plus_1   = 0;
-	static RGBColor<Manip_pixels, 2> *rgb_row_plus_2   = 0;
+	static RGBColor<Manip_pixels, 2> *rgb_row_minus_2  = nullptr;
+	static RGBColor<Manip_pixels, 2> *rgb_row_minus_1  = nullptr;
+	static RGBColor<Manip_pixels, 2> *rgb_row_current  = nullptr;
+	static RGBColor<Manip_pixels, 2> *rgb_row_plus_1   = nullptr;
+	static RGBColor<Manip_pixels, 2> *rgb_row_plus_2   = nullptr;
 	if (buff_size < sline_pixels) {
 		delete [] rgb_row_minus_2;
 		delete [] rgb_row_minus_1;
@@ -314,7 +315,10 @@ void Scale_xBR(
 		Dest_pixel *out = dest + Scaler::scale * (y * dline_pixels + srcx);
 
 		RGBColor<Manip_pixels, 2> const *sa2 = rgb_row_current + srcx; //center
-		RGBColor<Manip_pixels, 2> const *sa0, *sa1, *sa3, *sa4;
+		RGBColor<Manip_pixels, 2> const *sa0;
+		RGBColor<Manip_pixels, 2> const *sa1;
+		RGBColor<Manip_pixels, 2> const *sa3;
+		RGBColor<Manip_pixels, 2> const *sa4;
 
 		if (y <= 1) {
 			if (y == 1)
@@ -338,7 +342,14 @@ void Scale_xBR(
 
 		for (int x = srcx; x < srcx + srcw; ++x, ++sa0, ++sa1, ++sa2, ++sa3, ++sa4,
 		        out += Scaler::scale) {
-			RGBColor<Manip_pixels, 2> const *a0, *d0, *g0, *a1, *a, *d, *g, *g5;
+			RGBColor<Manip_pixels, 2> const *a0;
+			RGBColor<Manip_pixels, 2> const *d0;
+			RGBColor<Manip_pixels, 2> const *g0;
+			RGBColor<Manip_pixels, 2> const *a1;
+			RGBColor<Manip_pixels, 2> const *a;
+			RGBColor<Manip_pixels, 2> const *d;
+			RGBColor<Manip_pixels, 2> const *g;
+			RGBColor<Manip_pixels, 2> const *g5;
 
 			//all those bounds checks have only insignificant impact on performance!
 			if (x <= 1) {
@@ -375,9 +386,19 @@ void Scale_xBR(
 				g5 = &sa4[-1];
 			}
 
-			RGBColor<Manip_pixels, 2> const *b1 = &sa0[0], *b = &sa1[0],
-			                                 *e = &sa2[0], *h = &sa3[0], *h5 = &sa4[0],
-			                                  *c1, *c, *f, *i, *i5, *c4, *f4, *i4;
+			RGBColor<Manip_pixels, 2> const *b1 = &sa0[0];
+			RGBColor<Manip_pixels, 2> const *b = &sa1[0];
+			RGBColor<Manip_pixels, 2> const *e = &sa2[0];
+			RGBColor<Manip_pixels, 2> const *h = &sa3[0];
+			RGBColor<Manip_pixels, 2> const *h5 = &sa4[0];
+			RGBColor<Manip_pixels, 2> const *c1;
+			RGBColor<Manip_pixels, 2> const *c;
+			RGBColor<Manip_pixels, 2> const *f;
+			RGBColor<Manip_pixels, 2> const *i;
+			RGBColor<Manip_pixels, 2> const *i5;
+			RGBColor<Manip_pixels, 2> const *c4;
+			RGBColor<Manip_pixels, 2> const *f4;
+			RGBColor<Manip_pixels, 2> const *i4;
 
 			if (x >= sline_pixels - 2) {
 				if (x == sline_pixels - 1) {

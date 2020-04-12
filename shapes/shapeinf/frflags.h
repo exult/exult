@@ -27,7 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "baseinf.h"
 #include "exult_constants.h"
-using std::istream;
+
+#include <iosfwd>
 
 class Shape_info;
 
@@ -75,9 +76,7 @@ class Frame_flags_info : public Base_info {
 	unsigned int    m_flags;    // Bit field with the relevant flags.
 public:
 	friend class Shape_info;
-	Frame_flags_info()
-		: Base_info()
-	{  }
+	Frame_flags_info() = default;
 	Frame_flags_info(short fr, short q, unsigned int fl, bool p = false,
 	                 bool m = false, bool s = false, bool inv = false) {
 		set(fr, q, fl, p, m, s, inv);
@@ -123,10 +122,10 @@ public:
 		}
 	}
 	bool operator<(const Frame_flags_info &other) const {
-		unsigned short qual1 = static_cast<unsigned short>(quality),
-		               qual2 = static_cast<unsigned short>(other.quality);
-		unsigned short frame1 = static_cast<unsigned short>(frame),
-		               frame2 = static_cast<unsigned short>(other.frame);
+		unsigned short qual1 = static_cast<unsigned short>(quality);
+		unsigned short qual2 = static_cast<unsigned short>(other.quality);
+		unsigned short frame1 = static_cast<unsigned short>(frame);
+		unsigned short frame2 = static_cast<unsigned short>(other.frame);
 		return (frame1 == frame2 && qual1 < qual2) || (frame1 < frame2);
 	}
 	bool operator==(const Frame_flags_info &other) const {

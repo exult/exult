@@ -19,8 +19,6 @@
 #ifndef KEYS_H
 #define KEYS_H
 
-#include "sdl-compat.h"
-
 #include "SDL_events.h"
 #include "game.h"
 
@@ -37,7 +35,7 @@ struct ActionType {
 };
 
 struct ltSDLkeysym {
-	bool operator()(SDL_keysym k1, SDL_keysym k2) const {
+	bool operator()(SDL_Keysym k1, SDL_Keysym k2) const {
 		if (k1.sym == k2.sym)
 			return k1.mod < k2.mod;
 		else
@@ -45,7 +43,7 @@ struct ltSDLkeysym {
 	}
 };
 
-typedef std::map<SDL_keysym, ActionType, ltSDLkeysym>   KeyMap;
+using KeyMap = std::map<SDL_Keysym, ActionType, ltSDLkeysym>;
 
 class KeyBinder {
 private:
@@ -59,13 +57,12 @@ private:
 	KeyMap::const_iterator TranslateEvent(SDL_Event const &ev) const;
 public:
 	KeyBinder();
-	~KeyBinder();
 	/* Add keybinding */
-	void AddKeyBinding(SDLKey sym, int mod, const Action *action,
-	                   int nparams, int *params);
+	void AddKeyBinding(SDL_Keycode key, int mod, const Action *action,
+	                   int nparams, const int *params);
 
 	/* Delete keybinding */
-	void DelKeyBinding(SDLKey sym, int mod);
+	void DelKeyBinding(SDL_Keycode sym, int mod);
 
 	/* Other methods */
 	void Flush() {

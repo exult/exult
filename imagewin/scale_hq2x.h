@@ -95,17 +95,15 @@ void Scale_Hq2x(
     int dline_pixels,       // Pixels (words)/line for dest.
     const Manip_pixels &manip   // Manipulator methods.
 ) {
-	int i, j;
-	int prevline, nextline;
+	int i;
+	int j;
+	int prevline;
+	int nextline;
 	int w[10];
 	int c[10];
 	int yuv[10];
-#if 0
-	srcx = srcy = 0;
-	srcw = sline_pixels;
-	srch = sheight; //++++TESTING
-#endif
-	int stopy = srcy + srch, stopx = srcx + srcw;
+	int stopy = srcy + srch;
+	int stopx = srcx + srcw;
 	unsigned char *from = source + srcy * sline_pixels + srcx;
 	Dest_pixel *to = dest + 2 * srcy * dline_pixels + 2 * srcx;
 

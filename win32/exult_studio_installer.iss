@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=Exult Studio
-AppVerName=Exult Studio Git
+AppVerName=Exult Studio
 DefaultDirName={pf}\Exult
 DefaultGroupName=Exult Studio
 OutputBaseFilename=ExultStudio

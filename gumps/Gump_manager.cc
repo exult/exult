@@ -47,13 +47,12 @@
 #include "ShortcutBar_gump.h"
 #include "jawbone.h"
 #include "spellbook.h"
+#include "touchui.h"
 
 using std::cout;
 using std::endl;
 
-Gump_manager::Gump_manager()
-	: open_gumps(0), kbd_focus(0), non_persistent_count(0),
-	  modal_gump_count(0), right_click_close(true), dont_pause_game(false) {
+Gump_manager::Gump_manager() {
 	std::string str;
 	config->value("config/gameplay/right_click_closes_gumps", str, "yes");
 	if (str == "no")
@@ -72,7 +71,7 @@ Gump_manager::Gump_manager()
 
 bool Gump_manager::showing_gumps(bool no_pers) const {
 	// If no gumps, or we do want to check for persistent, just check to see if any exist
-	if (!no_pers || !open_gumps) return open_gumps != 0;
+	if (!no_pers || !open_gumps) return open_gumps != nullptr;
 
 	// If we don't want to check for persistend
 	for (Gump_list *gump = open_gumps; gump; gump = gump->next)
@@ -93,13 +92,13 @@ Gump *Gump_manager::find_gump(
     bool pers               // Persistent?
 ) {
 	Gump_list *gmp;
-	Gump *found = 0;        // We want last found in chain.
+	Gump *found = nullptr;        // We want last found in chain.
 	for (gmp = open_gumps; gmp; gmp = gmp->next) {
 		Gump *gump = gmp->gump;
 		if (gump->has_point(x, y) && (pers || !gump->is_persistent()))
 			found = gump;
 	}
-	return (found);
+	return found;
 }
 
 /*
@@ -112,17 +111,17 @@ Gump *Gump_manager::find_gump(
 	// Get container object is in.
 	const Game_object *owner = obj->get_owner();
 	if (!owner)
-		return (0);
+		return nullptr;
 	// Look for container's gump.
 	for (Gump_list *gmp = open_gumps; gmp; gmp = gmp->next)
 		if (gmp->gump->get_container() == owner)
-			return (gmp->gump);
+			return gmp->gump;
 
 	Gump *dragged = gwin->get_dragging_gump();
 	if (dragged && dragged->get_container() == owner)
 		return dragged;
 
-	return (0);
+	return nullptr;
 }
 
 /*
@@ -146,7 +145,7 @@ Gump *Gump_manager::find_gump(
 	         dragged->get_shapenum() == shapenum))
 		return dragged;
 
-	return (0);
+	return nullptr;
 }
 
 /*
@@ -181,6 +180,9 @@ bool Gump_manager::close_gump(Gump *gump) {
 	if (dragged == gump)
 		gwin->stop_dragging();
 	delete gump;
+	if (touchui != nullptr && non_persistent_count == 0) {
+		touchui->showGameControls();
+	}
 	return ret;
 }
 
@@ -190,7 +192,7 @@ bool Gump_manager::close_gump(Gump *gump) {
 
 bool Gump_manager::remove_gump(Gump *gump) {
 	if (gump == kbd_focus)
-		set_kbd_focus(0);
+		set_kbd_focus(nullptr);
 	if (open_gumps) {
 		if (open_gumps->gump == gump) {
 			Gump_list *p = open_gumps->next;
@@ -198,7 +200,7 @@ bool Gump_manager::remove_gump(Gump *gump) {
 			open_gumps = p;
 		} else {
 			Gump_list *p = open_gumps;      // Find prev. to this.
-			while (p->next != 0 && p->next->gump != gump) p = p->next;
+			while (p->next != nullptr && p->next->gump != gump) p = p->next;
 
 			if (p->next) {
 				Gump_list *g = p->next->next;
@@ -259,8 +261,8 @@ void Gump_manager::add_gump(
 		return;
 	}
 
-	int x = (1 + cnt) * gwin->get_width() / 10,
-	    y = (1 + cnt) * gwin->get_height() / 10;
+	int x = (1 + cnt) * gwin->get_width() / 10;
+	int y = (1 + cnt) * gwin->get_height() / 10;
 
 	ShapeID s_id(shapenum, 0, paperdoll ? SF_PAPERDOL_VGA : SF_GUMPS_VGA);
 	Shape_frame *shape = s_id.get_shape();
@@ -272,7 +274,7 @@ void Gump_manager::add_gump(
 		y = gwin->get_width() / 10;
 	}
 
-	Gump *new_gump = 0;
+	Gump *new_gump = nullptr;
 	if (obj) {
 		Actor *npc = obj->as_actor();
 		if (npc && paperdoll)
@@ -305,6 +307,9 @@ void Gump_manager::add_gump(
 
 	// Paint new one last.
 	add_gump(new_gump);
+	if (touchui != nullptr && !gumps_dont_pause_game()) {
+		touchui->hideGameControls();
+	}
 	if (++cnt == 8)
 		cnt = 0;
 	int sfx = Audio::game_sfx(14);
@@ -321,7 +326,7 @@ void Gump_manager::close_all_gumps(
 ) {
 	bool removed = false;
 
-	Gump_list *prev = 0;
+	Gump_list *prev = nullptr;
 	Gump_list *next = open_gumps;
 
 	while (next) {      // Remove all gumps.
@@ -342,9 +347,14 @@ void Gump_manager::close_all_gumps(
 			prev = gump;
 	}
 	non_persistent_count = 0;
-	set_kbd_focus(0);
+	set_kbd_focus(nullptr);
 	gwin->get_npc_prox()->wait(4);      // Delay "barking" for 4 secs.
-	if (removed) gwin->paint();
+	if (removed) {
+		gwin->paint();
+	}
+	if (touchui != nullptr && !modal_gump_count && non_persistent_count == 0 && !gwin->is_in_exult_menu()) {
+		touchui->showGameControls();
+	}
 }
 
 /*
@@ -352,15 +362,12 @@ void Gump_manager::close_all_gumps(
  */
 
 void Gump_manager::set_kbd_focus(
-    Gump *gump          // May be NULL.
+    Gump *gump          // May be nullptr.
 ) {
 	if (gump && gump->can_handle_kbd()) {
 		kbd_focus = gump;
-		SDL_EnableUNICODE(1);   // Enable unicode translation.
 	} else {
-		kbd_focus = 0;
-		if (!modal_gump_count)
-			SDL_EnableUNICODE(0);
+		kbd_focus = nullptr;
 	}
 }
 
@@ -422,25 +429,22 @@ void Gump_manager::update_gumps() {
 void Gump_manager::paint(bool modal) {
 	for (Gump_list *gmp = open_gumps; gmp; gmp = gmp->next)
 		if (gmp->gump->is_modal() == modal) gmp->gump->paint();
-#ifdef __IPHONEOS__
-	gkeybb->paint();
-#endif
 }
 
 
 /*
  *  Verify user wants to quit.
  *
- *  Output: 1 to quit.
+ *  Output: true to quit.
  */
-int Gump_manager::okay_to_quit() {
+bool Gump_manager::okay_to_quit() {
 	if (Yesno_gump::ask("Do you really want to quit?"))
 		quitting_time = QUIT_TIME_YES;
-	return quitting_time;
+	return quitting_time != QUIT_TIME_NO;
 }
 
 
-int Gump_manager::handle_modal_gump_event(
+bool Gump_manager::handle_modal_gump_event(
     Modal_gump *gump,
     SDL_Event &event
 ) {
@@ -449,7 +453,8 @@ int Gump_manager::handle_modal_gump_event(
 	//          : gwin->get_win()->get_scale();
 	static bool rightclick;
 
-	int gx, gy;
+	int gx;
+	int gy;
 	Uint16 keysym_unicode = 0;
 
 	switch (event.type) {
@@ -459,10 +464,6 @@ int Gump_manager::handle_modal_gump_event(
 #ifdef DEBUG
 		cout << "(x,y) rel. to gump is (" << (gx - gump->get_x())
 		     << ", " << (gy - gump->get_y()) << ")" << endl;
-#endif
-#ifdef __IPHONEOS__
-		if (gkeybb->handle_event(&event))
-			break;
 #endif
 		if (g_shortcutBar && g_shortcutBar->handle_event(&event))
 			break;
@@ -476,20 +477,12 @@ int Gump_manager::handle_modal_gump_event(
 		} else if (event.button.button == 3) {
 			rightclick = true;
 			gump->mouse_down(gx, gy, event.button.button);
-		} else if (event.button.button == 4) { // mousewheel up
-			if (!gump->mouse_down(gx, gy, event.button.button)) gump->mousewheel_up();
-		} else if (event.button.button == 5) { // mousewheel down
-			if (!gump->mouse_down(gx, gy, event.button.button)) gump->mousewheel_down();
 		} else {
 			gump->mouse_down(gx, gy, event.button.button);
 		}
 		break;
 	case SDL_MOUSEBUTTONUP:
 		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
-#ifdef __IPHONEOS__
-		if (gkeybb->handle_event(&event))
-			break;
-#endif
 		if (g_shortcutBar && g_shortcutBar->handle_event(&event))
 			break;
 		if (event.button.button != 3)
@@ -497,9 +490,37 @@ int Gump_manager::handle_modal_gump_event(
 		else if (rightclick) {
 			rightclick = false;
 			if (!gump->mouse_up(gx, gy, event.button.button) &&
-			        gumpman->can_right_click_close()) return 0;
+			        gumpman->can_right_click_close()) return false;
 		}
 		break;
+	case SDL_FINGERMOTION: {
+		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
+		static int numFingers = 0;
+		SDL_Finger* finger0 = SDL_GetTouchFinger(event.tfinger.touchId, 0);
+		if (finger0) {
+			numFingers = SDL_GetNumTouchFingers(event.tfinger.touchId);
+		}
+		if (numFingers > 1) {
+			if(event.tfinger.dy < 0) {
+				if (!gump->mouse_down(gx, gy, event.button.button)) gump->mousewheel_up();
+			}
+			else if(event.tfinger.dy > 0) {
+				if (!gump->mouse_down(gx, gy, event.button.button)) gump->mousewheel_down();
+			}
+		}
+		break;
+	}
+	// Mousewheel scrolling with SDL2.
+	case SDL_MOUSEWHEEL: {
+		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
+		if(event.wheel.y > 0) {
+			if (!gump->mouse_down(gx, gy, event.button.button)) gump->mousewheel_up();
+		}
+		else if(event.wheel.y < 0) {
+			if (!gump->mouse_down(gx, gy, event.button.button)) gump->mousewheel_down();
+		}
+		break;
+	}
 	case SDL_MOUSEMOTION:
 		gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 
@@ -511,58 +532,146 @@ int Gump_manager::handle_modal_gump_event(
 		break;
 	case SDL_QUIT:
 		if (okay_to_quit())
-			return (0);
+			return false;
 		break;
 	case SDL_KEYDOWN:
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 	case SDL_TEXTINPUT:
 		if (event.type == SDL_TEXTINPUT) {
 			event.key.keysym.sym = SDLK_UNKNOWN;
 			keysym_unicode = event.text.text[0];
 		}
-#endif
 	{
 		if (event.key.keysym.sym == SDLK_ESCAPE)
-			return (0);
+			return false;
 		if ((event.key.keysym.sym == SDLK_s) &&
 		        (event.key.keysym.mod & KMOD_ALT) &&
 		        (event.key.keysym.mod & KMOD_CTRL)) {
 			make_screenshot(true);
-			return 1;
+			return true;
 		}
 
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 		if (event.key.keysym.sym != 0 && event.key.keysym.sym > +'~') {
 			keysym_unicode = event.key.keysym.sym;
 		}
-#else
-		keysym_unicode = event.key.keysym.unicode;
-#endif
+		translate_numpad(event.key.keysym.sym, keysym_unicode, event.key.keysym.mod);
 		gump->key_down(event.key.keysym.sym);
 		gump->text_input(event.key.keysym.sym, keysym_unicode);
 
 		break;
 	}
+	default:
+		if (event.type == TouchUI::eventType) {
+			if (event.user.code == TouchUI::EVENT_CODE_TEXT_INPUT) {
+				if (event.user.data1 != nullptr) {
+					const char *text = static_cast<const char*>(event.user.data1);
+					if (text) gump->text_input(text);
+				}
+			}
+		}
+		break;
 	}
-	return (1);
+	return true;
 }
+
+void Gump_manager::translate_numpad(SDL_Keycode& code, uint16& unicode, uint16 mod) {
+	bool numlock_active = (mod & KMOD_NUM) != 0;
+	unicode = 0;
+	switch (code) {
+	case SDLK_KP_0:
+		if (numlock_active) {
+			code = SDLK_0;
+			unicode = '0';
+		}
+		break;
+	case SDLK_KP_1:
+		if (numlock_active) {
+			code = SDLK_1;
+			unicode = '1';
+		} else {
+			code = SDLK_END;
+		}
+		break;
+	case SDLK_KP_2:
+		if (numlock_active) {
+			code = SDLK_2;
+			unicode = '2';
+		} else {
+			code = SDLK_DOWN;
+		}
+		break;
+	case SDLK_KP_3:
+		if (numlock_active) {
+			code = SDLK_3;
+			unicode = '3';
+		} else {
+			code = SDLK_PAGEDOWN;
+		}
+		break;
+	case SDLK_KP_4:
+		if (numlock_active) {
+			code = SDLK_4;
+			unicode = '4';
+		} else {
+			code = SDLK_LEFT;
+		}
+		break;
+	case SDLK_KP_5:
+		if (numlock_active) {
+			code = SDLK_5;
+			unicode = '5';
+		}
+		break;
+	case SDLK_KP_6:
+		if (numlock_active) {
+			code = SDLK_6;
+			unicode = '6';
+		} else {
+			code = SDLK_RIGHT;
+		}
+		break;
+	case SDLK_KP_7:
+		if (numlock_active) {
+			code = SDLK_7;
+			unicode = '7';
+		} else {
+			code = SDLK_HOME;
+		}
+		break;
+	case SDLK_KP_8:
+		if (numlock_active) {
+			code = SDLK_8;
+			unicode = '8';
+		} else {
+			code = SDLK_UP;
+		}
+		break;
+	case SDLK_KP_9:
+		if (numlock_active) {
+			code = SDLK_9;
+			unicode = '9';
+		} else {
+			code = SDLK_PAGEUP;
+		}
+		break;
+	default:
+		break;
+	}
+}
+
 
 /*
  *  Handle a modal gump, like the range slider or the save box, until
  *  the gump self-destructs.
  *
- *  Output: 0 if user hit ESC.
+ *  Output: false if user hit ESC.
  */
 
-int Gump_manager::do_modal_gump(
+bool Gump_manager::do_modal_gump(
     Modal_gump *gump,       // What the user interacts with.
     Mouse::Mouse_shapes shape,  // Mouse shape to use.
     Paintable *paint        // Paint this over everything else.
 ) {
-	if (!modal_gump_count)
-		SDL_EnableUNICODE(1); // enable unicode translation for text input
 	modal_gump_count++;
-
 
 	//  Game_window *gwin = Game_window::get_instance();
 
@@ -575,7 +684,7 @@ int Gump_manager::do_modal_gump(
 	Mouse::Mouse_shapes saveshape = Mouse::mouse->get_shape();
 	if (shape != Mouse::dontchange)
 		Mouse::mouse->set_shape(shape);
-	int escaped = 0;
+	bool escaped = false;
 	add_gump(gump);
 	gump->run();
 	gwin->paint();          // Show everything now.
@@ -583,9 +692,9 @@ int Gump_manager::do_modal_gump(
 		paint->paint();
 	Mouse::mouse->show();
 	gwin->show();
-#ifdef __IPHONEOS__
-	gkeybb->paint();
-#endif
+	if (touchui != nullptr) {
+		touchui->hideGameControls();
+	}
 	do {
 		Delay();        // Wait a fraction of a second.
 		Mouse::mouse->hide();       // Turn off mouse.
@@ -594,8 +703,8 @@ int Gump_manager::do_modal_gump(
 		while (!escaped && !gump->is_done() && SDL_PollEvent(&event))
 			escaped = !handle_modal_gump_event(gump, event);
 
-		if (gump->run() || gwin->is_dirty() || GL_manager::get_instance()) {
-			gwin->paint();  // OpenGL?  Paint each cycle.
+		if (gump->run() || gwin->is_dirty()) {
+			gwin->paint();  // Paint each cycle.
 			if (paint)
 				paint->paint();
 		}
@@ -603,9 +712,6 @@ int Gump_manager::do_modal_gump(
 		if (!gwin->show() &&    // Blit to screen if necessary.
 		        Mouse::mouse_update)    // If not, did mouse change?
 			Mouse::mouse->blit_dirty();
-#ifdef __IPHONEOS__
-		gkeybb->paint();
-#endif
 	} while (!gump->is_done() && !escaped);
 	Mouse::mouse->hide();
 	remove_gump(gump);
@@ -617,11 +723,13 @@ int Gump_manager::do_modal_gump(
 	gwin->get_tqueue()->resume(SDL_GetTicks());
 
 	modal_gump_count--;
-
-	if (!modal_gump_count)
-		SDL_EnableUNICODE(0);
-
-	return (!escaped);
+	if (touchui != nullptr) {
+		if (!gwin->is_in_exult_menu())
+			touchui->showButtonControls();
+		if ((non_persistent_count == 0 || gumpman->gumps_dont_pause_game()) && !modal_gump_count && !gwin->is_in_exult_menu())
+			touchui->showGameControls();
+	}
+	return !escaped;
 }
 
 
@@ -639,10 +747,10 @@ int Gump_manager::prompt_for_number(
 ) {
 	Slider_gump *slider = new Slider_gump(minval, maxval,
 	                                      step, defval);
-	int ok = do_modal_gump(slider, Mouse::hand, paint);
+	bool ok = do_modal_gump(slider, Mouse::hand, paint);
 	int ret = !ok ? 0 : slider->get_val();
 	delete slider;
-	return (ret);
+	return ret;
 }
 
 

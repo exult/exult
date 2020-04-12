@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _JAWBONE_GUMP_H_
-#define _JAWBONE_GUMP_H_
+#ifndef JAWBONE_GUMP_H
+#define JAWBONE_GUMP_H
 
 #include "Gump.h"
 
@@ -30,18 +30,16 @@ class Jawbone_gump : public Gump {
 public:
 	Jawbone_gump(Jawbone_object *cont, int initx, int inity);
 
-	virtual ~Jawbone_gump() {}
-
 	// Find the object the mouse is over
-	virtual Game_object *find_object(int mx, int my);
+	Game_object *find_object(int mx, int my) override;
 
 	// Add object.
-	virtual int add(Game_object *obj, int mx = -1, int my = -1,
-	                int sx = -1, int sy = -1, bool dont_check = false,
-	                bool combine = false);
+	bool add(Game_object *obj, int mx = -1, int my = -1,
+	        int sx = -1, int sy = -1, bool dont_check = false,
+	        bool combine = false) override;
 
 	// Paint it and its contents.
-	virtual void paint();
+	void paint() override;
 
 private:
 	void set_to_spot(Game_object *obj, int sx, int sy);

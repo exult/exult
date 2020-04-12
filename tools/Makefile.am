@@ -18,7 +18,7 @@ endif
 
 if BUILD_TOOLS
 NOINSTTOOLS =
-EXTRATOOLS = wuc mklink rip cmanip splitshp shp2pcx textpack
+EXTRATOOLS = wuc mklink rip cmanip splitshp shp2pcx textpack u7voice2syx
 else
 EXTRATOOLS =
 NOINSTTOOLS =
@@ -89,8 +89,14 @@ textpack_LDADD = \
 	../files/libu7file.la \
 	$(SYSLIBS)
 
+u7voice2syx_SOURCES = u7voice2syx.cc
+
+u7voice2syx_LDADD = \
+	../files/libu7file.la \
+	$(SYSLIBS)
+
 cmanip_SOURCES = \
-	cmanip.cc 
+	cmanip.cc
 
 cmanip_LDADD = \
 	../conf/libconf.la \

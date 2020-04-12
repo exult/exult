@@ -1,5 +1,5 @@
-#ifndef _CRC_H_
-#define _CRC_H_
+#ifndef CRC_H
+#define CRC_H
 
 #include "common_types.h"
 

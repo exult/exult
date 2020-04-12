@@ -1,1 +1,1 @@
-g++ test.cc -L. -laudio -I. -I/usr/local/include -I/usr/local/include/SDL -D_REENTRANT -I /usr/local/include/libkmid/ -L/usr/local/lib -lkmid -L/usr/local/lib -lSDL -lpthread -lX11 -L /usr/X11R6/lib -L../conf -lconf -lXext -I../conf -I/usr/include/SDL
+g++ test.cc -L. -laudio -I. -I/usr/local/include -I/usr/local/include/SDL -D_REENTRANT -L/usr/local/lib -L/usr/local/lib -lSDL -lpthread -lX11 -L /usr/X11R6/lib -L../conf -lconf -lXext -I../conf -I/usr/include/SDL

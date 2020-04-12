@@ -195,7 +195,9 @@ static void Setup_item_names(
 	int first_msg;          // First in exultmsg.txt.  Should
 	//   follow those in text.flx.
 	int total_msgs = 0;
-	int num_item_names = 0, num_text_msgs = 0, num_misc_names = 0;
+	int num_item_names = 0;
+	int num_text_msgs = 0;
+	int num_misc_names = 0;
 
 	items.seekg(0x54);
 	int flxcnt = Read4(items);
@@ -261,10 +263,6 @@ static void Setup_item_names(
 			                       i - num_item_names - num_text_msgs,
 			                       sibeta)] = newitem;
 		delete [] newitem;
-#if 0
-		cout << dec << i << " 0x" << hex << i << dec
-		     << "\t" << item_names[i] << endl;
-#endif
 	}
 	for (i = first_msg; i < total_msgs; i++)
 		text_msgs[i] = msglist[i + 0x400];
@@ -320,10 +318,9 @@ void Setup_text(bool si, bool expansion, bool sibeta) {
 		const char *msgs = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
 		U7object txtobj(msgs, EXULT_FLX_EXULTMSG_TXT);
 		size_t len;
-		const char *txt = txtobj.retrieve(len);
+		auto txt = txtobj.retrieve(len);
 		if (txt && len > 0) {
-			exultmsgbuf->str(string(txt, len));
-			delete [] txt;
+			exultmsgbuf->str(string(reinterpret_cast<char*>(txt.get()), len));
 		}
 	}
 

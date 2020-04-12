@@ -15,12 +15,6 @@ rwregress_LDADD = \
 	libu7file.la \
 	$(SYSLIBS)
 
-if HAVE_SNPRINTF
-SNPRINTF =
-else
-SNPRINTF = snprintf.cc
-endif
-
 libu7file_la_SOURCES =	\
 	Flat.cc		\
 	Flat.h		\
@@ -44,8 +38,7 @@ libu7file_la_SOURCES =	\
 	crc.cc		\
 	crc.h		\
 	msgfile.cc	\
-	msgfile.h	\
-	$(SNPRINTF)
+	msgfile.h
 
 EXTRA_DIST = 		\
 	README

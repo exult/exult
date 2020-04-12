@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _SCROLL_GUMP_H_
-#define _SCROLL_GUMP_H_
+#ifndef SCROLL_GUMP_H
+#define SCROLL_GUMP_H
 
 #include "Text_gump.h"
 
@@ -25,13 +25,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  A scroll:
  */
 class Scroll_gump : public Text_gump {
-	UNREPLICATABLE_CLASS_I(Scroll_gump, Text_gump(0))
+	UNREPLICATABLE_CLASS(Scroll_gump)
 
 public:
 	Scroll_gump(int fnt = 4, int gump = -1);
-	virtual ~Scroll_gump() {  }
 	// Paint it and its contents.
-	virtual void paint();
+	void paint() override;
 };
 
 #endif

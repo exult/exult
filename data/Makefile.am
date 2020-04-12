@@ -76,10 +76,6 @@ EXULT_SI_FLX_OBJECTS = \
 	si/container.dat \
 	si/autonotes.txt
 
-EXULT_IPHONE_FLX_OBJECTS = \
-	iphone/flx.in \
-	iphone/keyboardbutton.shp
-
 EXULT_BG_PAPERDOL_VGA_OBJECTS = \
 	bg/amulets.shp \
 	bg/bgfiredoom.shp \
@@ -160,20 +156,18 @@ if DATA_FILES
 EXULT_FLX = exult.flx
 EXULT_BG_FLX = exult_bg.flx
 EXULT_SI_FLX = exult_si.flx
-EXULT_IPHONE_FLX = exult_iphone.flx
 EXULT_BG_PAPERDOL_VGA = bg/bg_paperdol.vga
 EXULT_BG_MR_FACES_VGA = bg/bg_mr_faces.vga
 else
 EXULT_FLX =
 EXULT_BG_FLX =
 EXULT_SI_FLX =
-EXULT_IPHONE_FLX =
 EXULT_BG_PAPERDOL_VGA =
 EXULT_BG_MR_FACES_VGA =
 endif
 
 flex_DATA =  \
-		$(EXULT_FLX) $(EXULT_BG_FLX) $(EXULT_SI_FLX) $(EXULT_IPHONE_FLX) midisfx.flx \
+		$(EXULT_FLX) $(EXULT_BG_FLX) $(EXULT_SI_FLX) midisfx.flx \
 		exultmsg.txt $(EXULT_BG_PAPERDOL_VGA) $(EXULT_BG_MR_FACES_VGA)
 
 if BUILD_STUDIO
@@ -182,21 +176,21 @@ else
 estudionew_DATA =
 endif
 
-CLEANFILES = exult.flx exult_bg.flx exult_si.flx exult_iphone.flx bg/bg_paperdol.vga bg/bg_mr_faces.vga *~
+CLEANFILES = exult.flx exult_bg.flx exult_si.flx bg/bg_paperdol.vga bg/bg_mr_faces.vga *~
 
 EXTRA_DIST = flx.in $(EXULT_FLX_OBJECTS) $(EXULT_BG_FLX_OBJECTS) \
-	$(EXULT_SI_FLX_OBJECTS) $(EXULT_IPHONE_FLX_OBJECTS) $(ESTUDIO_NEW_FILES) midisfx.flx \
+	$(EXULT_SI_FLX_OBJECTS) $(ESTUDIO_NEW_FILES) midisfx.flx \
 	exultmsg.txt bginclude.uc \
 	$(EXULT_BG_PAPERDOL_VGA_OBJECTS) $(EXULT_BG_MR_FACES_VGA_OBJECTS)
 
 if CROSS_COMPILING
 expack = $(EXPACK)
 else
-expack = ../tools/expack
+expack = ../tools/expack$(EXEEXT)
 endif
 
-../tools/expack:
-	+(cd ../tools;$(MAKE) expack)
+../tools/expack$(EXEEXT):
+	+(cd ../tools;$(MAKE) expack$(EXEEXT))
 
 bg/bg_paperdol.vga: $(expack) $(EXULT_BG_PAPERDOL_VGA_OBJECTS)
 	$(expack) -i $(srcdir)/bg/bg_paperdol.in
@@ -213,14 +207,9 @@ exult_bg.flx: $(expack) $(EXULT_BG_FLX_OBJECTS)
 exult_si.flx: $(expack) $(EXULT_SI_FLX_OBJECTS)
 	$(expack) -i $(srcdir)/si/flx.in
 
-exult_iphone.flx: $(expack) $(EXULT_IPHONE_FLX_OBJECTS)
-	$(expack) -i $(srcdir)/iphone/flx.in
-	
 exult_flx.h: exult.flx
 
 exult_bg_flx.h: exult_bg.flx
-
-exult_iphone_flx.h: exult_iphone.flx
 
 exult_si_flx.h: exult_si.flx
 

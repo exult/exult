@@ -45,9 +45,9 @@ inline void Figure_dir(
 /*
  *  Find path from source to destination.
  *
- *  Output: 1 if successful, else 0.
+ *  Output: true if successful, else false.
  */
-int Zombie::NewPath(Tile_coord const &s, Tile_coord const &d, Pathfinder_client * client) {
+bool Zombie::NewPath(Tile_coord const &s, Tile_coord const &d, Pathfinder_client * client) {
 	ignore_unused_variable_warning(client);
 	src = s;            // Store start, destination.
 	dest = d;
@@ -58,10 +58,14 @@ int Zombie::NewPath(Tile_coord const &s, Tile_coord const &d, Pathfinder_client 
 	long deltaz = Tile_coord::delta(cur.tz, dest.tz);
 	if (!deltax && !deltay && !deltaz) { // Going nowhere?
 		major_distance = 0;
-		return (0);
+		return false;
 	}
-	unsigned int abs_deltax, abs_deltay, abs_deltaz;
-	int x_dir, y_dir, z_dir;    // Figure directions.
+	unsigned int abs_deltax;
+	unsigned int abs_deltay;
+	unsigned int abs_deltaz;
+	int x_dir;
+	int y_dir;
+	int z_dir;    // Figure directions.
 	Figure_dir(deltax, abs_deltax, x_dir);
 	Figure_dir(deltay, abs_deltay, y_dir);
 	Figure_dir(deltaz, abs_deltaz, z_dir);
@@ -99,18 +103,18 @@ int Zombie::NewPath(Tile_coord const &s, Tile_coord const &d, Pathfinder_client 
 		minor_delta2 = abs_deltaz;
 	}
 	major_distance = major_delta;   // How far to go.
-	return (1);
+	return true;
 }
 
 /*
  *  Get next point on path to go to (in tile coords).
  *
- *  Output: 0 if all done.
+ *  Output: false if all done.
  */
-int Zombie::GetNextStep(Tile_coord &n, bool &done) {
+bool Zombie::GetNextStep(Tile_coord &n, bool &done) {
 	if (major_distance <= 0) {
 		done = true;
-		return (0);
+		return false;
 	}
 	// Subtract from distance to go.
 	major_distance -= major_frame_incr;
@@ -134,16 +138,9 @@ int Zombie::GetNextStep(Tile_coord &n, bool &done) {
 		cur.tz = 0;
 		major_distance = 0;
 		done = true;
-		return (0);
+		return false;
 	}
 	n = cur;            // Return new tile.
 	done = (major_distance <= 0);   // Indicate if this is the last one.
-	return (1);
-}
-
-/*
- *  Delete.
- */
-Zombie::~Zombie(
-) {
+	return true;
 }

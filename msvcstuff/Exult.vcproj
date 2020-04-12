@@ -44,7 +44,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\;..\Gumps;..\conf;..\files;..\filc;..\imagewin;..\objs;..\pathfinder;..\shapes;..\shapes\shapeinf;..\usecode;..\MSVCStuff;..\Audio;..\Audio\midi_drivers;..\data;..\server;..\Headers;..\tools;..\gamemgr"
-				PreprocessorDefinitions="_DEBUG;DEBUG;_CONSOLE;EXULT;WIN32;USING_PRECOMPILED_HEADER"
+				PreprocessorDefinitions="_DEBUG;DEBUG;_CONSOLE;EXULT;USING_PRECOMPILED_HEADER"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
@@ -70,7 +70,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib SDL.lib winmm.lib zlib_libcmt.lib opengl32.lib ws2_32.lib ole32.lib user32.lib libogg_static.lib libvorbis_static.lib libvorbisfile_static.lib freetype.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib SDL.lib winmm.lib zlib_libcmt.lib ws2_32.lib ole32.lib user32.lib libogg_static.lib libvorbis_static.lib libvorbisfile_static.lib freetype.lib"
 				OutputFile="$(OutDir)/$(ProjectName).exe"
 				Version="1.1"
 				LinkIncremental="2"
@@ -134,7 +134,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				AdditionalIncludeDirectories="..\;..\Gumps;..\conf;..\files;..\filc;..\imagewin;..\objs;..\pathfinder;..\shapes;..\shapes\shapeinf;..\usecode;..\MSVCStuff;..\Audio;..\Audio\midi_drivers;..\data;..\server;..\Headers;..\tools;..\gamemgr"
-				PreprocessorDefinitions="NDEBUG,_CONSOLE,EXULT,WIN32"
+				PreprocessorDefinitions="NDEBUG,_CONSOLE,EXULT"
 				StringPooling="true"
 				ExceptionHandling="1"
 				RuntimeLibrary="0"
@@ -160,7 +160,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib SDL.lib winmm.lib zlib_libcmt.lib opengl32.lib ws2_32.lib libogg_static.lib libvorbis_static.lib libvorbisfile_static.lib freetype.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib SDL.lib winmm.lib zlib_libcmt.lib ws2_32.lib libogg_static.lib libvorbis_static.lib libvorbisfile_static.lib freetype.lib"
 				Version="1.1"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -262,14 +262,6 @@
 			</File>
 			<File
 				RelativePath="..\combat_opts.h"
-				>
-			</File>
-			<File
-				RelativePath="..\delobjs.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\delobjs.h"
 				>
 			</File>
 			<File
@@ -733,34 +725,6 @@
 							RelativePath="..\audio\midi_drivers\WindowsMidiDriver.h"
 							>
 						</File>
-						<Filter
-							Name="Legacy midi Drivers"
-							>
-							<File
-								RelativePath="..\audio\midi_drivers\forked_player.cc"
-								>
-							</File>
-							<File
-								RelativePath="..\audio\midi_drivers\forked_player.h"
-								>
-							</File>
-							<File
-								RelativePath="..\audio\midi_drivers\KMIDI.cc"
-								>
-							</File>
-							<File
-								RelativePath="..\audio\midi_drivers\KMIDI.h"
-								>
-							</File>
-							<File
-								RelativePath="..\audio\midi_drivers\mixer_midiout.cc"
-								>
-							</File>
-							<File
-								RelativePath="..\audio\midi_drivers\mixer_midiout.h"
-								>
-							</File>
-						</Filter>
 						<Filter
 							Name="mt32emu"
 							>
@@ -1278,6 +1242,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\gumps\ItemMenu_gump.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\gumps\ItemMenu_gump.h"
+					>
+				</File>
+				<File
 					RelativePath="..\gumps\Face_button.cc"
 					>
 				</File>
@@ -1486,6 +1458,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\gumps\InputOptions_gump.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\gumps\InputOptions_gump.h"
+					>
+				</File>
+				<File
 					RelativePath="..\gumps\VideoOptions_gump.cc"
 					>
 				</File>
@@ -1603,10 +1583,6 @@
 					</File>
 					<File
 						RelativePath="..\imagewin\scale_bilinear.h"
-						>
-					</File>
-					<File
-						RelativePath="..\imagewin\scale_gl.cc"
 						>
 					</File>
 					<File
@@ -1955,14 +1931,6 @@
 				</File>
 				<File
 					RelativePath="..\shapes\fontvga.h"
-					>
-				</File>
-				<File
-					RelativePath="..\shapes\glshape.cc"
-					>
-				</File>
-				<File
-					RelativePath="..\shapes\glshape.h"
 					>
 				</File>
 				<File

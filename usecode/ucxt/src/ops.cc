@@ -27,21 +27,7 @@
 #include <iomanip>
 #include <fstream>
 #include <stack>
-#ifdef HAVE_SSTREAM
 #include <sstream>
-using std::stringstream;
-#endif
-
-
-/*** head2data
-#ifndef __STRING
-    #if defined __STDC__ && __STDC__
-        #define __STRING(x) #x
-    #else
-        #define __STRING(x) "x"
-    #endif
-#endif
-*/
 
 using std::vector;
 using std::ifstream;
@@ -51,6 +37,7 @@ using std::string;
 using std::cerr;
 using std::pair;
 using std::map;
+using std::stringstream;
 
 #define MAX_NO_OPCODES 512
 vector<UCOpcodeData> opcode_table_data(MAX_NO_OPCODES);
@@ -99,9 +86,9 @@ string ucxtInit::get_datadir(const Configuration &config, const UCOptions &optio
 
 	// just to handle if people are going to compile with makefile.unix, unsupported, but occasionally useful
 #ifdef HAVE_CONFIG_H
-	if (options.noconf == false) config.value("config/ucxt/root", datadir, EXULT_DATADIR);
+	if (!options.noconf) config.value("config/ucxt/root", datadir, EXULT_DATADIR);
 #else
-	if (options.noconf == false) config.value("config/ucxt/root", datadir, "data/");
+	if (!options.noconf) config.value("config/ucxt/root", datadir, "data/");
 #endif
 
 	if (!datadir.empty() && datadir[datadir.size() - 1] != '/' && datadir[datadir.size() - 1] != '\\') datadir += '/';
@@ -134,7 +121,7 @@ void ucxtInit::misc() {
 					munge_offset = true;
 
 		// once we've got it, add it to the map
-		pair<unsigned int, bool> tsm_tmp(static_cast<unsigned int>(strtol(k->second.c_str(), 0, 0)), munge_offset);
+		pair<unsigned int, bool> tsm_tmp(static_cast<unsigned int>(strtol(k->second.c_str(), nullptr, 0)), munge_offset);
 		type_size_map.insert(pair<string, pair<unsigned int, bool> >(k->first, tsm_tmp));
 	}
 }
@@ -152,7 +139,7 @@ void ucxtInit::opcodes() {
 			opdata.getsubkeys(ktl, *key);
 
 			if (!ktl.empty()) {
-				unsigned int i = static_cast<unsigned int>(strtol(key->substr(key->find_first_of("0")).c_str(), 0, 0));
+				unsigned int i = static_cast<unsigned int>(strtol(key->substr(key->find_first_of("0")).c_str(), nullptr, 0));
 				opcode_table_data[i] = UCOpcodeData(i, ktl);
 			}
 		}
@@ -162,17 +149,11 @@ void ucxtInit::opcodes() {
 	    execute a 'jump' statement */
 	for (std::vector<UCOpcodeData>::iterator op = opcode_table_data.begin(); op != opcode_table_data.end(); ++op) {
 		for (unsigned int i = 0; i < op->param_sizes.size(); i++) {
-			if (op->param_sizes[i].second == true) { // this is a calculated offset
+			if (op->param_sizes[i].second) { // this is a calculated offset
 				opcode_jumps.push_back(std::pair<unsigned int, unsigned int>(op->opcode, i + 1)); // parameters are stored as base 1
 			}
 		}
 	}
-
-#if 0
-	std::cout << "Calculated Opcode pairs:" << std::endl;
-	for (std::vector<std::pair<unsigned int, unsigned int> >::iterator i = opcode_jumps.begin(); i != opcode_jumps.end(); ++i)
-		std::cout << setw(4) << i->first << '\t' << setw(4) << i->second << std::endl;
-#endif
 }
 
 void ucxtInit::intrinsics(const string &intrinsic_data, const string &intrinsic_root) {
@@ -183,7 +164,7 @@ void ucxtInit::intrinsics(const string &intrinsic_data, const string &intrinsic_
 	intdata.getsubkeys(ktl, intrinsic_root);
 
 	for (Configuration::KeyTypeList::iterator k = ktl.begin(); k != ktl.end(); ++k)
-		uc_intrinsics.insert(pair<unsigned int, string>(static_cast<unsigned int>(strtol(k->first.c_str(), 0, 0)), k->second));
+		uc_intrinsics.insert(pair<unsigned int, string>(static_cast<unsigned int>(strtol(k->first.c_str(), nullptr, 0)), k->second));
 }
 
 /* To be depricated when I get the complex std::vector<std::string> splitter online */
@@ -219,7 +200,7 @@ std::vector<std::string> str2vec(const std::string &s) {
 	for (unsigned int i = 0; i < s.size(); i++) {
 		if (s[i] == '"')
 			indquote = !indquote;
-		else if (isspace(s[i]) && (!indquote)) {
+		else if (isspace(static_cast<unsigned char>(s[i])) && (!indquote)) {
 			if (lasti != i) {
 				if ((s[lasti] == '"') && (s[i - 1] == '"')) {
 					if ((lasti + 1) != (lasti - 1))
@@ -238,12 +219,6 @@ std::vector<std::string> str2vec(const std::string &s) {
 				vs.push_back(s.substr(lasti, i - lasti + 1));
 		}
 	}
-
-#if 0 //test
-	for (unsigned int i = 0; i < vs.size(); i++)
-		std::cout << "\t\"" << vs[i] << "\"" << std::endl;
-#endif ///test
-
 	return vs;
 }
 
@@ -259,85 +234,3 @@ void map_type_size(const std::vector<std::string> &param_types, std::vector<std:
 	}
 }
 
-/*std::vector<std::string> str2vec(const std::string &s)
-{
-    std::vector<std::string> vs; // the resulting strings
-    stack<char> vbound; // the "bounding" chars used to deonte collections of characters
-    unsigned int lasti=0;
-    std::string currstr; // the current string, gets appended to vs
-
-    // if it's empty return null
-    if(s.size()==0) return vs;
-
-    for(unsigned int i=0; i<s.size(); i++)
-    {
-        bool pushback=false; // do we push the currstr onto the vector now?
-        char c = s[i];
-        switch(c)
-        {*/
-// let's start with the openings...
-/* the general pricipal, since we strip the outermost enclosures,
-   is to only append the "bounding" characters if they're NOT the
-   outer most.
-   NOTE: A subtle exception is the boundaries on the outermost set of
-   bounding chars has the same effect as isspace(), YHBW */
-/*          case '{':  if(vs.size()) currstr+=c; vbound.push('}');  break;
-            //case '[': if(vs.size()) currstr+=c; vbound.push(']'); break;
-            //case '(': if(vs.size()) currstr+=c; vbound.push(')'); break;
-            //case '<': if(vs.size()) currstr+=c; vbound.push('>'); break;
-
-            // now the closures...
-            case '}':
-                if(vbound.top()=='}') vbound.pop();
-                if(vbound.size()==0)  pushback=true;
-                else                  currstr+=c;
-                break;
-            //case ']':
-            //  break;
-            //case ')':
-            //  break;
-            //case '>':
-            //  break;
-
-            // now the ones that have the pretentiousness of being both
-            // opening and closing causes
-            case '\"': if(vs.size()) currstr+=c; vbound.push('\"'); break;
-            case '\'': if(vs.size()) currstr+=c; vbound.push('\''); break;
-            case '\"':
-                if(vbound.top()=='\"')    vbound.pop();
-                else                   vbound.push('\"');
-                if(vbound.size()==0) pushback=true;
-                else                   currstr+=c;
-                break;
-            case '\'':
-                if(vbound.top()=='\'') vbound.pop();
-                if(vbound.size()==0)   pushback=true;
-                else                   currstr+=c;
-                break;
-
-            // not to emulate isspace();
-            case ' ':  // ze space
-            case '\f': // form-feed
-            case '\n': // newline
-            case '\r': // carriage return
-            case '\t': // horizontal tab
-            case '\v': // vertical tab
-                pushback=true;
-                break;
-        }
-
-        if(pushback)
-        {
-            if(currstr.size())
-                vs.push_back(currstr);
-            currstr="";
-        }
-    }
-
-    #if 1 //test
-    for(unsigned int i=0; i<vs.size(); i++)
-        std::cout << "\t\"" << vs[i] << "\"" << std::endl;
-    #endif ///test
-
-    return vs;
-}*/

@@ -78,6 +78,7 @@ public:
 };
 
 void Shapes_vga_file::Write_Shapeinf_text_data_file(Exult_Game game) {
+	size_t num_shapes = shapes.size();
 	Base_writer *writers[] = {
 		// For explosions.
 		new Functor_multidata_writer < Shape_info,
@@ -203,6 +204,7 @@ void Shapes_vga_file::Write_Shapeinf_text_data_file(Exult_Game game) {
 }
 
 void Shapes_vga_file::Write_Bodies_text_data_file(Exult_Game game) {
+	size_t num_shapes = shapes.size();
 	Base_writer *writers[] = {
 		new Functor_multidata_writer < Shape_info,
 		Bit_text_writer_functor < is_body_flag, unsigned short,
@@ -218,6 +220,7 @@ void Shapes_vga_file::Write_Bodies_text_data_file(Exult_Game game) {
 }
 
 void Shapes_vga_file::Write_Paperdoll_text_data_file(Exult_Game game) {
+	size_t num_shapes = shapes.size();
 	Base_writer *writers[] = {
 		new Functor_multidata_writer < Shape_info,
 		Class_writer_functor < Paperdoll_npc, Shape_info,
@@ -238,7 +241,7 @@ void Shapes_vga_file::Write_Paperdoll_text_data_file(Exult_Game game) {
 void Shapes_vga_file::write_info(
     Exult_Game game
 ) {
-	int i, cnt;
+	size_t num_shapes = shapes.size();
 	bool have_patch_path = is_system_path_defined("<PATCH>");
 	assert(have_patch_path);
 
@@ -246,7 +249,7 @@ void Shapes_vga_file::write_info(
 	// Starts at 0x96'th shape.
 	ofstream shpdims;
 	U7open(shpdims, PATCH_SHPDIMS);
-	for (i = c_first_obj_shape; i < num_shapes; i++) {
+	for (size_t i = c_first_obj_shape; i < num_shapes; i++) {
 		shpdims.put(info[i].shpdims[0]);
 		shpdims.put(info[i].shpdims[1]);
 	}
@@ -254,7 +257,7 @@ void Shapes_vga_file::write_info(
 	// WGTVOL
 	ofstream wgtvol;
 	U7open(wgtvol, PATCH_WGTVOL);
-	for (i = 0; i < num_shapes; i++) {
+	for (size_t i = 0; i < num_shapes; i++) {
 		wgtvol.put(info[i].weight);
 		wgtvol.put(info[i].volume);
 	}
@@ -262,19 +265,19 @@ void Shapes_vga_file::write_info(
 	// TFA
 	ofstream tfa;
 	U7open(tfa, PATCH_TFA);
-	for (i = 0; i < num_shapes; i++)
+	for (size_t i = 0; i < num_shapes; i++)
 		tfa.write(reinterpret_cast<char *>(&info[i].tfa[0]), 3);
 
 	// Write data about drawing the weapon in an actor's hand
 	ofstream wihh;
 	U7open(wihh, PATCH_WIHH);
-	cnt = 0;            // Keep track of actual entries.
-	for (i = 0; i < num_shapes; i++)
-		if (info[i].weapon_offsets == 0)
+	size_t cnt = 0;            // Keep track of actual entries.
+	for (size_t i = 0; i < num_shapes; i++)
+		if (info[i].weapon_offsets == nullptr)
 			Write2(wihh, 0);// None for this shape.
 		else            // Write where it will go.
 			Write2(wihh, 2 * num_shapes + 64 * (cnt++));
-	for (i = 0; i < num_shapes; i++)
+	for (size_t i = 0; i < num_shapes; i++)
 		if (info[i].weapon_offsets)
 			// There are two bytes per frame: 64 total
 			wihh.write(reinterpret_cast<char *>(info[i].weapon_offsets), 64);
@@ -285,10 +288,10 @@ void Shapes_vga_file::write_info(
 	unsigned char occbits[c_occsize];   // c_max_shapes bit flags.
 	// +++++This could be rewritten better!
 	memset(&occbits[0], 0, sizeof(occbits));
-	for (i = 0; i < static_cast<int>(sizeof(occbits)); i++) {
+	for (size_t i = 0; i < sizeof(occbits); i++) {
 		unsigned char bits = 0;
 		int shnum = i * 8;  // Check each bit.
-		for (int b = 0; b < 8; b++)
+		for (size_t b = 0; b < 8; b++)
 			if (shnum + b >= num_shapes)
 				break;
 			else if (info[shnum + b].occludes_flag)
@@ -301,7 +304,7 @@ void Shapes_vga_file::write_info(
 	U7open(mfile, PATCH_EQUIP); // Write 'equip.dat'.
 	cnt = Monster_info::get_equip_cnt();
 	Write_count(mfile, cnt);    // Exult extension.
-	for (i = 0; i < cnt; i++) {
+	for (size_t i = 0; i < cnt; i++) {
 		Equip_record &rec = Monster_info::get_equip(i);
 		// 10 elements/record.
 		for (int e = 0; e < 10; e++) {
@@ -575,11 +578,11 @@ void Weapon_info::write(
 	Write2(ptr, ammo);
 	Write2(ptr, projectile);
 	*ptr++ = damage;
-	unsigned char flags0 = (damage_type << 4) | (m_delete_depleted << 3) |
-	                       (m_no_blocking << 2) | (m_explodes << 1) | m_lucky;
+	unsigned char flags0 = (damage_type << 4) | (m_delete_depleted ? (1 << 3) : 0) |
+	                       (m_no_blocking ? (1 << 2) : 0) | (m_explodes ? (1 << 1) : 0) | (m_lucky ? 1 : 0);
 	*ptr++ = flags0;
-	*ptr++ = (range << 3) | (uses << 1) | m_autohit;
-	unsigned char flags1 = m_returns | (m_need_target << 1) | (rotation_speed << 4) |
+	*ptr++ = (range << 3) | (uses << 1) | (m_autohit ? 1 : 0);
+	unsigned char flags1 = (m_returns ? 1 : 0) | (m_need_target ? (1 << 1) : 0) | (rotation_speed << 4) |
 	                       ((missile_speed == 4 ? 1 : 0) << 2);
 	*ptr++ = flags1;
 	int delay = missile_speed >= 3 ? 0 : (missile_speed == 2 ? 2 : 3);
@@ -614,8 +617,8 @@ void Ammo_info::write(
 	Write2(ptr, sprite);
 	*ptr++ = damage;
 	unsigned char flags0;
-	flags0 = (m_explodes << 6) | ((homing ? 3 : drop_type) << 4) | m_lucky |
-	         (m_autohit << 1) | (m_returns << 2) | (m_no_blocking << 3);
+	flags0 = (m_explodes ? (1 << 6) : 0) | ((homing ? 3 : drop_type) << 4) | (m_lucky ? 1 : 0) |
+	         (m_autohit ? (1<< 1) : 0) | (m_returns ? (1 << 2) : 0) | (m_no_blocking ? (1 << 3) : 0);
 	*ptr++ = flags0;
 	*ptr++ = 0;         // Unknown.
 	*ptr++ = damage_type << 4;

@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string>
 
 class Shape_group_file;
+class ODataSource;
 
 /*
  *  A group of shape/chunk #'s:
@@ -42,7 +43,7 @@ class Shape_group : std::vector<int> {      // Not public on purpose.
 public:
 	friend class Shape_group_file;
 	Shape_group(const char *nm, Shape_group_file *f, int built = -1);
-	~Shape_group() {  }
+	~Shape_group() = default;
 	bool is_builtin() const {
 		return builtin != -1;
 	}
@@ -64,6 +65,7 @@ public:
 	void del(int i);
 	void swap(int i);       // Swap entries i and i+1.
 	void add(int id);       // Add ID, checking for duplicate 1st.
+	void write(ODataSource& out);
 	enum Special_builtin {
 	    first_group = 20,
 	    ammo_group = first_group,

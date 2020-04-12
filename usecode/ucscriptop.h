@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _USCRIPTOP_H
-#define _USCRIPTOP_H
+#ifndef USCRIPTOP_H
+#define USCRIPTOP_H
 
 /*
  *  Opcodes for Usecode_script's:

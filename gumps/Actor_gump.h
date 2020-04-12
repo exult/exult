@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _ACTOR_GUMP_H_
-#define _ACTOR_GUMP_H_
+#ifndef ACTOR_GUMP_H
+#define ACTOR_GUMP_H
 
 #include "Gump.h"
 
@@ -31,7 +31,7 @@ class Combat_mode_button;
  *  A rectangular area showing a character and his/her possessions:
  */
 class Actor_gump : public Gump {
-	UNREPLICATABLE_CLASS_I(Actor_gump, Gump())
+	UNREPLICATABLE_CLASS(Actor_gump)
 
 protected:
 	static short coords[24];    // Coords. of where to draw things,
@@ -54,15 +54,14 @@ protected:
 public:
 	Actor_gump(Container_game_object *cont, int initx, int inity,
 	           int shnum);
-	~Actor_gump();
 	// Add object.
-	virtual int add(Game_object *obj, int mx = -1, int my = -1,
-	                int sx = -1, int sy = -1, bool dont_check = false,
-	                bool combine = false);
+	bool add(Game_object *obj, int mx = -1, int my = -1,
+	        int sx = -1, int sy = -1, bool dont_check = false,
+	        bool combine = false) override;
 	// Paint it and its contents.
-	virtual void paint();
+	void paint() override;
 
-	virtual Container_game_object *find_actor(int mx, int my);
+	Container_game_object *find_actor(int mx, int my) override;
 };
 
 #endif

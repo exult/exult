@@ -20,9 +20,10 @@
 
 #ifndef MISCINF_H
 #define MISCINF_H 1
-#include <vector>
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 class Actor;
 
@@ -56,12 +57,14 @@ struct Usecode_function_data {
 };
 
 class Shapeinfo_entry_parser;
+struct Shapeinfo_data;
+struct Avatar_data;
 
 /*
  *  A class to get the extra information for a given shape.
  */
 class Shapeinfo_lookup {
-	typedef std::vector<std::string> Readstrings;
+	using Readstrings = std::vector<std::string>;
 	static Skin_data *ScrollSkins(int skin, bool sex, bool sishapes, bool ignoresex, bool prev, bool sel);
 public:
 	static void reset();
@@ -105,6 +108,8 @@ private:
 	                           Shapeinfo_entry_parser *parsers[], int numsections);
 	static void setup_shape_files();
 	static void setup_avatar_data();
+	static std::unique_ptr<Shapeinfo_data> data;
+	static std::unique_ptr<Avatar_data>    avdata;
 };
 
 #endif

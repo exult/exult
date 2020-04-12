@@ -126,7 +126,7 @@ void Actor::read(
 #endif
 	}
 
-	bool has_contents = fix_first ? (iflag1 && !unused) : (iflag1 & 1);
+	bool has_contents = fix_first ? (iflag1 && !unused) : (iflag1 & 1) != 0;
 	// Read first set of flags
 	const int rflags = nfile->read2();
 
@@ -227,7 +227,11 @@ void Actor::read(
 
 	int unk0 = nfile->read1();  // We set high bit of this value.
 	int unk1 = nfile->read1();
-	int magic = 0, mana = 0, temp, flags3, ident = 0;
+	int magic = 0;
+	int mana = 0;
+	int temp;
+	int flags3;
+	int ident = 0;
 	if (fix_first || unk0 == 0) {   // How U7 stored things.
 		// If NPC 0: MaxMagic (0-4), TempHigh (5-7) and Mana(0-4),
 		//                      TempLow (5-7)
@@ -354,7 +358,7 @@ void Actor::read(
 		nfile->skip(1);  // 1 free from old SIFLAGS
 
 		// Flags2   But don't set polymorph.
-		bool polym = get_flag(Obj_flags::polymorph) != false;
+		bool polym = get_flag(Obj_flags::polymorph);
 		f = nfile->read4();
 		flags2 |= f;
 		if (!polym && get_flag(Obj_flags::polymorph))
@@ -439,13 +443,9 @@ void Actor::read(
 	set_invalid();          // Not in world yet.
 	if (olist && !is_dead() &&  // Valid & alive?  Put into chunk list.
 	        !unused) {
-#if 1
 		move((scx + cx)*c_tiles_per_chunk + tilex,
 		     (scy + cy)*c_tiles_per_chunk + tiley,
 		     get_lift(), map_num);
-#else
-		olist->add(this);
-#endif
 		if (this == gwin->get_main_actor())
 			gwin->set_map(map_num);
 	}
@@ -507,7 +507,8 @@ void Actor::write(
 
 	int old_shape = get_shapenum(); // Backup shape because we might change it
 	set_shape(get_shape_real());     // Change the shape out non polymorph one
-	int shapenum = get_shapenum(), framenum = get_framenum();
+	int shapenum = get_shapenum();
+	int framenum = get_framenum();
 	buf4[0] = ((get_cx() % 16) << 4) | get_tx();
 	buf4[1] = ((get_cy() % 16) << 4) | get_ty();
 	// ++++++Is this even needed anymore? We already save 16-bit shapes below.
@@ -752,7 +753,7 @@ void Actor::write_contents(
 		Game_object *obj;
 		Object_iterator next(objects);
 
-		while ((obj = next.get_next()) != 0) {
+		while ((obj = next.get_next()) != nullptr) {
 			for (i = 0; i < num_spots; ++i)
 				if (spots[i] == obj)
 					break;

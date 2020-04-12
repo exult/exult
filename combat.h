@@ -49,7 +49,7 @@ protected:
 	static unsigned long battle_end_time;   // And when it ended.
 	Phase state;
 	Schedule_types prev_schedule;   // Before going into combat.
-	std::list<Actor *> opponents;   // Possible opponents.
+	std::list<Game_object_weak> opponents;   // Possible opponents.
 	Game_object *practice_target;   // Only for duel schedule.
 	Game_object *weapon;
 	int weapon_shape;       // Weapon's shape in shapes.vga.
@@ -74,7 +74,7 @@ protected:
 	bool be_invisible();
 	virtual void find_opponents();
 	// Find attacker of protected member.
-	std::list<Actor *>::iterator find_protected_attacker();
+	std::list<Game_object_weak>::iterator find_protected_attacker();
 	Game_object *find_foe(int mode);// Find a new opponent.
 	Game_object *find_foe();
 	// Back off when being attacked.
@@ -89,10 +89,10 @@ public:
 	static void monster_died(); // Checks for victory.
 	static void stop_attacking_npc(Game_object *npc);
 	static void stop_attacking_invisible(Game_object *npc);
-	virtual void now_what();    // Npc calls this when it's done
-	virtual void im_dormant();  // Npc calls this when it goes dormant.
-	virtual void ending(int newtype);// Switching to another schedule.
-	virtual void set_weapon(bool removed = false);  // Set weapon info.
+	void now_what() override;    // Npc calls this when it's done
+	void im_dormant() override;  // Npc calls this when it goes dormant.
+	void ending(int newtype) override;// Switching to another schedule.
+	void set_weapon(bool removed = false) override;  // Set weapon info.
 	void set_hand_to_hand();
 	bool has_started_battle() const {
 		return started_battle;
@@ -112,10 +112,10 @@ public:
 class Duel_schedule : public Combat_schedule {
 	Tile_coord start;       // Starting position.
 	int attacks;            // Count strikes.
-	virtual void find_opponents();
+	void find_opponents() override;
 public:
 	Duel_schedule(Actor *n);
-	virtual void now_what();
+	void now_what() override;
 };
 
 bool In_ammo_family(int shnum, int family);// Yow, a global function.

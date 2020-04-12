@@ -22,11 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "XMidiEvent.h"
 #include "XMidiEventList.h"
 
-#ifdef PENTAGRAM_IN_EXULT
 #include "databuf.h"
-#else
-#include "ODataSource.h"
-#endif
 
 using std::size_t;
 using std::string;
@@ -52,7 +48,7 @@ int XMidiEventList::write (ODataSource *dest)
 	if (!dest)
 	{
 		// Header is 14 bytes long and add the rest as well
-		len = convertListToMTrk (NULL);
+		len = convertListToMTrk (nullptr);
 		return 14 + len;
 	}
 
@@ -100,7 +96,7 @@ int XMidiEventList::putVLQ(ODataSource *dest, uint32 value)
 
 // Converts and event list to a MTrk
 // Returns bytes of the array
-// buf can be NULL
+// buf can be nullptr
 uint32 XMidiEventList::convertListToMTrk (ODataSource *dest)
 {
 	int time = 0;
@@ -219,7 +215,7 @@ void XMidiEventList::decrementCounter()
 {
 	if (--counter < 0) {
 		events->FreeThis();
-		events = 0;
-		XMidiEvent::Free(this);
+		events = nullptr;
+		delete this;
 	}
 }

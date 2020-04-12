@@ -40,7 +40,7 @@ class Uc_statement;
 class Uc_function : public Uc_design_unit {
 	static Uc_scope globals;    // For finding intrinsics, funs.
 	// Intrinsics, indexed by number:
-	static vector<Uc_intrinsic_symbol *> intrinsics;
+	static std::vector<Uc_intrinsic_symbol *> intrinsics;
 	// Some intrinsic numbers:
 	static int add_answer, remove_answer, push_answers, pop_answers,
 	       show_face, remove_face, get_item_shape, get_usecode_fun;
@@ -69,8 +69,8 @@ public:
 private:
 	static Intrinsic_type intrinsic_type;
 public:
-	Uc_function(Uc_function_symbol *p, Uc_scope *parent = 0);
-	~Uc_function();
+	Uc_function(Uc_function_symbol *p, Uc_scope *parent = nullptr);
+	~Uc_function() override;
 	static void set_intrinsics();
 	static void setup_intrinsics() {    // Init. the 1st time.
 		if (intrinsics.empty())
@@ -105,19 +105,19 @@ public:
 	int get_method_num() {
 		return proto->get_method_num();
 	}
-	virtual bool has_ret() const {
+	bool has_ret() const {
 		return proto->has_ret();
 	}
-	virtual Uc_function_symbol::Function_ret get_ret_type() const {
+	Uc_function_symbol::Function_ret get_ret_type() const {
 		return proto->get_ret_type();
 	}
-	virtual Uc_class *get_cls() const {
+	Uc_class *get_cls() const {
 		return proto->get_cls();
 	}
-	virtual Uc_struct_symbol *get_struct() const {
+	Uc_struct_symbol *get_struct() const {
 		return proto->get_struct();
 	}
-	virtual Uc_function_symbol::Function_kind get_function_type() const {
+	Uc_function_symbol::Function_kind get_function_type() const {
 		return proto->get_function_type();
 	}
 	Uc_scope *get_parent() {
@@ -144,7 +144,7 @@ public:
 	}
 	static Uc_intrinsic_symbol *get_intrinsic(int i) {
 		setup_intrinsics();
-		return (i >= 0 && static_cast<unsigned>(i) < intrinsics.size()) ? intrinsics[i] : 0;
+		return (i >= 0 && static_cast<unsigned>(i) < intrinsics.size()) ? intrinsics[i] : nullptr;
 	}
 	static Uc_intrinsic_symbol *get_add_answer() {
 		return get_intrinsic(add_answer);
@@ -183,11 +183,11 @@ public:
 	void add_static(char *nm);  // Add static var. to current scope.
 	void add_static(char *nm, Uc_struct_symbol *type);  // Add static struct to current scope.
 	void add_static(char *nm, Uc_class *c); // Add static cls. to current scope.
-	int add_function_symbol(Uc_function_symbol *fun, Uc_scope *parent = 0) {
+	int add_function_symbol(Uc_function_symbol *fun, Uc_scope *parent = nullptr) {
 		return cur_scope->add_function_symbol(fun, parent);
 	}
 	static int add_global_function_symbol(Uc_function_symbol *fun,
-	                                      Uc_scope *parent = 0) {
+	                                      Uc_scope *parent = nullptr) {
 		return globals.add_function_symbol(fun, parent);
 	}
 	static void add_global_class_symbol(Uc_class_symbol *c) {
@@ -216,8 +216,8 @@ public:
 	}
 
 	int link(Uc_function_symbol *fun);
-	void gen(std::ostream &out);        // Generate Usecode.
-	virtual Usecode_symbol *create_sym();
+	void gen(std::ostream &out) override;        // Generate Usecode.
+	Usecode_symbol *create_sym() override;
 };
 
 #endif

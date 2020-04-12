@@ -141,7 +141,7 @@ void Gump::get_shape_location(
     const Game_object *obj,
     int &ox, int &oy
 ) const {
-	ox = x + object_area.x + obj->get_tx(),
+	ox = x + object_area.x + obj->get_tx();
 	oy = y + object_area.y + obj->get_ty();
 }
 
@@ -157,14 +157,15 @@ Game_object *Gump::find_object(
 	int cnt = 0;
 	Game_object *list[100];
 	if (!container)
-		return (0);
+		return nullptr;
 	Object_iterator next(container->get_objects());
 	Game_object *obj;
 	Shape_frame *s;
 
-	int ox, oy;
+	int ox;
+	int oy;
 
-	while ((obj = next.get_next()) != 0) {
+	while ((obj = next.get_next()) != nullptr) {
 		Rectangle box = get_shape_rect(obj);
 		if (box.has_point(mx, my)) {
 			s = obj->get_shape();
@@ -174,7 +175,7 @@ Game_object *Gump::find_object(
 		}
 	}
 	// ++++++Return top item.
-	return (cnt ? list[cnt - 1] : 0);
+	return cnt ? list[cnt - 1] : nullptr;
 }
 
 /*
@@ -188,7 +189,7 @@ Rectangle Gump::get_dirty(
 		return rect;
 	Object_iterator next(container->get_objects());
 	Game_object *obj;
-	while ((obj = next.get_next()) != 0) {
+	while ((obj = next.get_next()) != nullptr) {
 		Rectangle orect = get_shape_rect(obj);
 		rect = rect.add(orect);
 	}
@@ -217,7 +218,7 @@ Gump_button *Gump::on_button(
 		if (w->on_button(mx, my))
 			return dynamic_cast<Gump_button *>(w);
 	}
-	return 0;
+	return nullptr;
 }
 
 /*
@@ -225,10 +226,10 @@ Gump_button *Gump::on_button(
  *  is calculated by 'paint()'.  If they're all -2, it's assumed that
  *  obj->tx, obj->ty are already correct.
  *
- *  Output: 0 if cannot add it.
+ *  Output: false if cannot add it.
  */
 
-int Gump::add(
+bool Gump::add(
     Game_object *obj,
     int mx, int my,         // Mouse location.
     int sx, int sy,         // Screen location of obj's hotspot.
@@ -239,16 +240,16 @@ int Gump::add(
 	ignore_unused_variable_warning(combine);
 	if (!container || (!cheat.in_hack_mover() &&
 	                   !dont_check && !container->has_room(obj)))
-		return (0);     // Full.
+		return false;     // Full.
 	// Dropping on same thing?
 	Game_object *onobj = find_object(mx, my);
 	// If possible, combine.
 
 	if (onobj && onobj != obj && onobj->drop(obj))
-		return (1);
+		return true;
 
 	if (!container->add(obj, dont_check))   // DON'T combine here.
-		return (0);
+		return false;
 
 	// Not a valid spot?
 	if (sx == -1 && sy == -1 && mx == -1 && my == -1)
@@ -271,7 +272,7 @@ int Gump::add(
 			sy = object_area.h - shape->get_ybelow();
 		obj->set_shape_pos(sx, sy);
 	}
-	return (1);
+	return true;
 }
 
 /*
@@ -304,12 +305,14 @@ void Gump::paint_elems(
 
 void check_elem_positions(Object_list &objects)
 {
-	int prevx = -1, prevy = -1;
+	int prevx = -1;
+	int prevy = -1;
 	Game_object *obj;
 	Object_iterator next(objects);
 	// See if all have the same position, indicating from a new game.
-	while ((obj = next.get_next()) != 0) {
-		int tx = obj->get_tx(), ty = obj->get_ty();
+	while ((obj = next.get_next()) != nullptr) {
+		int tx = obj->get_tx();
+		int ty = obj->get_ty();
 	    if (prevx == -1) {
 		    prevx = tx;
 			prevy = ty;
@@ -318,7 +321,7 @@ void check_elem_positions(Object_list &objects)
 		}
 	}
 	next.reset();
-	while ((obj = next.get_next()) != 0) {
+	while ((obj = next.get_next()) != nullptr) {
 	    obj->set_shape_pos(255, 255);
 	}
 }
@@ -343,13 +346,15 @@ void Gump::paint(
 		return;         // Empty.
 	Rectangle box = object_area;    // Paint objects inside.
 	box.shift(x, y);        // Set box to screen location.
-	int cury = 0, curx = 0;
-	int endy = box.h, endx = box.w;
+	int cury = 0;
+	int curx = 0;
+	int endy = box.h;
+	int endx = box.w;
 	int loop = 0;           // # of times covering container.
 	check_elem_positions(objects);	// Set to place if new game.
 	Game_object *obj;
 	Object_iterator next(objects);
-	while ((obj = next.get_next()) != 0) {
+	while ((obj = next.get_next()) != nullptr) {
 		Shape_frame *shape = obj->get_shape();
 		if (!shape)
 			continue;
@@ -362,8 +367,8 @@ void Gump::paint(
 		        !object_area.has_point(objx + shape->get_xright() - 1,
 		                               objy + shape->get_ybelow() - 1)) {
 			// No.
-			int px = curx + shape->get_width(),
-			    py = cury + shape->get_height();
+			int px = curx + shape->get_width();
+			int py = cury + shape->get_height();
 			if (px > endx)
 				px = endx;
 			if (py > endy)
@@ -383,12 +388,13 @@ void Gump::paint(
 		obj = obj->get_next();
 	}
 	// Outline selections in this gump.
-	const Game_object_vector &sel = cheat.get_selected();
-	for (Game_object_vector::const_iterator it = sel.begin();
+	const Game_object_shared_vector &sel = cheat.get_selected();
+	for (Game_object_shared_vector::const_iterator it = sel.begin();
 	        it != sel.end(); ++it) {
-		Game_object *obj = *it;
+		Game_object *obj = (*it).get();
 		if (container == obj->get_owner()) {
-			int x, y;
+			int x;
+			int y;
 			get_shape_location(obj, x, y);
 			obj->ShapeID::paint_outline(x, y, HIT_PIXEL);
 		}
@@ -410,9 +416,7 @@ void Gump::close(
 bool Gump::has_point(int sx, int sy) const {
 	Shape_frame *s = get_shape();
 
-	if (s && s->has_point(sx - x, sy - y)) return true;
-
-	return false;
+	return s && s->has_point(sx - x, sy - y);
 }
 
 /*

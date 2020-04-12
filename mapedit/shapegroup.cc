@@ -43,6 +43,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 using std::vector;
 using std::ios;
 using std::string;
+using std::unique_ptr;
+using std::make_unique;
 using EStudio::Alert;
 
 /*
@@ -62,7 +64,8 @@ Shape_group::Shape_group(
 	                           es->get_vgafile()->get_ifile());
 	// Read info. the first time.
 	vgafile->read_info(es->get_game_type(), true);
-	int i, cnt = vgafile->get_num_shapes();
+	int i;
+	int cnt = vgafile->get_num_shapes();
 	bool modified = file->modified;
 
 	if (builtin >= 0 && builtin <= 15) {
@@ -210,38 +213,48 @@ void Shape_group::add(
 }
 
 /*
+ *  Save shape group to a file.
+ */
+void Shape_group::write(
+    ODataSource& out
+) {
+	// Name, #entries, entries(2-bytes).
+	out.write(name.c_str(), name.size() + 1);
+	out.write2(size());    // # entries.
+	for (auto elem : *this)
+		out.write2(elem);
+}
+
+/*
  *  Init. and read in (if it exists) a groups file.
  */
 
 Shape_group_file::Shape_group_file(
     const char *nm          // Basename.
 ) : name(nm), modified(false) {
-	Flex *flex = 0;
+	unique_ptr<Flex> flex;
 	std::string patchname = "<PATCH>/" + name;
 	std::string staticname = "<STATIC>/" + name;
 	if (U7exists(patchname))    // First try 'patch' directory.
-		flex = new FlexFile(patchname.c_str());
+		flex = make_unique<FlexFile>(patchname.c_str());
 	else if (U7exists(staticname))
-		flex = new FlexFile(staticname.c_str());
+		flex = make_unique<FlexFile>(staticname.c_str());
 	if (flex) {         // Exists?
 		int cnt = flex->number_of_objects();
 		for (int i = 0; i < cnt; i++) {
 			// Get each group.
 			std::size_t len;
-			char *buf = flex->retrieve(i, len);
-			const char *gname = buf;  // Starts with name.
-			const unsigned char *ptr = reinterpret_cast<const unsigned char *>(
-			                     gname) + strlen(gname) + 1;
+			auto buf = flex->retrieve(i, len);
+			const char *gname = reinterpret_cast<const char*>(buf.get());  // Starts with name.
+			const unsigned char *ptr = buf.get() + strlen(gname) + 1;
 			size_t sz = Read2(ptr); // Get # entries.
-			assert((len - (reinterpret_cast<const char *>(ptr) - buf)) / 2 == sz);
+			assert((len - (ptr - buf.get())) / 2 == sz);
 			Shape_group *grp = new Shape_group(gname, this);
 			grp->reserve(sz);
 			for (size_t j = 0; j < sz; j++)
 				grp->push_back(Read2(ptr));
 			groups.push_back(grp);
-			delete buf;
 		}
-		delete flex;
 	}
 }
 
@@ -257,7 +270,7 @@ int Shape_group_file::find(
 	for (vector<Shape_group *>::const_iterator it = groups.begin();
 	        it != groups.end(); ++it)
 		if ((*it)->name == nm)
-			return (it - groups.begin());
+			return it - groups.begin();
 	return -1;
 }
 
@@ -346,7 +359,7 @@ Shape_group *Shape_group_file::get_builtin(
 			break;
 		}
 	if (type < 0 || type >= Shape_group::last_builtin_group)
-		return 0;
+		return nullptr;
 	if (builtins.size() <= unsigned(type))
 		builtins.resize(type + 1);
 	if (!builtins[type])        // Create if needed.
@@ -360,33 +373,17 @@ Shape_group *Shape_group_file::get_builtin(
 
 void Shape_group_file::write(
 ) {
-	std::ofstream out;
 	std::string patchname = "<PATCH>/" + name;
-	U7open(out, patchname.c_str());
-	int cnt = groups.size();    // # groups.
-	Flex_writer gfile(out, "ExultStudio shape groups", cnt);
-	int i;              // Write each group.
-	for (i = 0; i < cnt; i++) {
-		Shape_group *grp = groups[i];
-		const char *nm = grp->get_name();
-		int sz = grp->size();
-		// Name, #entries, entries(2-bytes).
-		long len = strlen(nm) + 1 + 2 + 2 * sz;
-		unsigned char *buf = new unsigned char[len];
-		strcpy(reinterpret_cast<char *>(buf), nm);
-		unsigned char *ptr = buf + strlen(nm) + 1;
-		Write2(ptr, sz);    // # entries.
-		for (vector<int>::iterator it = grp->begin();
-		        it != grp->end(); ++it)
-			Write2(ptr, *it);
-		assert(ptr - buf == len);
-		// Write out to file.
-		out.write(reinterpret_cast<char *>(buf), len);
-		delete [] buf;
-		gfile.mark_section_done();
-	}
-	if (!gfile.close())
+	try {
+		OFileDataSource out(patchname.c_str());
+		Flex_writer gfile(out, "ExultStudio shape groups", groups.size());
+		// Write each group.
+		for (auto grp : groups) {
+			gfile.write_object(grp);
+		}
+	} catch (exult_exception &e) {
 		Alert("Error writing '%s'", patchname.c_str());
+	}
 	modified = false;
 }
 
@@ -481,7 +478,7 @@ on_group_list_row_deleted(GtkTreeModel *model,
                           GtkTreePath *path,
                           gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
-	ExultStudio::get_instance()->groups_changed(model, path, 0);
+	ExultStudio::get_instance()->groups_changed(model, path, nullptr);
 }
 
 C_EXPORT void
@@ -500,6 +497,13 @@ enum {
     GRP_NUM_COLUMNS
 };
 
+extern "C" {
+	void gulong_deleter(gpointer data) {
+		gulong *ptr = static_cast<gulong*>(data);
+		delete ptr;
+	}
+}
+
 /*
  *  Initialize the list of shape groups for the file being shown in the
  *  browser.
@@ -516,7 +520,9 @@ void ExultStudio::setup_groups(
 	                         glade_xml_get_widget(app_xml, "group_list"));
 	GtkTreeModel *oldmod = gtk_tree_view_get_model(tview);
 	GtkTreeStore *model;
-	gulong addsig = 0, delsig = 0, chgsig = 0;
+	gulong addsig = 0;
+	gulong delsig = 0;
+	gulong chgsig = 0;
 	if (!oldmod) {          // Create model first time.
 		model = gtk_tree_store_new(GRP_NUM_COLUMNS,
 		                           G_TYPE_STRING, G_TYPE_POINTER);
@@ -524,36 +530,33 @@ void ExultStudio::setup_groups(
 		g_object_unref(model);
 		// Create column.
 		GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-		g_object_set(renderer, "xalign", 0.0, NULL);
+		g_object_set(renderer, "xalign", 0.0, nullptr);
 		gint col_offset = gtk_tree_view_insert_column_with_attributes(
 		                      tview,
 		                      -1, "Names",
 		                      renderer, "text",
-		                      GRP_FILE_COLUMN, NULL);
+		                      GRP_FILE_COLUMN, nullptr);
 		GtkTreeViewColumn *column = gtk_tree_view_get_column(tview,
 		                            col_offset - 1);
 		gtk_tree_view_column_set_clickable(column, TRUE);
 		addsig = g_signal_connect(G_OBJECT(model), "row-inserted",
 		                          GTK_SIGNAL_FUNC(on_group_list_row_inserted), this);
 		// Store signal id with model.
-		g_object_set_data(G_OBJECT(model), "row-inserted",
-		                  reinterpret_cast<gpointer>(addsig));
+		g_object_set_data_full(G_OBJECT(model), "row-inserted",
+		                  new gulong(addsig), gulong_deleter);
 		delsig = g_signal_connect(G_OBJECT(model), "row-deleted",
 		                          GTK_SIGNAL_FUNC(on_group_list_row_deleted), this);
-		g_object_set_data(G_OBJECT(model), "row-deleted",
-		                  reinterpret_cast<gpointer>(delsig));
+		g_object_set_data_full(G_OBJECT(model), "row-deleted",
+		                  new gulong(delsig), gulong_deleter);
 		chgsig = g_signal_connect(G_OBJECT(model), "row-changed",
 		                          GTK_SIGNAL_FUNC(on_group_list_row_changed), this);
-		g_object_set_data(G_OBJECT(model), "row-changed",
-		                  reinterpret_cast<gpointer>(delsig));
+		g_object_set_data_full(G_OBJECT(model), "row-changed",
+		                  new gulong(delsig), gulong_deleter);
 	} else {
 		model = GTK_TREE_STORE(oldmod);
-		addsig = reinterpret_cast<gulong>(g_object_get_data(G_OBJECT(model),
-		                                    "row-inserted"));
-		delsig = reinterpret_cast<gulong>(g_object_get_data(G_OBJECT(model),
-		                                    "row-deleted"));
-		chgsig = reinterpret_cast<gulong>(g_object_get_data(G_OBJECT(model),
-		                                    "row-changed"));
+		addsig = *static_cast<gulong*>(g_object_get_data(G_OBJECT(model), "row-inserted"));
+		delsig = *static_cast<gulong*>(g_object_get_data(G_OBJECT(model), "row-deleted"));
+		chgsig = *static_cast<gulong*>(g_object_get_data(G_OBJECT(model), "row-changed"));
 	}
 	// Block this signal during creation.
 	g_signal_handler_block(model, addsig);
@@ -568,7 +571,7 @@ void ExultStudio::setup_groups(
 	GtkTreeIter iter;
 	for (int i = 0; i < cnt; i++) {
 		Shape_group *grp = groups->get(i);
-		gtk_tree_store_append(model, &iter, NULL);
+		gtk_tree_store_append(model, &iter, nullptr);
 		gtk_tree_store_set(model, &iter,
 		                   GRP_FILE_COLUMN, grp->get_name(),
 		                   GRP_GROUP_COLUMN, grp,
@@ -622,7 +625,7 @@ void ExultStudio::add_group(
 	if (nm && *nm && groups->find(nm) < 0) {
 		Shape_group *grp = new Shape_group(nm, groups);
 		GtkTreeIter iter;
-		gtk_tree_store_append(model, &iter, NULL);
+		gtk_tree_store_append(model, &iter, nullptr);
 		gtk_tree_store_set(model, &iter,
 		                   GRP_FILE_COLUMN, nm,
 		                   GRP_GROUP_COLUMN, grp,
@@ -686,7 +689,7 @@ void ExultStudio::groups_changed(
 	if (!loc)
 		groups->remove(row, false);
 	else {
-		void *grpaddr = 0;
+		void *grpaddr = nullptr;
 		gtk_tree_model_get(model, loc, GRP_GROUP_COLUMN, &grpaddr,
 		                   -1);
 		Shape_group *grp = static_cast<Shape_group *>(grpaddr);
@@ -802,10 +805,10 @@ void ExultStudio::open_builtin_group_window(
 void ExultStudio::open_group_window(
     Shape_group *grp
 ) {
-	GladeXML *xml = glade_xml_new(glade_path, "group_window", NULL);
+	GladeXML *xml = glade_xml_new(glade_path, "group_window", nullptr);
 	glade_xml_signal_autoconnect(xml);
 	GtkWidget *grpwin = glade_xml_get_widget(xml, "group_window");
-	Object_browser *chooser = curfile->create_browser(vgafile, palbuf, grp);
+	Object_browser *chooser = curfile->create_browser(vgafile, palbuf.get(), grp);
 	// Set xml as data on window.
 	gtk_object_set_data(GTK_OBJECT(grpwin), "xml", xml);
 	gtk_object_set_data(GTK_OBJECT(grpwin), "browser", chooser);

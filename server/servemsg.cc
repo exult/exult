@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "servemsg.h"
 #include <cstring>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "servewin32.h"
 #endif
 
@@ -66,7 +66,7 @@ int Send_data(
 		std::memcpy(&buf[5], data, datalen);    // The data itself.
 	int len = datalen + hdrlength;
 
-	return (write(socket, buf, len) == len ? 0 : -1);
+	return write(socket, buf, len) == len ? 0 : -1;
 #else  /* USE_EXULTSTUDIO */
 	ignore_unused_variable_warning(socket, id, data, datalen);
 	return -1;
@@ -129,7 +129,7 @@ int Receive_data(
 
 bool wait_for_response(int socket, int ms) {
 	ignore_unused_variable_warning(socket, ms);
-#if defined(WIN32) && defined(USE_EXULTSTUDIO)
+#if defined(_WIN32) && defined(USE_EXULTSTUDIO)
 	/*
 	int ticks = GetTickCount();
 	while(GetTickCount() < ticks+ms) {

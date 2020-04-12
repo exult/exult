@@ -52,14 +52,13 @@ using std::ostream;
 using std::vector;
 using std::string;
 using std::pair;
+using std::unique_ptr;
+using std::make_unique;
 
-GL_manager *Shape_frame::glman = 0;
-Image_buffer8 *Shape_frame::scrwin = 0;
+Image_buffer8 *Shape_frame::scrwin = nullptr;
 
-#if 1   /* For debugging. */
 #include <iomanip>
 #include "items.h"
-#endif
 
 /*
  *  +++++Debugging
@@ -79,27 +78,29 @@ inline void Check_file(
  *  May return 0.
  */
 
-Shape_frame *Shape_frame::reflect(
+unique_ptr<Shape_frame> Shape_frame::reflect(
 ) {
 	if (!data)
-		return 0;
-	int w = get_width(), h = get_height();
+		return nullptr;
+	int w = get_width();
+	int h = get_height();
 	if (w < h)
 		w = h;
 	else
 		h = w;          // Use max. dim.
-	Shape_frame *reflected = new Shape_frame();
+	auto reflected = make_unique<Shape_frame>();
 	reflected->rle = true;      // Set data.
 	reflected->xleft = yabove;
 	reflected->yabove = xleft;
 	reflected->xright = ybelow;
 	reflected->ybelow = xright;
 	// Create drawing area.
-	Image_buffer8 *ibuf = new Image_buffer8(h, w);
-	ibuf->fill8(255);       // Fill with 'transparent' pixel.
+	Image_buffer8 ibuf(h, w);
+	ibuf.fill8(255);       // Fill with 'transparent' pixel.
 	// Figure origin.
-	int xoff = reflected->xleft, yoff = reflected->yabove;
-	const uint8 *in = data;   // Point to data, and draw.
+	int xoff = reflected->xleft;
+	int yoff = reflected->yabove;
+	const uint8 *in = data.get();   // Point to data, and draw.
 	int scanlen;
 	while ((scanlen = Read2(in)) != 0) {
 		// Get length of scan line.
@@ -108,7 +109,7 @@ Shape_frame *Shape_frame::reflect(
 		short scanx = Read2(in);
 		short scany = Read2(in);
 		if (!encoded) {     // Raw data?
-			ibuf->copy8(in, 1, scanlen,
+			ibuf.copy8(in, 1, scanlen,
 			            xoff + scany, yoff + scanx);
 			in += scanlen;
 			continue;
@@ -120,19 +121,18 @@ Shape_frame *Shape_frame::reflect(
 			bcnt = bcnt >> 1; // Get count.
 			if (repeat) {
 				unsigned char pix = *in++;
-				ibuf->fill8(pix, 1, bcnt,
+				ibuf.fill8(pix, 1, bcnt,
 				            xoff + scany, yoff + scanx + b);
 			} else {    // Get that # of bytes.
-				ibuf->copy8(in, 1, bcnt,
+				ibuf.copy8(in, 1, bcnt,
 				            xoff + scany, yoff + scanx + b);
 				in += bcnt;
 			}
 			b += bcnt;
 		}
 	}
-	reflected->create_rle(ibuf->get_bits(), w, h);
-	delete ibuf;            // Done with this.
-	return (reflected);
+	reflected->create_rle(ibuf.get_bits(), w, h);
+	return reflected;
 }
 
 /*
@@ -151,7 +151,7 @@ static int Skip_transparent(
 		x++;
 		pixels++;
 	}
-	return (x);
+	return x;
 }
 
 /*
@@ -192,7 +192,7 @@ static int Find_runs(
 		runs[runcnt++] = run;
 	}
 	runs[runcnt] = 0;       // 0-delimit list.
-	return (x);
+	return x;
 }
 
 unsigned char Shape_frame::get_topleft_pix(
@@ -202,7 +202,7 @@ unsigned char Shape_frame::get_topleft_pix(
 		return def;
 	else if (!rle)
 		return data[0];
-	unsigned char *ptr = data;
+	unsigned char *ptr = data.get();
 	int scanlen = (ptr[1] << 8) | ptr[0];
 	if (!scanlen)
 		return def;
@@ -215,6 +215,28 @@ unsigned char Shape_frame::get_topleft_pix(
 }
 
 /*
+ *  Writes the frame to the given stream.
+ */
+
+void Shape_frame::write(ODataSource& out) const {
+	if (rle) {
+		out.write2(xright);
+		out.write2(xleft);
+		out.write2(yabove);
+		out.write2(ybelow);
+	}
+	out.write(data.get(), datalen);   // The frame data.
+}
+
+void Shape_frame::save(ODataSource *shape_source) const {
+	shape_source->write2(xright);
+	shape_source->write2(xleft);
+	shape_source->write2(yabove);
+	shape_source->write2(ybelow);
+	shape_source->write(data.get(), get_size());
+}
+
+/*
  *  Encode an 8-bit image into an RLE frame.
  *
  *  Output: Data is set to compressed image.
@@ -224,7 +246,6 @@ void Shape_frame::create_rle(
     unsigned char *pixels,      // 8-bit uncompressed data.
     int w, int h            // Width, height.
 ) {
-	delete [] data;         // Delete old data if there.
 	data = encode_rle(pixels, w, h, xleft, yabove, datalen);
 }
 
@@ -234,7 +255,7 @@ void Shape_frame::create_rle(
  *  Output: ->allocated RLE data.
  */
 
-unsigned char *Shape_frame::encode_rle(
+unique_ptr<unsigned char[]> Shape_frame::encode_rle(
     unsigned char *pixels,      // 8-bit uncompressed data.
     int w, int h,           // Width, height.
     int xoff, int yoff,     // Origin (xleft, yabove).
@@ -296,8 +317,8 @@ unsigned char *Shape_frame::encode_rle(
 		cout << "create_rle: datalen: " << datalen << " w: " << w
 		     << " h: " << h << endl;
 #endif
-	unsigned char *data = new unsigned char[datalen];
-	memcpy(data, buf, datalen);
+	auto data = make_unique<unsigned char[]>(datalen);
+	memcpy(data.get(), buf, datalen);
 	delete [] buf;
 	return data;
 }
@@ -311,19 +332,34 @@ Shape_frame::Shape_frame(
     int w, int h,           // Dimensions.
     int xoff, int yoff,     // Xleft, yabove.
     bool setrle         // Run-length-encode.
-) :
-#ifdef HAVE_OPENGL
-	glshape(0), gloutline(0),
-#endif
-	xleft(xoff), xright(w - xoff - 1), yabove(yoff), ybelow(h - yoff - 1),
+) : xleft(xoff), xright(w - xoff - 1), yabove(yoff), ybelow(h - yoff - 1),
 	rle(setrle) {
 	if (!rle) {
 		assert(w == c_tilesize && h == c_tilesize);
 		datalen = c_num_tile_bytes;
-		data = new unsigned char[c_num_tile_bytes];
-		memcpy(data, pixels, c_num_tile_bytes);
+		data = make_unique<unsigned char[]>(c_num_tile_bytes);
+		memcpy(data.get(), pixels, c_num_tile_bytes);
 	} else
 		data = encode_rle(pixels, w, h, xleft, yabove, datalen);
+}
+
+/*
+ *  Create from data.
+ */
+
+Shape_frame::Shape_frame(
+    unique_ptr<unsigned char[]> pixels,      // (Gets stolen.)
+    int w, int h,           // Dimensions.
+    int xoff, int yoff,     // Xleft, yabove.
+    bool setrle         // Run-length-encode.
+) : xleft(xoff), xright(w - xoff - 1), yabove(yoff), ybelow(h - yoff - 1),
+	rle(setrle) {
+	if (!rle) {
+		assert(w == c_tilesize && h == c_tilesize);
+		datalen = c_num_tile_bytes;
+		data = std::move(pixels);
+	} else
+		data = encode_rle(pixels.get(), w, h, xleft, yabove, datalen);
 }
 
 /*
@@ -350,9 +386,10 @@ unsigned int Shape_frame::read(
 		// Figure # frames.
 		int nframes = (hdrlen - 4) / 4;
 		if (framenum >= nframes)// Bug out if bad frame #.
-			return (nframes);
+			return nframes;
 		// Get frame offset, lengeth.
-		uint32 frameoff, framelen;
+		uint32 frameoff;
+		uint32 framelen;
 		if (framenum == 0) {
 			frameoff = hdrlen;
 			framelen = nframes > 1 ? shapes->read4() - frameoff :
@@ -369,17 +406,15 @@ unsigned int Shape_frame::read(
 		// Get compressed data.
 		get_rle_shape(shapes, shapeoff + frameoff, framelen);
 		// Return # frames.
-		return (nframes);
+		return nframes;
 	}
 	framenum &= 31;         // !!!Guessing here.
 	xleft = yabove = c_tilesize;        // Just an 8x8 bitmap.
 	xright = ybelow = -1;
 	shapes->seek(shapeoff + framenum * c_num_tile_bytes);
-	delete [] data;
-	data = new unsigned char[c_num_tile_bytes]; // Read in 8x8 pixels.
 	datalen = c_num_tile_bytes;
-	shapes->read(reinterpret_cast<char *>(data), c_num_tile_bytes);
-	return (shapelen / c_num_tile_bytes);   // That's how many frames.
+	data = shapes->readN(c_num_tile_bytes);
+	return shapelen / c_num_tile_bytes;   // That's how many frames.
 }
 
 /*
@@ -397,10 +432,9 @@ void Shape_frame::get_rle_shape(
 	yabove = shapes->read2();
 	ybelow = shapes->read2();
 	len -= 8;           // Subtract what we just read.
-	delete [] data;
-	data = new unsigned char[len + 2];  // Allocate and read data.
 	datalen = len + 2;
-	shapes->read(reinterpret_cast<char *>(data), len);
+	data = make_unique<unsigned char[]>(datalen);
+	shapes->read(data.get(), len);
 	data[len] = 0;          // 0-delimit.
 	data[len + 1] = 0;
 	rle = true;
@@ -416,12 +450,13 @@ void Shape_frame::paint_rle(
 ) {
 	assert(rle);
 
-	int w = get_width(), h = get_height();
+	int w = get_width();
+	int h = get_height();
 	if (w >= c_tilesize || h >= c_tilesize)     // Big enough to check?  Off screen?
 		if (!win->is_visible(xoff - xleft, yoff - yabove, w, h))
 			return;
 
-	win->paint_rle(xoff, yoff, data);
+	win->paint_rle(xoff, yoff, data.get());
 }
 
 /*
@@ -435,12 +470,13 @@ void Shape_frame::paint_rle_remapped(
 ) {
 	assert(rle);
 
-	int w = get_width(), h = get_height();
+	int w = get_width();
+	int h = get_height();
 	if (w >= c_tilesize || h >= c_tilesize)     // Big enough to check?  Off screen?
 		if (!win->is_visible(xoff - xleft, yoff - yabove, w, h))
 			return;
 
-	win->paint_rle_remapped(xoff, yoff, data, trans);
+	win->paint_rle_remapped(xoff, yoff, data.get(), trans);
 }
 
 /*
@@ -454,7 +490,7 @@ void Shape_frame::paint(
 	if (rle)
 		paint_rle(win, xoff, yoff);
 	else
-		win->copy8(data, c_tilesize, c_tilesize,
+		win->copy8(data.get(), c_tilesize, c_tilesize,
 		           xoff - c_tilesize, yoff - c_tilesize);
 }
 
@@ -470,14 +506,15 @@ void Shape_frame::paint_rle_translucent(
 ) {
 	assert(rle);
 
-	int w = get_width(), h = get_height();
+	int w = get_width();
+	int h = get_height();
 	if (w >= c_tilesize || h >= c_tilesize)     // Big enough to check?  Off screen?
 		if (!win->is_visible(xoff - xleft,
 		                     yoff - yabove, w, h))
 			return;
 	// First pix. value to transform.
 	const int xfstart = 0xff - xfcnt;
-	const uint8 *in = data;
+	const uint8 *in = data.get();
 	int scanlen;
 	while ((scanlen = Read2(in)) != 0) {
 		// Get length of scan line.
@@ -529,12 +566,13 @@ void Shape_frame::paint_rle_transformed(
 ) {
 	assert(rle);
 
-	int w = get_width(), h = get_height();
+	int w = get_width();
+	int h = get_height();
 	if (w >= c_tilesize || h >= c_tilesize)     // Big enough to check?  Off screen?
 		if (!win->is_visible(xoff - xleft,
 		                     yoff - yabove, w, h))
 			return;
-	const uint8 *in = data;
+	const uint8 *in = data.get();
 	int scanlen;
 	while ((scanlen = Read2(in)) != 0) {
 		// Get length of scan line.
@@ -573,14 +611,15 @@ void Shape_frame::paint_rle_outline(
 ) {
 	assert(rle);
 
-	int w = get_width(), h = get_height();
+	int w = get_width();
+	int h = get_height();
 	if (w >= c_tilesize || h >= c_tilesize)     // Big enough to check?  Off screen?
 		if (!win->is_visible(xoff - xleft,
 		                     yoff - yabove, w, h))
 			return;
 	int firsty = -10000;        // Finds first line.
 	int lasty = -10000;
-	const uint8 *in = data;
+	const uint8 *in = data.get();
 	int scanlen;
 	while ((scanlen = Read2(in)) != 0) {
 		// Get length of scan line.
@@ -627,14 +666,14 @@ void Shape_frame::paint_rle_outline(
  *  shape.
  */
 
-int Shape_frame::has_point(
+bool Shape_frame::has_point(
     int x, int y            // Relative to origin of shape.
 ) const {
 	if (!rle) {         // 8x8 flat?
 		return x >= -xleft && x < xright &&
 		       y >= -yabove && y < ybelow;
 	}
-	const uint8 *in = data;       // Point to data.
+	const uint8 *in = data.get();       // Point to data.
 	int scanlen;
 	while ((scanlen = Read2(in)) != 0) {
 		// Get length of scan line.
@@ -644,7 +683,7 @@ int Shape_frame::has_point(
 		short scany = Read2(in);
 		// Be liberal by 1 pixel.
 		if (y == scany && x >= scanx - 1 && x <= scanx + scanlen)
-			return (1);
+			return true;
 		if (!encoded) {     // Raw data?
 			in += scanlen;
 			continue;
@@ -661,7 +700,7 @@ int Shape_frame::has_point(
 			b += bcnt;
 		}
 	}
-	return (0);         // Never found it.
+	return false;         // Never found it.
 }
 
 /*
@@ -673,7 +712,8 @@ void Shape_frame::set_offset(
 ) {
 	if (!rle)
 		return;         // Can do it for 8x8 tiles.
-	int w = get_width(), h = get_height();
+	int w = get_width();
+	int h = get_height();
 	if (new_xright > w)     // Limit to left edge.
 		new_xright = w;
 	if (new_ybelow > h)
@@ -684,7 +724,7 @@ void Shape_frame::set_offset(
 	ybelow = new_ybelow;
 	xleft = w - xright - 1;     // Update other dims.
 	yabove = h - ybelow - 1;
-	uint8 *in = data;       // Got to update all scan lines!
+	uint8 *in = data.get();       // Got to update all scan lines!
 	int scanlen;
 	while ((scanlen = MRead2(in)) != 0) {
 		// Get length of scan line.
@@ -718,7 +758,7 @@ void Shape_frame::set_offset(
  */
 
 Shape_frame *Shape::reflect(
-    vector<pair<IDataSource *, bool> > const &shapes,    // shapes data source to read.
+    vector<pair<unique_ptr<IDataSource>, bool>> const &shapes,    // shapes data source to read.
     int shapenum,           // Shape #.
     int framenum,           // Frame # without the 'reflect' bit.
     vector<int> const &counts
@@ -726,34 +766,18 @@ Shape_frame *Shape::reflect(
 	// Get normal frame.
 	Shape_frame *normal = get(shapes, shapenum, framenum, counts);
 	if (!normal)
-		return (0);
+		return nullptr;
 	// Reflect it.
-	Shape_frame *reflected = normal->reflect();
+	unique_ptr<Shape_frame> reflected(normal->reflect());
 	if (!reflected)
-		return (0);
+		return nullptr;
 	framenum |= 32;         // Put back 'reflect' flag.
-	if (static_cast<unsigned>(framenum) >= frames_size - 1)// Expand list if necessary.
-		enlarge(framenum + 1);
-	frames[framenum] = reflected;   // Store new frame.
-	return reflected;
-}
-
-/*
- *  Resize list upwards.
- */
-
-void Shape::enlarge(
-    int newsize
-) {
-	Shape_frame **newframes = new Shape_frame *[newsize];
-	size_t i;
-	for (i = 0; i < frames_size; i++)
-		newframes[i] = frames[i];
-	frames_size = newsize;
-	for (; i < frames_size; i++)
-		newframes[i] = 0;
-	delete [] frames;
-	frames = newframes;
+	// Expand list if necessary.
+	if (static_cast<unsigned>(framenum) >= frames.size() - 1) {
+		frames.resize(framenum + 1);
+	}
+	frames[framenum] = std::move(reflected);   // Store new frame.
+	return frames[framenum].get();
 }
 
 /*
@@ -763,23 +787,9 @@ void Shape::enlarge(
 void Shape::resize(
     int newsize
 ) {
-	if (newsize < 0 || static_cast<unsigned>(newsize) == frames_size)
+	if (newsize < 0 || size_t(newsize) == frames.size())
 		return;
-	if (static_cast<unsigned>(newsize) > frames_size)
-		enlarge(newsize);   // Growing.
-	else {
-		// Shrinking.
-		Shape_frame **newframes = new Shape_frame *[newsize];
-		size_t i;
-		for (i = 0; i < static_cast<unsigned>(newsize); i++)
-			newframes[i] = frames[i];
-		// Delete past new end.
-		for (; i < frames_size; i++)
-			delete frames[i];
-		frames_size = static_cast<unsigned>(newsize);
-		delete [] frames;
-		frames = newframes;
-	}
+	frames.resize(newsize);
 	num_frames = newsize;
 	modified = true;
 }
@@ -791,9 +801,8 @@ void Shape::resize(
 inline void Shape::create_frames_list(
     int nframes
 ) {
-	num_frames = frames_size = nframes;
-	frames = new Shape_frame *[frames_size];
-	memset(frames, 0, frames_size * sizeof(Shape_frame *));
+	num_frames = nframes;
+	frames.resize(nframes);
 }
 
 /*
@@ -804,13 +813,13 @@ inline void Shape::create_frames_list(
  */
 
 Shape_frame *Shape::read(
-    vector<pair<IDataSource *, bool> > const &shapes, // Shapes data source to read.
+    vector<pair<unique_ptr<IDataSource>, bool>> const &shapes, // Shapes data source to read.
     int shapenum,           // Shape #.
     int framenum,           // Frame # within shape.
     vector<int> const &counts,      // Number of shapes in files.
     int src
 ) {
-	IDataSource *shp = 0;
+	IDataSource *shp = nullptr;
 	// Figure offset in "shapes.vga".
 	uint32 shapeoff = 0x80 + shapenum * 8;
 	uint32 shapelen = 0;
@@ -818,11 +827,10 @@ Shape_frame *Shape::read(
 	// Check backwards for the shape file to use.
 	int i = counts.size();
 	if (src < 0) {
-		vector<pair<IDataSource *, bool> >::const_reverse_iterator it = shapes.rbegin();
-		for (; it != shapes.rend(); ++it) {
+		for (auto it = shapes.crbegin(); it != shapes.crend(); ++it) {
 			i--;
 			if (shapenum < counts[i]) {
-				IDataSource *ds = (*it).first;
+				IDataSource *ds = it->first.get();
 				ds->seek(shapeoff);
 				// Get location, length.
 				int s = ds->read4();
@@ -831,13 +839,13 @@ Shape_frame *Shape::read(
 				if (s && shapelen) {
 					shapeoff = s;
 					shp = ds;
-					from_patch = (*it).second;
+					from_patch = it->second;
 					break;
 				}
 			}
 		}
 	} else if (shapenum < counts[src]) {
-		IDataSource *ds = shapes[src].first;
+		IDataSource *ds = shapes[src].first.get();
 		ds->seek(shapeoff);
 		// Get location, length.
 		int s = ds->read4();
@@ -850,23 +858,22 @@ Shape_frame *Shape::read(
 		}
 	}
 	// The shape was not found anywhere, so leave.
-	if (shp == 0) {
+	if (shp == nullptr) {
 		std::cerr << "Shape num out of range: " << shapenum << std::endl;
-		return 0;
+		return nullptr;
 	}
 	// Read it in and get frame count.
-	Shape_frame *frame = new Shape_frame();
+	auto frame = make_unique<Shape_frame>();
 	int nframes = frame->read(shp, shapeoff, shapelen, framenum);
 	if (!num_frames)        // 1st time?
 		create_frames_list(nframes);
-	if (!frame->rle)
+	if (!frame->is_rle())
 		framenum &= 31;     // !!Guessing.
 	if (framenum >= nframes &&  // Compare against #frames in file.
 	        (framenum & 32)) {  // Reflection desired?
-		delete frame;
-		return (reflect(shapes, shapenum, framenum & 0x1f, counts));
+		return reflect(shapes, shapenum, framenum & 0x1f, counts);
 	}
-	return store_frame(frame, framenum);
+	return store_frame(std::move(frame), framenum);
 }
 
 /*
@@ -877,44 +884,40 @@ Shape_frame *Shape::read(
  */
 
 void Shape::write(
-    ostream &out            // What to write to.
-) {
+    ODataSource& out            // What to write to.
+) const {
 	if (!num_frames)
 		return;         // Empty.
-	assert(frames != 0 && *frames != 0);
+	assert(!frames.empty() && frames[0]);
 	bool flat = !frames[0]->is_rle();
 	// Save starting position.
-	unsigned long startpos = out.tellp();
+	size_t startpos = out.getPos();
 
 	size_t frnum;
 	if (!flat) {
-		Write4(out, 0);     // Place-holder for total length.
+		out.write4(0);     // Place-holder for total length.
 		// Also for frame locations.
 		for (frnum = 0; frnum < num_frames; frnum++)
-			Write4(out, 0);
+			out.write4(0);
 	}
 	for (frnum = 0; frnum < num_frames; frnum++) {
-		Shape_frame *frame = frames[frnum];
-		assert(frame != 0); // Better all be the same type.
+		Shape_frame *frame = frames[frnum].get();
+		assert(frame != nullptr); // Better all be the same type.
 		assert(flat == !frame->is_rle());
 		if (frame->is_rle()) {
 			// Get position of frame.
-			unsigned long pos = out.tellp();
-			out.seekp(startpos + (frnum + 1) * 4);
-			Write4(out, pos - startpos);    // Store pos.
-			out.seekp(pos);         // Get back.
-			Write2(out, frame->xright);
-			Write2(out, frame->xleft);
-			Write2(out, frame->yabove);
-			Write2(out, frame->ybelow);
+			size_t pos = out.getPos();
+			out.seek(startpos + (frnum + 1) * 4);
+			out.write4(pos - startpos);    // Store pos.
+			out.seek(pos);         // Get back.
 		}
-		out.write(reinterpret_cast<char *>(frame->data), frame->datalen);   // The frame data.
+		frame->write(out);
 	}
 	if (!flat) {
-		unsigned long pos = out.tellp();// Ending position.
-		out.seekp(startpos);        // Store total length.
-		Write4(out, pos - startpos);
-		out.seekp(pos);         // And get back to end.
+		size_t pos = out.getPos();// Ending position.
+		out.seek(startpos);        // Store total length.
+		out.write4(pos - startpos);
+		out.seek(pos);         // And get back to end.
 	}
 }
 
@@ -925,40 +928,33 @@ void Shape::write(
  */
 
 Shape_frame *Shape::store_frame(
-    Shape_frame *frame,     // Frame that was read.
+    unique_ptr<Shape_frame> frame,     // Frame that was read.
     int framenum            // It's frame #.
 ) {
 	if (framenum < 0) { // Something fishy?
-		delete frame;
 		cerr << "Shape::store_frame:  framenum < 0 ("
-		     << framenum << " >= " << frames_size
+		     << framenum << " >= " << frames.size()
 		     << ")" << endl;
-		return (0);
-	} else if (static_cast<unsigned>(framenum) >= frames_size) { // Something fishy?
-		delete frame;
-		cerr << "Shape::store_frame:  framenum >= frames_size ("
-		     << framenum << " >= " << frames_size
+		return nullptr;
+	} else if (size_t(framenum) >= frames.size()) { // Something fishy?
+		cerr << "Shape::store_frame:  framenum >= frames.size() ("
+		     << framenum << " >= " << frames.size()
 		     << ")" << endl;
-		return (0);
+		return nullptr;
 	}
-	if (!frames) {  // First one?
-		frames = new Shape_frame *[num_frames];
-		memset(frames, 0, num_frames * sizeof(Shape_frame *));
+	if (frames.empty()) {  // First one?
+		frames.resize(num_frames);
 	}
-	frames[framenum] = frame;
-	return (frame);
+	frames[framenum] = std::move(frame);
+	return frames[framenum].get();
 }
 
 /*
  *  Create with a single frame.
  */
 
-Shape::Shape(Shape_frame *fr) {
-	modified = false;
-	from_patch = false;
-	num_frames = frames_size = 1;
-	frames = new Shape_frame*[1];
-	frames[0] = fr;
+Shape::Shape(unique_ptr<Shape_frame> fr) : num_frames(1) {
+	frames.push_back(std::move(fr));
 }
 
 /*
@@ -968,37 +964,12 @@ Shape::Shape(Shape_frame *fr) {
 Shape::Shape(
     int n               // # frames.
 ) {
-	modified = false;
-	from_patch = false;
 	create_frames_list(n);
 }
 
 void Shape::reset() {
-	if (frames) {
-		for (size_t i = 0; i < frames_size; i++)
-			delete frames[i];
-		delete [] frames;
-		frames = 0;
-	} else if (frames_size)
-		cerr << "Shape::~Shape(): 'frames' is null, while frames_size="
-		     << frames_size << endl;
-}
-
-/*
- *  Take frames from another shape and set that shape to empty.
- */
-
-void Shape::take(
-    Shape *sh2
-) {
-	reset();            // Clear ourself.
-	frames = sh2->frames;
-	sh2->frames = 0;
-	frames_size = sh2->frames_size;
-	num_frames = sh2->num_frames;
-	sh2->num_frames = sh2->frames_size = 0;
-	modified = sh2->get_modified();
-	from_patch = sh2->get_from_patch();
+	frames.clear();
+	num_frames = 0;
 }
 
 /*
@@ -1009,22 +980,18 @@ void Shape::load(
     IDataSource *shape_source        // datasource.
 ) {
 	reset();
-	Shape_frame *frame = new Shape_frame();
+	auto frame = make_unique<Shape_frame>();
 	size_t location = shape_source->getPos();
 	uint32 shapelen = shape_source->read4();
 	// Read frame 0 & get frame count.
 	create_frames_list(frame->read(shape_source, location, shapelen, 0));
-	store_frame(frame, 0);
+	store_frame(std::move(frame), 0);
 	// Get the rest.
 	for (size_t i = 1; i < num_frames; i++) {
-		frame = new Shape_frame();
+		auto frame = make_unique<Shape_frame>();
 		frame->read(shape_source, location, shapelen, i);
-		store_frame(frame, i);
+		store_frame(std::move(frame), i);
 	}
-}
-
-Shape::~Shape() {
-	reset();
 }
 
 /*
@@ -1032,12 +999,11 @@ Shape::~Shape() {
  */
 
 void Shape::set_frame(
-    Shape_frame *frame,     // Must be allocated.
+    unique_ptr<Shape_frame> frame,     // Must be allocated.
     int framenum
 ) {
 	assert(framenum >= 0 && static_cast<unsigned>(framenum) < num_frames);
-	delete frames[framenum];    // Delete existing.
-	frames[framenum] = frame;
+	frames[framenum] = std::move(frame);
 	modified = true;
 }
 
@@ -1046,14 +1012,11 @@ void Shape::set_frame(
  */
 
 void Shape::add_frame(
-    Shape_frame *frame,     // Must be allocated.
+    unique_ptr<Shape_frame> frame,     // Must be allocated.
     int framenum            // Insert here.
 ) {
 	assert(framenum >= 0 && static_cast<unsigned>(framenum) <= num_frames); // Can append.
-	enlarge(frames_size + 1);   // Make room.
-	for (int i = frames_size - 1; i > framenum; i--)
-		frames[i] = frames[i - 1];
-	frames[framenum] = frame;
+	frames.emplace(frames.begin() + framenum, std::move(frame));
 	num_frames++;
 	modified = true;
 }
@@ -1066,21 +1029,9 @@ void Shape::del_frame(
     int framenum
 ) {
 	assert(framenum >= 0 && static_cast<unsigned>(framenum) < num_frames);
-	delete frames[framenum];
-	// Shift down.
-	for (size_t i = framenum + 1; i < frames_size; i++)
-		frames[i - 1] = frames[i];
-	frames[frames_size - 1] = 0;    // Last spot is now free.
+	frames.erase(frames.begin() + framenum);
 	num_frames--;
 	modified = true;
-}
-
-/*
- * Empty constructor
- */
-
-Shape_file::Shape_file() {
-	// Nothing to see here
 }
 
 /*
@@ -1100,9 +1051,7 @@ Shape_file::Shape_file(
 void Shape_file::load(
     const char *nm          // Path to file.
 ) {
-	ifstream file;
-	U7open(file, nm);
-	IStreamDataSource shape_source(&file);
+	IFileDataSource shape_source(nm);
 	Shape::load(&shape_source);
 }
 
@@ -1119,7 +1068,7 @@ Shape_file::Shape_file(
 
 
 // NOTE: Only works on shapes other than the special 8x8 tile-shapes
-int Shape_file::get_size() {
+int Shape_file::get_size() const {
 	int size = 4;
 	for (size_t i = 0; i < num_frames; i++)
 		size += frames[i]->get_size() + 4 + 8;
@@ -1127,8 +1076,8 @@ int Shape_file::get_size() {
 }
 
 // NOTE: Only works on shapes other than the special 8x8 tile-shapes
-void Shape_file::save(ODataSource *shape_source) {
-	int *offsets = new int[num_frames];
+void Shape_file::save(ODataSource *shape_source) const {
+	auto offsets = make_unique<int[]>(num_frames);
 	int size;
 	offsets[0] = 4 + num_frames * 4;
 	size_t i;   // Blame MSVC
@@ -1139,13 +1088,8 @@ void Shape_file::save(ODataSource *shape_source) {
 	for (i = 0; i < num_frames; i++)
 		shape_source->write4(offsets[i]);
 	for (i = 0; i < num_frames; i++) {
-		shape_source->write2(frames[i]->xright);
-		shape_source->write2(frames[i]->xleft);
-		shape_source->write2(frames[i]->yabove);
-		shape_source->write2(frames[i]->ybelow);
-		shape_source->write(reinterpret_cast<char *>(frames[i]->data), frames[i]->get_size());
+		frames[i]->save(shape_source);
 	}
-	delete [] offsets;
 }
 
 /*
@@ -1156,19 +1100,16 @@ Vga_file::Vga_file(
     const char *nm,         // Path to file.
     int u7drag,         // # from u7drag.h, or -1.
     const char *nm2         // Patch file, or null.
-) : u7drag_type(u7drag), num_shapes(0), shapes(0), flex(true) {
+) : u7drag_type(u7drag) {
 	load(nm, nm2);
 }
 
-Vga_file::Vga_file(
-) : u7drag_type(-1), num_shapes(0), shapes(0), flex(true) {
-	// Nothing to see here !!!
-}
+Vga_file::Vga_file() = default;
 
 Vga_file::Vga_file(
-    vector<pair<string, int> > const &sources,
+    vector<pair<string, int>> const &sources,
     int u7drag      // # from u7drag.h, or -1
-) : u7drag_type(u7drag), num_shapes(0), flex(true) {
+) : u7drag_type(u7drag) {
 	load(sources);
 }
 
@@ -1181,49 +1122,40 @@ bool Vga_file::load(
     const char *nm2,
     bool resetimports
 ) {
-	vector<pair<string, int> > src;
+	vector<pair<string, int>> src;
 	src.push_back(pair<string, int>(string(nm), -1));
-	if (nm2 != 0)
+	if (nm2 != nullptr)
 		src.push_back(pair<string, int>(string(nm2), -1));
 	return load(src, resetimports);
 }
 
 IDataSource *Vga_file::U7load(
     pair<string, int> const &resource,
-    vector<ifstream *> &fs,
-    vector<char *> &bs,
-    vector<pair<IDataSource *, bool> > &shps
+    vector<pair<unique_ptr<IDataSource>, bool>> &shps
 ) {
-	IDataSource *source = 0;
+	unique_ptr<IDataSource> source;
+	bool is_patch = false;
 	if (resource.second < 0) {
 		// It is a file.
-		if (U7exists(resource.first)) {
-			ifstream *file = new ifstream();
-			U7open(*file, resource.first.c_str());
-			source = new IStreamDataSource(file);
-			fs.push_back(file);
-			shps.push_back(pair<IDataSource *, bool>(source,
-			                                        !resource.first.compare(0, 7, "<PATCH>")));
-		}
+		source = make_unique<IFileDataSource>(resource.first);
+		is_patch = !resource.first.compare(0, 7, "<PATCH>");
 	} else {
 		// It is a resource.
-		U7object vgaobj(resource.first, resource.second);
-		std::size_t len;
-		char *buf = vgaobj.retrieve(len);
-		if (!buf || !len) {
-			CERR("Resource '" << resource.first << "' not found.");
-			delete [] buf;
-			return 0;
-		}
-		source = new IBufferDataSource(buf, len);
-		bs.push_back(buf);
-		shps.push_back(pair<IDataSource *, bool>(source, false));
+		source = make_unique<IExultDataSource>(resource.first, resource.second);
+		is_patch = false;
 	}
-	return source;
+	if (!source->good()) {
+		CERR("Resource '" << resource.first << "' not found.");
+		return nullptr;
+	} else {
+		IDataSource *ds = source.get();
+		shps.emplace_back(std::move(source), is_patch);
+		return ds;
+	}
 }
 
 bool Vga_file::load(
-    vector<pair<string, int> > const &sources,
+    vector<pair<string, int>> const &sources,
     bool resetimports
 ) {
 	reset();
@@ -1231,20 +1163,18 @@ bool Vga_file::load(
 		reset_imports();
 	int count = sources.size();
 	shape_sources.reserve(count);
-	files.reserve(count);
-	buffers.reserve(count);
 	shape_cnts.reserve(count);
 	bool is_good = true;
+	size_t num_shapes = shapes.size();
 	if (!U7exists(sources[0].first.c_str()))
 		is_good = false;
-	for (vector<pair<string, int> >::const_iterator it = sources.begin();
-	        it != sources.end(); ++it) {
-		IDataSource *source = U7load(*it, files, buffers, shape_sources);
+	for (auto& src : sources) {
+		IDataSource *source = U7load(src, shape_sources);
 		if (source) {
 			flex = Flex::is_flex(source);
 			if (flex) {
 				source->seek(0x54); // Get # of shapes.
-				int cnt = source->read4();
+				size_t cnt = source->read4();
 				num_shapes = num_shapes > cnt ? num_shapes : cnt;
 				shape_cnts.push_back(cnt);
 			}
@@ -1253,15 +1183,14 @@ bool Vga_file::load(
 	if (shape_sources.empty())
 		throw file_open_exception(get_system_path(sources[0].first));
 	if (!flex) {        // Just one shape, which we preload.
-		num_shapes = 1;
 		shape_cnts.clear();
 		shape_cnts.push_back(1);
-		shapes = new Shape[1];
-		shapes[0].load(shape_sources[shape_sources.size() - 1].first);
+		shapes.emplace_back();
+		shapes[0].load(shape_sources[shape_sources.size() - 1].first.get());
 		return true;
 	}
 	// Set up lists of pointers.
-	shapes = new Shape[num_shapes];
+	shapes.resize(num_shapes);
 	return is_good;
 }
 
@@ -1283,11 +1212,10 @@ bool Vga_file::get_imported_shape_data(int shnum, imported_map &data) {
 
 bool Vga_file::import_shapes(
     pair<string, int> const &source,
-    vector<pair<int, int> > const &imports
+    vector<pair<int, int>> const &imports
 ) {
 	reset_imports();
-	IDataSource *ds =
-	    U7load(source, imported_files, imported_buffers, imported_sources);
+	IDataSource *ds = U7load(source, imported_sources);
 	if (ds) {
 		ds->seek(0x54); // Get # of shapes.
 		int cnt = ds->read4();
@@ -1295,21 +1223,22 @@ bool Vga_file::import_shapes(
 		flex = Flex::is_flex(ds);
 		assert(flex);
 		imported_shapes.reserve(imported_shapes.size() + imports.size());
-		for (vector<pair<int, int> >::const_iterator it = imports.begin();
+		for (vector<pair<int, int>>::const_iterator it = imports.begin();
 		        it != imports.end(); ++it) {
-			int shpsize = imported_shapes.size(), srcsize = imported_sources.size() - 1;
+			int shpsize = imported_shapes.size();
+			int srcsize = imported_sources.size() - 1;
 			imported_map data = {
 				(*it).second,   // The real shape
 				shpsize,    // The index of the data pointer.
 				srcsize
 			};   // The data source index.
 			imported_shape_table[(*it).first] = data;
-			imported_shapes.push_back(new Shape());
+			imported_shapes.emplace_back();
 		}
 		return true;
 	} else {
 		// Set up the import table anyway.
-		for (vector<pair<int, int> >::const_iterator it = imports.begin();
+		for (vector<pair<int, int>>::const_iterator it = imports.begin();
 		        it != imports.end(); ++it) {
 			imported_map data = {(*it).second, -1, -1};
 			imported_shape_table[(*it).first] = data;
@@ -1319,64 +1248,20 @@ bool Vga_file::import_shapes(
 }
 
 void Vga_file::reset() {
-	delete [] shapes;
-
-	for (vector<pair<IDataSource *, bool> >::iterator it = shape_sources.begin();
-	        it != shape_sources.end(); ++it)
-		delete it->first;
+	shapes.clear();
 	shape_sources.clear();
-
-	for (vector<ifstream *>::iterator it = files.begin();
-	        it != files.end(); ++it) {
-		if ((*it)->is_open())
-			(*it)->close();
-		delete *it;
-	}
-	files.clear();
-
-	for (vector<char *>::iterator it = buffers.begin();
-	        it != buffers.end(); ++it)
-		delete [] *it;
-	buffers.clear();
-
 	shape_cnts.clear();
-
-	num_shapes = 0;
-	shapes = 0;
 }
 
 void Vga_file::reset_imports() {
-	for (vector<Shape *>::iterator it = imported_shapes.begin();
-	        it != imported_shapes.end(); ++it)
-		delete *it;
 	imported_shapes.clear();
-
-	for (vector<pair<IDataSource *, bool> >::iterator it = imported_sources.begin();
-	        it != imported_sources.end(); ++it)
-		delete it->first;
 	imported_sources.clear();
-
-	for (vector<ifstream *>::iterator it = imported_files.begin();
-	        it != imported_files.end(); ++it) {
-		if ((*it)->is_open())
-			(*it)->close();
-		delete *it;
-	}
-	imported_files.clear();
-
-	for (vector<char *>::iterator it = imported_buffers.begin();
-	        it != imported_buffers.end(); ++it)
-		delete [] *it;
-	imported_buffers.clear();
-
 	imported_cnts.clear();
 	imported_shape_table.clear();
 }
 
-Vga_file::~Vga_file() {
-	reset();
-	reset_imports();
-}
+// Out-of-line definition to avoid more dependencies on databuf.h.
+Vga_file::~Vga_file() noexcept = default;
 
 /*
  *  Make a spot for a new shape, and delete frames in existing shape.
@@ -1388,20 +1273,14 @@ Shape *Vga_file::new_shape(
     int shapenum
 ) {
 	if (shapenum < 0 || shapenum >= c_max_shapes)
-		return 0;
-	if (shapenum < num_shapes) {
+		return nullptr;
+	if (size_t(shapenum) < shapes.size()) {
 		shapes[shapenum].reset();
-		shapes[shapenum].num_frames = shapes[shapenum].frames_size = 0;
 		shapes[shapenum].set_modified();
 	} else {            // Enlarge list.
 		if (!flex)
-			return 0;   // 1-shape file.
-		Shape *newshapes = new Shape[shapenum + 1];
-		for (int i = 0; i < num_shapes; i++)
-			newshapes[i].take(&shapes[i]);
-		delete [] shapes;
-		shapes = newshapes;
-		num_shapes = shapenum + 1;
+			return nullptr;   // 1-shape file.
+		shapes.resize(shapenum + 1);
 	}
 	return &shapes[shapenum];
 }

@@ -61,9 +61,9 @@ public:
 			// Handle world-wrapping.
 			newt.tx = (newt.tx + c_num_tiles) % c_num_tiles;
 			newt.ty = (newt.ty + c_num_tiles) % c_num_tiles;
-			return (1);
+			return 1;
 		}
-		return (0);
+		return 0;
 	}
 };
 
@@ -86,11 +86,11 @@ class Search_node {
 	short total_cost;       // Sum of the two above.
 	Search_node *parent;        // Prev. in path.
 	Search_node *priority_next; // ->next with same total_cost, or
-	//   NULL if not in 'open' set.
+	//   nullptr if not in 'open' set.
 public:
 	Search_node(Tile_coord const &t, short scost, short gcost, Search_node *p)
 		: tile(t), start_cost(scost), goal_cost(gcost),
-		  parent(p), priority_next(0) {
+		  parent(p), priority_next(nullptr) {
 		total_cost = gcost + scost;
 	}
 	// For creating a key to search for.
@@ -108,8 +108,8 @@ public:
 	int get_total_cost() {
 		return total_cost;
 	}
-	int is_open() {         // In 'open' priority queue?
-		return priority_next != 0;
+	bool is_open() {         // In 'open' priority queue?
+		return priority_next != nullptr;
 	}
 	void update(short scost, short gcost, Search_node *p) {
 		start_cost = scost;
@@ -122,7 +122,7 @@ public:
 		int cnt = 1;        // This.
 		// Count back to start.
 		Search_node *each = this;
-		while ((each = each->parent) != 0)
+		while ((each = each->parent) != nullptr)
 			cnt++;
 		pathlen = cnt - 1;  // Don't want starting tile.
 		Tile_coord *result = new Tile_coord[pathlen];
@@ -137,7 +137,7 @@ public:
 	// Returns 0 if bad chain.
 	int verify_chain(Search_node *last, int removed = 0) {
 		if (!last)
-			return (1);
+			return 1;
 		int found = 0;
 		Search_node *prev = last;
 		int cnt = 0;
@@ -150,10 +150,10 @@ public:
 				break;
 		} while (prev != last);
 		if (!found && !removed)
-			return (0);
+			return 0;
 		if (cnt == 10000)
-			return (0);
-		return (1);
+			return 0;
+		return 1;
 	}
 #endif
 	// Add to chain of same priorities.
@@ -178,7 +178,7 @@ public:
 #endif
 		if (priority_next == this)
 			// Only one in chain?
-			last = 0;
+			last = nullptr;
 		else {
 			// Got to find prev. to this.
 			Search_node *prev = last;
@@ -194,7 +194,7 @@ public:
 					last = priority_next;
 			}
 		}
-		priority_next = 0;  // No longer in 'open'.
+		priority_next = nullptr;  // No longer in 'open'.
 #ifdef VERIFYCHAIN
 		if (!verify_chain(last, 1))
 			cout << "Bad chain after removing." << endl;
@@ -204,15 +204,13 @@ public:
 	static Search_node *remove_first_from_chain(Search_node *&last) {
 		Search_node *first = last->priority_next;
 		if (first == last)  // Last entry?
-			last = 0;
+			last = nullptr;
 		else
 			last->priority_next = first->priority_next;
-		first->priority_next = 0;
+		first->priority_next = nullptr;
 		return first;
 	}
 };
-
-#ifndef DONT_HAVE_HASH_SET
 
 /*
  *  Hash function for nodes:
@@ -221,7 +219,7 @@ class Hash_node {
 public:
 	size_t operator()(const Search_node *a) const {
 		const Tile_coord t = a->get_tile();
-		return ((t.tz << 24) + (t.ty << 12) + t.tx);
+		return (t.tz << 24) + (t.ty << 12) + t.tx;
 	}
 };
 
@@ -231,33 +229,11 @@ public:
 class Equal_nodes {
 public:
 	bool operator()(const Search_node *a, const Search_node *b) const {
-		Tile_coord ta = a->get_tile(), tb = b->get_tile();
+		Tile_coord ta = a->get_tile();
+		Tile_coord tb = b->get_tile();
 		return ta == tb;
 	}
 };
-
-#else
-
-/*
- *  "Less than" relation for nodes
- */
-class Less_nodes {
-public:
-	bool operator()(const Search_node *a, const Search_node *b) const {
-		Tile_coord ta = a->get_tile(), tb = b->get_tile();
-		uint32 apos = ta.tx << 16, bpos = tb.tx << 16;
-		apos |= ta.ty << 4;
-		bpos |= tb.ty << 4;
-		apos |= ta.tz;
-		bpos |= tb.tz;
-		/* Because #(short x short) is <= #int, we can define an injective projection,
-		** which is all we need. */
-		return apos < bpos;
-	}
-};
-
-#endif
-
 
 /*
  *  The priority queue for the A* algorithm:
@@ -267,24 +243,15 @@ class A_star_queue {
 	//   is a ->last node in chain.
 	int best;           // Index of 1st non-null ent. in open.
 	// For finding each tile's node:
-#ifndef DONT_HAVE_HASH_SET
-	typedef unordered_set<Search_node *, Hash_node, Equal_nodes> Lookup_set;
-#else
-	typedef std::set<Search_node *, Less_nodes> Lookup_set;
-#endif
+	using Lookup_set = std::unordered_set<Search_node *, Hash_node, Equal_nodes>;
 	Lookup_set lookup;
+
 public:
-#ifndef DONT_HAVE_HASH_SET
-	A_star_queue() : open(256), lookup(1000)
-#else
-	A_star_queue() : open(256), lookup()
-#endif
-	{
-		open.insert(open.begin(), 256, static_cast<Search_node *>(0));
+	A_star_queue() : open(256), lookup(1000) {
+		open.insert(open.begin(), 256, nullptr);
 		best = open.size(); // Best is past end.
 	}
 	~A_star_queue() {
-#if 1
 		/*
 		This _should_ work, but might hang some hash_set implementations.
 		The problem is that on deleting the Search_node, the hash_set can
@@ -297,7 +264,6 @@ public:
 			++X;
 			delete sn; // only delete this _after_ iterating
 		}
-#endif
 		lookup.clear();     // Remove all nodes.
 	}
 	void add_open(int pri, Search_node *nd) {
@@ -308,7 +274,7 @@ public:
 	void add_back(Search_node *nd) { // Add an existing node back to 'open'.
 		int total_cost = nd->get_total_cost();
 		Search_node *last = total_cost < static_cast<int>(open.size()) ?
-		                    open[total_cost] : 0;
+		                    open[total_cost] : nullptr;
 		nd->add_to_chain(last); // Add node to this chain.
 		add_open(total_cost, last);
 		if (total_cost < best)
@@ -324,7 +290,7 @@ public:
 			return;     // Nothing to do.
 		int total_cost = nd->get_total_cost();
 		Search_node *last = total_cost < static_cast<int>(open.size()) ?
-		                    open[total_cost] : 0;
+		                    open[total_cost] : nullptr;
 		if (last) {
 			nd->remove_from_chain(last);
 			// Store updated 'last'.
@@ -334,15 +300,15 @@ public:
 			if (total_cost == best) {
 				int cnt = open.size();
 				for (best++; best < cnt; best++)
-					if (open[best] != 0)
+					if (open[best] != nullptr)
 						break;
 			}
 		}
 	}
 	Search_node *pop() {    // Pop best from priority queue.
-		Search_node *last = best < static_cast<int>(open.size()) ? open[best] : 0;
+		Search_node *last = best < static_cast<int>(open.size()) ? open[best] : nullptr;
 		if (!last)
-			return (0);
+			return nullptr;
 		// Return 1st in list.
 		Search_node *node = Search_node::remove_first_from_chain(last);
 		// Store updated 'last'.
@@ -350,7 +316,7 @@ public:
 		if (!last) {    // List now empty?
 			int cnt = open.size();
 			for (best++; best < cnt; best++)
-				if (open[best] != 0)
+				if (open[best] != nullptr)
 					break;
 		}
 		return node;
@@ -358,17 +324,12 @@ public:
 	// Find node for given tile.
 	Search_node *find(const Tile_coord& tile) {
 		Search_node key(tile);
-#ifndef DONT_HAVE_HASH_SET
-		unordered_set<Search_node *, Hash_node, Equal_nodes>::iterator it =
+		std::unordered_set<Search_node *, Hash_node, Equal_nodes>::iterator it =
 		    lookup.find(&key);
-#else
-		std::set<Search_node *, Less_nodes>::iterator it =
-		    lookup.find(&key);
-#endif
 		if (it != lookup.end())
 			return *it;
 		else
-			return 0;
+			return nullptr;
 	}
 };
 
@@ -389,11 +350,11 @@ Tile_coord *Find_path(
 	A_star_queue nodes;     // The priority queue & hash table.
 	int max_cost = client->estimate_cost(start, goal);
 	// Create start node.
-	nodes.add(new Search_node(start, 0, max_cost, 0));
+	nodes.add(new Search_node(start, 0, max_cost, nullptr));
 	// Figure when to give up.
 	max_cost = client->get_max_cost(max_cost);
 	Search_node *node;      // Try 'best' node each iteration.
-	while ((node = nodes.pop()) != 0) {
+	while ((node = nodes.pop()) != nullptr) {
 		if (tracing)
 			cout << "Goal: (" << goal.tx << ", " << goal.ty << ", " << goal.tz <<
 			     "), Node: (" << node->get_tile().tx << ", " <<
@@ -435,5 +396,5 @@ Tile_coord *Find_path(
 		}
 	}
 	pathlen = 0;            // Failed if here.
-	return 0;
+	return nullptr;
 }

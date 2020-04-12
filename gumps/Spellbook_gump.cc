@@ -74,7 +74,7 @@ inline int Get_spell_gump_shape(
 		return 0;
 	shape = spell % 8;
 	frame = spell / 8;
-	return (1);
+	return 1;
 }
 
 /*
@@ -88,11 +88,11 @@ public:
 		  leftright(lr)
 	{  }
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
-	virtual bool push(int button) {
+	bool activate(int button = 1) override;
+	bool push(int button) override {
 		return button == 1;
 	}
-	virtual void unpush(int button) {
+	void unpush(int button) override {
 		ignore_unused_variable_warning(button);
 	}
 };
@@ -119,11 +119,11 @@ public:
 	{  }
 	void set();         // Call this to set properly.
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
-	virtual bool push(int button) {
+	bool activate(int button = 1) override;
+	bool push(int button) override {
 		return button == 1;
 	}
-	virtual void unpush(int button) {
+	void unpush(int button) override {
 		ignore_unused_variable_warning(button);
 	}
 };
@@ -183,12 +183,12 @@ public:
 		set_frame(frnum);   // Frame # is circle.
 	}
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
-	virtual void double_clicked(int x, int y);
-	virtual bool push(int button) {
+	bool activate(int button = 1) override;
+	void double_clicked(int x, int y) override;
+	bool push(int button) override {
 		return button == 1;
 	}
-	virtual void unpush(int button) {
+	void unpush(int button) override {
 		ignore_unused_variable_warning(button);
 	}
 };
@@ -257,7 +257,9 @@ Spellbook_gump::Spellbook_gump(
 	set_object_area(Rectangle(36, 28, 102, 66), 7, 54);
 
 	// Where to paint page marks:
-	const int lpagex = 43, rpagex = 137, lrpagey = 25;
+	const int lpagex = 43;
+	const int rpagex = 137;
+	const int lrpagey = 25;
 	// Get book's top owner.
 	book_owner = book->get_outermost();
 	set_avail();            // Figure spell counts.
@@ -289,7 +291,7 @@ Spellbook_gump::Spellbook_gump(
 				                                 spnum,
 				                                 spells0 + spnum % 8, spnum / 8);
 			} else
-				spells[spindex + s] = 0;
+				spells[spindex + s] = nullptr;
 	}
 }
 
@@ -416,7 +418,7 @@ Gump_button *Spellbook_gump::on_button(
 	}
 	if (bookmark->on_button(mx, my))
 		return bookmark;
-	return 0;
+	return nullptr;
 }
 
 /*
@@ -435,7 +437,8 @@ void Spellbook_gump::paint_button(
 
 void Spellbook_gump::paint(
 ) {
-	const int numx = 1, numy = -4;// Where to draw numbers on spells,
+	const int numx = 1;
+	const int numy = -4;// Where to draw numbers on spells,
 	//   with numx being the right edge.
 	Gump::paint();          // Paint outside & checkmark.
 	if (page > 0)           // Not the first?
@@ -484,7 +487,8 @@ void Spellbook_gump::paint(
 	if (book->bookmark >= 0)    // Bookmark?
 		paint_button(bookmark);
 	if (turning_page) {     // Animate turning page.
-		const int TPXOFF = 5, TPYOFF = 3;
+		const int TPXOFF = 5;
+		const int TPYOFF = 3;
 		ShapeID shape(TURNINGPAGE, turning_frame, SF_GUMPS_VGA);
 		Shape_frame *fr = shape.get_shape();
 		int spritex = x + object_area.x + fr->get_xleft() + TPXOFF;
@@ -563,7 +567,7 @@ bool Spellbook_gump::handle_kbd_event(void *vev) {
 
 Spellscroll_gump::Spellscroll_gump(
     Game_object *s
-) : Spelltype_gump(game->get_shape("gumps/spell_scroll")), scroll(s), spell(0) {
+) : Spelltype_gump(game->get_shape("gumps/spell_scroll")), scroll(s), spell(nullptr) {
 	set_object_area(Rectangle(30, 29, 50, 29), 8, 68);
 
 	// Get dims. of a spell.
@@ -596,7 +600,7 @@ void Spellscroll_gump::do_spell(
     int spellnum
 ) {
 	scroll->remove_this();      // Scroll is gone.
-	scroll = 0;
+	scroll = nullptr;
 	close();            // We've just been deleted!
 	gwin->paint();
 	gwin->show();
@@ -626,7 +630,7 @@ Gump_button *Spellscroll_gump::on_button(
 		return btn;
 	else if (spell && spell->on_button(mx, my))
 		return spell;
-	return 0;
+	return nullptr;
 }
 
 /*

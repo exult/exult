@@ -18,30 +18,7 @@
 #ifndef IGNORE_UNUSED_VARIABLE_WARNING_H
 #define IGNORE_UNUSED_VARIABLE_WARNING_H
 
-#if __cplusplus >= 201103L
-	template <typename... T>
-	inline void ignore_unused_variable_warning(T const&...) {}
-#else
-	template <typename T1>
-	inline void ignore_unused_variable_warning(T1 const&) {}
-
-	template <typename T1, typename T2>
-	inline void ignore_unused_variable_warning(T1 const&, T2 const&) {}
-
-	template <typename T1, typename T2, typename T3>
-	inline void ignore_unused_variable_warning(T1 const&, T2 const&, T3 const&) {}
-
-	template <typename T1, typename T2, typename T3, typename T4>
-	inline void ignore_unused_variable_warning(T1 const&, T2 const&, T3 const&, T4 const&) {}
-
-	template <typename T1, typename T2, typename T3, typename T4, typename T5>
-	inline void ignore_unused_variable_warning(T1 const&, T2 const&, T3 const&, T4 const&, T5 const&) {}
-
-	template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-	inline void ignore_unused_variable_warning(T1 const&, T2 const&, T3 const&, T4 const&, T5 const&, T6 const&) {}
-
-	template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
-	inline void ignore_unused_variable_warning(T1 const&, T2 const&, T3 const&, T4 const&, T5 const&, T6 const&, T7 const&) {}
-#endif // __cplusplus
+template <typename... T>
+inline void ignore_unused_variable_warning(T const&...) {}
 
 #endif // IGNORE_UNUSED_VARIABLE_WARNING_H

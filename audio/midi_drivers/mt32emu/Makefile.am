@@ -7,7 +7,7 @@ AM_CPPFLAGS = -I$(srcdir)/../../../headers -I$(srcdir)/../../../conf \
 			-I$(srcdir)/../../.. -I$(srcdir)/../.. -I$(srcdir)/.. \
 			-I$(srcdir)/../../../files -I$(srcdir)/../../../imagewin \
 			-I$(srcdir)/../../../shapes \
-			$(SDL_CFLAGS) $(KMID_INCLUDES) $(INCDIRS) $(WINDOWING_SYSTEM) \
+			$(SDL_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 			-I../../../conf -I../../../files \
 			-DMT32EMU_EXPORTS_TYPE=0 -DMT32EMU_API_TYPE=0 \
 			-DMT32EMU_VERSION_MAJOR=$(MT32EMU_VERSION_MAJOR) \

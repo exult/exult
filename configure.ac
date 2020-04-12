@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.63])
-AC_INIT([Exult], [1.5.0git], ,[exult], [http://exult.sourceforge.net/])
+AC_INIT([Exult], [1.6.0], ,[exult], [http://exult.sourceforge.net/])
 AC_CONFIG_SRCDIR([exult.cc])
 
 
@@ -49,14 +49,16 @@ case "$host_os" in
 		AC_MSG_RESULT([X11 (GNU/Linux)])
 		;;
 	mingw32* )
-		WINDOWING_SYSTEM="-DWIN32"
+		WINDOWING_SYSTEM="-D_WIN32"
+		AC_DEFINE(MINGW, 1, [Using MinGW])
 		AC_MSG_RESULT([Win32 (mingw32)])
-		SYSLIBS="-lwinmm -lstdc++"
+		CXXFLAGS="$CXXFLAGS -D_USE_MATH_DEFINES"
+		SYSLIBS="-luuid -lole32 -lwinmm -lstdc++ -lws2_32"
 		ICON_FILE="win32/exultico.o"
 		enable_timidity="no"
 		;;
 	cygwin* )
-		WINDOWING_SYSTEM="-DWIN32"
+		WINDOWING_SYSTEM="-D_WIN32"
 		AC_DEFINE(CYGWIN, 1, [Using Cygwin])
 		AC_MSG_RESULT([Win32 (cygwin)])
 		CXXFLAGS="$CXXFLAGS -mno-cygwin"
@@ -97,7 +99,7 @@ case "$host_os" in
 		AC_DEFINE(MACOSX, 1, [Using MacOSX])
 		AC_MSG_RESULT([Mac OS X])
 		SYSLIBS="-framework CoreFoundation -framework AudioUnit -framework AudioToolbox -framework CoreMIDI"
-		CXXFLAGS="$CXXFLAGS"
+		CXXFLAGS="$CXXFLAGS -stdlib=libc++"
 		EXULT_DATADIR="/Library/Application\ Support/Exult/data"
 		ARCH=macosx
 		dnl swap around clang for OSX
@@ -171,17 +173,12 @@ AC_SUBST(LIBTOOL_DEPS)
 # ---------------------------------------------------------------------
 # Checks for integer types with specific sizes.
 # ---------------------------------------------------------------------
-AC_CHECK_TYPES([int8_t, int16_t, int32_t, int64_t, intptr_t])
-AC_CHECK_TYPES([uint8_t, uint16_t, uint32_t, uint64_t, uintptr_t])
-
-# ---------------------------------------------------------------------
-# Check sizes of integer types, in case the above fail.
-# ---------------------------------------------------------------------
-AC_CHECK_SIZEOF(short)
-AC_CHECK_SIZEOF(int)
-AC_CHECK_SIZEOF(long)
-AC_CHECK_SIZEOF(long long)
-AC_CHECK_SIZEOF(int*)
+AC_CHECK_TYPES([int8_t, int16_t, int32_t, int64_t, intptr_t],
+               [], [AC_MSG_ERROR([*** Cannot find suitably-sized signed integers!])],
+               [#include <cstdint>])
+AC_CHECK_TYPES([uint8_t, uint16_t, uint32_t, uint64_t, uintptr_t],
+               [], [AC_MSG_ERROR([*** Cannot find suitably-sized unsigned integers!])],
+               [#include <cstdint>])
 
 # ---------------------------------------------------------------------
 # Checks for header files.
@@ -192,10 +189,6 @@ AC_CHECK_HEADERS(limits.h sys/time.h unistd.h)
 AC_CHECK_HEADERS(sys/types.h sys/socket.h netdb.h)
 AC_CHECK_HEADERS(sys/wait.h signal.h)
 AC_CHECK_HEADERS(png.h, AM_CONDITIONAL(HAVE_PNG,true), AM_CONDITIONAL(HAVE_PNG, false))
-
-AC_CHECK_HEADERS(sstream)
-AC_CHECK_HEADERS(unordered_map, [], AC_DEFINE(DONT_HAVE_HASH_MAP, 1, [Doesn't have hash map]))
-AC_CHECK_HEADERS(unordered_set, [], AC_DEFINE(DONT_HAVE_HASH_SET, 1, [Doesn't have hash set]))
 
 # ---------------------------------------------------------------------
 # Checks for typedefs, structures, and compiler characteristics.
@@ -254,23 +247,6 @@ AC_TRY_LINK([
 AC_MSG_RESULT($ac_cv_func_mkstemp)
 if test x$ac_cv_func_mkstemp = xyes ; then
 	AC_DEFINE(HAVE_MKSTEMP, 1, [Have mkstemp])
-fi
-
-AC_MSG_CHECKING([for snprintf()])
-AC_TRY_LINK([
-#include <stdio.h>
-],
-[
-	snprintf(0,0,0,0);
-],
-	ac_cv_func_snprintf=yes,
-	ac_cv_func_snprintf=no)
-AC_MSG_RESULT($ac_cv_func_snprintf)
-if test x$ac_cv_func_snprintf = xyes ; then
-	AC_DEFINE(HAVE_SNPRINTF, 1, [Have snprintf])
-	AM_CONDITIONAL(HAVE_SNPRINTF,true)
-else
-	AM_CONDITIONAL(HAVE_SNPRINTF,false)
 fi
 
 # do we need special X11 libraries?
@@ -555,40 +531,6 @@ else
 	AC_MSG_RESULT(no)
 fi
 
-# OpenGL rendering
-
-AC_ARG_ENABLE(opengl, AS_HELP_STRING([--enable-opengl], [Enable OpenGL rendering support @<:@EXPERIMENTAL@:>@]),,enable_opengl=no)
-
-if test x$enable_opengl = xyes; then
-	# Check for header presence. Damn you, Apple!
-	if test x$ARCH != xmacosx; then
-		AC_CHECK_HEADER(GL/gl.h,,enable_opengl=no)
-	else
-		AC_CHECK_HEADER(OpenGL/gl.h,,enable_opengl=no)
-	fi
-	# OpenGL scaler is broken with SDL2
-	if test x$sdl_ver = xsdl2; then
-		enable_opengl=no
-	fi
-fi
-
-AC_MSG_CHECKING([for OpenGL rendering support])
-
-if test x$enable_opengl = xyes ; then
-	AC_DEFINE(HAVE_OPENGL, 1, [Have OpenGL])
-	
-	# Mac OS X gets OpenGL through a framework.
-	if test x$ARCH != xmacosx; then
-		OPENGL_LIBS="-lGL"
-	else
-		OPENGL_LIBS="-framework OpenGL"
-	fi
-	
-	AC_MSG_RESULT(yes)
-else
-	AC_MSG_RESULT(no)
-fi
-
 # Midi Sfx
 
 AC_ARG_ENABLE(midi-sfx, AS_HELP_STRING([--enable-midi-sfx], [Support for Midi Sfx (sounds horrible) @<:@default no@:>@]),,enable_midi_sfx=no)
@@ -605,7 +547,7 @@ fi
 # ---------------------------------------------------------------------
 AC_MSG_CHECKING([whether to enable support for Exult Studio])
 AC_ARG_ENABLE(exult-studio-support, AS_HELP_STRING([--enable-exult-studio-support], [Enable ExultStudio support @<:@default no@:>@]),,enable_exult_studio_support=no)
-if test "$WINDOWING_SYSTEM" != -DXWIN ; then
+if test "$WINDOWING_SYSTEM" != -DXWIN -a "$WINDOWING_SYSTEM" != -D_WIN32 ; then
 	enable_exult_studio_support=no
 fi
 
@@ -767,6 +709,36 @@ else
 	exit 1
 fi
 
+AC_ARG_WITH([sanitizers],
+            AS_HELP_STRING([--with-sanitizers=no|address|thread|memory|undefined|dataflow|safe-stack],
+                           [Enable sanitizers @<:@default no@:>@]),
+            [enable_sanitizers="$withval"], [enable_sanitizers="no"])
+AC_MSG_CHECKING([whether to enable sanitizers])
+case "${enable_sanitizers}" in
+	no)
+		AC_MSG_RESULT(no)
+		CHK_SAN=""
+	;;
+	address|thread|memory|undefined|dataflow|safe-stack)
+		AC_MSG_RESULT($enable_sanitizers)
+		CHK_SAN="-fsanitize=$enable_sanitizers"
+	;;	
+	*)
+		AC_MSG_RESULT(invalid)
+		echo "Invalid option given for --with-sanitizers: $enable_sanitizers."
+		echo "Expected one of 'no', 'address', 'thread', 'memory', 'yes'."
+		exit 1
+	;;
+esac
+
+SANITIZERS=""
+for cxx_flag in $CHK_SAN
+do
+	AX_CHECK_COMPILE_FLAG([$cxx_flag], [SANITIZERS="$SANITIZERS $cxx_flag"], [], [$CXXFLAGS -Werror])
+done
+
+CXXFLAGS="$CXXFLAGS $SANITIZERS"
+
 # SDL parachute?
 AC_ARG_ENABLE(sdl-parachute, AS_HELP_STRING([--enable-sdl-parachute], [Use SDL parachute @<:@default yes@:>@]),,enable_sdl_parachute=yes)
 AC_MSG_CHECKING([if we should disable the SDL parachute])
@@ -800,6 +772,7 @@ CHK_WARN="$CHK_WARN -Wtrigraphs -Wundef -Wuninitialized -Wuseless-cast -Wwrite-s
 #CHK_WARN="$CHK_WARN -Wsuggest-attribute=cold -Wsuggest-attribute=const -Wsuggest-attribute=format -Wsuggest-attribute=malloc -Wsuggest-attribute=noreturn -Wsuggest-attribute=pure"
 # C++11 and newer
 #CHK_WARN="$CHK_WARN -Wsuggest-final-methods -Wsuggest-final-types -Wsuggest-override -Wzero-as-null-pointer-constant"
+CHK_WARN="$CHK_WARN -Wzero-as-null-pointer-constant"
 # Clang warnings
 CHK_WARN="$CHK_WARN -Wunused-const-variables -Wabsolute-value -Wdeprecated-register -Wmismatched-tags -Wunused-private-field"
 
@@ -818,16 +791,6 @@ fi
 AC_ARG_ENABLE(pedantic-errors, AS_HELP_STRING([--enable-pedantic-errors], [Turn all pedantic warnings into errors @<:@default no@:>@]),,enable_pedantic_errors=no)
 if test x$enable_pedantic_errors = xyes; then
 	CHK_WARN="-pedantic-errors $CHK_WARN"
-fi
-
-# Ignore long-long warnings (for SDL header files...)
-AC_ARG_ENABLE(long-long-warnings, AS_HELP_STRING([--enable-long-long-warnings], [Enable long long warnings (for Compaq cxx with GNU ld) @<:@default no@:>@]),,enable_long_long_warnings=no)
-AC_MSG_CHECKING([if we should disable long-long warnings])
-if test x$enable_long_long_warnings = xyes; then
-	AC_MSG_RESULT(no)
-else
-	AC_MSG_RESULT(yes)
-	CHK_WARN="$CHK_WARN -Wno-long-long"
 fi
 
 WARNINGS=""
@@ -940,6 +903,26 @@ else
 	AC_MSG_RESULT(no)
 fi
 
+# Usecode container
+AC_ARG_ENABLE(usecode-container, AS_HELP_STRING([--enable-usecode-container], [Enable display of usecode container for debugging purposes @<:@default no@:>@]),,enable_usecode_container=no)
+AC_MSG_CHECKING([whether to display the usecode container in Gumps])
+if test x$enable_usecode_container = xyes; then
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(SHOW_USECODE_CONTAINER, 1, [Display Usecode container])
+else
+	AC_MSG_RESULT(no)
+fi
+
+# Show non-readied objects
+AC_ARG_ENABLE(nonreadied-objects, AS_HELP_STRING([--enable-nonreadied-objects], [Enable display of non-readied objects for debugging purposes @<:@default no@:>@]),,enable_nonreadied_objects=no)
+AC_MSG_CHECKING([whether to display non-readied objects in Gumps])
+if test x$enable_nonreadied_objects = xyes; then
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(SHOW_NONREADIED_OBJECTS, 1, [Display non-readied objects])
+else
+	AC_MSG_RESULT(no)
+fi
+
 # gnome-shp-thumbnailer
 AC_ARG_ENABLE(gnome-shp-thumbnailer, AS_HELP_STRING([--enable-gnome-shp-thumbnailer], [Build Gnome SHP Thumbnailer @<:@default no@:>@]),,enable_gnome_shp_thumbnailer=no)
 AC_MSG_CHECKING([whether to build the Gnome SHP Thumbnailer])
@@ -1048,14 +1031,12 @@ AC_SUBST(SYSLIBS)
 AC_SUBST(ICON_FILE)
 AC_SUBST(DEBUG_FLAGS)
 AC_SUBST(ZLIB_LIBS)
-AC_SUBST(OPENGL_LIBS)
 AC_SUBST(WARNINGS)
 AC_SUBST(AR_FLAGS)
 
 AC_OUTPUT([
 exult.spec
 Info.plist
-Info-ios.plist
 Makefile
 audio/Makefile
 audio/midi_drivers/Makefile

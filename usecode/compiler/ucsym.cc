@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #include <cstring>
-#include <stdio.h>
+#include <cstdio>
 #include "ucsym.h"
 #include "opcodes.h"
 #include "utils.h"
@@ -80,7 +80,7 @@ int Uc_symbol::gen_call(
     Basic_block *out,
     Uc_function *fun,
     bool orig,          // Call original (not one from patch).
-    Uc_expression *itemref,     // Non-NULL for CALLE.
+    Uc_expression *itemref,     // Non-nullptr for CALLE.
     Uc_array_expression *parms, // Parameter list.
     bool retvalue,          // True if a function.
     Uc_class *scope_vtbl    // For method calls using a different scope.
@@ -95,7 +95,7 @@ int Uc_symbol::gen_call(
 
 Uc_expression *Uc_symbol::create_expression(
 ) {
-	return 0;
+	return nullptr;
 }
 
 /*
@@ -351,7 +351,7 @@ int Uc_intrinsic_symbol::gen_call(
     Basic_block *out,
     Uc_function *fun,
     bool orig,          // Call original (not one from patch).
-    Uc_expression *itemref,     // Non-NULL for CALLE.
+    Uc_expression *itemref,     // Non-nullptr for CALLE.
     Uc_array_expression *parms, // Parameter list.
     bool retvalue,          // True if a function.
     Uc_class *scope_vtbl    // For method calls using a different scope.
@@ -538,7 +538,7 @@ int Uc_function_symbol::gen_call(
     Basic_block *out,
     Uc_function *fun,
     bool orig,          // Call original (not one from patch).
-    Uc_expression *itemref,     // Non-NULL for CALLE or method.
+    Uc_expression *itemref,     // Non-nullptr for CALLE or method.
     Uc_array_expression *aparms,    // Actual parameter list.
     bool retvalue,      // True if a function.
     Uc_class *scope_vtbl    // For method calls using a different scope.
@@ -658,7 +658,7 @@ Uc_symbol *Uc_scope::search_up(
 	if (parent)         // Look upwards.
 		return parent->search_up(nm);
 	else
-		return 0;
+		return nullptr;
 }
 
 /*

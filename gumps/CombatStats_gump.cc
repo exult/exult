@@ -41,7 +41,7 @@ static const int rowy[7] = {15, 29, 42, 73, 87, 93, 106};
  *  Create stats display.
  */
 CombatStats_gump::CombatStats_gump(int initx, int inity) :
-	Gump(0, initx, inity, game->get_shape("gumps/cstats/1")) {
+	Gump(nullptr, initx, inity, game->get_shape("gumps/cstats/1")) {
 	set_object_area(Rectangle(0, 0, 0, 0), 7, 95);
 
 
@@ -59,9 +59,6 @@ CombatStats_gump::CombatStats_gump(int initx, int inity) :
 		add_elem(new Face_button(
 		             this, colx + i * coldx - 13, rowy[0], party[i]));
 	}
-}
-
-CombatStats_gump::~CombatStats_gump() {
 }
 
 /*

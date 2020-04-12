@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>@EXE_TARGET@</string>
 	<key>CFBundleGetInfoString</key>
-	<string>@VERSION@, Copyright 1998-2018 The Exult Team</string>
+	<string>@VERSION@, Copyright 1998-2020 The Exult Team</string>
 	<key>CFBundleIconFile</key>
 	<string>exult.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -25,15 +25,15 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright 1998-2018 The Exult Team</string>
+	<string>Copyright 1998-2020 The Exult Team</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
 	<key>i386</key>
-	<string>10.6.0</string>
-	<key>x86_64</key>
 	<string>10.7.0</string>
+	<key>x86_64</key>
+	<string>10.10.0</string>
 	</dict>
 </dict>
 </plist>

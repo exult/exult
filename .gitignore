@@ -72,6 +72,7 @@ tools/rip
 tools/shp2pcx
 tools/splitshp
 tools/textpack
+tools/u7voice2syx
 tools/wuc
 usecode/compiler/ucc
 usecode/compiler/ucparse.output
@@ -124,6 +125,9 @@ TAGS
 *.ko
 *.obj
 *.elf
+
+# Dependencies
+*.d
 
 # Precompiled Headers
 *.gch
@@ -246,9 +250,25 @@ m4/ltsugar.m4
 m4/ltversion.m4
 m4/lt~obsolete.m4
 
+# Mine
+shared.*
+log.*
+autogen.sh.1
+*.tgz
+
 # Gnome builder
 .buildconfig
 Makecache
 
 # vscode
 .vscode
+.clangd/*
+.vs/*
+msvc/.vs/*
+
+# Win32 build
+data/u7bgintrinsics.data
+data/u7sibetaintrinsics.data
+data/u7siintrinsics.data
+exult_studio.exp
+msys2.patch

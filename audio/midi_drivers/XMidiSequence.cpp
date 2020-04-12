@@ -36,7 +36,7 @@ const uint16	XMidiSequence::ChannelShadow::combined_value = (coarse_value << 8) 
 
 XMidiSequence::XMidiSequence(XMidiSequenceHandler *Handler, uint16 seq_id, XMidiEventList *events,
 						bool Repeat, int volume, int branch) :
-	handler(Handler), sequence_id(seq_id), evntlist(events), event(0),
+	handler(Handler), sequence_id(seq_id), evntlist(events), event(nullptr),
 	repeat(Repeat), last_tick(0), loop_num(-1), vol_multi(volume),
 	paused(false), speed(100)
 {
@@ -140,7 +140,7 @@ int XMidiSequence::playEvent()
 	XMidiEvent *note;
 
 	// Handle note off's here
-	while ((note = notes_on.PopTime(getRealTime())) != 0)
+	while ((note = notes_on.PopTime(getRealTime())) != nullptr)
 		handler->sequenceSendEvent(sequence_id, note->status + (note->data[0] << 8));
 
 	// No events left, but we still have notes on, so say we are still playing, if not report we've finished
@@ -168,7 +168,7 @@ int XMidiSequence::playEvent()
 #endif
 
 	// Handle note off's here too
-	while ((note = notes_on.PopTime(getRealTime())) != 0)
+	while ((note = notes_on.PopTime(getRealTime())) != nullptr)
 		handler->sequenceSendEvent(sequence_id, note->status + (note->data[0] << 8));
 
 		// XMidi For Loop
@@ -205,7 +205,7 @@ int XMidiSequence::playEvent()
 				loop_event[loop_num] = branch;
 			}
 		}
-		event = NULL;
+		event = nullptr;
 	}	// XMidi Callback Trigger
 	else if ((event->status >> 4) == MIDI_STATUS_CONTROLLER && event->data[0] == XMIDI_CONTROLLER_CALLBACK_TRIG)
 	{

@@ -37,24 +37,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 template<class D>
 D_Recursive_object_iterator<D>::D_Recursive_object_iterator(
     Game_object *start      // Start here.
-) : child(0), elems(start->get_outermost()->get_chunk()->get_objects()) {
+) : child(nullptr), elems(start->get_outermost()->get_chunk()->get_objects()) {
 	// Get what obj. is in (or itself).
 	Game_object *owner = start->get_outermost();
 	Game_object *obj;       // Find owner within its chunk.
-	while ((obj = get_next()) != 0 && obj != owner)
+	while ((obj = get_next()) != nullptr && obj != owner)
 		;
 	if (!obj)
 		return;         // Bad.  It wasn't found.
 	if (obj != start)       // Given object contained?
 		// Look within for it.
-		while ((obj = get_next()) != 0 && obj != start)
+		while ((obj = get_next()) != nullptr && obj != start)
 			;
 }
 
 /*
  *  Get next game object, going down recursively into containers.
  *
- *  Output: Next in world, or 0 if done.
+ *  Output: Next in world, or nullptr if done.
  */
 
 template<class D> Game_object *D_Recursive_object_iterator<D>::get_next(
@@ -65,11 +65,11 @@ template<class D> Game_object *D_Recursive_object_iterator<D>::get_next(
 		if (obj)
 			return obj;
 		delete child;
-		child = 0;      // Child done.
+		child = nullptr;      // Child done.
 	}
 	obj = elems.get_next();     // Get next from our list.
 	if (!obj)
-		return 0;       // All done.
+		return nullptr;       // All done.
 	// Is it a container?
 	Container_game_object *c = obj->as_container();
 	if (c)              // Container?  Set to go through it.

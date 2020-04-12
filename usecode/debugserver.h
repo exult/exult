@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _DEBUGSERVER_H
-#define _DEBUGSERVER_H
+#ifndef DEBUGSERVER_H
+#define DEBUGSERVER_H
 
 #if (defined(USE_EXULTSTUDIO) && defined(USECODE_DEBUGGER))
 

@@ -61,7 +61,7 @@ public:
 
 
 BilinearScaler::BilinearScaler() {
-	Scale8To8 = 0;
+	Scale8To8 = nullptr;
 	Scale8To32 = BilinearScalerInternal<uint32, Manip8to32, uint8>::ScaleBilinear;
 	Scale32To32 = BilinearScalerInternal<uint32, Manip32to32, uint32>::ScaleBilinear;
 

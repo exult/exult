@@ -16,8 +16,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _GUMP_UTILS_H_
-#define _GUMP_UTILS_H_
+#ifndef GUMP_UTILS_H
+#define GUMP_UTILS_H
 
 #ifdef XWIN  /* Only needed in XWIN. */
 #include <sys/time.h>
@@ -51,7 +51,7 @@ inline void Delay(
 	FD_ZERO(&rfds);
 	FD_SET(xfd, &rfds);
 	// Wait for timeout or event.
-	select(xfd + 1, &rfds, 0, 0, &timer);
+	select(xfd + 1, &rfds, nullptr, nullptr, &timer);
 #else                   /* May use this for Linux too. */
 	SDL_Delay(10);          // Try 1/100 second.
 #endif

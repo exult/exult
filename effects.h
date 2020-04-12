@@ -23,9 +23,11 @@
 
 #include <string>
 
+#include "singles.h"
+#include "shapeid.h"
+#include "rect.h"
 #include "tqueue.h"
 #include "tiles.h"
-#include "singles.h"
 
 class Xform_palette;
 class PathFinder;
@@ -37,6 +39,8 @@ class Actor;
 class Special_effect;
 class Text_effect;
 
+using Game_object_weak = std::weak_ptr<Game_object>;
+
 /*
  *  Manage special effects.
  */
@@ -45,7 +49,7 @@ class Effects_manager {
 	Special_effect *effects;    // Sprite effects, projectiles, etc.
 	Text_effect *texts;     // Text snippets.
 public:
-	Effects_manager(Game_window *g) : gwin(g), effects(0), texts(0)
+	Effects_manager(Game_window *g) : gwin(g), effects(nullptr), texts(nullptr)
 	{  }
 	~Effects_manager();
 	// Add text item.
@@ -53,7 +57,7 @@ public:
 	void add_text(const char *msg, int x, int y);
 	void center_text(const char *msg);
 	void add_effect(Special_effect *effect);
-	void add_text_effect(Text_effect *txt);
+	void add_text_effect(Text_effect *effect);
 	void remove_text_effect(Game_object *item);
 	// Remove text item & delete it.
 	void remove_effect(Special_effect *effect);
@@ -73,17 +77,13 @@ public:
  *  Base class for special-effects:
  */
 class Special_effect : public Time_sensitive, public Game_singletons {
-	Special_effect *next, *prev;    // All of them are chained together.
+	Special_effect *next = nullptr, *prev = nullptr;    // All of them are chained together.
 public:
 	friend class Effects_manager;
-	Special_effect() : next(0), prev(0)
-	{  }
-	virtual ~Special_effect()
-	{  }
 	// Render.
 	virtual void paint();
-	virtual int is_weather() {  // Need to distinguish weather.
-		return 0;
+	virtual bool is_weather() {  // Need to distinguish weather.
+		return false;
 	}
 };
 
@@ -96,7 +96,7 @@ protected:
 	//int sprite_num;       // Which one.
 	//int frame_num;        // Current frame.
 	int frames;         // # frames.
-	Game_object *item;      // Follows this around if not null.
+	Game_object_weak item;      // Follows this around if not null.
 	Tile_coord pos;         // Position within world.
 	int xoff, yoff;         // Offset from position in pixels.
 	int deltax, deltay;     // Add to xoff, yoff on each frame.
@@ -108,26 +108,26 @@ public:
 	Sprites_effect(int num, Game_object *it,
 	               int xf, int yf, int dx, int dy, int frm = 0, int rps = -1);
 	// For Time_sensitive:
-	virtual void handle_event(unsigned long time, uintptr udata);
+	void handle_event(unsigned long time, uintptr udata) override;
 	// Render.
-	virtual void paint();
+	void paint() override;
 };
 
 /*
  *  An explosion.
  */
 class Explosion_effect : public Sprites_effect {
-	Game_object *explode;       // What's exploding, or 0.
+	Game_object_weak explode;       // What's exploding, or nullptr.
 	int weapon;         // Weapon to use for attack values.
 	int projectile;     // The projectile, for e.g., burst arrows
 	int exp_sfx;        // Explosion SFX.
-	Game_object *attacker;  //Who is responsible for the explosion;
+	Game_object_weak attacker;  //Who is responsible for the explosion;
 	//otherwise, explosion and delayed blast spells
 	//would not trigger a response from target
 public:
 	Explosion_effect(Tile_coord const &p, Game_object *exp, int delay = 0, int weap = -1,
-	                 int proj = -1, Game_object *att = 0);
-	virtual void handle_event(unsigned long time, uintptr udata);
+	                 int proj = -1, Game_object *att = nullptr);
+	void handle_event(unsigned long time, uintptr udata) override;
 };
 
 /*
@@ -135,8 +135,8 @@ public:
  *  implement Usecode intrinsic 0x41:
  */
 class Projectile_effect : public Special_effect {
-	Game_object *attacker;      // Source of attack/spell.
-	Game_object *target;        // Target of path.
+	Game_object_weak attacker;      // Source of attack/spell.
+	Game_object_weak target;        // Target of path.
 	int weapon;         // Shape # of firing weapon.
 	int projectile_shape;       // Shape # of projectile/spell.
 	ShapeID sprite;         // Sprite shape to display.
@@ -151,22 +151,22 @@ class Projectile_effect : public Special_effect {
 	int attval;         // Attack value of projectile.
 	bool autohit;
 	void add_dirty();
-	void init(Tile_coord const &s, Tile_coord const &t);
+	void init(Tile_coord const &s, Tile_coord const &d);
 public:
 	Projectile_effect(Game_object *att, Game_object *to, int weap,
-	                  int proj, int spr, int attpts = 60, int speed = -1);
+	                  int proj, int spr, int attpts = 60, int spd = -1);
 	// For missile traps:
 	Projectile_effect(Game_object *att, Tile_coord const &d, int weap,
-	                  int proj, int spr, int attpts = 60, int speed = -1,
+	                  int proj, int spr, int attpts = 60, int spd = -1,
 	                  bool retpath = false);
 	Projectile_effect(Tile_coord const &s, Game_object *to, int weap,
-	                  int proj, int spr, int attpts = 60, int speed = -1,
+	                  int proj, int spr, int attpts = 60, int spd = -1,
 	                  bool retpath = false);
-	~Projectile_effect();
+	~Projectile_effect() override;
 	// For Time_sensitive:
-	virtual void handle_event(unsigned long time, uintptr udata);
+	void handle_event(unsigned long time, uintptr udata) override;
 	// Render.
-	virtual void paint();
+	void paint() override;
 	void set_speed(int s) {
 		speed = s;
 	}
@@ -181,8 +181,8 @@ public:
 class Homing_projectile : public Special_effect {
 	ShapeID sprite;
 	int weapon;     // The weapon's shape number.
-	Game_object *attacker;  // Who is responsible for the attack.
-	Actor *target;          // We'll follow this around if not 0.
+	Game_object_weak attacker;  // Who is responsible for the attack.
+	Actor *target;          // We'll follow this around if not nullptr.
 	Tile_coord pos;         // Current position.
 	Tile_coord dest;        // Destination pos for when there is no target.
 	bool stationary;        // If the effect should seek new targets.
@@ -196,9 +196,9 @@ public:
 	Homing_projectile(int shnum, Game_object *att, Game_object *trg,
 	                  Tile_coord const &sp, Tile_coord const &tp);
 	// For Time_sensitive:
-	virtual void handle_event(unsigned long time, uintptr udata);
+	void handle_event(unsigned long time, uintptr udata) override;
 	// Render.
-	virtual void paint();
+	void paint() override;
 };
 
 /*
@@ -209,7 +209,7 @@ public:
 class Text_effect : public Time_sensitive, public Game_singletons {
 	Text_effect *next, *prev;   // All of them are chained together.
 	std::string msg;        // What to print.
-	Game_object *item;      // Item text is on.  May be null.
+	Game_object_weak item;      // Item text is on.  May be null.
 	Tile_coord tpos;        // Position to display it at.
 	Rectangle pos;
 	short width, height;        // Dimensions of rectangle.
@@ -222,12 +222,12 @@ public:
 	Text_effect(const std::string &m, Game_object *it);
 	Text_effect(const std::string &m, int t_x, int t_y);
 	// At timeout, remove from screen.
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 	// Render.
 	virtual void paint();
 	// Check for matching item.
-	int is_text(Game_object *it) {
-		return it == item;
+	bool is_text(Game_object *it) {
+	    return it == item.lock().get();
 	}
 	virtual void update_dirty();
 };
@@ -241,13 +241,11 @@ protected:
 	int num;            // Weather ID (0-6), or -1.
 	Tile_coord eggloc;      // Location of egg that started this.
 public:
-	Weather_effect(int duration, int delay, int n, Game_object *egg = 0);
-	virtual ~Weather_effect()
-	{  }
+	Weather_effect(int duration, int delay, int n, Game_object *egg = nullptr);
 	// Avatar out of range?
-	int out_of_range(Tile_coord &avpos, int dist);
-	virtual int is_weather() {
-		return 1;
+	bool out_of_range(Tile_coord &avpos, int dist);
+	bool is_weather() override {
+		return true;
 	}
 	int get_num() {
 		return num;
@@ -260,10 +258,10 @@ public:
 class Fog_effect : public Weather_effect {
 	bool start;
 public:
-	Fog_effect(int duration, int delay = 0, Game_object *egg = 0);
-	virtual ~Fog_effect();
+	Fog_effect(int duration, int delay = 0, Game_object *egg = nullptr);
+	~Fog_effect() override;
 	// Execute when due.
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 /*
@@ -281,9 +279,9 @@ public:
 	bool from_usecode() const {
 		return fromusecode;
 	}
-	virtual ~Lightning_effect();
+	~Lightning_effect() override;
 	// Execute when due.
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 /*
@@ -292,9 +290,9 @@ public:
 class Storm_effect : public Weather_effect {
 	bool start;         // 1 to start storm.
 public:
-	Storm_effect(int duration, int delay = 0, Game_object *egg = 0);
+	Storm_effect(int duration, int delay = 0, Game_object *egg = nullptr);
 	// Execute when due.
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 /*
@@ -303,9 +301,9 @@ public:
 class Snowstorm_effect : public Weather_effect {
 	bool start;         // 1 to start storm.
 public:
-	Snowstorm_effect(int duration, int delay = 0, Game_object *egg = 0);
+	Snowstorm_effect(int duration, int delay = 0, Game_object *egg = nullptr);
 	// Execute when due.
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 /*
@@ -314,9 +312,9 @@ public:
 class Sparkle_effect : public Weather_effect {
 	bool start;         // 1 to start storm.
 public:
-	Sparkle_effect(int duration, int delay = 0, Game_object *egg = 0);
+	Sparkle_effect(int duration, int delay = 0, Game_object *egg = nullptr);
 	// Execute when due.
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 /*
@@ -346,12 +344,12 @@ class Clouds_effect : public Weather_effect {
 	Cloud **clouds;         // ->clouds.
 	bool overcast;
 public:
-	Clouds_effect(int duration, int delay = 0, Game_object *egg = 0, int n = -1);
+	Clouds_effect(int duration, int delay = 0, Game_object *egg = nullptr, int n = -1);
 	// Execute when due.
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 	// Render.
-	virtual void paint();
-	virtual ~Clouds_effect();
+	void paint() override;
+	~Clouds_effect() override;
 };
 
 /*
@@ -364,17 +362,17 @@ public:
 	Earthquake(int l) : len(l), i(0) {
 	}
 	// Execute when due.
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 /*
  *  A fire field that dies out after a few seconds.
  */
 class Fire_field_effect : public Special_effect {
-	Game_object *field;     // What we create.
+	Game_object_weak field;     // What we create.
 public:
 	Fire_field_effect(Tile_coord const &t);
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 #endif

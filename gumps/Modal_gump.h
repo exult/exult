@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _MODAL_GUMP_H_
-#define _MODAL_GUMP_H_
+#ifndef MODAL_GUMP_H
+#define MODAL_GUMP_H
 
 #include "Gump.h"
 #include "SDL_events.h"
@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  the user clicks okay.
  */
 class Modal_gump : public Gump {
-	UNREPLICATABLE_CLASS_I(Modal_gump, Gump())
+	UNREPLICATABLE_CLASS(Modal_gump)
 
 protected:
 	bool done;          // true when user clicks checkmark.
@@ -38,13 +38,12 @@ public:
 	Modal_gump(Container_game_object *cont, int initx, int inity,
 	           int shnum, ShapeFile shfile = SF_GUMPS_VGA)
 		: Gump(cont, initx, inity, shnum, shfile), done(false),
-		  pushed(0)
+		  pushed(nullptr)
 	{  }
-	virtual ~Modal_gump() {  }
 	// Create centered.
 	Modal_gump(Container_game_object *cont, int shnum,
 	           ShapeFile shfile = SF_GUMPS_VGA)
-		: Gump(cont, shnum, shfile), done(false), pushed(0)
+		: Gump(cont, shnum, shfile), done(false), pushed(nullptr)
 	{  }
 	bool is_done() {
 		return done;
@@ -63,7 +62,10 @@ public:
 	virtual void text_input(int chr, int unicode) { // Character typed (unicode)
 		ignore_unused_variable_warning(chr, unicode);
 	}
-	virtual bool is_modal() const {
+	virtual void text_input(const char *text) { // complete string input
+		ignore_unused_variable_warning(text);
+	}
+	bool is_modal() const override {
 		return true;
 	}
 

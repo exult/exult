@@ -1,5 +1,5 @@
-dnl Check if we have SDL (sdl-config, header and library) version >= 1.2.0
-dnl Extra options: --with-sdl-prefix=PATH and --with-sdl={sdl12,sdl2}
+dnl Check if we have SDL (sdl-config, header and library) version >= 2.0.1
+dnl Extra options: --with-sdl-prefix=PATH
 dnl Output:
 dnl SDL_CFLAGS and SDL_LIBS are set and AC_SUBST-ed
 dnl HAVE_SDL_H is AC_DEFINE-d
@@ -13,7 +13,6 @@ AC_DEFUN([EXULT_CHECK_SDL],[
 
   AC_ARG_WITH(sdl-prefix,[  --with-sdl-prefix=PFX   Prefix where SDL is installed (optional)], sdl_prefix="$withval", sdl_prefix="")
   AC_ARG_WITH(sdl-exec-prefix,[  --with-sdl-exec-prefix=PFX Exec prefix where SDL is installed (optional)], sdl_exec_prefix="$withval", sdl_exec_prefix="")
-  AC_ARG_WITH(sdl,       [  --with-sdl=sdl12,sdl2   Select a specific version of SDL to use (optional)], sdl_ver="$withval", sdl_ver="")
 
   dnl First: find sdl-config or sdl2-config
   exult_extra_path=$prefix/bin:$prefix/usr/bin
@@ -26,15 +25,7 @@ AC_DEFUN([EXULT_CHECK_SDL],[
      sdl_args="$sdl_args --prefix=$sdl_prefix"
      exult_extra_path=$sdl_prefix/bin
   fi
-  if test x"$sdl_ver" = xsdl12 ; then
-    exult_sdl_progs=sdl-config
-  elif test x"$sdl_ver" = xsdl2 ; then
-    exult_sdl_progs=sdl2-config
-  else
-    dnl NB: This line implies we prefer SDL 1.2 to SDL 2.0
-    exult_sdl_progs="sdl2-config sdl-config"
-  fi
-  AC_PATH_PROGS(SDL_CONFIG, $exult_sdl_progs, no, [$exult_extra_path:$PATH])
+  AC_PATH_PROGS(SDL_CONFIG, sdl2-config, no, [$exult_extra_path:$PATH])
   if test "$SDL_CONFIG" = "no" ; then
     exult_sdlok=no
   else
@@ -47,22 +38,11 @@ AC_DEFUN([EXULT_CHECK_SDL],[
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
     sdl_patchlevel=`$SDL_CONFIG $sdl_args --version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
-    if test $sdl_major_version -eq 1 ; then
-      sdl_ver=sdl12
-    else
-      sdl_ver=sdl2
-    fi
   fi
 
-  if test x"$sdl_ver" = xsdl2 ; then
-    REQ_MAJOR=2
-    REQ_MINOR=0
-    REQ_PATCHLEVEL=0
-  else
-    REQ_MAJOR=1
-    REQ_MINOR=2
-    REQ_PATCHLEVEL=0
-  fi
+  REQ_MAJOR=2
+  REQ_MINOR=0
+  REQ_PATCHLEVEL=1
   REQ_VERSION=$REQ_MAJOR.$REQ_MINOR.$REQ_PATCHLEVEL
 
   AC_MSG_CHECKING([for SDL - version >= $REQ_VERSION])

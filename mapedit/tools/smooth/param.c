@@ -29,7 +29,7 @@ void show_help(char *prog_name) {
 
 int is_switch(char *val) {
 	// function return true if the parameter has exactly 2 characters and starts with '-'
-	return(!strncmp(val, "-", 1) && strlen(val) == 2);
+	return !strncmp(val, "-", 1) && strlen(val) == 2;
 }
 
 int read_param(int argc, char **argv) {
@@ -53,7 +53,7 @@ int read_param(int argc, char **argv) {
 					g_statics.debug = atoi(argv[i + 1]);
 				} else {
 					printf("missing value for switch 'd'\n");
-					return(-1);
+					return -1;
 				}
 				break;
 			}
@@ -63,7 +63,7 @@ int read_param(int argc, char **argv) {
 					g_statics.config_file = argv[i + 1];
 				} else {
 					printf("missing value for switch 'c'\n");
-					return(-1);
+					return -1;
 				}
 				break;
 			}
@@ -72,7 +72,7 @@ int read_param(int argc, char **argv) {
 					g_statics.fileout = argv[i + 1];
 				} else {
 					printf("missing value for switch 'o'\n");
-					return(-1);
+					return -1;
 				}
 				break;
 			}
@@ -81,21 +81,21 @@ int read_param(int argc, char **argv) {
 					g_statics.filein = argv[i + 1];
 				} else {
 					printf("missing value for switch 'i'\n");
-					return(-1);
+					return -1;
 				}
 				break;
 			}
 			default: {
 				show_help(argv[0]);
-				return(-1);
+				return -1;
 			}
 			}
 			i++;
 		} else {
 			show_help(argv[0]);
-			return(-1);
+			return -1;
 		}
 	}
 
-	return(0);
+	return 0;
 }

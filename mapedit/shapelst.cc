@@ -26,8 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#ifdef WIN32
-#include "Windrag.h"
+#ifdef _WIN32
+#include "windrag.h"
 #include <windows.h>
 #endif
 
@@ -35,8 +35,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wparentheses"
+#if !defined(__llvm__) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#else
+#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
+#endif
 #endif  // __GNUC__
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -49,9 +55,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "gtk_redefines.h"
 
 #include <glib.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <memory>
 #include "shapelst.h"
 #include "shapevga.h"
 #include "ibuf8.h"
@@ -73,11 +80,13 @@ using std::endl;
 using std::strlen;
 using std::string;
 using std::ifstream;
+using std::make_unique;
+using std::unique_ptr;
 using EStudio::Prompt;
 using EStudio::Alert;
 using EStudio::Add_menu_item;
 
-std::vector<Editing_file *> Shape_chooser::editing_files;
+std::vector<std::unique_ptr<Editing_file>> Shape_chooser::editing_files;
 int Shape_chooser::check_editing_timer = -1;
 
 #define IS_FLAT(shnum)  ((shnum) < c_first_obj_shape)
@@ -144,7 +153,8 @@ void Shape_chooser::show(
 
 void Shape_chooser::tell_server_shape(
 ) {
-	int shnum = -1, frnum = 0;
+	int shnum = -1;
+	int frnum = 0;
 	if (selected >= 0) {
 		shnum = info[selected].shapenum;
 		frnum = info[selected].framenum;
@@ -247,8 +257,11 @@ static int Get_x_offset(
 	if (framenum >= nframes)
 		framenum = nframes - 1;
 	int xoff = 0;
-	for (int i = 0; i < framenum; i++)
-		xoff += shape->get_frame(i)->get_width() + border;
+	for (int i = 0; i < framenum; i++) {
+		Shape_frame *fr = shape->get_frame(i);
+		assert(fr);
+		xoff += fr->get_width() + border;
+	}
 	return xoff;
 }
 
@@ -284,7 +297,8 @@ void Shape_chooser::setup_info(
 
 void Shape_chooser::setup_shapes_info(
 ) {
-	int selshape = -1, selframe = -1;
+	int selshape = -1;
+	int selframe = -1;
 	if (selected >= 0) {    // Save selection info.
 		selshape = info[selected].shapenum;
 		selframe = info[selected].framenum;
@@ -305,8 +319,8 @@ void Shape_chooser::setup_shapes_info(
 		Shape_frame *shape = ifile->get_shape(shapenum, framenum);
 		if (!shape)
 			continue;
-		int sh = shape->get_height(),
-		    sw = shape->get_width();
+		int sh = shape->get_height();
+		int sw = shape->get_width();
 		// Check if we've exceeded max width
 		if (x + sw > winw && x) {   // But don't leave row empty.
 			// Next line.
@@ -337,7 +351,8 @@ void Shape_chooser::setup_shapes_info(
 void Shape_chooser::setup_frames_info(
 ) {
 	// Get drawing area dimensions.
-	int curr_y = 0, maxw = 0;
+	int curr_y = 0;
+	int maxw = 0;
 	unsigned total_cnt = get_count();
 	//   filter (group).
 	for (unsigned index = index0; index < total_cnt; index++) {
@@ -353,7 +368,8 @@ void Shape_chooser::setup_frames_info(
 		rows.back().y = curr_y;
 		rows.back().height = row_h + border;
 		int x = 0;
-		int sw, sh;
+		int sw;
+		int sh;
 		for (int framenum = 0; framenum < nframes; framenum++,
 		        x += sw + border) {
 			Shape_frame *frame = shape->get_frame(framenum);
@@ -393,7 +409,9 @@ void Shape_chooser::scroll_to_frame(
 			hoffset = xoff > border ? xoff - border : 0;
 		else {
 			gint winw = draw->allocation.width;
-			int sw = shape->get_frame(selframe)->get_width();
+			Shape_frame *fr = shape->get_frame(selframe);
+			assert(fr);
+			int sw = fr->get_width();
 			if (xoff + sw + border - hoffset > winw)
 				hoffset = xoff + sw + border - winw;
 		}
@@ -418,7 +436,8 @@ void Shape_chooser::goto_index(
 	Rectangle winrect(hoffset, voffset, config_width, config_height);
 	if (winrect.has_point(midx, midy))
 		return;
-	unsigned start = 0, count = rows.size();
+	unsigned start = 0;
+	unsigned count = rows.size();
 	while (count > 1) {     // Binary search.
 		unsigned mid = start + count / 2;
 		if (index < rows[mid].index0)
@@ -450,7 +469,8 @@ int Shape_chooser::find_shape(
 				return i;
 		return -1;
 	}
-	unsigned start = 0, count = info.size();
+	unsigned start = 0;
+	unsigned count = info.size();
 	while (count > 1) {     // Binary search.
 		unsigned mid = start + count / 2;
 		if (shnum < info[mid].shapenum)
@@ -496,7 +516,7 @@ gint Shape_chooser::configure(
 	//   BUT not more than once.
 	if (drop_callback != Shape_dropped_here)
 		enable_drop(Shape_dropped_here, this);
-	return (TRUE);
+	return TRUE;
 }
 
 /*
@@ -512,14 +532,14 @@ gint Shape_chooser::expose(
 	Shape_chooser *chooser = static_cast<Shape_chooser *>(data);
 	chooser->show(event->area.x, event->area.y, event->area.width,
 	              event->area.height);
-	return (TRUE);
+	return TRUE;
 }
 
 /*
  *  Handle a mouse drag event.
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 
 static bool win32_button = false;
 
@@ -537,14 +557,14 @@ gint Shape_chooser::win32_drag_motion(
 
 		// This call allows us to recycle the data transfer initialization code.
 		//  It's clumsy, but far easier to maintain.
-		drag_data_get(NULL, NULL, (GtkSelectionData *) &wdata,
+		drag_data_get(nullptr, nullptr, reinterpret_cast<GtkSelectionData*>(&wdata),
 		              U7_TARGET_SHAPEID, 0, data);
 
 		POINT pnt;
 		GetCursorPos(&pnt);
 
-		Windropsource idsrc(0, pnt.x, pnt.y);
-		LPDATAOBJECT idobj = (LPDATAOBJECT) new Winstudioobj(wdata);
+		Windropsource idsrc(nullptr, pnt.x, pnt.y);
+		LPDATAOBJECT idobj = new Winstudioobj(wdata);
 		DWORD dndout;
 
 		HRESULT res = DoDragDrop(idobj, &idsrc, DROPEFFECT_COPY, &dndout);
@@ -584,20 +604,22 @@ gint Shape_chooser::mouse_press(
 	if (event->button == 4) {
 		if (row0 > 0)
 			scroll_row_vertical(row0 - 1);
-		return(TRUE);
+		return TRUE;
 	} else if (event->button == 5) {
 		scroll_row_vertical(row0 + 1);
-		return(TRUE);
+		return TRUE;
 	}
-	int old_selected = selected, new_selected = -1;
+	int old_selected = selected;
+	int new_selected = -1;
 	unsigned i;              // Search through entries.
 	unsigned infosz = info.size();
-	int absx = static_cast<int>(event->x) + hoffset, absy = static_cast<int>(event->y) + voffset;
+	int absx = static_cast<int>(event->x) + hoffset;
+	int absy = static_cast<int>(event->y) + voffset;
 	for (i = rows[row0].index0; i < infosz; i++) {
 		if (info[i].box.distance(absx, absy) <= 2) {
 			// Found the box?
 			// Indicate we can drag.
-#ifdef WIN32
+#ifdef _WIN32
 // Here, we have to override GTK+'s Drag and Drop, which is non-OLE and
 // usually stucks outside the program window. I think it's because
 // the dragged shape only receives mouse motion events when the new mouse pointer
@@ -626,8 +648,8 @@ gint Shape_chooser::mouse_press(
 	}
 	if (event->button == 3)
 		gtk_menu_popup(GTK_MENU(create_popup()),
-		               0, 0, 0, 0, event->button, event->time);
-	return (TRUE);
+		               nullptr, nullptr, nullptr, nullptr, event->button, event->time);
+	return TRUE;
 }
 
 /*
@@ -683,14 +705,16 @@ const unsigned char transp = 255;
 time_t Shape_chooser::export_png(
     const char *fname       // File to write out.
 ) {
-	int shnum = info[selected].shapenum,
-	    frnum = info[selected].framenum;
+	int shnum = info[selected].shapenum;
+	int frnum = info[selected].framenum;
 	Shape_frame *frame = ifile->get_shape(shnum, frnum);
-	int w = frame->get_width(), h = frame->get_height();
+	int w = frame->get_width();
+	int h = frame->get_height();
 	Image_buffer8 img(w, h);    // Render into a buffer.
 	img.fill8(transp);      // Fill with transparent pixel.
 	frame->paint(&img, frame->get_xleft(), frame->get_yabove());
-	int xoff = 0, yoff = 0;
+	int xoff = 0;
+	int yoff = 0;
 	if (frame->is_rle()) {
 		xoff = -frame->get_xright();
 		yoff = -frame->get_ybelow();
@@ -726,7 +750,8 @@ time_t Shape_chooser::export_png(
 ) {
 	unsigned char pal[3 * 256]; // Set up palette.
 	Get_rgb_palette(palette, pal);
-	int w = img.get_width(), h = img.get_height();
+	int w = img.get_width();
+	int h = img.get_height();
 	struct stat fs;         // Write out to the .png.
 	// (Rotate transp. pixel to 0 for the
 	//   Gimp's sake.)
@@ -757,13 +782,14 @@ time_t Shape_chooser::export_tiled_png(
 	// Low shape in 'shapes.vga'?
 	assert(IS_FLAT(shnum) && file_info == studio->get_vgafile());
 	Shape *shape = ifile->extract_shape(shnum);
-	assert(shape != 0);
+	assert(shape != nullptr);
 	cout << "Writing " << fname << " tiled"
 	     << (bycols ? ", by cols" : ", by rows") << " first" << endl;
 	int nframes = shape->get_num_frames();
 	// Figure #tiles in other dim.
 	int dim1_cnt = (nframes + tiles - 1) / tiles;
-	int w, h;
+	int w;
+	int h;
 	if (bycols) {
 		h = tiles * c_tilesize;
 		w = dim1_cnt * c_tilesize;
@@ -785,7 +811,8 @@ time_t Shape_chooser::export_tiled_png(
 			Alert("%s", buf);
 			return 0;
 		}
-		int x, y;
+		int x;
+		int y;
 		if (bycols) {
 			y = f % tiles;
 			x = f / tiles;
@@ -807,10 +834,10 @@ time_t Shape_chooser::export_tiled_png(
 void Shape_chooser::edit_shape_info(
 ) {
 	ExultStudio *studio = ExultStudio::get_instance();
-	int shnum = info[selected].shapenum,
-	    frnum = info[selected].framenum;
-	Shape_info *info = 0;
-	const char *name = 0;
+	int shnum = info[selected].shapenum;
+	int frnum = info[selected].framenum;
+	Shape_info *info = nullptr;
+	const char *name = nullptr;
 	if (shapes_file) {
 		// Read info. the first time.
 		shapes_file->read_info(studio->get_game_type(), true);
@@ -832,8 +859,8 @@ void Shape_chooser::edit_shape(
     bool bycols         // Write tiles columns-first.
 ) {
 	ExultStudio *studio = ExultStudio::get_instance();
-	int shnum = info[selected].shapenum,
-	    frnum = info[selected].framenum;
+	int shnum = info[selected].shapenum;
+	int frnum = info[selected].framenum;
 	string filestr("<SAVEGAME>");   // Set up filename.
 	filestr += "/itmp";     // "Image tmp" directory.
 	U7mkdir(filestr.c_str(), 0755); // Create if not already there.
@@ -857,20 +884,20 @@ void Shape_chooser::edit_shape(
 		if (!mtime)
 			return;
 		// Store info. about file.
-		editing_files.push_back(new Editing_file(
+		editing_files.push_back(std::make_unique<Editing_file>(
 		                            file_info->get_basename(), fname, mtime, shnum, frnum));
 	} else {
 		mtime = export_tiled_png(fname, tiles, bycols);
 		if (!mtime)
 			return;
-		editing_files.push_back(new Editing_file(
+		editing_files.push_back(std::make_unique<Editing_file>(
 		                            file_info->get_basename(), fname, mtime, shnum,
 		                            tiles, bycols));
 	}
 	string cmd(studio->get_image_editor());
 	cmd += ' ';
 	string imgpath;
-#ifdef WIN32
+#ifdef _WIN32
 	if (fname[0] == '.' && (fname[1] == '\\' || fname[1] == '/')) {
 		char currdir[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, currdir);
@@ -884,7 +911,7 @@ void Shape_chooser::edit_shape(
 	if (imgpath.find(' ') != string::npos)
 		imgpath = "\"" + imgpath + "\"";
 	cmd += imgpath;
-#ifndef WIN32
+#ifndef _WIN32
 	cmd += " &";            // Background.
 	int ret = system(cmd.c_str());
 	if (ret == 127 || ret == -1)
@@ -897,14 +924,14 @@ void Shape_chooser::edit_shape(
 	STARTUPINFO     si;
 	std::memset(&si, 0, sizeof(si));
 	si.cb = sizeof(si);
-	int ret = CreateProcess(NULL, const_cast<char *>(cmd.c_str()),
-	                        NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+	int ret = CreateProcess(nullptr, const_cast<char *>(cmd.c_str()),
+	                        nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
 	if (!ret)
 		Alert("Can't launch '%s'", studio->get_image_editor());
 #endif
 	if (check_editing_timer == -1)  // Monitor files every 6 seconds.
 		check_editing_timer = gtk_timeout_add(6000,
-		                                      Shape_chooser::check_editing_files_cb, 0L);
+		                                      Shape_chooser::check_editing_files_cb, nullptr);
 }
 
 /*
@@ -928,22 +955,23 @@ gint Shape_chooser::check_editing_files_cb(
 gint Shape_chooser::check_editing_files(
 ) {
 	bool modified = false;
-	for (std::vector<Editing_file *>::iterator it = editing_files.begin();
-	        it != editing_files.end(); ++it) {
-		Editing_file *ed = *it;
+	for (auto& ed : editing_files) {
 		struct stat fs;     // Check mod. time of file.
 		if (stat(ed->pathname.c_str(), &fs) != 0) {
 			// Gone?
-			delete ed;
-			it = editing_files.erase(it);
+			ed.reset();
 			continue;
 		}
 		if (fs.st_mtime <= ed->mtime)
 			continue;   // Still not changed.
 		ed->mtime = fs.st_mtime;
-		read_back_edited(ed);
+		read_back_edited(ed.get());
 		modified = true;    // Did one.
 	}
+	editing_files.erase(std::remove_if(editing_files.begin(), editing_files.end(),
+		[](const auto& ed) {
+			return ed == nullptr;
+		}), editing_files.end());
 	if (modified) {         // Repaint if modified.
 		ExultStudio *studio = ExultStudio::get_instance();
 		Object_browser *browser = studio->get_browser();
@@ -952,7 +980,7 @@ gint Shape_chooser::check_editing_files(
 			browser->render();
 			browser->show();
 		}
-		studio->update_group_windows(0);
+		studio->update_group_windows(nullptr);
 	}
 	return 1;           // Continue timeouts.
 }
@@ -964,7 +992,7 @@ gint Shape_chooser::check_editing_files(
  */
 
 static int Find_closest_color(
-    unsigned char *pal,     // 3*255 bytes.
+    const unsigned char *pal,     // 3*255 bytes.
     int r, int g, int b     // Color to match.
 ) {
 	int best_index = -1;
@@ -972,8 +1000,9 @@ static int Find_closest_color(
 	// Be sure to search rotating colors too.
 	for (int i = 0; i < 0xff; i++) {
 		// Get deltas.
-		long dr = r - pal[3 * i], dg = g - pal[3 * i + 1],
-		     db = b - pal[3 * i + 2];
+		long dr = r - pal[3 * i];
+		long dg = g - pal[3 * i + 1];
+		long db = b - pal[3 * i + 2];
 		// Figure distance-squared.
 		long dist = dr * dr + dg * dg + db * db;
 		if (dist < best_distance) {
@@ -1030,8 +1059,14 @@ static void Import_png(
 	Shape *shape = ifile->extract_shape(shapenum);
 	if (!shape)
 		return;
-	int w, h, rowsize, xoff, yoff, palsize;
-	unsigned char *pixels, *oldpal;
+	int w;
+	int h;
+	int rowsize;
+	int xoff;
+	int yoff;
+	int palsize;
+	unsigned char *pixels;
+	unsigned char *oldpal;
 	// Import, with 255 = transp. index.
 	if (!Import_png8(fname, 255, w, h, rowsize, xoff, yoff,
 	                 pixels, oldpal, palsize))
@@ -1041,7 +1076,8 @@ static void Import_png(
 	delete [] oldpal;
 	// Low shape in 'shapes.vga'?
 	bool flat = IS_FLAT(shapenum) && finfo == studio->get_vgafile();
-	int xleft, yabove;
+	int xleft;
+	int yabove;
 	if (flat) {
 		xleft = yabove = c_tilesize;
 		if (w != c_tilesize || h != c_tilesize || rowsize != c_tilesize) {
@@ -1056,7 +1092,7 @@ static void Import_png(
 		xleft = w + xoff - 1;
 		yabove = h + yoff - 1;
 	}
-	shape->set_frame(new Shape_frame(pixels,
+	shape->set_frame(make_unique<Shape_frame>(pixels,
 	                                 w, h, xleft, yabove, !flat), framenum);
 	delete [] pixels;
 	finfo->set_modified();
@@ -1086,7 +1122,8 @@ static void Import_png_tiles(
 	// Figure #tiles in other dim.
 	int dim0_cnt = tiles;
 	int dim1_cnt = (nframes + dim0_cnt - 1) / dim0_cnt;
-	int needw, needh;       // Figure min. image dims.
+	int needw;
+	int needh;       // Figure min. image dims.
 	if (bycols) {
 		needh = dim0_cnt * c_tilesize;
 		needw = dim1_cnt * c_tilesize;
@@ -1094,8 +1131,14 @@ static void Import_png_tiles(
 		needw = dim0_cnt * c_tilesize;
 		needh = dim1_cnt * c_tilesize;
 	}
-	int w, h, rowsize, xoff, yoff, palsize;
-	unsigned char *pixels, *oldpal;
+	int w;
+	int h;
+	int rowsize;
+	int xoff;
+	int yoff;
+	int palsize;
+	unsigned char *pixels;
+	unsigned char *oldpal;
 	// Import, with 255 = transp. index.
 	if (!Import_png8(fname, 255, w, h, rowsize, xoff, yoff,
 	                 pixels, oldpal, palsize)) {
@@ -1112,7 +1155,8 @@ static void Import_png_tiles(
 		return;
 	}
 	for (int frnum = 0; frnum < nframes; frnum++) {
-		int x, y;
+		int x;
+		int y;
 		if (bycols) {
 			y = frnum % dim0_cnt;
 			x = frnum / dim0_cnt;
@@ -1129,7 +1173,7 @@ static void Import_png_tiles(
 			ptr += c_tilesize;
 			src += w;
 		}
-		shape->set_frame(new Shape_frame(&buf[0], c_tilesize, c_tilesize,
+		shape->set_frame(make_unique<Shape_frame>(&buf[0], c_tilesize, c_tilesize,
 		                                 c_tilesize, c_tilesize, false), frnum);
 	}
 	delete [] pixels;
@@ -1167,12 +1211,10 @@ void Shape_chooser::read_back_edited(
 void Shape_chooser::clear_editing_files(
 ) {
 	check_editing_files();      // Import any that changed.
-	while (!editing_files.empty()) {
-		Editing_file *ed = editing_files.back();
-		editing_files.pop_back();
+	for (auto& ed : editing_files) {
 		unlink(ed->pathname.c_str());
-		delete ed;
 	}
+	editing_files.clear();
 	if (check_editing_timer != -1)
 		gtk_timeout_remove(check_editing_timer);
 	check_editing_timer = -1;
@@ -1211,15 +1253,15 @@ void Shape_chooser::import_frame(
 	Shape_chooser *ed = static_cast<Shape_chooser *>(user_data);
 	if (ed->selected < 0)
 		return;         // Shouldn't happen.
-	int shnum = ed->info[ed->selected].shapenum,
-	    frnum = ed->info[ed->selected].framenum;
+	int shnum = ed->info[ed->selected].shapenum;
+	int frnum = ed->info[ed->selected].framenum;
 	unsigned char pal[3 * 256]; // Get current palette.
 	Get_rgb_palette(ed->palette, pal);
 	Import_png(fname, ed->file_info, pal, shnum, frnum);
 	ed->render();
 	ed->show();
 	ExultStudio *studio = ExultStudio::get_instance();
-	studio->update_group_windows(0);
+	studio->update_group_windows(nullptr);
 }
 
 /*
@@ -1235,11 +1277,13 @@ void Shape_chooser::export_all_pngs(
 		sprintf(fullname, "%s%02d.png", fname, i);
 		cout << "Writing " << fullname << endl;
 		Shape_frame *frame = ifile->get_shape(shnum, i);
-		int w = frame->get_width(), h = frame->get_height();
+		int w = frame->get_width();
+		int h = frame->get_height();
 		Image_buffer8 img(w, h);    // Render into a buffer.
 		img.fill8(transp);      // Fill with transparent pixel.
 		frame->paint(&img, frame->get_xleft(), frame->get_yabove());
-		int xoff = 0, yoff = 0;
+		int xoff = 0;
+		int yoff = 0;
 		if (frame->is_rle()) {
 			xoff = -frame->get_xright();
 			yoff = -frame->get_ybelow();
@@ -1293,8 +1337,14 @@ void Shape_chooser::import_all_pngs(
 	}
 	ExultStudio *studio = ExultStudio::get_instance();
 	while (U7exists(fullname)) {
-		int w, h, rowsize, xoff, yoff, palsize;
-		unsigned char *pixels, *oldpal;
+		int w;
+		int h;
+		int rowsize;
+		int xoff;
+		int yoff;
+		int palsize;
+		unsigned char *pixels;
+		unsigned char *oldpal;
 		// Import, with 255 = transp. index.
 		if (!Import_png8(fullname, 255, w, h, rowsize, xoff, yoff,
 		                 pixels, oldpal, palsize)) {
@@ -1304,13 +1354,14 @@ void Shape_chooser::import_all_pngs(
 		// Convert to game palette.
 		Convert_indexed_image(pixels, h * rowsize, oldpal, palsize, pal);
 		delete [] oldpal;
-		int xleft = w + xoff - 1, yabove = h + yoff - 1;
-		Shape_frame *frame = new Shape_frame(pixels,
+		int xleft = w + xoff - 1;
+		int yabove = h + yoff - 1;
+		auto frame = make_unique<Shape_frame>(pixels,
 		                                     w, h, xleft, yabove, true);
 		if (i < ifile->get_num_frames(shnum))
-			shape->set_frame(frame, i);
+			shape->set_frame(std::move(frame), i);
 		else
-			shape->add_frame(frame, i);
+			shape->add_frame(std::move(frame), i);
 		delete [] pixels;
 
 		i++;
@@ -1319,7 +1370,7 @@ void Shape_chooser::import_all_pngs(
 	render();
 	show();
 	file_info->set_modified();
-	studio->update_group_windows(0);
+	studio->update_group_windows(nullptr);
 	delete [] fullname;
 }
 
@@ -1346,13 +1397,13 @@ void Shape_chooser::import_shape(
 		Shape_chooser *ed = static_cast<Shape_chooser *>(user_data);
 		if (ed->selected < 0)
 			return;         // Shouldn't happen.
-		ifstream file;
-		U7open(file, fname);
-		IStreamDataSource ds(&file);
+		IFileDataSource ds(fname);
 		// Check to see if it is a valid shape file.
 		// We never get here through a flat, so we don't deal
 		// with that case. These tests aren't perfect!
-		int size = ds.getSize(), len = ds.read4(), first;
+		int size = ds.getSize();
+		int len = ds.read4();
+		int first;
 		if (len != size || (first = ds.read4()) > size || (first % 4) != 0)
 			return;
 		int shnum = ed->info[ed->selected].shapenum;
@@ -1374,8 +1425,8 @@ void Shape_chooser::new_frame(
 ) {
 	if (selected < 0)
 		return;
-	int shnum = info[selected].shapenum,
-	    frnum = info[selected].framenum;
+	int shnum = info[selected].shapenum;
+	int frnum = info[selected].framenum;
 	Vga_file *ifile = file_info->get_ifile();
 	// Read entire shape.
 	Shape *shape = ifile->extract_shape(shnum);
@@ -1386,17 +1437,21 @@ void Shape_chooser::new_frame(
 	// Low shape in 'shapes.vga'?
 	ExultStudio *studio = ExultStudio::get_instance();
 	bool flat = IS_FLAT(shnum) && file_info == studio->get_vgafile();
-	int w = 0, h = 0;
-	int xleft, yabove;
+	int w = 0;
+	int h = 0;
+	int xleft;
+	int yabove;
 	if (flat)
 		w = h = xleft = yabove = c_tilesize;
 	else {              // Find largest frame.
 		int cnt = shape->get_num_frames();
 		for (int i = 0; i < cnt; i++) {
-			int ht = shape->get_frame(i)->get_height();
+			Shape_frame *fr = shape->get_frame(i);
+			assert(fr);
+			int ht = fr->get_height();
 			if (ht > h)
 				h = ht;
-			int wd = shape->get_frame(i)->get_width();
+			int wd = fr->get_width();
 			if (wd > w)
 				w = wd;
 		}
@@ -1411,9 +1466,8 @@ void Shape_chooser::new_frame(
 	img.fill8(1);           // Just use color #1.
 	if (w > 2 && h > 2)
 		img.fill8(2, w - 2, h - 2, 1, 1);
-	Shape_frame *frame = new Shape_frame(img.get_bits(),
-	                                     w, h, xleft, yabove, !flat);
-	shape->add_frame(frame, frnum + 1);
+	shape->add_frame(make_unique<Shape_frame>(img.get_bits(),
+	                                     w, h, xleft, yabove, !flat), frnum + 1);
 	file_info->set_modified();
 	Object_browser *browser = studio->get_browser();
 	if (browser) {
@@ -1423,7 +1477,7 @@ void Shape_chooser::new_frame(
 		browser->render();
 		browser->show();
 	}
-	studio->update_group_windows(0);
+	studio->update_group_windows(nullptr);
 }
 
 /*
@@ -1471,7 +1525,7 @@ C_EXPORT gboolean on_new_shape_font_color_draw_expose_event(
 	gdk_rgb_gc_set_foreground(gc, color);
 	gdk_draw_rectangle(widget->window, gc, TRUE, event->area.x,
 	                   event->area.y, event->area.width, event->area.height);
-	return (TRUE);
+	return TRUE;
 }
 C_EXPORT void on_new_shape_font_color_changed(
     GtkSpinButton *button,
@@ -1516,7 +1570,7 @@ void Shape_chooser::from_font_toggled(
 	studio->set_sensitive("new_shape_font_color", true);
 	studio->set_sensitive("new_shape_font_height", true);
 	GtkFileSelection *fsel = Create_file_selection(
-	                             "Choose font file", font_file_chosen, 0L);
+	                             "Choose font file", font_file_chosen, nullptr);
 	if (is_system_path_defined("<PATCH>")) {
 		// Default to a writable location.
 		string patch = get_system_path("<PATCH>/");
@@ -1620,7 +1674,7 @@ void Shape_chooser::create_new_shape(
 	// Want to create from a font?
 	use_font = studio->get_toggle("new_shape_font");
 	const char *fontname = studio->get_text_entry("new_shape_font_name");
-	use_font = use_font && (fontname != 0) && *fontname != 0;
+	use_font = use_font && (fontname != nullptr) && *fontname != 0;
 	if (use_font) {
 		if (flat) {
 			Alert("Can't load font into a 'flat' shape");
@@ -1635,7 +1689,8 @@ void Shape_chooser::create_new_shape(
 	}
 #endif
 	if (!use_font) {
-		int w = c_tilesize, h = c_tilesize;
+		int w = c_tilesize;
+		int h = c_tilesize;
 		int xleft = flat ? c_tilesize : w - 1;
 		int yabove = flat ? c_tilesize : h - 1;
 		Image_buffer8 img(w, h);
@@ -1644,7 +1699,7 @@ void Shape_chooser::create_new_shape(
 		// Include some transparency.
 		img.fill8(255, w / 2, h / 2, w / 4, h / 4);
 		for (int i = 0; i < nframes; i++)
-			shape->add_frame(new Shape_frame(img.get_bits(),
+			shape->add_frame(make_unique<Shape_frame>(img.get_bits(),
 			                                 w, h, xleft, yabove, !flat), i);
 	}
 	file_info->set_modified();
@@ -1655,7 +1710,7 @@ void Shape_chooser::create_new_shape(
 		browser->render();
 		browser->show();
 	}
-	studio->update_group_windows(0);
+	studio->update_group_windows(nullptr);
 }
 
 /*
@@ -1666,8 +1721,8 @@ void Shape_chooser::del_frame(
 ) {
 	if (selected < 0)
 		return;
-	int shnum = info[selected].shapenum,
-	    frnum = info[selected].framenum;
+	int shnum = info[selected].shapenum;
+	int frnum = info[selected].framenum;
 	Vga_file *ifile = file_info->get_ifile();
 	// Read entire shape.
 	Shape *shape = ifile->extract_shape(shnum);
@@ -1686,7 +1741,7 @@ void Shape_chooser::del_frame(
 		browser->render();
 		browser->show();
 	}
-	studio->update_group_windows(0);
+	studio->update_group_windows(nullptr);
 }
 
 /*
@@ -1715,8 +1770,8 @@ void Shape_chooser::drag_data_get(
 	                           shinfo.framenum);
 	cout << "Setting selection data (" << shinfo.shapenum <<
 	     '/' << shinfo.framenum << ')' << endl;
-#ifdef WIN32
-	windragdata *wdata = (windragdata *)seldata;
+#ifdef _WIN32
+	windragdata *wdata = reinterpret_cast<windragdata*>(seldata);
 	wdata->assign(info, len, buf);
 #else
 	// Make us owner of xdndselection.
@@ -2128,7 +2183,7 @@ void Shape_chooser::shape_dropped_here(
 ) {
 	ignore_unused_variable_warning(frame);
 	// Got to be from same file type.
-	if (ifile->get_u7drag_type() == file && group != 0) {
+	if (ifile->get_u7drag_type() == file && group != nullptr) {
 		// Add to group.
 		if (group->is_builtin()) {
 			Alert("Can't modify builtin group.");
@@ -2182,7 +2237,8 @@ void Shape_chooser::search(
 			const std::vector<Frame_name_info> &nminf = info.get_frame_name_info();
 			for (std::vector<Frame_name_info>::const_iterator it = nminf.begin();
 			        it != nminf.end(); ++it) {
-				int type = it->get_type(), msgid = it->get_msgid();
+				int type = it->get_type();
+				int msgid = it->get_msgid();
 				if (type == -255 || type == -1 || msgid >= get_num_misc_names()
 				        || !get_misc_name(msgid))
 					continue;   // Keep looking.
@@ -2297,10 +2353,10 @@ Shape_chooser::Shape_chooser(
     Shape_file_info *fi
 ) : Object_browser(g, fi),
 	Shape_draw(i, palbuf, gtk_drawing_area_new()),
-	shapes_file(0), framenum0(0),
+	shapes_file(nullptr), framenum0(0),
 	info(0), rows(0), row0(0),
 	row0_voffset(0), total_height(0),
-	frames_mode(false), hoffset(0), voffset(0), status_id(-1), sel_changed(0) {
+	frames_mode(false), hoffset(0), voffset(0), status_id(-1), sel_changed(nullptr) {
 	rows.reserve(40);
 	// Put things in a vert. box.
 	GtkWidget *vbox = gtk_vbox_new(FALSE, 0);
@@ -2312,7 +2368,7 @@ Shape_chooser::Shape_chooser(
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
 	// A frame looks nice.
-	GtkWidget *frame = gtk_frame_new(NULL);
+	GtkWidget *frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
 	gtk_widget_show(frame);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
@@ -2341,7 +2397,7 @@ Shape_chooser::Shape_chooser(
 	// Mouse motion.
 	gtk_signal_connect(GTK_OBJECT(draw), "drag_begin",
 	                   GTK_SIGNAL_FUNC(drag_begin), this);
-#ifdef WIN32
+#ifdef _WIN32
 // required to override GTK+ Drag and Drop
 	gtk_signal_connect(GTK_OBJECT(draw), "motion_notify_event",
 	                   GTK_SIGNAL_FUNC(win32_drag_motion), this);
@@ -2466,8 +2522,9 @@ void Shape_chooser::update_statusbar(
 			const Shape_info &inf = shapes_file->get_info(shapenum);
 			const Frame_name_info *nminf;
 			if (inf.has_frame_name_info() &&
-			        (nminf = inf.get_frame_name(frnum, -1)) != 0) {
-				int type = nminf->get_type(), msgid = nminf->get_msgid();
+			        (nminf = inf.get_frame_name(frnum, -1)) != nullptr) {
+				int type = nminf->get_type();
+				int msgid = nminf->get_msgid();
 				if (type >= 0 && msgid < get_num_misc_names()) {
 					const char *msgstr = get_misc_name(msgid);
 					int len = strlen(buf);
@@ -2485,7 +2542,8 @@ void Shape_chooser::update_statusbar(
 							            get_misc_name(otmsg));
 							if (!otmsgstr) otmsgstr = "";
 						}
-						const char *prefix = 0, *suffix = 0;
+						const char *prefix = nullptr;
+						const char *suffix = nullptr;
 						if (type & 1) {
 							prefix = otmsgstr;
 							suffix = msgstr;

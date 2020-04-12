@@ -47,7 +47,7 @@ void LA32WaveGenerator::initSynth(const bool useSawtoothWaveform, const Bit8u us
 	wavePos = 0.0f;
 	lastFreq = 0.0f;
 
-	pcmWaveAddress = NULL;
+	pcmWaveAddress = nullptr;
 	active = true;
 }
 
@@ -282,7 +282,7 @@ bool LA32WaveGenerator::isActive() const {
 }
 
 bool LA32WaveGenerator::isPCMWave() const {
-	return pcmWaveAddress != NULL;
+	return pcmWaveAddress != nullptr;
 }
 
 void LA32PartialPair::init(const bool useRingModulated, const bool useMixed) {

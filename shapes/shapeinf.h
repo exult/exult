@@ -148,28 +148,28 @@ enum Data_flag_names {
 class Shape_info {
 protected:
 	// For some non-class data (see Data_flag_names enum).
-	unsigned int modified_flags;
-	unsigned int frompatch_flags;
+	unsigned int modified_flags = 0;
+	unsigned int frompatch_flags = 0;
 	// For class data (to indicate an invalid entry should
 	// be written by ES).
-	unsigned int have_static_flags;
-	unsigned char tfa[3];       // From "tfa.dat".+++++Keep for
+	unsigned int have_static_flags = 0;
+	unsigned char tfa[3] = {0};       // From "tfa.dat".+++++Keep for
 	//   debugging, for now.
 	// 3D dimensions in tiles:
-	unsigned char dims[3];      //   (x, y, z)
-	unsigned char weight, volume;   // From "wgtvol.dat".
-	unsigned char shpdims[2];   // From "shpdims.dat".
-	unsigned char *weapon_offsets;  // From "wihh.dat": pixel offsets
+	unsigned char dims[3] = {0};      //   (x, y, z)
+	unsigned char weight = 0, volume = 0;   // From "wgtvol.dat".
+	unsigned char shpdims[2] = {0};   // From "shpdims.dat".
+	unsigned char *weapon_offsets = nullptr;  // From "wihh.dat": pixel offsets
 	//   for drawing weapon in hand
-	Armor_info *armor;      // From armor.dat.
-	Weapon_info *weapon;        // From weapon.dat, if a weapon.
-	Ammo_info *ammo;        // From ammo.dat, if ammo.
-	Monster_info *monstinf;     // From monster.dat.
-	SFX_info *sfxinf;
-	Animation_info *aniinf;
-	Explosion_info *explosion;
-	Body_info *body;
-	Paperdoll_npc *npcpaperdoll;
+	Armor_info *armor = nullptr;          // From armor.dat.
+	Weapon_info *weapon = nullptr;        // From weapon.dat, if a weapon.
+	Ammo_info *ammo = nullptr;            // From ammo.dat, if ammo.
+	Monster_info *monstinf = nullptr;     // From monster.dat.
+	SFX_info *sfxinf = nullptr;
+	Animation_info *aniinf = nullptr;
+	Explosion_info *explosion = nullptr;
+	Body_info *body = nullptr;
+	Paperdoll_npc *npcpaperdoll = nullptr;
 	// These vectors should be totally ordered by the strict-weak
 	// order operator defined for the classes.
 	std::vector<Paperdoll_item> objpaperdoll;
@@ -179,19 +179,19 @@ protected:
 	std::vector<Frame_usecode_info> frucinf;
 	std::vector<Warmth_info> warminf;
 	std::vector<Content_rules> cntrules;
-	short gump_shape;       // From container.dat.
-	short gump_font;        // From container.dat v2+.
-	short monster_food;
-	unsigned short shape_flags;
-	unsigned char mountain_top;
-	unsigned char barge_type;
-	unsigned char actor_flags;
-	char field_type;
-	char ready_type;    // From "ready.dat": where item can be worn.
-	char alt_ready1;    // Alternate spot where item can be worn.
-	char alt_ready2;    // Second alternate spot where item can be worn.
-	bool spell_flag;        // Flagged as spell in 'ready.dat'.
-	bool occludes_flag;     // Flagged in 'occlude.dat'.  Roof.
+	short gump_shape = -1;       // From container.dat.
+	short gump_font = -1;        // From container.dat v2+.
+	short monster_food = -1;
+	unsigned short shape_flags = 0;
+	unsigned char mountain_top = 0;
+	unsigned char barge_type = 0;
+	unsigned char actor_flags = 0;
+	char field_type = -1;
+	char ready_type = -1;    // From "ready.dat": where item can be worn.
+	char alt_ready1 = -1;    // Alternate spot where item can be worn.
+	char alt_ready2 = -1;    // Second alternate spot where item can be worn.
+	bool spell_flag = false;        // Flagged as spell in 'ready.dat'.
+	bool occludes_flag = false;     // Flagged in 'occlude.dat'.  Roof.
 	void set_tfa_data() {   // Set fields from tfa.
 		dims[0] = static_cast<unsigned char>(1 + (tfa[2] & 7));
 		dims[1] = static_cast<unsigned char>(1 + ((tfa[2] >> 3) & 7));
@@ -326,7 +326,7 @@ public:
 	int get_body_frame() const;
 
 	bool has_weapon_info() const {
-		return weapon != 0;
+		return weapon != nullptr;
 	}
 	const Weapon_info *get_weapon_info_safe() const;
 	const Weapon_info *get_weapon_info() const {
@@ -335,7 +335,7 @@ public:
 	Weapon_info *set_weapon_info(bool tf);
 
 	bool has_ammo_info() const {
-		return ammo != 0;
+		return ammo != nullptr;
 	}
 	const Ammo_info *get_ammo_info_safe() const;
 	const Ammo_info *get_ammo_info() const {
@@ -344,7 +344,7 @@ public:
 	Ammo_info *set_ammo_info(bool tf);
 
 	bool has_armor_info() const {
-		return armor != 0;
+		return armor != nullptr;
 	}
 	const Armor_info *get_armor_info() const {
 		return armor;
@@ -352,7 +352,7 @@ public:
 	Armor_info *set_armor_info(bool tf);
 
 	bool has_monster_info() const {
-		return monstinf != 0;
+		return monstinf != nullptr;
 	}
 	const Monster_info *get_monster_info_safe() const;
 	const Monster_info *get_monster_info() const {
@@ -361,7 +361,7 @@ public:
 	Monster_info *set_monster_info(bool tf);
 
 	bool has_npc_paperdoll_info() const {
-		return npcpaperdoll != 0;
+		return npcpaperdoll != nullptr;
 	}
 	const Paperdoll_npc *get_npc_paperdoll() const {
 		return npcpaperdoll;
@@ -370,7 +370,7 @@ public:
 	const Paperdoll_npc *get_npc_paperdoll_safe(bool sex) const;
 
 	bool has_sfx_info() const {
-		return sfxinf != 0;
+		return sfxinf != nullptr;
 	}
 	const SFX_info *get_sfx_info() const {
 		return sfxinf;
@@ -378,7 +378,7 @@ public:
 	SFX_info *set_sfx_info(bool tf);
 
 	bool has_explosion_info() const {
-		return explosion != 0;
+		return explosion != nullptr;
 	}
 	const Explosion_info *get_explosion_info() const {
 		return explosion;
@@ -386,7 +386,7 @@ public:
 	Explosion_info *set_explosion_info(bool tf);
 
 	bool has_animation_info() const {
-		return aniinf != 0;
+		return aniinf != nullptr;
 	}
 	const Animation_info *get_animation_info() const {
 		return aniinf;
@@ -395,7 +395,7 @@ public:
 	Animation_info *set_animation_info(bool tf);
 
 	bool has_body_info() const {
-		return body != 0;
+		return body != nullptr;
 	}
 	const Body_info *get_body_info() const {
 		return body;
@@ -412,7 +412,7 @@ public:
 	void add_paperdoll_info(Paperdoll_item &add);
 	const Paperdoll_item *get_item_paperdoll(int frame, int spot) const;
 	bool is_object_allowed(int frame, int spot) const {
-		return get_item_paperdoll(frame, spot) != 0;
+		return get_item_paperdoll(frame, spot) != nullptr;
 	}
 
 	bool has_content_rules() const;
@@ -464,7 +464,7 @@ public:
 	void clear_frame_flags();
 	void add_frame_flags(Frame_flags_info &add);
 	int get_object_flags(int frame, int qual) const;
-	int has_object_flag(int frame, int qual, int p) const {
+	bool has_object_flag(int frame, int qual, int p) const {
 		return (get_object_flags(frame, qual) & (1 << p)) != 0;
 	}
 
@@ -654,79 +654,79 @@ public:
 	unsigned char get_tfa(int i) const {  // For debugging:
 		return tfa[i];
 	}
-	int has_sfx() const {         // Has a sound effect (guessing).
+	bool has_sfx() const {         // Has a sound effect (guessing).
 		return (tfa[0] & (1 << 0)) != 0;
 	}
 	void set_sfx(bool tf) {
 		set_tfa(0, 0, tf);
 	}
-	int has_strange_movement() const { // Slimes, sea monsters.
+	bool has_strange_movement() const { // Slimes, sea monsters.
 		return (tfa[0] & (1 << 1)) != 0;
 	}
 	void set_strange_movement(bool tf) {
 		set_tfa(0, 1, tf);
 	}
-	int is_animated() const {
+	bool is_animated() const {
 		return (tfa[0] & (1 << 2)) != 0;
 	}
 	void set_animated(bool tf) {
 		set_tfa(0, 2, tf);
 	}
-	int is_solid() const {        // Guessing.  Means can't walk through.
+	bool is_solid() const {        // Guessing.  Means can't walk through.
 		return (tfa[0] & (1 << 3)) != 0;
 	}
 	void set_solid(bool tf) {
 		set_tfa(0, 3, tf);
 	}
-	int is_water() const {        // Guessing.
+	bool is_water() const {        // Guessing.
 		return (tfa[0] & (1 << 4)) != 0;
 	}
 	void set_water(bool tf) {
 		set_tfa(0, 4, tf);
 	}
-	int is_poisonous() const {    // Swamps.  Applies to tiles.
+	bool is_poisonous() const {    // Swamps.  Applies to tiles.
 		return (tfa[1] & (1 << 4)) != 0;
 	}
-	int is_field() const {        // Applies to Game_objects??
+	bool is_field() const {        // Applies to Game_objects??
 		return (tfa[1] & (1 << 4)) != 0;
 	}
 	void set_field(bool tf) {
 		set_tfa(1, 4, tf);
 	}
-	int is_door() const {
+	bool is_door() const {
 		return (tfa[1] & (1 << 5)) != 0;
 	}
 	void set_door(bool tf) {
 		set_tfa(1, 5, tf);
 	}
-	int is_barge_part() const {
+	bool is_barge_part() const {
 		return (tfa[1] & (1 << 6)) != 0;
 	}
 	void set_barge_part(bool tf) {
 		set_tfa(1, 6, tf);
 	}
-	int is_transparent() const {      // ??
+	bool is_transparent() const {      // ??
 		return (tfa[1] & (1 << 7)) != 0;
 	}
 	void set_transparent(bool tf) {
 		set_tfa(1, 7, tf);
 	}
-	int is_light_source() const {
+	bool is_light_source() const {
 		return (tfa[2] & (1 << 6)) != 0;
 	}
 	void set_light_source(bool tf) {
 		set_tfa(2, 6, tf);
 	}
-	int has_translucency() const {
+	bool has_translucency() const {
 		return (tfa[2] & (1 << 7)) != 0;
 	}
 	void set_translucency(bool tf) {
 		set_tfa(2, 7, tf);
 	}
-	int is_xobstacle() const {    // Obstacle in x-dir.???
+	bool is_xobstacle() const {    // Obstacle in x-dir.???
 		return (shpdims[1] & 1) != 0;
 	}
-	int is_yobstacle() const {    // Obstacle in y-dir.???
+	bool is_yobstacle() const {    // Obstacle in y-dir.???
 		return (shpdims[0] & 1) != 0;
 	}
 	void set_obstacle(bool x, bool y) {
@@ -769,19 +769,8 @@ public:
 		return get_shape_class() == quality_flags;
 	}
 	bool has_quality() const {
-#if 0
-		static bool qual[16] =  // Ugly, but quick.
-		    //          quality
-		{
-			false,  false,  true,   false,  false,  false,
-			//  ctainer egg             virtue stone
-			true,   true,   false,  false,  false,  true,
-			//  monst   human
-			true,   true,   false,  false
-		};
-#endif
 		Shape_class c = get_shape_class();
-		return (c == 2 || c == 6 || c == 7 || c == 11 || c == 12 || c == 13);
+		return c == 2 || c == 6 || c == 7 || c == 11 || c == 12 || c == 13;
 		//      return qual[(int) c];
 	}
 	bool occludes() const {

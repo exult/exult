@@ -43,7 +43,7 @@ public:
 	         int additional_secs = 0);
 	void remove(Npc_actor *npc);    // Remove.
 	// Run usecode function.
-	void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 	// Wait before running more funs.
 	void wait(int secs);
 	void get_all(std::vector<Actor *> &list); // Fill list with nearby NPC's.

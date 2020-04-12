@@ -112,7 +112,7 @@ C_EXPORT gboolean on_obj_draw_expose_event(
 	ExultStudio::get_instance()->show_obj_shape(
 	    event->area.x, event->area.y, event->area.width,
 	    event->area.height);
-	return (TRUE);
+	return TRUE;
 }
 
 /*
@@ -167,7 +167,7 @@ static void Obj_shape_dropped(
 		static_cast<ExultStudio *>(udata)->set_obj_shape(shape, frame);
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 static void Drop_dragged_shape(int shape, int frame, int x, int y, void *data) {
 	cout << "Dropped a shape: " << shape << "," << frame << " " << data << endl;
@@ -186,29 +186,29 @@ void ExultStudio::open_obj_window(
     unsigned char *data,        // Serialized object.
     int datalen
 ) {
-#ifdef WIN32
+#ifdef _WIN32
 	bool first_time = false;
 #endif
 	if (!objwin) {          // First time?
-#ifdef WIN32
+#ifdef _WIN32
 		first_time = true;
 #endif
 		objwin = glade_xml_get_widget(app_xml, "obj_window");
 		// Note: vgafile can't be null here.
 		if (palbuf) {
-			obj_draw = new Shape_draw(vgafile->get_ifile(), palbuf,
+			obj_draw = new Shape_draw(vgafile->get_ifile(), palbuf.get(),
 			                          glade_xml_get_widget(app_xml, "obj_draw"));
 			obj_draw->enable_drop(Obj_shape_dropped, this);
 		}
 	}
 	// Init. obj address to null.
-	gtk_object_set_user_data(GTK_OBJECT(objwin), 0);
+	gtk_object_set_user_data(GTK_OBJECT(objwin), nullptr);
 	if (!init_obj_window(data, datalen))
 		return;
 	gtk_widget_show(objwin);
-#ifdef WIN32
+#ifdef _WIN32
 	if (first_time || !objdnd)
-		Windnd::CreateStudioDropDest(objdnd, objhwnd, Drop_dragged_shape, NULL, NULL, (void *) this);
+		Windnd::CreateStudioDropDest(objdnd, objhwnd, Drop_dragged_shape, nullptr, nullptr, this);
 #endif
 }
 
@@ -220,7 +220,7 @@ void ExultStudio::close_obj_window(
 ) {
 	if (objwin) {
 		gtk_widget_hide(objwin);
-#ifdef WIN32
+#ifdef _WIN32
 		Windnd::DestroyStudioDropDest(objdnd, objhwnd);
 #endif
 	}
@@ -237,8 +237,12 @@ int ExultStudio::init_obj_window(
     int datalen
 ) {
 	Game_object *addr;
-	int tx, ty, tz;
-	int shape, frame, quality;
+	int tx;
+	int ty;
+	int tz;
+	int shape;
+	int frame;
+	int quality;
 	std::string name;
 	if (!Object_in(data, datalen, addr, tx, ty, tz, shape, frame,
 	               quality, name)) {
@@ -283,8 +287,9 @@ int ExultStudio::save_obj_window(
 	cout << "In save_obj_window()" << endl;
 	// Get object address.
 	Game_object *addr = static_cast<Game_object*>(gtk_object_get_user_data(GTK_OBJECT(objwin)));
-	int tx = get_spin("obj_x"), ty = get_spin("obj_y"),
-	    tz = get_spin("obj_z");
+	int tx = get_spin("obj_x");
+	int ty = get_spin("obj_y");
+	int tz = get_spin("obj_z");
 	std::string name(get_text_entry("obj_name"));
 //	int shape = get_num_entry("obj_shape");
 //	int frame = get_num_entry("obj_frame");

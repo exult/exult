@@ -55,7 +55,7 @@ extern "C" {
 #endif
 
 struct unz_s;
-typedef unz_s *unzFile;
+using unzFile = unz_s *;
 
 #define UNZ_OK                                  (0)
 #define UNZ_END_OF_LIST_OF_FILE (-100)
@@ -124,7 +124,7 @@ typedef unz_s *unzFile;
 	     on a Windows NT computer "c:\\zlib\\zlib111.zip" or on an Unix computer
 	     "zlib/zlib111.zip".
 	     If the zipfile cannot be opened (file don't exist or in not valid), the
-	       return value is NULL.
+	       return value is nullptr.
 	     Else, the return value is a unzFile Handle, usable with other function
 	       of this unzip package.
 	*/
@@ -192,14 +192,14 @@ typedef unz_s *unzFile;
 	                                         uLong commentBufferSize);
 	/*
 	  Get Info about the current file
-	  if pfile_info!=NULL, the *pfile_info structure will contain somes info about
+	  if pfile_info!=nullptr, the *pfile_info structure will contain somes info about
 	        the current file
-	  if szFileName!=NULL, the filemane string will be copied in szFileName
+	  if szFileName!=nullptr, the filemane string will be copied in szFileName
 	            (fileNameBufferSize is the size of the buffer)
-	  if extraField!=NULL, the extra field information will be copied in extraField
+	  if extraField!=nullptr, the extra field information will be copied in extraField
 	            (extraFieldBufferSize is the size of the buffer).
 	            This is the Central-header version of the extra field
-	  if szComment!=NULL, the comment string of the file will be copied in szComment
+	  if szComment!=nullptr, the comment string of the file will be copied in szComment
 	            (commentBufferSize is the size of the buffer)
 	*/
 
@@ -249,9 +249,9 @@ typedef unz_s *unzFile;
 	  This is the local-header version of the extra field (sometimes, there is
 	    more info in the local-header version than in the central-header)
 
-	  if buf==NULL, it return the size of the local extra field
+	  if buf==nullptr, it return the size of the local extra field
 
-	  if buf!=NULL, len is the size of the buffer, the extra header is copied in
+	  if buf!=nullptr, len is the size of the buffer, the extra header is copied in
 	    buf.
 	  the return value is the number of bytes copied in buf, or (if <0)
 	    the error code

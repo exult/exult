@@ -96,7 +96,7 @@ int Text_gump::paint_page(
 	if (*str == '*')        // Saw end of page?
 		str++;
 	gwin->set_painted();        // Force blit.
-	return (str - text);        // Return offset past end.
+	return str - text;        // Return offset past end.
 }
 
 /*
@@ -108,8 +108,8 @@ int Text_gump::paint_page(
 int Text_gump::show_next_page(
 ) {
 	if (curend >= textlen)
-		return (0);     // That's all, folks.
+		return 0;     // That's all, folks.
 	curtop = curend;        // Start next page or pair of pages.
 	paint();            // Paint.  This updates curend.
-	return (1);
+	return 1;
 }

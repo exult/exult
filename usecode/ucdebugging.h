@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _UCDEBUGGING_H
-#define _UCDEBUGGING_H
+#ifndef UCDEBUGGING_H
+#define UCDEBUGGING_H
 
 #include <list>
 #include "ignore_unused_variable_warning.h"
@@ -44,7 +44,7 @@ public:
 	bool once; // delete when triggered
 
 	virtual Breakpoint_type get_type() const = 0;
-	virtual ~Breakpoint() {  }
+	virtual ~Breakpoint() = default;
 
 	virtual bool check(Stack_frame *frame) const = 0;
 
@@ -57,17 +57,16 @@ protected:
 class AnywhereBreakpoint : public Breakpoint {
 public:
 	AnywhereBreakpoint();
-	virtual ~AnywhereBreakpoint() {  }
 
-	virtual Breakpoint_type get_type() const {
+	Breakpoint_type get_type() const override {
 		return BP_anywhere;
 	}
-	virtual bool check(Stack_frame *frame) const {
+	bool check(Stack_frame *frame) const override {
 		ignore_unused_variable_warning(frame);
 		return true;
 	}
 
-	virtual void serialize(int fd) const {
+	void serialize(int fd) const override {
 		ignore_unused_variable_warning(fd);
 	} // +++++ implement this?
 };
@@ -75,14 +74,13 @@ public:
 class LocationBreakpoint : public Breakpoint {
 public:
 	LocationBreakpoint(int functionid, int ip, bool once = false);
-	virtual ~LocationBreakpoint() {  }
 
-	virtual Breakpoint_type get_type() const {
+	Breakpoint_type get_type() const override {
 		return BP_location;
 	}
-	virtual bool check(Stack_frame *frame) const;
+	bool check(Stack_frame *frame) const override;
 
-	virtual void serialize(int fd) const;
+	void serialize(int fd) const override;
 
 private:
 
@@ -93,14 +91,13 @@ private:
 class StepoverBreakpoint : public Breakpoint {
 public:
 	StepoverBreakpoint(Stack_frame *frame);
-	virtual ~StepoverBreakpoint() {  }
 
-	virtual Breakpoint_type get_type() const {
+	Breakpoint_type get_type() const override {
 		return BP_stepover;
 	}
-	virtual bool check(Stack_frame *frame) const;
+	bool check(Stack_frame *frame) const override;
 
-	virtual void serialize(int fd) const {
+	void serialize(int fd) const override {
 		ignore_unused_variable_warning(fd);
 	} // +++++ implement this?
 
@@ -113,14 +110,13 @@ private:
 class FinishBreakpoint : public Breakpoint {
 public:
 	FinishBreakpoint(Stack_frame *frame);
-	virtual ~FinishBreakpoint() {  }
 
-	virtual Breakpoint_type get_type() const {
+	Breakpoint_type get_type() const override {
 		return BP_finish;
 	}
-	virtual bool check(Stack_frame *frame) const;
+	bool check(Stack_frame *frame) const override;
 
-	virtual void serialize(int fd) const {
+	void serialize(int fd) const override {
 		ignore_unused_variable_warning(fd);
 	} // +++++ implement this?
 
@@ -132,7 +128,6 @@ private:
 
 class Breakpoints {
 public:
-	Breakpoints();
 	~Breakpoints();
 
 	void add(Breakpoint *breakpoint);

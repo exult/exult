@@ -28,23 +28,13 @@
 #include "font.h"
 #include "tqueue.h"
 
-SoundTester::SoundTester() : song(0), sfx(0), voice(0), active(0), repeat(true)
-	{
-	}
-
-SoundTester::~SoundTester()
-	{
-	}
-
 void SoundTester::test_sound()
 {
-		
 	Game_window *gwin = Game_window::get_instance();
 	Image_buffer8 *ibuf = gwin->get_win()->get_ib8();
 	Font *font = Shape_manager::get_instance()->get_font(4);
 
 	Audio *audio = Audio::get_ptr();
-	Scroll_gump *scroll = NULL;
 
 	char buf[256];
 	bool looping = true;
@@ -67,10 +57,9 @@ void SoundTester::test_sound()
 	{
 		if (redraw)
 		{
-		     
-			scroll = new Scroll_gump();
-			scroll->add_text(" ~");
-			scroll->paint();
+			Scroll_gump scroll;
+			scroll.add_text(" ~");
+			scroll.paint();
 
 			line = first_line;
 			font->paint_text_fixedwidth(ibuf, "Sound Tester", left, line, width);
@@ -132,7 +121,6 @@ void SoundTester::test_sound()
 			font->paint_text_fixedwidth(ibuf, buf, left, line, width);
 
 			gwin->show();
-			delete scroll;
 			redraw = false;
 		}
 		SDL_WaitEvent(&event);
@@ -165,7 +153,7 @@ void SoundTester::test_sound()
 				break;
 				
 			case SDLK_r:
-				repeat = repeat?false:true;
+				repeat = !repeat;
 				break;
 			case SDLK_s:
 				if ((event.key.keysym.mod & KMOD_ALT) && (event.key.keysym.mod & KMOD_CTRL)) 

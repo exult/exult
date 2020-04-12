@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _TABLE_H_
-#define _TABLE_H_
+#ifndef TABLE_H
+#define TABLE_H
 
 #include <vector>
 #include <string>
@@ -35,43 +35,33 @@ class DataSource;
  */
 class Table : public U7file {
 protected:
-	struct Reference {
-		uint32 offset;
-		uint16 size;
-		Reference()
-			: offset(0), size(0)
-		{  }
-	};
 	/// List of objects in the table file.
 	std::vector<Reference> object_list;
 
-	virtual void index_file();
+	void index_file() override;
+	Reference get_object_reference(uint32 objnum) const override {
+		return object_list[objnum];
+	}
+
 public:
 	/// Basic constructor.
 	/// @param spec File name and object index pair.
-	Table(const File_spec &spec)
+	explicit Table(const File_spec &spec)
 		: U7file(spec)
 	{  }
-	virtual ~Table()
-	{   }
 
-	virtual size_t number_of_objects(void) {
+	size_t number_of_objects() override {
 		return object_list.size();
 	}
-	virtual char *retrieve(uint32 objnum, std::size_t &len);
-	virtual const char *get_archive_type() {
+	const char *get_archive_type() override {
 		return "TABLE";
 	}
 
 	static bool is_table(IDataSource *in);
 	static bool is_table(const std::string& fname);
-private:
-	/// No default constructor.
-	Table();
-	UNREPLICATABLE_CLASS_I(Table, U7file(""))
 };
 
-typedef U7DataFile<Table> TableFile;
-typedef U7DataBuffer<Table> TableBuffer;
+using TableFile = U7DataFile<Table>;
+using TableBuffer = U7DataBuffer<Table>;
 
 #endif

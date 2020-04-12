@@ -27,8 +27,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wparentheses"
+#if !defined(__llvm__) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#else
+#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
+#endif
 #endif  // __GNUC__
 #include <gtk/gtk.h>
 #include <gdk/gdktypes.h>
@@ -41,8 +47,8 @@ class Vga_file;
 class Shape_frame;
 class Image_buffer8;
 
-typedef void (*Drop_callback)(int filenum,
-                              int shapenum, int framenum, void *udata);
+using Drop_callback = void (*)(int filenum,
+                               int shapenum, int framenum, void *udata);
 
 /*
  *  This class can draw shapes from a .vga file.
@@ -58,7 +64,7 @@ protected:
 	void *drop_user_data;
 	bool dragging;          // Dragging from here.
 public:
-	Shape_draw(Vga_file *i, unsigned char *palbuf, GtkWidget *drw);
+	Shape_draw(Vga_file *i, const unsigned char *palbuf, GtkWidget *drw);
 	virtual ~Shape_draw();
 	// Blit onto screen.
 	void show(GdkDrawable *drawable, int x, int y, int w, int h);
@@ -83,7 +89,7 @@ public:
 	// Handler for drop.
 	static void drag_data_received(GtkWidget *widget,
 	                               GdkDragContext *context, gint x, gint y,
-	                               GtkSelectionData *selection_data, guint info, guint time,
+	                               GtkSelectionData *seldata, guint info, guint time,
 	                               gpointer udata);
 	void enable_drop(Drop_callback callback, void *udata);
 	void set_drag_icon(GdkDragContext *context, Shape_frame *shape);

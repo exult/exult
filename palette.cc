@@ -64,9 +64,6 @@ void Palette::take(Palette *pal) {
 	memcpy(pal2, pal->pal2, 768);
 }
 
-Palette::~Palette() {
-}
-
 /*
  *  Fade the current palette in or out.
  *  Note:  If pal_num != -1, the current palette is set to it.
@@ -174,8 +171,7 @@ void Palette::apply(bool repaint) {
 
 	if (!repaint)
 		return;
-	if (!Set_glpalette())
-		win->show();
+	win->show();
 }
 
 /**
@@ -187,17 +183,17 @@ void Palette::apply(bool repaint) {
 void Palette::loadxform(const char *buf, const char *xfname, int &xindex) {
 	U7object xform(xfname, xindex);
 	size_t xlen;
-	unsigned char *xbuf = reinterpret_cast<unsigned char *>(xform.retrieve(xlen));
-	if (!xbuf || xlen <= 0)
+	auto xbuf = xform.retrieve(xlen);
+	if (!xbuf || xlen <= 0) {
 		xindex = -1;
-	else
+	} else {
 		for (int i = 0; i < 256; i++) {
 			int ix = xbuf[i];
 			pal1[3 * i] = buf[3 * ix];
 			pal1[3 * i + 1] = buf[3 * ix + 1];
 			pal1[3 * i + 2] = buf[3 * ix + 2];
 		}
-	delete [] xbuf;
+	}
 }
 
 /**
@@ -212,7 +208,8 @@ void Palette::set_loaded(
     int xindex
 ) {
 	size_t len;
-	char *buf = pal.retrieve(len);
+	auto xfbuf = pal.retrieve(len);
+	const char *buf = reinterpret_cast<const char*>(xfbuf.get());
 	if (len == 768) {
 		// Simple palette
 		if (xindex >= 0)
@@ -235,11 +232,8 @@ void Palette::set_loaded(
 		// the palette won't be loaded.
 		// For now, let's try to avoid overwriting any palette that
 		// may be loaded and just cleanup.
-		delete [] buf;
 		return;
 	}
-	Set_glpalette(this);
-	delete [] buf;
 }
 
 /**
@@ -306,63 +300,8 @@ void Palette::set_brightness(int bright) {
 	brightness = bright;
 }
 
-#ifdef HAVE_OPENGL
-static inline void glfade(
-    Image_window *win,
-    int cycles,
-    bool fadein,
-    unsigned char *pal1,
-    unsigned char *pal2,
-    int max_val,
-    int brightness
-) {
-#if 1
-	ignore_unused_variable_warning(cycles);
-	win->set_palette(fadein ? pal1 : pal2, max_val, brightness);
-	win->show();
-#else
-	// FIXME: For some reason, this doesn't work always. I have no idea why.
-	int scale = win->get_scale();
-	int width = win->get_width(), height = win->get_height();
-	int w = width * scale, h = height * scale;
-	unsigned char *rgba_pixels = GL_manager::get_instance()->get_screen_rgba(
-	                                 width, height);
-	win->set_palette(fadein ? pal1 : pal2, max_val, brightness);
-	unsigned char *fade_blend  = new unsigned char[4 * w * h];
-	//std::memset(fade_blend, 0, 4*w*h);
-	unsigned int ticks = SDL_GetTicks() + 20;
-	cycles >>= 2;
-	for (int i = 0; i <= cycles; i++) {
-		//int alpha = fadein ? 255 - ((255*i)/cycles) : (255*i)/cycles;
-		int from = fadein ? i : cycles - i;
-		for (int j = 0; j < w * h; j++) {
-			for (int k = 0; k < 3; k++)
-				fade_blend[4 * j + k] = (from * rgba_pixels[4 * j + k]) / cycles;
-			fade_blend[4 * j + 3] = rgba_pixels[4 * j + 3];
-			//fade_blend[4*j+3] = alpha;
-		}
-		//gl_paint_rgba_bitmap(rgba_pixels, 0, 0, w, h, 1);
-		gl_paint_rgba_bitmap(fade_blend , 0, 0, w, h, 1);
-		while (ticks >= SDL_GetTicks())
-			;
-		win->show();
-		ticks += 20;
-	}
-	delete [] rgba_pixels;
-	delete [] fade_blend;
-#endif
-}
-#endif
-
-
 void Palette::fade_in(int cycles) {
 	if (cycles && fades_enabled) {
-#ifdef HAVE_OPENGL
-		if (GL_manager::get_instance()) {
-			glfade(win, cycles, true, pal1, pal2, max_val, brightness);
-			return;
-		}
-#endif
 		unsigned char fade_pal[768];
 		unsigned int ticks = SDL_GetTicks() + 20;
 		for (int i = 0; i <= cycles; i++) {
@@ -417,12 +356,6 @@ void Palette::fade_in(int cycles) {
 void Palette::fade_out(int cycles) {
 	faded_out = true;       // Be sure to set flag.
 	if (cycles && fades_enabled) {
-#ifdef HAVE_OPENGL
-		if (GL_manager::get_instance()) {
-			glfade(win, cycles, false, pal1, pal2, max_val, brightness);
-			return;
-		}
-#endif
 		unsigned char fade_pal[768];
 		unsigned int ticks = SDL_GetTicks() + 20;
 		for (int i = cycles; i >= 0; i--) {
@@ -466,8 +399,9 @@ int Palette::find_color(int r, int g, int b, int last) {
 	// But don't search rotating colors.
 	for (int i = 0; i < last; i++) {
 		// Get deltas.
-		long dr = r - pal1[3 * i], dg = g - pal1[3 * i + 1],
-		     db = b - pal1[3 * i + 2];
+		long dr = r - pal1[3 * i];
+		long dg = g - pal1[3 * i + 1];
+		long db = b - pal1[3 * i + 2];
 		// Figure distance-squared.
 		long dist = dr * dr + dg * dg + db * db;
 		if (dist < best_distance) { // Better than prev?
@@ -566,7 +500,7 @@ Palette_transition::Palette_transition(
     int nsteps,
     int sh, int smin
 )
-	: current(0), step(0), max_steps(nsteps),
+	: current(nullptr), step(0), max_steps(nsteps),
 	  start_hour(sh), start_minute(smin), rate(r) {
 	start = new Palette();
 	start->load(PALETTES_FLX, PATCH_PALETTES, from);
@@ -582,7 +516,7 @@ Palette_transition::Palette_transition(
     int nsteps,
     int sh, int smin
 )
-	: current(0), step(0), max_steps(nsteps),
+	: current(nullptr), step(0), max_steps(nsteps),
 	  start_hour(sh), start_minute(smin), rate(r) {
 	start = new Palette(from);
 	end = new Palette();
@@ -597,7 +531,7 @@ Palette_transition::Palette_transition(
     int nsteps,
     int sh, int smin
 )
-	: current(0), step(0), max_steps(nsteps),
+	: current(nullptr), step(0), max_steps(nsteps),
 	  start_hour(sh), start_minute(smin), rate(r) {
 	start = new Palette(from);
 	end = new Palette(to);
@@ -622,10 +556,7 @@ bool Palette_transition::set_step(int hour, int min) {
 
 	if (current)
 		current->apply(true);
-	if (step >= max_steps)
-		return false;
-	else
-		return true;
+	return step < max_steps;
 }
 
 Palette_transition::~Palette_transition(

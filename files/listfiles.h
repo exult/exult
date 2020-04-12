@@ -19,7 +19,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef LISTFILES_H
 #define LISTFILES_H
 
-typedef std::vector<std::string> FileList;
+#include <string>
+#include <vector>
+
+using FileList = std::vector<std::string>;
 
 int U7ListFiles(const std::string &mask, FileList &files);
 

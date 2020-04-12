@@ -17,8 +17,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,5,0,0
- PRODUCTVERSION 1,5,0,0
+ FILEVERSION 1,6,0,0
+ PRODUCTVERSION 1,6,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -36,14 +36,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "Exult Config Helper DLL for InnoSetup\0"
-            VALUE "FileVersion", "1, 5, 0\0"
+            VALUE "FileVersion", "1, 6, 0\0"
             VALUE "InternalName", "exconfig\0"
-            VALUE "LegalCopyright", "Copyright © 2010\0"
+            VALUE "LegalCopyright", "Copyright © 2020\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "exconfig.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Exult\0"
-            VALUE "ProductVersion", "1.5.0git\0"
+            VALUE "ProductVersion", "1.6.0\0"
             VALUE "SpecialBuild", "\0"
         END
     END

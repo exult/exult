@@ -26,7 +26,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <ctype.h>
+#include <cctype>
 #include <iomanip>
 #include <cstdlib>
 #include "utils.h"
@@ -81,7 +81,7 @@ int Read_text_msg_file(IDataSource *in, vector<string> &strings,
 			const string sectionName(line.substr(line.find_first_not_of(" \t\b", sectionStart.length())));
 			if (sectionName == section) {
 				// Found the section.
-				section = 0;
+				section = nullptr;
 				continue;
 			}
 			cerr << "Line #" << linenum <<
@@ -161,7 +161,7 @@ int Read_text_msg_file(
     istream &in,
     vector<string> &strings,    // Strings returned here, each
     //   allocated on heap.
-    const char *section         // Section name, or NULL.  If given
+    const char *section         // Section name, or nullptr.  If given
     //   the section must be next infile.
 ) {
 	IStreamDataSource ds(&in);
@@ -182,7 +182,7 @@ int Read_text_msg_file_sections(
 	const char *versionstr = "version";
 	if (Search_text_msg_section(in, versionstr) &&
 	        Read_text_msg_file(in, versioninfo, versionstr) != -1) {
-		version = static_cast<int>(strtol(versioninfo[0].c_str(), 0, 0));
+		version = static_cast<int>(strtol(versioninfo[0].c_str(), nullptr, 0));
 	}
 
 	for (int i = 0; i < numsections; i++) {

@@ -62,19 +62,21 @@ libgumps_la_SOURCES = \
 	gump_types.h	\
 	Face_button.cc	\
 	Face_button.h	\
-	Jawbone_gump.h	\
 	Jawbone_gump.cc	\
-	Gump_manager.h	\
+	Jawbone_gump.h	\
 	Gump_manager.cc	\
-	Face_stats.h	\
+	Gump_manager.h	\
 	Face_stats.cc	\
-	Text_button.h	\
+	Face_stats.h	\
 	Text_button.cc \
-	Enabled_button.h \
+	Text_button.h	\
 	Enabled_button.cc \
-	iphone_gumps.h \
-	iphone_gumps.cc \
+	Enabled_button.h \
+	ShortcutBar_gump.cc \
 	ShortcutBar_gump.h \
-	ShortcutBar_gump.cc
+	ItemMenu_gump.cc \
+	ItemMenu_gump.h	\
+	InputOptions_gump.cc	\
+	InputOptions_gump.h
 
 CLEANFILES = *~

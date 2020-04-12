@@ -2753,7 +2753,7 @@ UI_ambient_light(bool onoff)                                         [SI, Exult]
 
   Parameters:
     onoff    Flag specifying whether we want to turn the light on or off: true
-             to turn it on, false to turn it off.
+             to turn it off, false to turn it on.
 
 UI_cause_light(int length)
 

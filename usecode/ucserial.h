@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _UCSERIAL_H
-#define _UCSERIAL_H
+#ifndef UCSERIAL_H
+#define UCSERIAL_H
 
 #include "objserial.h"
 
@@ -37,6 +37,7 @@ extern int Stack_frame_out(
     int num_vars,
     Usecode_value *locals
 );
+
 extern bool Stack_frame_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
@@ -50,6 +51,5 @@ extern bool Stack_frame_in(
     int &num_vars,
     Usecode_value *&locals
 );
-
 
 #endif

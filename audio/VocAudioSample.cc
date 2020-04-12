@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "pent_include.h"
 #include "VocAudioSample.h"
+#include <new>
 
 #define	TRAILING_VOC_SLOP 32
 #define	LEADING_VOC_SLOP 32
@@ -32,8 +33,8 @@ using std::max;
 
 namespace Pentagram {
 
-VocAudioSample::VocAudioSample(uint8* buffer_, uint32 size_)
-	: AudioSample(buffer_, size_)
+VocAudioSample::VocAudioSample(std::unique_ptr<uint8[]> buffer_, uint32 size_)
+	: AudioSample(std::move(buffer_), size_)
 {
 	bool	last_chunk=false;
 
@@ -153,17 +154,13 @@ VocAudioSample::VocAudioSample(uint8* buffer_, uint32 size_)
 	bits = 8;
 	stereo = false;
 	decompressor_size = sizeof(VocDecompData);
+	decompressor_align = alignof(VocDecompData);
 	length = size_;
-}
-
-VocAudioSample::~VocAudioSample()
-{
-
 }
 
 void VocAudioSample::initDecompressor(void *DecompData) const
 {
-	VocDecompData *decomp = static_cast<VocDecompData *>(DecompData);
+	VocDecompData *decomp = new (DecompData) VocDecompData;
 	decomp->pos = 0x1a;
 	decomp->compression = 0;
 	decomp->adpcm_reference = -1;
@@ -172,9 +169,10 @@ void VocAudioSample::initDecompressor(void *DecompData) const
 	decomp->cur_type = 0;
 }
 
-void VocAudioSample::rewind(void *DecompData) const
+void VocAudioSample::freeDecompressor(void *DecompData) const
 {
-	initDecompressor(DecompData);
+	VocDecompData *decomp = static_cast<VocDecompData *>(DecompData);
+	decomp->~VocDecompData();
 }
 
 //
@@ -318,13 +316,13 @@ uint32 VocAudioSample::decompressFrame(void *DecompData, void *samples) const
 	else if (decomp->compression == 0)
 	{
 		bytes_used = num_samples;
-		std::memcpy(samples, buffer+decomp->pos, num_samples);
+		std::memcpy(samples, buffer.get()+decomp->pos, num_samples);
 	}
 	else if (decomp->compression == 1)
 	{
 		bytes_used = num_samples/2;
 		if (decomp->adpcm_reference == -1) bytes_used++;
-		decode_ADPCM_4(buffer+decomp->pos, bytes_used, static_cast<uint8*>(samples), decomp->adpcm_reference, decomp->adpcm_scale);
+		decode_ADPCM_4(buffer.get()+decomp->pos, bytes_used, static_cast<uint8*>(samples), decomp->adpcm_reference, decomp->adpcm_scale);
 	}
 	else
 	{
@@ -344,10 +342,7 @@ bool VocAudioSample::isThis(IDataSource *ds)
 	char buffer[19];
 	ds->read(buffer,19);
 
-	if(!strncmp(buffer,"Creative Voice File",19))
-		return true;
-
-	return false;
+	return strncmp(buffer,"Creative Voice File",19) == 0;
 }
 
 

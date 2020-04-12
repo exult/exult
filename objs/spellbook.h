@@ -45,7 +45,7 @@ public:
 	Spellbook_object(int shapenum, int framenum, unsigned int shapex,
 	                 unsigned int shapey, unsigned int lft, unsigned char *c,
 	                 unsigned char bmark);
-	int has_spell(int spell) {  // Has a spell.
+	bool has_spell(int spell) {  // Has a spell.
 		int circle = spell / 8;
 		int num = spell % 8;    // # within circle.
 		return (circles[circle] & (1 << num)) != 0;
@@ -70,12 +70,12 @@ public:
 	static void execute_spell(Actor *act, int spell,
 	                          bool in_combat = false);
 	// Run usecode function.
-	virtual void activate(int event = 1);
+	void activate(int event = 1) override;
 	// Write out to IREG file.
-	virtual void write_ireg(ODataSource *out);
+	void write_ireg(ODataSource *out) override;
 	// Get size of IREG.
 	// Returns -1 if can't write to buffer
-	virtual int get_ireg_size();
+	int get_ireg_size() override;
 };
 
 #endif

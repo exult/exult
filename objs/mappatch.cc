@@ -39,7 +39,7 @@ Game_object *Map_patch::find(
 	Game_object_vector vec;     // Pass mask=0xb0 to get any object.
 	Game_object::find_nearby(vec, spec.loc, spec.shapenum, 0, 0xb0,
 	                         spec.quality, spec.framenum);
-	return vec.empty() ? 0 : vec.front();
+	return vec.empty() ? nullptr : vec.front();
 }
 
 /*
@@ -52,7 +52,7 @@ bool Map_patch_remove::apply(
 ) {
 	bool found = false;
 	Game_object *obj;
-	while ((obj = find()) != 0) {
+	while ((obj = find()) != nullptr) {
 		obj->remove_this();
 		found = true;
 		if (!all)       // Just one?
@@ -72,7 +72,8 @@ bool Map_patch_modify::apply(
 	Game_object *obj = find();
 	if (!obj)
 		return false;
-	obj->remove_this(1);        // Remove but don't delete.
+	Game_object_shared keep;
+	obj->remove_this(&keep);        // Remove but don't delete.
 	if (mod.shapenum != c_any_shapenum)
 		obj->set_shape(mod.shapenum);
 	if (mod.framenum != c_any_framenum)
@@ -109,8 +110,8 @@ void Map_patch_collection::add(
     Map_patch *p
 ) {
 	// Get superchunk coords.
-	int sx = p->spec.loc.tx / c_tiles_per_schunk,
-	    sy = p->spec.loc.ty / c_tiles_per_schunk;
+	int sx = p->spec.loc.tx / c_tiles_per_schunk;
+	int sy = p->spec.loc.ty / c_tiles_per_schunk;
 	// Get superchunk # (0-143).
 	int schunk = sy * c_num_schunks + sx;
 	patches[schunk].push_back(p);

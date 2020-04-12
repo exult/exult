@@ -35,7 +35,7 @@ public:
 	//! \param repeat Specifies if repeating is enabled or disabled
 	//! \param volume Volume level to play at
 	//! \param branch The Branch index to start playing at
-	XMidiSequence(XMidiSequenceHandler *handler, uint16 sequence_id, XMidiEventList *events, 
+	XMidiSequence(XMidiSequenceHandler *handler, uint16 seq_id, XMidiEventList *events, 
 						bool repeat, int volume, int branch);
 
 	//! Destructor
@@ -66,16 +66,16 @@ public:
 	//! Called when the XMidiSequenceHandler is taking a channel from this sequence
 	//! The XMidiSequence will gracefully reset the state of the channel
 	//! \param c the channel being lost
-	void				loseChannel(int c);
+	void				loseChannel(int i);
 
 	//! Called when the XMidiSequenceHandler is giving a channel to this sequence
 	//! The XMidiSequence will update the state of the channel to what is stored in the shadow
 	//! \param c the channel being gained
-	void				gainChannel(int c);
+	void				gainChannel(int i);
 
 	//! Apply a shadow state
 	//! \param c the channel to apply the shadow for
-	void				applyShadow(int c);
+	void				applyShadow(int i);
 
 	//! Get the channel used mask
 	//! \return the mask of used channels

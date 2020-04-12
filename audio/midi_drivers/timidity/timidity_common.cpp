@@ -28,16 +28,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
-#ifndef _WIN32_WCE
 #include <cerrno>
-#else
-static int errno = 0;
-static char *strerror(int _errno)
-{
-	return "";
-}
-#endif
+
 #include "timidity.h"
 #include "timidity_common.h"
 #include "timidity_output.h"
@@ -56,10 +48,10 @@ char current_filename[1024];
 
 #ifdef DEFAULT_TIMIDITY_PATH
 /* The paths in this list will be tried whenever we're reading a file */
-static PathList defaultpathlist={DEFAULT_TIMIDITY_PATH,0};
+static PathList defaultpathlist={DEFAULT_TIMIDITY_PATH, nullptr};
 static PathList *pathlist=&defaultpathlist; /* This is a linked list */
 #else
-static PathList *pathlist=0;
+static PathList *pathlist = nullptr;
 #endif
 
 /*	Try to open a file for reading. If the filename ends in one of the
@@ -72,7 +64,7 @@ static FILE *try_to_open(char *name, int decompress, int noise_mode)
 	fp=fopen(name, OPEN_MODE); /* First just check that the file exists */
 
 	if (!fp)
-		return 0;
+		return nullptr;
 
 #ifdef DECOMPRESSOR_LIST
 	if (decompress)
@@ -132,7 +124,7 @@ FILE *open_file(const char *name, int decompress, int noise_mode)
 	if (!name || !(*name))
 	{
 		ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Attempted to open nameless file.");
-		return 0;
+		return nullptr;
 	}
 
 	/* First try the given name */
@@ -144,14 +136,12 @@ FILE *open_file(const char *name, int decompress, int noise_mode)
 	if ((fp=try_to_open(current_filename, decompress, noise_mode)))
 		return fp;
 
-#ifdef ENOENT
 	if (noise_mode && (errno != ENOENT))
 	{
 		ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: %s",
 		          current_filename, strerror(errno));
-		return 0;
+		return nullptr;
 	}
-#endif
 
 #ifndef __WIN32__
 	if (name[0] != PATH_SEP)
@@ -176,14 +166,12 @@ FILE *open_file(const char *name, int decompress, int noise_mode)
 			ctl->cmsg(CMSG_INFO, VERB_DEBUG, "Trying to open %s", current_filename);
 			if ((fp=try_to_open(current_filename, decompress, noise_mode)))
 				return fp;
-#ifdef ENOENT
 			if (noise_mode && (errno != ENOENT))
 			{
 				ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: %s",
 					      current_filename, strerror(errno));
-				return 0;
+				return nullptr;
 			}
-#endif
 			plp=plp->next;
 		}
 
@@ -194,7 +182,7 @@ FILE *open_file(const char *name, int decompress, int noise_mode)
 	if (noise_mode>=2)
 		ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: %s", name, strerror(errno));
 
-	return 0;
+	return nullptr;
 }
 
 /* This closes files opened with open_file */
@@ -240,7 +228,7 @@ void *safe_malloc(size_t count)
 
 	ctl->close();
 	exit(10);
-	return(NULL);
+	return nullptr;
 }
 
 /* This adds a directory to the path list */

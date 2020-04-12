@@ -16,83 +16,27 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _HASH_UTILS_H_
-#define _HASH_UTILS_H_
+#ifndef HASH_UTILS_H
+#define HASH_UTILS_H
 
 #include "common_types.h"
 
 #include <cstring>
 
-#ifdef DONT_HAVE_HASH_MAP
-#  include <map>
-#else
-#  if HAVE_UNORDERED_MAP
-#    include <unordered_map>
-using std::unordered_map;
-#  elif defined(HAVE_TR1_UNORDERED_MAP) && defined(__GNUC__) && (__GNUC__ >= 4) && ( __GNUC_MINOR__ >= 3)
-#    include <tr1/unordered_map>
-using std::tr1::unordered_map;
-#  elif defined(HAVE_EXT_HASH_MAP)
-#    include <ext/hash_map>
-#    define unordered_map hash_map
-#    if (defined(__GNUC__) && (__GNUC__ >= 3) && ( __GNUC_MINOR__ >= 0))
-using __gnu_cxx::hash_map;
-#    else
-using std::hash_map;
-#    endif
-#  else//elif defined(HAVE_HASH_MAP)
-#    include <hash_map>
-#    define unordered_map hash_map
-#  endif
-#endif
-
-#ifdef DONT_HAVE_HASH_SET
-#  include <set>
-#else
-#  if HAVE_UNORDERED_SET
-#    include <unordered_set>
-using std::unordered_set;
-#  elif defined(HAVE_TR1_UNORDERED_SET) && defined(__GNUC__) && (__GNUC__ >= 4) && ( __GNUC_MINOR__ >= 3)
-#    include <tr1/unordered_set>
-using std::tr1::unordered_set;
-#  elif defined(HAVE_EXT_HASH_SET)
-#    include <ext/hash_set>
-#    define unordered_set hash_set
-#    if (defined(__GNUC__) && (__GNUC__ >= 3) && ( __GNUC_MINOR__ >= 0))
-using __gnu_cxx::hash_set;
-#    else
-using std::hash_set;
-#    endif
-#  else//elif defined(HAVE_HASH_SET)
-#    include <hash_set>
-#    define unordered_set hash_set
-#  endif
-#endif
-
-
-#if defined(DONT_HAVE_HASH_MAP) && defined(DONT_HAVE_HASH_SET)
-
-/*
- *  For testing if a string is "less" than another:
- */
-struct ltstr {
-	bool operator()(const char *s1, const char *s2) const {
-		return (std::strcmp(s1, s2) < 0);
-	}
-};
-
-#else
+#include <unordered_map>
+#include <unordered_set>
 
 /*
  *  Hash function for strings:
  */
 struct hashstr {
-	long operator()(const char *str) const {
+	uint32 operator()(const char *str) const {
 		const uint32 m = 4294967291u;
 		uint32 result = 0;
-		for (; *str != '\0'; ++str)
+		for (; *str != '\0'; ++str) {
 			result = ((result << 8) + *str) % m;
-		return long(result);
+		}
+		return result;
 	}
 };
 
@@ -104,7 +48,5 @@ struct eqstr {
 		return std::strcmp(s1, s2) == 0;
 	}
 };
-
-#endif
 
 #endif  /* _HASH_UTILS_H_ */

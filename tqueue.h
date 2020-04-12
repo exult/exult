@@ -33,18 +33,16 @@
  *  An interface for entries in the queue:
  */
 class Time_sensitive {
-	int queue_cnt;          // # of entries for this in queue.
-	bool always;            // Always do this, even if paused.
+	int queue_cnt = 0;          // # of entries for this in queue.
+	bool always = false;        // Always do this, even if paused.
 protected:
 	virtual void dequeue() {
 		queue_cnt--;
 	}
 public:
 	friend class Time_queue;
-	Time_sensitive() : queue_cnt(0), always(false)
-	{  }
-	virtual ~Time_sensitive();
-	int in_queue() const {
+	virtual ~Time_sensitive() = default;
+	bool in_queue() const {
 		return queue_cnt > 0;
 	}
 	void set_always(bool tf)    // Should be called before placing in
@@ -79,19 +77,16 @@ bool    operator <(const Queue_entry &q1, const Queue_entry &q2);
  *  by time.
  */
 class Time_queue {
-	typedef std::list<Queue_entry>  Temporal_sequence;
+	using Temporal_sequence = std::list<Queue_entry>;
 	Temporal_sequence data;
-	uint32 pause_time;      // Time when paused.
-	int paused;         // Count of calls to 'pause()'.
+	uint32 pause_time = 0;      // Time when paused.
+	int paused = 0;             // Count of calls to 'pause()'.
 
 	// Activate head + any others due.
 	void activate0(uint32 curtime);
 	void activate_always(uint32 curtime);
 public:
 	friend class Time_queue_iterator;
-	// Time_queue() : head(0), free_entries(0)
-	Time_queue() : pause_time(0), paused(0)
-	{  }
 	void clear();           // Remove all entries.
 	// Add an entry.
 	void add(uint32 t, Time_sensitive *obj) {

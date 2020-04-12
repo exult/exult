@@ -19,9 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef XMIDIFILE_H_INCLUDED
 #define XMIDIFILE_H_INCLUDED
 
-#ifdef PENTAGRAM_IN_EXULT
 #include "gamma.h"
-#endif
+
+#include "common_types.h"
 
 class IDataSource;
 class OIDataSource;
@@ -52,7 +52,6 @@ private:
 	XMidiEvent			*list;
 	XMidiEvent			*branches;
 	XMidiEvent			*current;
-	XMidiEvent			*notes_on;
 	XMidiEvent			*x_patch_bank_cur;
 	XMidiEvent			*x_patch_bank_first;
 	
@@ -67,12 +66,11 @@ private:
 	int					chorus_value;
 	int					reverb_value;
 
-#ifdef PENTAGRAM_IN_EXULT
 	// Midi Volume Curve Modification
 	static GammaTable<unsigned char>	VolumeCurve;
-#endif
 
 public:
+	XMidiFile() = delete; // No default constructor
 	XMidiFile(IDataSource *source, int pconvert);
 	~XMidiFile();
 
@@ -83,7 +81,7 @@ public:
 	XMidiEventList *StealEventList ()
 		{
 		XMidiEventList *tmp = GetEventList(0);
-		events = NULL;
+		events = nullptr;
 		return tmp;
 		}
 
@@ -91,9 +89,7 @@ public:
 	// int apply_patch (int track, DataSource *source);
 
 private:
-	XMidiFile(); // No default constructor
-    
-    struct first_state {			// Status,	Data[0]
+	struct first_state {			// Status,	Data[0]
 		XMidiEvent		*patch[16];	// 0xC
 		XMidiEvent		*bank[16];	// 0xB,		0
 		XMidiEvent		*pan[16];	// 0xB,		7
@@ -113,7 +109,7 @@ private:
 	int ConvertNote (const int time, const unsigned char status, IDataSource *source, const int size);
 	int ConvertEvent (const int time, const unsigned char status, IDataSource *source, const int size, first_state& fs);
 	int ConvertSystemMessage (const int time, const unsigned char status, IDataSource *source);
-	int CreateMT32SystemMessage(const int time, uint32 address_base, uint16 address_offset, uint32 len, const void *data = 0, IDataSource *source=0);
+	int CreateMT32SystemMessage(const int time, uint32 address_base, uint16 address_offset, uint32 len, const void *data = nullptr, IDataSource *source=nullptr);
 
 	int ConvertFiletoList (IDataSource *source, const bool is_xmi, first_state& fs);
 
@@ -125,6 +121,9 @@ private:
 	int ExtractTracksFromU7V (IDataSource *source);
 	int ExtractTracksFromXMIDIMT (IDataSource *source);
 	void InsertDisplayEvents();
+
+	void CreateEventList();
+	void DestroyEventList();
 };
 
 #endif //XMIDIFILE_H_INCLUDED

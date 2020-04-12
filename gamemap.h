@@ -29,6 +29,7 @@
 #include <cassert>
 #include <string>   // STL string
 #include <iostream>
+#include <memory>
 #include <fstream>
 #include <vector>
 
@@ -44,10 +45,11 @@ class Shapes_vga_file;
 class IDataSource;
 class ODataSource;
 class Shape;
-
-using std::vector;
+using Ireg_game_object_shared = std::shared_ptr<Ireg_game_object>;
+using Ifix_game_object_shared = std::shared_ptr<Ifix_game_object>;
 
 #define IREG_EXTENDED   254     // For shape #'s > 1023.
+#define IREG_EXTENDED2  253     // For lift > 15.
 
 /*
  *  The game map:
@@ -55,7 +57,7 @@ using std::vector;
 class Game_map {
 	int num;            // Map #.  Index in gwin->maps.
 	// Flat chunk areas:
-	static vector<Chunk_terrain *> *chunk_terrains;
+	static std::vector<Chunk_terrain *> *chunk_terrains;
 	static std::ifstream *chunks;   // "u7chunks" file.
 	static bool v2_chunks;      // True if 3 bytes/entry.
 	static bool read_all_terrain;   // True if we've read them all.
@@ -78,7 +80,7 @@ class Game_map {
 	static Chunk_terrain *read_terrain(int chunk_num);
 
 	// Create a 192x192 viewable map.
-	void create_minimap(Shape *minimaps, unsigned char *chunk_pixels);
+	void create_minimap(Shape *minimaps, const unsigned char *chunk_pixels);
 	void cache_out_schunk(int schunk);
 public:
 	Game_map(int n);
@@ -141,10 +143,10 @@ public:
 	}
 	Map_chunk *get_chunk_safely(int cx, int cy) {
 		Map_chunk *list;
-		return (cx >= 0 && cx < c_num_chunks &&
-		        cy >= 0 && cy < c_num_chunks ?
-		        ((list = objects[cx][cy]) != 0 ? list :
-		         create_chunk(cx, cy)) : 0);
+		return cx >= 0 && cx < c_num_chunks &&
+		       cy >= 0 && cy < c_num_chunks ?
+		       ((list = objects[cx][cy]) != nullptr ? list :
+		        create_chunk(cx, cy)) : nullptr;
 	}
 	// Get "map" superchunk objs/scenery.
 	void get_map_objects(int schunk);
@@ -189,12 +191,12 @@ public:
 	// Read scheduled script(s) for obj.
 	void read_special_ireg(IDataSource *ireg, Game_object *obj);
 	void read_ireg_objects(IDataSource *ireg, int scx, int scy,
-	                       Game_object *container = 0,
+	                       Game_object *container = nullptr,
 	                       unsigned long flags = (1 << Obj_flags::okay_to_take));
-	Ireg_game_object *create_ireg_object(const Shape_info &info, int shnum,
+	Ireg_game_object_shared create_ireg_object(const Shape_info &info, int shnum,
 	                                     int frnum, int tilex, int tiley, int lift);
-	Ireg_game_object *create_ireg_object(int shnum, int frnum);
-	Ifix_game_object *create_ifix_object(int shnum, int frnum);
+	Ireg_game_object_shared create_ireg_object(int shnum, int frnum);
+	Ifix_game_object_shared create_ifix_object(int shnum, int frnum);
 	// Get all superchunk objects.
 	void get_superchunk_objects(int schunk);
 	bool is_tile_occupied(Tile_coord const &tile);

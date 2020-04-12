@@ -91,11 +91,11 @@ Direction Get_direction4(
 	deltax = Wrap_Delta(deltax);
 	deltay = Wrap_Delta(deltay);
 	if (deltax >= 0)        // Right side?
-		return (deltay > deltax ? north : deltay < -deltax ? south
-		        : east);
+		return deltay > deltax ? north : deltay < -deltax ? south
+		        : east;
 	else                // Left side.
-		return (deltay > -deltax ? north : deltay < deltax ? south
-		        : west);
+		return deltay > -deltax ? north : deltay < deltax ? south
+		        : west;
 }
 
 /*

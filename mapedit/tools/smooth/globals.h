@@ -3,7 +3,7 @@
 #define strncasecmp  _strnicmp
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 typedef HMODULE libhandle_t;
 #define PLUGIN_EXPORT __declspec(dllexport)

@@ -40,14 +40,14 @@ public:
 
 protected:
 	// LowLevelMidiDriver implementation
-	virtual int			open();
-	virtual void		close();
-	virtual void		send(uint32 b);
-	virtual void		lowLevelProduceSamples(sint16 *samples, uint32 num_samples);
+	int			open() override;
+	void		close() override;
+	void		send(uint32 b) override;
+	void		lowLevelProduceSamples(sint16 *samples, uint32 num_samples) override;
 
 	// MidiDriver overloads
-	virtual bool		isSampleProducer() { return true; }
-	virtual bool		noTimbreSupport() { return true; }
+	bool		isSampleProducer() override { return true; }
+	bool		noTimbreSupport() override { return true; }
 };
 
 #endif //USE_TIMIDITY_MIDI

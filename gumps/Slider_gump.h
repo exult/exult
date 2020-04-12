@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _SLIDER_GUMP_H_
-#define _SLIDER_GUMP_H_
+#ifndef SLIDER_GUMP_H
+#define SLIDER_GUMP_H
 
 #include "Modal_gump.h"
 
@@ -27,7 +27,7 @@ class Slider_button;
  *  A slider for choosing a number.
  */
 class Slider_gump : public Modal_gump {
-	UNREPLICATABLE_CLASS_I(Slider_gump, Modal_gump(0, 0, 0, 0))
+	UNREPLICATABLE_CLASS(Slider_gump)
 
 protected:
 	int diamondx;           // Rel. pos. where diamond is shown.
@@ -46,7 +46,6 @@ protected:
 
 public:
 	Slider_gump(int mival, int mxval, int step, int defval);
-	virtual ~Slider_gump();
 	int get_val() {         // Get last value set.
 		return val;
 	}
@@ -56,18 +55,18 @@ public:
 	void move_diamond(int dir);
 
 	// Paint it and its contents.
-	virtual void paint();
-	virtual void close() {
-		done = 1;
+	void paint() override;
+	void close() override {
+		done = true;
 	}
 	// Handle events:
-	virtual bool mouse_down(int mx, int my, int button);
-	virtual bool mouse_up(int mx, int my, int button);
-	virtual void mouse_drag(int mx, int my);
-	virtual void key_down(int chr); // Character typed.
+	bool mouse_down(int mx, int my, int button) override;
+	bool mouse_up(int mx, int my, int button) override;
+	void mouse_drag(int mx, int my) override;
+	void key_down(int chr) override; // Character typed.
 
-	virtual void mousewheel_up();
-	virtual void mousewheel_down();
+	void mousewheel_up() override;
+	void mousewheel_down() override;
 };
 
 #endif

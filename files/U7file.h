@@ -18,11 +18,12 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _U7FILE_H_
-#define _U7FILE_H_
+#ifndef U7FILE_H
+#define U7FILE_H
 
 #include <fstream>
 #include <string>
+#include <utility>
 #include "databuf.h"
 #include "U7obj.h"
 #include "exceptions.h"
@@ -42,31 +43,69 @@ protected:
 	File_spec identifier;
 	/// Pointer to the DataSource which will be used by
 	/// derived classes.
-	IDataSource *data;
+	std::unique_ptr<IDataSource> data;
 	/// Causes file/buffer information to be read. Or will do,
 	/// when it is implemented for derived classes.
-	virtual void index_file()
-	{  }
-private:
-	/// No default constructor.
-	U7file();
-	UNREPLICATABLE_CLASS(U7file)
+	virtual void index_file() {}
+	struct Reference {
+		size_t  offset;
+		size_t  size;
+	};
+	virtual Reference get_object_reference(uint32) const {
+		return Reference{0, 0};
+	}
+
 public:
 	/// Initializes from a file spec. Needed by some constructors.
 	/// @param spec A file specification.
-	U7file(const File_spec &spec)
-		: identifier(spec), data(NULL)
-	{  }
+	explicit U7file(File_spec spec)
+		: identifier(std::move(spec)), data(nullptr) {}
 	/// Deletes the data source. The destructors of derived classes
 	/// should delete anything else that is needed by the datasource
 	/// (e.g. buffers) but NOT the datadource.
-	virtual ~U7file() {
-		delete data;
+	virtual ~U7file() noexcept = default;
+	U7file(const U7file&) = delete;
+	U7file& operator=(const U7file&) = delete;
+	U7file(U7file&&) = default;
+	U7file& operator=(U7file&&) = default;
+
+	virtual size_t number_of_objects() = 0;
+	/**
+	 *  Reads the desired object from the file.
+	 *  @param objnum   Number of object to read.
+	 *  @param len  Receives the length of the object, or zero in any failure.
+	 *  @return Buffer created with new[] containing the object data or
+	 *  null on any failure.
+	 */
+	std::unique_ptr<unsigned char[]> retrieve(uint32 objnum, std::size_t &len) {
+		if (!data || objnum >= number_of_objects()) {
+			len = 0;
+			return nullptr;
+		}
+		Reference ref = get_object_reference(objnum);
+		data->seek(ref.offset);
+		if (!data->good()) {
+			len = 0;
+			return nullptr;
+		}
+		len = ref.size;
+		return data->readN(len);
 	}
 
-	virtual size_t number_of_objects(void) = 0;
-	virtual char *retrieve(uint32 objnum, std::size_t &len) = 0;
 	virtual const char *get_archive_type() = 0;
+
+	/**
+	 *  Reads the desired object from the file.
+	 *  @param objnum   Number of object to read.
+	 *  @return IBufferDataSource wrapping object data. If any error
+	 *  has occurred, calling good() on the returned data source will
+	 *  return false.
+	 */
+	IBufferDataSource retrieve(uint32 objnum) {
+		std::size_t len;
+		auto buffer = retrieve(objnum, len);
+		return IBufferDataSource(std::move(buffer), len);
+	}
 };
 
 /**
@@ -76,31 +115,18 @@ public:
  *  The template parameter class T should be derived from U7file.
  */
 template <class T>
-class U7DataFile : public T {
-protected:
-	/// The stream from which data will come.
-	std::ifstream _file;
-private:
-	/// No default constructor.
-	U7DataFile();
-	UNREPLICATABLE_CLASS(U7DataFile)
+class U7DataFile final : public T {
 public:
 	/// This constructor treats the identifier as a file name and
 	/// opens the file if it exists. It also creates and initializes
 	/// the data source, or sets it to null if the file is not there.
 	/// @param spec Name of file to open. Ignores the index portion.
-	U7DataFile(const File_spec &spec)
+	explicit U7DataFile(const File_spec &spec)
 		: T(spec) {
-		if (U7exists(this->identifier.name)) {
-			U7open(this->_file, this->identifier.name.c_str());
-			this->data = new IStreamDataSource(&(this->_file));
+		this->data = std::make_unique<IFileDataSource>(this->identifier.name);
+		if (this->data->good()) {
 			this->index_file();
-		} else
-			this->data = 0;
-	}
-	/// This destructor simply closes the file.
-	virtual ~U7DataFile() {
-		this->_file.close();
+		}
 	}
 };
 
@@ -112,25 +138,14 @@ public:
  *  The template parameter class T should be derived from U7file.
  */
 template <class T>
-class U7DataBuffer : public T {
-protected:
-	/// The buffer to read from.
-	const char *_buffer;
-	/// Buffer length.
-	size_t _len;
-private:
-	/// No default constructor.
-	U7DataBuffer();
-	UNREPLICATABLE_CLASS(U7DataBuffer)
+class U7DataBuffer final : public T {
 public:
 	/// Creates and initializes the data source from the data source.
-	/// Takes ownership of the parameters and deletes them when done,
-	/// so callers should NOT delete them.
 	/// @param spec Unique identifier for this data object.
-	/// @param dt   IBufferDataSource that we shoud use.
-	U7DataBuffer(const File_spec &spec, IBufferDataSource *dt)
-		: T(spec), _buffer(reinterpret_cast<const char *>(dt->getPtr())), _len(dt->getSize()) {
-		this->data = dt;
+	/// @param dt   Unique pointer to IExultDataSource that we shoud use.
+	U7DataBuffer(const File_spec &spec, std::unique_ptr<IExultDataSource> dt)
+		: T(spec) {
+		this->data = std::move(dt);
 		this->index_file();
 	}
 	/// Creates and initializes the data source from the buffer.
@@ -141,27 +156,18 @@ public:
 	/// at the end. Can be null if l also is.
 	/// @param l    Length of data in the buffer.
 	U7DataBuffer(const File_spec &spec, const char *buf, unsigned int l)
-		: T(spec), _buffer(buf), _len(l) {
-		this->identifier = spec;
-		this->data = new IBufferDataSource(this->_buffer, this->_len);
+		: T(spec) {
+		this->data = std::make_unique<IExultDataSource>(buf, l);
 		this->index_file();
 	}
 	/// Creates and initializes the data source from the specified
 	/// file/number pair.
 	/// @param spec Unique identifier for this data object. The 'name'
 	/// member **MUST** be a valid file name.
-	U7DataBuffer(const File_spec &spec)
+	explicit U7DataBuffer(const File_spec &spec)
 		: T(spec) {
-		this->identifier = spec;
-		std::size_t size;
-		U7object from(spec.name, spec.index);
-		this->_buffer = from.retrieve(size);
-		this->data = new IBufferDataSource(_buffer, this->_len = size);
+		this->data = std::make_unique<IExultDataSource>(spec.name, spec.index);
 		this->index_file();
-	}
-	/// This destructor simply deletes the buffer if non-null.
-	virtual ~U7DataBuffer() {
-		delete [] this->_buffer;
 	}
 };
 
@@ -178,11 +184,10 @@ protected:
 	bool patch;
 	/// Number of objects in the file.
 	int cnt;
+
 public:
-	File_data(const File_spec &spec);
-	File_data(const File_data &other)
-		: file(other.file), patch(other.patch), cnt(other.cnt)
-	{  }
+	explicit File_data(const File_spec &spec);
+	File_data(const File_data &other) noexcept = default;
 	bool from_patch() const {
 		return patch;
 	}
@@ -207,19 +212,17 @@ class U7multifile {
 protected:
 	/// This is the list of contained files.
 	std::vector<File_data> files;
-private:
-	/// No default constructor.
-	U7multifile();
-	UNREPLICATABLE_CLASS(U7multifile)
+
 public:
-	U7multifile(const File_spec &spec);
+	U7multifile(const U7multifile&) = delete;
+	U7multifile& operator=(const U7multifile&) = delete;
+	explicit U7multifile(const File_spec &spec);
 	U7multifile(const File_spec &spec0, const File_spec &spec1);
 	U7multifile(const File_spec &spec0, const File_spec &spec1,
 	            const File_spec &spec2);
 	U7multifile(const std::vector<File_spec> &specs);
-	~U7multifile();
 
-	size_t number_of_objects(void) const;
+	size_t number_of_objects() const;
 	char *retrieve(uint32 objnum, std::size_t &len, bool &patch) const;
 };
 #endif

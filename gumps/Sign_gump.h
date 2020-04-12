@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _SIGN_GUMP_H_
-#define _SIGN_GUMP_H_
+#ifndef SIGN_GUMP_H
+#define SIGN_GUMP_H
 
 #include <string>
 #include "Gump.h"
@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  A sign showing runes.
  */
 class Sign_gump : public Gump {
-	UNREPLICATABLE_CLASS_I(Sign_gump, Gump())
+	UNREPLICATABLE_CLASS(Sign_gump)
 
 protected:
 	std::string *lines;         // Lines of text.
@@ -35,11 +35,11 @@ protected:
 
 public:
 	Sign_gump(int shapenum, int nlines);
-	virtual ~Sign_gump();
+	~Sign_gump() override;
 	// Set a line of text.
 	void add_text(int line, const std::string &txt);
 	// Paint it and its contents.
-	virtual void paint();
+	void paint() override;
 };
 
 #endif

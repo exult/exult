@@ -21,8 +21,6 @@
 #ifndef PENT_INCLUDE_H
 #define PENT_INCLUDE_H
 
-#define PENTAGRAM_IN_EXULT
-
 // Include config.h first if we have it
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -33,25 +31,15 @@
 //
 #include "common_types.h"
 
-
-//
-// p_dynamic_cast support
-//
-//#include "p_dynamic_cast.h"
-
-
 //
 // assert
 //
 #include <cassert>
 
-
 //
 // Strings
 //
 #include "istring.h"
-
-
 
 //
 // The Console
@@ -61,9 +49,6 @@
 #include <iostream>
 #define pout std::cout
 #define perr std::cerr
-
-
-
 
 //
 // Debugging
@@ -76,35 +61,6 @@
 #  define PERR(x)       do { } while(0)
 #endif
 
-// Two very useful macros that one should use instead of pure delete; they
-// will additionally set the old object pointer to 0, thus helping prevent
-// double deletes (note that "delete 0" is a no-op).
-#define FORGET_OBJECT(x) do { delete x; x = 0; } while(0)
-#define FORGET_ARRAY(x) do { delete [] x; x = 0; } while(0)
-
-
-//
-// Can't happen.
-// For things that really can't happen. Or shouldn't anyway.
-//
-#define CANT_HAPPEN() do { assert(false); } while(0)
-
-//
-// Can't happen return.
-// If we're guaranteed to return before this, but we want to shut the
-// compiler warning up.
-//
-#define CANT_HAPPEN_RETURN() do { assert(false); return 0; } while(0)
-
-//
-// Can't happen with a message
-//
-// Allows a message to be supplied.
-// May not work on all compilers or runtimes as expected
-//
-#define CANT_HAPPEN_MSG(msg) do { assert(msg && false); } while(0)
-
-
 ////////////////////
 //                //
 // Class Wrappers //
@@ -116,59 +72,5 @@
 //
 
 #include "databuf.h"
-
-class IFileDataSource : public IStreamDataSource {
-public:
-public:
-	IFileDataSource(std::ifstream *data_stream) : IStreamDataSource(data_stream) {
-	}
-	~IFileDataSource() {
-		FORGET_OBJECT(in);
-	}
-};
-
-class OFileDataSource : public OStreamDataSource {
-public:
-public:
-	OFileDataSource(std::ofstream *data_stream) : OStreamDataSource(data_stream) {
-	}
-	~OFileDataSource() {
-		FORGET_OBJECT(out);
-	}
-};
-
-//
-// FileSystem
-//
-
-#include "utils.h"
-#include "singles.h"
-
-class FileSystem : protected Game_singletons {
-public:
-	static FileSystem *get_instance() {
-		if (!pent_filesys) pent_filesys = new FileSystem;
-		return pent_filesys;
-	}
-
-	static IDataSource *ReadFile(const std::string &vfn, bool is_text) {
-		std::ifstream *f = new std::ifstream();
-		if (!U7open(*f, vfn.c_str(), is_text)) {
-			delete f;
-			return 0;
-		}
-		return new IFileDataSource(f);
-	}
-
-	// Open a streaming file as readable. Streamed (0 on failure)
-	static ODataSource *WriteFile(const std::string &vfn, bool is_text) {
-		std::ofstream *f = new std::ofstream();
-		if (!U7open(*f, vfn.c_str(), is_text)) {
-			delete f;
-			return 0;
-		}
-		return new OFileDataSource(f);
-	}
-};
 
 #endif //PENT_INCLUDE_H

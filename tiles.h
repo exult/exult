@@ -31,67 +31,71 @@
 class Tile_coord {
 	static short neighbors[16]; // Neighboring tiles in each dir.
 public:
-	short tx, ty, tz;       // Coords. within world. tz=lift.
+	short tx = 0, ty = 0, tz = 0;       // Coords. within world. tz=lift.
 	Tile_coord(int x, int y, int z) : tx(x), ty(y), tz(z)
 	{  }
-	Tile_coord(): tx(0), ty(0), tz(0) { }
-	Tile_coord(Tile_coord const &other)
-		: tx(other.tx), ty(other.ty), tz(other.tz) { }
-	int operator==(Tile_coord const &t2) const {
+	Tile_coord() = default;
+	bool operator==(Tile_coord const &t2) const {
 		return t2.tx == tx && t2.ty == ty && t2.tz == tz;
 	}
-	int operator!=(Tile_coord const &t2) const {
+	bool operator!=(Tile_coord const &t2) const {
 		return !(*this == t2);
 	}
 	int distance(Tile_coord const &t2) const {  // Distance to another tile?
 		int delta = distance_2d(t2);
 		int dz = t2.tz - tz;
-		if (dz < 0)
+		if (dz < 0) {
 			dz = -dz;
+		}
 		// Take larger abs. value.
-		return (delta > dz ? delta : dz);
+		return delta > dz ? delta : dz;
 	}
 	int distance_2d(Tile_coord const &t2) const { // For pathfinder.
 		// Handle wrapping round the world.
 		int dy = (t2.ty - ty + c_num_tiles) % c_num_tiles;
 		int dx = (t2.tx - tx + c_num_tiles) % c_num_tiles;
-		if (dy >= c_num_tiles / 2) // World-wrapping.
+		if (dy >= c_num_tiles / 2) {
 			dy = c_num_tiles - dy;
-		if (dx >= c_num_tiles / 2)
+		}
+		if (dx >= c_num_tiles / 2) {
 			dx = c_num_tiles - dx;
+		}
 		// Take larger abs. value.
-		return (dy > dx ? dy : dx);
+		return dy > dx ? dy : dx;
 	}
 	int square_distance_2d(Tile_coord const &t2) const {
 		int dy = (t2.ty - ty + c_num_tiles) % c_num_tiles;
 		int dx = (t2.tx - tx + c_num_tiles) % c_num_tiles;
-		if (dy >= c_num_tiles / 2) // World-wrapping.
+		if (dy >= c_num_tiles / 2) {
 			dy = c_num_tiles - dy;
-		if (dx >= c_num_tiles / 2)
+		}
+		if (dx >= c_num_tiles / 2) {
 			dx = c_num_tiles - dx;
-
+		}
 		return dx * dx + dy * dy;
 	}
 	int square_distance_3d(Tile_coord const &t2) const {
 		int dy = (t2.ty - ty + c_num_tiles) % c_num_tiles;
 		int dx = (t2.tx - tx + c_num_tiles) % c_num_tiles;
 		int dz = t2.tz - tz;
-		if (dy >= c_num_tiles / 2) // World-wrapping.
+		if (dy >= c_num_tiles / 2) {
 			dy = c_num_tiles - dy;
-		if (dx >= c_num_tiles / 2)
+		}
+		if (dx >= c_num_tiles / 2) {
 			dx = c_num_tiles - dx;
-
+		}
 		return dx * dx + dy * dy + dz * dz;
 	}
 	int square_distance_screen_space(Tile_coord const &t2) const {
 		int dy = (t2.ty - ty + c_num_tiles) % c_num_tiles;
 		int dx = (t2.tx - tx + c_num_tiles) % c_num_tiles;
 		int dz = t2.tz - tz;
-		if (dy >= c_num_tiles / 2) // World-wrapping.
+		if (dy >= c_num_tiles / 2) {
 			dy = c_num_tiles - dy;
-		if (dx >= c_num_tiles / 2)
+		}
+		if (dx >= c_num_tiles / 2) {
 			dx = c_num_tiles - dx;
-
+		}
 		dx = dx * 2 - dz;
 		dy = dy * 2 - dz;
 
@@ -111,7 +115,7 @@ public:
 	static bool gte(int t1, int t2) { // Ret. t1 >= t2 with wrapping.
 		int diff = t1 - t2;
 		return diff >= 0 ? (diff < c_num_tiles / 2) :
-		       diff < -c_num_tiles / 2;
+		       (diff < -c_num_tiles / 2);
 	}
 	// Ret. (to - from) with wrapping.
 	static int delta(int from, int to) {

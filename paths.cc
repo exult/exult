@@ -112,14 +112,16 @@ int Actor_pathfinder_client::get_step_cost(
     //   field may be modified.
 ) {
 	Game_window *gwin = Game_window::get_instance();
-	int cx = to.tx / c_tiles_per_chunk, cy = to.ty / c_tiles_per_chunk;
+	int cx = to.tx / c_tiles_per_chunk;
+	int cy = to.ty / c_tiles_per_chunk;
 	Map_chunk *olist = gwin->get_map()->get_chunk(cx, cy);
 	int tx = to.tx % c_tiles_per_chunk; // Get tile within chunk.
 	int ty = to.ty % c_tiles_per_chunk;
 	int cost = 1;
 	olist->setup_cache();       // Make sure cache is valid.
-	int water, poison;      // Get tile info.
-	Actor::get_tile_info(0, gwin, olist, tx, ty, water, poison);
+	bool water;
+	bool poison;      // Get tile info.
+	Actor::get_tile_info(nullptr, gwin, olist, tx, ty, water, poison);
 	int old_lift = to.tz;       // Might climb/descend.
 	Tile_coord from(frm);
 	if (npc->is_blocked(to, &from)) {
@@ -168,7 +170,8 @@ int Actor_pathfinder_client::estimate_cost(
 		dy += c_num_tiles;
 	else if (dy < 0)
 		dy = -dy;
-	int larger, smaller;        // Start with larger.
+	int larger;
+	int smaller;        // Start with larger.
 	if (dy <= dx) {
 		larger = dx;
 		smaller = dy;
@@ -176,14 +179,14 @@ int Actor_pathfinder_client::estimate_cost(
 		larger = dy;
 		smaller = dx;
 	}
-	return (2 * larger + smaller);  // Straight = 2, diag = 3.
+	return 2 * larger + smaller;  // Straight = 2, diag = 3.
 }
 
 /*
  *  Is tile at goal?
  */
 
-int Actor_pathfinder_client::at_goal(
+bool Actor_pathfinder_client::at_goal(
     Tile_coord const &tile,
     Tile_coord const &goal
 ) {
@@ -205,14 +208,14 @@ int Onecoord_pathfinder_client::estimate_cost(
 			dy += c_num_tiles;
 		else if (dy < 0)
 			dy = -dy;
-		return (2 * dy);
+		return 2 * dy;
 	} else if (to.ty == -1) {
 		int dx = to.tx - from.tx;
 		if (dx < -c_num_tiles / 2)
 			dx += c_num_tiles;
 		else if (dx < 0)
 			dx = -dx;
-		return (2 * dx);
+		return 2 * dx;
 	} else              // Shouldn't get here.
 		return Actor_pathfinder_client::estimate_cost(from, to);
 }
@@ -221,13 +224,13 @@ int Onecoord_pathfinder_client::estimate_cost(
  *  Is tile at goal?
  */
 
-int Onecoord_pathfinder_client::at_goal(
+bool Onecoord_pathfinder_client::at_goal(
     Tile_coord const &tile,
     Tile_coord const &goal
 ) {
-	return ((goal.tx == -1 || tile.tx == goal.tx) &&
+	return (goal.tx == -1 || tile.tx == goal.tx) &&
 	        (goal.ty == -1 || tile.ty == goal.ty) &&
-	        (goal.tz == -1 || tile.tz == goal.tz));
+	        (goal.tz == -1 || tile.tz == goal.tz);
 }
 
 /*
@@ -257,7 +260,8 @@ Offscreen_pathfinder_client::Offscreen_pathfinder_client(
 		Rectangle scr =
 		    Game_window::get_instance()->get_win_tile_rect();
 		// Get center.
-		int cx = scr.x + scr.w / 2, cy = scr.y + scr.h / 2;
+		int cx = scr.x + scr.w / 2;
+		int cy = scr.y + scr.h / 2;
 		// More than 4 screens away?
 		if (best.distance_2d(Tile_coord(cx, cy, 0)) > 4 * scr.w) {
 			best.tx = best.ty = -1;
@@ -333,7 +337,7 @@ int Offscreen_pathfinder_client::estimate_cost(
  *  Is tile at goal?
  */
 
-int Offscreen_pathfinder_client::at_goal(
+bool Offscreen_pathfinder_client::at_goal(
     Tile_coord const &tile,
     Tile_coord const &goal
 ) {
@@ -373,13 +377,13 @@ Approach_object_pathfinder_client::Approach_object_pathfinder_client(
  *  Is tile at goal?
  */
 
-int Approach_object_pathfinder_client::at_goal(
+bool Approach_object_pathfinder_client::at_goal(
     Tile_coord const &tile,
     Tile_coord const &goal
 ) {
 	int dz = tile.tz - goal.tz; // Got to be on same floor.
 	if (dz > 5 || dz < -5)
-		return 0;
+		return false;
 	return destbox.has_world_point(tile.tx, tile.ty);
 }
 
@@ -395,7 +399,7 @@ Fast_pathfinder_client::Fast_pathfinder_client(
     int mf
 ) : Pathfinder_client(mf),
 	destbox(Rectangle(dest.tx, dest.ty, 0, 0).enlarge(dist)) {
-	init(from, 0, dist);
+	init(from, nullptr, dist);
 }
 
 /*
@@ -423,7 +427,7 @@ Fast_pathfinder_client::Fast_pathfinder_client(
     int dist
 ) : Pathfinder_client(from->get_type_flags()),
 	destbox(Rectangle(dest.tx, dest.ty, 0, 0).enlarge(dist)) {
-	init(from, 0, dist);
+	init(from, nullptr, dist);
 }
 
 /*
@@ -482,7 +486,8 @@ int Fast_pathfinder_client::get_step_cost(
 ) {
 	ignore_unused_variable_warning(from);
 	Game_window *gwin = Game_window::get_instance();
-	int cx = to.tx / c_tiles_per_chunk, cy = to.ty / c_tiles_per_chunk;
+	int cx = to.tx / c_tiles_per_chunk;
+	int cy = to.ty / c_tiles_per_chunk;
 	Map_chunk *olist = gwin->get_map()->get_chunk(cx, cy);
 	int tx = to.tx % c_tiles_per_chunk; // Get tile within chunk.
 	int ty = to.ty % c_tiles_per_chunk;
@@ -511,13 +516,13 @@ int Fast_pathfinder_client::estimate_cost(
  *  Is tile at goal?
  */
 
-int Fast_pathfinder_client::at_goal(
+bool Fast_pathfinder_client::at_goal(
     Tile_coord const &tile,
     Tile_coord const &goal
 ) {
 	int dz = tile.tz - goal.tz; // Got to be on same floor.
 	if (dz > 5 || dz < -5)
-		return 0;
+		return false;
 	Rectangle abox(tile.tx - axtiles + 1, tile.ty - aytiles + 1,
 	               axtiles, aytiles);
 	return abox.intersects(destbox);
@@ -546,7 +551,7 @@ static void Get_closest_edge(
 	pos1.tz += ht1 - 1;
 }
 
-int Fast_pathfinder_client::is_grabable_internal(
+bool Fast_pathfinder_client::is_grabable_internal(
     Game_object *from,
     Tile_coord const &ct,
     Tile_coord const &dt,
@@ -557,13 +562,14 @@ int Fast_pathfinder_client::is_grabable_internal(
 	Game_map *gmap = Game_window::get_instance()->get_map();
 
 	Block fromvol = from->get_block();
-	Tile_coord src = from->get_tile(), dst(dt);
+	Tile_coord src = from->get_tile();
+	Tile_coord dst(dt);
 	Get_closest_edge(fromvol, tovol, src, dst);
 	src.tz = from->get_lift();
 
 	Astar path;
 	if (!path.NewPath(src, dst, &client))
-		return 0;
+		return false;
 
 	Tile_coord t;           // Check each tile.
 	bool done;
@@ -573,11 +579,11 @@ int Fast_pathfinder_client::is_grabable_internal(
 		while (path.GetNextStep(t, done))
 			if (t != from->get_tile() && !client.at_goal(t, dst) &&
 			        gmap->is_tile_occupied(t))
-				return 0;   // Blocked.
+				return false;   // Blocked.
 	}
 
 	if (!client.at_goal(t, dst))
-		return 0;
+		return false;
 
 	Block srcvol(fromvol);
 	fromvol.x += t.tx - src.tx;
@@ -587,11 +593,11 @@ int Fast_pathfinder_client::is_grabable_internal(
 	Get_closest_edge(fromvol, tovol, t, dst);
 
 	Zombie zpath;
-	if (!zpath.NewPath(t, dst, 0))  // Should always succeed.
-		return 0;
+	if (!zpath.NewPath(t, dst, nullptr))  // Should always succeed.
+		return false;
 
 	if (zpath.get_num_steps() == 0)
-		return 0;
+		return false;
 
 	Game_object *block;
 	while (zpath.GetNextStep(t, done))
@@ -599,83 +605,83 @@ int Fast_pathfinder_client::is_grabable_internal(
 		        !srcvol.has_world_point(t.tx, t.ty, t.tz) &&
 		        !fromvol.has_world_point(t.tx, t.ty, t.tz) &&
 		        gmap->is_tile_occupied(t) &&
-		        (block = Game_object::find_blocking(t)) != 0 &&
+		        (block = Game_object::find_blocking(t)) != nullptr &&
 		        // Ignore all blocking actors and movable objects.
-		        block->as_actor() == 0 && !block->is_dragable())
-			return 0;   // Blocked.
-	return 1;
+		        block->as_actor() == nullptr && !block->is_dragable())
+			return false;   // Blocked.
+	return true;
 }
 
 // Need this much for gems in swamp E of Empath Abbey
 #define MAX_GRAB_DIST 5
 
-int Fast_pathfinder_client::is_grabable(
+bool Fast_pathfinder_client::is_grabable(
     Game_object *from,      // From this object.
     Game_object *to,        // To this object.
     int mf
 ) {
 	if (from->distance(to) <= 1)
-		return 1;       // Already okay.
+		return true;       // Already okay.
 
 	for (int i = 1; i <= MAX_GRAB_DIST; i++) {
 		Fast_pathfinder_client client(from, to, i, mf);
 		if (is_grabable_internal(from, to->get_center_tile(), to->get_tile(),
 		                         to->get_block(), client))
-			return 1;
+			return true;
 	}
-	return 0;
+	return false;
 }
 
-int Fast_pathfinder_client::is_grabable(
+bool Fast_pathfinder_client::is_grabable(
     Game_object *from,      // From this object.
     Tile_coord const &to,   // To this spot.
     int mf
 ) {
 	if (from->distance(to) <= 1)
-		return 1;       // Already okay.
+		return true;       // Already okay.
 
 	for (int i = 1; i <= MAX_GRAB_DIST; i++) {
 		Fast_pathfinder_client client(from, to, i, mf);
 		if (is_grabable_internal(from, to, to,
 		                         Block(to.tx, to.ty, to.tz, 1, 1, 1),
 		                         client))
-			return 1;
+			return true;
 	}
-	return 0;
+	return false;
 }
 
 
-int Fast_pathfinder_client::is_grabable(
+bool Fast_pathfinder_client::is_grabable(
     Actor *from,            // From this object.
     Game_object *to         // To this object.
 ) {
 	if (from->distance(to) <= 1)
-		return 1;       // Already okay.
+		return true;       // Already okay.
 
 	for (int i = 1; i <= MAX_GRAB_DIST; i++) {
 		Fast_pathfinder_client client(from, to, i);
 		if (is_grabable_internal(from, to->get_center_tile(), to->get_tile(),
 		                         to->get_block(), client))
-			return 1;
+			return true;
 	}
-	return 0;
+	return false;
 }
 
-int Fast_pathfinder_client::is_grabable(
+bool Fast_pathfinder_client::is_grabable(
     Actor *from,            // From this object.
     Tile_coord const &to    // To this spot.
 ) {
 	if (from->distance(to) <= 1)
-		return 1;       // Already okay.
+		return true;       // Already okay.
 
 	for (int i = 1; i <= MAX_GRAB_DIST; i++) {
 		Fast_pathfinder_client client(from, to, i);
 		if (is_grabable_internal(from, to, to,
 		                         Block(to.tx, to.ty, to.tz, 1, 1, 1),
 		                         client))
-			return 1;
+			return true;
 	}
-	return 0;
+	return false;
 }
 
 /*
@@ -684,46 +690,48 @@ int Fast_pathfinder_client::is_grabable(
  *  NOTE2:  This version doesn't check the z-coord at all.
  */
 
-int Fast_pathfinder_client::is_straight_path(
+bool Fast_pathfinder_client::is_straight_path(
     Tile_coord const &from,     // From this spot.
     Tile_coord const &to            // To this spot.
 ) {
 	Game_map *gmap = Game_window::get_instance()->get_map();
 
 	Zombie path;
-	if (!path.NewPath(from, to, 0)) // Should always succeed.
-		return 0;
+	if (!path.NewPath(from, to, nullptr)) // Should always succeed.
+		return false;
 	Tile_coord t;           // Check each tile.
 	bool done;
 	while (path.GetNextStep(t, done))
 		if (t != from && t != to && gmap->is_tile_occupied(t))
-			return 0;   // Blocked.
-	return 1;           // Looks okay.
+			return false;   // Blocked.
+	return true;           // Looks okay.
 }
 
 /*
  *  Check for path from one object to another, using their closest corners.
  */
 
-int Fast_pathfinder_client::is_straight_path(
+bool Fast_pathfinder_client::is_straight_path(
     Game_object *from, Game_object *to
 ) {
-	Block fromvol = from->get_block(), tovol = to->get_block();
-	Tile_coord pos1(from->get_tile()), pos2(to->get_tile());
+	Block fromvol = from->get_block();
+	Block tovol = to->get_block();
+	Tile_coord pos1(from->get_tile());
+	Tile_coord pos2(to->get_tile());
 	Get_closest_edge(fromvol, tovol, pos1, pos2);
 
 	Game_map *gmap = Game_window::get_instance()->get_map();
 	Zombie path;
-	if (!path.NewPath(pos1, pos2, 0))   // Should always succeed.
-		return 0;
+	if (!path.NewPath(pos1, pos2, nullptr))   // Should always succeed.
+		return false;
 	Tile_coord t;           // Check each tile.
 	bool done;
 	while (path.GetNextStep(t, done))
 		if (!tovol.has_world_point(t.tx, t.ty, t.tz) &&
 		        !fromvol.has_world_point(t.tx, t.ty, t.tz) &&
 		        gmap->is_tile_occupied(t))
-			return 0;   // Blocked.
-	return 1;           // Looks okay.
+			return false;   // Blocked.
+	return true;           // Looks okay.
 }
 
 /*

@@ -30,22 +30,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "XMidiEvent.h"
 #include "XMidiEventList.h"
 
-#ifdef PENTAGRAM_IN_EXULT
 #include "databuf.h"
 #include "utils.h"
-#else
-#include "IDataSource.h"
-#include "FileSystem.h"
-#endif
 
 using namespace MT32Emu;
 
 const MidiDriver::MidiDriverDesc MT32EmuMidiDriver::desc =
 		MidiDriver::MidiDriverDesc ("MT32Emu", createInstance);
-
-MT32EmuMidiDriver::MT32EmuMidiDriver()
-{
-}
 
 /*
  *	This file open proc redirects writes to a writable directory
@@ -59,14 +50,12 @@ static bool openROMFile(
 ) {
 	std::string basedir;
 	if (!writable) {
-#ifdef MACOSX
 		// May be in bundle.
 		if (is_system_path_defined("<BUNDLE>")) {
 			basedir = "<BUNDLE>/" + filename;
 			if (file.open(get_system_path(basedir).c_str()))
 				return true;
 		}
-#endif
 		// Now try data dir.
 		basedir = "<DATA>/" + filename;
 		if (file.open(get_system_path(basedir).c_str()))
@@ -75,10 +64,7 @@ static bool openROMFile(
 		// may have written something there.
 	}
 	basedir = "<SAVEHOME>/data/" + filename;
-	if (file.open(get_system_path(basedir).c_str()))
-		return true;
-	// Nowhere we know about.
-	return false;
+	return file.open(get_system_path(basedir).c_str());
 }
 
 static const ROMImage *getROM(
@@ -88,7 +74,7 @@ static const ROMImage *getROM(
 	if (openROMFile(file, filename, false)) {
 		return ROMImage::makeROMImage(&file);
 	}
-	return NULL;
+	return nullptr;
 }
 
 int MT32EmuMidiDriver::open() {
@@ -105,7 +91,8 @@ int MT32EmuMidiDriver::open() {
 	if (!controlROMImage)
 		controlROMImage = getROM(controlROMFile, "MT32_CONTROL.ROM");
 	if (!controlROMImage) {
-		FileStream part1, part2;
+		FileStream part1;
+		FileStream part2;
 		if (openROMFile(part1, "MT32A.BIN", false) && openROMFile(part2, "MT32B.BIN", false)) {
 			std::ofstream out;
 			if (U7open(out, "<SAVEHOME>/data/MT32_CONTROL.ROM", false)) {
@@ -133,13 +120,13 @@ int MT32EmuMidiDriver::open() {
 		return 1;
 	}
 
-	mt32 = new Synth(0);
+	mt32 = new Synth(nullptr);
 
 	if (!mt32->open(*controlROMImage, *pcmROMImage)) {
 		ROMImage::freeROMImage(controlROMImage);
 		ROMImage::freeROMImage(pcmROMImage);
 		delete mt32;
-		mt32 = 0;
+		mt32 = nullptr;
 		return 1;
 	}
 
@@ -152,7 +139,7 @@ void MT32EmuMidiDriver::close() {
 	if (mt32) {
 		mt32->close();
 		delete mt32;
-		mt32 = 0;
+		mt32 = nullptr;
 	}
 }
 

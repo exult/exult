@@ -32,11 +32,9 @@ public:
 		init();
 	}
 
-	virtual ~Enabled_button()
-	{ }
-	virtual bool push(int button);
-	virtual void unpush(int button);
-	virtual bool activate(int button = 1);
+	bool push(int button) override;
+	void unpush(int button) override;
+	bool activate(int button = 1) override;
 
 	int getselection() const {
 		return get_framenum();
@@ -45,6 +43,26 @@ public:
 
 protected:
 	static const char *selections[];
+};
+
+template <typename Parent>
+class CallbackEnabledButton : public Enabled_button {
+public:
+	using CallbackType = void (Parent::*)(int state);
+
+	template <typename... Ts>
+	CallbackEnabledButton(Parent* par, CallbackType&& callback, Ts&&... args)
+		: Enabled_button(par, std::forward<Ts>(args)...),
+		  parent(par), on_toggle(std::forward<CallbackType>(callback)) {}
+
+	void toggle(int state) override {
+		(parent->*on_toggle)(state);
+		parent->paint();
+	}
+
+private:
+	Parent* parent;
+	CallbackType on_toggle;
 };
 
 #endif

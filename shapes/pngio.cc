@@ -30,10 +30,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef HAVE_PNG_H
 
 #include <cstdio>
-#include <string.h>
+#include <cstring>
 
 #include <png.h>
-#include <setjmp.h>
+#include <csetjmp>
 
 
 /*
@@ -58,46 +58,49 @@ int Import_png8(
     //   each entry 3 bytes (RGB).
     int &pal_size           // # entries in palette returned.
 ) {
-	pixels = 0;         // In case we fail.
-	palette = 0;        // In case we fail.
+	pixels = nullptr;         // In case we fail.
+	palette = nullptr;        // In case we fail.
 	// Open file.
 	FILE *fp = fopen(pngname, "rb");
 	if (!fp)
-		return (0);
+		return 0;
 	unsigned char sigbuf[8];        // Make sure it's a .png.
 	if (fread(sigbuf, 1, sizeof(sigbuf), fp) != sizeof(sigbuf) ||
 	        png_sig_cmp(sigbuf, 0, sizeof(sigbuf))) {
 		fclose(fp);
-		return (0);
+		return 0;
 	}
 	// Initialize.
 	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING,
-	                  0, 0, 0);
+	                  nullptr, nullptr, nullptr);
 	if (!png) {
 		fclose(fp);
-		return (0);
+		return 0;
 	}
 	// Allocate info. structure.
 	png_infop info = png_create_info_struct(png);
 	if (setjmp(png_jmpbuf(png))) {  // Handle errors.
-		png_destroy_read_struct(&png, &info, 0);
+		png_destroy_read_struct(&png, &info, nullptr);
 		fclose(fp);
-		return (0);
+		return 0;
 	}
 	png_init_io(png, fp);       // Init. for reading.
 	// Indicate we already read something.
 	png_set_sig_bytes(png, sizeof(sigbuf));
 	png_read_info(png, info);   // Read in image info.
-	png_uint_32 w, h;
-	int depth, color, interlace;
+	png_uint_32 w;
+	png_uint_32 h;
+	int depth;
+	int color;
+	int interlace;
 	png_get_IHDR(png, info, &w, &h, &depth, &color,
-	             &interlace, 0, 0);
+	             &interlace, nullptr, nullptr);
 	width = static_cast<int>(w);
 	height = static_cast<int>(h);
 	if (color != PNG_COLOR_TYPE_PALETTE) {
-		png_destroy_read_struct(&png, &info, 0);
+		png_destroy_read_struct(&png, &info, nullptr);
 		fclose(fp);
-		return (0);
+		return 0;
 	}
 	if (depth < 8)
 		png_set_packing(png);
@@ -106,7 +109,7 @@ int Import_png8(
 		palette = new unsigned char[3 * pal_size];
 	else {              // No palette??
 		pal_size = 0;
-		palette = 0;
+		palette = nullptr;
 	}
 	int i;
 	for (i = 0; i < pal_size; i++) {
@@ -114,7 +117,8 @@ int Import_png8(
 		palette[3 * i + 1] = pngpal[i].green;
 		palette[3 * i + 2] = pngpal[i].blue;
 	}
-	png_int_32 pngxoff, pngyoff;    // Get offsets.
+	png_int_32 pngxoff;
+	png_int_32 pngyoff;    // Get offsets.
 	int utype;
 	if (png_get_oFFs(png, info, &pngxoff, &pngyoff, &utype) &&
 	        utype == PNG_OFFSET_PIXEL) {
@@ -137,7 +141,7 @@ int Import_png8(
 	png_bytep rowptr;       // Read in rows.
 	int r;
 	for (r = 0, rowptr = image; r < height; r++, rowptr += rowbytes)
-		png_read_rows(png, &rowptr, 0, 1);
+		png_read_rows(png, &rowptr, nullptr, 1);
 	png_read_end(png, info);    // Get the rest.
 	// Point past end of data.
 	unsigned char *endptr = pixels + height * rowbytes;
@@ -157,9 +161,9 @@ int Import_png8(
 		pal_size--;
 	}
 	// Clean up.
-	png_destroy_read_struct(&png, &info, 0);
+	png_destroy_read_struct(&png, &info, nullptr);
 	fclose(fp);
-	return (1);
+	return 1;
 }
 
 
@@ -178,7 +182,7 @@ int Export_png8(
     int xoff, int yoff,     // (X,Y) offsets from top-left of
     //   image.
     unsigned char *pixels,      // ->pixels to write.
-    unsigned char *palette,     // ->palette,
+    const unsigned char *palette,     // ->palette,
     //   each entry 3 bytes (RGB).
     int pal_size,           // # entries in palette,
     bool transp_to_0        // If true, rotate palette so the
@@ -188,20 +192,20 @@ int Export_png8(
 	// Open file.
 	FILE *fp = fopen(pngname, "wb");
 	if (!fp)
-		return (0);
+		return 0;
 	// Initialize.
 	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING,
-	                  0, 0, 0);
+	                  nullptr, nullptr, nullptr);
 	if (!png) {
 		fclose(fp);
-		return (0);
+		return 0;
 	}
 	// Allocate info. structure.
 	png_infop info = png_create_info_struct(png);
 	if (setjmp(png_jmpbuf(png))) {  // Handle errors.
 		png_destroy_write_struct(&png, &info);
 		fclose(fp);
-		return (0);
+		return 0;
 	}
 	png_init_io(png, fp);       // Init. for reading.
 	png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_PALETTE,
@@ -225,7 +229,7 @@ int Export_png8(
 		png_byte trans[256];    // Only desired index is transparent.
 		memset(&trans[0], 255, sizeof(trans));
 		trans[static_cast<png_byte>(tindex)] = 0;
-		png_set_tRNS(png, info, &trans[0], tindex + 1, 0);
+		png_set_tRNS(png, info, &trans[0], tindex + 1, nullptr);
 	}
 	// Write out info.
 	png_write_info(png, info);
@@ -242,11 +246,11 @@ int Export_png8(
 			delete [] tbuf;
 		}
 	}
-	png_write_end(png, 0);      // Done.
+	png_write_end(png, nullptr);      // Done.
 	// Clean up.
 	png_destroy_write_struct(&png, &info);
 	fclose(fp);
-	return (1);
+	return 1;
 }
 
 /*
@@ -265,45 +269,48 @@ int Import_png32(
     //   image returned.  (0,0) if not
     //   specified in file.
     unsigned char  *&pixels,    // ->(allocated) pixels returned.
-    bool bottom_first       // Return last row first.  Useful for
-    //   OpenGL textures.
+    bool bottom_first       // Return last row first.
 ) {
-	pixels = 0;         // In case we fail.
+	pixels = nullptr;         // In case we fail.
 	// Open file.
 	FILE *fp = fopen(pngname, "rb");
 	if (!fp)
-		return (0);
+		return 0;
 	unsigned char sigbuf[8];        // Make sure it's a .png.
 	if (fread(sigbuf, 1, sizeof(sigbuf), fp) != sizeof(sigbuf) ||
 	        png_sig_cmp(sigbuf, 0, sizeof(sigbuf))) {
 		fclose(fp);
-		return (0);
+		return 0;
 	}
 	// Initialize.
 	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING,
-	                  0, 0, 0);
+	                  nullptr, nullptr, nullptr);
 	if (!png) {
 		fclose(fp);
-		return (0);
+		return 0;
 	}
 	// Allocate info. structure.
 	png_infop info = png_create_info_struct(png);
 	if (setjmp(png_jmpbuf(png))) {  // Handle errors.
-		png_destroy_read_struct(&png, &info, 0);
+		png_destroy_read_struct(&png, &info, nullptr);
 		fclose(fp);
-		return (0);
+		return 0;
 	}
 	png_init_io(png, fp);       // Init. for reading.
 	// Indicate we already read something.
 	png_set_sig_bytes(png, sizeof(sigbuf));
 	png_read_info(png, info);   // Read in image info.
-	png_uint_32 w, h;
-	int depth, color, interlace;
+	png_uint_32 w;
+	png_uint_32 h;
+	int depth;
+	int color;
+	int interlace;
 	png_get_IHDR(png, info, &w, &h, &depth, &color,
-	             &interlace, 0, 0);
+	             &interlace, nullptr, nullptr);
 	width = static_cast<int>(w);
 	height = static_cast<int>(h);
-	png_int_32 pngxoff, pngyoff;    // Get offsets.
+	png_int_32 pngxoff;
+	png_int_32 pngyoff;    // Get offsets.
 	int utype;
 	if (png_get_oFFs(png, info, &pngxoff, &pngyoff, &utype) &&
 	        utype == PNG_OFFSET_PIXEL) {
@@ -332,12 +339,12 @@ int Import_png32(
 	} else
 		stride = rowbytes;
 	for (int r = 0; r < height; r++, rowptr += stride)
-		png_read_row(png, rowptr, 0);
+		png_read_row(png, rowptr, nullptr);
 	png_read_end(png, info);    // Get the rest.
 	// Clean up.
-	png_destroy_read_struct(&png, &info, 0);
+	png_destroy_read_struct(&png, &info, nullptr);
 	fclose(fp);
-	return (1);
+	return 1;
 }
 
 
@@ -359,20 +366,20 @@ int Export_png32(
 	// Open file.
 	FILE *fp = fopen(pngname, "wb");
 	if (!fp)
-		return (0);
+		return 0;
 	// Initialize.
 	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING,
-	                  0, 0, 0);
+	                  nullptr, nullptr, nullptr);
 	if (!png) {
 		fclose(fp);
-		return (0);
+		return 0;
 	}
 	// Allocate info. structure.
 	png_infop info = png_create_info_struct(png);
 	if (setjmp(png_jmpbuf(png))) {  // Handle errors.
 		png_destroy_write_struct(&png, &info);
 		fclose(fp);
-		return (0);
+		return 0;
 	}
 	png_init_io(png, fp);       // Init. for reading.
 	png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB_ALPHA,
@@ -385,11 +392,11 @@ int Export_png32(
 	int r;
 	for (r = 0, rowptr = pixels; r < height; r++, rowptr += rowbytes)
 		png_write_row(png, rowptr);
-	png_write_end(png, 0);      // Done.
+	png_write_end(png, nullptr);      // Done.
 	// Clean up.
 	png_destroy_write_struct(&png, &info);
 	fclose(fp);
-	return (1);
+	return 1;
 }
 
 

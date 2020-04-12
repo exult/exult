@@ -89,8 +89,8 @@ extern int free_instruments_afterwards;
 
 #define SPECIAL_PROGRAM -1
 
-extern int load_missing_instruments(void);
-extern void free_instruments(void);
+extern int load_missing_instruments();
+extern void free_instruments();
 extern int set_default_instrument(char *name);
 
 #ifdef NS_TIMIDITY

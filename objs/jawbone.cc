@@ -57,7 +57,7 @@ void Jawbone_object::remove(Game_object *obj) {
 
 void Jawbone_object::find_teeth() {
 	for (int i = 0; i < 19; i++)
-		teeth[i] = 0;
+		teeth[i] = nullptr;
 	toothcount = 0;
 
 	Object_list &objects = get_objects();
@@ -67,7 +67,7 @@ void Jawbone_object::find_teeth() {
 	Game_object *obj;
 	Object_iterator next(objects);
 
-	while ((obj = next.get_next()) != 0)
+	while ((obj = next.get_next()) != nullptr)
 		teeth[obj->get_framenum()] = obj;
 
 	for (int i = 0; i < 19; i++)

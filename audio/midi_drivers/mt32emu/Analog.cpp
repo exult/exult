@@ -168,7 +168,7 @@ Analog::~Analog() {
 }
 
 void Analog::process(Sample *outStream, const Sample *nonReverbLeft, const Sample *nonReverbRight, const Sample *reverbDryLeft, const Sample *reverbDryRight, const Sample *reverbWetLeft, const Sample *reverbWetRight, Bit32u outLength) {
-	if (outStream == NULL) {
+	if (outStream == nullptr) {
 		leftChannelLPF.addPositionIncrement(outLength);
 		rightChannelLPF.addPositionIncrement(outLength);
 		return;

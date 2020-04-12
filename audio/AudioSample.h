@@ -19,7 +19,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef AUDIOSAMPLE_H_INCLUDED
 #define AUDIOSAMPLE_H_INCLUDED
 
+#include "common_types.h"
 #include "ignore_unused_variable_warning.h"
+
+#include <memory>
 
 class IDataSource;
 
@@ -33,29 +36,34 @@ protected:
 	bool	stereo;
 	int		frame_size;
 	uint32	decompressor_size;
+	uint32	decompressor_align;
 	uint32	length;
 
 	uint32	buffer_size;
-	uint8	*buffer;
+	std::unique_ptr<uint8[]> buffer;
 
 	uint32	refcount;
 
 public:
-	AudioSample(uint8 *buffer, uint32 size);
-	virtual ~AudioSample(void);
+	AudioSample(std::unique_ptr<uint8[]> buffer, uint32 size);
+	virtual ~AudioSample() = default;
 
 	inline uint32 getRate() const { return sample_rate; }
 	inline uint32 getBits() const { return bits; }
 	inline bool isStereo() const { return stereo; }
 	inline uint32 getFrameSize() const { return frame_size; }
 	inline uint32 getDecompressorDataSize() const { return decompressor_size; }
+	inline uint32 getDecompressorAlignment() const { return decompressor_align; }
 
 	//! get AudioSample length (in samples)
 	inline uint32 getLength() const { return length; }
 
 	virtual void initDecompressor(void *DecompData) const = 0;
 	virtual uint32 decompressFrame(void *DecompData, void *samples) const = 0;
-	virtual void rewind(void *DecompData) const = 0;
+	void rewind(void *DecompData) const {
+		freeDecompressor(DecompData);
+		initDecompressor(DecompData);
+	}
 	virtual void freeDecompressor(void *DecompData) const {
 		ignore_unused_variable_warning(DecompData);
 	}
@@ -67,7 +75,7 @@ public:
 	}
 	uint32			getRefCount() { return refcount; }
 
-	static AudioSample *createAudioSample(uint8 *data, uint32 size);
+	static AudioSample *createAudioSample(std::unique_ptr<uint8[]> data, uint32 size);
 };
 
 }

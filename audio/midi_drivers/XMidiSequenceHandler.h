@@ -19,13 +19,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SEQUENCEHANDLER_H_INCLUDED
 #define SEQUENCEHANDLER_H_INCLUDED
 
+#include "common_types.h"
+
 struct XMidiEvent;
 
 //! Abstract class for handling the playing of XMidiSequence objects
 class XMidiSequenceHandler
 {
 public:
-	virtual ~XMidiSequenceHandler() { }
+	virtual ~XMidiSequenceHandler() = default;
 
 	//! An event sent from a sequence to play
 	//! \param sequence_id The id of the sequence that is attempting to send the event

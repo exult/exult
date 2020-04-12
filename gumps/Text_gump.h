@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _TEXT_GUMP_H_
-#define _TEXT_GUMP_H_
+#ifndef TEXT_GUMP_H
+#define TEXT_GUMP_H
 
 #include "Gump.h"
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  A text gump is the base class for books and scrolls.
  */
 class Text_gump : public Gump {
-	UNREPLICATABLE_CLASS_I(Text_gump, Gump())
+	UNREPLICATABLE_CLASS(Text_gump)
 
 protected:
 	char *text;         // The text.
@@ -35,10 +35,10 @@ protected:
 	int font;       // The shape in fonts.vga to use
 
 public:
-	Text_gump(int shapenum, int fnt = 4) : Gump(0, shapenum),
-		text(0), textlen(0), curtop(0), curend(0), font(fnt)
+	Text_gump(int shapenum, int fnt = 4) : Gump(nullptr, shapenum),
+		text(nullptr), textlen(0), curtop(0), curend(0), font(fnt)
 	{  }
-	virtual ~Text_gump() {
+	~Text_gump() override {
 		delete [] text;
 	}
 	void add_text(const char *str); // Append text.

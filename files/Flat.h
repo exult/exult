@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _FLAT_H_
-#define _FLAT_H_
+#ifndef FLAT_H
+#define FLAT_H
 
 #include <string>
 #include "U7file.h"
@@ -34,22 +34,22 @@ class DataSource;
  *  undefined data origin, and may well be a buffer in memory.
  */
 class Flat : public U7file {
-private:
-	/// No default constructor.
-	Flat();
-	UNREPLICATABLE_CLASS_I(Flat, U7file(""))
+protected:
+	Reference get_object_reference(uint32) const override {
+		return Reference{0, data->getSize()};
+	}
+
 public:
 	/// Basic constructor.
 	/// @param spec File name and object index pair.
-	Flat(const File_spec &spec)
+	explicit Flat(const File_spec &spec)
 		: U7file(spec)
 	{  }
 
-	virtual size_t number_of_objects(void) {
+	size_t number_of_objects() override {
 		return 1;
 	}
-	virtual char *retrieve(uint32 objnum, std::size_t &len);
-	virtual const char *get_archive_type() {
+	const char *get_archive_type() override {
 		return "FLAT";
 	}
 
@@ -57,7 +57,7 @@ public:
 	static bool is_flat(const std::string& fname);
 };
 
-typedef U7DataFile<Flat> FlatFile;
-typedef U7DataBuffer<Flat> FlatBuffer;
+using FlatFile = U7DataFile<Flat>;
+using FlatBuffer = U7DataBuffer<Flat>;
 
 #endif

@@ -29,24 +29,12 @@
 #include "cheat.h"
 #include "game.h"
 
-#if 0
-static inline bool is_light_palette(int pal) {
-	return (pal == PALETTE_SINGLE_LIGHT || pal == PALETTE_MANY_LIGHTS);
-}
-#endif
-
 static inline bool is_dark_palette(int pal) {
-	return (pal == PALETTE_DUSK || pal == PALETTE_NIGHT);
+	return pal == PALETTE_DUSK || pal == PALETTE_NIGHT;
 }
-
-#if 0
-static inline bool is_weather_palette(int pal) {
-	return (pal == PALETTE_OVERCAST || pal == PALETTE_FOG);
-}
-#endif
 
 static inline bool is_day_palette(int pal) {
-	return (pal == PALETTE_DAWN || pal == PALETTE_DAY);
+	return pal == PALETTE_DAWN || pal == PALETTE_DAY;
 }
 
 static inline int get_time_palette(int hour, bool dungeon) {
@@ -99,16 +87,11 @@ void Game_clock::set_time_palette(
 	if (invis && !old_invisible) {
 		if (transition) {
 			delete transition;
-			transition = 0;
+			transition = nullptr;
 		}
 		gwin->get_pal()->set(PALETTE_INVISIBLE);
-#ifdef HAVE_OPENGL
-		if (GL_manager::get_instance() && !gwin->get_pal()->is_faded_out())
-			gwin->get_pal()->apply(true);
-		else
-#endif
-			if (!gwin->get_pal()->is_faded_out())
-				gwin->get_pal()->apply(false);
+		if (!gwin->get_pal()->is_faded_out())
+			gwin->get_pal()->apply(false);
 		return;
 	}
 	old_invisible = invis;
@@ -116,24 +99,19 @@ void Game_clock::set_time_palette(
 	if (!main_actor || (cheat.in_infravision() && !old_infravision)) {
 		if (transition) {
 			delete transition;
-			transition = 0;
+			transition = nullptr;
 		}
 		gwin->get_pal()->set(PALETTE_DAY);
-// As far as I can tell from testing in Direct X and Windib with OpenGL and other scalers, this palette apply isn't even needed.
-#ifdef HAVE_OPENGL
-		if (GL_manager::get_instance() && !gwin->get_pal()->is_faded_out())
-			gwin->get_pal()->apply(true);
-		else
-#endif
-			if (!gwin->get_pal()->is_faded_out())
-				gwin->get_pal()->apply(false);
+// As far as I can tell from testing in Direct X and Windib and other scalers, this palette apply isn't even needed.
+		if (!gwin->get_pal()->is_faded_out())
+			gwin->get_pal()->apply(false);
 		return;
 	}
 	old_infravision = cheat.in_infravision();
 
 	int new_dungeon = gwin->is_in_dungeon();
-	int new_palette = get_time_palette(hour + 1, new_dungeon != 0),
-	    old_palette = get_time_palette(hour, (dungeon != 255 ? dungeon : new_dungeon) != 0);
+	int new_palette = get_time_palette(hour + 1, new_dungeon != 0);
+	int old_palette = get_time_palette(hour, (dungeon != 255 ? dungeon : new_dungeon) != 0);
 	bool cloudy = overcast > 0;
 	bool foggy = fog > 0;
 	bool weather_change = (cloudy != was_overcast) || (foggy != was_foggy);
@@ -152,7 +130,7 @@ void Game_clock::set_time_palette(
 	if (gwin->get_pal()->is_faded_out()) {
 		if (transition) {
 			delete transition;
-			transition = 0;
+			transition = nullptr;
 		}
 		gwin->get_pal()->set(old_palette);
 		if (!gwin->get_pal()->is_faded_out())
@@ -177,7 +155,7 @@ void Game_clock::set_time_palette(
 	} else if (light_change) {
 		if (transition) {
 			delete transition;
-			transition = 0;
+			transition = nullptr;
 		}
 		gwin->get_pal()->set(new_palette);
 		if (!gwin->get_pal()->is_faded_out())
@@ -188,7 +166,7 @@ void Game_clock::set_time_palette(
 		if (transition->set_step(hour, minute))
 			return;
 		delete transition;
-		transition = 0;
+		transition = nullptr;
 	}
 
 	if (old_palette != new_palette) { // Do we have a transition?
@@ -264,7 +242,7 @@ static void Check_freezing(
 ) {
 	Game_window *gwin = Game_window::get_instance();
 	// Avatar's flag applies to party.
-	bool freeze = gwin->get_main_actor()->get_flag(Obj_flags::freeze) != false;
+	bool freeze = gwin->get_main_actor()->get_flag(Obj_flags::freeze);
 	Actor *party[9];        // Get party + Avatar.
 	int cnt = gwin->get_party(party, 1);
 	for (int i = 0; i < cnt; i++)
@@ -335,7 +313,7 @@ void Game_clock::handle_event(
 
 	if (transition && !transition->set_step(hour, minute)) {
 		delete transition;
-		transition = 0;
+		transition = nullptr;
 		set_time_palette();
 	} else if (hour != hour_old)
 		set_time_palette();

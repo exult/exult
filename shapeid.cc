@@ -37,6 +37,7 @@
 #include "exceptions.h"
 #include "miscinf.h"
 #include <fstream>
+#include <memory>
 #include <vector>
 #include <utility>
 
@@ -46,6 +47,8 @@ using std::endl;
 using std::string;
 using std::vector;
 using std::pair;
+using std::unique_ptr;
+using std::make_unique;
 
 // These MIGHT be macros!
 #ifndef min
@@ -55,21 +58,20 @@ using std::min;
 using std::max;
 #endif
 
-Shape_manager *Shape_manager::instance = 0;
+Shape_manager *Shape_manager::instance = nullptr;
 
 /*
  *  Singletons:
  */
-Game_window *Game_singletons::gwin = 0;
-Game_map *Game_singletons::gmap = 0;
-Effects_manager *Game_singletons::eman = 0;
-Shape_manager *Game_singletons::sman = 0;
-Usecode_machine *Game_singletons::ucmachine = 0;
-Game_clock *Game_singletons::gclock = 0;
-Palette *Game_singletons::pal = 0;
-Gump_manager *Game_singletons::gumpman = 0;
-Party_manager *Game_singletons::partyman = 0;
-class FileSystem *Game_singletons::pent_filesys = 0;
+Game_window *Game_singletons::gwin = nullptr;
+Game_map *Game_singletons::gmap = nullptr;
+Effects_manager *Game_singletons::eman = nullptr;
+Shape_manager *Game_singletons::sman = nullptr;
+Usecode_machine *Game_singletons::ucmachine = nullptr;
+Game_clock *Game_singletons::gclock = nullptr;
+Palette *Game_singletons::pal = nullptr;
+Gump_manager *Game_singletons::gumpman = nullptr;
+Party_manager *Game_singletons::partyman = nullptr;
 
 void Game_singletons::init(
     Game_window *g
@@ -89,9 +91,8 @@ void Game_singletons::init(
  *  Create shape manager.
  */
 Shape_manager::Shape_manager(
-) : fonts(0), can_have_paperdolls(false),
-	paperdolls_enabled(false), got_si_shapes(false) {
-	assert(instance == 0);
+)  {
+	assert(instance == nullptr);
 	instance = this;
 }
 
@@ -214,7 +215,7 @@ void Shape_manager::load(
 			Shape *shp = files[SF_SPRITES_VGA].new_shape(0);
 			unsigned char whitepix = 118;
 			for (int ii = 0; ii < 28; ii++) {
-				shp->add_frame(new Shape_frame(&whitepix, 1, 1, 0, 0, false), ii);
+				shp->add_frame(std::make_unique<Shape_frame>(&whitepix, 1, 1, 0, 0, false), ii);
 			}
 		}
 	}
@@ -241,21 +242,17 @@ void Shape_manager::load(
 	fonts = new Fonts_vga_file();
 	fonts->init();
 
-#ifdef __IPHONEOS__
-	files[SF_IPHONE_FLX].load(IPHONE_FLX);
-#endif
-
-
 	// Get translucency tables.
-	unsigned char *blends = 0;
-	unsigned char *ptr; // We will delete THIS at the end, not blends!
+	unsigned char *blends = nullptr;
+	unique_ptr<unsigned char[]> ptr; // We will delete THIS at the end, not blends!
 	int nblends;
 	// ++++TODO: Make this file editable in ES.
 	if (U7exists(PATCH_BLENDS)) {
 		std::ifstream fin;
 		U7open(fin, PATCH_BLENDS);
 		nblends = Read1(fin);
-		ptr = blends = new unsigned char[nblends * 4];
+		ptr = make_unique<unsigned char[]>(nblends * 4);
+		blends = ptr.get();
 		fin.read(reinterpret_cast<char *>(blends), nblends * 4);
 		fin.close();
 	} else if (GAME_BG || GAME_SI) {
@@ -265,13 +262,15 @@ void Shape_manager::load(
 		U7object txtobj(flexfile,
 		                GAME_BG ? EXULT_BG_FLX_BLENDS_DAT : EXULT_SI_FLX_BLENDS_DAT);
 		std::size_t len;
-		ptr = blends = reinterpret_cast<unsigned char *>(txtobj.retrieve(len));
+		ptr = txtobj.retrieve(len);
+		blends = ptr.get();
 		nblends = *blends++;
 	} else if (U7exists(BLENDS)) {
 		std::ifstream fin;
 		U7open(fin, BLENDS);
 		nblends = Read1(fin);
-		ptr = blends = new unsigned char[nblends * 4];
+		ptr = make_unique<unsigned char[]>(nblends * 4);
+		blends = ptr.get();
 		fin.read(reinterpret_cast<char *>(blends), nblends * 4);
 		fin.close();
 	}
@@ -290,7 +289,7 @@ void Shape_manager::load(
 		};
 		nblends = 17;
 		blends = hard_blends;
-		ptr = 0;
+		ptr = nullptr;
 	}
 	xforms.resize(nblends);
 	std::size_t nxforms = xforms.size();
@@ -301,34 +300,31 @@ void Shape_manager::load(
 	// ++++TODO: Make this file editable in ES.
 	if (U7exists(XFORMTBL) || U7exists(PATCH_XFORMS)) {
 		// Read in translucency tables.
-		FlexFile *sxf = U7exists(XFORMTBL) ? new FlexFile(XFORMTBL) : 0;
-		FlexFile *pxf = U7exists(PATCH_XFORMS) ? new FlexFile(XFORMTBL) : 0;
+		FlexFile *sxf = U7exists(XFORMTBL) ? new FlexFile(XFORMTBL) : nullptr;
+		FlexFile *pxf = U7exists(PATCH_XFORMS) ? new FlexFile(XFORMTBL) : nullptr;
 		int sn = sxf ? sxf->number_of_objects() : 0;
 		int pn = pxf ? pxf->number_of_objects() : 0;
 		int nobjs = min(max(sn, pn), nblends);  // Limit by blends.
 		for (int i = 0; i < nobjs; i++) {
-			uint8 *data = 0;
+			unique_ptr<unsigned char[]> data = nullptr;
 			std::size_t len = 0;
 			if (pxf)
-				data = reinterpret_cast<uint8 *>(pxf->retrieve(i, len));
+				data = pxf->retrieve(i, len);
 			if (!data || len == 0) {
 				// Not in patch;
-				delete [] data;
-				data = 0;
+				data.reset();
 				if (sxf)
-					data = reinterpret_cast<uint8 *>(sxf->retrieve(i, len));
+					data = sxf->retrieve(i, len);
 			}
 			if (!data || len == 0) {
-				delete [] data;
 				// No XForm data at all. Make this XForm into an
 				// identity transformation.
 				for (size_t j = 0; j < sizeof(xforms[0].colors); j++)
 					xforms[nxforms - 1 - i].colors[j] = j;
 				continue;
 			}
-			std::memcpy(xforms[nxforms - 1 - i].colors, data,
+			std::memcpy(xforms[nxforms - 1 - i].colors, data.get(),
 			            sizeof(xforms[0].colors));
-			delete[] data;
 		}
 		delete sxf;
 		delete pxf;
@@ -341,7 +337,6 @@ void Shape_manager::load(
 		}
 	}
 
-	delete [] ptr;
 	invis_xform = &xforms[nxforms - 1 - 0];   // ->entry 0.
 }
 
@@ -426,7 +421,7 @@ void Shape_manager::reload_shape_info(
 Shape_manager::~Shape_manager() {
 	delete fonts;
 	assert(this == instance);
-	instance = 0;
+	instance = nullptr;
 }
 
 /*
@@ -480,26 +475,23 @@ Font *Shape_manager::get_font(int fontnum) {
  *  Read in shape.
  */
 Shape_frame *ShapeID::cache_shape() const {
-	if (framenum == -1) return 0;
+	if (framenum == -1) return nullptr;
 
-	if (has_trans != 2) has_trans = 0;
+	has_trans = false;
 	if (!shapefile) {
 		// Special case.
 		shape = sman->shapes.get_shape(shapenum, framenum);
-		if (has_trans != 2)
-			has_trans =
-			    sman->shapes.get_info(shapenum).has_translucency();
+		has_trans = sman->shapes.get_info(shapenum).has_translucency();
 	} else if (shapefile < SF_OTHER) {
 		shape = sman->files[static_cast<int>(shapefile)].get_shape(
 		            shapenum, framenum);
 		if (shapefile == SF_SPRITES_VGA)
-			has_trans = 1;
+			has_trans = true;
 	} else {
 		std::cerr << "Error! Wrong ShapeFile!" << std::endl;
-		return 0;
+		return nullptr;
 	}
 	return shape;
-
 }
 
 int ShapeID::get_num_frames() const {

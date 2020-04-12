@@ -80,7 +80,7 @@ int plugin_parse(char *line) {
 
 	glob_idx++;
 
-	return(0);
+	return 0;
 }
 
 int get_random(int max) {
@@ -90,7 +90,7 @@ int get_random(int max) {
 	srand(timer * rand());
 
 	for (i = 0; i < temp; i++) rand();
-	return(rand() % max);
+	return rand() % max;
 }
 
 char *plugin_apply(char colour[6]) {
@@ -111,7 +111,7 @@ char *plugin_apply(char colour[6]) {
 	}
 
 	if (loc_idx >= glob_idx) {
-		return(colour);
+		return colour;
 	}
 
 	// find the max number of elements
@@ -122,5 +122,5 @@ char *plugin_apply(char colour[6]) {
 	my_rand++;
 	//  printf(" taking %d\ (%s)\n",my_rand,col[loc_idx][my_rand]);
 
-	return(col[loc_idx][my_rand]);
+	return col[loc_idx][my_rand];
 }

@@ -20,10 +20,12 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _U7OBJ_H_
-#define _U7OBJ_H_
+#ifndef U7OBJ_H
+#define U7OBJ_H
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "common_types.h"
 
@@ -37,30 +39,14 @@ struct File_spec {
 	/// If -1, this indicates that we are reading from the file itself.
 	/// If >= 0, this means we want to read from the object with the
 	/// given index inside the file.
-	int index;
-	File_spec()
-		: name(), index(-1)
-	{  }
+	int index{-1};
+	File_spec() = default;
 	/// Constructs a File_spec from a c-string.
 	File_spec(const char *n, int i = -1)
-		: name(n), index(i)
-	{  }
+		: name(n), index(i) {}
 	/// Constructs a File_spec from a string.
-	File_spec(const std::string& n, int i = -1)
-		: name(n), index(i)
-	{  }
-	File_spec(const File_spec &other)
-		: name(other.name), index(other.index)
-	{  }
-	~File_spec()
-	{  }
-	File_spec &operator=(const File_spec &other) {
-		if (this != &other) {
-			name = other.name;
-			index = other.index;
-		}
-		return *this;
-	}
+	File_spec(std::string n, int i = -1)
+		: name(std::move(n)), index(i) {}
 	bool operator<(const File_spec &other) const {
 		int cmp = name.compare(other.name);
 		return cmp < 0 || (cmp == 0 && index < other.index);
@@ -72,31 +58,34 @@ struct File_spec {
  *  a given object contained in said file.
  */
 class U7object {
-	friend class U7multiobject;
 protected:
 	/// Name of desired file.
 	File_spec identifier;
 	/// Number of object to retrieve.
 	int objnumber;
+
 public:
 	/// Setups to load an object from a buffer or file.
 	/// @param spec Specification of the data source.
 	/// @param objnum   Index of object in the data object.
 	/// @param p    Optional, defaults to false. If true, indicates
 	/// the object comes from the patch dir.
-	U7object(const File_spec &spec, int objnum)
-		: identifier(spec), objnumber(objnum)
+	U7object(File_spec spec, int objnum)
+		: identifier(std::move(spec)), objnumber(objnum)
 	{  }
-	/// Copy constructor.
-	/// @param other    What we are copying.
-	U7object(const U7object &other)
-		: identifier(other.identifier), objnumber(other.objnumber)
-	{  }
-	virtual ~U7object()
-	{  }
+	virtual ~U7object() noexcept = default;
+	U7object(const U7object&) = delete;
+	U7object& operator=(const U7object&) = delete;
+	U7object(U7object&&) = default;
+	U7object& operator=(U7object&&) = default;
 
+	File_spec get_identifier() const {
+		return identifier;
+	}
+	// TODO: This may need to be overriden by U7multiobject, in case the
+	// patching files have more objects than the base.
 	size_t number_of_objects();
-	virtual char *retrieve(std::size_t &len) const;
+	virtual std::unique_ptr<unsigned char[]> retrieve(std::size_t &len) const;
 };
 
 /**
@@ -111,10 +100,11 @@ public:
  *  in a buffer.
  */
 class U7multiobject : public U7object {
-protected:
-	char *buffer;
+private:
+	std::unique_ptr<unsigned char[]> buffer;
 	size_t length;
 	void set_object(const std::vector<U7object> &objects);
+
 public:
 	U7multiobject(const File_spec &file0, int objnum);
 	U7multiobject(const File_spec &file0, const File_spec &file1, int objnum);
@@ -123,11 +113,13 @@ public:
 	U7multiobject(const File_spec &file0, const File_spec &file1,
 	              const File_spec &file2, const File_spec &file3, int objnum);
 	U7multiobject(const std::vector<File_spec> &files, int objnum);
-	virtual ~U7multiobject() {
-		delete [] buffer;
-	}
+	~U7multiobject() noexcept final = default;
+	U7multiobject(const U7multiobject&) = delete;
+	U7multiobject& operator=(const U7multiobject&) = delete;
+	U7multiobject(U7multiobject&&) = default;
+	U7multiobject& operator=(U7multiobject&&) = default;
 
-	virtual char *retrieve(std::size_t &len) const;
+	std::unique_ptr<unsigned char[]> retrieve(std::size_t &len) const final;
 };
 
 #endif

@@ -39,15 +39,6 @@ using std::endl;
 #include <winbase.h>
 #include <cstdlib>
 
-WindowsMidiDriver::WindowsMidiDriver() : 
-	LowLevelMidiDriver(), dev_num(-1), midi_port(0), 
-	_streamBuffer(0), _streamBufferSize(0), _streamEvent(0)
-{
-#ifdef WIN32_USE_DUAL_MIDIDRIVERS
-	midi_port2 = 0;
-#endif
-}
-
 bool WindowsMidiDriver::doMCIError(MMRESULT mmsys_err)
 {
 	if (mmsys_err != MMSYSERR_NOERROR)
@@ -64,12 +55,7 @@ int WindowsMidiDriver::open()
 {
 	int i;
 	// Get Win32 Midi Device num
-	std::string device;
-#ifdef PENTAGRAM_IN_EXULT
-	device = getConfigSetting("win32_device", "-1");
-#else
-	device = getConfigSetting("windows_midi_device", "-1");
-#endif
+	std::string device = getConfigSetting("win32_device", "-1");
 
 	const char *begin = device.c_str();
 	char *end;
@@ -110,7 +96,7 @@ int WindowsMidiDriver::open()
 	midiOutGetDevCaps(static_cast<UINT>(dev_num), &caps, sizeof(caps));
 	pout << "Using device " << dev_num << ": "<< caps.szPname << endl;
 
-	_streamEvent = CreateEvent(NULL, true, true, NULL);
+	_streamEvent = CreateEvent(nullptr, true, true, nullptr);
 	UINT mmsys_err = midiOutOpen(&midi_port, dev_num, reinterpret_cast<uintptr>(_streamEvent), 0, CALLBACK_EVENT);
 
 #ifdef WIN32_USE_DUAL_MIDIDRIVERS
@@ -126,7 +112,7 @@ int WindowsMidiDriver::open()
 	{
 		perr << "Error: Unable to open win32 midi device" << endl;
 		CloseHandle(_streamEvent);
-		_streamEvent = 0;
+		_streamEvent = nullptr;
 		return 1;
 	}
 
@@ -139,22 +125,22 @@ int WindowsMidiDriver::open()
 void WindowsMidiDriver::close()
 {
 #ifdef WIN32_USE_DUAL_MIDIDRIVERS
-	if (midi_port2 != 0) midiOutClose(midi_port2);
-	midi_port2 = 0;
+	if (midi_port2 != nullptr) midiOutClose(midi_port2);
+	midi_port2 = nullptr;
 #endif
 	midiOutClose(midi_port);
-	midi_port = 0;
+	midi_port = nullptr;
 	CloseHandle(_streamEvent);
-	_streamEvent = 0;
+	_streamEvent = nullptr;
 	delete [] _streamBuffer;
-	_streamBuffer = 0;
+	_streamBuffer = nullptr;
 	_streamBufferSize = 0;
 }
 
 void WindowsMidiDriver::send(uint32 message)
 {
 #ifdef WIN32_USE_DUAL_MIDIDRIVERS
-	if (message & 0x1 && midi_port2 != 0) 
+	if (message & 0x1 && midi_port2 != nullptr) 
 		midiOutShortMsg(midi_port2,  message);
 	else
 		midiOutShortMsg(midi_port,  message);
@@ -167,12 +153,12 @@ void WindowsMidiDriver::send_sysex(uint8 status, const uint8 *msg, uint16 length
 {
 #ifdef WIN32_USE_DUAL_MIDIDRIVERS
 	// Hack for multiple devices. Not exactly 'fast'
-	if (midi_port2 != 0) {
+	if (midi_port2 != nullptr) {
 		HMIDIOUT			orig_midi_port = midi_port;
 		HMIDIOUT			orig_midi_port2 = midi_port2;
 
 		// Send to port 1
-		midi_port2 = 0;
+		midi_port2 = nullptr;
 		send_sysex(status, msg, length);
 
 		// Send to port 2
@@ -241,4 +227,4 @@ void WindowsMidiDriver::yield()
 	Sleep(1);
 }
 
-#endif //WIN32
+#endif //USE_WINDOWS_MIDI

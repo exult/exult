@@ -28,6 +28,7 @@ Boston, MA  02111-1307, USA.
 
 #include "imagewin.h"
 #include "ibuf8.h"
+#include <memory>
 
 template <class T> class GammaTable;
 
@@ -45,33 +46,30 @@ class Image_window8 : public Image_window {
 public:
 	Image_window8(unsigned int w, unsigned int h, unsigned int gw, unsigned int gh, int scl = 1,
 	              bool fs = false, int sclr = point, Image_window::FillMode fillmode = CentreAspectCorrect, unsigned int fillsclr = point);
-	~Image_window8();
 
 	Image_buffer8 *get_ib8() const {
 		return ib8;
 	}
 	// Set palette.
-	virtual void set_palette(const unsigned char *rgbs, int maxval,
-	                         int brightness = 100);
+	void set_palette(const unsigned char *rgbs, int maxval,
+	                 int brightness = 100) override;
 	// Get palette.
 	virtual const unsigned char *get_palette() const {
 		return colors;
 	}
 	// Rotate palette colors.
-	virtual void rotate_colors(int first, int num, int upd);
+	void rotate_colors(int first, int num, int upd) override;
 	/*
 	 *  8-bit color methods:
 	 */
 	// Fill with given (8-bit) value.
 	void fill8(unsigned char val) {
-		IF_OPENGL(opengl_fill8(val),
-		          ib8->Image_buffer8::fill8(val));
+		ib8->Image_buffer8::fill8(val);
 	}
 	// Fill rect. wth pixel.
 	void fill8(unsigned char val, int srcw, int srch,
 	           int destx, int desty) {
-		IF_OPENGL(opengl_fill8(val, srcw, srch, destx, desty),
-		          ib8->Image_buffer8::fill8(val, srcw, srch, destx, desty));
+		ib8->Image_buffer8::fill8(val, srcw, srch, destx, desty);
 	}
 	// Fill line with pixel.
 	void fill_line8(unsigned char val, int srcw,
@@ -122,7 +120,7 @@ public:
 	static void get_gamma(float &r, float &g, float &b);
 	static void set_gamma(float r, float g, float b);
 
-	unsigned char *mini_screenshot();
+	std::unique_ptr<unsigned char[]> mini_screenshot();
 };
 
 #endif

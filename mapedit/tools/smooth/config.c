@@ -15,7 +15,7 @@
 #include "plugin.h"
 
 int close_config(FILE *f) {
-	return(fclose(f));
+	return fclose(f);
 }
 
 FILE *open_config(char *configfile) {
@@ -28,16 +28,16 @@ FILE *open_config(char *configfile) {
 		if (!strcmp(g_statics.filein, "-")) { // is filein also stdin?
 			// IT IS!! That's no good
 			fprintf(stderr, "ERROR: Already using stdin for inputimage\n");
-			return(NULL);
+			return NULL;
 		} else {
-			return(stdin);
+			return stdin;
 		}
 	} else {
 		if ((f = fopen(configfile, "ra")) == NULL) {
 			fprintf(stderr, "ERROR: Couldn't open config file %s\n", configfile);
-			return(NULL);
+			return NULL;
 		}
-		return(f);
+		return f;
 	}
 }
 
@@ -63,7 +63,7 @@ int read_config(FILE *f) {
 		if (line_length == (MAX_LINE_LENGTH - 1)) {
 			// too many characters in the line. We might have missed some
 			fprintf(stderr, "ERROR: Too many characters in line %s\n", line);
-			return(-1);
+			return -1;
 		}
 		if (line_length != 0) {
 			if (line[0] == '[') {
@@ -82,7 +82,7 @@ int read_config(FILE *f) {
 				pluginname = (char *)malloc((13 + line_length) * sizeof(char));
 				strncpy(line, line + 1, line_length - 3); // what's between the '[' and the ']'
 				line[line_length - 3] = '\0'; // and add a \0 at the end
-#ifdef WIN32
+#ifdef _WIN32
 				sprintf(pluginname, "libsmooth_%s.dll", line);
 #else
 				sprintf(pluginname, "libsmooth_%s.so", line);
@@ -91,7 +91,7 @@ int read_config(FILE *f) {
 					printf("Plugin to load: %s\n", pluginname);
 				}
 				if ((a_hdl = plug_load(pluginname)) == NULL) {
-					return(-1);
+					return -1;
 				} else {
 					if (g_statics.debug > 2) {
 						printf("Adding %s to list\n", pluginname);
@@ -121,7 +121,7 @@ int read_config(FILE *f) {
 						// problem
 						fprintf(stderr, "ERROR: couldn't read the slave value of %s\n", line);
 						fflush(stderr);
-						return(-1);
+						return -1;
 					} else {
 						sscanf(col, "%02x%02x%02x", &r, &g, &b);
 						// get index of col from palette
@@ -154,6 +154,6 @@ int read_config(FILE *f) {
 		fflush(stdout);
 	}
 
-	return(0);
+	return 0;
 }
 

@@ -22,12 +22,13 @@
 #include "palette.h"
 #include "game.h"
 
-class Mouse;
-class Image_buffer8;
-class Game_window;
 class BaseGameInfo;
-class ModManager;
+class Font;
+class Game_window;
+class Image_buffer8;
 class MenuList;
+class ModManager;
+class Mouse;
 class Shape_frame;
 
 class ExultMenu {
@@ -44,13 +45,12 @@ private:
 	int pagesize;
 	void calc_win();
 	Mouse *menu_mouse;
-	MenuList *create_main_menu(Shape_frame *bg, int first = 0);
-	MenuList *create_mods_menu(ModManager *selgame, Shape_frame *bg, int first = 0);
-	BaseGameInfo *show_mods_menu(ModManager *selgame, Shape_frame *bg);
+	MenuList *create_main_menu(int first = 0);
+	MenuList *create_mods_menu(ModManager *selgame, int first = 0);
+	BaseGameInfo *show_mods_menu(ModManager *selgame);
 
 public:
 	ExultMenu(Game_window *gw);
-	~ExultMenu();
 	BaseGameInfo *run();
 	void setup();
 };

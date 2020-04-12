@@ -1,3 +1,36 @@
+04/13/20	v1.6
+
+		A Shortcut bar with important shortcuts right on top of the screen (thanks Litchie)
+		Switch to SDL2 - important for up to date OS
+		NxBR and HQ3x/HQ4x scalers
+		Option to drop stacks of items without confirmation
+		Some more combat options to make charmed combat more difficult.
+		Schedules got a workover and are more closer to the original but not yet perfect
+		NPCs using beds are sleeping better now
+		Papederdoll support of wearing diapers
+		Portable option for Windows
+		Seperate settings for fullscreen and windowed mode possible
+		HighDPI mode available on macOS
+		Better pathfinding when the party boards a barge
+		Fixed most inexplicable crashes
+		Serpent Isle Beta version works
+		fixed tons of bugs
+		Cleaned up the code in many places and fixed many compiler warnings
+		
+		
+		Known issues:
+		
+		Some crashes due to some cached out objects, we are working on this in another branch which will be the main snapshot after this release
+		Antimagic rain caused by the cube generator is not dissipating as fast as it should
+		Exult does not show the "you have beaten Ultima VII in n days" message
+		Exult does not return to the game menu after beating the game (instead it quits)
+		The BG intro does not have the proper sound effects
+		Fire Elemenatals cannot walk across lava
+		Some schedules need more detailed love
+		Several bugs that need more in depth looking at but no plot stopping bugs
+		When you disable "Gumps pause game", certain events might only happen after you close all gumps			
+
+
 10/21/10	v1.4.9rc1
 		
 		Compatible with the stricter permissions of Windows Vista and Windows 7

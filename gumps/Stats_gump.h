@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _STATS_GUMP_H_
-#define _STATS_GUMP_H_
+#ifndef STATS_GUMP_H
+#define STATS_GUMP_H
 
 #include "Gump.h"
 #include "misc_buttons.h"
@@ -29,7 +29,7 @@ class Actor;
  *  A rectangular area showing a character's statistics:
  */
 class Stats_gump : public Gump {
-	UNREPLICATABLE_CLASS_I(Stats_gump, Gump())
+	UNREPLICATABLE_CLASS(Stats_gump)
 
 protected:
 	Actor *get_actor() {
@@ -42,22 +42,20 @@ public:
 	Stats_gump(Container_game_object *cont, int initx, int inity);
 	Stats_gump(Container_game_object *cont, int initx, int inity,
 	           int shnum, ShapeFile shfile);
-	virtual ~Stats_gump()
-	{  }
 	static Stats_gump *create(Game_object *npc_obj, int x, int y);
 	// Add object.
-	virtual int add(Game_object *obj, int mx = -1, int my = -1,
+	bool add(Game_object *obj, int mx = -1, int my = -1,
 	                int sx = -1, int sy = -1, bool dont_check = false,
-	                bool combine = false) {
+	                bool combine = false) override {
 		ignore_unused_variable_warning(obj, mx, my, sx, sy, dont_check, combine);
-		return 0;    // Can't drop onto it.
+		return false;    // Can't drop onto it.
 	}
 	// Paint it and its contents.
-	virtual void paint();
+	void paint() override;
 
-	virtual Game_object *find_object(int mx, int my) {
+	Game_object *find_object(int mx, int my) override {
 		ignore_unused_variable_warning(mx, my);
-		return 0;
+		return nullptr;
 	}
 };
 

@@ -150,7 +150,8 @@ int Paperdoll_gump::find_closest(
 	for (size_t i = 0; i < sizeof(coords_hot) / (2 * sizeof(coords_hot[0])); i++) {
 		spot = i;
 
-		int dx = mx - coords_hot[spot * 2], dy = my - coords_hot[spot * 2 + 1];
+		int dx = mx - coords_hot[spot * 2];
+		int dy = my - coords_hot[spot * 2 + 1];
 		long dsquared = dx * dx + dy * dy;
 
 		// Map slots occupied by multi-slot items to the filled slot.
@@ -170,7 +171,7 @@ int Paperdoll_gump::find_closest(
 		}
 	}
 
-	return (closest);
+	return closest;
 }
 
 /*
@@ -199,11 +200,11 @@ Paperdoll_gump::Paperdoll_gump(
 
 		cmode_button = new Combat_mode_button(this, cmodex, cmodey,
 		                                      actor);
-		cstats_button = NULL;
+		cstats_button = nullptr;
 	} else {
 		cstats_button = new Cstats_button(this, cstatx, cstaty);
-		halo_button = NULL;
-		cmode_button = NULL;
+		halo_button = nullptr;
+		cmode_button = nullptr;
 	}
 
 
@@ -212,14 +213,14 @@ Paperdoll_gump::Paperdoll_gump(
 	if (actor->get_npc_num() == 0)
 		disk_button = new Disk_button(this, diskx, disky);
 	else
-		disk_button = NULL;
+		disk_button = nullptr;
 
 
 	// If Avatar create Combat Button
 	if (actor->get_npc_num() == 0)
 		combat_button = new Combat_button(this, combatx, combaty);
 	else
-		combat_button = NULL;
+		combat_button = nullptr;
 
 
 	// Put all the objects in the right place
@@ -268,16 +269,16 @@ Gump_button *Paperdoll_gump::on_button(
 		return halo_button;
 	else if (cmode_button && cmode_button->on_button(mx, my))
 		return cmode_button;
-	return 0;
+	return nullptr;
 }
 
 /*
  *  Add an object.
  *
- *  Output: 0 if cannot add it.
+ *  Output: false if cannot add it.
  */
 
-int Paperdoll_gump::add(
+bool Paperdoll_gump::add(
     Game_object *obj,
     int mx, int my,         // Screen location of mouse.
     int sx, int sy,         // Screen location of obj's hotspot.
@@ -300,8 +301,8 @@ int Paperdoll_gump::add(
 		if (container->add(obj, dont_check, combine))
 			break;
 
-		return 0;
-	} while (0);
+		return false;
+	} while (false);
 
 	// Put all the objects in the right place
 	for (size_t i = 0; i < sizeof(coords) / 2 * sizeof(coords[0]); i++) {
@@ -309,7 +310,7 @@ int Paperdoll_gump::add(
 		if (obj) set_to_spot(obj, i);
 	}
 
-	return 1;
+	return true;
 }
 
 /*
@@ -329,7 +330,8 @@ void Paperdoll_gump::set_to_spot(
 		return;
 
 	// Height and width
-	int w = shape->get_width(), h = shape->get_height();
+	int w = shape->get_width();
+	int h = shape->get_height();
 
 	// Set object's position.
 	obj->set_shape_pos(
@@ -364,15 +366,20 @@ void Paperdoll_gump::paint(
 	}
 	if (!info) {
 		const Shape_info &inf = ShapeID::get_info(actor->get_shape_real());
-		info = inf.get_npc_paperdoll_safe(actor->get_type_flag(Actor::tf_sex) != 0);
+		info = inf.get_npc_paperdoll_safe(actor->get_type_flag(Actor::tf_sex));
 	}
 
 	// Spots that are female/male specific
-	int shieldx, shieldy,
-	    back2x,  back2y,
-	    backx,   backy,
-	    neckx,   necky,
-	    beltx,   belty;
+	int shieldx;
+	int shieldy;
+	int back2x;
+	int back2y;
+	int backx;
+	int backy;
+	int neckx;
+	int necky;
+	int beltx;
+	int belty;
 
 	if (actor->get_type_flag(Actor::tf_sex) || info->is_npc_female()) {
 		// Set the female spots
@@ -423,13 +430,14 @@ void Paperdoll_gump::paint(
 	paint_head(box, info);
 	if (actor->is_neck_used()) {
 		obj = container->get_readied(amulet);
-		const Paperdoll_item *item1, *item2;
+		const Paperdoll_item *item1;
+		const Paperdoll_item *item2;
 		if (obj) {
 			const Shape_info &inf = obj->get_info();
 			item1 = inf.get_item_paperdoll(obj->get_framenum(), cloak);
 			item2 = inf.get_item_paperdoll(obj->get_framenum(), cloak_clasp);
 		} else
-			item1 = item2 = 0;
+			item1 = item2 = nullptr;
 		if (!item1 && !item2)
 			paint_object(box, info, amulet,          neckx,  necky);
 	} else
@@ -452,7 +460,7 @@ void Paperdoll_gump::paint(
 			const Shape_info &inf = obj->get_info();
 			item1 = inf.get_item_paperdoll(obj->get_framenum(), gloves);
 		} else
-			item1 = 0;
+			item1 = nullptr;
 		if (!item1)
 			paint_object_arms(box, info, lfinger,         rhandx, rhandy);
 		else
@@ -470,10 +478,11 @@ void Paperdoll_gump::paint(
 #endif
 
 #ifdef SHOW_NONREADIED_OBJECTS
+	Game_object *itm;
 	Object_iterator iter(actor->get_objects());
-	while ((obj = iter.get_next()) != 0)
-		if (actor->find_readied(obj) == -1)
-			obj->paint(box.x, box.y);
+	while ((itm = iter.get_next()) != nullptr)
+		if (actor->find_readied(itm) == -1)
+			itm->paint();
 #endif
 
 
@@ -551,7 +560,8 @@ void Paperdoll_gump::paint_object(
 
 		s.paint_shape(box.x + coords_blue[spot * 2],
 		              box.y + coords_blue[spot * 2 + 1]);
-		int ox = box.x + obj->get_tx(), oy = box.y + obj->get_ty();
+		int ox = box.x + obj->get_tx();
+		int oy = box.y + obj->get_ty();
 		obj->paint_shape(ox, oy);
 		if (cheat.is_selected(obj))
 			// Outline selected obj.
@@ -621,7 +631,7 @@ void Paperdoll_gump::paint_head(
 ) {
 	const Game_object *obj = container->get_readied(head);
 
-	const Paperdoll_item *item = NULL;
+	const Paperdoll_item *item = nullptr;
 	if (obj)
 		item = obj->get_info().get_item_paperdoll(
 		           obj->get_framenum(), head);
@@ -653,7 +663,7 @@ void Paperdoll_gump::paint_arms(
  *  Gets which arm frame to use
  */
 
-int Paperdoll_gump::get_arm_type(void) {
+int Paperdoll_gump::get_arm_type() {
 	const Game_object *obj = container->get_readied(lhand);
 	if (!obj)
 		return 0;   // Nothing in hand; normal arms.
@@ -693,14 +703,19 @@ Game_object *Paperdoll_gump::find_object(
 	}
 	if (!info) {
 		const Shape_info &inf = ShapeID::get_info(actor->get_shape_real());
-		info = inf.get_npc_paperdoll_safe(actor->get_type_flag(Actor::tf_sex) != 0);
+		info = inf.get_npc_paperdoll_safe(actor->get_type_flag(Actor::tf_sex));
 	}
 
-	int shieldx, shieldy,
-	    back2x,  back2y,
-	    backx,   backy,
-	    neckx,   necky,
-	    beltx,   belty;
+	int shieldx;
+	int shieldy;
+	int back2x;
+	int back2y;
+	int backx;
+	int backy;
+	int neckx;
+	int necky;
+	int beltx;
+	int belty;
 
 	if (actor->get_type_flag(Actor::tf_sex) || info->is_npc_female()) {
 		shieldx = shieldfx;
@@ -730,7 +745,7 @@ Game_object *Paperdoll_gump::find_object(
 
 	// if debugging show usecode container
 #ifdef SHOW_USECODE_CONTAINER
-	if (obj = check_object(mx, my, info, ucont,  20,      20))
+	if ((obj = check_object(mx, my, info, ucont,  20,      20)) != nullptr)
 		return obj;
 #endif
 
@@ -750,7 +765,7 @@ Game_object *Paperdoll_gump::find_object(
 			const Shape_info &inf = obj->get_info();
 			item1 = inf.get_item_paperdoll(obj->get_framenum(), gloves);
 		} else
-			item1 = 0;
+			item1 = nullptr;
 		if (!item1 && (obj = check_object_arms(mx, my, info, lfinger,     rhandx, rhandy,   0)))
 			return obj;
 		else if ((obj = check_object_arms(mx, my, info, lfinger,     handsx, handsy, 0, gloves)))
@@ -774,27 +789,28 @@ Game_object *Paperdoll_gump::find_object(
 	if ((obj = check_object_arms(mx, my, info, torso,       bodyx,   bodyy,  1, torso)))
 		return obj;
 	if (check_arms(mx, my, info))
-		return NULL;
+		return nullptr;
 	if (!actor->is_scabbard_used())
 		if ((obj = check_object(mx, my, info, belt,        beltx,   belty)))
 			return obj;
 	if (actor->is_neck_used()) {
 		obj = container->get_readied(amulet);
-		const Paperdoll_item *item1, *item2;
+		const Paperdoll_item *item1;
+		const Paperdoll_item *item2;
 		if (obj) {
 			const Shape_info &inf = obj->get_info();
 			item1 = inf.get_item_paperdoll(obj->get_framenum(), cloak);
 			item2 = inf.get_item_paperdoll(obj->get_framenum(), cloak_clasp);
 		} else
-			item1 = item2 = 0;
+			item1 = item2 = nullptr;
 		if (!item1 && !item2 && (obj = check_object(mx, my, info, amulet,      neckx,   necky)))
 			return obj;
 	} else if ((obj = check_object(mx, my, info, amulet,      neckx,   necky)))
 		return obj;
 	if (check_head(mx, my, info))
-		return NULL;
+		return nullptr;
 	if (check_belt(mx, my, info))
-		return NULL;
+		return nullptr;
 	if ((obj = check_object(mx, my, info, torso,       bodyx,   bodyy)))
 		return obj;
 	if ((obj = check_object(mx, my, info, quiver,      ammox,   ammoy,   0, -1)))
@@ -804,7 +820,7 @@ Game_object *Paperdoll_gump::find_object(
 	if ((obj = check_object(mx, my, info, legs,        legsx,   legsy)))
 		return obj;
 	if (check_body(mx, my, info))
-		return NULL;
+		return nullptr;
 	if (actor->is_neck_used()) {
 		if ((obj = check_object(mx, my, info, amulet,      bodyx,   bodyy,   0, cloak)))
 			return obj;
@@ -825,7 +841,7 @@ Game_object *Paperdoll_gump::find_object(
 		if ((obj = check_object(mx, my, info, back_shield, shieldx, shieldy)))
 			return obj;
 	}
-	return NULL;
+	return nullptr;
 }
 
 /*
@@ -841,7 +857,7 @@ Game_object *Paperdoll_gump::check_object(
     int itemtype
 ) {
 	Game_object *obj = container->get_readied(spot);
-	if (!obj) return NULL;
+	if (!obj) return nullptr;
 
 	int old_it = itemtype;
 	if (itemtype == -1) itemtype = spot;
@@ -849,7 +865,7 @@ Game_object *Paperdoll_gump::check_object(
 	const Paperdoll_item *item = obj->get_info().get_item_paperdoll(obj->get_framenum(), itemtype);
 	if (!item || item->get_paperdoll_baseframe() == -1 ||
 	        item->get_paperdoll_shape() == -1) {
-		if ((old_it != -1 && !item) || (spot == quiver && frame == 2)) return 0;
+		if ((old_it != -1 && !item) || (spot == quiver && frame == 2)) return nullptr;
 
 		if (!obj->get_tx() && !obj->get_ty()) set_to_spot(obj, spot);
 
@@ -858,9 +874,9 @@ Game_object *Paperdoll_gump::check_object(
 			return obj;
 		}
 
-		return NULL;
+		return nullptr;
 	} else if (spot == quiver && !Get_ammo_frame(obj, container, frame))
-		return NULL;
+		return nullptr;
 
 
 	int f = item->get_paperdoll_frame(frame);
@@ -869,7 +885,8 @@ Game_object *Paperdoll_gump::check_object(
 
 	if (check_shape(mx - sx, my - sy, item->get_paperdoll_shape(), f, SF_PAPERDOL_VGA)) {
 		Shape_frame *shape = obj->get_shape();
-		int w = shape->get_width(), h = shape->get_height();
+		int w = shape->get_width();
+		int h = shape->get_height();
 		// Set object's position.
 		obj->set_shape_pos(mx + shape->get_xleft() - w / 2,
 		                   my + shape->get_yabove() - h / 2);
@@ -877,7 +894,7 @@ Game_object *Paperdoll_gump::check_object(
 		return obj;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /*
@@ -929,7 +946,7 @@ bool Paperdoll_gump::check_head(
 ) {
 	const Game_object *obj = container->get_readied(head);
 
-	const Paperdoll_item *item = NULL;
+	const Paperdoll_item *item = nullptr;
 	if (obj)
 		item = obj->get_info().get_item_paperdoll(
 		           obj->get_framenum(), head);

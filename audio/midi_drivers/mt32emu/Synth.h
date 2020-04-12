@@ -200,7 +200,7 @@ private:
 	// **************************** Implementation methods **************************
 
 	Bit32u addMIDIInterfaceDelay(Bit32u len, Bit32u timestamp);
-	bool isAbortingPoly() const { return abortingPoly != NULL; }
+	bool isAbortingPoly() const { return abortingPoly != nullptr; }
 
 	void readSysex(Bit8u channel, const Bit8u *sysex, Bit32u len) const;
 	void initMemoryRegions();
@@ -250,12 +250,12 @@ public:
 
 	template <class S>
 	static inline void muteSampleBuffer(S *buffer, Bit32u len) {
-		if (buffer == NULL) return;
+		if (buffer == nullptr) return;
 		memset(buffer, 0, len * sizeof(S));
 	}
 
 	static inline void muteSampleBuffer(float *buffer, Bit32u len) {
-		if (buffer == NULL) return;
+		if (buffer == nullptr) return;
 		// FIXME: Use memset() where compatibility is guaranteed (if this turns out to be a win)
 		while (len--) {
 			*(buffer++) = 0.0f;
@@ -278,7 +278,7 @@ public:
 	MT32EMU_EXPORT static Bit32u getStereoOutputSampleRate(AnalogOutputMode analogOutputMode);
 
 	// Optionally sets callbacks for reporting various errors, information and debug messages
-	MT32EMU_EXPORT explicit Synth(ReportHandler *useReportHandler = NULL);
+	MT32EMU_EXPORT explicit Synth(ReportHandler *useReportHandler = nullptr);
 	MT32EMU_EXPORT ~Synth();
 
 	// Used to initialise the MT-32. Must be called before any other function.
@@ -417,7 +417,7 @@ public:
 
 	// Renders samples to the specified output streams as if they appeared at the DAC entrance.
 	// No further processing performed in analog circuitry emulation is applied to the signal.
-	// NULL may be specified in place of any or all of the stream buffers to skip it.
+	// nullptr may be specified in place of any or all of the stream buffers to skip it.
 	// The length is in samples, not bytes. Uses NATIVE byte ordering.
 	MT32EMU_EXPORT void renderStreams(Bit16s *nonReverbLeft, Bit16s *nonReverbRight, Bit16s *reverbDryLeft, Bit16s *reverbDryRight, Bit16s *reverbWetLeft, Bit16s *reverbWetRight, Bit32u len);
 	void renderStreams(const DACOutputStreams<Bit16s> &streams, Bit32u len) {

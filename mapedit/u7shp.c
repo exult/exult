@@ -212,6 +212,8 @@ run(GIMP20_CONST gchar   *name,
 	gint32        drawable_ID;
 	gint32        orig_image_ID;
 
+	gegl_init (NULL, NULL);
+
 	run_mode = param[0].data.d_int32;
 
 	*nreturn_vals = 1;
@@ -255,7 +257,7 @@ unsigned int read2(FILE *f) {
 	unsigned char b0, b1;
 	b0 = fgetc(f);
 	b1 = fgetc(f);
-	return (b0 + (b1 << 8));
+	return b0 + (b1 << 8);
 }
 
 /* Flauschepelz */
@@ -268,7 +270,7 @@ signed int read2signed(FILE *f) {
 	if (i0 >= 32768) {
 		i0 = i0 - 65536;
 	}
-	return (i0);
+	return i0;
 }
 
 unsigned int read4(FILE *f) {
@@ -277,7 +279,7 @@ unsigned int read4(FILE *f) {
 	b1 = fgetc(f);
 	b2 = fgetc(f);
 	b3 = fgetc(f);
-	return (b0 + (b1 << 8) + (b2 << 16) + (b3 << 24));
+	return b0 + (b1 << 8) + (b2 << 16) + (b3 << 24);
 }
 
 void write1(FILE *f, unsigned char b) {
@@ -415,8 +417,6 @@ static gint32 load_image(gchar *filename) {
 	gchar *framename;
 	guchar block;
 	guchar pix;
-	GimpDrawable *drawable;
-	GimpPixelRgn pixel_rgn;
 	GimpImageType image_type;
 	int i;
 	int j;
@@ -557,7 +557,7 @@ static gint32 load_image(gchar *filename) {
 	image_ID = gimp_image_new(max_leftX + max_rightX + 1,
 	                          max_leftY + max_rightY + 1, GIMP_INDEXED);
 	gimp_image_set_filename(image_ID, filename);
-	gimp_image_set_cmap(image_ID, gimp_cmap, 256);
+	gimp_image_set_colormap(image_ID, gimp_cmap, 256);
 	for (i = 0; i < shape.num_frames; i++) {
 		framename = g_strdup_printf("Frame %d", i);
 		frame = &shape.frames[i];
@@ -565,17 +565,15 @@ static gint32 load_image(gchar *filename) {
 		                          frame->width, frame->height,
 		                          image_type, 100, GIMP_NORMAL_MODE);
 		g_free(framename);
-		gimp_image_add_layer(image_ID, layer_ID, 0);
-		gimp_layer_translate(layer_ID, (gint)(max_leftX - frame->leftX),
+		gimp_image_insert_layer(image_ID, layer_ID, -1, 0);
+		gimp_item_transform_translate(layer_ID, (gint)(max_leftX - frame->leftX),
 		                     (gint)(max_leftY - frame->leftY));
 
-		drawable = gimp_drawable_get(layer_ID);
-
-		gimp_pixel_rgn_init(&pixel_rgn, drawable, 0, 0, drawable->width, drawable->height, TRUE, FALSE);
-		gimp_pixel_rgn_set_rect(&pixel_rgn, frame->pixels, 0, 0, drawable->width, drawable->height);
-
-		gimp_drawable_flush(drawable);
-		gimp_drawable_detach(drawable);
+		GeglBuffer *drawable = gimp_drawable_get_buffer(layer_ID);
+		gegl_buffer_set(drawable, GEGL_RECTANGLE(0, 0, gegl_buffer_get_width(drawable),
+		                                         gegl_buffer_get_height(drawable)),
+		                0, NULL, frame->pixels, GEGL_AUTO_ROWSTRIDE);
+		g_object_unref(drawable);
 	}
 
 	fclose(fp);
@@ -652,8 +650,6 @@ static gint32 save_image(gchar  *filename,
 	gint offsetX;
 	gint offsetY;
 	gchar *name_buf;
-	GimpDrawable *drawable;
-	GimpPixelRgn pixel_rgn;
 	guchar *pixptr;
 	guchar *pix;
 	guchar *out;
@@ -738,22 +734,24 @@ static gint32 save_image(gchar  *filename,
 
 	for (k = 0; k < nlayers; k++) {
 		frame = &shape.frames[k];
-		drawable = gimp_drawable_get(layers[k]);
+		GeglBuffer *drawable = gimp_drawable_get_buffer(layers[k]);
 		gimp_drawable_offsets(layers[k], &offsetX, &offsetY);
-		frame->width = drawable->width;
-		frame->height = drawable->height;
+		frame->width = gegl_buffer_get_width(drawable);
+		frame->height = gegl_buffer_get_height(drawable);
 		frame->leftX = hotx - offsetX;
 		frame->leftY = hoty - offsetY;
 		frame->rightX = frame->width - frame->leftX - 1;
 		frame->rightY = frame->height - frame->leftY - 1;
-		pix = g_new(guchar, frame->width * frame->height * 2);
+		const Babl *format = gegl_buffer_get_format(drawable);
+		pix = g_new(guchar, frame->width * frame->height * babl_format_get_bytes_per_pixel(format));
 		pixptr = pix;
 		out = g_new(guchar, frame->width * frame->height * 8);
 		outptr = out;
-		gimp_pixel_rgn_init(&pixel_rgn, drawable, 0, 0,
-		                    drawable->width, drawable->height, FALSE, FALSE);
-		gimp_pixel_rgn_get_rect(&pixel_rgn, pixptr, 0, 0,
-		                        drawable->width, drawable->height);
+		gegl_buffer_get(drawable, GEGL_RECTANGLE(0, 0,
+		                                         gegl_buffer_get_width(drawable),
+		                                         gegl_buffer_get_height(drawable)),
+		                1.0, format, pixptr, GEGL_AUTO_ROWSTRIDE, GEGL_ABYSS_NONE);
+		g_object_unref(drawable);
 
 		newx = 0;
 		for (y = 0; y < frame->height; y++) {
@@ -803,7 +801,6 @@ static gint32 save_image(gchar  *filename,
 		memcpy(frame->pixels, out, frame->datalen);
 		g_free(out);
 		g_free(pix);
-		gimp_drawable_detach(drawable);
 	}
 
 	fp = fopen(filename, "wb");

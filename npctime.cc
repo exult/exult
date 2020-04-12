@@ -45,7 +45,7 @@ protected:
 	uint32 get_minute();    // Get game minutes.
 public:
 	Npc_timer(Npc_timer_list *l, int start_delay = 0);
-	virtual ~Npc_timer();
+	~Npc_timer() override;
 };
 
 /*
@@ -57,9 +57,9 @@ public:
 	Npc_hunger_timer(Npc_timer_list *l) : Npc_timer(l, 5000) {
 		last_time = get_minute();
 	}
-	virtual ~Npc_hunger_timer();
+	~Npc_hunger_timer() override;
 	// Handle events:
-	void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 /*
@@ -69,9 +69,9 @@ class Npc_poison_timer : public Npc_timer {
 	uint32 end_time;        // Time when it wears off.
 public:
 	Npc_poison_timer(Npc_timer_list *l);
-	virtual ~Npc_poison_timer();
+	~Npc_poison_timer() override;
 	// Handle events:
-	void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 /*
@@ -84,11 +84,11 @@ public:
 		// Lasts 5-10 seconds..
 		end_time = Game::get_ticks() + 5000 + rand() % 5000;
 	}
-	virtual ~Npc_sleep_timer() {
-		list->sleep = 0;
+	~Npc_sleep_timer() override {
+		list->sleep = nullptr;
 	}
 	// Handle events:
-	void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 /*
@@ -101,11 +101,11 @@ public:
 		// Lasts 60-80 seconds..
 		end_time = Game::get_ticks() + 60000 + rand() % 20000;
 	}
-	virtual ~Npc_invisibility_timer() {
-		list->invisibility = 0;
+	~Npc_invisibility_timer() override {
+		list->invisibility = nullptr;
 	}
 	// Handle events:
-	void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 /*
@@ -118,11 +118,11 @@ public:
 		// Lasts 60-80 seconds..
 		end_time = Game::get_ticks() + 60000 + rand() % 20000;
 	}
-	virtual ~Npc_protection_timer() {
-		list->protection = 0;
+	~Npc_protection_timer() override {
+		list->protection = nullptr;
 	}
 	// Handle events:
-	void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 /*
@@ -138,11 +138,11 @@ public:
 		// Lasts 60-120 seconds..
 		end_time = Game::get_ticks() + 60000 + rand() % 60000;
 	}
-	virtual ~Npc_flag_timer() {
-		*listloc = 0;
+	~Npc_flag_timer() override {
+		*listloc = nullptr;
 	}
 	// Handle events:
-	void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 };
 
 
@@ -292,7 +292,7 @@ Npc_timer::~Npc_timer(
 
 Npc_hunger_timer::~Npc_hunger_timer(
 ) {
-	list->hunger = 0;
+	list->hunger = nullptr;
 }
 
 /*
@@ -345,7 +345,7 @@ Npc_poison_timer::Npc_poison_timer(
 
 Npc_poison_timer::~Npc_poison_timer(
 ) {
-	list->poison = 0;
+	list->poison = nullptr;
 }
 
 /*
@@ -359,7 +359,7 @@ void Npc_poison_timer::handle_event(
 	ignore_unused_variable_warning(udata);
 	Actor *npc = list->npc;
 	if (curtime >= end_time ||  // Long enough?  Or cured?
-	        npc->get_flag(Obj_flags::poisoned) == 0 ||
+	        !npc->get_flag(Obj_flags::poisoned) ||
 	        npc->is_dead()) {   // Obviously.
 		npc->clear_flag(Obj_flags::poisoned);
 		delete this;
@@ -399,7 +399,7 @@ void Npc_sleep_timer::handle_event(
 	// Don't wake up someone beaten into unconsciousness.
 	if (npc->get_property(static_cast<int>(Actor::health)) >= 1
 	        && (curtime >= end_time ||  // Long enough?  Or cured?
-	            npc->get_flag(Obj_flags::asleep) == 0)
+	            !npc->get_flag(Obj_flags::asleep))
 	   ) {
 		// Avoid waking sleeping people.
 		if (npc->get_schedule_type() == Schedule::sleep)
@@ -458,7 +458,7 @@ void Npc_invisibility_timer::handle_event(
 		return;
 	}
 	if (curtime >= end_time ||  // Long enough?  Or cleared.
-	        npc->get_flag(Obj_flags::invisible) == 0) {
+	        !npc->get_flag(Obj_flags::invisible)) {
 		npc->clear_flag(Obj_flags::invisible);
 		if (!npc->is_dead())
 			gwin->add_dirty(npc);
@@ -485,7 +485,7 @@ void Npc_protection_timer::handle_event(
 		return;
 	}
 	if (curtime >= end_time ||  // Long enough?  Or cleared.
-	        npc->get_flag(Obj_flags::protection) == 0) {
+	        !npc->get_flag(Obj_flags::protection)) {
 		npc->clear_flag(Obj_flags::protection);
 		if (!npc->is_dead())
 			gwin->add_dirty(npc);
@@ -507,7 +507,7 @@ void Npc_flag_timer::handle_event(
 	ignore_unused_variable_warning(udata);
 	Actor *npc = list->npc;
 	if (curtime >= end_time ||  // Long enough?  Or cleared.
-	        npc->get_flag(flag) == 0) {
+	        !npc->get_flag(flag)) {
 		npc->clear_flag(flag);
 		delete this;
 	} else              // Check again in 10 secs.

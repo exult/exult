@@ -69,7 +69,7 @@ void Usecode_internal::uc_trace_disasm(Usecode_value *locals, int num_locals,
 	int func_ip = static_cast<int>(ip - code);
 	int opcode = *ip++;
 	const uint8 *param_ip = ip;
-	_opcode_desc *pdesc = 0;
+	opcode_desc *pdesc = nullptr;
 
 	if (opcode >= 0 && static_cast<unsigned>(opcode) < array_size(opcode_table))
 		pdesc = &(opcode_table[opcode]);

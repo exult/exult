@@ -16,8 +16,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _FILE_GUMP_H_
-#define _FILE_GUMP_H_
+#ifndef FILE_GUMP_H
+#define FILE_GUMP_H
 
 #include "Modal_gump.h"
 
@@ -27,7 +27,7 @@ class Gump_text;
  *  The file save/load box:
  */
 class File_gump : public Modal_gump {
-	UNREPLICATABLE_CLASS_I(File_gump, Modal_gump(0, 0, 0, 0))
+	UNREPLICATABLE_CLASS(File_gump)
 
 protected:
 	static short textx, texty;  // Where to draw first text field.
@@ -36,13 +36,13 @@ protected:
 	static short btn_cols[3];   // x-coord of each button column.
 	Gump_text *names[10];       // 10 filename slots.
 	Gump_button *buttons[6];    // 2 rows, 3 cols of buttons.
-	Gump_text *pushed_text;     // Text mouse is down on.
-	Gump_text *focus;       // Text line that has focus.
-	unsigned char restored;     // Set to 1 if we restored a game.
+	Gump_text *pushed_text = nullptr;     // Text mouse is down on.
+	Gump_text *focus = nullptr;       // Text line that has focus.
+	unsigned char restored = 0;     // Set to 1 if we restored a game.
 
 public:
 	File_gump();
-	virtual ~File_gump();
+	~File_gump() override;
 	// Find savegame index of text field.
 	int get_save_index(Gump_text *txt);
 	void remove_focus();        // Unfocus text.
@@ -55,14 +55,15 @@ public:
 		return restored;
 	}
 	// Paint it and its contents.
-	virtual void paint();
-	virtual void close() {
-		done = 1;
+	void paint() override;
+	void close() override {
+		done = true;
 	}
 	// Handle events:
-	virtual bool mouse_down(int mx, int my, int button);
-	virtual bool mouse_up(int mx, int my, int button);
-	virtual void text_input(int chr, int unicode); // Character typed.
+	bool mouse_down(int mx, int my, int button) override;
+	bool mouse_up(int mx, int my, int button) override;
+	using Modal_gump::text_input;
+	void text_input(int chr, int unicode) override; // Character typed.
 };
 
 #endif

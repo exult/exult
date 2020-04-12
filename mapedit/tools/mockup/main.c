@@ -39,15 +39,6 @@ Uint32 getpixel(SDL_Surface *surface, int x, int y) {
 	}
 }
 
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-int __stdcall WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,  LPSTR lpCmdLine, int iShowCmd) {
-	SDL_SetModuleHandle(GetModuleHandle(NULL));
-	return main(__argc, __argv);
-}
-#endif
-
 int main(int argc, char **argv) {
 
 	SDL_Surface *mock_map;  // where the sketch map is loaded on
@@ -154,6 +145,6 @@ int main(int argc, char **argv) {
 	SDL_FreeSurface(mock_map);
 	SDL_Quit();
 	printf("Done!\n");
-	return(0);
+	return 0;
 }
 

@@ -103,7 +103,7 @@ void ExultStudio::open_barge_window(
 		                                  app_xml, "barge_status")), "Barge Editor");
 	}
 	// Init. barge address to null.
-	gtk_object_set_user_data(GTK_OBJECT(bargewin), 0);
+	gtk_object_set_user_data(GTK_OBJECT(bargewin), nullptr);
 	// Make 'apply' sensitive.
 	gtk_widget_set_sensitive(glade_xml_get_widget(app_xml,
 	                         "barge_apply_btn"), true);
@@ -138,9 +138,14 @@ int ExultStudio::init_barge_window(
     int datalen
 ) {
 	Barge_object *addr;
-	int tx, ty, tz;
-	int shape, frame;
-	int xtiles, ytiles, dir;
+	int tx;
+	int ty;
+	int tz;
+	int shape;
+	int frame;
+	int xtiles;
+	int ytiles;
+	int dir;
 	if (!Barge_object_in(data, datalen, addr, tx, ty, tz, shape, frame,
 	                     xtiles, ytiles, dir)) {
 		cout << "Error decoding barge" << endl;
@@ -181,8 +186,11 @@ int ExultStudio::save_barge_window(
 	cout << "In save_barge_window()" << endl;
 	// Get barge (null if creating new).
 	Barge_object *addr = static_cast<Barge_object*>(gtk_object_get_user_data(GTK_OBJECT(bargewin)));
-	int tx = -1, ty = -1, tz = -1;  // +++++For now.
-	int shape = -1, frame = -1; // For now.
+	int tx = -1;
+	int ty = -1;
+	int tz = -1;  // +++++For now.
+	int shape = -1;
+	int frame = -1; // For now.
 	int dir = get_optmenu("barge_dir");
 	int xtiles = get_spin("barge_xtiles");
 	int ytiles = get_spin("barge_ytiles");

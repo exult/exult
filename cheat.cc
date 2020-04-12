@@ -21,8 +21,12 @@
 #endif
 
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <string>
+#include <iomanip>
+using std::setw;
+using std::setfill;
 
 #include "SDL_mouse.h"
 #include "cheat.h"
@@ -45,18 +49,19 @@
 #include "chunks.h"
 #include "objiter.h"
 #include "miscinf.h"
+#include "touchui.h"
 
 #ifdef USE_EXULTSTUDIO  /* Only needed for exult studio. */
 #include "server.h"
 #include "servemsg.h"
 #include "ignore_unused_variable_warning.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
-#endif // WIN32
+#endif // _WIN32
 
 #endif //USE_EXULTSTUDIO
 
@@ -84,9 +89,9 @@ Cheat::Cheat() {
 	npc_numbers = false;
 	hack_mover = false;
 
-	browser = NULL;
-	tester = NULL;
-	cscreen = NULL;
+	browser = nullptr;
+	tester = nullptr;
+	cscreen = nullptr;
 	chunksel_left = chunksel_top = c_num_chunks;
 	chunksel_right = chunksel_bottom = -1;
 }
@@ -97,16 +102,13 @@ Cheat::~Cheat() {
 	delete cscreen;
 }
 
-void Cheat::init(void) {
+void Cheat::init() {
 	std::string cheating;
 	config->value("config/gameplay/cheat", cheating, "no");
-	if (cheating == "yes")
-		enabled = true;
-	else
-		enabled = false;
+	enabled = cheating == "yes";
 }
 
-void Cheat::finish_init(void) {
+void Cheat::finish_init() {
 
 	browser = new ShapeBrowser();
 	tester = new SoundTester();
@@ -127,7 +129,7 @@ void Cheat::set_enabled(bool en) {
 	config->set("config/gameplay/cheat", cheating, true);
 }
 
-void Cheat::toggle_god(void) {
+void Cheat::toggle_god() {
 	if (!enabled) return;
 
 	god_mode = !god_mode;
@@ -141,7 +143,7 @@ void Cheat::toggle_god(void) {
 		eman->center_text("God Mode Disabled");
 }
 
-void Cheat::toggle_wizard(void) {
+void Cheat::toggle_wizard() {
 	if (!enabled) return;
 
 	wizard_mode = !wizard_mode;
@@ -151,7 +153,7 @@ void Cheat::toggle_wizard(void) {
 		eman->center_text("Archwizard Mode Disabled");
 }
 
-void Cheat::toggle_map_editor(void) {
+void Cheat::toggle_map_editor() {
 	if (!enabled) return;
 
 	map_editor = !map_editor;
@@ -161,18 +163,16 @@ void Cheat::toggle_map_editor(void) {
 		gwin->set_time_stopped(-1);
 #ifdef USE_EXULTSTUDIO          /* Launch ExultStudio! */
 		if (!gwin->paint_eggs) { // Show eggs too.
-			gwin->paint_eggs = 1;
+			gwin->paint_eggs = true;
 			gwin->paint();
 		}
 		if (client_socket < 0 &&
 		        !gwin->get_win()->is_fullscreen()) {
-			std::string cmnd;     // Set up command.
-#ifdef WIN32
+			std::string cmnd("exult_studio -x ");     // Set up command.
+#ifdef _WIN32
 			if (get_system_path("<HOME>") == ".")   // portable
-				cmnd = "exult_studio -p -x ";
-			else
+				cmnd += " -p ";
 #endif
-				cmnd = "exult_studio -x ";
 			std::string data_path = get_system_path("<DATA>");
 			if (data_path.find(' ') != std::string::npos)
 				data_path = "\"" + data_path + "\"";
@@ -192,7 +192,7 @@ void Cheat::toggle_map_editor(void) {
 			}
 			cmnd += " &";
 			cout << "Executing: " << cmnd << endl;
-#ifndef WIN32
+#ifndef _WIN32
 			int ret = system(cmnd.c_str());
 			if (ret == 127 || ret == -1)
 				cout << "Couldn't run Exult Studio" << endl;
@@ -203,9 +203,9 @@ void Cheat::toggle_map_editor(void) {
 			std::memset(&si, 0, sizeof(si));
 			si.cb = sizeof(si);
 
-			int ret = CreateProcess(NULL, const_cast<char*>(cmnd.c_str()), NULL, NULL,
+			int ret = CreateProcess(nullptr, const_cast<char*>(cmnd.c_str()), nullptr, nullptr,
 			                        FALSE, 0,
-			                        NULL, NULL, &si, &pi);
+			                        nullptr, nullptr, &si, &pi);
 			if (!ret) cout << "Couldn't run Exult Studio" << endl;
 #endif
 		}
@@ -218,7 +218,7 @@ void Cheat::toggle_map_editor(void) {
 	}
 }
 
-void Cheat::toggle_tile_grid(void) {
+void Cheat::toggle_tile_grid() {
 	if (!enabled) return;
 	tile_grid = !tile_grid;
 	gwin->set_all_dirty();
@@ -232,10 +232,12 @@ void Cheat::set_edit_mode(Map_editor_mode md) {
 	}
 }
 
-void Cheat::clear_chunksel(void) {
+void Cheat::clear_chunksel() {
 	if (chunksel_right >= 0 && chunksel_bottom >= 0) {
-		int startx = chunksel_left, stopx = chunksel_right + 1;
-		int starty = chunksel_top, stopy = chunksel_bottom + 1;
+		int startx = chunksel_left;
+		int stopx = chunksel_right + 1;
+		int starty = chunksel_top;
+		int stopy = chunksel_bottom + 1;
 		for (int cy = starty; cy != stopy; cy = INCR_CHUNK(cy))
 			for (int cx = startx; cx != stopx;
 			        cx = INCR_CHUNK(cx)) {
@@ -250,7 +252,8 @@ void Cheat::clear_chunksel(void) {
 void Cheat::add_chunksel(Map_chunk *chunk, bool extend) {
 	ignore_unused_variable_warning(extend);
 	chunk->set_selected(true);
-	int cx = chunk->get_cx(), cy = chunk->get_cy();
+	int cx = chunk->get_cx();
+	int cy = chunk->get_cy();
 	if (cx < chunksel_left)
 		chunksel_left = cx;
 	if (cx > chunksel_right)
@@ -268,17 +271,17 @@ void Cheat::move_chunk(Map_chunk *chunk, int dx, int dy) {
 	int tox = (chunk->get_cx() + dx + c_num_chunks) % c_num_chunks;
 	int toy = (chunk->get_cy() + dy + c_num_chunks) % c_num_chunks;
 	Map_chunk *tochunk = gmap->get_chunk(tox, toy);
-	Game_object_vector tmplist; // Delete objs. in 'tochunk'.
+	Game_object_shared_vector tmplist; // Delete objs. in 'tochunk'.
 	Game_object *obj;
 
 	{
 		// Iterator needs its own scope.
 		Object_iterator toiter(tochunk->get_objects());
-		while ((obj = toiter.get_next()) != 0)
+		while ((obj = toiter.get_next()) != nullptr)
 			if (!obj->as_npc())
-				tmplist.push_back(obj);
+				tmplist.push_back(obj->shared_from_this());
 	}
-	for (Game_object_vector::const_iterator it = tmplist.begin();
+	for (Game_object_shared_vector::const_iterator it = tmplist.begin();
 	        it != tmplist.end(); ++it)
 		(*it)->remove_this();
 	tmplist.clear();
@@ -286,29 +289,34 @@ void Cheat::move_chunk(Map_chunk *chunk, int dx, int dy) {
 	tochunk->set_terrain(chunk->get_terrain());
 	{
 		Object_iterator fromiter(chunk->get_objects());
-		while ((obj = fromiter.get_next()) != 0)
+		while ((obj = fromiter.get_next()) != nullptr)
 			if (!obj->as_terrain())
-				tmplist.push_back(obj);
+				tmplist.push_back(obj->shared_from_this());
 	}
 	dx *= c_tiles_per_chunk;
 	dy *= c_tiles_per_chunk;
-	for (Game_object_vector::const_iterator it = tmplist.begin();
+	for (Game_object_shared_vector::const_iterator it = tmplist.begin();
 	        it != tmplist.end(); ++it) {
-		obj = *it;
+		obj = (*it).get();
 		Tile_coord t = obj->get_tile();
 		// Got to move objects legally.
 		obj->move((t.tx + dx + c_num_tiles) % c_num_tiles,
 		          (t.ty + dy + c_num_tiles) % c_num_tiles, t.tz);
 	}
 	// For now, set terrain to #0.
-	chunk->set_terrain(gmap->get_terrain(0));
+	chunk->set_terrain(Game_map::get_terrain(0));
 	chunk->set_selected(false);
 	tochunk->set_selected(true);
 }
 
 /*  Move all the selected chunks. */
 void Cheat::move_selected_chunks(int dx, int dy) {
-	int startx, stopx, dirx, starty, stopy, diry;
+	int startx;
+	int stopx;
+	int dirx;
+	int starty;
+	int stopy;
+	int diry;
 
 	if (dx <= 0) {
 		startx = chunksel_left;
@@ -352,7 +360,7 @@ void Cheat::set_edit_shape(int sh, int fr) {
 	edit_frame = fr;
 }
 
-void Cheat::toggle_infravision(void) {
+void Cheat::toggle_infravision() {
 	if (!enabled) return;
 
 	infravision = !infravision;
@@ -363,7 +371,7 @@ void Cheat::toggle_infravision(void) {
 	gclock->set_palette();
 }
 
-void Cheat::toggle_pickpocket(void) {
+void Cheat::toggle_pickpocket() {
 	if (!enabled) return;
 
 	pickpocket = !pickpocket;
@@ -374,7 +382,7 @@ void Cheat::toggle_pickpocket(void) {
 		eman->center_text("Pick Pocket Disabled");
 }
 
-void Cheat::toggle_hack_mover(void) {
+void Cheat::toggle_hack_mover() {
 	if (!enabled) return;
 
 	hack_mover = !hack_mover;
@@ -385,7 +393,7 @@ void Cheat::toggle_hack_mover(void) {
 	}
 }
 
-void Cheat::change_gender(void) const {
+void Cheat::change_gender() const {
 	if (!enabled) return;
 
 	if (gwin->get_main_actor()->get_type_flag(Actor::tf_sex)) {
@@ -398,7 +406,7 @@ void Cheat::change_gender(void) const {
 	gwin->set_all_dirty();
 }
 
-void Cheat::toggle_eggs(void) const {
+void Cheat::toggle_eggs() const {
 	if (!enabled) return;
 
 	gwin->paint_eggs = !gwin->paint_eggs;
@@ -409,7 +417,7 @@ void Cheat::toggle_eggs(void) const {
 	gwin->paint();
 }
 
-void Cheat::toggle_Petra(void) const {
+void Cheat::toggle_Petra() const {
 	if (!enabled || (Game::get_game_type() != SERPENT_ISLE)) return;
 
 	if (gwin->get_main_actor()->get_flag(Obj_flags::petra))
@@ -419,7 +427,7 @@ void Cheat::toggle_Petra(void) const {
 	gwin->set_all_dirty();
 }
 
-void Cheat::toggle_naked(void) const {
+void Cheat::toggle_naked() const {
 	if (!enabled) return;
 
 	if (gwin->get_main_actor()->get_flag(Obj_flags::naked))
@@ -429,23 +437,24 @@ void Cheat::toggle_naked(void) const {
 	gwin->set_all_dirty();
 }
 
-void Cheat::change_skin(void) const {
+void Cheat::change_skin() const {
 	if (!enabled)
 		return;
 
 	int color = gwin->get_main_actor()->get_skin_color();
-	bool sex = gwin->get_main_actor()->get_type_flag(Actor::tf_sex) != 0;
+	bool sex = gwin->get_main_actor()->get_type_flag(Actor::tf_sex);
 	color = Shapeinfo_lookup::GetNextSkin(color, sex, sman->have_si_shapes());
 
 	gwin->get_main_actor()->set_skin_color(color);
 	gwin->set_all_dirty();
 }
 
-void Cheat::levelup_party(void) const {
+void Cheat::levelup_party() const {
 	if (!enabled) return;
 
 	Actor *party[9];
-	int level, newexp;
+	int level;
+	int newexp;
 	bool leveledup = false;
 
 	// get party, including Avatar
@@ -467,16 +476,19 @@ void Cheat::levelup_party(void) const {
 	}
 }
 
-void Cheat::fake_time_period(void) const {
+void Cheat::fake_time_period() const {
 	if (!enabled) return;
 
 	if (!map_editor) {
+	    std::ostringstream s;
 		gwin->get_clock()->fake_next_period();
-		eman->center_text("Game clock incremented");
+		s << "Game clock incremented to " << gclock->get_hour() << ":"
+		  	 << setfill('0') << setw(2) << gclock->get_minute();
+		eman->center_text(s.str().c_str());
 	}
 }
 
-void Cheat::dec_skip_lift(void) const {
+void Cheat::dec_skip_lift() const {
 	if (!enabled) return;
 
 	if (gwin->skip_lift == 16)
@@ -521,7 +533,7 @@ void Cheat::send_select_status() {
  *  Add an object to the selected list without checking.
  */
 void Cheat::append_selected(Game_object *obj) {
-	selected.push_back(obj);
+	selected.push_back(obj->shared_from_this());
 	if (selected.size() == 1)   // First one?
 		send_select_status();
 }
@@ -535,16 +547,16 @@ void Cheat::toggle_selected(Game_object *obj) {
 	else
 		gwin->set_all_dirty();
 	// In list?
-	for (Game_object_vector::iterator it = selected.begin();
+	for (Game_object_shared_vector::iterator it = selected.begin();
 	        it != selected.end(); ++it)
-		if (*it == obj) {
+		if ((*it).get() == obj) {
 			// Yes, so remove it.
 			selected.erase(it);
 			if (selected.empty())   // Last one?
 				send_select_status();
 			return;
 		}
-	selected.push_back(obj);    // No, so add it.
+	selected.push_back(obj->shared_from_this());    // No, so add it.
 	if (selected.size() == 1)   // 1st one?
 		send_select_status();
 }
@@ -555,9 +567,9 @@ void Cheat::toggle_selected(Game_object *obj) {
 void Cheat::clear_selected() {
 	if (selected.empty())
 		return;
-	for (Game_object_vector::iterator it = selected.begin();
+	for (Game_object_shared_vector::iterator it = selected.begin();
 	        it != selected.end(); ++it) {
-		Game_object *obj = *it;
+		Game_object *obj = (*it).get();
 		if (!obj->get_owner())
 			gwin->add_dirty(obj);
 		else
@@ -574,10 +586,10 @@ void Cheat::delete_selected() {
 	if (selected.empty())
 		return;
 	while (!selected.empty()) {
-		Game_object *obj = selected.back();
+		Game_object_shared obj = selected.back();
 		selected.pop_back();
 		if (obj->get_owner())
-			gwin->add_dirty(obj);
+			gwin->add_dirty(obj.get());
 		else            // In a gump?
 			gwin->set_all_dirty();
 		obj->remove_this();
@@ -593,11 +605,12 @@ void Cheat::move_selected_objs(int dx, int dy, int dz) {
 	if (selected.empty())
 		return;         // Nothing to do.
 	std::vector<Tile_coord> tiles;  // Store locations here.
-	int lowz = 1000, highz = -1000; // Get min/max lift.
+	int lowz = 1000;
+	int highz = -1000; // Get min/max lift.
 	// Remove & store old locations.
-	Game_object_vector::iterator it;
+	Game_object_shared_vector::iterator it;
 	for (it = selected.begin(); it != selected.end(); ++it) {
-		Game_object *obj = *it;
+		Game_object *obj = (*it).get();
 		Game_object *owner = obj->get_outermost();
 		// Get location.  Use owner if inside.
 		Tile_coord tile = owner->get_tile();
@@ -606,7 +619,8 @@ void Cheat::move_selected_objs(int dx, int dy, int dz) {
 			gwin->add_dirty(obj);
 		else            // In a gump.  Repaint all for now.
 			gwin->set_all_dirty();
-		obj->remove_this(true);
+		Game_object_shared keep;
+		obj->remove_this(&keep);
 		if (tile.tz < lowz)
 			lowz = tile.tz;
 		if (tile.tz > highz)
@@ -636,9 +650,9 @@ void Cheat::move_selected(int dx, int dy, int dz) {
 }
 
 bool Cheat::is_selected(Game_object *o) {
-	for (Game_object_vector::const_iterator it = selected.begin();
+	for (Game_object_shared_vector::const_iterator it = selected.begin();
 	        it != selected.end(); ++it)
-		if (o == *it)
+		if (o == (*it).get())
 			return true;
 	return false;
 }
@@ -648,9 +662,9 @@ bool Cheat::is_selected(Game_object *o) {
  */
 class Clip_compare {
 public:
-	bool operator()(const Game_object *o1, const Game_object *o2) {
-		Tile_coord t1 = o1->get_tile(),
-		           t2 = o2->get_tile();
+	bool operator()(const Game_object_shared o1, const Game_object_shared o2) {
+		Tile_coord t1 = o1->get_tile();
+		Tile_coord t2 = o2->get_tile();
 		if (t1.tz != t2.tz)
 			return t1.tz < t2.tz;
 		else if (t1.ty != t2.ty)
@@ -666,31 +680,30 @@ void Cheat::cut(bool copy) {
 	if (selected.empty())
 		return;         // Nothing selected.
 	bool clip_was_empty = clipboard.empty();
-	Game_object_vector::iterator it;
+	Game_object_shared_vector::iterator it;
 	// Clear out old clipboard.
-	for (it = clipboard.begin(); it != clipboard.end(); ++it)
-		gwin->delete_object(*it);   // Careful here.
 	clipboard.resize(0);
 	clipboard.reserve(selected.size());
 	if (!copy)          // Removing?  Force repaint.
 		gwin->set_all_dirty();
 	// Go through selected objects.
 	for (it = selected.begin(); it != selected.end(); ++it) {
-		Game_object *obj = *it;
+		Game_object_shared newobj;
+		Game_object_shared keep;
+		Game_object *obj = (*it).get();
 		Tile_coord t = obj->get_outermost()->get_tile();
 		if (copy)
 			// TEST+++++REALLY want a 'clone()'.
-			obj = gwin->get_map()->create_ireg_object(
+			newobj = gwin->get_map()->create_ireg_object(
 			          obj->get_shapenum(), obj->get_framenum());
-		else            // Cut:  Remove but don't delete.
-			obj->remove_this(true);
+		else {           // Cut:  Remove but don't delete.
+			newobj = obj->shared_from_this();
+			obj->remove_this(&keep);
+		}
 		// Set pos. & add to list.
-		obj->set_shape_pos(t.tx % c_tiles_per_chunk,
-		                   t.ty % c_tiles_per_chunk);
-#if 0   /* ++++++What's this for? */
-		obj->set_chunk(t.tx / c_tiles_per_chunk, t.ty / c_tiles_per_chunk);
-#endif
-		clipboard.push_back(obj);
+		newobj->set_shape_pos(t.tx % c_tiles_per_chunk,
+		                   	  t.ty % c_tiles_per_chunk);
+		clipboard.push_back(newobj);
 	}
 	// Sort.
 	std::sort(selected.begin(), selected.end(), Clip_compare());
@@ -705,7 +718,7 @@ void Cheat::cut(bool copy) {
  *  ++++++++Goes away when we have obj->clone()++++++++++
  */
 
-static Game_object *Create_object(
+static Game_object_shared Create_object(
     Game_window *gwin,
     int shape, int frame        // What to create.
 ) {
@@ -714,7 +727,7 @@ static Game_object *Create_object(
 	// Is it an ireg (changeable) obj?
 	bool ireg = (sclass != Shape_info::unusable &&
 	             sclass != Shape_info::building);
-	Game_object *newobj;
+	Game_object_shared newobj;
 	if (ireg)
 		newobj = gwin->get_map()->create_ireg_object(info,
 		         shape, frame, 0, 0, 0);
@@ -734,20 +747,20 @@ void Cheat::paste(
 	// Use lowest/south/east for position.
 	Tile_coord hot = clipboard[0]->get_tile();
 	clear_selected();       // Remove old selected.
-	Game_object_vector::iterator it;
+	Game_object_shared_vector::iterator it;
 	for (it = clipboard.begin(); it != clipboard.end(); ++it) {
-		Game_object *obj = *it;
+		Game_object_shared obj = *it;
 		Tile_coord t = obj->get_tile();
 		// Figure spot rel. to hot-spot.
 		int liftpix = ((t.tz - hot.tz) * c_tilesize) / 2;
-		int x = mx + (t.tx - hot.tx) * c_tilesize - liftpix,
-		    y = my + (t.ty - hot.ty) * c_tilesize - liftpix;
+		int x = mx + (t.tx - hot.tx) * c_tilesize - liftpix;
+		int y = my + (t.ty - hot.ty) * c_tilesize - liftpix;
 		// +++++Use clone().
-		obj = Create_object(gwin, obj->get_shapenum(),
+		Game_object_shared newobj = Create_object(gwin, obj->get_shapenum(),
 		                    obj->get_framenum());
-		Dragging_info drag(obj);
+		Dragging_info drag(newobj);
 		if (drag.drop(x, y, true))  // (Dels if it fails.)
-			append_selected(obj);
+			append_selected(newobj.get());
 	}
 	gwin->set_all_dirty();      // Just repaint all.
 }
@@ -759,8 +772,9 @@ void Cheat::paste(
 void Cheat::paste() {
 	if (clipboard.empty())
 		return;
-	int x, y;       // Allow dragging while here:
-	if (Get_click(x, y, Mouse::greenselect, 0, true))
+	int x;
+	int y;       // Allow dragging while here:
+	if (Get_click(x, y, Mouse::greenselect, nullptr, true))
 		paste(x, y);
 }
 
@@ -776,7 +790,7 @@ public:
 	int w, h;
 	Shape_frame *map;
 	Vga_file *mini;         // If "minimaps.vga" is found.
-	Cheat_map(int mapnum = 0) : map(0), mini(0) {
+	Cheat_map(int mapnum = 0) : map(nullptr), mini(nullptr) {
 		if (U7exists(PATCH_MINIMAPS)) {
 			mini = new Vga_file(PATCH_MINIMAPS);
 			if (!(map = mini->get_shape(0, mapnum)))
@@ -792,15 +806,16 @@ public:
 		x = (gwin->get_width() - w) / 2 + map->get_xleft();
 		y = (gwin->get_height() - h) / 2 + map->get_yabove();
 	}
-	virtual ~Cheat_map() {
+	~Cheat_map() override {
 		delete mini;
 	}
 
-	virtual void paint() {
+	void paint() override {
 		sman->paint_shape(x, y, map, true);
 
 		// mark current location
-		int xx, yy;
+		int xx;
+		int yy;
 		Tile_coord t = gwin->get_main_actor()->get_tile();
 
 		xx = ((t.tx * (w - border * 2)) / worldsize);
@@ -813,12 +828,20 @@ public:
 	}
 };
 
-void Cheat::map_teleport(void) const {
+void Cheat::map_teleport() const {
 	if (!enabled) return;
+	Gump_manager *gumpman = gwin->get_gump_man();
+	if (touchui != nullptr) {
+		touchui->hideGameControls();
+	}
 	Cheat_map map(gwin->get_map()->get_num());
-	int xx, yy;
-	if (!Get_click(xx, yy, Mouse::greenselect, 0, false, &map)) {
+	int xx;
+	int yy;
+	if (!Get_click(xx, yy, Mouse::greenselect, nullptr, false, &map)) {
 		gwin->paint();
+		if (touchui != nullptr && !gumpman->gump_mode()) {
+			touchui->showGameControls();
+		}
 		return;
 	}
 
@@ -833,20 +856,20 @@ void Cheat::map_teleport(void) const {
 	t.ty = (t.ty + c_num_tiles) % c_num_tiles;
 	cout << "Teleporting to " << t.tx << "," << t.ty << "!" << endl;
 	t.tz = 0;
+	if (!gumpman->gump_mode() && touchui != nullptr) {
+		touchui->showGameControls();
+	}
 	gwin->teleport_party(t);
 	eman->center_text("Teleport!!!");
 }
 
-void Cheat::cursor_teleport(void) const {
+void Cheat::cursor_teleport() const {
 	if (!enabled) return;
 
-	int x, y;
+	int x;
+	int y;
 	SDL_GetMouseState(&x, &y);
-#if SDL_VERSION_ATLEAST(2, 0, 1) && (defined(MACOSX) || defined(__IPHONEOS__))
 	gwin->get_win()->screen_to_game_hdpi(x, y, gwin->get_fastmouse(), x, y);
-#else
-	gwin->get_win()->screen_to_game(x, y, gwin->get_fastmouse(), x, y);
-#endif
 	Tile_coord t(gwin->get_scrolltx() + x / c_tilesize,
 	             gwin->get_scrollty() + y / c_tilesize, 0);
 	t.fixme();
@@ -871,24 +894,24 @@ void Cheat::next_map_teleport() const {
 	eman->center_text(msg);
 }
 
-void Cheat::create_coins(void) const {
+void Cheat::create_coins() const {
 	if (!enabled) return;
 
 	gwin->get_main_actor()->add_quantity(100, 644);
 	eman->center_text("Added 100 gold coins");
 }
 
-void Cheat::create_last_shape(void) const {
+void Cheat::create_last_shape() const {
 	if (!enabled) return;
 
 	int current_shape = 0;
 	int current_frame = 0;
 	if (browser->get_shape(current_shape, current_frame)) {
-		Game_object *obj = gwin->get_map()->create_ireg_object(
+		Game_object_shared obj = gwin->get_map()->create_ireg_object(
 		                       current_shape, current_frame);
 		obj->set_flag(Obj_flags::okay_to_take);
 		Tile_coord t =  Map_chunk::find_spot(
-		                    gwin->get_main_actor()->get_tile(), 4, obj, 2);
+	                    gwin->get_main_actor()->get_tile(), 4, obj.get(), 2);
 		if (t.tx != -1) {
 			obj->move(t);
 			eman->center_text("Object created");
@@ -898,16 +921,13 @@ void Cheat::create_last_shape(void) const {
 		eman->center_text("Can only create from 'shapes.vga'");
 }
 
-void Cheat::delete_object(void) {
+void Cheat::delete_object() {
 	if (!enabled) return;
 
-	int x, y;
+	int x;
+	int y;
 	SDL_GetMouseState(&x, &y);
-#if SDL_VERSION_ATLEAST(2, 0, 1) && (defined(MACOSX) || defined(__IPHONEOS__))
 	gwin->get_win()->screen_to_game_hdpi(x, y, gwin->get_fastmouse(), x, y);
-#else
-	gwin->get_win()->screen_to_game(x, y, gwin->get_fastmouse(), x, y);
-#endif
 
 	Game_object *obj;
 	Gump *gump = gwin->get_gump_man()->find_gump(x, y);
@@ -925,7 +945,7 @@ void Cheat::delete_object(void) {
 	}
 }
 
-void Cheat::heal_party(void) const {
+void Cheat::heal_party() const {
 	if (!enabled) return;
 
 	int i;  // for MSVC
@@ -976,7 +996,7 @@ void Cheat::heal_party(void) const {
 	gwin->paint();
 }
 
-void Cheat::shape_browser(void) const {
+void Cheat::shape_browser() const {
 	if (!enabled) return;
 
 	browser->browse_shapes();
@@ -991,7 +1011,7 @@ bool Cheat::get_browser_shape(int &shape, int &frame) const {
 	return browser->get_shape(shape, frame);
 }
 
-void Cheat::sound_tester(void) const {
+void Cheat::sound_tester() const {
 	if (!enabled) return;
 
 	tester->test_sound();
@@ -999,7 +1019,7 @@ void Cheat::sound_tester(void) const {
 }
 
 
-void Cheat::cheat_screen(void) const {
+void Cheat::cheat_screen() const {
 	if (!enabled) return;
 
 	cscreen->show_screen();
@@ -1007,7 +1027,7 @@ void Cheat::cheat_screen(void) const {
 	gwin->paint();
 }
 
-void Cheat::toggle_grab_actor(void) {
+void Cheat::toggle_grab_actor() {
 	if (!enabled) return;
 
 	grab_actor = !grab_actor;
@@ -1029,7 +1049,7 @@ void Cheat::clear_this_grabbed_actor(Actor *actor) const {
 	cscreen->ClearThisGrabbedActor(actor);
 }
 
-void Cheat::toggle_number_npcs(void) {
+void Cheat::toggle_number_npcs() {
 	if (!enabled) return;
 
 	npc_numbers = !npc_numbers;

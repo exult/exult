@@ -1,7 +1,13 @@
 #ifndef INCL_WINDRAG
 #define INCL_WINDRAG
 
-#if defined(WIN32) && defined(USE_EXULTSTUDIO)
+#if defined(_WIN32) && defined(USE_EXULTSTUDIO)
+
+#ifdef __GNUC__
+// COM sucks.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
 
 #include "u7drag.h"
 #include <ole2.h>
@@ -10,8 +16,8 @@
 // A useful structure for Winstudioobj
 class windragdata {
 	sint32 id;
-	uint32 size;            // Size of data
-	unsigned char *data;
+	uint32 size = 0;            // Size of data
+	unsigned char *data = nullptr;
 public:
 
 	inline unsigned char *get_data() {
@@ -25,14 +31,13 @@ public:
 	}
 
 	// Default constructor
-	inline windragdata() : size(0), data(0) {
-	}
+	inline windragdata() = default;
 	// Copy constructor
 	inline windragdata(const windragdata &o) : id(o.id), size(o.size), data(new unsigned char [o.size]) {
 		std::memcpy(data, o.data, size);
 	}
 	// Read from buffer
-	inline windragdata(const unsigned char *buf) : data(0) {
+	inline windragdata(const unsigned char *buf) {
 		operator = (buf);
 	}
 	inline windragdata(sint32 i, uint32 s, const unsigned char *d) :
@@ -124,12 +129,12 @@ public:
 	       Drop_shape_handler_fun, Drop_chunk_handler_fun,
 	       Drop_npc_handler_fun npcfun, Drop_combo_handler_fun);
 	Windnd(HWND hgwnd, Drop_shape_handler_fun shapefun,
-	       Drop_chunk_handler_fun cfun, Drop_shape_handler_fun facefun, void *d);
-	virtual ~Windnd();
+	       Drop_chunk_handler_fun cfun, Drop_shape_handler_fun ffun, void *d);
+	virtual ~Windnd() = default;
 
 	STDMETHOD(QueryInterface)(REFIID iid, void **ppvObject);
-	STDMETHOD_(ULONG, AddRef)(void);
-	STDMETHOD_(ULONG, Release)(void);
+	STDMETHOD_(ULONG, AddRef)();
+	STDMETHOD_(ULONG, Release)();
 
 	STDMETHOD(DragEnter)(IDataObject *pDataObject,
 	                     DWORD grfKeyState,
@@ -138,7 +143,7 @@ public:
 	STDMETHOD(DragOver)(DWORD grfKeyState,
 	                    POINTL pt,
 	                    DWORD *pdwEffect);
-	STDMETHOD(DragLeave)(void);
+	STDMETHOD(DragLeave)();
 	STDMETHOD(Drop)(IDataObject *pDataObject,
 	                DWORD grfKeyState,
 	                POINTL pt,
@@ -172,8 +177,8 @@ public:
 	virtual ~Windropsource();
 
 	STDMETHOD(QueryInterface)(REFIID iid, void **ppvObject);
-	STDMETHOD_(ULONG, AddRef)(void);
-	STDMETHOD_(ULONG, Release)(void);
+	STDMETHOD_(ULONG, AddRef)();
+	STDMETHOD_(ULONG, Release)();
 
 	STDMETHOD(QueryContinueDrag)(BOOL fEscapePressed, DWORD grfKeyState);
 	STDMETHOD(GiveFeedback)(DWORD dwEffect);
@@ -193,11 +198,11 @@ private:
 
 public:
 	Winstudioobj(windragdata pdata);
-	virtual ~Winstudioobj();
+	virtual ~Winstudioobj() = default;
 
 	STDMETHOD(QueryInterface)(REFIID iid, void **ppvObject);
-	STDMETHOD_(ULONG, AddRef)(void);
-	STDMETHOD_(ULONG, Release)(void);
+	STDMETHOD_(ULONG, AddRef)();
+	STDMETHOD_(ULONG, Release)();
 
 	STDMETHOD(GetData)(FORMATETC *pFormatetc, STGMEDIUM *pmedium);
 	STDMETHOD(GetDataHere)(FORMATETC *pFormatetc, STGMEDIUM *pmedium);
@@ -230,6 +235,10 @@ public:
 	    IEnumSTATDATA **ppenumAdvise
 	);
 };
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #endif
 

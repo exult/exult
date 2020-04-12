@@ -30,6 +30,7 @@ using std::size_t;
 using std::string;
 using std::strncmp;
 using std::toupper;
+using std::unordered_map;
 
 FontManager fontManager;
 
@@ -47,7 +48,7 @@ static const char *Pass_whitespace(
 ) {
 	while (Is_space(*text))
 		text++;
-	return (text);
+	return text;
 }
 // Just spaces and tabs:
 static const char *Pass_space(
@@ -67,7 +68,7 @@ static const char *Pass_word(
 ) {
 	while (*text && (*text != '^') && (!Is_space(*text) || (*text == '\f') || (*text == '\v')))
 		text++;
-	return (text);
+	return text;
 }
 
 /*
@@ -91,20 +92,22 @@ int Font::paint_text_box(
     int vert_lead,          // Extra spacing between lines.
     bool pbreak,            // End at punctuation.
     bool center,            // Center each line.
-    Cursor_info *cursor     // We set x, y if not NULL.
+    Cursor_info *cursor     // We set x, y if not nullptr.
 ) {
 	const char *start = text;   // Remember the start.
 	win->set_clip(x, y, w, h);
 	int endx = x + w;       // Figure where to stop.
-	int curx = x, cury = y;
+	int curx = x;
+	int cury = y;
 	int height = get_text_height() + vert_lead + ver_lead;
 	int space_width = get_text_width(" ", 1);
 	int max_lines = h / height; // # lines that can be shown.
 	string *lines = new string[max_lines + 1];
 	int cur_line = 0;
-	const char *last_punct_end = 0;// ->last period, qmark, etc.
+	const char *last_punct_end = nullptr;// ->last period, qmark, etc.
 	// Last punct in 'lines':
-	int last_punct_line = -1, last_punct_offset = -1;
+	int last_punct_line = -1;
+	int last_punct_offset = -1;
 	int coff = -1;
 
 	if (cursor) {
@@ -163,7 +166,7 @@ int Font::paint_text_box(
 		const char *ewrd = Pass_word(text);
 		int width;
 		if (ucase_next) {
-			const char c = static_cast<char>(toupper(*text));
+			const char c = static_cast<char>(toupper(static_cast<unsigned char>(*text)));
 			width = get_text_width(&c, 1u)
 			        + get_text_width(text + 1, static_cast<uint32>(ewrd - text - 1));
 		} else
@@ -184,7 +187,7 @@ int Font::paint_text_box(
 			                  cury, cur_line);
 		// Store word.
 		if (ucase_next) {
-			lines[cur_line].push_back(static_cast<char>(toupper(*text)));
+			lines[cur_line].push_back(static_cast<char>(toupper(static_cast<unsigned char>(*text))));
 			++text;
 		}
 		lines[cur_line].append(text, ewrd - text);
@@ -229,7 +232,7 @@ int Font::paint_text_box(
 	if (*text)          // Out of room?
 		return -static_cast<int>(text - start); // Return -offset of end.
 	else                // Else return height.
-		return (cury - y);
+		return cury - y;
 }
 
 /*
@@ -260,7 +263,7 @@ int Font::paint_text(
 				shape->paint_rle(x, yoff);
 			x += shape->get_width() + hor_lead;
 		}
-	return (x - xoff);
+	return x - xoff;
 }
 
 /*
@@ -286,7 +289,7 @@ int Font::paint_text(
 			shape->paint_rle(x, yoff);
 			x += shape->get_width() + hor_lead;
 		}
-	return (x - xoff);
+	return x - xoff;
 }
 
 /*
@@ -320,14 +323,16 @@ int Font::paint_text_box_fixedwidth(
 	const char *start = text;   // Remember the start.
 	win->set_clip(x, y, w, h);
 	int endx = x + w;       // Figure where to stop.
-	int curx = x, cury = y;
+	int curx = x;
+	int cury = y;
 	int height = get_text_height() + vert_lead + ver_lead;
 	int max_lines = h / height; // # lines that can be shown.
 	string *lines = new string[max_lines + 1];
 	int cur_line = 0;
-	const char *last_punct_end = 0;// ->last period, qmark, etc.
+	const char *last_punct_end = nullptr;// ->last period, qmark, etc.
 	// Last punct in 'lines':
-	int last_punct_line = -1, last_punct_offset = -1;
+	int last_punct_line = -1;
+	int last_punct_offset = -1;
 
 	while (*text) {
 		switch (*text) {    // Special cases.
@@ -381,7 +386,7 @@ int Font::paint_text_box_fixedwidth(
 
 		// Store word.
 		if (ucase_next) {
-			lines[cur_line].push_back(static_cast<char>(toupper(*text)));
+			lines[cur_line].push_back(static_cast<char>(toupper(static_cast<unsigned char>(*text))));
 			++text;
 		}
 		lines[cur_line].append(text, ewrd - text);
@@ -417,7 +422,7 @@ int Font::paint_text_box_fixedwidth(
 	if (*text)          // Out of room?
 		return -static_cast<int>(text - start); // Return -offset of end.
 	else                // Else return height.
-		return (cury - y);
+		return cury - y;
 }
 
 /*
@@ -446,7 +451,7 @@ int Font::paint_text_fixedwidth(
 		shape->paint_rle(x, yoff);
 		x += width - w;
 	}
-	return (x - xoff);
+	return x - xoff;
 }
 
 /*
@@ -475,7 +480,7 @@ int Font::paint_text_fixedwidth(
 		shape->paint_rle(x, yoff);
 		x += width - w;
 	}
-	return (x - xoff);
+	return x - xoff;
 }
 
 /*
@@ -493,7 +498,7 @@ int Font::get_text_width(
 			if (shape)
 				width += shape->get_width() + hor_lead;
 		}
-	return (width);
+	return width;
 }
 
 /*
@@ -512,7 +517,7 @@ int Font::get_text_width(
 			if (shape)
 				width += shape->get_width() + hor_lead;
 		}
-	return (width);
+	return width;
 }
 
 /*
@@ -554,7 +559,8 @@ int Font::find_cursor(
 ) {
 	const char *start = text;   // Remember the start.
 	int endx = x + w;       // Figure where to stop.
-	int curx = x, cury = y;
+	int curx = x;
+	int cury = y;
 	int height = get_text_height() + vert_lead + ver_lead;
 	int space_width = get_text_width(" ", 1);
 	int max_lines = h / height; // # lines that can be shown.
@@ -601,7 +607,7 @@ int Font::find_cursor(
 		const char *ewrd = Pass_word(text);
 		int width;
 		if (ucase_next) {
-			const char c = static_cast<char>(toupper(*text));
+			const char c = static_cast<char>(toupper(static_cast<unsigned char>(*text)));
 			width = get_text_width(&c, 1u)
 			        + get_text_width(text + 1, static_cast<uint32>(ewrd - text - 1));
 		} else
@@ -659,20 +665,14 @@ int Font::find_xcursor(
 	return -1;
 }
 
-Font::Font(
-)
-	: hor_lead(0), ver_lead(0),
-	  font_shapes(0), font_data(0), font_buf(0), orig_font_buf(0),
-	  highest(0), lowest(0) {
-}
+Font::Font() = default;
 
 Font::Font(
     const File_spec &fname0,
     int index,
     int hlead,
     int vlead
-)
-	: font_shapes(0), font_data(0), font_buf(0), orig_font_buf(0) {
+) {
 	load(fname0, index, hlead, vlead);
 }
 
@@ -682,22 +682,12 @@ Font::Font(
     int index,
     int hlead,
     int vlead
-)
-	: font_shapes(0), font_data(0), font_buf(0), orig_font_buf(0) {
+) {
 	load(fname0, fname1, index, hlead, vlead);
 }
 
-Font::~Font() {
-	clean_up();
-}
-
 void Font::clean_up() {
-	delete font_shapes;
-	delete font_data;
-	delete [] orig_font_buf;
-	font_shapes = 0;
-	font_data = 0;
-	orig_font_buf = 0;
+	font_shapes.reset();
 }
 
 /**
@@ -707,31 +697,22 @@ void Font::clean_up() {
  *  @param vleah    Vertical lead of the font.
  */
 int Font::load_internal(
-    const U7multiobject &font_obj,
+    IDataSource& data,
     int hlead,
     int vlead
 ) {
-	size_t len;
-	delete [] orig_font_buf;
-	font_buf = font_obj.retrieve(len);
-
-	if (!font_buf || !len) {
-		delete [] font_buf;
-		font_buf = 0;
-		font_data = 0;
-		font_shapes = 0;
+	if (!data.good()) {
+		font_shapes.reset();
 		hor_lead = 0;
 		ver_lead = 0;
-		orig_font_buf = 0;
 	} else {
-		orig_font_buf = font_buf;
 		// Is it an IFF archive?
-		if (!strncmp(font_buf, "font", 4))
-			font_buf += 8;      // Yes, skip first 8 bytes.
-		delete font_data;
-		delete font_shapes;
-		font_data = new IBufferDataSource(font_buf, len);
-		font_shapes = new Shape_file(font_data);
+		char hdr[5] = {0};
+		data.read(hdr, 4);
+		data.seek(0);
+		if (!strncmp(hdr, "font", 4))
+			data.skip(8);      // Yes, skip first 8 bytes.
+		font_shapes = std::make_unique<Shape_file>(&data);
 		hor_lead = hlead;
 		ver_lead = vlead;
 		calc_highlow();
@@ -753,8 +734,8 @@ int Font::load(
     int vlead
 ) {
 	clean_up();
-	U7multiobject font_obj(fname0, index);
-	return load_internal(font_obj, hlead, vlead);
+	IExultDataSource data(fname0, index);
+	return load_internal(data, hlead, vlead);
 }
 
 /**
@@ -773,8 +754,8 @@ int Font::load(
     int vlead
 ) {
 	clean_up();
-	U7multiobject font_obj(fname0, fname1, index);
-	return load_internal(font_obj, hlead, vlead);
+	IExultDataSource data(fname0, fname1, index);
+	return load_internal(data, hlead, vlead);
 }
 
 int Font::center_text(Image_buffer8 *win, int x, int y, const char *s) {
@@ -801,11 +782,8 @@ void Font::calc_highlow() {
 	}
 }
 
-FontManager::FontManager() {
-}
-
 FontManager::~FontManager() {
-	fonts.clear();
+	reset();
 }
 
 /**
@@ -855,7 +833,7 @@ void FontManager::add_font(
 }
 
 void FontManager::remove_font(const char *name) {
-	if (fonts[name] != 0) {
+	if (fonts[name] != nullptr) {
 		delete fonts[name];
 		fonts.erase(name);
 	}
@@ -866,11 +844,7 @@ Font *FontManager::get_font(const char *name) {
 }
 
 void FontManager::reset() {
-#ifndef DONT_HAVE_HASH_MAP
 	unordered_map<const char *, Font *, hashstr, eqstr>::iterator i;
-#else
-	std::map<const char *, Font *, ltstr>::iterator i;
-#endif
 
 	for (i = fonts.begin(); i != fonts.end(); ++i) {
 		delete(*i).second;

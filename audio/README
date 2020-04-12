@@ -19,11 +19,11 @@ mixer_midiout.
 To make use of this mixer_midiout simply use the following in Midi.cc (in the
 relevant sections):
 -----------------------------------------
-#ifdef WIN32
+#ifdef _WIN32
   #include "midi_drivers/mixer_midiout.h"
 #endif
 -----------------------------------------
-#ifdef WIN32
+#ifdef _WIN32
   TRY_MIDI_DRIVER(Mixer_MidiOut)
 #endif
 -----------------------------------------

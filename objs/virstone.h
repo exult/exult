@@ -43,7 +43,7 @@ public:
 		pos = t;
 	}
 	void set_target_pos(unsigned char tilex, unsigned char tiley,
-	                    unsigned char schunk, unsigned char lft);
+	                    unsigned char schunk, unsigned char lift);
 	Tile_coord get_target_pos() {
 		return pos;
 	}
@@ -54,9 +54,9 @@ public:
 		map = m;
 	}
 	// Write out to IREG file.
-	virtual void write_ireg(ODataSource *out);
+	void write_ireg(ODataSource *out) override;
 	// Get size of IREG. Returns -1 if can't write to buffer
-	virtual int get_ireg_size();
+	int get_ireg_size() override;
 };
 
 #endif

@@ -28,8 +28,10 @@ Boston, MA  02111-1307, USA.
 
 #include "ignore_unused_variable_warning.h"
 
+#include <memory>
+
 // Table for translating palette vals.:
-//typedef unsigned char *Xform_palette; // Should be 256-bytes.
+//using Xform_palette = unsigned char *; // Should be 256-bytes.
 
 /*
  *  This class represents a single transparent color by providing a
@@ -65,30 +67,30 @@ protected:
 private:
 	int clipx, clipy, clipw, cliph; // Clip rectangle.
 
-	// Clip.  Rets. 0 if nothing to draw.
-	int clip_internal(int &srcx, int &srcw, int &destx,
+	// Clip.  Rets. false if nothing to draw.
+	bool clip_internal(int &srcx, int &srcw, int &destx,
 	                  int clips, int clipl) {
 		if (destx < clips) {
 			if ((srcw += (destx - clips)) <= 0)
-				return (0);
+				return false;
 			srcx -= (destx - clips);
 			destx = clips;
 		}
 		if (destx + srcw > (clips + clipl))
 			if ((srcw = ((clips + clipl) - destx)) <= 0)
-				return (0);
-		return (1);
+				return false;
+		return true;
 	}
 protected:
-	int clip_x(int &srcx, int &srcw, int &destx, int desty) {
-		return desty < clipy || desty >= clipy + cliph ? 0
+	bool clip_x(int &srcx, int &srcw, int &destx, int desty) {
+		return desty < clipy || desty >= clipy + cliph ? false
 		       : clip_internal(srcx, srcw, destx, clipx, clipw);
 	}
-	int clip(int &srcx, int &srcy, int &srcw, int &srch,
+	bool clip(int &srcx, int &srcy, int &srcw, int &srch,
 	         int &destx, int &desty) {
 		// Start with x-dim.
-		return (clip_internal(srcx, srcw, destx, clipx, clipw) &&
-		        clip_internal(srcy, srch, desty, clipy, cliph));
+		return clip_internal(srcx, srcw, destx, clipx, clipw) &&
+		        clip_internal(srcy, srch, desty, clipy, cliph);
 	}
 	Image_buffer(unsigned int w, unsigned int h, int dpth);
 public:
@@ -144,9 +146,9 @@ public:
 		cliph = h;
 	}
 	// Is rect. visible within clip?
-	int is_visible(int x, int y, int w, int h) {
-		return (!(x >= clipx + clipw || y >= clipy + cliph ||
-		          x + w <= clipx || y + h <= clipy));
+	bool is_visible(int x, int y, int w, int h) {
+		return !(x >= clipx + clipw || y >= clipy + cliph ||
+		          x + w <= clipx || y + h <= clipy);
 	}
 	/*
 	 *  16-bit color methods.  Default is to ignore them.
@@ -204,7 +206,7 @@ public:
 	/*
 	 *  Depth-independent methods:
 	 */
-	virtual Image_buffer *create_another(int w, int h) = 0;
+	virtual std::unique_ptr<Image_buffer> create_another(int w, int h) = 0;
 	// Copy within itself.
 	virtual void copy(int srcx, int srcy, int srcw, int srch,
 	                  int destx, int desty) = 0;

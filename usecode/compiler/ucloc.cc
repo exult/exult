@@ -38,7 +38,7 @@ using std::endl;
 
 
 std::vector<char *> Uc_location::source_names;
-char *Uc_location::cur_source = 0;
+char *Uc_location::cur_source = nullptr;
 int Uc_location::cur_line = 0;
 int Uc_location::num_errors = 0;
 
@@ -51,7 +51,7 @@ void Uc_location::set_cur(
     int l
 ) {
 	cur_line = l;
-	cur_source = 0;         // See if already here.
+	cur_source = nullptr;         // See if already here.
 	for (std::vector<char *>::const_iterator it = source_names.begin();
 	        it != source_names.end(); ++it)
 		if (strcmp(s, *it) == 0) {

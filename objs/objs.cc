@@ -24,7 +24,6 @@
 #endif
 
 #include "objs.h"
-#include "objclient.h"
 #include "chunks.h"
 #include "objiter.h"
 #include "egg.h"
@@ -89,11 +88,15 @@ int Game_object::get_usecode() const {
 	return ucmachine->get_shape_fun(get_shapenum());
 }
 
+bool Game_object::usecode_exists() const {
+	return ucmachine->function_exists(get_usecode());
+}
+
 // Offset to each neighbor, dir=0-7.
 short Tile_coord::neighbors[16] = {0, -1, 1, -1, 1, 0, 1, 1, 0, 1,
                                    -1, 1, -1, 0, -1, -1
                                   };
-Game_object *Game_object::editing = 0;
+Game_object *Game_object::editing = nullptr;
 // Bit 5=S, Bit6=reflect. on diag.
 unsigned char Game_object::rotate[8] = { 0, 0, 48, 48, 16, 16, 32, 32};
 
@@ -111,7 +114,7 @@ int Game_object::get_cy() const {
 
 
 Game_map *Game_object::get_map() const { // Map we're on.
-	return chunk ? chunk->get_map() : 0;
+	return chunk ? chunk->get_map() : nullptr;
 }
 int Game_object::get_map_num() const { // Get map number this is in.
 	return chunk ? chunk->get_map()->get_num() : -1;
@@ -150,11 +153,11 @@ Tile_coord Game_object::get_center_tile(
 		                  0);
 	}
 	int frame = get_framenum();
-	int dx = (get_info().get_3d_xtiles(frame) - 1) >> 1,
-	    dy = (get_info().get_3d_ytiles(frame) - 1) >> 1,
-	    dz = (get_info().get_3d_height() * 3) / 4;
-	int x = chunk->cx * c_tiles_per_chunk + tx - dx,
-	    y = chunk->cy * c_tiles_per_chunk + ty - dy;
+	int dx = (get_info().get_3d_xtiles(frame) - 1) >> 1;
+	int dy = (get_info().get_3d_ytiles(frame) - 1) >> 1;
+	int dz = (get_info().get_3d_height() * 3) / 4;
+	int x = chunk->cx * c_tiles_per_chunk + tx - dx;
+	int y = chunk->cy * c_tiles_per_chunk + ty - dy;
 	return Tile_coord(x, y, lift + dz);
 }
 
@@ -171,9 +174,9 @@ Tile_coord Game_object::get_missile_tile(
 		                  0);
 	}
 	int frame = get_framenum();
-	int dx = get_info().get_3d_xtiles(frame) - 1,
-	    dy = get_info().get_3d_ytiles(frame) - 1,
-	    dz = (get_info().get_3d_height() * 3) / 4;
+	int dx = get_info().get_3d_xtiles(frame) - 1;
+	int dy = get_info().get_3d_ytiles(frame) - 1;
+	int dz = (get_info().get_3d_height() * 3) / 4;
 	/*switch (dir)
 	    {
 	    case south:
@@ -192,8 +195,8 @@ Tile_coord Game_object::get_missile_tile(
 	        dy = -1;
 	        break;
 	    }*/
-	int x = chunk->cx * c_tiles_per_chunk + tx - dx / 2,
-	    y = chunk->cy * c_tiles_per_chunk + ty - dy / 2;
+	int x = chunk->cx * c_tiles_per_chunk + tx - dx / 2;
+	int y = chunk->cy * c_tiles_per_chunk + ty - dy / 2;
 	return Tile_coord(x, y, lift + dz);
 }
 
@@ -239,12 +242,15 @@ static inline void delta_wrap_check(
 int Game_object::distance(
     Game_object *o2
 ) const {
-	Tile_coord t1 = get_tile(), t2 = o2->get_tile();
-	const Shape_info &info1 = get_info(), info2 = o2->get_info();
-	int f1 = get_framenum(), f2 = o2->get_framenum();
-	int dx = Tile_coord::delta(t1.tx, t2.tx),
-	    dy = Tile_coord::delta(t1.ty, t2.ty),
-	    dz = t1.tz - t2.tz;
+	Tile_coord t1 = get_tile();
+	Tile_coord t2 = o2->get_tile();
+	const Shape_info &info1 = get_info();
+	const Shape_info info2 = o2->get_info();
+	int f1 = get_framenum();
+	int f2 = o2->get_framenum();
+	int dx = Tile_coord::delta(t1.tx, t2.tx);
+	int dy = Tile_coord::delta(t1.ty, t2.ty);
+	int dz = t1.tz - t2.tz;
 	delta_wrap_check(dx, info1.get_3d_xtiles(f1) - 1,
 	                 info2.get_3d_xtiles(f2) - 1, t1.tx, t2.tx);
 	delta_wrap_check(dy, info1.get_3d_ytiles(f1) - 1,
@@ -264,9 +270,9 @@ int Game_object::distance(
 	Tile_coord t1 = get_tile();
 	const Shape_info &info1 = get_info();
 	int f1 = get_framenum();
-	int dx = Tile_coord::delta(t1.tx, t2.tx),
-	    dy = Tile_coord::delta(t1.ty, t2.ty),
-	    dz = t1.tz - t2.tz;
+	int dx = Tile_coord::delta(t1.tx, t2.tx);
+	int dy = Tile_coord::delta(t1.ty, t2.ty);
+	int dz = t1.tz - t2.tz;
 	delta_wrap_check(dx, info1.get_3d_xtiles(f1) - 1, 0, t1.tx, t2.tx);
 	delta_wrap_check(dy, info1.get_3d_ytiles(f1) - 1, 0, t1.ty, t2.ty);
 	delta_check(dz, info1.get_3d_height(), 0, t1.tz, t2.tz);
@@ -326,17 +332,17 @@ int Game_object::get_facing_direction(
 /*
  *  Does a given shape come in quantity.
  */
-static int Has_quantity(
+static bool Has_quantity(
     int shnum           // Shape number.
 ) {
 	const Shape_info &info = ShapeID::get_info(shnum);
 	return info.has_quantity();
 }
 
-static int Has_hitpoints(int shnum) {
+static bool Has_hitpoints(int shnum) {
 	const Shape_info &info = ShapeID::get_info(shnum);
-	return ((info.get_shape_class() == Shape_info::has_hp) ||
-	        (info.get_shape_class() == Shape_info::container));
+	return (info.get_shape_class() == Shape_info::has_hp) ||
+	       (info.get_shape_class() == Shape_info::container);
 
 	// containers have hitpoints too ('resistance')
 }
@@ -390,7 +396,7 @@ int Game_object::get_weapon_ammo(
     bool recursive
 ) {
 	if (ammo)
-		*ammo = 0;
+		*ammo = nullptr;
 	if (weapon < 0)
 		return false;   // Bare hands.
 	// See if we need ammo.
@@ -457,7 +463,7 @@ int Game_object::get_volume(
 bool Game_object::inside_locked() const {
 	const Game_object *top = this;
 	const Game_object *above;
-	while ((above = top->get_owner()) != 0) {
+	while ((above = top->get_owner()) != nullptr) {
 		if (above->get_info().is_container_locked())
 			return true;
 		top = above;
@@ -483,11 +489,11 @@ int Game_object::modify_quantity(
 	if (!Has_quantity(get_shapenum())) {
 		// Can't do quantity here.
 		if (delta > 0)
-			return (delta);
+			return delta;
 		remove_this();      // Remove from container (or world).
 		if (del)
 			*del = true;
-		return (delta + 1);
+		return delta + 1;
 	}
 	int quant = quality & 0x7f; // Get current quantity.
 	if (!quant)
@@ -501,7 +507,7 @@ int Game_object::modify_quantity(
 		remove_this();      // We're done for.
 		if (del)
 			*del = true;
-		return (delta + quant);
+		return delta + quant;
 	}
 	int oldvol = get_volume();  // Get old volume used.
 	quality = static_cast<char>(newquant);  // Store new value.
@@ -522,7 +528,7 @@ int Game_object::modify_quantity(
 	Container_game_object *owner = get_owner();
 	if (owner)          // Update owner's volume.
 		owner->modify_volume_used(get_volume() - oldvol);
-	return (delta - (newquant - quant));
+	return delta - (newquant - quant);
 }
 
 /*
@@ -558,13 +564,15 @@ void Game_object::move(
     int newmap
 ) {
 	// Figure new chunk.
-	int newcx = newtx / c_tiles_per_chunk, newcy = newty / c_tiles_per_chunk;
+	int newcx = newtx / c_tiles_per_chunk;
+	int newcy = newty / c_tiles_per_chunk;
 	Game_map *objmap = newmap >= 0 ? gwin->get_map(newmap) : get_map();
 	if (!objmap) objmap = gmap;
 	Map_chunk *newchunk = objmap->get_chunk_safely(newcx, newcy);
 	if (!newchunk)
 		return;         // Bad loc.
 	Map_chunk *oldchunk = chunk;    // Remove from old.
+	Game_object_shared keep = shared_from_this();
 	if (oldchunk) {
 		gwin->add_dirty(this);  // Want to repaint old area.
 		oldchunk->remove(this);
@@ -574,31 +582,6 @@ void Game_object::move(
 	ty = newty % c_tiles_per_chunk;
 	newchunk->add(this);        // Updates 'chunk'.
 	gwin->add_dirty(this);      // And repaint new area.
-}
-
-/*
- *  Add/remove a client.
- */
-bool Game_object::add_client(
-    Object_client *c
-) {
-	for (vector<Object_client *>::iterator it = clients.begin();
-	        it != clients.end(); ++it)
-		if ((*it) == c)
-			return false;
-	clients.push_back(c);
-	return true;
-}
-
-void Game_object::remove_client(
-    Object_client *c
-) {
-	for (vector<Object_client *>::iterator it = clients.begin();
-	        it != clients.end(); ++it)
-		if ((*it) == c) {
-			clients.erase(it);
-			return;
-		}
 }
 
 /*
@@ -616,10 +599,10 @@ void Game_object::change_frame(
 /*
  *  Swap positions with another object (of the same footprint).
  *
- *  Output: 1 if successful, else 0.
+ *  Output: true if successful, else false.
  */
 
-int Game_object::swap_positions(
+bool Game_object::swap_positions(
     Game_object *obj2
 ) {
 	const Shape_info &inf1 = get_info();
@@ -628,16 +611,18 @@ int Game_object::swap_positions(
 	int frame2 = obj2->get_framenum();
 	if (inf1.get_3d_xtiles(frame1) != inf2.get_3d_xtiles(frame2) ||
 	        inf1.get_3d_ytiles(frame1) != inf2.get_3d_ytiles(frame2))
-		return 0;       // Not the same size.
+		return false;       // Not the same size.
 	Tile_coord p1 = get_tile();
 	Tile_coord p2 = obj2->get_tile();
-	remove_this(1);         // Remove (but don't delete) each.
+    Game_object_shared keep1;
+    Game_object_shared keep2;
+	remove_this(&keep1);         // Remove (but don't delete) each.
 	set_invalid();
-	obj2->remove_this(1);
+	obj2->remove_this(&keep2);
 	obj2->set_invalid();
 	move(p2.tx, p2.ty, p2.tz);  // Move to new locations.
 	obj2->move(p1.tx, p1.ty, p1.tz);
-	return (1);
+	return true;
 }
 
 /*
@@ -736,6 +721,20 @@ int Game_object::find_nearby(
 }
 
 /*
+ *  Convert a vector to weak objects.
+ */
+void Game_object::obj_vec_to_weak(
+    std::vector<Game_object_weak> &dest,
+	Game_object_vector &src
+) {
+	for (Game_object_vector::const_iterator it = src.begin(); it != src.end();
+											   	 			  ++it) {
+		Game_object *obj = *it;
+		dest.push_back(weak_from_obj(obj));
+	}
+}
+
+/*
  *  For sorting closest to a given spot.
  */
 class Object_closest_sorter {
@@ -744,8 +743,8 @@ public:
 	Object_closest_sorter(Tile_coord const &p) : pos(p)
 	{  }
 	bool operator()(const Game_object *o1, const Game_object *o2) {
-		Tile_coord t1 = o1->get_tile(),
-		           t2 = o2->get_tile();
+		Tile_coord t1 = o1->get_tile();
+		Tile_coord t2 = o2->get_tile();
 		return t1.distance(pos) < t2.distance(pos);
 	}
 };
@@ -769,7 +768,7 @@ Game_object *Game_object::find_closest(
 		find_nearby(vec, shapenums[i], dist, 0xb0);
 	int cnt = vec.size();
 	if (!cnt)
-		return (0);
+		return nullptr;
 	if (cnt > 1)
 		std::sort(vec.begin(), vec.end(),
 		          Object_closest_sorter(get_tile()));
@@ -779,7 +778,7 @@ Game_object *Game_object::find_closest(
 /*
  *  Find the closest nearby object with a shape in a given list.
  *
- *  Output: ->object, or 0 if none found.
+ *  Output: ->object, or nullptr if none found.
  */
 
 Game_object *Game_object::find_closest(
@@ -796,8 +795,8 @@ Game_object *Game_object::find_closest(
 		find_nearby(vec, pos, shapenums[i], dist, 0xb0);
 	int cnt = vec.size();
 	if (!cnt)
-		return (0);
-	Game_object *closest = 0;   // Get closest.
+		return nullptr;
+	Game_object *closest = nullptr;   // Get closest.
 	int best_dist = 10000;      // In tiles.
 	// Get our location.
 	for (Game_object_vector::const_iterator it = vec.begin();
@@ -809,7 +808,7 @@ Game_object *Game_object::find_closest(
 			best_dist = dist;
 		}
 	}
-	return (closest);
+	return closest;
 }
 
 /*
@@ -866,17 +865,15 @@ bool Game_object::blocks(
 		return false;       // Skip if not an obstacle.
 	// Occupies desired tile?
 	int frame = get_framenum();
-	if (tile.tx > t.tx - info.get_3d_xtiles(frame) &&
+	return tile.tx > t.tx - info.get_3d_xtiles(frame) &&
 	        tile.ty > t.ty - info.get_3d_ytiles(frame) &&
-	        tile.tz < t.tz + ztiles)
-		return true;
-	return false;
+	        tile.tz < t.tz + ztiles;
 }
 
 /*
  *  Find the game object that's blocking a given tile.
  *
- *  Output: ->object, or 0 if not found.
+ *  Output: ->object, or nullptr if not found.
  */
 
 Game_object *Game_object::find_blocking(
@@ -887,16 +884,16 @@ Game_object *Game_object::find_blocking(
 	                                   tile.ty / c_tiles_per_chunk);
 	Game_object *obj;
 	Object_iterator next(chunk->get_objects());
-	while ((obj = next.get_next()) != 0)
+	while ((obj = next.get_next()) != nullptr)
 		if (obj->blocks(tile))
 			return obj;
-	return (0);
+	return nullptr;
 }
 
 /*
  *  Find door blocking a given tile.
  *
- *  Output: ->door, or 0 if not found.
+ *  Output: ->door, or nullptr if not found.
  */
 
 Game_object *Game_object::find_door(
@@ -912,17 +909,19 @@ Game_object *Game_object::find_door(
  *  Is this a closed door?
  */
 
-int Game_object::is_closed_door(
+bool Game_object::is_closed_door(
 ) const {
 	const Shape_info &info = get_info();
 	if (!info.is_door())
-		return 0;
+		return false;
 	// Get door's footprint.
 	int frame = get_framenum();
-	int xtiles = info.get_3d_xtiles(frame), ytiles = info.get_3d_ytiles(frame);
+	int xtiles = info.get_3d_xtiles(frame);
+	int ytiles = info.get_3d_ytiles(frame);
 	// Get its location.
 	Tile_coord doortile = get_tile();
-	Tile_coord before, after;   // Want tiles to both sides.
+	Tile_coord before;
+	Tile_coord after;   // Want tiles to both sides.
 	if (xtiles > ytiles) {      // Horizontal footprint?
 		before = doortile + Tile_coord(-xtiles, 0, 0);
 		after = doortile + Tile_coord(1, 0, 0);
@@ -931,8 +930,8 @@ int Game_object::is_closed_door(
 		after = doortile + Tile_coord(0, 1, 0);
 	}
 	// Should be blocked before/after.
-	return (gmap->is_tile_occupied(before) &&
-	        gmap->is_tile_occupied(after));
+	return gmap->is_tile_occupied(before) &&
+	       gmap->is_tile_occupied(after);
 }
 
 /*
@@ -945,7 +944,7 @@ Game_object *Game_object::get_outermost(
 ) {
 	Game_object *top = this;
 	Game_object *above;
-	while ((above = top->get_owner()) != 0)
+	while ((above = top->get_owner()) != nullptr)
 		top = above;
 	return top;
 }
@@ -993,7 +992,8 @@ void Game_object::say(
 
 void Game_object::paint(
 ) {
-	int x, y;
+	int x;
+	int y;
 	gwin->get_shape_location(this, x, y);
 	paint_shape(x, y);
 }
@@ -1005,7 +1005,8 @@ void Game_object::paint(
 void Game_object::paint_outline(
     Pixel_colors pix        // Color to use.
 ) {
-	int x, y;
+	int x;
+	int y;
 	gwin->get_shape_location(this, x, y);
 	ShapeID::paint_outline(x, y, pix);
 }
@@ -1037,7 +1038,7 @@ bool Game_object::edit(
 #ifdef USE_EXULTSTUDIO
 	if (client_socket >= 0 &&   // Talking to ExultStudio?
 	        cheat.in_map_editor()) {
-		editing = 0;
+		editing = nullptr;
 		Tile_coord t = get_tile();
 		std::string name = get_name();
 		if (Object_out(client_socket, Exult_server::obj,
@@ -1064,8 +1065,12 @@ void Game_object::update_from_studio(
 ) {
 #ifdef USE_EXULTSTUDIO
 	Game_object *obj;
-	int tx, ty, tz;
-	int shape, frame, quality;
+	int tx;
+	int ty;
+	int tz;
+	int shape;
+	int frame;
+	int quality;
 	std::string name;
 	if (!Object_in(data, datalen, obj, tx, ty, tz, shape, frame,
 	               quality, name)) {
@@ -1076,7 +1081,7 @@ void Game_object::update_from_studio(
 		cout << "Obj from ExultStudio is not being edited" << endl;
 		return;
 	}
-//	editing = 0; // He may have chosen 'Apply', so still editing.
+//	editing = nullptr; // He may have chosen 'Apply', so still editing.
 	gwin->add_dirty(obj);
 	obj->set_shape(shape, frame);
 	gwin->add_dirty(obj);
@@ -1092,40 +1097,27 @@ void Game_object::update_from_studio(
 }
 
 /*
- *  Remove from clients list.
- */
-void Game_object::remove_clients() {
-	for (vector<Object_client *>::iterator it = clients.begin();
-	        it != clients.end(); ++it) {
-		(*it)->object_gone(this);
-	}
-	clients.clear();
-}
-
-/*
  *  Remove an object from the world.
  *  The object is deleted.
  */
 
 void Game_object::remove_this(
-    int nodel           // 1 to not delete.
+    Game_object_shared *keep     // Non-null to not delete.
 ) {
 	// Do this before all else.
-	if (!nodel)
-		remove_clients();
+	if (keep)
+	    *keep = shared_from_this();
 	if (chunk)
 		chunk->remove(this);
-	if (!nodel)
-		gwin->delete_object(this);
 }
 
 /*
  *  Can this be dragged?
  */
 
-int Game_object::is_dragable(
+bool Game_object::is_dragable(
 ) const {
-	return (0);         // Default is 'no'.
+	return false;         // Default is 'no'.
 }
 
 /*
@@ -1197,30 +1189,30 @@ bool Game_object::add(
     bool noset      // True to prevent actors from setting sched. weapon.
 ) {
 	ignore_unused_variable_warning(dont_check, noset);
-	return combine ? drop(obj) != 0 : false;
+	return combine ? drop(obj) : false;
 }
 
 /*
  *  Drop another onto this.
  *
- *  Output: 0 to reject, 1 to accept.
+ *  Output: false to reject, true to accept.
  */
 
-int Game_object::drop(
+bool Game_object::drop(
     Game_object *obj        // This may be deleted.
 ) {
 	const Shape_info &inf = get_info();
 	int shapenum = get_shapenum();  // It's possible if shapes match.
 	if (obj->get_shapenum() != shapenum || !inf.has_quantity() ||
 	        (!inf.has_quantity_frames() && get_framenum() != obj->get_framenum()))
-		return (0);
+		return false;
 	int objq = obj->get_quantity();
 	int total_quant = get_quantity() + objq;
 	if (total_quant > MAX_QUANTITY) // Too much?
-		return (0);
+		return false;
 	modify_quantity(objq);      // Add to our quantity.
 	obj->remove_this();     // It's been used up.
-	return (1);
+	return true;
 }
 
 //#define DEBUGLT
@@ -1319,15 +1311,19 @@ int Game_object::compare(
 	// See if there's no overlap.
 	Rectangle r2 = gwin->get_shape_rect(obj2);
 	if (!inf1.area.intersects(r2))
-		return (0);     // No overlap on screen.
+		return 0;     // No overlap on screen.
 	Ordering_info inf2(gwin, obj2, r2);
 #ifdef DEBUGLT
 	Debug_lt(inf1.tx, inf1.ty, inf2.tx, inf2.ty);
 #endif
-	int xcmp, ycmp, zcmp;       // Comparisons for a given dimension:
+	int xcmp;
+	int ycmp;
+	int zcmp;       // Comparisons for a given dimension:
 	//   -1 if o1<o2, 0 if o1==o2,
 	//    1 if o1>o2.
-	bool xover, yover, zover;   // True if dim's overlap.
+	bool xover;
+	bool yover;
+	bool zover;   // True if dim's overlap.
 	Compare_ranges(inf1.xleft, inf1.xright, inf2.xleft, inf2.xright,
 	               xcmp, xover);
 	Compare_ranges(inf1.yfar, inf1.ynear, inf2.yfar, inf2.ynear,
@@ -1363,14 +1359,11 @@ int Game_object::compare(
 			return TRACE_COMPARE(xcmp);
 		else if (xcmp == zcmp)      // See if X and Z dirs. agree.
 			return TRACE_COMPARE(xcmp);
-#if 1 /* Woohoo!  Seems to work without messing up N. Trinsic gate. */
-		// Experiment:  Fixes Trinsic mayor
-		//   statue-through-roof.
+		// Fixes Trinsic mayor statue-through-roof.
 		else if (inf1.ztop / 5 < inf2.zbot / 5 && inf2.info.occludes())
 			return TRACE_COMPARE(-1);   // A floor above/below.
 		else if (inf2.ztop / 5 < inf1.zbot / 5 && inf1.info.occludes())
 			return TRACE_COMPARE(1);
-#endif
 		else
 			return TRACE_COMPARE(0);
 	} else if (xover) {     // X's overlap.
@@ -1389,13 +1382,10 @@ int Game_object::compare(
 	} else if (ycmp == 1) { // o1 Y after o2 Y?
 		if (zover || zcmp >= 0)
 			return TRACE_COMPARE(1);
-#if 1   /* So far, this seems to work without causing problems: */
-		// Experiment:  Fixes Brit. museum
-		//   statue-through-roof.
+		// Fixes Brit. museum statue-through-roof.
 		else if (inf1.ztop / 5 < inf2.zbot / 5)
 			return TRACE_COMPARE(-1);   // A floor above.
 		else
-#endif
 			return TRACE_COMPARE(0);
 	}
 	return TRACE_COMPARE(0);
@@ -1444,7 +1434,7 @@ int Game_object::apply_damage(
 ) {
 	ignore_unused_variable_warning(bias);
 	if (exp)
-		exp = 0;
+		*exp = 0;
 	int damage = 0;
 	if (wpoints == 127)
 		damage = 127;
@@ -1523,14 +1513,14 @@ int Game_object::figure_hit_points(
 	if (weapon_shape >= 0)
 		winf = ShapeID::get_info(weapon_shape).get_weapon_info();
 	else
-		winf = 0;
+		winf = nullptr;
 	if (ammo_shape >= 0)
 		ainf = ShapeID::get_info(ammo_shape).get_ammo_info();
 	else
-		ainf = 0;
+		ainf = nullptr;
 	if (!winf && weapon_shape < 0) {
-		Actor *npc = attacker ? attacker->as_actor() : 0;
-		winf = npc ? npc->get_weapon(wpoints) : 0;
+		Actor *npc = attacker ? attacker->as_actor() : nullptr;
+		winf = npc ? npc->get_weapon(wpoints) : nullptr;
 	}
 
 	int usefun = -1;
@@ -1556,7 +1546,7 @@ int Game_object::figure_hit_points(
 		// Time to explode.
 		Tile_coord offset(0, 0, get_info().get_3d_height() / 2);
 		eman->add_effect(new Explosion_effect(get_tile() + offset,
-		                                      0, 0, weapon_shape, ammo_shape, attacker));
+		                                      nullptr, 0, weapon_shape, ammo_shape, attacker));
 		return -1;
 	}
 
@@ -1577,7 +1567,7 @@ int Game_object::figure_hit_points(
 
 void Game_object::play_hit_sfx(int weapon, bool ranged) {
 	const Weapon_info *winf = weapon >= 0 ?
-	                    ShapeID::get_info(weapon).get_weapon_info() : 0;
+	                    ShapeID::get_info(weapon).get_weapon_info() : nullptr;
 	if (winf && winf->get_damage()) {
 		int sfx;
 		if (ranged)
@@ -1623,7 +1613,7 @@ Game_object *Game_object::attacked(
 		cout << name << " attacks " << get_name();
 		if (oldhp < delta) {
 			cout << ", destroying it." << endl;
-			return 0;
+			return nullptr;
 		} else if (!delta || oldhp == newhp) {
 			// undamaged/indestructible
 			cout << " to no effect." << endl;
@@ -1648,7 +1638,7 @@ bool Game_object::set_usecode(int ui, const char *nm) {
 
 /*
  *  Move to a new absolute location.  This should work even if the old
- *  location is invalid (chunk = 0).
+ *  location is invalid (chunk = nullptr).
  */
 
 void Terrain_game_object::move(
@@ -1666,7 +1656,7 @@ void Terrain_game_object::move(
 				ter->set_flat(get_tx(), get_ty(), prev_flat);
 			else
 				ter->set_flat(get_tx(), get_ty(), ShapeID(12, 0));
-			gwin->get_map()->set_chunk_terrains_modified();
+			Game_map::set_chunk_terrains_modified();
 		}
 	}
 	Game_object::move(newtx, newty, newlift, newmap);
@@ -1674,7 +1664,7 @@ void Terrain_game_object::move(
 		Chunk_terrain *ter = chunk->get_terrain();
 		prev_flat = ter->get_flat(get_tx(), get_ty());
 		ter->set_flat(get_tx(), get_ty(), *this);
-		gwin->get_map()->set_chunk_terrains_modified();
+		Game_map::set_chunk_terrains_modified();
 	}
 }
 
@@ -1684,9 +1674,9 @@ void Terrain_game_object::move(
  */
 
 void Terrain_game_object::remove_this(
-    int nodel           // 1 to not delete.
+    Game_object_shared *keep     // Non-null to not delete.
 ) {
-	if (chunk && !nodel && !chunk->get_map()->is_caching_out()) {
+	if (chunk && !keep && !chunk->get_map()->is_caching_out()) {
 		// This code removes the terrain object if the object was deleted.
 		// This should NOT be run if the map is being cached out!
 		chunk->get_map()->set_map_modified();
@@ -1695,9 +1685,9 @@ void Terrain_game_object::remove_this(
 			ter->set_flat(get_tx(), get_ty(), prev_flat);
 		else
 			ter->set_flat(get_tx(), get_ty(), ShapeID(12, 0));
-		gwin->get_map()->set_chunk_terrains_modified();
+		Game_map::set_chunk_terrains_modified();
 	}
-	Game_object::remove_this(nodel);
+	Game_object::remove_this(keep);
 }
 
 /*
@@ -1711,7 +1701,7 @@ void Terrain_game_object::paint_terrain(
 
 /*
  *  Move to a new absolute location.  This should work even if the old
- *  location is invalid (chunk = 0).
+ *  location is invalid (chunk = nullptr).
  */
 
 void Ifix_game_object::move(
@@ -1734,13 +1724,14 @@ void Ifix_game_object::move(
  */
 
 void Ifix_game_object::remove_this(
-    int nodel           // 1 to not delete.
+    Game_object_shared *keep     // Non-null to not delete.
 ) {
 	if (chunk) {        // Mark superchunk as 'modified'.
-		int cx = get_cx(), cy = get_cy();
+		int cx = get_cx();
+		int cy = get_cy();
 		get_map()->set_ifix_modified(cx, cy);
 	}
-	Game_object::remove_this(nodel);
+	Game_object::remove_this(keep);
 }
 
 /*
@@ -1754,7 +1745,8 @@ void Ifix_game_object::write_ifix(
 	unsigned char buf[5];
 	buf[0] = (tx << 4) | ty;
 	buf[1] = lift;
-	int shapenum = get_shapenum(), framenum = get_framenum();
+	int shapenum = get_shapenum();
+	int framenum = get_framenum();
 	if (v2) {
 		buf[2] = shapenum & 0xff;
 		buf[3] = (shapenum >> 8) & 0xff;

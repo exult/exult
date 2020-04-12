@@ -35,7 +35,6 @@ public:
 		: funcid(new_funcid), num_args(new_num_args), return_var(new_return_var), aborts(new_aborts),
 		  class_fun(new_class_fun), funcname(new_funcname), kind(new_kind),
 		  varmap(new_varmap) {}
-	~UCFuncSet() {}
 
 	unsigned int funcid;      // the id of the function
 	unsigned int num_args;    // the number of arguments
@@ -47,8 +46,8 @@ public:
 	std::map<unsigned int, std::string>& varmap;	// Variable names
 };
 
-typedef std::map<unsigned int, UCFuncSet> FuncMap;
-typedef std::pair<unsigned int, UCFuncSet> FuncMapPair;
+using FuncMap = std::map<unsigned int, UCFuncSet>;
+using FuncMapPair = std::pair<unsigned int, UCFuncSet>;
 
 //#define DEBUG_GOTOSET
 const unsigned int SIZEOF_USHORT = 2;
@@ -123,8 +122,7 @@ class UCNode;
 
 class UCNode {
 public:
-	UCNode(UCc *newucc = 0) : ucc(newucc) { }
-	~UCNode() { }
+	UCNode(UCc *newucc = nullptr) : ucc(newucc) { }
 
 	UCc *ucc;
 	std::vector<UCNode *> nodelist;
@@ -134,7 +132,7 @@ public:
 
 class GotoSet {
 public:
-	GotoSet() : _offset(0) {}
+	GotoSet() = default;
 	GotoSet(const unsigned int offset, UCc *ucc)
 		: _offset(offset) {
 		add(ucc);
@@ -165,7 +163,7 @@ public:
 #ifdef DEBUG_GOTOSET
 			std::cout << "OP: " << opcode_table_data[j->first->_id].ucs_nmo << '\t' << j->second;
 #endif
-			if (j->second == true) {
+			if (j->second) {
 				/* ok, we need to take into consideration that the
 				   iterator we're removing might ==_uccs.begin() */
 				bool begin = false;
@@ -177,11 +175,11 @@ public:
 
 				GotoSet::iterator rem(j);
 
-				if (begin == false) --j;
+				if (!begin) --j;
 
 				_uccs.erase(rem);
 
-				if (begin == true) j = _uccs.begin();
+				if (begin) j = _uccs.begin();
 				else            ++j;
 
 				if (j == _uccs.end()) std::cout << "POTENTIAL PROBLEM" << std::endl;
@@ -198,10 +196,10 @@ public:
 		return _offset;
 	}
 
-	typedef std::vector<std::pair<UCc *, bool> >::iterator iterator;
+	using iterator = std::vector<std::pair<UCc *, bool>>::iterator;
 
 private:
-	unsigned int _offset;
+	unsigned int _offset = 0;
 	std::vector<std::pair<UCc *, bool> > _uccs;
 };
 
@@ -209,10 +207,7 @@ class UCOpcodeData;
 
 class UCFunc {
 public:
-	UCFunc() : _offset(0), _funcid(0), _funcsize(0), _bodyoffset(0), _datasize(0),
-		_codeoffset(0), _num_args(0), _num_locals(0), _num_externs(0), _num_statics(0),
-		return_var(false), aborts(false), debugging_info(false), debugging_offset(0),
-		_sym(0), _cls(0), ext32(false) {}
+	UCFunc() = default;
 
 	bool output_list(std::ostream &o, unsigned int funcno, const UCOptions &options);
 
@@ -243,36 +238,36 @@ public:
 
 	std::vector<GotoSet> gotoset;
 
-	std::streampos _offset;      // offset to start of function
-	unsigned int   _funcid;      // the id of the function
-	unsigned int   _funcsize;    // the size of the function (bytes)
-	std::streampos _bodyoffset;  // the file position after the header is read
+	std::streampos _offset = 0;      // offset to start of function
+	unsigned int   _funcid = 0;      // the id of the function
+	unsigned int   _funcsize = 0;    // the size of the function (bytes)
+	std::streampos _bodyoffset = 0;  // the file position after the header is read
 
-	unsigned int   _datasize;    // the size of the data block
+	unsigned int   _datasize = 0;    // the size of the data block
 
 	std::map<unsigned int, std::string> _data;
 	std::map<unsigned int, std::string> _varmap;
 	// contains the entire data segment in offset from start of segment, and string data pairs
 
-	std::streampos _codeoffset; // the offset to the start of the code segment
+	std::streampos _codeoffset = 0; // the offset to the start of the code segment
 
-	unsigned int   _num_args;    // the number of arguments
-	unsigned int   _num_locals;  // the number of local variables
-	unsigned int   _num_externs; // the number of external function id's
-	int            _num_statics; // the number of static variables defined in the function
+	unsigned int   _num_args = 0;    // the number of arguments
+	unsigned int   _num_locals = 0;  // the number of local variables
+	unsigned int   _num_externs = 0; // the number of external function id's
+	int            _num_statics = 0; // the number of static variables defined in the function
 	std::vector<unsigned int> _externs; // the external function id's
 
 	std::vector<UCc> _opcodes;
 
-	bool           return_var; // does the function return a variable?
-	bool           aborts;     // true if the function may not return.
-	bool           debugging_info;
-	unsigned int   debugging_offset;
+	bool           return_var = false; // does the function return a variable?
+	bool           aborts = false;     // true if the function may not return.
+	bool           debugging_info = false;
+	unsigned int   debugging_offset = 0;
 	std::string    funcname;
-	Usecode_symbol *_sym;
-	Usecode_class_symbol *_cls; // Class member functions
+	Usecode_symbol *_sym = nullptr;
+	Usecode_class_symbol *_cls = nullptr; // Class member functions
 
-	bool           ext32; // is this function an extended function?
+	bool           ext32 = false; // is this function an extended function?
 
 	unsigned int codesize() const {
 		return _funcsize - _datasize;

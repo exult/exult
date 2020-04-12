@@ -28,6 +28,8 @@
 
 #ifdef USE_FMOPL_MIDI
 
+#include "common_types.h"
+
 namespace FMOpl_Pentagram {
 
 enum {
@@ -40,9 +42,9 @@ enum {
 };
 
 
-typedef void (*OPL_TIMERHANDLER)(int channel,double interval_Sec);
-typedef void (*OPL_IRQHANDLER)(int param,int irq);
-typedef void (*OPL_UPDATEHANDLER)(int param,int min_interval_us);
+using OPL_TIMERHANDLER = void (*)(int channel, double interval_Sec);
+using OPL_IRQHANDLER = void (*)(int param, int irq);
+using OPL_UPDATEHANDLER = void (*)(int param, int min_interval_us);
 
 #define OPL_TYPE_WAVESEL   0x01  /* waveform select    */
 
@@ -70,7 +72,7 @@ typedef void (*OPL_UPDATEHANDLER)(int param,int min_interval_us);
 
 /* Saving is necessary for member of the 'R' mark for suspend/resume */
 /* ---------- OPL one of slot  ---------- */
-typedef struct fm_opl_slot {
+struct OPL_SLOT {
 	int TL;		/* total level     :TL << 8				*/
 	int TLL;	/* adjusted now TL						*/
 	uint8 KSR;	/* key scale rate  :(shift down bit)	*/
@@ -99,10 +101,10 @@ typedef struct fm_opl_slot {
 	uint8 vib;		/* vibrate flag                        */
 	/* wave selector */
 	int **wavetable;
-} OPL_SLOT;
+};
 
 /* ---------- OPL one of channel  ---------- */
-typedef struct fm_opl_channel {
+struct OPL_CH {
 	OPL_SLOT SLOT[2];
 	uint8 CON;			/* connection type					*/
 	uint8 FB;			/* feed back       :(shift down bit)*/
@@ -117,10 +119,10 @@ typedef struct fm_opl_channel {
 	uint32  ksl_base;		/* KeyScaleLevel Base step			*/
 	uint8 keyon;		/* key on/off flag					*/
 	uint8 PAN;			/* pan								*/
-} OPL_CH;
+};
 
 /* OPL state */
-typedef struct fm_opl_f {
+struct FM_OPL {
 	uint8 type;			/* chip type                         */
 	int clock;			/* master clock  (Hz)                */
 	int rate;			/* sampling rate (Hz)                */
@@ -165,7 +167,7 @@ typedef struct fm_opl_f {
 	int IRQParam;						/* IRQ parameter  */
 	OPL_UPDATEHANDLER UpdateHandler;	/* stream update handler   */
 	int UpdateParam;					/* stream update parameter */
-} FM_OPL;
+};
 
 /* ---------- Generic interface section ---------- */
 #define OPL_TYPE_YM3526 (0)

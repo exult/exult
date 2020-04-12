@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#if defined(WIN32) && defined(USE_EXULTSTUDIO)
+#if defined(_WIN32) && defined(USE_EXULTSTUDIO)
 
 #include <iostream>         /* For debugging msgs. */
 #include <cstring>          /* For debugging msgs. */
@@ -72,13 +72,12 @@ bool OpenPortFile(const char *path, bool writing) {
 	                filename,
 	                writing ? GENERIC_WRITE : GENERIC_READ,
 	                FILE_SHARE_READ | sharedel | (!writing ? FILE_SHARE_WRITE : 0),
-	                NULL,
+	                nullptr,
 	                writing ? CREATE_ALWAYS : OPEN_EXISTING,
 	                FILE_ATTRIBUTE_TEMPORARY | (writing ? FILE_FLAG_DELETE_ON_CLOSE : 0),
-	                NULL
+	                nullptr
 	            );
-	if (hPortFile == INVALID_HANDLE_VALUE) return false;
-	return true;
+	return hPortFile != INVALID_HANDLE_VALUE;
 }
 
 // Hack functions
@@ -150,7 +149,7 @@ bool create_pipe(const char *path) {
 	}
 
 	DWORD numWriten;
-	WriteFile(hPortFile, &service.sin_port, 2, &numWriten, NULL);
+	WriteFile(hPortFile, &service.sin_port, 2, &numWriten, nullptr);
 
 	cout << "Opened socket for Exult Server on port " << ntohs(service.sin_port) << endl;
 
@@ -170,13 +169,11 @@ bool try_connect_to_client(const char *path) {
 	TIMEVAL tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = 20000;
-	if (!select(0, &rfds, 0, 0, &tv)) return false;
+	if (!select(0, &rfds, nullptr, nullptr, &tv)) return false;
 
 	// Does accept
-	gDataSocket = accept(gServerSocket, NULL, NULL);
-	if (gDataSocket == INVALID_SOCKET) return false;
-
-	return true;
+	gDataSocket = accept(gServerSocket, nullptr, nullptr);
+	return gDataSocket != INVALID_SOCKET;
 }
 
 void disconnect_from_client() {
@@ -222,7 +219,7 @@ int try_connect_to_server(const char *path) {
 	}
 
 	DWORD numRead;
-	ReadFile(hPortFile, &service.sin_port, 2, &numRead, NULL);
+	ReadFile(hPortFile, &service.sin_port, 2, &numRead, nullptr);
 	CloseHandle(hPortFile);
 	hPortFile = INVALID_HANDLE_VALUE;
 	if (numRead != 2) {
@@ -256,7 +253,7 @@ int peek_pipe() {
 	TIMEVAL tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = 20000;
-	if (select(0, &rfds, 0, 0, &tv)) {
+	if (select(0, &rfds, nullptr, nullptr, &tv)) {
 		char c;
 		int to_get = recv(gDataSocket, &c, 1, MSG_PEEK);
 		if (to_get == 0 || to_get == SOCKET_ERROR) {
@@ -272,7 +269,7 @@ int peek_pipe() {
 bool is_broken() {
 	if (gDataSocket == INVALID_SOCKET) return true;
 	peek_pipe();
-	return (gDataSocket == INVALID_SOCKET);
+	return gDataSocket == INVALID_SOCKET;
 }
 
 bool notify_connection_lost() {

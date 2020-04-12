@@ -40,7 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "npclst.h"
 #include "ignore_unused_variable_warning.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "windrag.h"
 #endif
 
@@ -146,7 +146,7 @@ C_EXPORT gboolean on_npc_draw_expose_event(
 	ExultStudio::get_instance()->show_npc_shape(
 	    event->area.x, event->area.y, event->area.width,
 	    event->area.height);
-	return (TRUE);
+	return TRUE;
 }
 
 /*
@@ -189,7 +189,7 @@ C_EXPORT gboolean on_npc_face_draw_expose_event(
 	ExultStudio::get_instance()->show_npc_face(
 	    event->area.x, event->area.y, event->area.width,
 	    event->area.height);
-	return (TRUE);
+	return TRUE;
 }
 
 /*
@@ -287,7 +287,7 @@ static bool Get_schedule_line(
  *  Open the npc-editing window.
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 
 static void Drop_dragged_shape(int shape, int frame, int x, int y, void *data) {
 	ignore_unused_variable_warning(x, y);
@@ -310,23 +310,23 @@ void ExultStudio::open_npc_window(
     unsigned char *data,        // Serialized npc, or null.
     int datalen
 ) {
-#ifdef WIN32
+#ifdef _WIN32
 	bool first_time = false;
 #endif
 	if (!npcwin) {          // First time?
-#ifdef WIN32
+#ifdef _WIN32
 		first_time = true;
 #endif
 		npcwin = glade_xml_get_widget(app_xml, "npc_window");
 
 		if (vgafile && palbuf) {
-			npc_draw = new Shape_draw(vgafile->get_ifile(), palbuf,
+			npc_draw = new Shape_draw(vgafile->get_ifile(), palbuf.get(),
 			                          glade_xml_get_widget(app_xml, "npc_draw"));
 			npc_draw->enable_drop(Npc_shape_dropped, this);
 		}
 		if (facefile && palbuf) {
 			npc_face_draw = new Shape_draw(facefile->get_ifile(),
-			                               palbuf,
+			                               palbuf.get(),
 			                               glade_xml_get_widget(app_xml, "npc_face_draw"));
 			npc_face_draw->enable_drop(Npc_face_dropped, this);
 		}
@@ -338,7 +338,7 @@ void ExultStudio::open_npc_window(
 
 	}
 	// Init. npc address to null.
-	gtk_object_set_user_data(GTK_OBJECT(npcwin), 0);
+	gtk_object_set_user_data(GTK_OBJECT(npcwin), nullptr);
 	// Make 'apply', 'cancel' sensitive.
 	set_sensitive("npc_apply_btn", true);
 	set_sensitive("npc_cancel_btn", true);
@@ -349,9 +349,9 @@ void ExultStudio::open_npc_window(
 	} else
 		init_new_npc();
 	gtk_widget_show(npcwin);
-#ifdef WIN32
+#ifdef _WIN32
 	if (first_time || !npcdnd)
-		Windnd::CreateStudioDropDest(npcdnd, npchwnd, Drop_dragged_shape, NULL, Drop_dragged_face, (void *) this);
+		Windnd::CreateStudioDropDest(npcdnd, npchwnd, Drop_dragged_shape, nullptr, Drop_dragged_face, this);
 
 #endif
 }
@@ -364,7 +364,7 @@ void ExultStudio::close_npc_window(
 ) {
 	if (npcwin) {
 		gtk_widget_hide(npcwin);
-#ifdef WIN32
+#ifdef _WIN32
 		Windnd::DestroyStudioDropDest(npcdnd, npchwnd);
 #endif
 	}
@@ -385,13 +385,13 @@ static bool Get_prop_spin(
 	GtkTableChild *ent = static_cast<GtkTableChild *>(list->data);
 	GtkBin *frame = GTK_BIN(ent->widget);
 	spin = GTK_SPIN_BUTTON(frame->child);
-	assert(spin != 0);
+	assert(spin != nullptr);
 	const char *name = glade_get_widget_name(GTK_WIDGET(spin));
 	// Names: npc_prop_nn.
 	if (strncmp(name, "npc_prop_", 9) != 0)
 		return false;
 	pnum = atoi(name + 9);
-	return (pnum >= 0 && pnum < 12);
+	return pnum >= 0 && pnum < 12;
 }
 
 /*
@@ -412,7 +412,7 @@ static bool Get_flag_cbox(
 ) {
 	GtkTableChild *ent = static_cast<GtkTableChild *>(list->data);
 	cbox = GTK_CHECK_BUTTON(ent->widget);
-	assert(cbox != 0);
+	assert(cbox != nullptr);
 	const char *name = glade_get_widget_name(GTK_WIDGET(cbox));
 	// Names: npc_flag_xx_nn, where
 	//   xx = si, of, tf.
@@ -428,7 +428,7 @@ static bool Get_flag_cbox(
 	else
 		return false;
 	fnum = atoi(name + 9 + 3);
-	return (fnum >= 0 && fnum < 32);
+	return fnum >= 0 && fnum < 32;
 }
 
 /*
@@ -452,7 +452,7 @@ void ExultStudio::init_new_npc(
 	set_entry("npc_num_entry", npc_num, true, false);
 	// Usually, usecode = 0x400 + num.
 	set_entry("npc_usecode_entry", 0x400 + npc_num, true,
-	          npc_num >= 256 ? true : false);
+	          npc_num >= 256);
 	// Usually, face = npc_num.
 	set_npc_face(npc_num, 0);
 	set_entry("npc_name_entry", "");
@@ -499,14 +499,20 @@ int ExultStudio::init_npc_window(
     int datalen
 ) {
 	Actor *addr;
-	int tx, ty, tz;
-	int shape, frame, face;
+	int tx;
+	int ty;
+	int tz;
+	int shape;
+	int frame;
+	int face;
 	std::string name;
-	short npc_num, ident;
+	short npc_num;
+	short ident;
 	int usecode;
 	std::string usecodefun;
 	int properties[12];
-	short attack_mode, alignment;
+	short attack_mode;
+	short alignment;
 	unsigned long oflags;       // Object flags.
 	unsigned long xflags;       // Extra object flags.
 	unsigned long type_flags;   // Movement flags.
@@ -620,7 +626,9 @@ int ExultStudio::save_npc_window(
 	cout << "In save_npc_window()" << endl;
 	// Get npc (null if creating new).
 	Actor *addr = static_cast<Actor*>(gtk_object_get_user_data(GTK_OBJECT(npcwin)));
-	int tx = -1, ty = -1, tz = -1;  // +++++For now.
+	int tx = -1;
+	int ty = -1;
+	int tz = -1;  // +++++For now.
 	codepageStr locname(get_text_entry("npc_name_entry"));
 	std::string name(locname);
 	short npc_num = get_num_entry("npc_num_entry");

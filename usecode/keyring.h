@@ -16,15 +16,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _KEYRING_H
-#define _KEYRING_H
+#ifndef KEYRING_H
+#define KEYRING_H
 
 #include <set>
 
 class Keyring {
 public:
-	Keyring() { }
-
 	void read();  // read from KEYRING.DAT
 	void write(); // write to KEYRING.DAT
 

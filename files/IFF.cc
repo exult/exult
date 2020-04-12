@@ -40,13 +40,13 @@ using std::size_t;
 /**
  *  Reads the header from an IFF and builds an object index.
  */
-void IFF::index_file(void) {
-	if (!data)
+void IFF::index_file() {
+	if (!data) {
 		throw file_read_exception(identifier.name);
-
-	if (!is_iff(data))  // Not an IFF file we recognise
+	}
+	if (!is_iff(data.get())) {  // Not an IFF file we recognise
 		throw wrong_file_type_exception(identifier.name, "IFF");
-
+	}
 #ifdef DEBUG
 	cout << "Okay. It looks like an IFF file chunk" << endl;
 #endif
@@ -82,39 +82,14 @@ void IFF::index_file(void) {
 		r.size = data->read4high(); // 4 bytes for len
 		r.offset = data->getPos();
 
-		if (r.size == 0 || r.offset == 0)
+		if (r.size == 0 || r.offset == 0) {
 			break;
+		}
 		object_list.push_back(r);
 
 		// Objects are word-aligned in IFF files.
 		data->seek(r.offset + r.size + (r.size & 1));
 	}
-}
-
-/**
- *  Reads the desired object from the iff.
- *  @param objnum   Number of object to read.
- *  @param len  Receives the length of the object, or zero in any failure.
- *  @return Buffer created with new[] containing the object data or
- *  null on any failure.
- */
-char *IFF::retrieve(uint32 objnum, size_t &len) {
-	if (!data || objnum >= object_list.size()) {
-		len = 0;
-		return 0;
-	}
-#if 0
-	// Trying to avoid exceptions.
-	if (objnum >= object_list.size())
-		throw exult_exception("objnum too large in IFF::retrieve()");
-#endif
-
-	data->seek(object_list[objnum].offset);
-	len = object_list[objnum].size;
-	char *buffer = new char[len];
-	data->read(buffer, len);
-
-	return buffer;
 }
 
 /**
@@ -124,11 +99,11 @@ char *IFF::retrieve(uint32 objnum, size_t &len) {
  */
 bool IFF::is_iff(IDataSource *in) {
 	char ckid[4];
-	long pos = in->getPos();
+	size_t pos = in->getPos();
 	in->seek(0);
 	in->read(ckid, 4);
 	in->seek(pos);
-	return !memcmp(ckid, "FORM", 4);
+	return memcmp(ckid, "FORM", 4) == 0;
 }
 
 /**
@@ -138,16 +113,6 @@ bool IFF::is_iff(IDataSource *in) {
  *  the file does not exist.
  */
 bool IFF::is_iff(const std::string& fname) {
-	if (!U7exists(fname))
-		return false;
-
-	std::ifstream in;
-	U7open(in, fname.c_str());
-	IStreamDataSource ds(&in);
-
-	if (in.good())
-		return is_iff(&ds);
-
-	in.close();
-	return false;
+	IFileDataSource ds(fname.c_str());
+	return ds.good() && is_iff(&ds);
 }

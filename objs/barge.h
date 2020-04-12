@@ -34,7 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 class Barge_object : public Container_game_object, public Time_sensitive {
 	static Barge_object *editing;   // Egg being edited by ExultStudio.
-	Game_object_vector objects; // All objects in/on barge.
+    std::vector<Game_object_shared> objects; // All objects in/on barge.
 	int perm_count;         // Counts permanent parts of barge,
 	//   which proceed those placed on it.
 	unsigned char xtiles, ytiles;   // Tiles covered (when vertical).
@@ -50,7 +50,7 @@ class Barge_object : public Container_game_object, public Time_sensitive {
 	PathFinder *path;       // For traveling.
 	Tile_coord center;      // Center of barge.
 	Game_object *get_object(int i) {
-		return objects[i];
+		return objects[i].get();
 	}
 	void swap_dims();
 	void set_center();
@@ -68,7 +68,7 @@ public:
 		xtiles(xt), ytiles(yt), dir(d),
 		complete(false), gathered(false), ice_raft(false),
 		first_step(true), taking_2nd_step(false),
-		boat(-1), frame_time(0), path(0)
+		boat(-1), frame_time(0), path(nullptr)
 	{  }
 	Rectangle get_tile_footprint();
 	bool is_moving() {
@@ -83,7 +83,7 @@ public:
 	Tile_coord get_center() {
 		return center;
 	}
-	virtual ~Barge_object();
+	~Barge_object() override;
 	void set_to_gather() {      // Require 'gather' on next move.
 		gathered = false;
 	}
@@ -100,34 +100,34 @@ public:
 	}
 	void done();            // No longer being operated.
 	int okay_to_land();     // See if clear to land.
-	virtual Barge_object *as_barge() {
+	Barge_object *as_barge() override {
 		return this;
 	}
 	// For Time_sensitive:
-	virtual void handle_event(unsigned long curtime, uintptr udata);
+	void handle_event(unsigned long curtime, uintptr udata) override;
 	// Move to new abs. location.
-	virtual void move(int newtx, int newty, int newlift, int newmap = -1);
+	void move(int newtx, int newty, int newlift, int newmap = -1) override;
 	// Remove an object.
-	virtual void remove(Game_object *obj);
+	void remove(Game_object *obj) override;
 	// Add an object.
-	virtual bool add(Game_object *obj, bool dont_check = false,
-	                 bool combine = false, bool noset = false);
+	bool add(Game_object *obj, bool dont_check = false,
+	         bool combine = false, bool noset = false) override;
 	bool contains(Game_object *obj);
 	// Drop another onto this.
-	virtual int drop(Game_object *obj);
+	bool drop(Game_object *obj) override;
 	// Render.
-	virtual void paint();
-	virtual void activate(int event = 1);
-	virtual bool edit();        // Edit in ExultStudio.
+	void paint() override;
+	void activate(int event = 1) override;
+	bool edit() override;        // Edit in ExultStudio.
 	// Saved from ExultStudio.
 	static void update_from_studio(unsigned char *data, int datalen);
 	// Step onto an (adjacent) tile.
-	virtual int step(Tile_coord t, int frame = -1, bool force = false);
+	bool step(Tile_coord t, int frame = -1, bool force = false) override;
 	// Write out to IREG file.
-	virtual void write_ireg(ODataSource *out);
+	void write_ireg(ODataSource *out) override;
 	// Get size of IREG. Returns -1 if can't write to buffer
-	virtual int get_ireg_size();
-	virtual void elements_read();   // Called when all member items read.
+	int get_ireg_size() override;
+	void elements_read() override;   // Called when all member items read.
 };
 
 #endif

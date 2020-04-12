@@ -36,7 +36,7 @@
 #include "utils.h"
 
 using std::string;
-using std::map;
+using std::make_unique;
 
 static U7FileManager filemanager;
 U7FileManager *U7FileManager::self = &filemanager;
@@ -51,58 +51,51 @@ U7FileManager *U7FileManager::self = &filemanager;
  *  @return Pointer to data reading class.
  */
 U7file *U7FileManager::get_file_object(const File_spec &s, bool allow_errors) {
-	if (file_list.count(s))
-		return file_list[s];
-
+	if (file_list.count(s) != 0) {
+		return file_list[s].get();
+	}
 	// Not in our cache. Attempt to figure it out.
-	U7file *uf = 0;
+	std::unique_ptr<U7file> uf;
 	if (s.index >= 0) {
-		U7object from(s.name, s.index);
-		std::size_t size;
-		char *buffer = from.retrieve(size);
-		IBufferDataSource *data = new IBufferDataSource(buffer, size);
-		if (IFF::is_iff(data))
-			uf = new IFFBuffer(s, data);
-		else if (Flex::is_flex(data))
-			uf = new FlexBuffer(s, data);
-		else if (Table::is_table(data))
-			uf = new TableBuffer(s, data);
-		else if (Flat::is_flat(data))
-			uf = new FlatBuffer(s, data);
-		else {
-			// All other cases manage this, so we don't have to.
-			delete data;
-			delete [] buffer;
+		auto data = make_unique<IExultDataSource>(s.name, s.index);
+		if (data->good()) {
+			if (IFF::is_iff(data.get())) {
+				uf = std::make_unique<IFFBuffer>(s, std::move(data));
+			} else if (Flex::is_flex(data.get())) {
+				uf = std::make_unique<FlexBuffer>(s, std::move(data));
+			} else if (Table::is_table(data.get())) {
+				uf = std::make_unique<TableBuffer>(s, std::move(data));
+			} else if (Flat::is_flat(data.get())) {
+				uf = std::make_unique<FlatBuffer>(s, std::move(data));
+			}
 		}
 	} else {
-		if (IFF::is_iff(s.name))
-			uf = new IFFFile(s.name);
-		else if (Flex::is_flex(s.name))
-			uf = new FlexFile(s.name);
-		else if (Table::is_table(s.name))
-			uf = new TableFile(s.name);
-		else if (Flat::is_flat(s.name))
-			uf = new FlatFile(s.name);
+		if (IFF::is_iff(s.name)) {
+			uf = std::make_unique<IFFFile>(s.name);
+		} else if (Flex::is_flex(s.name)) {
+			uf = std::make_unique<FlexFile>(s.name);
+		} else if (Table::is_table(s.name)) {
+			uf = std::make_unique<TableFile>(s.name);
+		} else if (Flat::is_flat(s.name)) {
+			uf = std::make_unique<FlatFile>(s.name);
+		}
 	}
 
 	// Failed
-	if (!uf) {
+	if (uf == nullptr) {
 		if (!allow_errors)
-			throw(file_open_exception(s.name));
-		return 0;
+			throw file_open_exception(s.name);
+		return nullptr;
 	}
 
-	file_list[s] = uf;
-	return uf;
+	U7file *pt = uf.get();
+	file_list[s] = std::move(uf);
+	return pt;
 }
 
 /**
  *  Cleans the whole file list.
  */
 void U7FileManager::reset() {
-	for (map<File_spec, U7file *>::iterator it = file_list.begin();
-	        it != file_list.end(); ++it)
-		delete it->second;
-
 	file_list.clear();
 }

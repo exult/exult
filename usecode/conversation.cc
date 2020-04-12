@@ -30,6 +30,7 @@
 #include "miscinf.h"
 #include "data/exult_bg_flx.h"
 #include "array_size.h"
+#include "touchui.h"
 
 using std::size_t;
 using std::strcpy;
@@ -57,23 +58,16 @@ public:
 	string cur_text;        // Current text being shown.
 	Npc_face_info(ShapeID &sid, int num)
 		: shape(sid), face_num(num),
-		  text_pending(0), large_face(false)
+		  text_pending(false), large_face(false)
 	{  }
 };
-
-Conversation::Conversation()
-	: num_faces(0), last_face_shown(0), avatar_face(0, 0, 0, 0), conv_choices(0) {
-	const int max_faces = array_size(face_info);
-	for (int i = 0; i < max_faces; i++)
-		face_info[i] = 0;
-}
 
 Conversation::~Conversation() {
 	delete [] conv_choices;
 }
 
 
-void Conversation::clear_answers(void) {
+void Conversation::clear_answers() {
 	answers.clear();
 }
 
@@ -93,7 +87,7 @@ void Conversation::add_answer(Usecode_value &val) {
 	if (size) {         // An array?
 		for (int i = 0; i < size; i++)
 			add_answer(val.get_elem(i));
-	} else if ((str = val.get_str_value()) != 0)
+	} else if ((str = val.get_str_value()) != nullptr)
 		add_answer(str);
 }
 
@@ -135,7 +129,10 @@ void Conversation::init_faces() {
 	for (int i = 0; i < max_faces; i++) {
 		if (face_info[i])
 			delete face_info[i];
-		face_info[i] = 0;
+		face_info[i] = nullptr;
+		if (touchui != nullptr) {
+			touchui->showGameControls();
+		}
 	}
 	num_faces = 0;
 	last_face_shown = -1;
@@ -150,13 +147,15 @@ void Conversation::set_face_rect(
 	int text_height = sman->get_text_height(0);
 	// Figure starting y-coord.
 	// Get character's portrait.
-	Shape_frame *face = info->shape.get_shapenum() >= 0 ? info->shape.get_shape() : 0;
-	int face_w = 32, face_h = 32;
+	Shape_frame *face = info->shape.get_shapenum() >= 0 ? info->shape.get_shape() : nullptr;
+	int face_w = 32;
+	int face_h = 32;
 	if (face) {
 		face_w = face->get_width();
 		face_h = face->get_height();
 	}
-	int startx, extraw;
+	int startx;
+	int extraw;
 	if (face_w >= 119) {
 		startx = (screenw - face_w) / 2;
 		extraw = 0;
@@ -165,7 +164,8 @@ void Conversation::set_face_rect(
 		startx = 8;
 		extraw = 4;
 	}
-	int starty, extrah;
+	int starty;
+	int extrah;
 	if (face_h >= 142) {
 		starty = (screenh - face_h) / 2;
 		extrah = 0;
@@ -191,7 +191,8 @@ void Conversation::set_face_rect(
 	// No room?  (Serpent?)
 	if (info->large_face) {
 		// Show in lower center.
-		int x = screenw / 5, y = 3 * (screenh / 4);
+		int x = screenw / 5;
+		int y = 3 * (screenh / 4);
 		info->text_rect = Rectangle(x, y,
 		                            screenw - (2 * x), screenh - y - 4);
 	}
@@ -214,8 +215,9 @@ void Conversation::show_face(int shape, int frame, int slot) {
 		pal->set(-1, 100);
 
 	// Get screen dims.
-	int screenw = gwin->get_width(), screenh = gwin->get_height();
-	Npc_face_info *info = 0;
+	int screenw = gwin->get_width();
+	int screenh = gwin->get_height();
+	Npc_face_info *info = nullptr;
 	// See if already on screen.
 	for (int i = 0; i < max_faces; i++)
 		if (face_info[i] && face_info[i]->face_num == shape) {
@@ -231,7 +233,7 @@ void Conversation::show_face(int shape, int frame, int slot) {
 		if (slot == -1)     // Want next one?
 			slot = num_faces;
 		// Get last one shown.
-		Npc_face_info *prev = slot ? face_info[slot - 1] : 0;
+		Npc_face_info *prev = slot ? face_info[slot - 1] : nullptr;
 		last_face_shown = slot;
 		if (!face_info[slot])
 			num_faces++;    // We're adding one (not replacing).
@@ -242,6 +244,9 @@ void Conversation::show_face(int shape, int frame, int slot) {
 	}
 	gwin->get_win()->set_clip(0, 0, screenw, screenh);
 	paint_faces();          // Paint all faces.
+	if (touchui != nullptr) {
+		touchui->hideGameControls();
+	}
 	gwin->get_win()->clear_clip();
 }
 
@@ -271,8 +276,9 @@ void Conversation::change_face_frame(int frame, int slot) {
 
 	info->shape.set_frame(frame);
 	// Get screen dims.
-	int screenw = gwin->get_width(), screenh = gwin->get_height();
-	Npc_face_info *prev = slot ? face_info[slot - 1] : 0;
+	int screenw = gwin->get_width();
+	int screenh = gwin->get_height();
+	Npc_face_info *prev = slot ? face_info[slot - 1] : nullptr;
 	set_face_rect(info, prev, screenw, screenh);
 
 	gwin->get_win()->set_clip(0, 0, screenw, screenh);
@@ -315,7 +321,7 @@ void Conversation::remove_slot_face(
 		gwin->add_dirty(info->text_rect);
 	}
 	delete face_info[slot];
-	face_info[slot] = 0;
+	face_info[slot] = nullptr;
 	num_faces--;
 	if (last_face_shown == slot) {  // Just in case.
 		int j;
@@ -323,6 +329,9 @@ void Conversation::remove_slot_face(
 			if (face_info[j])
 				break;
 		last_face_shown = j;
+		if (touchui != nullptr && num_faces == 0) {
+			touchui->showGameControls();
+		}
 	}
 }
 
@@ -348,7 +357,8 @@ void Conversation::show_npc_message(const char *msg) {
 	                                      gwin->get_text_bg())) < 0) {
 		// More to do?
 		info->cur_text = string(msg, -height);
-		int x, y;
+		int x;
+		int y;
 		char c;
 		gwin->paint();      // Paint scenery beneath
 		Get_click(x, y, Mouse::hand, &c, false, this, true);
@@ -358,7 +368,7 @@ void Conversation::show_npc_message(const char *msg) {
 	// All fit?  Store height painted.
 	info->last_text_height = height;
 	info->cur_text = msg;
-	info->text_pending = 1;
+	info->text_pending = true;
 	gwin->set_painted();
 //	gwin->show();
 }
@@ -384,7 +394,7 @@ void Conversation::clear_text_pending() {
 	const int max_faces = array_size(face_info);
 	for (int i = 0; i < max_faces; i++) // Clear 'pending' flags.
 		if (face_info[i])
-			face_info[i]->text_pending = 0;
+			face_info[i]->text_pending = false;
 }
 
 /*
@@ -397,7 +407,8 @@ void Conversation::show_avatar_choices(int num_choices, char **choices) {
 	const int max_faces = array_size(face_info);
 	// Get screen rectangle.
 	Rectangle sbox = gwin->get_game_rect();
-	int x = 0, y = 0;       // Keep track of coords. in box.
+	int x = 0;
+	int y = 0;       // Keep track of coords. in box.
 	int height = sman->get_text_height(0);
 	int space_width = sman->get_text_width(0, " ");
 
@@ -423,7 +434,7 @@ void Conversation::show_avatar_choices(int num_choices, char **choices) {
 		if (!face_info[empty])
 			break;
 	// Get last one shown.
-	Npc_face_info *prev = empty ? face_info[empty - 1] : 0;
+	Npc_face_info *prev = empty ? face_info[empty - 1] : nullptr;
 	int fx = prev ? prev->face_rect.x + prev->face_rect.w + 4 : 16;
 	int fy;
 	if (SI) {
@@ -518,9 +529,9 @@ int Conversation::conversation_choice(int x, int y) {
 	        !conv_choices[i].has_point(x, y); i++)
 		;
 	if (conv_choices[i].w != 0) // Found one?
-		return (i);
+		return i;
 	else
-		return (-1);
+		return -1;
 }
 
 /*
@@ -549,27 +560,30 @@ void Conversation::paint_faces(
 		if (!finfo)
 			continue;
 		Shape_frame *face = finfo->face_num >= 0 ?
-		                    finfo->shape.get_shape() : 0;
-		int face_xleft = 0, face_yabove = 0;
+		                    finfo->shape.get_shape() : nullptr;
+		int face_xleft = 0;
+		int face_yabove = 0;
 		if (face) {
 			face_xleft = face->get_xleft();
 			face_yabove = face->get_yabove();
-			int fx = finfo->face_rect.x + face_xleft,
-			    fy = finfo->face_rect.y + face_yabove;
+			int fx = finfo->face_rect.x + face_xleft;
+			int fy = finfo->face_rect.y + face_yabove;
 			if (finfo->large_face) {
 				// Guardian, serpents: fill whole screen with the
 				// background pixel.
 				unsigned char px = face->get_topleft_pix();
 				const int xfstart = 0xff - sman->get_xforms_cnt();
-				int fw = finfo->face_rect.w,
-				    fh = finfo->face_rect.h;
+				int fw = finfo->face_rect.w;
+				int fh = finfo->face_rect.h;
 				Image_window8 *win = gwin->get_win();
-				int gw = win->get_game_width(), gh = win->get_game_height();
+				int gw = win->get_game_width();
+				int gh = win->get_game_height();
 				// Fill only if (a) not transparent, (b) is a translucent
 				// color and (c) the face is not covering the entire screen.
 				if (px >= xfstart && px <= 0xfe && (gw > fw || gh > fh)) {
 					Xform_palette &xform = sman->get_xform(px - xfstart);
-					int gx = win->get_start_x(), gy = win->get_start_y();
+					int gx = win->get_start_x();
+					int gy = win->get_start_y();
 					// Another option: 4 fills outside the face area.
 					win->fill_translucent8(0, gw, gh, gx, gy, xform);
 				}

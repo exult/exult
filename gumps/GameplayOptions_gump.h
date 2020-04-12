@@ -16,16 +16,19 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _GAMEPLAYOPTIONS_GUMP_H
-#define _GAMEPLAYOPTIONS_GUMP_H
+#ifndef GAMEPLAYOPTIONS_GUMP_H
+#define GAMEPLAYOPTIONS_GUMP_H
 
 #include "Modal_gump.h"
+
+#include <array>
+#include <memory>
 #include <string>
 
 class Gump_button;
 
 class GameplayOptions_gump : public Modal_gump {
-	UNREPLICATABLE_CLASS_I(GameplayOptions_gump, Modal_gump(0, 0, 0, 0))
+	UNREPLICATABLE_CLASS(GameplayOptions_gump)
 
 private:
 	int facestats;
@@ -40,8 +43,7 @@ private:
 	int right_pathfind;
 	int gumps_pause;
 
-	std::string *frametext;
-	int num_framerates;
+	std::vector<std::string> frametext;
 	int smooth_scrolling;
 
 	enum button_ids {
@@ -62,26 +64,72 @@ private:
 	    id_paperdolls,
 	    id_count
 	};
-	Gump_button *buttons[id_count];
+	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
 
 public:
 	GameplayOptions_gump();
-	virtual ~GameplayOptions_gump();
 
 	// Paint it and its contents.
-	virtual void paint();
-	virtual void close();
+	void paint() override;
+	void close() override;
 
 	// Handle events:
-	virtual bool mouse_down(int mx, int my, int button);
-	virtual bool mouse_up(int mx, int my, int button);
+	bool mouse_down(int mx, int my, int button) override;
+	bool mouse_up(int mx, int my, int button) override;
 
-	void toggle(Gump_button *btn, int state);
 	void build_buttons();
 
 	void load_settings();
 	void save_settings();
 	void cancel();
+
+	void toggle_facestats(int state) {
+		facestats = state;
+	}
+
+	void toggle_fastmouse(int state) {
+		fastmouse = state;
+	}
+
+	void toggle_mouse3rd(int state) {
+		mouse3rd = state;
+	}
+
+	void toggle_doubleclick(int state) {
+		doubleclick = state;
+	}
+
+	void toggle_cheats(int state) {
+		cheats = state;
+	}
+
+	void toggle_paperdolls(int state) {
+		paperdolls = state;
+	}
+
+	void toggle_text_bg(int state) {
+		text_bg = state;
+	}
+
+	void toggle_frames(int state) {
+		frames = state;
+	}
+
+	void toggle_rightclick_close(int state) {
+		rightclick_close = state;
+	}
+
+	void toggle_right_pathfind(int state) {
+		right_pathfind = state;
+	}
+
+	void toggle_gumps_pause(int state) {
+		gumps_pause = state;
+	}
+
+	void toggle_smooth_scrolling(int state) {
+		smooth_scrolling = state;
+	}
 };
 
 #endif

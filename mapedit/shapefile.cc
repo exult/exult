@@ -45,6 +45,7 @@ using std::string;
 using std::cerr;
 using std::endl;
 using std::ofstream;
+using std::unique_ptr;
 
 /*
  *  Delete file and groups.
@@ -68,7 +69,7 @@ Object_browser *Shape_file_info::get_browser(
 ) {
 	if (browser)
 		return browser;     // Okay.
-	browser = create_browser(vgafile, palbuf, 0);
+	browser = create_browser(vgafile, palbuf, nullptr);
 	// Add a reference (us).
 	gtk_widget_ref(browser->get_widget());
 	return browser;
@@ -115,14 +116,18 @@ void Image_file_info::flush(
 	modified = false;
 	int nshapes = ifile->get_num_shapes();
 	int shnum;          // First read all entries.
-	Shape **shapes = new Shape *[nshapes];
+	vector<Shape*> shapes(nshapes);
 	for (shnum = 0; shnum < nshapes; shnum++)
 		shapes[shnum] = ifile->extract_shape(shnum);
 	string filestr("<PATCH>/"); // Always write to 'patch'.
 	filestr += basename;
 	// !flex means single-shape.
-	write_file(filestr.c_str(), shapes, nshapes, !ifile->is_flex());
-	delete [] shapes;
+	try {
+		write_file(filestr.c_str(), shapes.data(), nshapes, !ifile->is_flex());
+	} catch (exult_exception &e) {
+		EStudio::Alert("Error writing '%s'", filestr.c_str());
+		return;
+	}
 	// Tell Exult to reload this file.
 	unsigned char buf[Exult_server::maxlength];
 	unsigned char *ptr = &buf[0];
@@ -157,26 +162,21 @@ void Image_file_info::write_file(
     int nshapes,            // # shapes.
     bool single         // Don't write a FLEX file.
 ) {
-	ofstream out;
-	U7open(out, pathname);      // May throw exception.
+	OFileDataSource out(pathname);      // May throw exception.
 	if (single) {
 		if (nshapes)
 			shapes[0]->write(out);
 		out.flush();
-		if (!out.good())
-			throw file_write_exception(pathname);
-		out.close();
 		return;
 	}
 	Flex_writer writer(out, "Written by ExultStudio", nshapes);
 	// Write all out.
 	for (int shnum = 0; shnum < nshapes; shnum++) {
 		if (shapes[shnum]->get_modified() || shapes[shnum]->get_from_patch())
-			shapes[shnum]->write(out);
-		writer.mark_section_done();
+			writer.write_object(shapes[shnum]);
+		else
+			writer.empty_object();
 	}
-	if (!writer.close())
-		throw file_write_exception(pathname);
 }
 
 /*
@@ -275,7 +275,8 @@ void Npcs_file_info::setup(
 	// Should get immediate answer.
 	unsigned char buf[Exult_server::maxlength];
 	Exult_server::Msg_type id;
-	int num_npcs, datalen;
+	int num_npcs;
+	int datalen;
 	if (Send_data(server_socket, Exult_server::npc_unused) == -1 ||
 	        !Exult_server::wait_for_response(server_socket, 100) ||
 	        (datalen = Exult_server::Receive_data(server_socket,
@@ -336,14 +337,12 @@ Flex_file_info::Flex_file_info(
     const char *bnm,        // Basename,
     const char *pnm,        // Full pathname,
     unsigned size           // File size.
-) : Shape_file_info(bnm, pnm, 0), flex(0), write_flat(true) {
+) : Shape_file_info(bnm, pnm, nullptr), flex(nullptr), write_flat(true) {
 	entries.resize(size > 0);
 	lengths.resize(entries.size());
 	if (size > 0) {         // Read in whole thing.
-		std::ifstream in;
-		U7open(in, pnm);    // Shouldn't fail.
-		entries[0] = new char[size];
-		in.read(entries[0], size);
+		IFileDataSource in(pnm);
+		entries[0] = in.readN(size);
 		lengths[0] = size;
 	}
 }
@@ -355,16 +354,13 @@ Flex_file_info::Flex_file_info(
 Flex_file_info::~Flex_file_info(
 ) {
 	delete flex;
-	int cnt = entries.size();
-	for (int i = 0; i < cnt; i++)
-		delete entries[i];
 }
 
 /*
  *  Get i'th entry.
  */
 
-char *Flex_file_info::get(
+unsigned char *Flex_file_info::get(
     unsigned i,
     size_t &len
 ) {
@@ -374,9 +370,9 @@ char *Flex_file_info::get(
 			lengths[i] = len;
 		}
 		len = lengths[i];
-		return entries[i];
+		return entries[i].get();
 	} else
-		return 0;
+		return nullptr;
 }
 
 /*
@@ -385,17 +381,16 @@ char *Flex_file_info::get(
 
 void Flex_file_info::set(
     unsigned i,
-    char *newentry,         // Allocated data that we'll own.
+    unique_ptr<unsigned char[]> newentry,         // Allocated data that we'll own.
     int entlen          // Length.
 ) {
 	if (i > entries.size())
 		return;
 	if (i == entries.size()) {  // Appending?
-		entries.push_back(newentry);
+		entries.push_back(std::move(newentry));
 		lengths.push_back(entlen);
 	} else {
-		delete entries[i];
-		entries[i] = newentry;
+		entries[i] = std::move(newentry);
 		lengths[i] = entlen;
 	}
 }
@@ -408,12 +403,8 @@ void Flex_file_info::swap(
     unsigned i
 ) {
 	assert(i < entries.size() - 1);
-	char *tmpent = entries[i];
-	int tmplen = lengths[i];
-	entries[i] = entries[i + 1];
-	lengths[i] = lengths[i + 1];
-	entries[i + 1] = tmpent;
-	lengths[i + 1] = tmplen;
+	std::swap(entries[i], entries[i + 1]);
+	std::swap(lengths[i], lengths[i + 1]);
 }
 
 /*
@@ -424,7 +415,6 @@ void Flex_file_info::remove(
     unsigned i
 ) {
 	assert(i < entries.size());
-	delete entries[i];      // Free memory.
 	entries.erase(entries.begin() + i);
 	lengths.erase(lengths.begin() + i);
 }
@@ -462,26 +452,19 @@ void Flex_file_info::flush(
 		if (!entries[i])
 			get(i, len);
 	}
-	ofstream out;
 	string filestr("<PATCH>/"); // Always write to 'patch'.
 	filestr += basename;
-	U7open(out, filestr.c_str());   // May throw exception.
+	OFileDataSource ds(filestr.c_str());	// Throws exception on failure
 	if (cnt <= 1 && write_flat) { // Write flat file.
 		if (cnt)
-			out.write(entries[0], lengths[0]);
-		out.close();
-		if (!out.good())
-			throw file_write_exception(filestr);
+			ds.write(entries[0].get(), lengths[0]);
 		return;
 	}
-	Flex_writer writer(out, "Written by ExultStudio", cnt);
+	Flex_writer writer(ds, "Written by ExultStudio", cnt);
 	// Write all out.
 	for (int i = 0; i < cnt; i++) {
-		out.write(entries[i], lengths[i]);
-		writer.mark_section_done();
+		writer.write_object(entries[i].get(), lengths[i]);
 	}
-	if (!writer.close())
-		throw file_write_exception(filestr);
 }
 
 /*
@@ -497,8 +480,7 @@ bool Flex_file_info::revert(
 	modified = false;
 	int cnt = entries.size();
 	for (int i = 0; i < cnt; i++) {
-		delete entries[i];
-		entries[i] = 0;
+		entries[i].reset();
 		lengths[i] = 0;
 	}
 	if (flex) {
@@ -506,17 +488,13 @@ bool Flex_file_info::revert(
 		entries.resize(cnt);
 		lengths.resize(entries.size());
 	} else {            // Single palette.
-		std::ifstream in;
-		U7open(in, pathname.c_str());   // Shouldn't fail.
-		in.seekg(0, std::ios::end); // Figure size.
-		int sz = in.tellg();
+		IFileDataSource in(pathname);
+		int sz = in.getSize();
 		cnt = sz > 0 ? 1 : 0;
 		entries.resize(cnt);
 		lengths.resize(entries.size());
-		in.seekg(0);
 		if (cnt) {
-			entries[0] = new char[sz];
-			in.read(entries[0], sz);
+			entries[0] = in.readN(sz);
 			lengths[0] = sz;
 		}
 	}
@@ -544,23 +522,24 @@ static bool Create_file(
     const char *basename,       // Base file name.
     const string &pathname      // Full name.
 ) {
-	int namelen = strlen(basename);
-	if (strcasecmp(".flx", basename + namelen - 4) == 0) {
-		// We can create an empty flx.
-		ofstream out;
-		U7open(out, pathname.c_str());  // May throw exception.
-		Flex_writer writer(out, "Written by ExultStudio", 0);
-		if (!writer.close())
-			throw file_write_exception(pathname);
-		return true;
-	} else if (strcasecmp(".pal", basename + namelen - 4) == 0) {
-		// Empty 1-palette file.
-		ofstream out;
-		U7open(out, pathname.c_str());  // May throw exception.
-		out.close();        // Empty file.
-		return true;
-	} else if (strcasecmp("npcs", basename) == 0)
-		return true;        // Don't need file.
+	try {
+		int namelen = strlen(basename);
+		if (strcasecmp(".flx", basename + namelen - 4) == 0) {
+			// We can create an empty flx.
+			OFileDataSource out(pathname.c_str());  // May throw exception.
+			Flex_writer writer(out, "Written by ExultStudio", 0);
+			return true;
+		} else if (strcasecmp(".pal", basename + namelen - 4) == 0) {
+			// Empty 1-palette file.
+			ofstream out;
+			U7open(out, pathname.c_str());  // May throw exception.
+			out.close();        // Empty file.
+			return true;
+		} else if (strcasecmp("npcs", basename) == 0)
+			return true;        // Don't need file.
+	} catch (exult_exception &e) {
+		EStudio::Alert("Error writing '%s'", pathname.c_str());
+	}
 	return false;           // Might add more later.
 }
 
@@ -581,12 +560,13 @@ Shape_file_info *Shape_file_set::create(
 	// Look in 'static', 'patch'.
 	string sstr = string("<STATIC>/") + basename;
 	string pstr = string("<PATCH>/") + basename;
-	const char *spath = sstr.c_str(), *ppath = pstr.c_str();
+	const char *spath = sstr.c_str();
+	const char *ppath = pstr.c_str();
 	bool sexists = U7exists(spath);
 	bool pexists = U7exists(ppath);
 	if (!sexists && !pexists)   // Neither place.  Try to create.
 		if (!(pexists = Create_file(basename, ppath)))
-			return 0;
+			return nullptr;
 	// Use patch file if it exists.
 	const char *fullname = pexists ? ppath : spath;
 	string group_name(basename);    // Create groups file.
@@ -641,13 +621,13 @@ Shape_file_info *Shape_file_set::create(
 		delete ifile;
 	}
 	cerr << "Error opening image file '" << basename << "'.\n";
-	return 0;
+	return nullptr;
 }
 
 /*
  *  Locates the NPC browser.
  *
- *  Output: ->file info, or 0 if not found.
+ *  Output: ->file info, or nullptr if not found.
  */
 
 Shape_file_info *Shape_file_set::get_npc_browser(
@@ -656,7 +636,7 @@ Shape_file_info *Shape_file_set::get_npc_browser(
 	        it != files.end(); ++it)
 		if (strcasecmp((*it)->basename.c_str(), "npcs") == 0)
 			return *it; // Found it.
-	return 0;   // Doesn't exist yet.
+	return nullptr;   // Doesn't exist yet.
 }
 
 /*

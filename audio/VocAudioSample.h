@@ -26,12 +26,11 @@ namespace Pentagram {
 class VocAudioSample : public AudioSample
 {
 public:
-	VocAudioSample(uint8* buffer, uint32 size);
-	virtual ~VocAudioSample();
+	VocAudioSample(std::unique_ptr<uint8[]> buffer, uint32 size);
 
-	virtual void initDecompressor(void *DecompData) const;
-	virtual uint32 decompressFrame(void *DecompData, void *samples) const;
-	virtual void rewind(void *DecompData) const;
+	void initDecompressor(void *DecompData) const override;
+	uint32 decompressFrame(void *DecompData, void *samples) const override;
+	void freeDecompressor(void *DecompData) const override;
 
 	static bool isThis(IDataSource *ds);
 protected:

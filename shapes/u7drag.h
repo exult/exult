@@ -63,9 +63,9 @@ void Get_u7_npcid(const unsigned char *data, int &npcnum);
 #define U7_TARGET_COMBOID 139
 
 //	Store/get combo and its elements:
-typedef struct U7_combo_data {
+struct U7_combo_data {
 	int tx, ty, tz, shape, frame;
-} U7_combo_data;
+};
 int Store_u7_comboid(unsigned char *data, int xtiles, int ytiles,
                      int tiles_right, int tiles_below, int cnt, U7_combo_data *ents);
 void Get_u7_comboid(const unsigned char *data, int &xtiles, int &ytiles,
@@ -73,18 +73,16 @@ void Get_u7_comboid(const unsigned char *data, int &xtiles, int &ytiles,
 
 // Put these here since they are shared between XWin and Win32
 
-typedef void (*Move_shape_handler_fun)(int shape, int frame, int x, int y,
-                                       int prevx, int prevy, bool show);
-typedef void (*Move_combo_handler_fun)(int xtiles, int ytiles, int tiles_right,
-                                       int tiles_below, int x, int y, int prevx, int prevy, bool show);
-typedef void (*Drop_shape_handler_fun)(int shape, int frame, int x, int y,
-                                       void *data);
-typedef void (*Drop_chunk_handler_fun)(int chunk, int x, int y, void *data);
-typedef void (*Drop_npc_handler_fun)(int npc, int x, int y, void *data);
-typedef void (*Drop_combo_handler_fun)(int cnt, struct U7_combo_data *combo,
-                                       int x, int y, void *data);
-
-
+using Move_shape_handler_fun = void (*)(int shape, int frame, int x, int y,
+                                        int prevx, int prevy, bool show);
+using Move_combo_handler_fun = void (*)(int xtiles, int ytiles, int tiles_right,
+                                        int tiles_below, int x, int y, int prevx, int prevy, bool show);
+using Drop_shape_handler_fun = void (*)(int shape, int frame, int x, int y,
+                                        void *data);
+using Drop_chunk_handler_fun = void (*)(int chunk, int x, int y, void *data);
+using Drop_npc_handler_fun = void (*)(int npc, int x, int y, void *data);
+using Drop_combo_handler_fun = void (*)(int cnt, struct U7_combo_data *combo,
+                                        int x, int y, void *data);
 
 #endif
 

@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#include <stdio.h>
+#include <cstdio>
 #include <cassert>
 #include <string>
 #include <vector>
@@ -48,7 +48,7 @@ using std::vector;
 using std::map;
 using std::pair;
 
-Uc_scope Uc_function::globals(0);   // Stores intrinic symbols.
+Uc_scope Uc_function::globals(nullptr);   // Stores intrinic symbols.
 vector<Uc_intrinsic_symbol *> Uc_function::intrinsics;
 int Uc_function::num_global_statics = 0;
 int Uc_function::add_answer = -1, Uc_function::remove_answer = -1,
@@ -66,19 +66,9 @@ Uc_function::Uc_function(
     Uc_function_symbol *p,
     Uc_scope *parent
 ) : top(parent), proto(p), cur_scope(&top), num_parms(0),
-	num_locals(0), num_statics(0), text_data(0), text_data_size(0),
-	statement(0) {
+	num_locals(0), num_statics(0), text_data(nullptr), text_data_size(0),
+	statement(nullptr) {
 	add_global_function_symbol(proto, parent);// Add prototype to globals.
-#if 0
-	const char *nm = proto->get_name();
-	if (!globals.search(nm))
-		globals.add(proto);
-	else {
-		char buf[100];
-		sprintf(buf, "Name '%s' already defined", nm);
-		Uc_location::yyerror(buf);
-	}
-#endif
 	const std::vector<Uc_var_symbol *> &parms = proto->get_parms();
 	// Add backwards.
 	for (std::vector<Uc_var_symbol *>::const_reverse_iterator it = parms.rbegin();
@@ -102,14 +92,14 @@ Uc_function::~Uc_function(
 /*
  *  Add a new variable to the current scope.
  *
- *  Output: New sym, or 0 if already declared.
+ *  Output: New sym, or nullptr if already declared.
  */
 
 Uc_var_symbol *Uc_function::add_symbol(
     char *nm
 ) {
 	if (cur_scope->is_dup(nm))
-		return 0;
+		return nullptr;
 	// Create & assign slot.
 	Uc_var_symbol *var = new Uc_var_symbol(nm, num_parms + num_locals++);
 	cur_scope->add(var);
@@ -119,7 +109,7 @@ Uc_var_symbol *Uc_function::add_symbol(
 /*
  *  Add a new variable to the current scope.
  *
- *  Output: New sym, or 0 if already declared.
+ *  Output: New sym, or nullptr if already declared.
  */
 
 Uc_var_symbol *Uc_function::add_symbol(
@@ -127,7 +117,7 @@ Uc_var_symbol *Uc_function::add_symbol(
     Uc_class *c
 ) {
 	if (cur_scope->is_dup(nm))
-		return 0;
+		return nullptr;
 	// Create & assign slot.
 	Uc_var_symbol *var = new Uc_class_inst_symbol(nm, c, num_parms + num_locals++);
 	cur_scope->add(var);
@@ -137,7 +127,7 @@ Uc_var_symbol *Uc_function::add_symbol(
 /*
  *  Add a new variable to the current scope.
  *
- *  Output: New sym, or 0 if already declared.
+ *  Output: New sym, or nullptr if already declared.
  */
 
 Uc_var_symbol *Uc_function::add_symbol(
@@ -145,7 +135,7 @@ Uc_var_symbol *Uc_function::add_symbol(
     Uc_struct_symbol *s
 ) {
 	if (cur_scope->is_dup(nm))
-		return 0;
+		return nullptr;
 	// Create & assign slot.
 	Uc_var_symbol *var = new Uc_struct_var_symbol(nm, s, num_parms + num_locals++);
 	cur_scope->add(var);
@@ -155,14 +145,14 @@ Uc_var_symbol *Uc_function::add_symbol(
 /*
  *  Add a new variable to the current scope.
  *
- *  Output: New sym, or 0 if already declared.
+ *  Output: New sym, or nullptr if already declared.
  */
 
 Uc_var_symbol *Uc_function::add_symbol(
     Uc_var_symbol *var
 ) {
 	if (cur_scope->is_dup(var->get_name()))
-		return 0;
+		return nullptr;
 	// Create & assign slot.
 	var->set_offset(num_parms + num_locals++);
 	cur_scope->add(var);
@@ -172,7 +162,7 @@ Uc_var_symbol *Uc_function::add_symbol(
 /*
  *  Add an alias to variable to the current scope.
  *
- *  Output: New sym, or 0 if already declared.
+ *  Output: New sym, or nullptr if already declared.
  */
 
 Uc_var_symbol *Uc_function::add_alias(
@@ -180,7 +170,7 @@ Uc_var_symbol *Uc_function::add_alias(
     Uc_var_symbol *var
 ) {
 	if (cur_scope->is_dup(nm))
-		return 0;
+		return nullptr;
 	// Create & assign slot.
 	Uc_alias_symbol *alias = new Uc_alias_symbol(nm, var);
 	cur_scope->add(alias);
@@ -190,7 +180,7 @@ Uc_var_symbol *Uc_function::add_alias(
 /*
  *  Add an alias to variable to the current scope.
  *
- *  Output: New sym, or 0 if already declared.
+ *  Output: New sym, or nullptr if already declared.
  */
 
 Uc_var_symbol *Uc_function::add_alias(
@@ -199,7 +189,7 @@ Uc_var_symbol *Uc_function::add_alias(
     Uc_struct_symbol *struc
 ) {
 	if (cur_scope->is_dup(nm))
-		return 0;
+		return nullptr;
 	// Create & assign slot.
 	Uc_var_symbol *var = static_cast<Uc_var_symbol *>(v->get_sym());
 	Uc_alias_symbol *alias = new Uc_struct_alias_symbol(nm, var, struc);
@@ -210,7 +200,7 @@ Uc_var_symbol *Uc_function::add_alias(
 /*
  *  Add an alias to variable to the current scope.
  *
- *  Output: New sym, or 0 if already declared.
+ *  Output: New sym, or nullptr if already declared.
  */
 
 Uc_var_symbol *Uc_function::add_alias(
@@ -219,7 +209,7 @@ Uc_var_symbol *Uc_function::add_alias(
     Uc_class *c
 ) {
 	if (cur_scope->is_dup(nm))
-		return 0;
+		return nullptr;
 	// Create & assign slot.
 	Uc_var_symbol *var = static_cast<Uc_var_symbol *>(v->get_sym());
 	Uc_alias_symbol *alias = new Uc_class_alias_symbol(nm, var, c);
@@ -280,7 +270,7 @@ Uc_symbol *Uc_function::add_string_symbol(
     char *text
 ) {
 	if (cur_scope->is_dup(nm))
-		return 0;
+		return nullptr;
 	// Create & assign slot.
 	Uc_symbol *sym = new Uc_string_symbol(nm, add_string(text));
 	cur_scope->add(sym);
@@ -290,7 +280,7 @@ Uc_symbol *Uc_function::add_string_symbol(
 /*
  *  Add a new integer constant variable to the current scope.
  *
- *  Output: New sym, or 0 if already declared.
+ *  Output: New sym, or nullptr if already declared.
  */
 
 Uc_symbol *Uc_function::add_int_const_symbol(
@@ -299,7 +289,7 @@ Uc_symbol *Uc_function::add_int_const_symbol(
     int opcode
 ) {
 	if (cur_scope->is_dup(nm))
-		return 0;
+		return nullptr;
 	// Create & assign slot.
 	Uc_const_int_symbol *var = new Uc_const_int_symbol(nm, value, static_cast<UsecodeOps>(opcode));
 	cur_scope->add(var);
@@ -309,7 +299,7 @@ Uc_symbol *Uc_function::add_int_const_symbol(
 /*
  *  Add a new integer constant variable to the global scope.
  *
- *  Output: New sym, or 0 if already declared.
+ *  Output: New sym, or nullptr if already declared.
  */
 
 Uc_symbol *Uc_function::add_global_int_const_symbol(
@@ -318,7 +308,7 @@ Uc_symbol *Uc_function::add_global_int_const_symbol(
     int opcode
 ) {
 	if (globals.is_dup(nm))
-		return 0;
+		return nullptr;
 	// Create & assign slot.
 	Uc_const_int_symbol *var = new Uc_const_int_symbol(nm, value, static_cast<UsecodeOps>(opcode));
 	globals.add(var);
@@ -451,7 +441,7 @@ int Uc_function::link(
 	for (std::vector<Uc_function_symbol *>::const_iterator it = links.begin();
 	        it != links.end(); ++it)
 		if (*it == fun)     // Found it?  Return offset.
-			return (it - links.begin());
+			return it - links.begin();
 	int offset = links.size();  // Going to add it.
 	links.push_back(fun);
 	return offset;
@@ -461,7 +451,7 @@ static int Remove_dead_blocks(
     vector<Basic_block *> &blocks
 ) {
 	int niter = 0;
-	while (1) {
+	while (true) {
 		niter++;
 		size_t i = 0;
 		int nremoved = 0;
@@ -500,7 +490,7 @@ static int Optimize_jumps(
     bool returns
 ) {
 	int niter = 0;
-	while (1) {
+	while (true) {
 		niter++;
 		size_t i = 0;
 		int nremoved = 0;
@@ -654,7 +644,7 @@ static int Set_32bit_jump_flags(
     vector<Basic_block *> &blocks
 ) {
 	int niter = 0;
-	while (1) {
+	while (true) {
 		niter++;
 		int nchanged = 0;
 		vector<int> locs;
@@ -671,21 +661,6 @@ static int Set_32bit_jump_flags(
 			if (is_sint_32bit(Compute_jump_distance(block, locs))) {
 				nchanged++;
 				block->set_32bit_jump();
-#if 0
-				// Doing this not only is unneccessary, but it also
-				// slows UCC down to a crawl for large functions
-				// with lots of blocks. In the absence of this block,
-				// most cases will work correctly with one iteraction.
-				// The only problematic cases are borderline jumps
-				// with offsets very close to requiring 32-bit integers
-				// and which might be pushed over the edge by the
-				// increased block lengths. These cases are dealt with
-				// by the multiple passes.
-				if (block->get_jump_size())
-					// Adjust positions of all that follow.
-					for (int j = i + 1; j < blocks.size(); j++)
-						locs[j] += 2;
-#endif
 			}
 		}
 		if (!nchanged)
@@ -734,7 +709,7 @@ void Uc_function::gen(
 			// Remove it from map and unlink references to it.
 			label->unlink_descendants();
 			label->unlink_predecessors();
-			it->second = 0;
+			it->second = nullptr;
 			delete label;
 		}
 	}
@@ -837,18 +812,18 @@ void Uc_function::gen(
 	out.flush();
 }
 
-#ifndef __STRING
+#ifndef TO_STRING
 #if defined __STDC__ && __STDC__
-#define __STRING(x) #x
+#define TO_STRING(x) #x
 #else
-#define __STRING(x) "x"
+#define TO_STRING(x) "x"
 #endif
 #endif
 
 /*
  *  Tables of usecode intrinsics:
  */
-#define USECODE_INTRINSIC_PTR(NAME) __STRING(UI_##NAME)
+#define USECODE_INTRINSIC_PTR(NAME) TO_STRING(UI_##NAME)
 
 const char *bg_intrinsic_table[] = {
 #include "../bgintrinsics.h"

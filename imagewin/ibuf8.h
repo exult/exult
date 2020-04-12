@@ -41,50 +41,50 @@ public:
 	/*
 	 *  Depth-independent methods:
 	 */
-	virtual Image_buffer *create_another(int w, int h) {
-		return new Image_buffer8(w, h);
+	std::unique_ptr<Image_buffer> create_another(int w, int h) override {
+		return std::make_unique<Image_buffer8>(w, h);
 	}
 	// Copy within itself.
-	virtual void copy(int srcx, int srcy, int srcw, int srch,
-	                  int destx, int desty);
+	void copy(int srcx, int srcy, int srcw, int srch,
+	          int destx, int desty) override;
 	// Get rect. into another buf.
-	virtual void get(Image_buffer *dest, int srcx, int srcy);
+	void get(Image_buffer *dest, int srcx, int srcy) override;
 	// Put rect. back.
-	virtual void put(Image_buffer *src, int destx, int desty);
+	void put(Image_buffer *src, int destx, int desty) override;
 
-	virtual void fill_static(int black, int gray, int white);
+	void fill_static(int black, int gray, int white) override;
 
 	/*
 	 *  8-bit color methods:
 	 */
 	// Fill with given (8-bit) value.
-	virtual void fill8(unsigned char val);
+	void fill8(unsigned char pix) override;
 	// Fill rect. wth pixel.
-	virtual void fill8(unsigned char val, int srcw, int srch,
-	                   int destx, int desty);
+	void fill8(unsigned char pix, int srcw, int srch,
+	           int destx, int desty) override;
 	// Fill line with pixel.
-	virtual void fill_line8(unsigned char val, int srcw,
-	                        int destx, int desty);
+	void fill_line8(unsigned char pix, int srcw,
+	                int destx, int desty) override;
 	// Copy rectangle into here.
-	virtual void copy8(const unsigned char *src_pixels,
-	                   int srcw, int srch, int destx, int desty);
+	void copy8(const unsigned char *src_pixels,
+	           int srcw, int srch, int destx, int desty) override;
 	// Copy line to here.
-	virtual void copy_line8(const unsigned char *src_pixels, int srcw,
-	                        int destx, int desty);
+	void copy_line8(const unsigned char *src_pixels, int srcw,
+	                int destx, int desty) override;
 	// Copy with translucency table.
-	virtual void copy_line_translucent8(
+	void copy_line_translucent8(
 	    const unsigned char *src_pixels, int srcw,
 	    int destx, int desty, int first_translucent,
-	    int last_translucent, const Xform_palette *xforms);
+	    int last_translucent, const Xform_palette *xforms) override;
 	// Apply translucency to a line.
-	virtual void fill_line_translucent8(unsigned char val,
-	                                    int srcw, int destx, int desty, const Xform_palette &xform);
+	void fill_line_translucent8(unsigned char val,
+	                            int srcw, int destx, int desty, const Xform_palette &xform) override;
 	// Apply translucency to a rectangle
-	virtual void fill_translucent8(unsigned char val, int srcw, int srch,
-	                               int destx, int desty, const Xform_palette &xform);
+	void fill_translucent8(unsigned char val, int srcw, int srch,
+	                       int destx, int desty, const Xform_palette &xform) override;
 	// Copy rect. with transp. color.
-	virtual void copy_transparent8(const unsigned char *src_pixels, int srcw,
-	                               int srch, int destx, int desty);
+	void copy_transparent8(const unsigned char *src_pixels, int srcw,
+	                       int srch, int destx, int desty) override;
 	// Get/put a single pixel.
 	unsigned char get_pixel8(int x, int y) {
 		return bits[y * line_width + x];
@@ -102,7 +102,7 @@ public:
 	unsigned char *rgba(const unsigned char *pal, unsigned char transp,
 	                    bool &rotate, int first_rotate, int last_rotate,
 	                    int first_translucent = 256, int last_translucent = 256,
-	                    const Xform_palette *xforms = 0, int alpha = 255);
+	                    const Xform_palette *xforms = nullptr, int alpha = 255);
 };
 
 #endif

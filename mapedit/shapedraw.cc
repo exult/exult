@@ -93,7 +93,8 @@ void Shape_draw::draw_shape_outline(
 			shape->paint_rle_outline(iwin, x + shape->get_xleft(),
 			                         y + shape->get_yabove(), color);
 		else {
-			int w = shape->get_width(), h = shape->get_height();
+			int w = shape->get_width();
+			int h = shape->get_height();
 			iwin->fill_line8(color, w, x, y);
 			iwin->fill_line8(color, w, x, y + h - 1);
 			iwin->fill8(color, 1, h, x, y);
@@ -118,7 +119,8 @@ void Shape_draw::draw_shape_centered(
 	if (!shape || shape->is_empty())
 		return;
 	// Get drawing area dimensions.
-	gint winw = draw->allocation.width, winh = draw->allocation.height;
+	gint winw = draw->allocation.width;
+	gint winh = draw->allocation.height;
 	draw_shape(shape, (winw - shape->get_width()) / 2,
 	           (winh - shape->get_height()) / 2);
 }
@@ -129,11 +131,11 @@ void Shape_draw::draw_shape_centered(
 
 Shape_draw::Shape_draw(
     Vga_file *i,            // Where they're kept.
-    unsigned char *palbuf,      // Palette, 3*256 bytes (rgb triples).
+    const unsigned char *palbuf,      // Palette, 3*256 bytes (rgb triples).
     GtkWidget *drw          // Drawing area to use.
-) : ifile(i), draw(drw), drawgc(0),
-	iwin(0), palette(0),
-	drop_callback(0), drop_user_data(0), dragging(false) {
+) : ifile(i), draw(drw), drawgc(nullptr),
+	iwin(nullptr), palette(nullptr),
+	drop_callback(nullptr), drop_user_data(nullptr), dragging(false) {
 	guint32 colors[256];
 	for (int i = 0; i < 256; i++)
 		colors[i] = (palbuf[3 * i] << 16) * 4 + (palbuf[3 * i + 1] << 8) * 4 +
@@ -213,7 +215,9 @@ void Shape_draw::drag_data_received(
 	if (draw->drop_callback &&
 	        seldata->type == gdk_atom_intern(U7_TARGET_SHAPEID_NAME, 0) &&
 	        seldata->format == 8 && seldata->length > 0) {
-		int file, shape, frame;
+		int file;
+		int shape;
+		int frame;
 		Get_u7_shapeid(seldata->data, file, shape, frame);
 		(*draw->drop_callback)(file, shape, frame,
 		                       draw->drop_user_data);
@@ -229,7 +233,7 @@ void Shape_draw::enable_drop(
     void *udata         // Passed to callback.
 ) {
 	gtk_widget_realize(draw);//???????
-#ifndef WIN32
+#ifndef _WIN32
 	drop_callback = callback;
 	drop_user_data = udata;
 	GtkTargetEntry tents[1];
@@ -254,8 +258,10 @@ void Shape_draw::set_drag_icon(
     GdkDragContext *context,
     Shape_frame *shape      // Shape to use for the icon.
 ) {
-	int w = shape->get_width(), h = shape->get_height(),
-	    xright = shape->get_xright(), ybelow = shape->get_ybelow();
+	int w = shape->get_width();
+	int h = shape->get_height();
+	int xright = shape->get_xright();
+	int ybelow = shape->get_ybelow();
 	Image_buffer8 tbuf(w, h);   // Create buffer to render to.
 	tbuf.fill8(0xff);       // Fill with 'transparent' pixel.
 	unsigned char *tbits = tbuf.get_bits();

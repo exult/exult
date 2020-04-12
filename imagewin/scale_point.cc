@@ -28,7 +28,6 @@
 #include "common_types.h"
 #include "manip.h"
 #include "scale_point.h"
-#include "sdl-compat.h"
 //
 // Point Sampling
 //
@@ -44,7 +43,7 @@ void Image_window::show_scaled8to8_point(
 	 display_surface->pitch,
 	 manip, scale);
 
-	SDL_UpdateRect(display_surface, scale * x, scale * y, scale * w, scale * h);
+	UpdateRect(display_surface, scale * x, scale * y, scale * w, scale * h);
 }
 
 void Image_window::show_scaled8to16_point(
@@ -59,7 +58,7 @@ void Image_window::show_scaled8to16_point(
 	 display_surface->pitch /
 	 display_surface->format->BytesPerPixel,
 	 manip, scale);
-	SDL_UpdateRect(display_surface, scale * x, scale * y, scale * w, scale * h);
+	UpdateRect(display_surface, scale * x, scale * y, scale * w, scale * h);
 }
 
 void Image_window::show_scaled8to555_point(
@@ -74,7 +73,7 @@ void Image_window::show_scaled8to555_point(
 	 display_surface->pitch /
 	 display_surface->format->BytesPerPixel,
 	 manip, scale);
-	SDL_UpdateRect(display_surface, scale * x, scale * y, scale * w, scale * h);
+	UpdateRect(display_surface, scale * x, scale * y, scale * w, scale * h);
 }
 
 void Image_window::show_scaled8to565_point(
@@ -89,7 +88,7 @@ void Image_window::show_scaled8to565_point(
 	 display_surface->pitch /
 	 display_surface->format->BytesPerPixel,
 	 manip, scale);
-	SDL_UpdateRect(display_surface, scale * x, scale * y, scale * w, scale * h);
+	UpdateRect(display_surface, scale * x, scale * y, scale * w, scale * h);
 }
 
 void Image_window::show_scaled8to32_point(
@@ -104,5 +103,5 @@ void Image_window::show_scaled8to32_point(
 	 display_surface->pitch /
 	 display_surface->format->BytesPerPixel,
 	 manip, scale);
-	SDL_UpdateRect(display_surface, scale * x, scale * y, scale * w, scale * h);
+	UpdateRect(display_surface, scale * x, scale * y, scale * w, scale * h);
 }

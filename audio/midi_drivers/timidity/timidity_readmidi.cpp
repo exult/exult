@@ -26,15 +26,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
-#ifndef _WIN32_WCE
 #include <cerrno>
-#else
-static int errno = 0;
-static char *strerror(int _errno) {
-	return "";
-}
-#endif
 
 #include "timidity.h"
 #include "timidity_common.h"
@@ -75,7 +67,7 @@ static void compute_sample_increment(sint32 tempo, sint32 divisions)
 }
 
 /* Read variable-length number (7 bits per byte, MSB first) */
-static sint32 getvl(void)
+static sint32 getvl()
 {
 	sint32 l=0;
 	uint8 c;
@@ -114,18 +106,25 @@ static int dumpstring(sint32 len, const char *label)
 #define MIDIEVENT(at,t,ch,pa,pb) \
 		event=safe_Malloc<MidiEventList>(); \
 		event->event.time=at; event->event.type=t; event->event.channel=ch; \
-		event->event.a=pa; event->event.b=pb; event->next=0;\
+		event->event.a=pa; event->event.b=pb; event->next=nullptr;\
 		return event;
 
 #define MAGIC_EOT (reinterpret_cast<MidiEventList *>(-1))
 
 /* Read a MIDI event, returning a freshly allocated element that can
    be linked to the event list */
-static MidiEventList *read_midi_event(void)
+static MidiEventList *read_midi_event()
 {
-	static uint8 laststatus, lastchan;
-	static uint8 nrpn=0, rpn_msb[16], rpn_lsb[16]; /* one per channel */
-	uint8 me, type, a,b,c;
+	static uint8 laststatus;
+	static uint8 lastchan;
+	static uint8 nrpn=0;
+	static uint8 rpn_msb[16];
+	static uint8 rpn_lsb[16]; /* one per channel */
+	uint8 me;
+	uint8 type;
+	uint8 a;
+	uint8 b;
+	uint8 c;
 	sint32 len;
 	MidiEventList *event;
 	size_t err;
@@ -137,7 +136,7 @@ static MidiEventList *read_midi_event(void)
 		{
 			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: read_midi_event: %s",
 			          current_filename, strerror(errno));
-			return 0;
+			return nullptr;
 		}
 
 		if(me==0xF0 || me == 0xF7) /* SysEx event */
@@ -318,7 +317,8 @@ static MidiEventList *read_midi_event(void)
 static int read_track(int append)
 {
 	MidiEventList *meep;
-	MidiEventList *next, *new_event;
+	MidiEventList *next;
+	MidiEventList *new_event;
 	sint32 len;
 	char tmp[4];
 
@@ -375,9 +375,10 @@ static int read_track(int append)
 }
 
 /* Free the linked event list from memory. */
-static void free_midi_list(void)
+static void free_midi_list()
 {
-	MidiEventList *meep, *next;
+	MidiEventList *meep;
+	MidiEventList *next;
 	if (!(meep=evlist)) return;
 	while (meep)
 	{
@@ -385,7 +386,7 @@ static void free_midi_list(void)
 		free(meep);
 		meep=next;
 	}
-	evlist=0;
+	evlist=nullptr;
 }
 
 /* Allocate an array of MidiEvents and fill it from the linked list of
@@ -394,12 +395,24 @@ static void free_midi_list(void)
  Free the linked list. */
 static MidiEvent *groom_list(sint32 divisions,sint32 *eventsp,sint32 *samplesp)
 {
-	MidiEvent *groomed_list, *lp;
+	MidiEvent *groomed_list;
+	MidiEvent *lp;
 	MidiEventList *meep;
-	sint32 i, our_event_count, tempo, skip_this_event, new_value;
-	sint32 sample_cum, samples_to_do, at, st, dt, counting_time;
+	sint32 i;
+	sint32 our_event_count;
+	sint32 tempo;
+	sint32 skip_this_event;
+	sint32 new_value;
+	sint32 sample_cum;
+	sint32 samples_to_do;
+	sint32 at;
+	sint32 st;
+	sint32 dt;
+	sint32 counting_time;
 
-	int current_bank[16], current_set[16], current_program[16];
+	int current_bank[16];
+	int current_set[16];
+	int current_program[16];
 	/* Or should each bank have its own current program? */
 
 	for (i=0; i<16; i++)
@@ -549,8 +562,11 @@ static MidiEvent *groom_list(sint32 divisions,sint32 *eventsp,sint32 *samplesp)
 
 MidiEvent *read_midi_file(FILE *mfp, sint32 *count, sint32 *sp)
 {
-	sint32 len, divisions;
-	sint16 format, tracks, divisions_tmp;
+	sint32 len;
+	sint32 divisions;
+	sint16 format;
+	sint16 tracks;
+	sint16 divisions_tmp;
 	int i;
 	char tmp[4];
 	size_t err;
@@ -558,7 +574,7 @@ MidiEvent *read_midi_file(FILE *mfp, sint32 *count, sint32 *sp)
 	fp=mfp;
 	event_count=0;
 	at=0;
-	evlist=0;
+	evlist=nullptr;
 
 	if ((fread(tmp,1,4,fp) != 4) || (fread(&len,4,1,fp) != 1))
 	{
@@ -570,14 +586,14 @@ MidiEvent *read_midi_file(FILE *mfp, sint32 *count, sint32 *sp)
 		else
 			ctl->cmsg(CMSG_ERROR, VERB_NORMAL,
 			          "%s: Not a MIDI file!", current_filename);
-		return 0;
+		return nullptr;
 	}
 	len=BE_LONG(len);
 	if (memcmp(tmp, "MThd", 4) != 0 || len < 6)
 	{
 		ctl->cmsg(CMSG_ERROR, VERB_NORMAL,
 		          "%s: Not a MIDI file!", current_filename);
-		return 0;
+		return nullptr;
 	}
 
 	err = fread(&format, 2, 1, fp);
@@ -608,7 +624,7 @@ MidiEvent *read_midi_file(FILE *mfp, sint32 *count, sint32 *sp)
 	{
 		ctl->cmsg(CMSG_ERROR, VERB_NORMAL,
 		          "%s: Unknown MIDI file format %d", current_filename, format);
-		return 0;
+		return nullptr;
 	}
 	ctl->cmsg(CMSG_INFO, VERB_VERBOSE,
 	          "Format: %d  Tracks: %d  Divisions: %d", format, tracks, divisions);
@@ -617,7 +633,7 @@ MidiEvent *read_midi_file(FILE *mfp, sint32 *count, sint32 *sp)
 	evlist=safe_Malloc<MidiEventList>();
 	evlist->event.time=0;
 	evlist->event.type=ME_NONE;
-	evlist->next=0;
+	evlist->next=nullptr;
 	event_count++;
 
 	switch(format)
@@ -626,7 +642,7 @@ MidiEvent *read_midi_file(FILE *mfp, sint32 *count, sint32 *sp)
 			if (read_track(0))
 			{
 				free_midi_list();
-				return 0;
+				return nullptr;
 			}
 			break;
 
@@ -635,7 +651,7 @@ MidiEvent *read_midi_file(FILE *mfp, sint32 *count, sint32 *sp)
 				if (read_track(0))
 				{
 					free_midi_list();
-					return 0;
+					return nullptr;
 				}
 			break;
 
@@ -644,7 +660,7 @@ MidiEvent *read_midi_file(FILE *mfp, sint32 *count, sint32 *sp)
 				if (read_track(1))
 				{
 					free_midi_list();
-					return 0;
+					return nullptr;
 				}
 			break;
 	}

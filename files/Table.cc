@@ -34,60 +34,25 @@ using std::string;
 using std::FILE;
 using std::size_t;
 
-void Table::index_file(void) {
-	if (!data)
+void Table::index_file() {
+	if (!data) {
 		throw file_read_exception(identifier.name);
-
-	if (!is_table(data))    // Not a table file we recognise
+	}
+	if (!is_table(data.get())) {    // Not a table file we recognise
 		throw wrong_file_type_exception(identifier.name, "TABLE");
-
+	}
 	unsigned int i = 0;
 	while (true) {
-		Table::Reference f;
+		Reference f;
 		f.size = data->read2();
 
-		if (f.size == 65535)
+		if (f.size == 65535) {
 			break;
-
+		}
 		f.offset = data->read4();
-
-#if 0
-		// We already guarded against this above.
-		if (f.size > file_size || f.offset > file_size)
-			throw wrong_file_type_exception(filename, "TABLE");
-#endif
-#if 0
-		cout << "Item " << i << ": " << f.size << " @ " << f.offset << endl;
-#endif
 		object_list.push_back(f);
 		i++;
 	}
-}
-
-/**
- *  Reads the desired object from the table file.
- *  @param objnum   Number of object to read.
- *  @param len  Receives the length of the object, or zero in any failure.
- *  @return Buffer created with new[] containing the object data or
- *  null on any failure.
- */
-char *Table::retrieve(uint32 objnum, size_t &len) {
-	if (!data || objnum >= object_list.size()) {
-		len = 0;
-		return 0;
-	}
-#if 0
-	// Trying to avoid exceptions.
-	if (objnum >= object_list.size())
-		throw exult_exception("objnum too large in Flex::retrieve()");
-#endif
-
-	data->seek(object_list[objnum].offset);
-	len = object_list[objnum].size;
-	char *buffer = new char[len];
-	data->read(buffer, len);
-
-	return buffer;
 }
 
 /**
@@ -104,9 +69,9 @@ bool Table::is_table(IDataSource *in) {
 		uint16 size = in->read2();
 
 		// End of table marker.
-		if (size == 65535)
+		if (size == 65535) {
 			break;
-
+		}
 		uint32 offset = in->read4();
 		if (size > file_size || offset > file_size) {
 			in->seek(pos);
@@ -125,16 +90,6 @@ bool Table::is_table(IDataSource *in) {
  *  the file does not exist.
  */
 bool Table::is_table(const std::string& fname) {
-	if (!U7exists(fname))
-		return false;
-
-	std::ifstream in;
-	U7open(in, fname.c_str());
-	IStreamDataSource ds(&in);
-
-	if (in.good())
-		return is_table(&ds);
-
-	in.close();
-	return false;
+	IFileDataSource ds(fname.c_str());
+	return ds.good() && is_table(&ds);
 }

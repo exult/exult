@@ -40,12 +40,7 @@ using std::vector;
 #include "timidity_tables.h"
 
 // we want to use Pentagram's config
-#ifndef PENTAGRAM_IN_EXULT
-#include "SettingManager.h"
-#else
 #include "Configuration.h"
-#endif
-
 
 #ifdef NS_TIMIDITY
 namespace NS_TIMIDITY {
@@ -56,8 +51,8 @@ int free_instruments_afterwards=0;
 static char def_instr_name[256]="";
 
 int AUDIO_BUFFER_SIZE;
-sample_t *resample_buffer=0;
-sint32 *common_buffer=0;
+sample_t *resample_buffer=nullptr;
+sint32 *common_buffer=nullptr;
 
 #define MAXWORDS 10u
 
@@ -67,7 +62,7 @@ static int read_config_file(const char *name)
 	char tmp[1024];
 	vector<char*> w;
 	w.reserve(MAXWORDS);
-	ToneBank *bank=0;
+	ToneBank *bank=nullptr;
 	int line=0;
 	static int rcf_count=0;
 
@@ -75,7 +70,7 @@ static int read_config_file(const char *name)
 	{
 		ctl->cmsg(CMSG_ERROR, VERB_NORMAL,
 		          "Probable source loop in configuration files");
-		return (-1);
+		return -1;
 	}
 
 	if (!(fp=open_file(name, 1, OF_VERBOSE)))
@@ -88,7 +83,7 @@ static int read_config_file(const char *name)
 		w.push_back(strtok(tmp, " \t\r\n\240"));
 		if (!w[0] || (*w[0]=='#')) continue;
 		while (w.back() && w.size() < MAXWORDS)
-			w.push_back(strtok(0," \t\r\n\240"));
+			w.push_back(strtok(nullptr," \t\r\n\240"));
 		if (!strcmp(w[0], "dir"))
 		{
 			if (w.size() < 2)
@@ -183,7 +178,7 @@ static int read_config_file(const char *name)
 			bank=tonebank[i];
 		}
 		else {
-			if ((w.size() < 2) || (*w[0] < '0' || *w[0] > '9'))
+			if ((w.size() < 2) || !std::isdigit(static_cast<unsigned char>(*w[0])))
 			{
 				ctl->cmsg(CMSG_ERROR, VERB_NORMAL,
 				          "%s: line %d: syntax error\n", name, line);
@@ -229,7 +224,7 @@ static int read_config_file(const char *name)
 				if (!strcmp(w[j], "amp"))
 				{
 					int k=atoi(cp);
-					if ((k<0 || k>MAX_AMPLIFICATION) || (*cp < '0' || *cp > '9'))
+					if ((k<0 || k>MAX_AMPLIFICATION) || !std::isdigit(static_cast<unsigned char>(*cp)))
 					{
 						ctl->cmsg(CMSG_ERROR, VERB_NORMAL,
 						          "%s: line %d: amplification must be between "
@@ -242,7 +237,7 @@ static int read_config_file(const char *name)
 				else if (!strcmp(w[j], "note"))
 				{
 					int k=atoi(cp);
-					if ((k<0 || k>127) || (*cp < '0' || *cp > '9'))
+					if ((k<0 || k>127) || !std::isdigit(static_cast<unsigned char>(*cp)))
 					{
 						ctl->cmsg(CMSG_ERROR, VERB_NORMAL,
 						          "%s: line %d: note must be between 0 and 127\n",
@@ -264,7 +259,7 @@ static int read_config_file(const char *name)
 					else
 						k=((atoi(cp)+100) * 100) / 157;
 					if ((k<0 || k>127) ||
-					    (k==0 && *cp!='-' && (*cp < '0' || *cp > '9')))
+					    (k==0 && *cp!='-' && !std::isdigit(static_cast<unsigned char>(*cp))))
 					{
 						ctl->cmsg(CMSG_ERROR, VERB_NORMAL,
 						          "%s: line %d: panning must be left, right, "
@@ -326,100 +321,25 @@ static int read_config_file(const char *name)
 	return 0;
 }
 
-#if 0
-// not used
-int Timidity_Init(int rate, int format, int channels, int samples)
-{
-	if (read_config_file(CONFIG_FILE)<0) {
-		return(-1);
-	}
-
-	/* Set play mode parameters */
-	play_mode->rate = rate;
-	play_mode->encoding = 0;
-	if ( (format&0xFF) == 16 ) {
-		play_mode->encoding |= PE_16BIT;
-	}
-	if ( (format&0x8000) ) {
-		play_mode->encoding |= PE_SIGNED;
-	}
-	if ( channels == 1 ) {
-		play_mode->encoding |= PE_MONO;
-	}
-	switch (format) {
-		case AUDIO_S8:
-			s32tobuf = s32tos8;
-			break;
-		case AUDIO_U8:
-			s32tobuf = s32tou8;
-			break;
-		case AUDIO_S16LSB:
-			s32tobuf = s32tos16l;
-			break;
-		case AUDIO_S16MSB:
-			s32tobuf = s32tos16b;
-			break;
-		case AUDIO_U16LSB:
-			s32tobuf = s32tou16l;
-			break;
-		case AUDIO_U16MSB:
-			s32tobuf = s32tou16b;
-			break;
-		default:
-			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Unsupported audio format");
-			return(-1);
-	}
-	AUDIO_BUFFER_SIZE = samples;
-
-	/* Allocate memory for mixing (WARNING:  Memory leak!) */
-	resample_buffer = safe_Malloc<sample_t>(AUDIO_BUFFER_SIZE);
-	common_buffer = safe_Malloc<sint32>(AUDIO_BUFFER_SIZE*2);
-
-	init_tables();
-
-	if (ctl->open(0, 0)) {
-		ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Couldn't open %s\n", ctl->id_name);
-		return(-1);
-	}
-
-	if (!control_ratio) {
-		control_ratio = play_mode->rate / CONTROLS_PER_SECOND;
-		if(control_ratio<1)
-			control_ratio=1;
-		else if (control_ratio > MAX_CONTROL_RATIO)
-			control_ratio=MAX_CONTROL_RATIO;
-	}
-	if (*def_instr_name)
-		set_default_instrument(def_instr_name);
-	return(0);
-}
-#endif
-
 int Timidity_Init_Simple(int rate, int samples, sint32 encoding)
 {
 	std::string configfile;
 	/* see if the pentagram config file specifies an alternate timidity.cfg */
-#ifndef PENTAGRAM_IN_EXULT
-	SettingManager* settings = SettingManager::get_instance();
-	if (!settings->get("timiditycfg", configfile))
-		configfile = CONFIG_FILE;
-#else
 	config->value("config/audio/midi/timiditycfg", configfile, CONFIG_FILE);
-#endif
 
 	if (read_config_file(configfile.c_str())<0) {
-		return(-1);
+		return -1;
 	}
 
 	/* Check to see if the encoding is 'valid' */
 
 	// Only 16 bit can be byte swapped
 	if ((encoding & PE_BYTESWAP) && !(encoding & PE_16BIT))
-		return(-1);
+		return -1;
 
 	// u-Law can only be mono or stereo
 	if ((encoding & PE_ULAW) && (encoding & ~(PE_ULAW|PE_MONO)))
-		return(-1);
+		return -1;
 
 	/* Set play mode parameters */
 	play_mode->rate = rate;
@@ -462,7 +382,7 @@ int Timidity_Init_Simple(int rate, int samples, sint32 encoding)
 
 		default:
 			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Unsupported audio format");
-			return(-1);
+			return -1;
 	}
 
 	AUDIO_BUFFER_SIZE = samples;
@@ -475,7 +395,7 @@ int Timidity_Init_Simple(int rate, int samples, sint32 encoding)
 
 	if (ctl->open(0, 0)) {
 		ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Couldn't open %s\n", ctl->id_name);
-		return(-1);
+		return -1;
 	}
 
 	if (!control_ratio) {
@@ -487,7 +407,7 @@ int Timidity_Init_Simple(int rate, int samples, sint32 encoding)
 	}
 	if (*def_instr_name)
 		set_default_instrument(def_instr_name);
-	return(0);
+	return 0;
 }
 
 void Timidity_DeInit()
@@ -495,17 +415,17 @@ void Timidity_DeInit()
 	free_instruments();
 
 	free(resample_buffer);
-	resample_buffer = 0;
+	resample_buffer = nullptr;
 
 	free(common_buffer);
-	common_buffer = 0;
+	common_buffer = nullptr;
 }
 
 
 char timidity_error[1024] = "";
-char *Timidity_Error(void)
+char *Timidity_Error()
 {
-	return(timidity_error);
+	return timidity_error;
 }
 
 #ifdef NS_TIMIDITY

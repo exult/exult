@@ -19,6 +19,7 @@
 #ifndef MENULIST_H
 #define MENULIST_H
 
+#include <memory>
 #include <string>
 #include <vector>
 #include "SDL_events.h"
@@ -30,15 +31,14 @@ class Mouse;
 
 class MenuObject {
 private:
-	bool has_id;
-	int id;
+	bool has_id = false;
+	int id = 0;
 public:
 	int x, y, x1, y1, x2, y2;
 	bool selected;
 	bool dirty;
 
-	MenuObject() : has_id(false), id(0) { }
-	virtual ~MenuObject() { }
+	virtual ~MenuObject() = default;
 
 	void set_selected(bool sel) {
 		dirty |= (selected != sel);
@@ -48,7 +48,7 @@ public:
 		return selected;
 	}
 	bool is_mouse_over(int mx, int my) {
-		return ((mx >= x1) && (mx <= x2) && (my >= y1) && (my <= y2));
+		return (mx >= x1) && (mx <= x2) && (my >= y1) && (my <= y2);
 	}
 
 	virtual void paint(Game_window *gwin) = 0;
@@ -75,27 +75,25 @@ class MenuEntry: public MenuObject {
 public:
 	Shape_frame *frame_on, *frame_off;
 	MenuEntry(Shape_frame *on, Shape_frame *off, int xpos, int ypos);
-	virtual ~MenuEntry() { }
 
-	virtual void paint(Game_window *gwin);
-	virtual bool handle_event(SDL_Event &event);
+	void paint(Game_window *gwin) override;
+	bool handle_event(SDL_Event &event) override;
 };
 
 class MenuTextObject: public MenuObject {
 public:
 	Font *font;
 	Font *font_on;
-	const char *text;
-	MenuTextObject() : text(0) {}
-	virtual ~MenuTextObject() {
-		delete [] text;
+	std::string text;
+	MenuTextObject(Font *fnt, Font *fnton, std::string txt)
+		: font(fnt), font_on(fnton), text(std::move(txt)) {
 	}
 
 	virtual int get_height() {
-		return (y2 - y1);
+		return y2 - y1;
 	}
-	virtual void paint(Game_window *gwin) = 0;
-	virtual bool handle_event(SDL_Event &event) = 0;
+	void paint(Game_window *gwin) override = 0;
+	bool handle_event(SDL_Event &event) override = 0;
 };
 
 class MenuTextEntry: public MenuTextObject {
@@ -103,26 +101,9 @@ private:
 	bool enabled;
 public:
 	MenuTextEntry(Font *fnton, Font *fnt, const char *txt, int xpos, int ypos);
-	virtual ~MenuTextEntry() { }
 
-	virtual void paint(Game_window *gwin);
-	virtual bool handle_event(SDL_Event &event);
-	void set_enabled(bool en) {
-		enabled = en;
-	}
-};
-
-class MenuGameEntry: public MenuTextEntry {
-private:
-	Shape_frame *sfxicon;
-	bool enabled;
-public:
-	MenuGameEntry(Font *fnton, Font *fnt, const char *txt, Shape_frame *sfx,
-	              int xpos, int ypos);
-	virtual ~MenuGameEntry() { }
-
-	virtual void paint(Game_window *gwin);
-	virtual bool handle_event(SDL_Event &event);
+	void paint(Game_window *gwin) override;
+	bool handle_event(SDL_Event &event) override;
 	bool is_enabled() const {
 		return enabled;
 	}
@@ -131,16 +112,24 @@ public:
 	}
 };
 
+class MenuGameEntry: public MenuTextEntry {
+private:
+	Shape_frame *sfxicon;
+public:
+	MenuGameEntry(Font *fnton, Font *fnt, const char *txt, Shape_frame *sfx,
+	              int xpos, int ypos);
+
+	void paint(Game_window *gwin) override;
+	bool handle_event(SDL_Event &event) override;
+};
+
 class MenuTextChoice: public MenuTextObject {
 private:
-	std::vector<std::string> *choices;
+	std::vector<std::string> choices;
 	int choice;
 	int max_choice_width;
 public:
 	MenuTextChoice(Font *fnton, Font *fnt, const char *txt, int xpos, int ypos);
-	virtual ~MenuTextChoice() {
-		delete choices;
-	}
 	void add_choice(const char *s);
 	int get_choice() {
 		return choice;
@@ -149,30 +138,22 @@ public:
 		choice = c;
 	}
 
-	virtual void paint(Game_window *gwin);
-	virtual bool handle_event(SDL_Event &event);
+	void paint(Game_window *gwin) override;
+	bool handle_event(SDL_Event &event) override;
 };
 
 class MenuList {
 private:
-	Shape_frame *bg;    // For OpenGL.
-	std::vector<MenuObject *> *entries;
-	bool selected;
-	int selection;
+	std::vector<std::unique_ptr<MenuObject>> entries;
+	bool selected = false;
+	int selection = 0;
 public:
-	MenuList(): bg(0), selected(false), selection(0) {
-		entries = new std::vector<MenuObject *>();
-	}
-	~MenuList();
 	int add_entry(MenuObject *entry) {
-		entries->push_back(entry);
-		return (entries->size() - 1);
+		entries.emplace_back(entry);
+		return entries.size() - 1;
 	}
 	void paint(Game_window *gwin);
 	int handle_events(Game_window *gwin, Mouse *mouse);
-	void set_background(Shape_frame *b) {
-		bg = b;
-	}
 	int get_selection() {
 		return selection;
 	}

@@ -14,63 +14,6 @@ using std::istringstream;
 
 const char *ss_data = "A BC DE FGHI JKLM NO\0";
 
-#if 0 // just used temporarially for some optimisation tests.
-inline uint8 Read1diff(
-    std::istream &in
-) {
-	return static_cast<uint8>(in.get());
-}
-
-inline uint32 Read4diff(
-    std::istream &in
-) {
-	return static_cast<uint32>(in.get() | (in.get() << 8) | (in.get() << 16) | (in.get() << 24));
-}
-
-#include <sys/time.h>
-#include <fstream>
-
-void speedtest() {
-	timeval tvstart;
-	timeval tvend;
-	timeval tvstart_diff;
-	timeval tvend_diff;
-
-	std::ifstream file("random");
-	assert(!file.fail());
-
-	gettimeofday(&tvstart, NULL);
-
-	while (!file.eof())
-		uint8 ui8 = Read4(file);
-
-	gettimeofday(&tvend, NULL);
-
-	//-------------------------
-
-	std::ifstream file_diff("random");
-	assert(!file_diff.fail());
-
-	gettimeofday(&tvstart_diff, NULL);
-
-	while (!file_diff.eof())
-		uint8 ui8 = Read4diff(file_diff);
-
-	gettimeofday(&tvend_diff, NULL);
-
-	cout << tvstart.tv_sec << '\t' << tvstart.tv_usec << endl;
-	cout << tvend.tv_sec << '\t' << tvend.tv_usec << endl;
-	cout << "---------------------" << endl;
-	cout << tvend.tv_sec - tvstart.tv_sec << '\t' << tvend.tv_usec - tvstart.tv_usec << endl;
-	cout << endl;
-	cout << tvstart_diff.tv_sec << '\t' << tvstart_diff.tv_usec << endl;
-	cout << tvend_diff.tv_sec << '\t' << tvend_diff.tv_usec << endl;
-	cout << "---------------------" << endl;
-	cout << tvend_diff.tv_sec - tvstart_diff.tv_sec << '\t' << tvend_diff.tv_usec - tvstart_diff.tv_usec << endl;
-	cout << endl;
-}
-#endif
-
 int main() {
 	istringstream iss(ss_data);
 

@@ -182,7 +182,7 @@ static void Npc_actor_io(
     short &ident,
     int &usecode,
     std::string &usecodefun,
-    int *properties,        // Must have room for 12.
+    int (&properties)[12],        // Must have room for 12.
     short &attack_mode,
     short &alignment,
     unsigned long &oflags,      // Object flags.
@@ -230,10 +230,10 @@ int Object_out(
 /*
  *  Decode an object.
  *
- *  Output: 0 if unsuccessful.
+ *  Output: false if unsuccessful.
  */
 
-int Object_in(
+bool Object_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     Game_object *&addr,        // Address.
@@ -276,10 +276,10 @@ int Container_out(
 /*
  *  Decode a container object.
  *
- *  Output: 0 if unsuccessful.
+ *  Output: false if unsuccessful.
  */
 
-int Container_in(
+bool Container_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     Container_game_object *&addr,        // Address.
@@ -323,10 +323,10 @@ int Barge_object_out(
 /*
  *  Decode an barge object.
  *
- *  Output: 0 if unsuccessful.
+ *  Output: false if unsuccessful.
  */
 
-int Barge_object_in(
+bool Barge_object_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     Barge_object *&addr,        // Address.
@@ -378,10 +378,10 @@ int Egg_object_out(
 /*
  *  Decode an egg object.
  *
- *  Output: 0 if unsuccessful.
+ *  Output: false if unsuccessful.
  */
 
-int Egg_object_in(
+bool Egg_object_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     Egg_object *&addr,        // Address.
@@ -423,7 +423,7 @@ int Npc_actor_out(
     short ident,
     int usecode,
     std::string usecodefun,
-    int properties[12],
+    int (&properties)[12],
     short attack_mode,
     short alignment,
     unsigned long oflags,       // Object flags.
@@ -446,10 +446,10 @@ int Npc_actor_out(
 /*
  *  Decode an npc object.
  *
- *  Output: 0 if unsuccessful.
+ *  Output: false if unsuccessful.
  */
 
-int Npc_actor_in(
+bool Npc_actor_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     Actor *&addr,        // Address.
@@ -460,7 +460,7 @@ int Npc_actor_in(
     short &ident,
     int &usecode,
     std::string &usecodefun,
-    int properties[12],
+    int (&properties)[12],
     short &attack_mode,
     short &alignment,
     unsigned long &oflags,      // Object flags.
@@ -525,10 +525,10 @@ int Game_info_out(
 /*
  *  Decode game info.
  *
- *  Output: 0 if unsuccessful.
+ *  Output: false if unsuccessful.
  */
 
-int Game_info_in(
+bool Game_info_in(
     const unsigned char *data,        // Data that was read.
     int datalen,            // Length of data.
     int &version,           // Server/client version.

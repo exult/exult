@@ -16,8 +16,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef _GUMP_H_
-#define _GUMP_H_
+#ifndef GUMP_H
+#define GUMP_H
 
 #include <vector>
 #include "exceptions.h"
@@ -37,14 +37,14 @@ class Gump_widget;
  *  A gump contains an image of an open container from "gumps.vga".
  */
 class Gump : public ShapeID, public Paintable {
-	UNREPLICATABLE_CLASS_I(Gump, ShapeID())
+	UNREPLICATABLE_CLASS(Gump)
 
 protected:
-	Gump() : ShapeID() {   }
+	Gump() = default;
 	Container_game_object *container;// What this gump shows.
 	int x, y;           // Location on screen.
 	Rectangle object_area;      // Area to paint objects in, rel. to
-	typedef std::vector<Gump_widget *> Gump_elems;
+	using Gump_elems = std::vector<Gump_widget *>;
 	Gump_elems elems;       // Includes 'checkmark'.
 	bool handles_kbd;       // Kbd can be handled by gump.
 	void set_object_area(Rectangle const &area, int checkx, int checky);
@@ -63,10 +63,10 @@ public:
 	     ShapeFile shfile = SF_GUMPS_VGA);
 	// Clone.
 	Gump(Container_game_object *cont, int initx, int inity, Gump *from);
-	virtual ~Gump();
+	~Gump() override;
 	virtual Gump *clone(Container_game_object *obj, int initx, int inity) {
 		ignore_unused_variable_warning(obj, initx, inity);
-		return 0;
+		return nullptr;
 	}
 	int get_x() {       // Get coords.
 		return x;
@@ -84,7 +84,7 @@ public:
 	}
 	virtual Container_game_object *find_actor(int mx, int my) {
 		ignore_unused_variable_warning(mx, my);
-		return 0;
+		return nullptr;
 	}
 	bool can_handle_kbd() const {
 		return handles_kbd;
@@ -105,13 +105,13 @@ public:
 	// Is a given point on a button?
 	virtual Gump_button *on_button(int mx, int my);
 	// Paint button.
-	virtual int add(Game_object *obj, int mx = -1, int my = -1,
+	virtual bool add(Game_object *obj, int mx = -1, int my = -1,
 	                int sx = -1, int sy = -1, bool dont_check = false,
 	                bool combine = false);
 	virtual void remove(Game_object *obj);
 	// Paint it and its contents.
 	void paint_elems();
-	virtual void paint();
+	void paint() override;
 	// Close (and delete).
 	virtual void close();
 	// update the gump, if required
@@ -144,7 +144,7 @@ public:
  *  A generic gump used by generic containers:
  */
 class Container_gump : public Gump {
-	UNREPLICATABLE_CLASS_I(Container_gump, Gump())
+	UNREPLICATABLE_CLASS(Container_gump)
 
 	void initialize(int shnum);     // Initialize object_area.
 
@@ -166,8 +166,7 @@ public:
 		: Gump(cont, initx, inity, this) {
 		ignore_unused_variable_warning(from);
 	}
-	virtual ~Container_gump() {  }
-	virtual Gump *clone(Container_game_object *cont, int initx, int inity) {
+	Gump *clone(Container_game_object *cont, int initx, int inity) override {
 		return new Container_gump(cont, initx, inity, this);
 	}
 };

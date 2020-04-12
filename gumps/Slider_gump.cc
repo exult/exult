@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#include "sdl-compat.h"
 #include "SDL_events.h"
 #include "SDL_keyboard.h"
 #include "game.h"
@@ -55,7 +54,7 @@ public:
 		: Gump_button(par, shapenum, px, py), is_left(left)
 	{  }
 	// What to do when 'clicked':
-	virtual bool activate(int button = 1);
+	bool activate(int button = 1) override;
 };
 
 /*
@@ -97,7 +96,7 @@ Slider_gump::Slider_gump(
     int mival, int mxval,       // Value range.
     int step,           // Amt. to change by.
     int defval          // Default value.
-) : Modal_gump(0, game->get_shape("gumps/slider")),
+) : Modal_gump(nullptr, game->get_shape("gumps/slider")),
 	min_val(mival), max_val(mxval), step_val(step),
 	val(defval), dragging(0), prev_dragx(0) {
 	diamond = ShapeID(game->get_shape("gumps/slider_diamond"), 0, SF_GUMPS_VGA);
@@ -116,14 +115,6 @@ Slider_gump::Slider_gump(
 	else if (defval > max_val)
 		defval = max_val;
 	set_val(defval);
-}
-
-/*
- *  Delete slider.
- */
-
-Slider_gump::~Slider_gump(
-) {
 }
 
 /*
@@ -160,7 +151,8 @@ void Slider_gump::move_diamond(int dir) {
 
 void Slider_gump::paint(
 ) {
-	const int textx = 128, texty = 7;
+	const int textx = 128;
+	const int texty = 7;
 	// Paint the gump itself.
 	paint_shape(x, y);
 	// Paint red "checkmark".
@@ -186,9 +178,9 @@ bool Slider_gump::mouse_down(
 	if (btn)
 		pushed = btn;
 	else
-		pushed = 0;
+		pushed = nullptr;
 	if (pushed) {
-		if (!pushed->push(button)) pushed = 0;
+		if (!pushed->push(button)) pushed = nullptr;
 		return true;
 	}
 	// See if on diamond.
@@ -236,7 +228,7 @@ bool Slider_gump::mouse_up(
 	pushed->unpush(button);
 	if (pushed->on_button(mx, my))
 		pushed->activate(button);
-	pushed = 0;
+	pushed = nullptr;
 
 	return true;
 }
@@ -275,7 +267,7 @@ void Slider_gump::key_down(int chr) {
 	switch (chr) {
 	case SDLK_RETURN:
 	case SDLK_KP_ENTER:
-		done = 1;
+		done = true;
 		break;
 	case SDLK_LEFT:
 		clicked_left_arrow();
@@ -287,7 +279,7 @@ void Slider_gump::key_down(int chr) {
 }
 
 void Slider_gump::mousewheel_up() {
-	SDLMod mod = SDL_GetModState();
+	SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT)
 		move_diamond(-10 * step_val);
 	else
@@ -295,7 +287,7 @@ void Slider_gump::mousewheel_up() {
 }
 
 void Slider_gump::mousewheel_down() {
-	SDLMod mod = SDL_GetModState();
+	SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT)
 		move_diamond(10 * step_val);
 	else

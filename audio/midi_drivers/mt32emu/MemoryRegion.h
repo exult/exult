@@ -80,7 +80,7 @@ public:
 		return 0;
 	}
 	Bit8u getMaxValue(int off) const {
-		if (maxTable == NULL)
+		if (maxTable == nullptr)
 			return 0xFF;
 		return maxTable[off % entrySize];
 	}
@@ -88,7 +88,7 @@ public:
 		return realMemory;
 	}
 	bool isReadable() const {
-		return getRealMemory() != NULL;
+		return getRealMemory() != nullptr;
 	}
 	void read(unsigned int entry, unsigned int off, Bit8u *dst, unsigned int len) const;
 	void write(unsigned int entry, unsigned int off, const Bit8u *src, unsigned int len, bool init = false) const;
@@ -120,11 +120,11 @@ public:
 };
 class DisplayMemoryRegion : public MemoryRegion {
 public:
-	DisplayMemoryRegion(Synth *useSynth) : MemoryRegion(useSynth, NULL, NULL, MR_Display, MT32EMU_MEMADDR(0x200000), SYSEX_BUFFER_SIZE - 1, 1) {}
+	DisplayMemoryRegion(Synth *useSynth) : MemoryRegion(useSynth, nullptr, nullptr, MR_Display, MT32EMU_MEMADDR(0x200000), SYSEX_BUFFER_SIZE - 1, 1) {}
 };
 class ResetMemoryRegion : public MemoryRegion {
 public:
-	ResetMemoryRegion(Synth *useSynth) : MemoryRegion(useSynth, NULL, NULL, MR_Reset, MT32EMU_MEMADDR(0x7F0000), 0x3FFF, 1) {}
+	ResetMemoryRegion(Synth *useSynth) : MemoryRegion(useSynth, nullptr, nullptr, MR_Reset, MT32EMU_MEMADDR(0x7F0000), 0x3FFF, 1) {}
 };
 
 } // namespace MT32Emu

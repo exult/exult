@@ -45,6 +45,7 @@ using std::strcpy;
 using std::strcat;
 using std::strlen;
 using std::string;
+using std::vector;
 
 void yyerror(const char *);
 void yywarning(const char *);
@@ -70,13 +71,13 @@ static Uc_call_expression *cls_function_call(Uc_expression *ths,
 
 std::vector<Uc_design_unit *> units;	// THIS is what we produce.
 
-static Uc_function *cur_fun = 0;	// Current function being parsed.
-static Uc_class *cur_class = 0;		// ...or, current class being parsed.
-static Uc_struct_symbol *cur_struct = 0;		// ...or, current struct being parsed.
+static Uc_function *cur_fun = nullptr;	// Current function being parsed.
+static Uc_class *cur_class = nullptr;		// ...or, current class being parsed.
+static Uc_struct_symbol *cur_struct = nullptr;		// ...or, current struct being parsed.
 static int enum_val = -1;		// Keeps track of enum elements.
 static bool is_extern = false;	// Marks a function symbol as being an extern
-static Uc_class *class_type = 0;	// For declaration of class variables.
-static Uc_struct_symbol *struct_type = 0;	// For declaration of struct variables.
+static Uc_class *class_type = nullptr;	// For declaration of class variables.
+static Uc_struct_symbol *struct_type = nullptr;	// For declaration of struct variables.
 static bool has_ret = false;
 static int repeat_nesting = 0;
 static std::vector<UsecodeOps> const_opcode;
@@ -245,7 +246,7 @@ class_definition:
 		units.push_back(cur_class);
 		// Add to 'globals' symbol table.
 		(void) Uc_class_symbol::create($2, cur_class);
-		cur_class = 0;
+		cur_class = nullptr;
 		}
 	;
 
@@ -253,7 +254,7 @@ opt_inheritance:
 	':' defined_class
 		{ $$ = $2; }
 	|				/* Empty */
-		{ $$ = 0; }
+		{ $$ = nullptr; }
 	;
 
 class_item_list:
@@ -267,11 +268,11 @@ class_item:
 	| VAR alias_tok IDENTIFIER '=' declared_var ';'
 		{ cur_class->add_alias($3, $5); }
 	| STRUCT '<' defined_struct '>' { struct_type = $3; } class_struct_def
-		{ struct_type = 0; }
+		{ struct_type = nullptr; }
 	| STRUCT '<' defined_struct '>' alias_tok IDENTIFIER '=' declared_var ';'
 		{ cur_class->add_alias($6, $8, $3); }
 	| CLASS '<' defined_class '>' { class_type = $3; } method
-		{ class_type = 0; }
+		{ class_type = nullptr; }
 	| opt_void method
 	;
 
@@ -303,15 +304,15 @@ method:
 		else if (struct_type)
 			funsym->set_ret_type(struct_type);
 		has_ret = false;
-		class_type = 0;
-		struct_type = 0;
+		class_type = nullptr;
+		struct_type = nullptr;
 
 		cur_fun = new Uc_function(funsym, cur_class->get_scope());
 		}
 	function_body
 		{
 		cur_class->add_method(cur_fun);
-		cur_fun = 0;
+		cur_fun = nullptr;
 		}
 	;
 
@@ -322,7 +323,7 @@ struct_definition:
 		{
 		// Add to 'globals' symbol table.
 		Uc_function::add_global_struct_symbol(cur_struct);
-		cur_struct = 0;
+		cur_struct = nullptr;
 		}
 	;
 
@@ -345,7 +346,7 @@ function:
 	function_body
 		{
 		units.push_back(cur_fun);
-		cur_fun = 0;
+		cur_fun = nullptr;
 		}
 	;
 
@@ -382,7 +383,7 @@ function_proto:
 				yyerror(buf);
 				}
 			}
-		$$ = Uc_function_symbol::create($2, $4->id, *$6, is_extern, 0, $4->kind);
+		$$ = Uc_function_symbol::create($2, $4->id, *$6, is_extern, nullptr, $4->kind);
 		if (has_ret)
 			$$->set_ret_type(true);
 		else if (struct_type)
@@ -390,11 +391,11 @@ function_proto:
 		delete $6;		// A copy was made.
 		delete $4;
 		has_ret = false;
-		struct_type = 0;
+		struct_type = nullptr;
 		}
 	| CLASS '<' defined_class '>' IDENTIFIER opt_int '(' opt_param_list ')'
 		{
-		$$ = Uc_function_symbol::create($5, $6, *$8, is_extern, 0,
+		$$ = Uc_function_symbol::create($5, $6, *$8, is_extern, nullptr,
 				Uc_function_symbol::utility_fun);
 		$$->set_ret_type($3);
 		delete $8;		// A copy was made.
@@ -433,7 +434,7 @@ const_int_val:
 			yyerror(buf);
 			$$ = -1;
 			}
-		else if ((var = dynamic_cast<Uc_const_int_symbol *>(sym)) == 0)
+		else if ((var = dynamic_cast<Uc_const_int_symbol *>(sym)) == nullptr)
 			{
 			sprintf(buf, "'%s' is not a constant integer", $1);
 			yyerror(buf);
@@ -519,7 +520,7 @@ statement:
 	| throwabort_statement expression ';'
 		{ $$ = new Uc_abort_statement($2); }
 	| ';'				/* Null statement */
-		{ $$ = 0; }
+		{ $$ = nullptr; }
 	;
 
 throwabort_statement:
@@ -536,13 +537,13 @@ stmt_declaration:
 	VAR var_decl_list ';'
 		{ $$ = $2; }
 	| VAR alias_tok IDENTIFIER '=' declared_var ';'
-		{ cur_fun->add_alias($3, $5); $$ = 0; }
+		{ cur_fun->add_alias($3, $5); $$ = nullptr; }
 	| STRUCT '<' defined_struct '>' { struct_type = $3; } struct_decl_list ';'
-		{ struct_type = 0; $$ = $6; }
+		{ struct_type = nullptr; $$ = $6; }
 	| STRUCT '<' defined_struct '>' alias_tok IDENTIFIER '=' declared_var ';'
-		{ cur_fun->add_alias($6, $8, $3); $$ = 0; }
+		{ cur_fun->add_alias($6, $8, $3); $$ = nullptr; }
 	| CLASS '<' defined_class '>' { class_type = $3; } class_decl_list ';'
-		{ class_type = 0; $$ = $6; }
+		{ class_type = nullptr; $$ = $6; }
 	| CLASS '<' defined_class '>' alias_tok IDENTIFIER '=' declared_var ';'
 		{
 		if (!$8->get_cls())
@@ -550,23 +551,23 @@ stmt_declaration:
 		else if (!Incompatible_classes_error($8->get_cls(), $3))
 				// Alias may be of different (compatible) class.
 			cur_fun->add_alias($6, $8, $3);
-		$$ = 0;
+		$$ = nullptr;
 		}
 	| STRING string_decl_list ';'
-		{ $$ = 0; }
+		{ $$ = nullptr; }
 	| const_int_decl
-		{ $$ = 0; }
+		{ $$ = nullptr; }
 	| enum_decl
-		{ $$ = 0; }
+		{ $$ = nullptr; }
 	| function_decl
 		{
 		if (!cur_fun->add_function_symbol($1, cur_class ?
-				cur_class->get_scope() : 0))
+				cur_class->get_scope() : nullptr))
 			delete $1;
-		$$ = 0;
+		$$ = nullptr;
 		}
 	| static_decl
-		{ $$ = 0; }
+		{ $$ = nullptr; }
 	;
 
 var_decl_list:
@@ -670,7 +671,7 @@ var_decl:
 			cur_fun->add_symbol($1);
 		else
 			cur_class->add_symbol($1);
-		$$ = 0;
+		$$ = nullptr;
 		}
 	| IDENTIFIER '=' nonclass_expr
 		{
@@ -679,7 +680,7 @@ var_decl:
 			char buf[180];
 			sprintf(buf, "Initialization of class member var '%s' must be done through constructor", $1);
 			yyerror(buf);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else
 			{
@@ -722,17 +723,17 @@ class_decl:
 		else
 			// Unsupported for now
 			{   }
-		$$ = 0;
+		$$ = nullptr;
 		}
 	| IDENTIFIER '=' class_expr
 		{
 		if (!class_type || !$3 || Nonclass_unexpected_error($3))
-			$$ = 0;
+			$$ = nullptr;
 		else
 			{
 			Uc_class *src = $3->get_cls();
 			if (Incompatible_classes_error(src, class_type))
-				$$ = 0;
+				$$ = nullptr;
 			else
 				{
 				Uc_var_symbol *v = cur_fun->add_symbol($1, class_type);
@@ -772,7 +773,7 @@ struct_decl:
 			cur_fun->add_symbol($1, struct_type);
 		else
 			cur_class->add_symbol($1, struct_type);
-		$$ = 0;
+		$$ = nullptr;
 		}
 	| IDENTIFIER '=' nonclass_expr
 		{
@@ -781,7 +782,7 @@ struct_decl:
 			char buf[180];
 			sprintf(buf, "Initialization of class member struct '%s' must be done through constructor", $1);
 			yyerror(buf);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else
 			{
@@ -806,14 +807,14 @@ class_expr:
 			sprintf(buf, "'%s' not declared", $1);
 			yyerror(buf);
 			cur_fun->add_symbol($1);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else if (sym->get_sym_type() != Uc_symbol::Class)
 			{
 			char buf[150];
 			sprintf(buf, "'%s' not a class", $1);
 			yyerror(buf);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else
 			{
@@ -834,11 +835,11 @@ static_decl:
 	| STATIC_ STRUCT '<' defined_struct '>'
 		{ struct_type = $4; }
 		static_struct_var_decl_list ';'
-		{ struct_type = 0; }
+		{ struct_type = nullptr; }
 	| STATIC_ CLASS '<' defined_class '>'
 		{ class_type = $4; }
 		static_cls_decl_list ';'
-		{ class_type = 0; }
+		{ class_type = nullptr; }
 	;
 
 static_var_decl_list:
@@ -910,13 +911,13 @@ assignment_statement:
 		if ($1->is_class())
 			{
 			if (Nonclass_unexpected_error($3))
-				$$ = 0;
+				$$ = nullptr;
 			else
 				{
 				Uc_class *trg = $1->get_cls();
 				Uc_class *src = $3->get_cls();
 				if (Incompatible_classes_error(src, trg))
-					$$ = 0;
+					$$ = nullptr;
 				else
 					{
 					$1->set_is_obj_fun($3->is_object_function(false));
@@ -925,7 +926,7 @@ assignment_statement:
 				}
 			}
 		else if (Class_unexpected_error($3))
-			$$ = 0;
+			$$ = nullptr;
 		else
 			{
 			$1->set_is_obj_fun($3->is_object_function(false));
@@ -992,12 +993,12 @@ if_statement:
 			else
 				{	// Need this because of those pesky GOTOs...
 				$3->warning("'if' clause may never be executed");
-				$$ = new Uc_if_statement(0, $5, 0);
+				$$ = new Uc_if_statement(nullptr, $5, nullptr);
 				}
 			delete $3;
 			}
 		else
-			$$ = new Uc_if_statement($3, $5, 0);
+			$$ = new Uc_if_statement($3, $5, nullptr);
 		}
 	| IF '(' expression ')' statement ELSE statement
 		{
@@ -1014,7 +1015,7 @@ if_statement:
 				{
 					// Need this because of those pesky GOTOs...
 				$3->warning("'if' clause may never be executed");
-				$$ = new Uc_if_statement(0, $5, $7);
+				$$ = new Uc_if_statement(nullptr, $5, $7);
 				}
 			delete $3;
 			}
@@ -1065,7 +1066,7 @@ while_statement:
 			else
 				{	// Need this because of those pesky GOTOs...
 				$3->warning("Body of 'while' statement may never be executed");
-				$$ = new Uc_while_statement(0, $6);
+				$$ = new Uc_while_statement(nullptr, $6);
 				}
 			delete $3;
 			}
@@ -1197,7 +1198,7 @@ opt_delay:
 	',' nonclass_expr
 		{ $$ = $2; }
 	|				/* Empty */
-		{ $$ = 0; }
+		{ $$ = nullptr; }
 	;
 
 return_statement:
@@ -1209,7 +1210,7 @@ return_statement:
 			sprintf(buf, "Function '%s' can't return a value",
 					cur_fun->get_name());
 			yyerror(buf);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else
 			{
@@ -1232,11 +1233,11 @@ return_statement:
 							src ? "class " : "",
 							src ? src->get_name() : "var");
 					yyerror(buf);
-					$$ = 0;
+					$$ = nullptr;
 					}
 				}
 			else if (Incompatible_classes_error(src, trg))
-				$$ = 0;
+				$$ = nullptr;
 			else
 				$$ = new Uc_return_statement($2);
 			}
@@ -1250,7 +1251,7 @@ return_statement:
 			sprintf(buf, "Function '%s' must return a '%s'",
 					cur_fun->get_name(), cls ? cls->get_name() : "var");
 			yyerror(buf);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else
 			$$ = new Uc_return_statement();
@@ -1269,7 +1270,7 @@ converse_statement:
 		{
 		end_loop();
 		--converse;
-		$$ = new Uc_converse_statement(0, $3, false);
+		$$ = new Uc_converse_statement(nullptr, $3, false);
 		}
 
 	| start_conv opt_nest '(' expression ')' '{' converse_case_list '}'
@@ -1277,7 +1278,7 @@ converse_statement:
 		end_loop();
 		--converse;
 		if (Class_unexpected_error($4))
-			$$ = 0;
+			$$ = nullptr;
 		else
 			$$ = new Uc_converse_statement($4, $7, $2);
 		}
@@ -1376,7 +1377,7 @@ switch_statement:
 			{ start_breakable(); } switch_case_list '}'
 		{
 		if (Class_unexpected_error($4))
-			$$ = 0;
+			$$ = nullptr;
 		else
 			{
 			end_breakable();
@@ -1693,7 +1694,7 @@ opt_script_delay:
 	AFTER nonclass_expr TICKS
 		{ $$ = $2; }
 	|				/* Empty */
-		{ $$ = 0; }
+		{ $$ = nullptr; }
 	;
 
 break_statement:
@@ -1714,7 +1715,7 @@ label_statement:
 			char buf[150];
 			sprintf(buf, "duplicate label: '%s'", $1);
 			yyerror(buf);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else
 			{
@@ -1742,7 +1743,7 @@ delete_statement:
 			char buf[150];
 			sprintf(buf, "'%s' is not a class", $2->get_name());
 			yyerror(buf);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else
 			$$ = new Uc_delete_statement(new Uc_del_expression(cls));
@@ -1784,7 +1785,7 @@ nonclass_expr:
 	expression
 		{
 		if (Class_unexpected_error($1))
-			$$ = 0;
+			$$ = nullptr;
 		else
 			$$ = $1;
 		}
@@ -1815,7 +1816,7 @@ expression:
 		if (!converse)	/* Only valid in converse blocks */
 			{
 			yyerror("'CHOICE' can only be used in a conversation block!");
-			$$ = 0;
+			$$ = nullptr;
 			}
 		$$ = new Uc_choice_expression();
 		}
@@ -1840,14 +1841,14 @@ expression:
 	| '+' primary %prec UPLUS
 		{
 		if (Class_unexpected_error($2))
-			$$ = 0;
+			$$ = nullptr;
 		else
 			$$ = $2;
 		}
 	| '-' primary %prec UMINUS
 		{
 		if (Class_unexpected_error($2))
-			$$ = 0;
+			$$ = nullptr;
 		else
 			$$ = new Uc_binary_expression(UC_SUB,
 				new Uc_int_expression(0), $2);
@@ -1875,7 +1876,7 @@ addressof:
 			char buf[150];
 			sprintf(buf, "'%s' not declared", $2);
 			yyerror(buf);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		Uc_function_symbol *fun = dynamic_cast<Uc_function_symbol *>(sym);
 		if (!fun)	/* See if the symbol is a function */
@@ -1883,7 +1884,7 @@ addressof:
 			char buf[150];
 			sprintf(buf, "'%s' is not a function", $2);
 			yyerror(buf);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else		/* Output the function's assigned number */
 			{
@@ -2039,7 +2040,7 @@ function_call:
 		}
 	| IDENTIFIER opt_original '(' opt_expression_list ')'
 		{
-		$$ = cls_function_call(0, cur_class, $1, $2, $4);
+		$$ = cls_function_call(nullptr, cur_class, $1, $2, $4);
 		}
 	| primary hierarchy_tok defined_class UCC_SCOPE IDENTIFIER '(' opt_expression_list ')'
 		{
@@ -2047,7 +2048,7 @@ function_call:
 		}
 	| defined_class UCC_SCOPE IDENTIFIER '(' opt_expression_list ')'
 		{
-		$$ = cls_method_call(0, cur_class, $1, $3, $5);
+		$$ = cls_method_call(nullptr, cur_class, $1, $3, $5);
 		}
 	| primary hierarchy_tok '(' '*' primary ')' '(' opt_expression_list ')'
 		{
@@ -2057,7 +2058,7 @@ function_call:
 	| '(' '*' primary ')' '(' opt_expression_list ')'
 		{
 		$$ = new Uc_call_expression($3, $6, cur_fun);
-		$$->set_itemref(0);
+		$$->set_itemref(nullptr);
 		}
 	| primary hierarchy_tok '(' '@' int_literal ')' '(' opt_expression_list ')'
 		{
@@ -2065,7 +2066,7 @@ function_call:
 		if (!$5->eval_const(num))
 			{
 			yyerror("Failed to obtain value from integer constant");
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else
 			{
@@ -2081,7 +2082,7 @@ function_call:
 		if (!$3->eval_const(num))
 			{
 			yyerror("Failed to obtain value from integer constant");
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else
 			{
@@ -2157,7 +2158,7 @@ int_literal:				/* A const. integer value.	*/
 			char buf[150];
 			sprintf(buf, "'%s' is not a const int", $1->get_name());
 			yyerror(buf);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else
 			$$ = sym->create_expression();
@@ -2245,7 +2246,7 @@ defined_struct:
 			char buf[150];
 			sprintf(buf, "'%s' not found, or is not a struct.", $1);
 			yyerror(buf);
-			$$ = 0;
+			$$ = nullptr;
 			}
 		else
 			$$ = sym;
@@ -2298,7 +2299,7 @@ static Uc_class *Find_class
 		char buf[150];
 		sprintf(buf, "'%s' not found, or is not a class.", nm);
 		yyerror(buf);
-		return 0;
+		return nullptr;
 		}
 	return csym->get_cls();
 	}
@@ -2350,11 +2351,11 @@ static Uc_call_expression *cls_method_call
 		char buf[150];
 		sprintf(buf, "'%s' requires a class object", nm);
 		yyerror(buf);
-		return 0;
+		return nullptr;
 		}
 
 	if (Incompatible_classes_error(curcls, clsscope))
-		return 0;
+		return nullptr;
 
 	Uc_symbol *sym = clsscope->get_scope()->search(nm);
 	if (!sym)
@@ -2363,7 +2364,7 @@ static Uc_call_expression *cls_method_call
 		sprintf(buf, "Function '%s' is not declared in class '%s'",
 				nm, clsscope->get_name());
 		yyerror(buf);
-		return 0;
+		return nullptr;
 		}
 
 	Uc_function_symbol *fun = dynamic_cast<Uc_function_symbol *>(sym);
@@ -2372,7 +2373,7 @@ static Uc_call_expression *cls_method_call
 		char buf[150];
 		sprintf(buf, "'%s' is not a function", nm);
 		yyerror(buf);
-		return 0;
+		return nullptr;
 		}
 
 	Uc_call_expression *ret =
@@ -2438,7 +2439,7 @@ static Uc_call_expression *cls_function_call
 	Uc_array_expression *parms
 	)
 	{
-	Uc_symbol *sym = 0;
+	Uc_symbol *sym = nullptr;
 	// Check class methods first.
 	if (!ths && curcls)
 		sym = curcls->get_scope()->search(nm);
@@ -2452,7 +2453,7 @@ static Uc_call_expression *cls_function_call
 		if (original && !ths)
 			ths = new Uc_item_expression();
 		if (!Uc_is_valid_calle(sym, ths, nm, original))
-			return 0;
+			return nullptr;
 		}
 
 	// Check for intrinsic name.
@@ -2470,7 +2471,7 @@ static Uc_call_expression *cls_function_call
 		char buf[150];
 		sprintf(buf, "'%s' not declared", nm);
 		yyerror(buf);
-		return 0;
+		return nullptr;
 		}
 	else
 		{

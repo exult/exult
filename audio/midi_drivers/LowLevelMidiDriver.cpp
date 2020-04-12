@@ -20,10 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "pent_include.h"
 #include <cstring>
 
-#ifndef PENTAGRAM_IN_EXULT
-#include "IDataSource.h"
-#endif
-
 #include "LowLevelMidiDriver.h"
 #include "XMidiSequence.h"
 #include "XMidiFile.h"
@@ -132,12 +128,6 @@ static inline int ConvBaseToActual(uint32 address_base)
 using std::string;
 using std::endl;
 
-LowLevelMidiDriver::LowLevelMidiDriver() :
-    mutex(0), cbmutex(0),cond(0),
-    global_volume(255), thread(0)
-{
-}
-
 LowLevelMidiDriver::~LowLevelMidiDriver()
 {
 	// Just kill it
@@ -147,16 +137,12 @@ LowLevelMidiDriver::~LowLevelMidiDriver()
 		//destroyMidiDriver();
 		if (thread)
 		{
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 			int status_thread;
 			quit_thread = true; // The thread should stop based upon this flag
 			SDL_WaitThread(thread, &status_thread);
-#else
-			SDL_KillThread(thread);
-#endif
 		}
 	}
-	thread = 0;
+	thread = nullptr;
 }
 
 //
@@ -182,7 +168,7 @@ int LowLevelMidiDriver::initMidiDriver(uint32 samp_rate, bool is_stereo)
 	mutex = SDL_CreateMutex();
 	cbmutex = SDL_CreateMutex();
 	cond = SDL_CreateCond();
-	thread = 0;
+	thread = nullptr;
 	sample_rate = samp_rate;
 	stereo = is_stereo;
 	uploading_timbres = false;
@@ -207,10 +193,10 @@ int LowLevelMidiDriver::initMidiDriver(uint32 samp_rate, bool is_stereo)
 		SDL_DestroyMutex(mutex);
 		SDL_DestroyMutex(cbmutex);
 		SDL_DestroyCond(cond);
-		thread = 0;
-		mutex = 0;
-		cbmutex = 0;
-		cond = 0;
+		thread = nullptr;
+		mutex = nullptr;
+		cbmutex = nullptr;
+		cond = nullptr;
 	}
 	else
 		initialized = true;
@@ -232,10 +218,10 @@ void LowLevelMidiDriver::destroyMidiDriver()
 	SDL_DestroyMutex(mutex);
 	SDL_DestroyMutex(cbmutex);
 	SDL_DestroyCond(cond);
-	cbmutex = 0;
-	mutex = 0;
-	thread = 0;
-	cond = 0;
+	cbmutex = nullptr;
+	mutex = nullptr;
+	thread = nullptr;
+	cond = nullptr;
 
 	giveinfo();
 }
@@ -430,11 +416,7 @@ int LowLevelMidiDriver::initThreadedSynth()
 	sendComMessage(message);
 
 	quit_thread = false;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 	thread = SDL_CreateThread (threadMain_Static, "LowLevelMidiDriver", this);
-#else
-	thread = SDL_CreateThread (threadMain_Static, this);
-#endif
 
 	while (peekComMessageType() == LLMD_MSG_THREAD_INIT)
 		yield ();
@@ -481,13 +463,9 @@ void LowLevelMidiDriver::destroyThreadedSynth()
 	// We waited a while and it still didn't terminate
 	if (count == 400 && peekComMessageType() != 0) {
 		perr << "MidiPlayer Thread failed to stop in time. Killing it." << std::endl;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 		int status_thread;
 		quit_thread = true; // The thread should stop based upon this flag
 		SDL_WaitThread(thread, &status_thread);
-#else
-		SDL_KillThread (thread);
-#endif
 	}
 
 	lockComMessage();
@@ -731,7 +709,7 @@ bool LowLevelMidiDriver::playSequences ()
 			else if (pending_events == -1)
 			{
 				delete sequences[seq];
-				sequences[seq] = 0;
+				sequences[seq] = nullptr;
 				lockComMessage();
 				playing[seq] = false;
 				unlockComMessage();
@@ -755,7 +733,7 @@ bool LowLevelMidiDriver::playSequences ()
 			case LLMD_MSG_FINISH:
 				{
 					delete sequences[message.sequence];
-					sequences[message.sequence] = 0;
+					sequences[message.sequence] = nullptr;
 					playing[message.sequence] = false;
 					callback_data[message.sequence] = -1;
 					unlockAndUnprotectChannel(message.sequence);
@@ -767,7 +745,7 @@ bool LowLevelMidiDriver::playSequences ()
 					for (i = 0; i < LLMD_NUM_SEQ; i++)
 					{
 						delete sequences[i];
-						sequences[i] = 0;
+						sequences[i] = nullptr;
 						playing[i] = false;
 						callback_data[i] = -1;
 						unlockAndUnprotectChannel(i);
@@ -812,7 +790,7 @@ bool LowLevelMidiDriver::playSequences ()
 				{
 					// Kill the previous stream
 					delete sequences[message.sequence];
-					sequences[message.sequence] = 0;
+					sequences[message.sequence] = nullptr;
 					playing[message.sequence] = false;
 					callback_data[message.sequence] = -1;
 					unlockAndUnprotectChannel(message.sequence);
@@ -859,7 +837,7 @@ bool LowLevelMidiDriver::playSequences ()
 						{
 							int bank_sel[16] = {0};
 
-							for (XMidiEvent *e = message.data.play.list->x_patch_bank; e != 0; e=e->next_patch_bank)
+							for (XMidiEvent *e = message.data.play.list->x_patch_bank; e != nullptr; e=e->next_patch_bank)
 							{
 								if ((e->status >> 4) == MIDI_STATUS_CONTROLLER)
 								{
@@ -1130,7 +1108,9 @@ int LowLevelMidiDriver::lockChannel(uint16 sequence_id, int chan, bool lock)
 	if (lock)
 	{
 		int notes_on[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		int s, c, phys;
+		int s;
+		int c;
+		int phys;
 
 		for (s = 0; s < LLMD_NUM_SEQ; s++)
 		{
@@ -1243,7 +1223,8 @@ int LowLevelMidiDriver::unlockAndUnprotectChannel(uint16 sequence_id)
 void LowLevelMidiDriver::loadTimbreLibrary(IDataSource *ds, TimbreLibraryType type)
 {
 	// Ensure all sequences are stopped
-	uint32 i,j;
+	uint32 i;
+	uint32 j;
 	for (i = 0 ; i < LLMD_NUM_SEQ; i++) {
 		ComMessage message(LLMD_MSG_FINISH, i);
 		sendComMessage(message);
@@ -1325,7 +1306,7 @@ void LowLevelMidiDriver::loadTimbreLibrary(IDataSource *ds, TimbreLibraryType ty
 		loadRhythm(default_rhythms[ii].rhythm, default_rhythms[ii].note);
 	}
 
-	XMidiFile *xmidi = 0;
+	XMidiFile *xmidi = nullptr;
 
 	if (type == TIMBRE_LIBRARY_U7VOICE_MT)
 		xmidi = new XMidiFile(ds,XMIDIFILE_HINT_U7VOICE_MT_FILE);
@@ -1393,7 +1374,7 @@ void LowLevelMidiDriver::loadTimbreLibrary(IDataSource *ds, TimbreLibraryType ty
 		uploading_timbres = false;
 
 		ComMessage precache(LLMD_MSG_PRECACHE_TIMBRES, -1);
-		precache.data.precache.list = 0;
+		precache.data.precache.list = nullptr;
 		sendComMessage(precache);
 	}
 	delete xmidi;
@@ -1415,7 +1396,7 @@ void LowLevelMidiDriver::extractTimbreLibrary(XMidiEventList *eventlist)
 	const uint32 timbre_unk_add_end = timbre_unk_add_start + timbre_mem_offset(128);
 
 	int i = 0;
-	XMidiEvent **next = 0;
+	XMidiEvent **next = nullptr;
 	for (XMidiEvent **event = &eventlist->events; *event; event = next)
 	{
 		next = &((*event)->next);
@@ -1541,7 +1522,7 @@ void LowLevelMidiDriver::extractTimbreLibrary(XMidiEventList *eventlist)
 				XMidiEvent *e = *event;
 				*event = *next;
 				next = event;
-				e->next = 0;
+				e->next = nullptr;
 				e->FreeThis();
 			}
 			else {
@@ -1552,7 +1533,7 @@ void LowLevelMidiDriver::extractTimbreLibrary(XMidiEventList *eventlist)
 	}
 }
 
-// If data is NULL, then it is assumed that sysex_buffer already contains the data
+// If data is nullptr, then it is assumed that sysex_buffer already contains the data
 // address_base is 7-bit, while address_offset is 8 bit!
 void LowLevelMidiDriver::sendMT32SystemMessage(uint32 address_base, uint16 address_offset, uint32 len, const void *data)
 {
@@ -1713,7 +1694,7 @@ void LowLevelMidiDriver::loadRhythmTemp(int temp)
 	sendMT32SystemMessage(rhythm_base,rhythm_mem_offset(temp),rhythm_mem_size, mt32_rhythm_bank[temp] );
 
 	delete mt32_rhythm_bank[temp];
-	mt32_rhythm_bank[temp] = 0;
+	mt32_rhythm_bank[temp] = nullptr;
 }
 
 void LowLevelMidiDriver::uploadTimbre(int bank, int patch)

@@ -27,7 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "baseinf.h"
 #include "exult_constants.h"
-using std::istream;
+
+#include <cstring>
+#include <iosfwd>
 
 class Shape_info;
 
@@ -49,9 +51,7 @@ private:
 	short   frame[4];           // The paperdoll frame and alternates.
 public:
 	friend class Shape_info;
-	Paperdoll_item()
-		: Base_info()
-	{  }
+	Paperdoll_item() = default;
 	Paperdoll_item(short w, short sp, short ty, bool tr, bool g,
 	               short sh, short fr0, short fr1, short fr2, short fr3,
 	               bool p = false, bool m = false, bool s = false,
@@ -142,8 +142,8 @@ public:
 		set_paperdoll_frame(3, f3);
 	}
 	bool operator<(const Paperdoll_item &other) const {
-		unsigned short wf1 = static_cast<unsigned short>(world_frame),
-		               wf2 = static_cast<unsigned short>(other.world_frame);
+		unsigned short wf1 = static_cast<unsigned short>(world_frame);
+		unsigned short wf2 = static_cast<unsigned short>(other.world_frame);
 		return (wf1 < wf2)
 		       || (world_frame == other.world_frame && spot < other.spot);
 	}
@@ -176,7 +176,7 @@ public:
 			set_translucent(other.translucent);
 			set_gender(other.gender);
 			set_paperdoll_shape(other.shape);
-			if (memcmp(frame, other.frame, sizeof(frame))) {
+			if (std::memcmp(frame, other.frame, sizeof(frame))) {
 				set_modified(true);
 				memcpy(frame, other.frame, sizeof(frame));
 			}

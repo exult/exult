@@ -22,16 +22,16 @@
 #ifndef GAMEREND_H
 #define GAMEREND_H 1
 
+class Game_object;
+
 /*
  *  A helper-class for rendering.
  */
 class Game_render {
-	unsigned long render_seq;   // For marking rendered objects.
-	int skip;           // Set for each render.  We skip
+	unsigned long render_seq = 0;   // For marking rendered objects.
+	int skip = 31;                  // Set for each render.  We skip
 	//   painting at or above this.
 public:
-	Game_render() : render_seq(0), skip(31)
-	{  }
 	void paint_terrain_only(int start_chunkx, int start_chunky,
 	                        int stop_chunkx, int stop_chunky);
 	// Render the map & objects.
@@ -47,7 +47,7 @@ public:
 	// Paint an obj. after dependencies.
 	void paint_object(Game_object *obj);
 	// Render dungeon blackness
-	void paint_blackness(int cx, int cy, int stop_chunkx, int stop_chunky,
+	void paint_blackness(int start_chunkx, int start_chunky, int stop_chunkx, int stop_chunky,
 	                     int index = 0);
 };
 

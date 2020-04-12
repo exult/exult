@@ -64,10 +64,8 @@ public:
 		for (int i = first; i < cnt; ++i)
 			atts[i] = allatts[first + i];
 	}
-	virtual ~Stats_extra_gump()
-	{  }
 
-	virtual void paint();
+	void paint() override;
 };
 
 /*
@@ -80,7 +78,9 @@ void Stats_extra_gump::paint(
 	Gump_manager *gman = gumpman;
 
 	// Area to print name in.
-	const int namex = 30, namey = 6, namew = 95;
+	const int namex = 30;
+	const int namey = 6;
+	const int namew = 95;
 	Actor *act = get_actor();
 	// Paint the gump itself.
 	paint_shape(x, y);
@@ -117,7 +117,7 @@ static int Show_atts(
 	ShapeID sid(game->get_shape("gumps/statatts"), framenum, SF_GUMPS_VGA);
 	Shape_frame *s = sid.get_shape();
 	sman->paint_shape(x + s->get_xleft(),
-	                  y + s->get_ybelow(), s, 1);
+	                  y + s->get_ybelow(), s, true);
 	return s->get_width() + 2;
 }
 
@@ -149,7 +149,7 @@ Stats_gump *Stats_gump::create(
     int x, int y
 ) {
 	Actor *npc = npc_obj->as_actor();
-	assert(npc != 0);
+	assert(npc != nullptr);
 	Actor::Atts_vector atts;
 	npc->get_attributes(atts);
 	int sz = atts.size();
@@ -173,7 +173,9 @@ void Stats_gump::paint(
 	Gump_manager *gman = gumpman;
 
 	// Area to print name in.
-	const int namex = 30, namey = 6, namew = 95;
+	const int namex = 30;
+	const int namey = 6;
+	const int namew = 95;
 	Actor *act = get_actor();   // Check for freezing (SI).
 	if (gwin->get_main_actor()->get_flag(Obj_flags::freeze)) {
 		int frame = act->get_temperature_zone();
@@ -225,7 +227,8 @@ void Stats_gump::paint(
 		                x + textx, y + texty[9]);
 	}
 	// Now show atts. at bottom.
-	const int attsy = 130, attsx0 = 29;
+	const int attsy = 130;
+	const int attsx0 = 29;
 	int attsx = attsx0;
 	if (act->get_flag(Obj_flags::asleep))
 		attsx += Show_atts(x + attsx, y + attsy, ASLEEP);

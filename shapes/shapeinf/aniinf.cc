@@ -109,7 +109,7 @@ Animation_info *Animation_info::create_from_tfa(
 		// None of these are used for any animated shape, which is why
 		// I haven't bothered implementing them.
 		delete inf;
-		return 0;
+		return nullptr;
 	}
 	inf->info_flags = static_cast<Info_bit_flags>(0);
 	return inf;
