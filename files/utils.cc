@@ -23,6 +23,12 @@
 #  include <config.h>
 #endif
 
+#if (__cplusplus >= 201703L)
+#include <filesystem>
+#include <system_error>
+namespace fs = std::filesystem;
+#endif // (__cplusplus >= 201703L)
+
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -418,12 +424,19 @@ bool U7exists(
     const char *fname         // May be converted to upper-case.
 ) {
 	string name = get_system_path(fname);
+    std::error_code err;
+#if (__cplusplus < 201703L)
 	struct stat sbuf;
-
+#endif //(__cplusplus < 201703L)
 	int uppercasecount = 0;
 	do {
+#if (__cplusplus < 201703L)
 		bool exists = (stat(name, &sbuf) == 0);
 		if (exists)
+#else
+        std::error_code err;
+        if(fs::exists(name, err))
+#endif //(__cplusplus < 201703L)
 			return true; // found it!
 	} while (base_to_uppercase(name, ++uppercasecount));
 
@@ -444,6 +457,13 @@ int U7mkdir(
 	string::size_type pos = name.find_last_not_of('/');
 	if (pos != string::npos)
 		name.resize(pos + 1);
+
+#if (__cplusplus >= 201703L)
+    std::error_code err;
+    if (fs::create_directory(name, err))
+        fs::permissions(name, fs::perms(mode), err);
+    return err.value();
+#else
 #if defined(_WIN32) && defined(UNICODE)
 	const char *n = name.c_str();
 	int nLen = std::strlen(n) + 1;
@@ -457,6 +477,7 @@ int U7mkdir(
 #else
 	return mkdir(name.c_str(), mode); // Create dir. if not already there.
 #endif
+#endif // (__cplusplus >= 201703L)
 }
 
 #ifdef _WIN32
