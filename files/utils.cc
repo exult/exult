@@ -23,18 +23,13 @@
 #  include <config.h>
 #endif
 
-#if (__cplusplus >= 201703L)
-#include <filesystem>
-#include <system_error>
-namespace fs = std::filesystem;
-#endif // (__cplusplus >= 201703L)
-
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
 #include <fstream>
+#include <system_error>
 #include <map>
 #include <list>
 #include <sys/stat.h>
@@ -61,6 +56,13 @@ namespace fs = std::filesystem;
 #  include <CoreFoundation/CoreFoundation.h>
 #  include <sys/param.h> // for MAXPATHLEN
 #endif
+
+#if (HAVE_FILESYSTEM && USE_STDFILESYSTEM)
+#  include <filesystem>
+namespace fs = std::filesystem;
+#else
+#  include "filesystem.h"
+#endif /* (HAVE_FILESYSTEM && USE_STDFILESYSTEM) */
 
 using std::cerr;
 using std::string;
@@ -367,25 +369,14 @@ void U7remove(
 ) {
 	string name = get_system_path(fname);
 
-#if defined(_WIN32) && defined(UNICODE)
-	const char *n = name.c_str();
-	int nLen = std::strlen(n) + 1;
-	LPTSTR lpszT = (LPTSTR) alloca(nLen * 2);
-	MultiByteToWideChar(CP_ACP, 0, n, -1, lpszT, nLen);
-	DeleteFile(lpszT);
-#else
-
-	struct stat sbuf;
-
+	std::error_code err;
 	int uppercasecount = 0;
 	do {
-		bool exists = (stat(name, &sbuf) == 0);
-		if (exists) {
-			std::remove(name.c_str());
+		if (fs::exists(name, err)) {
+			fs::remove(name, err);
 		}
 	} while (base_to_uppercase(name, ++uppercasecount));
-	std::remove(name.c_str());
-#endif
+	fs::remove(name, err);
 }
 
 /*
@@ -424,19 +415,10 @@ bool U7exists(
     const char *fname         // May be converted to upper-case.
 ) {
 	string name = get_system_path(fname);
-    std::error_code err;
-#if (__cplusplus < 201703L)
-	struct stat sbuf;
-#endif //(__cplusplus < 201703L)
+	std::error_code err;
 	int uppercasecount = 0;
 	do {
-#if (__cplusplus < 201703L)
-		bool exists = (stat(name, &sbuf) == 0);
-		if (exists)
-#else
-        std::error_code err;
-        if(fs::exists(name, err))
-#endif //(__cplusplus < 201703L)
+		if(fs::exists(name, err))
 			return true; // found it!
 	} while (base_to_uppercase(name, ++uppercasecount));
 
@@ -458,26 +440,10 @@ int U7mkdir(
 	if (pos != string::npos)
 		name.resize(pos + 1);
 
-#if (__cplusplus >= 201703L)
-    std::error_code err;
-    if (fs::create_directory(name, err))
-        fs::permissions(name, fs::perms(mode), err);
-    return err.value();
-#else
-#if defined(_WIN32) && defined(UNICODE)
-	const char *n = name.c_str();
-	int nLen = std::strlen(n) + 1;
-	LPTSTR lpszT = (LPTSTR) alloca(nLen * 2);
-	MultiByteToWideChar(CP_ACP, 0, n, -1, lpszT, nLen);
-	ignore_unused_variable_warning(mode);
-	return CreateDirectory(lpszT, nullptr);
-#elif defined(_WIN32)
-	ignore_unused_variable_warning(mode);
-	return mkdir(name.c_str());
-#else
-	return mkdir(name.c_str(), mode); // Create dir. if not already there.
-#endif
-#endif // (__cplusplus >= 201703L)
+	std::error_code err;
+	if (fs::create_directory(name, err))
+		fs::permissions(name, fs::perms(mode), err);
+	return err.value();
 }
 
 #ifdef _WIN32

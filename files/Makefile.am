@@ -1,6 +1,8 @@
 AM_CPPFLAGS = -I$(srcdir)/.. -I$(srcdir)/../headers $(SDL_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 		$(DEBUG_FLAGS) $(CPPFLAGS) -DEXULT_DATADIR=\"$(EXULT_DATADIR)\"
 
+
+
 SUBDIRS = sha1 zip
 
 noinst_LTLIBRARIES = libu7file.la
@@ -14,6 +16,15 @@ rwregress_SOURCES = \
 rwregress_LDADD = \
 	libu7file.la \
 	$(SYSLIBS)
+
+if !HAVE_FILESYSTEM
+FS_IMPL = filesystem.cc
+FS_HEAD = filesystem.h
+else
+FS_IMPL =
+FS_HEAD =
+endif
+
 
 libu7file_la_SOURCES =	\
 	Flat.cc		\
@@ -30,6 +41,9 @@ libu7file_la_SOURCES =	\
 	U7fileman.h	\
 	U7obj.cc	\
 	U7obj.h	\
+	$(FS_IMPL) \
+	$(FS_HEAD) \
+	filesystem.h \
 	utils.cc	\
 	utils.h		\
 	databuf.h	\
