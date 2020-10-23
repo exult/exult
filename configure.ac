@@ -136,12 +136,11 @@ fi
 AC_PROG_CXX([$cxx_compilers])
 
 AC_LANG([C++])
-
 AX_CXX_COMPILE_STDCXX_17([noext],[optional])
 if test "$HAVE_CXX17" = "0"; then
 	AX_CXX_COMPILE_STDCXX_14([noext],[mandatory])
 else
-	AC_CHECK_HEADERS([filesystem])
+	AX_CXX17_HAVE_STDFS
 fi
 AC_PROG_CXXCPP
 
@@ -234,50 +233,6 @@ if test x$ac_cv_func_mkstemp = xyes ; then
 	AC_DEFINE(HAVE_MKSTEMP, 1, [Have mkstemp])
 fi
 
-# std::filesystem::path breaks compilation on OSX Mojave
-# or earlier versions of Xcode, despite the fact it's there
-AC_MSG_CHECKING([if std::filesystem::path compiles fine])
-AC_TRY_COMPILE([
-#if HAVE_FILESYSTEM
-#include <filesystem>
-#endif
-],
-[
-	std::filesystem::path a{};
-],
-	ac_cv_class_fs_path=yes,
-	ac_cv_class_fs_path=no)
-AC_MSG_RESULT($ac_cv_class_fs_path)
-AM_CONDITIONAL([HAVE_FILESYSTEM], [ test "x$ac_cv_class_fs_path" = xyes ])
-if test "x$ac_cv_class_fs_path" = xyes; then
-	AC_DEFINE(USE_STDFILESYSTEM, 1, [Use std::filesystem])
-fi
-
-AC_MSG_CHECKING([if std::filesystem requires linking stdc++fs])
-AC_LINK_IFELSE(
-[AC_LANG_SOURCE([
-#if HAVE_FILESYSTEM
-#include <filesystem>
-#endif
-#include <system_error>
-
-int main() {
-	std::error_code e;
-	std::filesystem::create_directory("/dev/null", e);
-}
-])],
-	[ac_cv_link_fs_stdlib=no],
-	[ac_cv_link_fs_stdlib=yes]
-)
-if test "x$ac_cv_link_fs_stdlib" = xyes -a "x$ac_cv_class_fs_path" = xyes; then
-	AC_MSG_RESULT(yes)
-	SYSLIBS="$SYSLIBS -lstdc++fs"
-else
-	AC_MSG_RESULT(no)
-fi
-
-
-
 # do we need special X11 libraries?
 AC_MSG_CHECKING([for special X11 libraries])
 if test x$x_libraries = xNONE; then
@@ -309,7 +264,6 @@ PKG_PROG_PKG_CONFIG
 # ---------------------------------------------------------------------
 # SDL
 # ---------------------------------------------------------------------
-
 EXULT_CHECK_SDL(:,AC_MSG_ERROR([[*** SDL not found!]]))
 
 # ---------------------------------------------------------------------
@@ -630,7 +584,7 @@ else
 	AC_MSG_RESULT(no)
 fi
 
-
+SYSLIBS="$SYSLIBS $STDFSLIB"
 # ---------------------------------------------------------------------
 # Alternative directories
 # ---------------------------------------------------------------------
