@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  A pushable button on a gump:
  */
 class Gump_button : public Gump_widget {
-	UNREPLICATABLE_CLASS(Gump_button)
 
 private:
 	int pushed_button;      // 1 if in pushed state.

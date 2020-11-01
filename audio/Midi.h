@@ -36,7 +36,7 @@ namespace Pentagram {
 
 //---- MyMidiPlayer -----------------------------------------------------------
 
-class	MyMidiPlayer
+class	MyMidiPlayer : nonreplicatable
 {
 public:
 	enum TimbreLibrary {
@@ -50,7 +50,6 @@ public:
 	MyMidiPlayer();
 	~MyMidiPlayer();
 
-	UNREPLICATABLE_CLASS(MyMidiPlayer)
 
 	void			destroyMidiDriver();
 

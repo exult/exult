@@ -32,8 +32,7 @@ class Gump_button;
 /*
  *  A gump widget, such as a button or text field:
  */
-class Gump_widget : public ShapeID {
-	UNREPLICATABLE_CLASS(Gump_widget)
+class Gump_widget : nonreplicatable, public ShapeID {
 
 protected:
 	Gump_widget() = default;

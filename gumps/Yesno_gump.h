@@ -31,7 +31,6 @@ class Yesno_button;
  *  A yes/no box.
  */
 class Yesno_gump : public Modal_gump {
-	UNREPLICATABLE_CLASS(Yesno_gump)
 
 protected:
 	static short yesx, yesnoy, nox; // Coords. of the buttons.

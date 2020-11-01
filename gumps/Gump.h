@@ -36,8 +36,7 @@ class Gump_widget;
 /*
  *  A gump contains an image of an open container from "gumps.vga".
  */
-class Gump : public ShapeID, public Paintable {
-	UNREPLICATABLE_CLASS(Gump)
+class Gump : nonreplicatable, public ShapeID, public Paintable {
 
 protected:
 	Gump() = default;
@@ -144,7 +143,6 @@ public:
  *  A generic gump used by generic containers:
  */
 class Container_gump : public Gump {
-	UNREPLICATABLE_CLASS(Container_gump)
 
 	void initialize(int shnum);     // Initialize object_area.
 

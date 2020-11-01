@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  A text gump is the base class for books and scrolls.
  */
 class Text_gump : public Gump {
-	UNREPLICATABLE_CLASS(Text_gump)
 
 protected:
 	char *text;         // The text.

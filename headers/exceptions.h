@@ -55,21 +55,16 @@ public:
 	}
 };
 
-/*
- *  Classes which should not be replicatable throw an replication_exception
- */
-
-class replication_exception : public exult_exception {
-public:
-	explicit replication_exception(std::string what_arg): exult_exception(std::move(what_arg)) {  }
+//Per analogiam to boost::noncopyable
+class nonreplicatable {
+protected:
+	constexpr nonreplicatable() = default;
+	nonreplicatable(const nonreplicatable&) = delete;
+	nonreplicatable(nonreplicatable&&) = delete;
+	nonreplicatable& operator=(const nonreplicatable&) = delete;
+	nonreplicatable& operator=(nonreplicatable&&) = delete;
+	~nonreplicatable() = default;
 };
-
-// Some handy macros which you can use to make a class non-replicable
-#define UNREPLICATABLE_CLASS(NAME)  NAME(const NAME &) = delete; \
-	NAME &operator=(const NAME &) = delete; \
-	NAME(NAME &&) = delete; \
-	NAME &operator=(NAME &&) = delete;
-
 
 
 /*

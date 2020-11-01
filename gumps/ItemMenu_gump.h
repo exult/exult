@@ -40,7 +40,6 @@ class Itemmenu_gump : public Modal_gump {
 	};
 
 public:
-	UNREPLICATABLE_CLASS(Itemmenu_gump)
 	Itemmenu_gump(Game_object_map_xy *mobjxy, int cx, int cy);
 	Itemmenu_gump(Game_object *obj, int ox, int oy, int cx, int cy);
 	~Itemmenu_gump() override;

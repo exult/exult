@@ -27,7 +27,6 @@ class Slider_button;
  *  A slider for choosing a number.
  */
 class Slider_gump : public Modal_gump {
-	UNREPLICATABLE_CLASS(Slider_gump)
 
 protected:
 	int diamondx;           // Rel. pos. where diamond is shown.

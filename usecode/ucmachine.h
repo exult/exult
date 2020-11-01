@@ -42,8 +42,7 @@ class Tile_coord;
  *  Here's our virtual machine for running usecode.  The actual internals
  *  are in Usecode_internal.
  */
-class Usecode_machine : public Game_singletons {
-	UNREPLICATABLE_CLASS(Usecode_machine)
+class Usecode_machine : nonreplicatable, public Game_singletons {
 protected:
 	unsigned char gflags[c_last_gflag + 1]; // Global flags.
 	Keyring *keyring = nullptr;

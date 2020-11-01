@@ -26,7 +26,6 @@ class Actor;
 class Portrait_button;
 
 class Face_stats : public Gump {
-	UNREPLICATABLE_CLASS(Face_stats)
 	// Only allow for one to be made
 	static Face_stats   *self;
 	static int      mode;

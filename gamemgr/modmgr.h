@@ -190,8 +190,7 @@ public:
 	}
 };
 
-class GameManager {
-	UNREPLICATABLE_CLASS(GameManager)
+class GameManager : nonreplicatable {
 protected:
 	// -> to original games.
 	ModManager *bg;

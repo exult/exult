@@ -28,7 +28,6 @@ class Gump_button;
 
 class InputOptions_gump : public Modal_gump {
 public:
-	UNREPLICATABLE_CLASS(InputOptions_gump)
 	InputOptions_gump();
 
 	// Paint it and its contents.

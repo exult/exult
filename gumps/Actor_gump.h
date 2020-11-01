@@ -31,7 +31,6 @@ class Combat_mode_button;
  *  A rectangular area showing a character and his/her possessions:
  */
 class Actor_gump : public Gump {
-	UNREPLICATABLE_CLASS(Actor_gump)
 
 protected:
 	struct Position {

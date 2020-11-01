@@ -35,7 +35,6 @@ class Paperdoll_npc;
 
 class Paperdoll_gump : public Gump {
 private:
-	UNREPLICATABLE_CLASS(Paperdoll_gump)
 
 protected:
 	struct Position {

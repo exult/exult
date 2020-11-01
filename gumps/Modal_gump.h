@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  the user clicks okay.
  */
 class Modal_gump : public Gump {
-	UNREPLICATABLE_CLASS(Modal_gump)
 
 protected:
 	bool done;          // true when user clicks checkmark.

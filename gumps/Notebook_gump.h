@@ -42,7 +42,6 @@ public:
  *  A notebook gump represents the in-game journal.
  */
 class Notebook_gump : public Gump {
-	UNREPLICATABLE_CLASS(Notebook_gump)
 	static std::vector<One_note *> notes;// The text.
 	// Indexed by page#.
 	static std::vector<Notebook_top> page_info;
