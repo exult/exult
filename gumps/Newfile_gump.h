@@ -101,7 +101,6 @@ public:
 		void            SetSeqNumber();
 
 		~SaveInfo();
-
 	};
 
 protected:

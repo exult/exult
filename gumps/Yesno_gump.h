@@ -31,7 +31,6 @@ class Yesno_button;
  *  A yes/no box.
  */
 class Yesno_gump : public Modal_gump {
-
 protected:
 	static short yesx, yesnoy, nox; // Coords. of the buttons.
 	std::string text;           // Text of question.  It is drawn in

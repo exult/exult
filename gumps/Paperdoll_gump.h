@@ -34,8 +34,6 @@ class Paperdoll_npc;
 //
 
 class Paperdoll_gump : public Gump {
-private:
-
 protected:
 	struct Position {
 		short x;

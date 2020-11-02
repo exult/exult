@@ -30,7 +30,6 @@ class Actor;
  *  A rectangular area showing party combat statistics:
  */
 class CombatStats_gump : public Gump {
-
 public:
 	CombatStats_gump(int initx, int inity);
 	// Add object.

@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class Gump_button;
 
 class GameplayOptions_gump : public Modal_gump {
-
 private:
 	int facestats;
 	int fastmouse;

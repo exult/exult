@@ -29,7 +29,6 @@ class Actor;
  *  A rectangular area showing a character's statistics:
  */
 class Stats_gump : public Gump {
-
 protected:
 	Actor *get_actor() {
 		return reinterpret_cast<Actor *>(container);

@@ -37,7 +37,6 @@ class Gump_widget;
  *  A gump contains an image of an open container from "gumps.vga".
  */
 class Gump : nonreplicatable, public ShapeID, public Paintable {
-
 protected:
 	Gump() = default;
 	Container_game_object *container;// What this gump shows.
@@ -143,7 +142,6 @@ public:
  *  A generic gump used by generic containers:
  */
 class Container_gump : public Gump {
-
 	void initialize(int shnum);     // Initialize object_area.
 
 public:

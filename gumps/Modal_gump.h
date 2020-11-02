@@ -71,7 +71,6 @@ public:
 	virtual bool run() {
 		return false;
 	}
-
 };
 
 #endif

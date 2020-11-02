@@ -33,7 +33,6 @@ class Gump_button;
  *  A gump widget, such as a button or text field:
  */
 class Gump_widget : nonreplicatable, public ShapeID {
-
 protected:
 	Gump_widget() = default;
 	Gump *parent = nullptr;       // Who this is in.

@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  A book shows text side-by-side.
  */
 class Book_gump : public Text_gump {
-
 public:
 	Book_gump(int fnt = 4, int gump = -1);
 	// Paint it and its contents.
