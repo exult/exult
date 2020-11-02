@@ -293,7 +293,6 @@ void Effects_manager::update_dirty_text(
 	std::for_each(texts.begin(), texts.end(),
 			[](auto& txt) { txt->update_dirty(); }
 	);
-
 }
 /**
  *  Some special effects may not need painting.
@@ -1766,7 +1765,6 @@ void Earthquake::handle_event(
 		eqsoundonce = 0;
 		delete this;
 	}
-
 }
 
 /**
