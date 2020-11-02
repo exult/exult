@@ -79,10 +79,9 @@ void Effects_manager::add_text(
 		[&](const auto& el) { return el->is_text(item); }) != texts.cend())
 		return; // Already have text on this.
 
-	auto *txt = new Text_effect(msg, item);
 //	txt->paint(this);        // Draw it.
 //	painted = 1;
-	add_text_effect(txt);
+	texts.emplace_front(std::make_unique<Text_effect>(msg, item));
 }
 
 /**
@@ -96,10 +95,12 @@ void Effects_manager::add_text(
     const char *msg,
     int x, int y
 ) {
-	auto *txt = new Text_effect(msg,
-	                                   gwin->get_scrolltx() + x / c_tilesize,
-	                                   gwin->get_scrollty() + y / c_tilesize);
-	add_text_effect(txt);
+	                                   
+	texts.emplace_front(std::make_unique<Text_effect>(
+		msg,
+		gwin->get_scrolltx() + x / c_tilesize,
+		gwin->get_scrollty() + y / c_tilesize)
+	);
 }
 
 /**
@@ -151,7 +152,7 @@ void Effects_manager::remove_text_effect(
 	if (itemToDelete == texts.end())
 		return;
 	else {
-		remove_text_effect(*itemToDelete);
+		remove_text_effect((*itemToDelete).get());
 		gwin->paint();
 	}
 }
@@ -183,8 +184,7 @@ void Effects_manager::remove_text_effect(
 ) {
 	if (txt->in_queue())
 		gwin->get_tqueue()->remove(txt);
-	texts.remove(txt);
-	delete txt;
+	texts.remove_if([&](const auto& el) { return el.get() == txt; });
 }
 
 /**
@@ -202,7 +202,7 @@ void Effects_manager::remove_all_effects(
 		effects = next;
 	}
 	std::for_each(texts.begin(), texts.end(),
-			[&](auto& txt){ remove_text_effect(txt); }
+			[&](auto& txt){ remove_text_effect(txt.get()); }
 	);
 	if (repaint)
 		gwin->paint();      // Just paint whole screen.
@@ -216,7 +216,7 @@ void Effects_manager::remove_text_effects(
 ) {
 
 	std::for_each(texts.begin(), texts.end(),
-			[&](auto& txt){ remove_text_effect(txt); }
+			[&](auto& txt){ remove_text_effect(txt.get()); }
 	);
 	gwin->set_all_dirty();
 }
