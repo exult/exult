@@ -81,7 +81,7 @@ void Effects_manager::add_text(
 
 //	txt->paint(this);        // Draw it.
 //	painted = 1;
-	texts.emplace_front(std::make_unique<Text_effect>(msg, item));
+	texts.emplace_front(std::make_unique<Text_effect>(msg, item, *gwin));
 }
 
 /**
@@ -99,7 +99,8 @@ void Effects_manager::add_text(
 	texts.emplace_front(std::make_unique<Text_effect>(
 		msg,
 		gwin->get_scrolltx() + x / c_tilesize,
-		gwin->get_scrollty() + y / c_tilesize)
+		gwin->get_scrollty() + y / c_tilesize,
+		*gwin)
 	);
 }
 
@@ -182,8 +183,6 @@ void Effects_manager::remove_effect(
 void Effects_manager::remove_text_effect(
     Text_effect *txt
 ) {
-	if (txt->in_queue())
-		gwin->get_tqueue()->remove(txt);
 	texts.remove_if([&](const auto& el) { return el.get() == txt; });
 }
 
@@ -1062,8 +1061,9 @@ void Text_effect::init(
 
 Text_effect::Text_effect(
     const string &m,        // A copy is made.
-    Game_object *it         // Item text is on, or null.
-) : msg(m), item(weak_from_obj(it)), pos(Figure_text_pos()), num_ticks(0) {
+    Game_object *it,        // Item text is on, or null.
+    Game_window& gwin_      // Back-reference to gwin from Effects_manager
+) : msg(m), item(weak_from_obj(it)), pos(Figure_text_pos()), num_ticks(0), gwin(gwin_) {
 	init();
 }
 
@@ -1073,8 +1073,9 @@ Text_effect::Text_effect(
 
 Text_effect::Text_effect(
     const string &m,        // A copy is made.
-    int t_x, int t_y        // Abs. tile coords.
-) : msg(m), tpos(t_x, t_y, 0), pos(Figure_text_pos()), num_ticks(0) {
+    int t_x, int t_y,       // Abs. tile coords.
+    Game_window& gwin_      // Back-reference to gwin from Effects_manager
+) : msg(m), tpos(t_x, t_y, 0), pos(Figure_text_pos()), num_ticks(0), gwin(gwin_) {
 	init();
 }
 
@@ -1114,6 +1115,13 @@ void Text_effect::update_dirty(
 	pos = npos;         // Then set to repaint new.
 	add_dirty();
 }
+
+Text_effect::~Text_effect(
+) {
+	if (in_queue())
+		gwin.get_tqueue()->remove(this);
+}
+
 
 /**
  *  Render.

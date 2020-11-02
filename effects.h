@@ -221,10 +221,11 @@ class Text_effect : public Time_sensitive, public Game_singletons {
 	void add_dirty();
 	void init();
 	Rectangle Figure_text_pos();
+	Game_window& gwin;
 public:
 	friend class Effects_manager;
-	Text_effect(const std::string &m, Game_object *it);
-	Text_effect(const std::string &m, int t_x, int t_y);
+	Text_effect(const std::string &m, Game_object *it, Game_window& gwin_);
+	Text_effect(const std::string &m, int t_x, int t_y, Game_window& gwin_);
 	// At timeout, remove from screen.
 	void handle_event(unsigned long curtime, uintptr udata) override;
 	// Render.
@@ -234,6 +235,7 @@ public:
 	    return it == item.lock().get();
 	}
 	virtual void update_dirty();
+	~Text_effect() override;
 };
 
 /*
