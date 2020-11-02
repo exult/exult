@@ -222,7 +222,6 @@ class Text_effect : public Time_sensitive, public Game_singletons {
 	Rectangle Figure_text_pos();
 	Game_window& gwin;
 public:
-	friend class Effects_manager;
 	Text_effect(const std::string &m, Game_object *it, Game_window& gwin_);
 	Text_effect(const std::string &m, int t_x, int t_y, Game_window& gwin_);
 	// At timeout, remove from screen.
