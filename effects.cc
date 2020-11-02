@@ -76,7 +76,7 @@ void Effects_manager::add_text(
 		return;
 	// Don't duplicate for item.
 	if (std::find_if(texts.cbegin(), texts.cend(),
-		[&](const auto& el) { return el->is_text(item); }) != texts.cend())
+		[item](const auto& el) { return el->is_text(item); }) != texts.cend())
 		return; // Already have text on this.
 
 //	txt->paint(this);        // Draw it.
@@ -139,7 +139,7 @@ void Effects_manager::remove_text_effect(
     Game_object *item       // Item text was added for.
 ) {
 	auto effectToDelete = std::find_if(texts.begin(), texts.end(), 
-			[&item](const auto& el) { return el->is_text(item); });
+			[item](const auto& el) { return el->is_text(item); });
 	if (effectToDelete == texts.end())
 		return;
 	else {
@@ -173,7 +173,7 @@ void Effects_manager::remove_effect(
 void Effects_manager::remove_text_effect(
     Text_effect *txt
 ) {
-	texts.remove_if([&](const auto& el) { return el.get() == txt; });
+	texts.remove_if([txt](const auto& el) { return el.get() == txt; });
 }
 
 /**
@@ -201,7 +201,6 @@ void Effects_manager::remove_all_effects(
 
 void Effects_manager::remove_text_effects(
 ) {
-
 	texts.clear();
 	gwin->set_all_dirty();
 }
