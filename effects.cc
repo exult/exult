@@ -981,10 +981,9 @@ void Homing_projectile::paint(
  */
 
 Rectangle Text_effect::Figure_text_pos() {
-	Game_window *gwin = Game_window::get_instance();
     Game_object_shared item_obj = item.lock();
 	if (item_obj) {
-		Gump_manager *gumpman = gwin->get_gump_man();
+		Gump_manager *gumpman = gwin.get_gump_man();
 		// See if it's in a gump.
 		Gump *gump = gumpman->find_gump(item_obj.get());
 		if (gump)
@@ -992,15 +991,15 @@ Rectangle Text_effect::Figure_text_pos() {
 		else {
 			Game_object *outer = item_obj->get_outermost();
 			if (!outer->get_chunk()) return pos;
-			Rectangle r = gwin->get_shape_rect(outer);
-			r.x -= gwin->get_scrolltx_lo();
-			r.y -= gwin->get_scrollty_lo();
+			Rectangle r = gwin.get_shape_rect(outer);
+			r.x -= gwin.get_scrolltx_lo();
+			r.y -= gwin.get_scrollty_lo();
 			return r;
 		}
 	} else {
 		int x;
 		int y;
-		gwin->get_shape_location(tpos, x, y);
+		gwin.get_shape_location(tpos, x, y);
 		return Rectangle(x, y, c_tilesize, c_tilesize);
 	}
 }
@@ -1011,12 +1010,11 @@ Rectangle Text_effect::Figure_text_pos() {
 
 void Text_effect::add_dirty(
 ) {
-	Game_window *gwin = Game_window::get_instance();
 	// Repaint slightly bigger rectangle.
 	Rectangle rect(pos.x - c_tilesize,
 	               pos.y - c_tilesize,
 	               width + 2 * c_tilesize, height + 2 * c_tilesize);
-	gwin->add_dirty(gwin->clip_to_win(rect));
+	gwin.add_dirty(gwin.clip_to_win(rect));
 }
 
 /**
@@ -1027,12 +1025,11 @@ void Text_effect::init(
 ) {
 	set_always(true);       // Always execute in time queue, even
 	//   when paused.
-	Game_window *gwin = Game_window::get_instance();
 	width = 8 + sman->get_text_width(0, msg.c_str());
 	height = 8 + sman->get_text_height(0);
 	add_dirty();            // Force first paint.
 	// Start immediately.
-	gwin->get_tqueue()->add(Game::get_ticks(), this);
+	gwin.get_tqueue()->add(Game::get_ticks(), this);
 	if (msg[0] == '@')
 		msg[0] = '"';
 	int len = msg.size();
@@ -1073,7 +1070,6 @@ void Text_effect::handle_event(
     uintptr udata          // Ignored.
 ) {
 	ignore_unused_variable_warning(curtime, udata);
-	Game_window *gwin = Game_window::get_instance();
 	if (++num_ticks == 10) {    // About 1-2 seconds.
 		// All done.
 		add_dirty();
@@ -1081,7 +1077,7 @@ void Text_effect::handle_event(
 		return;
 	}
 	// Back into queue.
-	gwin->get_tqueue()->add(Game::get_ticks() + gwin->get_std_delay(), this);
+	gwin.get_tqueue()->add(Game::get_ticks() + gwin.get_std_delay(), this);
 
 	update_dirty();
 }
