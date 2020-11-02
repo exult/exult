@@ -132,16 +132,6 @@ void Effects_manager::add_effect(
 }
 
 /**
- *  Add a text effect at the start of the chain.
- */
-
-void Effects_manager::add_text_effect(
-    Text_effect *effect
-) {
-	texts.emplace_front(effect);
-}
-
-/**
  *  Remove a given object's text effect.
  */
 

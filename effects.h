@@ -59,7 +59,6 @@ public:
 	void add_text(const char *msg, int x, int y);
 	void center_text(const char *msg);
 	void add_effect(Special_effect *effect);
-	void add_text_effect(Text_effect *effect);
 	void remove_text_effect(Game_object *item);
 	// Remove text item & delete it.
 	void remove_effect(Special_effect *effect);
