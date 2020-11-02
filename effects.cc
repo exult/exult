@@ -75,9 +75,10 @@ void Effects_manager::add_text(
 	if (!msg)           // Happens with edited games.
 		return;
 	// Don't duplicate for item.
-	for (Text_effect *each = texts; each; each = each->next)
-		if (each->is_text(item))
-			return;     // Already have text on this.
+	if (std::find_if(texts.cbegin(), texts.cend(),
+		[&](const auto& el) { return el->is_text(item); }) != texts.cend())
+		return; // Already have text on this.
+
 	auto *txt = new Text_effect(msg, item);
 //	txt->paint(this);        // Draw it.
 //	painted = 1;
@@ -135,11 +136,7 @@ void Effects_manager::add_effect(
 void Effects_manager::add_text_effect(
     Text_effect *effect
 ) {
-	effect->next = texts;       // Insert into chain.
-	effect->prev = nullptr;
-	if (effect->next)
-		effect->next->prev = effect;
-	texts = effect;
+	texts.emplace_front(effect);
 }
 
 /**
@@ -149,13 +146,14 @@ void Effects_manager::add_text_effect(
 void Effects_manager::remove_text_effect(
     Game_object *item       // Item text was added for.
 ) {
-	for (Text_effect *each = texts; each; each = each->next)
-		if (each->is_text(item)) {
-			// Found it.
-			remove_text_effect(each);
-			gwin->paint();
-			return;
-		}
+	auto itemToDelete = std::find_if(texts.begin(), texts.end(), 
+			[&](const auto& el) { return el->is_text(item); });
+	if (itemToDelete == texts.end())
+		return;
+	else {
+		remove_text_effect(*itemToDelete);
+		gwin->paint();
+	}
 }
 
 /**
@@ -185,12 +183,7 @@ void Effects_manager::remove_text_effect(
 ) {
 	if (txt->in_queue())
 		gwin->get_tqueue()->remove(txt);
-	if (txt->next)
-		txt->next->prev = txt->prev;
-	if (txt->prev)
-		txt->prev->next = txt->next;
-	else                // Head of chain.
-		texts = txt->next;
+	texts.remove(txt);
 	delete txt;
 }
 
@@ -201,18 +194,16 @@ void Effects_manager::remove_text_effect(
 void Effects_manager::remove_all_effects(
     bool repaint
 ) {
-	if (!effects && !texts)
+	if (!effects && texts.empty())
 		return;
 	while (effects) {
 		Special_effect *next = effects->next;
 		remove_effect(effects);
 		effects = next;
 	}
-	while (texts) {
-		Text_effect *next = texts->next;
-		remove_text_effect(texts);
-		texts = next;
-	}
+	std::for_each(texts.begin(), texts.end(),
+			[&](auto& txt){ remove_text_effect(txt); }
+	);
 	if (repaint)
 		gwin->paint();      // Just paint whole screen.
 }
@@ -223,11 +214,10 @@ void Effects_manager::remove_all_effects(
 
 void Effects_manager::remove_text_effects(
 ) {
-	while (texts) {
-		Text_effect *next = texts->next;
-		remove_text_effect(texts);
-		texts = next;
-	}
+
+	std::for_each(texts.begin(), texts.end(),
+			[&](auto& txt){ remove_text_effect(txt); }
+	);
 	gwin->set_all_dirty();
 }
 
@@ -306,8 +296,9 @@ void Effects_manager::paint(
 
 void Effects_manager::paint_text(
 ) {
-	for (Text_effect *txt = texts; txt; txt = txt->next)
-		txt->paint();
+	std::for_each(texts.begin(), texts.end(),
+			[](auto& txt) { txt->paint(); }
+	);
 }
 
 /**
@@ -315,8 +306,10 @@ void Effects_manager::paint_text(
  */
 void Effects_manager::update_dirty_text(
 ) {
-	for (Text_effect *txt = texts; txt; txt = txt->next)
-		txt->update_dirty();
+	std::for_each(texts.begin(), texts.end(),
+			[](auto& txt) { txt->update_dirty(); }
+	);
+
 }
 /**
  *  Some special effects may not need painting.
@@ -1070,7 +1063,7 @@ void Text_effect::init(
 Text_effect::Text_effect(
     const string &m,        // A copy is made.
     Game_object *it         // Item text is on, or null.
-) : next(nullptr), prev(nullptr), msg(m), item(weak_from_obj(it)), pos(Figure_text_pos()), num_ticks(0) {
+) : msg(m), item(weak_from_obj(it)), pos(Figure_text_pos()), num_ticks(0) {
 	init();
 }
 
@@ -1081,7 +1074,7 @@ Text_effect::Text_effect(
 Text_effect::Text_effect(
     const string &m,        // A copy is made.
     int t_x, int t_y        // Abs. tile coords.
-) : next(nullptr), prev(nullptr), msg(m), tpos(t_x, t_y, 0), pos(Figure_text_pos()), num_ticks(0) {
+) : msg(m), tpos(t_x, t_y, 0), pos(Figure_text_pos()), num_ticks(0) {
 	init();
 }
 

@@ -28,6 +28,7 @@
 #include "rect.h"
 #include "tqueue.h"
 #include "tiles.h"
+#include <list>
 
 class Xform_palette;
 class PathFinder;
@@ -47,9 +48,9 @@ using Game_object_weak = std::weak_ptr<Game_object>;
 class Effects_manager {
 	Game_window *gwin;      // Handy pointer.
 	Special_effect *effects;    // Sprite effects, projectiles, etc.
-	Text_effect *texts;     // Text snippets.
+	std::list<Text_effect*> texts;     // Text snippets.
 public:
-	Effects_manager(Game_window *g) : gwin(g), effects(nullptr), texts(nullptr)
+	Effects_manager(Game_window *g) : gwin(g), effects(nullptr), texts{}
 	{  }
 	~Effects_manager();
 	// Add text item.
@@ -210,7 +211,6 @@ public:
  *  Game_window.
  */
 class Text_effect : public Time_sensitive, public Game_singletons {
-	Text_effect *next, *prev;   // All of them are chained together.
 	std::string msg;        // What to print.
 	Game_object_weak item;      // Item text is on.  May be null.
 	Tile_coord tpos;        // Position to display it at.
