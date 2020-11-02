@@ -91,7 +91,7 @@ void Effects_manager::add_text(
  *  @param y        y coord. on screen.
  */
 
-void Effects_manager::add_text(
+inline void Effects_manager::add_text(
     const char *msg,
     int x, int y
 ) {
@@ -148,12 +148,12 @@ void Effects_manager::add_text_effect(
 void Effects_manager::remove_text_effect(
     Game_object *item       // Item text was added for.
 ) {
-	auto itemToDelete = std::find_if(texts.begin(), texts.end(), 
-			[&](const auto& el) { return el->is_text(item); });
-	if (itemToDelete == texts.end())
+	auto effectToDelete = std::find_if(texts.begin(), texts.end(), 
+			[&item](const auto& el) { return el->is_text(item); });
+	if (effectToDelete == texts.end())
 		return;
 	else {
-		remove_text_effect((*itemToDelete).get());
+	    texts.erase(effectToDelete);
 		gwin->paint();
 	}
 }
@@ -200,9 +200,7 @@ void Effects_manager::remove_all_effects(
 		remove_effect(effects);
 		effects = next;
 	}
-	std::for_each(texts.begin(), texts.end(),
-			[&](auto& txt){ remove_text_effect(txt.get()); }
-	);
+	texts.clear();
 	if (repaint)
 		gwin->paint();      // Just paint whole screen.
 }
@@ -214,9 +212,7 @@ void Effects_manager::remove_all_effects(
 void Effects_manager::remove_text_effects(
 ) {
 
-	std::for_each(texts.begin(), texts.end(),
-			[&](auto& txt){ remove_text_effect(txt.get()); }
-	);
+	texts.clear();
 	gwin->set_all_dirty();
 }
 
