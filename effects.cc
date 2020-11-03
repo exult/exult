@@ -173,10 +173,7 @@ void Effects_manager::remove_all_effects(
 ) {
 	if (effects.empty() && texts.empty())
 		return;
-	auto ef = effects.begin();
-	while(ef != effects.end()) {
-		remove_effect((*(ef++)).get());
-	}
+	effects.clear();
 	texts.clear();
 	if (repaint)
 		gwin->paint();      // Just paint whole screen.
@@ -203,13 +200,11 @@ void Effects_manager::remove_weather_effects(
 	Actor *main_actor = gwin->get_main_actor();
 	Tile_coord apos = main_actor ? main_actor->get_tile()
 	                  : Tile_coord(-1, -1, -1);
-	auto each = effects.begin();
-	while (each != effects.end()) {
-		// See if we're far enough away.
-		if ((*each)->is_weather() && (!dist ||
-		                           static_cast<Weather_effect *>((*each).get())->out_of_range(apos, dist)))
-			remove_effect((*(each++)).get());
-	}
+	effects.remove_if([&](const auto& ef) {
+		return ef->is_weather() &&
+	           (!dist ||
+				static_cast<Weather_effect*>(ef.get())->out_of_range(apos, dist));
+	});
 	gwin->set_all_dirty();
 }
 
@@ -219,12 +214,9 @@ void Effects_manager::remove_weather_effects(
 
 void Effects_manager::remove_usecode_lightning(
 ) {
-	auto each = effects.begin();
-	while (each != effects.end()) {
-		// See if we're far enough away.
-		if ((*each)->is_usecode_lightning())
-			remove_effect((*(each++)).get());
-	}
+	effects.remove_if([](const auto& ef) {
+			return ef->is_usecode_lightning();
+	});
 	gwin->set_all_dirty();
 }
 
