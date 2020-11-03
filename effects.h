@@ -48,10 +48,10 @@ using Game_object_weak = std::weak_ptr<Game_object>;
  */
 class Effects_manager {
 	Game_window *gwin;      // Handy pointer.
-	Special_effect *effects;    // Sprite effects, projectiles, etc.
+	std::list<Special_effect*> effects;    // Sprite effects, projectiles, etc.
 	std::list<std::unique_ptr<Text_effect>> texts;     // Text snippets.
 public:
-	Effects_manager(Game_window *g) : gwin(g), effects(nullptr)
+	Effects_manager(Game_window *g) : gwin(g), effects{}
 	{  }
 	~Effects_manager();
 	// Add text item.
@@ -78,7 +78,6 @@ public:
  *  Base class for special-effects:
  */
 class Special_effect : public Time_sensitive, public Game_singletons {
-	Special_effect *next = nullptr, *prev = nullptr;    // All of them are chained together.
 public:
 	friend class Effects_manager;
 	// Render.

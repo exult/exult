@@ -124,11 +124,7 @@ void Effects_manager::center_text(
 void Effects_manager::add_effect(
     Special_effect *effect
 ) {
-	effect->next = effects;     // Insert into chain.
-	effect->prev = nullptr;
-	if (effect->next)
-		effect->next->prev = effect;
-	effects = effect;
+	effects.emplace_front(effect);
 }
 
 /**
@@ -157,12 +153,8 @@ void Effects_manager::remove_effect(
 ) {
 	if (effect->in_queue())
 		gwin->get_tqueue()->remove(effect);
-	if (effect->next)
-		effect->next->prev = effect->prev;
-	if (effect->prev)
-		effect->prev->next = effect->next;
-	else                // Head of chain.
-		effects = effect->next;
+
+	effects.remove(effect);
 	delete effect;
 }
 
@@ -183,12 +175,11 @@ void Effects_manager::remove_text_effect(
 void Effects_manager::remove_all_effects(
     bool repaint
 ) {
-	if (!effects && texts.empty())
+	if (effects.empty() && texts.empty())
 		return;
-	while (effects) {
-		Special_effect *next = effects->next;
-		remove_effect(effects);
-		effects = next;
+	auto ef = effects.begin();
+	while(ef != effects.end()) {
+		remove_effect(*(ef++));
 	}
 	texts.clear();
 	if (repaint)
@@ -216,14 +207,12 @@ void Effects_manager::remove_weather_effects(
 	Actor *main_actor = gwin->get_main_actor();
 	Tile_coord apos = main_actor ? main_actor->get_tile()
 	                  : Tile_coord(-1, -1, -1);
-	Special_effect *each = effects;
-	while (each) {
-		Special_effect *next = each->next;
+	auto each = effects.begin();
+	while (each != effects.end()) {
 		// See if we're far enough away.
-		if (each->is_weather() && (!dist ||
-		                           static_cast<Weather_effect *>(each)->out_of_range(apos, dist)))
-			remove_effect(each);
-		each = next;
+		if ((*each)->is_weather() && (!dist ||
+		                           static_cast<Weather_effect *>(*each)->out_of_range(apos, dist)))
+			remove_effect(*(each++));
 	}
 	gwin->set_all_dirty();
 }
@@ -234,13 +223,11 @@ void Effects_manager::remove_weather_effects(
 
 void Effects_manager::remove_usecode_lightning(
 ) {
-	Special_effect *each = effects;
-	while (each) {
-		Special_effect *next = each->next;
+	auto each = effects.begin();
+	while (each != effects.end()) {
 		// See if we're far enough away.
-		if (each->is_usecode_lightning())
-			remove_effect(each);
-		each = next;
+		if ((*each)->is_usecode_lightning())
+			remove_effect(*(each++));
 	}
 	gwin->set_all_dirty();
 }
@@ -251,17 +238,13 @@ void Effects_manager::remove_usecode_lightning(
 
 int Effects_manager::get_weather(
 ) {
-	Special_effect *each = effects;
-	while (each) {
-		Special_effect *next = each->next;
-		if (each->is_weather()) {
-			auto *weather = static_cast<Weather_effect *>(each);
-			if (weather->get_num() >= 0)
-				return weather->get_num();
-		}
-		each = next;
-	}
-	return 0;
+	auto found = std::find_if(effects.cbegin(), effects.cend(), [](const auto& ef) {
+			return ef->is_weather() && 
+				(static_cast<Weather_effect *>(ef)->get_num() >= 0);
+	});
+	return found != effects.cend()
+		? static_cast<Weather_effect *>(*found)->get_num()
+		: 0;
 }
 
 /**
@@ -270,7 +253,7 @@ int Effects_manager::get_weather(
 
 void Effects_manager::paint(
 ) {
-	for (Special_effect *effect = effects; effect; effect = effect->next)
+	for (auto& effect : effects)
 		effect->paint();
 }
 
