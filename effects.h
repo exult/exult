@@ -51,7 +51,7 @@ class Effects_manager {
 	Special_effect *effects;    // Sprite effects, projectiles, etc.
 	std::list<std::unique_ptr<Text_effect>> texts;     // Text snippets.
 public:
-	Effects_manager(Game_window *g) : gwin(g), effects(nullptr), texts{}
+	Effects_manager(Game_window *g) : gwin(g), effects(nullptr)
 	{  }
 	~Effects_manager();
 	// Add text item.
