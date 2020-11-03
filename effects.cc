@@ -1295,7 +1295,6 @@ public:
 	    unsigned long curtime,      // Current time of day.
 	    uintptr udata
 	) override {
-
 		// Gradual start/end.
 		change_ndrops(curtime);
 
