@@ -81,7 +81,7 @@ void Effects_manager::add_text(
 
 //	txt->paint(this);        // Draw it.
 //	painted = 1;
-	texts.emplace_front(std::make_unique<Text_effect>(msg, item, *gwin));
+	texts.emplace_front(std::make_unique<Text_effect>(msg, item, gwin));
 }
 
 /**
@@ -100,7 +100,7 @@ void Effects_manager::add_text(
 		msg,
 		gwin->get_scrolltx() + x / c_tilesize,
 		gwin->get_scrollty() + y / c_tilesize,
-		*gwin)
+		gwin)
 	);
 }
 
@@ -982,7 +982,7 @@ void Homing_projectile::paint(
 Rectangle Text_effect::Figure_text_pos() {
     Game_object_shared item_obj = item.lock();
 	if (item_obj) {
-		Gump_manager *gumpman = gwin.get_gump_man();
+		Gump_manager *gumpman = gwin->get_gump_man();
 		// See if it's in a gump.
 		Gump *gump = gumpman->find_gump(item_obj.get());
 		if (gump)
@@ -990,15 +990,15 @@ Rectangle Text_effect::Figure_text_pos() {
 		else {
 			Game_object *outer = item_obj->get_outermost();
 			if (!outer->get_chunk()) return pos;
-			Rectangle r = gwin.get_shape_rect(outer);
-			r.x -= gwin.get_scrolltx_lo();
-			r.y -= gwin.get_scrollty_lo();
+			Rectangle r = gwin->get_shape_rect(outer);
+			r.x -= gwin->get_scrolltx_lo();
+			r.y -= gwin->get_scrollty_lo();
 			return r;
 		}
 	} else {
 		int x;
 		int y;
-		gwin.get_shape_location(tpos, x, y);
+		gwin->get_shape_location(tpos, x, y);
 		return Rectangle(x, y, c_tilesize, c_tilesize);
 	}
 }
@@ -1013,7 +1013,7 @@ void Text_effect::add_dirty(
 	Rectangle rect(pos.x - c_tilesize,
 	               pos.y - c_tilesize,
 	               width + 2 * c_tilesize, height + 2 * c_tilesize);
-	gwin.add_dirty(gwin.clip_to_win(rect));
+	gwin->add_dirty(gwin->clip_to_win(rect));
 }
 
 /**
@@ -1028,7 +1028,7 @@ void Text_effect::init(
 	height = 8 + sman->get_text_height(0);
 	add_dirty();            // Force first paint.
 	// Start immediately.
-	gwin.get_tqueue()->add(Game::get_ticks(), this);
+	gwin->get_tqueue()->add(Game::get_ticks(), this);
 	if (msg[0] == '@')
 		msg[0] = '"';
 	int len = msg.size();
@@ -1043,7 +1043,7 @@ void Text_effect::init(
 Text_effect::Text_effect(
     const string &m,        // A copy is made.
     Game_object *it,        // Item text is on, or null.
-    Game_window& gwin_      // Back-reference to gwin from Effects_manager
+    Game_window *gwin_      // Back-reference to gwin from Effects_manager
 ) : msg(m), item(weak_from_obj(it)), pos(Figure_text_pos()), num_ticks(0), gwin(gwin_) {
 	init();
 }
@@ -1055,7 +1055,7 @@ Text_effect::Text_effect(
 Text_effect::Text_effect(
     const string &m,        // A copy is made.
     int t_x, int t_y,       // Abs. tile coords.
-    Game_window& gwin_      // Back-reference to gwin from Effects_manager
+    Game_window *gwin_      // Back-reference to gwin from Effects_manager
 ) : msg(m), tpos(t_x, t_y, 0), pos(Figure_text_pos()), num_ticks(0), gwin(gwin_) {
 	init();
 }
@@ -1076,7 +1076,7 @@ void Text_effect::handle_event(
 		return;
 	}
 	// Back into queue.
-	gwin.get_tqueue()->add(Game::get_ticks() + gwin.get_std_delay(), this);
+	gwin->get_tqueue()->add(Game::get_ticks() + gwin->get_std_delay(), this);
 
 	update_dirty();
 }
@@ -1099,7 +1099,7 @@ void Text_effect::update_dirty(
 Text_effect::~Text_effect(
 ) {
 	if (in_queue())
-		gwin.get_tqueue()->remove(this);
+		gwin->get_tqueue()->remove(this);
 }
 
 
