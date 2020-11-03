@@ -151,9 +151,6 @@ void Effects_manager::remove_text_effect(
 void Effects_manager::remove_effect(
     Special_effect *effect
 ) {
-	if (effect->in_queue())
-		gwin->get_tqueue()->remove(effect);
-
 	effects.remove_if([effect](const auto& ef) { return ef.get() == effect; });
 }
 
@@ -244,6 +241,28 @@ int Effects_manager::get_weather(
 	return found != effects.cend()
 		? static_cast<Weather_effect *>((*found).get())->get_num()
 		: 0;
+}
+
+/**
+ * Construct and store game window singleton
+ * TODO check if passing it from other scope
+ * won't be better
+ */
+
+Special_effect::Special_effect(
+) : gwin(Game_window::get_instance())
+{}
+
+/**
+ * Destructor
+ * Takes advantage of the fact that gwin
+ * is stored.
+ */
+Special_effect::~Special_effect(
+)
+{
+	if (in_queue())
+		gwin->get_tqueue()->remove(this);
 }
 
 /**

@@ -78,7 +78,11 @@ public:
  *  Base class for special-effects:
  */
 class Special_effect : public Time_sensitive, public Game_singletons {
+protected:
+	Game_window *gwin;
 public:
+	Special_effect();
+	~Special_effect() override;
 	friend class Effects_manager;
 	// Render.
 	virtual void paint();
