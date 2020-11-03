@@ -91,7 +91,7 @@ void Effects_manager::add_text(
  *  @param y        y coord. on screen.
  */
 
-inline void Effects_manager::add_text(
+void Effects_manager::add_text(
     const char *msg,
     int x, int y
 ) {
@@ -1807,4 +1807,3 @@ void Fire_field_effect::handle_event(
 		gwin->get_tqueue()->add(curtime + gwin->get_std_delay(), this, udata);
 	}
 }
-
