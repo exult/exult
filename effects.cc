@@ -280,9 +280,8 @@ void Effects_manager::paint(
 
 void Effects_manager::paint_text(
 ) {
-	std::for_each(texts.begin(), texts.end(),
-			[](auto& txt) { txt->paint(); }
-	);
+	for (auto& txt : texts)
+		txt->paint();
 }
 
 /**
@@ -290,9 +289,8 @@ void Effects_manager::paint_text(
  */
 void Effects_manager::update_dirty_text(
 ) {
-	std::for_each(texts.begin(), texts.end(),
-			[](auto& txt) { txt->update_dirty(); }
-	);
+	for (auto& txt : texts)
+		txt->update_dirty();
 }
 /**
  *  Some special effects may not need painting.
