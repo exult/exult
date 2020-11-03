@@ -143,7 +143,7 @@ void Effects_manager::remove_text_effect(
 	if (effectToDelete == texts.end())
 		return;
 	else {
-	    texts.erase(effectToDelete);
+		texts.erase(effectToDelete);
 		gwin->paint();
 	}
 }
