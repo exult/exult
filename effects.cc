@@ -122,9 +122,9 @@ void Effects_manager::center_text(
  */
 
 void Effects_manager::add_effect(
-    Special_effect *effect
+    std::unique_ptr<Special_effect> effect
 ) {
-	effects.emplace_front(effect);
+	effects.emplace_front(std::move(effect));
 }
 
 /**
@@ -154,8 +154,7 @@ void Effects_manager::remove_effect(
 	if (effect->in_queue())
 		gwin->get_tqueue()->remove(effect);
 
-	effects.remove(effect);
-	delete effect;
+	effects.remove_if([effect](const auto& ef) { return ef.get() == effect; });
 }
 
 /**
@@ -179,7 +178,7 @@ void Effects_manager::remove_all_effects(
 		return;
 	auto ef = effects.begin();
 	while(ef != effects.end()) {
-		remove_effect(*(ef++));
+		remove_effect((*(ef++)).get());
 	}
 	texts.clear();
 	if (repaint)
@@ -211,8 +210,8 @@ void Effects_manager::remove_weather_effects(
 	while (each != effects.end()) {
 		// See if we're far enough away.
 		if ((*each)->is_weather() && (!dist ||
-		                           static_cast<Weather_effect *>(*each)->out_of_range(apos, dist)))
-			remove_effect(*(each++));
+		                           static_cast<Weather_effect *>((*each).get())->out_of_range(apos, dist)))
+			remove_effect((*(each++)).get());
 	}
 	gwin->set_all_dirty();
 }
@@ -227,7 +226,7 @@ void Effects_manager::remove_usecode_lightning(
 	while (each != effects.end()) {
 		// See if we're far enough away.
 		if ((*each)->is_usecode_lightning())
-			remove_effect(*(each++));
+			remove_effect((*(each++)).get());
 	}
 	gwin->set_all_dirty();
 }
@@ -240,10 +239,10 @@ int Effects_manager::get_weather(
 ) {
 	auto found = std::find_if(effects.cbegin(), effects.cend(), [](const auto& ef) {
 			return ef->is_weather() && 
-				(static_cast<Weather_effect *>(ef)->get_num() >= 0);
+				(static_cast<Weather_effect *>(ef.get())->get_num() >= 0);
 	});
 	return found != effects.cend()
-		? static_cast<Weather_effect *>(*found)->get_num()
+		? static_cast<Weather_effect *>((*found).get())->get_num()
 		: 0;
 }
 
@@ -728,10 +727,10 @@ void Projectile_effect::handle_event(
 			else
 				offset = Tile_coord(0, 0, 0);
 			if (ainf && ainf->is_homing())
-				eman->add_effect(new Homing_projectile(weapon,
+				eman->add_effect(std::make_unique<Homing_projectile>(weapon,
 	                        att_obj.get(), tgt_obj.get(), pos, pos + offset));
 			else
-				eman->add_effect(new Explosion_effect(pos + offset,
+				eman->add_effect(std::make_unique<Explosion_effect>(pos + offset,
 			                 nullptr, 0, weapon, projectile_shape, att_obj.get()));
 			target = Game_object_weak(); // Takes care of attack.
 		} else {
@@ -758,12 +757,12 @@ void Projectile_effect::handle_event(
 			if (returns && att_obj &&  // boomerangs
 			        att_obj->distance(pos) < 50) {
 				// not teleported away
-				auto *proj = new Projectile_effect(
+				auto proj = std::make_unique<Projectile_effect>(
 				    pos, att_obj.get(), weapon, projectile_shape,
 				    sprite.get_shapenum(), attval, speed, true);
 				proj->set_speed(speed);
 				proj->set_sprite_shape(sprite.get_shapenum());
-				eman->add_effect(proj);
+				eman->add_effect(std::move(proj));
 			} else {
 				// See if we should drop projectile.
 				bool drop = false;
@@ -1392,11 +1391,11 @@ Storm_effect::Storm_effect(
     Game_object *egg        // Egg that caused it, or null.
 ) : Weather_effect(duration, delay, 2, egg), start(true) {
 	// Start raining soon.
-	eman->add_effect(new Clouds_effect(duration + 1, delay));
+	eman->add_effect(std::make_unique<Clouds_effect>(duration + 1, delay));
 	int rain_delay = 20 + rand() % 1000;
-	eman->add_effect(new Rain_effect<Raindrop>(duration + 2, rain_delay, 0));
+	eman->add_effect(std::make_unique<Rain_effect<Raindrop>>(duration + 2, rain_delay, 0));
 	int lightning_delay = rain_delay + rand() % 500;
-	eman->add_effect(new Lightning_effect(duration - 2, lightning_delay));
+	eman->add_effect(std::make_unique<Lightning_effect>(duration - 2, lightning_delay));
 }
 
 /**
@@ -1426,8 +1425,8 @@ Snowstorm_effect::Snowstorm_effect(
     Game_object *egg        // Egg that caused it, or null.
 ) : Weather_effect(duration, delay, 1, egg), start(true) {
 	// Start snowing soon.
-	eman->add_effect(new Clouds_effect(duration + 1, delay));
-	eman->add_effect(new Rain_effect<Snowflake>(duration + 2, 20 + rand() % 1000, 0));
+	eman->add_effect(std::make_unique<Clouds_effect>(duration + 1, delay));
+	eman->add_effect(std::make_unique<Rain_effect<Snowflake>>(duration + 2, 20 + rand() % 1000, 0));
 }
 
 /**
@@ -1457,7 +1456,7 @@ Sparkle_effect::Sparkle_effect(
     Game_object *egg        // Egg that caused it, or null.
 ) : Weather_effect(duration, delay, 3, egg), start(true) {
 	// Start snowing soon.
-	eman->add_effect(new Rain_effect<Sparkle>(duration, delay, MAXDROPS / 10, 3));
+	eman->add_effect(std::make_unique<Rain_effect<Sparkle>>(duration, delay, MAXDROPS / 10, 3));
 }
 
 /**
@@ -1494,7 +1493,7 @@ Fog_effect::Fog_effect(
 		// SI adds sparkle/raindrops to the fog palaette shift
 		// let's do that for all games
 		int rain_delay = 250 + rand() % 1000;
-		eman->add_effect(new Rain_effect<Sparkle>(duration, rain_delay, MAXDROPS/2));
+		eman->add_effect(std::make_unique<Rain_effect<Sparkle>>(duration, rain_delay, MAXDROPS/2));
 }
 
 void Fog_effect::handle_event(unsigned long curtime, uintptr udata) {

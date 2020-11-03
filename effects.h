@@ -48,7 +48,7 @@ using Game_object_weak = std::weak_ptr<Game_object>;
  */
 class Effects_manager {
 	Game_window *gwin;      // Handy pointer.
-	std::list<Special_effect*> effects;    // Sprite effects, projectiles, etc.
+	std::list<std::unique_ptr<Special_effect>> effects;    // Sprite effects, projectiles, etc.
 	std::list<std::unique_ptr<Text_effect>> texts;     // Text snippets.
 public:
 	Effects_manager(Game_window *g) : gwin(g), effects{}
@@ -58,7 +58,7 @@ public:
 	void add_text(const char *msg, Game_object *item);
 	void add_text(const char *msg, int x, int y);
 	void center_text(const char *msg);
-	void add_effect(Special_effect *effect);
+	void add_effect(std::unique_ptr<Special_effect> effect);
 	void remove_text_effect(Game_object *item);
 	// Remove text item & delete it.
 	void remove_effect(Special_effect *effect);

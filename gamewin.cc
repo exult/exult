@@ -32,6 +32,7 @@
 #include <cstring>
 #include <cstdarg>
 #include <cstdio>
+#include <memory>
 
 #include "Astar.h"
 #include "Audio.h"
@@ -1811,7 +1812,7 @@ void Game_window::start_actor_along_path(
 			Mouse::mouse->flash_shape(Mouse::blocked);
 	} else {
 		if (touch_pathfind)
-			get_effects()->add_effect(new Sprites_effect(18, dest, 0, 0, 0, 0));
+			get_effects()->add_effect(std::make_unique<Sprites_effect>(18, dest, 0, 0, 0, 0));
 		main_actor->get_followers();
 	}
 }

@@ -23,6 +23,8 @@
 #  include <config.h>
 #endif
 
+#include <memory>
+
 #include <iostream>           /* Debugging. */
 #include <cstdlib>
 #include <cstring>
@@ -3855,7 +3857,7 @@ int Actor::figure_hit_points(
 	if (explodes && !explosion) { // Explosions shouldn't explode again.
 		// Time to explode.
 		Tile_coord offset(0, 0, get_info().get_3d_height() / 2);
-		eman->add_effect(new Explosion_effect(get_tile() + offset,
+		eman->add_effect(std::make_unique<Explosion_effect>(get_tile() + offset,
 		                                      nullptr, 0, weapon_shape, ammo_shape, attacker));
 		// The explosion will handle the damage.
 		return -1;

@@ -22,6 +22,8 @@
 #  include <config.h>
 #endif
 
+#include <memory>
+
 #include "actors.h"
 #include "combat.h"
 #include "combat_opts.h"
@@ -229,12 +231,12 @@ bool Combat_schedule::teleport(
 	         src.tx % c_tiles_per_chunk, src.ty % c_tiles_per_chunk);
 	if (src.tz < 0)
 		src.tz = 0;
-	eman->add_effect(new Fire_field_effect(src));
+	eman->add_effect(std::make_unique<Fire_field_effect>(src));
 	int sfx = Audio::game_sfx(43);
 	Audio::get_ptr()->play_sound_effect(sfx, npc);  // The weird noise.
 	npc->move(dest.tx, dest.ty, dest.tz);
 	// Show the stars.
-	eman->add_effect(new Sprites_effect(7, npc, 0, 0, 0, 0));
+	eman->add_effect(std::make_unique<Sprites_effect>(7, npc, 0, 0, 0, 0));
 	return true;
 }
 
@@ -258,7 +260,7 @@ bool Combat_schedule::be_invisible(
 ) {
 	Object_sfx::Play(npc, Audio::game_sfx(44));
 	gwin->get_effects()->add_effect(
-	    new Sprites_effect(12, npc, 0, 0, 0, 0, 0, -1));
+	    std::make_unique<Sprites_effect>(12, npc, 0, 0, 0, 0, 0, -1));
 	npc->set_flag(Obj_flags::invisible);
 	npc->add_dirty();
 	npc->start_std();       // Back into queue.
@@ -1060,14 +1062,14 @@ bool Combat_schedule::attack_target(
 		// the possibility of the attacker's combat be lowered
 		// (e.g., due to being paralyzed) while the projectile is
 		// in flight and before it hits.
-		Projectile_effect *projectile;
+		std::unique_ptr<Projectile_effect> projectile;
 		if (target)
-			projectile = new Projectile_effect(attacker, target, weapon,
+			projectile = std::make_unique<Projectile_effect>(attacker, target, weapon,
 			                                   ammo ? ammo->get_shapenum() : proj, proj, attval);
 		else
-			projectile = new Projectile_effect(attacker, tile, weapon,
+			projectile = std::make_unique<Projectile_effect>(attacker, tile, weapon,
 			                                   ammo ? ammo->get_shapenum() : proj, proj, attval);
-		gwin->get_effects()->add_effect(projectile);
+		gwin->get_effects()->add_effect(std::move(projectile));
 		return true;
 	} else if (target) {
 		// Do nothing when attacking tiles in melee.
@@ -1082,7 +1084,7 @@ bool Combat_schedule::attack_target(
 		if (info.is_explosive()) {  // Powder keg.
 			// Blow up *instead*.
 			Tile_coord offset(0, 0, target->get_info().get_3d_height() / 2);
-			eman->add_effect(new Explosion_effect(target->get_tile() + offset,
+			eman->add_effect(std::make_unique<Explosion_effect>(target->get_tile() + offset,
 			                                      target, 0, weapon, -1, attacker));
 		} else {
 		    Game_object_weak trg_check = weak_from_obj(trg);

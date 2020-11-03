@@ -22,6 +22,7 @@
 
 #include <cmath>
 #include <map>
+#include <memory>
 
 #include "gamemap.h"
 #include "chunks.h"
@@ -767,7 +768,7 @@ USECODE_INTRINSIC(play_music) {
 		Game_object *obj = get_item(parms[1]);
 		if (obj && !obj->is_pos_invalid())
 			gwin->get_effects()->add_effect(
-			    new Sprites_effect(24, obj, 0, 0, -2, -2));
+			    std::make_unique<Sprites_effect>(24, obj, 0, 0, -2, -2));
 	}
 	return no_ret;
 }
@@ -1644,7 +1645,7 @@ USECODE_INTRINSIC(sprite_effect) {
 	// Display animation from sprites.vga.
 	// show_sprite(sprite#, tx, ty, dx, dy, frame, length??);
 	gwin->get_effects()->add_effect(
-	    new Sprites_effect(parms[0].get_int_value(),
+	    std::make_unique<Sprites_effect>(parms[0].get_int_value(),
 	                       Tile_coord(parms[1].get_int_value(), parms[2].get_int_value(),
 	                                  0),
 	                       parms[3].get_int_value(), parms[4].get_int_value(), 0,
@@ -1659,7 +1660,7 @@ USECODE_INTRINSIC(obj_sprite_effect) {
 	Game_object *obj = get_item(parms[0]);
 	if (obj)
 		gwin->get_effects()->add_effect(
-		    new Sprites_effect(parms[1].get_int_value(), obj,
+		    std::make_unique<Sprites_effect>(parms[1].get_int_value(), obj,
 		                       -parms[2].get_int_value(), -parms[3].get_int_value(),
 		                       parms[4].get_int_value(), parms[5].get_int_value(),
 		                       parms[6].get_int_value(), parms[7].get_int_value()));
@@ -1807,7 +1808,7 @@ USECODE_INTRINSIC(lightning) {
 	ignore_unused_variable_warning(num_parms, parms);
 	// 1 sec. is long enough for 1 flash.
 	gwin->get_effects()->remove_usecode_lightning();
-	gwin->get_effects()->add_effect(new Lightning_effect(1000, 0, true));
+	gwin->get_effects()->add_effect(std::make_unique<Lightning_effect>(1000, 0, true));
 	return no_ret;
 }
 
@@ -2277,7 +2278,7 @@ USECODE_INTRINSIC(fire_projectile) {
 	dest.ty += dist * dy;
 
 	// Fire missile.
-	gwin->get_effects()->add_effect(new Projectile_effect(attacker,
+	gwin->get_effects()->add_effect(std::make_unique<Projectile_effect>(attacker,
 	                                dest, wshape, ashape, missile, attval, 4));
 	return no_ret;
 }

@@ -21,6 +21,8 @@
 #  include <config.h>
 #endif
 
+#include <memory>
+
 #include "Audio.h"
 #include "monsters.h"
 #include "cheat.h"
@@ -104,7 +106,7 @@ void Missile_launcher::handle_event(
 			return;
 		}
 	}
-	Projectile_effect *proj = nullptr;
+	std::unique_ptr<Projectile_effect> proj{nullptr};
 	if (dir < 8) {          // Direction given?
 		// Get adjacent tile in direction.
 		Tile_coord adj = src.get_neighbor(dir % 8);
@@ -114,7 +116,8 @@ void Missile_launcher::handle_event(
 		Tile_coord dest = src;
 		dest.tx += range * dx;
 		dest.ty += range * dy;
-		proj = new Projectile_effect(egg, dest, weapon, shapenum, shapenum);
+		proj = std::make_unique<Projectile_effect>(egg,
+				dest, weapon, shapenum, shapenum);
 	} else {            // Target a party member.
 		Actor *party[9];
 		int psize = gwin->get_party(party, 1);
@@ -124,11 +127,11 @@ void Missile_launcher::handle_event(
 		for (int i = n; !proj && cnt; cnt--, i = (i + 1) % psize)
 			if (Fast_pathfinder_client::is_straight_path(src,
 			        party[i]->get_tile()))
-				proj = new Projectile_effect(
+				proj = std::make_unique<Projectile_effect>(
 				    src, party[i], weapon, shapenum, shapenum);
 	}
 	if (proj)
-		eman->add_effect(proj);
+		eman->add_effect(std::move(proj));
 	if (chk_range)
 		gwin->get_tqueue()->add(curtime + (delay > 0 ? delay : 1), this, udata);
 }
@@ -1097,21 +1100,21 @@ void Egg_object::set_weather(
 		eman->remove_weather_effects();
 		break;
 	case 1:     // Snow.
-		eman->add_effect(new Snowstorm_effect(len, 0, egg));
+		eman->add_effect(std::make_unique<Snowstorm_effect>(len, 0, egg));
 		break;
 	case 2:     // Storm.
-		eman->add_effect(new Storm_effect(len, 0, egg));
+		eman->add_effect(std::make_unique<Storm_effect>(len, 0, egg));
 		break;
 	case 3:     // (On Ambrosia).
 		eman->remove_weather_effects();
-		eman->add_effect(new Sparkle_effect(len, 0, egg));
+		eman->add_effect(std::make_unique<Sparkle_effect>(len, 0, egg));
 		break;
 	case 4:     // Fog.
-		eman->add_effect(new Fog_effect(len, 0, egg));
+		eman->add_effect(std::make_unique<Fog_effect>(len, 0, egg));
 		break;
 	case 5:     // Overcast.
 	case 6:     // Clouds.
-		eman->add_effect(new Clouds_effect(len, 0, egg, weather));
+		eman->add_effect(std::make_unique<Clouds_effect>(len, 0, egg, weather));
 		break;
 	default:
 		break;
