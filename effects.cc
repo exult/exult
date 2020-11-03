@@ -314,7 +314,6 @@ Sprites_effect::Sprites_effect(
     int rps             // Reps, or <0 to go through frames.
 ) : sprite(num, frm, SF_SPRITES_VGA), pos(p),
 	xoff(0), yoff(0), deltax(dx), deltay(dy), reps(rps) {
-	Game_window *gwin = Game_window::get_instance();
 	frames = sprite.get_num_frames();
 	// Start.
 	gwin->get_tqueue()->add(Game::get_ticks() + delay, this);
@@ -334,7 +333,6 @@ Sprites_effect::Sprites_effect(
 ) : sprite(num, frm, SF_SPRITES_VGA), item(weak_from_obj(it)), xoff(xf),
 	yoff(yf), deltax(dx), deltay(dy), reps(rps) {
 	pos = it->get_tile();
-	Game_window *gwin = Game_window::get_instance();
 	frames = sprite.get_num_frames();
 	// Start immediately.
 	gwin->get_tqueue()->add(Game::get_ticks(), this);
@@ -367,7 +365,6 @@ void Sprites_effect::handle_event(
     uintptr udata
 ) {
 	int frame_num = sprite.get_framenum();
-	Game_window *gwin = Game_window::get_instance();
 	int delay = gwin->get_std_delay();// Delay between frames.  Needs to
 	//   match usecode animations.
 	if (!reps || (reps < 0 && frame_num == frames)) { // At end?
@@ -510,7 +507,6 @@ void Projectile_effect::init(
     Tile_coord const &d         // Destination.
 ) {
 	no_blocking = false;        // We'll check the ammo & weapon.
-	Game_window *gwin = Game_window::get_instance();
 	const Weapon_info *winfo = ShapeID::get_info(weapon).get_weapon_info();
 	if (winfo) {
 		no_blocking = no_blocking || winfo->no_blocking();
@@ -703,7 +699,6 @@ void Projectile_effect::handle_event(
     unsigned long curtime,      // Current time of day.
     uintptr udata
 ) {
-	Game_window *gwin = Game_window::get_instance();
 	int delay = gwin->get_std_delay() / 2;
 	add_dirty();            // Force repaint of old pos.
 	const Weapon_info *winf = ShapeID::get_info(weapon).get_weapon_info();
@@ -852,7 +847,6 @@ Homing_projectile::Homing_projectile(   // A better name is welcome...
 	dest = tp;
 	target = trg ? trg->as_actor() : nullptr;
 	stationary = target == nullptr; //If true, the sprite will 'park' at dest
-	Game_window *gwin = Game_window::get_instance();
 	frames = sprite.get_num_frames();
 	// Go for 20 seconds.
 	stop_time = Game::get_ticks() + 20 * 1000;
@@ -886,7 +880,6 @@ void Homing_projectile::handle_event(
     unsigned long curtime,      // Current time of day.
     uintptr udata
 ) {
-	Game_window *gwin = Game_window::get_instance();
 	int width = add_dirty();    // Repaint old area.
 
 	if ((target && !target->is_dead()) || stationary) {
@@ -1125,7 +1118,6 @@ Weather_effect::Weather_effect(
     int n,              // Weather number.
     Game_object *egg        // Egg that started it, or null.
 ) : num(n) {
-	Game_window *gwin = Game_window::get_instance();
 	if (egg)
 		eggloc = egg->get_tile();
 	else
@@ -1311,7 +1303,6 @@ public:
 	    unsigned long curtime,      // Current time of day.
 	    uintptr udata
 	) override {
-		Game_window *gwin = Game_window::get_instance();
 
 		// Gradual start/end.
 		change_ndrops(curtime);
@@ -1373,7 +1364,6 @@ void Lightning_effect::handle_event(
     unsigned long curtime,      // Current time of day.
     uintptr udata
 ) {
-	Game_window *gwin = Game_window::get_instance();
 	int r = rand();         // Get a random #.
 	int delay = 100;        // Delay for next time.
 	if (flashing) {         // Just turned white?  Restore.
@@ -1425,7 +1415,6 @@ void Storm_effect::handle_event(
     uintptr udata
 ) {
 	ignore_unused_variable_warning(curtime);
-	Game_window *gwin = Game_window::get_instance();
 	if (start) {
 		start = false;
 		// Nothing more to do but end.
@@ -1456,7 +1445,6 @@ void Snowstorm_effect::handle_event(
     uintptr udata
 ) {
 	ignore_unused_variable_warning(curtime);
-	Game_window *gwin = Game_window::get_instance();
 	if (start) {
 		start = false;
 		// Nothing more to do but end.
@@ -1487,7 +1475,6 @@ void Sparkle_effect::handle_event(
     uintptr udata
 ) {
 	ignore_unused_variable_warning(curtime);
-	Game_window *gwin = Game_window::get_instance();
 	if (start) {
 		start = false;
 		// Nothing more to do but end.
@@ -1680,7 +1667,6 @@ void Clouds_effect::handle_event(
     uintptr udata
 ) {
 	const int delay = 100;
-	Game_window *gwin = Game_window::get_instance();
 	if (curtime >= stop_time) {
 		// Time to stop.
 		eman->remove_effect(this);
