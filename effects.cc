@@ -361,8 +361,8 @@ void Sprites_effect::handle_event(
 	//   match usecode animations.
 	if (!reps || (reps < 0 && frame_num == frames)) { // At end?
 		// Remove & delete this.
-		eman->remove_effect(this);
 		gwin->set_all_dirty();
+		eman->remove_effect(this);
 		return;
 	}
 	add_dirty(frame_num);       // Clear out old.
