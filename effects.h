@@ -85,7 +85,7 @@ public:
 	~Special_effect() override;
 	// Render.
 	virtual void paint();
-	virtual bool is_weather() {  // Need to distinguish weather.
+	virtual bool is_weather() const {  // Need to distinguish weather.
 		return false;
 	}
 	virtual bool is_usecode_lightning() const {
@@ -250,7 +250,7 @@ public:
 	Weather_effect(int duration, int delay, int n, Game_object *egg = nullptr);
 	// Avatar out of range?
 	bool out_of_range(Tile_coord &avpos, int dist);
-	bool is_weather() override {
+	bool is_weather() const override {
 		return true;
 	}
 	int get_num() {
