@@ -39,6 +39,7 @@ class Image_window8;
 class Shape_frame;
 class Actor;
 class Special_effect;
+class Weather_effect;
 class Text_effect;
 
 using Game_object_weak = std::weak_ptr<Game_object>;
@@ -48,7 +49,9 @@ using Game_object_weak = std::weak_ptr<Game_object>;
  */
 class Effects_manager {
 	Game_window *gwin;      // Handy pointer.
-	std::list<std::unique_ptr<Special_effect>> effects;    // Sprite effects, projectiles, etc.
+	std::list<std::unique_ptr<Weather_effect>> weather_effects;    // Sprite effects, projectiles, etc.
+	std::list<std::unique_ptr<Special_effect>> other_effects;    // Sprite effects, projectiles, etc.
+	std::list<Special_effect*> effects;
 	std::list<std::unique_ptr<Text_effect>> texts;     // Text snippets.
 public:
 	Effects_manager(Game_window *g) : gwin(g)
@@ -59,6 +62,7 @@ public:
 	void add_text(const char *msg, int x, int y);
 	void center_text(const char *msg);
 	void add_effect(std::unique_ptr<Special_effect> effect);
+	void add_weather_effect(std::unique_ptr<Weather_effect> effect);
 	void remove_text_effect(Game_object *item);
 	// Remove text item & delete it.
 	void remove_effect(Special_effect *effect);
@@ -85,9 +89,6 @@ public:
 	~Special_effect() override;
 	// Render.
 	virtual void paint();
-	virtual bool is_weather() const {  // Need to distinguish weather.
-		return false;
-	}
 	virtual bool is_usecode_lightning() const {
 		return false;
 	}
@@ -250,9 +251,6 @@ public:
 	Weather_effect(int duration, int delay, int n, Game_object *egg = nullptr);
 	// Avatar out of range?
 	bool out_of_range(Tile_coord &avpos, int dist);
-	bool is_weather() const override {
-		return true;
-	}
 	int get_num() {
 		return num;
 	}
