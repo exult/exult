@@ -245,12 +245,22 @@ void Effects_manager::remove_weather_effects(
 
 void Effects_manager::remove_usecode_lightning(
 ) {
-	effects.remove_if([](const auto& ef) {
+	auto lightning_begin = std::stable_partition(
+		weather_effects.begin(),
+		weather_effects.end(),
+		[](auto&& ef) {
 			return ef->is_usecode_lightning();
-	});
-    weather_effects.remove_if([](const auto& ef) {
-			return ef->is_usecode_lightning();
-	});
+		}
+	);
+	auto wend = weather_effects.end();
+	std::for_each(
+		lightning_begin,
+		wend,
+		[&](auto&& el) {
+			effects.remove(el.get());
+		}
+	);
+	weather_effects.erase(lightning_begin, wend);
 	gwin->set_all_dirty();
 }
 
