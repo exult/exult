@@ -89,9 +89,6 @@ public:
 	~Special_effect() override;
 	// Render.
 	virtual void paint();
-	virtual bool is_usecode_lightning() const {
-		return false;
-	}
 };
 
 /*
@@ -251,6 +248,7 @@ public:
 	Weather_effect(int duration, int delay, int n, Game_object *egg = nullptr);
 	// Avatar out of range?
 	bool out_of_range(Tile_coord &avpos, int dist);
+	virtual bool is_usecode_lightning() const { return false; }
 	int get_num() {
 		return num;
 	}
