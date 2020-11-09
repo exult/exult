@@ -123,7 +123,7 @@ void Effects_manager::center_text(
  *  Add an weather effect at the start of the chain.
  */
 
-void Effects_manager::add_weather_effect(
+void Effects_manager::add_effect(
     std::unique_ptr<Weather_effect> effect
 ) {
 	weather_effects.emplace_front(std::move(effect));
@@ -137,14 +137,8 @@ void Effects_manager::add_weather_effect(
 void Effects_manager::add_effect(
     std::unique_ptr<Special_effect> effect
 ) {
-	//TODO this shall be fixed by class hierarchy!
-	if (dynamic_cast<Weather_effect*>(effect.get())) {
-		std::unique_ptr<Weather_effect> we { static_cast<Weather_effect*>(effect.release()) };
-		add_weather_effect(std::move(we));
-	} else {
-		other_effects.emplace_front(std::move(effect));
-		effects.emplace_front(other_effects.front().get());
-	}
+	other_effects.emplace_front(std::move(effect));
+	effects.emplace_front(other_effects.front().get());
 }
 
 /**
@@ -165,20 +159,28 @@ void Effects_manager::remove_text_effect(
 }
 
 /**
- *  Remove a sprite from the chain and delete it.
+ *  Remove a sprite from the chain
  */
 
 void Effects_manager::remove_effect(
     Special_effect *effect
 ) {
-	//safe, will delete for one list or another
 	other_effects.remove_if([effect](const auto& ef) { return ef.get() == effect; });
-	weather_effects.remove_if([effect](const auto& ef) { return ef.get() == effect; });
 	effects.remove(effect);
 }
 
 /**
- *  Remove text from the chain and delete it.
+ *  Remove a weather effect from the chain
+ */
+
+void Effects_manager::remove_effect(
+    Weather_effect *effect
+) {
+	weather_effects.remove_if([effect](const auto& ef) { return ef.get() == effect; });
+	effects.remove(effect);
+}
+/**
+ *  Remove text from the chain
  */
 void Effects_manager::remove_text_effect(
     Text_effect *txt
@@ -305,6 +307,15 @@ Special_effect::~Special_effect(
 }
 
 /**
+ *  Some special effects may not need painting.
+ */
+
+void Paintable_effect::paint(
+) {
+}
+
+
+/**
  *  Paint them all.
  */
 
@@ -331,13 +342,6 @@ void Effects_manager::update_dirty_text(
 ) {
 	for (auto& txt : texts)
 		txt->update_dirty();
-}
-/**
- *  Some special effects may not need painting.
- */
-
-void Special_effect::paint(
-) {
 }
 
 /**
@@ -1156,7 +1160,7 @@ Weather_effect::Weather_effect(
     int delay,          // Delay before starting.
     int n,              // Weather number.
     Game_object *egg        // Egg that started it, or null.
-) : num(n) {
+) : gwin(Game_window::get_instance()), num(n) {
 	if (egg)
 		eggloc = egg->get_tile();
 	else
@@ -1181,6 +1185,11 @@ bool Weather_effect::out_of_range(
 	return eggloc.distance(avpos) >= dist;
 }
 
+Weather_effect::~Weather_effect(
+) {
+	if (in_queue())
+		gwin->get_tqueue()->remove(this);
+}
 
 /*
  *  A generic raindrop/snowflake/magic sparkle particle:

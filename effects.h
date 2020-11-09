@@ -41,6 +41,7 @@ class Actor;
 class Special_effect;
 class Weather_effect;
 class Text_effect;
+class Paintable_effect;
 
 using Game_object_weak = std::weak_ptr<Game_object>;
 
@@ -51,7 +52,7 @@ class Effects_manager {
 	Game_window *gwin;      // Handy pointer.
 	std::list<std::unique_ptr<Weather_effect>> weather_effects;    // Sprite effects, projectiles, etc.
 	std::list<std::unique_ptr<Special_effect>> other_effects;    // Sprite effects, projectiles, etc.
-	std::list<Special_effect*> effects;
+	std::list<Paintable_effect*> effects;
 	std::list<std::unique_ptr<Text_effect>> texts;     // Text snippets.
 public:
 	Effects_manager(Game_window *g) : gwin(g)
@@ -62,10 +63,11 @@ public:
 	void add_text(const char *msg, int x, int y);
 	void center_text(const char *msg);
 	void add_effect(std::unique_ptr<Special_effect> effect);
-	void add_weather_effect(std::unique_ptr<Weather_effect> effect);
+	void add_effect(std::unique_ptr<Weather_effect> effect);
 	void remove_text_effect(Game_object *item);
 	// Remove text item & delete it.
 	void remove_effect(Special_effect *effect);
+	void remove_effect(Weather_effect *effect);
 	void remove_text_effect(Text_effect *txt);
 	void remove_all_effects(bool repaint = false);
 	void remove_text_effects();
@@ -81,14 +83,24 @@ public:
 /*
  *  Base class for special-effects:
  */
-class Special_effect : public Time_sensitive, public Game_singletons {
+class Paintable_effect
+{
+public:
+	virtual void paint();
+protected:
+	~Paintable_effect() = default;
+};
+
+class Special_effect
+	: public Time_sensitive
+	, public Game_singletons
+	, public Paintable_effect
+{
 protected:
 	Game_window *gwin;
 public:
 	Special_effect();
-	~Special_effect() override;
-	// Render.
-	virtual void paint();
+	virtual ~Special_effect();
 };
 
 /*
@@ -239,8 +251,13 @@ public:
 /*
  *  Weather.
  */
-class Weather_effect : public Special_effect {
+class Weather_effect
+	: public Time_sensitive
+	, public Game_singletons
+	, public Paintable_effect
+{
 protected:
+	Game_window *gwin;
 	uint32 stop_time;       // Time in 1/1000 secs. to stop.
 	int num;            // Weather ID (0-6), or -1.
 	Tile_coord eggloc;      // Location of egg that started this.
@@ -252,6 +269,7 @@ public:
 	int get_num() {
 		return num;
 	}
+	virtual ~Weather_effect();
 };
 
 /*
