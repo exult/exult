@@ -224,7 +224,7 @@ void Effects_manager::remove_weather_effects(
 	Actor *main_actor = gwin->get_main_actor();
 	Tile_coord apos = main_actor ? main_actor->get_tile()
 	                  : Tile_coord(-1, -1, -1);
-	auto removal_iterator = std::remove_if(
+	auto removal_iterator = std::stable_partition(
 		weather_effects.begin(),
 		weather_effects.end(),
 		[&](const auto& ef) {
