@@ -170,7 +170,7 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS(limits.h sys/time.h unistd.h)
 AC_CHECK_HEADERS(sys/types.h sys/socket.h netdb.h)
-AC_CHECK_HEADERS(sys/wait.h signal.h)
+AC_CHECK_HEADERS(sys/wait.h signal.h getopt.h)
 AC_CHECK_HEADERS(png.h, AM_CONDITIONAL(HAVE_PNG,true), AM_CONDITIONAL(HAVE_PNG, false))
 
 # ---------------------------------------------------------------------
@@ -190,7 +190,7 @@ dnl AC_FUNC_MALLOC
 
 AC_FUNC_MEMCMP
 
-AC_CHECK_FUNCS([atexit dup2 getcwd isascii memchr memmove memset mkdir pow select socket strcasecmp strchr strstr strtol strtoul])
+AC_CHECK_FUNCS([atexit dup2 getcwd isascii memchr memmove memset mkdir pow select socket strcasecmp strchr strstr strtol strtoul getopt_long])
 
 AC_MSG_CHECKING([for getaddrinfo()])
 AC_TRY_COMPILE([

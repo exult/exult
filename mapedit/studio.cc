@@ -30,6 +30,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <glib.h>
 #include <unistd.h>
+#ifdef HAVE_GETOPT_LONG
+#include <getopt.h>
+#endif
 #include <cerrno>
 
 #include <cstdio>           /* These are for sockets. */
@@ -538,7 +541,22 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 	static const char *optstring = "hsc:g:m:px:";
 	opterr = 0;         // Don't let getopt() print errs.
 	int optchr;
+#ifdef HAVE_GETOPT_LONG
+	static const struct option optarray[] = {
+		{ "help",           no_argument, nullptr, 'h' },
+		{ "silent",         no_argument, nullptr, 's' },
+		{ "config",   required_argument, nullptr, 'c' },
+		{ "game",     required_argument, nullptr, 'g' },
+		{ "mod",      required_argument, nullptr, 'm' },
+		{ "portable",       no_argument, nullptr, 'p' },
+		{ "xmldir",   required_argument, nullptr, 'x' },
+		{ nullptr,    0,                 nullptr,  0  }
+	};
+	while ((optchr = getopt_long(argc, argv, optstring,
+	                             optarray, nullptr)) != -1)
+#else
 	while ((optchr = getopt(argc, argv, optstring)) != -1)
+#endif // HAVE_GETOPT_LONG
 		switch (optchr) {
 		case 'c':       // Configuration file.
 			alt_cfg = optarg;
@@ -566,6 +584,25 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 			silent = true;
 			break;
 		case 'h':
+#ifdef HAVE_GETOPT_LONG
+			cerr << "Usage: exult_studio [--help|-h] [--silent|-s] [--config|-c <configfile>]" << endl
+			     << "                    [--game|-g <game>] [--mod|-m <mod>]" << endl
+#if defined _WIN32
+			     << "                    [--portable|-p]" << endl
+#endif
+			     << "                    [--xmldir|-x <gladedir>]" << endl
+			     << "        --help                   Show this information" << endl
+			     << "        --silent                 Do not display the state of the games" << endl
+			     << "        --config configfile      Specify alternate config file, default is (.)exult.cfg" << endl
+			     << "        --game game              Start with <game> directly, one of :" << endl
+			     << "                                         blackgate or bg, forgeofvirtue or fov" << endl
+			     << "                                         serpentisle or si, silverseed or ss, serpentbeta or sib" << endl
+			     << "        --mod mod                With --game, Start vith <game> and <mod>" << endl
+#if defined _WIN32
+			     << "        --portable               Make the home path the Exult directory (old Windows way)" << endl
+#endif
+			     << "        --xmldir gladedir        Specify where the exult_studio.glade resides, default is share/exult" << endl;
+#else
 			cerr << "Usage: exult_studio [-h] [-s] [-c <configfile>]" << endl
 			     << "                    [-g <game>] [-m <mod>]" << endl
 #if defined _WIN32
@@ -583,6 +620,7 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 			     << "        -p              Make the home path the Exult directory (old Windows way)" << endl
 #endif
 			     << "        -x gladedir     Specify where the exult_studio.glade resides, default is share/exult" << endl;
+#endif // HAVE_GETOPT_LONG
 			exit(1);
 		}
 #ifdef _WIN32
