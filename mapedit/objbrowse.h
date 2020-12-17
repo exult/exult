@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2013 The Exult Team
+Copyright (C) 2000-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,26 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef OBJBROWSE_H
 #define OBJBROWSE_H
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wparentheses"
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#if !defined(__llvm__) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-#else
-#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
-#endif
-#endif  // __GNUC__
-#include <gtk/gtk.h>
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif  // __GNUC__
-#include "gtk_redefines.h"
-
-#include "ignore_unused_variable_warning.h"
 #include "utils.h"
 
 #include <string>
@@ -99,7 +79,6 @@ public:
 	virtual void render() = 0;
 	// Blit onto screen.
 	virtual void show(int x, int y, int w, int h) = 0;
-	virtual void show() = 0;
 	virtual int get_selected_id() {
 		return -1;
 	}
@@ -122,12 +101,12 @@ protected:
 
 public:
 	enum {              // Create controls at bottom.
-	    // OR together what you want.
-	    find_controls = 1,
-	    locate_controls = 2,
-	    locate_quality = 4,
-	    move_controls = 8,
-	    locate_frame = 16
+		// OR together what you want.
+		find_controls = 1,
+		locate_controls = 2,
+		locate_quality = 4,
+		move_controls = 8,
+		locate_frame = 16
 	};
 	GtkWidget *create_controls(int controls);
 	// Virtuals for controls.
@@ -147,10 +126,10 @@ public:
 using File_sel_okay_fun = void (*)(const char *, gpointer);
 void Create_file_selection(
     const char *title,
-	const char *path,
-	const char *filtername,
-	const std::vector<std::string>& filters,
-	GtkFileChooserAction action,
+    const char *path,
+    const char *filtername,
+    const std::vector<std::string> &filters,
+    GtkFileChooserAction action,
     File_sel_okay_fun ok_handler,
     gpointer user_data
 );

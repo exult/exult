@@ -5,7 +5,7 @@
  **/
 
 /*
-Copyright (C) 2001-2013 The Exult Team
+Copyright (C) 2001-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -25,31 +25,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef INCL_LOCATOR
 #define INCL_LOCATOR
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wparentheses"
-#if !defined(__llvm__) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-#else
-#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
-#endif
-#endif  // __GNUC__
-#include <gtk/gtk.h>
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif  // __GNUC__
-
 /*
  *  The 'locator' window:
  */
 class Locator {
 	GtkWidget *win;                  // Main window.
 	GtkWidget *draw;                 // GTK draw area to display.
-	GdkGC *drawgc = nullptr;         // For drawing in 'draw'.
+	cairo_t *drawgc = nullptr;       // For drawing in 'draw'.
 	GtkAdjustment *hadj, *vadj;      // For horiz., vert. scales.
-	int tx = 0, ty = 0, txs = 40, tys = 25/*, scale*/;    // Current Exult win. info. in tiles.
+	int tx = 0, ty = 0;              // Current Exult win. info. in tiles.
+	int txs = 40, tys = 25;          // Current Exult win. info. in tiles.
 	GdkRectangle viewbox;            // Where view box was last drawn.
 	bool dragging = false;           // True if dragging view box.
 	int drag_relx, drag_rely;        // Mouse pos. rel to view box.
@@ -63,18 +48,27 @@ public:
 	Locator();
 	~Locator();
 	void show(bool tf);     // Show/hide.
+	static gboolean on_loc_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	// Configure when created/resized.
 	void configure(GtkWidget *widget);
 	void render(GdkRectangle *area = nullptr);
+	// Manage graphic context.
+	void set_graphic_context(cairo_t *cairo) {
+		drawgc = cairo;
+	}
+	cairo_t *get_graphic_context() {
+		return drawgc;
+	}
 	// Message from exult.
 	void view_changed(const unsigned char *data, int datalen);
 	// Handle scrollbar.
 	static void vscrolled(GtkAdjustment *adj, gpointer data);
 	static void hscrolled(GtkAdjustment *adj, gpointer data);
 	// Handle mouse.
-	gint mouse_press(GdkEventButton *event);
-	gint mouse_release(GdkEventButton *event);
-	gint mouse_motion(GdkEventMotion *event);
+	gboolean mouse_press(GdkEventButton *event);
+	gboolean mouse_release(GdkEventButton *event);
+	gboolean mouse_motion(GdkEventMotion *event);
 };
 
 #endif

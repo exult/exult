@@ -5,7 +5,7 @@
  **/
 
 /*
-Copyright (C) 2002-2013 The Exult Team
+Copyright (C) 2002-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,6 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
+#include "studio.h"
+#include "ignore_unused_variable_warning.h"
+
 #include "shapefile.h"
 #include "u7drag.h"
 #include "shapegroup.h"
@@ -38,7 +41,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Flex.h"
 #include "exceptions.h"
 #include "combo.h"
-#include "studio.h"
 
 using std::vector;
 using std::string;
@@ -71,7 +73,7 @@ Object_browser *Shape_file_info::get_browser(
 		return browser;     // Okay.
 	browser = create_browser(vgafile, palbuf, nullptr);
 	// Add a reference (us).
-	gtk_widget_ref(browser->get_widget());
+	g_object_ref(browser->get_widget());
 	return browser;
 }
 
@@ -94,7 +96,7 @@ Object_browser *Image_file_info::create_browser(
     Shape_group *g          // Group, or 0.
 ) {
 	auto *chooser = new Shape_chooser(ifile, palbuf, 400, 64,
-	        g, this);
+	                                  g, this);
 	// Fonts?  Show 'A' as the default.
 	if (strcasecmp(basename.c_str(), "fonts.vga") == 0)
 		chooser->set_framenum0('A');
@@ -116,7 +118,7 @@ void Image_file_info::flush(
 	modified = false;
 	int nshapes = ifile->get_num_shapes();
 	int shnum;          // First read all entries.
-	vector<Shape*> shapes(nshapes);
+	vector<Shape *> shapes(nshapes);
 	for (shnum = 0; shnum < nshapes; shnum++)
 		shapes[shnum] = ifile->extract_shape(shnum);
 	string filestr("<PATCH>/"); // Always write to 'patch'.
@@ -454,7 +456,7 @@ void Flex_file_info::flush(
 	}
 	string filestr("<PATCH>/"); // Always write to 'patch'.
 	filestr += basename;
-	OFileDataSource ds(filestr.c_str());	// Throws exception on failure
+	OFileDataSource ds(filestr.c_str());    // Throws exception on failure
 	if (cnt <= 1 && write_flat) { // Write flat file.
 		if (cnt)
 			ds.write(entries[0].get(), lengths[0]);

@@ -8,7 +8,7 @@
 #define INCL_NPCLST 1
 
 /*
-Copyright (C) 2005-2013  The Exult Team
+Copyright (C) 2005-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -81,10 +81,6 @@ class Npc_chooser: public Object_browser, public Shape_draw {
 	void (*sel_changed)();      // Called when selection changes.
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
-	void show() override {
-		Npc_chooser::show(0, 0,
-		                  draw->allocation.width, draw->allocation.height);
-	}
 	void select(int new_sel);   // Show new selection.
 	void render() override;      // Draw list.
 	void set_background_color(guint32 c) override {
@@ -126,24 +122,22 @@ public:
 	// Configure when created/resized.
 	gint configure(GdkEventConfigure *event);
 	// Blit to screen.
-	static gint expose(GtkWidget *widget, GdkEventExpose *event,
-	                   gpointer data);
+	static gint expose(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	// Handle mouse press.
 	gint mouse_press(GtkWidget *widget, GdkEventButton *event);
 	// Give dragged shape.
 	static void drag_data_get(GtkWidget *widget, GdkDragContext *context,
-	                          GtkSelectionData *seldata, guint info, guint time, gpointer data);
+	                          GtkSelectionData *seldata,
+	                          guint info, guint time, gpointer data);
 	void edit_npc();
-	// Someone else selected.
-	static gint selection_clear(GtkWidget *widget,
-	                            GdkEventSelection *event, gpointer data);
 	static gint drag_begin(GtkWidget *widget, GdkDragContext *context,
 	                       gpointer data);
 	// Handler for drop.
-	static void drag_data_received(GtkWidget *widget,
-	                               GdkDragContext *context, gint x, gint y,
-	                               GtkSelectionData *seldata, guint info, guint time,
-	                               gpointer udata);
+	static void drag_data_received(GtkWidget *widget, GdkDragContext *context,
+	                               gint x, gint y,
+	                               GtkSelectionData *seldata,
+	                               guint info, guint time, gpointer udata);
 	void enable_drop();
 	// Handle scrollbar.
 	static void vscrolled(GtkAdjustment *adj, gpointer data);

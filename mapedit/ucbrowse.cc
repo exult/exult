@@ -5,7 +5,7 @@
  **/
 
 /*
-Copyright (C) 2001-2013 The Exult Team
+Copyright (C) 2001-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -27,10 +27,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #include "studio.h"
+#include "ignore_unused_variable_warning.h"
+
 #include "ucbrowse.h"
 #include "ucsymtbl.h"
 #include "utils.h"
-#include "ignore_unused_variable_warning.h"
 
 using std::ifstream;
 using std::string;
@@ -56,7 +57,7 @@ const char *ExultStudio::browse_usecode(
 		ucbrowsewin->setup_list();
 	}
 	ucbrowsewin->show(true);
-	while (GTK_WIDGET_VISIBLE(ucbrowsewin->get_win()))  // Spin.
+	while (gtk_widget_get_visible(GTK_WIDGET(ucbrowsewin->get_win())))  // Spin.
 		gtk_main_iteration();   // (Blocks).
 	const char *choice = ucbrowsewin->get_choice();
 	return choice;
@@ -70,8 +71,8 @@ C_EXPORT void on_usecodes_ok_clicked(
     gpointer user_data
 ) {
 	ignore_unused_variable_warning(user_data);
-	auto *ucb = static_cast<Usecode_browser *>(gtk_object_get_user_data(
-	                           GTK_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn)))));
+	auto *ucb = static_cast<Usecode_browser *>(g_object_get_data(
+	                G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
 	ucb->okay();
 }
 
@@ -85,8 +86,8 @@ C_EXPORT void on_usecodes_treeview_row_activated(
     gpointer user_data
 ) {
 	ignore_unused_variable_warning(path, column, user_data);
-	auto *ucb = static_cast<Usecode_browser *>(gtk_object_get_user_data(
-	                           GTK_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(treeview)))));
+	auto *ucb = static_cast<Usecode_browser *>(g_object_get_data(
+	                G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(treeview))), "user_data"));
 	ucb->okay();
 }
 
@@ -98,8 +99,8 @@ C_EXPORT void on_usecodes_cancel_clicked(
     gpointer user_data
 ) {
 	ignore_unused_variable_warning(user_data);
-	auto *ucb = static_cast<Usecode_browser *>(gtk_object_get_user_data(
-	                           GTK_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn)))));
+	auto *ucb = static_cast<Usecode_browser *>(g_object_get_data(
+	                G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
 	ucb->cancel();
 }
 
@@ -113,7 +114,7 @@ C_EXPORT gboolean on_usecodes_dialog_delete_event(
 ) {
 	ignore_unused_variable_warning(event, user_data);
 	auto *ucb = static_cast<Usecode_browser *>(
-	                       gtk_object_get_user_data(GTK_OBJECT(widget)));
+	                g_object_get_data(G_OBJECT(widget), "user_data"));
 
 	ucb->cancel();
 	return TRUE;
@@ -127,8 +128,8 @@ C_EXPORT void on_view_uc_classes_toggled(
     gpointer user_data
 ) {
 	ignore_unused_variable_warning(user_data);
-	auto *ucb = static_cast<Usecode_browser *>(gtk_object_get_user_data(
-	                           GTK_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn)))));
+	auto *ucb = static_cast<Usecode_browser *>(g_object_get_data(
+	                G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
 	ucb->setup_list();
 }
 C_EXPORT void on_view_uc_functions_toggled(
@@ -136,8 +137,8 @@ C_EXPORT void on_view_uc_functions_toggled(
     gpointer user_data
 ) {
 	ignore_unused_variable_warning(user_data);
-	auto *ucb = static_cast<Usecode_browser *>(gtk_object_get_user_data(
-	                           GTK_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn)))));
+	auto *ucb = static_cast<Usecode_browser *>(g_object_get_data(
+	                G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
 	ucb->setup_list();
 }
 C_EXPORT void on_view_uc_shapes_toggled(
@@ -145,8 +146,8 @@ C_EXPORT void on_view_uc_shapes_toggled(
     gpointer user_data
 ) {
 	ignore_unused_variable_warning(user_data);
-	auto *ucb = static_cast<Usecode_browser *>(gtk_object_get_user_data(
-	                           GTK_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn)))));
+	auto *ucb = static_cast<Usecode_browser *>(g_object_get_data(
+	                G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
 	ucb->setup_list();
 }
 
@@ -155,8 +156,8 @@ C_EXPORT void on_view_uc_objects_toggled(
     gpointer user_data
 ) {
 	ignore_unused_variable_warning(user_data);
-	auto *ucb = static_cast<Usecode_browser *>(gtk_object_get_user_data(
-	                           GTK_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn)))));
+	auto *ucb = static_cast<Usecode_browser *>(g_object_get_data(
+	                G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
 	ucb->setup_list();
 }
 
@@ -169,7 +170,7 @@ static gint ucbrowser_compare_func(
     GtkTreeIter  *b,
     gpointer      userdata
 ) {
-	gint colnum = *static_cast<gint*>(userdata);
+	gint colnum = *static_cast<gint *>(userdata);
 	gint ret = 0;
 	gchar *name1 = nullptr;
 	gchar *name2 = nullptr;
@@ -188,7 +189,7 @@ static gint ucbrowser_compare_func(
 
 extern "C" {
 	void gint_deleter(gpointer data) {
-		gint *ptr = static_cast<gint*>(data);
+		gint *ptr = static_cast<gint *>(data);
 		delete ptr;
 	}
 }
@@ -200,7 +201,7 @@ Usecode_browser::Usecode_browser(
 ) {
 	ExultStudio *studio = ExultStudio::get_instance();
 	win = studio->get_widget("usecodes_dialog");
-	gtk_object_set_user_data(GTK_OBJECT(win), this);
+	g_object_set_data(G_OBJECT(win), "user_data", this);
 	string ucname = get_system_path("<PATCH>/usecode");
 	if (!U7exists(ucname.c_str())) {
 		ucname = get_system_path("<STATIC>/usecode");
@@ -223,11 +224,11 @@ Usecode_browser::Usecode_browser(
 	GtkTreeSortable *sortable = GTK_TREE_SORTABLE(model);
 	gint *iname = new gint(NAME_COL);
 	gint *inum = new gint(NUM_COL);
-	gint *itype = new gint (TYPE_COL);
+	gint *itype = new gint(TYPE_COL);
 	gtk_tree_sortable_set_sort_func(sortable, SORTID_NAME,
 	                                ucbrowser_compare_func, iname, gint_deleter);
 	gtk_tree_sortable_set_sort_func(sortable, SORTID_NUM,
-	                                ucbrowser_compare_func, inum , gint_deleter);
+	                                ucbrowser_compare_func, inum, gint_deleter);
 	gtk_tree_sortable_set_sort_func(sortable, SORTID_TYPE,
 	                                ucbrowser_compare_func, itype, gint_deleter);
 	// Create each column.

@@ -5,7 +5,7 @@
  **/
 
 /*
-Copyright (C) 2000-2013 The Exult Team
+Copyright (C) 2000-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,10 +26,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
+#include "studio.h"
+#include "ignore_unused_variable_warning.h"
+
 #include <cstring>
 #include <cstdlib>
 
-#include "studio.h"
 #include "u7drag.h"
 #include "servemsg.h"
 #include "objserial.h"
@@ -38,7 +40,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "shapefile.h"
 #include "shapedraw.h"
 #include "npclst.h"
-#include "ignore_unused_variable_warning.h"
 
 #ifdef _WIN32
 #include "windrag.h"
@@ -97,8 +98,8 @@ C_EXPORT void on_npc_show_gump_clicked(
 	cout << "In on_npc_show_gump_clicked()" << endl;
 	unsigned char data[Exult_server::maxlength];
 	// Get container address.
-	auto addr = reinterpret_cast<uintptr>(gtk_object_get_user_data(
-	                         GTK_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn)))));
+	auto addr = reinterpret_cast<uintptr>(g_object_get_data(
+	        G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
 	unsigned char *ptr = &data[0];
 	Serial_out io(ptr);
 	io << addr;
@@ -137,15 +138,18 @@ C_EXPORT void on_npc_usecode_browse_clicked(
 /*
  *  Draw shape in NPC shape area.
  */
-C_EXPORT gboolean on_npc_draw_expose_event(
+gboolean ExultStudio::on_npc_draw_expose_event(
     GtkWidget *widget,      // The view window.
-    GdkEventExpose *event,
-    gpointer data           // ->Shape_chooser.
+    cairo_t *cairo,
+    gpointer data           // -> ExultStudio.
 ) {
 	ignore_unused_variable_warning(widget, data);
-	ExultStudio::get_instance()->show_npc_shape(
-	    event->area.x, event->area.y, event->area.width,
-	    event->area.height);
+	ExultStudio *studio = static_cast<ExultStudio *>(data);
+	GdkRectangle area = { 0, 0, 0, 0 };
+	gdk_cairo_get_clip_rectangle(cairo, &area);
+	studio->npc_draw->set_graphic_context(cairo);
+	studio->show_npc_shape(area.x, area.y, area.width, area.height);
+	studio->npc_draw->set_graphic_context(nullptr);
 	return TRUE;
 }
 
@@ -180,15 +184,18 @@ static void Npc_shape_dropped(
 /*
  *  Draw face.
  */
-C_EXPORT gboolean on_npc_face_draw_expose_event(
+gboolean ExultStudio::on_npc_face_draw_expose_event(
     GtkWidget *widget,      // The view window.
-    GdkEventExpose *event,
-    gpointer data           // ->Shape_chooser.
+    cairo_t *cairo,
+    gpointer data           // -> ExultStudio.
 ) {
 	ignore_unused_variable_warning(widget, data);
-	ExultStudio::get_instance()->show_npc_face(
-	    event->area.x, event->area.y, event->area.width,
-	    event->area.height);
+	ExultStudio *studio = static_cast<ExultStudio *>(data);
+	GdkRectangle area = { 0, 0, 0, 0 };
+	gdk_cairo_get_clip_rectangle(cairo, &area);
+	studio->npc_face_draw->set_graphic_context(cairo);
+	studio->show_npc_face(area.x, area.y, area.width, area.height);
+	studio->npc_face_draw->set_graphic_context(nullptr);
 	return TRUE;
 }
 
@@ -221,7 +228,7 @@ static const char *sched_names[32] = {
  */
 
 static void Set_schedule_line(
-	ExultStudio *studio,
+    ExultStudio *studio,
     int time,           // 0-7.
     int type,           // Activity (0-31, or -1 for none).
     int tx, int ty, int tz = 0  // Location.
@@ -230,22 +237,24 @@ static void Set_schedule_line(
 	GtkLabel *label = GTK_LABEL(studio->get_widget(lname));
 	g_free(lname);
 	// User data = schedule #.
-	gtk_object_set_user_data(GTK_OBJECT(label), reinterpret_cast<gpointer>(uintptr(type)));
+	g_object_set_data(G_OBJECT(label), "user_data", reinterpret_cast<gpointer>(uintptr(type)));
 	gtk_label_set_text(label,
 	                   type >= 0 && type < 32 ? sched_names[type] : "-----");
 	// Set location.
 	char *locname = g_strdup_printf("sched_loc%d", time);
 	GtkBox *box = GTK_BOX(studio->get_widget(locname));
 	g_free(locname);
-	GList *list = g_list_first(box->children);
-	GtkWidget *spin = static_cast<GtkBoxChild *>(list->data)->widget;
+	GList *children = g_list_first(gtk_container_get_children(GTK_CONTAINER(box)));
+	GList *list = children;
+	GtkWidget *spin = GTK_WIDGET(list->data);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), tx);
 	list = g_list_next(list);
-	spin = static_cast<GtkBoxChild *>(list->data)->widget;
+	spin = GTK_WIDGET(list->data);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), ty);
 	list = g_list_next(list);
-	spin = static_cast<GtkBoxChild *>(list->data)->widget;
+	spin = GTK_WIDGET(list->data);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), tz);
+	g_list_free(children);
 }
 
 /*
@@ -263,23 +272,25 @@ static bool Get_schedule_line(
 	GtkLabel *label = GTK_LABEL(studio->get_widget(lname));
 	g_free(lname);
 	// User data = schedule #.
-	sched.type = reinterpret_cast<sintptr>(gtk_object_get_user_data(GTK_OBJECT(label)));
+	sched.type = reinterpret_cast<sintptr>(g_object_get_data(G_OBJECT(label), "user_data"));
 	if (sched.type < 0 || sched.type > 31)
 		return false;
 	// Get location.
 	char *locname = g_strdup_printf("sched_loc%d", time);
 	GtkBox *box = GTK_BOX(studio->get_widget(locname));
 	g_free(locname);
-	GList *list = g_list_first(box->children);
-	GtkWidget *spin = static_cast<GtkBoxChild *>(list->data)->widget;
+	GList *children = g_list_first(gtk_container_get_children(GTK_CONTAINER(box)));
+	GList *list = children;
+	GtkWidget *spin = GTK_WIDGET(list->data);
 	sched.tx = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spin));
 	list = g_list_next(list);
-	spin = static_cast<GtkBoxChild *>(list->data)->widget;
+	spin = GTK_WIDGET(list->data);
 	sched.ty = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spin));
 	list = g_list_next(list);
-	spin = static_cast<GtkBoxChild *>(list->data)->widget;
+	spin = GTK_WIDGET(list->data);
 	sched.tz = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spin));
 	sched.time = time;
+	g_list_free(children);
 	return true;
 }
 
@@ -320,7 +331,8 @@ void ExultStudio::open_npc_window(
 		npcwin = get_widget("npc_window");
 
 		if (vgafile && palbuf) {
-			npc_draw = new Shape_draw(vgafile->get_ifile(), palbuf.get(),
+			npc_draw = new Shape_draw(vgafile->get_ifile(),
+			                          palbuf.get(),
 			                          get_widget("npc_draw"));
 			npc_draw->enable_drop(Npc_shape_dropped, this);
 		}
@@ -337,7 +349,11 @@ void ExultStudio::open_npc_window(
 
 	}
 	// Init. npc address to null.
-	gtk_object_set_user_data(GTK_OBJECT(npcwin), nullptr);
+	g_object_set_data(G_OBJECT(npcwin), "user_data", nullptr);
+	g_signal_connect(G_OBJECT(get_widget("npc_draw")), "draw",
+	                 G_CALLBACK(on_npc_draw_expose_event), this);
+	g_signal_connect(G_OBJECT(get_widget("npc_face_draw")), "draw",
+	                 G_CALLBACK(on_npc_face_draw_expose_event), this);
 	// Make 'apply', 'cancel' sensitive.
 	set_sensitive("npc_apply_btn", true);
 	set_sensitive("npc_cancel_btn", true);
@@ -350,7 +366,8 @@ void ExultStudio::open_npc_window(
 	gtk_widget_show(npcwin);
 #ifdef _WIN32
 	if (first_time || !npcdnd)
-		Windnd::CreateStudioDropDest(npcdnd, npchwnd, Drop_dragged_shape, nullptr, Drop_dragged_face, this);
+		Windnd::CreateStudioDropDest(npcdnd, npchwnd, Drop_dragged_shape,
+		                             nullptr, Drop_dragged_face, this);
 
 #endif
 }
@@ -381,9 +398,8 @@ static bool Get_prop_spin(
     GtkSpinButton  *&spin,      // Spin button returned.
     int &pnum           // Property number (0-11) returned.
 ) {
-	auto *ent = static_cast<GtkTableChild *>(list->data);
-	GtkBin *frame = GTK_BIN(ent->widget);
-	spin = GTK_SPIN_BUTTON(frame->child);
+	GtkBin *frame = GTK_BIN(list->data);
+	spin = GTK_SPIN_BUTTON(gtk_bin_get_child(frame));
 	assert(spin != nullptr);
 	const char *name = gtk_widget_get_name(GTK_WIDGET(spin));
 	// Names: npc_prop_nn.
@@ -409,8 +425,7 @@ static bool Get_flag_cbox(
     unsigned long  *&bits,      // ->one of 3 flags above.
     int &fnum           // Flag # (0-31) returned.
 ) {
-	auto *ent = static_cast<GtkTableChild *>(list->data);
-	cbox = GTK_CHECK_BUTTON(ent->widget);
+	cbox = GTK_CHECK_BUTTON(list->data);
 	assert(cbox != nullptr);
 	const char *name = gtk_widget_get_name(GTK_WIDGET(cbox));
 	// Names: npc_flag_xx_nn, where
@@ -445,7 +460,7 @@ void ExultStudio::init_new_npc(
 	Exult_server::wait_for_response(server_socket, 100);
 	Exult_server::Receive_data(server_socket, id, data, sizeof(data));
 	const unsigned char *ptr = &data[0];
-	Read2(ptr);	// Snip number of NPCs
+	Read2(ptr); // Snip number of NPCs
 	int first_unused = Read2(ptr);
 	npc_num = first_unused;
 	set_entry("npc_num_entry", npc_num, true, false);
@@ -461,27 +476,26 @@ void ExultStudio::init_new_npc(
 	set_optmenu("npc_attack_mode", 0);
 	set_optmenu("npc_alignment", 0);
 	// Clear flag buttons.
-	GtkTable *ftable = GTK_TABLE(
-	                       get_widget("npc_flags_table"));
+	GtkContainer *ftable = GTK_CONTAINER(get_widget("npc_flags_table"));
 	// Set flag checkboxes.
-	for (GList *list = g_list_first(ftable->children); list;
-	        list = g_list_next(list)) {
-		auto *ent = static_cast<GtkTableChild *>(list->data);
-		GtkCheckButton *cbox = GTK_CHECK_BUTTON(ent->widget);
+	GList *children = g_list_first(gtk_container_get_children(ftable));
+	for (GList *list = children; list; list = g_list_next(list)) {
+		GtkCheckButton *cbox = GTK_CHECK_BUTTON(list->data);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cbox), false);
 	}
+	g_list_free(children);
 	// Make sure the "default" NPC can walk around.
 	set_toggle("npc_flag_tf_05", true);
 	// Set properties.
-	GtkTable *ptable = GTK_TABLE(
-	                       get_widget("npc_props_table"));
-	for (GList *list = g_list_first(ptable->children); list;
-	        list = g_list_next(list)) {
+	GtkContainer *ptable = GTK_CONTAINER(get_widget("npc_props_table"));
+	children = g_list_first(gtk_container_get_children(ptable));
+	for (GList *list = children; list; list = g_list_next(list)) {
 		GtkSpinButton *spin;
 		int pnum;
 		if (Get_prop_spin(list, spin, pnum))
 			gtk_spin_button_set_value(spin, 12);
 	}
+	g_list_free(children);
 	// Clear schedules.
 	for (int i = 0; i < 24 / 3; i++)
 		Set_schedule_line(this, i, -1, 0, 0, 0);
@@ -525,7 +539,7 @@ int ExultStudio::init_npc_window(
 		return 0;
 	}
 	// Store address with window.
-	gtk_object_set_user_data(GTK_OBJECT(npcwin), addr);
+	g_object_set_data(G_OBJECT(npcwin), "user_data", addr);
 	// Store name, ident, num.
 	utf8Str utf8name(name.c_str());
 	set_entry("npc_name_entry", utf8name);
@@ -544,11 +558,10 @@ int ExultStudio::init_npc_window(
 	set_optmenu("npc_attack_mode", attack_mode);
 	set_optmenu("npc_alignment", alignment);
 	// Set flag buttons.
-	GtkTable *ftable = GTK_TABLE(
-	                       get_widget("npc_flags_table"));
+	GtkContainer *ftable = GTK_CONTAINER(get_widget("npc_flags_table"));
 	// Set flag checkboxes.
-	for (GList *list = g_list_first(ftable->children); list;
-	        list = g_list_next(list)) {
+	GList *children = g_list_first(gtk_container_get_children(ftable));
+	for (GList *list = children; list; list = g_list_next(list)) {
 		GtkCheckButton *cbox;
 		unsigned long *bits;
 		int fnum;
@@ -557,16 +570,17 @@ int ExultStudio::init_npc_window(
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cbox),
 			                             (*bits & (1 << fnum)) != 0);
 	}
+	g_list_free(children);
 	// Set properties.
-	GtkTable *ptable = GTK_TABLE(
-	                       get_widget("npc_props_table"));
-	for (GList *list = g_list_first(ptable->children); list;
-	        list = g_list_next(list)) {
+	GtkContainer *ptable = GTK_CONTAINER(get_widget("npc_props_table"));
+	children = g_list_first(gtk_container_get_children(ptable));
+	for (GList *list = children; list; list = g_list_next(list)) {
 		GtkSpinButton *spin;
 		int pnum;
 		if (Get_prop_spin(list, spin, pnum))
 			gtk_spin_button_set_value(spin, properties[pnum]);
 	}
+	g_list_free(children);
 	// Set schedules.
 	for (int i = 0; i < 24 / 3; i++) // First init. to empty.
 		Set_schedule_line(this, i, -1, 0, 0, 0);
@@ -624,7 +638,7 @@ int ExultStudio::save_npc_window(
 ) {
 	cout << "In save_npc_window()" << endl;
 	// Get npc (null if creating new).
-	auto *addr = static_cast<Actor*>(gtk_object_get_user_data(GTK_OBJECT(npcwin)));
+	auto *addr = static_cast<Actor *>(g_object_get_data(G_OBJECT(npcwin), "user_data"));
 	int tx = -1;
 	int ty = -1;
 	int tz = -1;  // +++++For now.
@@ -635,7 +649,7 @@ int ExultStudio::save_npc_window(
 	int shape = get_num_entry("npc_shape");
 	int frame = get_num_entry("npc_frame");
 	GtkWidget *fw = get_widget("npc_face_frame");
-	int face = reinterpret_cast<sintptr>(gtk_object_get_user_data(GTK_OBJECT(fw)));
+	int face = reinterpret_cast<sintptr>(g_object_get_data(G_OBJECT(fw), "user_data"));
 	int usecode = get_num_entry("npc_usecode_entry");
 	std::string usecodefun;
 	if (!usecode)
@@ -652,11 +666,10 @@ int ExultStudio::save_npc_window(
 		return 0;
 	}
 	// Set flag buttons.
-	GtkTable *ftable = GTK_TABLE(
-	                       get_widget("npc_flags_table"));
+	GtkContainer *ftable = GTK_CONTAINER(get_widget("npc_flags_table"));
 	// Get flags.
-	for (GList *list = g_list_first(ftable->children); list;
-	        list = g_list_next(list)) {
+	GList *children = g_list_first(gtk_container_get_children(ftable));
+	for (GList *list = children; list; list = g_list_next(list)) {
 		GtkCheckButton *cbox;
 		unsigned long *bits;
 		int fnum;
@@ -666,17 +679,18 @@ int ExultStudio::save_npc_window(
 			            GTK_TOGGLE_BUTTON(cbox)))
 				*bits |= (1 << fnum);
 	}
+	g_list_free(children);
 	int properties[12];     // Get properties.
-	GtkTable *ptable = GTK_TABLE(
-	                       get_widget("npc_props_table"));
-	for (GList *list = g_list_first(ptable->children); list;
-	        list = g_list_next(list)) {
+	GtkContainer *ptable = GTK_CONTAINER(get_widget("npc_props_table"));
+	children = g_list_first(gtk_container_get_children(ptable));
+	for (GList *list = children; list; list = g_list_next(list)) {
 		GtkSpinButton *spin;
 		int pnum;
 		if (Get_prop_spin(list, spin, pnum))
 			properties[pnum] =
 			    gtk_spin_button_get_value_as_int(spin);
 	}
+	g_list_free(children);
 	short num_schedules = 0;
 	Serial_schedule schedules[8];
 	for (int i = 0; i < 8; i++)
@@ -715,8 +729,13 @@ int ExultStudio::save_npc_window(
 void ExultStudio::show_npc_shape(
     int x, int y, int w, int h  // Rectangle. w=-1 to show all.
 ) {
+	ignore_unused_variable_warning(x, y, w, h);
 	if (!npc_draw)
 		return;
+	if (w == -1) {
+		npc_draw->render();
+		return;
+	}
 	npc_draw->configure();
 	// Yes, this is kind of redundant...
 	int shnum = get_num_entry("npc_shape");
@@ -724,10 +743,7 @@ void ExultStudio::show_npc_shape(
 	if (!shnum)         // Don't draw shape 0.
 		shnum = -1;
 	npc_draw->draw_shape_centered(shnum, frnum);
-	if (w != -1)
-		npc_draw->show(x, y, w, h);
-	else
-		npc_draw->show();
+	npc_draw->show(x, y, w, h);
 }
 
 /*
@@ -750,16 +766,18 @@ void ExultStudio::set_npc_shape(
 void ExultStudio::show_npc_face(
     int x, int y, int w, int h  // Rectangle. w=-1 to show all.
 ) {
+	ignore_unused_variable_warning(x, y, w, h);
 	if (!npc_face_draw)
 		return;
+	if (w == -1) {
+		npc_face_draw->render();
+		return;
+	}
 	npc_face_draw->configure();
 	GtkWidget *frame = get_widget("npc_face_frame");
-	int shnum = reinterpret_cast<sintptr>(gtk_object_get_user_data(GTK_OBJECT(frame)));
+	int shnum = reinterpret_cast<sintptr>(g_object_get_data(G_OBJECT(frame), "user_data"));
 	npc_face_draw->draw_shape_centered(shnum, 0);
-	if (w != -1)
-		npc_face_draw->show(x, y, w, h);
-	else
-		npc_face_draw->show();
+	npc_face_draw->show(x, y, w, h);
 }
 
 /*
@@ -776,7 +794,7 @@ void ExultStudio::set_npc_face(
 	if (shape < 0)
 		shape = 1;      // Default to 1st after Avatar.
 	GtkWidget *widget = get_widget("npc_face_frame");
-	gtk_object_set_user_data(GTK_OBJECT(widget), reinterpret_cast<gpointer>(uintptr(shape)));
+	g_object_set_data(G_OBJECT(widget), "user_data", reinterpret_cast<gpointer>(uintptr(shape)));
 	char *label = g_strdup_printf("Face #%d", shape);
 	gtk_frame_set_label(GTK_FRAME(widget), label);
 	g_free(label);
@@ -797,10 +815,10 @@ void ExultStudio::schedule_btn_clicked(
 	const char *numptr = name + 5;  // Past "sched".
 	int num = atoi(numptr);
 	auto *schedwin = static_cast<GtkWidget *>(data);
-	auto *label = static_cast<GtkLabel *>(gtk_object_get_user_data(
-	                      GTK_OBJECT(schedwin)));
+	auto *label = static_cast<GtkLabel *>(g_object_get_data(
+	        G_OBJECT(schedwin), "user_data"));
 	// User data = schedule #.
-	gtk_object_set_user_data(GTK_OBJECT(label), reinterpret_cast<gpointer>(uintptr(num)));
+	g_object_set_data(G_OBJECT(label), "user_data", reinterpret_cast<gpointer>(uintptr(num)));
 	gtk_label_set_text(label, num >= 0 && num < 32
 	                   ? sched_names[num] : "-----");
 	cout << "Chose schedule " << num << endl;
@@ -815,8 +833,8 @@ static void Set_sched_btn(
     GtkWidget *btn,
     gpointer data
 ) {
-	gtk_signal_connect(GTK_OBJECT(btn), "clicked",
-	                   GTK_SIGNAL_FUNC(ExultStudio::schedule_btn_clicked), data);
+	g_signal_connect(G_OBJECT(btn), "clicked",
+	                 G_CALLBACK(ExultStudio::schedule_btn_clicked), data);
 }
 
 /*
@@ -845,7 +863,7 @@ C_EXPORT void on_npc_set_sched(
 		gtk_container_foreach(btns, Set_sched_btn, schedwin);
 	}
 	// Store label as dialog's data.
-	gtk_object_set_user_data(GTK_OBJECT(schedwin), label);
+	g_object_set_data(G_OBJECT(schedwin), "user_data", label);
 	gtk_widget_show(schedwin);
 }
 
@@ -862,19 +880,21 @@ static void Game_loc_response(
 	if (id != Exult_server::game_pos)
 		return;
 	// Get box with loc. spin btns.
-	auto *box = static_cast<GtkBox *>(client);
+	GtkBox *box = static_cast<GtkBox *>(client);
 	int tx = Read2(data);
 	int ty = Read2(data);
 	int tz = Read2(data);
-	GList *list = g_list_first(box->children);
-	GtkWidget *spin = static_cast<GtkBoxChild *>(list->data)->widget;
+	GList *children = g_list_first(gtk_container_get_children(GTK_CONTAINER(box)));
+	GList *list = children;
+	GtkWidget *spin = GTK_WIDGET(list->data);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), tx);
 	list = g_list_next(list);
-	spin = static_cast<GtkBoxChild *>(list->data)->widget;
+	spin = GTK_WIDGET(list->data);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), ty);
 	list = g_list_next(list);
-	spin = static_cast<GtkBoxChild *>(list->data)->widget;
+	spin = GTK_WIDGET(list->data);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), tz);
+	g_list_free(children);
 }
 
 /*

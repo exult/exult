@@ -8,7 +8,7 @@
 #define INCL_SHAPEGROUP 1
 
 /*
-Copyright (C) 2002 The Exult Team
+Copyright (C) 2002-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -65,30 +65,30 @@ public:
 	void del(int i);
 	void swap(int i);       // Swap entries i and i+1.
 	void add(int id);       // Add ID, checking for duplicate 1st.
-	void write(ODataSource& out);
+	void write(ODataSource &out);
 	enum Special_builtin {
-	    first_group = 20,
-	    ammo_group = first_group,
-	    armour_group,
-	    monsters_group,
-	    weapons_group,
-	    containers_group,
-	    mountain_top,
-	    animation_group,
-	    barge_group,
-	    body_group,
-	    explosion_group,
-	    field_group,
-	    npcflags_group,
-	    npcpaperdoll_group,
-	    sfx_group,
-	    content_rules_group,
-	    frameflags_group,
-	    framehps_group,
-	    framenames_group,
-	    objpaperdoll_group,
-	    warmth_group,
-	    last_builtin_group
+		first_group = 20,
+		ammo_group = first_group,
+		armour_group,
+		monsters_group,
+		weapons_group,
+		containers_group,
+		mountain_top,
+		animation_group,
+		barge_group,
+		body_group,
+		explosion_group,
+		field_group,
+		npcflags_group,
+		npcpaperdoll_group,
+		sfx_group,
+		content_rules_group,
+		frameflags_group,
+		framehps_group,
+		framenames_group,
+		objpaperdoll_group,
+		warmth_group,
+		last_builtin_group
 	};
 };
 

@@ -5,7 +5,7 @@
  **/
 
 /*
-Copyright (C) 2002-2013 The Exult Team
+Copyright (C) 2002-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,8 +26,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#include "execbox.h"
+#include "studio.h"
 #include "ignore_unused_variable_warning.h"
+
+#include "execbox.h"
 #include <iostream> /* Debugging only */
 #include <string>
 #include <cstring>
@@ -78,9 +80,9 @@ void Exec_process::kill_child(
 	if (child_stderr >= 0)
 		close(child_stderr);
 	if (stdout_tag >= 0)
-		gdk_input_remove(stdout_tag);
+		g_source_remove(stdout_tag);
 	if (stderr_tag >= 0)
-		gdk_input_remove(stderr_tag);
+		g_source_remove(stderr_tag);
 	child_pid = child_stdin = child_stdout = child_stderr =
 	                              stdout_tag = stderr_tag = -1;
 }
@@ -89,14 +91,15 @@ void Exec_process::kill_child(
  *  Read from child & call client routine.
  */
 
-static void Read_from_child(
-    gpointer data,          // ->Exex_process
-    gint id,            // Pipe ID.
-    GdkInputCondition condition
+static gboolean Read_from_child(
+    GIOChannel  *source,
+    GIOCondition condition,
+    gpointer     data           // ->Exex_process
 ) {
 	ignore_unused_variable_warning(condition);
 	auto *ex = static_cast<Exec_process *>(data);
-	ex->read_from_child(id);
+	ex->read_from_child(g_io_channel_unix_get_fd(source));
+	return TRUE;
 }
 void Exec_process::read_from_child(
     int id              // Pipe to read from.
@@ -188,9 +191,9 @@ bool Exec_process::exec(
 		return false;
 	}
 	if (child_pid == 0) {   // Are we the child?
-		if (dup_wrapper(stdin_pipe , 0, true ) ||
-		    dup_wrapper(stdout_pipe, 1, false) ||
-		    dup_wrapper(stderr_pipe, 2, false)) {
+		if (dup_wrapper(stdin_pipe, 0, true) ||
+		        dup_wrapper(stdout_pipe, 1, false) ||
+		        dup_wrapper(stderr_pipe, 2, false)) {
 			Close_pipes(stdin_pipe, stdout_pipe, stderr_pipe);
 			return false;
 		}
@@ -206,10 +209,16 @@ bool Exec_process::exec(
 	close(stderr_pipe[1]);
 	cout << "Child_stdout is " << child_stdout << ", Child_stderr is " <<
 	     child_stderr << endl;
-	stdout_tag = gdk_input_add(child_stdout,
-	                           GDK_INPUT_READ, Read_from_child, this);
-	stderr_tag = gdk_input_add(child_stderr,
-	                           GDK_INPUT_READ, Read_from_child, this);
+	GIOChannel *gio_out = g_io_channel_unix_new(child_stdout);
+	GIOChannel *gio_err = g_io_channel_unix_new(child_stderr);
+	stdout_tag = g_io_add_watch(gio_out,
+	                            static_cast<GIOCondition>(G_IO_IN | G_IO_HUP | G_IO_ERR),
+	                            Read_from_child, this);
+	stderr_tag = g_io_add_watch(gio_err,
+	                            static_cast<GIOCondition>(G_IO_IN | G_IO_HUP | G_IO_ERR),
+	                            Read_from_child, this);
+	g_io_channel_unref(gio_out);
+	g_io_channel_unref(gio_err);
 	return true;
 }
 

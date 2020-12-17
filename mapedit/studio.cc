@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2013 The Exult Team
+Copyright (C) 2000-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,32 +20,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
+#include "studio.h"
+#include "ignore_unused_variable_warning.h"
+
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #include <dirent.h>
-
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wparentheses"
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#if !defined(__llvm__) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-#else
-#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
-#endif
-#endif  // __GNUC__
-#include <gtk/gtk.h>
-#ifdef XWIN
-#include <gdk/gdkx.h>
-#endif
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif  // __GNUC__
-#include "gtk_redefines.h"
 
 #include <glib.h>
 #include <unistd.h>
@@ -69,7 +50,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "shapevga.h"
 #include "U7fileman.h"
 #include "Flex.h"
-#include "studio.h"
 #include "utils.h"
 #include "u7drag.h"
 #include "shapegroup.h"
@@ -86,7 +66,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "items.h"
 #include "databuf.h"
 #include "modmgr.h"
-#include "ignore_unused_variable_warning.h"
 #include "array_size.h"
 
 using std::cerr;
@@ -114,12 +93,12 @@ static const char *mode_names[5] = {"move1", "paint1", "paint_with_chunks1",
                                    };
 
 enum ExultFileTypes {
-    ShapeArchive = 1,
-    ChunksArchive,
-    NpcsArchive,
-    PaletteFile,
-    FlexArchive,
-    ComboArchive
+	ShapeArchive = 1,
+	ChunksArchive,
+	NpcsArchive,
+	PaletteFile,
+	FlexArchive,
+	ComboArchive
 };
 
 struct FileTreeItem {
@@ -130,10 +109,10 @@ struct FileTreeItem {
 
 /* columns */
 enum {
-    FOLDER_COLUMN = 0,
-    FILE_COLUMN,
-    DATA_COLUMN,
-    NUM_COLUMNS
+	FOLDER_COLUMN = 0,
+	FILE_COLUMN,
+	DATA_COLUMN,
+	NUM_COLUMNS
 };
 
 
@@ -181,6 +160,7 @@ C_EXPORT void on_filelist_tree_cursor_changed(GtkTreeView *treeview) {
 	GtkTreeViewColumn *col;
 
 	gtk_tree_view_get_cursor(treeview, &path, &col);
+	if (path == nullptr) return;
 	Filelist_selection(treeview, path);
 }
 
@@ -373,7 +353,7 @@ on_move1_activate(GtkMenuItem     *menuitem,
                   gpointer         user_data) {
 	ignore_unused_variable_warning(user_data);
 	// NOTE:  modes are defined in cheat.h.
-	if (GTK_CHECK_MENU_ITEM(menuitem)->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)))
 		ExultStudio::get_instance()->set_edit_mode(0);
 }
 
@@ -381,7 +361,7 @@ C_EXPORT void
 on_paint1_activate(GtkMenuItem     *menuitem,
                    gpointer         user_data) {
 	ignore_unused_variable_warning(user_data);
-	if (GTK_CHECK_MENU_ITEM(menuitem)->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)))
 		ExultStudio::get_instance()->set_edit_mode(1);
 }
 
@@ -389,7 +369,7 @@ C_EXPORT void
 on_paint_with_chunks1_activate(GtkMenuItem     *menuitem,
                                gpointer         user_data) {
 	ignore_unused_variable_warning(user_data);
-	if (GTK_CHECK_MENU_ITEM(menuitem)->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)))
 		ExultStudio::get_instance()->set_edit_mode(2);
 }
 
@@ -397,7 +377,7 @@ C_EXPORT void
 on_pick_for_combo1_activate(GtkMenuItem     *menuitem,
                             gpointer         user_data) {
 	ignore_unused_variable_warning(user_data);
-	if (GTK_CHECK_MENU_ITEM(menuitem)->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)))
 		ExultStudio::get_instance()->set_edit_mode(3);
 }
 
@@ -405,7 +385,7 @@ C_EXPORT void
 on_select_chunks1_activate(GtkMenuItem     *menuitem,
                            gpointer         user_data) {
 	ignore_unused_variable_warning(user_data);
-	if (GTK_CHECK_MENU_ITEM(menuitem)->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)))
 		ExultStudio::get_instance()->set_edit_mode(4);
 }
 
@@ -464,7 +444,7 @@ on_edit_terrain_button_toggled(GtkToggleButton *button,
 /*
  *  Configure main window.
  */
-C_EXPORT gint on_main_window_configure_event(
+C_EXPORT gboolean on_main_window_configure_event(
     GtkWidget *widget,      // The view window.
     GdkEventConfigure *event,
     gpointer data
@@ -528,7 +508,8 @@ C_EXPORT gboolean on_main_window_focus_in_event(
 ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_path(nullptr),
 	image_editor(nullptr), default_game(nullptr), background_color(0),
 	shape_info_modified(false), shape_names_modified(false), npc_modified(false),
-	files(nullptr), curfile(nullptr), vgafile(nullptr), facefile(nullptr), fontfile(nullptr), gumpfile(nullptr),
+	files(nullptr), curfile(nullptr),
+	vgafile(nullptr), facefile(nullptr), fontfile(nullptr), gumpfile(nullptr),
 	spritefile(nullptr), browser(nullptr),
 	bargewin(nullptr), barge_ctx(0), barge_status_id(0),
 	eggwin(nullptr), egg_monster_draw(nullptr), egg_ctx(0), egg_status_id(0),
@@ -537,32 +518,38 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 	objwin(nullptr), obj_draw(nullptr), contwin(nullptr), cont_draw(nullptr), shapewin(nullptr),
 	shape_draw(nullptr), gump_draw(nullptr),
 	body_draw(nullptr), explosion_draw(nullptr),
-	equipwin(nullptr), locwin(nullptr), combowin(nullptr), compilewin(nullptr), compile_box(nullptr),
+	equipwin(nullptr), locwin(nullptr), combowin(nullptr),
+	compilewin(nullptr), compile_box(nullptr),
 	ucbrowsewin(nullptr), gameinfowin(nullptr),
 	game_type(BLACK_GATE), expansion(false), sibeta(false), curr_game(-1), curr_mod(-1),
 	server_socket(-1), server_input_tag(-1), waiting_for_server(nullptr) {
 	// Initialize the various subsystems
 	self = this;
 	gtk_init(&argc, &argv);
-	gdk_rgb_init();
 #ifdef _WIN32
 	bool portable = false;
 #endif
 	// Get options.
+	bool silent = false;        // Hide game search.
 	const char *xmldir = nullptr;     // Default:  Look here for .glade.
 	string game;                // Game to look up in .exult.cfg.
 	string modtitle;            // Mod title to look up in <MODS>/*.cfg.
 	string alt_cfg;
-	static const char *optstring = "c:g:x:m:p";
+	static const char *optstring = "hsc:g:m:px:";
 	opterr = 0;         // Don't let getopt() print errs.
 	int optchr;
 	while ((optchr = getopt(argc, argv, optstring)) != -1)
 		switch (optchr) {
-		case 'c':       // Configuration file
+		case 'c':       // Configuration file.
 			alt_cfg = optarg;
 			break;
 		case 'g':       // Game.  Replaces use of -d, -x.
 			game = optarg;
+			if (game == "bg")  game = CFG_BG_NAME;
+			if (game == "fov") game = CFG_FOV_NAME;
+			if (game == "si")  game = CFG_SI_NAME;
+			if (game == "ss")  game = CFG_SS_NAME;
+			if (game == "sib") game = CFG_SIB_NAME;
 			break;
 		case 'x':       // XML (.glade) directory.
 			xmldir = optarg;
@@ -575,11 +562,37 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 			portable = true;
 			break;
 #endif
+		case 's':
+			silent = true;
+			break;
+		case 'h':
+			cerr << "Usage: exult_studio [-h] [-s] [-c <configfile>]" << endl
+			     << "                    [-g <game>] [-m <mod>]" << endl
+#if defined _WIN32
+			     << "                    [-p]" << endl
+#endif
+			     << "                    [-x <gladedir>]" << endl
+			     << "        -h              Show this information" << endl
+			     << "        -s              Do not display the state of the games" << endl
+			     << "        -c configfile   Specify alternate config file, default is (.)exult.cfg" << endl
+			     << "        -g game         Start with <game> directly, one of :" << endl
+			     << "                                blackgate or bg, forgeofvirtue or fov" << endl
+			     << "                                serpentisle or si, silverseed or ss, serpentbeta or sib" << endl
+			     << "        -m mod          With -g, Start vith <game> and <mod>" << endl
+#if defined _WIN32
+			     << "        -p              Make the home path the Exult directory (old Windows way)" << endl
+#endif
+			     << "        -x gladedir     Specify where the exult_studio.glade resides, default is share/exult" << endl;
+			exit(1);
 		}
 #ifdef _WIN32
 	if (portable)
 		add_system_path("<HOME>", ".");
 #endif
+	cout << endl << "ExultStudio compiled with GTK+ "
+	     << GTK_MAJOR_VERSION << "." << GTK_MINOR_VERSION << "." << GTK_MICRO_VERSION
+	     << " running with GTK+ "
+	     << gtk_major_version << "." << gtk_minor_version << "." << gtk_micro_version << endl << endl;
 	setup_program_paths();
 #ifdef _WIN32
 	redirect_output("studio_");
@@ -611,7 +624,7 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 		strcpy(path, ".");
 	strcat(path, "/exult_studio.glade");
 	// Load the Glade interface
-	GError* error = nullptr;
+	GError *error = nullptr;
 	app_xml = gtk_builder_new();
 	if (!gtk_builder_add_from_file(app_xml, path, &error)) {
 		g_warning("Couldn't load builder file: %s", error->message);
@@ -620,6 +633,8 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 	}
 	assert(app_xml);
 	app = get_widget("main_window");
+	w_at_close = 0;
+	h_at_close = 0;
 	assert(app);
 	glade_path = g_strdup(path);
 	mainnotebook = GTK_NOTEBOOK(get_widget("notebook3"));
@@ -631,17 +646,17 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 	int h;           // Get main window dims.
 	config->value("config/estudio/main/width", w, 0);
 	config->value("config/estudio/main/height", h, 0);
-	if (w > 0 && h > 0)
+	if (w > 1 && h > 1)
 //++++Used to work  gtk_window_set_default_size(GTK_WINDOW(app), w, h);
 		gtk_window_resize(GTK_WINDOW(app), w, h);
 	gtk_widget_show(app);
 	// Background color for shape browser.
 	int bcolor;
 	config->value("config/estudio/background_color", bcolor, 0);
-	background_color = bcolor;
+	set_background_color(bcolor);
 
 	// Load games and mods; also stores system paths:
-	gamemanager = new GameManager();
+	gamemanager = new GameManager(silent);
 
 	if (gamemanager->get_game_count() == 0) {
 		int choice = prompt("Exult Studio could not find any games to edit.\n\n"
@@ -676,7 +691,7 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 		GtkWidget *item = get_widget(mode_names[i]);
 		gtk_radio_menu_item_set_group(GTK_RADIO_MENU_ITEM(item),
 		                              group);
-		group = gtk_radio_menu_item_group(GTK_RADIO_MENU_ITEM(item));
+		group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
 		gtk_check_menu_item_set_active(
 		    GTK_CHECK_MENU_ITEM(item), i == 0);
 	}
@@ -688,10 +703,11 @@ ExultStudio::~ExultStudio() {
 	OleUninitialize();
 #endif
 	// Store main window size.
-	int w = app->allocation.width;
-	int h = app->allocation.height;
+	int w = w_at_close;
+	int h = h_at_close;
 	// Finish up external edits.
 	Shape_chooser::clear_editing_files();
+
 	config->set("config/estudio/main/width", w, true);
 	config->set("config/estudio/main/height", h, true);
 	Free_text();
@@ -739,12 +755,12 @@ ExultStudio::~ExultStudio() {
 	g_object_unref(G_OBJECT(app_xml));
 #ifndef _WIN32
 	if (server_input_tag >= 0)
-		gdk_input_remove(server_input_tag);
+		g_source_remove(server_input_tag);
 	if (server_socket >= 0)
 		close(server_socket);
 #else
 	if (server_input_tag >= 0)
-		gtk_timeout_remove(server_input_tag);
+		g_source_remove(server_input_tag);
 	if (server_socket >= 0)
 		Exult_server::disconnect_from_server();
 #endif
@@ -762,6 +778,12 @@ ExultStudio::~ExultStudio() {
 
 bool ExultStudio::okay_to_close(
 ) {
+
+	GtkAllocation alloc = {0, 0, 0, 0};
+	gtk_widget_get_allocation(app, &alloc);
+	w_at_close = alloc.width;
+	h_at_close = alloc.height;
+
 	if (need_to_save()) {
 		int choice = prompt("File(s) modified.  Save?",
 		                    "Yes", "No", "Cancel");
@@ -778,8 +800,8 @@ bool ExultStudio::okay_to_close(
  */
 
 inline bool Window_has_focus(GtkWindow *win) {
-	return win->focus_widget != nullptr &&
-	        GTK_WIDGET_HAS_FOCUS(win->focus_widget);
+	return gtk_window_get_focus(win) != nullptr &&
+	       gtk_widget_has_focus(GTK_WIDGET(gtk_window_get_focus(win)));
 }
 
 /*
@@ -943,8 +965,11 @@ void ExultStudio::new_game() {
 	if (!okay_to_close())       // Okay to close prev. game?
 		return;
 	Create_file_selection("Choose new game directory",
-	                      "<SAVEHOME>", nullptr, {}, GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER,
-	                      on_choose_new_game_dir, this);
+	                      "<SAVEHOME>", nullptr,
+	                      {},
+	                      GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER,
+	                      on_choose_new_game_dir,
+	                      this);
 }
 
 C_EXPORT void on_gameselect_ok_clicked(
@@ -972,7 +997,7 @@ C_EXPORT void on_gameselect_ok_clicked(
 	string modtitle;
 
 	GtkWidget *frame = studio->get_widget("modinfo_frame");
-	if (GTK_WIDGET_VISIBLE(frame)) {
+	if (gtk_widget_get_visible(GTK_WIDGET(frame))) {
 		// Creating a new mod
 		modtitle = studio->get_text_entry("gameselect_cfgname");
 		if (modtitle.empty())
@@ -1044,6 +1069,7 @@ C_EXPORT void on_gameselect_gamelist_cursor_changed(
 	GtkTreePath *path;
 	GtkTreeViewColumn *col;
 	gtk_tree_view_get_cursor(treeview, &path, &col);
+	if (path == nullptr) return;
 	int gamenum = -1;
 	char *text;
 	GtkTreeIter gameiter;
@@ -1138,11 +1164,8 @@ void ExultStudio::open_game_dialog(
 	GtkWidget *win = get_widget("game_selection");
 	gtk_window_set_modal(GTK_WINDOW(win), true);
 
-	gtk_signal_connect(
-	    GTK_OBJECT(get_widget("gameselect_ok")),
-	    "clicked",
-	    GTK_SIGNAL_FUNC(on_gameselect_ok_clicked),
-	    nullptr);
+	g_signal_connect(G_OBJECT(get_widget("gameselect_ok")), "clicked",
+	    G_CALLBACK(on_gameselect_ok_clicked), nullptr);
 
 	GtkWidget *dlg_list[2] = {
 		get_widget("gameselect_gamelist"),
@@ -1167,11 +1190,11 @@ void ExultStudio::open_game_dialog(
 			/* column for game names */
 			g_object_set(renderer, "xalign", 0.0, nullptr);
 			col_offset = gtk_tree_view_insert_column_with_attributes(tree,
-			                 -1, "Column1",
-			                 renderer, "text",
-			                 FOLDER_COLUMN, nullptr);
+			             -1, "Column1",
+			             renderer, "text",
+			             FOLDER_COLUMN, nullptr);
 			GtkTreeViewColumn *column = gtk_tree_view_get_column(tree,
-			                                  col_offset - 1);
+			                            col_offset - 1);
 			gtk_tree_view_column_set_clickable(
 			    GTK_TREE_VIEW_COLUMN(column), TRUE);
 		}
@@ -1179,9 +1202,9 @@ void ExultStudio::open_game_dialog(
 	}
 
 	if (!createmod) {
-		gtk_signal_connect(GTK_OBJECT(dlg_list[0]), "cursor_changed",
-		                   GTK_SIGNAL_FUNC(on_gameselect_gamelist_cursor_changed),
-		                   nullptr);
+		g_signal_connect(G_OBJECT(dlg_list[0]), "cursor-changed",
+		                 G_CALLBACK(on_gameselect_gamelist_cursor_changed),
+		                 nullptr);
 		set_visible("modlist_frame", true);
 		set_visible("modinfo_frame", false);
 	} else {
@@ -1195,7 +1218,7 @@ void ExultStudio::open_game_dialog(
 /*
  *  Note:   If mod name is "", no mod is loaded
  */
-void ExultStudio::set_game_path(const string& gamename, const string& modname) {
+void ExultStudio::set_game_path(const string &gamename, const string &modname) {
 	// Finish up external edits.
 	Shape_chooser::clear_editing_files();
 
@@ -1275,9 +1298,9 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	for (auto *win : group_windows) {
 		GtkWidget *grpwin = GTK_WIDGET(win);
 		auto *xml = static_cast<GtkBuilder *>(g_object_get_data(G_OBJECT(grpwin),
-		                "xml"));
+		                                      "xml"));
 		auto *chooser = static_cast<Object_browser *>(g_object_get_data(
-		                              G_OBJECT(grpwin), "browser"));
+		                    G_OBJECT(grpwin), "browser"));
 		delete chooser;
 		gtk_widget_destroy(grpwin);
 		g_object_unref(G_OBJECT(xml));
@@ -1367,7 +1390,8 @@ void add_to_tree(GtkTreeStore *model, const char *folderName,
 				char *fname = entry->d_name;
 				int flen = strlen(fname);
 				// Ignore case of extension.
-				if (!strcmp(fname, ".") || !strcmp(fname, "..") || strcasecmp(fname + flen - strlen(ext), ext) != 0)
+				if (!strcmp(fname, ".") || !strcmp(fname, "..") ||
+				        strcasecmp(fname + flen - strlen(ext), ext) != 0)
 					continue;
 				gtk_tree_store_append(model, &child_iter, &iter);
 				gtk_tree_store_set(model, &child_iter,
@@ -1384,7 +1408,8 @@ void add_to_tree(GtkTreeStore *model, const char *folderName,
 				char *fname = entry->d_name;
 				int flen = strlen(fname);
 				// Ignore case of extension.
-				if (!strcmp(fname, ".") || !strcmp(fname, "..") || strcasecmp(fname + flen - strlen(ext), ext) != 0)
+				if (!strcmp(fname, ".") || !strcmp(fname, "..") ||
+				        strcasecmp(fname + flen - strlen(ext), ext) != 0)
 					continue;
 				// Filter out 'font0000.vga' file as it is apparently
 				// from an old origin screensaver.
@@ -1479,8 +1504,8 @@ void ExultStudio::setup_file_list() {
 
 	// Expand all entries.
 	gtk_tree_view_expand_all(GTK_TREE_VIEW(file_list));
-	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(file_list), TRUE);
-	gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(file_list)), GTK_SELECTION_SINGLE);
+	gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(file_list)),
+	                            GTK_SELECTION_SINGLE);
 }
 
 /*
@@ -1754,7 +1779,7 @@ void ExultStudio::new_shape_file(
 ) {
 	Create_file_selection(single ? "Write new .shp file" : "Write new .vga file",
 	                      "<PATCH>",
-						  single ? "Shape files" : "VGA files",
+	                      single ? "Shape files" : "VGA files",
 	                      {single ? "*.shp" : "*.vga"},
 	                      GTK_FILE_CHOOSER_ACTION_SAVE,
 	                      create_shape_file,
@@ -1778,7 +1803,7 @@ void ExultStudio::create_shape_file(
 			unsigned char pixels[w * h]; // Create an 8x8 shape.
 			memset(pixels, 1, w * h); // Just use color #1.
 			Shape shape(make_unique<Shape_frame>(pixels,
-												w, h, w - 1, h - 1, true));
+			                                     w, h, w - 1, h - 1, true));
 			Shape *ptr = &shape;
 			Image_file_info::write_file(pathname, &ptr, 1, true);
 		} else {
@@ -2061,7 +2086,7 @@ void ExultStudio::set_button(
     const char *text
 ) {
 	GtkWidget *btn = get_widget(name);
-	GtkLabel *label = GTK_LABEL(GTK_BIN(btn)->child);
+	GtkLabel *label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(btn)));
 	gtk_label_set_text(label, text);
 }
 
@@ -2119,7 +2144,6 @@ on_prompt3_cancel_clicked(GtkToggleButton *button,
 	prompt_choice = 2;
 }
 
-
 /*
  *  Prompt for one of two/three answers.
  *
@@ -2132,19 +2156,23 @@ int ExultStudio::prompt(
     const char *choice1,        // 2nd choice, or nullptr.
     const char *choice2     // 3rd choice, or nullptr.
 ) {
-	static GdkPixmap *logo_pixmap = nullptr;
-	static GdkBitmap *logo_mask = nullptr;
-	if (!logo_pixmap) {     // First time?
-		logo_pixmap = gdk_pixmap_create_from_xpm_d(app->window,
-		              &logo_mask, nullptr, const_cast<gchar **>(logo_xpm));
-		GtkWidget *pix = gtk_pixmap_new(logo_pixmap, logo_mask);
-		gtk_widget_show(pix);
+	static GtkWidget *dlg = nullptr;
+	if (!dlg) {     // First time?
+		dlg = get_widget("prompt3_dialog");
+		GdkPixbuf *logo_pixbuf = gdk_pixbuf_new_from_xpm_data(
+		                             static_cast<const gchar **>(logo_xpm));
+		GtkWidget *draw = gtk_image_new_from_pixbuf(logo_pixbuf);
+		g_object_unref(logo_pixbuf);
+		gtk_widget_show(draw);
 		GtkWidget *hbox = get_widget("prompt3_hbox");
-		gtk_box_pack_start(GTK_BOX(hbox), pix, FALSE, FALSE, 12);
+		gtk_widget_set_size_request(draw,
+		                            gdk_pixbuf_get_width(logo_pixbuf),
+		                            gdk_pixbuf_get_height(logo_pixbuf));
+		gtk_widget_show(draw);
+		gtk_box_pack_start(GTK_BOX(hbox), draw, FALSE, FALSE, 12);
 		// Make logo show to left.
-		gtk_box_reorder_child(GTK_BOX(hbox), pix, 0);
+		gtk_box_reorder_child(GTK_BOX(hbox), draw, 0);
 	}
-	GtkWidget *dlg = get_widget("prompt3_dialog");
 	gtk_label_set_text(
 	    GTK_LABEL(get_widget("prompt3_label")),
 	    msg);
@@ -2208,21 +2236,21 @@ void Alert(
 GtkWidget *Add_menu_item(
     GtkWidget *menu,        // Menu to add to.
     const char *label,      // What to put.  nullptr for separator.
-    GtkSignalFunc func,     // Handle menu choice.
+    GCallback func,         // Handle menu choice.
     gpointer func_data,     // Data passed to func().
     GSList *group           // If a radio menu item is wanted.
 ) {
 	GtkWidget *mitem = group ?
 	                   (label ? gtk_radio_menu_item_new_with_label(group, label)
 	                    : gtk_radio_menu_item_new(group))
-		                   : (label ? gtk_menu_item_new_with_label(label) :
-		                      gtk_menu_item_new());
+	                   : (label ? gtk_menu_item_new_with_label(label) :
+	                      gtk_menu_item_new());
 	gtk_widget_show(mitem);
-	gtk_menu_append(GTK_MENU(menu), mitem);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), mitem);
 	if (!label)         // Want separator?
 		gtk_widget_set_sensitive(mitem, FALSE);
 	if (func)           // Function?
-		gtk_signal_connect(GTK_OBJECT(mitem), "activate", func, func_data);
+		g_signal_connect(G_OBJECT(mitem), "activate", func, func_data);
 	return mitem;
 }
 
@@ -2232,14 +2260,16 @@ GtkWidget *Add_menu_item(
 
 GtkWidget *Create_arrow_button(
     GtkArrowType dir,       // Direction.
-    GtkSignalFunc clicked,      // Call this when clicked.
+    GCallback clicked,      // Call this when clicked.
     gpointer func_data      // Passed to 'clicked'.
 ) {
-	GtkWidget *btn = gtk_button_new_from_stock(
-	                     dir == GTK_ARROW_UP ? GTK_STOCK_GO_UP
-	                     : GTK_STOCK_GO_DOWN);
+	GtkWidget *btn = gtk_button_new();
+	GtkWidget *img = gtk_image_new_from_icon_name(
+	                     dir == GTK_ARROW_UP ? "go-up" : "go-down",
+	                     GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(btn), img);
 	gtk_widget_show(btn);
-	gtk_signal_connect(GTK_OBJECT(btn), "clicked", clicked, func_data);
+	g_signal_connect(G_OBJECT(btn), "clicked", clicked, func_data);
 	return btn;
 }
 
@@ -2290,75 +2320,54 @@ on_prefs_okay_clicked(GtkButton *button,
  *  'Okay' was hit in the color selector.
  */
 
-void ExultStudio::background_color_okay(
-    GtkWidget *dlg,
-    gpointer data
-) {
-	ignore_unused_variable_warning(data);
-	GtkColorSelectionDialog *colorsel = GTK_COLOR_SELECTION_DIALOG(dlg);
-	gdouble rgb[4];
-	gtk_color_selection_get_color(
-	    GTK_COLOR_SELECTION(colorsel->colorsel), rgb);
-	auto r = static_cast<unsigned char>(rgb[0] * 256);
-	auto g = static_cast<unsigned char>(rgb[1] * 256);
-	auto b = static_cast<unsigned char>(rgb[2] * 256);
-	ExultStudio *studio = ExultStudio::get_instance();
-	studio->background_color = (r << 16) + (g << 8) + b;
-	// Show new color.
-	GtkWidget *backgrnd = studio->get_widget("prefs_background");
-	gtk_object_set_user_data(GTK_OBJECT(backgrnd),
-	                         reinterpret_cast<gpointer>(uintptr(studio->background_color)));
-	GdkRectangle area = {0, 0, backgrnd->allocation.width,
-	                     backgrnd->allocation.height
-	                    };
-	gtk_widget_draw(backgrnd, &area);
-	gtk_widget_destroy(dlg);
-}
-
 C_EXPORT void
 on_prefs_background_choose_clicked(GtkButton *button,
                                    gpointer   user_data) {
 	ignore_unused_variable_warning(button, user_data);
-	GtkColorSelectionDialog *colorsel = GTK_COLOR_SELECTION_DIALOG(
-	                                        gtk_color_selection_dialog_new("Background color"));
+	GtkColorChooserDialog *colorsel = GTK_COLOR_CHOOSER_DIALOG(
+	                                      gtk_color_chooser_dialog_new("Background color", nullptr));
 	gtk_window_set_modal(GTK_WINDOW(colorsel), true);
-	// Set mouse click handler.
-	gtk_signal_connect_object(GTK_OBJECT(colorsel->ok_button), "clicked",
-	                          GTK_SIGNAL_FUNC(ExultStudio::background_color_okay),
-	                          GTK_OBJECT(colorsel));
-	gtk_signal_connect_object(GTK_OBJECT(colorsel->cancel_button),
-	                          "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy),
-	                          GTK_OBJECT(colorsel));
-	// Set delete handler.
-	gtk_signal_connect(GTK_OBJECT(colorsel), "delete_event",
-	                   GTK_SIGNAL_FUNC(gtk_false), nullptr);
 	// Get color.
 	guint32 c = ExultStudio::get_instance()->get_background_color();
-	gdouble rgb[3];
-	rgb[0] = ((c >> 16) & 0xff) / 256.0;
-	rgb[1] = ((c >> 8) & 0xff) / 256.0;
-	rgb[2] = ((c >> 0) & 0xff) / 256.0;
-	gtk_color_selection_set_color(GTK_COLOR_SELECTION(colorsel->colorsel),
-	                              rgb);
-	gtk_widget_show(GTK_WIDGET(colorsel));
+	GdkRGBA  rgba;
+	rgba.red   = ((c >> 16) & 0xff) / 255.0;
+	rgba.green = ((c >>  8) & 0xff) / 255.0;
+	rgba.blue  = ((c >>  0) & 0xff) / 255.0;
+	rgba.alpha = 1.0;
+	gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(colorsel), &rgba);
+	if (gtk_dialog_run(GTK_DIALOG(colorsel)) == GTK_RESPONSE_OK) {
+		gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(colorsel), &rgba);
+		auto r = static_cast<unsigned char>(rgba.red   * 255.0);
+		auto g = static_cast<unsigned char>(rgba.green * 255.0);
+		auto b = static_cast<unsigned char>(rgba.blue  * 255.0);
+		ExultStudio *studio = ExultStudio::get_instance();
+		studio->set_background_color((r << 16) + (g << 8) + b);
+		// Show new color.
+		GtkWidget *backgrnd = studio->get_widget("prefs_background");
+		g_object_set_data(G_OBJECT(backgrnd), "user_data",
+		                  reinterpret_cast<gpointer>(uintptr(studio->get_background_color())));
+		gtk_widget_queue_draw(backgrnd);
+	}
+	gtk_widget_destroy(GTK_WIDGET(colorsel));
 }
 // Background color area exposed.
-C_EXPORT gboolean on_prefs_background_expose_event(
+
+gboolean ExultStudio::on_prefs_background_expose_event(
     GtkWidget *widget,      // The draw area.
-    GdkEventExpose *event,
-    gpointer data
+    cairo_t *cairo,
+    gpointer data           // -> ExultStudio.
 ) {
-	ignore_unused_variable_warning(data);
-	auto color = static_cast<guint32>(reinterpret_cast<uintptr>(gtk_object_get_user_data(GTK_OBJECT(widget))));
-	auto *gc = static_cast<GdkGC *>(
-	            g_object_get_data(G_OBJECT(widget), "color_gc"));
-	if (!gc) {
-		gc = gdk_gc_new(widget->window);
-		g_object_set_data(G_OBJECT(widget), "color_gc", gc);
-	}
-	gdk_rgb_gc_set_foreground(gc, color);
-	gdk_draw_rectangle(widget->window, gc, TRUE, event->area.x,
-	                   event->area.y, event->area.width, event->area.height);
+	ignore_unused_variable_warning(widget, data);
+	auto color = static_cast<guint32>(reinterpret_cast<uintptr>(
+	     g_object_get_data(G_OBJECT(widget), "user_data")));
+	GdkRectangle area = { 0, 0, 0, 0 };
+	gdk_cairo_get_clip_rectangle(cairo, &area);
+	cairo_set_source_rgb(cairo,
+	                     ((color >> 16) & 255) / 255.0,
+	                     ((color >> 8) & 255) / 255.0,
+	                     (color & 255) / 255.0);
+	cairo_rectangle(cairo, area.x, area.y, area.width, area.height);
+	cairo_fill(cairo);
 	return TRUE;
 }
 
@@ -2382,9 +2391,11 @@ void ExultStudio::open_preferences(
 	set_entry("prefs_image_editor", image_editor ? image_editor : "");
 	set_entry("prefs_default_game", default_game ? default_game : "");
 	GtkWidget *backgrnd = get_widget("prefs_background");
-	gtk_object_set_user_data(GTK_OBJECT(backgrnd),
-	                         reinterpret_cast<gpointer>(uintptr(background_color)));
+	g_object_set_data(G_OBJECT(backgrnd), "user_data",
+	                  reinterpret_cast<gpointer>(uintptr(background_color)));
 	GtkWidget *win = get_widget("prefs_window");
+	g_signal_connect(G_OBJECT(get_widget("prefs_background")), "draw",
+	                 G_CALLBACK(on_prefs_background_expose_event), this);
 	gtk_widget_show(win);
 }
 
@@ -2403,8 +2414,8 @@ void ExultStudio::save_preferences(
 	default_game = g_strdup(text);
 	config->set("config/estudio/default_game", default_game, true);
 	GtkWidget *backgrnd = get_widget("prefs_background");
-	background_color = reinterpret_cast<uintptr>(gtk_object_get_user_data(
-	                       GTK_OBJECT(backgrnd)));
+	set_background_color(reinterpret_cast<uintptr>(g_object_get_data(
+	                         G_OBJECT(backgrnd), "user_data")));
 	config->set("config/estudio/background_color", background_color, true);
 	// Set background color.
 	palbuf[3 * 255] = (background_color >> 18) & 0x3f;
@@ -2429,7 +2440,7 @@ void ExultStudio::run() {
 static gint Reconnect(
     gpointer data           // ->ExultStudio.
 ) {
-	auto *studio = static_cast<ExultStudio *>(data);
+	ExultStudio *studio = static_cast<ExultStudio *>(data);
 	if (studio->connect_to_server())
 		return 0;       // Cancel timer.  We succeeded.
 	else
@@ -2459,20 +2470,21 @@ bool ExultStudio::send_to_server(
  */
 
 #ifndef _WIN32
-static void Read_from_server(
-    gpointer data,          // ->ExultStudio.
-    gint socket,
-    GdkInputCondition condition
+static gboolean Read_from_server(
+    GIOChannel  *source,
+    GIOCondition condition,
+    gpointer     data           // ->ExultStudio.
 ) {
-	ignore_unused_variable_warning(socket, condition);
-	auto *studio = static_cast<ExultStudio *>(data);
+	ignore_unused_variable_warning(source, condition);
+	ExultStudio *studio = static_cast<ExultStudio *>(data);
 	studio->read_from_server();
+	return TRUE;
 }
 #else
 static gint Read_from_server(
     gpointer data           // ->ExultStudio.
 ) {
-	auto *studio = static_cast<ExultStudio *>(data);
+	ExultStudio *studio = static_cast<ExultStudio *>(data);
 	studio->read_from_server();
 	return TRUE;
 }
@@ -2490,12 +2502,12 @@ void ExultStudio::read_from_server(
 
 	if (len == -1)  {
 		cout << "Disconnected from server" << endl;
-		gtk_timeout_remove(server_input_tag);
+		g_source_remove(server_input_tag);
 		Exult_server::disconnect_from_server();
 		server_input_tag = -1;
 		server_socket = -1;
 		// Try again every 4 secs.
-		gtk_timeout_add(4000, Reconnect, this);
+		g_timeout_add(4000, Reconnect, this);
 
 		return;
 	}
@@ -2509,14 +2521,14 @@ void ExultStudio::read_from_server(
 		cout << "Error reading from server" << endl;
 		if (server_socket == -1) { // Socket closed?
 #ifndef _WIN32
-			gdk_input_remove(server_input_tag);
+			g_source_remove(server_input_tag);
 #else
-			gtk_timeout_remove(server_input_tag);
+			g_source_remove(server_input_tag);
 			Exult_server::disconnect_from_server();
 #endif
 			server_input_tag = -1;
 			// Try again every 4 secs.
-			gtk_timeout_add(4000, Reconnect, this);
+			g_timeout_add(4000, Reconnect, this);
 		}
 		return;
 	}
@@ -2599,7 +2611,7 @@ bool ExultStudio::connect_to_server(
 #ifndef _WIN32
 	if (server_socket >= 0) {   // Close existing socket.
 		close(server_socket);
-		gdk_input_remove(server_input_tag);
+		g_source_remove(server_input_tag);
 	}
 	// Use <GAMEDAT>/exultserver.
 	if (!U7exists(GAMEDAT) || !U7exists(EXULT_SERVER)) {
@@ -2628,16 +2640,19 @@ bool ExultStudio::connect_to_server(
 		server_socket = -1;
 		return false;
 	}
-	server_input_tag = gdk_input_add(server_socket,
-	                                 GDK_INPUT_READ, Read_from_server, this);
+	GIOChannel *gio = g_io_channel_unix_new(server_socket);
+	server_input_tag = g_io_add_watch(gio,
+	                                  static_cast<GIOCondition>(G_IO_IN | G_IO_HUP | G_IO_ERR),
+	                                  Read_from_server, this);
+	g_io_channel_unref(gio);
 #else
 	// Close existing socket.
 	if (server_socket != -1) Exult_server::disconnect_from_server();
-	if (server_input_tag != -1) gtk_timeout_remove(server_input_tag);
+	if (server_input_tag != -1) g_source_remove(server_input_tag);
 	server_socket = server_input_tag = -1;
 
 	if (Exult_server::try_connect_to_server(get_system_path(EXULT_SERVER).c_str()) > 0)
-		server_input_tag = gtk_timeout_add(50, Read_from_server, this);
+		server_input_tag = g_timeout_add(50, Read_from_server, this);
 	else
 		return false;
 #endif
@@ -2669,10 +2684,10 @@ void ExultStudio::info_received(
 		               Exult_server::version, vers);
 #ifndef _WIN32
 		close(server_socket);
-		gdk_input_remove(server_input_tag);
+		g_source_remove(server_input_tag);
 #else
 		Exult_server::disconnect_from_server();
-		gtk_timeout_remove(server_input_tag);
+		g_source_remove(server_input_tag);
 #endif
 		server_socket = server_input_tag = -1;
 		return;
@@ -2888,17 +2903,11 @@ void ExultStudio::set_game_information(
 		gtk_window_set_modal(GTK_WINDOW(win), true);
 		gameinfowin = win;
 
-		gtk_signal_connect(
-		    GTK_OBJECT(get_widget("gameinfo_apply")),
-		    "clicked",
-		    GTK_SIGNAL_FUNC(on_gameinfo_apply_clicked),
-		    nullptr);
+		g_signal_connect(G_OBJECT(get_widget("gameinfo_apply")), "clicked",
+		    G_CALLBACK(on_gameinfo_apply_clicked), nullptr);
 
-		gtk_signal_connect(
-		    GTK_OBJECT(get_widget("gameinfo_charset")),
-		    "clicked",
-		    GTK_SIGNAL_FUNC(on_gameinfo_charset_changed),
-		    nullptr);
+		g_signal_connect(G_OBJECT(get_widget("gameinfo_charset")), "clicked",
+		    G_CALLBACK(on_gameinfo_charset_changed), nullptr);
 	}
 
 	// game_encoding should equal gameinfo->get_codepage().
@@ -3060,7 +3069,7 @@ void convertToUTF8::convert(gchar *&_convstr, const char *str, const char *enc) 
 // Exult-dependant stuff to be included in ES. Thus, Exult
 // defines the working version of this function.
 // Maybe we should do something about this...
-int get_skinvar(const std::string& key) {
+int get_skinvar(const std::string &key) {
 	ignore_unused_variable_warning(key);
 	return -1;
 }

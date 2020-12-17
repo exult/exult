@@ -8,7 +8,7 @@
 #define INCL_COMBO_H    1
 
 /*
-Copyright (C) 2002-2013 The Exult Team
+Copyright (C) 2002-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -72,7 +72,8 @@ public:
 	Combo(const Combo &c2);     // Copy.
 	~Combo();
 	Combo_member *get(int i) {
-		return i >= 0 && static_cast<unsigned>(i) < members.size() ? members[i] : nullptr;
+		return i >= 0 && static_cast<unsigned>(i) < members.size() ?
+		       members[i] : nullptr;
 	}
 	// Add a new object.
 	void add(int tx, int ty, int tz, int shnum, int frnum, bool toggle);
@@ -102,6 +103,8 @@ public:
 	friend class Combo_chooser;
 	Combo_editor(Shapes_vga_file *svga, unsigned char *palbuf);
 	~Combo_editor() override;
+	static gboolean on_combo_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	void show(bool tf);     // Show/hide.
 	void render_area(GdkRectangle *area);
 	void render() override {
@@ -117,7 +120,7 @@ public:
 	void remove();          // Remove selected.
 	void save();            // Save it.
 	bool is_visible() {
-		return GTK_WIDGET_VISIBLE(win);
+		return gtk_widget_get_visible(GTK_WIDGET(win));
 	}
 };
 
@@ -153,10 +156,6 @@ class Combo_chooser: public Object_browser, public Shape_draw {
 	void (*sel_changed)();      // Called when selection changes.
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
-	void show() override {
-		Combo_chooser::show(0, 0,
-		                    draw->allocation.width, draw->allocation.height);
-	}
 	void select(int new_sel);   // Show new selection.
 	void load() override;        // Load from file data.
 	void render() override;      // Draw list.
@@ -191,17 +190,15 @@ public:
 	static gint configure(GtkWidget *widget, GdkEventConfigure *event,
 	                      gpointer data);
 	// Blit to screen.
-	static gint expose(GtkWidget *widget, GdkEventExpose *event,
-	                   gpointer data);
+	static gint expose(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	// Handle mouse press.
 	static gint mouse_press(GtkWidget *widget, GdkEventButton *event,
 	                        gpointer data);
 	// Give dragged combo.
 	static void drag_data_get(GtkWidget *widget, GdkDragContext *context,
-	                          GtkSelectionData *seldata, guint info, guint time, gpointer data);
-	// Someone else selected.
-	static gint selection_clear(GtkWidget *widget,
-	                            GdkEventSelection *event, gpointer data);
+	                          GtkSelectionData *seldata,
+	                          guint info, guint time, gpointer data);
 	static gint drag_begin(GtkWidget *widget, GdkDragContext *context,
 	                       gpointer data);
 	// Handle scrollbar.

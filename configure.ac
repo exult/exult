@@ -287,7 +287,7 @@ fi
 # ---------------------------------------------------------------------
 
 if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.24, have_gtk=yes, have_gtk=no)
+	PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 3.16, have_gtk=yes, have_gtk=no)
 else
 	have_gtk=no
 fi
@@ -1110,7 +1110,7 @@ echo
 echo SDL ....................... : `$SDL_CONFIG --version`
 if test x$have_gtk = xyes; then
 echo GLIB ...................... : `$PKG_CONFIG --modversion glib-2.0`
-echo GTK+ ...................... : `$PKG_CONFIG --modversion gtk+-2.0`
+echo GTK+ ...................... : `$PKG_CONFIG --modversion gtk+-3.0`
 fi
 if test x$have_gnomeui = xyes; then
 echo libGnomeui................. : `$PKG_CONFIG --modversion libgnomeui-2.0`

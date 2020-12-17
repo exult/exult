@@ -8,7 +8,7 @@
 #define INCL_SHAPEDRAW  1
 
 /*
-Copyright (C) 2001  The Exult Team
+Copyright (C) 2001-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -25,26 +25,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wparentheses"
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#if !defined(__llvm__) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-#else
-#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
-#endif
-#endif  // __GNUC__
-#include <gtk/gtk.h>
-#include <gdk/gdktypes.h>
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif  // __GNUC__
-#include "gtk_redefines.h"
-
 class Vga_file;
 class Shape_frame;
 class Image_buffer8;
@@ -59,22 +39,29 @@ class Shape_draw {
 protected:
 	Vga_file *ifile;        // Where the shapes come from.
 	GtkWidget *draw;        // GTK draw area to display them in.
-	GdkGC *drawgc;          // For drawing in 'draw'.
+	cairo_t *drawgc;        // For drawing in 'draw'.
+	guint32 drawfg;         // Foreground color.
 	Image_buffer8 *iwin;        // What we render into.
-	GdkRgbCmap *palette;        // For gdk_draw_indexed_image().
+	ExultRgbCmap *palette;        // For palette indexed image.
 	Drop_callback drop_callback;    // Called when a shape is dropped here.
 	void *drop_user_data;
 	bool dragging;          // Dragging from here.
 public:
 	Shape_draw(Vga_file *i, const unsigned char *palbuf, GtkWidget *drw);
 	virtual ~Shape_draw();
-	// Blit onto screen.
-	void show(GdkDrawable *drawable, int x, int y, int w, int h);
-	void show(int x, int y, int w, int h) {
-		show(draw->window, x, y, w, h);
+	// Manage graphic context.
+	void set_graphic_context(cairo_t *cairo) {
+		drawgc = cairo;
 	}
+	cairo_t *get_graphic_context() {
+		return drawgc;
+	}
+	// Blit onto screen.
+	void show(int x, int y, int w, int h);
 	void show() {
-		show(0, 0, draw->allocation.width, draw->allocation.height);
+		GtkAllocation alloc = {0, 0, 0, 0};
+		gtk_widget_get_allocation(draw, &alloc);
+		show(0, 0, alloc.width, alloc.height);
 	}
 	guint32 get_color(int i) {
 		return palette->colors[i];
@@ -89,10 +76,10 @@ public:
 
 	void configure();       // Configure when created/resized.
 	// Handler for drop.
-	static void drag_data_received(GtkWidget *widget,
-	                               GdkDragContext *context, gint x, gint y,
-	                               GtkSelectionData *seldata, guint info, guint time,
-	                               gpointer udata);
+	static void drag_data_received(GtkWidget *widget, GdkDragContext *context,
+	                               gint x, gint y,
+	                               GtkSelectionData *seldata,
+	                               guint info, guint time, gpointer udata);
 	void enable_drop(Drop_callback callback, void *udata);
 	void set_drag_icon(GdkDragContext *context, Shape_frame *shape);
 	// Start/end dragging from here.

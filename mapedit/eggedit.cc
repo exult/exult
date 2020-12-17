@@ -5,7 +5,7 @@
  **/
 
 /*
-Copyright (C) 2000-2013 The Exult Team
+Copyright (C) 2000-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -27,13 +27,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #include "studio.h"
+#include "ignore_unused_variable_warning.h"
+
 #include "u7drag.h"
 #include "servemsg.h"
 #include "objserial.h"
 #include "exult_constants.h"
 #include "shapefile.h"
 #include "shapedraw.h"
-#include "ignore_unused_variable_warning.h"
 
 using std::cout;
 using std::endl;
@@ -106,15 +107,18 @@ C_EXPORT void on_egg_browse_usecode_clicked(
 /*
  *  Draw shape in egg 'monster' area.
  */
-C_EXPORT gboolean on_egg_monster_draw_expose_event(
+gboolean ExultStudio::on_egg_monster_draw_expose_event(
     GtkWidget *widget,      // The view window.
-    GdkEventExpose *event,
-    gpointer data           // ->Shape_chooser.
+    cairo_t *cairo,
+    gpointer data           // -> ExultStudio.
 ) {
 	ignore_unused_variable_warning(widget, data);
-	ExultStudio::get_instance()->show_egg_monster(
-	    event->area.x, event->area.y, event->area.width,
-	    event->area.height);
+	ExultStudio *studio = static_cast<ExultStudio *>(data);
+	GdkRectangle area = { 0, 0, 0, 0 };
+	gdk_cairo_get_clip_rectangle(cairo, &area);
+	studio->egg_monster_draw->set_graphic_context(cairo);
+	studio->show_egg_monster(area.x, area.y, area.width, area.height);
+	studio->egg_monster_draw->set_graphic_context(nullptr);
 	return TRUE;
 }
 
@@ -189,14 +193,15 @@ void ExultStudio::open_egg_window(
 			egg_monster_draw = new Shape_draw(vgafile->get_ifile(),
 			                                  palbuf.get(),
 			                                  get_widget("egg_monster_draw"));
-			egg_monster_draw->enable_drop(Egg_monster_dropped,
-			                              this);
+			egg_monster_draw->enable_drop(Egg_monster_dropped, this);
 		}
 		egg_ctx = gtk_statusbar_get_context_id(
 		              GTK_STATUSBAR(get_widget("egg_status")), "Egg Editor");
 	}
 	// Init. egg address to null.
-	gtk_object_set_user_data(GTK_OBJECT(eggwin), nullptr);
+	g_object_set_data(G_OBJECT(eggwin), "user_data", nullptr);
+	g_signal_connect(G_OBJECT(get_widget("egg_monster_draw")), "draw",
+	                 G_CALLBACK(on_egg_monster_draw_expose_event), this);
 	// Make 'apply' sensitive.
 	gtk_widget_set_sensitive(get_widget("egg_apply_btn"), true);
 	remove_statusbar("egg_status", egg_ctx, egg_status_id);
@@ -214,7 +219,8 @@ void ExultStudio::open_egg_window(
 
 #ifdef _WIN32
 	if (first_time || !eggdnd)
-		Windnd::CreateStudioDropDest(eggdnd, egghwnd, Drop_dragged_shape, nullptr, nullptr, this);
+		Windnd::CreateStudioDropDest(eggdnd, egghwnd, Drop_dragged_shape,
+		                             nullptr, nullptr, this);
 #endif
 }
 
@@ -268,10 +274,10 @@ int ExultStudio::init_egg_window(
 		return 0;
 	}
 	// Store address with window.
-	gtk_object_set_user_data(GTK_OBJECT(eggwin), addr);
+	g_object_set_data(G_OBJECT(eggwin), "user_data", addr);
 	GtkWidget *notebook = get_widget("notebook1");
 	if (notebook)           // 1st is monster (1).
-		gtk_notebook_set_page(GTK_NOTEBOOK(notebook), type - 1);
+		gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), type - 1);
 	set_spin("probability", probability);
 	set_spin("distance", distance);
 	set_optmenu("criteria", criteria);
@@ -492,7 +498,7 @@ int ExultStudio::save_egg_window(
 		cout << "Unknown egg type" << endl;
 		return 0;
 	}
-	auto *addr = static_cast<Egg_object*>(gtk_object_get_user_data(GTK_OBJECT(eggwin)));
+	auto *addr = static_cast<Egg_object *>(g_object_get_data(G_OBJECT(eggwin), "user_data"));
 	if (Egg_object_out(server_socket, addr, tx, ty, tz,
 	                   shape, frame, type, criteria, probability, distance,
 	                   nocturnal, once, hatched, auto_reset,
@@ -520,17 +526,19 @@ int ExultStudio::save_egg_window(
 void ExultStudio::show_egg_monster(
     int x, int y, int w, int h  // Rectangle. w=-1 to show all.
 ) {
+	ignore_unused_variable_warning(x, y, w, h);
 	if (!egg_monster_draw)
 		return;
+	if (w == -1) {
+		egg_monster_draw->render();
+		return;
+	}
 	egg_monster_draw->configure();
 	// Yes, this is kind of redundant...
 	int shnum = get_num_entry("monst_shape");
 	int frnum = get_num_entry("monst_frame");
 	egg_monster_draw->draw_shape_centered(shnum, frnum);
-	if (w != -1)
-		egg_monster_draw->show(x, y, w, h);
-	else
-		egg_monster_draw->show();
+	egg_monster_draw->show(x, y, w, h);
 }
 
 /*

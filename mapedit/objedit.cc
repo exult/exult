@@ -5,7 +5,7 @@
  **/
 
 /*
-Copyright (C) 2000-2013 The Exult Team
+Copyright (C) 2000-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #include "studio.h"
+#include "ignore_unused_variable_warning.h"
+
 #include "u7drag.h"
 #include "servemsg.h"
 #include "objserial.h"
@@ -35,7 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "shapefile.h"
 #include "shapedraw.h"
 #include "shapevga.h"
-#include "ignore_unused_variable_warning.h"
 
 using std::cout;
 using std::endl;
@@ -103,15 +104,18 @@ C_EXPORT gboolean on_obj_window_delete_event(
 /*
  *  Draw shape in object shape area.
  */
-C_EXPORT gboolean on_obj_draw_expose_event(
+gboolean ExultStudio::on_obj_draw_expose_event(
     GtkWidget *widget,      // The view window.
-    GdkEventExpose *event,
-    gpointer data           // ->Shape_chooser.
+    cairo_t *cairo,
+    gpointer data           // -> ExultStudio.
 ) {
 	ignore_unused_variable_warning(widget, data);
-	ExultStudio::get_instance()->show_obj_shape(
-	    event->area.x, event->area.y, event->area.width,
-	    event->area.height);
+	ExultStudio *studio = static_cast<ExultStudio *>(data);
+	GdkRectangle area = { 0, 0, 0, 0 };
+	gdk_cairo_get_clip_rectangle(cairo, &area);
+	studio->obj_draw->set_graphic_context(cairo);
+	studio->show_obj_shape(area.x, area.y, area.width, area.height);
+	studio->obj_draw->set_graphic_context(nullptr);
 	return TRUE;
 }
 
@@ -196,19 +200,23 @@ void ExultStudio::open_obj_window(
 		objwin = get_widget("obj_window");
 		// Note: vgafile can't be null here.
 		if (palbuf) {
-			obj_draw = new Shape_draw(vgafile->get_ifile(), palbuf.get(),
+			obj_draw = new Shape_draw(vgafile->get_ifile(),
+			                          palbuf.get(),
 			                          get_widget("obj_draw"));
 			obj_draw->enable_drop(Obj_shape_dropped, this);
 		}
 	}
 	// Init. obj address to null.
-	gtk_object_set_user_data(GTK_OBJECT(objwin), nullptr);
+	g_object_set_data(G_OBJECT(objwin), "user_data", nullptr);
+	g_signal_connect(G_OBJECT(get_widget("obj_draw")), "draw",
+	                 G_CALLBACK(on_obj_draw_expose_event), this);
 	if (!init_obj_window(data, datalen))
 		return;
 	gtk_widget_show(objwin);
 #ifdef _WIN32
 	if (first_time || !objdnd)
-		Windnd::CreateStudioDropDest(objdnd, objhwnd, Drop_dragged_shape, nullptr, nullptr, this);
+		Windnd::CreateStudioDropDest(objdnd, objhwnd, Drop_dragged_shape,
+		                             nullptr, nullptr, this);
 #endif
 }
 
@@ -250,7 +258,7 @@ int ExultStudio::init_obj_window(
 		return 0;
 	}
 	// Store address with window.
-	gtk_object_set_user_data(GTK_OBJECT(objwin), reinterpret_cast<gpointer>(addr));
+	g_object_set_data(G_OBJECT(objwin), "user_data", reinterpret_cast<gpointer>(addr));
 	// Store name. (Not allowed to change.)
 	set_entry("obj_name", name.c_str(), false);
 	// Shape/frame, quality.
@@ -270,8 +278,8 @@ int ExultStudio::init_obj_window(
 		GtkAdjustment *adj = gtk_spin_button_get_adjustment(
 		                         GTK_SPIN_BUTTON(btn));
 		int nframes = vgafile->get_ifile()->get_num_frames(shape);
-		adj->upper = (nframes - 1) | 32; // So we can rotate.
-		gtk_signal_emit_by_name(GTK_OBJECT(adj), "changed");
+		gtk_adjustment_set_upper(adj, (nframes - 1) | 32); // So we can rotate.
+		g_signal_emit_by_name(G_OBJECT(adj), "changed");
 	}
 	return 1;
 }
@@ -286,7 +294,7 @@ int ExultStudio::save_obj_window(
 ) {
 	cout << "In save_obj_window()" << endl;
 	// Get object address.
-	auto *addr = static_cast<Game_object*>(gtk_object_get_user_data(GTK_OBJECT(objwin)));
+	auto *addr = static_cast<Game_object *>(g_object_get_data(G_OBJECT(objwin), "user_data"));
 	int tx = get_spin("obj_x");
 	int ty = get_spin("obj_y");
 	int tz = get_spin("obj_z");
@@ -333,8 +341,13 @@ void ExultStudio::rotate_obj(
 void ExultStudio::show_obj_shape(
     int x, int y, int w, int h  // Rectangle. w=-1 to show all.
 ) {
+	ignore_unused_variable_warning(x, y, w, h);
 	if (!obj_draw)
 		return;
+	if (w == -1) {
+		obj_draw->render();
+		return;
+	}
 	obj_draw->configure();
 	// Yes, this is kind of redundant...
 	int shnum = get_num_entry("obj_shape");
@@ -342,10 +355,7 @@ void ExultStudio::show_obj_shape(
 	if (!shnum)         // Don't draw shape 0.
 		shnum = -1;
 	obj_draw->draw_shape_centered(shnum, frnum);
-	if (w != -1)
-		obj_draw->show(x, y, w, h);
-	else
-		obj_draw->show();
+	obj_draw->show(x, y, w, h);
 }
 
 /*

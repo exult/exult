@@ -5,7 +5,7 @@
  **/
 
 /*
-Copyright (C) 2002-2013 The Exult Team
+Copyright (C) 2002-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,12 +26,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#include <string>
 #include "studio.h"
+#include "ignore_unused_variable_warning.h"
+
+#include <string>
 #include "exult_constants.h"
 #include "utils.h"
 #include "execbox.h"
-#include "ignore_unused_variable_warning.h"
 
 using std::string;
 

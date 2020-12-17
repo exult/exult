@@ -8,7 +8,7 @@
 #define INCL_SHAPELST   1
 
 /*
-Copyright (C) 1999  Jeffrey S. Freedman
+Copyright (C) 1999-2020 Jeffrey S. Freedman
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -90,10 +90,6 @@ class Shape_chooser: public Object_browser, public Shape_draw {
 	static int check_editing_timer; // For monitoring files being edited.
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
-	void show() override {
-		Shape_chooser::show(0, 0,
-		                    draw->allocation.width, draw->allocation.height);
-	}
 	void tell_server_shape();   // Tell Exult what shape is selected.
 	void select(int new_sel);   // Show new selection.
 	void render() override;      // Draw list.
@@ -144,8 +140,10 @@ public:
 	// Configure when created/resized.
 	gint configure(GdkEventConfigure *event);
 	// Blit to screen.
-	static gint expose(GtkWidget *widget, GdkEventExpose *event,
-	                   gpointer data);
+	static gint expose(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
+	static gboolean on_new_shape_font_color_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	// Handle mouse press.
 	gint mouse_press(GtkWidget *widget, GdkEventButton *event);
 	// Export current frame as a PNG.
@@ -180,10 +178,8 @@ public:
 	void del_frame();
 	// Give dragged shape.
 	static void drag_data_get(GtkWidget *widget, GdkDragContext *context,
-	                          GtkSelectionData *seldata, guint info, guint time, gpointer data);
-	// Someone else selected.
-	static gint selection_clear(GtkWidget *widget,
-	                            GdkEventSelection *event, gpointer data);
+	                          GtkSelectionData *seldata,
+	                          guint info, guint time, gpointer data);
 	static gint drag_begin(GtkWidget *widget, GdkDragContext *context,
 	                       gpointer data);
 	// Handle scrollbar.

@@ -5,7 +5,7 @@
  **/
 
 /*
-Copyright (C) 2001-2013 The Exult Team
+Copyright (C) 2001-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,31 +26,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wparentheses"
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#if !defined(__llvm__) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-#else
-#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
-#endif
-#endif  // __GNUC__
-#include <gtk/gtkradiomenuitem.h>
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif  // __GNUC__
-#include "gtk_redefines.h"
-
 #include "studio.h"
+#include "ignore_unused_variable_warning.h"
+
 #include "servemsg.h"
 #include "exult_constants.h"
 #include "utils.h"
 #include "fnames.h"
-#include "ignore_unused_variable_warning.h"
 
 using EStudio::Add_menu_item;
 using EStudio::Alert;
@@ -198,7 +180,7 @@ void ExultStudio::setup_maps_list(
 ) {
 	GtkWidget *maps = gtk_menu_item_get_submenu(
 	                      GTK_MENU_ITEM(get_widget("map1")));
-	GList *items = gtk_container_get_children(GTK_CONTAINER(maps));
+	GList *items = g_list_first(gtk_container_get_children(GTK_CONTAINER(maps)));
 	GList *each = g_list_last(items);
 	GSList *group = nullptr;
 	int curmap = 0;
@@ -210,7 +192,7 @@ void ExultStudio::setup_maps_list(
 		if (strcmp(text, "Main") == 0) {
 			group = gtk_radio_menu_item_get_group(
 			            GTK_RADIO_MENU_ITEM(item));
-			gtk_object_set_user_data(GTK_OBJECT(item), nullptr);
+			g_object_set_data(G_OBJECT(item), "user_data", nullptr);
 			if (curmap == 0)
 				gtk_check_menu_item_set_active(
 				    GTK_CHECK_MENU_ITEM(item), TRUE);
@@ -218,8 +200,8 @@ void ExultStudio::setup_maps_list(
 		}
 		if (gtk_check_menu_item_get_active(
 		            GTK_CHECK_MENU_ITEM(item)))
-			curmap = reinterpret_cast<sintptr>(gtk_object_get_user_data(
-			             GTK_OBJECT(item)));
+			curmap = reinterpret_cast<sintptr>(g_object_get_data(
+			                                       G_OBJECT(item), "user_data"));
 		GList *prev = g_list_previous(each);
 		gtk_container_remove(GTK_CONTAINER(maps), GTK_WIDGET(item));
 		each = prev;
@@ -230,13 +212,14 @@ void ExultStudio::setup_maps_list(
 		sprintf(name, "Map #%02x", num);
 		auto *ptrnum = reinterpret_cast<gpointer>(uintptr(num));
 		GtkWidget *item =
-		    Add_menu_item(maps, name, GTK_SIGNAL_FUNC(on_map_activate), ptrnum, group);
-		gtk_object_set_user_data(GTK_OBJECT(item), ptrnum);
+		    Add_menu_item(maps, name, G_CALLBACK(on_map_activate), ptrnum, group);
+		g_object_set_data(G_OBJECT(item), "user_data", ptrnum);
 		if (curmap == num)
 			gtk_check_menu_item_set_active(
 			    GTK_CHECK_MENU_ITEM(item), TRUE);
 		group = gtk_radio_menu_item_get_group(
 		            GTK_RADIO_MENU_ITEM(item));
 	}
+	g_list_free(items);
 }
 

@@ -9,7 +9,7 @@
 #define INCL_PALEDIT    1
 
 /*
-Copyright (C) 2000 The Exult Team
+Copyright (C) 2000-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -38,13 +38,13 @@ class U7object;
  */
 class Palette_edit: public Object_browser {
 	Flex_file_info *flex_info;  // Where file data is stored.
-	guchar *image;          // Holds data to render.
 	int width, height;      // Dimensions of image.
 	GtkWidget *draw;        // GTK draw area to display them in.
-	GdkGC *drawgc;          // For drawing in 'draw'.
-	std::vector<GdkRgbCmap *> palettes; // The palettes to display.
+	cairo_t *drawgc;        // For drawing in 'draw'.
+	guint32 drawfg;         // Foreground color.
+	std::vector<ExultRgbCmap *> palettes; // The palettes to display.
 	int cur_pal;            // Index of current palette.
-	GtkColorSelectionDialog *colorsel;// Open color selector.
+	GtkColorChooserDialog   *colorsel;// Open color chooser.
 	GtkWidget *sbar;        // Status bar.
 	GtkWidget *pspin;       // Spin button for palette #.
 	GtkAdjustment *palnum_adj;  // For palette #.
@@ -53,18 +53,9 @@ class Palette_edit: public Object_browser {
 	GtkWidget *insert_btn, *remove_btn, *up_btn, *down_btn;
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
-	void show() override {
-		Palette_edit::show(0, 0,
-		                   draw->allocation.width, draw->allocation.height);
-	}
 	void select(int new_sel);   // Show new selection.
 	void load() override;        // Load from file data.
 	void render() override;      // Draw list.
-	// Handle color-selector buttons.
-	static int color_closed(GtkWidget *dlg, GdkEvent *event,
-	                        gpointer data);
-	static void color_cancel(GtkWidget *dlg, gpointer data);
-	static void color_okay(GtkWidget *dlg, gpointer data);
 	void double_clicked();      // Handle double-click on a color.
 	GtkWidget *create_controls();   // Controls at bottom of browser.
 	void enable_controls();     // Enable/disable controls after sel.
@@ -76,6 +67,13 @@ public:
 	Palette_edit(Flex_file_info *flinfo);
 	~Palette_edit() override;
 	void show_palette(int palnum);  // Show desired palette.
+	// Manage graphic context.
+	void set_graphic_context(cairo_t *cairo) {
+		drawgc = cairo;
+	}
+	cairo_t *get_graphic_context() {
+		return drawgc;
+	}
 	// Turn off selection.
 	void unselect(bool need_render = true);
 	void move_palette(bool up);
@@ -85,17 +83,15 @@ public:
 	static gint configure(GtkWidget *widget, GdkEventConfigure *event,
 	                      gpointer data);
 	// Blit to screen.
-	static gint expose(GtkWidget *widget, GdkEventExpose *event,
-	                   gpointer data);
+	static gint expose(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	// Handle mouse press.
 	static gint mouse_press(GtkWidget *widget, GdkEventButton *event,
 	                        gpointer data);
 	// Give dragged palette.
 	static void drag_data_get(GtkWidget *widget, GdkDragContext *context,
-	                          GtkSelectionData *seldata, guint info, guint time, gpointer data);
-	// Someone else selected.
-	static gint selection_clear(GtkWidget *widget,
-	                            GdkEventSelection *event, gpointer data);
+	                          GtkSelectionData *seldata,
+	                          guint info, guint time, gpointer data);
 	static gint drag_begin(GtkWidget *widget, GdkDragContext *context,
 	                       gpointer data);
 	static void palnum_changed(GtkAdjustment *adj, gpointer data);

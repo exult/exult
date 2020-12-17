@@ -6,7 +6,7 @@
  **/
 
 /*
-Copyright (C) 2005-2013 The Exult Team
+Copyright (C) 2005-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #include "studio.h"
+#include "ignore_unused_variable_warning.h"
+
 #include "u7drag.h"
 #include "servemsg.h"
 #include "objserial.h"
@@ -36,7 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "shapefile.h"
 #include "shapedraw.h"
 #include "shapevga.h"
-#include "ignore_unused_variable_warning.h"
 
 using std::cout;
 using std::endl;
@@ -88,8 +89,8 @@ C_EXPORT void on_cont_show_gump_clicked(
 	cout << "In on_cont_show_gump_clicked()" << endl;
 	unsigned char data[Exult_server::maxlength];
 	// Get container address.
-	auto addr = reinterpret_cast<uintptr>(gtk_object_get_user_data(
-	                         GTK_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn)))));
+	auto addr = reinterpret_cast<uintptr>(g_object_get_data(
+	        G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
 	unsigned char *ptr = &data[0];
 	Serial_out io(ptr);
 	io << addr;
@@ -125,15 +126,18 @@ C_EXPORT gboolean on_cont_window_delete_event(
 /*
  *  Draw shape in container shape area.
  */
-C_EXPORT gboolean on_cont_draw_expose_event(
+gboolean ExultStudio::on_cont_draw_expose_event(
     GtkWidget *widget,      // The view window.
-    GdkEventExpose *event,
-    gpointer data           // ->Shape_chooser.
+    cairo_t *cairo,
+    gpointer data           // -> ExultSudio.
 ) {
-	ignore_unused_variable_warning(widget, data);
-	ExultStudio::get_instance()->show_cont_shape(
-	    event->area.x, event->area.y, event->area.width,
-	    event->area.height);
+	ignore_unused_variable_warning(widget);
+	ExultStudio *studio = static_cast<ExultStudio *>(data);
+	GdkRectangle area = { 0, 0, 0, 0 };
+	gdk_cairo_get_clip_rectangle(cairo, &area);
+	studio->cont_draw->set_graphic_context(cairo);
+	studio->show_cont_shape(area.x, area.y, area.width, area.height);
+	studio->cont_draw->set_graphic_context(nullptr);
 	return TRUE;
 }
 
@@ -218,19 +222,23 @@ void ExultStudio::open_cont_window(
 		contwin = get_widget("cont_window");
 		// Note: vgafile can't be null here.
 		if (palbuf) {
-			cont_draw = new Shape_draw(vgafile->get_ifile(), palbuf.get(),
+			cont_draw = new Shape_draw(vgafile->get_ifile(),
+			                           palbuf.get(),
 			                           get_widget("cont_draw"));
 			cont_draw->enable_drop(cont_shape_dropped, this);
 		}
 	}
 	// Init. cont address to null.
-	gtk_object_set_user_data(GTK_OBJECT(contwin), nullptr);
+	g_object_set_data(G_OBJECT(contwin), "user_data", nullptr);
+	g_signal_connect(G_OBJECT(get_widget("cont_draw")), "draw",
+	                 G_CALLBACK(on_cont_draw_expose_event), this);
 	if (!init_cont_window(data, datalen))
 		return;
 	gtk_widget_show(contwin);
 #ifdef _WIN32
 	if (first_time || !contdnd)
-		Windnd::CreateStudioDropDest(contdnd, conthwnd, Drop_dragged_shape, nullptr, nullptr, this);
+		Windnd::CreateStudioDropDest(contdnd, conthwnd, Drop_dragged_shape,
+		                             nullptr, nullptr, this);
 #endif
 }
 
@@ -275,7 +283,7 @@ int ExultStudio::init_cont_window(
 		return 0;
 	}
 	// Store address with window.
-	gtk_object_set_user_data(GTK_OBJECT(contwin), reinterpret_cast<gpointer>(addr));
+	g_object_set_data(G_OBJECT(contwin), "user_data", reinterpret_cast<gpointer>(addr));
 	// Store name. (Not allowed to change.)
 	set_entry("cont_name", name.c_str(), false);
 	// Shape/frame, quality.
@@ -295,8 +303,8 @@ int ExultStudio::init_cont_window(
 		GtkAdjustment *adj = gtk_spin_button_get_adjustment(
 		                         GTK_SPIN_BUTTON(btn));
 		int nframes = vgafile->get_ifile()->get_num_frames(shape);
-		adj->upper = (nframes - 1) | 32; // So we can rotate.
-		gtk_signal_emit_by_name(GTK_OBJECT(adj), "changed");
+		gtk_adjustment_set_upper(adj, (nframes - 1) | 32); // So we can rotate.
+		g_signal_emit_by_name(G_OBJECT(adj), "changed");
 	}
 	return 1;
 }
@@ -311,7 +319,8 @@ int ExultStudio::save_cont_window(
 ) {
 	cout << "In save_cont_window()" << endl;
 	// Get container address.
-	auto *addr = static_cast<Container_game_object*>(gtk_object_get_user_data(GTK_OBJECT(contwin)));
+	auto *addr = static_cast<Container_game_object *>(
+	                 g_object_get_data(G_OBJECT(contwin), "user_data"));
 	int tx = get_spin("cont_x");
 	int ty = get_spin("cont_y");
 	int tz = get_spin("cont_z");
@@ -358,8 +367,13 @@ void ExultStudio::rotate_cont(
 void ExultStudio::show_cont_shape(
     int x, int y, int w, int h  // Rectangle. w=-1 to show all.
 ) {
+	ignore_unused_variable_warning(x, y, w, h);
 	if (!cont_draw)
 		return;
+	if (w == -1) {
+		cont_draw->render();
+		return;
+	}
 	cont_draw->configure();
 	// Yes, this is kind of redundant...
 	int shnum = get_num_entry("cont_shape");
@@ -367,10 +381,7 @@ void ExultStudio::show_cont_shape(
 	if (!shnum)         // Don't draw shape 0.
 		shnum = -1;
 	cont_draw->draw_shape_centered(shnum, frnum);
-	if (w != -1)
-		cont_draw->show(x, y, w, h);
-	else
-		cont_draw->show();
+	cont_draw->show(x, y, w, h);
 }
 
 /*

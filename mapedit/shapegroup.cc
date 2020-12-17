@@ -5,7 +5,7 @@
  **/
 
 /*
-Copyright (C) 2002-2013 The Exult Team
+Copyright (C) 2002-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,19 +26,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
+#include "studio.h"
+#include "ignore_unused_variable_warning.h"
+
 #include <cstdlib>
 #include <cassert>
 #include <fstream>
-#include <gdk/gdkkeysyms.h>
 #include "shapegroup.h"
 #include "Flex.h"
 #include "utils.h"
 #include "exceptions.h"
-#include "studio.h"
 #include "objbrowse.h"
 #include "shapefile.h"
 #include "shapevga.h"
-#include "ignore_unused_variable_warning.h"
 
 using std::vector;
 using std::ios;
@@ -61,7 +61,7 @@ Shape_group::Shape_group(
 	// Add shapes for builtin group.
 	ExultStudio *es = ExultStudio::get_instance();
 	auto *vgafile = static_cast<Shapes_vga_file *>(
-	                           es->get_vgafile()->get_ifile());
+	                    es->get_vgafile()->get_ifile());
 	// Read info. the first time.
 	vgafile->read_info(es->get_game_type(), true);
 	int i;
@@ -216,7 +216,7 @@ void Shape_group::add(
  *  Save shape group to a file.
  */
 void Shape_group::write(
-    ODataSource& out
+    ODataSource &out
 ) {
 	// Name, #entries, entries(2-bytes).
 	out.write(name.c_str(), name.size() + 1);
@@ -245,7 +245,7 @@ Shape_group_file::Shape_group_file(
 			// Get each group.
 			std::size_t len;
 			auto buf = flex->retrieve(i, len);
-			const char *gname = reinterpret_cast<const char*>(buf.get());  // Starts with name.
+			const char *gname = reinterpret_cast<const char *>(buf.get()); // Starts with name.
 			const unsigned char *ptr = buf.get() + strlen(gname) + 1;
 			size_t sz = Read2(ptr); // Get # entries.
 			assert((len - (ptr - buf.get())) / 2 == sz);
@@ -430,7 +430,7 @@ on_groups_new_name_key_press(GtkEntry   *entry,
                              GdkEventKey    *event,
                              gpointer    user_data) {
 	ignore_unused_variable_warning(entry, user_data);
-	if (event->keyval == GDK_Return) {
+	if (event->keyval == GDK_KEY_Return) {
 		ExultStudio::get_instance()->add_group();
 		return TRUE;
 	}
@@ -450,6 +450,11 @@ on_open_builtin_group_clicked(GtkButton       *button,
 C_EXPORT void
 on_group_list_cursor_changed(GtkTreeView    *tview) {
 	ignore_unused_variable_warning(tview);
+	GtkTreePath *path;
+	GtkTreeViewColumn *col;
+
+	gtk_tree_view_get_cursor(tview, &path, &col);
+	if (path == nullptr) return;
 	ExultStudio::get_instance()->setup_group_controls();
 }
 
@@ -490,14 +495,14 @@ on_group_list_row_activated(GtkTreeView    *treeview,
 
 /* columns */
 enum {
-    GRP_FILE_COLUMN = 0,
-    GRP_GROUP_COLUMN,
-    GRP_NUM_COLUMNS
+	GRP_FILE_COLUMN = 0,
+	GRP_GROUP_COLUMN,
+	GRP_NUM_COLUMNS
 };
 
 extern "C" {
 	void gulong_deleter(gpointer data) {
-		auto *ptr = static_cast<gulong*>(data);
+		auto *ptr = static_cast<gulong *>(data);
 		delete ptr;
 	}
 }
@@ -538,23 +543,23 @@ void ExultStudio::setup_groups(
 		                            col_offset - 1);
 		gtk_tree_view_column_set_clickable(column, TRUE);
 		addsig = g_signal_connect(G_OBJECT(model), "row-inserted",
-		                          GTK_SIGNAL_FUNC(on_group_list_row_inserted), this);
+		                          G_CALLBACK(on_group_list_row_inserted), this);
 		// Store signal id with model.
 		g_object_set_data_full(G_OBJECT(model), "row-inserted",
-		                  new gulong(addsig), gulong_deleter);
+		                       new gulong(addsig), gulong_deleter);
 		delsig = g_signal_connect(G_OBJECT(model), "row-deleted",
-		                          GTK_SIGNAL_FUNC(on_group_list_row_deleted), this);
+		                          G_CALLBACK(on_group_list_row_deleted), this);
 		g_object_set_data_full(G_OBJECT(model), "row-deleted",
-		                  new gulong(delsig), gulong_deleter);
+		                       new gulong(delsig), gulong_deleter);
 		chgsig = g_signal_connect(G_OBJECT(model), "row-changed",
-		                          GTK_SIGNAL_FUNC(on_group_list_row_changed), this);
+		                          G_CALLBACK(on_group_list_row_changed), this);
 		g_object_set_data_full(G_OBJECT(model), "row-changed",
-		                  new gulong(delsig), gulong_deleter);
+		                       new gulong(delsig), gulong_deleter);
 	} else {
 		model = GTK_TREE_STORE(oldmod);
-		addsig = *static_cast<gulong*>(g_object_get_data(G_OBJECT(model), "row-inserted"));
-		delsig = *static_cast<gulong*>(g_object_get_data(G_OBJECT(model), "row-deleted"));
-		chgsig = *static_cast<gulong*>(g_object_get_data(G_OBJECT(model), "row-changed"));
+		addsig = *static_cast<gulong *>(g_object_get_data(G_OBJECT(model), "row-inserted"));
+		delsig = *static_cast<gulong *>(g_object_get_data(G_OBJECT(model), "row-deleted"));
+		chgsig = *static_cast<gulong *>(g_object_get_data(G_OBJECT(model), "row-changed"));
 	}
 	// Block this signal during creation.
 	g_signal_handler_block(model, addsig);
@@ -575,7 +580,6 @@ void ExultStudio::setup_groups(
 		                   GRP_GROUP_COLUMN, grp,
 		                   -1);
 	}
-	gtk_tree_view_set_rules_hint(tview, TRUE);
 	g_signal_handler_unblock(model, addsig);
 	g_signal_handler_unblock(model, delsig);
 	g_signal_handler_unblock(model, chgsig);
@@ -660,7 +664,7 @@ void ExultStudio::del_group(
 	vector<GtkWindow *> toclose;
 	for (auto *widg : group_windows) {
 		auto *chooser = static_cast<Object_browser *>(
-		                          g_object_get_data(G_OBJECT(widg), "browser"));
+		                    g_object_get_data(G_OBJECT(widg), "browser"));
 		if (chooser->get_group() == grp)
 			// A match?
 			toclose.push_back(widg);
@@ -717,8 +721,8 @@ on_group_up_clicked(GtkToggleButton *button,
                     gpointer     user_data) {
 	ignore_unused_variable_warning(user_data);
 	auto *chooser = static_cast<Object_browser *>(g_object_get_data(
-	                              G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))),
-	                              "browser"));
+	                    G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))),
+	                    "browser"));
 	Shape_group *grp = chooser->get_group();
 	int i = chooser->get_selected();
 	if (grp && i > 0) {     // Moving item up.
@@ -731,8 +735,8 @@ on_group_down_clicked(GtkToggleButton *button,
                       gpointer     user_data) {
 	ignore_unused_variable_warning(user_data);
 	auto *chooser = static_cast<Object_browser *>(g_object_get_data(
-	                              G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))),
-	                              "browser"));
+	                    G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))),
+	                    "browser"));
 	Shape_group *grp = chooser->get_group();
 	int i = chooser->get_selected();
 	if (grp && i < grp->size() - 1) { // Moving down.
@@ -745,8 +749,8 @@ on_group_shape_remove_clicked(GtkToggleButton *button,
                               gpointer     user_data) {
 	ignore_unused_variable_warning(user_data);
 	auto *chooser = static_cast<Object_browser *>(g_object_get_data(
-	                              G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))),
-	                              "browser"));
+	                    G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))),
+	                    "browser"));
 	Shape_group *grp = chooser->get_group();
 	int i = chooser->get_selected();
 	if (grp && i >= 0) {
@@ -788,7 +792,12 @@ void ExultStudio::open_builtin_group_window(
 	GtkComboBox *btn = GTK_COMBO_BOX(get_widget("builtin_group"));
 	assert(btn != nullptr);
 	int index = gtk_combo_box_get_active(btn);
-	gchar * label = gtk_combo_box_get_active_text(btn);
+	// gchar * label = gtk_combo_box_get_active_text(btn);
+	GtkTreeIter iter;
+	gtk_combo_box_get_active_iter(btn, &iter);
+	GtkTreeModel *model = gtk_combo_box_get_model(btn);
+	gchar *label = nullptr;
+	gtk_tree_model_get(model, &iter, 0, &label, -1);
 	Shape_group *grp = groups->get_builtin(index, label);
 	g_free(label);
 	if (grp)
@@ -802,11 +811,14 @@ void ExultStudio::open_builtin_group_window(
 void ExultStudio::open_group_window(
     Shape_group *grp
 ) {
-	GError* error = nullptr;
+	GError *error = nullptr;
 	GtkBuilder *xml = gtk_builder_new();
-	const gchar *objects[] = {"group_window", nullptr};
+	const gchar *objects[] = {
+		"group_window_goup_img", "group_window_godown_img",
+		"group_window_remove_img", "group_window", nullptr
+	};
 	if (!gtk_builder_add_objects_from_file(xml, glade_path, const_cast<gchar **>(objects), &error)) {
-		g_warning ("Couldn't load group window: %s", error->message);
+		g_warning("Couldn't load group window: %s", error->message);
 		g_error_free(error);
 		exit(1);
 	}
@@ -829,9 +841,9 @@ void ExultStudio::open_group_window(
 	gtk_box_pack_start(GTK_BOX(browser_box), chooser->get_widget(),
 	                   TRUE, TRUE, 0);
 	// Auto-connect doesn't seem to work.
-	gtk_signal_connect(GTK_OBJECT(grpwin), "delete_event",
-	                   GTK_SIGNAL_FUNC(on_group_window_delete_event),
-	                   this);
+	g_signal_connect(G_OBJECT(grpwin), "delete-event",
+	                 G_CALLBACK(on_group_window_delete_event),
+	                 this);
 	group_windows.push_back(GTK_WINDOW(grpwin));
 	gtk_widget_show(grpwin);
 }
@@ -852,9 +864,9 @@ void ExultStudio::close_group_window(
 		}
 	}
 	auto *xml = static_cast<GtkBuilder *>(g_object_get_data(G_OBJECT(grpwin),
-	                "xml"));
+	                                      "xml"));
 	auto *chooser = static_cast<Object_browser *>(g_object_get_data(
-	                              G_OBJECT(grpwin), "browser"));
+	                    G_OBJECT(grpwin), "browser"));
 	delete chooser;
 	gtk_widget_destroy(grpwin);
 	g_object_unref(G_OBJECT(xml));
@@ -904,12 +916,11 @@ void ExultStudio::update_group_windows(
 ) {
 	for (auto *win : group_windows) {
 		auto *chooser = static_cast<Object_browser *>(
-		                          g_object_get_data(G_OBJECT(win), "browser"));
+		                    g_object_get_data(G_OBJECT(win), "browser"));
 		if (!grp || chooser->get_group() == grp) {
 			// A match?
 			chooser->setup_info();
 			chooser->render();
-			chooser->show();
 		}
 	}
 }

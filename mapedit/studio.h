@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2013 The Exult Team
+Copyright (C) 2000-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,18 +22,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wparentheses"
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #if !defined(__llvm__) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wuseless-cast"
 #else
-#pragma GCC diagnostic ignored "-Wunneeded-internal-declaration"
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif
 #endif  // __GNUC__
+#ifdef USE_STRICT_GTK
+#define GTK_DISABLE_SINGLE_INCLUDES
+#define GSEAL_ENABLE
+#define GNOME_DISABLE_DEPRECATED
+#define GTK_DISABLE_DEPRECATED
+#define GDK_DISABLE_DEPRECATED
+#endif // USE_STRICT_GTK
 #include <gtk/gtk.h>
+#ifndef __GDK_KEYSYMS_H__
+#include <gdk/gdkkeysyms.h>
+#endif
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif  // __GNUC__
@@ -124,7 +131,7 @@ private:
 	// Object editor:
 	GtkWidget       *objwin;
 	Shape_draw      *obj_draw;
-	// container editor:
+	// Container editor:
 	GtkWidget       *contwin;
 	Shape_draw      *cont_draw;
 	// Shape info. editor:
@@ -170,6 +177,10 @@ private:
 	Msg_callback        waiting_for_server;
 	void            *waiting_client;
 	std::map<std::string, int> misc_name_map;
+	// Window size at close.
+	int w_at_close;
+	int h_at_close;
+
 public:
 	ExultStudio(int argc, char **argv);
 	~ExultStudio();
@@ -193,6 +204,9 @@ public:
 	}
 	guint32 get_background_color() const {
 		return background_color;
+	}
+	void set_background_color(const guint32 color) {
+		background_color = color;
 	}
 	const char *get_shape_name(int shnum);
 	const char *get_image_editor() {
@@ -224,7 +238,8 @@ public:
 	void create_new_game(const char *dir);
 	void new_game();
 	Object_browser  *create_browser(const char *fname);
-	void set_game_path(const std::string& gamename, const std::string& modname = "");
+	void set_game_path(const std::string &gamename,
+	                   const std::string &modname = "");
 	void setup_file_list();
 	void save_all();        // Write out everything.
 	bool need_to_save();        // Anything modified?
@@ -265,6 +280,8 @@ public:
 	void rotate_obj();
 	void show_obj_shape(int x = 0, int y = 0, int w = -1, int h = -1);
 	void set_obj_shape(int shape, int frame);
+	static gboolean on_obj_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	// Containers:
 	void open_cont_window(unsigned char *data, int datalen);
 	void close_cont_window();
@@ -273,6 +290,8 @@ public:
 	void rotate_cont();
 	void show_cont_shape(int x = 0, int y = 0, int w = -1, int h = -1);
 	void set_cont_shape(int shape, int frame);
+	static gboolean on_cont_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	// Barges:
 	void open_barge_window(unsigned char *data = nullptr, int datalen = 0);
 	void close_barge_window();
@@ -285,6 +304,8 @@ public:
 	int save_egg_window();
 	void show_egg_monster(int x = 0, int y = 0, int w = -1, int h = -1);
 	void set_egg_monster(int shape, int frame);
+	static gboolean on_egg_monster_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	// NPC's:
 	void open_npc_window(unsigned char *data = nullptr, int datalen = 0);
 	void close_npc_window();
@@ -297,6 +318,10 @@ public:
 	void show_npc_face(int x = 0, int y = 0, int w = -1, int h = -1);
 	void set_npc_face(int shape, int frame);
 	static void schedule_btn_clicked(GtkWidget *btn, gpointer data);
+	static gboolean on_npc_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
+	static gboolean on_npc_face_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	// Shapes:
 	void init_equip_window(int recnum);
 	void save_equip_window();
@@ -319,8 +344,17 @@ public:
 	void show_shinfo_npcgump(int x = 0, int y = 0, int w = -1, int h = -1);
 	void show_shinfo_body(int x = 0, int y = 0, int w = -1, int h = -1);
 	void show_shinfo_explosion(int x = 0, int y = 0, int w = -1, int h = -1);
+	static gboolean on_shinfo_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
+	static gboolean on_shinfo_gump_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
+	static gboolean on_shinfo_body_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
+	static gboolean on_shinfo_explosion_draw_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	// Map locator.
 	void open_locator_window();
+	// Combo editor.
 	void open_combo_window();   // Combo-object editor.
 	void save_combos();
 	void close_combo_window();
@@ -350,7 +384,8 @@ public:
 	void info_received(unsigned char *data, int datalen);
 	void set_edit_menu(bool sel, bool clip);
 	// Preferences.
-	static void background_color_okay(GtkWidget *dlg, gpointer data);
+	static gboolean on_prefs_background_expose_event(
+	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	void open_preferences();
 	void save_preferences();
 	// GTK/Glade utils:
@@ -384,7 +419,7 @@ public:
 	bool has_expansion() const {
 		return expansion;
 	}
-	 bool is_si_beta() {
+	bool is_si_beta() {
 		return sibeta;
 	}
 	void set_shapeinfo_modified() {
@@ -407,9 +442,13 @@ namespace EStudio {
 int Prompt(const char *msg, const char *choice0,
            const char *choice1 = nullptr, const char *choice2 = nullptr);
 void Alert(const char *msg, ...) ATTR_PRINTF(1, 2);
-GtkWidget *Add_menu_item(GtkWidget *menu, const char *label = nullptr,
-                         GtkSignalFunc func = nullptr, gpointer func_data = nullptr, GSList *group = nullptr);
-GtkWidget *Create_arrow_button(GtkArrowType dir, GtkSignalFunc clicked,
+GtkWidget *Add_menu_item(GtkWidget *menu,
+                         const char *label = nullptr,
+                         GCallback func = nullptr,
+                         gpointer func_data = nullptr,
+                         GSList *group = nullptr);
+GtkWidget *Create_arrow_button(GtkArrowType dir,
+                               GCallback clicked,
                                gpointer func_data);
 bool Copy_file(const char *src, const char *dest);
 }
@@ -457,5 +496,9 @@ public:
 
 using utf8Str = strCodepageConvert<convertToUTF8>;
 using codepageStr = strCodepageConvert<convertFromUTF8>;
+
+typedef struct _ExultRgbCmap {
+	guint32 colors[256];
+} ExultRgbCmap;
 
 #endif

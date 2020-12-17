@@ -8,7 +8,7 @@
 #define INCL_SHAPEFILE  1
 
 /*
-Copyright (C) 2002 The Exult Team
+Copyright (C) 2002-2020 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -29,7 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <memory>
 #include <string>
 #include <vector>
-#include "ignore_unused_variable_warning.h"
 
 class Vga_file;
 class Shape_group_file;
@@ -73,7 +72,8 @@ public:
 	}
 	// Call this to create group browser.
 	virtual Object_browser *create_browser(Shape_file_info *vgafile,
-	                                       unsigned char *palbuf, Shape_group *g) {
+	                                       unsigned char *palbuf,
+	                                       Shape_group *g) {
 		ignore_unused_variable_warning(vgafile, palbuf, g);
 		return nullptr;
 	}
@@ -110,7 +110,8 @@ public:
 		return ifile;
 	}
 	Object_browser *create_browser(Shape_file_info *vgafile,
-	                                       unsigned char *palbuf, Shape_group *g = nullptr) override;
+	                               unsigned char *palbuf,
+	                               Shape_group *g = nullptr) override;
 	void flush() override;       // Write if modified.
 	bool revert() override;
 	static void write_file(const char *pathname, Shape **shapes,
@@ -133,7 +134,8 @@ public:
 		return file;
 	}
 	Object_browser *create_browser(Shape_file_info *vgafile,
-	                                       unsigned char *palbuf, Shape_group *g = nullptr) override;
+	                               unsigned char *palbuf,
+	                               Shape_group *g = nullptr) override;
 	void flush() override;       // Write if modified.
 };
 
@@ -161,7 +163,8 @@ public:
 		setup();
 	}
 	Object_browser *create_browser(Shape_file_info *vgafile,
-	                                       unsigned char *palbuf, Shape_group *g = nullptr) override;
+	                               unsigned char *palbuf,
+	                               Shape_group *g = nullptr) override;
 	std::vector<Estudio_npc> &get_npcs() {
 		return npcs;
 	}
@@ -174,10 +177,10 @@ public:
  */
 class Flex_file_info : public Shape_file_info {
 
-	Flex *flex;         // nullptr if just 1 entry.
-	std::vector<std::unique_ptr<unsigned char[]>> entries;    // Entries are stored here.
-	std::vector<int> lengths;   // Lengths here.
-	bool write_flat;        // Write flat file if just 1 entry.
+	Flex *flex;               // nullptr if just 1 entry.
+	std::vector<std::unique_ptr<unsigned char[]>> entries; // Entries stored here.
+	std::vector<int> lengths; // Lengths here.
+	bool write_flat;          // Write flat file if just 1 entry.
 public:
 	// We will own flex.
 	Flex_file_info(const char *bnm, const char *pnm,
@@ -194,7 +197,8 @@ public:
 	void remove(unsigned i);     // Remove i'th entry.
 	~Flex_file_info() override;
 	Object_browser *create_browser(Shape_file_info *vgafile,
-	                                       unsigned char *palbuf, Shape_group *g = nullptr) override;
+	                               unsigned char *palbuf,
+	                               Shape_group *g = nullptr) override;
 	Flex *get_flex() override {
 		return flex;
 	}
