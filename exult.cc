@@ -191,10 +191,6 @@ int current_scaleval = 1;
 #  pragma GCC diagnostic ignored "-Wold-style-cast"
 #  endif  // __GNUC__
 
-int xfd = 0;            // X connection #.
-static inline int WrappedConnectionNumber(Display *display) {
-	return ConnectionNumber(display);
-}
 #ifdef USE_EXULTSTUDIO
 static class Xdnd *xdnd = nullptr;
 #endif
@@ -906,7 +902,6 @@ static void Init(
 #ifdef USE_EXULTSTUDIO
 #ifndef _WIN32
 	SDL_GetWindowWMInfo(gwin->get_win()->get_screen_window(), &info);
-	xfd = WrappedConnectionNumber(info.info.x11.display);
 	Server_init();          // Initialize server (for map-editor).
 	xdnd = new Xdnd(info.info.x11.display, info.info.x11.window,
 	                info.info.x11.window,

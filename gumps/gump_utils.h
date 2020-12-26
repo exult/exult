@@ -19,42 +19,28 @@
 #ifndef GUMP_UTILS_H
 #define GUMP_UTILS_H
 
-#ifdef XWIN  /* Only needed in XWIN. */
-#include <sys/time.h>
-#endif
-
-#ifdef OPENBSD
-#include <sys/types.h>
-#endif
-
 #include <unistd.h>
 
-#ifndef XWIN
 #include "SDL_timer.h"
-#endif
+#include "SDL_events.h"
 
 /*
  *  Delay between animations.
  */
 
+#define DELAY_TOTAL_MS 10
+#define DELAY_SINGLE_MS 1
+
 inline void Delay(
 ) {
-#ifdef XWIN
-	/*
-	 *  Here's a somewhat better way to delay in X:
-	 */
-	extern int xfd;
-	fd_set rfds;
-	struct timeval timer;
-	timer.tv_sec = 0;
-	timer.tv_usec = 50000;      // Try 1/50 second.
-	FD_ZERO(&rfds);
-	FD_SET(xfd, &rfds);
-	// Wait for timeout or event.
-	select(xfd + 1, &rfds, nullptr, nullptr, &timer);
-#else                   /* May use this for Linux too. */
-	SDL_Delay(10);          // Try 1/100 second.
-#endif
+	Uint32 expiration = DELAY_TOTAL_MS + SDL_GetTicks();
+	for (;;) {
+		SDL_PumpEvents();
+		if ((SDL_PeepEvents(nullptr, 0, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) != 0) ||
+		    (static_cast<Sint32>(SDL_GetTicks()) >= static_cast<Sint32>(expiration))) return;
+
+		SDL_Delay(DELAY_SINGLE_MS);
+	}
 }
 
 #endif

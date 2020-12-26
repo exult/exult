@@ -78,13 +78,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cheat.h"
 #endif
 
+#include <SDL_timer.h>
+#include <SDL_events.h>
+
 using std::cout;
 using std::cerr;
 using std::endl;
 /*
  *  Sockets, etc.
  */
-extern int xfd;             // X-windows fd.
 int listen_socket = -1;         // Listen here for map-editor.
 int client_socket = -1;         // Socket to the map-editor.
 int highest_fd = -1;            // Largest fd + 1.
@@ -94,7 +96,7 @@ int highest_fd = -1;            // Largest fd + 1.
  */
 inline void Set_highest_fd(
 ) {
-	highest_fd = xfd;       // Figure highest to listen to.
+	highest_fd = -1;       // Figure highest to listen to.
 	if (listen_socket > highest_fd)
 		highest_fd = listen_socket;
 	if (client_socket > highest_fd)
@@ -515,41 +517,52 @@ static void Handle_client_message(
  *  If a server request comes, it's handled here.
  */
 
+#ifndef _WIN32
+#define DELAY_TOTAL_MS 10
+#define DELAY_SINGLE_MS 1
+#endif
+
 void Server_delay(
     Message_handler handle_message
 ) {
 #ifndef _WIN32
-	fd_set rfds;
-	struct timeval timer;
-	timer.tv_sec = 0;
-	timer.tv_usec = 50000;      // Try 1/50 second.
-	FD_ZERO(&rfds);
-	FD_SET(xfd, &rfds);
-	if (listen_socket >= 0)
-		FD_SET(listen_socket, &rfds);
-	if (client_socket >= 0)
-		FD_SET(client_socket, &rfds);
-	// Wait for timeout or event.
-	if (select(highest_fd, &rfds, nullptr, nullptr, &timer) > 0) {
-		// Something's come in.
-		if (listen_socket >= 0 && FD_ISSET(listen_socket, &rfds)) {
-			// New client connection.
-			// For now, just one at a time.
-			if (client_socket >= 0)
-				close(client_socket);
-			client_socket = accept(listen_socket, nullptr, nullptr);
-			cout << "Accept returned client_socket = " <<
-			     client_socket << endl;
-			// Non-blocking.
-			fcntl(client_socket, F_SETFL,
-			      fcntl(client_socket, F_GETFL) | O_NONBLOCK);
-			Set_highest_fd();
-		}
-		if (client_socket >= 0 && FD_ISSET(client_socket, &rfds)) {
-			handle_message(client_socket);
-			// Client gone?
-			if (client_socket == -1)
+	Uint32 expiration = DELAY_TOTAL_MS + SDL_GetTicks();
+	for (;;) {
+		SDL_PumpEvents();
+		if ((SDL_PeepEvents(nullptr, 0, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) != 0) ||
+		    (static_cast<Sint32>(SDL_GetTicks()) >= static_cast<Sint32>(expiration))) return;
+
+		fd_set rfds;
+		struct timeval timer;
+		timer.tv_sec = 0;
+		timer.tv_usec = DELAY_SINGLE_MS * 1000;      // Try 1/1000 second.
+		FD_ZERO(&rfds);
+		if (listen_socket >= 0)
+			FD_SET(listen_socket, &rfds);
+		if (client_socket >= 0)
+			FD_SET(client_socket, &rfds);
+		// Wait for timeout or event.
+		if (select(highest_fd, &rfds, nullptr, nullptr, &timer) > 0) {
+			// Something's come in.
+			if (listen_socket >= 0 && FD_ISSET(listen_socket, &rfds)) {
+				// New client connection.
+				// For now, just one at a time.
+				if (client_socket >= 0)
+					close(client_socket);
+				client_socket = accept(listen_socket, nullptr, nullptr);
+				cout << "Accept returned client_socket = " <<
+				     client_socket << endl;
+				// Non-blocking.
+				fcntl(client_socket, F_SETFL,
+				      fcntl(client_socket, F_GETFL) | O_NONBLOCK);
 				Set_highest_fd();
+			}
+			if (client_socket >= 0 && FD_ISSET(client_socket, &rfds)) {
+				handle_message(client_socket);
+				// Client gone?
+				if (client_socket == -1)
+					Set_highest_fd();
+			}
 		}
 	}
 #else
