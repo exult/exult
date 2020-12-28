@@ -29,7 +29,7 @@ static const char *compiler_table[] = {
 
 char token[TOKEN_LENGTH], *token2, curlabel[256], indata;
 int pass,offset;
-unsigned byte, word, funcnum, datasize, codesize;
+unsigned byteval, word, funcnum, datasize, codesize;
 int extended;
 
 char labels[MAX_LABELS][10];
@@ -249,8 +249,8 @@ int main(int argc,char *argv[]) {
 					for (i = 1; i < strlen(token); i++)
 						emit_byte(token[i]);
 				else {
-					sscanf(token, "%x", &byte);
-					emit_byte(byte);
+					sscanf(token, "%x", &byteval);
+					emit_byte(byteval);
 				}
 			} else if (!strcasecmp(token, "dw")) {
 				read_token(fi);
