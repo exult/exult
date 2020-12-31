@@ -795,6 +795,21 @@ void setup_program_paths() {
 	U7mkdir("<HOME>", 0755);
 	U7mkdir("<CONFIG>", 0755);
 	U7mkdir("<SAVEHOME>", 0755);
+#ifdef MACOSX	
+	// setup APPBUNDLE needed to launch Exult Studio from one
+	std::unique_ptr<std::remove_pointer<CFURLRef>::type, CFDeleter> fileUrl {std::move(CFBundleCopyBundleURL(CFBundleGetMainBundle()))};
+	if (fileUrl) {
+		unsigned char buf[MAXPATHLEN];
+		if (CFURLGetFileSystemRepresentation(fileUrl.get(), true, buf, sizeof(buf))) {
+			string path(reinterpret_cast<const char *>(buf));
+			add_system_path("<APPBUNDLE>", path.c_str());
+			// test whether it is actually an app bundle
+			path += "/Contents/Info.plist";
+			if (!U7exists(path))
+				clear_system_path("<APPBUNDLE>");
+		}
+	}
+#endif
 }
 
 /*

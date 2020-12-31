@@ -35,36 +35,19 @@ though.
 
 In order to compile Exult, you need to install several Unix packages.
 If you are an expert, you may want to install them manually; for all others,
-we recommend installing them via Fink (http://fink.sourceforge.net) or 
-MacPorts (http://www.macports.org/). 
+we recommend installing them via MacPorts (http://www.macports.org/).
+Other alternatives are Fink (https://www.finkproject.org) or 
+Homebrew (https://brew.sh/).
 
-Install these packages with Fink:
-  sdl
-  sdl2
-  libvorbis0
-
-Or if you use MacPorts install
-  libsdl
+With MacPorts install:
   libsdl2
   libvorbis
 
-Installing these packages with either Fink or MacPorts will actually
-install many other packages required by these packages.
+Installing these packages with MacPorts will actually install many other
+packages these depend on.
   
-If you are compiling the source code from Git, as opposed to the source of
-a released version, you also need to install these packages with Fink:
-  automake1.15
-  libtool2
-
-(MacPorts is good, all relevant dependencies were pulled in by installing libsdl )
-
 Open terminal and enter the following to allow the compile to find all the 
 headers.
-
-If you use Fink:
-  export CFLAGS=-I/sw/include
-  export CXXFLAGS=$CFLAGS
-  export CPPFLAGS=$CFLAGS
 
 If you use MacPorts:
   export CFLAGS=-I/opt/local/include
@@ -93,16 +76,10 @@ for a static build)
 How to compile Exult Studio on Mac OS X
 ---------------------------------------
 
-
-If you want to compile Exult Studio, you have to install these packages:
-
-If you use Fink
-  gtk2
-
-If you use MacPorts (SDL needs to be installed with the x11 dependency for Exult Studio)
-  libsdl +x11
+If you want to compile Exult Studio, you have to install these packages
+(SDL needs to be installed with the x11 dependency for Exult Studio):
   libsdl2 +x11
-  gtk2
+  gtk2 +x11
 
 This will cause many other packages required by gtk2 to
 be installed. 
@@ -133,8 +110,32 @@ on File->Connect.
 /path_to_the_Exult_source_code/mapedit/) to your Exult data folder which is by 
 default in /Library/Application Support/Exult/data.
 
-NOTE that SDL2 version <= 2.0.5 doesn't work correctly with XQuartz, this is fixed in 
-SDL2 development sources.
+
+
+How to build an Exult Studio app Bundle
+---------------------------------------
+
+You will need another package from MacPorts:
+  gtk-mac-bundler
+
+The following assumes you built Exult in the Exult source folder.
+Open the file macosx/exult_studio.bundle in the Exult source with a text editor. Find
+the lines
+		<prefix name="code">
+			PathToExultBuildDirectory
+		</prefix>
+and enter the correct path to where you build Exult (the Exult source).
+
+Follow the above steps to build Exult Studio and Exult with Exult Studio Support.
+Afterwards run the command:
+  gtk-mac-bundler ./macosx/exult_studio.bundle
+
+This will generate a ExultStudio.app in the macosx folder in your Exult source.
+
+Currently this will still require you to have Xquartz installed.
+When you run it, Exult will actually start and you will need to start Exult Studio
+by entering Map Edit mode after you have started a game.
+
 
 How to compile a static version of Exult on Mac OS X
 ----------------------------------------------------
