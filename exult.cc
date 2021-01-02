@@ -43,7 +43,7 @@
 #ifdef _WIN32
 #include "windrag.h"
 #elif defined(XWIN)
-#include "xdrag.h"
+// #include "xdrag.h" Removed : Use SDL_DROPFILE
 #endif
 #include "servemsg.h"
 #include "objserial.h"
@@ -192,7 +192,7 @@ int current_scaleval = 1;
 #  endif  // __GNUC__
 
 #ifdef USE_EXULTSTUDIO
-static class Xdnd *xdnd = nullptr;
+//static class Xdnd *xdnd = nullptr; Removed : Use SDL_DROPFILE
 #endif
 
 #  ifdef __GNUC__
@@ -228,8 +228,6 @@ static void Drop_dragged_combo(int cnt, U7_combo_data *combo,
 static void BuildGameMap(BaseGameInfo *game, int mapnum);
 static void Handle_events();
 static void Handle_event(SDL_Event &event);
-
-
 
 /*
  *  Statics:
@@ -600,7 +598,7 @@ int exult_main(const char *runpath) {
 	RevokeDragDrop(hgwin);
 	windnd->Release();
 #else
-	delete xdnd;
+//	delete xdnd; Removed : Use SDL_DROPFILE
 #endif
 	Server_close();
 #endif
@@ -700,14 +698,6 @@ static void Init(
 #endif
 #ifdef _WIN32
 	SDL_putenv("SDL_AUDIODRIVER=DirectSound");
-#elif defined(MACOSX) && defined(USE_EXULTSTUDIO)
-	// Just in case:
-#ifndef XWIN
-#error "Incompatible preprocessor definitions: simultaneous use of \"MACOSX\" and \"USE_EXULTSTUDIO\" require \"XWIN\" to be defined."
-#endif
-	// Exult Studio support in Mac OS X is experimental and requires
-	// SDL to use X11. Hence, we force the issue.
-	SDL_putenv("SDL_VIDEODRIVER=x11");
 #endif
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "Landscape");
 #if 0
@@ -903,11 +893,12 @@ static void Init(
 #ifndef _WIN32
 	SDL_GetWindowWMInfo(gwin->get_win()->get_screen_window(), &info);
 	Server_init();          // Initialize server (for map-editor).
-	xdnd = new Xdnd(info.info.x11.display, info.info.x11.window,
-	                info.info.x11.window,
-	                Move_dragged_shape, Move_dragged_combo,
-	                Drop_dragged_shape, Drop_dragged_chunk,
-	                Drop_dragged_npc, Drop_dragged_combo);
+//	xdnd = new Xdnd(info.info.x11.display, info.info.x11.window,
+//	                info.info.x11.window,
+//	                Move_dragged_shape, Move_dragged_combo,
+//	                Drop_dragged_shape, Drop_dragged_chunk,
+//	                Drop_dragged_npc, Drop_dragged_combo);
+	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 #else
 	SDL_GetWindowWMInfo(gwin->get_win()->get_screen_window(), &info);
 	hgwin = info.info.win.window;
@@ -1689,14 +1680,60 @@ static void Handle_event(
 		        !gwin->get_gump_man()->handle_kbd_event(&event))
 			keybinder->HandleEvent(event);
 		break;
-	case SDL_SYSWMEVENT: {
+	case SDL_DROPFILE: {
 #ifdef USE_EXULTSTUDIO
 #ifndef _WIN32
-		XEvent &ev = event.syswm.msg->msg.x11.event;
-		if (ev.type == ClientMessage)
-			xdnd->client_msg(reinterpret_cast<XClientMessageEvent &>(ev));
-		else if (ev.type == SelectionNotify)
-			xdnd->select_msg(reinterpret_cast<XSelectionEvent &>(ev));
+		int x;
+		int y;
+		SDL_GetMouseState(&x, &y);
+#ifdef DEBUG
+		cout << "(EXULT) SDL_DROPFILE Event, type = " << event.drop.type
+		     << ", file (" << strlen(event.drop.file) << ") = '" << event.drop.file
+		     << "', at x = " << x << ", y = " << y << endl;
+#endif
+		const unsigned char *data = reinterpret_cast<const unsigned char *>(event.drop.file);
+		if (Is_u7_shapeid(data) == true) {
+			// Get shape info.
+			int file, shape, frame;
+			Get_u7_shapeid(data, file, shape, frame);
+			cout << "(EXULT) SDL_DROPFILE Event, Shape: file = " << file
+			     << ", shape = " << shape << ", frame = " << frame << endl;
+			if (shape >= 0) {   // Dropping a shape?
+				if (file == U7_SHAPE_SHAPES)
+					// For now, just allow "shapes.vga".
+					Drop_dragged_shape(shape, frame, x, y, nullptr);
+			}
+		} else if (Is_u7_chunkid(data) == true) {
+			// A whole chunk.
+			int chunknum;
+			Get_u7_chunkid(data, chunknum);
+			cout << "(EXULT) SDL_DROPFILE Event, Chunk: num = " << chunknum << endl;
+			if (chunknum >= 0) { // A whole chunk.
+				Drop_dragged_chunk(chunknum, x, y, nullptr);
+			}
+		} else if (Is_u7_npcid(data) == true) {
+			int npcnum;
+			Get_u7_npcid(data, npcnum);
+			cout << "(EXULT) SDL_DROPFILE Event, Npc: num = " << npcnum << endl;
+			if (npcnum >= 0) { // An NPC.
+				Drop_dragged_npc(npcnum, x, y, nullptr);
+			}
+		} else if (Is_u7_comboid(data) == true) {
+			int combo_xtiles, combo_ytiles, combo_tiles_right, combo_tiles_below, combo_cnt;
+			U7_combo_data *combo;
+			Get_u7_comboid(data, combo_xtiles, combo_ytiles,
+			               combo_tiles_right, combo_tiles_below, combo_cnt, combo);
+			cout << "(EXULT) SDL_DROPFILE Event, Combo: xtiles = " << combo_xtiles
+			     << ", ytiles = " << combo_ytiles << ", tiles_right = " << combo_tiles_right
+			     << ", tiles_below = " << combo_tiles_below
+			     << ", count = " << combo_cnt << endl;
+			if (combo_cnt >= 0 && combo) {
+				Drop_dragged_combo(combo_cnt, combo, x, y, nullptr);
+			}
+		}
+#ifdef DEBUG
+		cout << "(EXULT) SDL_DROPFILE Event complete" << endl;
+#endif
 #endif
 #endif
 		break;

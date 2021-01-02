@@ -103,9 +103,7 @@ exult_SOURCES =	\
 	txtscroll.cc	\
 	txtscroll.h	\
 	version.cc	\
-	version.h	\
-	xdrag.cc	\
-	xdrag.h
+	version.h
 
 EXULTLIBS = \
 	pathfinder/libpathfinder.la		\

@@ -31,145 +31,210 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "utils.h"
 
 /*
- *  Store in char array.
+ *  Store a Shape : file, shape, frame.
  *
- *  Output: Length of what's stored.
+ *  Output: Length of data.
  */
 
 int Store_u7_shapeid(
-    unsigned char *data,        // At least 4 bytes.
-    int file,           // 0-255.
-    int shape,          // 0-0xffff.
-    int frame           // 0-255.
+    unsigned char *data,
+    int file,             // 0-0xff.
+    int shape,            // 0-0xffff.
+    int frame             // 0-0xff.
 ) {
-	unsigned char *ptr = data;
-	*ptr++ = file;
-	Write2(ptr, shape);
-	*ptr++ = frame;
-	return ptr - data;
+	return 1 + snprintf(reinterpret_cast<char *>(data), U7DND_DATA_LENGTH(3),
+	                    "file:///%s.%d.%d.%d", U7_TARGET_SHAPEID_NAME, file, shape, frame);
 }
 
 /*
- *  Retrieve shapeid.
+ *  Retrieve a Shape : file, shape, frame.
  */
 
 void Get_u7_shapeid(
-    const unsigned char *data,        // At least 4 bytes.
-    int &file,          // 0-255.
-    int &shape,         // 0-0xffff.
-    int &frame          // 0-255.
+    const unsigned char *data,
+    int &file,            // 0-0xff.
+    int &shape,           // 0-0xffff.
+    int &frame            // 0-0xff.
 ) {
-	const unsigned char *ptr = data;
-	file = *ptr++;
-	shape = Read2(ptr);
-	frame = *ptr;
+	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	const char *ptr = strchr(reinterpret_cast<const char *>(data), '.');
+	sscanf(ptr, ".%d.%d.%d", &file, &shape, &frame);
 }
 
 /*
- *  Store/retrieve chunk #.
+ *  Check a Shape.
+ */
+
+int Is_u7_shapeid(
+    const unsigned char *data
+) {
+	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	const unsigned char *dot  = reinterpret_cast<const unsigned char *>(
+	    strchr(reinterpret_cast<const char *>(data), '.'));
+	if (dot == nullptr) return false;
+	int len = dot - data;
+	if (strncmp(reinterpret_cast<const char *>(data), U7_TARGET_SHAPEID_NAME, len) == 0)
+		return true;
+	return false;
+}
+
+/*
+ *  Store a Chunk : chunk.
  *
- *  Output: Length of what's stored.
+ *  Output: Length of data.
  */
 
 int Store_u7_chunkid(
-    unsigned char *data,        // At least 4 bytes.
-    int cnum            // Chunk #.
+    unsigned char *data,
+    int cnum              // 0-0xffff.
 ) {
-	unsigned char *ptr = data;
-	Write2(ptr, cnum);
-	return ptr - data;
-}
-
-void Get_u7_chunkid(
-    const unsigned char *data,        // At least 4 bytes.
-    int &cnum           // 0-0xffff returned.
-) {
-	const unsigned char *ptr = data;
-	cnum = Read2(ptr);
+	return 1 + snprintf(reinterpret_cast<char *>(data), U7DND_DATA_LENGTH(1),
+	                    "file:///%s.%d", U7_TARGET_CHUNKID_NAME, cnum);
 }
 
 /*
- *  Store/retrieve npc #.
+ *  Retrieve a Chunk : chunk.
+ */
+
+void Get_u7_chunkid(
+    const unsigned char *data,
+    int &cnum             // 0-0xffff.
+) {
+	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	const char *ptr = strchr(reinterpret_cast<const char *>(data), '.');
+	sscanf(ptr, ".%d", &cnum);
+}
+
+/*
+ *  Check a Chunk.
+ */
+
+int Is_u7_chunkid(
+    const unsigned char *data
+) {
+	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	const unsigned char *dot  = reinterpret_cast<const unsigned char *>(
+	    strchr(reinterpret_cast<const char *>(data), '.'));
+	if (dot == nullptr) return false;
+	int len = dot - data;
+	if (strncmp(reinterpret_cast<const char *>(data), U7_TARGET_CHUNKID_NAME, len) == 0)
+		return true;
+	return false;
+}
+
+/*
+ *  Store an NPC : npc.
  *
- *  Output: Length of what's stored.
+ *  Output: Length of data.
  */
 
 int Store_u7_npcid(
-    unsigned char *data,        // At least 4 bytes.
-    int npcnum          // Npc #.
+    unsigned char *data,
+    int npcnum            // 0-0xffff.
 ) {
-	unsigned char *ptr = data;
-	Write2(ptr, npcnum);
-	return ptr - data;
-}
-
-void Get_u7_npcid(
-    const unsigned char *data,        // At least 4 bytes.
-    int &npcnum         // 0-0xffff returned.
-) {
-	const unsigned char *ptr = data;
-	npcnum = Read2(ptr);
+	return 1 + snprintf(reinterpret_cast<char *>(data), U7DND_DATA_LENGTH(1),
+	                    "file:///%s.%d", U7_TARGET_NPCID_NAME, npcnum);
 }
 
 /*
- *  Store combo.
+ *  Retrieve an NPC.
+ */
+
+void Get_u7_npcid(
+    const unsigned char *data,
+    int &npcnum           // 0-0xffff.
+) {
+	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	const char *ptr = strchr(reinterpret_cast<const char *>(data), '.');
+	sscanf(ptr, ".%d", &npcnum);
+}
+
+/*
+ *  Check an NPC.
+ */
+
+int Is_u7_npcid(
+    const unsigned char *data
+) {
+	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	const unsigned char *dot  = reinterpret_cast<const unsigned char *>(
+	    strchr(reinterpret_cast<const char *>(data), '.'));
+	if (dot == nullptr) return false;
+	int len = dot - data;
+	if (strncmp(reinterpret_cast<const char *>(data), U7_TARGET_NPCID_NAME, len) == 0)
+		return true;
+	return false;
+}
+
+/*
+ *  Store a Combo : x, y, right, below tiles, count of shapes -> each shape : x, y, z, shape, frame.
  *
- *  Output: Length of data stored.
+ *  Output: Length of data.
  */
 
 int Store_u7_comboid(
     unsigned char *data,
-    int xtiles, int ytiles,     // Footprint in tiles.
-    int tiles_right,        // Tiles to right of hot-spot.
-    int tiles_below,        // Tiles below hot-spot.
-    int cnt,            // # members.
-    U7_combo_data *ents     // The members, with locs. relative to
-    //   hot-spot.
+    int xtiles,           // 0-0xffff : X - Footprint in tiles.
+    int ytiles,           // 0-0xffff : Y - Footprint in tiles.
+    int tiles_right,      // 0-0xffff : Tiles to the right of the hot-spot.
+    int tiles_below,      // 0-0xffff : Tiles below the hot-spot.
+    int cnt,              // 0-0xffff : Number of members.
+    U7_combo_data *ents   // The members, with locations relative - can be negative - to hot-spot.
 ) {
-	unsigned char *ptr = data;
-	Write2(ptr, xtiles);
-	Write2(ptr, ytiles);
-	Write2(ptr, tiles_right);
-	Write2(ptr, tiles_below);
-	Write2(ptr, cnt);
+	unsigned char *ptr = data + snprintf(reinterpret_cast<char *>(data), U7DND_DATA_LENGTH(5),
+	                                     "file:///%s.%d.%d.%d.%d.%d", U7_TARGET_COMBOID_NAME,
+	                                     xtiles, ytiles, tiles_right, tiles_below, cnt);
 	for (int i = 0; i < cnt; i++) {
-		Write2(ptr, ents[i].tx);
-		Write2(ptr, ents[i].ty);
-		Write2(ptr, ents[i].tz);
-		Write2(ptr, ents[i].shape);
-		*ptr++ = static_cast<unsigned char>(ents[i].frame);
+		ptr = ptr + snprintf(reinterpret_cast<char *>(ptr),
+		                     U7DND_DATA_LENGTH(5+(5*cnt)) - (ptr - data),
+		                     ".%d.%d.%d.%d.%d",
+		                     ents[i].tx, ents[i].ty, ents[i].tz, ents[i].shape, ents[i].frame);
 	}
-	return ptr - data;
+	return ptr + 1 - data;
 }
 
 /*
- *  Retrieve a combo.
+ *  Retrieve a Combo : x, y, right, below tiles, count of shapes -> each shape : x, y, z, shape, frame.
  *
- *  Output: cnt = #elements.
- *      ents = ALLOCATED array of shapes with offsets rel. to hot-spot.
+ *  Output: cnt  = count of shapes.
+ *          ents = Allocated array of shapes with offsets relative to hot-spot.
  */
 
 void Get_u7_comboid(
     const unsigned char *data,
-    int &xtiles, int &ytiles,   // Footprint in tiles.
-    int &tiles_right,       // Tiles to right of hot-spot.
-    int &tiles_below,       // Tiles below hot-spot.
-    int &cnt,
-    U7_combo_data  *&ents
+    int &xtiles,          // 0-0xffff : X - Footprint in tiles.
+    int &ytiles,          // 0-0xffff : Y - Footprint in tiles.
+    int &tiles_right,     // 0-0xffff : Tiles to the right of the hot-spot.
+    int &tiles_below,     // 0-0xffff : Tiles below the hot-spot.
+    int &cnt,             // 0-0xffff : Number of members.
+    U7_combo_data *&ents  // The members, with locations relative - can be negative - to hot-spot.
 ) {
-	const unsigned char *ptr = data;
-	xtiles = Read2(ptr);
-	ytiles = Read2(ptr);
-	tiles_right = Read2(ptr);
-	tiles_below = Read2(ptr);
-	cnt = Read2(ptr);
+	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	const char *ptr = strchr(reinterpret_cast<const char *>(data), '.');
+	int n;
+	sscanf(ptr, ".%d.%d.%d.%d.%d%n", &xtiles, &ytiles, &tiles_right, &tiles_below, &cnt, &n);
+	ptr += n;
 	ents = new U7_combo_data[cnt];
 	for (int i = 0; i < cnt; i++) {
-		// Tiles can be negative!
-		ents[i].tx = static_cast<short>(Read2(ptr));
-		ents[i].ty = static_cast<short>(Read2(ptr));
-		ents[i].tz = static_cast<short>(Read2(ptr));
-		ents[i].shape = Read2(ptr);
-		ents[i].frame = *ptr++;
+		sscanf(ptr, ".%d.%d.%d.%d.%d%n",
+		       &ents[i].tx, &ents[i].ty, &ents[i].tz, &ents[i].shape, &ents[i].frame, &n);
+		ptr += n;
 	}
+}
+
+/*
+ *  Check a Combo.
+ */
+
+int Is_u7_comboid(
+    const unsigned char *data
+) {
+	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	const unsigned char *dot  = reinterpret_cast<const unsigned char *>(
+	    strchr(reinterpret_cast<const char *>(data), '.'));
+	if (dot == nullptr) return false;
+	int len = dot - data;
+	if (strncmp(reinterpret_cast<const char *>(data), U7_TARGET_COMBOID_NAME, len) == 0)
+		return true;
+	return false;
 }

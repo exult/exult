@@ -960,7 +960,9 @@ void Combo_chooser::drag_data_get(
     gpointer data           // ->Shape_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET" << endl;
+	cout << "In DRAG_DATA_GET of Combo for '"
+	     << gdk_atom_name(gtk_selection_data_get_target(seldata))
+	     << "'" << endl;
 	auto *chooser = static_cast<Combo_chooser *>(data);
 	if (chooser->selected < 0 || info != U7_TARGET_COMBOID)
 		return;         // Not sure about this.
@@ -969,7 +971,7 @@ void Combo_chooser::drag_data_get(
 	Combo *combo = chooser->combos[num];
 	// Get enough memory.
 	int cnt = combo->members.size();
-	int buflen = 5 * 4 + cnt * 5 * 4;
+	int buflen = U7DND_DATA_LENGTH(5 + cnt * 5);
 	cout << "Buflen = " << buflen << endl;
 	auto *buf = new unsigned char[buflen];
 	auto *ents = new U7_combo_data[cnt];
@@ -994,7 +996,7 @@ void Combo_chooser::drag_data_get(
 #else
 	// Set data.
 	gtk_selection_data_set(seldata,
-	                       gdk_atom_intern(U7_TARGET_COMBOID_NAME, 0),
+	                       gtk_selection_data_get_target(seldata),
 	                       8, buf, len);
 #endif
 	delete [] buf;
@@ -1011,7 +1013,7 @@ gint Combo_chooser::drag_begin(
     gpointer data           // ->Combo_chooser.
 ) {
 	ignore_unused_variable_warning(widget);
-	cout << "In DRAG_BEGIN" << endl;
+	cout << "In DRAG_BEGIN of Combo" << endl;
 	auto *chooser = static_cast<Combo_chooser *>(data);
 	if (chooser->selected < 0)
 		return FALSE;       // ++++Display a halt bitmap.

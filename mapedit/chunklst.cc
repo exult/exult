@@ -483,11 +483,13 @@ void Chunk_chooser::drag_data_get(
     gpointer data           // ->Chunk_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET" << endl;
+	cout << "In DRAG_DATA_GET of Chunk for '"
+	     << gdk_atom_name(gtk_selection_data_get_target(seldata))
+	     << "'" << endl;
 	auto *chooser = static_cast<Chunk_chooser *>(data);
 	if (chooser->selected < 0 || info != U7_TARGET_CHUNKID)
 		return;         // Not sure about this.
-	guchar buf[30];
+	guchar buf[U7DND_DATA_LENGTH(1)];
 	Chunk_info &shinfo = chooser->info[chooser->selected];
 	int len = Store_u7_chunkid(buf, shinfo.num);
 	cout << "Setting selection data (" << shinfo.num << ')' << endl;
@@ -497,7 +499,7 @@ void Chunk_chooser::drag_data_get(
 #else
 	// Set data.
 	gtk_selection_data_set(seldata,
-	                       gdk_atom_intern(U7_TARGET_CHUNKID_NAME, 0),
+	                       gtk_selection_data_get_target(seldata),
 	                       8, buf, len);
 #endif
 }
@@ -512,7 +514,7 @@ gint Chunk_chooser::drag_begin(
     gpointer data           // ->Chunk_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context);
-	cout << "In DRAG_BEGIN" << endl;
+	cout << "In DRAG_BEGIN of Chunk" << endl;
 	auto *chooser = static_cast<Chunk_chooser *>(data);
 	if (chooser->selected < 0)
 		return FALSE;       // ++++Display a halt bitmap.
@@ -535,8 +537,13 @@ void Chunk_chooser::drag_data_received(
 ) {
 	ignore_unused_variable_warning(widget, context, x, y, info, time);
 	auto *chooser = static_cast<Chunk_chooser *>(udata);
-	cout << "Chunk drag_data_received" << endl;
-	if (gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_CHUNKID_NAME, 0) &&
+	cout << "In DRAG_DATA_RECEIVED of Chunk for '"
+	     << gdk_atom_name(gtk_selection_data_get_data_type(seldata))
+	     << "'" << endl;
+	if ((gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_CHUNKID_NAME, 0) ||
+	     gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_GENERIC_NAME_X11, 0) ||
+	     gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_GENERIC_NAME_MACOSX, 0)) &&
+	        Is_u7_chunkid(gtk_selection_data_get_data(seldata)) == true &&
 	        gtk_selection_data_get_format(seldata) == 8 &&
 	        gtk_selection_data_get_length(seldata) > 0) {
 		int cnum;
@@ -558,11 +565,17 @@ void Chunk_chooser::enable_drop(
 	drop_enabled = true;
 	gtk_widget_realize(draw);//???????
 #ifndef _WIN32
-	GtkTargetEntry tents[1];
+	GtkTargetEntry tents[3];
 	tents[0].target = const_cast<char *>(U7_TARGET_CHUNKID_NAME);
+	tents[1].target = const_cast<char *>(U7_TARGET_GENERIC_NAME_X11);
+	tents[2].target = const_cast<char *>(U7_TARGET_GENERIC_NAME_MACOSX);
 	tents[0].flags = 0;
+	tents[1].flags = 0;
+	tents[2].flags = 0;
 	tents[0].info = U7_TARGET_CHUNKID;
-	gtk_drag_dest_set(draw, GTK_DEST_DEFAULT_ALL, tents, 1,
+	tents[1].info = U7_TARGET_CHUNKID;
+	tents[2].info = U7_TARGET_CHUNKID;
+	gtk_drag_dest_set(draw, GTK_DEST_DEFAULT_ALL, tents, 3,
 	                  static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
 
 	g_signal_connect(G_OBJECT(draw), "drag-data-received",

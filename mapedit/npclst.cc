@@ -677,11 +677,13 @@ void Npc_chooser::drag_data_get(
     gpointer data           // ->Npc_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET" << endl;
+	cout << "In DRAG_DATA_GET of Npc for '"
+	     << gdk_atom_name(gtk_selection_data_get_target(seldata))
+	     << "'" << endl;
 	auto *chooser = static_cast<Npc_chooser *>(data);
 	if (chooser->selected < 0 || info != U7_TARGET_NPCID)
 		return;         // Not sure about this.
-	guchar buf[30];
+	guchar buf[U7DND_DATA_LENGTH(1)];
 	int npcnum = chooser->info[chooser->selected].npcnum;
 	int len = Store_u7_npcid(buf, npcnum);
 	cout << "Setting selection data (" << npcnum << ')' << endl;
@@ -691,7 +693,7 @@ void Npc_chooser::drag_data_get(
 #else
 	// Set data.
 	gtk_selection_data_set(seldata,
-	                       gdk_atom_intern(U7_TARGET_NPCID_NAME, 0),
+	                       gtk_selection_data_get_target(seldata),
 	                       8, buf, len);
 #endif
 }
@@ -706,7 +708,7 @@ gint Npc_chooser::drag_begin(
     gpointer data           // ->Npc_chooser.
 ) {
 	ignore_unused_variable_warning(widget);
-	cout << "In DRAG_BEGIN" << endl;
+	cout << "In DRAG_BEGIN of Npc" << endl;
 	auto *chooser = static_cast<Npc_chooser *>(data);
 	if (chooser->selected < 0)
 		return FALSE;       // ++++Display a halt bitmap.
@@ -736,8 +738,13 @@ void Npc_chooser::drag_data_received(
 ) {
 	ignore_unused_variable_warning(widget, context, x, y, info, time);
 	auto *chooser = static_cast<Npc_chooser *>(udata);
-	cout << "Npc drag_data_received" << endl;
-	if (gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_NPCID_NAME, 0) &&
+	cout << "In DRAG_DATA_RECEIVED of Npc for '"
+	     << gdk_atom_name(gtk_selection_data_get_data_type(seldata))
+	     << "'" << endl;
+	if ((gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_NPCID_NAME, 0) ||
+	     gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_GENERIC_NAME_X11, 0) ||
+	     gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_GENERIC_NAME_MACOSX, 0)) &&
+	        Is_u7_npcid(gtk_selection_data_get_data(seldata)) == true &&
 	        gtk_selection_data_get_format(seldata) == 8 &&
 	        gtk_selection_data_get_length(seldata) > 0) {
 		int npcnum;
@@ -759,11 +766,17 @@ void Npc_chooser::enable_drop(
 	drop_enabled = true;
 	gtk_widget_realize(draw);//???????
 #ifndef _WIN32
-	GtkTargetEntry tents[1];
+	GtkTargetEntry tents[3];
 	tents[0].target = const_cast<char *>(U7_TARGET_NPCID_NAME);
+	tents[1].target = const_cast<char *>(U7_TARGET_GENERIC_NAME_X11);
+	tents[2].target = const_cast<char *>(U7_TARGET_GENERIC_NAME_MACOSX);
 	tents[0].flags = 0;
+	tents[1].flags = 0;
+	tents[2].flags = 0;
 	tents[0].info = U7_TARGET_NPCID;
-	gtk_drag_dest_set(draw, GTK_DEST_DEFAULT_ALL, tents, 1,
+	tents[1].info = U7_TARGET_NPCID;
+	tents[2].info = U7_TARGET_NPCID;
+	gtk_drag_dest_set(draw, GTK_DEST_DEFAULT_ALL, tents, 3,
 	                  static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
 
 	g_signal_connect(G_OBJECT(draw), "drag-data-received",

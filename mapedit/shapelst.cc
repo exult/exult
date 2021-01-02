@@ -588,7 +588,7 @@ gint Shape_chooser::drag_motion(
 	ignore_unused_variable_warning(widget);
 	auto *chooser = static_cast<Shape_chooser *>(data);
 	if (!chooser->dragging && chooser->selected >= 0)
-		chooser->start_drag(U7_TARGET_SHAPEID_NAME,
+		chooser->start_drag(U7_TARGET_GENERIC_NAME,
 		                    U7_TARGET_SHAPEID, reinterpret_cast<GdkEvent *>(event));
 	return true;
 }
@@ -1748,7 +1748,7 @@ void Shape_chooser::drag_data_get(
 	auto *chooser = static_cast<Shape_chooser *>(data);
 	if (chooser->selected < 0 || info != U7_TARGET_SHAPEID)
 		return;         // Not sure about this.
-	guchar buf[30];
+	guchar buf[U7DND_DATA_LENGTH(3)];
 	int file = chooser->ifile->get_u7drag_type();
 	if (file == U7_SHAPE_UNK)
 		file = U7_SHAPE_SHAPES; // Just assume it's shapes.vga.
@@ -1763,7 +1763,7 @@ void Shape_chooser::drag_data_get(
 #else
 	// Set data.
 	gtk_selection_data_set(seldata,
-	                       gdk_atom_intern(U7_TARGET_SHAPEID_NAME, 0),
+	                       gdk_atom_intern(U7_TARGET_GENERIC_NAME, 0),
 	                       8, buf, len);
 #endif
 }

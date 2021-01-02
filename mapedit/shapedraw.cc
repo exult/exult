@@ -235,9 +235,14 @@ void Shape_draw::drag_data_received(
 ) {
 	ignore_unused_variable_warning(widget, context, x, y, info, time);
 	auto *draw = static_cast<Shape_draw *>(udata);
-	cout << "drag_data_received" << endl;
+	cout << "In DRAG_DATA_RECEIVED of Shape for '"
+	     << gdk_atom_name(gtk_selection_data_get_data_type(seldata))
+	     << "'" << endl;
 	if (draw->drop_callback &&
-	        gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_SHAPEID_NAME, 0) &&
+	        (gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_SHAPEID_NAME, 0) ||
+	         gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_GENERIC_NAME_X11, 0) ||
+	         gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_GENERIC_NAME_MACOSX, 0)) &&
+	        Is_u7_shapeid(gtk_selection_data_get_data(seldata)) == true &&
 	        gtk_selection_data_get_format(seldata) == 8 &&
 	        gtk_selection_data_get_length(seldata) > 0) {
 		int file;
@@ -261,11 +266,17 @@ void Shape_draw::enable_drop(
 #ifndef _WIN32
 	drop_callback = callback;
 	drop_user_data = udata;
-	GtkTargetEntry tents[1];
+	GtkTargetEntry tents[3];
 	tents[0].target = const_cast<char *>(U7_TARGET_SHAPEID_NAME);
+	tents[1].target = const_cast<char *>(U7_TARGET_GENERIC_NAME_X11);
+	tents[2].target = const_cast<char *>(U7_TARGET_GENERIC_NAME_MACOSX);
 	tents[0].flags = 0;
+	tents[1].flags = 0;
+	tents[2].flags = 0;
 	tents[0].info = U7_TARGET_SHAPEID;
-	gtk_drag_dest_set(draw, GTK_DEST_DEFAULT_ALL, tents, 1,
+	tents[1].info = U7_TARGET_SHAPEID;
+	tents[2].info = U7_TARGET_SHAPEID;
+	gtk_drag_dest_set(draw, GTK_DEST_DEFAULT_ALL, tents, 3,
 	                  static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
 
 	g_signal_connect(G_OBJECT(draw), "drag-data-received",
@@ -324,11 +335,17 @@ void Shape_draw::start_drag(
 	if (dragging)
 		return;
 	dragging = true;
-	GtkTargetEntry tents[1];// Set up for dragging.
+	GtkTargetEntry tents[3];// Set up for dragging.
 	tents[0].target = const_cast<char *>(target);
+	tents[1].target = const_cast<char *>(U7_TARGET_GENERIC_NAME_X11);
+	tents[2].target = const_cast<char *>(U7_TARGET_GENERIC_NAME_MACOSX);
 	tents[0].flags = 0;
+	tents[1].flags = 0;
+	tents[2].flags = 0;
 	tents[0].info = id;
-	GtkTargetList *tlist = gtk_target_list_new(&tents[0], 1);
+	tents[1].info = id;
+	tents[2].info = id;
+	GtkTargetList *tlist = gtk_target_list_new(&tents[0], 3);
 	// ??+++ Do we need to free tlist?
 	gtk_drag_begin_with_coordinates(draw, tlist,
 	                                static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE),
