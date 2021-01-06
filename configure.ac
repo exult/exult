@@ -560,8 +560,6 @@ fi
 
 if test x$enable_macosx_studio_support = xyes ; then
 	enable_exult_studio_support=yes
-	SYSLIBS="$SYSLIBS -L/usr/X11R6/lib -lX11"
-	AC_DEFINE(XWIN, 1, [X11 (needed by Exult Studio support in Mac OS X)])
 fi
 
 if test x$enable_exult_studio_support = xyes ; then
