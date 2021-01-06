@@ -30,7 +30,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //	  Prefix = 18 : 8 file:/// + 9 U7CHUNKID + 1 terminating null
 #define U7DND_DATA_LENGTH(n) (18 + ((n)*7))
 //	Generic FILE_MIME Target
-#define U7_TARGET_GENERIC_NAME "text/uri-list"
+#define U7_TARGET_GENERIC_NAME_X11    "text/uri-list"
+#define U7_TARGET_GENERIC_NAME_MACOSX "public.file-url"
 
 //	Target information for dragging a shape:
 #define U7_TARGET_SHAPEID_NAME "U7SHAPEID"

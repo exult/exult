@@ -56,7 +56,7 @@ void Get_u7_shapeid(
     int &shape,           // 0-0xffff.
     int &frame            // 0-0xff.
 ) {
-	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	if (memcmp(data, "file:///", strlen("file:///")) == 0) data += strlen("file:///"); else if (data[0] == '/') data++;
 	const char *ptr = strchr(reinterpret_cast<const char *>(data), '.');
 	sscanf(ptr, ".%d.%d.%d", &file, &shape, &frame);
 }
@@ -68,7 +68,7 @@ void Get_u7_shapeid(
 int Is_u7_shapeid(
     const unsigned char *data
 ) {
-	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	if (memcmp(data, "file:///", strlen("file:///")) == 0) data += strlen("file:///"); else if (data[0] == '/') data++;
 	const unsigned char *dot  = reinterpret_cast<const unsigned char *>(
 	    strchr(reinterpret_cast<const char *>(data), '.'));
 	if (dot == nullptr) return false;
@@ -100,7 +100,7 @@ void Get_u7_chunkid(
     const unsigned char *data,
     int &cnum             // 0-0xffff.
 ) {
-	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	if (memcmp(data, "file:///", strlen("file:///")) == 0) data += strlen("file:///"); else if (data[0] == '/') data++;
 	const char *ptr = strchr(reinterpret_cast<const char *>(data), '.');
 	sscanf(ptr, ".%d", &cnum);
 }
@@ -112,7 +112,7 @@ void Get_u7_chunkid(
 int Is_u7_chunkid(
     const unsigned char *data
 ) {
-	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	if (memcmp(data, "file:///", strlen("file:///")) == 0) data += strlen("file:///"); else if (data[0] == '/') data++;
 	const unsigned char *dot  = reinterpret_cast<const unsigned char *>(
 	    strchr(reinterpret_cast<const char *>(data), '.'));
 	if (dot == nullptr) return false;
@@ -144,7 +144,7 @@ void Get_u7_npcid(
     const unsigned char *data,
     int &npcnum           // 0-0xffff.
 ) {
-	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	if (memcmp(data, "file:///", strlen("file:///")) == 0) data += strlen("file:///"); else if (data[0] == '/') data++;
 	const char *ptr = strchr(reinterpret_cast<const char *>(data), '.');
 	sscanf(ptr, ".%d", &npcnum);
 }
@@ -156,7 +156,7 @@ void Get_u7_npcid(
 int Is_u7_npcid(
     const unsigned char *data
 ) {
-	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	if (memcmp(data, "file:///", strlen("file:///")) == 0) data += strlen("file:///"); else if (data[0] == '/') data++;
 	const unsigned char *dot  = reinterpret_cast<const unsigned char *>(
 	    strchr(reinterpret_cast<const char *>(data), '.'));
 	if (dot == nullptr) return false;
@@ -209,7 +209,7 @@ void Get_u7_comboid(
     int &cnt,             // 0-0xffff : Number of members.
     U7_combo_data *&ents  // The members, with locations relative - can be negative - to hot-spot.
 ) {
-	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	if (memcmp(data, "file:///", strlen("file:///")) == 0) data += strlen("file:///"); else if (data[0] == '/') data++;
 	const char *ptr = strchr(reinterpret_cast<const char *>(data), '.');
 	int n;
 	sscanf(ptr, ".%d.%d.%d.%d.%d%n", &xtiles, &ytiles, &tiles_right, &tiles_below, &cnt, &n);
@@ -229,7 +229,7 @@ void Get_u7_comboid(
 int Is_u7_comboid(
     const unsigned char *data
 ) {
-	if (memcmp(data, "file:///", 8) == 0) data += 8; else if (data[0] == '/') data++;
+	if (memcmp(data, "file:///", strlen("file:///")) == 0) data += strlen("file:///"); else if (data[0] == '/') data++;
 	const unsigned char *dot  = reinterpret_cast<const unsigned char *>(
 	    strchr(reinterpret_cast<const char *>(data), '.'));
 	if (dot == nullptr) return false;

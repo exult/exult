@@ -357,7 +357,7 @@ gint Palette_edit::drag_begin(
     gpointer data           // ->Palette_edit.
 ) {
 	ignore_unused_variable_warning(widget, context, data);
-	cout << "In DRAG_BEGIN" << endl;
+	cout << "In DRAG_BEGIN of Palette" << endl;
 	//Palette_edit *paled = static_cast<Palette_edit *>(data);
 	// Maybe someday.
 	return TRUE;
