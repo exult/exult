@@ -1392,8 +1392,12 @@ void add_to_tree(GtkTreeStore *model, const char *folderName,
 					continue;
 				// See if also in 'patch'.
 				string fullpath(ppath);
+				string lowfname(fname);
+				for (auto& chr : lowfname) {
+					chr = static_cast<char>(std::tolower(static_cast<unsigned char>(chr)));
+				}
 				fullpath += "/";
-				fullpath += fname;
+				fullpath += lowfname;
 				if (U7exists(fullpath))
 					continue;
 				gtk_tree_store_append(model, &child_iter, &iter);
