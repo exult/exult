@@ -345,6 +345,7 @@ if test x$enable_static_libs != xno; then
 		VORBISFILE_LIBS="$with_macosx_static_lib_path/libvorbisfile.a"
 		VORBIS_LIBS="$with_macosx_static_lib_path/libvorbis.a -lm"
 		ZLIB_LIBS="$with_macosx_static_lib_path/libz.a"
+		MT32EMU_LIBS="$with_macosx_static_lib_path/libmt32emu.a"
 	fi
 fi
 
@@ -423,14 +424,23 @@ else
 fi
 
 # mt32emu midi driver
+AC_CHECK_HEADER(mt32emu/mt32emu.h, HAVEMT32EMU=yes, HAVEMT32EMU=no)
 AC_ARG_ENABLE(mt32emu, AS_HELP_STRING([--enable-mt32emu], [Enable built-in mt32emu support]),,enable_mt32emu=no)
 AC_MSG_CHECKING([if we should build mt32emu])
-if test x$enable_mt32emu = xyes; then
-	AC_MSG_RESULT(yes)
-	AC_DEFINE(USE_MT32EMU_MIDI, 1, [Enable mt32emu])
-	AM_CONDITIONAL(BUILD_MT32EMU, true)
+if test x$HAVEMT32EMU = xyes; then
+	if test x$enable_mt32emu = xyes; then
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(USE_MT32EMU_MIDI, 1, [Enable mt32emu])
+		AM_CONDITIONAL(BUILD_MT32EMU, true)
+		if test x$enable_static_libs = xno; then
+			MT32EMU_LIBS=" -lmt32emu"
+		fi
+	else
+		AC_MSG_RESULT(no)
+		AM_CONDITIONAL(BUILD_MT32EMU, false)
+	fi
 else
-	AC_MSG_RESULT(no)
+	AC_MSG_RESULT(no; mt32emu.h not found)
 	AM_CONDITIONAL(BUILD_MT32EMU, false)
 fi
 
@@ -1056,6 +1066,7 @@ AC_SUBST(SYSLIBS)
 AC_SUBST(ICON_FILE)
 AC_SUBST(DEBUG_FLAGS)
 AC_SUBST(ZLIB_LIBS)
+AC_SUBST(MT32EMU_LIBS)
 AC_SUBST(WARNINGS)
 AC_SUBST(AR_FLAGS)
 
@@ -1066,7 +1077,6 @@ Makefile
 audio/Makefile
 audio/midi_drivers/Makefile
 audio/midi_drivers/timidity/Makefile
-audio/midi_drivers/mt32emu/Makefile
 conf/Makefile
 content/Makefile
 content/sifixes/Makefile

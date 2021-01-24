@@ -42,6 +42,7 @@ Homebrew (https://brew.sh/).
 With MacPorts install:
   libsdl2
   libvorbis
+  munt-mt32emu
 
 Installing these packages with MacPorts will actually install many other
 packages these depend on.

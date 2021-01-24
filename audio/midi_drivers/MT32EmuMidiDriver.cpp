@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef USE_MT32EMU_MIDI
 
 #include "ignore_unused_variable_warning.h"
-#include "mt32emu/mt32emu.h"
 
 #include <cstring>
 

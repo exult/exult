@@ -30,29 +30,13 @@
 		8A45A3B8247C068500F12F4D /* joythumb-glass.png in Resources */ = {isa = PBXBuildFile; fileRef = 8A45A3AC247C068500F12F4D /* joythumb-glass.png */; };
 		8A52528B25718086005AD385 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A52527F25718086005AD385 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		8A5252C4257188A5005AD385 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A5252A725718897005AD385 /* libSDL2.a */; };
+		8A599C2224605925006E3252 /* libmt32emu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A599C21246058A9006E3252 /* libmt32emu.a */; };
 		8A6013712057CFAD00FCA555 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A6013662057CF0C00FCA555 /* Metal.framework */; };
 		8A7F1F7E1DE5B7820066F6FC /* expack.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A7F1F7D1DE5B7820066F6FC /* expack.cc */; };
 		8A8340C91F897806000696C7 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340C81F897806000696C7 /* GameController.framework */; };
 		8A8340D01F897827000696C7 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340CC1F897826000696C7 /* AVKit.framework */; };
 		8A8340D11F897827000696C7 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340CD1F897826000696C7 /* AVFoundation.framework */; };
 		8A8340D51F8979D3000696C7 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FD77A0840E26BDB800F39101 /* AudioToolbox.framework */; };
-		8A8728C91DD8AEFF005AC3FC /* Analog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A87289C1DD8AEFF005AC3FC /* Analog.cpp */; };
-		8A8728CA1DD8AEFF005AC3FC /* BReverbModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A87289E1DD8AEFF005AC3FC /* BReverbModel.cpp */; };
-		8A8728CB1DD8AEFF005AC3FC /* File.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728A11DD8AEFF005AC3FC /* File.cpp */; };
-		8A8728CC1DD8AEFF005AC3FC /* FileStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728A31DD8AEFF005AC3FC /* FileStream.cpp */; };
-		8A8728CE1DD8AEFF005AC3FC /* LA32Ramp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728A91DD8AEFF005AC3FC /* LA32Ramp.cpp */; };
-		8A8728CF1DD8AEFF005AC3FC /* LA32WaveGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728AB1DD8AEFF005AC3FC /* LA32WaveGenerator.cpp */; };
-		8A8728D01DD8AEFF005AC3FC /* MidiStreamParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728AF1DD8AEFF005AC3FC /* MidiStreamParser.cpp */; };
-		8A8728D11DD8AEFF005AC3FC /* Part.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728B31DD8AEFF005AC3FC /* Part.cpp */; };
-		8A8728D21DD8AEFF005AC3FC /* Partial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728B51DD8AEFF005AC3FC /* Partial.cpp */; };
-		8A8728D31DD8AEFF005AC3FC /* PartialManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728B71DD8AEFF005AC3FC /* PartialManager.cpp */; };
-		8A8728D41DD8AEFF005AC3FC /* Poly.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728B91DD8AEFF005AC3FC /* Poly.cpp */; };
-		8A8728D51DD8AEFF005AC3FC /* ROMInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728BB1DD8AEFF005AC3FC /* ROMInfo.cpp */; };
-		8A8728D61DD8AEFF005AC3FC /* Synth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728BE1DD8AEFF005AC3FC /* Synth.cpp */; };
-		8A8728D71DD8AEFF005AC3FC /* Tables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728C01DD8AEFF005AC3FC /* Tables.cpp */; };
-		8A8728D81DD8AEFF005AC3FC /* TVA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728C21DD8AEFF005AC3FC /* TVA.cpp */; };
-		8A8728D91DD8AEFF005AC3FC /* TVF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728C41DD8AEFF005AC3FC /* TVF.cpp */; };
-		8A8728DA1DD8AEFF005AC3FC /* TVP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728C61DD8AEFF005AC3FC /* TVP.cpp */; };
 		8A8728EA1DD8BAA3005AC3FC /* sha1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728E81DD8BAA3005AC3FC /* sha1.cpp */; };
 		8A93BD6A1F8901E3001850AA /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A93BC931F869000001850AA /* Media.xcassets */; };
 		8AB479F822AD1A5500BB3562 /* iOS Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8AB479E422AD1A5500BB3562 /* iOS Launch Screen.storyboard */; };
@@ -398,6 +382,13 @@
 			remoteGlobalIDString = A75FDB6E23E3A2C900529352;
 			remoteInfo = "hidapi-tvOS";
 		};
+		8A599C20246058A9006E3252 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4F58F7AA67A348AC99788A8C;
+			remoteInfo = mt32emu;
+		};
 		E738C84D1A6FFF58003A950D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E738C8491A6FFF58003A950D /* libogg.xcodeproj */;
@@ -427,6 +418,7 @@
 		8A45A3AC247C068500F12F4D /* joythumb-glass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joythumb-glass.png"; sourceTree = "<group>"; };
 		8A52527F25718086005AD385 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
 		8A52528E25718896005AD385 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = SDL2/Xcode/SDL/SDL.xcodeproj; sourceTree = "<group>"; };
+		8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libmt32emu.xcodeproj; path = libmt32emu.xcodeproj; sourceTree = "<group>"; };
 		8A6013662057CF0C00FCA555 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		8A7F1F721DE5B72A0066F6FC /* expack */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = expack; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A7F1F7D1DE5B7820066F6FC /* expack.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = expack.cc; path = ../tools/expack.cc; sourceTree = "<group>"; };
@@ -437,50 +429,6 @@
 		8A8340CB1F897826000696C7 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		8A8340CC1F897826000696C7 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
 		8A8340CD1F897826000696C7 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
-		8A87289C1DD8AEFF005AC3FC /* Analog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Analog.cpp; sourceTree = "<group>"; };
-		8A87289D1DD8AEFF005AC3FC /* Analog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Analog.h; sourceTree = "<group>"; };
-		8A87289E1DD8AEFF005AC3FC /* BReverbModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BReverbModel.cpp; sourceTree = "<group>"; };
-		8A87289F1DD8AEFF005AC3FC /* BReverbModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BReverbModel.h; sourceTree = "<group>"; };
-		8A8728A01DD8AEFF005AC3FC /* Enumerations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Enumerations.h; sourceTree = "<group>"; };
-		8A8728A11DD8AEFF005AC3FC /* File.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = File.cpp; sourceTree = "<group>"; };
-		8A8728A21DD8AEFF005AC3FC /* File.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = File.h; sourceTree = "<group>"; };
-		8A8728A31DD8AEFF005AC3FC /* FileStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileStream.cpp; sourceTree = "<group>"; };
-		8A8728A41DD8AEFF005AC3FC /* FileStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileStream.h; sourceTree = "<group>"; };
-		8A8728A51DD8AEFF005AC3FC /* globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = globals.h; sourceTree = "<group>"; };
-		8A8728A61DD8AEFF005AC3FC /* internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = internals.h; sourceTree = "<group>"; };
-		8A8728A81DD8AEFF005AC3FC /* LA32FloatWaveGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LA32FloatWaveGenerator.h; sourceTree = "<group>"; };
-		8A8728A91DD8AEFF005AC3FC /* LA32Ramp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LA32Ramp.cpp; sourceTree = "<group>"; };
-		8A8728AA1DD8AEFF005AC3FC /* LA32Ramp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LA32Ramp.h; sourceTree = "<group>"; };
-		8A8728AB1DD8AEFF005AC3FC /* LA32WaveGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LA32WaveGenerator.cpp; sourceTree = "<group>"; };
-		8A8728AC1DD8AEFF005AC3FC /* LA32WaveGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LA32WaveGenerator.h; sourceTree = "<group>"; };
-		8A8728AD1DD8AEFF005AC3FC /* MemoryRegion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryRegion.h; sourceTree = "<group>"; };
-		8A8728AE1DD8AEFF005AC3FC /* MidiEventQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MidiEventQueue.h; sourceTree = "<group>"; };
-		8A8728AF1DD8AEFF005AC3FC /* MidiStreamParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MidiStreamParser.cpp; sourceTree = "<group>"; };
-		8A8728B01DD8AEFF005AC3FC /* MidiStreamParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MidiStreamParser.h; sourceTree = "<group>"; };
-		8A8728B11DD8AEFF005AC3FC /* mmath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mmath.h; sourceTree = "<group>"; };
-		8A8728B21DD8AEFF005AC3FC /* mt32emu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mt32emu.h; sourceTree = "<group>"; };
-		8A8728B31DD8AEFF005AC3FC /* Part.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Part.cpp; sourceTree = "<group>"; };
-		8A8728B41DD8AEFF005AC3FC /* Part.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Part.h; sourceTree = "<group>"; };
-		8A8728B51DD8AEFF005AC3FC /* Partial.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Partial.cpp; sourceTree = "<group>"; };
-		8A8728B61DD8AEFF005AC3FC /* Partial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Partial.h; sourceTree = "<group>"; };
-		8A8728B71DD8AEFF005AC3FC /* PartialManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PartialManager.cpp; sourceTree = "<group>"; };
-		8A8728B81DD8AEFF005AC3FC /* PartialManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PartialManager.h; sourceTree = "<group>"; };
-		8A8728B91DD8AEFF005AC3FC /* Poly.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Poly.cpp; sourceTree = "<group>"; };
-		8A8728BA1DD8AEFF005AC3FC /* Poly.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Poly.h; sourceTree = "<group>"; };
-		8A8728BB1DD8AEFF005AC3FC /* ROMInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ROMInfo.cpp; sourceTree = "<group>"; };
-		8A8728BC1DD8AEFF005AC3FC /* ROMInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ROMInfo.h; sourceTree = "<group>"; };
-		8A8728BD1DD8AEFF005AC3FC /* Structures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Structures.h; sourceTree = "<group>"; };
-		8A8728BE1DD8AEFF005AC3FC /* Synth.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Synth.cpp; sourceTree = "<group>"; };
-		8A8728BF1DD8AEFF005AC3FC /* Synth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Synth.h; path = "../../../../../GIT/exult-ios/audio/midi_drivers/mt32emu/Synth.h"; sourceTree = "<group>"; };
-		8A8728C01DD8AEFF005AC3FC /* Tables.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tables.cpp; sourceTree = "<group>"; };
-		8A8728C11DD8AEFF005AC3FC /* Tables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tables.h; sourceTree = "<group>"; };
-		8A8728C21DD8AEFF005AC3FC /* TVA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TVA.cpp; sourceTree = "<group>"; };
-		8A8728C31DD8AEFF005AC3FC /* TVA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TVA.h; sourceTree = "<group>"; };
-		8A8728C41DD8AEFF005AC3FC /* TVF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TVF.cpp; sourceTree = "<group>"; };
-		8A8728C51DD8AEFF005AC3FC /* TVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TVF.h; sourceTree = "<group>"; };
-		8A8728C61DD8AEFF005AC3FC /* TVP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TVP.cpp; sourceTree = "<group>"; };
-		8A8728C71DD8AEFF005AC3FC /* TVP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TVP.h; sourceTree = "<group>"; };
-		8A8728C81DD8AEFF005AC3FC /* Types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Types.h; sourceTree = "<group>"; };
 		8A8728E81DD8BAA3005AC3FC /* sha1.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sha1.cpp; sourceTree = "<group>"; };
 		8A8728E91DD8BAA3005AC3FC /* sha1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sha1.h; sourceTree = "<group>"; };
 		8A93BC931F869000001850AA /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
@@ -991,6 +939,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8A5252C4257188A5005AD385 /* libSDL2.a in Frameworks */,
+				8A599C2224605925006E3252 /* libmt32emu.a in Frameworks */,
 				8A1FC4272571C747007B86DD /* CoreMotion.framework in Frameworks */,
 				8A52528B25718086005AD385 /* CoreHaptics.framework in Frameworks */,
 				8A1FC3CC2571BEBC007B86DD /* CoreBluetooth.framework in Frameworks */,
@@ -1126,6 +1075,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		8A599C1D246058A9006E3252 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8A599C21246058A9006E3252 /* libmt32emu.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		8A8728DD1DD8B011005AC3FC /* sha1 */ = {
 			isa = PBXGroup;
 			children = (
@@ -1187,7 +1144,6 @@
 				E700DB3E1A6E2CE7006C8BE4 /* LowLevelMidiDriver.h */,
 				E700DB421A6E2CE7006C8BE4 /* MidiDriver.cpp */,
 				E700DB431A6E2CE7006C8BE4 /* MidiDriver.h */,
-				E700DB461A6E2CE7006C8BE4 /* mt32emu */,
 				E700DB651A6E2CE7006C8BE4 /* MT32EmuMidiDriver.cpp */,
 				E700DB661A6E2CE7006C8BE4 /* MT32EmuMidiDriver.h */,
 				E700DB671A6E2CE7006C8BE4 /* README */,
@@ -1209,57 +1165,6 @@
 				E700DBA01A6E2CE7006C8BE4 /* XMidiSequenceHandler.h */,
 			);
 			path = midi_drivers;
-			sourceTree = "<group>";
-		};
-		E700DB461A6E2CE7006C8BE4 /* mt32emu */ = {
-			isa = PBXGroup;
-			children = (
-				8A87289C1DD8AEFF005AC3FC /* Analog.cpp */,
-				8A87289D1DD8AEFF005AC3FC /* Analog.h */,
-				8A87289E1DD8AEFF005AC3FC /* BReverbModel.cpp */,
-				8A87289F1DD8AEFF005AC3FC /* BReverbModel.h */,
-				8A8728A01DD8AEFF005AC3FC /* Enumerations.h */,
-				8A8728A11DD8AEFF005AC3FC /* File.cpp */,
-				8A8728A21DD8AEFF005AC3FC /* File.h */,
-				8A8728A31DD8AEFF005AC3FC /* FileStream.cpp */,
-				8A8728A41DD8AEFF005AC3FC /* FileStream.h */,
-				8A8728A51DD8AEFF005AC3FC /* globals.h */,
-				8A8728A61DD8AEFF005AC3FC /* internals.h */,
-				8A8728A81DD8AEFF005AC3FC /* LA32FloatWaveGenerator.h */,
-				8A8728A91DD8AEFF005AC3FC /* LA32Ramp.cpp */,
-				8A8728AA1DD8AEFF005AC3FC /* LA32Ramp.h */,
-				8A8728AB1DD8AEFF005AC3FC /* LA32WaveGenerator.cpp */,
-				8A8728AC1DD8AEFF005AC3FC /* LA32WaveGenerator.h */,
-				8A8728AD1DD8AEFF005AC3FC /* MemoryRegion.h */,
-				8A8728AE1DD8AEFF005AC3FC /* MidiEventQueue.h */,
-				8A8728AF1DD8AEFF005AC3FC /* MidiStreamParser.cpp */,
-				8A8728B01DD8AEFF005AC3FC /* MidiStreamParser.h */,
-				8A8728B11DD8AEFF005AC3FC /* mmath.h */,
-				8A8728B21DD8AEFF005AC3FC /* mt32emu.h */,
-				8A8728B31DD8AEFF005AC3FC /* Part.cpp */,
-				8A8728B41DD8AEFF005AC3FC /* Part.h */,
-				8A8728B51DD8AEFF005AC3FC /* Partial.cpp */,
-				8A8728B61DD8AEFF005AC3FC /* Partial.h */,
-				8A8728B71DD8AEFF005AC3FC /* PartialManager.cpp */,
-				8A8728B81DD8AEFF005AC3FC /* PartialManager.h */,
-				8A8728B91DD8AEFF005AC3FC /* Poly.cpp */,
-				8A8728BA1DD8AEFF005AC3FC /* Poly.h */,
-				8A8728BB1DD8AEFF005AC3FC /* ROMInfo.cpp */,
-				8A8728BC1DD8AEFF005AC3FC /* ROMInfo.h */,
-				8A8728BD1DD8AEFF005AC3FC /* Structures.h */,
-				8A8728BE1DD8AEFF005AC3FC /* Synth.cpp */,
-				8A8728BF1DD8AEFF005AC3FC /* Synth.h */,
-				8A8728C01DD8AEFF005AC3FC /* Tables.cpp */,
-				8A8728C11DD8AEFF005AC3FC /* Tables.h */,
-				8A8728C21DD8AEFF005AC3FC /* TVA.cpp */,
-				8A8728C31DD8AEFF005AC3FC /* TVA.h */,
-				8A8728C41DD8AEFF005AC3FC /* TVF.cpp */,
-				8A8728C51DD8AEFF005AC3FC /* TVF.h */,
-				8A8728C61DD8AEFF005AC3FC /* TVP.cpp */,
-				8A8728C71DD8AEFF005AC3FC /* TVP.h */,
-				8A8728C81DD8AEFF005AC3FC /* Types.h */,
-			);
-			path = mt32emu;
 			sourceTree = "<group>";
 		};
 		E700DB681A6E2CE7006C8BE4 /* timidity */ = {
@@ -1885,6 +1790,7 @@
 			isa = PBXGroup;
 			children = (
 				8A52528E25718896005AD385 /* SDL.xcodeproj */,
+				8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */,
 				E738C8491A6FFF58003A950D /* libogg.xcodeproj */,
 				E738C84F1A6FFF65003A950D /* libvorbis.xcodeproj */,
 			);
@@ -1957,6 +1863,10 @@
 			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
 			projectDirPath = "";
 			projectReferences = (
+				{
+					ProductGroup = 8A599C1D246058A9006E3252 /* Products */;
+					ProjectRef = 8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */;
+				},
 				{
 					ProductGroup = E738C84A1A6FFF58003A950D /* Products */;
 					ProjectRef = E738C8491A6FFF58003A950D /* libogg.xcodeproj */;
@@ -2070,6 +1980,13 @@
 			remoteRef = 8A5252B625718897005AD385 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		8A599C21246058A9006E3252 /* libmt32emu.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libmt32emu.a;
+			remoteRef = 8A599C20246058A9006E3252 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		E738C84E1A6FFF58003A950D /* liblibogg.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -2172,11 +2089,9 @@
 				E700DD561A6E3121006C8BE4 /* frnameinf.cc in Sources */,
 				E700DE2C1A6E344D006C8BE4 /* scale_2xSaI.cc in Sources */,
 				E700DE991A6E3497006C8BE4 /* Spellbook_gump.cc in Sources */,
-				8A8728C91DD8AEFF005AC3FC /* Analog.cpp in Sources */,
 				E700DE201A6E344D006C8BE4 /* BilinearScalerInternal_2x.cpp in Sources */,
 				E700DC151A6E2CE7006C8BE4 /* timidity_playmidi.cpp in Sources */,
 				E700DCE21A6E30D8006C8BE4 /* objnames.cc in Sources */,
-				8A8728D51DD8AEFF005AC3FC /* ROMInfo.cpp in Sources */,
 				E700DBE71A6E2CE7006C8BE4 /* MidiDriver.cpp in Sources */,
 				E700DF4B1A6E34C6006C8BE4 /* ucdebugging.cc in Sources */,
 				E700DD901A6E3161006C8BE4 /* msgfile.cc in Sources */,
@@ -2185,7 +2100,6 @@
 				E700DFD71A6E3943006C8BE4 /* sigame.cc in Sources */,
 				E700DD551A6E3121006C8BE4 /* frflags.cc in Sources */,
 				E700DC201A6E2CE7006C8BE4 /* XMidiSequence.cpp in Sources */,
-				8A8728D01DD8AEFF005AC3FC /* MidiStreamParser.cpp in Sources */,
 				E700DE831A6E3497006C8BE4 /* Face_stats.cc in Sources */,
 				E700DC9A1A6E30A7006C8BE4 /* exultmenu.cc in Sources */,
 				E700DF961A6E364E006C8BE4 /* XMLEntity.cc in Sources */,
@@ -2210,7 +2124,6 @@
 				E700DD971A6E3161006C8BE4 /* utils.cc in Sources */,
 				E700DE931A6E3497006C8BE4 /* Newfile_gump.cc in Sources */,
 				E700DC9B1A6E30A7006C8BE4 /* game.cc in Sources */,
-				8A8728D31DD8AEFF005AC3FC /* PartialManager.cpp in Sources */,
 				E700DCB21A6E30A7006C8BE4 /* version.cc in Sources */,
 				E700DE341A6E344D006C8BE4 /* scale_xbr.cc in Sources */,
 				E700DC181A6E2CE7006C8BE4 /* timidity_sdl_a.cpp in Sources */,
@@ -2229,13 +2142,11 @@
 				E700DD5B1A6E3121006C8BE4 /* monstinf.cc in Sources */,
 				E700DC241A6E2CE7006C8BE4 /* RawAudioSample.cc in Sources */,
 				E700DE2B1A6E344D006C8BE4 /* scale_2x.cc in Sources */,
-				8A8728D61DD8AEFF005AC3FC /* Synth.cpp in Sources */,
 				E700DF8F1A6E364E006C8BE4 /* Configuration.cc in Sources */,
 				E700DFBB1A6E372A006C8BE4 /* Zombie.cc in Sources */,
 				E700DD4F1A6E3121006C8BE4 /* aniinf.cc in Sources */,
 				E700DCDD1A6E30D8006C8BE4 /* iregobjs.cc in Sources */,
 				E700DE221A6E344D006C8BE4 /* BilinearScalerInternal_X1Y12.cpp in Sources */,
-				8A8728CC1DD8AEFF005AC3FC /* FileStream.cpp in Sources */,
 				E700DC8E1A6E30A7006C8BE4 /* actorio.cc in Sources */,
 				E700DCA21A6E30A7006C8BE4 /* keyactions.cc in Sources */,
 				E700DC101A6E2CE7006C8BE4 /* timidity_controls.cpp in Sources */,
@@ -2245,9 +2156,7 @@
 				E700DC941A6E30A7006C8BE4 /* combat.cc in Sources */,
 				E700DE7D1A6E3497006C8BE4 /* Actor_gump.cc in Sources */,
 				E700DBDF1A6E2CE7006C8BE4 /* fmopl.cpp in Sources */,
-				8A8728D11DD8AEFF005AC3FC /* Part.cpp in Sources */,
 				E700DE911A6E3497006C8BE4 /* misc_buttons.cc in Sources */,
-				8A8728D21DD8AEFF005AC3FC /* Partial.cpp in Sources */,
 				E700DD571A6E3121006C8BE4 /* frusefun.cc in Sources */,
 				005043EA9A06E3F7BB57379A /* lightinf.cc in Sources */,
 				E700DC2C1A6E2D6A006C8BE4 /* soundtest.cc in Sources */,
@@ -2294,7 +2203,6 @@
 				E700DBDC1A6E2CE7006C8BE4 /* CoreMidiDriver.cpp in Sources */,
 				E700DBBD1A6E2CE7006C8BE4 /* AudioSample.cc in Sources */,
 				E700DE9E1A6E3497006C8BE4 /* Yesno_gump.cc in Sources */,
-				8A8728CE1DD8AEFF005AC3FC /* LA32Ramp.cpp in Sources */,
 				E700DC901A6E30A7006C8BE4 /* args.cc in Sources */,
 				8AB53D8C1C9CA0A90084C69D /* ShortcutBar_gump.cc in Sources */,
 				E700DCD71A6E30D8006C8BE4 /* animate.cc in Sources */,
@@ -2310,29 +2218,24 @@
 				E700DD8D1A6E3161006C8BE4 /* Flex.cc in Sources */,
 				E700DD961A6E3161006C8BE4 /* U7obj.cc in Sources */,
 				E700DD3C1A6E3121006C8BE4 /* miscinf.cc in Sources */,
-				8A8728CB1DD8AEFF005AC3FC /* File.cpp in Sources */,
 				E700DC911A6E30A7006C8BE4 /* browser.cc in Sources */,
 				8AC797C71C8D0E4F001AF014 /* unzip.cc in Sources */,
 				E700DD611A6E3121006C8BE4 /* shapeinf.cc in Sources */,
-				8A8728D71DD8AEFF005AC3FC /* Tables.cpp in Sources */,
 				E700DF431A6E34C6006C8BE4 /* conversation.cc in Sources */,
 				E700DF4D1A6E34C6006C8BE4 /* ucfunction.cc in Sources */,
 				E700DCE41A6E30D8006C8BE4 /* spellbook.cc in Sources */,
 				E700DCDE1A6E30D8006C8BE4 /* jawbone.cc in Sources */,
-				8A8728D41DD8AEFF005AC3FC /* Poly.cpp in Sources */,
 				E700DE811A6E3497006C8BE4 /* Enabled_button.cc in Sources */,
 				E700DD641A6E3121006C8BE4 /* u7drag.cc in Sources */,
 				E700DF9F1A6E36D6006C8BE4 /* server.cc in Sources */,
 				E700DE1F1A6E344D006C8BE4 /* BilinearScaler.cpp in Sources */,
 				E700DD381A6E3121006C8BE4 /* fontgen.cc in Sources */,
-				8A8728D81DD8AEFF005AC3FC /* TVA.cpp in Sources */,
 				E700DD371A6E3121006C8BE4 /* font.cc in Sources */,
 				E700E0291A6E4067006C8BE4 /* gamewin.cc in Sources */,
 				E700DE871A6E3497006C8BE4 /* Gump_button.cc in Sources */,
 				E700DE8B1A6E3497006C8BE4 /* Gump_ToggleButton.cc in Sources */,
 				E700DBDB1A6E2CE7006C8BE4 /* CoreAudioMidiDriver.cpp in Sources */,
 				E700DE2A1A6E344D006C8BE4 /* savepcx.cc in Sources */,
-				8A8728D91DD8AEFF005AC3FC /* TVF.cpp in Sources */,
 				E700DD4E1A6E3121006C8BE4 /* ammoinf.cc in Sources */,
 				E700DE7F1A6E3497006C8BE4 /* Book_gump.cc in Sources */,
 				E700DE851A6E3497006C8BE4 /* Gamemenu_gump.cc in Sources */,
@@ -2343,7 +2246,6 @@
 				E700DC9D1A6E30A7006C8BE4 /* gamedat.cc in Sources */,
 				E700DD8C1A6E3161006C8BE4 /* Flat.cc in Sources */,
 				E700DBE31A6E2CE7006C8BE4 /* LowLevelMidiDriver.cpp in Sources */,
-				8A8728CA1DD8AEFF005AC3FC /* BReverbModel.cpp in Sources */,
 				E700DC171A6E2CE7006C8BE4 /* timidity_resample.cpp in Sources */,
 				E700DFBA1A6E372A006C8BE4 /* PathFinder.cc in Sources */,
 				E700DCAA1A6E30A7006C8BE4 /* party.cc in Sources */,
@@ -2353,7 +2255,6 @@
 				E700DE8C1A6E3497006C8BE4 /* Gump_widget.cc in Sources */,
 				E700DD931A6E3161006C8BE4 /* Table.cc in Sources */,
 				E700DD941A6E3161006C8BE4 /* U7file.cc in Sources */,
-				8A8728DA1DD8AEFF005AC3FC /* TVP.cpp in Sources */,
 				E700E02B1A6E4074006C8BE4 /* gamemap.cc in Sources */,
 				E700DC961A6E30A7006C8BE4 /* dir.cc in Sources */,
 				E700DC0E1A6E2CE7006C8BE4 /* timidity.cpp in Sources */,
@@ -2362,7 +2263,6 @@
 				E700DC0F1A6E2CE7006C8BE4 /* timidity_common.cpp in Sources */,
 				E700DF4E1A6E34C6006C8BE4 /* ucinternal.cc in Sources */,
 				E700DC1D1A6E2CE7006C8BE4 /* WindowsMidiDriver.cpp in Sources */,
-				8A8728CF1DD8AEFF005AC3FC /* LA32WaveGenerator.cpp in Sources */,
 				E700DE291A6E344D006C8BE4 /* PointScaler.cpp in Sources */,
 				E700DE981A6E3497006C8BE4 /* Slider_gump.cc in Sources */,
 				E700DE961A6E3497006C8BE4 /* Scroll_gump.cc in Sources */,
@@ -2432,6 +2332,7 @@
 					./libogg/include,
 					../objs,
 					../files,
+					./mt32emu/src,
 				);
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -2471,6 +2372,7 @@
 					./libogg/include,
 					../objs,
 					../files,
+					./mt32emu/src,
 				);
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;

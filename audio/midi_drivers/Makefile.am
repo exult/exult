@@ -1,6 +1,5 @@
 if BUILD_MT32EMU
 MT32EMUFLAGS=-DMT32EMU_EXPORTS_TYPE=0 -DMT32EMU_API_TYPE=0
-MT32EMUDIR=mt32emu
 MT32EMUDRV=	\
 	MT32EmuMidiDriver.cpp	\
 	MT32EmuMidiDriver.h
@@ -13,7 +12,7 @@ AM_CPPFLAGS = -I$(srcdir)/../../headers -I$(srcdir)/../../conf -I$(srcdir)/../..
 		$(MT32EMUFLAGS) \
 		$(DEBUG_FLAGS) $(CPPFLAGS)
 
-SUBDIRS = timidity $(MT32EMUDIR)
+SUBDIRS = timidity
 
 noinst_LTLIBRARIES = libmididrv.la
 

@@ -65,26 +65,6 @@ TIMIDITY_OBJS:=\
 	audio/midi_drivers/timidity/timidity_sdl_c.o \
 	audio/midi_drivers/timidity/timidity_tables.o
 
-MT32EMU_OBJS:=\
-	files/sha1/sha1.o \
-	audio/midi_drivers/mt32emu/Analog.o \
-	audio/midi_drivers/mt32emu/BReverbModel.o \
-	audio/midi_drivers/mt32emu/File.o \
-	audio/midi_drivers/mt32emu/FileStream.o \
-	audio/midi_drivers/mt32emu/LA32Ramp.o \
-	audio/midi_drivers/mt32emu/LA32WaveGenerator.o \
-	audio/midi_drivers/mt32emu/MidiStreamParser.o \
-	audio/midi_drivers/mt32emu/Part.o \
-	audio/midi_drivers/mt32emu/Partial.o \
-	audio/midi_drivers/mt32emu/PartialManager.o \
-	audio/midi_drivers/mt32emu/Poly.o \
-	audio/midi_drivers/mt32emu/ROMInfo.o \
-	audio/midi_drivers/mt32emu/Synth.o \
-	audio/midi_drivers/mt32emu/Tables.o \
-	audio/midi_drivers/mt32emu/TVA.o \
-	audio/midi_drivers/mt32emu/TVF.o \
-	audio/midi_drivers/mt32emu/TVP.o
-
 # Note we now always compile all midi drivers
 MIDI_DRV_OBJS:=\
 	audio/midi_drivers/ALSAMidiDriver.o \
@@ -102,8 +82,7 @@ MIDI_DRV_OBJS:=\
 	audio/midi_drivers/XMidiEventList.o \
 	audio/midi_drivers/XMidiFile.o \
 	audio/midi_drivers/XMidiSequence.o \
-	$(TIMIDITY_OBJS) \
-	$(MT32EMU_OBJS)
+	$(TIMIDITY_OBJS)
 
 AUDIO_OBJS:=\
 	audio/Audio.o \

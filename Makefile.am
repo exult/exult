@@ -107,16 +107,11 @@ exult_SOURCES =	\
 	xdrag.cc	\
 	xdrag.h
 
-if BUILD_MT32EMU
-EXTRA_EXULTLIBS=audio/midi_drivers/mt32emu/libmt32emu.la
-endif
-
 EXULTLIBS = \
 	pathfinder/libpathfinder.la		\
 	audio/libaudio.la	\
 	audio/midi_drivers/libmididrv.la	\
 	audio/midi_drivers/timidity/libtimidity.la	\
-	$(EXTRA_EXULTLIBS)		\
 	conf/libconf.la		\
 	imagewin/libimagewin.la	\
 	server/libserver.la \
@@ -134,7 +129,7 @@ EXULTLIBS = \
 exult_LDADD = \
 	$(EXULTLIBS) \
 	$(SDL_LIBS) $(SYSLIBS) $(x_libraries) $(ICON_FILE) \
-	$(ZLIB_LIBS) $(VORBIS_LIBS) $(VORBISFILE_LIBS) $(OGG_LIBS)
+	$(ZLIB_LIBS) $(VORBIS_LIBS) $(VORBISFILE_LIBS) $(OGG_LIBS) $(MT32EMU_LIBS)
 
 exult_DEPENDENCIES = $(ICON_FILE) $(EXULTLIBS)
 
