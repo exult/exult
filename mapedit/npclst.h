@@ -44,11 +44,12 @@ class Estudio_npc;
  */
 class Npc_entry {
 	friend class Npc_chooser;
-	short npcnum;
+	short npcnum, framenum; // The given npc/frame.
 	Rectangle box;          // Box where drawn.
 public:
-	void set(int num, int rx, int ry, int rw, int rh) {
-		npcnum = num;
+	void set(int num, int frnum, int rx, int ry, int rw, int rh) {
+		npcnum   = static_cast<short>(num);
+		framenum = static_cast<short>(frnum);
 		box = Rectangle(rx, ry, rw, rh);
 	}
 };
@@ -69,12 +70,18 @@ class Npc_row {
 class Npc_chooser: public Object_browser, public Shape_draw {
 	GtkWidget *sbar;        // Status bar.
 	guint sbar_sel;         // Status bar context for selection.
+	GtkWidget *fspin;       // Spin button for frame #.
+	GtkAdjustment *frame_adj;   // Adjustment for frame spin btn.
+	int framenum0;          // Default frame # to display.
 	std::vector<Npc_entry> info;    // Pos. of each shape/frame.
 	std::vector<Npc_row> rows;
 	unsigned row0;          // Row # at top of window.
 	int row0_voffset;       // Vert. pos. (in pixels) of top row.
 	long total_height;      // In pixels, for all rows.
 	int last_npc;           // Last shape visible in window.
+	bool frames_mode;       // Show all frames horizontally.
+	int hoffset;            // Horizontal offset in pixels (when in
+	                        //   frames_mode).
 	int voffset;            // Vertical offset in pixels.
 	int status_id;          // Statusbar msg. ID.
 	int red;            // Index of color red in palbuf.
@@ -89,6 +96,8 @@ class Npc_chooser: public Object_browser, public Shape_draw {
 	}
 	void setup_info(bool savepos = true) override;
 	void setup_shapes_info();
+	void setup_frames_info();
+	void scroll_to_frame();     // Scroll so sel. frame is visible.
 	int find_npc(int npcnum);   // Find index for given NPC.
 	void goto_index(unsigned index); // Get desired index in view.
 	int get_selected_id() override {
@@ -97,11 +106,15 @@ class Npc_chooser: public Object_browser, public Shape_draw {
 	void scroll_row_vertical(unsigned newrow);
 	void scroll_vertical(int newoffset); // Scroll.
 	void setup_vscrollbar();    // Set new scroll amounts.
+	void setup_hscrollbar(int newmax);
 	GtkWidget *create_popup() override;  // Popup menu.
 public:
 	Npc_chooser(Vga_file *i, unsigned char *palbuf, int w, int h,
 	            Shape_group *g = nullptr, Shape_file_info *fi = nullptr);
 	~Npc_chooser() override;
+	void set_framenum0(int f) {
+		framenum0 = f;
+	}
 	int get_count();        // Get # shapes we can display.
 	std::vector<Estudio_npc> &get_npcs();
 	void search(const char *srch, int dir) override;
@@ -142,6 +155,11 @@ public:
 	void enable_drop();
 	// Handle scrollbar.
 	static void vscrolled(GtkAdjustment *adj, gpointer data);
+	static void hscrolled(GtkAdjustment *adj, gpointer data);
+	// Handle spin-button for frames.
+	static void frame_changed(GtkAdjustment *adj, gpointer data);
+	static void all_frames_toggled(GtkToggleButton *btn,
+	                               gpointer user_data);
 #ifdef _WIN32
 	static gint win32_drag_motion(GtkWidget *widget, GdkEventMotion *event,
 	                              gpointer data);

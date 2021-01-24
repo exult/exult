@@ -442,7 +442,9 @@ GtkWidget *Palette_edit::create_controls(
 ) {
 	// Create main box.
 	GtkWidget *topframe = gtk_frame_new(nullptr);
+	widget_set_margins(topframe, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(topframe);
+
 	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
 	gtk_widget_show(vbox);
@@ -450,14 +452,17 @@ GtkWidget *Palette_edit::create_controls(
 
 	GtkWidget *hbox0 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_set_homogeneous(GTK_BOX(hbox0), FALSE);
+	widget_set_margins(hbox0, 1*HMARGIN, 1*HMARGIN, 1*VMARGIN, 1*VMARGIN);
 	gtk_widget_show(hbox0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox0, TRUE, TRUE, 2);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox0, TRUE, TRUE, 0);
 	/*
 	 *  The 'Edit' controls.
 	 */
 	GtkWidget *frame = gtk_frame_new("Edit");
+	widget_set_margins(frame, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(frame);
-	gtk_box_pack_start(GTK_BOX(hbox0), frame, FALSE, FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(hbox0), frame, FALSE, FALSE, 0);
+
 	GtkWidget *hbuttonbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
 	gtk_widget_show(hbuttonbox);
 	gtk_container_add(GTK_CONTAINER(frame), hbuttonbox);
@@ -466,14 +471,17 @@ GtkWidget *Palette_edit::create_controls(
 	gtk_box_set_spacing(GTK_BOX(hbuttonbox), 0);
 
 	insert_btn = gtk_button_new_with_label("New");
+	widget_set_margins(insert_btn, 2*HMARGIN, 1*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(insert_btn);
 	gtk_container_add(GTK_CONTAINER(hbuttonbox), insert_btn);
 	gtk_widget_set_can_default(GTK_WIDGET(insert_btn), TRUE);
 
 	remove_btn = gtk_button_new_with_label("Remove");
+	widget_set_margins(remove_btn, 1*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(remove_btn);
 	gtk_container_add(GTK_CONTAINER(hbuttonbox), remove_btn);
 	gtk_widget_set_can_default(GTK_WIDGET(remove_btn), TRUE);
+
 	g_signal_connect(G_OBJECT(insert_btn), "clicked",
 	                 G_CALLBACK(on_insert_btn_clicked),
 	                 this);
@@ -484,24 +492,31 @@ GtkWidget *Palette_edit::create_controls(
 	 *  The 'Move' controls.
 	 */
 	frame = gtk_frame_new("Move");
+	widget_set_margins(frame, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(frame);
-	gtk_box_pack_start(GTK_BOX(hbox0), frame, FALSE, FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(hbox0), frame, FALSE, FALSE, 0);
+
 	GtkWidget *bbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_set_homogeneous(GTK_BOX(bbox), TRUE);
 	gtk_widget_show(bbox);
 	gtk_container_add(GTK_CONTAINER(frame), bbox);
+
 	down_btn = gtk_button_new();
+	widget_set_margins(down_btn, 2*HMARGIN, 1*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(down_btn);
 	gtk_box_pack_start(GTK_BOX(bbox), down_btn, FALSE, FALSE, 0);
 	gtk_widget_set_can_default(GTK_WIDGET(down_btn), TRUE);
 	GtkWidget *arrow = gtk_image_new_from_icon_name("go-down", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(down_btn), arrow);
+
 	up_btn = gtk_button_new();
+	widget_set_margins(up_btn, 1*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(up_btn);
 	gtk_box_pack_start(GTK_BOX(bbox), up_btn, FALSE, FALSE, 0);
 	gtk_widget_set_can_default(GTK_WIDGET(up_btn), TRUE);
 	arrow = gtk_image_new_from_icon_name("go-up", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(up_btn), arrow);
+
 	g_signal_connect(G_OBJECT(down_btn), "clicked",
 	                 G_CALLBACK(on_down_btn_clicked),
 	                 this);
@@ -512,8 +527,10 @@ GtkWidget *Palette_edit::create_controls(
 	 *  The 'File' controls.
 	 */
 	frame = gtk_frame_new("File");
+	widget_set_margins(frame, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(frame);
-	gtk_box_pack_start(GTK_BOX(hbox0), frame, FALSE, FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(hbox0), frame, FALSE, FALSE, 0);
+
 	hbuttonbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
 	gtk_widget_show(hbuttonbox);
 	gtk_container_add(GTK_CONTAINER(frame), hbuttonbox);
@@ -522,14 +539,17 @@ GtkWidget *Palette_edit::create_controls(
 	gtk_box_set_spacing(GTK_BOX(hbuttonbox), 0);
 
 	GtkWidget *importbtn = gtk_button_new_with_label("Import");
+	widget_set_margins(importbtn, 2*HMARGIN, 1*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(importbtn);
 	gtk_container_add(GTK_CONTAINER(hbuttonbox), importbtn);
 	gtk_widget_set_can_default(GTK_WIDGET(importbtn), TRUE);
 
 	GtkWidget *exportbtn = gtk_button_new_with_label("Export");
+	widget_set_margins(exportbtn, 1*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(exportbtn);
 	gtk_container_add(GTK_CONTAINER(hbuttonbox), exportbtn);
 	gtk_widget_set_can_default(GTK_WIDGET(exportbtn), TRUE);
+
 	g_signal_connect(G_OBJECT(importbtn), "clicked",
 	                 G_CALLBACK(on_importbtn_clicked),
 	                 this);
@@ -571,11 +591,14 @@ void Palette_edit::setup(
 	gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
 	gtk_widget_show(vbox);
 	set_widget(vbox);
+
 	// A frame looks nice.
 	GtkWidget *frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
+	widget_set_margins(frame, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(frame);
 	gtk_box_pack_start(GTK_BOX(vbox), frame, TRUE, TRUE, 0);
+
 	draw = gtk_drawing_area_new();  // Create drawing area window.
 //	gtk_widget_set_size_request(draw, w, h);
 	// Indicate the events we want.
@@ -596,7 +619,9 @@ void Palette_edit::setup(
 	g_signal_connect(G_OBJECT(draw), "drag-data-get",
 	                 G_CALLBACK(drag_data_get), this);
 	gtk_container_add(GTK_CONTAINER(frame), draw);
+	widget_set_margins(draw, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(draw);
+
 	// At bottom, a status bar.
 	sbar = gtk_statusbar_new();
 	sbar_sel = gtk_statusbar_get_context_id(GTK_STATUSBAR(sbar),
@@ -609,8 +634,10 @@ void Palette_edit::setup(
 	gtk_box_pack_start(GTK_BOX(hbox1), sbar, TRUE, TRUE, 0);
 	// Palette # to right of sbar.
 	GtkWidget *label = gtk_label_new("Palette #:");
-	gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 4);
+	widget_set_margins(label, 2*HMARGIN, 1*HMARGIN, 2*VMARGIN, 2*VMARGIN);
+	gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
 	gtk_widget_show(label);
+
 	// A spin button for palette#.
 	palnum_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0,
 	                            palettes.size() - 1, 1,
@@ -618,11 +645,13 @@ void Palette_edit::setup(
 	pspin = gtk_spin_button_new(palnum_adj, 1, 0);
 	g_signal_connect(G_OBJECT(palnum_adj), "value-changed",
 	                 G_CALLBACK(palnum_changed), this);
+	widget_set_margins(pspin, 1*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_box_pack_start(GTK_BOX(hbox1), pspin, FALSE, FALSE, 0);
 	gtk_widget_show(pspin);
 
 	// Add edit controls to bottom.
 	gtk_box_pack_start(GTK_BOX(vbox), create_controls(), FALSE, FALSE, 0);
+	widget_set_margins(sbar, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(sbar);
 	enable_controls();
 }

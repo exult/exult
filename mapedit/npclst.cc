@@ -51,8 +51,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 using EStudio::Add_menu_item;
 using EStudio::Alert;
-using std::cerr;
 using std::cout;
+using std::cerr;
 using std::endl;
 using std::string;
 using std::vector;
@@ -114,9 +114,11 @@ void Npc_chooser::render(
 		for (unsigned index = row.index0; cols; --cols, ++index) {
 			int npcnum = info[index].npcnum;
 			int shapenum = npcs[npcnum].shapenum;
-			Shape_frame *shape = ifile->get_shape(shapenum, 0);
+			int framenum = info[index].framenum;
+			Shape_frame *shape = ifile->get_shape(shapenum,
+			                                      framenum);
 			if (shape) {
-				int sx = info[index].box.x;
+				int sx = info[index].box.x - hoffset;
 				int sy = info[index].box.y - voffset;
 				shape->paint(iwin, sx + shape->get_xleft(),
 				             sy + shape->get_yabove());
@@ -130,6 +132,52 @@ void Npc_chooser::render(
 		curr_y += rows[rownum].height;
 	}
 	gtk_widget_queue_draw(draw);
+}
+
+/*
+ *  Get maximum shape height for all its frames.
+ */
+
+static int Get_max_height(
+    Shape *shape
+) {
+	int cnt = shape->get_num_frames();
+	int maxh = 0;
+	for (int i = 0; i < cnt; i++) {
+		Shape_frame *frame = shape->get_frame(i);
+		if (!frame) {
+			continue;
+		}
+		int ht = frame->get_height();
+		if (ht > maxh)
+			maxh = ht;
+	}
+	return maxh;
+}
+
+/*
+ *  Get the x-offset in pixels where a frame will be drawn.
+ *
+ *  Output: Offset from left edge of (virtual) drawing area.
+ */
+
+static int Get_x_offset(
+    Shape *shape,
+    int framenum
+) {
+	if (!shape)
+		return 0;
+	int nframes = shape->get_num_frames();
+	if (framenum >= nframes)
+		framenum = nframes - 1;
+	int xoff = 0;
+	for (int i = 0; i < framenum; i++) {
+		Shape_frame *fr = shape->get_frame(i);
+		if (fr) {
+			xoff += fr->get_width() + border;
+		}
+	}
+	return xoff;
 }
 
 /*
@@ -149,14 +197,17 @@ void Npc_chooser::setup_info(
 	index0 = 0;
 	voffset = 0;
 	total_height = 0;
-	setup_shapes_info();
+	if (frames_mode)
+		setup_frames_info();
+	else
+		setup_shapes_info();
 	setup_vscrollbar();
 	if (savepos)
 		goto_index(oldind);
 }
 
 /*
- *  Setup info.
+ *  Setup info when not in 'frames' mode.
  */
 
 void Npc_chooser::setup_shapes_info(
@@ -164,6 +215,12 @@ void Npc_chooser::setup_shapes_info(
 	vector<Estudio_npc> &npcs = get_npcs();
 	if (npcs.empty())       // No NPC's?  Try to get them.
 		static_cast<Npcs_file_info *>(file_info)->setup();
+	int selnpc   = -1;
+	int selframe = -1;
+	if (selected >= 0) {    // Save selection info.
+		selnpc   = info[selected].npcnum;
+		selframe = info[selected].framenum;
+	}
 	// Get drawing area dimensions.
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
@@ -182,9 +239,10 @@ void Npc_chooser::setup_shapes_info(
 		if (npcnum >= 356 && npcnum <= 359)
 			continue;
 		int shapenum = npcs[npcnum].shapenum;
+		int framenum = npcnum == selnpc ? selframe : framenum0;
 		if (shapenum < 0 || shapenum >= num_shapes)
 			continue;
-		Shape_frame *shape = ifile->get_shape(shapenum, 0);
+		Shape_frame *shape = ifile->get_shape(shapenum, framenum);
 		if (!shape)
 			continue;
 		int sh = shape->get_height();
@@ -205,11 +263,101 @@ void Npc_chooser::setup_shapes_info(
 		int sy = curr_y + border; // Get top y-coord.
 		// Store info. about where drawn.
 		info.emplace_back();
-		info.back().set(npcnum, x, sy, sw, sh);
+		info.back().set(npcnum, framenum, x, sy, sw, sh);
 		x += sw + border;
 	}
 	rows.back().height = row_h + border;
 	total_height = curr_y + rows.back().height + border;
+}
+
+/*
+ *  Setup one NPC per row, showing its frames from left to right.
+ */
+
+void Npc_chooser::setup_frames_info(
+) {
+	vector<Estudio_npc> &npcs = get_npcs();
+	if (npcs.empty())       // No NPC's?  Try to get them.
+		static_cast<Npcs_file_info *>(file_info)->setup();
+	// Get drawing area dimensions.
+	int curr_y = 0;
+	int maxw = 0;
+	unsigned total_cnt = get_count();
+	int num_shapes = ifile->get_num_shapes();
+	//   filter (group).
+	for (unsigned index = index0; index < total_cnt; index++) {
+		int npcnum = group ? (*group)[index] : index;
+		if (npcnum >= 356 && npcnum <= 359)
+			continue;
+		int shapenum = npcs[npcnum].shapenum;
+		if (shapenum < 0 || shapenum >= num_shapes)
+			continue;
+		// Get all frames.
+		Shape *shape = ifile->extract_shape(shapenum);
+		int nframes = shape ? shape->get_num_frames() : 0;
+		if (!nframes)
+			continue;
+		int row_h = Get_max_height(shape);
+		rows.emplace_back();
+		rows.back().index0 = info.size();
+		rows.back().y = curr_y;
+		rows.back().height = row_h + border;
+		int x = 0;
+		int sw;
+		int sh;
+		for (int framenum = 0; framenum < nframes; framenum++,
+		        x += sw + border) {
+			Shape_frame *frame = shape->get_frame(framenum);
+			if (!frame) {
+				sw = sh = 0;
+				continue;
+			}
+			sh = frame->get_height();
+			sw = frame->get_width();
+			int sy = curr_y + border; // Get top y-coord.
+			// Store info. about where drawn.
+			info.emplace_back();
+			info.back().set(npcnum, framenum, x, sy, sw, sh);
+		}
+		if (x > maxw)
+			maxw = x;
+		// Next line.
+		curr_y += row_h + border;
+	}
+	total_height = curr_y + border;
+	setup_hscrollbar(maxw);
+}
+
+/*
+ *  Horizontally scroll so that the selected frame is visible (in frames
+ *  mode).
+ */
+
+void Npc_chooser::scroll_to_frame(
+) {
+	if (selected >= 0) {    // Save selection info.
+		vector<Estudio_npc> &npcs = get_npcs();
+		int selnpc   = info[selected].npcnum;
+		int selframe = info[selected].framenum;
+		Shape *shape = ifile->extract_shape(npcs[selnpc].shapenum);
+		int xoff = Get_x_offset(shape, selframe);
+		if (xoff < hoffset) // Left of visual area?
+			hoffset = xoff > border ? xoff - border : 0;
+		else {
+			GtkAllocation alloc = {0, 0, 0, 0};
+			gtk_widget_get_allocation(draw, &alloc);
+			gint winw = alloc.width;
+			Shape_frame *fr = shape->get_frame(selframe);
+			if (fr) {
+				int sw = fr->get_width();
+				if (xoff + sw + border - hoffset > winw)
+					hoffset = xoff + sw + border - winw;
+			}
+		}
+		GtkAdjustment *adj = gtk_range_get_adjustment(
+		                         GTK_RANGE(hscroll));
+		gtk_adjustment_set_value(adj, hoffset);
+	}
 }
 
 /*
@@ -706,6 +854,26 @@ void Npc_chooser::setup_vscrollbar(
 }
 
 /*
+ *  Adjust horizontal scroll amounts.
+ */
+
+void Npc_chooser::setup_hscrollbar(
+    int newmax          // New max., or -1 to leave alone.
+) {
+	GtkAdjustment *adj = gtk_range_get_adjustment(
+	                         GTK_RANGE(hscroll));
+	if (newmax > 0)
+		gtk_adjustment_set_upper(adj, newmax);
+	GtkAllocation alloc = {0, 0, 0, 0};
+	gtk_widget_get_allocation(draw, &alloc);
+	gtk_adjustment_set_page_increment(adj, alloc.width);
+	gtk_adjustment_set_page_size(adj, alloc.width);
+	if (gtk_adjustment_get_page_size(adj) > gtk_adjustment_get_upper(adj))
+		gtk_adjustment_set_upper(adj, gtk_adjustment_get_page_size(adj));
+	g_signal_emit_by_name(G_OBJECT(adj), "changed");
+}
+
+/*
  *  Handle a scrollbar event.
  */
 
@@ -717,6 +885,65 @@ void Npc_chooser::vscrolled(    // For vertical scrollbar.
 	cout << "Scrolled to " << gtk_adjustment_get_value(adj) << '\n';
 	gint newindex = static_cast<gint>(gtk_adjustment_get_value(adj));
 	chooser->scroll_vertical(newindex);
+}
+void Npc_chooser::hscrolled(      // For horizontal scrollbar.
+    GtkAdjustment *adj,     // The adjustment.
+    gpointer data           // ->Npc_chooser.
+) {
+	auto *chooser = static_cast<Npc_chooser *>(data);
+	chooser->hoffset = static_cast<gint>(gtk_adjustment_get_value(adj));
+	chooser->render();
+}
+
+/*
+ *  Handle a change to the 'frame' spin button.
+ */
+
+void Npc_chooser::frame_changed(
+    GtkAdjustment *adj,     // The adjustment.
+    gpointer data           // ->Npc_chooser.
+) {
+	auto *chooser = static_cast<Npc_chooser *>(data);
+	gint newframe = static_cast<gint>(gtk_adjustment_get_value(adj));
+	if (chooser->selected >= 0) {
+		Npc_entry &npcinfo = chooser->info[chooser->selected];
+		vector<Estudio_npc> &npcs = chooser->get_npcs();
+		int nframes = chooser->ifile->get_num_frames(npcs[npcinfo.npcnum].shapenum);
+		if (newframe >= nframes)    // Just checking
+			return;
+		npcinfo.framenum = newframe;
+		if (chooser->frames_mode)   // Get sel. frame in view.
+			chooser->scroll_to_frame();
+		chooser->render();
+		chooser->update_statusbar();
+	}
+}
+
+/*
+ *  'All frames' toggled.
+ */
+
+void Npc_chooser::all_frames_toggled(
+    GtkToggleButton *btn,
+    gpointer data
+) {
+	auto *chooser = static_cast<Npc_chooser *>(data);
+	if (chooser->info.size() == 0) return;
+	bool on = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
+	chooser->frames_mode = on;
+	if (on)             // Frame => show horiz. scrollbar.
+		gtk_widget_show(chooser->hscroll);
+	else
+		gtk_widget_hide(chooser->hscroll);
+	// The old index is no longer valid, so we need to remember the shape.
+	int indx = chooser->selected >= 0 ? chooser->selected
+	           : static_cast<int>(chooser->rows[chooser->row0].index0);
+	int npcnum = chooser->info[indx].npcnum;
+	chooser->selected = -1;
+	chooser->setup_info();
+	indx = chooser->find_npc(npcnum);
+	if (indx >= 0)          // Get back to given shape.
+		chooser->goto_index(indx);
 }
 
 /*
@@ -831,10 +1058,13 @@ Npc_chooser::Npc_chooser(
     Shape_file_info *fi
 ) : Object_browser(g, fi),
 	Shape_draw(i, palbuf, gtk_drawing_area_new()),
+	framenum0(0),
 	info(0), rows(0), row0(0),
 	row0_voffset(0), total_height(0),
+	frames_mode(false), hoffset(0),
 	voffset(0), status_id(-1), drop_enabled(false), sel_changed(nullptr) {
 	rows.reserve(40);
+
 	// Put things in a vert. box.
 	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
@@ -849,8 +1079,10 @@ Npc_chooser::Npc_chooser(
 	// A frame looks nice.
 	GtkWidget *frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
+	widget_set_margins(frame, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(frame);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
+
 	// NOTE:  draw is in Shape_draw.
 	// Indicate the events we want.
 	gtk_widget_set_events(draw, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK
@@ -876,7 +1108,7 @@ Npc_chooser::Npc_chooser(
 	g_signal_connect(G_OBJECT(draw), "drag-begin",
 	                 G_CALLBACK(drag_begin), this);
 #ifdef _WIN32
-// required to override GTK+ Drag and Drop
+	// required to override GTK+ Drag and Drop
 	g_signal_connect(G_OBJECT(draw), "motion-notify-event",
 	                 G_CALLBACK(win32_drag_motion), this);
 #else
@@ -886,6 +1118,7 @@ Npc_chooser::Npc_chooser(
 	g_signal_connect(G_OBJECT(draw), "drag-data-get",
 	                 G_CALLBACK(drag_data_get), this);
 	gtk_container_add(GTK_CONTAINER(frame), draw);
+	widget_set_margins(draw, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_set_size_request(draw, w, h);
 	gtk_widget_show(draw);
 	// Want vert. scrollbar for the shapes.
@@ -897,6 +1130,15 @@ Npc_chooser::Npc_chooser(
 	g_signal_connect(G_OBJECT(shape_adj), "value-changed",
 	                 G_CALLBACK(vscrolled), this);
 	gtk_widget_show(vscroll);
+	// Horizontal scrollbar.
+	shape_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 1600, 8, 16, 16));
+	hscroll = gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, GTK_ADJUSTMENT(shape_adj));
+	gtk_box_pack_start(GTK_BOX(vbox), hscroll, FALSE, TRUE, 0);
+	// Set scrollbar handler.
+	g_signal_connect(G_OBJECT(shape_adj), "value-changed",
+	                 G_CALLBACK(hscrolled), this);
+//++++  gtk_widget_hide(hscroll);   // Only shown in 'frames' mode.
+
 	// At the bottom, status bar & frame:
 	GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_set_homogeneous(GTK_BOX(hbox1), FALSE);
@@ -907,10 +1149,30 @@ Npc_chooser::Npc_chooser(
 	sbar_sel = gtk_statusbar_get_context_id(GTK_STATUSBAR(sbar),
 	                                        "selection");
 	gtk_box_pack_start(GTK_BOX(hbox1), sbar, TRUE, TRUE, 0);
+	widget_set_margins(sbar, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(sbar);
 	GtkWidget *label = gtk_label_new("Frame:");
-	gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
+	widget_set_margins(label, 2*HMARGIN, 1*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(label);
+	// A spin button for frame#.
+	frame_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0,
+	                           16, 1,
+	                           0, 0.0));
+	fspin = gtk_spin_button_new(GTK_ADJUSTMENT(frame_adj),
+	                            1, 0);
+	g_signal_connect(G_OBJECT(frame_adj), "value-changed",
+	                 G_CALLBACK(frame_changed), this);
+	gtk_box_pack_start(GTK_BOX(hbox1), fspin, FALSE, FALSE, 0);
+	widget_set_margins(fspin, 1*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
+	gtk_widget_show(fspin);
+	// A toggle for 'All Frames'.
+	GtkWidget *allframes = gtk_toggle_button_new_with_label("Frames");
+	gtk_box_pack_start(GTK_BOX(hbox1), allframes, FALSE, FALSE, 0);
+	widget_set_margins(allframes, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
+	gtk_widget_show(allframes);
+	g_signal_connect(G_OBJECT(allframes), "toggled",
+	                 G_CALLBACK(all_frames_toggled), this);
 	// Add search controls to bottom.
 	gtk_box_pack_start(GTK_BOX(vbox),
 	                   create_controls(find_controls | locate_controls),

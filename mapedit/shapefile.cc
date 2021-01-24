@@ -41,6 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "u7drag.h"
 #include "utils.h"
 
+using std::cout;
 using std::cerr;
 using std::endl;
 using std::ofstream;

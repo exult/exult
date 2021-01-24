@@ -305,6 +305,13 @@ on_save_combos1_activate(GtkMenuItem     *menuitem,
 }
 
 C_EXPORT void
+on_reload_css_activate(GtkMenuItem     *menuitem,
+                       gpointer         user_data) {
+	ignore_unused_variable_warning(menuitem, user_data);
+	ExultStudio::get_instance()->reload_css();
+}
+
+C_EXPORT void
 on_preferences_activate(GtkMenuItem     *menuitem,
                         gpointer         user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
@@ -511,7 +518,8 @@ C_EXPORT gboolean on_main_window_focus_in_event(
  *  Set up everything.
  */
 
-ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_path(nullptr),
+ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
+	css_path(nullptr), css_provider(nullptr), static_path(nullptr),
 	image_editor(nullptr), default_game(nullptr), background_color(0),
 	shape_info_modified(false), shape_names_modified(false), npc_modified(false),
 	files(nullptr), curfile(nullptr),
@@ -538,10 +546,11 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 	// Get options.
 	bool silent = false;        // Hide game search.
 	const char *xmldir = nullptr;     // Default:  Look here for .glade.
+	const char *cssdir = nullptr;     // Default:  Look here for .css.
 	string game;                // Game to look up in .exult.cfg.
 	string modtitle;            // Mod title to look up in <MODS>/*.cfg.
 	string alt_cfg;
-	static const char *optstring = "hsc:g:m:px:";
+	static const char *optstring = "hsc:g:m:px:y:";
 	opterr = 0;         // Don't let getopt() print errs.
 	int optchr;
 	auto get_next_option = [&]() {
@@ -554,6 +563,7 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 			{ "mod",      required_argument, nullptr, 'm' },
 			{ "portable",       no_argument, nullptr, 'p' },
 			{ "xmldir",   required_argument, nullptr, 'x' },
+			{ "cssdir",   required_argument, nullptr, 'y' },
 			{ nullptr,    0,                 nullptr,  0  }
 		};
 		return getopt_long(argc, argv, optstring,
@@ -578,6 +588,9 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 		case 'x':       // XML (.glade) directory.
 			xmldir = optarg;
 			break;
+		case 'y':       // CSS (.css) directory.
+			cssdir = optarg;
+			break;
 		case 'm':       // Mod.
 			modtitle = optarg;
 			break;
@@ -596,7 +609,7 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 #ifdef _WIN32
 			cerr << "                    [--portable|-p]" << endl;
 #endif
-			cerr << "                    [--xmldir|-x <gladedir>]" << endl
+			cerr << "                    [--xmldir|-x <gladedir>] [--cssdir|-y <cssdir>]" << endl
 			     << "        --help                   Show this information" << endl
 			     << "        --silent                 Do not display the state of the games" << endl
 			     << "        --config configfile      Specify alternate config file, default is (.)exult.cfg" << endl
@@ -608,13 +621,14 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 			cerr << "        --portable               Make the home path the Exult directory (old Windows way)" << endl;
 #endif
 			cerr << "        --xmldir gladedir        Specify where the exult_studio.glade resides, default is share/exult" << endl;
+			cerr << "        --cssdir cssdir          Specify where the exult_studio.css   resides, default is share/exult" << endl;
 #else
 			cerr << "Usage: exult_studio [-h] [-s] [-c <configfile>]" << endl
 			     << "                    [-g <game>] [-m <mod>]" << endl;
 #ifdef _WIN32
 			cerr << "                    [-p]" << endl;
 #endif
-			cerr << "                    [-x <gladedir>]" << endl
+			cerr << "                    [-x <gladedir>] [-y <cssdir>]" << endl
 			     << "        -h              Show this information" << endl
 			     << "        -s              Do not display the state of the games" << endl
 			     << "        -c configfile   Specify alternate config file, default is (.)exult.cfg" << endl
@@ -626,6 +640,7 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 			cerr << "        -p              Make the home path the Exult directory (old Windows way)" << endl;
 #endif
 			cerr << "        -x gladedir     Specify where the exult_studio.glade resides, default is share/exult" << endl;
+			cerr << "        -y cssdir       Specify where the exult_studio.css   resides, default is share/exult" << endl;
 #endif // HAVE_GETOPT_LONG
 			exit(1);
 		}
@@ -692,12 +707,55 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr), static_pat
 		g_error_free(error);
 		exit(1);
 	}
+	{
+		GSList *objects = gtk_builder_get_objects(app_xml);
+		for (GSList *l = objects; l; l = l->next) {
+			GObject *obj = static_cast<GObject *>(l->data);
+			if (GTK_IS_WIDGET(obj) && GTK_IS_BUILDABLE(obj)) {
+				gtk_widget_set_name(GTK_WIDGET(obj),
+				                    gtk_buildable_get_name(GTK_BUILDABLE(obj)));
+			}
+		}
+		g_slist_free(objects);
+	}
 	assert(app_xml);
 	app = get_widget("main_window");
 	w_at_close = 0;
 	h_at_close = 0;
 	assert(app);
 	glade_path = g_strdup(path);
+
+	if (!cssdir)
+		cssdir = datastr.c_str();
+	if (cssdir)
+		strcpy(path, cssdir);
+	else if (U7exists(EXULT_DATADIR"/exult_studio.css"))
+		strcpy(path, EXULT_DATADIR);
+	else
+		strcpy(path, ".");
+	strcat(path, "/exult_studio.css");
+	// Load the CSS provider
+	css_provider = gtk_css_provider_new();
+	assert(css_provider);
+	gtk_widget_set_sensitive(get_widget("reload_css"), true);
+	cout << "Looking for CSS at '" << path << "'... ";
+	if (U7exists(path)) {
+		cout << "loading." << endl;
+		if(!gtk_css_provider_load_from_path(css_provider, path, &error)) {
+			cerr << "Couldn't load css file: " << error->message << endl;
+			cerr << "ExultStudio proceeds without it. "
+			     << "You can fix it and reload it in 'File > Reload > Style CSS'" << endl;
+			g_error_free(error);
+		}
+	}
+	else {
+		cout << "but it wasn't there." << endl;
+	}
+	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
+	                                          GTK_STYLE_PROVIDER(css_provider),
+	                                          GTK_STYLE_PROVIDER_PRIORITY_USER);
+	css_path = g_strdup(path);
+
 	mainnotebook = GTK_NOTEBOOK(get_widget("notebook3"));
 
 	// More setting up...
@@ -773,6 +831,8 @@ ExultStudio::~ExultStudio() {
 	config->set("config/estudio/main/height", h, true);
 	Free_text();
 	g_free(glade_path);
+	if (css_path)
+		g_free(css_path);
 	delete files;
 	files = nullptr;
 	palbuf.reset();
@@ -2440,6 +2500,21 @@ C_EXPORT gboolean on_prefs_window_delete_event(
 }
 
 /*
+ *  Reload CSS.
+ */
+
+void ExultStudio::reload_css(
+) {
+	GError *error = nullptr;
+	if(!gtk_css_provider_load_from_path(css_provider, css_path, &error)) {
+		cerr << "Couldn't reload the CSS file: " << error->message << endl;
+		prompt("Failed to reload the CSS file.\n"
+		       "ExultStudio proceeds without it. You can fix it and Reload it.", "OK");
+		g_error_free(error);
+	}
+}
+
+/*
  *  Open preferences window.
  */
 
@@ -2643,12 +2718,12 @@ void ExultStudio::read_from_server(
 		set_edit_menu(data[0] != 0, data[1] != 0);
 		break;
 	case Exult_server::usecode_debugging:
-		std::cerr << "Warning: got a usecode debugging message! (ignored)"
-		          << std::endl;
+		cerr << "Warning: got a usecode debugging message! (ignored)"
+		     << endl;
 		break;
 	default:
-		std::cerr << "Warning: received unhandled message "
-		          << id << "; this message is being ignored." << std::endl;
+		cerr << "Warning: received unhandled message "
+		     << id << "; this message is being ignored." << endl;
 		break;
 	}
 }

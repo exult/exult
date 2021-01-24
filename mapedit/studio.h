@@ -63,6 +63,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	endif
 #endif
 
+const int HMARGIN = 2;
+const int VMARGIN = 1;
+
+static inline void
+widget_set_margins(GtkWidget *w, int s, int e, int t, int b) {
+	gtk_widget_set_margin_start  (w, s);
+	gtk_widget_set_margin_end    (w, e);
+	gtk_widget_set_margin_top    (w, t);
+	gtk_widget_set_margin_bottom (w, b);
+}
+
 class Shape_info;
 class Shapes_vga_file;
 struct Equip_row_widgets;
@@ -95,8 +106,10 @@ using Msg_callback = void (*)(Exult_server::Msg_type id,
 class ExultStudio {
 private:
 	char            *glade_path;    // Where our .glade file is.
+	char            *css_path;      // Where our .css file is.
 	GtkWidget       *app;
 	GtkBuilder      *app_xml;
+	GtkCssProvider  *css_provider;
 	char            *static_path;
 	char            *image_editor;
 	char            *default_game;
@@ -390,6 +403,8 @@ public:
 	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	void open_preferences();
 	void save_preferences();
+	// GTK/CSS utils:
+	void reload_css();
 	// GTK/Glade utils:
 	bool get_toggle(const char *name);
 	void set_toggle(const char *name, bool val, bool sensitive = true);

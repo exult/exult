@@ -46,9 +46,11 @@ inline T1 *gtk_cast(T2 *obj) {
 #if defined(_G_TYPE_CIC) || defined(_G_TYPE_CCC)
 #  undef _G_TYPE_CIC
 #  undef _G_TYPE_CCC
+#  undef _G_TYPE_CIT
 #  ifndef G_DISABLE_CAST_CHECKS
 #    define _G_TYPE_CIC(ip, gt, ct)     gtk_cast<ct>(g_type_check_instance_cast(gtk_cast<GTypeInstance>((ip)), gt))
 #    define _G_TYPE_CCC(cp, gt, ct)     gtk_cast<ct>(g_type_check_class_cast(gtk_cast<GTypeClass>((cp)), gt))
+#    define _G_TYPE_CIT(ip, gt)                     (g_type_check_instance_is_a(gtk_cast<GTypeInstance>((ip)), gt))
 #  else /* G_DISABLE_CAST_CHECKS */
 #    define _G_TYPE_CIC(ip, gt, ct)     gtk_cast<ct>((ip))
 #    define _G_TYPE_CCC(cp, gt, ct)     gtk_cast<ct>((cp))

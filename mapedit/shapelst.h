@@ -81,7 +81,7 @@ class Shape_chooser: public Object_browser, public Shape_draw {
 	int last_shape;         // Last shape visible in window.
 	bool frames_mode;       // Show all frames horizontally.
 	int hoffset;            // Horizontal offset in pixels (when in
-	//   frames_mode).
+	                        //   frames_mode).
 	int voffset;            // Vertical offset in pixels.
 	int status_id;          // Statusbar msg. ID.
 	void (*sel_changed)();      // Called when selection changes.

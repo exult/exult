@@ -60,6 +60,7 @@ using EStudio::Add_menu_item;
 using EStudio::Alert;
 using EStudio::Prompt;
 using std::cout;
+using std::cerr;
 using std::endl;
 using std::ifstream;
 using std::make_unique;
@@ -1321,7 +1322,7 @@ void Shape_chooser::import_all_pngs(
 	char *fullname = new char[strlen(fname) + 30];
 	sprintf(fullname, "%s%02d.png", fname, 0);
 	if (!U7exists(fullname)) {
-		std::cerr << "Invalid base file name for import of all frames!" << std::endl;
+		cerr << "Invalid base file name for import of all frames!" << endl;
 		delete [] fullname;
 		return;
 	}
@@ -2297,6 +2298,7 @@ Shape_chooser::Shape_chooser(
 	row0_voffset(0), total_height(0),
 	frames_mode(false), hoffset(0), voffset(0), status_id(-1), sel_changed(nullptr) {
 	rows.reserve(40);
+
 	// Put things in a vert. box.
 	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
@@ -2311,8 +2313,10 @@ Shape_chooser::Shape_chooser(
 	// A frame looks nice.
 	GtkWidget *frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
+	widget_set_margins(frame, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(frame);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
+
 	// NOTE:  draw is in Shape_draw.
 	// Indicate the events we want.
 	gtk_widget_set_events(draw, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK
@@ -2348,6 +2352,7 @@ Shape_chooser::Shape_chooser(
 	g_signal_connect(G_OBJECT(draw), "drag-data-get",
 	                 G_CALLBACK(drag_data_get), this);
 	gtk_container_add(GTK_CONTAINER(frame), draw);
+	widget_set_margins(draw, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_set_size_request(draw, w, h);
 	gtk_widget_show(draw);
 	// Want vert. scrollbar for the shapes.
@@ -2367,6 +2372,7 @@ Shape_chooser::Shape_chooser(
 	g_signal_connect(G_OBJECT(shape_adj), "value-changed",
 	                 G_CALLBACK(hscrolled), this);
 //++++  gtk_widget_hide(hscroll);   // Only shown in 'frames' mode.
+
 	// At the bottom, status bar & frame:
 	GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_set_homogeneous(GTK_BOX(hbox1), FALSE);
@@ -2377,9 +2383,11 @@ Shape_chooser::Shape_chooser(
 	sbar_sel = gtk_statusbar_get_context_id(GTK_STATUSBAR(sbar),
 	                                        "selection");
 	gtk_box_pack_start(GTK_BOX(hbox1), sbar, TRUE, TRUE, 0);
+	widget_set_margins(sbar, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(sbar);
 	GtkWidget *label = gtk_label_new("Frame:");
-	gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
+	widget_set_margins(label, 2*HMARGIN, 1*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(label);
 	// A spin button for frame#.
 	frame_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0,
@@ -2390,10 +2398,12 @@ Shape_chooser::Shape_chooser(
 	g_signal_connect(G_OBJECT(frame_adj), "value-changed",
 	                 G_CALLBACK(frame_changed), this);
 	gtk_box_pack_start(GTK_BOX(hbox1), fspin, FALSE, FALSE, 0);
+	widget_set_margins(fspin, 1*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(fspin);
 	// A toggle for 'All Frames'.
 	GtkWidget *allframes = gtk_toggle_button_new_with_label("Frames");
-	gtk_box_pack_start(GTK_BOX(hbox1), allframes, FALSE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox1), allframes, FALSE, FALSE, 0);
+	widget_set_margins(allframes, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(allframes);
 	g_signal_connect(G_OBJECT(allframes), "toggled",
 	                 G_CALLBACK(all_frames_toggled), this);

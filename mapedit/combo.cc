@@ -1098,6 +1098,7 @@ Combo_chooser::Combo_chooser(
 	flex_info(flinfo), index0(0),
 	info(nullptr), info_cnt(0), sel_changed(nullptr) {
 	load();             // Init. from file data.
+
 	// Put things in a vert. box.
 	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
@@ -1112,8 +1113,10 @@ Combo_chooser::Combo_chooser(
 	// A frame looks nice.
 	GtkWidget *frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
+	widget_set_margins(frame, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(frame);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
+
 	// NOTE:  draw is in Shape_draw.
 	// Indicate the events we want.
 	gtk_widget_set_events(draw, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK
@@ -1139,7 +1142,7 @@ Combo_chooser::Combo_chooser(
 	g_signal_connect(G_OBJECT(draw), "drag-begin",
 	                 G_CALLBACK(drag_begin), this);
 #ifdef _WIN32
-// required to override GTK+ Drag and Drop
+	// required to override GTK+ Drag and Drop
 	g_signal_connect(G_OBJECT(draw), "motion-notify-event",
 	                 G_CALLBACK(win32_drag_motion), this);
 #else
@@ -1149,6 +1152,7 @@ Combo_chooser::Combo_chooser(
 	g_signal_connect(G_OBJECT(draw), "drag-data-get",
 	                 G_CALLBACK(drag_data_get), this);
 	gtk_container_add(GTK_CONTAINER(frame), draw);
+	widget_set_margins(draw, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_set_size_request(draw, w, h);
 	gtk_widget_show(draw);
 	// Want a scrollbar for the combos.
@@ -1164,6 +1168,7 @@ Combo_chooser::Combo_chooser(
 	g_signal_connect(G_OBJECT(combo_adj), "value-changed",
 	                 G_CALLBACK(scrolled), this);
 	gtk_widget_show(vscroll);
+
 	// At the bottom, status bar:
 	GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_set_homogeneous(GTK_BOX(hbox1), FALSE);
@@ -1174,6 +1179,7 @@ Combo_chooser::Combo_chooser(
 	sbar_sel = gtk_statusbar_get_context_id(GTK_STATUSBAR(sbar),
 	                                        "selection");
 	gtk_box_pack_start(GTK_BOX(hbox1), sbar, TRUE, TRUE, 0);
+	widget_set_margins(sbar, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
 	gtk_widget_show(sbar);
 	// Add controls to bottom.
 	gtk_box_pack_start(GTK_BOX(vbox),

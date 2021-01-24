@@ -136,8 +136,19 @@ void Shape_draw::draw_shape_centered(
 	gtk_widget_get_allocation(draw, &alloc);
 	gint winw = alloc.width;
 	gint winh = alloc.height;
-	draw_shape(shape, (winw - shape->get_width()) / 2,
-	           (winh - shape->get_height()) / 2);
+	if (( alloc.width <  shape->get_width() + 8) ||
+	    (alloc.height < shape->get_height() + 8)) {
+		gtk_widget_set_size_request(draw,
+		    alloc.width  <  shape->get_width() + 8 ?
+		    shape->get_width() + 8 :  alloc.width,
+		    alloc.height < shape->get_height() + 8 ?
+		    shape->get_height() + 8 : alloc.height);
+		gtk_widget_queue_draw(draw);
+	}
+	else {
+		draw_shape(shape, (winw -  shape->get_width()) / 2,
+	                          (winh - shape->get_height()) / 2);
+	}
 }
 
 /*
