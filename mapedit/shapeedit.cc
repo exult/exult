@@ -1448,7 +1448,7 @@ C_EXPORT void on_shinfo_brightness_list_cursor_changed(
 static inline void Get_warmth_fields(
     ExultStudio *studio,
     unsigned int &frnum,
-    unsigned int *warm = nullptr
+    int *warm = nullptr
 ) {
 	bool anyfr = studio->get_toggle("shinfo_warmth_frame_type");
 	frnum = anyfr ? ~0u :
@@ -1477,7 +1477,7 @@ C_EXPORT void on_shinfo_warmth_update_clicked(
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio *studio = ExultStudio::get_instance();
 	unsigned int newfrnum;
-	unsigned int newwarm;
+	int newwarm;
 	Get_warmth_fields(studio, newfrnum, &newwarm);
 
 	GtkTreeView *warmtree = GTK_TREE_VIEW(
@@ -1493,10 +1493,10 @@ C_EXPORT void on_shinfo_warmth_update_clicked(
 		else
 			gtk_tree_store_insert_before(store, &newiter, nullptr, iter);
 		gtk_tree_store_set(store, &newiter, WARM_FRAME_COLUMN, static_cast<int>(newfrnum),
-		                   WARM_VALUE_COLUMN, static_cast<int>(newwarm), WARM_FROM_PATCH, 1,
+		                   WARM_VALUE_COLUMN, newwarm, WARM_FROM_PATCH, 1,
 		                   WARM_MODIFIED, 1, -1);
 	} else {
-		unsigned int warm;
+		int warm;
 		gtk_tree_model_get(model, iter, WARM_VALUE_COLUMN, &warm, -1);
 		if (warm != newwarm)
 			gtk_tree_store_set(store, iter, WARM_VALUE_COLUMN, newwarm,
@@ -1936,7 +1936,7 @@ C_EXPORT void on_shinfo_frameusecode_list_cursor_changed(
 	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_path_free(path);
 	gtk_tree_model_get(model, &iter, FRUC_FRAME_COLUMN, &frnum,
-	                   FRUC_QUAL_COLUMN, &qual, FRUC_FROM_PATCH, &ucfun, -1);
+	                   FRUC_QUAL_COLUMN, &qual, FRUC_USEFUN_COLUMN, &ucfun, -1);
 	Set_frameusecode_fields(frnum, qual, ucfun);
 }
 

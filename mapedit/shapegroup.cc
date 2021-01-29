@@ -159,6 +159,11 @@ Shape_group::Shape_group(
 				if (vgafile->get_info(i).has_frame_name_info())
 					add(i);
 			break;
+		case frameusecode_group:
+			for (i = 0; i < cnt; i++)
+				if (vgafile->get_info(i).has_frame_usecode_info())
+					add(i);
+			break;
 		case objpaperdoll_group:
 			for (i = 0; i < cnt; i++)
 				if (vgafile->get_info(i).has_paperdoll_info())
@@ -167,6 +172,11 @@ Shape_group::Shape_group(
 		case warmth_group:
 			for (i = 0; i < cnt; i++)
 				if (vgafile->get_info(i).has_warmth_info())
+					add(i);
+			break;
+		case light_group:
+			for (i = 0; i < cnt; i++)
+				if (vgafile->get_info(i).has_light_info())
 					add(i);
 			break;
 		}

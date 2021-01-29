@@ -86,8 +86,10 @@ public:
 		frameflags_group,
 		framehps_group,
 		framenames_group,
+		frameusecode_group,
 		objpaperdoll_group,
 		warmth_group,
+		light_group,
 		last_builtin_group
 	};
 };
