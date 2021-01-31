@@ -23,11 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "LowLevelMidiDriver.h"
 
-#ifdef __IPHONEOS__
-	#include <mt32emu.h>
-#else
-	#include <mt32emu/mt32emu.h>
-#endif
+#include <mt32emu.h>
 
 namespace MT32Emu { class Synth; }
 

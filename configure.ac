@@ -432,8 +432,8 @@ if test x$HAVEMT32EMU = xyes; then
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(USE_MT32EMU_MIDI, 1, [Enable mt32emu])
 		AM_CONDITIONAL(BUILD_MT32EMU, true)
-		if test x$enable_static_libs = xno; then
-			MT32EMU_LIBS=" -lmt32emu"
+		if test "x$PKG_CONFIG" != "x"; then
+			PKG_CHECK_MODULES(MT32EMU, mt32emu)
 		fi
 	else
 		AC_MSG_RESULT(no)
@@ -1067,6 +1067,7 @@ AC_SUBST(ICON_FILE)
 AC_SUBST(DEBUG_FLAGS)
 AC_SUBST(ZLIB_LIBS)
 AC_SUBST(MT32EMU_LIBS)
+AC_SUBST(MT32EMU_CFLAGS)
 AC_SUBST(WARNINGS)
 AC_SUBST(AR_FLAGS)
 

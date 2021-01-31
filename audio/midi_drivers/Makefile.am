@@ -8,7 +8,7 @@ endif
 AM_CPPFLAGS = -I$(srcdir)/../../headers -I$(srcdir)/../../conf -I$(srcdir)/../.. \
 		-I$(srcdir)/.. -I$(srcdir)/../../files -I$(srcdir)/../../imagewin \
 		-I../../conf -I../../files -I../../objs -I$(srcdir)/../../shapes \
-		$(SDL_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
+		$(SDL_CFLAGS) $(MT32EMU_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 		$(MT32EMUFLAGS) \
 		$(DEBUG_FLAGS) $(CPPFLAGS)
 
