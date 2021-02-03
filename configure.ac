@@ -293,13 +293,13 @@ else
 fi
 
 # ---------------------------------------------------------------------
-# Gdk (for Gnome shp thumbnailer)
+# Gdk-Pixbuf (for Gnome shp thumbnailer)
 # ---------------------------------------------------------------------
 
 if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_MODULES(GDK, gdk-3.0 >= 3.16, have_gdk=yes, have_gdk=no)
+	PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf-2.0, have_gdk_pixbuf=yes, have_gdk_pixbuf=no)
 else
-	have_gdk=no
+	have_gdk_pixbuf=no
 fi
 
 # ---------------------------------------------------------------------
@@ -971,9 +971,9 @@ AC_ARG_ENABLE(gnome-shp-thumbnailer, AS_HELP_STRING([--enable-gnome-shp-thumbnai
 AC_MSG_CHECKING([whether to build the Gnome SHP Thumbnailer])
 if test x$enable_gnome_shp_thumbnailer = xyes; then
 	AC_MSG_RESULT(yes)
-	if test x$have_gdk = xno; then
-		echo "Umm, but we don't have any Gdk stuff."
-		echo "Try again, either with Gdk-3.16, or with --disable-gnome-shp-thumbnailer"
+	if test x$have_gdk_pixbuf = xno; then
+		echo "Umm, but we don't have any Gdk-Pixbuf stuff."
+		echo "Try again, either with Gdk-Pixbuf-2.0, or with --disable-gnome-shp-thumbnailer"
 		exit 1
 	fi
 	AM_CONDITIONAL(BUILD_GTHUMB, true)
@@ -1131,8 +1131,8 @@ if test x$have_gtk = xyes; then
 echo GLIB....................... : `$PKG_CONFIG --modversion glib-2.0`
 echo GTK+....................... : `$PKG_CONFIG --modversion gtk+-3.0`
 fi
-if test x$have_gdk = xyes; then
-echo GDK ....................... : `$PKG_CONFIG --modversion gdk-3.0`
+if test x$have_gdk_pixbuf = xyes; then
+echo GDK-Pixbuf................. : `$PKG_CONFIG --modversion gdk-pixbuf-2.0`
 fi
 echo 
 echo Build tools................ : $enable_tools

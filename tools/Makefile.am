@@ -1,7 +1,7 @@
 AM_CPPFLAGS = -I$(srcdir)/../headers -I$(srcdir)/../files -I$(srcdir)/../usecode \
 	-I$(srcdir)/.. -I$(srcdir)/../shapes -I$(srcdir)/../imagewin \
 	-I$(srcdir)/../conf $(DEBUG_FLAGS) $(CPPFLAGS) $(SDL_CFLAGS) \
-	$(GDK_CFLAGS)
+	$(GDK_PIXBUF_CFLAGS)
 
 if HAVE_PNG
 IPACK = ipack
@@ -50,7 +50,7 @@ gnome_shp_thumbnailer_LDADD = \
 	../shapes/libshapes.la \
 	../imagewin/libimagewin.la \
 	../files/libu7file.la \
-	-lpng -lz $(SYSLIBS) $(GDK_LIBS)
+	-lpng -lz $(SYSLIBS) $(GDK_PIXBUF_LIBS)
 
 if BUILD_GTHUMB
 ## Does not work:
