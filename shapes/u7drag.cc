@@ -31,18 +31,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <cassert>
 
-#define FILE_URI "file:///"
+#define FILE_URI "file://"
+static const size_t FileUriLen = strlen(FILE_URI);
 
 /*
  *  Check and skip the URI introducer.
  */
 static bool verify_is_uri(
     const unsigned char *&data,
-	const char *searched_uri
+    const char *searched_uri
 ) {
-	static const size_t urilen = strlen(searched_uri);
-	if (memcmp(data, searched_uri, urilen) == 0) {
+	const size_t urilen = strlen(searched_uri);
+	if (memcmp(data,
+	           searched_uri,
+	           urilen      ) == 0) {
 		data += urilen;
+		return true;
+	}
+	if (memcmp(data,
+	           searched_uri + FileUriLen,
+	           urilen       - FileUriLen) == 0) {
+		data += urilen  - FileUriLen;
 		return true;
 	}
 	return false;
@@ -61,7 +70,7 @@ int Store_u7_shapeid(
     int frame             // 0-0xff.
 ) {
 	return 1 + snprintf(reinterpret_cast<char *>(data), U7DND_DATA_LENGTH(3),
-	                    FILE_URI "%s.%d.%d.%d", U7_TARGET_SHAPEID_NAME, file, shape, frame);
+	                    FILE_URI "/%s.%d.%d.%d", U7_TARGET_SHAPEID_NAME, file, shape, frame);
 }
 
 /*
@@ -85,7 +94,7 @@ void Get_u7_shapeid(
 bool Is_u7_shapeid(
     const unsigned char *data
 ) {
-	return !verify_is_uri(data, FILE_URI U7_TARGET_SHAPEID_NAME ".");
+	return verify_is_uri(data, FILE_URI "/" U7_TARGET_SHAPEID_NAME ".");
 }
 
 /*
@@ -99,7 +108,7 @@ int Store_u7_chunkid(
     int cnum              // 0-0xffff.
 ) {
 	return 1 + snprintf(reinterpret_cast<char *>(data), U7DND_DATA_LENGTH(1),
-	                    FILE_URI "%s.%d", U7_TARGET_CHUNKID_NAME, cnum);
+	                    FILE_URI "/%s.%d", U7_TARGET_CHUNKID_NAME, cnum);
 }
 
 /*
@@ -121,7 +130,7 @@ void Get_u7_chunkid(
 bool Is_u7_chunkid(
     const unsigned char *data
 ) {
-	return !verify_is_uri(data, FILE_URI U7_TARGET_CHUNKID_NAME ".");
+	return verify_is_uri(data, FILE_URI "/" U7_TARGET_CHUNKID_NAME ".");
 }
 
 /*
@@ -135,7 +144,7 @@ int Store_u7_npcid(
     int npcnum            // 0-0xffff.
 ) {
 	return 1 + snprintf(reinterpret_cast<char *>(data), U7DND_DATA_LENGTH(1),
-	                    FILE_URI "%s.%d", U7_TARGET_NPCID_NAME, npcnum);
+	                    FILE_URI "/%s.%d", U7_TARGET_NPCID_NAME, npcnum);
 }
 
 /*
@@ -157,7 +166,7 @@ void Get_u7_npcid(
 bool Is_u7_npcid(
     const unsigned char *data
 ) {
-	return !verify_is_uri(data, FILE_URI U7_TARGET_NPCID_NAME ".");
+	return verify_is_uri(data, FILE_URI "/" U7_TARGET_NPCID_NAME ".");
 }
 
 /*
@@ -176,7 +185,7 @@ int Store_u7_comboid(
     U7_combo_data *ents   // The members, with locations relative - can be negative - to hot-spot.
 ) {
 	unsigned char *ptr = data + snprintf(reinterpret_cast<char *>(data), U7DND_DATA_LENGTH(5),
-	                                     FILE_URI "%s.%d.%d.%d.%d.%d", U7_TARGET_COMBOID_NAME,
+	                                     FILE_URI "/%s.%d.%d.%d.%d.%d", U7_TARGET_COMBOID_NAME,
 	                                     xtiles, ytiles, tiles_right, tiles_below, cnt);
 	for (int i = 0; i < cnt; i++) {
 		ptr = ptr + snprintf(reinterpret_cast<char *>(ptr),
@@ -222,5 +231,5 @@ void Get_u7_comboid(
 bool Is_u7_comboid(
     const unsigned char *data
 ) {
-	return !verify_is_uri(data, FILE_URI U7_TARGET_COMBOID_NAME ".");
+	return verify_is_uri(data, FILE_URI "/" U7_TARGET_COMBOID_NAME ".");
 }
