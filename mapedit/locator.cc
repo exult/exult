@@ -547,6 +547,6 @@ gboolean Locator::mouse_motion(
 	if (!dragging || !(state & GDK_BUTTON1_MASK))
 		return FALSE;       // Not dragging with left button.
 	// Delay sending location to Exult.
-	goto_mouse(mx + drag_relx, my + drag_rely, true);
+	goto_mouse(mx - drag_relx, my - drag_rely, true);
 	return TRUE;
 }
