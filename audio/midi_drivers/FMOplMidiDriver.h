@@ -76,7 +76,7 @@ private:
 		int inum;
 		xinstrument ins;
 		bool xmidi;
-		int	xmidi_bank;
+		int xmidi_bank;
 		int vol;
 		int expression;
 		int nshift;

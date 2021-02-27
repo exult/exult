@@ -223,11 +223,12 @@ int FMOplMidiDriver::open()
 		i.enabled = 1;
 		i.pitchbend = 0x2000;
 		i.pan = 64;
+		i.sustain = 0;
 	}
 
 	/* General init */
 	for (auto& i : chp) {
-		i = {-1, 0, 0, 0};
+		i = {-1, 0, 0, 0, false};
 	}
 
 	opl = FMOpl_Pentagram::makeAdLibOPL(sample_rate);

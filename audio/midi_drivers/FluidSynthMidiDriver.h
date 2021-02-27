@@ -40,9 +40,10 @@ public:
 
 protected:
 	// Because GCC complains about casting from const to non-const...
-	void setInt(const char *name, int val);
-	void setNum(const char *name, double val);
-	void setStr(const char *name, const char *val);
+	int setInt(const char *name, int val);
+	int setNum(const char *name, double val);
+	int setStr(const char *name, const char *val);
+	int getStr(const char *name, char **pval);
 
 	// LowLevelMidiDriver implementation
 	int open() override;

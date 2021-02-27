@@ -32,16 +32,20 @@ const MidiDriver::MidiDriverDesc FluidSynthMidiDriver::desc =
 
 // MidiDriver method implementations
 
-void FluidSynthMidiDriver::setInt(const char *name, int val) {
-	fluid_settings_setint(_settings, name, val);
+int FluidSynthMidiDriver::setInt(const char *name, int val) {
+	return fluid_settings_setint(_settings, name, val);
 }
 
-void FluidSynthMidiDriver::setNum(const char *name, double val) {
-	fluid_settings_setnum(_settings, name, val);
+int FluidSynthMidiDriver::setNum(const char *name, double val) {
+	return fluid_settings_setnum(_settings, name, val);
 }
 
-void FluidSynthMidiDriver::setStr(const char *name, const char *val) {
-	fluid_settings_setstr(_settings, name, val);
+int FluidSynthMidiDriver::setStr(const char *name, const char *val) {
+	return fluid_settings_setstr(_settings, name, val);
+}
+
+int FluidSynthMidiDriver::getStr(const char *name, char **pval) {
+	return fluid_settings_dupstr(_settings, name, pval);
 }
 
 int FluidSynthMidiDriver::open() {
@@ -64,12 +68,21 @@ int FluidSynthMidiDriver::open() {
 	if (!soundfont.empty())
 		soundfonts.push_back(soundfont);
 
-	if (soundfonts.empty()) {
-		perr << "FluidSynth requires a 'fluidsynth_soundfont' setting" << std::endl;
-		return -2;
-	}
-
 	_settings = new_fluid_settings();
+
+	if (soundfonts.empty()) {
+		char *default_soundfont;
+		if (getStr("synth.default-soundfont", &default_soundfont) == FLUID_OK &&
+		    default_soundfont && default_soundfont[0] != 0) {
+			soundfonts.push_back(default_soundfont);
+			free(default_soundfont);
+			perr << "Setting 'fluidsynth_soundfont' missing in 'exult.cfg': enabling FluidSynth with FluidSynth default SoundFont" << std::endl;
+		}
+		else {
+			perr << "Setting 'fluidsynth_soundfont' missing in 'exult.cfg' and Fluidsynth without a default SoundFont: not enabling Fluidsynth" << std::endl;
+			return -2;
+		}
+	}
 
 	// The default gain setting is ridiculously low, but we can't set it
 	// too high either or sound will be clipped. This may need tuning...
@@ -108,11 +121,11 @@ int FluidSynthMidiDriver::open() {
 }
 
 void FluidSynthMidiDriver::close() {
-	while (!_soundFont.empty()) {
-		int soundfont = _soundFont.top();
+	//-- Do not sfunload the SoundFonts, this causes messages :
+	//--   fluidsynth: warning: No preset found on channel # [bank=# prog=#]
+	//-- And delete_fluid_synth unloads the SoundFonts anyway.
+	while (!_soundFont.empty())
 		_soundFont.pop();
-		fluid_synth_sfunload(_synth, soundfont, 1);
-	}
 
 	delete_fluid_synth(_synth);
 	_synth = nullptr;
