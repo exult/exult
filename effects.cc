@@ -22,6 +22,8 @@
 #  include <config.h>
 #endif
 
+#include <algorithm>
+
 #include "gamewin.h"
 #include "gamemap.h"
 #include "gameclk.h"
@@ -118,13 +120,25 @@ void Effects_manager::center_text(
 }
 
 /**
- *  Add an effect at the start of the chain.
+ *  Add an weather effect at the start of the chain.
+ */
+
+void Effects_manager::add_effect(
+    std::unique_ptr<Weather_effect> effect
+) {
+	weather_effects.emplace_front(std::move(effect));
+	effects.emplace_front(weather_effects.front().get());
+}
+
+/**
+ *  Add an non-weather effect at the start of the chain.
  */
 
 void Effects_manager::add_effect(
     std::unique_ptr<Special_effect> effect
 ) {
-	effects.emplace_front(std::move(effect));
+	other_effects.emplace_front(std::move(effect));
+	effects.emplace_front(other_effects.front().get());
 }
 
 /**
@@ -145,19 +159,29 @@ void Effects_manager::remove_text_effect(
 }
 
 /**
- *  Remove a sprite from the chain and delete it.
+ *  Remove a sprite from the chain
  */
 
 void Effects_manager::remove_effect(
     Special_effect *effect
 ) {
-	effects.remove_if([effect](const auto& ef) { return ef.get() == effect; });
+	other_effects.remove_if([effect](const auto& ef) { return ef.get() == effect; });
+	effects.remove(effect);
 }
 
 /**
- *  Remove text from the chain and delete it.
+ *  Remove a weather effect from the chain
  */
 
+void Effects_manager::remove_effect(
+    Weather_effect *effect
+) {
+	weather_effects.remove_if([effect](const auto& ef) { return ef.get() == effect; });
+	effects.remove(effect);
+}
+/**
+ *  Remove text from the chain
+ */
 void Effects_manager::remove_text_effect(
     Text_effect *txt
 ) {
@@ -173,6 +197,8 @@ void Effects_manager::remove_all_effects(
 ) {
 	if (effects.empty() && texts.empty())
 		return;
+	weather_effects.clear();
+	other_effects.clear();
 	effects.clear();
 	texts.clear();
 	if (repaint)
@@ -200,11 +226,18 @@ void Effects_manager::remove_weather_effects(
 	Actor *main_actor = gwin->get_main_actor();
 	Tile_coord apos = main_actor ? main_actor->get_tile()
 	                  : Tile_coord(-1, -1, -1);
-	effects.remove_if([&](const auto& ef) {
-		return ef->is_weather() &&
-	           (!dist ||
-				static_cast<Weather_effect*>(ef.get())->out_of_range(apos, dist));
-	});
+	auto removal_iterator = std::stable_partition(
+		weather_effects.begin(),
+		weather_effects.end(),
+		[&](const auto& ef) {
+			return (!dist || ef.get()->out_of_range(apos, dist));
+		}
+	);
+
+	std::for_each(removal_iterator, weather_effects.end(),
+			[&](const auto& ef) { effects.remove(ef.get()); }
+	);
+	weather_effects.erase(removal_iterator, weather_effects.end());
 	gwin->set_all_dirty();
 }
 
@@ -214,9 +247,22 @@ void Effects_manager::remove_weather_effects(
 
 void Effects_manager::remove_usecode_lightning(
 ) {
-	effects.remove_if([](const auto& ef) {
+	auto lightning_begin = std::stable_partition(
+		weather_effects.begin(),
+		weather_effects.end(),
+		[](auto&& ef) {
 			return ef->is_usecode_lightning();
-	});
+		}
+	);
+	auto wend = weather_effects.end();
+	std::for_each(
+		lightning_begin,
+		wend,
+		[&](auto&& el) {
+			effects.remove(el.get());
+		}
+	);
+	weather_effects.erase(lightning_begin, wend);
 	gwin->set_all_dirty();
 }
 
@@ -226,12 +272,15 @@ void Effects_manager::remove_usecode_lightning(
 
 int Effects_manager::get_weather(
 ) {
-	auto found = std::find_if(effects.cbegin(), effects.cend(), [](const auto& ef) {
-			return ef->is_weather() && 
-				(static_cast<Weather_effect *>(ef.get())->get_num() >= 0);
-	});
-	return found != effects.cend()
-		? static_cast<Weather_effect *>((*found).get())->get_num()
+	auto found = std::find_if(
+		weather_effects.cbegin(),
+		weather_effects.cend(),
+		[](const auto& ef) {
+			return ef.get()->get_num() >= 0;
+		}
+	);
+	return found != weather_effects.cend()
+		? (*found)->get_num()
 		: 0;
 }
 
@@ -256,6 +305,15 @@ Special_effect::~Special_effect(
 	if (in_queue())
 		gwin->get_tqueue()->remove(this);
 }
+
+/**
+ *  Some special effects may not need painting.
+ */
+
+void Paintable_effect::paint(
+) {
+}
+
 
 /**
  *  Paint them all.
@@ -284,13 +342,6 @@ void Effects_manager::update_dirty_text(
 ) {
 	for (auto& txt : texts)
 		txt->update_dirty();
-}
-/**
- *  Some special effects may not need painting.
- */
-
-void Special_effect::paint(
-) {
 }
 
 /**
@@ -1109,7 +1160,7 @@ Weather_effect::Weather_effect(
     int delay,          // Delay before starting.
     int n,              // Weather number.
     Game_object *egg        // Egg that started it, or null.
-) : num(n) {
+) : gwin(Game_window::get_instance()), num(n) {
 	if (egg)
 		eggloc = egg->get_tile();
 	else
@@ -1134,6 +1185,11 @@ bool Weather_effect::out_of_range(
 	return eggloc.distance(avpos) >= dist;
 }
 
+Weather_effect::~Weather_effect(
+) {
+	if (in_queue())
+		gwin->get_tqueue()->remove(this);
+}
 
 /*
  *  A generic raindrop/snowflake/magic sparkle particle:
