@@ -32,6 +32,11 @@ USECODE_OBJECTS = \
 	src/misc/egg_starting_hints.uc	\
 	src/misc/exchanged_item_list.uc	\
 	src/misc/fawn_tower_cleanup.uc	\
+	src/misc/draxinar_cloth_riddle.uc	\
+	src/misc/draxinar_earrings_riddle.uc	\
+	src/misc/egg_gwani_attack.uc	\
+	src/misc/egg_skullcrusher_automatons.uc	\
+	src/misc/gwani_cloak_check.uc	\
 	src/misc/inn_keys.uc	\
 	src/misc/location_ids.uc	\
 	src/misc/luther_return_shield.uc	\
@@ -46,6 +51,14 @@ USECODE_OBJECTS = \
 	src/npcs/iolo.uc	\
 	src/npcs/shamino.uc	\
 	src/npcs/thoxa.uc	\
+	src/npcs/bwundiai.uc	\
+	src/npcs/delin.uc	\
+	src/npcs/edrin.uc	\
+	src/npcs/kylista.uc	\
+	src/npcs/mwaerno.uc	\
+	src/npcs/myauri.uc	\
+	src/npcs/neyobi.uc	\
+	src/npcs/skullcrusher_automatons.uc	\
 	src/spells/spells.uc	\
 	src/usecode.uc	
 
@@ -78,12 +91,28 @@ sifixes_DATA = \
 
 sifixesdatadir = $(sifixesdir)/sifixes/data
 
-sifixesdata_DATA = \
+nodist_sifixesdata_DATA = \
 	data/usecode	\
 	data/gumps.vga	\
 	data/mainshp.flx	\
-	data/shapes.vga	\
+	data/shapes.vga
+
+sifixesdata_DATA = \
 	data/initgame.dat	
+
+EXTRA_DIST = \
+	Makefile.mingw \
+	Readme.txt \
+	sifixes.ico \
+	sifixes.png \
+	src/make.bat \
+	src/make.sh \
+	$(sifixesdata_DATA) \
+	$(sifixes_DATA) \
+	$(USECODE_OBJECTS) \
+	$(GUMPS_VGA_OBJECTS) \
+	$(MAINSHP_FLX_OBJECTS) \
+	$(SHAPES_VGA_OBJECTS)
 
 CLEANFILES = \
 	data/usecode	\

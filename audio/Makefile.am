@@ -16,7 +16,7 @@ libaudio_la_SOURCES =	\
 	conv.cc		\
 	conv.h		\
 	soundtest.cc	\
-	soundtest.h	    \
+	soundtest.h	\
 	convmusic.h     \
 	AudioChannel.cc \
 	AudioChannel.h  \
@@ -34,6 +34,8 @@ libaudio_la_SOURCES =	\
 	WavAudioSample.h
 
 EXTRA_DIST = 		\
+	module.mk	\
+	mtest		\
 	README
 
 CLEANFILES = *~

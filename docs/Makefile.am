@@ -26,24 +26,46 @@ nobase_doc_DATA = \
 	images/studiosiiregs.png
 
 EXTRA_DIST =		\
+	xml/docs.dtd	\
+	xml/docs.xml	\
+	xml/exult_studio.xml	\
+	xml/faq.xml	\
+	xml/HowTo	\
+	xml/html.xsl	\
+	xml/Makefile	\
+	xml/Makefile.win32	\
+	xml/php.xsl	\
+	xml/text.xsl	\
 	$(man_MANS)	\
-	$(nobase_doc_DATA)
-
-#	FLI.txt 	\
-#	exscript.txt	\
-#	items.txt	\
-#	schedule.txt	\
-#	u7combat.txt	\
-#	u7edit.txt	\
-#	u7eggs.txt	\
-#	u7itemtypes.txt	\
-#	u7monst.txt	\
-#	u7playend.zip	\
-#	u7ready.txt	\
-#	u7tech.txt	\
-#	unknown		\
-#	usedis.zip	\
-#	weapons.txt	\
-#	wuc.zip
+	$(nobase_doc_DATA)	\
+	art.txt		\
+	bgitems.txt	\
+	exult2.txt	\
+	exult_intrinsics.txt	\
+	exult_studio.txt	\
+	FLI.txt 	\
+	interview	\
+	IslandAddOn.txt	\
+	MidiInfo.txt	\
+	newgame.txt	\
+	Planets.txt	\
+	release.txt	\
+	schedule.txt	\
+	serpentsfx.txt	\
+	siitems.txt	\
+	u7combat.txt	\
+	u7edit.txt	\
+	u7eggs.txt	\
+	u7itemtypes.txt	\
+	u7monst.txt	\
+	u7ready.txt	\
+	u7tech.txt	\
+	ucc.txt		\
+	usecode32.txt	\
+	usecode_bugs.txt	\
+	usecode.dis	\
+	usecode_ff.txt	\
+	unknown		\
+	weapons.txt
 
 CLEANFILES = *~

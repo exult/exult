@@ -51,7 +51,6 @@ exult_studio_SOURCES = \
 	objbrowse.cc \
 	paledit.cc \
 	paledit.h \
-	ready.h		\
 	shapedraw.cc \
 	shapedraw.h \
 	shapefile.cc \
@@ -94,7 +93,10 @@ u7shp$(EXEEXT): u7shp.cc $(top_builddir)/config.h
 	CPPFLAGS="$(u7shp_CFLAGS)" CXXFLAGS="-O2 -I$(top_srcdir) -DHAVE_CONFIG_H" $(GIMPTOOL) --build $<
 
 EXTRA_DIST=	\
+	gimpwin32.txt \
+	PhotoshopShapePlugin.zip \
 	exult_studio.glade \
+	uniquepal.c \
 	logo.xpm
 
 if GIMP_PLUGIN

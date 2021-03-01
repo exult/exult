@@ -23,6 +23,7 @@ confregress_LDADD =	\
 
 EXTRA_DIST = 		\
 	config.xml	\
+	module.mk	\
 	README
 
 CLEANFILES = *~

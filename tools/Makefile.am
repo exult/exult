@@ -121,6 +121,17 @@ EXTRA_DIST = \
 	u7bgflag.txt \
 	u7siflag.txt \
 	ucformat.txt \
+	expack.1 \
+	gnome_u7shapes.thumbnailer.in \
+	ipack.1 \
+	ipack.txt \
+	shp2pcx.1 \
+	shp2pcx.txt \
+	splitshp.1 \
+	splitshp.txt \
+	textpack.1 \
+	textpack.txt \
+	x-shapefile.xml \
 	expack.txt
 
 CLEANFILES = *~ gnome_u7shapes.thumbnailer

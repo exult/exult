@@ -9,6 +9,8 @@ SUBDIRS = shapeinf
 noinst_LTLIBRARIES = libshapes.la
 
 libshapes_la_SOURCES = \
+	baseinf.h \
+	data_utils.h \
 	font.cc \
 	font.h \
 	fontgen.cc \
@@ -21,6 +23,7 @@ libshapes_la_SOURCES = \
 	miscinf.h \
 	pngio.cc \
 	pngio.h \
+	ready.h \
 	shapeinf.cc \
 	shapeinf.h \
 	shapevga.cc \

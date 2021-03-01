@@ -165,6 +165,8 @@ MAINSHP_FLX_OBJECTS = \
 
 PAPERDOL_VGA_OBJECTS = \
 	src/graphics/paperdol.in	\
+	src/graphics/paperdol/Buckethead_Body_Paperdoll.shp	\
+	src/graphics/paperdol/Buckethead_Face_Paperdoll.shp	\
 	src/graphics/paperdol/Female_Paperdoll.shp	\
 	src/graphics/paperdol/FlyingCarpet.shp	\
 	src/graphics/paperdol/Laurianna_Paperdoll.shp	\
@@ -256,13 +258,15 @@ bgkeyring_DATA = \
 
 bgkeyringdatadir = $(bgkeyringdir)/Keyring/data
 
-bgkeyringdata_DATA = \
+nodist_bgkeyringdata_DATA = \
 	data/usecode	\
 	data/faces.vga	\
 	data/gumps.vga	\
 	data/mainshp.flx	\
 	data/paperdol.vga	\
-	data/shapes.vga	\
+	data/shapes.vga
+
+bgkeyringdata_DATA = \
 	data/armor.dat	\
 	data/occlude.dat	\
 	data/avatar_data.txt	\
@@ -305,6 +309,23 @@ bgkeyringdatamap01_DATA = \
 	data/map01/u7ifix77	\
 	data/map01/u7ifix7d	\
 	data/map01/u7map	
+
+EXTRA_DIST = \
+	Keyring.ico \
+	Keyring.png \
+	Makefile.mingw \
+	Readme.txt \
+	src/make.bat \
+	src/make.sh \
+	$(bgkeyringdatamap01_DATA) \
+	$(bgkeyringdata_DATA) \
+	$(bgkeyring_DATA) \
+	$(USECODE_OBJECTS) \
+	$(FACES_VGA_OBJECTS) \
+	$(GUMPS_VGA_OBJECTS) \
+	$(MAINSHP_FLX_OBJECTS) \
+	$(PAPERDOL_VGA_OBJECTS) \
+	$(SHAPES_VGA_OBJECTS)
 
 CLEANFILES = \
 	data/usecode	\

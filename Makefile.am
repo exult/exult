@@ -8,7 +8,7 @@ AM_CPPFLAGS = -I$(srcdir) -I$(srcdir)/headers -I$(srcdir)/imagewin -I$(srcdir)/s
 	$(SDL_CFLAGS) $(VORBIS_CFLAGS) $(OGG_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 	$(DEBUG_FLAGS) $(CPPFLAGS) -DEXULT_DATADIR=\"$(EXULT_DATADIR)\"
 
-CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(DEBUG_FLAGS) $(CXXFLAGS) $(LDFLAGS) -o $(EXE_TARGET)
+CXXLINK = $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(DEBUG_FLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $(EXE_TARGET)
 
 if BUILD_MODS
 MODSDIR=content
@@ -28,6 +28,7 @@ exult_SOURCES =	\
 	actors.h	\
 	args.cc		\
 	args.h		\
+	headers/array_size.h	\
 	browser.cc	\
 	browser.h	\
 	cheat.cc	\
@@ -37,13 +38,14 @@ exult_SOURCES =	\
 	combat.cc	\
 	combat.h	\
 	combat_opts.h	\
-	common_types.h	\
+	headers/common_types.h	\
 	dir.cc		\
 	dir.h		\
 	drag.cc		\
 	drag.h		\
 	effects.cc	\
 	effects.h	\
+	headers/exceptions.h	\
 	exult.cc	\
 	exult.h		\
 	exulticon.h	\
@@ -63,8 +65,10 @@ exult_SOURCES =	\
 	gamerend.h	\
 	gamewin.cc	\
 	gamewin.h	\
+	headers/gamma.h	\
 	hash_utils.h	\
-	ignore_unused_variable_warning.h	\
+	headers/ignore_unused_variable_warning.h	\
+	headers/ios_state.hpp	\
 	istring.cc	\
 	istring.h	\
 	keys.cc		\
@@ -87,8 +91,8 @@ exult_SOURCES =	\
 	party.h		\
 	paths.cc	\
 	paths.h		\
+	headers/pent_include.h	\
 	readnpcs.cc	\
-	ready.h		\
 	rect.h		\
 	schedule.cc	\
 	schedule.h	\
@@ -102,8 +106,8 @@ exult_SOURCES =	\
 	tqueue.h	\
 	txtscroll.cc	\
 	txtscroll.h	\
-	verify.cc \
-	verify.h \
+	verify.cc	\
+	verify.h	\
 	version.cc	\
 	version.h
 
@@ -137,71 +141,146 @@ EXTRA_DIST = 	\
 	autogen.sh \
 	README \
 	FAQ \
+	README.md \
 	README.win32 \
 	README.MacOSX \
 	Makefile.common \
 	Makefile.mingw \
-	Makefile.studio.mingw \
 	Info.plist.in \
-	exult.spec \
-	windrag.cc	\
+	stamp-h.in \
+	windrag.cc \
 	windrag.h \
 	win32/exult.ico \
 	win32/exultico.rc \
 	win32/exultstudio.ico \
 	win32/exultstudioico.rc \
+	win32/exconfig.cc \
+	win32/exconfig.def \
+	win32/exconfig.h \
+	win32/exconfig.rc \
+	win32/exult.exe.manifest \
+	win32/exult_installer.iss \
+	win32/exult_shpplugin_installer.iss \
+	win32/exult_studio.exe.manifest \
+	win32/exult_studio_installer.iss \
+	win32/exult_tools_installer.iss \
+	win32/glib-xp.patch \
+	win32/README-SDL.txt \
 	macosx/exult.icns \
 	macosx/exult_studio_info.plist.in \
-	msvcstuff/expack.vcproj \
-	msvcstuff/Exult.vcproj \
-	msvcstuff/Exult.sln \
-	msvcstuff/Exult_bg_flx.vcproj \
-	msvcstuff/Exult_flx.vcproj \
-	msvcstuff/Exult_si_flx.vcproj \
-	msvcstuff/mklink.vcproj \
-	msvcstuff/msvc_kludges.cc \
-	msvcstuff/msvc_kludges.h \
-	msvcstuff/rip.vcproj \
-	msvcstuff/shp2pcx.vcproj \
-	msvcstuff/splitshp.vcproj \
-	msvcstuff/unistd.h \
-	msvcstuff/wuc.vcproj \
-	msvcstuff/Zip.vcproj \
-	msvcstuff/exconfig/exconfig.cpp \
-	msvcstuff/exconfig/exconfig.def \
-	msvcstuff/exconfig/exconfig.vcproj \
-	msvcstuff/exconfig/exconfig.h \
-	msvcstuff/exconfig/exconfig.rc \
-	msvcstuff/exconfig/resource.h \
-	msvcstuff/exconfig/StdAfx.cpp \
-	msvcstuff/exconfig/StdAfx.h \
-	msvc9/expack.vcproj \
-	msvc9/Exult.vcproj \
-	msvc9/Exult.sln \
-	msvc9/Exult_bg_flx.vcproj \
-	msvc9/Exult_flx.vcproj \
-	msvc9/Exult_si_flx.vcproj \
-	msvc9/mklink.vcproj \
-	msvc9/msvc_kludges.cc \
-	msvc9/msvc_kludges.h \
-	msvc9/rip.vcproj \
-	msvc9/shp2pcx.vcproj \
-	msvc9/splitshp.vcproj \
-	msvc9/unistd.h \
-	msvc9/wuc.vcproj \
-	msvc9/Zip.vcproj \
-	msvc9/exconfig/exconfig.cpp \
-	msvc9/exconfig/exconfig.def \
-	msvc9/exconfig/exconfig.vcproj \
-	msvc9/exconfig/exconfig.h \
-	msvc9/exconfig/exconfig.rc \
-	msvc9/exconfig/resource.h \
-	msvc9/exconfig/StdAfx.cpp \
-	msvc9/exconfig/StdAfx.h \
-	headers/common_types.h \
-	headers/exceptions.h \
-	headers/gamma.h	\
-	headers/pent_include.h \
+	macosx/diskback.png \
+	macosx/DS_Store \
+	macosx/exult_studio.bundle \
+	macosx/exult_studio_entitlements.plist \
+	macosx/exult_studio.icns \
+	macosx/exult_studio_launcher.sh \
+	msvcstuff/vs2019/.gitignore \
+	msvcstuff/vs2019/Exult.sln \
+	msvcstuff/vs2019/Exult.vcxproj \
+	msvcstuff/vs2019/Exult.vcxproj.filters \
+	msvcstuff/vs2019/dirent.h \
+	msvcstuff/vs2019/expack/expack.vcxproj \
+	msvcstuff/vs2019/expack/expack.vcxproj.filters \
+	msvcstuff/vs2019/msvc_include.h \
+	msvcstuff/vs2019/packages.config \
+	msvcstuff/vs2019/unistd.h \
+	ios/Exult.xcodeproj \
+	ios/Exult.xcodeproj/project.pbxproj \
+	ios/GamePadView.h \
+	ios/GamePadView.m \
+	ios/Images/Icon.png \
+	ios/Images/btn.png \
+	ios/Images/btnpressed.png \
+	ios/Images/dpadglass-east.png \
+	ios/Images/dpadglass-north.png \
+	ios/Images/dpadglass-northeast.png \
+	ios/Images/dpadglass-northwest.png \
+	ios/Images/dpadglass-south.png \
+	ios/Images/dpadglass-southeast.png \
+	ios/Images/dpadglass-southwest.png \
+	ios/Images/dpadglass-west.png \
+	ios/Images/dpadglass.png \
+	ios/Images/joypad-glass-east.png \
+	ios/Images/joypad-glass-north.png \
+	ios/Images/joypad-glass-northeast.png \
+	ios/Images/joypad-glass-northwest.png \
+	ios/Images/joypad-glass-south.png \
+	ios/Images/joypad-glass-southeast.png \
+	ios/Images/joypad-glass-southwest.png \
+	ios/Images/joypad-glass-west.png \
+	ios/Images/joypad-glass.png \
+	ios/Images/joythumb-glass.png \
+	ios/Info.plist \
+	ios/Media.xcassets/Contents.json \
+	ios/Media.xcassets/AppIcon.appiconset/Contents.json \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-57x57@1x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-57x57@2x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-72x72@1x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-72x72@2x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-AppStore.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-Small-50x50@1x.png \
+	ios/Media.xcassets/AppIcon.appiconset/Icon-Small-50x50@2x.png \
+	ios/SDL2/dummy \
+	ios/data/dummy \
+	ios/include/config.h \
+	ios/include/ios_utils.h \
+	ios/ios_utils.mm \
+	ios/libmt32emu/dummy \
+	ios/libmt32emu.xcodeproj/project.pbxproj \
+	ios/libogg/dummy \
+	ios/libogg.xcodeproj/project.pbxproj \
+	ios/libvorbis/dummy \
+	ios/libvorbis.xcodeproj/project.pbxproj \
+	mapedit/tools/mockup/LICENCE \
+	mapedit/tools/mockup/Makefile \
+	mapedit/tools/mockup/README \
+	mapedit/tools/mockup/defs.h \
+	mapedit/tools/mockup/main.h \
+	mapedit/tools/mockup/map.png \
+	mapedit/tools/mockup/mappings.txt \
+	mapedit/tools/mockup/mappings_alternative.txt \
+	mapedit/tools/mockup/main.c \
+	mapedit/tools/smooth/AUTHORS \
+	mapedit/tools/smooth/COPYING \
+	mapedit/tools/smooth/ChangeLog \
+	mapedit/tools/smooth/INSTALL \
+	mapedit/tools/smooth/README \
+	mapedit/tools/smooth/config.h \
+	mapedit/tools/smooth/globals.h \
+	mapedit/tools/smooth/image.h \
+	mapedit/tools/smooth/linked.h \
+	mapedit/tools/smooth/param.h \
+	mapedit/tools/smooth/plugin.h \
+	mapedit/tools/smooth/plugins/README \
+	mapedit/tools/smooth/plugins/README.Stream \
+	mapedit/tools/smooth/plugins/plugin_randomize.c \
+	mapedit/tools/smooth/plugins/plugin_smooth.c \
+	mapedit/tools/smooth/plugins/plugin_stream.c \
+	mapedit/tools/smooth/rough.bmp \
+	mapedit/tools/smooth/smooth.c \
+	mapedit/tools/smooth/smooth.h \
+	mapedit/tools/smooth/smooth.sln \
+	mapedit/tools/smooth/smooth.vcproj \
+	mapedit/tools/smooth/smoothed.bmp \
+	mapedit/tools/smooth/config.c \
+	mapedit/tools/smooth/image.c \
+	mapedit/tools/smooth/linked.c \
+	mapedit/tools/smooth/param.c \
+	mapedit/tools/smooth/plugin.c \
 	server/servewin32.cc \
 	server/servewin32.h
 

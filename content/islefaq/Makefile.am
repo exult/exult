@@ -28,10 +28,12 @@ islefaq_DATA = \
 
 islefaqpatchdir = $(islefaqdir)/islefaq/patch
 
-islefaqpatch_DATA = \
+nodist_islefaqpatch_DATA = \
 	patch/usecode	\
 	patch/faces.vga	\
-	patch/shapes.vga	\
+	patch/shapes.vga
+
+islefaqpatch_DATA = \
 	patch/initgame.dat	\
 	patch/ready.dat	\
 	patch/shpdims.dat	\
@@ -41,6 +43,14 @@ islefaqpatch_DATA = \
 	patch/u7ifix65	\
 	patch/u7map	\
 	patch/wihh.dat	
+
+EXTRA_DIST = \
+	Makefile.mingw \
+	$(islefaqpatch_DATA) \
+	$(islefaq_DATA) \
+	$(USECODE_OBJECTS) \
+	$(FACES_VGA_OBJECTS) \
+	$(SHAPES_VGA_OBJECTS)
 
 CLEANFILES = \
 	patch/usecode	\

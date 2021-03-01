@@ -9,6 +9,7 @@ SUBDIRS = . compiler ucxt
 noinst_LTLIBRARIES = libusecode.la
 
 libusecode_la_SOURCES = \
+	opcodes.h	\
 	bgintrinsics.h	\
 	siintrinsics.h	\
 	sibetaintrinsics.h	\

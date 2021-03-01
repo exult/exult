@@ -41,6 +41,7 @@ libu7file_la_SOURCES =	\
 	msgfile.h
 
 EXTRA_DIST = 		\
+	module.mk	\
 	README
 
 CLEANFILES = *~
