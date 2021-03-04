@@ -125,8 +125,12 @@ void Shape_draw::draw_shape_centered(
     int framenum
 ) {
 	iwin->fill8(255);       // Background (transparent) color.
-	if (shapenum < 0 || shapenum >= ifile->get_num_shapes()
-	        || framenum >= ifile->get_num_frames(shapenum))
+	if (shapenum < 0 || shapenum >= ifile->get_num_shapes())
+		return;
+	int num_frames = ifile->get_num_frames(shapenum);
+	if ((framenum <  0 || framenum >= num_frames) &&
+	    (num_frames > 32 ||
+	     framenum < 32 || framenum >= (32 + num_frames)))
 		return;
 	Shape_frame *shape = ifile->get_shape(shapenum, framenum);
 	if (!shape || shape->is_empty())
