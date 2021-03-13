@@ -1629,7 +1629,6 @@ Clouds_effect::Clouds_effect(
 	num_clouds = 2 + rand() % 5; // Pick #.
 	if (overcast)
 		num_clouds += rand() % 2;
-	clouds = new Cloud *[num_clouds];
 	// Figure wind direction.
 	int dx = rand() % 5 - 2;
 	int dy = rand() % 5 - 2;
@@ -1645,7 +1644,7 @@ Clouds_effect::Clouds_effect(
 			deltax += deltax / 2;
 			deltay += deltay / 2;
 		}
-		clouds[i] = new Cloud(deltax, deltay);
+		clouds.emplace_back(std::make_unique<Cloud>(deltax, deltay));
 	}
 }
 
@@ -1666,8 +1665,8 @@ void Clouds_effect::handle_event(
 	}
 	int w = gwin->get_width();
 	int h = gwin->get_height();
-	for (int i = 0; i < num_clouds; i++)
-		clouds[i]->next(gwin, curtime, w, h);
+	for (auto& cloud : clouds)
+		cloud->next(gwin, curtime, w, h);
 	gwin->get_tqueue()->add(curtime + delay, this, udata);
 }
 
@@ -1678,8 +1677,8 @@ void Clouds_effect::handle_event(
 void Clouds_effect::paint(
 ) {
 	if (!gwin->is_main_actor_inside())
-		for (int i = 0; i < num_clouds; i++)
-			clouds[i]->paint();
+		for (auto& cloud : clouds)
+			cloud->paint();
 }
 
 /**
@@ -1687,7 +1686,6 @@ void Clouds_effect::paint(
  */
 
 Clouds_effect::~Clouds_effect() {
-	delete [] clouds;
 	if (overcast)
 		Game_window::get_instance()->get_clock()->set_overcast(false);
 }

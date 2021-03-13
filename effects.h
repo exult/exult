@@ -350,7 +350,7 @@ public:
  */
 class Clouds_effect : public Weather_effect {
 	int num_clouds;
-	Cloud **clouds;         // ->clouds.
+	std::vector<std::unique_ptr<Cloud>> clouds;	
 	bool overcast;
 public:
 	Clouds_effect(int duration, int delay = 0, Game_object *egg = nullptr, int n = -1);
