@@ -145,13 +145,20 @@ void Effects_manager::remove_text_effect(
 }
 
 /**
- *  Remove a sprite from the chain and delete it.
+ *  Remove a sprite from the chain and return it to caller
  */
 
-void Effects_manager::remove_effect(
+std::unique_ptr<Special_effect> Effects_manager::remove_effect(
     Special_effect *effect
 ) {
-	effects.remove_if([effect](const auto& ef) { return ef.get() == effect; });
+	auto toDelete = std::find_if(std::begin(effects), std::end(effects),
+			[effect](const auto& ef) { return ef.get() == effect; });
+	decltype(effects)::value_type result;
+	if (toDelete != effects.end()) {
+		result = std::move(*toDelete);	
+		effects.erase(toDelete);
+	}
+	return result;
 }
 
 /**
@@ -362,7 +369,7 @@ void Sprites_effect::handle_event(
 	if (!reps || (reps < 0 && frame_num == frames)) { // At end?
 		// Remove & delete this.
 		gwin->set_all_dirty();
-		eman->remove_effect(this);
+		auto ownHandle = eman->remove_effect(this);
 		return;
 	}
 	add_dirty(frame_num);       // Clear out old.
@@ -798,7 +805,7 @@ void Projectile_effect::handle_event(
 		}
 		add_dirty();
 		skip_render = true;
-		eman->remove_effect(this);
+		auto ownHandle = eman->remove_effect(this);
 		return;
 	}
 	add_dirty();            // Paint new spot/frame.
@@ -943,7 +950,8 @@ void Homing_projectile::handle_event(
 			channel = -1;
 		}
 		gwin->set_all_dirty();
-		eman->remove_effect(this);
+		auto ownHandle = eman->remove_effect(this);
+		return;
 	}
 }
 
@@ -1410,8 +1418,10 @@ void Storm_effect::handle_event(
 		start = false;
 		// Nothing more to do but end.
 		gwin->get_tqueue()->add(stop_time, this, udata);
-	} else              // Must be time to stop.
-		eman->remove_effect(this);
+	} else {             // Must be time to stop.
+		auto ownHandle = eman->remove_effect(this);
+		return;
+	}
 }
 
 /**
@@ -1440,8 +1450,10 @@ void Snowstorm_effect::handle_event(
 		start = false;
 		// Nothing more to do but end.
 		gwin->get_tqueue()->add(stop_time, this, udata);
-	} else              // Must be time to stop.
-		eman->remove_effect(this);
+	} else {             // Must be time to stop.
+		auto ownHandle = eman->remove_effect(this);
+		return;
+	}
 }
 
 /**
@@ -1470,8 +1482,10 @@ void Sparkle_effect::handle_event(
 		start = false;
 		// Nothing more to do but end.
 		gwin->get_tqueue()->add(stop_time, this, udata);
-	} else              // Must be time to stop.
-		eman->remove_effect(this);
+	} else {             // Must be time to stop.
+		auto ownHandle = eman->remove_effect(this);
+		return;
+	}
 }
 
 /**
@@ -1500,8 +1514,10 @@ void Fog_effect::handle_event(unsigned long curtime, uintptr udata) {
 		// Nothing more to do but end.
 		gwin->get_tqueue()->add(stop_time, this, udata);
 		gclock->set_fog(true);
-	} else              // Must be time to stop.
-		eman->remove_effect(this);
+	} else {             // Must be time to stop.
+		auto ownHandle = eman->remove_effect(this);
+		return;
+	}
 }
 
 /**
@@ -1659,7 +1675,7 @@ void Clouds_effect::handle_event(
 	const int delay = 100;
 	if (curtime >= stop_time) {
 		// Time to stop.
-		eman->remove_effect(this);
+		auto ownHandle = eman->remove_effect(this);
 		gwin->set_all_dirty();
 		return;
 	}
@@ -1769,7 +1785,8 @@ void Fire_field_effect::handle_event(
 	if (frnum == 0) {       // All done?
 	    if (field_obj)
 		    field_obj->remove_this();
-		eman->remove_effect(this);
+		auto ownHandle = eman->remove_effect(this);
+		return;
 	} else {
 		if (frnum > 3) {    // Starting to wind down?
 			field_obj->as_egg()->stop_animation();

@@ -61,7 +61,7 @@ public:
 	void add_effect(std::unique_ptr<Special_effect> effect);
 	void remove_text_effect(Game_object *item);
 	// Remove text item & delete it.
-	void remove_effect(Special_effect *effect);
+	std::unique_ptr<Special_effect> remove_effect(Special_effect *effect);
 	void remove_text_effect(Text_effect *txt);
 	void remove_all_effects(bool repaint = false);
 	void remove_text_effects();
