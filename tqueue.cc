@@ -32,12 +32,10 @@
 
 void Time_queue::clear(
 ) {
-	while (!data.empty()) {
-		Queue_entry ent = data.front();
-		data.pop_front();
-		Time_sensitive *obj = ent.handler;
-		obj->dequeue();
+	for (auto& ent : data) {
+		ent.handler->dequeue();
 	}
+	data.clear();
 }
 
 /*
@@ -56,7 +54,8 @@ void Time_queue::add(
 		t -= SDL_GetTicks() - pause_time;
 	newent.set(t, obj, ud);
 	auto insertionPoint = 
-		std::find_if(data.begin(), data.end(), [&](const auto& el) { return newent < el; });
+		std::find_if(data.begin(), data.end(),
+			[&](const auto& el) { return newent < el; });
 	data.insert(insertionPoint, newent);
 }
 
@@ -73,15 +72,14 @@ bool    operator <(const Queue_entry &q1, const Queue_entry &q2) {
 int Time_queue::remove(
     Time_sensitive *obj
 ) {
-	if (data.empty())
+	auto toRemove = std::find_if(data.begin(), data.end(),
+			[obj](const auto& el) { return el.handler == obj; });
+	if (toRemove == data.end()) {
 		return 0;
-	for (auto it = data.begin();
-	        it != data.end(); ++it) {
-		if (it->handler == obj) {
-			obj->queue_cnt--;
-			data.erase(it);
-			return 1;
-		}
+	} else {
+		(*toRemove).handler->queue_cnt--;
+		data.erase(toRemove);
+		return 1;
 	}
 	return 0;         // Not found.
 }
@@ -118,7 +116,9 @@ int Time_queue::remove(
 int Time_queue::find(
     Time_sensitive const *obj
 ) const {
-	return std::find_if(data.begin(), data.end(), [&](const auto& el) {return el.handler==obj;}) != data.end();
+	return std::find_if(data.begin(), data.end(),
+			[&](const auto& el) {return el.handler==obj;})
+		!= data.end();
 }
 
 /*
@@ -131,7 +131,8 @@ long Time_queue::find_delay(
     Time_sensitive const *obj,
     uint32 curtime
 ) const {
-	auto found = std::find_if(data.begin(), data.end(), [&](const auto& el){return obj == el.handler;});
+	auto found = std::find_if(data.begin(), data.end(),
+		[&](const auto& el){return obj == el.handler;});
 	if (found == data.end()) {
 		return -1;
 	}
