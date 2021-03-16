@@ -22,7 +22,6 @@
 #define TQUEUE_H    1
 
 
-#include <vector>
 #include <list>
 
 #include "common_types.h"

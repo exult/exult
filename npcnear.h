@@ -22,6 +22,7 @@
 #define NPCNEAR_H   1
 
 #include "tqueue.h"
+#include <vector>
 
 class Game_window;
 class Npc_actor;
