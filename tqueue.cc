@@ -215,9 +215,13 @@ int Time_queue_iterator::operator()(
     Time_sensitive  *&obj,      // Main object.
     uintptr &data          // Data that was added with it.
 ) {
-	while (iter != tqueue->data.end() && this_obj &&
-	        (*iter).handler != this_obj)
-		++iter;
+	auto remain = iter;
+	iter = this_obj == nullptr
+		? remain
+		: std::find_if(iter, tqueue->data.end(), [&](const auto& el) {
+			return el.handler == this_obj;
+		}
+	);
 	if (iter == tqueue->data.end())
 		return 0;
 	obj = (*iter).handler;      // Return fields.
