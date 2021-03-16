@@ -55,18 +55,9 @@ void Time_queue::add(
 		// Messy, but we need to fix time.
 		t -= SDL_GetTicks() - pause_time;
 	newent.set(t, obj, ud);
-	if (data.empty()) {
-		data.push_back(newent);
-		return;
-	}
-	for (auto it = data.begin();
-	        it != data.end(); ++it) {
-		if (newent < *it) {
-			data.insert(it, newent);
-			return;
-		}
-	}
-	data.push_back(newent);
+	auto insertionPoint = 
+		std::find_if(data.begin(), data.end(), [&](const auto& el) { return newent < el; });
+	data.insert(insertionPoint, newent);
 }
 
 bool    operator <(const Queue_entry &q1, const Queue_entry &q2) {
@@ -127,13 +118,7 @@ int Time_queue::remove(
 int Time_queue::find(
     Time_sensitive const *obj
 ) const {
-	if (data.empty())
-		return 0;
-	for (const auto& it : data) {
-		if (it.handler == obj)
-			return 1;
-	}
-	return 0;
+	return std::find_if(data.begin(), data.end(), [&](const auto& el) {return el.handler==obj;}) != data.end();
 }
 
 /*
@@ -146,17 +131,15 @@ long Time_queue::find_delay(
     Time_sensitive const *obj,
     uint32 curtime
 ) const {
-	if (data.empty())
+	auto found = std::find_if(data.begin(), data.end(), [&](const auto& el){return obj == el.handler;});
+	if (found == data.end()) {
 		return -1;
-	for (const auto& it : data) {
-		if (it.handler == obj) {
-			if (pause_time) // Watch for case when paused.
-				curtime = pause_time;
-			long delay = it.time - curtime;
-			return delay >= 0 ? delay : 0;
-		}
 	}
-	return -1;
+	if (pause_time) { // Watch for case when paused.
+		curtime = pause_time;
+	}
+	long delay = (*found).time - curtime;
+	return delay >= 0 ? delay : 0;
 }
 
 /*
@@ -190,21 +173,18 @@ void Time_queue::activate_always(
 ) {
 	if (data.empty())
 		return;
-	Queue_entry ent;
-	for (auto it = data.begin();
-	        it != data.end() && !(curtime < (*it).time);) {
-		auto next = it;
-		++next;         // Get ->next in case we erase.
-		ent = *it;
+	auto newStart = std::stable_partition(data.begin(), data.end(),
+		[&] (const auto& el) { return !(curtime < el.time); });
+
+	std::for_each(data.begin(), newStart, [curtime](auto& ent) {
 		Time_sensitive *obj = ent.handler;
 		if (obj->always) {
 			obj->queue_cnt--;
 			uintptr udata = ent.udata;
-			data.erase(it);
 			obj->handle_event(curtime, udata);
 		}
-		it = next;
-	}
+	});
+	data.erase(data.begin(), newStart);
 }
 
 /*
