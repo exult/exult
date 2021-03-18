@@ -79,7 +79,7 @@ struct Equip_row_widgets;
 class Shape_file_set;
 class Shape_file_info;
 class Shape_group_file;
-class Shape_draw;
+class Shape_single;
 class Object_browser;
 class Shape_group;
 class Locator;
@@ -125,6 +125,7 @@ private:
 	Shape_file_info     *fontfile;  // 'font.vga'.
 	Shape_file_info     *gumpfile;  // 'gumps.vga'.
 	Shape_file_info     *spritefile;    // 'sprites.vga'.
+	Shape_file_info     *paperdolfile;  // 'paperdol.vga'.
 	Object_browser      *browser;
 	std::unique_ptr<unsigned char[]> palbuf;    // 3*256 rgb's, each 0-63.
 	// Barge editor:
@@ -133,24 +134,37 @@ private:
 	guint           barge_status_id;
 	// Egg editor:
 	GtkWidget       *eggwin;// Egg window.
-	Shape_draw      *egg_monster_draw;
+	Shape_single    *egg_monster_single;
+	Shape_single    *egg_missile_single;
 	int             egg_ctx;
 	guint           egg_status_id;
 	// Npc editor:
 	GtkWidget       *npcwin;
-	Shape_draw      *npc_draw, *npc_face_draw;
+	Shape_single    *npc_single, *npc_face_single;
 	int             npc_ctx;
 	guint           npc_status_id;
 	// Object editor:
 	GtkWidget       *objwin;
-	Shape_draw      *obj_draw;
+	Shape_single    *obj_single;
 	// Container editor:
 	GtkWidget       *contwin;
-	Shape_draw      *cont_draw;
+	Shape_single    *cont_single;
 	// Shape info. editor:
 	GtkWidget       *shapewin;
-	Shape_draw      *shape_draw, *gump_draw,
-	                *body_draw, *explosion_draw;
+	Shape_single    *shape_single, *gump_single,
+	                *body_single, *explosion_single;
+	Shape_single    *weapon_family_single, *weapon_projectile_single;
+	Shape_single    *ammo_family_single, *ammo_sprite_single;
+	Shape_single    *cntrules_shape_single;
+	Shape_single    *frameflags_frame_single, *effhps_frame_single,
+	                *framenames_frame_single, *frameusecode_frame_single;
+	Shape_single    *objpaperdoll_wframe_single, *objpaperdoll_spotframe_single;
+	Shape_single    *brightness_frame_single, *warmth_frame_single;
+	Shape_single    *npcpaperdoll_aframe_single, *npcpaperdoll_atwohanded_single,
+	                *npcpaperdoll_astaff_single, *npcpaperdoll_bframe_single,
+	                *npcpaperdoll_hframe_single, *npcpaperdoll_hhelm_single;
+	Shape_single    *objpaperdoll_frame0_single, *objpaperdoll_frame1_single,
+	                *objpaperdoll_frame2_single, *objpaperdoll_frame3_single;
 	GtkWidget       *equipwin;
 	// Map locator:
 	Locator         *locwin;
@@ -291,20 +305,18 @@ public:
 	int init_obj_window(unsigned char *data, int datalen);
 	int save_obj_window();
 	void rotate_obj();
-	void show_obj_shape(int x = 0, int y = 0, int w = -1, int h = -1);
-	void set_obj_shape(int shape, int frame);
-	static gboolean on_obj_draw_expose_event(
-	    GtkWidget *widget, cairo_t *cairo, gpointer data);
+#ifdef _WIN32
+	static void Obj_shape_dropped(int shape, int frame, int x, int y, void *data);
+#endif
 	// Containers:
 	void open_cont_window(unsigned char *data, int datalen);
 	void close_cont_window();
 	int init_cont_window(unsigned char *data, int datalen);
 	int save_cont_window();
 	void rotate_cont();
-	void show_cont_shape(int x = 0, int y = 0, int w = -1, int h = -1);
-	void set_cont_shape(int shape, int frame);
-	static gboolean on_cont_draw_expose_event(
-	    GtkWidget *widget, cairo_t *cairo, gpointer data);
+#ifdef _WIN32
+	static void Cont_shape_dropped(int shape, int frame, int x, int y, void *data);
+#endif
 	// Barges:
 	void open_barge_window(unsigned char *data = nullptr, int datalen = 0);
 	void close_barge_window();
@@ -315,10 +327,9 @@ public:
 	void close_egg_window();
 	int init_egg_window(unsigned char *data, int datalen);
 	int save_egg_window();
-	void show_egg_monster(int x = 0, int y = 0, int w = -1, int h = -1);
-	void set_egg_monster(int shape, int frame);
-	static gboolean on_egg_monster_draw_expose_event(
-	    GtkWidget *widget, cairo_t *cairo, gpointer data);
+#ifdef _WIN32
+	static void Egg_monster_dropped(int shape, int frame, int x, int y, void *data);
+#endif
 	// NPC's:
 	void open_npc_window(unsigned char *data = nullptr, int datalen = 0);
 	void close_npc_window();
@@ -326,22 +337,18 @@ public:
 	int init_npc_window(unsigned char *data, int datalen);
 	int save_npc_window();
 	void update_npc(); // updates the npc browser if it is open
-	void show_npc_shape(int x = 0, int y = 0, int w = -1, int h = -1);
-	void set_npc_shape(int shape, int frame);
-	void show_npc_face(int x = 0, int y = 0, int w = -1, int h = -1);
-	void set_npc_face(int shape, int frame);
 	static void schedule_btn_clicked(GtkWidget *btn, gpointer data);
-	static gboolean on_npc_draw_expose_event(
-	    GtkWidget *widget, cairo_t *cairo, gpointer data);
-	static gboolean on_npc_face_draw_expose_event(
-	    GtkWidget *widget, cairo_t *cairo, gpointer data);
+#ifdef _WIN32
+	static void Npc_shape_dropped(int shape, int frame, int x, int y, void *data);
+	static void Npc_face_dropped(int shape, int frame, int x, int y, void *data);
+#endif
 	// Shapes:
+	GdkPixbuf *shape_image(     // The GdkPixbuf should be g_object_unrefed.
+	    Vga_file *shpfile, int shnum, int frnum, bool transparent);
 	void init_equip_window(int recnum);
 	void save_equip_window();
 	void open_equip_window(int recnum);
 	void close_equip_window();
-	void show_equip_shape(Equip_row_widgets *eq,
-	                      int x = 0, int y = 0, int w = -1, int h = -1);
 	void new_equip_record();
 	void set_shape_notebook_frame(int frnum);
 	void init_shape_notebook(const Shape_info &info, GtkWidget *book,
@@ -352,19 +359,6 @@ public:
 	                       const char *shname, Shape_info *info = nullptr);
 	void save_shape_window();
 	void close_shape_window();
-	void show_shinfo_shape(int x = 0, int y = 0, int w = -1, int h = -1);
-	void show_shinfo_gump(int x = 0, int y = 0, int w = -1, int h = -1);
-	void show_shinfo_npcgump(int x = 0, int y = 0, int w = -1, int h = -1);
-	void show_shinfo_body(int x = 0, int y = 0, int w = -1, int h = -1);
-	void show_shinfo_explosion(int x = 0, int y = 0, int w = -1, int h = -1);
-	static gboolean on_shinfo_draw_expose_event(
-	    GtkWidget *widget, cairo_t *cairo, gpointer data);
-	static gboolean on_shinfo_gump_draw_expose_event(
-	    GtkWidget *widget, cairo_t *cairo, gpointer data);
-	static gboolean on_shinfo_body_draw_expose_event(
-	    GtkWidget *widget, cairo_t *cairo, gpointer data);
-	static gboolean on_shinfo_explosion_draw_expose_event(
-	    GtkWidget *widget, cairo_t *cairo, gpointer data);
 	// Map locator.
 	void open_locator_window();
 	// Combo editor.

@@ -151,7 +151,7 @@ void Shape_draw::draw_shape_centered(
 	}
 	else {
 		draw_shape(shape, (winw -  shape->get_width()) / 2,
-	                          (winh - shape->get_height()) / 2);
+		                  (winh - shape->get_height()) / 2);
 	}
 }
 
@@ -262,7 +262,7 @@ void Shape_draw::drag_data_received(
  *  Set to accept drops from drag-n-drop of a shape.
  */
 
-void Shape_draw::enable_drop(
+gulong Shape_draw::enable_drop(
     Drop_callback callback,     // Call this when shape dropped.
     void *udata         // Passed to callback.
 ) {
@@ -283,10 +283,11 @@ void Shape_draw::enable_drop(
 	gtk_drag_dest_set(draw, GTK_DEST_DEFAULT_ALL, tents, 3,
 	                  static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
 
-	g_signal_connect(G_OBJECT(draw), "drag-data-received",
-	                 G_CALLBACK(drag_data_received), this);
+	return g_signal_connect(G_OBJECT(draw), "drag-data-received",
+	                        G_CALLBACK(drag_data_received), this);
 #else
 	ignore_unused_variable_warning(callback, udata);
+	return 0;
 #endif
 }
 
@@ -356,3 +357,254 @@ void Shape_draw::start_drag(
 	                                1, event, -1, -1);
 }
 
+/*
+ *  Implement class Shape_single
+ */
+
+static inline int extract_value(GtkWidget *widget) {
+	if (widget) {
+		if (GTK_IS_SPIN_BUTTON(widget)) {
+			return gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+		}
+		if (GTK_IS_ENTRY(widget)) {
+			return ExultStudio::get_num_entry(widget, 0);
+		}
+		if (GTK_IS_FRAME(widget)) {
+			return reinterpret_cast<sintptr>(
+			    g_object_get_data(G_OBJECT(widget), "user_data"));
+		}
+	}
+	return -1;
+}
+
+Shape_single::Shape_single(
+    GtkWidget *shp, GtkWidget *shpnm, bool (*shvalid)(int),
+    GtkWidget *frm, int vgnum, Vga_file *vg,
+    const unsigned char *palbuf, GtkWidget *drw,
+    bool hdd) :
+    Shape_draw(vg, palbuf, drw),
+    shape(shp), shapename(shpnm), shapevalid(shvalid),
+    frame(frm), vganum(vgnum),
+    hide(hdd),
+    shape_connect(0), frame_connect(0), draw_connect(0), drop_connect(0), hide_connect(0)
+{
+	if (shape && (GTK_IS_SPIN_BUTTON(shape) || GTK_IS_ENTRY(shape))) {
+		shape_connect = g_signal_connect(G_OBJECT(shape), "changed",
+		    G_CALLBACK(Shape_single::on_shape_changed), this);
+	}
+	if (frame && (GTK_IS_SPIN_BUTTON(frame) || GTK_IS_ENTRY(frame))) {
+		frame_connect = g_signal_connect(G_OBJECT(frame), "changed",
+		    G_CALLBACK(Shape_single::on_frame_changed), this);
+	}
+	draw_connect = g_signal_connect(G_OBJECT(draw), "draw",
+		G_CALLBACK(Shape_single::on_draw_expose_event), this);
+	if (vganum >= 0) {
+		drop_connect = enable_drop(Shape_single::on_shape_dropped, this);
+	}
+	if (hide) {
+		if (frame) {
+			if (GTK_IS_SPIN_BUTTON(frame)) {
+				hide_connect = g_signal_connect(G_OBJECT(frame), "state-flags-changed",
+				    G_CALLBACK(Shape_single::on_state_changed), this);
+			}
+		} else {
+			if (GTK_IS_SPIN_BUTTON(shape)) {
+				hide_connect = g_signal_connect(G_OBJECT(shape), "state-flags-changed",
+				    G_CALLBACK(Shape_single::on_state_changed), this);
+			}
+		}
+	}
+}
+
+Shape_single::~Shape_single(
+) {
+	if (shape_connect &&
+	    g_signal_handler_is_connected(G_OBJECT(shape), shape_connect)) {
+		g_signal_handler_disconnect(G_OBJECT(shape), shape_connect);
+		shape_connect = 0;
+	}
+	if (frame_connect &&
+	    g_signal_handler_is_connected(G_OBJECT(frame), frame_connect)) {
+		g_signal_handler_disconnect(G_OBJECT(frame), frame_connect);
+		frame_connect = 0;
+	}
+	if (draw_connect &&
+	    g_signal_handler_is_connected(G_OBJECT(draw), draw_connect)) {
+		g_signal_handler_disconnect(G_OBJECT(draw), draw_connect);
+		draw_connect = 0;
+	}
+	if (drop_connect &&
+	    g_signal_handler_is_connected(G_OBJECT(draw), drop_connect)) {
+		g_signal_handler_disconnect(G_OBJECT(draw), drop_connect);
+		drop_connect = 0;
+	}
+	if (hide_connect &&
+	    g_signal_handler_is_connected(G_OBJECT(frame ? frame : shape), hide_connect)) {
+		g_signal_handler_disconnect(G_OBJECT(frame ? frame : shape), hide_connect);
+		hide_connect = 0;
+	}
+}
+
+void Shape_single::on_shape_changed(
+    GtkWidget *widget, gpointer user_data
+) {
+	ignore_unused_variable_warning(widget);
+	auto *single = static_cast<Shape_single *>(user_data);
+	if (single->shapename && GTK_IS_LABEL(single->shapename) &&
+	    GTK_IS_SPIN_BUTTON(widget)) {
+		int shnum = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+		if ((shnum == 0) && !(single->shapevalid(0))) shnum = -1;
+		const char *nm = ExultStudio::get_instance()->get_shape_name(shnum);
+		gtk_label_set_text(GTK_LABEL(single->shapename), nm ? nm : "");
+	}
+	if (single->hide && !(single->frame) && !(single->hide_connect) &&
+	    (GTK_IS_ENTRY(widget))) {
+		if (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) > 0) {
+			gtk_widget_show(single->draw);
+		} else {
+			gtk_widget_hide(single->draw);
+		}
+	}
+	single->render();
+}
+
+void Shape_single::on_frame_changed(
+    GtkWidget *widget, gpointer user_data
+) {
+	ignore_unused_variable_warning(widget);
+	auto *single = static_cast<Shape_single *>(user_data);
+	if (single->hide && !(single->hide_connect) &&
+	    (GTK_IS_ENTRY(widget))) {
+		if (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) > 0) {
+			gtk_widget_show(single->draw);
+		} else {
+			gtk_widget_hide(single->draw);
+		}
+	}
+	single->render();
+}
+
+void Shape_single::on_state_changed(
+    GtkWidget *widget, GtkStateFlags flags, gpointer user_data
+) {
+	ignore_unused_variable_warning(flags);
+	auto *single = static_cast<Shape_single *>(user_data);
+	if (!(gtk_widget_get_state_flags(widget) & GTK_STATE_FLAG_INSENSITIVE)) {
+		gtk_widget_show(single->draw);
+	} else {
+		gtk_widget_hide(single->draw);
+	}
+	single->render();
+}
+
+gboolean Shape_single::on_draw_expose_event(
+    GtkWidget *widget, cairo_t  *cairo, gpointer user_data
+) {
+	ignore_unused_variable_warning(widget);
+	auto *single = static_cast<Shape_single *>(user_data);
+	GdkRectangle area = { 0, 0, 0, 0 };
+	gdk_cairo_get_clip_rectangle(cairo, &area);
+	single->set_graphic_context(cairo);
+	single->configure();
+	int shnum = 0, frnum = 0;
+	if (single->shape) {
+		shnum = extract_value(single->shape);
+	}
+	if (single->vganum == U7_SHAPE_SPRITES && shnum >= 0 && single->ifile) {
+		frnum = single->ifile->get_num_frames(shnum) / 2;
+	}
+	if (single->frame) {
+		frnum = extract_value(single->frame);
+	}
+	if ((shnum == 0) && !(single->shapevalid(0))) shnum = -1;
+	single->draw_shape_centered(shnum, frnum);
+	single->show(area.x, area.y, area.width, area.height);
+	single->set_graphic_context(nullptr);
+	return TRUE;
+}
+
+void Shape_single::on_shape_dropped(
+    int filenum, int shapenum, int framenum, gpointer user_data
+) {
+	auto *single = static_cast<Shape_single *>(user_data);
+	if (filenum == single->vganum) {
+		if ((single->shape) && (single->shapevalid(shapenum))) {
+			if (GTK_IS_SPIN_BUTTON(single->shape)) {
+				gtk_spin_button_set_value(GTK_SPIN_BUTTON(single->shape), shapenum);
+			} else if (GTK_IS_ENTRY(single->shape)) {
+				char *txt = g_strdup_printf("%d", shapenum);
+				gtk_entry_set_text(GTK_ENTRY(single->shape), txt);
+				g_free(txt);
+			} else if (GTK_IS_FRAME(single->shape)) {
+				g_object_set_data(G_OBJECT(single->shape), "user_data",
+				    reinterpret_cast<gpointer>(uintptr(shapenum)));
+				char *label = g_strdup_printf("Face #%d", shapenum);
+				gtk_frame_set_label(GTK_FRAME(single->shape), label);
+				g_free(label);
+			}
+		}
+		if (single->frame &&
+		    ((framenum >= 0 &&
+		      framenum <  single->ifile->get_num_frames(shapenum)) ||
+		     (single->ifile->get_num_frames(shapenum) <= 32 &&
+		      framenum >= 32 &&
+		      framenum < (32 + single->ifile->get_num_frames(shapenum))))) {
+			if (GTK_IS_SPIN_BUTTON(single->frame)) {
+				gtk_spin_button_set_value(GTK_SPIN_BUTTON(single->frame), framenum);
+			} else if (GTK_IS_ENTRY(single->frame)) {
+				char *txt = g_strdup_printf("%d", framenum);
+				gtk_entry_set_text(GTK_ENTRY(single->frame), txt);
+				g_free(txt);
+			}
+		}
+	}
+}
+
+/*
+ *  Build an Image out of a Shape
+ */
+
+GdkPixbuf *ExultStudio::shape_image(
+    Vga_file *shpfile,
+    int shnum, int frnum,
+    bool transparent
+) {
+	if (shnum < 0)
+		return nullptr;
+	if (frnum < 0)
+		return nullptr;
+	Shape_frame *shape = shpfile->get_shape(shnum, frnum);
+	if (!shape)
+		return nullptr;
+	unsigned char *local_palbuf = palbuf.get();
+	if (!local_palbuf)
+		return nullptr;
+	int w = shape->get_width();
+	int h = shape->get_height();
+	int xright = shape->get_xright();
+	int ybelow = shape->get_ybelow();
+	Image_buffer8 tbuf(w, h);   // Create buffer to render to.
+	tbuf.fill8(0xff);       // Fill with 'transparent' pixel.
+	unsigned char *tbits = tbuf.get_bits();
+	shape->paint(&tbuf, w - 1 - xright, h - 1 - ybelow);
+	// Put shape on a pixmap.
+	GdkPixbuf *pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, transparent, 8, w, h);
+	guchar *pixels = gdk_pixbuf_get_pixels(pixbuf);
+	int rstride = gdk_pixbuf_get_rowstride(pixbuf);
+	int pstride = gdk_pixbuf_get_n_channels(pixbuf);
+	for (int y = 0; y < h; y++) for (int x = 0; x < w ; x++) {
+			guchar *t = pixels + y * rstride + x * pstride;
+			guchar  s = tbits  [ y * w       + x ];
+			if (transparent) {
+				t[0] = (s == 255 ? 0 : (4 * local_palbuf[3 * s    ]) & 255);
+				t[1] = (s == 255 ? 0 : (4 * local_palbuf[3 * s + 1]) & 255);
+				t[2] = (s == 255 ? 0 : (4 * local_palbuf[3 * s + 2]) & 255);
+				t[3] = (s == 255 ? 0 : 255);
+			} else {
+				t[0] = ((4 * local_palbuf[3 * s    ]) & 255);
+				t[1] = ((4 * local_palbuf[3 * s + 1]) & 255);
+				t[2] = ((4 * local_palbuf[3 * s + 2]) & 255);
+			}
+		}
+	return pixbuf;
+}

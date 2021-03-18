@@ -3188,7 +3188,6 @@
                             <property name="label" translatable="yes">Files</property>
                             <property name="justify">center</property>
                           </object>
-                          <packing></packing>
                         </child>
                         <child>
                           <object class="GtkFrame" id="groups_frame">
@@ -4145,7 +4144,7 @@
                                     <property name="vexpand">False</property>
                                     <property name="primary-icon-activatable">False</property>
                                     <property name="secondary-icon-activatable">False</property>
-                                    <signal name="focus-out-event" handler="on_monst_shape_focus_out_event" swapped="no"/>
+                                    <!-- <signal name="focus-out-event" handler="on_monst_shape_focus_out_event" swapped="no"/> -->
                                   </object>
                                 </child>
                                 <child type="label">
@@ -4259,7 +4258,6 @@
                 <property name="label" translatable="yes">Monster</property>
                 <property name="justify">center</property>
               </object>
-              <packing></packing>
             </child>
             <child>
               <object class="GtkBox" id="vbox8">
@@ -4736,17 +4734,45 @@
                     <property name="vexpand">False</property>
                     <property name="label-xalign">0</property>
                     <child>
-                      <object class="GtkEntry" id="missile_shape">
+                      <object class="GtkBox" id="missile_shape_box">
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="valign">center</property>
+                        <property name="can-focus">False</property>
                         <property name="margin-start">4</property>
                         <property name="margin-end">4</property>
                         <property name="margin-top">2</property>
                         <property name="margin-bottom">2</property>
-                        <property name="vexpand">False</property>
-                        <property name="primary-icon-activatable">False</property>
-                        <property name="secondary-icon-activatable">False</property>
+                        <property name="orientation">horizontal</property>
+                        <child>
+                          <object class="GtkEntry" id="missile_shape">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="valign">center</property>
+                            <property name="margin-start">4</property>
+                            <property name="margin-end">4</property>
+                            <property name="margin-top">2</property>
+                            <property name="margin-bottom">2</property>
+                            <property name="vexpand">False</property>
+                            <property name="primary-icon-activatable">False</property>
+                            <property name="secondary-icon-activatable">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkDrawingArea" id="missile_draw">
+                            <property name="width-request">40</property>
+                            <property name="height-request">40</property>
+                            <property name="visible">False</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                            <property name="margin-start">4</property>
+                            <property name="margin-end">4</property>
+                            <property name="margin-top">2</property>
+                            <property name="margin-bottom">2</property>
+                          </object>
+                          <packing>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
                       </object>
                     </child>
                     <child type="label">
@@ -6230,7 +6256,7 @@ Coordinates</property>
                             <property name="vexpand">False</property>
                             <property name="primary-icon-activatable">False</property>
                             <property name="secondary-icon-activatable">False</property>
-                            <signal name="focus-out-event" handler="on_npc_shape_focus_out_event" swapped="no"/>
+                            <!-- <signal name="focus-out-event" handler="on_npc_shape_focus_out_event" swapped="no"/> -->
                           </object>
                         </child>
                         <child type="label">
@@ -6901,7 +6927,6 @@ Coordinates</property>
                 <property name="label" translatable="yes">Properties</property>
                 <property name="justify">center</property>
               </object>
-              <packing></packing>
             </child>
             <child>
               <!-- n-columns=3 n-rows=11 -->
@@ -10315,7 +10340,7 @@ Coordinates</property>
                         <property name="secondary-icon-activatable">False</property>
                         <property name="adjustment">adjustment104</property>
                         <property name="climb-rate">1</property>
-                        <signal name="changed" handler="on_obj_shape_changed" swapped="no"/>
+                        <!-- <signal name="changed" handler="on_obj_shape_changed" swapped="no"/> -->
                       </object>
                     </child>
                     <child type="label">
@@ -10359,7 +10384,7 @@ Coordinates</property>
                         <property name="adjustment">adjustment103</property>
                         <property name="climb-rate">1</property>
                         <property name="wrap">True</property>
-                        <signal name="changed" handler="on_obj_shape_changed" swapped="no"/>
+                        <!-- <signal name="changed" handler="on_obj_shape_changed" swapped="no"/> -->
                       </object>
                     </child>
                     <child type="label">
@@ -12791,7 +12816,6 @@ Coordinates</property>
                 <property name="label" translatable="yes">Object</property>
                 <property name="justify">center</property>
               </object>
-              <packing></packing>
             </child>
             <child>
               <object class="GtkBox" id="shinfo_weapon_box">
@@ -13056,6 +13080,23 @@ Coordinates</property>
                                         <property name="position">1</property>
                                       </packing>
                                     </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_weapon_family_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">3</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                 </child>
                                 <child type="label">
@@ -13141,6 +13182,23 @@ Coordinates</property>
                                       </object>
                                       <packing>
                                         <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_weapon_projectile_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">3</property>
                                       </packing>
                                     </child>
                                   </object>
@@ -14120,20 +14178,48 @@ Coordinates</property>
                                 <property name="vexpand">False</property>
                                 <property name="label-xalign">0</property>
                                 <child>
-                                  <object class="GtkSpinButton" id="shinfo_ammo_family">
+                                  <object class="GtkBox" id="shinfo_ammo_family_box">
                                     <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="valign">center</property>
+                                    <property name="can-focus">False</property>
                                     <property name="margin-start">4</property>
                                     <property name="margin-end">4</property>
                                     <property name="margin-top">2</property>
                                     <property name="margin-bottom">2</property>
-                                    <property name="vexpand">False</property>
-                                    <property name="width-chars">5</property>
-                                    <property name="primary-icon-activatable">False</property>
-                                    <property name="secondary-icon-activatable">False</property>
-                                    <property name="adjustment">adjustment81</property>
-                                    <property name="climb-rate">1</property>
+                                    <property name="orientation">horizontal</property>
+                                    <child>
+                                      <object class="GtkSpinButton" id="shinfo_ammo_family">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                        <property name="vexpand">False</property>
+                                        <property name="width-chars">5</property>
+                                        <property name="primary-icon-activatable">False</property>
+                                        <property name="secondary-icon-activatable">False</property>
+                                        <property name="adjustment">adjustment81</property>
+                                        <property name="climb-rate">1</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_ammo_family_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">2</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                 </child>
                                 <child type="label">
@@ -14219,6 +14305,23 @@ Coordinates</property>
                                       </object>
                                       <packing>
                                         <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_ammo_sprite_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">3</property>
                                       </packing>
                                     </child>
                                   </object>
@@ -16878,7 +16981,7 @@ Coordinates</property>
                                         <property name="secondary-icon-activatable">False</property>
                                         <property name="adjustment">adjustment68</property>
                                         <property name="climb-rate">1</property>
-                                        <signal name="changed" handler="on_shinfo_gump_num_changed" swapped="no"/>
+                                        <!-- <signal name="changed" handler="on_shinfo_gump_num_changed" swapped="no"/> -->
                                       </object>
                                     </child>
                                     <child type="label">
@@ -17701,7 +17804,7 @@ Coordinates</property>
                                     <property name="secondary-icon-activatable">False</property>
                                     <property name="adjustment">adjustment61</property>
                                     <property name="climb-rate">1</property>
-                                    <signal name="changed" handler="on_shinfo_body_shape_changed" swapped="no"/>
+                                    <!-- <signal name="changed" handler="on_shinfo_body_shape_changed" swapped="no"/> -->
                                   </object>
                                 </child>
                                 <child type="label">
@@ -17744,7 +17847,7 @@ Coordinates</property>
                                     <property name="secondary-icon-activatable">False</property>
                                     <property name="adjustment">adjustment60</property>
                                     <property name="climb-rate">1</property>
-                                    <signal name="changed" handler="on_shinfo_body_frame_changed" swapped="no"/>
+                                    <!-- <signal name="changed" handler="on_shinfo_body_frame_changed" swapped="no"/> -->
                                   </object>
                                 </child>
                                 <child type="label">
@@ -17787,8 +17890,8 @@ Coordinates</property>
               <object class="GtkLabel" id="label276">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
+                <property name="halign">fill</property>
+                <property name="valign">fill</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
                 <property name="label" translatable="yes">Body</property>
@@ -17920,7 +18023,7 @@ Coordinates</property>
                                         <property name="secondary-icon-activatable">False</property>
                                         <property name="adjustment">adjustment59</property>
                                         <property name="climb-rate">1</property>
-                                        <signal name="changed" handler="on_shinfo_explosion_sprite_changed" swapped="no"/>
+                                        <!-- <signal name="changed" handler="on_shinfo_explosion_sprite_changed" swapped="no"/> -->
                                       </object>
                                     </child>
                                     <child type="label">
@@ -18756,20 +18859,48 @@ Coordinates</property>
                                         <property name="vexpand">False</property>
                                         <property name="label-xalign">0</property>
                                         <child>
-                                          <object class="GtkSpinButton" id="shinfo_npcpaperdoll_bframe">
+                                          <object class="GtkBox" id="shinfo_npcpaperdoll_bframe_box">
                                             <property name="visible">True</property>
-                                            <property name="can-focus">True</property>
-                                            <property name="valign">center</property>
+                                            <property name="can-focus">False</property>
                                             <property name="margin-start">4</property>
                                             <property name="margin-end">4</property>
                                             <property name="margin-top">2</property>
                                             <property name="margin-bottom">2</property>
-                                            <property name="vexpand">False</property>
-                                            <property name="width-chars">5</property>
-                                            <property name="primary-icon-activatable">False</property>
-                                            <property name="secondary-icon-activatable">False</property>
-                                            <property name="adjustment">adjustment56</property>
-                                            <property name="climb-rate">1</property>
+                                            <property name="orientation">horizontal</property>
+                                            <child>
+                                              <object class="GtkSpinButton" id="shinfo_npcpaperdoll_bframe">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                                <property name="vexpand">False</property>
+                                                <property name="width-chars">5</property>
+                                                <property name="primary-icon-activatable">False</property>
+                                                <property name="secondary-icon-activatable">False</property>
+                                                <property name="adjustment">adjustment56</property>
+                                                <property name="climb-rate">1</property>
+                                              </object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDrawingArea" id="shinfo_npcpaperdoll_bframe_draw">
+                                                <property name="width-request">40</property>
+                                                <property name="height-request">40</property>
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="halign">center</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                              </object>
+                                              <packing>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
                                           </object>
                                         </child>
                                         <child type="label">
@@ -18877,20 +19008,48 @@ Coordinates</property>
                                         <property name="vexpand">False</property>
                                         <property name="label-xalign">0</property>
                                         <child>
-                                          <object class="GtkSpinButton" id="shinfo_npcpaperdoll_hframe">
+                                          <object class="GtkBox" id="shinfo_npcpaperdoll_hframe_box">
                                             <property name="visible">True</property>
-                                            <property name="can-focus">True</property>
-                                            <property name="valign">center</property>
+                                            <property name="can-focus">False</property>
                                             <property name="margin-start">4</property>
                                             <property name="margin-end">4</property>
                                             <property name="margin-top">2</property>
                                             <property name="margin-bottom">2</property>
-                                            <property name="vexpand">False</property>
-                                            <property name="width-chars">5</property>
-                                            <property name="primary-icon-activatable">False</property>
-                                            <property name="secondary-icon-activatable">False</property>
-                                            <property name="adjustment">adjustment54</property>
-                                            <property name="climb-rate">1</property>
+                                            <property name="orientation">horizontal</property>
+                                            <child>
+                                              <object class="GtkSpinButton" id="shinfo_npcpaperdoll_hframe">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                                <property name="vexpand">False</property>
+                                                <property name="width-chars">5</property>
+                                                <property name="primary-icon-activatable">False</property>
+                                                <property name="secondary-icon-activatable">False</property>
+                                                <property name="adjustment">adjustment54</property>
+                                                <property name="climb-rate">1</property>
+                                              </object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDrawingArea" id="shinfo_npcpaperdoll_hframe_draw">
+                                                <property name="width-request">40</property>
+                                                <property name="height-request">40</property>
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="halign">center</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                              </object>
+                                              <packing>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
                                           </object>
                                         </child>
                                         <child type="label">
@@ -18919,20 +19078,48 @@ Coordinates</property>
                                         <property name="vexpand">False</property>
                                         <property name="label-xalign">0</property>
                                         <child>
-                                          <object class="GtkSpinButton" id="shinfo_npcpaperdoll_hhelm">
+                                          <object class="GtkBox" id="shinfo_npcpaperdoll_hhelm_box">
                                             <property name="visible">True</property>
-                                            <property name="can-focus">True</property>
-                                            <property name="valign">center</property>
+                                            <property name="can-focus">False</property>
                                             <property name="margin-start">4</property>
                                             <property name="margin-end">4</property>
                                             <property name="margin-top">2</property>
                                             <property name="margin-bottom">2</property>
-                                            <property name="vexpand">False</property>
-                                            <property name="width-chars">5</property>
-                                            <property name="primary-icon-activatable">False</property>
-                                            <property name="secondary-icon-activatable">False</property>
-                                            <property name="adjustment">adjustment53</property>
-                                            <property name="climb-rate">1</property>
+                                            <property name="orientation">horizontal</property>
+                                            <child>
+                                              <object class="GtkSpinButton" id="shinfo_npcpaperdoll_hhelm">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                                <property name="vexpand">False</property>
+                                                <property name="width-chars">5</property>
+                                                <property name="primary-icon-activatable">False</property>
+                                                <property name="secondary-icon-activatable">False</property>
+                                                <property name="adjustment">adjustment53</property>
+                                                <property name="climb-rate">1</property>
+                                              </object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDrawingArea" id="shinfo_npcpaperdoll_hhelm_draw">
+                                                <property name="width-request">40</property>
+                                                <property name="height-request">40</property>
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="halign">center</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                              </object>
+                                              <packing>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
                                           </object>
                                         </child>
                                         <child type="label">
@@ -19071,20 +19258,48 @@ Coordinates</property>
                                             <property name="vexpand">False</property>
                                             <property name="label-xalign">0</property>
                                             <child>
-                                              <object class="GtkSpinButton" id="shinfo_npcpaperdoll_aframe">
+                                              <object class="GtkBox" id="shinfo_npcpaperdoll_aframe_box">
                                                 <property name="visible">True</property>
-                                                <property name="can-focus">True</property>
-                                                <property name="valign">center</property>
+                                                <property name="can-focus">False</property>
                                                 <property name="margin-start">4</property>
                                                 <property name="margin-end">4</property>
                                                 <property name="margin-top">2</property>
                                                 <property name="margin-bottom">2</property>
-                                                <property name="vexpand">False</property>
-                                                <property name="width-chars">5</property>
-                                                <property name="primary-icon-activatable">False</property>
-                                                <property name="secondary-icon-activatable">False</property>
-                                                <property name="adjustment">adjustment51</property>
-                                                <property name="climb-rate">1</property>
+                                                <property name="orientation">horizontal</property>
+                                                <child>
+                                                  <object class="GtkSpinButton" id="shinfo_npcpaperdoll_aframe">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">True</property>
+                                                    <property name="valign">center</property>
+                                                    <property name="margin-start">4</property>
+                                                    <property name="margin-end">4</property>
+                                                    <property name="margin-top">2</property>
+                                                    <property name="margin-bottom">2</property>
+                                                    <property name="vexpand">False</property>
+                                                    <property name="width-chars">5</property>
+                                                    <property name="primary-icon-activatable">False</property>
+                                                    <property name="secondary-icon-activatable">False</property>
+                                                    <property name="adjustment">adjustment51</property>
+                                                    <property name="climb-rate">1</property>
+                                                  </object>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkDrawingArea" id="shinfo_npcpaperdoll_aframe_draw">
+                                                    <property name="width-request">40</property>
+                                                    <property name="height-request">40</property>
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">False</property>
+                                                    <property name="halign">center</property>
+                                                    <property name="valign">center</property>
+                                                    <property name="margin-start">4</property>
+                                                    <property name="margin-end">4</property>
+                                                    <property name="margin-top">2</property>
+                                                    <property name="margin-bottom">2</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="position">2</property>
+                                                  </packing>
+                                                </child>
                                               </object>
                                             </child>
                                             <child type="label">
@@ -19113,20 +19328,48 @@ Coordinates</property>
                                             <property name="vexpand">False</property>
                                             <property name="label-xalign">0</property>
                                             <child>
-                                              <object class="GtkSpinButton" id="shinfo_npcpaperdoll_atwohanded">
+                                              <object class="GtkBox" id="shinfo_npcpaperdoll_atwohanded_box">
                                                 <property name="visible">True</property>
-                                                <property name="can-focus">True</property>
-                                                <property name="valign">center</property>
+                                                <property name="can-focus">False</property>
                                                 <property name="margin-start">4</property>
                                                 <property name="margin-end">4</property>
                                                 <property name="margin-top">2</property>
                                                 <property name="margin-bottom">2</property>
-                                                <property name="vexpand">False</property>
-                                                <property name="width-chars">5</property>
-                                                <property name="primary-icon-activatable">False</property>
-                                                <property name="secondary-icon-activatable">False</property>
-                                                <property name="adjustment">adjustment50</property>
-                                                <property name="climb-rate">1</property>
+                                                <property name="orientation">horizontal</property>
+                                                <child>
+                                                  <object class="GtkSpinButton" id="shinfo_npcpaperdoll_atwohanded">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">True</property>
+                                                    <property name="valign">center</property>
+                                                    <property name="margin-start">4</property>
+                                                    <property name="margin-end">4</property>
+                                                    <property name="margin-top">2</property>
+                                                    <property name="margin-bottom">2</property>
+                                                    <property name="vexpand">False</property>
+                                                    <property name="width-chars">5</property>
+                                                    <property name="primary-icon-activatable">False</property>
+                                                    <property name="secondary-icon-activatable">False</property>
+                                                    <property name="adjustment">adjustment50</property>
+                                                    <property name="climb-rate">1</property>
+                                                  </object>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkDrawingArea" id="shinfo_npcpaperdoll_atwohanded_draw">
+                                                    <property name="width-request">40</property>
+                                                    <property name="height-request">40</property>
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">False</property>
+                                                    <property name="halign">center</property>
+                                                    <property name="valign">center</property>
+                                                    <property name="margin-start">4</property>
+                                                    <property name="margin-end">4</property>
+                                                    <property name="margin-top">2</property>
+                                                    <property name="margin-bottom">2</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="position">2</property>
+                                                  </packing>
+                                                </child>
                                               </object>
                                             </child>
                                             <child type="label">
@@ -19155,20 +19398,48 @@ Coordinates</property>
                                             <property name="vexpand">False</property>
                                             <property name="label-xalign">0</property>
                                             <child>
-                                              <object class="GtkSpinButton" id="shinfo_npcpaperdoll_astaff">
+                                              <object class="GtkBox" id="shinfo_npcpaperdoll_astaff_box">
                                                 <property name="visible">True</property>
-                                                <property name="can-focus">True</property>
-                                                <property name="valign">center</property>
+                                                <property name="can-focus">False</property>
                                                 <property name="margin-start">4</property>
                                                 <property name="margin-end">4</property>
                                                 <property name="margin-top">2</property>
                                                 <property name="margin-bottom">2</property>
-                                                <property name="vexpand">False</property>
-                                                <property name="width-chars">5</property>
-                                                <property name="primary-icon-activatable">False</property>
-                                                <property name="secondary-icon-activatable">False</property>
-                                                <property name="adjustment">adjustment49</property>
-                                                <property name="climb-rate">1</property>
+                                                <property name="orientation">horizontal</property>
+                                                <child>
+                                                  <object class="GtkSpinButton" id="shinfo_npcpaperdoll_astaff">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">True</property>
+                                                    <property name="valign">center</property>
+                                                    <property name="margin-start">4</property>
+                                                    <property name="margin-end">4</property>
+                                                    <property name="margin-top">2</property>
+                                                    <property name="margin-bottom">2</property>
+                                                    <property name="vexpand">False</property>
+                                                    <property name="width-chars">5</property>
+                                                    <property name="primary-icon-activatable">False</property>
+                                                    <property name="secondary-icon-activatable">False</property>
+                                                    <property name="adjustment">adjustment49</property>
+                                                    <property name="climb-rate">1</property>
+                                                  </object>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkDrawingArea" id="shinfo_npcpaperdoll_astaff_draw">
+                                                    <property name="width-request">40</property>
+                                                    <property name="height-request">40</property>
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">False</property>
+                                                    <property name="halign">center</property>
+                                                    <property name="valign">center</property>
+                                                    <property name="margin-start">4</property>
+                                                    <property name="margin-end">4</property>
+                                                    <property name="margin-top">2</property>
+                                                    <property name="margin-bottom">2</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="position">2</property>
+                                                  </packing>
+                                                </child>
                                               </object>
                                             </child>
                                             <child type="label">
@@ -19776,6 +20047,23 @@ Coordinates</property>
                                         <property name="position">2</property>
                                       </packing>
                                     </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_cntrules_shape_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">4</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                 </child>
                                 <child type="label">
@@ -20032,6 +20320,23 @@ Coordinates</property>
                                       </object>
                                       <packing>
                                         <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_frameflags_frame_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">3</property>
                                       </packing>
                                     </child>
                                   </object>
@@ -20720,6 +21025,23 @@ Coordinates</property>
                                         <property name="position">1</property>
                                       </packing>
                                     </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_effhps_frame_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">3</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                 </child>
                                 <child type="label">
@@ -21137,6 +21459,23 @@ Coordinates</property>
                                       </object>
                                       <packing>
                                         <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_framenames_frame_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">3</property>
                                       </packing>
                                     </child>
                                   </object>
@@ -21733,6 +22072,23 @@ Coordinates</property>
                                         <property name="position">1</property>
                                       </packing>
                                     </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_frameusecode_frame_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">3</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                 </child>
                                 <child type="label">
@@ -22147,6 +22503,23 @@ Coordinates</property>
                                         <property name="position">1</property>
                                       </packing>
                                     </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_objpaperdoll_wframe_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">3</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                 </child>
                                 <child type="label">
@@ -22234,20 +22607,48 @@ Coordinates</property>
                                     <property name="vexpand">False</property>
                                     <property name="label-xalign">0</property>
                                     <child>
-                                      <object class="GtkSpinButton" id="shinfo_objpaperdoll_spotframe">
+                                      <object class="GtkBox" id="shinfo_objpaperdoll_spotframe_box">
                                         <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="valign">center</property>
+                                        <property name="can-focus">False</property>
                                         <property name="margin-start">4</property>
                                         <property name="margin-end">4</property>
                                         <property name="margin-top">2</property>
                                         <property name="margin-bottom">2</property>
-                                        <property name="vexpand">False</property>
-                                        <property name="width-chars">5</property>
-                                        <property name="primary-icon-activatable">False</property>
-                                        <property name="secondary-icon-activatable">False</property>
-                                        <property name="adjustment">adjustment33</property>
-                                        <property name="climb-rate">1</property>
+                                        <property name="orientation">horizontal</property>
+                                        <child>
+                                          <object class="GtkSpinButton" id="shinfo_objpaperdoll_spotframe">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="valign">center</property>
+                                            <property name="margin-start">4</property>
+                                            <property name="margin-end">4</property>
+                                            <property name="margin-top">2</property>
+                                            <property name="margin-bottom">2</property>
+                                            <property name="vexpand">False</property>
+                                            <property name="width-chars">5</property>
+                                            <property name="primary-icon-activatable">False</property>
+                                            <property name="secondary-icon-activatable">False</property>
+                                            <property name="adjustment">adjustment33</property>
+                                            <property name="climb-rate">1</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkDrawingArea" id="shinfo_objpaperdoll_spotframe_draw">
+                                            <property name="width-request">40</property>
+                                            <property name="height-request">40</property>
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">False</property>
+                                            <property name="halign">center</property>
+                                            <property name="valign">center</property>
+                                            <property name="margin-start">4</property>
+                                            <property name="margin-end">4</property>
+                                            <property name="margin-top">2</property>
+                                            <property name="margin-bottom">2</property>
+                                          </object>
+                                          <packing>
+                                            <property name="position">2</property>
+                                          </packing>
+                                        </child>
                                       </object>
                                     </child>
                                     <child type="label">
@@ -22303,20 +22704,48 @@ Coordinates</property>
                                         <property name="vexpand">False</property>
                                         <property name="label-xalign">0</property>
                                         <child>
-                                          <object class="GtkSpinButton" id="shinfo_objpaperdoll_frame3">
+                                          <object class="GtkBox" id="shinfo_objpaperdoll_frame3_box">
                                             <property name="visible">True</property>
-                                            <property name="can-focus">True</property>
-                                            <property name="valign">center</property>
+                                            <property name="can-focus">False</property>
                                             <property name="margin-start">4</property>
                                             <property name="margin-end">4</property>
                                             <property name="margin-top">2</property>
                                             <property name="margin-bottom">2</property>
-                                            <property name="vexpand">False</property>
-                                            <property name="width-chars">5</property>
-                                            <property name="primary-icon-activatable">False</property>
-                                            <property name="secondary-icon-activatable">False</property>
-                                            <property name="adjustment">adjustment32</property>
-                                            <property name="climb-rate">1</property>
+                                            <property name="orientation">horizontal</property>
+                                            <child>
+                                              <object class="GtkSpinButton" id="shinfo_objpaperdoll_frame3">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                                <property name="vexpand">False</property>
+                                                <property name="width-chars">5</property>
+                                                <property name="primary-icon-activatable">False</property>
+                                                <property name="secondary-icon-activatable">False</property>
+                                                <property name="adjustment">adjustment32</property>
+                                                <property name="climb-rate">1</property>
+                                              </object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDrawingArea" id="shinfo_objpaperdoll_frame3_draw">
+                                                <property name="width-request">40</property>
+                                                <property name="height-request">40</property>
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="halign">center</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                              </object>
+                                              <packing>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
                                           </object>
                                         </child>
                                         <child type="label">
@@ -22348,20 +22777,48 @@ Coordinates</property>
                                         <property name="vexpand">False</property>
                                         <property name="label-xalign">0</property>
                                         <child>
-                                          <object class="GtkSpinButton" id="shinfo_objpaperdoll_frame0">
+                                          <object class="GtkBox" id="shinfo_objpaperdoll_frame0_box">
                                             <property name="visible">True</property>
-                                            <property name="can-focus">True</property>
-                                            <property name="valign">center</property>
+                                            <property name="can-focus">False</property>
                                             <property name="margin-start">4</property>
                                             <property name="margin-end">4</property>
                                             <property name="margin-top">2</property>
                                             <property name="margin-bottom">2</property>
-                                            <property name="vexpand">False</property>
-                                            <property name="width-chars">5</property>
-                                            <property name="primary-icon-activatable">False</property>
-                                            <property name="secondary-icon-activatable">False</property>
-                                            <property name="adjustment">adjustment31</property>
-                                            <property name="climb-rate">1</property>
+                                            <property name="orientation">horizontal</property>
+                                            <child>
+                                              <object class="GtkSpinButton" id="shinfo_objpaperdoll_frame0">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                                <property name="vexpand">False</property>
+                                                <property name="width-chars">5</property>
+                                                <property name="primary-icon-activatable">False</property>
+                                                <property name="secondary-icon-activatable">False</property>
+                                                <property name="adjustment">adjustment31</property>
+                                                <property name="climb-rate">1</property>
+                                              </object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDrawingArea" id="shinfo_objpaperdoll_frame0_draw">
+                                                <property name="width-request">40</property>
+                                                <property name="height-request">40</property>
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="halign">center</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                              </object>
+                                              <packing>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
                                           </object>
                                         </child>
                                         <child type="label">
@@ -22486,20 +22943,48 @@ Coordinates</property>
                                         <property name="vexpand">False</property>
                                         <property name="label-xalign">0</property>
                                         <child>
-                                          <object class="GtkSpinButton" id="shinfo_objpaperdoll_frame1">
+                                          <object class="GtkBox" id="shinfo_objpaperdoll_frame1_box">
                                             <property name="visible">True</property>
-                                            <property name="can-focus">True</property>
-                                            <property name="valign">center</property>
+                                            <property name="can-focus">False</property>
                                             <property name="margin-start">4</property>
                                             <property name="margin-end">4</property>
                                             <property name="margin-top">2</property>
                                             <property name="margin-bottom">2</property>
-                                            <property name="vexpand">False</property>
-                                            <property name="width-chars">5</property>
-                                            <property name="primary-icon-activatable">False</property>
-                                            <property name="secondary-icon-activatable">False</property>
-                                            <property name="adjustment">adjustment29</property>
-                                            <property name="climb-rate">1</property>
+                                            <property name="orientation">horizontal</property>
+                                            <child>
+                                              <object class="GtkSpinButton" id="shinfo_objpaperdoll_frame1">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                                <property name="vexpand">False</property>
+                                                <property name="width-chars">5</property>
+                                                <property name="primary-icon-activatable">False</property>
+                                                <property name="secondary-icon-activatable">False</property>
+                                                <property name="adjustment">adjustment29</property>
+                                                <property name="climb-rate">1</property>
+                                              </object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDrawingArea" id="shinfo_objpaperdoll_frame1_draw">
+                                                <property name="width-request">40</property>
+                                                <property name="height-request">40</property>
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="halign">center</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                              </object>
+                                              <packing>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
                                           </object>
                                         </child>
                                         <child type="label">
@@ -22531,20 +23016,48 @@ Coordinates</property>
                                         <property name="vexpand">False</property>
                                         <property name="label-xalign">0</property>
                                         <child>
-                                          <object class="GtkSpinButton" id="shinfo_objpaperdoll_frame2">
+                                          <object class="GtkBox" id="shinfo_objpaperdoll_frame2_box">
                                             <property name="visible">True</property>
-                                            <property name="can-focus">True</property>
-                                            <property name="valign">center</property>
+                                            <property name="can-focus">False</property>
                                             <property name="margin-start">4</property>
                                             <property name="margin-end">4</property>
                                             <property name="margin-top">2</property>
                                             <property name="margin-bottom">2</property>
-                                            <property name="vexpand">False</property>
-                                            <property name="width-chars">5</property>
-                                            <property name="primary-icon-activatable">False</property>
-                                            <property name="secondary-icon-activatable">False</property>
-                                            <property name="adjustment">adjustment28</property>
-                                            <property name="climb-rate">1</property>
+                                            <property name="orientation">horizontal</property>
+                                            <child>
+                                              <object class="GtkSpinButton" id="shinfo_objpaperdoll_frame2">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                                <property name="vexpand">False</property>
+                                                <property name="width-chars">5</property>
+                                                <property name="primary-icon-activatable">False</property>
+                                                <property name="secondary-icon-activatable">False</property>
+                                                <property name="adjustment">adjustment28</property>
+                                                <property name="climb-rate">1</property>
+                                              </object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDrawingArea" id="shinfo_objpaperdoll_frame2_draw">
+                                                <property name="width-request">40</property>
+                                                <property name="height-request">40</property>
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="halign">center</property>
+                                                <property name="valign">center</property>
+                                                <property name="margin-start">4</property>
+                                                <property name="margin-end">4</property>
+                                                <property name="margin-top">2</property>
+                                                <property name="margin-bottom">2</property>
+                                              </object>
+                                              <packing>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
                                           </object>
                                         </child>
                                         <child type="label">
@@ -22818,6 +23331,23 @@ Coordinates</property>
                                       </object>
                                       <packing>
                                         <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_brightness_frame_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">3</property>
                                       </packing>
                                     </child>
                                   </object>
@@ -23136,6 +23666,23 @@ Coordinates</property>
                                       </object>
                                       <packing>
                                         <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="shinfo_warmth_frame_draw">
+                                        <property name="width-request">40</property>
+                                        <property name="height-request">40</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">3</property>
                                       </packing>
                                     </child>
                                   </object>
@@ -26998,7 +27545,7 @@ Coordinates</property>
                         <property name="secondary-icon-activatable">False</property>
                         <property name="adjustment">adjustment5</property>
                         <property name="climb-rate">1</property>
-                        <signal name="changed" handler="on_cont_shape_changed" swapped="no"/>
+                        <!-- <signal name="changed" handler="on_cont_shape_changed" swapped="no"/> -->
                       </object>
                     </child>
                     <child type="label">
@@ -27043,7 +27590,7 @@ Coordinates</property>
                         <property name="adjustment">adjustment4</property>
                         <property name="climb-rate">1</property>
                         <property name="wrap">True</property>
-                        <signal name="changed" handler="on_cont_shape_changed" swapped="no"/>
+                        <!-- <signal name="changed" handler="on_cont_shape_changed" swapped="no"/> -->
                       </object>
                     </child>
                     <child type="label">

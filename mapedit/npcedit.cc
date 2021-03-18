@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "servemsg.h"
 #include "shapedraw.h"
 #include "shapefile.h"
+#include "shapevga.h"
 #include "studio.h"
 #include "u7drag.h"
 #include "utils.h"
@@ -133,85 +134,8 @@ C_EXPORT void on_npc_usecode_browse_clicked(
 		studio->set_entry("npc_usecode_entry", uc, true);
 }
 
-/*
- *  Draw shape in NPC shape area.
- */
-gboolean ExultStudio::on_npc_draw_expose_event(
-    GtkWidget *widget,      // The view window.
-    cairo_t *cairo,
-    gpointer data           // -> ExultStudio.
-) {
-	ignore_unused_variable_warning(widget, data);
-	auto *studio = static_cast<ExultStudio *>(data);
-	GdkRectangle area = { 0, 0, 0, 0 };
-	gdk_cairo_get_clip_rectangle(cairo, &area);
-	studio->npc_draw->set_graphic_context(cairo);
-	studio->show_npc_shape(area.x, area.y, area.width, area.height);
-	studio->npc_draw->set_graphic_context(nullptr);
-	return TRUE;
-}
-
-/*
- *  Npc shape # lost focus, so update shape displayed.
- */
-C_EXPORT gboolean on_npc_shape_focus_out_event(
-    GtkWidget *widget,
-    GdkEventFocus *event,
-    gpointer user_data
-) {
-	ignore_unused_variable_warning(widget, event, user_data);
-	ExultStudio::get_instance()->show_npc_shape();
-	return FALSE;
-}
-
-/*
- *  Callback for when a shape is dropped on the NPC draw area.
- */
-
-static void Npc_shape_dropped(
-    int file,           // U7_SHAPE_SHAPES.
-    int shape,
-    int frame,
-    void *udata
-) {
-	if (file == U7_SHAPE_SHAPES && shape >= 150 && shape < c_max_shapes)
-		static_cast<ExultStudio *>(udata)->set_npc_shape(shape, frame);
-}
-
 // Schedule names.
-/*
- *  Draw face.
- */
-gboolean ExultStudio::on_npc_face_draw_expose_event(
-    GtkWidget *widget,      // The view window.
-    cairo_t *cairo,
-    gpointer data           // -> ExultStudio.
-) {
-	ignore_unused_variable_warning(widget, data);
-	auto *studio = static_cast<ExultStudio *>(data);
-	GdkRectangle area = { 0, 0, 0, 0 };
-	gdk_cairo_get_clip_rectangle(cairo, &area);
-	studio->npc_face_draw->set_graphic_context(cairo);
-	studio->show_npc_face(area.x, area.y, area.width, area.height);
-	studio->npc_face_draw->set_graphic_context(nullptr);
-	return TRUE;
-}
 
-/*
- *  Callback for when a shape is dropped on the NPC face area.
- */
-
-static void Npc_face_dropped(
-    int file,           // U7_SHAPE_FACES
-    int shape,
-    int frame,
-    void *udata
-) {
-	if (file == U7_SHAPE_FACES && shape >= 0 && shape < 1024)
-		static_cast<ExultStudio *>(udata)->set_npc_face(shape, frame);
-}
-
-// Schedule names.
 static const char *sched_names[32] = {
 	"Combat", "Horiz. Pace", "Vert. Pace", "Talk", "Dance",
 	"Eat", "Farm", "Tend Shop", "Miner", "Hound", "Stand",
@@ -298,19 +222,20 @@ static bool Get_schedule_line(
 
 #ifdef _WIN32
 
-static void Drop_dragged_shape(int shape, int frame, int x, int y, void *data) {
+void ExultStudio::Npc_shape_dropped(int shape, int frame, int x, int y, void *data) {
 	ignore_unused_variable_warning(x, y);
 	if (shape < 150)
 		return;
 	cout << "Dropped a shape: " << shape << "," << frame << " " << data << endl;
-
-	Npc_shape_dropped(U7_SHAPE_SHAPES, shape, frame, data);
+	auto *studio = static_cast<ExultStudio *>(data);
+	Shape_single::on_shape_dropped(U7_SHAPE_SHAPES, shape, frame, studio->npc_single);
 }
 
-static void Drop_dragged_face(int shape, int frame, int x, int y, void *data) {
+void ExultStudio::Npc_face_dropped(int shape, int frame, int x, int y, void *data) {
 	cout << "Dropped a face: " << shape << "," << frame << " " << data << endl;
 	ignore_unused_variable_warning(x, y);
-	Npc_face_dropped(U7_SHAPE_FACES, shape, frame, data);
+	auto *studio = static_cast<ExultStudio *>(data);
+	Shape_single::on_shape_dropped(U7_SHAPE_FACES, shape, frame, studio->npc_face_single);
 }
 
 #endif
@@ -329,16 +254,25 @@ void ExultStudio::open_npc_window(
 		npcwin = get_widget("npc_window");
 
 		if (vgafile && palbuf) {
-			npc_draw = new Shape_draw(vgafile->get_ifile(),
-			                          palbuf.get(),
-			                          get_widget("npc_draw"));
-			npc_draw->enable_drop(Npc_shape_dropped, this);
+			npc_single = new Shape_single(
+			    get_widget("npc_shape"), nullptr,
+			    [](int shnum)->bool{ return (shnum >= c_first_obj_shape) &&
+			                                (shnum < c_max_shapes); },
+			    get_widget("npc_frame"),
+			    U7_SHAPE_SHAPES,
+			    vgafile->get_ifile(),
+			    palbuf.get(),
+			    get_widget("npc_draw"));
 		}
 		if (facefile && palbuf) {
-			npc_face_draw = new Shape_draw(facefile->get_ifile(),
-			                               palbuf.get(),
-			                               get_widget("npc_face_draw"));
-			npc_face_draw->enable_drop(Npc_face_dropped, this);
+			npc_face_single = new Shape_single(
+			    get_widget("npc_face_frame"), nullptr,
+			    [](int shnum)->bool{ return (shnum >= 0) && (shnum < 1024); },
+			    nullptr,
+			    U7_SHAPE_FACES,
+			    facefile->get_ifile(),
+			    palbuf.get(),
+			    get_widget("npc_face_draw"));
 		}
 		npc_ctx = gtk_statusbar_get_context_id(
 		              GTK_STATUSBAR(get_widget("npc_status")), "Npc Editor");
@@ -348,10 +282,6 @@ void ExultStudio::open_npc_window(
 	}
 	// Init. npc address to null.
 	g_object_set_data(G_OBJECT(npcwin), "user_data", nullptr);
-	g_signal_connect(G_OBJECT(get_widget("npc_draw")), "draw",
-	                 G_CALLBACK(on_npc_draw_expose_event), this);
-	g_signal_connect(G_OBJECT(get_widget("npc_face_draw")), "draw",
-	                 G_CALLBACK(on_npc_face_draw_expose_event), this);
 	// Make 'apply', 'cancel' sensitive.
 	set_sensitive("npc_apply_btn", true);
 	set_sensitive("npc_cancel_btn", true);
@@ -364,8 +294,10 @@ void ExultStudio::open_npc_window(
 	gtk_widget_show(npcwin);
 #ifdef _WIN32
 	if (first_time || !npcdnd)
-		Windnd::CreateStudioDropDest(npcdnd, npchwnd, Drop_dragged_shape,
-		                             nullptr, Drop_dragged_face, this);
+		Windnd::CreateStudioDropDest(npcdnd, npchwnd,
+		                             ExultStudio::Npc_shape_dropped,
+		                             nullptr,
+		                             ExultStudio::Npc_face_dropped, this);
 
 #endif
 }
@@ -466,7 +398,14 @@ void ExultStudio::init_new_npc(
 	set_entry("npc_usecode_entry", 0x400 + npc_num, true,
 	          npc_num >= 256);
 	// Usually, face = npc_num.
-	set_npc_face(npc_num, 0);
+	{
+		GtkWidget *widget = get_widget("npc_face_frame");
+		g_object_set_data(G_OBJECT(widget), "user_data",
+		    reinterpret_cast<gpointer>(uintptr(npc_num)));
+		char *label = g_strdup_printf("Face #%d", npc_num);
+		gtk_frame_set_label(GTK_FRAME(widget), label);
+		g_free(label);
+	}
 	set_entry("npc_name_entry", "");
 	set_entry("npc_ident_entry", 0);
 	set_entry("npc_shape", -1);
@@ -545,8 +484,16 @@ int ExultStudio::init_npc_window(
 	set_entry("npc_num_entry", npc_num, true, false);
 	set_entry("npc_ident_entry", ident);
 	// Shape/frame.
-	set_npc_shape(shape, 16);
-	set_npc_face(face, 0);
+	set_entry("npc_shape", shape);
+	set_entry("npc_frame", 16);
+	{
+		GtkWidget *widget = get_widget("npc_face_frame");
+		g_object_set_data(G_OBJECT(widget), "user_data",
+		    reinterpret_cast<gpointer>(uintptr(face)));
+		char *label = g_strdup_printf("Face #%d", face);
+		gtk_frame_set_label(GTK_FRAME(widget), label);
+		g_free(label);
+	}
 	// Usecode #.
 	if (npc_num >= 256 && !usecodefun.empty())
 		set_entry("npc_usecode_entry", usecodefun.c_str(), true);
@@ -718,84 +665,6 @@ int ExultStudio::save_npc_window(
 		npcchoose->update_npc(npc_num);
 	close_npc_window();
 	return 1;
-}
-
-/*
- *  Paint the shape in the NPC draw area.
- */
-
-void ExultStudio::show_npc_shape(
-    int x, int y, int w, int h  // Rectangle. w=-1 to show all.
-) {
-	if (!npc_draw)
-		return;
-	if (w == -1) {
-		npc_draw->render();
-		return;
-	}
-	npc_draw->configure();
-	// Yes, this is kind of redundant...
-	int shnum = get_num_entry("npc_shape");
-	int frnum = get_num_entry("npc_frame");
-	if (!shnum)         // Don't draw shape 0.
-		shnum = -1;
-	npc_draw->draw_shape_centered(shnum, frnum);
-	npc_draw->show(x, y, w, h);
-}
-
-/*
- *  Set NPC shape.
- */
-
-void ExultStudio::set_npc_shape(
-    int shape,
-    int frame
-) {
-	set_entry("npc_shape", shape);
-	set_entry("npc_frame", frame);
-	show_npc_shape();
-}
-
-/*
- *  Paint the face.
- */
-
-void ExultStudio::show_npc_face(
-    int x, int y, int w, int h  // Rectangle. w=-1 to show all.
-) {
-	ignore_unused_variable_warning(x, y, w, h);
-	if (!npc_face_draw)
-		return;
-	if (w == -1) {
-		npc_face_draw->render();
-		return;
-	}
-	npc_face_draw->configure();
-	GtkWidget *frame = get_widget("npc_face_frame");
-	int shnum = reinterpret_cast<sintptr>(g_object_get_data(G_OBJECT(frame), "user_data"));
-	npc_face_draw->draw_shape_centered(shnum, 0);
-	npc_face_draw->show(x, y, w, h);
-}
-
-/*
- *  Set NPC face.
- */
-
-void ExultStudio::set_npc_face(
-    int shape,
-    int frame
-) {
-	ignore_unused_variable_warning(frame);
-//	set_entry("npc_shape", shape);
-//	set_entry("npc_frame", frame);
-	if (shape < 0)
-		shape = 1;      // Default to 1st after Avatar.
-	GtkWidget *widget = get_widget("npc_face_frame");
-	g_object_set_data(G_OBJECT(widget), "user_data", reinterpret_cast<gpointer>(uintptr(shape)));
-	char *label = g_strdup_printf("Face #%d", shape);
-	gtk_frame_set_label(GTK_FRAME(widget), label);
-	g_free(label);
-	show_npc_face();
 }
 
 /*

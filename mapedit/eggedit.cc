@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "servemsg.h"
 #include "shapedraw.h"
 #include "shapefile.h"
+#include "shapevga.h"
 #include "studio.h"
 #include "u7drag.h"
 
@@ -103,36 +104,6 @@ C_EXPORT void on_egg_browse_usecode_clicked(
 }
 
 /*
- *  Draw shape in egg 'monster' area.
- */
-gboolean ExultStudio::on_egg_monster_draw_expose_event(
-    GtkWidget *widget,      // The view window.
-    cairo_t *cairo,
-    gpointer data           // -> ExultStudio.
-) {
-	ignore_unused_variable_warning(widget, data);
-	auto *studio = static_cast<ExultStudio *>(data);
-	GdkRectangle area = { 0, 0, 0, 0 };
-	gdk_cairo_get_clip_rectangle(cairo, &area);
-	studio->egg_monster_draw->set_graphic_context(cairo);
-	studio->show_egg_monster(area.x, area.y, area.width, area.height);
-	studio->egg_monster_draw->set_graphic_context(nullptr);
-	return TRUE;
-}
-
-/*
- *  Monster shape # lost focus, so update shape displayed.
- */
-C_EXPORT gboolean on_monst_shape_focus_out_event(
-    GtkWidget *widget,
-    GdkEventFocus *event,
-    gpointer user_data
-) {
-	ignore_unused_variable_warning(widget, event, user_data);
-	ExultStudio::get_instance()->show_egg_monster();
-	return FALSE;
-}
-/*
  *  "Teleport coords" toggled.
  */
 C_EXPORT void on_teleport_coord_toggled(
@@ -148,29 +119,15 @@ C_EXPORT void on_teleport_coord_toggled(
 	studio->set_sensitive("teleport_eggnum", !on);
 }
 
-/*
- *  Callback for when a shape is dropped on the Egg 'monster' area.
- */
-
-static void Egg_monster_dropped(
-    int file,           // U7_SHAPE_SHAPES.
-    int shape,
-    int frame,
-    void *udata
-) {
-	if (file == U7_SHAPE_SHAPES && shape >= 150 && shape < 0xffff)
-		static_cast<ExultStudio *>(udata)->set_egg_monster(shape, frame);
-}
-
 #ifdef _WIN32
 
-static void Drop_dragged_shape(int shape, int frame, int x, int y, void *data) {
+void ExultStudio::Egg_monster_dropped(int shape, int frame, int x, int y, void *data) {
 	ignore_unused_variable_warning(x, y);
 	if (shape < 150)
 		return;
 	cout << "Dropped a shape: " << shape << "," << frame << " " << data << endl;
-
-	Egg_monster_dropped(U7_SHAPE_SHAPES, shape, frame, data);
+	auto *studio = static_cast<ExultStudio *>(data);
+	Shape_single::on_shape_dropped(U7_SHAPE_SHAPES, shape, frame, studio->egg_monster_single);
 }
 
 #endif
@@ -188,18 +145,30 @@ void ExultStudio::open_egg_window(
 		first_time = true;
 		eggwin = get_widget("egg_window");
 		if (vgafile && palbuf) {
-			egg_monster_draw = new Shape_draw(vgafile->get_ifile(),
-			                                  palbuf.get(),
-			                                  get_widget("egg_monster_draw"));
-			egg_monster_draw->enable_drop(Egg_monster_dropped, this);
+			egg_monster_single = new Shape_single(
+			    get_widget("monst_shape"), nullptr,
+			    [](int shnum)->bool{ return (shnum >= c_first_obj_shape) &&
+			                                (shnum < c_max_shapes); },
+			    get_widget("monst_frame"),
+			    U7_SHAPE_SHAPES,
+			    vgafile->get_ifile(),
+			    palbuf.get(),
+			    get_widget("egg_monster_draw"));
+			egg_missile_single = new Shape_single(
+			    get_widget("missile_shape"), nullptr,
+			    [](int shnum)->bool{ return (shnum >= 0) &&
+			                                (shnum < c_max_shapes); },
+			    nullptr,
+			    U7_SHAPE_SHAPES,
+			    vgafile->get_ifile(),
+			    palbuf.get(),
+			    get_widget("missile_draw"), true);
 		}
 		egg_ctx = gtk_statusbar_get_context_id(
 		              GTK_STATUSBAR(get_widget("egg_status")), "Egg Editor");
 	}
 	// Init. egg address to null.
 	g_object_set_data(G_OBJECT(eggwin), "user_data", nullptr);
-	g_signal_connect(G_OBJECT(get_widget("egg_monster_draw")), "draw",
-	                 G_CALLBACK(on_egg_monster_draw_expose_event), this);
 	// Make 'apply' sensitive.
 	gtk_widget_set_sensitive(get_widget("egg_apply_btn"), true);
 	remove_statusbar("egg_status", egg_ctx, egg_status_id);
@@ -217,7 +186,8 @@ void ExultStudio::open_egg_window(
 
 #ifdef _WIN32
 	if (first_time || !eggdnd)
-		Windnd::CreateStudioDropDest(eggdnd, egghwnd, Drop_dragged_shape,
+		Windnd::CreateStudioDropDest(eggdnd, egghwnd,
+		                             ExultStudio::Egg_monster_dropped,
 		                             nullptr, nullptr, this);
 #endif
 }
@@ -516,38 +486,3 @@ int ExultStudio::save_egg_window(
 	close_egg_window();
 	return 1;
 }
-
-/*
- *  Paint the shape in the egg 'monster' notebook page.
- */
-
-void ExultStudio::show_egg_monster(
-    int x, int y, int w, int h  // Rectangle. w=-1 to show all.
-) {
-	if (!egg_monster_draw)
-		return;
-	if (w == -1) {
-		egg_monster_draw->render();
-		return;
-	}
-	egg_monster_draw->configure();
-	// Yes, this is kind of redundant...
-	int shnum = get_num_entry("monst_shape");
-	int frnum = get_num_entry("monst_frame");
-	egg_monster_draw->draw_shape_centered(shnum, frnum);
-	egg_monster_draw->show(x, y, w, h);
-}
-
-/*
- *  Set egg monster shape.
- */
-
-void ExultStudio::set_egg_monster(
-    int shape,
-    int frame
-) {
-	set_entry("monst_shape", shape);
-	set_entry("monst_frame", frame);
-	show_egg_monster();
-}
-

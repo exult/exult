@@ -82,13 +82,53 @@ public:
 	                               gint x, gint y,
 	                               GtkSelectionData *seldata,
 	                               guint info, guint time, gpointer udata);
-	void enable_drop(Drop_callback callback, void *udata);
+	gulong enable_drop(Drop_callback callback, void *udata);
 	void set_drag_icon(GdkDragContext *context, Shape_frame *shape);
 	// Start/end dragging from here.
 	void start_drag(const char *target, int id, GdkEvent *event);
 	void mouse_up() {
 		dragging = false;
 	}
+};
+
+class Shape_single : public Shape_draw {
+protected:
+	GtkWidget *shape;         // The ShapeID   holding GtkWidget :
+	                          //     GtkSpinButton / GtkEntry,
+	                          //     or GtkFrame ( NPCEditor NPC Face ).
+	GtkWidget *shapename;     // The ShapeName holding GtkLabel.
+	bool(*shapevalid)(int s); // The ShapeID   validating lambda.
+	GtkWidget *frame;         // The FrameID   holding GtkWidget :
+	                          //     GtkSpinButton / GtkEntry.
+	int vganum;               // For a Drag and Drop enabled Shape_single :
+	bool hide;                // Whether the Shape should be hidden.
+	gulong shape_connect;     // The Shape Widget g_signal_connect changed ID
+	gulong frame_connect;     // The Frame Widget g_signal_connect changed ID
+	gulong draw_connect;      // The Draw  Widget g_signal_connect draw ID
+	gulong drop_connect;      // The Draw  Widget g_signal_connect drop ID
+	gulong hide_connect;      // The Hide  Widget g_signal_connect changed ID
+public:
+	Shape_single(
+	    GtkWidget *shp,       // The ShapeID   holding GtkWidget.
+	    GtkWidget *shpnm,     // The ShapeName holding GtkWidget.
+	    bool (*shvld)(int),   // The ShapeUD   validating lambda.
+	    GtkWidget *frm,       // The FrameID   holding GtkWidget.
+	    int vgnum,            // The D&D U7_SHAPE_xxx VGA file category.
+	    Vga_file *vg,         // The VGA File         for the Shape_draw constructor.
+	    const unsigned char *palbuf, // The Palette for the Shape_draw constructor.
+	    GtkWidget *drw,       // The GtkDrawingArea   for the Shape_draw constructor.
+	    bool hdd = false);    // Whether the Shape should be hidden.
+	~Shape_single() override;
+	static void on_shape_changed(
+	    GtkWidget *widget, gpointer user_data);
+	static void on_frame_changed(
+	    GtkWidget *widget, gpointer user_data);
+	static gboolean on_draw_expose_event(
+	    GtkWidget *widget, cairo_t  *cairo, gpointer user_data);
+	static void on_shape_dropped(
+	    int filenum, int shapenum, int framenum, gpointer user_data);
+	static void on_state_changed(
+	    GtkWidget *widget, GtkStateFlags flags, gpointer user_data);
 };
 
 #endif

@@ -524,14 +524,27 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 	shape_info_modified(false), shape_names_modified(false), npc_modified(false),
 	files(nullptr), curfile(nullptr),
 	vgafile(nullptr), facefile(nullptr), fontfile(nullptr), gumpfile(nullptr),
-	spritefile(nullptr), browser(nullptr),
+	spritefile(nullptr), paperdolfile(nullptr), browser(nullptr),
 	bargewin(nullptr), barge_ctx(0), barge_status_id(0),
-	eggwin(nullptr), egg_monster_draw(nullptr), egg_ctx(0), egg_status_id(0),
-	npcwin(nullptr), npc_draw(nullptr), npc_face_draw(nullptr),
+	eggwin(nullptr), egg_monster_single(nullptr), egg_missile_single(nullptr),
+	egg_ctx(0), egg_status_id(0),
+	npcwin(nullptr), npc_single(nullptr), npc_face_single(nullptr),
 	npc_ctx(0), npc_status_id(0),
-	objwin(nullptr), obj_draw(nullptr), contwin(nullptr), cont_draw(nullptr), shapewin(nullptr),
-	shape_draw(nullptr), gump_draw(nullptr),
-	body_draw(nullptr), explosion_draw(nullptr),
+	objwin(nullptr), obj_single(nullptr), contwin(nullptr), cont_single(nullptr), shapewin(nullptr),
+	shape_single(nullptr), gump_single(nullptr),
+	body_single(nullptr), explosion_single(nullptr),
+	weapon_family_single(nullptr), weapon_projectile_single(nullptr),
+	ammo_family_single(nullptr), ammo_sprite_single(nullptr),
+	cntrules_shape_single(nullptr),
+	frameflags_frame_single(nullptr), effhps_frame_single(nullptr),
+	framenames_frame_single(nullptr), frameusecode_frame_single(nullptr),
+	objpaperdoll_wframe_single(nullptr), objpaperdoll_spotframe_single(nullptr),
+	brightness_frame_single(nullptr), warmth_frame_single(nullptr),
+	npcpaperdoll_aframe_single(nullptr), npcpaperdoll_atwohanded_single(nullptr),
+	npcpaperdoll_astaff_single(nullptr), npcpaperdoll_bframe_single(nullptr),
+	npcpaperdoll_hframe_single(nullptr), npcpaperdoll_hhelm_single(nullptr),
+	objpaperdoll_frame0_single(nullptr), objpaperdoll_frame1_single(nullptr),
+	objpaperdoll_frame2_single(nullptr), objpaperdoll_frame3_single(nullptr),
 	equipwin(nullptr), locwin(nullptr), combowin(nullptr),
 	compilewin(nullptr), compile_box(nullptr),
 	ucbrowsewin(nullptr), gameinfowin(nullptr),
@@ -838,24 +851,48 @@ ExultStudio::~ExultStudio() {
 	palbuf.reset();
 	if (objwin)
 		gtk_widget_destroy(objwin);
-	delete obj_draw;
+	delete obj_single;
 	if (contwin)
 		gtk_widget_destroy(contwin);
-	delete cont_draw;
+	delete cont_single;
 	if (eggwin)
 		gtk_widget_destroy(eggwin);
-	delete egg_monster_draw;
+	delete egg_monster_single;
+	delete egg_missile_single;
 	eggwin = nullptr;
 	if (npcwin)
 		gtk_widget_destroy(npcwin);
-	delete npc_draw;
+	delete npc_single;
 	npcwin = nullptr;
 	if (shapewin)
 		gtk_widget_destroy(shapewin);
-	delete shape_draw;
-	delete gump_draw;
-	delete body_draw;
-	delete explosion_draw;
+	delete shape_single;
+	delete gump_single;
+	delete body_single;
+	delete explosion_single;
+	delete weapon_family_single;
+	delete weapon_projectile_single;
+	delete ammo_family_single;
+	delete ammo_sprite_single;
+	delete cntrules_shape_single;
+	delete frameflags_frame_single;
+	delete effhps_frame_single;
+	delete framenames_frame_single;
+	delete frameusecode_frame_single;
+	delete objpaperdoll_wframe_single;
+	delete objpaperdoll_spotframe_single;
+	delete brightness_frame_single;
+	delete warmth_frame_single;
+	delete npcpaperdoll_aframe_single;
+	delete npcpaperdoll_atwohanded_single;
+	delete npcpaperdoll_astaff_single;
+	delete npcpaperdoll_bframe_single;
+	delete npcpaperdoll_hframe_single;
+	delete npcpaperdoll_hhelm_single;
+	delete objpaperdoll_frame0_single;
+	delete objpaperdoll_frame1_single;
+	delete objpaperdoll_frame2_single;
+	delete objpaperdoll_frame3_single;
 	shapewin = nullptr;
 	if (equipwin)
 		gtk_widget_destroy(equipwin);
@@ -1449,6 +1486,8 @@ void ExultStudio::set_game_path(const string &gamename, const string &modname) {
 	fontfile = open_shape_file("fonts.vga");
 	gumpfile = open_shape_file("gumps.vga");
 	spritefile = open_shape_file("sprites.vga");
+	if (game_type == SERPENT_ISLE)
+		paperdolfile = open_shape_file("paperdol.vga");
 	Setup_text(game_type == SERPENT_ISLE, expansion, sibeta);   // Read in shape names.
 	misc_name_map.clear();
 	for (int i = 0; i < get_num_misc_names(); i++)
