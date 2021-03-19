@@ -136,12 +136,8 @@ fi
 AC_PROG_CXX([$cxx_compilers])
 
 AC_LANG([C++])
-AX_CXX_COMPILE_STDCXX_17([noext],[optional])
-if test "$HAVE_CXX17" = "0"; then
-	AX_CXX_COMPILE_STDCXX_14([noext],[mandatory])
-else
-	AX_CXX17_HAVE_STDFS
-fi
+AX_CXX_COMPILE_STDCXX_17([noext],[mandatory])
+AX_CXX17_HAVE_STDFS
 AC_PROG_CXXCPP
 
 AC_PROG_INSTALL
