@@ -30,6 +30,7 @@
 #include <string>
 #include <fstream>
 #include <map>
+#include <vector>
 #include <list>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -192,10 +193,9 @@ string get_system_path(const string &path) {
 	if (pos == pos2 && pos3 != string::npos) {
 		int num_chars = GetShortPathName(new_path.c_str(), nullptr, 0);
 		if (num_chars > 0) {
-			char *short_path = new char [num_chars + 1];
-			GetShortPathName(new_path.c_str(), short_path, num_chars + 1);
-			new_path = short_path;
-			delete [] short_path;
+			std::vector<char> short_path(num_chars + 1);
+			GetShortPathName(new_path.c_str(), &short_path[0], num_chars + 1);
+			new_path = std::string(short_path.begin(), short_path.end());
 		}
 		//else std::cerr << "Warning unable to get short path for: " << new_path << std::endl;
 	}
@@ -841,18 +841,17 @@ void U7copy(
 		throw;
 	}
 	size_t bufsize = 0x8000;
-	char *buf = new char[0x8000];
+	std::vector<char> buf(0x8000);
 	in.seekg(0, ios::end);      // Get filesize.
 	size_t filesize = in.tellg();
 	in.seekg(0, ios::beg);
 	while (filesize > 0) {      // Copy.
 		size_t toread = bufsize < filesize ? bufsize : filesize;
-		in.read(buf, toread);
-		out.write(buf, toread);
+		in.read(&buf[0], toread);
+		out.write(&buf[0], toread);
 		filesize -= toread;
 	}
 	out.flush();
-	delete [] buf;
 	bool inok = in.good();
 	bool outok = out.good();
 	in.close();
