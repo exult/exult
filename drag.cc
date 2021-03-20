@@ -119,10 +119,7 @@ Dragging_info::Dragging_info(
  *  Delete dragging info.
  */
 
-Dragging_info::~Dragging_info(
-) {
-	delete save;
-}
+Dragging_info::~Dragging_info() = default;
 
 /*
  *  First motion.
@@ -218,7 +215,7 @@ bool Dragging_info::moved(
 		if (!start(x, y))
 			return false;
 	} else if (save)            // Not first time?  Restore beneath.
-		gwin->get_win()->put(save, rect.x, rect.y);
+		gwin->get_win()->put(save.get(), rect.x, rect.y);
 	else
 		gwin->add_dirty(gwin->clip_to_win(rect));
 	gwin->set_painted();
@@ -244,8 +241,11 @@ void Dragging_info::paint(
 ) {
 	if (!rect.w)            // Not moved enough yet?
 		return;
-	if (save)           // Save background.
-		gwin->get_win()->get(save, rect.x, rect.y);
+	if (save) {          // Save background.
+        Image_buffer* tmp;
+		gwin->get_win()->get(tmp, rect.x, rect.y);
+        save.reset(tmp);
+    }
 	if (obj) {
 		if (obj->get_flag(Obj_flags::invisible))
 			obj->paint_invisible(paintx, painty);

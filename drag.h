@@ -26,6 +26,7 @@
 #include "rect.h"
 #include "singles.h"
 #include "tiles.h"
+#include <memory>
 
 class Gump;
 class Gump_button;
@@ -49,7 +50,7 @@ class Dragging_info : public Game_singletons {
 	int mousex, mousey, paintx, painty;
 	Mouse::Mouse_shapes mouse_shape;// Save starting mouse shape.
 	Rectangle rect;         // Rectangle to repaint.
-	Image_buffer *save;     // Image below dragged object.
+	std::unique_ptr<Image_buffer> save;     // Image below dragged object.
 	bool okay;          // True if drag constructed okay.
 	bool possible_theft;        // Moved enough to be 'theft'.
 
