@@ -92,17 +92,15 @@ int Time_queue::remove(
     Time_sensitive *obj,
     uintptr udata
 ) {
-	if (data.empty())
-		return 0;
-	for (auto it = data.begin();
-	        it != data.end(); ++it) {
-		if (it->handler == obj && it->udata == udata) {
-			obj->queue_cnt--;
-			data.erase(it);
-			return 1;
-		}
+    auto it = std::find_if(data.begin(), data.end(),
+            [&](const auto& el) { return el.handler == obj && el.udata == udata; }
+    );
+    bool found = it != data.end();
+    if (found) {
+		obj->queue_cnt--;
+		data.erase(it);
 	}
-	return 0;         // Not found.
+    return found;
 }
 
 /*
