@@ -149,8 +149,6 @@ long Time_queue::find_delay(
 void Time_queue::activate0(
     uint32 curtime      // Current time.
 ) {
-	if (data.empty())
-		return;
 	Queue_entry ent;
 	do {
 		ent = data.front();
