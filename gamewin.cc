@@ -615,7 +615,7 @@ void Game_window::set_map(
 /*
  *  Get map patch list.
  */
-Map_patch_collection *Game_window::get_map_patches() {
+Map_patch_collection& Game_window::get_map_patches() {
 	return map->get_map_patches();
 }
 

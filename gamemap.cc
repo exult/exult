@@ -131,7 +131,7 @@ Game_map::Game_map(
 ) :
 	num(n), didinit(false),
 	map_modified(false), caching_out(0),
-	map_patches(new Map_patch_collection) {
+	map_patches(std::make_unique<Map_patch_collection>()) {
 }
 
 /*
@@ -142,7 +142,6 @@ Game_map::~Game_map(
 ) {
 	clear();            // Delete all objects, chunks.
 	delete chunks;
-	delete map_patches;
 }
 
 /*
