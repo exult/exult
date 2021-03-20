@@ -166,8 +166,6 @@ void Time_queue::activate0(
 void Time_queue::activate_always(
     uint32 curtime      // Current time.
 ) {
-	if (data.empty())
-		return;
 	auto newStart = std::stable_partition(data.begin(), data.end(),
 		[&] (const auto& el) { return !(curtime < el.time); });
 
