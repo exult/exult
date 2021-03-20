@@ -229,8 +229,7 @@ void Shape_manager::load(
 
 	read_shape_info();
 
-	delete fonts;
-	fonts = new Fonts_vga_file();
+	fonts = make_unique<Fonts_vga_file>();
 	fonts->init();
 
 	// Get translucency tables.
@@ -374,7 +373,6 @@ void Shape_manager::reload_shape_info(
  *  Clean up.
  */
 Shape_manager::~Shape_manager() {
-	delete fonts;
 	assert(this == instance);
 	instance = nullptr;
 }

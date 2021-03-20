@@ -21,12 +21,14 @@
 
 #include "exult_constants.h"
 #include "shapevga.h"
+#include "fontvga.h"
 #include "singles.h"
 #include <vector>
+#include <memory>
+
 
 class Shape_frame;
 class Shape_info;
-class Fonts_vga_file;
 class Font;
 class Image_buffer8;
 struct Cursor_info;
@@ -57,7 +59,7 @@ class Shape_manager : public Game_singletons {
 	static Shape_manager *instance; // There shall be only one.
 	Shapes_vga_file shapes;     // Main 'shapes.vga' file.
 	Vga_file files[static_cast<int>(SF_COUNT)]; // The files we manage.
-	Fonts_vga_file *fonts = nullptr;      // "fonts.vga" file.
+	std::unique_ptr<Fonts_vga_file> fonts = nullptr;      // "fonts.vga" file.
 	std::vector<Xform_palette> xforms;  // Transforms translucent colors
 	//   0xf4 through 0xfe.
 	Xform_palette *invis_xform; // For showing invisible NPC's.
