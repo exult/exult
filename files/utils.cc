@@ -706,12 +706,9 @@ void setup_data_dir(
 	if (!sep) sep = std::strrchr(runpath, '\\');
 	if (sep) {
 		int plen = sep - runpath;
-		char *dpath = new char[plen + 10];
-		std::strncpy(dpath, runpath, plen + 1);
-		dpath[plen + 1] = 0;
-		std::strcat(dpath, "data");
+		std::string dpath(runpath, plen + 1);
+		dpath += "data";
 		add_system_path("<DATA>", dpath);
-		delete [] dpath;
 	} else
 		add_system_path("<DATA>", "data");
 	if (U7exists(EXULT_FLX))
