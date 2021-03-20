@@ -86,31 +86,18 @@ bool Map_patch_modify::apply(
 }
 
 /*
- *  Delete all the patches.
- */
-
-Map_patch_collection::~Map_patch_collection(
-) {
-	for (auto& patchlist : patches) {
-		for (auto *patch : patchlist.second) {
-			delete patch;
-		}
-	}
-}
-
-/*
  *  Add a new patch.
  */
 
 void Map_patch_collection::add(
-    Map_patch *p
+    std::unique_ptr<Map_patch> p
 ) {
 	// Get superchunk coords.
 	int sx = p->spec.loc.tx / c_tiles_per_schunk;
 	int sy = p->spec.loc.ty / c_tiles_per_schunk;
 	// Get superchunk # (0-143).
 	int schunk = sy * c_num_schunks + sx;
-	patches[schunk].push_back(p);
+	patches[schunk].push_back(std::move(p));
 }
 
 /*
@@ -123,7 +110,7 @@ void Map_patch_collection::apply(
 	auto it1 = patches.find(schunk);
 	if (it1 != patches.end()) { // Found list for superchunk?
 		Map_patch_list &lst = it1->second;
-		for (auto *it2 : lst)
+		for (auto& it2 : lst)
 			it2->apply();    // Apply each one in list.
 	}
 }

@@ -200,38 +200,38 @@ SI_Game::SI_Game() {
 	if (GAME_SI && !is_si_beta()) {
 		Map_patch_collection *mp = gwin->get_map_patches();
 		// Egg by "PC pirate" in forest:
-		mp->add(new Map_patch_remove(Object_spec(
+		mp->add(std::make_unique<Map_patch_remove>(Object_spec(
 		                                 Tile_coord(647, 1899, 0), 275, 7, 1)));
 		// Carpets above roof in Monitor:
-		mp->add(new Map_patch_remove(Object_spec(
+		mp->add(std::make_unique<Map_patch_remove>(Object_spec(
 		                                 Tile_coord(1035, 2572, 8), 483, 1, 0), true));
-		mp->add(new Map_patch_remove(Object_spec(
+		mp->add(std::make_unique<Map_patch_remove>(Object_spec(
 		                                 Tile_coord(1034, 2571, 6), 483, 1, 0)));
-		mp->add(new Map_patch_remove(Object_spec(
+		mp->add(std::make_unique<Map_patch_remove>(Object_spec(
 		                                 Tile_coord(1034, 2571, 5), 483, 1, 0), true));
 		// Neyobi under a fur:
-		mp->add(new Map_patch_modify(Object_spec(
+		mp->add(std::make_unique<Map_patch_modify>(Object_spec(
 		                                 Tile_coord(1012, 873, 0), 867, 13, 0),
 		                             Object_spec(
 		                                 Tile_coord(1013, 873, 1), 867, 13, 0)));
 		// Bread on the prep table in Moonshade
-		mp->add(new Map_patch_remove(Object_spec(
+		mp->add(std::make_unique<Map_patch_remove>(Object_spec(
 		                                 Tile_coord(2381, 1896, 2), 377, 1, 0)));
 		// Flour on Moonshade display table
-		mp->add(new Map_patch_remove(Object_spec(
+		mp->add(std::make_unique<Map_patch_remove>(Object_spec(
 		                                 Tile_coord(2378, 1890, 2), 863, 16, 0)));
 		// Dough on Moonshade display table
-		mp->add(new Map_patch_remove(Object_spec(
+		mp->add(std::make_unique<Map_patch_remove>(Object_spec(
 		                                 Tile_coord(2369, 1896, 2), 863, 17, 0)));
 		// Skullcrusher Mountains
 		//    music instruments in wall
-		mp->add(new Map_patch_remove(Object_spec(
+		mp->add(std::make_unique<Map_patch_remove>(Object_spec(
 		                                 Tile_coord(35, 1942, 0), 690, 0, 0)));
-		mp->add(new Map_patch_remove(Object_spec(
+		mp->add(std::make_unique<Map_patch_remove>(Object_spec(
 		                                 Tile_coord(35, 1954, 0), 692, 0, 0)));
 		// FIXME: eggs shouldn't spawn inside of walls
 		//    egg spawning spiders in wall
-		mp->add(new Map_patch_remove(Object_spec(
+		mp->add(std::make_unique<Map_patch_remove>(Object_spec(
 		                                 Tile_coord(60, 1937, 0), 275, 0, 0)));
 	}
 }
