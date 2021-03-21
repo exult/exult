@@ -72,14 +72,12 @@ int Time_queue::remove(
 ) {
 	auto toRemove = std::find_if(data.begin(), data.end(),
 			[obj](const auto& el) { return el.handler == obj; });
-	if (toRemove == data.end()) {
-		return 0;
-	} else {
+	auto found = toRemove != data.end();
+	if (found) {
 		(*toRemove).handler->queue_cnt--;
 		data.erase(toRemove);
-		return 1;
 	}
-	return 0;         // Not found.
+	return found;
 }
 
 /*
@@ -100,7 +98,7 @@ int Time_queue::remove(
 		obj->queue_cnt--;
 		data.erase(it);
 	}
-    return found;
+	return found;
 }
 
 /*
