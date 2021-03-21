@@ -164,18 +164,23 @@ void Time_queue::activate0(
 void Time_queue::activate_always(
     uint32 curtime      // Current time.
 ) {
-	auto newStart = std::stable_partition(data.begin(), data.end(),
-		[&] (const auto& el) { return !(curtime < el.time); });
-
-	std::for_each(data.begin(), newStart, [curtime](auto& ent) {
+	if (data.empty())
+		return;
+	Queue_entry ent;
+	for (auto it = data.begin();
+	        it != data.end() && !(curtime < (*it).time);) {
+		auto next = it;
+		++next;         // Get ->next in case we erase.
+		ent = *it;
 		Time_sensitive *obj = ent.handler;
 		if (obj->always) {
 			obj->queue_cnt--;
 			uintptr udata = ent.udata;
+			data.erase(it);
 			obj->handle_event(curtime, udata);
 		}
-	});
-	data.erase(data.begin(), newStart);
+		it = next;
+	}
 }
 
 /*
