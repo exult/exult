@@ -53,11 +53,9 @@ Dragging_info::Dragging_info(
 	old_foot(0, 0, 0, 0), old_lift(-1), quantity(obj->get_quantity()),
 	readied_index(-1), mousex(-1), mousey(-1), paintx(-1000), painty(-1000),
 	mouse_shape(Mouse::mouse->get_shape()), rect(0, 0, 0, 0),
-	save(nullptr), okay(true), possible_theft(false) {
+	okay(true), possible_theft(false) {
 	rect = gwin->get_shape_rect(obj.get());
 	rect.enlarge(8);        // Make a little bigger.
-	// Create buffer to backup background.
-	//save = gwin->get_win()->create_buffer(rect.w, rect.h);
 }
 
 /*
@@ -70,7 +68,7 @@ Dragging_info::Dragging_info(
 	old_foot(0, 0, 0, 0), old_lift(-1), quantity(0),
 	readied_index(-1), mousex(x), mousey(y), paintx(-1000), painty(-1000),
 	mouse_shape(Mouse::mouse->get_shape()), rect(0, 0, 0, 0),
-	save(nullptr), okay(false), possible_theft(false) {
+	okay(false), possible_theft(false) {
 	// First see if it's a gump.
 	gump = gumpman->find_gump(x, y);
 	Game_object *to_drag = nullptr;
@@ -113,15 +111,6 @@ Dragging_info::Dragging_info(
 		obj = to_drag->shared_from_this();
 	}
 	okay = true;
-}
-
-/*
- *  Delete dragging info.
- */
-
-Dragging_info::~Dragging_info(
-) {
-	delete save;
 }
 
 /*
@@ -198,8 +187,6 @@ bool Dragging_info::start(
 
 	Rectangle crect = gwin->clip_to_win(rect);
 	gwin->paint(crect);     // Paint over obj's. area.
-	// Create buffer to backup background.
-	//save = gwin->get_win()->create_buffer(rect.w, rect.h);
 	return true;
 }
 
@@ -217,9 +204,7 @@ bool Dragging_info::moved(
 	if (rect.w == 0) {
 		if (!start(x, y))
 			return false;
-	} else if (save)            // Not first time?  Restore beneath.
-		gwin->get_win()->put(save, rect.x, rect.y);
-	else
+	} else
 		gwin->add_dirty(gwin->clip_to_win(rect));
 	gwin->set_painted();
 	int deltax = x - mousex;
@@ -244,8 +229,6 @@ void Dragging_info::paint(
 ) {
 	if (!rect.w)            // Not moved enough yet?
 		return;
-	if (save)           // Save background.
-		gwin->get_win()->get(save, rect.x, rect.y);
 	if (obj) {
 		if (obj->get_flag(Obj_flags::invisible))
 			obj->paint_invisible(paintx, painty);
