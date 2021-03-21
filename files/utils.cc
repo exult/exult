@@ -840,17 +840,7 @@ void U7copy(
 		out.close();
 		throw;
 	}
-	size_t bufsize = 0x8000;
-	std::vector<char> buf(0x8000);
-	in.seekg(0, ios::end);      // Get filesize.
-	size_t filesize = in.tellg();
-	in.seekg(0, ios::beg);
-	while (filesize > 0) {      // Copy.
-		size_t toread = bufsize < filesize ? bufsize : filesize;
-		in.read(&buf[0], toread);
-		out.write(&buf[0], toread);
-		filesize -= toread;
-	}
+	out << in.rdbuf();
 	out.flush();
 	bool inok = in.good();
 	bool outok = out.good();
