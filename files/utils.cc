@@ -193,9 +193,9 @@ string get_system_path(const string &path) {
 	if (pos == pos2 && pos3 != string::npos) {
 		int num_chars = GetShortPathName(new_path.c_str(), nullptr, 0);
 		if (num_chars > 0) {
-			std::vector<char> short_path(num_chars + 1);
+			std::string short_path(num_chars + 1);
 			GetShortPathName(new_path.c_str(), &short_path[0], num_chars + 1);
-			new_path = std::string(short_path.begin(), short_path.end());
+			new_path = std::move(short_path);
 		}
 		//else std::cerr << "Warning unable to get short path for: " << new_path << std::endl;
 	}

@@ -93,7 +93,6 @@ public:
 class Map_patch_collection {
 	Map_patch_map patches;
 public:
-	~Map_patch_collection() = default;
 	void add(std::unique_ptr<Map_patch> p);     // Add a patch.
 	void apply(int schunk);     // Apply for given superchunk.
 };

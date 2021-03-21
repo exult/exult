@@ -63,7 +63,6 @@ public:
 	// Create for dropping new object.
 	Dragging_info(Game_object_shared newobj);
 	Dragging_info(int x, int y);    // Create for given mouse position.
-	~Dragging_info();
 	bool moved(int x, int y);   // Mouse moved.
 	void paint();           // Paint object being dragged.
 	bool drop(int x, int y);    // Drop obj. at given position.

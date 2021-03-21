@@ -74,7 +74,7 @@ class Game_map {
 	char *schunk_cache[144];
 	int  schunk_cache_sizes[144];
 	int caching_out;        // >0 in 'cache_out_schunk'.
-    std::unique_ptr<Map_patch_collection> map_patches;
+	std::unique_ptr<Map_patch_collection> map_patches;
 
 	Map_chunk *create_chunk(int cx, int cy);
 	static Chunk_terrain *read_terrain(int chunk_num);

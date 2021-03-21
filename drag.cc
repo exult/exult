@@ -116,12 +116,6 @@ Dragging_info::Dragging_info(
 }
 
 /*
- *  Delete dragging info.
- */
-
-Dragging_info::~Dragging_info() = default;
-
-/*
  *  First motion.
  *
  *  Output: false if failed.
@@ -242,9 +236,9 @@ void Dragging_info::paint(
 	if (!rect.w)            // Not moved enough yet?
 		return;
 	if (save) {          // Save background.
-        Image_buffer* tmp;
+		Image_buffer* tmp;
 		gwin->get_win()->get(tmp, rect.x, rect.y);
-        save.reset(tmp);
+		save.reset(tmp);
     }
 	if (obj) {
 		if (obj->get_flag(Obj_flags::invisible))
