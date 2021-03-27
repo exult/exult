@@ -41,12 +41,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "u7drag.h"
 #include "utils.h"
 
-#ifdef _WIN32
-#	include "windrag.h"
-
-#	include <windows.h>
-#endif
-
 #include <glib.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -540,46 +534,6 @@ gint Shape_chooser::expose(
  *  Handle a mouse drag event.
  */
 
-#ifdef _WIN32
-
-static bool win32_button = false;
-
-gint Shape_chooser::win32_drag_motion(
-    GtkWidget *widget,      // The view window.
-    GdkEventMotion *event,
-    gpointer data           // ->Shape_chooser.
-) {
-	ignore_unused_variable_warning(widget, event);
-	if (win32_button) {
-		win32_button = false;
-
-		// prepare the dragged data
-		windragdata wdata;
-
-		// This call allows us to recycle the data transfer initialization code.
-		//  It's clumsy, but far easier to maintain.
-		drag_data_get(nullptr, nullptr, reinterpret_cast<GtkSelectionData *>(&wdata),
-		              U7_TARGET_SHAPEID, 0, data);
-
-		POINT pnt;
-		GetCursorPos(&pnt);
-
-		LPDROPSOURCE idsrc = new Windropsource(nullptr, pnt.x, pnt.y);
-		LPDATAOBJECT idobj = new Winstudioobj(wdata);
-		DWORD dndout;
-
-		HRESULT res = DoDragDrop(idobj, idsrc, DROPEFFECT_COPY, &dndout);
-		if (FAILED(res)) {
-			g_warning("Oops! Something is wrong with OLE2 DnD..");
-		}
-
-		idobj->Release();   // Not sure if we really need this. However, it doesn't hurt either.
-		idsrc->Release();
-	}
-
-	return true;
-}
-#else
 gint Shape_chooser::drag_motion(
     GtkWidget *widget,      // The view window.
     GdkEventMotion *event,
@@ -592,7 +546,6 @@ gint Shape_chooser::drag_motion(
 		                    U7_TARGET_SHAPEID, reinterpret_cast<GdkEvent *>(event));
 	return true;
 }
-#endif
 
 /*
  *  Handle a mouse button-press event.
@@ -621,14 +574,6 @@ gint Shape_chooser::mouse_press(
 		if (info[i].box.distance(absx, absy) <= 2) {
 			// Found the box?
 			// Indicate we can drag.
-#ifdef _WIN32
-// Here, we have to override GTK+'s Drag and Drop, which is non-OLE and
-// usually stucks outside the program window. I think it's because
-// the dragged shape only receives mouse motion events when the new mouse pointer
-// position is *still* inside the shape. So if you move the mouse too fast,
-// we are stuck.
-			win32_button = true;
-#endif
 			new_selected = i;
 			break;
 		} else if (info[i].box.y - voffset >= config_height)
@@ -1759,15 +1704,10 @@ void Shape_chooser::drag_data_get(
 	                           shinfo.framenum);
 	cout << "Setting selection data (" << shinfo.shapenum <<
 	     '/' << shinfo.framenum << ')' << endl;
-#ifdef _WIN32
-	auto *wdata = reinterpret_cast<windragdata *>(seldata);
-	wdata->assign(info, len, buf);
-#else
 	// Set data.
 	gtk_selection_data_set(seldata,
 	                       gtk_selection_data_get_target(seldata),
 	                       8, buf, len);
-#endif
 }
 
 /*
@@ -2343,14 +2283,8 @@ Shape_chooser::Shape_chooser(
 	// Mouse motion.
 	g_signal_connect(G_OBJECT(draw), "drag-begin",
 	                 G_CALLBACK(drag_begin), this);
-#ifdef _WIN32
-// required to override GTK+ Drag and Drop
-	g_signal_connect(G_OBJECT(draw), "motion-notify-event",
-	                 G_CALLBACK(win32_drag_motion), this);
-#else
 	g_signal_connect(G_OBJECT(draw), "motion-notify-event",
 	                 G_CALLBACK(drag_motion), this);
-#endif
 	g_signal_connect(G_OBJECT(draw), "drag-data-get",
 	                 G_CALLBACK(drag_data_get), this);
 	gtk_container_add(GTK_CONTAINER(frame), draw);

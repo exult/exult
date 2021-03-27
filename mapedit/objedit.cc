@@ -112,18 +112,6 @@ C_EXPORT gboolean on_obj_pos_changed(
 	return TRUE;
 }
 
-#ifdef _WIN32
-
-void ExultStudio::Obj_shape_dropped(int shape, int frame, int x, int y, void *data) {
-	cout << "Dropped a shape: " << shape << "," << frame << " " << data << endl;
-	ignore_unused_variable_warning(x, y);
-	auto *studio = static_cast<ExultStudio *>(data);
-	Shape_single::on_shape_dropped(U7_SHAPE_SHAPES, shape, frame, studio->obj_single);
-}
-
-#endif
-
-
 /*
  *  Open the object-editing window.
  */
@@ -132,13 +120,7 @@ void ExultStudio::open_obj_window(
     unsigned char *data,        // Serialized object.
     int datalen
 ) {
-#ifdef _WIN32
-	bool first_time = false;
-#endif
 	if (!objwin) {          // First time?
-#ifdef _WIN32
-		first_time = true;
-#endif
 		objwin = get_widget("obj_window");
 		// Note: vgafile can't be null here.
 		if (palbuf) {
@@ -158,12 +140,6 @@ void ExultStudio::open_obj_window(
 	if (!init_obj_window(data, datalen))
 		return;
 	gtk_widget_show(objwin);
-#ifdef _WIN32
-	if (first_time || !objdnd)
-		Windnd::CreateStudioDropDest(objdnd, objhwnd,
-		                             ExultStudio::Obj_shape_dropped,
-		                             nullptr, nullptr, this);
-#endif
 }
 
 /*
@@ -174,9 +150,6 @@ void ExultStudio::close_obj_window(
 ) {
 	if (objwin) {
 		gtk_widget_hide(objwin);
-#ifdef _WIN32
-		Windnd::DestroyStudioDropDest(objdnd, objhwnd);
-#endif
 	}
 }
 

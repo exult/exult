@@ -202,13 +202,14 @@ static void set_scaleval(int new_scaleval);
 #ifdef USE_EXULTSTUDIO
 static void Move_dragged_shape(int shape, int frame, int x, int y,
                                int prevx, int prevy, bool show);
+#ifdef _WIN32
 static void Move_dragged_combo(int xtiles, int ytiles, int tiles_right,
                                int tiles_below, int x, int y, int prevx, int prevy, bool show);
-static void Drop_dragged_shape(int shape, int frame, int x, int y, void *d);
-static void Drop_dragged_chunk(int chunknum, int x, int y, void *d);
-static void Drop_dragged_npc(int npcnum, int x, int y, void *d);
-static void Drop_dragged_combo(int cnt, U7_combo_data *combo,
-                               int x, int y, void *d);
+#endif
+static void Drop_dragged_shape(int shape, int frame, int x, int y);
+static void Drop_dragged_chunk(int chunknum, int x, int y);
+static void Drop_dragged_npc(int npcnum, int x, int y);
+static void Drop_dragged_combo(int cnt, U7_combo_data *combo, int x, int y);
 #endif
 static void BuildGameMap(BaseGameInfo *game, int mapnum);
 static void Handle_events();
@@ -973,7 +974,7 @@ static void Paint_with_shape(
 		cheat.set_edit_shape(shnum, nextframe);
 	} else
 		frnum = cheat.get_edit_frame();
-	Drop_dragged_shape(shnum, frnum, event.button.x, event.button.y, nullptr);
+	Drop_dragged_shape(shnum, frnum, event.button.x, event.button.y);
 }
 
 /*
@@ -998,7 +999,7 @@ static void Paint_with_chunk(
 	lastcx = cx;
 	lastcy = cy;
 	int chnum = cheat.get_edit_chunknum();
-	Drop_dragged_chunk(chnum, event.button.x, event.button.y, nullptr);
+	Drop_dragged_chunk(chnum, event.button.x, event.button.y);
 }
 
 /*
@@ -1692,7 +1693,7 @@ static void Handle_event(
 			if (shape >= 0) {   // Dropping a shape?
 				if (file == U7_SHAPE_SHAPES)
 					// For now, just allow "shapes.vga".
-					Drop_dragged_shape(shape, frame, x, y, nullptr);
+					Drop_dragged_shape(shape, frame, x, y);
 			}
 		} else if (Is_u7_chunkid(data) == true) {
 			// A whole chunk.
@@ -1700,14 +1701,14 @@ static void Handle_event(
 			Get_u7_chunkid(data, chunknum);
 			cout << "(EXULT) SDL_DROPFILE Event, Chunk: num = " << chunknum << endl;
 			if (chunknum >= 0) { // A whole chunk.
-				Drop_dragged_chunk(chunknum, x, y, nullptr);
+				Drop_dragged_chunk(chunknum, x, y);
 			}
 		} else if (Is_u7_npcid(data) == true) {
 			int npcnum;
 			Get_u7_npcid(data, npcnum);
 			cout << "(EXULT) SDL_DROPFILE Event, Npc: num = " << npcnum << endl;
 			if (npcnum >= 0) { // An NPC.
-				Drop_dragged_npc(npcnum, x, y, nullptr);
+				Drop_dragged_npc(npcnum, x, y);
 			}
 		} else if (Is_u7_comboid(data) == true) {
 			int combo_xtiles, combo_ytiles, combo_tiles_right, combo_tiles_below, combo_cnt;
@@ -1719,7 +1720,7 @@ static void Handle_event(
 			     << ", tiles_below = " << combo_tiles_below
 			     << ", count = " << combo_cnt << endl;
 			if (combo_cnt >= 0 && combo) {
-				Drop_dragged_combo(combo_cnt, combo, x, y, nullptr);
+				Drop_dragged_combo(combo_cnt, combo, x, y);
 			}
 			delete[] combo;
 		}
@@ -2567,6 +2568,7 @@ static void Move_dragged_shape(
 		gwin->show();
 }
 
+#ifdef _WIN32
 /*
  *  Show where a shape dragged from a shape-chooser will go.
  */
@@ -2584,6 +2586,7 @@ static void Move_dragged_combo(
 	if (show)
 		gwin->show();
 }
+#endif
 
 /*
  *  Create an object as moveable (IREG) or fixed.
@@ -2612,11 +2615,9 @@ static Game_object_shared Create_object(
  */
 
 static void Drop_dragged_shape(
-    int shape, int frame,       // What to create.
-    int x, int y,           // Mouse coords. within window.
-    void *data          // Passed data, unused by exult
+    int shape, int frame,   // What to create.
+    int x, int y            // Mouse coords. within window.
 ) {
-	ignore_unused_variable_warning(data);
 	if (!cheat.in_map_editor()) // Get into editing mode.
 		cheat.toggle_map_editor();
 	cheat.clear_selected();     // Remove old selected.
@@ -2659,10 +2660,8 @@ static void Drop_dragged_shape(
 
 static void Drop_dragged_chunk(
     int chunknum,           // Index in 'u7chunks'.
-    int x, int y,           // Mouse coords. within window.
-    void *data          // Passed data, unused by exult
+    int x, int y            // Mouse coords. within window.
 ) {
-	ignore_unused_variable_warning(data);
 	if (!cheat.in_map_editor()) // Get into editing mode.
 		cheat.toggle_map_editor();
 	gwin->get_win()->screen_to_game(x, y, false, x, y);
@@ -2683,10 +2682,8 @@ static void Drop_dragged_chunk(
 
 static void Drop_dragged_npc(
     int npcnum,
-    int x, int y,           // Mouse coords. within window.
-    void *data          // Passed data, unused by exult
+    int x, int y            // Mouse coords. within window.
 ) {
-	ignore_unused_variable_warning(data);
 	if (!cheat.in_map_editor()) // Get into editing mode.
 		cheat.toggle_map_editor();
 	gwin->get_win()->screen_to_game(x, y, false, x, y);
@@ -2714,10 +2711,8 @@ static void Drop_dragged_npc(
 void Drop_dragged_combo(
     int cnt,            // # shapes.
     U7_combo_data *combo,       // The shapes.
-    int x, int y,           // Mouse coords. within window.
-    void *data          // Passed data, unused by exult
+    int x, int y            // Mouse coords. within window.
 ) {
-	ignore_unused_variable_warning(data);
 	if (!cheat.in_map_editor()) // Get into editing mode.
 		cheat.toggle_map_editor();
 	cheat.clear_selected();     // Remove old selected.

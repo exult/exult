@@ -40,10 +40,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cstdlib>
 #include <cstring>
 
-#ifdef _WIN32
-#	include "windrag.h"
-#endif
-
 using std::cout;
 using std::endl;
 
@@ -220,37 +216,11 @@ static bool Get_schedule_line(
  *  Open the npc-editing window.
  */
 
-#ifdef _WIN32
-
-void ExultStudio::Npc_shape_dropped(int shape, int frame, int x, int y, void *data) {
-	ignore_unused_variable_warning(x, y);
-	if (shape < 150)
-		return;
-	cout << "Dropped a shape: " << shape << "," << frame << " " << data << endl;
-	auto *studio = static_cast<ExultStudio *>(data);
-	Shape_single::on_shape_dropped(U7_SHAPE_SHAPES, shape, frame, studio->npc_single);
-}
-
-void ExultStudio::Npc_face_dropped(int shape, int frame, int x, int y, void *data) {
-	cout << "Dropped a face: " << shape << "," << frame << " " << data << endl;
-	ignore_unused_variable_warning(x, y);
-	auto *studio = static_cast<ExultStudio *>(data);
-	Shape_single::on_shape_dropped(U7_SHAPE_FACES, shape, frame, studio->npc_face_single);
-}
-
-#endif
-
 void ExultStudio::open_npc_window(
     unsigned char *data,        // Serialized npc, or null.
     int datalen
 ) {
-#ifdef _WIN32
-	bool first_time = false;
-#endif
 	if (!npcwin) {          // First time?
-#ifdef _WIN32
-		first_time = true;
-#endif
 		npcwin = get_widget("npc_window");
 
 		if (vgafile && palbuf) {
@@ -292,14 +262,6 @@ void ExultStudio::open_npc_window(
 	} else
 		init_new_npc();
 	gtk_widget_show(npcwin);
-#ifdef _WIN32
-	if (first_time || !npcdnd)
-		Windnd::CreateStudioDropDest(npcdnd, npchwnd,
-		                             ExultStudio::Npc_shape_dropped,
-		                             nullptr,
-		                             ExultStudio::Npc_face_dropped, this);
-
-#endif
 }
 
 /*
@@ -310,9 +272,6 @@ void ExultStudio::close_npc_window(
 ) {
 	if (npcwin) {
 		gtk_widget_hide(npcwin);
-#ifdef _WIN32
-		Windnd::DestroyStudioDropDest(npcdnd, npchwnd);
-#endif
 	}
 }
 

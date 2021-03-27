@@ -119,19 +119,6 @@ C_EXPORT void on_teleport_coord_toggled(
 	studio->set_sensitive("teleport_eggnum", !on);
 }
 
-#ifdef _WIN32
-
-void ExultStudio::Egg_monster_dropped(int shape, int frame, int x, int y, void *data) {
-	ignore_unused_variable_warning(x, y);
-	if (shape < 150)
-		return;
-	cout << "Dropped a shape: " << shape << "," << frame << " " << data << endl;
-	auto *studio = static_cast<ExultStudio *>(data);
-	Shape_single::on_shape_dropped(U7_SHAPE_SHAPES, shape, frame, studio->egg_monster_single);
-}
-
-#endif
-
 /*
  *  Open the egg-editing window.
  */
@@ -183,13 +170,6 @@ void ExultStudio::open_egg_window(
 		set_sensitive("teleport_eggnum", false);
 	}
 	gtk_widget_show(eggwin);
-
-#ifdef _WIN32
-	if (first_time || !eggdnd)
-		Windnd::CreateStudioDropDest(eggdnd, egghwnd,
-		                             ExultStudio::Egg_monster_dropped,
-		                             nullptr, nullptr, this);
-#endif
 }
 
 /*
@@ -200,9 +180,6 @@ void ExultStudio::close_egg_window(
 ) {
 	if (eggwin) {
 		gtk_widget_hide(eggwin);
-#ifdef _WIN32
-		Windnd::DestroyStudioDropDest(eggdnd, egghwnd);
-#endif
 	}
 }
 

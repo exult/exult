@@ -98,7 +98,6 @@ using Msg_callback = void (*)(Exult_server::Msg_type id,
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
-#include "windrag.h"
 #define C_EXPORT extern "C" __declspec(dllexport)
 #endif
 
@@ -185,19 +184,6 @@ private:
 	int curr_game;  // Which game is loaded
 	int curr_mod;   // Which mod is loaded, or -1 for none
 	std::string game_encoding;  // Character set for current game/mod.
-	// For Win32 DND
-#ifdef _WIN32
-	HWND            egghwnd;
-	Windnd          *eggdnd;
-	HWND            npchwnd;
-	Windnd          *npcdnd;
-	HWND            objhwnd;
-	Windnd          *objdnd;
-	HWND            conthwnd;
-	Windnd          *contdnd;
-	HWND            shphwnd;
-	Windnd          *shpdnd;
-#endif
 	// Server data.
 	int         server_socket;
 	gint            server_input_tag;
@@ -305,18 +291,12 @@ public:
 	int init_obj_window(unsigned char *data, int datalen);
 	int save_obj_window();
 	void rotate_obj();
-#ifdef _WIN32
-	static void Obj_shape_dropped(int shape, int frame, int x, int y, void *data);
-#endif
 	// Containers:
 	void open_cont_window(unsigned char *data, int datalen);
 	void close_cont_window();
 	int init_cont_window(unsigned char *data, int datalen);
 	int save_cont_window();
 	void rotate_cont();
-#ifdef _WIN32
-	static void Cont_shape_dropped(int shape, int frame, int x, int y, void *data);
-#endif
 	// Barges:
 	void open_barge_window(unsigned char *data = nullptr, int datalen = 0);
 	void close_barge_window();
@@ -327,9 +307,6 @@ public:
 	void close_egg_window();
 	int init_egg_window(unsigned char *data, int datalen);
 	int save_egg_window();
-#ifdef _WIN32
-	static void Egg_monster_dropped(int shape, int frame, int x, int y, void *data);
-#endif
 	// NPC's:
 	void open_npc_window(unsigned char *data = nullptr, int datalen = 0);
 	void close_npc_window();
@@ -338,10 +315,6 @@ public:
 	int save_npc_window();
 	void update_npc(); // updates the npc browser if it is open
 	static void schedule_btn_clicked(GtkWidget *btn, gpointer data);
-#ifdef _WIN32
-	static void Npc_shape_dropped(int shape, int frame, int x, int y, void *data);
-	static void Npc_face_dropped(int shape, int frame, int x, int y, void *data);
-#endif
 	// Shapes:
 	GdkPixbuf *shape_image(     // The GdkPixbuf should be g_object_unrefed.
 	    Vga_file *shpfile, int shnum, int frnum, bool transparent);

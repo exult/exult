@@ -550,6 +550,10 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 	ucbrowsewin(nullptr), gameinfowin(nullptr),
 	game_type(BLACK_GATE), expansion(false), sibeta(false), curr_game(-1), curr_mod(-1),
 	server_socket(-1), server_input_tag(-1), waiting_for_server(nullptr) {
+#ifdef _WIN32
+	// Enable the GTK+ 3 OLE Drag and Drop
+	g_setenv("GDK_WIN32_USE_EXPERIMENTAL_OLE2_DND", "1", 0);
+#endif
 	// Initialize the various subsystems
 	self = this;
 	gtk_init(&argc, &argv);

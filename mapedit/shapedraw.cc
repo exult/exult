@@ -267,7 +267,6 @@ gulong Shape_draw::enable_drop(
     void *udata         // Passed to callback.
 ) {
 	gtk_widget_realize(draw);//???????
-#ifndef _WIN32
 	drop_callback = callback;
 	drop_user_data = udata;
 	GtkTargetEntry tents[3];
@@ -285,10 +284,6 @@ gulong Shape_draw::enable_drop(
 
 	return g_signal_connect(G_OBJECT(draw), "drag-data-received",
 	                        G_CALLBACK(drag_data_received), this);
-#else
-	ignore_unused_variable_warning(callback, udata);
-	return 0;
-#endif
 }
 
 /*

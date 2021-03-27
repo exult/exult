@@ -190,13 +190,8 @@ public:
 	static void frame_changed(GtkAdjustment *adj, gpointer data);
 	static void all_frames_toggled(GtkToggleButton *btn,
 	                               gpointer user_data);
-#ifdef _WIN32
-	static gint win32_drag_motion(GtkWidget *widget, GdkEventMotion *event,
-	                              gpointer data);
-#else
 	static gint drag_motion(GtkWidget *widget, GdkEventMotion *event,
 	                        gpointer data);
-#endif
 	// Menu items:
 	static void on_shapes_popup_info_activate(
 	    GtkMenuItem *item, gpointer udata);

@@ -134,13 +134,8 @@ public:
 	void delete_response(const unsigned char *data, int datalen);
 	void move(bool upwards) override;    // Move current selected chunk.
 	void swap_response(const unsigned char *data, int datalen);
-#ifdef _WIN32
-	static gint win32_drag_motion(GtkWidget *widget, GdkEventMotion *event,
-	                              gpointer data);
-#else
 	static gint drag_motion(GtkWidget *widget, GdkEventMotion *event,
 	                        gpointer data);
-#endif
 };
 
 #endif
