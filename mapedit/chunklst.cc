@@ -481,8 +481,8 @@ void Chunk_chooser::drag_data_received(
 	     << gdk_atom_name(gtk_selection_data_get_data_type(seldata))
 	     << "'" << endl;
 	if ((gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_CHUNKID_NAME, 0) ||
-	     gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_GENERIC_NAME_X11, 0) ||
-	     gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_GENERIC_NAME_MACOSX, 0)) &&
+	     gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_DROPFILE_NAME_MIME, 0) ||
+	     gtk_selection_data_get_data_type(seldata) == gdk_atom_intern(U7_TARGET_DROPFILE_NAME_MACOSX, 0)) &&
 	        Is_u7_chunkid(gtk_selection_data_get_data(seldata)) &&
 	        gtk_selection_data_get_format(seldata) == 8 &&
 	        gtk_selection_data_get_length(seldata) > 0) {
@@ -504,11 +504,10 @@ void Chunk_chooser::enable_drop(
 		return;
 	drop_enabled = true;
 	gtk_widget_realize(draw);//???????
-#ifndef _WIN32
 	GtkTargetEntry tents[3];
 	tents[0].target = const_cast<char *>(U7_TARGET_CHUNKID_NAME);
-	tents[1].target = const_cast<char *>(U7_TARGET_GENERIC_NAME_X11);
-	tents[2].target = const_cast<char *>(U7_TARGET_GENERIC_NAME_MACOSX);
+	tents[1].target = const_cast<char *>(U7_TARGET_DROPFILE_NAME_MIME);
+	tents[2].target = const_cast<char *>(U7_TARGET_DROPFILE_NAME_MACOSX);
 	tents[0].flags = 0;
 	tents[1].flags = 0;
 	tents[2].flags = 0;
@@ -520,7 +519,6 @@ void Chunk_chooser::enable_drop(
 
 	g_signal_connect(G_OBJECT(draw), "drag-data-received",
 	                 G_CALLBACK(drag_data_received), this);
-#endif
 }
 
 /*

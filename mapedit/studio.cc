@@ -46,9 +46,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef _WIN32
 #	include "servewin32.h"
-
-#	include <ole2.h>
-#	include <windows.h>
 #else
 #	include <sys/socket.h>
 #	include <sys/un.h>
@@ -817,9 +814,6 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 	config->value("config/estudio/image_editor", iedit, "gimp");
 	image_editor = g_strdup(iedit.c_str());
 	config->set("config/estudio/image_editor", iedit, true);
-#ifdef _WIN32
-	OleInitialize(nullptr);
-#endif
 	// Init. 'Mode' menu, since Glade
 	//   doesn't seem to do it right.
 	GSList *group = nullptr;
@@ -835,9 +829,6 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 }
 
 ExultStudio::~ExultStudio() {
-#ifdef _WIN32
-	OleUninitialize();
-#endif
 	// Store main window size.
 	int w = w_at_close;
 	int h = h_at_close;

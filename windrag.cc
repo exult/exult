@@ -14,7 +14,7 @@
 #include "u7drag.h"
 #include "ignore_unused_variable_warning.h"
 
-static UINT CF_EXULT = RegisterClipboardFormat(U7_TARGET_GENERIC_NAME_X11);
+static UINT CF_EXULT = RegisterClipboardFormat(U7_TARGET_DROPFILE_NAME_MIME);
 
 // Just in case
 #ifndef DECLSPEC_NOTHROW

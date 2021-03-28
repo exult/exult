@@ -92,13 +92,9 @@ using Msg_callback = void (*)(Exult_server::Msg_type id,
                               const unsigned char *data, int datalen, void *client);
 
 #ifndef _WIN32
-#define C_EXPORT extern "C"
+#	define C_EXPORT extern "C"
 #else
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#define C_EXPORT extern "C" __declspec(dllexport)
+#	define C_EXPORT extern "C" __declspec(dllexport)
 #endif
 
 class ExultStudio {
