@@ -29,6 +29,7 @@
 #include <cstring>
 #include <string>
 #include <fstream>
+#include <system_error>
 #include <map>
 #include <vector>
 #include <list>
@@ -56,6 +57,13 @@
 #  include <CoreFoundation/CoreFoundation.h>
 #  include <sys/param.h> // for MAXPATHLEN
 #endif
+
+#ifdef HAVE_STDFILESYSTEM
+#  include <filesystem>
+namespace fs = std::filesystem;
+#else
+#  include "filesystem.h"
+#endif /* (HAVE_STDFILESYSTEM) */
 
 using std::cerr;
 using std::string;
@@ -361,25 +369,14 @@ void U7remove(
 ) {
 	string name = get_system_path(fname);
 
-#if defined(_WIN32) && defined(UNICODE)
-	const char *n = name.c_str();
-	int nLen = std::strlen(n) + 1;
-	LPTSTR lpszT = (LPTSTR) alloca(nLen * 2);
-	MultiByteToWideChar(CP_ACP, 0, n, -1, lpszT, nLen);
-	DeleteFile(lpszT);
-#else
-
-	struct stat sbuf;
-
+	std::error_code err;
 	int uppercasecount = 0;
 	do {
-		bool exists = (stat(name, &sbuf) == 0);
-		if (exists) {
-			std::remove(name.c_str());
+		if (fs::exists(name, err)) {
+			fs::remove(name, err);
 		}
 	} while (base_to_uppercase(name, ++uppercasecount));
-	std::remove(name.c_str());
-#endif
+	fs::remove(name, err);
 }
 
 /*
@@ -418,12 +415,10 @@ bool U7exists(
     const char *fname         // May be converted to upper-case.
 ) {
 	string name = get_system_path(fname);
-	struct stat sbuf;
-
+	std::error_code err;
 	int uppercasecount = 0;
 	do {
-		bool exists = (stat(name, &sbuf) == 0);
-		if (exists)
+		if(fs::exists(name, err))
 			return true; // found it!
 	} while (base_to_uppercase(name, ++uppercasecount));
 
@@ -444,19 +439,11 @@ int U7mkdir(
 	string::size_type pos = name.find_last_not_of('/');
 	if (pos != string::npos)
 		name.resize(pos + 1);
-#if defined(_WIN32) && defined(UNICODE)
-	const char *n = name.c_str();
-	int nLen = std::strlen(n) + 1;
-	LPTSTR lpszT = (LPTSTR) alloca(nLen * 2);
-	MultiByteToWideChar(CP_ACP, 0, n, -1, lpszT, nLen);
-	ignore_unused_variable_warning(mode);
-	return CreateDirectory(lpszT, nullptr);
-#elif defined(_WIN32)
-	ignore_unused_variable_warning(mode);
-	return mkdir(name.c_str());
-#else
-	return mkdir(name.c_str(), mode); // Create dir. if not already there.
-#endif
+
+	std::error_code err;
+	if (fs::create_directory(name, err))
+		fs::permissions(name, fs::perms(mode), err);
+	return err.value();
 }
 
 #ifdef _WIN32

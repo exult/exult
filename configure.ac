@@ -136,11 +136,8 @@ fi
 AC_PROG_CXX([$cxx_compilers])
 
 AC_LANG([C++])
-
-AX_CXX_COMPILE_STDCXX_17([noext],[optional])
-if test "$HAVE_CXX17" = "0"; then
-	AX_CXX_COMPILE_STDCXX_14([noext],[mandatory])
-fi
+AX_CXX_COMPILE_STDCXX_17([noext],[mandatory])
+AX_CXX17_HAVE_STDFS
 AC_PROG_CXXCPP
 
 AC_PROG_INSTALL
@@ -263,7 +260,6 @@ PKG_PROG_PKG_CONFIG
 # ---------------------------------------------------------------------
 # SDL
 # ---------------------------------------------------------------------
-
 EXULT_CHECK_SDL(:,AC_MSG_ERROR([[*** SDL not found!]]))
 
 # ---------------------------------------------------------------------
@@ -584,7 +580,7 @@ else
 	AC_MSG_RESULT(no)
 fi
 
-
+SYSLIBS="$SYSLIBS $STDFSLIB"
 # ---------------------------------------------------------------------
 # Alternative directories
 # ---------------------------------------------------------------------
