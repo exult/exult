@@ -88,7 +88,7 @@ template <typename T>
 void clean_vector(std::vector<T> &vec) {
 	vec.erase(std::remove_if(vec.begin(), vec.end(),
 		[](T& elem) {
-			return elem.is_invalid() || !elem.have_static();
+			return elem.is_invalid() && !elem.have_static();
 		}
 		), vec.end());
 }
