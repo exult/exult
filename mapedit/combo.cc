@@ -251,7 +251,9 @@ Combo::Combo(
 	starttx(c_num_tiles), startty(c_num_tiles),
 	tilefoot(0, 0, 0, 0) {
 	// Read info. the first time.
-	shapes_file->read_info(ExultStudio::get_instance()->get_game_type(), true);
+	ExultStudio *es = ExultStudio::get_instance();
+	if (shapes_file->read_info(es->get_game_type(), true))
+		es->set_shapeinfo_modified();
 }
 
 /*

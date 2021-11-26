@@ -790,7 +790,8 @@ void Shape_chooser::edit_shape_info(
 	const char *name = nullptr;
 	if (shapes_file) {
 		// Read info. the first time.
-		shapes_file->read_info(studio->get_game_type(), true);
+		if (shapes_file->read_info(studio->get_game_type(), true))
+			studio->set_shapeinfo_modified();
 		if (!shapes_file->has_info(shnum))
 			shapes_file->set_info(shnum, Shape_info());
 		info = &shapes_file->get_info(shnum);
@@ -2106,7 +2107,8 @@ void Shape_chooser::search(
 		return;         // Empty.
 	// Read info if not read.
 	ExultStudio *studio = ExultStudio::get_instance();
-	shapes_file->read_info(studio->get_game_type(), true);
+	if (shapes_file->read_info(studio->get_game_type(), true))
+		studio->set_shapeinfo_modified();
 	// Start with selection, or top.
 	int start = selected >= 0 ? selected : static_cast<int>(rows[row0].index0);
 	int i;
@@ -2406,7 +2408,8 @@ void Shape_chooser::update_statusbar(
 				g_snprintf(buf + len, sizeof(buf) - len,
 				           ":  '%s'", nm);
 			}
-			shapes_file->read_info(studio->get_game_type(), true);
+			if (shapes_file->read_info(studio->get_game_type(), true))
+				studio->set_shapeinfo_modified();
 			int frnum = info[selected].framenum;
 			const Shape_info &inf = shapes_file->get_info(shapenum);
 			const Frame_name_info *nminf;

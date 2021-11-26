@@ -755,7 +755,7 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 	cout << "Looking for CSS at '" << path << "'... ";
 	if (U7exists(path)) {
 		cout << "loading." << endl;
-		if(!gtk_css_provider_load_from_path(css_provider, path, &error)) {
+		if (!gtk_css_provider_load_from_path(css_provider, path, &error)) {
 			cerr << "Couldn't load css file: " << error->message << endl;
 			cerr << "ExultStudio proceeds without it. "
 			     << "You can fix it and reload it in 'File > Reload > Style CSS'" << endl;
@@ -2538,7 +2538,7 @@ C_EXPORT gboolean on_prefs_window_delete_event(
 void ExultStudio::reload_css(
 ) {
 	GError *error = nullptr;
-	if(!gtk_css_provider_load_from_path(css_provider, css_path, &error)) {
+	if (!gtk_css_provider_load_from_path(css_provider, css_path, &error)) {
 		cerr << "Couldn't reload the CSS file: " << error->message << endl;
 		prompt("Failed to reload the CSS file.\n"
 		       "ExultStudio proceeds without it. You can fix it and Reload it.", "OK");

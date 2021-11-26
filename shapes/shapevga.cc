@@ -168,17 +168,6 @@ class Actor_flags_functor {
 public:
 	void operator()(std::istream &in, int version, bool patch,
 	                Exult_Game game, Shape_info &info) {
-		// We already have monster data by this point.
-		Monster_info *minf = info.monstinf;
-		if (minf) {
-			// Deprecating old Monster_info based flags for these powers:
-			if (minf->can_teleport())
-				info.actor_flags |= Shape_info::teleports;
-			if (minf->can_summon())
-				info.actor_flags |= Shape_info::summons;
-			if (minf->can_be_invisible())
-				info.actor_flags |= Shape_info::turns_invisible;
-		}
 		setflags(in, version, patch, game, info);
 	}
 };
@@ -427,12 +416,12 @@ void Shapes_vga_file::reload_info(
  *  Output: 0 if error.
  */
 
-void Shapes_vga_file::read_info(
+bool Shapes_vga_file::read_info(
     Exult_Game game,        // Which game.
     bool editing            // True to allow files to not exist.
 ) {
 	if (info_read)
-		return;
+		return false;
 	info_read = true;
 	bool have_patch_path = is_system_path_defined("<PATCH>");
 
@@ -606,6 +595,33 @@ void Shapes_vga_file::read_info(
 		if (inf.ready_type == invalid_spot)
 			inf.ready_type = defready;
 	}
+	bool auto_modified = false;
+	for (auto &it : info) {
+		int shnum = it.first;
+		Shape_info &inf = it.second;
+		if (inf.has_monster_info()) {
+			Monster_info *minf = inf.monstinf;
+			if (minf->can_teleport()) {
+				std::cerr << "Shape " << shnum << " is a monster that can teleport, teleport flag moved from Monster info ( monster.dat ) to Actor info ( shape_info.txt ) as NPC flags." << std::endl;
+				inf.set_actor_flag(Shape_info::teleports);
+				minf->set_can_teleport(false);
+				auto_modified = true;
+			}
+			if (minf->can_summon()) {
+				std::cerr << "Shape " << shnum << " is a monster that can summon, summon flag moved from Monster info ( monster.dat ) to Actor info ( shape_info.txt ) as NPC flags." << std::endl;
+				inf.set_actor_flag(Shape_info::summons);
+				minf->set_can_summon(false);
+				auto_modified = true;
+			}
+			if (minf->can_be_invisible()) {
+				std::cerr << "Shape " << shnum << " is a monster that can be invisible, invisible flag moved from Monster info ( monster.dat ) to Actor info ( shape_info.txt ) as NPC flags." << std::endl;
+				inf.set_actor_flag(Shape_info::turns_invisible);
+				minf->set_can_be_invisible(false);
+				auto_modified = true;
+			}
+		}
+	}
+	return auto_modified;
 }
 
 /*

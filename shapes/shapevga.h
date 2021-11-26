@@ -55,7 +55,8 @@ public:
 	// Read additional data files.
 	void reload_info(Exult_Game game);
 	void fix_old_shape_info(Exult_Game game);
-	void read_info(Exult_Game game, bool editing = false);
+	// Returns true when some Shape data have been migrated.
+	bool read_info(Exult_Game game, bool editing = false);
 	void write_info(Exult_Game game);   // Write them back out.
 	Shape *new_shape(int shapenum) override;
 	Shape_info &get_info(int shapenum) {
