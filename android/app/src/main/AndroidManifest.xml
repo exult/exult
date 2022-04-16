@@ -57,8 +57,13 @@
         android:icon="@drawable/ankh"
         android:allowBackup="true"
         android:theme="@style/Theme.ExultLauncher"
-        android:hardwareAccelerated="true" >
-      
+        android:hardwareAccelerated="true"
+	android:appCategory="game" >
+
+  <meta-data
+        android:name="com.android.app.gamemode.performance.enabled"
+        android:value="true"/>
+
         <!-- Example of setting SDL hints from AndroidManifest.xml:
         <meta-data android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK" android:value="0"/>
          -->
