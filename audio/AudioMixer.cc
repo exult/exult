@@ -85,9 +85,10 @@ id_counter(0), device(nullptr)
 	desired.callback = sdlAudioCallback;
 	desired.userdata = this;
 
-	// Set update rate to 20 Hz, or there abouts. This should be more then adequate for everyone
+	// Set update rate to 5 Hz, or there abouts. This should be more than adequate for everyone
+	// Note: setting this to 1 Hz (/1) causes Exult to hang on MacOS.
 	desired.samples=1;
-	while(desired.samples<=desired.freq/30) desired.samples<<=1;
+	while(desired.samples<=desired.freq/5) desired.samples<<=1;
 
 	// Open SDL Audio (even though we may not need it)
 	SDL_InitSubSystem(SDL_INIT_AUDIO);
