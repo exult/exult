@@ -61,7 +61,7 @@ vector<string> Notebook_gump::auto_text;
 
 const int font = 4;         // Small black.
 const int vlead = 1;            // Extra inter-line spacing.
-#ifdef __IPHONEOS__
+#if defined(__IPHONEOS__) || defined(ANDROID)
 const int pagey = 7;           // Top of text area of page.
 #else
 const int pagey = 10;           // Top of text area of page.
@@ -235,7 +235,7 @@ void Notebook_gump::add_new(
 Notebook_gump::Notebook_gump(
 ) : Gump(nullptr,
 	EXULT_FLX_NOTEBOOK_SHP, SF_EXULT_FLX) {
-#ifdef __IPHONEOS__
+#if defined(__IPHONEOS__) || defined(ANDROID)
 	//on iOS the Notebook gump needs to be aligned with the top
 	set_pos(5, -2);
 #endif
@@ -322,7 +322,7 @@ bool Notebook_gump::paint_page(
 		}
 		snprintf(buf, sizeof(buf), "Day %d, %02d:%02d%s",
 		         note->day, h ? h : 12, note->minute, ampm);
-#ifdef __IPHONEOS__
+#if defined(__IPHONEOS__) || defined(ANDROID)
 		const int fontnum = 4;
 		const int yoffset = 0;
 #else

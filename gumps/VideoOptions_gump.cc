@@ -275,7 +275,7 @@ void VideoOptions_gump::load_settings(bool Fullscreen) {
 		game_resolutions.reserve(5);
 		game_resolutions.push_back(0);	// Auto
 		game_resolutions.push_back(make_resolution(320, 200));
-	#ifdef  __IPHONEOS__
+	#if defined(__IPHONEOS__) || defined(ANDROID)
 		game_resolutions.push_back(make_resolution(400, 250));
 		game_resolutions.push_back(make_resolution(480, 300));
 	#endif
