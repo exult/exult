@@ -410,6 +410,11 @@ using U7OstreamFactory = std::function<std::unique_ptr<std::ostream>(const char*
 void U7set_istream_factory(U7IstreamFactory factory);
 void U7set_ostream_factory(U7OstreamFactory factory);
 
+// Manually sets the home directory rather than trying to infer it from the environment.
+// Intended to be called once during initialization before using U7open...() calls and is not guaranteed
+// to be thread-safe.
+void U7set_home(std::string home);
+
 std::unique_ptr<std::istream> U7open_in(
     const char *fname,          // May be converted to upper-case.
     bool is_text = false            // Should the file be opened in text mode

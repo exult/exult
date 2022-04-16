@@ -562,7 +562,7 @@ void cleanup_output(const char *prefix) {
 	ignore_unused_variable_warning(prefix);
 }
 #else
-std::string Get_home();
+static std::string Get_home();
 
 // Pulled from exult_studio.cc.
 void redirect_output(const char *prefix) {
@@ -659,8 +659,17 @@ void cleanup_output(const char *prefix) {
 #endif // USE_CONSOLE
 #endif  // _WIN32
 
+
+static std::string home_dir;
+
+void U7set_home(std::string home) {
+	home_dir = home;
+}
+
 string Get_home() {
-	std::string home_dir;
+	if (!home_dir.empty()) {
+		return home_dir;
+	}
 #ifdef _WIN32
 #ifdef PORTABLE_EXULT_WIN32
 	home_dir = ".";
