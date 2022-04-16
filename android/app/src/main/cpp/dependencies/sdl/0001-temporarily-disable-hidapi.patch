@@ -1,0 +1,36 @@
+Temporaily disable dependency on hidapi
+
+From: Ken Cecka <ceckak@uw.edu>
+
+The android app is having trouble loading hidapi.  Need to circle back and figure out how to load it correctly, but temporarily removing the dependency on it for now.
+---
+ .../main/java/org/libsdl/app/HIDDeviceManager.java |    2 +-
+ .../src/main/java/org/libsdl/app/SDLActivity.java  |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/android-project/app/src/main/java/org/libsdl/app/HIDDeviceManager.java b/android-project/app/src/main/java/org/libsdl/app/HIDDeviceManager.java
+index 5899817..7dada12 100644
+--- a/android-project/app/src/main/java/org/libsdl/app/HIDDeviceManager.java
++++ b/android-project/app/src/main/java/org/libsdl/app/HIDDeviceManager.java
+@@ -106,7 +106,7 @@ public class HIDDeviceManager {
+ 
+         // Make sure we have the HIDAPI library loaded with the native functions
+         try {
+-            SDL.loadLibrary("hidapi");
++            //SDL.loadLibrary("hidapi");
+         } catch (Throwable e) {
+             Log.w(TAG, "Couldn't load hidapi: " + e.toString());
+ 
+diff --git a/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java b/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
+index e7e5a2a..f5572a3 100644
+--- a/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
++++ b/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
+@@ -271,7 +271,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
+ 
+         mClipboardHandler = new SDLClipboardHandler();
+ 
+-        mHIDDeviceManager = HIDDeviceManager.acquire(this);
++        //mHIDDeviceManager = HIDDeviceManager.acquire(this);
+ 
+         // Set up the surface
+         mSurface = new SDLSurface(getApplication());
