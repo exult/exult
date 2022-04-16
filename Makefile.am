@@ -20,8 +20,16 @@ SUBDIRS =  files conf data shapes imagewin pathfinder \
 	gamemgr flic usecode tools audio gumps objs server \
 	mapedit desktop docs $(MODSDIR)
 
+# Build top-level android dir when building the apk with a native build.
 if ANDROID_APK
 SUBDIRS += android
+endif
+
+# Build android lib dir when cross-compiling for android.
+if ANDROID
+SUBDIRS += android/lib
+AM_CPPFLAGS += -I$(srcdir)/android/lib/include
+ANDROID_LIB = android/lib/src/libandroid.la
 endif
 
 EXULTSOURCES =	\
@@ -132,7 +140,8 @@ EXULTLIBS = \
 	gumps/libgumps.la \
 	files/libu7file.la \
 	files/sha1/libsha1.la \
-	files/zip/libminizip.la
+	files/zip/libminizip.la \
+	$(ANDROID_LIB)
 
 EXULTLIBADD = \
 	$(EXULTLIBS) $(PNG_LIBS) $(FREETYPE2_LIBS) \
