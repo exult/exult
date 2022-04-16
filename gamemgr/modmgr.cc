@@ -542,8 +542,7 @@ void ModManager::gather_mods() {
 	modlist.clear();    // Just to be on the safe side.
 
 	FileList filenames;
-	string pathname("<" + path_prefix + "_MODS>");
-	int ptroff = get_system_path(pathname).length() + 1;
+	string   pathname("<" + path_prefix + "_MODS>");
 
 	// If the dir doesn't exist, leave at once.
 	if (!U7exists(pathname))
@@ -555,11 +554,19 @@ void ModManager::gather_mods() {
 	if (num_mods > 0) {
 		modlist.reserve(num_mods);
 		for (int i = 0; i < num_mods; i++) {
-			string modtitle = filenames[i].substr(ptroff,
-			                                      filenames[i].size() - ptroff - 4);
-			modlist.emplace_back(type, language, cfgname,
-			                          modtitle, path_prefix, expansion, sibeta,
-			                          editing, filenames[i]);
+#if 0
+			// std::filesystem isn't reliably available yet, but this is much cleaner
+			std::filesystem::path modcfg(filenames[i]);
+			auto modtitle = modcfg.stem();
+#else
+			auto filename = filenames[i];
+			auto pathend  = filename.find_last_of('/') + 1;
+			auto modtitle = filename.substr(
+					pathend, filename.length() - pathend - strlen(".cfg"));
+#endif
+			modlist.emplace_back(
+					type, language, cfgname, modtitle, path_prefix, expansion,
+					sibeta, editing, filenames[i]);
 		}
 	}
 }
