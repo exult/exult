@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="mods_card_text"><![CDATA[
+    <p>
+      Exult can optionally make use of mods that change the original games or add entirely new content.  This android port is currently set up to make use of the three mods mainted by the Exult project.  To install them, browse to the <a href="http://exult.info/download.php">Exult Downloads page</a> and tap on the mods under &quot;Mod Snapshots&quot; you are interested in to download them.
+    </p>
+    <p>
+      After you have downloaded the .zip file(s), you can tap the corresponding checkboxes on the left.  These will open a file browser which you can use to select the archive(s) you downloaded, and the installer will take care of extracting the required data files and installing them in the correct places.
+    </p>
+    <p>
+      Once you have successfully installed the mod(s), you are free to delete the .zip files; they will no longer be needed or used by Exult after installation.
+    </p>
+  ]]></string>
+</resources>
