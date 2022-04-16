@@ -5,6 +5,7 @@ plugins {
 android {
     compileSdkVersion @ANDROID_SDK_VERSION@
     buildToolsVersion "@ANDROID_BUILD_TOOLS_VERSION@"
+    ndkVersion "@ANDROID_NDK_VERSION@"
 
     defaultConfig {
         applicationId "info.exult"
@@ -13,12 +14,23 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++17"
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
             zipAlignEnabled true
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "@ANDROID_CMAKE_VERSION@"
         }
     }
     compileOptions {

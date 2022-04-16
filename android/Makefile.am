@@ -55,6 +55,8 @@ $(abs_builddir)/gradlew: $(APK_SOURCE_TREE) android_packages
 android_packages:
 	$(SDKMANAGER) --install "platforms;android-$(ANDROID_SDK_VERSION)"
 	$(SDKMANAGER) --install "build-tools;$(ANDROID_BUILD_TOOLS_VERSION)"
+	$(SDKMANAGER) --install "ndk;$(ANDROID_NDK_VERSION)"
+	$(SDKMANAGER) --install "cmake;$(ANDROID_CMAKE_VERSION)"
 	$(SDKMANAGER) --licenses
 
 # Various locations in the source and native build to copy files from that need to be staged for the APK build
