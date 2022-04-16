@@ -6,38 +6,30 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-  <RelativeLayout
-      xmlns:android="http://schemas.android.com/apk/res/android"
+  <LinearLayout
+      android:id="@+id/launchLayout"
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"
-      android:id="@+id/root_view">
-
-    <LinearLayout
-        android:id="@+id/launchLayout"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical"
-	android:gravity="center">
-      <ImageView
-          android:id="@+id/exultImageView"
-          android:layout_width="200dp"
-          android:layout_height="wrap_content"
-          android:adjustViewBounds="true"
-          android:scaleType="fitXY"
-          android:src="@drawable/exult_logo_nice" />
-      <Button
-	  android:id="@+id/launchExultButton"
-	  android:layout_width="wrap_content"
-	  android:layout_height="wrap_content"
-	  android:text="Launch Exult" />
-      <CheckBox
-	  android:id="@+id/autoLaunchCheckBox"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Automatically launch Exult when opening app"/>
-    </LinearLayout>
-
-  </RelativeLayout>
+      android:orientation="vertical"
+      android:gravity="center">
+    <ImageView
+        android:id="@+id/exultImageView"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/exult_logo_nice" />
+    <Button
+	android:id="@+id/launchExultButton"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="Launch Exult" />
+    <CheckBox
+	android:id="@+id/autoLaunchCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Automatically launch Exult when opening app"/>
+  </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

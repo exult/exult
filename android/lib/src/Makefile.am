@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I$(srcdir)/../include -I$(top_srcdir) -I$(top_srcdir)/headers $(SDL_CFLAGS) $(INCDIRS)	\
+AM_CPPFLAGS = -I$(srcdir)/../include -I$(top_srcdir) -I$(top_srcdir)/headers -I$(top_srcdir)/conf $(SDL_CFLAGS) $(INCDIRS)	\
 		$(WINDOWING_SYSTEM) $(DEBUG_FLAGS) $(CPPFLAGS)
 
 noinst_LTLIBRARIES = libandroid.la
