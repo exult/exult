@@ -37,6 +37,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 
   private static final TabData[] TABS = {
     new TabData("Launcher", LauncherFragment.class),
+    new TabData("Games", GamesFragment.class),
     new TabData("Console Log", ConsoleLogFragment.class)
   };
 

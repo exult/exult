@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="games_card_text"><![CDATA[
+    <p>
+      The exult game engine enables you to play Ultima VII, but you still need to purchase/own a copy of the original game files, and copy the data files to your device.
+    </p>
+    <p>
+      Currently, the easiest way to do this is by purchasing the <a href="https://www.gog.com/game/ultima_7_complete">Ultima&trade; 7 The Complete Edition</a> from <a href="https://www.gog.com/">GOG.com</a>.  After purchasing the game, follow these steps to download it onto this device:
+    </p>
+    <ol>
+      <li>Browse to <a href="https://www.gog.com/">GOG.com</a> and log in to your account</li>
+      <li>Tap the &quot;Your Account&quot; menu and select &quot;Games&quot;</li>
+      <li>Tap the game you want to install (e.g. &quot;Ultima VII&trade; - The Black Gate + The Forge of Virtue&quot;)</li>
+      <li>Under &quot;System&quot;, select &quot;Mac&quot;</li>
+      <li>Scroll down to the section titled &quot;DOWNLOAD OFFLINE BACKUP GAME INSTALLERS&quot; and expand it</li>
+      <li>Tap the game name to download it.  This should place a .pkg file in your Downloads folder</li>
+    </ol>
+    <p>
+      Alternately, if you have purchased the game from another site or own a hard copy on CD (or the original floppy disks), you should be able to place the contents in a zip file (or other common archive format) and copy it to your device.  The important part is having a single archive file on your device which contains the data files.
+    </p>
+    <p>
+      After you have downloaded your .pkg file (or otherwise loaded another archive), you can tap one of the checkboxes on the left, corresponding to the game you are installing.  This will open a file browser which you can use to select the archive you downloaded, and the installer will take care of extracting the required data files and installing them in the correct places.
+    </p>
+    <p>
+      Once you have successfully installed the game data, you are free to delete the .pkg (or other archive); it will no longer be needed or used by Exult after installation.
+    </p>
+  ]]></string>
+</resources>
