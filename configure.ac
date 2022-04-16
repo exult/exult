@@ -1039,6 +1039,12 @@ if test x$enable_android_apk != xno; then
 	AC_PROG_MKDIR_P
 	AC_PROG_LN_S
 
+	# Needed to download SDL sources
+	AC_CHECK_PROGS(GIT, git)
+	if test -z "$GIT"; then
+		AC_MSG_ERROR([not found])
+	fi
+
 	# Check for gradle
 	# TODO: any reasonable way to use the gradle bundled with android studio?
 	AC_CHECK_PROGS(GRADLE, gradle)

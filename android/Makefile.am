@@ -31,7 +31,11 @@ APK_ASSETS = $(patsubst %,$(APK_ASSETS_DIR)/%,$(DATA_FILES))
 # want to end up in the source tree, so we can't simply have one link to the top-level source tree.
 APK_SOURCE_TREE = \
 	$(patsubst $(srcdir)/%,$(abs_builddir)/%,$(wildcard $(srcdir)/*gradle*)) \
-	$(patsubst $(srcdir)/%,$(abs_builddir)/%,$(wildcard $(srcdir)/app/src/main/*)) \
+	$(abs_builddir)/app/src/main/AndroidManifest.xml \
+	$(abs_builddir)/app/src/main/cpp \
+	$(abs_builddir)/app/src/main/java/info/exult \
+	$(abs_builddir)/app/src/main/java/org/libsdl \
+	$(abs_builddir)/app/src/main/res \
 	$(APK_ASSETS)
 
 # Pass Exult source directory to gradle as project property
@@ -60,6 +64,11 @@ $(abs_builddir)/%: $(abs_srcdir)/%
 	@$(MKDIR_P) $(dir $@)
 	$(LN_S) $< $@
 
+SDL_SOURCE_DIR=$(abs_builddir)/sdl-src
+$(abs_builddir)/app/src/main/java/org/libsdl: $(SDL_SOURCE_DIR)
+	@$(MKDIR_P) $(dir $@)
+	$(LN_S) $(SDL_SOURCE_DIR)/android-project/app/src/main/java/org/libsdl $@
+
 $(APK_ASSETS_DIR)/%: $(abs_top_srcdir)/data/bg/%
 	@$(MKDIR_P) $(dir $@)
 	$(INSTALL) $< $@
@@ -75,3 +84,12 @@ $(APK_ASSETS_DIR)/%: $(abs_top_srcdir)/usecode/ucxt/data/%
 $(APK_ASSETS_DIR)/%: $(abs_top_builddir)/usecode/ucxt/data/%
 	@$(MKDIR_P) $(dir $@)
 	$(INSTALL) $< $@
+
+# In addition to building the SDL C library for NDK, we also need Java
+# sources compiled into the app.  Rather than let the NDK CMake pull
+# in SDL like the other dependencies, pre-load the codebase here at
+# the top level so that we have access to the Java sources too.
+# The NDK build also utilizes this codebase rather than downloading a
+# separate copy.
+$(SDL_SOURCE_DIR):
+	$(GIT) clone --branch release-2.0.14 --depth 1 https://github.com/libsdl-org/SDL.git $@
