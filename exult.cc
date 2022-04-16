@@ -2368,7 +2368,7 @@ void setup_video(bool fullscreen, int setup_video_type, int resx, int resy,
 		// Default resolution is now 320x240 with 2x scaling
 		int w = 320;
 		int h = 240;
-#ifdef __IPHONEOS__
+#if defined(__IPHONEOS__) || defined(ANDROID)
 		SDL_DisplayMode dispmode;
 		if (SDL_GetDesktopDisplayMode(0, &dispmode) == 0) {
 			w = dispmode.w;
