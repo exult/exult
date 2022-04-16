@@ -732,8 +732,10 @@ static void Init(
 #if 0
 	init_flags |= SDL_INIT_JOYSTICK;
 #endif
-#ifdef __IPHONEOS__
+#if defined(__IPHONEOS__) || defined(ANDROID)
 	Mouse::use_touch_input = true;
+#endif
+#ifdef __IPHONEOS__
 	SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "2");
 #endif
 	if (SDL_Init(init_flags) < 0) {
