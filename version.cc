@@ -155,7 +155,9 @@ void getVersionInfo(std::ostream &out) {
 
 	out << std::endl << "Platform: ";
 
-#if (defined(__linux__) || defined(__linux) || defined(linux))
+#if (defined(ANDROID))
+	out << "Android";
+#elif (defined(__linux__) || defined(__linux) || defined(linux))
 	std::string ver;
 
 	try {
