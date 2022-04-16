@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="audio_packs_card_text"><![CDATA[
+    <p>
+      Exult can optionally make use of digital music and sound effects packages.  This android port is set up to make use of the all-in-one package.  To install it, browse to the <a href="http://exult.info/download.php">Exult Downloads page</a> and tap on &quot;Zipped all-in-one audio pack for manual installation&quot;.
+    </p>
+    <p>
+      After you have downloaded the .zip file, you can tap the checkbox on the left.  This will open a file browser which you can use to select the archive you downloaded, and the installer will take care of extracting the required data files and installing them in the correct places.
+    </p>
+    <p>
+      Once you have successfully installed the audio pack, you are free to delete the .zip; it will no longer be needed or used by Exult after installation.
+    </p>
+  ]]></string>
+</resources>

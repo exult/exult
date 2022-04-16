@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+						   xmlns:app="http://schemas.android.com/apk/res-auto"
+						   xmlns:tools="http://schemas.android.com/tools"
+						   android:layout_width="match_parent"
+						   android:layout_height="match_parent"
+						   tools:context=".MainActivity">
+
+  <LinearLayout
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:orientation="horizontal"
+      android:divider="?android:dividerHorizontal"
+      android:layout_marginTop="2dp"
+      android:showDividers="middle"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:ignore="DuplicateIds">
+
+    <LinearLayout
+	android:id="@+id/contentLayout"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:orientation="vertical"
+	xmlns:tools="http://schemas.android.com/tools"
+	tools:ignore="DuplicateIds"
+	android:padding="40dp">
+      <CheckBox
+          android:id="@+id/audioPackCheckBox"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Zipped all-in-one audio pack"
+	  android:onClick="onAudioPackCheckboxClicked">
+	<tag
+            android:id="@+id/name"
+            android:value="allInOne" />
+      </CheckBox>
+    </LinearLayout>
+    <WebView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/contentWebView" />
+
+  </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
