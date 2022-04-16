@@ -305,7 +305,7 @@ VideoOptions_gump::VideoOptions_gump()
 	const std::vector<std::string> enabledtext = {"Disabled", "Enabled"};
 
 	fullscreen = gwin->get_win()->is_fullscreen();
-#ifndef __IPHONEOS__
+#if !defined(__IPHONEOS__) && !defined(ANDROID)
 	buttons[id_fullscreen] = std::make_unique<VideoTextToggle>(this, &VideoOptions_gump::toggle_fullscreen,
 	        enabledtext, fullscreen, colx[2], rowy[0], 74);
 #endif
@@ -315,7 +315,7 @@ VideoOptions_gump::VideoOptions_gump()
 	config->value("config/video/share_video_settings", share_settings, false);
 	
 	std::vector<std::string> yesNO = {"No", "Yes"};
-#ifndef __IPHONEOS__
+#if !defined(__IPHONEOS__) && !defined(ANDROID)
 	buttons[id_share_settings] = std::make_unique<VideoTextToggle>(this, &VideoOptions_gump::toggle_share_settings,
 	        std::move(yesNO), share_settings, colx[5], rowy[11], 40);
 #endif
@@ -405,7 +405,7 @@ void VideoOptions_gump::paint() {
 
 	Font *font = fontManager.get_font("SMALL_BLACK_FONT");
 	Image_window8 *iwin = gwin->get_win();
-#ifndef __IPHONEOS__
+#if !defined(__IPHONEOS__) && !defined(ANDROID)
 	font->paint_text(iwin->get_ib8(), "Full Screen:", x + colx[0], y + rowy[0] + 1);
 	if (fullscreen) font->paint_text(iwin->get_ib8(), "Display Mode:", x + colx[0], y + rowy[1] + 1);
 	else font->paint_text(iwin->get_ib8(), "Window Size:", x + colx[0], y + rowy[1] + 1);
@@ -419,7 +419,7 @@ void VideoOptions_gump::paint() {
 	font->paint_text(iwin->get_ib8(), "Fill Quality:", x + colx[0], y + rowy[7] + 1);
 	font->paint_text(iwin->get_ib8(), "Fill Mode:", x + colx[0], y + rowy[8] + 1);
 	if (buttons[id_has_ac] != nullptr) font->paint_text(iwin->get_ib8(), "AR Correction:", x + colx[0], y + rowy[9] + 1);
-#ifndef __IPHONEOS__
+#if !defined(__IPHONEOS__) && !defined(ANDROID)
 	font->paint_text(iwin->get_ib8(), "Same settings for window", x + colx[0], y + rowy[10] + 1);
 	font->paint_text(iwin->get_ib8(), "and fullscreen:", x + colx[0], y + rowy[11] + 1);
 #endif
