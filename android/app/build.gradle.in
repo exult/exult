@@ -2,6 +2,10 @@ plugins {
     id 'com.android.application'
 }
 
+def getGitCommitId() {
+    ("git -C " + project.getProperty('EXULT_SOURCE_DIR') + " rev-parse --verify --short HEAD").execute().text.trim()
+}
+
 android {
     compileSdkVersion @ANDROID_SDK_VERSION@
     buildToolsVersion "@ANDROID_BUILD_TOOLS_VERSION@"
@@ -12,7 +16,7 @@ android {
         minSdkVersion 28 // could lower to 18 if we locally implement glob()
         targetSdkVersion 30
         versionCode 1
-        versionName "1.0"
+        versionName "@VERSION@ (" + getGitCommitId() + ")"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
