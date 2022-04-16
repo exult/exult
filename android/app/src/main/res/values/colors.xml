@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="deep_koamaru">#FF333366</color>
+    <color name="dark_scampi">#FF666699</color>
+    <color name="bright_laurel">#FF669966</color>
+    <color name="laurel">#FF6E8D71</color>
+    <color name="black">#ff000000</color>
+    <color name="green">#FF00FF00</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
