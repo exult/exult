@@ -377,7 +377,7 @@ Game_window::Game_window(
 	config->value("config/gameplay/allow_autonotes", str, "no");
 	allow_autonotes = str == "yes";
 	config->set("config/gameplay/allow_autonotes", allow_autonotes ? "yes" : "no", false);
-#ifdef __IPHONEOS__
+#if defined(__IPHONEOS__) || defined(ANDROID)
 	string default_scroll_with_mouse = "no";
 #else
 	string default_scroll_with_mouse = "yes";
@@ -386,7 +386,7 @@ Game_window::Game_window(
 	scroll_with_mouse = str == "yes";
 	config->set("config/gameplay/scroll_with_mouse",
 	            scroll_with_mouse ? "yes" : "no", false);
-#ifdef __IPHONEOS__
+#if defined(__IPHONEOS__) && defined(ANDROID)
 	const string default_item_menu = "yes";
 	const string default_dpad_location = "right";
 	const string default_shortcutbar = "translucent";
