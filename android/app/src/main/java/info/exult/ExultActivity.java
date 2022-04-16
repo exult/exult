@@ -24,6 +24,33 @@ import org.libsdl.app.SDLActivity;
  * This class implements the Activity that will launch the Exult game engine on Android.
  */
 public class ExultActivity extends SDLActivity {
+  // Making this static for easy access from UI fragments, but it feels a bit hacky.
+  private static String m_consoleLog;
+
+  /**
+   * This method clears the console buffer.
+   */
+  public static void clearConsole() {
+      m_consoleLog = "";
+  }
+
+  /**
+   * This method appends a new line to the console buffer.
+   *
+   * @param message The message to append to the console buffer.
+   */
+  public void writeToConsole(String message) {
+    if (message != null) {
+      m_consoleLog += message + "\n";
+    }
+  }
+
+  /**
+   * This method retrieves the current console buffer.
+   */
+  public static String getConsole() {
+      return m_consoleLog;
+  }
 
   /**
    * This method returns the name of the application entry point It can be overridden by derived

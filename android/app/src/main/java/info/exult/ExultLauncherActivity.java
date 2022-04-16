@@ -32,7 +32,7 @@ public class ExultLauncherActivity extends AppCompatActivity {
   private SharedPreferences m_sharedPreferences;
 
   // This feels pretty hacky, but haven't figured out a better way to detect when the Activity
-  // is returning from a launch versus being opened and eligble to auto-launch.
+  // is returning from a launch versus being opened and eligible to auto-launch.
   private boolean m_launched = false;
 
   @Override
@@ -60,6 +60,7 @@ public class ExultLauncherActivity extends AppCompatActivity {
   public void launchExult() {
     m_launched = true;
     Intent launchExultIntent = new Intent(this, ExultActivity.class);
+    ExultActivity.clearConsole();
     startActivity(launchExultIntent);
   }
 

@@ -5,6 +5,7 @@
     <color name="bright_laurel">#FF669966</color>
     <color name="laurel">#FF6E8D71</color>
     <color name="black">#ff000000</color>
+    <color name="blackish">#C0000000</color>
     <color name="green">#FF00FF00</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

@@ -16,6 +16,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <jni.h>
+
 #include <streambuf>
 #include <string>
 
@@ -45,4 +47,13 @@ private:
 
 	/// Buffer to accumulate characters in until we reach the end of a line.
 	std::string m_lineBuf;
+
+	/// JNI Environment for routing logs to UI
+	JNIEnv*			m_jniEnv;
+
+	/// The Activity to use for routing logs to UI
+	jobject			m_exultActivityObject;
+
+	/// The Method to use for routing logs to UI
+	jmethodID		m_writeToConsoleMethod;
 };
