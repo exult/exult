@@ -18,10 +18,14 @@
 
 package info.exult;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import org.libsdl.app.SDLActivity;
@@ -97,6 +101,95 @@ public class ExultActivity extends SDLActivity {
   private float m_dpadImageViewActionDownY;
 
   public native void setVirtualJoystick(float x, float y);
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    m_instance = this;
+
+    m_dpadImageView = new ImageView(this);
+    m_dpadImageView.setImageResource(R.drawable.dpad_center);
+    m_dpadImageView.setOnTouchListener(
+        new View.OnTouchListener() {
+          @Override
+          public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getActionMasked()) {
+              case MotionEvent.ACTION_DOWN:
+                m_dpadImageViewActionDownX = event.getRawX();
+                m_dpadImageViewActionDownY = event.getRawY();
+                return true;
+              case MotionEvent.ACTION_MOVE:
+                float deltaX = event.getRawX() - m_dpadImageViewActionDownX;
+                float deltaY = event.getRawY() - m_dpadImageViewActionDownY;
+
+                setVirtualJoystick(
+                    deltaX / (m_dpadImageView.getWidth() / 2),
+                    deltaY / (m_dpadImageView.getHeight() / 2));
+
+                double radius = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                if (radius < m_dpadImageView.getWidth() / 8) {
+                  m_dpadImageView.setImageResource(R.drawable.dpad_center);
+                  return true;
+                }
+                m_dpadImageView.setLayoutParams(layoutParams);
+                m_dpadImageView.setVisibility(View.VISIBLE);
+                break;
+              default:
+                // Appease CodeFactor with a default case
+                break;
+            }
+            Log.d("ExultActivity", "showGameControls: " + dpadLocation);
+            m_dpadImageView.setLayoutParams(layoutParams);
+            m_dpadImageView.setVisibility(View.VISIBLE);
+          }
+        });
+  }
+
+  public void hideGameControls() {
+    runOnUiThread(
+        () -> {
+          m_dpadImageView.setVisibility(View.GONE);
+        });
+  }
+
+  private ImageView m_dpadImageView;
+  private float m_dpadImageViewActionDownX;
+  private float m_dpadImageViewActionDownY;
+
+  public native void setVirtualJoystick(float x, float y);
+
+  public native void setName(String name);
+
+  public void promptForName(String name) {
+    runOnUiThread(
+        () -> {
+          Context context = getContext();
+          AlertDialog.Builder nameBuilder = new AlertDialog.Builder(context);
+          nameBuilder.setTitle("Name");
+          EditText nameEditText = new EditText(context);
+          nameEditText.setInputType(InputType.TYPE_CLASS_TEXT);
+          nameBuilder.setView(nameEditText);
+          nameBuilder.setPositiveButton(
+              "OK",
+              new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                  setName(nameEditText.getText().toString());
+                }
+              });
+          nameBuilder.setNegativeButton(
+              "Cancel",
+              new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                  dialog.cancel();
+                }
+              });
+
+          nameBuilder.show();
+        });
+  }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {

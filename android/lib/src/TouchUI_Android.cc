@@ -33,6 +33,14 @@ extern "C" JNIEXPORT void JNICALL
 			std::clamp(axisY, SDL_JOYSTICK_AXIS_MIN, SDL_JOYSTICK_AXIS_MAX));
 }
 
+extern "C" JNIEXPORT void JNICALL
+		Java_info_exult_ExultActivity_setName(
+				JNIEnv* env, jobject /* this */, jstring javaName) {
+	const char* name = env->GetStringUTFChars(javaName, nullptr);
+	TouchUI::onTextInput(name);
+	env->ReleaseStringUTFChars(javaName, name);
+}
+
 TouchUI_Android* TouchUI_Android::m_instance = nullptr;
 
 TouchUI_Android* TouchUI_Android::getInstance() {
@@ -56,6 +64,8 @@ TouchUI_Android::TouchUI_Android() {
 			jclass, "showGameControls", "(Ljava/lang/String;)V");
 	m_hideGameControlsMethod
 			= m_jniEnv->GetMethodID(jclass, "hideGameControls", "()V");
+	m_promptForNameMethod = m_jniEnv->GetMethodID(
+			jclass, "promptForName", "(Ljava/lang/String;)V");
 
 	int joystickDeviceIndex = SDL_JoystickAttachVirtual(
 			SDL_JOYSTICK_TYPE_GAMECONTROLLER, SDL_CONTROLLER_AXIS_MAX,
@@ -89,7 +99,10 @@ TouchUI_Android::~TouchUI_Android() {
 	}
 }
 
-void TouchUI_Android::promptForName(const char *name) {
+void TouchUI_Android::promptForName(const char* name) {
+	auto javaName = m_jniEnv->NewStringUTF(name);
+	m_jniEnv->CallVoidMethod(
+			m_exultActivityObject, m_promptForNameMethod, javaName);
 }
 
 void TouchUI_Android::showGameControls() {
