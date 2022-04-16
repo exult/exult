@@ -480,6 +480,14 @@ void Image_window::static_init() {
 Image_window::~Image_window() {
 	free_surface();
 	delete ibuf;
+
+	// Clean up the SDL window.  Not particularly important for standalone
+	// executable builds, but on android, if the app remains in memory after
+	// exiting the game and you try to restart the game, the previous run's
+	// window will still be allocated if we don't clean it up here and the
+	// subsequent attempt to call SDL_CreateWindow() will crash.
+	SDL_DestroyWindow(screen_window);
+	screen_window = nullptr;
 }
 
 /*
