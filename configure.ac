@@ -1027,6 +1027,71 @@ else
 	AC_MSG_RESULT(no)
 fi
 
+# Build Android APK?
+# Note: version numbers checked in this section are known-good baselines; haven't tested extensively to find minimums
+AM_CONDITIONAL(ANDROID_APK, false)
+AC_ARG_ENABLE(android-apk, AS_HELP_STRING([--enable-android-apk=debug|release], [Build an Android APK @<:@default no@:>@]),enable_android_apk="$enableval",enable_android_apk=no)
+AC_MSG_CHECKING([whether to build an Android APK])
+if test x$enable_android_apk != xno; then
+	AC_MSG_RESULT($enable_android_apk)
+
+	# Needed to stage the sources in an out-of-tree build directory
+	AC_PROG_MKDIR_P
+	AC_PROG_LN_S
+
+	# Check for gradle
+	# TODO: any reasonable way to use the gradle bundled with android studio?
+	AC_CHECK_PROGS(GRADLE, gradle)
+	if test -z "$GRADLE"; then
+		AC_MSG_ERROR([not found])
+	fi
+
+	# Checking against a known-good baseline gradle version
+	AC_MSG_CHECKING([gradle version])
+	gradle_version=`$GRADLE --version | grep Gradle | awk '{print $2;}' | awk -F. '{ print 0$1 * 10000 + 0$2*100 + 0$3;}'`
+	if test "$gradle_version" -ge 60802; then
+		AC_MSG_RESULT([found >= 6.8.2])
+	else
+		AC_MSG_ERROR([found < 6.8.2])
+	fi
+	
+	# Use sdkmanager to check Android package versions.
+	AC_PATH_PROGS(SDKMANAGER, sdkmanager)
+
+	# Check for required Android SDK version.
+	ANDROID_SDK_VERSION=30
+	AC_MSG_CHECKING([for Android SDK $ANDROID_SDK_VERSION])
+	if $SDKMANAGER --list|grep -q "platforms;android-$ANDROID_SDK_VERSION"; then
+		AC_MSG_RESULT([yes])
+	else
+		AC_MSG_ERROR([no])
+	fi
+	AC_SUBST(ANDROID_SDK_VERSION, $ANDROID_SDK_VERSION)
+
+	# Check for required Android SDK Build-Tools version.
+	ANDROID_BUILD_TOOLS_VERSION=30.0.3
+	AC_MSG_CHECKING([for Android SDK Build-Tools $ANDROID_BUILD_TOOLS_VERSION])
+	if $SDKMANAGER --list|grep -q "build-tools;$ANDROID_BUILD_TOOLS_VERSION"; then
+		AC_MSG_RESULT([yes])
+	else
+		AC_MSG_ERROR([no])
+	fi
+	AC_SUBST(ANDROID_BUILD_TOOLS_VERSION, $ANDROID_BUILD_TOOLS_VERSION)
+
+	# Pass down SDK directory
+	AC_SUBST(ANDROID_SDK_ROOT, `AS_DIRNAME(["$SDKMANAGER"])`/../../../..)
+
+	# Enable Android APK build
+	AM_CONDITIONAL(ANDROID_APK, true)
+	AC_SUBST(APK_BUILD_TYPE, $enable_android_apk)
+	if test x$enable_android_apk = xrelease; then
+		# The apk filename has an additional suffix for release builds
+		AC_SUBST(APK_SUFFIX, -unsigned)
+	fi
+else
+	AC_MSG_RESULT(no)
+fi
+
 # ----------------------------------------------------------------
 # If we are cross-compiling, look for expack and head2data in PATH
 # ----------------------------------------------------------------
@@ -1084,6 +1149,8 @@ exult.spec
 Info.plist
 macosx/exult_studio_info.plist
 Makefile
+android/Makefile
+android/app/build.gradle
 audio/Makefile
 audio/midi_drivers/Makefile
 audio/midi_drivers/timidity/Makefile
@@ -1198,6 +1265,7 @@ echo Create data files.......... : $enable_data
 echo Create zipped Savegames.... : $enable_zip_support
 echo Build GIMP plugin.......... : $enable_gimp_plugin
 echo Build Gnome SHP Thumbnailer : $enable_gnome_shp_thumbnailer
+echo Build Android APK.......... : $enable_android_apk
 echo
 echo Debug :
 echo Build Usecode debugger..... : $enable_usecode_debugger

@@ -20,6 +20,10 @@ SUBDIRS =  files conf data shapes imagewin pathfinder \
 	gamemgr flic usecode tools audio gumps objs server \
 	mapedit desktop docs $(MODSDIR)
 
+if ANDROID_APK
+SUBDIRS += android
+endif
+
 EXULTSOURCES =	\
 	actions.cc	\
 	actions.h	\
