@@ -482,7 +482,7 @@ void Game_window::write_saveinfo() {
 
 			char name[18];
 			std::string namestr = npc->get_npc_name();
-			strncpy(name, namestr.c_str(), 18);
+			memcpy(name, namestr.c_str(), 18);
 			out.write(name, 18);
 			out.write2(npc->get_shapenum());
 
@@ -1065,7 +1065,7 @@ bool Game_window::save_gamedat_zip(
 		ofstream out;
 		char title[0x50];
 		memset(title, 0, 0x50);
-		std::strncpy(title, savename, 0x50);
+		memcpy(title, savename, 0x50);
 		U7open(out, fname);
 		out.write(title, 0x50);
 		out.close();

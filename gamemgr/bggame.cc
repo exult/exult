@@ -1916,7 +1916,6 @@ void BG_Game::end_game(bool success) {
 				if (i == 2) {
 					// initialize to make sure there is no garbage.
 					char buffer[50] = {0};
-					message         = buffer;
 					// since we start at 6am we use hours if below 30 of them(30-6=1day), otherwise we don't display hours 
 					// unless over a month so offset doesn't matter.
 					if (total_time >= 30) {
@@ -1935,32 +1934,29 @@ void BG_Game::end_game(bool success) {
 						// if(year > 0) sprintf(buffer,"%d year(s) , ",year);
 						// message = buffer;
 						if (month == 1)
-							sprintf(buffer, "%s%d month", message, month);
+							sprintf(buffer + strlen(buffer), "%d month", month);
 						else if (month > 1)
-							sprintf(buffer, "%s%d months", message, month);
-						message = buffer;
+							sprintf(buffer + strlen(buffer), "%d months", month);
 
 						// add ampersand only if month(s) and there is more to display.
 						if (month > 0 && (day != 0 || hour != 0))
-							sprintf(buffer, "%s & ", message);
-						message = buffer;
+							sprintf(buffer + strlen(buffer), " & ");
 
 						if (day == 1)
-							sprintf(buffer, "%s%d day", message, day);
+							sprintf(buffer + strlen(buffer), "%d day", day);
 						else if (day > 1)
-							sprintf(buffer, "%s%d days", message, day);
+							sprintf(buffer + strlen(buffer), "%d days", day);
 						// if no days, display hours(this would only happen on exactly 1,2,3 etc months)
 						// Here so the player doesnt think we didn't track the hours/days.
 						// so 112 days at 2am would display "4 months & 2 hours", 113 days at 2am would display "4 months & 1 day"
 						else if (day == 0 && hour == 1)
-							sprintf(buffer, "%s%d hour", message, hour);
+							sprintf(buffer + strlen(buffer), "%d hour", hour);
 						else if (day == 0 && hour > 1)
-							sprintf(buffer, "%s%d hours", message, hour);
+							sprintf(buffer + strlen(buffer), "%d hours", hour);
 
 						// in the remote chance a player finishes on exactly 0 hours, 0 days and X month(s)
 						if (day == 0 && hour == 0)
-							sprintf(buffer, "%s & 0 days", message);
-						message = buffer;
+							sprintf(buffer + strlen(buffer), " & 0 days");
 					} else {
 						// if only displaying hours remove the initial 6
 						total_time -= 6;
@@ -1968,8 +1964,8 @@ void BG_Game::end_game(bool success) {
 							sprintf(buffer, "only %d hour.", total_time);
 						else
 							sprintf(buffer, "only %d hours.", total_time);
-						message = buffer;
 					}
+					message = buffer;
 				}
 				// Update the mailing address
 				if (i == 4) {

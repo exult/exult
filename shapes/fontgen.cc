@@ -36,7 +36,7 @@ using std::make_unique;
  *  Generate a shadow around a character.
  */
 
-static void Gen_shadow(
+void Gen_shadow(
     unsigned char *pixels,
     int w, int h,           // Dimensions.
     unsigned char fg,       // Foreground color index.

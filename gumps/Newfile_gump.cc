@@ -53,7 +53,6 @@ using std::memset;
 using std::qsort;
 using std::string;
 using std::strlen;
-using std::strncpy;
 using std::strcpy;
 using std::strcat;
 using std::time_t;
@@ -919,7 +918,7 @@ void Newfile_gump::LoadSaveGameDetails() {
 			npc = gwin->get_npc(partyman->get_member(i - 1));
 
 		std::string namestr = npc->get_npc_name();
-		strncpy(cur_party[i].name, namestr.c_str(), 18);
+		memcpy(cur_party[i].name, namestr.c_str(), 18);
 		cur_party[i].shape = npc->get_shapenum();
 		cur_party[i].shape_file = npc->get_shapefile();
 
