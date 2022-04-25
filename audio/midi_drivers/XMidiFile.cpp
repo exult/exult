@@ -723,16 +723,17 @@ void XMidiFile::ApplyFirstState(first_state &fs, int chan_mask)
 		patch->time = 0;
 		bank->time = 0;
 
-		if (reverb && do_chorus) reverb->next = chorus;
-		else if (reverb) reverb->next = bank;
-		if (chorus) chorus->next = bank;
+		if (reverb)
+			if (chorus) reverb->next = chorus;
+			else reverb->next = bank;
+		else if (chorus) chorus->next = bank;
 		bank->next = vol;
 		vol->next = pan;
 		pan->next = patch;
 
 		patch->next = list;
-		if (do_reverb) list = reverb;
-		else if (do_chorus) list = chorus;
+		if (reverb) list = reverb;
+		else if (chorus) list = chorus;
 		else list = bank;
 	}
 }

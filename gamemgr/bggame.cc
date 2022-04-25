@@ -1934,16 +1934,16 @@ void BG_Game::end_game(bool success) {
 						// if(year > 0) sprintf(buffer,"%d year(s) , ",year);
 						// message = buffer;
 						if (month == 1)
-							sprintf(buffer + strlen(buffer), "%d month", month);
+							strcat(buffer, "1 month");
 						else if (month > 1)
 							sprintf(buffer + strlen(buffer), "%d months", month);
 
 						// add ampersand only if month(s) and there is more to display.
 						if (month > 0 && (day != 0 || hour != 0))
-							sprintf(buffer + strlen(buffer), " & ");
+							strcat(buffer, " & ");
 
 						if (day == 1)
-							sprintf(buffer + strlen(buffer), "%d day", day);
+							strcat(buffer, "1 day");
 						else if (day > 1)
 							sprintf(buffer + strlen(buffer), "%d days", day);
 						// if no days, display hours(this would only happen on exactly 1,2,3 etc months)
@@ -1956,7 +1956,7 @@ void BG_Game::end_game(bool success) {
 
 						// in the remote chance a player finishes on exactly 0 hours, 0 days and X month(s)
 						if (day == 0 && hour == 0)
-							sprintf(buffer + strlen(buffer), " & 0 days");
+							strcat(buffer, " & 0 days");
 					} else {
 						// if only displaying hours remove the initial 6
 						total_time -= 6;

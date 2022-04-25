@@ -54,6 +54,7 @@ static const char *displaytext = "Game Display";
 static const char *enginetext = "Game Engine";
 static const char *inputtext = "Game Input";
 #ifndef __IPHONEOS__
+// not used - static const char *quitmenutext = "Quit to Menu";
 static const char *quittext = "Quit";
 #endif
 

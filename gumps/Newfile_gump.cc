@@ -918,7 +918,7 @@ void Newfile_gump::LoadSaveGameDetails() {
 			npc = gwin->get_npc(partyman->get_member(i - 1));
 
 		std::string namestr = npc->get_npc_name();
-		memcpy(cur_party[i].name, namestr.c_str(), 18);
+		strcpy(cur_party[i].name, namestr.substr(0, 17).c_str());
 		cur_party[i].shape = npc->get_shapenum();
 		cur_party[i].shape_file = npc->get_shapefile();
 

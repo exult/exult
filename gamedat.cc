@@ -480,9 +480,9 @@ void Game_window::write_saveinfo() {
 			else
 				npc = get_npc(party_man->get_member(i - 1));
 
-			char name[18];
+			char name[18] = {0};
 			std::string namestr = npc->get_npc_name();
-			memcpy(name, namestr.c_str(), 18);
+			strcpy(name, namestr.substr(0, 17).c_str());
 			out.write(name, 18);
 			out.write2(npc->get_shapenum());
 
@@ -1063,9 +1063,8 @@ bool Game_window::save_gamedat_zip(
 	// Name
 	{
 		ofstream out;
-		char title[0x50];
-		memset(title, 0, 0x50);
-		memcpy(title, savename, 0x50);
+		char title[0x50] = {0};
+		strncpy(title, savename, 0x4F);
 		U7open(out, fname);
 		out.write(title, 0x50);
 		out.close();
