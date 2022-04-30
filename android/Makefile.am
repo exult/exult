@@ -7,10 +7,7 @@ android_DATA=$(ANDROID_APK)
 
 # These are shared with iOS, but need to be staged in the android tree and are not allowed to have
 # a '-' in the filename.
-SHARED_IMAGE_ASSETS = \
-	$(abs_builddir)/app/src/main/res/drawable/btn.png \
-	$(abs_builddir)/app/src/main/res/drawable/btnpressed.png \
-	$(abs_builddir)/app/src/main/res/drawable/dpad_center.png \
+DPAD_DIRECTIONS = \
 	$(abs_builddir)/app/src/main/res/drawable/dpad_east.png \
 	$(abs_builddir)/app/src/main/res/drawable/dpad_north.png \
 	$(abs_builddir)/app/src/main/res/drawable/dpad_northeast.png \
@@ -19,6 +16,12 @@ SHARED_IMAGE_ASSETS = \
 	$(abs_builddir)/app/src/main/res/drawable/dpad_southeast.png \
 	$(abs_builddir)/app/src/main/res/drawable/dpad_southwest.png \
 	$(abs_builddir)/app/src/main/res/drawable/dpad_west.png
+DPAD_CENTER = \
+	$(abs_builddir)/app/src/main/res/drawable/dpad_center.png
+BUTTON = \
+	$(abs_builddir)/app/src/main/res/drawable/btn.png \
+	$(abs_builddir)/app/src/main/res/drawable/btnpressed.png
+SHARED_IMAGE_ASSETS = $(DPAD_DIRECTIONS) $(DPAD_CENTER) $(BUTTON)
 
 # All the DATA files that getinstalled by a normal build.
 # TODO: Would be ideal to infer this list rather than hard-coding it here.  
@@ -32,6 +35,10 @@ DATA_FILES = \
 APK_ASSETS_DIR=$(abs_builddir)/app/src/main/assets/data
 APK_ASSETS = $(DATA_FILES:%=$(APK_ASSETS_DIR)/%)
 
+# We'll use the java sources for Android integration provided in the SDL source tree.
+LIBSDL_JAVA_DIR = \
+	$(abs_builddir)/app/src/main/java/org/libsdl
+
 # Gradle doesn't appear to have a simple way to do out-of-tree builds, so instead we'll symbolic link the source tree
 # into the build directory and run the build from the links.  Note that the final source tree includes elements from
 # multiple locations and we end up installing an assets folder as part of the build in app/src/main/assets which we don't
@@ -43,15 +50,15 @@ APK_SOURCE_TREE = \
 	$(abs_builddir)/app/src/main/AndroidManifest.xml \
 	$(abs_builddir)/app/src/main/cpp \
 	$(abs_builddir)/app/src/main/java/info/exult \
-	$(abs_builddir)/app/src/main/java/org/libsdl \
 	$(abs_builddir)/app/src/main/res/layout \
 	$(abs_builddir)/app/src/main/res/values \
 	$(abs_builddir)/app/src/main/res/drawable/ankh.png \
 	$(abs_builddir)/app/src/main/res/drawable/back.gif \
 	$(abs_builddir)/app/src/main/res/drawable/exult_logo_nice.png \
-	$(abs_builddir)/app/src/main/res/drawable/tile_back.xml \
-	$(SHARED_IMAGE_ASSETS) \
-	$(APK_ASSETS)
+	$(abs_builddir)/app/src/main/res/drawable/tile_back.xml
+
+# Pull together all the components into the full staged APK build tree
+APK_BUILD_TREE = $(APK_SOURCE_TREE) $(LIBSDL_JAVA_DIR) $(SHARED_IMAGE_ASSETS) $(APK_ASSETS)
 
 # Pass SDL and Exult source directories to gradle as project properties
 SDL_SOURCE_DIR=$(abs_builddir)/sdl-src
@@ -63,7 +70,7 @@ $(ANDROID_APK): $(abs_builddir)/gradlew
 	ANDROID_SDK_ROOT=$(ANDROID_SDK_ROOT) ./gradlew assemble$(APK_BUILD_TYPE) $(GRADLE_PROJECT_PROPS) --info
 
 # Generate the gradle wrapper
-$(abs_builddir)/gradlew: $(APK_SOURCE_TREE) android_packages
+$(abs_builddir)/gradlew: $(APK_BUILD_TREE) android_packages
 	ANDROID_SDK_ROOT=$(ANDROID_SDK_ROOT) $(GRADLE) wrapper $(GRADLE_PROJECT_PROPS)
 
 # Always try to install any missing android packages
@@ -78,31 +85,27 @@ android_packages:
 # Various locations in the source and native build to copy files from that need to be staged for the APK build
 # TODO: prefer $(LN_S) for everything, but gradle doesn't seem to like symbolic links for assets
 
-$(abs_builddir)/%: $(abs_srcdir)/%
-	@$(MKDIR_P) $(dir $@)
+$(APK_SOURCE_TREE): $(abs_builddir)/%: $(abs_srcdir)/%
+	@$(MKDIR_P) $(@D)
 	$(LN_S) $< $@
 
 $(abs_builddir)/app/src/main/java/org/libsdl: $(SDL_SOURCE_DIR)
-	@$(MKDIR_P) $(dir $@)
+	@$(MKDIR_P) $(@D)
 	$(LN_S) $(SDL_SOURCE_DIR)/android-project/app/src/main/java/org/libsdl $@
 
 $(abs_builddir)/app/src/main/res/drawable/dpad_center.png: $(abs_top_srcdir)/ios/Images/joypad-glass.png
 	@$(MKDIR_P) $(@D)
 	$(LN_S) $< $@
 
-$(abs_builddir)/app/src/main/res/drawable/dpad_%.png: $(abs_top_srcdir)/ios/Images/joypad-glass-%.png
+$(DPAD_DIRECTIONS): $(abs_builddir)/app/src/main/res/drawable/dpad_%.png: $(abs_top_srcdir)/ios/Images/joypad-glass-%.png
 	@$(MKDIR_P) $(@D)
 	$(LN_S) $< $@
 
-$(abs_builddir)/app/src/main/res/drawable/%: $(abs_top_srcdir)/ios/Images/%
+$(BUTTON): $(abs_builddir)/app/src/main/res/drawable/%: $(abs_top_srcdir)/ios/Images/%
 	@$(MKDIR_P) $(@D)
 	$(LN_S) $< $@
 
-$(APK_ASSETS_DIR)/%: $(abs_top_srcdir)/data/bg/%
-	@$(MKDIR_P) $(@D)
-	$(INSTALL) $< $@
-
-$(APK_ASSETS_DIR)/%: $(abs_top_srcdir)/data/%
+$(APK_ASSETS): $(APK_ASSETS_DIR)/%: $(abs_top_srcdir)/data/%
 	@$(MKDIR_P) $(@D)
 	$(INSTALL) $< $@
 
