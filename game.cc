@@ -48,6 +48,11 @@
 #include "shapes/miscinf.h"
 #include "array_size.h"
 
+#ifdef VITA
+#include "vita.h"
+#endif
+
+
 using std::cout;
 using std::endl;
 using std::ifstream;
@@ -503,6 +508,22 @@ int wait_delay(int ms, int startcol, int ncol, int rotspd) {
 				}
 				break;
 			}
+#ifdef VITA
+      case SDL_JOYBUTTONDOWN:
+        switch (event.jbutton.button) {
+          case VITA_BUTTON_CIRCLE:
+            return 1;
+          break;
+          case VITA_BUTTON_CROSS:
+            return 2;
+          break;
+          case VITA_BUTTON_START:
+            return 2;
+          break;
+          default:
+          break;
+        }
+#endif
 			default:
 				break;
 			}

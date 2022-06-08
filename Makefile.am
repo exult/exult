@@ -121,7 +121,9 @@ EXULTSOURCES =	\
 	verify.cc	\
 	verify.h	\
 	version.cc	\
-	version.h
+	version.h \
+	vita.cc \
+	vita.h
 
 EXULTLIBS = \
 	pathfinder/libpathfinder.la		\

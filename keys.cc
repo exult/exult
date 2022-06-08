@@ -35,6 +35,10 @@
 #include "utils.h"
 #include "keyactions.h"
 
+#ifdef VITA
+#include "vita.h"
+#endif
+
 using std::atoi;
 using std::cerr;
 using std::cout;
@@ -461,6 +465,136 @@ bool KeyBinder::HandleEvent(SDL_Event const &ev) const {
 
 	return false;
 }
+
+#ifdef VITA
+//bool KeyBinder::HandleJoyEvent(SDL_Event const &ev) const {
+SDL_Event KeyBinder::HandleJoyEvent(SDL_Event const &ev) const {
+  SDL_Keysym sym;
+  SDL_KeyboardEvent ke;
+  SDL_Event transmit;
+
+	SDL_zero(transmit);
+	SDL_zero(ke);
+	SDL_zero(sym);
+  sym.mod=KMOD_NONE;
+  sym.unused=0;
+  ke.type=SDL_KEYDOWN;
+  ke.timestamp=ev.jbutton.timestamp;
+  ke.windowID=0;
+  ke.state=SDL_PRESSED;
+  ke.repeat=0;
+  transmit.type=SDL_KEYDOWN;
+
+  if(ev.type == SDL_JOYBUTTONDOWN) {
+    switch(ev.jbutton.button) {
+      // Game Menu
+      case VITA_BUTTON_START:
+      case VITA_BUTTON_CIRCLE:
+        sym.scancode=SDL_SCANCODE_ESCAPE;
+        sym.sym=SDLK_ESCAPE;
+        ke.keysym=sym;
+        transmit.key=ke;
+        //SDL_PushEvent(&transmit);
+				return(transmit);
+      break;
+      // Target
+      case VITA_BUTTON_TRIANGLE:
+        sym.scancode=SDL_SCANCODE_T;
+        sym.sym=SDLK_t;
+        ke.keysym=sym;
+        transmit.key=ke;
+        //SDL_PushEvent(&transmit);
+				return(transmit);
+      break;
+      // Inventory
+      case VITA_BUTTON_SQUARE:
+        sym.scancode=SDL_SCANCODE_I;
+        sym.sym=SDLK_i;
+        ke.keysym=sym;
+        transmit.key=ke;
+        //SDL_PushEvent(&transmit);
+				return(transmit);
+      break;     
+      // Toggle Combat
+      case VITA_BUTTON_TOP_R:
+        sym.scancode=SDL_SCANCODE_C;
+        sym.sym=SDLK_c;
+        ke.keysym=sym;
+        transmit.key=ke;
+        //SDL_PushEvent(&transmit);
+				return(transmit);
+      break; 
+      // Map
+      case VITA_BUTTON_TOP_L:
+        sym.scancode=SDL_SCANCODE_M;
+        sym.sym=SDLK_m;
+        ke.keysym=sym;
+        transmit.key=ke;
+        //SDL_PushEvent(&transmit);
+				return(transmit);
+      break; 
+      // Notebook
+      case VITA_BUTTON_SELECT:
+        sym.scancode=SDL_SCANCODE_N;
+        sym.sym=SDLK_n;
+				ke.keysym=sym;
+        transmit.key=ke;
+        //SDL_PushEvent(&transmit);
+				return(transmit);
+      break;
+      // Spellbook
+      case VITA_BUTTON_UP:
+        sym.scancode=SDL_SCANCODE_B;
+        sym.sym=SDLK_b;
+        ke.keysym=sym;
+        transmit.key=ke;
+        //SDL_PushEvent(&transmit);
+				return(transmit);
+      break;
+      // Lockpicks
+      case VITA_BUTTON_LEFT:
+        sym.scancode=SDL_SCANCODE_P;
+        sym.sym=SDLK_p;
+        ke.keysym=sym;
+        transmit.key=ke;
+        //SDL_PushEvent(&transmit);
+				return(transmit);
+      break;
+      // Food
+      case VITA_BUTTON_RIGHT:
+        sym.scancode=SDL_SCANCODE_F;
+        sym.sym=SDLK_f;
+        ke.keysym=sym;
+        transmit.key=ke;
+        //SDL_PushEvent(&transmit);
+				return(transmit);
+      break;
+      // Status Bar
+      case VITA_BUTTON_DOWN:
+        sym.scancode=SDL_SCANCODE_Z;
+        sym.sym=SDLK_z;
+        ke.keysym=sym;
+        transmit.key=ke;
+        //SDL_PushEvent(&transmit);
+				return(transmit);
+      break;
+      // Pause Combat 
+      case VITA_BUTTON_CROSS:
+        sym.scancode=SDL_SCANCODE_SPACE;
+        sym.sym=SDLK_SPACE;
+        ke.keysym=sym;
+        transmit.key=ke;
+        //SDL_PushEvent(&transmit);
+				return(transmit);
+      break;
+    }
+  }
+  //return true;
+	SDL_zero(transmit);
+	return(transmit);
+}
+
+#endif
 
 bool KeyBinder::IsMotionEvent(SDL_Event const &ev) const {
 	auto sdlkey_index = TranslateEvent(ev);

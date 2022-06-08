@@ -74,6 +74,10 @@ public:
 	}
 	bool DoAction(ActionType const &action, bool press) const;
 	bool HandleEvent(SDL_Event const &ev) const;
+#ifdef VITA
+	//bool HandleJoyEvent(SDL_Event const &ev) const;
+	SDL_Event HandleJoyEvent(SDL_Event const &ev) const;
+#endif
 	bool IsMotionEvent(SDL_Event const &ev) const;
 
 	void LoadFromFile(const char *filename);

@@ -36,6 +36,10 @@
 #include "SDL_stdinc.h"
 #include "SDL_scancode.h"
 
+#ifdef VITA
+#include "vita.h"
+#endif
+
 using std::atoi;
 using std::size_t;
 using std::strchr;
@@ -223,11 +227,25 @@ bool TextScroller::run(Game_window *gwin) {
 					else
 						looping = false;
 					break;
-
+#ifdef VITA
+				case SDL_JOYBUTTONDOWN:
+					if (event.jbutton.button == VITA_BUTTON_TOP_R || event.jbutton.button == VITA_BUTTON_TOP_L 
+						|| event.jbutton.button == VITA_BUTTON_RIGHT || event.jbutton.button == VITA_BUTTON_LEFT )
+						incr = 0;
+					else
+						looping = false;
+					break;
+#endif
 				case SDL_KEYUP:
 					incr = 120;
 					next_time = SDL_GetTicks();
 					break;
+#ifdef VITA
+				case VITA_BUTTON_UP:
+					incr = 120;
+					next_time = SDL_GetTicks();
+					break;
+#endif
 				case SDL_MOUSEBUTTONUP:
 					looping = false;
 					break;

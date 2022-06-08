@@ -29,6 +29,11 @@
 #include "shapeid.h"
 #include "gump_utils.h"
 
+#ifdef VITA
+#include "vita.h"
+#endif
+
+
 // MenuEntry: a selectable menu entry (a button)
 MenuEntry::MenuEntry(Shape_frame *on, Shape_frame *off, int xpos, int ypos) {
 	frame_on = on;
@@ -61,8 +66,15 @@ void MenuEntry::paint(Game_window *gwin) {
 
 bool MenuEntry::handle_event(SDL_Event &event) {
 	SDL_Keysym &key = event.key.keysym;
+#ifdef VITA
+	int button = event.jbutton.button;
+#endif
 	return (event.type == SDL_KEYDOWN &&
 	        (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER)) ||
+#ifdef VITA
+					(event.type == SDL_JOYBUTTONDOWN &&
+						(button == VITA_BUTTON_START || button == VITA_BUTTON_CROSS)) ||
+#endif
 	       event.type == SDL_MOUSEBUTTONUP;
 }
 
@@ -97,8 +109,15 @@ void MenuTextEntry::paint(Game_window *gwin) {
 
 bool MenuTextEntry::handle_event(SDL_Event &event) {
 	SDL_Keysym &key = event.key.keysym;
+#ifdef VITA
+  int button = event.jbutton.button;
+#endif
 	return (((event.type == SDL_KEYDOWN &&
 	          (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER)) ||
+#ifdef VITA
+          (event.type == SDL_JOYBUTTONDOWN &&
+            (button == VITA_BUTTON_START || button == VITA_BUTTON_CROSS)) ||
+#endif
 	         event.type == SDL_MOUSEBUTTONUP)) && enabled;
 }
 
@@ -167,8 +186,15 @@ void MenuGameEntry::paint(Game_window *gwin) {
 
 bool MenuGameEntry::handle_event(SDL_Event &event) {
 	SDL_Keysym &key = event.key.keysym;
+#ifdef VITA
+  int button = event.jbutton.button;
+#endif
 	return (((event.type == SDL_KEYDOWN &&
 	          (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER)) ||
+#ifdef VITA
+          (event.type == SDL_JOYBUTTONDOWN &&
+            (button == VITA_BUTTON_START || button == VITA_BUTTON_CROSS)) ||
+#endif
 	         event.type == SDL_MOUSEBUTTONUP)) && is_enabled();
 }
 
@@ -238,6 +264,25 @@ bool MenuTextChoice::handle_event(SDL_Event &event) {
 		default:
 			break;
 		}
+#ifdef VITA
+		} else if (event.type == SDL_JOYBUTTONDOWN) {
+    switch (event.jbutton.button) {
+    case VITA_BUTTON_LEFT:
+      dirty = true;
+      choice--;
+      if (choice < 0)
+        choice = choices.size() - 1;
+      break;
+    case VITA_BUTTON_RIGHT:
+      dirty = true;
+      choice++;
+      if (choice >= static_cast<int>(choices.size()))
+        choice = 0;
+      break;
+    default:
+      break;
+    }
+#endif
 	}
 	return false;
 }
@@ -381,6 +426,46 @@ int MenuList::handle_events(Game_window *gwin, Mouse *mouse) {
 				}
 				break;
 				}
+#ifdef VITA
+			} else if (event.type == SDL_JOYBUTTONDOWN) {
+        mouse_updated = false;
+        mouse->hide();
+        mouse->blit_dirty();
+        switch (event.jbutton.button) {
+        case VITA_BUTTON_CIRCLE:
+            return -1;
+          break;
+        case VITA_BUTTON_UP:
+          if (!selected) {
+            // if unselected (by 'MouseOut' event), just re-select
+            set_selection(selection);
+            continue;
+          }
+          if (selection <= 0)
+            set_selection(count - 1);
+          else
+            set_selection(selection - 1);
+          continue;
+        case VITA_BUTTON_DOWN:
+          if (!selected) {
+            // if unselected (by 'MouseOut' event), just re-select
+            set_selection(selection);
+            continue;
+          }
+          if (selection >= (count - 1))
+            set_selection(0);
+          else
+            set_selection(selection + 1);
+          continue;
+        default: {
+          // let key be processed by selected menu-item
+          if (selected) {
+            exit_loop = entries[selection]->handle_event(event);
+          }
+        }
+        break;
+        }
+#endif
 			} else if (event.type == SDL_QUIT) {
 				return -1;
 			} else if (event.type == SDL_FINGERDOWN) {

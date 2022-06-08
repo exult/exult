@@ -21,6 +21,11 @@
 #include "touchui.h"
 #include <cstring>
 
+#ifdef VITA
+//extern char *strdup(const char *s);
+#include "vita.h"
+#endif
+
 uint32 TouchUI::eventType = ~uint32(0);
 
 void TouchUI::onTextInput(const char *text) {
