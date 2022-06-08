@@ -453,11 +453,16 @@ int exult_main(const char *runpath) {
 	// Read in configuration file
 	config = new Configuration;
 
+#ifndef VITA
 	if (!arg_configfile.empty()) {
 		config->read_abs_config_file(arg_configfile);
 	} else {
 		config->read_config_file(USER_CONFIGURATION_FILE);
 	}
+#else
+	//config->read_config_file("ux0:data/exult/exult.cfg");
+  config->read_abs_config_file("ux0:data/exult/exult.cfg");
+#endif
 
 	// reset-video command line option
 	if (arg_reset_video) {
@@ -487,7 +492,12 @@ int exult_main(const char *runpath) {
 
 	// Setup virtual directories
 	string data_path;
+#ifndef VITA
 	config->value("config/disk/data_path", data_path, EXULT_DATADIR);
+#else
+  //config->value("config/disk/data_path", data_path, "ux0:data/exult/data");
+	config->value("config/disk/data_path", data_path, "ux0:data/exult");
+#endif
 	setup_data_dir(data_path, runpath);
 
 	std::string default_music = get_system_path("<DATA>/music");
@@ -509,10 +519,11 @@ int exult_main(const char *runpath) {
 	std::cout << "Digital music : " << get_system_path("<MUSIC>") << std::endl;
 	std::cout << std::endl;
 
+#ifndef VITA
 	// Check CRCs of our .flx files
 	bool crc_ok = true;
 	const char *flexname = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
-	uint32 crc = crc32(flexname);
+  uint32 crc = crc32(flexname);
 	if (crc != EXULT_FLX_CRC32) {
 		crc_ok = false;
 		cerr << "exult.flx has a wrong checksum!" << endl;
@@ -544,7 +555,7 @@ int exult_main(const char *runpath) {
 		return 1;
 	}
 
-
+#endif
 	// Convert from old format if needed
 	vector<string> vs = config->listkeys("config/disk/game", false);
 	if (vs.empty() && config->key_exists("config/disk/u7path")) {
@@ -587,7 +598,7 @@ int exult_main(const char *runpath) {
 
 	cheat.init();
 
-#ifdef __IPHONEOS__
+#if (defined(__IPHONEOS__) )
 	touchui = new TouchUI_iOS();
 #elif defined(ANDROID)
 	touchui = new TouchUI_Android();
@@ -729,7 +740,9 @@ static void Init(
 	SDL_putenv("SDL_VIDEODRIVER=x11");
 #endif
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "Landscape");
-#if 0
+//#if 0
+#ifdef VITA
+	SDL_SetHint(SDL_HINT_IME_SHOW_UI,"1");
 	init_flags |= SDL_INIT_JOYSTICK;
 #endif
 #if defined(__IPHONEOS__) || defined(ANDROID)
@@ -1711,6 +1724,15 @@ static void Handle_event(
 	case SDL_QUIT:
 		gwin->get_gump_man()->okay_to_quit();
 		break;
+#ifdef VITA
+	case SDL_JOYBUTTONDOWN:
+	case SDL_JOYBUTTONUP:
+		//if (!dragging &&    // ESC while dragging causes crashes.
+			//!gwin->get_gump_man()->handle_kbd_event(&event))
+			if (!dragging && !gwin->get_gump_man()->handle_kbd_event(&event)) keybinder->HandleEvent(keybinder->HandleJoyEvent(event));
+		//keybinder->HandleJoyEvent(event);
+	break;
+#endif
 	case SDL_KEYDOWN:       // Keystroke.
 	case SDL_KEYUP:
 		if (!dragging &&    // ESC while dragging causes crashes.
@@ -1913,6 +1935,13 @@ static bool Get_click(
 				}
 				break;
 			}
+#ifdef VITA
+      case SDL_JOYBUTTONDOWN:
+        //g_waiting_for_click = false;
+        //return true;
+				return false;	// ESC
+      break;
+#endif
 			case SDL_WINDOWEVENT:
 				if (GainedFocus(event))
 					gwin->get_focus();
