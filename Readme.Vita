@@ -3,7 +3,7 @@ This is a fork to compile Exult for Vita
 
 Prequesites:
 ------------
-	- running VITASDK Environment
+  - running VITASDK Environment
   - libvorbis 
   - libogg
 
@@ -11,7 +11,7 @@ Compilation (with linux):
 --------------------------
 
 Clone the repo:
-	git clone https://github.com/einmueller/exult-vita.git
+  git clone https://github.com/einmueller/exult-vita.git
 
 Compile the support binaries for linux:
 ---------------------------------------
