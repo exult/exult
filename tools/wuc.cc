@@ -1,6 +1,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#ifdef VITA
+#include "strings.h"
+#endif
 
 #include "uctools.h"
 #include "array_size.h"

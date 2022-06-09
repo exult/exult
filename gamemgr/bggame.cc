@@ -51,6 +51,10 @@
 #include "touchui.h"
 #include "txtscroll.h"
 
+#ifdef VITA
+#include "vita.h"
+#endif
+
 #include <SDL.h>
 #include <SDL_events.h>
 
@@ -2049,6 +2053,11 @@ bool BG_Game::new_game(Vga_file &shapes) {
 	char npc_name[max_name_len + 1];
 	char disp_name[max_name_len + 2];
 	npc_name[0] = 0;
+#ifdef VITA
+  //strncpy(npc_name,getUsername(),max_name_len); 
+	strncpy(npc_name,"The Stranger",max_name_len);
+  npc_name[max_name_len] = 0;
+#endif
 
 	int selected = 0;
 	int num_choices = 4;
@@ -2121,6 +2130,8 @@ bool BG_Game::new_game(Vga_file &shapes) {
 					} else if (selected == 0 && touchui != nullptr) {
 						touchui->promptForName(npc_name);
 					}
+
+
 					redraw = true;
 				} else if (SDL_EnclosePoints(&point, 1, &rectSex, nullptr)) {
 					if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -2234,6 +2245,85 @@ bool BG_Game::new_game(Vga_file &shapes) {
 				break;
 				}
 			}
+#ifdef VITA
+      if (event.type == SDL_JOYBUTTONDOWN) {
+        redraw = true;
+        switch (event.jbutton.button) {
+/*
+        case SDLK_SPACE:
+          if (selected == 0) {
+            int len = strlen(npc_name);
+            if (len < max_name_len) {
+              npc_name[len] = ' ';
+              npc_name[len + 1] = 0;
+            }
+          } else if (selected == 1)
+            skindata = Shapeinfo_lookup::GetNextSelSkin(skindata, si_installed, true);
+          else if (selected == 2) {
+            editing = false;
+            ok = true;
+          } else if (selected == 3)
+            editing = ok = false;
+          break;
+*/
+        case VITA_BUTTON_LEFT:
+          if (selected == 1)
+            skindata = Shapeinfo_lookup::GetPrevSelSkin(skindata, si_installed, true);
+          break;
+        case VITA_BUTTON_RIGHT:
+          if (selected == 1)
+            skindata = Shapeinfo_lookup::GetNextSelSkin(skindata, si_installed, true);
+          break;
+        case VITA_BUTTON_CIRCLE:
+          editing = false;
+          ok = false;
+          break;
+        case VITA_BUTTON_DOWN:
+          ++selected;
+          if (selected == num_choices)
+            selected = 0;
+          break;
+        case VITA_BUTTON_UP:
+          --selected;
+          if (selected < 0)
+            selected = num_choices - 1;
+          break;
+        case VITA_BUTTON_CROSS:
+        case VITA_BUTTON_START:
+          if (selected < 2)
+            ++selected;
+          else if (selected == 2) {
+            editing = false;
+            ok = true;
+          } else
+            editing = ok = false;
+          break;
+
+/*
+        case SDLK_BACKSPACE:
+          if (selected == 0 && strlen(npc_name) > 0)
+            npc_name[strlen(npc_name) - 1] = 0;
+          break;
+        default: {
+          if ((isTextInput && selected == 0) || (!isTextInput && keysym_unicode > +'~' && selected == 0))
+          {
+            int len = strlen(npc_name);
+            char chr = 0;
+            if ((keysym_unicode & 0xFF80) == 0)
+              chr = keysym_unicode & 0x7F;
+
+            if (chr >= ' ' && len < max_name_len) {
+              npc_name[len] = chr;
+              npc_name[len + 1] = 0;
+            }
+          } else
+            redraw = false;
+        }
+        break;
+*/
+        }
+      }
+#endif
 		}
 	} while (editing);
 

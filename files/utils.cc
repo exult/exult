@@ -778,7 +778,10 @@ void setup_data_dir(
 }
 
 static string Get_config_dir(const string& home_dir) {
-#ifdef __IPHONEOS__
+#ifdef VITA
+	ignore_unused_variable_warning(home_dir);
+  return ("ux0:/data/exult");
+#elif defined(__IPHONEOS__)
 	ignore_unused_variable_warning(home_dir);
 	return ios_get_documents_dir();
 #elif defined(MACOSX)
@@ -791,7 +794,10 @@ static string Get_config_dir(const string& home_dir) {
 }
 
 static string Get_savehome_dir(const string& home_dir, const string& config_dir) {
-#ifdef __IPHONEOS__
+#ifdef VITA
+  ignore_unused_variable_warning(config_dir);
+  return("ux0:/data/exult"); 
+#elif defined(__IPHONEOS__)
 	ignore_unused_variable_warning(home_dir);
 	string savehome_dir(config_dir);
 	savehome_dir += "/save";
@@ -813,7 +819,10 @@ static string Get_savehome_dir(const string& home_dir, const string& config_dir)
 }
 
 static string Get_gamehome_dir(const string& home_dir, const string& config_dir) {
-#ifdef __IPHONEOS__
+#ifdef VITA
+  ignore_unused_variable_warning(home_dir, config_dir);
+  return "ux0:/data/exult";
+#elif defined(__IPHONEOS__)
 	ignore_unused_variable_warning(home_dir);
 	string gamehome_dir(config_dir);
 	gamehome_dir += "/game";

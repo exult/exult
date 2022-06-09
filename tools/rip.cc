@@ -3,6 +3,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#ifdef VITA
+#include "strings.h"
+#endif
 using namespace std;
 
 #ifndef ATTR_NORET

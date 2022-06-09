@@ -1,4 +1,5 @@
 /*
+bfr
 Copyright (C) 2001-2022 The Exult Team
 
 This program is free software; you can redistribute it and/or
@@ -43,7 +44,7 @@ using std::string;
 #if defined(_WIN32)
 
 // Need this for _findfirst, _findnext, _findclose
-#include <windows.h>
+//#include <windows.h>
 #include <tchar.h>
 
 int U7ListFiles(const std::string &mask, FileList &files) {
@@ -138,6 +139,64 @@ int U7ListFiles(const std::string &mask, FileList &files) {
 	return 0;
 }
 
+#elif defined(VITA)
+#include <sys/types.h>
+#include <dirent.h>
+
+int U7ListFiles(const std::string &mask, FileList &files) {
+  string::size_type lastslash;
+	string::size_type wildcard;
+  DIR *dir;
+  struct dirent *dentry;
+  int err=3;	// no matches
+
+  string path(get_system_path(mask));
+
+  lastslash=path.rfind('/');
+  string filepart=path.substr(lastslash+1);
+  string dirpart=path.substr(0,lastslash);
+  
+  dir=opendir(dirpart.c_str());
+  if(dir == NULL) {
+    cerr << "opendir error" << endl;
+    return(1);
+  }
+
+  dentry=readdir(dir);
+  while ( dentry != NULL) {
+   if(strlen(dentry->d_name) >= strlen(filepart.c_str())) {  // filename has to be at least the same size
+
+      // ok, the only wildcard is always a single '*'
+      // we've to check the string before an after that...
+      wildcard=filepart.find('*');
+      string pre=filepart.substr(0,wildcard);
+      string suff=filepart.substr(wildcard+1);
+
+      std::cout << "     prefix: " << pre << "  suffix: "  << suff << std::endl;
+
+      // we have to check the same amount of chars
+      // of the direntry
+      string check = string(dentry->d_name);
+      string cpre=check.substr(0,wildcard);
+
+      string csuff=check.substr(check.length()-filepart.length()+wildcard+1);
+
+      std::cout << "     prefix: " << cpre << "  csuffix: "  << csuff << std::endl;
+
+      if((!pre.compare(cpre)) && (!suff.compare(csuff))) {
+        printf("MATCH: %s/%s\n",dirpart.c_str(),dentry->d_name);
+        files.push_back(dirpart + "/" + string(dentry->d_name));
+        err=0;
+      }
+    }
+
+    dentry=readdir(dir);
+  }
+	closedir(dir);
+  return(err);
+}
+
+
 #else   // This system has glob.h
 
 #include <glob.h>
@@ -150,6 +209,7 @@ int U7ListFiles(const std::string &mask, FileList &files) {
 static int U7ListFilesImp(const std::string &path, FileList &files) {
 	glob_t globres;
 	int err = glob(path.c_str(), GLOB_NOSORT, nullptr, &globres);
+  //int err = 7;
 
 	switch (err) {
 	case 0:   //OK
