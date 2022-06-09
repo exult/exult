@@ -23,6 +23,11 @@
 #include <cctype>
 #include <cstring>
 
+#ifdef VITA
+extern int isascii (int c);
+#endif
+
+
 #include "SDL_events.h"
 
 #include "Audio.h"
@@ -577,6 +582,7 @@ bool File_gump::mouse_up(
 void File_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	if (!focus)         // Text field?
 		return;
+
 	switch (chr) {
 	case SDLK_RETURN:       // If only 'Save', do it.
 	case SDLK_KP_ENTER:

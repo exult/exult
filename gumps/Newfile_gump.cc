@@ -45,6 +45,10 @@
 #include "touchui.h"
 #include "Gump_manager.h"
 
+#ifdef VITA
+#include "vita.h"
+#endif
+
 using std::atoi;
 using std::cout;
 using std::endl;
@@ -555,20 +559,34 @@ bool Newfile_gump::mouse_down(
 	cout << "Hit a save game field" << endl;
 #endif
 	selected = hit + list_position;
-
 	bool want_load = true;
 	bool want_delete = true;
 	bool want_save = true;
 
+#ifdef VITA
+  time_t t;
+  struct tm *tmp;
+  t = time(NULL);
+  tmp = localtime(&t);
+  strftime(newname,MAX_SAVEGAME_NAME_LEN,"%x %X",tmp);
+#endif
+
+
 	if (selected == -2) {
 		want_load = false;
 		want_delete = false;
+#if not defined VITA
 		want_save = false;
+#endif
 		screenshot = cur_shot.get();
 		details = cur_details;
 		party = cur_party;
+#if not defined VITA
 		newname[0] = 0;
 		cursor = 0;
+#else
+		cursor = -1;
+#endif
 		is_readable = true;
 		filename = nullptr;
 	} else if (selected == -1) {
@@ -584,8 +602,12 @@ bool Newfile_gump::mouse_down(
 		screenshot = games[selected].screenshot.get();
 		details = games[selected].details;
 		party = games[selected].party;
+#if not defined VITA
 		strcpy(newname, games[selected].savename);
 		cursor = static_cast<int>(strlen(newname));
+#else
+    cursor = -1;
+#endif
 		is_readable = want_load = games[selected].readable;
 		filename = games[selected].filename;
 	}

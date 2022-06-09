@@ -38,6 +38,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "exult.h"
 #include "touchui.h"
 
+#ifdef VITA
+extern int isascii (int c);
+#endif
+
 using std::ofstream;
 using std::ifstream;
 using std::ostream;
@@ -419,8 +423,11 @@ Gump_button *Notebook_gump::on_button(
 		cursor.offset = offset + coff;
 		paint();
 		updnx = cursor.x - x - lpagex;
+#if !defined  (VITA)
+		// only works one time...
 		if (!SDL_IsTextInputActive())
 			SDL_StartTextInput();
+#endif
 	} else {
 		offset += -coff;        // New offset.
 		if (offset >= static_cast<int>(note->text.length())) {

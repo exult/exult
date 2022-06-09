@@ -49,6 +49,10 @@
 #include "spellbook.h"
 #include "touchui.h"
 
+#ifdef VITA
+#include "vita.h"
+#endif
+
 using std::cout;
 using std::endl;
 
@@ -543,6 +547,13 @@ bool Gump_manager::handle_modal_gump_event(
 		if (okay_to_quit())
 			return false;
 		break;
+#ifdef VITA
+	case SDL_JOYBUTTONDOWN:
+		if (event.jbutton.button == VITA_BUTTON_START || event.jbutton.button == VITA_BUTTON_CIRCLE) {
+			return false;
+		}
+	break;
+#endif
 	case SDL_KEYDOWN:
 	case SDL_TEXTINPUT:
 		if (event.type == SDL_TEXTINPUT) {
