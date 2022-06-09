@@ -1,0 +1,86 @@
+This is a fork to compile Exult for Vita
+----------------------------------------
+
+Prequesites:
+------------
+	- running VITASDK Environment
+  - libvorbis 
+  - libogg
+
+Compilation (with linux):
+--------------------------
+
+Clone the repo:
+	git clone https://github.com/einmueller/exult-vita.git
+
+Compile the support binaries for linux:
+---------------------------------------
+cd exult-vita/
+ sh autogen.sh 
+./configure
+make
+
+Now set the pathes for your VITASDK:
+------------------------------------
+
+  export VITASDK=/home/sirtobi/VITASDK
+  export PATH=$VITASDK/bin:$PATH # add vitasdk tool to $PATH
+  export PATH=/home/sirtobi/VITASDK/arm-vita-eabi/bin:$PATH
+
+Copy over the support tools to your build environment (or somewhere in the path):
+---------------------------------------------------------------------------------
+  cp tools/{cmanip,expack,ipack,mklink,rip,shp2pcx,splitshp,textpack,wuc} ~/VITASDK/bin/
+  cp usecode/ucxt/head2data ~/VITASDK/bin/
+
+Build the exult binary:
+-----------------------
+  ./configure CXXFLAGS="-Wl,-q -DVITA" CFLAGS="-Wl,-q -DVITA" LIBS="-lSceDisplay_stub -lSceAppUtil_stub" CXX=arm-vita-eabi-c++ --host=armv7 PKG_CONFIG_PATH=/home/sirtobi/VITASDK/arm-vita-eabi/lib/pkgconfig
+  make
+
+Build the VPK and Data-Package:
+--------------
+  arm-vita-eabi-strip  -g exult
+  vita-elf-create exult exult.velf
+  vita-make-fself exult.velf eboot.bin
+  vita-mksfoex -s TITLE_ID="EXULT0042" -s APP_VER="01.80" "Exult" param.sfo
+
+  vita-pack-vpk -s param.sfo -b eboot.bin \
+    --add sce_sys/icon0.png=sce_sys/icon0.png \
+    --add sce_sys/livearea/contents/bg.png=sce_sys/livearea/contents/bg.png \
+    --add sce_sys/livearea/contents/startup.png=sce_sys/livearea/contents/startup.png \
+    --add sce_sys/livearea/contents/template.xml=sce_sys/livearea/contents/template.xml \
+  exult.vpk
+
+  zip -j exult_data.zip data/*.flx
+
+
+Installation:
+-------------
+- Install the exult.vpk as usual
+- copy the flx-files from exult_data.zip to ux0:/data/exult/
+- place your gamefiles to ux0:/data/exult/ like mentioned
+  in the exult docs, chapter 11
+
+Notes:
+------
+- no keyboard support (soft-keyboard crashes the game). So the avatar is always named "The Stranger"
+  and Save Games are named according to the save-date and -time.
+- there are some slowdowns, but the game runs pretty well.
+- exult.cfg is generated with some presets in ux0:/data/exult/exult.cfg
+- digital music works, but is too slow.
+
+Buttons (as for now):
+---------------------
+- Touchscreen and left joystick as mouse
+- Start or Circle = In-Game-Menu
+- Select = Notebook
+- Circle = ESC
+- Cross = Pause Combat
+- Triangle = Target Mode
+- Square = Inventory
+- Top-Left = Map
+- Top-Right = Toggle Combat
+- Up = Spell Book
+- Left = Lockpicks
+- Right = Food
+- Down = Show stats
