@@ -1,24 +1,14 @@
-# Badges
+## What is THIS?
 
-[![Chat on IRC](https://img.shields.io/badge/web.libera.chat-%23exult-blue?logo=LiveChat&logoColor=white)](https://web.libera.chat/#exult)
+----
 
-[![GitHub](https://img.shields.io/github/license/exult/exult?label=License&logo=GNU)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+This is a quick port of Exult to Sony Vita.
 
-[![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/exult/exult?label=codefactor&logo=codefactor&logoColor=white)](https://www.codefactor.io/repository/github/exult/exult)
-[![LGTM Alerts](https://img.shields.io/lgtm/alerts/github/exult/exult?logo=LGTM)](https://lgtm.com/projects/g/exult/exult/alerts/)
-[![LGTM Grade](https://img.shields.io/lgtm/grade/cpp/github/exult/exult?logo=LGTM)](https://lgtm.com/projects/g/exult/exult/context:cpp)
+Please don't ask questions about this specific port to the Exult-Team...
 
-[![Travis (.com)](https://img.shields.io/travis/com/exult/exult?label=Travis%20CI%20Build&logo=Travis%20CI&logoColor=white)](https://www.travis-ci.com/exult/exult)
+But if you have questions about Exult at all, please look here for further information
+and documentation: http://exult.sourceforge.net/
 
-[![CI Ubuntu 20.04](https://img.shields.io/github/workflow/status/exult/exult/ci-linux?label=CI%20Ubuntu&logo=Ubuntu&logoColor=white)](https://github.com/exult/exult/actions?query=workflow%3Aci-linux)
-[![CI Mac OS Catalina 10.15](https://img.shields.io/github/workflow/status/exult/exult/ci-macos?label=CI%20Mac%20OS%20X&logo=Apple&logoColor=white)](https://github.com/exult/exult/actions?query=workflow%3Aci-macos)
-[![CI Windows Server 2019](https://img.shields.io/github/workflow/status/exult/exult/ci-windows?label=CI%20Windows&logo=Windows&logoColor=white)](https://github.com/exult/exult/actions?query=workflow%3Aci-windows)
-
-[![Coverity Scan Analysis](https://img.shields.io/github/workflow/status/exult/exult/coverity-scan?label=Coverity%20Scan%20Analysis&logo=data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjU2IDI1MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMjYuOTUgMTA5LjA4bC0zLjUyLTkuNDUgMzcuOTYgNzAuODloLjg1bDQ3LjMzLTExOC4xM2MuODMtMi41NiA4LjI2LTIxLjc0IDguNTEtMzAuMi42My0yMS44NC0xNC4xLTIzLjgxLTI5Ljc3LTE5LjM5QzM2Ljg3IDE5LjQ2LS4yNCA2Ny44My4wMSAxMjQuNzhjLjIgNTIuOTcgMzIuNjQgOTguMjQgNzguNjUgMTE3LjM4TDI2Ljk1IDEwOS4wOE0xNzQuMzMgNS40OGMtNi4zMiAxMi43LTEzLjEgMjYuMzctMjEuNjggNDguMDhMNzkuMjIgMjQyLjM5YzE1LjA5IDYuMiAzMS42MyA5LjYgNDguOTYgOS41MiA3MC41LS4yNyAxMjcuNDItNTcuNjcgMTI3LjEzLTEyOC4xOC0uMjItNTMuODMtMzMuNzYtOTkuNy04MC45OC0xMTguMjYiIGZpbGw9IiNmZmYiLz48L3N2Zz4=)](https://github.com/exult/exult/actions?query=workflow%3Acoverity-scan)
-[![Coverity Scan](https://img.shields.io/coverity/scan/10872?label=Coverity%20Scan%20Results&logo=data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjU2IDI1MiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMjYuOTUgMTA5LjA4bC0zLjUyLTkuNDUgMzcuOTYgNzAuODloLjg1bDQ3LjMzLTExOC4xM2MuODMtMi41NiA4LjI2LTIxLjc0IDguNTEtMzAuMi42My0yMS44NC0xNC4xLTIzLjgxLTI5Ljc3LTE5LjM5QzM2Ljg3IDE5LjQ2LS4yNCA2Ny44My4wMSAxMjQuNzhjLjIgNTIuOTcgMzIuNjQgOTguMjQgNzguNjUgMTE3LjM4TDI2Ljk1IDEwOS4wOE0xNzQuMzMgNS40OGMtNi4zMiAxMi43LTEzLjEgMjYuMzctMjEuNjggNDguMDhMNzkuMjIgMjQyLjM5YzE1LjA5IDYuMiAzMS42MyA5LjYgNDguOTYgOS41MiA3MC41LS4yNyAxMjcuNDItNTcuNjcgMTI3LjEzLTEyOC4xOC0uMjItNTMuODMtMzMuNzYtOTkuNy04MC45OC0xMTguMjYiIGZpbGw9IiNmZmYiLz48L3N2Zz4=)](https://scan.coverity.com/projects/exult-exult)
-
-[![Windows snapshot build](https://img.shields.io/github/workflow/status/exult/exult/snapshots-windows?label=Windows%20Snapshot%20build&logo=windows&logoColor=white)](https://github.com/exult/exult/actions?query=workflow%3Asnapshots-windows)
-[![Latest Windows snapshot](https://img.shields.io/github/release-date/exult/exult?label=Latest%20Windows%20snapshot&logo=windows&logoColor=white)](https://github.com/exult/exult/releases/latest)
 
 ## What is Exult?
 
@@ -31,3 +21,7 @@ Exult is written in C++ and runs on, at least, Linux, Mac OS X and Windows using
 Exult aims to let those people who own Ultima 7 (copyright 1993) play the game on modern hardware, in as close to (or perhaps even surpassing) its original splendor as is possible. You need to own "Ultima 7: The Black Gate" and/or "Ultima 7: Serpent Isle" and optionally the add-ons (not required to run) in order to use Exult, and we encourage you to buy a legal copy.
 
 For more information, either consult the README file on the repository, or view its HTML version [here](http://exult.info/docs.php).
+
+
+
+
