@@ -23,7 +23,7 @@ make
 Now set the pathes for your VITASDK:
 ------------------------------------
 
-  export VITASDK=/home/sirtobi/VITASDK
+  export VITASDK=~/VITASDK
   export PATH=$VITASDK/bin:$PATH # add vitasdk tool to $PATH
   export PATH=$VITASDK/arm-vita-eabi/bin:$PATH
 
