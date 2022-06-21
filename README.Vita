@@ -25,7 +25,7 @@ Now set the pathes for your VITASDK:
 
   export VITASDK=/home/sirtobi/VITASDK
   export PATH=$VITASDK/bin:$PATH # add vitasdk tool to $PATH
-  export PATH=/home/sirtobi/VITASDK/arm-vita-eabi/bin:$PATH
+  export PATH=$VITASDK/arm-vita-eabi/bin:$PATH
 
 Copy over the support tools to your build environment (or somewhere in the path):
 ---------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ Copy over the support tools to your build environment (or somewhere in the path)
 
 Build the exult binary:
 -----------------------
-  ./configure CXXFLAGS="-Wl,-q -DVITA" CFLAGS="-Wl,-q -DVITA" LIBS="-lSceDisplay_stub -lSceAppUtil_stub" CXX=arm-vita-eabi-c++ --host=armv7 PKG_CONFIG_PATH=/home/sirtobi/VITASDK/arm-vita-eabi/lib/pkgconfig
+  ./configure CXXFLAGS="-Wl,-q -O2 -DVITA" CFLAGS="-Wl,-q -O2 -DVITA" LIBS="-lSceDisplay_stub -lSceAppUtil_stub" CXX=arm-vita-eabi-c++ -host=armv7 PKG_CONFIG_PATH=/home/sirtobi/VITASDK/arm-vita-eabi/lib/pkgconfig
   make
 
 Build the VPK and Data-Package:
@@ -42,7 +42,7 @@ Build the VPK and Data-Package:
   arm-vita-eabi-strip  -g exult
   vita-elf-create exult exult.velf
   vita-make-fself exult.velf eboot.bin
-  vita-mksfoex -s TITLE_ID="EXULT0042" -s APP_VER="01.80" "Exult" param.sfo
+  vita-mksfoex -s TITLE_ID="EXULT0042" -s APP_VER="01.80" -d ATTRIBUTE2=12 "Exult" param.sfo
 
   vita-pack-vpk -s param.sfo -b eboot.bin \
     --add sce_sys/icon0.png=sce_sys/icon0.png \
