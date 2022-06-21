@@ -427,6 +427,17 @@ int MenuList::handle_events(Game_window *gwin, Mouse *mouse) {
 				break;
 				}
 #ifdef VITA
+//			} else if (event.type == SDL_JOYBUTTONDOWN || event.type == SDL_JOYBUTTONUP || event.type == SDL_USEREVENT) {
+//				joy2KeyMouse(event,1,config);
+//			} else if (event.type == SDL_JOYAXISMOTION) {
+//				struct vita_mouse_pos vmp;
+//				int mousex,mousey;
+//				vmp=getJoyMouseDiff();
+//				if(vmp.motion) {
+//					SDL_GetMouseState(&mousex, &mousey);
+//					SDL_WarpMouseInWindow(gwin->get_win()->get_screen_window(),mousex+vmp.x,mousey+vmp.y);
+//					SDL_AddTimer(30, joystick_callback, NULL);
+//				}
 			} else if (event.type == SDL_JOYBUTTONDOWN) {
         mouse_updated = false;
         mouse->hide();

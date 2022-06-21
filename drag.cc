@@ -43,6 +43,10 @@
 using std::cout;
 using std::endl;
 
+#ifdef VITA
+#include "vita.h"
+#endif
+
 /*
  *  Create for a given (newly created) object.
  */
@@ -122,10 +126,24 @@ Dragging_info::Dragging_info(
 bool Dragging_info::start(
     int x, int y            // Mouse position.
 ) {
+#ifdef VITA
+	struct vita_mouse_pos vmp;
+#endif
 	int deltax = abs(x - mousex);
 	int deltay = abs(y - mousey);
+#ifdef VITA
+		if (deltax <= 2 && deltay <= 2) {
+			vmp = getJoyMouseDiff();
+			if(!vmp.motion) { 
+				return false; 
+			}
+			deltax = vmp.x;
+			deltay = vmp.y;
+		}
+#else
 	if (deltax <= 2 && deltay <= 2)
 		return false;     // Wait for greater motion.
+#endif
 	if (obj) {
 		// Don't want to move walls.
 		if (!cheat.in_hack_mover() && !obj->is_dragable() &&

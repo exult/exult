@@ -119,6 +119,10 @@ using std::toupper;
 using std::string;
 using std::vector;
 
+#ifdef VITA
+#include "vita.h"
+#endif
+
 #if (defined(_WIN32) || (defined(MACOSX) && defined(USE_EXULTSTUDIO)))
 
 static int SDLCALL SDL_putenv(const char *_var) {
@@ -744,6 +748,7 @@ static void Init(
 #ifdef VITA
 	SDL_SetHint(SDL_HINT_IME_SHOW_UI,"1");
 	init_flags |= SDL_INIT_JOYSTICK;
+	init_flags |= SDL_INIT_TIMER;
 #endif
 #if defined(__IPHONEOS__) || defined(ANDROID)
 	Mouse::use_touch_input = true;
@@ -1299,7 +1304,7 @@ static inline bool LostFocus(SDL_Event& event) {
  */
 
 static void Handle_event(
-    SDL_Event &event
+ SDL_Event &event
 ) {
 
 	// Mouse scale factor
@@ -1309,6 +1314,18 @@ static void Handle_event(
 	// We want this
 	Gump_manager *gump_man = gwin->get_gump_man();
 	Gump *gump = nullptr;
+
+#ifdef VITA
+	struct vita_mouse_pos vmp;
+//	SDL_Joystick* gGameController;
+//	int joyx=0;
+//	int joyy=0;
+//	int mousediffx=0;
+//	int mousediffy=0;
+	int mousex=0;
+	int mousey=0;
+//	int joymove=0;
+#endif
 	
 	// For detecting double-clicks.
 	static uint32 last_b1_click = 0;
@@ -1328,21 +1345,23 @@ static void Handle_event(
 		}
 		break;
 	}
-	case SDL_USEREVENT: {
-		if (!dragged) {
-			switch (event.user.code) {
-				case SHORTCUT_BAR_USER_EVENT: {
-					if(g_shortcutBar) // just in case
-						g_shortcutBar->onUserEvent(&event);
-					break;
-				}
-				default:
-					break;
-			}
-		}
-		dragging = dragged = false;
-		break;
-	}
+#if !defined(VITA)
+  case SDL_USEREVENT: {
+    if (!dragged) {
+      switch (event.user.code) {
+        case SHORTCUT_BAR_USER_EVENT: {
+          if(g_shortcutBar) // just in case
+            g_shortcutBar->onUserEvent(&event);
+          break;
+        }
+        default:
+          break;
+      }
+    }
+    dragging = dragged = false;
+    break;
+  }
+#endif
 	case SDL_CONTROLLERAXISMOTION: {
 		// Ignore axis changes on anything but a specific thumb-stick
 		// on the game-controller.
@@ -1420,6 +1439,40 @@ static void Handle_event(
 		}
 		break;
 	}
+#ifdef VITA
+	case SDL_JOYAXISMOTION:
+	case SDL_USEREVENT: {
+		//joymove=0;
+		if(event.type == SDL_USEREVENT) {
+			if (!dragged) {
+     	 switch (event.user.code) {
+     	   case SHORTCUT_BAR_USER_EVENT: {
+     	     if(g_shortcutBar) // just in case
+     	       g_shortcutBar->onUserEvent(&event);
+     	     break;
+     	   }
+					case VITA_JOYSTICK_USER_EVENT: {
+						SDL_JoystickUpdate();
+						//joymove=1;
+					break;
+					}
+     	   default:
+     	     break;
+     	   }
+    	}
+    	dragging = dragged = false;
+		}
+		if(event.type == SDL_JOYAXISMOTION || event.user.code == VITA_JOYSTICK_USER_EVENT) {
+			vmp=getJoyMouseDiff();
+			if(vmp.motion) {
+				SDL_GetMouseState(&mousex, &mousey);
+				SDL_WarpMouseInWindow(gwin->get_win()->get_screen_window(),mousex+vmp.x,mousey+vmp.y);
+				SDL_AddTimer(30, joystick_callback, NULL);
+			}
+		}
+	break;
+	}
+#endif
 	case SDL_FINGERDOWN: {
 		if ((!Mouse::use_touch_input) && (event.tfinger.fingerId != 0)) {
 			Mouse::use_touch_input = true;
@@ -1657,7 +1710,11 @@ static void Handle_event(
 		}
 
 		// Dragging with left button?
+#ifdef VITA
+		if ((event.motion.state & SDL_BUTTON(1)) || isJoyMouse1Pressed()) {
+#else
 		if (event.motion.state & SDL_BUTTON(1)) {
+#endif
 #ifdef USE_EXULTSTUDIO          // Painting?
 			if (cheat.in_map_editor()) {
 				if (cheat.get_edit_shape() >= 0 &&
@@ -1685,7 +1742,12 @@ static void Handle_event(
 			dragged = gwin->drag(mx, my);
 		}
 		// Dragging with right?
+//#ifdef VITA
+		// no right mouse for now
+		//else if (((event.motion.state & SDL_BUTTON(3)) || isJoyMouse3Pressed()) && !right_on_gump) {
+//#else
 		else if ((event.motion.state & SDL_BUTTON(3)) && !right_on_gump) {
+//#endif
 			if (avatar_can_act && gwin->main_actor_can_act_charmed())
 				gwin->start_actor(mx, my, Mouse::mouse->avatar_speed);
 		}
@@ -1727,10 +1789,7 @@ static void Handle_event(
 #ifdef VITA
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
-		//if (!dragging &&    // ESC while dragging causes crashes.
-			//!gwin->get_gump_man()->handle_kbd_event(&event))
-			if (!dragging && !gwin->get_gump_man()->handle_kbd_event(&event)) keybinder->HandleEvent(keybinder->HandleJoyEvent(event));
-		//keybinder->HandleJoyEvent(event);
+		joy2KeyMouse(event,(!dragging && !gwin->get_gump_man()->handle_kbd_event(&event)), config);
 	break;
 #endif
 	case SDL_KEYDOWN:       // Keystroke.
@@ -1884,6 +1943,21 @@ static bool Get_click(
 					}
 				}
 				break;
+#ifdef VITA
+				case SDL_USEREVENT:
+				case SDL_JOYAXISMOTION: {
+					struct vita_mouse_pos vmp;
+					int mousex,mousey;
+
+					vmp=getJoyMouseDiff();
+					if(vmp.motion) {
+						SDL_GetMouseState(&mousex, &mousey);
+						SDL_WarpMouseInWindow(gwin->get_win()->get_screen_window(),mousex+vmp.x,mousey+vmp.y);
+						SDL_AddTimer(30, joystick_callback, NULL);
+					}
+    		break;
+  		}
+#endif
 			case SDL_MOUSEMOTION: {
 				int mx;
 				int my;
@@ -1891,9 +1965,16 @@ static bool Get_click(
 
 				Mouse::mouse->move(mx, my);
 				Mouse::mouse_update = true;
+
+#ifdef VITA
+				if (drag_ok &&
+								((event.motion.state & SDL_BUTTON(1)) || isJoyMouse1Pressed()))
+					dragged = gwin->drag(mx, my);
+#else
 				if (drag_ok &&
 				        (event.motion.state & SDL_BUTTON(1)))
 					dragged = gwin->drag(mx, my);
+#endif
 				break;
 			}
 			case SDL_KEYDOWN: {
@@ -1937,10 +2018,10 @@ static bool Get_click(
 			}
 #ifdef VITA
       case SDL_JOYBUTTONDOWN:
-        //g_waiting_for_click = false;
-        //return true;
-				return false;	// ESC
+			case SDL_JOYBUTTONUP: {
+				joy2KeyMouse(event,1,config);
       break;
+			}
 #endif
 			case SDL_WINDOWEVENT:
 				if (GainedFocus(event))
@@ -2410,7 +2491,15 @@ void setup_video(bool fullscreen, int setup_video_type, int resx, int resy,
 		// Default resolution is now 320x240 with 2x scaling
 		int w = 320;
 		int h = 240;
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#ifdef VITA
+  w=960;
+  h=544;
+  int sc = 1;
+  string default_scaler = "point";
+  string default_fill_scaler = "point";
+  string default_fmode = "Fill";
+  fullscreen = true;
+#elif defined(__IPHONEOS__) || defined(ANDROID)
 		SDL_DisplayMode dispmode;
 		if (SDL_GetDesktopDisplayMode(0, &dispmode) == 0) {
 			w = dispmode.w;
@@ -2423,11 +2512,12 @@ void setup_video(bool fullscreen, int setup_video_type, int resx, int resy,
 		fullscreen = true;
 		config->set("config/video/force_bpp", 32, true);
 #else
-		int sc = 2;
-		string default_scaler = "point";
-		string default_fill_scaler = "point";
-		string default_fmode = "Fit";
+    int sc = 2;
+    string default_scaler = "point";
+    string default_fill_scaler = "point";
+    string default_fmode = "Fit";
 #endif
+
 		string fill_scaler_str;
 		if (video_init) {
 			// Convert from old video dims to new
@@ -2486,6 +2576,7 @@ void setup_video(bool fullscreen, int setup_video_type, int resx, int resy,
 		     " fill mode, " << fillScalerName << " fill scaler, " <<
 		     (fullscreen ? "full screen" : "window") << endl;
 #endif
+#ifndef VITA
 		config->set((vidStr + "/display/width").c_str(), resx, false);
 		config->set((vidStr + "/display/height").c_str(), resy, false);
 		config->set((vidStr + "/game/width").c_str(), gw, false);
@@ -2496,6 +2587,9 @@ void setup_video(bool fullscreen, int setup_video_type, int resx, int resy,
 		config->set((vidStr + "/fill_scaler").c_str(), fillScalerName, false);
 		config->set("config/video/highdpi", high_dpi ?
 		            "yes" : "no", false);
+#else
+	 setVitaDefaultConfig(config);
+#endif
 	}
 	if (video_init) {
 #ifdef DEBUG

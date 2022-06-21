@@ -532,6 +532,19 @@ bool Gump_manager::handle_modal_gump_event(
 		}
 		break;
 	}
+#ifdef VITA
+  case SDL_JOYAXISMOTION: {
+    struct vita_mouse_pos vmp;
+    int mousex,mousey;
+    vmp=getJoyMouseDiff();
+      if(vmp.motion) {
+        SDL_GetMouseState(&mousex, &mousey);
+        SDL_WarpMouseInWindow(gwin->get_win()->get_screen_window(),mousex+vmp.x,mousey+vmp.y);
+        SDL_AddTimer(30, joystick_callback, NULL);
+      }
+    break;
+  }
+#endif
 	case SDL_MOUSEMOTION:
 		if ((Mouse::use_touch_input == true) && (event.motion.which != SDL_TOUCH_MOUSEID))
 			Mouse::use_touch_input = false;
@@ -540,8 +553,13 @@ bool Gump_manager::handle_modal_gump_event(
 		Mouse::mouse->move(gx, gy);
 		Mouse::mouse_update = true;
 		// Dragging with left button?
+#ifdef VITA
+		if ((event.motion.state & SDL_BUTTON(1)) || isJoyMouse1Pressed())
+			gump->mouse_drag(gx, gy);
+#else
 		if (event.motion.state & SDL_BUTTON(1))
 			gump->mouse_drag(gx, gy);
+#endif
 		break;
 	case SDL_QUIT:
 		if (okay_to_quit())
@@ -549,10 +567,10 @@ bool Gump_manager::handle_modal_gump_event(
 		break;
 #ifdef VITA
 	case SDL_JOYBUTTONDOWN:
-		if (event.jbutton.button == VITA_BUTTON_START || event.jbutton.button == VITA_BUTTON_CIRCLE) {
-			return false;
-		}
-	break;
+	case SDL_JOYBUTTONUP: {
+		joy2KeyMouse(event,1,config);
+		break;
+	}
 #endif
 	case SDL_KEYDOWN:
 	case SDL_TEXTINPUT:
