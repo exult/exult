@@ -15,23 +15,22 @@ Clone the repo:
 
 Compile the support binaries for linux:
 ---------------------------------------
-cd exult-vita/
-sh autogen.sh 
-./configure
-make
-
-Now set the pathes for your VITASDK:
-------------------------------------
-
-  export VITASDK=~/VITASDK
-  export PATH=$VITASDK/bin:$PATH # add vitasdk tool to $PATH
-  export PATH=$VITASDK/arm-vita-eabi/bin:$PATH
+  cd exult-vita/
+  sh autogen.sh 
+  ./configure
+  make
 
 Copy over the support tools to your build environment (or somewhere in the path):
 ---------------------------------------------------------------------------------
   cp tools/{cmanip,expack,ipack,mklink,rip,shp2pcx,splitshp,textpack,wuc} ~/VITASDK/bin/
   cp usecode/ucxt/head2data ~/VITASDK/bin/
 	make clean
+
+Now set the pathes for your VITASDK:
+------------------------------------
+  export VITASDK=~/VITASDK
+  export PATH=$VITASDK/bin:$PATH # add vitasdk tool to $PATH
+  export PATH=$VITASDK/arm-vita-eabi/bin:$PATH
 
 Build the exult binary:
 -----------------------
@@ -92,3 +91,4 @@ Buttons (as for now):
 
 Most useful keyboard shortcuts (but not the mouse buttons) are configurable in exult.cfg
 
+You can also set your mousespeed in exult.cfg.
