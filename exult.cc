@@ -499,7 +499,6 @@ int exult_main(const char *runpath) {
 #ifndef VITA
 	config->value("config/disk/data_path", data_path, EXULT_DATADIR);
 #else
-  //config->value("config/disk/data_path", data_path, "ux0:data/exult/data");
 	config->value("config/disk/data_path", data_path, "ux0:data/exult");
 #endif
 	setup_data_dir(data_path, runpath);
@@ -1317,14 +1316,8 @@ static void Handle_event(
 
 #ifdef VITA
 	struct vita_mouse_pos vmp;
-//	SDL_Joystick* gGameController;
-//	int joyx=0;
-//	int joyy=0;
-//	int mousediffx=0;
-//	int mousediffy=0;
 	int mousex=0;
 	int mousey=0;
-//	int joymove=0;
 #endif
 	
 	// For detecting double-clicks.
@@ -1442,7 +1435,6 @@ static void Handle_event(
 #ifdef VITA
 	case SDL_JOYAXISMOTION:
 	case SDL_USEREVENT: {
-		//joymove=0;
 		if(event.type == SDL_USEREVENT) {
 			if (!dragged) {
      	 switch (event.user.code) {
@@ -1453,7 +1445,6 @@ static void Handle_event(
      	   }
 					case VITA_JOYSTICK_USER_EVENT: {
 						SDL_JoystickUpdate();
-						//joymove=1;
 					break;
 					}
      	   default:
@@ -1743,7 +1734,7 @@ static void Handle_event(
 		}
 		// Dragging with right?
 //#ifdef VITA
-		// no right mouse for now
+		// no right mouse for now... 
 		//else if (((event.motion.state & SDL_BUTTON(3)) || isJoyMouse3Pressed()) && !right_on_gump) {
 //#else
 		else if ((event.motion.state & SDL_BUTTON(3)) && !right_on_gump) {
@@ -1789,7 +1780,7 @@ static void Handle_event(
 #ifdef VITA
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
-		joy2KeyMouse(event,(!dragging && !gwin->get_gump_man()->handle_kbd_event(&event)), config);
+		joy2KeyMouse(event,(!dragging && !gwin->get_gump_man()->handle_kbd_event(&event)));
 	break;
 #endif
 	case SDL_KEYDOWN:       // Keystroke.
@@ -2019,7 +2010,7 @@ static bool Get_click(
 #ifdef VITA
       case SDL_JOYBUTTONDOWN:
 			case SDL_JOYBUTTONUP: {
-				joy2KeyMouse(event,1,config);
+				joy2KeyMouse(event,1);
       break;
 			}
 #endif
@@ -2588,7 +2579,7 @@ void setup_video(bool fullscreen, int setup_video_type, int resx, int resy,
 		config->set("config/video/highdpi", high_dpi ?
 		            "yes" : "no", false);
 #else
-	 setVitaDefaultConfig(config);
+	 setVitaDefaultConfig();
 #endif
 	}
 	if (video_init) {

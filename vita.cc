@@ -103,7 +103,7 @@ bool isJoyMouse1Pressed(void) {
   return(pressed);
 }
 
-void setVitaDefaultConfig(Configuration *config) {
+void setVitaDefaultConfig(void) {
   string str;
   int i1;
   config->value("config/video/force_bpp", str, "16");
@@ -230,7 +230,7 @@ void setVitaDefaultConfig(Configuration *config) {
 }
 
 
-bool joy2KeyMouse(SDL_Event const &ev, bool dokeys, Configuration const *config) {
+bool joy2KeyMouse(SDL_Event const &ev, bool dokeys) {
   SDL_Keysym sym;
   SDL_KeyboardEvent ke;
   SDL_Event transmit;

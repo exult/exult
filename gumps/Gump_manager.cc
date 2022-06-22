@@ -568,7 +568,7 @@ bool Gump_manager::handle_modal_gump_event(
 #ifdef VITA
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP: {
-		joy2KeyMouse(event,1,config);
+		joy2KeyMouse(event,1);
 		break;
 	}
 #endif

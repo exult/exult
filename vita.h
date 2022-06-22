@@ -10,8 +10,8 @@ Uint32 joystick_callback (Uint32 interval, void *param);
 extern struct vita_mouse_pos getJoyMouseDiff(void);
 extern bool isJoyMotion(void);
 extern bool isJoyMouse1Pressed(void);
-extern bool joy2KeyMouse(SDL_Event const &ev, bool dokeys, Configuration const *config);
-extern void setVitaDefaultConfig(Configuration *config);
+extern bool joy2KeyMouse(SDL_Event const &ev, bool dokeys);
+extern void setVitaDefaultConfig(void);
 
 struct vita_mouse_pos {
   int x;
@@ -37,13 +37,13 @@ struct vita_mouse_pos {
 #define VITA_BUTTON_SELECT_DEFAULT "n"
 #define VITA_BUTTON_SQUARE_DEFAULT "i"
 #define VITA_BUTTON_TRIANGLE_DEFAULT "t"
-//#define VITA_BUTTON_CIRCLE_DEFAULT "esc"
-//#define VITA_BUTTON_CROSS_DEFAULT "mouse1"
+// fixed now #define VITA_BUTTON_CIRCLE_DEFAULT "esc"
+// fixed now #define VITA_BUTTON_CROSS_DEFAULT "mouse1"
 #define VITA_BUTTON_LEFT_DEFAULT "p"
 #define VITA_BUTTON_RIGHT_DEFAULT "f"
 #define VITA_BUTTON_UP_DEFAULT "b"
-#define VITA_BUTTON_DOWN_DEFAULT "Z"
-//#define VITA_BUTTON_TOP_L_DEFAULT "mouse1"
+#define VITA_BUTTON_DOWN_DEFAULT "z"
+// fixed now #define VITA_BUTTON_TOP_L_DEFAULT "mouse1"
 #define VITA_BUTTON_TOP_R_DEFAULT "space"
 
 

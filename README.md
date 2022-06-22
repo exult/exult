@@ -9,6 +9,8 @@ Please don't ask questions about this specific port to the Exult-Team...
 But if you have questions about Exult at all, please look here for further information
 and documentation: http://exult.sourceforge.net/
 
+Specific Documentation is also included in the README.Vita
+
 
 ## What is Exult?
 

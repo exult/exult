@@ -35,10 +35,6 @@
 #include "utils.h"
 #include "keyactions.h"
 
-#ifdef VITA
-#include "vita.h"
-#endif
-
 using std::atoi;
 using std::cerr;
 using std::cout;

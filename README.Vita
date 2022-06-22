@@ -31,6 +31,7 @@ Copy over the support tools to your build environment (or somewhere in the path)
 ---------------------------------------------------------------------------------
   cp tools/{cmanip,expack,ipack,mklink,rip,shp2pcx,splitshp,textpack,wuc} ~/VITASDK/bin/
   cp usecode/ucxt/head2data ~/VITASDK/bin/
+	make clean
 
 Build the exult binary:
 -----------------------
@@ -42,7 +43,7 @@ Build the VPK and Data-Package:
   arm-vita-eabi-strip  -g exult
   vita-elf-create exult exult.velf
   vita-make-fself exult.velf eboot.bin
-  vita-mksfoex -s TITLE_ID="EXULT0042" -s APP_VER="01.80" -d ATTRIBUTE2=12 "Exult" param.sfo
+  vita-mksfoex -s TITLE_ID="EXULT0042" -s APP_VER="01.90" -d ATTRIBUTE2=12 "Exult" param.sfo
 
   vita-pack-vpk -s param.sfo -b eboot.bin \
     --add sce_sys/icon0.png=sce_sys/icon0.png \
@@ -61,6 +62,11 @@ Installation:
 - place your gamefiles to ux0:/data/exult/ like mentioned
   in the exult docs, chapter 11
 
+Configuration:
+--------------
+An "exult.cfg" is generated in ux0:/data/exult/ on first start. You can
+configure it to your needs.
+
 Notes:
 ------
 - no keyboard support (soft-keyboard crashes the game). So the avatar is always named "The Stranger"
@@ -71,16 +77,19 @@ Notes:
 
 Buttons (as for now):
 ---------------------
-- Touchscreen and left joystick as mouse
-- Start or Circle = In-Game-Menu
-- Select = Notebook
-- Circle = ESC
-- Cross = Pause Combat
-- Triangle = Target Mode
-- Square = Inventory
-- Top-Left = Map
-- Top-Right = Toggle Combat
-- Up = Spell Book
-- Left = Lockpicks
-- Right = Food
-- Down = Show stats
+- Touchscreen and left joystick for move and actions
+- right joystick as mouse and for easier drag & drop
+- Left-Top-Button or Cross as left mouse button.
+
+- Start or Circle = ESC (In-Game-Menu)
+- Select = n (Notebook)
+- Triangle = t (Target Mode)
+- Square = i (Inventory)
+- Top-Right = space (pause combat)
+- Up = b (Spell Book)
+- Left = p (Lockpicks)
+- Right = f (Food)
+- Down = z (Show stats)
+
+Most useful keyboard shortcuts (but not the mouse buttons) are configurable in exult.cfg
+

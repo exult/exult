@@ -22,7 +22,6 @@
 #include <cstring>
 
 #ifdef VITA
-//extern char *strdup(const char *s);
 #include "vita.h"
 #endif
 
