@@ -16,7 +16,7 @@ Clone the repo:
 Compile the support binaries for linux:
 ---------------------------------------
 cd exult-vita/
- sh autogen.sh 
+sh autogen.sh 
 ./configure
 make
 
@@ -80,7 +80,6 @@ Buttons (as for now):
 - Touchscreen and left joystick for move and actions
 - right joystick as mouse and for easier drag & drop
 - Left-Top-Button or Cross as left mouse button.
-
 - Start or Circle = ESC (In-Game-Menu)
 - Select = n (Notebook)
 - Triangle = t (Target Mode)
