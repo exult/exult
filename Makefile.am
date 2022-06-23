@@ -15,6 +15,7 @@ if HAVE_PNG
 PNG_LIBS=-lpng
 endif
 
+AUTOMAKE_OPTIONS = subdir-objects
 
 SUBDIRS =  files conf data shapes imagewin pathfinder \
 	gamemgr flic usecode tools audio gumps objs server \
@@ -122,8 +123,8 @@ EXULTSOURCES =	\
 	verify.h	\
 	version.cc	\
 	version.h \
-	vita.cc \
-	vita.h
+	vita/vita.cc \
+	vita/vita.h
 
 EXULTLIBS = \
 	pathfinder/libpathfinder.la		\

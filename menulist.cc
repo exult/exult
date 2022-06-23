@@ -30,7 +30,7 @@
 #include "gump_utils.h"
 
 #ifdef VITA
-#include "vita.h"
+#include "vita/vita.h"
 #endif
 
 

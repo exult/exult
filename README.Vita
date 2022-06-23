@@ -45,10 +45,10 @@ Build the VPK and Data-Package:
   vita-mksfoex -s TITLE_ID="EXULT0042" -s APP_VER="01.90" -d ATTRIBUTE2=12 "Exult" param.sfo
 
   vita-pack-vpk -s param.sfo -b eboot.bin \
-    --add sce_sys/icon0.png=sce_sys/icon0.png \
-    --add sce_sys/livearea/contents/bg.png=sce_sys/livearea/contents/bg.png \
-    --add sce_sys/livearea/contents/startup.png=sce_sys/livearea/contents/startup.png \
-    --add sce_sys/livearea/contents/template.xml=sce_sys/livearea/contents/template.xml \
+    --add vita/sce_sys/icon0.png=sce_sys/icon0.png \
+    --add vita/sce_sys/livearea/contents/bg.png=sce_sys/livearea/contents/bg.png \
+    --add vita/sce_sys/livearea/contents/startup.png=sce_sys/livearea/contents/startup.png \
+    --add vita/sce_sys/livearea/contents/template.xml=sce_sys/livearea/contents/template.xml \
   exult.vpk
 
   zip -j exult_data.zip data/*.flx

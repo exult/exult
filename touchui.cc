@@ -22,7 +22,7 @@
 #include <cstring>
 
 #ifdef VITA
-#include "vita.h"
+#include "vita/vita.h"
 #endif
 
 uint32 TouchUI::eventType = ~uint32(0);

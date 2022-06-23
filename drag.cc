@@ -44,7 +44,7 @@ using std::cout;
 using std::endl;
 
 #ifdef VITA
-#include "vita.h"
+#include "vita/vita.h"
 #endif
 
 /*

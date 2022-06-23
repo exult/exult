@@ -49,7 +49,7 @@
 #include "array_size.h"
 
 #ifdef VITA
-#include "vita.h"
+#include "vita/vita.h"
 #endif
 
 

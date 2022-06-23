@@ -120,7 +120,7 @@ using std::string;
 using std::vector;
 
 #ifdef VITA
-#include "vita.h"
+#include "vita/vita.h"
 #endif
 
 #if (defined(_WIN32) || (defined(MACOSX) && defined(USE_EXULTSTUDIO)))

@@ -50,7 +50,7 @@
 #include "touchui.h"
 
 #ifdef VITA
-#include "vita.h"
+#include "vita/vita.h"
 #endif
 
 using std::cout;

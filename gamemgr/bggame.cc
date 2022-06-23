@@ -52,7 +52,7 @@
 #include "txtscroll.h"
 
 #ifdef VITA
-#include "vita.h"
+#include "vita/vita.h"
 #endif
 
 #include <SDL.h>
@@ -2249,23 +2249,6 @@ bool BG_Game::new_game(Vga_file &shapes) {
       if (event.type == SDL_JOYBUTTONDOWN) {
         redraw = true;
         switch (event.jbutton.button) {
-/*
-        case SDLK_SPACE:
-          if (selected == 0) {
-            int len = strlen(npc_name);
-            if (len < max_name_len) {
-              npc_name[len] = ' ';
-              npc_name[len + 1] = 0;
-            }
-          } else if (selected == 1)
-            skindata = Shapeinfo_lookup::GetNextSelSkin(skindata, si_installed, true);
-          else if (selected == 2) {
-            editing = false;
-            ok = true;
-          } else if (selected == 3)
-            editing = ok = false;
-          break;
-*/
         case VITA_BUTTON_LEFT:
           if (selected == 1)
             skindata = Shapeinfo_lookup::GetPrevSelSkin(skindata, si_installed, true);
