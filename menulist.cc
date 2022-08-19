@@ -309,7 +309,7 @@ int MenuList::handle_events(Game_window *gwin, Mouse *mouse) {
 			int gx;
 			int gy;
 			if (event.type == SDL_MOUSEMOTION) {
-				if ((Mouse::use_touch_input == true) && (event.motion.which != SDL_TOUCH_MOUSEID))
+				if ((Mouse::use_touch_input == true) && (event.motion.which != EXSDL_TOUCH_MOUSEID))
 					Mouse::use_touch_input = false;
 				gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 				if (!mouse_updated) mouse->hide();

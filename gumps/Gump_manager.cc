@@ -22,8 +22,16 @@
 #  include <config.h>
 #endif
 
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif    // __GNUC__
 #include "SDL_events.h"
 #include "SDL_keyboard.h"
+static const Uint32 EXSDL_TOUCH_MOUSEID=SDL_TOUCH_MOUSEID;
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 
 #include "Configuration.h"
 #include "exult.h"
@@ -529,7 +537,7 @@ bool Gump_manager::handle_modal_gump_event(
 		break;
 	}
 	case SDL_MOUSEMOTION:
-		if ((Mouse::use_touch_input == true) && (event.motion.which != SDL_TOUCH_MOUSEID))
+		if ((Mouse::use_touch_input == true) && (event.motion.which != EXSDL_TOUCH_MOUSEID))
 			Mouse::use_touch_input = false;
 		gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 

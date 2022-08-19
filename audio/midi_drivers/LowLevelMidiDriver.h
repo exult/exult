@@ -29,8 +29,17 @@ class XMidiSequence;
 #include <cstring>
 #include <memory>
 #include <queue>
+
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif    // __GNUC__
 #include <SDL.h>
 #include <SDL_thread.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
+
 #include "common_types.h"
 #include "ignore_unused_variable_warning.h"
 

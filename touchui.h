@@ -21,7 +21,14 @@
 #ifndef TOUCHUI_H
 #define TOUCHUI_H
 
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif    // __GNUC__
 #include <SDL.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 #include "common_types.h"
 
 class TouchUI {

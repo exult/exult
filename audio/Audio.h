@@ -22,8 +22,17 @@
 #include <map>
 #include <memory>
 #include <vector>
+
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif    // __GNUC__
 #include <SDL.h>
 #include <SDL_audio.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
+
 #include "AudioMixer.h"
 #include "exceptions.h"
 #include "exult_constants.h"

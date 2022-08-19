@@ -31,10 +31,17 @@
 #include "font.h"
 #include "game.h"
 
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif    // __GNUC__
 #include "SDL_timer.h"
 #include "SDL_events.h"
 #include "SDL_stdinc.h"
 #include "SDL_scancode.h"
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 
 using std::atoi;
 using std::size_t;

@@ -21,8 +21,15 @@
 
 #include <unistd.h>
 
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif    // __GNUC__
 #include "SDL_timer.h"
 #include "SDL_events.h"
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 
 /*
  *  Delay between animations.

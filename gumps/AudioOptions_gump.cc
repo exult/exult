@@ -19,7 +19,14 @@
 // Includes Pentagram headers so we must include pent_include.h
 #include "pent_include.h"
 
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif    // __GNUC__
 #include "SDL_events.h"
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 
 #include <iostream>
 

@@ -74,7 +74,7 @@ Object_browser *Shape_file_info::get_browser(
 		return browser;     // Okay.
 	browser = create_browser(vgafile, palbuf, nullptr);
 	// Add a reference (us).
-	g_object_ref(browser->get_widget());
+	(g_object_ref)(browser->get_widget());
 	return browser;
 }
 
