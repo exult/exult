@@ -270,6 +270,9 @@ fi
 # Check for pkg-config
 # ---------------------------------------------------------------------
 PKG_PROG_PKG_CONFIG
+if test x$PKG_CONFIG = x; then
+	AC_MSG_ERROR([*** To Build Exult 1.9+, pkg-config is required. ***])
+fi
 
 # ---------------------------------------------------------------------
 # SDL
@@ -281,37 +284,19 @@ EXULT_CHECK_SDL(:,AC_MSG_ERROR([[*** SDL not found!]]))
 # libogg, libvorbis, libvorbisfile
 # ---------------------------------------------------------------------
 
-if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_MODULES(OGG, ogg >= 1.0 vorbis >= 1.0.1 vorbisfile, , AC_MSG_ERROR([*** must have Ogg/Vorbis installed!]))
-	else
-		dnl old school test
-		m4_ifdef([XIPH_PATH_OGG], [
-			XIPH_PATH_OGG(, AC_MSG_ERROR([*** must have Ogg installed!]))
-		], AC_MSG_ERROR([*** must have Ogg installed!]))
-		m4_ifdef([XIPH_PATH_VORBIS], [
-			XIPH_PATH_VORBIS(, AC_MSG_ERROR([*** must have Vorbis installed!]))
-		], AC_MSG_ERROR([*** must have Vorbis installed!]))
-fi
+PKG_CHECK_MODULES(OGG, ogg >= 1.0 vorbis >= 1.0.1 vorbisfile, , AC_MSG_ERROR([*** must have Ogg/Vorbis installed!]))
 
 # ---------------------------------------------------------------------
 # Gtk (for ES)
 # ---------------------------------------------------------------------
 
-if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 3.16, have_gtk=yes, have_gtk=no)
-else
-	have_gtk=no
-fi
+PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 3.16, have_gtk=yes, have_gtk=no)
 
 # ---------------------------------------------------------------------
 # Gdk-Pixbuf (for Gnome shp thumbnailer)
 # ---------------------------------------------------------------------
 
-if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf-2.0, have_gdk_pixbuf=yes, have_gdk_pixbuf=no)
-else
-	have_gdk_pixbuf=no
-fi
+PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf-2.0, have_gdk_pixbuf=yes, have_gdk_pixbuf=no)
 
 # ---------------------------------------------------------------------
 # Black magic for static linking.
@@ -435,15 +420,7 @@ else
 fi
 
 # mt32emu midi driver
-if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_MODULES(MT32EMU, mt32emu, HAVEMT32EMU=yes, HAVEMT32EMU=no)
-else
-	AC_CHECK_HEADER(mt32emu/mt32emu.h, HAVEMT32EMU=yes, HAVEMT32EMU=no)
-	if test x$enable_static_libs = xno; then
-		MT32EMU_LIBS="-lmt32emu"
-		MT32EMU_CFLAGS=""
-	fi
-fi
+PKG_CHECK_MODULES(MT32EMU, mt32emu, HAVEMT32EMU=yes, HAVEMT32EMU=no)
 AC_ARG_ENABLE(mt32emu, AS_HELP_STRING([--enable-mt32emu], [Enable built-in mt32emu support]),,enable_mt32emu=no)
 AC_MSG_CHECKING([if we should build mt32emu])
 if test x$HAVEMT32EMU = xyes; then
@@ -576,11 +553,12 @@ if test x$enable_exult_studio_support = xyes ; then
 		fi
 	fi
 
-	# due to bug 2129731 and 3139441 some Linux distributions need -lX11 explicitly set
+	# Due to bug 2129731 and 3139441 some Linux distributions need -lX11 explicitly set
 	# when enabling Exult Studio support or linking fails
-	if test "$WINDOWING_SYSTEM" = -DXWIN ; then
-		SYSLIBS="$SYSLIBS -lX11"
-	fi
+	# 2022.08 : This does not appear relevant any longer
+	# 2022.08 : if test "$WINDOWING_SYSTEM" = -DXWIN ; then
+	# 2022.08 :     SYSLIBS="$SYSLIBS -lX11"
+	# 2022.08 : fi
 
 	if test x$enable_macosx_x11_studio_support = xyes ; then
 		enable_exult_studio_support=yes
@@ -1018,21 +996,17 @@ if test x$enable_gimp_plugin = xyes; then
 		AC_MSG_CHECKING([for GIMP version])
 		gimp_version=`$GIMPTOOL --version | awk 'BEGIN { FS = "."; } { print $1 * 10000 + $2 * 100 + $3;}'`
 		if test "$gimp_version" -ge 20800; then
-			if test "x$PKG_CONFIG" != "x"; then
-				AC_MSG_RESULT([found >= 2.8.0])
-				AC_SUBST(GIMPTOOL)
-				AM_CONDITIONAL(GIMP_PLUGIN, true)
-				GIMP_PLUGIN_PREFIX=`$GIMPTOOL --gimpplugindir`
-				GIMP_PLUGIN_PREFIX="$GIMP_PLUGIN_PREFIX/plug-ins"
-				AC_SUBST(GIMP_PLUGIN_PREFIX)
-				AC_DEFINE(HAVE_GIMP, 1, [Have GIMP])
-				GIMP_INCLUDES=`$PKG_CONFIG --cflags gimpui-2.0`
-				GIMP_LIBS=`$PKG_CONFIG --libs gimpui-2.0`
-				AC_SUBST(GIMP_INCLUDES)
-				AC_SUBST(GIMP_LIBS)
-			else
-				AC_MSG_RESULT([found >= 2.8.0 but missing pkg-config - disabling plugin])
-			fi
+			AC_MSG_RESULT([found >= 2.8.0])
+			AC_SUBST(GIMPTOOL)
+			AM_CONDITIONAL(GIMP_PLUGIN, true)
+			GIMP_PLUGIN_PREFIX=`$GIMPTOOL --gimpplugindir`
+			GIMP_PLUGIN_PREFIX="$GIMP_PLUGIN_PREFIX/plug-ins"
+			AC_SUBST(GIMP_PLUGIN_PREFIX)
+			AC_DEFINE(HAVE_GIMP, 1, [Have GIMP])
+			GIMP_INCLUDES=`$PKG_CONFIG --cflags gimpui-2.0`
+			GIMP_LIBS=`$PKG_CONFIG --libs gimpui-2.0`
+			AC_SUBST(GIMP_INCLUDES)
+			AC_SUBST(GIMP_LIBS)
 		else
 			AC_MSG_RESULT([found < 2.8.0 - disabling plugin])
 		fi
@@ -1250,31 +1224,21 @@ if test "x$dbg_level" != "x"; then
 fi
 echo
 echo SDL........................ : `$SDL_CONFIG --version`
-if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_EXISTS(ogg,
-		echo Ogg.........................: `$PKG_CONFIG --modversion ogg`)
-fi
-if test "x$PKG_CONFIG" != "x"; then
-	PKG_CHECK_EXISTS(vorbis,
-		echo Vorbis......................: `$PKG_CONFIG --modversion vorbis`)
-fi
+PKG_CHECK_EXISTS(ogg,
+	echo Ogg.........................: `$PKG_CONFIG --modversion ogg`)
+PKG_CHECK_EXISTS(vorbis,
+	echo Vorbis......................: `$PKG_CONFIG --modversion vorbis`)
 if test x$ac_cv_header_png_h = xyes; then
-	if test "x$PKG_CONFIG" != "x"; then
-		PKG_CHECK_EXISTS(libpng,
-			echo libpng..................... : `$PKG_CONFIG --modversion libpng`)
-	fi
+	PKG_CHECK_EXISTS(libpng,
+		echo libpng..................... : `$PKG_CONFIG --modversion libpng`)
 fi
 if test x$enable_mt32emu = xyes; then
-	if test "x$PKG_CONFIG" != "x"; then
-		PKG_CHECK_EXISTS(mt32emu,
-			echo MT32emu.................... : `$PKG_CONFIG --modversion mt32emu`)
-	fi
+	PKG_CHECK_EXISTS(mt32emu,
+		echo MT32emu.................... : `$PKG_CONFIG --modversion mt32emu`)
 fi
 if test x$enable_fluidsynth = xyes; then
-	if test "x$PKG_CONFIG" != "x"; then
-		PKG_CHECK_EXISTS(fluidsynth,
-			echo Fluidsynth................. : `$PKG_CONFIG --modversion fluidsynth`)
-	fi
+	PKG_CHECK_EXISTS(fluidsynth,
+		echo Fluidsynth................. : `$PKG_CONFIG --modversion fluidsynth`)
 fi
 if test x$have_gtk = xyes; then
 	echo GLIB....................... : `$PKG_CONFIG --modversion glib-2.0`
