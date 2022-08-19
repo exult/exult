@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MODAL_GUMP_H
 
 #include "Gump.h"
-#include "SDL_events.h"
 #include "ignore_unused_variable_warning.h"
 
 /*

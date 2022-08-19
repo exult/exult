@@ -27,8 +27,6 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif    // __GNUC__
 #include <SDL.h>
-#include "SDL_mouse.h"
-#include "SDL_timer.h"
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__

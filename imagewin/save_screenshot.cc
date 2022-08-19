@@ -35,8 +35,15 @@ It has been partly rewritten to use an SDL surface as input.
 
 #include <cstdlib>
 
-#include "SDL_video.h"
-#include "SDL_endian.h"
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif    // __GNUC__
+#include <SDL.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
+
 #include <iostream>
 
 using std::cout;

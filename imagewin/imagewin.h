@@ -27,7 +27,6 @@ Boston, MA  02111-1307, USA.
 #ifndef INCL_IMAGEWIN
 #define INCL_IMAGEWIN   1
 
-//#include "SDL_video.h"
 #include "imagebuf.h"
 #include "common_types.h"
 #include <string>
@@ -35,7 +34,15 @@ Boston, MA  02111-1307, USA.
 #include <memory>
 #include <vector>
 
-#include "SDL_video.h"
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif    // __GNUC__
+#include <SDL.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
+
 #include "ignore_unused_variable_warning.h"
 
 struct SDL_Surface;

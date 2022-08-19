@@ -22,8 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "ShortcutBar_gump.h"
 
-#include "SDL_events.h"
-
 #include "fnames.h"
 #include "exult.h"
 #include "keyactions.h"

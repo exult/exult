@@ -52,9 +52,6 @@
 #include "touchui.h"
 #include "txtscroll.h"
 
-#include <SDL.h>
-#include <SDL_events.h>
-
 #include <cctype>
 #include <cstring>
 #include <string>

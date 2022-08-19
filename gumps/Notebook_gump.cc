@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "gamewin.h"
 #include "gameclk.h"
 #include "actors.h"
-#include "SDL_events.h"
 #include "Configuration.h"
 #include "msgfile.h"
 #include "fnames.h"

@@ -22,22 +22,20 @@
 #  include <config.h>
 #endif
 
-#ifdef __GNUC__
-#	pragma GCC diagnostic push
-#	pragma GCC diagnostic ignored "-Wold-style-cast"
-#endif    // __GNUC__
-#include "SDL_events.h"
-#include "SDL_keyboard.h"
-static const Uint32 EXSDL_TOUCH_MOUSEID=SDL_TOUCH_MOUSEID;
-#ifdef __GNUC__
-#	pragma GCC diagnostic pop
-#endif    // __GNUC__
-
 #include "Configuration.h"
 #include "exult.h"
 #include "Gump.h"
 #include "Gump_manager.h"
 #include "gamewin.h"
+
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif    // __GNUC__
+static const Uint32 EXSDL_TOUCH_MOUSEID=SDL_TOUCH_MOUSEID;
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 
 #include "Actor_gump.h"
 #include "Paperdoll_gump.h"

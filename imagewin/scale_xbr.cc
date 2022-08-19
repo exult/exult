@@ -28,8 +28,6 @@
 
 #ifdef USE_XBR_SCALER
 
-#include "SDL_video.h"
-
 #include "imagewin.h"
 #include <cstdlib>
 #include <cstring>

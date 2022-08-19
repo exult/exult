@@ -29,6 +29,7 @@
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
+
 #include "common_types.h"
 
 class TouchUI {

@@ -19,12 +19,8 @@
 #include "pent_include.h"
 #include "ignore_unused_variable_warning.h"
 
-#include <SDL_audio.h>
-#include <SDL_timer.h>
-
 #include <fstream>
 #include <set>
-//#include "SDL_mapping.h"
 
 #include "Audio.h"
 #include "Configuration.h"

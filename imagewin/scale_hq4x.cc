@@ -25,8 +25,6 @@
 
 #ifdef USE_HQ4X_SCALER
 
-#include "SDL_video.h"
-
 #include "imagewin.h"
 #include <cstdlib>
 #include <cstring>

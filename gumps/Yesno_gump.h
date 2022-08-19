@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Modal_gump.h"
 
-#include <SDL.h>
-
 class Yesno_button;
 
 /*

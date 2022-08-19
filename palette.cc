@@ -32,7 +32,14 @@
 #include "exceptions.h"
 #include "ignore_unused_variable_warning.h"
 
-#include "SDL_timer.h"
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif    // __GNUC__
+#include <SDL.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 
 using std::memcpy;
 using std::memset;

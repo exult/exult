@@ -20,16 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  include <config.h>
 #endif
 
-#ifdef __GNUC__
-#	pragma GCC diagnostic push
-#	pragma GCC diagnostic ignored "-Wold-style-cast"
-#endif    // __GNUC__
-#include "SDL_events.h"
-#include "SDL_keyboard.h"
-#ifdef __GNUC__
-#	pragma GCC diagnostic pop
-#endif    // __GNUC__
-
 #include "game.h"
 #include "gamewin.h"
 #include "Gump_button.h"
