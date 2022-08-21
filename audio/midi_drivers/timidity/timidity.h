@@ -176,7 +176,7 @@ extern void Timidity_GenerateSamples(void *stream, int samples);
 #include <machine/endian.h>
 #endif
 
-#ifdef linux
+#ifdef __linux__
 /*
  * Byte order is defined in <bytesex.h> as __BYTE_ORDER, that need to
  * be checked against __LITTLE_ENDIAN and __BIG_ENDIAN defined in <endian.h>
@@ -193,7 +193,7 @@ extern void Timidity_GenerateSamples(void *stream, int samples);
 # else
 # error No byte sex defined
 # endif
-#endif /* linux */
+#endif /* __linux__ */
 
 /* Win32 on Intel machines */
 #ifdef __WIN32__

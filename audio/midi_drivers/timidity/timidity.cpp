@@ -90,8 +90,11 @@ static int read_config_file(const char *name)
 		w.clear();
 		w.push_back(strtok(tmp, " \t\r\n\240"));
 		if (!w[0] || (*w[0]=='#')) continue;
-		while (w.back() && w.size() < MAXWORDS)
-			w.push_back(strtok(nullptr," \t\r\n\240"));
+		while (w.size() < MAXWORDS) {
+			char *token = strtok(nullptr," \t\r\n\240");
+			if (token && token[0] != '#') w.push_back(token);
+			else break;
+		}
 		if (!strcmp(w[0], "dir"))
 		{
 			if (w.size() < 2)
@@ -335,7 +338,10 @@ int Timidity_Init_Simple(int rate, int samples, sint32 encoding)
 	/* see if the pentagram config file specifies an alternate timidity.cfg */
 	config->value("config/audio/midi/timiditycfg", configfile, CONFIG_FILE);
 
-	if (read_config_file(configfile.c_str())<0) {
+	if (( read_config_file(configfile.c_str()) < 0) &&
+	    ((!is_system_path_defined("<BUNDLE>")) ||
+	     (read_config_file(get_system_path("<BUNDLE>/" CONFIG_FILE).c_str()) < 0)) &&
+	    ( read_config_file(get_system_path("<DATA>/"   CONFIG_FILE).c_str()) < 0) ) {
 		return -1;
 	}
 
