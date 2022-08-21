@@ -437,8 +437,7 @@ Shape_manager::Cached_shape Shape_manager::cache_shape(int shape_kind, int shape
 		cache.shape = sman->shapes.get_shape(shapenum, framenum);
 		cache.has_trans = sman->shapes.get_info(shapenum).has_translucency();
 	} else if (shape_kind < SF_OTHER) {
-		cache.shape = sman->files[static_cast<int>(shape_kind)].get_shape(
-		            shapenum, framenum);
+		cache.shape = sman->files[shape_kind].get_shape(shapenum, framenum);
 		if (shape_kind == SF_SPRITES_VGA)
 			cache.has_trans = true;
 	} else {
