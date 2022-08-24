@@ -92,28 +92,28 @@ string  XMLnode::dump(int depth) {
 
 	s += "<";
 	s += id;
-	s += ">\n";
+	s += ">";
 	if (id[id.length() - 1] != '/') {
 		for (auto *node : nodelist) {
-			s += node->dump(depth + 1);
+			s += "\n";
+			s += node->dump(depth + 2);
 		}
 
 		if (content.length()) {
-			s += string(depth, ' ');
 			s += encode_entity(content);
 		}
 		if (id[0] == '?') {
 			return s;
 		}
-		if (content.length())
+		if (!content.length()) {
 			s += "\n";
+			s += string(depth, ' ');
+		}
 
 		if (!no_close) {
-			s += string(depth, ' ');
-
 			s += "</";
 			s += close_tag(id);
-			s += ">\n";
+			s += ">";
 		}
 	}
 
