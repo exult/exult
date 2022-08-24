@@ -33,28 +33,37 @@ class ALSAMidiDriver : public LowLevelMidiDriver
 		return new ALSAMidiDriver();
 	}
 
-public:	
+public:
 	static const MidiDriverDesc* getDesc() { return &desc; }
 	ALSAMidiDriver();
 
 protected:
-	int			open() override;
-	void		close() override;
-	void		send(uint32 b) override;
-//	void		yield() override;
-	void		send_sysex(uint8 status, const uint8 *msg,
-								   uint16 length) override;
+	int  open() override;
+	void close() override;
+	void send(uint32 b) override;
+//	void yield() override;
+	void send_sysex(uint8 status, const uint8 *msg,
+	                uint16 length) override;
 
-	std::string devname;
 	bool isOpen;
 
-	snd_seq_event_t ev;
-	snd_seq_t *seq_handle;
+	snd_seq_event_t        ev;
+	snd_seq_t             *seq_handle;
+	snd_seq_client_info_t *clt_info;
+	snd_seq_port_info_t   *prt_info;
+
 	int seq_client, seq_port;
-	int my_client, my_port;
+	int my_client,  my_port;
+	int clt_id,     prt_id;
+	unsigned int prt_capability, prt_type;
+	int prt_midi_channels, prt_write_use;
+	char const* clt_name;
+	char const* prt_name;
 
 	void send_event(int do_flush);
-	int parse_addr(const std::string& arg, int *client, int *port);
+	int  parse_addr(const std::string& arg, int *client, int *port);
+	bool find_next_port(bool first);
+	bool identify_port(int seq_client = -1, int seq_port = -1);
 };
 
 #endif
