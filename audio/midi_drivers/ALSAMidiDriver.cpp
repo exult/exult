@@ -49,8 +49,8 @@ const MidiDriver::MidiDriverDesc ALSAMidiDriver::desc =
 
 
 ALSAMidiDriver::ALSAMidiDriver()
- : isOpen(false), seq_handle(nullptr), seq_client(0), seq_port(0),
-   my_client(0), my_port(0)
+ : isOpen(false), seq_handle(nullptr), clt_info(nullptr), prt_info(nullptr),
+   seq_client(0), seq_port(0), my_client(0), my_port(0)
 {
 
 }
@@ -139,8 +139,7 @@ int ALSAMidiDriver::open() {
 	my_port = snd_seq_create_simple_port(seq_handle, "PENTAGRAM", caps,
 	    SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
 	if (my_port < 0) {
-		snd_seq_close(seq_handle);
-		isOpen = false;
+		close();
 		perr << "ALSAMidiDriver: Can't create port" << std::endl;
 		return -1;
 	}
@@ -170,6 +169,7 @@ int ALSAMidiDriver::open() {
 	arg = getConfigSetting("alsa_port", ALSA_PORT);
 
 	if (parse_addr(arg, &seq_client, &seq_port) < 0) {
+		close();
 		perr << "ALSAMidiDriver: Invalid port: " << arg << std::endl;
 		return -1;
 	}
@@ -230,6 +230,7 @@ int ALSAMidiDriver::open() {
 				}
 			}
 		}
+		close();
 		return -1;
 	}
 	return 0;
@@ -237,9 +238,22 @@ int ALSAMidiDriver::open() {
 
 void ALSAMidiDriver::close() {
 	isOpen = false;
-	if (clt_info)   snd_seq_client_info_free(clt_info);
-	if (prt_info)   snd_seq_port_info_free  (prt_info);
-	if (seq_handle) snd_seq_close(seq_handle);
+	if (clt_info) {
+		snd_seq_client_info_free(clt_info);
+		clt_info = nullptr;
+	}
+	if (prt_info) {
+		snd_seq_port_info_free  (prt_info);
+		prt_info = nullptr;
+	}
+	if (seq_handle) {
+		snd_seq_close(seq_handle);
+		seq_handle = nullptr;
+	}
+	seq_client = 0;
+	my_client = 0;
+	seq_port = 0;
+	my_port = 0;
 }
 
 void ALSAMidiDriver::send(uint32 b) {
