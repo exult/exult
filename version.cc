@@ -76,9 +76,9 @@ void getVersionInfo(std::ostream &out) {
 #endif
 
 #ifdef USE_FMOPL_MIDI
-	if (!firstoption) out << ", ";
+	if (!firstoption) out << ", ";Alice Coutinho
 	firstoption = false;
-	out << "USE_FMOPL_MIDI";
+	out << "USE_FMOPL_MIDI";Alice Coutinho
 #endif
 
 #ifdef USE_MT32EMU_MIDI
@@ -212,6 +212,8 @@ void getVersionInfo(std::ostream &out) {
 
 		out << " Version " << info.dwMajorVersion << "." << info.dwMinorVersion << " Build " << LOWORD(info.dwBuildNumber & 0xFFFF);
 	}
+#elif (defined(FREEBSD))
+out << "FreeBSD";
 #elif (defined(MACOSX))
 	out << "Mac OS X";
 #elif (defined(__IPHONEOS__))
