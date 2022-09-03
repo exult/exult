@@ -76,9 +76,9 @@ void getVersionInfo(std::ostream &out) {
 #endif
 
 #ifdef USE_FMOPL_MIDI
-	if (!firstoption) out << ", ";Alice Coutinho
+	if (!firstoption) out << ", ";
 	firstoption = false;
-	out << "USE_FMOPL_MIDI";Alice Coutinho
+	out << "USE_FMOPL_MIDI";
 #endif
 
 #ifdef USE_MT32EMU_MIDI
