@@ -3166,7 +3166,7 @@
                             <property name="hexpand">False</property>
                             <property name="vexpand">False</property>
                             <property name="hscrollbar-policy">never</property>
-                            <property name="vscrollbar-policy">never</property>
+                            <property name="min-content-height">360</property>
                             <property name="shadow-type">in</property>
                             <child>
                               <object class="GtkTreeView" id="file_list">
