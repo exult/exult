@@ -134,7 +134,7 @@ void getVersionInfo(std::ostream &out) {
 #ifdef __INTEL_COMPILER
 #	define COMPILER __VERSION__
 #elif defined(__clang__)
-#	define COMPILER "GCC " __VERSION__
+#	define COMPILER __VERSION__
 #elif defined(__GNUC__)
 #	define COMPILER "GCC " __VERSION__
 #elif defined(_MSC_FULL_VER)
