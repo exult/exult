@@ -728,6 +728,8 @@ Chunk_chooser::Chunk_chooser(
 	g_signal_connect(G_OBJECT(chunk_adj), "value-changed",
 	                 G_CALLBACK(scrolled), this);
 	gtk_widget_show(vscroll);
+	// Scroll events.
+	enable_draw_vscroll(draw);
 
 	// At the bottom, status bar:
 	GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

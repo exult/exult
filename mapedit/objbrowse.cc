@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "shapegroup.h"
 
 #include <cctype>
+#include <cmath>
 
 using EStudio::Add_menu_item;
 using EStudio::Create_arrow_button;
@@ -39,6 +40,8 @@ Object_browser::Object_browser(Shape_group *grp, Shape_file_info *fi)
 Object_browser::~Object_browser() {
 	if (popup)
 		gtk_widget_destroy(popup);
+	if ((G_IS_OBJECT(vscroll_ctlr)) && (G_OBJECT(vscroll_ctlr)->ref_count > 0))
+		g_object_unref(vscroll_ctlr);
 }
 
 void Object_browser::set_widget(GtkWidget *w) {
@@ -476,3 +479,31 @@ GtkWidget *Object_browser::create_controls(
 	return topframe;
 }
 
+// Scroll events.
+void Object_browser::draw_vscrolled( // For scroll events.
+    GtkEventControllerScroll *self,  // The scroll event controller,
+    gdouble dx, gdouble dy, // The scroll motion
+    gpointer data           // ->Object_browser.
+) {
+	ignore_unused_variable_warning(self, dx);
+	auto *browser = static_cast<Object_browser *>(data);
+	GtkAdjustment *adj = gtk_range_get_adjustment(
+	    GTK_RANGE(browser->vscroll));
+	const gdouble adj_value  = gtk_adjustment_get_value(adj);
+#if defined(MACOSX) && !defined(XWIN)
+	const gdouble new_unit   = 1.0;
+#else
+	const gdouble adj_pgsize = gtk_adjustment_get_page_size(adj);
+	const gdouble new_unit   = pow(adj_pgsize, 2.0/3.0);
+#endif // MACOSX && !XWIN
+	const gdouble new_value  = (dy * new_unit) + adj_value;
+	gtk_adjustment_set_value(adj, new_value);
+}
+
+void Object_browser::enable_draw_vscroll(GtkWidget *draw) {
+	vscroll_ctlr = GTK_EVENT_CONTROLLER(
+	    gtk_event_controller_scroll_new(draw,
+	                 GTK_EVENT_CONTROLLER_SCROLL_VERTICAL));
+	g_signal_connect(G_OBJECT(vscroll_ctlr), "scroll",
+	                 G_CALLBACK(draw_vscrolled), this);
+}

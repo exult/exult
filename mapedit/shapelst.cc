@@ -2314,6 +2314,8 @@ Shape_chooser::Shape_chooser(
 	g_signal_connect(G_OBJECT(shape_adj), "value-changed",
 	                 G_CALLBACK(hscrolled), this);
 //++++  gtk_widget_hide(hscroll);   // Only shown in 'frames' mode.
+	// Scroll events.
+	enable_draw_vscroll(draw);
 
 	// At the bottom, status bar & frame:
 	GtkWidget *hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

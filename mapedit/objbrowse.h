@@ -39,6 +39,7 @@ protected:
 	//   displayed list.
 	GtkWidget *vscroll = nullptr;         // Vertical scrollbar.
 	GtkWidget *hscroll = nullptr;         // Horizontal scrollbar.
+	GtkEventController *vscroll_ctlr = nullptr; // Vertical scroll in browser.
 	Shape_group *group;                   // Non-null to use filter.
 	GtkWidget *popup = nullptr;           // Popup menu in draw area.
 	Shape_file_info *file_info;           // Our creator (or null).
@@ -96,6 +97,10 @@ public:
 	virtual GtkWidget *create_popup() {
 		return create_popup_internal(true);
 	}
+	// Handle scroll events.
+	void enable_draw_vscroll(GtkWidget *draw);
+	static void draw_vscrolled(GtkEventControllerScroll *self,
+	                           gdouble dx, gdouble dy, gpointer data);
 
 protected:
 	GtkWidget *create_popup_internal(bool files);// Popup menu.
