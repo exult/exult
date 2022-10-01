@@ -47,6 +47,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef _WIN32
 #	include "servewin32.h"
 #else
+//#	include <fcntl.h> The call to fcntl is for !_WIN32 and has been commented out
+#	include <sys/stat.h>
 #	include <sys/socket.h>
 #	include <sys/un.h>
 #endif
@@ -62,8 +64,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef HAVE_GETOPT_LONG
 #	include <getopt.h>
 #endif
-
-#include <fcntl.h>
 
 #include <cerrno>
 #include <cstdarg>
@@ -2774,7 +2774,10 @@ bool ExultStudio::connect_to_server(
 		g_source_remove(server_input_tag);
 	}
 	// Use <GAMEDAT>/exultserver.
-	if (!U7exists(GAMEDAT) || !U7exists(EXULT_SERVER)) {
+	// Use stat() instead of U7exists which no longer supports sockets.
+	struct stat fs;
+	const std::string servename = get_system_path(EXULT_SERVER);
+	if (!U7exists(GAMEDAT) || (stat(servename.c_str(), &fs)) != 0) {
 		cout << "Can't find gamedat for socket" << endl;
 		return false;
 	}
@@ -2782,7 +2785,7 @@ bool ExultStudio::connect_to_server(
 	sockaddr_un addr;
 	addr.sun_family = AF_UNIX;
 	addr.sun_path[0] = 0;
-	strcpy(addr.sun_path, get_system_path(EXULT_SERVER).c_str());
+	strcpy(addr.sun_path, servename.c_str());
 	server_socket = socket(PF_LOCAL, SOCK_STREAM, 0);
 	if (server_socket < 0) {
 		perror("Failed to open map-editor socket");
