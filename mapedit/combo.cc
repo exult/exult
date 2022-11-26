@@ -639,8 +639,8 @@ gint Combo_editor::mouse_press(
 	if (event->button != 1)
 		return FALSE;       // Handling left-click.
 	// Get mouse position, draw dims.
-	const int mx = static_cast<int>(event->x);
-	const int my = static_cast<int>(event->y);
+	const int mx = ZoomDown(static_cast<int>(event->x));
+	const int my = ZoomDown(static_cast<int>(event->y));
 	selected = combo->find(mx, my); // Find it (or -1 if not found).
 	set_controls();
 	render();
@@ -768,14 +768,18 @@ void Combo_chooser::show(
 ) {
 	Shape_draw::show(x, y, w, h);
 	if ((selected >= 0) && (drawgc != nullptr)) {    // Show selected.
+		const int zoom_scale = ZoomGet();
 		const TileRect b = info[selected].box;
 		// Draw yellow box.
-		cairo_set_line_width(drawgc, 1.0);
+		cairo_set_line_width(drawgc, zoom_scale/2.0);
 		cairo_set_source_rgb(drawgc,
 		                     ((drawfg >> 16) & 255) / 255.0,
 		                     ((drawfg >> 8) & 255) / 255.0,
 		                     (drawfg & 255) / 255.0);
-		cairo_rectangle(drawgc, b.x, b.y, b.w, b.h);
+		cairo_rectangle(drawgc, (b.x * zoom_scale)/2,
+		                        (b.y * zoom_scale)/2,
+		                        (b.w * zoom_scale)/2,
+		                        (b.h * zoom_scale)/2);
 		cairo_stroke(drawgc);
 	}
 }
@@ -878,8 +882,8 @@ void Combo_chooser::render(
 	// Get drawing area dimensions.
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
-	const gint winw = alloc.width;
-	const gint winh = alloc.height;
+	const gint winw = ZoomDown(alloc.width);
+	const gint winh = ZoomDown(alloc.height);
 	// Provide more than enough room.
 	info = new Combo_info[256];
 	info_cnt = 0;           // Count them.
@@ -890,13 +894,14 @@ void Combo_chooser::render(
 	const int combow = 128;
 	const int comboh = 128;
 	const int total_cnt = get_count();
-	int y = border;
-	// Show bottom if at least 1/2 vis.
-	while (index < total_cnt && y + comboh / 2 + border <= winh) {
+	int y = border - voffset;
+	while (index < total_cnt && y < winh ) {
 		int x = border;
 		const int cliph = y + comboh <= winh ? comboh : (winh - y);
-		while (index < total_cnt && x + combow + border <= winw) {
-			iwin->set_clip(x, y, combow, cliph);
+		while (index < total_cnt &&
+		       ( x + combow + border <= winw || x == border ) ) {
+			const int clipw = x + combow <= winw ? combow : (winw - x);
+			iwin->set_clip(x, y, clipw, cliph);
 			const int combonum = group ? (*group)[index] : index;
 			combos[combonum]->draw(this, -1, x, y);
 			iwin->clear_clip();
@@ -923,9 +928,12 @@ void Combo_chooser::render(
  */
 
 void Combo_chooser::scroll(
-    int newindex            // Abs. index of leftmost to show.
+    int newpixel            // Abs. index of leftmost to show.
 ) {
 	const int total = combos.size();
+	const int newindex = (newpixel / (128 + border)) * per_row;
+	const int newoffset = newpixel % (128 + border);
+	voffset = newindex >= 0 ? newoffset : 0;
 	if (index0 < newindex)  // Going forwards?
 		index0 = newindex < total ? newindex : total;
 	else if (index0 > newindex) // Backwards?
@@ -941,7 +949,7 @@ void Combo_chooser::scroll(
     bool upwards
 ) {
 	GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
-	gdouble delta = gtk_adjustment_get_step_increment(adj);
+	gdouble delta = 128 + border;
 	if (upwards)
 		delta = -delta;
 	gtk_adjustment_set_value(adj, delta + gtk_adjustment_get_value(adj));
@@ -1035,6 +1043,15 @@ void Combo_chooser::scrolled(
     gpointer data           // ->Combo_chooser.
 ) {
 	auto *chooser = static_cast<Combo_chooser *>(data);
+#ifdef DEBUG
+	cout << "Combos : VScrolled to " << gtk_adjustment_get_value(adj)
+	     << " of [ " << gtk_adjustment_get_lower(adj)
+	     << ", " << gtk_adjustment_get_upper(adj)
+	     << " ] by " << gtk_adjustment_get_step_increment(adj)
+	     << " ( " << gtk_adjustment_get_page_increment(adj)
+	     << ", " << gtk_adjustment_get_page_size(adj)
+	     << " )" << endl;
+#endif
 	const gint newindex = static_cast<gint>(gtk_adjustment_get_value(adj));
 	chooser->scroll(newindex);
 }
@@ -1095,7 +1112,7 @@ Combo_chooser::Combo_chooser(
 ) : Object_browser(g, flinfo),
 	Shape_draw(i, palbuf, gtk_drawing_area_new()),
 	flex_info(flinfo), index0(0),
-	info(nullptr), info_cnt(0), sel_changed(nullptr) {
+	info(nullptr), info_cnt(0), sel_changed(nullptr), voffset(0), per_row(1) {
 	load_internal();             // Init. from file data.
 
 	// Put things in a vert. box.
@@ -1150,7 +1167,7 @@ Combo_chooser::Combo_chooser(
 	gtk_widget_show(draw);
 	// Want a scrollbar for the combos.
 	GtkAdjustment *combo_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0,
-	                           combos.size(), 1,
+	                           (128 + border) * combos.size(), 1,
 	                           4, 1.0));
 	vscroll = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT(combo_adj));
 	// Update window when it stops.
@@ -1214,9 +1231,9 @@ int Combo_chooser::add(
 		delete combos[index];
 		combos[index] = newcombo;
 	}
-	GtkAdjustment *adj =
-	    gtk_range_get_adjustment(GTK_RANGE(vscroll));
-	gtk_adjustment_set_upper(adj, combos.size());
+	GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
+	gtk_adjustment_set_upper(adj,
+	    (((128 + border) * combos.size()) + per_row-1)/per_row);
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 	render();
 	return index;           // Return index.
@@ -1245,9 +1262,9 @@ void Combo_chooser::remove(
 	combos.erase(combos.begin() + tnum);
 	flex_info->set_modified();
 	flex_info->remove(tnum);    // Update flex-file list.
-	GtkAdjustment *adj =        // Update scrollbar.
-	    gtk_range_get_adjustment(GTK_RANGE(vscroll));
-	gtk_adjustment_set_upper(adj, combos.size());
+	GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
+	gtk_adjustment_set_upper(adj,
+	    (((128 + border) * combos.size()) + per_row-1)/per_row);
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 	render();
 }
@@ -1283,23 +1300,31 @@ gint Combo_chooser::configure(
     GdkEventConfigure *event,
     gpointer data           // ->Combo_chooser
 ) {
-	ignore_unused_variable_warning(widget);
+	ignore_unused_variable_warning(widget, event);
 	auto *chooser = static_cast<Combo_chooser *>(data);
 	chooser->Shape_draw::configure();
 	chooser->render();
-	// Set new scroll amounts.
-	const int w = event->width;
-	const int h = event->height;
-	const int per_row = (w - border) / (128 + border);
-	const int num_rows = (h - border) / (128 + border);
-	const int page_size = per_row * num_rows;
-	GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(
-	                         chooser->vscroll));
-	gtk_adjustment_set_step_increment(adj, per_row);
-	gtk_adjustment_set_page_increment(adj, page_size);
-	gtk_adjustment_set_page_size(adj, page_size);
-	g_signal_emit_by_name(G_OBJECT(adj), "changed");
+	chooser->setup_info(true);
 	return TRUE;
+}
+
+void Combo_chooser::setup_info(
+    bool savepos            // Try to keep current position.
+) {
+	ignore_unused_variable_warning(savepos);
+	// Set new scroll amounts.
+	GtkAllocation alloc = {0, 0, 0, 0};
+	gtk_widget_get_allocation(draw, &alloc);
+	const int w = ZoomDown(alloc.width);
+	const int h = ZoomDown(alloc.height);
+	per_row = std::max((w - border) / (128 + border), 1);
+	GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
+	gtk_adjustment_set_upper(adj,
+	    (((128 + border) * combos.size()) + per_row-1)/per_row);
+	gtk_adjustment_set_step_increment(adj, ZoomDown(16));
+	gtk_adjustment_set_page_increment(adj, h - border);
+	gtk_adjustment_set_page_size(adj, h - border);
+	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 }
 
 /*
@@ -1316,7 +1341,8 @@ gint Combo_chooser::expose(
 	chooser->set_graphic_context(cairo);
 	GdkRectangle area = { 0, 0, 0, 0 };
 	gdk_cairo_get_clip_rectangle(cairo, &area);
-	chooser->show(area.x, area.y, area.width, area.height);
+	chooser->show(ZoomDown(area.x), ZoomDown(area.y),
+	              ZoomDown(area.width), ZoomDown(area.height));
 	chooser->set_graphic_context(nullptr);
 	return TRUE;
 }
@@ -1346,6 +1372,10 @@ gint Combo_chooser::mouse_press(
 	gtk_widget_grab_focus(widget);  // Enables keystrokes.
 	auto *chooser = static_cast<Combo_chooser *>(data);
 
+#ifdef DEBUG
+	cout << "Combos : Clicked to " << (event->x) << " * " << (event->y)
+	     << " by " << (event->button) << endl;
+#endif
 	if (event->button == 4) {
 		chooser->scroll(true);
 		return TRUE;
@@ -1358,7 +1388,8 @@ gint Combo_chooser::mouse_press(
 	int i;              // Search through entries.
 	for (i = 0; i < chooser->info_cnt; i++)
 		if (chooser->info[i].box.has_point(
-		            static_cast<int>(event->x), static_cast<int>(event->y))) {
+		            ZoomDown(static_cast<int>(event->x)),
+		            ZoomDown(static_cast<int>(event->y)))) {
 			// Found the box?
 			// Indicate we can drag.
 			chooser->selected = i;

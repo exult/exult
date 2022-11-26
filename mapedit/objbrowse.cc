@@ -497,6 +497,17 @@ void Object_browser::draw_vscrolled( // For scroll events.
 	const gdouble new_unit   = pow(adj_pgsize, 2.0/3.0);
 #endif // MACOSX && !XWIN
 	const gdouble new_value  = (dy * new_unit) + adj_value;
+#ifdef DEBUG
+	std::cout << "Objects : Wheeled to " << dy
+	          << " at " << gtk_adjustment_get_value(adj)
+	          << " -> " << new_value
+	          << " of [ " << gtk_adjustment_get_lower(adj)
+	          << ", " << gtk_adjustment_get_upper(adj)
+	          << " ] by " << gtk_adjustment_get_step_increment(adj)
+	          << " ( " << gtk_adjustment_get_page_increment(adj)
+	          << ", " << gtk_adjustment_get_page_size(adj)
+	          << " )" << std::endl;
+#endif
 	gtk_adjustment_set_value(adj, new_value);
 }
 

@@ -55,14 +55,18 @@ void Chunk_chooser::show(
 ) {
 	Shape_draw::show(x, y, w, h);
 	if ((selected >= 0) && (drawgc != nullptr)) {    // Show selected.
+		const int zoom_scale = ZoomGet();
 		const TileRect b = info[selected].box;
 		// Draw yellow box.
-		cairo_set_line_width(drawgc, 1.0);
+		cairo_set_line_width(drawgc, zoom_scale/2.0);
 		cairo_set_source_rgb(drawgc,
 		                     ((drawfg >> 16) & 255) / 255.0,
 		                     ((drawfg >> 8) & 255) / 255.0,
 		                     (drawfg & 255) / 255.0);
-		cairo_rectangle(drawgc, b.x, b.y, b.w, b.h);
+		cairo_rectangle(drawgc, (b.x * zoom_scale)/2,
+		                        (b.y * zoom_scale)/2,
+		                        (b.w * zoom_scale)/2,
+		                        (b.h * zoom_scale)/2);
 		cairo_stroke(drawgc);
 	}
 }
@@ -121,8 +125,8 @@ void Chunk_chooser::render(
 	// Get drawing area dimensions.
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
-	const gint winw = alloc.width;
-	const gint winh = alloc.height;
+	const gint winw = ZoomDown(alloc.width);
+	const gint winh = ZoomDown(alloc.height);
 	// Provide more than enough room.
 	info = new Chunk_info[256];
 	info_cnt = 0;           // Count them.
@@ -133,13 +137,14 @@ void Chunk_chooser::render(
 	const int chunkw = 128;
 	const int chunkh = 128;
 	const int total_cnt = get_count();
-	int y = border;
-	// Show bottom if at least 1/4 vis.
-	while (index < total_cnt && y + chunkh / 4 <= winh) {
+	int y = border - voffset;
+	while (index < total_cnt && y < winh ) {
 		int x = border;
 		const int cliph = y + chunkh <= winh ? chunkh : (winh - y);
-		while (index < total_cnt && x + chunkw + border <= winw) {
-			iwin->set_clip(x, y, chunkw, cliph);
+		while (index < total_cnt &&
+		       ( x + chunkw + border <= winw || x == border ) ) {
+			const int clipw = x + chunkw <= winw ? chunkw : (winw - x);
+			iwin->set_clip(x, y, clipw, cliph);
 			const int chunknum = group ? (*group)[index] : index;
 			render_chunk(chunknum, x, y);
 			iwin->clear_clip();
@@ -212,7 +217,8 @@ void Chunk_chooser::update_num_chunks(
 ) {
 	num_chunks = new_num_chunks;
 	GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
-	gtk_adjustment_set_upper(adj, num_chunks);
+	gtk_adjustment_set_upper(adj,
+	    (((128 + border) * num_chunks) + per_row-1)/per_row);
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 }
 
@@ -301,28 +307,35 @@ gint Chunk_chooser::configure(
     GdkEventConfigure *event,
     gpointer data           // ->Chunk_chooser
 ) {
-	ignore_unused_variable_warning(widget);
+	ignore_unused_variable_warning(widget, event);
 	auto *chooser = static_cast<Chunk_chooser *>(data);
 	chooser->Shape_draw::configure();
 	chooser->render();
-	// Set new scroll amounts.
-	const int w = event->width;
-	const int h = event->height;
-	const int per_row = (w - border) / (128 + border);
-	const int num_rows = (h - border) / (128 + border);
-	const int page_size = per_row * num_rows;
-	GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(
-	                         chooser->vscroll));
-	gtk_adjustment_set_step_increment(adj, per_row);
-	gtk_adjustment_set_page_increment(adj, page_size);
-	gtk_adjustment_set_page_size(adj, page_size);
-	g_signal_emit_by_name(G_OBJECT(adj), "changed");
+	chooser->setup_info(true);
 	if (chooser->group)     // Filtering?
 		chooser->enable_drop(); // Can drop chunks here.
 
 	return TRUE;
 }
 
+void Chunk_chooser::setup_info(
+    bool savepos            // Try to keep current position.
+) {
+	ignore_unused_variable_warning(savepos);
+	// Set new scroll amounts.
+	GtkAllocation alloc = {0, 0, 0, 0};
+	gtk_widget_get_allocation(draw, &alloc);
+	const int w = ZoomDown(alloc.width);
+	const int h = ZoomDown(alloc.height);
+	per_row = std::max((w - border) / (128 + border), 1);
+	GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
+	gtk_adjustment_set_upper(adj,
+	    (((128 + border) * num_chunks) + per_row - 1)/per_row);
+	gtk_adjustment_set_step_increment(adj, ZoomDown(16));
+	gtk_adjustment_set_page_increment(adj, h - border);
+	gtk_adjustment_set_page_size(adj, h - border);
+	g_signal_emit_by_name(G_OBJECT(adj), "changed");
+}
 
 /*
  *  Handle an expose event.
@@ -338,7 +351,8 @@ gint Chunk_chooser::expose(
 	chooser->set_graphic_context(cairo);
 	GdkRectangle area = { 0, 0, 0, 0 };
 	gdk_cairo_get_clip_rectangle(cairo, &area);
-	chooser->show(area.x, area.y, area.width, area.height);
+	chooser->show(ZoomDown(area.x), ZoomDown(area.y),
+	              ZoomDown(area.width), ZoomDown(area.height));
 	chooser->set_graphic_context(nullptr);
 	return TRUE;
 }
@@ -368,6 +382,10 @@ gint Chunk_chooser::mouse_press(
 	ignore_unused_variable_warning(widget);
 	auto *chooser = static_cast<Chunk_chooser *>(data);
 
+#ifdef DEBUG
+	cout << "Chunks : Clicked to " << (event->x) << " * " << (event->y)
+	     << " by " << (event->button) << endl;
+#endif
 	if (event->button == 4) {
 		chooser->scroll(true);
 		return TRUE;
@@ -380,7 +398,8 @@ gint Chunk_chooser::mouse_press(
 	int i;              // Search through entries.
 	for (i = 0; i < chooser->info_cnt; i++)
 		if (chooser->info[i].box.has_point(
-		            static_cast<int>(event->x), static_cast<int>(event->y))) {
+		            ZoomDown(static_cast<int>(event->x)),
+		            ZoomDown(static_cast<int>(event->y)))) {
 			// Found the box?
 //			if (i == old_selected)
 //				return TRUE;
@@ -526,9 +545,12 @@ void Chunk_chooser::enable_drop(
  */
 
 void Chunk_chooser::scroll(
-    int newindex            // Abs. index of leftmost to show.
+    int newpixel            // Abs. index of leftmost to show.
 ) {
 	const int total = get_count();
+	const int newindex = (newpixel / (128 + border)) * per_row;
+	const int newoffset = newpixel % (128 + border);
+	voffset = newindex >= 0 ? newoffset : 0;
 	if (index0 < newindex)  // Going forwards?
 		index0 = newindex < total ? newindex : total;
 	else if (index0 > newindex) // Backwards?
@@ -544,7 +566,7 @@ void Chunk_chooser::scroll(
     bool upwards
 ) {
 	GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
-	gdouble delta = gtk_adjustment_get_step_increment(adj);
+	gdouble delta = 128 + border;
 	if (upwards)
 		delta = -delta;
 	gtk_adjustment_set_value(adj, gtk_adjustment_get_value(adj) + delta);
@@ -561,7 +583,15 @@ void Chunk_chooser::scrolled(
     gpointer data           // ->Chunk_chooser.
 ) {
 	auto *chooser = static_cast<Chunk_chooser *>(data);
-	cout << "Scrolled to " << gtk_adjustment_get_value(adj) << '\n';
+#ifdef DEBUG
+	cout << "Chunks : VScrolled to " << gtk_adjustment_get_value(adj)
+	     << " of [ " << gtk_adjustment_get_lower(adj)
+	     << ", " << gtk_adjustment_get_upper(adj)
+	     << " ] by " << gtk_adjustment_get_step_increment(adj)
+	     << " ( " << gtk_adjustment_get_page_increment(adj)
+	     << ", " << gtk_adjustment_get_page_size(adj)
+	     << " )" << endl;
+#endif
 	const gint newindex = static_cast<gint>(gtk_adjustment_get_value(adj));
 	chooser->scroll(newindex);
 }
@@ -658,7 +688,7 @@ Chunk_chooser::Chunk_chooser(
 ) : Object_browser(g), Shape_draw(i, palbuf, gtk_drawing_area_new()),
 	chunkfile(cfile), chunksz(c_tiles_per_chunk * c_tiles_per_chunk * 2),
 	headersz(0), info(nullptr), info_cnt(0), locate_cx(-1), locate_cy(-1),
-	drop_enabled(false), to_del(-1), sel_changed(nullptr) {
+	drop_enabled(false), to_del(-1), sel_changed(nullptr), voffset(0), per_row(1) {
 	static char v2hdr[] = {'\xff', '\xff', '\xff', '\xff', 'e', 'x', 'l', 't', 0, 0};
 	char v2buf[V2_CHUNK_HDR_SIZE];  // Check for V2 chunks.
 	chunkfile.seekg(0);
@@ -720,7 +750,7 @@ Chunk_chooser::Chunk_chooser(
 	gtk_widget_show(draw);
 	// Want a scrollbar for the chunks.
 	GtkAdjustment *chunk_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0,
-	                           num_chunks, 1,
+	                           (128 + border) * num_chunks, 1,
 	                           4, 1.0));
 	vscroll = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT(chunk_adj));
 	gtk_box_pack_start(GTK_BOX(hbox), vscroll, FALSE, TRUE, 0);

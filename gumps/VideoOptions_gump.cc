@@ -252,15 +252,30 @@ void VideoOptions_gump::load_settings(bool Fullscreen) {
 			std::set<uint32> Resolutions{
 				make_resolution(320, 200),
 				make_resolution(320, 240),
+				make_resolution(400, 250),
 				make_resolution(400, 300),
+				make_resolution(480, 300),
+				make_resolution(480, 360),
+				make_resolution(512, 320),
 				make_resolution(512, 384),
 				make_resolution(640, 400),
 				make_resolution(640, 480),
+				make_resolution(800, 500),
 				make_resolution(800, 600),
 				make_resolution(960, 600),
 				make_resolution(960, 720),
+				make_resolution(1024, 640),
 				make_resolution(1024, 768),
-				make_resolution(1200, 900)
+				make_resolution(1200, 750),
+				make_resolution(1200, 900),
+				make_resolution(1280, 800),
+				make_resolution(1280, 960),
+				make_resolution(1440, 900),
+				make_resolution(1440, 1080),
+				make_resolution(1600, 1000),
+				make_resolution(1600, 1200),
+				make_resolution(1920, 1200),
+				make_resolution(1920, 1440)
 			};
 			auto it = std::find(Resolutions.cbegin(), Resolutions.cend(), resolution);
 			if (it == Resolutions.cend()) {

@@ -518,6 +518,7 @@ C_EXPORT gboolean on_main_window_focus_in_event(
 ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 	css_path(nullptr), css_provider(nullptr), static_path(nullptr),
 	image_editor(nullptr), default_game(nullptr), background_color(0),
+	shape_scale(0), shape_bilinear(false),
 	shape_info_modified(false), shape_names_modified(false), npc_modified(false),
 	files(nullptr), curfile(nullptr),
 	vgafile(nullptr), facefile(nullptr), fontfile(nullptr), gumpfile(nullptr),
@@ -564,7 +565,7 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 	string game;                // Game to look up in .exult.cfg.
 	string modtitle;            // Mod title to look up in <MODS>/*.cfg.
 	string alt_cfg;
-	static const char *optstring = "hsc:g:m:px:y:";
+	static const char *optstring = "hsc:g:m:px:y:z:";
 	opterr = 0;         // Don't let getopt() print errs.
 	int optchr;
 	auto get_next_option = [&]() {
@@ -578,6 +579,7 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 			{ "portable",       no_argument, nullptr, 'p' },
 			{ "xmldir",   required_argument, nullptr, 'x' },
 			{ "cssdir",   required_argument, nullptr, 'y' },
+			{ "zoom",     required_argument, nullptr, 'z' },
 			{ nullptr,    0,                 nullptr,  0  }
 		};
 		return getopt_long(argc, argv, optstring,
@@ -608,6 +610,37 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 		case 'm':       // Mod.
 			modtitle = optarg;
 			break;
+		case 'z':
+			if ((optarg[0] == 'b') || (optarg[0] == 'B')) {
+				shape_bilinear = true;
+				optarg ++;
+			}
+			else if ((optarg[0] == 'n') || (optarg[0] == 'N')) {
+				shape_bilinear = false;
+				optarg ++;
+			}
+			else {
+				shape_bilinear = false;
+			}
+			shape_scale =
+			    (static_cast<int>(std::strtoul(optarg, nullptr, 10)) / 50);
+			if (shape_scale < 2) {
+				shape_scale = 2;
+			}
+			else if (shape_scale > 32) {
+				shape_scale = 32;
+			} else {
+				// The expected values are 2,3, 4,6, 8,12, 16,24, 32 :
+				//   the bounds 2 and 32 are checked above.
+				//   Loop : divide by 2, until reaching 2 or 3.
+				int shape_pow2 = 1;
+				while(shape_scale > 4) {
+					shape_scale >>= 1;
+					shape_pow2  <<= 1;
+				}
+				shape_scale *= shape_pow2;
+			}
+			break;
 		case 'p':
 #ifdef _WIN32
 			portable = true;
@@ -619,7 +652,7 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 		case 'h':
 #ifdef HAVE_GETOPT_LONG
 			cerr << "Usage: exult_studio [--help|-h] [--silent|-s] [--config|-c <configfile>]" << endl
-			     << "                    [--game|-g <game>] [--mod|-m <mod>]" << endl;
+			     << "                    [--game|-g <game>] [--mod|-m <mod>] [--zoom|-z <zoomshape>]" << endl;
 #ifdef _WIN32
 			cerr << "                    [--portable|-p]" << endl;
 #endif
@@ -636,6 +669,9 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 #endif
 			cerr << "        --xmldir gladedir        Specify where the exult_studio.glade resides, default is share/exult" << endl;
 			cerr << "        --cssdir cssdir          Specify where the exult_studio.css   resides, default is share/exult" << endl;
+			cerr << "        --zoom zoomshape         Enlarge the displayed Shapes, [B|N(default)]percent, default is 100" << endl;
+			cerr << "                                         With Nearest : N ( default ), or Bilinear : B" << endl;
+			cerr << "                                         Percent is one of 100, 150, 200, 300, 400, 600, 800, 1200 or 1600" << endl;
 #else
 			cerr << "Usage: exult_studio [-h] [-s] [-c <configfile>]" << endl
 			     << "                    [-g <game>] [-m <mod>]" << endl;
@@ -655,6 +691,9 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 #endif
 			cerr << "        -x gladedir     Specify where the exult_studio.glade resides, default is share/exult" << endl;
 			cerr << "        -y cssdir       Specify where the exult_studio.css   resides, default is share/exult" << endl;
+			cerr << "        -z zoomshape    Enlarge the displayed Shapes, [B|N(default)]percent, default is 100" << endl;
+			cerr << "                                With Nearest : N ( default ), or Bilinear : B" << endl;
+			cerr << "                                Percent is one of 100, 150, 200, 300, 400, 600, 800, 1200 or 1600" << endl;
 #endif // HAVE_GETOPT_LONG
 			exit(1);
 		}
@@ -677,6 +716,19 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 		config->read_abs_config_file(alt_cfg);
 	else {
 		config->read_config_file(USER_CONFIGURATION_FILE);
+	}
+	// Get Shape scaling from config if not set by command line, report if above 100%
+	if (shape_scale == 0) {
+		config->value("config/estudio/shape_scale", shape_scale, 2);
+		config->value("config/estudio/shape_bilinear", shape_bilinear, false);
+		if (shape_scale > 2) {
+			cout << "Scaling Shapes by " << (shape_scale * 50) << "% using "
+			     << (shape_bilinear ? "Bilinear." : "Nearest (by config).") << endl;
+		}
+	} else
+	if (shape_scale > 2) {
+		cout << "Scaling Shapes by " << (shape_scale * 50) << "% using "
+		     << (shape_bilinear ? "Bilinear." : "Nearest (by command line).") << endl;
 	}
 	// Setup virtual directories
 	string data_path;
@@ -771,6 +823,9 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 
 	mainnotebook = GTK_NOTEBOOK(get_widget("notebook3"));
 
+	// Create Zoom shapes GUI
+	create_zoom_controls();
+
 	// More setting up...
 	// Connect signals automagically.
 	gtk_builder_connect_signals(app_xml, nullptr);
@@ -782,6 +837,8 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 //++++Used to work  gtk_window_set_default_size(GTK_WINDOW(app), w, h);
 		gtk_window_resize(GTK_WINDOW(app), w, h);
 	gtk_widget_show(app);
+	g_signal_connect(G_OBJECT(app), "key-press-event",
+	                 G_CALLBACK(on_app_key_press), this);
 	// Background color for shape browser.
 	int bcolor;
 	config->value("config/estudio/background_color", bcolor, 0);
@@ -836,6 +893,8 @@ ExultStudio::~ExultStudio() {
 
 	config->set("config/estudio/main/width", w, true);
 	config->set("config/estudio/main/height", h, true);
+	config->set("config/estudio/shape_scale", shape_scale, true);
+	config->set("config/estudio/shape_bilinear", shape_bilinear, true);
 	Free_text();
 	g_free(glade_path);
 	if (css_path)
@@ -2311,7 +2370,6 @@ int ExultStudio::prompt(
 		                             static_cast<const gchar **>(logo_xpm));
 		GtkWidget *draw = gtk_image_new_from_pixbuf(logo_pixbuf);
 		g_object_unref(logo_pixbuf);
-		gtk_widget_show(draw);
 		GtkWidget *hbox = get_widget("prompt3_hbox");
 		gtk_widget_set_size_request(draw,
 		                            gdk_pixbuf_get_width(logo_pixbuf),
@@ -3241,4 +3299,139 @@ void convertToUTF8::convert(gchar *&_convstr, const char *str, const char *enc) 
 int get_skinvar(const std::string &key) {
 	ignore_unused_variable_warning(key);
 	return -1;
+}
+
+// Zoom callbacks
+void ExultStudio::on_zoom_bilinear(GtkToggleButton *btn, gpointer user_data)
+{
+	ignore_unused_variable_warning(btn, user_data);
+	auto *studio = ExultStudio::get_instance();
+	studio->shape_bilinear = gtk_toggle_button_get_active(btn);
+	if (studio->browser) {
+		// No need to setup_info, the sizes of the shapes do not change.
+		studio->browser->render();
+	}
+}
+
+void ExultStudio::on_zoom_up(GtkButton *btn, gpointer user_data)
+{
+	ignore_unused_variable_warning(btn, user_data);
+	auto *studio = ExultStudio::get_instance();
+	if (studio->shape_scale == 32) {
+		return;
+	}
+	if (studio->shape_scale % 3 == 0) {
+		studio->shape_scale = (studio->shape_scale * 4) / 3;
+	} else {
+		studio->shape_scale = (studio->shape_scale * 3) / 2;
+	}
+	string zvalue = std::to_string(50 * studio->shape_scale) + "%";
+	gtk_label_set_text(GTK_LABEL(studio->shape_zlabel), zvalue.c_str());
+	gtk_widget_set_sensitive(studio->shape_zup,
+	                         (studio->shape_scale <  32 ? true : false));
+	gtk_widget_set_sensitive(studio->shape_zdown,
+	                         (studio->shape_scale >   2 ? true : false));
+	if (studio->browser) {
+		studio->browser->setup_info(true);
+		studio->browser->render();
+	}
+}
+
+void ExultStudio::on_zoom_down(GtkButton *btn, gpointer user_data)
+{
+	ignore_unused_variable_warning(btn, user_data);
+	auto *studio = ExultStudio::get_instance();
+	if (studio->shape_scale == 2) {
+		return;
+	}
+	if (studio->shape_scale % 3 == 0) {
+		studio->shape_scale = (studio->shape_scale * 2) / 3;
+	} else {
+		studio->shape_scale = (studio->shape_scale * 3) / 4;
+	}
+	string zvalue = std::to_string(50 * studio->shape_scale) + "%";
+	gtk_label_set_text(GTK_LABEL(studio->shape_zlabel), zvalue.c_str());
+	gtk_widget_set_sensitive(studio->shape_zup,
+	                         (studio->shape_scale <  32 ? true : false));
+	gtk_widget_set_sensitive(studio->shape_zdown,
+	                         (studio->shape_scale >   2 ? true : false));
+	if (studio->browser) {
+		studio->browser->setup_info(true);
+		studio->browser->render();
+	}
+}
+
+gboolean ExultStudio::on_app_key_press(
+    GtkEntry *entry,
+    GdkEventKey *event,
+    gpointer user_data
+) {
+	ignore_unused_variable_warning(entry, user_data);
+	auto *studio = ExultStudio::get_instance();
+	switch (event->keyval) {
+	case GDK_KEY_plus:
+	case GDK_KEY_KP_Add:
+		if (studio->shape_zup) {
+			g_signal_emit_by_name(G_OBJECT(studio->shape_zup), "clicked");
+		}
+		return TRUE;
+	case GDK_KEY_minus:
+	case GDK_KEY_KP_Subtract:
+		if (studio->shape_zdown) {
+			g_signal_emit_by_name(G_OBJECT(studio->shape_zdown), "clicked");
+		}
+		return TRUE;
+	}
+	return FALSE;
+}
+void ExultStudio::create_zoom_controls()
+{
+	GtkWidget *zbox = get_widget("menubar_box");
+	GtkWidget *zframe = gtk_frame_new(nullptr);
+	widget_set_margins(zframe, 2*HMARGIN, 0*HMARGIN, 0*VMARGIN, 0*VMARGIN);
+	gtk_widget_show(zframe);
+	gtk_box_pack_start(GTK_BOX(zbox), zframe, FALSE, FALSE, 0);
+
+	GtkWidget *zbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	widget_set_margins(zbox2, 0*HMARGIN, 0*HMARGIN, 0*VMARGIN, 0*VMARGIN);
+	gtk_box_set_homogeneous(GTK_BOX(zbox2), FALSE);
+	gtk_widget_show(zbox2);
+	gtk_container_add(GTK_CONTAINER(zframe), zbox2);
+
+	GtkWidget *zname = gtk_label_new("Zoom");
+	gtk_widget_set_visible(GTK_WIDGET(zname), TRUE);
+	widget_set_margins(zname, 4*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
+	gtk_box_pack_start(GTK_BOX(zbox2), zname, FALSE, FALSE, 0);
+	gtk_widget_show(zname);
+
+	string zvalue = std::to_string(50 * shape_scale) + "%";
+	shape_zlabel = gtk_label_new(zvalue.c_str());
+	gtk_widget_set_visible(GTK_WIDGET(shape_zlabel), TRUE);
+	widget_set_margins(shape_zlabel, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
+	gtk_box_pack_start(GTK_BOX(zbox2), shape_zlabel, FALSE, FALSE, 0);
+	gtk_widget_set_size_request(shape_zlabel, 50, -1);
+	gtk_label_set_justify(GTK_LABEL(shape_zlabel), GTK_JUSTIFY_RIGHT);
+	gtk_widget_show(shape_zlabel);
+
+	shape_zdown = EStudio::Create_arrow_button(GTK_ARROW_DOWN,
+	    G_CALLBACK(ExultStudio::on_zoom_down), this);
+	widget_set_margins(shape_zdown, 2*HMARGIN, 1*HMARGIN, 2*VMARGIN, 2*VMARGIN);
+	gtk_widget_set_sensitive(shape_zdown, (shape_scale > 2 ? true : false));
+	gtk_box_pack_start(GTK_BOX(zbox2), shape_zdown, TRUE, TRUE, 0);
+	gtk_widget_show(shape_zdown);
+
+	shape_zup  = EStudio::Create_arrow_button(GTK_ARROW_UP,
+	    G_CALLBACK(ExultStudio::on_zoom_up), this);
+	widget_set_margins(shape_zup, 1*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
+	gtk_widget_set_sensitive(shape_zup, (shape_scale <  32 ? true : false));
+	gtk_box_pack_start(GTK_BOX(zbox2), shape_zup, TRUE, TRUE, 0);
+	gtk_widget_show(shape_zup);
+
+	GtkWidget *zcheck = gtk_check_button_new_with_label("Bilinear");
+	widget_set_margins(zcheck, 2*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
+	gtk_box_pack_start(GTK_BOX(zbox2), zcheck, TRUE, TRUE, 0);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(zcheck), shape_bilinear);
+	gtk_widget_show(zcheck);
+	g_signal_connect(G_OBJECT(zcheck), "toggled",
+	    G_CALLBACK(ExultStudio::on_zoom_bilinear), this);
 }

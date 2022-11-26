@@ -56,9 +56,31 @@ void Shape_draw::show(
 				t[1] = (c >>  8) & 255;
 				t[2] = (c >>  0) & 255;
 			}
-		gdk_cairo_set_source_pixbuf(drawgc, pixbuf, x, y);
-		cairo_rectangle(drawgc, x, y, w, h);
-		cairo_fill(drawgc);
+		const int zoom_scale = ExultStudio::get_instance()->get_shape_scale();
+		if (zoom_scale == 2) { // No Zoom
+			gdk_cairo_set_source_pixbuf(drawgc, pixbuf, x, y);
+			cairo_rectangle(drawgc, x, y, w, h);
+			cairo_fill(drawgc);
+		}
+		else {
+			// Using GdkPixbuf scaling :
+			const bool zoom_bilinear = ExultStudio::get_instance()->get_shape_bilinear();
+			GdkPixbuf *zoom_pixbuf = gdk_pixbuf_scale_simple(pixbuf,
+			    (w * zoom_scale)/2, (h * zoom_scale)/2,
+			    (zoom_bilinear ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST));
+			gdk_cairo_set_source_pixbuf(drawgc, zoom_pixbuf,
+			    (x * zoom_scale)/2, (y * zoom_scale)/2);
+			cairo_rectangle(drawgc, (x * zoom_scale)/2, (y * zoom_scale)/2,
+			    (w * zoom_scale)/2, (h * zoom_scale)/2);
+			cairo_fill(drawgc);
+			g_object_unref(zoom_pixbuf);
+			//
+			// Using Cairo scaling :
+			// cairo_scale(drawgc, zoom_scale / 2.0, zoom_scale / 2.0);
+			// gdk_cairo_set_source_pixbuf(drawgc, pixbuf, x, y);
+			// cairo_rectangle(drawgc, x, y, w, h);
+			// cairo_fill(drawgc);
+		}
 		g_object_unref(pixbuf);
 	}
 }
@@ -138,15 +160,15 @@ void Shape_draw::draw_shape_centered(
 	// Get drawing area dimensions.
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
-	const gint winw = alloc.width;
-	const gint winh = alloc.height;
-	if (( alloc.width <  shape->get_width() + 8) ||
-	    (alloc.height < shape->get_height() + 8)) {
+	const gint winw = ZoomDown(alloc.width);
+	const gint winh = ZoomDown(alloc.height);
+	if ((winw <  shape->get_width() + 8) ||
+	    (winh < shape->get_height() + 8)) {
 		gtk_widget_set_size_request(draw,
-		    alloc.width  <  shape->get_width() + 8 ?
-		    shape->get_width() + 8 :  alloc.width,
-		    alloc.height < shape->get_height() + 8 ?
-		    shape->get_height() + 8 : alloc.height);
+		    winw <  shape->get_width() + 8 ?
+		    ZoomUp( shape->get_width() + 8 ) :  alloc.width,
+		    winh < shape->get_height() + 8 ?
+		    ZoomUp(shape->get_height() + 8 ) : alloc.height);
 		gtk_widget_queue_draw(draw);
 	}
 	else {
@@ -513,7 +535,8 @@ gboolean Shape_single::on_draw_expose_event(
 	}
 	if ((shnum == 0) && !(single->shapevalid(0))) shnum = -1;
 	single->draw_shape_centered(shnum, frnum);
-	single->show(area.x, area.y, area.width, area.height);
+	single->show(ZoomDown(area.x), ZoomDown(area.y),
+	             ZoomDown(area.width), ZoomDown(area.height));
 	single->set_graphic_context(nullptr);
 	return TRUE;
 }
@@ -601,5 +624,15 @@ GdkPixbuf *ExultStudio::shape_image(
 				t[2] = ((4 * local_palbuf[3 * s + 2]) & 255);
 			}
 		}
+	const int zoom_scale = ExultStudio::get_instance()->get_shape_scale();
+	if (zoom_scale > 2) {
+		// Using GdkPixbuf scaling :
+		const bool zoom_bilinear = ExultStudio::get_instance()->get_shape_bilinear();
+		GdkPixbuf *zoom_pixbuf = gdk_pixbuf_scale_simple(pixbuf,
+		    (w * zoom_scale)/2, (h * zoom_scale)/2,
+		    (zoom_bilinear ? GDK_INTERP_BILINEAR : GDK_INTERP_NEAREST));
+		g_object_unref(pixbuf);
+		pixbuf = zoom_pixbuf;
+	}
 	return pixbuf;
 }

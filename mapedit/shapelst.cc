@@ -120,14 +120,18 @@ void Shape_chooser::show(
 ) {
 	Shape_draw::show(x, y, w, h);
 	if ((selected >= 0) && (drawgc != nullptr)) {    // Show selected.
+		const int zoom_scale = ZoomGet();
 		const TileRect b = info[selected].box;
 		// Draw yellow box.
-		cairo_set_line_width(drawgc, 1.0);
+		cairo_set_line_width(drawgc, zoom_scale/2.0);
 		cairo_set_source_rgb(drawgc,
 		                     ((drawfg >> 16) & 255) / 255.0,
 		                     ((drawfg >> 8) & 255) / 255.0,
 		                     (drawfg & 255) / 255.0);
-		cairo_rectangle(drawgc, b.x - hoffset, b.y - voffset, b.w, b.h);
+		cairo_rectangle(drawgc, ((b.x - hoffset) * zoom_scale)/2,
+		                        ((b.y - voffset) * zoom_scale)/2,
+		                        (b.w * zoom_scale)/2,
+		                        (b.h * zoom_scale)/2);
 		cairo_stroke(drawgc);
 	}
 }
@@ -182,7 +186,7 @@ void Shape_chooser::render(
 	// Get drawing area dimensions.
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
-	const gint winh = alloc.height;
+	const gint winh = ZoomDown(alloc.height);
 	// Clear window first.
 	iwin->fill8(255);       // Set to background_color.
 	int curr_y = -row0_voffset;
@@ -297,7 +301,7 @@ void Shape_chooser::setup_shapes_info(
 	// Get drawing area dimensions.
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
-	const gint winw = alloc.width;
+	const gint winw = ZoomDown(alloc.width);
 	int x = 0;
 	int curr_y = 0;
 	int row_h = 0;
@@ -403,7 +407,7 @@ void Shape_chooser::scroll_to_frame(
 		else {
 			GtkAllocation alloc = {0, 0, 0, 0};
 			gtk_widget_get_allocation(draw, &alloc);
-			const gint winw = alloc.width;
+			const gint winw = ZoomDown(alloc.width);
 			Shape_frame *fr = shape->get_frame(selframe);
 			if (fr) {
 				const int sw = fr->get_width();
@@ -529,7 +533,8 @@ gint Shape_chooser::expose(
 	chooser->set_graphic_context(cairo);
 	GdkRectangle area = { 0, 0, 0, 0 };
 	gdk_cairo_get_clip_rectangle(cairo, &area);
-	chooser->show(area.x, area.y, area.width, area.height);
+	chooser->show(ZoomDown(area.x), ZoomDown(area.y),
+	              ZoomDown(area.width), ZoomDown(area.height));
 	chooser->set_graphic_context(nullptr);
 	return TRUE;
 }
@@ -560,6 +565,10 @@ gint Shape_chooser::mouse_press(
 ) {
 	gtk_widget_grab_focus(widget);
 
+#ifdef DEBUG
+	cout << "Shapes : Clicked to " << (event->x) << " * " << (event->y)
+	     << " by " << (event->button) << endl;
+#endif
 	if (event->button == 4) {
 		if (row0 > 0)
 			scroll_row_vertical(row0 - 1);
@@ -572,8 +581,8 @@ gint Shape_chooser::mouse_press(
 	int new_selected = -1;
 	unsigned i;              // Search through entries.
 	const unsigned infosz = info.size();
-	const int absx = static_cast<int>(event->x) + hoffset;
-	const int absy = static_cast<int>(event->y) + voffset;
+	const int absx = ZoomDown(static_cast<int>(event->x)) + hoffset;
+	const int absy = ZoomDown(static_cast<int>(event->y)) + voffset;
 	for (i = rows[row0].index0; i < infosz; i++) {
 		if (info[i].box.distance(absx, absy) <= 2) {
 			// Found the box?
@@ -1761,11 +1770,19 @@ void Shape_chooser::scroll_vertical(
     int newoffset
 ) {
 	int delta = newoffset - voffset;
-	while (delta > 0 && row0 < rows.size() - 1) {
+	while (delta > 0 && row0 < rows.size()) {
 		// Going down.
 		const int rowh = rows[row0].height - row0_voffset;
 		if (delta < rowh) {
 			// Part of current row.
+			voffset += delta;
+			row0_voffset += delta;
+			delta = 0;
+		} else if (row0 == rows.size() - 1) {
+			// Scroll in bottomest row
+			if (delta > rowh) {
+				delta = rowh;
+			}
 			voffset += delta;
 			row0_voffset += delta;
 			delta = 0;
@@ -1815,9 +1832,9 @@ void Shape_chooser::setup_vscrollbar(
 	gtk_adjustment_set_value(adj, 0);
 	gtk_adjustment_set_lower(adj, 0);
 	gtk_adjustment_set_upper(adj, total_height);
-	gtk_adjustment_set_step_increment(adj, 16);   // +++++FOR NOW.
-	gtk_adjustment_set_page_increment(adj, config_height);
-	gtk_adjustment_set_page_size(adj, config_height);
+	gtk_adjustment_set_step_increment(adj, ZoomDown(16));   // +++++FOR NOW.
+	gtk_adjustment_set_page_increment(adj, ZoomDown(config_height));
+	gtk_adjustment_set_page_size(adj, ZoomDown(config_height));
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 }
 
@@ -1834,8 +1851,9 @@ void Shape_chooser::setup_hscrollbar(
 		gtk_adjustment_set_upper(adj, newmax);
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
-	gtk_adjustment_set_page_increment(adj, alloc.width);
-	gtk_adjustment_set_page_size(adj, alloc.width);
+	gtk_adjustment_set_step_increment(adj, ZoomDown(16));   // +++++FOR NOW.
+	gtk_adjustment_set_page_increment(adj, ZoomDown(alloc.width));
+	gtk_adjustment_set_page_size(adj, ZoomDown(alloc.width));
 	if (gtk_adjustment_get_page_size(adj) > gtk_adjustment_get_upper(adj))
 		gtk_adjustment_set_upper(adj, gtk_adjustment_get_page_size(adj));
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
@@ -1850,7 +1868,15 @@ void Shape_chooser::vscrolled(      // For vertical scrollbar.
     gpointer data           // ->Shape_chooser.
 ) {
 	auto *chooser = static_cast<Shape_chooser *>(data);
-	cout << "Scrolled to " << gtk_adjustment_get_value(adj) << '\n';
+#ifdef DEBUG
+	cout << "Shapes : VScrolled to " << gtk_adjustment_get_value(adj)
+	     << " of [ " << gtk_adjustment_get_lower(adj)
+	     << ", " << gtk_adjustment_get_upper(adj)
+	     << " ] by " << gtk_adjustment_get_step_increment(adj)
+	     << " ( " << gtk_adjustment_get_page_increment(adj)
+	     << ", " << gtk_adjustment_get_page_size(adj)
+	     << " )" << endl;
+#endif
 	const gint newindex = static_cast<gint>(gtk_adjustment_get_value(adj));
 	chooser->scroll_vertical(newindex);
 }
@@ -1859,6 +1885,15 @@ void Shape_chooser::hscrolled(      // For horizontal scrollbar.
     gpointer data           // ->Shape_chooser.
 ) {
 	auto *chooser = static_cast<Shape_chooser *>(data);
+#ifdef DEBUG
+	cout << "Shapes : HScrolled to " << gtk_adjustment_get_value(adj)
+	     << " of [ " << gtk_adjustment_get_lower(adj)
+	     << ", " << gtk_adjustment_get_upper(adj)
+	     << " ] by " << gtk_adjustment_get_step_increment(adj)
+	     << " ( " << gtk_adjustment_get_page_increment(adj)
+	     << ", " << gtk_adjustment_get_page_size(adj)
+	     << " )" << endl;
+#endif
 	chooser->hoffset = static_cast<gint>(gtk_adjustment_get_value(adj));
 	chooser->render();
 }

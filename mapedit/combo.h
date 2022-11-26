@@ -156,12 +156,15 @@ class Combo_chooser: public Object_browser, public Shape_draw {
 	int info_cnt;           // # entries in info.
 	void (*sel_changed)();      // Called when selection changes.
 	// Blit onto screen.
+	int voffset;
+	int per_row;
 	void show(int x, int y, int w, int h) override;
 	void select(int new_sel);   // Show new selection.
 	void load() override {
 		load_internal();
 	}
 	void load_internal();        // Load from file data.
+	void setup_info(bool savepos = true) override;
 	void render() override;      // Draw list.
 	void set_background_color(guint32 c) override {
 		Shape_draw::set_background_color(c);
@@ -169,7 +172,7 @@ class Combo_chooser: public Object_browser, public Shape_draw {
 	int get_selected_id() override {
 		return selected < 0 ? -1 : info[selected].num;
 	}
-	void scroll(int newindex);  // Scroll.
+	void scroll(int newpixel);  // Scroll.
 	void scroll(bool upwards);
 	void enable_controls();     // Enable/disable controls after sel.
 	//   has changed.

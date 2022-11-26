@@ -109,6 +109,14 @@ private:
 	char            *default_game;
 	guint32         background_color;
 	static ExultStudio  *self;
+	// Shape scaling
+	int             shape_scale;    // Zoom half-units : 100% is 2, 150% is 3 ...
+	bool            shape_bilinear; // True is Bilinear, False is Nearest.
+	GtkWidget       *shape_zlabel;  // Zoom shape label, set to 50 * shape_scale.
+	GtkWidget       *shape_zup;     // Zoom up arrow.
+	GtkWidget       *shape_zdown;   // Zoom down arrow.
+	static gboolean on_app_key_press(
+	    GtkEntry *entry, GdkEventKey *event, gpointer user_data);
 	// Modified one of the .dat's?
 	bool            shape_info_modified, shape_names_modified;
 	bool            npc_modified;
@@ -194,6 +202,8 @@ public:
 	ExultStudio(int argc, char **argv);
 	~ExultStudio();
 	bool okay_to_close();
+	int get_shape_scale() { return shape_scale; }
+	bool get_shape_bilinear() { return shape_bilinear; }
 	GtkWidget *get_widget(GtkBuilder *xml, const char *name) {
 		return GTK_WIDGET(gtk_builder_get_object(xml, name));
 	}
@@ -328,6 +338,10 @@ public:
 	                       const char *shname, Shape_info *info = nullptr);
 	void save_shape_window();
 	void close_shape_window();
+	void create_zoom_controls();
+	static void on_zoom_bilinear(GtkToggleButton *btn, gpointer user_data);
+	static void on_zoom_up(GtkButton *btn, gpointer user_data);
+	static void on_zoom_down(GtkButton *btn, gpointer user_data);
 	// Map locator.
 	void open_locator_window();
 	// Combo editor.
@@ -430,6 +444,16 @@ GtkWidget *Create_arrow_button(GtkArrowType dir,
                                GCallback clicked,
                                gpointer func_data);
 bool Copy_file(const char *src, const char *dest);
+}
+
+inline int ZoomUp( int size ) {
+	return ( (size * (ExultStudio::get_instance()->get_shape_scale())) / 2 );
+}
+inline int ZoomDown( int size ) {
+	return ( (size * 2) / (ExultStudio::get_instance()->get_shape_scale()) );
+}
+inline int ZoomGet() {
+	return (ExultStudio::get_instance()->get_shape_scale());
 }
 
 class convertToUTF8 {

@@ -63,7 +63,7 @@ public:
 	void show() {
 		GtkAllocation alloc = {0, 0, 0, 0};
 		gtk_widget_get_allocation(draw, &alloc);
-		show(0, 0, alloc.width, alloc.height);
+		show(0, 0, ZoomDown(alloc.width), ZoomDown(alloc.height));
 	}
 	guint32 get_color(int i) {
 		return palette->colors[i];

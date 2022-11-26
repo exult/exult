@@ -68,10 +68,13 @@ class Chunk_chooser: public Object_browser, public Shape_draw {
 	int to_del;         // Terrain # to delete, or -1.
 	void (*sel_changed)();      // Called when selection changes.
 	// Blit onto screen.
+	int voffset;
+	int per_row;
 	void show(int x, int y, int w, int h) override;
 	void tell_server();
 	void select(int new_sel);   // Show new selection.
 	void render() override;      // Draw list.
+	void setup_info(bool savepos = true) override;
 	void set_background_color(guint32 c) override {
 		Shape_draw::set_background_color(c);
 	}
@@ -82,7 +85,7 @@ class Chunk_chooser: public Object_browser, public Shape_draw {
 	void update_num_chunks(int new_num_chunks);
 	void set_chunk(const unsigned char *data, int datalen);
 	void render_chunk(int chunknum, int xoff, int yoff);
-	void scroll(int newindex);  // Scroll.
+	void scroll(int newpixel);  // Scroll.
 	void scroll(bool upwards);
 	void enable_controls();     // Enable/disable controls after sel.
 	//   has changed.
