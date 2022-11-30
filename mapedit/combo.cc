@@ -1317,6 +1317,7 @@ void Combo_chooser::setup_info(
 	gtk_widget_get_allocation(draw, &alloc);
 	const int w = ZoomDown(alloc.width);
 	const int h = ZoomDown(alloc.height);
+	const int per_row_old = per_row;
 	per_row = std::max((w - border) / (128 + border), 1);
 	GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
 	gtk_adjustment_set_upper(adj,
@@ -1324,6 +1325,8 @@ void Combo_chooser::setup_info(
 	gtk_adjustment_set_step_increment(adj, ZoomDown(16));
 	gtk_adjustment_set_page_increment(adj, h - border);
 	gtk_adjustment_set_page_size(adj, h - border);
+	gtk_adjustment_set_value(adj,
+	    (gtk_adjustment_get_value(adj) * per_row_old / per_row));
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 }
 
