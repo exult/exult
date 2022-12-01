@@ -162,18 +162,23 @@ void Game_render::paint_terrain_only(
 	int cx;
 	int cy;         // Chunk #'s.
 	// Paint all the flat scenery.
-	for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
-		const int yoff = Figure_screen_offset(cy, gwin->scrollty) - gwin->get_scrollty_lo();
-		for (cx = start_chunkx; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
-			const int xoff = Figure_screen_offset(cx, gwin->scrolltx) - gwin->get_scrolltx_lo();
-			Map_chunk *chunk = map->get_chunk(cx, cy);
-			chunk->get_terrain()->render_all(cx, cy);
-			if (cheat.in_map_editor())
-				Paint_chunk_outline(gwin,
-				                    sman->get_special_pixel(HIT_PIXEL), cx, cy,
-				                    map->get_terrain_num(cx, cy), xoff, yoff);
+	for (int pass = 1; pass <= 3; pass ++)
+		for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
+			const int yoff = Figure_screen_offset(cy, gwin->scrollty) -
+			    gwin->get_scrollty_lo();
+			for (cx = start_chunkx; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
+				const int xoff = Figure_screen_offset(cx, gwin->scrolltx) -
+				    gwin->get_scrolltx_lo();
+				if (pass < 3) {
+					Map_chunk *chunk = map->get_chunk(cx, cy);
+					chunk->get_terrain()->render_all(cx, cy, pass);
+				}
+				if (cheat.in_map_editor() && pass == 3)
+					Paint_chunk_outline(gwin,
+					    sman->get_special_pixel(HIT_PIXEL), cx, cy,
+					    map->get_terrain_num(cx, cy), xoff, yoff);
+			}
 		}
-	}
 	// Paint tile grid if desired.
 	if (cheat.show_tile_grid())
 		Paint_grid(gwin, sman->get_xform(16));
@@ -222,29 +227,37 @@ int Game_render::paint_map(
 	int cy;         // Chunk #'s.
 	// Paint all the flat scenery.
 	for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
-		const int yoff = Figure_screen_offset(cy, scrollty) - gwin->get_scrollty_lo();
+		const int yoff = Figure_screen_offset(cy, scrollty) -
+		    gwin->get_scrollty_lo();
 		for (cx = start_chunkx; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
-			const int xoff = Figure_screen_offset(cx, scrolltx) - gwin->get_scrolltx_lo();
+			const int xoff = Figure_screen_offset(cx, scrolltx) -
+			    gwin->get_scrolltx_lo();
 			paint_chunk_flats(cx, cy, xoff, yoff);
-			if (cheat.in_map_editor())
-				Paint_chunk_outline(gwin,
-				                    sman->get_special_pixel(HIT_PIXEL), cx, cy,
-				                    map->get_terrain_num(cx, cy), xoff, yoff);
 		}
 	}
 	// Now the flat RLE terrain.
 	for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
-		const int yoff = Figure_screen_offset(cy, scrollty) -  - gwin->get_scrollty_lo();
+		const int yoff = Figure_screen_offset(cy, scrollty) -
+		    gwin->get_scrollty_lo();
 		for (cx = start_chunkx; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
-			const int xoff = Figure_screen_offset(cx, scrolltx) -  - gwin->get_scrolltx_lo();
+			const int xoff = Figure_screen_offset(cx, scrolltx) -
+			    gwin->get_scrolltx_lo();
 			paint_chunk_flat_rles(cx, cy, xoff, yoff);
-
-			if (cheat.in_map_editor())
-				Paint_chunk_outline(gwin,
-				                    sman->get_special_pixel(HIT_PIXEL), cx, cy,
-				                    map->get_terrain_num(cx, cy), xoff, yoff);
 		}
 	}
+	// Draw the chunk grid in Map editor cheat mode.
+	if (cheat.in_map_editor())
+		for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
+			const int yoff = Figure_screen_offset(cy, scrollty) -
+			    gwin->get_scrollty_lo();
+			for (cx = start_chunkx; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
+				const int xoff = Figure_screen_offset(cx, scrolltx) -
+				    gwin->get_scrolltx_lo();
+				Paint_chunk_outline(gwin,
+				    sman->get_special_pixel(HIT_PIXEL), cx, cy,
+				    map->get_terrain_num(cx, cy), xoff, yoff);
+			}
+		}
 	// Draw the chunks' objects
 	//   diagonally NE.
 	const int tmp_stopy = DECR_CHUNK(start_chunky);
@@ -283,8 +296,7 @@ int Game_render::paint_map(
 			Paint_grid(gwin, sman->get_xform(16));
 		if (cheat.get_edit_mode() == Cheat::select_chunks)
 			Paint_selected_chunks(gwin, sman->get_xform(13),
-			                      start_chunkx, start_chunky, stop_chunkx,
-			                      stop_chunky);
+			    start_chunkx, start_chunky, stop_chunkx, stop_chunky);
 	}
 	return light_sources;
 }

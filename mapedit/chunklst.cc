@@ -265,26 +265,38 @@ void Chunk_chooser::render_chunk(
     int chunknum,           // # to render.
     int xoff, int yoff      // Where to draw it in iwin.
 ) {
-	unsigned char *data = get_chunk(chunknum);
-	int y = c_tilesize;
-	for (int ty = 0; ty < c_tiles_per_chunk; ty++, y += c_tilesize) {
-		int x = c_tilesize;
-		for (int tx = 0; tx < c_tiles_per_chunk; tx++,
-		        x += c_tilesize) {
-			int shapenum;
-			int framenum;
-			const unsigned char l = *data++;
-			const unsigned char h = *data++;
-			if (!headersz) {
-				shapenum = l + 256 * (h & 0x3);
-				framenum = h >> 2;
-			} else {    // Version 2.
-				shapenum = l + 256 * h;
-				framenum = *data++;
+	for (int pass = 1; pass <= 2; pass ++) {
+		unsigned char *data = get_chunk(chunknum);
+		int y = c_tilesize;
+		for (int ty = 0; ty < c_tiles_per_chunk; ty++, y += c_tilesize) {
+			int x = c_tilesize;
+			for (int tx = 0; tx < c_tiles_per_chunk; tx++,
+			     x += c_tilesize) {
+				int shapenum;
+				int framenum;
+				const unsigned char l = *data++;
+				const unsigned char h = *data++;
+				if (!headersz) {
+					shapenum = l + 256 * (h & 0x3);
+					framenum = h >> 2;
+				} else {    // Version 2.
+					shapenum = l + 256 * h;
+					framenum = *data++;
+				}
+				Shape_frame *s = ifile->get_shape(shapenum, framenum);
+				// First pass over non RLE flats :
+				//  8x8 tiles, shapenum < 150,
+				//  Default origin -1, -1 to be reset,
+				//  Not clickable nor Hack-Movable.
+				if (s && pass == 1 && !s->is_rle())
+					s->paint(iwin, xoff + x, yoff + y);
+				// Second pass over RLE flats :
+				//  Larger than 8*8 tiles, shapenum >= 150,
+				//  Valid origin,
+				//  Clikable show Name and Outline, Hack-Movable.
+				if (s && pass == 2 && s->is_rle())
+					s->paint(iwin, xoff + x - 1, yoff + y - 1);
 			}
-			Shape_frame *s = ifile->get_shape(shapenum, framenum);
-			if (s)
-				s->paint(iwin, xoff + x - 1, yoff + y - 1);
 		}
 	}
 }

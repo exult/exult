@@ -252,7 +252,7 @@ void Chunk_terrain::free_rendered_flats() {
  */
 
 void Chunk_terrain::render_all(
-    int cx, int cy          // Chunk rendering too.
+    int cx, int cy, int pass // Chunk rendering too.
 ) {
 	Image_window8 *iwin = gwin->get_win();
 	const int ctx = cx * c_tiles_per_chunk;
@@ -265,12 +265,12 @@ void Chunk_terrain::render_all(
 			Shape_frame *shape = get_shape(tilex, tiley);
 			if (!shape)
 				continue;
-			if (!shape->is_rle())
+			if (!shape->is_rle() && pass == 1)
 				iwin->copy8(shape->get_data(), c_tilesize,
 				            c_tilesize,
 				            (ctx + tilex - scrolltx)*c_tilesize,
 				            (cty + tiley - scrollty)*c_tilesize);
-			else {      // RLE.
+			else if (shape->is_rle() && pass == 2) {      // RLE.
 				int x;
 				int y;
 				const Tile_coord tile(ctx + tilex, cty + tiley, 0);

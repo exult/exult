@@ -169,6 +169,7 @@ void Shape_draw::draw_shape_centered(
 		    ZoomUp( shape->get_width() + 8 ) :  alloc.width,
 		    winh < shape->get_height() + 8 ?
 		    ZoomUp(shape->get_height() + 8 ) : alloc.height);
+		cairo_reset_clip(drawgc);
 		gtk_widget_queue_draw(draw);
 	}
 	else {
