@@ -109,13 +109,14 @@ void ExultStudio::save_combos(
 gboolean Combo_editor::on_combo_draw_expose_event(
     GtkWidget *widget,      // The view window.
     cairo_t *cairo,
-    gpointer data) {
+    gpointer data
+) {
 	ignore_unused_variable_warning(data);
 	auto *combo = static_cast<Combo_editor *>(g_object_get_data(
 	                  G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))), "user_data"));
+	combo->set_graphic_context(cairo);
 	GdkRectangle area = { 0, 0, 0, 0 };
 	gdk_cairo_get_clip_rectangle(cairo, &area);
-	combo->set_graphic_context(cairo);
 	combo->render_area(&area);
 	combo->set_graphic_context(nullptr);
 	return TRUE;
@@ -1311,7 +1312,6 @@ gint Combo_chooser::configure(
 void Combo_chooser::setup_info(
     bool savepos            // Try to keep current position.
 ) {
-	ignore_unused_variable_warning(savepos);
 	// Set new scroll amounts.
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
@@ -1325,8 +1325,18 @@ void Combo_chooser::setup_info(
 	gtk_adjustment_set_step_increment(adj, ZoomDown(16));
 	gtk_adjustment_set_page_increment(adj, h - border);
 	gtk_adjustment_set_page_size(adj, h - border);
-	gtk_adjustment_set_value(adj,
-	    (gtk_adjustment_get_value(adj) * per_row_old / per_row));
+	if (savepos && selected >= 0) {
+		gtk_adjustment_set_value(adj,
+		    ((128 + border) * info[selected].num) / per_row);
+	}
+	else if (savepos) {
+		gtk_adjustment_set_value(adj,
+		    (gtk_adjustment_get_value(adj) * per_row_old / per_row));
+	}
+	if (gtk_adjustment_get_value(adj) >
+	      (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj)))
+		gtk_adjustment_set_value(adj,
+		  (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj)));
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 }
 

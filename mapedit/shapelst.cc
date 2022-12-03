@@ -267,7 +267,7 @@ static int Get_x_offset(
 void Shape_chooser::setup_info(
     bool savepos            // Try to keep current position.
 ) {
-	const unsigned oldind = rows[row0].index0;
+	const unsigned oldind = (selected >= 0 ? selected : rows[row0].index0);
 	info.resize(0);
 	rows.resize(0);
 	row0 = row0_voffset = 0;
@@ -1856,6 +1856,10 @@ void Shape_chooser::setup_hscrollbar(
 	gtk_adjustment_set_page_size(adj, ZoomDown(alloc.width));
 	if (gtk_adjustment_get_page_size(adj) > gtk_adjustment_get_upper(adj))
 		gtk_adjustment_set_upper(adj, gtk_adjustment_get_page_size(adj));
+	if (gtk_adjustment_get_value(adj) >
+	      (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj)))
+		gtk_adjustment_set_value(adj,
+		  (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj)));
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 }
 
