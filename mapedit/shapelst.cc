@@ -168,7 +168,6 @@ void Shape_chooser::select(
 	tell_server_shape();        // Tell Exult.
 	const int shapenum = info[selected].shapenum;
 	// Update spin-button value, range.
-	gtk_widget_set_sensitive(fspin, true);
 	const int nframes = ifile->get_num_frames(shapenum);
 	gtk_adjustment_set_upper(frame_adj, nframes - 1);
 	gtk_adjustment_set_value(frame_adj, info[selected].framenum);
@@ -276,6 +275,7 @@ void Shape_chooser::setup_info(
 	    probably be removed from the base Obj_browser class */
 	index0 = 0;
 	voffset = 0;
+	hoffset = 0;
 	total_height = 0;
 	if (frames_mode)
 		setup_frames_info();
@@ -284,6 +284,8 @@ void Shape_chooser::setup_info(
 	setup_vscrollbar();
 	if (savepos)
 		goto_index(oldind);
+	if (savepos && frames_mode)
+		scroll_to_frame();
 }
 
 /*
@@ -433,7 +435,8 @@ void Shape_chooser::goto_index(
 	const Shape_entry &inf = info[index]; // Already in view?
 	const unsigned midx = inf.box.x + inf.box.w / 2;
 	const unsigned midy = inf.box.y + inf.box.h / 2;
-	const TileRect winrect(hoffset, voffset, config_width, config_height);
+	const TileRect winrect(hoffset, voffset,
+	    ZoomDown(config_width), ZoomDown(config_height));
 	if (winrect.has_point(midx, midy))
 		return;
 	unsigned start = 0;
@@ -589,7 +592,7 @@ gint Shape_chooser::mouse_press(
 			// Indicate we can drag.
 			new_selected = i;
 			break;
-		} else if (info[i].box.y - voffset >= config_height)
+		} else if (info[i].box.y - voffset >= ZoomDown(config_height))
 			break;      // Past bottom of screen.
 	}
 	if (new_selected >= 0) {
@@ -1856,10 +1859,7 @@ void Shape_chooser::setup_hscrollbar(
 	gtk_adjustment_set_page_size(adj, ZoomDown(alloc.width));
 	if (gtk_adjustment_get_page_size(adj) > gtk_adjustment_get_upper(adj))
 		gtk_adjustment_set_upper(adj, gtk_adjustment_get_page_size(adj));
-	if (gtk_adjustment_get_value(adj) >
-	      (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj)))
-		gtk_adjustment_set_value(adj,
-		  (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj)));
+	gtk_adjustment_set_value(adj, 0);
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 }
 
@@ -2283,7 +2283,8 @@ Shape_chooser::Shape_chooser(
 	shapes_file(nullptr), framenum0(0),
 	info(0), rows(0), row0(0),
 	row0_voffset(0), total_height(0),
-	frames_mode(false), hoffset(0), voffset(0), status_id(-1), sel_changed(nullptr) {
+	frames_mode(false), hoffset(0), voffset(0),
+	status_id(-1), sel_changed(nullptr) {
 	rows.reserve(40);
 
 	// Put things in a vert. box.
@@ -2382,6 +2383,7 @@ Shape_chooser::Shape_chooser(
 	                 G_CALLBACK(frame_changed), this);
 	gtk_box_pack_start(GTK_BOX(hbox1), fspin, FALSE, FALSE, 0);
 	widget_set_margins(fspin, 1*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
+	gtk_widget_set_sensitive(fspin, false);
 	gtk_widget_show(fspin);
 	// A toggle for 'All Frames'.
 	GtkWidget *allframes = gtk_toggle_button_new_with_label("Frames");

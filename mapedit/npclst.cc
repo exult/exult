@@ -68,7 +68,7 @@ void Npc_chooser::show(
 		                     ((drawfg >> 16) & 255) / 255.0,
 		                     ((drawfg >> 8) & 255) / 255.0,
 		                     (drawfg & 255) / 255.0);
-		cairo_rectangle(drawgc, (b.x * zoom_scale)/2,
+		cairo_rectangle(drawgc, ((b.x - hoffset) * zoom_scale)/2,
 		                        ((b.y - voffset) * zoom_scale)/2,
 		                        (b.w * zoom_scale)/2,
 		                        (b.h * zoom_scale)/2);
@@ -84,7 +84,15 @@ void Npc_chooser::show(
 void Npc_chooser::select(
     int new_sel
 ) {
+	vector<Estudio_npc> &npcs = get_npcs();
 	selected = new_sel;
+	const int npcnum = info[selected].npcnum;
+	const int shapenum = npcs[npcnum].shapenum;
+	// Update spin-button value, range.
+	const int nframes = ifile->get_num_frames(shapenum);
+	gtk_adjustment_set_upper(frame_adj, nframes - 1);
+	gtk_adjustment_set_value(frame_adj, info[selected].framenum);
+	gtk_widget_set_sensitive(fspin, true);
 	update_statusbar();
 }
 
@@ -194,6 +202,7 @@ void Npc_chooser::setup_info(
 	    probably be removed from the base Obj_browser class */
 	index0 = 0;
 	voffset = 0;
+	hoffset = 0;
 	total_height = 0;
 	if (frames_mode)
 		setup_frames_info();
@@ -202,6 +211,8 @@ void Npc_chooser::setup_info(
 	setup_vscrollbar();
 	if (savepos)
 		goto_index(oldind);
+	if (savepos && frames_mode)
+		scroll_to_frame();
 }
 
 /*
@@ -368,9 +379,10 @@ void Npc_chooser::goto_index(
 	if (index >= info.size())
 		return;         // Illegal index or empty chooser.
 	const Npc_entry &inf = info[index];   // Already in view?
-	const int midx = inf.box.x + inf.box.w / 2;
-	const int midy = inf.box.y + inf.box.h / 2;
-	const TileRect winrect(0, voffset, config_width, config_height);
+	const unsigned midx = inf.box.x + inf.box.w / 2;
+	const unsigned midy = inf.box.y + inf.box.h / 2;
+	const TileRect winrect(hoffset, voffset,
+	    ZoomDown(config_width), ZoomDown(config_height));
 	if (winrect.has_point(midx, midy))
 		return;
 	unsigned start = 0;
@@ -516,15 +528,15 @@ gint Npc_chooser::mouse_press(
 	int new_selected = -1;
 	unsigned i;              // Search through entries.
 	const unsigned infosz = info.size();
-	const int absx = ZoomDown(static_cast<int>(event->x));
+	const int absx = ZoomDown(static_cast<int>(event->x)) + hoffset;
 	const int absy = ZoomDown(static_cast<int>(event->y)) + voffset;
 	for (i = rows[row0].index0; i < infosz; i++) {
-		if (info[i].box.has_point(absx, absy)) {
+		if (info[i].box.distance(absx, absy) <= 2) {
 			// Found the box?
 			// Indicate we can drag.
 			new_selected = i;
 			break;
-		} else if (info[i].box.y - voffset >= config_height)
+		} else if (info[i].box.y - voffset >= ZoomDown(config_height))
 			break;      // Past bottom of screen.
 	}
 	if (new_selected >= 0) {
@@ -839,10 +851,7 @@ void Npc_chooser::setup_hscrollbar(
 	gtk_adjustment_set_page_size(adj, ZoomDown(alloc.width));
 	if (gtk_adjustment_get_page_size(adj) > gtk_adjustment_get_upper(adj))
 		gtk_adjustment_set_upper(adj, gtk_adjustment_get_page_size(adj));
-	if (gtk_adjustment_get_value(adj) >
-	      (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj)))
-		gtk_adjustment_set_value(adj,
-		  (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj)));
+	gtk_adjustment_set_value(adj, 0);
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 }
 
@@ -1051,8 +1060,8 @@ Npc_chooser::Npc_chooser(
 	framenum0(0),
 	info(0), rows(0), row0(0),
 	row0_voffset(0), total_height(0),
-	frames_mode(false), hoffset(0),
-	voffset(0), status_id(-1), drop_enabled(false), sel_changed(nullptr) {
+	frames_mode(false), hoffset(0), voffset(0),
+	status_id(-1), drop_enabled(false), sel_changed(nullptr) {
 	rows.reserve(40);
 
 	// Put things in a vert. box.
@@ -1151,6 +1160,7 @@ Npc_chooser::Npc_chooser(
 	                 G_CALLBACK(frame_changed), this);
 	gtk_box_pack_start(GTK_BOX(hbox1), fspin, FALSE, FALSE, 0);
 	widget_set_margins(fspin, 1*HMARGIN, 2*HMARGIN, 2*VMARGIN, 2*VMARGIN);
+	gtk_widget_set_sensitive(fspin, false);
 	gtk_widget_show(fspin);
 	// A toggle for 'All Frames'.
 	GtkWidget *allframes = gtk_toggle_button_new_with_label("Frames");
@@ -1184,6 +1194,9 @@ void Npc_chooser::unselect(
 ) {
 	if (selected >= 0) {
 		selected = -1;
+		// Update spin button for frame #.
+		gtk_adjustment_set_value(frame_adj, 0);
+		gtk_widget_set_sensitive(fspin, false);
 		if (need_render) {
 			render();
 		}
