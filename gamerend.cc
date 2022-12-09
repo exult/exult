@@ -211,6 +211,9 @@ int Game_render::paint_map(
 	int start_chunky = (scrollty + y / c_tilesize - 1) / c_tiles_per_chunk;
 	start_chunky = (start_chunky + c_num_chunks) % c_num_chunks;
 	// End 8 tiles to right.
+	// The chunk limits were increased by 1 to support the Smooth Scrolling.
+	// The same increase had to be added into the Game_map::read_map_data
+	//   which builds the chunk cache that the Edit Terrain mode relies on.
 	int stop_chunkx = 2 + (scrolltx + (x + w + c_tilesize - 2) / c_tilesize +
 	                       c_tiles_per_chunk / 2) / c_tiles_per_chunk;
 	int stop_chunky = 2 + (scrollty + (y + h + c_tilesize - 2) / c_tilesize +

@@ -303,10 +303,14 @@ void Game_map::read_map_data(
 	const int firstsx = (scrolltx - 1) / c_tiles_per_schunk;
 	const int firstsy = (scrollty - 1) / c_tiles_per_schunk;
 	// End 8 tiles to right.
-	const int lastsx = (scrolltx + (w + c_tilesize - 2) / c_tilesize +
-	              c_tiles_per_chunk / 2) / c_tiles_per_schunk;
-	const int lastsy = (scrollty + (h + c_tilesize - 2) / c_tilesize +
-	              c_tiles_per_chunk / 2) / c_tiles_per_schunk;
+	// These 1 added to the chunk limits reflect the Game_render::paint_map
+	//       1 added to the chunk limits for the Smooth Scrolling.
+	// This prevents a crash in the Edit Terrain mode when jumping
+	//   to a chunk near a superchunk boundary.
+	const int lastsx = ( 1 + (scrolltx + (w + c_tilesize - 2) / c_tilesize +
+	    c_tiles_per_chunk / 2) / c_tiles_per_chunk ) / c_chunks_per_schunk;
+	const int lastsy = ( 1 + (scrollty + (h + c_tilesize - 2) / c_tilesize +
+	    c_tiles_per_chunk / 2) / c_tiles_per_chunk ) / c_chunks_per_schunk;
 	// Watch for wrapping.
 	const int stopsx = (lastsx + 1) % c_num_schunks;
 	const int stopsy = (lastsy + 1) % c_num_schunks;
