@@ -477,7 +477,7 @@ bool CheatScreen::SharedInput(char *input, int len, int &command, Cheat_Prompt &
 					activate = true;
 				} else if ((key.sym == '-' || key.sym == SDLK_KP_MINUS) && !input[0]) {
 					input[0] = '-';
-				} else if ((key.sym < 256 && key.sym >= 0 ? std::isxdigit(key.sym) : false)) {
+				} else if (key.sym < 256 && key.sym >= 0 && std::isxdigit(key.sym)) {
 					const int curlen = std::strlen(input);
 					if (curlen < (len - 1)) {
 						input[curlen] = std::tolower(key.sym);
@@ -497,7 +497,7 @@ bool CheatScreen::SharedInput(char *input, int len, int &command, Cheat_Prompt &
 			} else if (mode >= CP_Name) {      // Want Text input (len chars)
 				if (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER) {
 					activate = true;
-				} else if ((key.sym < 256 && key.sym >= 0 ? std::isalnum(key.sym) : false) || key.sym == ' ') {
+				} else if ((key.sym < 256 && key.sym >= 0 && std::isalnum(key.sym)) || key.sym == ' ') {
 					const int curlen = std::strlen(input);
 					char chr = key.sym;
 					if (key.mod & KMOD_SHIFT) {
@@ -524,7 +524,7 @@ bool CheatScreen::SharedInput(char *input, int len, int &command, Cheat_Prompt &
 					activate = true;
 				} else if ((key.sym == '-' || key.sym == SDLK_KP_MINUS) && !input[0]) {
 					input[0] = '-';
-				} else if ((key.sym < 256 && key.sym >= 0 ? std::isdigit(key.sym) : false)) {
+				} else if (key.sym < 256 && key.sym >= 0 && std::isdigit(key.sym)) {
 					const int curlen = std::strlen(input);
 					if (curlen < (len - 1)) {
 						input[curlen] = key.sym;
