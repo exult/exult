@@ -37,11 +37,18 @@
 #include "header/si/si_shapes.uc"
 // SI NPCs
 #include "header/si/si_npcs.uc"
+// SI Faces
+#include "header/si/si_faces.uc"
+// SI Sprites
+#include "header/si/si_sprites.uc"
 
 // New functions
 #include "header/functions.uc"
 
 // From here down, all functions have preassigned function numbers:
+
+// Utility code is not specific to BG or SI, and can be reused in original mods
+#include "utility/remove_all_container_items_and_container.uc"
 
 // Fixes spelling in Draxinar's second riddle
 #include "misc/draxinar_earrings_riddle.uc"
@@ -118,6 +125,8 @@
 #include "items/bucket_cure.uc"
 // Fixes Shrine of Order issues
 #include "items/hourglass.uc"
+// Fixes the missing face for Smith in the Dream Realm.
+#include "items/nightmare.uc"
 // Can no longer get to Test of Purity from SS
 #include "items/pillar.uc"
 // Iolo, Shamino and Dupre refuse blue potions in Spinebreaker mountains
@@ -147,3 +156,4 @@
 #include "misc/list_field.uc"
 // Allows Hound of Doskar to track Anti-Shamino with Beatrix' Book.
 #include "npcs/hound.uc"
+

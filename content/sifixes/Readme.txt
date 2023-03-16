@@ -180,6 +180,9 @@ version: 0.15.15
 	    
 6	Version history
 -------------------
+version 0.15.16 - 2023-03-15
+	- Added Smith's face for the nightmare horse in Dream Realm. Added some headers
+	  and a utility folder to make importing from Knight Captain's mod a bit easier.
 version 0.15.15 - 2017-09-03
 	- Fixed paperdoll art for the moonsilk and fishnet stockings to cover toes.
 	- Fixed sprite art for the blue "teleport here" to completed clipped circles.
