@@ -43,7 +43,7 @@ protected:
 	bool sibeta = false;              // For beta version of SI.
 	bool found = false;               // If the game/mod is found.
 	bool editing = false;             // Game is being edited and may have missing files.
-	std::string codepage = "CP437";   // Game/mod codepage (mainly for ES).
+	std::string codepage = "ASCII";   // Game/mod codepage (mainly for ES).
 public:
 	BaseGameInfo() = default;
 	BaseGameInfo(

@@ -2450,9 +2450,10 @@ void Shape_chooser::update_statusbar(
 		if (shapes_file) {
 			const char *nm;
 			if ((nm = studio->get_shape_name(shapenum))) {
+				const utf8Str utf8nm(nm);
 				const int len = strlen(buf);
 				g_snprintf(buf + len, sizeof(buf) - len,
-				           ":  '%s'", nm);
+				           ":  '%s'", utf8nm.get_str());
 			}
 			if (shapes_file->read_info(studio->get_game_type(), true))
 				studio->set_shapeinfo_modified();
@@ -2489,11 +2490,15 @@ void Shape_chooser::update_statusbar(
 							prefix = msgstr;
 							suffix = otmsgstr;
 						}
+						const utf8Str utf8prf(prefix);
+						const utf8Str utf8suf(suffix);
 						g_snprintf(buf + len, sizeof(buf) - len,
-						           "  -  '%s%s'", prefix, suffix);
-					} else
+						           "  -  '%s%s'", utf8prf.get_str(), utf8suf.get_str());
+					} else {
+						const utf8Str utf8msg(msgstr);
 						g_snprintf(buf + len, sizeof(buf) - len,
-						           "  -  '%s'", msgstr);
+						           "  -  '%s'", utf8msg.get_str());
+					}
 				}
 			}
 		}

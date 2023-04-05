@@ -176,7 +176,7 @@ ModInfo::ModInfo(
 
 	// Read codepage first.
 	config_path = "mod_info/codepage";
-	default_dir = "CP437";  // DOS code page.
+	default_dir = "ASCII";  // Ultima VII 7-bit ASCII code page.
 	modconfig.value(config_path, codepage, default_dir.c_str());
 
 	// Where game data is. This is defaults to a non-writable location because
@@ -349,7 +349,7 @@ ModManager::ModManager(const string &name, const string &menu, bool needtitle,
 
 		// Read codepage too.
 		config_path = base_cfg_path + "/codepage";
-		default_dir = "CP437";  // DOS code page.
+		default_dir = "ASCII";  // Ultima VII 7-bit ASCII code page.
 		config->value(config_path, codepage, default_dir.c_str());
 
 		// And edit flag.

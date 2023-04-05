@@ -1275,7 +1275,13 @@
     </columns>
     <data>
       <row>
-        <col id="0" translatable="yes">DOS Western (CP-437)</col>
+        <col id="0" translatable="yes">Ultima VII 7-bit ASCII</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">United States DOS (CP-437)</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">European DOS (CP-850)</col>
       </row>
       <row>
         <col id="0" translatable="yes">Western (ISO-8859-1)</col>

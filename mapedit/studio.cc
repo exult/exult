@@ -1214,7 +1214,7 @@ C_EXPORT void on_gameselect_ok_clicked(
 		GtkTextIter endpos;
 		gtk_text_buffer_get_bounds(buff, &startpos, &endpos);
 		gchar *modmenu = gtk_text_iter_get_text(&startpos, &endpos);
-		const codepageStr menu(modmenu, "CP437");
+		const codepageStr menu(modmenu, "ASCII");
 		const string modmenustr = menu.get_str();
 		g_free(modmenu);
 		if (modmenustr.empty())
@@ -1313,7 +1313,7 @@ C_EXPORT void on_gameselect_gamelist_cursor_changed(
 
 		// Titles need to be displayable in Exult menu, hence should not
 		// have any extra characters.
-		const utf8Str title(modname.c_str(), "CP437");
+		const utf8Str title(modname.c_str(), "ASCII");
 		gtk_tree_store_append(model, &iter, nullptr);
 		gtk_tree_store_set(model, &iter,
 		                   0, title.get_str(),
@@ -1338,7 +1338,7 @@ void fill_game_tree(GtkTreeView *treeview, int curr_game) {
 
 		// Titles need to be displayable in Exult menu, hence should not
 		// have any extra characters.
-		const utf8Str title(gamename.c_str(), "CP437");
+		const utf8Str title(gamename.c_str(), "ASCII");
 		gtk_tree_store_append(model, &iter, nullptr);
 		gtk_tree_store_set(model, &iter,
 		                   0, title.get_str(),
@@ -2985,7 +2985,7 @@ BaseGameInfo *ExultStudio::get_game() const {
 
 // List partially copied from Firefox and from GLib's config.charset.
 static const gchar *encodings [] = {
-	"CP437",
+	"ASCII",            "CP437",            "CP850",
 
 	"ISO-8859-1",       "CP1252",           "ISO-8859-15",
 
@@ -3058,7 +3058,7 @@ C_EXPORT void on_gameinfo_apply_clicked(
 	gchar *modmenu = gtk_text_iter_get_text(&startpos, &endpos);
 	// Titles need to be displayable in Exult menu, hence should not
 	// have any extra characters.
-	const codepageStr menu(modmenu, "CP437");
+	const codepageStr menu(modmenu, "ASCII");
 	string menustr = menu.get_str();
 	for (size_t i = 0; i < strlen(menustr.c_str()); i++)
 		if ((static_cast<unsigned char>(menustr[i]) & 0x80) != 0)
@@ -3097,9 +3097,20 @@ C_EXPORT void on_gameinfo_charset_changed(
 void ExultStudio::show_charset(
 ) {
 	const char *enc = Get_Encoding(get_optmenu("gameinfo_charset"));
-	static const char charset[] = {
+	static const char half_charset[] = {
 		" \t00\t01\t02\t03\t04\t05\t06\t07\t08\t09\t0A\t0B\t0C\t0D\t0E\t0F\n"
-		"00\t \t\x01\t\x02\t\x03\t\x04\t\x05\t\x06\t\x07\t \t \t \t\x0B\t\x0C\t \t\x0E\t\x0F\n"
+		"00\t \t\x01\t\x02\t\x03\t\x04\t\x05\t\x06\t\x07\t\x08\t \t \t\x0B\t\x0C\t \t\x0E\t\x0F\n"
+		"10\t\x10\t\x11\t\x12\t\x13\t\x14\t\x15\t\x16\t\x17\t\x18\t\x19\t\x1A\t\x1B\t\x1C\t\x1D\t\x1E\t\x1F\n"
+		"20\t\x20\t\x21\t\x22\t\x23\t\x24\t\x25\t\x26\t\x27\t\x28\t\x29\t\x2A\t\x2B\t\x2C\t\x2D\t\x2E\t\x2F\n"
+		"30\t\x30\t\x31\t\x32\t\x33\t\x34\t\x35\t\x36\t\x37\t\x38\t\x39\t\x3A\t\x3B\t\x3C\t\x3D\t\x3E\t\x3F\n"
+		"40\t\x40\t\x41\t\x42\t\x43\t\x44\t\x45\t\x46\t\x47\t\x48\t\x49\t\x4A\t\x4B\t\x4C\t\x4D\t\x4E\t\x4F\n"
+		"50\t\x50\t\x51\t\x52\t\x53\t\x54\t\x55\t\x56\t\x57\t\x58\t\x59\t\x5A\t\x5B\t\x5C\t\x5D\t\x5E\t\x5F\n"
+		"60\t\x60\t\x61\t\x62\t\x63\t\x64\t\x65\t\x66\t\x67\t\x68\t\x69\t\x6A\t\x6B\t\x6C\t\x6D\t\x6E\t\x6F\n"
+		"70\t\x70\t\x71\t\x72\t\x73\t\x74\t\x75\t\x76\t\x77\t\x78\t\x79\t\x7A\t\x7B\t\x7C\t\x7D\t\x7E\t\x7F\n\0"
+	};
+	static const char full_charset[] = {
+		" \t00\t01\t02\t03\t04\t05\t06\t07\t08\t09\t0A\t0B\t0C\t0D\t0E\t0F\n"
+		"00\t \t\x01\t\x02\t\x03\t\x04\t\x05\t\x06\t\x07\t\x08\t \t \t\x0B\t\x0C\t \t\x0E\t\x0F\n"
 		"10\t\x10\t\x11\t\x12\t\x13\t\x14\t\x15\t\x16\t\x17\t\x18\t\x19\t\x1A\t\x1B\t\x1C\t\x1D\t\x1E\t\x1F\n"
 		"20\t\x20\t\x21\t\x22\t\x23\t\x24\t\x25\t\x26\t\x27\t\x28\t\x29\t\x2A\t\x2B\t\x2C\t\x2D\t\x2E\t\x2F\n"
 		"30\t\x30\t\x31\t\x32\t\x33\t\x34\t\x35\t\x36\t\x37\t\x38\t\x39\t\x3A\t\x3B\t\x3C\t\x3D\t\x3E\t\x3F\n"
@@ -3117,7 +3128,7 @@ void ExultStudio::show_charset(
 		"F0\t\xF0\t\xF1\t\xF2\t\xF3\t\xF4\t\xF5\t\xF6\t\xF7\t\xF8\t\xF9\t\xFA\t\xFB\t\xFC\t\xFD\t\xFE\t\xFF\n\0"
 	};
 
-	const utf8Str codechars(charset, enc);
+	const utf8Str codechars(((strcmp(enc, "ASCII") == 0) ? half_charset : full_charset), enc);
 	GtkTextBuffer *buff = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
 	                          get_widget("gameinfo_codepage_display")));
 	gtk_text_buffer_set_text(buff, codechars, -1);
@@ -3153,7 +3164,7 @@ void ExultStudio::set_game_information(
 	                          get_widget("gameinfo_menustring")));
 	// Titles need to be displayable in Exult menu, hence should not
 	// have any extra characters.
-	const utf8Str title(gameinfo->get_menu_string().c_str(), "CP437");
+	const utf8Str title(gameinfo->get_menu_string().c_str(), "ASCII");
 	gtk_text_buffer_set_text(buff, title.get_str(), -1);
 
 	gtk_widget_show(gameinfowin);
@@ -3182,6 +3193,13 @@ void convertFromUTF8::convert(gchar *&_convstr, const char *str, const char *enc
 		_convstr = g_strdup("");
 		return;
 	}
+	// The ASCII codepage stands for the Original Ultima VII French / German.
+	//   It used a 7 bits ASCII codepage with reused codebytes 01 .. 1f
+	//      except 09 0a 1a 1b for French, German and Spanish characters.
+	bool is_7bit = (strcmp(enc, "ASCII") == 0);
+	if (is_7bit) {
+		enc = "CP437";
+	}
 	GError *error = nullptr;
 	gsize bytes_read;
 	gsize bytes_written;
@@ -3190,12 +3208,10 @@ void convertFromUTF8::convert(gchar *&_convstr, const char *str, const char *enc
 	_convstr = g_convert(str, -1, enc, "UTF-8",
 	                     &bytes_read, &bytes_written, &error);
 
-	if (_convstr)
-		return;
-
+	if (_convstr) ; // Conversion succeeded.
 	// In theory, we should also check G_CONVERT_ERROR_PARTIAL_INPUT.
 	// But for now, we only take UTF-8 strings from GTK.
-	if (error->code == G_CONVERT_ERROR_NO_CONVERSION) {
+	else if (error->code == G_CONVERT_ERROR_NO_CONVERSION) {
 		// Can't convert between chosen code page and UTF-8.
 		// GLib from GTK+ for Windows may fail here for some ISO charsets.
 		CONV_ERROR("UTF-8", enc);
@@ -3225,7 +3241,7 @@ void convertFromUTF8::convert(gchar *&_convstr, const char *str, const char *enc
 
 			CONV_ERROR("UTF-8", enc);
 			const char fallback = '?';
-			_convstr = g_convert_with_fallback(force.c_str(), -1, "UTF-8", enc,
+			_convstr = g_convert_with_fallback(force.c_str(), -1, enc, "UTF-8",
 			                                   &fallback, &bytes_read, &bytes_written, &error);
 		}
 
@@ -3233,13 +3249,49 @@ void convertFromUTF8::convert(gchar *&_convstr, const char *str, const char *enc
 			CONV_ERROR(enc, "UTF-8");
 			// Conversion still failed; try lossy conversion.
 			const char fallback = '?';
-			_convstr = g_convert_with_fallback(force.c_str(), -1, "UTF-8", enc,
+			_convstr = g_convert_with_fallback(force.c_str(), -1, enc, "UTF-8",
 			                                   &fallback, &bytes_read, &bytes_written, &error);
 		}
 	}
 
 	// This shouldn't fail.
 	assert(_convstr != nullptr);
+	if (is_7bit) {
+		for (unsigned char *ch = reinterpret_cast<unsigned char *>(_convstr); *ch; ch++) {
+			if      (*ch <= 0x7f) ;
+			// 80 -> 01 Ç:C cedilla,    81 -> 02 ü:u diaeresis,  82 -> 03 é:e acute,
+			// 83 -> 04 â:a circumflex, 84 -> 05 ä:a diaeresis,  85 -> 06 à:a grave.
+			else if (*ch <= 0x85) *ch -= 0x7f;
+			else if (*ch <= 0x86) ;
+			// 87 -> 07 ç:c cedilla,    88 -> 08 ê:e circumflex.
+			else if (*ch <= 0x88) *ch -= 0x80;
+			// 89 -> 0b ë:e diaeresis,  8a -> 0c è:e grave.
+			else if (*ch <= 0x8a) *ch -= 0x7e;
+			// 8b -> 0e ï:i diaeresis,  8c -> 0f î:i circumflex, 8d -> 10 ì:i grave,
+			// 8e -> 11 Ä:A diaeresis.
+			else if (*ch <= 0x8e) *ch -= 0x7d;
+			else if (*ch <= 0x8f) ;
+			// 90 -> 12 É:E acute E.
+			else if (*ch <= 0x90) *ch -= 0x7e;
+			else if (*ch <= 0x92) ;
+			// 93 -> 13 ô:o circumflex, 94 -> 14 ö:o diaeresis.
+			else if (*ch <= 0x94) *ch -= 0x80;
+			else if (*ch <= 0x95) ;
+			// 96 -> 15 û:u circumflex, 97 -> 16 ù:u grave.
+			else if (*ch <= 0x97) *ch -= 0x81;
+			else if (*ch <= 0x98) ;
+			// 99 -> 17 Ö:O diaeresis,  9a -> 18 Ü:U diaeresis.
+			else if (*ch <= 0x9a) *ch -= 0x82;
+			else if (*ch <= 0x9f) ;
+			// a0 -> 19 á:a acute.
+			else if (*ch <= 0xa0) *ch -= 0x87;
+			// a1 -> 1d í:i acute,      a2 -> 1e ó:o acute,      a3 -> 1f ú:u acute.
+			else if (*ch <= 0xa3) *ch -= 0x84;
+			else if (*ch <= 0xe0) ;
+			// e1 -> 1c ß:s sharp.
+			else if (*ch <= 0xe1) *ch -= 0xc5;
+		}
+	}
 }
 
 /*
@@ -3252,6 +3304,46 @@ void convertToUTF8::convert(gchar *&_convstr, const char *str, const char *enc) 
 		_convstr = g_strdup("");
 		return;
 	}
+	// The ASCII codepage stands for the Original Ultima VII French / German.
+	//   It used a 7 bits ASCII codepage with reused codebytes 01 .. 1f
+	//      except 09 0a 1a 1b for French, German and Spanish characters.
+	bool is_7bit = (strcmp(enc, "ASCII") == 0);
+	char *cvt_str = nullptr;
+	if (is_7bit) {
+		if ((cvt_str = g_strdup(str)) != nullptr) {
+			for (unsigned char *ch = reinterpret_cast<unsigned char *>(cvt_str); *ch; ch++) {
+				// 80 <- 01 Ç:C cedilla,    81 <- 02 ü:u diaeresis,  82 <- 03 é:e acute,
+				// 83 <- 04 â:a circumflex, 84 <- 05 ä:a diaeresis,  85 <- 06 à:a grave.
+				if      (*ch <= 0x06) *ch += 0x7f;
+				// 87 <- 07 ç:c cedilla,    88 <- 08 ê:e circumflex.
+				else if (*ch <= 0x08) *ch += 0x80;
+				else if (*ch <= 0x0a) ;
+				// 89 <- 0b ë:e diaeresis,  8a <- 0c è:e grave.
+				else if (*ch <= 0x0c) *ch += 0x7e;
+				else if (*ch <= 0x0d) ;
+				// 8b <- 0e ï:i diaeresis,  8c <- 0f î:i circumflex, 8d <- 10 ì:i grave,
+				// 8e <- 11 Ä:A diaeresis.
+				else if (*ch <= 0x11) *ch += 0x7d;
+				// 90 <- 12 É:E acute E.
+				else if (*ch <= 0x12) *ch += 0x7e;
+				// 93 <- 13 ô:o circumflex, 94 <- 14 ö:o diaeresis.
+				else if (*ch <= 0x14) *ch += 0x80;
+				// 96 <- 15 û:u circumflex, 97 <- 16 ù:u grave.
+				else if (*ch <= 0x16) *ch += 0x81;
+				// 99 <- 17 Ö:O diaeresis,  9a <- 18 Ü:U diaeresis.
+				else if (*ch <= 0x18) *ch += 0x82;
+				// a0 <- 19 á:a acute.
+				else if (*ch <= 0x19) *ch += 0x87;
+				else if (*ch <= 0x1b) ;
+				// e1 <- 1c ß:s sharp.
+				else if (*ch <= 0x1c) *ch += 0xc5;
+				// a1 <- 1d í:i acute,      a2 <- 1e ó:o acute,      a3 <- 1f ú:u acute.
+				else if (*ch <= 0x1f) *ch += 0x84;
+			}
+			str = cvt_str;
+			enc = "CP437";
+		}
+	}
 	GError *error = nullptr;
 	gsize bytes_read;
 	gsize bytes_written;
@@ -3260,15 +3352,14 @@ void convertToUTF8::convert(gchar *&_convstr, const char *str, const char *enc) 
 	_convstr = g_convert(str, -1, "UTF-8", enc,
 	                     &bytes_read, &bytes_written, &error);
 
-	if (_convstr)   // Conversion succeeded.
-		return;
-
-	if (error->code == G_CONVERT_ERROR_NO_CONVERSION) {
+	if (_convstr) ; // Conversion succeeded.
+	else if (error->code == G_CONVERT_ERROR_NO_CONVERSION) {
 		CONV_ERROR(enc, "UTF-8");
 		// Can't convert between UTF-8 and chosen code page.
 		ExultStudio *studio = ExultStudio::get_instance();
 		studio->prompt("Failed to convert from selected codepage to UTF-8\n"
 		               "This usually happens on Windows for some ISO character sets.", "OK");
+		if (cvt_str) g_free(cvt_str);
 		return;
 	} else if (error->code == G_CONVERT_ERROR_ILLEGAL_SEQUENCE) {
 		// Need to clean string.
@@ -3293,6 +3384,7 @@ void convertToUTF8::convert(gchar *&_convstr, const char *str, const char *enc) 
 			                                   &fallback, &bytes_read, &bytes_written, &error);
 		}
 	}
+	if (cvt_str) g_free(cvt_str);
 	assert(_convstr != nullptr);
 }
 
