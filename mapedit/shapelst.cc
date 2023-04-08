@@ -1347,7 +1347,7 @@ void Shape_chooser::import_all_frames(
 	const int shnum = chooser->info[chooser->selected].shapenum;
 	const int len = strlen(fname);
 	// Ensure we have a valid file name.
-	std::string file = fname;
+	string file = fname;
 	if (file[len - 4] == '.')
 		file[len - 6] = 0;
 	chooser->import_all_pngs(file.c_str(), shnum);
@@ -2156,11 +2156,11 @@ void Shape_chooser::search(
 	int i;
 	start += dir;
 	const int stop = dir == -1 ? -1 : static_cast<int>(info.size());
-	const codepageStr srch(search);
+	const string srch(convertFromUTF8(search));
 	for (i = start; i != stop; i += dir) {
 		const int shnum = info[i].shapenum;
 		const char *nm = studio->get_shape_name(shnum);
-		if (nm && search_name(nm, srch))
+		if (nm && search_name(nm, srch.c_str()))
 			break;      // Found it.
 		const Shape_info &info = shapes_file->get_info(shnum);
 		if (info.has_frame_name_info()) {
@@ -2172,7 +2172,7 @@ void Shape_chooser::search(
 				if (type == -255 || type == -1 || msgid >= get_num_misc_names()
 				        || !get_misc_name(msgid))
 					continue;   // Keep looking.
-				if (search_name(get_misc_name(msgid), srch)) {
+				if (search_name(get_misc_name(msgid), srch.c_str())) {
 					found = true;
 					break;      // Found it.
 				}
@@ -2450,10 +2450,10 @@ void Shape_chooser::update_statusbar(
 		if (shapes_file) {
 			const char *nm;
 			if ((nm = studio->get_shape_name(shapenum))) {
-				const utf8Str utf8nm(nm);
+				const string utf8nm(convertToUTF8(nm));
 				const int len = strlen(buf);
 				g_snprintf(buf + len, sizeof(buf) - len,
-				           ":  '%s'", utf8nm.get_str());
+				           ":  '%s'", utf8nm.c_str());
 			}
 			if (shapes_file->read_info(studio->get_game_type(), true))
 				studio->set_shapeinfo_modified();
@@ -2490,14 +2490,14 @@ void Shape_chooser::update_statusbar(
 							prefix = msgstr;
 							suffix = otmsgstr;
 						}
-						const utf8Str utf8prf(prefix);
-						const utf8Str utf8suf(suffix);
+						const string utf8prf(convertToUTF8(prefix));
+						const string utf8suf(convertToUTF8(suffix));
 						g_snprintf(buf + len, sizeof(buf) - len,
-						           "  -  '%s%s'", utf8prf.get_str(), utf8suf.get_str());
+						           "  -  '%s%s'", utf8prf.c_str(), utf8suf.c_str());
 					} else {
-						const utf8Str utf8msg(msgstr);
+						const string utf8msg(convertToUTF8(msgstr));
 						g_snprintf(buf + len, sizeof(buf) - len,
-						           "  -  '%s'", utf8msg.get_str());
+						           "  -  '%s'", utf8msg.c_str());
 					}
 				}
 			}

@@ -437,8 +437,8 @@ int ExultStudio::init_npc_window(
 	// Store address with window.
 	g_object_set_data(G_OBJECT(npcwin), "user_data", addr);
 	// Store name, ident, num.
-	const utf8Str utf8name(name.c_str());
-	set_entry("npc_name_entry", utf8name);
+	const std::string utf8name(convertToUTF8(name.c_str()));
+	set_entry("npc_name_entry", utf8name.c_str());
 	// (Not allowed to change npc#.).
 	set_entry("npc_num_entry", npc_num, true, false);
 	set_entry("npc_ident_entry", ident);
@@ -546,8 +546,7 @@ int ExultStudio::save_npc_window(
 	const int tx = -1;
 	const int ty = -1;
 	const int tz = -1;  // +++++For now.
-	const codepageStr locname(get_text_entry("npc_name_entry"));
-	const std::string name(locname);
+	const std::string name(convertFromUTF8(get_text_entry("npc_name_entry")));
 	const short npc_num = get_num_entry("npc_num_entry");
 	const short ident = get_num_entry("npc_ident_entry");
 	const int shape = get_num_entry("npc_shape");

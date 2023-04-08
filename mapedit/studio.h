@@ -456,49 +456,16 @@ inline int ZoomGet() {
 	return (ExultStudio::get_instance()->get_shape_scale());
 }
 
-class convertToUTF8 {
-private:
-	void convert(gchar *&_convstr, const char *str, const char *enc);
-public:
-	void operator()(gchar *&_convstr, const char *str, const char *enc) {
-		convert(_convstr, str, enc);
-	}
-};
-
-class convertFromUTF8 {
-private:
-	void convert(gchar *&_convstr, const char *str, const char *enc);
-public:
-	void operator()(gchar *&_convstr, const char *str, const char *enc) {
-		convert(_convstr, str, enc);
-	}
-};
-
-template <class T>
-class strCodepageConvert {
-protected:
-	gchar *_convstr;
-	T Convert;
-public:
-	strCodepageConvert(const char *str) {
-		Convert(_convstr, str, ExultStudio::get_instance()->get_encoding().c_str());
-	}
-	strCodepageConvert(const char *str, const char *enc) {
-		Convert(_convstr, str, enc);
-	}
-	~strCodepageConvert() {
-		if (_convstr) g_free(_convstr);
-	}
-	const char *get_str() const {
-		return _convstr ? reinterpret_cast<const char *>(_convstr) : "";
-	}
-	operator const char *() const {
-		return get_str();
-	}
-};
-
-using utf8Str = strCodepageConvert<convertToUTF8>;
-using codepageStr = strCodepageConvert<convertFromUTF8>;
+std::string          convertToUTF8(const char *src_str, const char *enc);
+inline std::string   convertToUTF8(const char *src_str) {
+	return   convertToUTF8(src_str,
+	                       ExultStudio::get_instance()->get_encoding().c_str());
+}
+std::string        convertFromUTF8(const char *src_str, const char *enc);
+inline std::string convertFromUTF8(const char *src_str) {
+	return convertFromUTF8(src_str,
+	                       ExultStudio::get_instance()->get_encoding().c_str());
+}
 
 struct ExultRgbCmap {
 	guint32 colors[256];

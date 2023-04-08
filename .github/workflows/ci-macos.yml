@@ -106,7 +106,7 @@ jobs:
           brew update
           brew upgrade || true
           brew install automake libtool pkg-config libpng zlib libogg libvorbis fluid-synth freetype gtk+3 libxml2 bison flex
-          brew install sdl2
+          brew install sdl2 icu4c
       - name: Checkout code
         uses: actions/checkout@master
       - name: Run autogen
@@ -118,7 +118,7 @@ jobs:
           export LDFLAGS="-L$(brew --prefix bison)/lib -L$(brew --prefix flex)/lib -L$(brew --prefix zlib)/lib"
           export CPPFLAGS="-I$(brew --prefix flex)/include -I$(brew --prefix zlib)/include"
           export PATH="$(brew --prefix bison)/bin:$(brew --prefix flex)/bin:$(brew --prefix libxml2)/bin:$PATH"
-          export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig"
+          export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig:$(brew --prefix icu4c)/lib/pkgconfig"
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler \
             --enable-zip-support --enable-shared --enable-gnome-shp-thumbnailer --enable-data --enable-mods \
             --disable-alsa --disable-timidity-midi --disable-oggtest --disable-vorbistest
@@ -127,5 +127,5 @@ jobs:
           export LDFLAGS="-L$(brew --prefix bison)/lib -L$(brew --prefix flex)/lib -L$(brew --prefix zlib)/lib"
           export CPPFLAGS="-I$(brew --prefix flex)/include -I$(brew --prefix zlib)/include"
           export PATH="$(brew --prefix bison)/bin:$(brew --prefix flex)/bin:$(brew --prefix libxml2)/bin:$PATH"
-          export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig"
+          export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig:$(brew --prefix icu4c)/lib/pkgconfig"
           make -j 2

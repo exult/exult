@@ -254,7 +254,7 @@ bool Npcs_file_info::read_npc(unsigned num) {
 	npcs[num].shapenum = Read2(newptr); // -1 if unused.
 	if (npcs[num].shapenum >= 0) {
 		npcs[num].unused = (*newptr++ != 0);
-		const utf8Str utf8name(reinterpret_cast<const char *>(newptr));
+		const string utf8name(convertToUTF8(reinterpret_cast<const char *>(newptr)));
 		npcs[num].name = utf8name;
 	} else {
 		npcs[num].unused = true;
@@ -306,7 +306,7 @@ void Npcs_file_info::setup(
 		npcs[i].shapenum = Read2(newptr);   // -1 if unused.
 		if (npcs[i].shapenum >= 0) {
 			npcs[i].unused = (*newptr++ != 0);
-			const utf8Str utf8name(reinterpret_cast<const char *>(newptr));
+			const string utf8name(convertToUTF8(reinterpret_cast<const char *>(newptr)));
 			npcs[i].name = utf8name;
 		} else {
 			npcs[i].unused = true;

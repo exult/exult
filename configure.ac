@@ -426,6 +426,14 @@ if test x$enable_android_apk = xno; then
 fi
 
 # ---------------------------------------------------------------------
+# Icu (for ES)
+# ---------------------------------------------------------------------
+
+if test x$enable_android_apk = xno; then
+    PKG_CHECK_MODULES(ICU, icu-uc, have_icu=yes, have_icu=no)
+fi
+
+# ---------------------------------------------------------------------
 # Gtk (for ES)
 # ---------------------------------------------------------------------
 
@@ -1049,8 +1057,13 @@ AC_MSG_CHECKING([whether to build Exult Studio])
 if test x$enable_exult_studio = xyes; then
 	AC_MSG_RESULT(yes)
 	if test x$have_gtk = xno; then
-		echo "Umm, but we don't have any Gtk+ stuff."
-		echo "Try again, either with Gtk-3.16 or newer, or with --disable-exult-studio"
+		echo "Exult Studio requires the GTK+ (aka the GIMP Tool Kit), but it is not installed."
+		echo "Please try again, either with the GTK+ installed as 3.16 or newer, or with '--disable-exult-studio'."
+		exit 1
+	fi
+	if test x$have_icu = xno; then
+		echo "Exult Studio requires the ICU (aka the International Components for Unicode), but it is not installed."
+		echo "Please try again, either with the ICU installed, or with '--disable-exult-studio'."
 		exit 1
 	fi
 	AM_CONDITIONAL(BUILD_STUDIO, true)
@@ -1285,6 +1298,9 @@ if test x$enable_android_apk = xno; then
 	if test x$enable_fluidsynth = xyes; then
 		PKG_CHECK_EXISTS(fluidsynth,
 			echo Fluidsynth................. : `$PKG_CONFIG --modversion fluidsynth`)
+	fi
+	if test x$have_icu = xyes; then
+		echo ICU........................ : `$PKG_CONFIG --modversion icu-uc`
 	fi
 	if test x$have_gtk = xyes; then
 		echo GLIB....................... : `$PKG_CONFIG --modversion glib-2.0`

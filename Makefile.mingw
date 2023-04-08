@@ -83,9 +83,15 @@ FREETYPE2_INCLUDES:=$(shell pkg-config --cflags freetype2)
 # If this doesn't work, insert output of 'pkg-config --libs freetype2' manually
 FREETYPE2_LIBS:=$(shell pkg-config --libs freetype2)
 
+### ICU libs and includes, for Exult Studio.
+# If this doesn't work, insert output of 'pkg-config --cflags icu-uc' manually
+ICU_INCLUDES:=$(shell pkg-config --cflags icu-uc)
+# If this doesn't work, insert output of 'pkg-config --libs icu-uc' manually
+ICU_LIBS:=$(shell pkg-config --libs icu-uc)
+
 ### Combined Exult Studio includes and libs.
-ES_INCLUDES:=$(GTK_INCLUDES) $(FREETYPE2_INCLUDES)
-ES_LIBS:=$(GTK_LIBS) $(FREETYPE2_LIBS) $(ZIP_LIBS) -lpng -luuid -lole32 -lwinmm -lws2_32 $(SUBSYSTEM)
+ES_INCLUDES:=$(GTK_INCLUDES) $(FREETYPE2_INCLUDES) $(ICU_INCLUDES)
+ES_LIBS:=$(GTK_LIBS) $(FREETYPE2_LIBS) $(ICU_LIBS) $(ZIP_LIBS) -lpng -luuid -lole32 -lwinmm -lws2_32 $(SUBSYSTEM)
 
 ### GIMP libs and includes, for the GIMP plugin.
 # If this doesn't work, insert output of 'gimptool --cflags' manually

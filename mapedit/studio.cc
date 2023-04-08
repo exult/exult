@@ -71,6 +71,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cstdlib>
 #include <memory>
 
+#include <unicode/ucnv.h>
+#include <unicode/ucnv_cb.h>
+
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -1214,8 +1217,7 @@ C_EXPORT void on_gameselect_ok_clicked(
 		GtkTextIter endpos;
 		gtk_text_buffer_get_bounds(buff, &startpos, &endpos);
 		gchar *modmenu = gtk_text_iter_get_text(&startpos, &endpos);
-		const codepageStr menu(modmenu, "ASCII");
-		const string modmenustr = menu.get_str();
+		const string  modmenustr(convertFromUTF8(modmenu, "ASCII"));
 		g_free(modmenu);
 		if (modmenustr.empty())
 			return;
@@ -1313,10 +1315,10 @@ C_EXPORT void on_gameselect_gamelist_cursor_changed(
 
 		// Titles need to be displayable in Exult menu, hence should not
 		// have any extra characters.
-		const utf8Str title(modname.c_str(), "ASCII");
+		const string title(convertToUTF8(modname.c_str(), "ASCII"));
 		gtk_tree_store_append(model, &iter, nullptr);
 		gtk_tree_store_set(model, &iter,
-		                   0, title.get_str(),
+		                   0, title.c_str(),
 		                   1, j,
 		                   -1);
 	}
@@ -1338,10 +1340,10 @@ void fill_game_tree(GtkTreeView *treeview, int curr_game) {
 
 		// Titles need to be displayable in Exult menu, hence should not
 		// have any extra characters.
-		const utf8Str title(gamename.c_str(), "ASCII");
+		const string title(convertToUTF8(gamename.c_str(), "ASCII"));
 		gtk_tree_store_append(model, &iter, nullptr);
 		gtk_tree_store_set(model, &iter,
-		                   0, title.get_str(),
+		                   0, title.c_str(),
 		                   1, j,
 		                   -1);
 		if (j == size_t(curr_game)) {
@@ -3017,8 +3019,6 @@ static const gchar *encodings [] = {
 	"ISO-8859-11",      "CP874",
 
 	"ISO-8859-14",
-
-	"ISO-8859-16",
 };
 
 static inline int Find_Encoding_Index(const char *enc) {
@@ -3058,8 +3058,7 @@ C_EXPORT void on_gameinfo_apply_clicked(
 	gchar *modmenu = gtk_text_iter_get_text(&startpos, &endpos);
 	// Titles need to be displayable in Exult menu, hence should not
 	// have any extra characters.
-	const codepageStr menu(modmenu, "ASCII");
-	string menustr = menu.get_str();
+	string menustr(convertFromUTF8(modmenu, "ASCII"));
 	for (size_t i = 0; i < strlen(menustr.c_str()); i++)
 		if ((static_cast<unsigned char>(menustr[i]) & 0x80) != 0)
 			menustr[i] = '?';
@@ -3128,10 +3127,10 @@ void ExultStudio::show_charset(
 		"F0\t\xF0\t\xF1\t\xF2\t\xF3\t\xF4\t\xF5\t\xF6\t\xF7\t\xF8\t\xF9\t\xFA\t\xFB\t\xFC\t\xFD\t\xFE\t\xFF\n\0"
 	};
 
-	const utf8Str codechars(((strcmp(enc, "ASCII") == 0) ? half_charset : full_charset), enc);
+	const string codechars(convertToUTF8(((strcmp(enc, "ASCII") == 0) ? half_charset : full_charset), enc));
 	GtkTextBuffer *buff = gtk_text_view_get_buffer(GTK_TEXT_VIEW(
 	                          get_widget("gameinfo_codepage_display")));
-	gtk_text_buffer_set_text(buff, codechars, -1);
+	gtk_text_buffer_set_text(buff, codechars.c_str(), -1);
 }
 
 /*
@@ -3147,9 +3146,6 @@ void ExultStudio::set_game_information(
 
 		g_signal_connect(G_OBJECT(get_widget("gameinfo_apply")), "clicked",
 		    G_CALLBACK(on_gameinfo_apply_clicked), nullptr);
-
-		g_signal_connect(G_OBJECT(get_widget("gameinfo_charset")), "clicked",
-		    G_CALLBACK(on_gameinfo_charset_changed), nullptr);
 	}
 
 	// game_encoding should equal gameinfo->get_codepage().
@@ -3164,134 +3160,218 @@ void ExultStudio::set_game_information(
 	                          get_widget("gameinfo_menustring")));
 	// Titles need to be displayable in Exult menu, hence should not
 	// have any extra characters.
-	const utf8Str title(gameinfo->get_menu_string().c_str(), "ASCII");
-	gtk_text_buffer_set_text(buff, title.get_str(), -1);
+	const string title(convertToUTF8(gameinfo->get_menu_string().c_str(), "ASCII"));
+	gtk_text_buffer_set_text(buff, title.c_str(), -1);
 
 	gtk_widget_show(gameinfowin);
 }
 
-#define CONV_ERROR(x,y) do {\
-		CERR("Error converting from \"" << (x)  \
-		     << "\" into \"" << (y) \
-		     << "\". Error information:" << endl    \
-		     << "\tbytes_read: " << bytes_read  \
-		     << "\tbytes_written: " << bytes_written    \
-		     << "\tlast_read: " << static_cast<unsigned>(str[bytes_read])  \
-		     << "\tcode: " << error->code << endl   \
-		     << "\tmessage: \"" << error->message << "\"" << endl); \
-		g_error_free(error);    \
-		error = nullptr;  \
-	} while(0)
+/*
+ * Callbacks for the ICU Converters
+ * Replace Illegal or Not Translatable characters by '?'
+ */
+static void convertToUnicodeCallback ( // Called in the direction Codepage -> UTF8
+	const void *              context,
+	UConverterToUnicodeArgs * toArgs,
+	const char *              codeUnits,
+	int32_t                   length,
+	UConverterCallbackReason  reason,
+	UErrorCode *              err )
+{
+	ignore_unused_variable_warning(context, codeUnits, length);
+	if (reason == UCNV_ILLEGAL || reason == UCNV_UNASSIGNED) { // Illegal : ASCII unexpected code 80..ff, Unassigned : all non defined
+		*err = U_ZERO_ERROR;
+		UChar toSubSource[]{'?'};
+		ucnv_cbToUWriteUChars(toArgs, toSubSource, 1, 0, err);
+	}
+}
+
+static void convertFromUnicodeCallback ( // Called in the direction UTF8 -> Codepage
+	const void *                context,
+	UConverterFromUnicodeArgs * fromArgs,
+	const UChar *               codeUnits,
+	int32_t                     length,
+	UChar32                     codePoint,
+	UConverterCallbackReason    reason,
+	UErrorCode *                err )
+{
+	ignore_unused_variable_warning(context, codeUnits, length, codePoint);
+	if (reason == UCNV_UNASSIGNED) { // Unassigned : all non defined
+		*err = U_ZERO_ERROR;
+		const char toSubSource[]{'?'};
+		ucnv_cbFromUWriteBytes(fromArgs, toSubSource, 1, 0, err);
+	}
+}
+
+/*
+ * Cache for the ICU Converters
+ * The two Encodings,  strings
+ * The two Converters, UConverters
+ */
+static const char * EncName      = nullptr;
+static const char * UtfName      = nullptr;
+static UConverter * EncConverter = nullptr;
+static UConverter * UtfConverter = nullptr;
+
+static bool setupUtfConverter(const char * utf) {
+	UErrorCode status {U_ZERO_ERROR};
+	if (!UtfName || strcmp(UtfName, utf) || UtfConverter) {
+		if (UtfName && UtfConverter) {
+			ucnv_close(UtfConverter);
+			UtfName      = nullptr;
+			UtfConverter = nullptr;
+		}
+		UtfConverter = ucnv_open(utf, &status);
+		if (!U_SUCCESS(status)) {
+			UtfName      = nullptr;
+			UtfConverter = nullptr;
+			return false;
+		}
+		ucnv_setToUCallBack(UtfConverter,
+		                    convertToUnicodeCallback,
+		                    nullptr, nullptr, nullptr,
+		                    &status);
+		if (!U_SUCCESS(status)) {
+			ucnv_close(UtfConverter);
+			UtfName      = nullptr;
+			UtfConverter = nullptr;
+			return false;
+		}
+		ucnv_setFromUCallBack(UtfConverter,
+		                      convertFromUnicodeCallback,
+		                      nullptr, nullptr, nullptr,
+		                      &status);
+		if (!U_SUCCESS(status)) {
+			ucnv_close(UtfConverter);
+			UtfName      = nullptr;
+			UtfConverter = nullptr;
+			return false;
+		}
+		UtfName = utf;
+	}
+	return true;
+}
+
+static bool setupEncConverter(const char * enc) {
+	UErrorCode status {U_ZERO_ERROR};
+	if (!EncName || strcmp(EncName, enc) || EncConverter) {
+		if (EncName && EncConverter) {
+			ucnv_close(EncConverter);
+			EncName      = nullptr;
+			EncConverter = nullptr;
+		}
+		EncConverter = ucnv_open(enc, &status);
+		if (!U_SUCCESS(status)) {
+			EncName      = nullptr;
+			EncConverter = nullptr;
+			return false;
+		}
+		ucnv_setToUCallBack(EncConverter,
+		                    convertToUnicodeCallback,
+		                    nullptr, nullptr, nullptr,
+		                    &status);
+		if (!U_SUCCESS(status)) {
+			ucnv_close(EncConverter);
+			EncName      = nullptr;
+			EncConverter = nullptr;
+			return false;
+		}
+		ucnv_setFromUCallBack(EncConverter,
+		                      convertFromUnicodeCallback,
+		                      nullptr, nullptr, nullptr,
+		                      &status);
+		if (!U_SUCCESS(status)) {
+			ucnv_close(EncConverter);
+			EncName      = nullptr;
+			EncConverter = nullptr;
+			return false;
+		}
+		EncName = enc;
+	}
+	return true;
+}
 
 /*
  *  Takes a UTF-8 string and converts into an 8-bit clean
  *  string using specified codepage. If the conversion fails,
  *  tries a lossy conversion to the same codepage.
  */
-void convertFromUTF8::convert(gchar *&_convstr, const char *str, const char *enc) {
-	if (!str) {
-		_convstr = g_strdup("");
-		return;
+std::string convertFromUTF8(const char *src_str, const char *enc) {
+	if (!src_str) {
+		return "";
 	}
+	auto src_len = strlen(src_str);
 	// The ASCII codepage stands for the Original Ultima VII French / German.
 	//   It used a 7 bits ASCII codepage with reused codebytes 01 .. 1f
 	//      except 09 0a 1a 1b for French, German and Spanish characters.
+
 	bool is_7bit = (strcmp(enc, "ASCII") == 0);
 	if (is_7bit) {
 		enc = "CP437";
 	}
-	GError *error = nullptr;
-	gsize bytes_read;
-	gsize bytes_written;
 
-	// Try lossless encoding to specified codepage.
-	_convstr = g_convert(str, -1, enc, "UTF-8",
-	                     &bytes_read, &bytes_written, &error);
-
-	if (_convstr) ; // Conversion succeeded.
-	// In theory, we should also check G_CONVERT_ERROR_PARTIAL_INPUT.
-	// But for now, we only take UTF-8 strings from GTK.
-	else if (error->code == G_CONVERT_ERROR_NO_CONVERSION) {
-		// Can't convert between chosen code page and UTF-8.
-		// GLib from GTK+ for Windows may fail here for some ISO charsets.
-		CONV_ERROR("UTF-8", enc);
-		ExultStudio *studio = ExultStudio::get_instance();
-		studio->prompt("Failed to convert from UTF-8 to selected codepage.\n"
-		               "This usually happens on Windows for some ISO character sets.", "OK");
-		return;
-	} else if (error->code == G_CONVERT_ERROR_ILLEGAL_SEQUENCE) {
-		// Need to clean string.
-		// Strangely, all this extra work was needed in Ubuntu/Linux, but
-		// not in Windows; the lossy conversion at the end was enough in
-		// the latter but failed in the former.
-		string force(str);
-		while (!_convstr && error->code == G_CONVERT_ERROR_ILLEGAL_SEQUENCE) {
-			char *ptr = &(force[bytes_read]);
-			char illegal[5];
-			g_utf8_strncpy(illegal, ptr, 1);
-			char *end = g_utf8_next_char(illegal);
-			*end = 0;
-			// Must always be < 5, but just to be safe...
-			//int len = end - ptr;
-			const std::ptrdiff_t len = end - ptr;
-			size_t pos;
-
-			while ((pos = force.find(illegal)) != string::npos)
-				force.replace(pos, len, 1, '?');
-
-			CONV_ERROR("UTF-8", enc);
-			const char fallback = '?';
-			_convstr = g_convert_with_fallback(force.c_str(), -1, enc, "UTF-8",
-			                                   &fallback, &bytes_read, &bytes_written, &error);
-		}
-
-		if (!_convstr) {
-			CONV_ERROR(enc, "UTF-8");
-			// Conversion still failed; try lossy conversion.
-			const char fallback = '?';
-			_convstr = g_convert_with_fallback(force.c_str(), -1, enc, "UTF-8",
-			                                   &fallback, &bytes_read, &bytes_written, &error);
-		}
+	if (setupUtfConverter("UTF8") == false) {
+		return "";
+	}
+	if (setupEncConverter( enc )  == false) {
+		return "";
 	}
 
-	// This shouldn't fail.
-	assert(_convstr != nullptr);
+	string tgt_str(1 + src_len*1, '\0');
+
+	auto src_ptr = src_str;
+	auto src_end = src_ptr + src_len + 1;
+	auto tgt_ptr = const_cast<char *>(tgt_str.data());
+	auto tgt_end = tgt_str.data() + tgt_str.size();
+
+	UErrorCode status {U_ZERO_ERROR};
+
+	ucnv_convertEx(EncConverter, UtfConverter, // Enc 2nd converter, UTF8 1st converter
+	               &tgt_ptr, tgt_end,          // Target progress pointer and limit
+	               &src_ptr, src_end,          // Source progress pointer and limit
+	               nullptr, nullptr,           // Pivot start and source pointer
+	               nullptr, nullptr,           // Pivot target pointer and limit
+	               true, true, &status);       // Reset boolean, Flush boolean, Error code pointer
+	if (!U_SUCCESS(status)) {
+		return "";
+	}
+
+	static unsigned char FromCP437[256] = {
+		// 0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f
+		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, // 0
+		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, // 1
+		0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, // 2
+		0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f, // 3
+		0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f, // 4
+		0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f, // 5
+		0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f, // 6
+		0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f, // 7
+		// 80 -> 01 Ç:C cedilla,    81 -> 02 ü:u diaeresis,  82 -> 03 é:e acute,      83 -> 04 â:a circumflex,
+		// 84 -> 05 ä:a diaeresis,  85 -> 06 à:a grave,                               87 -> 07 ç:c cedilla,
+		// 88 -> 08 ê:e circumflex, 89 -> 0b ë:e diaeresis,  8a -> 0c è:e grave,      8b -> 0e ï:i diaeresis,
+		// 8c -> 0f î:i circumflex, 8d -> 10 ì:i grave,      8e -> 11 Ä:A diaeresis.
+		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x86, 0x07, 0x08, 0x0b, 0x0c, 0x0e, 0x0f, 0x10, 0x11, 0x8f, // 8
+		// 90 -> 12 É:E acute E,                                                      93 -> 13 ô:o circumflex,
+		// 94 -> 14 ö:o diaeresis,                           96 -> 15 û:u circumflex, 97 -> 16 ù:u grave,
+		//                          99 -> 17 Ö:O diaeresis,  9a -> 18 Ü:U diaeresis.
+		0x12, 0x91, 0x92, 0x13, 0x14, 0x95, 0x15, 0x16, 0x98, 0x17, 0x18, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f, // 9
+		// a0 -> 19 á:a acute,      a1 -> 1d í:i acute,      a2 -> 1e ó:o acute,      a3 -> 1f ú:u acute.
+		0x19, 0x1d, 0x1e, 0x1f, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, // a
+		0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xbf, // b
+		0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf, // c
+		0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf, // d
+		//                          e1 -> 1c ß:s sharp.
+		0xe0, 0x1c, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, 0xef, // e
+		0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff  // f
+	};
+
 	if (is_7bit) {
-		for (unsigned char *ch = reinterpret_cast<unsigned char *>(_convstr); *ch; ch++) {
-			if      (*ch <= 0x7f) ;
-			// 80 -> 01 Ç:C cedilla,    81 -> 02 ü:u diaeresis,  82 -> 03 é:e acute,
-			// 83 -> 04 â:a circumflex, 84 -> 05 ä:a diaeresis,  85 -> 06 à:a grave.
-			else if (*ch <= 0x85) *ch -= 0x7f;
-			else if (*ch <= 0x86) ;
-			// 87 -> 07 ç:c cedilla,    88 -> 08 ê:e circumflex.
-			else if (*ch <= 0x88) *ch -= 0x80;
-			// 89 -> 0b ë:e diaeresis,  8a -> 0c è:e grave.
-			else if (*ch <= 0x8a) *ch -= 0x7e;
-			// 8b -> 0e ï:i diaeresis,  8c -> 0f î:i circumflex, 8d -> 10 ì:i grave,
-			// 8e -> 11 Ä:A diaeresis.
-			else if (*ch <= 0x8e) *ch -= 0x7d;
-			else if (*ch <= 0x8f) ;
-			// 90 -> 12 É:E acute E.
-			else if (*ch <= 0x90) *ch -= 0x7e;
-			else if (*ch <= 0x92) ;
-			// 93 -> 13 ô:o circumflex, 94 -> 14 ö:o diaeresis.
-			else if (*ch <= 0x94) *ch -= 0x80;
-			else if (*ch <= 0x95) ;
-			// 96 -> 15 û:u circumflex, 97 -> 16 ù:u grave.
-			else if (*ch <= 0x97) *ch -= 0x81;
-			else if (*ch <= 0x98) ;
-			// 99 -> 17 Ö:O diaeresis,  9a -> 18 Ü:U diaeresis.
-			else if (*ch <= 0x9a) *ch -= 0x82;
-			else if (*ch <= 0x9f) ;
-			// a0 -> 19 á:a acute.
-			else if (*ch <= 0xa0) *ch -= 0x87;
-			// a1 -> 1d í:i acute,      a2 -> 1e ó:o acute,      a3 -> 1f ú:u acute.
-			else if (*ch <= 0xa3) *ch -= 0x84;
-			else if (*ch <= 0xe0) ;
-			// e1 -> 1c ß:s sharp.
-			else if (*ch <= 0xe1) *ch -= 0xc5;
+		for (char& c : tgt_str) {
+			c = static_cast<char>(FromCP437[static_cast<unsigned char>(c)]);
 		}
 	}
+
+	return tgt_str;
 }
 
 /*
@@ -3299,93 +3379,85 @@ void convertFromUTF8::convert(gchar *&_convstr, const char *str, const char *enc
  *  and converts into a UTF-8 string. If the conversion fails,
  *  tries a lossy conversion from the same codepage.
  */
-void convertToUTF8::convert(gchar *&_convstr, const char *str, const char *enc) {
-	if (!str) {
-		_convstr = g_strdup("");
-		return;
+std::string convertToUTF8(const char *src_str, const char *enc) {
+	if (!src_str) {
+		return "";
 	}
+	auto src_len = strlen(src_str);
+
 	// The ASCII codepage stands for the Original Ultima VII French / German.
 	//   It used a 7 bits ASCII codepage with reused codebytes 01 .. 1f
 	//      except 09 0a 1a 1b for French, German and Spanish characters.
+
 	bool is_7bit = (strcmp(enc, "ASCII") == 0);
-	char *cvt_str = nullptr;
 	if (is_7bit) {
-		if ((cvt_str = g_strdup(str)) != nullptr) {
-			for (unsigned char *ch = reinterpret_cast<unsigned char *>(cvt_str); *ch; ch++) {
-				// 80 <- 01 Ç:C cedilla,    81 <- 02 ü:u diaeresis,  82 <- 03 é:e acute,
-				// 83 <- 04 â:a circumflex, 84 <- 05 ä:a diaeresis,  85 <- 06 à:a grave.
-				if      (*ch <= 0x06) *ch += 0x7f;
-				// 87 <- 07 ç:c cedilla,    88 <- 08 ê:e circumflex.
-				else if (*ch <= 0x08) *ch += 0x80;
-				else if (*ch <= 0x0a) ;
-				// 89 <- 0b ë:e diaeresis,  8a <- 0c è:e grave.
-				else if (*ch <= 0x0c) *ch += 0x7e;
-				else if (*ch <= 0x0d) ;
-				// 8b <- 0e ï:i diaeresis,  8c <- 0f î:i circumflex, 8d <- 10 ì:i grave,
-				// 8e <- 11 Ä:A diaeresis.
-				else if (*ch <= 0x11) *ch += 0x7d;
-				// 90 <- 12 É:E acute E.
-				else if (*ch <= 0x12) *ch += 0x7e;
-				// 93 <- 13 ô:o circumflex, 94 <- 14 ö:o diaeresis.
-				else if (*ch <= 0x14) *ch += 0x80;
-				// 96 <- 15 û:u circumflex, 97 <- 16 ù:u grave.
-				else if (*ch <= 0x16) *ch += 0x81;
-				// 99 <- 17 Ö:O diaeresis,  9a <- 18 Ü:U diaeresis.
-				else if (*ch <= 0x18) *ch += 0x82;
-				// a0 <- 19 á:a acute.
-				else if (*ch <= 0x19) *ch += 0x87;
-				else if (*ch <= 0x1b) ;
-				// e1 <- 1c ß:s sharp.
-				else if (*ch <= 0x1c) *ch += 0xc5;
-				// a1 <- 1d í:i acute,      a2 <- 1e ó:o acute,      a3 <- 1f ú:u acute.
-				else if (*ch <= 0x1f) *ch += 0x84;
-			}
-			str = cvt_str;
-			enc = "CP437";
-		}
+		enc = "CP437";
 	}
-	GError *error = nullptr;
-	gsize bytes_read;
-	gsize bytes_written;
 
-	// Try lossless encoding to specified codepage.
-	_convstr = g_convert(str, -1, "UTF-8", enc,
-	                     &bytes_read, &bytes_written, &error);
-
-	if (_convstr) ; // Conversion succeeded.
-	else if (error->code == G_CONVERT_ERROR_NO_CONVERSION) {
-		CONV_ERROR(enc, "UTF-8");
-		// Can't convert between UTF-8 and chosen code page.
-		ExultStudio *studio = ExultStudio::get_instance();
-		studio->prompt("Failed to convert from selected codepage to UTF-8\n"
-		               "This usually happens on Windows for some ISO character sets.", "OK");
-		if (cvt_str) g_free(cvt_str);
-		return;
-	} else if (error->code == G_CONVERT_ERROR_ILLEGAL_SEQUENCE) {
-		// Need to clean string.
-		string force(str);
-		while (!_convstr && error->code == G_CONVERT_ERROR_ILLEGAL_SEQUENCE) {
-			const char illegal = force[bytes_read];
-			size_t pos;
-
-			while ((pos = force.find(illegal)) != string::npos)
-				force[pos] = '?';
-
-			CONV_ERROR(enc, "UTF-8");
-			_convstr = g_convert(force.c_str(), -1, "UTF-8", enc,
-			                     &bytes_read, &bytes_written, &error);
-		}
-
-		if (!_convstr) {
-			CONV_ERROR(enc, "UTF-8");
-			// Conversion still failed; try lossy conversion.
-			const char fallback = '?';
-			_convstr = g_convert_with_fallback(force.c_str(), -1, "UTF-8", enc,
-			                                   &fallback, &bytes_read, &bytes_written, &error);
-		}
+	if (setupUtfConverter("UTF8") == false) {
+		return "";
 	}
-	if (cvt_str) g_free(cvt_str);
-	assert(_convstr != nullptr);
+	if (setupEncConverter( enc )  == false) {
+		return "";
+	}
+
+	static unsigned char ToCP437[256] = {
+		// 0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f
+		//                          80 <- 01 Ç:C cedilla,    81 <- 02 ü:u diaeresis,  82 <- 03 é:e acute,
+		// 83 <- 04 â:a circumflex, 84 <- 05 ä:a diaeresis,  85 <- 06 à:a grave,      87 <- 07 ç:c cedilla,
+		// 88 <- 08 ê:e circumflex,                                                   89 <- 0b ë:e diaeresis,
+		// 8a <- 0c è:e grave,                               8b <- 0e ï:i diaeresis,  8c <- 0f î:i circumflex.
+		0x00, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x87, 0x88, 0x09, 0x0a, 0x89, 0x8a, 0x0d, 0x8b, 0x8c, // 0
+		// 8d <- 10 ì:i grave,      8e <- 11 Ä:A diaeresis,  90 <- 12 É:E acute E,    93 <- 13 ô:o circumflex,
+		// 94 <- 14 ö:o diaeresis,  96 <- 15 û:u circumflex, 97 <- 16 ù:u grave,      99 <- 17 Ö:O diaeresis,
+		// 9a <- 18 Ü:U diaeresis,  a0 <- 19 á:a acute,
+		// e1 <- 1c ß:s sharp,      a1 <- 1d í:i acute,      a2 <- 1e ó:o acute,      a3 <- 1f ú:u acute.
+		0x8d, 0x8e, 0x90, 0x93, 0x94, 0x96, 0x97, 0x99, 0x9a, 0xa0, 0x1a, 0x1b, 0xe1, 0xa1, 0xa2, 0xa3, // 1
+		0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, // 2
+		0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f, // 3
+		0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f, // 4
+		0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f, // 5
+		0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f, // 6
+		0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f, // 7
+		0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f, // 8
+		0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f, // 9
+		0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, // a
+		0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xbf, // b
+		0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf, // c
+		0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf, // d
+		0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, 0xef, // e
+		0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff  // f
+	};
+
+	string cvt_str;
+	if (is_7bit) {
+		cvt_str = src_str;
+		for (char& c : cvt_str) {
+			c = static_cast<char>(ToCP437[static_cast<unsigned char>(c)]);
+		}
+		src_str = cvt_str.c_str();
+	}
+
+	string tgt_str(1 + src_len*4, '\0');
+
+	auto src_ptr = src_str;
+	auto src_end = src_ptr + src_len + 1;
+	auto tgt_ptr = const_cast<char *>(tgt_str.data());
+	auto tgt_end = tgt_str.data() + tgt_str.size();
+
+	UErrorCode status {U_ZERO_ERROR};
+
+	ucnv_convertEx(UtfConverter, EncConverter, // UTF8 2nd converter, Enc 1st converter
+	               &tgt_ptr, tgt_end,          // Target progress pointer and limit
+	               &src_ptr, src_end,          // Source progress pointer and limit
+	               nullptr, nullptr,           // Pivot start and source pointer
+	               nullptr, nullptr,           // Pivot target pointer and limit
+	               true, true, &status);       // Reset boolean, Flush boolean, Error code pointer
+	if (!U_SUCCESS(status)) {
+		return "";
+	}
+
+	return tgt_str;
 }
 
 
