@@ -409,15 +409,6 @@ void Actor::read(
 
 	unsigned char namebuf[17];
 	nfile->read(namebuf, 16);
-
-	for (int i = 0; i < 16; i++)
-		if (namebuf[i] == 0)
-			i = 16;
-		else if ((namebuf[i] & 0x80u) != 0 || namebuf[i] < ' ') {
-			namebuf[0] = 0;
-			break;
-		}
-
 	namebuf[16] = 0;        // Be sure it's 0-delimited.
 //	cout << "Actor " << namebuf << " has alignment " << alignment << endl;
 

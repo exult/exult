@@ -179,7 +179,8 @@ int ExultStudio::init_obj_window(
 	// Store address with window.
 	g_object_set_data(G_OBJECT(objwin), "user_data", reinterpret_cast<gpointer>(addr));
 	// Store name. (Not allowed to change.)
-	set_entry("obj_name", name.c_str(), false);
+	const std::string locname(convertToUTF8(name.c_str()));
+	set_entry("obj_name", locname.c_str(), false);
 	// Shape/frame, quality.
 //	set_entry("obj_shape", shape);
 //	set_entry("obj_frame", frame);
@@ -218,6 +219,7 @@ int ExultStudio::save_obj_window(
 	const int ty = get_spin("obj_y");
 	const int tz = get_spin("obj_z");
 	const std::string name(get_text_entry("obj_name"));
+	const std::string locname(convertFromUTF8(name.c_str()));
 //	int shape = get_num_entry("obj_shape");
 //	int frame = get_num_entry("obj_frame");
 //	int quality = get_num_entry("obj_quality");
@@ -226,7 +228,7 @@ int ExultStudio::save_obj_window(
 	const int quality = get_spin("obj_quality");
 
 	if (Object_out(server_socket, Exult_server::obj, addr, tx, ty, tz,
-	               shape, frame, quality, name) == -1) {
+	               shape, frame, quality, locname) == -1) {
 		cout << "Error sending object data to server" << endl;
 		return 0;
 	}
