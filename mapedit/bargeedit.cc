@@ -71,7 +71,7 @@ C_EXPORT gboolean on_barge_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio::get_instance()->close_barge_window();
-	return TRUE;
+	return true;
 }
 
 /*
@@ -99,7 +99,7 @@ void ExultStudio::open_barge_window(
 		}
 	} else if (first_time) {    // Init. empty dialog first time.
 	}
-	gtk_widget_show(bargewin);
+	gtk_widget_set_visible(bargewin, true);
 }
 
 /*
@@ -108,7 +108,7 @@ void ExultStudio::open_barge_window(
 
 void ExultStudio::close_barge_window() {
 	if (bargewin) {
-		gtk_widget_hide(bargewin);
+		gtk_widget_set_visible(bargewin, false);
 	}
 }
 

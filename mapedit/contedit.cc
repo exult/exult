@@ -101,7 +101,7 @@ C_EXPORT gboolean on_cont_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio::get_instance()->close_cont_window();
-	return TRUE;
+	return true;
 }
 
 /*
@@ -111,7 +111,7 @@ C_EXPORT gboolean on_cont_pos_changed(
 		GtkWidget* widget, GdkEventFocus* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	//++++Maybe later, change pos. immediately?
-	return TRUE;
+	return true;
 }
 
 /*
@@ -141,7 +141,7 @@ void ExultStudio::open_cont_window(
 	if (!init_cont_window(data, datalen)) {
 		return;
 	}
-	gtk_widget_show(contwin);
+	gtk_widget_set_visible(contwin, true);
 }
 
 /*
@@ -150,7 +150,7 @@ void ExultStudio::open_cont_window(
 
 void ExultStudio::close_cont_window() {
 	if (contwin) {
-		gtk_widget_hide(contwin);
+		gtk_widget_set_visible(contwin, false);
 	}
 }
 

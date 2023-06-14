@@ -74,7 +74,7 @@ C_EXPORT gboolean on_egg_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio::get_instance()->close_egg_window();
-	return TRUE;
+	return true;
 }
 
 /*
@@ -152,7 +152,7 @@ void ExultStudio::open_egg_window(
 		set_sensitive("teleport_z", true);
 		set_sensitive("teleport_eggnum", false);
 	}
-	gtk_widget_show(eggwin);
+	gtk_widget_set_visible(eggwin, true);
 }
 
 /*
@@ -161,7 +161,7 @@ void ExultStudio::open_egg_window(
 
 void ExultStudio::close_egg_window() {
 	if (eggwin) {
-		gtk_widget_hide(eggwin);
+		gtk_widget_set_visible(eggwin, false);
 	}
 }
 

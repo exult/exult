@@ -487,9 +487,9 @@ void Shape_single::on_shape_changed(GtkWidget* widget, gpointer user_data) {
 	if (single->hide && !(single->frame) && !(single->hide_connect)
 		&& (GTK_IS_ENTRY(widget))) {
 		if (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) > 0) {
-			gtk_widget_show(single->draw);
+			gtk_widget_set_visible(single->draw, true);
 		} else {
-			gtk_widget_hide(single->draw);
+			gtk_widget_set_visible(single->draw, false);
 		}
 	}
 	single->render();
@@ -500,9 +500,9 @@ void Shape_single::on_frame_changed(GtkWidget* widget, gpointer user_data) {
 	auto* single = static_cast<Shape_single*>(user_data);
 	if (single->hide && !(single->hide_connect) && (GTK_IS_ENTRY(widget))) {
 		if (strlen(gtk_entry_get_text(GTK_ENTRY(widget))) > 0) {
-			gtk_widget_show(single->draw);
+			gtk_widget_set_visible(single->draw, true);
 		} else {
-			gtk_widget_hide(single->draw);
+			gtk_widget_set_visible(single->draw, false);
 		}
 	}
 	single->render();
@@ -513,9 +513,9 @@ void Shape_single::on_state_changed(
 	ignore_unused_variable_warning(flags);
 	auto* single = static_cast<Shape_single*>(user_data);
 	if (!(gtk_widget_get_state_flags(widget) & GTK_STATE_FLAG_INSENSITIVE)) {
-		gtk_widget_show(single->draw);
+		gtk_widget_set_visible(single->draw, true);
 	} else {
-		gtk_widget_hide(single->draw);
+		gtk_widget_set_visible(single->draw, false);
 	}
 	single->render();
 }
@@ -546,7 +546,7 @@ gboolean Shape_single::on_draw_expose_event(
 			ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width),
 			ZoomDown(area.height));
 	single->set_graphic_context(nullptr);
-	return TRUE;
+	return true;
 }
 
 void Shape_single::on_shape_dropped(

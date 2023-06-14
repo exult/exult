@@ -100,7 +100,7 @@ static gboolean Read_from_child(
 	ignore_unused_variable_warning(condition);
 	auto* ex = static_cast<Exec_process*>(data);
 	ex->read_from_child(g_io_channel_unix_get_fd(source));
-	return TRUE;
+	return true;
 }
 
 void Exec_process::read_from_child(int id    // Pipe to read from.

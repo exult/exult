@@ -73,7 +73,7 @@ void ExultStudio::open_combo_window() {
 	combowin->show(true);
 	// Set edit-mode to pick.
 	GtkWidget* mitem = get_widget("pick_for_combo1");
-	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mitem), TRUE);
+	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mitem), true);
 }
 
 /*
@@ -117,7 +117,7 @@ gboolean Combo_editor::on_combo_draw_expose_event(
 	gdk_cairo_get_clip_rectangle(cairo, &area);
 	combo->render_area(&area);
 	combo->set_graphic_context(nullptr);
-	return TRUE;
+	return true;
 }
 
 C_EXPORT void on_combo_remove_clicked(GtkButton* button, gpointer user_data) {
@@ -142,7 +142,7 @@ C_EXPORT void on_combo_ok_clicked(GtkButton* button, gpointer user_data) {
 	auto*      combo = static_cast<Combo_editor*>(
             g_object_get_data(G_OBJECT(win), "user_data"));
 	combo->save();
-	gtk_widget_hide(win);
+	gtk_widget_set_visible(win, false);
 }
 
 C_EXPORT void on_combo_locx_changed(GtkSpinButton* button, gpointer user_data) {
@@ -549,9 +549,9 @@ Combo_editor::~Combo_editor() {
 
 void Combo_editor::show(bool tf) {
 	if (tf) {
-		gtk_widget_show(win);
+		gtk_widget_set_visible(win, true);
 	} else {
-		gtk_widget_hide(win);
+		gtk_widget_set_visible(win, false);
 	}
 }
 
@@ -619,7 +619,7 @@ void Combo_editor::set_controls() {
 
 gint Combo_editor::mouse_press(GdkEventButton* event) {
 	if (event->button != 1) {
-		return FALSE;    // Handling left-click.
+		return false;    // Handling left-click.
 	}
 	// Get mouse position, draw dims.
 	const int mx = ZoomDown(static_cast<int>(event->x));
@@ -627,7 +627,7 @@ gint Combo_editor::mouse_press(GdkEventButton* event) {
 	selected     = combo->find(mx, my);    // Find it (or -1 if not found).
 	set_controls();
 	render();
-	return TRUE;
+	return true;
 }
 
 /*
@@ -1001,7 +1001,7 @@ gint Combo_chooser::drag_begin(
 	cout << "In DRAG_BEGIN of Combo" << endl;
 	auto* chooser = static_cast<Combo_chooser*>(data);
 	if (chooser->selected < 0) {
-		return FALSE;    // ++++Display a halt bitmap.
+		return false;    // ++++Display a halt bitmap.
 	}
 	// Get ->combo.
 	const int num   = chooser->info[chooser->selected].num;
@@ -1013,7 +1013,7 @@ gint Combo_chooser::drag_begin(
 	if (shape) {
 		chooser->set_drag_icon(context, shape);
 	}
-	return TRUE;
+	return true;
 }
 
 /*
@@ -1050,9 +1050,9 @@ static gboolean on_combo_key_press(
 	switch (event->keyval) {
 	case GDK_KEY_Delete:
 		chooser->remove();
-		return TRUE;
+		return true;
 	}
-	return FALSE;    // Let parent handle it.
+	return false;    // Let parent handle it.
 }
 
 /*
@@ -1096,22 +1096,22 @@ Combo_chooser::Combo_chooser(
 
 	// Put things in a vert. box.
 	GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+	gtk_box_set_homogeneous(GTK_BOX(vbox), false);
 	set_widget(vbox);    // This is our "widget"
-	gtk_widget_show(vbox);
+	gtk_widget_set_visible(vbox, true);
 
 	GtkWidget* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(hbox), FALSE);
-	gtk_widget_show(hbox);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	gtk_box_set_homogeneous(GTK_BOX(hbox), false);
+	gtk_widget_set_visible(hbox, true);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, true, true, 0);
 
 	// A frame looks nice.
 	GtkWidget* frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
 	widget_set_margins(
 			frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_widget_show(frame);
-	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
+	gtk_widget_set_visible(frame, true);
+	gtk_box_pack_start(GTK_BOX(hbox), frame, true, true, 0);
 
 	// NOTE:  draw is in Shape_draw.
 	// Indicate the events we want.
@@ -1128,7 +1128,7 @@ Combo_chooser::Combo_chooser(
 	g_signal_connect(
 			G_OBJECT(draw), "key-press-event", G_CALLBACK(on_combo_key_press),
 			this);
-	gtk_widget_set_can_focus(GTK_WIDGET(draw), TRUE);
+	gtk_widget_set_can_focus(GTK_WIDGET(draw), true);
 	// Set mouse click handler.
 	g_signal_connect(
 			G_OBJECT(draw), "button-press-event", G_CALLBACK(mouse_press),
@@ -1148,7 +1148,7 @@ Combo_chooser::Combo_chooser(
 	widget_set_margins(
 			draw, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_size_request(draw, w, h);
-	gtk_widget_show(draw);
+	gtk_widget_set_visible(draw, true);
 	// Want a scrollbar for the combos.
 	GtkAdjustment* combo_adj = GTK_ADJUSTMENT(gtk_adjustment_new(
 			0, 0, (128 + border) * combos.size(), 1, 4, 1.0));
@@ -1157,30 +1157,30 @@ Combo_chooser::Combo_chooser(
 	// Update window when it stops.
 	// (Deprecated) gtk_range_set_update_policy(GTK_RANGE(vscroll),
 	// (Deprecated)                             GTK_UPDATE_DELAYED);
-	gtk_box_pack_start(GTK_BOX(hbox), vscroll, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vscroll, false, true, 0);
 	// Set scrollbar handler.
 	g_signal_connect(
 			G_OBJECT(combo_adj), "value-changed", G_CALLBACK(scrolled), this);
-	gtk_widget_show(vscroll);
+	gtk_widget_set_visible(vscroll, true);
 	// Scroll events.
 	enable_draw_vscroll(draw);
 
 	// At the bottom, status bar:
 	GtkWidget* hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(hbox1), FALSE);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox1, FALSE, FALSE, 0);
-	gtk_widget_show(hbox1);
+	gtk_box_set_homogeneous(GTK_BOX(hbox1), false);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox1, false, false, 0);
+	gtk_widget_set_visible(hbox1, true);
 	// At left, a status bar.
 	sbar     = gtk_statusbar_new();
 	sbar_sel = gtk_statusbar_get_context_id(GTK_STATUSBAR(sbar), "selection");
-	gtk_box_pack_start(GTK_BOX(hbox1), sbar, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox1), sbar, true, true, 0);
 	widget_set_margins(
 			sbar, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_widget_show(sbar);
+	gtk_widget_set_visible(sbar, true);
 	// Add controls to bottom.
 	gtk_box_pack_start(
 			GTK_BOX(vbox), create_controls(find_controls | move_controls),
-			FALSE, FALSE, 0);
+			false, false, 0);
 }
 
 /*
@@ -1291,7 +1291,7 @@ gint Combo_chooser::configure(
 	chooser->Shape_draw::configure();
 	chooser->render();
 	chooser->setup_info(true);
-	return TRUE;
+	return true;
 }
 
 void Combo_chooser::setup_info(bool savepos    // Try to keep current position.
@@ -1343,7 +1343,7 @@ gint Combo_chooser::expose(
 			ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width),
 			ZoomDown(area.height));
 	chooser->set_graphic_context(nullptr);
-	return TRUE;
+	return true;
 }
 
 gint Combo_chooser::drag_motion(
@@ -1379,10 +1379,10 @@ gint Combo_chooser::mouse_press(
 #endif
 	if (event->button == 4) {
 		chooser->scroll(true);
-		return TRUE;
+		return true;
 	} else if (event->button == 5) {
 		chooser->scroll(false);
-		return TRUE;
+		return true;
 	}
 
 	const int old_selected = chooser->selected;
@@ -1415,7 +1415,7 @@ gint Combo_chooser::mouse_press(
 				GTK_MENU(chooser->create_popup()),
 				reinterpret_cast<GdkEvent*>(event));
 	}
-	return TRUE;
+	return true;
 }
 
 /*

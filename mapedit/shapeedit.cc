@@ -203,7 +203,7 @@ C_EXPORT gboolean on_equip_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio::get_instance()->close_equip_window();
-	return TRUE;
+	return true;
 }
 
 /*
@@ -215,7 +215,7 @@ C_EXPORT gboolean
 	const int recnum
 			= gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 	ExultStudio::get_instance()->init_equip_window(recnum);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -238,58 +238,58 @@ static void Setup_equip(
 ) {
 	GtkGrid* table = GTK_GRID(gtk_grid_new());
 	gtk_container_add(viewport, GTK_WIDGET(table));
-	gtk_widget_show(GTK_WIDGET(table));
+	gtk_widget_set_visible(GTK_WIDGET(table), true);
 	// Labels at top:
 	GtkWidget* label = gtk_label_new("Shape");
-	gtk_widget_show(label);
+	gtk_widget_set_visible(label, true);
 	gtk_grid_attach(table, label, 0, 0, 3, 1);
 	label = gtk_label_new("Chance (%)");
-	gtk_widget_show(label);
+	gtk_widget_set_visible(label, true);
 	gtk_grid_attach(table, label, 4, 0, 1, 1);
 	label = gtk_label_new("Count");
-	gtk_widget_show(label);
+	gtk_widget_set_visible(label, true);
 	gtk_grid_attach(table, label, 6, 0, 1, 1);
 	// Separators:
 	GtkWidget* vsep = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-	gtk_widget_show(vsep);
+	gtk_widget_set_visible(vsep, true);
 	gtk_grid_attach(table, vsep, 3, 0, 1, 12);
 	gtk_widget_set_margin_start(vsep, 2);
 	gtk_widget_set_margin_end(vsep, 2);
 	gtk_widget_set_halign(vsep, GTK_ALIGN_CENTER);
-	gtk_widget_set_hexpand(vsep, TRUE);
+	gtk_widget_set_hexpand(vsep, true);
 	vsep = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-	gtk_widget_show(vsep);
+	gtk_widget_set_visible(vsep, true);
 	gtk_grid_attach(table, vsep, 5, 0, 1, 12);
 	gtk_widget_set_margin_start(vsep, 2);
 	gtk_widget_set_margin_end(vsep, 2);
 	gtk_widget_set_halign(vsep, GTK_ALIGN_CENTER);
-	gtk_widget_set_hexpand(vsep, TRUE);
+	gtk_widget_set_hexpand(vsep, true);
 	GtkWidget* hsep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-	gtk_widget_show(hsep);
+	gtk_widget_set_visible(hsep, true);
 	gtk_grid_attach(table, hsep, 0, 1, 7, 1);
 	gtk_widget_set_halign(hsep, GTK_ALIGN_FILL);
-	gtk_widget_set_hexpand(hsep, TRUE);
+	gtk_widget_set_hexpand(hsep, true);
 	gtk_widget_set_valign(hsep, GTK_ALIGN_CENTER);
-	gtk_widget_set_vexpand(hsep, TRUE);
+	gtk_widget_set_vexpand(hsep, true);
 
 	// Create the rows.
 	for (int row = 0; row < 10; row++) {
 		// Create frame, shape drawing area.
 		GtkWidget* frame = gtk_frame_new(nullptr);
-		gtk_widget_show(frame);
+		gtk_widget_set_visible(frame, true);
 		gtk_grid_attach(table, frame, 0, row + 2, 1, 1);
 		gtk_widget_set_margin_start(frame, 3);
 		gtk_widget_set_margin_end(frame, 3);
 		gtk_widget_set_margin_top(frame, 2);
 		gtk_widget_set_margin_bottom(frame, 2);
 		gtk_widget_set_halign(frame, GTK_ALIGN_FILL);
-		gtk_widget_set_hexpand(frame, TRUE);
+		gtk_widget_set_hexpand(frame, true);
 		gtk_widget_set_valign(frame, GTK_ALIGN_FILL);
-		gtk_widget_set_hexpand(frame, TRUE);
+		gtk_widget_set_hexpand(frame, true);
 		gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
 
 		GtkWidget* drawingarea = gtk_drawing_area_new();
-		gtk_widget_show(drawingarea);
+		gtk_widget_set_visible(drawingarea, true);
 		gtk_container_add(GTK_CONTAINER(frame), drawingarea);
 		gtk_widget_set_size_request(drawingarea, 20, 40);
 		// Shape #:
@@ -298,19 +298,19 @@ static void Setup_equip(
 						gtk_adjustment_new(1, 0, c_max_shapes - 1, 1, 50, 50)),
 				1, 0);
 		rows[row].shape = spin;
-		gtk_widget_show(spin);
+		gtk_widget_set_visible(spin, true);
 		gtk_grid_attach(table, spin, 1, row + 2, 1, 1);
 		gtk_widget_set_margin_top(spin, 2);
 		gtk_widget_set_margin_bottom(spin, 2);
 		gtk_widget_set_halign(spin, GTK_ALIGN_FILL);
-		gtk_widget_set_hexpand(spin, TRUE);
+		gtk_widget_set_hexpand(spin, true);
 		// Name:
 		label          = gtk_label_new("label1");
 		rows[row].name = label;
-		gtk_widget_show(label);
+		gtk_widget_set_visible(label, true);
 		gtk_grid_attach(table, label, 2, row + 2, 1, 1);
 		gtk_widget_set_halign(label, GTK_ALIGN_FILL);
-		gtk_widget_set_hexpand(label, TRUE);
+		gtk_widget_set_hexpand(label, true);
 		gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_LEFT);
 		gtk_label_set_xalign(GTK_LABEL(label), 0.2);
 		gtk_label_set_yalign(GTK_LABEL(label), 0.5);
@@ -326,23 +326,23 @@ static void Setup_equip(
 		spin = gtk_spin_button_new(
 				GTK_ADJUSTMENT(gtk_adjustment_new(1, 0, 100, 1, 10, 10)), 1, 0);
 		rows[row].chance = spin;
-		gtk_widget_show(spin);
+		gtk_widget_set_visible(spin, true);
 		gtk_grid_attach(table, spin, 4, row + 2, 1, 1);
 		gtk_widget_set_margin_top(spin, 2);
 		gtk_widget_set_margin_bottom(spin, 2);
 		gtk_widget_set_halign(spin, GTK_ALIGN_FILL);
-		gtk_widget_set_hexpand(spin, TRUE);
+		gtk_widget_set_hexpand(spin, true);
 		// Count:
 		spin = gtk_spin_button_new(
 				GTK_ADJUSTMENT(gtk_adjustment_new(1, 0, 100, 1, 10, 10)), 1, 0);
 		rows[row].count = spin;
-		gtk_widget_show(spin);
+		gtk_widget_set_visible(spin, true);
 		gtk_grid_attach(table, spin, 6, row + 2, 1, 1);
 		gtk_widget_set_margin_end(spin, 2);
 		gtk_widget_set_margin_top(spin, 2);
 		gtk_widget_set_margin_bottom(spin, 2);
 		gtk_widget_set_halign(spin, GTK_ALIGN_FILL);
-		gtk_widget_set_hexpand(spin, TRUE);
+		gtk_widget_set_hexpand(spin, true);
 	}
 }
 
@@ -412,7 +412,7 @@ void ExultStudio::open_equip_window(
 	// This will cause the data to be set:
 	set_spin("equip_recnum", recnum, 1, ecnt);
 	set_sensitive("equip_new", ecnt < 255);
-	gtk_widget_show(equipwin);
+	gtk_widget_set_visible(equipwin, true);
 }
 
 /*
@@ -421,7 +421,7 @@ void ExultStudio::open_equip_window(
 
 void ExultStudio::close_equip_window() {
 	if (equipwin) {
-		gtk_widget_hide(equipwin);
+		gtk_widget_set_visible(equipwin, false);
 	}
 }
 
@@ -469,7 +469,7 @@ C_EXPORT gboolean on_shape_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio::get_instance()->close_shape_window();
-	return TRUE;
+	return true;
 }
 
 /*
@@ -482,7 +482,7 @@ C_EXPORT gboolean
 	const bool   on     = sel == 0;
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_weapon_ammo_shape", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -495,7 +495,7 @@ C_EXPORT gboolean
 	const bool   on     = sel == 0;
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_weapon_proj", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -508,7 +508,7 @@ C_EXPORT gboolean
 	const bool   on     = sel == 0;
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_ammo_proj", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -532,7 +532,7 @@ C_EXPORT gboolean
 	studio->set_sensitive("shinfo_animation_rectype", on);
 	const bool recon = studio->get_toggle("shinfo_animation_rectype");
 	studio->set_sensitive("shinfo_animation_recycle", on && !recon);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -544,7 +544,7 @@ C_EXPORT gboolean on_shinfo_animation_frtype_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_animation_frcount", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -556,7 +556,7 @@ C_EXPORT gboolean on_shinfo_animation_rectype_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_animation_recycle", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -568,7 +568,7 @@ C_EXPORT gboolean on_shinfo_animation_sfxsynch_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_animation_sfxdelay", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -580,7 +580,7 @@ C_EXPORT gboolean on_shinfo_animation_freezefirst_changed(
 	const int    sel    = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_animation_freezechance", sel == 2);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -592,7 +592,7 @@ C_EXPORT gboolean on_shinfo_effhps_frame_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_effhps_frame_num", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -604,7 +604,7 @@ C_EXPORT gboolean on_shinfo_effhps_qual_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_effhps_qual_num", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -616,7 +616,7 @@ C_EXPORT gboolean on_shinfo_effhps_hp_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_effhps_hp_val", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -628,7 +628,7 @@ C_EXPORT gboolean on_shinfo_frameusecode_frame_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_frameusecode_frame_num", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -640,7 +640,7 @@ C_EXPORT gboolean on_shinfo_frameusecode_qual_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_frameusecode_qual_num", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -652,7 +652,7 @@ C_EXPORT gboolean on_shinfo_framenames_frame_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_framenames_frame_num", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -664,7 +664,7 @@ C_EXPORT gboolean on_shinfo_framenames_qual_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_framenames_qual_num", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -701,7 +701,7 @@ C_EXPORT gboolean on_shinfo_framenames_name_type_changed(
 		ot = studio->get_optmenu("shinfo_framenames_comp_msg_type");
 		studio->set_sensitive("shinfo_framenames_comp_msg_text", ot == 2);
 	}
-	return TRUE;
+	return true;
 }
 
 /*
@@ -713,7 +713,7 @@ C_EXPORT gboolean on_shinfo_framenames_comp_msg_type_changed(
 	const int    val    = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_framenames_comp_msg_text", val == 2);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -731,7 +731,7 @@ C_EXPORT gboolean on_shinfo_framenames_comp_type_changed(
 	}
 	val = studio->get_optmenu("shinfo_framenames_comp_msg_type");
 	studio->set_sensitive("shinfo_framenames_comp_msg_text", val == 2);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -743,7 +743,7 @@ C_EXPORT gboolean on_shinfo_frameflags_frame_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_frameflags_frame_num", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -755,7 +755,7 @@ C_EXPORT gboolean on_shinfo_frameflags_qual_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_frameflags_qual_num", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -767,7 +767,7 @@ C_EXPORT gboolean on_shinfo_brightness_frame_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_brightness_frame_num", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -779,7 +779,7 @@ C_EXPORT gboolean on_shinfo_warmth_frame_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_warmth_frame_num", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -791,7 +791,7 @@ C_EXPORT gboolean on_shinfo_cntrules_shape_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_cntrules_shape_num", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -803,7 +803,7 @@ C_EXPORT gboolean on_shinfo_explosion_sfx_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_explosion_sfx_number", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -1049,7 +1049,7 @@ C_EXPORT gboolean
 		studio->set_optmenu("shinfo_mountaintop_type", 0, false);
 	}
 
-	return TRUE;
+	return true;
 }
 
 /*
@@ -2053,7 +2053,7 @@ C_EXPORT gboolean on_shinfo_objpaperdoll_frame_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_objpaperdoll_wframe", on);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -2170,7 +2170,7 @@ C_EXPORT gboolean
 	ExultStudio* studio = ExultStudio::get_instance();
 	const int    ready  = studio->get_optmenu("shinfo_ready_spot");
 	Set_objpaperdoll_sensitivity(studio, spot, ready);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -2183,7 +2183,7 @@ C_EXPORT gboolean
 	ExultStudio* studio = ExultStudio::get_instance();
 	const int    spot   = studio->get_optmenu("shinfo_objpaperdoll_spot");
 	Set_objpaperdoll_sensitivity(studio, spot, ready);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -3256,7 +3256,7 @@ void ExultStudio::init_shape_notebook(
 		Set_objpaperdoll_fields();
 	}
 
-	gtk_widget_show(book);
+	gtk_widget_set_visible(book, true);
 }
 
 struct Update_hps {
@@ -4546,9 +4546,9 @@ void ExultStudio::open_shape_window(
 	if (info) {
 		init_shape_notebook(*info, notebook, shnum, frnum);
 	} else {
-		gtk_widget_hide(notebook);
+		gtk_widget_set_visible(notebook, false);
 	}
-	gtk_widget_show(shapewin);
+	gtk_widget_set_visible(shapewin, true);
 }
 
 /*
@@ -4603,6 +4603,6 @@ void ExultStudio::save_shape_window() {
 
 void ExultStudio::close_shape_window() {
 	if (shapewin) {
-		gtk_widget_hide(shapewin);
+		gtk_widget_set_visible(shapewin, false);
 	}
 }

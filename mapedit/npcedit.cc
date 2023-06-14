@@ -98,7 +98,7 @@ C_EXPORT gboolean on_npc_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio::get_instance()->close_npc_window();
-	return TRUE;
+	return true;
 }
 
 /*
@@ -250,7 +250,7 @@ void ExultStudio::open_npc_window(
 	} else {
 		init_new_npc();
 	}
-	gtk_widget_show(npcwin);
+	gtk_widget_set_visible(npcwin, true);
 }
 
 /*
@@ -259,7 +259,7 @@ void ExultStudio::open_npc_window(
 
 void ExultStudio::close_npc_window() {
 	if (npcwin) {
-		gtk_widget_hide(npcwin);
+		gtk_widget_set_visible(npcwin, false);
 	}
 }
 
@@ -648,7 +648,7 @@ void ExultStudio::schedule_btn_clicked(
 	gtk_label_set_text(
 			label, num >= 0 && num < 32 ? sched_names[num] : "-----");
 	cout << "Chose schedule " << num << endl;
-	gtk_widget_hide(studio->get_widget("schedule_dialog"));
+	gtk_widget_set_visible(studio->get_widget("schedule_dialog"), false);
 }
 
 /*
@@ -687,7 +687,7 @@ C_EXPORT void on_npc_set_sched(
 	}
 	// Store label as dialog's data.
 	g_object_set_data(G_OBJECT(schedwin), "user_data", label);
-	gtk_widget_show(schedwin);
+	gtk_widget_set_visible(schedwin, true);
 }
 
 /*

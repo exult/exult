@@ -81,7 +81,7 @@ void ExultStudio::open_compile_window() {
 				GTK_TEXT_VIEW(get_widget("compile_msgs")),
 				GTK_STATUSBAR(get_widget("compile_status")), Ucc_done, nullptr);
 	}
-	gtk_widget_show(compilewin);
+	gtk_widget_set_visible(compilewin, true);
 }
 
 /*
@@ -91,7 +91,7 @@ void ExultStudio::open_compile_window() {
 void ExultStudio::close_compile_window() {
 	halt_compile();
 	if (compilewin) {
-		gtk_widget_hide(compilewin);
+		gtk_widget_set_visible(compilewin, false);
 	}
 }
 

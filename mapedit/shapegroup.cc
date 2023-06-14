@@ -491,9 +491,9 @@ C_EXPORT gboolean on_groups_new_name_key_press(
 	ignore_unused_variable_warning(entry, user_data);
 	if (event->keyval == GDK_KEY_Return) {
 		ExultStudio::get_instance()->add_group();
-		return TRUE;
+		return true;
 	}
-	return FALSE;    // Let parent handle it.
+	return false;    // Let parent handle it.
 }
 
 C_EXPORT void on_open_builtin_group_clicked(
@@ -565,7 +565,7 @@ void gulong_deleter(gpointer data) {
 void ExultStudio::setup_groups() {
 	Shape_group_file* groups = curfile->get_groups();
 	if (!groups) {    // No groups?
-		set_visible("groups_frame", FALSE);
+		set_visible("groups_frame", false);
 		return;
 	}
 	GtkTreeView*  tview  = GTK_TREE_VIEW(get_widget("group_list"));
@@ -586,7 +586,7 @@ void ExultStudio::setup_groups() {
 				tview, -1, "Names", renderer, "text", GRP_FILE_COLUMN, nullptr);
 		GtkTreeViewColumn* column
 				= gtk_tree_view_get_column(tview, col_offset - 1);
-		gtk_tree_view_column_set_clickable(column, TRUE);
+		gtk_tree_view_column_set_clickable(column, true);
 		addsig = g_signal_connect(
 				G_OBJECT(model), "row-inserted",
 				G_CALLBACK(on_group_list_row_inserted), this);
@@ -620,10 +620,10 @@ void ExultStudio::setup_groups() {
 	g_signal_handler_block(model, delsig);
 	g_signal_handler_block(model, chgsig);
 	gtk_tree_store_clear(model);
-	set_visible("groups_frame", TRUE);
+	set_visible("groups_frame", true);
 	// Show builtins for shapes.vga.
 	set_visible("builtin_groups", curfile == vgafile);
-	gtk_tree_view_set_reorderable(tview, TRUE);
+	gtk_tree_view_set_reorderable(tview, true);
 	const int   cnt = groups->size();    // Add groups from file.
 	GtkTreeIter iter;
 	for (int i = 0; i < cnt; i++) {
@@ -764,7 +764,7 @@ C_EXPORT gboolean on_group_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(event, user_data);
 	ExultStudio::get_instance()->close_group_window(widget);
-	return TRUE;
+	return true;
 }
 
 C_EXPORT void on_group_up_clicked(GtkToggleButton* button, gpointer user_data) {
@@ -884,15 +884,15 @@ void ExultStudio::open_group_window(Shape_group* grp) {
 	}
 	// Attach browser.
 	GtkWidget* browser_box = get_widget(xml, "group_shapes");
-	gtk_widget_show(browser_box);
+	gtk_widget_set_visible(browser_box, true);
 	gtk_box_pack_start(
-			GTK_BOX(browser_box), chooser->get_widget(), TRUE, TRUE, 0);
+			GTK_BOX(browser_box), chooser->get_widget(), true, true, 0);
 	// Auto-connect doesn't seem to work.
 	g_signal_connect(
 			G_OBJECT(grpwin), "delete-event",
 			G_CALLBACK(on_group_window_delete_event), this);
 	group_windows.push_back(GTK_WINDOW(grpwin));
-	gtk_widget_show(grpwin);
+	gtk_widget_set_visible(grpwin, true);
 }
 
 /*
@@ -935,7 +935,7 @@ void ExultStudio::save_groups() {
 }
 
 /*
- *  Return TRUE if any groups have been modified.
+ *  Return true if any groups have been modified.
  */
 
 bool ExultStudio::groups_modified() {

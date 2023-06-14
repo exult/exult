@@ -443,7 +443,7 @@ C_EXPORT gboolean on_main_window_configure_event(
 	// Configure "Hide lift" spin range.
 	studio->set_spin(
 			"hide_lift_spin", studio->get_spin("hide_lift_spin"), 1, 255);
-	return FALSE;
+	return false;
 }
 
 /*
@@ -453,9 +453,9 @@ C_EXPORT gboolean on_main_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	if (!ExultStudio::get_instance()->okay_to_close()) {
-		return TRUE;    // Can't quit.
+		return true;    // Can't quit.
 	}
-	return FALSE;
+	return false;
 }
 
 C_EXPORT void on_main_window_destroy_event(GtkWidget* widget, gpointer data) {
@@ -480,7 +480,7 @@ C_EXPORT gboolean on_main_window_focus_in_event(
 		GtkWidget* widget, GdkEventFocus* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	Shape_chooser::check_editing_files();
-	return FALSE;
+	return false;
 }
 
 /*
@@ -534,7 +534,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	gtk_init(&argc, &argv);
 	g_object_set(
 			gtk_settings_get_default(), "gtk-application-prefer-dark-theme",
-			TRUE, nullptr);
+			true, nullptr);
 #ifdef _WIN32
 	bool portable = false;
 #endif
@@ -878,7 +878,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 		//++++Used to work  gtk_window_set_default_size(GTK_WINDOW(app), w, h);
 		gtk_window_resize(GTK_WINDOW(app), w, h);
 	}
-	gtk_widget_show(app);
+	gtk_widget_set_visible(app, true);
 	g_signal_connect(
 			G_OBJECT(app), "key-press-event", G_CALLBACK(on_app_key_press),
 			this);
@@ -1091,10 +1091,10 @@ void ExultStudio::set_browser(const char* name, Object_browser* obj) {
 	browser = obj;
 
 	gtk_frame_set_label(GTK_FRAME(browser_frame), name);
-	gtk_widget_show(browser_box);
+	gtk_widget_set_visible(browser_box, true);
 	if (browser) {
 		gtk_box_pack_start(
-				GTK_BOX(browser_box), browser->get_widget(), TRUE, TRUE, 0);
+				GTK_BOX(browser_box), browser->get_widget(), true, true, 0);
 	}
 }
 
@@ -1313,7 +1313,7 @@ C_EXPORT void on_gameselect_ok_clicked(
 
 	studio->set_game_path(game->get_cfgname(), modtitle);
 	GtkWidget* win = studio->get_widget("game_selection");
-	gtk_widget_hide(win);
+	gtk_widget_set_visible(win, false);
 }
 
 /*
@@ -1442,7 +1442,7 @@ void ExultStudio::open_game_dialog(bool createmod) {
 			GtkTreeViewColumn* column
 					= gtk_tree_view_get_column(tree, col_offset - 1);
 			gtk_tree_view_column_set_clickable(
-					GTK_TREE_VIEW_COLUMN(column), TRUE);
+					GTK_TREE_VIEW_COLUMN(column), true);
 		}
 		gtk_tree_store_clear(model);
 	}
@@ -1458,7 +1458,7 @@ void ExultStudio::open_game_dialog(bool createmod) {
 		set_visible("modlist_frame", false);
 	}
 	fill_game_tree(GTK_TREE_VIEW(dlg_list[0]), curr_game);
-	gtk_widget_show(win);
+	gtk_widget_set_visible(win, true);
 }
 
 /*
@@ -1574,7 +1574,7 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	close_combo_window();
 	close_compile_window();
 	if (gameinfowin) {
-		gtk_widget_hide(gameinfowin);
+		gtk_widget_set_visible(gameinfowin, false);
 	}
 
 	gtk_notebook_prev_page(mainnotebook);
@@ -1749,14 +1749,14 @@ void ExultStudio::setup_file_list() {
 				FOLDER_COLUMN, nullptr);
 		column = gtk_tree_view_get_column(
 				GTK_TREE_VIEW(file_list), col_offset - 1);
-		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), TRUE);
+		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), true);
 		/* column for file names */
 		col_offset = gtk_tree_view_insert_column_with_attributes(
 				GTK_TREE_VIEW(file_list), -1, "Files", renderer, "text",
 				FILE_COLUMN, nullptr);
 		column = gtk_tree_view_get_column(
 				GTK_TREE_VIEW(file_list), col_offset - 1);
-		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), TRUE);
+		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), true);
 	}
 	gtk_tree_store_clear(model);
 	add_to_tree(
@@ -1957,7 +1957,7 @@ void ExultStudio::set_edit_terrain(gboolean terrain    // True/false
 	}
 	// Set edit-mode to paint.
 	GtkWidget* mitem = get_widget(terrain ? "paint1" : "move1");
-	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mitem), TRUE);
+	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mitem), true);
 }
 
 void ExultStudio::set_edit_mode(int md    // 0-2 (drag, paint, pick.
@@ -1992,7 +1992,7 @@ void ExultStudio::show_unused_shapes(
 	GtkTextView*   text    = GTK_TEXT_VIEW(get_widget("msg_text"));
 	GtkTextBuffer* buffer  = gtk_text_view_get_buffer(text);
 	gtk_text_buffer_set_text(buffer, "", 0);    // Clear out old text
-	set_visible("msg_win", TRUE);               // Show message window.
+	set_visible("msg_win", true);               // Show message window.
 	int          pos = 0;
 	GtkEditable* ed  = GTK_EDITABLE(text);
 	Insert_text(ed, "The following shapes were not found.\n", pos);
@@ -2309,14 +2309,18 @@ void ExultStudio::set_button(const char* name, const char* text) {
 /*
  *  Show/hide a widget.
  */
+C_EXPORT gboolean exult_widget_hide(GtkWidget* w) {
+	gtk_widget_set_visible(w, false);
+	return true;
+}
 
 void ExultStudio::set_visible(const char* name, bool vis) {
 	GtkWidget* widg = get_widget(name);
 	if (widg) {
 		if (vis) {
-			gtk_widget_show(widg);
+			gtk_widget_set_visible(widg, true);
 		} else {
-			gtk_widget_hide(widg);
+			gtk_widget_set_visible(widg, false);
 		}
 	}
 }
@@ -2378,8 +2382,8 @@ int ExultStudio::prompt(
 		gtk_widget_set_size_request(
 				draw, gdk_pixbuf_get_width(logo_pixbuf),
 				gdk_pixbuf_get_height(logo_pixbuf));
-		gtk_widget_show(draw);
-		gtk_box_pack_start(GTK_BOX(hbox), draw, FALSE, FALSE, 12);
+		gtk_widget_set_visible(draw, true);
+		gtk_box_pack_start(GTK_BOX(hbox), draw, false, false, 12);
 		// Make logo show to left.
 		gtk_box_reorder_child(GTK_BOX(hbox), draw, 0);
 	}
@@ -2399,11 +2403,11 @@ int ExultStudio::prompt(
 	}
 	prompt_choice = -1;
 	gtk_window_set_modal(GTK_WINDOW(dlg), true);
-	gtk_widget_show(dlg);            // Should be modal.
-	while (prompt_choice == -1) {    // Spin.
-		gtk_main_iteration();        // (Blocks).
+	gtk_widget_set_visible(dlg, true);    // Should be modal.
+	while (prompt_choice == -1) {         // Spin.
+		gtk_main_iteration();             // (Blocks).
 	}
-	gtk_widget_hide(dlg);
+	gtk_widget_set_visible(dlg, false);
 	assert(prompt_choice >= 0 && prompt_choice <= 2);
 	return prompt_choice;
 }
@@ -2457,10 +2461,10 @@ namespace EStudio {
 								   : gtk_radio_menu_item_new(group))
 						  : (label ? gtk_menu_item_new_with_label(label)
 								   : gtk_menu_item_new());
-		gtk_widget_show(mitem);
+		gtk_widget_set_visible(mitem, true);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), mitem);
 		if (!label) {    // Want separator?
-			gtk_widget_set_sensitive(mitem, FALSE);
+			gtk_widget_set_sensitive(mitem, false);
 		}
 		if (func) {    // Function?
 			g_signal_connect(G_OBJECT(mitem), "activate", func, func_data);
@@ -2482,7 +2486,7 @@ namespace EStudio {
 				dir == GTK_ARROW_UP ? "go-up" : "go-down",
 				GTK_ICON_SIZE_BUTTON);
 		gtk_button_set_image(GTK_BUTTON(btn), img);
-		gtk_widget_show(btn);
+		gtk_widget_set_visible(btn, true);
 		g_signal_connect(G_OBJECT(btn), "clicked", clicked, func_data);
 		return btn;
 	}
@@ -2509,7 +2513,7 @@ namespace EStudio {
 
 C_EXPORT void on_prefs_cancel_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
-	gtk_widget_hide(gtk_widget_get_toplevel(GTK_WIDGET(button)));
+	gtk_widget_set_visible(gtk_widget_get_toplevel(GTK_WIDGET(button)), false);
 }
 
 C_EXPORT void on_prefs_apply_clicked(GtkButton* button, gpointer user_data) {
@@ -2520,7 +2524,7 @@ C_EXPORT void on_prefs_apply_clicked(GtkButton* button, gpointer user_data) {
 C_EXPORT void on_prefs_okay_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	ExultStudio::get_instance()->save_preferences();
-	gtk_widget_hide(gtk_widget_get_toplevel(GTK_WIDGET(button)));
+	gtk_widget_set_visible(gtk_widget_get_toplevel(GTK_WIDGET(button)), false);
 }
 
 /*
@@ -2532,7 +2536,7 @@ C_EXPORT void on_prefs_background_choose_clicked(
 	ignore_unused_variable_warning(button, user_data);
 	GtkColorChooserDialog* colorsel = GTK_COLOR_CHOOSER_DIALOG(
 			gtk_color_chooser_dialog_new("Background color", nullptr));
-	g_object_set(colorsel, "show-editor", TRUE, nullptr);
+	g_object_set(colorsel, "show-editor", true, nullptr);
 	gtk_window_set_modal(GTK_WINDOW(colorsel), true);
 	// Get color.
 	const guint32 c = ExultStudio::get_instance()->get_background_color();
@@ -2577,15 +2581,15 @@ gboolean ExultStudio::on_prefs_background_expose_event(
 			(color & 255) / 255.0);
 	cairo_rectangle(cairo, area.x, area.y, area.width, area.height);
 	cairo_fill(cairo);
-	return TRUE;
+	return true;
 }
 
 // X at top of window.
 C_EXPORT gboolean on_prefs_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(event, user_data);
-	gtk_widget_hide(widget);
-	return TRUE;
+	gtk_widget_set_visible(widget, false);
+	return true;
 }
 
 /*
@@ -2618,7 +2622,7 @@ void ExultStudio::open_preferences() {
 	g_signal_connect(
 			G_OBJECT(get_widget("prefs_background")), "draw",
 			G_CALLBACK(on_prefs_background_expose_event), this);
-	gtk_widget_show(win);
+	gtk_widget_set_visible(win, true);
 }
 
 /*
@@ -2695,14 +2699,14 @@ static gboolean Read_from_server(
 	ignore_unused_variable_warning(source, condition);
 	ExultStudio* studio = static_cast<ExultStudio*>(data);
 	studio->read_from_server();
-	return TRUE;
+	return true;
 }
 #else
 static gint Read_from_server(gpointer data    // ->ExultStudio.
 ) {
 	auto* studio = static_cast<ExultStudio*>(data);
 	studio->read_from_server();
-	return TRUE;
+	return true;
 }
 #endif
 
@@ -2930,7 +2934,7 @@ void ExultStudio::info_received(
 	if (edmode >= 0 && static_cast<unsigned>(edmode) < mode_names.size()) {
 		GtkWidget* mitem = get_widget(mode_names[edmode]);
 
-		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mitem), TRUE);
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mitem), true);
 	}
 }
 
@@ -3050,7 +3054,7 @@ C_EXPORT void on_gameinfo_apply_clicked(
 	}
 
 	GtkWidget* win = studio->get_widget("game_information");
-	gtk_widget_hide(win);
+	gtk_widget_set_visible(win, false);
 }
 
 C_EXPORT void on_gameinfo_charset_changed(
@@ -3158,7 +3162,7 @@ void ExultStudio::set_game_information() {
 			convertToUTF8(gameinfo->get_menu_string().c_str(), "ASCII"));
 	gtk_text_buffer_set_text(buff, title.c_str(), -1);
 
-	gtk_widget_show(gameinfowin);
+	gtk_widget_set_visible(gameinfowin, true);
 }
 
 /*
@@ -3576,15 +3580,15 @@ gboolean ExultStudio::on_app_key_press(
 		if (studio->shape_zup) {
 			g_signal_emit_by_name(G_OBJECT(studio->shape_zup), "clicked");
 		}
-		return TRUE;
+		return true;
 	case GDK_KEY_minus:
 	case GDK_KEY_KP_Subtract:
 		if (studio->shape_zdown) {
 			g_signal_emit_by_name(G_OBJECT(studio->shape_zdown), "clicked");
 		}
-		return TRUE;
+		return true;
 	}
-	return FALSE;
+	return false;
 }
 
 void ExultStudio::create_zoom_controls() {
@@ -3592,55 +3596,55 @@ void ExultStudio::create_zoom_controls() {
 	GtkWidget* zframe = gtk_frame_new(nullptr);
 	widget_set_margins(
 			zframe, 2 * HMARGIN, 0 * HMARGIN, 0 * VMARGIN, 0 * VMARGIN);
-	gtk_widget_show(zframe);
-	gtk_box_pack_start(GTK_BOX(zbox), zframe, FALSE, FALSE, 0);
+	gtk_widget_set_visible(zframe, true);
+	gtk_box_pack_start(GTK_BOX(zbox), zframe, false, false, 0);
 
 	GtkWidget* zbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	widget_set_margins(
 			zbox2, 0 * HMARGIN, 0 * HMARGIN, 0 * VMARGIN, 0 * VMARGIN);
-	gtk_box_set_homogeneous(GTK_BOX(zbox2), FALSE);
-	gtk_widget_show(zbox2);
+	gtk_box_set_homogeneous(GTK_BOX(zbox2), false);
+	gtk_widget_set_visible(zbox2, true);
 	gtk_container_add(GTK_CONTAINER(zframe), zbox2);
 
 	GtkWidget* zname = gtk_label_new("Zoom");
-	gtk_widget_set_visible(GTK_WIDGET(zname), TRUE);
+	gtk_widget_set_visible(GTK_WIDGET(zname), true);
 	widget_set_margins(
 			zname, 4 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_box_pack_start(GTK_BOX(zbox2), zname, FALSE, FALSE, 0);
-	gtk_widget_show(zname);
+	gtk_box_pack_start(GTK_BOX(zbox2), zname, false, false, 0);
+	gtk_widget_set_visible(zname, true);
 
 	string zvalue = std::to_string(50 * shape_scale) + "%";
 	shape_zlabel  = gtk_label_new(zvalue.c_str());
-	gtk_widget_set_visible(GTK_WIDGET(shape_zlabel), TRUE);
+	gtk_widget_set_visible(GTK_WIDGET(shape_zlabel), true);
 	widget_set_margins(
 			shape_zlabel, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_box_pack_start(GTK_BOX(zbox2), shape_zlabel, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(zbox2), shape_zlabel, false, false, 0);
 	gtk_widget_set_size_request(shape_zlabel, 50, -1);
 	gtk_label_set_justify(GTK_LABEL(shape_zlabel), GTK_JUSTIFY_RIGHT);
-	gtk_widget_show(shape_zlabel);
+	gtk_widget_set_visible(shape_zlabel, true);
 
 	shape_zdown = EStudio::Create_arrow_button(
 			GTK_ARROW_DOWN, G_CALLBACK(ExultStudio::on_zoom_down), this);
 	widget_set_margins(
 			shape_zdown, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_sensitive(shape_zdown, (shape_scale > 2 ? true : false));
-	gtk_box_pack_start(GTK_BOX(zbox2), shape_zdown, TRUE, TRUE, 0);
-	gtk_widget_show(shape_zdown);
+	gtk_box_pack_start(GTK_BOX(zbox2), shape_zdown, true, true, 0);
+	gtk_widget_set_visible(shape_zdown, true);
 
 	shape_zup = EStudio::Create_arrow_button(
 			GTK_ARROW_UP, G_CALLBACK(ExultStudio::on_zoom_up), this);
 	widget_set_margins(
 			shape_zup, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_sensitive(shape_zup, (shape_scale < 32 ? true : false));
-	gtk_box_pack_start(GTK_BOX(zbox2), shape_zup, TRUE, TRUE, 0);
-	gtk_widget_show(shape_zup);
+	gtk_box_pack_start(GTK_BOX(zbox2), shape_zup, true, true, 0);
+	gtk_widget_set_visible(shape_zup, true);
 
 	GtkWidget* zcheck = gtk_check_button_new_with_label("Bilinear");
 	widget_set_margins(
 			zcheck, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_box_pack_start(GTK_BOX(zbox2), zcheck, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(zbox2), zcheck, true, true, 0);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(zcheck), shape_bilinear);
-	gtk_widget_show(zcheck);
+	gtk_widget_set_visible(zcheck, true);
 	g_signal_connect(
 			G_OBJECT(zcheck), "toggled",
 			G_CALLBACK(ExultStudio::on_zoom_bilinear), this);

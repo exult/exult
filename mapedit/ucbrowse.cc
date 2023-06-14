@@ -114,7 +114,7 @@ C_EXPORT gboolean on_usecodes_dialog_delete_event(
 			g_object_get_data(G_OBJECT(widget), "user_data"));
 
 	ucb->cancel();
-	return TRUE;
+	return true;
 }
 
 /*
@@ -238,11 +238,11 @@ Usecode_browser::Usecode_browser() {
             "Type", renderer, "text", TYPE_COL, nullptr);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree), col);
 	gtk_tree_view_column_set_sort_column_id(col, SORTID_TYPE);
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), TRUE);
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), true);
 	// Set initial sort.
 	gtk_tree_sortable_set_sort_column_id(
 			sortable, SORTID_NAME, GTK_SORT_ASCENDING);
-	gtk_widget_show(tree);
+	gtk_widget_set_visible(tree, true);
 }
 
 /*
@@ -260,9 +260,9 @@ Usecode_browser::~Usecode_browser() {
 
 void Usecode_browser::show(bool tf) {
 	if (tf) {
-		gtk_widget_show(win);
+		gtk_widget_set_visible(win, true);
 	} else {
-		gtk_widget_hide(win);
+		gtk_widget_set_visible(win, false);
 	}
 }
 
@@ -292,7 +292,7 @@ void Usecode_browser::okay() {
 		}
 		g_print("selected row is: %s\n", choice.c_str());
 	}
-	show(FALSE);
+	show(false);
 }
 
 /*

@@ -324,7 +324,7 @@ gint Chunk_chooser::configure(
 		chooser->enable_drop();    // Can drop chunks here.
 	}
 
-	return TRUE;
+	return true;
 }
 
 void Chunk_chooser::setup_info(bool savepos    // Try to keep current position.
@@ -376,7 +376,7 @@ gint Chunk_chooser::expose(
 			ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width),
 			ZoomDown(area.height));
 	chooser->set_graphic_context(nullptr);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -412,10 +412,10 @@ gint Chunk_chooser::mouse_press(
 #endif
 	if (event->button == 4) {
 		chooser->scroll(true);
-		return TRUE;
+		return true;
 	} else if (event->button == 5) {
 		chooser->scroll(false);
-		return TRUE;
+		return true;
 	}
 
 	// int old_selected = chooser->selected;
@@ -426,7 +426,7 @@ gint Chunk_chooser::mouse_press(
 					ZoomDown(static_cast<int>(event->y)))) {
 			// Found the box?
 			//			if (i == old_selected)
-			//				return TRUE;
+			//				return true;
 			// Indicate we can dra.
 			chooser->selected  = i;
 			chooser->locate_cx = chooser->locate_cy = -1;
@@ -445,7 +445,7 @@ gint Chunk_chooser::mouse_press(
 				GTK_MENU(chooser->create_popup()),
 				reinterpret_cast<GdkEvent*>(event));
 	}
-	return TRUE;
+	return true;
 }
 
 /*
@@ -503,9 +503,9 @@ gint Chunk_chooser::drag_begin(
 	cout << "In DRAG_BEGIN of Chunk" << endl;
 	auto* chooser = static_cast<Chunk_chooser*>(data);
 	if (chooser->selected < 0) {
-		return FALSE;    // ++++Display a halt bitmap.
+		return false;    // ++++Display a halt bitmap.
 	}
-	return TRUE;
+	return true;
 }
 
 /*
@@ -723,22 +723,22 @@ Chunk_chooser::Chunk_chooser(
 
 	// Put things in a vert. box.
 	GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+	gtk_box_set_homogeneous(GTK_BOX(vbox), false);
 	set_widget(vbox);    // This is our "widget"
-	gtk_widget_show(vbox);
+	gtk_widget_set_visible(vbox, true);
 
 	GtkWidget* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(hbox), FALSE);
-	gtk_widget_show(hbox);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	gtk_box_set_homogeneous(GTK_BOX(hbox), false);
+	gtk_widget_set_visible(hbox, true);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, true, true, 0);
 
 	// A frame looks nice.
 	GtkWidget* frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
 	widget_set_margins(
 			frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_widget_show(frame);
-	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
+	gtk_widget_set_visible(frame, true);
+	gtk_box_pack_start(GTK_BOX(hbox), frame, true, true, 0);
 
 	// NOTE:  draw is in Shape_draw.
 	// Indicate the events we want.
@@ -769,37 +769,37 @@ Chunk_chooser::Chunk_chooser(
 	widget_set_margins(
 			draw, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_size_request(draw, w, h);
-	gtk_widget_show(draw);
+	gtk_widget_set_visible(draw, true);
 	// Want a scrollbar for the chunks.
 	GtkAdjustment* chunk_adj = GTK_ADJUSTMENT(
 			gtk_adjustment_new(0, 0, (128 + border) * num_chunks, 1, 4, 1.0));
 	vscroll = gtk_scrollbar_new(
 			GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT(chunk_adj));
-	gtk_box_pack_start(GTK_BOX(hbox), vscroll, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vscroll, false, true, 0);
 	// Set scrollbar handler.
 	g_signal_connect(
 			G_OBJECT(chunk_adj), "value-changed", G_CALLBACK(scrolled), this);
-	gtk_widget_show(vscroll);
+	gtk_widget_set_visible(vscroll, true);
 	// Scroll events.
 	enable_draw_vscroll(draw);
 
 	// At the bottom, status bar:
 	GtkWidget* hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(hbox1), FALSE);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox1, FALSE, FALSE, 0);
-	gtk_widget_show(hbox1);
+	gtk_box_set_homogeneous(GTK_BOX(hbox1), false);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox1, false, false, 0);
+	gtk_widget_set_visible(hbox1, true);
 	// At left, a status bar.
 	sbar     = gtk_statusbar_new();
 	sbar_sel = gtk_statusbar_get_context_id(GTK_STATUSBAR(sbar), "selection");
-	gtk_box_pack_start(GTK_BOX(hbox1), sbar, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox1), sbar, true, true, 0);
 	widget_set_margins(
 			sbar, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_widget_show(sbar);
+	gtk_widget_set_visible(sbar, true);
 	// Add locate/move controls to bottom.
 	gtk_box_pack_start(
 			GTK_BOX(vbox),
 			create_controls(locate_controls | (!group ? move_controls : 0)),
-			FALSE, FALSE, 0);
+			false, false, 0);
 }
 
 /*

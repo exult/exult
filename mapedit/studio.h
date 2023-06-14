@@ -39,6 +39,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	define GNOME_DISABLE_DEPRECATED
 #	define GTK_DISABLE_DEPRECATED
 #	define GDK_DISABLE_DEPRECATED
+#else
+#	define GDK_DISABLE_DEPRECATION_WARNINGS
+#	define GLIB_DISABLE_DEPRECATION_WARNINGS
 #endif    // USE_STRICT_GTK
 #include <gtk/gtk.h>
 #ifndef __GDK_KEYSYMS_H__

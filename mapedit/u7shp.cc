@@ -34,6 +34,9 @@
 #	define GNOME_DISABLE_DEPRECATED
 #	define GTK_DISABLE_DEPRECATED
 #	define GDK_DISABLE_DEPRECATED
+#else
+#	define GDK_DISABLE_DEPRECATION_WARNINGS
+#	define GLIB_DISABLE_DEPRECATION_WARNINGS
 #endif    // USE_STRICT_GTK
 #include <gtk/gtk.h>
 #include <libgimp/gimp.h>
@@ -228,7 +231,7 @@ static void run(
 
 	GimpPDBStatusType status = GIMP_PDB_SUCCESS;
 	if (strcmp(name, "file_shp_load") == 0) {
-		gimp_ui_init("u7shp", FALSE);
+		gimp_ui_init("u7shp", false);
 		if (run_mode != GIMP_RUN_NONINTERACTIVE) {
 			choose_palette();
 		}

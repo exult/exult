@@ -71,7 +71,7 @@ C_EXPORT gboolean on_loc_window_delete_event(
 	auto* loc = static_cast<Locator*>(
 			g_object_get_data(G_OBJECT(widget), "user_data"));
 	loc->show(false);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -87,7 +87,7 @@ C_EXPORT gboolean on_loc_draw_configure_event(
 			G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
 			"user_data"));
 	loc->configure(widget);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -105,7 +105,7 @@ gboolean Locator::on_loc_draw_expose_event(
 	gdk_cairo_get_clip_rectangle(cairo, &area);
 	loc->render(&area);
 	loc->set_graphic_context(nullptr);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -201,10 +201,10 @@ Locator::~Locator() {
 
 void Locator::show(bool tf) {
 	if (tf) {
-		gtk_widget_show(win);
+		gtk_widget_set_visible(win, true);
 		query_location();    // Get Exult's loc.
 	} else {
-		gtk_widget_hide(win);
+		gtk_widget_set_visible(win, false);
 	}
 }
 
@@ -504,7 +504,7 @@ void Locator::goto_mouse(
 gboolean Locator::mouse_press(GdkEventButton* event) {
 	dragging = false;
 	if (event->button != 1) {
-		return FALSE;    // Handling left-click.
+		return false;    // Handling left-click.
 	}
 	// Get mouse position, draw dims.
 	const int mx = static_cast<int>(event->x);
@@ -512,18 +512,18 @@ gboolean Locator::mouse_press(GdkEventButton* event) {
 	// Double-click?
 	if (reinterpret_cast<GdkEvent*>(event)->type == GDK_2BUTTON_PRESS) {
 		goto_mouse(mx, my);
-		return TRUE;
+		return true;
 	}
 	// On (or close to) view box?
 	if (mx < viewbox.x - 3 || my < viewbox.y - 3
 		|| mx > viewbox.x + viewbox.width + 6
 		|| my > viewbox.y + viewbox.height + 6) {
-		return FALSE;
+		return false;
 	}
 	dragging  = true;
 	drag_relx = mx - viewbox.x;    // Save rel. pos.
 	drag_rely = my - viewbox.y;
-	return TRUE;
+	return true;
 }
 
 /*
@@ -533,7 +533,7 @@ gboolean Locator::mouse_press(GdkEventButton* event) {
 gboolean Locator::mouse_release(GdkEventButton* event) {
 	ignore_unused_variable_warning(event);
 	dragging = false;
-	return TRUE;
+	return true;
 }
 
 /*
@@ -548,9 +548,9 @@ gboolean Locator::mouse_motion(GdkEventMotion* event) {
 	my    = static_cast<int>(event->y);
 	state = static_cast<GdkModifierType>(event->state);
 	if (!dragging || !(state & GDK_BUTTON1_MASK)) {
-		return FALSE;    // Not dragging with left button.
+		return false;    // Not dragging with left button.
 	}
 	// Delay sending location to Exult.
 	goto_mouse(mx - drag_relx, my - drag_rely, true);
-	return TRUE;
+	return true;
 }

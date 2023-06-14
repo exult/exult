@@ -470,7 +470,7 @@ gint Npc_chooser::configure(GdkEventConfigure* event) {
 	if (group) {          // Filtering?
 		enable_drop();    // Can drop NPCs here.
 	}
-	return TRUE;
+	return true;
 }
 
 /*
@@ -491,7 +491,7 @@ gint Npc_chooser::expose(
 			ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width),
 			ZoomDown(area.height));
 	chooser->set_graphic_context(nullptr);
-	return TRUE;
+	return true;
 }
 
 /*
@@ -529,10 +529,10 @@ gint Npc_chooser::mouse_press(
 		if (row0 > 0) {
 			scroll_row_vertical(row0 - 1);
 		}
-		return TRUE;
+		return true;
 	} else if (event->button == 5) {
 		scroll_row_vertical(row0 + 1);
-		return TRUE;
+		return true;
 	}
 	const int      old_selected = selected;
 	int            new_selected = -1;
@@ -569,7 +569,7 @@ gint Npc_chooser::mouse_press(
 		gtk_menu_popup_at_pointer(
 				GTK_MENU(create_popup()), reinterpret_cast<GdkEvent*>(event));
 	}
-	return TRUE;
+	return true;
 }
 
 /*
@@ -602,7 +602,7 @@ C_EXPORT gboolean on_npc_draw_key_press(
 		GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
 	ignore_unused_variable_warning(entry, event, user_data);
 	// Npc_chooser *chooser = static_cast<Npc_chooser *>(user_data);
-	return FALSE;    // Let parent handle it.
+	return false;    // Let parent handle it.
 }
 
 /*
@@ -682,17 +682,17 @@ gint Npc_chooser::drag_begin(
 	cout << "In DRAG_BEGIN of Npc" << endl;
 	auto* chooser = static_cast<Npc_chooser*>(data);
 	if (chooser->selected < 0) {
-		return FALSE;    // ++++Display a halt bitmap.
+		return false;    // ++++Display a halt bitmap.
 	}
 	// Get ->npc.
 	const int          npcnum = chooser->info[chooser->selected].npcnum;
 	const Estudio_npc& npc    = chooser->get_npcs()[npcnum];
 	Shape_frame*       shape  = chooser->ifile->get_shape(npc.shapenum, 0);
 	if (!shape) {
-		return FALSE;
+		return false;
 	}
 	chooser->set_drag_icon(context, shape);    // Set icon for dragging.
-	return TRUE;
+	return true;
 }
 
 /*
@@ -943,9 +943,9 @@ void Npc_chooser::all_frames_toggled(GtkToggleButton* btn, gpointer data) {
 	const bool on        = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	chooser->frames_mode = on;
 	if (on) {    // Frame => show horiz. scrollbar.
-		gtk_widget_show(chooser->hscroll);
+		gtk_widget_set_visible(chooser->hscroll, true);
 	} else {
-		gtk_widget_hide(chooser->hscroll);
+		gtk_widget_set_visible(chooser->hscroll, false);
 	}
 	// The old index is no longer valid, so we need to remember the shape.
 	int       indx    = chooser->selected >= 0
@@ -1071,22 +1071,22 @@ Npc_chooser::Npc_chooser(
 
 	// Put things in a vert. box.
 	GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+	gtk_box_set_homogeneous(GTK_BOX(vbox), false);
 	set_widget(vbox);    // This is our "widget"
-	gtk_widget_show(vbox);
+	gtk_widget_set_visible(vbox, true);
 
 	GtkWidget* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(hbox), FALSE);
-	gtk_widget_show(hbox);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	gtk_box_set_homogeneous(GTK_BOX(hbox), false);
+	gtk_widget_set_visible(hbox, true);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, true, true, 0);
 
 	// A frame looks nice.
 	GtkWidget* frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
 	widget_set_margins(
 			frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_widget_show(frame);
-	gtk_box_pack_start(GTK_BOX(hbox), frame, TRUE, TRUE, 0);
+	gtk_widget_set_visible(frame, true);
+	gtk_box_pack_start(GTK_BOX(hbox), frame, true, true, 0);
 
 	// NOTE:  draw is in Shape_draw.
 	// Indicate the events we want.
@@ -1104,7 +1104,7 @@ Npc_chooser::Npc_chooser(
 	g_signal_connect(
 			G_OBJECT(draw), "key-press-event",
 			G_CALLBACK(on_npc_draw_key_press), this);
-	gtk_widget_set_can_focus(GTK_WIDGET(draw), TRUE);
+	gtk_widget_set_can_focus(GTK_WIDGET(draw), true);
 	// Set mouse click handler.
 	g_signal_connect(
 			G_OBJECT(draw), "button-press-event", G_CALLBACK(Mouse_press),
@@ -1124,70 +1124,71 @@ Npc_chooser::Npc_chooser(
 	widget_set_margins(
 			draw, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_size_request(draw, w, h);
-	gtk_widget_show(draw);
+	gtk_widget_set_visible(draw, true);
 	// Want vert. scrollbar for the shapes.
 	GtkAdjustment* shape_adj = GTK_ADJUSTMENT(
 			gtk_adjustment_new(0, 0, std::ceil(get_count() / 4.0), 1, 1, 1));
 	vscroll = gtk_scrollbar_new(
 			GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT(shape_adj));
-	gtk_box_pack_start(GTK_BOX(hbox), vscroll, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vscroll, false, true, 0);
 	// Set scrollbar handler.
 	g_signal_connect(
 			G_OBJECT(shape_adj), "value-changed", G_CALLBACK(vscrolled), this);
-	gtk_widget_show(vscroll);
+	gtk_widget_set_visible(vscroll, true);
 	// Horizontal scrollbar.
 	shape_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 1600, 8, 16, 16));
 	hscroll   = gtk_scrollbar_new(
             GTK_ORIENTATION_HORIZONTAL, GTK_ADJUSTMENT(shape_adj));
-	gtk_box_pack_start(GTK_BOX(vbox), hscroll, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hscroll, false, true, 0);
 	// Set scrollbar handler.
 	g_signal_connect(
 			G_OBJECT(shape_adj), "value-changed", G_CALLBACK(hscrolled), this);
-	//++++  gtk_widget_hide(hscroll);   // Only shown in 'frames' mode.
+	//++++  gtk_widget_set_visible(hscroll, false);   // Only shown in 'frames'
+	// mode.
 	// Scroll events.
 	enable_draw_vscroll(draw);
 
 	// At the bottom, status bar & frame:
 	GtkWidget* hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(hbox1), FALSE);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox1, FALSE, FALSE, 0);
-	gtk_widget_show(hbox1);
+	gtk_box_set_homogeneous(GTK_BOX(hbox1), false);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox1, false, false, 0);
+	gtk_widget_set_visible(hbox1, true);
 	// At left, a status bar.
 	sbar     = gtk_statusbar_new();
 	sbar_sel = gtk_statusbar_get_context_id(GTK_STATUSBAR(sbar), "selection");
-	gtk_box_pack_start(GTK_BOX(hbox1), sbar, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox1), sbar, true, true, 0);
 	widget_set_margins(
 			sbar, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_widget_show(sbar);
+	gtk_widget_set_visible(sbar, true);
 	GtkWidget* label = gtk_label_new("Frame:");
-	gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox1), label, false, false, 0);
 	widget_set_margins(
 			label, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_widget_show(label);
+	gtk_widget_set_visible(label, true);
 	// A spin button for frame#.
 	frame_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 16, 1, 0, 0.0));
 	fspin     = gtk_spin_button_new(GTK_ADJUSTMENT(frame_adj), 1, 0);
 	g_signal_connect(
 			G_OBJECT(frame_adj), "value-changed", G_CALLBACK(frame_changed),
 			this);
-	gtk_box_pack_start(GTK_BOX(hbox1), fspin, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox1), fspin, false, false, 0);
 	widget_set_margins(
 			fspin, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_sensitive(fspin, false);
-	gtk_widget_show(fspin);
+	gtk_widget_set_visible(fspin, true);
 	// A toggle for 'All Frames'.
 	GtkWidget* allframes = gtk_toggle_button_new_with_label("Frames");
-	gtk_box_pack_start(GTK_BOX(hbox1), allframes, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox1), allframes, false, false, 0);
 	widget_set_margins(
 			allframes, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_widget_show(allframes);
+	gtk_widget_set_visible(allframes, true);
 	g_signal_connect(
 			G_OBJECT(allframes), "toggled", G_CALLBACK(all_frames_toggled),
 			this);
 	// Add search controls to bottom.
 	gtk_box_pack_start(
 			GTK_BOX(vbox), create_controls(find_controls | locate_controls),
-			FALSE, FALSE, 0);
+			false, false, 0);
 	red = ExultStudio::get_instance()->find_palette_color(63, 5, 5);
 }
 

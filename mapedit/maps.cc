@@ -86,7 +86,7 @@ void ExultStudio::new_map_dialog() {
 	set_toggle("newmap_copy_flats", false);
 	set_toggle("newmap_copy_fixed", false);
 	set_toggle("newmap_copy_ireg", false);
-	gtk_widget_show(win);
+	gtk_widget_set_visible(win, true);
 }
 
 /*
@@ -165,7 +165,7 @@ C_EXPORT void on_newmap_ok_clicked(GtkMenuItem* menuitem, gpointer user_data) {
 		}
 	}
 	studio->setup_maps_list();
-	gtk_widget_hide(win);
+	gtk_widget_set_visible(win, false);
 }
 
 /*
@@ -189,7 +189,7 @@ void ExultStudio::setup_maps_list() {
 			group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
 			g_object_set_data(G_OBJECT(item), "user_data", nullptr);
 			if (curmap == 0) {
-				gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+				gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), true);
 			}
 			break;
 		}
@@ -210,7 +210,7 @@ void ExultStudio::setup_maps_list() {
                 maps, name, G_CALLBACK(on_map_activate), ptrnum, group);
 		g_object_set_data(G_OBJECT(item), "user_data", ptrnum);
 		if (curmap == num) {
-			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), true);
 		}
 		group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
 	}

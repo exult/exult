@@ -160,7 +160,7 @@ void Create_file_selection(
 	gtk_button_set_image(GTK_BUTTON(btn), img);
 	gtk_window_set_modal(GTK_WINDOW(fsel), true);
 	if (action == GTK_FILE_CHOOSER_ACTION_SAVE) {
-		gtk_file_chooser_set_do_overwrite_confirmation(fsel, TRUE);
+		gtk_file_chooser_set_do_overwrite_confirmation(fsel, true);
 	}
 	if (path != nullptr && is_system_path_defined(path)) {
 		// Default to a writable location.
@@ -276,9 +276,9 @@ static gboolean on_find_key(
 		auto* chooser = static_cast<Object_browser*>(user_data);
 		chooser->search(
 				gtk_entry_get_text(GTK_ENTRY(chooser->get_find_text())), 1);
-		return TRUE;
+		return true;
 	}
-	return FALSE;    // Let parent handle it.
+	return false;    // Let parent handle it.
 }
 
 static void on_loc_down(GtkButton* button, gpointer user_data) {
@@ -318,14 +318,14 @@ GtkWidget* Object_browser::create_controls(
 	GtkWidget* topframe = gtk_frame_new(nullptr);
 	widget_set_margins(
 			topframe, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-	gtk_widget_show(topframe);
+	gtk_widget_set_visible(topframe, true);
 
 	// Everything goes in here.
 	GtkWidget* tophbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(tophbox), FALSE);
+	gtk_box_set_homogeneous(GTK_BOX(tophbox), false);
 	widget_set_margins(
 			tophbox, 1 * HMARGIN, 1 * HMARGIN, 1 * VMARGIN, 1 * VMARGIN);
-	gtk_widget_show(tophbox);
+	gtk_widget_set_visible(tophbox, true);
 	gtk_container_add(GTK_CONTAINER(topframe), tophbox);
 	/*
 	 *  The 'Find' controls.
@@ -334,40 +334,40 @@ GtkWidget* Object_browser::create_controls(
 		GtkWidget* frame = gtk_frame_new("Find");
 		widget_set_margins(
 				frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-		gtk_widget_show(frame);
-		gtk_box_pack_start(GTK_BOX(tophbox), frame, FALSE, FALSE, 0);
+		gtk_widget_set_visible(frame, true);
+		gtk_box_pack_start(GTK_BOX(tophbox), frame, false, false, 0);
 
 		GtkWidget* hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-		gtk_box_set_homogeneous(GTK_BOX(hbox2), FALSE);
-		gtk_widget_show(hbox2);
+		gtk_box_set_homogeneous(GTK_BOX(hbox2), false);
+		gtk_widget_set_visible(hbox2, true);
 		gtk_container_add(GTK_CONTAINER(frame), hbox2);
 
 		find_text = gtk_entry_new();
-		gtk_editable_set_editable(GTK_EDITABLE(find_text), TRUE);
-		gtk_entry_set_visibility(GTK_ENTRY(find_text), TRUE);
-		gtk_widget_set_can_focus(GTK_WIDGET(find_text), TRUE);
+		gtk_editable_set_editable(GTK_EDITABLE(find_text), true);
+		gtk_entry_set_visibility(GTK_ENTRY(find_text), true);
+		gtk_widget_set_can_focus(GTK_WIDGET(find_text), true);
 		widget_set_margins(
 				find_text, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-		gtk_widget_show(find_text);
-		gtk_box_pack_start(GTK_BOX(hbox2), find_text, FALSE, FALSE, 0);
+		gtk_widget_set_visible(find_text, true);
+		gtk_box_pack_start(GTK_BOX(hbox2), find_text, false, false, 0);
 		gtk_widget_set_size_request(find_text, 110, -1);
 
 		GtkWidget* hbox3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-		gtk_box_set_homogeneous(GTK_BOX(hbox3), TRUE);
-		gtk_widget_show(hbox3);
-		gtk_box_pack_start(GTK_BOX(hbox2), hbox3, FALSE, FALSE, 0);
+		gtk_box_set_homogeneous(GTK_BOX(hbox3), true);
+		gtk_widget_set_visible(hbox3, true);
+		gtk_box_pack_start(GTK_BOX(hbox2), hbox3, false, false, 0);
 
 		GtkWidget* find_down = Create_arrow_button(
 				GTK_ARROW_DOWN, G_CALLBACK(on_find_down), this);
 		widget_set_margins(
 				find_down, 1 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-		gtk_box_pack_start(GTK_BOX(hbox3), find_down, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(hbox3), find_down, true, true, 0);
 
 		GtkWidget* find_up = Create_arrow_button(
 				GTK_ARROW_UP, G_CALLBACK(on_find_up), this);
 		widget_set_margins(
 				find_up, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-		gtk_box_pack_start(GTK_BOX(hbox3), find_up, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(hbox3), find_up, true, true, 0);
 
 		g_signal_connect(
 				G_OBJECT(find_text), "key-press-event", G_CALLBACK(on_find_key),
@@ -380,28 +380,28 @@ GtkWidget* Object_browser::create_controls(
 		GtkWidget* frame = gtk_frame_new("Locate");
 		widget_set_margins(
 				frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-		gtk_widget_show(frame);
-		gtk_box_pack_start(GTK_BOX(tophbox), frame, FALSE, FALSE, 0);
+		gtk_widget_set_visible(frame, true);
+		gtk_box_pack_start(GTK_BOX(tophbox), frame, false, false, 0);
 
 		GtkWidget* lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-		gtk_box_set_homogeneous(GTK_BOX(lbox), FALSE);
-		gtk_widget_show(lbox);
+		gtk_box_set_homogeneous(GTK_BOX(lbox), false);
+		gtk_widget_set_visible(lbox, true);
 		gtk_container_add(GTK_CONTAINER(frame), lbox);
 		GtkWidget* bbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-		gtk_box_set_homogeneous(GTK_BOX(bbox), TRUE);
-		gtk_widget_show(bbox);
-		gtk_box_pack_start(GTK_BOX(lbox), bbox, TRUE, TRUE, 0);
+		gtk_box_set_homogeneous(GTK_BOX(bbox), true);
+		gtk_widget_set_visible(bbox, true);
+		gtk_box_pack_start(GTK_BOX(lbox), bbox, true, true, 0);
 
 		loc_down = Create_arrow_button(
 				GTK_ARROW_DOWN, G_CALLBACK(on_loc_down), this);
 		widget_set_margins(
 				loc_down, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-		gtk_box_pack_start(GTK_BOX(bbox), loc_down, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(bbox), loc_down, true, true, 0);
 
 		loc_up = Create_arrow_button(GTK_ARROW_UP, G_CALLBACK(on_loc_up), this);
 		widget_set_margins(
 				loc_up, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-		gtk_box_pack_start(GTK_BOX(bbox), loc_up, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(bbox), loc_up, true, true, 0);
 
 		if (controls & static_cast<int>(locate_frame)) {
 			GtkWidget* lbl = gtk_label_new(" F:");
@@ -409,17 +409,17 @@ GtkWidget* Object_browser::create_controls(
 					lbl, 0 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 			gtk_label_set_xalign(GTK_LABEL(lbl), 0.9);
 			gtk_label_set_yalign(GTK_LABEL(lbl), 0.5);
-			gtk_box_pack_start(GTK_BOX(lbox), lbl, TRUE, TRUE, 0);
-			gtk_widget_show(lbl);
+			gtk_box_pack_start(GTK_BOX(lbox), lbl, true, true, 0);
+			gtk_widget_set_visible(lbl, true);
 
 			loc_f = gtk_entry_new();
-			gtk_editable_set_editable(GTK_EDITABLE(loc_f), TRUE);
-			gtk_entry_set_visibility(GTK_ENTRY(loc_f), TRUE);
-			gtk_widget_set_can_focus(GTK_WIDGET(loc_f), TRUE);
+			gtk_editable_set_editable(GTK_EDITABLE(loc_f), true);
+			gtk_entry_set_visibility(GTK_ENTRY(loc_f), true);
+			gtk_widget_set_can_focus(GTK_WIDGET(loc_f), true);
 			widget_set_margins(
 					loc_f, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-			gtk_widget_show(loc_f);
-			gtk_box_pack_start(GTK_BOX(lbox), loc_f, TRUE, TRUE, 0);
+			gtk_widget_set_visible(loc_f, true);
+			gtk_box_pack_start(GTK_BOX(lbox), loc_f, true, true, 0);
 			gtk_widget_set_size_request(loc_f, 64, -1);
 		}
 		if (controls & static_cast<int>(locate_quality)) {
@@ -428,17 +428,17 @@ GtkWidget* Object_browser::create_controls(
 					lbl, 0 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 			gtk_label_set_xalign(GTK_LABEL(lbl), 0.9);
 			gtk_label_set_yalign(GTK_LABEL(lbl), 0.5);
-			gtk_box_pack_start(GTK_BOX(lbox), lbl, TRUE, TRUE, 0);
-			gtk_widget_show(lbl);
+			gtk_box_pack_start(GTK_BOX(lbox), lbl, true, true, 0);
+			gtk_widget_set_visible(lbl, true);
 
 			loc_q = gtk_entry_new();
-			gtk_editable_set_editable(GTK_EDITABLE(loc_q), TRUE);
-			gtk_entry_set_visibility(GTK_ENTRY(loc_q), TRUE);
-			gtk_widget_set_can_focus(GTK_WIDGET(loc_q), TRUE);
+			gtk_editable_set_editable(GTK_EDITABLE(loc_q), true);
+			gtk_entry_set_visibility(GTK_ENTRY(loc_q), true);
+			gtk_widget_set_can_focus(GTK_WIDGET(loc_q), true);
 			widget_set_margins(
 					loc_q, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-			gtk_widget_show(loc_q);
-			gtk_box_pack_start(GTK_BOX(lbox), loc_q, TRUE, TRUE, 0);
+			gtk_widget_set_visible(loc_q, true);
+			gtk_box_pack_start(GTK_BOX(lbox), loc_q, true, true, 0);
 			gtk_widget_set_size_request(loc_q, 64, -1);
 		}
 	}
@@ -449,25 +449,25 @@ GtkWidget* Object_browser::create_controls(
 		GtkWidget* frame = gtk_frame_new("Move");
 		widget_set_margins(
 				frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-		gtk_widget_show(frame);
-		gtk_box_pack_start(GTK_BOX(tophbox), frame, FALSE, FALSE, 0);
+		gtk_widget_set_visible(frame, true);
+		gtk_box_pack_start(GTK_BOX(tophbox), frame, false, false, 0);
 
 		GtkWidget* bbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-		gtk_box_set_homogeneous(GTK_BOX(bbox), TRUE);
-		gtk_widget_show(bbox);
+		gtk_box_set_homogeneous(GTK_BOX(bbox), true);
+		gtk_widget_set_visible(bbox, true);
 		gtk_container_add(GTK_CONTAINER(frame), bbox);
 
 		move_down = Create_arrow_button(
 				GTK_ARROW_DOWN, G_CALLBACK(on_move_down), this);
 		widget_set_margins(
 				move_down, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-		gtk_box_pack_start(GTK_BOX(bbox), move_down, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(bbox), move_down, true, true, 0);
 
 		move_up = Create_arrow_button(
 				GTK_ARROW_UP, G_CALLBACK(on_move_up), this);
 		widget_set_margins(
 				move_up, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
-		gtk_box_pack_start(GTK_BOX(bbox), move_up, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(bbox), move_up, true, true, 0);
 	}
 	return topframe;
 }
