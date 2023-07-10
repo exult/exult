@@ -799,6 +799,10 @@ static string Get_config_dir(const string& home_dir) {
 	string config_dir(home_dir);
 	config_dir += "/Library/Preferences";
 	return config_dir;
+#elif defined(__HAIKU__)
+	string config_dir(home_dir);
+	config_dir += "/config/settings/exult";
+	return config_dir;
 #else
 	return home_dir;
 #endif
@@ -814,6 +818,11 @@ static string Get_savehome_dir(const string& home_dir, const string& config_dir)
 	ignore_unused_variable_warning(config_dir);
 	string savehome_dir(home_dir);
 	savehome_dir += "/Library/Application Support/Exult";
+	return savehome_dir;
+#elif defined(__HAIKU__)
+	ignore_unused_variable_warning(config_dir);
+	string savehome_dir(home_dir);
+	savehome_dir += "/config/settings/exult";
 	return savehome_dir;
 #elif defined(XWIN)
 	ignore_unused_variable_warning(config_dir);
@@ -835,6 +844,11 @@ static string Get_gamehome_dir(const string& home_dir, const string& config_dir)
 #elif defined(MACOSX)
 	ignore_unused_variable_warning(home_dir, config_dir);
 	return "/Library/Application Support/Exult";
+#elif defined(__HAIKU__)
+	ignore_unused_variable_warning(config_dir);
+	string gamehome_dir(home_dir);
+	gamehome_dir += "/config/non-packaged/data/exult";
+	return gamehome_dir;
 #elif defined(XWIN)
 	ignore_unused_variable_warning(home_dir, config_dir);
 	return EXULT_DATADIR;
