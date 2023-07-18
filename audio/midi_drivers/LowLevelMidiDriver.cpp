@@ -398,7 +398,7 @@ void LowLevelMidiDriver::sendComMessage(ComMessage& message)
 
 void LowLevelMidiDriver::waitTillNoComMessages()
 {
-	while (peekComMessageType()) yield ();
+	while (thread && peekComMessageType()) yield ();
 }
 
 //
