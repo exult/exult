@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
 	}
 	fclose(f);
 	// clean up
-	SDL_FreeSurface(mock_map);
+	SDL_DestroySurface(mock_map);
 	SDL_Quit();
 	printf("Done!\n");
 	return 0;

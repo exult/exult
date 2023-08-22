@@ -326,7 +326,7 @@ void Image_window::static_init() {
 	Uint32 Bmask;
 	Uint32 Amask;
 	if (SDL_GetDesktopDisplayMode(0, &dispmode) == 0
-		&& SDL_PixelFormatEnumToMasks(dispmode.format, &bpp, &Rmask, &Gmask, &Bmask, &Amask) == SDL_TRUE) {
+		&& SDL_GetMasksForPixelFormatEnum(dispmode.format, &bpp, &Rmask, &Gmask, &Bmask, &Amask) == SDL_TRUE) {
 		desktop_displaymode = dispmode;
 		desktop_depth = bpp;
 	} else {
@@ -431,7 +431,7 @@ void Image_window::static_init() {
 		}
 	}
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID)
+#if !defined(__IOS__) && !defined(ANDROID)
 	if (windowed == 0)
 		cerr << "SDL Reports 640x400 windowed surfaces are not OK. Windowed scalers may not work properly." << endl;
 #endif
@@ -492,7 +492,7 @@ void Image_window::create_surface(
 	}
 
 	if (!paletted_surface && !force_bpp) {      // No scaling, or failed?
-		uint32 flags = SDL_SWSURFACE | SDL_WINDOW_ALLOW_HIGHDPI;
+		uint32 flags = SDL_SWSURFACE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 		if (fullscreen) {
 			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 		}
@@ -520,11 +520,11 @@ void Image_window::create_surface(
 		SDL_RenderPresent(screen_renderer);
 
 		int sbpp;
-        	Uint32 sRmask;
-        	Uint32 sGmask;
-        	Uint32 sBmask;
-        	Uint32 sAmask;
-		SDL_PixelFormatEnumToMasks(desktop_displaymode.format, &sbpp, &sRmask, &sGmask, &sBmask, &sAmask);
+		Uint32 sRmask;
+		Uint32 sGmask;
+		Uint32 sBmask;
+		Uint32 sAmask;
+		SDL_GetMasksForPixelFormatEnum(desktop_displaymode.format, &sbpp, &sRmask, &sGmask, &sBmask, &sAmask);
 		display_surface = SDL_CreateRGBSurface(0,
 				(w / scale), (h / scale), sbpp,
                                 sRmask, sGmask, sBmask, sAmask);
@@ -581,7 +581,7 @@ void Image_window::create_surface(
 
 bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	int hwdepth = bpp;
-	uint32 flags = SDL_SWSURFACE | SDL_WINDOW_ALLOW_HIGHDPI;
+	uint32 flags = SDL_SWSURFACE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 	if (fullscreen) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
@@ -605,7 +605,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 		int dw;
 		int dh;
 		//with HighDPi this returns the higher resolutions
-		SDL_GetRendererOutputSize(screen_renderer, &dw, &dh);
+		SDL_GetCurrentRenderOutputSize(screen_renderer, &dw, &dh);
 		w=dw;
 		h=dh;
 		const Resolution res = { w, h };
@@ -615,7 +615,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 		SDL_GetWindowSize(screen_window, &sw, nullptr);
 		nativescale = float(dw) / sw;
 		//high resolution fullscreen needs this to make the whole screen available
-		SDL_RenderSetLogicalSize(screen_renderer, w, h);
+		SDL_SetRenderLogicalPresentation(screen_renderer, w, h);
 	} else
 		//make sure the window has the right dimensions
 		SDL_SetWindowSize(screen_window, w, h);
@@ -626,11 +626,11 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	SDL_RenderPresent(screen_renderer);
 
 	int sbpp;
-       	Uint32 sRmask;
-       	Uint32 sGmask;
-       	Uint32 sBmask;
-       	Uint32 sAmask;
-	SDL_PixelFormatEnumToMasks(desktop_displaymode.format, &sbpp, &sRmask, &sGmask, &sBmask, &sAmask);
+	Uint32 sRmask;
+	Uint32 sGmask;
+	Uint32 sBmask;
+	Uint32 sAmask;
+	SDL_GetMasksForPixelFormatEnum(desktop_displaymode.format, &sbpp, &sRmask, &sGmask, &sBmask, &sAmask);
 
 	display_surface = SDL_CreateRGBSurface(0,
 			w, h, sbpp,
@@ -724,8 +724,8 @@ bool Image_window::try_scaler(int w, int h) {
 */
 
 void Image_window::free_surface() {
-	if (draw_surface != nullptr && draw_surface != display_surface && draw_surface != inter_surface) SDL_FreeSurface(draw_surface);
-	if (inter_surface != nullptr && inter_surface != display_surface) SDL_FreeSurface(inter_surface);
+	if (draw_surface != nullptr && draw_surface != display_surface && draw_surface != inter_surface) SDL_DestroySurface(draw_surface);
+	if (inter_surface != nullptr && inter_surface != display_surface) SDL_DestroySurface(inter_surface);
 	paletted_surface = nullptr;
 	inter_surface = nullptr;
 	draw_surface = nullptr;
@@ -1141,7 +1141,7 @@ void Image_window::UpdateRect(SDL_Surface *surf, int x, int y, int w, int h)
 	SDL_UpdateTexture(screen_texture, nullptr, surf->pixels, surf->pitch);
 	ignore_unused_variable_warning(x, y, w, h);
 	//SDL_Rect destRect = {x, y, w, h};
-	SDL_RenderCopy(screen_renderer, screen_texture, nullptr, nullptr);
+	SDL_RenderTexture(screen_renderer, screen_texture, nullptr, nullptr);
 	SDL_RenderPresent(screen_renderer);
 }
 
@@ -1160,7 +1160,7 @@ int Image_window::VideoModeOK(int width, int height)
 		Uint32 Bmask;
 		Uint32 Amask;
 		if (SDL_GetDisplayMode(0, j, &dispmode) == 0
-		        && SDL_PixelFormatEnumToMasks(dispmode.format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask) == SDL_TRUE
+		        && SDL_GetMasksForPixelFormatEnum(dispmode.format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask) == SDL_TRUE
 		        && dispmode.w == width
 		        && dispmode.h == height) {
 			return nbpp;

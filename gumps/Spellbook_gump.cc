@@ -518,9 +518,9 @@ bool Spellbook_gump::handle_kbd_event(void *vev) {
 	const SDL_Event &ev = *static_cast<SDL_Event *>(vev);
 	const int chr = ev.key.keysym.sym;
 
-	if (ev.type == SDL_KEYUP)
+	if (ev.type == SDL_EVENT_KEY_UP)
 		return true;        // Ignoring key-up at present.
-	if (ev.type != SDL_KEYDOWN)
+	if (ev.type != SDL_EVENT_KEY_DOWN)
 		return false;
 	switch (chr) {
 	case SDLK_RETURN:

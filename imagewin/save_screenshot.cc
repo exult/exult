@@ -360,8 +360,8 @@ bool SaveIMG_RW(
 				bounds.y = 0;
 				bounds.w = saveme->w;
 				bounds.h = saveme->h;
-				if (SDL_LowerBlit(saveme, &bounds, surface, &bounds) < 0) {
-					SDL_FreeSurface(surface);
+				if (SDL_BlitSurfaceUnchecked(saveme, &bounds, surface, &bounds) < 0) {
+					SDL_DestroySurface(surface);
 					cout << "Couldn't convert image to 24 bpp for screenshot";
 					found_error = true;
 					surface     = nullptr;
@@ -378,7 +378,7 @@ bool SaveIMG_RW(
 		/* Close it up.. */
 		SDL_UnlockSurface(surface);
 		if (surface != saveme) {
-			SDL_FreeSurface(surface);
+			SDL_DestroySurface(surface);
 		}
 	}
 

@@ -378,7 +378,7 @@ void getVersionInfo(std::ostream &out) {
 	out << "FreeBSD";
 #elif (defined(MACOSX))
 	out << "macOS";
-#elif (defined(__IPHONEOS__))
+#elif (defined(__IOS__))
 	out << "iOS";
 #elif (defined(NETBSD))
 	out << "NetBSD";

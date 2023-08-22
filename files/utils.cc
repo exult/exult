@@ -35,7 +35,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#ifdef __IPHONEOS__
+#ifdef __IOS__
 #  include "ios_utils.h"
 #endif
 
@@ -52,7 +52,7 @@
 #include "fnames.h"
 #include "ignore_unused_variable_warning.h"
 
-#if defined(MACOSX) || defined(__IPHONEOS__)
+#if defined(MACOSX) || defined(__IOS__)
 #  include <CoreFoundation/CoreFoundation.h>
 #  include <sys/param.h> // for MAXPATHLEN
 #endif
@@ -702,7 +702,7 @@ string Get_home() {
 	return home_directory;
 }
 
-#if defined(MACOSX) || defined(__IPHONEOS__)
+#if defined(MACOSX) || defined(__IOS__)
 struct CFDeleter
 {
 	void operator()(CFTypeRef ptr) const
@@ -742,7 +742,7 @@ void setup_data_dir(
     const std::string &data_path,
     const char *runpath
 ) {
-#if defined(MACOSX) || defined(__IPHONEOS__)
+#if defined(MACOSX) || defined(__IOS__)
 	// Can we try from the bundle?
 	setup_app_bundle_resource();
 	if (is_system_path_defined("<APP_BUNDLE_RES>")) {
@@ -753,7 +753,7 @@ void setup_data_dir(
 			clear_system_path("<BUNDLE>");
 	}
 #endif
-#ifdef __IPHONEOS__
+#ifdef __IOS__
 	if (is_system_path_defined("<BUNDLE>")) {
 		// We have the flxfiles in the bundle, so lets use it.
 		// But lets use <DATA> in the iTunes file sharing.
@@ -815,7 +815,7 @@ void setup_data_dir(
 }
 
 static string Get_config_dir(const string& home_dir) {
-#ifdef __IPHONEOS__
+#ifdef __IOS__
 	ignore_unused_variable_warning(home_dir);
 	return ios_get_documents_dir();
 #elif defined(MACOSX)
@@ -832,7 +832,7 @@ static string Get_config_dir(const string& home_dir) {
 }
 
 static string Get_savehome_dir(const string& home_dir, const string& config_dir) {
-#ifdef __IPHONEOS__
+#ifdef __IOS__
 	ignore_unused_variable_warning(home_dir);
 	string savehome_dir(config_dir);
 	savehome_dir += "/save";
@@ -859,7 +859,7 @@ static string Get_savehome_dir(const string& home_dir, const string& config_dir)
 }
 
 static string Get_gamehome_dir(const string& home_dir, const string& config_dir) {
-#ifdef __IPHONEOS__
+#ifdef __IOS__
 	ignore_unused_variable_warning(home_dir);
 	string gamehome_dir(config_dir);
 	gamehome_dir += "/game";

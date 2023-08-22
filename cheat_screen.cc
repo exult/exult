@@ -177,7 +177,7 @@ void CheatScreen::show_screen() {
 	font = fontManager.get_font("MENU_FONT");
 	clock = gwin->get_clock();
 	maxx = gwin->get_width();
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	maxy = 200;
 #else
 	maxy = gwin->get_height();
@@ -210,7 +210,7 @@ void CheatScreen::show_screen() {
 		if (!gumpman->gump_mode()) {
 			touchui->showGameControls();
 		}
-		if (SDL_IsTextInputActive()) {
+		if (SDL_TextInputActive()) {
 			SDL_StopTextInput();
 		}
 	}
@@ -228,7 +228,7 @@ void CheatScreen::show_screen() {
 void CheatScreen::SharedPrompt(char *input, const Cheat_Prompt &mode) {
 	char buf[512];
 
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int prompt = 81;
 	const int promptmes = 90;
 	const int offsetx = 15;
@@ -445,18 +445,18 @@ bool CheatScreen::SharedInput(char *input, int len, int &command, Cheat_Prompt &
 		Delay();
 		while (SDL_PollEvent(&event)) {
 			// Touch on the cheat screen will bring up the keyboard
-			if (event.type == SDL_MOUSEBUTTONDOWN) {
-				if (SDL_IsTextInputActive())
+			if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+				if (SDL_TextInputActive())
 					SDL_StopTextInput();
 				else
 					SDL_StartTextInput();
 			}
 
-			if (event.type != SDL_KEYDOWN)
+			if (event.type != SDL_EVENT_KEY_DOWN)
 				continue;
 			const SDL_Keysym &key = event.key.keysym;
 
-			if ((key.sym == SDLK_s) && (key.mod & KMOD_ALT) && (key.mod & KMOD_CTRL)) {
+			if ((key.sym == SDLK_s) && (key.mod & SDL_KMOD_ALT) && (key.mod & SDL_KMOD_CTRL)) {
 				make_screenshot(true);
 				return false;
 			}
@@ -500,7 +500,7 @@ bool CheatScreen::SharedInput(char *input, int len, int &command, Cheat_Prompt &
 				} else if ((key.sym < 256 && key.sym >= 0 && std::isalnum(key.sym)) || key.sym == ' ') {
 					const int curlen = std::strlen(input);
 					char chr = key.sym;
-					if (key.mod & KMOD_SHIFT) {
+					if (key.mod & SDL_KMOD_SHIFT) {
 						chr = static_cast<char>(std::toupper(static_cast<unsigned char>(chr)));
 					}
 					if (curlen < (len - 1)) {
@@ -601,7 +601,7 @@ void CheatScreen::NormalLoop() {
 
 void CheatScreen::NormalDisplay() {
 	char    buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 15;
 	const int offsety1 = 108;
 	const int offsety2 = 54;
@@ -655,7 +655,7 @@ void CheatScreen::NormalDisplay() {
 
 void CheatScreen::NormalMenu() {
 	char    buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 15;
 	const int offsety1 = 73;
 	const int offsety2 = 55;
@@ -674,7 +674,7 @@ void CheatScreen::NormalMenu() {
 	// Left Column
 
 	// Use
-#if !defined(__IPHONEOS__) && !defined(ANDROID)
+#if !defined(__IOS__) && !defined(ANDROID)
 	// Paperdolls can be toggled in the gumps, no need here for small screens
 	Shape_manager *sman = Shape_manager::get_instance();
 	if (sman->can_use_paperdolls() && sman->are_paperdolls_enabled())
@@ -707,7 +707,7 @@ void CheatScreen::NormalMenu() {
 	// Set Time
 	font->paint_text_fixedwidth(ibuf, "[S]et Time", offsetx + offsetx1, offsety4, 8);
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID)
+#if !defined(__IOS__) && !defined(ANDROID)
 	// for small screens taking the liberty of leaving that out
 	// Time Rate
 	snprintf(buf, 512, "[+-] Time Rate: %3i", clock->get_time_rate());
@@ -888,7 +888,7 @@ bool CheatScreen::NormalCheck(char *input, int &command, Cheat_Prompt &mode, boo
 
 void CheatScreen::ActivityDisplay() {
 	char    buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsety1 = 99;
 #else
 	const int offsety1 = 0;
@@ -989,7 +989,7 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 
 CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 	bool looping = true;
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 15;
 	const int offsety1 = 83;
 	const int offsety2 = 72;
@@ -1016,7 +1016,7 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 	while (looping) {
 		gwin->clear_screen();
 
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 		// on small screens we want lean and mean, so begone NormalDisplay
 		font->paint_text_fixedwidth(ibuf, "Global Flags", 15, 0, 8);
 #else
@@ -1190,7 +1190,7 @@ CheatScreen::Cheat_Prompt CheatScreen::NPCLoop(int num) {
 
 void CheatScreen::NPCDisplay(Actor *actor, int &num) {
 	char    buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 15;
 	const int offsety1 = 73;
 #else
@@ -1256,7 +1256,7 @@ void CheatScreen::NPCDisplay(Actor *actor, int &num) {
 
 void CheatScreen::NPCMenu(Actor *actor, int &num) {
 	ignore_unused_variable_warning(num);
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 15;
 	const int offsety1 = 74;
 	const int offsetx2 = 15;
@@ -1480,7 +1480,7 @@ bool CheatScreen::NPCCheck(char *input, int &command, Cheat_Prompt &mode, bool &
 //
 
 void CheatScreen::FlagLoop(Actor *actor) {
-#if !defined(__IPHONEOS__) && !defined(ANDROID)
+#if !defined(__IOS__) && !defined(ANDROID)
 	int num = actor->get_npc_num();
 #endif
 	bool looping = true;
@@ -1499,7 +1499,7 @@ void CheatScreen::FlagLoop(Actor *actor) {
 	while (looping) {
 		gwin->clear_screen();
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID)
+#if !defined(__IOS__) && !defined(ANDROID)
 		// First the display
 		NPCDisplay(actor, num);
 #endif
@@ -1527,7 +1527,7 @@ void CheatScreen::FlagLoop(Actor *actor) {
 
 void CheatScreen::FlagMenu(Actor *actor) {
 	char    buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 10;
 	const int offsetx1 = 6;
 	const int offsety1 = 92;
@@ -2102,7 +2102,7 @@ void CheatScreen::BusinessLoop(Actor *actor) {
 void CheatScreen::BusinessDisplay(Actor *actor) {
 	char    buf[512];
 	const Tile_coord t = actor->get_tile();
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 10;
 	const int offsety1 = 20;
 	const int offsetx2 = 161;
@@ -2122,7 +2122,7 @@ void CheatScreen::BusinessDisplay(Actor *actor) {
 	snprintf(buf, 512, "Loc (%04i, %04i, %02i)", t.tx, t.ty, t.tz);
 	font->paint_text_fixedwidth(ibuf, buf, 0, 8, 8);
 
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const char activity_msg[] = "-Act: %2i %s";
 #else
 	const char activity_msg[] = "Current Activity:  %2i - %s";
@@ -2133,7 +2133,7 @@ void CheatScreen::BusinessDisplay(Actor *actor) {
 
 	// Avatar can't have schedules
 	if (actor->get_npc_num() > 0) {
-#if !defined(__IPHONEOS__) && !defined(ANDROID)
+#if !defined(__IOS__) && !defined(ANDROID)
 		font->paint_text_fixedwidth(ibuf, "Schedules:", offsetx, 16, 8);
 #endif
 
@@ -2171,7 +2171,7 @@ void CheatScreen::BusinessDisplay(Actor *actor) {
 
 void CheatScreen::BusinessMenu(Actor *actor) {
 	// Left Column
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 10;
 #else
 	const int offsetx = 0;
@@ -2344,7 +2344,7 @@ bool CheatScreen::BusinessCheck(char *input, int &command, Cheat_Prompt &mode, b
 //
 
 void CheatScreen::StatLoop(Actor *actor) {
-#if !defined(__IPHONEOS__) && !defined(ANDROID)
+#if !defined(__IOS__) && !defined(ANDROID)
     int num = actor->get_npc_num();
 #endif
 	bool looping = true;
@@ -2363,7 +2363,7 @@ void CheatScreen::StatLoop(Actor *actor) {
 	while (looping) {
 		gwin->clear_screen();
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID)
+#if !defined(__IOS__) && !defined(ANDROID)
 		// First the display
 		NPCDisplay(actor, num);
 #endif
@@ -2391,7 +2391,7 @@ void CheatScreen::StatLoop(Actor *actor) {
 
 void CheatScreen::StatMenu(Actor *actor) {
 	char    buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 15;
 	const int offsety1 = 92;
 #else
@@ -2539,7 +2539,7 @@ bool CheatScreen::StatCheck(char *input, int &command, Cheat_Prompt &mode, bool 
 //
 
 CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor *actor) {
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 15;
 	const int offsety1 = 83;
 	const int offsety2 = 72;
@@ -2565,7 +2565,7 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor *actor) {
 	while (looping) {
 		gwin->clear_screen();
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID)
+#if !defined(__IOS__) && !defined(ANDROID)
 		NPCDisplay(actor, npc_num);
 #endif
 
@@ -2748,7 +2748,7 @@ void CheatScreen::TeleportDisplay() {
 	const Tile_coord t = gwin->get_main_actor()->get_tile();
 	const int curmap = gwin->get_map()->get_num();
 	const int highest = Find_highest_map();
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 15;
 	const int offsety1 = 54;
 #else
@@ -2756,7 +2756,7 @@ void CheatScreen::TeleportDisplay() {
 	const int offsety1 = 0;
 #endif
 
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	font->paint_text_fixedwidth(ibuf, "Teleport Menu - Dangerous!", offsetx, 0, 8);
 #else
 	font->paint_text_fixedwidth(ibuf, "Teleport Menu", offsetx, 0, 8);
@@ -2765,7 +2765,7 @@ void CheatScreen::TeleportDisplay() {
 
 	const int longi = ((t.tx - 0x3A5) / 10);
 	const int lati = ((t.ty - 0x46E) / 10);
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	snprintf(buf, 512, "Coords %d %s %d %s, Map #%d of %d",
 		abs(lati), (lati < 0 ? "North" : "South"),
 		abs(longi), (longi < 0 ? "West" : "East"), curmap, highest);
@@ -2785,7 +2785,7 @@ void CheatScreen::TeleportDisplay() {
 	         t.tx, t.ty, t.tz);
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, 81 - offsety1, 8);
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID)
+#if !defined(__IOS__) && !defined(ANDROID)
 	snprintf(buf, 512, "On Map #%d of %d",
 	         curmap, highest);
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, 90, 8);
@@ -2795,7 +2795,7 @@ void CheatScreen::TeleportDisplay() {
 
 void CheatScreen::TeleportMenu() {
 
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(__IOS__) || defined(ANDROID)
 	const int offsetx = 15;
 	const int offsety1 = 64;
 	const int offsetx2 = 175;

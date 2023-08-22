@@ -159,9 +159,9 @@ bool    Configuration::read_config_file(const string &input_filename, const stri
 	// a slash or with two dots and a slash.
 	// Or if it's not a relative path.
 	if (!is_path_absolute(get_system_path(input_filename))) {
-#if (defined(XWIN) || defined(MACOSX) || defined(_WIN32) || defined(__IPHONEOS__))
+#if (defined(XWIN) || defined(MACOSX) || defined(_WIN32) || defined(__IOS__))
 		fname = "<CONFIG>/";
-#   if (defined(XWIN) && !defined(MACOSX) && !defined(__IPHONEOS__))
+#   if (defined(XWIN) && !defined(MACOSX) && !defined(__IOS__))
 		fname += ".";
 #   endif
 		fname += input_filename;

@@ -30,7 +30,7 @@ int img_read(char *filein) {
 	g_statics.image_in = IMG_Load_RW(rw, 0);
 	if (g_statics.image_in == NULL) {
 		fprintf(stderr, "ERROR: %s\n", SDL_GetError());
-		SDL_FreeRW(rw);
+		SDL_DestroyRW(rw);
 		return -1;
 	}
 
@@ -38,15 +38,15 @@ int img_read(char *filein) {
 	SDL_PixelFormat *fmt = g_statics.image_in->format;
 	if (fmt->BitsPerPixel != 8) {
 		fprintf(stderr, "ERROR: the image file is not in 8 bpp. Please convert it.\n");
-		SDL_FreeSurface(g_statics.image_in);
-		SDL_FreeRW(rw);
+		SDL_DestroySurface(g_statics.image_in);
+		SDL_DestroyRW(rw);
 		return -1;
 	}
 
 	if (g_statics.image_in->w != 192 || g_statics.image_in->h != 192) {
 		fprintf(stderr, "ERROR: The image file is not 192x192 pixels. Please modify it.\n");
-		SDL_FreeSurface(g_statics.image_in);
-		SDL_FreeRW(rw);
+		SDL_DestroySurface(g_statics.image_in);
+		SDL_DestroyRW(rw);
 		return -1;
 	}
 
@@ -68,7 +68,7 @@ int img_read(char *filein) {
 	g_variables.image_out = SDL_ConvertSurface(g_variables.image_out, g_statics.image_in->format, SDL_SWSURFACE);
 
 	// a bit of clean up
-	SDL_FreeRW(rw);
+	SDL_DestroyRW(rw);
 	return 0;
 }
 

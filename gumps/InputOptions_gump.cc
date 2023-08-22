@@ -101,7 +101,7 @@ void InputOptions_gump::build_buttons() {
 	buttons[id_scroll_mouse] = std::make_unique<InputTextToggle>(this, &InputOptions_gump::toggle_scroll_mouse,
 	        yesNo, scroll_mouse, colx[5], rowy[++y_index], 44);
 
-#ifndef __IPHONEOS__
+#ifndef __IOS__
 	buttons[id_mouse3rd] = std::make_unique<InputTextToggle>(this, &InputOptions_gump::toggle_mouse3rd,
 	        yesNo, mouse3rd, colx[5], rowy[++y_index], 44);
 

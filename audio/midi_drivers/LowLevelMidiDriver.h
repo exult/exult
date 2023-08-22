@@ -188,14 +188,14 @@ private:
 	public:
 		SDLMutex();
 		~SDLMutex();
-		operator SDL_mutex*() {
+		operator SDL_Mutex*() {
 			return mutex;
 		}
 		void lock();
 		void unlock();
 
 	private:
-		SDL_mutex *mutex;
+		SDL_Mutex *mutex;
 	};
 
 	bool					uploading_timbres;	// Set in 'uploading' timbres mode
@@ -204,7 +204,7 @@ private:
 	std::queue<ComMessage>	messages;
 	std::unique_ptr<SDLMutex> mutex;
 	std::unique_ptr<SDLMutex> cbmutex;
-	SDL_cond				*cond = nullptr;
+	SDL_Condition				*cond = nullptr;
 	sint32					peekComMessageType();
 	void					sendComMessage(ComMessage& message);
 	void					waitTillNoComMessages();

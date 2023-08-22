@@ -177,10 +177,10 @@ void ShapeBrowser::browse_shapes() {
 			redraw = false;
 		}
 		SDL_WaitEvent(&event);
-		if (event.type == SDL_KEYDOWN) {
+		if (event.type == SDL_EVENT_KEY_DOWN) {
 			redraw = true;
-			const bool shift = event.key.keysym.mod & KMOD_SHIFT;
-			//int ctrl = event.key.keysym.mod & KMOD_CTRL;
+			const bool shift = event.key.keysym.mod & SDL_KMOD_SHIFT;
+			//int ctrl = event.key.keysym.mod & SDL_KMOD_CTRL;
 			switch (event.key.keysym.sym) {
 			case SDLK_ESCAPE:
 				looping = false;
@@ -204,7 +204,7 @@ void ShapeBrowser::browse_shapes() {
 				break;
 				// Shapes
 			case SDLK_s:
-				if ((event.key.keysym.mod & KMOD_ALT) && (event.key.keysym.mod & KMOD_CTRL))
+				if ((event.key.keysym.mod & SDL_KMOD_ALT) && (event.key.keysym.mod & SDL_KMOD_CTRL))
 					make_screenshot(true);
 				else {
 					handle_key(shift, current_shape, num_shapes);

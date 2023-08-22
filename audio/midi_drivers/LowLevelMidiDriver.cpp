@@ -182,7 +182,7 @@ int LowLevelMidiDriver::initMidiDriver(uint32 samp_rate, bool is_stereo)
 
 	mutex = std::make_unique<SDLMutex>();
 	cbmutex = std::make_unique<SDLMutex>();
-	cond = SDL_CreateCond();
+	cond = SDL_CreateCondition();
 	thread = nullptr;
 	sample_rate = samp_rate;
 	stereo = is_stereo;
@@ -210,7 +210,7 @@ int LowLevelMidiDriver::initMidiDriver(uint32 samp_rate, bool is_stereo)
 		perr << "Failed to initialize midi player (code: " << code << ")" << endl;
 		mutex.reset();
 		cbmutex.reset();
-		SDL_DestroyCond(cond);
+		SDL_DestroyCondition(cond);
 		thread = nullptr;
 		cond = nullptr;
 	}
@@ -233,7 +233,7 @@ void LowLevelMidiDriver::destroyMidiDriver()
 
 	mutex.reset();
 	cbmutex.reset();
-	SDL_DestroyCond(cond);
+	SDL_DestroyCondition(cond);
 	thread = nullptr;
 	cond = nullptr;
 
@@ -393,7 +393,7 @@ void LowLevelMidiDriver::sendComMessage(ComMessage& message)
 {
 	const std::lock_guard<SDLMutex> lock(*mutex);
 	messages.push(message);
-	SDL_CondSignal(cond);
+	SDL_SignalCondition(cond);
 }
 
 void LowLevelMidiDriver::waitTillNoComMessages()
@@ -549,7 +549,7 @@ int LowLevelMidiDriver::threadMain()
 			if (messages.empty())
 			{
 				//printf("Waiting %i ms\n", time_till_next-2);
-				SDL_CondWaitTimeout(cond, *mutex,time_till_next-2);
+				SDL_WaitConditionTimeout(cond, *mutex,time_till_next-2);
 				//printf("Finished Waiting\n");
 			}
 			else

@@ -119,7 +119,7 @@ SdlRwopsStreambuf*
 	}
 	m_openMode = mode;
 	if (mode & std::ios_base::ate) {
-		if (SDL_RWseek(m_context, 0, RW_SEEK_END) == -1) {
+		if (SDL_RWseek(m_context, 0, SDL_RW_SEEK_END) == -1) {
 			SDL_RWclose(m_context);
 			m_context = nullptr;
 			return nullptr;
@@ -232,13 +232,13 @@ typename SdlRwopsStreambuf::pos_type SdlRwopsStreambuf::seekoff(
 	int whence;
 	switch (dir) {
 	case std::ios_base::beg:
-		whence = RW_SEEK_SET;
+		whence = SDL_RW_SEEK_SET;
 		break;
 	case std::ios_base::cur:
-		whence = RW_SEEK_CUR;
+		whence = SDL_RW_SEEK_CUR;
 		break;
 	case std::ios_base::end:
-		whence = RW_SEEK_END;
+		whence = SDL_RW_SEEK_END;
 		break;
 	default:
 		return pos_type(off_type(-1));
@@ -253,7 +253,7 @@ typename SdlRwopsStreambuf::pos_type
 		SdlRwopsStreambuf::seekpos(pos_type sp, std::ios_base::openmode) {
 	if (!m_context || sync())
 		return pos_type(off_type(-1));
-	if (SDL_RWseek(m_context, sp, RW_SEEK_SET) == -1)
+	if (SDL_RWseek(m_context, sp, SDL_RW_SEEK_SET) == -1)
 		return pos_type(off_type(-1));
 	return sp;
 }
@@ -279,7 +279,7 @@ SdlRwopsStreambuf::sync()
     {
         off_type c;
         c = egptr() - gptr();
-        if (SDL_RWseek(m_context, -c, RW_SEEK_CUR) == -1)
+        if (SDL_RWseek(m_context, -c, SDL_RW_SEEK_CUR) == -1)
             return -1;
         setg(nullptr, nullptr, nullptr);
         m_currentMode = NO_OPENMODE;

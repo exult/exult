@@ -39,7 +39,7 @@ const float vjoy_radius = 80.f;  // max-radius of vjoy
 	bool vjoy_is_active; 		            // true when the vjoy is active
 	CGPoint vjoy_center;     	            // center of the vjoy
 	CGPoint vjoy_current;     	            // current position of the vjoy
-	SDL_GameController *vjoy_controller;    // the vjoy's SDL_GameController
+	SDL_Gamepad *vjoy_controller;    // the vjoy's SDL_Gamepad
 	UITouch * __weak vjoy_input_source;	    // where vjoy input is actively coming from
 }
 

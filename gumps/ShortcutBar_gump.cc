@@ -313,7 +313,8 @@ int ShortcutBar_gump::handle_event(SDL_Event *event) {
 		return 0;
 	}
 	
-	if ((event->type == SDL_MOUSEBUTTONDOWN || event->type == SDL_MOUSEBUTTONUP) && handle_events) {
+	if ((event->type == SDL_EVENT_MOUSE_BUTTON_DOWN || event->type == SDL_EVENT_MOUSE_BUTTON_UP) &&
+	    handle_events) {
 		int x;
 		int y;
 		gwin->get_win()->screen_to_game(event->button.x, event->button.y,
@@ -329,9 +330,9 @@ int ShortcutBar_gump::handle_event(SDL_Event *event) {
 				// do not click "through" a gump
 				return 0;
 			}
-			if (event->type == SDL_MOUSEBUTTONDOWN) {
+			if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 				mouse_down(event, x, y);
-			} else if (event->type == SDL_MOUSEBUTTONUP) {
+			} else if (event->type == SDL_EVENT_MOUSE_BUTTON_UP) {
 				mouse_up(event, x, y);
 			}
 			return 1;
@@ -362,13 +363,13 @@ void ShortcutBar_gump::mouse_down(SDL_Event *event, int mx, int my) {
 static Uint32 didMouseUp(Uint32 interval, void *param) {
 	ignore_unused_variable_warning(interval);
 	SDL_UserEvent userevent;
-	userevent.type = SDL_USEREVENT;
+	userevent.type = SDL_EVENT_USER;
 	userevent.code = SHORTCUT_BAR_USER_EVENT;
 	userevent.data1 = param;
 	userevent.data2 = reinterpret_cast<void*>(DID_MOUSE_UP);
 
 	SDL_Event event;
-	event.type = SDL_USEREVENT;
+	event.type = SDL_EVENT_USER;
 	event.user = userevent;
 	SDL_PushEvent(&event);
 	return 0;

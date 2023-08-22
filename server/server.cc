@@ -535,7 +535,7 @@ void Server_delay(
 	Uint32 expiration = DELAY_TOTAL_MS + SDL_GetTicks();
 	for (;;) {
 		SDL_PumpEvents();
-		if ((SDL_PeepEvents(nullptr, 0, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) != 0) ||
+		if ((SDL_PeepEvents(nullptr, 0, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) != 0) ||
 		    (static_cast<Sint32>(SDL_GetTicks()) >= static_cast<Sint32>(expiration))) return;
 
 		fd_set rfds;

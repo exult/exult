@@ -278,7 +278,7 @@ void Slider_gump::key_down(int chr) {
 
 void Slider_gump::mousewheel_up() {
 	const SDL_Keymod mod = SDL_GetModState();
-	if (mod & KMOD_ALT)
+	if (mod & SDL_KMOD_ALT)
 		move_diamond(-10 * step_val);
 	else
 		move_diamond(-step_val);
@@ -286,7 +286,7 @@ void Slider_gump::mousewheel_up() {
 
 void Slider_gump::mousewheel_down() {
 	const SDL_Keymod mod = SDL_GetModState();
-	if (mod & KMOD_ALT)
+	if (mod & SDL_KMOD_ALT)
 		move_diamond(10 * step_val);
 	else
 		move_diamond(step_val);
