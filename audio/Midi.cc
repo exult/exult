@@ -54,6 +54,16 @@ using std::cout;
 using std::endl;
 using std::string;
 
+#ifdef DEBUG
+inline char * formatTicks() {
+	static char formattedTicks[ 32 ];
+	uint64 ticks = SDL_GetTicks();
+	snprintf(formattedTicks, 32, "[ %5ld.%0ld ] ",
+	         ticks / 1000, ticks % 1000);
+	return formattedTicks;
+}
+#endif
+
 //
 // Midi devices types and conversions
 //
@@ -139,7 +149,7 @@ void	MyMidiPlayer::start_music(int num,bool repeat,std::string flex)
 		return;
 
 #ifdef DEBUG
-	cout << "Audio subsystem request: Music track # " << num << " in "<< flex << endl;
+	cout << formatTicks() << "Audio subsystem request: MIDI Music track # " << num << " in flex " << flex << endl;
 #endif
 
 	stop_music();
@@ -204,7 +214,7 @@ void	MyMidiPlayer::start_music(std::string fname,int num,bool repeat)
 	repeating = repeat;
 
 #ifdef DEBUG
-	cout << "Audio subsystem request: Music track # " << num << " in file "<< fname << endl;
+	cout << formatTicks() << "Audio subsystem request: MIDI Music track # " << num << " in file " << fname << endl;
 #endif
 
 	// OGG Handling
@@ -683,7 +693,7 @@ void MyMidiPlayer::produceSamples(sint16 *stream, uint32 bytes)
 void    MyMidiPlayer::start_sound_effect(int num)
 {
 #ifdef DEBUG
-	cout << "Audio subsystem request: sound effect # " << num << endl;
+	cout << formatTicks() << "Audio subsystem request: MIDI SFX sound effect # " << num << endl;
 #endif
 
 	int real_num = num;

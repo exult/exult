@@ -437,7 +437,7 @@ int main(
 		delete game;
 		Audio::Destroy();   // Deinit the sound system.
 		delete config;
-		SDL_VideoQuit();
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
 		SDL_Quit();
 		result = 0;
 	} catch (const exult_exception &e) {
@@ -660,11 +660,10 @@ static void SetIcon() {
 		iconpal[i].g = ExultIcon::header_data_cmap[i][1];
 		iconpal[i].b = ExultIcon::header_data_cmap[i][2];
 	}
-	SDL_Surface *iconsurface = SDL_CreateRGBSurface(0,
-				ExultIcon::width,
-				ExultIcon::height,
-				32,
-				0, 0, 0, 0);
+	SDL_Surface *iconsurface = SDL_CreateSurface(ExultIcon::width,
+	                                             ExultIcon::height,
+	                              SDL_GetPixelFormatEnumForMasks(32,
+	                                             0, 0, 0, 0));
 	if (iconsurface == nullptr) {
 		cout << "Error creating icon surface: " << SDL_GetError() << std::endl;
 		return;
@@ -690,7 +689,7 @@ static void SetIcon() {
 #endif
 }
 
-void Open_game_controller(int joystick_index) {
+void Open_game_controller(SDL_JoystickID joystick_index) {
 	SDL_Gamepad *input_device = SDL_OpenGamepad(joystick_index);
 	if (input_device) {
 		SDL_GetGamepadJoystick(input_device);
@@ -708,14 +707,13 @@ int Handle_device_connection_event(void *userdata, SDL_Event *event) {
 	// become connected or disconnected.
 	switch (event->type) {
 		case SDL_EVENT_GAMEPAD_ADDED: {
-			const SDL_JoystickID joystick_id = SDL_JoystickGetDeviceInstanceID(event->cdevice.which);
-			if (!SDL_GetGamepadFromInstanceID(joystick_id)) {
-				Open_game_controller(event->cdevice.which);
+			if (!SDL_GetGamepadFromInstanceID(event->jdevice.which)) {
+				Open_game_controller(event->jdevice.which);
 			}
 			break;
 		}
 		case SDL_EVENT_GAMEPAD_REMOVED: {
-			SDL_Gamepad *input_device = SDL_GetGamepadFromInstanceID(event->cdevice.which);
+			SDL_Gamepad *input_device = SDL_GetGamepadFromInstanceID(event->jdevice.which);
 			if (input_device) {
 				SDL_CloseGamepad(input_device);
 				input_device = nullptr;
@@ -737,17 +735,20 @@ int Handle_device_connection_event(void *userdata, SDL_Event *event) {
 static void Init(
 ) {
 	const Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD;
-#ifdef NO_SDL_PARACHUTE
-	const Uint32 parachute = SDL_INIT_NOPARACHUTE;
-#else
-	const Uint32 parachute = 0;
-#endif
+	// Let SDL3 choose its own audio/video drivers until proved otherwise.
 #ifdef _WIN32
-	SDL_putenv("SDL_AUDIODRIVER=DirectSound");
+	// ( SDL3 : Obsolete ) SDL_putenv("SDL_AUDIODRIVER=DirectSound");
+	// ( SDL3 New Syntax ) SDL_SetHint(SDL_HINT_AUDIODRIVER, "DirectSound");
 #elif defined(MACOSX) && defined(XWIN) && defined(USE_EXULTSTUDIO)
-	// Exult Studio drag'n'drop with SDL2 < 2.0.15 requires Exult
-	// to use X11. Hence, we force the issue.
-	SDL_putenv("SDL_VIDEODRIVER=x11");
+	// Dragon Baroque to Dominus : Probably irrelevant but left as a comment :
+	//   Exult Studio drag'n'drop with SDL2 < 2.0.15 requires Exult
+	//   to use X11. Hence, we force the issue.
+	// ( SDL3 : Obsolete ) SDL_putenv("SDL_VIDEODRIVER=x11");
+	// ( SDL3 New Syntax ) SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
+#elif defined(XWIN) && defined(USE_EXULTSTUDIO)
+	// Linux SDL Video : Prefer Wayland to X11 in SDL2, No longer relevant in SDL3
+	// ( SDL3 : Obsolete ) SDL_putenv("SDL_VIDEODRIVER=wayland,x11");
+	// ( SDL3 New Syntax ) SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
 #endif
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "Landscape");
 #if 0
@@ -761,7 +762,7 @@ static void Init(
 #ifdef __IOS__
 	SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "2");
 #endif
-	if (SDL_Init(init_flags|parachute|joyinit) < 0) {
+	if (SDL_Init(init_flags|joyinit) < 0) {
 		cerr << "Unable to initialize SDL: " << SDL_GetError() << endl;
 		exit(-1);
 	}
@@ -770,14 +771,17 @@ static void Init(
 	SDL_SysWMinfo info;     // Get system info.
 
 	// KBD repeat should be nice.
-	SDL_ShowCursor(0);
-	SDL_VERSION(&info.version);
+	SDL_HideCursor();
 
 	// Open any connected game controllers.
-	for (int i = 0, n = SDL_NumJoysticks(); i < n; ++i) {
-		if (SDL_IsGamepad(i)) {
-			Open_game_controller(i);
+	SDL_JoystickID *joysticks = SDL_GetJoysticks(nullptr);
+	if (joysticks) {
+		for (int i = 0; joysticks[i]; ++i) {
+			if (SDL_IsGamepad(joysticks[i])) {
+				Open_game_controller(joysticks[i]);
+			}
 		}
+		SDL_free(joysticks);
 	}
 	// Listen for game controller device connection and disconnection
 	// events. Registering a listener allows these events to be received
@@ -902,7 +906,59 @@ static void Init(
 			newgame->setup_game_paths();
 			exit(verify_files(newgame));
 		}
+#ifdef DEBUG
+		{
+			int ix;
+			SDL_version compVers, linkVers;
 
+			SDL_VERSION(&compVers);
+			SDL_GetVersion(&linkVers);
+			cout << "SDL Initialized, Exult compiled against SDL " << static_cast<int>(compVers.major) << "." << static_cast<int>(compVers.minor) << "." << static_cast<int>(compVers.patch)
+			     << ", Exult running against SDL " << static_cast<int>(linkVers.major) << "." << static_cast<int>(linkVers.minor) << "." << static_cast<int>(linkVers.patch) << endl;
+			cout << "SDL Video :" << endl;
+			cout << "    Hint VIDEODRIVER is '" << (SDL_GetHint(SDL_HINT_VIDEO_DRIVER) ? SDL_GetHint(SDL_HINT_VIDEO_DRIVER) : "(null)")
+			     << "', Current Video Driver is '" << (SDL_GetCurrentVideoDriver() ? SDL_GetCurrentVideoDriver() : "(null)") << "'" << endl;
+			for (ix = 0; ix < SDL_GetNumVideoDrivers(); ix++ ) {
+				cout << "    [ " << ix << " ] Video Driver is '" << SDL_GetVideoDriver(ix) << "'" << endl;
+			}
+			SDL_DisplayID *display_ids = SDL_GetDisplays(nullptr);
+			for (ix = 0; display_ids[ix]; ix++ ) {
+				const SDL_DisplayMode *currMode = SDL_GetCurrentDisplayMode(display_ids[ix]);
+				cout << "    [ " << ix << " ] Video Display Mode [ ID is " << display_ids[ix] << " ] is '" << currMode->w << "x" << currMode->h << "' at '"
+				     << currMode->refresh_rate << "Hz'" << endl;
+			}
+			SDL_free(display_ids);
+			for (ix = 0; ix < SDL_GetNumRenderDrivers(); ix++ ) {
+				cout << "    [ " << ix << " ] Video Renderer is '" << (SDL_GetRenderDriver(ix) ? SDL_GetRenderDriver(ix) : "(null)") << "'" << endl;
+			}
+			cout << "SDL Audio :" << endl;
+			cout << "    Hint AUDIODRIVER is '" << (SDL_GetHint(SDL_HINT_AUDIO_DRIVER) ? SDL_GetHint(SDL_HINT_AUDIO_DRIVER) : "(null)")
+			     << "', Current Audio Driver is '" << (SDL_GetCurrentAudioDriver() ? SDL_GetCurrentAudioDriver() : "(null)") << "'" << endl;
+			for (ix = 0; ix < SDL_GetNumAudioDrivers(); ix++ ) {
+				cout << "    [ " << ix << " ] Audio Driver is '" << SDL_GetAudioDriver(ix) << "'" << endl;
+			}
+			SDL_AudioDeviceID *devices;
+			int num_devices;
+			devices = SDL_GetAudioCaptureDevices(&num_devices);
+			for (ix = 0; ix < num_devices; ix++ ) {
+				SDL_AudioSpec as;
+				cout << "    [ " << ix << " ] Audio Device [ ID is " << devices[ix] << " ] is [capture] '"
+				     << (SDL_GetAudioDeviceName(devices[ix]) ? SDL_GetAudioDeviceName(devices[ix]) : "(null)") << "'";
+				if (!SDL_GetAudioDeviceFormat(devices[ix], &as)) cout << ", " << static_cast<int>(as.channels) << " channel(s) at '" << as.freq << "Hz'" << endl;
+				else                                     cout << endl;
+			}
+			SDL_free(devices);
+			devices = SDL_GetAudioOutputDevices(&num_devices);
+			for (ix = 0; ix < num_devices; ix++ ) {
+				SDL_AudioSpec as;
+				cout << "    [ " << ix << " ] Audio Device [ ID is " << devices[ix] << " ] is [output] '"
+				     << (SDL_GetAudioDeviceName(devices[ix]) ? SDL_GetAudioDeviceName(devices[ix]) : "(null)") << "'";
+				if (!SDL_GetAudioDeviceFormat(devices[ix], &as)) cout << ", " << static_cast<int>(as.channels) << " channel(s) at '" << as.freq << "Hz'" << endl;
+				else                                     cout << endl;
+			}
+			SDL_free(devices);
+		}
+#endif
 		Game::create_game(newgame);
 		Audio *audio = Audio::get_ptr();
 		audio->Init_sfx();
@@ -947,11 +1003,13 @@ static void Init(
 	// Get scale factor for mouse.
 #ifdef USE_EXULTSTUDIO
 #ifndef _WIN32
-	SDL_GetWindowWMInfo(gwin->get_win()->get_screen_window(), &info);
+	SDL_GetWindowWMInfo(gwin->get_win()->get_screen_window(), &info,
+	                    SDL_SYSWM_CURRENT_VERSION);
 	Server_init();          // Initialize server (for map-editor).
-	SDL_EventState(SDL_EVENT_DROP_FILE, SDL_ENABLE);
+	SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_TRUE);
 #else
-	SDL_GetWindowWMInfo(gwin->get_win()->get_screen_window(), &info);
+	SDL_GetWindowWMInfo(gwin->get_win()->get_screen_window(), &info,
+	                    SDL_SYSWM_CURRENT_VERSION);
 	hgwin = info.info.win.window;
 	Server_init();          // Initialize server (for map-editor).
 	OleInitialize(nullptr);
@@ -1199,7 +1257,10 @@ static void Handle_events(
 		        gwin->main_actor_can_act_charmed()) {
 			int x;
 			int y;// Check for 'stuck' Avatar.
-			const int ms = SDL_GetMouseState(&x, &y);
+			float fx, fy;
+			const int ms = SDL_GetMouseState(&fx, &fy);
+			x = int(fx);
+			y = int(fy);
 			//mouse movement needs to be adjusted for HighDPI
 			gwin->get_win()->screen_to_game_hdpi(x, y, gwin->get_fastmouse(), x, y);
 			if ((SDL_BUTTON(3) & ms) && !right_on_gump)
@@ -1291,18 +1352,6 @@ static void Handle_events(
 	}
 }
 
-static inline bool EnteredWindow(SDL_Event& event) {
-	return event.window.event == SDL_EVENT_WINDOW_MOUSE_ENTER;
-}
-
-static inline bool GainedFocus(SDL_Event& event) {
-	return event.window.event == SDL_EVENT_WINDOW_FOCUS_GAINED;
-}
-
-static inline bool LostFocus(SDL_Event& event) {
-	return event.window.event == SDL_EVENT_WINDOW_FOCUS_LOST;
-}
-
 /*
  *  Handle an event.  This should work for all platforms, and should only
  *  be called in 'normal' and 'gump' modes.
@@ -1356,12 +1405,12 @@ static void Handle_event(
 	case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
 		// Ignore axis changes on anything but a specific thumb-stick
 		// on the game-controller.
-		if (event.caxis.axis != SDL_GAMEPAD_AXIS_LEFTX &&
-			  event.caxis.axis != SDL_GAMEPAD_AXIS_LEFTY) {
+		if (event.jaxis.axis != SDL_GAMEPAD_AXIS_LEFTX &&
+			  event.jaxis.axis != SDL_GAMEPAD_AXIS_LEFTY) {
 			break;
 		}
 
-		SDL_Gamepad *input_device = SDL_GetGamepadFromInstanceID(event.caxis.which);
+		SDL_Gamepad *input_device = SDL_GetGamepadFromInstanceID(event.jaxis.which);
 		if (input_device && !dont_move_mode && avatar_can_act &&
 			gwin->main_actor_can_act_charmed()) {
 			auto get_normalized_axis = [input_device](SDL_GamepadAxis axis){
@@ -1716,20 +1765,22 @@ static void Handle_event(
 #endif
 		break;
 	}
-	case SDL_WINDOWEVENT:
-		if (EnteredWindow(event)) {
-			int x;
-			int y;
-			SDL_GetMouseState(&x, &y);
-			gwin->get_win()->screen_to_game(x, y, gwin->get_fastmouse(), x, y);
-			Mouse::mouse->set_location(x, y);
-			gwin->set_painted();
-		}
-
-		if (GainedFocus(event))
-			gwin->get_focus();
-		else if (LostFocus(event))
-			gwin->lose_focus();
+	case SDL_EVENT_WINDOW_MOUSE_ENTER:
+		int x;
+		int y;
+		float fx, fy;
+		SDL_GetMouseState(&fx, &fy);
+		x = int(fx);
+		y = int(fy);
+		gwin->get_win()->screen_to_game(x, y, gwin->get_fastmouse(), x, y);
+		Mouse::mouse->set_location(x, y);
+		gwin->set_painted();
+		break;
+	case SDL_EVENT_WINDOW_FOCUS_GAINED:
+		gwin->get_focus();
+		break;
+	case SDL_EVENT_WINDOW_FOCUS_LOST:
+		gwin->lose_focus();
 		break;
 	case SDL_EVENT_QUIT:
 		gwin->get_gump_man()->okay_to_quit();
@@ -1745,7 +1796,10 @@ static void Handle_event(
 #ifndef _WIN32
 		int x;
 		int y;
-		SDL_GetMouseState(&x, &y);
+		float fx, fy;
+		SDL_GetMouseState(&fx, &fy);
+		x = int(fx);
+		y = int(fy);
 #ifdef DEBUG
 		cout << "(EXULT) SDL_EVENT_DROP_FILE Event, type = " << event.drop.type
 		     << ", file (" << strlen(event.drop.file) << ") = '" << event.drop.file
@@ -1757,7 +1811,8 @@ static void Handle_event(
 			int file, shape, frame;
 			Get_u7_shapeid(data, file, shape, frame);
 			cout << "(EXULT) SDL_EVENT_DROP_FILE Event, Shape: file = " << file
-			     << ", shape = " << shape << ", frame = " << frame << endl;
+			     << ", shape = " << shape << ", frame = " << frame
+			     << ", at x = " << x << ", y = " << y << endl;
 			if (shape >= 0) {   // Dropping a shape?
 				if (file == U7_SHAPE_SHAPES)
 					// For now, just allow "shapes.vga".
@@ -1767,14 +1822,16 @@ static void Handle_event(
 			// A whole chunk.
 			int chunknum;
 			Get_u7_chunkid(data, chunknum);
-			cout << "(EXULT) SDL_EVENT_DROP_FILE Event, Chunk: num = " << chunknum << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_FILE Event, Chunk: num = " << chunknum
+			     << ", at x = " << x << ", y = " << y << endl;
 			if (chunknum >= 0) { // A whole chunk.
 				Drop_dragged_chunk(chunknum, x, y);
 			}
 		} else if (Is_u7_npcid(data) == true) {
 			int npcnum;
 			Get_u7_npcid(data, npcnum);
-			cout << "(EXULT) SDL_EVENT_DROP_FILE Event, Npc: num = " << npcnum << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_FILE Event, Npc: num = " << npcnum
+			     << ", at x = " << x << ", y = " << y << endl;
 			if (npcnum >= 0) { // An NPC.
 				Drop_dragged_npc(npcnum, x, y);
 			}
@@ -1786,7 +1843,8 @@ static void Handle_event(
 			cout << "(EXULT) SDL_EVENT_DROP_FILE Event, Combo: xtiles = " << combo_xtiles
 			     << ", ytiles = " << combo_ytiles << ", tiles_right = " << combo_tiles_right
 			     << ", tiles_below = " << combo_tiles_below
-			     << ", count = " << combo_cnt << endl;
+			     << ", count = " << combo_cnt
+			     << ", at x = " << x << ", y = " << y << endl;
 			if (combo_cnt >= 0 && combo) {
 				Drop_dragged_combo(combo_cnt, combo, x, y);
 			}
@@ -1936,11 +1994,12 @@ static bool Get_click(
 				}
 				break;
 			}
-			case SDL_WINDOWEVENT:
-				if (GainedFocus(event))
-					gwin->get_focus();
-				else if (LostFocus(event))
-					gwin->lose_focus();
+			case SDL_EVENT_WINDOW_FOCUS_GAINED:
+				gwin->get_focus();
+				break;
+			case SDL_EVENT_WINDOW_FOCUS_LOST:
+				gwin->lose_focus();
+				break;
 			}
 		if (dragging)
 			gwin->paint_dirty();
@@ -2143,7 +2202,10 @@ void Wizard_eye(
 			// Right mouse button down?
 			int x;
 			int y;
-			const int ms = SDL_GetMouseState(&x, &y);
+			float fx, fy;
+			const int ms = SDL_GetMouseState(&fx, &fy);
+			x = int(fx);
+			y = int(fy);
 			int mx;
 			int my;
 			//mouse movement of the eye needs to adjust for HighDPI
@@ -2461,7 +2523,7 @@ void setup_video(bool fullscreen, int setup_video_type, int resx, int resy,
 		config->value(vidStr + "/display/height", resy, 768);
 		config->value(vidStr + "/game/width", gw, 320);
 		config->value(vidStr + "/game/height", gh, 200);
-		SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, high_dpi ? "0" : "1");
+		// SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, high_dpi ? "0" : "1"); Cannot be Disabled in SDL3
 		config->value(vidStr + "/fill_mode", fmode_string, default_fmode);
 		fillmode = Image_window::string_to_fillmode(fmode_string.c_str());
 		if (fillmode == 0)

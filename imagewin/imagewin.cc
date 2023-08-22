@@ -268,25 +268,25 @@ Image_window::ScalerType Image_window::get_scaler_for_name(const char *scaler) {
 * Get the bpp for a scaled surface of the desired scaled video mode
 */
 
-int Image_window::Get_best_bpp(int w, int h, int bpp, uint32 flags) {
+int Image_window::Get_best_bpp(int w, int h, int bpp) {
 	if (w == 0 || h == 0) return 0;
 
 	auto best_bpp = VideoModeOK(w, h);
 
 	// Explicit BPP required
 	if (bpp != 0) {
-		if (!(flags & SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+		if (!(fullscreen)) {
 			if (windowed != 0) return 16;
 		}
 
 		if (best_bpp != 0)
 			return best_bpp;
 
-		cerr << "SDL Reports " << w << "x" << h << " " << bpp << " bpp " << ((flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ? "fullscreen" : "windowed") << " surface is not OK. Attempting to use " << bpp << " bpp anyway." << endl;
+		cerr << "SDL Reports " << w << "x" << h << " " << bpp << " bpp " << ((fullscreen) ? "fullscreen" : "windowed") << " surface is not OK. Attempting to use " << bpp << " bpp anyway." << endl;
 		return bpp;
 	}
 
-	if (!(flags & SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+	if (!(fullscreen)) {
 		if (desktop_depth == 16 && windowed != 0) return 16;
 		else if (desktop_depth == 32 && windowed != 0) return 32;
 		else if (windowed == 16) return 16;
@@ -305,7 +305,7 @@ int Image_window::Get_best_bpp(int w, int h, int bpp, uint32 flags) {
 	else if (best_bpp != 0)
 		return 16;
 
-	cerr << "SDL Reports " << w << "x" << h << " " << ((flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ? "fullscreen" : "windowed") << " surfaces are not OK. Attempting to use 16 bpp. anyway" << endl;
+	cerr << "SDL Reports " << w << "x" << h << " " << ((fullscreen) ? "fullscreen" : "windowed") << " surfaces are not OK. Attempting to use 16 bpp. anyway" << endl;
 	return 16;
 }
 
@@ -319,15 +319,14 @@ void Image_window::static_init() {
 
 	cout << "Checking rendering support" << std::endl;
 
-	SDL_DisplayMode dispmode;
+	const SDL_DisplayMode * dispmode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
 	int bpp;
 	Uint32 Rmask;
 	Uint32 Gmask;
 	Uint32 Bmask;
 	Uint32 Amask;
-	if (SDL_GetDesktopDisplayMode(0, &dispmode) == 0
-		&& SDL_GetMasksForPixelFormatEnum(dispmode.format, &bpp, &Rmask, &Gmask, &Bmask, &Amask) == SDL_TRUE) {
-		desktop_displaymode = dispmode;
+	if (SDL_GetMasksForPixelFormatEnum(dispmode->format, &bpp, &Rmask, &Gmask, &Bmask, &Amask) == SDL_TRUE) {
+		desktop_displaymode = *dispmode;
 		desktop_depth = bpp;
 	} else {
 		desktop_depth = 0;
@@ -340,16 +339,12 @@ void Image_window::static_init() {
 	cout << std::endl;
 
 	/* Get available fullscreen/hardware modes */
-	for (int j = 0; j < SDL_GetNumDisplayModes(0); j++) {
-		SDL_DisplayMode dispmode;
-		if (SDL_GetDisplayMode(0, j, &dispmode) == 0) {
-			const Resolution res = { dispmode.w, dispmode.h };
-			p_resolutions[(res.width << 16) | res.height] = res;
-
-		} else {
-			cout << " Error getting display mode #" << j << ": " << SDL_GetError() << std::endl;
-		}
+	const SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(SDL_GetPrimaryDisplay(),nullptr);
+	for (int j = 0; modes[j]; j++) {
+		const Resolution res = { dispmode->w, dispmode->h };
+		p_resolutions[(res.width << 16) | res.height] = res;
 	}
+	SDL_free(static_cast<void *>(modes));
 
 	// It's empty, so add in some basic resolutions that would be nice to support
 	if (p_resolutions.empty()) {
@@ -493,23 +488,22 @@ void Image_window::create_surface(
 
 	if (!paletted_surface && !force_bpp) {      // No scaling, or failed?
 		uint32 flags = SDL_SWSURFACE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-		if (fullscreen) {
-			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-		}
 		if (screen_window != nullptr) {
 			SDL_SetWindowSize(screen_window, w / scale, h / scale);
-			SDL_SetWindowFullscreen(screen_window, flags);
+			SDL_SetWindowFullscreen(screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
 			SDL_DestroyTexture(screen_texture);
 			SDL_DestroyRenderer(screen_renderer);
-		} else
-			screen_window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w / scale, h / scale, flags);
+		} else {
+			screen_window = SDL_CreateWindow("", w / scale, h / scale, flags);
+			SDL_SetWindowFullscreen(screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
+		}
 		if (screen_window == nullptr)
 			cout << "Couldn't create window: " << SDL_GetError() << std::endl;
 
-		screen_renderer = SDL_CreateRenderer(screen_window, -1, SDL_RENDERER_PRESENTVSYNC);
+		screen_renderer = SDL_CreateRenderer(screen_window, nullptr, SDL_RENDERER_PRESENTVSYNC);
 		if (screen_renderer == nullptr) {
 			// Just in case.
-			screen_renderer = SDL_CreateRenderer(screen_window, -1, 0);
+			screen_renderer = SDL_CreateRenderer(screen_window, nullptr, 0);
 		}
 		if (screen_renderer == nullptr) {
 			cout << "Couldn't create renderer: " << SDL_GetError() << std::endl;
@@ -525,9 +519,10 @@ void Image_window::create_surface(
 		Uint32 sBmask;
 		Uint32 sAmask;
 		SDL_GetMasksForPixelFormatEnum(desktop_displaymode.format, &sbpp, &sRmask, &sGmask, &sBmask, &sAmask);
-		display_surface = SDL_CreateRGBSurface(0,
-				(w / scale), (h / scale), sbpp,
-                                sRmask, sGmask, sBmask, sAmask);
+		display_surface = SDL_CreateSurface((w / scale), (h / scale),
+		                      SDL_GetPixelFormatEnumForMasks(
+		                                    sbpp,
+		                                    sRmask, sGmask, sBmask, sAmask));
 		if (display_surface == nullptr)
 			cout << "Couldn't create display surface: " << SDL_GetError() << std::endl;
 		screen_texture = SDL_CreateTexture(screen_renderer,
@@ -582,22 +577,21 @@ void Image_window::create_surface(
 bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	int hwdepth = bpp;
 	uint32 flags = SDL_SWSURFACE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-	if (fullscreen) {
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	}
-	hwdepth = Get_best_bpp(w, h, hwdepth, flags);
+	hwdepth = Get_best_bpp(w, h, hwdepth);
 	if (!hwdepth) return false;
 
 	if (screen_window != nullptr) {
 		SDL_SetWindowSize(screen_window, w, h);
-		SDL_SetWindowFullscreen(screen_window, flags);
+		SDL_SetWindowFullscreen(screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
 		SDL_DestroyTexture(screen_texture);
 		SDL_DestroyRenderer(screen_renderer);
-	} else
-		screen_window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, flags);
+	} else {
+		screen_window = SDL_CreateWindow("", w, h, flags);
+		SDL_SetWindowFullscreen(screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
+	}
 	if (screen_window == nullptr)
 		cout << "Couldn't create window: " << SDL_GetError() << std::endl;
-	screen_renderer = SDL_CreateRenderer(screen_window, -1, 0);
+	screen_renderer = SDL_CreateRenderer(screen_window, nullptr, 0);
 	if (screen_renderer == nullptr)
 		cout << "Couldn't create renderer: " << SDL_GetError() << std::endl;
 
@@ -615,7 +609,8 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 		SDL_GetWindowSize(screen_window, &sw, nullptr);
 		nativescale = float(dw) / sw;
 		//high resolution fullscreen needs this to make the whole screen available
-		SDL_SetRenderLogicalPresentation(screen_renderer, w, h);
+		SDL_SetRenderLogicalPresentation(screen_renderer, w, h,
+		    SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_SCALEMODE_LINEAR);
 	} else
 		//make sure the window has the right dimensions
 		SDL_SetWindowSize(screen_window, w, h);
@@ -632,9 +627,10 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	Uint32 sAmask;
 	SDL_GetMasksForPixelFormatEnum(desktop_displaymode.format, &sbpp, &sRmask, &sGmask, &sBmask, &sAmask);
 
-	display_surface = SDL_CreateRGBSurface(0,
-			w, h, sbpp,
-                        sRmask, sGmask, sBmask, sAmask);
+	display_surface = SDL_CreateSurface(w, h,
+	                      SDL_GetPixelFormatEnumForMasks(
+	                                    sbpp,
+	                                    sRmask, sGmask, sBmask, sAmask));
 	if (display_surface == nullptr)
 		cout << "Couldn't create display surface: " << SDL_GetError() << std::endl;
 	screen_texture = SDL_CreateTexture(screen_renderer,
@@ -649,7 +645,10 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 		return false;
 	}
 
-	if (!(draw_surface =  SDL_CreateRGBSurface(SDL_SWSURFACE, inter_width / scale + 2 * guard_band, inter_height / scale + 2 * guard_band, ibuf->depth, 0, 0, 0, 0))) {
+	if (!(draw_surface =  SDL_CreateSurface(inter_width  / scale + 2 * guard_band,
+	                                        inter_height / scale + 2 * guard_band,
+	                          SDL_GetPixelFormatEnumForMasks(
+	                                        ibuf->depth, 0, 0, 0, 0)))) {
 		cerr << "Couldn't create draw surface" << endl;
 		free_surface();
 		return false;
@@ -659,7 +658,14 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	if (scaler == fill_scaler || scale == 1) {
 		inter_surface = draw_surface;
 	} else if (inter_width != w || inter_height != h) {
-		if (!(inter_surface =  SDL_CreateRGBSurface(SDL_SWSURFACE, inter_width + 2 * scale * guard_band, inter_height + 2 * scale * guard_band, hwdepth, display_surface->format->Rmask, display_surface->format->Gmask, display_surface->format->Bmask, display_surface->format->Amask))) {
+		if (!(inter_surface =  SDL_CreateSurface(inter_width  + 2 * scale * guard_band,
+		                                         inter_height + 2 * scale * guard_band,
+		                           SDL_GetPixelFormatEnumForMasks(
+		                                         hwdepth,
+		                                         display_surface->format->Rmask,
+		                                         display_surface->format->Gmask,
+		                                         display_surface->format->Bmask,
+		                                         display_surface->format->Amask)))) {
 			cerr << "Couldn't create inter surface: " << SDL_GetError() << endl;
 			free_surface();
 			return false;
@@ -1151,21 +1157,21 @@ int Image_window::VideoModeOK(int width, int height)
 		// Reject portrait modes.
 		return 0;
 	}
-	const int num_display_modes = SDL_GetNumDisplayModes(0);
-	for (int j = 0; j < num_display_modes; j++) {
-		SDL_DisplayMode dispmode;
+	const SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(SDL_GetPrimaryDisplay(),nullptr);
+	for (int j = 0; modes[j]; j++) {
 		int nbpp;
 		Uint32 Rmask;
 		Uint32 Gmask;
 		Uint32 Bmask;
 		Uint32 Amask;
-		if (SDL_GetDisplayMode(0, j, &dispmode) == 0
-		        && SDL_GetMasksForPixelFormatEnum(dispmode.format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask) == SDL_TRUE
-		        && dispmode.w == width
-		        && dispmode.h == height) {
+		if (SDL_GetMasksForPixelFormatEnum(modes[j]->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask) == SDL_TRUE
+		        && modes[j]->w == width
+		        && modes[j]->h == height) {
+			SDL_free(static_cast<void *>(modes));
 			return nbpp;
 		}
 	}
+	SDL_free(static_cast<void *>(modes));
 	return 0;
 }
 

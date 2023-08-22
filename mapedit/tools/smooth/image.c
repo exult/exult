@@ -55,7 +55,12 @@ int img_read(char *filein) {
 		fflush(stdout);
 	}
 
-	if ((g_variables.image_out = SDL_CreateRGBSurfaceFrom(g_statics.image_in->pixels, g_statics.image_in->w, g_statics.image_in->h, g_statics.image_in->pitch, g_statics.image_in->format->BitsPerPixel, 0, 0, 0, 0)) == NULL) {
+	if ((g_variables.image_out = SDL_CreateSurfaceFrom(g_statics.image_in->pixels,
+	                                                   g_statics.image_in->w, g_statics.image_in->h,
+	                                                   g_statics.image_in->pitch,
+	                                SDL_GetPixelFormatEnumForMasks(
+	                                                   g_statics.image_in->format->BitsPerPixel,
+	                                                   0, 0, 0, 0))) == NULL) {
 		fprintf(stderr, "ERROR: %s", SDL_GetError());
 		return -1;
 	}

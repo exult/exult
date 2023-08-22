@@ -114,9 +114,6 @@
 /* Using MacOSX */
 /* #undef MACOSX */
 
-/* Disable SDL parachute */
-/* #undef NO_SDL_PARACHUTE */
-
 /* Doesn't have hash map */
 #define DONT_HAVE_HASH_MAP 1
 

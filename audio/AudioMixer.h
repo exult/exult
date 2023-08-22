@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <vector>
 
 class MyMidiPlayer;
+struct SDL_AudioStream;
 
 #define AUDIO_MAX_VOLUME 256
 #define AUDIO_DEF_PITCH 0x10000
@@ -84,7 +85,8 @@ private:
 	std::unique_ptr<SDLAudioDevice>	device;
 
 	void			init_midi();
-	static void		sdlAudioCallback(void *userdata, uint8 *stream, int len);
+	static void		sdlAudioCallback(SDL_AudioStream *stream, int len, void *userdata);
+	SDL_AudioStream *stream;
 
 	void			MixAudio(sint16 *stream, uint32 bytes);
 

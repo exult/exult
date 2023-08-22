@@ -79,7 +79,7 @@ static void png_error_SDL(png_structp ctx, png_const_charp str) {
 }
 static void png_write_SDL(png_structp png_ptr, png_bytep data, png_size_t length) {
 	SDL_RWops* rw = static_cast<SDL_RWops*>(png_get_io_ptr(png_ptr));
-	SDL_RWwrite(rw, data, sizeof(png_byte), length);
+	SDL_RWwrite(rw, data, sizeof(png_byte) * length);
 }
 
 static bool save_image(SDL_Surface* surface, SDL_RWops* dst, int guardband) {
@@ -351,9 +351,9 @@ bool SaveIMG_RW(
 			SDL_Rect bounds;
 
 			/* Convert to 24 bits per pixel */
-			surface = SDL_CreateRGBSurface(SDL_SWSURFACE,
-			                               saveme->w, saveme->h, 24,
-			                               Rmask, Gmask, Bmask, 0);
+			surface = SDL_CreateSurface(saveme->w, saveme->h,
+			             SDL_GetPixelFormatEnumForMasks(24,
+			                            Rmask, Gmask, Bmask, 0));
 
 			if (surface != nullptr) {
 				bounds.x = 0;

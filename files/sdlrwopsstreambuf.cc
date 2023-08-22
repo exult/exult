@@ -168,7 +168,7 @@ typename SdlRwopsStreambuf::int_type SdlRwopsStreambuf::underflow() {
 	if (gptr() == egptr()) {
 		std::memmove(eback(), egptr() - unget_sz, unget_sz * sizeof(char_type));
 		std::size_t nmemb = egptr() - eback() - unget_sz;
-		nmemb             = SDL_RWread(m_context, eback() + unget_sz, 1, nmemb);
+		nmemb             = SDL_RWread(m_context, eback() + unget_sz, nmemb);
 		if (nmemb != 0) {
 			setg(eback(), eback() + unget_sz, eback() + unget_sz + nmemb);
 			c = traits_type::to_int_type(*gptr());
@@ -217,7 +217,7 @@ typename SdlRwopsStreambuf::int_type SdlRwopsStreambuf::overflow(int_type c) {
 	}
 	if (pptr() != pbase()) {
 		const std::size_t nmemb = static_cast<std::size_t>(pptr() - pbase());
-		if (SDL_RWwrite(m_context, pbase(), sizeof(char_type), nmemb) != nmemb)
+		if (SDL_RWwrite(m_context, pbase(), nmemb) != nmemb)
 			return traits_type::eof();
 		setp(pb_save, epb_save);
 	}
@@ -272,7 +272,7 @@ SdlRwopsStreambuf::sync()
         //Would be calling SDL_RWflush() here if it existed.
         //Consider closing and re-opening the file to simulate a flush.
         if (SDL_RWOPS_STDFILE == m_context->type) {
-            fflush(m_context->hidden.stdio.fp);
+            fflush(static_cast<FILE *>(m_context->hidden.stdio.fp));
         }
     }
     else if (m_currentMode & std::ios_base::in)

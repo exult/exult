@@ -879,9 +879,11 @@ void Cheat::map_teleport() const {
 void Cheat::cursor_teleport() const {
 	if (!enabled) return;
 
-	int x;
-	int y;
-	SDL_GetMouseState(&x, &y);
+	int x, y;
+	float fx, fy;
+	SDL_GetMouseState(&fx, &fy);
+	x = int(fx);
+	y = int(fy);
 	gwin->get_win()->screen_to_game_hdpi(x, y, gwin->get_fastmouse(), x, y);
 	Tile_coord t(gwin->get_scrolltx() + x / c_tilesize,
 	             gwin->get_scrollty() + y / c_tilesize, 0);
@@ -939,7 +941,10 @@ void Cheat::delete_object() {
 
 	int x;
 	int y;
-	SDL_GetMouseState(&x, &y);
+	float fx, fy;
+	SDL_GetMouseState(&fx, &fy);
+	x = int(fx);
+	y = int(fy);
 	gwin->get_win()->screen_to_game_hdpi(x, y, gwin->get_fastmouse(), x, y);
 
 	Game_object *obj;

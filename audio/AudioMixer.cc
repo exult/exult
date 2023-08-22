@@ -43,29 +43,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 namespace Pentagram {
 	class SDLAudioDevice {
 	public:
-		SDLAudioDevice(SDL_AudioDeviceID dev_) : dev(dev_) {}
+		SDLAudioDevice(SDL_AudioDeviceID dev_, SDL_AudioStream *stream_) : dev(dev_), stream(stream_) {}
 		~SDLAudioDevice() {
 			SDL_CloseAudioDevice(dev);
 		}
 
 		void pause() {
-			SDL_PauseAudioDevice(dev, 1);
+			SDL_PauseAudioDevice(dev);
 		}
 
 		void unpause() {
-			SDL_PauseAudioDevice(dev, 0);
+			SDL_ResumeAudioDevice(dev);
 		}
 
 		void lock() {
-			SDL_LockAudioDevice(dev);
+			SDL_LockAudioStream(stream);
 		}
 
 		void unlock() {
-			SDL_UnlockAudioDevice(dev);
+			SDL_UnlockAudioStream(stream);
 		}
 
 	private:
 		SDL_AudioDeviceID dev;
+		SDL_AudioStream  *stream;
 	};
 }
 
@@ -89,29 +90,30 @@ id_counter(0)
 	desired.format = SDL_AUDIO_S16SYS;
 	desired.freq = sample_rate_;
 	desired.channels = stereo_?2:1;
-	desired.callback = sdlAudioCallback;
-	desired.userdata = this;
 
 	// Set update rate to 5 Hz, or there abouts. This should be more than adequate for everyone
 	// Note: setting this to 1 Hz (/1) causes Exult to hang on MacOS.
-	desired.samples=1;
-	while(desired.samples<=desired.freq/5) desired.samples<<=1;
+	int samples = 1;                                     // No need to pass it to SDL3
+	while ( samples <= desired.freq / 5 ) samples <<= 1; // No need to pass it to SDL3
 
 	// Open SDL Audio (even though we may not need it)
 	SDL_InitSubSystem(SDL_INIT_AUDIO);
-	const SDL_AudioDeviceID dev = SDL_OpenAudioDevice(nullptr, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
+	const SDL_AudioDeviceID dev = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &desired);
 	audio_ok = (dev != 0);
 
 	if (audio_ok) {
-		pout << "Audio opened using format: " << obtained.freq << " Hz "
+		stream = SDL_CreateAndBindAudioStream(dev, &desired);
+		SDL_SetAudioStreamGetCallback(stream, sdlAudioCallback, this);
+		SDL_GetAudioStreamFormat(stream, &obtained, nullptr);
+		pout << "Audio opened using format: " << obtained.freq << " Hz from desired " << sample_rate_ << " Hz "
 		     << static_cast<int>(obtained.channels) << " Channels" <<  std::endl;
-		device = std::make_unique<SDLAudioDevice>(dev);
+		device = std::make_unique<SDLAudioDevice>(dev, stream);
 		{
 			const std::lock_guard<SDLAudioDevice> lock(*device);
 			sample_rate = obtained.freq;
 			stereo = obtained.channels == 2;
 
-			internal_buffer.resize((obtained.size + 1) / 2);
+			internal_buffer . resize( samples * 2 );     // No need to pass it to SDL3
 			for (int i = 0; i < num_channels_; i++)
 				channels.emplace_back(sample_rate, stereo);
 		}
@@ -127,6 +129,12 @@ AudioMixer::~AudioMixer()
 
 	closeMidiOutput();
 
+	if (stream) {
+		SDL_DestroyAudioStream(stream);
+		stream = nullptr;
+	}
+	SDL_QuitSubSystem(SDL_INIT_AUDIO);
+
 	the_audio_mixer = nullptr;
 }
 
@@ -140,6 +148,10 @@ void AudioMixer::reset()
 
 	const std::lock_guard<SDLAudioDevice> lock(*device);
 	for (auto& channel : channels) channel.stop();
+
+	if (stream) {
+		SDL_FlushAudioStream(stream);
+	}
 }
 
 sint32 AudioMixer::playSample(AudioSample *sample, int loop, int priority, bool paused, uint32 pitch_shift_, int lvol, int rvol)
@@ -313,7 +325,7 @@ void AudioMixer::get2DPosition(sint32 instance_id, int &distance, int &angle) co
 	}
 }
 
-void AudioMixer::sdlAudioCallback(void *userdata, Uint8 *stream, int len)
+void AudioMixer::sdlAudioCallback(SDL_AudioStream *stream, int len, void *userdata)
 {
 	auto *mixer = static_cast<AudioMixer *>(userdata);
 	// Unfortunately, SDL does not guarantee that stream will be aligned to
@@ -326,14 +338,15 @@ void AudioMixer::sdlAudioCallback(void *userdata, Uint8 *stream, int len)
 	if (newlen > mixer->internal_buffer.size()) {
 		mixer->internal_buffer.resize(newlen);
 	}
-	mixer->MixAudio(mixer->internal_buffer.data(), len);
-	std::memcpy(stream, mixer->internal_buffer.data(), len);
+	if (len == 0) return;
+	mixer->MixAudio(mixer->internal_buffer.data(), mixer->internal_buffer.size()*2); // len);
+	SDL_PutAudioStreamData(stream, mixer->internal_buffer.data(), mixer->internal_buffer.size()*2); // len);
 }
 
 void AudioMixer::MixAudio(sint16 *stream, uint32 bytes)
 {
 	if (!audio_ok) return;
-	std::memset(stream,0,bytes);
+	std::memset(stream, 0, bytes);
 	if (midi) midi->produceSamples(stream, bytes);
 	for (auto& channel : channels)
 		if (channel.isPlaying()) channel.resampleAndMix(stream,bytes);

@@ -418,7 +418,11 @@ fi
 # SDL
 # ---------------------------------------------------------------------
 
-EXULT_CHECK_SDL(:,AC_MSG_ERROR([[*** SDL not found!]]))
+PKG_CHECK_MODULES(SDL, sdl3, , AC_MSG_ERROR([[*** SDL not found!]]))
+AC_DEFINE(HAVE_SDL_H, 1, [Define to 1 if you have the "SDL.h" header file])
+AM_CONDITIONAL(HAVE_SDL, true)
+AC_SUBST(SDL_CFLAGS)
+AC_SUBST(SDL_LIBS)
 
 # ---------------------------------------------------------------------
 # libogg, libvorbis, libvorbisfile
@@ -719,10 +723,22 @@ if test "$WINDOWING_SYSTEM" != -DXWIN -a "$WINDOWING_SYSTEM" != -D_WIN32 -a "$WI
 	enable_exult_studio_support=no
 fi
 
-AC_ARG_ENABLE(macosx-x11-studio-support, AS_HELP_STRING([--enable-macosx-x11-studio-support], [Force Exult Studio X11 support in macOS @<:@default no@:>@]),,enable_macosx_x11_studio_support=no)
-if test "$WINDOWING_SYSTEM" != -DMACOSX; then
-	enable_macosx_x11_studio_support=no
-fi
+#
+# From Dragon Baroque to Dominus :
+#   The two ifs below are probably mostly irrelevant for MacOS in SDL3,
+#       as they enable the communication from Exult to Studio using X11 instead of native Quartz
+#   The first  one enables it using an option in the command line of ./configure
+#   The second one enables it for a version of SDL below 2.0.15, but :
+#     - this check cannot work as the EXULT_CHECK_SDL macro is no longer invoked above,
+#       thus the $sdl_minor_version and $sdl_patchlevel are not longer set
+#     - this check is automatically satisfied in SDL 3
+#   =>  The not working / irrelevant code is left but commented out.
+#
+
+# AC_ARG_ENABLE(macosx-x11-studio-support, AS_HELP_STRING([--enable-macosx-x11-studio-support], [Force Exult Studio X11 support in Mac OS X @<:@default no@:>@]),,enable_macosx_x11_studio_support=no)
+# if test "$WINDOWING_SYSTEM" != -DMACOSX; then
+# 	enable_macosx_x11_studio_support=no
+# fi
 
 if test x$enable_exult_studio = xyes; then
 	enable_exult_studio_support=yes
@@ -731,26 +747,26 @@ fi
 if test x$enable_exult_studio_support = xyes ; then
 	AC_MSG_RESULT(yes)
 	AC_DEFINE(USE_EXULTSTUDIO, 1, [Use Exult Studio])
-	AC_CHECK_FUNC(xwin, AC_DEFINE(XWIN))
-	if test "$WINDOWING_SYSTEM" = -DMACOSX -a "$ac_cv_func_xwin" != yes; then
-		if test $sdl_minor_version -eq "0" -a $sdl_patchlevel -lt "15"; then
-			echo "SDL2 2.0.15 or newer is needed for native drag'n'drop - switching to X11"
-			enable_macosx_x11_studio_support=yes
-		fi
-	fi
+# 	AC_CHECK_FUNC(xwin, AC_DEFINE(XWIN))
+# 	if test "$WINDOWING_SYSTEM" = -DMACOSX -a "$ac_cv_func_xwin" != yes; then
+# 		if test $sdl_minor_version -eq "0" -a $sdl_patchlevel -lt "15"; then
+# 			echo "SDL2 2.0.15 or newer is needed for native drag'n'drop - switching to X11"
+# 			enable_macosx_x11_studio_support=yes
+# 		fi
+# 	fi
 
-	# Due to bug 2129731 and 3139441 some Linux distributions need -lX11 explicitly set
-	# when enabling Exult Studio support or linking fails
-	# 2022.08 : This does not appear relevant any longer
-	# 2022.08 : if test "$WINDOWING_SYSTEM" = -DXWIN ; then
-	# 2022.08 :     SYSLIBS="$SYSLIBS -lX11"
-	# 2022.08 : fi
+# 	# Due to bug 2129731 and 3139441 some Linux distributions need -lX11 explicitly set
+# 	# when enabling Exult Studio support or linking fails
+# 	# 2022.08 : This does not appear relevant any longer
+# 	# 2022.08 : if test "$WINDOWING_SYSTEM" = -DXWIN ; then
+# 	# 2022.08 :     SYSLIBS="$SYSLIBS -lX11"
+# 	# 2022.08 : fi
 
-	if test x$enable_macosx_x11_studio_support = xyes ; then
-		enable_exult_studio_support=yes
-		SYSLIBS="$SYSLIBS -L/usr/X11R6/lib -lX11"
-		AC_DEFINE(XWIN, 1, [X11 (needed by Exult Studio X11 support in macOS)])
-	fi
+# 	if test x$enable_macosx_x11_studio_support = xyes ; then
+# 		enable_exult_studio_support=yes
+# 		SYSLIBS="$SYSLIBS -L/usr/X11R6/lib -lX11"
+# 		AC_DEFINE(XWIN, 1, [X11 (needed by Exult Studio X11 support in macOS)])
+# 	fi
 else
 	AC_MSG_RESULT(no)
 fi
@@ -1106,16 +1122,6 @@ done
 
 CXXFLAGS="$CXXFLAGS $SANITIZERS"
 
-# SDL parachute?
-AC_ARG_ENABLE(sdl-parachute, AS_HELP_STRING([--enable-sdl-parachute], [Use SDL parachute @<:@default yes@:>@]),,enable_sdl_parachute=yes)
-AC_MSG_CHECKING([if we should disable the SDL parachute])
-if test x$enable_sdl_parachute = xno; then
-	AC_MSG_RESULT(yes)
-	AC_DEFINE(NO_SDL_PARACHUTE, 1, [Disable SDL parachute])
-else
-	AC_MSG_RESULT(no)
-fi
-
 # ---------------------------------------------------------------------
 # Warning level
 # ---------------------------------------------------------------------
@@ -1298,7 +1304,7 @@ fi
 echo
 if test x$enable_android_apk = xno; then
 	echo Dependencies :
-	echo SDL........................ : `$SDL_CONFIG --version`
+	echo SDL........................ : `$PKG_CONFIG --modversion sdl3`
 	PKG_CHECK_EXISTS(ogg,
 		echo Ogg.........................: `$PKG_CONFIG --modversion ogg`)
 	PKG_CHECK_EXISTS(vorbis,
@@ -1366,7 +1372,6 @@ echo Debug non Readied Objects.. : $enable_nonreadied_objects
 echo
 echo Compilation :
 echo Enable compiler sanitizers. : $enable_sanitizers
-echo Enable SDL parachute....... : $enable_sdl_parachute
 echo Build with static libraries : $enable_static_libs
 echo Turn all warnings to errors : $enable_warning_errors
 echo Turn pedantics to errors... : $enable_pedantic_errors

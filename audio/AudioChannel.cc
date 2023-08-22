@@ -21,6 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "AudioChannel.h"
 #include "AudioSample.h"
+#ifdef DEBUG
+#include <SDL.h>
+#endif
 
 #include <cstring>
 namespace Pentagram {
@@ -55,8 +58,22 @@ AudioChannel::~AudioChannel()
 	sample = nullptr;
 }
 
+#ifdef DEBUG
+inline char * formatTicks() {
+	static char formattedTicks[ 32 ];
+	uint64 ticks = SDL_GetTicks();
+	snprintf(formattedTicks, 32, "[ %5ld.%0ld ] ",
+	         ticks / 1000, ticks % 1000);
+	return formattedTicks;
+}
+#endif
+
 void AudioChannel::playSample(AudioSample *sample_, int loop_, int priority_, bool paused_, uint32 pitch_shift_, int lvol_, int rvol_, sint32 instance_id_)
 {
+#ifdef DEBUG
+	std::cout << formatTicks() << "AudioChannel::playSample, volume left "
+	          << lvol_ << " right " << rvol_ << " sample rate " << sample_->getRate() << " Hz -> " << sample_rate << " Hz" << std::endl;
+#endif
 	stop();
 	sample = sample_;
 

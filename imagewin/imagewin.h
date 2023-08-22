@@ -292,7 +292,7 @@ public:
 	inline struct SDL_Window *get_screen_window() const {
 		return screen_window;
 	}
-	int Get_best_bpp(int w, int h, int bpp, uint32 flags);
+	int Get_best_bpp(int w, int h, int bpp);
 
 	// Create with given buffer.
 	Image_window(Image_buffer *ib, int w, int h, int gamew, int gameh, int scl = 1, bool fs = false, int sclr = point, FillMode fmode = AspectCorrectCentre, int fillsclr = point)
