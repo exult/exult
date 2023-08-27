@@ -39,23 +39,23 @@ if ((x) > 1.0) { \
 	if ((self = [super initWithFrame:frame])) {
 		self.backgroundColor = [UIColor clearColor];
 		self.backgroundImage = [UIImage imageNamed:@"joythumb-glass.png"];
-		int vjoy_index = SDL_AttachVirtualJoystick(
+		SDL_JoystickID vjoy_id = SDL_AttachVirtualJoystick(
 			SDL_JOYSTICK_TYPE_GAMEPAD,
 			SDL_GAMEPAD_AXIS_MAX,
 			SDL_GAMEPAD_BUTTON_MAX,
 			0
 		);
-		if (vjoy_index < 0) {
+		if (!vjoy_id) {
 			printf("SDL_AttachVirtualJoystick failed: %s\n", SDL_GetError());
 		} else {
-			vjoy_controller = SDL_OpenGamepad(vjoy_index);
+			vjoy_controller = SDL_OpenGamepad(vjoy_id);
 			if (!vjoy_controller) {
 				printf("SDL_OpenGamepad failed for virtual joystick: %s\n", SDL_GetError());
-				SDL_DetachVirtualJoystick(vjoy_index);
+				SDL_DetachVirtualJoystick(vjoy_id);
 			}
 		}
 		[self reset];
-		// printf("VJOY INIT, controller=%p\n", vjoy_controller);
+		// printf("VJOY INIT, controller=%p, ID=%d\n", vjoy_controller, vjoy_id);
 	}
 	return self;
 }
@@ -69,17 +69,17 @@ if ((x) > 1.0) { \
 
 - (void)dealloc {
 	if (vjoy_controller) {
-		const SDL_JoystickID vjoy_controller_id = SDL_GetJoystickInstanceID(
-			SDL_GetGamepadJoystick(vjoy_controller)
-		);
 		SDL_CloseGamepad(vjoy_controller);
-		for (int i = 0, n = SDL_NumJoysticks(); i < n; ++i) {
-			const SDL_JoystickID current_id = SDL_JoystickGetDeviceInstanceID(i);
-			if (current_id == vjoy_controller_id) {
-				// printf("detach virtual at id:%d, index:%d\n", current_id, i);
-				SDL_DetachVirtualJoystick(i);
-				break;
+		SDL_JoystickID *joysticks = SDL_GetJoysticks(NULL);
+		if (joysticks) {
+			for (int i = 0; joysticks[i]; ++i) {
+				if (SDL_IsJoystickVirtual(joysticks[i])) {
+					// printf("detach virtual at id:%d, index:%d\n", joysticks[i], i);
+					SDL_DetachVirtualJoystick(joysticks[i]);
+					break;
+				}
 			}
+			SDL_free(joysticks);
 		}
 	}
 

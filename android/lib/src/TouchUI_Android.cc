@@ -88,31 +88,34 @@ TouchUI_Android::TouchUI_Android() {
 	m_promptForNameMethod = m_jniEnv->GetMethodID(
 			jclass, "promptForName", "(Ljava/lang/String;)V");
 
-	int joystickDeviceIndex = SDL_AttachVirtualJoystick(
+	SDL_JoystickID joystickDeviceID = SDL_AttachVirtualJoystick(
 			SDL_JOYSTICK_TYPE_GAMEPAD, SDL_GAMEPAD_AXIS_MAX,
 			SDL_GAMEPAD_BUTTON_MAX, 0);
-	if (joystickDeviceIndex < 0) {
+	if (!joystickDeviceID) {
 		std::cerr << "SDL_AttachVirtualJoystick failed: " << SDL_GetError()
 				  << std::endl;
 	} else {
-		m_joystick = SDL_OpenJoystick(joystickDeviceIndex);
+		m_joystick = SDL_OpenJoystick(joystickDeviceID);
 		if (!m_joystick) {
 			std::cerr << "SDL_OpenJoystick failed for virtual joystick: "
 					  << SDL_GetError() << std::endl;
-			SDL_DetachVirtualJoystick(joystickDeviceIndex);
+			SDL_DetachVirtualJoystick(joystickDeviceID);
 		}
 	}
 }
 
 TouchUI_Android::~TouchUI_Android() {
 	if (m_joystick) {
-		const auto joystickId = SDL_GetJoystickInstanceID(m_joystick);
 		SDL_CloseJoystick(m_joystick);
-		for (int i = 0, n = SDL_NumJoysticks(); i < n; ++i) {
-			if (SDL_JoystickGetDeviceInstanceID(i) == joystickId) {
-				SDL_DetachVirtualJoystick(i);
-				break;
+		SDL_JoystickID *joysticks = SDL_GetJoysticks(nullptr);
+		if (joysticks) {
+			for (int i = 0; joysticks[i]; ++i) {
+				if (SDL_IsJoystickVirtual(joysticks[i])) {
+					SDL_DetachVirtualJoystick(joysticks[i]);
+					break;
+				}
 			}
+			SDL_free(joysticks);
 		}
 	}
 }

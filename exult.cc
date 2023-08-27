@@ -2467,10 +2467,10 @@ void setup_video(bool fullscreen, int setup_video_type, int resx, int resy,
 		// Default resolution is 320x240 with 1x scaling
 		int w = 320;
 		int h = 240;
-		SDL_DisplayMode dispmode;
-		if (SDL_GetDesktopDisplayMode(0, &dispmode) == 0) {
-			w = dispmode.w;
-			h = dispmode.h;
+		const SDL_DisplayMode * dispmode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+		if (dispmode != nullptr) {
+			w = dispmode->w;
+			h = dispmode->h;
 		}
 		const int sc = 1;
 		const string default_scaler = "point";

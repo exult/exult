@@ -206,11 +206,11 @@ static void writeline(SDL_RWops* dst, Uint8* buffer, int bytes) {
 		}
 
 		if (value < 0xc0 && count == 1) {
-			SDL_RWwrite(dst, &value, 1, 1);
+			SDL_RWwrite(dst, &value, 1);
 		} else {
 			Uint8 tmp = count + 0xc0;
-			SDL_RWwrite(dst, &tmp, 1, 1);
-			SDL_RWwrite(dst, &value, 1, 1);
+			SDL_RWwrite(dst, &tmp, 1);
+			SDL_RWwrite(dst, &value, 1);
 		}
 	}
 }
@@ -287,22 +287,22 @@ static bool save_image(SDL_Surface* surface, SDL_RWops* dst, int guardband) {
 
 	/* write header */
 	/*  fp_offset = SDL_RWtell(dst);*/
-	SDL_RWwrite(dst, &header, sizeof(PCX_Header), 1);
+	SDL_RWwrite(dst, &header, sizeof(PCX_Header));
 
 	if (cmap) {
 		save_8(dst, width, height, pitch, pixels);
 
 		/* write palette */
 		Uint8 tmp = 0x0c;
-		SDL_RWwrite(dst, &tmp, 1, 1);
-		SDL_RWwrite(dst, cmap, 3, colors);
+		SDL_RWwrite(dst, &tmp, 1);
+		SDL_RWwrite(dst, cmap, 3 * colors);
 
 		/* fill unused colors */
 		tmp = 0;
 		for (int i = colors; i < 256; i++) {
-			SDL_RWwrite(dst, &tmp, 1, 1);
-			SDL_RWwrite(dst, &tmp, 1, 1);
-			SDL_RWwrite(dst, &tmp, 1, 1);
+			SDL_RWwrite(dst, &tmp, 1);
+			SDL_RWwrite(dst, &tmp, 1);
+			SDL_RWwrite(dst, &tmp, 1);
 		}
 
 		delete[] cmap;
