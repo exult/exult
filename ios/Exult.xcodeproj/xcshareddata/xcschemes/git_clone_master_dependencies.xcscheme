@@ -9,7 +9,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "clone the libraries&apos; master"
-               scriptText = "git -c advice.detachedHead=false clone -b sans_glib --depth 1 https://github.com/dominusexult/fluidsynth-sans-glib ${WORKSPACE_PATH}/../../fluidsynth-sans-glib || true&#10;git clone https://github.com/xiph/ogg ${WORKSPACE_PATH}/../../libogg || true&#10;git clone https://github.com/xiph/vorbis ${WORKSPACE_PATH}/../../libvorbis || true&#10;git clone https://github.com/munt/munt ${WORKSPACE_PATH}/../../libmt32emu || true&#10;git clone -b SDL2 https://github.com/libsdl-org/sdl ${WORKSPACE_PATH}/../../SDL || true&#10;">
+               scriptText = "git -c advice.detachedHead=false clone -b sans_glib --depth 1 https://github.com/dominusexult/fluidsynth-sans-glib ${WORKSPACE_PATH}/../../fluidsynth-sans-glib || true&#10;git clone https://github.com/xiph/ogg ${WORKSPACE_PATH}/../../libogg || true&#10;git clone https://github.com/xiph/vorbis ${WORKSPACE_PATH}/../../libvorbis || true&#10;git clone https://github.com/munt/munt ${WORKSPACE_PATH}/../../libmt32emu || true&#10;git clone https://github.com/libsdl-org/sdl ${WORKSPACE_PATH}/../../SDL || true&#10;">
             </ActionContent>
          </ExecutionAction>
       </PreActions>

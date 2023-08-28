@@ -41,7 +41,7 @@
 
 #define USE_FMOPL_MIDI
 
-#define USE_FLUIDSYNTH_MIDI
+//#define USE_FLUIDSYNTH_MIDI
 
 #define USE_MT32EMU_MIDI
 
