@@ -1495,7 +1495,7 @@ static void Handle_event(
 			break;
 		int x;
 		int y;
-		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
+		gwin->get_win()->screen_to_game_hdpi(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
 		if (event.button.button == 1) {
 			Gump_button *button;
 			// Allow dragging only either if the avatar can act or if map edit
@@ -1615,7 +1615,7 @@ static void Handle_event(
 			break;
 		int x ;
 		int y;
-		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
+		gwin->get_win()->screen_to_game_hdpi(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
 
 		if (event.button.button == 3) {
 			const uint32 curtime = SDL_GetTicks();
@@ -1702,7 +1702,7 @@ static void Handle_event(
 		int my;
 		if (Mouse::use_touch_input && event.motion.which != EXSDL_TOUCH_MOUSEID)
 			Mouse::use_touch_input = false;
-		gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
+		gwin->get_win()->screen_to_game_hdpi(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
 
 		Mouse::mouse->move(mx, my);
 		if (!dragging)
@@ -1913,7 +1913,7 @@ static bool Get_click(
 				if (event.button.button == 3)
 					rightclick = true;
 				else if (drag_ok && event.button.button == 1) {
-					gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
+					gwin->get_win()->screen_to_game_hdpi(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
 					dragging = gwin->start_dragging(x, y);
 					dragged = false;
 				}
@@ -1923,7 +1923,7 @@ static bool Get_click(
 				if (g_shortcutBar && g_shortcutBar->handle_event(&event))
 					break;
 				if (event.button.button == 1) {
-					gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
+					gwin->get_win()->screen_to_game_hdpi(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
 					const bool drg = dragging;
 					const bool drged = dragged;
 					dragging = dragged = false;
@@ -1946,7 +1946,7 @@ static bool Get_click(
 			case SDL_EVENT_MOUSE_MOTION: {
 				int mx;
 				int my;
-				gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
+				gwin->get_win()->screen_to_game_hdpi(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
 
 				Mouse::mouse->move(mx, my);
 				Mouse::mouse_update = true;
@@ -2073,7 +2073,7 @@ void Wait_for_arrival(
 		while (SDL_PollEvent(&event))
 			switch (event.type) {
 			case SDL_EVENT_MOUSE_MOTION:
-				gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
+				gwin->get_win()->screen_to_game_hdpi(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
 
 				Mouse::mouse->move(mx, my);
 				Mouse::mouse_update = true;
@@ -2177,7 +2177,7 @@ void Wizard_eye(
 			case SDL_EVENT_MOUSE_MOTION: {
 				int mx;
 				int my;
-				gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
+				gwin->get_win()->screen_to_game_hdpi(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
 
 				Mouse::mouse->move(mx, my);
 				Mouse::mouse->set_shape(

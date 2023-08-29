@@ -317,7 +317,7 @@ int ShortcutBar_gump::handle_event(SDL_Event *event) {
 	    handle_events) {
 		int x;
 		int y;
-		gwin->get_win()->screen_to_game(event->button.x, event->button.y,
+		gwin->get_win()->screen_to_game_hdpi(event->button.x, event->button.y,
 		                                gwin->get_fastmouse(), x, y);
 		Gump *on_gump = gumpman->find_gump(x, y);
 		Gump_button *button;

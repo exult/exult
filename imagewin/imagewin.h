@@ -333,7 +333,7 @@ public:
 			// reset nativescale to 1.0 for windowed gaming or toggling
 			// fullscreen/windowed mode uses the wrong nativescale
 			nativescale = 1.0f;
-		if (nativescale != 1.0f) {
+		if (nativescale != 1.0f && !fast) {
 			gx = lgx * nativescale;
 			gy = lgy * nativescale;
 		} else {

@@ -317,7 +317,7 @@ int MenuList::handle_events(Game_window *gwin, Mouse *mouse) {
 			if (event.type == SDL_EVENT_MOUSE_MOTION) {
 				if (Mouse::use_touch_input && event.motion.which != EXSDL_TOUCH_MOUSEID)
 					Mouse::use_touch_input = false;
-				gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
+				gwin->get_win()->screen_to_game_hdpi(event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 				if (!mouse_updated) mouse->hide();
 				mouse_updated = true;
 				mouse->move(gx, gy);
@@ -326,7 +326,7 @@ int MenuList::handle_events(Game_window *gwin, Mouse *mouse) {
 				//mouse->blit_dirty();
 			} else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 				if (!mouse_visible) {
-					gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
+					gwin->get_win()->screen_to_game_hdpi(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 
 					// if invisible, redraw mouse
 					set_selection(gx, gy);
@@ -335,7 +335,7 @@ int MenuList::handle_events(Game_window *gwin, Mouse *mouse) {
 					mouse_updated = false;
 				}
 			} else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-				gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
+				gwin->get_win()->screen_to_game_hdpi(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 				auto& entry = entries[selection];
 				if (entry->is_mouse_over(gx, gy)) {
 					exit_loop = entry->handle_event(event);
