@@ -417,13 +417,15 @@ fi
 # ---------------------------------------------------------------------
 # SDL
 # ---------------------------------------------------------------------
-
-PKG_CHECK_MODULES(SDL, sdl3, , AC_MSG_ERROR([[*** SDL not found!]]))
-AC_DEFINE(HAVE_SDL_H, 1, [Define to 1 if you have the "SDL.h" header file])
-AM_CONDITIONAL(HAVE_SDL, true)
-AC_SUBST(SDL_CFLAGS)
-AC_SUBST(SDL_LIBS)
-
+if test x$enable_android_apk = xno; then
+	PKG_CHECK_MODULES(SDL, sdl3, , AC_MSG_ERROR([[*** SDL not found!]]))
+	AC_DEFINE(HAVE_SDL_H, 1, [Define to 1 if you have the "SDL.h" header file])
+	AM_CONDITIONAL(HAVE_SDL, true)
+	AC_SUBST(SDL_CFLAGS)
+	AC_SUBST(SDL_LIBS)
+else
+	AM_CONDITIONAL(HAVE_SDL, false)
+fi
 # ---------------------------------------------------------------------
 # libogg, libvorbis, libvorbisfile
 # ---------------------------------------------------------------------

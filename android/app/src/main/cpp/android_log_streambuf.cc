@@ -20,7 +20,7 @@
 
 #include <android/log.h>
 
-#include <SDL_system.h>
+#include <SDL3/SDL_system.h>
 
 #include <iostream>
 

@@ -596,19 +596,27 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 		cout << "Couldn't create renderer: " << SDL_GetError() << std::endl;
 
 	if (fullscreen) {
-		int dw;
-		int dh;
-		//with HighDPi this returns the higher resolutions
-		SDL_GetCurrentRenderOutputSize(screen_renderer, &dw, &dh);
-		w=dw;
-		h=dh;
-		const Resolution res = { w, h };
-		p_resolutions[(w << 16) | h] = res;
-		//getting new native scale when highdpi is active
+		//getting new native scale for highdpi is active
+		//or if it is disabled but a highdpi resolution is still being used
 		nativescale = float(SDL_GetWindowDisplayScale(screen_window));
-		//high resolution fullscreen needs this to make the whole screen available
-		SDL_SetRenderLogicalPresentation(screen_renderer, w, h,
-		    SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_SCALEMODE_LINEAR);
+		bool high_dpi;
+		config->value("config/video/highdpi", high_dpi, true);
+		if (high_dpi) {
+			int dw;
+			int dh;
+			//with HighDPi this returns the higher resolutions
+			SDL_GetCurrentRenderOutputSize(screen_renderer, &dw, &dh);
+			w=dw;
+			h=dh;
+			const Resolution res = { w, h };
+			p_resolutions[(w << 16) | h] = res;
+			//high resolution fullscreen needs this to make the whole screen available
+			SDL_SetRenderLogicalPresentation(screen_renderer, w, h,
+			    SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_SCALEMODE_LINEAR);
+		} else {
+			SDL_SetRenderLogicalPresentation(screen_renderer, w, h,
+			    SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_SCALEMODE_LINEAR);
+		}
 	} else
 		//make sure the window has the right dimensions
 		SDL_SetWindowSize(screen_window, w, h);

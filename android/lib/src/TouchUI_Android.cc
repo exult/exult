@@ -17,7 +17,7 @@
  */
 
 #include <Configuration.h>
-#include <SDL_system.h>
+#include <SDL3/SDL_system.h>
 #include <TouchUI_Android.h>
 
 #include <iostream>
