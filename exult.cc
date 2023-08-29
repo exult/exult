@@ -35,6 +35,7 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif    // __GNUC__
 #include <SDL.h>
+#include <SDL_main.h>
 static const Uint32 EXSDL_TOUCH_MOUSEID=SDL_TOUCH_MOUSEID;
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
@@ -111,7 +112,6 @@ static const Uint32 EXSDL_TOUCH_MOUSEID=SDL_TOUCH_MOUSEID;
 using namespace Pentagram;
 
 #ifdef __IOS__
-#  include <SDL_main.h>
 #  include "ios_utils.h"
 #elif defined(ANDROID)
 #  include <SDL_system.h>
