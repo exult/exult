@@ -85,7 +85,7 @@ private:
 	std::unique_ptr<SDLAudioDevice>	device;
 
 	void			init_midi();
-	static void		sdlAudioCallback(SDL_AudioStream *stream, int len, void *userdata);
+	static void		sdlAudioCallback(void *userdata, SDL_AudioStream *stream, int len);
 	SDL_AudioStream *stream;
 
 	void			MixAudio(sint16 *stream, uint32 bytes);
