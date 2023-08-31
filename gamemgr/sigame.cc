@@ -1330,7 +1330,7 @@ bool SI_Game::new_game(Vga_file &shapes) {
 				const SDL_Rect rectOnward = { topx + 10,    topy + 180, 130,  16 };
 				const SDL_Rect rectReturn = { centerx + 10, topy + 180, 130,  16 };
 				SDL_Point point;
-				gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), point.x, point.y);
+				gwin->get_win()->screen_to_game_hdpi(event.button.x, event.button.y, gwin->get_fastmouse(), point.x, point.y);
 				if (SDL_GetRectEnclosingPoints(&point, 1, &rectName, nullptr)) {
 					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 0;

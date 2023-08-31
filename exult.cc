@@ -1069,7 +1069,7 @@ static void Paint_with_shape(
 	//int x = event.button.x/scale, y = event.button.y/scale;
 	int x;
 	int y;
-	gwin->get_win()->screen_to_game(event.button.x, event.button.y, false, x, y);
+	gwin->get_win()->screen_to_game_hdpi(event.button.x, event.button.y, false, x, y);
 
 	const int tx = (gwin->get_scrolltx() + x / c_tilesize);
 	const int ty = (gwin->get_scrollty() + y / c_tilesize);
@@ -1107,7 +1107,7 @@ static void Paint_with_chunk(
 	static int lastcy = -1;
 	int x;
 	int y;
-	gwin->get_win()->screen_to_game(event.button.x, event.button.y, false, x, y);
+	gwin->get_win()->screen_to_game_hdpi(event.button.x, event.button.y, false, x, y);
 	const int cx = (gwin->get_scrolltx() + x / c_tilesize) / c_tiles_per_chunk;
 	const int cy = (gwin->get_scrollty() + y / c_tilesize) / c_tiles_per_chunk;
 	if (dragging) {         // See if moving to a new chunk.
@@ -1133,7 +1133,7 @@ static void Select_chunks(
 	static int lastcy = -1;
 	int x;
 	int y;
-	gwin->get_win()->screen_to_game(event.button.x, event.button.y, false, x, y);
+	gwin->get_win()->screen_to_game_hdpi(event.button.x, event.button.y, false, x, y);
 	const int cx = (gwin->get_scrolltx() + x / c_tilesize) / c_tiles_per_chunk;
 	const int cy = (gwin->get_scrollty() + y / c_tilesize) / c_tiles_per_chunk;
 	if (dragging) {         // See if moving to a new chunk.
@@ -1164,7 +1164,7 @@ static void Select_for_combo(
 	static Game_object *last_obj = nullptr;
 	int x;
 	int y;
-	gwin->get_win()->screen_to_game(event.button.x, event.button.y, false, x, y);
+	gwin->get_win()->screen_to_game_hdpi(event.button.x, event.button.y, false, x, y);
 	//int tx = (gwin->get_scrolltx() + x/c_tilesize)%c_num_tiles;
 	//int ty = (gwin->get_scrollty() + y/c_tilesize)%c_num_tiles;
 	Game_object *obj = gwin->find_object(x, y);
@@ -1406,12 +1406,12 @@ static void Handle_event(
 	case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
 		// Ignore axis changes on anything but a specific thumb-stick
 		// on the game-controller.
-		if (event.jaxis.axis != SDL_GAMEPAD_AXIS_LEFTX &&
-			  event.jaxis.axis != SDL_GAMEPAD_AXIS_LEFTY) {
+		if (event.gaxis.axis != SDL_GAMEPAD_AXIS_LEFTX &&
+			  event.gaxis.axis != SDL_GAMEPAD_AXIS_LEFTY) {
 			break;
 		}
 
-		SDL_Gamepad *input_device = SDL_GetGamepadFromInstanceID(event.jaxis.which);
+		SDL_Gamepad *input_device = SDL_GetGamepadFromInstanceID(event.gaxis.which);
 		if (input_device && !dont_move_mode && avatar_can_act &&
 			gwin->main_actor_can_act_charmed()) {
 			auto get_normalized_axis = [input_device](SDL_GamepadAxis axis){
@@ -2628,7 +2628,7 @@ static void Move_grid(
 	//int scale = gwin->get_win()->get_scale();
 	//x /= scale;           // Watch for scaled window.
 	//y /= scale;
-	gwin->get_win()->screen_to_game(x, y, false, x, y);
+	gwin->get_win()->screen_to_game_hdpi(x, y, false, x, y);
 
 	const int lift = cheat.get_edit_lift();
 	x += lift * 4 - 1;      // Take lift into account, round.
@@ -2638,7 +2638,7 @@ static void Move_grid(
 	tx += tiles_right;
 	ty += tiles_below;
 	if (prevx != -1) {      // See if moved to a new tile.
-		gwin->get_win()->screen_to_game(prevx, prevy, false, prevx, prevy);
+		gwin->get_win()->screen_to_game_hdpi(prevx, prevy, false, prevx, prevy);
 		prevx += lift * 4 - 1;  // Take lift into account, round.
 		prevy += lift * 4 - 1;
 		int ptx = prevx / c_tilesize;
@@ -2760,7 +2760,7 @@ static void Drop_dragged_shape(
 		cheat.toggle_map_editor();
 	cheat.clear_selected();     // Remove old selected.
 	gwin->get_map()->set_map_modified();
-	gwin->get_win()->screen_to_game(x, y, false, x, y);
+	gwin->get_win()->screen_to_game_hdpi(x, y, false, x, y);
 	const ShapeID sid(shape, frame);
 	if (gwin->skip_lift == 0) { // Editing terrain?
 		int tx = (gwin->get_scrolltx() + x / c_tilesize) % c_num_tiles;
@@ -2802,7 +2802,7 @@ static void Drop_dragged_chunk(
 ) {
 	if (!cheat.in_map_editor()) // Get into editing mode.
 		cheat.toggle_map_editor();
-	gwin->get_win()->screen_to_game(x, y, false, x, y);
+	gwin->get_win()->screen_to_game_hdpi(x, y, false, x, y);
 	cout << "Last drag pos: (" << x << ", " << y << ')' << endl;
 	cout << "Set chunk (" << chunknum << ')' << endl;
 	// Need chunk-coordinates.
@@ -2824,7 +2824,7 @@ static void Drop_dragged_npc(
 ) {
 	if (!cheat.in_map_editor()) // Get into editing mode.
 		cheat.toggle_map_editor();
-	gwin->get_win()->screen_to_game(x, y, false, x, y);
+	gwin->get_win()->screen_to_game_hdpi(x, y, false, x, y);
 	cout << "Last drag pos: (" << x << ", " << y << ')' << endl;
 	cout << "Set npc (" << npcnum << ')' << endl;
 	Actor *npc = gwin->get_npc(npcnum);
@@ -2854,7 +2854,7 @@ void Drop_dragged_combo(
 	if (!cheat.in_map_editor()) // Get into editing mode.
 		cheat.toggle_map_editor();
 	cheat.clear_selected();     // Remove old selected.
-	gwin->get_win()->screen_to_game(x, y, false, x, y);
+	gwin->get_win()->screen_to_game_hdpi(x, y, false, x, y);
 	const int at_lift = cheat.get_edit_lift();
 	x += at_lift * 4 - 1;   // Take lift into account, round.
 	y += at_lift * 4 - 1;

@@ -33,6 +33,7 @@
 		8A8340D01F897827000696C7 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340CC1F897826000696C7 /* AVKit.framework */; };
 		8A8340D11F897827000696C7 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340CD1F897826000696C7 /* AVFoundation.framework */; };
 		8A8340D51F8979D3000696C7 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FD77A0840E26BDB800F39101 /* AudioToolbox.framework */; };
+		8A86A74D2A9F2C8600AA55DA /* SDL3.framework in Embed SDL3 Framework */ = {isa = PBXBuildFile; fileRef = 8A52529F25718897005AD385 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		8A8728EA1DD8BAA3005AC3FC /* sha1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A8728E81DD8BAA3005AC3FC /* sha1.cpp */; };
 		8A93BD6A1F8901E3001850AA /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A93BC931F869000001850AA /* Media.xcassets */; };
 		8A98326D27AD7A0C0028D9C9 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A98326C27AD7A0C0028D9C9 /* QuartzCore.framework */; };
@@ -303,6 +304,20 @@
 			remoteInfo = vorbis;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8A86A7452A9F2C4200AA55DA /* Embed SDL3 Framework */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				8A86A74D2A9F2C8600AA55DA /* SDL3.framework in Embed SDL3 Framework */,
+			);
+			name = "Embed SDL3 Framework";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		1D6058910D05DD3D006BFB54 /* Exult.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Exult.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1615,6 +1630,7 @@
 				1D60588D0D05DD3D006BFB54 /* Resources */,
 				1D60588E0D05DD3D006BFB54 /* Sources */,
 				1D60588F0D05DD3D006BFB54 /* Frameworks */,
+				8A86A7452A9F2C4200AA55DA /* Embed SDL3 Framework */,
 			);
 			buildRules = (
 			);
