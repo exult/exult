@@ -215,10 +215,10 @@ static void set_scaleval(int new_scaleval);
 #ifdef USE_EXULTSTUDIO
 static void Move_dragged_shape(int shape, int frame, int x, int y,
                                int prevx, int prevy, bool show);
-#ifdef _WIN32
+//#ifdef _WIN32
 static void Move_dragged_combo(int xtiles, int ytiles, int tiles_right,
                                int tiles_below, int x, int y, int prevx, int prevy, bool show);
-#endif
+//#endif
 static void Drop_dragged_shape(int shape, int frame, int x, int y);
 static void Drop_dragged_chunk(int chunknum, int x, int y);
 static void Drop_dragged_npc(int npcnum, int x, int y);
@@ -249,6 +249,7 @@ static bool arg_verify_files = false;    // Verify a game's files.
 
 static bool dragging = false;       // Object or gump being moved.
 static bool dragged = false;        // Flag for when obj. moved.
+static int drag_prevx = 0, drag_prevy = 0;
 static bool right_on_gump = false;  // Right clicked on gump?
 static int show_items_x = 0, show_items_y = 0;
 static unsigned int show_items_time = 0;
@@ -1858,6 +1859,108 @@ static void Handle_event(
 #endif
 		break;
 	}
+	case SDL_EVENT_DROP_BEGIN: {
+#ifdef USE_EXULTSTUDIO
+#ifndef _WIN32
+		int x;
+		int y;
+		float fx = event.drop.x, fy = event.drop.y;
+		x = int(fx);
+		y = int(fy);
+#ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, type = " << event.drop.type
+		     << ", at x = " << x << ", y = " << y << endl;
+#endif
+		drag_prevx = -1;
+		drag_prevy = -1;
+		const unsigned char *data = reinterpret_cast<const unsigned char*>("/U7SHAPEID.0.199.0");
+		if (Is_u7_shapeid(data) == true) {
+			// Get shape info.
+			int file, shape, frame;
+			Get_u7_shapeid(data, file, shape, frame);
+			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Shape: file = " << file
+			     << ", shape = " << shape << ", frame = " << frame
+			     << ", at x = " << x << ", y = " << y << endl;
+			if (shape >= 0) {   // Moving a shape?
+				if (file == U7_SHAPE_SHAPES)
+					// For now, just allow "shapes.vga".
+					Move_dragged_shape(shape, frame, x, y, drag_prevx, drag_prevy, true);
+			}
+		} else if (Is_u7_comboid(data) == true) {
+			int combo_xtiles, combo_ytiles, combo_tiles_right, combo_tiles_below, combo_cnt;
+			U7_combo_data *combo;
+			Get_u7_comboid(data, combo_xtiles, combo_ytiles,
+			               combo_tiles_right, combo_tiles_below, combo_cnt, combo);
+			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Combo: xtiles = " << combo_xtiles
+			     << ", ytiles = " << combo_ytiles << ", tiles_right = " << combo_tiles_right
+			     << ", tiles_below = " << combo_tiles_below
+			     << ", count = " << combo_cnt
+			     << ", at x = " << x << ", y = " << y << endl;
+			if (combo_cnt >= 0 && combo) {
+				Move_dragged_combo(combo_xtiles, combo_ytiles, combo_tiles_right, combo_tiles_below,
+				                   x, y, drag_prevx, drag_prevy, true);
+			}
+			delete[] combo;
+		}
+		drag_prevx = x;
+		drag_prevy = y;
+#ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event complete" << endl;
+#endif
+#endif
+#endif
+		break;
+	}
+	case SDL_EVENT_DROP_POSITION: {
+#ifdef USE_EXULTSTUDIO
+#ifndef _WIN32
+		int x;
+		int y;
+		float fx = event.drop.x, fy = event.drop.y;
+		x = int(fx);
+		y = int(fy);
+#ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, type = " << event.drop.type
+		     << ", at x = " << x << ", y = " << y << endl;
+#endif
+		const unsigned char *data = reinterpret_cast<const unsigned char*>("/U7SHAPEID.0.199.0");
+		if (Is_u7_shapeid(data) == true) {
+			// Get shape info.
+			int file, shape, frame;
+			Get_u7_shapeid(data, file, shape, frame);
+			cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, Shape: file = " << file
+			     << ", shape = " << shape << ", frame = " << frame
+			     << ", at x = " << x << ", y = " << y << endl;
+			if (shape >= 0) {   // Moving a shape?
+				if (file == U7_SHAPE_SHAPES)
+					// For now, just allow "shapes.vga".
+					Move_dragged_shape(shape, frame, x, y, drag_prevx, drag_prevy, true);
+			}
+		} else if (Is_u7_comboid(data) == true) {
+			int combo_xtiles, combo_ytiles, combo_tiles_right, combo_tiles_below, combo_cnt;
+			U7_combo_data *combo;
+			Get_u7_comboid(data, combo_xtiles, combo_ytiles,
+			               combo_tiles_right, combo_tiles_below, combo_cnt, combo);
+			cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, Combo: xtiles = " << combo_xtiles
+			     << ", ytiles = " << combo_ytiles << ", tiles_right = " << combo_tiles_right
+			     << ", tiles_below = " << combo_tiles_below
+			     << ", count = " << combo_cnt
+			     << ", at x = " << x << ", y = " << y << endl;
+			if (combo_cnt >= 0 && combo) {
+				Move_dragged_combo(combo_xtiles, combo_ytiles, combo_tiles_right, combo_tiles_below,
+				                   x, y, drag_prevx, drag_prevy, true);
+			}
+			delete[] combo;
+		}
+		drag_prevx = x;
+		drag_prevy = y;
+#ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_POSITION Event complete" << endl;
+#endif
+#endif
+#endif
+		break;
+	}
 	}
 }
 
@@ -2706,7 +2809,7 @@ static void Move_dragged_shape(
 		gwin->show();
 }
 
-#ifdef _WIN32
+//#ifdef _WIN32
 /*
  *  Show where a shape dragged from a shape-chooser will go.
  */
@@ -2724,7 +2827,7 @@ static void Move_dragged_combo(
 	if (show)
 		gwin->show();
 }
-#endif
+//#endif
 
 /*
  *  Create an object as moveable (IREG) or fixed.
