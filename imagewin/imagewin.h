@@ -38,7 +38,7 @@ Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__

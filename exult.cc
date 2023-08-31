@@ -34,15 +34,15 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif    // __GNUC__
-#include <SDL.h>
-#include <SDL_main.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 static const Uint32 EXSDL_TOUCH_MOUSEID=SDL_TOUCH_MOUSEID;
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
 #define Font _XFont_
-#include <SDL_syswm.h>
+#include <SDL3/SDL_syswm.h>
 #undef Font
 
 #ifdef USE_EXULTSTUDIO  /* Only needed for communication with exult studio */
@@ -114,7 +114,7 @@ using namespace Pentagram;
 #ifdef __IOS__
 #  include "ios_utils.h"
 #elif defined(ANDROID)
-#  include <SDL_system.h>
+#  include <SDL3/SDL_system.h>
 #  include "TouchUI_Android.h"
 #endif
 

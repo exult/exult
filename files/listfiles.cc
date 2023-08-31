@@ -141,7 +141,7 @@ int U7ListFiles(const std::string &mask, FileList &files) {
 #include <glob.h>
 
 #ifdef ANDROID
-#include <SDL_system.h>
+#include <SDL3/SDL_system.h>
 #endif
 
 

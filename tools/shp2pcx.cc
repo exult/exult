@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //    to get the SDL_BYTEORDER macro for Endianness.
 // 2- Including SDL.h in full redirects main() to SDL_main()
 //    when the code is a stand alone executable, which shp2pcx is.
-#include <SDL_endian.h>
+#include <SDL3/SDL_endian.h>
 
 #include <cassert>
 #include <iostream>
