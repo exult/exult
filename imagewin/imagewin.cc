@@ -341,7 +341,7 @@ void Image_window::static_init() {
 	/* Get available fullscreen/hardware modes */
 	const SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(SDL_GetPrimaryDisplay(),nullptr);
 	for (int j = 0; modes[j]; j++) {
-		const Resolution res = { dispmode->w, dispmode->h };
+		const Resolution res = { modes[j]->w, modes[j]->h };
 		p_resolutions[(res.width << 16) | res.height] = res;
 	}
 	SDL_free(static_cast<void *>(modes));
