@@ -128,28 +128,6 @@ using std::toupper;
 using std::string;
 using std::vector;
 
-#if (defined(_WIN32) || (defined(MACOSX) && defined(USE_EXULTSTUDIO)))
-
-static int SDLCALL SDL_putenv(const char *_var) {
-    char *ptr = nullptr;
-    char *var = SDL_strdup(_var);
-    if (var == nullptr) {
-        return -1;  /* we don't set errno. */
-    }
-
-    ptr = SDL_strchr(var, '=');
-    if (ptr == nullptr) {
-        SDL_free(var);
-        return -1;
-    }
-
-    *ptr = '\0';  /* split the string into name and value. */
-    SDL_setenv(var, ptr + 1, 1);
-    SDL_free(var);
-    return 0;
-}
-#endif
-
 Configuration *config = nullptr;
 KeyBinder *keybinder = nullptr;
 GameManager *gamemanager = nullptr;
@@ -738,27 +716,11 @@ static void Init(
 ) {
 	const Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD;
 	// Let SDL3 choose its own audio/video drivers until proved otherwise.
-#ifdef _WIN32
-	// ( SDL3 : Obsolete ) SDL_putenv("SDL_AUDIODRIVER=DirectSound");
-	// ( SDL3 New Syntax ) SDL_SetHint(SDL_HINT_AUDIODRIVER, "DirectSound");
-#elif defined(MACOSX) && defined(XWIN) && defined(USE_EXULTSTUDIO)
-	// Dragon Baroque to Dominus : Probably irrelevant but left as a comment :
-	//   Exult Studio drag'n'drop with SDL2 < 2.0.15 requires Exult
-	//   to use X11. Hence, we force the issue.
-	// ( SDL3 : Obsolete ) SDL_putenv("SDL_VIDEODRIVER=x11");
-	// ( SDL3 New Syntax ) SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
-#elif defined(XWIN) && defined(USE_EXULTSTUDIO)
-	// Linux SDL Video : Prefer Wayland to X11 in SDL2, No longer relevant in SDL3
-	// ( SDL3 : Obsolete ) SDL_putenv("SDL_VIDEODRIVER=wayland,x11");
-	// ( SDL3 New Syntax ) SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
-#endif
-	SDL_SetHint(SDL_HINT_ORIENTATIONS, "Landscape");
-#if 0
-	const Uint32 joyinit = SDL_INIT_JOYSTICK;
-#else
+	// ( SDL3 ) SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "DirectSound");
+	// ( SDL3 ) SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland,x11");
 	const Uint32 joyinit = 0;
-#endif
 #if defined(__IOS__) || defined(ANDROID)
+	SDL_SetHint(SDL_HINT_ORIENTATIONS, "Landscape");
 	Mouse::use_touch_input = true;
 #endif
 #ifdef __IOS__

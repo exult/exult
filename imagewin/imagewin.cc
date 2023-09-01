@@ -598,7 +598,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	if (fullscreen) {
 		//getting new native scale for highdpi is active
 		//or if it is disabled but a highdpi resolution is still being used
-		nativescale = float(SDL_GetWindowDisplayScale(screen_window));
+		nativescale = SDL_GetWindowDisplayScale(screen_window);
 		bool high_dpi;
 		config->value("config/video/highdpi", high_dpi, true);
 		if (high_dpi) {
