@@ -595,6 +595,8 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	if (screen_renderer == nullptr)
 		cout << "Couldn't create renderer: " << SDL_GetError() << std::endl;
 
+	SDL_DisplayID original_displayID = SDL_GetDisplayForWindow(screen_window);
+
 	if (fullscreen) {
 		//getting new native scale for highdpi is active
 		//or if it is disabled but a highdpi resolution is still being used
@@ -617,9 +619,14 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 			SDL_SetRenderLogicalPresentation(screen_renderer, w, h,
 			    SDL_LOGICAL_PRESENTATION_LETTERBOX, SDL_SCALEMODE_LINEAR);
 		}
-	} else
+	} else {
 		//make sure the window has the right dimensions
 		SDL_SetWindowSize(screen_window, w, h);
+		//center the window on the screen
+		SDL_SetWindowPosition(screen_window,
+		    SDL_WINDOWPOS_CENTERED_DISPLAY(original_displayID),
+		    SDL_WINDOWPOS_CENTERED_DISPLAY(original_displayID));
+	}
 
 	// Do an initial draw/fill
 	SDL_SetRenderDrawColor(screen_renderer, 0, 0, 0, 255);
