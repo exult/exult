@@ -1744,12 +1744,23 @@ gint Shape_chooser::drag_begin(
 	auto *chooser = static_cast<Shape_chooser *>(data);
 	if (chooser->selected < 0)
 		return FALSE;       // ++++Display a halt bitmap.
+	int file = chooser->ifile->get_u7drag_type();
+	if (file == U7_SHAPE_UNK)
+		file = U7_SHAPE_SHAPES; // Just assume it's shapes.vga.
 	// Get ->shape.
 	const Shape_entry &shinfo = chooser->info[chooser->selected];
 	Shape_frame *shape = chooser->ifile->get_shape(shinfo.shapenum,
 	                     shinfo.framenum);
 	if (!shape)
 		return FALSE;
+	unsigned char buf[Exult_server::maxlength];
+	unsigned char *ptr = &buf[0];
+	Write2(ptr, file);
+	Write2(ptr, shinfo.shapenum);
+	Write2(ptr, shinfo.framenum);
+	ExultStudio *studio = ExultStudio::get_instance();
+	studio->send_to_server(
+	    Exult_server::drag_shape, buf, ptr - buf);
 	chooser->set_drag_icon(context, shape); // Set icon for dragging.
 	return TRUE;
 }

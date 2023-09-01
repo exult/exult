@@ -88,6 +88,8 @@ enum Msg_type {
     container = 40,         // Edit container object.
     cont_show_gump = 41,        // Displays a container's gump.
     reload_shapes_info = 42,    // Reload shapes info.
+    drag_shape = 43,        // Begin drag of a Shape.
+    drag_combo = 44,        // Begin drag of a Combo.
     usecode_debugging = 128
 };
 

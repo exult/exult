@@ -1030,6 +1030,18 @@ gint Combo_chooser::drag_begin(
 	Combo_member *hot = combo->members[combo->hot_index];
 	Shape_frame *shape = combo->shapes_file->get_shape(hot->shapenum,
 	                     hot->framenum);
+	const int cnt = combo->members.size();
+	const TileRect foot = combo->tilefoot;
+	unsigned char buf[Exult_server::maxlength];
+	unsigned char *ptr = &buf[0];
+	Write2(ptr, cnt);
+	Write2(ptr, foot.w);
+	Write2(ptr, foot.h);
+	Write2(ptr, foot.x + foot.w - 1 - hot->tx);
+	Write2(ptr, foot.y + foot.h - 1 - hot->ty);
+	ExultStudio *studio = ExultStudio::get_instance();
+	studio->send_to_server(
+	    Exult_server::drag_combo, buf, ptr - buf);
 	if (shape)
 		chooser->set_drag_icon(context, shape);
 	return TRUE;
