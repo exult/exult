@@ -3,7 +3,6 @@ AC_PREREQ([2.69])
 AC_INIT([Exult],[1.9.0git],[],[exult],[http://exult.info/])
 AC_CONFIG_SRCDIR([exult.cc])
 
-
 # ---------------------------------------------------------------------
 # System/version info
 # ---------------------------------------------------------------------
@@ -24,7 +23,6 @@ AC_CONFIG_MACRO_DIR([m4])
 AH_BOTTOM([
 #define USE_FMOPL_MIDI
 ])
-
 
 # ---------------------------------------------------------------------
 # Host system settings
@@ -163,6 +161,7 @@ AC_SUBST(LIBTOOL_DEPS)
 # ---------------------------------------------------------------------
 # Checks for integer types with specific sizes.
 # ---------------------------------------------------------------------
+
 AC_CHECK_TYPES([int8_t, int16_t, int32_t, int64_t, intptr_t],
                [], [AC_MSG_ERROR([*** Cannot find suitably-sized signed integers!])],
                [#include <cstdint>])
@@ -173,6 +172,7 @@ AC_CHECK_TYPES([uint8_t, uint16_t, uint32_t, uint64_t, uintptr_t],
 # ---------------------------------------------------------------------
 # Checks for header files.
 # ---------------------------------------------------------------------
+
 AC_HEADER_DIRENT
 AC_CHECK_HEADERS(limits.h sys/time.h unistd.h)
 AC_CHECK_HEADERS(sys/types.h sys/socket.h netdb.h)
@@ -186,6 +186,7 @@ fi
 # ---------------------------------------------------------------------
 # Checks for typedefs, structures, and compiler characteristics.
 # ---------------------------------------------------------------------
+
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
@@ -195,6 +196,7 @@ AC_STRUCT_TM
 # ---------------------------------------------------------------------
 # Checks for library functions
 # ---------------------------------------------------------------------
+
 dnl Disabled this for now (undefined in autoconf < 2.5)
 dnl AC_FUNC_MALLOC
 
@@ -351,7 +353,7 @@ if test x$enable_android_apk != xno; then
 		enable_exult=no
 		enable_tools=no
 	fi
-	
+
 else
 	AC_MSG_RESULT(no)
 fi
@@ -417,6 +419,7 @@ fi
 # ---------------------------------------------------------------------
 # SDL
 # ---------------------------------------------------------------------
+
 if test x$enable_android_apk = xno; then
 	PKG_CHECK_MODULES(SDL, sdl3, , AC_MSG_ERROR([[*** SDL not found!]]))
 	AC_DEFINE(HAVE_SDL_H, 1, [Define to 1 if you have the "SDL.h" header file])
@@ -426,6 +429,7 @@ if test x$enable_android_apk = xno; then
 else
 	AM_CONDITIONAL(HAVE_SDL, false)
 fi
+
 # ---------------------------------------------------------------------
 # libogg, libvorbis, libvorbisfile
 # ---------------------------------------------------------------------
@@ -437,6 +441,7 @@ fi
 # ---------------------------------------------------------------------
 # Black magic for static linking.
 # ---------------------------------------------------------------------
+
 if test x$ARCH = xmacosx; then
 	AC_ARG_WITH(macosx-static-lib-path,
 		AS_HELP_STRING([--with-macosx-static-lib-path=path], [path to location of static library files (macOS bundles only)]),
@@ -512,7 +517,6 @@ AC_MSG_CHECKING([if we want to use timidity midi])
 if test x$enable_timidity_midi = xyes; then
 	AC_MSG_RESULT(yes)
 	AC_DEFINE(USE_TIMIDITY_MIDI, 1, [Enable timidity midi])
-
 	if test x$with_timidity != x; then
 		if test ! -d $with_timidity; then
 			with_timidity=`echo "$with_timidity" | sed 's/timidity.cfg//'`
@@ -573,14 +577,13 @@ else
 	AM_CONDITIONAL(BUILD_MT32EMU, false)
 fi
 
-
 # zipped savegame support
 AC_ARG_ENABLE(zip-support, AS_HELP_STRING([--enable-zip-support], [Enable zipped savegame support @<:@default yes@:>@]),,enable_zip_support=yes)
-AC_MSG_CHECKING([for zipped savegame support])
-
 if test x$enable_zip_support = xyes ; then
 	AC_CHECK_HEADER(zlib.h,,enable_zip_support=no)
 fi
+
+AC_MSG_CHECKING([for zipped savegame support])
 
 if test x$enable_zip_support = xyes ; then
 	# disabled for now (non-portable):
@@ -666,7 +669,6 @@ fi
 # ---------------------------------------------------------------------
 
 AC_ARG_ENABLE(exult-studio, AS_HELP_STRING([--enable-exult-studio], [Build Exult Studio @<:@default no@:>@]),,enable_exult_studio=no)
-AC_MSG_CHECKING([whether to build Exult Studio])
 
 if test x$enable_android_apk = xyes; then
 	enable_exult_studio=no
@@ -699,6 +701,7 @@ if test x$enable_exult_studio = xyes; then
 fi
 
 # Exult Studio
+AC_MSG_CHECKING([whether to build Exult Studio])
 if test x$enable_exult_studio = xyes; then
 	AC_MSG_RESULT(yes)
 	if test x$have_gtk = xno; then
@@ -915,7 +918,6 @@ AC_ARG_WITH([icondir],
 	esac])
 AC_SUBST([ICONDIR])
 
-
 # ---------------------------------------------------------------------
 # Workaround for 'ar' warning in libtool
 # ---------------------------------------------------------------------
@@ -998,11 +1000,6 @@ else
 		exit 1
 	fi
 fi
-
-# link-time optimization
-GB_ENABLE_LTO
-DEBUG_LEVEL="$DEBUG_LEVEL $LTO_CFLAGS"
-
 
 # ---------------------------------------------------------------------
 # Debugging options
