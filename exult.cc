@@ -1763,8 +1763,9 @@ static void Handle_event(
 #ifndef _WIN32
 		int x;
 		int y;
-		float fx, fy;
-		SDL_GetMouseState(&fx, &fy);
+//		float fx, fy;
+//		SDL_GetMouseState(&fx, &fy);
+		float fx = event.drop.x, fy = event.drop.y;
 		x = int(fx);
 		y = int(fy);
 #ifdef DEBUG

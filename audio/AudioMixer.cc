@@ -88,7 +88,7 @@ id_counter(0)
 	SDL_AudioSpec desired{};
 	SDL_AudioSpec obtained;
 
-	desired.format = SDL_AUDIO_S16SYS;
+	desired.format = SDL_AUDIO_S16;
 	desired.freq = sample_rate_;
 	desired.channels = stereo_?2:1;
 
