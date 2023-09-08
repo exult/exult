@@ -303,9 +303,6 @@
     <ClCompile Include="..\..\version.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\windrag.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\audio\midi_drivers\fmopl.cpp">
       <Filter>audio\midi_drivers</Filter>
     </ClCompile>
@@ -870,9 +867,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\windrag.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\audio\midi_drivers\fmopl.h">
