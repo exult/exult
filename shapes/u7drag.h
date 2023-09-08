@@ -32,6 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //	Generic FILE_MIME Target
 #define U7_TARGET_DROPFILE_NAME_MIME   "text/uri-list"
 #define U7_TARGET_DROPFILE_NAME_MACOSX "public.file-url"
+#define U7_TARGET_DROPTEXT_NAME_MIME   "text/plain;charset=utf-8"
+#define U7_TARGET_DROPTEXT_NAME_MACOSX "public.utf8-plain-text"
 
 //	Target information for dragging a shape:
 #define U7_TARGET_SHAPEID_NAME "U7SHAPEID"

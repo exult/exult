@@ -1723,7 +1723,8 @@ void Shape_chooser::drag_data_get(
 	const int len = Store_u7_shapeid(buf, file, shinfo.shapenum,
 	                           shinfo.framenum);
 	cout << "Setting selection data (" << shinfo.shapenum <<
-	     '/' << shinfo.framenum << ')' << endl;
+	     '/' << shinfo.framenum << ')'
+	     << " (" << len << ") '" << buf << "'" << endl;
 	// Set data.
 	gtk_selection_data_set(seldata,
 	                       gtk_selection_data_get_target(seldata),
