@@ -324,8 +324,9 @@ void AudioMixer::get2DPosition(sint32 instance_id, int &distance, int &angle) co
 	}
 }
 
-void AudioMixer::sdlAudioCallback(void *userdata, SDL_AudioStream *stream, int len)
+void AudioMixer::sdlAudioCallback(void *userdata, SDL_AudioStream *stream, int len, int maxlen)
 {
+	ignore_unused_variable_warning(maxlen);
 	auto *mixer = static_cast<AudioMixer *>(userdata);
 	// Unfortunately, SDL does not guarantee that stream will be aligned to
 	// the correct alignment for sint16.
