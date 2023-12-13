@@ -747,8 +747,7 @@ ExultStudio::ExultStudio(int argc, char **argv): glade_path(nullptr),
 		datastr = get_system_path("<BUNDLE>");
 	} else
 #endif
-	config->value("config/disk/data_path", datastr, EXULT_DATADIR);
-	add_system_path("<DATA>", datastr);
+	datastr = get_system_path("<DATA>");
 
 	if (!xmldir)
 		xmldir = datastr.c_str();
