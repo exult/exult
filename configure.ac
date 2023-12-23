@@ -511,7 +511,7 @@ fi
 # ---------------------------------------------------------------------
 
 # Timidity midi driver
-AC_ARG_ENABLE(timidity_midi, AS_HELP_STRING([--disable-timidity-midi], [Disable built-in timidity midi]),,enable_timidity_midi=yes)
+AC_ARG_ENABLE(timidity_midi, AS_HELP_STRING([--disable-timidity-midi], [Disable timidity midi support]),,enable_timidity_midi=yes)
 AC_ARG_WITH(timidity, AS_HELP_STRING([--with-timidity=path], [path to timidity.cfg (optional)]),,)
 AC_MSG_CHECKING([if we want to use timidity midi])
 if test x$enable_timidity_midi = xyes; then
@@ -561,8 +561,8 @@ fi
 
 # mt32emu midi driver
 PKG_CHECK_MODULES(MT32EMU, mt32emu, HAVEMT32EMU=yes, HAVEMT32EMU=no)
-AC_ARG_ENABLE(mt32emu, AS_HELP_STRING([--enable-mt32emu], [Enable built-in mt32emu support]),,enable_mt32emu=no)
-AC_MSG_CHECKING([if we should build mt32emu])
+AC_ARG_ENABLE(mt32emu, AS_HELP_STRING([--disable-mt32emu], [Disable mt32emu midi support]),,enable_mt32emu=yes)
+AC_MSG_CHECKING([if we want to use mt32emu midi])
 if test x$HAVEMT32EMU = xyes; then
 	if test x$enable_mt32emu = xyes; then
 		AC_MSG_RESULT(yes)
