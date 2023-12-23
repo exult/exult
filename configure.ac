@@ -1288,6 +1288,7 @@ if test x$enable_android_apk != xno; then
 fi
 echo
 echo C++ Compiler............... : $CXX
+echo C++ Compiler Version....... : $($CXX --version | head -1)
 if test "x$opt_level" != "x"; then
 	echo C++ optimization........... : $opt_level
 fi
