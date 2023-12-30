@@ -427,7 +427,7 @@ void Timidity_DeInit()
 }
 
 
-char timidity_error[1024] = "";
+char timidity_error[TIMIDITY_ERROR_SIZE] = "";
 char *Timidity_Error()
 {
 	return timidity_error;

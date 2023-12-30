@@ -24,11 +24,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "LowLevelMidiDriver.h"
 
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wundef"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if defined(__llvm__) || defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wmacro-redefined"
+#	endif
+#endif    // __GNUC__
 #ifdef __IPHONEOS__
 	#include <mt32emu.h>
 #else
 	#include <mt32emu/mt32emu.h>
 #endif
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 
 namespace MT32Emu {
 	class Synth;

@@ -33,6 +33,7 @@ class XMidiSequence;
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
 #include <SDL.h>
 #ifdef __GNUC__

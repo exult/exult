@@ -1060,41 +1060,42 @@ void BG_Game::scene_guardian() {
 }
 
 namespace {//anonymous
+
+enum HandlerScriptOps {
+	eNOP,                   // Does nothing except redraw static if needed
+	eHAND_HIT,              // Move hand to frame 3, and redraw static if needed
+	eHAND_RECOIL,           // Decrement hand frame, and redraw static if needed
+	eBLACK_SCREEN,          // Draw black screen
+	eSHOW_STATIC,           // Draw static
+	eFLASH_FAKE_TITLE,      // Draw fake title screen for 1 frame, then revert to black screen
+	eSHOW_FAKE_TITLE,       // Draw fake title screen permanently
+};
+
+static constexpr const HandlerScriptOps HandlerScript[] = {
+	eHAND_HIT        ,
+	eBLACK_SCREEN    ,
+	eSHOW_FAKE_TITLE ,
+	eSHOW_STATIC     , eHAND_RECOIL     ,
+	eNOP             , eHAND_RECOIL     ,
+	eNOP             , eHAND_RECOIL     ,
+	eBLACK_SCREEN    ,
+	eHAND_HIT        ,
+	eNOP             ,
+	eSHOW_FAKE_TITLE ,
+	eSHOW_STATIC     , eHAND_RECOIL     ,
+	eNOP             , eHAND_RECOIL     ,
+	eNOP             , eHAND_RECOIL     ,
+	eBLACK_SCREEN    ,
+	eHAND_HIT        ,
+	eNOP             ,
+	eFLASH_FAKE_TITLE, eHAND_RECOIL     ,
+	eFLASH_FAKE_TITLE, eHAND_RECOIL     ,
+	eFLASH_FAKE_TITLE, eHAND_RECOIL     ,
+	eSHOW_FAKE_TITLE
+};
+
 class Hand_Handler {
 private:
-	enum HandlerScriptOps {
-		eNOP,                   // Does nothing except redraw static if needed
-		eHAND_HIT,              // Move hand to frame 3, and redraw static if needed
-		eHAND_RECOIL,           // Decrement hand frame, and redraw static if needed
-		eBLACK_SCREEN,          // Draw black screen
-		eSHOW_STATIC,           // Draw static
-		eFLASH_FAKE_TITLE,      // Draw fake title screen for 1 frame, then revert to black screen
-		eSHOW_FAKE_TITLE,       // Draw fake title screen permanently
-	};
-
-	static constexpr const HandlerScriptOps HandlerScript[] = {
-		eHAND_HIT        ,
-		eBLACK_SCREEN    ,
-		eSHOW_FAKE_TITLE ,
-		eSHOW_STATIC     , eHAND_RECOIL     ,
-		eNOP             , eHAND_RECOIL     ,
-		eNOP             , eHAND_RECOIL     ,
-		eBLACK_SCREEN    ,
-		eHAND_HIT        ,
-		eNOP             ,
-		eSHOW_FAKE_TITLE ,
-		eSHOW_STATIC     , eHAND_RECOIL     ,
-		eNOP             , eHAND_RECOIL     ,
-		eNOP             , eHAND_RECOIL     ,
-		eBLACK_SCREEN    ,
-		eHAND_HIT        ,
-		eNOP             ,
-		eFLASH_FAKE_TITLE, eHAND_RECOIL     ,
-		eFLASH_FAKE_TITLE, eHAND_RECOIL     ,
-		eFLASH_FAKE_TITLE, eHAND_RECOIL     ,
-		eSHOW_FAKE_TITLE
-	};
-
 	Image_window8 *win;
 	Shape_manager *sman;
 	std::unique_ptr<Shape_file> handshp;
@@ -1139,8 +1140,6 @@ public:
 		backup.reset();
 	}
 };
-
-constexpr const Hand_Handler::HandlerScriptOps Hand_Handler::HandlerScript[];
 
 bool Hand_Handler::draw_frame() {
 	if (scriptPosition >= array_size(HandlerScript)) {

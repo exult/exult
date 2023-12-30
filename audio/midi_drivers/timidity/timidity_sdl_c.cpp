@@ -108,7 +108,7 @@ static int cmsg(int type, int verbosity_level, const char *fmt, ...)
 	    ctl.verbosity<verbosity_level)
 		return 0;
 	va_start(ap, fmt);
-	vsprintf(timidity_error, fmt, ap);
+	vsnprintf(timidity_error, TIMIDITY_ERROR_SIZE, fmt, ap);
 	va_end(ap);
 	//perr.printf ("%s\n", timidity_error);
 	return 0;

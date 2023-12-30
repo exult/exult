@@ -806,10 +806,10 @@ void Game_window::locate_npc(
 	char msg[80];
 	Actor *npc = get_npc(npc_num);
 	if (!npc) {
-		snprintf(msg, 80, "NPC %d does not exist.", npc_num);
+		snprintf(msg, sizeof(msg), "NPC %d does not exist.", npc_num);
 		effects->center_text(msg);
 	} else if (npc->is_pos_invalid()) {
-		snprintf(msg, 80, "NPC %d is not on the map.", npc_num);
+		snprintf(msg, sizeof(msg), "NPC %d is not on the map.", npc_num);
 		effects->center_text(msg);
 	} else {
 		// ++++WHAT IF on a different map???
@@ -817,7 +817,7 @@ void Game_window::locate_npc(
 		center_view(pos);
 		cheat.clear_selected();
 		cheat.append_selected(npc);
-		snprintf(msg, 80, "NPC %d: '%s'.", npc_num,
+		snprintf(msg, sizeof(msg), "NPC %d: '%s'.", npc_num,
 		         npc->get_npc_name().c_str());
 		const int above = pos.tz + npc->get_info().get_3d_height() - 1;
 		if (skip_above_actor > above)
@@ -878,7 +878,7 @@ void Game_window::resized(
 	// Do the following only if in game (not for menus)
 	if (!gump_man->gump_mode()) {
 		char msg[80];
-		snprintf(msg, 80, "%ux%ux%u", neww, newh, newsc);
+		snprintf(msg, sizeof(msg), "%ux%ux%u", neww, newh, newsc);
 		effects->center_text(msg);
 	}
 	if(g_shortcutBar)
@@ -2094,9 +2094,8 @@ void Game_window::show_items(
 	        (npc->get_npc_num() > 0 || npc == main_actor)) {
 		char str[64];
 		const std::string namestr = Get_object_name(obj);
-		snprintf(str, sizeof(str)-1, "(%i) %s", npc->get_npc_num(),
+		snprintf(str, sizeof(str), "(%i) %s", npc->get_npc_num(),
 		         namestr.c_str());
-		str[sizeof(str)-1] = 0;
 		effects->add_text(str, obj);
 	} else if (obj) {
 		// Show name.
@@ -2108,9 +2107,8 @@ void Game_window::show_items(
 		// Combat and an NPC?
 		if (in_combat() && Combat::mode != Combat::original && npc) {
 			char buf[128];
-			snprintf(buf, sizeof(buf)-1, " (%d)",
+			snprintf(buf, sizeof(buf), " (%d)",
 			        npc->get_property(Actor::health));
-			buf[sizeof(buf)-1] = 0;
 			namestr += buf;
 		}
 		effects->add_text(namestr.c_str(), obj);
@@ -2118,9 +2116,8 @@ void Game_window::show_items(
 		// Show flat, but not when editing ter.
 		const ShapeID id = get_flat(x, y);
 		char str[20];
-		snprintf(str, sizeof(str)-1, "Flat %d:%d",
+		snprintf(str, sizeof(str), "Flat %d:%d",
 		         id.get_shapenum(), id.get_framenum());
-		str[sizeof(str)-1] = 0;
 		effects->add_text(str, x, y);
 	}
 	// If it's an actor and we want to grab the actor, grab it.

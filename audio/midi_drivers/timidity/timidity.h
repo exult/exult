@@ -32,6 +32,8 @@ namespace NS_TIMIDITY {
 
 struct MidiSong;
 
+#define TIMIDITY_ERROR_SIZE	1024
+
 //extern int Timidity_Init(int rate, int format, int channels, int samples);
 extern char *Timidity_Error();
 extern void Timidity_SetVolume(int volume);

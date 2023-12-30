@@ -673,14 +673,14 @@ if test x$enable_exult_studio = xyes; then
 # Gtk
 	PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 3.16, have_gtk=yes, have_gtk=no)
 # Freetype2 (optional, used in ExultStudio, shapes/fontgen.cc)
-	AC_PATH_PROG(FT2CONFIG, freetype-config)
-	if test -n "$FT2CONFIG"; then
-		FREETYPE2_LIBS=`$FT2CONFIG --libs`
+	PKG_CHECK_MODULES(CHKFREETYPE, freetype2, chk_freetype=yes, chk_freetype=no)
+	if test x$chk_freetype = xyes; then
+		FREETYPE2_LIBS=`$PKG_CONFIG --libs freetype2`
 		SAVED_LDFLAGS="$LDFLAGS"
 		LDFLAGS="$LDFLAGS $FREETYPE2_LIBS"
 		AC_CHECK_FUNC(FT_Init_FreeType, have_freetype=yes, have_freetype=no)
 		LDFLAGS="$SAVED_LDFLAGS"
-		FREETYPE2_INCLUDES=`$FT2CONFIG --cflags`
+		FREETYPE2_INCLUDES=`$PKG_CONFIG --cflags freetype2`
 		if test x$have_freetype = xyes; then
 			AC_DEFINE(HAVE_FREETYPE2, 1, [Have freetype2])
 		else
@@ -1140,7 +1140,7 @@ CHK_WARN="$CHK_WARN -Wtrigraphs -Wundef -Wuninitialized -Wuseless-cast -Wwrite-s
 #CHK_WARN="$CHK_WARN -Wsuggest-final-methods -Wsuggest-final-types -Wsuggest-override -Wzero-as-null-pointer-constant"
 CHK_WARN="$CHK_WARN -Wzero-as-null-pointer-constant"
 # Clang warnings
-CHK_WARN="$CHK_WARN -Wunused-const-variables -Wabsolute-value -Wdeprecated-register -Wmismatched-tags -Wunused-private-field"
+CHK_WARN="$CHK_WARN -Wunused-const-variables -Wabsolute-value -Wdeprecated -Wdeprecated-register -Wmismatched-tags -Wunused-private-field"
 
 # Eliminate some spurious warnings due to low optimization level.
 if test x$opt_level = xnone -o x$opt_level = xdebug; then

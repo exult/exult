@@ -29,6 +29,7 @@
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
 #include <SDL.h>
 #ifdef __GNUC__
@@ -206,9 +207,7 @@ void VideoOptions_gump::rebuild_dynamic_buttons() {
 		// the text arrays is freed by the destructor of the button
 		std::vector<std::string> scalingtext;
 		for (int i = 0; i < num_scales; i++) {
-			char buf[10];
-			snprintf(buf, sizeof(buf), "x%d", i + 1);
-			scalingtext.emplace_back(buf);
+			scalingtext.push_back('x' + std::to_string(i + 1));
 		}
 		buttons[id_scaling] = std::make_unique<VideoTextToggle>(this, &VideoOptions_gump::toggle_scaling,
 		        std::move(scalingtext), scaling, colx[2], rowy[4], 74);
