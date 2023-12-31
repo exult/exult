@@ -34,7 +34,6 @@
 #include "timidity_common.h"
 #include "timidity_output.h"
 #include "timidity_controls.h"
-#include "array_size.h"
 #include "ignore_unused_variable_warning.h"
 
 #ifdef NS_TIMIDITY
@@ -105,7 +104,7 @@ static FILE *try_to_open(char *name, int decompress, int noise_mode)
 			}
 			*cp2=0;
 
-			snprintf(tmp, array_size(tmp), *(dec+1), tmp2);
+			snprintf(tmp, sizeof(tmp), *(dec+1), tmp2);
 			return popen(tmp, "r");
 		}
 	}

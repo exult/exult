@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	include <config.h>
 #endif
 
-#include "array_size.h"
 #include "exult_constants.h"
 #include "fnames.h"
 #include "servemsg.h"
@@ -147,8 +146,8 @@ C_EXPORT void on_newmap_ok_clicked(
 		for (int schunk = 0; schunk < 12 * 12; schunk++) {
 			char pname[128];
 			char sname[128];
-			snprintf(pname, array_size(pname), "%s%02x", PATCH_U7IFIX, schunk);
-			snprintf(sname, array_size(sname), "%s%02x", U7IFIX, schunk);
+			snprintf(pname, sizeof(pname), "%s%02x", PATCH_U7IFIX, schunk);
+			snprintf(sname, sizeof(sname), "%s%02x", U7IFIX, schunk);
 			if (!Copy_static_file(sname, pname, frommap, num))
 				break;
 		}
@@ -159,10 +158,10 @@ C_EXPORT void on_newmap_ok_clicked(
 		for (int schunk = 0; schunk < 12 * 12; schunk++) {
 			Get_mapped_name(U7IREG, frommap, fname);
 			const size_t fnamelen = strlen(fname);
-			snprintf(fname + fnamelen, array_size(fname) - fnamelen, "%02x", schunk);
+			snprintf(fname + fnamelen, sizeof(fname) - fnamelen, "%02x", schunk);
 			Get_mapped_name(U7IREG, num, tname);
 			const size_t tnamelen = strlen(tname);
-			snprintf(tname + tnamelen, array_size(tname) - tnamelen, "%02x", schunk);
+			snprintf(tname + tnamelen, sizeof(tname) - tnamelen, "%02x", schunk);
 			if (U7exists(fname))
 				if (!EStudio::Copy_file(fname, tname))
 					break;
@@ -209,7 +208,7 @@ void ExultStudio::setup_maps_list(
 	int num = 0;
 	while ((num = Find_next_map(num + 1, 10)) != -1) {
 		char name[40];
-		snprintf(name, array_size(name), "Map #%02x", num);
+		snprintf(name, sizeof(name), "Map #%02x", num);
 		auto *ptrnum = reinterpret_cast<gpointer>(uintptr(num));
 		GtkWidget *item =
 		    Add_menu_item(maps, name, G_CALLBACK(on_map_activate), ptrnum, group);

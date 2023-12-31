@@ -101,7 +101,7 @@ void SoundTester::test_sound()
 			line += height;
 			font->paint_text_fixedwidth(ibuf, "    S - Stop Music", left, line, width);
 
-			snprintf (buf, 256, "%2s Music %c %3i %c %s",
+			snprintf (buf, sizeof(buf), "%2s Music %c %3i %c %s",
 					active==0?"->":"",
 					active==0?'<':' ',
 					song,
@@ -110,7 +110,7 @@ void SoundTester::test_sound()
 			line += height*2;
 			font->paint_text_fixedwidth(ibuf, buf, left, line, width);
 
-			snprintf (buf, 256, "%2s SFX   %c %3i %c",
+			snprintf (buf, sizeof(buf), "%2s SFX   %c %3i %c",
 					active==1?"->":"",
 						active==1?'<':' ',
 					sfx,
@@ -119,7 +119,7 @@ void SoundTester::test_sound()
 			line += height*2;
 			font->paint_text_fixedwidth(ibuf, buf, left, line, width);
 
-			snprintf (buf, 256, "%2s Voice %c %3i %c",
+			snprintf (buf, sizeof(buf), "%2s Voice %c %3i %c",
 					active==2?"->":"",
 					active==2?'<':' ',
 					voice,

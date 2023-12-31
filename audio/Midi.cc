@@ -766,7 +766,7 @@ bool MyMidiPlayer::ogg_play_track(const std::string& filename, int num, bool rep
 		else if (filename == MAINMUS || filename == MAINMUS_AD)
 			{
 			char outputstr[255];
-			snprintf(outputstr, 255, "%02dbg.ogg", num);
+			snprintf(outputstr, sizeof(outputstr), "%02dbg.ogg", num);
 			ogg_name = outputstr;
 			}
 		else if (filename == EXULT_BG_FLX)
@@ -796,7 +796,7 @@ bool MyMidiPlayer::ogg_play_track(const std::string& filename, int num, bool rep
 			else
 				{
 				char outputstr[255];
-				snprintf(outputstr, 255, "%02dsi.ogg", num);
+				snprintf(outputstr, sizeof(outputstr), "%02dsi.ogg", num);
 				ogg_name = outputstr;
 				}
 			}
@@ -808,7 +808,7 @@ bool MyMidiPlayer::ogg_play_track(const std::string& filename, int num, bool rep
 	else
 		{
 		char outputstr[255];
-		snprintf(outputstr, 255, "%02dmus.ogg", num);
+		snprintf(outputstr, sizeof(outputstr), "%02dmus.ogg", num);
 		ogg_name = outputstr;
 		basepath = "<STATIC>/music/";
 		}

@@ -31,7 +31,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <vector>
 #include <cstring>
 
-#include "array_size.h"
 #include "ucclass.h"
 #include "ucsymtbl.h"
 #include "ucfun.h"
@@ -149,7 +148,7 @@ void Uc_class::add_method(
 				return;
 			} else {
 				char buf[150];
-				snprintf(buf, array_size(buf), "Duplicate decl. of virtual member function '%s'.", m->get_name());
+				snprintf(buf, sizeof(buf), "Duplicate decl. of virtual member function '%s'.", m->get_name());
 				Uc_location::yyerror(buf);
 				return;
 			}

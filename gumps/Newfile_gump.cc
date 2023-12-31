@@ -940,7 +940,7 @@ void Newfile_gump::LoadSaveGameDetails() {
 	// Now read save game details
 	char    mask[256];
 
-	snprintf(mask, 256, SAVENAME2, GAME_BG ? "bg" : GAME_SI ? "si" : "dev");
+	snprintf(mask, sizeof(mask), SAVENAME2, GAME_BG ? "bg" : GAME_SI ? "si" : "dev");
 
 	FileList filenames;
 	U7ListFiles(mask, filenames);

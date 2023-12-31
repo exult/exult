@@ -2508,7 +2508,7 @@ int Usecode_internal::run() {
 					//              if (locals[offset].get_int_value() != 0) {
 					if (frame->locals[offset].get_int_value() >= 0) {
 						char buf[20];
-						snprintf(buf, 20, "%ld",
+						snprintf(buf, sizeof(buf), "%ld",
 						         frame->locals[offset].get_int_value());
 						append_string(buf);
 					}

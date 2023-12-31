@@ -219,21 +219,18 @@ static bool Gen_font_shape_win32(
 	logfont.lfPitchAndFamily = DEFAULT_PITCH;
 
 	if (font == nullptr && stylename) {
-		snprintf(logfont.lfFaceName, LF_FACESIZE - 1, "%s %s", famname, stylename);
-		logfont.lfFaceName[LF_FACESIZE - 1] = 0;
+		snprintf(logfont.lfFaceName, LF_FACESIZE, "%s %s", famname, stylename);
 
 		if (!EnumFontFamilies(dc, logfont.lfFaceName, reinterpret_cast<FONTENUMPROC>(&EnumFontFamProc), 0))
 			font = CreateFontIndirect(&logfont);
 	}
 	if (font == nullptr && stylename) {
-		snprintf(logfont.lfFaceName, LF_FACESIZE - 1, "%s%s", famname, stylename);
-		logfont.lfFaceName[LF_FACESIZE - 1] = 0;
+		snprintf(logfont.lfFaceName, LF_FACESIZE, "%s%s", famname, stylename);
 		if (!EnumFontFamilies(dc, logfont.lfFaceName, reinterpret_cast<FONTENUMPROC>(&EnumFontFamProc), 0))
 			font = CreateFontIndirect(&logfont);
 	}
 	if (font  == nullptr) {
-		strncpy(logfont.lfFaceName, famname, LF_FACESIZE - 1);
-		logfont.lfFaceName[LF_FACESIZE - 1] = 0;
+		snprintf(logfont.lfFaceName, LF_FACESIZE, "%s", famname);
 		if (!EnumFontFamilies(dc, logfont.lfFaceName, reinterpret_cast<FONTENUMPROC>(&EnumFontFamProc), reinterpret_cast<LPARAM>(stylename)))
 			font = CreateFontIndirect(&logfont);
 	}

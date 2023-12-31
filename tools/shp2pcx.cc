@@ -34,7 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cstring>
 #include <string>
 
-#include "array_size.h"
 #include "common_types.h"
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
@@ -427,7 +426,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	for (int i = 0; i < sh->num_frames; i++) {
-		snprintf(outfilename, array_size(outfilename), "%s%02i.pcx", outprefix, i);
+		snprintf(outfilename, sizeof(outfilename), "%s%02i.pcx", outprefix, i);
 		cout << "Writing frame " << i << " to " << outfilename << "..." << endl;
 		save_image(sh->frames[i].pixels, palette, sh->width, sh->height, outfilename);
 	}

@@ -484,9 +484,9 @@ void Paperdoll_gump::paint(
 	const int weight = actor->get_weight() / 10;
 	char text[20];
 	if (gwin->failed_copy_protection())
-		snprintf(text, 6, "Oink!");
+		snprintf(text, sizeof(text), "Oink!");
 	else
-		snprintf(text, 20, "%d/%d", weight, max_weight);
+		snprintf(text, sizeof(text), "%d/%d", weight, max_weight);
 	const int twidth = sman->get_text_width(2, text);
 	sman->paint_text(2, text, x + 84 - (twidth / 2), y + 114);
 }

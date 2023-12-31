@@ -397,7 +397,7 @@ extern "C" {
 		// Check all the IFIX files
 		//for (i = 0; i < 144; i++) {
 		//  char num[4];
-		//  std::snprintf(num, array_size(num), "%02X", i);
+		//  std::snprintf(num, sizeof(num), "%02X", i);
 		//
 		//  string s(U7IFIX);
 		//  s += num;
@@ -436,7 +436,7 @@ extern "C" {
 		// Check all the IFIX files
 		//for (i = 0; i < 144; i++) {
 		//  char num[4];
-		//  std::snprintf(num, array_size(num), "%02X", i);
+		//  std::snprintf(num, sizeof(num), "%02X", i);
 		//
 		//  string s(U7IFIX);
 		//  s += num;

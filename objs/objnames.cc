@@ -100,7 +100,7 @@ static void get_plural_name(
 ) {
 	char buf[20];
 
-	snprintf(buf, 20, "%d ", quantity); // Output the quantity
+	snprintf(buf, sizeof(buf), "%d ", quantity); // Output the quantity
 	output_name = buf;
 
 	// Skip the first part
@@ -209,7 +209,7 @@ string Game_object::get_name(
 		else {
 			char buf[50];
 
-			snprintf(buf, 50, "%d %s", quantity, name);
+			snprintf(buf, sizeof(buf), "%d %s", quantity, name);
 			display_name = buf;
 		}
 	} else if (quantity <= 1)   // quantity might be zero?

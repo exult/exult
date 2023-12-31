@@ -259,7 +259,7 @@ public:
 		if (game != BLACK_GATE && game != SERPENT_ISLE)
 			return;
 		/*  ++++ Not because of ES.
-		snprintf(buf, 50, "config/%s", fname);
+		snprintf(buf, sizeof(buf), "config/%s", fname);
 		str_int_pair resource = game->get_resource(buf);
 		U7object txtobj(resource.str, resource.num);
 		*/
@@ -510,7 +510,7 @@ static void Read_text_data_file(
 	char buf[50];
 	if (game == BLACK_GATE || game == SERPENT_ISLE) {
 		/*  ++++ Not because of ES.
-		snprintf(buf, 50, "config/%s", fname);
+		snprintf(buf, sizeof(buf), "config/%s", fname);
 		str_int_pair resource = game->get_resource(buf);
 		U7object txtobj(resource.str, resource.num);
 		*/
@@ -523,7 +523,7 @@ static void Read_text_data_file(
 		                 static_strings, sections, numsections);
 	} else {
 		try {
-			snprintf(buf, 50, "<STATIC>/%s.txt", fname);
+			snprintf(buf, sizeof(buf), "<STATIC>/%s.txt", fname);
 			auto pIn = U7open_in(buf, false);
 			if (!pIn)
 				throw file_open_exception(buf);
@@ -540,7 +540,7 @@ static void Read_text_data_file(
 		}
 	}
 	patch_strings.resize(numsections);
-	snprintf(buf, 50, "<PATCH>/%s.txt", fname);
+	snprintf(buf, sizeof(buf), "<PATCH>/%s.txt", fname);
 	if (U7exists(buf)) {
 		auto pIn = U7open_in(buf, false);
 		if (!pIn)
@@ -858,7 +858,7 @@ static void Write_text_data_file(
 		return;
 	}
 	char buf[50];
-	snprintf(buf, 50, "<PATCH>/%s.txt", fname);
+	snprintf(buf, sizeof(buf), "<PATCH>/%s.txt", fname);
 	auto pOut = U7open_out(buf, true); // (It's a text file.)
 	if (!pOut)
 		return;

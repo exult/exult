@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "shapelst.h"
 
-#include "array_size.h"
 #include "databuf.h"
 #include "fontgen.h"
 #include "frnameinf.h"
@@ -769,7 +768,7 @@ time_t Shape_chooser::export_tiled_png(
 		if (frame->is_rle() || frame->get_width() != c_tilesize ||
 		        frame->get_height() != c_tilesize) {
 			char buf[250];
-			snprintf(buf, array_size(buf), "Can only tile %dx%d flat shapes",
+			snprintf(buf, sizeof(buf), "Can only tile %dx%d flat shapes",
 			         c_tilesize, c_tilesize);
 			Alert("%s", buf);
 			return 0;
@@ -2444,7 +2443,7 @@ void Shape_chooser::update_statusbar(
 	if (selected >= 0) {
 		const int shapenum = info[selected].shapenum;
 		const int nframes = ifile->get_num_frames(shapenum);
-		g_snprintf(buf, array_size(buf), "Shape %d (0x%03x, %d frames)",
+		g_snprintf(buf, sizeof(buf), "Shape %d (0x%03x, %d frames)",
 		           shapenum, shapenum, nframes);
 		ExultStudio *studio = ExultStudio::get_instance();
 		if (shapes_file) {

@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "ucbrowse.h"
 
-#include "headers/array_size.h"
 #include "ucsymtbl.h"
 #include "utils.h"
 
@@ -365,7 +364,7 @@ void Usecode_browser::setup_list(
 			continue;
 		}
 		char num[20];
-		snprintf(num, array_size(num), "%05xH", sym->get_val());
+		snprintf(num, sizeof(num), "%05xH", sym->get_val());
 		GtkTreeIter iter;
 		gtk_tree_store_append(model, &iter, nullptr);
 		gtk_tree_store_set(model, &iter, NAME_COL, nm,

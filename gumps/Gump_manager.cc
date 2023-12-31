@@ -782,7 +782,7 @@ void Gump_manager::paint_num(
 	//  Shape_manager *sman = Shape_manager::get_instance();
 	const int font = 2;
 	char buf[20];
-	snprintf(buf, 20, "%d", num);
+	snprintf(buf, sizeof(buf), "%d", num);
 	sman->paint_text(font, buf, x - sman->get_text_width(font, buf), y);
 }
 

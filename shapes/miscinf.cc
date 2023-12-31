@@ -377,14 +377,14 @@ void Shapeinfo_lookup::Read_data_file(
 	int patch_version = 1;
 	char buf[50];
 	if (GAME_BG || GAME_SI) {
-		snprintf(buf, 50, "config/%s", fname);
+		snprintf(buf, sizeof(buf), "config/%s", fname);
 		const str_int_pair &resource = game->get_resource(buf);
 		IExultDataSource ds(resource.str, resource.num);
 		static_version = Read_text_msg_file_sections(&ds,
 		                 static_strings, sections, numsections);
 	} else {
 		try {
-			snprintf(buf, 50, "<STATIC>/%s.txt", fname);
+			snprintf(buf, sizeof(buf), "<STATIC>/%s.txt", fname);
 			auto pIn = U7open_in(buf, false);
 			if (!pIn)
 				throw file_open_exception(buf);
@@ -399,7 +399,7 @@ void Shapeinfo_lookup::Read_data_file(
 		}
 	}
 	patch_strings.resize(numsections);
-	snprintf(buf, 50, "<PATCH>/%s.txt", fname);
+	snprintf(buf, sizeof(buf), "<PATCH>/%s.txt", fname);
 	if (U7exists(buf)) {
 		auto pIn = U7open_in(buf, false);
 		if (!pIn)

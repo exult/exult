@@ -1,5 +1,3 @@
-#include "array_size.h"
-
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
@@ -118,7 +116,7 @@ int main(int argc, char *argv[]) {
 		char s[10];
 		char filename[18];
 		if (number == all_functions || number == only_index || number == fn) {
-			snprintf(s, array_size(s), "%04X", fn);
+			snprintf(s, sizeof(s), "%04X", fn);
 			strcpy(filename, s);
 			strcat(filename, ".uco");
 			fprintf(fo2, "%s\n", s);

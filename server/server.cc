@@ -55,7 +55,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <sys/un.h>
 #endif
 
-#include "array_size.h"
 #include "server.h"
 #include "servemsg.h"
 #include "utils.h"
@@ -474,7 +473,7 @@ static void Handle_client_message(
 		const Tile_coord pos = gwin->get_main_actor()->get_tile();
 		const int num = Read2(ptr);
 		gwin->teleport_party(pos, true, num);
-		snprintf(msg, array_size(msg), "Map #%02x", num);
+		snprintf(msg, sizeof(msg), "Map #%02x", num);
 		gwin->get_effects()->center_text(msg);
 		break;
 	}

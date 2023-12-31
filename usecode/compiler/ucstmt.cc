@@ -30,7 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cstdio>
 #include <cassert>
 
-#include "array_size.h"
 #include "ucstmt.h"
 #include "ucexpr.h"
 #include "ucsym.h"
@@ -209,7 +208,7 @@ void Uc_trycatch_statement::gen(
 	// Generate a temp variable for error if needed
 	if (!catch_var) {
 		char buf[50];
-		snprintf(buf, array_size(buf), "_tmperror_%d", cnt++);
+		snprintf(buf, sizeof(buf), "_tmperror_%d", cnt++);
 		// Create a 'tmp' variable.
 		catch_var = fun->add_symbol(buf, true);
 		assert(catch_var != nullptr);
@@ -519,11 +518,11 @@ void Uc_arrayloop_statement_base::finish(
 ) {
 	char buf[100];
 	if (index == nullptr) {       // Create vars. if not given.
-		snprintf(buf, array_size(buf), "_%s_index", array->get_name());
+		snprintf(buf, sizeof(buf), "_%s_index", array->get_name());
 		index = fun->add_symbol(buf, true);
 	}
 	if (array_len == nullptr) {
-		snprintf(buf, array_size(buf), "_%s_size", array->get_name());
+		snprintf(buf, sizeof(buf), "_%s_size", array->get_name());
 		array_len = fun->add_symbol(buf, true);
 	}
 }
@@ -631,7 +630,7 @@ void Uc_arrayloop_attend_statement::gen(
 	auto it = labels.find(label);
 	if (it == labels.end()) {
 		char buf[255];
-		snprintf(buf, 255, "Undeclared label: '%s'", label.c_str());
+		snprintf(buf, sizeof(buf), "Undeclared label: '%s'", label.c_str());
 		error(buf);
 		return;
 	}
@@ -764,7 +763,7 @@ void Uc_goto_statement::gen(
 		blocks.push_back(curr);
 	} else {
 		char buf[255];
-		snprintf(buf, 255, "Undeclared label: '%s'", label.c_str());
+		snprintf(buf, sizeof(buf), "Undeclared label: '%s'", label.c_str());
 		error(buf);
 	}
 }
@@ -1017,7 +1016,7 @@ void Uc_converse_case_attend_statement::gen(
 	auto it = labels.find(label);
 	if (it == labels.end()) {
 		char buf[255];
-		snprintf(buf, 255, "Undeclared label: '%s'", label.c_str());
+		snprintf(buf, sizeof(buf), "Undeclared label: '%s'", label.c_str());
 		error(buf);
 		return;
 	}
@@ -1280,7 +1279,7 @@ void Uc_converse_attend_statement::gen(
 	auto it = labels.find(label);
 	if (it == labels.end()) {
 		char buf[255];
-		snprintf(buf, 255, "Undeclared label: '%s'", label.c_str());
+		snprintf(buf, sizeof(buf), "Undeclared label: '%s'", label.c_str());
 		error(buf);
 		return;
 	}
@@ -1369,7 +1368,7 @@ Uc_switch_statement::Uc_switch_statement(
 		if (stmt->is_default()) {
 			if (has_default) {
 				char buf[255];
-				snprintf(buf, 255, "switch statement already has a default case.");
+				snprintf(buf, sizeof(buf), "switch statement already has a default case.");
 				error(buf);
 			} else
 				has_default = true;

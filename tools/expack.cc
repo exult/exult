@@ -304,7 +304,7 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 			char outfile[32];
-			snprintf(outfile, 32, "%05lu.%s", n, ext);
+			snprintf(outfile, sizeof(outfile), "%05lu.%s", n, ext);
 			Write_Object(f, outfile);   // may throw!
 		} else {
 			U7FileManager *fm = U7FileManager::get_ptr();
@@ -313,7 +313,7 @@ int main(int argc, char **argv)
 			for (int index = 0; index < count; index++) {
 				U7object o(fname, index);
 				char outfile[32];
-				snprintf(outfile, 32, "%05d.%s", index, ext);
+				snprintf(outfile, sizeof(outfile), "%05d.%s", index, ext);
 				Write_Object(o, outfile);
 			}
 		}

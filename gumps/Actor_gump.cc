@@ -216,7 +216,7 @@ void Actor_gump::paint(
 	const int max_weight = container->get_max_weight();
 	const int weight = container->get_weight() / 10;
 	char text[20];
-	snprintf(text, 20, "%d/%d", weight, max_weight);
+	snprintf(text, sizeof(text), "%d/%d", weight, max_weight);
 	const int twidth = sman->get_text_width(2, text);
 	const int boxw = 102;
 	sman->paint_text(2, text, x + 28 + (boxw - twidth) / 2, y + 120);

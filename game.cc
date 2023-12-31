@@ -121,9 +121,8 @@ Game* Game::create_game(BaseGameInfo* mygame) {
 	config->set("config/gameplay/bg_paperdolls", str, true);
 	char buf[256];
 	if (!mygame->get_mod_title().empty())
-		snprintf(
-				buf, 256, " with the '%s' modification.",
-				mygame->get_mod_title().c_str());
+		snprintf(buf, sizeof(buf), " with the '%s' modification.",
+	             mygame->get_mod_title().c_str());
 	else
 		buf[0] = 0;
 	switch (game_type) {
@@ -335,9 +334,8 @@ const str_int_pair& Game::get_resource(const char* name) {
 		return resources[name];
 	} else {
 		char buf[250];
-		snprintf(
-				buf, array_size(buf),
-				"Game::get_resource: Illegal resource requested: '%s'", name);
+		snprintf(buf, sizeof(buf),
+		         "Game::get_resource: Illegal resource requested: '%s'", name);
 		throw exult_exception(buf);
 	}
 }
@@ -417,7 +415,7 @@ bool Game::show_menu(bool skip) {
 
 	const Vga_file exult_flx(BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX));
 	char           npc_name[16];
-	snprintf(npc_name, 16, "Exult");
+	snprintf(npc_name, sizeof(npc_name), "Exult");
 	bool play     = false;
 	bool fadeout  = true;
 	bool exitmenu = false;

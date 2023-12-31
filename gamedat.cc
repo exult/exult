@@ -240,7 +240,7 @@ void Game_window::restore_gamedat(
     int num             // 0-9, currently.
 ) {
 	char fname[50];         // Set up name.
-	snprintf(fname, 50, SAVENAME, num,
+	snprintf(fname, sizeof(fname), SAVENAME, num,
 	         Game::get_game_type() == BLACK_GATE ? "bg" :
 	         Game::get_game_type() == SERPENT_ISLE ? "si" : "dev");
 	restore_gamedat(fname);
@@ -386,7 +386,7 @@ void Game_window::save_gamedat(
     const char *savename            // User's savegame name.
 ) {
 	char fname[50];         // Set up name.
-	snprintf(fname, 50, SAVENAME, num,
+	snprintf(fname, sizeof(fname), SAVENAME, num,
 	         Game::get_game_type() == BLACK_GATE ? "bg" :
 	         Game::get_game_type() == SERPENT_ISLE ? "si" : "dev");
 	save_gamedat(fname, savename);
@@ -403,7 +403,7 @@ void Game_window::read_save_names(
 ) {
 	for (unsigned int i = 0; i < array_size(save_names); i++) {
 		char fname[50];     // Set up name.
-		snprintf(fname, 50, SAVENAME, static_cast<int>(i),
+		snprintf(fname, sizeof(fname), SAVENAME, static_cast<int>(i),
 		         GAME_BG ? "bg" : (GAME_SI ? "si" : "dev"));
 		try {
 			auto pIn = U7open_in(fname);
@@ -588,7 +588,7 @@ void Game_window::read_saveinfo(IDataSource *in,
 
 bool Game_window::get_saveinfo(int num, char *&name, std::unique_ptr<Shape_file> &map, SaveGame_Details *&details, SaveGame_Party  *&party) {
 	char fname[50];         // Set up name.
-	snprintf(fname, 50, SAVENAME, num,
+	snprintf(fname, sizeof(fname), SAVENAME, num,
 	         Game::get_game_type() == BLACK_GATE ? "bg" :
 	         Game::get_game_type() == SERPENT_ISLE ? "si" : "dev");
 

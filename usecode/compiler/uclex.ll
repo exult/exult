@@ -42,7 +42,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ucparse.h"
 #include "ucloc.h"
 #include "ucfun.h"
-#include "array_size.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
@@ -154,7 +153,7 @@ static void Include
 	if (!yyin)
 		{
 		char msg[180];
-		snprintf(msg, array_size(msg), "Can't open '%s'", name);
+		snprintf(msg, sizeof(msg), "Can't open '%s'", name);
 		Uc_location::yyerror(msg);
 		exit(1);
 		}
@@ -293,7 +292,7 @@ char *Handle_string
 				if (escape.size() != 2 && escape.size() != 3) {
 					// Just in case.
 					char buf[150];
-					snprintf(buf, array_size(buf), "Invalid rune escape sequence '\\{%s}'. "
+					snprintf(buf, sizeof(buf), "Invalid rune escape sequence '\\{%s}'. "
 					             "Valid escapes are: '\\{dot}', '\\{ea}', '\\{ee}', '\\{ng}', '\\{st}', '\\{th}'",
 								 escape.c_str());
 					Uc_location::yyerror(buf);
@@ -307,7 +306,7 @@ char *Handle_string
 		default:
 			{
 			char buf[150];
-			snprintf(buf, array_size(buf), "Unknown escape sequence '\\%c'. If you are trying "
+			snprintf(buf, sizeof(buf), "Unknown escape sequence '\\%c'. If you are trying "
 			             "to insert a literal backslash ('\\') into text, "
 			             "write it as '\\\\'.", *from);
 			Uc_location::yywarning(buf);

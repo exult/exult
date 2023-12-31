@@ -1349,7 +1349,7 @@ int XMidiFile::ExtractTracks (IDataSource *source)
 	VolumeCurve.set_gamma (atof(s.c_str()));
 	const int igam = std::lround(VolumeCurve.get_gamma()*10000);
 	char buf[32];
-	snprintf (buf, 32, "%d.%04d", igam/10000, igam%10000);
+	snprintf (buf, sizeof(buf), "%d.%04d", igam/10000, igam%10000);
 	config->set("config/audio/midi/volume_curve",buf,true);
 
 	// Read first 4 bytes of header

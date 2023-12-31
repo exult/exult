@@ -1100,8 +1100,8 @@ bool Image_window::fillmode_to_string(FillMode fmode, std::string &str) {
 		if (factor == 2)
 			factor_str[0] = 0;
 		else {
-			snprintf(factor_str, 15, (factor & 1) ? " x%d.5" : " x%d", factor / 2);
-			factor_str[15] = 0;
+			snprintf(factor_str, sizeof(factor_str),
+			         (factor & 1) ? " x%d.5" : " x%d", factor / 2);
 		}
 
 		if (fmode & 1)
@@ -1116,8 +1116,7 @@ bool Image_window::fillmode_to_string(FillMode fmode, std::string &str) {
 		if (!fw || !fh) return false;
 
 		char factor_str[16];
-		snprintf(factor_str, 15, "%dx%d", fw, fh);
-		factor_str[15] = 0;
+		snprintf(factor_str, sizeof(factor_str), "%dx%d", fw, fh);
 		str = std::string(factor_str);
 
 		return true;

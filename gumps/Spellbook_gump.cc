@@ -478,7 +478,7 @@ void Spellbook_gump::paint(
 					else if (num >= 1000 || cheat.in_wizard_mode())
 						std::strcpy(text, "999");
 					else
-						snprintf(text, 7, "%d", num);
+						snprintf(text, sizeof(text), "%d", num);
 				} else  // prevent garbage text
 					std::strcpy(text, "");
 			sman->paint_text(5, text,
