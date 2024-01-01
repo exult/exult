@@ -135,7 +135,7 @@ AC_PROG_CXX([$cxx_compilers])
 
 AC_LANG([C++])
 
-AX_CXX_COMPILE_STDCXX([17], [noext],[mandatory])
+AX_CXX_COMPILE_STDCXX([17], [noext], [mandatory])
 AC_PROG_CXXCPP
 
 AC_PROG_INSTALL
@@ -1119,7 +1119,7 @@ fi
 
 CHK_WARN="-Wall -Wextra -pedantic"
 CHK_WARN="$CHK_WARN -Walloc-zero -Walloca"
-CHK_WARN="$CHK_WARN -Wc++14-compat -Wc++17-compat -Wbool-compare -Wbool-operation"
+CHK_WARN="$CHK_WARN -Wc++17-compat -Wc++20-compat -Wbool-compare -Wbool-operation"
 CHK_WARN="$CHK_WARN -Wcatch-value=3 -Wcast-align -Wcast-align=strict -Wcast-qual -Wcast-function-type"
 CHK_WARN="$CHK_WARN -Wconditionally-supported -Wctor-dtor-privacy -Wdisabled-optimization"
 CHK_WARN="$CHK_WARN -Wduplicated-branches -Wduplicated-cond -Wextra-semi"

@@ -3173,24 +3173,21 @@ void Actor::lay_down(bool die) {
 
 	set_action(nullptr);
 	auto* scr = new Usecode_script(this);
-	(*scr) << Ucscript::finish << (Ucscript::npc_frame + Actor::standing);
+	(*scr) << Ucscript::finish << Ucscript::npc_standing_frame;
 	if (GAME_SI && get_shapenum() == 832) {    // SI Frost serpent
 		// Frames are in reversed order. This results in a
 		// strangeanimation in the original, which we fix here.
-		(*scr) << (Ucscript::npc_frame + Actor::sleep_frame)
-			   << (Ucscript::npc_frame + Actor::kneel_frame)
-			   << (Ucscript::npc_frame + Actor::bow_frame)
-			   << (Ucscript::npc_frame + Actor::sit_frame);
+		(*scr) << Ucscript::npc_sleep_frame << Ucscript::npc_kneel_frame
+			   << Ucscript::npc_bow_frame << Ucscript::npc_sit_frame;
 	} else if (get_info().has_strange_movement()) {
 		// BG Sea serpent; slimes are done elsewhere.
-		(*scr) << (Ucscript::npc_frame + Actor::bow_frame)
-			   << (Ucscript::npc_frame + Actor::kneel_frame)
-			   << (Ucscript::npc_frame + Actor::sleep_frame);
+		(*scr) << Ucscript::npc_bow_frame << Ucscript::npc_kneel_frame
+			   << Ucscript::npc_sleep_frame;
 	} else {
-		(*scr) << (Ucscript::npc_frame + Actor::kneel_frame) << Ucscript::sfx
+		(*scr) << Ucscript::npc_kneel_frame << Ucscript::sfx
 			   << Audio::game_sfx(86);
 		if (!die) {
-			(*scr) << (Ucscript::npc_frame + Actor::sleep_frame);
+			(*scr) << Ucscript::npc_sleep_frame;
 		}
 	}
 	if (die) {    // If dying, remove.
@@ -4663,9 +4660,8 @@ Actor* Actor::resurrect(Dead_body* body    // Must be this actor's body.
 		return this;
 	}
 	auto* scr = new Usecode_script(this);
-	(*scr) << (Ucscript::npc_frame + Actor::sleep_frame)
-		   << (Ucscript::npc_frame + Actor::kneel_frame)
-		   << (Ucscript::npc_frame + Actor::standing);
+	(*scr) << Ucscript::npc_sleep_frame << Ucscript::npc_kneel_frame
+		   << Ucscript::npc_standing_frame;
 	scr->start(1);
 	return this;
 }

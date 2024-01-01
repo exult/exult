@@ -755,7 +755,6 @@ Game_object* Game_object::find_closest(
 		// 0xb0 mask finds anything.
 		find_nearby(vec, pos, shape, dist, 0xb0);
 	}
-	const size_t cnt = vec.size();
 	if (vec.empty()) {
 		return nullptr;
 	}

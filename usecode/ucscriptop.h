@@ -19,7 +19,7 @@
  */
 
 #ifndef USCRIPTOP_H
-#define USCRIPTOP_H
+#	define USCRIPTOP_H
 
 /*
  *  Opcodes for Usecode_script's:
@@ -71,8 +71,26 @@ namespace Ucscript {
 		face_dir       = 0x59,    // Face_dir(dir), dir=0-7, 0=north.
 		weather        = 0x5A,    // Set weather(type).
 		npc_frame      = 0x61,    // 61-70:  Set frame, but w/ cur. dir.
-		hit            = 0x78,    // Hit(hps, type).  Item attacked.
-		attack         = 0x7a,    // Attack using vals from
+		// Begin - Replicated from actors.h
+		npc_standing_frame   = 0x61 + 0,
+		npc_step_right_frame = 0x61 + 1,
+		npc_step_left_frame  = 0x61 + 2,
+		npc_ready_frame      = 0x61 + 3,    // Ready to fight?
+		npc_raise1_frame     = 0x61 + 4,    // 1-handed strikes.
+		npc_reach1_frame     = 0x61 + 5,
+		npc_strike1_frame    = 0x61 + 6,
+		npc_raise2_frame     = 0x61 + 7,    // 2-handed strikes.
+		npc_reach2_frame     = 0x61 + 8,
+		npc_strike2_frame    = 0x61 + 9,
+		npc_sit_frame        = 0x61 + 10,
+		npc_bow_frame        = 0x61 + 11,
+		npc_kneel_frame      = 0x61 + 12,
+		npc_sleep_frame      = 0x61 + 13,
+		npc_up_frame         = 0x61 + 14,    // Both hands reach up.
+		npc_out_frame        = 0x61 + 15,    // Both hands reach out.
+		// End   - Replicated from actors.h
+		hit    = 0x78,    // Hit(hps, type).  Item attacked.
+		attack = 0x7a,    // Attack using vals from
 		//   set_to_attack intrinsic.
 		/*
 		 *  These are (I think) not in the original:
@@ -81,4 +99,4 @@ namespace Ucscript {
 		resurrect = 0x81     // Parm. is body.
 	};
 }    // namespace Ucscript
-#endif
+#	endif

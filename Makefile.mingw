@@ -160,7 +160,6 @@ WARNINGS := \
 	-Wall \
 	-Wextra \
 	-Wpedantic \
-	-Wc++14-compat \
 	-Wc++17-compat \
 	-Wc++20-compat \
 	-Walloc-zero \

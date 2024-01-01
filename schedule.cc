@@ -940,14 +940,14 @@ void Preach_schedule::now_what() {
 			auto* scr = new Usecode_script(member);
 			scr->add(Ucscript::delay_ticks, 3);
 			scr->add(Ucscript::face_dir, member->get_dir_facing());
-			scr->add(Ucscript::npc_frame + Actor::standing);
+			scr->add(Ucscript::npc_standing_frame);
 			scr->add(
 					Ucscript::say,
 					get_text_msg(
 							first_amen
 							+ rand() % (last_amen - first_amen + 1)));
 			scr->add(Ucscript::delay_ticks, 2);
-			scr->add(Ucscript::npc_frame + Actor::sit_frame);
+			scr->add(Ucscript::npc_sit_frame);
 			scr->start();    // Start next tick.
 		}
 		return;
@@ -998,15 +998,11 @@ void Preach_schedule::now_what() {
 	case pray: {
 		auto* scr = new Usecode_script(npc);
 		(*scr) << Ucscript::face_dir << 6    // Face west.
-			   << (Ucscript::npc_frame + Actor::standing)
-			   << (Ucscript::npc_frame + Actor::bow_frame)
-			   << Ucscript::delay_ticks << 3
-			   << (Ucscript::npc_frame + Actor::kneel_frame);
+			   << Ucscript::npc_standing_frame << Ucscript::npc_bow_frame
+			   << Ucscript::delay_ticks << 3 << Ucscript::npc_kneel_frame;
 		scr->add(Ucscript::say, get_text_msg(first_amen + rand() % 2));
-		(*scr) << Ucscript::delay_ticks << 5
-			   << (Ucscript::npc_frame + Actor::bow_frame)
-			   << Ucscript::delay_ticks << 3
-			   << (Ucscript::npc_frame + Actor::standing);
+		(*scr) << Ucscript::delay_ticks << 5 << Ucscript::npc_bow_frame
+			   << Ucscript::delay_ticks << 3 << Ucscript::npc_standing_frame;
 		scr->start();    // Start next tick.
 		state = find_podium;
 		npc->start(2 * gwin->get_std_delay(), 4000);
@@ -1128,7 +1124,7 @@ void Patrol_schedule::now_what() {
 			// Scripts for all actions. At worst, display standing frame
 			// once the path egg is reached.
 			auto* scr = new Usecode_script(npc);
-			(*scr) << Ucscript::npc_frame + Actor::standing;
+			(*scr) << Ucscript::npc_standing_frame;
 			// Quality = type.  (I think high bits
 			// are flags).
 			const int qual = path->get_quality();
@@ -1177,14 +1173,11 @@ void Patrol_schedule::now_what() {
 				// random, then stands up again after a while.
 				// If anyone complains enough I will add it.
 				// -- Marzo Jan 22/2013
-				(*scr) << Ucscript::delay_ticks << 2
-					   << Ucscript::npc_frame + Actor::bow_frame
+				(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_bow_frame
 					   << Ucscript::delay_ticks << 4
-					   << Ucscript::npc_frame + Actor::kneel_frame
-					   << Ucscript::delay_ticks << 20
-					   << Ucscript::npc_frame + Actor::bow_frame
-					   << Ucscript::delay_ticks << 4
-					   << Ucscript::npc_frame + Actor::standing;
+					   << Ucscript::npc_kneel_frame << Ucscript::delay_ticks
+					   << 20 << Ucscript::npc_bow_frame << Ucscript::delay_ticks
+					   << 4 << Ucscript::npc_standing_frame;
 				delay = 36;
 				break;
 			case 6:              // Loiter.
@@ -1284,16 +1277,14 @@ void Patrol_schedule::now_what() {
 				break;
 			case 16:    // Bow to ground.
 				// Trying to differentiate this from 17, below.
-				(*scr) << Ucscript::delay_ticks << 2
-					   << Ucscript::npc_frame + Actor::bow_frame
+				(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_bow_frame
 					   << Ucscript::delay_ticks << 2;
 				delay = 8;
 				break;
 			case 17:    // Bow from ground.
 				// Trying to differentiate this from 16, above.
-				(*scr) << Ucscript::npc_frame + Actor::bow_frame
-					   << Ucscript::delay_ticks << 2
-					   << Ucscript::npc_frame + Actor::standing;
+				(*scr) << Ucscript::npc_bow_frame << Ucscript::delay_ticks << 2
+					   << Ucscript::npc_standing_frame;
 				delay = 8;
 				break;
 			case 20:    // Ready weapon
@@ -1370,10 +1361,9 @@ void Patrol_schedule::now_what() {
 			}
 			// Standing up animation.
 			auto* scr = new Usecode_script(npc);
-			(*scr) << Ucscript::delay_ticks << 2
-				   << Ucscript::npc_frame + Actor::bow_frame
+			(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_bow_frame
 				   << Ucscript::delay_ticks << 2
-				   << Ucscript::npc_frame + Actor::standing;
+				   << Ucscript::npc_standing_frame;
 			scr->start();    // Start next tick.
 			npc->start(speed, speed * 7);
 		}
@@ -1427,17 +1417,14 @@ void Patrol_schedule::now_what() {
 		const int repcnt = 1 + rand() % 3;
 
 		auto* scr = new Usecode_script(npc);
-		(*scr) << Ucscript::delay_ticks << 2
-			   << Ucscript::npc_frame + Actor::ready_frame
-			   << Ucscript::delay_ticks << 2
-			   << Ucscript::npc_frame + Actor::raise1_frame
+		(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_ready_frame
+			   << Ucscript::delay_ticks << 2 << Ucscript::npc_raise1_frame
 			   << Ucscript::delay_ticks << 2 << Ucscript::sfx
-			   << Audio::game_sfx(45) << Ucscript::npc_frame + Actor::out_frame
+			   << Audio::game_sfx(45) << Ucscript::npc_out_frame
 			   << Ucscript::delay_ticks << 2 << Ucscript::repeat << -13
 			   << repcnt << Ucscript::delay_ticks << 2
-			   << Ucscript::npc_frame + Actor::ready_frame
-			   << Ucscript::delay_ticks << 2
-			   << Ucscript::npc_frame + Actor::standing;
+			   << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 2
+			   << Ucscript::npc_standing_frame;
 		const int delay = 11 * (repcnt + 1) + 6;
 		scr->start();    // Start next tick.
 		state = 0;       // THEN, find next path.
@@ -2426,13 +2413,10 @@ void Sleep_schedule::ending(int new_type    // New schedule.
 		// Animation for making bed.
 		auto* scr = new Usecode_script(npc);
 		(*scr) << Ucscript::dont_halt << Ucscript::face_dir << dir
-			   << Ucscript::npc_frame + Actor::ready_frame
-			   << Ucscript::delay_ticks << 1
-			   << Ucscript::npc_frame + Actor::raise1_frame
-			   << Ucscript::delay_ticks << 1
-			   << Ucscript::npc_frame + Actor::ready_frame
-			   << Ucscript::delay_ticks << 1
-			   << Ucscript::npc_frame + Actor::standing;
+			   << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 1
+			   << Ucscript::npc_raise1_frame << Ucscript::delay_ticks << 1
+			   << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 1
+			   << Ucscript::npc_standing_frame;
 		scr->start();
 	}
 	gwin->set_all_dirty();    // Update all, since Av. stands up.
@@ -3648,12 +3632,10 @@ static void Prep_animation(Actor* npc, Game_object* table) {
 	auto* scr = new Usecode_script(npc);
 	(*scr) << Ucscript::face_dir << npc->get_dir_facing();
 	for (int cnt = 1 + rand() % 3; cnt; --cnt) {
-		(*scr) << (Ucscript::npc_frame + Actor::ready_frame)
-			   << Ucscript::delay_ticks << 1
-			   << (Ucscript::npc_frame + Actor::raise1_frame)
-			   << Ucscript::delay_ticks << 1;
+		(*scr) << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 1
+			   << Ucscript::npc_raise1_frame << Ucscript::delay_ticks << 1;
 	}
-	(*scr) << (Ucscript::npc_frame + Actor::standing);
+	(*scr) << Ucscript::npc_standing_frame;
 	scr->start();    // Start next tick.
 	const int shapenum = table->get_shapenum();
 	// Cauldron or stove?  Animate a little.
@@ -3750,9 +3732,8 @@ void Waiter_schedule::now_what() {
 		create_customer_plate();
 		auto* scr = new Usecode_script(npc);
 		(*scr) << Ucscript::face_dir << npc->get_dir_facing()
-			   << (Ucscript::npc_frame + Actor::ready_frame)
-			   << Ucscript::delay_ticks << 2
-			   << (Ucscript::npc_frame + Actor::standing);
+			   << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 2
+			   << Ucscript::npc_standing_frame;
 		scr->start();    // Start next tick.
 		state = took_order;
 		customers_ordered.push_back(customer);
@@ -3879,9 +3860,8 @@ void Waiter_schedule::now_what() {
 			}
 			auto* scr = new Usecode_script(npc);
 			(*scr) << Ucscript::face_dir << npc->get_dir_facing()
-				   << (Ucscript::npc_frame + Actor::ready_frame)
-				   << Ucscript::delay_ticks << 2
-				   << (Ucscript::npc_frame + Actor::standing);
+				   << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 2
+				   << Ucscript::npc_standing_frame;
 			scr->start();    // Start next tick.
 		}
 		state = served_food;
