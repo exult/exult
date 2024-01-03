@@ -180,8 +180,6 @@ EXTRA_DIST = 	\
 	Makefile.mingw \
 	Info.plist.in \
 	stamp-h.in \
-	windrag.cc \
-	windrag.h \
 	win32/exult.ico \
 	win32/exultico.rc \
 	win32/exultstudio.ico \

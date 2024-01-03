@@ -93,9 +93,6 @@ static const SDL_TouchID EXSDL_MOUSE_TOUCHID = SDL_MOUSE_TOUCHID;
 #	if HAVE_SYS_TIME_H
 #		include <sys/time.h>
 #	endif
-#	ifdef _WIN32
-#		include "windrag.h"
-#	endif
 #	include "chunks.h"
 #	include "chunkter.h"
 #	include "objserial.h"
@@ -155,11 +152,6 @@ extern void initialise_usecode_debugger();
 #endif
 
 int current_scaleval = 1;
-
-#if defined(_WIN32) && defined(USE_EXULTSTUDIO)
-static HWND    hgwin;
-static Windnd* windnd = nullptr;
-#endif
 
 /*
  *  Local functions:
@@ -637,10 +629,6 @@ int exult_main(const char* runpath) {
 	//  main menu and select another scenario". Becaule DnD isn't registered
 	//  until you really enter the game, we remove it here to prevent possible
 	//  bugs invilved with registering DnD a second time over an old variable.
-#	if defined(_WIN32)
-	RevokeDragDrop(hgwin);
-	windnd->Release();
-#	endif
 	Server_close();
 #endif
 
@@ -1070,23 +1058,9 @@ static void Init() {
 	gwin->setup_game(arg_edit_mode);    // This will start the scene.
 										// Get scale factor for mouse.
 #ifdef USE_EXULTSTUDIO
-#	ifndef _WIN32
 	Server_init();    // Initialize server (for map-editor).
 	SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_TRUE);
 	SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, SDL_TRUE);
-#	else
-	hgwin = (HWND)SDL_GetProperty(
-			SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER,
-			nullptr);
-	Server_init();    // Initialize server (for map-editor).
-	OleInitialize(nullptr);
-	windnd = new Windnd(
-			hgwin, Move_dragged_shape, Move_dragged_combo, Drop_dragged_shape,
-			Drop_dragged_chunk, Drop_dragged_npc, Drop_dragged_combo);
-	if (FAILED(RegisterDragDrop(hgwin, windnd))) {
-		cout << "Something's wrong with OLE2 ..." << endl;
-	}
-#	endif
 #endif
 }
 
@@ -2065,7 +2039,6 @@ static void Handle_event(SDL_Event& event) {
 	case SDL_EVENT_DROP_TEXT:
 	case SDL_EVENT_DROP_FILE: {
 #ifdef USE_EXULTSTUDIO
-#	ifndef _WIN32
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		int x;
 		int y;
@@ -2074,13 +2047,13 @@ static void Handle_event(SDL_Event& event) {
 		float fx = event.drop.x, fy = event.drop.y;
 		x = int(fx);
 		y = int(fy);
-#		ifdef DEBUG
+#	ifdef DEBUG
 		cout << "(EXULT) SDL_EVENT_DROP_"
 			 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
 			 << " Event, type = " << event.drop.type << ", file ("
 			 << strlen(event.drop.data) << ") = '" << event.drop.data
 			 << "', at x = " << x << ", y = " << y << endl;
-#		endif
+#	endif
 		const unsigned char* data
 				= reinterpret_cast<const unsigned char*>(event.drop.data);
 		if (Is_u7_shapeid(data) == true) {
@@ -2141,28 +2114,26 @@ static void Handle_event(SDL_Event& event) {
 			}
 			drag_cbcnt = -1;
 		}
-#		ifdef DEBUG
+#	ifdef DEBUG
 		cout << "(EXULT) SDL_EVENT_DROP_"
 			 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
 			 << " Event complete" << endl;
-#		endif
 #	endif
 #endif
 		break;
 	}
 	case SDL_EVENT_DROP_BEGIN: {
 #ifdef USE_EXULTSTUDIO
-#	ifndef _WIN32
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		int   x;
 		int   y;
 		float fx = event.drop.x, fy = event.drop.y;
 		x = int(fx);
 		y = int(fy);
-#		ifdef DEBUG
+#	ifdef DEBUG
 		cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, type = " << event.drop.type
 			 << ", at x = " << x << ", y = " << y << endl;
-#		endif
+#	endif
 		drag_prevx = -1;
 		drag_prevy = -1;
 		if (drag_shpnum != -1) {
@@ -2196,16 +2167,14 @@ static void Handle_event(SDL_Event& event) {
 		}
 		drag_prevx = x;
 		drag_prevy = y;
-#		ifdef DEBUG
+#	ifdef DEBUG
 		cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event complete" << endl;
-#		endif
 #	endif
 #endif
 		break;
 	}
 	case SDL_EVENT_DROP_POSITION: {
 #ifdef USE_EXULTSTUDIO
-#	ifndef _WIN32
 		// activate Exult for drag'n'drop
 		SDL_RaiseWindow(gwin->get_win()->get_screen_window());
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
@@ -2214,10 +2183,10 @@ static void Handle_event(SDL_Event& event) {
 		float fx = event.drop.x, fy = event.drop.y;
 		x = int(fx);
 		y = int(fy);
-#		ifdef DEBUG
+#	ifdef DEBUG
 		cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, type = "
 			 << event.drop.type << ", at x = " << x << ", y = " << y << endl;
-#		endif
+#	endif
 		if (drag_shpnum != -1) {
 			int file = drag_shfile, shape = drag_shpnum, frame = drag_shfnum;
 			cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, Shape: file = "
@@ -2249,9 +2218,8 @@ static void Handle_event(SDL_Event& event) {
 		}
 		drag_prevx = x;
 		drag_prevy = y;
-#		ifdef DEBUG
+#	ifdef DEBUG
 		cout << "(EXULT) SDL_EVENT_DROP_POSITION Event complete" << endl;
-#		endif
 #	endif
 #endif
 		break;

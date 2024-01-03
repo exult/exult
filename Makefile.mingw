@@ -538,7 +538,7 @@ CFLAGS:=-MMD -fdiagnostics-color=always $(ARCHFLAGS) $(ARCHTYPE) $(strip $(OPT_L
 
 OBJECTS:=$(OBJS) $(TOOL_OBJS) $(ES_OBJS) mapedit/u7shp.o
 
-MISC_OBJS:=exultstudioico.o windrag.o
+MISC_OBJS:=exultstudioico.o
 
 ES_OBJS:=$(MAPEDIT_OBJS) $(ES_FILES_OBJS) $(ES_GAMEMGR_OBJS) $(ES_IMAGEWIN_OBJS) $(ES_SHAPES_OBJS) \
 	$(ES_SERVER_OBJS) $(CONF_OBJS) $(MISC_OBJS) $(ZIP_OBJS)
