@@ -93,9 +93,6 @@ static const SDL_TouchID EXSDL_MOUSE_TOUCHID = SDL_MOUSE_TOUCHID;
 #	if HAVE_SYS_TIME_H
 #		include <sys/time.h>
 #	endif
-#	ifdef _WIN32
-#		include "windrag.h"
-#	endif
 #	include "chunks.h"
 #	include "chunkter.h"
 #	include "objserial.h"
@@ -156,11 +153,6 @@ extern void initialise_usecode_debugger();
 
 int current_scaleval = 1;
 
-#if defined(_WIN32) && defined(USE_EXULTSTUDIO)
-static HWND    hgwin;
-static Windnd* windnd = nullptr;
-#endif
-
 /*
  *  Local functions:
  */
@@ -180,12 +172,17 @@ static void Drop_dragged_shape(int shape, int frame, int x, int y);
 static void Drop_dragged_chunk(int chunknum, int x, int y);
 static void Drop_dragged_npc(int npcnum, int x, int y);
 static void Drop_dragged_combo(int cnt, U7_combo_data* combo, int x, int y);
-static int  drag_prevx = 0, drag_prevy = 0;
-static int  drag_shfile = -1;
-static int  drag_shpnum = -1, drag_shfnum = -1;
-static int  drag_cbcnt    = -1;
-static int  drag_cbxtiles = -1, drag_cbytiles = -1;
-static int  drag_cbrtiles = -1, drag_cbbtiles = -1;
+static void Move_grid(
+		int x, int y, int prevx, int prevy, bool ireg, int xtiles, int ytiles,
+		int tiles_right, int tiles_below);
+static int drag_prevx = -1, drag_prevy = -1;
+static int drag_shfile = -1;
+static int drag_shpnum = -1, drag_shfnum = -1;
+static int drag_cbcnt    = -1;
+static int drag_cbxtiles = -1, drag_cbytiles = -1;
+static int drag_cbrtiles = -1, drag_cbbtiles = -1;
+static int drag_npcnum = -1;
+static int drag_cnknum = -1;
 #endif
 static void BuildGameMap(BaseGameInfo* game, int mapnum);
 static void Handle_events();
@@ -655,10 +652,6 @@ int exult_main(const char* runpath) {
 	//  main menu and select another scenario". Becaule DnD isn't registered
 	//  until you really enter the game, we remove it here to prevent possible
 	//  bugs invilved with registering DnD a second time over an old variable.
-#	if defined(_WIN32)
-	RevokeDragDrop(hgwin);
-	windnd->Release();
-#	endif
 	Server_close();
 #endif
 
@@ -1090,23 +1083,9 @@ static void Init() {
 	gwin->setup_game(arg_edit_mode);    // This will start the scene.
 										// Get scale factor for mouse.
 #ifdef USE_EXULTSTUDIO
-#	ifndef _WIN32
 	Server_init();    // Initialize server (for map-editor).
 	SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
 	SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, true);
-#	else
-	hgwin = (HWND)SDL_GetProperty(
-			SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER,
-			nullptr);
-	Server_init();    // Initialize server (for map-editor).
-	OleInitialize(nullptr);
-	windnd = new Windnd(
-			hgwin, Move_dragged_shape, Move_dragged_combo, Drop_dragged_shape,
-			Drop_dragged_chunk, Drop_dragged_npc, Drop_dragged_combo);
-	if (FAILED(RegisterDragDrop(hgwin, windnd))) {
-		cout << "Something's wrong with OLE2 ..." << endl;
-	}
-#	endif
 #endif
 }
 
@@ -1907,7 +1886,6 @@ static void Handle_event(SDL_Event& event) {
 	case SDL_EVENT_DROP_TEXT:
 	case SDL_EVENT_DROP_FILE: {
 #ifdef USE_EXULTSTUDIO
-#	ifndef _WIN32
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		int x;
 		int y;
@@ -1916,13 +1894,13 @@ static void Handle_event(SDL_Event& event) {
 		float fx = event.drop.x, fy = event.drop.y;
 		x = int(fx);
 		y = int(fy);
-#		ifdef DEBUG
+#	ifdef DEBUG
 		cout << "(EXULT) SDL_EVENT_DROP_"
 			 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
 			 << " Event, type = " << event.drop.type << ", file ("
 			 << strlen(event.drop.data) << ") = '" << event.drop.data
 			 << "', at x = " << x << ", y = " << y << endl;
-#		endif
+#	endif
 		const unsigned char* data
 				= reinterpret_cast<const unsigned char*>(event.drop.data);
 		if (Is_u7_shapeid(data) == true) {
@@ -1952,6 +1930,7 @@ static void Handle_event(SDL_Event& event) {
 			if (chunknum >= 0) {    // A whole chunk.
 				Drop_dragged_chunk(chunknum, x, y);
 			}
+			drag_cnknum = -1;
 		} else if (Is_u7_npcid(data) == true) {
 			int npcnum;
 			Get_u7_npcid(data, npcnum);
@@ -1962,6 +1941,7 @@ static void Handle_event(SDL_Event& event) {
 			if (npcnum >= 0) {    // An NPC.
 				Drop_dragged_npc(npcnum, x, y);
 			}
+			drag_npcnum = -1;
 		} else if (Is_u7_comboid(data) == true) {
 			int combo_xtiles, combo_ytiles, combo_tiles_right,
 					combo_tiles_below, combo_cnt;
@@ -1983,35 +1963,35 @@ static void Handle_event(SDL_Event& event) {
 			}
 			drag_cbcnt = -1;
 		}
-#		ifdef DEBUG
+#	ifdef DEBUG
 		cout << "(EXULT) SDL_EVENT_DROP_"
 			 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
 			 << " Event complete" << endl;
-#		endif
 #	endif
 #endif
 		break;
 	}
 	case SDL_EVENT_DROP_BEGIN: {
 #ifdef USE_EXULTSTUDIO
-#	ifndef _WIN32
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		int   x;
 		int   y;
 		float fx = event.drop.x, fy = event.drop.y;
 		x = int(fx);
 		y = int(fy);
-#		ifdef DEBUG
+#	ifdef DEBUG
 		cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, type = " << event.drop.type
 			 << ", at x = " << x << ", y = " << y << endl;
-#		endif
+#	endif
 		drag_prevx = -1;
 		drag_prevy = -1;
 		if (drag_shpnum != -1) {
 			int file = drag_shfile, shape = drag_shpnum, frame = drag_shfnum;
+#	ifdef DEBUG
 			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Shape: file = " << file
 				 << ", shape = " << shape << ", frame = " << frame
 				 << ", at x = " << x << ", y = " << y << endl;
+#	endif
 			if (shape >= 0) {    // Moving a shape?
 				if (file == U7_SHAPE_SHAPES) {
 					// For now, just allow "shapes.vga".
@@ -2024,47 +2004,82 @@ static void Handle_event(SDL_Event& event) {
 			int combo_tiles_right = drag_cbrtiles;
 			int combo_tiles_below = drag_cbbtiles;
 			int combo_cnt         = drag_cbcnt;
+#	ifdef DEBUG
 			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Combo: xtiles = "
 				 << combo_xtiles << ", ytiles = " << combo_ytiles
 				 << ", tiles_right = " << combo_tiles_right
 				 << ", tiles_below = " << combo_tiles_below
 				 << ", count = " << combo_cnt << ", at x = " << x
 				 << ", y = " << y << endl;
+#	endif
 			if (combo_cnt >= 0) {
 				Move_dragged_combo(
 						combo_xtiles, combo_ytiles, combo_tiles_right,
 						combo_tiles_below, x, y, drag_prevx, drag_prevy, true);
 			}
+		} else if (drag_cnknum != -1) {
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Chunk: num = "
+				 << drag_cnknum << ", at x = " << x << ", y = " << y << endl;
+#	endif
+			int cx, cy;
+			gwin->get_win()->screen_to_game(x, y, false, cx, cy);
+			cx = ((gwin->get_scrolltx() + (cx / c_tilesize))
+				  / c_tiles_per_chunk)
+				 * c_tiles_per_chunk;
+			cy = ((gwin->get_scrollty() + (cy / c_tilesize))
+				  / c_tiles_per_chunk)
+				 * c_tiles_per_chunk;
+			cx = ((cx - gwin->get_scrolltx()) * c_tilesize) + c_chunksize;
+			cy = ((cy - gwin->get_scrollty()) * c_tilesize) + c_chunksize;
+			gwin->get_win()->game_to_screen(cx, cy, false, x, y);
+			Move_grid(
+					x, y, drag_prevx, drag_prevy, false, c_tiles_per_chunk,
+					c_tiles_per_chunk, 0, 0);
+			gwin->show();
 		}
 		drag_prevx = x;
 		drag_prevy = y;
-#		ifdef DEBUG
+#	ifdef DEBUG
 		cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event complete" << endl;
-#		endif
 #	endif
 #endif
 		break;
 	}
+	case SDL_EVENT_DROP_COMPLETE:    // Drag pointer left the window, handle as
+									 // -1, -1 DROP_POSITION
 	case SDL_EVENT_DROP_POSITION: {
 #ifdef USE_EXULTSTUDIO
-#	ifndef _WIN32
-		// activate Exult for drag'n'drop
+		int x;
+		int y;
 		SDL_RaiseWindow(gwin->get_win()->get_screen_window());
-		SDL_ConvertEventToRenderCoordinates(renderer, &event);
-		int   x;
-		int   y;
-		float fx = event.drop.x, fy = event.drop.y;
-		x = int(fx);
-		y = int(fy);
-#		ifdef DEBUG
-		cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, type = "
-			 << event.drop.type << ", at x = " << x << ", y = " << y << endl;
-#		endif
+		if (event.type == SDL_EVENT_DROP_POSITION) {
+			// activate Exult for drag'n'drop
+			SDL_ConvertEventToRenderCoordinates(renderer, &event);
+			float fx = event.drop.x, fy = event.drop.y;
+			x = int(fx);
+			y = int(fy);
+		} else {
+			x = -1;
+			y = -1;
+		}
+#	ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_"
+			 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
+													   : "COMPLETE")
+			 << " Event, type = " << event.drop.type << ", at x = " << x
+			 << ", y = " << y << endl;
+#	endif
 		if (drag_shpnum != -1) {
 			int file = drag_shfile, shape = drag_shpnum, frame = drag_shfnum;
-			cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, Shape: file = "
-				 << file << ", shape = " << shape << ", frame = " << frame
-				 << ", at x = " << x << ", y = " << y << endl;
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
+														   : "COMPLETE")
+				 << " Event, Shape: file = " << file << ", shape = " << shape
+				 << ", frame = " << frame << ", at x = " << x << ", y = " << y
+				 << endl;
+#	endif
 			if (shape >= 0) {    // Moving a shape?
 				if (file == U7_SHAPE_SHAPES) {
 					// For now, just allow "shapes.vga".
@@ -2077,23 +2092,53 @@ static void Handle_event(SDL_Event& event) {
 			int combo_tiles_right = drag_cbrtiles,
 				combo_tiles_below = drag_cbbtiles;
 			int combo_cnt         = drag_cbcnt;
-			cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, Combo: xtiles = "
-				 << combo_xtiles << ", ytiles = " << combo_ytiles
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
+														   : "COMPLETE")
+				 << " Event, Combo: xtiles = " << combo_xtiles
+				 << ", ytiles = " << combo_ytiles
 				 << ", tiles_right = " << combo_tiles_right
 				 << ", tiles_below = " << combo_tiles_below
 				 << ", count = " << combo_cnt << ", at x = " << x
 				 << ", y = " << y << endl;
+#	endif
 			if (combo_cnt >= 0) {
 				Move_dragged_combo(
 						combo_xtiles, combo_ytiles, combo_tiles_right,
 						combo_tiles_below, x, y, drag_prevx, drag_prevy, true);
 			}
+		} else if (drag_cnknum != -1) {
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
+														   : "COMPLETE")
+				 << " Event, Chunk: num = " << drag_cnknum << ", at x = " << x
+				 << ", y = " << y << endl;
+#	endif
+			int cx, cy;
+			gwin->get_win()->screen_to_game(x, y, false, cx, cy);
+			cx = ((gwin->get_scrolltx() + (cx / c_tilesize))
+				  / c_tiles_per_chunk)
+				 * c_tiles_per_chunk;
+			cy = ((gwin->get_scrollty() + (cy / c_tilesize))
+				  / c_tiles_per_chunk)
+				 * c_tiles_per_chunk;
+			cx = ((cx - gwin->get_scrolltx()) * c_tilesize) + c_chunksize;
+			cy = ((cy - gwin->get_scrollty()) * c_tilesize) + c_chunksize;
+			gwin->get_win()->game_to_screen(cx, cy, false, x, y);
+			Move_grid(
+					x, y, drag_prevx, drag_prevy, false, c_tiles_per_chunk,
+					c_tiles_per_chunk, 0, 0);
+			gwin->show();
 		}
 		drag_prevx = x;
 		drag_prevy = y;
-#		ifdef DEBUG
-		cout << "(EXULT) SDL_EVENT_DROP_POSITION Event complete" << endl;
-#		endif
+#	ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_"
+			 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
+													   : "COMPLETE")
+			 << " Event complete" << endl;
 #	endif
 #endif
 		break;
@@ -3224,14 +3269,33 @@ void Set_dragged_shape(int file, int shnum, int frnum) {
 	drag_shfile = file;
 	drag_shpnum = shnum;
 	drag_shfnum = frnum;
+	drag_cbcnt  = -1;
+	drag_npcnum = -1;
+	drag_cnknum = -1;
 }
 
 void Set_dragged_combo(int cnt, int xtl, int ytl, int rtl, int btl) {
+	drag_shpnum   = -1;
 	drag_cbcnt    = cnt;
 	drag_cbxtiles = xtl;
 	drag_cbytiles = ytl;
 	drag_cbrtiles = rtl;
 	drag_cbbtiles = btl;
+	drag_npcnum   = -1;
+	drag_cnknum   = -1;
 }
 
+void Set_dragged_npc(int npcnum) {
+	drag_shpnum = -1;
+	drag_cbcnt  = -1;
+	drag_npcnum = npcnum;
+	drag_cnknum = -1;
+}
+
+void Set_dragged_chunk(int chunknum) {
+	drag_shpnum = -1;
+	drag_cbcnt  = -1;
+	drag_npcnum = -1;
+	drag_cnknum = chunknum;
+}
 #endif

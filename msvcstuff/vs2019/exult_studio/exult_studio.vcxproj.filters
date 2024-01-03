@@ -252,9 +252,6 @@
     <ClCompile Include="..\..\..\usecode\ucsymtbl.cc">
       <Filter>Usecode</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\windrag.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\conf\Configuration.cc">
       <Filter>Conf</Filter>
     </ClCompile>
@@ -479,9 +476,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\usecode\ucsymtbl.h">
       <Filter>Usecode</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\windrag.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\conf\Configuration.h">
       <Filter>Conf</Filter>

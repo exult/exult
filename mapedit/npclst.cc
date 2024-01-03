@@ -655,11 +655,13 @@ void Npc_chooser::drag_data_get(
 		gpointer data    // ->Npc_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET of Npc for '"
+	cout << "In DRAG_DATA_GET of Npc for " << info << " and '"
 		 << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
 		 << endl;
 	auto* chooser = static_cast<Npc_chooser*>(data);
-	if (chooser->selected < 0 || info != U7_TARGET_NPCID) {
+	if (chooser->selected < 0
+		|| (info != U7_TARGET_NPCID && info != U7_TARGET_NPCID + 100
+			&& info != U7_TARGET_NPCID + 200)) {
 		return;    // Not sure about this.
 	}
 	guchar    buf[U7DND_DATA_LENGTH(1)];
@@ -694,6 +696,11 @@ gint Npc_chooser::drag_begin(
 	if (!shape) {
 		return false;
 	}
+	unsigned char  buf[Exult_server::maxlength];
+	unsigned char* ptr = &buf[0];
+	little_endian::Write2(ptr, npcnum);
+	ExultStudio* studio = ExultStudio::get_instance();
+	studio->send_to_server(Exult_server::drag_npc, buf, ptr - buf);
 	chooser->set_drag_icon(context, shape);    // Set icon for dragging.
 	return true;
 }
@@ -712,12 +719,10 @@ void Npc_chooser::drag_data_received(
 	cout << "In DRAG_DATA_RECEIVED of Npc for '"
 		 << gdk_atom_name(gtk_selection_data_get_data_type(seldata)) << "'"
 		 << endl;
-	if ((gtk_selection_data_get_data_type(seldata)
-				 == gdk_atom_intern(U7_TARGET_NPCID_NAME, 0)
-		 || gtk_selection_data_get_data_type(seldata)
-					== gdk_atom_intern(U7_TARGET_DROPFILE_NAME_MIME, 0)
-		 || gtk_selection_data_get_data_type(seldata)
-					== gdk_atom_intern(U7_TARGET_DROPFILE_NAME_MACOSX, 0))
+	auto seltype = gtk_selection_data_get_data_type(seldata);
+	if (((seltype == gdk_atom_intern(U7_TARGET_NPCID_NAME, 0))
+		 || (seltype == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MIME, 0))
+		 || (seltype == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_GENERIC, 0)))
 		&& Is_u7_npcid(gtk_selection_data_get_data(seldata))
 		&& gtk_selection_data_get_format(seldata) == 8
 		&& gtk_selection_data_get_length(seldata) > 0) {
@@ -741,14 +746,14 @@ void Npc_chooser::enable_drop() {
 	gtk_widget_realize(draw);    //???????
 	GtkTargetEntry tents[3];
 	tents[0].target = const_cast<char*>(U7_TARGET_NPCID_NAME);
-	tents[1].target = const_cast<char*>(U7_TARGET_DROPFILE_NAME_MIME);
-	tents[2].target = const_cast<char*>(U7_TARGET_DROPFILE_NAME_MACOSX);
+	tents[1].target = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MIME);
+	tents[2].target = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_GENERIC);
 	tents[0].flags  = 0;
 	tents[1].flags  = 0;
 	tents[2].flags  = 0;
 	tents[0].info   = U7_TARGET_NPCID;
-	tents[1].info   = U7_TARGET_NPCID;
-	tents[2].info   = U7_TARGET_NPCID;
+	tents[1].info   = U7_TARGET_NPCID + 100;
+	tents[2].info   = U7_TARGET_NPCID + 200;
 	gtk_drag_dest_set(
 			draw, GTK_DEST_DEFAULT_ALL, tents, 3,
 			static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
