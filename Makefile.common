@@ -37,8 +37,7 @@ MAIN_OBJS:=actions.o \
 	tqueue.o \
 	txtscroll.o \
 	verify.o \
-	version.o \
-	windrag.o
+	version.o
 
 PATH_OBJS:= \
 	pathfinder/Astar.o \

@@ -477,11 +477,13 @@ void Chunk_chooser::drag_data_get(
 		gpointer data    // ->Chunk_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET of Chunk for '"
+	cout << "In DRAG_DATA_GET of Chunk for " << info << " and '"
 		 << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
 		 << endl;
 	auto* chooser = static_cast<Chunk_chooser*>(data);
-	if (chooser->selected < 0 || info != U7_TARGET_CHUNKID) {
+	if (chooser->selected < 0
+		|| (info != U7_TARGET_CHUNKID && info != U7_TARGET_CHUNKID + 100
+			&& info != U7_TARGET_CHUNKID + 200)) {
 		return;    // Not sure about this.
 	}
 	guchar            buf[U7DND_DATA_LENGTH(1)];
@@ -533,6 +535,11 @@ gint Chunk_chooser::drag_begin(
 			t[3]            = (s == 255 ? 0 : 255);
 		}
 	}
+	unsigned char  buf[Exult_server::maxlength];
+	unsigned char* ptr = &buf[0];
+	little_endian::Write2(ptr, shinfo.num);
+	ExultStudio* studio = ExultStudio::get_instance();
+	studio->send_to_server(Exult_server::drag_chunk, buf, ptr - buf);
 	// This will be the chunk dragged.
 	gtk_drag_set_icon_pixbuf(context, pixbuf, w - 2, h - 2);
 	g_object_unref(pixbuf);
@@ -553,12 +560,10 @@ void Chunk_chooser::drag_data_received(
 	cout << "In DRAG_DATA_RECEIVED of Chunk for '"
 		 << gdk_atom_name(gtk_selection_data_get_data_type(seldata)) << "'"
 		 << endl;
-	if ((gtk_selection_data_get_data_type(seldata)
-				 == gdk_atom_intern(U7_TARGET_CHUNKID_NAME, 0)
-		 || gtk_selection_data_get_data_type(seldata)
-					== gdk_atom_intern(U7_TARGET_DROPFILE_NAME_MIME, 0)
-		 || gtk_selection_data_get_data_type(seldata)
-					== gdk_atom_intern(U7_TARGET_DROPFILE_NAME_MACOSX, 0))
+	auto seltype = gtk_selection_data_get_data_type(seldata);
+	if (((seltype == gdk_atom_intern(U7_TARGET_CHUNKID_NAME, 0))
+		 || (seltype == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MIME, 0))
+		 || (seltype == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_GENERIC, 0)))
 		&& Is_u7_chunkid(gtk_selection_data_get_data(seldata))
 		&& gtk_selection_data_get_format(seldata) == 8
 		&& gtk_selection_data_get_length(seldata) > 0) {
@@ -582,14 +587,14 @@ void Chunk_chooser::enable_drop() {
 	gtk_widget_realize(draw);    //???????
 	GtkTargetEntry tents[3];
 	tents[0].target = const_cast<char*>(U7_TARGET_CHUNKID_NAME);
-	tents[1].target = const_cast<char*>(U7_TARGET_DROPFILE_NAME_MIME);
-	tents[2].target = const_cast<char*>(U7_TARGET_DROPFILE_NAME_MACOSX);
+	tents[1].target = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MIME);
+	tents[2].target = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_GENERIC);
 	tents[0].flags  = 0;
 	tents[1].flags  = 0;
 	tents[2].flags  = 0;
 	tents[0].info   = U7_TARGET_CHUNKID;
-	tents[1].info   = U7_TARGET_CHUNKID;
-	tents[2].info   = U7_TARGET_CHUNKID;
+	tents[1].info   = U7_TARGET_CHUNKID + 100;
+	tents[2].info   = U7_TARGET_CHUNKID + 200;
 	gtk_drag_dest_set(
 			draw, GTK_DEST_DEFAULT_ALL, tents, 3,
 			static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
@@ -1034,10 +1039,11 @@ void Chunk_chooser::insert_response(const unsigned char* data, int datalen) {
 			memset(data, 0, chunksz);
 		}
 		// FIXME - for now only append to the end which prevents ordering errors
-		// in chunk groups. Ideally this should update existing chunk groups as
-		// well. if (tnum >= 0 && tnum < num_chunks - 1) {
+		// in chunk groups.
+		// Ideally this should update existing chunk groups as well.
+		// if (tnum >= 0 && tnum < num_chunks - 1) {
 		//	chunklist.insert(chunklist.begin() + tnum + 1, data);
-		// } else    // If -1, append to end.*/
+		// } else    // If -1, append to end.
 		chunklist.push_back(data);
 
 		update_num_chunks(num_chunks + 1);
