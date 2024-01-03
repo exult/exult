@@ -950,11 +950,13 @@ void Combo_chooser::drag_data_get(
 		gpointer data    // ->Shape_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET of Combo for '"
+	cout << "In DRAG_DATA_GET of Combo for " << info << " and '"
 		 << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
 		 << endl;
 	auto* chooser = static_cast<Combo_chooser*>(data);
-	if (chooser->selected < 0 || info != U7_TARGET_COMBOID) {
+	if (chooser->selected < 0
+		|| (info != U7_TARGET_COMBOID && info != U7_TARGET_COMBOID + 100
+			&& info != U7_TARGET_COMBOID + 200)) {
 		return;    // Not sure about this.
 	}
 	// Get combo #.
