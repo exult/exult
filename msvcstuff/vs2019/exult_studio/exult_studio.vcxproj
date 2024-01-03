@@ -255,7 +255,6 @@
     <ClCompile Include="..\..\..\shapes\u7drag.cc" />
     <ClCompile Include="..\..\..\shapes\vgafile.cc" />
     <ClCompile Include="..\..\..\usecode\ucsymtbl.cc" />
-    <ClCompile Include="..\..\..\windrag.cc" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="..\..\..\mapedit\exult_studio.glade">
@@ -343,7 +342,6 @@
     <ClInclude Include="..\..\..\shapes\u7drag.h" />
     <ClInclude Include="..\..\..\shapes\vgafile.h" />
     <ClInclude Include="..\..\..\usecode\ucsymtbl.h" />
-    <ClInclude Include="..\..\..\windrag.h" />
     <ClInclude Include="..\dirent.h" />
     <ClInclude Include="..\msvc_include.h" />
     <ClInclude Include="..\unistd.h" />
