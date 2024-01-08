@@ -33,15 +33,28 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 7.6.2
+      - name: Install dependencies
+        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
+        run: |
+          if ! apt-fast -- help &> /dev/null; then
+            sudo add-apt-repository -u -y ppa:apt-fast/stable
+            sudo apt-get update
+            echo debconf apt-fast/maxdownloads string 16 | sudo debconf-set-selections
+            echo debconf apt-fast/dlflag boolean true | sudo debconf-set-selections
+            echo debconf apt-fast/aptmanager string apt-get | sudo debconf-set-selections
+            DEBIAN_FRONTEND=noninteractive sudo apt install -y apt-fast
+          else
+            sudo apt-fast update
+          fi
+          sudo apt-fast install -y autoconf-archive
       - name: Checkout code
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         uses: actions/checkout@master
-      - name: Run autogen
+      - name: Run autoreconf
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         run: |
-          chmod a+x ./autogen.sh
-          mkdir ./../build && cd ./../build
-          ./../exult/autogen.sh
+          mkdir ./../build
+          autoreconf -f -v -i
       - name: Configure debug
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         run: |

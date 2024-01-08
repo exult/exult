@@ -175,7 +175,6 @@ endif
 endif
 
 EXTRA_DIST = 	\
-	autogen.sh \
 	README \
 	FAQ \
 	README.md \

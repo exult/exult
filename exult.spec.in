@@ -98,7 +98,7 @@ Exult Studio: an editor for the Exult engine.
 %build
 # Needed for snapshot releases.
 if [ ! -f configure ]; then
-  ./autogen.sh
+  autoreconf -f -v -i
 fi
 
 %configure --disable-gimp-plugin --enable-exult-studio --enable-exult-studio-support

@@ -106,13 +106,12 @@ jobs:
           brew update
           brew upgrade || true
           brew install automake libtool pkg-config libpng zlib libogg libvorbis fluid-synth freetype gtk+3 libxml2 bison flex
-          brew install sdl2 icu4c mt32emu
+          brew install sdl2 icu4c mt32emu autoconf-archive
       - name: Checkout code
         uses: actions/checkout@master
-      - name: Run autogen
+      - name: Run autoreconf
         run: |
-          chmod a+x ./autogen.sh
-          ./autogen.sh
+          autoreconf -f -v -i
       - name: Configure
         run: |
           export LDFLAGS="-L$(brew --prefix bison)/lib -L$(brew --prefix flex)/lib -L$(brew --prefix zlib)/lib"

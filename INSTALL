@@ -34,9 +34,14 @@ If you're building from Git you'll also need recent versions of:
 
 	automake
 	autoconf
+	autoconf-archive
 	libtool
 
-Run the autogen.sh file to generate configure and other necessary scripts.
+Look at the top directory, and check whether configure exists.
+If it does not, then configure.ac should exist, and then you should type,
+in the top directory, to create configure,
+
+	autoreconf -f -v -i
 
 Got everything? Excellent. Now you can build your own binary of Exult.
 From the top directory type the following:
@@ -77,7 +82,7 @@ To compile Exult Studio you additionally need to install:
 Now follow the above steps to build Exult, only add the switch --enable-exult-studio
 to the configure step:
 
-./autogen.sh
+autoreconf -f -v -i
 ./configure --enable-exult-studio
 make
 

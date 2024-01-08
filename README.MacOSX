@@ -38,6 +38,7 @@ Alternative package managers are Fink (https://www.finkproject.org) or
 Homebrew (https://brew.sh/).
 
 With MacPorts install:
+  autoconf-archive
   libsdl2
   libvorbis
   munt-mt32emu
@@ -58,7 +59,7 @@ If you use MacPorts:
 
 Now you are ready to compile Exult. If you are compiling from Git, the
 first thing you have to run is this:
-  ./autogen.sh
+  autoreconf -f -v -i
 
 The next step is the same whether you compile a release version or Git:
   ./configure
