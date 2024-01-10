@@ -111,7 +111,7 @@ jobs:
             libgdk-pixbuf2.0-dev libxml2-dev bison flex timidity libgimp2.0-dev autoconf-archive
       - name: Run autoreconf
         run: |
-          autoreconf -f -v -i
+          autoreconf -v -i
       - name: Configure
         run: |
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \

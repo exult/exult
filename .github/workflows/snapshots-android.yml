@@ -54,7 +54,7 @@ jobs:
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         run: |
           mkdir ./../build
-          autoreconf -f -v -i
+          autoreconf -v -i
       - name: Configure debug
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         run: |

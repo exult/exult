@@ -50,7 +50,7 @@ jobs:
       - name: Run autoreconf
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         run: |
-          autoreconf -f -v -i
+          autoreconf -v -i
       - name: Configure
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         run: |

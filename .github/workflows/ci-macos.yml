@@ -111,7 +111,7 @@ jobs:
         uses: actions/checkout@master
       - name: Run autoreconf
         run: |
-          autoreconf -f -v -i
+          autoreconf -v -i
       - name: Configure
         run: |
           export LDFLAGS="-L$(brew --prefix bison)/lib -L$(brew --prefix flex)/lib -L$(brew --prefix zlib)/lib"

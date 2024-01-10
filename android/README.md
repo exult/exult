@@ -39,7 +39,7 @@ The following is a quick summary of the commands to build (assuming you are in t
 
 ```
 mkdir ./../build && cd ./../build
-$ autoreconf -f -v -i ./../exult/
+$ autoreconf -v -i ./../exult
 $ ./../exult/configure --enable-data --enable-android-apk=debug \
             --disable-exult --disable-tools --disable-timidity-midi --disable-alsa \
             --disable-fluidsynth --disable-mt32emu --disable-all-hq-scalers \
@@ -55,7 +55,7 @@ Building a release build is similar, but requires signing the binary:
 
 ```
 mkdir ./../build && cd ./../build
-$ autoreconf -f -v -i ./../exult
+$ autoreconf -v -i ./../exult
 $ ./../exult/configure --enable-data --enable-android-apk=release \
             --disable-exult --disable-tools --disable-timidity-midi --disable-alsa \
             --disable-fluidsynth --disable-mt32emu --disable-all-hq-scalers \

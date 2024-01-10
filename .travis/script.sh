@@ -19,7 +19,7 @@ else
 	export LIBTOOLFLAGS="--silent"
 fi
 
-autoreconf -f -v -i && ./configure --with-cxx=$(which $CXX) $LIBOPTS $EXTRA_OPT	\
+autoreconf -v -i && ./configure --with-cxx=$(which $CXX) $LIBOPTS $EXTRA_OPT	\
                             --disable-oggtest --disable-vorbistest	\
                             --enable-exult-studio --enable-exult-studio-support	\
                             --enable-mt32emu --enable-zip-support	\

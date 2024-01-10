@@ -57,7 +57,7 @@ jobs:
             name: "exult/exult"
             description: "Exult is an open source engine for Ultima 7 and Serpent Isle."
           notification_email: marzojr@gmail.com
-          build_command_prepend: "autoreconf -f -v -i && ./configure --with-debug=messages --disable-oggtest --disable-vorbistest --enable-exult-studio --enable-exult-studio-support --enable-mt32emu --enable-zip-support --enable-shared --enable-midi-sfx --enable-gimp-plugin --enable-gnome-shp-thumbnailer --enable-compiler --enable-mods --with-usecode-debugger=yes"
+          build_command_prepend: "autoreconf -v -i && ./configure --with-debug=messages --disable-oggtest --disable-vorbistest --enable-exult-studio --enable-exult-studio-support --enable-mt32emu --enable-zip-support --enable-shared --enable-midi-sfx --enable-gimp-plugin --enable-gnome-shp-thumbnailer --enable-compiler --enable-mods --with-usecode-debugger=yes"
           build_command:   "make"
           branch_pattern: coverity_scan
       before_script:

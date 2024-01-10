@@ -129,7 +129,7 @@ jobs:
       - name: Run autoreconf
         run: |
           mkdir ./../build
-          autoreconf -f -v -i
+          autoreconf -v -i
       - name: Configure
         run: |
           cd ./../build
