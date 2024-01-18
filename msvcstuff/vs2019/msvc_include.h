@@ -21,8 +21,10 @@
 									   // except to indicate a function is not
 									   // __declspec(nothrow)
 
-#	pragma warning (disable : 4267 4244) // conversion from 'type' to 'type' possible loss of data
-#	pragma warning(disable : 4805) // unsafe mix of type 'int' and type 'bool' in operation
+#	pragma warning(disable : 4267 4244)    // conversion from 'type' to 'type'
+											// possible loss of data
+#	pragma warning(disable : 4805)         // unsafe mix of type 'int' and type
+											// 'bool' in operation
 
 #endif
 
@@ -35,11 +37,12 @@
 
 #if _MSC_VER <= 1938
 
-#include <algorithm>
-#include <cctype>
+#	include <algorithm>
+#	include <cctype>
 
-#	pragma warning(disable : 4091) // 'typedef ' : ignored on left of 'tagGPFIDL_FLAGS' when no variable
-#	pragma warning(disable : 4309) // truncation of constant value 
+#	pragma warning(disable : 4091)    // 'typedef ' : ignored on left of
+									   // 'tagGPFIDL_FLAGS' when no variable
+#	pragma warning(disable : 4309)    // truncation of constant value
 
 /*
 namespace std {
