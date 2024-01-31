@@ -43,65 +43,78 @@ cxx_compilers="g++ clang++ c++ gpp aCC CC cxx cc++ cl.exe FCC KCC RCC xlC_r xlC"
 AC_MSG_CHECKING([windowing system])
 case "$host_os" in
 	linux-android*)
+		# Android cross compiled from Linux, supported.
 		AC_DEFINE(ANDROID, 1, [Using Android])
 		ARCH=android
 		AC_MSG_RESULT([Android])
+		CXXFLAGS="$CXXFLAGS -pthread"
 		;;
 	linux*)
+		# Linux, supported.
 		WINDOWING_SYSTEM="-DXWIN"
 		AC_MSG_RESULT([X11 (GNU/Linux)])
+		CXXFLAGS="$CXXFLAGS -pthread"
 		;;
-	mingw32* )
+	mingw32*)
+		# Windows as MinGW, placeholder, true build by Makefile.mingw.
 		WINDOWING_SYSTEM="-D_WIN32"
 		AC_DEFINE(MINGW, 1, [Using MinGW])
 		AC_MSG_RESULT([Win32 (mingw32)])
-		CXXFLAGS="$CXXFLAGS -D_USE_MATH_DEFINES"
+		CXXFLAGS="$CXXFLAGS -D_USE_MATH_DEFINES -pthread"
 		SYSLIBS="-luuid -lole32 -lwinmm -lstdc++ -lws2_32"
 		ICON_FILE="win32/exultico.o"
 		;;
-	cygwin* )
+	cygwin*)
+		# Windows as Cygwin, placeholder, true build by Makefile.mingw.
 		WINDOWING_SYSTEM="-D_WIN32"
 		AC_DEFINE(CYGWIN, 1, [Using Cygwin])
 		AC_MSG_RESULT([Win32 (cygwin)])
-		CXXFLAGS="$CXXFLAGS -mno-cygwin"
+		CXXFLAGS="$CXXFLAGS -mno-cygwin -pthread"
 		SYSLIBS="-lwinmm"
 		ICON_FILE="win32/exultico.o"
 		;;
-	openbsd* )
+	openbsd*)
+		# OpenBSD, placeholder.
 		WINDOWING_SYSTEM="-DXWIN"
 		AC_DEFINE(OPENBSD, 1, [Using OpenBSD])
 		AC_MSG_RESULT([X11 (OpenBSD)])
+		CXXFLAGS="$CXXFLAGS -pthread"
 		SYSLIBS="-L/usr/X11R6/lib -lX11 -lXext -lXxf86vm -lXxf86dga"
 		;;
-	freebsd* )
+	freebsd*)
+		# FreeBSD, supported.
 		WINDOWING_SYSTEM="-DXWIN"
 		AC_DEFINE(FREEBSD, 1, [Using FreeBSD])
 		AC_MSG_RESULT([X11 (FreeBSD)])
-		CXXFLAGS="$CXXFLAGS -I/usr/local/include"
-		SYSLIBS="-lpthread"
+		CXXFLAGS="$CXXFLAGS -I/usr/local/include -pthread"
 		;;
-	netbsd* )
+	netbsd*)
+		# NetBSD, placeholder.
 		WINDOWING_SYSTEM="-DXWIN"
 		AC_MSG_RESULT([X11 (NetBSD)])
-		CXXFLAGS="$CXXFLAGS -I/usr/X11R6/include"
+		CXXFLAGS="$CXXFLAGS -I/usr/X11R6/include -pthread"
 		;;
-	solaris* )
+	solaris*)
+		# Solaris, placeholder.
 		WINDOWING_SYSTEM="-DXWIN"
 		AC_MSG_RESULT([X11 (Solaris)])
+		CXXFLAGS="$CXXFLAGS -pthread"
 		SYSLIBS="-lsocket -lX11"
 		;;
 	darwin*)
+		# MacOS as Darwin, supported.
+		dnl
 		dnl We have a problem here: both Mac OS X and Darwin report
 		dnl the same signature "powerpc-apple-darwin*" - so we have
 		dnl to do more to distinguish them. Plain Darwin will propably
 		dnl use X-Windows; and it is of course lacking Cocoa. For
 		dnl now I am lazy and do not add proper detection code.
-
+		dnl
 		WINDOWING_SYSTEM="-DMACOSX"
 		AC_DEFINE(MACOSX, 1, [Using MacOSX])
 		AC_MSG_RESULT([Mac OS X])
 		SYSLIBS="-framework CoreFoundation -framework AudioUnit -framework AudioToolbox -framework CoreMIDI"
-		CXXFLAGS="$CXXFLAGS -stdlib=libc++"
+		CXXFLAGS="$CXXFLAGS -stdlib=libc++ -pthread"
 		EXULT_DATADIR="/Library/Application\ Support/Exult/data"
 		ARCH=macosx
 		dnl swap around clang for OSX
