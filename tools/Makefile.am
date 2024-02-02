@@ -76,7 +76,7 @@ gnome_shp_thumbnailerdir=$(DESTDIR)$(datadir)/mime/packages
 
 # Rule to make the service file with bindir expanded
 $(thumbnailer_DATA): $(thumbnailer_in_files)
-	@$(SED) -e "s|\@bindir\@|$(bindir)|" $< > $@
+	@$(SED) -e "s|\@bindir\@|$(bindir)|" $(thumbnailer_in_files) > $@
 endif
 
 wuc_SOURCES = \

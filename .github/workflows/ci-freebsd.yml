@@ -1,0 +1,138 @@
+name: ci-freebsd
+
+on:
+  push:
+    paths:
+      - "**"
+      - "!android/**"
+      - "!docs/**"
+      - "docs/Makefile.am"
+      - "!ios/**"
+      - "!macosx/**"
+      - "!msvcstuff/**"
+      - "!win32/**"
+      - "!AUTHORS"
+      - "!ChangeLog"
+      - "!COPYING"
+      - "!FAQ"
+      - "!INSTALL"
+      - "!NEWS"
+      - "!**README**"
+      - "!**.ico"
+      - "!**.md"
+      - "!**.png"
+      - "!**.txt"
+      - "!.clang*"
+      - "!.gitignore"
+      - "!.gitattributes"
+      - "!.github/workflows/*"
+      - ".github/workflows/ci-freebsd.yml"
+  pull_request:
+    paths:
+      - "**"
+      - "!android/**"
+      - "!docs/**"
+      - "docs/Makefile.am"
+      - "!ios/**"
+      - "!macosx/**"
+      - "!msvcstuff/**"
+      - "!win32/**"
+      - "!AUTHORS"
+      - "!ChangeLog"
+      - "!COPYING"
+      - "!FAQ"
+      - "!INSTALL"
+      - "!NEWS"
+      - "!**README**"
+      - "!**.ico"
+      - "!**.md"
+      - "!**.png"
+      - "!**.txt"
+      - "!.clang*"
+      - "!.gitignore"
+      - "!.gitattributes"
+      - "!.github/workflows/*"
+      - ".github/workflows/ci-freebsd.yml"
+
+jobs:
+  notify:
+    name: Exult-CI (IRC & Discord notification)
+    runs-on: ubuntu-latest
+    needs:
+      - ci-freebsd
+    if: ${{ always() && (github.repository_owner == 'exult' && github.event_name != 'pull_request') }}
+    steps:
+      - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
+        uses: Gottox/irc-message-action@v2
+        if: needs.ci-freebsd.result == 'success'
+        with:
+          server: irc.libera.chat
+          port: 6697
+          channel: "#exult"
+          nickname: github-actions
+          tls: true
+          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The FreeBSD build \x033succeeded\x03."
+      - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
+        uses: Gottox/irc-message-action@v2
+        if: needs.ci-freebsd.result != 'success'
+        with:
+          server: irc.libera.chat
+          port: 6697
+          channel: "#exult"
+          nickname: github-actions
+          tls: true
+          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The FreeBSD build \x034failed\x03."
+      - name: Discord success notification
+        uses: BubbleProd/discord-webhook-notify@v2.0.1
+        if: needs.ci-freebsd.result == 'success'
+        with:
+          severity: info
+          username: github-actions
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          text: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          title: "The FreeBSD build succeeded."
+      - name: Discord failure notification
+        uses: BubbleProd/discord-webhook-notify@v2.0.1
+        if: needs.ci-freebsd.result != 'success'
+        with:
+          severity: error
+          username: github-actions
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          text: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          title: "The FreeBSD build failed."
+  ci-freebsd:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Build Exult in FreeBSD
+      id: ci-freebsd
+      uses: vmactions/freebsd-vm@v1
+      with:
+        usesh: true
+        prepare: |
+          pkg update
+          pkg upgrade
+          pkg install -y at-spi2-core
+          pkg install -y alsa-lib fluidsynth libogg libvorbis
+          pkg install -y autoconf autoconf-archive automake bison flex gettext-runtime \
+                         git glib gmake icu json-glib libtool pkgconf sdl2
+          pkg install -y cairo gdk-pixbuf2 gegl gimp-app png
+          pkg install -y freetype2 harfbuzz
+          pkg install -y fontconfig
+          pkg install -y gtk2 gtk3 pango
+          pkg install -y babl libX11 libXext
+        run: |
+          autoreconf -v -i
+          ./configure \
+           --enable-exult-studio --enable-exult-studio-support \
+           --enable-alsa --enable-fluidsynth --enable-mt32emu --enable-midi-sfx \
+           --enable-gimp-plugin --enable-gnome-shp-thumbnailer \
+           --enable-mods --enable-data --enable-zip-support \
+           --enable-compiler --with-usecode-debugger=yes --enable-usecode-container \
+           --enable-nonreadied-objects \
+           --disable-static --enable-shared \
+           --enable-pedantic-errors --with-debug=extreme \
+           CXX=clang++ \
+           CXXFLAGS="-isystem /usr/local/include" \
+           LIBS="-L/usr/local/lib"
+          make -j 2
