@@ -86,7 +86,7 @@ case "$host_os" in
 		WINDOWING_SYSTEM="-DXWIN"
 		AC_DEFINE(FREEBSD, 1, [Using FreeBSD])
 		AC_MSG_RESULT([X11 (FreeBSD)])
-		CXXFLAGS="$CXXFLAGS -I/usr/local/include -pthread"
+		CXXFLAGS="$CXXFLAGS -pthread"
 		;;
 	netbsd*)
 		# NetBSD, placeholder.
@@ -188,11 +188,6 @@ AC_HEADER_DIRENT
 AC_CHECK_HEADERS(limits.h sys/time.h unistd.h)
 AC_CHECK_HEADERS(sys/types.h sys/socket.h netdb.h)
 AC_CHECK_HEADERS(sys/wait.h signal.h getopt.h)
-if test x$ARCH != xandroid; then
-	AC_CHECK_HEADERS(png.h, AM_CONDITIONAL(HAVE_PNG,true), AM_CONDITIONAL(HAVE_PNG, false))
-else
-	AM_CONDITIONAL(HAVE_PNG, false)
-fi
 
 # ---------------------------------------------------------------------
 # Checks for typedefs, structures, and compiler characteristics.
@@ -432,6 +427,22 @@ fi
 # ---------------------------------------------------------------------
 
 EXULT_CHECK_SDL(:,AC_MSG_ERROR([[*** SDL not found!]]))
+
+# ---------------------------------------------------------------------
+# libpng
+# ---------------------------------------------------------------------
+
+if test x$ARCH != xandroid; then
+	PKG_CHECK_MODULES(PNG, libpng, have_png=yes, have_png=no)
+else
+	have_png=no
+fi
+if test x$have_png = xyes; then
+	AM_CONDITIONAL(HAVE_PNG, true)
+	AC_DEFINE(HAVE_PNG_H, 1, [Define to 1 if you have the <png.h> header file.])
+else
+	AM_CONDITIONAL(HAVE_PNG, false)
+fi
 
 # ---------------------------------------------------------------------
 # libogg, libvorbis, libvorbisfile
@@ -715,6 +726,11 @@ if test x$enable_exult_studio = xyes; then
 		echo "Please try again, either with the ICU installed, or with '--disable-exult-studio'."
 		exit 1
 	fi
+	if test x$have_png = xno; then
+		echo "Exult Studio requires the PNG (aka the Portable Network Graphics), but it is not installed."
+		echo "Please try again, either with the PNG installed, or with '--disable-exult-studio'."
+		exit 1
+	fi
 	AM_CONDITIONAL(BUILD_STUDIO, true)
 	AM_CONDITIONAL(BUILD_SHAPES, true)
 else
@@ -827,11 +843,11 @@ if test x$enable_usecode_debugger = xconsole -o x$enable_usecode_debugger = xyes
 		AC_DEFINE(USECODE_CONSOLE_DEBUGGER, 1, [Enable Usecode debugging on console])
 	elif test x$enable_exult_studio != xyes; then
 		echo "But we are not building Exult Studio."
-		echo "Try again, either with --enable-exult-studio, or without the usecode debugger"
+		echo "Please try again, either with '--enable-exult-studio', or without the usecode debugger"
 		exit 1
 	elif test x$enable_exult_studio_support != xyes; then
 		echo "But we are not building Exult with Exult Studio support."
-		echo "Try again, either with --enable-exult-studio-support, or without the usecode debugger"
+		echo "Please try again, either with '--enable-exult-studio-support', or without the usecode debugger"
 		exit 1
 	fi
 	AC_DEFINE(USECODE_DEBUGGER, 1, [Enable Usecode debugging])
@@ -868,7 +884,12 @@ if test x$enable_gnome_shp_thumbnailer = xyes; then
 	PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf-2.0, have_gdk_pixbuf=yes, have_gdk_pixbuf=no)
 	if test x$have_gdk_pixbuf = xno; then
 		echo "The Gnome shp thumbnailer requires Gdk-Pixbuf."
-		echo "Try again, either with Gdk-Pixbuf-2.0, or with --disable-gnome-shp-thumbnailer"
+		echo "Please try again, either with Gdk-Pixbuf-2.0, or with '--disable-gnome-shp-thumbnailer'."
+		exit 1
+	fi
+	if test x$have_png = xno; then
+		echo "The Gnome shp thumbnailer requires the PNG (aka the Portable Network Graphics)."
+		echo "Please try again, either with the PNG installed, or with '--disable-gnome-shp-thumbnailer'."
 		exit 1
 	fi
 	AM_CONDITIONAL(BUILD_GTHUMB, true)
@@ -1311,7 +1332,7 @@ if test x$enable_android_apk = xno; then
 		echo Ogg.........................: `$PKG_CONFIG --modversion ogg`)
 	PKG_CHECK_EXISTS(vorbis,
 		echo Vorbis......................: `$PKG_CONFIG --modversion vorbis`)
-	if test x$ac_cv_header_png_h = xyes; then
+	if test x$have_png = xyes; then
 		PKG_CHECK_EXISTS(libpng,
 			echo libpng..................... : `$PKG_CONFIG --modversion libpng`)
 	fi

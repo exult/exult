@@ -2,7 +2,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/shapes \
 	-I$(top_srcdir)/imagewin -I$(top_srcdir)/conf -I$(top_srcdir)/gamemgr \
 	-I$(top_srcdir)/files -I$(top_srcdir)/server  -I$(top_srcdir)/usecode \
 	-I$(top_srcdir)/shapes/shapeinf \
-	$(GTK_CFLAGS) $(ICU_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
+	$(GTK_CFLAGS) $(PNG_CFLAGS) $(ICU_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 	$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DEXULT_DATADIR=\"$(EXULT_DATADIR)\"
 
 if GIMP_PLUGIN
@@ -21,7 +21,7 @@ u7shp_SOURCES = u7shp.cc
 
 u7shp_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/files -I$(top_srcdir)/headers \
 	-I$(top_srcdir)/shapes -I$(top_srcdir)/imagewin -I$(top_srcdir)/files \
-	$(GIMP_INCLUDES) $(GTK_CFLAGS) $(ICU_CFLAGS) $(INCDIRS) \
+	$(GIMP_INCLUDES) $(GTK_CFLAGS) $(PNG_CFLAGS) $(ICU_CFLAGS) $(INCDIRS) \
 	$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DHAVE_CONFIG_H
 
 u7shp_LDADD = \
@@ -81,9 +81,9 @@ exult_studio_LDADD = \
 	../server/libserver.la		\
 	../usecode/libusecode.la		\
 	../shapes/shapeinf/libshapeinf.la	\
-	-lpng $(FREETYPE2_LIBS) $(SYSLIBS) $(x_libraries) $(GTK_LIBS) $(ICU_LIBS) $(ZLIB_LIBS)
+	$(PNG_LIBS) $(FREETYPE2_LIBS) $(SYSLIBS) $(x_libraries) $(GTK_LIBS) $(ICU_LIBS) $(ZLIB_LIBS)
 
-exult_studio_CFLAGS = $(GTK_CFLAGS) $(ICU_CFLAGS)
+exult_studio_CFLAGS = $(GTK_CFLAGS) $(PNG_CFLAGS) $(ICU_CFLAGS)
 exult_studio_LDFLAGS = -export-dynamic		# For Gtk+ 2.x
 
 mapeditdir = $(datadir)/exult
