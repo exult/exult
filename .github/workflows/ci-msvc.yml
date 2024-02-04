@@ -13,7 +13,7 @@ on:
 
 env:
   # Path to the solution file relative to the root of the project.
-  SOLUTION_FILE_PATH: msvc_stuff\vs2019
+  SOLUTION_FILE_PATH: msvcstuff\vs2019
 
   # Configuration type to build.
   # You can convert this to a build matrix if you need coverage of multiple configuration types.
