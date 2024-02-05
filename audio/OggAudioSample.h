@@ -26,7 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#	if defined(__llvm__) || defined(__clang__)
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wunused-variable"
+#	else
 #		if __clang_major__ >= 16
 #			pragma GCC diagnostic ignored "-Wcast-function-type-strict"
 #		endif

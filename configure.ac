@@ -92,7 +92,7 @@ case "$host_os" in
 		# NetBSD, placeholder.
 		WINDOWING_SYSTEM="-DXWIN"
 		AC_MSG_RESULT([X11 (NetBSD)])
-		CXXFLAGS="$CXXFLAGS -I/usr/X11R6/include -pthread"
+		CXXFLAGS="$CXXFLAGS -pthread"
 		;;
 	solaris*)
 		# Solaris, placeholder.

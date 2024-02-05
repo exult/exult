@@ -87,9 +87,16 @@ static const Uint32 EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wvariadic-macros"
+#endif    // __GNUC__
 #define Font _XFont_
 #include <SDL_syswm.h>
 #undef Font
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 
 #ifdef USE_EXULTSTUDIO /* Only needed for communication with exult studio */
 #	if HAVE_SYS_TIME_H

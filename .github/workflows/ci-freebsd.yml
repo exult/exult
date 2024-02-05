@@ -123,14 +123,8 @@ jobs:
           pkg install -y babl libX11 libXext
         run: |
           autoreconf -v -i
-          ./configure \
-           --enable-exult-studio --enable-exult-studio-support \
-           --enable-alsa --enable-fluidsynth --enable-mt32emu --enable-midi-sfx \
-           --enable-gimp-plugin --enable-gnome-shp-thumbnailer \
-           --enable-mods --enable-data --enable-zip-support \
-           --enable-compiler --with-usecode-debugger=yes --enable-usecode-container \
-           --enable-nonreadied-objects \
-           --disable-static --enable-shared \
-           --enable-pedantic-errors --with-debug=extreme \
-           CXX=clang++
+          ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \
+            --enable-zip-support --enable-shared --enable-midi-sfx --enable-gnome-shp-thumbnailer --enable-data --enable-mods \
+            --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects --disable-oggtest --disable-vorbistest \
+            CXX=clang++ CC=clang
           make -j 2

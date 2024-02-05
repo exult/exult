@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/files $(SDL_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
+AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/files $(SDL_CFLAGS) $(PNG_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 		-I$(top_srcdir)/conf \
 		$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS)
 
