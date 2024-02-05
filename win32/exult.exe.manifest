@@ -15,17 +15,17 @@
 			<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}" />
 		</application>
 	</compatibility>
-	<application>
-		<windowsSettings>
-			<dpiAware xmlns="https://schemas.microsoft.com/SMI/2005/WindowsSettings">
+	<asmv3:application>
+		<asmv3:windowsSettings>
+			<dpiAware>
 				true/PM
 			</dpiAware>
-			<highResolutionScrollingAware xmlns="https://schemas.microsoft.com/SMI/2013/WindowsSettings">
+			<highResolutionScrollingAware>
 				true
 			</highResolutionScrollingAware>
-			<dpiAwareness xmlns="https://schemas.microsoft.com/SMI/2016/WindowsSettings">
+			<dpiAwareness>
 				PerMonitorV2, PerMonitor
 			</dpiAwareness>
-		</windowsSettings>
-	</application>
+		</asmv3:windowsSettings>
+	</asmv3:application>
 </assembly>
