@@ -5,12 +5,8 @@ AM_CPPFLAGS = -I$(srcdir) -I$(srcdir)/headers -I$(srcdir)/imagewin -I$(srcdir)/s
 	-I$(srcdir)/objs -I$(srcdir)/conf -I$(srcdir)/files -I$(srcdir)/gumps \
 	-I$(srcdir)/audio -I$(srcdir)/audio/midi_drivers -I$(srcdir)/pathfinder \
 	-I$(srcdir)/usecode -I$(srcdir)/shapes/shapeinf \
-	$(SDL_CFLAGS) $(VORBIS_CFLAGS) $(OGG_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
+	$(SDL_CFLAGS) $(VORBIS_CFLAGS) $(OGG_CFLAGS) $(PNG_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 	$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DEXULT_DATADIR=\"$(EXULT_DATADIR)\"
-
-if HAVE_PNG
-PNG_LIBS=-lpng
-endif
 
 SUBDIRS = files conf data shapes imagewin pathfinder \
 	gamemgr flic usecode tools audio gumps objs server \

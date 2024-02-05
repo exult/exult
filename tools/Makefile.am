@@ -1,7 +1,7 @@
 AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir)/files -I$(top_srcdir)/usecode \
 	-I$(top_srcdir) -I$(top_srcdir)/shapes -I$(top_srcdir)/imagewin \
 	-I$(top_srcdir)/conf $(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) $(SDL_CFLAGS) \
-	$(GDK_PIXBUF_CFLAGS)
+	$(GDK_PIXBUF_CFLAGS) $(PNG_CFLAGS)
 
 if CROSS_COMPILING
 if BUILD_TOOLS
@@ -53,7 +53,7 @@ ipack_LDADD = \
 	../files/libu7file.la \
 	../shapes/libshapes.la \
 	../imagewin/libimagewin.la \
-	-lpng -lz $(SYSLIBS)
+	$(PNG_LIBS) $(ZLIB_LIBS) $(SYSLIBS)
 
 gnome_shp_thumbnailer_SOURCES = \
 	gnome_shp_thumbnailer.cc
@@ -62,7 +62,7 @@ gnome_shp_thumbnailer_LDADD = \
 	../shapes/libshapes.la \
 	../imagewin/libimagewin.la \
 	../files/libu7file.la \
-	-lpng -lz $(SYSLIBS) $(GDK_PIXBUF_LIBS)
+	$(PNG_LIBS) $(ZLIB_LIBS) $(SYSLIBS) $(GDK_PIXBUF_LIBS)
 
 if BUILD_GTHUMB
 ## Does not work:

@@ -132,7 +132,5 @@ jobs:
            --enable-nonreadied-objects \
            --disable-static --enable-shared \
            --enable-pedantic-errors --with-debug=extreme \
-           CXX=clang++ \
-           CXXFLAGS="-isystem /usr/local/include" \
-           LIBS="-L/usr/local/lib"
+           CXX=clang++
           make -j 2

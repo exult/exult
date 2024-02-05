@@ -23,7 +23,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef USE_ALSA_MIDI
 #	include "LowLevelMidiDriver.h"
 
+#	ifdef __GNUC__
+#		pragma GCC diagnostic push
+#		pragma GCC diagnostic ignored "-Wold-style-cast"
+#		if defined(__llvm__) || defined(__clang__)
+#			if __clang_major__ >= 16
+#				pragma GCC diagnostic ignored "-Wzero-length-array"
+#			endif
+#		endif
+#	endif    // __GNUC__
 #	include <alsa/asoundlib.h>
+#	ifdef __GNUC__
+#		pragma GCC diagnostic pop
+#	endif    // __GNUC__
 
 #	include <string>
 
