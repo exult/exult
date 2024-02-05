@@ -3,13 +3,60 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: CI-MSVC
+name: ci-msvc
 
 on:
   push:
-    branches: [ "master" ]
+    paths:
+      - "**"
+      - "!android/**"
+      - "!docs/**"
+      - "!**Makefile**"
+      - "!ios/**"
+      - "!macosx/**"
+      - "!AUTHORS"
+      - "!ChangeLog"
+      - "!COPYING"
+      - "!FAQ"
+      - "!INSTALL"
+      - "!NEWS"
+      - "!**README**"
+      - "!**.ico"
+      - "!**.md"
+      - "!**.png"
+      - "!**.txt"
+      - "!.clang*"
+      - "!.gitignore"
+      - "!.gitattributes"
+      - "!.github/workflows/*"
+      - ".github/workflows/ci-msvc.yml"
   pull_request:
-    branches: [ "master" ]
+    paths:
+      - "**"
+      - "!android/**"
+      - "!docs/**"
+      - "!docs/Makefile.am"
+      - "!ios/**"
+      - "!macosx/**"
+      - "!AUTHORS"
+      - "!ChangeLog"
+      - "!COPYING"
+      - "!FAQ"
+      - "!INSTALL"
+      - "!NEWS"
+      - "!**README**"
+      - "!**.ico"
+      - "!**.md"
+      - "!**.png"
+      - "!**.txt"
+      - "!.clang*"
+      - "!.gitignore"
+      - "!.gitattributes"
+      - "!.github/workflows/*"
+      - ".github/workflows/ci-msvc.yml"
+  schedule: # include aschedule so any errors get emailed to me
+    - cron: "0 23 * * *" # Daily at 23:00 UTC
+  workflow_dispatch:
 
 env:
   # Path to the solution file relative to the root of the project.
@@ -20,12 +67,18 @@ env:
   # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
   BUILD_CONFIGURATION: Release
 
+  #platform
+  BUILD_PLATFORM: x64
+
+  BUILD_PROJECTS: Exult
+
 permissions:
   contents: read
 
 jobs:
   build:
     runs-on: windows-latest
+    if: ${{ github.repository_owner == 'exult' || github.repository_owner == 'wench' }}
 
     steps:
     - uses: actions/checkout@v3
@@ -39,6 +92,4 @@ jobs:
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      # Add additional options to the MSBuild command line here (like platform or verbosity level).
-      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}} /t:${{env.BUILD_PROJECTS}}
