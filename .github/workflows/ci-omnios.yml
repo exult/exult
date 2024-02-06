@@ -1,4 +1,4 @@
-name: ci-freebsd
+name: ci-omnios
 
 on:
   push:
@@ -26,7 +26,7 @@ on:
       - "!.gitignore"
       - "!.gitattributes"
       - "!.github/workflows/*"
-      - ".github/workflows/ci-freebsd.yml"
+      - ".github/workflows/ci-omnios.yml"
   pull_request:
     paths:
       - "**"
@@ -52,81 +52,91 @@ on:
       - "!.gitignore"
       - "!.gitattributes"
       - "!.github/workflows/*"
-      - ".github/workflows/ci-freebsd.yml"
+      - ".github/workflows/ci-omnios.yml"
 
 jobs:
   notify:
     name: Exult-CI (IRC & Discord notification)
     runs-on: ubuntu-latest
     needs:
-      - ci-freebsd
+      - ci-omnios
     if: ${{ always() && (github.repository_owner == 'exult' && github.event_name != 'pull_request') }}
     steps:
       - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
-        if: needs.ci-freebsd.result == 'success'
+        if: needs.ci-omnios.result == 'success'
         with:
           server: irc.libera.chat
           port: 6697
           channel: "#exult"
           nickname: github-actions
           tls: true
-          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The FreeBSD build \x033succeeded\x03."
+          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The OmniOS build \x033succeeded\x03."
       - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
-        if: needs.ci-freebsd.result != 'success'
+        if: needs.ci-omnios.result != 'success'
         with:
           server: irc.libera.chat
           port: 6697
           channel: "#exult"
           nickname: github-actions
           tls: true
-          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The FreeBSD build \x034failed\x03."
+          message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The OmniOS build \x034failed\x03."
       - name: Discord success notification
         uses: BubbleProd/discord-webhook-notify@v2.0.1
-        if: needs.ci-freebsd.result == 'success'
+        if: needs.ci-omnios.result == 'success'
         with:
           severity: info
           username: github-actions
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
           text: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          title: "The FreeBSD build succeeded."
+          title: "The OmniOS build succeeded."
       - name: Discord failure notification
         uses: BubbleProd/discord-webhook-notify@v2.0.1
-        if: needs.ci-freebsd.result != 'success'
+        if: needs.ci-omnios.result != 'success'
         with:
           severity: error
           username: github-actions
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
           text: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          title: "The FreeBSD build failed."
-  ci-freebsd:
+          title: "The OmniOS build failed."
+  ci-omnios:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Build Exult in FreeBSD
-      id: ci-freebsd
-      uses: vmactions/freebsd-vm@v1
+    - name: Build Exult in OmniOS
+      id: ci-omnios
+      uses: vmactions/omnios-vm@v1
       with:
         usesh: true
         sync: rsync
         copyback: false
         prepare: |
           pkg update
-          pkg upgrade
-          pkg install -y at-spi2-core
-          pkg install -y alsa-lib fluidsynth libogg libvorbis
-          pkg install -y autoconf autoconf-archive automake bison flex gettext-runtime \
-                         git glib gmake icu json-glib libtool pkgconf sdl2
-          pkg install -y cairo gdk-pixbuf2 gegl gimp-app png
-          pkg install -y freetype2 harfbuzz
-          pkg install -y fontconfig
-          pkg install -y gtk2 gtk3 pango
-          pkg install -y babl libX11 libXext
+          pkg install gcc13
+          pkg install llvm-17
+          curl -ORL https://pkgsrc.SmartOS.org/packages/SmartOS/bootstrap/bootstrap-2023Q4-x86_64.tar.gz
+          tar -zxpf bootstrap-2023Q4-x86_64.tar.gz -C /
+          export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+          export MANPATH=/opt/local/man:$MANPATH
+          pkgin update
+          pkgin upgrade
+          pkgin -y install at-spi2-core xorgproto
+          pkgin -y install alsa-lib fluidsynth libogg libvorbis
+          pkgin -y install autoconf autoconf-archive automake bison flex gettext \
+                           git glib2 gmake icu json-glib libtool pkgconf SDL2
+          pkgin -y install cairo gdk-pixbuf2 gegl gimp png
+          pkgin -y install freetype2 harfbuzz
+          pkgin -y install fontconfig
+          pkgin -y install gtk2+ gtk3+ pango
+          pkgin -y install babl libX11 libXext
         run: |
+          export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+          export MANPATH=/opt/local/man:$MANPATH
+          export PKG_CONFIG_PATH=/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:/opt/ooce/lib/amd64/pkgconfig:$PKG_CONFIG_PATH
           autoreconf -v -i
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \
             --enable-zip-support --enable-shared --enable-midi-sfx --enable-gnome-shp-thumbnailer --enable-data --enable-mods \
             --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects \
-            CXX=clang++ CC=clang
+            CXX=g++ CC=gcc
           make -j 2
