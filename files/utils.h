@@ -54,36 +54,36 @@ inline uint8 Read1(std::istream* in) {
 	return static_cast<uint8>(in->get());
 }
 
-inline uint8 Read1(const uint8*& in) {
-	return *in++;
-}
-
-inline uint8 Read1(uint8*& in) {
-	return *in++;
-}
-
-inline uint8 Read1(const sint8*& in) {
+inline uint8 Read1(const unsigned char*& in) {
 	return static_cast<uint8>(*in++);
 }
 
-inline uint8 Read1(sint8*& in) {
+inline uint8 Read1(unsigned char*& in) {
 	return static_cast<uint8>(*in++);
 }
 
-inline sint8 Read1s(const uint8*& in) {
+inline uint8 Read1(const signed char*& in) {
+	return static_cast<uint8>(*in++);
+}
+
+inline uint8 Read1(signed char*& in) {
+	return static_cast<uint8>(*in++);
+}
+
+inline sint8 Read1s(const unsigned char*& in) {
 	return static_cast<sint8>(*in++);
 }
 
-inline sint8 Read1s(uint8*& in) {
+inline sint8 Read1s(unsigned char*& in) {
 	return static_cast<sint8>(*in++);
 }
 
-inline sint8 Read1s(const sint8*& in) {
-	return *in++;
+inline sint8 Read1s(const signed char*& in) {
+	return static_cast<sint8>(*in++);
 }
 
-inline sint8 Read1s(sint8*& in) {
-	return *in++;
+inline sint8 Read1s(signed char*& in) {
+	return static_cast<sint8>(*in++);
 }
 
 inline uint8 Read1(const char*& in) {
@@ -289,16 +289,16 @@ inline void Write1(std::ostream* out, uint8 val) {
 	out->put(static_cast<char>(val));
 }
 
-inline void Write1(uint8*& out, uint8 val) {
-	*out++ = val;
+inline void Write1(unsigned char*& out, uint8 val) {
+	*out++ = static_cast<unsigned char>(val);
 }
 
-inline void Write1(sint8*& out, uint8 val) {
-	*out++ = static_cast<sint8>(val);
+inline void Write1(signed char*& out, uint8 val) {
+	*out++ = static_cast<signed char>(val);
 }
 
 inline void Write1(char*& out, uint8 val) {
-	*out++ = static_cast<sint8>(val);
+	*out++ = static_cast<char>(val);
 }
 
 /*

@@ -26,7 +26,7 @@ constexpr static const std::array compiler_table{
 char     token[TOKEN_LENGTH], *token2, curlabel[256], indata;
 int      pass, offset;
 unsigned byteval, word, funcnum, datasize, codesize;
-int      extended;
+int      is_extended;
 
 char     labels[MAX_LABELS][10];
 int      offsets[MAX_LABELS];
@@ -218,7 +218,7 @@ int main(int argc, char* argv[]) {
 				indata = 0;
 				offset = 0;
 			} else if (!strcmp(token, ".data")) {
-				if (extended == 0) {
+				if (is_extended == 0) {
 					emit_word(funcnum);
 					emit_word(0);
 					emit_word(0);
@@ -239,9 +239,9 @@ int main(int argc, char* argv[]) {
 				sscanf(token, "%x", &funcnum);
 				printf("Function %04X\n", funcnum);
 				// codesize=2;
-				extended = 0;
+				is_extended = 0;
 			} else if (!strcmp(token, ".ext32")) {
-				extended = 1;
+				is_extended = 1;
 			} else if (!strcmp(token, ".msize") || !strcmp(token, ".dsize")) {
 				// Ignore either of these.
 			} else if (token[0] == '.') {
@@ -527,7 +527,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		if (extended == 0) {
+		if (is_extended == 0) {
 			fseek(fo, 2, SEEK_SET);
 			indata = 0;
 			i      = codesize;

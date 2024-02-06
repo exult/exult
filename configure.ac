@@ -99,7 +99,7 @@ case "$host_os" in
 		WINDOWING_SYSTEM="-DXWIN"
 		AC_MSG_RESULT([X11 (Solaris)])
 		CXXFLAGS="$CXXFLAGS -pthread"
-		SYSLIBS="-lsocket -lX11"
+		SYSLIBS="-lsocket"
 		;;
 	darwin*)
 		# MacOS as Darwin, supported.
