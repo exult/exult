@@ -266,9 +266,9 @@ void Shape_draw::drag_data_received(
 		&& (gtk_selection_data_get_data_type(seldata)
 					== gdk_atom_intern(U7_TARGET_SHAPEID_NAME, 0)
 			|| gtk_selection_data_get_data_type(seldata)
-					   == gdk_atom_intern(U7_TARGET_DROPFILE_NAME_MIME, 0)
+					   == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MIME, 0)
 			|| gtk_selection_data_get_data_type(seldata)
-					   == gdk_atom_intern(U7_TARGET_DROPFILE_NAME_MACOSX, 0))
+					   == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MACOSX, 0))
 		&& Is_u7_shapeid(gtk_selection_data_get_data(seldata))
 		&& gtk_selection_data_get_format(seldata) == 8
 		&& gtk_selection_data_get_length(seldata) > 0) {
@@ -294,8 +294,8 @@ gulong Shape_draw::enable_drop(
 	drop_user_data = udata;
 	GtkTargetEntry tents[3];
 	tents[0].target = const_cast<char*>(U7_TARGET_SHAPEID_NAME);
-	tents[1].target = const_cast<char*>(U7_TARGET_DROPFILE_NAME_MIME);
-	tents[2].target = const_cast<char*>(U7_TARGET_DROPFILE_NAME_MACOSX);
+	tents[1].target = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MIME);
+	tents[2].target = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MACOSX);
 	tents[0].flags  = 0;
 	tents[1].flags  = 0;
 	tents[2].flags  = 0;
@@ -365,8 +365,8 @@ void Shape_draw::start_drag(
 	dragging = true;
 	GtkTargetEntry tents[3];    // Set up for dragging.
 	tents[0].target      = const_cast<char*>(target);
-	tents[1].target      = const_cast<char*>(U7_TARGET_DROPFILE_NAME_MIME);
-	tents[2].target      = const_cast<char*>(U7_TARGET_DROPFILE_NAME_MACOSX);
+	tents[1].target      = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MIME);
+	tents[2].target      = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MACOSX);
 	tents[0].flags       = 0;
 	tents[1].flags       = 0;
 	tents[2].flags       = 0;
