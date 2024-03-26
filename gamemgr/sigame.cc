@@ -1424,52 +1424,72 @@ bool SI_Game::new_game(Vga_file& shapes) {
 	const int menuy = topy + 110;
 	Font*     font  = fontManager.get_font("MENU_FONT");
 
+	const bool si_installed = true;
+	// List of files to load.
+	std::vector<std::pair<std::string, int>> source{
+			{  FACES_VGA, -1},
+			{PATCH_FACES, -1},
+	};
+
 	Vga_file faces_vga;
-	faces_vga.load(FACES_VGA, PATCH_FACES);
+	faces_vga.load(source);
 
-	const int max_len = 16;
-	char      npc_name[max_len + 1];
-	char      disp_name[max_len + 2];
-	npc_name[0] = 0;
+	const int   max_name_len = 16;
+	std::string npc_name;
 
-	int       selected    = 0;
-	const int num_choices = 4;
-	bool      editing     = true;
-	bool      redraw      = true;
-	bool      ok          = true;
+	size_t selected = 0;
+	bool   clicked  = false;
+	bool   editing  = true;
+	bool   redraw   = true;
+	bool   ok       = true;
 
 	// Skin info
 	Avatar_default_skin* defskin  = Shapeinfo_lookup::GetDefaultAvSkin();
 	Skin_data*           skindata = Shapeinfo_lookup::GetSkinInfoSafe(
-            defskin->default_skin, defskin->default_female, true);
+            defskin->default_skin, defskin->default_female, si_installed);
+	const unsigned char* transto = nullptr;
+
+	const int sexshape       = 0x19;
+	const int portrait_off_x = 300;
+	const int portrait_off_y = 50;
+
+	const std::vector<TileRect> ui_elements{
+			{   topx + 10, menuy + 10, 130, 16},
+			{   topx + 10, menuy + 25, 130, 16},
+			{   topx + 10, topy + 180, 130, 16},
+			{centerx + 10, topy + 180, 130, 16},
+	};
+
 	do {
 		Delay();
 		if (redraw) {
 			gwin->clear_screen();
-			sman->paint_shape(topx, topy, shapes.get_shape(0x2, 0));
 			sman->paint_shape(
-					topx + 10, menuy + 10,
-					shapes.get_shape(0xC, selected == 0));
+					topx, topy, shapes.get_shape(0x2, 0), false, transto);
 			sman->paint_shape(
-					topx + 10, menuy + 25,
-					shapes.get_shape(0x19, selected == 1));
+					topx + 10, menuy + 10, shapes.get_shape(0xC, selected == 0),
+					false, transto);
+
+			Shape_frame* sex_shape = shapes.get_shape(sexshape, selected == 1);
+			sman->paint_shape(topx + 10, menuy + 25, sex_shape, false, transto);
 
 			Shape_frame* portrait = faces_vga.get_shape(
 					skindata->face_shape, skindata->face_frame);
-			sman->paint_shape(topx + 300, menuy + 50, portrait);
+			sman->paint_shape(
+					topx + portrait_off_x, menuy + portrait_off_y, portrait);
 
 			sman->paint_shape(
-					topx + 10, topy + 180,
-					shapes.get_shape(0x8, selected == 2));
+					topx + 10, topy + 180, shapes.get_shape(0x8, selected == 2),
+					false, transto);
 			sman->paint_shape(
 					centerx + 10, topy + 180,
-					shapes.get_shape(0x7, selected == 3));
+					shapes.get_shape(0x7, selected == 3), false, transto);
+			std::string disp_name = npc_name;
 			if (selected == 0) {
-				snprintf(disp_name, max_len + 2, "%s_", npc_name);
-			} else {
-				snprintf(disp_name, max_len + 2, "%s", npc_name);
+				disp_name += '_';
 			}
-			font->draw_text(ibuf, topx + 60, menuy + 10, disp_name);
+			font->draw_text(
+					ibuf, topx + 60, menuy + 10, disp_name.c_str(), transto);
 			gwin->get_win()->show();
 			redraw = false;
 		}
@@ -1479,53 +1499,55 @@ bool SI_Game::new_game(Vga_file& shapes) {
 			bool   isTextInput    = false;
 			if (event.type == SDL_MOUSEBUTTONDOWN
 				|| event.type == SDL_MOUSEBUTTONUP) {
-				const SDL_Rect rectName   = {topx + 10, menuy + 10, 130, 16};
-				const SDL_Rect rectSex    = {topx + 10, menuy + 25, 130, 16};
-				const SDL_Rect rectOnward = {topx + 10, topy + 180, 130, 16};
-				const SDL_Rect rectReturn = {centerx + 10, topy + 180, 130, 16};
-				SDL_Point      point;
+				SDL_Point point;
 				gwin->get_win()->screen_to_game(
 						event.button.x, event.button.y, gwin->get_fastmouse(),
 						point.x, point.y);
-				if (SDL_EnclosePoints(&point, 1, &rectName, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
-						selected = 0;
-					} else if (selected == 0 && touchui != nullptr) {
-						touchui->promptForName(npc_name);
+				clicked = false;
+				for (size_t ii = 0; ii < ui_elements.size(); ii++) {
+					const TileRect& rc = ui_elements[ii];
+					if (rc.has_point(point.x, point.y)) {
+						if (event.type == SDL_MOUSEBUTTONDOWN) {
+							selected = ii;
+						} else if (selected == ii) {
+							clicked = true;
+						}
+						redraw = true;
+						break;
 					}
-					redraw = true;
-				} else if (SDL_EnclosePoints(&point, 1, &rectSex, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
-						selected = 1;
-					} else if (selected == 1) {
+				}
+				if (clicked) {
+					switch (selected) {
+					case 0:
+						if (touchui != nullptr) {
+							char name[max_name_len + 1]{};
+							touchui->promptForName(name);
+							npc_name = name;
+						}
+						break;
+					case 1:
 						skindata = Shapeinfo_lookup::GetNextSelSkin(
-								skindata, true, true);
-					}
-					redraw = true;
-				} else if (SDL_EnclosePoints(&point, 1, &rectOnward, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
-						selected = 2;
-					} else if (selected == 2) {
+								skindata, si_installed, true);
+						break;
+					case 2:
 						editing = false;
 						ok      = true;
-					}
-					redraw = true;
-				} else if (SDL_EnclosePoints(&point, 1, &rectReturn, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
-						selected = 3;
-					} else if (selected == 3) {
+						break;
+					case 3:
 						editing = false;
 						ok      = false;
+						break;
 					}
-					redraw = true;
 				}
 			} else if (event.type == TouchUI::eventType) {
 				if (event.user.code == TouchUI::EVENT_CODE_TEXT_INPUT) {
 					if (selected == 0 && event.user.data1 != nullptr) {
-						strncpy(npc_name, static_cast<char*>(event.user.data1),
-								max_len);
-						npc_name[max_len] = '\0';
-						free(event.user.data1);
+						std::unique_ptr<const char[]> data(
+								static_cast<const char*>(event.user.data1));
+						npc_name = data.get();
+						if (npc_name.size() > max_name_len) {
+							npc_name.resize(max_name_len);
+						}
 						redraw = true;
 					}
 				}
@@ -1540,14 +1562,12 @@ bool SI_Game::new_game(Vga_file& shapes) {
 				switch (event.key.keysym.sym) {
 				case SDLK_SPACE:
 					if (selected == 0) {
-						const int len = strlen(npc_name);
-						if (len < max_len) {
-							npc_name[len]     = ' ';
-							npc_name[len + 1] = 0;
+						if (npc_name.size() < max_name_len) {
+							npc_name.push_back(' ');
 						}
 					} else if (selected == 1) {
 						skindata = Shapeinfo_lookup::GetNextSelSkin(
-								skindata, true, true);
+								skindata, si_installed, true);
 					} else if (selected == 2) {
 						editing = false;
 						ok      = true;
@@ -1558,13 +1578,13 @@ bool SI_Game::new_game(Vga_file& shapes) {
 				case SDLK_LEFT:
 					if (selected == 1) {
 						skindata = Shapeinfo_lookup::GetPrevSelSkin(
-								skindata, true, true);
+								skindata, si_installed, true);
 					}
 					break;
 				case SDLK_RIGHT:
 					if (selected == 1) {
 						skindata = Shapeinfo_lookup::GetNextSelSkin(
-								skindata, true, true);
+								skindata, si_installed, true);
 					}
 					break;
 				case SDLK_ESCAPE:
@@ -1574,14 +1594,15 @@ bool SI_Game::new_game(Vga_file& shapes) {
 				case SDLK_TAB:
 				case SDLK_DOWN:
 					++selected;
-					if (selected == num_choices) {
+					if (selected == ui_elements.size()) {
 						selected = 0;
 					}
 					break;
 				case SDLK_UP:
-					--selected;
-					if (selected < 0) {
-						selected = num_choices - 1;
+					if (selected == 0) {
+						selected = ui_elements.size() - 1;
+					} else {
+						--selected;
 					}
 					break;
 				case SDLK_RETURN:
@@ -1596,23 +1617,21 @@ bool SI_Game::new_game(Vga_file& shapes) {
 					}
 					break;
 				case SDLK_BACKSPACE:
-					if (selected == 0 && strlen(npc_name) > 0) {
-						npc_name[strlen(npc_name) - 1] = 0;
+					if (selected == 0 && !npc_name.empty()) {
+						npc_name.pop_back();
 					}
 					break;
 				default: {
 					if ((isTextInput && selected == 0)
 						|| (!isTextInput && keysym_unicode > +'~'
 							&& selected == 0)) {
-						const int len = strlen(npc_name);
-						char      chr = 0;
+						char chr = 0;
 						if ((keysym_unicode & 0xFF80) == 0) {
 							chr = keysym_unicode & 0x7F;
 						}
 
-						if (chr >= ' ' && len < max_len) {
-							npc_name[len]     = chr;
-							npc_name[len + 1] = 0;
+						if (chr >= ' ' && npc_name.size() < max_name_len) {
+							npc_name.push_back(chr);
 						}
 					} else {
 						redraw = false;
@@ -1621,7 +1640,9 @@ bool SI_Game::new_game(Vga_file& shapes) {
 				}
 			}
 		}
-	} while (editing);
+	}
+
+	while (editing);
 
 	gwin->clear_screen();
 
@@ -1631,7 +1652,7 @@ bool SI_Game::new_game(Vga_file& shapes) {
 				  << " Sex is: " << skindata->is_female << std::endl;
 #endif
 		set_avskin(skindata->skin_id);
-		set_avname(npc_name);
+		set_avname(npc_name.c_str());
 		set_avsex(skindata->is_female);
 		pal->fade_out(c_fade_out_time);
 		gwin->clear_screen(true);

@@ -1026,11 +1026,12 @@ int fgepow2(uint32 n) {
 }
 
 /*
- *  Replacement for non-standard strdup function.
+ *  Replacement for strdup function which uses new[] instead of malloc.
+ *  Returns a pointer that needs to be deallocated with delete[].
  */
 
 char* newstrdup(const char* s) {
-	if (!s) {
+	if (s == nullptr) {
 		throw std::invalid_argument("nullptr pointer passed to newstrdup");
 	}
 	char* ret = new char[std::strlen(s) + 1];

@@ -134,7 +134,7 @@ public:
 	// Paint shape in window.
 	void paint_shape(
 			int xoff, int yoff, Shape_frame* shape, bool translucent = false,
-			unsigned char* trans = nullptr) {
+			const unsigned char* trans = nullptr) {
 		if (!shape || !shape->get_data()) {
 			CERR("nullptr SHAPE!!!");
 		} else if (!shape->is_rle()) {

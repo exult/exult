@@ -78,7 +78,7 @@ public:
 			Cursor_info* cursor = nullptr);
 	int paint_text(
 			Image_buffer8* win, const char* text, int xoff, int yoff,
-			unsigned char* trans = nullptr);
+			const unsigned char* trans = nullptr);
 	int paint_text(
 			Image_buffer8* win, const char* text, int textlen, int xoff,
 			int yoff);
@@ -104,7 +104,7 @@ public:
 
 	int draw_text(
 			Image_buffer8* win, int x, int y, const char* s,
-			unsigned char* trans = nullptr) {
+			const unsigned char* trans = nullptr) {
 		return paint_text(win, s, x, y, trans);
 	}
 

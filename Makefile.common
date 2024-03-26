@@ -19,6 +19,7 @@ MAIN_OBJS:=actions.o \
 	gamemap.o \
 	gamerend.o \
 	gamewin.o \
+	eventman.o	\
 	istring.o \
 	keys.o \
 	keyactions.o \

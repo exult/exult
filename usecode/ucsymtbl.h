@@ -29,6 +29,9 @@
 #include <vector>
 
 #ifdef __clang__
+// Working around this clang bug with pragma push/pop:
+// https://github.com/clangd/clangd/issues/1167
+static_assert(true);
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wunused-const-variable"
 #endif

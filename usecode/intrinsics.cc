@@ -35,6 +35,7 @@
 #include "conversation.h"
 #include "effects.h"
 #include "egg.h"
+#include "eventman.h"
 #include "exult.h"
 #include "frflags.h"
 #include "game.h"
@@ -2445,19 +2446,8 @@ USECODE_INTRINSIC(start_blocking_speech) {
 			Delay();                 // Wait a fraction of a second.
 			Mouse::mouse->hide();    // Turn off mouse.
 			Mouse::mouse_update = false;
-			SDL_Event event;
-			while (SDL_PollEvent(&event)) {
-				if (event.type == SDL_MOUSEMOTION) {
-					// Mouse scale factor
-					int mx;
-					int my;
-					gwin->get_win()->screen_to_game(
-							event.motion.x, event.motion.y,
-							gwin->get_fastmouse(), mx, my);
-					Mouse::mouse->move(mx, my);
-					Mouse::mouse_update = true;
-				}
-			}
+			EventManager* eman  = EventManager::getInstance();
+			eman->handle_events();
 			// Get current time, & animate.
 			const uint32 ticks = SDL_GetTicks();
 			Game::set_ticks(ticks);

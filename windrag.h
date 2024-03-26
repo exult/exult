@@ -4,6 +4,11 @@
 #if defined(_WIN32) && defined(USE_EXULTSTUDIO)
 
 #	ifdef __GNUC__
+#		ifdef __clang__
+// Working around this clang bug with pragma push/pop:
+// https://github.com/clangd/clangd/issues/1167
+static_assert(true);
+#		endif
 // COM sucks.
 #		pragma GCC diagnostic push
 #		pragma GCC diagnostic ignored "-Wnon-virtual-dtor"

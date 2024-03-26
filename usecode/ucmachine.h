@@ -78,8 +78,8 @@ public:
 		avatar_is_thief       = 0x2eb
 	};
 
-	int get_global_flag(int i) {    // Get/set ith flag.
-		return gflags[i];
+	bool get_global_flag(int i) {    // Get/set ith flag.
+		return gflags[i] != 0u;
 	}
 
 	void set_global_flag(int i, int val = 1) {

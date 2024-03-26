@@ -19,6 +19,8 @@
 #ifndef GUMP_UTILS_H
 #define GUMP_UTILS_H
 
+#include "eventman.h"
+
 #include <unistd.h>
 
 #ifdef __GNUC__
@@ -39,12 +41,10 @@
 #define DELAY_SINGLE_MS 1
 
 inline void Delay() {
-	const Uint32 expiration = DELAY_TOTAL_MS + SDL_GetTicks();
+	const Uint32  expiration = DELAY_TOTAL_MS + SDL_GetTicks();
+	EventManager* eman       = EventManager::getInstance();
 	for (;;) {
-		SDL_PumpEvents();
-		if ((SDL_PeepEvents(
-					 nullptr, 0, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)
-			 != 0)
+		if (eman->any_events_pending()
 			|| (static_cast<Sint32>(SDL_GetTicks())
 				>= static_cast<Sint32>(expiration))) {
 			return;

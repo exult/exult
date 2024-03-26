@@ -77,6 +77,11 @@
 #include <cstdlib>
 
 #ifdef __GNUC__
+#	ifdef __clang__
+// Working around this clang bug with pragma push/pop:
+// https://github.com/clangd/clangd/issues/1167
+static_assert(true);
+#	endif
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
@@ -205,17 +210,17 @@ static bool Get_click(
 		int& x, int& y, char* chr, bool drag_ok, bool rotate_colors = false);
 static void set_scaleval(int new_scaleval);
 #ifdef USE_EXULTSTUDIO
-static void Move_dragged_shape(
+void Move_dragged_shape(
 		int shape, int frame, int x, int y, int prevx, int prevy, bool show);
 #	ifdef _WIN32
-static void Move_dragged_combo(
+void Move_dragged_combo(
 		int xtiles, int ytiles, int tiles_right, int tiles_below, int x, int y,
 		int prevx, int prevy, bool show);
 #	endif
-static void Drop_dragged_shape(int shape, int frame, int x, int y);
-static void Drop_dragged_chunk(int chunknum, int x, int y);
-static void Drop_dragged_npc(int npcnum, int x, int y);
-static void Drop_dragged_combo(int cnt, U7_combo_data* combo, int x, int y);
+void Drop_dragged_shape(int shape, int frame, int x, int y);
+void Drop_dragged_chunk(int chunknum, int x, int y);
+void Drop_dragged_npc(int npcnum, int x, int y);
+void Drop_dragged_combo(int cnt, U7_combo_data* combo, int x, int y);
 #endif
 static void BuildGameMap(BaseGameInfo* game, int mapnum);
 static void Handle_events();
@@ -1906,7 +1911,7 @@ static void Handle_event(SDL_Event& event) {
 		if (event.type == ShortcutBar_gump::eventType) {
 			if (!dragged) {
 				if (g_shortcutBar) {    // just in case
-					g_shortcutBar->handleMouseUp(event);
+					g_shortcutBar->handleMouseUp(event.user);
 				}
 			}
 			dragging = dragged = false;
@@ -2795,7 +2800,7 @@ static void Move_grid(
  *  ALSO, this is called with shape==-1 to just force a repaint.
  */
 
-static void Move_dragged_shape(
+void Move_dragged_shape(
 		int shape, int frame,    // What to create, OR -1 to just
 		//   repaint window.
 		int x, int y,            // Mouse coords. within window.
@@ -2826,7 +2831,7 @@ static void Move_dragged_shape(
  *  Show where a shape dragged from a shape-chooser will go.
  */
 
-static void Move_dragged_combo(
+void Move_dragged_combo(
 		int xtiles, int ytiles,           // Dimensions in tiles.
 		int tiles_right,                  // Tiles right of & below hot-spot.
 		int tiles_below, int x, int y,    // Mouse coords. within window.
@@ -2868,7 +2873,7 @@ static Game_object_shared Create_object(
  *  Drop a shape dragged from a shape-chooser via drag-and-drop.
  */
 
-static void Drop_dragged_shape(
+void Drop_dragged_shape(
 		int shape, int frame,    // What to create.
 		int x, int y             // Mouse coords. within window.
 ) {
@@ -2913,7 +2918,7 @@ static void Drop_dragged_shape(
  *  Drop a chunk dragged from a chunk-chooser via drag-and-drop.
  */
 
-static void Drop_dragged_chunk(
+void Drop_dragged_chunk(
 		int chunknum,    // Index in 'u7chunks'.
 		int x, int y     // Mouse coords. within window.
 ) {
@@ -2936,7 +2941,7 @@ static void Drop_dragged_chunk(
  *  Drop a npc dragged from a npc-chooser via drag-and-drop.
  */
 
-static void Drop_dragged_npc(
+void Drop_dragged_npc(
 		int npcnum, int x, int y    // Mouse coords. within window.
 ) {
 	if (!cheat.in_map_editor()) {    // Get into editing mode.

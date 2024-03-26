@@ -20,17 +20,9 @@
 #	include <config.h>
 #endif
 
-#ifdef __GNUC__
-#	pragma GCC diagnostic push
-#	pragma GCC diagnostic ignored "-Wold-style-cast"
-#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#endif    // __GNUC__
-#include <SDL.h>
-#ifdef __GNUC__
-#	pragma GCC diagnostic pop
-#endif    // __GNUC__
-
 #include "browser.h"
+
+#include "eventman.h"
 #include "exult.h"
 #include "files/U7file.h"
 #include "font.h"
@@ -82,6 +74,7 @@ void ShapeBrowser::browse_shapes() {
 	Shape_manager* sman = Shape_manager::get_instance();
 	Image_buffer8* ibuf = gwin->get_win()->get_ib8();
 	Font*          font = fontManager.get_font("MENU_FONT");
+	EventManager*  eman = EventManager::getInstance();
 
 	const int   maxx    = gwin->get_width();
 	const int   centerx = maxx / 2;
@@ -96,10 +89,85 @@ void ShapeBrowser::browse_shapes() {
 	if (!shapes) {
 		shapes = new Vga_file(fname);
 	}
-	bool      looping = true;
-	bool      redraw  = true;
-	SDL_Event event;
-	// int active;
+	bool looping = true;
+	bool redraw  = true;
+
+	auto guard = eman->register_callbacks([&](KeyboardEvent  type,
+											  const KeyCodes sym,
+											  const KeyMod   mod) {
+		if (type == KeyboardEvent::Pressed) {
+			redraw           = true;
+			const bool shift = (mod & KeyMod::Shift) != KeyMod::NoMods;
+			switch (sym) {
+			case KeyCodes::Key_Escape:
+				looping = false;
+				break;
+			case KeyCodes::Key_v:
+				handle_key(shift, current_file, num_files);
+				current_shape = 0;
+				current_frame = 0;
+				delete shapes;
+				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
+				fname  = game->get_resource(buf).str;
+				shapes = new Vga_file(fname);
+				break;
+			case KeyCodes::Key_p:
+				handle_key(shift, current_palette, num_palettes);
+				current_xform = -1;
+				break;
+			case KeyCodes::Key_x:
+				handle_key(shift, current_xform, num_xforms);
+				break;
+				// Shapes
+			case KeyCodes::Key_s: {
+				const bool alt  = (mod & KeyMod::Alt) != KeyMod::NoMods;
+				const bool ctrl = (mod & KeyMod::Ctrl) != KeyMod::NoMods;
+				if (alt && ctrl) {
+					make_screenshot(true);
+				} else {
+					handle_key(shift, current_shape, num_shapes);
+					current_frame = 0;
+				}
+				break;
+			}
+			case KeyCodes::Key_Up:
+				handle_key(true, current_shape, num_shapes);
+				current_frame = 0;
+				break;
+			case KeyCodes::Key_Down:
+				handle_key(false, current_shape, num_shapes);
+				current_frame = 0;
+				break;
+			case KeyCodes::Key_j:    // Jump by 20.
+				handle_key(shift, current_shape, num_shapes, 20);
+				current_frame = 0;
+				break;
+			case KeyCodes::Key_PageUp:
+				handle_key(true, current_shape, num_shapes, 20);
+				current_frame = 0;
+				break;
+			case KeyCodes::Key_PageDown:
+				handle_key(false, current_shape, num_shapes, 20);
+				current_frame = 0;
+				break;
+				// Frames
+			case KeyCodes::Key_f:
+				handle_key(shift, current_frame, num_frames);
+				break;
+			case KeyCodes::Key_Left:
+				handle_key(true, current_frame, num_frames);
+				break;
+			case KeyCodes::Key_Right:
+				handle_key(false, current_frame, num_frames);
+				break;
+			case KeyCodes::Key_k:
+				keybinder->ShowBrowserKeys();
+				break;
+			default:
+				break;
+			}
+		}
+	});
 
 	do {
 		if (redraw) {
@@ -201,79 +269,7 @@ void ShapeBrowser::browse_shapes() {
 			pal.apply();
 			redraw = false;
 		}
-		SDL_WaitEvent(&event);
-		if (event.type == SDL_KEYDOWN) {
-			redraw           = true;
-			const bool shift = event.key.keysym.mod & KMOD_SHIFT;
-			// int ctrl = event.key.keysym.mod & KMOD_CTRL;
-			switch (event.key.keysym.sym) {
-			case SDLK_ESCAPE:
-				looping = false;
-				break;
-			case SDLK_v:
-				handle_key(shift, current_file, num_files);
-				current_shape = 0;
-				current_frame = 0;
-				delete shapes;
-				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
-				fname  = game->get_resource(buf).str;
-				shapes = new Vga_file(fname);
-				break;
-			case SDLK_p:
-				handle_key(shift, current_palette, num_palettes);
-				current_xform = -1;
-				break;
-			case SDLK_x:
-				handle_key(shift, current_xform, num_xforms);
-				break;
-				// Shapes
-			case SDLK_s:
-				if ((event.key.keysym.mod & KMOD_ALT)
-					&& (event.key.keysym.mod & KMOD_CTRL)) {
-					make_screenshot(true);
-				} else {
-					handle_key(shift, current_shape, num_shapes);
-					current_frame = 0;
-				}
-				break;
-			case SDLK_UP:
-				handle_key(true, current_shape, num_shapes);
-				current_frame = 0;
-				break;
-			case SDLK_DOWN:
-				handle_key(false, current_shape, num_shapes);
-				current_frame = 0;
-				break;
-			case SDLK_j:    // Jump by 20.
-				handle_key(shift, current_shape, num_shapes, 20);
-				current_frame = 0;
-				break;
-			case SDLK_PAGEUP:
-				handle_key(true, current_shape, num_shapes, 20);
-				current_frame = 0;
-				break;
-			case SDLK_PAGEDOWN:
-				handle_key(false, current_shape, num_shapes, 20);
-				current_frame = 0;
-				break;
-				// Frames
-			case SDLK_f:
-				handle_key(shift, current_frame, num_frames);
-				break;
-			case SDLK_LEFT:
-				handle_key(true, current_frame, num_frames);
-				break;
-			case SDLK_RIGHT:
-				handle_key(false, current_frame, num_frames);
-				break;
-			case SDLK_k:
-				keybinder->ShowBrowserKeys();
-				break;
-			default:
-
-				break;
-			}
-		}
+		eman->handle_events();
 	} while (looping);
 }
 

@@ -27,6 +27,7 @@
 #include "actors.h"
 #include "cheat.h"
 #include "chunks.h"
+#include "eventman.h"
 #include "exult.h"
 #include "files/U7file.h"
 #include "font.h"
@@ -36,15 +37,12 @@
 #include "gamewin.h"
 #include "gump_utils.h"
 #include "ignore_unused_variable_warning.h"
-#include "imagewin.h"
 #include "miscinf.h"
 #include "party.h"
 #include "schedule.h"
 #include "touchui.h"
 #include "ucmachine.h"
 #include "vgafile.h"
-
-#include <cstring>
 
 const char* CheatScreen::schedules[33] = {
 		"Combat",    "Hor. Pace",  "Ver. Pace",  "Talk",  "Dance",     "Eat",
@@ -154,7 +152,7 @@ void CheatScreen::show_screen() {
 	centery = maxy / 2;
 	if (touchui != nullptr) {
 		touchui->hideGameControls();
-		SDL_StartTextInput();
+		EventManager::getInstance()->start_text_input();
 	}
 
 	// Pause the game
@@ -179,9 +177,7 @@ void CheatScreen::show_screen() {
 		if (!gumpman->gump_mode()) {
 			touchui->showGameControls();
 		}
-		if (SDL_IsTextInputActive()) {
-			SDL_StopTextInput();
-		}
+		EventManager::getInstance()->stop_text_input();
 	}
 }
 
@@ -193,7 +189,8 @@ void CheatScreen::show_screen() {
 // Shared
 //
 
-void CheatScreen::SharedPrompt(char* input, const Cheat_Prompt& mode) {
+void CheatScreen::SharedPrompt(
+		const std::string& input, const Cheat_Prompt& mode) {
 	char buf[512];
 
 #if defined(__IPHONEOS__) || defined(ANDROID)
@@ -207,17 +204,18 @@ void CheatScreen::SharedPrompt(char* input, const Cheat_Prompt& mode) {
 #endif
 	font->paint_text_fixedwidth(ibuf, "Select->", offsetx, prompt, 8);
 
-	if (input && std::strlen(input)) {
-		font->paint_text_fixedwidth(ibuf, input, 64 + offsetx, prompt, 8);
+	if (!input.empty()) {
+		int cursor_offset = static_cast<int>(input.size()) * 8;
 		font->paint_text_fixedwidth(
-				ibuf, "_", 64 + offsetx + std::strlen(input) * 8, prompt, 8);
+				ibuf, input.data(), 64 + offsetx, prompt, 8);
+		font->paint_text_fixedwidth(
+				ibuf, "_", 64 + offsetx + cursor_offset, prompt, 8);
 	} else {
 		font->paint_text_fixedwidth(ibuf, "_", 64 + offsetx, prompt, 8);
 	}
 
 	// ...and Prompt Message
 	switch (mode) {
-	default:
 	case CP_Command:
 		font->paint_text_fixedwidth(
 				ibuf, "Enter Command.", offsetx, promptmes, 8);
@@ -354,14 +352,12 @@ void CheatScreen::SharedPrompt(char* input, const Cheat_Prompt& mode) {
 				ibuf, "Enter Lift. (-1 to cancel)", offsetx, promptmes, 8);
 		break;
 
-	case CP_GFlagNum: {
-		char buf[50];
+	case CP_GFlagNum:
 		snprintf(
 				buf, sizeof(buf), "Enter Global Flag 0-%d. (-1 to cancel)",
 				c_last_gflag);
 		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8);
 		break;
-	}
 
 	case CP_NFlagNum:
 		font->paint_text_fixedwidth(
@@ -430,178 +426,111 @@ void CheatScreen::SharedPrompt(char* input, const Cheat_Prompt& mode) {
 	}
 }
 
-static int SDLScanCodeToInt(SDL_Keycode sym) {
-	switch (sym) {
-	case SDLK_KP_0:
-		return '0';
-	case SDLK_KP_1:
-		return '1';
-	case SDLK_KP_2:
-		return '2';
-	case SDLK_KP_3:
-		return '3';
-	case SDLK_KP_4:
-		return '4';
-	case SDLK_KP_5:
-		return '5';
-	case SDLK_KP_6:
-		return '6';
-	case SDLK_KP_7:
-		return '7';
-	case SDLK_KP_8:
-		return '8';
-	case SDLK_KP_9:
-		return '9';
-	default:
-		return -1;
-	}
-}
-
 bool CheatScreen::SharedInput(
-		char* input, int len, int& command, Cheat_Prompt& mode,
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode,
 		bool& activate) {
-	SDL_Event event;
+	EventManager* eman = EventManager::getInstance();
 
-	while (true) {
+	bool result  = false;
+	bool looping = true;
+
+	auto guard = eman->register_callbacks(
+			[&](MouseEvent type, MouseButton button, int numClicks,
+				const MousePosition& pos) {
+				ignore_unused_variable_warning(button, numClicks, pos);
+				if (type == MouseEvent::Pressed) {
+					eman->toggle_text_input();
+				}
+			},
+			[&](KeyboardEvent type, const KeyCodes sym, const KeyMod mod) {
+				if (type != KeyboardEvent::Pressed) {
+					return;
+				}
+				looping = false;
+				result  = false;
+				if ((sym == KeyCodes::Key_s)
+					&& (mod & KeyMod::Alt) != KeyMod::NoMods
+					&& (mod & KeyMod::Ctrl) != KeyMod::NoMods) {
+					make_screenshot(true);
+				} else if (mode == CP_NorthSouth) {
+					if (input.empty()
+						&& (sym == KeyCodes::Key_n || sym == KeyCodes::Key_s)) {
+						input.push_back(static_cast<char>(sym));
+						activate = true;
+					}
+				} else if (mode == CP_WestEast) {
+					if (input.empty()
+						&& (sym == KeyCodes::Key_w || sym == KeyCodes::Key_e)) {
+						input.push_back(static_cast<char>(sym));
+						activate = true;
+					}
+				} else if (mode >= CP_HexXCoord) {    // Want hex input
+					// Activate (if possible)
+					if (is_return(sym, mod)) {
+						activate = true;
+					} else if (is_minus(sym, mod) && input.empty()) {
+						input.push_back('-');
+					} else if (is_xdigit(sym, mod)) {
+						input.push_back(get_xdigit(sym, mod));
+					} else if (sym == KeyCodes::Key_Backspace) {
+						if (!input.empty()) {
+							input.pop_back();
+						}
+					}
+				} else if (mode >= CP_Name) {    // Want Text input (len chars)
+					if (is_return(sym, mod)) {
+						activate = true;
+					} else if (is_alnum(sym, mod)) {
+						char chr = get_alnum(sym, mod);
+						input.push_back(chr);
+					} else if (sym == KeyCodes::Key_Space) {
+						input.push_back(' ');
+					} else if (sym == KeyCodes::Key_Backspace) {
+						if (!input.empty()) {
+							input.pop_back();
+						}
+					}
+				} else if (mode >= CP_ChooseNPC) {    // Need to grab numerical
+													  // input
+					// Browse shape
+					if (mode == CP_Shape && input.empty()
+						&& sym == KeyCodes::Key_b
+						&& (mod & (KeyMod::Alt | KeyMod::Ctrl | KeyMod::GUI))
+								   == KeyMod::NoMods) {
+						cheat.shape_browser();
+						input.push_back('b');
+						activate = true;
+					}
+
+					// Activate (if possible)
+					if (is_return(sym, mod)) {
+						activate = true;
+					} else if (is_minus(sym, mod) && input.empty()) {
+						input.push_back('-');
+					} else if (is_digit(sym, mod)) {
+						input.push_back(get_digit(sym, mod));
+					} else if (sym == KeyCodes::Key_Backspace) {
+						if (!input.empty()) {
+							input.pop_back();
+						}
+					}
+				} else if (mode != CP_Command) {    // Just want a key pressed
+					mode = CP_Command;
+					input.clear();
+					command = KeyCodes::Key_Unknown;
+				} else {    // Need the key pressed
+					command = sym;
+					result  = true;
+				}
+			});
+
+	while (looping) {
 		Delay();
-		while (SDL_PollEvent(&event)) {
-			// Touch on the cheat screen will bring up the keyboard
-			if (event.type == SDL_MOUSEBUTTONDOWN) {
-				if (SDL_IsTextInputActive()) {
-					SDL_StopTextInput();
-				} else {
-					SDL_StartTextInput();
-				}
-			}
-
-			if (event.type != SDL_KEYDOWN) {
-				continue;
-			}
-			const SDL_Keysym& key = event.key.keysym;
-
-			if ((key.sym == SDLK_s) && (key.mod & KMOD_ALT)
-				&& (key.mod & KMOD_CTRL)) {
-				make_screenshot(true);
-				return false;
-			}
-
-			if (mode == CP_NorthSouth) {
-				if (!input[0] && (key.sym == 'n' || key.sym == 's')) {
-					input[0] = key.sym;
-					activate = true;
-				}
-			} else if (mode == CP_WestEast) {
-				if (!input[0] && (key.sym == 'w' || key.sym == 'e')) {
-					input[0] = key.sym;
-					activate = true;
-				}
-			} else if (mode >= CP_HexXCoord) {    // Want hex input
-				// Activate (if possible)
-				if (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER) {
-					activate = true;
-				} else if (
-						(key.sym == '-' || key.sym == SDLK_KP_MINUS)
-						&& !input[0]) {
-					input[0] = '-';
-				} else if (
-						key.sym < 256 && key.sym >= 0
-						&& std::isxdigit(key.sym)) {
-					const int curlen = std::strlen(input);
-					if (curlen < (len - 1)) {
-						input[curlen]     = std::tolower(key.sym);
-						input[curlen + 1] = 0;
-					}
-				} else if (
-						(key.sym >= SDLK_KP_1 && key.sym <= SDLK_KP_9)
-						|| key.sym == SDLK_KP_0) {
-					const int curlen = std::strlen(input);
-					if (curlen < (len - 1)) {
-						const int sym     = SDLScanCodeToInt(key.sym);
-						input[curlen]     = sym;
-						input[curlen + 1] = 0;
-					}
-				} else if (key.sym == SDLK_BACKSPACE) {
-					const int curlen = std::strlen(input);
-					if (curlen) {
-						input[curlen - 1] = 0;
-					}
-				}
-			} else if (mode >= CP_Name) {    // Want Text input (len chars)
-				if (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER) {
-					activate = true;
-				} else if (
-						(key.sym < 256 && key.sym >= 0 && std::isalnum(key.sym))
-						|| key.sym == ' ') {
-					const int curlen = std::strlen(input);
-					char      chr    = key.sym;
-					if (key.mod & KMOD_SHIFT) {
-						chr = static_cast<char>(
-								std::toupper(static_cast<unsigned char>(chr)));
-					}
-					if (curlen < (len - 1)) {
-						input[curlen]     = chr;
-						input[curlen + 1] = 0;
-					}
-				} else if (key.sym == SDLK_BACKSPACE) {
-					const int curlen = std::strlen(input);
-					if (curlen) {
-						input[curlen - 1] = 0;
-					}
-				}
-			} else if (mode >= CP_ChooseNPC) {    // Need to grab numerical
-												  // input
-				// Browse shape
-				if (mode == CP_Shape && !input[0] && key.sym == 'b') {
-					cheat.shape_browser();
-					input[0] = 'b';
-					activate = true;
-				}
-
-				// Activate (if possible)
-				if (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER) {
-					activate = true;
-				} else if (
-						(key.sym == '-' || key.sym == SDLK_KP_MINUS)
-						&& !input[0]) {
-					input[0] = '-';
-				} else if (
-						key.sym < 256 && key.sym >= 0
-						&& std::isdigit(key.sym)) {
-					const int curlen = std::strlen(input);
-					if (curlen < (len - 1)) {
-						input[curlen]     = key.sym;
-						input[curlen + 1] = 0;
-					}
-				} else if (
-						(key.sym >= SDLK_KP_1 && key.sym <= SDLK_KP_9)
-						|| key.sym == SDLK_KP_0) {
-					const int curlen = std::strlen(input);
-					if (curlen < (len - 1)) {
-						const int sym     = SDLScanCodeToInt(key.sym);
-						input[curlen]     = sym;
-						input[curlen + 1] = 0;
-					}
-				} else if (key.sym == SDLK_BACKSPACE) {
-					const int curlen = std::strlen(input);
-					if (curlen) {
-						input[curlen - 1] = 0;
-					}
-				}
-			} else if (mode) {    // Just want a key pressed
-				mode = CP_Command;
-				for (int i = 0; i < len; i++) {
-					input[i] = 0;
-				}
-				command = 0;
-			} else {    // Need the key pressed
-				command = key.sym;
-				return true;
-			}
-			return false;
-		}
+		looping = true;
+		eman->handle_events();
 		gwin->paint_dirty();
 	}
-	return false;
+	return result;
 }
 
 //
@@ -615,9 +544,9 @@ void CheatScreen::NormalLoop() {
 	Cheat_Prompt mode = CP_Command;
 
 	// This is the command
-	char input[5] = {0, 0, 0, 0, 0};
-	int  command;
-	bool activate = false;
+	std::string input;
+	KeyCodes    command;
+	bool        activate = false;
 
 	while (looping) {
 		gwin->clear_screen();
@@ -641,7 +570,7 @@ void CheatScreen::NormalLoop() {
 			continue;
 		}
 
-		if (SharedInput(input, 5, command, mode, activate)) {
+		if (SharedInput(input, command, mode, activate)) {
 			looping = NormalCheck(input, command, mode, activate);
 		}
 	}
@@ -799,70 +728,70 @@ void CheatScreen::NormalMenu() {
 }
 
 void CheatScreen::NormalActivate(
-		char* input, int& command, Cheat_Prompt& mode) {
-	const int      npc  = std::atoi(input);
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode) {
+	const int      npc  = std::atoi(input.data());
 	Shape_manager* sman = Shape_manager::get_instance();
 
 	mode = CP_Command;
 
 	switch (command) {
 		// God Mode
-	case 'g':
+	case KeyCodes::Key_g:
 		cheat.toggle_god();
 		break;
 
 		// Wizard Mode
-	case 'w':
+	case KeyCodes::Key_w:
 		cheat.toggle_wizard();
 		break;
 
 		// Infravision
-	case 'i':
+	case KeyCodes::Key_i:
 		cheat.toggle_infravision();
 		pal.apply();
 		break;
 
 		// Eggs
-	case 'e':
+	case KeyCodes::Key_e:
 		cheat.toggle_eggs();
 		break;
 
 		// Hack mover
-	case 'h':
+	case KeyCodes::Key_h:
 		cheat.toggle_hack_mover();
 		break;
 
 		// Set Time
-	case 's':
+	case KeyCodes::Key_s:
 		mode = TimeSetLoop();
 		break;
 
 		// - Time Rate
-	case '-':
+	case KeyCodes::Key_Minus:
 		if (clock->get_time_rate() > 0) {
 			clock->set_time_rate(clock->get_time_rate() - 1);
 		}
 		break;
 
 		// + Time Rate
-	case '+':
+	case KeyCodes::Key_Plus:
 		if (clock->get_time_rate() < 20) {
 			clock->set_time_rate(clock->get_time_rate() + 1);
 		}
 		break;
 
 		// Teleport
-	case 't':
+	case KeyCodes::Key_t:
 		TeleportLoop();
 		break;
 
 		// NPC Tool
-	case 'n':
+	case KeyCodes::Key_n:
 		if (npc < -1 || (npc >= 356 && npc <= 359)) {
 			mode = CP_InvalidNPC;
 		} else if (npc == -1) {
 			mode = CP_Canceled;
-		} else if (!input[0]) {
+		} else if (input.empty()) {
 			NPCLoop(-1);
 		} else {
 			mode = NPCLoop(npc);
@@ -870,12 +799,12 @@ void CheatScreen::NormalActivate(
 		break;
 
 		// Global Flag Editor
-	case 'f':
+	case KeyCodes::Key_f:
 		if (npc < -1) {
 			mode = CP_InvalidValue;
 		} else if (npc > c_last_gflag) {
 			mode = CP_InvalidValue;
-		} else if (npc == -1 || !input[0]) {
+		} else if (npc == -1 || input.empty()) {
 			mode = CP_Canceled;
 		} else {
 			mode = GlobalFlagLoop(npc);
@@ -883,7 +812,7 @@ void CheatScreen::NormalActivate(
 		break;
 
 		// Paperdolls
-	case 'p':
+	case KeyCodes::Key_p:
 		if ((Game::get_game_type() == BLACK_GATE
 			 || Game::get_game_type() == EXULT_DEVEL_GAME)
 			&& sman->can_use_paperdolls()) {
@@ -898,67 +827,66 @@ void CheatScreen::NormalActivate(
 		break;
 	}
 
-	input[0] = 0;
-	input[1] = 0;
-	input[2] = 0;
-	input[3] = 0;
-	command  = 0;
+	input.clear();
+	command = KeyCodes::Key_Unknown;
 }
 
 // Checks the input
 bool CheatScreen::NormalCheck(
-		char* input, int& command, Cheat_Prompt& mode, bool& activate) {
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+		bool& activate) {
 	switch (command) {
 		// Simple commands
-	case 't':    // Teleport
-	case 'g':    // God Mode
-	case 'w':    // Wizard
-	case 'i':    // iNfravision
-	case 's':    // Set Time
-	case 'e':    // Eggs
-	case 'h':    // Hack Mover
-	case 'c':    // Create Item
-	case 'p':    // Paperdolls
-		input[0] = command;
+	case KeyCodes::Key_t:    // Teleport
+	case KeyCodes::Key_g:    // God Mode
+	case KeyCodes::Key_w:    // Wizard
+	case KeyCodes::Key_i:    // iNfravision
+	case KeyCodes::Key_s:    // Set Time
+	case KeyCodes::Key_e:    // Eggs
+	case KeyCodes::Key_h:    // Hack Mover
+	case KeyCodes::Key_c:    // Create Item
+	case KeyCodes::Key_p:    // Paperdolls
+		input    = static_cast<char>(command);
 		activate = true;
 		break;
 
 		// - Time
-	case SDLK_KP_MINUS:
-	case '-':
-		command  = '-';
-		input[0] = command;
+	case KeyCodes::Key_KP_Minus:
+	case KeyCodes::Key_Minus:
+		command  = KeyCodes::Key_Minus;
+		input    = static_cast<char>(command);
 		activate = true;
 		break;
 
 		// + Time
-	case SDLK_KP_PLUS:
-	case '=':
-		command  = '+';
-		input[0] = command;
+	case KeyCodes::Key_KP_Plus:
+	case KeyCodes::Key_Equals:
+	case KeyCodes::Key_Plus:
+		command  = KeyCodes::Key_Plus;
+		input    = static_cast<char>(command);
 		activate = true;
 		break;
 
 		// NPC Tool
-	case 'n':
+	case KeyCodes::Key_n:
 		mode = CP_ChooseNPC;
 		break;
 
 		// Global Flag Editor
-	case 'f':
+	case KeyCodes::Key_f:
 		mode = CP_GFlagNum;
 		break;
 
 		// X and Escape leave
-	case SDLK_ESCAPE:
-	case 'x':
-		input[0] = command;
+	case KeyCodes::Key_Escape:
+	case KeyCodes::Key_x:
+		input = static_cast<char>(command);
 		return false;
 
 	default:
-		mode     = CP_InvalidCom;
-		input[0] = command;
-		command  = 0;
+		mode    = CP_InvalidCom;
+		input   = static_cast<char>(command);
+		command = KeyCodes::Key_Unknown;
 		break;
 	}
 
@@ -1000,9 +928,9 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 	Cheat_Prompt mode = CP_Day;
 
 	// This is the command
-	char input[5] = {0, 0, 0, 0, 0};
-	int  command;
-	bool activate = false;
+	std::string input;
+	KeyCodes    command;
+	bool        activate = false;
 
 	int day  = 0;
 	int hour = 0;
@@ -1024,7 +952,7 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 
 		// Check to see if we need to change menus
 		if (activate) {
-			const int val = std::atoi(input);
+			const int val = std::atoi(input.data());
 
 			if (val == -1) {
 				return CP_Canceled;
@@ -1049,15 +977,12 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 			}
 
 			activate = false;
-			input[0] = 0;
-			input[1] = 0;
-			input[2] = 0;
-			input[3] = 0;
-			command  = 0;
+			input.clear();
+			command = KeyCodes::Key_Unknown;
 			continue;
 		}
 
-		SharedInput(input, 5, command, mode, activate);
+		SharedInput(input, command, mode, activate);
 	}
 
 	return CP_ClockSet;
@@ -1083,15 +1008,11 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 	Cheat_Prompt mode = CP_Command;
 
 	// This is the command
-	char input[17];
-	int  i;
-	int  command;
-	bool activate = false;
-	char buf[512];
-
-	for (i = 0; i < 17; i++) {
-		input[i] = 0;
-	}
+	std::string input;
+	int         i;
+	KeyCodes    command  = KeyCodes::Key_Unknown;
+	bool        activate = false;
+	char        buf[512];
 
 	Usecode_machine* usecode = Game_window::get_instance()->get_usecode();
 
@@ -1152,83 +1073,83 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 		// Check to see if we need to change menus
 		if (activate) {
 			mode = CP_Command;
-			if (command == '-') {    // Decrement
+			if (command == KeyCodes::Key_Minus) {    // Decrement
 				num--;
 				if (num < 0) {
 					num = 0;
 				}
-			} else if (command == '+') {    // Increment
+			} else if (command == KeyCodes::Key_Plus) {    // Increment
 				num++;
 				if (num > c_last_gflag) {
 					num = c_last_gflag;
 				}
-			} else if (command == '*') {    // Change Flag
-				i = std::atoi(input);
+			} else if (command == KeyCodes::Key_Asterisk) {    // Change Flag
+				i = std::atoi(input.data());
 				if (i < -1 || i > c_last_gflag) {
 					mode = CP_InvalidValue;
 				} else if (i == -1) {
 					mode = CP_Canceled;
-				} else if (input[0]) {
+				} else if (!input.empty()) {
 					num = i;
 				}
-			} else if (command == 's') {    // Set
+			} else if (command == KeyCodes::Key_s) {    // Set
 				usecode->set_global_flag(num, 1);
-			} else if (command == 'u') {    // Unset
+			} else if (command == KeyCodes::Key_u) {    // Unset
 				usecode->set_global_flag(num, 0);
 			}
 
-			for (i = 0; i < 17; i++) {
-				input[i] = 0;
-			}
-			command  = 0;
+			input.clear();
+			command  = KeyCodes::Key_Unknown;
 			activate = false;
 			continue;
 		}
 
-		if (SharedInput(input, 17, command, mode, activate)) {
+		if (SharedInput(input, command, mode, activate)) {
 			switch (command) {
 				// Simple commands
-			case 's':    // Set Flag
-			case 'u':    // Unset flag
-				input[0] = command;
+			case KeyCodes::Key_s:    // Set Flag
+			case KeyCodes::Key_u:    // Unset flag
+				input    = static_cast<char>(command);
 				activate = true;
 				break;
 
 				// Decrement
-			case SDLK_KP_MINUS:
-			case '-':
-				command  = '-';
-				input[0] = command;
+			case KeyCodes::Key_KP_Minus:
+			case KeyCodes::Key_Minus:
+				command  = KeyCodes::Key_Minus;
+				input    = static_cast<char>(command);
 				activate = true;
 				break;
 
 				// Increment
-			case SDLK_KP_PLUS:
-			case '=':
-				command  = '+';
-				input[0] = command;
+			case KeyCodes::Key_KP_Plus:
+			case KeyCodes::Key_Equals:
+			case KeyCodes::Key_Plus:
+				command  = KeyCodes::Key_Plus;
+				input    = static_cast<char>(command);
 				activate = true;
 				break;
 
 				// * Change Flag
-			case SDLK_KP_MULTIPLY:
-			case '8':
-				command  = '*';
-				input[0] = 0;
-				mode     = CP_GFlagNum;
+			case KeyCodes::Key_KP_Multiply:
+			case KeyCodes::Key_8:
+			case KeyCodes::Key_Asterisk:
+				command = KeyCodes::Key_Asterisk;
+				input.clear();
+				mode = CP_GFlagNum;
 				break;
 
 				// X and Escape leave
-			case SDLK_ESCAPE:
-			case 'x':
-				input[0] = command;
-				looping  = false;
+			case KeyCodes::Key_Escape:
+			case KeyCodes::Key_x:
+				input   = static_cast<char>(command);
+				looping = false;
 				break;
 
 			default:
-				mode     = CP_InvalidCom;
-				input[0] = command;
-				command  = 0;
+				mode    = CP_InvalidCom;
+				input   = static_cast<char>(command);
+				command = KeyCodes::Key_Unknown;
 				break;
 			}
 		}
@@ -1249,14 +1170,9 @@ CheatScreen::Cheat_Prompt CheatScreen::NPCLoop(int num) {
 	Cheat_Prompt mode = CP_Command;
 
 	// This is the command
-	char input[17];
-	int  i;
-	int  command;
-	bool activate = false;
-
-	for (i = 0; i < 17; i++) {
-		input[i] = 0;
-	}
+	std::string input;
+	KeyCodes    command;
+	bool        activate = false;
 
 	while (looping) {
 		if (num == -1) {
@@ -1265,7 +1181,7 @@ CheatScreen::Cheat_Prompt CheatScreen::NPCLoop(int num) {
 			actor = gwin->get_npc(num);
 		}
 		grabbed = actor;
-		if (actor) {
+		if (actor != nullptr) {
 			num = actor->get_npc_num();
 		}
 
@@ -1290,7 +1206,7 @@ CheatScreen::Cheat_Prompt CheatScreen::NPCLoop(int num) {
 			continue;
 		}
 
-		if (SharedInput(input, 17, command, mode, activate)) {
+		if (SharedInput(input, command, mode, activate)) {
 			looping = NPCCheck(input, command, mode, activate, actor, num);
 		}
 	}
@@ -1306,12 +1222,12 @@ void CheatScreen::NPCDisplay(Actor* actor, int& num) {
 	const int offsetx  = 0;
 	const int offsety1 = 0;
 #endif
-	if (actor) {
+	if (actor != nullptr) {
 		const Tile_coord t = actor->get_tile();
 
 		// Paint the actors shape
 		Shape_frame* shape = actor->get_shape();
-		if (shape) {
+		if (shape != nullptr) {
 			actor->paint_shape(shape->get_xright() + 240, shape->get_yabove());
 		}
 
@@ -1351,7 +1267,7 @@ void CheatScreen::NPCDisplay(Actor* actor, int& num) {
 
 		if (num != -1) {
 			int ucitemnum = 0x10000 - num;
-			if (!num) {
+			if (num == 0) {
 				ucitemnum = 0xfe9c;
 			}
 			snprintf(
@@ -1410,7 +1326,7 @@ void CheatScreen::NPCMenu(Actor* actor, int& num) {
 #endif
 	// Left Column
 
-	if (actor) {
+	if (actor != nullptr) {
 		// Business Activity
 		font->paint_text_fixedwidth(
 				ibuf, "[B]usiness Activity", offsetx, maxy - offsety1 - 99, 8);
@@ -1437,7 +1353,7 @@ void CheatScreen::NPCMenu(Actor* actor, int& num) {
 
 	// Right Column
 
-	if (actor) {
+	if (actor != nullptr) {
 		// Stats
 		font->paint_text_fixedwidth(
 				ibuf, "[S]tats", offsetx + 160, maxy - offsety1 - 99, 8);
@@ -1462,53 +1378,54 @@ void CheatScreen::NPCMenu(Actor* actor, int& num) {
 }
 
 void CheatScreen::NPCActivate(
-		char* input, int& command, Cheat_Prompt& mode, Actor* actor, int& num) {
-	int       i = std::atoi(input);
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode, Actor* actor,
+		int& num) {
+	int       i = std::atoi(input.data());
 	const int nshapes
 			= Shape_manager::get_instance()->get_shapes().get_num_shapes();
 
 	mode = CP_Command;
 
-	if (command == '-') {
+	if (command == KeyCodes::Key_Minus) {
 		num--;
 		if (num < 0) {
 			num = 0;
 		} else if (num >= 356 && num <= 359) {
 			num = 355;
 		}
-	} else if (command == '+') {
+	} else if (command == KeyCodes::Key_Plus) {
 		num++;
 		if (num >= 356 && num <= 359) {
 			num = 360;
 		}
-	} else if (command == '*') {    // Change NPC
+	} else if (command == KeyCodes::Key_Asterisk) {    // Change NPC
 		if (i < -1 || (i >= 356 && i <= 359)) {
 			mode = CP_InvalidNPC;
 		} else if (i == -1) {
 			mode = CP_Canceled;
-		} else if (input[0]) {
+		} else if (!input.empty()) {
 			num = i;
 		}
-	} else if (actor) {
+	} else if (actor != nullptr) {
 		switch (command) {
-		case 'b':    // Business
+		case KeyCodes::Key_b:    // Business
 			BusinessLoop(actor);
 			break;
 
-		case 'n':    // Npc flags
+		case KeyCodes::Key_n:    // Npc flags
 			FlagLoop(actor);
 			break;
 
-		case 's':    // stats
+		case KeyCodes::Key_s:    // stats
 			StatLoop(actor);
 			break;
 
-		case 't':    // Teleport
+		case KeyCodes::Key_t:    // Teleport
 			Game_window::get_instance()->teleport_party(
 					actor->get_tile(), false, actor->get_map_num());
 			break;
 
-		case 'e':    // Experience
+		case KeyCodes::Key_e:    // Experience
 			if (i < 0) {
 				mode = CP_Canceled;
 			} else {
@@ -1516,7 +1433,7 @@ void CheatScreen::NPCActivate(
 			}
 			break;
 
-		case '2':    // Training Points
+		case KeyCodes::Key_2:    // Training Points
 			if (i < 0) {
 				mode = CP_Canceled;
 			} else {
@@ -1524,7 +1441,7 @@ void CheatScreen::NPCActivate(
 			}
 			break;
 
-		case 'c':                     // Change shape
+		case KeyCodes::Key_c:         // Change shape
 			if (input[0] == 'b') {    // Browser
 				int n;
 				if (!cheat.get_browser_shape(i, n)) {
@@ -1539,7 +1456,8 @@ void CheatScreen::NPCActivate(
 				mode = CP_InvalidShape;
 			} else if (i >= nshapes) {
 				mode = CP_InvalidShape;
-			} else if (input[0] && (input[0] != '-' || input[1])) {
+			} else if (
+					!input.empty() && (input[0] != '-' || input.size() > 1)) {
 				if (actor->get_npc_num() != 0) {
 					actor->set_shape(i);
 				} else {
@@ -1549,11 +1467,11 @@ void CheatScreen::NPCActivate(
 			}
 			break;
 
-		case '1':    // Name
-			if (!std::strlen(input)) {
+		case KeyCodes::Key_1:    // Name
+			if (input.empty()) {
 				mode = CP_Canceled;
 			} else {
-				actor->set_npc_name(input);
+				actor->set_npc_name(input.data());
 				mode = CP_NameSet;
 			}
 			break;
@@ -1562,28 +1480,26 @@ void CheatScreen::NPCActivate(
 			break;
 		}
 	}
-	for (i = 0; i < 17; i++) {
-		input[i] = 0;
-	}
-	command = 0;
+	input.clear();
+	command = KeyCodes::Key_Unknown;
 }
 
 // Checks the input
 bool CheatScreen::NPCCheck(
-		char* input, int& command, Cheat_Prompt& mode, bool& activate,
-		Actor* actor, int& num) {
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+		bool& activate, Actor* actor, int& num) {
 	ignore_unused_variable_warning(num);
 	switch (command) {
 		// Simple commands
-	case 'a':    // Attack mode
-	case 'b':    // BUsiness
-	case 'n':    // Npc flags
-	case 'd':    // pop weapon
-	case 's':    // stats
-	case 'z':    // Target
-	case 't':    // Teleport
-		input[0] = command;
-		if (!actor) {
+	case KeyCodes::Key_a:    // Attack mode
+	case KeyCodes::Key_b:    // BUsiness
+	case KeyCodes::Key_n:    // Npc flags
+	case KeyCodes::Key_d:    // pop weapon
+	case KeyCodes::Key_s:    // stats
+	case KeyCodes::Key_z:    // Target
+	case KeyCodes::Key_t:    // Teleport
+		input = static_cast<char>(command);
+		if (actor == nullptr) {
 			mode = CP_InvalidCom;
 		} else {
 			activate = true;
@@ -1591,9 +1507,9 @@ bool CheatScreen::NPCCheck(
 		break;
 
 		// Value entries
-	case 'e':    // Experience
-	case '2':    // Training Points
-		if (!actor) {
+	case KeyCodes::Key_e:    // Experience
+	case KeyCodes::Key_2:    // Training Points
+		if (actor == nullptr) {
 			mode = CP_InvalidCom;
 		} else {
 			mode = CP_EnterValue;
@@ -1601,8 +1517,8 @@ bool CheatScreen::NPCCheck(
 		break;
 
 		// Change shape
-	case 'c':
-		if (!actor) {
+	case KeyCodes::Key_c:
+		if (actor == nullptr) {
 			mode = CP_InvalidCom;
 		} else {
 			mode = CP_Shape;
@@ -1610,8 +1526,8 @@ bool CheatScreen::NPCCheck(
 		break;
 
 		// Name
-	case '1':
-		if (!actor) {
+	case KeyCodes::Key_1:
+		if (actor == nullptr) {
 			mode = CP_InvalidCom;
 		} else {
 			mode = CP_Name;
@@ -1619,39 +1535,41 @@ bool CheatScreen::NPCCheck(
 		break;
 
 		// - NPC
-	case SDLK_KP_MINUS:
-	case '-':
-		command  = '-';
-		input[0] = command;
+	case KeyCodes::Key_KP_Minus:
+	case KeyCodes::Key_Minus:
+		command  = KeyCodes::Key_Minus;
+		input    = static_cast<char>(command);
 		activate = true;
 		break;
 
 		// + NPC
-	case SDLK_KP_PLUS:
-	case '=':
-		command  = '+';
-		input[0] = command;
+	case KeyCodes::Key_KP_Plus:
+	case KeyCodes::Key_Equals:
+	case KeyCodes::Key_Plus:
+		command  = KeyCodes::Key_Plus;
+		input    = static_cast<char>(command);
 		activate = true;
 		break;
 
 		// * Change NPC
-	case SDLK_KP_MULTIPLY:
-	case '8':
-		command  = '*';
-		input[0] = 0;
-		mode     = CP_ChooseNPC;
+	case KeyCodes::Key_KP_Multiply:
+	case KeyCodes::Key_8:
+	case KeyCodes::Key_Asterisk:
+		command = KeyCodes::Key_Asterisk;
+		input.clear();
+		mode = CP_ChooseNPC;
 		break;
 
 		// X and Escape leave
-	case SDLK_ESCAPE:
-	case 'x':
-		input[0] = command;
+	case KeyCodes::Key_Escape:
+	case KeyCodes::Key_x:
+		input = static_cast<char>(command);
 		return false;
 
 	default:
-		mode     = CP_InvalidCom;
-		input[0] = command;
-		command  = 0;
+		mode    = CP_InvalidCom;
+		input   = static_cast<char>(command);
+		command = KeyCodes::Key_Unknown;
 		break;
 	}
 
@@ -1672,14 +1590,9 @@ void CheatScreen::FlagLoop(Actor* actor) {
 	Cheat_Prompt mode = CP_Command;
 
 	// This is the command
-	char input[17];
-	int  i;
-	int  command;
-	bool activate = false;
-
-	for (i = 0; i < 17; i++) {
-		input[i] = 0;
-	}
+	std::string input;
+	KeyCodes    command;
+	bool        activate = false;
 
 	while (looping) {
 		gwin->clear_screen();
@@ -1705,7 +1618,7 @@ void CheatScreen::FlagLoop(Actor* actor) {
 			continue;
 		}
 
-		if (SharedInput(input, 17, command, mode, activate)) {
+		if (SharedInput(input, command, mode, activate)) {
 			looping = FlagCheck(input, command, mode, activate, actor);
 		}
 	}
@@ -1833,7 +1746,7 @@ void CheatScreen::FlagMenu(Actor* actor) {
 			ibuf, buf, offsetx1 + 104, maxy - offsety1 - 36, 8);
 
 	// Naked (AV ONLY)
-	if (!actor->get_npc_num()) {
+	if (actor->get_npc_num() == 0) {
 		snprintf(
 				buf, sizeof(buf), "[7] Naked..%c",
 				actor->get_flag(Obj_flags::naked) ? 'Y' : 'N');
@@ -1857,7 +1770,7 @@ void CheatScreen::FlagMenu(Actor* actor) {
 	font->paint_text_fixedwidth(
 			ibuf, buf, offsetx1 + 208, maxy - offsety1 - 99, 8);
 
-	if (!actor->get_npc_num()) {    // Avatar
+	if (actor->get_npc_num() == 0) {    // Avatar
 		// Sex
 		snprintf(
 				buf, sizeof(buf), "[S] Sex....%c",
@@ -1925,7 +1838,7 @@ void CheatScreen::FlagMenu(Actor* actor) {
 			ibuf, buf, offsetx1 + 208, maxy - offsety1 - 36, 8);
 
 	// Patra (AV SI ONLY)
-	if (!actor->get_npc_num()) {
+	if (actor->get_npc_num() == 0) {
 		snprintf(
 				buf, sizeof(buf), "[5] Petra..%c",
 				actor->get_flag(Obj_flags::petra) ? 'Y' : 'N');
@@ -1935,8 +1848,9 @@ void CheatScreen::FlagMenu(Actor* actor) {
 }
 
 void CheatScreen::FlagActivate(
-		char* input, int& command, Cheat_Prompt& mode, Actor* actor) {
-	int       i = std::atoi(input);
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+		Actor* actor) {
+	int       i = std::atoi(input.data());
 	const int nshapes
 			= Shape_manager::get_instance()->get_shapes().get_num_shapes();
 
@@ -1945,7 +1859,7 @@ void CheatScreen::FlagActivate(
 		// Everyone
 
 		// Toggles
-	case 'a':    // Asleep
+	case KeyCodes::Key_a:    // Asleep
 		if (actor->get_flag(Obj_flags::asleep)) {
 			actor->clear_flag(Obj_flags::asleep);
 		} else {
@@ -1953,7 +1867,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'b':    // Charmed
+	case KeyCodes::Key_b:    // Charmed
 		if (actor->get_flag(Obj_flags::charmed)) {
 			actor->clear_flag(Obj_flags::charmed);
 		} else {
@@ -1961,7 +1875,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'c':    // Cursed
+	case KeyCodes::Key_c:    // Cursed
 		if (actor->get_flag(Obj_flags::cursed)) {
 			actor->clear_flag(Obj_flags::cursed);
 		} else {
@@ -1969,7 +1883,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'd':    // Paralyzed
+	case KeyCodes::Key_d:    // Paralyzed
 		if (actor->get_flag(Obj_flags::paralyzed)) {
 			actor->clear_flag(Obj_flags::paralyzed);
 		} else {
@@ -1977,7 +1891,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'e':    // Poisoned
+	case KeyCodes::Key_e:    // Poisoned
 		if (actor->get_flag(Obj_flags::poisoned)) {
 			actor->clear_flag(Obj_flags::poisoned);
 		} else {
@@ -1985,7 +1899,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'f':    // Protected
+	case KeyCodes::Key_f:    // Protected
 		if (actor->get_flag(Obj_flags::protection)) {
 			actor->clear_flag(Obj_flags::protection);
 		} else {
@@ -1993,7 +1907,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'j':    // Invisible
+	case KeyCodes::Key_j:    // Invisible
 		if (actor->get_flag(Obj_flags::invisible)) {
 			actor->clear_flag(Obj_flags::invisible);
 		} else {
@@ -2002,7 +1916,7 @@ void CheatScreen::FlagActivate(
 		pal.apply();
 		break;
 
-	case 'k':    // Fly
+	case KeyCodes::Key_k:    // Fly
 		if (actor->get_type_flag(Actor::tf_fly)) {
 			actor->clear_type_flag(Actor::tf_fly);
 		} else {
@@ -2010,7 +1924,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'l':    // Walk
+	case KeyCodes::Key_l:    // Walk
 		if (actor->get_type_flag(Actor::tf_walk)) {
 			actor->clear_type_flag(Actor::tf_walk);
 		} else {
@@ -2018,7 +1932,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'm':    // Swim
+	case KeyCodes::Key_m:    // Swim
 		if (actor->get_type_flag(Actor::tf_swim)) {
 			actor->clear_type_flag(Actor::tf_swim);
 		} else {
@@ -2026,7 +1940,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'n':    // Ethrel
+	case KeyCodes::Key_n:    // Ethereal
 		if (actor->get_type_flag(Actor::tf_ethereal)) {
 			actor->clear_type_flag(Actor::tf_ethereal);
 		} else {
@@ -2034,7 +1948,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'p':    // Conjured
+	case KeyCodes::Key_p:    // Conjured
 		if (actor->get_type_flag(Actor::tf_conjured)) {
 			actor->clear_type_flag(Actor::tf_conjured);
 		} else {
@@ -2042,7 +1956,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'q':    // Summoned
+	case KeyCodes::Key_q:    // Summoned
 		if (actor->get_type_flag(Actor::tf_summonned)) {
 			actor->clear_type_flag(Actor::tf_summonned);
 		} else {
@@ -2050,7 +1964,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'r':    // Bleeding
+	case KeyCodes::Key_r:    // Bleeding
 		if (actor->get_type_flag(Actor::tf_bleeding)) {
 			actor->clear_type_flag(Actor::tf_bleeding);
 		} else {
@@ -2058,7 +1972,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 's':    // Sex
+	case KeyCodes::Key_s:    // Sex
 		if (actor->get_type_flag(Actor::tf_sex)) {
 			actor->clear_type_flag(Actor::tf_sex);
 		} else {
@@ -2066,7 +1980,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case '4':    // Read
+	case KeyCodes::Key_4:    // Read
 		if (actor->get_flag(Obj_flags::read)) {
 			actor->clear_flag(Obj_flags::read);
 		} else {
@@ -2074,7 +1988,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case '5':    // Petra
+	case KeyCodes::Key_5:    // Petra
 		if (actor->get_flag(Obj_flags::petra)) {
 			actor->clear_flag(Obj_flags::petra);
 		} else {
@@ -2082,7 +1996,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case '7':    // Naked
+	case KeyCodes::Key_7:    // Naked
 		if (actor->get_flag(Obj_flags::naked)) {
 			actor->clear_flag(Obj_flags::naked);
 		} else {
@@ -2090,7 +2004,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 't':    // Met
+	case KeyCodes::Key_t:    // Met
 		if (actor->get_flag(Obj_flags::met)) {
 			actor->clear_flag(Obj_flags::met);
 		} else {
@@ -2098,7 +2012,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'u':    // No Cast
+	case KeyCodes::Key_u:    // No Cast
 		if (actor->get_flag(Obj_flags::no_spell_casting)) {
 			actor->clear_flag(Obj_flags::no_spell_casting);
 		} else {
@@ -2106,7 +2020,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'z':    // Zombie
+	case KeyCodes::Key_z:    // Zombie
 		if (actor->get_flag(Obj_flags::si_zombie)) {
 			actor->clear_flag(Obj_flags::si_zombie);
 		} else {
@@ -2114,7 +2028,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'w':    // Freeze
+	case KeyCodes::Key_w:    // Freeze
 		if (actor->get_flag(Obj_flags::freeze)) {
 			actor->clear_flag(Obj_flags::freeze);
 		} else {
@@ -2122,7 +2036,7 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'i':    // Party
+	case KeyCodes::Key_i:    // Party
 		if (actor->get_flag(Obj_flags::in_party)) {
 			gwin->get_party_man()->remove_from_party(actor);
 			gwin->revert_schedules(actor);
@@ -2133,29 +2047,29 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'o':    // Protectee
+	case KeyCodes::Key_o:    // Protectee
 		break;
 
 		// Value
-	case 'v':    // ID
+	case KeyCodes::Key_v:    // ID
 		if (i < -1) {
 			mode = CP_InvalidValue;
 		} else if (i > 63) {
 			mode = CP_InvalidValue;
-		} else if (i == -1 || !input[0]) {
+		} else if (i == -1 || input.empty()) {
 			mode = CP_Canceled;
 		} else {
 			actor->set_ident(i);
 		}
 		break;
 
-	case '1':    // Skin color
+	case KeyCodes::Key_1:    // Skin color
 		actor->set_skin_color(Shapeinfo_lookup::GetNextSkin(
 				actor->get_skin_color(), actor->get_type_flag(Actor::tf_sex),
 				Shape_manager::get_instance()->have_si_shapes()));
 		break;
 
-	case '3':    // Tournament
+	case KeyCodes::Key_3:    // Tournament
 		if (actor->get_flag(Obj_flags::tournament)) {
 			actor->clear_flag(Obj_flags::tournament);
 		} else {
@@ -2163,20 +2077,19 @@ void CheatScreen::FlagActivate(
 		}
 		break;
 
-	case 'y':    // Warmth
+	case KeyCodes::Key_y:    // Warmth
 		if (i < -1) {
 			mode = CP_InvalidValue;
 		} else if (i > 63) {
 			mode = CP_InvalidValue;
-		} else if (i == -1 || !input[0]) {
+		} else if (i == -1 || input.empty()) {
 			mode = CP_Canceled;
 		} else {
 			actor->set_temperature(i);
 		}
 		break;
 
-	case '2':    // Polymorph
-
+	case KeyCodes::Key_2:    // Polymorph
 		// Clear polymorph
 		if (actor->get_polymorph() != -1) {
 			actor->set_polymorph(actor->get_polymorph());
@@ -2197,7 +2110,7 @@ void CheatScreen::FlagActivate(
 			mode = CP_InvalidShape;
 		} else if (i >= nshapes) {
 			mode = CP_InvalidShape;
-		} else if (input[0] && (input[0] != '-' || input[1])) {
+		} else if (!input.empty() && (input[0] != '-' || input.size() > 1)) {
 			actor->set_polymorph(i);
 			mode = CP_ShapeSet;
 		}
@@ -2205,12 +2118,14 @@ void CheatScreen::FlagActivate(
 		break;
 
 		// Advanced Numeric Flag Editor
-	case '*':
+	case KeyCodes::Key_KP_Multiply:
+	case KeyCodes::Key_Asterisk:
+	case KeyCodes::Key_8:
 		if (i < -1) {
 			mode = CP_InvalidValue;
 		} else if (i > 63) {
 			mode = CP_InvalidValue;
-		} else if (i == -1 || !input[0]) {
+		} else if (i == -1 || input.empty()) {
 			mode = CP_Canceled;
 		} else {
 			mode = AdvancedFlagLoop(i, actor);
@@ -2220,141 +2135,140 @@ void CheatScreen::FlagActivate(
 	default:
 		break;
 	}
-	for (i = 0; i < 17; i++) {
-		input[i] = 0;
-	}
-	command = 0;
+	input.clear();
+	command = KeyCodes::Key_Unknown;
 }
 
 // Checks the input
 bool CheatScreen::FlagCheck(
-		char* input, int& command, Cheat_Prompt& mode, bool& activate,
-		Actor* actor) {
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+		bool& activate, Actor* actor) {
 	switch (command) {
 		// Everyone
 
 		// Toggles
-	case 'a':    // Asleep
-	case 'b':    // Charmed
-	case 'c':    // Cursed
-	case 'd':    // Paralyzed
-	case 'e':    // Poisoned
-	case 'f':    // Protected
-	case 'i':    // Party
-	case 'j':    // Invisible
-	case 'k':    // Fly
-	case 'l':    // Walk
-	case 'm':    // Swim
-	case 'n':    // Ethrel
-	case 'o':    // Protectee
-	case 'p':    // Conjured
-	case 'q':    // Summoned
-	case 'r':    // Bleedin
-	case 'w':    // Freeze
-	case '3':    // Tournament
+	case KeyCodes::Key_a:    // Asleep
+	case KeyCodes::Key_b:    // Charmed
+	case KeyCodes::Key_c:    // Cursed
+	case KeyCodes::Key_d:    // Paralyzed
+	case KeyCodes::Key_e:    // Poisoned
+	case KeyCodes::Key_f:    // Protected
+	case KeyCodes::Key_i:    // Party
+	case KeyCodes::Key_j:    // Invisible
+	case KeyCodes::Key_k:    // Fly
+	case KeyCodes::Key_l:    // Walk
+	case KeyCodes::Key_m:    // Swim
+	case KeyCodes::Key_n:    // Ethrel
+	case KeyCodes::Key_o:    // Protectee
+	case KeyCodes::Key_p:    // Conjured
+	case KeyCodes::Key_q:    // Summoned
+	case KeyCodes::Key_r:    // Bleedin
+	case KeyCodes::Key_w:    // Freeze
+	case KeyCodes::Key_3:    // Tournament
 		activate = true;
-		input[0] = command;
+		input    = static_cast<char>(command);
 		break;
 
 		// Value
-	case '2':    // Polymorph
+	case KeyCodes::Key_2:    // Polymorph
 		if (actor->get_polymorph() == -1) {
-			mode     = CP_Shape;
-			input[0] = 0;
+			mode = CP_Shape;
+			input.clear();
 		} else {
 			activate = true;
-			input[0] = command;
+			input    = static_cast<char>(command);
 		}
 		break;
 
 		// Party Only
 
 		// Value
-	case 'y':    // Temp
+	case KeyCodes::Key_y:    // Temp
 		if (!actor->is_in_party()) {
-			command = 0;
+			command = KeyCodes::Key_Unknown;
 		} else {
 			mode = CP_TempNum;
 		}
-		input[0] = 0;
+		input.clear();
 		break;
 
 		// Avatar Only
 
 		// Toggles
-	case 's':    // Sex
-	case '4':    // Read
-		if (actor->get_npc_num()) {
-			command = 0;
+	case KeyCodes::Key_s:    // Sex
+	case KeyCodes::Key_4:    // Read
+		if (actor->get_npc_num() != 0) {
+			command = KeyCodes::Key_Unknown;
 		} else {
 			activate = true;
 		}
-		input[0] = command;
+		input = static_cast<char>(command);
 		break;
 
 		// Toggles SI
-	case '5':    // Petra
-	case '7':    // Naked
-		if (actor->get_npc_num()) {
-			command = 0;
+	case KeyCodes::Key_5:    // Petra
+	case KeyCodes::Key_7:    // Naked
+		if (actor->get_npc_num() != 0) {
+			command = KeyCodes::Key_Unknown;
 		} else {
 			activate = true;
 		}
-		input[0] = command;
+		input = static_cast<char>(command);
 		break;
 
 		// Value SI
-	case '1':    // Skin
-		if (actor->get_npc_num()) {
-			command = 0;
+	case KeyCodes::Key_1:    // Skin
+		if (actor->get_npc_num() != 0) {
+			command = KeyCodes::Key_Unknown;
 		} else {
 			activate = true;
 		}
-		input[0] = command;
+		input = static_cast<char>(command);
 		break;
 
 		// Everyone but avatar
 
 		// Toggles
-	case 't':    // Met
-	case 'u':    // No Cast
-	case 'z':    // Zombie
-		if (!actor->get_npc_num()) {
-			command = 0;
+	case KeyCodes::Key_t:    // Met
+	case KeyCodes::Key_u:    // No Cast
+	case KeyCodes::Key_z:    // Zombie
+		if (actor->get_npc_num() == 0) {
+			command = KeyCodes::Key_Unknown;
 		} else {
 			activate = true;
 		}
-		input[0] = command;
+		input = static_cast<char>(command);
 		break;
 
 		// Value
-	case 'v':    // ID
-		if (!actor->get_npc_num()) {
-			command = 0;
+	case KeyCodes::Key_v:    // ID
+		if (actor->get_npc_num() == 0) {
+			command = KeyCodes::Key_Unknown;
 		} else {
 			mode = CP_EnterValue;
 		}
-		input[0] = 0;
+		input.clear();
 		break;
 
 		// NPC Flag Editor
 
-	case SDLK_KP_MULTIPLY:
-	case '8':
-		command  = '*';
-		input[0] = 0;
-		mode     = CP_NFlagNum;
+	case KeyCodes::Key_KP_Multiply:
+	case KeyCodes::Key_8:
+	case KeyCodes::Key_Asterisk:
+		command = KeyCodes::Key_Asterisk;
+		input.clear();
+		mode = CP_NFlagNum;
 		break;
 
 		// X and Escape leave
-	case SDLK_ESCAPE:
-	case 'x':
-		input[0] = command;
+	case KeyCodes::Key_Escape:
+	case KeyCodes::Key_x:
+		input = static_cast<char>(command);
 		return false;
 
 		// Unknown
 	default:
-		command = 0;
+		command = KeyCodes::Key_Unknown;
 		break;
 	}
 
@@ -2372,16 +2286,11 @@ void CheatScreen::BusinessLoop(Actor* actor) {
 	Cheat_Prompt mode = CP_Command;
 
 	// This is the command
-	char input[17];
-	int  i;
-	int  command;
-	bool activate = false;
-	int  time     = 0;
-	int  prev     = 0;
-
-	for (i = 0; i < 17; i++) {
-		input[i] = 0;
-	}
+	std::string input;
+	KeyCodes    command;
+	bool        activate = false;
+	int         time     = 0;
+	int         prev     = 0;
 
 	while (looping) {
 		gwin->clear_screen();
@@ -2409,7 +2318,7 @@ void CheatScreen::BusinessLoop(Actor* actor) {
 			continue;
 		}
 
-		if (SharedInput(input, 17, command, mode, activate)) {
+		if (SharedInput(input, command, mode, activate)) {
 			looping = BusinessCheck(
 					input, command, mode, activate, actor, time);
 		}
@@ -2538,132 +2447,129 @@ void CheatScreen::BusinessMenu(Actor* actor) {
 }
 
 void CheatScreen::BusinessActivate(
-		char* input, int& command, Cheat_Prompt& mode, Actor* actor, int& time,
-		int& prev) {
-	int i = std::atoi(input);
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode, Actor* actor,
+		int& time, int& prev) {
+	int i = std::atoi(input.data());
 
-	mode          = CP_Command;
-	const int old = command;
-	command       = 0;
+	mode               = CP_Command;
+	const KeyCodes old = std::exchange(command, KeyCodes::Key_Unknown);
 	switch (old) {
-	case 'a':    // Set Activity
+	case KeyCodes::Key_a:    // Set Activity
 		if (i < -1 || i > 31) {
 			mode = CP_InvalidValue;
 		} else if (i == -1) {
 			mode = CP_Canceled;
-		} else if (!input[0]) {
+		} else if (input.empty()) {
 			mode    = CP_Activity;
-			command = 'a';
+			command = KeyCodes::Key_a;
 		} else {
 			actor->set_schedule_time_type(time, i);
 		}
 		break;
 
-	case 'i':    // X Coord
+	case KeyCodes::Key_i:    // X Coord
 		if (i < -1 || i > c_num_tiles) {
 			mode = CP_InvalidValue;
 		} else if (i == -1) {
 			mode = CP_Canceled;
-		} else if (!input[0]) {
+		} else if (input.empty()) {
 			mode    = CP_XCoord;
-			command = 'i';
+			command = KeyCodes::Key_i;
 		} else {
 			prev    = i;
 			mode    = CP_YCoord;
-			command = 'j';
+			command = KeyCodes::Key_j;
 		}
 		break;
 
-	case 'j':    // Y Coord
+	case KeyCodes::Key_j:    // Y Coord
 		if (i < -1 || i > c_num_tiles) {
 			mode = CP_InvalidValue;
 		} else if (i == -1) {
 			mode = CP_Canceled;
-		} else if (!input[0]) {
+		} else if (input.empty()) {
 			mode    = CP_YCoord;
-			command = 'j';
+			command = KeyCodes::Key_j;
 		} else {
 			actor->set_schedule_time_location(time, prev, i);
 		}
 		break;
 
-	case '1':    // Clear
+	case KeyCodes::Key_1:    // Clear
 		actor->remove_schedule(time);
 		break;
 
-	case 's':    // Set Current
+	case KeyCodes::Key_s:    // Set Current
 		if (i < -1 || i > 31) {
 			mode = CP_InvalidValue;
 		} else if (i == -1) {
 			mode = CP_Canceled;
-		} else if (!input[0]) {
+		} else if (input.empty()) {
 			mode    = CP_Activity;
-			command = 's';
+			command = KeyCodes::Key_s;
 		} else {
 			actor->set_schedule_type(i);
 		}
 		break;
 
-	case 'r':    // Revert
+	case KeyCodes::Key_r:    // Revert
 		Game_window::get_instance()->revert_schedules(actor);
 		break;
 
 	default:
 		break;
 	}
-	for (i = 0; i < 17; i++) {
-		input[i] = 0;
-	}
+	input.clear();
 }
 
 // Checks the input
 bool CheatScreen::BusinessCheck(
-		char* input, int& command, Cheat_Prompt& mode, bool& activate,
-		Actor* actor, int& time) {
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+		bool& activate, Actor* actor, int& time) {
 	// Might break on monster npcs?
 	if (actor->get_npc_num() > 0) {
 		switch (command) {
-		case 'a':
-		case 'b':
-		case 'c':
-		case 'd':
-		case 'e':
-		case 'f':
-		case 'g':
-		case 'h':
-			time    = command - 'a';
-			command = 'a';
+		case KeyCodes::Key_a:
+		case KeyCodes::Key_b:
+		case KeyCodes::Key_c:
+		case KeyCodes::Key_d:
+		case KeyCodes::Key_e:
+		case KeyCodes::Key_f:
+		case KeyCodes::Key_g:
+		case KeyCodes::Key_h:
+			time    = command - KeyCodes::Key_a;
+			command = KeyCodes::Key_a;
 			mode    = CP_Activity;
 			return true;
 
-		case 'i':
-		case 'j':
-		case 'k':
-		case 'l':
-		case 'm':
-		case 'n':
-		case 'o':
-		case 'p':
-			time    = command - 'i';
-			command = 'i';
+		case KeyCodes::Key_i:
+		case KeyCodes::Key_j:
+		case KeyCodes::Key_k:
+		case KeyCodes::Key_l:
+		case KeyCodes::Key_m:
+		case KeyCodes::Key_n:
+		case KeyCodes::Key_o:
+		case KeyCodes::Key_p:
+			time    = command - KeyCodes::Key_i;
+			command = KeyCodes::Key_i;
 			mode    = CP_XCoord;
 			return true;
 
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-			time     = command - '1';
-			command  = '1';
+		case KeyCodes::Key_1:
+		case KeyCodes::Key_2:
+		case KeyCodes::Key_3:
+		case KeyCodes::Key_4:
+		case KeyCodes::Key_5:
+		case KeyCodes::Key_6:
+		case KeyCodes::Key_7:
+		case KeyCodes::Key_8:
+			time     = command - KeyCodes::Key_1;
+			command  = KeyCodes::Key_1;
 			activate = true;
 			return true;
 
-		case 'r':
-			command  = 'r';
+		case KeyCodes::Key_r:
+			command  = KeyCodes::Key_r;
 			activate = true;
 			return true;
 
@@ -2674,21 +2580,21 @@ bool CheatScreen::BusinessCheck(
 
 	switch (command) {
 		// Set Current
-	case 's':
-		command  = 's';
-		input[0] = 0;
-		mode     = CP_Activity;
+	case KeyCodes::Key_s:
+		command = KeyCodes::Key_s;
+		input.clear();
+		mode = CP_Activity;
 		break;
 
 		// X and Escape leave
-	case SDLK_ESCAPE:
-	case 'x':
-		input[0] = command;
+	case KeyCodes::Key_Escape:
+	case KeyCodes::Key_x:
+		input = static_cast<char>(command);
 		return false;
 
 		// Unknown
 	default:
-		command = 0;
+		command = KeyCodes::Key_Unknown;
 		mode    = CP_InvalidCom;
 		break;
 	}
@@ -2710,14 +2616,9 @@ void CheatScreen::StatLoop(Actor* actor) {
 	Cheat_Prompt mode = CP_Command;
 
 	// This is the command
-	char input[17];
-	int  i;
-	int  command;
-	bool activate = false;
-
-	for (i = 0; i < 17; i++) {
-		input[i] = 0;
-	}
+	std::string input;
+	KeyCodes    command;
+	bool        activate = false;
 
 	while (looping) {
 		gwin->clear_screen();
@@ -2743,7 +2644,7 @@ void CheatScreen::StatLoop(Actor* actor) {
 			continue;
 		}
 
-		if (SharedInput(input, 17, command, mode, activate)) {
+		if (SharedInput(input, command, mode, activate)) {
 			looping = StatCheck(input, command, mode, activate, actor);
 		}
 	}
@@ -2816,18 +2717,17 @@ void CheatScreen::StatMenu(Actor* actor) {
 }
 
 void CheatScreen::StatActivate(
-		char* input, int& command, Cheat_Prompt& mode, Actor* actor) {
-	int i = std::atoi(input);
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+		Actor* actor) {
+	int i = std::atoi(input.data());
 	mode  = CP_Command;
 	// Enforce sane bounds.
 	if (i > 60) {
 		i = 60;
-	} else if (i < 0 && command != 'h') {
+	} else if (i < 0 && command != KeyCodes::Key_h) {
 		if (i == -1) {    // canceled
-			for (i = 0; i < 17; i++) {
-				input[i] = 0;
-			}
-			command = 0;
+			input.clear();
+			command = KeyCodes::Key_Unknown;
 			return;
 		}
 		i = 0;
@@ -2836,78 +2736,76 @@ void CheatScreen::StatActivate(
 	}
 
 	switch (command) {
-	case 'd':    // Dexterity
+	case KeyCodes::Key_d:    // Dexterity
 		actor->set_property(Actor::dexterity, i);
 		break;
 
-	case 'f':    // Food Level
+	case KeyCodes::Key_f:    // Food Level
 		actor->set_property(Actor::food_level, i);
 		break;
 
-	case 'i':    // Intelligence
+	case KeyCodes::Key_i:    // Intelligence
 		actor->set_property(Actor::intelligence, i);
 		break;
 
-	case 's':    // Strength
+	case KeyCodes::Key_s:    // Strength
 		actor->set_property(Actor::strength, i);
 		break;
 
-	case 'c':    // Combat Points
+	case KeyCodes::Key_c:    // Combat Points
 		actor->set_property(Actor::combat, i);
 		break;
 
-	case 'h':    // Hit Points
+	case KeyCodes::Key_h:    // Hit Points
 		actor->set_property(Actor::health, i);
 		break;
 
-	case 'm':    // Magic
+	case KeyCodes::Key_m:    // Magic
 		actor->set_property(Actor::magic, i);
 		break;
 
-	case 'v':    // [V]ana
+	case KeyCodes::Key_v:    // [V]ana
 		actor->set_property(Actor::mana, i);
 		break;
 
 	default:
 		break;
 	}
-	for (i = 0; i < 17; i++) {
-		input[i] = 0;
-	}
-	command = 0;
+	input.clear();
+	command = KeyCodes::Key_Unknown;
 }
 
 // Checks the input
 bool CheatScreen::StatCheck(
-		char* input, int& command, Cheat_Prompt& mode, bool& activate,
-		Actor* actor) {
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+		bool& activate, Actor* actor) {
 	ignore_unused_variable_warning(activate, actor);
 	switch (command) {
 		// Everyone
-	case 'h':    // Hit Points
-		input[0] = 0;
-		mode     = CP_EnterValueNoCancel;
+	case KeyCodes::Key_h:    // Hit Points
+		input.clear();
+		mode = CP_EnterValueNoCancel;
 		break;
-	case 'd':    // Dexterity
-	case 'f':    // Food Level
-	case 'i':    // Intelligence
-	case 's':    // Strength
-	case 'c':    // Combat Points
-	case 'm':    // Magic
-	case 'v':    // [V]ana
-		input[0] = 0;
-		mode     = CP_EnterValue;
+	case KeyCodes::Key_d:    // Dexterity
+	case KeyCodes::Key_f:    // Food Level
+	case KeyCodes::Key_i:    // Intelligence
+	case KeyCodes::Key_s:    // Strength
+	case KeyCodes::Key_c:    // Combat Points
+	case KeyCodes::Key_m:    // Magic
+	case KeyCodes::Key_v:    // [V]ana
+		input.clear();
+		mode = CP_EnterValue;
 		break;
 
 		// X and Escape leave
-	case SDLK_ESCAPE:
-	case 'x':
-		input[0] = command;
+	case KeyCodes::Key_Escape:
+	case KeyCodes::Key_x:
+		input = static_cast<char>(command);
 		return false;
 
 		// Unknown
 	default:
-		command = 0;
+		command = KeyCodes::Key_Unknown;
 		break;
 	}
 
@@ -2934,15 +2832,10 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 	Cheat_Prompt mode = CP_Command;
 
 	// This is the command
-	char input[17];
-	int  i;
-	int  command;
-	bool activate = false;
-	char buf[512];
-
-	for (i = 0; i < 17; i++) {
-		input[i] = 0;
-	}
+	std::string input;
+	KeyCodes    command  = KeyCodes::Key_Unknown;
+	bool        activate = false;
+	char        buf[512];
 
 	while (looping) {
 		gwin->clear_screen();
@@ -2958,7 +2851,7 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 		}
 
 		// First the info
-		if (flag_names[num]) {
+		if (flag_names[num] != nullptr) {
 			snprintf(buf, sizeof(buf), "NPC Flag %i: %s", num, flag_names[num]);
 		} else {
 			snprintf(buf, sizeof(buf), "NPC Flag %i", num);
@@ -3008,32 +2901,32 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 		// Check to see if we need to change menus
 		if (activate) {
 			mode = CP_Command;
-			if (command == '-') {    // Decrement
+			if (command == KeyCodes::Key_Minus) {    // Decrement
 				num--;
 				if (num < 0) {
 					num = 0;
 				}
-			} else if (command == '+') {    // Increment
+			} else if (command == KeyCodes::Key_Plus) {    // Increment
 				num++;
 				if (num > 63) {
 					num = 63;
 				}
-			} else if (command == '*') {    // Change Flag
-				i = std::atoi(input);
+			} else if (command == KeyCodes::Key_Asterisk) {    // Change Flag
+				int i = std::atoi(input.data());
 				if (i < -1 || i > 63) {
 					mode = CP_InvalidValue;
 				} else if (i == -1) {
 					mode = CP_Canceled;
-				} else if (input[0]) {
+				} else if (!input.empty()) {
 					num = i;
 				}
-			} else if (command == 's') {    // Set
+			} else if (command == KeyCodes::Key_s) {    // Set
 				actor->set_flag(num);
 				if (num == Obj_flags::in_party) {
 					gwin->get_party_man()->add_to_party(actor);
 					actor->set_schedule_type(Schedule::follow_avatar);
 				}
-			} else if (command == 'u') {    // Unset
+			} else if (command == KeyCodes::Key_u) {    // Unset
 				if (num == Obj_flags::in_party) {
 					gwin->get_party_man()->remove_from_party(actor);
 					gwin->revert_schedules(actor);
@@ -3041,58 +2934,58 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 				actor->clear_flag(num);
 			}
 
-			for (i = 0; i < 17; i++) {
-				input[i] = 0;
-			}
-			command  = 0;
+			input.clear();
+			command  = KeyCodes::Key_Unknown;
 			activate = false;
 			continue;
 		}
 
-		if (SharedInput(input, 17, command, mode, activate)) {
+		if (SharedInput(input, command, mode, activate)) {
 			switch (command) {
 				// Simple commands
-			case 's':    // Set Flag
-			case 'u':    // Unset flag
-				input[0] = command;
+			case KeyCodes::Key_s:    // Set Flag
+			case KeyCodes::Key_u:    // Unset flag
+				input    = static_cast<char>(command);
 				activate = true;
 				break;
 
 				// Decrement
-			case SDLK_KP_MINUS:
-			case '-':
-				command  = '-';
-				input[0] = command;
+			case KeyCodes::Key_KP_Minus:
+			case KeyCodes::Key_Minus:
+				command  = KeyCodes::Key_Minus;
+				input    = static_cast<char>(command);
 				activate = true;
 				break;
 
 				// Increment
-			case SDLK_KP_PLUS:
-			case '=':
-				command  = '+';
-				input[0] = command;
+			case KeyCodes::Key_KP_Plus:
+			case KeyCodes::Key_Equals:
+			case KeyCodes::Key_Plus:
+				command  = KeyCodes::Key_Plus;
+				input    = static_cast<char>(command);
 				activate = true;
 				break;
 
 				// * Change Flag
-			case SDLK_KP_MULTIPLY:
-			case '8':
-				command  = '*';
-				input[0] = 0;
-				mode     = CP_NFlagNum;
+			case KeyCodes::Key_KP_Multiply:
+			case KeyCodes::Key_8:
+			case KeyCodes::Key_Asterisk:
+				command = KeyCodes::Key_Asterisk;
+				input.clear();
+				mode = CP_NFlagNum;
 				break;
 
 				// X and Escape leave
-			case SDLK_ESCAPE:
-			case 'x':
-				input[0] = command;
-				looping  = false;
+			case KeyCodes::Key_Escape:
+			case KeyCodes::Key_x:
+				input   = static_cast<char>(command);
+				looping = false;
 				break;
 
 			default:
-				mode     = CP_InvalidCom;
-				input[0] = command;
-				command  = 0;
+				mode    = CP_InvalidCom;
+				input   = static_cast<char>(command);
+				command = KeyCodes::Key_Unknown;
 				break;
 			}
 		}
@@ -3111,15 +3004,10 @@ void CheatScreen::TeleportLoop() {
 	Cheat_Prompt mode = CP_Command;
 
 	// This is the command
-	char input[5];
-	int  i;
-	int  command;
-	bool activate = false;
-	int  prev     = 0;
-
-	for (i = 0; i < 5; i++) {
-		input[i] = 0;
-	}
+	std::string input;
+	KeyCodes    command;
+	bool        activate = false;
+	int         prev     = 0;
 
 	while (looping) {
 		gwin->clear_screen();
@@ -3143,7 +3031,7 @@ void CheatScreen::TeleportLoop() {
 			continue;
 		}
 
-		if (SharedInput(input, 5, command, mode, activate)) {
+		if (SharedInput(input, command, mode, activate)) {
 			looping = TeleportCheck(input, command, mode, activate);
 		}
 	}
@@ -3244,18 +3132,18 @@ void CheatScreen::TeleportMenu() {
 }
 
 void CheatScreen::TeleportActivate(
-		char* input, int& command, Cheat_Prompt& mode, int& prev) {
-	int        i = std::atoi(input);
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode, int& prev) {
+	int        i = std::atoi(input.data());
 	static int lat;
 	Tile_coord t       = gwin->get_main_actor()->get_tile();
 	const int  highest = Find_highest_map();
 
 	mode = CP_Command;
 	switch (command) {
-	case 'g':    // North or South
-		if (!input[0]) {
+	case KeyCodes::Key_g:    // North or South
+		if (input.empty()) {
 			mode    = CP_NorthSouth;
-			command = 'g';
+			command = KeyCodes::Key_g;
 		} else if (input[0] == 'n' || input[0] == 's') {
 			prev = input[0];
 			if (prev == 'n') {
@@ -3263,24 +3151,24 @@ void CheatScreen::TeleportActivate(
 			} else {
 				mode = CP_SLatitude;
 			}
-			command = 'a';
+			command = KeyCodes::Key_a;
 		} else {
 			mode = CP_InvalidValue;
 		}
 		break;
 
-	case 'a':    // latitude
+	case KeyCodes::Key_a:    // latitude
 		if (i < -1 || (prev == 'n' && i > 113) || (prev == 's' && i > 193)) {
 			mode = CP_InvalidValue;
 		} else if (i == -1) {
 			mode = CP_Canceled;
-		} else if (!input[0]) {
+		} else if (input.empty()) {
 			if (prev == 'n') {
 				mode = CP_NLatitude;
 			} else {
 				mode = CP_SLatitude;
 			}
-			command = 'a';
+			command = KeyCodes::Key_a;
 		} else {
 			if (prev == 'n') {
 				lat = ((i * -10) + 0x46E);
@@ -3288,14 +3176,14 @@ void CheatScreen::TeleportActivate(
 				lat = ((i * 10) + 0x46E);
 			}
 			mode    = CP_WestEast;
-			command = 'b';
+			command = KeyCodes::Key_b;
 		}
 		break;
 
-	case 'b':    // West or East
-		if (!input[0]) {
+	case KeyCodes::Key_b:    // West or East
+		if (input.empty()) {
 			mode    = CP_WestEast;
-			command = 'b';
+			command = KeyCodes::Key_b;
 		} else if (input[0] == 'w' || input[0] == 'e') {
 			prev = input[0];
 			if (prev == 'w') {
@@ -3303,24 +3191,24 @@ void CheatScreen::TeleportActivate(
 			} else {
 				mode = CP_ELongitude;
 			}
-			command = 'c';
+			command = KeyCodes::Key_c;
 		} else {
 			mode = CP_InvalidValue;
 		}
 		break;
 
-	case 'c':    // longitude
+	case KeyCodes::Key_c:    // longitude
 		if (i < -1 || (prev == 'w' && i > 93) || (prev == 'e' && i > 213)) {
 			mode = CP_InvalidValue;
 		} else if (i == -1) {
 			mode = CP_Canceled;
-		} else if (!input[0]) {
+		} else if (input.empty()) {
 			if (prev == 'w') {
 				mode = CP_WLongitude;
 			} else {
 				mode = CP_ELongitude;
 			}
-			command = 'c';
+			command = KeyCodes::Key_c;
 		} else {
 			if (prev == 'w') {
 				t.tx = ((i * -10) + 0x3A5);
@@ -3333,31 +3221,31 @@ void CheatScreen::TeleportActivate(
 		}
 		break;
 
-	case 'h':    // hex X coord
-		i = strtol(input, nullptr, 16);
+	case KeyCodes::Key_h:    // hex X coord
+		i = strtol(input.data(), nullptr, 16);
 		if (i < -1 || i > c_num_tiles) {
 			mode = CP_InvalidValue;
 		} else if (i == -1) {
 			mode = CP_Canceled;
-		} else if (!input[0]) {
+		} else if (input.empty()) {
 			mode    = CP_HexXCoord;
-			command = 'h';
+			command = KeyCodes::Key_h;
 		} else {
 			prev    = i;
 			mode    = CP_HexYCoord;
-			command = 'i';
+			command = KeyCodes::Key_i;
 		}
 		break;
 
-	case 'i':    // hex Y coord
-		i = strtol(input, nullptr, 16);
+	case KeyCodes::Key_i:    // hex Y coord
+		i = strtol(input.data(), nullptr, 16);
 		if (i < -1 || i > c_num_tiles) {
 			mode = CP_InvalidValue;
 		} else if (i == -1) {
 			mode = CP_Canceled;
-		} else if (!input[0]) {
+		} else if (input.empty()) {
 			mode    = CP_HexYCoord;
-			command = 'i';
+			command = KeyCodes::Key_i;
 		} else {
 			t.tx = prev;
 			t.ty = i;
@@ -3366,29 +3254,29 @@ void CheatScreen::TeleportActivate(
 		}
 		break;
 
-	case 'd':    // dec X coord
+	case KeyCodes::Key_d:    // dec X coord
 		if (i < -1 || i > c_num_tiles) {
 			mode = CP_InvalidValue;
 		} else if (i == -1) {
 			mode = CP_Canceled;
-		} else if (!input[0]) {
+		} else if (input.empty()) {
 			mode    = CP_XCoord;
-			command = 'd';
+			command = KeyCodes::Key_d;
 		} else {
 			prev    = i;
 			mode    = CP_YCoord;
-			command = 'e';
+			command = KeyCodes::Key_e;
 		}
 		break;
 
-	case 'e':    // dec Y coord
+	case KeyCodes::Key_e:    // dec Y coord
 		if (i < -1 || i > c_num_tiles) {
 			mode = CP_InvalidValue;
 		} else if (i == -1) {
 			mode = CP_Canceled;
-		} else if (!input[0]) {
+		} else if (input.empty()) {
 			mode    = CP_YCoord;
-			command = 'e';
+			command = KeyCodes::Key_e;
 		} else {
 			t.tx = prev;
 			t.ty = i;
@@ -3397,7 +3285,7 @@ void CheatScreen::TeleportActivate(
 		}
 		break;
 
-	case 'n':    // NPC
+	case KeyCodes::Key_n:    // NPC
 		if (i < -1 || (i >= 356 && i <= 359)) {
 			mode = CP_InvalidNPC;
 		} else if (i == -1) {
@@ -3409,7 +3297,7 @@ void CheatScreen::TeleportActivate(
 		}
 		break;
 
-	case 'm':    // map
+	case KeyCodes::Key_m:    // map
 		if (i == -1) {
 			mode = CP_Canceled;
 		} else if ((i < 0 || i > 255) || i > highest) {
@@ -3422,45 +3310,44 @@ void CheatScreen::TeleportActivate(
 	default:
 		break;
 	}
-	for (i = 0; i < 5; i++) {
-		input[i] = 0;
-	}
+	input.clear();
 }
 
 // Checks the input
 bool CheatScreen::TeleportCheck(
-		char* input, int& command, Cheat_Prompt& mode, bool& activate) {
+		std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+		bool& activate) {
 	ignore_unused_variable_warning(activate);
 	switch (command) {
 		// Simple commands
-	case 'g':    // geographic
+	case KeyCodes::Key_g:    // geographic
 		mode = CP_NorthSouth;
 		return true;
 
-	case 'h':    // hex
+	case KeyCodes::Key_h:    // hex
 		mode = CP_HexXCoord;
 		return true;
 
-	case 'd':    // dec teleport
+	case KeyCodes::Key_d:    // dec teleport
 		mode = CP_XCoord;
 		return true;
 
-	case 'n':    // NPC teleport
+	case KeyCodes::Key_n:    // NPC teleport
 		mode = CP_ChooseNPC;
 		break;
 
-	case 'm':    // NPC teleport
+	case KeyCodes::Key_m:    // NPC teleport
 		mode = CP_EnterValue;
 		break;
 
 		// X and Escape leave
-	case SDLK_ESCAPE:
-	case 'x':
-		input[0] = command;
+	case KeyCodes::Key_Escape:
+	case KeyCodes::Key_x:
+		input = static_cast<char>(command);
 		return false;
 
 	default:
-		command = 0;
+		command = KeyCodes::Key_Unknown;
 		mode    = CP_InvalidCom;
 		break;
 	}

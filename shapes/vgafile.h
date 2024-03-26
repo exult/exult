@@ -111,7 +111,7 @@ public:
 		paint_rle(scrwin, px, py);
 	}
 
-	void paint_rle_remapped(int px, int py, unsigned char* trans) {
+	void paint_rle_remapped(int px, int py, const unsigned char* trans) {
 		paint_rle_remapped(scrwin, px, py, trans);
 	}
 
