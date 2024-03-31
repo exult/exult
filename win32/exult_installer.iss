@@ -24,7 +24,6 @@ WizardStyle=modern
 
 [Dirs]
 Name: "{app}\data"
-Name: "{app}\mods"
 
 [Types]
 Name: full; Description: Full installation
@@ -315,13 +314,13 @@ begin
       if Length(sDir) > 0 then begin iBGVerified := VerifyBGDirectory ( sDir );
       end else iBGVerified := 0;
 
-      if (iBGVerified = 1) then  BGPath := sDir; 
+      if (iBGVerified = 1) then  BGPath := sDir;
 
      sDir := SIEdit.Text;
       if Length(sDir) > 0 then begin iSIVerified := VerifySIDirectory ( sDir );
       end else iSIVerified := 0;
 
-      if (iSIVerified = 1) then SIPath := sDir; 
+      if (iSIVerified = 1) then SIPath := sDir;
 
       if (iBGVerified = 0) AND (iSIVerified = 0) then begin
         if MsgBox ('Warning: No valid game installations found. Do you wish to continue?', mbError, MB_YESNO or MB_DEFBUTTON2) = IDYES then begin
@@ -347,11 +346,11 @@ begin
       if PrevItemAChecked <> WizardIsComponentSelected('downloads\audio') then
         DownloadPage.Add('https://downloads.sourceforge.net/project/exult/exult-data/exult_audio.zip', 'exult_audio.zip','72e10efa8664a645470ceb99f6b749ce99c3d5fd1c8387c63640499cfcdbbc68');
       if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\keyring')) AND (iBGVerified = 1) then
-        DownloadPage.Add('https://github.com/exult/exult/releases/latest/download/Keyring.zip', 'Keyring.zip', '');      
+        DownloadPage.Add('https://github.com/exult/exult/releases/latest/download/Keyring.zip', 'Keyring.zip', '');
       if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\sfisland')) AND (iBGVerified = 1) then
-        DownloadPage.Add('https://github.com/exult/exult/releases/latest/download/SFisland.zip', 'Sfisland.zip', '');      
+        DownloadPage.Add('https://github.com/exult/exult/releases/latest/download/SFisland.zip', 'Sfisland.zip', '');
       if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\sifixes')) AND (iSIVerified = 1) then
-        DownloadPage.Add('https://github.com/exult/exult/releases/latest/download/Sifixes.zip', 'Sifixes.zip', '');      
+        DownloadPage.Add('https://github.com/exult/exult/releases/latest/download/Sifixes.zip', 'Sifixes.zip', '');
       DownloadPage.Show;
       try
         try
@@ -421,24 +420,29 @@ begin
     if WizardIsComponentSelected('Icons') then
       RegWriteStringValue(HKEY_LOCAL_MACHINE, 'Software\Exult', 'ShellObjectFolder', ExpandConstant('{groupname}'));
     
-// Wine doesn't support the Windows built-in unzip method hence will crash at installing the downloads
-    if not RegKeyExists(HKEY_LOCAL_MACHINE, 'Software\Wine') then begin     
-// again check if component was selected and game paths are verified, and there create the mods sub folder
-    if PrevItemAChecked <> WizardIsComponentSelected('downloads\audio') then
-      ExtractMe('{tmp}\exult_audio.zip','{app}\data\');
-    if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\keyring')) AND (iBGVerified = 1) then begin
-      ForceDirectories(sBGmods);
-      ExtractMe('{tmp}\Keyring.zip',sBGmods);
-    end;    
-    if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\sfisland')) AND (iBGVerified = 1) then begin
-      ForceDirectories(sBGmods);
-      ExtractMe('{tmp}\SFisland.zip',sBGmods);
-    end;    
-    if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\sifixes')) AND (iSIVerified = 1) then begin
-      ForceDirectories(sSImods);
-      ExtractMe('{tmp}\Sifixes.zip',sSImods);
-    end;
-    end else if RegKeyExists(HKEY_LOCAL_MACHINE, 'Software\Wine') then begin
+    // Wine doesn't support the Windows built-in unzip method hence will crash at installing the downloads
+    if not RegKeyExists(HKEY_LOCAL_MACHINE, 'Software\Wine') then
+    begin
+      // again check if component was selected and game paths are verified, and there create the mods sub folder
+      if PrevItemAChecked <> WizardIsComponentSelected('downloads\audio') then
+        ExtractMe('{tmp}\exult_audio.zip','{app}\data\');
+      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\keyring')) AND (iBGVerified = 1) then
+      begin
+        ForceDirectories(sBGmods);
+        ExtractMe('{tmp}\Keyring.zip',sBGmods);
+      end;
+      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\sfisland')) AND (iBGVerified = 1) then
+      begin
+        ForceDirectories(sBGmods);
+        ExtractMe('{tmp}\SFisland.zip',sBGmods);
+      end;
+      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\sifixes')) AND (iSIVerified = 1) then
+      begin
+        ForceDirectories(sSImods);
+        ExtractMe('{tmp}\Sifixes.zip',sSImods);
+      end;
+    end else if RegKeyExists(HKEY_LOCAL_MACHINE, 'Software\Wine') then
+    begin
       MsgBox('Warning: You seem to be using Wine. Unfortunately the installer cannnot install the extra downloads on Wine!', mbInformation, MB_OK);
     end;
   end;
