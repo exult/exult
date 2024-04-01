@@ -2,7 +2,7 @@ ucxtdir = $(datadir)/exult
 
 if BUILD_TOOLS
 if CROSS_COMPILING
-head2data = $(HEAD2DATA)
+head2data = $(HEAD2DATA_PROG)
 else
 head2data = $(top_builddir)/usecode/ucxt/head2data
 endif

@@ -2,11 +2,11 @@
 # Instead, run makefile_builder.sh from the parent directory.
 
 # Base of the exult source
-UCCDIR=$(top_srcdir)/usecode/compiler
-UCC=$(UCCDIR)/ucc
+UCCDIR:=$(top_srcdir)/usecode/compiler
+UCC:=$(UCCDIR)/ucc
 
-EXPACKDIR=$(top_srcdir)/tools
-EXPACK=$(EXPACKDIR)/expack
+EXPACKDIR:=$(top_srcdir)/tools
+EXPACK:=$(EXPACKDIR)/expack
 
 USECODE_OBJECTS :=	\
 	src/cutscenes/fawn_storm.uc	\

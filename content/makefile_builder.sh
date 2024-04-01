@@ -73,11 +73,11 @@ find . -mindepth 2 -iname "*.cfg" | while read -r cfgfile; do
 # Instead, run makefile_builder.sh from the parent directory.
 
 # Base of the exult source
-UCCDIR=\$(top_srcdir)/usecode/compiler
-UCC=\$(UCCDIR)/ucc
+UCCDIR:=\$(top_srcdir)/usecode/compiler
+UCC:=\$(UCCDIR)/ucc
 
-EXPACKDIR=\$(top_srcdir)/tools
-EXPACK=\$(EXPACKDIR)/expack
+EXPACKDIR:=\$(top_srcdir)/tools
+EXPACK:=\$(EXPACKDIR)/expack
 " >> "$modmakefile_am"
 
 	# Boilerplate for Makefile.mingw:

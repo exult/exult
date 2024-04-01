@@ -220,7 +220,7 @@ EXTRA_DIST = flx.in $(EXULT_FLX_OBJECTS) $(EXULT_BG_FLX_OBJECTS) \
 	$(EXULT_BG_PAPERDOL_VGA_OBJECTS) $(EXULT_BG_MR_FACES_VGA_OBJECTS)
 
 if CROSS_COMPILING
-expack = $(EXPACK)
+expack = $(EXPACK_PROG)
 else
 expack = $(top_builddir)/tools/expack$(EXEEXT)
 endif

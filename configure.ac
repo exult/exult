@@ -13,7 +13,7 @@ AC_CONFIG_SRCDIR([exult.cc])
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([-Wno-portability])
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Package Name])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Package Version])
 
@@ -1202,22 +1202,22 @@ AM_CONDITIONAL(CROSS_COMPILING, test $cross_compiling = yes)
 
 AS_IF([ test $cross_compiling = yes ], [
 	if test x$enable_data = xyes; then
-		AC_PATH_PROG(EXPACK, expack, no)
+		AC_PATH_PROG(EXPACK_PROG, expack, no)
 		echo "While cross compiling you need to have a build system native"
 		echo "expack in your path to generate Exult's data files."
 		echo "After you natively compiled Exult you will find expack in the tools subfolder."
-		if test x$EXPACK = xno; then
+		if test x$EXPACK_PROG = xno; then
 			AC_MSG_ERROR([Could not find expack in your path, cannot generate data files.])
 		fi
 	fi
 
 	if test x$enable_tools = xyes; then
-		AC_PATH_PROG(HEAD2DATA, head2data, no)
+		AC_PATH_PROG(HEAD2DATA_PROG, head2data, no)
 		echo "While cross compiling you need to have a build system native"
 		echo "head2data in your path to build part of Exult's tools."
 		echo "After you natively compiled Exult you will find head2data"
 		echo "in the usecode/ucxt subfolder."
-		if test x$HEAD2DATA = xno; then
+		if test x$HEAD2DATA_PROG = xno; then
 			AC_MSG_ERROR([Could not find head2data in your path, cannot generate data files for tools.])
 		fi
 	fi
@@ -1411,10 +1411,10 @@ if test ${cross_compiling} = yes; then
 	echo
 	echo Cross Compiling for $host
 	if test x$enable_data = xyes; then
-		echo expack path................ : $EXPACK
+		echo expack path................ : $EXPACK_PROG
 	fi
 	if test x$enable_tools = xyes; then
-		echo head2data path............. : $HEAD2DATA
+		echo head2data path............. : $HEAD2DATA_PROG
 	fi
 fi
 echo
