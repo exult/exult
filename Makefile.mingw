@@ -513,7 +513,7 @@ debug: $(EXEC)
 	cp data/exult_si.flx $(U7PATH)/data
 
 dist:   U7PATH:=$(DISTPATH)/Exult-$(MSYSTEM_CARCH)
-dist:   $(EXEC) exconfig.dll install
+dist:   $(EXEC) exconfig.dll install Exult\ Source\ Code.url
 	mkdir -p $(DISTPATH)
 	cp AUTHORS $(U7PATH)/AUTHORS.txt
 	cp ChangeLog $(U7PATH)/ChangeLog.txt
@@ -533,6 +533,21 @@ dist:   $(EXEC) exconfig.dll install
 	u2d $(U7PATH)/*.txt
 	strip exconfig.dll -o $(DISTPATH)/exconfig-$(MSYSTEM_CARCH).dll
 	cp win32/exult_installer.iss $(DISTPATH)
+	cp Exult\ Source\ Code.url $(U7PATH)
+
+git_revision :=$(shell git rev-parse HEAD)
+git_tag :=$(shell git tag -l --points-at HEAD)
+Exult\ Source\ Code.url:
+	echo "[InternetShortcut]" > Exult\ Source\ Code.url
+ifneq  ($(git_tag),)
+	echo URL=https://github.com/exult/exult/tree/$(git_tag) >> Exult\ Source\ Code.url
+else ifneq ($(git_revision),)
+	echo URL=https://github.com/exult/exult/tree/$(git_revision) >> Exult\ Source\ Code.url
+else
+	echo URL=https://github.com/exult/exult/ >> Exult\ Source\ Code.url
+endif
+	echo Iconfile=https://exult.sourceforge.io/favicon.ico >> Exult\ Source\ Code.url
+	echo IconIndex=0  >> Exult\ Source\ Code.url
 
 toolsinstall: tools
 	mkdir -p $(U7PATH)
@@ -551,7 +566,7 @@ toolsinstall: tools
 	cp data/u7sibetaintrinsics.data $(U7PATH)/data
 
 toolsdist: U7PATH:=$(DISTPATH)/Tools-$(MSYSTEM_CARCH)
-toolsdist: tools toolsinstall
+toolsdist: tools toolsinstall Exult\ Source\ Code.url
 	mkdir -p $(DISTPATH)
 	cp tools/expack.txt $(U7PATH)/tools
 	cp tools/intrins1.txt $(U7PATH)/tools
@@ -574,6 +589,7 @@ toolsdist: tools toolsinstall
 	cp usecode/ucxt/Docs/README $(U7PATH)/ucxt.txt
 	cp usecode/ucxt/Docs/ucxtread.txt $(U7PATH)
 	cp AUTHORS $(U7PATH)/AUTHORS.txt
+	cp Exult\ Source\ Code.url $(U7PATH)
 	cp COPYING $(U7PATH)/COPYING.txt
 	cp win32/README-SDL.txt $(U7PATH)/tools/README-SDL.txt
 	u2d $(U7PATH)/*.txt
@@ -609,7 +625,7 @@ studioinstall: exult_studio$(EXEEXT)
 	echo "[Settings]" > $(U7PATH)/share/gtk-3.0/settings.ini
 
 studiodist: U7PATH:=$(DISTPATH)/Studio-$(MSYSTEM_CARCH)
-studiodist: exult_studio$(EXEEXT) studioinstall
+studiodist: exult_studio$(EXEEXT) studioinstall  Exult\ Source\ Code.url
 	mkdir -p $(DISTPATH)
 	cp docs/exult_studio.html $(U7PATH)
 	cp docs/exult_studio.txt $(U7PATH)
@@ -618,6 +634,7 @@ studiodist: exult_studio$(EXEEXT) studioinstall
 	cp docs/images/studio*.png $(U7PATH)/images
 	cp AUTHORS $(U7PATH)/AUTHORS.txt
 	cp COPYING $(U7PATH)/COPYING.txt
+	cp Exult\ Source\ Code.url $(U7PATH)
 	u2d $(U7PATH)/*.txt
 	cp win32/exult_studio_installer.iss $(DISTPATH)
 
@@ -642,6 +659,7 @@ plugindist: plugin plugininstall
 
 allclean: clean toolsclean studioclean
 	rm -f exconfig.dll exconfig_rc.o win32/exconfig.o
+	rm -f Exult\ Source\ Code.url
 
 allinstall: install toolsinstall studioinstall
 

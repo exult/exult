@@ -31,7 +31,7 @@ Name: custom; Description: Custom installation; Flags: iscustom
 [Components]
 Name: Exult; Description: Install Exult; Types: full compact
 Name: Docs; Description: Install Exult Documentation; Types: full
-Name: GPL; Description: Install GPL License; Types: full compact custom; Flags: fixed
+Name: GPL; Description: Install GPL License and Link to Source; Types: full compact custom; Flags: fixed
 Name: Paths; Description: Setup Game Paths; Types: full compact custom pathsonly
 Name: Icons; Description: Create Start Menu Icons; Types: full compact
 Name: "downloads"; Description: "Download and install"; Types: full custom
@@ -51,6 +51,7 @@ Source: Exult-x86_64\Exult.exe; DestDir: {app}; Flags: ignoreversion; Components
 Source: Exult-x86_64\*.dll; DestDir: {app};  Flags: ignoreversion; Components: Exult; Check: Is64BitInstallMode
 ; Architecture-neutral files
 Source: Exult-i686\COPYING.txt; DestDir: {app}; Flags: ignoreversion; Components: GPL
+Source: Exult-i686\Exult Source Code.url; DestDir: {app}; Flags: ignoreversion; Components: GPL
 Source: Exult-i686\README-SDL.txt; DestDir: {app}; Flags: ignoreversion; Components: Exult
 Source: Exult-i686\AUTHORS.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
 Source: Exult-i686\bgdefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
@@ -76,6 +77,7 @@ Name: {group}\reset video settings; Filename: {app}\Exult.exe; Parameters: --res
 Name: {group}\Uninstall Exult; Filename: {uninstallexe}; Components: Icons
 Name: {group}\FAQ; Filename: {app}\FAQ.html; Flags: createonlyiffileexists; Components: Icons
 Name: {group}\Readme; Filename: {app}\ReadMe.html; Flags: createonlyiffileexists; Components: Icons
+Name: {group}\Exult Source Code; Filename : {app}\Exult Source Code.url; Components: Icons
 ; Name: {group}\COPYING; Filename: {app}\COPYING.txt; Flags: createonlyiffileexists; Components: Icons
 ; Name: {group}\ChangeLog; Filename: {app}\ChangeLog.txt; Flags: createonlyiffileexists; Components: Icons
 ; Name: {group}\Readme Win32; Filename: {app}\README.win32.txt; Flags: createonlyiffileexists; Components: Icons
