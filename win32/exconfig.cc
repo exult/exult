@@ -88,10 +88,13 @@ __declspec(dllexport) int __stdcall VerifyBGDirectory(char* path);
 
 void strcat_safe(char* dest, const char* src, size_t size_dest) {
 	size_t cur = std::strlen(dest);
-	if (cur > size_dest) {
+	if (cur >= size_dest) {
 		return;
 	}
-	std::strncat(dest, src, size_dest - cur - 1);
+	size_t remaining = size_dest - cur;
+
+	std::strncpy(dest+cur, src, remaining - 1);
+	dest[size_dest-1]=0;
 }
 
 //
@@ -99,11 +102,12 @@ void strcat_safe(char* dest, const char* src, size_t size_dest) {
 //
 class Path {
 	struct Directory {
-		char       name[256];
+		char       name[256]; // I hope no one needs path components this long
 		Directory* next{};
 
 		Directory() {
 			name[0] = 0;
+			next    = nullptr;
 		}
 	};
 
@@ -169,11 +173,19 @@ int Path::Addit(const char* p) {
 		d       = d->next;
 	}
 
-	for (i = 0; p[i] != 0 && p[i] != '\\' && p[i] != '/'; i++) {
+	for (i = 0; p[i] != 0 && p[i] != '\\' && p[i] != '/' && i < std::size(d->name)-1; i++) {
 		d->name[i] = p[i];
 	}
 
 	d->name[i] = 0;
+
+	if (i == std::size(d->name) - 1)
+	{
+		// 'if there is no separator where we stopped the path component is too long so discard everything after what we copied
+		if (p[i] && (p[i] != '\\' && p[i] != '/')) {
+			return std::strlen(p);
+		}
+	}
 
 	// Skip all 'slashes'
 	while (p[i] && (p[i] == '\\' || p[i] == '/')) {
@@ -187,7 +199,13 @@ int Path::Addit(const char* p) {
 	} else if (!std::strcmp(d->name, "..")) {
 		delete d;
 		delete prev;
-		prevprev->next = nullptr;
+		if (prevprev) {
+			prevprev->next = nullptr;
+
+			// if there is no prevprev we've gone back upto the root
+		} else {
+			dirs = nullptr;
+		}
 	}
 
 	return i;
