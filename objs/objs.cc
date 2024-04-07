@@ -978,6 +978,8 @@ void Game_object::activate(int event) {
 		gumpman->add_gump(this, gump);
 		return;
 	}
+	//temp cout statement to diagnose cube
+	std::cout << "Calling use code for " << this->get_name().c_str() << endl;
 	ucmachine->call_usecode(
 			get_usecode(), this,
 			static_cast<Usecode_machine::Usecode_events>(event));

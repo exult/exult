@@ -189,6 +189,10 @@ bool Usecode_internal::call_function(
 		int funcid, int eventid, Game_object* caller, bool entrypoint,
 		bool orig, int givenargs) {
 	Usecode_function* fun = find_function(funcid);
+	//temp enclosed prism cout
+	std::cout << "In usecode function with funcid: " << hex << funcid << dec << std::endl;
+	std::cout << "\t eventid: " << hex << eventid << dec << std::endl;
+
 	if (!fun) {
 		return false;
 	}
@@ -2045,6 +2049,8 @@ int Usecode_internal::run() {
 
 			frame->ip++;
 
+			//temp couts to find out what opcodes we are getting when reading in this function
+			std::cout << "Current opcode: " << hex << opcode << dec << std::endl;
 			switch (opcode) {
 			case UC_CONVERSE:        // start conversation
 			case UC_CONVERSE32: {    // (32 bit version)
@@ -3059,6 +3065,8 @@ int Usecode_internal::call_usecode(
 		Usecode_events event) {
 	conv->clear_answers();
 
+	//temp cout for Enclosed Prism debugging
+	std::cout << "In usecode function id: " << id << std::endl;
 	int ret;
 	if (call_function(id, event, item, true)) {
 		ret = run();
