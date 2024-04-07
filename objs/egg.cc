@@ -1114,7 +1114,6 @@ void Egg_object::hatch(
 	}
 
 	/* end hack */
-
 	const int roll = must ? 0 : 1 + rand() % 100;
 	if (roll <= probability) {
 		// Time to hatch the egg.
