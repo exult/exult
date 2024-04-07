@@ -189,7 +189,6 @@ bool Usecode_internal::call_function(
 		int funcid, int eventid, Game_object* caller, bool entrypoint,
 		bool orig, int givenargs) {
 	Usecode_function* fun = find_function(funcid);
-
 	if (!fun) {
 		return false;
 	}
@@ -2045,6 +2044,7 @@ int Usecode_internal::run() {
 #endif
 
 			frame->ip++;
+
 			switch (opcode) {
 			case UC_CONVERSE:        // start conversation
 			case UC_CONVERSE32: {    // (32 bit version)
@@ -2790,7 +2790,7 @@ int Usecode_internal::run() {
 				frame_changed = true;
 				break;
 			}
-			case UC_PUSHEVENTID:    // PUSH EVENTID
+			case UC_PUSHEVENTID:    // PUSH EVENTID.
 				pushi(frame->eventid);
 				break;
 			case UC_ARRA: {    // ARRA.
