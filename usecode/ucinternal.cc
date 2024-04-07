@@ -2050,7 +2050,7 @@ int Usecode_internal::run() {
 			frame->ip++;
 
 			//temp couts to find out what opcodes we are getting when reading in this function
-			std::cout << "Current opcode: " << hex << opcode << dec << std::endl;
+			std::cout << "Current opcode: 0x" << hex << opcode << dec << std::endl;
 			switch (opcode) {
 			case UC_CONVERSE:        // start conversation
 			case UC_CONVERSE32: {    // (32 bit version)
@@ -2796,7 +2796,7 @@ int Usecode_internal::run() {
 				frame_changed = true;
 				break;
 			}
-			case UC_PUSHEVENTID:    // PUSH EVENTID.
+			case UC_PUSHEVENTID:    // PUSH EVENTID
 				pushi(frame->eventid);
 				break;
 			case UC_ARRA: {    // ARRA.
