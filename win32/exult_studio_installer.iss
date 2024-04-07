@@ -37,6 +37,7 @@ Source: Studio-x86_64\lib\*; DestDir: {app}\lib\; Flags: ignoreversion recursesu
 ; Architecture-neutral files
 Source: Studio-i686\share\*; DestDir: {app}\share\; Flags: ignoreversion recursesubdirs
 Source: Studio-i686\COPYING.txt; DestDir: {app}; Flags: onlyifdoesntexist
+Source: Studio-i686\Exult Source Code.url; DestDir: {app}; Flags: ignoreversion;
 Source: Studio-i686\AUTHORS.txt; DestDir: {app}; Flags: onlyifdoesntexist
 Source: Studio-i686\images\*.gif; DestDir: {app}\images\; Flags: ignoreversion
 Source: Studio-i686\images\studio*.png; DestDir: {app}\images\; Flags: ignoreversion

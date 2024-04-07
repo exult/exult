@@ -450,11 +450,7 @@ public:
 			unsigned int tz, unsigned short itype, unsigned char prob,
 			uint16 d1, uint16 d2)
 			: Egg_object(shnum, frnum, tx, ty, tz, itype, prob, d1, d2),
-			  weather(d1 & 0xff), len(d1 >> 8) {
-		if (!len) {       // Means continuous.
-			len = 120;    // How about a couple game hours?
-		}
-	}
+			  weather(d1 & 0xff), len(d1 >> 8) {}
 
 	void hatch_now(Game_object* obj, bool must) override {
 		ignore_unused_variable_warning(obj, must);
@@ -1180,7 +1176,7 @@ void Egg_object::set_weather(
 	case 2:    // Storm.
 		eman->add_effect(std::make_unique<Storm_effect>(len, 0, egg));
 		break;
-	case 3:    // (On Ambrosia).
+	case 3:    // (On Ambrosia and in Generators).
 		eman->remove_weather_effects();
 		eman->add_effect(std::make_unique<Sparkle_effect>(len, 0, egg));
 		break;

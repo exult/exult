@@ -63,6 +63,7 @@ Source: Tools-x86_64\tools\*.dll; DestDir: {app}\tools\; Flags: ignoreversion; C
 ; Architecture-neutral files
 Source: Tools-i686\AUTHORS.txt; DestDir: {app}; Flags: onlyifdoesntexist
 Source: Tools-i686\COPYING.txt; DestDir: {app}; Flags: onlyifdoesntexist
+Source: Tools-i686\Exult Source Code.url; DestDir: {app}; Flags: ignoreversion;
 Source: Tools-i686\tools\README-SDL.txt; DestDir: {app}\tools\; Flags: ignoreversion
 Source: Tools-i686\data\bginclude.uc; DestDir: {app}\data\; Flags: ignoreversion
 Source: Tools-i686\data\events.data; DestDir: {app}\data\; Flags: ignoreversion
