@@ -175,11 +175,10 @@ void Shape_sfx::stop() {
 }
 
 inline void Shape_sfx::set_looping() {
-	looping = sfxinf
-					  ? (sfxinf->get_sfx_range() == 1
-						 && sfxinf->get_chance() == 100
-						 && !sfxinf->play_horly_ticks())
-					  : false;
+	looping = sfxinf ? (sfxinf->get_sfx_range() == 1
+						&& sfxinf->get_chance() == 100
+						&& !sfxinf->play_horly_ticks())
+					 : false;
 }
 
 /*
@@ -238,8 +237,11 @@ void Shape_sfx::update(bool play) {
 	}
 
 	dir               = 0;
-	const int  volume = AUDIO_MAX_VOLUME;    // Set volume based on distance.
+	//set volume based on Distance and SFX volume
+	const int  volume = static_cast<int>(AUDIO_MAX_VOLUME * (sfxinf->get_volume() / 100.0));
 	const bool halt   = Get_sfx_out_of_range(gwin, obj->get_center_tile());
+	std::cout << "Volume of sfx for shape num" << obj->get_shapenum() << " is ";
+	std::cout << volume << std::endl;
 
 	if (play && halt) {
 		play = false;

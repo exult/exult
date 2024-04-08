@@ -57,7 +57,7 @@
 
 %%section shape_sfx
 #	Format
-#		:shapenum/sfxnum/chance/range/rand/extra
+#		:shapenum/sfxnum/chance/range/rand/extra/volume
 #	Only the first two parameters are required.
 #	chance is the % chance of playing the sfx at any given moment.
 #	Values of chance not in the [1-100] interval are treated as 100.
@@ -66,9 +66,10 @@
 #	rand is a flag controlling how range is used: if rand is 1, Exult
 #	will randomly play one sfx in the range; if rand is 0, Exult will
 #	play them sequentially, wrapping back to the first sfx.
-#	extra is basicall for the grandfather clock. It is a SFX that will
+#	extra is basically for the grandfather clock. It is a SFX that will
 #	play every game hour a number of times equal to hour % 12 (or
-#	twelve times for midnight).
+#	twelve times for midnight).Volume is used to control individual sfx
+#	volume levels. If no value is given, 100% volume will be assumed.
 #
 #	Surf (49)
 :612/49
@@ -185,7 +186,7 @@
 
 #	Energy Field
 #
-:768/11
+:768/11/20/0/0/0/40
 
 #	Smokebomb
 #
