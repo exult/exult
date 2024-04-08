@@ -257,13 +257,6 @@ void Shape_sfx::update(bool play) {
 	const int  volume = AUDIO_MAX_VOLUME;    // Set volume based on distance.
 	const bool halt   = Get_sfx_out_of_range(gwin, obj->get_center_tile());
 	const bool frame_halt = Is_halt_frame(obj->get_framenum(), sfxinf->get_halt_frame());
-	std::cout << "Frame of shape " << obj->get_shapenum() << " is " << obj->get_framenum() << std::endl;
-	std::cout << "\tAlso has halt frame of " << sfxinf->get_halt_frame() << std::endl;
-	if (frame_halt)
-	{
-		std::cout << "SFX Halting for shape " << obj->get_shapenum() << " by hitting frame " << std::endl;
-		std::cout << sfxinf->get_halt_frame() << std::endl;
-	}
 
 	if ((play && halt) || (play && frame_halt)) {
 		play = false;
