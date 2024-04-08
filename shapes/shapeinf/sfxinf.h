@@ -41,6 +41,7 @@ class SFX_info : public Base_info {
 	int  range;     // # of sequential sfx to be used.
 	int  chance;    // % chance of playing the SFX.
 	int  extra;     // For grandfather clock.
+	int halt_frame; // For energy field to halt when it hits a certain frame
 
 public:
 	friend class Shape_info;
@@ -88,6 +89,10 @@ public:
 
 	bool play_horly_ticks() const {
 		return extra > -1;
+	}
+
+	int get_halt_frame() const {
+		return halt_frame;
 	}
 
 	int get_extra_sfx() const {

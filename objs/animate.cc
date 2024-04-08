@@ -59,6 +59,22 @@ static inline bool Get_sfx_out_of_range(
 		   > (MAX_SOUND_FALLOFF * MAX_SOUND_FALLOFF);
 }
 
+static inline bool Is_halt_frame(
+		int frame_num, int halt_frame
+		){
+	if (halt_frame == -1)
+	{
+		return false;
+	}else
+	{
+		if (frame_num == halt_frame)
+		{
+			return true;
+		}
+		return false;
+	}
+}
+
 /*
  *  Play SFX.
  */
@@ -240,8 +256,14 @@ void Shape_sfx::update(bool play) {
 	dir               = 0;
 	const int  volume = AUDIO_MAX_VOLUME;    // Set volume based on distance.
 	const bool halt   = Get_sfx_out_of_range(gwin, obj->get_center_tile());
+	const bool frame_halt = Is_halt_frame(obj->get_framenum(), sfxinf->get_halt_frame());
+	if (frame_halt)
+	{
+		std::cout << "SFX Halting for object " << obj->get_shapenum() << " by hitting frame ";
+		std::cout << sfxinf->get_halt_frame() << std::endl;
+	}
 
-	if (play && halt) {
+	if ((play && halt) || (play && frame_halt)) {
 		play = false;
 	}
 
@@ -251,7 +273,7 @@ void Shape_sfx::update(bool play) {
 			channel[i] = Audio::get_ptr()->play_sound_effect(
 					sfxnum[i], obj, volume, rep[i]);
 		} else if (channel[i] != -1) {
-			if (halt) {
+			if (halt || frame_halt) {
 				Audio::get_ptr()->stop_sound_effect(channel[i]);
 				channel[i] = -1;
 			} else {

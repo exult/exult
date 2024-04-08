@@ -54,6 +54,7 @@ bool SFX_info::read(
 		}
 		random = ReadInt(in, 0) != 0;
 		extra  = ReadInt(in, -1);
+		halt_frame = ReadInt(in, -1);
 	}
 	return true;
 }
