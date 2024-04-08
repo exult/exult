@@ -803,7 +803,7 @@ Sequence_actor_action::Sequence_actor_action(
 		Actor_action* a1, Actor_action* a2, Actor_action* a3)
 		: index(0), speed(100) {
 	// Create 0-delimited list.
-	actions = new Actor_action* [] {
+	actions = new Actor_action* [5] {
 		a0, a1, a2, a3, nullptr,
 	};
 }

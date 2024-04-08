@@ -58,6 +58,7 @@ jobs:
   notify:
     name: Exult-CI (IRC & Discord notification)
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs:
       - ci-freebsd
     if: ${{ always() && (github.repository_owner == 'exult' && github.event_name != 'pull_request') }}
