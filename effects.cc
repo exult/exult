@@ -1287,7 +1287,7 @@ protected:
 			int ascrolly) override {
 		set_frame<fra0, fraN, randomize>(drop);
 		// Time to restart?
-		if (x < 0 || x >= w || y < 0 || y >= h) {
+		if (x < 0 || x >= w || y < 0 || y >= h || (delta == 0 && drop.get_framenum() == fraN)) {
 			const int r = rand();
 			drop.move(ascrollx + r % (w - w / 8), ascrolly + r % (h - h / 4));
 		} else {    // Next spot.
@@ -1300,7 +1300,7 @@ protected:
 // using Raindrop = Basicdrop< 3, 6, 6, false>;
 using Raindrop  = Basicdrop<3, 7, 6, false>;
 using Snowflake = Basicdrop<13, 20, 1, false>;
-using Sparkle   = Basicdrop<21, 27, 0, true>;
+using Sparkle   = Basicdrop<21, 27, 0, true>; //delta is zero as sparkles should not fall
 
 /*
  *  Raining.
@@ -1523,7 +1523,7 @@ Sparkle_effect::Sparkle_effect(
 	// Start snowing soon.
 
 	eman->add_effect(std::make_unique<Rain_effect<Sparkle>>(
-			duration, delay, MAXDROPS / 5, 3, egg));
+			duration, delay, MAXDROPS / 6, 3, egg));
 }
 
 /**
