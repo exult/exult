@@ -1300,7 +1300,7 @@ protected:
 // using Raindrop = Basicdrop< 3, 6, 6, false>;
 using Raindrop  = Basicdrop<3, 7, 6, false>;
 using Snowflake = Basicdrop<13, 20, 1, false>;
-using Sparkle   = Basicdrop<21, 27, 12, true>;
+using Sparkle   = Basicdrop<21, 27, 0, true>;
 
 /*
  *  Raining.
@@ -1523,7 +1523,7 @@ Sparkle_effect::Sparkle_effect(
 	// Start snowing soon.
 
 	eman->add_effect(std::make_unique<Rain_effect<Sparkle>>(
-			duration, delay, MAXDROPS / 10, 3, egg));
+			duration, delay, MAXDROPS / 5, 3, egg));
 }
 
 /**
