@@ -340,7 +340,7 @@ public:
 };
 
 /*
- *  Ambrosia's 'twinkling rain'.
+ *  Ambrosia and Generators Sparkles that seem to hang in the air.
  */
 class Sparkle_effect : public Weather_effect {
 	bool start;    // 1 to start storm.
