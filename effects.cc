@@ -1287,7 +1287,7 @@ protected:
 			int ascrolly) override {
 		set_frame<fra0, fraN, randomize>(drop);
 		// Time to restart?
-		if (x < 0 || x >= w || y < 0 || y >= h) {
+		if (x < 0 || x >= w || y < 0 || y >= h || (delta == 0 && drop.get_framenum() == fraN)) {
 			const int r = rand();
 			drop.move(ascrollx + r % (w - w / 8), ascrolly + r % (h - h / 4));
 		} else {    // Next spot.
@@ -1300,7 +1300,7 @@ protected:
 // using Raindrop = Basicdrop< 3, 6, 6, false>;
 using Raindrop  = Basicdrop<3, 7, 6, false>;
 using Snowflake = Basicdrop<13, 20, 1, false>;
-using Sparkle   = Basicdrop<21, 27, 12, true>;
+using Sparkle   = Basicdrop<21, 27, 0, true>; //delta is zero as sparkles should not fall
 
 /*
  *  Raining.
@@ -1314,6 +1314,7 @@ protected:
 	int      num_drops;          // # to actually use.
 	bool     gradual;
 	Functor  do_drop;    // Controls how drops move.
+	int weatherType; // check weather type to show sparkle indoors
 
 	void change_ndrops(unsigned long curtime) {
 		if (!gradual) {
@@ -1341,7 +1342,9 @@ public:
 			int duration, int delay = 0, int ndrops = MAXDROPS, int n = -1,
 			Game_object* egg = nullptr)
 			: Weather_effect(duration, delay, n, egg), num_drops(ndrops),
-			  gradual(ndrops == 0) {}
+			  gradual(ndrops == 0) {
+		weatherType = n;
+	}
 
 	// Execute when due.
 	void handle_event(
@@ -1350,7 +1353,8 @@ public:
 		// Gradual start/end.
 		change_ndrops(curtime);
 
-		if (!gwin->is_main_actor_inside() && !gumpman->showing_gumps(true)) {
+		//we want to display the magic sparkle effect indoors however
+		if ((!gwin->is_main_actor_inside() && !gumpman->showing_gumps(true)) || weatherType == 3) {
 			// Don't show rain inside buildings!
 			Image_window8* win = gwin->get_win();
 			const int      w   = win->get_game_width();
@@ -1374,7 +1378,7 @@ public:
 
 	// Render.
 	void paint() override {
-		if (gwin->is_main_actor_inside()) {
+		if (gwin->is_main_actor_inside() && weatherType != 3) {
 			return;    // Inside.
 		}
 		// Get transform table.
@@ -1517,8 +1521,9 @@ Sparkle_effect::Sparkle_effect(
 		)
 		: Weather_effect(duration, delay, 3, egg), start(true) {
 	// Start snowing soon.
+
 	eman->add_effect(std::make_unique<Rain_effect<Sparkle>>(
-			duration, delay, MAXDROPS / 10, 3));
+			duration, delay, MAXDROPS / 6, 3, egg));
 }
 
 /**
