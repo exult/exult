@@ -189,7 +189,6 @@ bool Usecode_internal::call_function(
 		int funcid, int eventid, Game_object* caller, bool entrypoint,
 		bool orig, int givenargs) {
 	Usecode_function* fun = find_function(funcid);
-
 	if (!fun) {
 		return false;
 	}
