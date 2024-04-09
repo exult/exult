@@ -59,17 +59,6 @@ static inline bool Get_sfx_out_of_range(
 		   > (MAX_SOUND_FALLOFF * MAX_SOUND_FALLOFF);
 }
 
-static inline bool Is_halt_frame(int frame_num, int halt_frame) {
-	if (halt_frame == -1) {
-		return false;
-	} else {
-		if (frame_num == halt_frame) {
-			return true;
-		}
-		return false;
-	}
-}
-
 /*
  *  Play SFX.
  */
