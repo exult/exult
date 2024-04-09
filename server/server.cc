@@ -74,6 +74,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #		include "servewin32.h"
 #	else
 #		include <sys/un.h>
+#		include "eventman.h"
 #	endif
 
 #	ifdef __GNUC__
@@ -534,11 +535,9 @@ static void Handle_client_message(
 void Server_delay(Message_handler handle_message) {
 #	ifndef _WIN32
 	Uint32 expiration = DELAY_TOTAL_MS + SDL_GetTicks();
+	EventManager* eman = EventManager::getInstance();
 	for (;;) {
-		SDL_PumpEvents();
-		if ((SDL_PeepEvents(
-					 nullptr, 0, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)
-			 != 0)
+		if (eman->any_events_pending()
 			|| (static_cast<Sint32>(SDL_GetTicks())
 				>= static_cast<Sint32>(expiration))) {
 			return;

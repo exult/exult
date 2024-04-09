@@ -269,7 +269,7 @@ int Font::paint_text(
 		Image_buffer8* win,     // Buffer to paint in.
 		const char*    text,    // What to draw, 0-delimited.
 		int xoff, int yoff,     // Upper-left corner of where to start.
-		unsigned char* trans) {
+		const unsigned char* trans) {
 	ignore_unused_variable_warning(win);
 	int x = xoff;
 	yoff += get_text_baseline();

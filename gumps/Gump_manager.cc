@@ -47,6 +47,11 @@
 #include "touchui.h"
 
 #ifdef __GNUC__
+#	ifdef __clang__
+// Working around this clang bug with pragma push/pop:
+// https://github.com/clangd/clangd/issues/1167
+static_assert(true);
+#	endif
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif    // __GNUC__
@@ -635,12 +640,12 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		if (event.type == TouchUI::eventType) {
 			if (event.user.code == TouchUI::EVENT_CODE_TEXT_INPUT) {
 				if (event.user.data1 != nullptr) {
-					const char* text
-							= static_cast<const char*>(event.user.data1);
-					if (text) {
+					std::unique_ptr<const char[]> data(
+							static_cast<const char*>(event.user.data1));
+					const char* text = data.get();
+					if (text != nullptr) {
 						gump->text_input(text);
 					}
-					free(event.user.data1);
 				}
 			}
 		}

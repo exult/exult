@@ -419,7 +419,7 @@ int Palette::find_color(int r, int g, int b, int last) const {
  *  Creates a translation table between two palettes.
  */
 
-void Palette::create_palette_map(const Palette* to, unsigned char*& buf) const {
+void Palette::create_palette_map(const Palette* to, unsigned char* buf) const {
 	// Assume buf has 256 elements
 	for (int i = 0; i < 256; i++) {
 		buf[i] = to->find_color(

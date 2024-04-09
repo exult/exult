@@ -21,11 +21,14 @@
 
 #include "palette.h"
 
+#include <string>
+
 class Game_window;
 class Image_buffer8;
 class Font;
 class Game_clock;
 class Actor;
+enum class KeyCodes : int;
 
 class CheatScreen {
 	Actor*             grabbed = nullptr;
@@ -100,17 +103,19 @@ private:
 	int            centerx = 0, centery = 0;
 	Palette        pal;
 
-	void SharedPrompt(char* input, const Cheat_Prompt& mode);
+	void SharedPrompt(const std::string& input, const Cheat_Prompt& mode);
 	bool SharedInput(
-			char* input, int len, int& command, Cheat_Prompt& mode,
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode,
 			bool& activate);
 
 	void NormalLoop();
 	void NormalDisplay();
 	void NormalMenu();
-	void NormalActivate(char* input, int& command, Cheat_Prompt& mode);
+	void NormalActivate(
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode);
 	bool NormalCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate);
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+			bool& activate);
 
 	void ActivityDisplay();
 
@@ -122,46 +127,50 @@ private:
 	void         NPCDisplay(Actor* actor, int& num);
 	void         NPCMenu(Actor* actor, int& num);
 	void         NPCActivate(
-					char* input, int& command, Cheat_Prompt& mode, Actor* actor,
-					int& num);
+					std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+					Actor* actor, int& num);
 	bool NPCCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate,
-			Actor* actor, int& num);
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+			bool& activate, Actor* actor, int& num);
 
 	void FlagLoop(Actor* actor);
 	void FlagMenu(Actor* actor);
 	void FlagActivate(
-			char* input, int& command, Cheat_Prompt& mode, Actor* actor);
-	bool FlagCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate,
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode,
 			Actor* actor);
+	bool FlagCheck(
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+			bool& activate, Actor* actor);
 	Cheat_Prompt AdvancedFlagLoop(int flagnum, Actor* actor);
 
 	void BusinessLoop(Actor* actor);
 	void BusinessDisplay(Actor* actor);
 	void BusinessMenu(Actor* actor);
 	void BusinessActivate(
-			char* input, int& command, Cheat_Prompt& mode, Actor* actor,
-			int& time, int& prev);
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+			Actor* actor, int& time, int& prev);
 	bool BusinessCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate,
-			Actor* actor, int& time);
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+			bool& activate, Actor* actor, int& time);
 
 	void StatLoop(Actor* actor);
 	void StatMenu(Actor* actor);
 	void StatActivate(
-			char* input, int& command, Cheat_Prompt& mode, Actor* actor);
-	bool StatCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate,
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode,
 			Actor* actor);
+	bool StatCheck(
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+			bool& activate, Actor* actor);
 
 	void TeleportLoop();
 	void TeleportDisplay();
 	void TeleportMenu();
 	void TeleportActivate(
-			char* input, int& command, Cheat_Prompt& mode, int& prev);
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+			int& prev);
 	bool TeleportCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate);
+			std::string& input, KeyCodes& command, Cheat_Prompt& mode,
+			bool& activate);
 };
 
 #endif

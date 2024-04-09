@@ -409,11 +409,13 @@ void ShortcutBar_gump::mouse_down(SDL_Event* event, int mx, int my) {
 static Uint32 didMouseUp(Uint32 interval, void* param) {
 	ignore_unused_variable_warning(interval);
 	SDL_Event event;
-	SDL_zero(event);
-	event.type       = ShortcutBar_gump::eventType;
-	event.user.code  = ShortcutBar_gump::SHORTCUT_BAR_MOUSE_UP;
-	event.user.data1 = param;
-	event.user.data2 = nullptr;
+	event.user
+			= {ShortcutBar_gump::eventType,
+			   0,
+			   0,
+			   ShortcutBar_gump::SHORTCUT_BAR_MOUSE_UP,
+			   param,
+			   nullptr};
 	SDL_PushEvent(&event);
 	return 0;
 }
@@ -421,12 +423,12 @@ static Uint32 didMouseUp(Uint32 interval, void* param) {
 /*
  * Runs on main thread.
  */
-void ShortcutBar_gump::handleMouseUp(SDL_Event& event) {
-	if (event.user.code != ShortcutBar_gump::SHORTCUT_BAR_MOUSE_UP) {
+void ShortcutBar_gump::handleMouseUp(SDL_UserEvent& event) {
+	if (event.code != ShortcutBar_gump::SHORTCUT_BAR_MOUSE_UP) {
 		return;
 	}
 	sintptr button;
-	std::memcpy(&button, &event.user.data1, sizeof(sintptr));
+	std::memcpy(&button, &event.data1, sizeof(sintptr));
 	if (button >= 0 && button < numButtons) {
 		onItemClicked(button, false);
 		if (timerId != 0) {

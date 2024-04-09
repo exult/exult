@@ -46,10 +46,9 @@ void SoundTester::test_sound() {
 
 	Audio* audio = Audio::get_ptr();
 
-	char      buf[256];
-	bool      looping = true;
-	bool      redraw  = true;
-	SDL_Event event;
+	char buf[256];
+	bool looping = true;
+	bool redraw  = true;
 
 	const int centerx    = gwin->get_width() / 2;
 	const int centery    = gwin->get_height() / 2;
@@ -134,82 +133,84 @@ void SoundTester::test_sound() {
 			gwin->show();
 			redraw = false;
 		}
-		SDL_WaitEvent(&event);
-		if (event.type == SDL_KEYDOWN) {
-			redraw = true;
-			switch (event.key.keysym.sym) {
-			case SDLK_ESCAPE:
-				looping = false;
-				break;
+		SDL_Event event;
+		while (SDL_PollEvent(&event) != 0) {
+			if (event.type == SDL_KEYDOWN) {
+				redraw = true;
+				switch (event.key.keysym.sym) {
+				case SDLK_ESCAPE:
+					looping = false;
+					break;
 
-			case SDLK_RETURN:
-			case SDLK_KP_ENTER:
-				if (active == 0) {
-					audio->stop_music();
-					audio->start_music(song, repeat);
-				} else if (active == 1) {
-					audio->play_sound_effect(sfx);
-				} else if (active == 2) {
-					audio->cancel_streams();
-					audio->start_speech(voice, false);
-				}
-				break;
+				case SDLK_RETURN:
+				case SDLK_KP_ENTER:
+					if (active == 0) {
+						audio->stop_music();
+						audio->start_music(song, repeat);
+					} else if (active == 1) {
+						audio->play_sound_effect(sfx);
+					} else if (active == 2) {
+						audio->cancel_streams();
+						audio->start_speech(voice, false);
+					}
+					break;
 
-			case SDLK_r:
-				repeat = !repeat;
-				break;
-			case SDLK_s:
-				if ((event.key.keysym.mod & KMOD_ALT)
-					&& (event.key.keysym.mod & KMOD_CTRL)) {
-					make_screenshot(true);
-				} else {
-					audio->stop_music();
+				case SDLK_r:
+					repeat = !repeat;
+					break;
+				case SDLK_s:
+					if ((event.key.keysym.mod & KMOD_ALT)
+						&& (event.key.keysym.mod & KMOD_CTRL)) {
+						make_screenshot(true);
+					} else {
+						audio->stop_music();
+					}
+					break;
+				case SDLK_UP:
+					active = (active + 2) % 3;
+					break;
+				case SDLK_DOWN:
+					active = (active + 1) % 3;
+					break;
+				case SDLK_LEFT:
+					if (active == 0) {
+						song--;
+						if (song < 0) {
+							song = 255;
+						}
+					} else if (active == 1) {
+						sfx--;
+						if (sfx < 0) {
+							sfx = 255;
+						}
+					} else if (active == 2) {
+						voice--;
+						if (voice < 0) {
+							voice = 255;
+						}
+					}
+					break;
+				case SDLK_RIGHT:
+					if (active == 0) {
+						song++;
+						if (song > 255) {
+							song = 0;
+						}
+					} else if (active == 1) {
+						sfx++;
+						if (sfx > 255) {
+							sfx = 0;
+						}
+					} else if (active == 2) {
+						voice++;
+						if (voice > 255) {
+							voice = 0;
+						}
+					}
+					break;
+				default:
+					break;
 				}
-				break;
-			case SDLK_UP:
-				active = (active + 2) % 3;
-				break;
-			case SDLK_DOWN:
-				active = (active + 1) % 3;
-				break;
-			case SDLK_LEFT:
-				if (active == 0) {
-					song--;
-					if (song < 0) {
-						song = 255;
-					}
-				} else if (active == 1) {
-					sfx--;
-					if (sfx < 0) {
-						sfx = 255;
-					}
-				} else if (active == 2) {
-					voice--;
-					if (voice < 0) {
-						voice = 255;
-					}
-				}
-				break;
-			case SDLK_RIGHT:
-				if (active == 0) {
-					song++;
-					if (song > 255) {
-						song = 0;
-					}
-				} else if (active == 1) {
-					sfx++;
-					if (sfx > 255) {
-						sfx = 0;
-					}
-				} else if (active == 2) {
-					voice++;
-					if (voice > 255) {
-						voice = 0;
-					}
-				}
-				break;
-			default:
-				break;
 			}
 		}
 	} while (looping);

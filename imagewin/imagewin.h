@@ -349,6 +349,16 @@ public:
 		}
 	}
 
+	void screen_to_game_delta(int sx, int sy, bool fast, int& gx, int& gy) {
+		if (fast) {
+			gx = sx;
+			gy = sy;
+		} else {
+			gx = (sx * inter_width) / (scale * get_display_width());
+			gy = (sy * inter_height) / (scale * get_display_height());
+		}
+	}
+
 	void screen_to_game_hdpi(int sx, int sy, bool fast, int& gx, int& gy) {
 		int lgx;
 		int lgy;

@@ -28,20 +28,22 @@ class U7multiobject;
 /*
  *  Palette #'s in 'palettes.flx':
  */
-const int PALETTE_DAY       = 0;
-const int PALETTE_DUSK      = 1;
-const int PALETTE_DAWN      = 1;    // Think this is it.
-const int PALETTE_NIGHT     = 2;
-const int PALETTE_INVISIBLE = 3;    // When Avatar is invisible.
-const int PALETTE_OVERCAST  = 4;    // When raining or overcast during daytime
-const int PALETTE_FOG       = 5;
-const int PALETTE_SPELL     = 6;    // light spell.
-const int PALETTE_CANDLE    = 7;    // is somewhat warmer, candles.
-const int PALETTE_RED       = 8;    // Used when hit in combat.
-// 9 has lots of black.
-const int PALETTE_LIGHTNING    = 10;
-const int PALETTE_SINGLE_LIGHT = 11;
-const int PALETTE_MANY_LIGHTS  = 12;
+enum PaletteIDs {
+	PALETTE_DAY,
+	PALETTE_DUSK,
+	PALETTE_DAWN = PALETTE_DUSK,
+	PALETTE_NIGHT,
+	PALETTE_INVISIBLE,    // When Avatar is invisible.
+	PALETTE_OVERCAST,     // When raining or overcast during daytime
+	PALETTE_FOG,
+	PALETTE_SPELL,      // light spell.
+	PALETTE_CANDLE,     // is somewhat warmer, candles.
+	PALETTE_RED,        // Used when hit in combat.
+	PALETTE_UNKNOWN,    // Has lots of black.
+	PALETTE_LIGHTNING,
+	PALETTE_SINGLE_LIGHT,
+	PALETTE_MANY_LIGHTS,
+};
 
 class Palette {
 	Image_window8* win;
@@ -113,7 +115,7 @@ public:
 	void fade_in(int cycles);
 	void fade_out(int cycles);
 	int  find_color(int r, int g, int b, int last = 0xe0) const;
-	void create_palette_map(const Palette* to, unsigned char*& buf) const;
+	void create_palette_map(const Palette* to, unsigned char* buf) const;
 	std::unique_ptr<Palette> create_intermediate(
 			const Palette& to, int nsteps, int pos) const;
 	void create_trans_table(

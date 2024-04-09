@@ -101,7 +101,7 @@ public:
 	int  starty;
 	int  resy;
 	int  gamey;
-	void handleMouseUp(SDL_Event& event);
+	void handleMouseUp(SDL_UserEvent& event);
 	// add dirty region, if dirty
 	void update_gump() override;
 

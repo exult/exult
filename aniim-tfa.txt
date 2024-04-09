@@ -1,0 +1,22 @@
+TFA animation types
+===================
+
+type    effect
+0       Not animated
+1       Frame increase every tick, restart on initial frame when going past last frame
+2       On every tick there is a 25% chance to work as type 1
+3       Frame increase every tick, switches to decrease every tick when going past last frame, starts to increase again when going past initial frame
+4       On every tick there is a 25% chance to work as type 3
+5       If on first frame, on every tick there is a 5% chance to increase frame; otherwise, frame increase every tick, restart on initial frame when going past last frame
+6       Every tick picks a random frame
+7       On every tick there is a 5% chance to flip bit 0 of the frame
+8       Frame is equal to current hour of day
+9       Frame increase every tick, repeat the last 8 frames when going past last frame
+10      Frame increase every tick, repeat the last 6 frames when going past last frame
+11      No animation for frame 0; otherwise, frame increase every tick, restart on frame 1 when going past last frame
+12      Frame increase every 4 ticks, restart on initial frame when going past last frame
+13      Frame increase every tick until reaching last frame
+14      Frame increase every tick until reaching last frame
+15      Not animated?
+
+
