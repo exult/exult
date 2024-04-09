@@ -69,7 +69,7 @@
 #	extra is basically for the grandfather clock. It is a SFX that will
 #	play every game hour a number of times equal to hour % 12 (or
 #	twelve times for midnight).Volume is used to control individual sfx
-#   volume levels. If no value is given, 100% volume will be assumed.
+#	volume levels. If no value is given, 100% volume will be assumed.
 #
 #	Surf (49)
 :612/49

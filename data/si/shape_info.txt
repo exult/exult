@@ -61,8 +61,8 @@
 #	rand is a flag controlling how range is used: if rand is 1, Exult
 #	will randomly play one sfx in the range; if rand is 0, Exult will
 #	play them sequentially, wrapping back to the first sfx.
-#   Volume allows an individual sfx to have an individual volume level.
-#   If no value is given 100% will be assumed.
+#	Volume allows an individual sfx to have an individual volume level.
+#	If no value is given 100% will be assumed.
 #
 #	Surf (109)
 :612/109/0/0/0/0/10
