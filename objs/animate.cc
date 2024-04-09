@@ -59,16 +59,11 @@ static inline bool Get_sfx_out_of_range(
 		   > (MAX_SOUND_FALLOFF * MAX_SOUND_FALLOFF);
 }
 
-static inline bool Is_halt_frame(
-		int frame_num, int halt_frame
-		){
-	if (halt_frame == -1)
-	{
+static inline bool Is_halt_frame(int frame_num, int halt_frame) {
+	if (halt_frame == -1) {
 		return false;
-	}else
-	{
-		if (frame_num == halt_frame)
-		{
+	} else {
+		if (frame_num == halt_frame) {
 			return true;
 		}
 		return false;
@@ -191,11 +186,10 @@ void Shape_sfx::stop() {
 }
 
 inline void Shape_sfx::set_looping() {
-	looping = sfxinf
-					  ? (sfxinf->get_sfx_range() == 1
-						 && sfxinf->get_chance() == 100
-						 && !sfxinf->play_horly_ticks())
-					  : false;
+	looping = sfxinf ? (sfxinf->get_sfx_range() == 1
+						&& sfxinf->get_chance() == 100
+						&& !sfxinf->play_horly_ticks())
+					 : false;
 }
 
 /*
@@ -256,7 +250,8 @@ void Shape_sfx::update(bool play) {
 	dir               = 0;
 	const int  volume = AUDIO_MAX_VOLUME;    // Set volume based on distance.
 	const bool halt   = Get_sfx_out_of_range(gwin, obj->get_center_tile());
-	const bool frame_halt = Is_halt_frame(obj->get_framenum(), sfxinf->get_halt_frame());
+	const bool frame_halt
+			= Is_halt_frame(obj->get_framenum(), sfxinf->get_halt_frame());
 
 	if ((play && halt) || (play && frame_halt)) {
 		play = false;
