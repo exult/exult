@@ -66,11 +66,10 @@
 #	rand is a flag controlling how range is used: if rand is 1, Exult
 #	will randomly play one sfx in the range; if rand is 0, Exult will
 #	play them sequentially, wrapping back to the first sfx.
-#	extra is basicall for the grandfather clock. It is a SFX that will
+#	extra is basically for the grandfather clock. It is a SFX that will
 #	play every game hour a number of times equal to hour % 12 (or
-#	twelve times for midnight).
-#   Volume is used to control indidivdual sfx volume levels. If no
-#   value is given, 100% volume will be assumed for the sfx
+#	twelve times for midnight).Volume is used to control individual sfx
+#   volume levels. If no value is given, 100% volume will be assumed.
 #
 #	Surf (49)
 :612/49
