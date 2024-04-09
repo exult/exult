@@ -49,7 +49,7 @@
 
 %%section shape_sfx
 #	Format
-#		:shapenum/sfxnum/delay/range/rand/extra/halt_frame
+#		:shapenum/sfxnum/delay/range/rand/extra/volume
 #	Only the first two parameters are required.
 #	delay is a flag (either 0 or 1) which indicates extra delay
 #	between successive plays. If it is 1 and the shape does *not*
@@ -61,27 +61,26 @@
 #	rand is a flag controlling how range is used: if rand is 1, Exult
 #	will randomly play one sfx in the range; if rand is 0, Exult will
 #	play them sequentially, wrapping back to the first sfx.
-#   Halt_frame allows a frame of a shape to be specified that when it is hit
-#   the sfx will halt. This fixes the issue with energy fields where the sfx
-#   would play forever.
+#   Volume allows an individual sfx to have an individual volume level.
+#   If no value is given 100% will be assumed.
 #
 #	Surf (109)
-:612/109
-:613/109
-:632/109
-:699/109
-:736/109
-:737/109
-:751/109
-:808/109
-:834/109
-:875/109
-:907/109
-:911/109
-:918/109
-:1012/109
-:1020/109
-:1022/109
+:612/109/0/0/0/0/20
+:613/109/0/0/0/0/20
+:632/109/0/0/0/0/20
+:699/109/0/0/0/0/20
+:736/109/0/0/0/0/20
+:737/109/0/0/0/0/20
+:751/109/0/0/0/0/20
+:808/109/0/0/0/0/20
+:834/109/0/0/0/0/20
+:875/109/0/0/0/0/20
+:907/109/0/0/0/0/20
+:911/109/0/0/0/0/20
+:918/109/0/0/0/0/20
+:1012/109/0/0/0/0/20
+:1020/109/0/0/0/0/20
+:1022/109/0/0/0/0/20
 
 #	Bubbles (110 to 114)
 #
@@ -155,7 +154,7 @@
 
 #	Energy Field
 #
-:768/71/40
+:768/71/20
 
 #	Barrier
 #

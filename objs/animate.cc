@@ -248,12 +248,13 @@ void Shape_sfx::update(bool play) {
 	}
 
 	dir               = 0;
-	const int  volume = AUDIO_MAX_VOLUME;    // Set volume based on distance.
+	//set volume based on Distance and SFX volume
+	const int  volume = static_cast<int>(AUDIO_MAX_VOLUME * (sfxinf->get_volume() / 100.0));
 	const bool halt   = Get_sfx_out_of_range(gwin, obj->get_center_tile());
-	const bool frame_halt
-			= Is_halt_frame(obj->get_framenum(), sfxinf->get_halt_frame());
+	std::cout << "Volume of sfx for shape num" << obj->get_shapenum() << " is ";
+	std::cout << volume << std::endl;
 
-	if ((play && halt) || (play && frame_halt)) {
+	if (play && halt) {
 		play = false;
 	}
 
@@ -263,7 +264,7 @@ void Shape_sfx::update(bool play) {
 			channel[i] = Audio::get_ptr()->play_sound_effect(
 					sfxnum[i], obj, volume, rep[i]);
 		} else if (channel[i] != -1) {
-			if (halt || frame_halt) {
+			if (halt) {
 				Audio::get_ptr()->stop_sound_effect(channel[i]);
 				channel[i] = -1;
 			} else {

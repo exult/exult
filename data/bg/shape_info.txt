@@ -57,7 +57,7 @@
 
 %%section shape_sfx
 #	Format
-#		:shapenum/sfxnum/chance/range/rand/extra/halt_frame
+#		:shapenum/sfxnum/chance/range/rand/extra/volume
 #	Only the first two parameters are required.
 #	chance is the % chance of playing the sfx at any given moment.
 #	Values of chance not in the [1-100] interval are treated as 100.
@@ -69,8 +69,8 @@
 #	extra is basicall for the grandfather clock. It is a SFX that will
 #	play every game hour a number of times equal to hour % 12 (or
 #	twelve times for midnight).
-#   Halt frame is used to tell a sfx to stop playing when it hits a
-#   certain frame. Currently WIP.
+#   Volume is used to control indidivdual sfx volume levels. If no
+#   value is given, 100% volume will be assumed for the sfx
 #
 #	Surf (49)
 :612/49
@@ -187,7 +187,7 @@
 
 #	Energy Field
 #
-:768/11/40
+:768/11/20/0/0/0/40
 
 #	Smokebomb
 #
