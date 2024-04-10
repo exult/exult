@@ -247,6 +247,34 @@ void AudioMixer::stopSample(AudioSample* sample) {
 	}
 }
 
+sint32 Pentagram::AudioMixer::getLoop(sint32 instance_id) const {
+	if (instance_id < 0 || channels.empty() || !audio_ok) {
+		return 0;
+	}
+
+	const std::lock_guard<SDLAudioDevice> lock(*device);
+	auto                                  it = std::find_if(
+            channels.cbegin(), channels.cend(), [instance_id](auto& channel) {
+                return channel.getInstanceId() == instance_id;
+            });
+	return (it != channels.end()) ? it->getLoop() : 0;
+}
+
+void Pentagram::AudioMixer::setLoop(sint32 instance_id, sint32 newloop) {
+	if (instance_id < 0 || channels.empty() || !audio_ok) {
+		return;
+	}
+
+	const std::lock_guard<SDLAudioDevice> lock(*device);
+	auto                                  it = std::find_if(
+            channels.begin(), channels.end(), [instance_id](auto& channel) {
+                return channel.getInstanceId() == instance_id;
+            });
+	if (it != channels.end()) {
+		it->setLoop(newloop);
+	}
+}
+
 void AudioMixer::setPaused(sint32 instance_id, bool paused) {
 	if (instance_id < 0 || channels.empty() || !audio_ok) {
 		return;

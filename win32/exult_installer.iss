@@ -2,9 +2,9 @@
 AppName=Exult
 AppVerName=Exult 1.9.0git Snapshot
 AppPublisher=The Exult Team
-AppPublisherURL=http://exult.info/
-AppSupportURL=http://exult.info/
-AppUpdatesURL=http://exult.info/
+AppPublisherURL=https://exult.info/
+AppSupportURL=https://exult.info/
+AppUpdatesURL=https://exult.info/
 ; Setup exe version number:
 VersionInfoVersion=1.9.0
 DisableDirPage=no
@@ -35,11 +35,14 @@ Name: GPL; Description: Install GPL License and Link to Source; Types: full comp
 Name: Paths; Description: Setup Game Paths; Types: full compact custom pathsonly
 Name: Icons; Description: Create Start Menu Icons; Types: full compact
 Name: "downloads"; Description: "Download and install"; Types: full custom
-Name: "downloads\audio"; Description: "Digital music and sound effects"; Types: full custom
+Name: "downloads\audio"; Description: "Digital music and sound effects"; Types: full custom; ExtraDiskSpaceRequired: 48439905
 Name: "downloads\mods"; Description: "Mods"; Types: full custom
-Name: "downloads\mods\keyring"; Description: "Keyring mod for The Black Gate"; Types: full custom
-Name: "downloads\mods\sfisland"; Description: "SourceForge Island mod for The Black Gate"; Types: full custom
-Name: "downloads\mods\sifixes"; Description: "SIFixes mod for Serpent Isle"; Types: full custom
+Name: "downloads\mods\keyring"; Description: "Keyring mod for The Black Gate"; Types: full custom; ExtraDiskSpaceRequired: 750027
+Name: "downloads\mods\sfisland"; Description: "SourceForge Island mod for The Black Gate"; Types: full custom; ExtraDiskSpaceRequired: 284857
+Name: "downloads\mods\sifixes"; Description: "SIFixes mod for Serpent Isle"; Types: full custom; ExtraDiskSpaceRequired: 334482
+Name: "downloads\3rdpartymods"; Description: "Mods not created by the Exult team"; Types: full custom;
+Name: "downloads\3rdpartymods\ultima6"; Description: "Ultima VI Remake for The Black Gate"; Types: full custom; ExtraDiskSpaceRequired: 65341451
+Name: "downloads\3rdpartymods\glimmerscape"; Description: "Glimmerscape by Donfrow for Serpent Isle"; Types: full custom; ExtraDiskSpaceRequired: 13187091
 
 [Files]
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
@@ -352,6 +355,10 @@ begin
         DownloadPage.Add('https://github.com/exult/exult/releases/latest/download/SFisland.zip', 'Sfisland.zip', '');
       if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\sifixes')) AND (iSIVerified = 1) then
         DownloadPage.Add('https://github.com/exult/exult/releases/latest/download/Sifixes.zip', 'Sifixes.zip', '');
+      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\3rdpartymods\ultima6')) AND (iBGVerified = 1) then
+        DownloadPage.Add('https://exult.info/snapshots/Ultima6.zip', 'Ultima6.zip', '');
+      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\3rdpartymods\glimmerscape')) AND (iSIVerified = 1) then
+        DownloadPage.Add('https://exult.info/snapshots/Glimmerscape_SI_mod_by_Donfrow.zip', 'Glimmerscape_SI_mod_by_Donfrow.zip', '');
       DownloadPage.Show;
       try
         try
@@ -436,6 +443,10 @@ begin
         ExtractMe('{tmp}\SFisland.zip',sBGmods);
       if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\sifixes')) AND (iSIVerified = 1) then
         ExtractMe('{tmp}\Sifixes.zip',sSImods);
+      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\3rdpartymods\ultima6')) AND (iBGVerified = 1) then
+        ExtractMe('{tmp}\Ultima6.zip',sBGmods);
+      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\3rdpartymods\glimmerscape')) AND (iSIVerified = 1) then
+        ExtractMe('{tmp}\Glimmerscape_SI_mod_by_Donfrow.zip',sSImods);
 
     // Wine doesn't support the Windows built-in unzip method hence will crash at installing the downloads
     end else if RegKeyExists(HKEY_LOCAL_MACHINE, 'Software\Wine') then begin

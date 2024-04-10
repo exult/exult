@@ -36,8 +36,8 @@ class CoreAudioMidiDriver : public LowLevelMidiDriver {
 
 	static const MidiDriverDesc desc;
 
-	static MidiDriver* createInstance() {
-		return new CoreAudioMidiDriver();
+	static std::shared_ptr<MidiDriver> createInstance() {
+		return std::make_shared<CoreAudioMidiDriver>();
 	}
 
 public:

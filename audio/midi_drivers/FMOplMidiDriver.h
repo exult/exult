@@ -30,8 +30,8 @@ class IDataSource;
 class FMOplMidiDriver : public LowLevelMidiDriver {
 	static const MidiDriverDesc desc;
 
-	static MidiDriver* createInstance() {
-		return new FMOplMidiDriver();
+	static std::shared_ptr<MidiDriver> createInstance() {
+		return std::make_shared<FMOplMidiDriver>();
 	}
 
 public:

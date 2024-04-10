@@ -34,7 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <vector>
 
-static MidiDriver* Disabled_CreateInstance() {
+static std::shared_ptr<MidiDriver> Disabled_CreateInstance() {
 	return nullptr;
 }
 
@@ -97,11 +97,11 @@ std::string MidiDriver::getDriverName(uint32 index) {
 }
 
 // Create an Instance of a MidiDriver
-MidiDriver* MidiDriver::createInstance(
+std::shared_ptr<MidiDriver> MidiDriver::createInstance(
 		const std::string& desired_driver, uint32 sample_rate, bool stereo) {
 	InitMidiDriverVector();
 
-	MidiDriver* new_driver = nullptr;
+	std::shared_ptr<MidiDriver> new_driver = nullptr;
 
 	const char* drv = desired_driver.c_str();
 
@@ -116,9 +116,9 @@ MidiDriver* MidiDriver::createInstance(
 
 				new_driver = midi_driver->createInstance();
 				if (new_driver) {
+					new_driver->selfptr = new_driver;
 					if (new_driver->initMidiDriver(sample_rate, stereo)) {
 						pout << "Failed!" << std::endl;
-						delete new_driver;
 						new_driver = nullptr;
 					} else {
 						pout << "Success!" << std::endl;
@@ -135,7 +135,9 @@ MidiDriver* MidiDriver::createInstance(
 				pout << "Trying: `" << midi_driver->name << "'" << std::endl;
 
 				new_driver = midi_driver->createInstance();
+
 				if (new_driver) {
+					new_driver->selfptr = new_driver;
 					// Got it
 					if (!new_driver->initMidiDriver(sample_rate, stereo)) {
 						pout << "Success!" << std::endl;
@@ -145,7 +147,6 @@ MidiDriver* MidiDriver::createInstance(
 					pout << "Failed!" << std::endl;
 
 					// Oh well, try the next one
-					delete new_driver;
 					new_driver = nullptr;
 				}
 			}
@@ -153,7 +154,6 @@ MidiDriver* MidiDriver::createInstance(
 	} else {
 		new_driver = nullptr;    // silence :-)
 	}
-
 	pout << "Midi Output: " << (new_driver != nullptr ? "Enabled" : "Disabled")
 		 << std::endl;
 
