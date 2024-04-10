@@ -98,6 +98,14 @@ public:
 		return paused;
 	}
 
+	bool isRepeating() {
+		return repeat;
+	}
+
+	void setRepeat(bool newrepeat) {
+		repeat = newrepeat;
+	}
+
 	//! Count the number of notes on for a chan
 	//! \param chan The channel to count for
 	//! \return the number of notes on

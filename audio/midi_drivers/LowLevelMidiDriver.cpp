@@ -29,7 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <chrono>
 #include <cstring>
 #include <mutex>
-
 // If the time to wait is less than this then we yield instead of waiting on the
 // condition variable This must be great than or equal to 2
 #define LLMD_MINIMUM_YIELD_THRESHOLD 6
@@ -146,9 +145,8 @@ LowLevelMidiDriver::~LowLevelMidiDriver() {
 				"destroyMidiDriver() wasn't called!"
 			 << std::endl;
 		// destroyMidiDriver();
+		quit_thread = true;    // The thread should stop based upon this flag
 		if (thread) {
-			quit_thread
-					= true;      // The thread should stop based upon this flag
 			thread->detach();    // calling join might not be safe as the driver
 								 // is kind of in a indeterminate state and
 								 // joining might block this thread forever so
@@ -393,6 +391,13 @@ bool LowLevelMidiDriver::isSequencePlaying(int seq_num) {
 	return playing[seq_num];
 }
 
+void LowLevelMidiDriver::setSequenceRepeat(int seq_num, bool newrepeat) {
+	ComMessage message(LLMD_MSG_SET_REPEAT, seq_num);
+	message.data.set_repeat.newrepeat = newrepeat;
+
+	sendComMessage(message);
+}
+
 void LowLevelMidiDriver::pauseSequence(int seq_num) {
 	if (seq_num >= LLMD_NUM_SEQ || seq_num < 0) {
 		return;
@@ -475,7 +480,9 @@ int LowLevelMidiDriver::initThreadedSynth() {
 		destroyThreadedSynth();
 	}
 	quit_thread = false;
-	thread      = std::make_unique<std::thread>(threadMain_Static, this);
+	thread      = std::make_unique<std::thread>(
+            threadMain_Static,
+            std::static_pointer_cast<LowLevelMidiDriver>(selfptr.lock()));
 
 	while (peekComMessageType() == LLMD_MSG_THREAD_INIT) {
 		yield();
@@ -530,7 +537,8 @@ void LowLevelMidiDriver::destroyThreadedSynth() {
 	}
 }
 
-int LowLevelMidiDriver::threadMain_Static(LowLevelMidiDriver* ptr) {
+int LowLevelMidiDriver::threadMain_Static(
+		std::shared_ptr<LowLevelMidiDriver> ptr) {
 	giveinfo();
 	return ptr->threadMain();
 }
@@ -573,7 +581,7 @@ int LowLevelMidiDriver::threadMain() {
 			break;
 		}
 
-		sint32 time_till_next = 0x7FFFFFFF;
+		sint32 time_till_next = INT32_MAX;
 
 		for (int i = 0; i < LLMD_NUM_SEQ; i++) {
 			const int seq = i;
@@ -833,6 +841,13 @@ bool LowLevelMidiDriver::playSequences() {
 			}
 		} break;
 
+		case LLMD_MSG_SET_REPEAT: {
+			if (sequences[message.sequence]) {
+				sequences[message.sequence]->setRepeat(
+						message.data.set_repeat.newrepeat);
+			}
+		} break;
+
 		case LLMD_MSG_PLAY: {
 			// Kill the previous stream
 			delete sequences[message.sequence];
@@ -888,8 +903,8 @@ bool LowLevelMidiDriver::playSequences() {
 								const int patch = e->data[0];
 								// pout << "Program in seq: " <<
 								// message.sequence << " Channel: " <<
-								// (e->status & 0xF) << " Bank: " << bank << "
-								// Patch: " << patch << std::endl;
+								// (e->status & 0xF) << " Bank: " << bank <<
+								// " Patch: " << patch << std::endl;
 								if (bank != mt32_patch_bank_sel[patch]) {
 									setPatchBank(bank, patch);
 								}
@@ -970,11 +985,12 @@ void LowLevelMidiDriver::sequenceSendEvent(uint16 sequence_id, uint32 message) {
 					sequence_id, log_chan, ((message >> 16) & 0xFF) >= 64);
 			return;
 		} else if ((message & 0xFF00) == (XMIDI_CONTROLLER_BANK_CHANGE << 8)) {
-			// pout << "Bank change in seq: " << sequence_id << " Channel: " <<
-			// log_chan << " Bank: " << ((message>>16)&0xFF) << std::endl;
+			// pout << "Bank change in seq: " << sequence_id << " Channel: "
+			// << log_chan << " Bank: " << ((message>>16)&0xFF) <<
+			// std::endl;
 			mt32_bank_sel[sequence_id][log_chan] = (message >> 16) & 0xFF;
-			// Note, we will pass this onto the midi driver, because they (i.e.
-			// FMOpl) might want them)
+			// Note, we will pass this onto the midi driver, because they
+			// (i.e. FMOpl) might want them)
 		}
 	} else if ((message & 0x00F0) == (MIDI_STATUS_PROG_CHANGE << 4)) {
 		if (mt32_patch_banks[0]) {
@@ -1092,8 +1108,9 @@ void LowLevelMidiDriver::sequenceSendSysEx(
 	send_sysex(status, msg, length);
 	next_sysex = std::chrono::duration_cast<decltype(next_sysex)>(
 			std::chrono::steady_clock::now().time_since_epoch()
-			+ std::chrono::milliseconds(static_cast<long long>(
-					(40 + (length + 2) * 1000.0) / 3125.0)));
+			+ std::chrono::milliseconds(
+					static_cast<std::chrono::milliseconds::rep>(
+							(40 + (length + 2) * 1000.0) / 3125.0)));
 }
 
 uint32 LowLevelMidiDriver::getTickCount(uint16 sequence_id) {
@@ -1350,9 +1367,9 @@ void LowLevelMidiDriver::loadTimbreLibrary(
 		}
 
 		// TODO: This should not be hard-coded.
-		// Setup default rhythm library (thanks to the munt folks for making it
-		// show data on the terminal). This data is the same for all of the
-		// originals.
+		// Setup default rhythm library (thanks to the munt folks for making
+		// it show data on the terminal). This data is the same for all of
+		// the originals.
 		static const MT32RhythmSpec default_rhythms[] = {
 				{28, {0x00, 0x5a, 0x07, 0x00}},
                 {33, {0x06, 0x64, 0x07, 0x01}},
@@ -1387,9 +1404,10 @@ void LowLevelMidiDriver::loadTimbreLibrary(
 			loadXMidiTimbreLibrary(ds);
 			ds->seek(0);
 			xmidi = std::make_unique<XMidiFile>(
-					ds, XMIDIFILE_HINT_XMIDI_MT_FILE);    // a bit of a hack, it
-														  // just sets up a few
-														  // sysex messages
+					ds,
+					XMIDIFILE_HINT_XMIDI_MT_FILE);    // a bit of a hack, it
+													  // just sets up a few
+													  // sysex messages
 		}
 	}
 
@@ -1659,9 +1677,10 @@ void LowLevelMidiDriver::sendMT32SystemMessage(
 	send_sysex(0xF0, sysex_buffer, sysex_data_start + len + 2);
 	next_sysex = std::chrono::duration_cast<decltype(next_sysex)>(
 			std::chrono::steady_clock::now().time_since_epoch()
-			+ std::chrono::milliseconds(static_cast<long long>(
-					(40 + (sysex_data_start + len + 2 + 2) * 1000.0)
-					/ 3125.0)));
+			+ std::chrono::milliseconds(
+					static_cast<std::chrono::milliseconds::rep>(
+							(40 + (sysex_data_start + len + 2 + 2) * 1000.0)
+							/ 3125.0)));
 }
 
 void LowLevelMidiDriver::setPatchBank(int bank, int patch) {

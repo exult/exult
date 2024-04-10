@@ -62,6 +62,8 @@ public:
 		return repeating;
 	}
 
+	void set_repeat(bool newrepeat);
+
 	void set_timbre_lib(TimbreLibrary lib);
 
 	TimbreLibrary get_timbre_lib() const {
@@ -104,10 +106,10 @@ private:
 	bool repeating     = false;
 	int  current_track = -1;
 
-	std::string midi_driver_name = "default";
-	MidiDriver* midi_driver      = nullptr;
-	bool        initialized      = false;
-	bool        init_device(bool timbre_load = false);
+	std::string                 midi_driver_name = "default";
+	std::shared_ptr<MidiDriver> midi_driver      = nullptr;
+	bool                        initialized      = false;
+	bool                        init_device(bool timbre_load = false);
 
 	TimbreLibrary timbre_lib = TIMBRE_LIB_GM;
 	std::string   timbre_lib_filename;
@@ -124,6 +126,7 @@ private:
 	bool ogg_play_track(const std::string& filename, int num, bool repeat);
 	bool ogg_is_playing() const;
 	void ogg_stop_track();
+	void ogg_set_repeat(bool newrepeat);
 
 	void ogg_mix(sint16* stream, uint32 bytes);
 };

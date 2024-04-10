@@ -67,6 +67,7 @@ public:
 	void   setSequenceVolume(int seq_num, int vol) override;
 	void   setSequenceSpeed(int seq_num, int speed) override;
 	bool   isSequencePlaying(int seq_num) override;
+	void   setSequenceRepeat(int seq_num, bool newrepeat);
 	uint32 getSequenceCallbackData(int seq_num) override;
 
 	void produceSamples(sint16* samples, uint32 bytes) override;
@@ -124,6 +125,7 @@ private:
 		LLMD_MSG_SET_VOLUME       = 4,
 		LLMD_MSG_SET_SPEED        = 5,
 		LLMD_MSG_PRECACHE_TIMBRES = 6,
+		LLMD_MSG_SET_REPEAT       = 7,
 		// These are only used by thread
 		LLMD_MSG_THREAD_INIT        = -1,
 		LLMD_MSG_THREAD_INIT_FAILED = -2,
@@ -179,6 +181,9 @@ private:
 				XMidiEventList* list;
 			} precache;
 
+			struct {
+				bool newrepeat;
+			} set_repeat;
 		} data;
 	};
 
@@ -278,7 +283,7 @@ private:
 	// Thread Methods
 	int        initThreadedSynth();
 	void       destroyThreadedSynth();
-	static int threadMain_Static(LowLevelMidiDriver* data);
+	static int threadMain_Static(std::shared_ptr<LowLevelMidiDriver> data);
 	int        threadMain();
 	// Thread flag -- set to true when ready to quit
 	std::atomic_bool quit_thread;

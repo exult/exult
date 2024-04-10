@@ -297,3 +297,4 @@ project.xcworkspace
 *.pdb
 *.iobj
 *.ipdb
+/Exult Source Code.url

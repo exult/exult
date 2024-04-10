@@ -33,8 +33,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class UnixSeqMidiDriver : public LowLevelMidiDriver {
 	static const MidiDriverDesc desc;
 
-	static MidiDriver* createInstance() {
-		return new UnixSeqMidiDriver();
+	static std::shared_ptr<MidiDriver> createInstance() {
+		return std::make_shared<UnixSeqMidiDriver>();
 	}
 
 public:

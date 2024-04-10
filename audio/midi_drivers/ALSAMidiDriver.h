@@ -42,8 +42,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class ALSAMidiDriver : public LowLevelMidiDriver {
 	static const MidiDriverDesc desc;
 
-	static MidiDriver* createInstance() {
-		return new ALSAMidiDriver();
+	static std::shared_ptr<MidiDriver> createInstance() {
+		return std::make_shared<ALSAMidiDriver>();
 	}
 
 public:

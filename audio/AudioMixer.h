@@ -49,11 +49,13 @@ namespace Pentagram {
 				AudioSample* sample, int loop, int priority,
 				bool paused = false, uint32 pitch_shift = AUDIO_DEF_PITCH,
 				int lvol = AUDIO_MAX_VOLUME, int rvol = AUDIO_MAX_VOLUME);
-		bool isPlaying(sint32 instance_id) const;
-		bool isPlaying(AudioSample* sample) const;
-		bool isPlayingVoice() const;
-		void stopSample(sint32 instance_id);
-		void stopSample(AudioSample* sample);
+		bool   isPlaying(sint32 instance_id) const;
+		bool   isPlaying(AudioSample* sample) const;
+		bool   isPlayingVoice() const;
+		void   stopSample(sint32 instance_id);
+		void   stopSample(AudioSample* sample);
+		sint32 getLoop(sint32 instance_id) const;
+		void   setLoop(sint32 instance_id, sint32 newloop);
 
 		void setPaused(sint32 instance_id, bool paused);
 		bool isPaused(sint32 instance_id) const;

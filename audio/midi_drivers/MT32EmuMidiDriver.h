@@ -49,16 +49,16 @@ namespace MT32Emu {
 class MT32EmuMidiDriver : public LowLevelMidiDriver {
 	static const MidiDriverDesc desc;
 
-	static MidiDriver* createInstance() {
-		return new MT32EmuMidiDriver();
+	static std::shared_ptr<MidiDriver> createInstance() {
+		return std::make_shared<MT32EmuMidiDriver>();
 	}
 
 	MT32Emu::Synth*               mt32;
 	MT32Emu::SampleRateConverter* mt32src;
 
+public:
 	MT32EmuMidiDriver() : mt32(nullptr), mt32src(nullptr) {}
 
-public:
 	static const MidiDriverDesc* getDesc() {
 		return &desc;
 	}
