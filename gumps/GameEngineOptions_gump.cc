@@ -110,6 +110,7 @@ void GameEngineOptions_gump::build_buttons() {
 			this, &GameEngineOptions_gump::toggle_alternate_drop, yesNo,
 			alternate_drop, colx[5], rowy[++y_index], small_size);
 
+	std::cout << "Frames = " << frames << std::endl;
 	buttons[id_frames] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_frames, frametext, frames,
 			colx[5], rowy[++y_index], small_size);
@@ -162,6 +163,8 @@ void GameEngineOptions_gump::load_settings() {
 	gumps_pause          = !gumpman->gumps_dont_pause_game();
 	const int realframes = 1000 / gwin->get_std_delay();
 
+	//this code generates the number of framerate options and their text
+	//the functionality is kind of odd but I am leaving it alone.
 	frames                        = -1;
 	framerates[num_default_rates] = realframes;
 	for (size_t i = 0; i < num_default_rates; i++) {
@@ -180,6 +183,36 @@ void GameEngineOptions_gump::load_settings() {
 	for (size_t i = 0; i < num_framerates; i++) {
 		frametext.emplace_back(framestring(framerates[i]));
 	}
+	//setting the actual framerate number by loading from the xml
+	int fps;
+	config->value("config/video/fps", fps, 5);
+	//This switch case checks what the actual fps value is and sets the frame
+	//value accordingly so that the button can know what text to display
+	switch(fps){
+	case 10:
+		frames = 5;
+		break;
+	case 8:
+		frames = 4;
+		break;
+	case 5:
+		frames = 3;
+		break;
+	case 6:
+		frames = 2;
+		break;
+	case 4:
+		frames = 1;
+		break;
+	case 2:
+		frames = 0;
+		break;
+	default:
+		frames = 3;
+		fps = 5;
+		break;
+	}
+
 }
 
 GameEngineOptions_gump::GameEngineOptions_gump()
