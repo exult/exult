@@ -211,7 +211,6 @@ void GameEngineOptions_gump::load_settings() {
 		fps = 5;
 		break;
 	}
-
 }
 
 GameEngineOptions_gump::GameEngineOptions_gump()
