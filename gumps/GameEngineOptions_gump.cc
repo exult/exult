@@ -110,7 +110,6 @@ void GameEngineOptions_gump::build_buttons() {
 			this, &GameEngineOptions_gump::toggle_alternate_drop, yesNo,
 			alternate_drop, colx[5], rowy[++y_index], small_size);
 
-	std::cout << "Frames = " << frames << std::endl;
 	buttons[id_frames] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_frames, frametext, frames,
 			colx[5], rowy[++y_index], small_size);
