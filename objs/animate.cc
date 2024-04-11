@@ -240,8 +240,6 @@ void Shape_sfx::update(bool play) {
 	//set volume based on Distance and SFX volume
 	const int  volume = static_cast<int>(AUDIO_MAX_VOLUME * (sfxinf->get_volume() / 100.0));
 	const bool halt   = Get_sfx_out_of_range(gwin, obj->get_center_tile());
-	std::cout << "Volume of sfx for shape num" << obj->get_shapenum() << " is ";
-	std::cout << volume << std::endl;
 
 	if (play && halt) {
 		play = false;
