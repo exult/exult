@@ -67,7 +67,7 @@ public:
 	void   setSequenceVolume(int seq_num, int vol) override;
 	void   setSequenceSpeed(int seq_num, int speed) override;
 	bool   isSequencePlaying(int seq_num) override;
-	void   setSequenceRepeat(int seq_num, bool newrepeat);
+	void   setSequenceRepeat(int seq_num, bool newrepeat) override;
 	uint32 getSequenceCallbackData(int seq_num) override;
 
 	void produceSamples(sint16* samples, uint32 bytes) override;
