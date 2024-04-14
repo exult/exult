@@ -154,6 +154,7 @@ GUMPS_OBJS:= \
 	gumps/File_gump.o \
 	gumps/Gamemenu_gump.o \
 	gumps/GameDisplayOptions_gump.o \
+	gumps/Mixer_gump.o \
 	gumps/Gump.o \
 	gumps/Gump_button.o \
 	gumps/Gump_manager.o \
@@ -506,6 +507,7 @@ gumps/Gamemenu_gump.o : gumps/Gamemenu_gump.cc $(EXULT_FLX)
 
 gumps/GameDisplayOptions_gump.o : gumps/GameDisplayOptions_gump.cc $(EXULT_FLX)
 
+gumps/Mixer_gump.o : gumps/Mixer_gump.cc $(EXULT_FLX)
 gumps/ItemMenu_gump.o : gumps/ItemMenu_gump.cc $(EXULT_FLX)
 
 gumps/InputOptions_gump.o : gumps/InputOptions_gump.cc $(EXULT_FLX)
