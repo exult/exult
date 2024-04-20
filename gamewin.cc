@@ -173,32 +173,20 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 	} else if (weather == 1) {
 		currentstate = SnowStorm;
 	} else if (nighttime) {
-		currentstate = Nighttime;    // Night time
+		currentstate = Nighttime;
 	} else {
 		currentstate = Outside;
 	}
 
 	MyMidiPlayer* player = Audio::get_ptr()->get_midi();
-	// Lets allow this for Digital Muisc and MT32Emu only,
-	// for MT32/FakeMT32 conversion as well.
-	// if (player) {
-	// if (player && player->get_ogg_enabled()){
-	if (player
-		&& (player->get_ogg_enabled() || player->is_mt32()
-			|| player->is_adlib())) {
+	// The sfx tracks only play for Digital Music, MT32emu, MT32/FakeMT32
+	// FMOpl is not sounding acceptable even though the original used it.
+	const bool play_bg_tracks
+			= player && (player->get_ogg_enabled() || player->is_mt32());
+
+	if (player || play_bg_tracks) {
 		delay = 1000;    // Quickly get back to this function check
-		// We've got OGG so play the background SFX tracks
-
 		const int curr_track = player->get_current_track();
-
-		// Testing. Original seems to allow crickets for all songs at night,
-		// except when in a dungeon. Also, only do it sometimes.
-		if (nighttime && currentstate != Dungeon && rand() % 6 == 0) {
-			// Play the cricket sounds at night
-			Audio::get_ptr()->play_sound_effect(
-					Audio::game_sfx(61), AUDIO_MAX_VOLUME - 30);
-		}
-
 		if ((curr_track == -1 || laststate != currentstate)
 			&& Audio::get_ptr()->is_music_enabled()) {
 			// Don't override bee cave music with dungeon music.
@@ -218,66 +206,70 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 					tracknum  = Audio::game_music(10);
 					laststate = DangerNear;
 				} else if (gwin->is_in_dungeon()) {
-					// Start the SFX music track then
-					tracknum  = Audio::game_music(52);
+					if (play_bg_tracks) {
+						tracknum = Audio::game_music(52);
+					}
 					laststate = Dungeon;
 				} else if (weather == 1) {    // Snowstorm
-					tracknum  = Audio::game_music(5);
+					if (play_bg_tracks) {
+						tracknum = Audio::game_music(5);
+					}
 					laststate = SnowStorm;
 				} else if (weather == 2) {    // Rainstorm
-					tracknum  = Audio::game_music(4);
+					if (play_bg_tracks) {
+						tracknum = Audio::game_music(4);
+					}
 					laststate = RainStorm;
-				} else if (bghour < 6 || bghour > 20) {
-					tracknum  = Audio::game_music(7);
+				} else if (nighttime) {
+					// Disabled nighttime sfx track as it is very distracting
+					/*if (play_bg_tracks)
+						tracknum  = Audio::game_music(7);*/
 					laststate = Nighttime;
 				} else {
-					// Start the SFX music track then
-					tracknum  = Audio::game_music(6);
+					if (play_bg_tracks) {
+						tracknum = Audio::game_music(6);
+					}
 					laststate = Outside;
 				}
 				Audio::get_ptr()->start_music(tracknum, true);
 			}
 		}
-	} else {
-		Main_actor* ava = gwin->get_main_actor();
-		// Tests to see if track is playing the SFX tracks, possible
-		// when the game has been restored
-		// and the Audio option was changed from OGG to something else
-		if (player && player->get_current_track() >= Audio::game_music(4)
-			&& player->get_current_track() <= Audio::game_music(8)) {
-			player->stop_music();
-		}
+	}
 
-		// Not OGG so play the SFX sounds manually
-		//  Only if outside.
-		if (ava && !gwin->is_main_actor_inside() &&
-			// +++++SI SFX's don't sound right.
-			Game::get_game_type() == BLACK_GATE) {
-			int                        sound;    // BG SFX #.
-			static const unsigned char bgnight[] = {61, 61, 255};
-			static const unsigned char bgday[]   = {82, 85, 85};
-			if (repeats > 0) {    // Repeating?
-				sound = last_sound;
-			} else {
-				const int hour = gwin->get_clock()->get_hour();
-				if (hour < 6 || hour > 20) {
-					sound = bgnight[rand() % sizeof(bgnight)];
-				} else {
-					sound = bgday[rand() % sizeof(bgday)];
-				}
-				// Translate BG to SI #'s.
-				sound      = Audio::game_sfx(sound);
-				last_sound = sound;
+	// Tests to see if day sfx track is playing, possible
+	// when the game has been restored
+	// and the Audio option was changed from OGG/MT32 to something else
+	// If nighttime sfx track is uncommented, also query whether track 7 plays
+	if (player && !play_bg_tracks && player->get_current_track() == 6) {
+		player->stop_music();
+	}
+	Main_actor* ava = gwin->get_main_actor();
+	// Testing. When outside play birds during daytime or crickets at night
+	if (ava && !gwin->is_main_actor_inside() && currentstate != Dungeon) {
+		int                        sound;     // SFX #.
+		int                        volume;    // keep the volume down.
+		static const unsigned char bgnight[] = {61, 61, 255};
+		static const unsigned char bgday[]   = {82, 85, 85};
+		if (repeats > 0) {    // Repeating?
+			sound = last_sound;
+		} else {
+			if (nighttime) {
+				sound = bgnight[rand() % sizeof(bgnight)];
+				// only play daytime sfx when no music track is playing
+			} else if (!play_bg_tracks && player->get_current_track() == -1) {
+				sound = bgday[rand() % sizeof(bgday)];
 			}
-			Audio::get_ptr()->play_sound_effect(sound);
-			repeats++;    // Count it.
-			if (rand() % (repeats + 1) == 0) {
-				// Repeat.
-				delay = 500 + rand() % 1000;
-			} else {
-				delay   = 4000 + rand() % 3000;
-				repeats = 0;
-			}
+			last_sound = sound;
+		}
+		Audio::get_ptr()->play_sound_effect(
+				Audio::game_sfx(sound), AUDIO_MAX_VOLUME - 200);
+		repeats++;    // Count it.
+		if (rand() % (repeats + 1) == 0) {
+			// Repeat.
+			delay = 500 + rand() % 1000;
+		} else {
+			delay   = 4000 + rand() % 3000;
+			repeats = 0;
 		}
 	}
 
