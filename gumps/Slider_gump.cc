@@ -40,8 +40,8 @@ short Slider_gump::leftbtnx  = 31;
 short Slider_gump::rightbtnx = 103;
 short Slider_gump::btny      = 14;
 short Slider_gump::diamondy  = 6;
-short Slider_gump::xmin      = 35;    // Min., max. positions of diamond.
-short Slider_gump::xmax      = 93;
+short Slider_gump::xmin      = 36;    // Min., max. positions of diamond.
+short Slider_gump::xmax      = 91;
 
 /*
  *  One of the two arrow button on the slider:
