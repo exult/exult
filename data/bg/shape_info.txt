@@ -57,7 +57,7 @@
 
 %%section shape_sfx
 #	Format
-#		:shapenum/sfxnum/chance/range/rand/extra
+#		:shapenum/sfxnum/chance/range/rand/extra/volume
 #	Only the first two parameters are required.
 #	chance is the % chance of playing the sfx at any given moment.
 #	Values of chance not in the [1-100] interval are treated as 100.
@@ -66,31 +66,34 @@
 #	rand is a flag controlling how range is used: if rand is 1, Exult
 #	will randomly play one sfx in the range; if rand is 0, Exult will
 #	play them sequentially, wrapping back to the first sfx.
-#	extra is basicall for the grandfather clock. It is a SFX that will
+#	extra is basically for the grandfather clock. It is a SFX that will
 #	play every game hour a number of times equal to hour % 12 (or
 #	twelve times for midnight).
+#	Volume is used to control individual sfx volume levels. If no value 
+#	is given, 100% volume will be assumed.
 #
 #	Surf (49)
-:612/49
-:613/49
-:632/49
-:736/49
-:737/49
-:751/49
-:808/49
-:834/49
-:875/49
-:907/49
-:911/49
-:918/49
-:1012/49
-:1020/49
-:1022/49
+:612/49/0/0/0/0/20
+:613/49/0/0/0/0/20
+:632/49/0/0/0/0/20
+:699/49/0/0/0/0/20
+:736/49/0/0/0/0/20
+:737/49/0/0/0/0/20
+:751/49/0/0/0/0/20
+:808/49/0/0/0/0/20
+:834/49/0/0/0/0/20
+:875/49/0/0/0/0/20
+:907/49/0/0/0/0/20
+:911/49/0/0/0/0/20
+:918/49/0/0/0/0/20
+:1012/49/0/0/0/0/20
+:1020/49/0/0/0/0/20
+:1022/49/0/0/0/0/20
 
 #	Bubbles (54 to 58)
 #
-:334/54/100/5/1
-:335/54/100/5/1
+:334/54/100/5/1/0/50
+:335/54/100/5/1/0/50
 #	Doesn't seem to play sounds
 #:780/54/100/5/1
 
@@ -100,14 +103,14 @@
 
 #	Fountains
 #
-:893/48
+:893/48/0/0/0/0/40
 
 #	Moongates
 #
-:157/77
-:776/77
-:777/77
-:779/77
+:157/77/0/0/0/0/80
+:776/77/0/0/0/0/80
+:777/77/0/0/0/0/80
+:779/77/0/0/0/0/80
 
 #	Ethereal monster
 #
@@ -115,29 +118,25 @@
 
 #	Sphere generator
 #
-:234/80
-:235/80
-:236/80
+:234/80/0/0/0/0/80
+:235/80/0/0/0/0/80
+:236/80/0/0/0/0/80
 
 #	Tetrahedron generator
 #
-:242/81
-:243/81
-:244/81
+:242/81/0/0/0/0/60
+:243/81/0/0/0/0/60
+:244/81/0/0/0/0/60
 
 #	Cube generator
 #
-:238/82
-:239/82
-:240/82
+:238/82/0/0/0/0/80
+:239/82/0/0/0/0/80
+:240/82/0/0/0/0/80
 
 #	Black gate
 #
-:305/78
-
-#	Vortex cube
-#
-:786/79
+:305/78/0/0/0/0/80
 
 #	Grandfather clock
 #
@@ -146,19 +145,19 @@
 
 #	Cavern
 #
-:389/103/5
-:391/103/5
+:389/103/5/0/0/0/0/80
+:391/103/5/0/0/0/0/80
 
 #	Bee
 #
-:494/113
+:494/113/0/0/0/0/70
 
 #	Magic weapons
 #
-:547/104
-:548/104
-:559/104
-:562/104
+:547/104/0/0/0/0/50
+:548/104/0/0/0/0/50
+:559/104/0/0/0/0/50
+:562/104/0/0/0/0/50
 
 #	Flaming weapons -- sounds awful, so it is disabled
 #
@@ -168,24 +167,24 @@
 
 #	Mechanism
 #
-:685/114
+:685/114/0/0/0/0/60
 
 #	Mill Stone
 #
-:711/26
+:711/26/0/0/0/0/50
 
 #	Well of Souls
 #
 :748/52
 
-#	Orrery
+#	Orrery -- only shape #767 plays sfx to prevent too much noise
 #
-:755/114
+#:755/114
 :767/114
 
 #	Energy Field
 #
-:768/11
+:768/11/20/0/0/0/20
 
 #	Smokebomb
 #
@@ -193,11 +192,11 @@
 
 #	The Vortex Cube
 #
-:786/79
+:786/79/0/0/0/0/70
 
 #	Water
 #
-:794/50
+:794/50/0/0/0/0/30
 
 #	Campfire -- sounds awful, so it is disabled
 #
@@ -209,21 +208,21 @@
 
 #	Poison/Sleep Field
 #
-:900/52
-:902/52
+:900/52/11/20/0/0/0/40
+:902/52/11/20/0/0/0/40
 
-#	Water Wheel
+#	Water Wheel -- only shapes #942 & #952 play sfx to prevent too much noise
 #
-:934/59
-:941/59
-:942/59
-:951/59
+#:934/59
+#:941/59
+:942/59/0/0/0/0/80
+:951/59/0/0/0/0/80
 
 #	Prisms
 #
-:968/81
-:981/81
-:1010/11
+:968/81/0/0/0/0/60
+:981/81/0/0/0/0/60
+:1010/11/0/0/0/0/60
 %%endsection
 
 %%section animation
