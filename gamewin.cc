@@ -247,7 +247,6 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 	// Testing. When outside play birds during daytime or crickets at night
 	if (ava && !gwin->is_main_actor_inside() && currentstate != Dungeon) {
 		int                        sound;     // SFX #.
-		int                        volume;    // keep the volume down.
 		static const unsigned char bgnight[] = {61, 61, 255};
 		static const unsigned char bgday[]   = {82, 85, 85};
 		if (repeats > 0) {    // Repeating?
