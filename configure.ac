@@ -433,7 +433,15 @@ fi
 # SDL
 # ---------------------------------------------------------------------
 
-EXULT_CHECK_SDL(:,AC_MSG_ERROR([[*** SDL not found!]]))
+if test x$enable_android_apk = xno; then
+	PKG_CHECK_MODULES(SDL, sdl2 >= 2.0.16, , AC_MSG_ERROR([[*** SDL not found!]]))
+	AC_DEFINE(HAVE_SDL_H, 1, [Define to 1 if you have the "SDL.h" header file])
+	AM_CONDITIONAL(HAVE_SDL, true)
+	AC_SUBST(SDL_CFLAGS)
+	AC_SUBST(SDL_LIBS)
+else
+	AM_CONDITIONAL(HAVE_SDL, false)
+fi
 
 # ---------------------------------------------------------------------
 # libpng
@@ -703,11 +711,6 @@ if test "$WINDOWING_SYSTEM" != -DXWIN -a "$WINDOWING_SYSTEM" != -D_WIN32 -a "$WI
 	enable_exult_studio_support=no
 fi
 
-AC_ARG_ENABLE(macosx-x11-studio-support, AS_HELP_STRING([--enable-macosx-x11-studio-support], [Force Exult Studio X11 support in macOS @<:@default no@:>@]),,enable_macosx_x11_studio_support=no)
-if test "$WINDOWING_SYSTEM" != -DMACOSX; then
-	enable_macosx_x11_studio_support=no
-fi
-
 if test x$enable_exult_studio = xyes; then
 	enable_exult_studio_support=yes
 fi
@@ -715,26 +718,6 @@ fi
 if test x$enable_exult_studio_support = xyes ; then
 	AC_MSG_RESULT(yes)
 	AC_DEFINE(USE_EXULTSTUDIO, 1, [Use Exult Studio])
-	AC_CHECK_FUNC(xwin, AC_DEFINE(XWIN))
-	if test "$WINDOWING_SYSTEM" = -DMACOSX -a "$ac_cv_func_xwin" != yes; then
-		if test $sdl_minor_version -eq "0" -a $sdl_patchlevel -lt "15"; then
-			echo "SDL2 2.0.15 or newer is needed for native drag'n'drop - switching to X11"
-			enable_macosx_x11_studio_support=yes
-		fi
-	fi
-
-	# Due to bug 2129731 and 3139441 some Linux distributions need -lX11 explicitly set
-	# when enabling Exult Studio support or linking fails
-	# 2022.08 : This does not appear relevant any longer
-	# 2022.08 : if test "$WINDOWING_SYSTEM" = -DXWIN ; then
-	# 2022.08 :     SYSLIBS="$SYSLIBS -lX11"
-	# 2022.08 : fi
-
-	if test x$enable_macosx_x11_studio_support = xyes ; then
-		enable_exult_studio_support=yes
-		SYSLIBS="$SYSLIBS -L/usr/X11R6/lib -lX11"
-		AC_DEFINE(XWIN, 1, [X11 (needed by Exult Studio X11 support in macOS)])
-	fi
 else
 	AC_MSG_RESULT(no)
 fi
@@ -1285,7 +1268,7 @@ fi
 echo
 if test x$enable_android_apk = xno; then
 	echo Dependencies :
-	echo SDL........................ : `$SDL_CONFIG --version`
+	echo SDL........................ : `$PKG_CONFIG --modversion sdl2`
 	PKG_CHECK_EXISTS(ogg,
 		echo Ogg.........................: `$PKG_CONFIG --modversion ogg`)
 	PKG_CHECK_EXISTS(vorbis,
