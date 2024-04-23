@@ -33,7 +33,7 @@
 @property(nonatomic, assign) bool         vjoyIsActive;
 @property(nonatomic, assign) CGPoint      vjoyCenter;
 @property(nonatomic, assign) CGPoint      vjoyCurrent;
-@property(nonatomic, assign) SDL_Gamepad* vjoyController;
+@property(nonatomic, assign) SDL_Gamepad* vjoyGamepad;
 @property(nonatomic, weak) UITouch*       vjoyInputSource;
 
 @end
@@ -60,5 +60,4 @@ typedef enum {
 @property(nonatomic, assign) BOOL               pressed;
 @property(nonatomic, retain) NSArray*           keyCodes;
 @property(nonatomic, assign) GamePadButtonStyle style;
-
 @end

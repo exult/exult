@@ -24,6 +24,9 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
 #include <SDL3/SDL.h>
 #ifdef __GNUC__
@@ -216,9 +219,8 @@ void ShapeBrowser::browse_shapes() {
 		Delay();
 		if (SDL_PollEvent(&event) && event.type == SDL_EVENT_KEY_DOWN) {
 			redraw           = true;
-			const bool shift = event.key.keysym.mod & SDL_KMOD_SHIFT;
-			// int ctrl = event.key.keysym.mod & SDL_KMOD_CTRL;
-			switch (event.key.keysym.sym) {
+			const bool shift = event.key.mod & SDL_KMOD_SHIFT;
+			switch (event.key.key) {
 			case SDLK_ESCAPE:
 				looping = false;
 				break;
@@ -244,8 +246,8 @@ void ShapeBrowser::browse_shapes() {
 				break;
 				// Shapes
 			case SDLK_S:
-				if ((event.key.keysym.mod & SDL_KMOD_ALT)
-					&& (event.key.keysym.mod & SDL_KMOD_CTRL)) {
+				if ((event.key.mod & SDL_KMOD_ALT)
+					&& (event.key.mod & SDL_KMOD_CTRL)) {
 					make_screenshot(true);
 				} else {
 					handle_key(shift, current_shape, num_shapes);

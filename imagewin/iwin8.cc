@@ -32,6 +32,9 @@ Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
 #include <SDL3/SDL.h>
 #ifdef __GNUC__
@@ -108,10 +111,14 @@ void Image_window8::set_palette(
 		colors2[i].b = colors[i * 3 + 2]
 				= GammaBlue[Get_color8(rgbs[3 * i + 2], maxval, brightness)];
 	}
-	SDL_SetPaletteColors(paletted_surface->format->palette, colors2, 0, 256);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
+	SDL_SetPaletteColors(paletted_surface_palette, colors2, 0, 256);
 
 	if (paletted_surface != draw_surface) {
-		SDL_SetPaletteColors(draw_surface->format->palette, colors2, 0, 256);
+		SDL_Palette* draw_surface_palette
+				= SDL_GetSurfacePalette(paletted_surface);
+		SDL_SetPaletteColors(draw_surface_palette, colors2, 0, 256);
 	}
 }
 
@@ -144,12 +151,14 @@ void Image_window8::rotate_colors(
 			colors2[i].g = colors[i * 3 + 1];
 			colors2[i].b = colors[i * 3 + 2];
 		}
-		SDL_SetPaletteColors(
-				paletted_surface->format->palette, colors2, 0, 256);
+		SDL_Palette* paletted_surface_palette
+				= SDL_GetSurfacePalette(paletted_surface);
+		SDL_SetPaletteColors(paletted_surface_palette, colors2, 0, 256);
 
 		if (paletted_surface != draw_surface) {
-			SDL_SetPaletteColors(
-					draw_surface->format->palette, colors2, 0, 256);
+			SDL_Palette* draw_surface_palette
+					= SDL_GetSurfacePalette(paletted_surface);
+			SDL_SetPaletteColors(draw_surface_palette, colors2, 0, 256);
 		}
 	}
 }

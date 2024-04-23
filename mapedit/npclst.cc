@@ -665,7 +665,8 @@ void Npc_chooser::drag_data_get(
 	guchar    buf[U7DND_DATA_LENGTH(1)];
 	const int npcnum = chooser->info[chooser->selected].npcnum;
 	const int len    = Store_u7_npcid(buf, npcnum);
-	cout << "Setting selection data (" << npcnum << ')' << endl;
+	cout << "Setting selection data (" << npcnum << ')' << " (" << len << ") '"
+		 << buf << "'" << endl;
 	// Set data.
 	gtk_selection_data_set(
 			seldata, gtk_selection_data_get_target(seldata), 8, buf, len);
