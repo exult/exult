@@ -1482,10 +1482,13 @@ bool SI_Game::new_game(Vga_file& shapes) {
 			gwin->get_win()->show();
 			redraw = false;
 		}
+		SDL_Renderer* renderer
+				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
 			Uint16 keysym_unicode = 0;
 			bool   isTextInput    = false;
+			SDL_ConvertEventToRenderCoordinates(renderer, &event);
 			if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN
 				|| event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
 				const SDL_Rect rectName   = {topx + 10, menuy + 10, 130, 16};
@@ -1542,14 +1545,14 @@ bool SI_Game::new_game(Vga_file& shapes) {
 					}
 				}
 			} else if (event.type == SDL_EVENT_TEXT_INPUT) {
-				isTextInput          = true;
-				keysym_unicode       = event.text.text[0];
-				event.type           = SDL_EVENT_KEY_DOWN;
-				event.key.keysym.sym = SDLK_UNKNOWN;
+				isTextInput    = true;
+				keysym_unicode = event.text.text[0];
+				event.type     = SDL_EVENT_KEY_DOWN;
+				event.key.key  = SDLK_UNKNOWN;
 			}
 			if (event.type == SDL_EVENT_KEY_DOWN) {
 				redraw = true;
-				switch (event.key.keysym.sym) {
+				switch (event.key.key) {
 				case SDLK_SPACE:
 					if (selected == 0) {
 						const int len = strlen(npc_name);
