@@ -43,7 +43,7 @@ $ autoreconf -v -i ./../exult
 $ ./../exult/configure --enable-data --enable-android-apk=debug \
             --disable-exult --disable-tools --disable-timidity-midi --disable-alsa \
             --disable-fluidsynth --disable-mt32emu --disable-all-hq-scalers \
-            --disable-nxbr --disable-zip-support --disable-sdl-parachute
+            --disable-nxbr --disable-zip-support
 $ cd files && make
 $ cd ./../data && make
 $ cd ./../android && make
@@ -59,7 +59,7 @@ $ autoreconf -v -i ./../exult
 $ ./../exult/configure --enable-data --enable-android-apk=release \
             --disable-exult --disable-tools --disable-timidity-midi --disable-alsa \
             --disable-fluidsynth --disable-mt32emu --disable-all-hq-scalers \
-            --disable-nxbr --disable-zip-support --disable-sdl-parachute
+            --disable-nxbr --disable-zip-support
 $ cd files && make
 $ cd ./../data && make
 $ cd ./../android && make

@@ -54,7 +54,7 @@
 
 // #define TEST_MOBILE 1
 
-static const Uint32 EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
+static const SDL_MouseID EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
 
 // renable the warning that was disabled above
 #if defined(__GNUC__)
@@ -182,11 +182,12 @@ void CheatScreen::show_screen() {
 #else
 	maxy = gwin->get_height();
 #endif
-	centerx = maxx / 2;
-	centery = maxy / 2;
+	centerx            = maxx / 2;
+	centery            = maxy / 2;
+	SDL_Window* window = gwin->get_win()->get_screen_window();
 	if (touchui != nullptr) {
 		touchui->hideGameControls();
-		SDL_StartTextInput();
+		SDL_StartTextInput(window);
 	}
 
 	// Pause the game
@@ -237,8 +238,8 @@ void CheatScreen::show_screen() {
 		if (!gumpman->gump_mode()) {
 			touchui->showGameControls();
 		}
-		if (SDL_TextInputActive()) {
-			SDL_StopTextInput();
+		if (SDL_TextInputActive(window)) {
+			SDL_StopTextInput(window);
 		}
 	}
 }
@@ -544,6 +545,7 @@ static void resizeline(float& axis1, float delta1, float& axis2) {
 
 bool CheatScreen::SharedInput() {
 	SDL_Event event;
+	SDL_Window* window = gwin->get_win()->get_screen_window();
 	// Do repaint after 100 ms to allow for time dependant effects. 10 FPS seems
 	// more that adequate for Cheat Screen If anyone needs to do smooth animaion
 	// the can change this
@@ -627,7 +629,7 @@ bool CheatScreen::SharedInput() {
 					CERR("SDL_EVENT_FINGER_DOWN");
 					buttons_down.insert(button_down_finger);
 					if ((!Mouse::use_touch_input)
-						&& (event.tfinger.fingerId != 0)) {
+						&& (event.tfinger.fingerID != 0)) {
 						Mouse::use_touch_input = true;
 					}
 					break;
@@ -649,19 +651,14 @@ bool CheatScreen::SharedInput() {
 							gwin->get_fastmouse(), gx, gy);
 
 					static int  numFingers = 0;
-					SDL_Finger* finger0
-							= SDL_GetTouchFinger(event.tfinger.touchId, 0);
-					if (finger0) {
-						numFingers
-								= SDL_GetNumTouchFingers(event.tfinger.touchId);
-					}
+					SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
 					CERR("numFingers " << numFingers);
 
 					// Will allow single finger swipes
 					if (numFingers > 0) {
 						// Hide on screen keyboard if we are swiping
-						if (SDL_TextInputActive()) {
-							SDL_StopTextInput();
+						if (SDL_TextInputActive(window)) {
+							SDL_StopTextInput(window);
 						}
 						// Accuulate the deltas onto
 						// thevector
@@ -718,13 +715,13 @@ bool CheatScreen::SharedInput() {
 							// Touch on the cheat screen will bring up the
 							// keyboard but not if the tap was within a 20 pixel
 							// border on the edge of the game screen)
-							if (SDL_TextInputActive()) {
-								SDL_StopTextInput();
+							if (SDL_TextInputActive(window)) {
+								SDL_StopTextInput(window);
 							} else if (
 									gx > 20 && gy > 20
 									&& gx < (gwin->get_width() - 20)
 									&& gy < (gwin->get_height() - 20)) {
-								SDL_StartTextInput();
+								SDL_StartTextInput(window);
 							}
 						}
 					}
@@ -734,11 +731,11 @@ bool CheatScreen::SharedInput() {
 				} break;
 
 				case SDL_EVENT_KEY_DOWN: {
-					buttons_down.insert(int(event.key.keysym.sym));
+					buttons_down.insert(int(event.key.key));
 				} break;
 
 				case SDL_EVENT_KEY_UP: {
-					buttons_down.erase(int(event.key.keysym.sym));
+					buttons_down.erase(int(event.key.key));
 				} break;
 
 				default:
@@ -748,9 +745,9 @@ bool CheatScreen::SharedInput() {
 
 			if (simulate_key) {
 				std::memset(&event, 0, sizeof(event));
-				event.type           = SDL_EVENT_KEY_DOWN;
-				event.key.keysym.sym = simulate_key;
-				CERR("simmulate key " << event.key.keysym.sym);
+				event.type    = SDL_EVENT_KEY_DOWN;
+				event.key.key = simulate_key;
+				CERR("simmulate key " << event.key.key);
 				// Simulated keys automatically execute the command if possible
 				if (state.GetMode() >= CP_HitKey
 					&& state.GetMode() <= CP_WrongShapeFile) {
@@ -760,9 +757,10 @@ bool CheatScreen::SharedInput() {
 			if (event.type != SDL_EVENT_KEY_DOWN) {
 				continue;
 			}
-			const SDL_Keysym& key = event.key.keysym;
+			const SDL_Keycode key_sym = event.key.key;
+			const SDL_Keymod  key_mod = event.key.mod;
 
-			if (key.sym == SDLK_ESCAPE) {
+			if (key_sym == SDLK_ESCAPE) {
 				std::memset(state.input, 0, sizeof(state.input));
 				// If current mode is needing to press a key return to command
 				if (state.GetMode() >= CP_HitKey
@@ -773,46 +771,47 @@ bool CheatScreen::SharedInput() {
 				}
 				// Escape will cancel current mode
 				else if (state.GetMode() != CP_Command) {
-					state.command = key.sym;
+					state.command = key_sym;
 					state.SetMode(CP_Canceled, true);
 					return false;
 				}
 			}
 
-			if ((key.sym == SDLK_S) && (key.mod & SDL_KMOD_ALT)
-				&& (key.mod & SDL_KMOD_CTRL)) {
+			if ((key_sym == SDLK_S) && (key_mod & SDL_KMOD_ALT)
+				&& (key_mod & SDL_KMOD_CTRL)) {
 				make_screenshot(true);
 				return false;
 			}
 
 			if (state.GetMode() == CP_NorthSouth) {
-				if (!state.input[0] && (key.sym == 'n' || key.sym == 's')) {
-					state.input[0] = char(key.sym);
+				if (!state.input[0] && (key_sym == 'n' || key_sym == 's')) {
+					state.input[0] = char(key_sym);
 					state.activate = true;
 				}
 			} else if (state.GetMode() == CP_WestEast) {
-				if (!state.input[0] && (key.sym == 'w' || key.sym == 'e')) {
-					state.input[0] = char(key.sym);
+				if (!state.input[0] && (key_sym == 'w' || key_sym == 'e')) {
+					state.input[0] = char(key_sym);
 					state.activate = true;
 				}
 			} else if (
 					state.GetMode() >= CP_HexXCoord
 					&& state.GetMode() <= CP_HexYCoord) {    // Want hex input
 				// Activate (if possible)
-				if (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER) {
+				if (key_sym == SDLK_RETURN || key_sym == SDLK_KP_ENTER) {
 					state.activate = true;
+// Begin New
 					// increment/decrement
-				} else if (key.sym == SDLK_LEFT || key.sym == SDLK_RIGHT) {
+				} else if (key_sym == SDLK_LEFT || key_sym == SDLK_RIGHT) {
 					char* end   = nullptr;
 					long  value = std::strtol(state.input, &end, 16);
 					if (state.val_max < state.val_min) {
 						std::swap(state.val_max, state.val_min);
 					}
 					if (end == state.input + strlen(state.input)) {
-						if (key.sym == SDLK_LEFT && value != state.val_min) {
+						if (key_sym == SDLK_LEFT && value != state.val_min) {
 							value = std::max(value - 1, state.val_min);
 						} else if (
-								key.sym == SDLK_RIGHT
+								key_sym == SDLK_RIGHT
 								&& value != state.val_max) {
 							value = std::min(value + 1, state.val_max);
 						}
@@ -826,43 +825,40 @@ bool CheatScreen::SharedInput() {
 									value);
 						}
 					}
-
+// End New
 				} else if (
-						(key.sym == '-' || key.sym == SDLK_KP_MINUS)
+						(key_sym == '-' || key_sym == SDLK_KP_MINUS)
 						&& !state.input[0]) {
 					state.input[0] = '-';
 				} else if (
-						key.sym < 256 && key.sym >= 0
-						&& std::isxdigit(key.sym)) {
+						key_sym < 256 && std::isxdigit(key_sym)) {
 					const size_t curlen = std::strlen(state.input);
 					if (curlen < (std::size(state.input) - 1)) {
-						state.input[curlen]     = char(std::tolower(key.sym));
+						state.input[curlen]     = char(std::tolower(key_sym));
 						state.input[curlen + 1] = 0;
 					}
-				} else if (
-						(key.sym >= SDLK_KP_1 && key.sym <= SDLK_KP_9)
-						|| key.sym == SDLK_KP_0) {
+				} else if (SDLScanCodeToInt(key_sym) != -1) {    // KP_0 to 9
 					const size_t curlen = std::strlen(state.input);
 					if (curlen < (std::size(state.input) - 1)) {
-						const int sym           = SDLScanCodeToInt(key.sym);
+						const int sym           = SDLScanCodeToInt(key_sym);
 						state.input[curlen]     = char(sym);
 						state.input[curlen + 1] = 0;
 					}
-				} else if (key.sym == SDLK_BACKSPACE) {
+				} else if (key_sym == SDLK_BACKSPACE) {
 					const size_t curlen = std::strlen(state.input);
 					if (curlen) {
 						state.input[curlen - 1] = 0;
 					}
 				}
 			} else if (state.GetMode() == CP_Name) {    // Want Text input
-				if (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER) {
+				if (key_sym == SDLK_RETURN || key_sym == SDLK_KP_ENTER) {
 					state.activate = true;
 				} else if (
-						(key.sym < 256 && key.sym >= 0 && std::isalnum(key.sym))
-						|| key.sym == ' ') {
+						(key_sym < 256 && std::isalnum(key_sym))
+						|| key_sym == ' ') {
 					const size_t curlen = std::strlen(state.input);
-					char         chr    = key.sym;
-					if (key.mod & SDL_KMOD_SHIFT) {
+					char         chr    = key_sym;
+					if (key_mod & SDL_KMOD_SHIFT) {
 						chr = static_cast<char>(
 								std::toupper(static_cast<unsigned char>(chr)));
 					}
@@ -870,23 +866,23 @@ bool CheatScreen::SharedInput() {
 						state.input[curlen]     = chr;
 						state.input[curlen + 1] = 0;
 					}
-				} else if (key.sym == SDLK_BACKSPACE) {
+				} else if (key_sym == SDLK_BACKSPACE) {
 					const size_t curlen = std::strlen(state.input);
 					if (curlen) {
 						state.input[curlen - 1] = 0;
 					}
 				}
 			} else if (state.GetMode() >= CP_ChooseNPC) {    // Need to grab
-															 // numerical
-				// input Browse shape
+															 // numerical input
+				// Browse shape
 				if (state.GetMode() == CP_Shape && !state.input[0]
-					&& key.sym == 'b') {
+					&& key_sym == 'b') {
 					cheat.shape_browser();
 					state.input[0] = 'b';
 					state.activate = true;
 				}
 
-				if (key.sym == SDLK_LEFT || key.sym == SDLK_RIGHT) {
+				if (key_sym == SDLK_LEFT || key_sym == SDLK_RIGHT) {
 					char* end   = nullptr;
 					long  value = std::strtol(state.input, &end, 10);
 
@@ -894,10 +890,10 @@ bool CheatScreen::SharedInput() {
 						std::swap(state.val_max, state.val_min);
 					}
 					if (end == state.input + strlen(state.input)) {
-						if (key.sym == SDLK_LEFT && value != state.val_min) {
+						if (key_sym == SDLK_LEFT && value != state.val_min) {
 							value = std::max(value - 1, state.val_min);
 						} else if (
-								key.sym == SDLK_RIGHT
+								key_sym == SDLK_RIGHT
 								&& value != state.val_max) {
 							value = std::min(value + 1, state.val_max);
 						}
@@ -907,40 +903,37 @@ bool CheatScreen::SharedInput() {
 					}
 				}
 				// Activate (if possible)
-				else if (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER) {
+				else if (key_sym == SDLK_RETURN || key_sym == SDLK_KP_ENTER) {
 					state.activate = true;
 				} else if (
-						(key.sym == '-' || key.sym == SDLK_KP_MINUS)
+						(key_sym == '-' || key_sym == SDLK_KP_MINUS)
 						&& !state.input[0]) {
 					state.input[0] = '-';
 				} else if (
-						key.sym < 256 && key.sym >= 0
-						&& std::isdigit(key.sym)) {
+						key_sym < 256 && std::isdigit(key_sym)) {
 					const size_t curlen = std::strlen(state.input);
 					if (curlen < (std::size(state.input) - 1)) {
-						state.input[curlen]     = key.sym;
+						state.input[curlen]     = key_sym;
 						state.input[curlen + 1] = 0;
 					}
-				} else if (
-						(key.sym >= SDLK_KP_1 && key.sym <= SDLK_KP_9)
-						|| key.sym == SDLK_KP_0) {
+				} else if (SDLScanCodeToInt(key_sym) != -1) {    // KP_0 to 9
 					const size_t curlen = std::strlen(state.input);
 					if (curlen < (std::size(state.input) - 1)) {
-						const int sym           = SDLScanCodeToInt(key.sym);
+						const int sym           = SDLScanCodeToInt(key_sym);
 						state.input[curlen]     = sym;
 						state.input[curlen + 1] = 0;
 					}
-				} else if (key.sym == SDLK_BACKSPACE) {
+				} else if (key_sym == SDLK_BACKSPACE) {
 					const auto curlen = std::strlen(state.input);
 					if (curlen) {
 						state.input[curlen - 1] = 0;
 					}
 				}
 			} else {
-				char c = key.sym;
+				char c = key_sym;
 
 				// Translate arrow key into the characters we use for arrows
-				switch (key.sym) {
+				switch (key_sym) {
 				case SDLK_UP: {
 					c = '^';
 				} break;
@@ -970,7 +963,7 @@ bool CheatScreen::SharedInput() {
 					state.SetMode(CP_Command, true);
 					state.command = 0;
 				} else {    // Need the key pressed
-					state.command       = key.sym;
+					state.command       = key_sym;
 					state.highlighttime = SDL_GetTicks() + 1000;
 					state.highlight     = state.command;
 					return true;

@@ -47,7 +47,8 @@ void Image_window::show_scaled8to16_2xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to555_2xBR(
@@ -59,7 +60,8 @@ void Image_window::show_scaled8to555_2xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to565_2xBR(
@@ -71,7 +73,8 @@ void Image_window::show_scaled8to565_2xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to32_2xBR(
@@ -83,7 +86,8 @@ void Image_window::show_scaled8to32_2xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint32*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 //
@@ -98,7 +102,8 @@ void Image_window::show_scaled8to16_3xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to555_3xBR(
@@ -110,7 +115,8 @@ void Image_window::show_scaled8to555_3xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to565_3xBR(
@@ -122,7 +128,8 @@ void Image_window::show_scaled8to565_3xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to32_3xBR(
@@ -134,7 +141,8 @@ void Image_window::show_scaled8to32_3xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint32*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 //
@@ -149,7 +157,8 @@ void Image_window::show_scaled8to16_4xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to555_4xBR(
@@ -161,7 +170,8 @@ void Image_window::show_scaled8to555_4xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to565_4xBR(
@@ -173,7 +183,8 @@ void Image_window::show_scaled8to565_4xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to32_4xBR(
@@ -185,7 +196,8 @@ void Image_window::show_scaled8to32_4xBR(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint32*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 // calculate input matrix coordinates after rotation at compile time

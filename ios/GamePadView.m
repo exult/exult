@@ -43,7 +43,7 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 @synthesize     vjoyIsActive;       // true when the vjoy is active
 @synthesize     vjoyCenter;         // center of the vjoy
 @synthesize     vjoyCurrent;        // current position of the vjoy
-@synthesize     vjoyController;     // the vjoy's SDL_Gamepad
+@synthesize     vjoyController;     // the vjoy's SDL_GameController
 @synthesize     vjoyInputSource;    // where vjoy input is coming from
 
 - (id)initWithFrame:(CGRect)frame {
@@ -52,18 +52,25 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 		self.backgroundColor = [UIColor clearColor];
 		self.backgroundImage = [UIImage imageNamed:@"joythumb-glass.png"];
 
-		int vjoy_index = SDL_JoystickAttachVirtual(
-				SDL_JOYSTICK_TYPE_GAMEPAD, SDL_GAMEPAD_AXIS_MAX,
-				SDL_GAMEPAD_BUTTON_MAX, 0);
-		if (vjoy_index < 0) {
-			printf("SDL_JoystickAttachVirtual failed: %s\n", SDL_GetError());
+		SDL_VirtualJoystickTouchpadDesc virtual_touchpad = { 1, { 0, 0, 0 } };
+		SDL_VirtualJoystickSensorDesc virtual_sensor = { SDL_SENSOR_ACCEL, 0.0f };
+		SDL_VirtualJoystickDesc desc = { SDL_JOYSTICK_TYPE_GAMEPAD };
+		desc.naxes      = SDL_GAMEPAD_AXIS_MAX;
+		desc.nbuttons   = SDL_GAMEPAD_BUTTON_MAX;
+		desc.ntouchpads = 1;
+		desc.touchpads  = &virtual_touchpad;
+		desc.nsensors   = 1;
+		desc.sensors    = &virtual_sensor;
+		SDL_JoystickID vjoy_id = SDL_AttachVirtualJoystick(&desc);
+		if (!vjoy_id) {
+			printf("SDL_AttachVirtualJoystick failed: %s\n", SDL_GetError());
 		} else {
-			self.vjoyController = SDL_OpenGamepad(vjoy_index);
+			self.vjoyController = SDL_OpenGamepad(vjoy_id);
 			if (!self.vjoyController) {
 				printf("SDL_OpenGamepad failed for virtual joystick: "
 					   "%s\n",
 					   SDL_GetError());
-				SDL_DetachVirtualJoystick(vjoy_index);
+				SDL_DetachVirtualJoystick(vjoy_id);
 			}
 		}
 		[self reset];
@@ -80,17 +87,18 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 
 - (void)dealloc {
 	if (vjoyController) {
-		const SDL_JoystickID vjoy_controller_id = SDL_GetJoystickID(
-				SDL_GetGamepadJoystick(vjoyController));
 		SDL_CloseGamepad(vjoyController);
-		for (int i = 0, n = SDL_NumJoysticks(); i < n; ++i) {
-			const SDL_JoystickID current_id
-					= SDL_JoystickGetDeviceInstanceID(i);
-			if (current_id == vjoy_controller_id) {
-				// printf("detach virtual at id:%d, index:%d\n", current_id, i);
-				SDL_DetachVirtualJoystick(i);
-				break;
+		SDL_JoystickID* joysticks = SDL_GetJoysticks(NULL);
+		if (joysticks) {
+			for (int i = 0; joysticks[i]; ++i) {
+				if (SDL_IsJoystickVirtual(joysticks[i])) {
+					// printf("detach virtual at id:%d, index:%d\n",
+					// joysticks[i], i);
+					SDL_DetachVirtualJoystick(joysticks[i]);
+					break;
+				}
 			}
+			SDL_free(joysticks);
 		}
 	}
 

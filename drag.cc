@@ -509,11 +509,11 @@ bool Dragging_info::drop(
 	// or if alternate drop is enabled (ctrl inverts).
 
 	const Uint8* keystate = SDL_GetKeyboardState(nullptr);
-	const bool   drop     = (keystate[SDL_GetScancodeFromKey(SDLK_LCTRL)]
-                       || keystate[SDL_GetScancodeFromKey(SDLK_RCTRL)])
-									? gwin->get_alternate_drop()
-									: !gwin->get_alternate_drop();
-	const bool   temp     = obj->get_flag(Obj_flags::is_temporary);
+	const bool   drop
+			= (keystate[SDL_SCANCODE_LCTRL] || keystate[SDL_SCANCODE_RCTRL])
+					  ? gwin->get_alternate_drop()
+					  : !gwin->get_alternate_drop();
+	const bool temp = obj->get_flag(Obj_flags::is_temporary);
 
 	if (quantity > 1 && (!on_gump || on_gump != gump) && drop) {
 		quantity = gumpman->prompt_for_number(0, quantity, 1, quantity);

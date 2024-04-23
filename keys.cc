@@ -343,14 +343,13 @@ KeyBinder::KeyBinder() {
 }
 
 void KeyBinder::AddKeyBinding(
-		SDL_Keycode key, int mod, const Action* action, int nparams,
+		SDL_Keycode key, SDL_Keymod mod, const Action* action, int nparams,
 		const int* params) {
-	SDL_Keysym k;
+	ExultKey   k;
 	ActionType a;
-	k.scancode = static_cast<SDL_Scancode>(0);
-	k.sym      = key;
-	k.mod      = static_cast<SDL_Keymod>(mod);
-	a.action   = action;
+	k.key    = key;
+	k.mod    = mod;
+	a.action = action;
 	int i;    // For MSVC
 	for (i = 0; i < c_maxparams && i < nparams; i++) {
 		a.params[i] = params[i];
@@ -429,27 +428,27 @@ bool KeyBinder::DoAction(const ActionType& a, bool press) const {
 }
 
 KeyMap::const_iterator KeyBinder::TranslateEvent(const SDL_Event& ev) const {
-	SDL_Keysym key = ev.key.keysym;
+	ExultKey key{ev.key.key, ev.key.mod};
 
 	if (ev.type != SDL_EVENT_KEY_DOWN && ev.type != SDL_EVENT_KEY_UP) {
 		return bindings.end();
 	}
 
 	key.mod = SDL_KMOD_NONE;
-	if (ev.key.keysym.mod & SDL_KMOD_SHIFT) {
-		key.mod = static_cast<SDL_Keymod>(key.mod | SDL_KMOD_SHIFT);
+	if (ev.key.mod & SDL_KMOD_SHIFT) {
+		key.mod = key.mod | SDL_KMOD_SHIFT;
 	}
-	if (ev.key.keysym.mod & SDL_KMOD_CTRL) {
-		key.mod = static_cast<SDL_Keymod>(key.mod | SDL_KMOD_CTRL);
+	if (ev.key.mod & SDL_KMOD_CTRL) {
+		key.mod = key.mod | SDL_KMOD_CTRL;
 	}
 #ifdef MACOSX
 	// map Meta to Alt on OS X
-	if (ev.key.keysym.mod & SDL_KMOD_GUI) {
-		key.mod = static_cast<SDL_Keymod>(key.mod | SDL_KMOD_ALT);
+	if (ev.key.mod & SDL_KMOD_GUI) {
+		key.mod = key.mod | SDL_KMOD_ALT;
 	}
 #else
-	if (ev.key.keysym.mod & SDL_KMOD_ALT) {
-		key.mod = static_cast<SDL_Keymod>(key.mod | SDL_KMOD_ALT);
+	if (ev.key.mod & SDL_KMOD_ALT) {
+		key.mod = key.mod | SDL_KMOD_ALT;
 	}
 #endif
 
@@ -603,9 +602,9 @@ static void skipspace(string& s) {
 
 void KeyBinder::ParseLine(char* line) {
 	size_t     i;
-	SDL_Keysym k;
+	ExultKey   k;
 	ActionType a;
-	k.sym    = SDLK_UNKNOWN;
+	k.key    = SDLK_UNKNOWN;
 	k.mod    = SDL_KMOD_NONE;
 	string s = line;
 	string u;
@@ -628,17 +627,17 @@ void KeyBinder::ParseLine(char* line) {
 		// check modifiers
 		//    if (u.compare("ALT-",0,4) == 0) {
 		if (u.substr(0, 4) == "ALT-") {
-			k.mod = static_cast<SDL_Keymod>(k.mod | SDL_KMOD_ALT);
+			k.mod = k.mod | SDL_KMOD_ALT;
 			s.erase(0, 4);
 			u.erase(0, 4);
 			//    } else if (u.compare("CTRL-",0,5) == 0) {
 		} else if (u.substr(0, 5) == "CTRL-") {
-			k.mod = static_cast<SDL_Keymod>(k.mod | SDL_KMOD_CTRL);
+			k.mod = k.mod | SDL_KMOD_CTRL;
 			s.erase(0, 5);
 			u.erase(0, 5);
 			//    } else if (u.compare("SHIFT-",0,6) == 0) {
 		} else if (u.substr(0, 6) == "SHIFT-") {
-			k.mod = static_cast<SDL_Keymod>(k.mod | SDL_KMOD_SHIFT);
+			k.mod = k.mod | SDL_KMOD_SHIFT;
 			s.erase(0, 6);
 			u.erase(0, 6);
 		} else {
@@ -658,7 +657,7 @@ void KeyBinder::ParseLine(char* line) {
 				if (std::isgraph(c) && c != '%' && c != '{' && c != '|'
 					&& c != '}' && c != '~') {
 					c     = std::tolower(c);    // need lowercase
-					k.sym = static_cast<SDL_Keycode>(c);
+					k.key = static_cast<SDL_Keycode>(c);
 				} else {
 					cerr << "Keybinder: unsupported key: " << keycode << endl;
 				}
@@ -666,7 +665,7 @@ void KeyBinder::ParseLine(char* line) {
 				// lookup in table
 				auto key_index = keys.find(t);
 				if (key_index != keys.end()) {
-					k.sym = key_index->second;
+					k.key = key_index->second;
 				} else {
 					cerr << "Keybinder: unsupported key: " << keycode << endl;
 					return;
@@ -675,7 +674,7 @@ void KeyBinder::ParseLine(char* line) {
 		}
 	}
 
-	if (k.sym == SDLK_UNKNOWN) {
+	if (k.key == SDLK_UNKNOWN) {
 		cerr << "Keybinder: parse error in line: " << s << endl;
 		return;
 	}
@@ -784,7 +783,7 @@ void KeyBinder::ParseLine(char* line) {
 	}
 
 	// bind key
-	AddKeyBinding(k.sym, k.mod, a.action, np, a.params);
+	AddKeyBinding(k.key, k.mod, a.action, np, a.params);
 }
 
 void KeyBinder::LoadFromFileInternal(const char* filename) {

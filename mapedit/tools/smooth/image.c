@@ -23,24 +23,25 @@ int img_read(char* filein) {
 	SDL_IOStream* rw;
 	if (!strcmp(filein,
 				"-")) {    // stdin as input. Shouldn't work but we try anyways
-		rw = SDL_RWFromFP(stdin, SDL_FALSE);
-	} else {    // a regular file name
+		// rw = SDL_IOFromFP(stdin, SDL_FALSE);
+		return -1;    // Not supported in SDL3
+	} else {          // a regular file name
 		rw = SDL_IOFromFile(filein, "rb");
 	}
 
-	g_statics.image_in = IMG_Load_RW(rw, 0);
+	g_statics.image_in = IMG_Load_IO(rw, 0);
 	if (g_statics.image_in == NULL) {
 		fprintf(stderr, "ERROR: %s\n", SDL_GetError());
-		SDL_FreeRW(rw);
+		SDL_CloseIO(rw);
 		return -1;
 	}
 
-	// SDL 2 can return 1, 2, 4 bits per pixel SDL_Surface
-	if (g_statics.image_in->format->BitsPerPixel < 8) {
+	// SDL 3 can return 1, 2, 4 bits per pixel SDL_Surface
+	if (g_statics.image_in->format->bits_per_pixel < 8) {
 		fprintf(stderr,
 				"WARNING: the image file is not in 8 bpp ( reported %d ). "
 				"Converting it to 8 bpp.\n",
-				g_statics.image_in->format->BitsPerPixel);
+				g_statics.image_in->format->bits_per_pixel);
 		SDL_PixelFormat* format8
 				= SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_INDEX8);
 		if (SDL_SetPixelFormatPalette(
@@ -48,15 +49,15 @@ int img_read(char* filein) {
 			< 0) {
 			fprintf(stderr, "ERROR: %s\n", SDL_GetError());
 			SDL_DestroySurface(g_statics.image_in);
-			SDL_FreeRW(rw);
+			SDL_CloseIO(rw);
 			return -1;
 		}
 		SDL_Surface* converted8
-				= SDL_ConvertSurface(g_statics.image_in, format8, 0);
+				= SDL_ConvertSurface(g_statics.image_in, format8);
 		if (converted8 == NULL) {
 			fprintf(stderr, "ERROR: %s\n", SDL_GetError());
 			SDL_DestroySurface(g_statics.image_in);
-			SDL_FreeRW(rw);
+			SDL_CloseIO(rw);
 			return -1;
 		}
 		SDL_DestroySurface(g_statics.image_in);
@@ -66,13 +67,13 @@ int img_read(char* filein) {
 
 	// check if image is in 8bpp format
 	SDL_PixelFormat* fmt = g_statics.image_in->format;
-	if (fmt->BitsPerPixel != 8) {
+	if (fmt->bits_per_pixel != 8) {
 		fprintf(stderr,
 				"ERROR: the image file is not in 8 bpp ( reported %d ). Please "
 				"convert it.\n",
-				fmt->BitsPerPixel);
+				fmt->bits_per_pixel);
 		SDL_DestroySurface(g_statics.image_in);
-		SDL_FreeRW(rw);
+		SDL_CloseIO(rw);
 		return -1;
 	}
 
@@ -80,7 +81,7 @@ int img_read(char* filein) {
 		fprintf(stderr, "ERROR: The image file is not 192x192 pixels. Please "
 						"modify it.\n");
 		SDL_DestroySurface(g_statics.image_in);
-		SDL_FreeRW(rw);
+		SDL_CloseIO(rw);
 		return -1;
 	}
 
@@ -89,11 +90,12 @@ int img_read(char* filein) {
 		fflush(stdout);
 	}
 
-	if ((g_variables.image_out = SDL_CreateRGBSurfaceFrom(
+	if ((g_variables.image_out = SDL_CreateSurfaceFrom(
 				 g_statics.image_in->pixels, g_statics.image_in->w,
-				 g_statics.image_in->h,
-				 g_statics.image_in->format->BitsPerPixel,
-				 g_statics.image_in->pitch, 0, 0, 0, 0))
+				 g_statics.image_in->h, g_statics.image_in->pitch,
+				 SDL_GetPixelFormatEnumForMasks(
+						 g_statics.image_in->format->bits_per_pixel, 0, 0, 0,
+						 0)))
 		== NULL) {
 		fprintf(stderr, "ERROR: %s\n", SDL_GetError());
 		return -1;
@@ -106,10 +108,10 @@ int img_read(char* filein) {
 	//       launch SDL_ConvertSurface
 
 	g_variables.image_out = SDL_ConvertSurface(
-			g_variables.image_out, g_statics.image_in->format, SDL_SWSURFACE);
+			g_variables.image_out, g_statics.image_in->format);
 
 	// a bit of clean up
-	SDL_FreeRW(rw);
+	SDL_CloseIO(rw);
 	return 0;
 }
 
@@ -136,7 +138,7 @@ int img_write(char* img_out) {
 }
 
 Uint8 getpixel(SDL_Surface* surface, int x, int y) {
-	int    bpp = surface->format->BytesPerPixel;
+	int    bpp = surface->format->bytes_per_pixel;
 	Uint8* p   = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
 	/* Here p is the address to the pixel we want to retrieve */
 

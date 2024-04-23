@@ -479,7 +479,7 @@ fi
 # ---------------------------------------------------------------------
 
 if test x$enable_android_apk = xno; then
-	PKG_CHECK_MODULES(SDL, sdl2 >= 2.0.16, , AC_MSG_ERROR([[*** SDL not found!]]))
+	PKG_CHECK_MODULES(SDL, sdl3, , AC_MSG_ERROR([[*** SDL not found!]]))
 	AC_DEFINE(HAVE_SDL_H, 1, [Define to 1 if you have the "SDL.h" header file])
 	AM_CONDITIONAL(HAVE_SDL, true)
 	AC_SUBST(SDL_CFLAGS)
@@ -1216,16 +1216,6 @@ done
 
 CXXFLAGS="$CXXFLAGS $SANITIZERS"
 
-# SDL parachute?
-AC_ARG_ENABLE(sdl-parachute, AS_HELP_STRING([--enable-sdl-parachute], [Use SDL parachute @<:@default yes@:>@]),,enable_sdl_parachute=yes)
-AC_MSG_CHECKING([if we should disable the SDL parachute])
-if test x$enable_sdl_parachute = xno; then
-	AC_MSG_RESULT(yes)
-	AC_DEFINE(NO_SDL_PARACHUTE, 1, [Disable SDL parachute])
-else
-	AC_MSG_RESULT(no)
-fi
-
 # ---------------------------------------------------------------------
 # Warning level
 # ---------------------------------------------------------------------
@@ -1419,7 +1409,7 @@ if test x$enable_android_apk != xno; then
 	echo Java....................... : $java_version
 	echo
 else
-	echo SDL........................ : `$PKG_CONFIG --modversion sdl2`
+	echo SDL........................ : `$PKG_CONFIG --modversion sdl3`
 	PKG_CHECK_EXISTS(ogg,
 		echo Ogg.........................: `$PKG_CONFIG --modversion ogg`)
 	PKG_CHECK_EXISTS(vorbis,
@@ -1494,7 +1484,6 @@ echo Debug non Readied Objects.. : $enable_nonreadied_objects
 echo
 echo Compilation :
 echo Enable compiler sanitizers. : $enable_sanitizers
-echo Enable SDL parachute....... : $enable_sdl_parachute
 echo Build with static libraries : $enable_static_libs
 echo Turn all warnings to errors : $enable_warning_errors
 echo Turn pedantics to errors... : $enable_pedantic_errors

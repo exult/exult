@@ -66,8 +66,8 @@ void TouchUI_Android::setVirtualJoystick(Sint16 x, Sint16 y) {
 }
 
 void TouchUI_Android::sendEscapeKeypress() {
-	SDL_Event event      = {};
-	event.key.keysym.sym = SDLK_ESCAPE;
+	SDL_Event event = {};
+	event.key.key   = SDLK_ESCAPE;
 
 	event.type = SDL_EVENT_KEY_DOWN;
 	SDL_PushEvent(&event);
@@ -94,31 +94,43 @@ TouchUI_Android::TouchUI_Android() {
 	m_promptForNameMethod = m_jniEnv->GetMethodID(
 			jclass, "promptForName", "(Ljava/lang/String;)V");
 
-	int joystickDeviceIndex = SDL_JoystickAttachVirtual(
-			SDL_JOYSTICK_TYPE_GAMEPAD, SDL_GAMEPAD_AXIS_MAX,
-			SDL_GAMEPAD_BUTTON_MAX, 0);
-	if (joystickDeviceIndex < 0) {
-		std::cerr << "SDL_JoystickAttachVirtual failed: " << SDL_GetError()
+	SDL_VirtualJoystickTouchpadDesc virtual_touchpad = {
+			1, {0, 0, 0}
+    };
+	SDL_VirtualJoystickSensorDesc virtual_sensor = {SDL_SENSOR_ACCEL, 0.0f};
+	SDL_VirtualJoystickDesc       desc           = {SDL_JOYSTICK_TYPE_GAMEPAD};
+	desc.naxes                                   = SDL_GAMEPAD_AXIS_MAX;
+	desc.nbuttons                                = SDL_GAMEPAD_BUTTON_MAX;
+	desc.ntouchpads                              = 1;
+	desc.touchpads                               = &virtual_touchpad;
+	desc.nsensors                                = 1;
+	desc.sensors                                 = &virtual_sensor;
+	SDL_JoystickID joystickDeviceID = SDL_AttachVirtualJoystick(&desc);
+	if (!joystickDeviceID) {
+		std::cerr << "SDL_AttachVirtualJoystick failed: " << SDL_GetError()
 				  << std::endl;
 	} else {
-		m_joystick = SDL_OpenJoystick(joystickDeviceIndex);
+		m_joystick = SDL_OpenJoystick(joystickDeviceID);
 		if (m_joystick == nullptr) {
 			std::cerr << "SDL_OpenJoystick failed for virtual joystick: "
 					  << SDL_GetError() << std::endl;
-			SDL_DetachVirtualJoystick(joystickDeviceIndex);
+			SDL_DetachVirtualJoystick(joystickDeviceID);
 		}
 	}
 }
 
 TouchUI_Android::~TouchUI_Android() {
 	if (m_joystick != nullptr) {
-		const auto joystickId = SDL_GetJoystickID(m_joystick);
 		SDL_CloseJoystick(m_joystick);
-		for (int i = 0, n = SDL_NumJoysticks(); i < n; ++i) {
-			if (SDL_JoystickGetDeviceInstanceID(i) == joystickId) {
-				SDL_DetachVirtualJoystick(i);
-				break;
+		SDL_JoystickID* joysticks = SDL_GetJoysticks(nullptr);
+		if (joysticks) {
+			for (int i = 0; joysticks[i]; ++i) {
+				if (SDL_IsJoystickVirtual(joysticks[i])) {
+					SDL_DetachVirtualJoystick(joysticks[i]);
+					break;
+				}
 			}
+			SDL_free(joysticks);
 		}
 	}
 }

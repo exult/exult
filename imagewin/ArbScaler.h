@@ -74,28 +74,28 @@ namespace Pentagram {
 				sint32 sh, SDL_Surface* dest, sint32 dx, sint32 dy, sint32 dw,
 				sint32 dh, bool clamp_src) const {
 			uint8* pixel = static_cast<uint8*>(dest->pixels)
-						   + dx * dest->format->BytesPerPixel
+						   + dx * dest->format->bytes_per_pixel
 						   + dy * dest->pitch;
 			const sint32 pitch = dest->pitch;
 
 			SDL_PixelFormat* src_format = texture->format;
 			SDL_PixelFormat* dst_format = dest->format;
 
-			if (dst_format->BytesPerPixel == 2) {
+			if (dst_format->bytes_per_pixel == 2) {
 				const int r = dst_format->Rmask;
 				const int g = dst_format->Gmask;
 				const int b = dst_format->Bmask;
 
 				if ((r == 0xf800 && g == 0x7e0 && b == 0x1f)
 					|| (b == 0xf800 && g == 0x7e0 && r == 0x1f)) {
-					if (src_format->BitsPerPixel == 8 && Scale8To565) {
+					if (src_format->bits_per_pixel == 8 && Scale8To565) {
 						const Manip8to565 manip(
 								src_format->palette->colors, dst_format);
 						return Scale8To565(
 								texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
 								clamp_src);
 					} else if (
-							src_format->BytesPerPixel == 2 && Scale565To565) {
+							src_format->bytes_per_pixel == 2 && Scale565To565) {
 						const Manip565to565 manip(nullptr, dst_format);
 						return Scale565To565(
 								texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
@@ -104,14 +104,14 @@ namespace Pentagram {
 				} else if (
 						(r == 0x7c00 && g == 0x3e0 && b == 0x1f)
 						|| (b == 0x7c00 && g == 0x3e0 && r == 0x1f)) {
-					if (src_format->BitsPerPixel == 8 && Scale8To555) {
+					if (src_format->bits_per_pixel == 8 && Scale8To555) {
 						const Manip8to555 manip(
 								src_format->palette->colors, dst_format);
 						return Scale8To555(
 								texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
 								clamp_src);
 					} else if (
-							src_format->BytesPerPixel == 2 && Scale555To555) {
+							src_format->bytes_per_pixel == 2 && Scale555To555) {
 						const Manip555to555 manip(nullptr, dst_format);
 						return Scale555To555(
 								texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
@@ -119,33 +119,33 @@ namespace Pentagram {
 					}
 				}
 
-				if (src_format->BitsPerPixel == 8 && Scale8To16) {
+				if (src_format->bits_per_pixel == 8 && Scale8To16) {
 					const Manip8to16 manip(
 							src_format->palette->colors, dst_format);
 					return Scale8To16(
 							texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
 							clamp_src);
-				} else if (src_format->BytesPerPixel == 2 && Scale16To16) {
+				} else if (src_format->bytes_per_pixel == 2 && Scale16To16) {
 					const Manip16to16 manip(nullptr, dst_format);
 					return Scale16To16(
 							texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
 							clamp_src);
 				}
-			} else if (dst_format->BitsPerPixel == 32) {
-				if (src_format->BitsPerPixel == 8 && Scale8To32) {
+			} else if (dst_format->bits_per_pixel == 32) {
+				if (src_format->bits_per_pixel == 8 && Scale8To32) {
 					const Manip8to32 manip(
 							src_format->palette->colors, dst_format);
 					return Scale8To32(
 							texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
 							clamp_src);
-				} else if (src_format->BytesPerPixel == 4 && Scale32To32) {
+				} else if (src_format->bytes_per_pixel == 4 && Scale32To32) {
 					const Manip32to32 manip(nullptr, dst_format);
 					return Scale32To32(
 							texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
 							clamp_src);
 				}
-			} else if (dst_format->BitsPerPixel == 8) {
-				if (src_format->BitsPerPixel == 8 && Scale8To8) {
+			} else if (dst_format->bits_per_pixel == 8) {
+				if (src_format->bits_per_pixel == 8 && Scale8To8) {
 					const Manip8to8 manip(nullptr, dst_format);
 					return Scale8To8(
 							texture, sx, sy, sw, sh, pixel, dw, dh, pitch,

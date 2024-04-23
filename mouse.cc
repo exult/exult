@@ -79,7 +79,10 @@ Mouse::Mouse(Game_window* gw    // Where to draw.
 		: gwin(gw), iwin(gwin->get_win()), box(0, 0, 0, 0), dirty(0, 0, 0, 0),
 		  cur_framenum(0), cur(nullptr),
 		  avatar_speed(100 * gwin->get_std_delay() / slow_speed_factor) {
-	SDL_GetMouseState(&mousex, &mousey);
+	float fx, fy;
+	SDL_GetMouseState(&fx, &fy);
+	mousex = int(fx);
+	mousey = int(fy);
 	iwin->screen_to_game(mousex, mousey, gwin->get_fastmouse(), mousex, mousey);
 	if (is_system_path_defined("<PATCH>") && U7exists(PATCH_POINTERS)) {
 		pointers.load(PATCH_POINTERS);
@@ -96,7 +99,10 @@ Mouse::Mouse(
 		: gwin(gw), iwin(gwin->get_win()), box(0, 0, 0, 0), dirty(0, 0, 0, 0),
 		  cur_framenum(0), cur(nullptr),
 		  avatar_speed(100 * gwin->get_std_delay() / slow_speed_factor) {
-	SDL_GetMouseState(&mousex, &mousey);
+	float fx, fy;
+	SDL_GetMouseState(&fx, &fy);
+	mousex = int(fx);
+	mousey = int(fy);
 	iwin->screen_to_game(mousex, mousey, gwin->get_fastmouse(), mousex, mousey);
 	pointers.load(&shapes);
 	Init();

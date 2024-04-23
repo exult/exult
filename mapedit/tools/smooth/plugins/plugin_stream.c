@@ -15,7 +15,7 @@ colour_hex col[256][19];    // Star, Source, Trigger, 16 targets
 int        glob_idx = 0;
 
 Uint8 my_getpixel(SDL_Surface* surface, int x, int y) {
-	int    bpp = surface->format->BytesPerPixel;
+	int    bpp = surface->format->bytes_per_pixel;
 	Uint8* p   = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
 	/* Here p is the address to the pixel we want to retrieve */
 

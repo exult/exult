@@ -298,14 +298,6 @@ void getVersionInfo(std::ostream& out) {
 	out << "USECODE_DEBUGGER";
 #endif
 
-#ifdef NO_SDL_PARACHUTE
-	if (!firstoption) {
-		out << ", ";
-	}
-	firstoption = false;
-	out << "NO_SDL_PARACHUTE";
-#endif
-
 #ifdef HAVE_ZIP_SUPPORT
 	if (!firstoption) {
 		out << ", ";

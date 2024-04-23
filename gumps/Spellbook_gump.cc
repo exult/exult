@@ -545,7 +545,7 @@ void Spellbook_gump::paint() {
 
 bool Spellbook_gump::handle_kbd_event(void* vev) {
 	const SDL_Event& ev  = *static_cast<SDL_Event*>(vev);
-	const int        chr = ev.key.keysym.sym;
+	const int        chr = ev.key.key;
 
 	if (ev.type == SDL_EVENT_KEY_UP) {
 		return true;    // Ignoring key-up at present.

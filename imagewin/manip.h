@@ -83,16 +83,16 @@ public:
 	using uintD = typename color_d::T;
 
 	static uintD rgb(unsigned int r, unsigned int g, unsigned int b) {
-		return ((r >> fmt->Rloss) << fmt->Rshift)
-			   | ((g >> fmt->Gloss) << fmt->Gshift)
-			   | ((b >> fmt->Bloss) << fmt->Bshift);
+		return ((r >> (8 - fmt->Rbits)) << fmt->Rshift)
+			   | ((g >> (8 - fmt->Gbits)) << fmt->Gshift)
+			   | ((b >> (8 - fmt->Bbits)) << fmt->Bshift);
 	}
 
 	static void split_dest(
 			uintD pix, unsigned int& r, unsigned int& g, unsigned int& b) {
-		r = ((pix & fmt->Rmask) >> fmt->Rshift) << fmt->Rloss;
-		g = ((pix & fmt->Gmask) >> fmt->Gshift) << fmt->Gloss;
-		b = ((pix & fmt->Bmask) >> fmt->Bshift) << fmt->Bloss;
+		r = ((pix & fmt->Rmask) >> fmt->Rshift) << (8 - fmt->Rbits);
+		g = ((pix & fmt->Gmask) >> fmt->Gshift) << (8 - fmt->Gbits);
+		b = ((pix & fmt->Bmask) >> fmt->Bshift) << (8 - fmt->Bbits);
 	}
 };
 
@@ -223,20 +223,20 @@ public:
 	static void split_source(
 			uintS pix, unsigned int& r, unsigned int& g, unsigned int& b) {
 		r = ((pix & ManipBase::fmt->Rmask) >> ManipBase::fmt->Rshift)
-			<< ManipBase::fmt->Rloss;
+			<< (8 - ManipBase::fmt->Rbits);
 		g = ((pix & ManipBase::fmt->Gmask) >> ManipBase::fmt->Gshift)
-			<< ManipBase::fmt->Gloss;
+			<< (8 - ManipBase::fmt->Gbits);
 		b = ((pix & ManipBase::fmt->Bmask) >> ManipBase::fmt->Bshift)
-			<< ManipBase::fmt->Bloss;
+			<< (8 - ManipBase::fmt->Bbits);
 	}
 
 	static void split_source(uintS pix, uint8& r, uint8& g, uint8& b) {
 		r = ((pix & ManipBase::fmt->Rmask) >> ManipBase::fmt->Rshift)
-			<< ManipBase::fmt->Rloss;
+			<< (8 - ManipBase::fmt->Rbits);
 		g = ((pix & ManipBase::fmt->Gmask) >> ManipBase::fmt->Gshift)
-			<< ManipBase::fmt->Gloss;
+			<< (8 - ManipBase::fmt->Gbits);
 		b = ((pix & ManipBase::fmt->Bmask) >> ManipBase::fmt->Bshift)
-			<< ManipBase::fmt->Bloss;
+			<< (8 - ManipBase::fmt->Bbits);
 	}
 };
 

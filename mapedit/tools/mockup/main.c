@@ -28,7 +28,7 @@
 #endif
 
 Uint32 getpixel(SDL_Surface* surface, int x, int y) {
-	int bpp = surface->format->BytesPerPixel;
+	int bpp = surface->format->bytes_per_pixel;
 	/* Here p is the address to the pixel we want to retrieve */
 	Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
 
@@ -63,11 +63,11 @@ int main(int argc, char** argv) {
 		exit(-1);
 	}
 
-	// SDL 2 can return 1, 2, 4 bits per pixel SDL_Surface
-	if (mock_map->format->BitsPerPixel < 8) {
+	// SDL 3 can return 1, 2, 4 bits per pixel SDL_Surface
+	if (mock_map->format->bits_per_pixel < 8) {
 		printf("The image file is not in 8 bpp ( reported %d ). Converting it "
 			   "to 8 bpp.\n",
-			   mock_map->format->BitsPerPixel);
+			   mock_map->format->bits_per_pixel);
 		SDL_PixelFormat* format8
 				= SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_INDEX8);
 		if (SDL_SetPixelFormatPalette(format8, mock_map->format->palette) < 0) {
@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
 			SDL_DestroySurface(mock_map);
 			exit(-1);
 		}
-		SDL_Surface* converted8 = SDL_ConvertSurface(mock_map, format8, 0);
+		SDL_Surface* converted8 = SDL_ConvertSurface(mock_map, format8);
 		if (converted8 == NULL) {
 			fprintf(stderr, "Couldn't convert %s: %s\n", argv[1],
 					SDL_GetError());
@@ -88,11 +88,12 @@ int main(int argc, char** argv) {
 		SDL_FreeFormat(format8);
 	}
 
+	// check if mock_map is in 8bpp format
 	SDL_PixelFormat* fmt = mock_map->format;
-	if (fmt->BitsPerPixel != 8) {
+	if (fmt->bits_per_pixel != 8) {
 		printf("The image file is not in 8 bpp ( reported %d ). Please convert "
 			   "it.\n",
-			   mock_map->format->BitsPerPixel);
+			   mock_map->format->bits_per_pixel);
 		exit(-1);
 	}
 
@@ -140,10 +141,9 @@ int main(int argc, char** argv) {
 
 	for (int i = 0; i < fmt->palette->ncolors; i++) {
 		if (found[i] == 1) {
-			printf("mapping[%3d] = color %02x%02x%02x %3d %3d %3d -> "
-				   "chunk %04x (%5d)\n",
-				   i, origRed[i], origGreen[i], origBlue[i], origRed[i],
-				   origGreen[i], origBlue[i], mapping[i], mapping[i]);
+			printf("mapping[%3d] = color %02x%02x%02x -> chunk %04x (%5d)\n", i,
+				   origRed[i], origGreen[i], origBlue[i], mapping[i],
+				   mapping[i]);
 		}
 	}
 	u7map mymap;    // a table in which the map is created and is then written
@@ -169,11 +169,10 @@ int main(int argc, char** argv) {
 	}
 	for (int i = 0; i < fmt->palette->ncolors; i++) {
 		if (found[i] == 1) {
-			printf("mapping[%3d] = color %02x%02x%02x %3d %3d %3d -> "
-				   "chunk %04x (%5d), converted %5d times\n",
-				   i, origRed[i], origGreen[i], origBlue[i], origRed[i],
-				   origGreen[i], origBlue[i], mapping[i], mapping[i],
-				   converted[i]);
+			printf("mapping[%3d] = color %02x%02x%02x -> chunk %04x (%5d), "
+				   "converted %5d times\n",
+				   i, origRed[i], origGreen[i], origBlue[i], mapping[i],
+				   mapping[i], converted[i]);
 		}
 	}
 

@@ -66,9 +66,8 @@ void MenuEntry::paint(Game_window* gwin) {
 }
 
 bool MenuEntry::handle_event(SDL_Event& event) {
-	const SDL_Keysym& key = event.key.keysym;
 	return (event.type == SDL_EVENT_KEY_DOWN
-			&& (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER))
+			&& (event.key.key == SDLK_RETURN || event.key.key == SDLK_KP_ENTER))
 		   || event.type == SDL_EVENT_MOUSE_BUTTON_UP;
 }
 
@@ -107,9 +106,9 @@ void MenuTextEntry::paint(Game_window* gwin) {
 }
 
 bool MenuTextEntry::handle_event(SDL_Event& event) {
-	const SDL_Keysym& key = event.key.keysym;
 	return (((event.type == SDL_EVENT_KEY_DOWN
-			  && (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER))
+			  && (event.key.key == SDLK_RETURN
+				  || event.key.key == SDLK_KP_ENTER))
 			 || event.type == SDL_EVENT_MOUSE_BUTTON_UP))
 		   && enabled;
 }
@@ -182,9 +181,9 @@ void MenuGameEntry::paint(Game_window* gwin) {
 }
 
 bool MenuGameEntry::handle_event(SDL_Event& event) {
-	const SDL_Keysym& key = event.key.keysym;
 	return (((event.type == SDL_EVENT_KEY_DOWN
-			  && (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER))
+			  && (event.key.key == SDLK_RETURN
+				  || event.key.key == SDLK_KP_ENTER))
 			 || event.type == SDL_EVENT_MOUSE_BUTTON_UP))
 		   && is_enabled();
 }
@@ -245,7 +244,7 @@ bool MenuTextChoice::handle_event(SDL_Event& event) {
 			choice = 0;
 		}
 	} else if (event.type == SDL_EVENT_KEY_DOWN) {
-		switch (event.key.keysym.sym) {
+		switch (event.key.key) {
 		case SDLK_LEFT:
 			dirty = true;
 			choice--;
@@ -350,9 +349,12 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 			mouse->show();
 			mouse->blit_dirty();
 		}
-		bool      mouse_updated = false;
+		bool          mouse_updated = false;
+		SDL_Renderer* renderer
+				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
+			SDL_ConvertEventToRenderCoordinates(renderer, &event);
 			int gx;
 			int gy;
 			if (event.type == SDL_EVENT_MOUSE_MOTION) {
@@ -395,7 +397,7 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 				mouse_updated = false;
 				mouse->hide();
 				mouse->blit_dirty();
-				switch (event.key.keysym.sym) {
+				switch (event.key.key) {
 				case SDLK_ESCAPE:
 					if (has_cancel) {
 						return cancel_id;
@@ -403,8 +405,8 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 					break;
 				case SDLK_Q:
 				case SDLK_X:
-					if (event.key.keysym.mod & SDL_KMOD_ALT
-						|| event.key.keysym.mod & SDL_KMOD_GUI) {
+					if (event.key.mod & SDL_KMOD_ALT
+						|| event.key.mod & SDL_KMOD_GUI) {
 						return -1;
 					}
 					break;
@@ -433,8 +435,8 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 					}
 					continue;
 				case SDLK_S:
-					if ((event.key.keysym.mod & SDL_KMOD_ALT)
-						&& (event.key.keysym.mod & SDL_KMOD_CTRL)) {
+					if ((event.key.mod & SDL_KMOD_ALT)
+						&& (event.key.mod & SDL_KMOD_CTRL)) {
 						make_screenshot(true);
 					}
 					// FALLTHROUGH
@@ -449,7 +451,7 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 				return -1;
 			} else if (event.type == SDL_EVENT_FINGER_DOWN) {
 				if ((!Mouse::use_touch_input)
-					&& (event.tfinger.fingerId != 0)) {
+					&& (event.tfinger.fingerID != 0)) {
 					Mouse::use_touch_input = true;
 					gwin->set_painted();
 				}

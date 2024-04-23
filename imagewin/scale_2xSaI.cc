@@ -41,7 +41,8 @@ void Image_window::show_scaled8to16_2xSaI(
 			static_cast<uint8*>(draw_surface->pixels), x, y, w, h,
 			ibuf->line_width, ibuf->height,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to555_2xSaI(
@@ -53,7 +54,8 @@ void Image_window::show_scaled8to555_2xSaI(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to565_2xSaI(
@@ -65,7 +67,8 @@ void Image_window::show_scaled8to565_2xSaI(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to32_2xSaI(
@@ -77,7 +80,8 @@ void Image_window::show_scaled8to32_2xSaI(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height,
 			static_cast<uint32*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 //
@@ -92,7 +96,8 @@ void Image_window::show_scaled8to16_Super2xSaI(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to555_Super2xSaI(
@@ -104,7 +109,8 @@ void Image_window::show_scaled8to555_Super2xSaI(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to565_Super2xSaI(
@@ -116,7 +122,8 @@ void Image_window::show_scaled8to565_Super2xSaI(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to32_Super2xSaI(
@@ -128,7 +135,8 @@ void Image_window::show_scaled8to32_Super2xSaI(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint32*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 //
@@ -143,7 +151,8 @@ void Image_window::show_scaled8to16_SuperEagle(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to555_SuperEagle(
@@ -155,7 +164,8 @@ void Image_window::show_scaled8to555_SuperEagle(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to565_SuperEagle(
@@ -167,7 +177,8 @@ void Image_window::show_scaled8to565_SuperEagle(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to32_SuperEagle(
@@ -179,5 +190,6 @@ void Image_window::show_scaled8to32_SuperEagle(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint32*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }

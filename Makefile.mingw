@@ -76,20 +76,20 @@ else
 	SYSFLAGS:=
 endif
 
-SDL_CFLAGS:=$(shell pkg-config --cflags-only-I SDL2)
+SDL_CFLAGS:=$(shell pkg-config --cflags-only-I SDL3)
 ### We want to do our own stdout/stderr redirection, thank you.
-#SDL_LIBS:=$(shell pkg-config --libs SDL2)
-SDL_LIBS:=$(shell pkg-config --libs SDL2)
+#SDL_LIBS:=$(shell pkg-config --libs SDL3)
+SDL_LIBS:=$(shell pkg-config --libs SDL3)
 # -lwinmm
 
-SDL_IMAGE_LIBS:=$(shell pkg-config --libs SDL2_image) $(shell pkg-config --libs SDL2_image)
+SDL_IMAGE_LIBS:=$(shell pkg-config --libs SDL3-image)
 #-lpng -ltiff -ljpeg -lwebp -lz
 
 ### Uncomment these 2 lines, and comment out the 2 above if you want to build
 ### Exult as a console Win32 application. This is unsupported and is somewhat
 ### of a hack.
-#SDL_LIBS:=$(shell pkg-config --libs-only-L SDL2) $(shell pkg-config --libs-only-l SDL2) -mconsole
-#SDL_CFLAGS:=$(shell pkg-config --cflags SDL2)
+#SDL_LIBS:=$(shell pkg-config --libs-only-L SDL3) $(shell pkg-config --libs-only-l SDL3) -mconsole
+#SDL_CFLAGS:=$(shell pkg-config --cflags SDL3)
 
 ### Zip File support. Comment out if ZLib isn't installed
 ### Modify paths, if required
@@ -262,7 +262,7 @@ ifeq (n,$(findstring n,$(firstword -$(MAKEFLAGS))))
 		IOS_CFLAGS:=-target arm64-apple-ios12.0 -fmessage-length=0 \
 			-fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 \
 			-fobjc-weak -fpascal-strings -fno-common -fvisibility-inlines-hidden \
-			-D__IPHONEOS__=1 -DUSE_CORE_AUDIO_MIDI -DUSE_CORE_MIDI \
+			-DSDL_PLATFORM_IOS=1 -DUSE_CORE_AUDIO_MIDI -DUSE_CORE_MIDI \
 			-DMAC_OS_X_VERSION_MIN_REQUIRED=101100 \
 			-D__AVAILABILITY_MACROS_USES_AVAILABILITY=0 \
 			-DOBJC_OLD_DISPATCH_PROTOTYPES=0 -D_THREAD_SAFE \
@@ -543,9 +543,11 @@ MISC_OBJS:=exultstudioico.o windrag.o
 ES_OBJS:=$(MAPEDIT_OBJS) $(ES_FILES_OBJS) $(ES_GAMEMGR_OBJS) $(ES_IMAGEWIN_OBJS) $(ES_SHAPES_OBJS) \
 	$(ES_SERVER_OBJS) $(CONF_OBJS) $(MISC_OBJS) $(ZIP_OBJS)
 
-TOOL_EXES:=expack$(EXEEXT) cmanip$(EXEEXT) ipack$(EXEEXT) mklink$(EXEEXT) mockup$(EXEEXT) rip$(EXEEXT) \
-	shp2pcx$(EXEEXT) smooth$(EXEEXT) splitshp$(EXEEXT) textpack$(EXEEXT) wuc$(EXEEXT) u7voice2syx$(EXEEXT) \
-	ucc$(EXEEXT) libsmooth_randomize$(LIBEXT) libsmooth_smooth$(LIBEXT) libsmooth_stream$(LIBEXT)
+# Gather together at the end the SDL3_image dependent executables
+TOOL_EXES:=expack$(EXEEXT) cmanip$(EXEEXT) ipack$(EXEEXT) mklink$(EXEEXT) rip$(EXEEXT) \
+	shp2pcx$(EXEEXT)  splitshp$(EXEEXT) textpack$(EXEEXT) wuc$(EXEEXT) u7voice2syx$(EXEEXT) \
+	ucc$(EXEEXT) \
+	mockup$(EXEEXT) smooth$(EXEEXT) libsmooth_randomize$(LIBEXT) libsmooth_smooth$(LIBEXT) libsmooth_stream$(LIBEXT)
 
 exultico.o: win32/exultico.rc win32/exult.ico win32/exult.exe.manifest
 	windres --include-dir win32 win32/exultico.rc exultico.o

@@ -45,7 +45,8 @@ void Image_window::show_scaled8to16_Hq4x(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to555_Hq4x(
@@ -57,7 +58,8 @@ void Image_window::show_scaled8to555_Hq4x(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to565_Hq4x(
@@ -69,7 +71,8 @@ void Image_window::show_scaled8to565_Hq4x(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to32_Hq4x(
@@ -81,7 +84,8 @@ void Image_window::show_scaled8to32_Hq4x(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint32*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			manip);
 }
 
 #endif    // USE_HQ4X_SCALER

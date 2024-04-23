@@ -196,6 +196,9 @@ void Server_close() {
  *  A message from a client is available, so handle it.
  */
 
+extern void Set_dragged_shape(int file, int shnum, int frnum);
+extern void Set_dragged_combo(int cnt, int xtl, int ytl, int rtl, int btl);
+
 static void Handle_client_message(
 		int& fd    // Socket to client.  May be closed.
 ) {
@@ -386,6 +389,22 @@ static void Handle_client_message(
 		gwin->get_map()->find_unused_shapes(data, sz);
 		Exult_server::Send_data(
 				client_socket, Exult_server::unused_shapes, data, sz);
+		break;
+	}
+	case Exult_server::drag_combo: {
+		const int cnt = little_endian::Read2(ptr);
+		const int xtl = little_endian::Read2(ptr);
+		const int ytl = little_endian::Read2(ptr);
+		const int rtl = little_endian::Read2(ptr);
+		const int btl = little_endian::Read2(ptr);
+		Set_dragged_combo(cnt, xtl, ytl, rtl, btl);
+		break;
+	}
+	case Exult_server::drag_shape: {
+		const int file  = little_endian::Read2(ptr);
+		const int shnum = little_endian::Read2(ptr);
+		const int frnum = little_endian::Read2s(ptr);
+		Set_dragged_shape(file, shnum, frnum);
 		break;
 	}
 	case Exult_server::locate_shape: {

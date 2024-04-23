@@ -114,7 +114,7 @@ private:
 	std::vector<Hotspot> hotspots;
 
 	struct {
-		int         highlight     = 0;
+		Uint32      highlight     = 0;
 		Uint32      highlighttime = 0;
 		char        input[17]     = {0};
 		int         command       = 0;
