@@ -32,6 +32,7 @@
 #include "ibuf8.h"
 #include "palette.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <map>
