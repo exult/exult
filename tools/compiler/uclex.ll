@@ -4,6 +4,7 @@
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #if !defined(__llvm__) && !defined(__clang__)
 #	pragma GCC diagnostic ignored "-Wredundant-tags"
+#	pragma GCC diagnostic ignored "-Wuseless-cast"
 #endif
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"

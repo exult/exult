@@ -23,6 +23,9 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
 #include <SDL3/SDL.h>
 #ifdef __GNUC__
@@ -35,6 +38,11 @@
 #include <string>
 #include <vector>
 
+typedef struct ExultKey {
+	SDL_Keycode key;
+	SDL_Keymod  mod;
+} EXULT_Keysym;
+
 const int c_maxparams = 4;
 
 struct Action;
@@ -44,17 +52,17 @@ struct ActionType {
 	int           params[c_maxparams];
 };
 
-struct ltSDLkeysym {
-	bool operator()(SDL_Keysym k1, SDL_Keysym k2) const {
-		if (k1.sym == k2.sym) {
+struct ltExultKey {
+	bool operator()(ExultKey k1, ExultKey k2) const {
+		if (k1.key == k2.key) {
 			return k1.mod < k2.mod;
 		} else {
-			return k1.sym < k2.sym;
+			return k1.key < k2.key;
 		}
 	}
 };
 
-using KeyMap = std::map<SDL_Keysym, ActionType, ltSDLkeysym>;
+using KeyMap = std::map<ExultKey, ActionType, ltExultKey>;
 
 class KeyBinder {
 private:
@@ -71,11 +79,8 @@ public:
 	KeyBinder();
 	/* Add keybinding */
 	void AddKeyBinding(
-			SDL_Keycode key, int mod, const Action* action, int nparams,
+			SDL_Keycode key, SDL_Keymod mod, const Action* action, int nparams,
 			const int* params);
-
-	/* Delete keybinding */
-	void DelKeyBinding(SDL_Keycode sym, int mod);
 
 	/* Other methods */
 	void Flush() {

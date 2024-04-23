@@ -50,7 +50,7 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif    // __GNUC__
-static const Uint32 EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
+static const SDL_MouseID EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -520,19 +520,23 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	//          : gwin->get_win()->get_scale();
 	static bool rightclick;
 
-	int    gx;
-	int    gy;
-	Uint16 keysym_unicode = 0;
+	int           gx;
+	int           gy;
+	Uint16        keysym_unicode = 0;
+	SDL_Renderer* renderer
+			= SDL_GetRenderer(gwin->get_win()->get_screen_window());
 
 	switch (event.type) {
 	case SDL_EVENT_FINGER_DOWN: {
-		if ((!Mouse::use_touch_input) && (event.tfinger.fingerId != 0)) {
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
+		if ((!Mouse::use_touch_input) && (event.tfinger.fingerID != 0)) {
 			Mouse::use_touch_input = true;
 			gwin->set_painted();
 		}
 		break;
 	}
 	case SDL_EVENT_MOUSE_BUTTON_DOWN:
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(
 				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 
@@ -563,6 +567,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		}
 		break;
 	case SDL_EVENT_MOUSE_BUTTON_UP:
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(
 				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 		if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
@@ -581,12 +586,14 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		}
 		break;
 	case SDL_EVENT_FINGER_MOTION: {
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(
 				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
-		static int  numFingers = 0;
-		SDL_Finger* finger0    = SDL_GetTouchFinger(event.tfinger.touchId, 0);
-		if (finger0) {
-			numFingers = SDL_GetNumTouchFingers(event.tfinger.touchId);
+		static int   numFingers = 0;
+		SDL_Finger** fingers
+				= SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
+		if (fingers) {
+			SDL_free(fingers);
 		}
 		if (numFingers > 1) {
 			if (event.tfinger.dy < 0) {
@@ -625,6 +632,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 			&& event.motion.which != EXSDL_TOUCH_MOUSEID) {
 			Mouse::use_touch_input = false;
 		}
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(
 				event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 
@@ -643,40 +651,37 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	case SDL_EVENT_KEY_DOWN:
 	case SDL_EVENT_TEXT_INPUT:
 		if (event.type == SDL_EVENT_TEXT_INPUT) {
-			keysym_unicode       = event.text.text[0];
-			event.key.keysym.sym = SDLK_UNKNOWN;
+			keysym_unicode = event.text.text[0];
+			event.key.key  = SDLK_UNKNOWN;
 		}
 		{
-			if ((event.key.keysym.sym == SDLK_S)
-				&& (event.key.keysym.mod & SDL_KMOD_ALT)
-				&& (event.key.keysym.mod & SDL_KMOD_CTRL)) {
+			if ((event.key.key == SDLK_S) && (event.key.mod & SDL_KMOD_ALT)
+				&& (event.key.mod & SDL_KMOD_CTRL)) {
 				make_screenshot(true);
 				return true;
 			}
 			// Alt-x for quit
-			if ((event.key.keysym.sym == SDLK_X)
-				&& (event.key.keysym.mod & SDL_KMOD_ALT
-					|| event.key.keysym.mod & SDL_KMOD_GUI)) {
+			if ((event.key.key == SDLK_X)
+				&& (event.key.mod & SDL_KMOD_ALT
+					|| event.key.mod & SDL_KMOD_GUI)) {
 				if (okay_to_quit()) {
 					return false;
 				}
 			}
 
-			if (event.key.keysym.sym > +'~') {
-				keysym_unicode = event.key.keysym.sym;
+			if (event.key.key > +'~') {
+				keysym_unicode = event.key.key;
 			}
-			translate_numpad(
-					event.key.keysym.sym, keysym_unicode, event.key.keysym.mod);
-			gump->key_down(event.key.keysym.sym);
+			translate_numpad(event.key.key, keysym_unicode, event.key.mod);
+			gump->key_down(event.key.key);
 			bool handled = gump->character_input(
-					event.key.keysym.sym, keysym_unicode,
-					(event.key.keysym.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS))
-							!= 0);
+					event.key.key, keysym_unicode,
+					(event.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)) != 0);
 
 			// we'll allow the gump to handle escape first
 			// before closing the gump
 			if (!handled) {
-				if (event.key.keysym.sym == SDLK_ESCAPE) {
+				if (event.key.key == SDLK_ESCAPE) {
 					return false;
 				}
 			}

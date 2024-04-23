@@ -28,6 +28,9 @@
 #		pragma GCC diagnostic push
 #		pragma GCC diagnostic ignored "-Wold-style-cast"
 #		pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#		if !defined(__llvm__) && !defined(__clang__)
+#			pragma GCC diagnostic ignored "-Wuseless-cast"
+#		endif
 #	endif    // __GNUC__
 #	include <SDL3/SDL.h>
 #	ifdef __GNUC__
@@ -48,49 +51,69 @@
 void Image_window::show_scaled8to16_Hq2x(
 		int x, int y, int w, int h    // Area to show.
 ) {
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to16 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_Hq2x<uint16, Manip8to16>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to555_Hq2x(
 		int x, int y, int w, int h    // Area to show.
 ) {
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to555 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_Hq2x<uint16, Manip8to555>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to565_Hq2x(
 		int x, int y, int w, int h    // Area to show.
 ) {
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to565 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_Hq2x<uint16, Manip8to565>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
+			manip);
 }
 
 void Image_window::show_scaled8to32_Hq2x(
 		int x, int y, int w, int h    // Area to show.
 ) {
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to32 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_Hq2x<uint32, Manip8to32>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint32*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->BytesPerPixel, manip);
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
+			manip);
 }
 
 #endif    // USE_HQ2X_SCALER

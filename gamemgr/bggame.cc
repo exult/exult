@@ -716,12 +716,17 @@ class SDL_SurfaceOwner {
 	SDL_Surface* surf;
 
 public:
-	SDL_SurfaceOwner(Image_buffer* src, SDL_Surface* draw)
-			: surf(SDL_CreateRGBSurfaceFrom(
-					  src->get_bits(), src->get_height(), src->get_width(),
-					  draw->format->BitsPerPixel, src->get_line_width(),
-					  draw->format->Rmask, draw->format->Gmask,
-					  draw->format->Bmask, draw->format->Amask)) {}
+	SDL_SurfaceOwner(Image_buffer* src, SDL_Surface* draw) {
+		const SDL_PixelFormatDetails* draw_format
+				= SDL_GetPixelFormatDetails(draw->format);
+		surf = SDL_CreateSurfaceFrom(
+				src->get_width(), src->get_height(),
+				SDL_GetPixelFormatForMasks(
+						draw_format->bits_per_pixel, draw_format->Rmask,
+						draw_format->Gmask, draw_format->Bmask,
+						draw_format->Amask),
+				src->get_bits(), src->get_line_width());
+	}
 
 	~SDL_SurfaceOwner() noexcept {
 		SDL_DestroySurface(surf);
@@ -2200,10 +2205,9 @@ bool BG_Game::new_game(Vga_file& shapes) {
 
 	int       selected    = 0;
 	const int num_choices = 4;
-	SDL_Event event;
-	bool      editing = true;
-	bool      redraw  = true;
-	bool      ok      = true;
+	bool      editing     = true;
+	bool      redraw      = true;
+	bool      ok          = true;
 
 	// Skin info
 	Avatar_default_skin* defskin  = Shapeinfo_lookup::GetDefaultAvSkin();
@@ -2275,10 +2279,13 @@ bool BG_Game::new_game(Vga_file& shapes) {
 			gwin->get_win()->ShowFillGuardBand();
 			redraw = false;
 		}
-
+		SDL_Renderer* renderer
+				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
+		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
 			Uint16 keysym_unicode = 0;
 			bool   isTextInput    = false;
+			SDL_ConvertEventToRenderCoordinates(renderer, &event);
 			if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN
 				|| event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
 				const SDL_Rect rectName   = {topx + 10, menuy + 10, 130, 16};
@@ -2335,14 +2342,14 @@ bool BG_Game::new_game(Vga_file& shapes) {
 					}
 				}
 			} else if (event.type == SDL_EVENT_TEXT_INPUT) {
-				isTextInput          = true;
-				keysym_unicode       = event.text.text[0];
-				event.type           = SDL_EVENT_KEY_DOWN;
-				event.key.keysym.sym = SDLK_UNKNOWN;
+				isTextInput    = true;
+				keysym_unicode = event.text.text[0];
+				event.type     = SDL_EVENT_KEY_DOWN;
+				event.key.key  = SDLK_UNKNOWN;
 			}
 			if (event.type == SDL_EVENT_KEY_DOWN) {
 				redraw = true;
-				switch (event.key.keysym.sym) {
+				switch (event.key.key) {
 				case SDLK_SPACE:
 					if (selected == 0) {
 						const int len = strlen(npc_name);

@@ -374,11 +374,11 @@ void Shape_draw::start_drag(
 	tents[1].info        = id;
 	tents[2].info        = id;
 	GtkTargetList* tlist = gtk_target_list_new(&tents[0], 3);
-	// ??+++ Do we need to free tlist?
 	gtk_drag_begin_with_coordinates(
 			draw, tlist,
 			static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE), 1,
 			event, -1, -1);
+	gtk_target_list_unref(tlist);
 }
 
 /*

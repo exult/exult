@@ -40,6 +40,9 @@ Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
 #include <SDL3/SDL.h>
 #ifdef __GNUC__
@@ -202,9 +205,7 @@ protected:
 	struct SDL_Window*     screen_window;
 	struct SDL_Renderer*   screen_renderer;
 	struct SDL_Texture*    screen_texture;
-	// Returns 0 on failure, else highest bpp for resolution
-	static int VideoModeOK(int width, int height);
-	void       UpdateRect(SDL_Surface* surf, int x, int y, int w, int h);
+	void                   UpdateRect(SDL_Surface* surf);
 
 	SDL_Surface* paletted_surface;    // Surface that palette is set on (Example
 									  // res)
@@ -308,17 +309,18 @@ protected:
 
 	static void static_init();
 
-	static int   force_bpp;
-	static int   desktop_depth;
-	static int   windowed;
-	static float nativescale;
+	static int force_bpp;
+	static int desktop_depth;
+	static int windowed;
 
 public:
 	inline struct SDL_Window* get_screen_window() const {
 		return screen_window;
 	}
 
-	int Get_best_bpp(int w, int h, int bpp, uint32 flags);
+	// Returns 0 on failure, else highest bpp for resolution
+	static int VideoModeOK(int width, int height, bool fullscreen);
+	int        Get_best_bpp(int w, int h, int bpp);
 
 	// Create with given buffer.
 	Image_window(
@@ -329,6 +331,7 @@ public:
 			  fullscreen(fs), game_width(gamew), game_height(gameh),
 			  saved_game_width(gamew), saved_game_height(gameh),
 			  fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
+			  screen_renderer(nullptr), screen_texture(nullptr),
 			  paletted_surface(nullptr), display_surface(nullptr),
 			  inter_surface(nullptr), draw_surface(nullptr) {
 		static_init();

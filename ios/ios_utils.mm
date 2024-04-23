@@ -34,7 +34,26 @@ namespace {
 }
 
 // NOLINTNEXTLINE(google-objc-function-naming)
-extern "C" int SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode);
+// extern "C" int SDL_SendKeyboardKey(
+//		Uint64 timestamp, SDL_KeyboardID keyboardID, int rawcode,
+//		SDL_Scancode keycode, Uint8 state);
+
+// This should be equivalent to :
+//   SDL_Event event;
+//   event.type = SDL_EVENT_KEY_DOWN ( state == SDL_PRESSED ) or
+//                SDL_EVENT_KEY_UP   ( state == SDL_RELEASED );
+//   event.common.timestamp = timestamp; // 0 in here
+//   event.key.scancode = aSDL_Scancode;
+//   event.key.key      = SDL_GetKeyFromScancode(
+//           aSDL_Scancode, SDL_KMOD_NONE, false);
+//   event.key.mod      = 0;
+//   event.key.raw      = rawcode;       // 0 in here
+//   event.key.down     = true  ( state == SDL_PRESSED ) or
+//                        false ( state == SDL_RELEASED );
+//   event.key.repeat   = false;
+//   event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
+//   event.key.which    = keyboardID;    // 0 in here
+//   SDL_PushEvent(&event);
 
 @interface UIManager : NSObject <KeyInputDelegate, GamePadButtonDelegate>
 
@@ -49,21 +68,41 @@ extern "C" int SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode);
 @end
 
 @implementation UIManager
-@synthesize     touchUI;
-@synthesize     dpad;
-@synthesize     btn1;
-@synthesize     btn2;
-@synthesize     recurringKeycode;
+@synthesize touchUI;
+@synthesize dpad;
+@synthesize btn1;
+@synthesize btn2;
+@synthesize recurringKeycode;
 
 - (void)sendRecurringKeycode {
-	SDL_SendKeyboardKey(SDL_PRESSED, self.recurringKeycode);
+	//	SDL_SendKeyboardKey(0, 0, 0, self.recurringKeycode, SDL_PRESSED);
+	SDL_Event event;
+	SDL_zero(event);
+	event.type         = SDL_EVENT_KEY_DOWN;
+	event.key.scancode = self.recurringKeycode;
+	event.key.key      = SDL_GetKeyFromScancode(
+            self.recurringKeycode, SDL_KMOD_NONE, false);
+	event.key.down     = true;
+	event.key.repeat   = false;
+	event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
+	SDL_PushEvent(&event);
 	[self performSelector:@selector(sendRecurringKeycode)
 			   withObject:nil
 			   afterDelay:.5];
 }
 
 - (void)keydown:(SDL_Scancode)keycode {
-	SDL_SendKeyboardKey(SDL_PRESSED, keycode);
+	//	SDL_SendKeyboardKey(0, 0, 0, keycode, SDL_PRESSED);
+	SDL_Event event;
+	SDL_zero(event);
+	event.type         = SDL_EVENT_KEY_DOWN;
+	event.key.scancode = keycode;
+	event.key.key      = SDL_GetKeyFromScancode(
+            keycode, SDL_KMOD_NONE, false);
+	event.key.down     = true;
+	event.key.repeat   = false;
+	event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
+	SDL_PushEvent(&event);
 	self.recurringKeycode = keycode;
 	[NSObject cancelPreviousPerformRequestsWithTarget:self
 											 selector:@selector
@@ -79,19 +118,49 @@ extern "C" int SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode);
 											 selector:@selector
 											 (sendRecurringKeycode)
 											   object:nil];
-	SDL_SendKeyboardKey(SDL_RELEASED, keycode);
+	//	SDL_SendKeyboardKey(0, 0, 0, keycode, SDL_RELEASED);
+	SDL_Event event;
+	SDL_zero(event);
+	event.type         = SDL_EVENT_KEY_UP;
+	event.key.scancode = keycode;
+	event.key.key      = SDL_GetKeyFromScancode(
+            keycode, SDL_KMOD_NONE, false);
+	event.key.down     = false;
+	event.key.repeat   = false;
+	event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
+	SDL_PushEvent(&event);
 }
 
 - (void)buttonDown:(GamePadButton*)btn {
-	NSNumber*  code     = btn.keyCodes[0];
-	const auto scancode = static_cast<SDL_Scancode>([code integerValue]);
-	SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+	NSNumber*  code    = btn.keyCodes[0];
+	const auto keycode = static_cast<SDL_Scancode>([code integerValue]);
+	//	SDL_SendKeyboardKey(0, 0, 0, keycode, SDL_PRESSED);
+	SDL_Event event;
+	SDL_zero(event);
+	event.type         = SDL_EVENT_KEY_DOWN;
+	event.key.scancode = keycode;
+	event.key.key      = SDL_GetKeyFromScancode(
+            keycode, SDL_KMOD_NONE, false);
+	event.key.down     = true;
+	event.key.repeat   = false;
+	event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
+	SDL_PushEvent(&event);
 }
 
 - (void)buttonUp:(GamePadButton*)btn {
-	NSNumber*  code     = btn.keyCodes[0];
-	const auto scancode = static_cast<SDL_Scancode>([code integerValue]);
-	SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+	NSNumber*  code    = btn.keyCodes[0];
+	const auto keycode = static_cast<SDL_Scancode>([code integerValue]);
+	//	SDL_SendKeyboardKey(0, 0, 0, keycode, SDL_RELEASED);
+	SDL_Event event;
+	SDL_zero(event);
+	event.type         = SDL_EVENT_KEY_UP;
+	event.key.scancode = keycode;
+	event.key.key      = SDL_GetKeyFromScancode(
+            keycode, SDL_KMOD_NONE, false);
+	event.key.down     = false;
+	event.key.repeat   = false;
+	event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
+	SDL_PushEvent(&event);
 }
 
 - (void)promptForName:(NSString*)name {

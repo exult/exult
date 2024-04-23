@@ -275,8 +275,9 @@ Notebook_gump* Notebook_gump::create() {
 		instance = new Notebook_gump;
 		if (touchui != nullptr) {
 			touchui->hideGameControls();
-			if (!SDL_TextInputActive()) {
-				SDL_StartTextInput();
+			SDL_Window* window = gwin->get_win()->get_screen_window();
+			if (!SDL_TextInputActive(window)) {
+				SDL_StartTextInput(window);
 			}
 		}
 	}
@@ -307,8 +308,9 @@ Notebook_gump::~Notebook_gump() {
 		if (!gumpman->gump_mode()) {
 			touchui->showGameControls();
 		}
-		if (SDL_TextInputActive()) {
-			SDL_StopTextInput();
+		SDL_Window* window = gwin->get_win()->get_screen_window();
+		if (SDL_TextInputActive(window)) {
+			SDL_StopTextInput(window);
 		}
 	}
 }
@@ -439,14 +441,15 @@ Gump_button* Notebook_gump::on_button(
 	int       coff   = sman->find_cursor(
             font, note->text.c_str() + offset, x + box.x, y + box.y, box.w,
             box.h, mx, my, vlead);
+	SDL_Window* window = gwin->get_win()->get_screen_window();
 	if (coff >= 0) {    // Found it?
 		curpage       = topleft;
 		curnote       = page_info[curpage].notenum;
 		cursor.offset = offset + coff;
 		paint();
 		updnx = cursor.x - x - lpagex;
-		if (!SDL_TextInputActive()) {
-			SDL_StartTextInput();
+		if (!SDL_TextInputActive(window)) {
+			SDL_StartTextInput(window);
 		}
 	} else {
 		offset += -coff;    // New offset.
@@ -470,8 +473,8 @@ Gump_button* Notebook_gump::on_button(
 			cursor.offset = offset + coff;
 			paint();
 			updnx = cursor.x - x - rpagex;
-			if (!SDL_TextInputActive()) {
-				SDL_StartTextInput();
+			if (!SDL_TextInputActive(window)) {
+				SDL_StartTextInput(window);
 			}
 		}
 	}
@@ -648,9 +651,8 @@ void Notebook_gump::up_arrow() {
 bool Notebook_gump::handle_kbd_event(void* vev) {
 	SDL_Event& ev      = *static_cast<SDL_Event*>(vev);
 	uint16     unicode = 0;    // Unicode is way different in SDL2
-	Gump_manager::translate_numpad(
-			ev.key.keysym.sym, unicode, ev.key.keysym.mod);
-	int chr = ev.key.keysym.sym;
+	Gump_manager::translate_numpad(ev.key.key, unicode, ev.key.mod);
+	int chr = ev.key.key;
 
 	if (ev.type == SDL_EVENT_KEY_UP) {
 		return true;    // Ignoring key-up at present.
@@ -732,7 +734,7 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 		if (chr == '^') {
 			return true;
 		}
-		if (ev.key.keysym.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)) {
+		if (ev.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)) {
 			chr = toupper(chr);
 		}
 

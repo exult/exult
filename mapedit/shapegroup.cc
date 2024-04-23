@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Flex.h"
 #include "exceptions.h"
+#include "ignore_unused_variable_warning.h"
 #include "objbrowse.h"
 #include "shapefile.h"
 #include "shapevga.h"
@@ -443,6 +444,7 @@ void Shape_group_file::write() {
 			gfile.write_object(grp);
 		}
 	} catch (exult_exception& e) {
+		ignore_unused_variable_warning(e);
 		Alert("Error writing '%s'", patchname.c_str());
 	}
 	modified = false;
