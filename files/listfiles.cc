@@ -144,7 +144,18 @@ int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 #	include <glob.h>
 
 #	ifdef ANDROID
+#		ifdef __GNUC__
+#			pragma GCC diagnostic push
+#			pragma GCC diagnostic ignored "-Wold-style-cast"
+#			pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#			if !defined(__llvm__) && !defined(__clang__)
+#				pragma GCC diagnostic ignored "-Wuseless-cast"
+#			endif
+#		endif    // __GNUC__
 #		include <SDL3/SDL_system.h>
+#		ifdef __GNUC__
+#			pragma GCC diagnostic pop
+#		endif    // __GNUC__
 #	endif
 
 static int U7ListFilesImp(

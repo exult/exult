@@ -36,6 +36,9 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
 #include <SDL3/SDL.h>
 #ifdef __GNUC__
@@ -233,8 +236,8 @@ bool TextScroller::run(Game_window* gwin) {
 			while (SDL_PollEvent(&event)) {
 				switch (event.type) {
 				case SDL_EVENT_KEY_DOWN:
-					if (event.key.keysym.sym == SDLK_RSHIFT
-						|| event.key.keysym.sym == SDLK_LSHIFT) {
+					if (event.key.key == SDLK_RSHIFT
+						|| event.key.key == SDLK_LSHIFT) {
 						incr = 0;
 					} else {
 						looping = false;

@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
 	}
 
 	// initialise SDL
-	if ((SDL_Init(SDL_INIT_VIDEO) == -1)) {
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		printf("Couldn't initialise SDL: %s\n", SDL_GetError());
 		exit(-1);
 	}

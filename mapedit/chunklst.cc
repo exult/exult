@@ -487,7 +487,8 @@ void Chunk_chooser::drag_data_get(
 	guchar            buf[U7DND_DATA_LENGTH(1)];
 	const Chunk_info& shinfo = chooser->info[chooser->selected];
 	const int         len    = Store_u7_chunkid(buf, shinfo.num);
-	cout << "Setting selection data (" << shinfo.num << ')' << endl;
+	cout << "Setting selection data (" << shinfo.num << ')' << " (" << len
+		 << ") '" << buf << "'" << endl;
 	// Set data.
 	gtk_selection_data_set(
 			seldata, gtk_selection_data_get_target(seldata), 8, buf, len);
