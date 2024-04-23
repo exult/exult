@@ -33,20 +33,26 @@ typedef void* libhandle_t;
 // note: there are some almost static stuff and some very variable stuff
 // global's variables
 typedef struct g_var_struct {
-	SDL_Surface* image_out;    // var
-	int          global_x;     // var
-	int          global_y;     // var
+	SDL_Surface*                  image_out;            // var
+	const SDL_PixelFormatDetails* image_out_format;     // var
+	SDL_Palette*                  image_out_palette;    // var
+	int                           image_out_ncolors;    // var
+	int                           global_x;             // var
+	int                           global_y;             // var
 } glob_variables;
 
 EXTERN glob_variables g_variables;
 
 // global's almost statics
 typedef struct g_stat_struct {
-	int          debug;          // stat
-	SDL_Surface* image_in;       // stat
-	char*        filein;         // stat
-	char*        fileout;        // stat
-	char*        config_file;    // stat
+	int                           debug;               // stat
+	SDL_Surface*                  image_in;            // stat
+	const SDL_PixelFormatDetails* image_in_format;     // stat
+	SDL_Palette*                  image_in_palette;    // stat
+	int                           image_in_ncolors;    // stat
+	char*                         filein;              // stat
+	char*                         fileout;             // stat
+	char*                         config_file;         // stat
 } glob_statics;
 
 EXTERN glob_statics g_statics;

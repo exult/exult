@@ -407,8 +407,8 @@ void ShortcutBar_gump::sdl_mouse_down(SDL_Event* event, int mx, int my) {
  * Just push an event to main thread so that our global shortcut bar instance
  * can catch it.
  */
-static Uint32 didMouseUp(Uint32 interval, void* param) {
-	ignore_unused_variable_warning(interval);
+static Uint32 didMouseUp(void* param, SDL_TimerID timerID, Uint32 interval) {
+	ignore_unused_variable_warning(timerID, interval);
 	SDL_Event event;
 	SDL_zero(event);
 	event.type       = ShortcutBar_gump::eventType;

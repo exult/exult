@@ -141,7 +141,8 @@ int read_config(FILE* f) {
 					} else {
 						// get index of (r,g,b) from palette
 						int idx = SDL_MapRGB(
-								g_statics.image_in->format, r, g, b);
+								g_statics.image_in_format,
+								g_statics.image_in_palette, r, g, b);
 						// some reporting
 						if (g_statics.debug > 3) {
 							printf("slave is %02x%02x%02x "
@@ -168,7 +169,7 @@ int read_config(FILE* f) {
 		free(pluginname);
 	}
 	if (g_statics.debug) {
-		printf("********************\nEnf of config file\n\n");
+		printf("********************\nEnd of config file\n\n");
 		fflush(stdout);
 	}
 

@@ -22,6 +22,9 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
 #include <SDL3/SDL.h>
 #ifdef __GNUC__
@@ -134,7 +137,7 @@ SdlRwopsStreambuf* SdlRwopsStreambuf::close() {
 		return nullptr;
 	}
 
-	std::unique_ptr<SDL_IOStream, int (*)(SDL_IOStream*)> h(
+	std::unique_ptr<SDL_IOStream, bool (*)(SDL_IOStream*)> h(
 			m_context, SDL_CloseIO);
 	auto rt = this;
 	if (sync()) {
@@ -174,7 +177,7 @@ typename SdlRwopsStreambuf::int_type SdlRwopsStreambuf::underflow() {
 	if (gptr() == egptr()) {
 		std::memmove(eback(), egptr() - unget_sz, unget_sz * sizeof(char_type));
 		std::size_t nmemb = egptr() - eback() - unget_sz;
-		nmemb             = SDL_ReadIO(m_context, eback() + unget_sz, 1, nmemb);
+		nmemb             = SDL_ReadIO(m_context, eback() + unget_sz, nmemb);
 		if (nmemb != 0) {
 			setg(eback(), eback() + unget_sz, eback() + unget_sz + nmemb);
 			c = traits_type::to_int_type(*gptr());
@@ -227,8 +230,7 @@ typename SdlRwopsStreambuf::int_type SdlRwopsStreambuf::overflow(int_type c) {
 	}
 	if (pptr() != pbase()) {
 		const std::size_t nmemb = static_cast<std::size_t>(pptr() - pbase());
-		if (SDL_WriteIO(m_context, pbase(), sizeof(char_type), nmemb)
-			!= nmemb) {
+		if (SDL_WriteIO(m_context, pbase(), nmemb) != nmemb) {
 			return traits_type::eof();
 		}
 		setp(pb_save, epb_save);
@@ -242,7 +244,7 @@ typename SdlRwopsStreambuf::pos_type SdlRwopsStreambuf::seekoff(
 	if (!m_context || sync()) {
 		return pos_type(off_type(-1));
 	}
-	int whence;
+	SDL_IOWhence whence;
 	switch (dir) {
 	case std::ios_base::beg:
 		whence = SDL_IO_SEEK_SET;
@@ -287,8 +289,13 @@ int SdlRwopsStreambuf::sync() {
 		}
 		// Would be calling SDL_RWflush() here if it existed.
 		// Consider closing and re-opening the file to simulate a flush.
-		if (SDL_RWOPS_STDFILE == m_context->type) {
-			fflush(m_context->hidden.stdio.fp);
+		const SDL_PropertiesID props = SDL_GetIOProperties(m_context);
+		if (props) {
+			FILE* fp = static_cast<FILE*>(SDL_GetPointerProperty(
+					props, SDL_PROP_IOSTREAM_STDIO_FILE_POINTER, nullptr));
+			if (fp) {
+				fflush(fp);
+			}
 		}
 	} else if (m_currentMode & std::ios_base::in) {
 		off_type c;
