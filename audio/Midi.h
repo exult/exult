@@ -131,6 +131,18 @@ private:
 	void ogg_set_repeat(bool newrepeat);
 
 	void ogg_mix(sint16* stream, uint32 bytes);
+
+private:
+	uint16 looping_egg_count;
+
+public:
+	void set_egg_count(uint16 new_count) {
+		looping_egg_count = new_count;
+	}
+
+	uint16 get_egg_count() const {
+		return looping_egg_count;
+	}
 };
 
 std::unique_ptr<IDataSource> open_music_flex(const std::string& flex, int num);

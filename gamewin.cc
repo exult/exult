@@ -1410,7 +1410,9 @@ void Game_window::write_gwin() {
 	MyMidiPlayer* player = Audio::get_ptr()->get_midi();
 	if (player) {
 		gout.write4(static_cast<uint32>(player->get_current_track()));
-		gout.write4(static_cast<uint32>(player->is_repeating()));
+		gout.write4(
+				static_cast<uint32>(player->is_repeating())
+				| player->get_egg_count() << 16);
 	} else {
 		gout.write4(static_cast<uint32>(-1));
 		gout.write4(0);
@@ -1470,7 +1472,8 @@ void Game_window::read_gwin() {
 	MyMidiPlayer* midi = Audio::get_ptr()->get_midi();
 	if (!is_bg_track(track_num)
 		|| (midi && (midi->get_ogg_enabled() || midi->is_mt32()))) {
-		Audio::get_ptr()->start_music(track_num, repeat != 0);
+		Audio::get_ptr()->start_music(track_num, repeat & 0x1);
+		midi->set_egg_count(static_cast<uint16>(repeat >> 16));
 	}
 	armageddon = gin.read1() == 1;
 	if (!gin.good()) {
@@ -1697,7 +1700,7 @@ void Game_window::start_actor_alt(
 		Game_object* block = main_actor->is_moving()
 									 ? nullptr
 									 : main_actor->find_blocking(
-											 start.get_neighbor(dir), dir);
+											   start.get_neighbor(dir), dir);
 		// We already know the blocking object isn't the avatar, so don't
 		// double check it here.
 		if (!block || !block->move_aside(main_actor, dir)) {
