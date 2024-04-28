@@ -1903,6 +1903,10 @@ void Game_window::teleport_party(
 	moving_barge = nullptr;    // Calling 'done()' could be risky...
 	int       i;
 	const int cnt = party_man->get_count();
+	if (!skip_eggs) {
+		main_actor->get_chunk()->unhatch_eggs(
+				main_actor, t.tx, t.ty, t.tz, oldpos.tx, oldpos.ty);
+	}
 	if (newmap != -1) {
 		set_map(newmap);
 	}

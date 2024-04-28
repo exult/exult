@@ -858,6 +858,109 @@ bool Egg_object::is_active(
 	}
 }
 
+// test_unhatch pretty much inverts all the criteria compared to is_active
+// this was added for improve jukebox_egg behaviour to give the eggs a proximity
+// near and far trigger unless other egg types are modified this code should not
+// affect anything except jukebox_eggs
+
+bool Egg_object::test_unhatch(
+		Game_object* obj,           // Object placed (or Actor).
+		int tx, int ty, int tz,     // Tile stepped onto.
+		int from_tx, int from_ty    // Tile stepped from.
+) {
+	// Only avatar can unhatch
+	if (obj != gwin->get_main_actor()) {
+		return false;
+	}
+	// if the subclass doesn't support unhatch then we do not do anything
+	if (!can_unhatch()) {
+		return false;
+	}
+	// cannot unhatch unless already hatched
+	if (!is_hatched()) {
+		return false;
+	}
+	if (cheat.in_map_editor()) {
+		return false;    // Disable in map-editor.
+	}
+	// As this is an Exult only feature I am making nocturnal eggs always
+	// unhatch if it becomes day this sort of thing might have some use to
+	// automatically clean up things once it becomes day if someone in the
+	// future wants to implement that. Right now unhatching is only relevate to
+	// jukebox_eggs and as far as I know they are not nocturnal
+	if (is_nocturnal()) {
+		// Nocturnal.
+		const int hour = gclock->get_hour();
+		if (hour < 21 && hour > 4) {
+			return true;    // It's not night.
+		}
+	}
+	auto cri = static_cast<Egg_criteria>(get_criteria());
+
+	const int deltaz = tz - get_lift();
+	switch (cri) {
+	case cached_in: {    // Anywhere in square.
+		if (GAME_SI && deltaz / 5 != 0 && type == monster) {
+			return true;
+		}
+
+		// return true  moving from in to out
+		return area.has_world_point(from_tx, from_ty)
+			   && !area.has_world_point(tx, ty);
+	}
+	case avatar_near:
+		[[fallthrough]];
+	case party_near:    // Avatar or party member.
+		if (!obj->get_flag(Obj_flags::in_party)) {
+			return false;
+		}
+		if (type == teleport ||    // Teleports:  Any tile, exact lift.
+			type == intermap) {
+			return false;    // this makes no sense for teleports
+		} else if (type == jukebox || type == soundsfx || type == voice) {
+			return !area.has_world_point(tx, ty)
+				   && area.has_world_point(from_tx, from_ty);
+		}
+		return !(
+				(deltaz / 2 == 0 ||
+				 // Using trial&error here:
+				 (Game::get_game_type() == SERPENT_ISLE && type != missile)
+				 || (type == missile && deltaz / 5 == 0))
+				&&
+				// New tile is in, old is out.
+				area.has_world_point(tx, ty)
+				&& !area.has_world_point(from_tx, from_ty));
+	case avatar_far: {    // New tile is outside, old is inside.
+		if (obj != gwin->get_main_actor()
+			|| !area.has_world_point(from_tx, from_ty)) {
+			return false;
+		}
+		const TileRect inside(area.x + 1, area.y + 1, area.w - 2, area.h - 2);
+		return !inside.has_world_point(from_tx, from_ty)
+			   && inside.has_world_point(tx, ty);
+	}
+	case avatar_footpad:
+		return obj == gwin->get_main_actor()
+			   && (deltaz != 0 || !area.has_world_point(tx, ty));
+	case party_footpad:
+		// This is a basic inversion of the logic from is_active
+		// if this is needed it might be necessary to adjust this logic
+		if (type >= fire_field) {
+			return (!area.has_world_point(tx, ty) || deltaz != 0)
+				   && obj->as_actor();
+		} else {
+			return (!area.has_world_point(tx, ty) || deltaz != 0)
+				   && obj->get_flag(Obj_flags::in_party);
+		}
+	case something_on:
+		return (deltaz / 4 != 0 || !area.has_world_point(tx, ty))
+			   && !obj->as_actor();
+	case external_criteria:
+	default:
+		return false;
+	}
+}
+
 /*
  *  Animate.
  */
@@ -1111,6 +1214,12 @@ void Egg_object::hatch(
 
 	/* end hack */
 
+	// Must not try to hatch an unhatchble egg unless unhatch() was called and
+	// removedthe hatched flag
+	if (can_unhatch() && is_hatched()) {
+		return;
+	}
+
 	const int roll = must ? 0 : 1 + rand() % 100;
 	if (roll <= probability) {
 		// Time to hatch the egg.
@@ -1121,13 +1230,27 @@ void Egg_object::hatch(
 			// We have been deleted, so just leave.
 			return;
 		}
-		if (flags & (1 << static_cast<int>(once))) {
+		// unhatchble eggs must not be removed here
+		if (!can_unhatch() && is_once()) {
 			remove_this(nullptr);
 			return;
 		}
 	}
 	// Flag it as done, whether or not it has been hatched.
 	flags |= (1 << static_cast<int>(hatched));
+}
+
+void Egg_object::unhatch(Game_object* obj, bool must) {
+	// if unhatch_now returns true the hatched flag is cleared
+	if (unhatch_now(obj, must)) {
+		if (is_auto_reset()) {
+			flags &= ~(1 << static_cast<int>(hatched));
+		}
+	}
+	// once only eggs are safe to remove here
+	if (is_once()) {
+		remove_this(nullptr);
+	}
 }
 
 /*

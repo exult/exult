@@ -4787,6 +4787,9 @@ bool Main_actor::step(
 	// Get old chunk, old tile.
 	Map_chunk*       olist   = get_chunk();
 	const Tile_coord oldtile = get_tile();
+	// Unhatch any nearby eggs in old location
+	olist->unhatch_eggs(this, t.tx, t.ty, t.tz, oldtile.tx, oldtile.ty);
+
 	// Move it.
 	Actor::movef(olist, nlist, tx, ty, frame, t.tz);
 	add_dirty(true);    // Set to update new.
