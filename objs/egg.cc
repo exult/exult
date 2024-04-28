@@ -40,6 +40,7 @@
 #include "npctime.h"
 #include "paths.h"
 #include "shapeinf.h"
+#include "tqueue.h"
 #include "ucmachine.h"
 #include "ucsched.h"
 #include "ucscriptop.h"
@@ -146,7 +147,7 @@ void Missile_launcher::handle_event(unsigned long curtime, uintptr udata) {
 /*
  *  Each egg type:
  */
-class Jukebox_egg : public Egg_object {
+class Jukebox_egg : public Egg_object, public Time_sensitive {
 protected:
 	unsigned char score;
 	bool          continuous;
@@ -162,10 +163,175 @@ public:
 	void hatch_now(Game_object* obj, bool must) override {
 		ignore_unused_variable_warning(obj, must);
 #ifdef DEBUG
-		cout << "Audio parameters might be: " << (data1 & 0xff) << " and "
-			 << ((data1 >> 8) & 0x01) << endl;
+		cout << "Jukebox_egg::hatch_now Audio parameters might be: "
+			 << (data1 & 0xff) << " and " << ((data1 >> 8) & 0x01) << endl;
 #endif
+		// palette shift the shape as we are active
+		set_palette_transform(
+				147);    // an offset of 147 will makes the jukebox egg palette
+						 // cycle instead of be plain blue
+		MyMidiPlayer* player = Audio::get_ptr()->get_midi();
+		if (player && continuous) {
+			// create the Jukeboxfar_egg to stop music repeat
+			if (player && player->get_current_track() == score) {
+				if (continuous) {
+					// increment egg count and set repeat to true if we are
+					// continuous
+					player->set_egg_count(player->get_egg_count() + 1);
+					player->set_repeat(true);
+				}
+				return;
+			}
+		}
 		Audio::get_ptr()->start_music(score, continuous);
+		// set the egg count to 1 if we are continous otherwise to 0
+		if (player) {
+			player->set_egg_count(continuous ? 1 : 0);
+		}
+	}
+
+	virtual bool can_unhatch() {
+		return true;
+	}
+
+	bool unhatch_now(Game_object* obj, bool must) override {
+		MyMidiPlayer* player = Audio::get_ptr()->get_midi();
+		// only do anything if the currently playing track is ours
+		if (player && player->get_current_track() == score) {
+			auto count = player->get_egg_count();
+#ifdef DEBUG
+			cout << "Jukebox_egg::unhatch_now Audio parameters might be: "
+				 << (data1 & 0xff) << " and " << ((data1 >> 8) & 0x01)
+				 << ", count " << count << endl;
+#endif
+
+			// No eggs left so stop repeat
+			if (count <= 1) {
+				switch (Audio::get_ptr()->get_music_looping()) {
+					// if in endless mode we do not do anything
+				case Audio::LoopingType::Endless:
+					break;
+				// if in limited mode we stop the music but wait a tick in case
+				// other eggs are going to be hatched that might change the
+				// cxounter
+				case Audio::LoopingType::Limited:
+
+#ifdef DEBUG
+					cout << "Jukebox_egg::unhatch_now adding to timequeue "
+						 << endl;
+#endif
+					Time_sensitive::set_always(true);
+					gwin->get_tqueue()->add(
+							0, std::static_pointer_cast<Time_sensitive>(
+									   std::static_pointer_cast<Jukebox_egg>(
+											   shared_from_this())));
+					break;
+				default:
+					player->set_repeat(false);
+				}
+				player->set_egg_count(0);
+			} else {
+				player->set_egg_count(count - 1);
+			}
+		}
+		// set the egg back to normal palette so blue
+		set_palette_transform(0);
+		return true;
+	}
+
+	virtual void handle_event(unsigned long curtime, uintptr udata) override {
+		MyMidiPlayer* player = Audio::get_ptr()->get_midi();
+		// only do anything if the currently playing track is ours
+		if (player && player->get_current_track() == score) {
+			auto count = player->get_egg_count();
+#ifdef DEBUG
+			cout << "Jukebox_egg::handle_event Audio parameters might be: "
+				 << (data1 & 0xff) << " and " << ((data1 >> 8) & 0x01)
+				 << ", count " << count << endl;
+#endif
+			// No eggs left so stop repeat
+			if (count < 1) {
+				switch (Audio::get_ptr()->get_music_looping()) {
+					// if in endless mode we do not do anything
+				case Audio::LoopingType::Endless:
+					break;
+				// if in Stop mode we immediately stop the music
+				case Audio::LoopingType::Limited:
+					player->stop_music();
+					break;
+				default:
+					player->set_repeat(false);
+				}
+			}
+		}
+	}
+
+	void paint() override {
+#ifdef DEBUG
+		if (gwin->paint_eggs) {
+			// paint outline of jukebox egg area
+			// 80 is the norm colour of the jukebox egg shapebut also apply the
+			// palette shift if we hve one
+			const int pix = 80 + get_palette_transform();
+			int       rx;
+			int       by;
+			int       lx;
+			int       ty;
+			auto      shaperect = gwin->get_shape_rect(this);
+			// Centrepoint of egg on screen
+			int ex = shaperect.x + shaperect.w / 2;
+			int ey = shaperect.y + shaperect.h / 2;
+			// draw area at lift of player
+			gwin->get_shape_location(
+					Tile_coord(
+							area.x - 1, area.y - 1,
+							gwin->get_main_actor()->get_lift()),
+					lx, ty);
+			rx = lx + area.w * c_tilesize;
+			by = ty + area.h * c_tilesize;
+			// Horiz. line along top, bottom.
+			gwin->get_win()->draw_line8(pix, lx, ty, rx, ty);
+			gwin->get_win()->draw_line8(pix, lx, by, rx, by);
+			// Vert. line to left, right.
+			gwin->get_win()->draw_line8(pix, lx, ty, lx, by);
+			gwin->get_win()->draw_line8(pix, rx, ty, rx, by);
+			// Egg to corners
+			gwin->get_win()->draw_line8(pix, ex, ey, rx, ty);
+			gwin->get_win()->draw_line8(pix, ex, ey, rx, by);
+			gwin->get_win()->draw_line8(pix, ex, ey, lx, by);
+			gwin->get_win()->draw_line8(pix, ex, ey, lx, ty);
+			// Egg to midpoints
+			gwin->get_win()->draw_line8(pix, ex, ey, (lx + rx) / 2, ty);
+			gwin->get_win()->draw_line8(pix, ex, ey, rx, (ty + by) / 2);
+			gwin->get_win()->draw_line8(pix, ex, ey, (lx + rx) / 2, by);
+			gwin->get_win()->draw_line8(pix, ex, ey, lx, (ty + by) / 2);
+
+			auto footprint = gwin->get_main_actor()->get_footprint();
+			gwin->get_shape_location(
+					gwin->get_main_actor(), footprint.x, footprint.y);
+			footprint.x -= c_tilesize;
+			footprint.y -= c_tilesize;
+			footprint.h *= c_tilesize;
+			footprint.w *= c_tilesize;
+
+			gwin->get_win()->draw_line8(
+					40, footprint.x, footprint.y, footprint.x + footprint.w,
+					footprint.y);
+			gwin->get_win()->draw_line8(
+					40, footprint.x + footprint.w, footprint.y,
+					footprint.x + footprint.w, footprint.y + footprint.h);
+			gwin->get_win()->draw_line8(
+					40, footprint.x + footprint.w, footprint.y + footprint.h,
+					footprint.x, footprint.y + footprint.h);
+			gwin->get_win()->draw_line8(
+					40, footprint.x + footprint.w, footprint.y + footprint.h,
+					footprint.x, footprint.y + footprint.h);
+			gwin->get_win()->draw_line8(
+					40, footprint.x, footprint.y, footprint.x,
+					footprint.y + footprint.h);
+		}
+#endif    // DEBUG
+		Egg_object::paint();
 	}
 };
 
@@ -181,6 +347,12 @@ public:
 		ignore_unused_variable_warning(obj, must);
 		Audio::get_ptr()->play_sound_effect(
 				score, this, AUDIO_MAX_VOLUME, continuous);
+	}
+
+	virtual bool unhatch_now(Game_object* obj, bool must) override {
+		//  Might want to do somnething here to stop repeating sounds like
+		//  Jukebox_egg
+		return false;
 	}
 };
 
@@ -859,9 +1031,9 @@ bool Egg_object::is_active(
 }
 
 // test_unhatch pretty much inverts all the criteria compared to is_active
-// this was added for improve jukebox_egg behaviour to give the eggs a proximity
+// thiswas added for improve jukebox_egg behaviour to give the eggs a proximity
 // near and far trigger unless other egg types are modified this code should not
-// affect anything except jukebox_eggs
+// effect anything except jukebox_eggs
 
 bool Egg_object::test_unhatch(
 		Game_object* obj,           // Object placed (or Actor).
@@ -888,7 +1060,7 @@ bool Egg_object::test_unhatch(
 	// automatically clean up things once it becomes day if someone in the
 	// future wants to implement that. Right now unhatching is only relevate to
 	// jukebox_eggs and as far as I know they are not nocturnal
-	if (is_nocturnal()) {
+	if (flags & (1 << static_cast<int>(nocturnal))) {
 		// Nocturnal.
 		const int hour = gclock->get_hour();
 		if (hour < 21 && hour > 4) {
@@ -1231,7 +1403,7 @@ void Egg_object::hatch(
 			return;
 		}
 		// unhatchble eggs must not be removed here
-		if (!can_unhatch() && is_once()) {
+		if (!can_unhatch() && flags & (1 << static_cast<int>(once))) {
 			remove_this(nullptr);
 			return;
 		}
@@ -1545,8 +1717,8 @@ Mirror_object::Mirror_object(
 		int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
 		unsigned int lft)
 		: Egg_object(
-				shapenum, framenum, tilex, tiley, lft,
-				Egg_object::mirror_object) {
+				  shapenum, framenum, tilex, tiley, lft,
+				  Egg_object::mirror_object) {
 	solid_area = 1;
 }
 
