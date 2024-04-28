@@ -315,7 +315,7 @@ public:
 				table[255] = 255;
 				transtable = table;
 				// Bound check xform table
-			} else if (sman->get_xforms_cnt() <= xform && xform >= 0) {
+			} else if (sman->get_xforms_cnt() <= xform) {
 				transtable = sman->get_xform(xform).colors;
 			}
 		}
