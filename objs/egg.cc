@@ -239,7 +239,7 @@ public:
 		return true;
 	}
 
-	virtual void handle_event(unsigned long curtime, uintptr udata) override {
+	 void handle_event(unsigned long curtime, uintptr udata) override {
 		MyMidiPlayer* player = Audio::get_ptr()->get_midi();
 		// only do anything if the currently playing track is ours
 		if (player && player->get_current_track() == score) {
@@ -349,7 +349,7 @@ public:
 				score, this, AUDIO_MAX_VOLUME, continuous);
 	}
 
-	virtual bool unhatch_now(Game_object* obj, bool must) override {
+	bool unhatch_now(Game_object* obj, bool must) override {
 		//  Might want to do somnething here to stop repeating sounds like
 		//  Jukebox_egg
 		return false;
