@@ -199,9 +199,15 @@ public:
  *  as a 2-byte quantity.
  */
 class ShapeID : public Game_singletons {
-	short       shapenum  = -1;    // Shape #.
-	signed char framenum  = -1;    // Frame # within shape.
-	ShapeFile   shapefile = SF_SHAPES_VGA;
+	short       shapenum          = -1;    // Shape #.
+	signed char framenum          = -1;    // Frame # within shape.
+	uint16      palette_transform = 0;     // Palette transformation to use when
+										   // painting shape if not transparent.
+	//  0-255 are palete index offset mod 256
+	//  This perform a pallete shift
+	// >255 are (xform table <<8)
+
+	ShapeFile shapefile = SF_SHAPES_VGA;
 
 	Shape_manager::Cached_shape cache_shape() const;
 
@@ -212,6 +218,8 @@ public:
 		const unsigned char h = Read1(data);
 		shapenum              = l + 256 * (h & 0x3);
 		framenum              = h >> 2;
+		// this is not saved
+		palette_transform = 0;
 	}
 
 	// Create "end-of-list"/invalid entry.
@@ -259,7 +267,8 @@ public:
 	}
 
 	ShapeID(int shnum, int frnum, ShapeFile shfile = SF_SHAPES_VGA)
-			: shapenum(shnum), framenum(frnum), shapefile(shfile) {}
+			: shapenum(shnum), framenum(frnum), palette_transform(0),
+			  shapefile(shfile) {}
 
 	void set_shape(int shnum) {    // Set shape, but keep old frame #.
 		shapenum = shnum;
@@ -269,22 +278,58 @@ public:
 		framenum = frnum;
 	}
 
+	// Palette transformation to use when painting shape if not transparent.
+	// 0-255 are palette index offset mod 256 This perform a pallete shift. 0 is
+	// nomal unshifted
+	// >=256 are (xform table <<8)  the shape's colours are transformed using
+	// the xform table as if there was a transparent overlay drawn over the
+	// shape Note Behaviour on palette cycling, a shift can shift a colour into
+	// the palette cycling range for interesting effects, or shift cycling
+	// colours out of the range Xform will get rid of all palette cycling
+	// effects
+	void set_palette_transform(int pt) {
+		palette_transform = pt;
+	}
+
+	int get_palette_transform() const {
+		return palette_transform;
+	}
+
 	void set_file(ShapeFile shfile) {    // Set to new flex
 		shapefile = shfile;
 	}
 
-	void paint_shape(int xoff, int yoff, bool force_trans = false) {
-		auto cache = cache_shape();
+	void paint_shape(int xoff, int yoff, bool force_trans = false) const {
+		auto           cache      = cache_shape();
+		unsigned char* transtable = nullptr;
+		unsigned char  table[256];
+		if (palette_transform != 0) {
+			uint16 xform = palette_transform >> 8;
+			int    index = palette_transform & 0xff;
+			if (xform == 0) {
+				for (int i = 0; i < 256; i++) {
+					table[i] = (i + index) & 0xff;
+				}
+				// keep index 0 and 255 as themselves as this is more useful
+				table[0]   = 0;
+				table[255] = 255;
+				transtable = table;
+				// Bound check xform table
+			} else if (sman->get_xforms_cnt() <= xform && xform >= 0) {
+				transtable = sman->get_xform(xform).colors;
+			}
+		}
 		sman->paint_shape(
-				xoff, yoff, cache.shape, cache.has_trans || force_trans);
+				xoff, yoff, cache.shape, cache.has_trans || force_trans,
+				transtable);
 	}
 
-	void paint_invisible(int xoff, int yoff) {
+	void paint_invisible(int xoff, int yoff) const {
 		sman->paint_invisible(xoff, yoff, get_shape());
 	}
 
 	// Paint outline around a shape.
-	inline void paint_outline(int xoff, int yoff, Pixel_colors pix) {
+	inline void paint_outline(int xoff, int yoff, Pixel_colors pix) const {
 		sman->paint_outline(xoff, yoff, get_shape(), pix);
 	}
 
