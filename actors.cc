@@ -2555,14 +2555,26 @@ void Actor::set_property(int prop, int val) {
 		&& cheat.in_god_mode() && val < properties[prop]) {
 		return;
 	}
+	// The originals have a cap of 999999 exp.
+	constexpr const int max_exp = 999999;
+	// The originals have a cap of 255 training points.
+	constexpr const int max_training = 255;
 	switch (static_cast<Item_properties>(prop)) {
 	case exp: {
-		// Experience?  Check for new level.
+		// Experience.
+		if (val > max_exp) {
+			val = max_exp;
+		}
+		// Check for new level.
 		const int old_level               = get_level();
 		properties[static_cast<int>(exp)] = val;
 		const int delta                   = get_level() - old_level;
 		if (delta > 0) {
-			properties[static_cast<int>(training)] += 3 * delta;
+			int train_delta = 3 * delta;
+			if (train_delta > max_training) {
+				train_delta = max_training;
+			}
+			properties[static_cast<int>(training)] += train_delta;
 		}
 		break;
 	}
@@ -2586,8 +2598,14 @@ void Actor::set_property(int prop, int val) {
 		}
 		break;
 	}
-	case training:    // Don't let this go negative.
-		properties[prop] = val < 0 ? 0 : val;
+	case training:
+		// Don't let this go negative.
+		if (val > 0) {
+			if (val > max_training) {
+				val = max_training;
+			}
+			properties[prop] = val;
+		}
 		break;
 	case sex_flag:
 		// Doesn't seem to be settable in original BG except by hex-editing

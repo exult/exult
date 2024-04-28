@@ -66,6 +66,7 @@
 
 #include <array>
 #include <cmath>
+#include <limits>
 #include <map>
 #include <memory>
 #include <string_view>
@@ -491,6 +492,21 @@ USECODE_INTRINSIC(set_npc_prop) {
 			const int prop  = parms[1].get_int_value();
 			int       delta = parms[2].get_int_value();
 			if (prop == static_cast<int>(Actor::exp)) {
+				if (delta < 0) {
+					// There is a bug in Silver Seed when you plant the silver
+					// seed with more than 25600 exp: the intended exp bonus is
+					// 0xC800, which gets misinterpreted as -0x3800.
+					// In the original game, there seems to be a check that
+					// prevents negative exp bonuses from usecode; we will
+					// instead fix this here.
+					// If this is a 16-bit negative value, make it positive.
+					// Otherwise, bail out.
+					if (delta >= std::numeric_limits<int16_t>::min()) {
+						delta = static_cast<uint16_t>(delta);
+					} else {
+						return Usecode_value(1);
+					}
+				}
 				delta /= 2;    // Verified.
 			}
 			if (prop != static_cast<int>(Actor::sex_flag)) {
