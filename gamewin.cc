@@ -221,9 +221,9 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 					}
 					laststate = RainStorm;
 				} else if (nighttime) {
-					// Disabled nighttime sfx track as it is very distracting
-					/*if (play_bg_tracks)
-						tracknum  = Audio::game_music(7);*/
+					if (play_bg_tracks) {
+						tracknum = Audio::game_music(7);
+					}
 					laststate = Nighttime;
 				} else {
 					if (play_bg_tracks) {
@@ -236,17 +236,18 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 		}
 	}
 
-	// Tests to see if day sfx track is playing, possible
-	// when the game has been restored
+	// Tests to see if Outside/Nighttime sfx tracks are playing,
+	// possible when the game has been restored
 	// and the Audio option was changed from OGG/MT32 to something else
-	// If nighttime sfx track is uncommented, also query whether track 7 plays
-	if (player && !play_bg_tracks && player->get_current_track() == 6) {
+	if (player && !play_bg_tracks
+		&& (player->get_current_track() == 6
+			|| player->get_current_track() == 7)) {
 		player->stop_music();
 	}
 	Main_actor* ava = gwin->get_main_actor();
 	// Testing. When outside play birds during daytime or crickets at night
 	if (ava && !gwin->is_main_actor_inside() && currentstate != Dungeon) {
-		int                        sound;     // SFX #.
+		int                        sound;    // SFX #.
 		static const unsigned char bgnight[] = {61, 61, 255};
 		static const unsigned char bgday[]   = {82, 85, 85};
 		if (repeats > 0) {    // Repeating?
