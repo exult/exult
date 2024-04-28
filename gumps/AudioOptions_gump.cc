@@ -181,11 +181,13 @@ void AudioOptions_gump::rebuild_midi_buttons() {
 			this, &AudioOptions_gump::toggle_music_digital, midi_ogg_enabled,
 			colx[2], rowy[5], 59);
 
-	// looping on/off
-	buttons[id_music_looping] = std::make_unique<AudioEnabledToggle>(
-			this, &AudioOptions_gump::toggle_music_looping, midi_looping,
-			colx[2], rowy[4], 59);
-
+	// looping type
+	std::vector<std::string> looping_options
+			= {"Never", "Limited", "Auto", "Endless"};
+	buttons[id_music_looping] = std::make_unique<AudioTextToggle>(
+			this, &AudioOptions_gump::change_music_looping,
+			std::move(looping_options), static_cast<int>(midi_looping), colx[2],
+			rowy[4], 59);
 	rebuild_midi_driver_buttons();
 }
 
@@ -307,7 +309,7 @@ void AudioOptions_gump::load_settings() {
 								  ? speech_on_with_subtitles
 								  : speech_on)
 					   : speech_off);
-	midi_looping = (Audio::get_ptr()->is_music_looping_allowed() ? 1 : 0);
+	midi_looping = Audio::get_ptr()->get_music_looping();
 	speaker_type = true;    // stereo
 	sample_rate  = 44100;
 	config->value("config/audio/stereo", speaker_type, speaker_type);
@@ -523,7 +525,7 @@ void AudioOptions_gump::save_settings() {
 	Audio::get_ptr()->set_speech_enabled(speech_option != speech_off);
 	Audio::get_ptr()->set_speech_with_subs(
 			speech_option == speech_on_with_subtitles);
-	Audio::get_ptr()->set_allow_music_looping(midi_looping == 1);
+	Audio::get_ptr()->set_music_looping(midi_looping);
 
 	config->set("config/audio/enabled", audio_enabled ? "yes" : "no", false);
 	config->set(
@@ -542,8 +544,11 @@ void AudioOptions_gump::save_settings() {
 	config->set(
 			"config/audio/midi/reverb/enabled",
 			(midi_reverb_chorus & 1) ? "yes" : "no", false);
+
+	const char* midi_looping_values[] = {"never", "limited", "auto", "endless"};
 	config->set(
-			"config/audio/midi/looping", midi_looping ? "yes" : "no", false);
+			"config/audio/midi/looping",
+			midi_looping_values[static_cast<int>(midi_looping)], false);
 
 	const std::string d
 			= "config/disk/game/" + Game::get_gametitle() + "/waves";

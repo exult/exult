@@ -215,7 +215,7 @@ Audio* Audio::get_ptr() {
 Audio::Audio() {
 	assert(self == nullptr);
 
-	string s;
+	string s, newval;
 
 	config->value("config/audio/enabled", s, "yes");
 	audio_enabled = (s != "no");
@@ -229,8 +229,24 @@ Audio::Audio() {
 	music_enabled = (s != "no");
 	config->value("config/audio/effects/enabled", s, "---");
 	effects_enabled = (s != "no");
-	config->value("config/audio/midi/looping", s, "yes");
-	allow_music_looping = (s != "no");
+	config->value("config/audio/midi/looping", s, "auto");
+
+	newval = s;
+	if (s == "no" || s == "never") {
+		newval        = "never";
+		music_looping = LoopingType::Never;
+	} else if (s == "endless") {
+		music_looping = LoopingType::Endless;
+	} else if (s == "limited") {
+		music_looping = LoopingType::Limited;
+	} else {
+		newval        = "auto";
+		music_looping = LoopingType::Auto;
+	}
+	// Update config file with new value if needed
+	if (newval != s) {
+		config->set("config/audio/midi/looping", newval, true);
+	}
 
 	mixer.reset();
 	sfxs = std::make_unique<SFX_cache_manager>();
@@ -449,14 +465,20 @@ bool Audio::playing() {
 void Audio::start_music(int num, bool continuous, const std::string& flex) {
 	if (audio_enabled && music_enabled && mixer && mixer->getMidiPlayer()) {
 		mixer->getMidiPlayer()->start_music(
-				num, continuous && allow_music_looping, flex);
+				num, music_looping == LoopingType::Never ? false : continuous,
+				flex);
 	}
+}
+
+void Audio::change_repeat(bool newrepeat) {
+	mixer->getMidiPlayer()->set_repeat(newrepeat);
 }
 
 void Audio::start_music(const std::string& fname, int num, bool continuous) {
 	if (audio_enabled && music_enabled && mixer && mixer->getMidiPlayer()) {
 		mixer->getMidiPlayer()->start_music(
-				fname, num, continuous && allow_music_looping);
+				fname, num,
+				music_looping == LoopingType::Never ? false : continuous);
 	}
 }
 
@@ -501,7 +523,8 @@ void Audio::start_music_combat(Combat_song song, bool continuous) {
 		break;
 	}
 
-	mixer->getMidiPlayer()->start_music(num, continuous && allow_music_looping);
+	mixer->getMidiPlayer()->start_music(
+			num, continuous && music_looping != LoopingType::Never);
 }
 
 void Audio::stop_music() {
