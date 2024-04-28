@@ -657,7 +657,7 @@ void Chunk_cache::unhatch_eggs(
 					  //   the list can change as eggs are
 					  //   activated, causing a CRASH!
 		const size_t sz = egg_objects.size();
-		size_t       i  = 0;    // Go through eggs.
+		i               = 0;    // Go through eggs.
 		for (; i < sz; i++) {
 			Egg_object* egg = egg_objects[i];
 			if (egg && egg->test_unhatch(obj, tx, ty, tz, from_tx, from_ty)) {
@@ -736,9 +736,9 @@ void Map_chunk::set_terrain(Chunk_terrain* ter) {
 				const Game_object_shared obj
 						= info.is_animated()
 								  ? std::make_shared<Animated_object>(
-											shapenum, framenum, tilex, tiley)
+										  shapenum, framenum, tilex, tiley)
 								  : std::make_shared<Terrain_game_object>(
-											shapenum, framenum, tilex, tiley);
+										  shapenum, framenum, tilex, tiley);
 				add(obj.get());
 			}
 		}
@@ -1394,9 +1394,9 @@ void Map_chunk::setup_dungeon_levels() {
 			const TileRect area
 					= (shinf.has_translucency() && each->get_framenum() == 0)
 							  ? TileRect(
-										cx * c_tiles_per_chunk,
-										cy * c_tiles_per_chunk,
-										c_tiles_per_chunk, c_tiles_per_chunk)
+									  cx * c_tiles_per_chunk,
+									  cy * c_tiles_per_chunk, c_tiles_per_chunk,
+									  c_tiles_per_chunk)
 							  : each->get_footprint();
 
 			// Go through interesected chunks.
