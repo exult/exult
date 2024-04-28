@@ -21,6 +21,7 @@
 #ifndef FIND_NEARBY_H
 #define FIND_NEARBY_H
 
+#include "actors.h"
 #include "chunks.h"
 #include "citerate.h"
 #include "flags.h"
@@ -137,7 +138,14 @@ int Game_object::find_nearby(
 		while ((obj = next.get_next()) != nullptr) {
 			// Check shape.
 			if (shapenum >= 0) {
-				if (obj->get_shapenum() != shapenum) {
+				const bool shape_match = [&]() {
+					if (obj->get_shapenum() == shapenum) {
+						return true;
+					}
+					Actor* npc = obj->as_actor();
+					return npc != nullptr && npc->get_polymorph() == shapenum;
+				}();
+				if (!shape_match) {
 					continue;
 				}
 			}

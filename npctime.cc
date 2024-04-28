@@ -408,7 +408,8 @@ void Npc_sleep_timer::handle_event(unsigned long curtime, uintptr udata) {
 		&& (curtime >= end_time || !npc->get_flag(Obj_flags::asleep))) {
 		// Avoid waking sleeping people.
 		if (npc->get_schedule_type() == Schedule::sleep) {
-			npc->clear_sleep();
+			// This breaks Gorlab Swamp in SI/SS.
+			// npc->clear_sleep();
 		} else if (!npc->is_dead()) {
 			// Don't wake the dead.
 			npc->clear_flag(Obj_flags::asleep);

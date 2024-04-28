@@ -36,6 +36,9 @@ extern void makePartyFaceNPC object#(0x7D1) ();
 // Makes NPC face Avatar:
 extern void faceAvatar object#(0x7D2) ();
 
+// Generic party automaton dialog:
+extern void partyAutomaton 0x809 ();
+
 // Resurrects Iolo, Shamino and Dupre and adds them back to the party
 extern void resurrectCompanions 0x86D ();
 
@@ -62,6 +65,14 @@ extern var getDoorState 0x906 (var door);
 // state 0 = unlocked, state 1 = swung open, state 2 is locked and
 // state 3 is magically locked
 extern void setDoorState 0x907 (var door, var state);
+
+// Presses switch/pulls lever and alters state of nearby sliding doors.
+// Does several additional things, such as checking for Skullcrusher password
+// for the appropriate door, etc.
+// If mode == 0, closes opened sliding doors.
+// If mode == 1, opens closed sliding doors.
+// If mode == SHAPE_ANY, toggles sliding doors.
+extern void changeSlidingDoorState 0x924 (var lever, var mode);
 
 extern void usecodeStartSpeechWrapper 0x922 (var track);
 extern var exchangedItemList 0x92C (var index);

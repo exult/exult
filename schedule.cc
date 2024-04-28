@@ -2363,8 +2363,8 @@ void Sleep_schedule::ending(int new_type    // New schedule.
 	bool                     makebed = false;
 	int                      dir     = 0;
 	const Game_object_shared bed_obj = bed.lock();
-	if (bed_obj &&    // Still in bed?
-		(npc->get_framenum() & 0xf) == Actor::sleep_frame
+	// Still in bed?
+	if (bed_obj && (npc->get_framenum() & 0xf) == Actor::sleep_frame
 		&& npc->distance(bed_obj.get()) < 8) {
 		// Locate free spot.
 		if (floorloc.tx == -1) {
@@ -2386,9 +2386,9 @@ void Sleep_schedule::ending(int new_type    // New schedule.
 		floorloc = pos;
 		// Make bed.
 		const int frnum = bed_obj->get_framenum();
-		if (new_type != static_cast<int>(combat)
-			&&    // Not if going into combat
-			frnum >= spread0 && frnum <= spread1 && !(frnum % 2)
+		// Not if going into combat, or was awakened
+		if (!sleep_interrupted && new_type != static_cast<int>(combat)
+			&& frnum >= spread0 && frnum <= spread1 && !(frnum % 2)
 			&& !is_bed_occupied(
 					bed_obj.get(),
 					npc)) {    // And not if there is another occupant.

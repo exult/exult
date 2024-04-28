@@ -12,6 +12,7 @@ USECODE_OBJECTS :=	\
 	src/cutscenes/fawn_storm.uc	\
 	src/cutscenes/fawn_trial.uc	\
 	src/cutscenes/monitor_banquet.uc	\
+	src/cutscenes/moonshade_banquet.uc	\
 	src/cutscenes/wall_of_lights.uc	\
 	src/header/constants.uc	\
 	src/header/functions.uc	\
@@ -64,6 +65,7 @@ USECODE_OBJECTS :=	\
 	src/npcs/neyobi.uc	\
 	src/npcs/shamino.uc	\
 	src/npcs/skullcrusher_automatons.uc	\
+	src/npcs/spinebreaker_automatons.uc	\
 	src/npcs/thoxa.uc	\
 	src/spells/spells.uc	\
 	src/usecode.uc
