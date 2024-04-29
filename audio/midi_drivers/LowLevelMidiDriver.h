@@ -56,7 +56,6 @@ public:
 	int  initMidiDriver(uint32 samp_rate, bool stereo) override;
 	void destroyMidiDriver() override;
 	int  maxSequences() override;
-	void setGlobalVolume(int vol) override;
 
 	void startSequence(
 			int seq_num, XMidiEventList* list, bool repeat, int vol,
@@ -78,6 +77,7 @@ public:
 	static bool precacheTimbresOnPlay;
 
 protected:
+	LowLevelMidiDriver(std::string &&name) : MidiDriver(std::move(name)) {}
 	// Will be wanted by software drivers
 	uint32 sample_rate;
 	bool   stereo;
@@ -203,7 +203,7 @@ private:
 	sint32 callback_data[LLMD_NUM_SEQ];    // Only set by thread
 
 	// Shared Data
-	int global_volume = 255;
+	std::atomic_uchar global_volume = 100;
 	// Xmidi clock 1/6000th second granuality
 
 	std::chrono::duration<uint32, std::ratio<1, 6000>> xmidi_clock;
@@ -305,8 +305,18 @@ private:
 
 	int unlockAndUnprotectChannel(uint16 sequence_id);
 
-	//! Mute all phyisical channels
-	void muteAllChannels();
+	//! Set global volume of this driver
+	//! \param vol The new volume level for the sequence (0-100)
+	void setGlobalVolume(int vol) override
+	{
+		global_volume = vol;
+	}
+	//! Get global volume of this driver
+	//! \returns Current Volume [0-100]
+	int getGlobalVolume() override
+	{
+		return global_volume;
+	}
 };
 
 #endif    // LOWLEVELMIDIDRIVER_H_INCLUDED

@@ -47,7 +47,9 @@ class ALSAMidiDriver : public LowLevelMidiDriver {
 	}
 
 public:
-	static const MidiDriverDesc* getDesc() {
+ALSAMidiDriver() : LowLevelMidiDriver(std::string(desc.name)) {}	
+	
+		static const MidiDriverDesc* getDesc() {
 		return &desc;
 	}
 

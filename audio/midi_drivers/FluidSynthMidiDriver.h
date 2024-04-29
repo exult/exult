@@ -39,6 +39,8 @@ private:
 	}
 
 public:
+	FluidSynthMidiDriver() : LowLevelMidiDriver(std::string(desc.name)) {}	
+	
 	static const MidiDriverDesc* getDesc() {
 		return &desc;
 	}

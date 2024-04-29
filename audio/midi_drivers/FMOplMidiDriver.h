@@ -35,6 +35,8 @@ class FMOplMidiDriver : public LowLevelMidiDriver {
 	}
 
 public:
+	FMOplMidiDriver() : LowLevelMidiDriver(std::string(desc.name)) {}	
+	
 	static const MidiDriverDesc* getDesc() {
 		return &desc;
 	}
