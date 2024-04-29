@@ -38,6 +38,8 @@ class UnixSeqMidiDriver : public LowLevelMidiDriver {
 	}
 
 public:
+	UnixSeqMidiDriver() : LowLevelMidiDriver(std::string(desc.name)) {}	
+	
 	static const MidiDriverDesc* getDesc() {
 		return &desc;
 	}

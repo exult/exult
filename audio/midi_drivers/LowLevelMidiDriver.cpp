@@ -343,20 +343,6 @@ void LowLevelMidiDriver::setSequenceVolume(int seq_num, int vol) {
 	sendComMessage(message);
 }
 
-void LowLevelMidiDriver::setGlobalVolume(int vol) {
-	if (vol < 0 || vol > 255) {
-		return;
-	}
-	if (!initialized) {
-		return;
-	}
-
-	ComMessage message(LLMD_MSG_SET_VOLUME, -1);
-	message.data.volume.level = vol;
-
-	sendComMessage(message);
-}
-
 void LowLevelMidiDriver::setSequenceSpeed(int seq_num, int speed) {
 	if (seq_num >= LLMD_NUM_SEQ || seq_num < 0) {
 		return;
@@ -795,6 +781,11 @@ bool LowLevelMidiDriver::playSequences() {
 
 		switch (message.type) {
 		case LLMD_MSG_FINISH: {
+			// Out of range
+			if (message.sequence < 0
+				|| message.sequence >= std::size(sequences)) {
+				break;
+			}
 			delete sequences[message.sequence];
 			sequences[message.sequence]     = nullptr;
 			playing[message.sequence]       = false;
@@ -814,20 +805,22 @@ bool LowLevelMidiDriver::playSequences() {
 			return true;
 
 		case LLMD_MSG_SET_VOLUME: {
-			if (message.sequence == -1) {
-				global_volume = message.data.volume.level;
-				for (i = 0; i < LLMD_NUM_SEQ; i++) {
-					if (sequences[i]) {
-						sequences[i]->setVolume(sequences[i]->getVolume());
-					}
-				}
-			} else if (sequences[message.sequence]) {
+				// Out of range
+			if (message.sequence < 0 || message.sequence >= std::size(sequences)) break;
+			
+			if (sequences[message.sequence]) {
 				sequences[message.sequence]->setVolume(
 						message.data.volume.level);
 			}
+			
 		} break;
 
 		case LLMD_MSG_SET_SPEED: {
+			// Out of range
+			if (message.sequence < 0
+				|| message.sequence >= std::size(sequences)) {
+				break;
+			}
 			if (sequences[message.sequence]) {
 				sequences[message.sequence]->setSpeed(
 						message.data.speed.percentage);
@@ -835,6 +828,11 @@ bool LowLevelMidiDriver::playSequences() {
 		} break;
 
 		case LLMD_MSG_PAUSE: {
+			// Out of range
+			if (message.sequence < 0
+				|| message.sequence >= std::size(sequences)) {
+				break;
+			}
 			if (sequences[message.sequence]) {
 				if (!message.data.pause.paused) {
 					sequences[message.sequence]->unpause();
@@ -845,6 +843,11 @@ bool LowLevelMidiDriver::playSequences() {
 		} break;
 
 		case LLMD_MSG_SET_REPEAT: {
+			// Out of range
+			if (message.sequence < 0
+				|| message.sequence >= std::size(sequences)) {
+				break;
+			}
 			if (sequences[message.sequence]) {
 				sequences[message.sequence]->setRepeat(
 						message.data.set_repeat.newrepeat);
@@ -852,6 +855,11 @@ bool LowLevelMidiDriver::playSequences() {
 		} break;
 
 		case LLMD_MSG_PLAY: {
+			// Out of range
+			if (message.sequence < 0
+				|| message.sequence >= std::size(sequences)) {
+				break;
+			}
 			// Kill the previous stream
 			delete sequences[message.sequence];
 			sequences[message.sequence]     = nullptr;
@@ -882,6 +890,11 @@ bool LowLevelMidiDriver::playSequences() {
 
 			// Attempt to load first 64 timbres into memory
 		case LLMD_MSG_PRECACHE_TIMBRES: {
+			// Out of range
+			if (message.sequence < 0
+				|| message.sequence >= std::size(sequences)) {
+				break;
+			}
 			// pout << "Precaching Timbres..." << std::endl;
 
 			// Display messages     0123456789ABCDEF0123
@@ -977,7 +990,7 @@ void LowLevelMidiDriver::sequenceSendEvent(uint16 sequence_id, uint32 message) {
 			int vol = (message >> 16) & 0xFF;
 			message &= 0x00FFFF;
 			// Global volume
-			vol = (vol * global_volume) / 0xFF;
+			//vol = (vol * global_volume) / 0xFF;
 			message |= vol << 16;
 		} else if ((message & 0xFF00) == (XMIDI_CONTROLLER_CHAN_LOCK << 8)) {
 			lockChannel(sequence_id, log_chan, ((message >> 16) & 0xFF) >= 64);
@@ -1013,6 +1026,16 @@ void LowLevelMidiDriver::sequenceSendEvent(uint16 sequence_id, uint32 message) {
 		if (temp < 127 && mt32_rhythm_bank[temp]) {
 			loadRhythmTemp(temp);
 		}
+	}
+	// Adjust veloity of Note on and After Touch by Global volume
+	if ((message & 0xf0) == MIDI_STATUS_NOTE_ON << 4
+		|| (message & 0xf0) == MIDI_STATUS_AFTERTOUCH <<4) 
+	{
+		int vel = (message >> 16) & 0xFF;
+		message &= 0x00FFFF;
+		// Global volume
+		vel = (vel * global_volume) / 100;
+		message |= vel << 16;
 	}
 
 	// Ok, get the physical channel number from the logical.

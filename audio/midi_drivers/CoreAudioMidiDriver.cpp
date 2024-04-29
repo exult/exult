@@ -62,7 +62,7 @@ public:
 const MidiDriver::MidiDriverDesc CoreAudioMidiDriver::desc
 		= MidiDriver::MidiDriverDesc("CoreAudio", createInstance);
 
-CoreAudioMidiDriver::CoreAudioMidiDriver() : _auGraph(nullptr) {}
+CoreAudioMidiDriver::CoreAudioMidiDriver() : LowLevelMidiDriver(std::string(desc.name)), _auGraph(nullptr) {}
 
 #	ifdef __IPHONEOS__
 constexpr static const AudioComponentDescription dev_desc{

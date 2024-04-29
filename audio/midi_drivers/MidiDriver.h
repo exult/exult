@@ -74,9 +74,6 @@ public:
 	//! driver \return The maximum number of playing sequences
 	virtual int maxSequences() = 0;
 
-	//! Set the global volume level
-	//! \param vol The new global volume level (0-255)
-	virtual void setGlobalVolume(int vol) = 0;
 
 	//! Start playing a sequence
 	//! \param seq_num The Sequence number to use.
@@ -103,8 +100,15 @@ public:
 
 	//! Set the volume of a sequence
 	//! \param seq_num The Sequence number to set the volume for
-	//! \param vol The new volume level for the sequence (0-255)
+	//! \param vol The new volume level for the sequence, default is 255 (0-255)
 	virtual void setSequenceVolume(int seq_num, int vol) = 0;
+
+	//! Set global volume of this driver
+	//! \param vol The new volume level for the sequence (0-100)
+	virtual void setGlobalVolume(int vol) = 0;
+	//! Get global volume of this driver
+	//! \returns Current Volume [0-100]
+	virtual int  getGlobalVolume()        = 0;
 
 	//! Set the speed of a sequence
 	//! \param seq_num The Sequence number to change it's speed
@@ -174,6 +178,10 @@ public:
 	//! \param index Driver number
 	static std::string getDriverName(uint32 index);
 
+	const std::string &getName() const {
+		return Name;
+	}
+
 	//! Create an Instance of a MidiDriver
 	//! \param driverName Name of the prefered driver to create
 	//! \return The created MidiDriver instance
@@ -181,9 +189,12 @@ public:
 			const std::string& desired_driver, uint32 sample_rate, bool stereo);
 
 protected:
+	std::string Name;
 	//! Get a configuration setting for the midi driver
 	std::string getConfigSetting(
 			const std::string& name, const std::string& defaultval);
+
+	MidiDriver(std::string&& name) : Name(std::move(name)) {}
 };
 
 #endif    // MIDIDRIVER_H_INCLUDED
