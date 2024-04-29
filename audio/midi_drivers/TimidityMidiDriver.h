@@ -41,8 +41,6 @@ public:
 		return &desc;
 	}
 
-	TimidityMidiDriver() = default;
-
 protected:
 	// LowLevelMidiDriver implementation
 	int  open() override;
