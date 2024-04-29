@@ -727,6 +727,9 @@
     <ClCompile Include="..\..\audio\midi_drivers\MT32EmuMidiDriver.cpp">
       <Filter>audio\midi_drivers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gumps\Mixer_gump.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\actions.h">
@@ -1427,6 +1430,9 @@
     </ClInclude>
     <ClInclude Include="..\..\headers\span.h">
       <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Mixer_gump.h">
+      <Filter>gumps</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
