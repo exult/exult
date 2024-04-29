@@ -57,7 +57,9 @@ class MT32EmuMidiDriver : public LowLevelMidiDriver {
 	MT32Emu::SampleRateConverter* mt32src;
 
 public:
-	MT32EmuMidiDriver() : LowLevelMidiDriver(std::string(desc.name)), mt32(nullptr), mt32src(nullptr) {}
+	MT32EmuMidiDriver()
+			: LowLevelMidiDriver(std::string(desc.name)), mt32(nullptr),
+			  mt32src(nullptr) {}
 
 	static const MidiDriverDesc* getDesc() {
 		return &desc;

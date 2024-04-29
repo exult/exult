@@ -74,7 +74,6 @@ public:
 	//! driver \return The maximum number of playing sequences
 	virtual int maxSequences() = 0;
 
-
 	//! Start playing a sequence
 	//! \param seq_num The Sequence number to use.
 	//! \param list The XMidiEventList to play
@@ -108,7 +107,7 @@ public:
 	virtual void setGlobalVolume(int vol) = 0;
 	//! Get global volume of this driver
 	//! \returns Current Volume [0-100]
-	virtual int  getGlobalVolume()        = 0;
+	virtual int getGlobalVolume() = 0;
 
 	//! Set the speed of a sequence
 	//! \param seq_num The Sequence number to change it's speed
@@ -178,7 +177,7 @@ public:
 	//! \param index Driver number
 	static std::string getDriverName(uint32 index);
 
-	const std::string &getName() const {
+	const std::string& getName() const {
 		return Name;
 	}
 

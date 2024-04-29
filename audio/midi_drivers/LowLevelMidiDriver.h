@@ -77,7 +77,8 @@ public:
 	static bool precacheTimbresOnPlay;
 
 protected:
-	LowLevelMidiDriver(std::string &&name) : MidiDriver(std::move(name)) {}
+	LowLevelMidiDriver(std::string&& name) : MidiDriver(std::move(name)) {}
+
 	// Will be wanted by software drivers
 	uint32 sample_rate;
 	bool   stereo;
@@ -307,14 +308,13 @@ private:
 
 	//! Set global volume of this driver
 	//! \param vol The new volume level for the sequence (0-100)
-	void setGlobalVolume(int vol) override
-	{
+	void setGlobalVolume(int vol) override {
 		global_volume = vol;
 	}
+
 	//! Get global volume of this driver
 	//! \returns Current Volume [0-100]
-	int getGlobalVolume() override
-	{
+	int getGlobalVolume() override {
 		return global_volume;
 	}
 };
