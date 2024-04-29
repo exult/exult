@@ -551,6 +551,7 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <ClCompile Include="..\..\gumps\Jawbone_gump.cc" />
     <ClCompile Include="..\..\gumps\GameEngineOptions_gump.cc" />
     <ClCompile Include="..\..\gumps\misc_buttons.cc" />
+    <ClCompile Include="..\..\gumps\Mixer_gump.cc" />
     <ClCompile Include="..\..\gumps\Newfile_gump.cc" />
     <ClCompile Include="..\..\gumps\Notebook_gump.cc" />
     <ClCompile Include="..\..\gumps\Paperdoll_gump.cc" />
@@ -765,6 +766,7 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <ClInclude Include="..\..\gumps\Jawbone_gump.h" />
     <ClInclude Include="..\..\gumps\GameEngineOptions_gump.h" />
     <ClInclude Include="..\..\gumps\misc_buttons.h" />
+    <ClInclude Include="..\..\gumps\Mixer_gump.h" />
     <ClInclude Include="..\..\gumps\Modal_gump.h" />
     <ClInclude Include="..\..\gumps\Newfile_gump.h" />
     <ClInclude Include="..\..\gumps\Notebook_gump.h" />
