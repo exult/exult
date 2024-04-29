@@ -49,7 +49,7 @@
 
 %%section shape_sfx
 #	Format
-#		:shapenum/sfxnum/delay/range/rand
+#		:shapenum/sfxnum/delay/range/rand/extra/volume
 #	Only the first two parameters are required.
 #	delay is a flag (either 0 or 1) which indicates extra delay
 #	between successive plays. If it is 1 and the shape does *not*
@@ -61,30 +61,35 @@
 #	rand is a flag controlling how range is used: if rand is 1, Exult
 #	will randomly play one sfx in the range; if rand is 0, Exult will
 #	play them sequentially, wrapping back to the first sfx.
+#	extra is basically for the grandfather clock. It is a SFX that will
+#	play every game hour a number of times equal to hour % 12 (or
+#	twelve times for midnight).
+#	Volume is used to control individual sfx volume levels. If no value 
+#	is given, 100% volume will be assumed.
 #
 #	Surf (109)
-:612/109
-:613/109
-:632/109
-:699/109
-:736/109
-:737/109
-:751/109
-:808/109
-:834/109
-:875/109
-:907/109
-:911/109
-:918/109
-:1012/109
-:1020/109
-:1022/109
+:612/109/0/0/0/0/20
+:613/109/0/0/0/0/20
+:632/109/0/0/0/0/20
+:699/109/0/0/0/0/20
+:736/109/0/0/0/0/20
+:737/109/0/0/0/0/20
+:751/109/0/0/0/0/20
+:808/109/0/0/0/0/20
+:834/109/0/0/0/0/20
+:875/109/0/0/0/0/20
+:907/109/0/0/0/0/20
+:911/109/0/0/0/0/20
+:918/109/0/0/0/0/20
+:1012/109/0/0/0/0/20
+:1020/109/0/0/0/0/20
+:1022/109/0/0/0/0/20
 
 #	Bubbles (110 to 114)
 #
-:335/110/100/5/1
+:335/110/100/5/1/0/50
 #	Doesn't seem to play sounds
-#:780/110/100/5/1
+#:780/110/100/5/1/0/50
 
 #	Slimes (54 to 58)
 #
@@ -92,12 +97,12 @@
 
 #	Fountains
 #
-:153/50
-:326/50
+:153/50/0/0/0/0/40
+:326/50/0/0/0/0/40
 
 #	Moongates
 #
-:864/55
+:864/55/0/0/0/0/80
 
 #	Grandfather clock
 #
@@ -106,19 +111,19 @@
 
 #	Cavern
 #
-:389/103/5
-:391/103/5
+:389/103/5/0/0/0/0/80
+:391/103/5/0/0/0/0/80
 
 #	Magic weapons -- apparently not used
 #
-#:547/75
-#:548/75
-#:559/75
-#:562/75
+#:547/75/0/0/0/0/50
+#:548/75/0/0/0/0/50
+#:559/75/0/0/0/0/50
+#:562/75/0/0/0/0/50
 
 #	Force Wall
 #
-:728/75
+:728/75/0/0/0/0/80
 
 #	Flaming weapons -- sounds awful, so it is disabled
 #
@@ -147,20 +152,20 @@
 
 #	Poison/Sleep Field
 #
-:900/129
-:902/129
+:900/129/71/20/0/0/0/40
+:902/129/71/20/0/0/0/40
 
 #	Energy Field
 #
-:768/71
+:768/71/20/0/0/0/20
 
 #	Barrier
 #
-:301/71
+:301/71/0/0/0/0/80
 
 #	Pulsating object
 #
-:726:26
+:726:26/0/0/0/0/60
 
 %%endsection
 

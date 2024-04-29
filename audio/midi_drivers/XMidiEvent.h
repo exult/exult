@@ -48,6 +48,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 #define XMIDI_CONTROLLER_CHAN_LOCK 0x6e
 
+#define MIDI_CONTROLLER_VOLUME            7
+#define MIDI_CONTROLLER_BANK              0
+#define MIDI_CONTROLLER_MODWHEEL          1
+#define MIDI_CONTROLLER_FOOTPEDAL         4
+#define MIDI_CONTROLLER_PAN               9
+#define MIDI_CONTROLLER_BALANCE           10
+#define MIDI_CONTROLLER_EXPRESSION        11
+#define MIDI_CONTROLLER_SUSTAIN           64
+#define MIDI_CONTROLLER_EFFECT            91
+#define MIDI_CONTROLLER_CHORUS            93
 #define XMIDI_CONTROLLER_CHAN_LOCK_PROT   0x6f    // Channel Lock Protect
 #define XMIDI_CONTROLLER_VOICE_PROT       0x70    // Voice Protect
 #define XMIDI_CONTROLLER_TIMBRE_PROT      0x71    // Timbre Protect
@@ -61,6 +71,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "common_types.h"
 
+#include <ostream>
 // Maximum number of for loops we'll allow (used by LowLevelMidiDriver)
 // The specs say 4, so that is what we;ll use
 #define XMIDI_MAX_FOR_LOOP_COUNT 4
@@ -109,6 +120,164 @@ struct XMidiEvent {
 		}
 		delete this;
 	}
+
+	void DumpText(std::ostream& out) {
+		out << time << " Ch " << ((int)status & 0xf) << " ";
+
+		switch (status >> 4) {
+		case MIDI_STATUS_NOTE_OFF:
+			out << "Note Off" << (int)data[0];
+			break;
+		case MIDI_STATUS_NOTE_ON:
+			out << "Note On " << (int)data[0] << " " << (int)data[1];
+			if (ex.note_on.duration) {
+				out << " d " << ex.note_on.duration;
+			}
+			break;
+
+		case MIDI_STATUS_AFTERTOUCH:
+			out << "Aftertouch " << (int)data[0] << " " << (int)data[1];
+			break;
+		case MIDI_STATUS_PROG_CHANGE:
+			out << "Program Change " << (int)data[0] << " " << (int)data[1];
+			break;
+		case MIDI_STATUS_PRESSURE:
+			out << "Pressure " << (int)data[0] << " " << (int)data[1];
+			break;
+		case MIDI_STATUS_PITCH_WHEEL:
+			out << "Pitch Wheel " << (int)data[0] << " " << (int)data[1];
+			break;
+		case MIDI_STATUS_CONTROLLER: {
+			switch (data[0]) {
+			case MIDI_CONTROLLER_VOLUME:
+				out << "Controller Volume " << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_VOLUME + 32:
+				out << "Controller Volume Fine" << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_BANK:
+				out << "Controller Bank " << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_BANK + 32:
+				out << "Controller Bank Fine" << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_MODWHEEL:
+				out << "Controller Bank " << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_MODWHEEL + 32:
+				out << "Controller Bank Fine" << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_FOOTPEDAL:
+				out << "Controller FootPedal " << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_FOOTPEDAL + 32:
+				out << "Controller Foot Pedal Fine" << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_PAN:
+				out << "Controller Pan " << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_PAN + 32:
+				out << "Controller Pan Fine" << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_BALANCE:
+				out << "Controller Balance " << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_BALANCE + 32:
+				out << "Controller Balance Fine" << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_EXPRESSION:
+				out << "Controller Expression " << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_EXPRESSION + 32:
+				out << "Controller Expression Fine" << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_SUSTAIN:
+				out << "Controller Sustain " << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_EFFECT:
+				out << "Controller Effect " << (int)data[1];
+				break;
+			case MIDI_CONTROLLER_CHORUS:
+				out << "Controller Chorus " << (int)data[1];
+				break;
+			case XMIDI_CONTROLLER_CHAN_LOCK_PROT:
+				out << "Controller XChannel Lock Protect " << (int)data[1];
+				break;
+			case XMIDI_CONTROLLER_VOICE_PROT:
+				out << "Controller XVoice Protect " << (int)data[1];
+				break;
+			case XMIDI_CONTROLLER_TIMBRE_PROT:
+				out << "Controller XTimbre Protect " << (int)data[1];
+				break;
+			case XMIDI_CONTROLLER_BANK_CHANGE:
+				out << "Controller XBank Change " << (int)data[1];
+				break;
+			case XMIDI_CONTROLLER_IND_CTRL_PREFIX:
+				out << "Controller XIndirect Controller Prefix "
+					<< (int)data[1];
+				break;
+			case XMIDI_CONTROLLER_FOR_LOOP:
+				out << "Controller XFor Loop " << (int)data[1];
+				break;
+			case XMIDI_CONTROLLER_NEXT_BREAK:
+				out << "Controller XNext/Break " << (int)data[1];
+				break;
+			case XMIDI_CONTROLLER_CLEAR_BB_COUNT:
+				out << "Controller XClear Beat/Bar Count " << (int)data[1];
+				break;
+			case XMIDI_CONTROLLER_CALLBACK_TRIG:
+				out << "Controller XCallback Trigger " << (int)data[1];
+				break;
+			case XMIDI_CONTROLLER_SEQ_BRANCH_INDEX:
+				out << "Controller XSequence Branch Index " << (int)data[1];
+				break;
+
+			default:
+				out << "Controller " << (int)data[0] << " " << (int)data[1];
+			}
+		} break;
+
+		case MIDI_STATUS_SYSEX:
+			out << "sysex " << ex.sysex_data.len << " bytes";
+			break;
+
+			// default should never happen
+		default:
+			out << "Status_" << ((int)status >> 4) << " " << (int)data[0] << " "
+				<< (int)data[1];
+		}
+
+		out << std::endl;
+		if (next) {
+			next->DumpText(out);
+		}
+	}
+
+	// time critical events cannot have their time shifted
+	// non time critcal events can be moved as long as they are played in order
+	// pretty much time critical are notes and events that affect playing notes
+	bool is_time_critical() {
+		int type = status >> 4;
+		if (type == MIDI_STATUS_CONTROLLER) {
+			switch (data[0]) {
+			case MIDI_CONTROLLER_BANK:
+			case MIDI_CONTROLLER_BANK + 32:
+			case XMIDI_CONTROLLER_BANK_CHANGE:
+			case XMIDI_CONTROLLER_CHAN_LOCK_PROT:
+			case XMIDI_CONTROLLER_VOICE_PROT:
+			case XMIDI_CONTROLLER_TIMBRE_PROT:
+				return false;
+
+			default:
+				return true;
+			}
+		}
+		// these shouldn't be time critical. needed to fix BG21 and SI12
+		if (type == MIDI_STATUS_PROG_CHANGE || type == MIDI_STATUS_SYSEX) {
+			return false;
+		}
+		return true;
+	};
 };
 
 #endif    // XMIDIEVENT_H_INCLUDED

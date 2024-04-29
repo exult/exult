@@ -230,7 +230,7 @@
 		<xsl:for-each select="@*|node()">
 	<xsl:copy/>
 	</xsl:for-each>
-	</xsl:copy>	
+	</xsl:copy>
 </xsl:template>
 
 <!-- Misc Templates -->
@@ -259,12 +259,12 @@
 
 
 <xsl:template match="key">
-	'<font color="maroon"><xsl:value-of select="."/></font>'
+	'<span class="highlight"><xsl:value-of select="."/></span>'
 </xsl:template>
 
 
 <xsl:template match="kbd">
-	<font color="maroon"><kbd><xsl:apply-templates/></kbd></font>
+	<span class="highlight"><kbd><xsl:apply-templates/></kbd></span>
 </xsl:template>
 
 <xsl:template match="TM">
@@ -300,7 +300,7 @@
 <xsl:template match="keydesc">
 	<tr>
 		<td nowrap="nowrap" valign="top">
-			<font color="maroon"><xsl:value-of select="@name"/></font>
+			<span class="highlight"><xsl:value-of select="@name"/></span>
 		</td>
 		<td width="10"><xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text></td>
 		<td><xsl:value-of select="."/></td>
@@ -317,24 +317,46 @@
 
 <xsl:template match="configtag">
 	<xsl:param name="indent">0</xsl:param>
-	<xsl:variable name="row-style"><xsl:if test="@manual">color: #62186f</xsl:if></xsl:variable>
+	<xsl:variable name="row-class"><xsl:if test="@manual">highlight</xsl:if></xsl:variable>
 
 	<xsl:choose>
-		<xsl:when test="count(child::configtag)>0">
-			<tr style="{$row-style}"><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td></tr>
-			<xsl:apply-templates select="configtag">
-				<xsl:with-param name="indent"><xsl:value-of select="$indent+16"/></xsl:with-param>
-			</xsl:apply-templates>
+		<xsl:when test="@manual">
+			<xsl:choose>
+				<xsl:when test="count(child::configtag)>0">
+					<tr class="{$row-class}"><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td></tr>
+					<xsl:apply-templates select="configtag">
+						<xsl:with-param name="indent"><xsl:value-of select="$indent+16"/></xsl:with-param>
+					</xsl:apply-templates>
+				</xsl:when>
+				<xsl:otherwise>
+					<tr class="{$row-class}"><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td>
+					<td rowspan="3"><xsl:apply-templates select="comment"/></td></tr>
+					<tr class="{$row-class}"><td style="text-indent:{$indent}pt"><xsl:value-of select="text()"/></td></tr>
+				</xsl:otherwise>
+			</xsl:choose>
+			<xsl:if test="@closing-tag='yes'">
+				<tr class="{$row-class}"><td style="text-indent:{$indent}pt">&lt;/<xsl:value-of select="@name"/>&gt;</td></tr>
+			</xsl:if>
 		</xsl:when>
 		<xsl:otherwise>
-			<tr style="{$row-style}"><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td>
-			<td rowspan="3"><xsl:apply-templates select="comment"/></td></tr>
-			<tr style="{$row-style}"><td style="text-indent:{$indent}pt"><xsl:value-of select="text()"/></td></tr>
+			<xsl:choose>
+				<xsl:when test="count(child::configtag)>0">
+					<tr><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td></tr>
+					<xsl:apply-templates select="configtag">
+						<xsl:with-param name="indent"><xsl:value-of select="$indent+16"/></xsl:with-param>
+					</xsl:apply-templates>
+				</xsl:when>
+				<xsl:otherwise>
+					<tr><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td>
+					<td rowspan="3"><xsl:apply-templates select="comment"/></td></tr>
+					<tr><td style="text-indent:{$indent}pt"><xsl:value-of select="text()"/></td></tr>
+				</xsl:otherwise>
+			</xsl:choose>
+			<xsl:if test="@closing-tag='yes'">
+				<tr><td style="text-indent:{$indent}pt">&lt;/<xsl:value-of select="@name"/>&gt;</td></tr>
+			</xsl:if>
 		</xsl:otherwise>
 	</xsl:choose>
-	<xsl:if test="@closing-tag='yes'">
-		<tr style="{$row-style}"><td style="text-indent:{$indent}pt">&lt;/<xsl:value-of select="@name"/>&gt;</td></tr>
-	</xsl:if>
 </xsl:template>
 
 <xsl:template match="comment">

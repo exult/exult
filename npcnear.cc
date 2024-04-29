@@ -32,6 +32,7 @@
 #include "gamewin.h"
 #include "ignore_unused_variable_warning.h"
 #include "items.h"
+#include "paths.h"
 #include "schedule.h"
 #include "ucmachine.h"
 
@@ -58,7 +59,7 @@ bool Bg_dont_wake(Game_window* gwin, Actor* npc);
 void Npc_proximity_handler::add(
 		unsigned long curtime,    // Current time (msecs).
 		Npc_actor*    npc,
-		int           additional_secs    // More secs. to wait.
+		int           additional_ticks    // More secs. to wait.
 ) {
 	int msecs;    // Hostile?  Wait 0-2 secs.
 	if (npc->get_effective_alignment() >= Actor::evil) {
@@ -66,8 +67,8 @@ void Npc_proximity_handler::add(
 	} else {    // Wait between 2 & 6 secs.
 		msecs = (rand() % 4000) + 2000;
 	}
-	unsigned long newtime = curtime + msecs;
-	newtime += 1000 * additional_secs;
+	unsigned long newtime = curtime + (msecs * gwin->get_std_delay() / 100);
+	newtime += additional_ticks * gwin->get_std_delay();
 	gwin->get_tqueue()->add(newtime, this, npc);
 }
 
@@ -113,11 +114,10 @@ void Npc_proximity_handler::handle_event(unsigned long curtime, uintptr udata) {
 	auto sched
 			= static_cast<Schedule::Schedule_types>(npc->get_schedule_type());
 	// Sleep schedule?
-	if (npc->get_schedule() && sched == Schedule::sleep &&
-		// But not under a sleep spell?
-		!npc->get_flag(Obj_flags::asleep) && gwin->is_main_actor_inside()
+	if (npc->get_schedule() && sched == Schedule::sleep && !npc->is_in_party()
 		&& !Bg_dont_wake(gwin, npc) && npc->distance(gwin->get_main_actor()) < 6
-		&& rand() % 3 != 0) {
+		&& Fast_pathfinder_client::is_straight_path(npc, gwin->get_main_actor())
+		&& (rand() % 3) == 0) {
 		// Trick:  Stand, but stay in
 		//   sleep_schedule.
 		npc->get_schedule()->ending(Schedule::stand);

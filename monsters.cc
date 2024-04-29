@@ -34,6 +34,8 @@
 #include "gamewin.h"
 #include "ignore_unused_variable_warning.h"
 #include "monstinf.h"
+#include "objiter.h"
+#include "objs/contain.h"
 #include "schedule.h"
 #include "ucmachine.h"
 #include "weaponinf.h"
@@ -138,31 +140,103 @@ Monster_actor::~Monster_actor() {
 void Monster_actor::equip(const Monster_info* inf, bool temporary) {
 	// Get equipment.
 	const int equip_offset = inf->equip_offset;
-	if (!equip_offset || equip_offset - 1 >= Monster_info::get_equip_cnt()) {
+	if (equip_offset == 0
+		|| equip_offset - 1 >= Monster_info::get_equip_cnt()) {
 		return;
 	}
 	vector<Equip_record>& equip = Monster_info::equip;
 	const Equip_record&   rec   = equip[equip_offset - 1];
 	for (const Equip_element& elem : rec.elements) {
 		// Give equipment.
-		if (!elem.shapenum || 1 + rand() % 100 > elem.probability) {
+		if (elem.shapenum <= 0 || (1 + (rand() % 100)) > elem.probability) {
 			continue;    // You lose.
 		}
 		int frnum = (elem.shapenum == 377) ? get_info().get_monster_food() : 0;
-		if (frnum < 0) {    // Food.
-			frnum = rand() % ShapeID(377, 0).get_num_frames();
+		if (frnum < 0) {
+			// Food. Want top randomize frame for each object.
+			const int num_frames = ShapeID(elem.shapenum, 0).get_num_frames();
+			for (int i = 0; i < elem.quantity; i++) {
+				frnum = rand() % num_frames;
+				create_quantity(1, elem.shapenum, c_any_qual, frnum, temporary);
+			}
+			continue;
 		}
 		const Shape_info&  einfo = ShapeID::get_info(elem.shapenum);
 		const Weapon_info* winfo = einfo.get_weapon_info();
-		if (einfo.has_quality() && winfo && winfo->uses_charges()) {
+		if (einfo.has_quality() && winfo != nullptr && winfo->uses_charges()) {
 			create_quantity(1, elem.shapenum, elem.quantity, frnum, temporary);
+		} else if (einfo.has_quantity()) {
+			// Randomize quantity for shapes that have a quantity value. This
+			// matches behavior of the original games, where some items (like
+			// gold coins) can be any amount in this range.
+			int amount = 1 + (rand() % elem.quantity);
+			create_quantity(
+					amount, elem.shapenum, c_any_qual, frnum, temporary);
 		} else {
 			create_quantity(
 					elem.quantity, elem.shapenum, c_any_qual, frnum, temporary);
 		}
-		const int ammo = winfo ? winfo->get_ammo_consumed() : -1;
-		if (ammo >= 0) {    // Weapon requires ammo.
-			create_quantity(5 + rand() % 25, ammo, c_any_qual, 0, temporary);
+		const int ammo = winfo != nullptr ? winfo->get_ammo_consumed() : -1;
+		if (ammo >= 0) {
+			// Weapon requires ammo.
+			create_quantity(
+					(1 + (rand() % 10)) + (1 + (rand() % 10)), ammo, c_any_qual,
+					0, temporary);
+		}
+	}
+	if (inf->cant_yell()) {
+		// TODO: This seems to match originals, but it is a bit of a kludge.
+		return;
+	}
+	// This is a presumably sentient, so we will put all the equipment that is
+	// not equipped inside a container.
+	std::vector<Game_object*> contents;
+	size_t                    num_items = 0;
+	{
+		Game_object*    obj;
+		Object_iterator next(this->get_objects());
+		while ((obj = next.get_next()) != nullptr) {
+			// The originals never created a container only for food.
+			if (find_readied(obj) == -1 && !obj->get_info().is_spell()) {
+				contents.push_back(obj);
+				if (obj->get_shapenum() != 377) {
+					num_items++;
+				}
+			}
+		}
+	}
+	if (num_items > 0) {
+		struct container_info {
+			int shape;
+			int qual;
+		};
+
+		const std::array<container_info, 5> containers = {
+				container_info{522,   0}, // Locked chest, pickable
+				container_info{522, 255}, // Locked chest, pickable, trapped
+				container_info{800,   0}, // Unlocked chest
+				container_info{801,   0}, // Backpack
+				container_info{802,   0}, // Bag
+		};
+		const auto [shape, qual]     = containers[rand() % containers.size()];
+		Game_object_shared container = gmap->create_ireg_object(
+				ShapeID::get_info(shape), shape, 0, 0, 0, 0);
+
+		// Set temporary
+		if (temporary) {
+			container->set_flag(Obj_flags::is_temporary);
+		}
+		for (auto* obj : contents) {
+			Game_object_shared keep;
+			obj->remove_this(&keep);
+			if (!container->add(obj, true)) {
+				add(obj, true);
+			}
+		}
+
+		if (!add(container.get(), true)) {
+			container.reset();
+			return;
 		}
 	}
 }

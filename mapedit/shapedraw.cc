@@ -131,8 +131,8 @@ void Shape_draw::draw_shape_outline(
 		} else {
 			const int w = shape->get_width();
 			const int h = shape->get_height();
-			iwin->fill_line8(color, w, x, y);
-			iwin->fill_line8(color, w, x, y + h - 1);
+			iwin->fill_hline8(color, w, x, y);
+			iwin->fill_hline8(color, w, x, y + h - 1);
 			iwin->fill8(color, 1, h, x, y);
 			iwin->fill8(color, 1, h, x + w - 1, y);
 		}

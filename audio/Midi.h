@@ -37,6 +37,8 @@ namespace Pentagram {
 //---- MyMidiPlayer -----------------------------------------------------------
 
 class MyMidiPlayer : nonreplicatable {
+	friend class SoundTester;
+
 public:
 	enum TimbreLibrary {
 		TIMBRE_LIB_GM       = 0,    // General Midi/GS output mode
@@ -130,5 +132,7 @@ private:
 
 	void ogg_mix(sint16* stream, uint32 bytes);
 };
+
+std::unique_ptr<IDataSource> open_music_flex(const std::string& flex, int num);
 
 #endif

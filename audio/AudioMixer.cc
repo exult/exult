@@ -90,11 +90,16 @@ AudioMixer::AudioMixer(int sample_rate_, bool stereo_, int num_channels_)
 	desired.callback = sdlAudioCallback;
 	desired.userdata = this;
 
-	// Set update rate to 5 Hz, or there abouts. This should be more than
-	// adequate for everyone Note: setting this to 1 Hz (/1) causes Exult to
+	// Set update rate to 30 Hz, or there abouts. This should be more than
+	// adequate for everyone. Note: setting this to 1 Hz (/1) causes Exult to
 	// hang on MacOS.
+	// Android needs <=5 to prevent digital music from stuttering.
 	desired.samples = 1;
+#ifdef ANDROID
 	while (desired.samples <= desired.freq / 5) {
+#else
+	while (desired.samples <= desired.freq / 30) {
+#endif
 		desired.samples <<= 1;
 	}
 

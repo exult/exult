@@ -116,7 +116,6 @@ std::shared_ptr<MidiDriver> MidiDriver::createInstance(
 
 				new_driver = midi_driver->createInstance();
 				if (new_driver) {
-					new_driver->selfptr = new_driver;
 					if (new_driver->initMidiDriver(sample_rate, stereo)) {
 						pout << "Failed!" << std::endl;
 						new_driver = nullptr;
@@ -137,7 +136,6 @@ std::shared_ptr<MidiDriver> MidiDriver::createInstance(
 				new_driver = midi_driver->createInstance();
 
 				if (new_driver) {
-					new_driver->selfptr = new_driver;
 					// Got it
 					if (!new_driver->initMidiDriver(sample_rate, stereo)) {
 						pout << "Success!" << std::endl;

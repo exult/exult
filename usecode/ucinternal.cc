@@ -2466,7 +2466,7 @@ int Usecode_internal::run() {
 											 : frame->function->statics[local4])
 								  : (opcode == UC_LOOPTOPTHV
 											 ? frame->get_this().nth_class_var(
-													 local4)
+													   local4)
 											 : frame->locals[local4]);
 				if (initializing_loop && arr.is_undefined()) {
 					// If the local 'array' is not initialized, do not loop

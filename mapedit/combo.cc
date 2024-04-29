@@ -515,8 +515,8 @@ Combo_editor::Combo_editor(
 		unsigned char*   palbuf    // Palette for drawing shapes.
 		)
 		: Shape_draw(
-				svga, palbuf,
-				ExultStudio::get_instance()->get_widget("combo_draw")),
+				  svga, palbuf,
+				  ExultStudio::get_instance()->get_widget("combo_draw")),
 		  selected(-1), setting_controls(false), file_index(-1) {
 	static bool first = true;
 	combo             = new Combo(svga);

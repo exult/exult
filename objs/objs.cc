@@ -1545,7 +1545,7 @@ int Game_object::figure_hit_points(
 	int       delta  = 0;
 	const int effstr = attacker && attacker->as_actor()
 							   ? attacker->as_actor()->get_effective_prop(
-									   Actor::strength)
+										 Actor::strength)
 							   : 0;
 	if (winf && (winf->get_powers() & Weapon_data::no_damage) == 0) {
 		delta = apply_damage(attacker, effstr, wpoints, type);

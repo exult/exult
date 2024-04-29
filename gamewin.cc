@@ -877,7 +877,7 @@ int Game_window::get_unused_npc() {
 			continue;    // Never return these.
 		}
 		if (!npcs[i] || npcs[i]->is_unused()) {
-			break;
+			return i;
 		}
 	}
 	if (i >= 356 && i <= 359) {
@@ -885,7 +885,7 @@ int Game_window::get_unused_npc() {
 		i = 360;
 		do {
 			npcs.push_back(std::make_shared<Npc_actor>("Reserved", 0));
-			auto& npc = npcs[i];
+			auto& npc = npcs[cnt];
 			npc->set_schedule_type(Schedule::wait);
 			npc->set_unused(true);
 		} while (++cnt < 360);

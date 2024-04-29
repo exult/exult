@@ -90,7 +90,9 @@ Dragging_info::Dragging_info(
 			}
 			button->push(1);
 			// Pushed button, so make noise.
-			Audio::get_ptr()->play_sound_effect(Audio::game_sfx(73));
+			if (!button->is_checkmark()) {
+				Audio::get_ptr()->play_sound_effect(Audio::game_sfx(73));
+			}
 			gwin->set_painted();
 		} else if (gump->is_draggable()) {
 			// Dragging whole gump.

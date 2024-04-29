@@ -29,13 +29,9 @@ class XMidiEventList;
 class IDataSource;
 
 //! The Basic High Level Pentagram Midi Driver interface.
-class MidiDriver {
+class MidiDriver : public std::enable_shared_from_this<MidiDriver> {
 protected:
 	std::atomic_bool initialized = false;
-
-	// Weak pointer to ourself In case something needs to keep us alive like in
-	// another thread
-	std::weak_ptr<MidiDriver> selfptr;
 
 public:
 	//! Midi driver desription

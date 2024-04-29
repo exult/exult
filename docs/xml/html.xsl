@@ -102,32 +102,49 @@
 	<head>
 		<title><xsl:value-of select="@title"/> FAQ</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<style>
+			body {
+				font-family: helvetica, sans-serif;
+				font-size: medium;
+				text-align: justify;
+				line-height: 1.4em;
+				background-color: #cccccc;
+				color: #333366;
+				background-image: url("images/back.gif");
+			}
+			:link { color: #666699; }
+			:visited { color: #669966; }
+			:link:active :visited:active { color: #ffcc33; }
+			div.centered { display: block; }
+			span.highlight { color: maroon; }
+			tr.highlight { color: #62186f; }
+		</style>
 	</head>
-	<body bgcolor="#cccccc" text="#333366" link="#666699" vlink="#669966" alink="#ffcc33"  background="images/back.gif">
-			<table border="0" cellpadding="0" cellspacing="0" width="90%">
-				<xsl:call-template name="NAVBAR"/>
-				<tr>
-					<td>
-						<h1><xsl:value-of select="@title"/> F.A.Q. (frequently asked questions) </h1>
-						<p>last changed: <xsl:value-of select="@changed"/></p>
-						<hr/>
-						<p>
-							The latest version of this document can be found <a href="http://exult.info/faq.php">here</a>
-						</p>
-						<br/>
+	<body>
+		<table border="0" cellpadding="0" cellspacing="0" width="90%">
+			<xsl:call-template name="NAVBAR"/>
+			<tr>
+				<td>
+					<h1><xsl:value-of select="@title"/> F.A.Q. (frequently asked questions) </h1>
+					<p>last changed: <xsl:value-of select="@changed"/></p>
+					<hr/>
+					<p>
+						The latest version of this document can be found <a href="http://exult.info/faq.php">here</a>
+					</p>
+					<br/>
 
-					<!-- BEGIN TOC -->
-					<xsl:call-template name="TOC"/>
-					<!-- END TOC -->
+				<!-- BEGIN TOC -->
+				<xsl:call-template name="TOC"/>
+				<!-- END TOC -->
 
-					<!-- BEGIN CONTENT -->
-					<xsl:apply-templates select="section"/>
-					<!-- END CONTENT -->
+				<!-- BEGIN CONTENT -->
+				<xsl:apply-templates select="section"/>
+				<!-- END CONTENT -->
 
-					</td>
-				</tr>
-				<xsl:call-template name="DISCLAIMER"/>
-			</table>
+				</td>
+			</tr>
+			<xsl:call-template name="DISCLAIMER"/>
+		</table>
 	</body>
 	</html>
 </xsl:template>
@@ -139,8 +156,25 @@
 	<head>
 		<title><xsl:value-of select="@title"/> - Documentation</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<style>
+			body {
+				font-family: helvetica, sans-serif;
+				font-size: medium;
+				text-align: justify;
+				line-height: 1.4em;
+				background-color: #cccccc;
+				color: #333366;
+				background-image: url("images/back.gif");
+			}
+			:link { color: #666699; }
+			:visited { color: #669966; }
+			:link:active :visited:active { color: #ffcc33; }
+			div.centered { display: block; }
+			span.highlight { color: maroon; }
+			tr.highlight { color: #62186f; }
+		</style>
 	</head>
-	<body bgcolor="#cccccc" text="#333366" link="#666699" vlink="#669966" alink="#ffcc33" background="images/back.gif">
+	<body>
 		<div align="center">
 			<table border="0" cellpadding="0" cellspacing="0" width="90%">
 				<xsl:call-template name="NAVBAR"/>
@@ -178,8 +212,25 @@
 	<head>
 		<title><xsl:value-of select="@title"/> Studio Documentation </title>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<style>
+			body {
+				font-family: helvetica, sans-serif;
+				font-size: medium;
+				text-align: justify;
+				line-height: 1.4em;
+				background-color: #cccccc;
+				color: #333366;
+				background-image: url("images/back.gif");
+			}
+			:link { color: #666699; }
+			:visited { color: #669966; }
+			:link:active :visited:active { color: #ffcc33; }
+			div.centered { display: block; }
+			span.highlight { color: maroon; }
+			tr.highlight { color: #62186f; }
+		</style>
 	</head>
-	<body bgcolor="#cccccc" text="#333366" link="#666699" vlink="#669966" alink="#ffcc33"  background="images/back.gif">
+	<body>
 		<div align="center">
 			<table border="0" cellpadding="0" cellspacing="0" width="90%">
 				<xsl:call-template name="NAVBAR"/>
@@ -328,7 +379,7 @@
 		<xsl:for-each select="@*|node()">
 	<xsl:copy/>
 	</xsl:for-each>
-	</xsl:copy>	
+	</xsl:copy>
 </xsl:template>
 
 <!-- Misc Templates -->
@@ -357,12 +408,12 @@
 
 
 <xsl:template match="key">
-	'<font color="maroon"><xsl:value-of select="."/></font>'
+	'<span class="highlight"><xsl:value-of select="."/></span>'
 </xsl:template>
 
 
 <xsl:template match="kbd">
-	<font color="maroon"><kbd><xsl:apply-templates/></kbd></font>
+	<span class="highlight"><kbd><xsl:apply-templates/></kbd></span>
 </xsl:template>
 
 <xsl:template match="TM">
@@ -399,7 +450,7 @@
 <xsl:template match="keydesc">
 	<tr>
 		<td nowrap="nowrap" valign="top">
-			<font color="maroon"><xsl:value-of select="@name"/></font>
+			<span class="highlight"><xsl:value-of select="@name"/></span>
 		</td>
 		<td width="10"><xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text></td>
 		<td><xsl:value-of select="."/></td>
@@ -417,24 +468,46 @@
 
 <xsl:template match="configtag">
 	<xsl:param name="indent">0</xsl:param>
-	<xsl:variable name="row-style"><xsl:if test="@manual">color: #62186f</xsl:if></xsl:variable>
+	<xsl:variable name="row-class"><xsl:if test="@manual">highlight</xsl:if></xsl:variable>
 
 	<xsl:choose>
-		<xsl:when test="count(child::configtag)>0">
-			<tr style="{$row-style}"><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td></tr>
-			<xsl:apply-templates select="configtag">
-				<xsl:with-param name="indent"><xsl:value-of select="$indent+16"/></xsl:with-param>
-			</xsl:apply-templates>
+		<xsl:when test="@manual">
+			<xsl:choose>
+				<xsl:when test="count(child::configtag)>0">
+					<tr class="{$row-class}"><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td></tr>
+					<xsl:apply-templates select="configtag">
+						<xsl:with-param name="indent"><xsl:value-of select="$indent+16"/></xsl:with-param>
+					</xsl:apply-templates>
+				</xsl:when>
+				<xsl:otherwise>
+					<tr class="{$row-class}"><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td>
+					<td rowspan="3"><xsl:apply-templates select="comment"/></td></tr>
+					<tr class="{$row-class}"><td style="text-indent:{$indent}pt"><xsl:value-of select="text()"/></td></tr>
+				</xsl:otherwise>
+			</xsl:choose>
+			<xsl:if test="@closing-tag='yes'">
+				<tr class="{$row-class}"><td style="text-indent:{$indent}pt">&lt;/<xsl:value-of select="@name"/>&gt;</td></tr>
+			</xsl:if>
 		</xsl:when>
 		<xsl:otherwise>
-			<tr style="{$row-style}"><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td>
-			<td rowspan="3"><xsl:apply-templates select="comment"/></td></tr>
-			<tr style="{$row-style}"><td style="text-indent:{$indent}pt"><xsl:value-of select="text()"/></td></tr>
+			<xsl:choose>
+				<xsl:when test="count(child::configtag)>0">
+					<tr><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td></tr>
+					<xsl:apply-templates select="configtag">
+						<xsl:with-param name="indent"><xsl:value-of select="$indent+16"/></xsl:with-param>
+					</xsl:apply-templates>
+				</xsl:when>
+				<xsl:otherwise>
+					<tr><td style="text-indent:{$indent}pt">&lt;<xsl:value-of select="@name"/>&gt;</td>
+					<td rowspan="3"><xsl:apply-templates select="comment"/></td></tr>
+					<tr><td style="text-indent:{$indent}pt"><xsl:value-of select="text()"/></td></tr>
+				</xsl:otherwise>
+			</xsl:choose>
+			<xsl:if test="@closing-tag='yes'">
+				<tr><td style="text-indent:{$indent}pt">&lt;/<xsl:value-of select="@name"/>&gt;</td></tr>
+			</xsl:if>
 		</xsl:otherwise>
 	</xsl:choose>
-	<xsl:if test="@closing-tag='yes'">
-		<tr style="{$row-style}"><td style="text-indent:{$indent}pt">&lt;/<xsl:value-of select="@name"/>&gt;</td></tr>
-	</xsl:if>
 </xsl:template>
 
 <xsl:template match="comment">

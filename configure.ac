@@ -406,6 +406,13 @@ fi
 AC_ARG_ENABLE(static-libraries, AS_HELP_STRING([--enable-static-libraries], [Enable static linking of libraries]),,enable_static_libs=no)
 AC_MSG_CHECKING([if we want to statically compile libraries])
 if test x$enable_static_libs != xno; then
+	if test x$ARCH != xmacosx; then
+		# Assuming GCC. This is probably not portable.
+		STATIC_LD="-static"
+		LDFLAGS="$LDFLAGS -static"
+	else
+		AC_MSG_ERROR([*** static linking is not supported on macOS])
+	fi
 	AC_MSG_RESULT(yes)
 else
 	AC_MSG_RESULT(no)
@@ -426,7 +433,15 @@ fi
 # SDL
 # ---------------------------------------------------------------------
 
-EXULT_CHECK_SDL(:,AC_MSG_ERROR([[*** SDL not found!]]))
+if test x$enable_android_apk = xno; then
+	PKG_CHECK_MODULES(SDL, sdl2 >= 2.0.16, , AC_MSG_ERROR([[*** SDL not found!]]))
+	AC_DEFINE(HAVE_SDL_H, 1, [Define to 1 if you have the "SDL.h" header file])
+	AM_CONDITIONAL(HAVE_SDL, true)
+	AC_SUBST(SDL_CFLAGS)
+	AC_SUBST(SDL_LIBS)
+else
+	AM_CONDITIONAL(HAVE_SDL, false)
+fi
 
 # ---------------------------------------------------------------------
 # libpng
@@ -450,54 +465,6 @@ fi
 
 if test x$enable_android_apk = xno -a x$enable_exult = xyes; then
 	PKG_CHECK_MODULES(OGG, ogg >= 1.0 vorbis >= 1.0.1 vorbisfile, , AC_MSG_ERROR([*** must have Ogg/Vorbis installed!]))
-fi
-
-# ---------------------------------------------------------------------
-# Black magic for static linking.
-# ---------------------------------------------------------------------
-
-if test x$ARCH = xmacosx; then
-	AC_ARG_WITH(macosx-static-lib-path,
-		AS_HELP_STRING([--with-macosx-static-lib-path=path], [path to location of static library files (macOS bundles only)]),
-		[with_macosx_static_lib_path="$withval"],
-		[with_macosx_static_lib_path=""])
-	if test x$with_macosx_static_lib_path != x; then
-		if test ! -d $with_macosx_static_lib_path; then
-			AC_MSG_ERROR([*** a directory is expected for --macosx-static-lib-path!])
-		fi
-		with_macosx_static_lib_path=`echo "$with_macosx_static_lib_path" | sed 's/\/*$//'`
-	else
-		enable_static_libs=no
-	fi
-fi
-
-if test x$enable_static_libs != xno; then
-	if test x$ARCH != xmacosx; then
-		# Assuming GCC. This is probably not portable.
-		STATIC_LD="-static"
-		LDFLAGS="$LDFLAGS -static"
-	else
-		# Apple has done its best to prevent the above from working, so we
-		# need this stuff here.
-		# Using -static doesn't work because of system libraries that cannot be
-		# linked statically; using the usual -Wl,-static -lvorbis -Wl,-dynamic
-		# also fails if there is a non-static version of libvorbis in the lib
-		# search path before or at the same location as the static lib because
-		# the linker tries to use these even with the flags. The only way to get
-		# reliable static compiles in Mac OS X is to hard-code the path to the
-		# static library and link to *that*.
-		# Damn you, Apple!
-
-		# SDL Mac OS X readme lists this as needed.
-		# We should have sdl-config by this point, or we would have
-		# died in EXULT_CHECK_SDL.
-		SDL_LIBS=`$SDL_CONFIG $sdl_config_args --static-libs`
-		OGG_LIBS="$with_macosx_static_lib_path/libogg.a"
-		VORBISFILE_LIBS="$with_macosx_static_lib_path/libvorbisfile.a"
-		VORBIS_LIBS="$with_macosx_static_lib_path/libvorbis.a -lm"
-		ZLIB_LIBS="$with_macosx_static_lib_path/libz.a"
-		MT32EMU_LIBS="$with_macosx_static_lib_path/libmt32emu.a"
-	fi
 fi
 
 # ---------------------------------------------------------------------
@@ -590,7 +557,6 @@ else
 	AC_MSG_RESULT(no; mt32emu.h not found)
 	AM_CONDITIONAL(BUILD_MT32EMU, false)
 fi
-
 
 # zipped savegame support
 AC_ARG_ENABLE(zip-support, AS_HELP_STRING([--enable-zip-support], [Enable zipped savegame support @<:@default yes@:>@]),,enable_zip_support=yes)
@@ -745,11 +711,6 @@ if test "$WINDOWING_SYSTEM" != -DXWIN -a "$WINDOWING_SYSTEM" != -D_WIN32 -a "$WI
 	enable_exult_studio_support=no
 fi
 
-AC_ARG_ENABLE(macosx-x11-studio-support, AS_HELP_STRING([--enable-macosx-x11-studio-support], [Force Exult Studio X11 support in macOS @<:@default no@:>@]),,enable_macosx_x11_studio_support=no)
-if test "$WINDOWING_SYSTEM" != -DMACOSX; then
-	enable_macosx_x11_studio_support=no
-fi
-
 if test x$enable_exult_studio = xyes; then
 	enable_exult_studio_support=yes
 fi
@@ -757,26 +718,6 @@ fi
 if test x$enable_exult_studio_support = xyes ; then
 	AC_MSG_RESULT(yes)
 	AC_DEFINE(USE_EXULTSTUDIO, 1, [Use Exult Studio])
-	AC_CHECK_FUNC(xwin, AC_DEFINE(XWIN))
-	if test "$WINDOWING_SYSTEM" = -DMACOSX -a "$ac_cv_func_xwin" != yes; then
-		if test $sdl_minor_version -eq "0" -a $sdl_patchlevel -lt "15"; then
-			echo "SDL2 2.0.15 or newer is needed for native drag'n'drop - switching to X11"
-			enable_macosx_x11_studio_support=yes
-		fi
-	fi
-
-	# Due to bug 2129731 and 3139441 some Linux distributions need -lX11 explicitly set
-	# when enabling Exult Studio support or linking fails
-	# 2022.08 : This does not appear relevant any longer
-	# 2022.08 : if test "$WINDOWING_SYSTEM" = -DXWIN ; then
-	# 2022.08 :     SYSLIBS="$SYSLIBS -lX11"
-	# 2022.08 : fi
-
-	if test x$enable_macosx_x11_studio_support = xyes ; then
-		enable_exult_studio_support=yes
-		SYSLIBS="$SYSLIBS -L/usr/X11R6/lib -lX11"
-		AC_DEFINE(XWIN, 1, [X11 (needed by Exult Studio X11 support in macOS)])
-	fi
 else
 	AC_MSG_RESULT(no)
 fi
@@ -1327,7 +1268,7 @@ fi
 echo
 if test x$enable_android_apk = xno; then
 	echo Dependencies :
-	echo SDL........................ : `$SDL_CONFIG --version`
+	echo SDL........................ : `$PKG_CONFIG --modversion sdl2`
 	PKG_CHECK_EXISTS(ogg,
 		echo Ogg.........................: `$PKG_CONFIG --modversion ogg`)
 	PKG_CHECK_EXISTS(vorbis,

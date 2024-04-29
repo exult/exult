@@ -70,9 +70,8 @@ Gump::Gump(
  */
 
 Gump::Gump(Container_game_object* cont, int initx, int inity, Gump* from)
-		: ShapeID(
-				from->get_shapenum(), from->get_framenum(),
-				from->get_shapefile()),
+		: ShapeID(from->get_shapenum(), from->get_framenum(),
+				  from->get_shapefile()),
 		  container(cont), x(initx), y(inity), object_area(from->object_area),
 		  handles_kbd(false) {
 	// Clone widgets.

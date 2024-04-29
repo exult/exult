@@ -64,22 +64,28 @@ public:
 	void fill8(unsigned char pix, int srcw, int srch, int destx, int desty)
 			override;
 	// Fill line with pixel.
-	void fill_line8(unsigned char pix, int srcw, int destx, int desty) override;
+	void fill_hline8(
+			unsigned char pix, int srcw, int destx, int desty) override;
+	// Draw an arbitrary line from any point to any point inclusive. Accuracy
+	// not guarenteed
+	virtual void draw_line8(
+			unsigned char val, int startx, int starty, int endx, int endy,
+			const Xform_palette* xform = nullptr) override;
 	// Copy rectangle into here.
 	void copy8(
 			const unsigned char* src_pixels, int srcw, int srch, int destx,
 			int desty) override;
 	// Copy line to here.
-	void copy_line8(
+	void copy_hline8(
 			const unsigned char* src_pixels, int srcw, int destx,
 			int desty) override;
 	// Copy with translucency table.
-	void copy_line_translucent8(
+	void copy_hline_translucent8(
 			const unsigned char* src_pixels, int srcw, int destx, int desty,
 			int first_translucent, int last_translucent,
 			const Xform_palette* xforms) override;
 	// Apply translucency to a line.
-	void fill_line_translucent8(
+	void fill_hline_translucent8(
 			unsigned char val, int srcw, int destx, int desty,
 			const Xform_palette& xform) override;
 	// Apply translucency to a rectangle

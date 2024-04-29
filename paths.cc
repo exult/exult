@@ -763,7 +763,7 @@ Monster_pathfinder_client::Monster_pathfinder_client(
 		int          reach,    // Weapon reach in tiles.
 		Game_object* opponent)
 		: Fast_pathfinder_client(
-				attacker, opponent, reach, attacker->get_type_flags()),
+				  attacker, opponent, reach, attacker->get_type_flags()),
 		  intelligence(attacker->get_property(Actor::intelligence)) {}
 
 /*

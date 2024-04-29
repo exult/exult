@@ -26,7 +26,7 @@
 <xsl:key name="sub_ref" match="sub" use="@name"/>
 <xsl:key name="section_ref" match="section" use="@title"/>
 
-<!-- br Line Break trickery Templates 
+<!-- br Line Break trickery Templates
  |   Because we achieve proper formatting through using normalize-space we strip all line breaks.
  |   By changing the ones we really want to Ä first, we can change them back after normalizing
  +-->
@@ -141,7 +141,7 @@
 	<!-- In order to do proper formatting, we have to apply a little trick -
 	 |   we first store the result tree fragment (RTF) in a variable, then
 	 |   we can apply normalize-space to this variable. Nifty, hu? ;)
-	 |   In order to get our wanted line breaks back we translate 
+	 |   In order to get our wanted line breaks back we translate
 	 |   Ä to line breaks *after* the normalization. see "br" template on top
 	 +-->
 	<xsl:variable name = "data">
@@ -297,7 +297,7 @@
 <xsl:template match="keydesc">
 	<tr>
 		<td nowrap="nowrap" valign="top">
-			<font color="maroon"><xsl:value-of select="@name"/></font>
+			<span class="highlight"><xsl:value-of select="@name"/></span>
 		</td>
 		<td><xsl:text> : </xsl:text></td>
 		<td><xsl:value-of select="."/></td>

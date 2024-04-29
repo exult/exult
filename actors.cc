@@ -39,6 +39,7 @@
 #include "chunks.h"
 #include "combat.h"
 #include "combat_opts.h"
+#include "contain.h"
 #include "dir.h"
 #include "effects.h"
 #include "egg.h"
@@ -101,7 +102,7 @@ extern bool combat_trace;
 // Please Don't Touch - Colourless
 //
 const short Actor::party_pos[4][10][2] = {
-  // North Facing
+		// North Facing
 		{ {-2, 2},
 		 {2, 2},
 		 {0, 4},
@@ -112,7 +113,7 @@ const short Actor::party_pos[4][10][2] = {
 		 {0, 8},
 		 {-4, 8},
 		 {4, 8} },
- // East Facing,
+		// East Facing,
 		{{-2, -2},
 		 {-2, 2},
 		 {-4, 0},
@@ -123,7 +124,7 @@ const short Actor::party_pos[4][10][2] = {
 		 {-8, 0},
 		 {-8, -4},
 		 {-8, 4}},
- // South Facing
+		// South Facing
 		{{-2, -2},
 		 {2, -2},
 		 {0, -4},
@@ -134,7 +135,7 @@ const short Actor::party_pos[4][10][2] = {
 		 {0, -8},
 		 {-4, -8},
 		 {4, -8}},
- // West Facing
+		// West Facing
 		{ {2, -2},
 		 {2, 2},
 		 {4, 0},
@@ -2554,14 +2555,26 @@ void Actor::set_property(int prop, int val) {
 		&& cheat.in_god_mode() && val < properties[prop]) {
 		return;
 	}
+	// The originals have a cap of 999999 exp.
+	constexpr const int max_exp = 999999;
+	// The originals have a cap of 255 training points.
+	constexpr const int max_training = 255;
 	switch (static_cast<Item_properties>(prop)) {
 	case exp: {
-		// Experience?  Check for new level.
+		// Experience.
+		if (val > max_exp) {
+			val = max_exp;
+		}
+		// Check for new level.
 		const int old_level               = get_level();
 		properties[static_cast<int>(exp)] = val;
 		const int delta                   = get_level() - old_level;
 		if (delta > 0) {
-			properties[static_cast<int>(training)] += 3 * delta;
+			int train_delta = 3 * delta;
+			if (train_delta > max_training) {
+				train_delta = max_training;
+			}
+			properties[static_cast<int>(training)] += train_delta;
 		}
 		break;
 	}
@@ -2585,8 +2598,14 @@ void Actor::set_property(int prop, int val) {
 		}
 		break;
 	}
-	case training:    // Don't let this go negative.
-		properties[prop] = val < 0 ? 0 : val;
+	case training:
+		// Don't let this go negative.
+		if (val > 0) {
+			if (val > max_training) {
+				val = max_training;
+			}
+			properties[prop] = val;
+		}
 		break;
 	case sex_flag:
 		// Doesn't seem to be settable in original BG except by hex-editing
@@ -4155,10 +4174,14 @@ int Actor::figure_hit_points(
 	}
 	// Apply weapon powers if needed.
 	// wpoints == 0 ==> some spells that don't hurt (but need to apply powers).
-	if (powers && (hits || !wpoints || nodamage)) {
+	const bool powers_only = !wpoints || nodamage;
+	if (powers && (hits || powers_only)) {
 		// Protection prevents powers.
 		if (!get_flag(Obj_flags::protection)) {
-			const int attint = Get_effective_prop(npc, Actor::intelligence, 16);
+			const int attint
+					= powers_only
+							  ? Get_effective_prop(npc, Actor::intelligence, 16)
+							  : 16;
 			const int defstr = Get_effective_prop(this, Actor::strength);
 			const int defint = Get_effective_prop(this, Actor::intelligence);
 
@@ -4191,18 +4214,21 @@ int Actor::figure_hit_points(
 				// Take away all mana.
 				set_property(static_cast<int>(Actor::mana), 0);
 				int                num_spells = 0;
-				Game_object_vector vec;
 				Game_object_vector spells;
-				vec.reserve(50);
 				spells.reserve(50);
-				get_objects(vec, c_any_shapenum, c_any_qual, c_any_framenum);
-				// Gather all spells...
-				for (auto* obj : vec) {
-					if (obj->get_info().is_spell()) {    // Seems to be right.
-						spells.push_back(obj);
+				{
+					Game_object_vector vec;
+					vec.reserve(50);
+					get_objects(
+							vec, c_any_shapenum, c_any_qual, c_any_framenum);
+					// Gather all spells...
+					for (auto* obj : vec) {
+						if (obj->get_info().is_spell()) {
+							// Seems to be right.
+							spells.push_back(obj);
+						}
 					}
 				}
-				vec.clear();
 				// ... and take them all away.
 				while (!spells.empty()) {
 					++num_spells;
@@ -4471,31 +4497,45 @@ void Actor::die(Game_object* attacker) {
 	} else {
 		body = nullptr;
 	}
-	Game_object*              item;        // Move/remove all the items.
+
 	Game_object_shared_vector tooheavy;    // Some shouldn't be moved.
-	while ((item = objects.get_first()) != nullptr) {
-		const Game_object_shared item_keep = shared_from_obj(item);
-		remove(item);
-		item->set_invalid();
-		if (item->get_info().is_spell()) {
-			tooheavy.push_back(item_keep);
-			continue;
-		}
-		if (body) {
-			item->set_shape_pos(255, 255);    // So it gets placed.
-			body->add(item, true);            // Always succeed at adding.
-		} else {                              // No body?  Drop on ground.
-			item->set_flag_recursively(Obj_flags::okay_to_take);
-			const Tile_coord pos2 = Map_chunk::find_spot(
-					pos, 5, item->get_shapenum(), item->get_framenum(), 1);
-			if (pos.tx != -1) {
-				item->move(pos2);
-			} else {    // No room anywhere.
+	{
+		Game_object* item;    // Move/remove all the items.
+		while ((item = objects.get_first()) != nullptr) {
+			const Game_object_shared item_keep = shared_from_obj(item);
+			remove(item);
+			if (item->get_info().is_spell()) {
+				// Note: this misses spells in containers. This is fixed below.
 				tooheavy.push_back(item_keep);
+				continue;
+			}
+			if (body) {
+				item->set_shape_pos(255, 255);    // So it gets placed.
+				body->add(item, true);            // Always succeed at adding.
+			} else {                              // No body?  Drop on ground.
+				item->set_flag_recursively(Obj_flags::okay_to_take);
+				const Tile_coord pos2 = Map_chunk::find_spot(
+						pos, 5, item->get_shapenum(), item->get_framenum(), 1);
+				if (pos.tx != -1) {
+					item->move(pos2);
+				} else {    // No room anywhere.
+					tooheavy.push_back(item_keep);
+				}
 			}
 		}
 	}
 	if (body) {    // Okay to take its contents.
+		Game_object_vector vec;
+		vec.reserve(50);
+		body->get_objects(vec, c_any_shapenum, c_any_qual, c_any_framenum);
+		// Gather all spells recursively and move them back to the NPC.
+		for (auto* obj : vec) {
+			Container_game_object* cont = obj->get_owner();
+			if (cont != nullptr && obj->get_info().is_spell()) {
+				tooheavy.push_back(obj->shared_from_this());
+				obj->get_owner()->remove(obj);
+			}
+		}
 		body->set_flag_recursively(Obj_flags::okay_to_take);
 	}
 

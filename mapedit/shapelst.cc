@@ -2497,7 +2497,7 @@ void Shape_chooser::update_statusbar() {
 											  : (otmsg == -1 || otmsg >= get_num_misc_names()
 														 ? ""
 														 : get_misc_name(
-																 otmsg));
+																   otmsg));
 							if (!otmsgstr) {
 								otmsgstr = "";
 							}
