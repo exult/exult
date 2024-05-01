@@ -190,11 +190,12 @@ public:
 		}
 	}
 
-	virtual bool can_unhatch() {
+	bool can_unhatch() override {
 		return true;
 	}
 
 	bool unhatch_now(Game_object* obj, bool must) override {
+		ignore_unused_variable_warning(obj, must);
 		MyMidiPlayer* player = Audio::get_ptr()->get_midi();
 		// only do anything if the currently playing track is ours
 		if (player && player->get_current_track() == score) {
@@ -240,6 +241,7 @@ public:
 	}
 
 	 void handle_event(unsigned long curtime, uintptr udata) override {
+		ignore_unused_variable_warning(curtime, udata);
 		MyMidiPlayer* player = Audio::get_ptr()->get_midi();
 		// only do anything if the currently playing track is ours
 		if (player && player->get_current_track() == score) {
@@ -350,7 +352,8 @@ public:
 	}
 
 	bool unhatch_now(Game_object* obj, bool must) override {
-		//  Might want to do somnething here to stop repeating sounds like
+		ignore_unused_variable_warning(obj, must);
+		//  Might want to do something here to stop repeating sounds like
 		//  Jukebox_egg
 		return false;
 	}

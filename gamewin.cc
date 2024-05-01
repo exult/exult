@@ -184,7 +184,7 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 	const bool play_bg_tracks
 			= player && (player->get_ogg_enabled() || player->is_mt32());
 
-	if (player || play_bg_tracks) {
+	if (player && play_bg_tracks) {
 		delay = 1000;    // Quickly get back to this function check
 		const int curr_track = player->get_current_track();
 		if ((curr_track == -1 || laststate != currentstate)
@@ -242,7 +242,7 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 	Main_actor* ava = gwin->get_main_actor();
 	// Testing. When outside play birds during daytime or crickets at night
 	if (ava && !gwin->is_main_actor_inside() && currentstate != Dungeon) {
-        int                        sound = 0;    // SFX #.
+		int                        sound     = -1;    // SFX #.
 		static const unsigned char bgnight[] = {61, 61, 255};
 		static const unsigned char bgday[]   = {82, 85, 85};
 		if (repeats > 0) {    // Repeating?
@@ -256,14 +256,18 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 			}
 			last_sound = sound;
 		}
-		Audio::get_ptr()->play_sound_effect(
-				Audio::game_sfx(sound), AUDIO_MAX_VOLUME - 200);
-		repeats++;    // Count it.
-		if (rand() % (repeats + 1) == 0) {
-			// Repeat.
-			delay = 500 + rand() % 1000;
+		if (sound >= 0) {
+			Audio::get_ptr()->play_sound_effect(
+					Audio::game_sfx(sound), AUDIO_MAX_VOLUME - 64);
+			repeats++;    // Count it.
+			if (rand() % (repeats + 1) == 0) {
+				// Repeat.
+				delay = 500 + rand() % 1000;
+			} else {
+				delay   = 4000 + rand() % 3000;
+				repeats = 0;
+			}
 		} else {
-			delay   = 4000 + rand() % 3000;
 			repeats = 0;
 		}
 	}
