@@ -562,7 +562,7 @@ void ModManager::gather_mods() {
 		return;
 	}
 
-	U7ListFiles(pathname + "/*.cfg", filenames);
+	U7ListFiles(pathname, MODCFG_REGEX, filenames);
 	const int num_mods = filenames.size();
 
 	if (num_mods > 0) {

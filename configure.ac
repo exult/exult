@@ -323,7 +323,7 @@ if test x$enable_android_apk != xno; then
 	AC_SUBST(ANDROID_BUILD_TOOLS_VERSION, $ANDROID_BUILD_TOOLS_VERSION)
 
 	# Check for required Android NDK version.
-	ANDROID_NDK_VERSION=21.4.7075529
+	ANDROID_NDK_VERSION=22.1.7171670
 	AC_MSG_CHECKING([for Android NDK $ANDROID_NDK_VERSION])
 	if $SDKMANAGER --list|grep -q "ndk;$ANDROID_NDK_VERSION"; then
 		AC_MSG_RESULT([yes])
@@ -333,7 +333,7 @@ if test x$enable_android_apk != xno; then
 	AC_SUBST(ANDROID_NDK_VERSION, $ANDROID_NDK_VERSION)
 
 	# Check for required Android CMake version.
-	ANDROID_CMAKE_VERSION=3.18.1
+	ANDROID_CMAKE_VERSION=3.22.1
 	AC_MSG_CHECKING([for Android CMake $ANDROID_CMAKE_VERSION])
 	if $SDKMANAGER --list|grep -q "cmake;$ANDROID_CMAKE_VERSION"; then
 		AC_MSG_RESULT([yes])

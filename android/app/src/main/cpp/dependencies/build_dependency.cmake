@@ -13,7 +13,7 @@ endif()
 
 # Build
 execute_process(
-  COMMAND ${CMAKE_COMMAND} --build .
+  COMMAND ${CMAKE_COMMAND} --debug-output --build .
   RESULT_VARIABLE result
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )

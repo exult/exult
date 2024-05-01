@@ -223,7 +223,7 @@ ifeq (n,$(findstring n,$(firstword -$(MAKEFLAGS))))
 	# For this, nab a framework from https://github.com/xybp888/iOS-SDKs and
 	# make symlinks with the appropriate structure.
 	ifdef WITH_IOS_HEADERS
-		IOS_CFLAGS:=-target arm64-apple-ios12.0 -fmessage-length=0 \
+		IOS_CFLAGS:=-target arm64-apple-ios13.0 -fmessage-length=0 \
 			-fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 \
 			-fobjc-weak -fpascal-strings -fno-common -fvisibility-inlines-hidden \
 			-D__IPHONEOS__=1 -DUSE_CORE_AUDIO_MIDI -DUSE_CORE_MIDI \

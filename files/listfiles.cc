@@ -16,163 +16,98 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include <type_traits>
 #ifdef HAVE_CONFIG_H
 #	include <config.h>
 #endif
 
 #include "listfiles.h"
-
 #include "utils.h"
 
 #include <cstring>
 #include <iostream>
 #include <string>
 
+// Need iOS >= 13 and NDK >= 22 for std::filesystem
+#include <filesystem>
+#include <regex>
+
 using std::string;
 
 // TODO: If SDL ever adds directory traversal to rwops, update U7ListFiles() to
-//       use it.
+// use it.
 
-// System Specific Code for Windows
-#if defined(_WIN32)
+namespace fs      = std::filesystem;
+using string_type = fs::path::string_type;
+using value_type  = fs::path::value_type;
+using regex_t     = std::basic_regex<value_type>;
 
-// Need this for _findfirst, _findnext, _findclose
-#	include <tchar.h>
-#	include <windows.h>
+static std::error_code U7ListFilesImp(
+		const fs::path& source, const regex_t& regex, FileList& files) {
+	// In here, we convert the path directly to a std::string_view if it was a
+	// std::string, or we reinterpret the data as a char* if it was a
+	// std::u8string. This way, we have a unified way of dealing with the result
+	// independently of what the result is, which will depend on whether we are
+	// in c++17, or a later standard.
+	auto get_string_view_from_path = [](const auto& fname) -> std::string_view {
+		if constexpr (std::is_same_v<std::string, decltype(fname)>) {
+			return {fname};
+		} else {
+			const auto* data = reinterpret_cast<const char*>(fname.data());
+			return {data, fname.size()};
+		}
+	};
 
-int U7ListFiles(const std::string& mask, FileList& files) {
-	const string    path(get_system_path(mask));
-	const TCHAR*    lpszT;
-	WIN32_FIND_DATA fileinfo;
-	HANDLE          handle;
-	char*           stripped_path;
-	int             i;
-	int             nLen;
-	int             nLen2;
+	if (!fs::exists(source)) {
+		std::cerr << "Directory does not exist: " << source << std::endl;
+		return std::make_error_code(std::errc::no_such_file_or_directory);
+	}
 
-#	ifdef UNICODE
-	const char* name = path.c_str();
-	nLen             = strlen(name) + 1;
-	LPTSTR lpszT2    = static_cast<LPTSTR>(_alloca(nLen * 2));
-	lpszT            = lpszT2;
-	MultiByteToWideChar(CP_ACP, 0, name, -1, lpszT2, nLen);
-#	else
-	lpszT = path.c_str();
-#	endif
-
-	handle = FindFirstFile(lpszT, &fileinfo);
-
-	stripped_path = new char[path.length() + 1];
-	strcpy(stripped_path, path.c_str());
-
-	for (i = strlen(stripped_path) - 1; i; i--) {
-		if (stripped_path[i] == '\\' || stripped_path[i] == '/') {
-			break;
+	std::error_code result{};
+	for (const auto& entry : fs::directory_iterator(source, result)) {
+		if (!entry.is_regular_file() && !entry.is_symlink()) {
+			continue;
+		}
+		const fs::path& path = entry.path();
+		const auto      file = path.filename().native();
+		if (std::regex_match(file, regex)) {
+			files.emplace_back(
+					get_string_view_from_path(path.generic_u8string()));
 		}
 	}
-
-	if (stripped_path[i] == '\\' || stripped_path[i] == '/') {
-		stripped_path[i + 1] = 0;
+	if (result != std::error_code{}) {
+		std::cerr << "Error while listing files: " << result.message()
+				  << std::endl;
 	}
-
-#	ifdef DEBUG
-	std::cerr << "U7ListFiles: " << mask << " = " << path << std::endl;
-#	endif
-
-	// Now search the files
-	if (handle != INVALID_HANDLE_VALUE) {
-		do {
-			nLen           = std::strlen(stripped_path);
-			nLen2          = _tcslen(fileinfo.cFileName) + 1;
-			char* filename = new char[nLen + nLen2];
-			strcpy(filename, stripped_path);
-#	ifdef UNICODE
-			WideCharToMultiByte(
-					CP_ACP, 0, fileinfo.cFileName, -1, filename + nLen, nLen2,
-					nullptr, nullptr);
-#	else
-			std::strcat(filename, fileinfo.cFileName);
-#	endif
-
-			files.push_back(filename);
-#	ifdef DEBUG
-			std::cerr << filename << std::endl;
-#	endif
-			delete[] filename;
-		} while (FindNextFile(handle, &fileinfo));
-	}
-
-	if (GetLastError() != ERROR_NO_MORE_FILES) {
-		LPTSTR lpMsgBuf;
-		char*  str;
-		FormatMessage(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
-						| FORMAT_MESSAGE_IGNORE_INSERTS,
-				nullptr, GetLastError(),
-				MAKELANGID(
-						LANG_NEUTRAL, SUBLANG_DEFAULT),    // Default language
-				reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, nullptr);
-#	ifdef UNICODE
-		nLen2 = _tcslen(lpMsgBuf) + 1;
-		str   = static_cast<char*>(_alloca(nLen));
-		WideCharToMultiByte(
-				CP_ACP, 0, lpMsgBuf, -1, str, nLen2, nullptr, nullptr);
-#	else
-		str = lpMsgBuf;
-#	endif
-		std::cerr << "Error while listing files: " << str << std::endl;
-		LocalFree(lpMsgBuf);
-	}
-
-#	ifdef DEBUG
-	std::cerr << files.size() << " filenames" << std::endl;
-#	endif
-
-	delete[] stripped_path;
-	FindClose(handle);
-	return 0;
-}
-
-#else    // This system has glob.h
-
-#	include <glob.h>
-
-#	ifdef ANDROID
-#		include <SDL_system.h>
-#	endif
-
-static int U7ListFilesImp(const std::string& path, FileList& files) {
-	glob_t globres;
-	int    err = glob(path.c_str(), GLOB_NOSORT, nullptr, &globres);
-
-	switch (err) {
-	case 0:    // OK
-		for (size_t i = 0; i < globres.gl_pathc; i++) {
-			files.push_back(globres.gl_pathv[i]);
-		}
-		globfree(&globres);
-		return 0;
-	case 3:    // no matches
-		return 0;
-	default:    // error
-		std::cerr << "Glob error " << err << std::endl;
-		return err;
-	}
-}
-
-int U7ListFiles(const std::string& mask, FileList& files) {
-	string path(get_system_path(mask));
-	int    result = U7ListFilesImp(path, files);
-#	ifdef ANDROID
-	// TODO: If SDL ever adds directory traversal to rwops use it instead of
-	// glob() so that we pick up platform-specific paths and behaviors like
-	// this.
-	if (result != 0) {
-		result = U7ListFilesImp(
-				SDL_AndroidGetInternalStoragePath() + ("/" + path), files);
-	}
-#	endif
 	return result;
 }
 
+int U7ListFiles(
+		const std::string& directory, const std::string& mask,
+		FileList& files) {
+	// In here, we assume that we have a UTF-8-encoded string, and we convert it
+	// to the native string type of the filesystem.
+	auto convert_mask = [](auto& value) -> string_type {
+		if constexpr (std::is_same_v<string_type, std::string>) {
+			return value;
+		} else {
+			// TODO: This will need fixing in c++20 as fs::u8path is deprecated.
+			// Moreover, the addition of char8_t and u8string will complicate
+			// some things and simplify others.
+			return fs::u8path(value).native();
+		}
+	};
+	fs::path        path(fs::u8path(get_system_path(directory)));
+	regex_t         regex(convert_mask(mask));
+	std::error_code result = U7ListFilesImp(path, regex, files);
+#ifdef ANDROID
+	// TODO: If SDL ever adds directory traversal to rwops use it instead so
+	// that we pick up platform-specific paths and behaviors like this.
+	if (result != std::error_code{}) {
+		result = U7ListFilesImp(
+				fs::u8path(SDL_AndroidGetInternalStoragePath()) / path, regex,
+				files);
+	}
 #endif
+	return result.value();
+}
