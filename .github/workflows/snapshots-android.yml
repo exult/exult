@@ -6,9 +6,9 @@ jobs:
   snapshots-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
-          java-version: 11
+          java-version: 17
           distribution: "temurin"
       - name: Activity check
         shell: bash
@@ -31,12 +31,12 @@ jobs:
           fi
       - name: Setup Android SDK
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
       - name: Setup Gradle
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 7.6.2
+          gradle-version: 7.6.4
       - name: Install dependencies
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         run: |

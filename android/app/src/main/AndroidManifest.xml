@@ -22,7 +22,6 @@
     <uses-feature
         android:name="android.hardware.usb.host"
         android:required="false" />
-
     <!-- External mouse input events -->
     <uses-feature
         android:name="android.hardware.type.pc"
@@ -39,7 +38,7 @@
 
     <!-- Allow access to Bluetooth devices -->
     <!-- Currently this is just for Steam Controller support and requires setting SDL_HINT_JOYSTICK_HIDAPI_STEAM -->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <!-- Allow access to the vibrator -->
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -63,31 +62,31 @@
         android:allowBackup="true"
         android:theme="@style/Theme.ExultLauncher"
         android:hardwareAccelerated="true"
-	android:appCategory="game" >
+        android:appCategory="game" >
 
-  <meta-data
-        android:name="com.android.app.gamemode.performance.enabled"
-        android:value="true"/>
+        <meta-data
+            android:name="com.android.app.gamemode.performance.enabled"
+            android:value="true"/>
 
         <!-- Example of setting SDL hints from AndroidManifest.xml:
         <meta-data android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK" android:value="0"/>
          -->
-     
+
         <activity android:name="ExultLauncherActivity"
-                 android:screenOrientation="landscape"
-                 tools:ignore="LockedOrientationActivity"
-		 android:theme="@style/Theme.ExultLauncher.NoActionBar">
+            android:screenOrientation="landscape"
+            tools:ignore="LockedOrientationActivity"
+            android:theme="@style/Theme.ExultLauncher.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-	<activity android:name="ExultActivity"
+        <activity android:name="ExultActivity"
             android:label="@string/app_name"
             android:alwaysRetainTaskState="true"
             android:launchMode="singleInstance"
             android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
-	    android:screenOrientation="landscape"
-	    tools:ignore="LockedOrientationActivity" />
+            android:screenOrientation="landscape"
+            tools:ignore="LockedOrientationActivity" />
     </application>
 </manifest>
