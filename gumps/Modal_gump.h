@@ -48,32 +48,6 @@ public:
 		return done;
 	}
 
-	// Handle events:
-	virtual bool mouse_down(int mx, int my, int button) = 0;
-	virtual bool mouse_up(int mx, int my, int button)   = 0;
-
-	virtual void mousewheel_down() {}
-
-	virtual void mousewheel_up() {}
-
-	virtual void mouse_drag(int mx, int my) {
-		ignore_unused_variable_warning(mx, my);
-	}
-
-	virtual void key_down(int chr) {    // Key pressed
-		ignore_unused_variable_warning(chr);
-	}
-
-	virtual void text_input(
-			int chr, int unicode,
-			bool shift_pressed) {    // Character typed (unicode)
-		ignore_unused_variable_warning(chr, unicode, shift_pressed);
-	}
-
-	virtual void text_input(const char* text) {    // complete string input
-		ignore_unused_variable_warning(text);
-	}
-
 	bool is_modal() const override {
 		return true;
 	}

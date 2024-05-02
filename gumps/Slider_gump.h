@@ -64,11 +64,11 @@ public:
 	// Handle events:
 	bool mouse_down(int mx, int my, int button) override;
 	bool mouse_up(int mx, int my, int button) override;
-	void mouse_drag(int mx, int my) override;
-	void key_down(int chr) override;    // Character typed.
+	bool mouse_drag(int mx, int my) override;
+	bool key_down(int chr) override;    // Character typed.
 
-	void mousewheel_up() override;
-	void mousewheel_down() override;
+	bool mousewheel_up(int mx, int my) override;
+	bool mousewheel_down(int mx, int my) override;
 };
 
 #endif

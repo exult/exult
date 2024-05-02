@@ -72,7 +72,7 @@ public:
 	// update dirty region, if required
 	void update_widget() override;
 
-	bool is_draggable() override {
+	bool is_draggable() const override {
 		return false;
 	}
 };
@@ -155,11 +155,11 @@ public:
 	// update dirty region, if required
 	void update_widget() override;
 
-	bool on_button(int mx, int my) const override;
+	Gump_button* on_button(int mx, int my) override;
 
 	TileRect get_rect() override;
 
-	bool is_draggable() override {
+	bool is_draggable() const override {
 		return false;
 	}
 };
@@ -201,16 +201,15 @@ void Portrait_button::double_clicked(int x, int y) {
 	}
 }
 
-bool Portrait_button::on_button(int x, int y) const {
-	if (hp && hp->on_button(x, y)) {
-		return true;
-	} else if (mana && mana->on_button(x, y)) {
-		return true;
-	} else if (Face_button::on_button(x, y)) {
-		return true;
+Gump_button* Portrait_button::on_button(int x, int y) {
+	Gump_button* ret = nullptr;
+	if (hp && (ret = hp->on_button(x, y))) {
+		return ret;
+	} else if (mana && (ret = mana->on_button(x, y))) {
+		return ret;
+	} else {
+		return Face_button::on_button(x, y);
 	}
-
-	return false;
 }
 
 void Portrait_button::update_widget() {

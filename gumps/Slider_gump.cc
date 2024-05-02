@@ -252,12 +252,12 @@ bool Slider_gump::mouse_up(
  *  Mouse was dragged with left button down.
  */
 
-void Slider_gump::mouse_drag(
+bool Slider_gump::mouse_drag(
 		int mx, int my    // Where mouse is.
 ) {
 	ignore_unused_variable_warning(mx, my);
 	if (!dragging) {
-		return;
+		return true;
 	}
 	diamondx += mx - prev_dragx;
 	prev_dragx = mx;
@@ -275,13 +275,14 @@ void Slider_gump::mouse_drag(
 		val = newval;
 	}
 	paint();
+	return true;
 }
 
 /*
  *  Handle ASCII character typed.
  */
 
-void Slider_gump::key_down(int chr) {
+bool Slider_gump::key_down(int chr) {
 	switch (chr) {
 	case SDLK_RETURN:
 	case SDLK_KP_ENTER:
@@ -294,22 +295,27 @@ void Slider_gump::key_down(int chr) {
 		clicked_right_arrow();
 		break;
 	}
+	return true;
 }
 
-void Slider_gump::mousewheel_up() {
+bool Slider_gump::mousewheel_up(int mx, int my) {
+	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT) {
 		move_diamond(-10 * step_val);
 	} else {
 		move_diamond(-step_val);
 	}
+	return true;
 }
 
-void Slider_gump::mousewheel_down() {
+bool Slider_gump::mousewheel_down(int mx, int my) {
+	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT) {
 		move_diamond(10 * step_val);
 	} else {
 		move_diamond(step_val);
 	}
+	return true;
 }

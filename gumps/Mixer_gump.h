@@ -86,9 +86,9 @@ public:
 	// Handle events:
 	bool mouse_down(int mx, int my, int button) override;
 	bool mouse_up(int mx, int my, int button) override;
-	void mouse_drag(int mx, int my) override;
-	void mousewheel_up() override;
-	void mousewheel_down() override;
+	bool mouse_drag(int mx, int my) override;
+	bool mousewheel_up(int mx, int my) override;
+	bool mousewheel_down(int mx, int my) override;
 };
 
 #endif

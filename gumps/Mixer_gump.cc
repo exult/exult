@@ -273,26 +273,29 @@ bool Mixer_gump::mouse_up(int mx, int my, int button) {
 	return res;
 }
 
-void Mixer_gump::mouse_drag(
+bool Mixer_gump::mouse_drag(
 		int mx, int my    // Where mouse is.
 ) {
-
+	return false;
 }
 
-void Mixer_gump::mousewheel_up() {
+bool Mixer_gump::mousewheel_up(int mx, int my) {
 	const SDL_Keymod mod = SDL_GetModState();
 /*	if (mod & KMOD_ALT) {
 		move_diamond(-10 * step_val);
 	} else {
 		move_diamond(-step_val);
 	}*/
+	return false;
 }
 
-void Mixer_gump::mousewheel_down() {
+bool Mixer_gump::mousewheel_down(int mx, int my) {
 	const SDL_Keymod mod = SDL_GetModState();
 /*	if (mod & KMOD_ALT) {
 		move_diamond(10 * step_val);
 	} else {
 		move_diamond(step_val);
 	}*/
+
+	return false;
 }

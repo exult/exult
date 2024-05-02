@@ -34,10 +34,75 @@ class Gump_button;
 class Gump_manager;
 class Gump_widget;
 
+// Base Class shared by Gumps and Widgetss
+class Gump_Base : public ShapeID, public Paintable {
+public:
+	Gump_Base(int shnum, int frnum, ShapeFile shfile)
+			: ShapeID(shnum, frnum, shfile) {}
+
+	virtual int  get_x() const               = 0;
+	virtual int  get_y() const               = 0;
+	virtual void set_pos(int newx, int newy) = 0;
+	//! Get button at point
+	virtual Gump_button* on_button(int mx, int my) = 0;
+
+	// Basic Input events These all return true if the event was handled
+
+	virtual bool mouse_down(int mx, int my, int button) {
+		ignore_unused_variable_warning(mx, my);
+		return false;
+	}
+
+	virtual bool mouse_up(int mx, int my, int button) {
+		ignore_unused_variable_warning(mx, my);
+		return false;
+	}
+
+	virtual bool mousewheel_down(int mx, int my) {
+		ignore_unused_variable_warning(mx, my);
+		return false;
+	}
+
+	virtual bool mousewheel_up(int mx, int my) {
+		ignore_unused_variable_warning(mx, my);
+		return false;
+	}
+
+	virtual bool mouse_drag(int mx, int my) {
+		ignore_unused_variable_warning(mx, my);
+		return false;
+	}
+
+	virtual bool key_down(int chr) {    // Key pressed
+		ignore_unused_variable_warning(chr);
+		return false;
+	}
+
+	virtual bool text_input(
+			int chr, int unicode,
+			bool shift_pressed) {    // Character typed (unicode)
+		ignore_unused_variable_warning(chr, unicode, shift_pressed);
+		return false;
+	}
+
+	virtual bool text_input(const char* text) {    // complete string input
+		ignore_unused_variable_warning(text);
+		return false;
+	}
+
+	virtual bool is_draggable() const = 0;
+
+	virtual Container_game_object* get_container() {
+		return nullptr;
+	}
+
+	virtual void close() {}
+};
+
 /*
  *  A gump contains an image of an open container from "gumps.vga".
  */
-class Gump : nonreplicatable, public ShapeID, public Paintable {
+class Gump : nonreplicatable, public Gump_Base {
 protected:
 	Gump() = default;
 	Container_game_object* container;    // What this gump shows.
@@ -72,22 +137,22 @@ public:
 		return nullptr;
 	}
 
-	int get_x() {    // Get coords.
+	int get_x() const override {    // Get coords.
 		return x;
 	}
 
-	int get_y() {
+	int get_y() const override {
 		return y;
 	}
 
-	void set_pos(int newx, int newy) {    // Set new spot on screen.
+	void set_pos(int newx, int newy) override {    // Set new spot on screen.
 		x = newx;
 		y = newy;
 	}
 
 	void set_pos();    // Set centered.
 
-	Container_game_object* get_container() {
+	Container_game_object* get_container() override {
 		return container;
 	}
 
@@ -117,7 +182,7 @@ public:
 	virtual TileRect     get_dirty();    // Get dirty rect. for gump+contents.
 	virtual Game_object* get_owner();    // Get object this belongs to.
 	// Is a given point on a button?
-	virtual Gump_button* on_button(int mx, int my);
+	virtual Gump_button* on_button(int mx, int my) override;
 	// Paint button.
 	virtual bool add(
 			Game_object* obj, int mx = -1, int my = -1, int sx = -1,
@@ -127,13 +192,13 @@ public:
 	void paint_elems();
 	void paint() override;
 	// Close (and delete).
-	virtual void close();
+	virtual void close() override;
 
 	// update the gump, if required
 	virtual void update_gump() {}
 
 	// Can be dragged with mouse
-	virtual bool is_draggable() const {
+	virtual bool is_draggable() const override {
 		return true;
 	}
 
