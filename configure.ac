@@ -303,7 +303,7 @@ if test x$enable_android_apk != xno; then
 	AC_PATH_PROGS(SDKMANAGER, sdkmanager)
 
 	# Check for required Android SDK version.
-	ANDROID_SDK_VERSION=30
+	ANDROID_SDK_VERSION=31
 	AC_MSG_CHECKING([for Android SDK $ANDROID_SDK_VERSION])
 	if $SDKMANAGER --list|grep -q "platforms;android-$ANDROID_SDK_VERSION"; then
 		AC_MSG_RESULT([yes])
