@@ -88,6 +88,17 @@ public:
 		return music_conversion;
 	}
 
+	//! Set Volume of Current Midi device.
+	//!
+	//! If Music is disabled this does nothing
+	//!
+	//! \param vol new volume to set [0-100]
+	//! \param saveconfig Save the new value to exult.cfg
+	void SetMidiMusicVolume(int vol, bool saveconfig);
+	//! Get volume of current Midi device volume
+	//! \return The current midi device volume. This will return 0 if Music is disabled
+	int GetMidiMusicVolume();
+
 #ifdef ENABLE_MIDISFX
 	void start_sound_effect(int num);
 	void stop_sound_effects();
@@ -124,7 +135,22 @@ private:
 	// Ogg Stuff
 	bool   ogg_enabled     = false;
 	sint32 ogg_instance_id = -1;
+	int    ogg_volume      = 100;
 
+public:
+	//! Set Volume for Ogg Music Playback. This will
+	//! \param vol new volume to set [0-100]
+	//! \param saveconfig Save the new value to exult.cfg
+	void SetOggMusicVolume(int vol, bool saveconfig);
+
+	//! Get current Set OggMusic volume
+	//! \return The current Ogg music volume. This will return the correct value
+	//!  even if Ogg music is disabled.
+	int GetOggMusicVolume() {
+		return ogg_volume;
+	}
+
+private:
 	bool ogg_play_track(const std::string& filename, int num, bool repeat);
 	bool ogg_is_playing() const;
 	void ogg_stop_track();
