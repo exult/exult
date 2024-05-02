@@ -953,6 +953,43 @@ void MyMidiPlayer::ogg_set_repeat(bool newrepeat) {
 	}
 }
 
+void MyMidiPlayer::SetOggMusicVolume(int vol, bool saveconfig) {
+	if (vol < 0) {
+		vol = 0;
+	}
+	if (vol > 100) {
+		vol = 100;
+	}
+}
+
+int MyMidiPlayer::GetMidiMusicVolume() {
+	if (midi_driver) {
+		return midi_driver->getGlobalVolume();
+	}
+	return 0;
+}
+
+void MyMidiPlayer::SetMidiMusicVolume(int vol, bool saveconfig) {
+	if (!midi_driver) {
+		return;
+	}
+
+	// range check
+	if (vol < 0) {
+		vol = 0;
+	}
+	if (vol > 100) {
+		vol = 100;
+	}
+
+	midi_driver->setGlobalVolume(vol);
+	if (saveconfig) {
+		config->set(
+				"config/audio/volume/volume_" + midi_driver->getName(),
+				std::to_string(vol), true);
+	}
+}
+
 bool MyMidiPlayer::ogg_is_playing() const {
 	if (ogg_instance_id != -1) {
 		Pentagram::AudioMixer* mixer = Pentagram::AudioMixer::get_instance();
