@@ -563,11 +563,13 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		if (numFingers > 1) {
 			if (event.tfinger.dy < 0) {
 				if (!gump->mouse_down(gx, gy, event.button.button)) {
-					gump->mousewheel_up();
+					gump->mousewheel_up(
+							Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
 				}
 			} else if (event.tfinger.dy > 0) {
 				if (!gump->mouse_down(gx, gy, event.button.button)) {
-					gump->mousewheel_down();
+					gump->mousewheel_down(
+							Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
 				}
 			}
 		}
@@ -576,9 +578,9 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	// Mousewheel scrolling with SDL2.
 	case SDL_MOUSEWHEEL: {
 		if (event.wheel.y > 0) {
-			gump->mousewheel_up();
+			gump->mousewheel_up(Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
 		} else if (event.wheel.y < 0) {
-			gump->mousewheel_down();
+			gump->mousewheel_down(Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
 		}
 		break;
 	}

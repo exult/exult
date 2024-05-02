@@ -41,7 +41,7 @@ Gump::Gump(
 		int initx, int inity,           // Coords. on screen.
 		int       shnum,                // Shape #.
 		ShapeFile shfile)
-		: ShapeID(shnum, 0, shfile), container(cont), x(initx), y(inity),
+		: Gump_Base(shnum, 0, shfile), container(cont), x(initx), y(inity),
 		  handles_kbd(false) {
 	if (container) {
 		if (container->validGumpXY()) {
@@ -59,7 +59,7 @@ Gump::Gump(
 		Container_game_object* cont,     // Container it represents.
 		int                    shnum,    // Shape #.
 		ShapeFile              shfile)
-		: ShapeID(shnum, 0, shfile), container(cont), handles_kbd(false) {
+		: Gump_Base(shnum, 0, shfile), container(cont), handles_kbd(false) {
 	Shape_frame* shape = get_shape();
 	x                  = (gwin->get_width() - shape->get_width()) / 2;
 	y                  = (gwin->get_height() - shape->get_height()) / 2;
@@ -70,7 +70,8 @@ Gump::Gump(
  */
 
 Gump::Gump(Container_game_object* cont, int initx, int inity, Gump* from)
-		: ShapeID(from->get_shapenum(), from->get_framenum(),
+		: Gump_Base(
+				  from->get_shapenum(), from->get_framenum(),
 				  from->get_shapefile()),
 		  container(cont), x(initx), y(inity), object_area(from->object_area),
 		  handles_kbd(false) {

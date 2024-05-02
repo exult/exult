@@ -39,9 +39,8 @@ public:
 			ShapeFile shfile = SF_GUMPS_VGA)
 			: Gump_widget(par, shnum, px, py, shfile), pushed_button(0) {}
 
-	// Is a given point on the checkmark?
-	bool on_button(int mx, int my) const override {
-		return on_widget(mx, my);
+	Gump_button* on_button(int mx, int my) override {
+		return on_widget(mx, my) ? this : nullptr;
 	}
 
 	// What to do when 'clicked':

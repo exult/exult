@@ -702,34 +702,36 @@ bool Newfile_gump::mouse_up(
 	return true;
 }
 
-void Newfile_gump::mousewheel_up() {
+bool Newfile_gump::mousewheel_up(int mx, int my) {
 	const SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT) {
 		scroll_page(-1);
 	} else {
 		scroll_line(-1);
+		return true;
 	}
 }
 
-void Newfile_gump::mousewheel_down() {
+bool Newfile_gump::mousewheel_down(int mx, int my) {
 	const SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT) {
 		scroll_page(1);
 	} else {
 		scroll_line(1);
 	}
+	return true;
 }
 
 /*
  *  Mouse was dragged with left button down.
  */
 
-void Newfile_gump::mouse_drag(
+bool Newfile_gump::mouse_drag(
 		int mx, int my    // Where mouse is.
 ) {
 	// If not sliding don't do anything
 	if (slide_start == -1) {
-		return;
+		return true;
 	}
 
 	const int gx = mx - x;
@@ -755,7 +757,7 @@ void Newfile_gump::mouse_drag(
 
 	// Can't scroll if there is less than 1 pos
 	if (num_pos < 1) {
-		return;
+		return true;
 	}
 
 	// Now work out the closest position to here position
@@ -765,14 +767,15 @@ void Newfile_gump::mouse_drag(
 		list_position = new_pos;
 		paint();
 	}
+	return true;
 }
 
-void Newfile_gump::text_input(const char* text) {
+bool Newfile_gump::text_input(const char* text) {
 	if (cursor == -1 || strlen(text) >= MAX_SAVEGAME_NAME_LEN - 1) {
-		return;
+		return true;
 	}
 	if (strcmp(text, newname) == 0) {    // Not changed
-		return;
+		return true;
 	}
 
 	strcpy(newname, text);
@@ -795,19 +798,20 @@ void Newfile_gump::text_input(const char* text) {
 
 	paint();
 	gwin->set_painted();
+	return true;
 }
 
 /*
  *  Handle character that was typed.
  */
 
-void Newfile_gump::text_input(int chr, int unicode, bool shift_pressed) {
+bool Newfile_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	bool update_details = false;
 	int  repaint        = false;
 
 	// Are we selected on some text?
 	if (selected == -3) {
-		return;
+		return true;
 	}
 
 	switch (chr) {
@@ -871,7 +875,7 @@ void Newfile_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	default:
 		ignore_unused_variable_warning(unicode);
 		if (chr < ' ') {
-			return;    // Ignore other special chars.
+			return true;    // Ignore other special chars.
 		}
 
 		if (chr < 256 && isascii(chr)) {
@@ -909,6 +913,7 @@ void Newfile_gump::text_input(int chr, int unicode, bool shift_pressed) {
 		paint();
 		gwin->set_painted();
 	}
+	return true;
 }
 
 int Newfile_gump::BackspacePressed() {

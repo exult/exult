@@ -54,7 +54,7 @@ public:
 	// Handle events:
 	bool        mouse_down(int mx, int my, int button) override;
 	bool        mouse_up(int mx, int my, int button) override;
-	void        key_down(int chr) override;    // Character typed.
+	bool        key_down(int chr) override;    // Character typed.
 	static bool ask(
 			const char* txt,
 			const char* font

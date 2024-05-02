@@ -153,13 +153,14 @@ bool Yesno_gump::mouse_up(
  *  Handle ASCII character typed.
  */
 
-void Yesno_gump::key_down(int chr) {
+bool Yesno_gump::key_down(int chr) {
 	if (chr == 'y' || chr == 'Y' || chr == SDLK_RETURN
 		|| chr == SDLK_KP_ENTER) {
 		set_answer(1);
 	} else if (chr == 'n' || chr == 'N' || chr == SDLK_ESCAPE) {
 		set_answer(0);
 	}
+	return true;
 }
 
 /*

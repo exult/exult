@@ -40,10 +40,6 @@ public:
 	void paint() override;
 
 	bool on_widget(int mx, int my) const override;
-
-	bool on_button(int mx, int my) const override {
-		return on_widget(mx, my);
-	}
 };
 
 template <typename Parent, typename... Args>

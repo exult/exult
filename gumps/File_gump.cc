@@ -603,9 +603,9 @@ bool File_gump::mouse_up(
  *  Handle character that was typed.
  */
 
-void File_gump::text_input(int chr, int unicode, bool shift_pressed) {
+bool File_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	if (!focus) {    // Text field?
-		return;
+		return true;
 	}
 	switch (chr) {
 	case SDLK_RETURN:    // If only 'Save', do it.
@@ -632,7 +632,7 @@ void File_gump::text_input(int chr, int unicode, bool shift_pressed) {
 			buttons[0] = buttons[1] = nullptr;
 			paint();
 		}
-		return;
+		return true;
 	case SDLK_DELETE:
 		if (focus->delete_right()) {
 			// Can't restore now.
@@ -646,19 +646,19 @@ void File_gump::text_input(int chr, int unicode, bool shift_pressed) {
 			buttons[0] = buttons[1] = nullptr;
 			paint();
 		}
-		return;
+		return true;
 	case SDLK_LEFT:
 		focus->set_cursor(focus->get_cursor() - 1);
-		return;
+		return true;
 	case SDLK_RIGHT:
 		focus->set_cursor(focus->get_cursor() + 1);
-		return;
+		return true;
 	case SDLK_HOME:
 		focus->set_cursor(0);
-		return;
+		return true;
 	case SDLK_END:
 		focus->set_cursor(focus->get_length());
-		return;
+		return true;
 	}
 
 	if ((unicode & 0xFF80) == 0) {
@@ -668,7 +668,7 @@ void File_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	}
 
 	if (chr < ' ') {
-		return;    // Ignore other special chars.
+		return true;    // Ignore other special chars.
 	}
 	if (chr < 256 && isascii(chr)) {
 		if (shift_pressed) {
@@ -691,4 +691,5 @@ void File_gump::text_input(int chr, int unicode, bool shift_pressed) {
 		}
 		gwin->set_painted();
 	}
+	return true;
 }
