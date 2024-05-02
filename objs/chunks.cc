@@ -629,6 +629,47 @@ void Chunk_cache::activate_eggs(
 	}
 }
 
+void Chunk_cache::unhatch_eggs(
+		Game_object* obj,            // Object (actor) that's near.
+		Map_chunk*   chunk,          // Chunk this is attached to.
+		int tx, int ty, int tz,      // Tile (absolute).
+		int from_tx, int from_ty,    // Tile walked from.
+		unsigned short eggbits,      // Eggs[tile].
+		bool           now           // Do them immediately.
+) {
+	// Ensure we exist until the end of the function.
+	auto ownHandle = shared_from_this();
+
+	size_t i;    // Go through eggs.
+	for (i = 0; i < 8 * sizeof(eggbits) - 1 && eggbits;
+		 i++, eggbits = eggbits >> 1) {
+		Egg_object* egg;
+		if ((eggbits & 1) && i < egg_objects.size() && (egg = egg_objects[i])
+			&& egg->test_unhatch(obj, tx, ty, tz, from_tx, from_ty)) {
+			egg->unhatch(obj, now);
+			if (chunk->get_cache() != this) {
+				return;    // A teleport could have deleted us!
+			}
+		}
+	}
+	if (eggbits) {    // Check 15th bit.
+					  // DON'T use an iterator here, since
+					  //   the list can change as eggs are
+					  //   activated, causing a CRASH!
+		const size_t sz = egg_objects.size();
+		i               = 0;    // Go through eggs.
+		for (; i < sz; i++) {
+			Egg_object* egg = egg_objects[i];
+			if (egg && egg->test_unhatch(obj, tx, ty, tz, from_tx, from_ty)) {
+				egg->unhatch(obj, now);
+			}
+			if (chunk->get_cache() != this) {
+				return;    // A teleport could have deleted us!
+			}
+		}
+	}
+}
+
 /*
  *  Find door blocking a given tile.
  */

@@ -24,6 +24,7 @@
 #include "common_types.h"
 
 #include <list>
+#include <memory>
 
 /*
  *  An interface for entries in the queue:
@@ -61,13 +62,18 @@ class Time_queue;
 struct Queue_entry {
 	// Queue_entry *next, *prev;    // Next, prev. in queue.
 	Time_sensitive* handler;    // Object to activate.
-	uintptr         udata;      // Data to pass to handler.
-	uint32          time;       // Time when this is due.
+	std::shared_ptr<Time_sensitive>
+			sp_handler;    // Shared pointer to object to activate
+	uintptr udata;         // Data to pass to handler.
+	uint32  time;          // Time when this is due.
 
-	inline void set(uint32 t, Time_sensitive* h, uintptr ud) {
-		time    = t;
-		handler = h;
-		udata   = ud;
+	inline void set(
+			uint32 t, Time_sensitive* h, uintptr ud,
+			std::shared_ptr<Time_sensitive> sp) {
+		time       = t;
+		handler    = h;
+		udata      = ud;
+		sp_handler = sp;
 	}
 };
 
@@ -96,19 +102,34 @@ public:
 		add(t, obj, static_cast<uintptr>(0));
 	}
 
+	void add(uint32 t, std::shared_ptr<Time_sensitive> obj) {
+		add(t, obj, static_cast<uintptr>(0));
+	}
+
 	void add(uint32 t, Time_sensitive* obj, void* ud) {
 		add(t, obj, reinterpret_cast<uintptr>(ud));
 	}
 
+	void add(uint32 t, std::shared_ptr<Time_sensitive> obj, void* ud) {
+		add(t, obj, reinterpret_cast<uintptr>(ud));
+	}
+
+	void add(uint32 t, std::shared_ptr<Time_sensitive> obj, uintptr ud);
 	void add(uint32 t, Time_sensitive* obj, uintptr ud);
 	// Remove object's entry.
 	bool remove(Time_sensitive* obj);
+	bool remove(std::shared_ptr<Time_sensitive> obj);
 
 	void remove(Time_sensitive* obj, void* ud) {
 		remove(obj, reinterpret_cast<uintptr>(ud));
 	}
 
+	void remove(std::shared_ptr<Time_sensitive> obj, void* ud) {
+		remove(obj, reinterpret_cast<uintptr>(ud));
+	}
+
 	bool remove(Time_sensitive* obj, uintptr udata);
+	bool remove(std::shared_ptr<Time_sensitive> obj, uintptr udata);
 	bool find(const Time_sensitive* obj) const;    // Find an entry.
 	// Find delay when obj. is due.
 	long find_delay(const Time_sensitive* obj, uint32 curtime) const;

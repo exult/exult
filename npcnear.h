@@ -43,7 +43,7 @@ public:
 	}
 
 	// Add npc to queue.
-	void add(unsigned long curtime, Npc_actor* npc, int additional_secs = 0);
+	void add(unsigned long curtime, Npc_actor* npc, int additional_ticks = 0);
 	void remove(Npc_actor* npc);    // Remove.
 	// Run usecode function.
 	void handle_event(unsigned long curtime, uintptr udata) override;

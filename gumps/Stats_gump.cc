@@ -57,8 +57,8 @@ public:
 			Container_game_object* cont, int initx, int inity,
 			Actor::Atts_vector& allatts, int first, int ord)
 			: Stats_gump(
-					cont, initx, inity, EXULT_FLX_STATS_EXTRA_SHP,
-					SF_EXULT_FLX),
+					  cont, initx, inity, EXULT_FLX_STATS_EXTRA_SHP,
+					  SF_EXULT_FLX),
 			  order(ord) {
 		int cnt = allatts.size() - first;
 		if (cnt > num_extra_spots) {

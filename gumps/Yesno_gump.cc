@@ -59,10 +59,10 @@ class Yesno_button : public Gump_button {
 public:
 	Yesno_button(Gump* par, int px, int py, int yes)
 			: Gump_button(
-					par,
-					yes ? game->get_shape("gumps/yesbtn")
-						: game->get_shape("gumps/nobtn"),
-					px, py),
+					  par,
+					  yes ? game->get_shape("gumps/yesbtn")
+						  : game->get_shape("gumps/nobtn"),
+					  px, py),
 			  isyes(yes) {}
 
 	// What to do when 'clicked':

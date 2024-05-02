@@ -59,8 +59,8 @@ Image_window8::Image_window8(
 		unsigned int gheight, int scl, bool fs, int sclr,
 		Image_window::FillMode fillmode, unsigned int fillsclr)
 		: Image_window(
-				new Image_buffer8(0, 0, nullptr), w, h, gwidth, gheight, scl,
-				fs, sclr, fillmode, fillsclr) {
+				  new Image_buffer8(0, 0, nullptr), w, h, gwidth, gheight, scl,
+				  fs, sclr, fillmode, fillsclr) {
 	ib8 = static_cast<Image_buffer8*>(ibuf);
 }
 

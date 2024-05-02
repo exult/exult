@@ -251,8 +251,8 @@ static int                  joy_aim_x = 0, joy_aim_y = 0;
 Mouse::Avatar_Speed_Factors joy_speed_factor = Mouse::medium_speed_factor;
 
 #if defined _WIN32
-void        do_cleanup_output() {
-    cleanup_output("std");
+void do_cleanup_output() {
+	cleanup_output("std");
 }
 #endif
 

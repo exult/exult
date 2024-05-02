@@ -452,10 +452,11 @@ Gump_button* Notebook_gump::on_button(
 		}
 		box = Get_text_area(true, offset == 0);    // Right page.
 		box.shift(x, y);                           // Window area.
-		coff = box.has_point(mx, my) ? sman->find_cursor(
-					   font, note->text.c_str() + offset, box.x, box.y, box.w,
-					   box.h, mx, my, vlead)
-									 : -1;
+		coff = box.has_point(mx, my)
+					   ? sman->find_cursor(
+								 font, note->text.c_str() + offset, box.x,
+								 box.y, box.w, box.h, mx, my, vlead)
+					   : -1;
 		if (coff >= 0) {    // Found it?
 			curpage       = curpage | 1;
 			curnote       = page_info[curpage].notenum;

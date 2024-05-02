@@ -59,7 +59,7 @@ using std::cout;
 using std::endl;
 using std::exit;
 
-#define SCALE_BIT(factor) (1 << ((factor)-1))
+#define SCALE_BIT(factor) (1 << ((factor) - 1))
 
 const Image_window::ScalerType  Image_window::NoScaler(-1);
 const Image_window::ScalerConst Image_window::point("Point");

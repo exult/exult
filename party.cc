@@ -260,14 +260,14 @@ static const int followers[EXULT_PARTY_MAX + 1][2] = {
  *  0 = North, 1 = East, 2 = South, 3 = West).
  */
 static const int left_offsets[4][2] = {
-  // Follower is behind and to left.
+		// Follower is behind and to left.
 		{-2,  2}, // North.
 		{-2, -2}, // East.
 		{ 2, -2}, // South.
 		{ 2,  2}
 };     // West.
 static const int right_offsets[4][2] = {
-  // Follower is behind and to right.
+		// Follower is behind and to right.
 		{ 2,  2}, // North.
 		{-2,  2}, // East.
 		{-2, -2}, // South.

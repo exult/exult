@@ -857,9 +857,8 @@ Homing_projectile::Homing_projectile(    // A better name is welcome...
 		const Tile_coord& sp,            // Where to start.
 		const Tile_coord& tp             // Target pos, if trg isn't an actor.
 		)
-		: sprite(
-				ShapeID::get_info(shnum).get_explosion_sprite(), 0,
-				SF_SPRITES_VGA),
+		: sprite(ShapeID::get_info(shnum).get_explosion_sprite(), 0,
+				 SF_SPRITES_VGA),
 		  next_damage_time(0),
 		  sfx(ShapeID::get_info(shnum).get_explosion_sfx()), channel(-1) {
 	weapon     = shnum;
@@ -1287,7 +1286,8 @@ protected:
 			int ascrolly) override {
 		set_frame<fra0, fraN, randomize>(drop);
 		// Time to restart?
-		if (x < 0 || x >= w || y < 0 || y >= h || (delta == 0 && drop.get_framenum() == fraN)) {
+		if (x < 0 || x >= w || y < 0 || y >= h
+			|| (delta == 0 && drop.get_framenum() == fraN)) {
 			const int r = rand();
 			drop.move(ascrollx + r % (w - w / 8), ascrolly + r % (h - h / 4));
 		} else {    // Next spot.
@@ -1300,7 +1300,8 @@ protected:
 // using Raindrop = Basicdrop< 3, 6, 6, false>;
 using Raindrop  = Basicdrop<3, 7, 6, false>;
 using Snowflake = Basicdrop<13, 20, 1, false>;
-using Sparkle   = Basicdrop<21, 27, 0, true>; //delta is zero as sparkles should not fall
+using Sparkle   = Basicdrop<21, 27, 0, true>;    // delta is zero as sparkles
+												 // should not fall
 
 /*
  *  Raining.
@@ -1313,8 +1314,8 @@ protected:
 	Particle drops[MAXDROPS];    // Drops moving down the screen.
 	int      num_drops;          // # to actually use.
 	bool     gradual;
-	Functor  do_drop;    // Controls how drops move.
-	int weatherType; // check weather type to show sparkle indoors
+	Functor  do_drop;        // Controls how drops move.
+	int      weatherType;    // check weather type to show sparkle indoors
 
 	void change_ndrops(unsigned long curtime) {
 		if (!gradual) {
@@ -1353,8 +1354,9 @@ public:
 		// Gradual start/end.
 		change_ndrops(curtime);
 
-		//we want to display the magic sparkle effect indoors however
-		if ((!gwin->is_main_actor_inside() && !gumpman->showing_gumps(true)) || weatherType == 3) {
+		// we want to display the magic sparkle effect indoors however
+		if ((!gwin->is_main_actor_inside() && !gumpman->showing_gumps(true))
+			|| weatherType == 3) {
 			// Don't show rain inside buildings!
 			Image_window8* win = gwin->get_win();
 			const int      w   = win->get_game_width();

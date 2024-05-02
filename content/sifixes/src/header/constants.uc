@@ -40,6 +40,8 @@
  *	likes of UI_path_run_usecode.
  */
 
+const int LOOP_ONCE = -1;
+
 enum events {
 	PROXIMITY		= 0,	// Object is on-screen or nearby
 							// This is called repeatedly, with a random delay

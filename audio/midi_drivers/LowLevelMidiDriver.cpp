@@ -482,7 +482,7 @@ int LowLevelMidiDriver::initThreadedSynth() {
 	quit_thread = false;
 	thread      = std::make_unique<std::thread>(
             threadMain_Static,
-            std::static_pointer_cast<LowLevelMidiDriver>(selfptr.lock()));
+            std::static_pointer_cast<LowLevelMidiDriver>(shared_from_this()));
 
 	while (peekComMessageType() == LLMD_MSG_THREAD_INIT) {
 		yield();
@@ -587,12 +587,15 @@ int LowLevelMidiDriver::threadMain() {
 			const int seq = i;
 
 			if (sequences[seq]) {
-				const sint32 ms = sequences[seq]->timeTillNext();
+				sint32 ms = sequences[seq]->timeTillNext();
 				if (ms < time_till_next) {
 					time_till_next = ms;
 				}
 			}
 		}
+
+		// maximum wait of 1 second
+		time_till_next = std::min(1000, time_till_next);
 
 		if (time_till_next <= LLMD_MINIMUM_YIELD_THRESHOLD) {
 			bool wait = false;

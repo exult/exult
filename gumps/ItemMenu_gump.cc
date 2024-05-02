@@ -65,7 +65,8 @@ void Itemmenu_gump::fix_position(int num_elements) {
 
 Itemmenu_gump::Itemmenu_gump(Game_object_map_xy* mobjxy, int cx, int cy)
 		: Modal_gump(
-				nullptr, cx, cy, EXULT_FLX_TRANSPARENTMENU_SHP, SF_EXULT_FLX) {
+				  nullptr, cx, cy, EXULT_FLX_TRANSPARENTMENU_SHP,
+				  SF_EXULT_FLX) {
 	objectSelected        = nullptr;
 	objectSelectedClickXY = {-1, -1};
 	objectAction          = no_action;
@@ -93,7 +94,8 @@ Itemmenu_gump::Itemmenu_gump(Game_object_map_xy* mobjxy, int cx, int cy)
 
 Itemmenu_gump::Itemmenu_gump(Game_object* obj, int ox, int oy, int cx, int cy)
 		: Modal_gump(
-				nullptr, cx, cy, EXULT_FLX_TRANSPARENTMENU_SHP, SF_EXULT_FLX) {
+				  nullptr, cx, cy, EXULT_FLX_TRANSPARENTMENU_SHP,
+				  SF_EXULT_FLX) {
 	objectSelected                     = obj;
 	objectAction                       = item_menu;
 	objectSelectedClickXY              = {ox, oy};

@@ -173,42 +173,25 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 	} else if (weather == 1) {
 		currentstate = SnowStorm;
 	} else if (nighttime) {
-		currentstate = Nighttime;    // Night time
+		currentstate = Nighttime;
 	} else {
 		currentstate = Outside;
 	}
 
 	MyMidiPlayer* player = Audio::get_ptr()->get_midi();
-	// Lets allow this for Digital Muisc and MT32Emu only,
-	// for MT32/FakeMT32 conversion as well.
-	// if (player) {
-	// if (player && player->get_ogg_enabled()){
-	if (player
-		&& (player->get_ogg_enabled() || player->is_mt32()
-			|| player->is_adlib())) {
+	// The sfx tracks only play for Digital Music, MT32emu, MT32/FakeMT32
+	// FMOpl is not sounding acceptable even though the original used it.
+	const bool play_bg_tracks
+			= player && (player->get_ogg_enabled() || player->is_mt32());
+
+	if (player || play_bg_tracks) {
 		delay = 1000;    // Quickly get back to this function check
-		// We've got OGG so play the background SFX tracks
-
 		const int curr_track = player->get_current_track();
-
-		// Testing. Original seems to allow crickets for all songs at night,
-		// except when in a dungeon. Also, only do it sometimes.
-		if (nighttime && currentstate != Dungeon && rand() % 6 == 0) {
-			// Play the cricket sounds at night
-			Audio::get_ptr()->play_sound_effect(
-					Audio::game_sfx(61), AUDIO_MAX_VOLUME - 30);
-		}
-
 		if ((curr_track == -1 || laststate != currentstate)
 			&& Audio::get_ptr()->is_music_enabled()) {
-			// Don't override bee cave music with dungeon music.
-			const bool notbees = !GAME_BG || curr_track != 54;
-			// ++++ TODO: Need to come up with a way to replace repeating songs
-			// here, just so they don't loop forever.
 			// Conditions: not playing music, playing a background music
 			if (curr_track == -1 || gwin->is_bg_track(curr_track)
-				|| (((currentstate == Dungeon && notbees)
-					 || currentstate == DangerNear)
+				|| (((currentstate == Dungeon) || currentstate == DangerNear)
 					&& !is_combat_music(curr_track))) {
 				// Not already playing music
 				int tracknum = 255;
@@ -218,66 +201,70 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 					tracknum  = Audio::game_music(10);
 					laststate = DangerNear;
 				} else if (gwin->is_in_dungeon()) {
-					// Start the SFX music track then
-					tracknum  = Audio::game_music(52);
+					if (play_bg_tracks) {
+						tracknum = Audio::game_music(52);
+					}
 					laststate = Dungeon;
 				} else if (weather == 1) {    // Snowstorm
-					tracknum  = Audio::game_music(5);
+					if (play_bg_tracks) {
+						tracknum = Audio::game_music(5);
+					}
 					laststate = SnowStorm;
 				} else if (weather == 2) {    // Rainstorm
-					tracknum  = Audio::game_music(4);
+					if (play_bg_tracks) {
+						tracknum = Audio::game_music(4);
+					}
 					laststate = RainStorm;
-				} else if (bghour < 6 || bghour > 20) {
-					tracknum  = Audio::game_music(7);
+				} else if (nighttime) {
+					if (play_bg_tracks) {
+						tracknum = Audio::game_music(7);
+					}
 					laststate = Nighttime;
 				} else {
-					// Start the SFX music track then
-					tracknum  = Audio::game_music(6);
+					if (play_bg_tracks) {
+						tracknum = Audio::game_music(6);
+					}
 					laststate = Outside;
 				}
 				Audio::get_ptr()->start_music(tracknum, true);
 			}
 		}
-	} else {
-		Main_actor* ava = gwin->get_main_actor();
-		// Tests to see if track is playing the SFX tracks, possible
-		// when the game has been restored
-		// and the Audio option was changed from OGG to something else
-		if (player && player->get_current_track() >= Audio::game_music(4)
-			&& player->get_current_track() <= Audio::game_music(8)) {
-			player->stop_music();
-		}
+	}
 
-		// Not OGG so play the SFX sounds manually
-		//  Only if outside.
-		if (ava && !gwin->is_main_actor_inside() &&
-			// +++++SI SFX's don't sound right.
-			Game::get_game_type() == BLACK_GATE) {
-			int                        sound;    // BG SFX #.
-			static const unsigned char bgnight[] = {61, 61, 255};
-			static const unsigned char bgday[]   = {82, 85, 85};
-			if (repeats > 0) {    // Repeating?
-				sound = last_sound;
-			} else {
-				const int hour = gwin->get_clock()->get_hour();
-				if (hour < 6 || hour > 20) {
-					sound = bgnight[rand() % sizeof(bgnight)];
-				} else {
-					sound = bgday[rand() % sizeof(bgday)];
-				}
-				// Translate BG to SI #'s.
-				sound      = Audio::game_sfx(sound);
-				last_sound = sound;
+	// Tests to see if Outside/Nighttime sfx tracks are playing,
+	// possible when the game has been restored
+	// and the Audio option was changed from OGG/MT32 to something else
+	if (player && !play_bg_tracks
+		&& (player->get_current_track() == 6
+			|| player->get_current_track() == 7)) {
+		player->stop_music();
+	}
+	Main_actor* ava = gwin->get_main_actor();
+	// Testing. When outside play birds during daytime or crickets at night
+	if (ava && !gwin->is_main_actor_inside() && currentstate != Dungeon) {
+        int                        sound = 0;    // SFX #.
+		static const unsigned char bgnight[] = {61, 61, 255};
+		static const unsigned char bgday[]   = {82, 85, 85};
+		if (repeats > 0) {    // Repeating?
+			sound = last_sound;
+		} else {
+			if (nighttime) {
+				sound = bgnight[rand() % sizeof(bgnight)];
+				// only play daytime sfx when no music track is playing
+			} else if (!play_bg_tracks && player->get_current_track() == -1) {
+				sound = bgday[rand() % sizeof(bgday)];
 			}
-			Audio::get_ptr()->play_sound_effect(sound);
-			repeats++;    // Count it.
-			if (rand() % (repeats + 1) == 0) {
-				// Repeat.
-				delay = 500 + rand() % 1000;
-			} else {
-				delay   = 4000 + rand() % 3000;
-				repeats = 0;
-			}
+			last_sound = sound;
+		}
+		Audio::get_ptr()->play_sound_effect(
+				Audio::game_sfx(sound), AUDIO_MAX_VOLUME - 200);
+		repeats++;    // Count it.
+		if (rand() % (repeats + 1) == 0) {
+			// Repeat.
+			delay = 500 + rand() % 1000;
+		} else {
+			delay   = 4000 + rand() % 3000;
+			repeats = 0;
 		}
 	}
 
@@ -877,7 +864,7 @@ int Game_window::get_unused_npc() {
 			continue;    // Never return these.
 		}
 		if (!npcs[i] || npcs[i]->is_unused()) {
-			break;
+			return i;
 		}
 	}
 	if (i >= 356 && i <= 359) {
@@ -885,7 +872,7 @@ int Game_window::get_unused_npc() {
 		i = 360;
 		do {
 			npcs.push_back(std::make_shared<Npc_actor>("Reserved", 0));
-			auto& npc = npcs[i];
+			auto& npc = npcs[cnt];
 			npc->set_schedule_type(Schedule::wait);
 			npc->set_unused(true);
 		} while (++cnt < 360);
@@ -1410,7 +1397,9 @@ void Game_window::write_gwin() {
 	MyMidiPlayer* player = Audio::get_ptr()->get_midi();
 	if (player) {
 		gout.write4(static_cast<uint32>(player->get_current_track()));
-		gout.write4(static_cast<uint32>(player->is_repeating()));
+		gout.write4(
+				static_cast<uint32>(player->is_repeating())
+				| player->get_egg_count() << 16);
 	} else {
 		gout.write4(static_cast<uint32>(-1));
 		gout.write4(0);
@@ -1470,7 +1459,8 @@ void Game_window::read_gwin() {
 	MyMidiPlayer* midi = Audio::get_ptr()->get_midi();
 	if (!is_bg_track(track_num)
 		|| (midi && (midi->get_ogg_enabled() || midi->is_mt32()))) {
-		Audio::get_ptr()->start_music(track_num, repeat != 0);
+		Audio::get_ptr()->start_music(track_num, repeat & 0x1);
+		midi->set_egg_count(static_cast<uint16>(repeat >> 16));
 	}
 	armageddon = gin.read1() == 1;
 	if (!gin.good()) {
@@ -1697,7 +1687,7 @@ void Game_window::start_actor_alt(
 		Game_object* block = main_actor->is_moving()
 									 ? nullptr
 									 : main_actor->find_blocking(
-											 start.get_neighbor(dir), dir);
+											   start.get_neighbor(dir), dir);
 		// We already know the blocking object isn't the avatar, so don't
 		// double check it here.
 		if (!block || !block->move_aside(main_actor, dir)) {
@@ -1903,6 +1893,10 @@ void Game_window::teleport_party(
 	moving_barge = nullptr;    // Calling 'done()' could be risky...
 	int       i;
 	const int cnt = party_man->get_count();
+	if (!skip_eggs) {
+		main_actor->get_chunk()->unhatch_eggs(
+				main_actor, t.tx, t.ty, t.tz, oldpos.tx, oldpos.ty);
+	}
 	if (newmap != -1) {
 		set_map(newmap);
 	}

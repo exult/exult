@@ -98,7 +98,7 @@ ModInfo::ModInfo(
 		const string& mod, const string& path, bool exp, bool sib, bool ed,
 		const string& cfg)
 		: BaseGameInfo(
-				game, lang, name, mod, path, "", exp, sib, false, ed, ""),
+				  game, lang, name, mod, path, "", exp, sib, false, ed, ""),
 		  configfile(cfg), compatible(false) {
 	const Configuration modconfig(configfile, "modinfo");
 

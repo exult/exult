@@ -32,6 +32,7 @@
 #include "ibuf8.h"
 #include "palette.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <map>
@@ -570,7 +571,7 @@ void Shape_frame::paint_rle_translucent(
 		const short scanx = little_endian::Read2(in);
 		const short scany = little_endian::Read2(in);
 		if (!encoded) {    // Raw data?
-			win->copy_line_translucent8(
+			win->copy_hline_translucent8(
 					in, scanlen, xoff + scanx, yoff + scany, xfstart, 0xfe,
 					xforms);
 			in += scanlen;
@@ -584,14 +585,14 @@ void Shape_frame::paint_rle_translucent(
 			if (repeat) {
 				const unsigned char pix = Read1(in);
 				if (pix >= xfstart && pix <= 0xfe) {
-					win->fill_line_translucent8(
+					win->fill_hline_translucent8(
 							pix, bcnt, xoff + scanx + b, yoff + scany,
 							xforms[pix - xfstart]);
 				} else {
-					win->fill_line8(pix, bcnt, xoff + scanx + b, yoff + scany);
+					win->fill_hline8(pix, bcnt, xoff + scanx + b, yoff + scany);
 				}
 			} else {    // Get that # of bytes.
-				win->copy_line_translucent8(
+				win->copy_hline_translucent8(
 						in, bcnt, xoff + scanx + b, yoff + scany, xfstart, 0xfe,
 						xforms);
 				in += bcnt;
@@ -631,7 +632,7 @@ void Shape_frame::paint_rle_transformed(
 		const short scany = little_endian::Read2(in);
 		if (!encoded) {    // Raw data?
 			// (Note: 1st parm is ignored).
-			win->fill_line_translucent8(
+			win->fill_hline_translucent8(
 					0, scanlen, xoff + scanx, yoff + scany, xform);
 			in += scanlen;
 			continue;
@@ -642,7 +643,7 @@ void Shape_frame::paint_rle_transformed(
 			const int repeat = bcnt & 1;
 			bcnt             = bcnt >> 1;    // Get count.
 			in += repeat ? 1 : bcnt;
-			win->fill_line_translucent8(
+			win->fill_hline_translucent8(
 					0, bcnt, xoff + scanx + b, yoff + scany, xform);
 			b += bcnt;
 		}
@@ -691,7 +692,7 @@ void Shape_frame::paint_rle_outline(
 		if (!encoded) {           // Raw data?
 			if (y == firsty ||    // First line?
 				y == lasty) {     // Last line?
-				win->fill_line8(color, scanlen, x, y);
+				win->fill_hline8(color, scanlen, x, y);
 			}
 			in += scanlen;
 			continue;
@@ -708,7 +709,7 @@ void Shape_frame::paint_rle_outline(
 			}
 			if (y == firsty ||    // First line?
 				y == lasty) {     // Last line?
-				win->fill_line8(color, bcnt, x + b, y);
+				win->fill_hline8(color, bcnt, x + b, y);
 			}
 			b += bcnt;
 		}

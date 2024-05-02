@@ -441,6 +441,8 @@ Map'Ctrl+R'
  Reloads the map. All changes made since the last save get discarded.
 Usecode
  Very useful when you edit the usecode of a game or add new usecode to an existing game. Normally this would require a restart of Exult.
+Style CSS
+ The interface of Exult Studio now supports customization via a CSS file (exult_studio.css) and if you changed that you can reload it without having to restart Exult Studio.
 * Connect
  Connects Exult and Exult Studio if one of them had to be restarted.
 * Preferences
@@ -455,7 +457,7 @@ Shape List Background:
 * Exit'Ctrl+Q'
  Exits Exult Studio.
 
-Note that the default location for saving and creation of new files is the PATCH folder of a game. If there is no PATCH folder specified will create one. See 2.4. What you can do at the moment .
+Note that the default location for saving and creation of new files is the PATCH folder of a game. If there is no PATCH folder specified Exult Studio will create one. See 2.4. What you can do at the moment .
 
 
 4.3. Edit
@@ -513,7 +515,7 @@ Note that you can only drag objects in the game window when you are in "Move" mo
 * Compile Usecode...
  Compiles the usecode script usecode.uc in the patch folder (see 5.3.)
 * Fix old shape info
- Old versions of discarded some shpe info data on saving. This option adds the discarded information back to old mods and patches.
+ Old versions of Exult Studio discarded some shape info data on saving. This option adds the discarded information back to old mods and patches.
 
 
 
@@ -790,7 +792,7 @@ If you want to create a new NPC you have to select Create NPC in the edit menu. 
 * NPC #
  This cannot be changed.
 * Ident
- This is a number used in usecode in SI to differentiate between different NPC possibilities. It can be used to decide which set of conversation options some party members have, as well as making some ¨monster¨ NPCs have a more persistent identity despite not having a set NPC number
+ This is a number used in usecode in SI to differentiate between different NPC possibilities. It can be used to decide which set of conversation options some party members have, as well as making some "monster¨" NPCs have a more persistent identity despite not having a set NPC number
 * Shape #
  Either drag and drop a shape from shapes.vga into the line (or the black box to the right of it) or enter a shape number.
 * Frame #

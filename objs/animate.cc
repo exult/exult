@@ -236,10 +236,11 @@ void Shape_sfx::update(bool play) {
 		}
 	}
 
-	dir               = 0;
-	//set volume based on Distance and SFX volume
-	const int  volume = static_cast<int>(AUDIO_MAX_VOLUME * (sfxinf->get_volume() / 100.0));
-	const bool halt   = Get_sfx_out_of_range(gwin, obj->get_center_tile());
+	dir = 0;
+	// set volume based on Distance and SFX volume
+	const int volume = static_cast<int>(
+			AUDIO_MAX_VOLUME * (sfxinf->get_volume() / 100.0));
+	const bool halt = Get_sfx_out_of_range(gwin, obj->get_center_tile());
 
 	if (play && halt) {
 		play = false;

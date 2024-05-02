@@ -120,6 +120,8 @@
 #include "npcs/mwaerno.uc"
 // Brings the automatons in Skullcrusher to life
 #include "npcs/skullcrusher_automatons.uc"
+// Fixing wrong book quoting from automaton guard.
+#include "npcs/spinebreaker_automatons.uc"
 
 // For curing Cantra, from exult/content/si; modified to allow companions
 // to thank you (and rejoin) after you cure them but before Xenka returns
@@ -149,6 +151,8 @@
 #include "cutscenes/fawn_trial.uc"
 // Prevents deletion of the training pikeman egg
 #include "cutscenes/monitor_banquet.uc"
+// Fix invisible party members not joining back.
+#include "cutscenes/moonshade_banquet.uc"
 // Absolutely force companions to be there and force-kills them after
 #include "cutscenes/wall_of_lights.uc"
 // Fixes gang planck blocking check

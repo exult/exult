@@ -205,10 +205,9 @@ enum Sleeping_Bull_townplot {
 	ASKED_ANDRAL_ABOUT_INN = 0xC
 };
 
-/*
 enum Moonshade_townplot {
+	FILBERCIO_BANQUET_WILL_HAPPEN = 0xDA,
 };
-*/
 
 enum Gustacios_experiment_subplot {
 	HAVE_1ST_ENERGY_GLOBE = 0x11C,
@@ -257,6 +256,11 @@ enum Skullcrusher_townplot {
 	KNOW_SKULLCRUSHER_PASSWORD = 613,
 	// New for SIfixes, set when the Skullcrusher automatons receive non-waiting schedules.
 	SKULLCRUSHER_AUTOMATONS = 614
+};
+
+enum Spinebreaker_townplot {
+	OPENED_SPINEBREAKER_DOOR = 0x251,
+	READ_STRUCTURE_OF_ORDER = 0x252,
 };
 
 // The quotes are from http://www.it-he.org

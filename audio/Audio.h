@@ -104,7 +104,6 @@ private:
 	bool              truthful_ = false;
 	bool speech_enabled = true, music_enabled = true, effects_enabled = true,
 		 speech_with_subs = false;
-	bool                               allow_music_looping;
 	std::unique_ptr<SFX_cache_manager> sfxs;    // SFX and voice cache manager
 	bool                               initialized = false;
 	SDL_AudioSpec                      wanted;
@@ -152,6 +151,7 @@ public:
 	void   start_music(
 			  int num, bool continuous = false,
 			  const std::string& flex = MAINMUS);
+	void change_repeat(bool newrepeat);
 	void start_music(
 			const std::string& fname, int num, bool continuous = false);
 	void start_music_combat(Combat_song song, bool continuous);
@@ -230,12 +230,23 @@ public:
 
 	void set_audio_enabled(bool ena);
 
-	bool is_music_looping_allowed() const {
-		return allow_music_looping;
+	enum class LoopingType {
+		Never   = 0,
+		Limited = 1,
+		Auto    = 2,
+		Endless = 3,
+	};
+
+private:
+	LoopingType music_looping;
+
+public:
+	LoopingType get_music_looping() const {
+		return music_looping;
 	}
 
-	void set_allow_music_looping(bool ena) {
-		allow_music_looping = ena;
+	void set_music_looping(LoopingType type) {
+		music_looping = type;
 	}
 
 	static bool can_sfx(const std::string& file, std::string* out = nullptr);
