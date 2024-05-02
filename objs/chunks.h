@@ -127,6 +127,23 @@ private:
 		}
 	}
 
+	void unhatch_eggs(
+			Game_object* obj, Map_chunk* chunk, int tx, int ty, int tz,
+			int from_tx, int from_ty, unsigned short eggbits, bool now);
+
+	void unhatch_eggs(
+			Game_object* obj, Map_chunk* chunk, int tx, int ty, int tz,
+			int from_tx, int from_ty, bool now) {
+				// unhatch needs eggbits at from location not to location
+		const unsigned short eggbits
+				= eggs[(from_ty % c_tiles_per_chunk) * c_tiles_per_chunk
+					   + (from_tx % c_tiles_per_chunk)];
+		if (eggbits) {
+			unhatch_eggs(
+					obj, chunk, tx, ty, tz, from_tx, from_ty, eggbits, now);
+		}
+	}
+
 	// Find door blocking given tile.
 	Game_object* find_door(const Tile_coord& t);
 
@@ -328,6 +345,13 @@ public:
 			Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty,
 			bool now = false) {
 		need_cache()->activate_eggs(
+				obj, this, tx, ty, tz, from_tx, from_ty, now);
+	}
+
+	void unhatch_eggs(
+			Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty,
+			bool now = false) {
+		need_cache()->unhatch_eggs(
 				obj, this, tx, ty, tz, from_tx, from_ty, now);
 	}
 

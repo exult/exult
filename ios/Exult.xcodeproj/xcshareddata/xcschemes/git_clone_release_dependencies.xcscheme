@@ -9,7 +9,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "clone the libraries&apos; releases"
-               scriptText = "git -c advice.detachedHead=false clone -b sans_glib --depth 1 https://github.com/dominusexult/fluidsynth-sans-glib ${WORKSPACE_PATH}/../../fluidsynth-sans-glib || true&#10;git -c advice.detachedHead=false clone -b v1.3.5 --depth 1 https://github.com/xiph/ogg ${WORKSPACE_PATH}/../../libogg || true&#10;git -c advice.detachedHead=false clone -b v1.3.7 --depth 1 https://github.com/xiph/vorbis ${WORKSPACE_PATH}/../../libvorbis || true&#10;git -c advice.detachedHead=false clone -b munt_2_7_0 --depth 1 https://github.com/munt/munt ${WORKSPACE_PATH}/../../libmt32emu || true&#10;git -c advice.detachedHead=false clone -b release-2.28.2 --depth 1 https://github.com/libsdl-org/sdl ${WORKSPACE_PATH}/../../SDL || true&#10;">
+               scriptText = "git -c advice.detachedHead=false clone -b sans_glib --depth 1 https://github.com/dominusexult/fluidsynth-sans-glib ${WORKSPACE_PATH}/../../fluidsynth-sans-glib || true&#10;git -c advice.detachedHead=false clone -b v1.3.5 --depth 1 https://github.com/xiph/ogg ${WORKSPACE_PATH}/../../libogg || true&#10;git -c advice.detachedHead=false clone -b v1.3.7 --depth 1 https://github.com/xiph/vorbis ${WORKSPACE_PATH}/../../libvorbis || true&#10;git -c advice.detachedHead=false clone -b libmt32emu_2_7_1 --depth 1 https://github.com/munt/munt ${WORKSPACE_PATH}/../../libmt32emu || true&#10;git -c advice.detachedHead=false clone -b release-2.30.2 --depth 1 https://github.com/libsdl-org/sdl ${WORKSPACE_PATH}/../../SDL || true&#10;">
             </ActionContent>
          </ExecutionAction>
       </PreActions>

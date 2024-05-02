@@ -298,10 +298,11 @@ public:
 				   : ((type == array_type && get_array_size())
 							  ? arrayval[0].need_int_value()
 							  // Pointer = ref.
-							  : (type == pointer_type ? (
-										 reinterpret_cast<uintptr>(ptrval.get())
-										 & 0x7ffffff)
-													  : get_int_value()));
+							  : (type == pointer_type
+										 ? (reinterpret_cast<uintptr>(
+													ptrval.get())
+											& 0x7ffffff)
+										 : get_int_value()));
 	}
 
 	// Add array element. (No checking!)

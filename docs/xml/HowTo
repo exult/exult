@@ -4,38 +4,49 @@ Quick and dirty guide to generating our documentation
 1. Preparations
 ---------------
 
-To transform the Readme/FAQ you need Xalan, found at http://xml.apache.org/xalan-j/ and on that page see what
-else you need (Java Development Kit or Java Runtime). 
-From the Xalan package you need xalan.jar, xercesImpl.jar and xml-apis.jar.
-Copy these files to the same directory that contains the xml and xsl files of the Pentagram Readme/FAQ.
+To transform the Readme/FAQ/Exult Studio documentation you need xsltproc.
+This is usually either bundled with libxslt, or a standalone package
+dependent on it. Here is how you can install it on a few common platforms
+(probably needing to add `sudo`):
 
+- MSYS2 on Windows:
+    pacman -S --noconfirm libxslt
+- Chocolatey on Windows:
+    choco install xsltproc
+- vcpkg:
+    vcpkg install libxslt
+- ArchLinux:
+    pacman -S --noconfirm libxslt
+- Debian/Ubuntu:
+    apt install xsltproc
+- Fedora/CentOS:
+    dnf install libxslt
+- FreeBSD:
+    pkg install -y libxslt
+- Homebrew on macOS:
+    brew install libxslt
+- MacPorts on macOS:
+    port install libxslt
 
 2. Generating the docs
 ----------------------
 
-- Use the makefiles provided in the directory by running "make".
-
-- Win32 users need to run "make -f makefile.win32" to transform the files.
-
+- Use the Makefile provided in the docs/xml directory by running "make".
 
 3. What to do with the files
 ----------------------------
 
-By running make you get readme.txt/html/dat and faq.txt/html/dat.
+By running make you get README, docs.txt, readme.txt/html/dat, FAQ,
+faq.txt/html/dat and exult_studio.txt/html/dat.
 
-- Replace Readme and FAQ in the root directory of the exult Git with the text files, replace ReadMe.html, 
-  faq.html and exult_studio.html in /docs with the newly generated files.
+- Replace Readme and FAQ in the root directory of the exult Git with the text
+  files, replace ReadMe.html, faq.html, exult_studio.html and exult_studio.txt
+  in /docs with the newly generated files.
 
-- Copy the text files docs.txt, faq.txt and exult_studio.txt to the root of the web module and the *.dat files 
-  to /content dir of the web module
-- To properly use the php files (readme.dat, faq.dat) you have to to strip the
-  <test xmlns="test.dtd"> ... </test> stuff surrounding everything else.
-  The makefile uses gsed to do that automatically on *nix and OS X. sed might work, too.
+- Copy the text files docs.txt, faq.txt and exult_studio.txt to the root of the
+  web module and the *.dat files to /content dir of the web module.
 
-
-4. Misc
--------
-
-- There is a slight incompatibility with the JDK 1.4.x. 
-See http://xml.apache.org/xalan-j/faq.html#faq-N100CC for details and workaround.
-
+- To properly use the php files (readme.dat, faq.dat, exult_studio.dat) you
+  have to to strip the <test xmlns=".*"> ... </test> stuff surrounding
+  everything else.
+  The Makefile uses sed to do that automatically.

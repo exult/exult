@@ -65,7 +65,7 @@
 						we refer to "Ultima VII: The Black Gate" as BG and to "Ultima VII - Part 2: Serpent Isle"
 						as SI. The add-ons "Forge of Virtue" and "Silver Seed" are called FoV and SS.</li>
 					<li><strong>eggs</strong>:<br/>
-						these are trip-wires that can cause monsters to spawn, execute scripts, play 
+						these are trip-wires that can cause monsters to spawn, execute scripts, play
 						music, change weather, trigger traps or teleport when you get near them.</li>
 					<li><strong>flex files</strong>:<br/>
 						also known as flexes, these are used by the original to store the data files.
@@ -106,7 +106,7 @@
 						<Studio/> <strong>only</strong> works with the latest snapshot, not the latest release.</li>
 					<li>For U*ix platforms you need to build <Studio/> from the source available from our
 						source snapshot at <extref target="http://exult.info/download.php"/>.</li>
-					<li>For Windows platforms (XP,Vista,7,8,10) you need to download <Studio/> from our 
+					<li>For Windows platforms (XP,Vista,7,8,10) you need to download <Studio/> from our
 						<extref target="http://exult.info/download.php">download page</extref>
 						and install it in the same folder where you installed <Exult/>.</li>
 					<li>For macOS we also provide a snapshot on our
@@ -123,7 +123,7 @@
 					as it uses <Exult/> as a server. What you really want to do is:
 				</para>
 				<ul>
-					<li>Put 'exult_studio.glade' in the <Exult/> 'data' folder (not needed if you use the 
+					<li>Put 'exult_studio.glade' in the <Exult/> 'data' folder (not needed if you use the
 						snapshot for Windows or macOS).</li>
 					<li>Be sure 'exult_studio' is in your path. (on Windows
 						'exult_studio.exe' needs to be in the same folder as exult.exe)</li>
@@ -140,7 +140,7 @@
 					<li>If <Exult/> isn't running, start it up. Then, in <Studio/>,
 						use the 'File' menu to choose the static folder (for the game you're
 						playing).</li>
-					<li>If <Studio/> isn't running start it up and select the game to edit in the 
+					<li>If <Studio/> isn't running start it up and select the game to edit in the
 						"File-Open Game" dialog.</li>
 				</ul>
 				<para>
@@ -163,14 +163,14 @@
 					<li>Next, you need to have the latest <Exult/> snapshotinstalled properly
 						onto your computer and working correctly. If you are currently playing either BG or SI
 						on your machine this is probably done right. To make sure you have the correct version,
-						ensure that it says X.XX GIT (X.XX stands for some version number) during <Exult/>'s 
-						start-up screen (for example see 
+						ensure that it says X.XX GIT (X.XX stands for some version number) during <Exult/>'s
+						start-up screen (for example see
 						<extref target="http://exult.info/images/screenshots/mainmenu.png"/>).</li>
 					<li>You need to make sure the newest version of <Studio/> is installed properly onto your
-						computer as well. <Studio/> should be installed in the same folder as the <Exult/> 
+						computer as well. <Studio/> should be installed in the same folder as the <Exult/>
 						snapshot.</li>
-					<li>The patch folder <strong>needs</strong> to be in folder which you are allowed to write, 
-						so <Studio/> can save any changes to existing games. See <ref1 target="can_do_atm"/> on 
+					<li>The patch folder <strong>needs</strong> to be in folder which you are allowed to write,
+						so <Studio/> can save any changes to existing games. See <ref1 target="can_do_atm"/> on
 						how to change exult.cfg accordingly.</li>
 					<li>In order for <Studio/> to work properly, you need to have <Exult/> running in windowed mode.
 						If you can see your desktop while playing, then you're doing it right.</li>
@@ -181,7 +181,7 @@
 						frozen, but you are still able to move your characters around in order to place objects.
 						You're now ready to start your world editing. You should be seeing something like this:</li>
 				</ol>
-				<para>	
+				<para>
 					<img alt="game window with red grid" src="images/studio01.png"/>
 				</para>
 			</body>
@@ -237,11 +237,11 @@
 					</configtag>
 				</configdesc>
 				<para>
-					<em>IMPORTANT:</em> <Studio/> requires the "patch" folder to be writeable. If you don't have writeaccess 
+					<em>IMPORTANT:</em> <Studio/> requires the "patch" folder to be writeable. If you don't have writeaccess
 					you need to place it somewhere you are allowed to write to and change the path accordingly in exult.cfg.
 				</para>
 				<para>
-					<Exult/> will also read files from 'patch' if it exists on starting a new game. The patch 
+					<Exult/> will also read files from 'patch' if it exists on starting a new game. The patch
 					folder is expected to be within the main game folder, parallel to the static folder.
 				</para>
 				<para>
@@ -302,14 +302,14 @@
 					<li>(--config) -c configfile<br/>
 						Specify alternate config file (relative or absolute paths work).</li>
 					<li>(--portable) -p<br/>
-						Portable option for Windows only. <Studio/> will read cfg file from the folder <Exult/> got 
-						installed to.</li>	
+						Portable option for Windows only. <Studio/> will read cfg file from the folder <Exult/> got
+						installed to.</li>
 					<li>(--game) -g GAMENAME<br/>
 						specifies GAMENAME and <Studio/> will read the game base folder from exult.cfg.
 						GAMENAME can be chosen from the games specified in &lt;game&gt; part of exult.cfg.</li>
 					<li>(--mod) -m modname<br/>
-						Must be used together with '-g gamename'; runs the specified 
-						game using the mod with title equal to 'modname'. 'modname' is the name of the mod 
+						Must be used together with '-g gamename'; runs the specified
+						game using the mod with title equal to 'modname'. 'modname' is the name of the mod
 						cfg file (e.g. keyring.cfg means 'modname' 'keyring'.</li>
 					<li>(--xmldir) -x FOLDER<br/>
 						tells exult_studio to look in FOLDER for its user-interface specification
@@ -527,7 +527,7 @@
 						See
 						<extref target="http://exult.info/newgame.txt">New Game manual</extref>.</li>
 					<li><strong>New Mod...</strong><br/>
-						Easily start a new mod for an existing game. The dialog that opens lets you select 
+						Easily start a new mod for an existing game. The dialog that opens lets you select
 						the game you want to mod, the name of the mod and its name in the Exult menu (menu string).</li>
 					<li><strong>Open Game...</strong><br/>
 						Choose the Game folder of the game you that you have been working on.</li>
@@ -558,10 +558,10 @@
 						Reloads the map. All changes made since the last save get discarded.<br/>
 						<strong>Usecode</strong><br/>
 						Very useful when you edit the usecode of a game or add new usecode to an
-						existing game. Normally this would require a restart of Exult.</li>
+						existing game. Normally this would require a restart of Exult.<br/>
 						<strong>Style CSS</strong><br/>
-						<Studio/> now supports customization via a CSS file (exult_studio.css) and if you 
-						changed that you can reload it without having to restart <Studio/>.<br/>
+						The interface of <Studio/> now supports customization via a CSS file (exult_studio.css) and if you
+						changed that you can reload it without having to restart <Studio/>.</li>
 					<li><strong>Connect</strong><br/>
 						Connects <Exult/> and <Studio/> if one of them had to be restarted.</li>
 					<li><strong>Preferences</strong><br/>
@@ -580,7 +580,7 @@
 				</ul>
 				<para>
 					Note that the default location for saving and creation of new files is the PATCH folder
-					of a game. If there is no PATCH folder specified <Studi/> will create one. See <ref1 target="can_do_atm"/>.
+					of a game. If there is no PATCH folder specified <Studio/> will create one. See <ref1 target="can_do_atm"/>.
 				</para>
 			</body>
 		</sub>
@@ -615,7 +615,7 @@
 						Edit the game information shwon in the Exult menu.</li>
 				</ul>
 				<para>
-					When in map-edit mode, you can select shapes in Exult by left-clicking, or multiple shapes by 
+					When in map-edit mode, you can select shapes in Exult by left-clicking, or multiple shapes by
 					ctrl+left-clicking.
 				</para>
 			</body>
@@ -648,8 +648,8 @@
 						Picks objects for a new combo file. Double-left-click to add objects to the combo,
 						single-left-click to identify object. See <ref1 target="combo_edit"/></li>
 					<li><strong>Select chunks</strong><br/>
-						You can select chunks and move them around with ctrl+arrow keys. This will leave 
-						generic chunks where the original chunks were, and is probably better used for moving 
+						You can select chunks and move them around with ctrl+arrow keys. This will leave
+						generic chunks where the original chunks were, and is probably better used for moving
 						parts of a map because you misjudged the position it needed to be in.</li>
 				</ul>
 				<para>
@@ -673,7 +673,7 @@
 						Compiles the usecode script usecode.uc in the patch folder
 						(see <ref target="usecode_edit"/>)</li>
 					<li><strong>Fix old shape info</strong><br/>
-						Old versions of <Studi/> discarded some shpe info data on saving. This option adds 
+						Old versions of <Studio/> discarded some shape info data on saving. This option adds
 						the discarded information back to old mods and patches.</li>
 				</ul>
 			</body>
@@ -685,7 +685,7 @@
 					<li><strong>New</strong><br/>
 						Used to create a new map to use for multi-map support (see <ref1 target="multi_map"/>).</li>
 					<li><strong>Main/Map #xx</strong><br/>
-						The default map or the map that is currently being worked on. The game needs to be started in 
+						The default map or the map that is currently being worked on. The game needs to be started in
 						<Exult/> to see the other maps.</li>
 				</ul>
 			</body>
@@ -743,8 +743,8 @@
 						export to a .png.</li>
 					<li><strong>Export/Import all frames</strong>:<br/>
 						Let's you import all frames from .png files or
-						export to a .png. To import the .png files need to be named with the same basename 
-						followed by the frame number (e.g. shape00.png, shape01.png). On export <Studio/> 
+						export to a .png. To import the .png files need to be named with the same basename
+						followed by the frame number (e.g. shape00.png, shape01.png). On export <Studio/>
 						will ask you for a basename and folder to export to.</li>
 					<li><strong>Export/Import shape</strong>:<br/>
 						Let's you import a single frame from a .png file or
@@ -806,10 +806,10 @@
 				<para>
 					Someone does have to write extensive documentation for this but I (Dominus) am not
 					really up for that task.<br/>
-					Wizardry Dragon and Marzo made a good list of intrinsics 
+					Wizardry Dragon and Marzo made a good list of intrinsics
 					<extref target="http://www.thefeudallands.ca/srcdocs/files/intrinsics-uc.html"/> and
-					Pertex has written some documentation at 
-					<extref target="http://web.archive.org/web/20071217233843/http://www.sophen.de/exult/"/> 
+					Pertex has written some documentation at
+					<extref target="http://web.archive.org/web/20071217233843/http://www.sophen.de/exult/"/>
 					(unfortunately Pertex original documentation has vanished but at least the wayback machine
 					can be of great help)
 					that might be able help you.
@@ -868,7 +868,7 @@
 						is used to activate eggs in the vicinity that are set to external</li>
 					<li><strong>Intermap</strong><br/>
 						Now that Exult has multi-map support, this egg can be used to create a teleporter
-						between maps.</li>	
+						between maps.</li>
 				</ul>
 			</body>
 		</sub>
@@ -925,15 +925,15 @@
 						<strong>Party footpad</strong> - This option is identical to the Avatar footpad option
 						except if either the main character or one of his companions stumbles onto the egg it
 						will be activated.<br/>
-						<strong>Something on</strong> - This egg is activated whenever an object is placed 
+						<strong>Something on</strong> - This egg is activated whenever an object is placed
 						<strong>AND</strong> removed within the area specified by an egg.<br/>
 						<strong>External</strong> - Eggs set to the external characteristic will be activated
 						by button eggs in the vicinity.</li>
 					<li><strong>Flag</strong><br/>
 						final attribute you can give an egg to determine whether it will be activated or not.
 						As a note you can mix and match flags, you can set an egg to nocturnal once only or
-						nocturnal auto-reset.Not that an egg will be reactivated after you walk about a 
-						screenful away and then return if the the flags "once-only" or "auto-reset" are not 
+						nocturnal auto-reset.Not that an egg will be reactivated after you walk about a
+						screenful away and then return if the the flags "once-only" or "auto-reset" are not
 						set.<br/>
 						<strong>Nocturnal</strong> - Any egg with this setting will only be activated during
 						the nighttime. Great for setting the spawning of creatures of the night, or giving
@@ -959,20 +959,20 @@
 					isn't overly important when placing a monster, but for placing an object it can be very
 					important. Enter these attributes into their respective form. You next have to set the
 					monster's schedule. The various schedules that are important for a monster spawn are
-					discussed next.<br/> 
+					discussed next.<br/>
 					You also have to set the spawned monster's alignment.
-					Any creature set to a <strong>Neutral</strong> alignment will ignore the Avatar and friends, 
-					following their schedule until attacked. Any creature set to <strong>Evil</strong> will 
-					immediately attack the Avatar if you get too close. A <strong>Good</strong> creature will 
-					help the avatar in fights, but will also attack the Avatar if he is caught stealing or 
-					killing "good" NPCs. It will also attack evil Monsters or NPCs regardless of the Avatar. 
-					And finally <strong>Chaotic</strong> creatures or monsters will attack anyone, regardless 
+					Any creature set to a <strong>Neutral</strong> alignment will ignore the Avatar and friends,
+					following their schedule until attacked. Any creature set to <strong>Evil</strong> will
+					immediately attack the Avatar if you get too close. A <strong>Good</strong> creature will
+					help the avatar in fights, but will also attack the Avatar if he is caught stealing or
+					killing "good" NPCs. It will also attack evil Monsters or NPCs regardless of the Avatar.
+					And finally <strong>Chaotic</strong> creatures or monsters will attack anyone, regardless
 					of their alignement<br/>
-					Next you can set the number of creatures you want to appear using the count option. You 
+					Next you can set the number of creatures you want to appear using the count option. You
 					can set anywhere from 1 to 31 monsters.<br/>
-					Finally you can assign a Usecode number or name to the spawned monster (leave this blank if 
+					Finally you can assign a Usecode number or name to the spawned monster (leave this blank if
 					you don't want to set one).<br/>
-					When you're finished setting the egg the way you want, simply press "Apply" and place the 
+					When you're finished setting the egg the way you want, simply press "Apply" and place the
 					egg on the world map.<br/>
 					<img alt="Exult Egg window" src="images/studio03.png"/><br/>
 				</para>
@@ -982,7 +982,7 @@
 			<header>Schedules of Monsters and Creatures</header>
 			<body>
 				<para>
-					You can have the full set of schedules that NPCs can have but for a spawned  monster you will 
+					You can have the full set of schedules that NPCs can have but for a spawned  monster you will
 					most like want to use one of the following schedules.<br/>
 				</para>
 				<ul>
@@ -1017,8 +1017,8 @@
 						dummies or archery targets. For an extra laugh place 10 spawns each set for 31 guards
 						to appear in dueling mode.</li>
 					<li><strong>Patrol</strong><br/>
-						An NPC with this schedule will follow "path" markers (shape #607). The default behavior is to go 
-						to "1", then "2", etc., and return to "1" when no higher numbers are found. There are also some 
+						An NPC with this schedule will follow "path" markers (shape #607). The default behavior is to go
+						to "1", then "2", etc., and return to "1" when no higher numbers are found. There are also some
 						fairly complicated rules that depend on the "quality" that you give to each of the path markers.
 						(<Studio/> should have a dialog to create these, so I wouldn't worry about them right now.)<br/>
 						<img alt="Guards duel" src="images/studio04.png"/><br/></li>
@@ -1144,9 +1144,9 @@
 			<header>Intermap eggs</header>
 			<body>
 				<para>
-					An intermap egg works precisely the same as a regular teleport egg except it can be used to 
-					teleport the main character between maps. The <strong>Coordinates</strong> options are used 
-					to set the precise tile the Avatar will be teleported to on the opposing map. The 
+					An intermap egg works precisely the same as a regular teleport egg except it can be used to
+					teleport the main character between maps. The <strong>Coordinates</strong> options are used
+					to set the precise tile the Avatar will be teleported to on the opposing map. The
 					<strong>Map Number</strong> condition is used to set which map the main character will appear at.
 				</para>
 			</body>
@@ -1155,12 +1155,12 @@
 			<header>Multi-map support</header>
 			<body>
 				<para>
-					Exult now supports multiple maps. To create new maps select <strong>New</strong> from the 
-					<strong>Map</strong> menu. You now have an option to copy information over from an existing map. 
-					The <strong>Terrain</strong> option allows you to retain the lay of the land. If this option 
-					isn't selected your new map will be entirely ocean. <strong>Fixed</strong> and 
-					<strong>Moveable objects</strong> allow you to retain the remaining objects from the previous map 
-					(Jeffrey's favourite idea is to entirely copy the current Exult map and create a new 'Bizarro-Brittania'). 
+					Exult now supports multiple maps. To create new maps select <strong>New</strong> from the
+					<strong>Map</strong> menu. You now have an option to copy information over from an existing map.
+					The <strong>Terrain</strong> option allows you to retain the lay of the land. If this option
+					isn't selected your new map will be entirely ocean. <strong>Fixed</strong> and
+					<strong>Moveable objects</strong> allow you to retain the remaining objects from the previous map
+					(Jeffrey's favourite idea is to entirely copy the current Exult map and create a new 'Bizarro-Brittania').
 					You can quickly switch between maps in game using the command <key>ctrl-alt-t</key>.
 				</para>
 			</body>
@@ -1184,7 +1184,7 @@
 				<para>
 					If you want to create a new NPC you have to select <strong>Create NPC</strong> in the edit menu.
 					This will pop up the same NPC window as when you double click an NPC. Now enter all the properties
-					of the new NPC as will be described in the following text. When you are satisfied with your new 
+					of the new NPC as will be described in the following text. When you are satisfied with your new
 					NPC hit Apply and you will be asked to choose a spot in <Exult/> to place the NPC.
 				</para>
 			</body>
@@ -1194,7 +1194,7 @@
 			<body>
 				<ul>
 					<li><strong>Face #</strong><br/>
-						Drag and drop a face from Faces.vga in the main <Studio/> window to the face field in 
+						Drag and drop a face from Faces.vga in the main <Studio/> window to the face field in
 						the NPC window.</li>
 					<li><strong>Name</strong><br/>
 						Choose a name for your NPC.</li>
@@ -1204,25 +1204,25 @@
 						This cannot be changed.</li>
 					<li><strong>Ident</strong><br/>
 						This is a number used in usecode in SI to differentiate between different NPC possibilities.
-						It can be used to decide which set of conversation options some party members have, as well 
-						as making some ¨monster¨ NPCs have a more persistent identity despite not having a set NPC 
+						It can be used to decide which set of conversation options some party members have, as well
+						as making some "monster¨" NPCs have a more persistent identity despite not having a set NPC
 						number</li>
 					<li><strong>Shape #</strong><br/>
-						Either drag and drop a shape from shapes.vga into the line (or the black box to the 
+						Either drag and drop a shape from shapes.vga into the line (or the black box to the
 						right of it) or enter a shape number.</li>
 					<li><strong>Frame #</strong><br/>
 						The frame of the above given shape the NPC starts with.</li>
 					<li><strong>Alignment</strong><br/>
 						Any NPC set to a neutral alignment will ignore the Avatar and friends, following their
-						schedule until attacked. A "good" NPC will help the avatar in fights, but will also attack 
-						the Avatar if he is caught stealing or killing "good" NPCs. It will also attack evil Monsters 
+						schedule until attacked. A "good" NPC will help the avatar in fights, but will also attack
+						the Avatar if he is caught stealing or killing "good" NPCs. It will also attack evil Monsters
 						or NPCs regardless of the Avatar.<br/>
-						Any NPC set to hostile will immediately be attacked by the Avatar when you go into combat mode. 
+						Any NPC set to hostile will immediately be attacked by the Avatar when you go into combat mode.
 						Some NPCs will not talk to you or will even attack you on sight when set to hostile.<br/>
 					</li>
 					<li><strong>Attack Mode</strong><br/>
 						You can choose the mode in which the NPC attacks when it goes into combat. Choose
-						between Nearest, Weakest, Strongest, Berserk, Protect, Defend, Flank, Flee, Random 
+						between Nearest, Weakest, Strongest, Berserk, Protect, Defend, Flank, Flee, Random
 						and Manual. We don't advice using Manual as for most NPCs you will not be able to
 						actually change the attack mode manually.</li>
 				</ul>
@@ -1241,17 +1241,17 @@
 					<li><strong>Health</strong></li>
 					<li><strong>Combat</strong></li>
 					<li><strong>Mana</strong><br/>
-						How much mana you have left for casting spells. Only useful for members of the party 
+						How much mana you have left for casting spells. Only useful for members of the party
 						and if the game allows party members casting spells.</li>
 					<li><strong>Max. Mana</strong><br/>
-						Maximum amount of mana you can have. Only useful for members of the party 
+						Maximum amount of mana you can have. Only useful for members of the party
 						and if the game allows party members casting spells.</li>
 					<li><strong>Training</strong><br/>
-						How much Training points the NPC has left and can use at trainers. Only useful for 
+						How much Training points the NPC has left and can use at trainers. Only useful for
 						party members.</li>
 					<li><strong>Experience</strong></li>
 					<li><strong>Food Level</strong><br/>
-						How hungry is the NPC. Only relevant for party members. Normal NPCs don't starve 
+						How hungry is the NPC. Only relevant for party members. Normal NPCs don't starve
 						and need to be fed.</li>
 				</ul>
 			</body>
@@ -1260,7 +1260,7 @@
 			<header>NPC Flags</header>
 			<body>
 				<para>
-					Here you can set special properties of NPCs. Some are only set for special NPCs, party members 
+					Here you can set special properties of NPCs. Some are only set for special NPCs, party members
 					or just the Avatar. A lot are also only available in SI. Here a brief listing of the flags and
 					when needed a short description.
 				</para>
@@ -1299,11 +1299,11 @@
 					<li><strong>Charmed</strong></li>
 					<li><strong>Cursed</strong></li>
 					<li><strong>Ethereal</strong><br/>
-						This makes it possible for the NPC to behave like a ghost 
+						This makes it possible for the NPC to behave like a ghost
 						(walk through walls, walk on water...)</li>
 					<li><strong>In action</strong></li>
 					<li><strong>Read</strong><br/>
-					This NPC can read runic or ophidian (useful for the Avatar so 
+					This NPC can read runic or ophidian (useful for the Avatar so
 					signs can be read directly)</li>
 					<li><strong>Naked</strong></li>
 					<li><strong>Paralyzed</strong></li>
@@ -1323,18 +1323,18 @@
 				</para>
 				<ul>
 					<li><strong>Activity</strong><br/>
-						With the button Set you can choose the schedule. Keep in mind that some schedules also 
+						With the button Set you can choose the schedule. Keep in mind that some schedules also
 						require items, e.g. for the Blacksmith activity you need a smithy to work in. If there
-						is no such item near the location you set, the NPC will use the next near item in the 
-						vicinity, for example the sleep activity will have the NPC wander to the next available 
+						is no such item near the location you set, the NPC will use the next near item in the
+						vicinity, for example the sleep activity will have the NPC wander to the next available
 						bed.<br/>
 						To clear the activity set it to --None--.</li>
 					<li><strong>Location</strong><br/>
 						Enter the x and y coordinates of the place you want the NPC to follow his schedule at.
-						Unfortunately you cannot (yet) set the z coordinate (on which floor of a house the 
-						schedule begins). By placing the Avatar at the spot for the scheduled activity and 
+						Unfortunately you cannot (yet) set the z coordinate (on which floor of a house the
+						schedule begins). By placing the Avatar at the spot for the scheduled activity and
 						pressing the <strong>Game</strong> button, <Studio/> will fill out the coordinates.<br/>
-						Also by pressing <key>F2</key> at a place, the cheat screen will show you the coordinates 
+						Also by pressing <key>F2</key> at a place, the cheat screen will show you the coordinates
 						in hex and decimal and you can use either system to enter the location.</li>
 				</ul>
 			</body>
@@ -1381,8 +1381,8 @@
 					over the <Exult/> window, wait for the window to switch and then place the item. Once you
 					found where you would like the object to appear, simply let go of the mouse and the object is
 					placed. If you're unhappy where you placed the object, simply drag and drop it somewhere else.<br/>
-					On Windows you will get a green grid that will show you exactly where you can expect the object 
-					to show up. With the switch to SDL2's dropfile function we lost the green grid on other Operating 
+					On Windows you will get a green grid that will show you exactly where you can expect the object
+					to show up. With the switch to SDL2's dropfile function we lost the green grid on other Operating
 					Systems.<br/>
 					<img alt="green grid" src="images/studio06.png"/>
 				</para>
@@ -1522,33 +1522,33 @@
 			<header>Creating a boat, flying carpet, or horse drawn carriage</header>
 			<body>
 				<para>
-					By double clicking on a barge (horse drawn carriage/magic carpet) in map editing mode one can 
-					alter the properties of the barge through the barge editor. The Barge Editor allows one to alter 
-					the size of a currently existing barge. By increasing the size of the Magic Carpet you can use 
-					the added space to create some sort of a flying battleship. Theoretically the maximum size of a 
-					barge is 100x100, but an object that large will fill the entire screen and become extremely 
+					By double clicking on a barge (horse drawn carriage/magic carpet) in map editing mode one can
+					alter the properties of the barge through the barge editor. The Barge Editor allows one to alter
+					the size of a currently existing barge. By increasing the size of the Magic Carpet you can use
+					the added space to create some sort of a flying battleship. Theoretically the maximum size of a
+					barge is 100x100, but an object that large will fill the entire screen and become extremely
 					difficult to steer.
 				</para>
 				<para>
-					To create your own barge, you first need to chose Create Barge, select the dimensions of your 
-					barge and place them in the map. To create a magic carpet, place the small blue tiles from the 
-					magic carpet (shape# 840, frame 57) within the barge area and place the required number of seats 
-					on top of the magic carpet tiles. You now have your own custom carpet. Magic carpet tiles are only 
-					required for the seats your party will sit on, by expanding the area of the barge further you can 
-					create a custom area where you can place walls and other flooring tiles. Unfortunately there are 
-					limitations, all objects must be placed no more than four values in the vertical direction from the 
+					To create your own barge, you first need to chose Create Barge, select the dimensions of your
+					barge and place them in the map. To create a magic carpet, place the small blue tiles from the
+					magic carpet (shape# 840, frame 57) within the barge area and place the required number of seats
+					on top of the magic carpet tiles. You now have your own custom carpet. Magic carpet tiles are only
+					required for the seats your party will sit on, by expanding the area of the barge further you can
+					create a custom area where you can place walls and other flooring tiles. Unfortunately there are
+					limitations, all objects must be placed no more than four values in the vertical direction from the
 					floor. <strong>For a craft to work you must have at least as many seats as party members</strong>.
 				</para>
 				<para>
-					To create a cart you need only place a floor tile from the carriage (shape 652, frame 7) within the 
-					barge area and place a seat on top of it but you must have a deed from one of the carriage vendors. 
-					If you place a draft horse on your cart then you will need a cart deed (shape 797, frame 0) that had 
-					the same quality set as the draft horse. The quality for an object can be set using the <Studio/> 
+					To create a cart you need only place a floor tile from the carriage (shape 652, frame 7) within the
+					barge area and place a seat on top of it but you must have a deed from one of the carriage vendors.
+					If you place a draft horse on your cart then you will need a cart deed (shape 797, frame 0) that had
+					the same quality set as the draft horse. The quality for an object can be set using the <Studio/>
 					object tool.
 				</para>
 				<para>
-					You can also create a ship by placing the deck (shape 700, frame 2) a chair, and an unfurled sail within 
-					a barge created on the water. You also need a deed for the boat. To create a boat deed need a scroll that 
+					You can also create a ship by placing the deck (shape 700, frame 2) a chair, and an unfurled sail within
+					a barge created on the water. You also need a deed for the boat. To create a boat deed need a scroll that
 					has the same quality value as the sail of your boat.
 				</para>
 			</body>
@@ -1557,24 +1557,24 @@
 			<header>Importing and creating your own custom shapes</header>
 			<body>
 				<para>
-					Importing a shape into <Studio/> is quite easy. Simply select the type of object you wish to 
+					Importing a shape into <Studio/> is quite easy. Simply select the type of object you wish to
 					create (shape, chunk, gump, etc.) and right-click on the display window and select <strong>New Shape</strong>
-					or <strong>New Frame</strong> depending on which is pertinent. Once the new shape is created, right 
-					click on the new shape and select <strong>Import frame</strong>. Now select the desired shape from 
-					the folder. You must now save all in <Studio/> and both <Studio/> and <Exult/> need to be restarted 
+					or <strong>New Frame</strong> depending on which is pertinent. Once the new shape is created, right
+					click on the new shape and select <strong>Import frame</strong>. Now select the desired shape from
+					the folder. You must now save all in <Studio/> and both <Studio/> and <Exult/> need to be restarted
 					before the newly imported shape can be used in a game.
 				</para>
 				<para>
 					<em>Note</em><br/>
-					All shapes imported into <Studio/> must be in either .png or .shp format. .png is a standard format 
-					while .shp is an <Exult/> specific file format. We recommend 
-					<extref target="http://www.gimp.org">The Gimp (The GNU Image Manipulation Program)</extref> for editing 
-					graphic files for several reasons. It is free, it is relatively easy on hardware, and it has all the 
+					All shapes imported into <Studio/> must be in either .png or .shp format. .png is a standard format
+					while .shp is an <Exult/> specific file format. We recommend
+					<extref target="http://www.gimp.org">The Gimp (The GNU Image Manipulation Program)</extref> for editing
+					graphic files for several reasons. It is free, it is relatively easy on hardware, and it has all the
 					necessary functions for creating and importing shapes into <Studio/>.
 				</para>
 				<para>
 					<em>Important</em><br/>
-					For a shape to be compatible with <Studio/> it must be saved as a 255 colour interlaced .png/.shp file. 
+					For a shape to be compatible with <Studio/> it must be saved as a 255 colour interlaced .png/.shp file.
 					RGB or grayscale images are not compatible. Transparent sections will remain transparent in <Exult/>.
 				</para>
 			</body>
@@ -1583,12 +1583,12 @@
 			<header>How to create a custom font?</header>
 			<body>
 				<para>
-					For your convenience <Studio/> accepts .ttf (true type font) files, which is the standard file 
-					format for text in a Windows machine. Select new shape from fonts.vga, here you can either 
-					manually overwrite a single frame of a font or you can import an entire .ttf file by selecting 
-					the <strong>From font</strong> option. To overwrite an existing font set the shape of your 
-					newly imported font to that of a preexisting font. Unfortunately newly imported .ttf files 
-					don't have the correct offsets and you letters will look stuck together. To fix that you will 
+					For your convenience <Studio/> accepts .ttf (true type font) files, which is the standard file
+					format for text in a Windows machine. Select new shape from fonts.vga, here you can either
+					manually overwrite a single frame of a font or you can import an entire .ttf file by selecting
+					the <strong>From font</strong> option. To overwrite an existing font set the shape of your
+					newly imported font to that of a preexisting font. Unfortunately newly imported .ttf files
+					don't have the correct offsets and you letters will look stuck together. To fix that you will
 					have to manually edit all font frames to give them proper spacing.
 				</para>
 			</body>
@@ -1661,7 +1661,7 @@
 				<ul>
 					<li>GTK+3 has to be ported to the platform.</li>
 					<li><Studio/> uses sockets to communicate with <Exult/>.</li>
-					<li>Recently we switched from using X drag'n'drop to SDL2's DropFile. For Windows 
+					<li>Recently we switched from using X drag'n'drop to SDL2's DropFile. For Windows
 						<Exult/> we are still using our own code.<br/>
 						As an alternative to dragging objects, you can now select a shape,
 						then insert it into the game window by left-clicking while holding the
@@ -1727,8 +1727,8 @@
 					working now :-)
 				</para>
 				<para>
-					For a more detailed explanation, see Gary Thompson's paper, 
-					<extref target="https://raw.githubusercontent.com/exult/exult/master/docs/u7edit.txt">u7edit.txt</extref>, 
+					For a more detailed explanation, see Gary Thompson's paper,
+					<extref target="https://raw.githubusercontent.com/exult/exult/master/docs/u7edit.txt">u7edit.txt</extref>,
 					in our 'docs' folder.
 				</para>
 			</body>
@@ -1737,7 +1737,7 @@
 			<header>ifix and ireg reference chart</header>
 			<body>
 				<para>
-					Crowley from our forum made this chart to easily reference the u7iregnn 
+					Crowley from our forum made this chart to easily reference the u7iregnn
 					and u7ifixnn files in both BG and SI. Thanks a lot!
 				</para>
 				<para>
@@ -1767,7 +1767,7 @@
 			<header>Known Bugs with the Linux port</header>
 			<body>
 				<ul>
-					<li>when you load games or mods with more than one map, <Studio/> has problems 
+					<li>when you load games or mods with more than one map, <Studio/> has problems
 						creating and saving the extra maps. This may no longer be an issue.</li>
 				</ul>
 			</body>
@@ -1815,7 +1815,7 @@
 			<header>- 19 February 2011</header>
 			<body>
 				<ul>
-					<li><ref1 target="command_line"/> added -c -m, added space between -x -g, 
+					<li><ref1 target="command_line"/> added -c -m, added space between -x -g,
 					even though it works without space as well.</li>
 				</ul>
 			</body>

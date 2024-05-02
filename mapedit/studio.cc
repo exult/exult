@@ -2455,13 +2455,11 @@ namespace EStudio {
 			gpointer    func_data,    // Data passed to func().
 			GSList*     group         // If a radio menu item is wanted.
 	) {
-		GtkWidget* mitem
-				= group
-						  ? (label ? gtk_radio_menu_item_new_with_label(
-									 group, label)
-								   : gtk_radio_menu_item_new(group))
-						  : (label ? gtk_menu_item_new_with_label(label)
-								   : gtk_menu_item_new());
+		GtkWidget* mitem = group ? (label ? gtk_radio_menu_item_new_with_label(
+													group, label)
+										  : gtk_radio_menu_item_new(group))
+								 : (label ? gtk_menu_item_new_with_label(label)
+										  : gtk_menu_item_new());
 		gtk_widget_set_visible(mitem, true);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), mitem);
 		if (!label) {    // Want separator?

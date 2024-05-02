@@ -634,9 +634,9 @@ void Game_map::get_ifix_chunk_objects(
 			const Shape_info& info  = ShapeID::get_info(shnum);
 			obj                     = (info.is_animated() || info.has_sfx())
 											  ? std::make_shared<Animated_ifix_object>(
-                                  shnum, frnum, tx, ty, tz)
+                                    shnum, frnum, tx, ty, tz)
 											  : std::make_shared<Ifix_game_object>(
-                                  shnum, frnum, tx, ty, tz);
+                                    shnum, frnum, tx, ty, tz);
 			olist->add(obj.get());
 		}
 	} else if (
@@ -653,9 +653,9 @@ void Game_map::get_ifix_chunk_objects(
 			const Shape_info& info  = ShapeID::get_info(shnum);
 			obj                     = (info.is_animated() || info.has_sfx())
 											  ? std::make_shared<Animated_ifix_object>(
-                                  shnum, frnum, tx, ty, tz)
+                                    shnum, frnum, tx, ty, tz)
 											  : std::make_shared<Ifix_game_object>(
-                                  shnum, frnum, tx, ty, tz);
+                                    shnum, frnum, tx, ty, tz);
 			olist->add(obj.get());
 		}
 	} else {
@@ -1250,7 +1250,7 @@ Ifix_game_object_shared Game_map::create_ifix_object(
 	const Shape_info& info = ShapeID::get_info(shnum);
 	return (info.is_animated() || info.has_sfx())
 				   ? std::make_shared<Animated_ifix_object>(
-						   shnum, frnum, 0, 0, 0)
+							 shnum, frnum, 0, 0, 0)
 				   : std::make_shared<Ifix_game_object>(shnum, frnum, 0, 0, 0);
 }
 

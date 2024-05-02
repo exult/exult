@@ -41,7 +41,7 @@ class SFX_info : public Base_info {
 	int  range;     // # of sequential sfx to be used.
 	int  chance;    // % chance of playing the SFX.
 	int  extra;     // For grandfather clock.
-	int volume; 	// For volume of individual SFX
+	int  volume;    // For volume of individual SFX
 
 public:
 	friend class Shape_info;

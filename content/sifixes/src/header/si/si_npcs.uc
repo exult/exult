@@ -420,5 +420,6 @@ enum misc_npcs {
 	PIBB = -284, // Starts at the House of the Dead
 	CINDY = -287, // Naked girl S of turtle-summoning bell
 	DBEYER = -293, // Gargoyle, starts at the House of the Dead
-	FITCH = -295 // Trapper, the one dying at the edge of the Ice Plains
+	FITCH = -295, // Trapper, the one dying at the edge of the Ice Plains
+	AUTOMATON_FACE = -298,
 };

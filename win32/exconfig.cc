@@ -93,8 +93,8 @@ void strcat_safe(char* dest, const char* src, size_t size_dest) {
 	}
 	size_t remaining = size_dest - cur;
 
-	std::strncpy(dest+cur, src, remaining - 1);
-	dest[size_dest-1]=0;
+	std::strncpy(dest + cur, src, remaining - 1);
+	dest[size_dest - 1] = 0;
 }
 
 //
@@ -102,7 +102,7 @@ void strcat_safe(char* dest, const char* src, size_t size_dest) {
 //
 class Path {
 	struct Directory {
-		char       name[256]; // I hope no one needs path components this long
+		char name[256];    // I hope no one needs path components this long
 		Directory* next{};
 
 		Directory() {
@@ -173,15 +173,17 @@ int Path::Addit(const char* p) {
 		d       = d->next;
 	}
 
-	for (i = 0; p[i] != 0 && p[i] != '\\' && p[i] != '/' && i < std::size(d->name)-1; i++) {
+	for (i = 0;
+		 p[i] != 0 && p[i] != '\\' && p[i] != '/' && i < std::size(d->name) - 1;
+		 i++) {
 		d->name[i] = p[i];
 	}
 
 	d->name[i] = 0;
 
-	if (i == std::size(d->name) - 1)
-	{
-		// 'if there is no separator where we stopped the path component is too long so discard everything after what we copied
+	if (i == std::size(d->name) - 1) {
+		// 'if there is no separator where we stopped the path component is too
+		// long so discard everything after what we copied
 		if (p[i] && (p[i] != '\\' && p[i] != '/')) {
 			return std::strlen(p);
 		}

@@ -52,6 +52,19 @@ void Time_queue::clear() {
  */
 
 void Time_queue::add(
+		uint32 t, std::shared_ptr<Time_sensitive> obj, uintptr ud) {
+	obj->queue_cnt++;    // It's going in, no matter what.
+	Queue_entry newent;
+	if (paused && !obj->always) {    // Paused?
+		// Messy, but we need to fix time.
+		t -= SDL_GetTicks() - pause_time;
+	}
+	newent.set(t, nullptr, ud, obj);
+	auto insertionPoint = std::upper_bound(data.begin(), data.end(), newent);
+	data.insert(insertionPoint, newent);
+}
+
+void Time_queue::add(
 		uint32          t,      // When entry is to be activated.
 		Time_sensitive* obj,    // Object to be added.
 		uintptr         ud      // User data.
@@ -62,7 +75,7 @@ void Time_queue::add(
 		// Messy, but we need to fix time.
 		t -= SDL_GetTicks() - pause_time;
 	}
-	newent.set(t, obj, ud);
+	newent.set(t, obj, ud, nullptr);
 	auto insertionPoint = std::upper_bound(data.begin(), data.end(), newent);
 	data.insert(insertionPoint, newent);
 }
@@ -80,7 +93,20 @@ bool operator<(const Queue_entry& q1, const Queue_entry& q2) {
 bool Time_queue::remove(Time_sensitive* obj) {
 	auto toRemove
 			= std::find_if(data.begin(), data.end(), [obj](const auto& el) {
-				  return el.handler == obj;
+				  return el.handler == obj || el.sp_handler.get() == obj;
+			  });
+	auto found = toRemove != data.end();
+	if (found) {
+		toRemove->handler->queue_cnt--;
+		data.erase(toRemove);
+	}
+	return found;
+}
+
+bool Time_queue::remove(std::shared_ptr<Time_sensitive> obj) {
+	auto toRemove
+			= std::find_if(data.begin(), data.end(), [obj](const auto& el) {
+				  return el.handler == obj.get() || el.sp_handler == obj;
 			  });
 	auto found = toRemove != data.end();
 	if (found) {
@@ -108,6 +134,19 @@ bool Time_queue::remove(Time_sensitive* obj, uintptr udata) {
 	return found;
 }
 
+bool Time_queue::remove(std::shared_ptr<Time_sensitive> obj, uintptr udata) {
+	auto       it = std::find_if(data.begin(), data.end(), [&](const auto& el) {
+        return (el.handler == obj.get() || el.sp_handler == obj)
+               && el.udata == udata;
+    });
+	const bool found = it != data.end();
+	if (found) {
+		obj->queue_cnt--;
+		data.erase(it);
+	}
+	return found;
+}
+
 /*
  *  See if a given entry is in the queue.
  *
@@ -118,7 +157,7 @@ bool Time_queue::find(const Time_sensitive* obj) const {
 	return std::find_if(
 				   data.begin(), data.end(),
 				   [&](const auto& el) {
-					   return el.handler == obj;
+					   return el.handler == obj || el.sp_handler.get() == obj;
 				   })
 		   != data.end();
 }
@@ -131,7 +170,7 @@ bool Time_queue::find(const Time_sensitive* obj) const {
 
 long Time_queue::find_delay(const Time_sensitive* obj, uint32 curtime) const {
 	auto found = std::find_if(data.begin(), data.end(), [&](const auto& el) {
-		return obj == el.handler;
+		return obj == el.handler || obj == el.sp_handler.get();
 	});
 	if (found == data.end()) {
 		return -1;
@@ -152,12 +191,20 @@ void Time_queue::activate0(uint32 curtime    // Current time.
 ) {
 	Queue_entry ent;
 	do {
-		ent                   = data.front();
-		Time_sensitive* obj   = ent.handler;
-		const uintptr   udata = ent.udata;
+		ent                                    = data.front();
+		Time_sensitive*                 obj    = ent.handler;
+		std::shared_ptr<Time_sensitive> sp_obj = ent.sp_handler;
+		const uintptr                   udata  = ent.udata;
 		data.pop_front();    // Remove from chain.
-		obj->queue_cnt--;
-		obj->handle_event(curtime, udata);
+
+		if (!obj && sp_obj) {
+			obj = sp_obj.get();
+		}
+		if (obj) {
+			obj->queue_cnt--;
+			obj->handle_event(curtime, udata);
+		}
+
 	} while (!data.empty() && !(curtime < data.front().time));
 }
 
@@ -175,9 +222,13 @@ void Time_queue::activate_always(uint32 curtime    // Current time.
 	for (auto it = data.begin(); it != data.end() && !(curtime < it->time);) {
 		auto next = it;
 		++next;    // Get ->next in case we erase.
-		ent                 = *it;
-		Time_sensitive* obj = ent.handler;
-		if (obj->always) {
+		ent                                    = *it;
+		std::shared_ptr<Time_sensitive> sp_obj = ent.sp_handler;
+		Time_sensitive*                 obj    = ent.handler;
+		if (!obj && sp_obj) {
+			obj = sp_obj.get();
+		}
+		if (obj && obj->always) {
 			obj->queue_cnt--;
 			const uintptr udata = ent.udata;
 			data.erase(it);
@@ -219,9 +270,10 @@ bool Time_queue_iterator::operator()(
 	iter        = this_obj == nullptr
 						  ? remain
 						  : std::find_if(
-                           iter, tqueue->data.end(), [&](const auto& el) {
-                               return el.handler == this_obj;
-                           });
+                             iter, tqueue->data.end(), [&](const auto& el) {
+                                 return el.handler == this_obj
+                                        || el.sp_handler.get() == this_obj;
+                             });
 	if (iter == tqueue->data.end()) {
 		return false;
 	}

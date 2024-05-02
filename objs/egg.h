@@ -101,6 +101,22 @@ public:
 		auto_reset = 3
 	};
 
+	bool is_hatched() const {
+		return (flags & (1 << static_cast<int>(hatched))) != 0;
+	}
+
+	bool is_once() const {
+		return (flags & (1 << static_cast<int>(once))) != 0;
+	}
+
+	bool is_nocturnal() const {
+		return (flags & (1 << static_cast<int>(nocturnal))) != 0;
+	}
+
+	bool is_auto_reset() const {
+		return (flags & (1 << static_cast<int>(auto_reset))) != 0;
+	}
+
 	enum Egg_criteria {
 		cached_in         = 0,    // Activated when chunk read in?
 		party_near        = 1,
@@ -155,6 +171,17 @@ public:
 	virtual bool is_active(
 			Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty);
 
+	// This is pretty much the opposite to is_active it is used to test if
+	// unhatch should be called largely because the avatar was in proximity and
+	// moved out.
+	virtual bool test_unhatch(
+			Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty);
+
+	// returns true by subclasses if they want unhatched to be called
+	virtual bool can_unhatch() {
+		return false;
+	}
+
 	TileRect get_area() const {    // Get active area.
 		return area;
 	}
@@ -176,7 +203,13 @@ public:
 		ignore_unused_variable_warning(obj, must);
 	}
 
+	virtual bool unhatch_now(Game_object* obj, bool must) {
+		ignore_unused_variable_warning(obj, must);
+		return false;
+	}
+
 	virtual void hatch(Game_object* obj, bool must = false);
+	virtual void unhatch(Game_object* obj, bool must = false);
 	void         print_debug();
 	static void  set_weather(
 			 int weather, int len = 15, Game_object* egg = nullptr);
@@ -195,6 +228,10 @@ public:
 	int get_ireg_size() override;
 
 	virtual bool reset() {
+		// being unloaded last change call unhatch_now
+		if (is_hatched() && can_unhatch()) {
+			unhatch_now(nullptr, true);
+		}
 		flags &= ~(1 << hatched);
 		return true;
 	}

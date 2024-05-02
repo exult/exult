@@ -84,8 +84,17 @@ public:
 	}
 
 	// Fill line with pixel.
-	void fill_line8(unsigned char val, int srcw, int destx, int desty) {
-		ib8->Image_buffer8::fill_line8(val, srcw, destx, desty);
+	void fill_hline8(unsigned char val, int srcw, int destx, int desty) {
+		ib8->Image_buffer8::fill_hline8(val, srcw, destx, desty);
+	}
+
+	// Draw an arbitrary line from any point to any point inclusive
+	// If xform is not null then the line is drawn using xform otherwise val is
+	// used;
+	void draw_line8(
+			unsigned char val, int startx, int starty, int endx, int endy,
+			const Xform_palette* xform = nullptr) {
+		ib8->draw_line8(val, startx, starty, endx, endy, xform);
 	}
 
 	// Copy rectangle into here.
@@ -96,26 +105,26 @@ public:
 	}
 
 	// Copy line to here.
-	void copy_line8(
+	void copy_hline8(
 			const unsigned char* src_pixels, int srcw, int destx, int desty) {
-		ib8->Image_buffer8::copy_line8(src_pixels, srcw, destx, desty);
+		ib8->Image_buffer8::copy_hline8(src_pixels, srcw, destx, desty);
 	}
 
 	// Copy with translucency table.
-	void copy_line_translucent8(
+	void copy_hline_translucent8(
 			const unsigned char* src_pixels, int srcw, int destx, int desty,
 			int first_translucent, int last_translucent,
 			const Xform_palette* xforms) {
-		ib8->Image_buffer8::copy_line_translucent8(
+		ib8->Image_buffer8::copy_hline_translucent8(
 				src_pixels, srcw, destx, desty, first_translucent,
 				last_translucent, xforms);
 	}
 
 	// Apply translucency to a line.
-	void fill_line_translucent8(
+	void fill_hline_translucent8(
 			unsigned char val, int srcw, int destx, int desty,
 			const Xform_palette& xform) {
-		ib8->Image_buffer8::fill_line_translucent8(
+		ib8->Image_buffer8::fill_hline_translucent8(
 				val, srcw, destx, desty, xform);
 	}
 

@@ -719,6 +719,7 @@ int XMidiFile::GetVLQ(IDataSource* source, uint32& quant) {
 		quant <<= 7;
 		quant |= data & 0x7F;
 
+		// if bit7 is clear this is the final byte
 		if (!(data & 0x80)) {
 			i++;
 			break;

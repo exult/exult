@@ -525,8 +525,9 @@ namespace TCB_SPAN_NAMESPACE_NAME {
 	span(const std::array<T, N>&) -> span<const T, N>;
 
 	template <class Container>
-	span(Container&) -> span<typename std::remove_reference<
-			decltype(*detail::data(std::declval<Container&>()))>::type>;
+	span(Container&)
+			-> span<typename std::remove_reference<
+					decltype(*detail::data(std::declval<Container&>()))>::type>;
 
 	template <class Container>
 	span(const Container&) -> span<const typename Container::value_type>;

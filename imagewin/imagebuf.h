@@ -153,6 +153,13 @@ public:
 		cliph = h;
 	}
 
+	void get_clip(int& x, int& y, int& w, int& h) {
+		x = clipx;
+		y = clipy;
+		w = clipw;
+		h = cliph;
+	}
+
 	// Is rect. visible within clip?
 	bool is_visible(int x, int y, int w, int h) {
 		return x < clipx + clipw && y < clipy + cliph && x + w > clipx
@@ -196,8 +203,14 @@ public:
 	virtual void fill8(
 			unsigned char val, int srcw, int srch, int destx, int desty)
 			= 0;
-	// Fill line with pixel.
-	virtual void fill_line8(unsigned char val, int srcw, int destx, int desty)
+	// Fill horizontal line with pixel.
+	virtual void fill_hline8(unsigned char val, int srcw, int destx, int desty)
+			= 0;
+	// Draw an arbitrary line from any point to any point. Accuracy not
+	// guarenteed
+	virtual void draw_line8(
+			unsigned char val, int startx, int starty, int endx, int endy,
+			const Xform_palette* xform = nullptr)
 			= 0;
 	// Copy rectangle into here.
 	virtual void copy8(
@@ -205,17 +218,17 @@ public:
 			int desty)
 			= 0;
 	// Copy line to here.
-	virtual void copy_line8(
+	virtual void copy_hline8(
 			const unsigned char* src_pixels, int srcw, int destx, int desty)
 			= 0;
 	// Copy with translucency table.
-	virtual void copy_line_translucent8(
+	virtual void copy_hline_translucent8(
 			const unsigned char* src_pixels, int srcw, int destx, int desty,
 			int first_translucent, int last_translucent,
 			const Xform_palette* xforms)
 			= 0;
 	// Apply translucency to a line.
-	virtual void fill_line_translucent8(
+	virtual void fill_hline_translucent8(
 			unsigned char val, int srcw, int destx, int desty,
 			const Xform_palette& xform)
 			= 0;

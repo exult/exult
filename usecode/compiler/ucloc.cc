@@ -78,8 +78,7 @@ void Uc_location::error(const char* s) {
  */
 
 void Uc_location::warning(const char* s) {
-	cout << source << ':' << line + 1 << ": "
-		 << "Warning: " << s << endl;
+	cout << source << ':' << line + 1 << ": " << "Warning: " << s << endl;
 }
 
 /*
@@ -92,6 +91,6 @@ void Uc_location::yyerror(const char* s) {
 }
 
 void Uc_location::yywarning(const char* s) {
-	cout << cur_source << ':' << cur_line + 1 << ": "
-		 << "Warning: " << s << endl;
+	cout << cur_source << ':' << cur_line + 1 << ": " << "Warning: " << s
+		 << endl;
 }
