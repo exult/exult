@@ -89,6 +89,21 @@ public:
 		x = newx;
 		y = newy;
 	}
+
+	void screen_to_local(int& sx, int& sy) const override {
+		sx -= x;
+		sy -= y;
+		if (parent) parent->screen_to_local(sx, sy);
+		
+	}
+
+	void local_to_screen(int& sx, int& sy) const override {
+		sx += x;
+		sy += y;
+		if (parent) {
+			parent->local_to_screen(sx, sy);
+		}
+	}
 };
 
 #endif

@@ -43,10 +43,18 @@ public:
 	virtual int  get_x() const               = 0;
 	virtual int  get_y() const               = 0;
 	virtual void set_pos(int newx, int newy) = 0;
-	//! Get button at point
+
+	//! Get button at point in screenspace
 	virtual Gump_button* on_button(int mx, int my) = 0;
 
+	//! Transform point from screen space to local
+	virtual void screen_to_local(int& sx, int& sy) const = 0;
+
+	//! Transform point deom local to screen space
+	virtual void local_to_screen(int& sx, int& sy) const = 0;
+
 	// Basic Input events These all return true if the event was handled
+	// coords are all in screen space
 
 	virtual bool mouse_down(int mx, int my, int button) {
 		ignore_unused_variable_warning(mx, my);
@@ -218,6 +226,16 @@ public:
 
 	virtual bool     has_point(int x, int y) const;
 	virtual TileRect get_rect() const;
+
+	void screen_to_local(int& sx, int& sy) const override {
+		sx -= x;
+		sy -= y;
+	}
+
+	void local_to_screen(int& sx, int& sy) const override {
+		sx += x;
+		sy += y;
+	}
 
 	virtual bool handle_kbd_event(void* ev) {
 		ignore_unused_variable_warning(ev);
