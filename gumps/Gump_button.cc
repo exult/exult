@@ -65,16 +65,13 @@ void Gump_button::double_clicked(int x, int y) {
  */
 
 void Gump_button::paint() {
-	int px = 0;
-	int py = 0;
+	int sx = 0;
+	int sy = 0;
 
-	if (parent) {
-		px = parent->get_x();
-		py = parent->get_y();
-	}
+	local_to_screen(sx, sy);
 
 	const int prev_frame = get_framenum();
 	set_frame(prev_frame + (is_pushed() ? 1 : 0));
-	paint_shape(x + px, y + py);
+	paint_shape(sx, sy);
 	set_frame(prev_frame);
 }

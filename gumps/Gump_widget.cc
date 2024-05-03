@@ -32,8 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 bool Gump_widget::on_widget(
 		int mx, int my    // Point in window.
 ) const {
-	mx -= parent->get_x() + x;    // Get point rel. to gump.
-	my -= parent->get_y() + y;
+	screen_to_local(mx, my);
 	Shape_frame* cshape = get_shape();
 	return (cshape != nullptr) ? cshape->has_point(mx, my) : false;
 }
@@ -43,15 +42,12 @@ bool Gump_widget::on_widget(
  */
 
 void Gump_widget::paint() {
-	int px = 0;
-	int py = 0;
+	int sx = 0;
+	int sy = 0;
 
-	if (parent) {
-		px = parent->get_x();
-		py = parent->get_y();
-	}
+	local_to_screen(sx, sy);
 
-	paint_shape(x + px, y + py);
+	paint_shape( sx, sy);
 }
 
 /*
@@ -59,13 +55,11 @@ void Gump_widget::paint() {
  */
 
 TileRect Gump_widget::get_rect() {
-	int px = x;
-	int py = y;
+	int sx = 0;
+	int sy = 0;
 
-	if (parent) {
-		px += parent->get_x();
-		py += parent->get_y();
-	}
+
+	local_to_screen(sx, sy);
 
 	Shape_frame* s = get_shape();
 
@@ -74,6 +68,6 @@ TileRect Gump_widget::get_rect() {
 	}
 
 	return TileRect(
-			px - s->get_xleft(), py - s->get_yabove(), s->get_width(),
+			sx - s->get_xleft(), sy - s->get_yabove(), s->get_width(),
 			s->get_height());
 }
