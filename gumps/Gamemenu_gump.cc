@@ -161,8 +161,8 @@ void Gamemenu_gump::paint() {
 	gwin->set_painted();
 }
 
-bool Gamemenu_gump::mouse_down(int mx, int my, int button) {
-	if (button != 1) {
+bool Gamemenu_gump::mouse_down(int mx, int my, MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 
@@ -185,15 +185,15 @@ bool Gamemenu_gump::mouse_down(int mx, int my, int button) {
 	return true;
 }
 
-bool Gamemenu_gump::mouse_up(int mx, int my, int button) {
-	if (button != 1) {
+bool Gamemenu_gump::mouse_up(int mx, int my, MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 
 	if (pushed) {    // Pushing a button?
 		pushed->unpush(button);
 		if (pushed->on_button(mx, my)) {
-			pushed->activate(1);
+			pushed->activate(MouseButton::Left);
 		}
 		pushed = nullptr;
 	}

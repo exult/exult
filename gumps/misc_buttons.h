@@ -35,7 +35,7 @@ public:
 	}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 
 	bool is_checkmark() const override {
 		return true;
@@ -54,7 +54,7 @@ public:
 	}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 };
 
 /*
@@ -69,7 +69,7 @@ public:
 	}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 };
 
 /*
@@ -84,7 +84,7 @@ public:
 	}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 	void paint() override;
 };
 
@@ -101,7 +101,7 @@ public:
 	}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 };
 
 /*
@@ -117,7 +117,7 @@ public:
 	}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 };
 
 /*
@@ -132,7 +132,7 @@ public:
 	}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 };
 
 #endif

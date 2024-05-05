@@ -34,9 +34,9 @@
 #endif    // __GNUC__
 
 #include "Configuration.h"
-#include "Mixer_gump.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
+#include "Mixer_gump.h"
 #include "Text_button.h"
 #include "exult.h"
 #include "exult_flx.h"
@@ -46,25 +46,27 @@
 
 using std::string;
 
-static const int rowy[]
-		= {8, 21, 34, 48};
+static const int rowy[] = {8, 21, 34, 48};
 static const int colx[] = {35, 83, 95, 117, 206, 215, 253};
 
 // Scrollbar and Slider Info
-const short Mixer_gump::sliderw = 7;      // Width of Slider
-int Mixer_gump::max_val = 100;
-int Mixer_gump::min_val = 0;
-short Mixer_gump::xmin      = colx[2] + 2 ;    // Min., max. positions of diamond.
-short Mixer_gump::xmax      = colx[5] - Mixer_gump::sliderw ;
+const short Mixer_gump::sliderw = 7;    // Width of Slider
+int         Mixer_gump::max_val = 100;
+int         Mixer_gump::min_val = 0;
+short Mixer_gump::xmin = colx[2] + 2;    // Min., max. positions of diamond.
+short Mixer_gump::xmax = colx[5] - Mixer_gump::sliderw;
 
 static const char* oktext     = "OK";
 static const char* canceltext = "CANCEL";
 static const char* helptext   = "HELP";
 
-// the slider bar is longer than 100 pixels, so we calculate its length and divide by 100
-float Mixer_gump::factor = static_cast<float>(colx[5] - colx[2] - 2 - Mixer_gump::sliderw) / static_cast<float>(100.0);
+// the slider bar is longer than 100 pixels, so we calculate its length and
+// divide by 100
+float Mixer_gump::factor
+		= static_cast<float>(colx[5] - colx[2] - 2 - Mixer_gump::sliderw)
+		  / static_cast<float>(100.0);
 
-using Mixer_button  = CallbackButton<Mixer_gump>;
+using Mixer_button     = CallbackButton<Mixer_gump>;
 using Mixer_Textbutton = CallbackTextButton<Mixer_gump>;
 
 void Mixer_gump::close() {
@@ -84,12 +86,13 @@ void Mixer_gump::help() {
 }
 
 void Mixer_gump::load_settings() {
-	music_volume = max_val;
-	sfx_volume = max_val;
+	music_volume  = max_val;
+	sfx_volume    = max_val;
 	speech_volume = max_val;
 	config->value("config/audio/midi/music_volume", music_volume, music_volume);
 	config->value("config/audio/effects/sfx_volume", sfx_volume, sfx_volume);
-	config->value("config/audio/speech/speech_volume", speech_volume, speech_volume);
+	config->value(
+			"config/audio/speech/speech_volume", speech_volume, speech_volume);
 }
 
 void Mixer_gump::set_val(int newval) {
@@ -101,48 +104,44 @@ void Mixer_gump::set_val(int newval) {
 Mixer_gump::Mixer_gump()
 		: Modal_gump(nullptr, EXULT_FLX_MIXER_SHP, SF_EXULT_FLX) {
 	set_object_area(TileRect(0, 0, 0, 0), 9, 62);
-	music_slider = ShapeID(EXULT_FLX_SAV_SLIDER_SHP, 0, SF_EXULT_FLX);
-	sfx_slider = ShapeID(EXULT_FLX_SAV_SLIDER_SHP, 0, SF_EXULT_FLX);
+	music_slider  = ShapeID(EXULT_FLX_SAV_SLIDER_SHP, 0, SF_EXULT_FLX);
+	sfx_slider    = ShapeID(EXULT_FLX_SAV_SLIDER_SHP, 0, SF_EXULT_FLX);
 	speech_slider = ShapeID(EXULT_FLX_SAV_SLIDER_SHP, 0, SF_EXULT_FLX);
 	for (auto& btn : buttons) {
 		btn.reset();
 	}
 	buttons[id_music_left] = std::make_unique<Mixer_button>(
 			this, &Mixer_gump::scroll_left, EXULT_FLX_SCROLL_LEFT_SHP, colx[1],
-			rowy[0] -3, SF_EXULT_FLX);
+			rowy[0] - 3, SF_EXULT_FLX);
 	buttons[id_music_right] = std::make_unique<Mixer_button>(
-			this, &Mixer_gump::scroll_right, EXULT_FLX_SCROLL_RIGHT_SHP, colx[5],
-			rowy[0] -3, SF_EXULT_FLX);
+			this, &Mixer_gump::scroll_right, EXULT_FLX_SCROLL_RIGHT_SHP,
+			colx[5], rowy[0] - 3, SF_EXULT_FLX);
 	buttons[id_sfx_left] = std::make_unique<Mixer_button>(
 			this, &Mixer_gump::scroll_left, EXULT_FLX_SCROLL_LEFT_SHP, colx[1],
-			rowy[1] -3, SF_EXULT_FLX);
+			rowy[1] - 3, SF_EXULT_FLX);
 	buttons[id_sfx_right] = std::make_unique<Mixer_button>(
-			this, &Mixer_gump::scroll_right, EXULT_FLX_SCROLL_RIGHT_SHP, colx[5],
-			rowy[1] -3, SF_EXULT_FLX);
+			this, &Mixer_gump::scroll_right, EXULT_FLX_SCROLL_RIGHT_SHP,
+			colx[5], rowy[1] - 3, SF_EXULT_FLX);
 	buttons[id_voc_left] = std::make_unique<Mixer_button>(
 			this, &Mixer_gump::scroll_left, EXULT_FLX_SCROLL_LEFT_SHP, colx[1],
-			rowy[2] -3, SF_EXULT_FLX);
+			rowy[2] - 3, SF_EXULT_FLX);
 	buttons[id_voc_right] = std::make_unique<Mixer_button>(
-			this, &Mixer_gump::scroll_right, EXULT_FLX_SCROLL_RIGHT_SHP, colx[5],
-			rowy[2] -3, SF_EXULT_FLX);
+			this, &Mixer_gump::scroll_right, EXULT_FLX_SCROLL_RIGHT_SHP,
+			colx[5], rowy[2] - 3, SF_EXULT_FLX);
 
 	load_settings();
 
 	// Ok
 	buttons[id_ok] = std::make_unique<Mixer_Textbutton>(
-			this, &Mixer_gump::close, oktext, colx[0] - 2,
-			rowy[3], 50);
+			this, &Mixer_gump::close, oktext, colx[0] - 2, rowy[3], 50);
 	// Cancel
 	buttons[id_cancel] = std::make_unique<Mixer_Textbutton>(
-			this, &Mixer_gump::cancel, canceltext, colx[4],
-			rowy[3], 50);
+			this, &Mixer_gump::cancel, canceltext, colx[4], rowy[3], 50);
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 	// Help
 	buttons[id_help] = std::make_unique<Mixer_Textbutton>(
-			this, &Mixer_gump::help, helptext, colx[3],
-			rowy[3], 50);
-#endif	
-
+			this, &Mixer_gump::help, helptext, colx[3], rowy[3], 50);
+#endif
 }
 
 void Mixer_gump::scroll_left() {
@@ -168,13 +167,12 @@ void Mixer_gump::move_slider(int dir) {
 	gwin->set_painted();
 }
 
-
 void Mixer_gump::save_settings() {
 	config->set("config/audio/midi/music_volume", music_volume, false);
 	config->set("config/audio/effects/sfx_volume", sfx_volume, false);
 	config->set("config/audio/speech/speech_volume", speech_volume, false);
 	config->write_back();
-	
+
 	// Now initialize Audio anew with the saved settings?
 	// commented for now until it actually does something
 	/*Audio::get_ptr()->Init_sfx();
@@ -199,32 +197,28 @@ void Mixer_gump::paint() {
 			btn->paint();
 		}
 	}
-	Font*          font    = fontManager.get_font("SMALL_BLACK_FONT");
-	Image_window8* iwin    = gwin->get_win();
-	font->paint_text(
-			iwin->get_ib8(), "Music:", x + colx[0],
-			y + rowy[0]);
-	font->paint_text(
-			iwin->get_ib8(), "SFX:", x + colx[0],
-			y + rowy[1]);
-	font->paint_text(
-			iwin->get_ib8(), "Speech:", x + colx[0],
-			y + rowy[2]);
+	Font*          font = fontManager.get_font("SMALL_BLACK_FONT");
+	Image_window8* iwin = gwin->get_win();
+	font->paint_text(iwin->get_ib8(), "Music:", x + colx[0], y + rowy[0]);
+	font->paint_text(iwin->get_ib8(), "SFX:", x + colx[0], y + rowy[1]);
+	font->paint_text(iwin->get_ib8(), "Speech:", x + colx[0], y + rowy[2]);
 	// Slider
-	music_slider.paint_shape(x + colx[2] + 2  + music_volume * factor, y + rowy[0]);
+	music_slider.paint_shape(
+			x + colx[2] + 2 + music_volume * factor, y + rowy[0]);
 	sfx_slider.paint_shape(x + colx[2] + 2 + sfx_volume * factor, y + rowy[1]);
-	speech_slider.paint_shape(x + colx[2] + 2  + speech_volume * factor, y + rowy[2]);
+	speech_slider.paint_shape(
+			x + colx[2] + 2 + speech_volume * factor, y + rowy[2]);
 	// Numbers
 	gumpman->paint_num(music_volume, x + colx[6], y + rowy[0]);
 	gumpman->paint_num(sfx_volume, x + colx[6], y + rowy[1]);
 	gumpman->paint_num(speech_volume, x + colx[6], y + rowy[2]);
-	
+
 	gwin->set_painted();
 }
 
-bool Mixer_gump::mouse_down(int mx, int my, int button) {
+bool Mixer_gump::mouse_down(int mx, int my, MouseButton button) {
 	// Only left and right buttons
-	if (button != 1 && button != 3) {
+	if (button != MouseButton::Left && button != MouseButton::Right) {
 		return false;
 	}
 
@@ -233,7 +227,7 @@ bool Mixer_gump::mouse_down(int mx, int my, int button) {
 		return true;
 	}
 
-	dragging         = 0;
+	dragging = 0;
 	// First try checkmark
 	pushed = Gump::on_button(mx, my);
 
@@ -251,17 +245,17 @@ bool Mixer_gump::mouse_down(int mx, int my, int button) {
 		pushed = nullptr;
 	}
 
-	return button == 1 || pushed != nullptr;
+	return button == MouseButton::Left || pushed != nullptr;
 }
 
-bool Mixer_gump::mouse_up(int mx, int my, int button) {
+bool Mixer_gump::mouse_up(int mx, int my, MouseButton button) {
 	// Not Pushing a button?
 	if (!pushed) {
 		return false;
 	}
 
 	if (pushed->get_pushed() != button) {
-		return button == 1;
+		return button == MouseButton::Left;
 	}
 
 	bool res = false;
@@ -281,21 +275,21 @@ bool Mixer_gump::mouse_drag(
 
 bool Mixer_gump::mousewheel_up(int mx, int my) {
 	const SDL_Keymod mod = SDL_GetModState();
-/*	if (mod & KMOD_ALT) {
-		move_diamond(-10 * step_val);
-	} else {
-		move_diamond(-step_val);
-	}*/
+	/*	if (mod & KMOD_ALT) {
+			move_diamond(-10 * step_val);
+		} else {
+			move_diamond(-step_val);
+		}*/
 	return false;
 }
 
 bool Mixer_gump::mousewheel_down(int mx, int my) {
 	const SDL_Keymod mod = SDL_GetModState();
-/*	if (mod & KMOD_ALT) {
-		move_diamond(10 * step_val);
-	} else {
-		move_diamond(step_val);
-	}*/
+	/*	if (mod & KMOD_ALT) {
+			move_diamond(10 * step_val);
+		} else {
+			move_diamond(step_val);
+		}*/
 
 	return false;
 }

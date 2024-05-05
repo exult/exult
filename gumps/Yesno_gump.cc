@@ -66,15 +66,15 @@ public:
 			  isyes(yes) {}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 };
 
 /*
  *  Handle 'yes' or 'no' button.
  */
 
-bool Yesno_button::activate(int button) {
-	if (button != 1) {
+bool Yesno_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	static_cast<Yesno_gump*>(parent)->set_answer(isyes);
@@ -116,9 +116,9 @@ void Yesno_gump::paint() {
  */
 
 bool Yesno_gump::mouse_down(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	pushed = on_button(mx, my);
@@ -133,9 +133,9 @@ bool Yesno_gump::mouse_down(
  */
 
 bool Yesno_gump::mouse_up(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 

@@ -30,8 +30,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  Redisplay as 'pushed'.
  */
 
-bool Gump_button::push(int button) {
-	if (button == 1) {
+bool Gump_button::push(MouseButton button) {
+	if (button == MouseButton::Left) {
 		set_pushed(button);
 		paint();
 		gwin->set_painted();
@@ -44,8 +44,8 @@ bool Gump_button::push(int button) {
  *  Redisplay as 'unpushed'.
  */
 
-void Gump_button::unpush(int button) {
-	if (button == 1) {
+void Gump_button::unpush(MouseButton button) {
+	if (button == MouseButton::Left) {
 		set_pushed(false);
 		paint();
 		gwin->set_painted();
@@ -55,6 +55,10 @@ void Gump_button::unpush(int button) {
 /*
  *  Default method for double-click.
  */
+
+bool Gump_button::activate(MouseButton button) {
+	return false;
+}
 
 void Gump_button::double_clicked(int x, int y) {
 	ignore_unused_variable_warning(x, y);

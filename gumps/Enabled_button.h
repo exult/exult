@@ -34,9 +34,9 @@ public:
 		init();
 	}
 
-	bool push(int button) override;
-	void unpush(int button) override;
-	bool activate(int button = 1) override;
+	bool push(MouseButton button) override;
+	void unpush(MouseButton button) override;
+	bool activate(MouseButton button) override;
 
 	int getselection() const {
 		return get_framenum();

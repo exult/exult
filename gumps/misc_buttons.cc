@@ -42,8 +42,8 @@ Checkmark_button::Checkmark_button(Gump* par, int px, int py)
  *  Handle click on a 'checkmark'.
  */
 
-bool Checkmark_button::activate(int button) {
-	if (button != 1) {
+bool Checkmark_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	Audio::get_ptr()->play_sound_effect(Audio::game_sfx(74));
@@ -62,8 +62,8 @@ Heart_button::Heart_button(Gump* par, int px, int py)
  *  Handle click on a heart.
  */
 
-bool Heart_button::activate(int button) {
-	if (button != 1) {
+bool Heart_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	gumpman->add_gump(
@@ -82,8 +82,8 @@ Disk_button::Disk_button(Gump* par, int px, int py)
  *  Handle click on a diskette.
  */
 
-bool Disk_button::activate(int button) {
-	if (button != 1) {
+bool Disk_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	auto* menu = new Gamemenu_gump();
@@ -105,8 +105,8 @@ Combat_button::Combat_button(Gump* par, int px, int py)
  *  Handle click on a combat toggle button.
  */
 
-bool Combat_button::activate(int button) {
-	if (button != 1) {
+bool Combat_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	gwin->toggle_combat();
@@ -137,8 +137,8 @@ Halo_button::Halo_button(Gump* par, int px, int py, Actor* a)
  *  Handle click on a halo toggle button.
  */
 
-bool Halo_button::activate(int button) {
-	if (button != 1) {
+bool Halo_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	// Want to toggle it.
@@ -175,8 +175,8 @@ Combat_mode_button::Combat_mode_button(Gump* par, int px, int py, Actor* a)
  *  Handle click on a combat toggle button.
  */
 
-bool Combat_mode_button::activate(int button) {
-	if (button != 1) {
+bool Combat_mode_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	// Only Avatar gets last frame (manual)
@@ -203,8 +203,8 @@ Cstats_button::Cstats_button(Gump* par, int px, int py)
  *  Handle click on a combat stats button
  */
 
-bool Cstats_button::activate(int button) {
-	if (button != 1) {
+bool Cstats_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	const int cnt = partyman->get_count();

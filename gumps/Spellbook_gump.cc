@@ -99,13 +99,13 @@ public:
 			  leftright(lr) {}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 
-	bool push(int button) override {
-		return button == 1;
+	bool push(MouseButton button) override {
+		return button == MouseButton::Left;
 	}
 
-	void unpush(int button) override {
+	void unpush(MouseButton button) override {
 		ignore_unused_variable_warning(button);
 	}
 };
@@ -114,8 +114,8 @@ public:
  *  Handle click.
  */
 
-bool Page_button::activate(int button) {
-	if (button != 1) {
+bool Page_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	static_cast<Spellbook_gump*>(parent)->change_page(leftright ? 1 : -1);
@@ -131,13 +131,13 @@ public:
 
 	void set();    // Call this to set properly.
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 
-	bool push(int button) override {
-		return button == 1;
+	bool push(MouseButton button) override {
+		return button == MouseButton::Left;
 	}
 
-	void unpush(int button) override {
+	void unpush(MouseButton button) override {
 		ignore_unused_variable_warning(button);
 	}
 };
@@ -169,8 +169,8 @@ void Bookmark_button::set() {
  *  Handle click.
  */
 
-bool Bookmark_button::activate(int button) {
-	if (button != 1) {
+bool Bookmark_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	auto*     sgump  = static_cast<Spellbook_gump*>(parent);
@@ -199,14 +199,14 @@ public:
 	}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 	void double_clicked(int x, int y) override;
 
-	bool push(int button) override {
-		return button == 1;
+	bool push(MouseButton button) override {
+		return button == MouseButton::Left;
 	}
 
-	void unpush(int button) override {
+	void unpush(MouseButton button) override {
 		ignore_unused_variable_warning(button);
 	}
 };
@@ -215,8 +215,8 @@ public:
  *  Handle click.
  */
 
-bool Spell_button::activate(int button) {
-	if (button != 1) {
+bool Spell_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	static_cast<Spelltype_gump*>(parent)->select_spell(spell);

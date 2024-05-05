@@ -30,8 +30,8 @@ const char* Enabled_button::selections[] = {"Disabled", "Enabled"};
  *  Redisplay as 'pushed'.
  */
 
-bool Enabled_button::push(int button) {
-	if (button == 1 || button == 3) {
+bool Enabled_button::push(MouseButton button) {
+	if (button == MouseButton::Left || button == MouseButton::Middle) {
 		set_pushed(button);
 		paint();
 		gwin->set_painted();
@@ -44,16 +44,16 @@ bool Enabled_button::push(int button) {
  *  Redisplay as 'unpushed'.
  */
 
-void Enabled_button::unpush(int button) {
-	if (button == 1 || button == 3) {
+void Enabled_button::unpush(MouseButton button) {
+	if (button == MouseButton::Left || button == MouseButton::Right) {
 		set_pushed(false);
 		paint();
 		gwin->set_painted();
 	}
 }
 
-bool Enabled_button::activate(int button) {
-	if (button != 1 && button != 3) {
+bool Enabled_button::activate(MouseButton button) {
+	if (button != MouseButton::Left && button != MouseButton::Right) {
 		return false;
 	}
 

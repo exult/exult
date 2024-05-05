@@ -47,7 +47,7 @@ void Gump_widget::paint() {
 
 	local_to_screen(sx, sy);
 
-	paint_shape( sx, sy);
+	paint_shape(sx, sy);
 }
 
 /*
@@ -57,7 +57,6 @@ void Gump_widget::paint() {
 TileRect Gump_widget::get_rect() {
 	int sx = 0;
 	int sy = 0;
-
 
 	local_to_screen(sx, sy);
 
