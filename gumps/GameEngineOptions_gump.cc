@@ -273,9 +273,9 @@ void GameEngineOptions_gump::paint() {
 	gwin->set_painted();
 }
 
-bool GameEngineOptions_gump::mouse_down(int mx, int my, int button) {
+bool GameEngineOptions_gump::mouse_down(int mx, int my, MouseButton button) {
 	// Only left and right buttons
-	if (button != 1 && button != 3) {
+	if (button != MouseButton::Left && button != MouseButton::Right) {
 		return false;
 	}
 
@@ -301,17 +301,17 @@ bool GameEngineOptions_gump::mouse_down(int mx, int my, int button) {
 		pushed = nullptr;
 	}
 
-	return button == 1 || pushed != nullptr;
+	return button == MouseButton::Left || pushed != nullptr;
 }
 
-bool GameEngineOptions_gump::mouse_up(int mx, int my, int button) {
+bool GameEngineOptions_gump::mouse_up(int mx, int my, MouseButton button) {
 	// Not Pushing a button?
 	if (!pushed) {
 		return false;
 	}
 
 	if (pushed->get_pushed() != button) {
-		return button == 1;
+		return button == MouseButton::Left;
 	}
 
 	bool res = false;

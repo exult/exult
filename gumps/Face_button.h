@@ -41,17 +41,17 @@ public:
 
 	void double_clicked(int x, int y) override;
 
-	bool activate(int button) override {
-		return button == 1;
+	bool activate(MouseButton button) override {
+		return button == MouseButton::Left;
 	}
 
 	void paint() override;
 
-	bool push(int button) override {
-		return button == 1;
+	bool push(MouseButton button) override {
+		return button == MouseButton::Left;
 	}
 
-	void unpush(int) override {}
+	void unpush(MouseButton) override {}
 
 	void update_widget() override;
 };

@@ -37,8 +37,8 @@
 #include "Gump_ToggleButton.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
-#include "Mixer_gump.h"
 #include "MidiDriver.h"
+#include "Mixer_gump.h"
 #include "XMidiFile.h"
 #include "exult.h"
 #include "exult_constants.h"
@@ -60,7 +60,7 @@ static const int colx[] = {35, 50, 134};
 static const char* oktext     = "OK";
 static const char* canceltext = "CANCEL";
 static const char* helptext   = "HELP";
-static const char* mixertext   = "VOLUME MIXER";
+static const char* mixertext  = "VOLUME MIXER";
 
 uint32 AudioOptions_gump::sample_rates[5]  = {11025, 22050, 44100, 48000, 0};
 int    AudioOptions_gump::num_sample_rates = 0;
@@ -489,7 +489,8 @@ AudioOptions_gump::AudioOptions_gump()
 
 	// Volume Mixer
 	buttons[id_mixer] = std::make_unique<AudioOptions_button>(
-			this, &AudioOptions_gump::mixer, mixertext, colx[1] +15, rowy[0], 95);
+			this, &AudioOptions_gump::mixer, mixertext, colx[1] + 15, rowy[0],
+			95);
 	// audio on/off
 	buttons[id_audio_enabled] = std::make_unique<AudioEnabledToggle>(
 			this, &AudioOptions_gump::toggle_audio_enabled, audio_enabled,
@@ -703,9 +704,9 @@ void AudioOptions_gump::paint() {
 	gwin->set_painted();
 }
 
-bool AudioOptions_gump::mouse_down(int mx, int my, int button) {
+bool AudioOptions_gump::mouse_down(int mx, int my, MouseButton button) {
 	// Only left and right buttons
-	if (button != 1 && button != 3) {
+	if (button != MouseButton::Left && button != MouseButton::Right) {
 		return false;
 	}
 
@@ -731,17 +732,17 @@ bool AudioOptions_gump::mouse_down(int mx, int my, int button) {
 		pushed = nullptr;
 	}
 
-	return button == 1 || pushed != nullptr;
+	return button == MouseButton::Left || pushed != nullptr;
 }
 
-bool AudioOptions_gump::mouse_up(int mx, int my, int button) {
+bool AudioOptions_gump::mouse_up(int mx, int my, MouseButton button) {
 	// Not Pushing a button?
 	if (!pushed) {
 		return false;
 	}
 
 	if (pushed->get_pushed() != button) {
-		return button == 1;
+		return button == MouseButton::Left;
 	}
 
 	bool res = false;

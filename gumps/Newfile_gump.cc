@@ -518,9 +518,9 @@ void Newfile_gump::paint() {
  */
 
 bool Newfile_gump::mouse_down(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 
@@ -676,9 +676,9 @@ bool Newfile_gump::mouse_down(
  */
 
 bool Newfile_gump::mouse_up(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 
@@ -818,11 +818,11 @@ bool Newfile_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	case SDLK_RETURN:    // If only 'Save', do it.
 	case SDLK_KP_ENTER:
 		if (!buttons[id_load] && buttons[id_save]) {
-			if (buttons[id_save]->push(1)) {
+			if (buttons[id_save]->push(MouseButton::Left)) {
 				gwin->show(true);
-				buttons[id_save]->unpush(1);
+				buttons[id_save]->unpush(MouseButton::Left);
 				gwin->show(true);
-				buttons[id_save]->activate(1);
+				buttons[id_save]->activate(MouseButton::Left);
 			}
 		}
 		update_details = true;

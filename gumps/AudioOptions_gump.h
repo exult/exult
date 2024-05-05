@@ -102,8 +102,8 @@ public:
 	void close() override;
 
 	// Handle events:
-	bool mouse_down(int mx, int my, int button) override;
-	bool mouse_up(int mx, int my, int button) override;
+	bool mouse_down(int mx, int my, MouseButton button) override;
+	bool mouse_up(int mx, int my, MouseButton button) override;
 
 	void toggle(Gump_button* btn, int state);
 	void rebuild_buttons();
@@ -117,7 +117,7 @@ public:
 	void cancel();
 	void help();
 	void mixer();
-	
+
 	void toggle_audio_enabled(int state) {
 		audio_enabled = state;
 		rebuild_buttons();

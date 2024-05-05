@@ -67,7 +67,7 @@ public:
 			: Gump_button(par, shapenum, px, py) {}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 };
 
 /*
@@ -79,7 +79,7 @@ public:
 			: Gump_button(par, game->get_shape("gumps/quitbtn"), px, py) {}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 };
 
 /*
@@ -93,15 +93,15 @@ public:
 	}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 };
 
 /*
  *  Clicked a 'load' or 'save' button.
  */
 
-bool Load_save_button::activate(int button) {
-	if (button != 1) {
+bool Load_save_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 
@@ -118,8 +118,8 @@ bool Load_save_button::activate(int button) {
  *  Clicked on 'quit'.
  */
 
-bool Quit_button::activate(int button) {
-	if (button != 1) {
+bool Quit_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	static_cast<File_gump*>(parent)->quit();
@@ -130,8 +130,8 @@ bool Quit_button::activate(int button) {
  *  Clicked on one of the sound options.
  */
 
-bool Sound_button::activate(int button) {
-	if (button != 1) {
+bool Sound_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	set_pushed(static_cast<File_gump*>(parent)->toggle_option(this) != 0);
@@ -507,9 +507,9 @@ void File_gump::paint() {
  */
 
 bool File_gump::mouse_down(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 
@@ -547,9 +547,9 @@ bool File_gump::mouse_down(
  */
 
 bool File_gump::mouse_up(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 
@@ -611,11 +611,11 @@ bool File_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	case SDLK_RETURN:    // If only 'Save', do it.
 	case SDLK_KP_ENTER:
 		if (!buttons[0] && buttons[1]) {
-			if (buttons[1]->push(1)) {
+			if (buttons[1]->push(MouseButton::Left)) {
 				gwin->show(true);
-				buttons[1]->unpush(1);
+				buttons[1]->unpush(MouseButton::Left);
 				gwin->show(true);
-				buttons[1]->activate(1);
+				buttons[1]->activate(MouseButton::Left);
 			}
 		}
 		break;

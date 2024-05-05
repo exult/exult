@@ -492,6 +492,18 @@ bool Gump_manager::okay_to_quit() {
 	return quitting_time != QUIT_TIME_NO;
 }
 
+static Gump_Base::MouseButton SDL_MouseButton_to_Gump(Uint8 sdlbutton) {
+	switch (sdlbutton) {
+	case 1:
+		return Gump_Base::MouseButton::Left;
+	case 2:
+		return Gump_Base::MouseButton::Middle;
+	case 3:
+		return Gump_Base::MouseButton::Right;
+	}
+	return Gump_Base::MouseButton::Unknown;
+}
+
 bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	//  Game_window *gwin = Game_window::get_instance();
 	// int scale_factor = gwin->get_fastmouse() ? 1
@@ -522,18 +534,22 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 			break;
 		}
 		if (event.button.button == 1) {
-			gump->mouse_down(gx, gy, event.button.button);
+			gump->mouse_down(
+					gx, gy, SDL_MouseButton_to_Gump(event.button.button));
 		} else if (event.button.button == 2) {
-			if (!gump->mouse_down(gx, gy, event.button.button)
+			if (!gump->mouse_down(
+						gx, gy, SDL_MouseButton_to_Gump(event.button.button))
 				&& gwin->get_mouse3rd()) {
 				gump->key_down(SDLK_RETURN);
 				gump->text_input(SDLK_RETURN, SDLK_RETURN, false);
 			}
 		} else if (event.button.button == 3) {
 			rightclick = true;
-			gump->mouse_down(gx, gy, event.button.button);
+			gump->mouse_down(
+					gx, gy, SDL_MouseButton_to_Gump(event.button.button));
 		} else {
-			gump->mouse_down(gx, gy, event.button.button);
+			gump->mouse_down(
+					gx, gy, SDL_MouseButton_to_Gump(event.button.button));
 		}
 		break;
 	case SDL_MOUSEBUTTONUP:
@@ -543,10 +559,12 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 			break;
 		}
 		if (event.button.button != 3) {
-			gump->mouse_up(gx, gy, event.button.button);
+			gump->mouse_up(
+					gx, gy, SDL_MouseButton_to_Gump(event.button.button));
 		} else if (rightclick) {
 			rightclick = false;
-			if (!gump->mouse_up(gx, gy, event.button.button)
+			if (!gump->mouse_up(
+						gx, gy, SDL_MouseButton_to_Gump(event.button.button))
 				&& gumpman->can_right_click_close()) {
 				return false;
 			}
@@ -562,14 +580,20 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		}
 		if (numFingers > 1) {
 			if (event.tfinger.dy < 0) {
-				if (!gump->mouse_down(gx, gy, event.button.button)) {
+				if (!gump->mouse_down(
+							gx, gy,
+							SDL_MouseButton_to_Gump(event.button.button))) {
 					gump->mousewheel_up(
-							Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
+							Mouse::mouse->get_mousex(),
+							Mouse::mouse->get_mousey());
 				}
 			} else if (event.tfinger.dy > 0) {
-				if (!gump->mouse_down(gx, gy, event.button.button)) {
+				if (!gump->mouse_down(
+							gx, gy,
+							SDL_MouseButton_to_Gump(event.button.button))) {
 					gump->mousewheel_down(
-							Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
+							Mouse::mouse->get_mousex(),
+							Mouse::mouse->get_mousey());
 				}
 			}
 		}
@@ -578,9 +602,11 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	// Mousewheel scrolling with SDL2.
 	case SDL_MOUSEWHEEL: {
 		if (event.wheel.y > 0) {
-			gump->mousewheel_up(Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
+			gump->mousewheel_up(
+					Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
 		} else if (event.wheel.y < 0) {
-			gump->mousewheel_down(Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
+			gump->mousewheel_down(
+					Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
 		}
 		break;
 	}

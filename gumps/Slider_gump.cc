@@ -54,15 +54,15 @@ public:
 			: Gump_button(par, shapenum, px, py), is_left(left) {}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 };
 
 /*
  *  Handle click on a slider's arrow.
  */
 
-bool Slider_button::activate(int button) {
-	if (button != 1) {
+bool Slider_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	if (is_left) {
@@ -171,9 +171,9 @@ void Slider_gump::paint() {
  */
 
 bool Slider_gump::mouse_down(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 
@@ -224,9 +224,9 @@ bool Slider_gump::mouse_down(
  */
 
 bool Slider_gump::mouse_up(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 

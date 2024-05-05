@@ -57,15 +57,15 @@ public:
 	void double_clicked(int x, int y) override;
 	void paint() override;
 
-	bool activate(int button) override {
-		return button == 1;
+	bool activate(MouseButton button) override {
+		return button == MouseButton::Left;
 	}
 
-	bool push(int button) override {
-		return button == 1;
+	bool push(MouseButton button) override {
+		return button == MouseButton::Left;
 	}
 
-	void unpush(int button) override {
+	void unpush(MouseButton button) override {
 		ignore_unused_variable_warning(button);
 	}
 

@@ -67,8 +67,8 @@ public:
 	void close() override;
 
 	// Handle events:
-	bool mouse_down(int mx, int my, int button) override;
-	bool mouse_up(int mx, int my, int button) override;
+	bool mouse_down(int mx, int my, MouseButton button) override;
+	bool mouse_up(int mx, int my, MouseButton button) override;
 
 	void build_buttons();
 

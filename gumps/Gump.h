@@ -44,6 +44,12 @@ public:
 	virtual int  get_y() const               = 0;
 	virtual void set_pos(int newx, int newy) = 0;
 
+	enum class MouseButton {
+		Unknown = 0,
+		Left    = 1,
+		Middle  = 2,
+		Right   = 3,
+	};
 	//! Get button at point in screenspace
 	virtual Gump_button* on_button(int mx, int my) = 0;
 
@@ -56,12 +62,12 @@ public:
 	// Basic Input events These all return true if the event was handled
 	// coords are all in screen space
 
-	virtual bool mouse_down(int mx, int my, int button) {
+	virtual bool mouse_down(int mx, int my, MouseButton button) {
 		ignore_unused_variable_warning(mx, my);
 		return false;
 	}
 
-	virtual bool mouse_up(int mx, int my, int button) {
+	virtual bool mouse_up(int mx, int my, MouseButton button) {
 		ignore_unused_variable_warning(mx, my);
 		return false;
 	}
