@@ -134,7 +134,7 @@ private:
 	void unhatch_eggs(
 			Game_object* obj, Map_chunk* chunk, int tx, int ty, int tz,
 			int from_tx, int from_ty, bool now) {
-				// unhatch needs eggbits at from location not to location
+		// unhatch needs eggbits at from location not to location
 		const unsigned short eggbits
 				= eggs[(from_ty % c_tiles_per_chunk) * c_tiles_per_chunk
 					   + (from_tx % c_tiles_per_chunk)];

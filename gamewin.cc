@@ -251,7 +251,9 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 			if (nighttime) {
 				sound = bgnight[rand() % sizeof(bgnight)];
 				// only play daytime sfx when no music track is playing
-			} else if (!play_bg_tracks && (!player || player->get_current_track() == -1)) {
+			} else if (
+					!play_bg_tracks
+					&& (!player || player->get_current_track() == -1)) {
 				sound = bgday[rand() % sizeof(bgday)];
 			}
 			last_sound = sound;
@@ -1464,7 +1466,9 @@ void Game_window::read_gwin() {
 	if (!is_background_track(track_num)
 		|| (midi && (midi->get_ogg_enabled() || midi->is_mt32()))) {
 		Audio::get_ptr()->start_music(track_num, repeat & 0x1);
-		if (midi) midi->set_egg_count(static_cast<uint16>(repeat >> 16));
+		if (midi) {
+			midi->set_egg_count(static_cast<uint16>(repeat >> 16));
+		}
 	}
 	armageddon = gin.read1() == 1;
 	if (!gin.good()) {

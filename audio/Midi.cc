@@ -157,7 +157,8 @@ void MyMidiPlayer::start_music(int num, bool repeat, std::string flex) {
 		// No midi driver or bg track and we can't play it properly so don't
 		// fall through
 		if (!midi_driver
-			|| (!is_mt32() && Game_window::get_instance()->is_background_track(num)
+			|| (!is_mt32()
+				&& Game_window::get_instance()->is_background_track(num)
 				&& flex == MAINMUS)) {
 			return;
 		}

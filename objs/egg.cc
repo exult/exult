@@ -240,7 +240,7 @@ public:
 		return true;
 	}
 
-	 void handle_event(unsigned long curtime, uintptr udata) override {
+	void handle_event(unsigned long curtime, uintptr udata) override {
 		ignore_unused_variable_warning(curtime, udata);
 		MyMidiPlayer* player = Audio::get_ptr()->get_midi();
 		// only do anything if the currently playing track is ours

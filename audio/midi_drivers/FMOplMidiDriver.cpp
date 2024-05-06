@@ -46,9 +46,9 @@ const MidiDriver::MidiDriverDesc FMOplMidiDriver::desc
 const FMOplMidiDriver::xinstrument
 		FMOplMidiDriver::midi_fm_instruments_table[128]
 		= {
-  /* This set of GM instrument patches was provided by Jorrit
-  * Rouwe...
-  */
+				/* This set of GM instrument patches was provided by Jorrit
+				 * Rouwe...
+				 */
 				{0x21, 0x21, 0x8f, 0x0c, 0xf2, 0xf2, 0x45, 0x76, 0x00, 0x00,
 				 0x08, 0x80}, /* Acoustic Grand */
 				{0x31, 0x21, 0x4b, 0x09, 0xf2, 0xf2, 0x54, 0x56, 0x00, 0x00,
