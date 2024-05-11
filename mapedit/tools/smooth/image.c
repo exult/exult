@@ -35,11 +35,41 @@ int img_read(char* filein) {
 		return -1;
 	}
 
+	// SDL 2 can return 1, 2, 4 bits per pixel SDL_Surface
+	if (g_statics.image_in->format->BitsPerPixel < 8) {
+		fprintf(stderr,
+				"WARNING: the image file is not in 8 bpp ( reported %d ). "
+				"Converting it to 8 bpp.\n",
+				g_statics.image_in->format->BitsPerPixel);
+		SDL_PixelFormat* format8 = SDL_AllocFormat(SDL_PIXELFORMAT_INDEX8);
+		if (SDL_SetPixelFormatPalette(
+					format8, g_statics.image_in->format->palette)
+			< 0) {
+			fprintf(stderr, "ERROR: %s\n", SDL_GetError());
+			SDL_FreeSurface(g_statics.image_in);
+			SDL_FreeRW(rw);
+			return -1;
+		}
+		SDL_Surface* converted8
+				= SDL_ConvertSurface(g_statics.image_in, format8, 0);
+		if (converted8 == NULL) {
+			fprintf(stderr, "ERROR: %s\n", SDL_GetError());
+			SDL_FreeSurface(g_statics.image_in);
+			SDL_FreeRW(rw);
+			return -1;
+		}
+		SDL_FreeSurface(g_statics.image_in);
+		g_statics.image_in = converted8;
+		SDL_FreeFormat(format8);
+	}
+
 	// check if image is in 8bpp format
 	SDL_PixelFormat* fmt = g_statics.image_in->format;
 	if (fmt->BitsPerPixel != 8) {
 		fprintf(stderr,
-				"ERROR: the image file is not in 8 bpp. Please convert it.\n");
+				"ERROR: the image file is not in 8 bpp ( reported %d ). Please "
+				"convert it.\n",
+				fmt->BitsPerPixel);
 		SDL_FreeSurface(g_statics.image_in);
 		SDL_FreeRW(rw);
 		return -1;
@@ -60,10 +90,11 @@ int img_read(char* filein) {
 
 	if ((g_variables.image_out = SDL_CreateRGBSurfaceFrom(
 				 g_statics.image_in->pixels, g_statics.image_in->w,
-				 g_statics.image_in->h, g_statics.image_in->pitch,
-				 g_statics.image_in->format->BitsPerPixel, 0, 0, 0, 0))
+				 g_statics.image_in->h,
+				 g_statics.image_in->format->BitsPerPixel,
+				 g_statics.image_in->pitch, 0, 0, 0, 0))
 		== NULL) {
-		fprintf(stderr, "ERROR: %s", SDL_GetError());
+		fprintf(stderr, "ERROR: %s\n", SDL_GetError());
 		return -1;
 	}
 
@@ -97,7 +128,7 @@ int img_write(char* img_out) {
 	}
 
 	if (SDL_SaveBMP(g_variables.image_out, img_out) < 0) {
-		fprintf(stderr, "ERROR: %s", SDL_GetError());
+		fprintf(stderr, "ERROR: %s\n", SDL_GetError());
 		return -1;
 	}
 	return 0;
@@ -121,20 +152,17 @@ void putpixel(SDL_Surface* surface, int x, int y, Uint8 pixel) {
 	*p       = pixel;
 }
 
-char* transform(int index) {
-	const size_t retlen = 7 * sizeof(char);
-	char*        ret    = (char*)malloc(retlen);
-
-	snprintf(
-			ret, retlen, "%02x%02x%02x",
-			g_variables.image_out->format->palette->colors[index].r,
-			g_variables.image_out->format->palette->colors[index].g,
-			g_variables.image_out->format->palette->colors[index].b);
+colour_hex transform(int index) {
+	SDL_Palette* image_out_palette = g_variables.image_out->format->palette;
+	colour_hex   ret
+			= ((((colour_hex)(image_out_palette->colors[index].r)) << 16)
+			   | (((colour_hex)(image_out_palette->colors[index].g)) << 8)
+			   | (((colour_hex)(image_out_palette->colors[index].b))));
 
 	node* cursor = action_table[index];
 	if (cursor != NULL) {
 		// there is some apply functions to take care of
-		char* tmp;
+		colour_hex tmp;
 		do {
 			pfnPluginApply tmp_func = cursor->plugin_apply;
 			tmp                     = (*tmp_func)(ret, &g_variables);
@@ -146,14 +174,12 @@ char* transform(int index) {
 	}
 }
 
-Uint8 palette_rw(char* col) {
+Uint8 palette_rw(colour_hex col) {
 	// this function returns the colour number from image_out palette for the
 	// colour [rgb] or if it doesn't exist in the palette, it simply adds it!
-	unsigned r;
-	unsigned g;
-	unsigned b;
-	sscanf(col, "%02x%02x%02x", &r, &g, &b);
-	free(col);
+	unsigned r = (col >> 16) & 0xffu;
+	unsigned g = (col >> 8) & 0xffu;
+	unsigned b = (col) & 0xffu;
 	// get index of col from palette
 	int idx = SDL_MapRGB(g_variables.image_out->format, r, g, b);
 

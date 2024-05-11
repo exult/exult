@@ -79,7 +79,7 @@ int read_config(FILE* f) {
 					printf("\nsection %s", line);
 					fflush(stdout);
 				}
-				const size_t namelen = (13 + line_length) * sizeof(char);
+				const size_t namelen = (16 + line_length) * sizeof(char);
 				pluginname           = (char*)malloc(namelen);
 				// what's between the '[' and the ']'
 				memmove(line, line + 1, line_length - 3);
@@ -128,28 +128,25 @@ int read_config(FILE* f) {
 				} else {
 					// extract the first colour from the line, get index from
 					// palette and populate action_table at right index with hdl
-					colour_hex col;
-					if (sscanf(line, "%6s", col) != 1
-						|| strlen(col) != 6) {    // just read 6 characters to
-												  // prevent buffer overflow
-						// problem
+					unsigned r;
+					unsigned g;
+					unsigned b;
+					if (sscanf(line, "%02x%02x%02x", &r, &g, &b) != 3) {
+						// prevent buffer overflow problem
 						fprintf(stderr,
 								"ERROR: couldn't read the slave value of %s\n",
 								line);
 						fflush(stderr);
 						return -1;
 					} else {
-						unsigned r;
-						unsigned g;
-						unsigned b;
-						sscanf(col, "%02x%02x%02x", &r, &g, &b);
-						// get index of col from palette
+						// get index of (r,g,b) from palette
 						int idx = SDL_MapRGB(
 								g_statics.image_in->format, r, g, b);
 						// some reporting
 						if (g_statics.debug > 3) {
-							printf("slave is %s (idx=%d: r=%u g=%u b=%u)\n",
-								   col, idx, r, g, b);
+							printf("slave is %02x%02x%02x "
+								   "(idx=%d: r=%u g=%u b=%u)\n",
+								   r, g, b, idx, r, g, b);
 							fflush(stdout);
 						}
 						// teach the plugin how to convert what

@@ -1,10 +1,11 @@
 Under linux:
-normally, a simple "make && make install" should do. It will prompt
+Normally, a simple "make && make install" should do. It will prompt
 you for the root password for make install so be prepared to pass it
 (files are copied to /usr/lib/).
+To use clang instead of the default gcc, use "make CC=clang".
 
 Under windows:
-use the binary package available at si-french.sf.net/tools/
+Use the binary package available at si-french.sf.net/tools/
 If you insist on compiling on Windows, contact Ryan (see AUTHORS).
 
 Under anything else:
