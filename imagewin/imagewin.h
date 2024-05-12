@@ -157,6 +157,7 @@ public:
 	static const ScalerConst _2xBR;
 	static const ScalerConst _3xBR;
 	static const ScalerConst _4xBR;
+	static const ScalerConst SDLScaler;
 	static const ScalerConst NumScalers;
 
 	// Gets the draw surface and intersurface dims.

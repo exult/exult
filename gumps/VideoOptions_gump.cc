@@ -115,7 +115,7 @@ void VideoOptions_gump::rebuild_buttons() {
 
 	std::vector<std::string> scalers;
 	scalers.reserve(Image_window::NumScalers);
-	for (int i = 0; i < Image_window::NumScalers; i++) {
+	for (int i = 0; i < Image_window::SDLScaler; i++) {
 		scalers.emplace_back(Image_window::get_name_for_scaler(i));
 	}
 	buttons[id_scaler] = std::make_unique<VideoTextToggle>(
@@ -144,6 +144,13 @@ void VideoOptions_gump::rebuild_buttons() {
 			74);
 
 	std::vector<std::string> fill_scaler_text = {"Point", "Bilinear"};
+	{
+		const char* renderer_name = SDL_GetRendererName(
+				SDL_GetRenderer(gwin->get_win()->get_screen_window()));
+		if (renderer_name) {
+			fill_scaler_text.emplace_back(renderer_name);
+		}
+	}
 	buttons[id_fill_scaler] = std::make_unique<VideoTextToggle>(
 			this, &VideoOptions_gump::toggle_fill_scaler,
 			std::move(fill_scaler_text), fill_scaler, colx[2], rowy[7], 74);
@@ -212,7 +219,8 @@ void VideoOptions_gump::rebuild_dynamic_buttons() {
 	const int max_scales = scaling > 8 && scaling <= 16 ? scaling : 8;
 	const int num_scales = (scaler == Image_window::point
 							|| scaler == Image_window::interlaced
-							|| scaler == Image_window::bilinear)
+							|| scaler == Image_window::bilinear
+							|| scaler == Image_window::SDLScaler)
 								   ? max_scales
 								   : 1;
 	if (num_scales > 1) {
@@ -442,7 +450,9 @@ void VideoOptions_gump::save_settings() {
 	}
 	gwin->resized(
 			resx, resy, fullscreen != 0, gw, gh, scaling + 1, scaler, fill_mode,
-			fill_scaler ? Image_window::bilinear : Image_window::point);
+			fill_scaler == 2   ? Image_window::SDLScaler
+			: fill_scaler == 1 ? Image_window::bilinear
+							   : Image_window::point);
 	gclock->reset_palette();
 	set_pos();
 	gwin->set_all_dirty();
@@ -460,8 +470,9 @@ void VideoOptions_gump::save_settings() {
 			gwin->resized(
 					resx, resy, o_fullscreen, gw, gh, o_scaling + 1, o_scaler,
 					o_fill_mode,
-					o_fill_scaler ? Image_window::bilinear
-								  : Image_window::point);
+					o_fill_scaler == 2   ? Image_window::SDLScaler
+					: o_fill_scaler == 1 ? Image_window::bilinear
+										 : Image_window::point);
 		}
 		gclock->reset_palette();
 		set_pos();
@@ -475,7 +486,9 @@ void VideoOptions_gump::save_settings() {
 		setup_video(
 				fullscreen != 0, SET_CONFIG, resx, resy, gw, gh, scaling + 1,
 				scaler, fill_mode,
-				fill_scaler ? Image_window::bilinear : Image_window::point);
+				fill_scaler == 2   ? Image_window::SDLScaler
+				: fill_scaler == 1 ? Image_window::bilinear
+								   : Image_window::point);
 		config->write_back();
 		o_resolution      = resolution;
 		o_scaling         = scaling;

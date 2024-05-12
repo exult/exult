@@ -2780,7 +2780,8 @@ void setup_video(
 		config->value(vidStr + "/scale", scaleval, sc);
 		scaler = Image_window::get_scaler_for_name(sclr.c_str());
 		// Ensure a default scaler if a wrong scaler name is set
-		if (scaler == Image_window::NoScaler) {
+		if (scaler == Image_window::NoScaler
+			|| scaler == Image_window::SDLScaler) {
 			scaler = Image_window::get_scaler_for_name(default_scaler.c_str());
 		}
 		// Ensure proper values for scaleval based on scaler.
@@ -2791,6 +2792,7 @@ void setup_video(
 			scaleval = 4;
 		} else if (
 				scaler != Image_window::point
+				&& scaler != Image_window::SDLScaler
 				&& scaler != Image_window::interlaced
 				&& scaler != Image_window::bilinear) {
 			scaleval = 2;
@@ -2898,8 +2900,7 @@ void setup_video(
 		videoGump->set_scaler(scaler);
 		videoGump->set_resolution(resx << 16 | resy);
 		videoGump->set_game_resolution(gw << 16 | gh);
-		videoGump->set_fill_scaler(
-				fill_scaler == Image_window::bilinear ? 1 : 0);
+		videoGump->set_fill_scaler(fill_scaler);
 		videoGump->set_fill_mode(fillmode);
 	}
 }

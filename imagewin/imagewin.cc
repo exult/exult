@@ -83,6 +83,7 @@ const Image_window::ScalerConst Image_window::Hq4x("Hq4x");
 const Image_window::ScalerConst Image_window::_2xBR("2xBR");
 const Image_window::ScalerConst Image_window::_3xBR("3xBR");
 const Image_window::ScalerConst Image_window::_4xBR("4xBR");
+const Image_window::ScalerConst Image_window::SDLScaler("SDLScaler");
 const Image_window::ScalerConst Image_window::NumScalers(nullptr);
 
 Image_window::ScalerVector        Image_window::p_scalers;
@@ -107,7 +108,7 @@ SDL_Color ManipBase::colors[256];    // Palette for source window.
 
 // Constructor for the ScalerVector, setup the list
 Image_window::ScalerVector::ScalerVector() {
-	reserve(13);
+	reserve(14);
 
 	// This is all the names of the scalers. It needs to match the ScalerType
 	// enum
@@ -259,6 +260,9 @@ Image_window::ScalerVector::ScalerVector() {
 			   nullptr};
 	push_back(_4xbr);
 #endif
+	const ScalerInfo SDLScaler = {"SDLScaler", 0xFFFFFFFF, nullptr, nullptr,
+								  nullptr,     nullptr,    nullptr, nullptr};
+	push_back(SDLScaler);
 }
 
 Image_window::ScalerVector::~ScalerVector() {
@@ -522,8 +526,8 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 	uses_palette = true;
 	free_surface();
 
-	if (!Scalers[fill_scaler].arb) {
-		if (Scalers[scaler].arb) {
+	if (!Scalers[fill_scaler].arb && fill_scaler != SDLScaler) {
+		if (Scalers[scaler].arb || scaler == SDLScaler) {
 			fill_scaler = scaler;
 		} else {
 			fill_scaler = point;
@@ -545,10 +549,20 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 		uint32 flags = SDL_WINDOW_HIGH_PIXEL_DENSITY;
 		if (screen_window != nullptr) {
 			SDL_SetWindowSize(screen_window, w / scale, h / scale);
+#if 0
+			// This does not appear to have any effect
+			SDL_SetWindowFullscreenMode(
+					screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0, SDL_TRUE));
+#endif
 			SDL_SetWindowFullscreen(
 					screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
 		} else {
 			screen_window = SDL_CreateWindow("", w / scale, h / scale, flags);
+#if 0
+			// This does not appear to have any effect
+			SDL_SetWindowFullscreenMode(
+					screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0, SDL_TRUE));
+#endif
 			SDL_SetWindowFullscreen(
 					screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
 		}
@@ -648,10 +662,20 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 
 	if (screen_window != nullptr) {
 		SDL_SetWindowSize(screen_window, w, h);
+#if 0
+		// This does not appear to have any effect
+		SDL_SetWindowFullscreenMode(
+				screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w, h, 0.0, SDL_TRUE));
+#endif
 		SDL_SetWindowFullscreen(
 				screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
 	} else {
 		screen_window = SDL_CreateWindow("", w, h, flags);
+#if 0
+		// This does not appear to have any effect
+		SDL_SetWindowFullscreenMode(
+				screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w, h, 0.0, SDL_TRUE));
+#endif
 		SDL_SetWindowFullscreen(
 				screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
 	}
@@ -732,7 +756,9 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	if (screen_texture == nullptr) {
 		screen_texture = SDL_CreateTexture(
 				screen_renderer, desktop_displaymode.format,
-				SDL_TEXTUREACCESS_STREAMING, w, h);
+				SDL_TEXTUREACCESS_STREAMING,
+				(fill_scaler == SDLScaler ? inter_width : w),
+				(fill_scaler == SDLScaler ? inter_height : h));
 	}
 	if (screen_texture == nullptr) {
 		cout << "Couldn't create texture: " << SDL_GetError() << std::endl;
@@ -754,7 +780,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	}
 
 	// Scale using 'fill_scaler' only
-	if (scaler == fill_scaler || scale == 1) {
+	if (fill_scaler != SDLScaler && (scaler == fill_scaler || scale == 1)) {
 		inter_surface = draw_surface;
 	} else if (inter_width != w || inter_height != h) {
 		if (!(inter_surface = SDL_CreateSurface(
@@ -1013,7 +1039,7 @@ void Image_window::show(int x, int y, int w, int h) {
 	}
 
 	// Phase 2 blit from inter_surface to display_surface
-	if (inter_surface != display_surface) {
+	if (inter_surface != display_surface && fill_scaler != SDLScaler) {
 		const ScalerInfo& sel_scaler = Scalers[fill_scaler];
 
 		// Just scale entire surfaces
@@ -1045,7 +1071,7 @@ void Image_window::show(int x, int y, int w, int h) {
 	}
 	// Phase 3 blit high res draw surface on top of display_surface
 	// Phase 4 notify SDL
-	UpdateRect(display_surface);
+	UpdateRect(fill_scaler == SDLScaler ? inter_surface : display_surface);
 }
 
 /*
@@ -1384,7 +1410,14 @@ void Image_window::UpdateRect(SDL_Surface* surf) {
 	// TODO: Only update the necessary portion of the screen.
 	// Seem to get flicker like crazy or some other ill effect no matter
 	// what I try. -Lanica 08/28/2013
-	SDL_UpdateTexture(screen_texture, nullptr, surf->pixels, surf->pitch);
+	uint8* pixels
+			= (surf == display_surface
+					   ? static_cast<uint8*>(surf->pixels)
+					   : static_cast<uint8*>(surf->pixels)
+								 + guard_band * scale
+										   * surf->format->bytes_per_pixel
+								 + guard_band * scale * surf->pitch);
+	SDL_UpdateTexture(screen_texture, nullptr, pixels, surf->pitch);
 	SDL_RenderTexture(screen_renderer, screen_texture, nullptr, nullptr);
 	SDL_RenderPresent(screen_renderer);
 }
