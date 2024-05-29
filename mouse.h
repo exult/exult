@@ -162,8 +162,13 @@ public:
 		return onscreen;
 	}
 
-	inline int get_mousex() const { return mousex; }
-	inline int get_mousey() const { return mousey; }
+	inline int get_mousex() const {
+		return mousex;
+	}
+
+	inline int get_mousey() const {
+		return mousey;
+	}
 
 	// Sets hand or speed cursors
 	void set_speed_cursor();
