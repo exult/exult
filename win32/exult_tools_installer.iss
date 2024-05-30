@@ -86,6 +86,7 @@ Source: Tools-i686\tools\mappings.txt; DestDir: {app}\tools\; Flags: ignoreversi
 Source: Tools-i686\tools\mappings_alternative.txt; DestDir: {app}\tools\; Flags: ignoreversion
 Source: Tools-i686\tools\map.png; DestDir: {app}\tools\; Flags: ignoreversion
 Source: Tools-i686\tools\smooth.txt; DestDir: {app}\tools\; Flags: ignoreversion
+Source: Tools-i686\tools\smooth.conf; DestDir: {app}\tools\; Flags: ignoreversion
 Source: Tools-i686\tools\rough.bmp; DestDir: {app}\tools\; Flags: ignoreversion
 Source: Tools-i686\tools\smoothed.bmp; DestDir: {app}\tools\; Flags: ignoreversion
 Source: Tools-x86_64\ucxt.txt; DestDir: {app}\; Flags: ignoreversion

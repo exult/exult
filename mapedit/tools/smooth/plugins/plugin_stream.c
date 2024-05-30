@@ -11,8 +11,8 @@ glob_statics   my_g_stat;
 glob_variables my_g_var;
 
 // global variables
-char col[256][18][7];
-int  glob_idx = 0;
+colour_hex col[256][19];    // Star, Source, Trigger, 16 targets
+int        glob_idx = 0;
 
 Uint8 my_getpixel(SDL_Surface* surface, int x, int y) {
 	int    bpp = surface->format->BytesPerPixel;
@@ -42,7 +42,7 @@ void init_plugin(glob_statics* g_stat) {
 	}
 
 	if (my_g_stat.debug > 3) {
-		printf("Checking the global stats\n");
+		printf("Checking the global stats for %s\n", PLUGIN_NAME);
 		printf("\tdebug = %d\n", my_g_stat.debug);
 		printf("\tfilein = %s\n", my_g_stat.filein);
 		printf("\tfileout = %s\n", my_g_stat.fileout);
@@ -53,7 +53,7 @@ void init_plugin(glob_statics* g_stat) {
 void deinit_plugin() {
 	// required since it is called specifically at unload time
 	if (my_g_stat.debug) {
-		printf("Unloading Stream\n");
+		printf("Unloading %s\n", PLUGIN_NAME);
 	}
 }
 
@@ -62,10 +62,14 @@ int plugin_parse(char* line) {
 	// will prepare the plugin to know what to send back when receiving a
 	// colour_hex in plugin_apply
 
-	const int    size   = strlen(line);
-	int          newrec = 1;
-	int          let    = 0;
-	unsigned int idx    = -1;
+	const int    size     = strlen(line);
+	int          newrec   = 1;
+	int          let      = 0;
+	unsigned int idx      = 0;
+	char         color[7] = {0};
+	unsigned     r        = 0;
+	unsigned     g        = 0;
+	unsigned     b        = 0;
 
 	// in this case we know we should receive 18 parameters
 	// 1 for slave, 1 for master and 16 for the resulting colour
@@ -74,35 +78,35 @@ int plugin_parse(char* line) {
 		printf("Parsing %s\n", line);
 	}
 
-	for (int i = 0; i < size; i++) {
-		char c;
-		sscanf(line, "%c", &c);
-		line++;
+	col[glob_idx][0] = 0;
+	for (int i = 0; i <= size; i++) {
+		char c = (i == size ? '\n' : line[i]);
 		if (c != ' ' && c != '\t' && c != '\n' && c != '\r') {
 			if (newrec) {
 				newrec = 0;
 				idx++;
 			}
 			if (let < 6) {
-				col[glob_idx][idx][let] = c;
+				color[let] = c;
 			}
 			let++;
 		} else {
 			if (newrec == 0) {
-				col[glob_idx][idx][let] = '\0';
+				color[let] = '\0';
+				if (idx == 2 && let > 0 && color[0] == '*') {
+					col[glob_idx][0]   = 1;
+					col[glob_idx][idx] = 0;
+				} else {
+					sscanf(color, "%02x%02x%02x", &r, &g, &b);
+					col[glob_idx][idx]
+							= ((((colour_hex)r) << 16) | (((colour_hex)g) << 8)
+							   | ((colour_hex)b));
+				}
 			}
 			newrec = 1;
 			let    = 0;
 		}
 	}
-
-	// for debugging purposes only
-	//  for(i=0;i<=idx;i++){
-	//    printf("Value(%d): %s\n",glob_idx,col[glob_idx][i],col[glob_idx][i]);
-	//  }
-
-	// mark the end of the record
-	col[glob_idx][size][0] = '\0';
 
 	glob_idx++;
 
@@ -122,7 +126,7 @@ int calculate(Uint8 col_num, unsigned int my_x, unsigned int my_y) {
 	}
 }
 
-int has_around(char* col_name) {
+int has_around(colour_hex col_name) {
 	// this checks if there is a chunk around (i,j) of colour col_name
 	// we check the 8 directions
 
@@ -175,14 +179,13 @@ int has_around(char* col_name) {
 				 + my_g_stat.image_in->format->palette->colors[h0].g * 256
 				 + my_g_stat.image_in->format->palette->colors[h0].b;
 
-	long int val = strtol(col_name, (char**)NULL, 16);
-	//  printf("checking if %d = %d: %d\n",a,val,a == val);
+	long int val = col_name;
 
 	return a == val || b == val || c == val || d == val || e == val || f == val
 		   || g == val || h == val;
 }
 
-char* plugin_apply(char colour[6], glob_variables* g_var) {
+colour_hex plugin_apply(colour_hex colour, glob_variables* g_var) {
 	// required
 	// function called to transform a colour_hex into another one. plugin_parse
 	// must have been called previously to know what to return. the
@@ -199,7 +202,7 @@ char* plugin_apply(char colour[6], glob_variables* g_var) {
 
 	// find the colour in big table
 	int loc_idx = 0;
-	while (loc_idx < glob_idx && strncasecmp(col[loc_idx][0], colour, 6) != 0) {
+	while (loc_idx < glob_idx && col[loc_idx][1] != colour) {
 		loc_idx++;
 	}
 
@@ -210,9 +213,7 @@ char* plugin_apply(char colour[6], glob_variables* g_var) {
 						  // should never happen.
 	}
 
-	const char* a_star = "*";
-	if (strncasecmp(col[loc_idx][1], a_star, 1) == 0
-		|| has_around(col[loc_idx][1])) {
+	if (col[loc_idx][0] == 1 || has_around(col[loc_idx][2])) {
 		unsigned int calc_value
 				= (1
 				   * calculate(
@@ -234,9 +235,10 @@ char* plugin_apply(char colour[6], glob_variables* g_var) {
 			printf("calc_value is %u at (%d,%d) -- col_num = %u\n", calc_value,
 				   my_g_var.global_x, my_g_var.global_y, col_num);
 		}
-		return col[loc_idx][calc_value + 2];    // the first 2 cells are taken
-												// by slave and trigger
+		return col[loc_idx][calc_value + 3];    // the first 3 cells are
+												// star, slave and trigger
 	} else {
+		// No trigger around this chunk
 		return colour;
 	}
 }

@@ -20,7 +20,10 @@
  */
 
 #include <iostream>
+#include <string>
 
 void getVersionInfo(std::ostream& out);
+std::string VersionGetGitRevision(bool shortrev);
+std::string VersionGetGitInfo(bool limitedwidth=false);
 
 #endif

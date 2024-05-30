@@ -72,7 +72,7 @@ void GameDisplayOptions_gump::cancel() {
 }
 
 void GameDisplayOptions_gump::help() {
-	SDL_OpenURL("http://exult.info/docs.php#game_display_gump");
+	SDL_OpenURL("https://exult.info/docs.php#game_display_gump");
 }
 
 void GameDisplayOptions_gump::build_buttons() {

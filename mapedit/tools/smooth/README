@@ -15,8 +15,7 @@ chunk. There is a hard limit of chunks that can be used of 256. It
 makes sense then to use an indexed image (less than 256 colours) with
 reused colours, each representing a chunk and to convert this image
 into a map, thanks to an association chunk <-> colour. The tool to do
-this is called mockup and can be found at:
-http://si-french.sf.net/tools/
+this is called mockup and is also part of the Exult tools.
 
 It is noteworthy that even creating such a map is a difficult
 task. Either a lots of manual work in done on the image itself, or a
@@ -49,3 +48,42 @@ Most of the time, the order in which the colours are put in the config
 file matter. If you happen to change the colours in the config file,
 make sure you adapt accordingly the file "mapping.txt" from mockup.
 
+
+Modes of operation
+==================
+
+ -i Inputfile
+ graphic file to smooth. Must be an 8bit (<256 colors) indexed bmp
+ or png file, sized 192x192 pixel.
+
+ -o Outputfile
+ genrated graphic file, will always be in bmp format.
+
+ -c Configfile
+ By default smooth wil use the file "smooth.conf" but with this
+ you can tell it to use any other text file.
+
+ -d Debug level
+ Level of verbosity of smooth. 0 (default) - 4.
+
+
+EXAMPLES
+========
+
+smooth
+This will try to use the input file rough.bmp with the config
+file smooth.conf to generate the file smoothed.bmp.
+
+smooth -i foo.bmp -c config.txt -o bar.bmp -d 4
+This will use the input file foo.bmp with the config file
+config.txt to generate the file bar.bmp with the highest verbosity.
+
+
+BUGS
+====
+
+ - The randomizer plugin broke some time ago, so if you have a [randomizer]
+   section, smooth will silently abort generating the output file.
+
+ - With the port to SDL2 something broke in smooth and thus it isn't
+   working at the moment.

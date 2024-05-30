@@ -95,7 +95,7 @@ int add_plugin_apply(int col_index, libhandle_t a_hdl) {
 	// insert new node at cursor->next, with handle as the pointer to
 	// plugin_apply
 
-	//  char *(*apply)(colour_hex,glob_variables *);
+	//  colour_hex(*apply)(colour_hex,glob_variables *);
 
 	// first of all, load a_hdl's apply function
 	pfnPluginApply apply;

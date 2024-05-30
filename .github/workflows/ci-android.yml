@@ -63,6 +63,7 @@ jobs:
     steps:
       - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
+        continue-on-error: true
         if: needs.ci-android.result == 'success'
         with:
           server: irc.libera.chat
@@ -73,6 +74,7 @@ jobs:
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The Android build \x033succeeded\x03."
       - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
+        continue-on-error: true
         if: needs.ci-android.result != 'success'
         with:
           server: irc.libera.chat
@@ -82,36 +84,38 @@ jobs:
           tls: true
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The Android build \x034failed\x03."
       - name: Discord success notification
-        uses: BubbleProd/discord-webhook-notify@v2.0.1
+        uses: rjstone/discord-webhook-notify@master
+        continue-on-error: true
         if: needs.ci-android.result == 'success'
         with:
           severity: info
-          username: github-actions
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          text: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          title: "The Android build succeeded."
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The Android build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: Discord failure notification
-        uses: BubbleProd/discord-webhook-notify@v2.0.1
+        uses: rjstone/discord-webhook-notify@master
+        continue-on-error: true
         if: needs.ci-android.result != 'success'
         with:
           severity: error
-          username: github-actions
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          text: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          title: "The Android build failed."
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The Android build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
   ci-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
-          java-version: 11
+          java-version: 17
           distribution: "temurin"
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 7.6.2
+          gradle-version: 8.7
       - name: Install dependencies
         run: |
           if ! apt-fast -- help &> /dev/null; then
@@ -126,7 +130,7 @@ jobs:
           fi
           sudo apt-fast install -y autoconf-archive
       - name: Checkout code
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
       - name: Run autoreconf
         run: |
           mkdir ./../build

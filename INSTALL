@@ -50,7 +50,7 @@ From the top directory type the following:
 	make
 
 If everything goes well, you should end up with an 'exult' binary.
-See the documentation at http://exult.info/docs.php or 
+See the documentation at https://exult.info/docs.php or 
 the included README file for information on how to create an exult
 config file to indicate where you have installed Ultima VII, and you're
 ready to run Exult.

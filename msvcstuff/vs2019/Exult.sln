@@ -10,6 +10,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Exult", "Exult.vcxproj", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "expack", "expack\expack.vcxproj", "{7D388E0F-AA32-459F-83FD-037299591DD6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exconfig", "exconfig\exconfig.vcxproj", "{567827FF-4807-417D-BFEC-1778E0FCC24B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mt32Emu|x64 = Debug Mt32Emu|x64
@@ -44,6 +46,15 @@ Global
 		{7D388E0F-AA32-459F-83FD-037299591DD6}.Release|x64.Build.0 = Release|x64
 		{7D388E0F-AA32-459F-83FD-037299591DD6}.Release|x86.ActiveCfg = Release|Win32
 		{7D388E0F-AA32-459F-83FD-037299591DD6}.Release|x86.Build.0 = Release|Win32
+		{567827FF-4807-417D-BFEC-1778E0FCC24B}.Debug Mt32Emu|x64.ActiveCfg = Debug|Win32
+		{567827FF-4807-417D-BFEC-1778E0FCC24B}.Debug Mt32Emu|x86.ActiveCfg = Debug|Win32
+		{567827FF-4807-417D-BFEC-1778E0FCC24B}.Debug Mt32Emu|x86.Build.0 = Debug|Win32
+		{567827FF-4807-417D-BFEC-1778E0FCC24B}.Debug|x64.ActiveCfg = Debug|x64
+		{567827FF-4807-417D-BFEC-1778E0FCC24B}.Debug|x86.ActiveCfg = Debug|Win32
+		{567827FF-4807-417D-BFEC-1778E0FCC24B}.Debug|x86.Build.0 = Debug|Win32
+		{567827FF-4807-417D-BFEC-1778E0FCC24B}.Release|x64.ActiveCfg = Release|Win32
+		{567827FF-4807-417D-BFEC-1778E0FCC24B}.Release|x86.ActiveCfg = Release|Win32
+		{567827FF-4807-417D-BFEC-1778E0FCC24B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

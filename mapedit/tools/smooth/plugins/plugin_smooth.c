@@ -12,10 +12,8 @@ glob_statics   my_g_stat;
 glob_variables my_g_var;
 
 // global variables
-char col[256][15][7];    // colour has 6 char + \0, 13 possible choice + trigger
-						 // + slave and max of 256 colours that could be subject
-						 // to transformation
-int glob_idx = 0;
+colour_hex col[256][16];    // Star, Source, Trigger, 13 targets
+int        glob_idx = 0;
 
 /*****************************************************************************/
 // NO CHANGES TO MAKE HERE
@@ -68,44 +66,51 @@ int plugin_parse(char* line) {
 	// will prepare the plugin to know what to send back when receiving a
 	// colour_hex in plugin_apply
 
-	const int    size   = strlen(line);
-	int          newrec = 1;
-	int          let    = 0;
-	unsigned int idx    = -1;
+	const int    size     = strlen(line);
+	int          newrec   = 1;
+	int          let      = 0;
+	unsigned int idx      = 0;
+	char         color[7] = {0};
+	unsigned     r        = 0;
+	unsigned     g        = 0;
+	unsigned     b        = 0;
 
 	// in this case we know we should receive 18 parameters
 	// 1 for slave, 1 for master and 13 for the resulting colour
 
-	for (int i = 0; i < size; i++) {
-		char c;
-		sscanf(line, "%c", &c);
-		line++;
-		if (c != ' ' && c != '\t' && c != '\n'
-			&& c != '\r') {    // skip spaces, tabs and enters
+	if (my_g_stat.debug > 3) {
+		printf("Parsing %s\n", line);
+	}
+
+	col[glob_idx][0] = 0;
+	for (int i = 0; i <= size; i++) {
+		char c = (i == size ? '\n' : line[i]);
+		if (c != ' ' && c != '\t' && c != '\n' && c != '\r') {
 			if (newrec) {
 				newrec = 0;
 				idx++;
 			}
 			if (let < 6) {
-				col[glob_idx][idx][let] = c;
+				color[let] = c;
 			}
 			let++;
 		} else {
-			col[glob_idx][idx][let] = '\0';
-			newrec                  = 1;
-			let                     = 0;
+			if (newrec == 0) {
+				color[let] = '\0';
+				if (idx == 2 && let > 0 && color[0] == '*') {
+					col[glob_idx][0]   = 1;
+					col[glob_idx][idx] = 0;
+				} else {
+					sscanf(color, "%02x%02x%02x", &r, &g, &b);
+					col[glob_idx][idx]
+							= ((((colour_hex)r) << 16) | (((colour_hex)g) << 8)
+							   | ((colour_hex)b));
+				}
+			}
+			newrec = 1;
+			let    = 0;
 		}
 	}
-
-	if (my_g_stat.debug > 3) {
-		printf("Parsed line checking:\n");
-		for (unsigned j = 0; j <= idx; j++) {
-			printf("Value(%d): %s\n", glob_idx, col[glob_idx][j]);
-		}
-	}
-
-	// mark the end of the record
-	//  col[glob_idx][idx][0]='\0';
 
 	glob_idx++;
 
@@ -125,7 +130,7 @@ int calculate(Uint8 col_num, unsigned int my_x, unsigned int my_y) {
 	}
 }
 
-int has_around(char* col_name) {
+int has_around(colour_hex col_name) {
 	// this checks if there is a chunk around (i,j) of colour col_name
 	// we check the 8 directions
 	// used to find a trigger colour around the chunk we are transforming
@@ -179,8 +184,7 @@ int has_around(char* col_name) {
 				 + my_g_stat.image_in->format->palette->colors[h0].g * 256
 				 + my_g_stat.image_in->format->palette->colors[h0].b;
 
-	long int val = strtol(col_name, (char**)NULL, 16);
-	//  printf("checking if %ld = %ld (%s): %d\n",a,val,col_name,a == val);
+	long int val = col_name;
 
 	return a == val || b == val || c == val || d == val || e == val || f == val
 		   || g == val || h == val;
@@ -189,7 +193,7 @@ int has_around(char* col_name) {
 // UP TO HERE
 /*****************************************************************************/
 
-char* plugin_apply(char colour[6], glob_variables* g_var) {
+colour_hex plugin_apply(colour_hex colour, glob_variables* g_var) {
 	// required
 	// function called to transform a colour_hex into another one. plugin_parse
 	// must have been called previously to know what to return. the
@@ -206,9 +210,7 @@ char* plugin_apply(char colour[6], glob_variables* g_var) {
 
 	// find the colour in big table
 	int loc_idx = 0;
-	while (loc_idx < glob_idx && strncasecmp(col[loc_idx][0], colour, 6) != 0) {
-		//    printf("I look for %s and I got %s
-		//    instead!\n",colour,col[loc_idx][0]);
+	while (loc_idx < glob_idx && col[loc_idx][1] != colour) {
 		loc_idx++;
 	}
 
@@ -217,15 +219,9 @@ char* plugin_apply(char colour[6], glob_variables* g_var) {
 				"WARNING: loc_idx >= glob_idx. This should never happen\n");
 		return colour;    // colour is not in table, so we don't treat it. This
 						  // should never happen.
-	} else {
-		//    fprintf(stderr,"found an entry in col for %s at
-		//    %d\n",colour,loc_idx); fprintf(stderr,"col[%d][1] =
-		//    %s\n",loc_idx,col[loc_idx][1]);
 	}
 
-	const char* a_star = "*";
-	if (strncasecmp(col[loc_idx][1], a_star, 1) == 0
-		|| has_around(col[loc_idx][1])) {
+	if (col[loc_idx][0] == 1 || has_around(col[loc_idx][2])) {
 		//    printf("trig is around!\n");
 		// this is the main part. Trigger is * or trigger is around the chunk to
 		// change.
@@ -261,14 +257,17 @@ char* plugin_apply(char colour[6], glob_variables* g_var) {
 
 		if (calc_value != 6) {
 			// not the center chunk with a trigger on one of the corners
-			return col[loc_idx]
-					  [calc_value + 2];    // the first 2 cells are taken by
-										   // slave and trigger
+			return col[loc_idx][calc_value + 3];    // the first 3 cells are
+													// star, slave and trigger
 		} else {
 			// in this case, the chunk is a center chunk with a trigger on one
 			// corner need to know trigger's index.
 			//      Uint8 idx_trigger =
-			//      SDL_MapRGB(my_g_stat.image_in->format,16*(int)col[loc_idx][1][0]+(int)col[loc_idx][1][1],16*(int)col[loc_idx][1][2]+(int)col[loc_idx][1][3],16*(int)col[loc_idx][1][4]+(int)col[loc_idx][1][5]);
+			//      SDL_MapRGB(
+			//      my_g_stat.image_in->format,
+			//      16*(int)col[loc_idx][1][0]+(int)col[loc_idx][1][1],
+			//      16*(int)col[loc_idx][1][2]+(int)col[loc_idx][1][3],
+			//      16*(int)col[loc_idx][1][4]+(int)col[loc_idx][1][5]);
 			Uint8              idx_trigger = 0;
 			unsigned short int i           = calculate(
                     idx_trigger, my_g_var.global_x - 1,
@@ -284,16 +283,15 @@ char* plugin_apply(char colour[6], glob_variables* g_var) {
 					my_g_var.global_y + 1);    // SW corner
 
 			if (i + j + k + l != 1) {
-				// not exactly one trigger at the corners. This is not allowed
+				// Not exactly one trigger at the corners. This is not allowed
 				return colour;
 			} else {
 				calc_value = 8 + 1 * i + 2 * j + 3 * k + 4 * l;
-				return col[loc_idx][calc_value + 2];
+				return col[loc_idx][calc_value + 3];
 			}
 		}
 	} else {
-		// there is no trigger around this chunk
-		//    printf("no trig around\n");
+		// No trigger aroung this chunk
 		return colour;
 	}
 }

@@ -6,7 +6,7 @@
  * (C) 2010-2022 The Exult Team
  *
  * You can find the most recent version of this file in the Exult sources,
- * available from http://exult.info/
+ * available from https://exult.info/
  */
 
 #ifdef HAVE_CONFIG_H

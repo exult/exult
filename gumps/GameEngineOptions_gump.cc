@@ -61,7 +61,7 @@ namespace {
 	const char* canceltext = "CANCEL";
 	const char* helptext   = "HELP";
 
-	std::array framerates{2, 4, 6, 5, 8, 10, -1};
+	std::array framerates{2, 4, 5, 6, 8, 10, -1};
 	// -1 is placeholder for custom framerate
 	constexpr const size_t num_default_rates = framerates.size() - 1;
 
@@ -86,7 +86,7 @@ void GameEngineOptions_gump::cancel() {
 }
 
 void GameEngineOptions_gump::help() {
-	SDL_OpenURL("http://exult.info/docs.php#game_engine_gump");
+	SDL_OpenURL("https://exult.info/docs.php#game_engine_gump");
 }
 
 void GameEngineOptions_gump::build_buttons() {
@@ -154,29 +154,27 @@ void GameEngineOptions_gump::load_settings() {
 	if (mode < 0 || mode > 1) {
 		mode = 0;
 	}
-	charmDiff            = Combat::charmed_more_difficult;
-	alternate_drop       = gwin->get_alternate_drop();
-	allow_autonotes      = gwin->get_allow_autonotes();
-	gumps_pause          = !gumpman->gumps_dont_pause_game();
-	const int realframes = 1000 / gwin->get_std_delay();
-
-	frames                        = -1;
-	framerates[num_default_rates] = realframes;
-	for (size_t i = 0; i < num_default_rates; i++) {
-		if (realframes == framerates[i]) {
-			frames = i;
-			break;
-		}
-	}
-
+	charmDiff             = Combat::charmed_more_difficult;
+	alternate_drop        = gwin->get_alternate_drop();
+	allow_autonotes       = gwin->get_allow_autonotes();
+	gumps_pause           = !gumpman->gumps_dont_pause_game();
+	frames                = -1;
 	size_t num_framerates = num_default_rates;
-	if (frames == -1) {
-		num_framerates++;
-		frames = num_default_rates;
-	}
 	frametext.clear();
+	// setting the framerate number to show by actually loading from config
+	int fps;
+	config->value("config/video/fps", fps, 5);
+	// check that we don't get a negative framerate value
+	if (fps <= 0) {
+		fps = 5;    // default should be 5 frames
+	}
+	// Now we want to populate the framerates vector and match our current text
+	// to the proper index
 	for (size_t i = 0; i < num_framerates; i++) {
 		frametext.emplace_back(framestring(framerates[i]));
+		if (framerates[i] == fps) {
+			frames = i;
+		}
 	}
 }
 

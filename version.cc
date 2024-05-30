@@ -20,7 +20,18 @@
 #	include <config.h>
 #endif
 
+#include "version.h"
+
+#include <cstring>
 #include <iostream>
+
+// Only include gitinfo.h if it exists and none of the macros have already been
+// defined
+#if __has_include(                                                  \
+		"gitinfo.h") && !defined(GIT_REVISION) && !defined(GIT_TAG) \
+		&& !defined(GIT_REMOTE_BRANCH) && !defined(GIT_REMOTE_URL)
+#	include "gitinfo.h"
+#endif
 
 #ifdef _WIN32
 #	ifndef WIN32_LEAN_AND_MEAN
@@ -56,6 +67,106 @@ To safe_pointer_cast(From pointer) {
 }
 
 #endif
+#ifdef GIT_REVISION
+static const char git_rev[] = GIT_REVISION;
+#else
+static const char git_rev[] = "";
+#endif
+#ifdef GIT_TAG
+static const char git_tag[] = GIT_TAG;
+#else
+static const char git_tag[] = "";
+#endif
+#ifdef GIT_REMOTE_BRANCH
+static const char git_branch[] = GIT_REMOTE_BRANCH;
+#else
+static const char git_branch[] = "";
+#endif
+#ifdef GIT_REMOTE_URL
+static const char git_url[] = GIT_REMOTE_URL;
+#else
+static const char git_url[] = "";
+#endif
+
+std::string VersionGetGitRevision(bool shortrev) {
+	if (git_rev[0]) {
+		if (shortrev) {
+			return std::string(git_rev, 7);
+		} else {
+			return git_rev;
+		}
+	}
+	return std::string();
+}
+
+std::string VersionGetGitInfo(bool limitedwidth) {
+	// Everything for this function can be known at compile time
+	// so could probably be made constexpr with a new enough c++ standard
+	// and compiler support
+	std::string result;
+	result.reserve(256);
+
+	if (git_branch[0]) {
+		result += "Git Branch: ";
+		result += git_branch;
+		result += "\n";
+	}
+	if (git_rev[0]) {
+		result += "Git Revision: ";
+		result += VersionGetGitRevision(limitedwidth);
+		result += "\n";
+	}
+	if (git_tag[0]) {
+		result += "Git Tag: ";
+		result += git_tag;
+		result += "\n";
+	}
+
+	// Default to the Exult origin repo on github
+	std::string src_url = "https://github.com/exult/exult";
+
+	// if the remote url was supplied in the build make sure it is git hub https
+	if (!std::strncmp(git_url, "https://github.com/", 19)) {
+		src_url = git_url;
+		// if it ends in '.git remove it
+#ifdef __cpp_lib_starts_ends_with    // c++20
+		if (src_url.ends_with(".git"))
+#else    // older
+		if (!src_url.compare(src_url.size() - 4, 4, ".git"))
+#endif
+		{
+			src_url.resize(src_url.size() - 4);
+		}
+		// remove ending slash if any
+		if (src_url.back() == '/') {
+			src_url.pop_back();
+		}
+
+		// As we have github remote we can create url to exact revision/tag
+		if (git_tag[0]) {
+			src_url.reserve(src_url.size() + std::size(git_tag) + 7);
+			if (limitedwidth) {
+				src_url += "\n";
+			}
+			src_url += "/tree/";
+			src_url += git_tag;
+		} else if (git_rev[0]) {
+			src_url.reserve(src_url.size() + std::size(git_rev) + 6);
+			if (limitedwidth) {
+				src_url += "\n";
+			}
+			src_url += "/tree/";
+			src_url += VersionGetGitRevision(limitedwidth);
+		}
+	}
+
+	result += "Source url: ";
+	// if (limitedwidth) {
+	//	result += "\n";
+	// }
+	result += src_url;
+	return result;
+}
 
 void getVersionInfo(std::ostream& out) {
 	/*
@@ -63,9 +174,13 @@ void getVersionInfo(std::ostream& out) {
 	 */
 
 	out << "Exult version " << VERSION << std::endl;
+	/*
+	 * 4. Git revision information
+	 */
+	out << VersionGetGitInfo(false) << std::endl;
 
 	/*
-	 * 2. Build Architechture
+	 * 3. Build Architechture
 	 */
 	out << "Build Architechture: ";
 
@@ -97,7 +212,7 @@ void getVersionInfo(std::ostream& out) {
 	out << std::endl;
 
 	/*
-	 * 2. Build time
+	 * 4. Build time
 	 */
 
 #if (defined(__TIME__) || defined(__DATE__))
@@ -112,7 +227,7 @@ void getVersionInfo(std::ostream& out) {
 #endif
 
 	/*
-	 * 4. Various important build options in effect
+	 * 5. Various important build options in effect
 	 */
 
 	out << "Compile-time options: ";
@@ -204,7 +319,7 @@ void getVersionInfo(std::ostream& out) {
 	out << std::endl;
 
 	/*
-	 * 4. Compiler used to create this binary
+	 * 6. Compiler used to create this binary
 	 */
 
 	out << "Compiler: ";
@@ -227,7 +342,7 @@ void getVersionInfo(std::ostream& out) {
 #undef COMPILER
 
 	/*
-	 * 5. Platform
+	 * 7. Platform
 	 */
 
 	out << std::endl << "Platform: ";
@@ -257,8 +372,9 @@ void getVersionInfo(std::ostream& out) {
 	{
 		// Get the version
 		OSVERSIONINFOEXA info;
+		ZeroMemory(&info, sizeof(info));
 		info.dwOSVersionInfoSize = sizeof(info);
-		GetVersionEx(safe_pointer_cast<LPOSVERSIONINFOA>(&info));
+		GetVersionExA(safe_pointer_cast<LPOSVERSIONINFOA>(&info));
 
 		// Platform is NT
 		if (info.dwPlatformId == VER_PLATFORM_WIN32_NT) {
@@ -345,29 +461,29 @@ void getVersionInfo(std::ostream& out) {
 					}
 				}
 			}
+			if (info.szCSDVersion[0] != 0) {
+				out << " " << info.szCSDVersion;
+			}
 
 		} else {
-			out << "Unknown NT";
-		}
+			out << "Windows ";
 
-		if (info.szCSDVersion[0] != 0) {
-			out << " " << info.szCSDVersion;
-		} else if (info.dwMajorVersion == 4 && info.dwMinorVersion == 0) {
-			out << 95;
-			if (info.szCSDVersion[1] != ' ') {
-				out << info.szCSDVersion;
+			if (info.dwMajorVersion == 4 && info.dwMinorVersion == 0) {
+				out << 95;
+				if (info.szCSDVersion[1] != ' ') {
+					out << info.szCSDVersion;
+				}
+			} else if (info.dwMajorVersion == 4 && info.dwMinorVersion == 10) {
+				out << 98;
+				if (info.szCSDVersion[1] == 'A') {
+					out << " SE";
+				} else if (info.szCSDVersion[1] != ' ') {
+					out << info.szCSDVersion;
+				}
+			} else if (info.dwMajorVersion == 4 && info.dwMinorVersion == 90) {
+				out << "Me";
 			}
-		} else if (info.dwMajorVersion == 4 && info.dwMinorVersion == 10) {
-			out << 98;
-			if (info.szCSDVersion[1] == 'A') {
-				out << " SE";
-			} else if (info.szCSDVersion[1] != ' ') {
-				out << info.szCSDVersion;
-			}
-		} else if (info.dwMajorVersion == 4 && info.dwMinorVersion == 90) {
-			out << "Me";
 		}
-
 		out << " Version " << info.dwMajorVersion << "." << info.dwMinorVersion
 			<< " Build " << LOWORD(info.dwBuildNumber & 0xFFFF) << " ";
 

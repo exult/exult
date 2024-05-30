@@ -342,6 +342,8 @@ char* Handle_string(
 %s in_conversation
 %s in_breakable
 
+string_literal		\"([^"]|\\\{(dot|ea|ee|ng|st|th)\}|\\[^\{])*\"
+
 %%
 
 if		return IF;
@@ -500,13 +502,13 @@ sonic_damage	return SONIC_DAMAGE;
 			yylval.strval = strdup(yytext);
 			return IDENTIFIER;
 		}
-\"([^"]|\\\{(dot|ea|ee|ng|st|th)\}|\\[^\{])*\"		{
+{string_literal}		{
 			// Remove ending quote.
 			const char* strval = yytext + 1;
 			yylval.strval      = Handle_string(strval, strlen(strval) + 1);
 			return STRING_LITERAL;
 		}
-\"([^"]|\\\{(dot|ea|ee|ng|st|th)\}|\\[^\{])*\"\*		{
+{string_literal}\*		{
 			// Remove ending quote and asterisk.
 			const char* strval = yytext + 1;
 			yylval.strval      = Handle_string(strval, strlen(strval) + 1);

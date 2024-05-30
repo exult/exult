@@ -78,10 +78,10 @@ jobs:
     if: ${{ github.repository_owner == 'exult' || github.repository_owner == 'wench' }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v2
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -100,6 +100,7 @@ jobs:
     steps:
       - name: IRC success notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
+        continue-on-error: true
         if: needs.ci-msvc.result == 'success'
         with:
           server: irc.libera.chat
@@ -110,6 +111,7 @@ jobs:
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC build \x033succeeded\x03."
       - name: IRC failure notification (ircs://irc.libera.chat:6697/#exult)
         uses: Gottox/irc-message-action@v2
+        continue-on-error: true
         if: needs.ci-msvc.result != 'success'
         with:
           server: irc.libera.chat
@@ -119,20 +121,22 @@ jobs:
           tls: true
           message: "\x0313exult\x03/\x0306${{ github.ref }}\x03 \x0314${{ github.sha }}\x03 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} The MSVC build \x034failed\x03."
       - name: Discord success notification
-        uses: BubbleProd/discord-webhook-notify@v2.0.1
+        uses: rjstone/discord-webhook-notify@master
+        continue-on-error: true
         if: needs.ci-msvc.result == 'success'
         with:
           severity: info
-          username: github-actions
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          text: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          title: 'The MSVC build succeeded.'
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The MSVC build succeeded:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
       - name: Discord failure notification
-        uses: BubbleProd/discord-webhook-notify@v2.0.1
+        uses: rjstone/discord-webhook-notify@master
+        continue-on-error: true
         if: needs.ci-msvc.result != 'success'
         with:
           severity: error
-          username: github-actions
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          text: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          title: 'The MSVC build failed.'
+          username: Exult github-actions
+          avatarUrl: https://avatars.githubusercontent.com/u/15114538?s=200&v=4
+          text: '**[The MSVC build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'

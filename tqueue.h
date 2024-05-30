@@ -92,6 +92,7 @@ class Time_queue {
 	// Activate head + any others due.
 	void activate0(uint32 curtime);
 	void activate_always(uint32 curtime);
+	void activate_mapedit(uint32 curtime);
 
 public:
 	friend class Time_queue_iterator;
@@ -135,14 +136,7 @@ public:
 	long find_delay(const Time_sensitive* obj, uint32 curtime) const;
 
 	// Activate entries that are 'due'.
-	inline void activate(uint32 curtime) {
-		// if (head && !(curtime < head->time))
-		if (paused) {
-			activate_always(curtime);
-		} else if (!data.empty() && !(curtime < data.front().time)) {
-			activate0(curtime);
-		}
-	}
+	void activate(uint32 curtime);
 
 	void pause(uint32 curtime) {    // Game paused.
 		if (!paused++) {

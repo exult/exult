@@ -896,6 +896,21 @@ bool Game_object::is_closed_door() const {
  *  Output: ->topmost owner, or the object itself.
  */
 
+const Game_object* Game_object::get_outermost() const {
+	const Game_object* top = this;
+	const Game_object* above;
+	while ((above = top->get_owner()) != nullptr) {
+		top = above;
+	}
+	return top;
+}
+
+/*
+ *  Get the topmost owner of this object.
+ *
+ *  Output: ->topmost owner, or the object itself.
+ */
+
 Game_object* Game_object::get_outermost() {
 	Game_object* top = this;
 	Game_object* above;

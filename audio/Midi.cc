@@ -157,7 +157,8 @@ void MyMidiPlayer::start_music(int num, bool repeat, std::string flex) {
 		// No midi driver or bg track and we can't play it properly so don't
 		// fall through
 		if (!midi_driver
-			|| (!is_mt32() && Game_window::get_instance()->is_bg_track(num)
+			|| (!is_mt32()
+				&& Game_window::get_instance()->is_background_track(num)
 				&& flex == MAINMUS)) {
 			return;
 		}
@@ -947,7 +948,7 @@ void MyMidiPlayer::ogg_stop_track() {
 void MyMidiPlayer::ogg_set_repeat(bool newrepeat) {
 	Pentagram::AudioMixer* mixer = Pentagram::AudioMixer::get_instance();
 	if (mixer->isPlaying(ogg_instance_id)) {
-		mixer->getLoop(newrepeat ? -1 : 0);
+		mixer->setLoop(ogg_instance_id, newrepeat ? -1 : 0);
 	}
 }
 

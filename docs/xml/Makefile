@@ -1,42 +1,72 @@
-CLASSPATH = xml-apis.jar:xercesImpl.jar:xalan.jar
-JAVA = java
-INPUT = readme.xml faq.xml
-CLASS = org.apache.xalan.xslt.Process
+top_srcdir := ../..
+DOCS_DIR := $(top_srcdir)/docs
 
 HTML_OBJS := $(patsubst %.xml,%.html,$(wildcard *.xml))
 TEXT_OBJS := $(patsubst %.xml,%.txt,$(wildcard *.xml))
 PHP_OBJS := $(patsubst %.xml,%.dat,$(wildcard *.xml))
 
-all: html text php ReadMe.html duplicate phpfix
+DOCS_HTMLS := $(DOCS_DIR)/ReadMe.html $(DOCS_DIR)/faq.html $(DOCS_DIR)/exult_studio.html
+DOCS_TEXTS := $(DOCS_DIR)/exult_studio.txt
+TOP_TEXTS := $(top_srcdir)/FAQ $(top_srcdir)/README
+
+ifdef WEB_DIR
+	WEB_TEXTS := $(patsubst %.xml,$(WEB_DIR)/%.txt,$(wildcard *.xml))
+	WEB_DATS := $(patsubst %.xml,$(WEB_DIR)/content/%.dat,$(wildcard *.xml))
+else
+	WEB_TEXTS :=
+	WEB_DATS :=
+endif
+
+define build_output_files
+	xsltproc -o $(1) $(2) $(3)
+	sed -i'' 's/[[:blank:]]*$$//' $(1)
+endef
+
+define build_php_dats
+	xsltproc -o $(1) $(2) $(3)
+	sed -i'' -e '1s@<test xmlns="http://www.w3.org/1999/xhtml">@@; $$s@</test>@@ ; s/[[:blank:]]*$$//' $(1)
+endef
 
 # Rules for transforming the XML source
-.xml.html: html.xsl
-	$(JAVA) -classpath $(CLASSPATH) $(CLASS) -IN $< -XSL html.xsl -OUT $@
-.xml.txt: text.xsl
-	$(JAVA) -classpath $(CLASSPATH) $(CLASS) -IN $< -XSL text.xsl -OUT $@
-.xml.dat: php.xsl
-	$(JAVA) -classpath $(CLASSPATH) $(CLASS) -IN $< -XSL php.xsl -OUT $@
+%.html: %.xml html.xsl docs.dtd
+	$(call build_output_files, $@, html.xsl, $<)
+
+%.txt: %.xml text.xsl docs.dtd
+	$(call build_output_files, $@, text.xsl, $<)
+
+%.dat: %.xml php.xsl docs.dtd
+	$(call build_php_dats, $@, php.xsl, $<)
+
 .SUFFIXES: .xml .html .txt .dat
 
-# rule for renaming docs.html to ReadMe.html
-ReadMe.html: docs.html
-	mv docs.html ReadMe.html
+all: html text php $(top_srcdir)/FAQ $(top_srcdir)/README $(WEB_TEXTS) $(WEB_DATS)
 
-#rule for copying faq.txt, docs.txt to Faq and ReadMe
-duplicate: faq.txt docs.txt
-	cp faq.txt FAQ
-	cp docs.txt README
+define update_files_template
+$(1): $(2)
+	cp $(2) $(1)
+endef
 
-# rule for stripping the unneded <test> tag from the PHP files
-phpfix: docs.dat faq.dat exult_studio.dat
-	gsed -i -e 's@<test xmlns="http://www.w3.org/1999/xhtml">@@; s@</test>@@' *.dat
+ifdef WEB_DIR
+$(foreach file, $(TEXT_OBJS), $(eval $(call update_files_template, $(WEB_DIR)/$(file), $(file))))
+$(foreach file, $(PHP_OBJS), $(eval $(call update_files_template, $(WEB_DIR)/content/$(file), $(file))))
+endif
+
+# Rule for updating files in the docs directory
+$(eval $(call update_files_template, $(DOCS_DIR)/ReadMe.html, docs.html))
+$(eval $(call update_files_template, $(DOCS_DIR)/faq.html, faq.html))
+$(eval $(call update_files_template, $(DOCS_DIR)/exult_studio.html, exult_studio.html))
+$(eval $(call update_files_template, $(DOCS_DIR)/exult_studio.txt, exult_studio.txt))
+
+# Rules for updating files in the top directory
+$(eval $(call update_files_template, $(top_srcdir)/FAQ, faq.txt))
+$(eval $(call update_files_template, $(top_srcdir)/README, docs.txt))
 
 # remove all generated files
 clean:
-	-rm -f *.html *.txt *.dat FAQ README
+	-rm -f *.html *.txt *.dat
 
-html: $(HTML_OBJS)
-text: $(TEXT_OBJS)
+html: $(HTML_OBJS) $(DOCS_HTMLS) $(DOCS_TEXTS)
+text: $(TEXT_OBJS) $(TOP_TEXTS)
 php: $(PHP_OBJS)
 
-.PHONY: all html text php clean
+.PHONY: all html text php clean update

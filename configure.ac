@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.69])
-AC_INIT([Exult],[1.9.0git],[],[exult],[http://exult.info/])
+AC_INIT([Exult],[1.9.0git],[],[exult],[https://exult.info/])
 AC_CONFIG_SRCDIR([exult.cc])
 
 # ---------------------------------------------------------------------
@@ -291,59 +291,72 @@ if test x$enable_android_apk != xno; then
 	# Checking against a known-good baseline gradle version
 	AC_MSG_CHECKING([gradle version])
 	gradle_version=`$GRADLE --version | grep Gradle | awk '{print $2;}' | tr -d '\r\n'`
-	AX_COMPARE_VERSION([$gradle_version], [ge], [6.8.2], [dnl
-		dnl $gradle_version >= 6.8.2
-		AC_MSG_RESULT([found $gradle_version >= 6.8.2])
+	AX_COMPARE_VERSION([$gradle_version], [ge], [7.5], [dnl
+		dnl $gradle_version >= 7.5
+		AC_MSG_RESULT([found $gradle_version >= 7.5])
 	], [
-		dnl $gradle_version < 6.8.2
-		AC_MSG_ERROR([found $gradle_version < 6.8.2])
+		dnl $gradle_version < 7.5
+		AC_MSG_ERROR([found $gradle_version < 7.5])
 	])
 
 	# Use sdkmanager to check Android package versions.
 	AC_PATH_PROGS(SDKMANAGER, sdkmanager)
 
 	# Check for required Android SDK version.
-	ANDROID_SDK_VERSION=30
+	AC_ARG_WITH(android_sdk,
+		AS_HELP_STRING([--with-android-sdk=sdk_version], [Android SDK version @<:@default 33@:>@]),
+		[with_android_sdk="$withval"],[with_android_sdk=33])
+	ANDROID_SDK_VERSION="$with_android_sdk"
 	AC_MSG_CHECKING([for Android SDK $ANDROID_SDK_VERSION])
 	if $SDKMANAGER --list|grep -q "platforms;android-$ANDROID_SDK_VERSION"; then
 		AC_MSG_RESULT([yes])
 	else
-		AC_MSG_ERROR([no])
+		AC_MSG_ERROR([$ANDROID_SDK_VERSION is not a valid Android SDK version.])
 	fi
 	AC_SUBST(ANDROID_SDK_VERSION, $ANDROID_SDK_VERSION)
 
 	# Check for required Android SDK Build-Tools version.
-	ANDROID_BUILD_TOOLS_VERSION=30.0.3
+	AC_ARG_WITH(android_build_tools,
+		AS_HELP_STRING([--with-android-build-tools=build_tools_version], [Android build tools version @<:@default 34.0.0@:>@]),
+		[with_android_build_tools="$withval"],[with_android_build_tools=34.0.0])
+	ANDROID_BUILD_TOOLS_VERSION="$with_android_build_tools"
 	AC_MSG_CHECKING([for Android SDK Build-Tools $ANDROID_BUILD_TOOLS_VERSION])
 	if $SDKMANAGER --list|grep -q "build-tools;$ANDROID_BUILD_TOOLS_VERSION"; then
 		AC_MSG_RESULT([yes])
 	else
-		AC_MSG_ERROR([no])
+		AC_MSG_ERROR([$ANDROID_BUILD_TOOLS_VERSION is not a valid Android build tools version.])
 	fi
 	AC_SUBST(ANDROID_BUILD_TOOLS_VERSION, $ANDROID_BUILD_TOOLS_VERSION)
 
 	# Check for required Android NDK version.
-	ANDROID_NDK_VERSION=21.4.7075529
+	AC_ARG_WITH(android_ndk,
+		AS_HELP_STRING([--with-android-ndk=ndk_version], [Android NDK version @<:@default 22.1.7171670@:>@]),
+		[with_android_sdk="$withval"],[with_android_ndk=22.1.7171670])
+	ANDROID_NDK_VERSION="$with_android_ndk"
 	AC_MSG_CHECKING([for Android NDK $ANDROID_NDK_VERSION])
 	if $SDKMANAGER --list|grep -q "ndk;$ANDROID_NDK_VERSION"; then
 		AC_MSG_RESULT([yes])
 	else
-		AC_MSG_ERROR([no])
+		AC_MSG_ERROR([$ANDROID_NDK_VERSION is not a valid Android NDK version.])
 	fi
 	AC_SUBST(ANDROID_NDK_VERSION, $ANDROID_NDK_VERSION)
 
 	# Check for required Android CMake version.
-	ANDROID_CMAKE_VERSION=3.18.1
+	AC_ARG_WITH(android_cmake,
+		AS_HELP_STRING([--with-android-cmake=cmake_version], [Android CMake version @<:@default 3.22.1@:>@]),
+		[with_android_cmake="$withval"],[with_android_cmake=3.22.1])
+	ANDROID_CMAKE_VERSION="$with_android_cmake"
 	AC_MSG_CHECKING([for Android CMake $ANDROID_CMAKE_VERSION])
 	if $SDKMANAGER --list|grep -q "cmake;$ANDROID_CMAKE_VERSION"; then
 		AC_MSG_RESULT([yes])
 	else
-		AC_MSG_ERROR([no])
+		AC_MSG_ERROR([$ANDROID_CMAKE_VERSION is not a valid Android CMake version.])
 	fi
 	AC_SUBST(ANDROID_CMAKE_VERSION, $ANDROID_CMAKE_VERSION)
 
-	# Pass down SDK directory
-	AC_SUBST(ANDROID_SDK_ROOT, `AS_DIRNAME(["$SDKMANAGER"])`/../../../..)
+	# Pass down SDK directory, keep _HOME and _SDK_ROOT in sync
+	AC_SUBST(ANDROID_HOME, `AS_DIRNAME(["$SDKMANAGER"])`/../../..)
+	AC_SUBST(ANDROID_SDK_ROOT, $ANDROID_HOME)
 
 	# Enable Android APK build
 	AM_CONDITIONAL(ANDROID_APK, true)
@@ -1254,7 +1267,6 @@ echo Exult Studio support....... : $enable_exult_studio_support
 echo Create data files.......... : $enable_data
 if test x$enable_android_apk != xno; then
 	echo Build Android APK.......... : $enable_android_apk
-	echo Gradle..................... : $gradle_version
 fi
 echo
 echo C++ Compiler............... : $CXX
@@ -1266,8 +1278,14 @@ if test "x$dbg_level" != "x"; then
 	echo C++ debug.................. : $dbg_level
 fi
 echo
-if test x$enable_android_apk = xno; then
 	echo Dependencies :
+if test x$enable_android_apk != xno; then
+	echo Android SDK................ : $ANDROID_SDK_VERSION
+	echo Android NDK................ : $ANDROID_NDK_VERSION
+	echo Android SDK CMake.......... : $ANDROID_CMAKE_VERSION
+	echo Gradle..................... : $gradle_version
+	echo
+else
 	echo SDL........................ : `$PKG_CONFIG --modversion sdl2`
 	PKG_CHECK_EXISTS(ogg,
 		echo Ogg.........................: `$PKG_CONFIG --modversion ogg`)

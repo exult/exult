@@ -74,7 +74,7 @@ void InputOptions_gump::cancel() {
 }
 
 void InputOptions_gump::help() {
-	SDL_OpenURL("http://exult.info/docs.php#game_input_gump");
+	SDL_OpenURL("https://exult.info/docs.php#game_input_gump");
 }
 
 void InputOptions_gump::build_buttons() {

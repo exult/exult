@@ -11,10 +11,10 @@ Version: %ver
 Release: %rel
 Copyright: GPL
 Group: Amusements/Games
-Source: http://download.sourceforge.net/projects/exult/exult-%{ver}.tar.gz
+Source: https://download.sourceforge.net/projects/exult/exult-%{ver}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-root
 Packager: Willem Jan Palenstijn <wjpalenstijn@users.sourceforge.net>
-URL: http://exult.info
+URL: https://exult.info
 Prereq: /sbin/install-info
 
 %description

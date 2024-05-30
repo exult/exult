@@ -159,8 +159,7 @@ int ALSAMidiDriver::open() {
 			pout << clt_id << ":" << prt_id << " : [ " << clt_name << " : "
 				 << prt_name
 				 << (prt_write_use > 0 ? " ], in use, " : " ], available, ")
-				 << prt_midi_channels << " channels"
-				 << ", RW capability"
+				 << prt_midi_channels << " channels" << ", RW capability"
 				 << ((prt_capability & SND_SEQ_PORT_CAP_READ) != 0u ? " R" : "")
 				 << ((prt_capability & SND_SEQ_PORT_CAP_WRITE) != 0u ? " W"
 																	 : "")
@@ -197,9 +196,8 @@ int ALSAMidiDriver::open() {
 			pout << std::endl;
 			return 0;
 		}
-		perr << "ALSAMidiDriver: "
-			 << "Can't subscribe to default MIDI port [" << seq_client << ":"
-			 << seq_port << "]";
+		perr << "ALSAMidiDriver: " << "Can't subscribe to default MIDI port ["
+			 << seq_client << ":" << seq_port << "]";
 		if (identify_port(seq_client, seq_port)) {
 			perr << " [ " << clt_name << " : " << prt_name << " ]";
 		}
@@ -230,9 +228,8 @@ int ALSAMidiDriver::open() {
 					>= 0) {
 					pout << "ALSAMidiDriver: "
 						 << "ALSA client initialised on MIDI port ["
-						 << seq_client << ":" << seq_port << "]"
-						 << " [ " << clt_name << " : " << prt_name << " ]"
-						 << std::endl;
+						 << seq_client << ":" << seq_port << "]" << " [ "
+						 << clt_name << " : " << prt_name << " ]" << std::endl;
 					return 0;
 				}
 			}

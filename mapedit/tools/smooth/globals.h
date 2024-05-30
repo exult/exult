@@ -51,9 +51,9 @@ typedef struct g_stat_struct {
 
 EXTERN glob_statics g_statics;
 
-typedef char colour_hex[8];
+typedef Uint32 colour_hex;
 
-typedef char* (*pfnPluginApply)(
+typedef colour_hex (*pfnPluginApply)(
 		colour_hex ret_col, glob_variables* g_variables);
 
 typedef struct pacman {

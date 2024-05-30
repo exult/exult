@@ -24,6 +24,10 @@
 
 #include "tqueue.h"
 
+#include "actors.h"
+#include "cheat.h"
+#include "gamewin.h"
+
 #include <algorithm>
 
 #ifdef __GNUC__
@@ -182,6 +186,16 @@ long Time_queue::find_delay(const Time_sensitive* obj, uint32 curtime) const {
 	return delay >= 0 ? delay : 0;
 }
 
+void Time_queue::activate(uint32 curtime) {
+	if (cheat.in_map_editor()) {
+		activate_mapedit(curtime);
+	} else if (paused > 0) {
+		activate_always(curtime);
+	} else if (!data.empty() && !(curtime < data.front().time)) {
+		activate0(curtime);
+	}
+}
+
 /*
  *  Remove & activate entries that are due, starting with head (already
  *  known to be due).
@@ -189,9 +203,8 @@ long Time_queue::find_delay(const Time_sensitive* obj, uint32 curtime) const {
 
 void Time_queue::activate0(uint32 curtime    // Current time.
 ) {
-	Queue_entry ent;
 	do {
-		ent                                    = data.front();
+		Queue_entry                     ent    = data.front();
 		Time_sensitive*                 obj    = ent.handler;
 		std::shared_ptr<Time_sensitive> sp_obj = ent.sp_handler;
 		const uintptr                   udata  = ent.udata;
@@ -218,17 +231,48 @@ void Time_queue::activate_always(uint32 curtime    // Current time.
 	if (data.empty()) {
 		return;
 	}
-	Queue_entry ent;
 	for (auto it = data.begin(); it != data.end() && !(curtime < it->time);) {
 		auto next = it;
 		++next;    // Get ->next in case we erase.
-		ent                                    = *it;
+		Queue_entry                     ent    = *it;
 		std::shared_ptr<Time_sensitive> sp_obj = ent.sp_handler;
 		Time_sensitive*                 obj    = ent.handler;
-		if (!obj && sp_obj) {
+		if (obj == nullptr && sp_obj) {
 			obj = sp_obj.get();
 		}
-		if (obj && obj->always) {
+		if (obj != nullptr && obj->always) {
+			obj->queue_cnt--;
+			const uintptr udata = ent.udata;
+			data.erase(it);
+			obj->handle_event(curtime, udata);
+		}
+		it = next;
+	}
+}
+
+/*
+ *  Remove & activate only the avatar.  This is called when
+ *  map edit mode is enabled.
+ */
+
+void Time_queue::activate_mapedit(uint32 curtime    // Current time.
+) {
+	if (data.empty()) {
+		return;
+	}
+
+	const Main_actor* const avatar
+			= Game_window::get_instance()->get_main_actor();
+	for (auto it = data.begin(); it != data.end() && !(curtime < it->time);) {
+		auto next = it;
+		++next;    // Get ->next in case we erase.
+		Queue_entry                     ent    = *it;
+		std::shared_ptr<Time_sensitive> sp_obj = ent.sp_handler;
+		Time_sensitive*                 obj    = ent.handler;
+		if (obj == nullptr && sp_obj) {
+			obj = sp_obj.get();
+		}
+		if (obj != nullptr && (obj == avatar || obj->always)) {
 			obj->queue_cnt--;
 			const uintptr udata = ent.udata;
 			data.erase(it);
@@ -243,8 +287,8 @@ void Time_queue::activate_always(uint32 curtime    // Current time.
  */
 
 void Time_queue::resume(uint32 curtime) {
-	if (!paused || --paused > 0) {    // Only unpause when stack empty.
-		return;                       // Not paused.
+	if (paused == 0 || --paused > 0) {    // Only unpause when stack empty.
+		return;                           // Not paused.
 	}
 	const int diff = curtime - pause_time;
 	pause_time     = 0;

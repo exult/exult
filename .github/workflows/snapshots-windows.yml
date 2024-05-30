@@ -47,7 +47,7 @@ jobs:
             mingw-w64-i686-gtk2 mingw-w64-i686-gimp mingw-w64-i686-icu
       - name: Checkout code for i686 build
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
         with:
           path: exult-i686
       - name: Build i686
@@ -69,7 +69,7 @@ jobs:
           echo "MSYSHOME=${HOME}" >> $GITHUB_ENV
       - name: Checkout code for x86_64 build
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
         with:
           path: exult-x86_64
       - name: Build x86_64
@@ -108,7 +108,7 @@ jobs:
           cp ${{ env.EXULT_SNAPSHOT_PATH }}/SFisland.zip ./windows-snapshot
           cp ${{ env.EXULT_SNAPSHOT_PATH }}/Sifixes.zip ./windows-snapshot
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "windows snapshot"
           path: windows-snapshot

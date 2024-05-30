@@ -46,7 +46,7 @@ jobs:
           tar xzf /tmp/cov-analysis-linux64.tar.gz --strip 1 -C /tmp/cov-analysis-linux64
       - name: Checkout code
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
       - name: Run autoreconf
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         run: |

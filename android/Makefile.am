@@ -67,11 +67,11 @@ GRADLE_PROJECT_PROPS=--project-prop EXULT_SOURCE_DIR=$(abs_top_srcdir) --project
 # Always call the gradle wrapper to update the APK
 .PHONY: $(ANDROID_APK)
 $(ANDROID_APK): $(abs_builddir)/gradlew
-	ANDROID_SDK_ROOT=$(ANDROID_SDK_ROOT) ./gradlew assemble$(APK_BUILD_TYPE) $(GRADLE_PROJECT_PROPS) --info
+	ANDROID_HOME=$(ANDROID_HOME) ./gradlew assemble$(APK_BUILD_TYPE) $(GRADLE_PROJECT_PROPS) --info
 
 # Generate the gradle wrapper
 $(abs_builddir)/gradlew: $(APK_BUILD_TREE) android_packages
-	ANDROID_SDK_ROOT=$(ANDROID_SDK_ROOT) $(GRADLE) wrapper $(GRADLE_PROJECT_PROPS)
+	ANDROID_HOME=$(ANDROID_HOME) $(GRADLE) wrapper $(GRADLE_PROJECT_PROPS)
 
 # Always try to install any missing android packages
 .PHONY: android_packages
@@ -116,4 +116,4 @@ $(APK_ASSETS): $(APK_ASSETS_DIR)/%: $(abs_top_srcdir)/data/%
 # The NDK build also utilizes this codebase rather than downloading a
 # separate copy.
 $(SDL_SOURCE_DIR):
-	$(GIT) -c advice.detachedHead=false clone --branch release-2.28.2 --depth 1 https://github.com/libsdl-org/SDL.git $@
+	$(GIT) -c advice.detachedHead=false clone --branch release-2.30.3 --depth 1 https://github.com/libsdl-org/SDL.git $@

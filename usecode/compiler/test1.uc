@@ -52,7 +52,7 @@ var adder1 (a, b)
 		case "Bye":
 			break;
 		case "bogus", "nonsense", "garbage":
-			say("This is utter nonsense!");
+			say("This is utter"*);
 		default:
 			say("All other answers get here. Your choice was ", user_choice);
 		}

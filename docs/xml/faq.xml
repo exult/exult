@@ -39,7 +39,7 @@
 					redistribute your work you are required to make the source freely available
 					in turn. Obviously the <Exult/> team would be very grateful if any
 					modifications you make are contributed back to the main code, so that
-					everyone can benefit from them. If you want to work on <Exult/> please contact 
+					everyone can benefit from them. If you want to work on <Exult/> please contact
 					us via our
 					<extref target="https://github.com/exult/exult/discussions">forum</extref>.<br/>
 					More information on the GNU GPL at
@@ -51,8 +51,8 @@
 			<header>Do you accept donations?</header>
 			<body>
 				<para>
-					No, the <Exult/> team will not accept donations. For us there are greater legal matters 
-					involved, which none of us particularly want to explore. We do not want to risk the 
+					No, the <Exult/> team will not accept donations. For us there are greater legal matters
+					involved, which none of us particularly want to explore. We do not want to risk the
 					wrath of EA for directly profiting off <Exult/>.<br/>
 				</para>
 			</body>
@@ -62,13 +62,13 @@
 			<body>
 				<para>
 					First of all, Origin has been wiped from existence by EA a long time ago.
-					Furthermore, Origin and/or people that worked for Origin have claimed that 
+					Furthermore, Origin and/or people that worked for Origin have claimed that
 					the source code for Ultima VII (BG/SI) has been lost for some time.
 					So there is no chance for the <Exult/> team to have a look at the actual code.
 				</para>
 				<para>
-					Also the team tried to contact some people from Origin years ago but received 
-					neither positive or negative response on the <Exult/> project. So far it seems 
+					Also the team tried to contact some people from Origin years ago but received
+					neither positive or negative response on the <Exult/> project. So far it seems
 					that EA has decided to ignore <Exult/>.
 				</para>
 				<para>
@@ -102,14 +102,14 @@
 					Any <strong>developer</strong> is welcome to take a look and contact us.
 				</para>
 				<para>
-					After years this plan has come to fruit and <Pentagram/> has been merged into 
-					<strong>ScummVM</strong>. Even support for the two games <strong>Crusader: No Remorse</strong> 
+					After years this plan has come to fruit and <Pentagram/> has been merged into
+					<strong>ScummVM</strong>. Even support for the two games <strong>Crusader: No Remorse</strong>
 					and <strong>Crusader: No Regret</strong>, which use the same engine, has been progressing
 					in <strong>ScummVM</strong>'s code.
 				</para>
 				<para>
 					On the official <Pentagram/> homepage at <extref target="http://pentagram.info/"/>
-					you will find more information on this project of before the merge with 
+					you will find more information on this project of before the merge with
 					<strong>ScummVM</strong>.
 				</para>
 			</body>
@@ -138,17 +138,17 @@
 				<para>
 					The latest official version is found on
 					<extref target="https://exult.info/"/><br/>
-					The source code of <Exult/> is hosted on GitHub's Git server which you can 
+					The source code of <Exult/> is hosted on GitHub's Git server which you can
 					browse and download at <extref target="https://github.com/exult"/>.<br/>
 					Daily snapshots of the source code, Windows and macOS binaries can be found at
 					<extref target="https://exult.info/download.php"/>.<br/>
-					Paulo started a PPA for Ubuntu at 
+					Paulo started a PPA for Ubuntu at
 					<extref target="https://launchpad.net/~exult-team/+archive/exult-daily"/>.<br/>
 				</para>
 				<para>
 					To use the PPA for Ubuntu follow these steps in terminal:<br/>
 					<kbd>$  sudo apt-add-repository ppa:exult-team/exult-daily</kbd><br/>
-					#Adds the repository - you will be required to accept the key file. 
+					#Adds the repository - you will be required to accept the key file.
 					Just press 'Enter'<br/>
 					<kbd>$ sudo apt-get update</kbd><br/>
 					#Updates your cache.<br/>
@@ -167,7 +167,7 @@
 				<para>
 					The snapshot is the newest source code of the program. It is updated every
 					night if commits landed in our repository on that day. There is information on how to
-					build your own binary in the source but there is also the newest pre-compiled Windows  
+					build your own binary in the source but there is also the newest pre-compiled Windows
 					and macOS executables.<br/>
 					If there is no new one this means that either there were no changes to the code
 					or the source failed to compile.
@@ -178,8 +178,8 @@
 			<header>How do I compile a source code snapshot for my OS?</header>
 			<body>
 				<para>
-					The source code snapshots contain the files Readme.win32, Readme.MacOSX 
-					that explain everything. The instructions for Linux systems are 
+					The source code snapshots contain the files Readme.win32, Readme.MacOSX
+					that explain everything. The instructions for Linux systems are
 					traditionally in the file called INSTALL.
 				</para>
 			</body>
@@ -196,8 +196,8 @@
 					To find out which version you are running, press <key>v</key> while in game.
 				</para>
 				<para>
-					At the moment we recommend that people use the latest snapshot rather than 
-					our last official version since many critical bugs have been fixed since the 
+					At the moment we recommend that people use the latest snapshot rather than
+					our last official version since many critical bugs have been fixed since the
 					last release.
 				</para>
 			</body>
@@ -208,24 +208,24 @@
 				<para>
 					<Exult/> should be able to be compiled (with minor modifications) on
 					any platform that SDL2 supports. Right now the source can be compiled
-					in <strong>Linux, macOS, OpenBSD, FreeBSD,</strong> and 
+					in <strong>Linux, macOS, OpenBSD, FreeBSD,</strong> and
 					<strong>Windows (XP/Vista/7, 10, 11)</strong>.
 				</para>
 				<ul>
 					<li><strong>iOS (iPhone and iPad)</strong><br/>
-					After initial porting by our member Lanica Dragon, Chaoji Li (aka Litchie) 
-					successfully ported <Exult/> to iOS. On the iPad <Exult/>  really shines 
-					and is very enjoyable. However Ultima VII's item management makes it much 
+					After initial porting by our member Lanica Dragon, Chaoji Li (aka Litchie)
+					successfully ported <Exult/> to iOS. On the iPad <Exult/>  really shines
+					and is very enjoyable. However Ultima VII's item management makes it much
 					harder to use on the smaller iPhone screens.<br/></li>
 
 					<li><strong>Android, Java</strong><br/>
-					Jeff, Dr.Code, is started porting <Exult/> to Android by rewriting it in Java. 
-					Unfortunately this port has been abandoned but its former progress can be viewed in its 
+					Jeff, Dr.Code, is started porting <Exult/> to Android by rewriting it in Java.
+					Unfortunately this port has been abandoned but its former progress can be viewed in its
 					old	<extref target="https://goo.gl/VJCNG">forum</extref> thread.</li>
 
 					<li><strong>Android, native</strong><br/>
-					KenC ported <Exult/> directly to Android, without rewriting it in Java. After a long 
-					hiatus he continued his work on 
+					KenC ported <Exult/> directly to Android, without rewriting it in Java. After a long
+					hiatus he continued his work on
 					<extref target="https://github.com/ceckak/exult/tree/android-port">Github</extref>,
 					before we merged it with <Exult/> after our 1.8 release.</li>
 				</ul>
@@ -235,8 +235,8 @@
 			<header>Platforms <Exult/> used to run on</header>
 			<body>
 				<para>
-					<Exult/> used to run on many more platforms but these are mostly devices and operating systems that have 
-					not been in use for ages now. Support for these has been removed from the Exult source to streamline 
+					<Exult/> used to run on many more platforms but these are mostly devices and operating systems that have
+					not been in use for ages now. Support for these has been removed from the Exult source to streamline
 					our code. Or the 3rd party ports have been inactive for years.
 				</para>
 				<ul>
@@ -250,23 +250,23 @@
 					<li><strong>PocketPC</strong><br/>
 					Lanica Dragon successfully ported <Exult/> to the PocketPC.</li>
 					<li><strong>Amiga/MorphOS</strong><br/>
-					Ruediger Hanke ported <Exult/> to MorphOS and AmigaOS. Unfortunately the port has 
-					been abandoned for quite some time now. But you can only find the archived homepage 
+					Ruediger Hanke ported <Exult/> to MorphOS and AmigaOS. Unfortunately the port has
+					been abandoned for quite some time now. But you can only find the archived homepage
 					for this port at
 					<extref target="https://web.archive.org/web/20070927190600/http://www.muenster.de/~tomjoad/exult.html"/>.
 					Unfortunately the download is no longer available.</li>
 					<li><strong>Dingoo</strong><br/>
-					<Exult/> has been ported to Dingoo (see 
-					<extref target="https://crankgaming.blogspot.com/2010/09/exult-v14svn6317-for-dingux-beta2.html">this Announcement</extref>) 
+					<Exult/> has been ported to Dingoo (see
+					<extref target="https://crankgaming.blogspot.com/2010/09/exult-v14svn6317-for-dingux-beta2.html">this Announcement</extref>)
 					by SiENcE.</li>
 					<li><strong>Sony PSP</strong><br/>
 					Phantom Fighter ported <Exult/> 1.2 to <extref target="http://thefoodsucks.com/portfolio/exult-psp/">Sony PSP</extref></li>
 					<li><strong>Xbox 360</strong><br/>
-					And Cancerous1 is in the progress of porting <Exult/> to 
+					And Cancerous1 is in the progress of porting <Exult/> to
 					<extref target="https://code.google.com/p/exultx-nosdlmixer/">Xbox 360</extref>.</li>
 				</ul>
 				<para>
-					A long time ago <Exult/> used to compile on <strong>MacOS 8.5</strong> (or higher), 
+					A long time ago <Exult/> used to compile on <strong>MacOS 8.5</strong> (or higher),
 					<strong>Solaris</strong> and <strong>BeOS</strong>.
 				</para>
 			</body>
@@ -275,18 +275,18 @@
 			<header>Will there be a port of <Exult/> for &lt;insert platform here&gt;?</header>
 			<body>
 				<para>
-					That depends on a great many things. For one, it requires a developer that (1) has the 
-					necessary free time, (2) the necessary knowledge about programming for the platform in 
-					question, (3) the necessary motivation to do the port and (4) access to the platform in 
-					question. Any of the <Exult/> developers may lack one or more of the items above, but it 
-					will probably the fourth (and, by consequence, the third) item. This is likely fatal 
-					for the port: programming using an emulator (if one is even available) may result in a 
-					port that works on the emulator but not on the original (unless the emulator is that 
-					good), and programming without any access at all to the platform in question is a 
+					That depends on a great many things. For one, it requires a developer that (1) has the
+					necessary free time, (2) the necessary knowledge about programming for the platform in
+					question, (3) the necessary motivation to do the port and (4) access to the platform in
+					question. Any of the <Exult/> developers may lack one or more of the items above, but it
+					will probably the fourth (and, by consequence, the third) item. This is likely fatal
+					for the port: programming using an emulator (if one is even available) may result in a
+					port that works on the emulator but not on the original (unless the emulator is that
+					good), and programming without any access at all to the platform in question is a
 					pointless and frustrating exercise in futility.
 				</para>
 				<para>
-					Moreover, some platforms might require BG and/or SI to come bundled with <Exult/>; that alone 
+					Moreover, some platforms might require BG and/or SI to come bundled with <Exult/>; that alone
 					would disqualify any official builds for legal reasons.
 				</para>
 			</body>
@@ -311,7 +311,7 @@
 				</para>
 				<para>
 					In the past there were reported problems with the localized versions of the
-					game (French, German and Spanish) but these should not be a problem anymore. 
+					game (French, German and Spanish) but these should not be a problem anymore.
 					The reported problems were that conversation threads didn't seem to skip to the
 					next line in the proper places and therefore were unreadable in some cases.<br/>
 					SI was published in English and Spanish (to our surprise)
@@ -328,7 +328,7 @@
 			<body>
 				<para>
 					We added support for the beta version of Serpent Isle that surfaced at some point.<br/>
-					It's interesting to see how SI changed from this beta but it's not stable enough to 
+					It's interesting to see how SI changed from this beta but it's not stable enough to
 					play through the game.
 				</para>
 			</body>
@@ -393,7 +393,7 @@
 					a saved game of the macOS port of <Exult/> works on Windows 10 as well.
 				</para>
 				<para>
-					However it is not advisable to continue playing with savegames of games started 
+					However it is not advisable to continue playing with savegames of games started
 					with old versions of <Exult/>.
 				</para>
 			</body>
@@ -402,8 +402,8 @@
 			<header>Where do I find Ultima VII on the net to download?</header>
 			<body>
 				<para>
-					If you are looking for a legitimate copy of the games, go to 
-					<extref target="https://www.gog.com">GOG.com</extref>. They are offering the 
+					If you are looking for a legitimate copy of the games, go to
+					<extref target="https://www.gog.com">GOG.com</extref>. They are offering the
 					complete Ultima VII since November 2011 for a decent price.
 				</para>
 				<para>
@@ -430,7 +430,7 @@
 						The Ultima VII section of the more detailed Ultima Gameplay FAQ</extref></li>
 				</ul>
 				<para>
-					Please be aware that if you play by using a walkthrough you may accidentally skip important parts of the game, 
+					Please be aware that if you play by using a walkthrough you may accidentally skip important parts of the game,
 					especially when playing SI you have to be careful since SI is much more linear than BG.<br/>
 					Please see <ref target="why_gameplayfaq"/> for more information.
 				</para>
@@ -445,7 +445,7 @@
 				<ul>
 					<li>On Linux systems you can expect to find it in <kbd>$HOME/.exult.cfg</kbd></li>
 					<li>macOS saves it to <kbd>~/Library/Preferences/exult.cfg</kbd></li>
-					<li>Windows (7, 8, 10, 11) save exult.cfg to <kbd>LOCAL_APPDATA\Exult</kbd>, 
+					<li>Windows (7, 8, 10, 11) save exult.cfg to <kbd>LOCAL_APPDATA\Exult</kbd>,
 						but on these this translates to <kbd>C:\Users\YourUsername\AppData\Local\Exult</kbd></li>
 					<li>On all supported Windows versions you can quickly access this folder by executing<br/>
 						<kbd>shell:Local AppData\Exult</kbd><br/>
@@ -457,15 +457,15 @@
 			<header>I updated Exult to the new version. Where have my savegames gone?</header>
 			<body>
 				<para>
-					With version 1.4.9rc1 we changed the location where Exult saves its savegames to. 
-					The new location differs depending on your operating system, for details see 
+					With version 1.4.9rc1 we changed the location where Exult saves its savegames to.
+					The new location differs depending on your operating system, for details see
 					<extref doc="docs" target="path_config">Path-Settings</extref>.<br/>
-					Your old savegames are probably still in the folder of the original games as 
+					Your old savegames are probably still in the folder of the original games as
 					we used to save them there.<br/>
 					Just copy them from the old location to the new location.
 				</para>
 				<para>
-					However it is not advisable to continue playing with savegames of games started 
+					However it is not advisable to continue playing with savegames of games started
 					with old versions of <Exult/>.
 				</para>
 			</body>
@@ -474,13 +474,13 @@
 			<header>Will you implement the extended intro for SI?</header>
 			<body>
 				<para>
-					In February 2021 we did implement the extended intro in Exult and it is now the 
+					In February 2021 we did implement the extended intro in Exult and it is now the
 					default intro played when you start a SI game in <Exult/>.<br/>
 					Below you can find our old view on implementing it.
 				</para>
 				<para>
 					Information on the extended intro for Serpent Isle can be found at
-					<extref target="https://ultimacodex.com/2011/11/the-original-serpent-isle-introduction/"/>. 
+					<extref target="https://ultimacodex.com/2011/11/the-original-serpent-isle-introduction/"/>.
 					At this moment we don't even think about implementing this extended intro.<br/>
 					Why not?<br/>
 					It sure would be nice to use it. But you may have noticed some effects
@@ -566,8 +566,8 @@
 			<header>Why can't I hear the speech in the intro?</header>
 			<body>
 				<para>
-					We've been made aware that if your introsnd.dat file becomes corrupt you might lose 
-					speech in the intro. The file is located in your games static folder. So if you hit 
+					We've been made aware that if your introsnd.dat file becomes corrupt you might lose
+					speech in the intro. The file is located in your games static folder. So if you hit
 					this problem you need to restore this file.
 				</para>
 			</body>
@@ -657,10 +657,10 @@
 					zip files. They are still labeled *.sav and have the save game name in the zip
 					comment.</li>
 				<li>A notebook for making notes and the possibility to automatically add notes.</li>
-				<li>Shortcut bar on top of the screen with many useful shortcuts. This is especially 
+				<li>Shortcut bar on top of the screen with many useful shortcuts. This is especially
 					useful for touch devices without a physical keyboard (.e.g. iOS devices).</li>
-				<li>The Serpent Isle extended intro. This was slimmed down in the original to save 
-					floppy disk space but we restored it from material posted online by the artist 
+				<li>The Serpent Isle extended intro. This was slimmed down in the original to save
+					floppy disk space but we restored it from material posted online by the artist
 					Denis Loubet.</li>
 				</ul>
 			</body>
@@ -740,15 +740,15 @@
 				<para>
 					With <Studio/> advancing more and more, there are actually now a couple of patches
 					and Mods (modifications) for <Exult/>.<br/>
-					A nice collection can be found at 
-					<extref target="https://www.exult.info/seventowers/">Seven Towers</extref>, Marzo's Mods 
-					and his documentation of Ultima VII/<Exult/> Usecode. Other patches/mods can be 
+					A nice collection can be found at
+					<extref target="https://www.exult.info/seventowers/">Seven Towers</extref>, Marzo's Mods
+					and his documentation of Ultima VII/<Exult/> Usecode. Other patches/mods can be
 					found at:
 				</para>
 				<para>
-					A list of all known mods can be found on our 
-					<extref target="https://github.com/exult/exult/discussions/260">Github</extref> 
-					with most being available on our 
+					A list of all known mods can be found on our
+					<extref target="https://github.com/exult/exult/discussions/260">Github</extref>
+					with most being available on our
 					<extref target="https://exult.info/download.php">download page</extref>.
 				</para>
 				<para>
@@ -768,7 +768,7 @@
 			<body>
 				<para>
 					To see a list of open bug reports go to
-					<extref target="https://github.com/exult/exult/issues"/> and our old bugtracker at 
+					<extref target="https://github.com/exult/exult/issues"/> and our old bugtracker at
 					<extref target="https://sourceforge.net/p/exult/bugs/"/>.
 				</para>
 			</body>
@@ -785,7 +785,7 @@
 						<extref target="https://exult.info/download.php">snapshot</extref>.
 						If the bug still occurs make sure that no one else has already reported the bug
 						(in the bug tracker).</li>
-					<li>You can only submit a bug report in our tracker if you are a 
+					<li>You can only submit a bug report in our tracker if you are a
 						<extref target="https://github.com">GitHub</extref> member.</li>
 					<li>Make sense in the topic! For example, if the problem is with Rowenna in Skara Brae
 						don't just write "Skara Brae" in the topic. "BG: Rowenna crashes game" makes more
@@ -800,11 +800,11 @@
 						may require you to complete other quests or stuff before you get to the bug you want to
 						report it's much easier for the team to look at the problem (speeds the process up a bit
 						as they are much more likely you take a look at the problem this way).</li>
-					<li>You may be asked to provide the log files of <Exult/>. These are named stdout.txt and 
-						stderr.txt and can be found where exult.cfg is saved to, see 
+					<li>You may be asked to provide the log files of <Exult/>. These are named stdout.txt and
+						stderr.txt and can be found where exult.cfg is saved to, see
 						<ref1 target="where_cfg"/>.</li>
-					<li>You may be asked to provide the log files of <Studio/>. These are named studio_out.txt and 
-						studio_err.txt and can also be found where exult.cfg is saved to, see 
+					<li>You may be asked to provide the log files of <Studio/>. These are named studio_out.txt and
+						studio_err.txt and can also be found where exult.cfg is saved to, see
 						<ref1 target="where_cfg"/>.</li>
 					<li><em>One</em> bug per subject please. It's easier to track what has been fixed if you
 						follow this.</li>
@@ -817,9 +817,9 @@
 					You can also use our
 					<extref target="https://github.com/exult/exult/discussions">forum</extref>
 					to report bugs. But if you do, please follow the guidelines mentioned above. Though
-					be aware that bugs submitted to the bug tracker are more likely to get attention than bugs 
+					be aware that bugs submitted to the bug tracker are more likely to get attention than bugs
 					submitted to the forum.<br/>
-					And if you report to the forum, also follow the "one bug per report" rule, a post with 
+					And if you report to the forum, also follow the "one bug per report" rule, a post with
 					many bug reports in it is likely to have some bugs overlooked in the end.
 				</para>
 				<para>
@@ -844,7 +844,7 @@
 				</para>
 				<ul>
 					<li>Birds and animals open doors and such, like the human and sentient
-						creatures of Britannia do. You should rarely encounter this anymore 
+						creatures of Britannia do. You should rarely encounter this anymore
 						since there are better intelligence checks, but it can still happen.</li>
 					<li>The way the Avatar and the companions walk. Is it 2 frames or 3 frames?
 						This has been changed a lot as this was disputed almost every four weeks.
@@ -907,7 +907,7 @@
 				</para>
 				<para>
 					We added a mark to the question (BG/FoV/SI/SS) to show which Ultima VII game is
-					affected by this. See <extref doc="docs" target="terms"/> to learn which game 
+					affected by this. See <extref doc="docs" target="terms"/> to learn which game
 					these marks point to.
 				</para>
 			</body>
@@ -917,9 +917,9 @@
 			<body>
 				<para>
 					The documentation and installation files of the original may be a bit misleading.
-					There are only a few NPCs in the games that have audible speech. In BG only the 
+					There are only a few NPCs in the games that have audible speech. In BG only the
 					Guardian can be heard during the game.<br/>
-					Apart from the Intro you can only hear the Guardian and the Great Earth Serpent 
+					Apart from the Intro you can only hear the Guardian and the Great Earth Serpent
 					in SI.
 				</para>
 			</body>
@@ -928,7 +928,7 @@
 			<header>Why do spells require different reagents than the manual lists (BG+SI)?</header>
 			<body>
 				<para>
-					The manuals of both BG and SI listed different requirements for two spells than what 
+					The manuals of both BG and SI listed different requirements for two spells than what
 					was actually required in the original game and <Exult/>.
 				</para>
 				<ul>
@@ -936,12 +936,12 @@
 						The original game and <Exult/> use garlic, ginseng, mandrake root, spider silk.<br/>
 						Manual lists garlic, ginseng, mandrake root, sulfurous ash.</li>
 					<li>SI Imbalance<br/>
-						The original game and <Exult/> use bloodspawn, nightshade, serpent scale, sulfurous ash, 
+						The original game and <Exult/> use bloodspawn, nightshade, serpent scale, sulfurous ash,
 						worm heart,<br/>
 						while the Manual lists nightshade, serpent scale, sulfurous ash, worm heart.</li>
 				</ul>
 				<para>
-					Unfortunately very old <Exult/> versions were also wrong in more spell requirements and 
+					Unfortunately very old <Exult/> versions were also wrong in more spell requirements and
 					reagent costs. This has since been corrected.
 				</para>
 			</body>
@@ -950,8 +950,8 @@
 			<header>Why can't I see my location on the map (BG+SI)?</header>
 			<body>
 				<para>
-					To see your location marked on the map with a yellow cross you need to have sextant 
-					in your inventory. And you need to be in the open. Since you can't use a sextant 
+					To see your location marked on the map with a yellow cross you need to have sextant
+					in your inventory. And you need to be in the open. Since you can't use a sextant
 					under a roof, in a cave or in a dungeon you will not see your position marked there.
 				</para>
 			</body>
@@ -1023,12 +1023,12 @@
 					Some of our users have problems entering the generator and finding the prism afterwards.
 				</para>
 				<para>
-					To enter the tetrahedron generator you have to wear the ethereal ring (enchanted by Penumbra). 
+					To enter the tetrahedron generator you have to wear the ethereal ring (enchanted by Penumbra).
 					It is important to <strong>wear</strong> the ring on a finger and not just hold it like a weapon.
 				</para>
 				<para>
 					After you defeated the enemy you have to double click the prism to destroy the generator.
-					You will then find the black prism (without the yellow outline) to your feet. Look 
+					You will then find the black prism (without the yellow outline) to your feet. Look
 					closely and take it with you.
 				</para>
 			</body>
@@ -1083,7 +1083,7 @@
 				<para>
 					When you are at the Sleeping Bull, do <em>NOT</em> close the gangplank to Captain Hawk's ship.
 					After you've got him out of Jail and you are ready for him to take you to Moonshade, he will
-					not be able to do so when the gangplank is closed. If you have accidentally done that you will 
+					not be able to do so when the gangplank is closed. If you have accidentally done that you will
 					have to resort to cheating (enable hackmover) for fixing that.
 				</para>
 			</body>
@@ -1105,7 +1105,7 @@
 			<header>Why won't Pothos take the blood moss and talk about the mad mage (SI)?</header>
 			<body>
 				<para>
-					Pothos won't take the moss if he hasn't sent you to fetch it for him. If you want 
+					Pothos won't take the moss if he hasn't sent you to fetch it for him. If you want
 					him to tell you about the mad mage and how to get to him you first have to talk with
 					Bucia (also in Moonshade) about Pothos. Then you can talk to Pothos about it and he will
 					sent you off to fetch him fresh blood moss. Read what he says because it is important to
@@ -1151,8 +1151,8 @@
 				<para>
 					SI is very plot driven, so to stop people from breaking the plot, certain NPCs
 					stay in a unaccessible spot on the map until you meet them by following the plot,
-					or disappear from the map until they are needed again. If you cheat by 
-					teleporting to them before the scripted meeting you are bound to break the plot 
+					or disappear from the map until they are needed again. If you cheat by
+					teleporting to them before the scripted meeting you are bound to break the plot
 					and most likely forced to reload an earlier savegame or start the whole game again.<br/>
 					So please take care when teleporting around the map.
 				</para>
@@ -1162,12 +1162,12 @@
 			<header>Why can't I find Karnax, Xenka or the other monks (SI)?</header>
 			<body>
 				<para>
-					See the above question. You have to use the Dark Path to make the monks appear 
+					See the above question. You have to use the Dark Path to make the monks appear
 					on Monk Island. If you just use the teleport cheat they won't show up.
 				</para>
 				<para>
-					The same applies to Xenka. Even though Xenka returns to Monk Island while you 
-					are there, next time you return to the island you will need to go through the 
+					The same applies to Xenka. Even though Xenka returns to Monk Island while you
+					are there, next time you return to the island you will need to go through the
 					Dark Path. Otherwise she will not be found there.
 				</para>
 			</body>
@@ -1176,11 +1176,11 @@
 			<header>Why can't I cure my friends of their madness (SI)?</header>
 			<body>
 				<para>
-					After defeating the Banes in the White Dragon Castle, your friends are dead and 
-					need to be revived and subsequently cured of their madness. Instead of reviving 
-					them through the hourglass, take the bodies to Monk Island monastery. Ask Karnax 
-					to revive them and then cure them with the respective waters. If you revive and 
-					cure them elsewhere, you will not be able to cure the last of them because you 
+					After defeating the Banes in the White Dragon Castle, your friends are dead and
+					need to be revived and subsequently cured of their madness. Instead of reviving
+					them through the hourglass, take the bodies to Monk Island monastery. Ask Karnax
+					to revive them and then cure them with the respective waters. If you revive and
+					cure them elsewhere, you will not be able to cure the last of them because you
 					need to be on Monk Island.
 				</para>
 			</body>
@@ -1196,7 +1196,7 @@
 					recommend to get it without cheating and to stand right next to it.
 				</para>
 				<para>
-					Just picking it up and not transferring it to the inventory at once, but instead 
+					Just picking it up and not transferring it to the inventory at once, but instead
 					putting it on the ground again could break later plot. Willem coded a workaround
 					in <Exult/> so the problem might disappear.
 				</para>
@@ -1221,22 +1221,22 @@
 			<header>Left or right on the Altar of Discipline (SI)</header>
 			<body>
 				<para>
-					In the Temple of Discipline you need to place a quartz and obsidian symbol 
+					In the Temple of Discipline you need to place a quartz and obsidian symbol
 					(Y-shape) onto the altar to disable the trap and to call a bridge into being.<br/>
 					The book "The Symbol of Discipline" you find in the upper floor states:
 				</para>
 				<cite name="The Symbol of Discipline by Sharless">
-					The altar before the serpent statue doth have upon it two slots ... 
-					bolts of lightning fire from the altar unless the quartz symbol is placed 
-					in the slot on the left side. A bridge ... is called into being if the obsidian 
+					The altar before the serpent statue doth have upon it two slots ...
+					bolts of lightning fire from the altar unless the quartz symbol is placed
+					in the slot on the left side. A bridge ... is called into being if the obsidian
 					symbol is placed in the right slot...
 				</cite>
 				<para>
-					This is highly confusing as the player looks at the screen and associates west 
-					in the game with left and east with right. Whoever wrote this originally must 
-					have imagined the Avatar standing to the north of the altar and facing the temple 
+					This is highly confusing as the player looks at the screen and associates west
+					in the game with left and east with right. Whoever wrote this originally must
+					have imagined the Avatar standing to the north of the altar and facing the temple
 					entrance.<br/>
-					So you need to place the quartz symbol onto the east depression of the altar and 
+					So you need to place the quartz symbol onto the east depression of the altar and
 					the obsidian symbol onto the west depression.
 				</para>
 			</body>
@@ -1250,7 +1250,7 @@
 					try to observe them by following them around.
 				</para>
 				<para>
-					The original and <Exult/> determine the ability to open doors by the intelligence 
+					The original and <Exult/> determine the ability to open doors by the intelligence
 					assigned to the shape of an NPC and not the intelligence the NPCs have in the game.
 				</para>
 			</body>
@@ -1285,7 +1285,7 @@
 					AKA Dominik Reichardt.
 					Feel free to contact me with improvements or complaints regarding
 					the FAQ.<br/>
-					Best way to contact me is through our forum at 
+					Best way to contact me is through our forum at
 					<extref target="https://github.com/exult/exult/discussions"/>.
 				</para>
 			</body>
@@ -1353,7 +1353,7 @@
 					<li>Removed references to Windows CE/Pocket PC.</li>
 					<li>Many little changes to wordings and indentation.</li>
 					<li><ref1 target="pentagram"/> merged with ScummVM.</li>
-					<li><ref1 target="whereis_exult"/> Kirben no longer handles the snapshots and there are also 
+					<li><ref1 target="whereis_exult"/> Kirben no longer handles the snapshots and there are also
 						macOS ones, following sections changed accordingly as well.</li>
 					<li><ref1 target="improvements"/> Shortcut bar and extended SI intro added.</li>
 					<li><ref1 target="bug_report"/> bug tracker is now on Github.</li>

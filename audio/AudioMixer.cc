@@ -96,10 +96,11 @@ AudioMixer::AudioMixer(int sample_rate_, bool stereo_, int num_channels_)
 	// Android needs <=5 to prevent digital music from stuttering.
 	desired.samples = 1;
 #ifdef ANDROID
-	while (desired.samples <= desired.freq / 5) {
+	const int SAMPLE_BUFFER_PER_SECOND = 5;
 #else
-	while (desired.samples <= desired.freq / 30) {
+	const int SAMPLE_BUFFER_PER_SECOND = 30;
 #endif
+	while (desired.samples <= desired.freq / SAMPLE_BUFFER_PER_SECOND) {
 		desired.samples <<= 1;
 	}
 

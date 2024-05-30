@@ -1,5 +1,5 @@
 plugins {
-    id 'com.android.application'
+    id('com.android.application')
 }
 
 def getGitCommitId() {
@@ -13,8 +13,9 @@ android {
 
     defaultConfig {
         applicationId "info.exult"
+        namespace 'info.exult'
         minSdkVersion 28 // could lower to 18 if we locally implement glob()
-        targetSdkVersion 30
+        targetSdkVersion @ANDROID_SDK_VERSION@
         versionCode 1
         versionName "@VERSION@ (" + getGitCommitId() + ")"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -45,7 +46,7 @@ android {
 }
 
 dependencies {
-    implementation "androidx.viewpager2:viewpager2:1.0.0"
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'androidx.fragment:fragment-ktx:1.3.6'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.4.0'

@@ -1,7 +1,7 @@
 Exult Studio Documentation
 last changed: 20 February 2021 (GMT)
 
-The latest version of this document can be found at http://exult.info/studio.php
+The latest version of this document can be found at https://exult.info/studio.php
 
 
 1. Introduction
@@ -163,7 +163,7 @@ Of course the terms explained in ReadMe.txt are also used in this Documentation 
 
 * You need Exult and you need to install it properly (see ReadMe.txt). Also make sure that you are using the latest snapshot of Exult.
 Exult Studioonly works with the latest snapshot, not the latest release.
-* For U*ix platforms you need to build Exult Studio from the source available from our source snapshot at http://exult.info/download.php.
+* For U*ix platforms you need to build Exult Studio from the source available from our source snapshot at https://exult.info/download.php.
 * For Windows platforms (XP,Vista,7,8,10) you need to download Exult Studio from our download page and install it in the same folder where you installed Exult.
 * For macOS we also provide a snapshot on our download page. Download the disk image and move the app to the Applications.
 
@@ -189,7 +189,7 @@ You can also reconnect by selecting "File-Connect" in Exult Studio's menu.
 
 The above instructions may still be too technical for everybody. You have to make sure all these steps are taken care of before you're going to get very far with your world building.
 1. While it is not explicitly needed it is useful to have a working copy of either BG or SI properly installed onto your computer.
-2. Next, you need to have the latest Exult snapshotinstalled properly onto your computer and working correctly. If you are currently playing either BG or SI on your machine this is probably done right. To make sure you have the correct version, ensure that it says X.XX GIT (X.XX stands for some version number) during Exult's start-up screen (for example see http://exult.info/images/screenshots/mainmenu.png).
+2. Next, you need to have the latest Exult snapshotinstalled properly onto your computer and working correctly. If you are currently playing either BG or SI on your machine this is probably done right. To make sure you have the correct version, ensure that it says X.XX GIT (X.XX stands for some version number) during Exult's start-up screen (for example see https://exult.info/images/screenshots/mainmenu.png).
 3. You need to make sure the newest version of Exult Studio is installed properly onto your computer as well. Exult Studio should be installed in the same folder as the Exult snapshot.
 4. The patch folder needs to be in folder which you are allowed to write, so Exult Studio can save any changes to existing games. See 2.4. What you can do at the moment on how to change exult.cfg accordingly.
 5. In order for Exult Studio to work properly, you need to have Exult running in windowed mode. If you can see your desktop while playing, then you're doing it right.
@@ -441,6 +441,8 @@ Map'Ctrl+R'
  Reloads the map. All changes made since the last save get discarded.
 Usecode
  Very useful when you edit the usecode of a game or add new usecode to an existing game. Normally this would require a restart of Exult.
+Style CSS
+ The interface of Exult Studio now supports customization via a CSS file (exult_studio.css) and if you changed that you can reload it without having to restart Exult Studio.
 * Connect
  Connects Exult and Exult Studio if one of them had to be restarted.
 * Preferences
@@ -455,7 +457,7 @@ Shape List Background:
 * Exit'Ctrl+Q'
  Exits Exult Studio.
 
-Note that the default location for saving and creation of new files is the PATCH folder of a game. If there is no PATCH folder specified will create one. See 2.4. What you can do at the moment .
+Note that the default location for saving and creation of new files is the PATCH folder of a game. If there is no PATCH folder specified Exult Studio will create one. See 2.4. What you can do at the moment .
 
 
 4.3. Edit
@@ -513,7 +515,7 @@ Note that you can only drag objects in the game window when you are in "Move" mo
 * Compile Usecode...
  Compiles the usecode script usecode.uc in the patch folder (see 5.3.)
 * Fix old shape info
- Old versions of discarded some shpe info data on saving. This option adds the discarded information back to old mods and patches.
+ Old versions of Exult Studio discarded some shape info data on saving. This option adds the discarded information back to old mods and patches.
 
 
 
@@ -579,7 +581,7 @@ Create 'combination shapes', like a fence or an entire roof by selecting "Tools-
 
 As hinted at (see 1.3.) Usecode is actually what runs Ultima VII and therefore any game created with Exult Studio.
  As of yet we do not have a Usecode editor/debugger. So writing your own Usecode is not that easy.
-For an example of how Usecode may look like download our experimental patch for BG at http://exult.info/snapshots/patch.zip.
+For an example of how Usecode may look like download our SF Island mod for BG at https://exult.info/snapshots/SFisland.zip.
  In that zip you'll find a readme.txt which tells you how to run it.
  You will also see two files called usecode.uc and usecode.
 Usecode.uc is the usecode script that will help you understand our usecode language.
@@ -790,7 +792,7 @@ If you want to create a new NPC you have to select Create NPC in the edit menu. 
 * NPC #
  This cannot be changed.
 * Ident
- This is a number used in usecode in SI to differentiate between different NPC possibilities. It can be used to decide which set of conversation options some party members have, as well as making some ¨monster¨ NPCs have a more persistent identity despite not having a set NPC number
+ This is a number used in usecode in SI to differentiate between different NPC possibilities. It can be used to decide which set of conversation options some party members have, as well as making some "monster¨" NPCs have a more persistent identity despite not having a set NPC number
 * Shape #
  Either drag and drop a shape from shapes.vga into the line (or the black box to the right of it) or enter a shape number.
 * Frame #
@@ -980,7 +982,7 @@ For your convenience Exult Studio accepts .ttf (true type font) files, which is 
 9.4. Other tools that might be useful
 
 In the process of creating Exult the team came up with some useful tools that might help in editing/making a game.
- These can be built from the Exult source or you can download the Windows binary snapshot. The source and binary snapshot can be found at http://exult.info/download.php.
+ These can be built from the Exult source or you can download the Windows binary snapshot. The source and binary snapshot can be found at https://exult.info/download.php.
  The tools are:
 * mockup:
  This is a simple program that converts a 8 bpp indexed file into a u7map based on a colour and u7chunk association. See the manual.

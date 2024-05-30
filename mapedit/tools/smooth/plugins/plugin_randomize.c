@@ -8,7 +8,9 @@
 #define PLUGIN_NAME "Randomize"
 
 // global variables
-char         col[256][256][7];
+#define MAX_RANDOM 256
+colour_hex col[256]
+			  [MAX_RANDOM + 2];    // # randoms, source color, random colors
 int          glob_idx = 0;
 glob_statics my_g_stat;
 
@@ -27,7 +29,7 @@ void init_plugin(glob_statics* g_stat) {
 	}
 
 	if (my_g_stat.debug > 3) {
-		printf("Checking the global stats\n");
+		printf("Checking the global stats for %s\n", PLUGIN_NAME);
 		printf("\tdebug = %d\n", my_g_stat.debug);
 		printf("\tfilein = %s\n", my_g_stat.filein);
 		printf("\tfileout = %s\n", my_g_stat.fileout);
@@ -48,37 +50,45 @@ int plugin_parse(char* line) {
 	// will prepare the plugin to know what to send back when receiving a
 	// colour_hex in plugin_apply
 
-	const int    size   = strlen(line);
-	int          newrec = 1;
-	int          let    = 0;
-	unsigned int idx    = -1;
+	const int    size     = strlen(line);
+	int          newrec   = 1;
+	int          let      = 0;
+	unsigned int idx      = 0;
+	char         color[7] = {0};
+	unsigned     r        = 0;
+	unsigned     g        = 0;
+	unsigned     b        = 0;
 
-	for (int i = 0; i < size; i++) {
-		char c;
-		sscanf(line, "%c", &c);
-		line++;
+	if (my_g_stat.debug > 3) {
+		printf("Parsing %s\n", line);
+	}
+
+	col[glob_idx][0] = 0;
+
+	for (int i = 0; i <= size; i++) {
+		char c = (i == size ? '\n' : line[i]);
 		if (c != ' ' && c != '\t' && c != '\n' && c != '\r') {
 			if (newrec) {
 				newrec = 0;
 				idx++;
 			}
 			if (let < 6) {
-				col[glob_idx][idx][let] = c;
+				color[let] = c;
 			}
 			let++;
 		} else {
-			col[glob_idx][idx][let] = '\0';
-			newrec                  = 1;
-			let                     = 0;
+			if (newrec == 0) {
+				color[let] = '\0';
+				sscanf(color, "%02x%02x%02x", &r, &g, &b);
+				col[glob_idx][idx]
+						= ((((colour_hex)r) << 16) | (((colour_hex)g) << 8)
+						   | ((colour_hex)b));
+				col[glob_idx][0] = idx - 1;
+			}
+			newrec = 1;
+			let    = 0;
 		}
 	}
-
-	// for debugging purposes only
-	//  for(i=0;i<=idx;i++){
-	//    printf("Value(%d): %s\n",glob_idx,col[glob_idx][i]);
-	//  }
-	// mark the end of the
-	col[glob_idx][size][0] = '\0';
 
 	glob_idx++;
 
@@ -96,7 +106,7 @@ int get_random(int max) {
 	return rand() % max;
 }
 
-char* plugin_apply(char colour[6]) {
+colour_hex plugin_apply(colour_hex colour) {
 	// required
 	// function called to transform a colour_hex into another one. plugin_parse
 	// must have been called previously to know what to return. the
@@ -107,25 +117,22 @@ char* plugin_apply(char colour[6]) {
 	int loc_idx = 0;
 
 	// find the colour in big table
-	while (loc_idx < glob_idx && strncasecmp(col[loc_idx][0], colour, 6) != 0) {
-		//    printf("I look for %s and I got %s
-		//    instead!\n",colour,col[loc_idx][0]);
+	while (loc_idx < glob_idx && col[loc_idx][1] != colour) {
+		// printf("I look for %06x and I got %06x at %d instead!\n",
+		//        colour, col[loc_idx][1], loc_idx+1);
 		loc_idx++;
 	}
 
 	if (loc_idx >= glob_idx) {
+		printf("I look for %06x, not found\n", colour);
 		return colour;
 	}
 
 	// find the max number of elements
-	int max_num = 0;
-	while (col[loc_idx][max_num][0] != '\0') {
-		max_num++;
-	}
-	max_num = max_num - 1;
-	//  printf("there are %d element to take from:",max_num);
+	unsigned max_num = col[loc_idx][0];
+	// printf("There are %d elements to take for %06x :", max_num, colour);
 	int my_rand = get_random(max_num) + 1;
-	//  printf(" taking %d\ (%s)\n",my_rand,col[loc_idx][my_rand]);
+	// printf(" taking %d (%06x)\n", my_rand, col[loc_idx][my_rand+1]);
 
-	return col[loc_idx][my_rand];
+	return col[loc_idx][my_rand + 1];
 }

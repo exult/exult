@@ -34,7 +34,7 @@
 					<Exult/> aims to let those people who own Ultima VII (copyright 1993)
 					play the game on modern hardware, in as close to (or perhaps even surpassing)
 					its original splendor as is possible. You need to <strong>own</strong>
-					&quot;Ultima VII: The Black Gate&quot; and/or 
+					&quot;Ultima VII: The Black Gate&quot; and/or
 					&quot;Ultima VII - Part 2: The Serpent Isle&quot; and optionally
 					the add-ons (not required to run) in order to use <Exult/>,
 					and we encourage you to buy a legal copy.
@@ -52,12 +52,12 @@
 				<ul>
 					<li><strong>BG</strong>, <strong>SI</strong>, <strong>FoV</strong>
 					or <strong>SS</strong>:<br/>
-						we refer to &quot;Ultima VII: The Black Gate&quot; as BG and to 
+						we refer to &quot;Ultima VII: The Black Gate&quot; as BG and to
 						&quot;Ultima VII - Part 2: The Serpent Isle&quot;
-						as SI. The add-ons &quot;Forge of Virtue&quot; and &quot;Silver Seed&quot; are 
+						as SI. The add-ons &quot;Forge of Virtue&quot; and &quot;Silver Seed&quot; are
 						called FoV and SS.</li>
 					<li><strong>eggs</strong>:<br/>
-						these are trip-wires that can cause monsters to spawn, execute scripts, play 
+						these are trip-wires that can cause monsters to spawn, execute scripts, play
 						music, change weather, trigger traps or teleport when you get near them.</li>
 					<li><strong>flex files</strong>:<br/>
 						also known as flexes, these are used by the original to store the data files.
@@ -84,8 +84,8 @@
 						that's the folder where <Exult/> stores its data files (exult.flx, exult_bg.flx and
 						exult_si.flx).</li>
 					<li><strong>gamename</strong><br/>
-						name of games that are set in exult.cfg's &lt;game&gt;, <Exult/> knows by default 
-						the gamenames <em>blackgate</em>, <em>forgeofvirtue</em>, <em>serpentisle</em>, 
+						name of games that are set in exult.cfg's &lt;game&gt;, <Exult/> knows by default
+						the gamenames <em>blackgate</em>, <em>forgeofvirtue</em>, <em>serpentisle</em>,
 						<em>silverseed</em> and <em>serpentbeta</em>.</li>
 				</ul>
 			</body>
@@ -101,14 +101,14 @@
 					<li>You need an installed version of Ultima VII to run <Exult/> with.
 						At <section_ref target="Installing the original Ultima VII games for use with Exult"/>
 						we have a guide on how to install the original games or use the version offered by GOG.com.</li>
-					<li>Download <Exult/> from our 
+					<li>Download <Exult/> from our
 						<extref target="https://exult.info/download.php">download page</extref>
-						and install it. The Windows version comes with an installer that asks for the 
-						location of both BG and SI. If you entered the correct location or you are using the default 
+						and install it. The Windows version comes with an installer that asks for the
+						location of both BG and SI. If you entered the correct location or you are using the default
 						games locations on Linux systems and macOS the next two steps are not necessary.</li>
 					<li>Now run <strong>exult</strong> (<strong>exult.exe</strong> on Windows)
 						and quit it immediately.</li>
-					<li>Edit the configuration file with a text editor (e.g. on Windows use Notepad) 
+					<li>Edit the configuration file with a text editor (e.g. on Windows use Notepad)
 						and enter the correct paths for the game folders - see <ref target="exult_config"/>
 						for details</li>
 					<li>Run <strong>exult</strong> and enjoy the game :-)</li>
@@ -122,21 +122,21 @@
 			<header>Location of exult.cfg</header>
 			<body>
 				<para>
-					Most of the options in <Exult/> can be changed from the <strong>Setup</strong> 
-					menu when you run <Exult/> or via the Game Options menu. <Exult/> stores these 
+					Most of the options in <Exult/> can be changed from the <strong>Setup</strong>
+					menu when you run <Exult/> or via the Game Options menu. <Exult/> stores these
 					changes in a configuration file. Except for changing paths to the games you
 					shouldn't need to edit the file. Very few options need manual editing.<br/>
 					However if you need to edit the configuration file, it is extensively explained
 					in <section_ref target="The exult.cfg file"/>.
 				</para>
 				<para>
-					The location of the file varies depending on the Operating System and in the 
+					The location of the file varies depending on the Operating System and in the
 					case of Windows OS it also depends on the version of Windows.
 				</para>
 					<ul>
 						<li>On Linux systems you can expect to find it in <kbd>$HOME/.exult.cfg</kbd></li>
 						<li>macOS saves it to <kbd>~/Library/Preferences/exult.cfg</kbd></li>
-						<li>Windows (7, 8, 10, 11) save exult.cfg to <kbd>LOCAL_APPDATA\Exult</kbd>, 
+						<li>Windows (7, 8, 10, 11) save exult.cfg to <kbd>LOCAL_APPDATA\Exult</kbd>,
 							but on these this translates to <kbd>C:\Users\YourUsername\AppData\Local\Exult</kbd></li>
 						<li>On all supported Windows versions you can quickly access this folder by executing<br/>
 							<kbd>shell:Local AppData\Exult</kbd><br/>
@@ -151,39 +151,39 @@
 					On macOS <Exult/> uses a couple of different folders to follow Apple's guidelines:
 				</para>
 				<para>
-					Note that on macOS <Exult/> looks in a default folder (<kbd>/Library/Application Support/Exult/data</kbd>) 
-					for <Exult/>'s data and the files of the games. On purpose this folder is not in the User-only 
+					Note that on macOS <Exult/> looks in a default folder (<kbd>/Library/Application Support/Exult/data</kbd>)
+					for <Exult/>'s data and the files of the games. On purpose this folder is not in the User-only
 					space, so other users on the same mac can play the games and use the Exult.app.<br/>
-					<strong>But</strong> you will need to follow our gamename standard when you name the game 
+					<strong>But</strong> you will need to follow our gamename standard when you name the game
 					folders, see <ref1 target="terms"/>, otherwise <Exult/> will not find them there.<br/>
-					Another specialty on macOS is that the Exult.app comes bundled with the <Exult/> data, so 
-					<Exult/> will first use the data in the Exult.app and then use the data in the default folder 
+					Another specialty on macOS is that the Exult.app comes bundled with the <Exult/> data, so
+					<Exult/> will first use the data in the Exult.app and then use the data in the default folder
 					or the location written down in exult.cfg's &lt;data_path&gt;.<br/>
-					This means that you can copy the sfx files and the digital music folder into the app bundle 
+					This means that you can copy the sfx files and the digital music folder into the app bundle
 					(<kbd>Exult.app/Contents/Resources/data</kbd>) and <Exult/> will automatically use these.
 				</para>
 				<para>
-					Example: User named <strong>FooBar</strong> on <strong>macOS 14</strong>. BG is installed to 
-					<kbd>/Library/Application Support/Exult/blackgate</kbd> and SI is installed to 
+					Example: User named <strong>FooBar</strong> on <strong>macOS 14</strong>. BG is installed to
+					<kbd>/Library/Application Support/Exult/blackgate</kbd> and SI is installed to
 					<kbd>/Library/Application Support/Exult/serpentisle</kbd>.<br/>
-					The app Exult.app is saved to <kbd>/Applications</kbd>. When you run <Exult/> it will automatically 
-					recognize that BG and SI are installed. You do not need to edit exult.cfg, which is saved 
+					The app Exult.app is saved to <kbd>/Applications</kbd>. When you run <Exult/> it will automatically
+					recognize that BG and SI are installed. You do not need to edit exult.cfg, which is saved
 					to <kbd>/Users/FooBar/Library/Preferences/exult.cfg</kbd>.<br/>
-					When you save a game in BG the savegame will be saved to 
-					<kbd>/Users/FooBar/Library/Application Support/exult/blackgate/</kbd>, 
+					When you save a game in BG the savegame will be saved to
+					<kbd>/Users/FooBar/Library/Application Support/exult/blackgate/</kbd>,
 					for SI to <kbd>Users/FooBar/Library/Application Support/exult/serpentisle/</kbd>.<br/>
-					If you install for example the keyring mod, you copy the contents of the Keyring.zip to 
-					<kbd>/Library/Application Support/Exult/blackgate/mods</kbd>. When you save a game with the 
+					If you install for example the keyring mod, you copy the contents of the Keyring.zip to
+					<kbd>/Library/Application Support/Exult/blackgate/mods</kbd>. When you save a game with the
 					Keyring mod, this savegame will be found in
 					<kbd>/Users/FooBar/Library/Application Support/exult/blackgate/mods/keyring/</kbd>.
 				</para>
 				<para>
 					Please be aware of the difference between <kbd>/Library/...</kbd> and <kbd>~/Library/...</kbd>.<br/>
-					In the root of your macOS system hard drive is the folder <kbd>/Library</kbd>. The folder 
-					<kbd>~/Library</kbd> is a sub folder of your home folder. If your username is foobar then the folder 
+					In the root of your macOS system hard drive is the folder <kbd>/Library</kbd>. The folder
+					<kbd>~/Library</kbd> is a sub folder of your home folder. If your username is foobar then the folder
 					<kbd>~/Library</kbd> is located at <kbd>/Users/foobar/Library</kbd> on your hard drive.<br/>
-					On macOS the folder <kbd>~/Library</kbd> is hidden by default. To access it open Finder, 
-					click on the menu item 'Go' while pressing <key>Option/Alt</key> and 'Library' will be an option 
+					On macOS the folder <kbd>~/Library</kbd> is hidden by default. To access it open Finder,
+					click on the menu item 'Go' while pressing <key>Option/Alt</key> and 'Library' will be an option
 					to click on.
 				</para>
 				<para>
@@ -200,22 +200,22 @@
 			<header>Path-Settings for Linux based systems</header>
 			<body>
 				<para>
-					As on macOS, <Exult/> uses a default path on Linux systems for its data folder and the game files. 
+					As on macOS, <Exult/> uses a default path on Linux systems for its data folder and the game files.
 					<Exult/> will automatically look for these in <kbd>/usr/local/share/exult</kbd> unless you entered
 					different paths in exult.cfg.<br/>
-					<strong>But</strong> you will need to follow our gamename standard when you name the game 
+					<strong>But</strong> you will need to follow our gamename standard when you name the game
 					folders, see <ref1 target="terms"/>, otherwise <Exult/> will not find them there.
 				</para>
 				<para>
-					Example: User named <strong>FooBar</strong> on <strong>Ubuntu</strong>. BG is installed to 
+					Example: User named <strong>FooBar</strong> on <strong>Ubuntu</strong>. BG is installed to
 					<kbd>/usr/local/share/exult/blackgate</kbd> and SI is installed to
-					<kbd>/usr/local/share/exult/serpentisle</kbd>. 
-					When you run <Exult/> it will automatically recognize that BG and SI are installed. You do not 
+					<kbd>/usr/local/share/exult/serpentisle</kbd>.
+					When you run <Exult/> it will automatically recognize that BG and SI are installed. You do not
 					need to edit exult.cfg, which is saved to <kbd>$HOME/.exult.cfg</kbd>.<br/>
-					When you save a game in BG the savegame will be saved to <kbd>$HOME/.exult/blackgate/</kbd>, 
+					When you save a game in BG the savegame will be saved to <kbd>$HOME/.exult/blackgate/</kbd>,
 					for SI to <kbd>$HOME/.exult/serpentisle/</kbd>.<br/>
-					If you install for example the keyring mod, you copy the contents of the Keyring.zip to 
-					<kbd>/usr/local/share/Exult/blackgate/mods</kbd>. When you save a game with the Keyring mod, 
+					If you install for example the keyring mod, you copy the contents of the Keyring.zip to
+					<kbd>/usr/local/share/Exult/blackgate/mods</kbd>. When you save a game with the Keyring mod,
 					this savegame will be found in <kbd>$HOME/.exult/blackgate/mods/keyring/</kbd>.
 				</para>
 				<para>
@@ -240,9 +240,9 @@
 						Portable option for Windows only. <Exult/> will read cfg file from the folder it got
 						installed to (or make one) and will assume the games to be in the gamename subfolders
 						(see <ref target="terms"/>).<br/>
-						For example if <Exult/> got installed to <kbd>E:\Exult</kbd>, a BG game will be expected 
+						For example if <Exult/> got installed to <kbd>E:\Exult</kbd>, a BG game will be expected
 						to be in <kbd>E:\Exult\blackgate</kbd>. Savegames will also be saved in these folders.<br/>
-						Be careful that you have actually writing permissions in the <Exult/> folder or 
+						Be careful that you have actually writing permissions in the <Exult/> folder or
 						this will fail.</li>
 					<li><key>--bg</key><br/>
 						Starts the game with the Black Gate menu (prefers original game).</li>
@@ -264,20 +264,20 @@
 						Loads a game specified in exult.cfg when there are other games made
 						with <Studio/>.</li>
 					<li><key>--mod modname</key><br/>
-						Must be used together with <key>--bg</key>, <key>--si</key>, <key>--fov</key>, 
-						<key>--ss</key>, <key>--sib</key> or <key>--game gamename</key>; runs the specified 
-						game using the mod with title equal to <key>modname</key>. <key>modname</key> is the 
+						Must be used together with <key>--bg</key>, <key>--si</key>, <key>--fov</key>,
+						<key>--ss</key>, <key>--sib</key> or <key>--game gamename</key>; runs the specified
+						game using the mod with title equal to <key>modname</key>. <key>modname</key> is the
 						name of the mod cfg file (e.g. keyring.cfg means 'modname' is 'keyring'.</li>
 					<li><key>--buildmap x</key><br/>
 						x = 0 shows all roofs, x = 2 pops them all.<br/>
-						Makes 144 2048x2048 pixels screenshots of the game map which you will need to piece 
-						together. The screenshots are numbered according to the 
+						Makes 144 2048x2048 pixels screenshots of the game map which you will need to piece
+						together. The screenshots are numbered according to the
 						<extref doc="studio" target="ifix_iregs">ifix/ireg map</extref>.<br/>
-						By default the screenshots are PNG files. In the unlikely case that Exult was compiled 
+						By default the screenshots are PNG files. In the unlikely case that Exult was compiled
 						without libpng support, buildmap will output PCX files.<br/>
 						<Exult/> is required to be run in windowed mode and you get the best map if you
 						started a new game before you build the map.<br/>
-						You need to specify a game, either by <key>--bg</key> (or <key>--si</key>, 
+						You need to specify a game, either by <key>--bg</key> (or <key>--si</key>,
 						<key>--fov</key>, <key>--ss</key>, <key>--sib</key>) or with the
 						<key>--game</key>/<key>--mod</key> option.</li>
 					<li><key>--mapnum</key><br/>
@@ -289,14 +289,14 @@
 						don't know what you are doing as it is likely to crash <Exult/>.</li>
 					<li><key>--verify-files</key><br/>
 						Verifies that the files in static dir are not corrupt.<br/>
-						Only valid if used together with <key>--bg</key>, <key>--si</key>, <key>--fov</key>, 
+						Only valid if used together with <key>--bg</key>, <key>--si</key>, <key>--fov</key>,
 						<key>--ss</key>, <key>--sib</key> or <key>--game gamename</key>; you cannot specify a mod with this flag.</li>
 					<li><key>--edit</key><br/>
 						Start in map-edit mode. This will also load <Studio/> when the game is started.</li>
 					<li><key>--write-xml</key><br/>
 						Write <kbd>patch/exultgame.xml</kbd>. Only useful for game editing.</li>
 					<li><key>--reset-video</key><br/>
-						resets <Exult/>'s video settings to the default values. Very helpful when <Exult/> 
+						resets <Exult/>'s video settings to the default values. Very helpful when <Exult/>
 						isn't playable anymore because of wrong settings.</li>
 				</ul>
 			</body>
@@ -319,7 +319,7 @@
 						will send both stderr and stdout to the file named <kbd>exult_log.txt</kbd>
 						in your <kbd>$HOME</kbd> folder.</li>
 					<li><strong>macOS:</strong><br/>
-						Similar to Linux, you need to start <Exult/> from the Terminal.app to see the 
+						Similar to Linux, you need to start <Exult/> from the Terminal.app to see the
 						logs or redirect them to a text file. Use <br/>
 						<kbd>/Applications/Exult.app/Contents/MacOS/exult &gt;&amp;$HOME/exult_log.txt</kbd><br/>
 						to find the file named <kbd>exult_log.txt</kbd> in your <kbd>$HOME</kbd> folder.</li>
@@ -344,7 +344,7 @@
 					<img alt="the Game menu" src="images/docs01.png"/>
 				</para>
 				<para>
-					There is a HELP button on most options that will open your default browser at the 
+					There is a HELP button on most options that will open your default browser at the
 					online version of this documentation.
 				</para>
 			</body>
@@ -374,7 +374,7 @@
 					<li><strong>Full Screen</strong><br/>
 						enable or disable running <Exult/> in full screen.</li>
 					<li><strong>Window Size</strong><br/>
-						lets you choose between various resolutions determined by the fullscreen resolutions 
+						lets you choose between various resolutions determined by the fullscreen resolutions
 						your system reports as supported. If you want other resolutions edit
 						exult.cfg outlined in <ref1 target="exult_config"/>.</li>
 					<li><strong>Scaler</strong><br/>
@@ -384,13 +384,13 @@
 						choose between 1x up to 8x. Further explanation in <ref1 target="scaler"/>.<br/>
 						For scalers that have a default only scaling (e.g. 2xSaI) this option will be hidden.</li>
 					<li><strong>Game Area</strong><br/>
-						the size of your game viewing area in the <Exult/> window. You can choose between the 
-						original default resolution of '320x200' or 'Auto' which tries to set the best viewing 
+						the size of your game viewing area in the <Exult/> window. You can choose between the
+						original default resolution of '320x200' or 'Auto' which tries to set the best viewing
 						area for the chosen resolution.</li>
 					<li><strong>Fill Quality</strong><br/>
 						the scaler used by the different fill modes. You can chose between Point and Bilinear.</li>
 					<li><strong>Fill Mode</strong><br/>
-						Different modes on how to display the Game Area in the <Exult/> window size. 
+						Different modes on how to display the Game Area in the <Exult/> window size.
 						Please see <ref1 target="video_fill_modes"/>.</li>
 					<li><strong>AR Correction</strong><br/>
 						Aspect Ratio Correction for the fill modes 'Fit' and 'Centre'.</li>
@@ -398,7 +398,7 @@
 						When you disable this you can select different settings for window and fullscreen mode by changing
 						the settings while being in either mode.</li>
 					<li><strong>APPLY/HELP/CANCEL</strong><br/>
-						Checks whether your changes can cause problems, applies your changes and gives you a countdown 
+						Checks whether your changes can cause problems, applies your changes and gives you a countdown
 						to confirm that the new settings are working correctly. If you don't want to apply your changes,
 						click CANCEL.</li>
 				</ul>
@@ -430,10 +430,10 @@
 					<li><strong>SFX</strong><br/>
 						Enable or disable digital sound effects.</li>
 					<li><strong>Pack</strong><br/>
-						choose between our standard SFX packs, Roland MT32 and Soundblaster, see <ref target="wave_sfx"/>. 
+						choose between our standard SFX packs, Roland MT32 and Soundblaster, see <ref target="wave_sfx"/>.
 						This option is not available in the <Exult/> Setup.</li>
 					<li><strong>Speech</strong><br/>
-						enable or disable speech. When disabled you will see subtitles when the Guardian 
+						enable or disable speech. When disabled you will see subtitles when the Guardian
 						or the Great Earth Serpent speaks.</li>
 					<li><strong>subtitles</strong><br/>
 						 Show subtitles while speech is being played. In the original
@@ -456,7 +456,7 @@
 					<li><strong>Gumps pause games</strong><br/>
 						In the original the game got paused when Gumps were shown. Enable/disable it.</li>
 					<li><strong>Alternative drag and drop</strong><br/>
-						When enabled dropping a stack of items (coins, bolts...) will drop the whole stack without 
+						When enabled dropping a stack of items (coins, bolts...) will drop the whole stack without
 						asking for confirmation of the amount of items to drop. Hold <key>Ctrl</key> while dropping
 						if you need to split a stack.</li>
 					<li><strong>Speed</strong><br/>
@@ -475,12 +475,12 @@
 						right-clicking, then clicking on a target to attack. Or change weapons, choose a
 						favorite spell.</li>
 					<li><strong>Combat Charmed difficulty</strong><br/>
-						choose between Normal and Hard. With Normal the Avatar can't be charmed. The original game allowed 
-						him to be charmed though that only highlighted him as charmed and the charmed status icon showed 
-						but you could control him as usual.<br/> 
-						Hard will neither allow the player to control charmed party members, including the Avatar, nor 
-						access the inventory of a charmed party member. But you can still manipulate objects that are not 
-						in the charmed party members possessions even if the Avatar is the one who is charmed. Charmed 
+						choose between Normal and Hard. With Normal the Avatar can't be charmed. The original game allowed
+						him to be charmed though that only highlighted him as charmed and the charmed status icon showed
+						but you could control him as usual.<br/>
+						Hard will neither allow the player to control charmed party members, including the Avatar, nor
+						access the inventory of a charmed party member. But you can still manipulate objects that are not
+						in the charmed party members possessions even if the Avatar is the one who is charmed. Charmed
 						party members will continue to attack, even if the player ends combat.</li>
 					<li><strong>Combat Difficulty</strong><br/>
 						Ranges from Easiest (-3) to Hardest (3). It affects the chance of a hit, and
@@ -502,34 +502,34 @@
 						You can either disable the status bars or choose its position on
 						the bottom of the screen (left, middle, right).</li>
 					<li><strong>Use ShortcutBar</strong><br/>
-						Toggle the ShortcutBar or make it transparent when on the map - 
+						Toggle the ShortcutBar or make it transparent when on the map -
 						see <ref1 target="shortcutbar"/>.</li>
 					<li><strong>Use outline color</strong><br/>
-						Choose a the color of the outline around the ShortcutBar buttons or disable it - see 
+						Choose a the color of the outline around the ShortcutBar buttons or disable it - see
 						<ref1 target="shortcutbar"/>.</li>
 					<li><strong>Hide missing items</strong><br/>
-						hides ShortcutBar items the party doesn't have, otherwise missing items are greyed out - 
+						hides ShortcutBar items the party doesn't have, otherwise missing items are greyed out -
 						see <ref1 target="shortcutbar"/>.</li>
 					<li><strong>Text Background</strong><br/>
 						shows a tinted background behind text in conversations to make it easier to read.
 						Either disable it or choose between the colors purple, orange, light gray, green,
 						yellow, pale blue, dark green, red, bright white, dark gray and white.</li>
 					<li><strong>Smooth scrolling</strong><br/>
-						Disabled/25%/50%/75%/100% percentage of how smooth the game scrolls when the avatar 
+						Disabled/25%/50%/75%/100% percentage of how smooth the game scrolls when the avatar
 						moves. When disabled <Exult/> uses the 'jerky' scrolling of the original game.</li>
 					<li><strong>Skip intro</strong><br/>
-						When enabled you don't have to watch the splash screen and intro when you select a game 
+						When enabled you don't have to watch the splash screen and intro when you select a game
 						from the <Exult/> menu.</li>
 					<li><strong>Skip scripted first scene</strong><br/>
-						When you start a new game of BG the game starts with a scripted scene during which 
-						you can't move the Avatar. Enable this to skip this part but only do this 
+						When you start a new game of BG the game starts with a scripted scene during which
+						you can't move the Avatar. Enable this to skip this part but only do this
 						if you have already played the game and have seen this scene.</li>
 					<li><strong>Use extended SI intro</strong><br/>
-						To fit the intro of SI onto the constraints of floppy disks, it was cut and made 
-						much simpler than originally envisioned by Denis Loubet. We have restored the 
+						To fit the intro of SI onto the constraints of floppy disks, it was cut and made
+						much simpler than originally envisioned by Denis Loubet. We have restored the
 						intro and made it possible to watch it.</li>
 					<li><strong>Paperdolls</strong><br/>
-						only available in <strong>Black Gate</strong> and only if you have 
+						only available in <strong>Black Gate</strong> and only if you have
 						<strong>Serpent Isle</strong> installed as well. Enables or disable Paperdolls
 						(inventory screen) in the style of <strong>Serpent Isle</strong>.</li>
 				</ul>
@@ -547,10 +547,10 @@
 					<li><strong>Right click closes gumps</strong><br/>
 						the same but different.</li>
 					<li><strong>Pathfind with Right Click</strong><br/>
-						Right-clicking on a spot makes the avatar walk to it. Default is a double click 
+						Right-clicking on a spot makes the avatar walk to it. Default is a double click
 						but you can set it to a single one or disable it.</li>
 					<li><strong>Scroll game view with mouse</strong><br/>
-						When cheats are enabled you can scroll the game view with the scroll wheel of the mouse, 
+						When cheats are enabled you can scroll the game view with the scroll wheel of the mouse,
 						when you hold down the <key>Alt</key> you will scroll sideways (to the west or to the east).</li>
 					<li><strong>Use middle mouse button</strong><br/>
 						In the normal game, the middle mouse button activates the target-function
@@ -562,13 +562,13 @@
 					<li><strong>Fullscreen Fast Mouse</strong><br/>
 						makes the mouse cursor move faster in full screen modes. Enable or disable it.</li>
 					<li><strong>Item helper menu</strong><br/>
-						Enabling this will pop up a menu on screen of objects you can click on and once you select one, 
+						Enabling this will pop up a menu on screen of objects you can click on and once you select one,
 						it gives you further options on how to interact with the object. Only on iOS enabled by default.</li>
 					<li><strong>D-Pad screen location</strong><br/>
-						On iOS we display a virtual D-Pad to move the Avatar with your finger (thumb). This toggles and 
+						On iOS we display a virtual D-Pad to move the Avatar with your finger (thumb). This toggles and
 						selects the side of the screen this D-Pad is displayed on. For now this is only enabled on iOS</li>
 					<li><strong>Pathfind with Long touch</strong><br/>
-						When you click or touch for a little while the Avatar will move to this location if it's 
+						When you click or touch for a little while the Avatar will move to this location if it's
 						possible to move there. By default only enabled on iOS.</li>
 				</ul>
 			</body>
@@ -588,21 +588,21 @@
 			<header>Music</header>
 			<body>
 				<para>
-					There are three general ways that music is played in <Exult/>. One is using MIDI, which 
-					plays the music through any MIDI device, or software synthesizers like TiMidity and 
-					FluidSynth. Another way is Digital Music encoded into OGG (similar to MP3) which was 
-					recorded directly from a Roland MT-32. The third option is FMOpl which emulates 
+					There are three general ways that music is played in <Exult/>. One is using MIDI, which
+					plays the music through any MIDI device, or software synthesizers like TiMidity and
+					FluidSynth. Another way is Digital Music encoded into OGG (similar to MP3) which was
+					recorded directly from a Roland MT-32. The third option is FMOpl which emulates
 					Opl2/Adlib.<br/>
-					The MIDI files are converted on-the-fly from the original Ultima VII MT-32 files to 
-					General MIDI format so that they will be playable on modern General MIDI and 
+					The MIDI files are converted on-the-fly from the original Ultima VII MT-32 files to
+					General MIDI format so that they will be playable on modern General MIDI and
 					General MIDI/GS supporting sound cards.
 				</para>
 				<para>
-					The Music driver options can be changed in the in-game menu that you open by hitting 
+					The Music driver options can be changed in the in-game menu that you open by hitting
 					<key>ESC</key>.<br/>
-					There you can enable Digital Music and change the MIDI driver, through which you can 
-					also select the FMOpl emulation. When you enable Digital Music, it takes precedence over 
-					the MIDI driver. 
+					There you can enable Digital Music and change the MIDI driver, through which you can
+					also select the FMOpl emulation. When you enable Digital Music, it takes precedence over
+					the MIDI driver.
 				</para>
 			</body>
 		</sub>
@@ -620,22 +620,22 @@
 					<li><strong>TiMidity</strong><br/>
 						is a software synthesizer that can play MIDI files without a hardware synthesizer.
 						You can install TiMidity on all major Operating systems. You need to place tmidity.cfg
-						into the same folder where the <Exult/> executable is installed to, otherwise TiMidity 
+						into the same folder where the <Exult/> executable is installed to, otherwise TiMidity
 						will not work. On linux systems it needs to be in ~/.exult.</li>
 					<li><strong>FluidSynth</strong><br/>
-						is another software synthesizer, which uses SoundFont 2 technology without need for a 
-						SoundFont-compatible sound card. It is available for many Operating Systems and opposed 
+						is another software synthesizer, which uses SoundFont 2 technology without need for a
+						SoundFont-compatible sound card. It is available for many Operating Systems and opposed
 						to TiMidity still actively developed.<br/>
 						Since Fluidsynth pulls in many dependencies it is not compiled into <Exult/> at the moment.<br/>
-						If you compiled <Exult/> ourself and you enabled Fluidsynth you just need to edit 
-						exult.cfg and point &lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;fluidsynth_soundfont&gt; 
+						If you compiled <Exult/> ourself and you enabled Fluidsynth you just need to edit
+						exult.cfg and point &lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;fluidsynth_soundfont&gt;
 						to the SoundFont you want to use.<br/>
-						<Exult/> supports FluidSynth's soundfont stack. Soundfonts are specified in the 
-						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;fluidsynth_soundfontN&gt; exult.cfg entries 
-						(N = 0 to 9) which are loaded in numerical order (0 first), plus the old 
+						<Exult/> supports FluidSynth's soundfont stack. Soundfonts are specified in the
+						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;fluidsynth_soundfontN&gt; exult.cfg entries
+						(N = 0 to 9) which are loaded in numerical order (0 first), plus the old
 						&lt;fluidsynth_soundfont&gt; entry, which loads after all others.</li>
 					<li><strong>MT32Emu</strong><br/>
-						Roland MT32 emulation requires either the ROM set 'MT32_CONTROL.ROM' and 'MT32_PCM.ROM' or 
+						Roland MT32 emulation requires either the ROM set 'MT32_CONTROL.ROM' and 'MT32_PCM.ROM' or
 						the ROM set 'CM32L_CONTROL.ROM' and 'CM32L_PCM.ROM' in the <Exult/> data folder.
 						If both sets are present the CM32L ROM set will be used.</li>
 					<li><strong>Windows</strong><br/>
@@ -644,18 +644,18 @@
 						uses XMIDI on macOS. You can use a different soundfont than macOS' default by pointing
 						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;coreaudio_soundfont&gt; to it in exult.cfg.</li>
 					<li><strong>CoreMIDI</strong><br/>
-						on macOS this MIDI driver allows using a real MIDI device like a Roland MT32 or software 
-						MIDI devices like  Munt MT-32 Emulator. If you have more than one MIDI device you can choose the 
-						the device by setting the device ID in exult.cfg 
-						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;coremidi_device&gt; 
+						on macOS this MIDI driver allows using a real MIDI device like a Roland MT32 or software
+						MIDI devices like  Munt MT-32 Emulator. If you have more than one MIDI device you can choose the
+						the device by setting the device ID in exult.cfg
+						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;coremidi_device&gt;
 						- see <ref target="coremidi_device"/>.</li>
 					<li><strong>Alsa</strong><br/>
 						uses ALSA on Linux systems. If your ALSA port is not on 65:0 you need to change
 						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;alsa_port&gt; in the exult.cfg.</li>
 					<li><strong>UnixSeqDevice</strong><br/>
-						Linux systems write to special symbolic file, default '/dev/sequencer'. This can be 
+						Linux systems write to special symbolic file, default '/dev/sequencer'. This can be
 						changed at &lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;unixseqdevice&gt; in the exult.cfg.<br/>
-						Because of size constraints we abbreviated it to <strong>UnixSeq</strong> in the 
+						Because of size constraints we abbreviated it to <strong>UnixSeq</strong> in the
 						<ref target="audio_gump"/>.</li>
 				</ul>
 				<para>
@@ -665,8 +665,8 @@
 					<li><strong>MT32</strong><br/>
 						This option will output the music with nothing changed. Because
 						the mapping will be for MT32s you should only use this option if
-						you have a MT32 compatible device. With this option <Exult/> will 
-						also send SysEx messages to the Roland MT32 display, which are nice 
+						you have a MT32 compatible device. With this option <Exult/> will
+						also send SysEx messages to the Roland MT32 display, which are nice
 						to watch when you have such a device.</li>
 					<li><strong>GM</strong><br/>
 						This will convert the MT32 patches to standard General MIDI patches.
@@ -681,10 +681,10 @@
 						in Bank 127. Some GS implementation have this, some don't. Only use
 						this if you know that you have a MT32 implementation on Bank 127.</li>
 					<li><strong>Fake MT32</strong><br/>
-						This is for MIDI devices that behave like a MT32 but don't support 
-						SysEx messages. Use that option if you have a SoundFont or similar loaded 
-						for your sound card (or software synth such as FluidSynth) that contains 
-						the MT32 capital tones but the device can't be reprogrammed using MT32 
+						This is for MIDI devices that behave like a MT32 but don't support
+						SysEx messages. Use that option if you have a SoundFont or similar loaded
+						for your sound card (or software synth such as FluidSynth) that contains
+						the MT32 capital tones but the device can't be reprogrammed using MT32
 						SysEx commands by <Exult/>.</li>
 				</ul>
 				<para>
@@ -722,7 +722,7 @@
 				</para>
 				<para>
 					To do this start <Exult/>, on the menu choose 'Exit'. Now open the file stdout.txt
-					in the folder where exult.cfg is located (see <ref target="exult_config_location"/>). 
+					in the folder where exult.cfg is located (see <ref target="exult_config_location"/>).
 					You will see a listing of the MIDI devices.<br/>
 					For example with an SB Live! in Win2k it will look like this:
 				</para>
@@ -759,19 +759,19 @@
 			<header>macOS CoreMidi device ID</header>
 			<body>
 				<para>
-					Similar to the above Windows MIDI mapper you can tell <Exult/> on macOS which MIDI device 
-					it should use. By default <Exult/> uses macOS' CoreAudio device to output MIDI music. If you 
-					have a real MIDI device (e.g. Roland MT32) or another software MIDI device (e.g. Munt MT-32 Emulator) 
+					Similar to the above Windows MIDI mapper you can tell <Exult/> on macOS which MIDI device
+					it should use. By default <Exult/> uses macOS' CoreAudio device to output MIDI music. If you
+					have a real MIDI device (e.g. Roland MT32) or another software MIDI device (e.g. Munt MT-32 Emulator)
 					you want to use, you will need to select the CoreMidi MIDI driver.<br/>
-					CoreMidi uses by default the MIDI device with the first device ID (0), if you have more than 
+					CoreMidi uses by default the MIDI device with the first device ID (0), if you have more than
 					one device you will need to learn the device IDs first and then set it in exult.cfg.
 				</para>
 				<para>
 					To do this you will need to start <Exult/> in a special way:<br/>
-					right click on the <Exult/>.app, select 'Show Package Contents' which will show you the folder/file 
+					right click on the <Exult/>.app, select 'Show Package Contents' which will show you the folder/file
 					structure of the <Exult/>.app. Doubleclick on 'Contents', doubleclick on MacOS, doubleclick on exult.<br/>
-					Terminal.app will open a window and will show you all kind of output while <Exult/> will also start. In 
-					<Exult/> click on setup and in the Audio settings select the CoreMidi driver (make sure to disable 
+					Terminal.app will open a window and will show you all kind of output while <Exult/> will also start. In
+					<Exult/> click on setup and in the Audio settings select the CoreMidi driver (make sure to disable
 					digital music).<br/>
 					In the Terminal.app window you should now see a listing of the MIDI devices which could look like this:<br/>
 				</para>
@@ -821,9 +821,9 @@
 					be mapped to GM/GS. These SFX tracks do not play when the music is switched off.
 				</para>
 				<para>
-					The digital music pack seems to have two issue, though, some tracks seem to have 
-					been recorded at lower volume than the others. Also, since both the digital music 
-					and the sound effects are played by the Wave / PCM of your sound card, you can no 
+					The digital music pack seems to have two issue, though, some tracks seem to have
+					been recorded at lower volume than the others. Also, since both the digital music
+					and the sound effects are played by the Wave / PCM of your sound card, you can no
 					longer have a different volume for music and sound effects.
 				</para>
 			</body>
@@ -845,13 +845,13 @@
 			<header>All-in-One Audio Data pack and installers</header>
 			<body>
 				<para>
-					We've combined all the audio data we offer, Digital Music and Digital Wave 
-					Sound Effects, into an all-in-one pack which saves you downloading several 
-					smaller zip files. You can download a zip file for manual installation or 
+					We've combined all the audio data we offer, Digital Music and Digital Wave
+					Sound Effects, into an all-in-one pack which saves you downloading several
+					smaller zip files. You can download a zip file for manual installation or
 					an installer for either Windows or macOS. Chose the one you want
 					to use on our download page at
 					<extref target="https://exult.info/download.php"/>.<br/>
-					The Windows installer for <Exult/> gives you the option to download and 
+					The Windows installer for <Exult/> gives you the option to download and
 					install the zip automatically, so we recommend you use this method.<br/>
 					On macOS, we recommend you download and run the installer.<br/>
 					On Linux or if you want to manually install the all-in-one pack, you will need
@@ -859,9 +859,9 @@
 				</para>
 				<para>
 					To install the zip file, extract its content to the <Exult/> data folder. On Linux
-					systems this is by default <kbd>/usr/local/share/exult</kbd>. On macOS it is 
-					<kbd>/Library/Application Support/Exult/data</kbd> and on Windows it's in the folder 
-					data in the folder where you installed <Exult/> to (by default 
+					systems this is by default <kbd>/usr/local/share/exult</kbd>. On macOS it is
+					<kbd>/Library/Application Support/Exult/data</kbd> and on Windows it's in the folder
+					data in the folder where you installed <Exult/> to (by default
 					<kbd>C:\Program Files (x86)\Exult</kbd>).
 				</para>
 				<para>
@@ -882,21 +882,21 @@
 					The Digital Music pack can be downloaded from
 					<extref target="https://exult.info/download.php"/>, the files are called
 					<strong>Ogg encoded Music files for Exult Part 1</strong>
-					(U7MusicOGG_1of2.zip) and 
-					<strong>Ogg encoded Music files for Exult Part 2</strong> 
-					(U7MusicOGG_2of2.zip). The readme.txt found in the ZIP files contains installation 
+					(U7MusicOGG_1of2.zip) and
+					<strong>Ogg encoded Music files for Exult Part 2</strong>
+					(U7MusicOGG_2of2.zip). The readme.txt found in the ZIP files contains installation
 					instructions that are no longer 100% valid and should not be followed.<br/>
-					Create a music folder in exult/data (i.e. exult/data/music/) and extract the two ZIP 
+					Create a music folder in exult/data (i.e. exult/data/music/) and extract the two ZIP
 					files U7MusicOGG_1of2.zip and U7MusicOGG_2of2.zip into this folder.<br/>
-					If you are not sure where the data folder is, search for the file 
-					<strong>exult_bg.flx</strong> on your hard drive as this file is always in the data 
+					If you are not sure where the data folder is, search for the file
+					<strong>exult_bg.flx</strong> on your hard drive as this file is always in the data
 					folder.<br/>
-					Now start up <Exult/> and start either a game of BG or SI. Hit <key>ESC</key> to enter 
-					the game menu. Here select <strong>Audio Options</strong> and in the 'Music options' 
+					Now start up <Exult/> and start either a game of BG or SI. Hit <key>ESC</key> to enter
+					the game menu. Here select <strong>Audio Options</strong> and in the 'Music options'
 					<strong>enable</strong> the <strong>digital music</strong> option.
 				</para>
 				<para>
-					It isn't necessary but you can also customize the location of the music files by adding 
+					It isn't necessary but you can also customize the location of the music files by adding
 					&lt;music_path&gt; to exult.cfg. Example:
 				</para>
 				<configdesc>
@@ -925,16 +925,16 @@
 					SoundBlaster SFX and Simon Quinn recorded the Roland MT32 SFX. You can find them on
 					our download page at
 					<extref target="https://exult.info/download.php"/>.<br/>
-					'Sound pack for Blackgate' and 'Sound pack for Serpent Isle' are the SoundBlaster 
+					'Sound pack for Blackgate' and 'Sound pack for Serpent Isle' are the SoundBlaster
 					sound effects.<br/>
-					'Sound pack for Black Gate (Roland MT-32)' and 'Sound pack for Serpent Isle (Roland MT-32)' 
+					'Sound pack for Black Gate (Roland MT-32)' and 'Sound pack for Serpent Isle (Roland MT-32)'
 					are the Roland MT32 sound effects.<br/>
 				</para>
 				<para>
-					Extract the zip files into your <Exult/> data folder. <Exult/> will automatically find and 
-					use the SFX packs and will default to use the Roland MT32 pack when both both packs 
-					(SoundBlaster and Roland MT-32) are present. You can then choose between the packs in the 
-					Game Menu (<ref target="audio_gump"/>), of course you can override this setting in the 
+					Extract the zip files into your <Exult/> data folder. <Exult/> will automatically find and
+					use the SFX packs and will default to use the Roland MT32 pack when both both packs
+					(SoundBlaster and Roland MT-32) are present. You can then choose between the packs in the
+					Game Menu (<ref target="audio_gump"/>), of course you can override this setting in the
 					exult.cfg (see <ref target="exult_config"/>).<br/>
 					An example of how the relevant part of exult.cfg looks when you prefer the SoundBlaster SFX:
 				</para>
@@ -978,7 +978,7 @@
 			<header>Linux and Audio</header>
 			<body>
 				<para>
-					You can configure the ALSA port for your distribution in .exult.cfg (see 
+					You can configure the ALSA port for your distribution in .exult.cfg (see
 					<ref target="exult_config"/>), by default we use 65:0.<br/>
 					If the default or the port you set is not working <Exult/> tries to figure out a
 					working port and will connect to the first port that satisfies these requirements:
@@ -997,30 +997,30 @@
 			<header>Resolution</header>
 			<body>
 				<para>
-					We distinguish between the <Exult/> display resolution (which determines 
-					the size of the <Exult/> window and its fullscreen rendering) and the game 
+					We distinguish between the <Exult/> display resolution (which determines
+					the size of the <Exult/> window and its fullscreen rendering) and the game
 					area, which determines how big the in-game viewing area is.<br/>
 				</para>
 				<para>
-					By default <Exult/> runs the games at 320x200 (which is the resolution the 
+					By default <Exult/> runs the games at 320x200 (which is the resolution the
 					original Ultima VII used). <Exult/> can use different scaling engines to
-					double the size to 640x400 or even triple the the size to 960x600 while 
-					increasing  the quality of the graphics and maintaining the same viewing 
-					area. This allows Exult to show the game as an enhanced version of how it 
-					originally appeared, and not show locations that were originally off-screen.<br/> 
-					When you first start <Exult/> we apply the scaler 2xSaI which doubles the size 
+					double the size to 640x400 or even triple the the size to 960x600 while
+					increasing  the quality of the graphics and maintaining the same viewing
+					area. This allows Exult to show the game as an enhanced version of how it
+					originally appeared, and not show locations that were originally off-screen.<br/>
+					When you first start <Exult/> we apply the scaler 2xSaI which doubles the size
 					of each pixel, resulting in a 640x400 window.
 				</para>
 				<para>
-					You will also have to hit 'Apply' in the Video gump to apply your changes. <Exult/> 
-					will then use the new settings and will show you a countdown which asks you to confirm 
-					that the new video settings are working. When you don't confirm by hitting 'YES', the 
-					changes will be reverted. This way we try to prevent that some bad video options 
+					You will also have to hit 'Apply' in the Video gump to apply your changes. <Exult/>
+					will then use the new settings and will show you a countdown which asks you to confirm
+					that the new video settings are working. When you don't confirm by hitting 'YES', the
+					changes will be reverted. This way we try to prevent that some bad video options
 					combinations prevent you from playing the games.
 				</para>
 				<para>
-					When you disallow same settings for window and fullscreen mode in the Game menu, 
-					settings can be set for either fullscreen or windows mode just by selecting different 
+					When you disallow same settings for window and fullscreen mode in the Game menu,
+					settings can be set for either fullscreen or windows mode just by selecting different
 					settings while using either mode.
 				</para>
 			</body>
@@ -1029,47 +1029,47 @@
 			<header>Fill modes</header>
 			<body>
 				<para>
-					The game area with scaler applied should not be bigger than the display, 
+					The game area with scaler applied should not be bigger than the display,
 					otherwise you will get strange effects and the game might crash.<br/>
-					For example when you set the game area to 320x200 with the scaler Point 
-					at sale factor 3, your game viewing area is actually 960x600. If your display 
-					resolution is set to 640x480 the resolutions don't match and your <Exult/> 
+					For example when you set the game area to 320x200 with the scaler Point
+					at sale factor 3, your game viewing area is actually 960x600. If your display
+					resolution is set to 640x480 the resolutions don't match and your <Exult/>
 					window will be smaller than intended.<br/>
-					<Exult/> will check whether this will happen and will warn you against it, since 
-					making the window smaller than 320x200 will cause you trouble with <Exult/>s 
+					<Exult/> will check whether this will happen and will warn you against it, since
+					making the window smaller than 320x200 will cause you trouble with <Exult/>s
 					interface and you might not be able to revert your changes.<br/>
 				</para>
 				<para>
-					On the other hand when your display resolution is set higher than the game resolution 
+					On the other hand when your display resolution is set higher than the game resolution
 					you can have black borders surrounding the game viewing area. The borders can be used
 					for positioning gumps and the face stats.<br/>
 					You can also change the color of the borders.<br/>
-					If you don't like black borders you can also stretched to fill the entire display 
+					If you don't like black borders you can also stretched to fill the entire display
 					resolution, or sacled to fit the display resolution without stretching the pixels.<br/>
 					You have the following options
 				</para>
 				<ul>
 					<li><strong>Fill</strong><br/>
-						The game screen is stretched to fill the entire display surface. No borders will be added 
-						in this mode. The game screen will be downsampled if it is bigger than the display 
+						The game screen is stretched to fill the entire display surface. No borders will be added
+						in this mode. The game screen will be downsampled if it is bigger than the display
 						surface in this mode.</li>
 					<li><strong>Fit</strong><br/>
-						Game is scaled to fill the display surface maintaining square pixels. Black borders 
-						will be added to maintain aspect if needed. The game screen will be downsampled if it 
+						Game is scaled to fill the display surface maintaining square pixels. Black borders
+						will be added to maintain aspect if needed. The game screen will be downsampled if it
 						is bigger than the display surface in this mode.</li>
 					<li><strong>Aspect Correct Fit</strong><br/>
 						Same as fit, but pixels are additionally scaled using a 1:1.2 ratio. This corrects the
-						aspect mismatch between the non square pixels used by the original game and the square 
+						aspect mismatch between the non square pixels used by the original game and the square
 						pixels of modern screen resolutions.</li>
 					<li><strong>Centre</strong><br/>
-						The game is centered on the display surface without additional scaling. Black borders will 
-						be added if game screen is smaller than the display surface. Clipping will occur if the 
+						The game is centered on the display surface without additional scaling. Black borders will
+						be added if game screen is smaller than the display surface. Clipping will occur if the
 						game screen is larger than the display surface.</li>
 					<li><strong>Aspect Correct Centre</strong><br/>
 						Same as Centre except height is scaled by 1.2x to correct pixel aspect mismatch.</li>
 				</ul>
 				<para>
-					If the Game Area setting is set to Auto then the game area is calculated based on the selected 
+					If the Game Area setting is set to Auto then the game area is calculated based on the selected
 					fill mode with no additional scaling applied.<br/>
 					The additional scaling method can be set to Point or Bilinear.
 				</para>
@@ -1081,10 +1081,10 @@
 				<para>
 					Using higher resolutions is considered cheating as you can see too much of
 					the surrounding area. Since the game was designed to be played at a specific
-					size (320x200), this can actually lead to plot-stopping problems; hence we 
-					will not fix any problem caused by your cheating! 
+					size (320x200), this can actually lead to plot-stopping problems; hence we
+					will not fix any problem caused by your cheating!
 					Don't say we didn't warn you :-)<br/>
-					But being able to play in higher resolutions is actually one of the big 
+					But being able to play in higher resolutions is actually one of the big
 					advantages of <Exult/> but as mentioned above it comes with a price.
 				</para>
 			</body>
@@ -1099,13 +1099,13 @@
 				</para>
 				<ul>
 					<li><strong>Point</strong><br/>
-						simple but very fast scaler. Only duplicates pixels, no fancy interpolation. 
+						simple but very fast scaler. Only duplicates pixels, no fancy interpolation.
 						Can be used for arbitrary integer scales (2x, 3x, 4x...).</li>
 					<li><strong>Interlaced</strong><br/>
 						identical to point except that it skips every other line to be even faster.
 						Can be used for arbitrary integer scales (2x, 3x, 4x...).</li>
 					<li><strong>Bilinear</strong><br/>
-						bilinear interpolation to smooth the result. Slower than point, but looks better. 
+						bilinear interpolation to smooth the result. Slower than point, but looks better.
 						Can be used for arbitrary integer scales (2x, 3x, 4x...).</li>
 					<li><strong>BilinearPlus</strong><br/>
 						same as Bilinear and it may even be a bit faster.</li>
@@ -1125,8 +1125,8 @@
 					<li><strong>HQ4X</strong><br/>
 						High quality scaler, that uses a *lot* of CPU cycles. Only 4x.</li>
 					<li><strong>2xBR</strong><br/>
-						High quality scaler by Hyllian 
-						<extref target="https://github.com/libretro/common-shaders/tree/master/xBR">Github</extref>, 
+						High quality scaler by Hyllian
+						<extref target="https://github.com/libretro/common-shaders/tree/master/xBR">Github</extref>,
 						that uses a lot of CPU cycles. Only 2x.</li>
 					<li><strong>3xBR</strong><br/>
 						Same as 2xBR but 3x.</li>
@@ -1146,24 +1146,24 @@
 				<ul>
 					<li>Hold right mouse button down to move Avatar.</li>
 					<li>Clicking with the right mouse button will make the Avatar
-						find a path to the selected spot. Default is a double click 
+						find a path to the selected spot. Default is a double click
 						but you can also choose a single click in the options.</li>
 					<li>Click on objects with left button to identify them.</li>
 					<li>Double-click on characters to hold conversations.</li>
 					<li>Double-click on doors, shutters with left button to open or
 						close them.</li>
-					<li>Click and hold an item to move the item if the item is moveable 
+					<li>Click and hold an item to move the item if the item is moveable
 						and can be reached by the Avatar.</li>
-					<li>Press <key>Ctrl</key> while dropping a stack of items (coins, bolts...) 
-						to drop the whole stack without being asked for confirmation of 
+					<li>Press <key>Ctrl</key> while dropping a stack of items (coins, bolts...)
+						to drop the whole stack without being asked for confirmation of
 						the amount of items to drop.</li>
 					<li>Use the arrow keys (or the keypad keys for more precise movement).
-						When you move while holding shift the Avatar walks slowly otherwise he 
+						When you move while holding shift the Avatar walks slowly otherwise he
 						is in running mode.</li>
 				</ul>
 				<para>
-					On iOS we display a virtual D-Pad on screen with which you control the movement. 
-					Additionally you can long touch on the screen and the Avatar moves there 
+					On iOS we display a virtual D-Pad on screen with which you control the movement.
+					Additionally you can long touch on the screen and the Avatar moves there
 					(if it is possible).
 				</para>
 			</body>
@@ -1180,15 +1180,15 @@
 					You can change your key bindings by providing your own defaultkeys file.<br/>
 					Download <extref target="https://raw.githubusercontent.com/exult/exult/master/data/bg/defaultkeys.txt">defaultkeys.txt for BG</extref>
 					or <extref target="https://raw.githubusercontent.com/exult/exult/master/data/si/defaultkeys.txt">defaultkeys.txt for BG</extref>,
-					change the bindings and save the file (e.g. as my_keys.txt). Now you have to change 
-					exult.cfg to use that file. See the keys settings at <ref target="exult_config"/> 
+					change the bindings and save the file (e.g. as my_keys.txt). Now you have to change
+					exult.cfg to use that file. See the keys settings at <ref target="exult_config"/>
 					and change (default) to my_keys.txt.<br/>
 					Our installer for Windows installs the defaultkeys files to your <Exult/>
 					folder (bgdefaultkeys.txt for BG and sidefaultkeys.txt for SI).
 				</para>
 				<para>
 					During the game press <key>h</key> to see a help
-					screen with most of the keys (for macOS use Alt for Cmd - however the in-game help 
+					screen with most of the keys (for macOS use Alt for Cmd - however the in-game help
 					screen shows the correct key combination). <key>KP</key> means keypad.
 				</para>
 				<keytable title="Default keyboard commands">
@@ -1260,7 +1260,7 @@
 				<para>
 					In conversations you have the ability not just click on the answer
 					with the mouse but also to use the numeric keys. The response options
-					aren't numbered visually but logically with the dots. Also pressing 
+					aren't numbered visually but logically with the dots. Also pressing
 					<key>Esc</key> selects 'bye' if it's an option.
 				</para>
 			</body>
@@ -1337,16 +1337,16 @@
 			<body>
 				<para>
 					Especially on mobile devices it makes sense to have a shortcutbar that allows quick actions
-					with just one or a double click. This was first implemented in the 
-					<extref target="https://github.com/litchie/exult-ios">Exult for iOS</extref> fork but later 
-					back ported and improved in main <Exult/>. By default the shortcutbar is disabled, but can be 
+					with just one or a double click. This was first implemented in the
+					<extref target="https://github.com/litchie/exult-ios">Exult for iOS</extref> fork but later
+					back ported and improved in main <Exult/>. By default the shortcutbar is disabled, but can be
 					enabled and further configured in the <ref1 target="misc_gump"/>.<br/>
-					You can make the bar transparent (only when drawn on the map) and select different colors 
-					for the outlines around the buttons. Some buttons only work when you have a certain item 
+					You can make the bar transparent (only when drawn on the map) and select different colors
+					for the outlines around the buttons. Some buttons only work when you have a certain item
 					(spellbook, jawbone in SI). You can choose to hide those buttons or display them greyed out.
 				</para>
 				<para>
-					The buttons have the following functions (cheat functions only work when you enabled cheats 
+					The buttons have the following functions (cheat functions only work when you enabled cheats
 					in <ref1 target="gameplay_gump"/>):
 				</para>
 				<ul>
@@ -1354,7 +1354,7 @@
 					Single click opens the game menu, double click the <ref1 target="savemenu"/><br/>
 					Additionally clicking it will close all Gumps that are open.</li>
 					<li><strong>Dove/Flaming Sword</strong><br/>
-					Toggles combat but also shows you whether you are in combat mode (flaming sword) when combat 
+					Toggles combat but also shows you whether you are in combat mode (flaming sword) when combat
 					is toggled in another way.</li>
 					<li><strong>Map</strong><br/>
 					Shows you the map, on double click opens the map teleporter</li>
@@ -1363,18 +1363,18 @@
 					<li><strong>Backpack</strong><br/>
 					On each click opens the paperdoll of party members.</li>
 					<li><strong>Key (Keyring in SI)</strong><br/>
-					Single click gives you a target pointer that tries all keys on the lock you click on. A double 
+					Single click gives you a target pointer that tries all keys on the lock you click on. A double
 					click uses a lockpick if you have any in your party.<br/>
-					When you acquire the keyring in SI, the button will change into the keyring and use that on a 
+					When you acquire the keyring in SI, the button will change into the keyring and use that on a
 					single click.</li>
 					<li><strong>Notebook</strong><br/>
-					Opens the notebook (see <ref1 target="notebook"/>), on double click shows you the 
+					Opens the notebook (see <ref1 target="notebook"/>), on double click shows you the
 					cheat menu.</li>
 					<li><strong>Target</strong><br/>
-					single click gives you the target pointer, double click changes the pointer to a red cross 
+					single click gives you the target pointer, double click changes the pointer to a red cross
 					which will cheat teleport you wherever you click.</li>
 					<li><strong>Fork and Knife</strong><br/>
-					A single click lets you feed a party member while a double click will use bandages or healing 
+					A single click lets you feed a party member while a double click will use bandages or healing
 					potions to heal.</li>
 					<li><strong>Jawbone (SI only)</strong><br/>
 					Opens the jawbone gump if you have the jawbone.</li>
@@ -1385,12 +1385,12 @@
 			<header>Using the Notebook</header>
 			<body>
 				<para>
-					We implemented a notebook you can access by pressing <key>n</key>. With this you can make 
-					notes of things you experienced, or 'heard' from any of the NPCs. Entries will be saved when you 
+					We implemented a notebook you can access by pressing <key>n</key>. With this you can make
+					notes of things you experienced, or 'heard' from any of the NPCs. Entries will be saved when you
 					close the notebook and save the game.
 				</para>
 				<para>
-					Additionally when you have cheats enabled you will see the coordinates (in decimal) where 
+					Additionally when you have cheats enabled you will see the coordinates (in decimal) where
 					you wrote your note.
 				</para>
 			</body>
@@ -1399,8 +1399,8 @@
 			<header>The automatic Notebook</header>
 			<body>
 				<para>
-					If you want you can also have <Exult/> automatically make some notes on its own when certain things happen in game. 
-					This feature has not yet progressed very far, especially for SI we have mostly basic pointers of what 
+					If you want you can also have <Exult/> automatically make some notes on its own when certain things happen in game.
+					This feature has not yet progressed very far, especially for SI we have mostly basic pointers of what
 					was noted.<br/>
 					You can enable autonotes in the <ref1 target="misc_gump"/>.
 				</para>
@@ -1408,7 +1408,7 @@
 					You can also write your own autonotes and override the ones that come with <Exult/>.<br/>
 					For BG download <extref target="https://github.com/exult/exult/raw/master/data/bg/autonotes.txt"/>.<br/>
 					For SI download <extref target="https://github.com/exult/exult/raw/master/data/si/autonotes.txt"/>.<br/>
-					Then change the &lt;autonotes&gt; setting in exult.cfg to point at the path of these files instead 
+					Then change the &lt;autonotes&gt; setting in exult.cfg to point at the path of these files instead
 					of being set to (default).<br/>
 					Example:
 				</para>
@@ -1434,8 +1434,8 @@
 			<header>Screenshots</header>
 			<body>
 				<para>
-					When you press <key>Ctrl-Alt-s</key> <Exult/> will make a screenshot of your game window in PNG image 
-					file format in the same folder your savegames are saved to. In the unlikely case that your <Exult/> 
+					When you press <key>Ctrl-Alt-s</key> <Exult/> will make a screenshot of your game window in PNG image
+					file format in the same folder your savegames are saved to. In the unlikely case that your <Exult/>
 					has been compiled without libpng support , the PCX file format is used.
 				</para>
 			</body>
@@ -1447,21 +1447,21 @@
 			<body>
 				<para>
 					With <Studio/> advancing more and more, there are now a small number mods and patches
-					developed, both by <Exult/> team members and other users. 
+					developed, both by <Exult/> team members and other users.
 					See <extref doc="faq" target="mods_patches"/> for a list.
 				</para>
 				<para>
 					Patches are meant for what the name implies, little patches to the original game.
-					Changing shapes, fixing or changing some usecode and such. Patches also have the 
+					Changing shapes, fixing or changing some usecode and such. Patches also have the
 					limitation that you can only have one patch per original game installed.
 				</para>
 				<para>
-					Mods on the other hand are more or less meant for heavy modifications of the original 
+					Mods on the other hand are more or less meant for heavy modifications of the original
 					games. Changing the map layout, adding NPCs and objects, changing usecode and so on.
 					You can have several mods installed which can be chosen from a convenient menu in <Exult/>.
 					Because of these advantages that mods have over patches, people now develop mods rather
 					than patches.
-				</para>	
+				</para>
 			</body>
 		</sub>
 		<sub name="mods_install">
@@ -1469,19 +1469,19 @@
 			<body>
 				<para>
 					To install a mod unzip or move the mod files (if they come unzipped) into your games
-					<kbd>mods</kbd> folder. By default that is the mods subfolder in the path you set for your 
-					game in the exult.cfg file (see <ref1 target="path_config"/>. If the folder is not 
-					there, simply create an empty folder called <kbd>mods</kbd> in your games folder and 
+					<kbd>mods</kbd> folder. By default that is the mods subfolder in the path you set for your
+					game in the exult.cfg file (see <ref1 target="path_config"/>. If the folder is not
+					there, simply create an empty folder called <kbd>mods</kbd> in your games folder and
 					proceed as above.<br/>
 					Now start a new game, choose the mod in the menu and enjoy the mod.
 				</para>
 				<para>
-					Please read the readme(.txt) that should have come with the mods. In there you will 
-					normally find further instructions and what the mod is about and how to experience 
+					Please read the readme(.txt) that should have come with the mods. In there you will
+					normally find further instructions and what the mod is about and how to experience
 					the changes in the game.
 				</para>
 				<para>
-					Unfortunately, since there are always advancements in the map editing, mods that are 
+					Unfortunately, since there are always advancements in the map editing, mods that are
 					no longer maintained might no longer work correctly with current versions of <Exult/>.
 				</para>
 			</body>
@@ -1490,16 +1490,16 @@
 			<header>Installing Patches</header>
 			<body>
 				<para>
-					Installation of patches is very similar to the installation of mods: unzip or move the patch 
-					files (if they come unzip) into your games <kbd>patch</kbd> folder. By default that is the patch 
-					subfolder in the path you set for your game in the exult.cfg file 
-					(see <ref1 target="path_config"/>). If the folder is not there, simply create an empty folder 
+					Installation of patches is very similar to the installation of mods: unzip or move the patch
+					files (if they come unzip) into your games <kbd>patch</kbd> folder. By default that is the patch
+					subfolder in the path you set for your game in the exult.cfg file
+					(see <ref1 target="path_config"/>). If the folder is not there, simply create an empty folder
 					called <kbd>patch</kbd> in your games folder and proceed as above.<br/>
 					Now start a new game and enjoy the patch.
 				</para>
 				<para>
-					Please read the readme(.txt) that should have come with the patch. In there you will 
-					normally find instructions and what the patch is about and how to experience the changes 
+					Please read the readme(.txt) that should have come with the patch. In there you will
+					normally find instructions and what the patch is about and how to experience the changes
 					in the game.
 				</para>
 			</body>
@@ -1509,8 +1509,8 @@
 			<body>
 				<para>
 					In exult.cfg you can adapt where <Exult/> looks for both mods and patches.
-					The paths <Exult/> uses by default, are explained in <ref target="path_config"/>, 
-					so stick to that for the location of mods and patches, and only edit the config 
+					The paths <Exult/> uses by default, are explained in <ref target="path_config"/>,
+					so stick to that for the location of mods and patches, and only edit the config
 					file if you need to.
 				</para>
 				<configdesc>
@@ -1538,14 +1538,14 @@
 			<header>Where to find the savegames of modded games</header>
 			<body>
 				<para>
-					When you save a modded game the savegames are saved to &lt;savegame_path&gt;/mods/name_of_mod. 
-					The Gamedat folder will be found in that folder as well. For the location of &lt;savegame_path&gt;, 
+					When you save a modded game the savegames are saved to &lt;savegame_path&gt;/mods/name_of_mod.
+					The Gamedat folder will be found in that folder as well. For the location of &lt;savegame_path&gt;,
 					please see <ref1 target="path_config"/> and the following chapters for your Operating System.
 				</para>
 				<para>
-					Note, you can override the location of savegames in the cfg of the mod under the 
+					Note, you can override the location of savegames in the cfg of the mod under the
 					&lt;savegame_path&gt;.<br/>
-					For example if you install the BG Keyring mod, you would find the settings for that mod in 
+					For example if you install the BG Keyring mod, you would find the settings for that mod in
 					keyring.cfg.
 				</para>
 			</body>
@@ -1568,14 +1568,14 @@
 			<header>The port to iOS</header>
 			<body>
 				<para>
-					In January 2015 Chaoji Li (aka Litchie) forked <Exult/> on 
-					<extref target="https://github.com/litchie/exult-ios">Github</extref> to work 
+					In January 2015 Chaoji Li (aka Litchie) forked <Exult/> on
+					<extref target="https://github.com/litchie/exult-ios">Github</extref> to work
 					on the initial porting effort by Lanica Dragon (which had stopped in 2013).<br/>
 					Since 2020 the port is merged in our code.
 				</para>
 				<para>
-					Note that <Exult/> runs very nicely on iPads but the item management of the games makes 
-					playing on the smaller iPhone screens a bit of a challenge. Starting with the 
+					Note that <Exult/> runs very nicely on iPads but the item management of the games makes
+					playing on the smaller iPhone screens a bit of a challenge. Starting with the
 					screen size of the iPhone 6 things become easier.
 				</para>
 			</body>
@@ -1587,11 +1587,11 @@
 					For now <Exult/> is not on the App Store but there are two other ways to get it on your device.
 				</para>
 				<ul>
-					<li>Write an email to Dominus Dragon 
-						(see <extref target="https://exult.info/about.php">About Us</extref>) to sign up for 
+					<li>Write an email to Dominus Dragon
+						(see <extref target="https://exult.info/about.php">About Us</extref>) to sign up for
 						the beta testing (through Apple's iTunes Connect/TestFlight).</li>
-					<li>If your iOS device is on iOS version 12 and higher and you are running a Mac, you can download 
-						Xcode from the AppStore, clone the git repository, run the Xcode project file and easily install 
+					<li>If your iOS device is on iOS version 12 and higher and you are running a Mac, you can download
+						Xcode from the AppStore, clone the git repository, run the Xcode project file and easily install
 						<Exult/> on your device. This is called 'sideloading'.</li>
 				</ul>
 			</body>
@@ -1600,11 +1600,11 @@
 			<header>Installing the games on your iPhone/iPad</header>
 			<body>
 				<para>
-					Once you have the <Exult/> app on your device, you will need to upload the games to your 
+					Once you have the <Exult/> app on your device, you will need to upload the games to your
 					device using Finder or iTunes file sharing. But it needs a bit of preparing.
 				</para>
 				<para>
-					First you will need to put the games into a folder called game and use the following 
+					First you will need to put the games into a folder called game and use the following
 					folder structure:<br/>
 					<kbd>game</kbd><br/>
 					<kbd>+-- blackgate</kbd><br/>
@@ -1613,32 +1613,32 @@
 					<kbd>+-- serpentisle</kbd><br/>
 					<kbd>|     +--- static</kbd><br/>
 					<kbd>|          +---- *.*</kbd><br/>
-					Please make sure that all the file and folder names are in lowercase, iOS is case sensitive 
+					Please make sure that all the file and folder names are in lowercase, iOS is case sensitive
 					and the games might not be detected otherwise.<br/>
-					Don't write <kbd>+--</kbd> - it's only there to visualize the structure. With <kbd>*.*</kbd> 
+					Don't write <kbd>+--</kbd> - it's only there to visualize the structure. With <kbd>*.*</kbd>
 					all the files of the static folder are meant.
 				</para>
 				<para>
-					On Windows connect your device to your computer, start iTunes and select your device in it. Click 'Apps', 
-					scroll down to 'File Sharing' and select <Exult/>. Now drag and drop the game folder you prepared 
-					in the first step. See 
+					On Windows connect your device to your computer, start iTunes and select your device in it. Click 'Apps',
+					scroll down to 'File Sharing' and select <Exult/>. Now drag and drop the game folder you prepared
+					in the first step. See
 					<extref target="https://support.apple.com/guide/itunes/transfer-files-itns32636/windows">
 					Apple's guide</extref>.
 				</para>
 				<para>
-					On macOS you have to use Finder, select your iOS device, click on 'Files' and select 
-					<Exult/>. Now drag and drop the game folder you prepared in the first step. See 
+					On macOS you have to use Finder, select your iOS device, click on 'Files' and select
+					<Exult/>. Now drag and drop the game folder you prepared in the first step. See
 					<extref target="https://support.apple.com/guide/mac-help/sync-files-to-your-device-mchl4bd77d3a/mac">
 					Apple's guide</extref>.<br/>
 					On older macOS versions you have to use iTunes as you would on Windows.
 				</para>
 				<para>
 					<strong>Only</strong> use Finder or iTunes file sharing and not the iOS app Files. Otherwise you
-					will probably end up with an incomplete game. The many small files of the games slow down the Files app 
+					will probably end up with an incomplete game. The many small files of the games slow down the Files app
 					and as soon as you switch to another app, the transfer is likely to stop.
 				</para>
 				<para>
-					Note: if you want to use mods just add them to the game folder structure before you drag and drop 
+					Note: if you want to use mods just add them to the game folder structure before you drag and drop
 					that in iTunes file sharing.<br/>
 					Example with the BG keyring and SI fixes mods:<br/>
 					<kbd>game</kbd><br/>
@@ -1663,10 +1663,10 @@
 			<header>Installing sfx and digital music</header>
 			<body>
 				<para>
-					To install the optional sfx and digital music, please download the 'Zipped all-in-one audio pack 
-					for manual installation' zip file from our 
-					<extref target="https://exult.info/download.php">download page</extref>. 
-					Unzip everything to a folder called 'data' and drag and drop this also in iTunes/Finder file sharing. 
+					To install the optional sfx and digital music, please download the 'Zipped all-in-one audio pack
+					for manual installation' zip file from our
+					<extref target="https://exult.info/download.php">download page</extref>.
+					Unzip everything to a folder called 'data' and drag and drop this also in iTunes/Finder file sharing.
 					Do NOT put it in the 'game' folder.
 				</para>
 			</body>
@@ -1675,17 +1675,17 @@
 			<header>iOS controls</header>
 			<body>
 				<para>
-					When playing you have a dpad overlaying the game screen which by default is on the right of the 
+					When playing you have a dpad overlaying the game screen which by default is on the right of the
 					screen (but can be set to the left side).<br/>
 					Tapping with your finger is equal to a left click in the game.<br/>
-					The green (and eventually red (combat)) movement cursor and the hand pointer are invisible on 
+					The green (and eventually red (combat)) movement cursor and the hand pointer are invisible on
 					iOS as they are more distracting than helping when you control and click with your finger.
 				</para>
 				<para>
 					When you do a long touch on a location and then release the finger, the Avatar will pathfind to this spot.
 				</para>
 				<para>
-					There is also a helper menu when you click near objects in the games, which can be helpful on 
+					There is also a helper menu when you click near objects in the games, which can be helpful on
 					the smaller iPhone screens but can be disabled in <ref1 target="game_input_gump"/>.
 				</para>
 			</body>
@@ -1694,8 +1694,8 @@
 			<header>iOS automatic saves</header>
 			<body>
 				<para>
-					One important addition to the iOS port is that <Exult/> autosaves when it is no longer 
-					the focused app. Apple enforces apps to terminate very quickly once they lose focus and 
+					One important addition to the iOS port is that <Exult/> autosaves when it is no longer
+					the focused app. Apple enforces apps to terminate very quickly once they lose focus and
 					to prevent the loss of your current progress, we implemented this automatic saving.
 				</para>
 			</body>
@@ -1711,7 +1711,7 @@
 					is not well tested.
 				</para>
 				<para>
-					The file looks like this (do not copy the **and following - these are my remarks), 
+					The file looks like this (do not copy the **and following - these are my remarks),
 					options you can only change manually are colored in purple.
 				</para>
 				<para>
@@ -2202,17 +2202,17 @@
 						<configtag name="shortcutbar">
 							<configtag name="use_shortcutbar">
 							no
-							<comment>**options are yes/translucent (will not be translucent if not on </comment> 
+							<comment>**options are yes/translucent (will not be translucent if not on </comment>
 							<comment>map, default on iOS)</comment>
 							</configtag>
 							<configtag name="use_outline_color">
 							black
-							<comment>**outline around shortcutbar buttons only if the bar is on the map.</comment> 
+							<comment>**outline around shortcutbar buttons only if the bar is on the map.</comment>
 							<comment>Options are: no, green, white, yellow, blue, red, purple, black (default).</comment>
 							</configtag>
 							<configtag name="hide_missing_items">
 							yes
-							<comment>**hides ShortcutBar buttons for items the party doesn't have.</comment> 
+							<comment>**hides ShortcutBar buttons for items the party doesn't have.</comment>
 							<comment>no shows those buttons greyed out.</comment>
 							</configtag>
 						</configtag>
@@ -2244,9 +2244,9 @@
 				<para>
 					The way <Exult/> generates default paths (for gamedat, savegames, mods, patches) has changed since Version 1.2. It will
 					not write these paths to exult.cfg but use them automatically.<br/>
-					The location where <Exult/> expects those, and if needed, will create those folders is similarly depending on the Operating 
+					The location where <Exult/> expects those, and if needed, will create those folders is similarly depending on the Operating
 					System as the location of exult.cfg (see <ref1 target="exult_config_location"/>).
-					If you were to override these paths you would need to change the following tags (you can substitute gamename with the 
+					If you were to override these paths you would need to change the following tags (you can substitute gamename with the
 					'known games' - see <ref target="terms"/>):
 				</para>
 				<configdesc>
@@ -2281,10 +2281,10 @@
 					</configtag>
 				</configdesc>
 				<para>
-					But normally you don't need to. On starting up, <Exult/> will first read which games 
-					are available as configured in exult.cfg. 
+					But normally you don't need to. On starting up, <Exult/> will first read which games
+					are available as configured in exult.cfg.
 					Then it will use the &lt;path&gt; setting and assume that &lt;static_path&gt; is &lt;path&gt;/static.<br/>
-					For &lt;savegame_path&gt;, &lt;gamedat_path&gt;, &lt;mods&gt; and &lt;patch&gt; <Exult/> will assume 
+					For &lt;savegame_path&gt;, &lt;gamedat_path&gt;, &lt;mods&gt; and &lt;patch&gt; <Exult/> will assume
 					Operating System specific paths.
 				</para>
 				<para>
@@ -2292,15 +2292,15 @@
 				</para>
 				<ul>
 					<li>&lt;data_path&gt;<br/>
-						the most important folder. In this folder are the files <Exult/> absolutely needs to run. We also check the checksums of these 
+						the most important folder. In this folder are the files <Exult/> absolutely needs to run. We also check the checksums of these
 						files to make sure that <Exult/> uses the correct ones.</li>
 					<li>&lt;static_path&gt;<br/>
-						the second most important folder. In there you have the data files from the original game. You should 
+						the second most important folder. In there you have the data files from the original game. You should
 						never touch these files.</li>
 					<li>&lt;savegame_path&gt;<br/>
 						this is where <Exult/> stores your savegames.</li>
 					<li>&lt;gamedat_path&gt;<br/>
-						contains the (dynamic) data for the game you're currently playing. It's where the 
+						contains the (dynamic) data for the game you're currently playing. It's where the
 						'journey onward' and 'quicksave' 'savegame' is stored.</li>
 					<li>&lt;mods&gt;<br/>
 						here mods for games are saved to. More information on this at <ref1 target="mods_intro"/></li>
@@ -2311,20 +2311,20 @@
 					Some notes for <strong>all</strong> Operating Systems:
 				</para>
 				<ul>
-					<li>On Windows all of these settings, except for the &lt;path&gt; setting, are 
+					<li>On Windows all of these settings, except for the &lt;path&gt; setting, are
 						<strong>optional and not required</strong>,
 						Exult will sort this out on its own.</li>
-					<li>On Linux and macOS you might even not need to touch the &lt;path&gt; setting, if you stick to 
+					<li>On Linux and macOS you might even not need to touch the &lt;path&gt; setting, if you stick to
 						our standard gamenames.</li>
-					<li>You can either use the relative (e.g. <kbd>./ultima7</kbd>) or absolute 
-						(e.g. <kbd>C:\Games\ultima7</kbd>) path to point to the correct folder. The relative path uses 
+					<li>You can either use the relative (e.g. <kbd>./ultima7</kbd>) or absolute
+						(e.g. <kbd>C:\Games\ultima7</kbd>) path to point to the correct folder. The relative path uses
 						the exult.exe, exult binary or Exult.app as base.</li>
-					<li>Better don't use spaces in the path (e.g. <kbd>C:\Games\the black gate\</kbd>). Some people 
+					<li>Better don't use spaces in the path (e.g. <kbd>C:\Games\the black gate\</kbd>). Some people
 						seem to have reported problems with that.</li>
-					<li>Path settings in exult.cfg are the <strong>same</strong> on <strong>all</strong> operating systems. 
+					<li>Path settings in exult.cfg are the <strong>same</strong> on <strong>all</strong> operating systems.
 						Of course you need to make adjustments on Linux systems when you enter the absolute path.</li>
 					<li><Exult/> and <Studio/> don't trust the exult.cfg 100% and will recognize which games
-						you entered the path for. This means, that if you entered the path to SI in the 
+						you entered the path for. This means, that if you entered the path to SI in the
 						&lt;blackgate&gt;&lt;path&gt; <Exult/> and <Studio/> will not be fooled.</li>
 					<li>Don't ever point &lt;static_path&gt; and &lt;gamedat_path&gt; to the same folder.</li>
 				</ul>
@@ -2369,12 +2369,12 @@
 				</configdesc>
 				<para>
 					<kbd>LOCAL_APPDATA\Exult</kbd> translates to <kbd>C:\Users\YourUsername\AppData\Local\Exult</kbd>.<br/>
-					Also not that you can quickly access this folder by executing <kbd>shell:Local AppData\Exult</kbd>  
+					Also not that you can quickly access this folder by executing <kbd>shell:Local AppData\Exult</kbd>
 					in the 'Quick Access' of Explorer.<br/>
-					For now <Exult/>'s data folder is always installed into the same folder where you installed 
+					For now <Exult/>'s data folder is always installed into the same folder where you installed
 					<Exult/> to (default is <kbd>C:\Program Files (x86)\Exult</kbd>).<br/>
 					Also note that in contrast to macOS and Linux systems there is no default path, where <Exult/> looks
-					for the games. You have to choose that folder yourself, but the installer will ask you for the BG and SI 
+					for the games. You have to choose that folder yourself, but the installer will ask you for the BG and SI
 					folder to set your paths up.
 				</para>
 				<para>
@@ -2383,10 +2383,10 @@
 					The installer of <Exult/> asks for the location of these two games and automatically saves that to
 					exult.cfg. The installer saves exult.cfg to <kbd>C:\Users\FooBar\AppData\Local\Exult\exult.cfg</kbd>.
 					<Exult/> gets installed to <kbd>C:\Program Files (x86)\Exult</kbd>.<br/>
-					When you save a game in BG the savegame will be saved to 
-					<kbd>C:\Users\FooBar\AppData\Local\Exult\blackgate\</kbd>, for SI to 
+					When you save a game in BG the savegame will be saved to
+					<kbd>C:\Users\FooBar\AppData\Local\Exult\blackgate\</kbd>, for SI to
 					<kbd>C:\Users\FooBar\AppData\Local\Exult\serpentisle\</kbd>.<br/>
-					If you install for example the keyring mod, you copy the contents of the Keyring.zip to 
+					If you install for example the keyring mod, you copy the contents of the Keyring.zip to
 					<kbd>C:\Ultima7\blackgate\mods</kbd>. When you save a game with the Keyring mod, this savegame will be found in
 					<kbd>C:\Users\FooBar\AppData\Local\Exult\blackgate\mods\keyring\</kbd>.
 				</para>
@@ -2474,7 +2474,7 @@
 			<header>Advanced Configuration: Using both the original and the Add-Ons</header>
 			<body>
 				<para>
-					If you own both BG or SI without the add-ons FoV and SS and also the versions 
+					If you own both BG or SI without the add-ons FoV and SS and also the versions
 					that has the add-ons you can now have them both shown in the <Exult/> menu. Before
 					you had to edit the exult.cfg when you wanted to switch the games.<br/>
 					You now just have to add the tags for the two games.
@@ -2492,7 +2492,7 @@
 									<configtag name="path" manual="true">
 									path_to/forgeofvirtue
 									</configtag>
-								</configtag>	
+								</configtag>
 								<configtag name="serpentisle">
 									<configtag name="path">
 									path_to/serpentisle
@@ -2501,24 +2501,24 @@
 								<configtag name="silverseed" manual="true">
 									<configtag name="path" manual="true">
 									path_to/silverseed
-									</configtag>	
+									</configtag>
 								</configtag>
 							</configtag>
 						</configtag>
 					</configtag>
 				</configdesc>
 				<para>
-					If you only own one version of the game, you don't have to worry about this 
-					advanced configuration, just follow the instructions at <ref target="installation"/>. 
-					You only have to do this extra work if you want to differentiate between original game with 
+					If you only own one version of the game, you don't have to worry about this
+					advanced configuration, just follow the instructions at <ref target="installation"/>.
+					You only have to do this extra work if you want to differentiate between original game with
 					and without the add-on.
 				</para>
 				<para>
-					<em>Note:</em> Interchanging savegames of games started with or without the add-ons will make 
+					<em>Note:</em> Interchanging savegames of games started with or without the add-ons will make
 					your games unplayable.
 				</para>
 				<para>
-					And again, <Exult/> and <Studio/> will not be fooled by false games under 
+					And again, <Exult/> and <Studio/> will not be fooled by false games under
 					&lt;gamename&gt;&lt;path&gt;.
 				</para>
 			</body>
@@ -2530,19 +2530,19 @@
 			<body>
 				<para>
 					Since November 2011 you can buy Ultima VII from <extref target="https://www.gog.com">GOG</extref>.
-					Unfortunately GOG only offers a Windows installer that you can't easily circumvent, which makes 
+					Unfortunately GOG only offers a Windows installer that you can't easily circumvent, which makes
 					it a challenge for users that use a different OS than Windows.
 				</para>
 				<para>
-					Right now the only way to get at the game files is to run the installer on Windows (or in WINE 
-					if you are not a Windows user). After the installation you will find the game files in 
-					<kbd>C:\GOG Games\Ultima 7</kbd> and 
+					Right now the only way to get at the game files is to run the installer on Windows (or in WINE
+					if you are not a Windows user). After the installation you will find the game files in
+					<kbd>C:\GOG Games\Ultima 7</kbd> and
 					<kbd>C:\GOG Games\Ultima 7 - Serpent Isle</kbd>.
 				</para>
 				<para>
-					After installation you can just run our installer and when asked where the games are installed 
+					After installation you can just run our installer and when asked where the games are installed
 					enter or browse to the above paths.<br/>
-					Unfortunately GOG changes the download of the games for some unknown reason again and again. So our instructions are 
+					Unfortunately GOG changes the download of the games for some unknown reason again and again. So our instructions are
 					sometimes out of date. These ones are for the latest GOG release at the time of writing (version 1.0_(22309)). If it
 					doesn't work, please let us know.
 				</para>
@@ -2558,10 +2558,10 @@
 			<header>Using GOG.com's installer for macOS</header>
 			<body>
 				<para>
-					Since January 2013 <extref target="https://www.gog.com">GOG</extref> also offers a macOS download for each of the 
-					Ultima VII parts. These are install packages for macOS that will install the 
-					two parts into your Applications folder as applications that use a modified version of DOSBox to play the game. 
-					If you want to make Exult automatically find the games, you will need to copy the game files from these 
+					Since January 2013 <extref target="https://www.gog.com">GOG</extref> also offers a macOS download for each of the
+					Ultima VII parts. These are install packages for macOS that will install the
+					two parts into your Applications folder as applications that use a modified version of DOSBox to play the game.
+					If you want to make Exult automatically find the games, you will need to copy the game files from these
 					applications to a different folder on your hard drive. To do this follow the next few steps.<br/>
 					These instructions are the same whether you used the manual download from GOG or GOG Galaxy to install the games.
 				</para>
@@ -2571,15 +2571,15 @@
 					<kbd>sudo mkdir -p "/Library/Application Support/Exult/serpentisle"</kbd><br/>
 					<kbd>sudo cp -p -R "/Applications/Ultima VII<TM/>  - The Black Gate + The Forge of Virtue.app/Contents/Resources/game/STATIC" "/Library/Application Support/Exult/blackgate"</kbd><br/>
 					<kbd>sudo cp -p -R "/Applications/Ultima VII<TM/>  - Serpent Isle + The Silver Seed.app/Contents/Resources/game/STATIC" "/Library/Application Support/Exult/serpentisle"</kbd><br/>
-					Because we need elevated rights the commands are using sudo and will ask for your password and you 
-					will need to do this with an administrator account. If you don't have that, please ask your administrator 
+					Because we need elevated rights the commands are using sudo and will ask for your password and you
+					will need to do this with an administrator account. If you don't have that, please ask your administrator
 					to do this for you.<br/>
-					Unfortunately GOG changes the download of the games for some unknown reason again and again. So our instructions are 
-					sometimes out of date. These ones are for the latest GOG release at the time of writing (gog_3_34095). If it doesn't work, 
-					please visit our forum and tell us. 
+					Unfortunately GOG changes the download of the games for some unknown reason again and again. So our instructions are
+					sometimes out of date. These ones are for the latest GOG release at the time of writing (gog_3_34095). If it doesn't work,
+					please visit our forum and tell us.
 				</para>
 				<para>
-					If you are on a Linux system you can extract the files from the install packages via xar. In the extracted folder 
+					If you are on a Linux system you can extract the files from the install packages via xar. In the extracted folder
 					<kbd>package.pkg</kbd> you will find a file called <kbd>Scripts</kbd> which is a cpio.gz archive.
 				</para>
 			</body>
@@ -2594,23 +2594,23 @@
 				</para>
 				<ul>
 					<li><strong>EA Compilation</strong><br/>
-					This includes BG and a couple of other games (Savage Empire, Ultima Underworld and other non-Ultima games). 
-					Unfortunately BG does not have the add-on FoV included. From the CD just copy the folder <kbd>Ultima7</kbd> to 
+					This includes BG and a couple of other games (Savage Empire, Ultima Underworld and other non-Ultima games).
+					Unfortunately BG does not have the add-on FoV included. From the CD just copy the folder <kbd>Ultima7</kbd> to
 					<kbd>C:\Games\ULTIMA7</kbd>.</li>
 					<li><strong>Ultima Collection</strong><br/>
-					From the CD just copy the folders <kbd>Serpent</kbd> and <kbd>Ultima7</kbd> to <kbd>C:\Games\ULTIMA7</kbd> 
-					and <kbd>C:\Games\SERPENT</kbd>. Don't bother with the Ultima Collection installer. Both games come with 
+					From the CD just copy the folders <kbd>Serpent</kbd> and <kbd>Ultima7</kbd> to <kbd>C:\Games\ULTIMA7</kbd>
+					and <kbd>C:\Games\SERPENT</kbd>. Don't bother with the Ultima Collection installer. Both games come with
 					the add-ons included.</li>
 					<li><strong>The Complete Ultima VII (EA presents CD-ROM Classics)</strong><br/>
-					On this CD-ROM the games are zipped in Serpent.zip and Ultima7.zip. Unzip serpent.zip to 
+					On this CD-ROM the games are zipped in Serpent.zip and Ultima7.zip. Unzip serpent.zip to
 					<kbd>C:\Games\SERPENT</kbd> and unzip Ultima7.zip to <kbd>C:\Games\ULTIMA7</kbd>.<br/>
 					Both games come with the add-ons included.</li>
 				</ul>
 				<para>
-					On Linux systems and macOS, you might run into a permissions problem. You need to set group 
+					On Linux systems and macOS, you might run into a permissions problem. You need to set group
 					permissions to read and write.<br/>
 					On macOS select both game folders in Finder, bring up info, go to Ownership and Permissions,
-					expand details, change Access under Group from read only to read and write, then 
+					expand details, change Access under Group from read only to read and write, then
 					click Apply.
 				</para>
 			</body>
@@ -2620,12 +2620,12 @@
 			<body>
 				<para>
 					<extref target="https://dosbox.com">DOSBox</extref> is a program that emulates the old Dos
-					and should run on any operating system that <Exult/> runs on (and more). So this is perfect 
+					and should run on any operating system that <Exult/> runs on (and more). So this is perfect
 					for users that don't run Windows.
 				</para>
 				<para>
-					To install Ultima VII with DOSBox, download and install DOSBox from 
-					<extref target="https://dosbox.com"/>. Make a new folder in your <kbd>C:\</kbd> drive 
+					To install Ultima VII with DOSBox, download and install DOSBox from
+					<extref target="https://dosbox.com"/>. Make a new folder in your <kbd>C:\</kbd> drive
 					called <kbd>Games</kbd>.<br/>
 					Insert Disk 1 in your floppy drive, start DOSBox and enter the following:<br/>
 					<kbd>mount c C:\Games</kbd><br/>
@@ -2634,30 +2634,30 @@
 					<kbd>install</kbd><br/>
 				</para>
 				<para>
-					These days you are less likely to have floppy drive in your computer. But if you created images 
+					These days you are less likely to have floppy drive in your computer. But if you created images
 					of your game floppies you can use these to install the games.<br/>
 					Follow the above instructions until you are asked to insert Disk 1. Instead enter these commands:<br/>
 					<kbd>mount c C:\Games</kbd><br/>
 					<kbd>imgmount a /path/bg-1.img /path/bg-2.img /path/bg-3.img /path/bg-4.img /path/bg-5.img /path/bg-6.img -t floppy</kbd><br/>
 					<kbd>a:</kbd><br/>
 					<kbd>install</kbd><br/>
-					Replace path with the path to your image files. In case of installing Serpent Isle enter this 
+					Replace path with the path to your image files. In case of installing Serpent Isle enter this
 					for the imgmount command:<br/>
 					<kbd>imgmount a /path/si-1.img /path/si-2.img /path/si-3.img /path/si-4.img /path/si-5.img /path/si-6.img /path/si-7.img -t floppy</kbd>
 					When you are asked to change disk use the keyboard shortcut <key>Ctrl+F4</key>, which will use the next image.
 				</para>
 				<para>
-					The installer will start and ask you on which drive to install Ultima VII to. Choose c and 
-					when it asks for the target folder choose <kbd>C:\ULTIMA7</kbd> for BG or 
-					<kbd>C:\SERPENT</kbd> for SI (in both cases you can just hit enter). Next you choose 
-					the sound card, but as this is not relevant for <Exult/>, choose 'No sound card'. Confirm the 
+					The installer will start and ask you on which drive to install Ultima VII to. Choose c and
+					when it asks for the target folder choose <kbd>C:\ULTIMA7</kbd> for BG or
+					<kbd>C:\SERPENT</kbd> for SI (in both cases you can just hit enter). Next you choose
+					the sound card, but as this is not relevant for <Exult/>, choose 'No sound card'. Confirm the
 					settings with 'Y' and the installer begins to make noise in your floppy drive...<br/>
 					When asked to insert the next floppy disk and hit any key (or ESC to cancel). When the
-					installation is done, the installer will complain, that 'something has put your system 
-					in protected mode...', ignore that and press any key to continue. Again it will complain 
-					that 'your current system configuration is not compatible with Ultima VII!...', ignore 
-					that as well and press 'N' (you don't need a boot disk for playing U7 with <Exult/>). Finally 
-					hit any key to finish your installation. Close DOSBox. The game can now be found at 
+					installation is done, the installer will complain, that 'something has put your system
+					in protected mode...', ignore that and press any key to continue. Again it will complain
+					that 'your current system configuration is not compatible with Ultima VII!...', ignore
+					that as well and press 'N' (you don't need a boot disk for playing U7 with <Exult/>). Finally
+					hit any key to finish your installation. Close DOSBox. The game can now be found at
 					<kbd>C:\Games\ULTIMA7</kbd> or <kbd>C:\Games\SERPENT</kbd>.
 				</para>
 			</body>
@@ -2666,8 +2666,8 @@
 			<header>Installing the floppy disks of the Add-Ons FoV/SS using DOSBox</header>
 			<body>
 				<para>
-					We assume you followed the above guide on how to <ref1 target="dosbox_floppy"/>, so you 
-					should have BG/SI installed to <kbd>C:\Games\ULTIMA7</kbd> or 
+					We assume you followed the above guide on how to <ref1 target="dosbox_floppy"/>, so you
+					should have BG/SI installed to <kbd>C:\Games\ULTIMA7</kbd> or
 					<kbd>C:\Games\SERPENT</kbd>.
 				</para>
 				<para>
@@ -2682,18 +2682,18 @@
 					<kbd>imgmount a /path/fov.img -t floppy</kbd> instead of <kbd>mount a a:\ -t floppy</kbd>.
 				</para>
 				<para>
-					Now you have to choose the drive where you installed the game to. Choose C and the installer 
-					will find the correct folder of BG/SI and will ask for your confirmation to proceed with 
+					Now you have to choose the drive where you installed the game to. Choose C and the installer
+					will find the correct folder of BG/SI and will ask for your confirmation to proceed with
 					the installation. Hit 'Y' and the installation will begin, at the end press any key to finish
 					the installation and to close the installer. Close DOSBox.<br/>
-					FoV is then installed in <kbd>C:\Games\ULTIMA7</kbd>. SS is then installed in 
+					FoV is then installed in <kbd>C:\Games\ULTIMA7</kbd>. SS is then installed in
 					<kbd>C:\Games\SERPENT</kbd>.
 				</para>
 				<para>
-					Unfortunately you might run into a DOSBox bug when installing the add-ons in DOSBox. You might 
+					Unfortunately you might run into a DOSBox bug when installing the add-ons in DOSBox. You might
 					have to rename the file <kbd>C:\Games\ULTIMA7\static\usecode.new</kbd> to just
-					<kbd>C:\Games\ULTIMA7\static\usecode</kbd> (or 
-					<kbd>C:\Games\SERPENT\static\usecode.new</kbd> to just 
+					<kbd>C:\Games\ULTIMA7\static\usecode</kbd> (or
+					<kbd>C:\Games\SERPENT\static\usecode.new</kbd> to just
 					<kbd>C:\Games\SERPENT\static\usecode</kbd>), overwriting the existing usecode file.
 				</para>
 			</body>
@@ -2702,13 +2702,13 @@
 			<header>Manual installation of the BG floppy disks</header>
 			<body>
 				<para>
-					If for some reason you can't use the above guides to install BG, there is also a way to 
+					If for some reason you can't use the above guides to install BG, there is also a way to
 					install BG without using the installer.
 				</para>
 				<para>
-					Copy all the files of your floppy files in one folder (e.g. <kbd>C:\Exult\BGfloppy</kbd>). 
-					If you are using Windows open a command prompt (run -> cmd.exe) and change into this folder 
-					(enter <kbd>cd C:\Exult\BGfloppy</kbd>). There enter the following lines and press return after 
+					Copy all the files of your floppy files in one folder (e.g. <kbd>C:\Exult\BGfloppy</kbd>).
+					If you are using Windows open a command prompt (run -> cmd.exe) and change into this folder
+					(enter <kbd>cd C:\Exult\BGfloppy</kbd>). There enter the following lines and press return after
 					each line:<br/>
 					<kbd>copy /b u7disk00 + U7disk01 + u7disk02 u7disk00.zip</kbd><br/>
 					<kbd>copy /b u7disk10 + u7disk11 + u7disk12 u7disk10.zip</kbd><br/>
@@ -2717,8 +2717,8 @@
 					<kbd>cat u7disk00 U7disk01 u7disk02 >u7disk00.zip</kbd>
 				</para>
 				<para>
-					In that folder you can now find 3 zip files. You can now use winzip/winrar/any unarchiver 
-					to extract the files (keep folder structure in the settings) to <kbd>C:\Games\ULTIMA7</kbd>. 
+					In that folder you can now find 3 zip files. You can now use winzip/winrar/any unarchiver
+					to extract the files (keep folder structure in the settings) to <kbd>C:\Games\ULTIMA7</kbd>.
 					Also copy the files INSTALL.EXE, PKUNZIP.EXE, INSTALL.PRM to <kbd>C:\Games\ULTIMA7</kbd>.
 					Or enter the following lines on the command prompt:<br/>
 					<kbd>pkunzip -d -e u7disk00.zip C:\Games\ULTIMA7</kbd><br/>
@@ -2738,13 +2738,13 @@
 			<header>Manual installation of the SI floppy disks</header>
 			<body>
 				<para>
-					If for some reason you can't use the above guides to install SI, there is also a way to 
+					If for some reason you can't use the above guides to install SI, there is also a way to
 					install SI without using the installer.
 				</para>
 				<para>
-					Copy all the files of your floppy files in one folder (e.g. <kbd>C:\Exult\SIfloppy</kbd>). 
-					If you are using Windows open a command prompt (run -> cmd.exe) and change into this folder 
-					(enter <kbd>cd C:\Exult\SIfloppy</kbd>). There enter the following lines and press return after 
+					Copy all the files of your floppy files in one folder (e.g. <kbd>C:\Exult\SIfloppy</kbd>).
+					If you are using Windows open a command prompt (run -> cmd.exe) and change into this folder
+					(enter <kbd>cd C:\Exult\SIfloppy</kbd>). There enter the following lines and press return after
 					each line:<br/>
 					<kbd>copy sidisk00 sidisk00.zip</kbd><br/>
 					<kbd>copy /b sidisk10 + sidisk11 + sidisk12 + sidisk13 sidisk10.zip</kbd><br/>
@@ -2755,9 +2755,9 @@
 					<kbd>cat sidisk10 sidisk11 sidisk12 sidisk13 >sidisk10.zip</kbd>
 				</para>
 				<para>
-					In that folder you can now find 5 zip files. You can now use winzip/winrar/any unarchiver 
-					to extract the files (keep folder structure in the settings) to <kbd>C:\Games\SERPENT</kbd>. 
-					Also copy the files Also copy the files 386STEP.EXE, INSTALL.EXE, PKUNZIP.EXE, INSTALL.PRM to 
+					In that folder you can now find 5 zip files. You can now use winzip/winrar/any unarchiver
+					to extract the files (keep folder structure in the settings) to <kbd>C:\Games\SERPENT</kbd>.
+					Also copy the files Also copy the files 386STEP.EXE, INSTALL.EXE, PKUNZIP.EXE, INSTALL.PRM to
 					<kbd>C:\Games\SERPENT</kbd>.<br/>
 					Or enter the following lines on the command prompt:<br/>
 					<kbd>pkunzip -d -e sidisk00.zip C:\Games\SERPENT</kbd><br/>
@@ -2779,60 +2779,60 @@
 			<header>Installing the floppy disks of BG/SI on Windows</header>
 			<body>
 				<para>
-					Modern Windows versions do not actually run 16bit DOS programs anymore, not to mention 
+					Modern Windows versions do not actually run 16bit DOS programs anymore, not to mention
 					that modern computers are not likely to have a floppy drive. So this guide only remains
 					for completeness' sake.
 				</para>
 				<para>
-					Insert Disk 1 in your floppy drive, open explorer and click on the floppy drive 
-					(<kbd>a:\</kbd>). 
-					Double click on install.exe, choose the drive you want to install to, and then in which 
-					folder you want BG/SI to be installed to (Let's assume <kbd>C:\Games\ULTIMA</kbd> 
-					for BG and <kbd>C:\Games\SERPENT</kbd> for SI).<br/> 
-					Next you choose the sound card, but as this is not relevant for <Exult/>, choose 'No sound 
-					card'. Confirm the settings with 'Y' and the installer begins to make noise in your 
+					Insert Disk 1 in your floppy drive, open explorer and click on the floppy drive
+					(<kbd>a:\</kbd>).
+					Double click on install.exe, choose the drive you want to install to, and then in which
+					folder you want BG/SI to be installed to (Let's assume <kbd>C:\Games\ULTIMA</kbd>
+					for BG and <kbd>C:\Games\SERPENT</kbd> for SI).<br/>
+					Next you choose the sound card, but as this is not relevant for <Exult/>, choose 'No sound
+					card'. Confirm the settings with 'Y' and the installer begins to make noise in your
 					floppy drive...<br/>
 					When asked to insert the next floppy disk and hit any key (or ESC to cancel). When the
-					installation is done, the installer will complain, that 'something has put your system 
-					in protected mode...', ignore that and press any key to continue. Again it will complain 
-					that 'your current system configuration is not compatible with Ultima VII!...', ignore 
-					that as well and press 'N' (you don't need a boot disk for playing U7 with <Exult/>). Finally 
-					hit any key to finish your installation. The installer will finish and the game can be 
+					installation is done, the installer will complain, that 'something has put your system
+					in protected mode...', ignore that and press any key to continue. Again it will complain
+					that 'your current system configuration is not compatible with Ultima VII!...', ignore
+					that as well and press 'N' (you don't need a boot disk for playing U7 with <Exult/>). Finally
+					hit any key to finish your installation. The installer will finish and the game can be
 					found at <kbd>C:\Games\ULTIMA7</kbd> or <kbd>C:\Games\SERPENT</kbd>.
 				</para>
 				<para>
 					When installing Ultima VII from floppy disks in Windows you can run into some problems.<br/>
 					The installer assumes that all drives in the computer are hard drives and can't cope with
-					drives like CD-ROMs and card readers. It tries to read how much free space the drives have 
+					drives like CD-ROMs and card readers. It tries to read how much free space the drives have
 					and if there is no media in the drive it gives an error and you can't proceed.<br/>
-					To solve this you have to insert a CD-ROM in your CD/DVD-ROM drive. If you have a multi card 
-					reader disconnect that if possible (or insert cards in all the slots if you have them). If 
+					To solve this you have to insert a CD-ROM in your CD/DVD-ROM drive. If you have a multi card
+					reader disconnect that if possible (or insert cards in all the slots if you have them). If
 					disconnecting the reader is not possible you have to use one of the other ways to install the
 					floppy versions or use a different computer.
 				</para>
 				<para>
 					Unfortunately it is possible that one of the floppies is no longer working. In that case the
-					installation will fail and the installer might suggest that there is a device error and asks 
+					installation will fail and the installer might suggest that there is a device error and asks
 					you to reboot your computer. Don't follow that advice a reboot is not likely to fix it.
-				</para> 
+				</para>
 			</body>
 		</sub>
 		<sub name="win32_addons">
 			<header>Installing the floppy disks of the Add-Ons FoV/SS on Windows</header>
 			<body>
 				<para>
-					Modern Windows versions do not actually run 16bit DOS programs anymore, not to mention 
+					Modern Windows versions do not actually run 16bit DOS programs anymore, not to mention
 					that modern computers are not likely to have a floppy drive. So this guide only remains
 					for completeness' sake.
 				</para>
 				<para>
-					Insert the add-on floppy disk in your floppy drive, open explorer and click on the floppy 
-					drive (<kbd>a:\</kbd>). Double click on install.exe, and then you first have to choose 
-					the drive where you installed the game (BG/SI) to. Default is <kbd>C:\</kbd>, the 
-					installer will then search in which folder BG/SI has been installed to. This is unfortunately 
+					Insert the add-on floppy disk in your floppy drive, open explorer and click on the floppy
+					drive (<kbd>a:\</kbd>). Double click on install.exe, and then you first have to choose
+					the drive where you installed the game (BG/SI) to. Default is <kbd>C:\</kbd>, the
+					installer will then search in which folder BG/SI has been installed to. This is unfortunately
 					not working on every computer, for some unknown reason the installer might crash at this point.<br/>
-					If it doesn't crash the installer will write where it found BG/SI installed to and will ask 
-					whether you want to proceed with the installation. Hit 'Y' and the installation will begin, 
+					If it doesn't crash the installer will write where it found BG/SI installed to and will ask
+					whether you want to proceed with the installation. Hit 'Y' and the installation will begin,
 					at the end press any key to finish the installation and to close the installer.
 				</para>
 				<para>
@@ -2846,12 +2846,12 @@
 			<body>
 				<para>
 					For the ease of use the following guides mostly ask you to use all files from the original.
-					But <Exult/> only really needs the <kbd>STATIC</kbd> folder of the games. So if you 
-					want to trim down your installed files, you can delete all files except that folder and its 
+					But <Exult/> only really needs the <kbd>STATIC</kbd> folder of the games. So if you
+					want to trim down your installed files, you can delete all files except that folder and its
 					content.
 				</para>
 			</body>
-		</sub>	
+		</sub>
 	</section>
 	<section title="Credits and Contact">
 		<sub name="thanks">
@@ -2876,7 +2876,7 @@
 			<header>Contacting us</header>
 			<body>
 				<para>
-					You can contact the <Exult/> team through our 
+					You can contact the <Exult/> team through our
 					<extref target="https://github.com/exult/exult/discussions">Github Discussions</extref> page.
 				</para>
 			</body>

@@ -311,11 +311,13 @@ public:
 	// Find object blocking given tile.
 	static Game_object* find_blocking(Tile_coord tile);
 	static Game_object* find_door(Tile_coord tile);
-	bool         is_closed_door() const;    // Checking for a closed door.
-	Game_object* get_outermost();           // Get top 'owner' of this object.
-	void         say(const char* text);     // Put text up by item.
-	void         say(int msgnum);           // Show given text msg.
-	void         say(int from, int to);     // Show random msg. from 'text.flx'.
+	bool               is_closed_door() const;    // Checking for a closed door.
+	const Game_object* get_outermost()
+			const;                         // Get top 'owner' of this object.
+	Game_object* get_outermost();          // Get top 'owner' of this object.
+	void         say(const char* text);    // Put text up by item.
+	void         say(int msgnum);          // Show given text msg.
+	void         say(int from, int to);    // Show random msg. from 'text.flx'.
 	// Render.
 	virtual void paint();
 	void         paint_outline(Pixel_colors pix);

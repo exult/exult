@@ -122,118 +122,132 @@ struct XMidiEvent {
 	}
 
 	void DumpText(std::ostream& out) {
-		out << time << " Ch " << ((int)status & 0xf) << " ";
+		out << time << " Ch " << (static_cast<int>(status) & 0xf) << " ";
 
 		switch (status >> 4) {
 		case MIDI_STATUS_NOTE_OFF:
-			out << "Note Off" << (int)data[0];
+			out << "Note Off" << static_cast<int>(data[0]);
 			break;
 		case MIDI_STATUS_NOTE_ON:
-			out << "Note On " << (int)data[0] << " " << (int)data[1];
+			out << "Note On " << static_cast<int>(data[0]) << " "
+				<< static_cast<int>(data[1]);
 			if (ex.note_on.duration) {
 				out << " d " << ex.note_on.duration;
 			}
 			break;
 
 		case MIDI_STATUS_AFTERTOUCH:
-			out << "Aftertouch " << (int)data[0] << " " << (int)data[1];
+			out << "Aftertouch " << static_cast<int>(data[0]) << " "
+				<< static_cast<int>(data[1]);
 			break;
 		case MIDI_STATUS_PROG_CHANGE:
-			out << "Program Change " << (int)data[0] << " " << (int)data[1];
+			out << "Program Change " << static_cast<int>(data[0]) << " "
+				<< static_cast<int>(data[1]);
 			break;
 		case MIDI_STATUS_PRESSURE:
-			out << "Pressure " << (int)data[0] << " " << (int)data[1];
+			out << "Pressure " << static_cast<int>(data[0]) << " "
+				<< static_cast<int>(data[1]);
 			break;
 		case MIDI_STATUS_PITCH_WHEEL:
-			out << "Pitch Wheel " << (int)data[0] << " " << (int)data[1];
+			out << "Pitch Wheel " << static_cast<int>(data[0]) << " "
+				<< static_cast<int>(data[1]);
 			break;
 		case MIDI_STATUS_CONTROLLER: {
 			switch (data[0]) {
 			case MIDI_CONTROLLER_VOLUME:
-				out << "Controller Volume " << (int)data[1];
+				out << "Controller Volume " << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_VOLUME + 32:
-				out << "Controller Volume Fine" << (int)data[1];
+				out << "Controller Volume Fine" << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_BANK:
-				out << "Controller Bank " << (int)data[1];
+				out << "Controller Bank " << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_BANK + 32:
-				out << "Controller Bank Fine" << (int)data[1];
+				out << "Controller Bank Fine" << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_MODWHEEL:
-				out << "Controller Bank " << (int)data[1];
+				out << "Controller Bank " << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_MODWHEEL + 32:
-				out << "Controller Bank Fine" << (int)data[1];
+				out << "Controller Bank Fine" << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_FOOTPEDAL:
-				out << "Controller FootPedal " << (int)data[1];
+				out << "Controller FootPedal " << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_FOOTPEDAL + 32:
-				out << "Controller Foot Pedal Fine" << (int)data[1];
+				out << "Controller Foot Pedal Fine"
+					<< static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_PAN:
-				out << "Controller Pan " << (int)data[1];
+				out << "Controller Pan " << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_PAN + 32:
-				out << "Controller Pan Fine" << (int)data[1];
+				out << "Controller Pan Fine" << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_BALANCE:
-				out << "Controller Balance " << (int)data[1];
+				out << "Controller Balance " << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_BALANCE + 32:
-				out << "Controller Balance Fine" << (int)data[1];
+				out << "Controller Balance Fine" << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_EXPRESSION:
-				out << "Controller Expression " << (int)data[1];
+				out << "Controller Expression " << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_EXPRESSION + 32:
-				out << "Controller Expression Fine" << (int)data[1];
+				out << "Controller Expression Fine"
+					<< static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_SUSTAIN:
-				out << "Controller Sustain " << (int)data[1];
+				out << "Controller Sustain " << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_EFFECT:
-				out << "Controller Effect " << (int)data[1];
+				out << "Controller Effect " << static_cast<int>(data[1]);
 				break;
 			case MIDI_CONTROLLER_CHORUS:
-				out << "Controller Chorus " << (int)data[1];
+				out << "Controller Chorus " << static_cast<int>(data[1]);
 				break;
 			case XMIDI_CONTROLLER_CHAN_LOCK_PROT:
-				out << "Controller XChannel Lock Protect " << (int)data[1];
+				out << "Controller XChannel Lock Protect "
+					<< static_cast<int>(data[1]);
 				break;
 			case XMIDI_CONTROLLER_VOICE_PROT:
-				out << "Controller XVoice Protect " << (int)data[1];
+				out << "Controller XVoice Protect "
+					<< static_cast<int>(data[1]);
 				break;
 			case XMIDI_CONTROLLER_TIMBRE_PROT:
-				out << "Controller XTimbre Protect " << (int)data[1];
+				out << "Controller XTimbre Protect "
+					<< static_cast<int>(data[1]);
 				break;
 			case XMIDI_CONTROLLER_BANK_CHANGE:
-				out << "Controller XBank Change " << (int)data[1];
+				out << "Controller XBank Change " << static_cast<int>(data[1]);
 				break;
 			case XMIDI_CONTROLLER_IND_CTRL_PREFIX:
 				out << "Controller XIndirect Controller Prefix "
-					<< (int)data[1];
+					<< static_cast<int>(data[1]);
 				break;
 			case XMIDI_CONTROLLER_FOR_LOOP:
-				out << "Controller XFor Loop " << (int)data[1];
+				out << "Controller XFor Loop " << static_cast<int>(data[1]);
 				break;
 			case XMIDI_CONTROLLER_NEXT_BREAK:
-				out << "Controller XNext/Break " << (int)data[1];
+				out << "Controller XNext/Break " << static_cast<int>(data[1]);
 				break;
 			case XMIDI_CONTROLLER_CLEAR_BB_COUNT:
-				out << "Controller XClear Beat/Bar Count " << (int)data[1];
+				out << "Controller XClear Beat/Bar Count "
+					<< static_cast<int>(data[1]);
 				break;
 			case XMIDI_CONTROLLER_CALLBACK_TRIG:
-				out << "Controller XCallback Trigger " << (int)data[1];
+				out << "Controller XCallback Trigger "
+					<< static_cast<int>(data[1]);
 				break;
 			case XMIDI_CONTROLLER_SEQ_BRANCH_INDEX:
-				out << "Controller XSequence Branch Index " << (int)data[1];
+				out << "Controller XSequence Branch Index "
+					<< static_cast<int>(data[1]);
 				break;
 
 			default:
-				out << "Controller " << (int)data[0] << " " << (int)data[1];
+				out << "Controller " << static_cast<int>(data[0]) << " "
+					<< static_cast<int>(data[1]);
 			}
 		} break;
 
@@ -243,8 +257,9 @@ struct XMidiEvent {
 
 			// default should never happen
 		default:
-			out << "Status_" << ((int)status >> 4) << " " << (int)data[0] << " "
-				<< (int)data[1];
+			out << "Status_" << (static_cast<int>(status) >> 4) << " "
+				<< static_cast<int>(data[0]) << " "
+				<< static_cast<int>(data[1]);
 		}
 
 		out << std::endl;
@@ -277,7 +292,7 @@ struct XMidiEvent {
 			return false;
 		}
 		return true;
-	};
+	}
 };
 
 #endif    // XMIDIEVENT_H_INCLUDED

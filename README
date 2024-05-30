@@ -1,7 +1,7 @@
 Exult Documentation
 last changed: 25 April 2024 (GMT)
 
-The latest version of this document can be found at http://exult.info/docs.php
+The latest version of this document can be found at https://exult.info/docs.php
 
 
 1. Introduction
@@ -270,7 +270,7 @@ Exult generates the files stdout.txt and stderr.txt. These may give you some ide
 ./exult >&$HOME/exult_log.txt
  will send both stderr and stdout to the file named exult_log.txt in your $HOME folder.
 * macOS:
- Similar to Linux, you need to start Exult from the Terminal.app to see the logs or redirect them to a text file. Use 
+ Similar to Linux, you need to start Exult from the Terminal.app to see the logs or redirect them to a text file. Use
 /Applications/Exult.app/Contents/MacOS/exult >&$HOME/exult_log.txt
  to find the file named exult_log.txt in your $HOME folder.
 
@@ -876,7 +876,7 @@ Especially on mobile devices it makes sense to have a shortcutbar that allows qu
  You can make the bar transparent (only when drawn on the map) and select different colors for the outlines around the buttons. Some buttons only work when you have a certain item (spellbook, jawbone in SI). You can choose to hide those buttons or display them greyed out.
 The buttons have the following functions (cheat functions only work when you enabled cheats in 1.1. ):
 * Floppy Disk
- Single click opens the game menu, double click the 3.2. Load/Save Game 
+ Single click opens the game menu, double click the 3.2. Load/Save Game
  Additionally clicking it will close all Gumps that are open.
 * Dove/Flaming Sword
  Toggles combat but also shows you whether you are in combat mode (flaming sword) when combat is toggled in another way.
@@ -1080,7 +1080,7 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
   <disk>
     <save_compression_level>
     1
-				**save games are now compressed as zip files. 0 disables compression, 
+				**save games are now compressed as zip files. 0 disables compression,
 				1 enables it, 2 compresses even a bit better. Default is 1.
     </save_compression_level>
     <data_path>
@@ -1099,7 +1099,7 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
         </path>
         <savegame_path>
         optional_path
-				**optional. Default is the same as <path>, change to whatever you like. 
+				**optional. Default is the same as <path>, change to whatever you like.
 				Also see 10.2. before changing it.
         </savegame_path>
         <static_path>
@@ -1112,12 +1112,12 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
         </gamedat_path>
         <keys>
         (default)
-				**configure custom key bindings or leave the (default) 
+				**configure custom key bindings or leave the (default)
 				- see 6.2.
         </keys>
         <autonotes>
         (default)
-				**set path to a custom autonotes file or leave the (default) 
+				**set path to a custom autonotes file or leave the (default)
 				- see 7.3.
         </autonotes>
         <waves>
@@ -1140,7 +1140,7 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
         </path>
         <savegame_path>
         optional_path
-				**optional. Default is the same as <path>, change to whatever you like. 
+				**optional. Default is the same as <path>, change to whatever you like.
 				Also see 10.2. before changing it.
         </savegame_path>
         <static_path>
@@ -1184,10 +1184,10 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
     </facestats>
     <textbackground>
     -1
-				**with this enabled all the text in the games have a colored background 
-				to improve readability. 0 gives a solid light gray,  1 dark purple, 
-				2 bright yellow, 3 light blue, 4 dark green, 5 dark red, 6 purple, 
-				7 orange, 8 light gray, 9 green, 10 yellow, 11 pale blue, 12 dark green, 
+				**with this enabled all the text in the games have a colored background
+				to improve readability. 0 gives a solid light gray,  1 dark purple,
+				2 bright yellow, 3 light blue, 4 dark green, 5 dark red, 6 purple,
+				7 orange, 8 light gray, 9 green, 10 yellow, 11 pale blue, 12 dark green,
 				13 red, 14 bright white, 15 dark gray, 16 white. -1 disables this.
     </textbackground>
     <fastmouse>
@@ -1206,8 +1206,8 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
     </right_click_closes_gumps>
     <allow_right_pathfind>
     double
-				**right-clicking lets the Avatar walk automatically 
-				to where you clicked. it defaults to double click but 
+				**right-clicking lets the Avatar walk automatically
+				to where you clicked. it defaults to double click but
 				you can opt for a single click or disable it.
     </allow_right_pathfind>
     <scroll_with_mouse>
@@ -1228,8 +1228,8 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
     </bg_paperdolls>
     <smooth_scrolling>
     0
-				**0/25/50/75/100 percentage of how smooth the game scrolls when the avatar 
-				moves. 0 disables smooth scrolling and uses the "jerky" scrolling of the 
+				**0/25/50/75/100 percentage of how smooth the game scrolls when the avatar
+				moves. 0 disables smooth scrolling and uses the "jerky" scrolling of the
 				original game.
     </smooth_scrolling>
     <skip_intro>
@@ -1252,58 +1252,58 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
     </formation>
     <step_tile_delta>
     8
-				**Controls how far the Avatar will move before Exult recalculates the 
-				Avatar's and the party's movement. Bigger # avoids jerkiness, but may cause other 
+				**Controls how far the Avatar will move before Exult recalculates the
+				Avatar's and the party's movement. Bigger # avoids jerkiness, but may cause other
 				problems.
     </step_tile_delta>
     <alternate_drop>
     no
-				**Dropping stacks of items will drop the whole stack without asking how many when enabled. 
-				Hold 'Ctrl' while dropping to split the stack. 
+				**Dropping stacks of items will drop the whole stack without asking how many when enabled.
+				Hold 'Ctrl' while dropping to split the stack.
     </alternate_drop>
     <allow_autonotes>
     no
-				**Automatically fill the notebook with entries when game flags are set. 
+				**Automatically fill the notebook with entries when game flags are set.
 				See 7.3.
     </allow_autonotes>
     <combat>
       <difficulty>
       0
-				**0 is default, negative values make combat easier, positive makes it 
-				harder. It affects the chance of a hit, and the HP's lost if a hit occurs. 
+				**0 is default, negative values make combat easier, positive makes it
+				harder. It affects the chance of a hit, and the HP's lost if a hit occurs.
 				Ranges from -3 to 3 (easiest to hardest).
       </difficulty>
       <mode>
       original
-				**original or key pause. On key pause the game pauses when you hit space 
+				**original or key pause. On key pause the game pauses when you hit space
 				so you can make changes in combat.
       </mode>
       <show_hits>
       no
-				**no is default. With yes you see the hit points of NPCs 
+				**no is default. With yes you see the hit points of NPCs
 				in brackets after their name.
       </show_hits>
       <charmDifficulty>
       normal
-				**with normal the Avatar behaves as in the original game. When he is charmed 
-				he will be highlighted as charmed and the status icon will show but you can control him as usual. 
+				**with normal the Avatar behaves as in the original game. When he is charmed
+				he will be highlighted as charmed and the status icon will show but you can control him as usual.
 				"hard" will neither allow the player to control the Avatar nor access his inventory.
       </charmDifficulty>
     </combat>
     <extended_intro>
     yes
-				**The implementation of the extended intro is now default for an SI game. 
+				**The implementation of the extended intro is now default for an SI game.
     </extended_intro>
   </gameplay>
   <audio>
     <enabled>
     yes
-				**enable/disable all audio - this takes precedence over the 
+				**enable/disable all audio - this takes precedence over the
 				other audio settings.
     </enabled>
     <disablepause>
     no
-				**enable/disable the pausing of SFX and digital music when the 
+				**enable/disable the pausing of SFX and digital music when the
 				game pauses (e.g. not the focused window). MIDI music is currently not paused.
     </disablepause>
     <sample_rate>
@@ -1341,9 +1341,9 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
       </use_oggs>
       <driver>
       default
-				**choose your music driver between default, MT32Emu, Fluidsynth, FMOPL, 
-				TiMidity, Windows, alsa, CoreAudio, 
-				CoreMidi, UnixSeqDevice. 
+				**choose your music driver between default, MT32Emu, Fluidsynth, FMOPL,
+				TiMidity, Windows, alsa, CoreAudio,
+				CoreMidi, UnixSeqDevice.
 				See 4.1. for details.
       </driver>
       <convert>
@@ -1377,12 +1377,12 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
       <precacheTimbers>
         <onStartup>
         no
-				**when enabled it preloads the entire timbre bank on starting 
+				**when enabled it preloads the entire timbre bank on starting
 				up Exult with a penalty on start up time.
         </onStartup>
         <onPlay>
         yes
-				**only preloads needed timbres and patches when a song gets 
+				**only preloads needed timbres and patches when a song gets
 				loaded.
         </onPlay>
       </precacheTimbers>
@@ -1392,18 +1392,18 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
       </win32_device>
       <coreaudio_soundfont>
       path
-				**path to the sound font you want to use for CoreAudio on macOS. 
+				**path to the sound font you want to use for CoreAudio on macOS.
 				CoreAudio uses the system sound font by default.
       </coreaudio_soundfont>
       <coremidi_device>
       0
-				**select the CoreMidi device ID on macOS. 
+				**select the CoreMidi device ID on macOS.
 				You need to start Exult from Terminal.app to see the IDs when you select CoreMidi as Midi driver.
 				See 4.5..
       </coremidi_device>
       <alsa_port>
       65:0
-				**use this to change the ALSA port when you have chosen alsa as your driver 
+				**use this to change the ALSA port when you have chosen alsa as your driver
 				(format: XX:YY).
       </alsa_port>
       <unixseqdevice>
@@ -1412,12 +1412,12 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
       </unixseqdevice>
       <fluidsynth_soundfont>
       path
-				**path to the sound font that will be used to render the MIDI music 
+				**path to the sound font that will be used to render the MIDI music
 				when Fluidsynth is chosen as driver.
       </fluidsynth_soundfont>
       <fluidsynth_soundfontN>
       path
-				**support for FluidSynth soundfont stack, add multiple soundfonts 
+				**support for FluidSynth soundfont stack, add multiple soundfonts
 				(N = 0 to 9). See 4.2..
       </fluidsynth_soundfontN>
       <volume_curve>
@@ -1442,7 +1442,7 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
     </scale_method>
     <scale>
     2
-				**2 enables / 1 disables scaling, some scalers support higher values. 
+				**2 enables / 1 disables scaling, some scalers support higher values.
 				See 5.4. - applies to fullscreen if video settings are not shared.
     </scale>
     <display>
@@ -1470,8 +1470,8 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
       <border>
         <red>
         0
-				**if game resolution doesn't match Exult resolution 
-				you have borders around the game res. With these you can 
+				**if game resolution doesn't match Exult resolution
+				you have borders around the game res. With these you can
 				change the black default border color - applies to fullscreen if video settings are not shared.
         </red>
         <green>
@@ -1555,7 +1555,7 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
   <shortcutbar>
     <use_shortcutbar>
     no
-				**options are yes/translucent (will not be translucent if not on 
+				**options are yes/translucent (will not be translucent if not on
 				map, default on iOS)
     </use_shortcutbar>
     <use_outline_color>
@@ -1573,12 +1573,12 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
     <trace>
       <usecode>
       no
-				**options are yes/no/verbose. This is used to trace the 
+				**options are yes/no/verbose. This is used to trace the
 				executed Usecode. (You shouldn't need this unless you are a programmer.)
       </usecode>
       <intrinsics>
       no
-				**options are yes/no. Used to trace intrinsics. 
+				**options are yes/no. Used to trace intrinsics.
 				(You shouldn't need this unless you are a programmer.)
       </intrinsics>
       <combat>
