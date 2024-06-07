@@ -160,6 +160,7 @@ public:
 	static const ScalerConst _2xBR;
 	static const ScalerConst _3xBR;
 	static const ScalerConst _4xBR;
+	static const ScalerConst SDLScaler;
 	static const ScalerConst NumScalers;
 
 	// Gets the draw surface and intersurface dims.
@@ -309,17 +310,29 @@ protected:
 
 	static void static_init();
 
-	static int force_bpp;
-	static int desktop_depth;
-	static int windowed;
+	static int   force_bpp;
+	static int   desktop_depth;
+	static int   windowed;
+	static float nativescale;
 
 public:
 	inline struct SDL_Window* get_screen_window() const {
 		return screen_window;
 	}
 
-	// Returns 0 on failure, else highest bpp for resolution
-	static int VideoModeOK(int width, int height, bool fullscreen);
+	// Looks for the best resolution from the width x height and fullscreen :
+	// - A portrait requirement height > width can never be found,
+	// - In Windowed, only the Desktop resolution is suitable,
+	//      and only if it is larger or equal than width x height,
+	// - In Fullscreen, a Fullscreen mode of the display is suitable
+	//      if it is equal to width x height.
+	// If the required bits per pixel bpp is left to default ( 0 ),
+	//      the largest bits per pixel in 8, 16, 32 is returned
+	//      from the suitable resolutions, otherwise 0 is returned.
+	// If the required bits per pixel bpp is set ( to one of 8, 16, 32 ),
+	//      the exact same bits per pixel is returned if a suitable resolution
+	//      admits this bpp, otherwise 0 is returned.
+	static int VideoModeOK(int width, int height, bool fullscreen, int bpp = 0);
 	int        Get_best_bpp(int w, int h, int bpp);
 
 	// Create with given buffer.

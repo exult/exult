@@ -116,7 +116,10 @@ public:
 	}
 
 	void set_fill_scaler(int f_scaler) {
-		fill_scaler = f_scaler;
+		fill_scaler
+				= (f_scaler == Image_window::SDLScaler  ? 2
+				   : f_scaler == Image_window::bilinear ? 1
+														: 0);
 	}
 
 	void set_fill_mode(Image_window::FillMode f_mode) {

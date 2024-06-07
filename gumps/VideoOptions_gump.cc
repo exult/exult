@@ -118,7 +118,7 @@ void VideoOptions_gump::rebuild_buttons() {
 
 	std::vector<std::string> scalers;
 	scalers.reserve(Image_window::NumScalers);
-	for (int i = 0; i < Image_window::NumScalers; i++) {
+	for (int i = 0; i < Image_window::SDLScaler; i++) {
 		scalers.emplace_back(Image_window::get_name_for_scaler(i));
 	}
 	buttons[id_scaler] = std::make_unique<VideoTextToggle>(
@@ -147,6 +147,13 @@ void VideoOptions_gump::rebuild_buttons() {
 			74);
 
 	std::vector<std::string> fill_scaler_text = {"Point", "Bilinear"};
+	{
+		const char* renderer_name = SDL_GetRendererName(
+				SDL_GetRenderer(gwin->get_win()->get_screen_window()));
+		if (renderer_name) {
+			fill_scaler_text.emplace_back(renderer_name);
+		}
+	}
 	buttons[id_fill_scaler] = std::make_unique<VideoTextToggle>(
 			this, &VideoOptions_gump::toggle_fill_scaler,
 			std::move(fill_scaler_text), fill_scaler, colx[2], rowy[7], 74);
@@ -215,7 +222,8 @@ void VideoOptions_gump::rebuild_dynamic_buttons() {
 	const int max_scales = scaling > 8 && scaling <= 16 ? scaling : 8;
 	const int num_scales = (scaler == Image_window::point
 							|| scaler == Image_window::interlaced
-							|| scaler == Image_window::bilinear)
+							|| scaler == Image_window::bilinear
+							|| scaler == Image_window::SDLScaler)
 								   ? max_scales
 								   : 1;
 	if (num_scales > 1) {
@@ -274,20 +282,67 @@ void VideoOptions_gump::load_settings(bool Fullscreen) {
 		}
 		{
 			// Add in useful window resolutions
+			// Ratios          8:5 Game exact,    4:3 Top and Bottom bands
 			std::set<uint32> Resolutions{
-					make_resolution(320, 200),   make_resolution(320, 240),
-					make_resolution(400, 250),   make_resolution(400, 300),
-					make_resolution(480, 300),   make_resolution(480, 360),
-					make_resolution(512, 320),   make_resolution(512, 384),
-					make_resolution(640, 400),   make_resolution(640, 480),
-					make_resolution(800, 500),   make_resolution(800, 600),
-					make_resolution(960, 600),   make_resolution(960, 720),
-					make_resolution(1024, 640),  make_resolution(1024, 768),
-					make_resolution(1200, 750),  make_resolution(1200, 900),
-					make_resolution(1280, 800),  make_resolution(1280, 960),
-					make_resolution(1440, 900),  make_resolution(1440, 1080),
-					make_resolution(1600, 1000), make_resolution(1600, 1200),
-					make_resolution(1920, 1200), make_resolution(1920, 1440)};
+					//  320 Set : x1, x9/8, x5/4, x3/2, x8/5, x9/5, x15/8, (x2)
+					make_resolution(320, 180), make_resolution(320, 200),
+					make_resolution(320, 240), make_resolution(360, 225),
+					make_resolution(360, 270), make_resolution(400, 225),
+					make_resolution(400, 250), make_resolution(400, 300),
+					make_resolution(480, 270), make_resolution(480, 300),
+					make_resolution(480, 360), make_resolution(512, 288),
+					make_resolution(512, 320), make_resolution(512, 384),
+					make_resolution(576, 324), make_resolution(576, 360),
+					make_resolution(576, 432), make_resolution(600, 375),
+					make_resolution(600, 450),
+					//  640 Set : x1, x9/8, x5/4, x3/2, x8/5, x9/5, x15/8, (x2)
+					make_resolution(640, 360), make_resolution(640, 400),
+					make_resolution(640, 480), make_resolution(720, 405),
+					make_resolution(720, 450), make_resolution(720, 540),
+					make_resolution(800, 450), make_resolution(800, 500),
+					make_resolution(800, 600), make_resolution(960, 540),
+					make_resolution(960, 600), make_resolution(960, 720),
+					make_resolution(1024, 576), make_resolution(1024, 640),
+					make_resolution(1024, 768), make_resolution(1152, 648),
+					make_resolution(1152, 720), make_resolution(1152, 864),
+					make_resolution(1200, 675), make_resolution(1200, 750),
+					make_resolution(1200, 900),
+					// 1280 Set : x1, x9/8, x5/4, x3/2, x8/5, x9/5, x15/8, (x2)
+					make_resolution(1280, 720), make_resolution(1280, 800),
+					make_resolution(1280, 960), make_resolution(1440, 810),
+					make_resolution(1440, 900), make_resolution(1440, 1080),
+					make_resolution(1600, 900), make_resolution(1600, 1000),
+					make_resolution(1600, 1200), make_resolution(1920, 1080),
+					make_resolution(1920, 1200), make_resolution(1920, 1440),
+					make_resolution(2048, 1152), make_resolution(2048, 1280),
+					make_resolution(2048, 1536), make_resolution(2304, 1296),
+					make_resolution(2304, 1440), make_resolution(2304, 1728),
+					make_resolution(2400, 1350), make_resolution(2400, 1500),
+					make_resolution(2400, 1800),
+					// 2560 Set : x1, x9/8, x5/4, x3/2, x8/5, x9/5, x15/8, (x2)
+					make_resolution(2560, 1440), make_resolution(2560, 1600),
+					make_resolution(2560, 1920), make_resolution(2880, 1620),
+					make_resolution(2880, 1800), make_resolution(2880, 2160),
+					make_resolution(3200, 1800), make_resolution(3200, 2000),
+					make_resolution(3200, 2400), make_resolution(3840, 2160),
+					make_resolution(3840, 2400), make_resolution(3840, 2880),
+					make_resolution(4096, 2304), make_resolution(4096, 2560),
+					make_resolution(4096, 3072), make_resolution(4608, 2592),
+					make_resolution(4608, 2880), make_resolution(4608, 3456),
+					make_resolution(4800, 2700), make_resolution(4800, 3000),
+					make_resolution(4800, 3600),
+					// 5120 Set : x1, x9/8, x5/4, x3/2, x8/5, x9/5, x15/8, (x2)
+					make_resolution(5120, 2880), make_resolution(5120, 3200),
+					make_resolution(5120, 3840), make_resolution(5760, 3240),
+					make_resolution(5760, 3600), make_resolution(5760, 4320),
+					make_resolution(6400, 3600), make_resolution(6400, 4000),
+					make_resolution(6400, 4800), make_resolution(7680, 4320),
+					make_resolution(7680, 4800), make_resolution(7680, 5760),
+					make_resolution(8192, 4608), make_resolution(8192, 5120),
+					make_resolution(8192, 6144), make_resolution(9216, 5184),
+					make_resolution(9216, 5760), make_resolution(9216, 6912),
+					make_resolution(9600, 5400), make_resolution(9600, 6000),
+					make_resolution(9600, 7200)};
 			auto it = std::find(
 					Resolutions.cbegin(), Resolutions.cend(), resolution);
 			if (it == Resolutions.cend()) {
@@ -398,7 +453,9 @@ void VideoOptions_gump::save_settings() {
 	}
 	gwin->resized(
 			resx, resy, fullscreen != 0, gw, gh, scaling + 1, scaler, fill_mode,
-			fill_scaler ? Image_window::bilinear : Image_window::point);
+			fill_scaler == 2   ? Image_window::SDLScaler
+			: fill_scaler == 1 ? Image_window::bilinear
+							   : Image_window::point);
 	gclock->reset_palette();
 	set_pos();
 	gwin->set_all_dirty();
@@ -416,8 +473,9 @@ void VideoOptions_gump::save_settings() {
 			gwin->resized(
 					resx, resy, o_fullscreen, gw, gh, o_scaling + 1, o_scaler,
 					o_fill_mode,
-					o_fill_scaler ? Image_window::bilinear
-								  : Image_window::point);
+					o_fill_scaler == 2   ? Image_window::SDLScaler
+					: o_fill_scaler == 1 ? Image_window::bilinear
+										 : Image_window::point);
 		}
 		gclock->reset_palette();
 		set_pos();
@@ -431,7 +489,9 @@ void VideoOptions_gump::save_settings() {
 		setup_video(
 				fullscreen != 0, SET_CONFIG, resx, resy, gw, gh, scaling + 1,
 				scaler, fill_mode,
-				fill_scaler ? Image_window::bilinear : Image_window::point);
+				fill_scaler == 2   ? Image_window::SDLScaler
+				: fill_scaler == 1 ? Image_window::bilinear
+								   : Image_window::point);
 		config->write_back();
 		o_resolution      = resolution;
 		o_scaling         = scaling;

@@ -1773,10 +1773,9 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
       </fill_scaler>
     </windows>
     <force_bpp>
-    0
-				**force output bpp. Valid values are 	0 (for any), 8, 16 or 32.
-				If set to 8 most scalers will not work and will display as the
-				fallback point scaler.
+    32
+				**force output bpp. The option no longer exists in SDL 3.
+				The only supported resolution for the display is 32 bpp.
     </force_bpp>
     <disable_fades>
     no

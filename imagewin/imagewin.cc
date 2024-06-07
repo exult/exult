@@ -86,6 +86,7 @@ const Image_window::ScalerConst Image_window::Hq4x("Hq4x");
 const Image_window::ScalerConst Image_window::_2xBR("2xBR");
 const Image_window::ScalerConst Image_window::_3xBR("3xBR");
 const Image_window::ScalerConst Image_window::_4xBR("4xBR");
+const Image_window::ScalerConst Image_window::SDLScaler("SDLScaler");
 const Image_window::ScalerConst Image_window::NumScalers(nullptr);
 
 Image_window::ScalerVector        Image_window::p_scalers;
@@ -98,9 +99,12 @@ const std::map<uint32, Image_window::Resolution>& Image_window::Resolutions
 bool        Image_window::any_res_allowed;
 const bool& Image_window::AnyResAllowed = Image_window::any_res_allowed;
 
-int Image_window::force_bpp     = 0;
+int Image_window::force_bpp     = 32;
 int Image_window::desktop_depth = 0;
 int Image_window::windowed      = 0;
+// When HighDPI is enabled we will end up with a different native scale factor,
+// so we need to define the default
+float Image_window::nativescale = 1.0f;
 
 const SDL_PixelFormatDetails*
 		  ManipBase::fmt;    // Format of dest. pixels (and src for rgb src).
@@ -108,7 +112,7 @@ SDL_Color ManipBase::colors[256];    // Palette for source window.
 
 // Constructor for the ScalerVector, setup the list
 Image_window::ScalerVector::ScalerVector() {
-	reserve(13);
+	reserve(14);
 
 	// This is all the names of the scalers. It needs to match the ScalerType
 	// enum
@@ -260,6 +264,9 @@ Image_window::ScalerVector::ScalerVector() {
 			   nullptr};
 	push_back(_4xbr);
 #endif
+	const ScalerInfo SDLScaler = {"SDLScaler", 0xFFFFFFFF, nullptr, nullptr,
+								  nullptr,     nullptr,    nullptr, nullptr};
+	push_back(SDLScaler);
 }
 
 Image_window::ScalerVector::~ScalerVector() {
@@ -293,12 +300,16 @@ int Image_window::Get_best_bpp(int w, int h, int bpp) {
 
 	// Explicit BPP required
 	if (bpp != 0) {
+		auto forced_bpp = VideoModeOK(w, h, fullscreen, bpp);
 		if (!(fullscreen)) {
-			if (windowed != 0) {
-				return 16;
+			if (windowed != 0 && windowed == bpp) {
+				return windowed;
 			}
 		}
 
+		if (forced_bpp != 0) {
+			return forced_bpp;
+		}
 		if (best_bpp != 0) {
 			return best_bpp;
 		}
@@ -320,7 +331,7 @@ int Image_window::Get_best_bpp(int w, int h, int bpp) {
 		} else if (windowed == 32) {
 			return 32;
 		} else if (windowed != 0) {
-			return 16;
+			return windowed;
 		}
 	}
 
@@ -333,13 +344,13 @@ int Image_window::Get_best_bpp(int w, int h, int bpp) {
 	} else if (best_bpp == 32) {
 		return 32;
 	} else if (best_bpp != 0) {
-		return 16;
+		return best_bpp;
 	}
 
 	cerr << "SDL Reports " << w << "x" << h << " "
 		 << ((fullscreen) ? "fullscreen" : "windowed")
-		 << " surfaces are not OK. Attempting to use 16 bpp. anyway" << endl;
-	return 16;
+		 << " surfaces are not OK. Attempting to use 32 bpp. anyway" << endl;
+	return 32;
 }
 
 /*
@@ -384,7 +395,7 @@ void Image_window::static_init() {
 		const Resolution res = {modes[j]->w, modes[j]->h};
 		p_resolutions[(res.width << 16) | res.height] = res;
 	}
-	SDL_free(static_cast<void*>(modes));
+	SDL_free(modes);
 
 	// It's empty, so add in some basic resolutions that would be nice to
 	// support
@@ -478,7 +489,7 @@ void Image_window::static_init() {
 		cerr << "SDL Reports no usable fullscreen resolutions." << endl;
 	}
 
-	config->value("config/video/force_bpp", force_bpp, 0);
+	// [SDL 3] force_bpp is set to 32, discard the config/video/force_bpp
 
 	if (force_bpp != 0 && force_bpp != 16 && force_bpp != 8
 		&& force_bpp != 32) {
@@ -518,8 +529,8 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 	uses_palette = true;
 	free_surface();
 
-	if (!Scalers[fill_scaler].arb) {
-		if (Scalers[scaler].arb) {
+	if (!Scalers[fill_scaler].arb && fill_scaler != SDLScaler) {
+		if (Scalers[scaler].arb || scaler == SDLScaler) {
 			fill_scaler = scaler;
 		} else {
 			fill_scaler = point;
@@ -542,10 +553,32 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 		uint32 flags = SDL_WINDOW_HIGH_PIXEL_DENSITY;
 		if (screen_window != nullptr) {
 			SDL_SetWindowSize(screen_window, w / scale, h / scale);
-			SDL_SetWindowFullscreen(screen_window, (fullscreen ? true : false));
+#if 0
+			{
+				SDL_DisplayMode closest_mode;
+				// This does not appear to have any effect
+				if (SDL_GetClosestFullscreenDisplayMode(
+							SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0,
+							true, &closest_mode)) {
+					SDL_SetWindowFullscreenMode(screen_window, &closest_mode);
+				}
+			}
+#endif
+			SDL_SetWindowFullscreen(screen_window, fullscreen);
 		} else {
 			screen_window = SDL_CreateWindow("", w / scale, h / scale, flags);
-			SDL_SetWindowFullscreen(screen_window, (fullscreen ? true : false));
+#if 0
+			{
+				SDL_DisplayMode closest_mode;
+				// This does not appear to have any effect
+				if (SDL_GetClosestFullscreenDisplayMode(
+							SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0,
+							true, &closest_mode)) {
+					SDL_SetWindowFullscreenMode(screen_window, &closest_mode);
+				}
+			}
+#endif
+			SDL_SetWindowFullscreen(screen_window, fullscreen);
 		}
 		if (screen_window == nullptr) {
 			cout << "Couldn't create window: " << SDL_GetError() << std::endl;
@@ -587,7 +620,7 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 		if (screen_texture == nullptr) {
 			cout << "Couldn't create texture: " << SDL_GetError() << std::endl;
 		}
-
+		SDL_SetTextureBlendMode(screen_texture, SDL_BLENDMODE_NONE);
 		inter_surface = draw_surface = paletted_surface = display_surface;
 		inter_width                                     = w / scale;
 		inter_height                                    = h / scale;
@@ -643,10 +676,32 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 
 	if (screen_window != nullptr) {
 		SDL_SetWindowSize(screen_window, w, h);
-		SDL_SetWindowFullscreen(screen_window, (fullscreen ? true : false));
+#if 0
+		{
+			SDL_DisplayMode closest_mode;
+			// This does not appear to have any effect
+			if (SDL_GetClosestFullscreenDisplayMode(
+						SDL_GetPrimaryDisplay(), w, h, 0.0, true,
+						&closest_mode)) {
+				SDL_SetWindowFullscreenMode(screen_window, &closest_mode);
+			}
+		}
+#endif
+		SDL_SetWindowFullscreen(screen_window, fullscreen);
 	} else {
 		screen_window = SDL_CreateWindow("", w, h, flags);
-		SDL_SetWindowFullscreen(screen_window, (fullscreen ? true : false));
+#if 0
+		{
+			SDL_DisplayMode closest_mode;
+			// This does not appear to have any effect
+			if (SDL_GetClosestFullscreenDisplayMode(
+						SDL_GetPrimaryDisplay(), w, h, 0.0, true,
+						&closest_mode)) {
+				SDL_SetWindowFullscreenMode(screen_window, &closest_mode);
+			}
+		}
+#endif
+		SDL_SetWindowFullscreen(screen_window, fullscreen);
 	}
 	if (screen_window == nullptr) {
 		cout << "Couldn't create window: " << SDL_GetError() << std::endl;
@@ -681,10 +736,9 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 		const Resolution res         = {w, h};
 		p_resolutions[(w << 16) | h] = res;
 		// getting new native scale when highdpi is active
-		// FIXME: Not used in SDL 3
-		// int sw;
-		// SDL_GetWindowSize(screen_window, &sw, nullptr);
-		// nativescale = float(dw) / sw;
+		int sw;
+		SDL_GetWindowSize(screen_window, &sw, nullptr);
+		nativescale = float(dw) / sw;
 		// high resolution fullscreen needs this to make the whole screen
 		// available
 		SDL_SetRenderLogicalPresentation(
@@ -697,6 +751,8 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 				screen_window,
 				SDL_WINDOWPOS_CENTERED_DISPLAY(original_displayID),
 				SDL_WINDOWPOS_CENTERED_DISPLAY(original_displayID));
+		SDL_SetRenderLogicalPresentation(
+				screen_renderer, w, h, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 	}
 
 	// Do an initial draw/fill
@@ -723,11 +779,14 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	if (screen_texture == nullptr) {
 		screen_texture = SDL_CreateTexture(
 				screen_renderer, desktop_displaymode.format,
-				SDL_TEXTUREACCESS_STREAMING, w, h);
+				SDL_TEXTUREACCESS_STREAMING,
+				(fill_scaler == SDLScaler ? inter_width : w),
+				(fill_scaler == SDLScaler ? inter_height : h));
 	}
 	if (screen_texture == nullptr) {
 		cout << "Couldn't create texture: " << SDL_GetError() << std::endl;
 	}
+	SDL_SetTextureBlendMode(screen_texture, SDL_BLENDMODE_NONE);
 	if (!display_surface) {
 		cerr << "Unable to set video mode to" << w << "x" << h << " " << hwdepth
 			 << " bpp" << endl;
@@ -751,7 +810,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	}
 
 	// Scale using 'fill_scaler' only
-	if (scaler == fill_scaler || scale == 1) {
+	if (fill_scaler != SDLScaler && (scaler == fill_scaler || scale == 1)) {
 		inter_surface = draw_surface;
 	} else if (inter_width != w || inter_height != h) {
 		const SDL_PixelFormatDetails* display_surface_format
@@ -863,6 +922,10 @@ void Image_window::free_surface() {
 	draw_surface     = nullptr;
 	display_surface  = nullptr;
 	ibuf->bits       = nullptr;
+	if (screen_renderer != nullptr) {
+		SDL_DestroyRenderer(screen_renderer);
+	}
+	screen_renderer = nullptr;
 }
 
 /*
@@ -1028,7 +1091,7 @@ void Image_window::show(int x, int y, int w, int h) {
 	}
 
 	// Phase 2 blit from inter_surface to display_surface
-	if (inter_surface != display_surface) {
+	if (inter_surface != display_surface && fill_scaler != SDLScaler) {
 		const ScalerInfo& sel_scaler = Scalers[fill_scaler];
 
 		// Just scale entire surfaces
@@ -1060,7 +1123,7 @@ void Image_window::show(int x, int y, int w, int h) {
 	}
 	// Phase 3 blit high res draw surface on top of display_surface
 	// Phase 4 notify SDL
-	UpdateRect(display_surface);
+	UpdateRect(fill_scaler == SDLScaler ? inter_surface : display_surface);
 }
 
 /*
@@ -1509,14 +1572,27 @@ void Image_window::UpdateRect(SDL_Surface* surf) {
 	// TODO: Only update the necessary portion of the screen.
 	// Seem to get flicker like crazy or some other ill effect no matter
 	// what I try. -Lanica 08/28/2013
-	SDL_UpdateTexture(screen_texture, nullptr, surf->pixels, surf->pitch);
+	const SDL_PixelFormatDetails* surf_format
+			= SDL_GetPixelFormatDetails(surf->format);
+	uint8* pixels
+			= (surf == display_surface
+					   ? static_cast<uint8*>(surf->pixels)
+					   : static_cast<uint8*>(surf->pixels)
+								 + guard_band * scale
+										   * surf_format->bytes_per_pixel
+								 + guard_band * scale * surf->pitch);
+	SDL_UpdateTexture(screen_texture, nullptr, pixels, surf->pitch);
 	SDL_RenderTexture(screen_renderer, screen_texture, nullptr, nullptr);
 	SDL_RenderPresent(screen_renderer);
 }
 
-int Image_window::VideoModeOK(int width, int height, bool fullscreen) {
+int Image_window::VideoModeOK(int width, int height, bool fullscreen, int bpp) {
 	if (height > width) {
 		// Reject portrait modes.
+		return 0;
+	}
+	if (bpp != 0 && bpp != 8 && bpp != 16 && bpp != 32) {
+		// Reject forced bpp out of 8, 16, 32.
 		return 0;
 	}
 	if (!fullscreen) {
@@ -1529,11 +1605,12 @@ int Image_window::VideoModeOK(int width, int height, bool fullscreen) {
 		Uint32 Amask;
 		if (SDL_GetMasksForPixelFormat(
 					mode->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask)
-			&& mode->w >= width && mode->h >= height) {
+			&& mode->w >= width && mode->h >= height
+			&& ((bpp == nbpp)
+				|| (bpp == 0 && (nbpp == 8 || nbpp == 16 || nbpp == 32)))) {
 			return nbpp;
-		} else {
-			return 0;
 		}
+		return 0;
 	}
 
 	SDL_DisplayMode** modes
@@ -1546,12 +1623,14 @@ int Image_window::VideoModeOK(int width, int height, bool fullscreen) {
 		Uint32 Amask;
 		if (SDL_GetMasksForPixelFormat(
 					modes[j]->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask)
-			&& modes[j]->w == width && modes[j]->h == height) {
-			SDL_free(static_cast<void*>(modes));
+			&& modes[j]->w == width && modes[j]->h == height
+			&& ((bpp == nbpp)
+				|| (bpp == 0 && (nbpp == 8 || nbpp == 16 || nbpp == 32)))) {
+			SDL_free(modes);
 			return nbpp;
 		}
 	}
-	SDL_free(static_cast<void*>(modes));
+	SDL_free(modes);
 	return 0;
 }
 
