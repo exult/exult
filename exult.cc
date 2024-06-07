@@ -735,19 +735,22 @@ static void Init() {
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "Landscape");
 	Mouse::use_touch_input = true;
-#endif
-#ifdef SDL_PLATFORM_IOS
+	// Remove SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE set as "0"
+#	if defined(SDL_PLATFORM_IOS)
 	SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "2");
+#	endif
 #endif
 	// SDL3 lost the pointer when switching Windowed <-> Fullscreen in Wayland
 	//   This was fixed
 	//     1- By disabling SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP
 	//        here in Exult.
 	//        [ That hint was generalized to other video backends than Wayland
-	//          as SDL_HINT_MOUSE_RELATIVE_MODE_WARP. ]
+	//          as SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE. ]
 	//     2- By SDL 3 disabling MOUSE_RELATIVE_MODE_WARP at
 	//        Windowed <-> Fullscreen transitions on Wayland or XWayland.
 	//        [ Resetting that hint in Exult then became useless. ]
+	// Remove SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE set as "0"
+	// Do not confuse that Hint with :
 	//        SDL_HINT_MOUSE_RELATIVE_MODE_WARP         set as "0"
 	if (!SDL_Init(init_flags | joyinit)) {
 		cerr << "Unable to initialize SDL: " << SDL_GetError() << endl;
@@ -1318,7 +1321,7 @@ static void Handle_events() {
 			int       x  = Mouse::mouse->get_mousex();
 			int       y  = Mouse::mouse->get_mousey();
 			const int ms = SDL_GetMouseState(nullptr, nullptr);
-			if ((SDL_BUTTON_MASK(3) & ms) && !right_on_gump) {
+			if ((SDL_BUTTON_RMASK & ms) && !right_on_gump) {
 				gwin->start_actor(x, y, Mouse::mouse->avatar_speed);
 			} else if (ticks > last_rest) {
 				const int resttime = ticks - last_rest;
@@ -1445,7 +1448,7 @@ bool Translate_keyboard(
 		chr     = event.key.key;
 		unicode = SDL_GetKeyFromScancode(
 				event.key.scancode,
-				(event.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)));
+				(event.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)), false);
 		unicode = (unicode & SDLK_SCANCODE_MASK ? 0 : unicode);
 	} else {
 		return false;
@@ -1968,7 +1971,7 @@ static void Handle_event(SDL_Event& event) {
 		}
 
 		// Dragging with left button?
-		if (event.motion.state & SDL_BUTTON_MASK(1)) {
+		if (event.motion.state & SDL_BUTTON_LMASK) {
 #ifdef USE_EXULTSTUDIO    // Painting?
 			if (cheat.in_map_editor()) {
 				if (cheat.get_edit_shape() >= 0
@@ -1997,7 +2000,7 @@ static void Handle_event(SDL_Event& event) {
 			dragged = gwin->drag(mx, my);
 		}
 		// Dragging with right?
-		else if ((event.motion.state & SDL_BUTTON_MASK(3)) && !right_on_gump) {
+		else if ((event.motion.state & SDL_BUTTON_RMASK) && !right_on_gump) {
 			if (avatar_can_act && gwin->main_actor_can_act_charmed()) {
 				gwin->start_actor(mx, my, Mouse::mouse->avatar_speed);
 			}
@@ -2424,7 +2427,7 @@ static bool Get_click(
 
 				Mouse::mouse->move(mx, my);
 				Mouse::mouse_update = true;
-				if (drag_ok && (event.motion.state & SDL_BUTTON_MASK(1))) {
+				if (drag_ok && (event.motion.state & SDL_BUTTON_LMASK)) {
 					dragged = gwin->drag(mx, my);
 				}
 				break;
@@ -2697,7 +2700,7 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 			const int ms = SDL_GetMouseState(nullptr, nullptr);
 			int       mx = Mouse::mouse->get_mousex();
 			int       my = Mouse::mouse->get_mousey();
-			if (SDL_BUTTON_MASK(3) & ms) {
+			if (SDL_BUTTON_RMASK & ms) {
 				Shift_wizards_eye(mx, my);
 			}
 			gwin->set_all_dirty();
@@ -3006,7 +3009,8 @@ void setup_video(
 		config->value(vidStr + "/scale", scaleval, sc);
 		scaler = Image_window::get_scaler_for_name(sclr.c_str());
 		// Ensure a default scaler if a wrong scaler name is set
-		if (scaler == Image_window::NoScaler) {
+		if (scaler == Image_window::NoScaler
+			|| scaler == Image_window::SDLScaler) {
 			scaler = Image_window::get_scaler_for_name(default_scaler.c_str());
 		}
 		// Ensure proper values for scaleval based on scaler.
@@ -3017,6 +3021,7 @@ void setup_video(
 			scaleval = 4;
 		} else if (
 				scaler != Image_window::point
+				&& scaler != Image_window::SDLScaler
 				&& scaler != Image_window::interlaced
 				&& scaler != Image_window::bilinear) {
 			scaleval = 2;
@@ -3025,10 +3030,11 @@ void setup_video(
 		int dh = resy * scaleval;
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 		// Default display is desktop
-		SDL_DisplayMode dispmode;
-		if (SDL_GetDesktopDisplayMode(0, &dispmode) == 0) {
-			dw = dispmode.w;
-			dh = dispmode.h;
+		const SDL_DisplayMode* dispmode
+				= SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+		if (dispmode) {
+			dw = dispmode->w;
+			dh = dispmode->h;
 		}
 #else
 		// Default display is 1024x768
@@ -3124,8 +3130,7 @@ void setup_video(
 		videoGump->set_scaler(scaler);
 		videoGump->set_resolution(resx << 16 | resy);
 		videoGump->set_game_resolution(gw << 16 | gh);
-		videoGump->set_fill_scaler(
-				fill_scaler == Image_window::bilinear ? 1 : 0);
+		videoGump->set_fill_scaler(fill_scaler);
 		videoGump->set_fill_mode(fillmode);
 	}
 }
