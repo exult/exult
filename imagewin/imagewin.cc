@@ -292,12 +292,16 @@ int Image_window::Get_best_bpp(int w, int h, int bpp) {
 
 	// Explicit BPP required
 	if (bpp != 0) {
+		auto forced_bpp = VideoModeOK(w, h, fullscreen, bpp);
 		if (!(fullscreen)) {
-			if (windowed != 0) {
-				return 16;
+			if (windowed != 0 && windowed == bpp) {
+				return windowed;
 			}
 		}
 
+		if (forced_bpp != 0) {
+			return forced_bpp;
+		}
 		if (best_bpp != 0) {
 			return best_bpp;
 		}
@@ -319,7 +323,7 @@ int Image_window::Get_best_bpp(int w, int h, int bpp) {
 		} else if (windowed == 32) {
 			return 32;
 		} else if (windowed != 0) {
-			return 16;
+			return windowed;
 		}
 	}
 
@@ -332,13 +336,13 @@ int Image_window::Get_best_bpp(int w, int h, int bpp) {
 	} else if (best_bpp == 32) {
 		return 32;
 	} else if (best_bpp != 0) {
-		return 16;
+		return best_bpp;
 	}
 
 	cerr << "SDL Reports " << w << "x" << h << " "
 		 << ((fullscreen) ? "fullscreen" : "windowed")
-		 << " surfaces are not OK. Attempting to use 16 bpp. anyway" << endl;
-	return 16;
+		 << " surfaces are not OK. Attempting to use 32 bpp. anyway" << endl;
+	return 32;
 }
 
 /*
@@ -1385,9 +1389,13 @@ void Image_window::UpdateRect(SDL_Surface* surf) {
 	SDL_RenderPresent(screen_renderer);
 }
 
-int Image_window::VideoModeOK(int width, int height, bool fullscreen) {
+int Image_window::VideoModeOK(int width, int height, bool fullscreen, int bpp) {
 	if (height > width) {
 		// Reject portrait modes.
+		return 0;
+	}
+	if (bpp != 0 && bpp != 8 && bpp != 16 && bpp != 32) {
+		// Reject forced bpp out of 8, 16, 32.
 		return 0;
 	}
 	if (!fullscreen) {
@@ -1401,11 +1409,12 @@ int Image_window::VideoModeOK(int width, int height, bool fullscreen) {
 		if (SDL_GetMasksForPixelFormat(
 					mode->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask)
 					== SDL_TRUE
-			&& mode->w >= width && mode->h >= height) {
+			&& mode->w >= width && mode->h >= height
+			&& ((bpp == nbpp)
+				|| (bpp == 0 && (nbpp == 8 || nbpp == 16 || nbpp == 32)))) {
 			return nbpp;
-		} else {
-			return 0;
 		}
+		return 0;
 	}
 
 	const SDL_DisplayMode** modes
@@ -1419,7 +1428,9 @@ int Image_window::VideoModeOK(int width, int height, bool fullscreen) {
 		if (SDL_GetMasksForPixelFormat(
 					modes[j]->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask)
 					== SDL_TRUE
-			&& modes[j]->w == width && modes[j]->h == height) {
+			&& modes[j]->w == width && modes[j]->h == height
+			&& ((bpp == nbpp)
+				|| (bpp == 0 && (nbpp == 8 || nbpp == 16 || nbpp == 32)))) {
 			SDL_free(static_cast<void*>(modes));
 			return nbpp;
 		}
