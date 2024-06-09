@@ -379,9 +379,9 @@ int ShortcutBar_gump::handle_event(SDL_Event* event) {
 				return 0;
 			}
 			if (event->type == SDL_MOUSEBUTTONDOWN) {
-				mouse_down(event, x, y);
+				sdl_mouse_down(event, x, y);
 			} else if (event->type == SDL_MOUSEBUTTONUP) {
-				mouse_up(event, x, y);
+				sdl_mouse_up(event, x, y);
 			}
 			return 1;
 		}
@@ -392,7 +392,7 @@ int ShortcutBar_gump::handle_event(SDL_Event* event) {
 	return 0;
 }
 
-void ShortcutBar_gump::mouse_down(SDL_Event* event, int mx, int my) {
+void ShortcutBar_gump::sdl_mouse_down(SDL_Event* event, int mx, int my) {
 	ignore_unused_variable_warning(event);
 	for (int i = 0; i < numButtons; i++) {
 		if (buttonItems[i].rect.has_point(mx, my)) {
@@ -436,7 +436,7 @@ void ShortcutBar_gump::handleMouseUp(SDL_Event& event) {
 	}
 }
 
-void ShortcutBar_gump::mouse_up(SDL_Event* event, int mx, int my) {
+void ShortcutBar_gump::sdl_mouse_up(SDL_Event* event, int mx, int my) {
 	ignore_unused_variable_warning(event);
 	int i;
 

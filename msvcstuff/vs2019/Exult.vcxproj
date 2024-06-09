@@ -552,6 +552,7 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <ClCompile Include="..\..\gumps\GameEngineOptions_gump.cc" />
     <ClCompile Include="..\..\gumps\misc_buttons.cc" />
     <ClCompile Include="..\..\gumps\Mixer_gump.cc" />
+    <ClCompile Include="..\..\gumps\Modal_gump.cc" />
     <ClCompile Include="..\..\gumps\Newfile_gump.cc" />
     <ClCompile Include="..\..\gumps\Notebook_gump.cc" />
     <ClCompile Include="..\..\gumps\Paperdoll_gump.cc" />
@@ -559,6 +560,7 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <ClCompile Include="..\..\gumps\ShortcutBar_gump.cc" />
     <ClCompile Include="..\..\gumps\Sign_gump.cc" />
     <ClCompile Include="..\..\gumps\Slider_gump.cc" />
+    <ClCompile Include="..\..\gumps\Slider_widget.cc" />
     <ClCompile Include="..\..\gumps\Spellbook_gump.cc" />
     <ClCompile Include="..\..\gumps\Stats_gump.cc" />
     <ClCompile Include="..\..\gumps\Text_button.cc" />
@@ -775,6 +777,7 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <ClInclude Include="..\..\gumps\ShortcutBar_gump.h" />
     <ClInclude Include="..\..\gumps\Sign_gump.h" />
     <ClInclude Include="..\..\gumps\Slider_gump.h" />
+    <ClInclude Include="..\..\gumps\Slider_widget.h" />
     <ClInclude Include="..\..\gumps\Spellbook_gump.h" />
     <ClInclude Include="..\..\gumps\Stats_gump.h" />
     <ClInclude Include="..\..\gumps\Text_button.h" />
@@ -920,8 +923,8 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <Import Project="packages\vorbis-msvc-x64.1.3.5.8787\build\native\vorbis-msvc-x64.targets" Condition="Exists('packages\vorbis-msvc-x64.1.3.5.8787\build\native\vorbis-msvc-x64.targets')" />
     <Import Project="packages\ogg-msvc-x64.1.3.2.8787\build\native\ogg-msvc-x64.targets" Condition="Exists('packages\ogg-msvc-x64.1.3.2.8787\build\native\ogg-msvc-x64.targets')" />
     <Import Project="packages\sdl2.nuget.redist.2.28.5\build\native\sdl2.nuget.redist.targets" Condition="Exists('packages\sdl2.nuget.redist.2.28.5\build\native\sdl2.nuget.redist.targets')" />
-    <Import Project="packages\sdl2.nuget.2.28.5\build\native\sdl2.nuget.targets" Condition="Exists('packages\sdl2.nuget.2.28.5\build\native\sdl2.nuget.targets')" />
     <Import Project="packages\zlib_static.1.2.11.12\build\native\zlib_static.targets" Condition="Exists('packages\zlib_static.1.2.11.12\build\native\zlib_static.targets')" />
+    <Import Project="packages\sdl2.nuget.2.0.16\build\native\sdl2.nuget.targets" Condition="Exists('packages\sdl2.nuget.2.0.16\build\native\sdl2.nuget.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -932,7 +935,7 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <Error Condition="!Exists('packages\vorbis-msvc-x64.1.3.5.8787\build\native\vorbis-msvc-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vorbis-msvc-x64.1.3.5.8787\build\native\vorbis-msvc-x64.targets'))" />
     <Error Condition="!Exists('packages\ogg-msvc-x64.1.3.2.8787\build\native\ogg-msvc-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\ogg-msvc-x64.1.3.2.8787\build\native\ogg-msvc-x64.targets'))" />
     <Error Condition="!Exists('packages\sdl2.nuget.redist.2.28.5\build\native\sdl2.nuget.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2.nuget.redist.2.28.5\build\native\sdl2.nuget.redist.targets'))" />
-    <Error Condition="!Exists('packages\sdl2.nuget.2.28.5\build\native\sdl2.nuget.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2.nuget.2.28.5\build\native\sdl2.nuget.targets'))" />
     <Error Condition="!Exists('packages\zlib_static.1.2.11.12\build\native\zlib_static.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\zlib_static.1.2.11.12\build\native\zlib_static.targets'))" />
+    <Error Condition="!Exists('packages\sdl2.nuget.2.0.16\build\native\sdl2.nuget.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2.nuget.2.0.16\build\native\sdl2.nuget.targets'))" />
   </Target>
 </Project>

@@ -38,6 +38,8 @@ libgumps_la_SOURCES = \
 	Sign_gump.h	\
 	Slider_gump.cc	\
 	Slider_gump.h	\
+	Slider_widget.cc	\
+	Slider_widget.h	\
 	Spellbook_gump.cc	\
 	Spellbook_gump.h	\
 	Stats_gump.cc	\

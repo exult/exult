@@ -57,7 +57,7 @@ public:
 	virtual bool on_widget(int mx, int my) const;
 
 	Gump_button* on_button(int mx, int my) override {
-		ignore_unused_variable_warning(my, my);
+		ignore_unused_variable_warning(mx, my);
 		return nullptr;
 	}
 
@@ -68,7 +68,7 @@ public:
 	// update the widget, if required
 	virtual void update_widget() {}
 
-	virtual bool is_draggable() const {
+	bool is_draggable() const override {
 		return true;
 	}
 
