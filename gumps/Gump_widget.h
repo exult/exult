@@ -44,9 +44,9 @@ public:
 	friend class Spellscroll_gump;
 
 	Gump_widget(
-			Gump_Base* par, int shnum, int px, int py,
+			Gump_Base* par, int shnum, int px, int py, int frnum = 0,
 			ShapeFile shfile = SF_GUMPS_VGA)
-			: Gump_Base(shnum, 0, shfile), parent(par), x(px), y(py) {}
+			: Gump_Base(shnum, frnum, shfile), parent(par), x(px), y(py) {}
 
 	virtual Gump_widget* clone(Gump* par) {
 		ignore_unused_variable_warning(par);
@@ -56,7 +56,7 @@ public:
 	// Is a given point on the widget?
 	virtual bool on_widget(int mx, int my) const;
 
-	virtual Gump_button* on_button(int mx, int my) override {
+	Gump_button* on_button(int mx, int my) override {
 		ignore_unused_variable_warning(my, my);
 		return nullptr;
 	}
