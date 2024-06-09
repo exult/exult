@@ -98,10 +98,23 @@ Gump::~Gump() {
 /*
  *   Set centered.
  */
+
 void Gump::set_pos() {
 	Shape_frame* shape = get_shape();
-	x                  = (gwin->get_width() - shape->get_width()) / 2;
-	y                  = (gwin->get_height() - shape->get_height()) / 2;
+	set_pos((gwin->get_width() - shape->get_width()) / 2,
+			(gwin->get_height() - shape->get_height()) / 2);
+}
+
+void Gump::set_pos(int newx, int newy) {    // Set new spot on screen.
+	if (x == newx && y == newy) {
+		return;
+	}
+	// mark old position dirty
+	gwin->add_dirty(get_rect());
+	x = newx;
+	y = newy;
+	// mark new position dirty
+	gwin->add_dirty(get_rect());
 }
 
 /*
@@ -433,6 +446,20 @@ TileRect Gump::get_rect() const {
 	return TileRect(
 			x - s->get_xleft(), y - s->get_yabove(), s->get_width(),
 			s->get_height());
+}
+
+bool Gump::isOffscreen(bool partially) const {
+	auto rect = get_rect();
+
+	if (partially) {
+		return rect.x < 0 || rect.y < 0
+			   || (rect.x + rect.w) > gwin->get_game_width()
+			   || (rect.y + rect.h) > gwin->get_game_height();
+	} else {
+		return rect.x >= gwin->get_game_width()
+			   || rect.y >= gwin->get_game_height() || (rect.x + rect.w) <= 0
+			   || (rect.y + rect.h) <= 0;
+	}
 }
 
 /*

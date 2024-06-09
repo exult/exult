@@ -163,7 +163,7 @@ void Gamemenu_gump::paint() {
 
 bool Gamemenu_gump::mouse_down(int mx, int my, MouseButton button) {
 	if (button != MouseButton::Left) {
-		return false;
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 
 	pushed = Gump::on_button(mx, my);
@@ -180,23 +180,22 @@ bool Gamemenu_gump::mouse_down(int mx, int my, MouseButton button) {
 
 	if (pushed) {    // On a button?
 		pushed->push(button);
+		return true;
 	}
 
-	return true;
+	return Modal_gump::mouse_down(mx, my, button);
 }
 
 bool Gamemenu_gump::mouse_up(int mx, int my, MouseButton button) {
-	if (button != MouseButton::Left) {
-		return false;
+	if (button != MouseButton::Left || !pushed) {
+		return Modal_gump::mouse_up(mx, my, button);
 	}
 
-	if (pushed) {    // Pushing a button?
-		pushed->unpush(button);
-		if (pushed->on_button(mx, my)) {
-			pushed->activate(MouseButton::Left);
-		}
-		pushed = nullptr;
+	pushed->unpush(button);
+	if (pushed->on_button(mx, my)) {
+		pushed->activate(MouseButton::Left);
 	}
+	pushed = nullptr;
 
 	return true;
 }

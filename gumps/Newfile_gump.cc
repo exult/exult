@@ -579,7 +579,7 @@ bool Newfile_gump::mouse_down(
 
 	// Now check for text fields
 	if (gx < fieldx || gx >= fieldx + fieldw) {
-		return true;
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 
 	int hit = -1;
@@ -593,13 +593,13 @@ bool Newfile_gump::mouse_down(
 	}
 
 	if (hit == -1) {
-		return true;
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 
 	last_selected = selected;
 	if (hit + list_position >= num_games || hit + list_position < -2
 		|| selected == hit + list_position) {
-		return true;
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 
 #ifdef DEBUG
@@ -679,10 +679,12 @@ bool Newfile_gump::mouse_up(
 		int mx, int my, MouseButton button    // Position in window.
 ) {
 	if (button != MouseButton::Left) {
-		return false;
+		return Modal_gump::mouse_up(mx, my, button);
 	}
 
 	slide_start = -1;
+	bool result = false;
+	;
 
 	if (pushed) {    // Pushing a button?
 		pushed->unpush(button);
@@ -690,16 +692,18 @@ bool Newfile_gump::mouse_up(
 			pushed->activate(button);
 		}
 		pushed = nullptr;
+		result = true;
 	}
 	if (touchui != nullptr
 		&& ((selected == -2 && last_selected != -4)
 			|| (selected >= 0 && selected == last_selected))) {
 		touchui->promptForName(newname);
+		result = true;
 	}
 	// reset so the prompt doesn't pop up on closing
 	last_selected = -4;
 
-	return true;
+	return result || Modal_gump::mouse_up(mx, my, button);
 }
 
 bool Newfile_gump::mousewheel_up(int mx, int my) {
@@ -708,8 +712,8 @@ bool Newfile_gump::mousewheel_up(int mx, int my) {
 		scroll_page(-1);
 	} else {
 		scroll_line(-1);
-		return true;
 	}
+	return true;
 }
 
 bool Newfile_gump::mousewheel_down(int mx, int my) {
@@ -731,7 +735,7 @@ bool Newfile_gump::mouse_drag(
 ) {
 	// If not sliding don't do anything
 	if (slide_start == -1) {
-		return true;
+		return Modal_gump::mouse_drag(mx, my);
 	}
 
 	const int gx = mx - x;
