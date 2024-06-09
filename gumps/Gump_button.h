@@ -35,9 +35,9 @@ public:
 	friend class Gump;
 
 	Gump_button(
-			Gump* par, int shnum, int px, int py,
+			Gump_Base* par, int shnum, int px, int py,
 			ShapeFile shfile = SF_GUMPS_VGA)
-			: Gump_widget(par, shnum, px, py, shfile),
+			: Gump_widget(par, shnum, px, py, 0, shfile),
 			  pushed_button(MouseButton::Unknown) {}
 
 	Gump_button* on_button(int mx, int my) override {
