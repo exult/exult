@@ -274,7 +274,7 @@ void GameEngineOptions_gump::paint() {
 bool GameEngineOptions_gump::mouse_down(int mx, int my, MouseButton button) {
 	// Only left and right buttons
 	if (button != MouseButton::Left && button != MouseButton::Right) {
-		return false;
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 
 	// We'll eat the mouse down if we've already got a button down
@@ -299,13 +299,13 @@ bool GameEngineOptions_gump::mouse_down(int mx, int my, MouseButton button) {
 		pushed = nullptr;
 	}
 
-	return button == MouseButton::Left || pushed != nullptr;
+	return pushed != nullptr || Modal_gump::mouse_down(mx, my, button);
 }
 
 bool GameEngineOptions_gump::mouse_up(int mx, int my, MouseButton button) {
 	// Not Pushing a button?
 	if (!pushed) {
-		return false;
+		return Modal_gump::mouse_up(mx, my, button);
 	}
 
 	if (pushed->get_pushed() != button) {
@@ -318,5 +318,5 @@ bool GameEngineOptions_gump::mouse_up(int mx, int my, MouseButton button) {
 		res = pushed->activate(button);
 	}
 	pushed = nullptr;
-	return res;
+	return res || Modal_gump::mouse_up(mx, my, button);
 }

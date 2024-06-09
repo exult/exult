@@ -510,7 +510,7 @@ bool File_gump::mouse_down(
 		int mx, int my, MouseButton button    // Position in window.
 ) {
 	if (button != MouseButton::Left) {
-		return false;
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 
 	pushed      = nullptr;
@@ -535,11 +535,11 @@ bool File_gump::mouse_down(
 	for (auto& name : names) {
 		if (name->on_widget(mx, my)) {
 			pushed_text = name;
-			break;
+			return true;
 		}
 	}
 
-	return true;
+	return Modal_gump::mouse_down(mx, my, button);
 }
 
 /*
@@ -550,7 +550,7 @@ bool File_gump::mouse_up(
 		int mx, int my, MouseButton button    // Position in window.
 ) {
 	if (button != MouseButton::Left) {
-		return false;
+		return Modal_gump::mouse_up(mx, my, button);
 	}
 
 	if (pushed) {    // Pushing a button?
@@ -561,7 +561,7 @@ bool File_gump::mouse_up(
 		pushed = nullptr;
 	}
 	if (!pushed_text) {
-		return true;
+		return Modal_gump::mouse_up(mx, my, button);
 	}
 	// Let text field handle it.
 	if (!pushed_text->mouse_clicked(mx, my)

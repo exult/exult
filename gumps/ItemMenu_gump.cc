@@ -96,6 +96,9 @@ Itemmenu_gump::Itemmenu_gump(Game_object* obj, int ox, int oy, int cx, int cy)
 		: Modal_gump(
 				  nullptr, cx, cy, EXULT_FLX_TRANSPARENTMENU_SHP,
 				  SF_EXULT_FLX) {
+	// Ths gump cannot be dragged at this time
+	no_dragging = true;
+
 	objectSelected                     = obj;
 	objectAction                       = item_menu;
 	objectSelectedClickXY              = {ox, oy};

@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -34,15 +34,12 @@ protected:
 public:
 	Modal_gump(
 			Container_game_object* cont, int initx, int inity, int shnum,
-			ShapeFile shfile = SF_GUMPS_VGA)
-			: Gump(cont, initx, inity, shnum, shfile), done(false),
-			  pushed(nullptr) {}
+			ShapeFile shfile = SF_GUMPS_VGA);
 
 	// Create centered.
 	Modal_gump(
 			Container_game_object* cont, int shnum,
-			ShapeFile shfile = SF_GUMPS_VGA)
-			: Gump(cont, shnum, shfile), done(false), pushed(nullptr) {}
+			ShapeFile shfile = SF_GUMPS_VGA);
 
 	bool is_done() {
 		return done;
@@ -55,6 +52,37 @@ public:
 	virtual bool run() {
 		return false;
 	}
+
+	bool mouse_down(int mx, int my, MouseButton button) override;
+
+	bool mouse_up(int mx, int my, MouseButton button) override;
+
+	bool mouse_drag(int mx, int my) override;
+
+public:
+	enum class DragType {
+		Unknown,
+		Never,
+		Always,
+		Offscreen,
+	};
+
+	// Get the user set drag type from exult.cfg
+	static DragType GetDragType();
+	// Set new dragtype and update exult.cfg
+	static void SetDragType(DragType newtype);
+
+private:
+	// the previous position of the mouse during a drag, INT_MIN if not dragging
+	int drag_mx, drag_my;
+
+	// the last known good position of the gump that it will be returned to if
+	// the user drags it completely off screen only valid while dragging
+	int lastgood_x, lastgood_y;
+
+protected:
+	// If set this gump cannot be dragged
+	bool no_dragging;
 };
 
 #endif

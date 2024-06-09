@@ -56,6 +56,8 @@ libgumps_la_SOURCES = \
 	GameDisplayOptions_gump.h	\
 	GameEngineOptions_gump.cc \
 	GameEngineOptions_gump.h \
+	Modal_gump.cc \
+	Modal_gump.h \
 	Mixer_gump.cc \
 	Mixer_gump.h \
 	Gump_ToggleButton.cc	\

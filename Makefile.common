@@ -155,6 +155,7 @@ GUMPS_OBJS:= \
 	gumps/Gamemenu_gump.o \
 	gumps/GameDisplayOptions_gump.o \
 	gumps/Mixer_gump.o \
+	gumps/Modal_gump.o \
 	gumps/Gump.o \
 	gumps/Gump_button.o \
 	gumps/Gump_manager.o \

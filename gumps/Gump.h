@@ -159,10 +159,7 @@ public:
 		return y;
 	}
 
-	void set_pos(int newx, int newy) override {    // Set new spot on screen.
-		x = newx;
-		y = newy;
-	}
+	void set_pos(int newx, int newy) override;
 
 	void set_pos();    // Set centered.
 
@@ -232,6 +229,10 @@ public:
 
 	virtual bool     has_point(int x, int y) const;
 	virtual TileRect get_rect() const;
+
+	// Is the gump partially or completely off screen
+	// Only check shape rectangle, not against the actual shape
+	bool isOffscreen(bool partially = true) const;
 
 	void screen_to_local(int& sx, int& sy) const override {
 		sx -= x;
