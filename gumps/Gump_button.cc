@@ -57,6 +57,7 @@ void Gump_button::unpush(MouseButton button) {
  */
 
 bool Gump_button::activate(MouseButton button) {
+	ignore_unused_variable_warning(button);
 	return false;
 }
 

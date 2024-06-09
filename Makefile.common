@@ -171,6 +171,7 @@ GUMPS_OBJS:= \
 	gumps/Scroll_gump.o \
 	gumps/Sign_gump.o \
 	gumps/Slider_gump.o \
+	gumps/Slider_widget.o \
 	gumps/Spellbook_gump.o \
 	gumps/Stats_gump.o \
 	gumps/Text_button.o \

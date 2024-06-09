@@ -63,12 +63,12 @@ public:
 	// coords are all in screen space
 
 	virtual bool mouse_down(int mx, int my, MouseButton button) {
-		ignore_unused_variable_warning(mx, my);
+		ignore_unused_variable_warning(mx, my, button);
 		return false;
 	}
 
 	virtual bool mouse_up(int mx, int my, MouseButton button) {
-		ignore_unused_variable_warning(mx, my);
+		ignore_unused_variable_warning(mx, my, button);
 		return false;
 	}
 

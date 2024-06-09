@@ -5,6 +5,22 @@
 #define VERSION       "1.9.0git"
 #define EXULT_DATADIR "data/"
 
+#ifdef _DEBUG
+#	define DEBUG
+#endif
+
+// Force Multibyte character set
+// Exult does not suppot default uniccode on Windows
+#ifndef _MBCS
+#	define _MBCS 1
+#endif
+#ifdef UNICODE
+#	undef UNICODE
+#endif
+#ifdef _UNICODE
+#	undef _UNICODE
+#endif
+
 // Don't need everything in the windows headers
 #define WIN32_LEAN_AND_MEAN
 
