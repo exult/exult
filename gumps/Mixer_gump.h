@@ -20,51 +20,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIXER_GUMP_H
 
 #include "Modal_gump.h"
-
+#include "Slider_widget.h"
 #include <array>
 #include <memory>
 #include <string>
 
 class Gump_button;
 
-class Mixer_gump : public Modal_gump {
+class Mixer_gump : public Modal_gump, public Slider_widget::ICallback {
 private:
 	enum button_ids {
 		id_first = 0,
 		id_ok    = id_first,
 		id_cancel,
 		id_help,
-		id_music_left,
-		id_music_right,
-		id_sfx_left,
-		id_sfx_right,
-		id_voc_left,
-		id_voc_right,
 		id_count
 	};
+	std::shared_ptr<Slider_widget> musicslider, sfxslider, voiceslider, inputslider;
+
+	std::shared_ptr<Slider_widget> GetSlider(int sx, int sy);
 
 	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
-
-	// Diamonds
-	ShapeID music_slider;
-	ShapeID sfx_slider;
-	ShapeID speech_slider;
-
-	// Scrollbar and Slider Info
-	static const short sliderw;    // Width of Slider
-	int                sliderx;    // Rel. pos. where diamond is shown.
-	static short       slidery;
-	int                step_val;    // Amount to step by.
-	static int         max_val;
-	static int         min_val;
-	int                val;                    // Current value.
-	void               set_val(int newval);    // Set to new value.
-	static short       xmin, xmax;
-	unsigned char      dragging;    // 1 if dragging the diamond.
-	int                music_volume;
-	int                sfx_volume;
-	int                speech_volume;
-	static float       factor;
 
 public:
 	Mixer_gump();
@@ -73,11 +49,8 @@ public:
 	void paint() override;
 	void close() override;
 
-	void move_slider(int dir);    // Scroll Line Button Pressed
 
-	void scroll_left();
 
-	void scroll_right();
 
 	void load_settings();
 	void save_settings();
@@ -89,6 +62,9 @@ public:
 	bool mouse_drag(int mx, int my) override;
 	bool mousewheel_up(int mx, int my) override;
 	bool mousewheel_down(int mx, int my) override;
+
+	// Inherited via ICallback
+	void OnSliderValueChanged(Slider_widget* sender, int newvalue) override;
 };
 
 #endif
