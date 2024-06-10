@@ -111,7 +111,7 @@ public:
 			 Paintable* paint = nullptr);
 	bool do_modal_gump(
 			Modal_gump*, Mouse::Mouse_shapes, Paintable* paint = nullptr);
-	void paint_num(int num, int x, int y);
+	void paint_num(int num, int x, int y,Font* font=nullptr);
 
 	Gump_manager();
 
