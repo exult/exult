@@ -436,6 +436,18 @@ int Shape_manager::paint_text(
 			gwin->get_win()->get_ib8(), fontnum, text, textlen, xoff, yoff);
 }
 
+int Shape_manager::paint_text(
+		Font*font, const char* text, int xoff, int yoff) {
+	return font->paint_text(
+			gwin->get_win()->get_ib8(), text, xoff, yoff);
+}
+
+int Shape_manager::paint_text(
+		Font* font, const char* text, int textlen, int xoff, int yoff) {
+	return font->paint_text(
+			gwin->get_win()->get_ib8(), text, textlen, xoff, yoff);
+}
+
 int Shape_manager::get_text_width(int fontnum, const char* text) {
 	return fonts->get_text_width(fontnum, text);
 }
