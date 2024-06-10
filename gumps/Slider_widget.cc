@@ -45,12 +45,18 @@ Slider_widget::Slider_widget(
 	auto lshape = sidLeft.get_shape();
 	auto rshape = sidRight.get_shape();
 	auto dshape = sidDiamond.get_shape();
-	leftbtnx    = lshape->get_width() - 1;
-	rightbtnx   = leftbtnx + width + rshape->get_width();
+	leftbtnx    = lshape->get_xleft();    //- 1;
+	xmin        = leftbtnx + lshape->get_xright() + dshape->get_xleft() + 1;
+	xmax        = xmin + width - dshape->get_width();
+	//rightbtnx   = xmax + dshape->get_xright();//+rshape->get_xleft();
+	rightbtnx = leftbtnx + lshape->get_xright() + width +rshape->get_xleft()+1;
 	btny        = lshape->get_height() - 1;
-	diamondy    = dshape->get_yabove();
-	xmin        = leftbtnx + dshape->get_xleft() + 1;
-	xmax        = leftbtnx + width - dshape->get_xright();
+	// centre the diamond between button height
+	int buttontop = btny + lshape->get_yabove();
+	int buttonbottom = btny + lshape->get_ybelow();
+	diamondy         = buttonbottom-dshape->get_ybelow()-(lshape->get_height()-dshape->get_height())/2;
+	//+dshape->get_ybelow();
+
 	diamond     = sidDiamond;
 
 	callback = dynamic_cast<ICallback*>(par);
