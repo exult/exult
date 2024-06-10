@@ -22,8 +22,9 @@ public:
 public:
 	//! Construct a Slider Widget
 	//! /param par Parent of this Widget, If it implemets ICallback, it will be
-	//! used as the default callback /param width. How wide the sliding region
-	//! should be. determines how far apart the left and right buttons should be
+	//! used as the default callback 
+	//! /param width. How wide the sliding region should be.
+	//!  determines how far apart the left and right buttons should be
 	Slider_widget(
 			Gump_Base* par, int px, int py, ShapeID sidLeft, ShapeID sidRight,
 			ShapeID sidDiamond, int mival, int mxval, int step, int defval,
@@ -38,15 +39,15 @@ public:
 
 private:
 	int   diamondx;    // Rel. pos. where diamond is shown.
-	short diamondy;
+	int  diamondy;
 	int   min_val, max_val;    // Max., min. values to choose from.
 	int   step_val;            // Amount to step by.
 	int   val;                 // Current value.
 	int   prev_dragx;          // Prev. x-coord. of mouse.
 	void set_val(int newval, bool recalcdiamond = true);    // Set to new value.
 	// Coords:
-	short leftbtnx, rightbtnx, btny;
-	short xmin, xmax;
+	int  leftbtnx, rightbtnx, btny;
+	int xmin, xmax, xdist;
 
 	ShapeID      diamond;    // Diamond
 	Gump_button *left, *right;

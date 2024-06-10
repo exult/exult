@@ -48,7 +48,8 @@ Slider_widget::Slider_widget(
 	leftbtnx    = lshape->get_xleft();    //- 1;
 	xmin        = leftbtnx + lshape->get_xright() + dshape->get_xleft() + 1;
 	xmax        = xmin + width - dshape->get_width();
-	//rightbtnx   = xmax + dshape->get_xright();//+rshape->get_xleft();
+	xdist       = xmax - xmin;
+	// rightbtnx   = xmax + dshape->get_xright();//+rshape->get_xleft();
 	rightbtnx = leftbtnx + lshape->get_xright() + width +rshape->get_xleft()+1;
 	btny        = lshape->get_height() - 1;
 	// centre the diamond between button height
@@ -82,7 +83,6 @@ Slider_widget::Slider_widget(
 
 void Slider_widget::set_val(int newval, bool recalcdiamond) {
 	val             = newval;
-	const int xdist = xmax - xmin;
 	if (recalcdiamond) {
 		if (max_val - min_val == 0) {
 			val      = 0;
@@ -204,7 +204,6 @@ bool Slider_widget::mouse_down(
 			return Gump_widget::mouse_down(mx, my, button);
 		}
 		diamondx               = lx;
-		static const int xdist = xmax - xmin;
 		int delta = (diamondx - xmin) * (max_val - min_val) / xdist;
 		// Round down to nearest step.
 		delta -= delta % step_val;
@@ -247,6 +246,11 @@ bool Slider_widget::mouse_up(
 /*
  *  Mouse was dragged with left button down.
  */
+#ifdef DEBUG
+#	define DEBUG_VAL(v)  std::cout << #v ": " << (v) << std::endl
+#else
+#	define DEBUG_VAL(v) do { } while (0)
+#endif
 
 bool Slider_widget::mouse_drag(
 		int mx, int my    // Where mouse is.
@@ -258,12 +262,17 @@ bool Slider_widget::mouse_drag(
 	// clamp the mouse position to the slidable region
 	int lx = mx, ly = my;
 	screen_to_local(lx, ly);
-	if (lx > xmax) {
-		mx -= lx - xmax;
+	DEBUG_VAL(mx);
+	if (lx > rightbtnx) {
+		mx -= lx - rightbtnx;
 	} else if (lx < xmin) {
 		mx += xmin - lx;
 	}
 
+	DEBUG_VAL(diamondx);
+	DEBUG_VAL(mx);
+	DEBUG_VAL(prev_dragx);
+	DEBUG_VAL(mx - prev_dragx);
 	diamondx += mx - prev_dragx;
 	prev_dragx = mx;
 	if (diamondx < xmin) {    // Stop at ends.
@@ -271,10 +280,20 @@ bool Slider_widget::mouse_drag(
 	} else if (diamondx > xmax) {
 		diamondx = xmax;
 	}
-	static const int xdist = xmax - xmin;
+	DEBUG_VAL(diamondx);
+	DEBUG_VAL(xdist);
+	DEBUG_VAL(xmax);
+	DEBUG_VAL(xmin);
 	int              delta = (diamondx - xmin) * (max_val - min_val) / xdist;
+	DEBUG_VAL(delta);
+	DEBUG_VAL(diamondx);
+	DEBUG_VAL(max_val);
+	DEBUG_VAL(min_val);
+
 	// Round down to nearest step.
 	delta -= delta % step_val;
+	DEBUG_VAL(delta);
+	DEBUG_VAL(step_val);
 	set_val(min_val + delta, false);
 
 	// paint();
