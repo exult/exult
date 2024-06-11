@@ -1614,7 +1614,7 @@ using UsecodeIntrinsicFn = Usecode_value (Usecode_internal::*)(
 #endif
 
 #define USECODE_INTRINSIC_PTR(NAME) \
-	{ &Usecode_internal::UI_##NAME, TO_STRING(NAME) }
+	{&Usecode_internal::UI_##NAME, TO_STRING(NAME)}
 
 // Black Gate Intrinsic Function Table
 Usecode_internal::IntrinsicTableEntry Usecode_internal::intrinsics_bg[] = {

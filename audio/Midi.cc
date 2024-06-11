@@ -915,7 +915,8 @@ bool MyMidiPlayer::ogg_play_track(
 
 	if (!Pentagram::OggAudioSample::isThis(ds.get())) {
 		std::cerr << "Failed to play OGG Music Track " << ogg_name
-				  << ". Reason: " << "Unknown" << std::endl;
+				  << ". Reason: "
+				  << "Unknown" << std::endl;
 		return false;
 	}
 

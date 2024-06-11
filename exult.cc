@@ -2561,13 +2561,8 @@ void setup_video(
 #endif
 #if defined(__IPHONEOS__) || defined(ANDROID)
 		// Default resolution is 320x240 with 1x scaling
-		int             w = 320;
-		int             h = 240;
-		SDL_DisplayMode dispmode;
-		if (SDL_GetDesktopDisplayMode(0, &dispmode) == 0) {
-			w = dispmode.w;
-			h = dispmode.h;
-		}
+		const int    w                   = 320;
+		const int    h                   = 240;
 		const int    sc                  = 1;
 		const string default_scaler      = "point";
 		const string default_fill_scaler = "point";
@@ -2621,8 +2616,22 @@ void setup_video(
 				&& scaler != Image_window::bilinear) {
 			scaleval = 2;
 		}
-		config->value(vidStr + "/display/width", resx, 1024);
-		config->value(vidStr + "/display/height", resy, 768);
+		int dw = resx * scaleval;
+		int dh = resy * scaleval;
+#if defined(__IPHONEOS__) || defined(ANDROID)
+		// Default display is desktop
+		SDL_DisplayMode dispmode;
+		if (SDL_GetDesktopDisplayMode(0, &dispmode) == 0) {
+			dw = dispmode.w;
+			dh = dispmode.h;
+		}
+#else
+		// Default display is 1024x768
+		dw = (dw > 1024 ? dw : 1024);
+		dh = (dh > 768 ? dh : 768);
+#endif
+		config->value(vidStr + "/display/width", resx, dw);
+		config->value(vidStr + "/display/height", resy, dh);
 		config->value(vidStr + "/game/width", gw, 320);
 		config->value(vidStr + "/game/height", gh, 200);
 		SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, high_dpi ? "0" : "1");

@@ -42,8 +42,8 @@
 #include "schedule.h"
 #include "touchui.h"
 #include "ucmachine.h"
-#include "vgafile.h"
 #include "version.h"
+#include "vgafile.h"
 
 #include <cstring>
 
@@ -680,7 +680,9 @@ void CheatScreen::NormalDisplay() {
 
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 18, 8);
 
-	snprintf(buf, sizeof(buf), "Exult Version %s  Rev: %s", VERSION, VersionGetGitRevision(true).c_str());
+	snprintf(
+			buf, sizeof(buf), "Exult Version %s  Rev: %s", VERSION,
+			VersionGetGitRevision(true).c_str());
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 27, 8);
 
 	snprintf(

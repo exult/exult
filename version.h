@@ -22,8 +22,8 @@
 #include <iostream>
 #include <string>
 
-void getVersionInfo(std::ostream& out);
+void        getVersionInfo(std::ostream& out);
 std::string VersionGetGitRevision(bool shortrev);
-std::string VersionGetGitInfo(bool limitedwidth=false);
+std::string VersionGetGitInfo(bool limitedwidth = false);
 
 #endif
