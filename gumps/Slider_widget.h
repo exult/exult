@@ -25,10 +25,10 @@ public:
 	//! used as the default callback 
 	//! /param width. How wide the sliding region should be.
 	//!  determines how far apart the left and right buttons should be
-	Slider_widget(
-			Gump_Base* par, int px, int py, ShapeID sidLeft, ShapeID sidRight,
-			ShapeID sidDiamond, int mival, int mxval, int step, int defval,
-			int width = 64);
+	Slider_widget(Gump_Base* par, int px, int py, ShapeID sidLeft,
+				  ShapeID sidRight, ShapeID sidDiamond, int mival, int mxval,
+				  int step, int defval, int width = 64,
+				  bool logarithmic = false);
 
 	// By default the callback is set to par by the construcor if par implements
 	// ISlider_widget_callback but if not the callback can be set here
@@ -38,6 +38,7 @@ public:
 	}
 
 private:
+	bool  logarithmic;
 	int   diamondx;    // Rel. pos. where diamond is shown.
 	int  diamondy;
 	int   min_val, max_val;    // Max., min. values to choose from.
@@ -79,4 +80,7 @@ public:
 
 	bool mousewheel_up(int mx, int my) override;
 	bool mousewheel_down(int mx, int my) override;
+	
+	int logtolinear(int linearvalue, int base);
+	int lineartolog(int logvalue, int base);
 };
