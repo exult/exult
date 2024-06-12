@@ -439,7 +439,7 @@ sint32 LowLevelMidiDriver::peekComMessageType() {
 	return 0;
 }
 
-void LowLevelMidiDriver::sendComMessage(ComMessage& message) {
+void LowLevelMidiDriver::sendComMessage(const ComMessage& message) {
 	const std::lock_guard<std::mutex> lock(*mutex);
 	messages.push(message);
 	cond->notify_one();
@@ -783,7 +783,7 @@ bool LowLevelMidiDriver::playSequences() {
 		case LLMD_MSG_FINISH: {
 			// Out of range
 			if (message.sequence < 0
-				|| message.sequence >= std::size(sequences)) {
+				|| message.sequence >= LLMD_NUM_SEQ) {
 				break;
 			}
 			delete sequences[message.sequence];
@@ -805,20 +805,23 @@ bool LowLevelMidiDriver::playSequences() {
 			return true;
 
 		case LLMD_MSG_SET_VOLUME: {
-				// Out of range
-			if (message.sequence < 0 || message.sequence >= std::size(sequences)) break;
-			
+			// Out of range
+			if (message.sequence < 0
+				|| message.sequence >= LLMD_NUM_SEQ) {
+				break;
+			}
+
 			if (sequences[message.sequence]) {
 				sequences[message.sequence]->setVolume(
 						message.data.volume.level);
 			}
-			
+
 		} break;
 
 		case LLMD_MSG_SET_SPEED: {
 			// Out of range
 			if (message.sequence < 0
-				|| message.sequence >= std::size(sequences)) {
+				|| message.sequence >= LLMD_NUM_SEQ) {
 				break;
 			}
 			if (sequences[message.sequence]) {
@@ -830,7 +833,7 @@ bool LowLevelMidiDriver::playSequences() {
 		case LLMD_MSG_PAUSE: {
 			// Out of range
 			if (message.sequence < 0
-				|| message.sequence >= std::size(sequences)) {
+				|| message.sequence >= LLMD_NUM_SEQ) {
 				break;
 			}
 			if (sequences[message.sequence]) {
@@ -845,7 +848,7 @@ bool LowLevelMidiDriver::playSequences() {
 		case LLMD_MSG_SET_REPEAT: {
 			// Out of range
 			if (message.sequence < 0
-				|| message.sequence >= std::size(sequences)) {
+				|| message.sequence >= LLMD_NUM_SEQ) {
 				break;
 			}
 			if (sequences[message.sequence]) {
@@ -854,10 +857,24 @@ bool LowLevelMidiDriver::playSequences() {
 			}
 		} break;
 
+		case LLMD_MSG_SET_GLOBAL_VOLUME: {
+			global_volume = message.data.volume.level;
+			// notify all sequences that volume changed
+			for (i = 0; i < LLMD_NUM_SEQ; i++) {
+				auto seq = sequences[i];
+
+				if (seq) {
+					for (int c = 0; c < 16; c++) {
+						seq->globalVolumeChanged();
+					}
+				}
+			}
+		} break;
+
 		case LLMD_MSG_PLAY: {
 			// Out of range
 			if (message.sequence < 0
-				|| message.sequence >= std::size(sequences)) {
+				|| message.sequence >= LLMD_NUM_SEQ) {
 				break;
 			}
 			// Kill the previous stream
@@ -892,7 +909,7 @@ bool LowLevelMidiDriver::playSequences() {
 		case LLMD_MSG_PRECACHE_TIMBRES: {
 			// Out of range
 			if (message.sequence < 0
-				|| message.sequence >= std::size(sequences)) {
+				|| message.sequence >= LLMD_NUM_SEQ) {
 				break;
 			}
 			// pout << "Precaching Timbres..." << std::endl;
@@ -989,8 +1006,6 @@ void LowLevelMidiDriver::sequenceSendEvent(uint16 sequence_id, uint32 message) {
 		if ((message & 0xFF00) == (7 << 8)) {
 			int vol = (message >> 16) & 0xFF;
 			message &= 0x00FFFF;
-			// Global volume
-			//vol = (vol * global_volume) / 0xFF;
 			message |= vol << 16;
 		} else if ((message & 0xFF00) == (XMIDI_CONTROLLER_CHAN_LOCK << 8)) {
 			lockChannel(sequence_id, log_chan, ((message >> 16) & 0xFF) >= 64);
@@ -1026,16 +1041,6 @@ void LowLevelMidiDriver::sequenceSendEvent(uint16 sequence_id, uint32 message) {
 		if (temp < 127 && mt32_rhythm_bank[temp]) {
 			loadRhythmTemp(temp);
 		}
-	}
-	// Adjust veloity of Note on and After Touch by Global volume
-	if ((message & 0xf0) == MIDI_STATUS_NOTE_ON << 4
-		|| (message & 0xf0) == MIDI_STATUS_AFTERTOUCH <<4) 
-	{
-		int vel = (message >> 16) & 0xFF;
-		message &= 0x00FFFF;
-		// Global volume
-		vel = (vel * global_volume) / 100;
-		message |= vel << 16;
 	}
 
 	// Ok, get the physical channel number from the logical.
@@ -1550,7 +1555,7 @@ void LowLevelMidiDriver::extractTimbreLibrary(XMidiEventList* eventlist) {
 
 				// Allocate memory
 				if (!mt32_timbre_banks[2]) {
-					mt32_timbre_banks[2] = new MT32Timbre*[128]{};
+					mt32_timbre_banks[2] = new MT32Timbre* [128] {};
 				}
 				if (!mt32_timbre_banks[2][start]) {
 					mt32_timbre_banks[2][start] = new MT32Timbre;
@@ -1949,14 +1954,14 @@ void LowLevelMidiDriver::loadXMidiTimbreLibrary(IDataSource* ds) {
 
 		// Allocate memory
 		if (!mt32_timbre_banks[bank]) {
-			mt32_timbre_banks[bank] = new MT32Timbre*[128]{};
+			mt32_timbre_banks[bank] = new MT32Timbre* [128] {};
 		}
 		if (!mt32_timbre_banks[bank][patch]) {
 			mt32_timbre_banks[bank][patch] = new MT32Timbre;
 		}
 
 		if (!mt32_patch_banks[bank]) {
-			mt32_patch_banks[bank] = new MT32Patch*[128]{};
+			mt32_patch_banks[bank] = new MT32Patch* [128] {};
 		}
 		if (!mt32_patch_banks[bank][patch]) {
 			mt32_patch_banks[bank][patch] = new MT32Patch;
