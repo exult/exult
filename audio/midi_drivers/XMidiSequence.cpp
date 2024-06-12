@@ -152,6 +152,7 @@ int XMidiSequence::playEvent() {
 		handler->sequenceSendEvent(
 				sequence_id, note->status + (note->data[0] << 8));
 	}
+	UpdateVolume();
 
 	// No events left, but we still have notes on, so say we are still playing,
 	// if not report we've finished
@@ -435,8 +436,10 @@ void XMidiSequence::sendEvent() {
 	if (type == MIDI_STATUS_CONTROLLER) {
 		// Channel volume
 		if (event->data[0] == 7) {
-			data = event->data[0]
-				   | (((event->data[1] * vol_multi) / 0xFF) << 8);
+			int actualvolume
+					= (event->data[1] * vol_multi * handler->getGlobalVolume())
+					  / 25500;
+			data = event->data[0] | (actualvolume << 8);
 		}
 	} else if (type == MIDI_STATUS_AFTERTOUCH) {
 		notes_on.SetAftertouch(event);
@@ -491,10 +494,12 @@ void XMidiSequence::applyShadow(int i) {
 	sendController(4, i, shadows[i].footpedal);
 
 	// Volume
+	int actualvolume
+			= (shadows[i].volumes[0] * vol_multi * handler->getGlobalVolume())
+			  / 25500;
 	handler->sequenceSendEvent(
-			sequence_id,
-			i | (MIDI_STATUS_CONTROLLER << 4) | (7 << 8)
-					| (((shadows[i].volumes[0] * vol_multi) / 0xFF) << 16));
+			sequence_id, i | (MIDI_STATUS_CONTROLLER << 4) | (7 << 8)
+								 | (actualvolume << 16));
 	handler->sequenceSendEvent(
 			sequence_id, i | (MIDI_STATUS_CONTROLLER << 4) | (39 << 8)
 								 | (shadows[i].volumes[1] << 16));
@@ -538,19 +543,23 @@ void XMidiSequence::applyShadow(int i) {
 	sendController(0, i, shadows[i].bank);
 }
 
-void XMidiSequence::setVolume(int new_volume) {
-	vol_multi = new_volume;
-
-	// Only update used channels
+void XMidiSequence::UpdateVolume() {
+	if (!vol_changed) {
+		return;
+	}
 	for (int i = 0; i < 16; i++) {
 		if (evntlist->chan_mask & (1 << i)) {
 			uint32 message = i;
 			message |= MIDI_STATUS_CONTROLLER << 4;
 			message |= 7 << 8;
-			message |= ((shadows[i].volumes[0] * vol_multi) / 0xFF) << 16;
+			int actualvolume = (shadows[i].volumes[0] * vol_multi
+								* handler->getGlobalVolume())
+							   / 25500;
+			message |= actualvolume << 16;
 			handler->sequenceSendEvent(sequence_id, message);
 		}
 	}
+	vol_changed = false;
 }
 
 void XMidiSequence::loseChannel(int i) {

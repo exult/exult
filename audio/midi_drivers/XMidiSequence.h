@@ -53,7 +53,17 @@ public:
 
 	//! Set a new volume to use
 	//! \param new_vol the new volume level (0-255)
-	void setVolume(int new_vol);
+	void setVolume(int new_vol)
+	{
+		vol_multi   = new_vol;
+		vol_changed = true;
+	}
+
+	//! Notify the sequence that global volume has changed
+	void globalVolumeChanged()
+	{
+		vol_changed = true;
+	}
 
 	//! Get the current volume level
 	//! \return the current volume level (0-255)
@@ -123,6 +133,7 @@ private:
 	uint32 start;                //!< XMidi Clock (in 1/6000 seconds)
 	int    loop_num;             //!< The level of the loop we are currently in
 	int    vol_multi;            //!< Volume multiplier (0-255)
+	bool   vol_changed;
 	bool   paused;               //!< Is the sequence paused
 	int    speed;                //!< Percentage of speed to playback at
 
@@ -168,6 +179,8 @@ private:
 
 	//! Update the shadows for an event
 	void updateShadowForEvent(XMidiEvent* event);
+
+	void UpdateVolume();
 
 	//! Initialize the XMidi clock to begin now
 	inline void initClock() {
