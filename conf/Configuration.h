@@ -77,6 +77,7 @@ public:
 	void set(const char* key, const char* value, bool write_out);
 	void set(const char* key, const std::string& value, bool write_out);
 	void set(const char* key, int, bool write_out);
+	void set(const std::string& key, int, bool write_out);
 
 	void remove(const std::string& key, bool write_out);
 
