@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Modal_gump.h"
 #include "Slider_widget.h"
+
 #include <array>
 #include <memory>
 #include <string>
@@ -36,11 +37,21 @@ private:
 		id_help,
 		id_count
 	};
-	std::shared_ptr<Slider_widget> musicslider, sfxslider, voiceslider, inputslider;
+
+	std::shared_ptr<Slider_widget> musicslider, sfxslider, speechslider,
+			inputslider;
 
 	std::shared_ptr<Slider_widget> GetSlider(int sx, int sy);
 
 	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
+
+	bool music_is_ogg;    // music slider only represents ogg music volume level
+						  // if oggs are enabled and there is not a midi track
+						  // playing when the gump is created
+
+	int initial_music;
+	int initial_sfx;
+	int initial_speech;
 
 public:
 	Mixer_gump();
@@ -48,9 +59,6 @@ public:
 	// Paint it and its contents.
 	void paint() override;
 	void close() override;
-
-
-
 
 	void load_settings();
 	void save_settings();

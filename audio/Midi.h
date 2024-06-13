@@ -53,8 +53,12 @@ public:
 
 	void destroyMidiDriver();
 
-	void start_music(int num, bool repeat = false, std::string flex = MAINMUS);
-	void start_music(std::string fname, int num, bool repeat = false);
+	void start_music(
+			int num, bool repeat = false, bool forcemidi = false,
+			std::string flex = MAINMUS);
+	void start_music(
+			std::string fname, int num, bool repeat = false,
+			bool forcemidi = false);
 	void stop_music(bool quitting = false);
 
 	bool is_track_playing(int num);
@@ -94,7 +98,7 @@ public:
 	//!
 	//! \param vol new volume to set [0-100]
 	//! \param saveconfig Save the new value to exult.cfg
-	void SetMidiMusicVolume(int vol, bool saveconfig);
+	void SetMidiMusicVolume(int vol, bool savetoconfig);
 	//! Get volume of current Midi device volume
 	//! \return The current midi device volume. This will return 0 if Music is disabled
 	int GetMidiMusicVolume();
@@ -141,7 +145,7 @@ public:
 	//! Set Volume for Ogg Music Playback. This will
 	//! \param vol new volume to set [0-100]
 	//! \param saveconfig Save the new value to exult.cfg
-	void SetOggMusicVolume(int vol, bool saveconfig);
+	void SetOggMusicVolume(int vol, bool savetoconfig);
 
 	//! Get current Set OggMusic volume
 	//! \return The current Ogg music volume. This will return the correct value
@@ -150,9 +154,10 @@ public:
 		return ogg_volume;
 	}
 
+	bool ogg_is_playing() const;
+
 private:
 	bool ogg_play_track(const std::string& filename, int num, bool repeat);
-	bool ogg_is_playing() const;
 	void ogg_stop_track();
 	void ogg_set_repeat(bool newrepeat);
 

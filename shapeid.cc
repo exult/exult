@@ -437,9 +437,8 @@ int Shape_manager::paint_text(
 }
 
 int Shape_manager::paint_text(
-		Font*font, const char* text, int xoff, int yoff) {
-	return font->paint_text(
-			gwin->get_win()->get_ib8(), text, xoff, yoff);
+		Font* font, const char* text, int xoff, int yoff) {
+	return font->paint_text(gwin->get_win()->get_ib8(), text, xoff, yoff);
 }
 
 int Shape_manager::paint_text(

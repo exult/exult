@@ -552,7 +552,7 @@ void BG_Game::scene_butterfly() {
 				butterfly->get_width(), butterfly->get_height()));
 
 		// Start playing the birdsongs while still faded out
-		Audio::get_ptr()->start_music(bird_song_midi, false, INTROMUS);
+		Audio::get_ptr()->start_music(bird_song_midi, false, false, INTROMUS);
 
 		// trees with "Ultima VII" on top of 'em
 		sman->paint_shape(topx, topy, shapes.get_shape(trees_shp, 0));
@@ -751,7 +751,7 @@ struct SpeechManager {
 	SpeechManager(const char* fname, const char* fpatch, bool wait) {
 		if (Audio::get_ptr()->is_audio_enabled()
 			&& Audio::get_ptr()->is_speech_enabled()) {
-			Audio::get_ptr()->playfile(fname, fpatch, wait);
+			Audio::get_ptr()->playSpeechfile(fname, fpatch, wait);
 		}
 	}
 
@@ -858,7 +858,7 @@ void BG_Game::scene_guardian() {
 		//
 		// Start background music
 		//
-		Audio::get_ptr()->start_music(guardian_midi, false, INTROMUS);
+		Audio::get_ptr()->start_music(guardian_midi, false, false, INTROMUS);
 
 		WAITDELAYCYCLE1(3800);
 
@@ -1378,7 +1378,7 @@ namespace {    // anonymous
 
 void BG_Game::scene_desk() {
 	try {
-		Audio::get_ptr()->start_music(home_song_midi, false, INTROMUS);
+		Audio::get_ptr()->start_music(home_song_midi, false, false, INTROMUS);
 
 		gwin->clear_screen();
 		// Clip it to 320x200 region
@@ -1656,7 +1656,7 @@ Shape_frame* BG_Game::get_menu_shape() {
 }
 
 void BG_Game::top_menu() {
-	Audio::get_ptr()->start_music(menu_midi, true, INTROMUS);
+	Audio::get_ptr()->start_music(menu_midi, true, false, INTROMUS);
 	sman->paint_shape(topx, topy, get_menu_shape());
 	pal->load(INTROPAL_DAT, PATCH_INTROPAL, 6);
 	pal->fade_in(60);
@@ -1697,7 +1697,7 @@ bool ExVoiceBuffer::play_it() {
 		buf += 8;
 		size -= 8;
 	}
-	Audio::get_ptr()->copy_and_play(buf, size, false);
+	Audio::get_ptr()->copy_and_play_speech(buf, size, false);
 	played = true;
 
 	return false;
@@ -2138,7 +2138,7 @@ void BG_Game::end_game(bool success, bool within_game) {
 }
 
 void BG_Game::show_quotes() {
-	Audio::get_ptr()->start_music(quotes_midi, false, INTROMUS);
+	Audio::get_ptr()->start_music(quotes_midi, false, false, INTROMUS);
 	TextScroller quotes(
 			MAINSHP_FLX, 0x10, fontManager.get_font("MENU_FONT"),
 			menushapes.extract_shape(0x14));
@@ -2147,7 +2147,7 @@ void BG_Game::show_quotes() {
 
 void BG_Game::show_credits() {
 	pal->load(INTROPAL_DAT, PATCH_INTROPAL, 6);
-	Audio::get_ptr()->start_music(credits_midi, false, INTROMUS);
+	Audio::get_ptr()->start_music(credits_midi, false, false, INTROMUS);
 	TextScroller credits(
 			MAINSHP_FLX, 0x0E, fontManager.get_font("MENU_FONT"),
 			menushapes.extract_shape(0x14));

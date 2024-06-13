@@ -707,6 +707,7 @@ bool Newfile_gump::mouse_up(
 }
 
 bool Newfile_gump::mousewheel_up(int mx, int my) {
+	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT) {
 		scroll_page(-1);
@@ -717,6 +718,7 @@ bool Newfile_gump::mousewheel_up(int mx, int my) {
 }
 
 bool Newfile_gump::mousewheel_down(int mx, int my) {
+	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT) {
 		scroll_page(1);

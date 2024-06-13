@@ -103,7 +103,9 @@ private:
 	static const int* bg2si_sfxs;     // Converts BG sfx's to SI sfx's.
 	bool              truthful_ = false;
 	bool speech_enabled = true, music_enabled = true, effects_enabled = true,
-		 speech_with_subs = false;
+		 speech_with_subs                            = false;
+	int                                speech_volume = 100;
+	int                                sfx_volume    = 100;
 	std::unique_ptr<SFX_cache_manager> sfxs;    // SFX and voice cache manager
 	bool                               initialized = false;
 	SDL_AudioSpec                      wanted;
@@ -144,16 +146,23 @@ public:
 	void pause_audio();
 	void resume_audio();
 
-	sint32 copy_and_play(const uint8* sound_data, uint32 len, bool);
-	sint32 play(std::unique_ptr<uint8[]> sound_data, uint32 len, bool);
-	sint32 playfile(const char*, const char*, bool);
-	bool   playing();
-	void   start_music(
-			  int num, bool continuous = false,
-			  const std::string& flex = MAINMUS);
+	sint32 copy_and_play_speech(
+			const uint8* sound_data, uint32 len, bool, int volume = 255);
+	sint32 copy_and_play_sfx(
+			const uint8* sound_data, uint32 len, bool, int volume = 255);
+	sint32 play(
+			std::unique_ptr<uint8[]> sound_data, uint32 len, bool wait,
+			int volume = 255);
+	sint32 playSpeechfile(
+			const char* fname, const char* fpatch, bool wait, int volume = 255);
+	bool playing();
+	void start_music(
+			int num, bool continuous = false, bool forcemidi = false,
+			const std::string& flex = MAINMUS);
 	void change_repeat(bool newrepeat);
 	void start_music(
-			const std::string& fname, int num, bool continuous = false);
+			const std::string& fname, int num, bool continuous = false,
+			bool forcemidi = false);
 	void start_music_combat(Combat_song song, bool continuous);
 	void stop_music();
 	int  play_sound_effect(
@@ -269,6 +278,17 @@ public:
 	}
 
 	MyMidiPlayer* get_midi() const;
+
+	int get_speech_volume() {
+		return speech_volume;
+	}
+
+	int get_sfx_volume() {
+		return sfx_volume;
+	}
+
+	void set_speech_volume(int newvol, bool savetoconfig);
+	void set_sfx_volume(int newvol, bool savetoconfig);
 };
 
 #endif

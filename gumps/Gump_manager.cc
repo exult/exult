@@ -868,14 +868,16 @@ int Gump_manager::prompt_for_number(
  */
 
 void Gump_manager::paint_num(
-		int num,
-		int x,    // Coord. of right edge of #.
-		int y,     // Coord. of top of #.
+		int   num,
+		int   x,    // Coord. of right edge of #.
+		int   y,    // Coord. of top of #.
 		Font* font) {
 	//  Shape_manager *sman = Shape_manager::get_instance();
-	char      buf[20];
+	char buf[20];
 	snprintf(buf, sizeof(buf), "%d", num);
-	if (font == nullptr) font = sman->get_font(2);
+	if (font == nullptr) {
+		font = sman->get_font(2);
+	}
 	sman->paint_text(font, buf, x - font->get_text_width(buf), y);
 }
 
