@@ -329,13 +329,16 @@ void SI_Game::play_intro() {
 			const auto* midi_driver = audio->get_midi();
 			if (midi_driver->get_ogg_enabled()) {
 				audio->start_music(
-						EXULT_SI_FLX_EXT_INTRO_SI01_OGG, false, EXULT_SI_FLX);
+						EXULT_SI_FLX_EXT_INTRO_SI01_OGG, false, false,
+						EXULT_SI_FLX);
 			} else if (midi_driver->is_mt32()) {
 				audio->start_music(
-						EXULT_SI_FLX_EXT_INTRO_R_XMI, false, EXULT_SI_FLX);
+						EXULT_SI_FLX_EXT_INTRO_R_XMI, false, true,
+						EXULT_SI_FLX);
 			} else {
 				audio->start_music(
-						EXULT_SI_FLX_EXT_INTRO_A_XMI, false, EXULT_SI_FLX);
+						EXULT_SI_FLX_EXT_INTRO_A_XMI, false, true,
+						EXULT_SI_FLX);
 			}
 		} else {
 			audio->start_music(R_SINTRO, 0, false);
@@ -347,7 +350,7 @@ void SI_Game::play_intro() {
 		if (speech) {
 			const U7multiobject voc_thunder(INTRO_DAT, PATCH_INTRO, 15);
 			buffer = voc_thunder.retrieve(size);
-			audio->copy_and_play(buffer.get() + 8, size - 8, false);
+			audio->copy_and_play_sfx(buffer.get() + 8, size - 8, false);
 		}
 
 		playfli fli1 = select_fli(1, EXULT_SI_FLX_EXT_INTRO_CASTLE_FLC);
@@ -416,7 +419,7 @@ void SI_Game::play_intro() {
 
 			// Thunder again, we free the buffer here
 			if (speech && j == 5) {
-				audio->copy_and_play(buffer.get() + 8, size - 8, false);
+				audio->copy_and_play_sfx(buffer.get() + 8, size - 8, false);
 				buffer.reset();
 			}
 
@@ -499,7 +502,7 @@ void SI_Game::play_intro() {
 		if (speech && !jive) {
 			const U7multiobject voc_my_leige(INTRO_DAT, PATCH_INTRO, 16);
 			auto                buffer = voc_my_leige.retrieve(size);
-			audio->copy_and_play(buffer.get() + 8, size - 8, false);
+			audio->copy_and_play_speech(buffer.get() + 8, size - 8, false);
 		}
 
 		count = *selected_intro_counts++;
@@ -532,7 +535,7 @@ void SI_Game::play_intro() {
 		if (speech && !jive) {
 			const U7multiobject voc_all_we(INTRO_DAT, PATCH_INTRO, 17);
 			auto                buffer = voc_all_we.retrieve(size);
-			audio->copy_and_play(buffer.get() + 8, size - 8, false);
+			audio->copy_and_play_speech(buffer.get() + 8, size - 8, false);
 		}
 
 		count = *selected_intro_counts++;
@@ -597,7 +600,7 @@ void SI_Game::play_intro() {
 		if (speech && !jive) {
 			const U7multiobject voc_indeed(INTRO_DAT, PATCH_INTRO, 18);
 			auto                buffer = voc_indeed.retrieve(size);
-			audio->copy_and_play(buffer.get() + 8, size - 8, false);
+			audio->copy_and_play_speech(buffer.get() + 8, size - 8, false);
 		}
 
 		next = fli2.play(win, j, j);
@@ -654,7 +657,7 @@ void SI_Game::play_intro() {
 		if (speech && !jive) {
 			const U7multiobject voc_stand_back(INTRO_DAT, PATCH_INTRO, 19);
 			auto                buffer = voc_stand_back.retrieve(size);
-			audio->copy_and_play(buffer.get() + 8, size - 8, false);
+			audio->copy_and_play_speech(buffer.get() + 8, size - 8, false);
 		}
 
 		count = *selected_intro_counts++;
@@ -696,7 +699,7 @@ void SI_Game::play_intro() {
 		if (speech && !jive) {
 			const U7multiobject voc_big_g(INTRO_DAT, PATCH_INTRO, 20);
 			auto                buffer = voc_big_g.retrieve(size);
-			audio->copy_and_play(buffer.get() + 8, size - 8, false);
+			audio->copy_and_play_speech(buffer.get() + 8, size - 8, false);
 		}
 
 		next = 0;
@@ -790,7 +793,7 @@ void SI_Game::play_intro() {
 		if (speech && !jive) {
 			const U7multiobject voc_tis_my(INTRO_DAT, PATCH_INTRO, 21);
 			auto                buffer = voc_tis_my.retrieve(size);
-			audio->copy_and_play(buffer.get() + 8, size - 8, false);
+			audio->copy_and_play_speech(buffer.get() + 8, size - 8, false);
 		}
 
 		count = *selected_intro_counts++;
@@ -903,7 +906,7 @@ Shape_frame* SI_Game::get_menu_shape() {
 }
 
 void SI_Game::top_menu() {
-	Audio::get_ptr()->start_music(28, true, MAINSHP_FLX);
+	Audio::get_ptr()->start_music(28, true, false, MAINSHP_FLX);
 	sman->paint_shape(topx, topy, get_menu_shape());
 	pal->load(MAINSHP_FLX, PATCH_MAINSHP, 26);
 	pal->fade_in(60);
@@ -1043,7 +1046,7 @@ bool ExCineVoc::play_it(Image_window* win, uint32 t) {
 		buf += 8;
 		size -= 8;
 	}
-	Audio::get_ptr()->copy_and_play(buf, size, false);
+	Audio::get_ptr()->copy_and_play_speech(buf, size, false);
 	played = true;
 
 	return false;
@@ -1402,7 +1405,7 @@ void SI_Game::end_game(bool success, bool within_game) {
 }
 
 void SI_Game::show_quotes() {
-	Audio::get_ptr()->start_music(32, false, MAINSHP_FLX);
+	Audio::get_ptr()->start_music(32, false, false, MAINSHP_FLX);
 	TextScroller quotes(
 			MAINSHP_FLX, 0x10, fontManager.get_font("MENU_FONT"),
 			menushapes.extract_shape(0x14));
@@ -1411,7 +1414,7 @@ void SI_Game::show_quotes() {
 
 void SI_Game::show_credits() {
 	pal->load(MAINSHP_FLX, PATCH_MAINSHP, 26);
-	Audio::get_ptr()->start_music(30, false, MAINSHP_FLX);
+	Audio::get_ptr()->start_music(30, false, false, MAINSHP_FLX);
 	TextScroller credits(
 			MAINSHP_FLX, 0x0E, fontManager.get_font("MENU_FONT"),
 			menushapes.extract_shape(0x14));

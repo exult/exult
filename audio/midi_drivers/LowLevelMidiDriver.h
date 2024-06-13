@@ -318,8 +318,8 @@ private:
 	//! Set global volume of this driver
 	//! \param vol The new volume level for the sequence (0-100)
 	void setGlobalVolume(int vol) override {
-		sendComMessage(
-				ComMessage(LLMD_MSG_SET_GLOBAL_VOLUME, -1, [vol](auto& data) noexcept {
+		sendComMessage(ComMessage(
+				LLMD_MSG_SET_GLOBAL_VOLUME, -1, [vol](auto& data) noexcept {
 					data.volume.level = vol;
 				}));
 	}

@@ -104,9 +104,10 @@ std::unique_ptr<IDataSource> open_music_flex(const std::string& flex, int num) {
 	}
 }
 
-void MyMidiPlayer::start_music(int num, bool repeat, std::string flex) {
+void MyMidiPlayer::start_music(
+		int num, bool repeat, bool forcemidi, std::string flex) {
 	// No output device
-	if (!ogg_enabled && !midi_driver && !init_device(true)) {
+	if ((!ogg_enabled || forcemidi) && !midi_driver && !init_device(true)) {
 		return;
 	}
 
@@ -144,7 +145,7 @@ void MyMidiPlayer::start_music(int num, bool repeat, std::string flex) {
 	repeating     = repeat;
 
 	// OGG Handling
-	if (ogg_enabled) {
+	if (ogg_enabled && !forcemidi) {
 		// Play ogg for this track
 		if (ogg_play_track(flex, num, repeat)) {
 			return;
@@ -200,9 +201,10 @@ void MyMidiPlayer::start_music(int num, bool repeat, std::string flex) {
 	}
 }
 
-void MyMidiPlayer::start_music(std::string fname, int num, bool repeat) {
+void MyMidiPlayer::start_music(
+		std::string fname, int num, bool repeat, bool forcemidi) {
 	// No output device
-	if (!ogg_enabled && !midi_driver && !init_device(true)) {
+	if ((!ogg_enabled || forcemidi) && !midi_driver && !init_device(true)) {
 		return;
 	}
 
@@ -222,7 +224,7 @@ void MyMidiPlayer::start_music(std::string fname, int num, bool repeat) {
 #endif
 
 	// OGG Handling
-	if (ogg_enabled) {
+	if (ogg_enabled && !forcemidi) {
 		// Play ogg for this track
 		if (ogg_play_track(fname, num, repeat)) {
 			return;
@@ -693,6 +695,21 @@ bool MyMidiPlayer::init_device(bool timbre_load) {
 	midi_driver                  = MidiDriver::createInstance(
             s, mixer->getSampleRate(), mixer->getStereo());
 
+	// Load Volume settings
+	if (midi_driver) {
+		int vol = midi_driver->getGlobalVolume();
+		config->value(
+				"config/audio/midi/volume_" + midi_driver->getName(), vol, vol);
+		config->set(
+				"config/audio/midi/volume_" + midi_driver->getName(), vol,
+				false);
+		midi_driver->setGlobalVolume(vol);
+	}
+	config->value("config/audio/midi/volume_ogg", ogg_volume, ogg_volume);
+	config->set("config/audio/midi/volume_ogg", ogg_volume, false);
+
+	config->write_back();
+
 	initialized = true;
 
 	if (!midi_driver) {
@@ -915,8 +932,7 @@ bool MyMidiPlayer::ogg_play_track(
 
 	if (!Pentagram::OggAudioSample::isThis(ds.get())) {
 		std::cerr << "Failed to play OGG Music Track " << ogg_name
-				  << ". Reason: "
-				  << "Unknown" << std::endl;
+				  << ". Reason: " << "Unknown" << std::endl;
 		return false;
 	}
 
@@ -931,7 +947,9 @@ bool MyMidiPlayer::ogg_play_track(
 	Pentagram::AudioSample* ogg_sample
 			= new Pentagram::OggAudioSample(std::move(ds));
 
-	ogg_instance_id = mixer->playSample(ogg_sample, repeat ? -1 : 0, INT_MAX);
+	int vol         = (ogg_volume * 255) / 100;
+	ogg_instance_id = mixer->playSample(
+			ogg_sample, repeat ? -1 : 0, INT_MAX, false, 65536, vol, vol);
 
 	ogg_sample->Release();
 
@@ -953,12 +971,22 @@ void MyMidiPlayer::ogg_set_repeat(bool newrepeat) {
 	}
 }
 
-void MyMidiPlayer::SetOggMusicVolume(int vol, bool saveconfig) {
+void MyMidiPlayer::SetOggMusicVolume(int vol, bool savetoconfig) {
 	if (vol < 0) {
 		vol = 0;
 	}
 	if (vol > 100) {
 		vol = 100;
+	}
+	ogg_volume = vol;
+
+	if (savetoconfig) {
+		config->set("config/audio/midi/volume_ogg", std::to_string(vol), true);
+	}
+	Pentagram::AudioMixer* mixer = Pentagram::AudioMixer::get_instance();
+	if (mixer->isPlaying(ogg_instance_id)) {
+		vol = (vol * 255) / 100;
+		mixer->setVolume(ogg_instance_id, vol, vol);
 	}
 }
 
@@ -969,7 +997,7 @@ int MyMidiPlayer::GetMidiMusicVolume() {
 	return 0;
 }
 
-void MyMidiPlayer::SetMidiMusicVolume(int vol, bool saveconfig) {
+void MyMidiPlayer::SetMidiMusicVolume(int vol, bool savetoconfig) {
 	if (!midi_driver) {
 		return;
 	}
@@ -983,9 +1011,9 @@ void MyMidiPlayer::SetMidiMusicVolume(int vol, bool saveconfig) {
 	}
 
 	midi_driver->setGlobalVolume(vol);
-	if (saveconfig) {
+	if (savetoconfig) {
 		config->set(
-				"config/audio/volume/volume_" + midi_driver->getName(),
+				"config/audio/midi/volume_" + midi_driver->getName(),
 				std::to_string(vol), true);
 	}
 }

@@ -5,6 +5,7 @@
 #include "gamewin.h"
 
 #include <SDL.h>
+
 #include <cmath>
 
 using std::cout;
@@ -37,14 +38,15 @@ public:
 	}
 };
 
-//#define SW_FORCE_AUTO_LOG_SLIDERS 1
+// #define SW_FORCE_AUTO_LOG_SLIDERS 1
 
 Slider_widget::Slider_widget(
 		Gump_Base* par, int px, int py, ShapeID sidLeft, ShapeID sidRight,
 		ShapeID sidDiamond, int mival, int mxval, int step, int defval,
 		int width, bool logarithmic)
-		: Gump_widget(par, -1, px, py, -1), logarithmic(logarithmic), min_val(mival), max_val(mxval),
-		  step_val(step), val(defval), prev_dragx(INT32_MIN) {
+		: Gump_widget(par, -1, px, py, -1), logarithmic(logarithmic),
+		  min_val(mival), max_val(mxval), step_val(step), val(defval),
+		  prev_dragx(INT32_MIN) {
 	auto lshape = sidLeft.get_shape();
 	auto rshape = sidRight.get_shape();
 	auto dshape = sidDiamond.get_shape();
@@ -53,18 +55,19 @@ Slider_widget::Slider_widget(
 	xmax        = xmin + width - dshape->get_width();
 	xdist       = xmax - xmin;
 	// rightbtnx   = xmax + dshape->get_xright();//+rshape->get_xleft();
-	rightbtnx = leftbtnx + lshape->get_xright() + width +rshape->get_xleft()+1;
-	btny        = lshape->get_height() - 1;
+	rightbtnx
+			= leftbtnx + lshape->get_xright() + width + rshape->get_xleft() + 1;
+	btny = lshape->get_height() - 1;
 	// centre the diamond between button height
-	int buttontop = btny + lshape->get_yabove();
+	//int buttontop    = btny + lshape->get_yabove();
 	int buttonbottom = btny + lshape->get_ybelow();
-	diamondy         = buttonbottom-dshape->get_ybelow()-(lshape->get_height()-dshape->get_height())/2;
+	diamondy         = buttonbottom - dshape->get_ybelow()
+			   - (lshape->get_height() - dshape->get_height()) / 2;
 	//+dshape->get_ybelow();
 
-	diamond     = sidDiamond;
+	diamond = sidDiamond;
 #ifdef SW_FORCE_AUTO_LOG_SLIDERS
-	if (!this->logarithmic)
-	{
+	if (!this->logarithmic) {
 		int range = mxval - mival;
 		if ((range / xdist) > 2) {
 			this->logarithmic = true;
@@ -94,14 +97,15 @@ Slider_widget::Slider_widget(
  */
 
 void Slider_widget::set_val(int newval, bool recalcdiamond) {
-	val             = newval;
+	val = newval;
 	if (recalcdiamond) {
 		if (max_val - min_val == 0) {
 			val      = 0;
 			diamondx = xmin;
 		} else {
 			diamondx = xmin
-					   + lineartolog((val - min_val) * xdist / (max_val - min_val),
+					   + lineartolog(
+							   (val - min_val) * xdist / (max_val - min_val),
 							   xdist);
 		}
 	}
@@ -217,8 +221,9 @@ bool Slider_widget::mouse_down(
 		if (lx < xmin || lx > xmax) {
 			return Gump_widget::mouse_down(mx, my, button);
 		}
-		diamondx               = lx;
-		int delta = logtolinear(diamondx - xmin,xdist) * (max_val - min_val) / xdist;
+		diamondx  = lx;
+		int delta = logtolinear(diamondx - xmin, xdist) * (max_val - min_val)
+					/ xdist;
 		// Round down to nearest step.
 		delta -= delta % step_val;
 		set_val(min_val + delta, false);
@@ -240,10 +245,10 @@ bool Slider_widget::mouse_up(
 		return Gump_widget::mouse_up(mx, my, button);
 	}
 
-	if (prev_dragx != INT32_MIN) {    // Done dragging?
-		set_val(val);                 // Set diamond in correct pos.
-		gwin->add_dirty(get_rect());
+	if (is_dragging()) {    // Done dragging?
 		prev_dragx = INT32_MIN;
+		set_val(val);    // Set diamond in correct pos.
+		gwin->add_dirty(get_rect());
 	}
 	if (!pushed) {
 		return Gump_widget::mouse_up(mx, my, button);
@@ -260,17 +265,19 @@ bool Slider_widget::mouse_up(
 /*
  *  Mouse was dragged with left button down.
  */
-#ifdef DEBUG
-#	define DEBUG_VAL(v)  std::cout << #v ": " << (v) << std::endl
+#ifdef EXTRA_DEBUG
+#	define DEBUG_VAL(v) std::cout << #v ": " << (v) << std::endl
 #else
-#	define DEBUG_VAL(v) do { } while (0)
+#	define DEBUG_VAL(v) \
+		do {             \
+		} while (0)
 #endif
 
 bool Slider_widget::mouse_drag(
 		int mx, int my    // Where mouse is.
 ) {
 	ignore_unused_variable_warning(mx, my);
-	if (prev_dragx == INT32_MIN) {
+	if (!is_dragging()) {
 		return Gump_widget::mouse_drag(mx, my);
 	}
 	// clamp the mouse position to the slidable region
@@ -298,7 +305,8 @@ bool Slider_widget::mouse_drag(
 	DEBUG_VAL(xdist);
 	DEBUG_VAL(xmax);
 	DEBUG_VAL(xmin);
-	int delta = logtolinear(diamondx - xmin,xdist) * (max_val - min_val) / xdist;
+	int delta
+			= logtolinear(diamondx - xmin, xdist) * (max_val - min_val) / xdist;
 	DEBUG_VAL(delta);
 	DEBUG_VAL(diamondx);
 	DEBUG_VAL(max_val);
@@ -365,9 +373,8 @@ int Slider_widget::logtolinear(int logvalue, int base) {
 	double scaled = lv / b;
 	double res    = std::pow(b, scaled);
 	res -= 1;
-	//int check = lineartolog(res, base);
+	// int check = lineartolog(res, base);
 	return static_cast<int>(res);
-
 }
 #ifdef SW_INVERT_LOGS
 #	undef logtolinear

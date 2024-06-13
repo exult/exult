@@ -219,7 +219,13 @@ Audio::Audio() {
 
 	config->value("config/audio/enabled", s, "yes");
 	audio_enabled = (s != "no");
-	config->set("config/audio/enabled", audio_enabled ? "yes" : "no", true);
+	config->set("config/audio/enabled", audio_enabled ? "yes" : "no", false);
+
+	config->value("config/audio/effects/sfx_volume", sfx_volume, sfx_volume);
+	config->value("config/audio/speech/speech_volume", speech_volume, false);
+	config->set("config/audio/effects/sfx_volume", sfx_volume, false);
+	config->set(
+			"config/audio/speech/speech_volume", speech_volume, speech_volume);
 
 	config->value("config/audio/speech/enabled", s, "yes");
 	speech_enabled = (s != "no");
@@ -245,8 +251,9 @@ Audio::Audio() {
 	}
 	// Update config file with new value if needed
 	if (newval != s) {
-		config->set("config/audio/midi/looping", newval, true);
+		config->set("config/audio/midi/looping", newval, false);
 	}
+	config->write_back();
 
 	mixer.reset();
 	sfxs = std::make_unique<SFX_cache_manager>();
@@ -391,13 +398,27 @@ Audio::~Audio() {
 	CERR("~Audio:  about to quit subsystem");
 }
 
-sint32 Audio::copy_and_play(const uint8* sound_data, uint32 len, bool wait) {
+sint32 Audio::copy_and_play_speech(
+		const uint8* sound_data, uint32 len, bool wait, int volume) {
 	auto new_sound_data = std::make_unique<uint8[]>(len);
 	std::memcpy(new_sound_data.get(), sound_data, len);
-	return play(std::move(new_sound_data), len, wait);
+	volume = (volume * speech_volume) / 100;
+
+	return play(std::move(new_sound_data), len, wait, volume);
 }
 
-sint32 Audio::play(std::unique_ptr<uint8[]> sound_data, uint32 len, bool wait) {
+sint32 Audio::copy_and_play_sfx(
+		const uint8* sound_data, uint32 len, bool wait, int volume) {
+	auto new_sound_data = std::make_unique<uint8[]>(len);
+	std::memcpy(new_sound_data.get(), sound_data, len);
+	volume = (volume * sfx_volume) / 100;
+
+	return play(std::move(new_sound_data), len, wait, volume);
+}
+
+sint32 Audio::play(
+		std::unique_ptr<uint8[]> sound_data, uint32 len, bool wait,
+		int volume) {
 	ignore_unused_variable_warning(wait);
 	if (!audio_enabled || !speech_enabled || !len) {
 		return -1;
@@ -407,7 +428,8 @@ sint32 Audio::play(std::unique_ptr<uint8[]> sound_data, uint32 len, bool wait) {
 			= AudioSample::createAudioSample(std::move(sound_data), len);
 
 	if (audio_sample) {
-		sint32 id = mixer->playSample(audio_sample, 0, 128);
+		sint32 id = mixer->playSample(
+				audio_sample, 0, 128, false, 65536, volume, volume);
 		audio_sample->Release();
 		return id;
 	}
@@ -440,7 +462,8 @@ void Audio::resume_audio() {
 	mixer->setPausedAll(false);
 }
 
-sint32 Audio::playfile(const char* fname, const char* fpatch, bool wait) {
+sint32 Audio::playSpeechfile(
+		const char* fname, const char* fpatch, bool wait, int volume) {
 	if (!audio_enabled) {
 		return -1;
 	}
@@ -454,19 +477,20 @@ sint32 Audio::playfile(const char* fname, const char* fpatch, bool wait) {
 		CERR("Audio::playfile: Error reading file '" << fname << "'");
 		return -1;
 	}
-
-	return play(std::move(buf), len, wait);
+	volume = (volume * speech_volume) / 100;
+	return play(std::move(buf), len, wait, volume);
 }
 
 bool Audio::playing() {
 	return false;
 }
 
-void Audio::start_music(int num, bool continuous, const std::string& flex) {
+void Audio::start_music(
+		int num, bool continuous, bool forcemidi, const std::string& flex) {
 	if (audio_enabled && music_enabled && mixer && mixer->getMidiPlayer()) {
 		mixer->getMidiPlayer()->start_music(
 				num, music_looping == LoopingType::Never ? false : continuous,
-				flex);
+				forcemidi, flex);
 	}
 }
 
@@ -474,11 +498,13 @@ void Audio::change_repeat(bool newrepeat) {
 	mixer->getMidiPlayer()->set_repeat(newrepeat);
 }
 
-void Audio::start_music(const std::string& fname, int num, bool continuous) {
+void Audio::start_music(
+		const std::string& fname, int num, bool continuous, bool forcemidi) {
 	if (audio_enabled && music_enabled && mixer && mixer->getMidiPlayer()) {
 		mixer->getMidiPlayer()->start_music(
 				fname, num,
-				music_looping == LoopingType::Never ? false : continuous);
+				music_looping == LoopingType::Never ? false : continuous,
+				forcemidi);
 	}
 }
 
@@ -561,7 +587,7 @@ bool Audio::start_speech(int num, bool wait) {
 		return false;
 	}
 
-	speech_id = play(std::move(buf), len, wait);
+	speech_id = play(std::move(buf), len, wait, (speech_volume * 255) / 100);
 	return true;
 }
 
@@ -570,7 +596,12 @@ void Audio::stop_speech() {
 		return;
 	}
 
-	mixer->reset();
+	// doing a mixer reset is not appropriate here
+	// as it will stop all playing sfx and music
+	// mixer->reset();
+	if (speech_id != -1) {
+		mixer->stopSample(speech_id);
+	}
 	speech_id = -1;
 }
 
@@ -653,6 +684,8 @@ int Audio::play_wave_sfx(
 		return -1;
 	}
 
+	volume = (volume * sfx_volume) / 100;
+
 	const int instance_id = mixer->playSample(
 			wave, repeat, 0, true, AUDIO_DEF_PITCH, volume, volume);
 	if (instance_id < 0) {
@@ -706,10 +739,11 @@ int Audio::play_wave_sfx(
 	auto   wavbuf = ds.steal_data(wavlen);
 	auto*  wave   = AudioSample::createAudioSample(std::move(wavbuf), wavlen);
 
+	volume                = (volume * sfx_volume) / 100;
 	const int instance_id = mixer->playSample(
 			wave, repeat, 0, true, AUDIO_DEF_PITCH, volume, volume);
 	// Either AudioMixer::playSample called IncRef through
-	// AudioChannel::playSample and the sample will be played, of the sample was
+	// AudioChannel::playSample and the sample will be played, or the sample was
 	// not queued for playback. In either case we need to Release the sample to
 	// avoid a memory leak.
 	wave->Release();
@@ -865,4 +899,22 @@ bool Audio::is_voice_playing() const {
 
 MyMidiPlayer* Audio::get_midi() const {
 	return mixer ? mixer->getMidiPlayer() : nullptr;
+}
+
+void Audio::set_speech_volume(int newvol, bool saveconfig) {
+	speech_volume = newvol;
+	if (speech_id != -1 && mixer->isPlaying(speech_id)) {
+		newvol = (newvol * 255) / 100;
+		mixer->setVolume(speech_id, newvol, newvol);
+	}
+	if (saveconfig) {
+		config->set("config/audio/speech/speech_volume", speech_volume, false);
+	}
+}
+
+void Audio::set_sfx_volume(int newvol, bool saveconfig) {
+	sfx_volume = newvol;
+	if (saveconfig) {
+		config->set("config/audio/effects/sfx_volume", sfx_volume, false);
+	}
 }

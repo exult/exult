@@ -176,7 +176,7 @@ public:
 	int paint_text(int fontnum, const char* text, int xoff, int yoff);
 	int paint_text(
 			int fontnum, const char* text, int textlen, int xoff, int yoff);
-	int paint_text(Font*font, const char* text, int xoff, int yoff);
+	int paint_text(Font* font, const char* text, int xoff, int yoff);
 	int paint_text(
 			Font* font, const char* text, int textlen, int xoff, int yoff);
 	// Get text width.

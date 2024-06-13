@@ -103,10 +103,10 @@ Slider_gump::Slider_gump(
 	diamond = ShapeID(game->get_shape("gumps/slider_diamond"), 0, SF_GUMPS_VGA);
 	set_object_area(TileRect(0, 0, 0, 0), 6, 30);
 
-#ifdef DEBUG
+#	ifdef DEBUG
 	cout << "Slider:  " << min_val << " to " << max_val << " by " << step
 		 << endl;
-#endif
+#	endif
 	add_elem(new Slider_button(
 			this, leftbtnx, btny, game->get_shape("gumps/slider_left"), true));
 	add_elem(new Slider_button(
@@ -340,7 +340,7 @@ Slider_gump::Slider_gump(
 }
 
 void Slider_gump::OnSliderValueChanged(Slider_widget* sender, int newvalue) {
-	ignore_unused_variable_warning(sender,newvalue);
+	ignore_unused_variable_warning(sender, newvalue);
 	gwin->add_dirty(get_rect());
 }
 

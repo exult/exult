@@ -641,7 +641,7 @@ void AudioOptions_gump::save_settings() {
 			|| midi->is_mt32())) {
 		if (gwin->is_in_exult_menu()) {
 			Audio::get_ptr()->start_music(
-					EXULT_FLX_MEDITOWN_MID, true, EXULT_FLX);
+					EXULT_FLX_MEDITOWN_MID, true, false, EXULT_FLX);
 		} else {
 			Audio::get_ptr()->start_music(track_playing, looping);
 		}

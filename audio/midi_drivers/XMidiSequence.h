@@ -53,15 +53,13 @@ public:
 
 	//! Set a new volume to use
 	//! \param new_vol the new volume level (0-255)
-	void setVolume(int new_vol)
-	{
+	void setVolume(int new_vol) {
 		vol_multi   = new_vol;
 		vol_changed = true;
 	}
 
 	//! Notify the sequence that global volume has changed
-	void globalVolumeChanged()
-	{
+	void globalVolumeChanged() {
 		vol_changed = true;
 	}
 
@@ -134,8 +132,8 @@ private:
 	int    loop_num;             //!< The level of the loop we are currently in
 	int    vol_multi;            //!< Volume multiplier (0-255)
 	bool   vol_changed;
-	bool   paused;               //!< Is the sequence paused
-	int    speed;                //!< Percentage of speed to playback at
+	bool   paused;    //!< Is the sequence paused
+	int    speed;     //!< Percentage of speed to playback at
 
 	//! The for loop event that triggered the loop per level
 	XMidiEvent* loop_event[XMIDI_MAX_FOR_LOOP_COUNT];

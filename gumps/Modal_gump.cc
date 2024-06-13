@@ -43,7 +43,7 @@ bool Modal_gump::mouse_down(int mx, int my, MouseButton button) {
 		auto dt = GetDragType();
 		if (dt == DragType::Always
 			|| (dt == DragType::Offscreen && isOffscreen())) {
-#ifdef DEBUG
+#ifdef EXTRA_DEBUG
 			std::cout << "start draggging modal gump " << mx << " " << my
 					  << std::endl;
 #endif
@@ -72,7 +72,7 @@ bool Modal_gump::mouse_up(int mx, int my, MouseButton button) {
 			lastgood_x = get_x();
 			lastgood_y = get_y();
 		}
-#ifdef DEBUG
+#ifdef EXTRA_DEBUG
 		std::cout << "stop draggging modal gump " << mx << " " << my << " "
 				  << delta_x << " " << delta_y << std::endl;
 #endif
@@ -99,7 +99,7 @@ bool Modal_gump::mouse_drag(int mx, int my) {
 		drag_mx = mx;
 		drag_my = my;
 
-#ifdef DEBUG
+#ifdef EXTRA_DEBUG
 		std::cout << "draggging modal gump " << mx << " " << my << " "
 				  << delta_x << " " << delta_y << std::endl;
 #endif
