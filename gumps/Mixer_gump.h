@@ -52,9 +52,12 @@ private:
 	int initial_music;
 	int initial_sfx;
 	int initial_speech;
+	bool closed = false;
+		
 
 public:
 	Mixer_gump();
+	~Mixer_gump();
 
 	// Paint it and its contents.
 	void paint() override;
@@ -70,6 +73,7 @@ public:
 	bool mouse_drag(int mx, int my) override;
 	bool mousewheel_up(int mx, int my) override;
 	bool mousewheel_down(int mx, int my) override;
+	bool key_down(int chr) override;    // Character typed.
 
 	// Inherited via ICallback
 	void OnSliderValueChanged(Slider_widget* sender, int newvalue) override;

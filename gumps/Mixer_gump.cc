@@ -60,11 +60,13 @@ using Mixer_Textbutton = CallbackTextButton<Mixer_gump>;
 
 void Mixer_gump::close() {
 	save_settings();
-	done = true;
+	done   = true;
+	closed = true;
 }
 
 void Mixer_gump::cancel() {
 	done         = true;
+	closed       = true;
 	Audio* audio = Audio::get_ptr();
 	if (!audio) {
 		return;
@@ -213,6 +215,13 @@ buttons[id_voc_right] = std::make_unique<Mixer_button>(
 	buttons[id_help] = std::make_unique<Mixer_Textbutton>(
 			this, &Mixer_gump::help, helptext, colx[3], rowy[3], 50);
 #endif
+}
+
+Mixer_gump::~Mixer_gump() {
+	// We did not close ourselves, so do a cancel and revert settings
+	if (!closed) {
+		cancel();
+	}
 }
 
 void Mixer_gump::save_settings() {
@@ -370,16 +379,30 @@ bool Mixer_gump::mouse_drag(
 	return Modal_gump::mouse_drag(mx, my);
 }
 
+template <typename T>
+class RAIIPointerClearer {
+	T* pointer = nullptr;
+
+public:
+	~RAIIPointerClearer() {
+		if (pointer) {
+			*pointer = nullptr;
+		}
+	}
+
+	RAIIPointerClearer<T>& operator=(T& ref) {
+		pointer = &ref;
+		return *this;
+	}
+};
+
 bool Mixer_gump::mousewheel_up(int mx, int my) {
-	bool clear = false;
+	RAIIPointerClearer<decltype(inputslider)> clearer;
 	if (inputslider == nullptr) {
 		inputslider = GetSlider(mx, my);
-		clear       = true;
+		clearer     = inputslider;
 	}
 	if (inputslider && inputslider->mousewheel_up(mx, my)) {
-		if (clear) {
-			inputslider = nullptr;
-		}
 		return true;
 	}
 
@@ -387,19 +410,42 @@ bool Mixer_gump::mousewheel_up(int mx, int my) {
 }
 
 bool Mixer_gump::mousewheel_down(int mx, int my) {
-	bool clear = false;
+	RAIIPointerClearer<decltype(inputslider)> clearer;
 	if (inputslider == nullptr) {
 		inputslider = GetSlider(mx, my);
-		clear       = true;
+		clearer     = inputslider;
 	}
 	if (inputslider && inputslider->mousewheel_down(mx, my)) {
-		if (clear) {
-			inputslider = nullptr;
-		}
 		return true;
 	}
 
 	return Modal_gump::mousewheel_down(mx, my);
+}
+
+bool Mixer_gump::key_down(int chr) {
+	switch (chr) {
+	case SDLK_RETURN:
+	case SDLK_KP_ENTER:
+		close();
+		return true;
+	default:
+		// Send the input to the current input slider if there is one
+		// if there is not an inputslider get the current mouse pos and get the
+		// slider under it
+		RAIIPointerClearer<decltype(inputslider)> clearer;
+
+		if (!inputslider) {
+			inputslider = GetSlider(
+					Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
+			clearer = inputslider;
+		}
+		if (inputslider && inputslider->key_down(chr)) {
+			return true;
+		}
+
+		break;
+	}
+	return Modal_gump::key_down(chr);
 }
 
 void Mixer_gump::OnSliderValueChanged(Slider_widget* sender, int newvalue) {
