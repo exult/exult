@@ -400,11 +400,14 @@ Audio::~Audio() {
 
 sint32 Audio::copy_and_play_speech(
 		const uint8* sound_data, uint32 len, bool wait, int volume) {
+	if (!speech_enabled) {
+		return -1;
+	}
 	auto new_sound_data = std::make_unique<uint8[]>(len);
 	std::memcpy(new_sound_data.get(), sound_data, len);
 	volume = (volume * speech_volume) / 100;
 
-	return play(std::move(new_sound_data), len, wait, volume);
+	return speech_id = play(std::move(new_sound_data), len, wait, volume);
 }
 
 sint32 Audio::copy_and_play_sfx(
@@ -420,7 +423,7 @@ sint32 Audio::play(
 		std::unique_ptr<uint8[]> sound_data, uint32 len, bool wait,
 		int volume) {
 	ignore_unused_variable_warning(wait);
-	if (!audio_enabled || !speech_enabled || !len) {
+	if (!audio_enabled || !len) {
 		return -1;
 	}
 
@@ -478,7 +481,7 @@ sint32 Audio::playSpeechfile(
 		return -1;
 	}
 	volume = (volume * speech_volume) / 100;
-	return play(std::move(buf), len, wait, volume);
+	return speech_id = play(std::move(buf), len, wait, volume);
 }
 
 bool Audio::playing() {

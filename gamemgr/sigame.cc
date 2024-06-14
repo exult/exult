@@ -347,7 +347,9 @@ void SI_Game::play_intro() {
 		size_t                      size;
 		unique_ptr<unsigned char[]> buffer;
 		// Thunder, note we use the buffer again later so it's not freed here
-		if (speech) {
+		// this is not speech so removing this check
+		//if (speech)
+		{
 			const U7multiobject voc_thunder(INTRO_DAT, PATCH_INTRO, 15);
 			buffer = voc_thunder.retrieve(size);
 			audio->copy_and_play_sfx(buffer.get() + 8, size - 8, false);
@@ -418,7 +420,7 @@ void SI_Game::play_intro() {
 			}
 
 			// Thunder again, we free the buffer here
-			if (speech && j == 5) {
+			if (/* speech &&*/ j == 5) {
 				audio->copy_and_play_sfx(buffer.get() + 8, size - 8, false);
 				buffer.reset();
 			}
