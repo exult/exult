@@ -193,7 +193,7 @@ public:
 	virtual TileRect     get_dirty();    // Get dirty rect. for gump+contents.
 	virtual Game_object* get_owner();    // Get object this belongs to.
 	// Is a given point on a button?
-	virtual Gump_button* on_button(int mx, int my) override;
+	Gump_button* on_button(int mx, int my) override;
 	// Paint button.
 	virtual bool add(
 			Game_object* obj, int mx = -1, int my = -1, int sx = -1,
@@ -203,13 +203,13 @@ public:
 	void paint_elems();
 	void paint() override;
 	// Close (and delete).
-	virtual void close() override;
+	void close() override;
 
 	// update the gump, if required
 	virtual void update_gump() {}
 
 	// Can be dragged with mouse
-	virtual bool is_draggable() const override {
+	bool is_draggable() const override {
 		return true;
 	}
 
