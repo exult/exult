@@ -162,19 +162,19 @@ Mixer_gump::Mixer_gump()
 	for (auto& btn : buttons) {
 		btn.reset();
 	}
-	musicslider = std::make_unique<Slider_widget>(
+	musicslider = std::make_shared<Slider_widget>(
 			this, colx[1], rowy[0] - 13,
 			ShapeID(EXULT_FLX_SCROLL_LEFT_SHP, 0, SF_EXULT_FLX),
 			ShapeID(EXULT_FLX_SCROLL_RIGHT_SHP, 0, SF_EXULT_FLX),
 			ShapeID(EXULT_FLX_SAV_SLIDER_SHP, 0, SF_EXULT_FLX), 0, 100, 1, 100,
 			120);
-	sfxslider = std::make_unique<Slider_widget>(
+	sfxslider = std::make_shared<Slider_widget>(
 			this, colx[1], rowy[1] - 13,
 			ShapeID(EXULT_FLX_SCROLL_LEFT_SHP, 0, SF_EXULT_FLX),
 			ShapeID(EXULT_FLX_SCROLL_RIGHT_SHP, 0, SF_EXULT_FLX),
 			ShapeID(EXULT_FLX_SAV_SLIDER_SHP, 0, SF_EXULT_FLX), 0, 100, 1, 100,
 			120);
-	speechslider = std::make_unique<Slider_widget>(
+	speechslider = std::make_shared<Slider_widget>(
 			this, colx[1], rowy[2] - 13,
 			ShapeID(EXULT_FLX_SCROLL_LEFT_SHP, 0, SF_EXULT_FLX),
 			ShapeID(EXULT_FLX_SCROLL_RIGHT_SHP, 0, SF_EXULT_FLX),
@@ -260,8 +260,9 @@ void Mixer_gump::paint() {
 	// font is required
 	if (!font) {
 		std::cerr << "Mixer_gump::paint() unable to get SMALL_BLACK_FONT "
-					 "leaving."
+					 "closing gump."
 				  << std::endl;
+		cancel();
 		return;
 	}
 
