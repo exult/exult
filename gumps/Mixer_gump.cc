@@ -106,7 +106,7 @@ void Mixer_gump::load_settings() {
 	}
 	// Get initial music volume
 	MyMidiPlayer* midi = audio ? audio->get_midi() : nullptr;
-	if (audio && audio->is_music_enabled() && midi) {
+	if (audio && audio->is_music_enabled() && midi && midi->can_play()) {
 		if (midi->get_ogg_enabled()) {
 			if (midi->ogg_is_playing() || midi->get_current_track() == -1) {
 				music_is_ogg = true;

@@ -119,6 +119,11 @@ public:
 	bool is_mt32() const;     // Check for true mt32, mt32emu or fakemt32
 	bool is_adlib() const;    // Check for adlib
 
+	// ! Can music be played at all
+	bool can_play() {
+		return ogg_enabled || midi_driver || init_device(true);
+	}
+
 private:
 	bool repeating     = false;
 	int  current_track = -1;
