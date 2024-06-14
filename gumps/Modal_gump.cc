@@ -38,7 +38,8 @@ Modal_gump::Modal_gump(Container_game_object* cont, int shnum, ShapeFile shfile)
 }
 
 bool Modal_gump::mouse_down(int mx, int my, MouseButton button) {
-	if (!no_dragging && button == MouseButton::Left)    //&&(has_point(mx, my))
+	if (is_draggable()
+		&& button == MouseButton::Left)    //&&(has_point(mx, my))
 	{
 		auto dt = GetDragType();
 		if (dt == DragType::Always
@@ -58,7 +59,7 @@ bool Modal_gump::mouse_down(int mx, int my, MouseButton button) {
 }
 
 bool Modal_gump::mouse_up(int mx, int my, MouseButton button) {
-	if (!no_dragging && button == MouseButton::Left && drag_mx != INT_MIN
+	if (is_draggable() && button == MouseButton::Left && drag_mx != INT_MIN
 		&& drag_my != INT_MIN) {
 		int delta_x = mx - drag_mx;
 		int delta_y = my - drag_my;
@@ -84,7 +85,7 @@ bool Modal_gump::mouse_up(int mx, int my, MouseButton button) {
 }
 
 bool Modal_gump::mouse_drag(int mx, int my) {
-	if (!no_dragging && drag_mx != INT_MIN && drag_my != INT_MIN) {
+	if (is_draggable() && drag_mx != INT_MIN && drag_my != INT_MIN) {
 		int delta_x = mx - drag_mx;
 		int delta_y = my - drag_my;
 		set_pos(get_x() + delta_x, get_y() + delta_y);

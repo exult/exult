@@ -53,6 +53,10 @@ public:
 		return false;
 	}
 
+	bool is_draggable() const override {
+		return !no_dragging;
+	}
+
 	bool mouse_down(int mx, int my, MouseButton button) override;
 
 	bool mouse_up(int mx, int my, MouseButton button) override;
