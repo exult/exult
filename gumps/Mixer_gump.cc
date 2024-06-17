@@ -33,6 +33,7 @@
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
+#include "Audio.h"
 #include "Configuration.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
@@ -43,8 +44,6 @@
 #include "font.h"
 #include "game.h"
 #include "gamewin.h"
-
-#include <Audio.h>
 
 using std::string;
 
