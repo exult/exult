@@ -85,7 +85,7 @@ void Mixer_gump::cancel() {
 			midi->SetMidiMusicVolume(initial_music, false);
 		}
 	}
-	audio->set_sfx_volume(initial_music, false);
+	audio->set_sfx_volume(initial_sfx, false);
 	audio->set_speech_volume(initial_speech, false);
 }
 
