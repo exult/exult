@@ -118,7 +118,7 @@ public:
  */
 class Gump : nonreplicatable, public Gump_Base {
 protected:
-	Gump() = default;
+	Gump() = delete;
 	Container_game_object* container;    // What this gump shows.
 	int                    x, y;         // Location on screen.
 	TileRect object_area{};              // Area to paint objects in, rel. to

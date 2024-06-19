@@ -34,7 +34,7 @@ class Gump_button;
  */
 class Gump_widget : nonreplicatable, public Gump_Base {
 protected:
-	Gump_widget()     = default;
+	Gump_widget()     = delete;
 	Gump_Base* parent = nullptr;    // Who this is in.
 	short      x, y;                // Coords. relative to parent.
 
