@@ -160,7 +160,7 @@ void SoundTester::test_sound() {
 				} else if (active == 1) {
 					audio->play_sound_effect(sfx);
 				} else if (active == 2) {
-					audio->cancel_streams();
+					audio->stop_speech();
 					audio->start_speech(voice, false);
 				}
 				break;

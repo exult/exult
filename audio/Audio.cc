@@ -696,7 +696,7 @@ int Audio::play_wave_sfx(
 		return -1;
 	}
 
-	CERR("Playing SFX: " << num);
+	CERR("Playing SFX: " << num << " with real volume " << std::hex << volume << std::dec);
 
 	mixer->set2DPosition(instance_id, distance, balance);
 	mixer->setPaused(instance_id, false);
