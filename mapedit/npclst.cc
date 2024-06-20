@@ -655,11 +655,13 @@ void Npc_chooser::drag_data_get(
 		gpointer data    // ->Npc_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET of Npc for '"
+	cout << "In DRAG_DATA_GET of Npc for " << info << " and '"
 		 << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
 		 << endl;
 	auto* chooser = static_cast<Npc_chooser*>(data);
-	if (chooser->selected < 0 || info != U7_TARGET_NPCID) {
+	if (chooser->selected < 0
+		|| (info != U7_TARGET_NPCID && info != U7_TARGET_NPCID + 100
+			&& info != U7_TARGET_NPCID + 200)) {
 		return;    // Not sure about this.
 	}
 	guchar    buf[U7DND_DATA_LENGTH(1)];
@@ -747,8 +749,8 @@ void Npc_chooser::enable_drop() {
 	tents[1].flags  = 0;
 	tents[2].flags  = 0;
 	tents[0].info   = U7_TARGET_NPCID;
-	tents[1].info   = U7_TARGET_NPCID;
-	tents[2].info   = U7_TARGET_NPCID;
+	tents[1].info   = U7_TARGET_NPCID + 100;
+	tents[2].info   = U7_TARGET_NPCID + 200;
 	gtk_drag_dest_set(
 			draw, GTK_DEST_DEFAULT_ALL, tents, 3,
 			static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));

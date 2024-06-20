@@ -300,8 +300,8 @@ gulong Shape_draw::enable_drop(
 	tents[1].flags  = 0;
 	tents[2].flags  = 0;
 	tents[0].info   = U7_TARGET_SHAPEID;
-	tents[1].info   = U7_TARGET_SHAPEID;
-	tents[2].info   = U7_TARGET_SHAPEID;
+	tents[1].info   = U7_TARGET_SHAPEID + 100;
+	tents[2].info   = U7_TARGET_SHAPEID + 200;
 	gtk_drag_dest_set(
 			draw, GTK_DEST_DEFAULT_ALL, tents, 3,
 			static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
@@ -371,8 +371,8 @@ void Shape_draw::start_drag(
 	tents[1].flags       = 0;
 	tents[2].flags       = 0;
 	tents[0].info        = id;
-	tents[1].info        = id;
-	tents[2].info        = id;
+	tents[1].info        = id + 100;
+	tents[2].info        = id + 200;
 	GtkTargetList* tlist = gtk_target_list_new(&tents[0], 3);
 	gtk_drag_begin_with_coordinates(
 			draw, tlist,

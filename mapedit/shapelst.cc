@@ -1735,11 +1735,13 @@ void Shape_chooser::drag_data_get(
 		gpointer data    // ->Shape_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET of Shape for '"
+	cout << "In DRAG_DATA_GET of Shape for " << info << " and '"
 		 << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
 		 << endl;
 	auto* chooser = static_cast<Shape_chooser*>(data);
-	if (chooser->selected < 0 || info != U7_TARGET_SHAPEID) {
+	if (chooser->selected < 0
+		|| (info != U7_TARGET_SHAPEID && info != U7_TARGET_SHAPEID + 100
+			&& info != U7_TARGET_SHAPEID + 200)) {
 		return;    // Not sure about this.
 	}
 	guchar buf[U7DND_DATA_LENGTH(3)];
