@@ -54,3 +54,38 @@ Image_buffer::Image_buffer(
 		break;
 	}
 }
+
+void Image_buffer::draw_box(
+		int x, int y, int w, int h, int strokewidth, uint8 colfill,
+		uint8 colstroke) {
+	// Need to shrink by 1 so lines are drawn in the right places
+	w--;
+	h--;
+	// draw edge lines
+	while (strokewidth--) {
+		if (colstroke != 0xff) {
+			// top
+			fill_hline8(colstroke, w, x, y);
+			// right
+			draw_line8(colstroke, x + w, y, x + w, y + h, nullptr);
+
+			// bottom
+			fill_hline8(colstroke, w, x, y + h);
+			// left
+			draw_line8(colstroke, x, y + 1, x, (y + h) - 1, nullptr);
+		}
+
+		// adjust the box size to be inside of what we just drew
+		x++;
+		y++;
+		w -= 2;
+		h -= 2;
+	}
+	// expand by 1 undoing what was done at the top
+	w++;
+	h++;
+	// Fill centre
+	if (colfill != 0xff) {
+		fill8(colfill, w, h, x, y);
+	}
+}

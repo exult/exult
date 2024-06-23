@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "misc_buttons.h"
 #include "objiter.h"
 
+#include <algorithm>
 /*
  *  Create a gump.
  */
@@ -59,10 +60,8 @@ Gump::Gump(
 		Container_game_object* cont,     // Container it represents.
 		int                    shnum,    // Shape #.
 		ShapeFile              shfile)
-		: Gump_Base(shnum, 0, shfile), container(cont), handles_kbd(false) {
-	Shape_frame* shape = get_shape();
-	x                  = (gwin->get_width() - shape->get_width()) / 2;
-	y                  = (gwin->get_height() - shape->get_height()) / 2;
+		: Gump_Base(shnum, shnum == -1?-1:0, shfile), container(cont), handles_kbd(false) {
+	set_pos();
 }
 
 /*
@@ -100,9 +99,14 @@ Gump::~Gump() {
  */
 
 void Gump::set_pos() {
-	Shape_frame* shape = get_shape();
-	set_pos((gwin->get_width() - shape->get_width()) / 2,
-			(gwin->get_height() - shape->get_height()) / 2);
+	// reset coords to 0 while getting rect
+	x            = 0;
+	y            = 0;
+	auto rect    = get_rect();
+
+
+	x = (gwin->get_width() - rect.w) / 2 +rect.x;
+	y = (gwin->get_height() - rect.h) / 2 +rect.y;
 }
 
 void Gump::set_pos(int newx, int newy) {    // Set new spot on screen.
@@ -123,9 +127,13 @@ void Gump::set_pos(int newx, int newy) {    // Set new spot on screen.
 
 void Gump::set_object_area(const TileRect& area, int checkx, int checky) {
 	object_area = area;
-	checkx += 16;
-	checky -= 12;
-	elems.push_back(new Checkmark_button(this, checkx, checky));
+	if (std::none_of(elems.begin(), elems.end(), [](auto elem) -> bool {
+			return dynamic_cast<Checkmark_button*>(elem) != nullptr;
+		})) {
+		checkx += 16;
+		checky -= 12;
+		elems.push_back(new Checkmark_button(this, checkx, checky));
+	}
 }
 
 /*
@@ -447,7 +455,6 @@ TileRect Gump::get_rect() const {
 			x - s->get_xleft(), y - s->get_yabove(), s->get_width(),
 			s->get_height());
 }
-
 bool Gump::isOffscreen(bool partially) const {
 	auto rect = get_rect();
 

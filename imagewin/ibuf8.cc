@@ -842,3 +842,60 @@ void Image_buffer8::paint_rle_remapped(
 		}
 	}
 }
+
+void Image_buffer8::draw_beveled_box(
+		int x, int y, int w, int h, int depth, uint8 colfill, uint8 coltop,
+		uint8 coltr, uint8 colbottom, uint8 colbl) {
+	// Need to shrink by 1 so lines are drawn in the right places
+	w--;
+	h--;
+	// draw beveled edge
+
+	while (depth--) {
+		// corner pixels
+		if (colfill != 0xff) {
+			// top left
+			put_pixel8(colfill, x, y);
+			// bottom right
+			put_pixel8(colfill, x + w, y + h);
+		}
+		// top right
+		if (coltr != 0xff) {
+			put_pixel8(coltr, x + w, y);
+		}
+
+		// bottomleft
+		if (colbl != 0xff) {
+			put_pixel8(colbl, x, y + h);
+		}
+
+		// Lines
+
+		if (coltop != 0xff) {
+			// top
+			fill_hline8(coltop, w - 1, x + 1, y);
+			// right
+			draw_line8(coltop, x + w, y + 1, x + w, y + h - 1, nullptr);
+		}
+
+		if (colbottom != 0xff) {
+			// bottom
+			fill_hline8(colbottom, w - 1, x + 1, y + h);
+			// left
+			draw_line8(colbottom, x, y + 1, x, (y + h) - 1, nullptr);
+		}
+
+		// adjust the box size to be inside of what we just drew
+		x++;
+		y++;
+		w -= 2;
+		h -= 2;
+	}
+	// expand by 1 undoing what was done at the top
+	w++;
+	h++;
+	// Fill centre
+	if (colfill != 0xff) {
+		fill8(colfill, w, h, x, y);
+	}
+}

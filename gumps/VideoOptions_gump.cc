@@ -453,7 +453,7 @@ void VideoOptions_gump::save_settings() {
 }
 
 void VideoOptions_gump::paint() {
-	Gump::paint();
+	Modal_gump::paint();
 	for (auto& btn : buttons) {
 		if (btn != nullptr) {
 			btn->paint();

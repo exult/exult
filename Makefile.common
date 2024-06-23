@@ -514,6 +514,8 @@ gumps/ItemMenu_gump.o : gumps/ItemMenu_gump.cc $(EXULT_FLX)
 
 gumps/InputOptions_gump.o : gumps/InputOptions_gump.cc $(EXULT_FLX)
 
+gumps/Modal_gump.o : gumps/Modal_gump.cc $(EXULT_FLX)
+
 gumps/Newfile_gump.o : gumps/Newfile_gump.cc $(EXULT_FLX)
 
 gumps/Notebook_gump.o : gumps/Notebook_gump.cc $(EXULT_FLX)
