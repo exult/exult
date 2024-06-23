@@ -204,6 +204,7 @@ public:
 class ShapeID : public Game_singletons {
 	short       shapenum = -1;    // Shape #.
 	signed char framenum = -1;    // Frame # within shape.
+	uint16      palette_transform = 0;
 
 	ShapeFile shapefile = SF_SHAPES_VGA;
 
@@ -281,8 +282,9 @@ public:
 	//
 	// see comment on set_palette_transform for what this is all about
 	//
+
 private:
-	uint16 palette_transform = 0;
+
 
 public:
 	//! Palette tranformation types to use with #set_palette_transform
