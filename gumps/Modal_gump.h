@@ -87,6 +87,57 @@ private:
 protected:
 	// If set this gump cannot be dragged
 	bool no_dragging;
+
+
+	TileRect procedural_background;
+
+	ShapeID checkmark_background;
+
+	// Colours used to draw the background.
+	struct ProceduralColours {
+		uint8 border     = 0;      // black
+		uint8 Background = 142;    // brown
+		uint8 Highlight;           // 2 brighter than backgriund
+		uint8 Highlight2;          // 4 brighter than background
+		uint8 Shadow;              // 2 darker tab background
+
+		ProceduralColours() {
+			CalculateHighlightAndShadow();
+		}
+
+		void CalculateHighlightAndShadow() {
+			Highlight  = Background - 2;
+			Shadow     = Background + 2;
+			Highlight2 = Background - 4;
+		}
+
+		// Remap the current colours to a new ramp (default ramp is 9)
+		void RemapColours(int newramp);
+	};
+
+	// Change as desired
+	ProceduralColours procedural_colours;
+
+	//! Set ths gump to have a procedurally drawn background
+	//! \param backrect The inner rectangle for the gumps background
+	//! \param Checkbg_paletteramp Colour ramp to use for the checkmark
+	//!  button background. if -1 use default green
+	//! \remarks This will reset procedural_colours to default 
+	//! and create the checkmark button if it doesn't aready exist
+	//! This will not supress rendeing of a background shape. 
+	//! To use this:
+	//! set shnum to -1 in the constructor Argument
+	//! and then call this funcion in the constructor. Do not call
+	//! Gump::set_object_area() to create the checkmark button
+	void SetProceduralBackground(
+			TileRect backrect,
+			int    Checkbg_paletteramp
+			= -1);
+
+public:
+	void paint() override;
+
+	TileRect get_rect() const override;
 };
 
 #endif

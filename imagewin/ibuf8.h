@@ -113,6 +113,10 @@ public:
 	void paint_rle_remapped(
 			int xoff, int yoff, const unsigned char* inptr,
 			const unsigned char*& trans);
+
+	void draw_beveled_box(
+			int x, int y, int w, int h, int depth, uint8 colfill, uint8 coltop,
+			uint8 coltr, uint8 colbottom, uint8 colbl) override;
 };
 
 #endif
