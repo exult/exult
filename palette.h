@@ -19,6 +19,7 @@
 #ifndef PALETTE_H
 #define PALETTE_H
 
+#include "common_types.h"
 class Image_window8;
 struct File_spec;
 class U7multiobject;
@@ -146,6 +147,39 @@ public:
 	unsigned char get_border_index() const {
 		return border255 ? 255 : 0;
 	}
+
+	struct Ramp {
+		uint8 start;
+		uint8 end;
+	};
+
+	//! Get details of colour ramps in the palette
+	//! \param[out] num_ramps The number of ramps in the returned array
+	//! \returns Pointer to array of Ramp. A start index of 0 is used as a terminator.
+	//! \remarks Colour index 0 is never included in a ramp. In general the u7 palette has 17 generally usuable ramps
+	//! Ramp 17 onwards are palette cycling colours So cannot be reasonably used
+	//! This generates the ramp information on first call so first callmight be
+	//! slow in some cases and fast in others In particular this will always
+	//! generate ramps from palette 0. If paleete 0 is not current it will
+	//! attempt to load if it fails to load palette 0 it will return zero ramps
+	const Ramp* get_ramps(unsigned int& num_ramps);
+
+	//! Get the ramp number this colour belongs to
+	//! \param colindex The colour to lookup
+	//! \returns The ramp the colour is in
+	int get_ramp_for_index(uint8 colindex);
+
+	//! Remap a single colour to another ramp maintaining relative brightness
+	//! \param colindex The colour to remap
+	//! \param newramp the ramp the colour shouldbe remapped to
+	//! \returns the bew colour if remapped or the colindex unchanged if
+	//! remapping failed
+	uint8 remap_colour_to_ramp(uint8 colindex, unsigned int newramp);
+
+	//! Generate an xform table to remap colours to a specific ramp
+	//! \param[out] table array to recieve generated table
+	//! \param[in] remaps array to indicate which ramps should get remapped to which other ramp. i = remaps[i], use -1 as terminator
+	void Generate_remap_xformtable(uint8 table[256], int* remaps);
 };
 
 /*

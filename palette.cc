@@ -25,6 +25,7 @@
 #include "exceptions.h"
 #include "files/U7file.h"
 #include "fnames.h"
+#include "game.h"
 #include "gameclk.h"
 #include "gamewin.h"
 #include "ibuf8.h"
@@ -231,8 +232,8 @@ void Palette::set_loaded(
 			memcpy(pal1, buf, 768);
 		}
 		// The second one is black.
-		memset(pal2, 0, 768);
-	} else if (buf && len > 0) {
+		memset(pal2, 0, sizeof(pal2));
+	} else if (buf && len >= 1536) {
 		// Double palette
 		for (int i = 0; i < 768; i++) {
 			pal1[i] = buf[i * 2];
@@ -497,6 +498,137 @@ void Palette::set_color(int nr, int r, int g, int b) {
 void Palette::set_palette(unsigned char palnew[768]) {
 	memcpy(pal1, palnew, 768);
 	memset(pal2, 0, 768);
+}
+
+const Palette::Ramp* Palette::get_ramps(unsigned int& num_ramps) {
+	static Ramp   ramps[32] = {{0}};
+	static uint32 rampgame  = 0;
+
+	uint32 currentgame = Game::Get_unique_gamecode();
+
+	// it is zeroed or game changed  so need to scan for ramps
+	if (ramps[0].start == 0 || rampgame != currentgame) {
+		// If palette is not 0, load palette 0 and use that instead
+		if (palette != 0) {
+			Palette palette0;
+			try {
+				palette0.load(PALETTES_FLX, PATCH_PALETTES, 0);
+				palette0.palette = 0;
+				return palette0.get_ramps(num_ramps);
+			} catch (...) {
+				num_ramps = 0;
+				return ramps;
+			}
+		}
+		int r    = -1;
+		int last = pal1[0] + pal1[1] + pal1[2];
+		for (int c = 1; c < 256; c++) {
+			int brightness = pal1[c * 3] + pal1[c * 3 + 1] + pal1[c * 3 + 2];
+
+			// Big change in brightness means start of a ramp (note 6 bit colour
+			// so 48 is equiv to 192 in 8 bit)
+			if (std::abs(brightness - last) > 48) {
+				// set the end point of the previous ramp
+				if (r != -1) {
+					ramps[r].end = c - 1;
+				}
+				r++;
+				// too many ramps
+				if (r >= std::size(ramps)) {
+					break;
+				}
+				// Start of a ramp
+				ramps[r].start = c;
+			}
+			last = brightness;
+		}
+		if (r >= 0) {
+			if (r < std::size(ramps)) {
+				num_ramps    = r + 1;
+				ramps[r].end = 255;
+			}
+		} else {
+			ramps[0].start = 0;
+			num_ramps      = 0;
+		}
+
+		rampgame = currentgame;
+	} else {
+		unsigned num = 0;
+		while (ramps[num].start != 0 && ramps[num].end != 0) {
+			num++;
+		}
+		num_ramps = num;
+	}
+	// terminator
+	ramps[std::size(ramps) - 1].start = 0;
+	return &ramps[0];
+}
+
+int Palette::get_ramp_for_index(uint8 colindex) {
+	unsigned int num_ramps = 0;
+	auto         ramps     = get_ramps(num_ramps);
+
+	for (unsigned int r = 0; r < num_ramps; r++) {
+		if (ramps[r].start <= colindex && ramps[r].end >= colindex) {
+			return r;
+		}
+	}
+
+	return -1;
+}
+
+uint8 Palette::remap_colour_to_ramp(uint8 colindex, unsigned int newramp) {
+	unsigned int num_ramps = 0;
+	auto         ramps     = get_ramps(num_ramps);
+
+	// New ramp is out of range, do nothing
+	if (newramp > num_ramps) {
+		return colindex;
+	}
+
+	// Find the ramp the existing colour is in and what offset it has in that
+	// ramp
+	int offset = 0;
+	for (unsigned int r = 0; r < num_ramps; r++) {
+		if (ramps[r].start <= colindex && ramps[r].end >= colindex) {
+			offset = ((colindex - ramps[r].start) * 256)
+					 / (ramps[r].end - ramps[r].start);
+			break;
+		}
+	}
+
+	int rampsize = ramps[newramp].end - ramps[newramp].start;
+	// New ramp is too small, just return the centre colour index
+	int newoffset = (offset * rampsize) / 256;
+	return ramps[newramp].start + newoffset;
+}
+
+void Palette::Generate_remap_xformtable(uint8 table[256], int* remaps) {
+	unsigned int num_ramps = 0;
+	auto         ramps     = get_ramps(num_ramps);
+
+	// First set table to do nothing
+	for (int i = 0; i < 256; i++) {
+		table[i] = i;
+	}
+
+	for (int r = 0; remaps[r] >= 0; r++) {
+		unsigned int to = remaps[r];
+		// Do nothing is invalid ramp or remap to self
+		if (to > num_ramps || to == r) {
+			continue;
+		}
+		auto fromramp = ramps[r];
+		auto toramp   = ramps[to];
+		int  fromsize = fromramp.end - fromramp.start;
+		int  tosize   = toramp.end - toramp.start;
+		for (uint8 c = fromramp.start; c <= fromramp.end; c++) {
+			int offset = ((c - fromramp.start) * 256) / (fromsize);
+
+			table[c] = toramp.start + (offset * tosize) / 256;
+		}
+	}
 }
 
 Palette_transition::Palette_transition(

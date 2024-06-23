@@ -202,13 +202,8 @@ public:
  *  as a 2-byte quantity.
  */
 class ShapeID : public Game_singletons {
-	short       shapenum          = -1;    // Shape #.
-	signed char framenum          = -1;    // Frame # within shape.
-	uint16      palette_transform = 0;     // Palette transformation to use when
-										   // painting shape if not transparent.
-	//  0-255 are palete index offset mod 256
-	//  This perform a pallete shift
-	// >255 are (xform table <<8)
+	short       shapenum = -1;    // Shape #.
+	signed char framenum = -1;    // Frame # within shape.
 
 	ShapeFile shapefile = SF_SHAPES_VGA;
 
@@ -281,15 +276,41 @@ public:
 		framenum = frnum;
 	}
 
-	// Palette transformation to use when painting shape if not transparent.
-	// 0-255 are palette index offset mod 256 This perform a pallete shift. 0 is
-	// nomal unshifted
-	// >=256 are (xform table <<8)  the shape's colours are transformed using
-	// the xform table as if there was a transparent overlay drawn over the
-	// shape Note Behaviour on palette cycling, a shift can shift a colour into
-	// the palette cycling range for interesting effects, or shift cycling
-	// colours out of the range Xform will get rid of all palette cycling
-	// effects
+	//
+	// Palette transformations
+	//
+	// see comment on set_palette_transform for what this is all about
+	//
+private:
+	uint16 palette_transform = 0;
+
+public:
+	//! Palette tranformation types to use with #set_palette_transform
+	enum PaletteTransformType {
+		//! Basic palette index shift
+		//! Use PT_Shift|(offset mod 256)
+		PT_Shift = 0,
+
+		//!  transform using an xform table as if there was a transparent
+		//!  overlay drawn over the
+		//! shape  Use (PT_xForm|xform number)
+		PT_xForm = 1 << 8,
+
+		//! Ramp remapping to remaap a single ramp
+		//! Use (PT_RampRemap|rampfrom<<5|rampto&31)
+		PT_RampRemap = 1 << 15,
+
+		//! Ramp remapping to remap all ramps.
+		//! Use (PT_RampRemapAllFrom|rampto&31)
+		PT_RampRemapAllFrom = PT_RampRemap | 255 << 5
+	};
+
+	//! Palette transformation to use when painting shape if not transparent.
+	//! \param pt New Palette transform to use. See ShapeId::PaletteTransformType
+	//! \remark Note Behaviour on palette cycling, a shift can shift a colour into
+	//! the palette cycling range for interesting effects, or shift cycling
+	//! colours out of the range Xform will get rid of all palette cycling
+	//! effects.
 	void set_palette_transform(int pt) {
 		palette_transform = pt;
 	}
@@ -307,20 +328,7 @@ public:
 		unsigned char* transtable = nullptr;
 		unsigned char  table[256];
 		if (palette_transform != 0) {
-			uint16 xform = palette_transform >> 8;
-			int    index = palette_transform & 0xff;
-			if (xform == 0) {
-				for (int i = 0; i < 256; i++) {
-					table[i] = (i + index) & 0xff;
-				}
-				// keep index 0 and 255 as themselves as this is more useful
-				table[0]   = 0;
-				table[255] = 255;
-				transtable = table;
-				// Bound check xform table
-			} else if (sman->get_xforms_cnt() <= xform) {
-				transtable = sman->get_xform(xform).colors;
-			}
+			transtable = Get_palette_transform_table(table);
 		}
 		sman->paint_shape(
 				xoff, yoff, cache.shape, cache.has_trans || force_trans,
@@ -350,6 +358,8 @@ public:
 	static Shape_info& get_info(int shnum) {    // Get info. about shape.
 		return Shape_manager::instance->shapes.get_info(shnum);
 	}
+
+	uint8* Get_palette_transform_table(uint8 table[256]) const;
 };
 
 /*
