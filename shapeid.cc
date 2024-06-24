@@ -546,8 +546,10 @@ uint8* ShapeID::Get_palette_transform_table(uint8 table[256]) const {
 				remaps[i]     = to;
 				remaps[i + 1] = -1;
 				break;
+			} 
+			else {
+				remaps[i] = i;
 			}
-			remaps[i] = i;
 		}
 		remaps[31] = -1;
 
@@ -561,7 +563,7 @@ uint8* ShapeID::Get_palette_transform_table(uint8 table[256]) const {
 		table[0]   = 0;
 		table[255] = 255;
 		// Bound check xform table
-	} else if (xform && sman->get_xforms_cnt() <= index) {
+	} else if (xform && index < sman->get_xforms_cnt()) {
 		return  sman->get_xform(index).colors;
 	}
 	return table;
