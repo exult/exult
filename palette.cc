@@ -501,7 +501,7 @@ void Palette::set_palette(unsigned char palnew[768]) {
 }
 
 const Palette::Ramp* Palette::get_ramps(unsigned int& num_ramps) {
-	static Ramp   ramps[32] = {{0}};
+	static Ramp   ramps[32] = {{0,0}};
 	static uint32 rampgame  = 0;
 
 	uint32 currentgame = Game::Get_unique_gamecode();
@@ -520,18 +520,17 @@ const Palette::Ramp* Palette::get_ramps(unsigned int& num_ramps) {
 				return ramps;
 			}
 		}
-		int r    = -1;
-		int last = pal1[0] + pal1[1] + pal1[2];
-		for (int c = 1; c < 256; c++) {
+		unsigned int r    = 0;
+		int last = pal1[3] + pal1[4] + pal1[5];
+		ramps[0].start    = 1;
+		for (int c = 2; c < 256; c++) {
 			int brightness = pal1[c * 3] + pal1[c * 3 + 1] + pal1[c * 3 + 2];
 
 			// Big change in brightness means start of a ramp (note 6 bit colour
 			// so 48 is equiv to 192 in 8 bit)
 			if (std::abs(brightness - last) > 48) {
 				// set the end point of the previous ramp
-				if (r != -1) {
-					ramps[r].end = c - 1;
-				}
+				ramps[r].end = c - 1;
 				r++;
 				// too many ramps
 				if (r >= std::size(ramps)) {
@@ -542,7 +541,7 @@ const Palette::Ramp* Palette::get_ramps(unsigned int& num_ramps) {
 			}
 			last = brightness;
 		}
-		if (r >= 0) {
+		if (r > 0) {
 			if (r < std::size(ramps)) {
 				num_ramps    = r + 1;
 				ramps[r].end = 255;
@@ -618,7 +617,7 @@ void Palette::Generate_remap_xformtable(uint8 table[256], int* remaps) {
 		table[i] = i;
 	}
 
-	for (int r = 0; remaps[r] >= 0; r++) {
+	for (unsigned int r = 0; remaps[r] >= 0; r++) {
 		unsigned int to = remaps[r];
 		// Do nothing is invalid ramp or remap to self
 		if (to > num_ramps || to == r) {
