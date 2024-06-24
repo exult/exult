@@ -546,6 +546,8 @@ const Palette::Ramp* Palette::get_ramps(unsigned int& num_ramps) {
 			if (r < std::size(ramps)) {
 				num_ramps    = r + 1;
 				ramps[r].end = 255;
+			} else {
+				num_ramps    = r;
 			}
 		} else {
 			ramps[0].start = 0;
@@ -582,6 +584,9 @@ uint8 Palette::remap_colour_to_ramp(uint8 colindex, unsigned int newramp) {
 	unsigned int num_ramps = 0;
 	auto         ramps     = get_ramps(num_ramps);
 
+	if (colindex == 0) {
+		return 0;
+	}
 	// New ramp is out of range, do nothing
 	if (newramp > num_ramps) {
 		return colindex;
@@ -623,8 +628,8 @@ void Palette::Generate_remap_xformtable(uint8 table[256], int* remaps) {
 		auto toramp   = ramps[to];
 		int  fromsize = fromramp.end - fromramp.start;
 		int  tosize   = toramp.end - toramp.start;
-		for (uint8 c = fromramp.start; c <= fromramp.end; c++) {
-			int offset = ((c - fromramp.start) * 256) / (fromsize);
+		if(fromramp.start) for (std::uint_fast16_t c = fromramp.start; c <= fromramp.end; c++) {
+			int offset = fromsize?((c - fromramp.start) * 256) / (fromsize):0;
 
 			table[c] = toramp.start + (offset * tosize) / 256;
 		}
