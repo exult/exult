@@ -172,8 +172,8 @@ void GameDisplayOptions_gump::load_settings() {
 }
 
 GameDisplayOptions_gump::GameDisplayOptions_gump()
-		: Modal_gump(nullptr, EXULT_FLX_GAMEPLAYOPTIONS_SHP, SF_EXULT_FLX) {
-	set_object_area(TileRect(0, 0, 0, 0), 8, 162);    //++++++ ???
+		: Modal_gump(nullptr, -1) {
+	SetProceduralBackground(TileRect(29, 2, 226, 156), -1);
 
 	for (auto& btn : buttons) {
 		btn.reset();
@@ -252,7 +252,7 @@ void GameDisplayOptions_gump::save_settings() {
 }
 
 void GameDisplayOptions_gump::paint() {
-	Gump::paint();
+	Modal_gump::paint();
 	for (auto& btn : buttons) {
 		if (btn) {
 			btn->paint();

@@ -179,8 +179,9 @@ void GameEngineOptions_gump::load_settings() {
 }
 
 GameEngineOptions_gump::GameEngineOptions_gump()
-		: Modal_gump(nullptr, EXULT_FLX_GAMEPLAYOPTIONS_SHP, SF_EXULT_FLX) {
-	set_object_area(TileRect(0, 0, 0, 0), 8, 162);    //++++++ ???
+		: Modal_gump(nullptr, -1) {
+	SetProceduralBackground(TileRect(29, 2, 224, 156), -1);
+
 
 	load_settings();
 	build_buttons();
@@ -234,7 +235,7 @@ void GameEngineOptions_gump::save_settings() {
 }
 
 void GameEngineOptions_gump::paint() {
-	Gump::paint();
+	Modal_gump::paint();
 	for (auto& btn : buttons) {
 		if (btn) {
 			btn->paint();

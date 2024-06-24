@@ -156,7 +156,7 @@ void Itemmenu_gump::paint() {
 	if (objectSelected) {
 		objectSelected->paint_outline(PROTECT_PIXEL);
 	}
-	Gump::paint();
+	Modal_gump::paint();
 	for (auto& btn : buttons) {
 		btn->paint();
 	}

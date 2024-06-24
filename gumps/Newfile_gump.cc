@@ -373,7 +373,7 @@ void Newfile_gump::paint() {
 	if (!games) {
 		return;    // No list, so skip out.
 	}
-	Gump::paint();
+	Modal_gump::paint();
 
 	// Paint text objects.
 	int i;

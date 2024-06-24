@@ -141,9 +141,8 @@ void InputOptions_gump::load_settings() {
 	touch_pathfind   = gwin->get_touch_pathfind();
 }
 
-InputOptions_gump::InputOptions_gump()
-		: Modal_gump(nullptr, EXULT_FLX_GAMEPLAYOPTIONS_SHP, SF_EXULT_FLX) {
-	set_object_area(TileRect(0, 0, 0, 0), 8, 162);    //++++++ ???
+InputOptions_gump::InputOptions_gump() : Modal_gump(nullptr, -1) {
+	SetProceduralBackground(TileRect(29, 2, 224, 156), -1);
 
 	load_settings();
 	build_buttons();
@@ -206,7 +205,7 @@ void InputOptions_gump::save_settings() {
 }
 
 void InputOptions_gump::paint() {
-	Gump::paint();
+	Modal_gump::paint();
 	for (auto& btn : buttons) {
 		if (btn) {
 			btn->paint();

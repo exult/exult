@@ -298,11 +298,6 @@ EXULT_FLX_OBJECTS := \
 	data/sav_upup.shp \
 	data/sav_slider.shp \
 	data/sav_selected.shp \
-	data/gameplayoptions.shp \
-	data/gamemenu.shp \
-	data/audiooptions.shp \
-	data/videooptions.shp \
-	data/miscoptions.shp \
 	data/hp_bar.shp \
 	data/sfx_icon.shp \
 	data/mtgm.mid \
@@ -322,7 +317,8 @@ EXULT_FLX_OBJECTS := \
 	data/exultmsg_es.txt \
 	data/exultmsg_fr.txt \
 	data/endfont.shp \
-	data/transparentmenu.shp
+	data/transparentmenu.shp \
+	data\checkmark_background.shp
 
 EXULT_BG_FLX := data/exult_bg.flx data/exult_bg_flx.h
 EXULT_BG_FLX_OBJECTS := \

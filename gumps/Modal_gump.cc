@@ -153,7 +153,7 @@ void Modal_gump::SetDragType(DragType newtype) {
 }
 
 void Modal_gump::SetProceduralBackground(
-		TileRect backsize, int Checkbg_paletteramp) {
+		TileRect backsize, int Checkbg_paletteramp, bool centre_gump_on_screen) {
 	checkmark_background
 			= ShapeID(EXULT_FLX_CHECKMARK_BACKGROUND_SHP, 0, SF_EXULT_FLX);
 
@@ -213,6 +213,10 @@ void Modal_gump::SetProceduralBackground(
 	}
 	// Set colours
 	procedural_colours = ProceduralColours();
+
+	if (centre_gump_on_screen) {
+		set_pos();
+	}
 }
 
 void Modal_gump::paint() {

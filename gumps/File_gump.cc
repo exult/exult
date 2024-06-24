@@ -488,7 +488,7 @@ int File_gump::toggle_option(Gump_button* btn    // Button that was clicked.
  */
 
 void File_gump::paint() {
-	Gump::paint();    // Paint background
+	Modal_gump::paint();    // Paint background
 	// Paint text objects.
 	for (auto& name : names) {
 		if (name) {

@@ -20,11 +20,6 @@ EXULT_FLX_OBJECTS = \
 	sav_upup.shp		\
 	sav_slider.shp		\
 	sav_selected.shp	\
-	gameplayoptions.shp	\
-	gamemenu.shp		\
-	audiooptions.shp	\
-	videooptions.shp	\
-	miscoptions.shp		\
 	hp_bar.shp		\
 	sfx_icon.shp		\
 	mtgm.mid			\
@@ -47,6 +42,7 @@ EXULT_FLX_OBJECTS = \
 	endfont.shp \
 	scroll_left.shp \
 	scroll_right.shp \
+	checkmark_background.shp \
 	mixer.shp
 
 EXULT_BG_FLX_OBJECTS = \

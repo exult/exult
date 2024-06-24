@@ -61,8 +61,8 @@ static const char*                  quittext     = "Quit";
 using Gamemenu_button = CallbackTextButton<Gamemenu_gump>;
 
 Gamemenu_gump::Gamemenu_gump()
-		: Modal_gump(nullptr, EXULT_FLX_GAMEMENU_SHP, SF_EXULT_FLX) {
-	set_object_area(TileRect(0, 0, 0, 0), 8, 95);
+		: Modal_gump(nullptr, -1) {
+	SetProceduralBackground(TileRect(29, 2, 112, 91), -1);
 
 	int y = 0;
 	if (!gwin->is_in_exult_menu()) {
@@ -152,7 +152,7 @@ void Gamemenu_gump::input_options() {
 }
 
 void Gamemenu_gump::paint() {
-	Gump::paint();
+	Modal_gump::paint();
 	for (auto& btn : buttons) {
 		if (btn) {
 			btn->paint();
