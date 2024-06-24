@@ -121,7 +121,8 @@ protected:
 	//! Set ths gump to have a procedurally drawn background
 	//! \param backrect The inner rectangle for the gumps background
 	//! \param Checkbg_paletteramp Colour ramp to use for the checkmark
-	//!  button background. if -1 use default green
+	//!  button background. if -1 use default green that is the same as 11
+	//! \param centre_gump_on_screen automatically centre the gump on screen when done
 	//! \remarks This will reset procedural_colours to default 
 	//! and create the checkmark button if it doesn't aready exist
 	//! This will not supress rendeing of a background shape. 
@@ -132,7 +133,8 @@ protected:
 	void SetProceduralBackground(
 			TileRect backrect,
 			int    Checkbg_paletteramp
-			= -1);
+			= -1,
+		bool centre_gump_on_screen = true);
 
 public:
 	void paint() override;

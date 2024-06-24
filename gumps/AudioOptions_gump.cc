@@ -454,8 +454,9 @@ void AudioOptions_gump::load_settings() {
 }
 
 AudioOptions_gump::AudioOptions_gump()
-		: Modal_gump(nullptr, EXULT_FLX_AUDIOOPTIONS_SHP, SF_EXULT_FLX) {
-	set_object_area(TileRect(0, 0, 0, 0), 8, 187);    //++++++ ???
+		: Modal_gump(nullptr, -1) {
+	SetProceduralBackground(TileRect(29, 2, 166, 186), -1);
+
 	const Exult_Game  game  = Game::get_game_type();
 	const std::string title = Game::get_gametitle();
 	have_config_pack        = Audio::have_config_sfx(title, &configpack);
