@@ -351,7 +351,7 @@ void check_elem_positions(Object_list& objects) {
 
 void Gump::paint() {
 	// Paint the gump itself.
-	paint_shape(x, y);
+	if (get_shape()) paint_shape(x, y);
 	gwin->set_painted();
 
 	// Paint red "checkmark".
