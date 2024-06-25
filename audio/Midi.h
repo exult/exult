@@ -53,12 +53,17 @@ public:
 
 	void destroyMidiDriver();
 
-	void start_music(
-			int num, bool repeat = false, bool forcemidi = false,
+	enum ForceType {
+		Force_None,
+		Force_Midi,
+		Force_Ogg
+	};
+	bool start_music(
+			int num, bool repeat = false, ForceType force = Force_None,
 			std::string flex = MAINMUS);
-	void start_music(
+	bool start_music(
 			std::string fname, int num, bool repeat = false,
-			bool forcemidi = false);
+			ForceType force = Force_None);
 	void stop_music(bool quitting = false);
 
 	bool is_track_playing(int num);
@@ -124,6 +129,13 @@ public:
 		return ogg_enabled || midi_driver || init_device(true);
 	}
 
+	bool can_play_midi() {
+		if (!midi_driver) {
+			init_device(true);
+		}
+		return midi_driver!=nullptr;
+	}
+
 private:
 	bool repeating     = false;
 	int  current_track = -1;
@@ -145,6 +157,7 @@ private:
 	bool   ogg_enabled     = false;
 	sint32 ogg_instance_id = -1;
 	int    ogg_volume      = 100;
+	std::string oggfailed;
 
 public:
 	//! Set Volume for Ogg Music Playback. This will
@@ -157,6 +170,10 @@ public:
 	//!  even if Ogg music is disabled.
 	int GetOggMusicVolume() {
 		return ogg_volume;
+	}
+
+	const std::string& GetOggFailed() {
+		return oggfailed;
 	}
 
 	bool ogg_is_playing() const;

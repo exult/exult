@@ -329,16 +329,16 @@ void SI_Game::play_intro() {
 			const auto* midi_driver = audio->get_midi();
 			if (midi_driver->get_ogg_enabled()) {
 				audio->start_music(
-						EXULT_SI_FLX_EXT_INTRO_SI01_OGG, false, false,
-						EXULT_SI_FLX);
+						EXULT_SI_FLX_EXT_INTRO_SI01_OGG, false,
+						MyMidiPlayer::Force_None, EXULT_SI_FLX);
 			} else if (midi_driver->is_mt32()) {
 				audio->start_music(
-						EXULT_SI_FLX_EXT_INTRO_R_XMI, false, true,
-						EXULT_SI_FLX);
+						EXULT_SI_FLX_EXT_INTRO_R_XMI, false,
+						MyMidiPlayer::Force_None, EXULT_SI_FLX);
 			} else {
 				audio->start_music(
-						EXULT_SI_FLX_EXT_INTRO_A_XMI, false, true,
-						EXULT_SI_FLX);
+						EXULT_SI_FLX_EXT_INTRO_A_XMI, false,
+						MyMidiPlayer::Force_None, EXULT_SI_FLX);
 			}
 		} else {
 			audio->start_music(R_SINTRO, 0, false);
@@ -348,7 +348,7 @@ void SI_Game::play_intro() {
 		unique_ptr<unsigned char[]> buffer;
 		// Thunder, note we use the buffer again later so it's not freed here
 		// this is not speech so removing this check
-		//if (speech)
+		// if (speech)
 		{
 			const U7multiobject voc_thunder(INTRO_DAT, PATCH_INTRO, 15);
 			buffer = voc_thunder.retrieve(size);
@@ -908,7 +908,8 @@ Shape_frame* SI_Game::get_menu_shape() {
 }
 
 void SI_Game::top_menu() {
-	Audio::get_ptr()->start_music(28, true, false, MAINSHP_FLX);
+	Audio::get_ptr()->start_music(
+			28, true, MyMidiPlayer::Force_None, MAINSHP_FLX);
 	sman->paint_shape(topx, topy, get_menu_shape());
 	pal->load(MAINSHP_FLX, PATCH_MAINSHP, 26);
 	pal->fade_in(60);
@@ -1407,7 +1408,8 @@ void SI_Game::end_game(bool success, bool within_game) {
 }
 
 void SI_Game::show_quotes() {
-	Audio::get_ptr()->start_music(32, false, false, MAINSHP_FLX);
+	Audio::get_ptr()->start_music(
+			32, false, MyMidiPlayer::Force_None, MAINSHP_FLX);
 	TextScroller quotes(
 			MAINSHP_FLX, 0x10, fontManager.get_font("MENU_FONT"),
 			menushapes.extract_shape(0x14));
@@ -1416,7 +1418,8 @@ void SI_Game::show_quotes() {
 
 void SI_Game::show_credits() {
 	pal->load(MAINSHP_FLX, PATCH_MAINSHP, 26);
-	Audio::get_ptr()->start_music(30, false, false, MAINSHP_FLX);
+	Audio::get_ptr()->start_music(
+			30, false, MyMidiPlayer::Force_None, MAINSHP_FLX);
 	TextScroller credits(
 			MAINSHP_FLX, 0x0E, fontManager.get_font("MENU_FONT"),
 			menushapes.extract_shape(0x14));

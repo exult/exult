@@ -552,7 +552,8 @@ void BG_Game::scene_butterfly() {
 				butterfly->get_width(), butterfly->get_height()));
 
 		// Start playing the birdsongs while still faded out
-		Audio::get_ptr()->start_music(bird_song_midi, false, false, INTROMUS);
+		Audio::get_ptr()->start_music(
+				bird_song_midi, false, MyMidiPlayer::Force_None, INTROMUS);
 
 		// trees with "Ultima VII" on top of 'em
 		sman->paint_shape(topx, topy, shapes.get_shape(trees_shp, 0));
@@ -858,7 +859,8 @@ void BG_Game::scene_guardian() {
 		//
 		// Start background music
 		//
-		Audio::get_ptr()->start_music(guardian_midi, false, false, INTROMUS);
+		Audio::get_ptr()->start_music(
+				guardian_midi, false, MyMidiPlayer::Force_None, INTROMUS);
 
 		WAITDELAYCYCLE1(3800);
 
@@ -1378,7 +1380,8 @@ namespace {    // anonymous
 
 void BG_Game::scene_desk() {
 	try {
-		Audio::get_ptr()->start_music(home_song_midi, false, false, INTROMUS);
+		Audio::get_ptr()->start_music(
+				home_song_midi, false, MyMidiPlayer::Force_None, INTROMUS);
 
 		gwin->clear_screen();
 		// Clip it to 320x200 region
@@ -1656,7 +1659,8 @@ Shape_frame* BG_Game::get_menu_shape() {
 }
 
 void BG_Game::top_menu() {
-	Audio::get_ptr()->start_music(menu_midi, true, false, INTROMUS);
+	Audio::get_ptr()->start_music(
+			menu_midi, true, MyMidiPlayer::Force_None, INTROMUS);
 	sman->paint_shape(topx, topy, get_menu_shape());
 	pal->load(INTROPAL_DAT, PATCH_INTROPAL, 6);
 	pal->fade_in(60);
@@ -2138,7 +2142,8 @@ void BG_Game::end_game(bool success, bool within_game) {
 }
 
 void BG_Game::show_quotes() {
-	Audio::get_ptr()->start_music(quotes_midi, false, false, INTROMUS);
+	Audio::get_ptr()->start_music(
+			quotes_midi, false, MyMidiPlayer::Force_None, INTROMUS);
 	TextScroller quotes(
 			MAINSHP_FLX, 0x10, fontManager.get_font("MENU_FONT"),
 			menushapes.extract_shape(0x14));
@@ -2147,7 +2152,8 @@ void BG_Game::show_quotes() {
 
 void BG_Game::show_credits() {
 	pal->load(INTROPAL_DAT, PATCH_INTROPAL, 6);
-	Audio::get_ptr()->start_music(credits_midi, false, false, INTROMUS);
+	Audio::get_ptr()->start_music(
+			credits_midi, false, MyMidiPlayer::Force_None, INTROMUS);
 	TextScroller credits(
 			MAINSHP_FLX, 0x0E, fontManager.get_font("MENU_FONT"),
 			menushapes.extract_shape(0x14));

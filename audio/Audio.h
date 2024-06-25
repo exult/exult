@@ -156,13 +156,13 @@ public:
 	sint32 playSpeechfile(
 			const char* fname, const char* fpatch, bool wait, int volume = 255);
 	bool playing();
-	void start_music(
-			int num, bool continuous = false, bool forcemidi = false,
+	bool start_music(
+			int num, bool continuous = false, MyMidiPlayer::ForceType force= MyMidiPlayer::Force_None,
 			const std::string& flex = MAINMUS);
 	void change_repeat(bool newrepeat);
-	void start_music(
+	bool start_music(
 			const std::string& fname, int num, bool continuous = false,
-			bool forcemidi = false);
+			MyMidiPlayer::ForceType force = MyMidiPlayer::Force_None);
 	void start_music_combat(Combat_song song, bool continuous);
 	void stop_music();
 	int  play_sound_effect(

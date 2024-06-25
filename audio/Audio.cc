@@ -488,27 +488,31 @@ bool Audio::playing() {
 	return false;
 }
 
-void Audio::start_music(
-		int num, bool continuous, bool forcemidi, const std::string& flex) {
+bool Audio::start_music(
+		int num, bool continuous, MyMidiPlayer::ForceType force,
+		const std::string& flex) {
 	if (audio_enabled && music_enabled && mixer && mixer->getMidiPlayer()) {
-		mixer->getMidiPlayer()->start_music(
+		return mixer->getMidiPlayer()->start_music(
 				num, music_looping == LoopingType::Never ? false : continuous,
-				forcemidi, flex);
+				force, flex);
 	}
+	return false;
 }
 
 void Audio::change_repeat(bool newrepeat) {
 	mixer->getMidiPlayer()->set_repeat(newrepeat);
 }
 
-void Audio::start_music(
-		const std::string& fname, int num, bool continuous, bool forcemidi) {
+bool Audio::start_music(
+		const std::string& fname, int num, bool continuous,
+		MyMidiPlayer::ForceType force ) {
 	if (audio_enabled && music_enabled && mixer && mixer->getMidiPlayer()) {
-		mixer->getMidiPlayer()->start_music(
+		return mixer->getMidiPlayer()->start_music(
 				fname, num,
 				music_looping == LoopingType::Never ? false : continuous,
-				forcemidi);
+				force);
 	}
+	return false;
 }
 
 void Audio::start_music_combat(Combat_song song, bool continuous) {

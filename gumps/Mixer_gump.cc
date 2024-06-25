@@ -488,7 +488,7 @@ void Mixer_gump::OnSliderValueChanged(Slider_widget* sender, int newvalue) {
 				&& !sender->is_dragging()) {
 				midi->start_music(
 						Audio::game_music(57), false,
-						!music_is_ogg);    // 57 is bg track number
+						music_is_ogg?MyMidiPlayer::Force_Ogg:MyMidiPlayer::Force_Midi);    // 57 is bg track number
 			}
 		}
 	} else if (sender == sfxslider.get()) {
