@@ -441,7 +441,8 @@ BaseGameInfo* ExultMenu::run() {
 		// Make sure timbre library is correct!
 		// Audio::get_ptr()->get_midi()->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_GM);
 		Audio::get_ptr()->start_music(
-				EXULT_FLX_MEDITOWN_MID, true, false, EXULT_FLX);
+				EXULT_FLX_MEDITOWN_MID, true, MyMidiPlayer::Force_None,
+				EXULT_FLX);
 	}
 
 	Shape_frame* exultlogo = exult_flx.get_shape(EXULT_FLX_EXULT_LOGO_SHP, 0);
@@ -484,7 +485,8 @@ BaseGameInfo* ExultMenu::run() {
 				// Make sure timbre library is correct!
 				// Audio::get_ptr()->get_midi()->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_GM);
 				Audio::get_ptr()->start_music(
-						EXULT_FLX_MEDITOWN_MID, true, false, EXULT_FLX);
+						EXULT_FLX_MEDITOWN_MID, true, MyMidiPlayer::Force_None,
+						EXULT_FLX);
 			}
 
 			calc_win();
