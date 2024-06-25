@@ -226,7 +226,6 @@ void Modal_gump::paint() {
 		TileRect rect = procedural_background;
 		local_to_screen(rect.x, rect.y);
 
-		auto cmbshape = checkmark_background.get_shape();
 		checkmark_background.paint_shape(rect.x, rect.y + rect.h);
 		checkmark_background.paint_shape(rect.x + rect.w, rect.y + rect.h);
 
