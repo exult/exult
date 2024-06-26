@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Gump.h"
 #include "ignore_unused_variable_warning.h"
-
+#include <chrono>
 /*
  *  A modal gump object represents a 'dialog' that grabs the mouse until
  *  the user clicks okay.
@@ -49,9 +49,7 @@ public:
 		return true;
 	}
 
-	virtual bool run() {
-		return false;
-	}
+	virtual bool run();
 
 	bool is_draggable() const override {
 		return !no_dragging;
@@ -140,6 +138,14 @@ public:
 	void paint() override;
 
 	TileRect get_rect() const override;
+
+private:
+	std::string                           popup_message;
+	std::chrono::steady_clock::time_point popup_message_timeout;
+
+public:
+	//! Set a message to display above the gump
+	void SetPopupMessage(const std::string& message, int mstimeout = 5000);
 };
 
 #endif
