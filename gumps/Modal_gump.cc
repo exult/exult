@@ -44,6 +44,17 @@ Modal_gump::Modal_gump(Container_game_object* cont, int shnum, ShapeFile shfile)
 	GetDragType();
 }
 
+bool Modal_gump::run() {
+	// Need a repaint is displaying a popup message and it has expired
+	if (!popup_message.empty()
+		&& popup_message_timeout <= std::chrono::steady_clock::now()) {
+		std::cout << "need to clear popup message" << std::endl;
+		popup_message.clear();
+		return true;
+	}
+	return false;
+}
+
 bool Modal_gump::mouse_down(int mx, int my, MouseButton button) {
 	if (is_draggable()
 		&& button == MouseButton::Left)    //&&(has_point(mx, my))
@@ -220,23 +231,51 @@ void Modal_gump::SetProceduralBackground(
 }
 
 void Modal_gump::paint() {
+	TileRect backrect;
+	auto     ib = gwin->get_win()->get_ib8();
 	if (procedural_background) {
-		auto ib = gwin->get_win()->get_ibuf();
 
-		TileRect rect = procedural_background;
-		local_to_screen(rect.x, rect.y);
+		backrect      = procedural_background;
+		local_to_screen(backrect.x, backrect.y);
 
-		checkmark_background.paint_shape(rect.x, rect.y + rect.h);
-		checkmark_background.paint_shape(rect.x + rect.w, rect.y + rect.h);
+		checkmark_background.paint_shape(backrect.x, backrect.y + backrect.h);
+		checkmark_background.paint_shape(backrect.x + backrect.w, backrect.y + backrect.h);
 
 		ib->draw_box(
-				rect.x, rect.y, rect.w, rect.h, 1, 0xFF,
+				backrect.x, backrect.y, backrect.w, backrect.h, 1, 0xFF,
 				procedural_colours.border);
 		ib->draw_beveled_box(
-				rect.x + 1, rect.y + 1, rect.w - 2, rect.h - 2, 1,
+				backrect.x + 1, backrect.y + 1, backrect.w - 2, backrect.h - 2, 1,
 				procedural_colours.Background, procedural_colours.Highlight,
 				procedural_colours.Highlight2, procedural_colours.Shadow,
 				procedural_colours.Shadow);
+	}
+	else
+	{
+		// Not a procedurally drawn gump but the popup message code needs backrect filled
+		backrect = get_rect();
+		// get_rect returns corrds including the space for the checkmark
+		// which is not what we need for message drawing so offset by the usual checkmark space size
+		// checkmark sace is usually about 27 pixel on left of gump and 3 on the right
+		backrect.x += 27;
+		backrect.w -= 30;
+
+	}
+
+	// if we have a message to display, check the timeout
+	if (!popup_message.empty()) {
+		Font* font = fontManager.get_font("SMALL_BLACK_FONT");
+		int  messagew = font->get_text_width(popup_message.c_str());
+		int  messageh = font->get_text_height() + 8;
+		int  messagex = backrect.x + backrect.w / 2 - messagew / 2;
+		int  messagey = backrect.y - messageh;
+		int  boxx     = std::min(backrect.x, messagex - 2);
+		int  boxw     = std::max(messagew + 4, backrect.w);
+		ib->draw_box(
+				boxx, messagey, boxw, messageh, 0,
+				procedural_colours.Background, 0xff);
+		font->paint_text(
+				ib, popup_message.c_str(), messagex, messagey + 4);
 	}
 
 	Gump::paint();
@@ -266,6 +305,18 @@ TileRect Modal_gump::get_rect() const {
 		local_to_screen(ret.x, ret.y);
 		return ret;
 	}
+}
+
+//! Set a message to display above the gump
+
+void Modal_gump::SetPopupMessage(
+		const std::string& message, int mstimeout) {
+	std::cout << "Adding popup message to gump: " << message << std::endl;
+	popup_message         = message;
+	popup_message_timeout = std::chrono::steady_clock::now()
+			+= std::chrono::milliseconds(mstimeout);
+
+	gwin->set_all_dirty();
 }
 
 void Modal_gump::ProceduralColours::RemapColours(int newramp) {
