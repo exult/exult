@@ -528,10 +528,10 @@ bool ShapeID::is_frame_empty() const {
 
 uint8* ShapeID::Get_palette_transform_table(uint8 table[256]) const {
 	uint16 xform = palette_transform & PT_xForm;
-	int    index = palette_transform & 0xff;
+	uint16 index = palette_transform & 0xff;
 	if (palette_transform & PT_RampRemap) {
-		int to = palette_transform & 31;
-		int from   = ((palette_transform & ~32768) >> 5);
+		uint16 to = palette_transform & 31;
+		uint16 from   = ((palette_transform & ~32768) >> 5);
 
 		int remaps[32];
 
