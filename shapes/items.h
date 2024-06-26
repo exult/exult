@@ -172,6 +172,8 @@ const int brit_earth  = 0x17A;    // to 0x17B
 const int pagan       = 0x17C;    // to 0x17E
 const int congrats_si = 0x17F;    // to 0x187
 
+const int mixergump_midi_test_failed = 0x188;
+const int mixergump_ogg_test_failed  = 0x189;
 //	Misc. text (frames, etc.) start at 0x500 in text.flx.
 const int misc_name0 = 0x500;
 

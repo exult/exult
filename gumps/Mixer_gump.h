@@ -38,22 +38,33 @@ private:
 		id_count
 	};
 
-	std::shared_ptr<Slider_widget> musicslider, sfxslider, speechslider,
-			inputslider;
+	std::shared_ptr<Slider_widget> midislider, oggslider, sfxslider,
+			speechslider, inputslider;
 
 	std::shared_ptr<Slider_widget> GetSlider(int sx, int sy);
 
 	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
 
-	bool music_is_ogg;    // music slider only represents ogg music volume level
-						  // if oggs are enabled and there is not a midi track
-						  // playing when the gump is created
+	int num_sliders = 0;    // The number of sliders the gump needs room for.
+							// Set in load_settings(). will be 3 or 4
 
-	int initial_music;
-	int initial_sfx;
-	int initial_speech;
-	bool closed = false;
-		
+	int initial_music_ogg = -1;     // Initial midi music volume when gump
+									// created. -1 if disabled
+	int initial_music_midi = -1;    // Initial odd music volume when gump
+									// created. -1 if disabled
+	int initial_sfx = -1;           // Initial sfx volume when gump created. -1
+									// if disabled
+	int initial_speech = -1;        // Initial speech volume when gump created.
+									// -1 if disabled
+	bool closed = false;    // Set when gump has been safely closed and changes
+							// have been saved or reverted If not set destructor
+							// will revert changes
+	uint8 slider_track_color;    // Palette index to use to draw slider track,
+								 // set in Constructor based on procedural
+								 // background colour. This will usually be 143
+	int slider_width  = 120;     // Width of the sliders
+	int slider_height = 7;    // Slider track height. This value is set to match
+							  // the height of the diamond in the constructor
 
 public:
 	Mixer_gump();
@@ -61,11 +72,14 @@ public:
 
 	// Paint it and its contents.
 	void paint() override;
+	// Close the gump and save changes
 	void close() override;
+	// Close the gump and revert changes
+	void cancel();
 
+protected:
 	void load_settings();
 	void save_settings();
-	void cancel();
 	void help();
 	// Handle events:
 	bool mouse_down(int mx, int my, MouseButton button) override;
@@ -75,7 +89,10 @@ public:
 	bool mousewheel_down(int mx, int my) override;
 	bool key_down(int chr) override;    // Character typed.
 
-	// Inherited via ICallback
+	//
+	// Implementation of Slider_widget::ICallback
+	//
+
 	void OnSliderValueChanged(Slider_widget* sender, int newvalue) override;
 };
 

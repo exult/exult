@@ -79,6 +79,13 @@ public:
 	int paint_text(
 			Image_buffer8* win, const char* text, int xoff, int yoff,
 			unsigned char* trans = nullptr);
+
+	int paint_text_right_aligned(
+			Image_buffer8* win, const char* text, int xoff, int yoff,
+			unsigned char* trans = nullptr) {
+		return paint_text(win, text, xoff - get_text_width(text), yoff, trans);
+	}
+
 	int paint_text(
 			Image_buffer8* win, const char* text, int textlen, int xoff,
 			int yoff);

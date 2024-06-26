@@ -38,6 +38,7 @@
 #include "gumps/Gamemenu_gump.h"
 #include "ibuf8.h"
 #include "ignore_unused_variable_warning.h"
+#include "items.h"
 #include "menulist.h"
 #include "mouse.h"
 #include "palette.h"
@@ -159,6 +160,11 @@ void ExultMenu::setup() {
 	// mm_exult_menu_game.set_game_type(EXULT_MENU_GAME);
 
 	Game* exult_menu_game = Game::create_game(mm);
+
+	// Load text messages if needed
+	if (!get_num_text_msgs()) {
+		Setup_text(GAME_SI, Game::has_expansion(), GAME_SIB);
+	}
 
 	if (!Shape_manager::get_instance()->load_gumps_minimal()) {
 		std::cerr << "Unable to show gumps in Exult menu." << std::endl;
