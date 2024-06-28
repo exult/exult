@@ -60,12 +60,10 @@ using Mixer_Textbutton = CallbackTextButton<Mixer_gump>;
 void Mixer_gump::close() {
 	save_settings();
 	done   = true;
-	closed = true;
 }
 
 void Mixer_gump::cancel() {
 	done         = true;
-	closed       = true;
 	Audio* audio = Audio::get_ptr();
 	if (!audio) {
 		return;
@@ -241,7 +239,7 @@ Mixer_gump::Mixer_gump() : Modal_gump(nullptr, -1) {
 
 Mixer_gump::~Mixer_gump() {
 	// We did not close ourselves, so do a cancel and revert settings
-	if (!closed) {
+	if (!done) {
 		cancel();
 	}
 }
