@@ -56,9 +56,6 @@ private:
 									// if disabled
 	int initial_speech = -1;        // Initial speech volume when gump created.
 									// -1 if disabled
-	bool closed = false;    // Set when gump has been safely closed and changes
-							// have been saved or reverted If not set destructor
-							// will revert changes
 	uint8 slider_track_color;    // Palette index to use to draw slider track,
 								 // set in Constructor based on procedural
 								 // background colour. This will usually be 143

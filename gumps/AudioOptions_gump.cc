@@ -57,7 +57,7 @@ static const int rowy[]
 		= {5, 17, 29, 41, 56, 68, 80, 92, 104, 116, 131, 143, 158, 173};
 static const int colx[] = {35, 50, 134};
 
-static const char* oktext     = "OK";
+static const char* applytext  = "APPLY";
 static const char* canceltext = "CANCEL";
 static const char* helptext   = "HELP";
 static const char* mixertext  = "VOLUME MIXER";
@@ -76,7 +76,7 @@ void AudioOptions_gump::mixer() {
 }
 
 void AudioOptions_gump::close() {
-	save_settings();
+//	save_settings();
 	done = true;
 }
 
@@ -499,8 +499,9 @@ AudioOptions_gump::AudioOptions_gump()
 			this, &AudioOptions_gump::toggle_audio_enabled, audio_enabled,
 			colx[2], rowy[1], 59);
 	// Ok
-	buttons[id_ok] = std::make_unique<AudioOptions_button>(
-			this, &AudioOptions_gump::close, oktext, colx[0] - 2, rowy[13], 50);
+	buttons[id_apply] = std::make_unique<AudioOptions_button>(
+			this, &AudioOptions_gump::save_settings, applytext, colx[0] - 2,
+			rowy[13], 50);
 	// Cancel
 	buttons[id_cancel] = std::make_unique<AudioOptions_button>(
 			this, &AudioOptions_gump::cancel, canceltext, colx[2] + 9, rowy[13],
