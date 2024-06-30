@@ -1172,102 +1172,6 @@
       </row>
     </data>
   </object>
-  <object class="GtkImage" id="cancel_img10">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img12">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img17">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img20">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img22">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img28">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img3">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img30">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img36">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img39">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img40">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img41">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img5">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img62">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img64">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="cancel_img8">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-cancel</property>
-    <property name="use-fallback">True</property>
-  </object>
   <object class="GtkListStore" id="charset_liststore">
     <columns>
       <!-- column-name charsets -->
@@ -1366,13 +1270,13 @@
   <object class="GtkImage" id="close_img13">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">gtk-close</property>
+    <property name="icon-name">window-close</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="close_img37">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">gtk-close</property>
+    <property name="icon-name">window-close</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkListStore" id="criteria_liststore">
@@ -1416,7 +1320,7 @@
   <object class="GtkImage" id="edit_img43">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">gtk-edit</property>
+    <property name="icon-name">document-edit</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkListStore" id="fieldinfo_type_liststore">
@@ -1832,132 +1736,6 @@
         <col id="0" translatable="yes">Cloak clasp</col>
       </row>
     </data>
-  </object>
-  <object class="GtkImage" id="ok_img1">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img11">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img15">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img16">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img18">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img19">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img2">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img21">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img27">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img29">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img34">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img35">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img38">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img4">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img42">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img6">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img60">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img61">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img63">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img7">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="ok_img9">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">gtk-ok</property>
-    <property name="use-fallback">True</property>
   </object>
   <object class="GtkImage" id="open_img24">
     <property name="visible">True</property>
@@ -5818,9 +5596,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img63</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_egg_apply_btn_clicked" swapped="no"/>
               </object>
               <packing>
@@ -5842,9 +5618,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img64</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_egg_cancel_btn_clicked" swapped="no"/>
               </object>
               <packing>
@@ -9262,9 +9036,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img38</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_npc_apply_btn_clicked" swapped="no"/>
               </object>
               <packing>
@@ -9286,9 +9058,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img39</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_npc_cancel_btn_clicked" swapped="no"/>
               </object>
               <packing>
@@ -9381,9 +9151,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img40</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="exult_widget_hide" object="schedule_dialog" swapped="yes"/>
               </object>
               <packing>
@@ -10642,9 +10410,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img1</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_obj_okay_clicked" swapped="no"/>
               </object>
               <packing>
@@ -10666,9 +10432,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img2</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_obj_apply_clicked" swapped="no"/>
               </object>
               <packing>
@@ -10690,9 +10454,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img3</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_obj_cancel_clicked" swapped="no"/>
               </object>
               <packing>
@@ -23902,9 +23664,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img60</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_shinfo_okay_clicked" swapped="no"/>
               </object>
               <packing>
@@ -23926,9 +23686,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img61</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_shinfo_apply_clicked" swapped="no"/>
               </object>
               <packing>
@@ -23950,9 +23708,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img62</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_shinfo_cancel_clicked" swapped="no"/>
               </object>
               <packing>
@@ -24111,9 +23867,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img15</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_equip_okay_clicked" swapped="no"/>
               </object>
               <packing>
@@ -24135,9 +23889,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img16</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_equip_apply_clicked" swapped="no"/>
               </object>
               <packing>
@@ -24159,9 +23911,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img17</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_equip_cancel_clicked" swapped="no"/>
               </object>
               <packing>
@@ -25178,9 +24928,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img34</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_prefs_okay_clicked" swapped="no"/>
               </object>
               <packing>
@@ -25202,9 +24950,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img35</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_prefs_apply_clicked" swapped="no"/>
               </object>
               <packing>
@@ -25226,9 +24972,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img36</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_prefs_cancel_clicked" swapped="no"/>
               </object>
               <packing>
@@ -25621,9 +25365,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img11</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_new_shape_okay_clicked" swapped="no"/>
               </object>
               <packing>
@@ -25645,9 +25387,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img12</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="exult_widget_hide" object="new_shape_window" swapped="yes"/>
               </object>
               <packing>
@@ -25882,9 +25622,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img9</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_export_tiles_okay_clicked" swapped="no"/>
               </object>
               <packing>
@@ -25906,9 +25644,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img10</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="exult_widget_hide" object="export_tiles_window" swapped="yes"/>
               </object>
               <packing>
@@ -26298,9 +26034,7 @@ Coordinates</property>
                     <property name="margin-bottom">0</property>
                     <property name="hexpand">False</property>
                     <property name="vexpand">False</property>
-                    <property name="image">ok_img6</property>
                     <property name="use-underline">True</property>
-                    <property name="always-show-image">True</property>
                     <signal name="clicked" handler="on_combo_ok_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -26322,9 +26056,7 @@ Coordinates</property>
                     <property name="margin-bottom">0</property>
                     <property name="hexpand">False</property>
                     <property name="vexpand">False</property>
-                    <property name="image">ok_img7</property>
                     <property name="use-underline">True</property>
-                    <property name="always-show-image">True</property>
                     <signal name="clicked" handler="on_combo_apply_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -26346,9 +26078,7 @@ Coordinates</property>
                     <property name="margin-bottom">0</property>
                     <property name="hexpand">False</property>
                     <property name="vexpand">False</property>
-                    <property name="image">cancel_img8</property>
                     <property name="use-underline">True</property>
-                    <property name="always-show-image">True</property>
                     <signal name="clicked" handler="exult_widget_hide" object="combo_win" swapped="yes"/>
                   </object>
                   <packing>
@@ -26721,9 +26451,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img4</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_newmap_ok_clicked" swapped="no"/>
               </object>
               <packing>
@@ -26745,9 +26473,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img5</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="exult_widget_hide" object="newmap_dialog" swapped="yes"/>
               </object>
               <packing>
@@ -27286,9 +27012,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img21</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_barge_apply_btn_clicked" swapped="no"/>
               </object>
               <packing>
@@ -27310,9 +27034,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img22</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_barge_cancel_btn_clicked" swapped="no"/>
               </object>
               <packing>
@@ -27966,9 +27688,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img18</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_cont_okay_clicked" swapped="no"/>
               </object>
               <packing>
@@ -27990,9 +27710,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img19</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_cont_apply_clicked" swapped="no"/>
               </object>
               <packing>
@@ -28014,9 +27732,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img20</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_cont_cancel_clicked" swapped="no"/>
               </object>
               <packing>
@@ -28072,9 +27788,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img29</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_gameselect_ok_clicked" swapped="no"/>
               </object>
               <packing>
@@ -28096,9 +27810,7 @@ Coordinates</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img30</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="exult_widget_hide" object="game_selection" swapped="yes"/>
               </object>
               <packing>
@@ -28432,9 +28144,7 @@ will be added automatically</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img41</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_usecodes_cancel_clicked" swapped="no"/>
               </object>
               <packing>
@@ -28456,9 +28166,7 @@ will be added automatically</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img42</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_usecodes_ok_clicked" swapped="no"/>
               </object>
               <packing>
@@ -28957,9 +28665,7 @@ will be added automatically</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">ok_img27</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_gameinfo_apply_clicked" swapped="no"/>
               </object>
               <packing>
@@ -28981,9 +28687,7 @@ will be added automatically</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">cancel_img28</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="exult_widget_hide" object="game_information" swapped="yes"/>
               </object>
               <packing>

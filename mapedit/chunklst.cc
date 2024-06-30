@@ -143,7 +143,7 @@ void Chunk_chooser::render() {
 			const int clipw = x + chunkw <= winw ? chunkw : (winw - x);
 			iwin->set_clip(x, y, clipw, cliph);
 			const int chunknum = group ? (*group)[index] : index;
-			render_chunk(chunknum, x, y);
+			render_chunk(chunknum, iwin, x, y);
 			iwin->clear_clip();
 			// Store info. about where drawn.
 			info[info_cnt].set(chunknum, x, y, chunkw, chunkh);
@@ -260,8 +260,9 @@ void Chunk_chooser::set_chunk(
  */
 
 void Chunk_chooser::render_chunk(
-		int chunknum,         // # to render.
-		int xoff, int yoff    // Where to draw it in iwin.
+		int            chunknum,    // # to render.
+		Image_buffer8* rwin,        // Where to draw it
+		int xoff, int yoff          // Where to draw it in rwin.
 ) {
 	for (int pass = 1; pass <= 2; pass++) {
 		unsigned char* data = get_chunk(chunknum);
@@ -286,14 +287,14 @@ void Chunk_chooser::render_chunk(
 				//  Default origin -1, -1 to be reset,
 				//  Not clickable nor Hack-Movable.
 				if (s && pass == 1 && !s->is_rle()) {
-					s->paint(iwin, xoff + x, yoff + y);
+					s->paint(rwin, xoff + x, yoff + y);
 				}
 				// Second pass over RLE flats :
 				//  Larger than 8*8 tiles, shapenum >= 150,
 				//  Valid origin,
 				//  Clikable show Name and Outline, Hack-Movable.
 				if (s && pass == 2 && s->is_rle()) {
-					s->paint(iwin, xoff + x - 1, yoff + y - 1);
+					s->paint(rwin, xoff + x - 1, yoff + y - 1);
 				}
 			}
 		}
@@ -507,6 +508,33 @@ gint Chunk_chooser::drag_begin(
 	if (chooser->selected < 0) {
 		return false;    // ++++Display a halt bitmap.
 	}
+	// Get ->chunk.
+	Chunk_info&   shinfo = chooser->info[chooser->selected];
+	const int     w      = c_tiles_per_chunk * c_tilesize;
+	const int     h      = c_tiles_per_chunk * c_tilesize;
+	Image_buffer8 tbuf(w, h);    // Create buffer to render to.
+	tbuf.fill8(0xff);            // Fill with 'transparent' pixel.
+	unsigned char* tbits = tbuf.get_bits();
+	chooser->render_chunk(shinfo.num, &tbuf, 0, 0);
+	// Put shape on a pixmap.
+	GdkPixbuf* pixbuf  = gdk_pixbuf_new(GDK_COLORSPACE_RGB, true, 8, w, h);
+	guchar*    pixels  = gdk_pixbuf_get_pixels(pixbuf);
+	const int  rstride = gdk_pixbuf_get_rowstride(pixbuf);
+	const int  pstride = gdk_pixbuf_get_n_channels(pixbuf);
+	for (int y = 0; y < h; y++) {
+		for (int x = 0; x < w; x++) {
+			guchar*       t = pixels + y * rstride + x * pstride;
+			const guchar  s = tbits[y * w + x];
+			const guint32 c = chooser->palette->colors[s];
+			t[0]            = (s == 255 ? 0 : (c >> 16) & 255);
+			t[1]            = (s == 255 ? 0 : (c >> 8) & 255);
+			t[2]            = (s == 255 ? 0 : (c >> 0) & 255);
+			t[3]            = (s == 255 ? 0 : 255);
+		}
+	}
+	// This will be the chunk dragged.
+	gtk_drag_set_icon_pixbuf(context, pixbuf, w - 2, h - 2);
+	g_object_unref(pixbuf);
 	return true;
 }
 

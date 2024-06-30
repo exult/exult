@@ -149,8 +149,8 @@ void Create_file_selection(
 			stock_accept, GTK_RESPONSE_ACCEPT, nullptr));
 	GtkWidget*      btn  = gtk_dialog_get_widget_for_response(
             GTK_DIALOG(fsel), GTK_RESPONSE_CANCEL);
-	GtkWidget* img
-			= gtk_image_new_from_icon_name("gtk-cancel", GTK_ICON_SIZE_BUTTON);
+	GtkWidget* img = gtk_image_new_from_icon_name(
+			"window-close", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(btn), img);
 	btn = gtk_dialog_get_widget_for_response(
 			GTK_DIALOG(fsel), GTK_RESPONSE_ACCEPT);
