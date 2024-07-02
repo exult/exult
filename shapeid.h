@@ -283,7 +283,6 @@ public:
 	// see comment on set_palette_transform for what this is all about
 	//
 
-private:
 public:
 	//! Palette tranformation types to use with #set_palette_transform
 	enum PaletteTransformType {
