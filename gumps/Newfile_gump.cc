@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2001-2022  The Exult Team
+ *  Copyright (C) 2001-2024  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -373,7 +373,7 @@ void Newfile_gump::paint() {
 	if (!games) {
 		return;    // No list, so skip out.
 	}
-	Gump::paint();
+	Modal_gump::paint();
 
 	// Paint text objects.
 	int i;
@@ -518,9 +518,9 @@ void Newfile_gump::paint() {
  */
 
 bool Newfile_gump::mouse_down(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 
@@ -579,7 +579,7 @@ bool Newfile_gump::mouse_down(
 
 	// Now check for text fields
 	if (gx < fieldx || gx >= fieldx + fieldw) {
-		return true;
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 
 	int hit = -1;
@@ -593,13 +593,13 @@ bool Newfile_gump::mouse_down(
 	}
 
 	if (hit == -1) {
-		return true;
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 
 	last_selected = selected;
 	if (hit + list_position >= num_games || hit + list_position < -2
 		|| selected == hit + list_position) {
-		return true;
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 
 #ifdef DEBUG
@@ -676,13 +676,15 @@ bool Newfile_gump::mouse_down(
  */
 
 bool Newfile_gump::mouse_up(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
-		return false;
+	if (button != MouseButton::Left) {
+		return Modal_gump::mouse_up(mx, my, button);
 	}
 
 	slide_start = -1;
+	bool result = false;
+	;
 
 	if (pushed) {    // Pushing a button?
 		pushed->unpush(button);
@@ -690,46 +692,52 @@ bool Newfile_gump::mouse_up(
 			pushed->activate(button);
 		}
 		pushed = nullptr;
+		result = true;
 	}
 	if (touchui != nullptr
 		&& ((selected == -2 && last_selected != -4)
 			|| (selected >= 0 && selected == last_selected))) {
 		touchui->promptForName(newname);
+		result = true;
 	}
 	// reset so the prompt doesn't pop up on closing
 	last_selected = -4;
 
-	return true;
+	return result || Modal_gump::mouse_up(mx, my, button);
 }
 
-void Newfile_gump::mousewheel_up() {
+bool Newfile_gump::mousewheel_up(int mx, int my) {
+	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT) {
 		scroll_page(-1);
 	} else {
 		scroll_line(-1);
 	}
+	return true;
 }
 
-void Newfile_gump::mousewheel_down() {
+bool Newfile_gump::mousewheel_down(int mx, int my) {
+	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
 	if (mod & KMOD_ALT) {
 		scroll_page(1);
 	} else {
 		scroll_line(1);
 	}
+	return true;
 }
 
 /*
  *  Mouse was dragged with left button down.
  */
 
-void Newfile_gump::mouse_drag(
+bool Newfile_gump::mouse_drag(
 		int mx, int my    // Where mouse is.
 ) {
 	// If not sliding don't do anything
 	if (slide_start == -1) {
-		return;
+		return Modal_gump::mouse_drag(mx, my);
 	}
 
 	const int gx = mx - x;
@@ -755,7 +763,7 @@ void Newfile_gump::mouse_drag(
 
 	// Can't scroll if there is less than 1 pos
 	if (num_pos < 1) {
-		return;
+		return true;
 	}
 
 	// Now work out the closest position to here position
@@ -765,14 +773,15 @@ void Newfile_gump::mouse_drag(
 		list_position = new_pos;
 		paint();
 	}
+	return true;
 }
 
-void Newfile_gump::text_input(const char* text) {
+bool Newfile_gump::text_input(const char* text) {
 	if (cursor == -1 || strlen(text) >= MAX_SAVEGAME_NAME_LEN - 1) {
-		return;
+		return true;
 	}
 	if (strcmp(text, newname) == 0) {    // Not changed
-		return;
+		return true;
 	}
 
 	strcpy(newname, text);
@@ -795,30 +804,31 @@ void Newfile_gump::text_input(const char* text) {
 
 	paint();
 	gwin->set_painted();
+	return true;
 }
 
 /*
  *  Handle character that was typed.
  */
 
-void Newfile_gump::text_input(int chr, int unicode, bool shift_pressed) {
+bool Newfile_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	bool update_details = false;
 	int  repaint        = false;
 
 	// Are we selected on some text?
 	if (selected == -3) {
-		return;
+		return true;
 	}
 
 	switch (chr) {
 	case SDLK_RETURN:    // If only 'Save', do it.
 	case SDLK_KP_ENTER:
 		if (!buttons[id_load] && buttons[id_save]) {
-			if (buttons[id_save]->push(1)) {
+			if (buttons[id_save]->push(MouseButton::Left)) {
 				gwin->show(true);
-				buttons[id_save]->unpush(1);
+				buttons[id_save]->unpush(MouseButton::Left);
 				gwin->show(true);
-				buttons[id_save]->activate(1);
+				buttons[id_save]->activate(MouseButton::Left);
 			}
 		}
 		update_details = true;
@@ -871,7 +881,7 @@ void Newfile_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	default:
 		ignore_unused_variable_warning(unicode);
 		if (chr < ' ') {
-			return;    // Ignore other special chars.
+			return true;    // Ignore other special chars.
 		}
 
 		if (chr < 256 && isascii(chr)) {
@@ -909,6 +919,7 @@ void Newfile_gump::text_input(int chr, int unicode, bool shift_pressed) {
 		paint();
 		gwin->set_painted();
 	}
+	return true;
 }
 
 int Newfile_gump::BackspacePressed() {

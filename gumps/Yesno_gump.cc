@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -66,15 +66,15 @@ public:
 			  isyes(yes) {}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 };
 
 /*
  *  Handle 'yes' or 'no' button.
  */
 
-bool Yesno_button::activate(int button) {
-	if (button != 1) {
+bool Yesno_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	static_cast<Yesno_gump*>(parent)->set_answer(isyes);
@@ -116,16 +116,17 @@ void Yesno_gump::paint() {
  */
 
 bool Yesno_gump::mouse_down(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
-		return false;
+	if (button != MouseButton::Left) {
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 	pushed = on_button(mx, my);
 	if (pushed) {
 		pushed->push(button);    // Show it.
+		return true;
 	}
-	return true;
+	return Modal_gump::mouse_down(mx, my, button);
 }
 
 /*
@@ -133,10 +134,10 @@ bool Yesno_gump::mouse_down(
  */
 
 bool Yesno_gump::mouse_up(
-		int mx, int my, int button    // Position in window.
+		int mx, int my, MouseButton button    // Position in window.
 ) {
-	if (button != 1) {
-		return false;
+	if (button != MouseButton::Left) {
+		return Modal_gump::mouse_up(mx, my, button);
 	}
 
 	if (pushed) {    // Pushing a button?
@@ -145,21 +146,23 @@ bool Yesno_gump::mouse_up(
 			pushed->activate(button);
 		}
 		pushed = nullptr;
+		return true;
 	}
-	return true;
+	return Modal_gump::mouse_up(mx, my, button);
 }
 
 /*
  *  Handle ASCII character typed.
  */
 
-void Yesno_gump::key_down(int chr) {
+bool Yesno_gump::key_down(int chr) {
 	if (chr == 'y' || chr == 'Y' || chr == SDLK_RETURN
 		|| chr == SDLK_KP_ENTER) {
 		set_answer(1);
 	} else if (chr == 'n' || chr == 'N' || chr == SDLK_ESCAPE) {
 		set_answer(0);
 	}
+	return true;
 }
 
 /*

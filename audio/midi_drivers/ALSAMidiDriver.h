@@ -47,11 +47,11 @@ class ALSAMidiDriver : public LowLevelMidiDriver {
 	}
 
 public:
+	ALSAMidiDriver() : LowLevelMidiDriver(std::string(desc.name)) {}
+
 	static const MidiDriverDesc* getDesc() {
 		return &desc;
 	}
-
-	ALSAMidiDriver();
 
 protected:
 	int  open() override;

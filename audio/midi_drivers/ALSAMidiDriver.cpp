@@ -66,7 +66,6 @@ namespace {
 	}
 }    // namespace
 
-ALSAMidiDriver::ALSAMidiDriver() = default;
 
 bool ALSAMidiDriver::find_next_port(bool first) {
 	if (first) {

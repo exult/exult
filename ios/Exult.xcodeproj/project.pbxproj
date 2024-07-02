@@ -26,6 +26,9 @@
 		8A2C52621DE6E9000016E16A /* U7fileman.cc in Sources */ = {isa = PBXBuildFile; fileRef = E700DD7A1A6E3161006C8BE4 /* U7fileman.cc */; };
 		8A2C52631DE6E9040016E16A /* U7obj.cc in Sources */ = {isa = PBXBuildFile; fileRef = E700DD7C1A6E3161006C8BE4 /* U7obj.cc */; };
 		8A2C52641DE6E9070016E16A /* utils.cc in Sources */ = {isa = PBXBuildFile; fileRef = E700DD7E1A6E3161006C8BE4 /* utils.cc */; };
+		8A33B5DE2C2051B800075AF4 /* Mixer_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5DA2C2051B800075AF4 /* Mixer_gump.cc */; };
+		8A33B5DF2C2051B800075AF4 /* Modal_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5DC2C2051B800075AF4 /* Modal_gump.cc */; };
+		8A33B5E02C2051B800075AF4 /* Slider_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5DD2C2051B800075AF4 /* Slider_widget.cc */; };
 		8A45A3B8247C068500F12F4D /* joythumb-glass.png in Resources */ = {isa = PBXBuildFile; fileRef = 8A45A3AC247C068500F12F4D /* joythumb-glass.png */; };
 		8A5252C4257188A5005AD385 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A5252A725718897005AD385 /* libSDL2.a */; };
 		8A599C2224605925006E3252 /* libmt32emu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A599C21246058A9006E3252 /* libmt32emu.a */; };
@@ -399,6 +402,11 @@
 		8A0C19E11D6D9F1800B9105A /* sibetaintrinsics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sibetaintrinsics.h; sourceTree = "<group>"; };
 		8A1C581B1FE7D91B00738E40 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		8A204E1D29F572DF00E7D3E2 /* FluidSynth.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FluidSynth.xcodeproj; path = "fluidsynth-sans-glib/xcode-ios/FluidSynth.xcodeproj"; sourceTree = "<group>"; };
+		8A33B5C92C2051B800075AF4 /* Slider_widget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Slider_widget.h; path = ../gumps/Slider_widget.h; sourceTree = "<group>"; };
+		8A33B5DA2C2051B800075AF4 /* Mixer_gump.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mixer_gump.cc; path = ../gumps/Mixer_gump.cc; sourceTree = "<group>"; };
+		8A33B5DB2C2051B800075AF4 /* Mixer_gump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mixer_gump.h; path = ../gumps/Mixer_gump.h; sourceTree = "<group>"; };
+		8A33B5DC2C2051B800075AF4 /* Modal_gump.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Modal_gump.cc; path = ../gumps/Modal_gump.cc; sourceTree = "<group>"; };
+		8A33B5DD2C2051B800075AF4 /* Slider_widget.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Slider_widget.cc; path = ../gumps/Slider_widget.cc; sourceTree = "<group>"; };
 		8A45A3AC247C068500F12F4D /* joythumb-glass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joythumb-glass.png"; sourceTree = "<group>"; };
 		8A52528E25718896005AD385 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = SDL/Xcode/SDL/SDL.xcodeproj; sourceTree = "<group>"; };
 		8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = libmt32emu.xcodeproj; sourceTree = "<group>"; };
@@ -1429,6 +1437,11 @@
 		E700DE351A6E3478006C8BE4 /* gumps */ = {
 			isa = PBXGroup;
 			children = (
+				8A33B5DA2C2051B800075AF4 /* Mixer_gump.cc */,
+				8A33B5DB2C2051B800075AF4 /* Mixer_gump.h */,
+				8A33B5DC2C2051B800075AF4 /* Modal_gump.cc */,
+				8A33B5DD2C2051B800075AF4 /* Slider_widget.cc */,
+				8A33B5C92C2051B800075AF4 /* Slider_widget.h */,
 				8AB53D8A1C9CA0A90084C69D /* ShortcutBar_gump.cc */,
 				8AB53D8B1C9CA0A90084C69D /* ShortcutBar_gump.h */,
 				8AD4A92F1A92B9DB0004762D /* InputOptions_gump.cc */,
@@ -2001,6 +2014,7 @@
 				E700DF751A6E34C6006C8BE4 /* useval.cc in Sources */,
 				E700DD5E1A6E3121006C8BE4 /* sfxinf.cc in Sources */,
 				E700DCAE1A6E30A7006C8BE4 /* shapeid.cc in Sources */,
+				8A33B5E02C2051B800075AF4 /* Slider_widget.cc in Sources */,
 				E700DE241A6E344D006C8BE4 /* ibuf8.cc in Sources */,
 				8A9A03B029F42948000AF341 /* FluidSynthMidiDriver.cpp in Sources */,
 				E700DD511A6E3121006C8BE4 /* bodyinf.cc in Sources */,
@@ -2140,6 +2154,7 @@
 				E700DCD71A6E30D8006C8BE4 /* animate.cc in Sources */,
 				E700DD601A6E3121006C8BE4 /* weaponinf.cc in Sources */,
 				E700DFB51A6E372A006C8BE4 /* Astar.cc in Sources */,
+				8A33B5DF2C2051B800075AF4 /* Modal_gump.cc in Sources */,
 				E700DC931A6E30A7006C8BE4 /* cheat.cc in Sources */,
 				E700DCB01A6E30A7006C8BE4 /* tqueue.cc in Sources */,
 				E700DC921A6E30A7006C8BE4 /* cheat_screen.cc in Sources */,
@@ -2169,6 +2184,7 @@
 				E700DE7F1A6E3497006C8BE4 /* Book_gump.cc in Sources */,
 				E700DE851A6E3497006C8BE4 /* Gamemenu_gump.cc in Sources */,
 				E700DE311A6E344D006C8BE4 /* scale_hq4x.cc in Sources */,
+				8A33B5DE2C2051B800075AF4 /* Mixer_gump.cc in Sources */,
 				E700DCA51A6E30A7006C8BE4 /* monsters.cc in Sources */,
 				E700DBBC1A6E2CE7006C8BE4 /* AudioMixer.cc in Sources */,
 				E700DFD11A6E3943006C8BE4 /* bggame.cc in Sources */,

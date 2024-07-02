@@ -146,3 +146,6 @@
 0x585:telling him of your fate!
 0x586:
 0x587:
+#mixer gump popup error message
+0x588: Failed to play midi test track
+0x589: Failed to play ogg test track

@@ -88,7 +88,7 @@ Dragging_info::Dragging_info(
 			if (!button->is_draggable()) {
 				return;
 			}
-			button->push(1);
+			button->push(Gump::MouseButton::Left);
 			// Pushed button, so make noise.
 			if (!button->is_checkmark()) {
 				Audio::get_ptr()->play_sound_effect(Audio::game_sfx(73));
@@ -271,10 +271,10 @@ bool Dragging_info::drop(
 	bool handled = moved;
 	Mouse::mouse->set_shape(mouse_shape);
 	if (button) {
-		button->unpush(1);
+		button->unpush(Gump::MouseButton::Left);
 		if (button->on_button(x, y)) {
 			// Clicked on button.
-			button->activate(1);
+			button->activate(Gump::MouseButton::Left);
 		}
 		handled = true;
 	} else if (!obj) {    // Only dragging a gump?

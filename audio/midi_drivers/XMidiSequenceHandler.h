@@ -52,6 +52,10 @@ public:
 	//! \param sequence_id The id of the sequence doing the callback
 	//! \param data data[1] of the XMIDI_CONTROLLER_CALLBACK_TRIG event
 	virtual void handleCallbackTrigger(uint16 sequence_id, uint8 data) = 0;
+
+	//! Get global volume
+	//! \returns Current Volume [0-100]
+	virtual int getGlobalVolume() = 0;
 };
 
 #endif    // SEQUENCEHANDLER_H_INCLUDED

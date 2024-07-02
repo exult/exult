@@ -32,6 +32,7 @@
 #include "Scroll_gump.h"
 #include "ShortcutBar_gump.h"
 #include "Yesno_gump.h"
+#include "Mixer_gump.h"
 #include "actors.h"
 #include "cheat.h"
 #include "combat_opts.h"
@@ -50,6 +51,7 @@
 #include "party.h"
 #include "ucmachine.h"
 #include "version.h"
+
 
 /*
  *  Get the i'th party member, with the 0'th being the Avatar.
@@ -87,6 +89,15 @@ void ActionMenuGump(const int* params) {
 	Game_window::get_instance()->get_gump_man()->do_modal_gump(
 			gmenu, Mouse::hand);
 	delete gmenu;
+}
+
+// { ActionMixerGump, 0, "Mixer", normal_keys, NONE },
+void ActionMixerGump(const int* params) {
+	ignore_unused_variable_warning(params);
+	auto* mixer = new Mixer_gump();
+	Game_window::get_instance()->get_gump_man()->do_modal_gump(
+			mixer, Mouse::hand);
+	delete mixer;
 }
 
 // { ActionFileGump, 0, "Save/restore", normal_keys, NONE },

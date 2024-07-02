@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "misc_buttons.h"
 #include "objiter.h"
 
+#include <algorithm>
 /*
  *  Create a gump.
  */
@@ -41,7 +42,7 @@ Gump::Gump(
 		int initx, int inity,           // Coords. on screen.
 		int       shnum,                // Shape #.
 		ShapeFile shfile)
-		: ShapeID(shnum, 0, shfile), container(cont), x(initx), y(inity),
+		: Gump_Base(shnum, 0, shfile), container(cont), x(initx), y(inity),
 		  handles_kbd(false) {
 	if (container) {
 		if (container->validGumpXY()) {
@@ -59,10 +60,8 @@ Gump::Gump(
 		Container_game_object* cont,     // Container it represents.
 		int                    shnum,    // Shape #.
 		ShapeFile              shfile)
-		: ShapeID(shnum, 0, shfile), container(cont), handles_kbd(false) {
-	Shape_frame* shape = get_shape();
-	x                  = (gwin->get_width() - shape->get_width()) / 2;
-	y                  = (gwin->get_height() - shape->get_height()) / 2;
+		: Gump_Base(shnum, shnum == -1?-1:0, shfile), container(cont), handles_kbd(false) {
+	set_pos();
 }
 
 /*
@@ -70,7 +69,8 @@ Gump::Gump(
  */
 
 Gump::Gump(Container_game_object* cont, int initx, int inity, Gump* from)
-		: ShapeID(from->get_shapenum(), from->get_framenum(),
+		: Gump_Base(
+				  from->get_shapenum(), from->get_framenum(),
 				  from->get_shapefile()),
 		  container(cont), x(initx), y(inity), object_area(from->object_area),
 		  handles_kbd(false) {
@@ -97,10 +97,28 @@ Gump::~Gump() {
 /*
  *   Set centered.
  */
+
 void Gump::set_pos() {
-	Shape_frame* shape = get_shape();
-	x                  = (gwin->get_width() - shape->get_width()) / 2;
-	y                  = (gwin->get_height() - shape->get_height()) / 2;
+	// reset coords to 0 while getting rect
+	x            = 0;
+	y            = 0;
+	auto rect    = get_rect();
+
+
+	x = (gwin->get_width() - rect.w) / 2 +rect.x;
+	y = (gwin->get_height() - rect.h) / 2 +rect.y;
+}
+
+void Gump::set_pos(int newx, int newy) {    // Set new spot on screen.
+	if (x == newx && y == newy) {
+		return;
+	}
+	// mark old position dirty
+	gwin->add_dirty(get_rect());
+	x = newx;
+	y = newy;
+	// mark new position dirty
+	gwin->add_dirty(get_rect());
 }
 
 /*
@@ -109,9 +127,13 @@ void Gump::set_pos() {
 
 void Gump::set_object_area(const TileRect& area, int checkx, int checky) {
 	object_area = area;
-	checkx += 16;
-	checky -= 12;
-	elems.push_back(new Checkmark_button(this, checkx, checky));
+	if (std::none_of(elems.begin(), elems.end(), [](auto elem) -> bool {
+			return dynamic_cast<Checkmark_button*>(elem) != nullptr;
+		})) {
+		checkx += 16;
+		checky -= 12;
+		elems.push_back(new Checkmark_button(this, checkx, checky));
+	}
 }
 
 /*
@@ -329,7 +351,7 @@ void check_elem_positions(Object_list& objects) {
 
 void Gump::paint() {
 	// Paint the gump itself.
-	paint_shape(x, y);
+	if (get_shape()) paint_shape(x, y);
 	gwin->set_painted();
 
 	// Paint red "checkmark".
@@ -432,6 +454,19 @@ TileRect Gump::get_rect() const {
 	return TileRect(
 			x - s->get_xleft(), y - s->get_yabove(), s->get_width(),
 			s->get_height());
+}
+bool Gump::isOffscreen(bool partially) const {
+	auto rect = get_rect();
+
+	if (partially) {
+		return rect.x < 0 || rect.y < 0
+			   || (rect.x + rect.w) > gwin->get_game_width()
+			   || (rect.y + rect.h) > gwin->get_game_height();
+	} else {
+		return rect.x >= gwin->get_game_width()
+			   || rect.y >= gwin->get_game_height() || (rect.x + rect.w) <= 0
+			   || (rect.y + rect.h) <= 0;
+	}
 }
 
 /*

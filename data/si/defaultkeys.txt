@@ -107,6 +107,7 @@ Ctrl-T		next_time_period
 Alt-T		cursor_teleport
 T		target_mode
 V		about
+Shift-V		volume_mixer
 Alt-W		toggle_wizard_mode
 W		useitem			675 21	# Use watch
 Alt-X		quit

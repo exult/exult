@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -34,9 +34,9 @@ public:
 		init();
 	}
 
-	bool push(int button) override;
-	void unpush(int button) override;
-	bool activate(int button = 1) override;
+	bool push(MouseButton button) override;
+	void unpush(MouseButton button) override;
+	bool activate(MouseButton button) override;
 
 	int getselection() const {
 		return get_framenum();

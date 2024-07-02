@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2011-2022 The Exult Team
+Copyright (C) 2011-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -96,6 +96,9 @@ Itemmenu_gump::Itemmenu_gump(Game_object* obj, int ox, int oy, int cx, int cy)
 		: Modal_gump(
 				  nullptr, cx, cy, EXULT_FLX_TRANSPARENTMENU_SHP,
 				  SF_EXULT_FLX) {
+	// Ths gump cannot be dragged at this time
+	no_dragging = true;
+
 	objectSelected                     = obj;
 	objectAction                       = item_menu;
 	objectSelectedClickXY              = {ox, oy};
@@ -153,16 +156,16 @@ void Itemmenu_gump::paint() {
 	if (objectSelected) {
 		objectSelected->paint_outline(PROTECT_PIXEL);
 	}
-	Gump::paint();
+	Modal_gump::paint();
 	for (auto& btn : buttons) {
 		btn->paint();
 	}
 	gwin->set_painted();
 }
 
-bool Itemmenu_gump::mouse_down(int mx, int my, int button) {
+bool Itemmenu_gump::mouse_down(int mx, int my, MouseButton button) {
 	// Only left and right buttons
-	if (button != 1 && button != 3) {
+	if (button != MouseButton::Left && button != MouseButton::Right) {
 		return false;
 	}
 	// We'll eat the mouse down if we've already got a button down
@@ -184,17 +187,17 @@ bool Itemmenu_gump::mouse_down(int mx, int my, int button) {
 	if (pushed && !pushed->push(button)) {
 		pushed = nullptr;
 	}
-	return button == 1 || pushed != nullptr;
+	return button == MouseButton::Left || pushed != nullptr;
 }
 
-bool Itemmenu_gump::mouse_up(int mx, int my, int button) {
+bool Itemmenu_gump::mouse_up(int mx, int my, MouseButton button) {
 	// Not Pushing a button?
 	if (!pushed) {
 		close();
 		return false;
 	}
 	if (pushed->get_pushed() != button) {
-		return button == 1;
+		return button == MouseButton::Left;
 	}
 	bool res = false;
 	pushed->unpush(button);

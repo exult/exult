@@ -53,8 +53,17 @@ public:
 
 	void destroyMidiDriver();
 
-	void start_music(int num, bool repeat = false, std::string flex = MAINMUS);
-	void start_music(std::string fname, int num, bool repeat = false);
+	enum ForceType {
+		Force_None,
+		Force_Midi,
+		Force_Ogg
+	};
+	bool start_music(
+			int num, bool repeat = false, ForceType force = Force_None,
+			std::string flex = MAINMUS);
+	bool start_music(
+			std::string fname, int num, bool repeat = false,
+			ForceType force = Force_None);
 	void stop_music(bool quitting = false);
 
 	bool is_track_playing(int num);
@@ -88,6 +97,17 @@ public:
 		return music_conversion;
 	}
 
+	//! Set Volume of Current Midi device.
+	//!
+	//! If Music is disabled this does nothing
+	//!
+	//! \param vol new volume to set [0-100]
+	//! \param saveconfig Save the new value to exult.cfg
+	void SetMidiMusicVolume(int vol, bool savetoconfig);
+	//! Get volume of current Midi device volume
+	//! \return The current midi device volume. This will return 0 if Music is disabled
+	int GetMidiMusicVolume();
+
 #ifdef ENABLE_MIDISFX
 	void start_sound_effect(int num);
 	void stop_sound_effects();
@@ -103,6 +123,18 @@ public:
 	void load_timbres();
 	bool is_mt32() const;     // Check for true mt32, mt32emu or fakemt32
 	bool is_adlib() const;    // Check for adlib
+
+	// ! Can music be played at all
+	bool can_play() {
+		return ogg_enabled || midi_driver || init_device(true);
+	}
+
+	bool can_play_midi() {
+		if (!midi_driver) {
+			init_device(true);
+		}
+		return midi_driver!=nullptr;
+	}
 
 private:
 	bool repeating     = false;
@@ -124,9 +156,30 @@ private:
 	// Ogg Stuff
 	bool   ogg_enabled     = false;
 	sint32 ogg_instance_id = -1;
+	int    ogg_volume      = 100;
+	std::string oggfailed;
 
-	bool ogg_play_track(const std::string& filename, int num, bool repeat);
+public:
+	//! Set Volume for Ogg Music Playback. This will
+	//! \param vol new volume to set [0-100]
+	//! \param saveconfig Save the new value to exult.cfg
+	void SetOggMusicVolume(int vol, bool savetoconfig);
+
+	//! Get current Set OggMusic volume
+	//! \return The current Ogg music volume. This will return the correct value
+	//!  even if Ogg music is disabled.
+	int GetOggMusicVolume() {
+		return ogg_volume;
+	}
+
+	const std::string& GetOggFailed() {
+		return oggfailed;
+	}
+
 	bool ogg_is_playing() const;
+
+private:
+	bool ogg_play_track(const std::string& filename, int num, bool repeat);
 	void ogg_stop_track();
 	void ogg_set_repeat(bool newrepeat);
 

@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -61,8 +61,8 @@ static const char*                  quittext     = "Quit";
 using Gamemenu_button = CallbackTextButton<Gamemenu_gump>;
 
 Gamemenu_gump::Gamemenu_gump()
-		: Modal_gump(nullptr, EXULT_FLX_GAMEMENU_SHP, SF_EXULT_FLX) {
-	set_object_area(TileRect(0, 0, 0, 0), 8, 95);
+		: Modal_gump(nullptr, -1) {
+	SetProceduralBackground(TileRect(29, 2, 112, 91), -1);
 
 	int y = 0;
 	if (!gwin->is_in_exult_menu()) {
@@ -152,7 +152,7 @@ void Gamemenu_gump::input_options() {
 }
 
 void Gamemenu_gump::paint() {
-	Gump::paint();
+	Modal_gump::paint();
 	for (auto& btn : buttons) {
 		if (btn) {
 			btn->paint();
@@ -161,9 +161,9 @@ void Gamemenu_gump::paint() {
 	gwin->set_painted();
 }
 
-bool Gamemenu_gump::mouse_down(int mx, int my, int button) {
-	if (button != 1) {
-		return false;
+bool Gamemenu_gump::mouse_down(int mx, int my, MouseButton button) {
+	if (button != MouseButton::Left) {
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 
 	pushed = Gump::on_button(mx, my);
@@ -180,23 +180,22 @@ bool Gamemenu_gump::mouse_down(int mx, int my, int button) {
 
 	if (pushed) {    // On a button?
 		pushed->push(button);
+		return true;
 	}
 
-	return true;
+	return Modal_gump::mouse_down(mx, my, button);
 }
 
-bool Gamemenu_gump::mouse_up(int mx, int my, int button) {
-	if (button != 1) {
-		return false;
+bool Gamemenu_gump::mouse_up(int mx, int my, MouseButton button) {
+	if (button != MouseButton::Left || !pushed) {
+		return Modal_gump::mouse_up(mx, my, button);
 	}
 
-	if (pushed) {    // Pushing a button?
-		pushed->unpush(button);
-		if (pushed->on_button(mx, my)) {
-			pushed->activate(1);
-		}
-		pushed = nullptr;
+	pushed->unpush(button);
+	if (pushed->on_button(mx, my)) {
+		pushed->activate(MouseButton::Left);
 	}
+	pushed = nullptr;
 
 	return true;
 }

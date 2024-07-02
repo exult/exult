@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -176,14 +176,14 @@ public:
 			  leftright(lr) {}
 
 	// What to do when 'clicked':
-	bool activate(int button = 1) override;
+	bool activate(MouseButton button) override;
 
-	bool push(int button) override {
+	bool push(MouseButton button) override {
 		ignore_unused_variable_warning(button);
 		return false;
 	}
 
-	void unpush(int button) override {
+	void unpush(MouseButton button) override {
 		ignore_unused_variable_warning(button);
 	}
 };
@@ -192,8 +192,8 @@ public:
  *  Handle click.
  */
 
-bool Notebook_page_button::activate(int button) {
-	if (button != 1) {
+bool Notebook_page_button::activate(MouseButton button) {
+	if (button != MouseButton::Left) {
 		return false;
 	}
 	static_cast<Notebook_gump*>(parent)->change_page(leftright ? 1 : -1);

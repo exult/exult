@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -66,8 +66,8 @@ public:
 	void close() override;
 
 	// Handle events:
-	bool mouse_down(int mx, int my, int button) override;
-	bool mouse_up(int mx, int my, int button) override;
+	bool mouse_down(int mx, int my, MouseButton button) override;
+	bool mouse_up(int mx, int my, MouseButton button) override;
 
 	void build_buttons();
 

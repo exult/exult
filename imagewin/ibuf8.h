@@ -68,7 +68,7 @@ public:
 			unsigned char pix, int srcw, int destx, int desty) override;
 	// Draw an arbitrary line from any point to any point inclusive. Accuracy
 	// not guarenteed
-	virtual void draw_line8(
+	void draw_line8(
 			unsigned char val, int startx, int starty, int endx, int endy,
 			const Xform_palette* xform = nullptr) override;
 	// Copy rectangle into here.
@@ -113,6 +113,10 @@ public:
 	void paint_rle_remapped(
 			int xoff, int yoff, const unsigned char* inptr,
 			const unsigned char*& trans);
+
+	void draw_beveled_box(
+			int x, int y, int w, int h, int depth, uint8 colfill, uint8 coltop,
+			uint8 coltr, uint8 colbottom, uint8 colbl) override;
 };
 
 #endif

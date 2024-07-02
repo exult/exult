@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -52,9 +52,9 @@ public:
 	// Paint it and its contents.
 	void paint() override;
 	// Handle events:
-	bool        mouse_down(int mx, int my, int button) override;
-	bool        mouse_up(int mx, int my, int button) override;
-	void        key_down(int chr) override;    // Character typed.
+	bool        mouse_down(int mx, int my, MouseButton button) override;
+	bool        mouse_up(int mx, int my, MouseButton button) override;
+	bool        key_down(int chr) override;    // Character typed.
 	static bool ask(
 			const char* txt,
 			const char* font

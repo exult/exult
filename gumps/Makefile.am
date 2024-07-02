@@ -38,6 +38,8 @@ libgumps_la_SOURCES = \
 	Sign_gump.h	\
 	Slider_gump.cc	\
 	Slider_gump.h	\
+	Slider_widget.cc	\
+	Slider_widget.h	\
 	Spellbook_gump.cc	\
 	Spellbook_gump.h	\
 	Stats_gump.cc	\
@@ -56,6 +58,10 @@ libgumps_la_SOURCES = \
 	GameDisplayOptions_gump.h	\
 	GameEngineOptions_gump.cc \
 	GameEngineOptions_gump.h \
+	Modal_gump.cc \
+	Modal_gump.h \
+	Mixer_gump.cc \
+	Mixer_gump.h \
 	Gump_ToggleButton.cc	\
 	Gump_ToggleButton.h	\
 	CombatStats_gump.cc	\

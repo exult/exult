@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -34,12 +34,91 @@ class Gump_button;
 class Gump_manager;
 class Gump_widget;
 
+// Base Class shared by Gumps and Widgetss
+class Gump_Base : public ShapeID, public Paintable {
+public:
+	Gump_Base(int shnum, int frnum, ShapeFile shfile)
+			: ShapeID(shnum, frnum, shfile) {}
+
+	virtual int  get_x() const               = 0;
+	virtual int  get_y() const               = 0;
+	virtual void set_pos(int newx, int newy) = 0;
+
+	enum class MouseButton {
+		Unknown = 0,
+		Left    = 1,
+		Middle  = 2,
+		Right   = 3,
+	};
+	//! Get button at point in screenspace
+	virtual Gump_button* on_button(int mx, int my) = 0;
+
+	//! Transform point from screen space to local
+	virtual void screen_to_local(int& sx, int& sy) const = 0;
+
+	//! Transform point deom local to screen space
+	virtual void local_to_screen(int& sx, int& sy) const = 0;
+
+	// Basic Input events These all return true if the event was handled
+	// coords are all in screen space
+
+	virtual bool mouse_down(int mx, int my, MouseButton button) {
+		ignore_unused_variable_warning(mx, my, button);
+		return false;
+	}
+
+	virtual bool mouse_up(int mx, int my, MouseButton button) {
+		ignore_unused_variable_warning(mx, my, button);
+		return false;
+	}
+
+	virtual bool mousewheel_down(int mx, int my) {
+		ignore_unused_variable_warning(mx, my);
+		return false;
+	}
+
+	virtual bool mousewheel_up(int mx, int my) {
+		ignore_unused_variable_warning(mx, my);
+		return false;
+	}
+
+	virtual bool mouse_drag(int mx, int my) {
+		ignore_unused_variable_warning(mx, my);
+		return false;
+	}
+
+	virtual bool key_down(int chr) {    // Key pressed
+		ignore_unused_variable_warning(chr);
+		return false;
+	}
+
+	virtual bool text_input(
+			int chr, int unicode,
+			bool shift_pressed) {    // Character typed (unicode)
+		ignore_unused_variable_warning(chr, unicode, shift_pressed);
+		return false;
+	}
+
+	virtual bool text_input(const char* text) {    // complete string input
+		ignore_unused_variable_warning(text);
+		return false;
+	}
+
+	virtual bool is_draggable() const = 0;
+
+	virtual Container_game_object* get_container() {
+		return nullptr;
+	}
+
+	virtual void close() {}
+};
+
 /*
  *  A gump contains an image of an open container from "gumps.vga".
  */
-class Gump : nonreplicatable, public ShapeID, public Paintable {
+class Gump : nonreplicatable, public Gump_Base {
 protected:
-	Gump() = default;
+	Gump() = delete;
 	Container_game_object* container;    // What this gump shows.
 	int                    x, y;         // Location on screen.
 	TileRect object_area{};              // Area to paint objects in, rel. to
@@ -72,22 +151,19 @@ public:
 		return nullptr;
 	}
 
-	int get_x() {    // Get coords.
+	int get_x() const override {    // Get coords.
 		return x;
 	}
 
-	int get_y() {
+	int get_y() const override {
 		return y;
 	}
 
-	void set_pos(int newx, int newy) {    // Set new spot on screen.
-		x = newx;
-		y = newy;
-	}
+	void set_pos(int newx, int newy) override;
 
 	void set_pos();    // Set centered.
 
-	Container_game_object* get_container() {
+	Container_game_object* get_container() override {
 		return container;
 	}
 
@@ -117,7 +193,7 @@ public:
 	virtual TileRect     get_dirty();    // Get dirty rect. for gump+contents.
 	virtual Game_object* get_owner();    // Get object this belongs to.
 	// Is a given point on a button?
-	virtual Gump_button* on_button(int mx, int my);
+	Gump_button* on_button(int mx, int my) override;
 	// Paint button.
 	virtual bool add(
 			Game_object* obj, int mx = -1, int my = -1, int sx = -1,
@@ -127,13 +203,13 @@ public:
 	void paint_elems();
 	void paint() override;
 	// Close (and delete).
-	virtual void close();
+	void close() override;
 
 	// update the gump, if required
 	virtual void update_gump() {}
 
 	// Can be dragged with mouse
-	virtual bool is_draggable() const {
+	bool is_draggable() const override {
 		return true;
 	}
 
@@ -153,6 +229,20 @@ public:
 
 	virtual bool     has_point(int x, int y) const;
 	virtual TileRect get_rect() const;
+
+	// Is the gump partially or completely off screen
+	// Only check shape rectangle, not against the actual shape
+	bool isOffscreen(bool partially = true) const;
+
+	void screen_to_local(int& sx, int& sy) const override {
+		sx -= x;
+		sy -= y;
+	}
+
+	void local_to_screen(int& sx, int& sy) const override {
+		sx += x;
+		sy += y;
+	}
 
 	virtual bool handle_kbd_event(void* ev) {
 		ignore_unused_variable_warning(ev);

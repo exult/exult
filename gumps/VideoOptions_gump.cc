@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2001-2022  The Exult Team
+ *  Copyright (C) 2001-2024  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -330,11 +330,10 @@ void VideoOptions_gump::load_settings(bool Fullscreen) {
 	o_highdpi         = highdpi;
 }
 
-VideoOptions_gump::VideoOptions_gump()
-		: Modal_gump(nullptr, EXULT_FLX_VIDEOOPTIONS_SHP, SF_EXULT_FLX),
+VideoOptions_gump::VideoOptions_gump() : Modal_gump(nullptr, -1), 
 		  startup_fill_mode(static_cast<Image_window::FillMode>(0)) {
+	SetProceduralBackground(TileRect(29, 2, 166, 166), -1);
 	video_options_gump = this;
-	set_object_area(TileRect(0, 0, 0, 0), 8, 170);
 
 	const std::vector<std::string> enabledtext = {"Disabled", "Enabled"};
 
@@ -453,7 +452,7 @@ void VideoOptions_gump::save_settings() {
 }
 
 void VideoOptions_gump::paint() {
-	Gump::paint();
+	Modal_gump::paint();
 	for (auto& btn : buttons) {
 		if (btn != nullptr) {
 			btn->paint();
@@ -503,10 +502,13 @@ void VideoOptions_gump::paint() {
 	gwin->set_painted();
 }
 
-bool VideoOptions_gump::mouse_down(int mx, int my, int button) {
+bool VideoOptions_gump::mouse_down(int mx, int my, MouseButton button) {
 	// Only left and right buttons
-	if (button != 1 && button != 3) {
-		return false;
+	if (button !=
+
+				MouseButton::Left
+		&& button != MouseButton::Right) {
+		return Modal_gump::mouse_down(mx, my, button);
 	}
 
 	// We'll eat the mouse down if we've already got a button down
@@ -531,17 +533,17 @@ bool VideoOptions_gump::mouse_down(int mx, int my, int button) {
 		pushed = nullptr;
 	}
 
-	return button == 1 || pushed != nullptr;
+	return pushed != nullptr || Modal_gump::mouse_down(mx, my, button);
 }
 
-bool VideoOptions_gump::mouse_up(int mx, int my, int button) {
+bool VideoOptions_gump::mouse_up(int mx, int my, MouseButton button) {
 	// Not Pushing a button?
 	if (!pushed) {
-		return false;
+		return Modal_gump::mouse_up(mx, my, button);
 	}
 
 	if (pushed->get_pushed() != button) {
-		return button == 1;
+		return button == MouseButton::Left;
 	}
 
 	bool res = false;
@@ -550,5 +552,5 @@ bool VideoOptions_gump::mouse_up(int mx, int my, int button) {
 		res = pushed->activate(button);
 	}
 	pushed = nullptr;
-	return res;
+	return res || Modal_gump::mouse_up(mx, my, button);
 }

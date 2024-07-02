@@ -32,9 +32,10 @@ class AudioOptions_gump : public Modal_gump {
 private:
 	enum button_ids {
 		id_first = 0,
-		id_ok    = id_first,
+		id_apply    = id_first,
 		id_cancel,
 		id_help,
+		id_mixer,
 		id_audio_enabled,
 		id_sample_rate,
 		id_speaker_type,
@@ -102,8 +103,8 @@ public:
 	void close() override;
 
 	// Handle events:
-	bool mouse_down(int mx, int my, int button) override;
-	bool mouse_up(int mx, int my, int button) override;
+	bool mouse_down(int mx, int my, MouseButton button) override;
+	bool mouse_up(int mx, int my, MouseButton button) override;
 
 	void toggle(Gump_button* btn, int state);
 	void rebuild_buttons();
@@ -116,6 +117,7 @@ public:
 	void save_settings();
 	void cancel();
 	void help();
+	void mixer();
 
 	void toggle_audio_enabled(int state) {
 		audio_enabled = state;

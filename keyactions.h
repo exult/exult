@@ -21,6 +21,7 @@
 
 void ActionQuit(const int* params);
 void ActionFileGump(const int* params);
+void ActionMixerGump(const int* params);
 void ActionQuicksave(const int* params);
 void ActionQuickrestore(const int* params);
 void ActionAbout(const int* params);

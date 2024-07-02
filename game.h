@@ -110,6 +110,12 @@ public:
 		return sibeta;
 	}
 
+	// Get a code represeting gametype, language, xp and beta state
+	static uint32 Get_unique_gamecode()
+	{
+		return game_type ^ expansion << 31 ^ sibeta << 30 ^ language << 24;
+	}
+
 	static const char* get_avname();
 	static int         get_avsex();
 	static int         get_avskin();

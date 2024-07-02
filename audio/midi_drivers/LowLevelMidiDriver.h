@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <atomic>
 #include <condition_variable>
 #include <cstring>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -56,7 +57,6 @@ public:
 	int  initMidiDriver(uint32 samp_rate, bool stereo) override;
 	void destroyMidiDriver() override;
 	int  maxSequences() override;
-	void setGlobalVolume(int vol) override;
 
 	void startSequence(
 			int seq_num, XMidiEventList* list, bool repeat, int vol,
@@ -78,6 +78,8 @@ public:
 	static bool precacheTimbresOnPlay;
 
 protected:
+	LowLevelMidiDriver(std::string&& name) : MidiDriver(std::move(name)) {}
+
 	// Will be wanted by software drivers
 	uint32 sample_rate;
 	bool   stereo;
@@ -119,13 +121,14 @@ protected:
 
 private:
 	enum Messages {
-		LLMD_MSG_PLAY             = 1,
-		LLMD_MSG_FINISH           = 2,
-		LLMD_MSG_PAUSE            = 3,
-		LLMD_MSG_SET_VOLUME       = 4,
-		LLMD_MSG_SET_SPEED        = 5,
-		LLMD_MSG_PRECACHE_TIMBRES = 6,
-		LLMD_MSG_SET_REPEAT       = 7,
+		LLMD_MSG_PLAY              = 1,
+		LLMD_MSG_FINISH            = 2,
+		LLMD_MSG_PAUSE             = 3,
+		LLMD_MSG_SET_VOLUME        = 4,
+		LLMD_MSG_SET_SPEED         = 5,
+		LLMD_MSG_PRECACHE_TIMBRES  = 6,
+		LLMD_MSG_SET_REPEAT        = 7,
+		LLMD_MSG_SET_GLOBAL_VOLUME = 8,
 		// These are only used by thread
 		LLMD_MSG_THREAD_INIT        = -1,
 		LLMD_MSG_THREAD_INIT_FAILED = -2,
@@ -133,10 +136,6 @@ private:
 	};
 
 	struct ComMessage {
-		ComMessage(Messages T, int seq) : type(T), sequence(seq) {
-			std::memset(&data, 0, sizeof(data));
-		}
-
 		ComMessage(const ComMessage& other) {
 			type     = other.type;
 			sequence = other.sequence;
@@ -185,6 +184,17 @@ private:
 				bool newrepeat;
 			} set_repeat;
 		} data;
+
+		ComMessage(
+				Messages T, int seq,
+				std::function<void(decltype(data)&)> data_setter
+				= std::function<void(decltype(data)&)>())
+				: type(T), sequence(seq) {
+			std::memset(&data, 0, sizeof(data));
+			if (data_setter) {
+				data_setter(data);
+			}
+		}
 	};
 
 	bool uploading_timbres;    // Set in 'uploading' timbres mode
@@ -195,7 +205,7 @@ private:
 	std::unique_ptr<std::mutex>              cbmutex;
 	std::unique_ptr<std::condition_variable> cond;
 	sint32                                   peekComMessageType();
-	void sendComMessage(ComMessage& message);
+	void sendComMessage(const ComMessage& message);
 	void waitTillNoComMessages();
 
 	// State
@@ -203,7 +213,7 @@ private:
 	sint32 callback_data[LLMD_NUM_SEQ];    // Only set by thread
 
 	// Shared Data
-	int global_volume = 255;
+	std::atomic_uchar global_volume = 100;
 	// Xmidi clock 1/6000th second granuality
 
 	std::chrono::duration<uint32, std::ratio<1, 6000>> xmidi_clock;
@@ -305,8 +315,20 @@ private:
 
 	int unlockAndUnprotectChannel(uint16 sequence_id);
 
-	//! Mute all phyisical channels
-	void muteAllChannels();
+	//! Set global volume of this driver
+	//! \param vol The new volume level for the sequence (0-100)
+	void setGlobalVolume(int vol) override {
+		sendComMessage(ComMessage(
+				LLMD_MSG_SET_GLOBAL_VOLUME, -1, [vol](auto& data) noexcept {
+					data.volume.level = vol;
+				}));
+	}
+
+	//! Get global volume of this driver
+	//! \returns Current Volume [0-100]
+	int getGlobalVolume() override {
+		return global_volume;
+	}
 };
 
 #endif    // LOWLEVELMIDIDRIVER_H_INCLUDED

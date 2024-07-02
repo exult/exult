@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2011-2022 The Exult Team
+Copyright (C) 2011-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -118,8 +118,8 @@ private:
 	void                  createButtons();
 	void                  deleteButtons();
 	void                  onItemClicked(int index, bool doubleClicked);
-	void                  mouse_down(SDL_Event* event, int mx, int my);
-	void                  mouse_up(SDL_Event* event, int mx, int my);
+	void                  sdl_mouse_down(SDL_Event* event, int mx, int my);
+	void                  sdl_mouse_up(SDL_Event* event, int mx, int my);
 	bool                  has_changed;
 
 	int locx;

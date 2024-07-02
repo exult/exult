@@ -118,6 +118,11 @@ void Configuration::set(const char* key, int value, bool write_out) {
 	set(k, v, write_out);
 }
 
+void Configuration::set(const string& key, int value, bool write_out) {
+	const string v = std::to_string(value);
+	set(key, v, write_out);
+}
+
 void Configuration::remove(const string& key, bool write_out) {
 	xmltree->remove(key, true);
 	if (write_out) {

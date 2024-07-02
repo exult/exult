@@ -36,7 +36,7 @@ using namespace std;
 const MidiDriver::MidiDriverDesc CoreMidiDriver::desc
 		= MidiDriver::MidiDriverDesc("CoreMidi", createInstance);
 
-CoreMidiDriver::CoreMidiDriver() : mClient(0), mOutPort(0), mDest(0) {
+CoreMidiDriver::CoreMidiDriver() : LowLevelMidiDriver(std::string(desc.name)), mClient(0), mOutPort(0), mDest(0) {
 	OSStatus err = noErr;
 	err          = MIDIClientCreate(
             CFSTR("CoreMidi Driver for macOS"), nullptr, nullptr, &mClient);

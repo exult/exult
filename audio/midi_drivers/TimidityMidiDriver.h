@@ -35,11 +35,11 @@ class TimidityMidiDriver : public LowLevelMidiDriver {
 	}
 
 public:
+	TimidityMidiDriver() : LowLevelMidiDriver(std::string(desc.name)) {}
+
 	static const MidiDriverDesc* getDesc() {
 		return &desc;
 	}
-
-	TimidityMidiDriver() = default;
 
 protected:
 	// LowLevelMidiDriver implementation

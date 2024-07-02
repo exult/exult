@@ -104,33 +104,41 @@ std::unique_ptr<IDataSource> open_music_flex(const std::string& flex, int num) {
 	}
 }
 
-void MyMidiPlayer::start_music(int num, bool repeat, std::string flex) {
-	// No output device
-	if (!ogg_enabled && !midi_driver && !init_device(true)) {
-		return;
+bool MyMidiPlayer::start_music(
+		int num, bool repeat, ForceType force, std::string flex) {
+	// Check output for no output device
+	if (force == Force_None && (!ogg_enabled) && !midi_driver
+			&& !init_device(true)) {
+		return false;
+	}
+	if (force == Force_Midi && !can_play_midi()) {
+		return false;
+	}
+	if (force == Force_Ogg && !ogg_enabled) {
+		return false;
 	}
 
 	// -1 and 255 are stop tracks
 	if (num == -1 || num == 255) {
 		stop_music();
-		return;
+		return true;
 	}
 
 	// Already playing it??
 	if (current_track == num) {
 		// OGG is playing?
-		if (ogg_enabled && ogg_is_playing()) {
-			return;
+		if (force != Force_Midi && ogg_enabled && ogg_is_playing()) {
+			return true;
 		}
 		// Midi driver is playing?
-		if (midi_driver && midi_driver->isSequencePlaying(SEQ_NUM_MUSIC)) {
-			return;
+		if (force != Force_Ogg && midi_driver && midi_driver->isSequencePlaying(SEQ_NUM_MUSIC)) {
+			return true;
 		}
 	}
 
 	// Work around Usecode bug where track 0 is played at Intro Earthquake
 	if (num == 0 && flex == MAINMUS && Game::get_game_type() == BLACK_GATE) {
-		return;
+		return false; 
 	}
 
 #ifdef DEBUG
@@ -144,10 +152,10 @@ void MyMidiPlayer::start_music(int num, bool repeat, std::string flex) {
 	repeating     = repeat;
 
 	// OGG Handling
-	if (ogg_enabled) {
+	if (ogg_enabled && force != Force_Midi) {
 		// Play ogg for this track
 		if (ogg_play_track(flex, num, repeat)) {
-			return;
+			return true;
 		}
 
 		// If we failed to play the track, call stop to clean up and put us back
@@ -155,17 +163,17 @@ void MyMidiPlayer::start_music(int num, bool repeat, std::string flex) {
 		ogg_stop_track();
 
 		// No midi driver or bg track and we can't play it properly so don't
-		// fall through
-		if (!midi_driver
+		// fall through or force ogg
+		if (force == Force_Ogg || !midi_driver
 			|| (!is_mt32()
 				&& Game_window::get_instance()->is_background_track(num)
 				&& flex == MAINMUS)) {
-			return;
+			return false;
 		}
 	}
 
 	if (!midi_driver) {
-		return;
+		return false;
 	}
 
 	// Handle FM Synth
@@ -187,7 +195,7 @@ void MyMidiPlayer::start_music(int num, bool repeat, std::string flex) {
 	std::unique_ptr<IDataSource> mid_data = open_music_flex(flex, num);
 	// Extra safety.
 	if (!mid_data->getSize()) {
-		return;
+		return false;
 	}
 
 	XMidiFile midfile(mid_data.get(), setup_timbre_for_track(flex));
@@ -197,20 +205,31 @@ void MyMidiPlayer::start_music(int num, bool repeat, std::string flex) {
 	XMidiEventList* eventlist = midfile.GetEventList(0);
 	if (eventlist) {
 		midi_driver->startSequence(SEQ_NUM_MUSIC, eventlist, repeat, 255);
+		return true;
 	}
+	return false;
 }
 
-void MyMidiPlayer::start_music(std::string fname, int num, bool repeat) {
+bool MyMidiPlayer::start_music(
+		std::string fname, int num, bool repeat, ForceType force) {
 	// No output device
-	if (!ogg_enabled && !midi_driver && !init_device(true)) {
-		return;
+	// Check output for no output device
+	if (force == Force_None && (!ogg_enabled) && !midi_driver
+		&& !init_device(true)) {
+		return false;
+	}
+	if (force == Force_Midi && !can_play_midi()) {
+		return false;
+	}
+	if (force == Force_Ogg && !ogg_enabled) {
+		return false;
 	}
 
 	stop_music();
 
 	// -1 and 255 are stop tracks
 	if (num == -1 || num == 255) {
-		return;
+		return true;
 	}
 
 	current_track = -1;
@@ -222,19 +241,24 @@ void MyMidiPlayer::start_music(std::string fname, int num, bool repeat) {
 #endif
 
 	// OGG Handling
-	if (ogg_enabled) {
+	if (ogg_enabled && force != Force_Midi) {
 		// Play ogg for this track
 		if (ogg_play_track(fname, num, repeat)) {
-			return;
+			return true;
 		}
 
 		// If we failed to play the track, call stop to clean up and put us back
 		// into midi synth mode
 		ogg_stop_track();
+
+		// No fallthrough if forcing ogg
+		if (force == Force_Ogg) {
+			return false;
+		}
 	}
 
 	if (!midi_driver) {
-		return;
+		return false;
 	}
 
 	// Handle FMSynth Stuff here
@@ -251,7 +275,7 @@ void MyMidiPlayer::start_music(std::string fname, int num, bool repeat) {
 	// Read the data into the XMIDI class
 	IFileDataSource mid_data(fname.c_str());
 	if (!mid_data.good()) {
-		return;
+		return false;
 	}
 
 	XMidiFile midfile(&mid_data, setup_timbre_for_track(fname));
@@ -260,7 +284,9 @@ void MyMidiPlayer::start_music(std::string fname, int num, bool repeat) {
 	XMidiEventList* eventlist = midfile.GetEventList(num);
 	if (eventlist) {
 		midi_driver->startSequence(SEQ_NUM_MUSIC, eventlist, repeat, 255);
+		return true;
 	}
+	return false;
 }
 
 void MyMidiPlayer::set_repeat(bool newrepeat) {
@@ -693,6 +719,21 @@ bool MyMidiPlayer::init_device(bool timbre_load) {
 	midi_driver                  = MidiDriver::createInstance(
             s, mixer->getSampleRate(), mixer->getStereo());
 
+	// Load Volume settings
+	if (midi_driver) {
+		int vol = midi_driver->getGlobalVolume();
+		config->value(
+				"config/audio/midi/volume_" + midi_driver->getName(), vol, vol);
+		config->set(
+				"config/audio/midi/volume_" + midi_driver->getName(), vol,
+				false);
+		midi_driver->setGlobalVolume(vol);
+	}
+	config->value("config/audio/midi/volume_ogg", ogg_volume, ogg_volume);
+	config->set("config/audio/midi/volume_ogg", ogg_volume, false);
+
+	config->write_back();
+
 	initialized = true;
 
 	if (!midi_driver) {
@@ -883,14 +924,18 @@ bool MyMidiPlayer::ogg_play_track(
 		basepath = "<STATIC>/music/";
 	}
 
+	oggfailed = ogg_name;
+
 	if (ogg_name.empty()) {
 		return false;
 	}
 
 	const bool flex_source = ogg_name == filename;
 	auto       ds          = [&ogg_name, &basepath, num,
-               flex_source]() -> std::unique_ptr<IDataSource> {
+               flex_source,this]() -> std::unique_ptr<IDataSource> {
         if (flex_source) {
+            oggfailed += ':';
+			oggfailed += std::to_string(num);
             return open_music_flex(ogg_name, num);
         }
         if (U7exists("<PATCH>/music/" + ogg_name)) {
@@ -915,8 +960,8 @@ bool MyMidiPlayer::ogg_play_track(
 
 	if (!Pentagram::OggAudioSample::isThis(ds.get())) {
 		std::cerr << "Failed to play OGG Music Track " << ogg_name
-				  << ". Reason: "
-				  << "Unknown" << std::endl;
+				  << ". Reason: " << "Unknown" << std::endl;
+		oggfailed = ogg_name;
 		return false;
 	}
 
@@ -931,10 +976,13 @@ bool MyMidiPlayer::ogg_play_track(
 	Pentagram::AudioSample* ogg_sample
 			= new Pentagram::OggAudioSample(std::move(ds));
 
-	ogg_instance_id = mixer->playSample(ogg_sample, repeat ? -1 : 0, INT_MAX);
+	int vol         = (ogg_volume * 255) / 100;
+	ogg_instance_id = mixer->playSample(
+			ogg_sample, repeat ? -1 : 0, INT_MAX, false, 65536, vol, vol);
 
 	ogg_sample->Release();
 
+	oggfailed.clear();
 	return true;
 }
 
@@ -950,6 +998,53 @@ void MyMidiPlayer::ogg_set_repeat(bool newrepeat) {
 	Pentagram::AudioMixer* mixer = Pentagram::AudioMixer::get_instance();
 	if (mixer->isPlaying(ogg_instance_id)) {
 		mixer->setLoop(ogg_instance_id, newrepeat ? -1 : 0);
+	}
+}
+
+void MyMidiPlayer::SetOggMusicVolume(int vol, bool savetoconfig) {
+	if (vol < 0) {
+		vol = 0;
+	}
+	if (vol > 100) {
+		vol = 100;
+	}
+	ogg_volume = vol;
+
+	if (savetoconfig) {
+		config->set("config/audio/midi/volume_ogg", std::to_string(vol), true);
+	}
+	Pentagram::AudioMixer* mixer = Pentagram::AudioMixer::get_instance();
+	if (mixer->isPlaying(ogg_instance_id)) {
+		vol = (vol * 255) / 100;
+		mixer->setVolume(ogg_instance_id, vol, vol);
+	}
+}
+
+int MyMidiPlayer::GetMidiMusicVolume() {
+	if (midi_driver) {
+		return midi_driver->getGlobalVolume();
+	}
+	return 0;
+}
+
+void MyMidiPlayer::SetMidiMusicVolume(int vol, bool savetoconfig) {
+	if (!midi_driver) {
+		return;
+	}
+
+	// range check
+	if (vol < 0) {
+		vol = 0;
+	}
+	if (vol > 100) {
+		vol = 100;
+	}
+
+	midi_driver->setGlobalVolume(vol);
+	if (savetoconfig) {
+		config->set(
+				"config/audio/midi/volume_" + midi_driver->getName(),
+				std::to_string(vol), true);
 	}
 }
 

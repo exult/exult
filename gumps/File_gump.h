@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2024  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -64,10 +64,10 @@ public:
 	}
 
 	// Handle events:
-	bool mouse_down(int mx, int my, int button) override;
-	bool mouse_up(int mx, int my, int button) override;
+	bool mouse_down(int mx, int my, MouseButton button) override;
+	bool mouse_up(int mx, int my, MouseButton button) override;
 	using Modal_gump::text_input;
-	void text_input(int chr, int unicode, bool shift_pressed)
+	bool text_input(int chr, int unicode, bool shift_pressed)
 			override;    // Character typed.
 };
 

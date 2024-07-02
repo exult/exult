@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2024 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -229,15 +229,15 @@ public:
 	}
 
 	// Handle events:
-	void text_input(const char* text) override;    // Character typed.
-	bool mouse_down(int mx, int my, int button) override;
-	bool mouse_up(int mx, int my, int button) override;
-	void mouse_drag(int mx, int my) override;
-	void text_input(int chr, int unicode, bool shift_pressed)
+	bool text_input(const char* text) override;    // Character typed.
+	bool mouse_down(int mx, int my, MouseButton button) override;
+	bool mouse_up(int mx, int my, MouseButton button) override;
+	bool mouse_drag(int mx, int my) override;
+	bool text_input(int chr, int unicode, bool shift_pressed)
 			override;    // Character typed.
 
-	void mousewheel_up() override;
-	void mousewheel_down() override;
+	bool mousewheel_up(int mx, int my) override;
+	bool mousewheel_down(int mx, int my) override;
 };
 
 #endif    // NEWFILE_GUMP_H

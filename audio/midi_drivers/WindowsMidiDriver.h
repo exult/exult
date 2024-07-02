@@ -62,6 +62,8 @@ class WindowsMidiDriver : public LowLevelMidiDriver {
 	static bool doMCIError(MMRESULT mmsys_err);
 
 public:
+	WindowsMidiDriver() : LowLevelMidiDriver(std::string(desc.name)) {}
+
 	static const MidiDriverDesc* getDesc() {
 		return &desc;
 	}

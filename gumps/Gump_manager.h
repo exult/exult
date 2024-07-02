@@ -1,7 +1,7 @@
 /*
  *  Gump_manager.h - Object that manages all available gumps
  *
- *  Copyright (C) 2001-2022  The Exult Team
+ *  Copyright (C) 2001-2024  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -111,7 +111,7 @@ public:
 			 Paintable* paint = nullptr);
 	bool do_modal_gump(
 			Modal_gump*, Mouse::Mouse_shapes, Paintable* paint = nullptr);
-	void paint_num(int num, int x, int y);
+	void paint_num(int num, int x, int y, Font* font = nullptr);
 
 	Gump_manager();
 

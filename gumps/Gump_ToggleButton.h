@@ -39,9 +39,9 @@ public:
 		set_frame(2 * selectionnum);
 	}
 
-	bool push(int button) override;
-	void unpush(int button) override;
-	bool activate(int button = 1) override;
+	bool push(MouseButton button) override;
+	void unpush(MouseButton button) override;
+	bool activate(MouseButton button) override;
 
 	int getselection() const {
 		return get_framenum() / 2;
@@ -78,9 +78,9 @@ public:
 		init();
 	}
 
-	bool push(int button) override;
-	void unpush(int button) override;
-	bool activate(int button = 1) override;
+	bool push(MouseButton button) override;
+	void unpush(MouseButton button) override;
+	bool activate(MouseButton button) override;
 
 	int getselection() const {
 		return get_framenum();
