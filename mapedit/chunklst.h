@@ -88,10 +88,10 @@ class Chunk_chooser : public Object_browser, public Shape_draw {
 	unsigned char* get_chunk(int chunknum);
 	void           update_num_chunks(int new_num_chunks);
 	void           set_chunk(const unsigned char* data, int datalen);
-	void           render_chunk(int chunknum, int xoff, int yoff);
-	void           scroll(int newpixel);    // Scroll.
-	void           scroll(bool upwards);
-	void           enable_controls();    // Enable/disable controls after sel.
+	void render_chunk(int chunknum, Image_buffer8* rwin, int xoff, int yoff);
+	void scroll(int newpixel);    // Scroll.
+	void scroll(bool upwards);
+	void enable_controls();    // Enable/disable controls after sel.
 	//   has changed.
 	GtkWidget* create_popup() override;    // Popup menu.
 public:
