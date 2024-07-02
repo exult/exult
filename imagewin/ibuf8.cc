@@ -283,7 +283,6 @@ void Image_buffer8::draw_line8(
 			return;
 		}
 		// zero means points are on the line and on screen
-
 	}
 	// clip x
 	;

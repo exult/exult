@@ -68,7 +68,7 @@ public:
 			unsigned char pix, int srcw, int destx, int desty) override;
 	// Draw an arbitrary line from any point to any point inclusive. Accuracy
 	// not guarenteed
-	virtual void draw_line8(
+	void draw_line8(
 			unsigned char val, int startx, int starty, int endx, int endy,
 			const Xform_palette* xform = nullptr) override;
 	// Copy rectangle into here.

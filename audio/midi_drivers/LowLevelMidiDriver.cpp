@@ -902,7 +902,6 @@ bool LowLevelMidiDriver::playSequences() {
 				if (mask & (1<<i)) allocateChannel(message.sequence, i);
 				*/
 			}
-
 		} break;
 
 			// Attempt to load first 64 timbres into memory

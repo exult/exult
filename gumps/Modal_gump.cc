@@ -234,7 +234,6 @@ void Modal_gump::paint() {
 	TileRect backrect;
 	auto     ib = gwin->get_win()->get_ib8();
 	if (procedural_background) {
-
 		backrect      = procedural_background;
 		local_to_screen(backrect.x, backrect.y);
 
@@ -259,7 +258,6 @@ void Modal_gump::paint() {
 		// checkmark sace is usually about 27 pixel on left of gump and 3 on the right
 		backrect.x += 27;
 		backrect.w -= 30;
-
 	}
 
 	// if we have a message to display, check the timeout
