@@ -344,7 +344,8 @@ bool Slider_widget::mouse_drag(
  *  Handle ASCII character typed.
  */
 
-bool Slider_widget::key_down(int chr) {
+bool Slider_widget::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
+	ignore_unused_variable_warning(unicode);
 	switch (chr) {
 	case SDLK_LEFT:
 		clicked_left_arrow();

@@ -649,10 +649,10 @@ void Notebook_gump::up_arrow() {
  *  Handle keystroke.
  */
 bool Notebook_gump::handle_kbd_event(void* vev) {
-	SDL_Event& ev      = *static_cast<SDL_Event*>(vev);
-	uint16     unicode = 0;    // Unicode is way different in SDL2
-	Gump_manager::translate_numpad(ev.key.key, unicode, ev.key.mod);
-	int chr = ev.key.key;
+	SDL_Event&  ev      = *static_cast<SDL_Event*>(vev);
+	SDL_Keycode unicode = 0;    // Unicode is way different in SDL2
+	SDL_Keycode chr     = 0;
+	Translate_keyboard(ev, chr, unicode, true);
 
 	if (ev.type == SDL_EVENT_KEY_UP) {
 		return true;    // Ignoring key-up at present.
@@ -667,7 +667,6 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 	One_note*           note  = notes[pinfo.notenum];
 	switch (chr) {
 	case SDLK_RETURN:
-	case SDLK_KP_ENTER:
 		note->insert('\n', cursor.offset);
 		++cursor.offset;
 		paint();    // (Not very efficient...)
@@ -724,24 +723,23 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 		change_page(1);
 		break;
 	default:
-		if (chr < ' ') {
-			return false;    // Ignore other special chars.
+		if (unicode < ' ') {
+			//			return false;    // Ignore other special chars.
+			return true;    // Ignore other special chars.
 		}
-		if (chr >= 256 || !isascii(chr)) {
-			return false;
-		}
-		// Special case: ignore "^" character
-		if (chr == '^') {
+		if (unicode >= 256 || !isascii(unicode)) {
+			//			return false;
 			return true;
 		}
-		if (ev.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)) {
-			chr = toupper(chr);
+		// Special case: ignore "^" character
+		if (unicode == '^') {
+			return true;
 		}
 
 		// Check if adding this character would make the current word too long
 		// by simulating inserting the character and then checking
 		string test_text = note->text;
-		test_text.insert(cursor.offset, 1, chr);
+		test_text.insert(cursor.offset, 1, unicode);
 
 		if (word_exceeds_line_length(test_text, cursor.offset + 1, curpage)) {
 			// Find the start of the current word
@@ -760,11 +758,11 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 				++cursor.offset;
 
 				// Then insert the character on the new line
-				note->insert(chr, cursor.offset);
+				note->insert(unicode, cursor.offset);
 				++cursor.offset;
 			} else {
 				// Normal case - break at word boundary
-				note->insert(chr, cursor.offset);
+				note->insert(unicode, cursor.offset);
 				++cursor.offset;
 
 				// Insert newline after the most recent space
@@ -778,7 +776,7 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 			}
 		} else {
 			// Normal case, just insert the character
-			note->insert(chr, cursor.offset);
+			note->insert(unicode, cursor.offset);
 			++cursor.offset;
 		}
 

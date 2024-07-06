@@ -1423,6 +1423,184 @@ static void Handle_events() {
 	}
 }
 
+bool Translate_keyboard(
+		SDL_Event event, SDL_Keycode& chr, SDL_Keycode& unicode, bool numpad) {
+	unicode = 0;
+
+	if (event.type == SDL_EVENT_TEXT_INPUT) {
+		chr = SDLK_UNKNOWN;
+		if ((event.text.text[0] & 0x80) == 0x00) {
+			unicode = event.text.text[0];
+		} else if (
+				(event.text.text[0] & 0xE0) == 0xC0
+				&& (event.text.text[1] & 0xC0) == 0x80) {
+			unicode = ((event.text.text[0] & 0x1F) << 6)
+					  | ((event.text.text[1] & 0x3F));
+		} else if (
+				(event.text.text[0] & 0xF0) == 0xE0
+				&& (event.text.text[1] & 0xC0) == 0x80
+				&& (event.text.text[2] & 0xC0) == 0x80) {
+			unicode = ((event.text.text[0] & 0x0F) << 12)
+					  | ((event.text.text[1] & 0x3F) << 6)
+					  | ((event.text.text[2] & 0x3F));
+		} else if (
+				(event.text.text[0] & 0xF8) == 0xF0
+				&& (event.text.text[1] & 0xC0) == 0x80
+				&& (event.text.text[1] & 0xC0) == 0x80
+				&& (event.text.text[1] & 0xC0) == 0x80) {
+			unicode = ((event.text.text[0] & 0x07) << 18)
+					  | ((event.text.text[1] & 0x3F) << 12)
+					  | ((event.text.text[2] & 0x3F) << 6)
+					  | ((event.text.text[3] & 0x3F));
+		} else {    // Invalid UTF-8
+			unicode = 0;
+		}
+	} else if (
+			event.type == SDL_EVENT_KEY_DOWN
+			|| event.type == SDL_EVENT_KEY_UP) {
+		// Handle Shift all variants, Simulate NumLock set
+		chr     = event.key.key;
+		unicode = SDL_GetKeyFromScancode(
+				event.key.scancode,
+				(event.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)));
+		unicode = (unicode & SDLK_SCANCODE_MASK ? 0 : unicode);
+	} else {
+		return false;
+	}
+	if (numpad) {
+		const bool numlock_active = (event.key.mod & SDL_KMOD_NUM) != 0;
+		switch (event.key.scancode) {
+		case SDL_SCANCODE_KP_ENTER:
+			chr     = SDLK_RETURN;
+			unicode = SDLK_RETURN;
+			break;
+		case SDL_SCANCODE_KP_PLUS:
+			chr     = SDLK_PLUS;
+			unicode = '+';
+			break;
+		case SDL_SCANCODE_KP_MINUS:
+			chr     = SDLK_MINUS;
+			unicode = '-';
+			break;
+		case SDL_SCANCODE_KP_MULTIPLY:
+			chr     = SDLK_ASTERISK;
+			unicode = '*';
+			break;
+		case SDL_SCANCODE_KP_DIVIDE:
+			chr     = SDLK_SLASH;
+			unicode = '/';
+			break;
+		case SDL_SCANCODE_KP_PERIOD:
+			if (numlock_active) {
+				chr     = SDLK_PERIOD;
+				unicode = '.';
+			} else {
+				chr     = SDLK_DELETE;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_0:
+			if (numlock_active) {
+				chr     = SDLK_0;
+				unicode = '0';
+			} else {
+				chr     = SDLK_INSERT;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_1:
+			if (numlock_active) {
+				chr     = SDLK_1;
+				unicode = '1';
+			} else {
+				chr     = SDLK_END;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_2:
+			if (numlock_active) {
+				chr     = SDLK_2;
+				unicode = '2';
+			} else {
+				chr     = SDLK_DOWN;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_3:
+			if (numlock_active) {
+				chr     = SDLK_3;
+				unicode = '3';
+			} else {
+				chr     = SDLK_PAGEDOWN;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_4:
+			if (numlock_active) {
+				chr     = SDLK_4;
+				unicode = '4';
+			} else {
+				chr     = SDLK_LEFT;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_5:
+			if (numlock_active) {
+				chr     = SDLK_5;
+				unicode = '5';
+			} else {
+				chr     = SDLK_CLEAR;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_6:
+			if (numlock_active) {
+				chr     = SDLK_6;
+				unicode = '6';
+			} else {
+				chr     = SDLK_RIGHT;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_7:
+			if (numlock_active) {
+				chr     = SDLK_7;
+				unicode = '7';
+			} else {
+				chr     = SDLK_HOME;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_8:
+			if (numlock_active) {
+				chr     = SDLK_8;
+				unicode = '8';
+			} else {
+				chr     = SDLK_UP;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_9:
+			if (numlock_active) {
+				chr     = SDLK_9;
+				unicode = '9';
+			} else {
+				chr     = SDLK_PAGEUP;
+				unicode = 0;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	return (event.key.key != SDLK_LSHIFT && event.key.key != SDLK_RSHIFT
+			&& event.key.key != SDLK_CAPSLOCK && event.key.key != SDLK_RCTRL
+			&& event.key.key != SDLK_LCTRL && event.key.key != SDLK_RALT
+			&& event.key.key != SDLK_LALT && event.key.key != SDLK_LGUI
+			&& event.key.key != SDLK_RGUI && event.key.key != SDLK_MODE
+			&& event.key.key != SDLK_NUMLOCKCLEAR);
+}
+
 /*
  *  Handle an event.  This should work for all platforms, and should only
  *  be called in 'normal' and 'gump' modes.
@@ -1443,7 +1621,7 @@ static void Handle_event(SDL_Event& event) {
 	static uint32 last_b1_click     = 0;
 	static uint32 last_b3_click     = 0;
 	static uint32 last_b1down_click = 0;
-	// cout << "Event " << (int) event.type << " received"<<endl;
+	// cout << "Event " << (int) event.type << " received" << endl;
 	switch (event.type) {
 	// Quick saving to make sure no game progress gets lost
 	// when the app goes into background
@@ -2226,7 +2404,7 @@ static bool Get_click(
 					if (keybinder->IsMotionEvent(event)) {
 						break;
 					}
-					if ((c == 's') && (event.key.mod & SDL_KMOD_ALT)
+					if ((c == SDLK_S) && (event.key.mod & SDL_KMOD_ALT)
 						&& (event.key.mod & SDL_KMOD_CTRL)) {
 						make_screenshot(true);
 						break;

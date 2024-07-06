@@ -510,33 +510,6 @@ void CheatScreen::SharedPrompt() {
 	}
 }
 
-static int SDLScanCodeToInt(SDL_Keycode sym) {
-	switch (sym) {
-	case SDLK_KP_0:
-		return '0';
-	case SDLK_KP_1:
-		return '1';
-	case SDLK_KP_2:
-		return '2';
-	case SDLK_KP_3:
-		return '3';
-	case SDLK_KP_4:
-		return '4';
-	case SDLK_KP_5:
-		return '5';
-	case SDLK_KP_6:
-		return '6';
-	case SDLK_KP_7:
-		return '7';
-	case SDLK_KP_8:
-		return '8';
-	case SDLK_KP_9:
-		return '9';
-	default:
-		return SDLK_ESCAPE;
-	}
-}
-
 static void resizeline(float& axis1, float delta1, float& axis2) {
 	float slope = axis2 / axis1;
 	axis1 += delta1;
@@ -757,8 +730,12 @@ bool CheatScreen::SharedInput() {
 			if (event.type != SDL_EVENT_KEY_DOWN) {
 				continue;
 			}
-			const SDL_Keycode key_sym = event.key.key;
-			const SDL_Keymod  key_mod = event.key.mod;
+			SDL_Keycode key_sym = event.key.key;
+			SDL_Keymod  key_mod = event.key.mod;
+			SDL_Keycode unicode = 0;
+			if (!Translate_keyboard(event, key_sym, unicode, true)) {
+				continue;
+			}
 
 			if (key_sym == SDLK_ESCAPE) {
 				std::memset(state.input, 0, sizeof(state.input));
@@ -784,12 +761,12 @@ bool CheatScreen::SharedInput() {
 			}
 
 			if (state.GetMode() == CP_NorthSouth) {
-				if (!state.input[0] && (key_sym == 'n' || key_sym == 's')) {
+				if (!state.input[0] && (key_sym == SDLK_N || key_sym == SDLK_S)) {
 					state.input[0] = char(key_sym);
 					state.activate = true;
 				}
 			} else if (state.GetMode() == CP_WestEast) {
-				if (!state.input[0] && (key_sym == 'w' || key_sym == 'e')) {
+				if (!state.input[0] && (key_sym == SDLK_W || key_sym == SDLK_E)) {
 					state.input[0] = char(key_sym);
 					state.activate = true;
 				}
@@ -797,7 +774,7 @@ bool CheatScreen::SharedInput() {
 					state.GetMode() >= CP_HexXCoord
 					&& state.GetMode() <= CP_HexYCoord) {    // Want hex input
 				// Activate (if possible)
-				if (key_sym == SDLK_RETURN || key_sym == SDLK_KP_ENTER) {
+				if (key_sym == SDLK_RETURN) {
 					state.activate = true;
 // Begin New
 					// increment/decrement
@@ -827,7 +804,7 @@ bool CheatScreen::SharedInput() {
 					}
 // End New
 				} else if (
-						(key_sym == '-' || key_sym == SDLK_KP_MINUS)
+						(key_sym == SDLK_MINUS)
 						&& !state.input[0]) {
 					state.input[0] = '-';
 				} else if (
@@ -837,13 +814,6 @@ bool CheatScreen::SharedInput() {
 						state.input[curlen]     = char(std::tolower(key_sym));
 						state.input[curlen + 1] = 0;
 					}
-				} else if (SDLScanCodeToInt(key_sym) != -1) {    // KP_0 to 9
-					const size_t curlen = std::strlen(state.input);
-					if (curlen < (std::size(state.input) - 1)) {
-						const int sym           = SDLScanCodeToInt(key_sym);
-						state.input[curlen]     = char(sym);
-						state.input[curlen + 1] = 0;
-					}
 				} else if (key_sym == SDLK_BACKSPACE) {
 					const size_t curlen = std::strlen(state.input);
 					if (curlen) {
@@ -851,19 +821,14 @@ bool CheatScreen::SharedInput() {
 					}
 				}
 			} else if (state.GetMode() == CP_Name) {    // Want Text input
-				if (key_sym == SDLK_RETURN || key_sym == SDLK_KP_ENTER) {
+				if (key_sym == SDLK_RETURN) {
 					state.activate = true;
 				} else if (
-						(key_sym < 256 && std::isalnum(key_sym))
-						|| key_sym == ' ') {
+						(unicode < 256 && std::isalnum(unicode))
+						|| unicode == ' ') {
 					const size_t curlen = std::strlen(state.input);
-					char         chr    = key_sym;
-					if (key_mod & SDL_KMOD_SHIFT) {
-						chr = static_cast<char>(
-								std::toupper(static_cast<unsigned char>(chr)));
-					}
 					if (curlen < (std::size(state.input) - 1)) {
-						state.input[curlen]     = chr;
+						state.input[curlen]     = unicode;
 						state.input[curlen + 1] = 0;
 					}
 				} else if (key_sym == SDLK_BACKSPACE) {
@@ -876,7 +841,7 @@ bool CheatScreen::SharedInput() {
 															 // numerical input
 				// Browse shape
 				if (state.GetMode() == CP_Shape && !state.input[0]
-					&& key_sym == 'b') {
+					&& key_sym == SDLK_B) {
 					cheat.shape_browser();
 					state.input[0] = 'b';
 					state.activate = true;
@@ -903,10 +868,10 @@ bool CheatScreen::SharedInput() {
 					}
 				}
 				// Activate (if possible)
-				else if (key_sym == SDLK_RETURN || key_sym == SDLK_KP_ENTER) {
+				else if (key_sym == SDLK_RETURN) {
 					state.activate = true;
 				} else if (
-						(key_sym == '-' || key_sym == SDLK_KP_MINUS)
+						(key_sym == SDLK_MINUS)
 						&& !state.input[0]) {
 					state.input[0] = '-';
 				} else if (
@@ -914,13 +879,6 @@ bool CheatScreen::SharedInput() {
 					const size_t curlen = std::strlen(state.input);
 					if (curlen < (std::size(state.input) - 1)) {
 						state.input[curlen]     = key_sym;
-						state.input[curlen + 1] = 0;
-					}
-				} else if (SDLScanCodeToInt(key_sym) != -1) {    // KP_0 to 9
-					const size_t curlen = std::strlen(state.input);
-					if (curlen < (std::size(state.input) - 1)) {
-						const int sym           = SDLScanCodeToInt(key_sym);
-						state.input[curlen]     = sym;
 						state.input[curlen + 1] = 0;
 					}
 				} else if (key_sym == SDLK_BACKSPACE) {
@@ -1239,33 +1197,33 @@ void CheatScreen::NormalActivate() {
 
 	switch (state.command) {
 		// God Mode
-	case 'g':
+	case SDLK_G:
 		cheat.toggle_god();
 		break;
 
 		// Wizard Mode
-	case 'w':
+	case SDLK_W:
 		cheat.toggle_wizard();
 		break;
 
 		// Infravision
-	case 'i':
+	case SDLK_I:
 		cheat.toggle_infravision();
 		pal.apply();
 		break;
 
 		// Eggs
-	case 'e':
+	case SDLK_E:
 		cheat.toggle_eggs();
 		break;
 
 		// Hack mover
-	case 'h':
+	case SDLK_H:
 		cheat.toggle_hack_mover();
 		break;
 
 		// Set Time
-	case 's':
+	case SDLK_S:
 		state.SetMode(TimeSetLoop());
 		break;
 
@@ -1284,12 +1242,12 @@ void CheatScreen::NormalActivate() {
 		break;
 
 		// Teleport
-	case 't':
+	case SDLK_T:
 		TeleportLoop();
 		break;
 
 		// NPC Tool
-	case 'n':
+	case SDLK_N:
 		if (npc < 0 || (npc >= 356 && npc <= 359)) {
 			state.SetMode(CP_InvalidNPC, false);
 		} else if (!state.input[0]) {
@@ -1300,7 +1258,7 @@ void CheatScreen::NormalActivate() {
 		break;
 
 		// Global Flag Editor
-	case 'f':
+	case SDLK_F:
 		if (npc < 0) {
 			state.SetMode(CP_InvalidValue, false);
 		} else if (npc > c_last_gflag) {
@@ -1313,7 +1271,7 @@ void CheatScreen::NormalActivate() {
 		break;
 
 		// Paperdolls
-	case 'p':
+	case SDLK_P:
 		if ((Game::get_game_type() == BLACK_GATE
 			 || Game::get_game_type() == EXULT_DEVEL_GAME)
 			&& sman->can_use_paperdolls()) {
@@ -1337,15 +1295,15 @@ void CheatScreen::NormalActivate() {
 bool CheatScreen::NormalCheck() {
 	switch (state.command) {
 		// Simple commands
-	case 't':    // Teleport
-	case 'g':    // God Mode
-	case 'w':    // Wizard
-	case 'i':    // iNfravision
-	case 's':    // Set Time
-	case 'e':    // Eggs
-	case 'h':    // Hack Mover
-	case 'c':    // Create Item
-	case 'p':    // Paperdolls
+	case SDLK_T:    // Teleport
+	case SDLK_G:    // God Mode
+	case SDLK_W:    // Wizard
+	case SDLK_I:    // iNfravision
+	case SDLK_S:    // Set Time
+	case SDLK_E:    // Eggs
+	case SDLK_H:    // Hack Mover
+	case SDLK_C:    // Create Item
+	case SDLK_P:    // Paperdolls
 		if (!state.input[0]) {
 			state.input[0] = state.command;
 		}
@@ -1361,7 +1319,7 @@ bool CheatScreen::NormalCheck() {
 		state.activate = true;
 		break;
 
-	// + Time
+		// + Time
 	case SDLK_RIGHT:
 		state.command = '>';
 		if (!state.input[0]) {
@@ -1371,14 +1329,14 @@ bool CheatScreen::NormalCheck() {
 		break;
 
 		// NPC Tool
-	case 'n':
+	case SDLK_N:
 		state.SetMode(CP_ChooseNPC);
 		state.val_min = 0;
 		state.val_max = gwin->get_num_npcs() - 1;
 		break;
 
 		// Global Flag Editor
-	case 'f':
+	case SDLK_F:
 		state.SetMode(CP_GFlagNum);
 		state.val_min = 0;
 		state.val_max = c_last_gflag;
@@ -1394,7 +1352,7 @@ bool CheatScreen::NormalCheck() {
 	default:
 		state.SetMode(CP_InvalidCom, false);
 		if (!state.input[0]) {
-			state.input[0] = state.command;
+			state.input[0] = (state.command < 128 ? state.command : 0);
 		}
 		state.command = 0;
 		break;
@@ -1653,8 +1611,8 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 		if (SharedInput()) {
 			switch (state.command) {
 				// Simple commands
-			case 's':    // Set Flag
-			case 'u':    // Unset flag
+			case SDLK_S:    // Set Flag
+			case SDLK_U:    // Unset flag
 				if (!state.input[0]) {
 					state.input[0] = state.command;
 				}
@@ -1699,7 +1657,7 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 			default:
 				state.SetMode(CP_InvalidCom, false);
 				if (!state.input[0]) {
-					state.input[0] = state.command;
+					state.input[0] = (state.command < 128 ? state.command : 0);
 				}
 				state.command = 0;
 				break;
@@ -1947,28 +1905,28 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 		}
 	} else if (actor) {
 		switch (state.command) {
-		case 'b':    // Business
+		case SDLK_B:    // Business
 			BusinessLoop(actor);
 			break;
 
-		case 'n':    // Npc flags
+		case SDLK_N:    // Npc flags
 			FlagLoop(actor);
 			break;
 
-		case 's':    // stats
+		case SDLK_S:    // stats
 			StatLoop(actor);
 			break;
 
-		case 'p':
+		case SDLK_P:
 			PalEffectLoop(actor);
 			break;
 
-		case 't':    // Teleport
+		case SDLK_T:    // Teleport
 			Game_window::get_instance()->teleport_party(
 					actor->get_tile(), false, actor->get_map_num());
 			break;
 
-		case 'e':    // Experience
+		case SDLK_E:    // Experience
 			if (i < 0) {
 				state.SetMode(CP_Canceled, false);
 			} else {
@@ -1976,7 +1934,7 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 			}
 			break;
 
-		case '2':    // Training Points
+		case SDLK_2:    // Training Points
 			if (i < 0) {
 				state.SetMode(CP_Canceled, false);
 			} else {
@@ -1984,7 +1942,7 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 			}
 			break;
 
-		case 'c':                           // Change shape
+		case SDLK_C:                        // Change shape
 			if (state.input[0] == 'b') {    // Browser
 				int n;
 				if (!cheat.get_browser_shape(i, n)) {
@@ -2007,7 +1965,7 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 			}
 			break;
 
-		case '1':    // Name
+		case SDLK_1:    // Name
 			if (!std::strlen(state.input)) {
 				state.SetMode(CP_Canceled, false);
 			} else {
@@ -2030,13 +1988,13 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 	ignore_unused_variable_warning(num);
 	switch (state.command) {
 		// Simple commands
-	case 'a':    // Attack mode
-	case 'b':    // BUsiness
-	case 'n':    // Npc flags
-	case 'd':    // pop weapon
-	case 's':    // stats
-	case 'z':    // Target
-	case 't':    // Teleport
+	case SDLK_A:    // Attack mode
+	case SDLK_B:    // BUsiness
+	case SDLK_N:    // Npc flags
+	case SDLK_D:    // pop weapon
+	case SDLK_S:    // stats
+	case SDLK_Z:    // Target
+	case SDLK_T:    // Teleport
 		if (!state.input[0]) {
 			state.input[0] = state.command;
 		}
@@ -2048,8 +2006,8 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 		break;
 
 		// Value entries
-	case 'e':    // Experience
-	case '2':    // Training Points
+	case SDLK_E:    // Experience
+	case SDLK_2:    // Training Points
 		if (!actor) {
 			state.SetMode(CP_InvalidCom, false);
 		} else {
@@ -2068,7 +2026,7 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 		break;
 
 		// Change shape
-	case 'c':
+	case SDLK_C:
 		if (!actor) {
 			state.SetMode(CP_InvalidCom, false);
 		} else {
@@ -2082,7 +2040,7 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 		break;
 
 		// Name
-	case '1':
+	case SDLK_1:
 		if (!actor) {
 			state.SetMode(CP_InvalidCom, false);
 		} else {
@@ -2127,7 +2085,7 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 	default:
 		state.SetMode(CP_InvalidCom, false);
 		if (!state.input[0]) {
-			state.input[0] = state.command;
+			state.input[0] = (state.command < 128 ? state.command : 0);
 		}
 		state.command = 0;
 		break;
@@ -2387,7 +2345,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		// Everyone
 
 		// Toggles
-	case 'a':    // Asleep
+	case SDLK_A:    // Asleep
 		if (actor->get_flag(Obj_flags::asleep)) {
 			actor->clear_flag(Obj_flags::asleep);
 		} else {
@@ -2395,7 +2353,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'b':    // Charmed
+	case SDLK_B:    // Charmed
 		if (actor->get_flag(Obj_flags::charmed)) {
 			actor->clear_flag(Obj_flags::charmed);
 		} else {
@@ -2403,7 +2361,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'c':    // Cursed
+	case SDLK_C:    // Cursed
 		if (actor->get_flag(Obj_flags::cursed)) {
 			actor->clear_flag(Obj_flags::cursed);
 		} else {
@@ -2411,7 +2369,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'd':    // Paralyzed
+	case SDLK_D:    // Paralyzed
 		if (actor->get_flag(Obj_flags::paralyzed)) {
 			actor->clear_flag(Obj_flags::paralyzed);
 		} else {
@@ -2419,7 +2377,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'e':    // Poisoned
+	case SDLK_E:    // Poisoned
 		if (actor->get_flag(Obj_flags::poisoned)) {
 			actor->clear_flag(Obj_flags::poisoned);
 		} else {
@@ -2427,7 +2385,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'f':    // Protected
+	case SDLK_F:    // Protected
 		if (actor->get_flag(Obj_flags::protection)) {
 			actor->clear_flag(Obj_flags::protection);
 		} else {
@@ -2435,7 +2393,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'j':    // Invisible
+	case SDLK_J:    // Invisible
 		if (actor->get_flag(Obj_flags::invisible)) {
 			actor->clear_flag(Obj_flags::invisible);
 		} else {
@@ -2444,7 +2402,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		pal.apply();
 		break;
 
-	case 'k':    // Fly
+	case SDLK_K:    // Fly
 		if (actor->get_type_flag(Actor::tf_fly)) {
 			actor->clear_type_flag(Actor::tf_fly);
 		} else {
@@ -2452,7 +2410,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'l':    // Walk
+	case SDLK_L:    // Walk
 		if (actor->get_type_flag(Actor::tf_walk)) {
 			actor->clear_type_flag(Actor::tf_walk);
 		} else {
@@ -2460,7 +2418,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'm':    // Swim
+	case SDLK_M:    // Swim
 		if (actor->get_type_flag(Actor::tf_swim)) {
 			actor->clear_type_flag(Actor::tf_swim);
 		} else {
@@ -2468,7 +2426,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'n':    // Ethrel
+	case SDLK_N:    // Ethrel
 		if (actor->get_type_flag(Actor::tf_ethereal)) {
 			actor->clear_type_flag(Actor::tf_ethereal);
 		} else {
@@ -2476,7 +2434,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'p':    // Conjured
+	case SDLK_P:    // Conjured
 		if (actor->get_type_flag(Actor::tf_conjured)) {
 			actor->clear_type_flag(Actor::tf_conjured);
 		} else {
@@ -2484,7 +2442,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'q':    // Summoned
+	case SDLK_Q:    // Summoned
 		if (actor->get_type_flag(Actor::tf_summonned)) {
 			actor->clear_type_flag(Actor::tf_summonned);
 		} else {
@@ -2492,7 +2450,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'r':    // Bleeding
+	case SDLK_R:    // Bleeding
 		if (actor->get_type_flag(Actor::tf_bleeding)) {
 			actor->clear_type_flag(Actor::tf_bleeding);
 		} else {
@@ -2500,7 +2458,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 's':    // Sex
+	case SDLK_S:    // Sex
 		if (actor->get_type_flag(Actor::tf_sex)) {
 			actor->clear_type_flag(Actor::tf_sex);
 		} else {
@@ -2508,7 +2466,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case '4':    // Read
+	case SDLK_4:    // Read
 		if (actor->get_flag(Obj_flags::read)) {
 			actor->clear_flag(Obj_flags::read);
 		} else {
@@ -2516,7 +2474,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case '5':    // Petra
+	case SDLK_5:    // Petra
 		if (actor->get_flag(Obj_flags::petra)) {
 			actor->clear_flag(Obj_flags::petra);
 		} else {
@@ -2524,7 +2482,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case '7':    // Naked
+	case SDLK_7:    // Naked
 		if (actor->get_flag(Obj_flags::naked)) {
 			actor->clear_flag(Obj_flags::naked);
 		} else {
@@ -2532,7 +2490,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 't':    // Met
+	case SDLK_T:    // Met
 		if (actor->get_flag(Obj_flags::met)) {
 			actor->clear_flag(Obj_flags::met);
 		} else {
@@ -2540,7 +2498,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'u':    // No Cast
+	case SDLK_U:    // No Cast
 		if (actor->get_flag(Obj_flags::no_spell_casting)) {
 			actor->clear_flag(Obj_flags::no_spell_casting);
 		} else {
@@ -2548,7 +2506,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'z':    // Zombie
+	case SDLK_Z:    // Zombie
 		if (actor->get_flag(Obj_flags::si_zombie)) {
 			actor->clear_flag(Obj_flags::si_zombie);
 		} else {
@@ -2556,7 +2514,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'w':    // Freeze
+	case SDLK_W:    // Freeze
 		if (actor->get_flag(Obj_flags::freeze)) {
 			actor->clear_flag(Obj_flags::freeze);
 		} else {
@@ -2564,7 +2522,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'i':    // Party
+	case SDLK_I:    // Party
 		if (actor->get_flag(Obj_flags::in_party)) {
 			gwin->get_party_man()->remove_from_party(actor);
 			gwin->revert_schedules(actor);
@@ -2575,11 +2533,11 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'o':    // Protectee
+	case SDLK_O:    // Protectee
 		break;
 
 		// Value
-	case 'v':    // ID
+	case SDLK_V:    // ID
 		if (i < 0) {
 			state.SetMode(CP_InvalidValue, false);
 		} else if (i > 63) {
@@ -2591,13 +2549,13 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case '1':    // Skin color
+	case SDLK_1:    // Skin color
 		actor->set_skin_color(Shapeinfo_lookup::GetNextSkin(
 				actor->get_skin_color(), actor->get_type_flag(Actor::tf_sex),
 				Shape_manager::get_instance()->have_si_shapes()));
 		break;
 
-	case 'g':    // Tournament
+	case SDLK_G:    // Tournament
 		if (actor->get_flag(Obj_flags::tournament)) {
 			actor->clear_flag(Obj_flags::tournament);
 		} else {
@@ -2605,7 +2563,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'y':    // Warmth
+	case SDLK_Y:    // Warmth
 		if (i < -1) {
 			state.SetMode(CP_InvalidValue, false);
 		} else if (i > 63) {
@@ -2617,7 +2575,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		}
 		break;
 
-	case 'h':    // Polymorph
+	case SDLK_H:    // Polymorph
 
 		// Clear polymorph
 		if (actor->get_polymorph() != -1) {
@@ -2672,24 +2630,24 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		// Everyone
 
 		// Toggles
-	case 'a':    // Asleep
-	case 'b':    // Charmed
-	case 'c':    // Cursed
-	case 'd':    // Paralyzed
-	case 'e':    // Poisoned
-	case 'f':    // Protected
-	case 'i':    // Party
-	case 'j':    // Invisible
-	case 'k':    // Fly
-	case 'l':    // Walk
-	case 'm':    // Swim
-	case 'n':    // Ethrel
-	case 'o':    // Protectee
-	case 'p':    // Conjured
-	case 'q':    // Summoned
-	case 'r':    // Bleedin
-	case 'w':    // Freeze
-	case 'g':    // Tournament
+	case SDLK_A:    // Asleep
+	case SDLK_B:    // Charmed
+	case SDLK_C:    // Cursed
+	case SDLK_D:    // Paralyzed
+	case SDLK_E:    // Poisoned
+	case SDLK_F:    // Protected
+	case SDLK_I:    // Party
+	case SDLK_J:    // Invisible
+	case SDLK_K:    // Fly
+	case SDLK_L:    // Walk
+	case SDLK_M:    // Swim
+	case SDLK_N:    // Ethrel
+	case SDLK_O:    // Protectee
+	case SDLK_P:    // Conjured
+	case SDLK_Q:    // Summoned
+	case SDLK_R:    // Bleedin
+	case SDLK_W:    // Freeze
+	case SDLK_G:    // Tournament
 		state.activate = true;
 		if (!state.input[0]) {
 			state.input[0] = state.command;
@@ -2697,7 +2655,7 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		break;
 
 		// Value
-	case 'h':    // Polymorph
+	case SDLK_H:    // Polymorph
 		if (actor->get_polymorph() == -1) {
 			state.SetMode(CP_Shape);
 			state.val_min = 0;
@@ -2717,7 +2675,7 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		// Party Only
 
 		// Value
-	case 'y':    // Temp
+	case SDLK_Y:    // Temp
 		if (!actor->is_in_party()) {
 			state.command = 0;
 		} else {
@@ -2731,8 +2689,8 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		// Avatar Only
 
 		// Toggles
-	case 's':    // Sex
-	case '4':    // Read
+	case SDLK_S:    // Sex
+	case SDLK_4:    // Read
 		if (actor->get_npc_num()) {
 			state.command = 0;
 		} else {
@@ -2744,8 +2702,8 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		break;
 
 		// Toggles SI
-	case '5':    // Petra
-	case '7':    // Naked
+	case SDLK_5:    // Petra
+	case SDLK_7:    // Naked
 		if (actor->get_npc_num()) {
 			state.command = 0;
 		} else {
@@ -2757,7 +2715,7 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		break;
 
 		// Value SI
-	case '1':    // Skin
+	case SDLK_1:    // Skin
 		if (actor->get_npc_num()) {
 			state.command = 0;
 		} else {
@@ -2771,9 +2729,9 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		// Everyone but avatar
 
 		// Toggles
-	case 't':    // Met
-	case 'u':    // No Cast
-	case 'z':    // Zombie
+	case SDLK_T:    // Met
+	case SDLK_U:    // No Cast
+	case SDLK_Z:    // Zombie
 		if (!actor->get_npc_num()) {
 			state.command = 0;
 		} else {
@@ -2785,7 +2743,7 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		break;
 
 		// Value
-	case 'v':    // ID
+	case SDLK_V:    // ID
 		if (!actor->get_npc_num()) {
 			state.command = 0;
 		} else {
@@ -2997,7 +2955,7 @@ void CheatScreen::BusinessActivate(Actor* actor, int& time, int& prev) {
 	const int old = state.command;
 	state.command = 0;
 	switch (old) {
-	case 'a':    // Set Activity
+	case SDLK_A:    // Set Activity
 		if (i < 0 || i > 31) {
 			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
@@ -3010,7 +2968,7 @@ void CheatScreen::BusinessActivate(Actor* actor, int& time, int& prev) {
 		}
 		break;
 
-	case 'i':    // X Coord
+	case SDLK_I:    // X Coord
 		if (i < 0 || i > c_num_tiles) {
 			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
@@ -3027,7 +2985,7 @@ void CheatScreen::BusinessActivate(Actor* actor, int& time, int& prev) {
 		}
 		break;
 
-	case 'j':    // Y Coord
+	case SDLK_J:    // Y Coord
 		if (i < 0 || i > c_num_tiles) {
 			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
@@ -3040,11 +2998,11 @@ void CheatScreen::BusinessActivate(Actor* actor, int& time, int& prev) {
 		}
 		break;
 
-	case '1':    // Clear
+	case SDLK_1:    // Clear
 		actor->remove_schedule(time);
 		break;
 
-	case 's':    // Set Current
+	case SDLK_S:    // Set Current
 		if (i < 0 || i > 31) {
 			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
@@ -3057,7 +3015,7 @@ void CheatScreen::BusinessActivate(Actor* actor, int& time, int& prev) {
 		}
 		break;
 
-	case 'r':    // Revert
+	case SDLK_R:    // Revert
 		Game_window::get_instance()->revert_schedules(actor);
 		break;
 
@@ -3072,14 +3030,14 @@ bool CheatScreen::BusinessCheck(Actor* actor, int& time) {
 	// Might break on monster npcs?
 	if (actor->get_npc_num() > 0) {
 		switch (state.command) {
-		case 'a':
-		case 'b':
-		case 'c':
-		case 'd':
-		case 'e':
-		case 'f':
-		case 'g':
-		case 'h':
+		case SDLK_A:
+		case SDLK_B:
+		case SDLK_C:
+		case SDLK_D:
+		case SDLK_E:
+		case SDLK_F:
+		case SDLK_G:
+		case SDLK_H:
 			time          = state.command - 'a';
 			state.command = 'a';
 			state.SetMode(CP_Activity);
@@ -3087,14 +3045,14 @@ bool CheatScreen::BusinessCheck(Actor* actor, int& time) {
 			state.val_max = 31;
 			return true;
 
-		case 'i':
-		case 'j':
-		case 'k':
-		case 'l':
-		case 'm':
-		case 'n':
-		case 'o':
-		case 'p':
+		case SDLK_I:
+		case SDLK_J:
+		case SDLK_K:
+		case SDLK_L:
+		case SDLK_M:
+		case SDLK_N:
+		case SDLK_O:
+		case SDLK_P:
 			time          = state.command - 'i';
 			state.command = 'i';
 			state.SetMode(CP_XCoord);
@@ -3102,20 +3060,20 @@ bool CheatScreen::BusinessCheck(Actor* actor, int& time) {
 			state.val_max = c_num_tiles;
 			return true;
 
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
+		case SDLK_1:
+		case SDLK_2:
+		case SDLK_3:
+		case SDLK_4:
+		case SDLK_5:
+		case SDLK_6:
+		case SDLK_7:
+		case SDLK_8:
 			time           = state.command - '1';
 			state.command  = '1';
 			state.activate = true;
 			return true;
 
-		case 'r':
+		case SDLK_R:
 			state.command  = 'r';
 			state.activate = true;
 			return true;
@@ -3127,7 +3085,7 @@ bool CheatScreen::BusinessCheck(Actor* actor, int& time) {
 
 	switch (state.command) {
 		// Set Current
-	case 's':
+	case SDLK_S:
 		state.command  = 's';
 		state.input[0] = 0;
 		state.SetMode(CP_Activity);
@@ -3277,35 +3235,35 @@ void CheatScreen::StatActivate(Actor* actor) {
 	}
 
 	switch (state.command) {
-	case 'd':    // Dexterity
+	case SDLK_D:    // Dexterity
 		actor->set_property(Actor::dexterity, i);
 		break;
 
-	case 'f':    // Food Level
+	case SDLK_F:    // Food Level
 		actor->set_property(Actor::food_level, i);
 		break;
 
-	case 'i':    // Intelligence
+	case SDLK_I:    // Intelligence
 		actor->set_property(Actor::intelligence, i);
 		break;
 
-	case 's':    // Strength
+	case SDLK_S:    // Strength
 		actor->set_property(Actor::strength, i);
 		break;
 
-	case 'c':    // Combat Points
+	case SDLK_C:    // Combat Points
 		actor->set_property(Actor::combat, i);
 		break;
 
-	case 'h':    // Hit Points
+	case SDLK_H:    // Hit Points
 		actor->set_property(Actor::health, i);
 		break;
 
-	case 'm':    // Magic
+	case SDLK_M:    // Magic
 		actor->set_property(Actor::magic, i);
 		break;
 
-	case 'v':    // [V]ana
+	case SDLK_V:    // [V]ana
 		actor->set_property(Actor::mana, i);
 		break;
 
@@ -3323,20 +3281,20 @@ bool CheatScreen::StatCheck(Actor* actor) {
 
 	switch (state.command) {
 		// Everyone
-	case 'h':    // Hit Points
+	case SDLK_H:    // Hit Points
 		state.input[0] = 0;
 		state.SetMode(CP_EnterValueNoCancel);
 		state.val_min = 0;
 		state.val_max = actor->get_property(Actor::strength);
 		;
 		break;
-	case 'd':    // Dexterity
-	case 'f':    // Food Level
-	case 'i':    // Intelligence
-	case 's':    // Strength
-	case 'c':    // Combat Points
-	case 'm':    // Magic
-	case 'v':    // [V]ana
+	case SDLK_D:    // Dexterity
+	case SDLK_F:    // Food Level
+	case SDLK_I:    // Intelligence
+	case SDLK_S:    // Strength
+	case SDLK_C:    // Combat Points
+	case SDLK_M:    // Magic
+	case SDLK_V:    // [V]ana
 		state.input[0] = 0;
 		state.SetMode(CP_EnterValue);
 		state.val_min = 0;
@@ -3716,8 +3674,8 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 		if (SharedInput()) {
 			switch (state.command) {
 				// Simple commands
-			case 's':    // Set Flag
-			case 'u':    // Unset flag
+			case SDLK_S:    // Set Flag
+			case SDLK_U:    // Unset flag
 				if (!state.input[0]) {
 					state.input[0] = state.command;
 				}
@@ -3762,7 +3720,7 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 			default:
 				state.SetMode(CP_InvalidCom, false);
 				if (!state.input[0]) {
-					state.input[0] = state.command;
+					state.input[0] = (state.command < 128 ? state.command : 0);
 				}
 				state.command = 0;
 				break;
@@ -3907,7 +3865,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 
 	state.SetMode(CP_Command, false);
 	switch (state.command) {
-	case 'g':    // North or South
+	case SDLK_G:    // North or South
 		if (!state.input[0]) {
 			state.SetMode(CP_NorthSouth);
 			state.command = 'g';
@@ -3928,7 +3886,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 		}
 		break;
 
-	case 'a':    // latitude
+	case SDLK_A:    // latitude
 		if (i < 0 || (prev == 'n' && i > 113) || (prev == 's' && i > 193)) {
 			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
@@ -3953,7 +3911,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 		}
 		break;
 
-	case 'b':    // West or East
+	case SDLK_B:    // West or East
 		if (!state.input[0]) {
 			state.SetMode(CP_WestEast);
 			state.command = 'b';
@@ -3974,7 +3932,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 		}
 		break;
 
-	case 'c':    // longitude
+	case SDLK_C:    // longitude
 		if (i < 0 || (prev == 'w' && i > 93) || (prev == 'e' && i > 213)) {
 			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
@@ -4000,7 +3958,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 		}
 		break;
 
-	case 'h':    // hex X coord
+	case SDLK_H:    // hex X coord
 		i = strtol(state.input, nullptr, 16);
 		if (i < 0 || i > c_num_tiles) {
 			state.SetMode(CP_InvalidValue, false);
@@ -4022,7 +3980,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 		state.val_min = c_num_tiles;
 		break;
 
-	case 'i':    // hex Y coord
+	case SDLK_I:    // hex Y coord
 		i = strtol(state.input, nullptr, 16);
 		if (i < 0 || i > c_num_tiles) {
 			state.SetMode(CP_InvalidValue, false);
@@ -4039,7 +3997,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 		}
 		break;
 
-	case 'd':    // dec X coord
+	case SDLK_D:    // dec X coord
 		if (i < 0 || i > c_num_tiles) {
 			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
@@ -4056,7 +4014,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 		}
 		break;
 
-	case 'e':    // dec Y coord
+	case SDLK_E:    // dec Y coord
 		if (i < 0 || i > c_num_tiles) {
 			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
@@ -4072,7 +4030,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 		}
 		break;
 
-	case 'n':    // NPC
+	case SDLK_N:    // NPC
 		if (i < 0 || (i >= 356 && i <= 359)) {
 			state.SetMode(CP_InvalidNPC);
 		} else {
@@ -4082,7 +4040,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 		}
 		break;
 
-	case 'm':    // map
+	case SDLK_M:    // map
 		if ((i < 0 || i > 255) || i > highest) {
 			state.SetMode(CP_InvalidValue, false);
 		} else {
@@ -4101,27 +4059,27 @@ bool CheatScreen::TeleportCheck() {
 	ignore_unused_variable_warning(state.activate);
 	switch (state.command) {
 		// Simple commands
-	case 'g':    // geographic
+	case SDLK_G:    // geographic
 		state.SetMode(CP_NorthSouth);
 		return true;
 
-	case 'h':    // hex
+	case SDLK_H:    // hex
 		state.SetMode(CP_HexXCoord);
 		state.val_min = 0;
 		state.val_max = c_num_tiles;
 		return true;
 
-	case 'd':    // dec teleport
+	case SDLK_D:    // dec teleport
 		state.SetMode(CP_XCoord);
 		state.val_min = 0;
 		state.val_max = c_num_tiles;
 		return true;
 
-	case 'n':    // NPC teleport
+	case SDLK_N:    // NPC teleport
 		state.SetMode(CP_ChooseNPC);
 		break;
 
-	case 'm':    // NPC teleport
+	case SDLK_M:    // NPC teleport
 		state.SetMode(CP_EnterValue);
 		state.val_min = 0;
 		state.val_max = gwin->get_num_npcs() - 1;

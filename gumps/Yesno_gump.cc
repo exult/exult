@@ -155,11 +155,11 @@ bool Yesno_gump::mouse_up(
  *  Handle ASCII character typed.
  */
 
-bool Yesno_gump::key_down(int chr) {
-	if (chr == 'y' || chr == 'Y' || chr == SDLK_RETURN
-		|| chr == SDLK_KP_ENTER) {
+bool Yesno_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
+	ignore_unused_variable_warning(unicode);
+	if (chr == SDLK_Y || chr == SDLK_RETURN) {
 		set_answer(1);
-	} else if (chr == 'n' || chr == 'N' || chr == SDLK_ESCAPE) {
+	} else if (chr == SDLK_N || chr == SDLK_ESCAPE) {
 		set_answer(0);
 	}
 	return true;

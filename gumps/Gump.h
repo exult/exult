@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "rect.h"
 #include "shapeid.h"
 
+#include <SDL3/SDL_keycode.h>
+
 #include <vector>
 
 class Checkmark_button;
@@ -87,15 +89,10 @@ public:
 		return false;
 	}
 
-	virtual bool key_down(int chr) {    // Key pressed
-		ignore_unused_variable_warning(chr);
-		return false;
-	}
-
-	virtual bool character_input(
-			int chr, int unicode,
-			bool shift_pressed) {    // Character typed (unicode)
-		ignore_unused_variable_warning(chr, unicode, shift_pressed);
+	virtual bool key_down(
+			SDL_Keycode chr,
+			SDL_Keycode unicode) {    // Key pressed
+		ignore_unused_variable_warning(chr, unicode);
 		return false;
 	}
 
