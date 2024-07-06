@@ -21,7 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Face_button.h"
 #include "Gump.h"
-#include "ignore_unused_variable_warning.h"
 #include "misc_buttons.h"
 
 class Actor;

@@ -100,15 +100,10 @@ public:
 		return false;
 	}
 
-	virtual bool key_down(int chr) {    // Key pressed
-		ignore_unused_variable_warning(chr);
-		return false;
-	}
-
-	virtual bool character_input(
-			int chr, int unicode,
-			bool shift_pressed) {    // Character typed (unicode)
-		ignore_unused_variable_warning(chr, unicode, shift_pressed);
+	virtual bool key_down(
+			SDL_Keycode chr,
+			SDL_Keycode unicode) {    // Key pressed
+		ignore_unused_variable_warning(chr, unicode);
 		return false;
 	}
 

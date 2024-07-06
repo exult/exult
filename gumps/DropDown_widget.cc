@@ -191,9 +191,8 @@ bool DropDown_widget::mouse_drag(int mx, int my) {
 	return false;
 }
 
-bool DropDown_widget::character_input(
-		int chr, int unicode, bool shift_pressed) {
-	ignore_unused_variable_warning(unicode, shift_pressed);
+bool DropDown_widget::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
+	ignore_unused_variable_warning(unicode);
 	if (!active) {
 		return false;
 	}

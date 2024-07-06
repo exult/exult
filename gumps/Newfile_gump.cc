@@ -811,7 +811,7 @@ bool Newfile_gump::text_input(const char* text) {
  *  Handle character that was typed.
  */
 
-bool Newfile_gump::character_input(int chr, int unicode, bool shift_pressed) {
+bool Newfile_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 	bool update_details = false;
 	int  repaint        = false;
 
@@ -822,7 +822,6 @@ bool Newfile_gump::character_input(int chr, int unicode, bool shift_pressed) {
 
 	switch (chr) {
 	case SDLK_RETURN:    // If only 'Save', do it.
-	case SDLK_KP_ENTER:
 		if (!buttons[id_load] && buttons[id_save]) {
 			if (buttons[id_save]->push(MouseButton::Left)) {
 				gwin->show(true);
@@ -879,19 +878,14 @@ bool Newfile_gump::character_input(int chr, int unicode, bool shift_pressed) {
 		break;
 
 	default:
-		ignore_unused_variable_warning(unicode);
-		if (chr < ' ') {
-			return Modal_gump::character_input(
-					chr, unicode,
-					shift_pressed);    // Ignore other special chars and let
-									   // parent class handle them
+		if (unicode < ' ') {
+			return Modal_gump::key_down(
+					chr, unicode);    // Ignore other special chars and let
+									  // parent class handle them
 		}
 
-		if (chr < 256 && isascii(chr)) {
-			if (shift_pressed) {
-				chr = std::toupper(chr);
-			}
-			if (AddCharacter(chr)) {
+		if (unicode < 256 && isascii(unicode)) {
+			if (AddCharacter(unicode)) {
 				// Added first character?  Need 'Save' button.
 				if (newname[0] && !buttons[id_save]) {
 					buttons[id_save] = std::make_unique<Newfile_Textbutton>(
