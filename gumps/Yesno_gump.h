@@ -52,9 +52,10 @@ public:
 	// Paint it and its contents.
 	void paint() override;
 	// Handle events:
-	bool        mouse_down(int mx, int my, MouseButton button) override;
-	bool        mouse_up(int mx, int my, MouseButton button) override;
-	bool        key_down(int chr) override;    // Character typed.
+	bool mouse_down(int mx, int my, MouseButton button) override;
+	bool mouse_up(int mx, int my, MouseButton button) override;
+	bool key_down(SDL_Keycode chr, SDL_Keycode unicode)
+			override;    // Character typed.
 	static bool ask(
 			const char* txt, Paintable* paint = nullptr,
 			const char* font
