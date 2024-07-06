@@ -198,17 +198,16 @@ bool AdvancedOptions_gump::mousewheel_up(int mx, int my) {
 	return Modal_gump::mousewheel_up(mx, my);
 }
 
-bool AdvancedOptions_gump::character_input(
-		int chr, int unicode, bool shift_pressed) {
+bool AdvancedOptions_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 	// try input first widget only
 	for (auto& child : elems) {
 		auto found = child->Input_first();
-		if (found && found->character_input(chr, unicode, shift_pressed)) {
+		if (found && found->key_down(chr, unicode)) {
 			return true;
 		}
 	}
 	// pass to our parentclass
-	return Modal_gump::character_input(chr, unicode, shift_pressed);
+	return Modal_gump::key_down(chr, unicode);
 }
 
 void AdvancedOptions_gump::paint() {

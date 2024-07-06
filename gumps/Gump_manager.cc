@@ -522,7 +522,8 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 
 	int           gx;
 	int           gy;
-	Uint16        keysym_unicode = 0;
+	SDL_Keycode   keysym_unicode = 0;
+	SDL_Keycode   chr            = 0;
 	SDL_Renderer* renderer
 			= SDL_GetRenderer(gwin->get_win()->get_screen_window());
 
@@ -554,8 +555,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 			if (!gump->mouse_down(
 						gx, gy, SDL_MouseButton_to_Gump(event.button.button))
 				&& gwin->get_mouse3rd()) {
-				gump->key_down(SDLK_RETURN);
-				gump->character_input(SDLK_RETURN, SDLK_RETURN, false);
+				gump->key_down(SDLK_RETURN, SDLK_RETURN);
 			}
 		} else if (event.button.button == 3) {
 			rightclick = true;
@@ -650,44 +650,32 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		break;
 	case SDL_EVENT_KEY_DOWN:
 	case SDL_EVENT_TEXT_INPUT:
-		if (event.type == SDL_EVENT_TEXT_INPUT) {
-			keysym_unicode = event.text.text[0];
-			event.key.key  = SDLK_UNKNOWN;
-		}
+		Translate_keyboard(event, chr, keysym_unicode, true);
 		{
-			if ((event.key.key == SDLK_S) && (event.key.mod & SDL_KMOD_ALT)
+			if ((chr == SDLK_S) && (event.key.mod & SDL_KMOD_ALT)
 				&& (event.key.mod & SDL_KMOD_CTRL)) {
 				make_screenshot(true);
 				return true;
 			}
 			// Alt-x for quit
-			if ((event.key.key == SDLK_X)
-				&& (event.key.mod & SDL_KMOD_ALT
+			if ((chr == SDLK_X)
+				&& ((event.key.mod & SDL_KMOD_ALT)
 					|| event.key.mod & SDL_KMOD_GUI)) {
 				if (okay_to_quit()) {
 					return false;
 				}
 			}
 
-			if (event.key.key > +'~') {
-				keysym_unicode = event.key.key;
-			}
-			translate_numpad(event.key.key, keysym_unicode, event.key.mod);
-			gump->key_down(event.key.key);
-			bool handled = gump->character_input(
-					event.key.key, keysym_unicode,
-					(event.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)) != 0);
-
+			bool handled = gump->key_down(chr, keysym_unicode);
 			// we'll allow the gump to handle escape first
 			// before closing the gump
 			if (!handled) {
-				if (event.key.key == SDLK_ESCAPE) {
+				if (chr == SDLK_ESCAPE) {
 					return false;
 				}
 			}
-
-			break;
 		}
+		break;
 	default:
 		if (event.type == TouchUI::eventType) {
 			if (event.user.code == TouchUI::EVENT_CODE_TEXT_INPUT) {
@@ -704,92 +692,6 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		break;
 	}
 	return true;
-}
-
-void Gump_manager::translate_numpad(
-		SDL_Keycode& code, uint16& unicode, uint16 mod) {
-	const bool numlock_active = (mod & SDL_KMOD_NUM) != 0;
-	unicode                   = 0;
-	switch (code) {
-	case SDLK_KP_0:
-		if (numlock_active) {
-			code    = SDLK_0;
-			unicode = '0';
-		}
-		break;
-	case SDLK_KP_1:
-		if (numlock_active) {
-			code    = SDLK_1;
-			unicode = '1';
-		} else {
-			code = SDLK_END;
-		}
-		break;
-	case SDLK_KP_2:
-		if (numlock_active) {
-			code    = SDLK_2;
-			unicode = '2';
-		} else {
-			code = SDLK_DOWN;
-		}
-		break;
-	case SDLK_KP_3:
-		if (numlock_active) {
-			code    = SDLK_3;
-			unicode = '3';
-		} else {
-			code = SDLK_PAGEDOWN;
-		}
-		break;
-	case SDLK_KP_4:
-		if (numlock_active) {
-			code    = SDLK_4;
-			unicode = '4';
-		} else {
-			code = SDLK_LEFT;
-		}
-		break;
-	case SDLK_KP_5:
-		if (numlock_active) {
-			code    = SDLK_5;
-			unicode = '5';
-		}
-		break;
-	case SDLK_KP_6:
-		if (numlock_active) {
-			code    = SDLK_6;
-			unicode = '6';
-		} else {
-			code = SDLK_RIGHT;
-		}
-		break;
-	case SDLK_KP_7:
-		if (numlock_active) {
-			code    = SDLK_7;
-			unicode = '7';
-		} else {
-			code = SDLK_HOME;
-		}
-		break;
-	case SDLK_KP_8:
-		if (numlock_active) {
-			code    = SDLK_8;
-			unicode = '8';
-		} else {
-			code = SDLK_UP;
-		}
-		break;
-	case SDLK_KP_9:
-		if (numlock_active) {
-			code    = SDLK_9;
-			unicode = '9';
-		} else {
-			code = SDLK_PAGEUP;
-		}
-		break;
-	default:
-		break;
-	}
 }
 
 /*

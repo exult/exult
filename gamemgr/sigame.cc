@@ -1451,6 +1451,10 @@ bool SI_Game::new_game(Vga_file& shapes) {
 	Avatar_default_skin* defskin  = Shapeinfo_lookup::GetDefaultAvSkin();
 	Skin_data*           skindata = Shapeinfo_lookup::GetSkinInfoSafe(
             defskin->default_skin, defskin->default_female, true);
+	SDL_Window* window = gwin->get_win()->get_screen_window();
+	if (!SDL_TextInputActive(window)) {
+		SDL_StartTextInput(window);
+	}
 	do {
 		Delay();
 		if (redraw) {
@@ -1637,6 +1641,9 @@ bool SI_Game::new_game(Vga_file& shapes) {
 			}
 		}
 	} while (editing);
+	if (SDL_TextInputActive(window)) {
+		SDL_StopTextInput(window);
+	}
 
 	gwin->clear_screen();
 

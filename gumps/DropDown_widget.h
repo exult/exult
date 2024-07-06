@@ -109,7 +109,7 @@ public:
 
 	bool mouse_drag(int mx, int my) override;
 
-	bool character_input(int chr, int unicode, bool shift_pressed) override;
+	bool key_down(SDL_Keycode chr, SDL_Keycode unicode) override;
 
 	void onbutton(Gump_widget* sender, MouseButton);
 	void onlist(Gump_widget* sender, MouseButton);

@@ -40,7 +40,6 @@
 #include "cheat.h"
 #include "game.h"
 #include "gamewin.h"
-#include "ignore_unused_variable_warning.h"
 #include "items.h"
 #include "mouse.h"
 #include "spellbook.h"
@@ -547,8 +546,10 @@ void Spellbook_gump::paint() {
  */
 
 bool Spellbook_gump::handle_kbd_event(void* vev) {
-	const SDL_Event& ev  = *static_cast<SDL_Event*>(vev);
-	const int        chr = ev.key.key;
+	const SDL_Event& ev             = *static_cast<SDL_Event*>(vev);
+	SDL_Keycode      keysym_unicode = 0;
+	SDL_Keycode      chr            = 0;
+	Translate_keyboard(ev, chr, keysym_unicode, true);
 
 	if (ev.type == SDL_EVENT_KEY_UP) {
 		return true;    // Ignoring key-up at present.
@@ -557,8 +558,7 @@ bool Spellbook_gump::handle_kbd_event(void* vev) {
 		return false;
 	}
 	switch (chr) {
-	case SDLK_RETURN:
-	case SDLK_KP_ENTER: {
+	case SDLK_RETURN: {
 		if (book->bookmark >= 0) {
 			change_page(book->bookmark / 8 - page);
 		}

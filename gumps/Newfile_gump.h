@@ -233,7 +233,7 @@ public:
 	bool mouse_down(int mx, int my, MouseButton button) override;
 	bool mouse_up(int mx, int my, MouseButton button) override;
 	bool mouse_drag(int mx, int my) override;
-	bool character_input(int chr, int unicode, bool shift_pressed)
+	bool key_down(SDL_Keycode chr, SDL_Keycode unicode)
 			override;    // Character typed.
 
 	bool mousewheel_up(int mx, int my) override;
