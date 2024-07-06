@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gump_manager.h"
 #include "game.h"
 #include "gamewin.h"
-#include "ignore_unused_variable_warning.h"
 #include "misc_buttons.h"
 
 using std::cout;
@@ -282,10 +281,10 @@ bool Slider_gump::mouse_drag(
  *  Handle ASCII character typed.
  */
 
-bool Slider_gump::key_down(int chr) {
+bool Slider_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
+	ignore_unused_variable_warning(unicode);
 	switch (chr) {
 	case SDLK_RETURN:
-	case SDLK_KP_ENTER:
 		done = true;
 		break;
 	case SDLK_LEFT:
@@ -432,18 +431,17 @@ bool Slider_gump::mouse_drag(
  *  Handle ASCII character typed.
  */
 
-bool Slider_gump::key_down(int chr) {
+bool Slider_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 	switch (chr) {
 	case SDLK_RETURN:
-	case SDLK_KP_ENTER:
 		done = true;
 		return true;
 	default:
-		if (widget->key_down(chr)) {
+		if (widget->key_down(chr, unicode)) {
 			return true;
 		}
 	}
-	return Modal_gump::key_down(chr);
+	return Modal_gump::key_down(chr, unicode);
 }
 
 bool Slider_gump::mousewheel_up(int mx, int my) {

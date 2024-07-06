@@ -606,14 +606,12 @@ bool File_gump::mouse_up(
  *  Handle character that was typed.
  */
 
-bool File_gump::character_input(int chr, int unicode, bool shift_pressed) {
-	ignore_unused_variable_warning(unicode);
+bool File_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 	if (!focus) {    // Text field?
 		return false;
 	}
 	switch (chr) {
 	case SDLK_RETURN:    // If only 'Save', do it.
-	case SDLK_KP_ENTER:
 		if (!buttons[0] && buttons[1]) {
 			if (buttons[1]->push(MouseButton::Left)) {
 				gwin->show(true);
@@ -665,18 +663,14 @@ bool File_gump::character_input(int chr, int unicode, bool shift_pressed) {
 		return true;
 	}
 
-	if (chr < ' ') {
-		return Modal_gump::character_input(
-				chr, unicode,
-				shift_pressed);    /// Ignore other special chars and let parent
-								   /// class handle them
+	if (unicode < ' ') {
+		return Modal_gump::key_down(
+				chr, unicode);    // Ignore other special chars and let parent
+								  // class handle them
 	}
-	if (chr < 256 && isascii(chr)) {
-		if (shift_pressed) {
-			chr = std::toupper(chr);
-		}
+	if (unicode < 256 && isascii(unicode)) {
 		const int old_length = focus->get_length();
-		focus->insert(chr);
+		focus->insert(unicode);
 		// Added first character?  Need
 		//   'Save' button.
 		if (!old_length && focus->get_length() && !buttons[1]) {
