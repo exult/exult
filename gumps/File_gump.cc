@@ -604,6 +604,7 @@ bool File_gump::mouse_up(
  */
 
 bool File_gump::text_input(int chr, int unicode, bool shift_pressed) {
+	ignore_unused_variable_warning(unicode);
 	if (!focus) {    // Text field?
 		return true;
 	}
@@ -659,12 +660,6 @@ bool File_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	case SDLK_END:
 		focus->set_cursor(focus->get_length());
 		return true;
-	}
-
-	if ((unicode & 0xFF80) == 0) {
-		chr = unicode & 0x7F;
-	} else {
-		chr = 0;
 	}
 
 	if (chr < ' ') {
