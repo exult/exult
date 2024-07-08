@@ -717,9 +717,7 @@ void Npc_chooser::drag_data_received(
 	if ((gtk_selection_data_get_data_type(seldata)
 				 == gdk_atom_intern(U7_TARGET_NPCID_NAME, 0)
 		 || gtk_selection_data_get_data_type(seldata)
-					== gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MIME, 0)
-		 || gtk_selection_data_get_data_type(seldata)
-					== gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MACOSX, 0))
+					== gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MIME, 0))
 		&& Is_u7_npcid(gtk_selection_data_get_data(seldata))
 		&& gtk_selection_data_get_format(seldata) == 8
 		&& gtk_selection_data_get_length(seldata) > 0) {
@@ -741,18 +739,15 @@ void Npc_chooser::enable_drop() {
 	}
 	drop_enabled = true;
 	gtk_widget_realize(draw);    //???????
-	GtkTargetEntry tents[3];
+	GtkTargetEntry tents[2];
 	tents[0].target = const_cast<char*>(U7_TARGET_NPCID_NAME);
 	tents[1].target = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MIME);
-	tents[2].target = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MACOSX);
 	tents[0].flags  = 0;
 	tents[1].flags  = 0;
-	tents[2].flags  = 0;
 	tents[0].info   = U7_TARGET_NPCID;
 	tents[1].info   = U7_TARGET_NPCID + 100;
-	tents[2].info   = U7_TARGET_NPCID + 200;
 	gtk_drag_dest_set(
-			draw, GTK_DEST_DEFAULT_ALL, tents, 3,
+			draw, GTK_DEST_DEFAULT_ALL, tents, 2,
 			static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
 
 	g_signal_connect(

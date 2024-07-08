@@ -266,9 +266,7 @@ void Shape_draw::drag_data_received(
 		&& (gtk_selection_data_get_data_type(seldata)
 					== gdk_atom_intern(U7_TARGET_SHAPEID_NAME, 0)
 			|| gtk_selection_data_get_data_type(seldata)
-					   == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MIME, 0)
-			|| gtk_selection_data_get_data_type(seldata)
-					   == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MACOSX, 0))
+					   == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MIME, 0))
 		&& Is_u7_shapeid(gtk_selection_data_get_data(seldata))
 		&& gtk_selection_data_get_format(seldata) == 8
 		&& gtk_selection_data_get_length(seldata) > 0) {
@@ -292,18 +290,15 @@ gulong Shape_draw::enable_drop(
 	gtk_widget_realize(draw);    //???????
 	drop_callback  = callback;
 	drop_user_data = udata;
-	GtkTargetEntry tents[3];
+	GtkTargetEntry tents[2];
 	tents[0].target = const_cast<char*>(U7_TARGET_SHAPEID_NAME);
 	tents[1].target = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MIME);
-	tents[2].target = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MACOSX);
 	tents[0].flags  = 0;
 	tents[1].flags  = 0;
-	tents[2].flags  = 0;
 	tents[0].info   = U7_TARGET_SHAPEID;
 	tents[1].info   = U7_TARGET_SHAPEID + 100;
-	tents[2].info   = U7_TARGET_SHAPEID + 200;
 	gtk_drag_dest_set(
-			draw, GTK_DEST_DEFAULT_ALL, tents, 3,
+			draw, GTK_DEST_DEFAULT_ALL, tents, 2,
 			static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
 
 	return g_signal_connect(
@@ -363,17 +358,14 @@ void Shape_draw::start_drag(
 		return;
 	}
 	dragging = true;
-	GtkTargetEntry tents[3];    // Set up for dragging.
+	GtkTargetEntry tents[2];    // Set up for dragging.
 	tents[0].target      = const_cast<char*>(target);
 	tents[1].target      = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MIME);
-	tents[2].target      = const_cast<char*>(U7_TARGET_DROPTEXT_NAME_MACOSX);
 	tents[0].flags       = 0;
 	tents[1].flags       = 0;
-	tents[2].flags       = 0;
 	tents[0].info        = id;
 	tents[1].info        = id + 100;
-	tents[2].info        = id + 200;
-	GtkTargetList* tlist = gtk_target_list_new(&tents[0], 3);
+	GtkTargetList* tlist = gtk_target_list_new(&tents[0], 2);
 	gtk_drag_begin_with_coordinates(
 			draw, tlist,
 			static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE), 1,

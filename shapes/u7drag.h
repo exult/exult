@@ -29,11 +29,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //	  Per number = 7 : 1 dot separator + 1 sign + 5 digits
 //	  Prefix = 18 : 8 file:/// + 9 U7CHUNKID + 1 terminating null
 #define U7DND_DATA_LENGTH(n) (18 + ((n) * 7))
-//	Generic FILE_MIME Target
-#define U7_TARGET_DROPFILE_NAME_MIME   "text/uri-list"
-#define U7_TARGET_DROPFILE_NAME_MACOSX "public.file-url"
-#define U7_TARGET_DROPTEXT_NAME_MIME   "text/plain;charset=utf-8"
-#define U7_TARGET_DROPTEXT_NAME_MACOSX "public.utf8-plain-text"
+
+//	Generic FILE_MIME, TEXT_MIME Targets
+#if defined(MACOSX)
+#	define U7_TARGET_DROPFILE_NAME_MIME "public.file-url"
+#	define U7_TARGET_DROPTEXT_NAME_MIME "UTF8_STRING"
+#else
+#	define U7_TARGET_DROPFILE_NAME_MIME "text/uri-list"
+#	define U7_TARGET_DROPTEXT_NAME_MIME "UTF8_STRING"
+#endif // MACOSX
 
 //	Target information for dragging a shape:
 #define U7_TARGET_SHAPEID_NAME "U7SHAPEID"
