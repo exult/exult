@@ -37,7 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #else
 #	define U7_TARGET_DROPFILE_NAME_MIME "text/uri-list"
 #	define U7_TARGET_DROPTEXT_NAME_MIME "UTF8_STRING"
-#endif // MACOSX
+#endif    // MACOSX
 
 //	Target information for dragging a shape:
 #define U7_TARGET_SHAPEID_NAME "U7SHAPEID"

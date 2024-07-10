@@ -716,14 +716,17 @@ class SDL_SurfaceOwner {
 	SDL_Surface* surf;
 
 public:
-	SDL_SurfaceOwner(Image_buffer* src, SDL_Surface* draw)
-			: surf(SDL_CreateSurfaceFrom(
-					  src->get_bits(), src->get_height(), src->get_width(),
-					  src->get_line_width(),
-					  SDL_GetPixelFormatEnumForMasks(
-							  draw->format->bits_per_pixel, draw->format->Rmask,
-							  draw->format->Gmask, draw->format->Bmask,
-							  draw->format->Amask))) {}
+	SDL_SurfaceOwner(Image_buffer* src, SDL_Surface* draw) {
+		const SDL_PixelFormatDetails* draw_format
+				= SDL_GetPixelFormatDetails(draw->format);
+		surf = SDL_CreateSurfaceFrom(
+				src->get_width(), src->get_height(),
+				SDL_GetPixelFormatForMasks(
+						draw_format->bits_per_pixel, draw_format->Rmask,
+						draw_format->Gmask, draw_format->Bmask,
+						draw_format->Amask),
+				src->get_bits(), src->get_line_width());
+	}
 
 	~SDL_SurfaceOwner() noexcept {
 		SDL_DestroySurface(surf);

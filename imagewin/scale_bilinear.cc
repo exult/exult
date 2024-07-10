@@ -37,13 +37,17 @@ void Image_window::show_scaled8to16_bilinear(
 ) {
 	increase_area(x, y, w, h, 1, 1, 1, 1, ibuf->width, ibuf->height);
 
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to16 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_2xBilinear<unsigned char, uint16, Manip8to16>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
 			manip);
 }
 
@@ -52,13 +56,17 @@ void Image_window::show_scaled8to555_bilinear(
 ) {
 	increase_area(x, y, w, h, 1, 1, 1, 1, ibuf->width, ibuf->height);
 
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to555 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_2xBilinear<unsigned char, uint16, Manip8to555>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
 			manip);
 }
 
@@ -67,13 +75,17 @@ void Image_window::show_scaled8to565_bilinear(
 ) {
 	increase_area(x, y, w, h, 1, 1, 1, 1, ibuf->width, ibuf->height);
 
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to565 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_2xBilinear<unsigned char, uint16, Manip8to565>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
 			manip);
 }
 
@@ -82,13 +94,17 @@ void Image_window::show_scaled8to32_bilinear(
 ) {
 	increase_area(x, y, w, h, 1, 1, 1, 1, ibuf->width, ibuf->height);
 
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to32 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_2xBilinear<unsigned char, uint32, Manip8to32>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint32*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
 			manip);
 }
 
@@ -100,13 +116,17 @@ void Image_window::show_scaled8to16_BilinearPlus(
 ) {
 	increase_area(x, y, w, h, 1, 1, 1, 1, ibuf->width, ibuf->height);
 
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to16 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_2xBilinearPlus<unsigned char, uint16, Manip8to16>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
 			manip);
 }
 
@@ -115,13 +135,17 @@ void Image_window::show_scaled8to555_BilinearPlus(
 ) {
 	increase_area(x, y, w, h, 1, 1, 1, 1, ibuf->width, ibuf->height);
 
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to555 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_2xBilinearPlus<unsigned char, uint16, Manip8to555>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
 			manip);
 }
 
@@ -130,13 +154,17 @@ void Image_window::show_scaled8to565_BilinearPlus(
 ) {
 	increase_area(x, y, w, h, 1, 1, 1, 1, ibuf->width, ibuf->height);
 
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to565 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_2xBilinearPlus<unsigned char, uint16, Manip8to565>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint16*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
 			manip);
 }
 
@@ -145,12 +173,16 @@ void Image_window::show_scaled8to32_BilinearPlus(
 ) {
 	increase_area(x, y, w, h, 1, 1, 1, 1, ibuf->width, ibuf->height);
 
+	const SDL_PixelFormatDetails* inter_surface_format
+			= SDL_GetPixelFormatDetails(inter_surface->format);
+	SDL_Palette* paletted_surface_palette
+			= SDL_GetSurfacePalette(paletted_surface);
 	const Manip8to32 manip(
-			paletted_surface->format->palette->colors, inter_surface->format);
+			paletted_surface_palette->colors, inter_surface_format);
 	Scale_2xBilinearPlus<unsigned char, uint32, Manip8to32>(
 			static_cast<uint8*>(draw_surface->pixels), x + guard_band,
 			y + guard_band, w, h, ibuf->line_width, ibuf->height + guard_band,
 			static_cast<uint32*>(inter_surface->pixels),
-			inter_surface->pitch / inter_surface->format->bytes_per_pixel,
+			inter_surface->pitch / inter_surface_format->bytes_per_pixel,
 			manip);
 }

@@ -53,7 +53,7 @@ using std::endl;
 #	include "png.h"
 
 /*
- * SDL_SavePNG -- libpng-based SDL_Surface writer.
+ * SDL_SavePNG -- libpng-based SDL_Surface writ.
  *
  * This code is free software, available under zlib/libpng license.
  * http://www.libpng.org/pub/png/src/libpng-LICENSE.txt
@@ -123,9 +123,11 @@ static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 
 	/* Prepare chunks */
 	colortype = PNG_COLOR_MASK_COLOR;
-	if ((surface->format->bytes_per_pixel > 0)
-		&& (surface->format->bytes_per_pixel <= 8)
-		&& (pal = surface->format->palette)) {
+	const SDL_PixelFormatDetails* surface_format
+			= SDL_GetPixelFormatDetails(surface->format);
+	if ((surface_format->bytes_per_pixel > 0)
+		&& (surface_format->bytes_per_pixel <= 8)
+		&& (pal = SDL_GetSurfacePalette(surface))) {
 		colortype |= PNG_COLOR_MASK_PALETTE;
 		pal_ptr = static_cast<png_colorp>(
 				malloc(pal->ncolors * sizeof(png_color)));
@@ -137,8 +139,7 @@ static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 		png_set_PLTE(png_ptr, info_ptr, pal_ptr, pal->ncolors);
 		free(pal_ptr);
 	} else if (
-			(surface->format->bytes_per_pixel > 3)
-			|| (surface->format->Amask)) {
+			(surface_format->bytes_per_pixel > 3) || (surface_format->Amask)) {
 		colortype |= PNG_COLOR_MASK_ALPHA;
 	}
 
@@ -257,19 +258,22 @@ static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 	header.version      = 5;
 	header.compression  = 1;
 
-	if (surface->format->palette && surface->format->bits_per_pixel == 8) {
-		colors = surface->format->palette->ncolors;
+	const SDL_PixelFormatDetails* surface_format
+			= SDL_GetPixelFormatDetails(surface->format);
+	const SDL_Palette* surface_palette = SDL_GetSurfacePalette(surface);
+	if (surface_palette && surface_format->bits_per_pixel == 8) {
+		colors = surface_palette->ncolors;
 		cmap   = new Uint8[3 * colors];
 		for (int i = 0; i < colors; i++) {
-			cmap[3 * i]     = surface->format->palette->colors[i].r;
-			cmap[3 * i + 1] = surface->format->palette->colors[i].g;
-			cmap[3 * i + 2] = surface->format->palette->colors[i].b;
+			cmap[3 * i]     = surface_palette->colors[i].r;
+			cmap[3 * i + 1] = surface_palette->colors[i].g;
+			cmap[3 * i + 2] = surface_palette->colors[i].b;
 		}
 		header.bpp          = 8;
 		header.bytesperline = htoqs(width);
 		header.planes       = 1;
 		header.color        = htoqs(1);
-	} else if (surface->format->bits_per_pixel == 24) {
+	} else if (surface_format->bits_per_pixel == 24) {
 		header.bpp          = 8;
 		header.bytesperline = htoqs(width);
 		header.planes       = 3;
@@ -334,20 +338,22 @@ bool SaveIMG_RW(
 	constexpr const Uint32 Gmask = 0x0000FF00U;
 	constexpr const Uint32 Bmask = 0x00FF0000U;
 #endif
+	const SDL_PixelFormatDetails* saveme_format
+			= SDL_GetPixelFormatDetails(saveme->format);
 	if (dst) {
-		if (saveme->format->palette) {
-			if (saveme->format->bits_per_pixel == 8) {
+		if (SDL_GetSurfacePalette(saveme)) {
+			if (saveme_format->bits_per_pixel == 8) {
 				surface = saveme;
 			} else {
 				found_error = true;
-				cout << saveme->format->bits_per_pixel
+				cout << saveme_format->bits_per_pixel
 					 << "bpp PCX files not supported" << endl;
 			}
 		} else if (
-				(saveme->format->bits_per_pixel == 24)
-				&& (saveme->format->Rmask == Rmask)
-				&& (saveme->format->Gmask == Gmask)
-				&& (saveme->format->Bmask == Bmask)) {
+				(saveme_format->bits_per_pixel == 24)
+				&& (saveme_format->Rmask == Rmask)
+				&& (saveme_format->Gmask == Gmask)
+				&& (saveme_format->Bmask == Bmask)) {
 			surface = saveme;
 		} else {
 			SDL_Rect bounds;
@@ -355,7 +361,7 @@ bool SaveIMG_RW(
 			/* Convert to 24 bits per pixel */
 			surface = SDL_CreateSurface(
 					saveme->w, saveme->h,
-					SDL_GetPixelFormatEnumForMasks(24, Rmask, Gmask, Bmask, 0));
+					SDL_GetPixelFormatForMasks(24, Rmask, Gmask, Bmask, 0));
 
 			if (surface != nullptr) {
 				bounds.x = 0;

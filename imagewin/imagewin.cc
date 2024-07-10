@@ -102,7 +102,7 @@ int Image_window::windowed      = 0;
 
 const int Image_window::guard_band = 4;
 
-SDL_PixelFormat*
+const SDL_PixelFormatDetails*
 		  ManipBase::fmt;    // Format of dest. pixels (and src for rgb src).
 SDL_Color ManipBase::colors[256];    // Palette for source window.
 
@@ -370,7 +370,7 @@ void Image_window::static_init() {
 	Uint32 Amask;
 	if (SDL_GetMasksForPixelFormat(
 				dispmode->format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)
-		== SDL_TRUE) {
+		>= 0) {
 		desktop_displaymode = *dispmode;
 		desktop_depth       = bpp;
 	} else {
@@ -592,7 +592,7 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 				&sAmask);
 		display_surface = SDL_CreateSurface(
 				(w / scale), (h / scale),
-				SDL_GetPixelFormatEnumForMasks(
+				SDL_GetPixelFormatForMasks(
 						sbpp, sRmask, sGmask, sBmask, sAmask));
 		if (display_surface == nullptr) {
 			cout << "Couldn't create display surface: " << SDL_GetError()
@@ -747,8 +747,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 
 	display_surface = SDL_CreateSurface(
 			w, h,
-			SDL_GetPixelFormatEnumForMasks(
-					sbpp, sRmask, sGmask, sBmask, sAmask));
+			SDL_GetPixelFormatForMasks(sbpp, sRmask, sGmask, sBmask, sAmask));
 	if (display_surface == nullptr) {
 		cout << "Couldn't create display surface: " << SDL_GetError()
 			 << std::endl;
@@ -773,7 +772,12 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	if (!(draw_surface = SDL_CreateSurface(
 				  inter_width / scale + 2 * guard_band,
 				  inter_height / scale + 2 * guard_band,
-				  SDL_GetPixelFormatEnumForMasks(ibuf->depth, 0, 0, 0, 0)))) {
+				  SDL_GetPixelFormatForMasks(ibuf->depth, 0, 0, 0, 0)))) {
+		cerr << "Couldn't create draw surface" << endl;
+		free_surface();
+		return false;
+	}
+	if (!(SDL_CreateSurfacePalette(draw_surface))) {
 		cerr << "Couldn't create draw surface" << endl;
 		free_surface();
 		return false;
@@ -783,14 +787,16 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	if (fill_scaler != SDLScaler && (scaler == fill_scaler || scale == 1)) {
 		inter_surface = draw_surface;
 	} else if (inter_width != w || inter_height != h) {
+		const SDL_PixelFormatDetails* display_surface_format
+				= SDL_GetPixelFormatDetails(display_surface->format);
 		if (!(inter_surface = SDL_CreateSurface(
 					  inter_width + 2 * scale * guard_band,
 					  inter_height + 2 * scale * guard_band,
-					  SDL_GetPixelFormatEnumForMasks(
-							  hwdepth, display_surface->format->Rmask,
-							  display_surface->format->Gmask,
-							  display_surface->format->Bmask,
-							  display_surface->format->Amask)))) {
+					  SDL_GetPixelFormatForMasks(
+							  hwdepth, display_surface_format->Rmask,
+							  display_surface_format->Gmask,
+							  display_surface_format->Bmask,
+							  display_surface_format->Amask)))) {
 			cerr << "Couldn't create inter surface: " << SDL_GetError() << endl;
 			free_surface();
 			return false;
@@ -975,11 +981,13 @@ void Image_window::show(int x, int y, int w, int h) {
 	if (draw_surface != inter_surface) {
 		const ScalerInfo& sel_scaler = Scalers[scaler];
 
+		const SDL_PixelFormatDetails* inter_surface_format
+				= SDL_GetPixelFormatDetails(inter_surface->format);
 		// Need to apply an offset to compensate for the guard_band
 		if (inter_surface == display_surface) {
 			inter_surface->pixels = static_cast<uint8*>(inter_surface->pixels)
 									- inter_surface->pitch * guard_band * scale
-									- inter_surface->format->bytes_per_pixel
+									- inter_surface_format->bytes_per_pixel
 											  * guard_band * scale;
 		}
 
@@ -996,11 +1004,11 @@ void Image_window::show(int x, int y, int w, int h) {
 			}
 		} else {
 			scalefun show_scaled;
-			if (inter_surface->format->bits_per_pixel == 16
-				|| inter_surface->format->bits_per_pixel == 15) {
-				const int r = inter_surface->format->Rmask;
-				const int g = inter_surface->format->Gmask;
-				const int b = inter_surface->format->Bmask;
+			if (inter_surface_format->bits_per_pixel == 16
+				|| inter_surface_format->bits_per_pixel == 15) {
+				const int r = inter_surface_format->Rmask;
+				const int g = inter_surface_format->Gmask;
+				const int b = inter_surface_format->Bmask;
 
 				show_scaled = (r == 0xf800 && g == 0x7e0 && b == 0x1f)
 											  || (b == 0xf800 && g == 0x7e0
@@ -1015,7 +1023,7 @@ void Image_window::show(int x, int y, int w, int h) {
 												 ? sel_scaler.fun8to555
 												 : sel_scaler.fun8to16)
 									  : sel_scaler.fun8to16;
-			} else if (inter_surface->format->bits_per_pixel == 32) {
+			} else if (inter_surface_format->bits_per_pixel == 32) {
 				show_scaled = sel_scaler.fun8to32;
 			} else {
 				show_scaled = sel_scaler.fun8to8;
@@ -1028,7 +1036,7 @@ void Image_window::show(int x, int y, int w, int h) {
 		if (inter_surface == display_surface) {
 			inter_surface->pixels = static_cast<uint8*>(inter_surface->pixels)
 									+ inter_surface->pitch * guard_band * scale
-									+ inter_surface->format->bytes_per_pixel
+									+ inter_surface_format->bytes_per_pixel
 											  * guard_band * scale;
 		}
 
@@ -1410,12 +1418,14 @@ void Image_window::UpdateRect(SDL_Surface* surf) {
 	// TODO: Only update the necessary portion of the screen.
 	// Seem to get flicker like crazy or some other ill effect no matter
 	// what I try. -Lanica 08/28/2013
+	const SDL_PixelFormatDetails* surf_format
+			= SDL_GetPixelFormatDetails(surf->format);
 	uint8* pixels
 			= (surf == display_surface
 					   ? static_cast<uint8*>(surf->pixels)
 					   : static_cast<uint8*>(surf->pixels)
 								 + guard_band * scale
-										   * surf->format->bytes_per_pixel
+										   * surf_format->bytes_per_pixel
 								 + guard_band * scale * surf->pitch);
 	SDL_UpdateTexture(screen_texture, nullptr, pixels, surf->pitch);
 	SDL_RenderTexture(screen_renderer, screen_texture, nullptr, nullptr);
@@ -1441,7 +1451,7 @@ int Image_window::VideoModeOK(int width, int height, bool fullscreen, int bpp) {
 		Uint32 Amask;
 		if (SDL_GetMasksForPixelFormat(
 					mode->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask)
-					== SDL_TRUE
+					>= 0
 			&& mode->w >= width && mode->h >= height
 			&& ((bpp == nbpp)
 				|| (bpp == 0 && (nbpp == 8 || nbpp == 16 || nbpp == 32)))) {
@@ -1460,7 +1470,7 @@ int Image_window::VideoModeOK(int width, int height, bool fullscreen, int bpp) {
 		Uint32 Amask;
 		if (SDL_GetMasksForPixelFormat(
 					modes[j]->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask)
-					== SDL_TRUE
+					>= 0
 			&& modes[j]->w == width && modes[j]->h == height
 			&& ((bpp == nbpp)
 				|| (bpp == 0 && (nbpp == 8 || nbpp == 16 || nbpp == 32)))) {

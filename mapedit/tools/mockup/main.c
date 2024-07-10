@@ -28,7 +28,9 @@
 #endif
 
 Uint32 getpixel(SDL_Surface* surface, int x, int y) {
-	int bpp = surface->format->bytes_per_pixel;
+	const SDL_PixelFormatDetails* surface_format
+			= SDL_GetPixelFormatDetails(surface->format);
+	int bpp = surface_format->bytes_per_pixel;
 	/* Here p is the address to the pixel we want to retrieve */
 	Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
 
@@ -64,36 +66,52 @@ int main(int argc, char** argv) {
 	}
 
 	// SDL 3 can return 1, 2, 4 bits per pixel SDL_Surface
-	if (mock_map->format->bits_per_pixel < 8) {
-		printf("The image file is not in 8 bpp ( reported %d ). Converting it "
-			   "to 8 bpp.\n",
-			   mock_map->format->bits_per_pixel);
-		SDL_PixelFormat* format8
-				= SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_INDEX8);
-		if (SDL_SetPixelFormatPalette(format8, mock_map->format->palette) < 0) {
-			fprintf(stderr, "Couldn't transfer palette %s: %s\n", argv[1],
-					SDL_GetError());
-			SDL_DestroySurface(mock_map);
-			exit(-1);
-		}
-		SDL_Surface* converted8 = SDL_ConvertSurface(mock_map, format8);
+	const SDL_PixelFormatDetails* mock_map_format
+			= SDL_GetPixelFormatDetails(mock_map->format);
+	const SDL_Palette* mock_map_palette = SDL_GetSurfacePalette(mock_map);
+	if (mock_map_format->bits_per_pixel < 8) {
+		fprintf(stderr,
+				"The image file is not in 8 bpp (reported %d). "
+				"Converting it to 8 bpp.\n",
+				mock_map_format->bits_per_pixel);
+		SDL_Surface* converted8
+				= SDL_ConvertSurface(mock_map, SDL_PIXELFORMAT_INDEX8);
 		if (converted8 == NULL) {
 			fprintf(stderr, "Couldn't convert %s: %s\n", argv[1],
 					SDL_GetError());
 			SDL_DestroySurface(mock_map);
 			exit(-1);
 		}
+		SDL_Palette* converted8_palette = SDL_CreateSurfacePalette(converted8);
+		if (converted8_palette == NULL
+			|| converted8_palette->ncolors < mock_map_palette->ncolors) {
+			fprintf(stderr, "Couldn't build palette for %s: %s\n", argv[1],
+					SDL_GetError());
+			SDL_DestroySurface(converted8);
+			SDL_DestroySurface(mock_map);
+			exit(-1);
+		}
+		if (SDL_SetPaletteColors(
+					converted8_palette, mock_map_palette->colors, 0,
+					mock_map_palette->ncolors)
+			< 0) {
+			fprintf(stderr, "Couldn't transfer palette for %s: %s\n", argv[1],
+					SDL_GetError());
+			SDL_DestroySurface(converted8);
+			SDL_DestroySurface(mock_map);
+			exit(-1);
+		}
 		SDL_DestroySurface(mock_map);
-		mock_map = converted8;
-		SDL_FreeFormat(format8);
+		mock_map         = converted8;
+		mock_map_format  = SDL_GetPixelFormatDetails(mock_map->format);
+		mock_map_palette = SDL_GetSurfacePalette(mock_map);
 	}
 
 	// check if mock_map is in 8bpp format
-	SDL_PixelFormat* fmt = mock_map->format;
-	if (fmt->bits_per_pixel != 8) {
+	if (mock_map_format->bits_per_pixel != 8) {
 		printf("The image file is not in 8 bpp ( reported %d ). Please convert "
 			   "it.\n",
-			   mock_map->format->bits_per_pixel);
+			   mock_map_format->bits_per_pixel);
 		exit(-1);
 	}
 
@@ -102,7 +120,7 @@ int main(int argc, char** argv) {
 		exit(-1);
 	}
 
-	printf("The image file uses %d colours\n", fmt->palette->ncolors);
+	printf("The image file uses %d colours\n", mock_map_palette->ncolors);
 
 	FILE* f = fopen(argv[2], "ra");
 
@@ -113,11 +131,13 @@ int main(int argc, char** argv) {
 	Uint8 origRed[MAX_COLOURS];
 	Uint8 origGreen[MAX_COLOURS];
 	Uint8 origBlue[MAX_COLOURS];
-	for (int i = 0; i < fmt->palette->ncolors; i++) {
+	for (int i = 0; i < mock_map_palette->ncolors; i++) {
 		found[i]     = 0;
 		mapping[i]   = 0;
 		converted[i] = 0;
-		SDL_GetRGB(i, fmt, &origRed[i], &origGreen[i], &origBlue[i]);
+		SDL_GetRGB(
+				i, mock_map_format, mock_map_palette, &origRed[i],
+				&origGreen[i], &origBlue[i]);
 		char buff[7];
 		snprintf(
 				buff, sizeof(buff), "%02x%02x%02x", origRed[i], origGreen[i],
@@ -139,7 +159,7 @@ int main(int argc, char** argv) {
 	printf("Colour map is successfully loaded from %s\n", argv[2]);
 	fclose(f);
 
-	for (int i = 0; i < fmt->palette->ncolors; i++) {
+	for (int i = 0; i < mock_map_palette->ncolors; i++) {
 		if (found[i] == 1) {
 			printf("mapping[%3d] = color %02x%02x%02x -> chunk %04x (%5d)\n", i,
 				   origRed[i], origGreen[i], origBlue[i], mapping[i],
@@ -167,7 +187,7 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	for (int i = 0; i < fmt->palette->ncolors; i++) {
+	for (int i = 0; i < mock_map_palette->ncolors; i++) {
 		if (found[i] == 1) {
 			printf("mapping[%3d] = color %02x%02x%02x -> chunk %04x (%5d), "
 				   "converted %5d times\n",

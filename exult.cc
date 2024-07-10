@@ -649,17 +649,20 @@ static void SetIcon() {
 	}
 	SDL_Surface* iconsurface = SDL_CreateSurface(
 			ExultIcon::width, ExultIcon::height,
-			SDL_GetPixelFormatEnumForMasks(32, 0, 0, 0, 0));
+			SDL_GetPixelFormatForMasks(32, 0, 0, 0, 0));
 	if (iconsurface == nullptr) {
 		cout << "Error creating icon surface: " << SDL_GetError() << std::endl;
 		return;
 	}
+	const SDL_PixelFormatDetails* iconsurface_format
+			= SDL_GetPixelFormatDetails(iconsurface->format);
+	SDL_Palette* iconsurface_palette = SDL_GetSurfacePalette(iconsurface);
 	for (int y = 0; y < static_cast<int>(ExultIcon::height); ++y) {
 		for (int x = 0; x < static_cast<int>(ExultIcon::width); ++x) {
 			const int idx = ExultIcon::header_data[(y * ExultIcon::height) + x];
 			const Uint32 pix = SDL_MapRGB(
-					iconsurface->format, iconpal[idx].r, iconpal[idx].g,
-					iconpal[idx].b);
+					iconsurface_format, iconsurface_palette, iconpal[idx].r,
+					iconpal[idx].g, iconpal[idx].b);
 			const SDL_Rect destRect = {x, y, 1, 1};
 			SDL_FillSurfaceRect(iconsurface, &destRect, pix);
 		}
@@ -667,8 +670,8 @@ static void SetIcon() {
 	SDL_SetSurfaceColorKey(
 			iconsurface, SDL_TRUE,
 			SDL_MapRGB(
-					iconsurface->format, iconpal[0].r, iconpal[0].g,
-					iconpal[0].b));
+					iconsurface_format, iconsurface_palette, iconpal[0].r,
+					iconpal[0].g, iconpal[0].b));
 	SDL_SetWindowIcon(gwin->get_win()->get_screen_window(), iconsurface);
 	SDL_DestroySurface(iconsurface);
 #endif
@@ -930,7 +933,7 @@ static void Init() {
 				Uint32 Gmask;
 				Uint32 Bmask;
 				Uint32 Amask;
-				SDL_GetMasksForPixelFormatEnum(
+				SDL_GetMasksForPixelFormat(
 						currMode->format, &nbpp, &Rmask, &Gmask, &Bmask,
 						&Amask);
 				cout << "    [ " << ix << " ] Video Display Mode [ ID is "

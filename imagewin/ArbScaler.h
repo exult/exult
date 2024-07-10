@@ -73,13 +73,16 @@ namespace Pentagram {
 				SDL_Surface* texture, sint32 sx, sint32 sy, sint32 sw,
 				sint32 sh, SDL_Surface* dest, sint32 dx, sint32 dy, sint32 dw,
 				sint32 dh, bool clamp_src) const {
+			const SDL_PixelFormatDetails* src_format
+					= SDL_GetPixelFormatDetails(texture->format);
+			const SDL_PixelFormatDetails* dst_format
+					= SDL_GetPixelFormatDetails(dest->format);
+			SDL_Palette* src_palette = SDL_GetSurfacePalette(texture);
+
 			uint8* pixel = static_cast<uint8*>(dest->pixels)
-						   + dx * dest->format->bytes_per_pixel
+						   + dx * dst_format->bytes_per_pixel
 						   + dy * dest->pitch;
 			const sint32 pitch = dest->pitch;
-
-			SDL_PixelFormat* src_format = texture->format;
-			SDL_PixelFormat* dst_format = dest->format;
 
 			if (dst_format->bytes_per_pixel == 2) {
 				const int r = dst_format->Rmask;
@@ -90,7 +93,7 @@ namespace Pentagram {
 					|| (b == 0xf800 && g == 0x7e0 && r == 0x1f)) {
 					if (src_format->bits_per_pixel == 8 && Scale8To565) {
 						const Manip8to565 manip(
-								src_format->palette->colors, dst_format);
+								src_palette->colors, dst_format);
 						return Scale8To565(
 								texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
 								clamp_src);
@@ -106,7 +109,7 @@ namespace Pentagram {
 						|| (b == 0x7c00 && g == 0x3e0 && r == 0x1f)) {
 					if (src_format->bits_per_pixel == 8 && Scale8To555) {
 						const Manip8to555 manip(
-								src_format->palette->colors, dst_format);
+								src_palette->colors, dst_format);
 						return Scale8To555(
 								texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
 								clamp_src);
@@ -120,8 +123,7 @@ namespace Pentagram {
 				}
 
 				if (src_format->bits_per_pixel == 8 && Scale8To16) {
-					const Manip8to16 manip(
-							src_format->palette->colors, dst_format);
+					const Manip8to16 manip(src_palette->colors, dst_format);
 					return Scale8To16(
 							texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
 							clamp_src);
@@ -133,8 +135,7 @@ namespace Pentagram {
 				}
 			} else if (dst_format->bits_per_pixel == 32) {
 				if (src_format->bits_per_pixel == 8 && Scale8To32) {
-					const Manip8to32 manip(
-							src_format->palette->colors, dst_format);
+					const Manip8to32 manip(src_palette->colors, dst_format);
 					return Scale8To32(
 							texture, sx, sy, sw, sh, pixel, dw, dh, pitch,
 							clamp_src);
