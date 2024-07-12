@@ -138,30 +138,22 @@ void U7set_ostream_factory(U7OstreamFactory factory);
 void U7set_home(std::string home);
 
 std::unique_ptr<std::istream> U7open_in(
-		const char* fname,             // May be converted to upper-case.
+		std::string_view fname,             // May be converted to upper-case.
 		bool        is_text = false    // Should the file be opened in text mode
 );
 
 std::unique_ptr<std::ostream> U7open_out(
-		const char* fname,             // May be converted to upper-case.
+		std::string_view fname,             // May be converted to upper-case.
 		bool        is_text = false    // Should the file be opened in text mode
 );
 
-std::unique_ptr<std::istream> U7open_static(
-		const char* fname,     // May be converted to upper-case.
-		bool        is_text    // Should file be opened in text mode
+DIR* U7opendir(std::string_view fname    // May be converted to upper-case.
 );
-DIR* U7opendir(const char* fname    // May be converted to upper-case.
-);
-void U7remove(const char* fname);
+void U7remove(std::string_view fname);
 
-bool U7exists(const char* fname);
+bool U7exists(std::string_view fname);
 
-inline bool U7exists(const std::string& fname) {
-	return U7exists(fname.c_str());
-}
-
-int U7mkdir(const char* dirname, int mode);
+int U7mkdir(std::string_view dirname, int mode);
 
 #ifdef _WIN32
 void redirect_output(const char* prefix = "std");
@@ -173,17 +165,15 @@ void setup_program_paths();
 void setup_app_bundle_resource();
 #endif
 
-int U7chdir(const char* dirname);
+void U7copy(std::string_view src, std::string_view dest);
 
-void U7copy(const char* src, const char* dest);
-
-bool is_system_path_defined(const std::string& path);
+bool is_system_path_defined(std::string_view path);
 void store_system_paths();
 void reset_system_paths();
-void clear_system_path(const std::string& key);
-void add_system_path(const std::string& key, const std::string& value);
-void clone_system_path(const std::string& new_key, const std::string& old_key);
-std::string get_system_path(const std::string& path);
+void clear_system_path(std::string_view key);
+void add_system_path(std::string_view key, std::string_view value);
+void clone_system_path(std::string_view new_key, std::string_view old_key);
+std::string get_system_path(std::string_view path);
 
 #define BUNDLE_CHECK(x, y) \
 	((is_system_path_defined("<BUNDLE>") && U7exists((x))) ? (x) : (y))

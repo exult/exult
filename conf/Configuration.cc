@@ -28,11 +28,11 @@
 
 #include <cassert>
 #include <cctype>
+#include <charconv>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 
-using std::atoi;
 using std::endl;
 using std::ostream;
 using std::perror;
@@ -50,10 +50,23 @@ using std::isspace;
 #	define CTRACE(X)
 #endif
 
+char safe_tolower(char c) {
+	return static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+}
+
+bool iequals(std::string_view lhs, std::string_view rhs) {
+	return std::equal(
+			lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
+			[](char left, char right) {
+				return safe_tolower(left) == safe_tolower(right);
+			});
+}
+
 void Configuration::value(
-		const string& key, string& ret, const std::string& defaultvalue) const {
+		std::string_view key, string& ret,
+		std::string_view defaultvalue) const {
 	const XMLnode* sub = xmltree->subtree(key);
-	if (sub) {
+	if (sub != nullptr) {
 		ret = sub->value();
 	} else {
 		ret = defaultvalue;
@@ -61,31 +74,38 @@ void Configuration::value(
 }
 
 void Configuration::value(
-		const string& key, bool& ret, bool defaultvalue) const {
+		std::string_view key, bool& ret, bool defaultvalue) const {
 	const XMLnode* sub = xmltree->subtree(key);
-	if (sub) {
-		ret = (to_uppercase(sub->value()) == "YES");
+	if (sub != nullptr) {
+		ret = iequals(sub->value(), "yes");
 	} else {
 		ret = defaultvalue;
 	}
 }
 
-void Configuration::value(const string& key, int& ret, int defaultvalue) const {
+void Configuration::value(
+		std::string_view key, int& ret, int defaultvalue) const {
 	const XMLnode* sub = xmltree->subtree(key);
-	if (sub) {
-		ret = atoi(sub->value().c_str());
+	if (sub != nullptr) {
+		const auto& value = sub->value();
+		const auto* start = value.data();
+		const auto* end   = std::next(start, value.size());
+		auto [p, ec]      = std::from_chars(start, end, ret);
+		if (ec != std::errc()) {
+			ret = defaultvalue;
+		}
 	} else {
 		ret = defaultvalue;
 	}
 }
 
-bool Configuration::key_exists(const string& key) const {
+bool Configuration::key_exists(std::string_view key) const {
 	const XMLnode* sub = xmltree->subtree(key);
 	return sub != nullptr;
 }
 
 void Configuration::set(
-		const string& key, const string& value, bool write_out) {
+		std::string_view key, std::string_view value, bool write_out) {
 	// Break k up into '/' separated elements.
 	// start advancing walk, one element at a time, creating nodes
 	// as needed.
@@ -101,46 +121,28 @@ void Configuration::set(
 	}
 }
 
-void Configuration::set(const char* key, const char* value, bool write_out) {
-	const string k(key);
-	const string v(value);
-	set(k, v, write_out);
-}
-
-void Configuration::set(const char* key, const string& value, bool write_out) {
-	const string k(key);
-	set(k, value, write_out);
-}
-
-void Configuration::set(const char* key, int value, bool write_out) {
-	const string k(key);
-	const string v = std::to_string(value);
-	set(k, v, write_out);
-}
-
-void Configuration::set(const string& key, int value, bool write_out) {
+void Configuration::set(std::string_view key, int value, bool write_out) {
 	const string v = std::to_string(value);
 	set(key, v, write_out);
 }
 
-void Configuration::remove(const string& key, bool write_out) {
+void Configuration::remove(std::string_view key, bool write_out) {
 	xmltree->remove(key, true);
 	if (write_out) {
 		write_back();
 	}
 }
 
-bool Configuration::read_config_string(const string& s) {
-	const string& sbuf(s);
-	size_t        nn = 0;
-	while (isspace(static_cast<char>(s[nn]))) {
+bool Configuration::read_config_string(std::string_view s) {
+	size_t nn = 0;
+	while (isspace(static_cast<unsigned char>(s[nn])) != 0) {
 		++nn;
 	}
 
 	assert(s[nn] == '<');
 	++nn;
 
-	xmltree->xmlparse(sbuf, nn);
+	xmltree->xmlparse(s, nn);
 	is_file = false;
 	return true;
 }
@@ -165,12 +167,10 @@ static inline bool is_path_absolute(const string& path) {
 }
 
 bool Configuration::read_config_file(
-		const string& input_filename, const string& root) {
-	string fname;
-
+		const std::string& input_filename, std::string_view root) {
 	CTRACE("Configuration::read_config_file");
 
-	fname = input_filename;
+	string fname = input_filename;
 	// Don't frob the filename if it starts with a dot and
 	// a slash or with two dots and a slash.
 	// Or if it's not a relative path.
@@ -190,9 +190,9 @@ bool Configuration::read_config_file(
 #if defined(_WIN32)
 		// Note: this first check misses some cases of path equality, but it
 		// does eliminates some spurious warnings.
-		if (fname != input_filename && U7exists(input_filename.c_str())
+		if (fname != input_filename && U7exists(input_filename)
 			&& get_system_path("<HOME>") != ".") {
-			if (!U7exists(fname.c_str())) {
+			if (!U7exists(fname)) {
 				cerr << "Warning: configuration file '" << input_filename
 					 << "' is being copied to file '" << fname
 					 << "' and will no longer be used." << endl;
@@ -201,9 +201,9 @@ bool Configuration::read_config_file(
 					if (pos != string::npos) {
 						// First, try to make the directory.
 						const std::string path = fname.substr(0, pos);
-						U7mkdir(path.c_str(), 0755);
+						U7mkdir(path, 0755);
 					}
-					U7copy(input_filename.c_str(), fname.c_str());
+					U7copy(input_filename, fname);
 				} catch (exult_exception& /*e*/) {
 					cerr << "File copy FAILED. Old settings will be lost"
 						 << endl;
@@ -221,7 +221,7 @@ bool Configuration::read_config_file(
 
 // read config from file, without pre-processing the filename
 bool Configuration::read_abs_config_file(
-		const string& input_filename, const string& root) {
+		std::string_view input_filename, std::string_view root) {
 	filename = input_filename;
 
 	CTRACE("Configuration::read_abs_config_file");
@@ -232,7 +232,7 @@ bool Configuration::read_abs_config_file(
 
 	std::unique_ptr<std::istream> pIfile;
 	try {
-		pIfile = U7open_in(filename.c_str(), true);
+		pIfile = U7open_in(filename, true);
 	} catch (exult_exception&) {
 		// configuration file not found
 		return false;
@@ -264,7 +264,7 @@ string Configuration::dump() {
 	return xmltree->dump();
 }
 
-ostream& Configuration::dump(ostream& o, const string& indentstr) {
+ostream& Configuration::dump(ostream& o, std::string_view indentstr) {
 	xmltree->dump(o, indentstr);
 	return o;
 }
@@ -276,7 +276,7 @@ void Configuration::write_back() {
 
 	std::unique_ptr<std::ostream> pOfile;
 	try {
-		pOfile = U7open_out(filename.c_str(), true);
+		pOfile = U7open_out(filename, true);
 	} catch (const file_open_exception&) {
 		perror("Failed to write configuration file");
 		return;
@@ -289,34 +289,28 @@ void Configuration::write_back() {
 }
 
 std::vector<string> Configuration::listkeys(
-		const string& key, bool longformat) {
+		std::string_view key, bool longformat) const {
 	std::vector<string> vs;
-	const XMLnode*      sub = xmltree->subtree(key);
-	if (sub) {
+	if (const XMLnode* sub = xmltree->subtree(key); sub != nullptr) {
 		sub->listkeys(key, vs, longformat);
 	}
 
 	return vs;
 }
 
-std::vector<string> Configuration::listkeys(const char* key, bool longformat) {
-	const string s(key);
-	return listkeys(s, longformat);
-}
-
-void Configuration::clear(const string& new_root) {
+void Configuration::clear(std::string_view new_root) {
 	CTRACE("Configuration::clear");
 
-	delete xmltree;
+	xmltree.reset();
 	CTRACE("Configuration::clear - xmltree deleted");
 	if (!new_root.empty()) {
 		rootname = new_root;
 	}
 	CTRACE("Configuration::clear - new root specified");
-	xmltree = new XMLnode(rootname);
+	xmltree = std::make_unique<XMLnode>(rootname);
 	CTRACE("Configuration::clear - fin");
 }
 
-void Configuration::getsubkeys(KeyTypeList& ktl, const string& basekey) {
-	xmltree->searchpairs(ktl, basekey, string(), 0);
+void Configuration::getsubkeys(KeyTypeList& ktl, std::string_view basekey) {
+	xmltree->searchpairs(ktl, basekey, "", 0);
 }
