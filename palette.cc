@@ -623,7 +623,7 @@ uint8 Palette::remap_colour_to_ramp(uint8 colindex, unsigned int newramp) {
 	return ramps[newramp].start + newoffset;
 }
 
-void Palette::Generate_remap_xformtable(uint8 table[256], int* remaps) {
+void Palette::Generate_remap_xformtable(uint8 table[256], const int* remaps) {
 	unsigned int num_ramps = 0;
 	auto         ramps     = get_ramps(num_ramps);
 

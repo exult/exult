@@ -179,7 +179,7 @@ public:
 	//! Generate an xform table to remap colours to a specific ramp
 	//! \param[out] table array to recieve generated table
 	//! \param[in] remaps array to indicate which ramps should get remapped to which other ramp. i = remaps[i], use -1 as terminator
-	void Generate_remap_xformtable(uint8 table[256], int* remaps);
+	void Generate_remap_xformtable(uint8 table[256], const int* remaps);
 };
 
 /*
