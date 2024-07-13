@@ -251,8 +251,8 @@ static int                  joy_aim_x = 0, joy_aim_y = 0;
 Mouse::Avatar_Speed_Factors joy_speed_factor = Mouse::medium_speed_factor;
 
 #if defined _WIN32
-void        do_cleanup_output() {
-    cleanup_output("std");
+void do_cleanup_output() {
+	cleanup_output("std");
 }
 #endif
 
@@ -536,7 +536,7 @@ int exult_main(const char* runpath) {
 	setup_data_dir(data_path, runpath);
 
 	const std::string default_music = get_system_path("<DATA>/music");
-	config->value("config/disk/music_path", music_path, default_music.c_str());
+	config->value("config/disk/music_path", music_path, default_music);
 
 	add_system_path("<MUSIC>", music_path);
 	add_system_path("<STATIC>", "static");
@@ -2577,12 +2577,12 @@ void setup_video(
 			resx = w;
 			resy = h;
 		}
-		config->value(vidStr + "/scale_method", sclr, default_scaler.c_str());
+		config->value(vidStr + "/scale_method", sclr, default_scaler);
 		config->value(vidStr + "/scale", scaleval, sc);
-		scaler = Image_window::get_scaler_for_name(sclr.c_str());
+		scaler = Image_window::get_scaler_for_name(sclr);
 		// Ensure a default scaler if a wrong scaler name is set
 		if (scaler == Image_window::NoScaler) {
-			scaler = Image_window::get_scaler_for_name(default_scaler.c_str());
+			scaler = Image_window::get_scaler_for_name(default_scaler);
 		}
 		// Ensure proper values for scaleval based on scaler.
 		if (scaler == Image_window::Hq3x || scaler == Image_window::_3xBR) {
@@ -2622,8 +2622,7 @@ void setup_video(
 		}
 		config->value(
 				vidStr + "/fill_scaler", fill_scaler_str, default_fill_scaler);
-		fill_scaler
-				= Image_window::get_scaler_for_name(fill_scaler_str.c_str());
+		fill_scaler = Image_window::get_scaler_for_name(fill_scaler_str);
 		if (fill_scaler == Image_window::NoScaler) {
 			fill_scaler = Image_window::bilinear;
 		}
@@ -2640,14 +2639,14 @@ void setup_video(
 			 << " fill scaler, " << (fullscreen ? "full screen" : "window")
 			 << endl;
 #endif
-		config->set((vidStr + "/display/width").c_str(), resx, false);
-		config->set((vidStr + "/display/height").c_str(), resy, false);
-		config->set((vidStr + "/game/width").c_str(), gw, false);
-		config->set((vidStr + "/game/height").c_str(), gh, false);
-		config->set((vidStr + "/scale").c_str(), scaleval, false);
-		config->set((vidStr + "/scale_method").c_str(), scalerName, false);
-		config->set((vidStr + "/fill_mode").c_str(), fmode_string, false);
-		config->set((vidStr + "/fill_scaler").c_str(), fillScalerName, false);
+		config->set(vidStr + "/display/width", resx, false);
+		config->set(vidStr + "/display/height", resy, false);
+		config->set(vidStr + "/game/width", gw, false);
+		config->set(vidStr + "/game/height", gh, false);
+		config->set(vidStr + "/scale", scaleval, false);
+		config->set(vidStr + "/scale_method", scalerName, false);
+		config->set(vidStr + "/fill_mode", fmode_string, false);
+		config->set(vidStr + "/fill_scaler", fillScalerName, false);
 		config->set("config/video/highdpi", high_dpi ? "yes" : "no", false);
 	}
 	if (video_init) {

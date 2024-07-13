@@ -581,9 +581,9 @@ void Game_window::init_files(bool cycle) {
 	std::string d;
 	std::string keyfilename;
 	d = "config/disk/game/" + Game::get_gametitle() + "/keys";
-	config->value(d.c_str(), keyfilename, "(default)");
+	config->value(d, keyfilename, "(default)");
 	if (keyfilename == "(default)") {
-		config->set(d.c_str(), keyfilename, true);
+		config->set(d, keyfilename, true);
 		keybinder->LoadDefaults();
 	} else {
 		try {
@@ -1722,7 +1722,7 @@ void Game_window::start_actor_alt(
 		Game_object* block = main_actor->is_moving()
 									 ? nullptr
 									 : main_actor->find_blocking(
-											 start.get_neighbor(dir), dir);
+											   start.get_neighbor(dir), dir);
 		// We already know the blocking object isn't the avatar, so don't
 		// double check it here.
 		if (!block || !block->move_aside(main_actor, dir)) {
@@ -2873,9 +2873,9 @@ void Game_window::setup_game(bool map_editing) {
 	std::string d;
 	std::string autonotesfilename;
 	d = "config/disk/game/" + Game::get_gametitle() + "/autonotes";
-	config->value(d.c_str(), autonotesfilename, "(default)");
+	config->value(d, autonotesfilename, "(default)");
 	if (autonotesfilename == "(default)") {
-		config->set(d.c_str(), autonotesfilename, true);
+		config->set(d, autonotesfilename, true);
 		Notebook_gump::read_auto_text();
 	} else {
 		try {

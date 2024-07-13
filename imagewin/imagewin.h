@@ -33,7 +33,9 @@ Boston, MA  02111-1307, USA.
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #ifdef __GNUC__
@@ -57,6 +59,20 @@ struct SDL_RWops;
 namespace Pentagram {
 	class ArbScaler;
 }
+
+namespace scalers {
+	struct ScalerConst {
+		using ScalerType = int;
+		std::optional<std::string_view> Name;
+
+		constexpr explicit ScalerConst(std::string_view name) noexcept
+				: Name(name) {}
+
+		constexpr explicit ScalerConst() noexcept : Name(std::nullopt) {}
+
+		operator ScalerType() const;
+	};
+}    // namespace scalers
 
 class Image_window {
 public:
@@ -89,7 +105,7 @@ public:
 
 		// Arbitrarty scaling support => (x<<16)|y
 		Centre_640x480 = (640 << 16)
-						 | 480    ///< Scale to specific dimentions and centre
+						 | 480    ///< Scale to specific dimensions and centre
 	};
 
 	struct ScalerInfo {
@@ -123,53 +139,41 @@ public:
 	static const std::map<uint32, Image_window::Resolution>& Resolutions;
 	static const bool&                                       AnyResAllowed;
 
-	static ScalerType get_scaler_for_name(const char* scaler);
+	static ScalerType get_scaler_for_name(std::string_view scaler);
 
 	static inline const char* get_name_for_scaler(int num) {
 		return Scalers[num].name;
 	}
 
-	struct ScalerConst {
-		const char* const Name;
-
-		ScalerConst(const char* name) : Name(name) {}
-
-		operator ScalerType() const {
-			if (Name == nullptr) {
-				return Scalers.size();
-			}
-			return get_scaler_for_name(Name);
-		}
-	};
-
-	static const ScalerType  NoScaler;
-	static const ScalerConst point;
-	static const ScalerConst interlaced;
-	static const ScalerConst bilinear;
-	static const ScalerConst BilinearPlus;
-	static const ScalerConst SaI;
-	static const ScalerConst SuperEagle;
-	static const ScalerConst Super2xSaI;
-	static const ScalerConst Scale2x;
-	static const ScalerConst Hq2x;
-	static const ScalerConst Hq3x;
-	static const ScalerConst Hq4x;
-	static const ScalerConst _2xBR;
-	static const ScalerConst _3xBR;
-	static const ScalerConst _4xBR;
-	static const ScalerConst NumScalers;
+	using ScalerConst = scalers::ScalerConst;
+	constexpr static const ScalerType  NoScaler{-1};
+	constexpr static const ScalerConst point{"Point"};
+	constexpr static const ScalerConst interlaced{"Interlaced"};
+	constexpr static const ScalerConst bilinear{"Bilinear"};
+	constexpr static const ScalerConst BilinearPlus{"BilinearPlus"};
+	constexpr static const ScalerConst SaI{"2xSaI"};
+	constexpr static const ScalerConst SuperEagle{"SuperEagle"};
+	constexpr static const ScalerConst Super2xSaI{"Super2xSaI"};
+	constexpr static const ScalerConst Scale2x{"Scale2x"};
+	constexpr static const ScalerConst Hq2x{"Hq2X"};
+	constexpr static const ScalerConst Hq3x{"Hq3x"};
+	constexpr static const ScalerConst Hq4x{"Hq4x"};
+	constexpr static const ScalerConst _2xBR{"2xBR"};
+	constexpr static const ScalerConst _3xBR{"3xBR"};
+	constexpr static const ScalerConst _4xBR{"4xBR"};
+	constexpr static const ScalerConst NumScalers{};
 
 	// Gets the draw surface and intersurface dims.
 	// if (inter_surface.wh != (dw*scale,dh*scale))
 	//   draw_surface is centred after scaling
-	// If (inter_surface.wh == display_surface.wh || strech_scaler == scaler ||
-	// scale == 1)
+	// If (inter_surface.wh == display_surface.wh || strech_scaler == scaler
+	// || scale == 1)
 	//   inter_surface wont be used
 	static bool get_draw_dims(
 			int sw, int sh, int scale, FillMode fillmode, int& gw, int& gh,
 			int& iw, int& ih);
 
-	static FillMode string_to_fillmode(const char* str);
+	static FillMode string_to_fillmode(std::string_view str);
 	static bool     fillmode_to_string(FillMode fmode, std::string& str);
 
 protected:
@@ -184,8 +188,8 @@ protected:
 	int           inter_height;
 
 	static const int
-			guard_band;    // Guardband around the edge of the draw surface to
-						   // allow scalers to run without clipping
+			guard_band;    // Guardband around the edge of the draw surface
+						   // to allow scalers to run without clipping
 
 	FillMode fill_mode;
 	int      fill_scaler;
@@ -198,12 +202,12 @@ protected:
 	static int VideoModeOK(int width, int height);
 	void       UpdateRect(SDL_Surface* surf, int x, int y, int w, int h);
 
-	SDL_Surface* paletted_surface;    // Surface that palette is set on (Example
-									  // res)
-	SDL_Surface*
-			display_surface;    // Final surface that is displayed  (1024x1024)
+	SDL_Surface* paletted_surface;    // Surface that palette is set on
+									  // (Example res)
+	SDL_Surface* display_surface;     // Final surface that is displayed
+									  // (1024x1024)
 	SDL_Surface* inter_surface;    // Post scaled/pre stretch surface  (960x600)
-	SDL_Surface* draw_surface;     // Pre scaled surface               (320x200)
+	SDL_Surface* draw_surface;     // Pre scaled surface (320x200)
 
 	/*
 	 *   Scaled blits:
@@ -602,4 +606,14 @@ public:
 
 	bool screenshot(SDL_RWops* dst);
 };
+
+namespace scalers {
+	inline ScalerConst::operator ScalerType() const {
+		if (!Name) {
+			return static_cast<ScalerType>(Image_window::Scalers.size());
+		}
+		return Image_window::get_scaler_for_name(Name.value());
+	}
+}    // namespace detail
+
 #endif /* INCL_IMAGEWIN    */

@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "WindowsMidiDriver.h"
 
+#include <string_view>
+
 #ifdef USE_WINDOWS_MIDI
 
 const MidiDriver::MidiDriverDesc WindowsMidiDriver::desc
@@ -82,15 +84,16 @@ int WindowsMidiDriver::open() {
 
 	for (i = -1; i < dev_count; i++) {
 		midiOutGetDevCaps(static_cast<UINT>(i), &caps, sizeof(caps));
-		pout << i << ": " << caps.szPname << endl;
-		if (!Pentagram::strcasecmp(caps.szPname, device.c_str())) {
+		std::string_view driver_name(caps.szPname);
+		pout << i << ": " << driver_name << endl;
+		if (Pentagram::iequals(driver_name, device)) {
 			dev_num = i;
 		}
 #	ifdef WIN32_USE_DUAL_MIDIDRIVERS
-		if (!Pentagram::strncasecmp(caps.szPname, "SB Live! Synth A", 16)) {
+		if (Pentagram::iequals(driver_name.substr(0, 16), "SB Live! Synth A")) {
 			dev_num = i;
-		} else if (!Pentagram::strncasecmp(
-						   caps.szPname, "SB Live! Synth B", 16)) {
+		} else if (Pentagram::iequals(
+						   driver_name.substr(0, 16), "SB Live! Synth B")) {
 			dev_num2 = i;
 		}
 #	endif

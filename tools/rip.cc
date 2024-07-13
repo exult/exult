@@ -1,8 +1,11 @@
+#include "istring.h"
+
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+
 using namespace std;
 
 #ifndef ATTR_NORET
@@ -62,7 +65,7 @@ void rebuild() {
 int main(int argc, char* argv[]) {
 	printf("Wody's Rip v0.005\nCopyright (c) 1999 Wody Dragon (a.k.a. Wouter "
 		   "Dijkslag)\n");
-	if (argc < 2 || (!strcasecmp(argv[1], "put") && argc != 3)) {
+	if (argc < 2 || (Pentagram::iequals(argv[1], "put") && argc != 3)) {
 		printf("Syntax: rip <number>\tGets function <number> out of usecode "
 			   "(and"
 			   " index)\n\trip all\t\tGets all functions out of usecode (and "
@@ -80,13 +83,13 @@ int main(int argc, char* argv[]) {
 
 	unsigned number;
 	bool     put = false;
-	if (!strcasecmp(argv[1], "all")) {
+	if (Pentagram::iequals(argv[1], "all")) {
 		number = all_functions;
-	} else if (!strcasecmp(argv[1], "glue")) {
+	} else if (Pentagram::iequals(argv[1], "glue")) {
 		rebuild();    // note: this doesn't return
-	} else if (!strcasecmp(argv[1], "index")) {
+	} else if (Pentagram::iequals(argv[1], "index")) {
 		number = only_index;
-	} else if (!strcasecmp(argv[1], "put")) {
+	} else if (Pentagram::iequals(argv[1], "put")) {
 		sscanf(argv[2], "%x", &number);
 		put = true;
 	} else {

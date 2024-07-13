@@ -1216,7 +1216,7 @@ bool Vga_file::load(
 	shape_cnts.reserve(count);
 	bool   is_good    = true;
 	size_t num_shapes = shapes.size();
-	if (!U7exists(sources[0].first.c_str())) {
+	if (!U7exists(sources[0].first)) {
 		is_good = false;
 	}
 	for (const auto& src : sources) {

@@ -103,20 +103,18 @@ std::shared_ptr<MidiDriver> MidiDriver::createInstance(
 
 	std::shared_ptr<MidiDriver> new_driver = nullptr;
 
-	const char* drv = desired_driver.c_str();
-
 	// Has the config file specified disabled midi?
-	if (Pentagram::strcasecmp(drv, "disabled") != 0) {
+	if (!Pentagram::iequals(desired_driver, "disabled")) {
 		// Ok, it hasn't so search for the driver
 		for (const auto* midi_driver : midi_drivers) {
 			// Found it (case insensitive)
-			if (!Pentagram::strcasecmp(drv, midi_driver->name)) {
+			if (Pentagram::iequals(desired_driver, midi_driver->name)) {
 				pout << "Trying config specified Midi driver: `"
 					 << midi_driver->name << "'" << std::endl;
 
 				new_driver = midi_driver->createInstance();
 				if (new_driver) {
-					if (new_driver->initMidiDriver(sample_rate, stereo)) {
+					if (new_driver->initMidiDriver(sample_rate, stereo) != 0) {
 						pout << "Failed!" << std::endl;
 						new_driver = nullptr;
 					} else {

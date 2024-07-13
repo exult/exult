@@ -194,9 +194,9 @@ Usecode_browser::Usecode_browser() {
 	win                 = studio->get_widget("usecodes_dialog");
 	g_object_set_data(G_OBJECT(win), "user_data", this);
 	string ucname = get_system_path("<PATCH>/usecode");
-	if (!U7exists(ucname.c_str())) {
+	if (!U7exists(ucname)) {
 		ucname = get_system_path("<STATIC>/usecode");
-		if (!U7exists(ucname.c_str())) {
+		if (!U7exists(ucname)) {
 			ucname = "";
 		}
 	}

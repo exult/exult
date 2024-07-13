@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
 	// it's place.
 	std::streambuf* coutbuf = nullptr;
 	if (!uc.output_redirect().empty()) {
-		auto pOutputstream = U7open_out(uc.output_redirect().c_str(), false);
+		auto pOutputstream = U7open_out(uc.output_redirect(), false);
 		if (!pOutputstream) {
 			cout << "error. failed to open " << uc.output_redirect()
 				 << " for writing. exiting." << endl;

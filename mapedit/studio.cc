@@ -16,11 +16,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include <string_view>
 #ifdef HAVE_CONFIG_H
 #	include <config.h>
 #endif
-
-#include "studio.h"
 
 #include "Configuration.h"
 #include "Flex.h"
@@ -30,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "exceptions.h"
 #include "execbox.h"
 #include "fnames.h"
+#include "istring.h"
 #include "items.h"
 #include "locator.h"
 #include "logo.xpm"
@@ -39,6 +39,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "shapegroup.h"
 #include "shapelst.h"
 #include "shapevga.h"
+#include "studio.h"
 #include "u7drag.h"
 #include "ucbrowse.h"
 #include "utils.h"
@@ -1178,18 +1179,18 @@ void ExultStudio::create_new_game(const char* dir    // Directory for new game.
 	}
 	U7mkdir(dir, 0755);    // Create "game", "game/static",
 	//   "game/patch".
-	U7mkdir(static_path.c_str(), 0755);
+	U7mkdir(static_path, 0755);
 	const string patch_path = dirstr + "/patch";
-	U7mkdir(patch_path.c_str(), 0755);
+	U7mkdir(patch_path, 0755);
 	// Set .exult.cfg.
 	string       d("config/disk/game/");
 	const string gameconfig = d + gamestr;
 	d                       = gameconfig + "/path";
-	config->set(d.c_str(), dirstr, false);
+	config->set(d, dirstr, false);
 	d = gameconfig + "/editing";    // We are editing.
-	config->set(d.c_str(), "yes", true);
+	config->set(d, "yes", true);
 	d = gameconfig + "/title";
-	config->set(d.c_str(), gamestr, false);
+	config->set(d, gamestr, false);
 	string esdir;    // Get dir. for new files.
 	config->value("config/disk/data_path", esdir, EXULT_DATADIR);
 	esdir += "/estudio/new";
@@ -1276,15 +1277,15 @@ C_EXPORT void on_gameselect_ok_clicked(
 		string pathname("<" + game->get_path_prefix() + "_MODS>");
 		to_uppercase(pathname);
 		if (!U7exists(pathname)) {
-			U7mkdir(pathname.c_str(), 0755);
+			U7mkdir(pathname, 0755);
 		}
 		// Create mod directories:
 		pathname += "/" + modtitle;
-		U7mkdir(pathname.c_str(), 0755);
+		U7mkdir(pathname, 0755);
 		string d = pathname + "/patch";
-		U7mkdir(d.c_str(), 0755);
+		U7mkdir(d, 0755);
 		d = pathname + "/gamedat";
-		U7mkdir(d.c_str(), 0755);
+		U7mkdir(d, 0755);
 		// Create mod cfg file:
 		const string  cfgfile = pathname + ".cfg";
 		Configuration modcfg(cfgfile, "modinfo");
@@ -1541,7 +1542,7 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	static_path             = g_strdup(get_system_path("<STATIC>").c_str());
 	const string patch_path = get_system_path("<PATCH>");
 	if (!U7exists(patch_path)) {    // Create patch if not there.
-		U7mkdir(patch_path.c_str(), 0755);
+		U7mkdir(patch_path, 0755);
 	}
 	// Reset EVERYTHING.
 	// Clear file cache!
@@ -1644,44 +1645,52 @@ void add_to_tree(
 			startpos = commapos + 1;
 		}
 
-		const string spath("<STATIC>");
-		const string ppath("<PATCH>");
-		const char*  ext = strstr(pattern, "*");
-		if (!ext) {
-			ext = pattern;
-		} else {
-			ext++;
-		}
-		DIR* dir = U7opendir(ppath.c_str());    // Get names from 'patch' first.
+		const string     spath("<STATIC>");
+		const string     ppath("<PATCH>");
+		std::string_view tail = [pattern]() {
+			const char* ext = strstr(pattern, "*");
+			if (!ext) {
+				ext = pattern;
+			} else {
+				ext++;
+			}
+			return ext;
+		}();
+		DIR* dir       = U7opendir(ppath);    // Get names from 'patch' first.
+		auto ends_with = [](std::string_view haystack,
+							std::string_view needle) -> bool {
+			return haystack.size() >= needle.size()
+				   && Pentagram::iequals(
+						   haystack.substr(
+								   haystack.size() - needle.size(),
+								   needle.size()),
+						   needle);
+		};
 		if (dir) {
 			while ((entry = readdir(dir))) {
-				char*     fname = entry->d_name;
-				const int flen  = strlen(fname);
+				std::string_view fname(entry->d_name);
 				// Ignore case of extension.
-				if (!strcmp(fname, ".") || !strcmp(fname, "..")
-					|| strcasecmp(fname + flen - strlen(ext), ext) != 0) {
+				if (fname == "." || fname == ".." || !ends_with(fname, tail)) {
 					continue;
 				}
 				gtk_tree_store_append(model, &child_iter, &iter);
 				gtk_tree_store_set(
 						model, &child_iter, FOLDER_COLUMN, nullptr, FILE_COLUMN,
-						fname, DATA_COLUMN, file_type, -1);
+						entry->d_name, DATA_COLUMN, file_type, -1);
 			}
 			closedir(dir);
 		}
-		dir = U7opendir(spath.c_str());    // Now go through 'static'.
+		dir = U7opendir(spath);    // Now go through 'static'.
 		if (dir) {
 			while ((entry = readdir(dir))) {
-				char*     fname = entry->d_name;
-				const int flen  = strlen(fname);
+				std::string_view fname(entry->d_name);
 				// Ignore case of extension.
-				if (!strcmp(fname, ".") || !strcmp(fname, "..")
-					|| strcasecmp(fname + flen - strlen(ext), ext) != 0) {
+				if (fname == "." || fname == ".." || !ends_with(fname, tail)) {
 					continue;
 				}
 				// Filter out 'font0000.vga' file as it is apparently
 				// from an old origin screensaver.
-				if (!strcasecmp(fname, "font0000.vga")) {
+				if (Pentagram::iequals(fname, "font0000.vga")) {
 					continue;
 				}
 				// See if also in 'patch'.
@@ -1699,7 +1708,7 @@ void add_to_tree(
 				gtk_tree_store_append(model, &child_iter, &iter);
 				gtk_tree_store_set(
 						model, &child_iter, FOLDER_COLUMN, nullptr, FILE_COLUMN,
-						fname, DATA_COLUMN, file_type, -1);
+						entry->d_name, DATA_COLUMN, file_type, -1);
 			}
 			closedir(dir);
 		}
