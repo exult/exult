@@ -1203,7 +1203,6 @@ static void Select_for_combo(
 
 static void Handle_events() {
 	uint32 last_repaint = 0;    // For insuring animation repaints.
-	uint32 last_rotate  = 0;
 	uint32 last_rest    = 0;
 #ifdef DEBUG
 	uint32 last_fps = 0;
