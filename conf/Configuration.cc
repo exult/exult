@@ -23,11 +23,14 @@
 #include "Configuration.h"
 
 #include "exceptions.h"
-#include "ignore_unused_variable_warning.h"
+#include "istring.h"
 #include "utils.h"
 
+#ifndef _WIN32
+#	include "ignore_unused_variable_warning.h"
+#endif
+
 #include <cassert>
-#include <cctype>
 #include <charconv>
 #include <cstdio>
 #include <cstdlib>
@@ -50,18 +53,6 @@ using std::isspace;
 #	define CTRACE(X)
 #endif
 
-char safe_tolower(char c) {
-	return static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-}
-
-bool iequals(std::string_view lhs, std::string_view rhs) {
-	return std::equal(
-			lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
-			[](char left, char right) {
-				return safe_tolower(left) == safe_tolower(right);
-			});
-}
-
 void Configuration::value(
 		std::string_view key, string& ret,
 		std::string_view defaultvalue) const {
@@ -77,7 +68,7 @@ void Configuration::value(
 		std::string_view key, bool& ret, bool defaultvalue) const {
 	const XMLnode* sub = xmltree->subtree(key);
 	if (sub != nullptr) {
-		ret = iequals(sub->value(), "yes");
+		ret = Pentagram::iequals(sub->value(), "yes");
 	} else {
 		ret = defaultvalue;
 	}
@@ -149,11 +140,11 @@ bool Configuration::read_config_string(std::string_view s) {
 
 static inline bool is_path_absolute(const string& path) {
 #ifdef _WIN32
-	const auto is_win32_abs_path = [](const string& path) {
-		return (path.find(".\\") == 0) || (path.find("..\\") == 0)
-			   || (path[0] == '\\')
-			   || (std::isalpha(path[0]) && path[1] == ':'
-				   && (path[2] == '/' || path[2] == '\\'));
+	const auto is_win32_abs_path = [](const string& path_) {
+		return (path_.find(".\\") == 0) || (path_.find("..\\") == 0)
+			   || (path_[0] == '\\')
+			   || ((std::isalpha(path_[0]) != 0) && path_[1] == ':'
+				   && (path_[2] == '/' || path_[2] == '\\'));
 	};
 #else
 	const auto is_win32_abs_path = [](const string& path) {

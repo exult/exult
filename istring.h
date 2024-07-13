@@ -24,15 +24,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef ISTRING_H
 #define ISTRING_H
 
-#include "common_types.h"
-
-#include <string>
+#include <algorithm>
+#include <cctype>
+#include <string_view>
 
 namespace Pentagram {
 
 	int strcasecmp(const char* s1, const char* s2);
 	int strncasecmp(const char* s1, const char* s2, std::size_t length);
 
+	inline char toupper(char c) {
+		return static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+	}
+
+	inline bool iequals(std::string_view lhs, std::string_view rhs) {
+		return std::equal(
+				lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
+				[](char left, char right) {
+					return Pentagram::toupper(left)
+						   == Pentagram::toupper(right);
+				});
+	}
 }    // namespace Pentagram
 
 #endif
