@@ -2616,7 +2616,7 @@ void setup_video(
 		config->value(vidStr + "/game/height", gh, 200);
 		SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, high_dpi ? "0" : "1");
 		config->value(vidStr + "/fill_mode", fmode_string, default_fmode);
-		fillmode = Image_window::string_to_fillmode(fmode_string.c_str());
+		fillmode = Image_window::string_to_fillmode(fmode_string);
 		if (fillmode == 0) {
 			fillmode = Image_window::AspectCorrectFit;
 		}

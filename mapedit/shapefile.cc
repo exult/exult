@@ -547,7 +547,7 @@ Shape_file_info* Shape_file_set::create(
 ) {
 	// Already have it open?
 	for (auto* file : files) {
-		if (Pentagram::iequals(file->basename.c_str(), basename)) {
+		if (Pentagram::iequals(file->basename, basename)) {
 			return file;    // Found it.
 		}
 	}
