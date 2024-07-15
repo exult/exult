@@ -82,7 +82,7 @@ void Configuration::value(
 		const auto* start = value.data();
 		const auto* end   = std::next(start, value.size());
 		auto [p, ec]      = std::from_chars(start, end, ret);
-		if (ec != std::errc()) {
+		if (ec != std::errc() || p != end) {
 			ret = defaultvalue;
 		}
 	} else {

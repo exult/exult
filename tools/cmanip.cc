@@ -202,7 +202,6 @@ void process_ops() {
 			}
 
 			assert(config != nullptr);
-			// config->set(i->second[0], "", false);
 			string s;
 			config->value(i->second[0], s, "unknown");
 			cout << s << endl;
