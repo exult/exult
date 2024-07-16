@@ -640,8 +640,8 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	case SDL_KEYDOWN:
 	case SDL_TEXTINPUT:
 		if (event.type == SDL_TEXTINPUT) {
-			event.key.keysym.sym = SDLK_UNKNOWN;
 			keysym_unicode       = event.text.text[0];
+			event.key.keysym.sym = SDLK_UNKNOWN;
 		}
 		{
 			if (event.key.keysym.sym == SDLK_ESCAPE) {

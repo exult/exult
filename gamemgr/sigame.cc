@@ -1539,9 +1539,9 @@ bool SI_Game::new_game(Vga_file& shapes) {
 				}
 			} else if (event.type == SDL_TEXTINPUT) {
 				isTextInput          = true;
+				keysym_unicode       = event.text.text[0];
 				event.type           = SDL_KEYDOWN;
 				event.key.keysym.sym = SDLK_UNKNOWN;
-				keysym_unicode       = event.text.text[0];
 			}
 			if (event.type == SDL_KEYDOWN) {
 				redraw = true;
