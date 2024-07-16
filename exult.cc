@@ -2141,9 +2141,11 @@ static void Handle_event(SDL_Event& event) {
 		drag_prevy = -1;
 		if (drag_shpnum != -1) {
 			int file = drag_shfile, shape = drag_shpnum, frame = drag_shfnum;
+#	ifdef DEBUG
 			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Shape: file = " << file
 				 << ", shape = " << shape << ", frame = " << frame
 				 << ", at x = " << x << ", y = " << y << endl;
+#	endif
 			if (shape >= 0) {    // Moving a shape?
 				if (file == U7_SHAPE_SHAPES) {
 					// For now, just allow "shapes.vga".
@@ -2156,12 +2158,14 @@ static void Handle_event(SDL_Event& event) {
 			int combo_tiles_right = drag_cbrtiles;
 			int combo_tiles_below = drag_cbbtiles;
 			int combo_cnt         = drag_cbcnt;
+#	ifdef DEBUG
 			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Combo: xtiles = "
 				 << combo_xtiles << ", ytiles = " << combo_ytiles
 				 << ", tiles_right = " << combo_tiles_right
 				 << ", tiles_below = " << combo_tiles_below
 				 << ", count = " << combo_cnt << ", at x = " << x
 				 << ", y = " << y << endl;
+#	endif
 			if (combo_cnt >= 0) {
 				Move_dragged_combo(
 						combo_xtiles, combo_ytiles, combo_tiles_right,
@@ -2192,9 +2196,11 @@ static void Handle_event(SDL_Event& event) {
 #	endif
 		if (drag_shpnum != -1) {
 			int file = drag_shfile, shape = drag_shpnum, frame = drag_shfnum;
+#	ifdef DEBUG
 			cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, Shape: file = "
 				 << file << ", shape = " << shape << ", frame = " << frame
 				 << ", at x = " << x << ", y = " << y << endl;
+#	endif
 			if (shape >= 0) {    // Moving a shape?
 				if (file == U7_SHAPE_SHAPES) {
 					// For now, just allow "shapes.vga".
@@ -2207,12 +2213,14 @@ static void Handle_event(SDL_Event& event) {
 			int combo_tiles_right = drag_cbrtiles,
 				combo_tiles_below = drag_cbbtiles;
 			int combo_cnt         = drag_cbcnt;
+#	ifdef DEBUG
 			cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, Combo: xtiles = "
 				 << combo_xtiles << ", ytiles = " << combo_ytiles
 				 << ", tiles_right = " << combo_tiles_right
 				 << ", tiles_below = " << combo_tiles_below
 				 << ", count = " << combo_cnt << ", at x = " << x
 				 << ", y = " << y << endl;
+#	endif
 			if (combo_cnt >= 0) {
 				Move_dragged_combo(
 						combo_xtiles, combo_ytiles, combo_tiles_right,
