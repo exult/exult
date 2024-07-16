@@ -19,9 +19,16 @@
 #ifndef CHEAT_SCREEN_H
 #define CHEAT_SCREEN_H
 
+#include "imagebuf.h"
 #include "palette.h"
+#include "rect.h"
+
+#include <SDL.h>
 
 #include <memory>
+#include <vector>
+static const Uint32 EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
+
 class Game_window;
 class Image_buffer8;
 class Font;
@@ -94,6 +101,57 @@ private:
 		CP_CustomValue
 	};
 
+	struct Hotspot : TileRect {
+		SDL_KeyCode keycode;
+
+		Hotspot(SDL_KeyCode keycode, int x, int y, int w, int h)
+				: TileRect(x, y, w, h), keycode(keycode) {}
+	};
+
+	std::vector<Hotspot> hotspots;
+
+	struct {
+		int         highlight     = 0;
+		Uint32      highlighttime = 0;
+		char        input[17]     = {0};
+		int         command       = 0;
+		bool        activate      = false;
+		Cheat_Prompt mode          = CP_Command;
+		const char* custom_prompt = nullptr;
+		int         saved_value   = 0;
+		long        val_min       = LONG_MIN;
+		long        val_max       = LONG_MAX;
+		long        value;
+		Uint32      last_swipe = 0;
+		// Accumulated swipe deltas. We treat these as a vector
+		float        swipe_dx = 0;
+		float        swipe_dy = 0;
+
+	} state;
+
+	template <class T>
+	struct ClearState {
+		T* ptr = nullptr;
+
+		ClearState() = delete;
+
+		ClearState(T& obj, bool now = true, bool on_destruct = true)
+				: ptr(&obj) {
+			if (now) {
+				*ptr = T();
+			}
+			if (!on_destruct) {
+				ptr = nullptr;
+			}
+		}
+
+		~ClearState() {
+			if (ptr) {
+				*ptr = T();
+			}
+		}
+	};
+
 	Game_window*          gwin  = nullptr;
 	Image_buffer8*        ibuf  = nullptr;
 	std::shared_ptr<Font> font  = nullptr;
@@ -101,20 +159,19 @@ private:
 	int                   maxx = 0, maxy = 0;
 	int                   centerx = 0, centery = 0;
 	Palette               pal;
-	const char*           custom_prompt = nullptr;
-	int                   saved_value   = 0;
+	Xform_palette         highlighttable;
+	Xform_palette         hovertable;
 
-	void SharedPrompt(const char* input, const Cheat_Prompt& mode);
-	bool SharedInput(
-			char* input, int len, int& command, Cheat_Prompt& mode,
-			bool& activate);
-
-	void NormalLoop();
-	void NormalDisplay();
-	void NormalMenu();
-	void NormalActivate(char* input, int& command, Cheat_Prompt& mode);
-	bool NormalCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate);
+	void        SharedPrompt();
+	bool        SharedInput();
+	void        SharedMenu();
+	SDL_KeyCode CheckHotspots(int mx, int my, int radius = 4);
+	void        PaintHotspots();
+	void        NormalLoop();
+	void        NormalDisplay();
+	void        NormalMenu();
+	void        NormalActivate();
+	bool        NormalCheck();
 
 	void ActivityDisplay();
 
@@ -128,19 +185,15 @@ private:
 	Cheat_Prompt NPCLoop(int num);
 	void         NPCDisplay(Actor* actor, int& num);
 	void         NPCMenu(Actor* actor, int& num);
-	void         NPCActivate(
-					char* input, int& command, Cheat_Prompt& mode, Actor* actor,
-					int& num);
+	void NPCActivate(Actor* actor, int& num);
 	bool NPCCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate,
-			Actor* actor, int& num);
+			Actor* actor,
+			int& num);
 
 	void FlagLoop(Actor* actor);
 	void FlagMenu(Actor* actor);
-	void FlagActivate(
-			char* input, int& command, Cheat_Prompt& mode, Actor* actor);
+	void FlagActivate(Actor* actor);
 	bool FlagCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate,
 			Actor* actor);
 	Cheat_Prompt AdvancedFlagLoop(int flagnum, Actor* actor);
 
@@ -148,33 +201,53 @@ private:
 	void BusinessDisplay(Actor* actor);
 	void BusinessMenu(Actor* actor);
 	void BusinessActivate(
-			char* input, int& command, Cheat_Prompt& mode, Actor* actor,
-			int& time, int& prev);
+			Actor* actor, int& time,
+			int& prev);
 	bool BusinessCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate,
-			Actor* actor, int& time);
+			Actor* actor,
+			int& time);
 
 	void StatLoop(Actor* actor);
 	void StatMenu(Actor* actor);
-	void StatActivate(
-			char* input, int& command, Cheat_Prompt& mode, Actor* actor);
+	void StatActivate(Actor* actor);
 	bool StatCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate,
-			Actor* actor);
+			 Actor* actor);
 	void PalEffectLoop(Actor*);
-	void PalEffectMenu(Actor* actor, int command);
-	void PalEffectActivate(
-			char* input, int& command, Cheat_Prompt& mode, Actor* actor);
+	void PalEffectMenu(Actor* actor);
+	void PalEffectActivate(Actor* actor);
 	bool PalEffectCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate,
 			Actor* actor);
 	void TeleportLoop();
 	void TeleportDisplay();
 	void TeleportMenu();
-	void TeleportActivate(
-			char* input, int& command, Cheat_Prompt& mode, int& prev);
-	bool TeleportCheck(
-			char* input, int& command, Cheat_Prompt& mode, bool& activate);
+	void TeleportActivate(int& prev);
+	bool TeleportCheck();
+
+	//! @brief Add a menu item with a hotspot for the Specified key
+	//! @param offsetx X coord for the menu item
+	//! @param offsety Y coord for the menu item
+	//! @param keycode Keycode used to activate the menuitem
+	//! @param label Label of the Menu item
+	//! @return Width in pixels of the menu item
+	int AddMenuItem(
+			int offsetx, int offsety, SDL_KeyCode keycode, const char* label);
+	
+	//! @brief Add a menuitem for left and right cursor keys
+	//! @param offsetx X coord for the menu item
+	//! @param offsety  Y coord for the menu item
+	//! @param label Label of the Menu item
+	//! @param left Flag for if the left arrow should be shown
+	//! @param right Flag for if the right arrow should be shown
+	//! @param leaveempty Flag to indicate that blank space should be used inplace of missing arrows
+	//! @param fixedlabel Flag to indicate the label should be drawn at a fixed position if arrows are mising
+	//! @return Width in pixels of the menu item
+	int AddLeftRightMenuItem(
+			int offsetx, int offsety, const char* label, bool left, bool right,
+			bool leaveempty, bool fixedlabel = false);
+
+	int  highest_map = INT_MIN;
+	int  Get_highest_map();
+	void EndFrame();
 };
 
 #endif
