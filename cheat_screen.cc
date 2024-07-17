@@ -695,19 +695,20 @@ bool CheatScreen::SharedInput() {
 							if (event.button.clicks >= 2) {
 								simulate_key = SDLK_RETURN;
 							}
-						}
-						CERR("window size( " << gwin->get_width() << " , "
-											 << gwin->get_height() << " )");
-						// Touch on the cheat screen will bring up the keyboard
-						// but not if the tap was within a 20 pixel border on
-						// the edge of the game screen)
-						if (SDL_IsTextInputActive()) {
-							SDL_StopTextInput();
-						} else if (
-								gx > 20 && gy > 20
-								&& gx < (gwin->get_width() - 20)
-								&& gy < (gwin->get_height() - 20)) {
-							SDL_StartTextInput();
+
+							CERR("window size( " << gwin->get_width() << " , "
+												 << gwin->get_height() << " )");
+							// Touch on the cheat screen will bring up the
+							// keyboard but not if the tap was within a 20 pixel
+							// border on the edge of the game screen)
+							if (SDL_IsTextInputActive()) {
+								SDL_StopTextInput();
+							} else if (
+									gx > 20 && gy > 20
+									&& gx < (gwin->get_width() - 20)
+									&& gy < (gwin->get_height() - 20)) {
+								SDL_StartTextInput();
+							}
 						}
 					}
 				} break;
@@ -1367,51 +1368,47 @@ void CheatScreen::ActivityDisplay() {
 }
 
 void CheatScreen::PaintArrow(int offsetx, int offsety, int type) {
+	// Need to draw arrows with overlapping characters
 	// up arrow
 	if (type == '^') {
-		// Need to draw up arrow with overlapping characters
 		// Use an i as the stem of the arrow
 		font->paint_text_fixedwidth(ibuf, "i", offsetx, offsety, 8);
 		// Draw a black line to narrow the stem
 		ibuf->draw_line8(0, offsetx + 4, offsety, offsetx + 4, offsety + 8);
 		// Draw point of arrow
 		font->paint_text_fixedwidth(ibuf, "^", offsetx, offsety, 8);
-
 	}    // down arrow
 	else if (type == 'V') {
-		// Need to draw up arrow with overlapping characters
 		// Use an l as the stem of the arrow
 		font->paint_text_fixedwidth(ibuf, "l", offsetx, offsety, 8);
-		// Draw a black lines to narrow the stem
+		// Draw black lines to narrow the stem
 		ibuf->draw_line8(0, offsetx + 2, offsety, offsetx + 2, offsety + 2);
 		ibuf->draw_line8(0, offsetx + 4, offsety, offsetx + 4, offsety + 6);
-		// Draw point of arrow
 
+		// Draw point of arrow
 		font->paint_text_fixedwidth(ibuf, "m", offsetx, offsety + 2, 8);
+
 		// Paint black lines to make it pointy
 		ibuf->draw_line8(0, offsetx + 0, offsety + 5, offsetx + 0, offsety + 8);
 		ibuf->draw_line8(0, offsetx + 6, offsety + 5, offsetx + 6, offsety + 8);
 		ibuf->draw_line8(0, offsetx + 1, offsety + 6, offsetx + 1, offsety + 8);
 		ibuf->draw_line8(0, offsetx + 5, offsety + 6, offsetx + 5, offsety + 8);
-	}
-
-	// left arrow
+	}    // left arrow
 	else if (type == '<') {
 		// Stem of arrow
 		font->paint_text_fixedwidth(ibuf, "-", offsetx + 1, offsety, 8);
-		// Paint black line to make it pointier
+		// Paint black line  to narrow the stem
 		ibuf->draw_line8(0, offsetx + 0, offsety + 4, offsetx + 7, offsety + 4);
 		// Point of  arrow
 		font->paint_text_fixedwidth(ibuf, "<", offsetx, offsety, 8);
 		// Paint black line to make it pointier
 		ibuf->draw_line8(0, offsetx + 1, offsety + 4, offsetx + 4, offsety + 7);
 		ibuf->put_pixel8(0, offsetx + 5, offsety + 7);
-
-		// Right Arrow
-	} else if (type == '>') {
+	}    // Right Arrow
+	else if (type == '>') {
 		// Stem of arrow
 		font->paint_text_fixedwidth(ibuf, "-", offsetx, offsety, 8);
-		// Paint black line to make it pointier
+		// Paint black line to narrow the stem
 		ibuf->draw_line8(0, offsetx + 0, offsety + 4, offsetx + 7, offsety + 4);
 		// Point of arrow
 		font->paint_text_fixedwidth(ibuf, ">", offsetx + 2, offsety, 8);
