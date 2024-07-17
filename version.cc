@@ -88,15 +88,15 @@ static const char git_url[] = GIT_REMOTE_URL;
 static const char git_url[] = "";
 #endif
 
-std::string VersionGetGitRevision(bool shortrev) {
+std::string_view VersionGetGitRevision(bool shortrev) {
 	if (git_rev[0]) {
 		if (shortrev) {
-			return std::string(git_rev, 7);
+			return std::string_view(git_rev, 7);
 		} else {
-			return git_rev;
+			return std::string_view(git_rev);
 		}
 	}
-	return std::string();
+	return std::string_view();
 }
 
 std::string VersionGetGitInfo(bool limitedwidth) {

@@ -20,10 +20,10 @@
  */
 
 #include <iostream>
-#include <string>
+#include <string_view>
 
 void        getVersionInfo(std::ostream& out);
-std::string VersionGetGitRevision(bool shortrev);
+std::string_view VersionGetGitRevision(bool shortrev);
 std::string VersionGetGitInfo(bool limitedwidth = false);
 
 #endif

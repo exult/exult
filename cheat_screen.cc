@@ -1051,9 +1051,12 @@ void CheatScreen::NormalDisplay() {
 
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 18, 8);
 
-	snprintf(
-			buf, sizeof(buf), "Exult Version %s  Rev: %s", VERSION,
-			VersionGetGitRevision(true).c_str());
+	strcpy(buf, "Exult Version " VERSION" Rev: ");
+	auto rev = VersionGetGitRevision(true);
+	int  curlen = strlen(buf);
+	rev.copy(buf + strlen(buf),rev.size());
+	// Need to null terminate after copy
+	buf[curlen + rev.size()] = 0;
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 27, 8);
 
 	snprintf(
