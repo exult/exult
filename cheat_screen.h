@@ -25,9 +25,9 @@
 
 #include <SDL.h>
 
+#include <climits>
 #include <memory>
 #include <vector>
-static const Uint32 EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
 
 class Game_window;
 class Image_buffer8;
@@ -111,21 +111,21 @@ private:
 	std::vector<Hotspot> hotspots;
 
 	struct {
-		int         highlight     = 0;
-		Uint32      highlighttime = 0;
-		char        input[17]     = {0};
-		int         command       = 0;
-		bool        activate      = false;
+		int          highlight     = 0;
+		Uint32       highlighttime = 0;
+		char         input[17]     = {0};
+		int          command       = 0;
+		bool         activate      = false;
 		Cheat_Prompt mode          = CP_Command;
-		const char* custom_prompt = nullptr;
-		int         saved_value   = 0;
-		long        val_min       = LONG_MIN;
-		long        val_max       = LONG_MAX;
-		long        value;
-		Uint32      last_swipe = 0;
+		const char*  custom_prompt = nullptr;
+		int          saved_value   = 0;
+		long         val_min       = LONG_MIN;
+		long         val_max       = LONG_MAX;
+		long         value;
+		Uint32       last_swipe = 0;
 		// Accumulated swipe deltas. We treat these as a vector
-		float        swipe_dx = 0;
-		float        swipe_dy = 0;
+		float swipe_dx = 0;
+		float swipe_dy = 0;
 
 	} state;
 
@@ -185,38 +185,29 @@ private:
 	Cheat_Prompt NPCLoop(int num);
 	void         NPCDisplay(Actor* actor, int& num);
 	void         NPCMenu(Actor* actor, int& num);
-	void NPCActivate(Actor* actor, int& num);
-	bool NPCCheck(
-			Actor* actor,
-			int& num);
+	void         NPCActivate(Actor* actor, int& num);
+	bool         NPCCheck(Actor* actor, int& num);
 
-	void FlagLoop(Actor* actor);
-	void FlagMenu(Actor* actor);
-	void FlagActivate(Actor* actor);
-	bool FlagCheck(
-			Actor* actor);
+	void         FlagLoop(Actor* actor);
+	void         FlagMenu(Actor* actor);
+	void         FlagActivate(Actor* actor);
+	bool         FlagCheck(Actor* actor);
 	Cheat_Prompt AdvancedFlagLoop(int flagnum, Actor* actor);
 
 	void BusinessLoop(Actor* actor);
 	void BusinessDisplay(Actor* actor);
 	void BusinessMenu(Actor* actor);
-	void BusinessActivate(
-			Actor* actor, int& time,
-			int& prev);
-	bool BusinessCheck(
-			Actor* actor,
-			int& time);
+	void BusinessActivate(Actor* actor, int& time, int& prev);
+	bool BusinessCheck(Actor* actor, int& time);
 
 	void StatLoop(Actor* actor);
 	void StatMenu(Actor* actor);
 	void StatActivate(Actor* actor);
-	bool StatCheck(
-			 Actor* actor);
+	bool StatCheck(Actor* actor);
 	void PalEffectLoop(Actor*);
 	void PalEffectMenu(Actor* actor);
 	void PalEffectActivate(Actor* actor);
-	bool PalEffectCheck(
-			Actor* actor);
+	bool PalEffectCheck(Actor* actor);
 	void TeleportLoop();
 	void TeleportDisplay();
 	void TeleportMenu();
@@ -231,15 +222,17 @@ private:
 	//! @return Width in pixels of the menu item
 	int AddMenuItem(
 			int offsetx, int offsety, SDL_KeyCode keycode, const char* label);
-	
+
 	//! @brief Add a menuitem for left and right cursor keys
 	//! @param offsetx X coord for the menu item
 	//! @param offsety  Y coord for the menu item
 	//! @param label Label of the Menu item
 	//! @param left Flag for if the left arrow should be shown
 	//! @param right Flag for if the right arrow should be shown
-	//! @param leaveempty Flag to indicate that blank space should be used inplace of missing arrows
-	//! @param fixedlabel Flag to indicate the label should be drawn at a fixed position if arrows are mising
+	//! @param leaveempty Flag to indicate that blank space should be used
+	//! inplace of missing arrows
+	//! @param fixedlabel Flag to indicate the label should be drawn at a fixed
+	//! position if arrows are mising
 	//! @return Width in pixels of the menu item
 	int AddLeftRightMenuItem(
 			int offsetx, int offsety, const char* label, bool left, bool right,

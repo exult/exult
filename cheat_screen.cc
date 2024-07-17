@@ -49,6 +49,17 @@
 
 #define TEST_MOBILE 1
 
+// Disable the gcc warnig because we cannot fit it the problem is in the Macro
+// from SDL
+#if defined(__GNUC__)
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
+static const Uint32 EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
+
+#if defined(__GNUC__)
+#	pragma GCC diagnostic pop
+#endif
 
 const char* CheatScreen::schedules[33] = {
 		"Combat",    "Hor. Pace",  "Ver. Pace",  "Talk",  "Dance",     "Eat",
@@ -616,8 +627,9 @@ bool CheatScreen::SharedInput() {
 				}
 					// Finger swiping converts to cursor keys
 				case SDL_FINGERMOTION: {
-					CERR("SDL_FINGERMOTION"  << "( dx(" << event.tfinger.dx << ") dy("
-							  << event.tfinger.dy << ")");
+					CERR("SDL_FINGERMOTION"
+						 << "( dx(" << event.tfinger.dx << ") dy("
+						 << event.tfinger.dy << ")");
 					gwin->get_win()->screen_to_game(
 							event.button.x, event.button.y,
 							gwin->get_fastmouse(), gx, gy);
@@ -638,7 +650,6 @@ bool CheatScreen::SharedInput() {
 						state.swipe_dy += event.tfinger.dy;
 						// set last swipe value to now
 						state.last_swipe = SDL_GetTicks();
-
 					}
 				} break;
 
@@ -671,8 +682,7 @@ bool CheatScreen::SharedInput() {
 					gwin->get_win()->screen_to_game(
 							event.button.x, event.button.y,
 							gwin->get_fastmouse(), gx, gy);
-					CERR("SDL_MOUSEBUTTONDOWN( " << gx << " , " << gy
-							  << " )");
+					CERR("SDL_MOUSEBUTTONDOWN( " << gx << " , " << gy << " )");
 
 					if (event.button.button == 1) {
 						simulate_key = CheckHotspots(gx, gy);
@@ -688,9 +698,8 @@ bool CheatScreen::SharedInput() {
 					if (simulate_key) {
 						break;
 					}
-					CERR("window size( " << gwin->get_width()
-							  << " , " << gwin->get_height()
-							  << " )");
+					CERR("window size( " << gwin->get_width() << " , "
+										 << gwin->get_height() << " )");
 					// Touch on the cheat screen will bring up the keyboard
 					// but not if the tap was within a 20 pixel border on the
 					// edge of the game screen)
@@ -712,8 +721,7 @@ bool CheatScreen::SharedInput() {
 				std::memset(&event, 0, sizeof(event));
 				event.type           = SDL_KEYDOWN;
 				event.key.keysym.sym = simulate_key;
-				CERR("simmulate key " << event.key.keysym.sym
-						);
+				CERR("simmulate key " << event.key.keysym.sym);
 				// Simulated keys automatically execute the command if possible
 				if (state.mode >= CP_HitKey
 					&& state.mode <= CP_WrongShapeFile) {
@@ -3432,7 +3440,7 @@ bool CheatScreen::PalEffectCheck(Actor* actor) {
 	switch (state.command) {
 	case 'r':    // [R]amp Remap
 	{
-		const char   prompttext[] = "enter From Ramp (0-%i) or 255 for all";
+		const char   prompttext[] = "enter From Ramp (0-%u) or 255 for all";
 		static char  staticPrompttext[sizeof(prompttext) + 16];
 		unsigned int numramps = 0;
 		gwin->get_pal()->get_ramps(numramps);
@@ -3452,7 +3460,7 @@ bool CheatScreen::PalEffectCheck(Actor* actor) {
 
 	case 'x':    // [X]Form
 	{
-		const char  prompttext[] = "enter XFORM Index (0-%i)";
+		const char  prompttext[] = "enter XFORM Index (0-%lu)";
 		static char staticPrompttext[sizeof(prompttext) + 16];
 		auto        numxforms = Shape_manager::get_instance()->get_xforms_cnt();
 		if (numxforms) {
