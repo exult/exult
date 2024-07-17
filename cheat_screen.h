@@ -126,7 +126,6 @@ private:
 		// Accumulated swipe deltas. We treat these as a vector
 		float swipe_dx = 0;
 		float swipe_dy = 0;
-
 	} state;
 
 	template <class T>
@@ -161,6 +160,14 @@ private:
 	Palette               pal;
 	Xform_palette         highlighttable;
 	Xform_palette         hovertable;
+
+	// Turn off clang-format so it doesn't wrap the long comments
+	// clang-format off
+ 
+ 	// Constants used for touch input
+	const float  swipe_threshold     = 0.075f;	// Threshold for Swipes to be converted into key inputs.
+
+	// clang-format on
 
 	void        SharedPrompt();
 	bool        SharedInput();
@@ -232,7 +239,7 @@ private:
 	//! @param leaveempty Flag to indicate that blank space should be used
 	//! inplace of missing arrows
 	//! @param fixedlabel Flag to indicate the label should be drawn at a fixed
-	//! position if arrows are mising
+	//! position if arrows are mising and !leaveempty
 	//! @return Width in pixels of the menu item
 	int AddLeftRightMenuItem(
 			int offsetx, int offsety, const char* label, bool left, bool right,

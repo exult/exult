@@ -47,7 +47,7 @@
 
 #include <cstring>
 
-#define TEST_MOBILE 1
+// #define TEST_MOBILE 1
 
 // Disable the gcc warnig because we cannot fit it the problem is in the Macro
 // from SDL
@@ -556,8 +556,7 @@ bool CheatScreen::SharedInput() {
 
 		// How far finger needs to move for swipe to be interpreted as an a
 		// cursor key input)
-		const float swipe_threshold = 0.075f;
-		bool        do_swipe        = std::abs(state.swipe_dx) > swipe_threshold
+		bool do_swipe = std::abs(state.swipe_dx) > swipe_threshold
 						|| std::abs(state.swipe_dy) > swipe_threshold;
 
 		if (!do_swipe && state.last_swipe
@@ -582,12 +581,13 @@ bool CheatScreen::SharedInput() {
 				// More vertical motion or More Horizontal
 				// perfectly diagonal motion will be treated as horizontal
 				if (ay > ax) {
-					// Vertical motion
+					// Swipe up the screen
 					if (state.swipe_dy < -swipe_threshold) {
 						simulate_key = SDLK_UP;
 						resizeline(
 								state.swipe_dy, +swipe_threshold,
 								state.swipe_dx);
+						// Swipe Down the screen
 					} else if (state.swipe_dy > swipe_threshold) {
 						simulate_key = SDLK_DOWN;
 						resizeline(
@@ -595,12 +595,13 @@ bool CheatScreen::SharedInput() {
 								state.swipe_dx);
 					}
 				} else {
-					// horizontal motion
+					// swipe right to left
 					if (state.swipe_dx < -swipe_threshold) {
 						simulate_key = SDLK_LEFT;
 						resizeline(
 								state.swipe_dx, +swipe_threshold,
 								state.swipe_dy);
+						// Swipe left to right
 					} else if (state.swipe_dx > swipe_threshold) {
 						simulate_key = SDLK_RIGHT;
 						resizeline(
@@ -627,9 +628,6 @@ bool CheatScreen::SharedInput() {
 				}
 					// Finger swiping converts to cursor keys
 				case SDL_FINGERMOTION: {
-					CERR("SDL_FINGERMOTION"
-						 << "( dx(" << event.tfinger.dx << ") dy("
-						 << event.tfinger.dy << ")");
 					gwin->get_win()->screen_to_game(
 							event.button.x, event.button.y,
 							gwin->get_fastmouse(), gx, gy);
@@ -645,7 +643,12 @@ bool CheatScreen::SharedInput() {
 
 					// Will allow single finger swipes
 					if (numFingers > 0) {
-						// Accuulate the deltas onto thevector
+						// Hide on screen keyboard if we are swiping
+						if (SDL_IsTextInputActive()) {
+							SDL_StopTextInput();
+						}
+						// Accuulate the deltas onto
+						// thevector
 						state.swipe_dx += event.tfinger.dx;
 						state.swipe_dy += event.tfinger.dy;
 						// set last swipe value to now
@@ -687,28 +690,25 @@ bool CheatScreen::SharedInput() {
 					if (event.button.button == 1) {
 						simulate_key = CheckHotspots(gx, gy);
 
-						// Double click detection. for mouse only?
-						if (!simulate_key
-							/*&& event.button.which != EXSDL_TOUCH_MOUSEID*/
-							&& event.button.clicks >= 2) {
-							simulate_key = SDLK_RETURN;
+						if (!simulate_key) {
+							// Double click detection
+							if (event.button.clicks >= 2) {
+								simulate_key = SDLK_RETURN;
+							}
 						}
-					}
-
-					if (simulate_key) {
-						break;
-					}
-					CERR("window size( " << gwin->get_width() << " , "
-										 << gwin->get_height() << " )");
-					// Touch on the cheat screen will bring up the keyboard
-					// but not if the tap was within a 20 pixel border on the
-					// edge of the game screen)
-					if (SDL_IsTextInputActive()) {
-						SDL_StopTextInput();
-					} else if (
-							gx > 20 && gy > 20 && gx < (gwin->get_width() - 20)
-							&& gy < (gwin->get_height() - 20)) {
-						SDL_StartTextInput();
+						CERR("window size( " << gwin->get_width() << " , "
+											 << gwin->get_height() << " )");
+						// Touch on the cheat screen will bring up the keyboard
+						// but not if the tap was within a 20 pixel border on
+						// the edge of the game screen)
+						if (SDL_IsTextInputActive()) {
+							SDL_StopTextInput();
+						} else if (
+								gx > 20 && gy > 20
+								&& gx < (gwin->get_width() - 20)
+								&& gy < (gwin->get_height() - 20)) {
+							SDL_StartTextInput();
+						}
 					}
 				} break;
 
@@ -1036,7 +1036,7 @@ void CheatScreen::NormalDisplay() {
 	const Tile_coord t      = gwin->get_main_actor()->get_tile();
 
 	font->paint_text_fixedwidth(
-			ibuf, "Colourless' Advanced Option Cheat Screen", 0, offsety1, 8);
+			ibuf, "Advanced Option Cheat Screen", 0, offsety1, 8);
 
 	if (Game::get_game_type() == BLACK_GATE) {
 		snprintf(buf, sizeof(buf), "Running \"Ultima 7: The Black Gate\"");
@@ -1051,13 +1051,16 @@ void CheatScreen::NormalDisplay() {
 
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 18, 8);
 
-	strcpy(buf, "Exult Version " VERSION" Rev: ");
-	auto rev = VersionGetGitRevision(true);
+	strcpy(buf, "Exult Version " VERSION " Rev: ");
+	auto rev    = VersionGetGitRevision(true);
 	int  curlen = strlen(buf);
-	rev.copy(buf + strlen(buf),rev.size());
+	rev.copy(buf + strlen(buf), rev.size());
 	// Need to null terminate after copy
 	buf[curlen + rev.size()] = 0;
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 27, 8);
+
+	font->paint_text_fixedwidth(
+			ibuf, "Compiled " __DATE__ " " __TIME__, offsetx, offsety1 + 36, 8);
 
 	snprintf(
 			buf, sizeof(buf), "Current time: %i:%02i %s  Day: %i",
