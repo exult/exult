@@ -1425,6 +1425,9 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 	int        day  = 0;
 	int        hour = 0;
 	ClearState clear(state);
+	state.mode = CP_Day;
+	state.val_min = 0;
+	state.val_max = INT_MAX;	// This seems unbounded
 	while (true) {
 		hotspots.clear();
 		gwin->clear_screen();
