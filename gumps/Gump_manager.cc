@@ -820,7 +820,6 @@ bool Gump_manager::do_modal_gump(
 	}
 	Mouse::mouse->show();
 	gwin->show();
-	//gwin->set_all_dirty();
 	if (touchui != nullptr) {
 		touchui->hideGameControls();
 	}
