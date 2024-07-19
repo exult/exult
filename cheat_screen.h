@@ -27,6 +27,7 @@
 
 #include <climits>
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 class Game_window;
@@ -42,6 +43,8 @@ class CheatScreen {
 	static const char* alignments[4];
 
 public:
+	CheatScreen() : highlighttable(), hovertable(), buttons_down() {}
+
 	void show_screen();
 
 	void SetGrabbedActor(Actor* g) {
@@ -248,6 +251,11 @@ private:
 	int  highest_map = INT_MIN;
 	int  Get_highest_map();
 	void EndFrame();
+
+	//
+	static const int             button_down_finger = -1;
+	std::unordered_multiset<int> buttons_down;
+	void                         WaitButtonsUp();
 };
 
 #endif

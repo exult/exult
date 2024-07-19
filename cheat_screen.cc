@@ -20,6 +20,11 @@
 #	include <config.h>
 #endif
 
+// Disable the gcc warning because we cannot fix it in SDL's headers
+#if defined(__GNUC__)
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
 #include "cheat_screen.h"
 
 #include "Configuration.h"
@@ -49,14 +54,9 @@
 
 // #define TEST_MOBILE 1
 
-// Disable the gcc warnig because we cannot fit it the problem is in the Macro
-// from SDL
-#if defined(__GNUC__)
-#	pragma GCC diagnostic push
-#	pragma GCC diagnostic ignored "-Wold-style-cast"
-#endif
 static const Uint32 EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
 
+// renable the warning that was disabled above
 #if defined(__GNUC__)
 #	pragma GCC diagnostic pop
 #endif
@@ -218,6 +218,7 @@ void CheatScreen::show_screen() {
 	Mouse::Mouse_shapes saveshape = Mouse::mouse->get_shape();
 	Mouse::mouse->set_shape(Mouse::hand);
 
+	buttons_down.clear();
 	// Start the loop
 	NormalLoop();
 
@@ -620,12 +621,23 @@ bool CheatScreen::SharedInput() {
 					break;
 				case SDL_FINGERDOWN: {
 					CERR("SDL_FINGERDOWN");
+					buttons_down.insert(button_down_finger);
 					if ((!Mouse::use_touch_input)
 						&& (event.tfinger.fingerId != 0)) {
 						Mouse::use_touch_input = true;
 					}
 					break;
 				}
+				case SDL_FINGERUP: {
+					CERR("SDL_FINGERUP");
+					// Get iterator for first instance of button_down_finger and
+					// erase it from the collection
+					auto it = buttons_down.find(button_down_finger);
+					if (it != buttons_down.end()) {
+						buttons_down.erase(it);
+					}
+
+				} break;
 					// Finger swiping converts to cursor keys
 				case SDL_FINGERMOTION: {
 					gwin->get_win()->screen_to_game(
@@ -686,7 +698,7 @@ bool CheatScreen::SharedInput() {
 							event.button.x, event.button.y,
 							gwin->get_fastmouse(), gx, gy);
 					CERR("SDL_MOUSEBUTTONDOWN( " << gx << " , " << gy << " )");
-
+					buttons_down.insert(event.button.button);
 					if (event.button.button == 1) {
 						simulate_key = CheckHotspots(gx, gy);
 
@@ -711,6 +723,17 @@ bool CheatScreen::SharedInput() {
 							}
 						}
 					}
+				} break;
+				case SDL_MOUSEBUTTONUP: {
+					buttons_down.erase(event.button.button);
+				} break;
+
+				case SDL_KEYDOWN: {
+					buttons_down.insert(int(event.key.keysym.sym));
+				} break;
+
+				case SDL_KEYUP: {
+					buttons_down.erase(int(event.key.keysym.sym));
 				} break;
 
 				default:
@@ -1018,6 +1041,7 @@ void CheatScreen::NormalLoop() {
 			looping = NormalCheck();
 		}
 	}
+	WaitButtonsUp();
 }
 
 void CheatScreen::NormalDisplay() {
@@ -1425,9 +1449,9 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 	int        day  = 0;
 	int        hour = 0;
 	ClearState clear(state);
-	state.mode = CP_Day;
+	state.mode    = CP_Day;
 	state.val_min = 0;
-	state.val_max = INT_MAX;	// This seems unbounded
+	state.val_max = INT_MAX;    // This seems unbounded
 	while (true) {
 		hotspots.clear();
 		gwin->clear_screen();
@@ -4128,4 +4152,146 @@ void CheatScreen::EndFrame() {
 	Mouse::mouse->show();
 	gwin->get_win()->show();
 	Mouse::mouse->hide();    // Must immediately hide to prevent flickering
+}
+
+const int CheatScreen::button_down_finger;
+
+void CheatScreen::WaitButtonsUp() {
+	Uint32     show_message = SDL_GetTicks() + 1000;
+	ClearState clear(state);
+	hotspots.clear();
+	while (buttons_down.size()) {
+		SharedInput();
+		hotspots.clear();
+		gwin->clear_screen();
+
+		// exit if escape is pressed
+		if (state.command == SDLK_ESCAPE) {
+			// But first eat up events if there are any
+			SharedInput();
+			break;
+		}
+
+		if (show_message < SDL_GetTicks()) {
+#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+			const int offsetx_start = 15;
+
+			// const int offsety1 = 73;
+			// const int offsety2 = 55;
+			 const int offsetx1 = 160;
+			// const int offsety4 = 36;
+			const int offsety5 = 72;
+#else
+			const int offsetx_start = 0;
+			// const int offsety1 = 0;
+			// const int offsety2 = 0;
+			 const int offsetx1 = 160;
+			// const int offsety4 = maxy - 45;
+			const int offsety5 = maxy - 36;
+#endif    // eXit
+
+			int        offsetx       = offsetx_start;
+			const char msg_waiting[] = "Waiting for up events: ";
+			int        offsety       = 36;
+			offsetx                  = offsetx1 - 4 * std::size(msg_waiting);
+			offsetx += font->paint_text_fixedwidth(
+							   ibuf, msg_waiting, offsetx, offsety, 8);
+
+			bool first       = true;
+			int  last_button = 0;
+			for (int button : buttons_down) {
+				char        buf[80]     = {0};
+				const char* button_name = 0;
+
+				// only each button once.. Standard guarantees that all keys
+				// that compare equivalent are grouped together
+				if (button == last_button) {
+					continue;
+				}
+				last_button = button;
+
+				switch (button) {
+				case button_down_finger: {
+					size_t num_fingers = buttons_down.count(button_down_finger);
+					button_name        = buf;
+
+					if (num_fingers > 1) {
+						snprintf(buf, sizeof(buf), "%zu Fingers", num_fingers);
+					} else {
+						button_name = "Finger";
+					}
+
+				} break;
+
+				case 1:
+				case 2:
+				case 3: {
+					const char* button_names[]
+							= {"Left Mouse Button", "Middle Mouse Button",
+							   "Right Mouse Button"};
+
+					// Don't show mouse buttons if also waiting for finger
+					// up
+					if (buttons_down.find(button_down_finger)
+						!= buttons_down.end()) {
+						continue;
+					}
+
+					button_name = button_names[button - 1];
+				} break;
+
+				default: {
+					// It should be an SDL_KeyCode
+					const char* keyname = SDL_GetKeyName(SDL_Keycode(button));
+					button_name         = buf;
+
+					// Only display keyname if there is one and it is in ASCII
+					if (keyname[0]
+						&& std::none_of(
+								keyname, keyname + strlen(keyname), [](char c) {
+									return c >= 128;
+								})) {
+						snprintf(buf, sizeof(buf), "Key %s", keyname);
+					} else {
+						snprintf(buf, sizeof(buf), "Unknown Key #%i", button);
+					}
+
+				} break;
+				}
+
+				if (!first) {
+					// Paint a comma at the end of the previous name
+					offsetx += font->paint_text_fixedwidth(
+							ibuf, ", ", offsetx, offsety, 8);
+				}
+				first = false;
+
+				// check if we have enough space on this line for the keyname
+				// if not start a new line
+				if (offsetx + strlen(button_name) * 8 > 312) {
+					offsetx = offsetx_start;
+					offsety += 9;
+					// If we advance so many lines just break out now
+					if (offsety >= (offsety5 + 9)) {
+						break;
+					}
+				} else {
+				}
+
+				offsetx += font->paint_text_fixedwidth(
+						ibuf, button_name, offsetx, offsety, 8);
+			}
+
+			offsetx                = 0;
+			const char msg_press[] = "Press";
+			font->paint_text_fixedwidth(
+					ibuf, msg_press, offsetx + 160 - 8 * std::size(msg_press),
+					offsety5 + 9, 8);
+
+			AddMenuItem(
+					offsetx + 160, offsety5 + 9, SDLK_ESCAPE, " to exit now");
+		}
+
+		EndFrame();
+	}
 }
