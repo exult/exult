@@ -57,8 +57,9 @@ public:
 	bool        key_down(int chr) override;    // Character typed.
 	static bool ask(
 			const char* txt,
-			const char* font
-			= "SMALL_BLACK_FONT");    // Ask question, get answer.
+			Paintable* paint=nullptr,
+			const char* font = "SMALL_BLACK_FONT"
+			);    // Ask question, get answer.
 };
 
 class Countdown_gump : public Yesno_gump {

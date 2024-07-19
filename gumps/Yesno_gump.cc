@@ -173,10 +173,10 @@ bool Yesno_gump::key_down(int chr) {
 
 bool Yesno_gump::ask(
 		const char* txt,    // What to ask.
-		const char* font) {
+		Paintable* paint, const char* font) {
 	Yesno_gump dlg(txt, font);
 	bool       answer;
-	if (!gumpman->do_modal_gump(&dlg, Mouse::hand)) {
+	if (!gumpman->do_modal_gump(&dlg, Mouse::hand,paint)) {
 		answer = false;
 	} else {
 		answer = dlg.get_answer();
