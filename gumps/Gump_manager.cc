@@ -590,11 +590,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		gwin->get_win()->screen_to_game(
 				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 		static int   numFingers = 0;
-		SDL_Finger** fingers
-				= SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
-		if (fingers) {
-			SDL_free(fingers);
-		}
+		SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
 		if (numFingers > 1) {
 			if (event.tfinger.dy < 0) {
 				if (!gump->mouse_down(

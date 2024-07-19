@@ -755,14 +755,13 @@ static void Init() {
 	SDL_HideCursor();
 
 	// Open any connected game controllers.
-	SDL_JoystickID* joysticks = SDL_GetJoysticks(nullptr);
+	const SDL_JoystickID* joysticks = SDL_GetJoysticks(nullptr);
 	if (joysticks) {
 		for (int i = 0; joysticks[i]; ++i) {
 			if (SDL_IsGamepad(joysticks[i])) {
 				Open_game_controller(joysticks[i]);
 			}
 		}
-		SDL_free(joysticks);
 	}
 	// Listen for game controller device connection and disconnection
 	// events. Registering a listener allows these events to be received
@@ -924,7 +923,7 @@ static void Init() {
 				cout << "    [ " << ix << " ] Video Driver is '"
 					 << SDL_GetVideoDriver(ix) << "'" << endl;
 			}
-			SDL_DisplayID* display_ids = SDL_GetDisplays(nullptr);
+			const SDL_DisplayID* display_ids = SDL_GetDisplays(nullptr);
 			for (ix = 0; display_ids[ix]; ix++) {
 				const SDL_DisplayMode* currMode
 						= SDL_GetCurrentDisplayMode(display_ids[ix]);
@@ -941,7 +940,6 @@ static void Init() {
 					 << currMode->h << "' at '" << currMode->refresh_rate
 					 << "Hz' for " << nbpp << " bpp" << endl;
 			}
-			SDL_free(display_ids);
 			const char* rname = SDL_GetRendererName(
 					SDL_GetRenderer(gwin->get_win()->get_screen_window()));
 			cout << "    Hint RENDER_DRIVER is '"
@@ -969,7 +967,7 @@ static void Init() {
 				cout << "    [ " << ix << " ] Audio Driver is '"
 					 << SDL_GetAudioDriver(ix) << "'" << endl;
 			}
-			SDL_AudioDeviceID* devices;
+			const SDL_AudioDeviceID* devices;
 			int                num_devices;
 			devices = SDL_GetAudioRecordingDevices(&num_devices);
 			for (ix = 0; ix < num_devices; ix++) {
@@ -989,7 +987,6 @@ static void Init() {
 					cout << endl;
 				}
 			}
-			SDL_free(devices);
 			devices = SDL_GetAudioPlaybackDevices(&num_devices);
 			for (ix = 0; ix < num_devices; ix++) {
 				SDL_AudioSpec as;
@@ -1008,7 +1005,6 @@ static void Init() {
 					cout << endl;
 				}
 			}
-			SDL_free(devices);
 		}
 #endif
 		Game::create_game(newgame);
@@ -1789,12 +1785,8 @@ static void Handle_event(SDL_Event& event) {
 		if (!cheat() || !gwin->can_scroll_with_mouse()) {
 			break;
 		}
-		static int   numFingers = 0;
-		SDL_Finger** fingers
-				= SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
-		if (fingers) {
-			SDL_free(fingers);
-		}
+		static int numFingers = 0;
+		SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
 		if (numFingers > 1) {
 			if (event.tfinger.dy < 0) {
 				ActionScrollUp(nullptr);
@@ -2958,10 +2950,11 @@ void setup_video(
 		int dh = resy * scaleval;
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 		// Default display is desktop
-		SDL_DisplayMode dispmode;
-		if (SDL_GetDesktopDisplayMode(0, &dispmode) == 0) {
-			dw = dispmode.w;
-			dh = dispmode.h;
+		const SDL_DisplayMode* dispmode
+				= SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+		if (dispmode) {
+			dw = dispmode->w;
+			dh = dispmode->h;
 		}
 #else
 		// Default display is 1024x768

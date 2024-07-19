@@ -88,7 +88,7 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 - (void)dealloc {
 	if (vjoyGamepad) {
 		SDL_CloseGamepad(vjoyGamepad);
-		SDL_JoystickID* joysticks = SDL_GetJoysticks(NULL);
+		const SDL_JoystickID* joysticks = SDL_GetJoysticks(NULL);
 		if (joysticks) {
 			for (int i = 0; joysticks[i]; ++i) {
 				if (SDL_IsJoystickVirtual(joysticks[i])) {
@@ -98,7 +98,6 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 					break;
 				}
 			}
-			SDL_free(joysticks);
 		}
 	}
 
