@@ -27,6 +27,7 @@
 
 #include <memory>
 #include <vector>
+#include <optional>
 
 class Shape_frame;
 class Shape_info;
@@ -325,7 +326,9 @@ public:
 		shapefile = shfile;
 	}
 
-	void paint_shape(int xoff, int yoff, bool force_trans = false) const {
+	void paint_shape(
+			int xoff, int yoff,
+			std::optional<bool> force_trans = std::nullopt) const {
 		auto           cache      = cache_shape();
 		unsigned char* transtable = nullptr;
 		unsigned char  table[256];
@@ -333,7 +336,8 @@ public:
 			transtable = Get_palette_transform_table(table);
 		}
 		sman->paint_shape(
-				xoff, yoff, cache.shape, cache.has_trans || force_trans,
+				xoff, yoff, cache.shape,
+				force_trans?*force_trans:cache.has_trans,
 				transtable);
 	}
 
@@ -365,7 +369,7 @@ public:
 };
 
 /*
- *  An interface used in Get_click():
+ *  An interface used in Get_click(): This will be painted on top of everything else
  */
 class Paintable {
 public:
@@ -375,7 +379,6 @@ public:
 
 // A paintable that should be painted as a background and not on top of everything.
 class BackgroundPaintable : public Paintable {
-
 };
 
 class ImageBufferPaintable : public BackgroundPaintable {
