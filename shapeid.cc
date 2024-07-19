@@ -565,3 +565,16 @@ uint8* ShapeID::Get_palette_transform_table(uint8 table[256]) const {
 	}
 	return table;
 }
+
+ImageBufferPaintable::ImageBufferPaintable() : x(0),y(0) {
+	auto gwin = Game_window::get_instance();
+	auto iwin = gwin->get_win();
+	buffer = iwin->create_buffer(iwin->get_full_width(), iwin->get_full_height());
+	iwin->get(buffer.get(),x, y);
+}
+
+void ImageBufferPaintable::paint() {
+	auto gwin = Game_window::get_instance();
+	auto iwin = gwin->get_win();
+	iwin->put(buffer.get(), x, y);
+}

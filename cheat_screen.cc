@@ -613,12 +613,13 @@ bool CheatScreen::SharedInput() {
 			} else {
 				CERR("event.type= " << event.type);
 				switch (event.type) {
-				case SDL_QUIT:
+				case SDL_QUIT: {
 					CERR("SDL_QUIT");
-					if (gwin->get_gump_man()->okay_to_quit()) {
+					ImageBufferPaintable screenshot;
+					if (gwin->get_gump_man()->okay_to_quit(&screenshot)) {
 						throw quit_exception();
 					}
-					break;
+				} break;
 				case SDL_FINGERDOWN: {
 					CERR("SDL_FINGERDOWN");
 					buttons_down.insert(button_down_finger);
@@ -848,7 +849,6 @@ bool CheatScreen::SharedInput() {
 					}
 				}
 			} else if (state.mode == CP_Name) {    // Want Text input
-
 				if (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER) {
 					state.activate = true;
 				} else if (
@@ -3490,9 +3490,9 @@ bool CheatScreen::PalEffectCheck(Actor* actor) {
 
 	case 'x':    // [X]Form
 	{
-		const char  prompttext[] = "enter XFORM Index (0-%lu)";
+		const char  prompttext[] = "enter XFORM Index (0-%zu)";
 		static char staticPrompttext[sizeof(prompttext) + 16];
-		auto        numxforms = Shape_manager::get_instance()->get_xforms_cnt();
+		size_t      numxforms = Shape_manager::get_instance()->get_xforms_cnt();
 		if (numxforms) {
 			numxforms--;
 		}
@@ -4178,14 +4178,14 @@ void CheatScreen::WaitButtonsUp() {
 
 			// const int offsety1 = 73;
 			// const int offsety2 = 55;
-			 const int offsetx1 = 160;
+			const int offsetx1 = 160;
 			// const int offsety4 = 36;
 			const int offsety5 = 72;
 #else
 			const int offsetx_start = 0;
 			// const int offsety1 = 0;
 			// const int offsety2 = 0;
-			 const int offsetx1 = 160;
+			const int offsetx1 = 160;
 			// const int offsety4 = maxy - 45;
 			const int offsety5 = maxy - 36;
 #endif    // eXit
@@ -4195,13 +4195,13 @@ void CheatScreen::WaitButtonsUp() {
 			int        offsety       = 36;
 			offsetx                  = offsetx1 - 4 * std::size(msg_waiting);
 			offsetx += font->paint_text_fixedwidth(
-							   ibuf, msg_waiting, offsetx, offsety, 8);
+					ibuf, msg_waiting, offsetx, offsety, 8);
 
 			bool first       = true;
 			int  last_button = 0;
 			for (int button : buttons_down) {
 				char        buf[80]     = {0};
-				const char* button_name = 0;
+				const char* button_name = nullptr;
 
 				// only each button once.. Standard guarantees that all keys
 				// that compare equivalent are grouped together
@@ -4220,7 +4220,6 @@ void CheatScreen::WaitButtonsUp() {
 					} else {
 						button_name = "Finger";
 					}
-
 				} break;
 
 				case 1:
@@ -4249,13 +4248,12 @@ void CheatScreen::WaitButtonsUp() {
 					if (keyname[0]
 						&& std::none_of(
 								keyname, keyname + strlen(keyname), [](char c) {
-									return c >= 128;
+									return static_cast<unsigned char>(c) >= 128;
 								})) {
 						snprintf(buf, sizeof(buf), "Key %s", keyname);
 					} else {
 						snprintf(buf, sizeof(buf), "Unknown Key #%i", button);
 					}
-
 				} break;
 				}
 

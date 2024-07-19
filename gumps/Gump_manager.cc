@@ -473,6 +473,9 @@ void Gump_manager::update_gumps() {
  *  Paint the gumps
  */
 void Gump_manager::paint(bool modal) {
+	if (modal && background) {
+		background->paint();
+	}
 	for (Gump_list* gmp = open_gumps; gmp; gmp = gmp->next) {
 		if (gmp->gump->is_modal() == modal) {
 			gmp->gump->paint();
@@ -485,14 +488,14 @@ void Gump_manager::paint(bool modal) {
  *
  *  Output: true to quit.
  */
-bool Gump_manager::okay_to_quit() {
+bool Gump_manager::okay_to_quit(Paintable* paint) {
 	// Prevent reentering this function
 	static bool inthis = false;
 	if (inthis) {
 		return false;
 	}
 	inthis = true;
-	if (Yesno_gump::ask("Do you really want to quit?")) {
+	if (Yesno_gump::ask("Do you really want to quit?", paint)) {
 		quitting_time = QUIT_TIME_YES;
 	}
 	inthis = false;
@@ -805,6 +808,10 @@ bool Gump_manager::do_modal_gump(
 		Mouse::mouse->set_shape(shape);
 	}
 	bool escaped = false;
+	background   = dynamic_cast<BackgroundPaintable*>(paint);
+	if (background) {
+		paint = nullptr;
+	}
 	add_gump(gump);
 	gump->run();
 	gwin->paint();    // Show everything now.
@@ -813,6 +820,7 @@ bool Gump_manager::do_modal_gump(
 	}
 	Mouse::mouse->show();
 	gwin->show();
+	//gwin->set_all_dirty();
 	if (touchui != nullptr) {
 		touchui->hideGameControls();
 	}
@@ -857,6 +865,7 @@ bool Gump_manager::do_modal_gump(
 			touchui->showGameControls();
 		}
 	}
+	background = nullptr;
 	return !escaped;
 }
 

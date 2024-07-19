@@ -31,6 +31,7 @@
 class Shape_frame;
 class Shape_info;
 class Font;
+class Image_buffer;
 class Image_buffer8;
 struct Cursor_info;
 
@@ -372,4 +373,27 @@ public:
 	virtual ~Paintable() = default;
 };
 
+// A paintable that should be painted as a background and not on top of everything.
+class BackgroundPaintable : public Paintable {
+
+};
+
+class ImageBufferPaintable : public BackgroundPaintable {
+	std::unique_ptr<Image_buffer> buffer;
+	int x,y;
+
+public:
+	// Construct from an existing Image_buffer
+	ImageBufferPaintable(std::unique_ptr<Image_buffer>&& buffer, int x, int y) :
+			buffer(std::move(buffer)),
+			x(x),y(y) {
+	}
+
+	// Construct from a screenshot of the current screen
+	ImageBufferPaintable();
+
+	virtual ~ImageBufferPaintable() = default;
+	// Inherited via Paintable
+	void paint() override;
+};
 #endif
