@@ -131,6 +131,7 @@ private:
 
 		private:
 		Cheat_Prompt mode = CP_Command;
+
 		public:
 		Cheat_Prompt GetMode() {
 			return mode;
