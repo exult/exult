@@ -265,9 +265,9 @@ void CheatScreen::SharedPrompt() {
 #endif
 	font->paint_text_fixedwidth(ibuf, "Select->", offsetx, prompt, 8);
 
-	// Special handling for arrows in CP_Command
+	// Special handling for arrows when not doing text input
 	const char* input = state.input;
-	if (state.mode == CP_Command && !input[1]
+	if (state.GetMode() < CP_ChooseNPC && !input[1]
 		&& (*input == '<' || *input == '>' || *input == '^' || *input == 'V')) {
 		PaintArrow(64 + offsetx, prompt, *input);
 		input = " ";
@@ -280,9 +280,12 @@ void CheatScreen::SharedPrompt() {
 	} else {
 		font->paint_text_fixedwidth(ibuf, "_", 64 + offsetx, prompt, 8);
 	}
-
+	// Clear the input
+	if (state.GetMode() < CP_ChooseNPC) {
+		state.input[0] = 0;
+	}
 	// ...and Prompt Message
-	switch (state.mode) {
+	switch (state.GetMode()) {
 	default:
 
 	case CP_Command:
@@ -748,9 +751,9 @@ bool CheatScreen::SharedInput() {
 				event.key.keysym.sym = simulate_key;
 				CERR("simmulate key " << event.key.keysym.sym);
 				// Simulated keys automatically execute the command if possible
-				if (state.mode >= CP_HitKey
-					&& state.mode <= CP_WrongShapeFile) {
-					state.mode = CP_Command;
+				if (state.GetMode() >= CP_HitKey
+					&& state.GetMode() <= CP_WrongShapeFile) {
+					state.SetMode(CP_Command, true);
 				}
 			}
 			if (event.type != SDL_KEYDOWN) {
@@ -761,16 +764,16 @@ bool CheatScreen::SharedInput() {
 			if (key.sym == SDLK_ESCAPE) {
 				std::memset(state.input, 0, sizeof(state.input));
 				// If current mode is needing to press a key return to command
-				if (state.mode >= CP_HitKey
-					&& state.mode <= CP_WrongShapeFile) {
+				if (state.GetMode() >= CP_HitKey
+					&& state.GetMode() <= CP_WrongShapeFile) {
 					state.command = 0;
-					state.mode    = CP_Command;
+					state.SetMode(CP_Command, true);
 					return false;
 				}
 				// Escape will cancel current mode
-				else if (state.mode != CP_Command) {
+				else if (state.GetMode() != CP_Command) {
 					state.command = key.sym;
-					state.mode    = CP_Canceled;
+					state.SetMode(CP_Canceled, true);
 					return false;
 				}
 			}
@@ -781,19 +784,19 @@ bool CheatScreen::SharedInput() {
 				return false;
 			}
 
-			if (state.mode == CP_NorthSouth) {
+			if (state.GetMode() == CP_NorthSouth) {
 				if (!state.input[0] && (key.sym == 'n' || key.sym == 's')) {
 					state.input[0] = char(key.sym);
 					state.activate = true;
 				}
-			} else if (state.mode == CP_WestEast) {
+			} else if (state.GetMode() == CP_WestEast) {
 				if (!state.input[0] && (key.sym == 'w' || key.sym == 'e')) {
 					state.input[0] = char(key.sym);
 					state.activate = true;
 				}
 			} else if (
-					state.mode >= CP_HexXCoord
-					&& state.mode <= CP_HexYCoord) {    // Want hex input
+					state.GetMode() >= CP_HexXCoord
+					&& state.GetMode() <= CP_HexYCoord) {    // Want hex input
 				// Activate (if possible)
 				if (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER) {
 					state.activate = true;
@@ -801,7 +804,9 @@ bool CheatScreen::SharedInput() {
 				} else if (key.sym == SDLK_LEFT || key.sym == SDLK_RIGHT) {
 					char* end   = nullptr;
 					long  value = std::strtol(state.input, &end, 16);
-
+					if (state.val_max < state.val_min) {
+						std::swap(state.val_max, state.val_min);
+					}
 					if (end == state.input + strlen(state.input)) {
 						if (key.sym == SDLK_LEFT && value != state.val_min) {
 							value = std::max(value - 1, state.val_min);
@@ -848,7 +853,7 @@ bool CheatScreen::SharedInput() {
 						state.input[curlen - 1] = 0;
 					}
 				}
-			} else if (state.mode == CP_Name) {    // Want Text input
+			} else if (state.GetMode() == CP_Name) {    // Want Text input
 				if (key.sym == SDLK_RETURN || key.sym == SDLK_KP_ENTER) {
 					state.activate = true;
 				} else if (
@@ -870,10 +875,10 @@ bool CheatScreen::SharedInput() {
 						state.input[curlen - 1] = 0;
 					}
 				}
-			} else if (state.mode >= CP_ChooseNPC) {    // Need to grab
-														// numerical
-														// input Browse shape
-				if (state.mode == CP_Shape && !state.input[0]
+			} else if (state.GetMode() >= CP_ChooseNPC) {    // Need to grab
+															 // numerical
+				// input Browse shape
+				if (state.GetMode() == CP_Shape && !state.input[0]
 					&& key.sym == 'b') {
 					cheat.shape_browser();
 					state.input[0] = 'b';
@@ -884,6 +889,9 @@ bool CheatScreen::SharedInput() {
 					char* end   = nullptr;
 					long  value = std::strtol(state.input, &end, 10);
 
+					if (state.val_max < state.val_min) {
+						std::swap(state.val_max, state.val_min);
+					}
 					if (end == state.input + strlen(state.input)) {
 						if (key.sym == SDLK_LEFT && value != state.val_min) {
 							value = std::max(value - 1, state.val_min);
@@ -927,17 +935,45 @@ bool CheatScreen::SharedInput() {
 						state.input[curlen - 1] = 0;
 					}
 				}
-			} else if (state.mode) {    // Just want a key pressed
-				state.mode = CP_Command;
-				for (size_t i = 0; i < std::size(state.input); i++) {
-					state.input[i] = 0;
+			} else {
+				char c = key.sym;
+
+				// Translate arrow key into the characters we use for arrows
+				switch (key.sym) {
+				case SDLK_UP: {
+					c = '^';
+				} break;
+
+				case SDLK_DOWN: {
+					c = 'V';
+				} break;
+
+				case SDLK_RIGHT: {
+					c = '>';
+				} break;
+
+				case SDLK_LEFT: {
+					c = '<';
+				} break;
+
+				default: {
+				} break;
 				}
-				state.command = 0;
-			} else {    // Need the key pressed
-				state.command       = key.sym;
-				state.highlighttime = SDL_GetTicks() + 1000;
-				state.highlight     = state.command;
-				return true;
+				// Set input to the typed character so it is shown with the
+				// prompt
+				std::memset(state.input, 0, sizeof(state.input));
+				state.input[0] = c;
+				state.input[1] = 0;
+
+				if (state.GetMode()) {    // Just want a key pressed
+					state.SetMode(CP_Command, true);
+					state.command = 0;
+				} else {    // Need the key pressed
+					state.command       = key.sym;
+					state.highlighttime = SDL_GetTicks() + 1000;
+					state.highlight     = state.command;
+					return true;
+				}
 			}
 			return false;
 		}
@@ -1205,7 +1241,7 @@ void CheatScreen::NormalActivate() {
 	const int      npc  = std::atoi(state.input);
 	Shape_manager* sman = Shape_manager::get_instance();
 
-	state.mode = CP_Command;
+	state.SetMode(CP_Command, false);
 
 	switch (state.command) {
 		// God Mode
@@ -1236,7 +1272,7 @@ void CheatScreen::NormalActivate() {
 
 		// Set Time
 	case 's':
-		state.mode = TimeSetLoop();
+		state.SetMode(TimeSetLoop());
 		break;
 
 		// - Time Rate
@@ -1261,24 +1297,24 @@ void CheatScreen::NormalActivate() {
 		// NPC Tool
 	case 'n':
 		if (npc < 0 || (npc >= 356 && npc <= 359)) {
-			state.mode = CP_InvalidNPC;
+			state.SetMode(CP_InvalidNPC, false);
 		} else if (!state.input[0]) {
 			NPCLoop(-1);
 		} else {
-			state.mode = NPCLoop(npc);
+			state.SetMode(NPCLoop(npc));
 		}
 		break;
 
 		// Global Flag Editor
 	case 'f':
 		if (npc < 0) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (npc > c_last_gflag) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
-			state.mode = CP_Canceled;
+			state.SetMode(CP_Canceled, false);
 		} else {
-			state.mode = GlobalFlagLoop(npc);
+			state.SetMode(GlobalFlagLoop(npc));
 		}
 		break;
 
@@ -1298,11 +1334,9 @@ void CheatScreen::NormalActivate() {
 		break;
 	}
 
-	state.input[0] = 0;
-	state.input[1] = 0;
-	state.input[2] = 0;
-	state.input[3] = 0;
-	state.command  = 0;
+	std::memset(state.input, 0, sizeof(state.input));
+
+	state.command = 0;
 }
 
 // Checks the state.input
@@ -1318,47 +1352,57 @@ bool CheatScreen::NormalCheck() {
 	case 'h':    // Hack Mover
 	case 'c':    // Create Item
 	case 'p':    // Paperdolls
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		state.activate = true;
 		break;
 
 		// - Time
 	case SDLK_LEFT:
-		state.command  = '<';
-		state.input[0] = state.command;
+		state.command = '<';
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		state.activate = true;
 		break;
 
 	// + Time
 	case SDLK_RIGHT:
-		state.command  = '>';
-		state.input[0] = state.command;
+		state.command = '>';
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		state.activate = true;
 		break;
 
 		// NPC Tool
 	case 'n':
-		state.mode    = CP_ChooseNPC;
+		state.SetMode(CP_ChooseNPC);
 		state.val_min = 0;
 		state.val_max = gwin->get_num_npcs() - 1;
 		break;
 
 		// Global Flag Editor
 	case 'f':
-		state.mode    = CP_GFlagNum;
-		state.val_max = 0;
-		state.val_min = c_last_gflag;
+		state.SetMode(CP_GFlagNum);
+		state.val_min = 0;
+		state.val_max = c_last_gflag;
 		break;
 
 		// X and Escape leave
 	case SDLK_ESCAPE:
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		return false;
 
 	default:
-		state.mode     = CP_InvalidCom;
-		state.input[0] = state.command;
-		state.command  = 0;
+		state.SetMode(CP_InvalidCom, false);
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
+		state.command = 0;
 		break;
 	}
 
@@ -1449,7 +1493,7 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 	int        day  = 0;
 	int        hour = 0;
 	ClearState clear(state);
-	state.mode    = CP_Day;
+	state.SetMode(CP_Day);
 	state.val_min = 0;
 	state.val_max = INT_MAX;    // This seems unbounded
 	while (true) {
@@ -1474,14 +1518,14 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 
 			if (val < 0) {
 				return CP_InvalidTime;
-			} else if (state.mode == CP_Day) {
-				day           = val;
-				state.mode    = CP_Hour;
+			} else if (state.GetMode() == CP_Day) {
+				day = val;
+				state.SetMode(CP_Hour);
 				state.val_min = 0;
 				state.val_max = 23;
 			} else if (val > 59) {
 				return CP_InvalidTime;
-			} else if (state.mode == CP_Minute) {
+			} else if (state.GetMode() == CP_Minute) {
 				clock->reset();
 				clock->set_day(day);
 				clock->set_hour(hour);
@@ -1489,9 +1533,9 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 				break;
 			} else if (val > 23) {
 				return CP_InvalidTime;
-			} else if (state.mode == CP_Hour) {
-				hour          = val;
-				state.mode    = CP_Minute;
+			} else if (state.GetMode() == CP_Hour) {
+				hour = val;
+				state.SetMode(CP_Minute);
 				state.val_min = 0;
 				state.val_max = 59;
 			}
@@ -1506,7 +1550,7 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 		}
 
 		SharedInput();
-		if (state.mode == CP_Canceled) {
+		if (state.GetMode() == CP_Canceled) {
 			return CP_Canceled;
 		}
 	}
@@ -1582,7 +1626,7 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 
 		// Check to see if we need to change menus
 		if (state.activate) {
-			state.mode = CP_Command;
+			state.SetMode(CP_Command, false);
 			if (state.command == '<') {    // Decrement
 				num--;
 				if (num < 0) {
@@ -1596,7 +1640,7 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 			} else if (state.command == '^') {    // Change Flag
 				i = std::atoi(state.input);
 				if (i < 0 || i > c_last_gflag) {
-					state.mode = CP_InvalidValue;
+					state.SetMode(CP_InvalidValue, false);
 				} else if (state.input[0]) {
 					num = i;
 				}
@@ -1605,10 +1649,8 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 			} else if (state.command == 'u') {    // Unset
 				usecode->set_global_flag(num, 0);
 			}
+			std::memset(state.input, 0, sizeof(state.input));
 
-			for (i = 0; i < 17; i++) {
-				state.input[i] = 0;
-			}
 			state.command  = 0;
 			state.activate = false;
 			continue;
@@ -1619,21 +1661,27 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 				// Simple commands
 			case 's':    // Set Flag
 			case 'u':    // Unset flag
-				state.input[0] = state.command;
+				if (!state.input[0]) {
+					state.input[0] = state.command;
+				}
 				state.activate = true;
 				break;
 
 				// Decrement
 			case SDLK_LEFT:
-				state.command  = '<';
-				state.input[0] = state.command;
+				state.command = '<';
+				if (!state.input[0]) {
+					state.input[0] = state.command;
+				}
 				state.activate = true;
 				break;
 
 				// Increment
 			case SDLK_RIGHT:
-				state.command  = '>';
-				state.input[0] = state.command;
+				state.command = '>';
+				if (!state.input[0]) {
+					state.input[0] = state.command;
+				}
 				state.activate = true;
 				break;
 
@@ -1641,21 +1689,25 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 			case SDLK_UP:
 				state.command  = '^';
 				state.input[0] = 0;
-				state.mode     = CP_GFlagNum;
-				state.val_max  = 0;
-				state.val_min  = c_last_gflag;
+				state.SetMode(CP_GFlagNum);
+				state.val_min = 0;
+				state.val_max = c_last_gflag;
 				break;
 
 				// X and Escape leave
 			case SDLK_ESCAPE:
-				state.input[0] = state.command;
-				looping        = false;
+				if (!state.input[0]) {
+					state.input[0] = state.command;
+				}
+				looping = false;
 				break;
 
 			default:
-				state.mode     = CP_InvalidCom;
-				state.input[0] = state.command;
-				state.command  = 0;
+				state.SetMode(CP_InvalidCom, false);
+				if (!state.input[0]) {
+					state.input[0] = state.command;
+				}
+				state.command = 0;
 				break;
 			}
 		}
@@ -1875,7 +1927,7 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 	const int nshapes
 			= Shape_manager::get_instance()->get_shapes().get_num_shapes();
 
-	state.mode = CP_Command;
+	state.SetMode(CP_Command, false);
 
 	if (state.command == '<') {
 		num--;
@@ -1891,7 +1943,7 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 		}
 	} else if (state.command == '^') {    // Change NPC
 		if (i < 0 || (i >= 356 && i <= 359)) {
-			state.mode = CP_InvalidNPC;
+			state.SetMode(CP_InvalidNPC, false);
 		} else if (state.input[0]) {
 			num = i;
 		}
@@ -1920,7 +1972,7 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 
 		case 'e':    // Experience
 			if (i < 0) {
-				state.mode = CP_Canceled;
+				state.SetMode(CP_Canceled, false);
 			} else {
 				actor->set_property(Actor::exp, i);
 			}
@@ -1928,7 +1980,7 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 
 		case '2':    // Training Points
 			if (i < 0) {
-				state.mode = CP_Canceled;
+				state.SetMode(CP_Canceled, false);
 			} else {
 				actor->set_property(Actor::training, i);
 			}
@@ -1938,31 +1990,31 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 			if (state.input[0] == 'b') {    // Browser
 				int n;
 				if (!cheat.get_browser_shape(i, n)) {
-					state.mode = CP_WrongShapeFile;
+					state.SetMode(CP_WrongShapeFile);
 					break;
 				}
 			}
 
 			if (i < 0) {
-				state.mode = CP_InvalidShape;
+				state.SetMode(CP_InvalidShape, false);
 			} else if (i >= nshapes) {
-				state.mode = CP_InvalidShape;
+				state.SetMode(CP_InvalidShape, false);
 			} else if (state.input[0]) {
 				if (actor->get_npc_num() != 0) {
 					actor->set_shape(i);
 				} else {
 					actor->set_polymorph(i);
 				}
-				state.mode = CP_ShapeSet;
+				state.SetMode(CP_ShapeSet, false);
 			}
 			break;
 
 		case '1':    // Name
 			if (!std::strlen(state.input)) {
-				state.mode = CP_Canceled;
+				state.SetMode(CP_Canceled, false);
 			} else {
 				actor->set_npc_name(state.input);
-				state.mode = CP_NameSet;
+				state.SetMode(CP_NameSet, false);
 			}
 			break;
 
@@ -1970,9 +2022,8 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 			break;
 		}
 	}
-	for (i = 0; i < 17; i++) {
-		state.input[i] = 0;
-	}
+	std::memset(state.input, 0, sizeof(state.input));
+
 	state.command = 0;
 }
 
@@ -1988,9 +2039,11 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 	case 's':    // stats
 	case 'z':    // Target
 	case 't':    // Teleport
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		if (!actor) {
-			state.mode = CP_InvalidCom;
+			state.SetMode(CP_InvalidCom, false);
 		} else {
 			state.activate = true;
 		}
@@ -2000,9 +2053,9 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 	case 'e':    // Experience
 	case '2':    // Training Points
 		if (!actor) {
-			state.mode = CP_InvalidCom;
+			state.SetMode(CP_InvalidCom, false);
 		} else {
-			state.mode    = CP_EnterValue;
+			state.SetMode(CP_EnterValue);
 			state.val_min = 255;
 		}
 		break;
@@ -2010,7 +2063,7 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 		// Palette Effect
 	case 'p':
 		if (!actor) {
-			state.mode = CP_InvalidCom;
+			state.SetMode(CP_InvalidCom, false);
 		} else {
 			state.activate = true;
 		}
@@ -2019,9 +2072,9 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 		// Change shape
 	case 'c':
 		if (!actor) {
-			state.mode = CP_InvalidCom;
+			state.SetMode(CP_InvalidCom, false);
 		} else {
-			state.mode    = CP_Shape;
+			state.SetMode(CP_Shape);
 			state.val_min = 0;
 			state.val_max = Shape_manager::get_instance()
 									->get_shapes()
@@ -2033,23 +2086,27 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 		// Name
 	case '1':
 		if (!actor) {
-			state.mode = CP_InvalidCom;
+			state.SetMode(CP_InvalidCom, false);
 		} else {
-			state.mode = CP_Name;
+			state.SetMode(CP_Name);
 		}
 		break;
 
 		// - NPC
 	case SDLK_LEFT:
-		state.command  = '<';
-		state.input[0] = state.command;
+		state.command = '<';
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		state.activate = true;
 		break;
 
 		// + NPC
 	case SDLK_RIGHT:
-		state.command  = '>';
-		state.input[0] = state.command;
+		state.command = '>';
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		state.activate = true;
 		break;
 
@@ -2057,20 +2114,24 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 	case SDLK_UP:
 		state.command  = '^';
 		state.input[0] = 0;
-		state.mode     = CP_ChooseNPC;
-		state.val_min  = 0;
-		state.val_max  = gwin->get_num_npcs() - 1;
+		state.SetMode(CP_ChooseNPC);
+		state.val_min = 0;
+		state.val_max = gwin->get_num_npcs() - 1;
 		break;
 
 		// X and Escape leave
 	case SDLK_ESCAPE:
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		return false;
 
 	default:
-		state.mode     = CP_InvalidCom;
-		state.input[0] = state.command;
-		state.command  = 0;
+		state.SetMode(CP_InvalidCom, false);
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
+		state.command = 0;
 		break;
 	}
 
@@ -2323,7 +2384,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 	const int nshapes
 			= Shape_manager::get_instance()->get_shapes().get_num_shapes();
 
-	state.mode = CP_Command;
+	state.SetMode(CP_Command, false);
 	switch (state.command) {
 		// Everyone
 
@@ -2522,11 +2583,11 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		// Value
 	case 'v':    // ID
 		if (i < 0) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (i > 63) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (i == -1 || !state.input[0]) {
-			state.mode = CP_Canceled;
+			state.SetMode(CP_Canceled);
 		} else {
 			actor->set_ident(unsigned(i));
 		}
@@ -2548,11 +2609,11 @@ void CheatScreen::FlagActivate(Actor* actor) {
 
 	case 'y':    // Warmth
 		if (i < -1) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (i > 63) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (i == -1 || !state.input[0]) {
-			state.mode = CP_Canceled;
+			state.SetMode(CP_Canceled);
 		} else {
 			actor->set_temperature(i);
 		}
@@ -2569,21 +2630,21 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		if (state.input[0] == 'b') {    // Browser
 			int n;
 			if (!cheat.get_browser_shape(i, n)) {
-				state.mode = CP_WrongShapeFile;
+				state.SetMode(CP_WrongShapeFile);
 				break;
 			}
 		}
 
 		if (i == -1) {
-			state.mode = CP_Canceled;
+			state.SetMode(CP_Canceled);
 		} else if (i < 0) {
-			state.mode = CP_InvalidShape;
+			state.SetMode(CP_InvalidShape, false);
 		} else if (i >= nshapes) {
-			state.mode = CP_InvalidShape;
+			state.SetMode(CP_InvalidShape, false);
 		} else if (
 				state.input[0] && (state.input[0] != '-' || state.input[1])) {
 			actor->set_polymorph(i);
-			state.mode = CP_ShapeSet;
+			state.SetMode(CP_ShapeSet);
 		}
 
 		break;
@@ -2591,20 +2652,19 @@ void CheatScreen::FlagActivate(Actor* actor) {
 		// Advanced Numeric Flag Editor
 	case '^':
 		if (i < 0 || i > 63) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
-			state.mode = CP_Canceled;
+			state.SetMode(CP_Canceled);
 		} else {
-			state.mode = AdvancedFlagLoop(i, actor);
+			state.SetMode(AdvancedFlagLoop(i, actor));
 		}
 		break;
 
 	default:
 		break;
 	}
-	for (i = 0; i < 17; i++) {
-		state.input[i] = 0;
-	}
+	std::memset(state.input, 0, sizeof(state.input));
+
 	state.command = 0;
 }
 
@@ -2633,13 +2693,15 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 	case 'w':    // Freeze
 	case 'g':    // Tournament
 		state.activate = true;
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		break;
 
 		// Value
 	case 'h':    // Polymorph
 		if (actor->get_polymorph() == -1) {
-			state.mode    = CP_Shape;
+			state.SetMode(CP_Shape);
 			state.val_min = 0;
 			state.val_max = Shape_manager::get_instance()
 									->get_shapes()
@@ -2648,7 +2710,9 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 			state.input[0] = 0;
 		} else {
 			state.activate = true;
-			state.input[0] = state.command;
+			if (!state.input[0]) {
+				state.input[0] = state.command;
+			}
 		}
 		break;
 
@@ -2659,7 +2723,7 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		if (!actor->is_in_party()) {
 			state.command = 0;
 		} else {
-			state.mode    = CP_TempNum;
+			state.SetMode(CP_TempNum);
 			state.val_max = 0;
 			state.val_min = 63;
 		}
@@ -2676,7 +2740,9 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		} else {
 			state.activate = true;
 		}
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		break;
 
 		// Toggles SI
@@ -2687,7 +2753,9 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		} else {
 			state.activate = true;
 		}
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		break;
 
 		// Value SI
@@ -2697,7 +2765,9 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		} else {
 			state.activate = true;
 		}
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		break;
 
 		// Everyone but avatar
@@ -2711,7 +2781,9 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		} else {
 			state.activate = true;
 		}
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		break;
 
 		// Value
@@ -2719,7 +2791,7 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 		if (!actor->get_npc_num()) {
 			state.command = 0;
 		} else {
-			state.mode    = CP_EnterValue;
+			state.SetMode(CP_EnterValue);
 			state.val_min = 0;
 			state.val_max = 63;
 		}
@@ -2731,14 +2803,16 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 	case SDLK_UP:
 		state.command  = '^';
 		state.input[0] = 0;
-		state.mode     = CP_NFlagNum;
-		state.val_max  = 0;
-		state.val_min  = 63;
+		state.SetMode(CP_NFlagNum);
+		state.val_max = 0;
+		state.val_min = 63;
 		break;
 
 		// X and Escape leave
 	case SDLK_ESCAPE:
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		return false;
 
 		// Unknown
@@ -2766,7 +2840,7 @@ void CheatScreen::BusinessLoop(Actor* actor) {
 		gwin->clear_screen();
 
 		// First the display
-		if (state.mode == CP_Activity) {
+		if (state.GetMode() == CP_Activity) {
 			ActivityDisplay();
 		} else {
 			BusinessDisplay(actor);
@@ -2924,15 +2998,15 @@ void CheatScreen::BusinessMenu(Actor* actor) {
 void CheatScreen::BusinessActivate(Actor* actor, int& time, int& prev) {
 	int i = std::atoi(state.input);
 
-	state.mode    = CP_Command;
+	state.SetMode(CP_Command, false);
 	const int old = state.command;
 	state.command = 0;
 	switch (old) {
 	case 'a':    // Set Activity
 		if (i < 0 || i > 31) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
-			state.mode    = CP_Activity;
+			state.SetMode(CP_Activity);
 			state.val_min = 0;
 			state.val_max = 31;
 			state.command = 'a';
@@ -2943,15 +3017,15 @@ void CheatScreen::BusinessActivate(Actor* actor, int& time, int& prev) {
 
 	case 'i':    // X Coord
 		if (i < 0 || i > c_num_tiles) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
-			state.mode    = CP_XCoord;
+			state.SetMode(CP_XCoord);
 			state.val_min = 0;
 			state.val_max = c_num_tiles;
 			state.command = 'i';
 		} else {
-			prev          = i;
-			state.mode    = CP_YCoord;
+			prev = i;
+			state.SetMode(CP_YCoord);
 			state.val_min = 0;
 			state.val_max = c_num_tiles;
 			state.command = 'j';
@@ -2960,9 +3034,9 @@ void CheatScreen::BusinessActivate(Actor* actor, int& time, int& prev) {
 
 	case 'j':    // Y Coord
 		if (i < 0 || i > c_num_tiles) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
-			state.mode    = CP_YCoord;
+			state.SetMode(CP_YCoord);
 			state.val_min = 0;
 			state.val_max = c_num_tiles;
 			state.command = 'j';
@@ -2977,9 +3051,9 @@ void CheatScreen::BusinessActivate(Actor* actor, int& time, int& prev) {
 
 	case 's':    // Set Current
 		if (i < 0 || i > 31) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
-			state.mode    = CP_Activity;
+			state.SetMode(CP_Activity);
 			state.val_min = 0;
 			state.val_max = 31;
 			state.command = 's';
@@ -2995,9 +3069,7 @@ void CheatScreen::BusinessActivate(Actor* actor, int& time, int& prev) {
 	default:
 		break;
 	}
-	for (i = 0; i < 17; i++) {
-		state.input[i] = 0;
-	}
+	std::memset(state.input, 0, sizeof(state.input));
 }
 
 // Checks the state.input
@@ -3015,7 +3087,7 @@ bool CheatScreen::BusinessCheck(Actor* actor, int& time) {
 		case 'h':
 			time          = state.command - 'a';
 			state.command = 'a';
-			state.mode    = CP_Activity;
+			state.SetMode(CP_Activity);
 			state.val_min = 0;
 			state.val_max = 31;
 			return true;
@@ -3030,7 +3102,7 @@ bool CheatScreen::BusinessCheck(Actor* actor, int& time) {
 		case 'p':
 			time          = state.command - 'i';
 			state.command = 'i';
-			state.mode    = CP_XCoord;
+			state.SetMode(CP_XCoord);
 			state.val_min = 0;
 			state.val_max = c_num_tiles;
 			return true;
@@ -3063,20 +3135,22 @@ bool CheatScreen::BusinessCheck(Actor* actor, int& time) {
 	case 's':
 		state.command  = 's';
 		state.input[0] = 0;
-		state.mode     = CP_Activity;
-		state.val_min  = 0;
-		state.val_max  = 31;
+		state.SetMode(CP_Activity);
+		state.val_min = 0;
+		state.val_max = 31;
 		break;
 
 		// X and Escape leave
 	case SDLK_ESCAPE:
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		return false;
 
 		// Unknown
 	default:
 		state.command = 0;
-		state.mode    = CP_InvalidCom;
+		state.SetMode(CP_InvalidCom, false);
 		break;
 	}
 
@@ -3190,16 +3264,15 @@ void CheatScreen::StatMenu(Actor* actor) {
 }
 
 void CheatScreen::StatActivate(Actor* actor) {
-	int i      = std::atoi(state.input);
-	state.mode = CP_Command;
+	int i = std::atoi(state.input);
+	state.SetMode(CP_Command, false);
 	// Enforce sane bounds.
 	if (i > 60) {
 		i = 60;
 	} else if (i < 0 && state.command != 'h') {
 		if (i == -1) {    // canceled
-			for (i = 0; i < 17; i++) {
-				state.input[i] = 0;
-			}
+			std::memset(state.input, 0, sizeof(state.input));
+
 			state.command = 0;
 			return;
 		}
@@ -3244,9 +3317,8 @@ void CheatScreen::StatActivate(Actor* actor) {
 	default:
 		break;
 	}
-	for (i = 0; i < 17; i++) {
-		state.input[i] = 0;
-	}
+	std::memset(state.input, 0, sizeof(state.input));
+
 	state.command = 0;
 }
 
@@ -3258,9 +3330,9 @@ bool CheatScreen::StatCheck(Actor* actor) {
 		// Everyone
 	case 'h':    // Hit Points
 		state.input[0] = 0;
-		state.mode     = CP_EnterValueNoCancel;
-		state.val_min  = 0;
-		state.val_max  = actor->get_property(Actor::strength);
+		state.SetMode(CP_EnterValueNoCancel);
+		state.val_min = 0;
+		state.val_max = actor->get_property(Actor::strength);
 		;
 		break;
 	case 'd':    // Dexterity
@@ -3271,14 +3343,16 @@ bool CheatScreen::StatCheck(Actor* actor) {
 	case 'm':    // Magic
 	case 'v':    // [V]ana
 		state.input[0] = 0;
-		state.mode     = CP_EnterValue;
-		state.val_min  = 0;
-		state.val_max  = 255;
+		state.SetMode(CP_EnterValue);
+		state.val_min = 0;
+		state.val_max = 255;
 		break;
 
 		// X and Escape leave
 	case SDLK_ESCAPE:
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		return false;
 
 		// Unknown
@@ -3395,8 +3469,7 @@ void CheatScreen::PalEffectMenu(Actor* actor) {
 void CheatScreen::PalEffectActivate(Actor* actor) {
 	int   i = std::atoi(state.input);
 	char* end;
-	auto  u    = std::strtoul(state.input, &end, 10);
-	state.mode = CP_Command;
+	auto  u = std::strtoul(state.input, &end, 10);
 
 	switch (state.command) {
 	case 'x':    // XForm
@@ -3415,7 +3488,7 @@ void CheatScreen::PalEffectActivate(Actor* actor) {
 			numramps--;
 		}
 		if (u >= numramps && u != 255) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 			break;
 		}
 		std::snprintf(
@@ -3423,11 +3496,11 @@ void CheatScreen::PalEffectActivate(Actor* actor) {
 				numramps);
 		state.input[0]      = 0;
 		state.custom_prompt = staticPrompttext;
-		state.mode          = CP_CustomValue;
-		state.command       = 't';
-		state.saved_value   = i;
-		state.val_min       = 0;
-		state.val_max       = int(numramps);
+		state.SetMode(CP_CustomValue);
+		state.command     = 't';
+		state.saved_value = i;
+		state.val_min     = 0;
+		state.val_max     = int(numramps);
 		return;
 	}
 
@@ -3436,7 +3509,7 @@ void CheatScreen::PalEffectActivate(Actor* actor) {
 		unsigned int numramps = 0;
 		gwin->get_pal()->get_ramps(numramps);
 		if (u >= numramps) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 			break;
 		}
 		if (state.saved_value == 255) {
@@ -3482,10 +3555,10 @@ bool CheatScreen::PalEffectCheck(Actor* actor) {
 				numramps);
 		state.input[0]      = 0;
 		state.custom_prompt = staticPrompttext;
-		state.mode          = CP_CustomValue;
-		state.command       = 'f';
-		state.val_min       = 0;
-		state.val_max       = 255;
+		state.SetMode(CP_CustomValue);
+		state.command = 'f';
+		state.val_min = 0;
+		state.val_max = 255;
 	} break;
 
 	case 'x':    // [X]Form
@@ -3501,23 +3574,25 @@ bool CheatScreen::PalEffectCheck(Actor* actor) {
 				numxforms);
 		state.input[0]      = 0;
 		state.custom_prompt = staticPrompttext;
-		state.mode          = CP_CustomValue;
-		state.val_min       = 0;
-		state.val_max       = int(numxforms);
+		state.SetMode(CP_CustomValue);
+		state.val_min = 0;
+		state.val_max = int(numxforms);
 	} break;
 
 	case 's':    // [S]hift
 		state.input[0]      = 0;
 		state.custom_prompt = "enter shift amount (0-255)";
-		state.mode          = CP_EnterValue;
-		state.val_min       = 0;
-		state.val_max       = 255;
+		state.SetMode(CP_EnterValue);
+		state.val_min = 0;
+		state.val_max = 255;
 		break;
 
 		// Escape leaves
 		// X and Escape leave
 	case SDLK_ESCAPE:
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		return false;
 
 		// clear
@@ -3607,7 +3682,7 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 
 		// Check to see if we need to change menus
 		if (state.activate) {
-			state.mode = CP_Command;
+			state.SetMode(CP_Command);
 			if (state.command == '<') {    // Decrement
 				num--;
 				if (num < 0) {
@@ -3621,7 +3696,7 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 			} else if (state.command == '^') {    // Change Flag
 				int i = std::atoi(state.input);
 				if (i < 0 || i > 63) {
-					state.mode = CP_InvalidValue;
+					state.SetMode(CP_InvalidValue, false);
 				} else if (state.input[0]) {
 					num = i;
 				}
@@ -3648,21 +3723,27 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 				// Simple commands
 			case 's':    // Set Flag
 			case 'u':    // Unset flag
-				state.input[0] = state.command;
+				if (!state.input[0]) {
+					state.input[0] = state.command;
+				}
 				state.activate = true;
 				break;
 
 				// Decrement
 			case SDLK_LEFT:
-				state.command  = '<';
-				state.input[0] = state.command;
+				state.command = '<';
+				if (!state.input[0]) {
+					state.input[0] = state.command;
+				}
 				state.activate = true;
 				break;
 
 				// Increment
 			case SDLK_RIGHT:
-				state.command  = '>';
-				state.input[0] = state.command;
+				state.command = '>';
+				if (!state.input[0]) {
+					state.input[0] = state.command;
+				}
 				state.activate = true;
 				break;
 
@@ -3670,21 +3751,25 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 			case SDLK_UP:
 				state.command  = '^';
 				state.input[0] = 0;
-				state.mode     = CP_NFlagNum;
-				state.val_max  = 0;
-				state.val_min  = 63;
+				state.SetMode(CP_NFlagNum);
+				state.val_max = 0;
+				state.val_min = 63;
 				break;
 
 				// X and Escape leave
 			case SDLK_ESCAPE:
-				state.input[0] = state.command;
-				looping        = false;
+				if (!state.input[0]) {
+					state.input[0] = state.command;
+				}
+				looping = false;
 				break;
 
 			default:
-				state.mode     = CP_InvalidCom;
-				state.input[0] = state.command;
-				state.command  = 0;
+				state.SetMode(CP_InvalidCom, false);
+				if (!state.input[0]) {
+					state.input[0] = state.command;
+				}
+				state.command = 0;
 				break;
 			}
 		}
@@ -3825,39 +3910,39 @@ void CheatScreen::TeleportActivate(int& prev) {
 	Tile_coord t       = gwin->get_main_actor()->get_tile();
 	const int  highest = Get_highest_map();
 
-	state.mode = CP_Command;
+	state.SetMode(CP_Command, false);
 	switch (state.command) {
 	case 'g':    // North or South
 		if (!state.input[0]) {
-			state.mode    = CP_NorthSouth;
+			state.SetMode(CP_NorthSouth);
 			state.command = 'g';
 		} else if (state.input[0] == 'n' || state.input[0] == 's') {
 			prev = state.input[0];
 			if (prev == 'n') {
-				state.mode    = CP_NLatitude;
+				state.SetMode(CP_NLatitude);
 				state.val_max = 0;
 				state.val_min = 113;
 			} else {
-				state.mode    = CP_SLatitude;
+				state.SetMode(CP_SLatitude);
 				state.val_max = 0;
 				state.val_min = 193;
 			}
 			state.command = 'a';
 		} else {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		}
 		break;
 
 	case 'a':    // latitude
 		if (i < 0 || (prev == 'n' && i > 113) || (prev == 's' && i > 193)) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
 			if (prev == 'n') {
-				state.mode    = CP_NLatitude;
+				state.SetMode(CP_NLatitude);
 				state.val_max = 0;
 				state.val_min = 113;
 			} else {
-				state.mode    = CP_SLatitude;
+				state.SetMode(CP_SLatitude);
 				state.val_max = 0;
 				state.val_min = 193;
 			}
@@ -3868,42 +3953,42 @@ void CheatScreen::TeleportActivate(int& prev) {
 			} else {
 				lat = ((i * 10) + 0x46E);
 			}
-			state.mode    = CP_WestEast;
+			state.SetMode(CP_WestEast);
 			state.command = 'b';
 		}
 		break;
 
 	case 'b':    // West or East
 		if (!state.input[0]) {
-			state.mode    = CP_WestEast;
+			state.SetMode(CP_WestEast);
 			state.command = 'b';
 		} else if (state.input[0] == 'w' || state.input[0] == 'e') {
 			prev = state.input[0];
 			if (prev == 'w') {
-				state.mode    = CP_WLongitude;
+				state.SetMode(CP_WLongitude);
 				state.val_max = 0;
 				state.val_min = 93;
 			} else {
-				state.mode    = CP_ELongitude;
+				state.SetMode(CP_ELongitude);
 				state.val_max = 0;
 				state.val_min = 213;
 			}
 			state.command = 'c';
 		} else {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		}
 		break;
 
 	case 'c':    // longitude
 		if (i < 0 || (prev == 'w' && i > 93) || (prev == 'e' && i > 213)) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
 			if (prev == 'w') {
-				state.mode    = CP_WLongitude;
+				state.SetMode(CP_WLongitude);
 				state.val_max = 0;
 				state.val_min = 93;
 			} else {
-				state.mode    = CP_ELongitude;
+				state.SetMode(CP_ELongitude);
 				state.val_max = 0;
 				state.val_min = 213;
 			}
@@ -3923,15 +4008,15 @@ void CheatScreen::TeleportActivate(int& prev) {
 	case 'h':    // hex X coord
 		i = strtol(state.input, nullptr, 16);
 		if (i < 0 || i > c_num_tiles) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
-			state.mode    = CP_HexXCoord;
+			state.SetMode(CP_HexXCoord);
 			state.val_min = 0;
 			state.val_max = c_num_tiles;
 			state.command = 'h';
 		} else {
-			prev          = i;
-			state.mode    = CP_HexYCoord;
+			prev = i;
+			state.SetMode(CP_HexYCoord);
 			state.val_min = 0;
 			state.val_max = c_num_tiles;
 			state.val_min = 0;
@@ -3945,9 +4030,9 @@ void CheatScreen::TeleportActivate(int& prev) {
 	case 'i':    // hex Y coord
 		i = strtol(state.input, nullptr, 16);
 		if (i < 0 || i > c_num_tiles) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
-			state.mode    = CP_HexYCoord;
+			state.SetMode(CP_HexYCoord);
 			state.val_min = 0;
 			state.val_max = c_num_tiles;
 			state.command = 'i';
@@ -3961,15 +4046,15 @@ void CheatScreen::TeleportActivate(int& prev) {
 
 	case 'd':    // dec X coord
 		if (i < 0 || i > c_num_tiles) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
-			state.mode    = CP_XCoord;
+			state.SetMode(CP_XCoord);
 			state.command = 'd';
 			state.val_min = 0;
 			state.val_max = c_num_tiles;
 		} else {
-			prev          = i;
-			state.mode    = CP_YCoord;
+			prev = i;
+			state.SetMode(CP_YCoord);
 			state.command = 'e';
 			state.val_min = 0;
 			state.val_max = c_num_tiles;
@@ -3978,9 +4063,9 @@ void CheatScreen::TeleportActivate(int& prev) {
 
 	case 'e':    // dec Y coord
 		if (i < 0 || i > c_num_tiles) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else if (!state.input[0]) {
-			state.mode    = CP_YCoord;
+			state.SetMode(CP_YCoord);
 			state.val_min = 0;
 			state.val_max = c_num_tiles;
 			state.command = 'e';
@@ -3994,7 +4079,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 
 	case 'n':    // NPC
 		if (i < 0 || (i >= 356 && i <= 359)) {
-			state.mode = CP_InvalidNPC;
+			state.SetMode(CP_InvalidNPC);
 		} else {
 			Actor* actor = gwin->get_npc(i);
 			Game_window::get_instance()->teleport_party(
@@ -4004,7 +4089,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 
 	case 'm':    // map
 		if ((i < 0 || i > 255) || i > highest) {
-			state.mode = CP_InvalidValue;
+			state.SetMode(CP_InvalidValue, false);
 		} else {
 			gwin->teleport_party(gwin->get_main_actor()->get_tile(), true, i);
 		}
@@ -4013,9 +4098,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 	default:
 		break;
 	}
-	for (i = 0; i < 5; i++) {
-		state.input[i] = 0;
-	}
+	std::memset(state.input, 0, sizeof(state.input));
 }
 
 // Checks the state.input
@@ -4024,39 +4107,41 @@ bool CheatScreen::TeleportCheck() {
 	switch (state.command) {
 		// Simple commands
 	case 'g':    // geographic
-		state.mode = CP_NorthSouth;
+		state.SetMode(CP_NorthSouth);
 		return true;
 
 	case 'h':    // hex
-		state.mode    = CP_HexXCoord;
+		state.SetMode(CP_HexXCoord);
 		state.val_min = 0;
 		state.val_max = c_num_tiles;
 		return true;
 
 	case 'd':    // dec teleport
-		state.mode    = CP_XCoord;
+		state.SetMode(CP_XCoord);
 		state.val_min = 0;
 		state.val_max = c_num_tiles;
 		return true;
 
 	case 'n':    // NPC teleport
-		state.mode = CP_ChooseNPC;
+		state.SetMode(CP_ChooseNPC);
 		break;
 
 	case 'm':    // NPC teleport
-		state.mode    = CP_EnterValue;
+		state.SetMode(CP_EnterValue);
 		state.val_min = 0;
 		state.val_max = gwin->get_num_npcs() - 1;
 		break;
 
 		// X and Escape leave
 	case SDLK_ESCAPE:
-		state.input[0] = state.command;
+		if (!state.input[0]) {
+			state.input[0] = state.command;
+		}
 		return false;
 
 	default:
 		state.command = 0;
-		state.mode    = CP_InvalidCom;
+		state.SetMode(CP_InvalidCom, false);
 		break;
 	}
 

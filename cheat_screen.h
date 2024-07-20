@@ -119,7 +119,6 @@ private:
 		char         input[17]     = {0};
 		int          command       = 0;
 		bool         activate      = false;
-		Cheat_Prompt mode          = CP_Command;
 		const char*  custom_prompt = nullptr;
 		int          saved_value   = 0;
 		long         val_min       = LONG_MIN;
@@ -129,6 +128,20 @@ private:
 		// Accumulated swipe deltas. We treat these as a vector
 		float swipe_dx = 0;
 		float swipe_dy = 0;
+
+		private:
+		Cheat_Prompt mode = CP_Command;
+		public:
+		Cheat_Prompt GetMode() {
+			return mode;
+		}
+		void SetMode(Cheat_Prompt newmode, bool clearinput=true) {
+			// Clear the input if changing to or from a text/value input mode
+			if (clearinput) {
+				input[0] = 0;
+			}
+			mode = newmode;
+		}
 	} state;
 
 	template <class T>
