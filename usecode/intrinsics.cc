@@ -2469,7 +2469,7 @@ USECODE_INTRINSIC(start_blocking_speech) {
 			Mouse::mouse_update = false;
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
-				if (event.type == SDL_MOUSEMOTION) {
+				if (event.type == SDL_EVENT_MOUSE_MOTION) {
 					// Mouse scale factor
 					int mx;
 					int my;

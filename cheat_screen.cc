@@ -177,7 +177,7 @@ void CheatScreen::show_screen() {
 	}
 	clock = gwin->get_clock();
 	maxx  = gwin->get_width();
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	maxy = 200;
 #else
 	maxy = gwin->get_height();
@@ -237,7 +237,7 @@ void CheatScreen::show_screen() {
 		if (!gumpman->gump_mode()) {
 			touchui->showGameControls();
 		}
-		if (SDL_IsTextInputActive()) {
+		if (SDL_TextInputActive()) {
 			SDL_StopTextInput();
 		}
 	}
@@ -254,7 +254,7 @@ void CheatScreen::show_screen() {
 void CheatScreen::SharedPrompt() {
 	char buf[64];
 
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int prompt    = 81;
 	const int promptmes = 90;
 	const int offsetx   = 15;
@@ -616,15 +616,15 @@ bool CheatScreen::SharedInput() {
 			} else {
 				CERR("event.type= " << event.type);
 				switch (event.type) {
-				case SDL_QUIT: {
-					CERR("SDL_QUIT");
+				case SDL_EVENT_QUIT: {
+					CERR("SDL_EVENT_QUIT");
 					ImageBufferPaintable screenshot;
 					if (gwin->get_gump_man()->okay_to_quit(&screenshot)) {
 						throw quit_exception();
 					}
 				} break;
-				case SDL_FINGERDOWN: {
-					CERR("SDL_FINGERDOWN");
+				case SDL_EVENT_FINGER_DOWN: {
+					CERR("SDL_EVENT_FINGER_DOWN");
 					buttons_down.insert(button_down_finger);
 					if ((!Mouse::use_touch_input)
 						&& (event.tfinger.fingerId != 0)) {
@@ -632,8 +632,8 @@ bool CheatScreen::SharedInput() {
 					}
 					break;
 				}
-				case SDL_FINGERUP: {
-					CERR("SDL_FINGERUP");
+				case SDL_EVENT_FINGER_UP: {
+					CERR("SDL_EVENT_FINGER_UP");
 					// Get iterator for first instance of button_down_finger and
 					// erase it from the collection
 					auto it = buttons_down.find(button_down_finger);
@@ -643,7 +643,7 @@ bool CheatScreen::SharedInput() {
 
 				} break;
 					// Finger swiping converts to cursor keys
-				case SDL_FINGERMOTION: {
+				case SDL_EVENT_FINGER_MOTION: {
 					gwin->get_win()->screen_to_game(
 							event.button.x, event.button.y,
 							gwin->get_fastmouse(), gx, gy);
@@ -660,7 +660,7 @@ bool CheatScreen::SharedInput() {
 					// Will allow single finger swipes
 					if (numFingers > 0) {
 						// Hide on screen keyboard if we are swiping
-						if (SDL_IsTextInputActive()) {
+						if (SDL_TextInputActive()) {
 							SDL_StopTextInput();
 						}
 						// Accuulate the deltas onto
@@ -673,16 +673,16 @@ bool CheatScreen::SharedInput() {
 				} break;
 
 				// Mousewheel scrolling with SDL2.
-				case SDL_MOUSEWHEEL: {
-					CERR("SDL_MOUSEWHEEL");
+				case SDL_EVENT_MOUSE_WHEEL: {
+					CERR("SDL_EVENT_MOUSE_WHEEL");
 					if (event.wheel.y > 0) {
 						simulate_key = SDLK_LEFT;
 					} else if (event.wheel.y < 0) {
 						simulate_key = SDLK_RIGHT;
 					}
 				} break;
-				case SDL_MOUSEMOTION: {
-					CERR("SDL_MOUSEMOTION");
+				case SDL_EVENT_MOUSE_MOTION: {
+					CERR("SDL_EVENT_MOUSE_MOTION");
 					if (Mouse::use_touch_input
 						&& event.motion.which != EXSDL_TOUCH_MOUSEID) {
 						Mouse::use_touch_input = false;
@@ -697,11 +697,12 @@ bool CheatScreen::SharedInput() {
 				} break;
 					// return;
 
-				case SDL_MOUSEBUTTONDOWN: {
+				case SDL_EVENT_MOUSE_BUTTON_DOWN: {
 					gwin->get_win()->screen_to_game(
 							event.button.x, event.button.y,
 							gwin->get_fastmouse(), gx, gy);
-					CERR("SDL_MOUSEBUTTONDOWN( " << gx << " , " << gy << " )");
+					CERR("SDL_EVENT_MOUSE_BUTTON_DOWN( " << gx << " , " << gy
+														 << " )");
 					buttons_down.insert(event.button.button);
 					if (event.button.button == 1) {
 						simulate_key = CheckHotspots(gx, gy);
@@ -717,7 +718,7 @@ bool CheatScreen::SharedInput() {
 							// Touch on the cheat screen will bring up the
 							// keyboard but not if the tap was within a 20 pixel
 							// border on the edge of the game screen)
-							if (SDL_IsTextInputActive()) {
+							if (SDL_TextInputActive()) {
 								SDL_StopTextInput();
 							} else if (
 									gx > 20 && gy > 20
@@ -728,15 +729,15 @@ bool CheatScreen::SharedInput() {
 						}
 					}
 				} break;
-				case SDL_MOUSEBUTTONUP: {
+				case SDL_EVENT_MOUSE_BUTTON_UP: {
 					buttons_down.erase(event.button.button);
 				} break;
 
-				case SDL_KEYDOWN: {
+				case SDL_EVENT_KEY_DOWN: {
 					buttons_down.insert(int(event.key.keysym.sym));
 				} break;
 
-				case SDL_KEYUP: {
+				case SDL_EVENT_KEY_UP: {
 					buttons_down.erase(int(event.key.keysym.sym));
 				} break;
 
@@ -747,7 +748,7 @@ bool CheatScreen::SharedInput() {
 
 			if (simulate_key) {
 				std::memset(&event, 0, sizeof(event));
-				event.type           = SDL_KEYDOWN;
+				event.type           = SDL_EVENT_KEY_DOWN;
 				event.key.keysym.sym = simulate_key;
 				CERR("simmulate key " << event.key.keysym.sym);
 				// Simulated keys automatically execute the command if possible
@@ -756,7 +757,7 @@ bool CheatScreen::SharedInput() {
 					state.SetMode(CP_Command, true);
 				}
 			}
-			if (event.type != SDL_KEYDOWN) {
+			if (event.type != SDL_EVENT_KEY_DOWN) {
 				continue;
 			}
 			const SDL_Keysym& key = event.key.keysym;
@@ -778,8 +779,8 @@ bool CheatScreen::SharedInput() {
 				}
 			}
 
-			if ((key.sym == SDLK_s) && (key.mod & KMOD_ALT)
-				&& (key.mod & KMOD_CTRL)) {
+			if ((key.sym == SDLK_S) && (key.mod & SDL_KMOD_ALT)
+				&& (key.mod & SDL_KMOD_CTRL)) {
 				make_screenshot(true);
 				return false;
 			}
@@ -861,7 +862,7 @@ bool CheatScreen::SharedInput() {
 						|| key.sym == ' ') {
 					const size_t curlen = std::strlen(state.input);
 					char         chr    = key.sym;
-					if (key.mod & KMOD_SHIFT) {
+					if (key.mod & SDL_KMOD_SHIFT) {
 						chr = static_cast<char>(
 								std::toupper(static_cast<unsigned char>(chr)));
 					}
@@ -989,7 +990,7 @@ bool CheatScreen::SharedInput() {
 }
 
 void CheatScreen::SharedMenu() {
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx = 15;
 	// const int offsety1 = 73;
 	// const int offsety2 = 55;
@@ -1082,7 +1083,7 @@ void CheatScreen::NormalLoop() {
 
 void CheatScreen::NormalDisplay() {
 	char buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 15;
 	const int offsety1 = 108;
 	const int offsety2 = 54;
@@ -1150,7 +1151,7 @@ void CheatScreen::NormalDisplay() {
 
 void CheatScreen::NormalMenu() {
 	char buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 15;
 	const int offsety1 = 73;
 	const int offsety2 = 55;
@@ -1169,7 +1170,7 @@ void CheatScreen::NormalMenu() {
 	// Left Column
 
 	// Use
-#if !defined(__IPHONEOS__) && !defined(ANDROID) && !defined(TEST_MOBILE)
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(TEST_MOBILE)
 	// Paperdolls can be toggled in the gumps, no need here for small screens
 	Shape_manager* sman = Shape_manager::get_instance();
 	if (sman->can_use_paperdolls() && sman->are_paperdolls_enabled()) {
@@ -1177,7 +1178,7 @@ void CheatScreen::NormalMenu() {
 	} else {
 		snprintf(buf, sizeof(buf), "aperdolls..:  No");
 	}
-	AddMenuItem(offsetx, maxy - 99, SDLK_p, buf);
+	AddMenuItem(offsetx, maxy - 99, SDLK_P, buf);
 
 #endif
 
@@ -1185,47 +1186,47 @@ void CheatScreen::NormalMenu() {
 	snprintf(
 			buf, sizeof(buf), "od Mode....: %3s",
 			cheat.in_god_mode() ? "On" : "Off");
-	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_g, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_G, buf);
 
 	// Archwizzard Mode
 	snprintf(
 			buf, sizeof(buf), "izard Mode.: %3s",
 			cheat.in_wizard_mode() ? "On" : "Off");
-	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_w, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_W, buf);
 
 	// Infravision
 	snprintf(
 			buf, sizeof(buf), "nfravision.: %3s",
 			cheat.in_infravision() ? "On" : "Off");
-	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_i, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_I, buf);
 
 	// Hackmover
 	snprintf(
 			buf, sizeof(buf), "ack Mover..: %3s",
 			cheat.in_hack_mover() ? "Yes" : "No");
-	AddMenuItem(offsetx, maxy - offsety1 - 63, SDLK_h, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 63, SDLK_H, buf);
 
 	// Eggs
 	snprintf(
 			buf, sizeof(buf), "ggs Visible: %3s",
 			gwin->paint_eggs ? "Yes" : "No");
-	AddMenuItem(offsetx, maxy - offsety1 - 54, SDLK_e, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 54, SDLK_E, buf);
 
 	// Set Time
-	AddMenuItem(offsetx + offsetx1, offsety4, SDLK_s, "et Time");
+	AddMenuItem(offsetx + offsetx1, offsety4, SDLK_S, "et Time");
 
 	// Right Column
 
 	// NPC Tool
-	AddMenuItem(offsetx + 160, maxy - offsety2 - 99, SDLK_n, "PC Tool");
+	AddMenuItem(offsetx + 160, maxy - offsety2 - 99, SDLK_N, "PC Tool");
 
 	// Global Flag Modify
-	AddMenuItem(offsetx + 160, maxy - offsety2 - 90, SDLK_f, "lag Modifier");
+	AddMenuItem(offsetx + 160, maxy - offsety2 - 90, SDLK_F, "lag Modifier");
 
 	// Teleport
-	AddMenuItem(offsetx + 160, maxy - offsety2 - 81, SDLK_t, "eleport");
+	AddMenuItem(offsetx + 160, maxy - offsety2 - 81, SDLK_T, "eleport");
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID) && !defined(TEST_MOBILE)
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(TEST_MOBILE)
 	// for small screens taking the liberty of leaving that out
 	// Time Rate
 	snprintf(buf, sizeof(buf), " Time Rate:%4i", clock->get_time_rate());
@@ -1415,7 +1416,7 @@ bool CheatScreen::NormalCheck() {
 
 void CheatScreen::ActivityDisplay() {
 	char buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsety1 = 7;
 #else
 	const int offsety1 = 9;
@@ -1564,7 +1565,7 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 
 CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 	bool looping = true;
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 15;
 	const int offsety1 = 83;
 	// const int offsety2 = 72;
@@ -1584,7 +1585,7 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 		hotspots.clear();
 		gwin->clear_screen();
 
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 		// on small screens we want lean and mean, so begone NormalDisplay
 		font->paint_text_fixedwidth(ibuf, "Global Flags", 15, 0, 8);
 #else
@@ -1604,10 +1605,10 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 
 		// Now the Menu Column
 		if (!usecode->get_global_flag(num)) {
-			AddMenuItem(offsetx + 160, maxy - offsety1 - 99, SDLK_s, "et Flag");
+			AddMenuItem(offsetx + 160, maxy - offsety1 - 99, SDLK_S, "et Flag");
 		} else {
 			AddMenuItem(
-					offsetx + 160, maxy - offsety1 - 99, SDLK_u, "nset Flag");
+					offsetx + 160, maxy - offsety1 - 99, SDLK_U, "nset Flag");
 		}
 
 		// Change Flag
@@ -1766,7 +1767,7 @@ CheatScreen::Cheat_Prompt CheatScreen::NPCLoop(int num) {
 
 void CheatScreen::NPCDisplay(Actor* actor, int& num) {
 	char buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 15;
 	const int offsety1 = 73;
 #else
@@ -1858,7 +1859,7 @@ void CheatScreen::NPCDisplay(Actor* actor, int& num) {
 
 void CheatScreen::NPCMenu(Actor* actor, int& num) {
 	ignore_unused_variable_warning(num);
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 15;
 	const int offsety1 = 74;
 	// const int offsetx2 = 15;
@@ -1879,16 +1880,16 @@ void CheatScreen::NPCMenu(Actor* actor, int& num) {
 
 	if (actor) {
 		// Business Activity
-		AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_b, "usiness Activity");
+		AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_B, "usiness Activity");
 
 		// Change Shape
-		AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_c, "hange Shape");
+		AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_C, "hange Shape");
 
 		// XP
-		AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_e, "xperience");
+		AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_E, "xperience");
 
 		// NPC Flags
-		AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_n, "pc Flags");
+		AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_N, "pc Flags");
 
 		// Name
 		AddMenuItem(offsetx, maxy - offsety1 - 63, SDLK_1, " Name");
@@ -1900,7 +1901,7 @@ void CheatScreen::NPCMenu(Actor* actor, int& num) {
 
 	if (actor) {
 		// Stats
-		AddMenuItem(offsetx + 160, maxy - offsety1 - 99, SDLK_s, "tats");
+		AddMenuItem(offsetx + 160, maxy - offsety1 - 99, SDLK_S, "tats");
 
 		// Training Points
 		AddMenuItem(offsetx + 160, maxy - offsety1 - 90, SDLK_2, " Training Points");
@@ -1908,11 +1909,11 @@ void CheatScreen::NPCMenu(Actor* actor, int& num) {
 				
 		// Teleport
 		AddMenuItem(
-				offsetx + 160, maxy - offsety1 - 81, SDLK_t, "eleport to NPC");
+				offsetx + 160, maxy - offsety1 - 81, SDLK_T, "eleport to NPC");
 
 		// Palette Effect
 		AddMenuItem(
-				offsetx + 160, maxy - offsety1 - 72, SDLK_p, "alette Effect");
+				offsetx + 160, maxy - offsety1 - 72, SDLK_P, "alette Effect");
 	}
 
 	// Change NPC
@@ -2147,7 +2148,7 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 //
 
 void CheatScreen::FlagLoop(Actor* actor) {
-#if !defined(__IPHONEOS__) && !defined(ANDROID) && !defined(TEST_MOBILE)
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(TEST_MOBILE)
 	int num = actor->get_npc_num();
 #endif
 	bool looping = true;
@@ -2157,7 +2158,7 @@ void CheatScreen::FlagLoop(Actor* actor) {
 		hotspots.clear();
 		gwin->clear_screen();
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID) && !defined(TEST_MOBILE)
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(TEST_MOBILE)
 		// First the display
 		NPCDisplay(actor, num);
 #endif
@@ -2186,7 +2187,7 @@ void CheatScreen::FlagLoop(Actor* actor) {
 
 void CheatScreen::FlagMenu(Actor* actor) {
 	char buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 10;
 	const int offsetx1 = 6;
 	const int offsety1 = 92;
@@ -2202,50 +2203,50 @@ void CheatScreen::FlagMenu(Actor* actor) {
 	snprintf(
 			buf, sizeof(buf), " Asleep.%c",
 			actor->get_flag(Obj_flags::asleep) ? 'Y' : 'N');
-	AddMenuItem(offsetx, maxy - offsety1 - 108, SDLK_a, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 108, SDLK_A, buf);
 
 	// Charmed
 	snprintf(
 			buf, sizeof(buf), " Charmd.%c",
 			actor->get_flag(Obj_flags::charmed) ? 'Y' : 'N');
 
-	AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_b, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_B, buf);
 
 	// Cursed
 	snprintf(
 			buf, sizeof(buf), " Cursed.%c",
 			actor->get_flag(Obj_flags::cursed) ? 'Y' : 'N');
-	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_c, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_C, buf);
 
 	// Paralyzed
 	snprintf(
 			buf, sizeof(buf), " Prlyzd.%c",
 			actor->get_flag(Obj_flags::paralyzed) ? 'Y' : 'N');
-	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_d, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_D, buf);
 
 	// Poisoned
 	snprintf(
 			buf, sizeof(buf), " Poisnd.%c",
 			actor->get_flag(Obj_flags::poisoned) ? 'Y' : 'N');
-	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_e, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_E, buf);
 
 	// Protected
 	snprintf(
 			buf, sizeof(buf), " Prtctd.%c",
 			actor->get_flag(Obj_flags::protection) ? 'Y' : 'N');
-	AddMenuItem(offsetx, maxy - offsety1 - 63, SDLK_f, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 63, SDLK_F, buf);
 
 	// Tournament (Original is SI only -- allowing for BG in Exult)
 	snprintf(
 			buf, sizeof(buf), " Tourna.%c",
 			actor->get_flag(Obj_flags::tournament) ? 'Y' : 'N');
-	AddMenuItem(offsetx, maxy - offsety1 - 54, SDLK_g, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 54, SDLK_G, buf);
 
 	// Polymorph
 	snprintf(
 			buf, sizeof(buf), " Polymo.%c",
 			actor->get_flag(Obj_flags::polymorph) ? 'Y' : 'N');
-	AddMenuItem(offsetx, maxy - offsety1 - 45, SDLK_h, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 45, SDLK_H, buf);
 	// Advanced Editor
 
 	AddMenuItem(offsetx, maxy - offsety1 - 36, SDLK_UP, "Advanced");
@@ -2258,47 +2259,47 @@ void CheatScreen::FlagMenu(Actor* actor) {
 	snprintf(
 			buf, sizeof(buf), " Party..%c",
 			actor->get_flag(Obj_flags::in_party) ? 'Y' : 'N');
-	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 108, SDLK_i, buf);
+	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 108, SDLK_I, buf);
 
 	// Invisible
 	snprintf(
 			buf, sizeof(buf), " Invsbl.%c",
 			actor->get_flag(Obj_flags::invisible) ? 'Y' : 'N');
-	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 99, SDLK_j, buf);
+	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 99, SDLK_J, buf);
 
 	// Fly
 	snprintf(
 			buf, sizeof(buf), " Fly....%c",
 			actor->get_type_flag(Actor::tf_fly) ? 'Y' : 'N');
-	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 90, SDLK_k, buf);
+	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 90, SDLK_K, buf);
 
 	// Walk
 	snprintf(
 			buf, sizeof(buf), " Walk...%c",
 			actor->get_type_flag(Actor::tf_walk) ? 'Y' : 'N');
-	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 81, SDLK_l, buf);
+	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 81, SDLK_L, buf);
 
 	// Swim
 	snprintf(
 			buf, sizeof(buf), " Swim...%c",
 			actor->get_type_flag(Actor::tf_swim) ? 'Y' : 'N');
-	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 72, SDLK_m, buf);
+	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 72, SDLK_M, buf);
 
 	// Ethereal
 	snprintf(
 			buf, sizeof(buf), " Ethrel.%c",
 			actor->get_type_flag(Actor::tf_ethereal) ? 'Y' : 'N');
-	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 63, SDLK_n, buf);
+	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 63, SDLK_N, buf);
 
 	// Protectee
 	snprintf(buf, sizeof(buf), " Prtcee.%c", '?');
-	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 54, SDLK_o, buf);
+	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 54, SDLK_O, buf);
 
 	// Conjured
 	snprintf(
 			buf, sizeof(buf), " Conjrd.%c",
 			actor->get_type_flag(Actor::tf_conjured) ? 'Y' : 'N');
-	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 45, SDLK_p, buf);
+	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 45, SDLK_P, buf);
 
 	// Naked (AV ONLY)
 	if (!actor->get_npc_num()) {
@@ -2314,20 +2315,20 @@ void CheatScreen::FlagMenu(Actor* actor) {
 	snprintf(
 			buf, sizeof(buf), " Summnd.%c",
 			actor->get_type_flag(Actor::tf_summonned) ? 'Y' : 'N');
-	AddMenuItem(offsetx1 + 208, maxy - offsety1 - 108, SDLK_q, buf);
+	AddMenuItem(offsetx1 + 208, maxy - offsety1 - 108, SDLK_Q, buf);
 
 	// Bleeding
 	snprintf(
 			buf, sizeof(buf), " Bleedn.%c",
 			actor->get_type_flag(Actor::tf_bleeding) ? 'Y' : 'N');
-	AddMenuItem(offsetx1 + 208, maxy - offsety1 - 99, SDLK_r, buf);
+	AddMenuItem(offsetx1 + 208, maxy - offsety1 - 99, SDLK_R, buf);
 
 	if (!actor->get_npc_num()) {    // Avatar
 		// Sex
 		snprintf(
 				buf, sizeof(buf), " Sex....%c",
 				actor->get_type_flag(Actor::tf_sex) ? 'F' : 'M');
-		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 90, SDLK_s, buf);
+		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 90, SDLK_S, buf);
 
 		// Skin
 		snprintf(buf, sizeof(buf), " Skin...%d", actor->get_skin_color());
@@ -2343,30 +2344,30 @@ void CheatScreen::FlagMenu(Actor* actor) {
 		snprintf(
 				buf, sizeof(buf), " Met....%c",
 				actor->get_flag(Obj_flags::met) ? 'Y' : 'N');
-		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 90, SDLK_t, buf);
+		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 90, SDLK_T, buf);
 
 		// NoCast
 		snprintf(
 				buf, sizeof(buf), " NoCast.%c",
 				actor->get_flag(Obj_flags::no_spell_casting) ? 'Y' : 'N');
-		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 81, SDLK_u, buf);
+		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 81, SDLK_U, buf);
 
 		// ID
 		snprintf(buf, sizeof(buf), " ID#:%02i", actor->get_ident());
-		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 72, SDLK_v, buf);
+		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 72, SDLK_V, buf);
 	}
 
 	// Freeze
 	snprintf(
 			buf, sizeof(buf), " Freeze.%c",
 			actor->get_flag(Obj_flags::freeze) ? 'Y' : 'N');
-	AddMenuItem(offsetx1 + 208, maxy - offsety1 - 63, SDLK_w, buf);
+	AddMenuItem(offsetx1 + 208, maxy - offsety1 - 63, SDLK_W, buf);
 
 	// Party
 	if (actor->is_in_party()) {
 		// Temp
 		snprintf(buf, sizeof(buf), " Temp: %02i", actor->get_temperature());
-		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 54, SDLK_y, buf);
+		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 54, SDLK_Y, buf);
 
 		// Warmth
 		snprintf(buf, sizeof(buf), "Warmth: %04i", actor->figure_warmth());
@@ -2875,7 +2876,7 @@ void CheatScreen::BusinessLoop(Actor* actor) {
 void CheatScreen::BusinessDisplay(Actor* actor) {
 	char             buf[512];
 	const Tile_coord t = actor->get_tile();
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 10;
 	const int offsety1 = 20;
 	const int offsetx2 = 171;
@@ -2899,7 +2900,7 @@ void CheatScreen::BusinessDisplay(Actor* actor) {
 	snprintf(buf, sizeof(buf), "Loc (%04i, %04i, %02i)", t.tx, t.ty, t.tz);
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, 8, 8);
 
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const char activity_msg[] = "%2i %s";
 #else
 	const char activity_msg[] = "Current Activity:  %2i - %s";
@@ -2952,7 +2953,7 @@ void CheatScreen::BusinessDisplay(Actor* actor) {
 void CheatScreen::BusinessMenu(Actor* actor) {
 	char buf[64];
 	// Left Column
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx = 10;
 	const int offsety = 0;
 #else
@@ -2974,27 +2975,24 @@ void CheatScreen::BusinessMenu(Actor* actor) {
 							 ibuf, buf, nextx, maxy - offsety - y, 8);
 			nextx += 8
 					 + AddMenuItem(
-							 nextx, maxy - offsety - y,
-							 SDLK_a + row, " Set");
+							 nextx, maxy - offsety - y, SDLK_A + row, " Set");
 			nextx += 8
 					 + AddMenuItem(
-							 nextx, maxy - offsety - y,
-							 SDLK_i + row, " Location");
-			AddMenuItem(
-					nextx, maxy - offsety - y, SDLK_1 + row,
-					" Clear");
+							 nextx, maxy - offsety - y, SDLK_I + row,
+							 " Location");
+			AddMenuItem(nextx, maxy - offsety - y, SDLK_1 + row, " Clear");
 		}
 		nextx = offsetx;
 		nextx += 8
 				 + AddMenuItem(
-						 nextx, maxy - offsety - 32, SDLK_s,
+						 nextx, maxy - offsety - 32, SDLK_S,
 						 "et Current Activity");
 
-		AddMenuItem(nextx, maxy - offsety - 32, SDLK_r, "evert");
+		AddMenuItem(nextx, maxy - offsety - 32, SDLK_R, "evert");
 
 	} else {
 		AddMenuItem(
-				offsetx, maxy - offsety - 96, SDLK_s, "et Current Activity");
+				offsetx, maxy - offsety - 96, SDLK_S, "et Current Activity");
 	}
 	SharedMenu();
 }
@@ -3166,7 +3164,7 @@ bool CheatScreen::BusinessCheck(Actor* actor, int& time) {
 //
 
 void CheatScreen::StatLoop(Actor* actor) {
-#if !defined(__IPHONEOS__) && !defined(ANDROID) && !defined(TEST_MOBILE)
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(TEST_MOBILE)
 	int num = actor->get_npc_num();
 #endif
 	bool looping = true;
@@ -3176,7 +3174,7 @@ void CheatScreen::StatLoop(Actor* actor) {
 		hotspots.clear();
 		gwin->clear_screen();
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID) && !defined(TEST_MOBILE)
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(TEST_MOBILE)
 		// First the display
 		NPCDisplay(actor, num);
 #endif
@@ -3205,7 +3203,7 @@ void CheatScreen::StatLoop(Actor* actor) {
 
 void CheatScreen::StatMenu(Actor* actor) {
 	char buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 15;
 	const int offsety1 = 92;
 #else
@@ -3219,50 +3217,50 @@ void CheatScreen::StatMenu(Actor* actor) {
 	snprintf(
 			buf, sizeof(buf), "exterity....%3i",
 			actor->get_property(Actor::dexterity));
-	AddMenuItem(offsetx, maxy - offsety1 - 108, SDLK_d, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 108, SDLK_D, buf);
 
 	// Food Level
 	snprintf(
 			buf, sizeof(buf), "ood Level...%3i",
 			actor->get_property(Actor::food_level));
-	AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_f, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_F, buf);
 
 	// Intelligence
 	snprintf(
 			buf, sizeof(buf), "ntellicence.%3i",
 			actor->get_property(Actor::intelligence));
-	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_i, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_I, buf);
 
 	// Strength
 	snprintf(
 			buf, sizeof(buf), "trength.....%3i",
 			actor->get_property(Actor::strength));
-	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_s, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_S, buf);
 
 	// Combat Skill
 	snprintf(
 			buf, sizeof(buf), "ombat Skill.%3i",
 			actor->get_property(Actor::combat));
-	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_c, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_C, buf);
 
 	// Hit Points
 	snprintf(
 			buf, sizeof(buf), "it Points...%3i",
 			actor->get_property(Actor::health));
-	AddMenuItem(offsetx, maxy - offsety1 - 63, SDLK_h, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 63, SDLK_H, buf);
 
 	// Magic
 	// Magic Points
 	snprintf(
 			buf, sizeof(buf), "agic Points.%3i",
 			actor->get_property(Actor::magic));
-	AddMenuItem(offsetx, maxy - offsety1 - 54, SDLK_m, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 54, SDLK_M, buf);
 
 	// Mana
 	snprintf(
 			buf, sizeof(buf), "ana Level...%3i",
 			actor->get_property(Actor::mana));
-	AddMenuItem(offsetx, maxy - offsety1 - 45, SDLK_v, buf);
+	AddMenuItem(offsetx, maxy - offsety1 - 45, SDLK_V, buf);
 
 	SharedMenu();
 }
@@ -3373,7 +3371,7 @@ bool CheatScreen::StatCheck(Actor* actor) {
 //
 
 void CheatScreen::PalEffectLoop(Actor* actor) {
-#if !defined(__IPHONEOS__) && !defined(ANDROID) && !defined(TEST_MOBILE)
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(TEST_MOBILE)
 	int num = actor->get_npc_num();
 #endif
 	bool looping = true;
@@ -3383,7 +3381,7 @@ void CheatScreen::PalEffectLoop(Actor* actor) {
 		hotspots.clear();
 		gwin->clear_screen();
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID) && !defined(TEST_MOBILE)
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(TEST_MOBILE)
 		// First the display
 		NPCDisplay(actor, num);
 #endif
@@ -3412,7 +3410,7 @@ void CheatScreen::PalEffectLoop(Actor* actor) {
 
 void CheatScreen::PalEffectMenu(Actor* actor) {
 	char buf[512];
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 15;
 	const int offsety1 = 81;
 	// const int offsety2 = 72;
@@ -3456,16 +3454,16 @@ void CheatScreen::PalEffectMenu(Actor* actor) {
 	// Left Column
 
 	// ramp remap
-	AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_r, "amp Remap");
+	AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_R, "amp Remap");
 
 	// xform
-	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_x, "form");
+	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_X, "form");
 
 	// Shift
-	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_s, "hift");
+	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_S, "hift");
 
 	// clear
-	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_c, "lear");
+	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_C, "lear");
 
 	SharedMenu();
 }
@@ -3618,7 +3616,7 @@ bool CheatScreen::PalEffectCheck(Actor* actor) {
 //
 
 CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 15;
 	const int offsety1 = 83;
 	// const int offsety2 = 72;
@@ -3636,7 +3634,7 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 		hotspots.clear();
 		gwin->clear_screen();
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID) && !defined(TEST_MOBILE)
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(TEST_MOBILE)
 		NPCDisplay(actor, npc_num);
 #endif
 
@@ -3663,10 +3661,10 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 
 		// Now the Menu Column
 		if (!actor->get_flag(num)) {
-			AddMenuItem(offsetx + 160, maxy - offsety1 - 90, SDLK_s, "et Flag");
+			AddMenuItem(offsetx + 160, maxy - offsety1 - 90, SDLK_S, "et Flag");
 		} else {
 			AddMenuItem(
-					offsetx + 160, maxy - offsety1 - 90, SDLK_u, "nset Flag");
+					offsetx + 160, maxy - offsety1 - 90, SDLK_U, "nset Flag");
 		}
 
 		// Change Flag
@@ -3825,7 +3823,7 @@ void CheatScreen::TeleportDisplay() {
 	const Tile_coord t       = gwin->get_main_actor()->get_tile();
 	const int        curmap  = gwin->get_map()->get_num();
 	const int        highest = Get_highest_map();
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 15;
 	const int offsety1 = 54;
 #else
@@ -3833,7 +3831,7 @@ void CheatScreen::TeleportDisplay() {
 	const int offsety1 = 0;
 #endif
 
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	font->paint_text_fixedwidth(
 			ibuf, "Teleport Menu - Dangerous!", offsetx, 0, 8);
 #else
@@ -3844,7 +3842,7 @@ void CheatScreen::TeleportDisplay() {
 
 	const int longi = ((t.tx - 0x3A5) / 10);
 	const int lati  = ((t.ty - 0x46E) / 10);
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	snprintf(
 			buf, sizeof(buf), "Coords %d %s %d %s, Map #%d of %d", abs(lati),
 			(lati < 0 ? "North" : "South"), abs(longi),
@@ -3868,14 +3866,14 @@ void CheatScreen::TeleportDisplay() {
 			t.tz);
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, 81 - offsety1, 8);
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID) && !defined(TEST_MOBILE)
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(TEST_MOBILE)
 	snprintf(buf, sizeof(buf), "On Map #%d of %d", curmap, highest);
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, 90, 8);
 #endif
 }
 
 void CheatScreen::TeleportMenu() {
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 15;
 	const int offsety1 = 64;
 	const int offsetx2 = 175;
@@ -3891,18 +3889,18 @@ void CheatScreen::TeleportMenu() {
 
 	// Left Column
 	// Geo
-	AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_g, "eographic Coordinates");
+	AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_G, "eographic Coordinates");
 	// Hex
 	AddMenuItem(
-			offsetx, maxy - offsety1 - 90, SDLK_h, "exadecimal Coordinates");
+			offsetx, maxy - offsety1 - 90, SDLK_H, "exadecimal Coordinates");
 
 	// Dec
-	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_d, "ecimal Coordinates");
+	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_D, "ecimal Coordinates");
 
 	// NPC
-	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_n, "PC Number");
+	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_N, "PC Number");
 
-	AddMenuItem(offsetx2, offsety2, SDLK_m, "ap Number");
+	AddMenuItem(offsetx2, offsety2, SDLK_M, "ap Number");
 	// Map
 
 	SharedMenu();
@@ -4262,7 +4260,7 @@ void CheatScreen::WaitButtonsUp() {
 		}
 
 		if (show_message < SDL_GetTicks()) {
-#if defined(__IPHONEOS__) || defined(ANDROID) || defined(TEST_MOBILE)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 			const int offsetx_start = 15;
 
 			// const int offsety1 = 73;

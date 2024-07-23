@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -180,7 +180,7 @@ bool Yesno_gump::ask(
 		sm->load_gumps_minimal();
 	Yesno_gump dlg(txt, font);
 	bool       answer;
-	if (!gumpman->do_modal_gump(&dlg, Mouse::hand,paint)) {
+	if (!gumpman->do_modal_gump(&dlg, Mouse::hand, paint)) {
 		answer = false;
 	} else {
 		answer = dlg.get_answer();

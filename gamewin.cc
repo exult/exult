@@ -391,7 +391,7 @@ Game_window::Game_window(
 	config->set(
 			"config/gameplay/allow_autonotes", allow_autonotes ? "yes" : "no",
 			false);
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	const string default_scroll_with_mouse = "no";
 	const string default_item_menu         = "yes";
 	const string default_dpad_location     = "right";
@@ -1722,7 +1722,7 @@ void Game_window::start_actor_alt(
 		Game_object* block = main_actor->is_moving()
 									 ? nullptr
 									 : main_actor->find_blocking(
-											 start.get_neighbor(dir), dir);
+											   start.get_neighbor(dir), dir);
 		// We already know the blocking object isn't the avatar, so don't
 		// double check it here.
 		if (!block || !block->move_aside(main_actor, dir)) {

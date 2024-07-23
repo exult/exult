@@ -9,7 +9,7 @@
 
 #include "globals.h"
 
-#include <SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,12 +20,12 @@ int img_read(char* filein) {
 		fflush(stdout);
 	}
 
-	SDL_RWops* rw;
+	SDL_IOStream* rw;
 	if (!strcmp(filein,
 				"-")) {    // stdin as input. Shouldn't work but we try anyways
 		rw = SDL_RWFromFP(stdin, SDL_FALSE);
 	} else {    // a regular file name
-		rw = SDL_RWFromFile(filein, "rb");
+		rw = SDL_IOFromFile(filein, "rb");
 	}
 
 	g_statics.image_in = IMG_Load_RW(rw, 0);
@@ -41,12 +41,13 @@ int img_read(char* filein) {
 				"WARNING: the image file is not in 8 bpp ( reported %d ). "
 				"Converting it to 8 bpp.\n",
 				g_statics.image_in->format->BitsPerPixel);
-		SDL_PixelFormat* format8 = SDL_AllocFormat(SDL_PIXELFORMAT_INDEX8);
+		SDL_PixelFormat* format8
+				= SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_INDEX8);
 		if (SDL_SetPixelFormatPalette(
 					format8, g_statics.image_in->format->palette)
 			< 0) {
 			fprintf(stderr, "ERROR: %s\n", SDL_GetError());
-			SDL_FreeSurface(g_statics.image_in);
+			SDL_DestroySurface(g_statics.image_in);
 			SDL_FreeRW(rw);
 			return -1;
 		}
@@ -54,11 +55,11 @@ int img_read(char* filein) {
 				= SDL_ConvertSurface(g_statics.image_in, format8, 0);
 		if (converted8 == NULL) {
 			fprintf(stderr, "ERROR: %s\n", SDL_GetError());
-			SDL_FreeSurface(g_statics.image_in);
+			SDL_DestroySurface(g_statics.image_in);
 			SDL_FreeRW(rw);
 			return -1;
 		}
-		SDL_FreeSurface(g_statics.image_in);
+		SDL_DestroySurface(g_statics.image_in);
 		g_statics.image_in = converted8;
 		SDL_FreeFormat(format8);
 	}
@@ -70,7 +71,7 @@ int img_read(char* filein) {
 				"ERROR: the image file is not in 8 bpp ( reported %d ). Please "
 				"convert it.\n",
 				fmt->BitsPerPixel);
-		SDL_FreeSurface(g_statics.image_in);
+		SDL_DestroySurface(g_statics.image_in);
 		SDL_FreeRW(rw);
 		return -1;
 	}
@@ -78,7 +79,7 @@ int img_read(char* filein) {
 	if (g_statics.image_in->w != 192 || g_statics.image_in->h != 192) {
 		fprintf(stderr, "ERROR: The image file is not 192x192 pixels. Please "
 						"modify it.\n");
-		SDL_FreeSurface(g_statics.image_in);
+		SDL_DestroySurface(g_statics.image_in);
 		SDL_FreeRW(rw);
 		return -1;
 	}

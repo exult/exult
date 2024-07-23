@@ -25,7 +25,7 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -431,25 +431,25 @@ bool KeyBinder::DoAction(const ActionType& a, bool press) const {
 KeyMap::const_iterator KeyBinder::TranslateEvent(const SDL_Event& ev) const {
 	SDL_Keysym key = ev.key.keysym;
 
-	if (ev.type != SDL_KEYDOWN && ev.type != SDL_KEYUP) {
+	if (ev.type != SDL_EVENT_KEY_DOWN && ev.type != SDL_EVENT_KEY_UP) {
 		return bindings.end();
 	}
 
-	key.mod = KMOD_NONE;
-	if (ev.key.keysym.mod & KMOD_SHIFT) {
-		key.mod = static_cast<SDL_Keymod>(key.mod | KMOD_SHIFT);
+	key.mod = SDL_KMOD_NONE;
+	if (ev.key.keysym.mod & SDL_KMOD_SHIFT) {
+		key.mod = static_cast<SDL_Keymod>(key.mod | SDL_KMOD_SHIFT);
 	}
-	if (ev.key.keysym.mod & KMOD_CTRL) {
-		key.mod = static_cast<SDL_Keymod>(key.mod | KMOD_CTRL);
+	if (ev.key.keysym.mod & SDL_KMOD_CTRL) {
+		key.mod = static_cast<SDL_Keymod>(key.mod | SDL_KMOD_CTRL);
 	}
 #ifdef MACOSX
 	// map Meta to Alt on OS X
-	if (ev.key.keysym.mod & KMOD_GUI) {
-		key.mod = static_cast<SDL_Keymod>(key.mod | KMOD_ALT);
+	if (ev.key.keysym.mod & SDL_KMOD_GUI) {
+		key.mod = static_cast<SDL_Keymod>(key.mod | SDL_KMOD_ALT);
 	}
 #else
-	if (ev.key.keysym.mod & KMOD_ALT) {
-		key.mod = static_cast<SDL_Keymod>(key.mod | KMOD_ALT);
+	if (ev.key.keysym.mod & SDL_KMOD_ALT) {
+		key.mod = static_cast<SDL_Keymod>(key.mod | SDL_KMOD_ALT);
 	}
 #endif
 
@@ -459,7 +459,7 @@ KeyMap::const_iterator KeyBinder::TranslateEvent(const SDL_Event& ev) const {
 bool KeyBinder::HandleEvent(const SDL_Event& ev) const {
 	auto sdlkey_index = TranslateEvent(ev);
 	if (sdlkey_index != bindings.end()) {
-		return DoAction(sdlkey_index->second, ev.type == SDL_KEYDOWN);
+		return DoAction(sdlkey_index->second, ev.type == SDL_EVENT_KEY_DOWN);
 	}
 
 	return false;
@@ -606,7 +606,7 @@ void KeyBinder::ParseLine(char* line) {
 	SDL_Keysym k;
 	ActionType a;
 	k.sym    = SDLK_UNKNOWN;
-	k.mod    = KMOD_NONE;
+	k.mod    = SDL_KMOD_NONE;
 	string s = line;
 	string u;
 	string desc;
@@ -628,17 +628,17 @@ void KeyBinder::ParseLine(char* line) {
 		// check modifiers
 		//    if (u.compare("ALT-",0,4) == 0) {
 		if (u.substr(0, 4) == "ALT-") {
-			k.mod = static_cast<SDL_Keymod>(k.mod | KMOD_ALT);
+			k.mod = static_cast<SDL_Keymod>(k.mod | SDL_KMOD_ALT);
 			s.erase(0, 4);
 			u.erase(0, 4);
 			//    } else if (u.compare("CTRL-",0,5) == 0) {
 		} else if (u.substr(0, 5) == "CTRL-") {
-			k.mod = static_cast<SDL_Keymod>(k.mod | KMOD_CTRL);
+			k.mod = static_cast<SDL_Keymod>(k.mod | SDL_KMOD_CTRL);
 			s.erase(0, 5);
 			u.erase(0, 5);
 			//    } else if (u.compare("SHIFT-",0,6) == 0) {
 		} else if (u.substr(0, 6) == "SHIFT-") {
-			k.mod = static_cast<SDL_Keymod>(k.mod | KMOD_SHIFT);
+			k.mod = static_cast<SDL_Keymod>(k.mod | SDL_KMOD_SHIFT);
 			s.erase(0, 6);
 			u.erase(0, 6);
 		} else {
@@ -750,19 +750,19 @@ void KeyBinder::ParseLine(char* line) {
 
 	if (show) {
 		desc = "";
-		if (k.mod & KMOD_CTRL) {
+		if (k.mod & SDL_KMOD_CTRL) {
 			desc += "Ctrl-";
 		}
 #ifdef MACOSX
-		if (k.mod & KMOD_ALT) {
+		if (k.mod & SDL_KMOD_ALT) {
 			desc += "Cmd-";
 		}
 #else
-		if (k.mod & KMOD_ALT) {
+		if (k.mod & SDL_KMOD_ALT) {
 			desc += "Alt-";
 		}
 #endif
-		if (k.mod & KMOD_SHIFT) {
+		if (k.mod & SDL_KMOD_SHIFT) {
 			desc += "Shift-";
 		}
 		desc += keycode;

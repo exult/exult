@@ -37,7 +37,7 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -232,7 +232,7 @@ bool TextScroller::run(Game_window* gwin) {
 			// this could be a problem when too many events are produced
 			while (SDL_PollEvent(&event)) {
 				switch (event.type) {
-				case SDL_KEYDOWN:
+				case SDL_EVENT_KEY_DOWN:
 					if (event.key.keysym.sym == SDLK_RSHIFT
 						|| event.key.keysym.sym == SDLK_LSHIFT) {
 						incr = 0;
@@ -241,11 +241,11 @@ bool TextScroller::run(Game_window* gwin) {
 					}
 					break;
 
-				case SDL_KEYUP:
+				case SDL_EVENT_KEY_UP:
 					incr      = 120;
 					next_time = SDL_GetTicks();
 					break;
-				case SDL_MOUSEBUTTONUP:
+				case SDL_EVENT_MOUSE_BUTTON_UP:
 					looping = false;
 					break;
 				default:

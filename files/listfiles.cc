@@ -142,7 +142,7 @@ int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 #	include <glob.h>
 
 #	ifdef ANDROID
-#		include <SDL_system.h>
+#		include <SDL3/SDL_system.h>
 #	endif
 
 static int U7ListFilesImp(const std::string& path, FileList& files,bool quiet) {
@@ -173,7 +173,7 @@ int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 	// this.
 	if (result != 0) {
 		result = U7ListFilesImp(
-				SDL_AndroidGetInternalStoragePath() + ("/" + path), files,quiet);
+				SDL_GetAndroidInternalStoragePath() + ("/" + path), files, quiet);
 	}
 #	endif
 	return result;
