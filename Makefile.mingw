@@ -28,10 +28,31 @@ endef
 # Base of the exult source
 SRC:=.
 
-ifneq (,$(findstring /mingw64,$(MSYSTEM_PREFIX)))
+# Choose Architecture and Compiler based on $(MSYSTEM), use 64 bits GCC by default.
+ifeq ($(MSYSTEM),MINGW64)
 	ARCHFLAGS:=-m64
-else
+	CC:=gcc
+	CXX:=g++
+else ifeq ($(MSYSTEM),MINGW32)
 	ARCHFLAGS:=-m32
+	CC:=gcc
+	CXX:=g++
+else ifeq ($(MSYSTEM),CLANG64)
+	ARCHFLAGS:=-m64
+	CC:=clang
+	CXX:=clang++
+else ifeq ($(MSYSTEM),CLANG32)
+	ARCHFLAGS:=-m32
+	CC:=clang
+	CXX:=clang++
+else ifeq ($(MSYSTEM),UCRT64)
+	ARCHFLAGS:=-m64
+	CC:=gcc
+	CXX:=g++
+else
+	ARCHFLAGS:=-m64
+	CC:=gcc
+	CXX:=g++
 endif
 
 # Lets target CPUs around 16 years old or newer for snapshots.
@@ -149,7 +170,7 @@ ifdef SHOW_NONREADIED_OBJECTS
 	USE_SHOW_NONREADIED_OBJECTS:=-DSHOW_NONREADIED_OBJECTS
 endif
 
-USING_SJLJ_EXCEPTIONS:=$(findstring --enable-sjlj-exceptions, $(shell gcc -v 2>&1))
+USING_SJLJ_EXCEPTIONS:=$(findstring --enable-sjlj-exceptions, $(shell $(CC) -v 2>&1))
 ifeq ($(USING_SJLJ_EXCEPTIONS),$())
 	MTHREADS:=
 else
@@ -257,6 +278,50 @@ else
 	UNIXSEQ_CFLAGS:=
 endif
 
+ifeq ($(CC),clang)
+WARNINGS := \
+	-Wall \
+	-Wextra \
+	-Wpedantic \
+	-Wc++17-compat \
+	-Wc++20-compat \
+	-Walloca \
+	-Wcast-align \
+	-Wcast-qual \
+	-Wctor-dtor-privacy \
+	-Wdeprecated-copy-dtor \
+	-Wdisabled-optimization \
+	-Wdouble-promotion \
+	-Wextra-semi \
+	-Wformat-nonliteral \
+	-Wformat-security \
+	-Wformat-y2k \
+	-Winvalid-pch \
+	-Wmismatched-tags \
+	-Wmissing-include-dirs \
+	-Wmultichar \
+	-Wno-deprecated-declarations \
+	-Wnon-virtual-dtor \
+	-Wnull-dereference \
+	-Wold-style-cast \
+	-Woverloaded-virtual \
+	-Wpacked \
+	-Wredundant-decls \
+	-Wregister \
+	-Wstack-protector \
+	-Wsuggest-override \
+	-Wsynth \
+	-Wundef \
+	-Wzero-as-null-pointer-constant \
+	-Warray-bounds \
+	-Wformat-overflow \
+	-Wformat-truncation \
+	-Wformat=2 \
+	-Wimplicit-fallthrough \
+	-Wshift-overflow \
+	-Wstrict-overflow=2 \
+	-Wunused-const-variable
+else
 WARNINGS := \
 	-Wall \
 	-Wextra \
@@ -322,6 +387,7 @@ WARNINGS := \
 	-Wstrict-overflow=2 \
 	-Wstringop-overflow=4 \
 	-Wunused-const-variable=1
+endif
 
 CXXFLAGS:=-MMD -std=c++17 -fdiagnostics-color=always $(ARCHFLAGS) $(ARCHTYPE) $(strip $(OPT_LEVEL) $(WARNINGS) -mms-bitfields)
 
@@ -332,7 +398,6 @@ EXEC:=Exult.exe
 EXEEXT:=.exe
 LIBEXT:=.dll
 
-EXP_FILE:=exult_studio.exp
 SERVER_OBJS:=\
 	server/objserial.o \
 	server/servemsg.o \
@@ -425,9 +490,6 @@ endef
 
 include Makefile.common
 
-CXX:=g++
-CC:=gcc
-
 CPPFLAGS:=$(strip -DVERSION=\"$(VERSION)\" -DEXULT_DATADIR=\"data\" \
 	-DNOMINMAX=1 -D_USE_MATH_DEFINES -DHAVE_NETDB_H=0 $(SYSFLAGS) \
 	-DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_TIME_H=1 -DHAVE_SYS_SOCKET_H=0 \
@@ -479,11 +541,8 @@ exconfig_rc.o: win32/exconfig.rc
 exconfig.dll: win32/exconfig.def $(FILE_OBJS) $(CONF_OBJS) exconfig_rc.o win32/exconfig.o
 	$(CXX) $(LDFLAGS) -shared -o $@ $(filter-out $<,$^) --def $< -static -lstdc++ -Wl,--add-stdcall-alias -Wl,--dynamicbase
 
-exult_studio$(EXEEXT): $(BG_PAPERDOLL) $(FLEXES) $(ES_OBJS) $(EXP_FILE)
-	$(CXX) $(LDFLAGS) $(EXP_FILE) -o $@ $(ES_OBJS) $(ES_LIBS)
-
-$(EXP_FILE): $(ES_OBJS)
-	dlltool --output-exp $@ $(ES_OBJS) -D exult_studio$(EXEEXT)
+exult_studio$(EXEEXT): $(BG_PAPERDOLL) $(FLEXES) $(ES_OBJS)
+	$(CXX) $(LDFLAGS) -o $@ $(ES_OBJS) $(ES_LIBS)
 
 exultstudioico.o: $(SRC)/win32/exultstudioico.rc $(SRC)/win32/exultstudio.ico win32/exult_studio.exe.manifest
 	windres --include-dir $(SRC)/win32 $(SRC)/win32/exultstudioico.rc $@
@@ -597,7 +656,7 @@ toolsdist: tools toolsinstall Exult\ Source\ Code.url
 	cp win32/exult_tools_installer.iss $(DISTPATH)
 
 studioclean:
-	rm -f $(ES_OBJS) $(ES_OBJS:%.o=%.d) $(EXP_FILE) exult_studio$(EXEEXT)
+	rm -f $(ES_OBJS) $(ES_OBJS:%.o=%.d) exult_studio$(EXEEXT)
 
 studio: exult_studio$(EXEEXT)
 
