@@ -122,7 +122,7 @@ TouchUI_Android::TouchUI_Android() {
 TouchUI_Android::~TouchUI_Android() {
 	if (m_joystick != nullptr) {
 		SDL_CloseJoystick(m_joystick);
-		const SDL_JoystickID* joysticks = SDL_GetJoysticks(nullptr);
+		SDL_JoystickID* joysticks = SDL_GetJoysticks(nullptr);
 		if (joysticks) {
 			for (int i = 0; joysticks[i]; ++i) {
 				if (SDL_IsJoystickVirtual(joysticks[i])) {
@@ -130,6 +130,7 @@ TouchUI_Android::~TouchUI_Android() {
 					break;
 				}
 			}
+			SDL_free(joysticks);
 		}
 	}
 }

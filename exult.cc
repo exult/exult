@@ -731,6 +731,7 @@ static void Init() {
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "Landscape");
 	Mouse::use_touch_input = true;
+	SDL_SetHint(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0");
 #endif
 #ifdef SDL_PLATFORM_IOS
 	SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "2");
@@ -740,10 +741,12 @@ static void Init() {
 	//     1- By disabling SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP
 	//        here in Exult.
 	//        [ That hint was generalized to other video backends than Wayland
-	//          as SDL_HINT_MOUSE_RELATIVE_MODE_WARP. ]
+	//          as SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE. ]
 	//     2- By SDL 3 disabling MOUSE_RELATIVE_MODE_WARP at
 	//        Windowed <-> Fullscreen transitions on Wayland or XWayland.
 	//        [ Resetting that hint in Exult then became useless. ]
+	// SDL_SetHint(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0" );
+	// Do not confuse that Hint with :
 	// SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "0");
 	if (SDL_Init(init_flags | joyinit) < 0) {
 		cerr << "Unable to initialize SDL: " << SDL_GetError() << endl;
@@ -755,13 +758,14 @@ static void Init() {
 	SDL_HideCursor();
 
 	// Open any connected game controllers.
-	const SDL_JoystickID* joysticks = SDL_GetJoysticks(nullptr);
+	SDL_JoystickID* joysticks = SDL_GetJoysticks(nullptr);
 	if (joysticks) {
 		for (int i = 0; joysticks[i]; ++i) {
 			if (SDL_IsGamepad(joysticks[i])) {
 				Open_game_controller(joysticks[i]);
 			}
 		}
+		SDL_free(joysticks);
 	}
 	// Listen for game controller device connection and disconnection
 	// events. Registering a listener allows these events to be received
@@ -923,7 +927,7 @@ static void Init() {
 				cout << "    [ " << ix << " ] Video Driver is '"
 					 << SDL_GetVideoDriver(ix) << "'" << endl;
 			}
-			const SDL_DisplayID* display_ids = SDL_GetDisplays(nullptr);
+			SDL_DisplayID* display_ids = SDL_GetDisplays(nullptr);
 			for (ix = 0; display_ids[ix]; ix++) {
 				const SDL_DisplayMode* currMode
 						= SDL_GetCurrentDisplayMode(display_ids[ix]);
@@ -940,6 +944,7 @@ static void Init() {
 					 << currMode->h << "' at '" << currMode->refresh_rate
 					 << "Hz' for " << nbpp << " bpp" << endl;
 			}
+			SDL_free(display_ids);
 			const char* rname = SDL_GetRendererName(
 					SDL_GetRenderer(gwin->get_win()->get_screen_window()));
 			cout << "    Hint RENDER_DRIVER is '"
@@ -967,7 +972,7 @@ static void Init() {
 				cout << "    [ " << ix << " ] Audio Driver is '"
 					 << SDL_GetAudioDriver(ix) << "'" << endl;
 			}
-			const SDL_AudioDeviceID* devices;
+			SDL_AudioDeviceID* devices;
 			int                num_devices;
 			devices = SDL_GetAudioRecordingDevices(&num_devices);
 			for (ix = 0; ix < num_devices; ix++) {
@@ -987,6 +992,7 @@ static void Init() {
 					cout << endl;
 				}
 			}
+			SDL_free(devices);
 			devices = SDL_GetAudioPlaybackDevices(&num_devices);
 			for (ix = 0; ix < num_devices; ix++) {
 				SDL_AudioSpec as;
@@ -1005,6 +1011,7 @@ static void Init() {
 					cout << endl;
 				}
 			}
+			SDL_free(devices);
 		}
 #endif
 		Game::create_game(newgame);
@@ -1785,8 +1792,12 @@ static void Handle_event(SDL_Event& event) {
 		if (!cheat() || !gwin->can_scroll_with_mouse()) {
 			break;
 		}
-		static int numFingers = 0;
-		SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
+		static int   numFingers = 0;
+		SDL_Finger** fingers
+				= SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
+		if (fingers) {
+			SDL_free(fingers);
+		}
 		if (numFingers > 1) {
 			if (event.tfinger.dy < 0) {
 				ActionScrollUp(nullptr);
