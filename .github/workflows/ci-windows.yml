@@ -105,6 +105,13 @@ jobs:
           text: '**[The Windows build failed:](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})**'
   ci-windows:
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sys: [mingw64, clang64]
+        include:
+          - { sys: mingw64, env: mingw-w64-x86_64 }
+          - { sys: clang64, env: mingw-w64-clang-x86_64 }
     defaults:
       run:
         shell: msys2 {0}
@@ -112,14 +119,14 @@ jobs:
       - name: Install dependencies
         uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: ${{ matrix.sys }}
           install: |
             base-devel git
-            mingw-w64-x86_64-toolchain mingw-w64-x86_64-binutils mingw-w64-x86_64-ntldd mingw-w64-x86_64-SDL2
-            mingw-w64-x86_64-fluidsynth mingw-w64-x86_64-libtimidity mingw-w64-x86_64-libogg mingw-w64-x86_64-libvorbis
-            mingw-w64-x86_64-munt-mt32emu mingw-w64-x86_64-libpng mingw-w64-x86_64-zlib mingw-w64-x86_64-SDL2_image
-            mingw-w64-x86_64-gtk3 mingw-w64-x86_64-adwaita-icon-theme mingw-w64-x86_64-libxml2 mingw-w64-x86_64-freetype
-            mingw-w64-x86_64-gtk2 mingw-w64-x86_64-gimp mingw-w64-x86_64-icu
+            ${{ matrix.env }}-toolchain ${{ matrix.env }}-binutils ${{ matrix.env }}-ntldd ${{ matrix.env }}-SDL2
+            ${{ matrix.env }}-fluidsynth ${{ matrix.env }}-libtimidity ${{ matrix.env }}-libogg ${{ matrix.env }}-libvorbis
+            ${{ matrix.env }}-munt-mt32emu ${{ matrix.env }}-libpng ${{ matrix.env }}-zlib ${{ matrix.env }}-SDL2_image
+            ${{ matrix.env }}-gtk3 ${{ matrix.env }}-adwaita-icon-theme ${{ matrix.env }}-libxml2 ${{ matrix.env }}-freetype
+            ${{ matrix.env }}-gtk2 ${{ matrix.env }}-gimp ${{ matrix.env }}-icu
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Build

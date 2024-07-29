@@ -18,6 +18,7 @@ InternalCompressLevel=max
 OutputDir=.
 DisableWelcomePage=no
 WizardStyle=modern
+ArchitecturesInstallIn64BitMode=x64compatible
 
 [Dirs]
 Name: "{app}\data"
@@ -108,19 +109,19 @@ var
 
 // Get Paths from Exult.cfg
 procedure GetExultGamePaths(sExultDir, sBGPath, sSIPath: AnsiString; iMaxPath: Integer);
-external 'GetExultGamePaths@files:exconfig-i686.dll stdcall';
+external 'GetExultGamePaths@files:exconfig-i686.dll cdecl';
 
 // Write Paths into Exult.cfg
 procedure SetExultGamePaths(sExultDir, sBGPath, sSIPath: AnsiString);
-external 'SetExultGamePaths@files:exconfig-i686.dll stdcall';
+external 'SetExultGamePaths@files:exconfig-i686.dll cdecl';
 
 // Verify BG Dir
 function VerifyBGDirectory(sPath: AnsiString) : Integer;
-external 'VerifyBGDirectory@files:exconfig-i686.dll stdcall';
+external 'VerifyBGDirectory@files:exconfig-i686.dll cdecl';
 
 // Verify SI Dir
 function VerifySIDirectory(sPath: AnsiString) : Integer;
-external 'VerifySIDirectory@files:exconfig-i686.dll stdcall';
+external 'VerifySIDirectory@files:exconfig-i686.dll cdecl';
 
 // Get the Previous Exult Installation Dir
 // This is done in a manner that is compatible with the old InstallShield setup

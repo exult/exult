@@ -49,15 +49,23 @@ else ifeq ($(MSYSTEM),UCRT64)
 	ARCHFLAGS:=-m64
 	CC:=gcc
 	CXX:=g++
+else ifeq ($(MSYSTEM),CLANGARM64)
+	ARCHFLAGS:=-m64
+	CC:=clang
+	CXX:=clang++
 else
 	ARCHFLAGS:=-m64
 	CC:=gcc
 	CXX:=g++
 endif
 
-# Lets target CPUs around 16 years old or newer for snapshots.
+# Lets target X86 CPUs around 16 years old or newer for snapshots.
 ifdef SNAPSHOT
+ifeq ($(MSYSTEM),CLANGARM64)
+	ARCHTYPE:=-march=native
+else
 	ARCHTYPE:=-march=x86-64-v2
+endif
 else
 	ARCHTYPE:=-march=native
 endif
@@ -538,8 +546,8 @@ exultico.o: win32/exultico.rc win32/exult.ico win32/exult.exe.manifest
 exconfig_rc.o: win32/exconfig.rc
 	windres --include-dir win32 win32/exconfig.rc exconfig_rc.o
 
-exconfig.dll: win32/exconfig.def $(FILE_OBJS) $(CONF_OBJS) exconfig_rc.o win32/exconfig.o
-	$(CXX) $(LDFLAGS) -shared -o $@ $(filter-out $<,$^) --def $< -static -lstdc++ -Wl,--add-stdcall-alias -Wl,--dynamicbase
+exconfig.dll: $(FILE_OBJS) $(CONF_OBJS) exconfig_rc.o win32/exconfig.o
+	$(CXX) $(LDFLAGS) -shared -o $@ $^ -static -lstdc++ -Wl,--dynamicbase
 
 exult_studio$(EXEEXT): $(BG_PAPERDOLL) $(FLEXES) $(ES_OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $(ES_OBJS) $(ES_LIBS)

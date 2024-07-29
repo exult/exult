@@ -81,9 +81,9 @@ constexpr static const std::array BG_Files{ENDGAME};
 constexpr static const std::array SI_Files{PAPERDOL};
 
 extern "C" {
-__declspec(dllexport) int __stdcall VerifySIDirectory(char* path);
+__declspec(dllexport) int __cdecl VerifySIDirectory(char* path);
 
-__declspec(dllexport) int __stdcall VerifyBGDirectory(char* path);
+__declspec(dllexport) int __cdecl VerifyBGDirectory(char* path);
 }
 
 void strcat_safe(char* dest, const char* src, size_t size_dest) {
@@ -274,7 +274,7 @@ extern "C" {
 //
 // Get the Game paths from the config file
 //
-__declspec(dllexport) void __stdcall GetExultGamePaths(
+__declspec(dllexport) void __cdecl GetExultGamePaths(
 		char* ExultDir, char* BGPath, char* SIPath, int MaxPath) {
 	MessageBoxDebug(nullptr, ExultDir, "ExultDir", MB_OK);
 	MessageBoxDebug(nullptr, BGPath, "BGPath", MB_OK);
@@ -353,7 +353,7 @@ bool IsNullEmptyOrWhitespace(const char* s) {
 // Set Game paths in the config file
 //
 
-__declspec(dllexport) void __stdcall SetExultGamePaths(
+__declspec(dllexport) void __cdecl SetExultGamePaths(
 		char* ExultDir, char* BGPath, char* SIPath) {
 	MessageBoxDebug(nullptr, ExultDir, "ExultDir", MB_OK);
 	MessageBoxDebug(nullptr, BGPath, "BGPath", MB_OK);
@@ -443,7 +443,7 @@ __declspec(dllexport) void __stdcall SetExultGamePaths(
 //
 // Verify the BG Directory contains the right stuff
 //
-__declspec(dllexport) int __stdcall VerifyBGDirectory(char* path) {
+__declspec(dllexport) int __cdecl VerifyBGDirectory(char* path) {
 	if (IsNullEmptyOrWhitespace(path)) {
 		return false;
 	}
@@ -483,7 +483,7 @@ __declspec(dllexport) int __stdcall VerifyBGDirectory(char* path) {
 //
 // Verify the SI Directorys contains the right stuff
 //
-__declspec(dllexport) int __stdcall VerifySIDirectory(char* path) {
+__declspec(dllexport) int __cdecl VerifySIDirectory(char* path) {
 	if (IsNullEmptyOrWhitespace(path)) {
 		return false;
 	}

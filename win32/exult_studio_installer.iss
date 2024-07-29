@@ -20,6 +20,7 @@ AllowNoIcons=true
 OutputDir=.
 DisableWelcomePage=no
 WizardStyle=modern
+ArchitecturesInstallIn64BitMode=x64compatible
 
 [Files]
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
