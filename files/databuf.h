@@ -187,7 +187,7 @@ public:
 	explicit IFileDataSource(const File_spec& spec, bool is_text = false)
 			: IStreamDataSource(nullptr) {
 		if (U7exists(spec.name)) {
-			pFin = U7open_in(spec.name.c_str(), is_text);
+			pFin = U7open_in(spec.name, is_text);
 		} else {
 			// Set fail bit
 			pFin      = std::make_unique<std::ifstream>();
@@ -451,7 +451,7 @@ class OFileDataSource : public OStreamDataSource {
 public:
 	explicit OFileDataSource(const File_spec& spec, bool is_text = false)
 			: OStreamDataSource(nullptr) {
-		fout = U7open_out(spec.name.c_str(), is_text);
+		fout = U7open_out(spec.name, is_text);
 		out  = fout.get();
 	}
 };

@@ -39,10 +39,8 @@
 #include <cstring>
 #include <exception>
 #include <fstream>
-#include <list>
 #include <map>
 #include <string>
-#include <vector>
 
 #ifdef __IPHONEOS__
 #	include "ios_utils.h"
@@ -80,8 +78,8 @@ static U7OstreamFactory ostream_factory
 
 // Ugly hack for supporting different paths
 
-static std::map<string, string> path_map;
-static std::map<string, string> stored_path_map;
+static std::map<string, string, std::less<>> path_map;
+static std::map<string, string, std::less<>> stored_path_map;
 
 void store_system_paths() {
 	stored_path_map = path_map;
@@ -99,20 +97,19 @@ static bool is_path_separator(char cc) {
 #endif
 }
 
-static string remove_trailing_slash(const string& value) {
-	string new_path = value;
-	if (is_path_separator(new_path.back())) {
+static std::string_view remove_trailing_slash(std::string_view value) {
+	if (is_path_separator(value.back())) {
 #ifdef EXTRA_DEBUG
 		std::cerr << "Warning, trailing slash in path: \"" << new_path << "\""
 				  << std::endl;
 #endif
-		new_path.resize(new_path.size() - 1);
+		value.remove_suffix(1);
 	}
 
-	return new_path;
+	return value;
 }
 
-void add_system_path(const string& key, const string& value) {
+void add_system_path(std::string_view key, std::string_view value) {
 	if (!value.empty()) {
 		if (value.find(key) != string::npos) {
 			std::cerr << "Error: system path '" << key
@@ -120,22 +117,28 @@ void add_system_path(const string& key, const string& value) {
 					  << "'." << std::endl;
 			exit(1);
 		} else {
-			path_map[key] = remove_trailing_slash(value);
+			// Alas, operator[] does not support heterogeneous lookup...
+			const auto& val     = remove_trailing_slash(value);
+			auto [it, inserted] = path_map.try_emplace(std::string(key), val);
+			if (!inserted) {
+				it->second = val;
+			}
 		}
 	} else {
 		clear_system_path(key);
 	}
 }
 
-void clone_system_path(const string& new_key, const string& old_key) {
-	if (is_system_path_defined(old_key)) {
-		path_map[new_key] = path_map[old_key];
+void clone_system_path(std::string_view new_key, std::string_view old_key) {
+	auto oldIt = path_map.find(old_key);
+	if (oldIt != path_map.end()) {
+		add_system_path(new_key, oldIt->second);
 	} else {
 		clear_system_path(new_key);
 	}
 }
 
-void clear_system_path(const string& key) {
+void clear_system_path(std::string_view key) {
 	auto iter = path_map.find(key);
 	if (iter != path_map.end()) {
 		path_map.erase(iter);
@@ -145,7 +148,7 @@ void clear_system_path(const string& key) {
 /*
  *  Has a path been entered?
  */
-bool is_system_path_defined(const string& path) {
+bool is_system_path_defined(std::string_view path) {
 	return path_map.find(path) != path_map.end();
 }
 
@@ -153,8 +156,8 @@ bool is_system_path_defined(const string& path) {
  *  Convert an exult path (e.g. "<DATA>/exult.flx") into a system path
  */
 
-string get_system_path(const string& path) {
-	string            new_path = path;
+string get_system_path(std::string_view path) {
+	string            new_path(path);
 	string::size_type pos;
 	string::size_type pos2;
 
@@ -300,8 +303,8 @@ void U7set_ostream_factory(U7OstreamFactory factory) {
  */
 
 std::unique_ptr<std::istream> U7open_in(
-		const char* fname,     // May be converted to upper-case.
-		bool        is_text    // Should the file be opened in text mode
+		std::string_view fname,     // May be converted to upper-case.
+		bool             is_text    // Should the file be opened in text mode
 ) {
 	std::ios_base::openmode mode = std::ios::in;
 	if (!is_text) {
@@ -324,7 +327,6 @@ std::unique_ptr<std::istream> U7open_in(
 
 	// file not found.
 	throw file_open_exception(get_system_path(fname));
-	return nullptr;
 }
 
 /*
@@ -336,8 +338,8 @@ std::unique_ptr<std::istream> U7open_in(
  */
 
 std::unique_ptr<std::ostream> U7open_out(
-		const char* fname,     // May be converted to upper-case.
-		bool        is_text    // Should the file be opened in text mode
+		std::string_view fname,     // May be converted to upper-case.
+		bool             is_text    // Should the file be opened in text mode
 ) {
 	std::ios_base::openmode mode = std::ios::out | std::ios::trunc;
 	if (!is_text) {
@@ -357,17 +359,16 @@ std::unique_ptr<std::ostream> U7open_out(
 
 	// file not found.
 	throw file_open_exception(get_system_path(fname));
-	return nullptr;
 }
 
-DIR* U7opendir(const char* fname    // May be converted to upper-case.
+DIR* U7opendir(std::string_view fname    // May be converted to upper-case.
 ) {
 	string name           = get_system_path(fname);
 	int    uppercasecount = 0;
 
 	do {
 		DIR* dir = opendir(name.c_str());    // Try to open
-		if (dir) {
+		if (dir != nullptr) {
 			return dir;    // found it!
 		}
 	} while (base_to_uppercase(name, ++uppercasecount));
@@ -379,7 +380,7 @@ DIR* U7opendir(const char* fname    // May be converted to upper-case.
  *
  */
 
-void U7remove(const char* fname    // May be converted to upper-case.
+void U7remove(std::string_view fname    // May be converted to upper-case.
 ) {
 	string name = get_system_path(fname);
 
@@ -413,41 +414,10 @@ void U7remove(const char* fname    // May be converted to upper-case.
 }
 
 /*
- *  Open a "static" game file by first looking in <PATCH>, then
- *  <STATIC>.
- *  Output: 0 if couldn't open. We do NOT throw exceptions.
- */
-
-std::unique_ptr<std::istream> U7open_static(
-		const char* fname,     // May be converted to upper-case.
-		bool        is_text    // Should file be opened in text mode
-) {
-	string name;
-
-	name = string("<PATCH>/") + fname;
-	try {
-		auto in = U7open_in(name.c_str(), is_text);
-		if (in) {
-			return in;
-		}
-	} catch (std::exception&) {
-	}
-	name = string("<STATIC>/") + fname;
-	try {
-		auto in = U7open_in(name.c_str(), is_text);
-		if (in) {
-			return in;
-		}
-	} catch (std::exception&) {
-	}
-	return nullptr;
-}
-
-/*
  *  See if a file exists.
  */
 
-bool U7exists(const char* fname    // May be converted to upper-case.
+bool U7exists(std::string_view fname    // May be converted to upper-case.
 ) {
 	try {
 		// First check if we can open it as a file.
@@ -459,7 +429,7 @@ bool U7exists(const char* fname    // May be converted to upper-case.
 	try {
 		// If not, try to open it as a directory.
 		auto* dir = U7opendir(fname);
-		if (dir) {
+		if (dir != nullptr) {
 			closedir(dir);
 			return true;
 		}
@@ -473,8 +443,8 @@ bool U7exists(const char* fname    // May be converted to upper-case.
  */
 
 int U7mkdir(
-		const char* dirname,    // May be converted to upper-case.
-		int         mode) {
+		std::string_view dirname,    // May be converted to upper-case.
+		int              mode) {
 	string name = get_system_path(dirname);
 	// remove any trailing slashes
 	const string::size_type pos = name.find_last_not_of('/');
@@ -558,16 +528,18 @@ public:
 			HRESULT code = SHGetFolderPath(
 					nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, szPath);
 			if (code == E_INVALIDARG) {
-				return string();
-			} else if (code == S_FALSE) {    // E_FAIL for Unicode version.
+				return {};
+			}
+			if (code == S_FALSE) {    // E_FAIL for Unicode version.
 				// Lets try creating it through the API flag:
 				code = SHGetFolderPath(
 						nullptr, CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE,
 						nullptr, 0, szPath);
 			}
 			if (code == E_INVALIDARG) {
-				return string();
-			} else if (code == S_OK) {
+				return {};
+			}
+			if (code == S_OK) {
 				return string(reinterpret_cast<const char*>(szPath));
 			}
 			// We don't have a folder yet at this point. This means we have
@@ -826,12 +798,12 @@ void setup_data_dir(const std::string& data_path, const char* runpath) {
 
 	// Try "data" subdirectory for exe directory:
 	const char* sep = std::strrchr(runpath, '/');
-	if (!sep) {
+	if (sep == nullptr) {
 		sep = std::strrchr(runpath, '\\');
 	}
-	if (sep) {
-		const int   plen = sep - runpath;
-		std::string dpath(runpath, plen + 1);
+	if (sep != nullptr) {
+		const ptrdiff_t plen = sep - runpath;
+		std::string     dpath(runpath, plen + 1);
 		dpath += "data";
 		add_system_path("<DATA>", dpath);
 	} else {
@@ -945,18 +917,9 @@ void setup_program_paths() {
 }
 
 /*
- *  Change the current directory
- */
-
-int U7chdir(const char* dirname    // May be converted to upper-case.
-) {
-	return chdir(dirname);
-}
-
-/*
  *  Copy a file. May throw an exception.
  */
-void U7copy(const char* src, const char* dest) {
+void U7copy(std::string_view src, std::string_view dest) {
 	std::unique_ptr<std::istream> pIn;
 	std::unique_ptr<std::ostream> pOut;
 	try {
@@ -966,10 +929,10 @@ void U7copy(const char* src, const char* dest) {
 		throw;
 	}
 	if (!pIn) {
-		throw file_open_exception(src);
+		throw file_open_exception(std::string(src));
 	}
 	if (!pOut) {
-		throw file_open_exception(dest);
+		throw file_open_exception(std::string(dest));
 	}
 	auto& in  = *pIn;
 	auto& out = *pOut;
@@ -978,10 +941,10 @@ void U7copy(const char* src, const char* dest) {
 	const bool inok  = in.good();
 	const bool outok = out.good();
 	if (!inok) {
-		throw file_read_exception(src);
+		throw file_read_exception(std::string(src));
 	}
 	if (!outok) {
-		throw file_write_exception(dest);
+		throw file_write_exception(std::string(dest));
 	}
 }
 
@@ -993,7 +956,7 @@ void U7copy(const char* src, const char* dest) {
 
 int Log2(uint32 n) {
 	int result = 0;
-	for (n = n >> 1; n; n = n >> 1) {
+	for (n = n >> 1; n != 0u; n = n >> 1) {
 		result++;
 	}
 	return result;
@@ -1031,7 +994,7 @@ int fgepow2(uint32 n) {
  */
 
 char* newstrdup(const char* s) {
-	if (!s) {
+	if (s == nullptr) {
 		throw std::invalid_argument("nullptr pointer passed to newstrdup");
 	}
 	char* ret = new char[std::strlen(s) + 1];
@@ -1075,7 +1038,7 @@ int Find_next_map(
 ) {
 	char fname[128];
 
-	for (int i = start; maxtry; --maxtry, ++i) {
+	for (int i = start; maxtry != 0; --maxtry, ++i) {
 		if (U7exists(Get_mapped_name("<STATIC>/", i, fname))
 			|| U7exists(Get_mapped_name("<PATCH>/", i, fname))) {
 			return i;

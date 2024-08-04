@@ -16,93 +16,68 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _Configuration_h_
-#define _Configuration_h_
+#ifndef CONFIGURATION_H
+#define CONFIGURATION_H
 
 #include "XMLEntity.h"
 
 class Configuration {
 public:
-	Configuration() : xmltree(new XMLnode("config")), rootname("config") {}
+	Configuration()
+			: xmltree(std::make_unique<XMLnode>("config")), rootname("config") {
+	}
 
-	Configuration(const std::string& fname, const std::string& root)
-			: xmltree(new XMLnode(root)), rootname(root) {
+	Configuration(const std::string& fname, std::string_view root)
+			: xmltree(std::make_unique<XMLnode>(root)), rootname(root) {
 		if (!fname.empty()) {
 			read_config_file(fname);
 		}
 	}
 
-	~Configuration() {
-		delete xmltree;
-	}
-
 	bool read_config_file(
-			const std::string& input_filename,
-			const std::string& root = std::string());
+			const std::string& input_filename, std::string_view root = "");
 	bool read_abs_config_file(
-			const std::string& input_filename,
-			const std::string& root = std::string());
+			std::string_view input_filename, std::string_view root = "");
 
-	bool read_config_string(const std::string&);
-
-	void value(
-			const std::string& key, std::string& ret,
-			const std::string& defaultvalue) const;
-	void value(
-			const std::string& key, bool& ret, bool defaultvalue = false) const;
-	void value(const std::string& key, int& ret, int defaultvalue = 0) const;
+	bool read_config_string(std::string_view s);
 
 	void value(
-			const std::string& key, std::string& ret,
-			const char* defaultvalue = "") const {
-		value(key, ret, std::string(defaultvalue));
-	}
+			std::string_view key, std::string& ret,
+			std::string_view defaultvalue = "") const;
 
-	void value(const char* key, std::string& ret, const char* defaultvalue = "")
-			const {
-		value(std::string(key), ret, defaultvalue);
-	}
+	void value(
+			std::string_view key, bool& ret, bool defaultvalue = false) const;
 
-	void value(const char* key, bool& ret, bool defaultvalue = false) const {
-		value(std::string(key), ret, defaultvalue);
-	}
+	void value(std::string_view key, int& ret, int defaultvalue = 0) const;
 
-	void value(const char* key, int& ret, int defaultvalue = 0) const {
-		value(std::string(key), ret, defaultvalue);
-	}
+	bool key_exists(std::string_view key) const;
 
-	bool key_exists(const std::string& key) const;
+	void set(std::string_view key, std::string_view value, bool write_out);
+	void set(std::string_view key, int value, bool write_out);
 
-	void set(const std::string& key, const std::string& value, bool write_out);
-	void set(const char* key, const char* value, bool write_out);
-	void set(const char* key, const std::string& value, bool write_out);
-	void set(const char* key, int, bool write_out);
-	void set(const std::string& key, int, bool write_out);
-
-	void remove(const std::string& key, bool write_out);
+	void remove(std::string_view key, bool write_out);
 
 	// Return a list of keys that are subsidiary to the supplied key
 	std::vector<std::string> listkeys(
-			const std::string& key, bool longformat = true);
-	std::vector<std::string> listkeys(const char* key, bool longformat = true);
+			std::string_view key, bool longformat = true) const;
 
 	std::string   dump();    // Assembles a readable representation
-	std::ostream& dump(std::ostream& o, const std::string& indentstr);
+	std::ostream& dump(std::ostream& o, std::string_view indentstr);
 
 	void write_back();
 
-	void clear(const std::string& new_root = std::string());
+	void clear(std::string_view new_root = "");
 
 	using KeyType     = XMLnode::KeyType;
 	using KeyTypeList = XMLnode::KeyTypeList;
 
-	void getsubkeys(KeyTypeList& ktl, const std::string& basekey);
+	void getsubkeys(KeyTypeList& ktl, std::string_view basekey);
 
 private:
-	XMLnode*    xmltree;
-	std::string rootname;
-	std::string filename;
-	bool        is_file = false;
+	std::unique_ptr<XMLnode> xmltree;
+	std::string              rootname;
+	std::string              filename;
+	bool                     is_file = false;
 };
 
 // Global Config

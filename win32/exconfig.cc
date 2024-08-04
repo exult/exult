@@ -465,7 +465,7 @@ __declspec(dllexport) int __cdecl VerifyBGDirectory(char* path) {
 	// 	std::string s(U7IFIX);
 	// 	s += num;
 
-	// 	if (!U7exists(s.c_str())) {
+	// 	if (!U7exists(s)) {
 	// 		return false;
 	// 	}
 	// }
@@ -505,7 +505,7 @@ __declspec(dllexport) int __cdecl VerifySIDirectory(char* path) {
 	// 	std::string s(U7IFIX);
 	// 	s += num;
 
-	// 	if (!U7exists(s.c_str())) {
+	// 	if (!U7exists(s)) {
 	// 		return false;
 	// 	}
 	// }

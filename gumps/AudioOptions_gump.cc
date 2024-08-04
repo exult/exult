@@ -46,6 +46,7 @@
 #include "font.h"
 #include "game.h"
 #include "gamewin.h"
+#include "istring.h"
 #include "mouse.h"
 
 #include <iostream>
@@ -352,7 +353,7 @@ void AudioOptions_gump::load_settings() {
 		for (midi_driver = 0; midi_driver < MidiDriver::getDriverCount();
 			 midi_driver++) {
 			const std::string name = MidiDriver::getDriverName(midi_driver);
-			if (!Pentagram::strcasecmp(name.c_str(), s.c_str())) {
+			if (Pentagram::iequals(name, s)) {
 				break;
 			}
 		}
@@ -386,7 +387,7 @@ void AudioOptions_gump::load_settings() {
 		config->value("config/audio/midi/use_oggs", s, "no");
 		midi_ogg_enabled = (s == "yes" ? 1 : 0);
 
-		config->value("config/audio/midi/driver", s, driver_default.c_str());
+		config->value("config/audio/midi/driver", s, driver_default);
 
 		if (s == "digital") {
 			midi_ogg_enabled = true;
@@ -397,7 +398,7 @@ void AudioOptions_gump::load_settings() {
 			for (midi_driver = 0; midi_driver < MidiDriver::getDriverCount();
 				 midi_driver++) {
 				const std::string name = MidiDriver::getDriverName(midi_driver);
-				if (!Pentagram::strcasecmp(name.c_str(), s.c_str())) {
+				if (Pentagram::iequals(name, s)) {
 					break;
 				}
 			}
@@ -423,7 +424,7 @@ void AudioOptions_gump::load_settings() {
 
 	const std::string d
 			= "config/disk/game/" + Game::get_gametitle() + "/waves";
-	config->value(d.c_str(), s, "---");
+	config->value(d, s, "---");
 	if (have_roland_pack && s == rolandpack) {
 		sfx_package = 0;
 	} else if (have_blaster_pack && s == blasterpack) {
@@ -577,7 +578,7 @@ void AudioOptions_gump::save_settings() {
 			waves = sfx_custompack;
 		}
 		if (waves != sfx_custompack) {
-			config->set(d.c_str(), waves, false);
+			config->set(d, waves, false);
 		}
 	}
 #ifdef ENABLE_MIDISFX
@@ -658,8 +659,8 @@ void AudioOptions_gump::paint() {
 		}
 	}
 
-	std::shared_ptr<Font>          font = fontManager.get_font("SMALL_BLACK_FONT");
-	Image_window8* iwin = gwin->get_win();
+	std::shared_ptr<Font> font = fontManager.get_font("SMALL_BLACK_FONT");
+	Image_window8*        iwin = gwin->get_win();
 
 	font->paint_text(iwin->get_ib8(), "Audio:", x + colx[0], y + rowy[1] + 1);
 	if (audio_enabled) {

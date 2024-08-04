@@ -161,13 +161,13 @@ void process_ops() {
 			if (verbose) {
 				string s;
 				assert(config != nullptr);
-				config->value(i->second[0].c_str(), s, "---nil---");
+				config->value(i->second[0], s, "---nil---");
 				cerr << "Original value of " << i->second[0] << " was " << s
 					 << endl;
 			}
 
 			assert(config != nullptr);
-			config->set(i->second[0].c_str(), i->second[1].c_str(), false);
+			config->set(i->second[0], i->second[1], false);
 
 			if (verbose) {
 				cerr << "Added " << i->second[1] << " to " << i->second[0]
@@ -179,13 +179,13 @@ void process_ops() {
 			if (verbose) {
 				string s;
 				assert(config != nullptr);
-				config->value(i->second[0].c_str(), s, "---nil---");
+				config->value(i->second[0], s, "---nil---");
 				cerr << "Original value was " << i->second[0] << " was " << s
 					 << endl;
 			}
 
 			assert(config != nullptr);
-			config->set(i->second[0].c_str(), "", false);
+			config->set(i->second[0], "", false);
 
 			if (verbose) {
 				cerr << "Removed " << i->second[0] << endl;
@@ -196,15 +196,14 @@ void process_ops() {
 			if (verbose) {
 				string s;
 				assert(config != nullptr);
-				config->value(i->second[0].c_str(), s, "unknown");
+				config->value(i->second[0], s, "unknown");
 				cerr << "Return value for " << i->second[0] << " is " << s
 					 << endl;
 			}
 
 			assert(config != nullptr);
-			// config->set(i->second[0].c_str(), "", false);
 			string s;
-			config->value(i->second[0].c_str(), s, "unknown");
+			config->value(i->second[0], s, "unknown");
 			cout << s << endl;
 		}
 	}
