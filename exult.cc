@@ -731,10 +731,10 @@ static void Init() {
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "Landscape");
 	Mouse::use_touch_input = true;
-	SDL_SetHint(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0");
-#endif
-#ifdef SDL_PLATFORM_IOS
+	// SDL_SetHint(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0");
+#	if defined(SDL_PLATFORM_IOS)
 	SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "2");
+#	endif
 #endif
 	// SDL3 lost the pointer when switching Windowed <-> Fullscreen in Wayland
 	//   This was fixed
@@ -1442,7 +1442,8 @@ bool Translate_keyboard(
 		chr     = event.key.key;
 		unicode = SDL_GetKeyFromScancode(
 				event.key.scancode,
-				(event.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)));
+				(event.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)),
+				SDL_FALSE);
 		unicode = (unicode & SDLK_SCANCODE_MASK ? 0 : unicode);
 	} else {
 		return false;

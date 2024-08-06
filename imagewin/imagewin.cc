@@ -99,6 +99,9 @@ const bool& Image_window::AnyResAllowed = Image_window::any_res_allowed;
 int Image_window::force_bpp     = 0;
 int Image_window::desktop_depth = 0;
 int Image_window::windowed      = 0;
+// When HighDPI is enabled we will end up with a different native scale factor,
+// so we need to define the default
+float Image_window::nativescale = 1.0f;
 
 const int Image_window::guard_band = 4;
 
@@ -712,10 +715,9 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 		const Resolution res         = {w, h};
 		p_resolutions[(w << 16) | h] = res;
 		// getting new native scale when highdpi is active
-		// FIXME: Not used in SDL 3
-		// int sw;
-		// SDL_GetWindowSize(screen_window, &sw, nullptr);
-		// nativescale = float(dw) / sw;
+		int sw;
+		SDL_GetWindowSize(screen_window, &sw, nullptr);
+		nativescale = float(dw) / sw;
 		// high resolution fullscreen needs this to make the whole screen
 		// available
 		SDL_SetRenderLogicalPresentation(

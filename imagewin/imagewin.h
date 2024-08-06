@@ -299,9 +299,10 @@ protected:
 
 	static void static_init();
 
-	static int force_bpp;
-	static int desktop_depth;
-	static int windowed;
+	static int   force_bpp;
+	static int   desktop_depth;
+	static int   windowed;
+	static float nativescale;
 
 public:
 	inline struct SDL_Window* get_screen_window() const {
