@@ -372,8 +372,7 @@ void Image_window::static_init() {
 	Uint32 Bmask;
 	Uint32 Amask;
 	if (SDL_GetMasksForPixelFormat(
-				dispmode->format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)
-		>= 0) {
+				dispmode->format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
 		desktop_displaymode = *dispmode;
 		desktop_depth       = bpp;
 	} else {
@@ -1454,7 +1453,6 @@ int Image_window::VideoModeOK(int width, int height, bool fullscreen, int bpp) {
 		Uint32 Amask;
 		if (SDL_GetMasksForPixelFormat(
 					mode->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask)
-					>= 0
 			&& mode->w >= width && mode->h >= height
 			&& ((bpp == nbpp)
 				|| (bpp == 0 && (nbpp == 8 || nbpp == 16 || nbpp == 32)))) {
@@ -1473,7 +1471,6 @@ int Image_window::VideoModeOK(int width, int height, bool fullscreen, int bpp) {
 		Uint32 Amask;
 		if (SDL_GetMasksForPixelFormat(
 					modes[j]->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask)
-					>= 0
 			&& modes[j]->w == width && modes[j]->h == height
 			&& ((bpp == nbpp)
 				|| (bpp == 0 && (nbpp == 8 || nbpp == 16 || nbpp == 32)))) {

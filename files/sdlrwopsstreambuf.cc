@@ -134,7 +134,7 @@ SdlRwopsStreambuf* SdlRwopsStreambuf::close() {
 		return nullptr;
 	}
 
-	std::unique_ptr<SDL_IOStream, int (*)(SDL_IOStream*)> h(
+	std::unique_ptr<SDL_IOStream, SDL_bool (*)(SDL_IOStream*)> h(
 			m_context, SDL_CloseIO);
 	auto rt = this;
 	if (sync()) {

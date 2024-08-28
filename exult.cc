@@ -690,7 +690,7 @@ void Open_game_controller(SDL_JoystickID joystick_index) {
 	}
 }
 
-int Handle_device_connection_event(void* userdata, SDL_Event* event) {
+SDL_bool Handle_device_connection_event(void* userdata, SDL_Event* event) {
 	ignore_unused_variable_warning(userdata);
 	// Make sure that game-controllers are opened and closed, as they
 	// become connected or disconnected.
@@ -712,10 +712,10 @@ int Handle_device_connection_event(void* userdata, SDL_Event* event) {
 	}
 	}
 
-	// Returning 1 will tell SDL2, which can invoke this via a callback
+	// Returning SDL_TRUE will tell SDL3, which can invoke this via a callback
 	// setup through SDL_AddEventWatch, to make sure the event gets posted
 	// to its event-queue (rather than dropping it).
-	return 1;
+	return SDL_TRUE;
 }
 
 /*
@@ -748,7 +748,7 @@ static void Init() {
 	// SDL_SetHint(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0" );
 	// Do not confuse that Hint with :
 	// SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "0");
-	if (SDL_Init(init_flags | joyinit) < 0) {
+	if (!SDL_Init(init_flags | joyinit)) {
 		cerr << "Unable to initialize SDL: " << SDL_GetError() << endl;
 		exit(-1);
 	}
