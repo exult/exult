@@ -508,8 +508,8 @@ bool Dragging_info::drop(
 	// Don't prompt if within same gump
 	// or if alternate drop is enabled (ctrl inverts).
 
-	const Uint8* keystate = SDL_GetKeyboardState(nullptr);
-	const bool   drop
+	const SDL_bool* keystate = SDL_GetKeyboardState(nullptr);
+	const bool      drop
 			= (keystate[SDL_SCANCODE_LCTRL] || keystate[SDL_SCANCODE_RCTRL])
 					  ? gwin->get_alternate_drop()
 					  : !gwin->get_alternate_drop();

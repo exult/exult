@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 	}
 
 	// initialise SDL
-	if ((SDL_Init(SDL_INIT_VIDEO) == -1)) {
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		printf("Couldn't initialise SDL: %s\n", SDL_GetError());
 		exit(-1);
 	}
@@ -91,10 +91,9 @@ int main(int argc, char** argv) {
 			SDL_DestroySurface(mock_map);
 			exit(-1);
 		}
-		if (SDL_SetPaletteColors(
+		if (!SDL_SetPaletteColors(
 					converted8_palette, mock_map_palette->colors, 0,
-					mock_map_palette->ncolors)
-			< 0) {
+					mock_map_palette->ncolors)) {
 			fprintf(stderr, "Couldn't transfer palette for %s: %s\n", argv[1],
 					SDL_GetError());
 			SDL_DestroySurface(converted8);

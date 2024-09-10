@@ -62,10 +62,9 @@ int img_read(char* filein) {
 			SDL_DestroySurface(g_statics.image_in);
 			return -1;
 		}
-		if (SDL_SetPaletteColors(
+		if (!SDL_SetPaletteColors(
 					converted8_palette, g_statics.image_in_palette->colors, 0,
-					g_statics.image_in_ncolors)
-			< 0) {
+					g_statics.image_in_ncolors)) {
 			fprintf(stderr, "ERROR: Palette transfer : %s\n", SDL_GetError());
 			SDL_DestroySurface(converted8);
 			SDL_DestroySurface(g_statics.image_in);
@@ -122,11 +121,10 @@ int img_read(char* filein) {
 		SDL_CloseIO(rw);
 		return -1;
 	}
-	if (SDL_SetPaletteColors(
+	if (!SDL_SetPaletteColors(
 				g_variables.image_out_palette,
 				g_statics.image_in_palette->colors, 0,
-				g_statics.image_in_ncolors)
-		< 0) {
+				g_statics.image_in_ncolors)) {
 		fprintf(stderr, "ERROR: Palette transfer : %s\n", SDL_GetError());
 		SDL_DestroySurface(g_variables.image_out);
 		SDL_DestroySurface(g_statics.image_in);
@@ -164,7 +162,7 @@ int img_write(char* img_out) {
 		> g_variables.image_out_ncolors) {
 		g_variables.image_out_palette->ncolors = g_variables.image_out_ncolors;
 	}
-	if (SDL_SaveBMP(g_variables.image_out, img_out) < 0) {
+	if (!SDL_SaveBMP(g_variables.image_out, img_out)) {
 		fprintf(stderr, "ERROR: %s\n", SDL_GetError());
 		return -1;
 	}
