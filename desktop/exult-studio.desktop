@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Exult Studio
+Comment=Exult Studio
+Exec=exult-studio
+Icon=exult-studio
+Terminal=false
+Type=Application
+Categories=Game;RolePlaying;
