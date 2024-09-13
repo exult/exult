@@ -172,12 +172,16 @@ static void Drop_dragged_shape(int shape, int frame, int x, int y);
 static void Drop_dragged_chunk(int chunknum, int x, int y);
 static void Drop_dragged_npc(int npcnum, int x, int y);
 static void Drop_dragged_combo(int cnt, U7_combo_data* combo, int x, int y);
+static void Move_grid(int x, int y, int prevx, int prevy,
+		bool ireg, int xtiles, int ytiles, int tiles_right, int tiles_below);
 static int  drag_prevx = 0, drag_prevy = 0;
 static int  drag_shfile = -1;
 static int  drag_shpnum = -1, drag_shfnum = -1;
 static int  drag_cbcnt    = -1;
 static int  drag_cbxtiles = -1, drag_cbytiles = -1;
 static int  drag_cbrtiles = -1, drag_cbbtiles = -1;
+static int  drag_npcnum = -1;
+static int  drag_cnknum = -1;
 #endif
 static void BuildGameMap(BaseGameInfo* game, int mapnum);
 static void Handle_events();
@@ -2090,6 +2094,7 @@ static void Handle_event(SDL_Event& event) {
 			if (chunknum >= 0) {    // A whole chunk.
 				Drop_dragged_chunk(chunknum, x, y);
 			}
+			drag_cnknum = -1;
 		} else if (Is_u7_npcid(data) == true) {
 			int npcnum;
 			Get_u7_npcid(data, npcnum);
@@ -2100,6 +2105,7 @@ static void Handle_event(SDL_Event& event) {
 			if (npcnum >= 0) {    // An NPC.
 				Drop_dragged_npc(npcnum, x, y);
 			}
+			drag_npcnum = -1;
 		} else if (Is_u7_comboid(data) == true) {
 			int combo_xtiles, combo_ytiles, combo_tiles_right,
 					combo_tiles_below, combo_cnt;
@@ -2175,6 +2181,21 @@ static void Handle_event(SDL_Event& event) {
 						combo_xtiles, combo_ytiles, combo_tiles_right,
 						combo_tiles_below, x, y, drag_prevx, drag_prevy, true);
 			}
+		} else if (drag_cnknum != -1) {
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Chunk: num = "
+				 << drag_cnknum
+				 << ", at x = " << x << ", y = " << y << endl;
+#	endif
+			int cx, cy;
+			gwin->get_win()->screen_to_game(x, y, false, cx, cy);
+			cx = ( ( gwin->get_scrolltx() + ( cx / c_tilesize ) ) / c_tiles_per_chunk ) * c_tiles_per_chunk ;
+			cy = ( ( gwin->get_scrollty() + ( cy / c_tilesize ) ) / c_tiles_per_chunk ) * c_tiles_per_chunk ;
+			cx = ( ( cx - gwin->get_scrolltx() ) * c_tilesize ) + c_chunksize;
+			cy = ( ( cy - gwin->get_scrollty() ) * c_tilesize ) + c_chunksize;
+			gwin->get_win()->game_to_screen(cx, cy, false, x, y);
+			Move_grid(x, y, drag_prevx, drag_prevy, false, c_tiles_per_chunk, c_tiles_per_chunk, 0, 0);
+			gwin->show();
 		}
 		drag_prevx = x;
 		drag_prevy = y;
@@ -2230,6 +2251,21 @@ static void Handle_event(SDL_Event& event) {
 						combo_xtiles, combo_ytiles, combo_tiles_right,
 						combo_tiles_below, x, y, drag_prevx, drag_prevy, true);
 			}
+		} else if (drag_cnknum != -1) {
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, Chunk: num = "
+				 << drag_cnknum
+				 << ", at x = " << x << ", y = " << y << endl;
+#	endif
+			int cx, cy;
+			gwin->get_win()->screen_to_game(x, y, false, cx, cy);
+			cx = ( ( gwin->get_scrolltx() + ( cx / c_tilesize ) ) / c_tiles_per_chunk ) * c_tiles_per_chunk ;
+			cy = ( ( gwin->get_scrollty() + ( cy / c_tilesize ) ) / c_tiles_per_chunk ) * c_tiles_per_chunk ;
+			cx = ( ( cx - gwin->get_scrolltx() ) * c_tilesize ) + c_chunksize;
+			cy = ( ( cy - gwin->get_scrollty() ) * c_tilesize ) + c_chunksize;
+			gwin->get_win()->game_to_screen(cx, cy, false, x, y);
+			Move_grid(x, y, drag_prevx, drag_prevy, false, c_tiles_per_chunk, c_tiles_per_chunk, 0, 0);
+			gwin->show();
 		}
 		drag_prevx = x;
 		drag_prevy = y;
@@ -3367,14 +3403,33 @@ void Set_dragged_shape(int file, int shnum, int frnum) {
 	drag_shfile = file;
 	drag_shpnum = shnum;
 	drag_shfnum = frnum;
+	drag_cbcnt  = -1;
+	drag_npcnum = -1;
+	drag_cnknum = -1;
 }
 
 void Set_dragged_combo(int cnt, int xtl, int ytl, int rtl, int btl) {
+	drag_shpnum   = -1;
 	drag_cbcnt    = cnt;
 	drag_cbxtiles = xtl;
 	drag_cbytiles = ytl;
 	drag_cbrtiles = rtl;
 	drag_cbbtiles = btl;
+	drag_npcnum = -1;
+	drag_cnknum = -1;
 }
 
+void Set_dragged_npc(int npcnum) {
+	drag_shpnum = -1;
+	drag_cbcnt  = -1;
+	drag_npcnum = npcnum;
+	drag_cnknum = -1;
+}
+
+void Set_dragged_chunk(int chunknum) {
+	drag_shpnum = -1;
+	drag_cbcnt  = -1;
+	drag_npcnum = -1;
+	drag_cnknum = chunknum;
+}
 #endif

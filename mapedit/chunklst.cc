@@ -535,6 +535,11 @@ gint Chunk_chooser::drag_begin(
 			t[3]            = (s == 255 ? 0 : 255);
 		}
 	}
+	unsigned char  buf[Exult_server::maxlength];
+	unsigned char* ptr = &buf[0];
+	little_endian::Write2(ptr, shinfo.num);
+	ExultStudio* studio = ExultStudio::get_instance();
+	studio->send_to_server(Exult_server::drag_chunk, buf, ptr - buf);
 	// This will be the chunk dragged.
 	gtk_drag_set_icon_pixbuf(context, pixbuf, w - 2, h - 2);
 	g_object_unref(pixbuf);

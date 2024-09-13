@@ -198,6 +198,8 @@ void Server_close() {
 
 extern void Set_dragged_shape(int file, int shnum, int frnum);
 extern void Set_dragged_combo(int cnt, int xtl, int ytl, int rtl, int btl);
+extern void Set_dragged_npc(int npcnum);
+extern void Set_dragged_chunk(int chunknum);
 
 static void Handle_client_message(
 		int& fd    // Socket to client.  May be closed.
@@ -405,6 +407,16 @@ static void Handle_client_message(
 		const int shnum = little_endian::Read2(ptr);
 		const int frnum = little_endian::Read2s(ptr);
 		Set_dragged_shape(file, shnum, frnum);
+		break;
+	}
+	case Exult_server::drag_npc: {
+		const int npcnum = little_endian::Read2(ptr);
+		Set_dragged_npc(npcnum);
+		break;
+	}
+	case Exult_server::drag_chunk: {
+		const int chunknum = little_endian::Read2(ptr);
+		Set_dragged_chunk(chunknum);
 		break;
 	}
 	case Exult_server::locate_shape: {

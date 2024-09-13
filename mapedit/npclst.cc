@@ -696,6 +696,11 @@ gint Npc_chooser::drag_begin(
 	if (!shape) {
 		return false;
 	}
+	unsigned char  buf[Exult_server::maxlength];
+	unsigned char* ptr = &buf[0];
+	little_endian::Write2(ptr, npcnum);
+	ExultStudio* studio = ExultStudio::get_instance();
+	studio->send_to_server(Exult_server::drag_npc, buf, ptr - buf);
 	chooser->set_drag_icon(context, shape);    // Set icon for dragging.
 	return true;
 }
