@@ -897,6 +897,10 @@ void Image_window::free_surface() {
 	draw_surface     = nullptr;
 	display_surface  = nullptr;
 	ibuf->bits       = nullptr;
+	if (screen_renderer != nullptr) {
+		SDL_DestroyRenderer(screen_renderer);
+	}
+	screen_renderer = nullptr;
 }
 
 /*
