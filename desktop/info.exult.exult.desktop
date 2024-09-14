@@ -2,7 +2,7 @@
 Name=Exult
 Comment=Exult Ultima 7 Engine
 Exec=exult
-Icon=exult
+Icon=info.exult.exult
 Terminal=false
 Type=Application
 Categories=Game;RolePlaying;

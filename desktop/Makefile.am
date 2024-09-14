@@ -1,7 +1,10 @@
 icondir = $(ICONDIR)
-dist_icon_DATA = exult.png
-
 desktopdir = $(DESKTOPDIR)
-dist_desktop_DATA = exult.desktop
 
-CLEANFILES = *~
+if BUILD_STUDIO
+dist_desktop_DATA = info.exult.exult.desktop info.exult.exult.studio.desktop
+dist_icon_DATA = info.exult.exult.png info.exult.exult.studio.png info.exult.exult.svg info.exult.exult.studio.svg
+else
+dist_desktop_DATA = info.exult.exult.desktop
+dist_icon_DATA = info.exult.exult.png info.exult.exult.svg
+endif
