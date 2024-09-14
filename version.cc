@@ -203,7 +203,7 @@ void getVersionInfo(std::ostream& out) {
 		|| defined(_M_IX86) || defined(__386)
 	out << "x86";
 #elif defined(__riscv)
-	out << "RISC-V"
+	out << "RISC-V";
 #else
 	out << "unknown architechture update version.cc ";
 
