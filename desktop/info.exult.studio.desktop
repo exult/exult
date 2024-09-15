@@ -2,7 +2,7 @@
 Name=Exult Studio
 Comment=Exult Studio
 Exec=exult_studio
-Icon=info.exult.exult.studio
+Icon=info.exult.studio
 Terminal=false
 Type=Application
 Categories=Game;RolePlaying;
