@@ -94,17 +94,18 @@ TouchUI_Android::TouchUI_Android() {
 	m_promptForNameMethod = m_jniEnv->GetMethodID(
 			jclass, "promptForName", "(Ljava/lang/String;)V");
 
-	SDL_VirtualJoystickTouchpadDesc virtual_touchpad = {
-			1, {0, 0, 0}
-    };
-	SDL_VirtualJoystickSensorDesc virtual_sensor = {SDL_SENSOR_ACCEL, 0.0f};
-	SDL_VirtualJoystickDesc       desc           = {SDL_JOYSTICK_TYPE_GAMEPAD};
-	desc.naxes                                   = SDL_GAMEPAD_AXIS_MAX;
-	desc.nbuttons                                = SDL_GAMEPAD_BUTTON_MAX;
-	desc.ntouchpads                              = 1;
-	desc.touchpads                               = &virtual_touchpad;
-	desc.nsensors                                = 1;
-	desc.sensors                                 = &virtual_sensor;
+	SDL_VirtualJoystickTouchpadDesc virtual_touchpad = { 1, { 0, 0, 0 } };
+	SDL_VirtualJoystickSensorDesc virtual_sensor = { SDL_SENSOR_ACCEL, 0.0f };
+	SDL_VirtualJoystickDesc       desc;
+
+	SDL_INIT_INTERFACE(&desc);
+	desc.type       = SDL_JOYSTICK_TYPE_GAMEPAD;
+	desc.naxes      = SDL_GAMEPAD_AXIS_COUNT;
+	desc.nbuttons   = SDL_GAMEPAD_BUTTON_COUNT;
+	desc.ntouchpads = 1;
+	desc.touchpads  = &virtual_touchpad;
+	desc.nsensors   = 1;
+	desc.sensors    = &virtual_sensor;
 	SDL_JoystickID joystickDeviceID = SDL_AttachVirtualJoystick(&desc);
 	if (!joystickDeviceID) {
 		std::cerr << "SDL_AttachVirtualJoystick failed: " << SDL_GetError()
