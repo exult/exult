@@ -730,6 +730,9 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 				screen_window,
 				SDL_WINDOWPOS_CENTERED_DISPLAY(original_displayID),
 				SDL_WINDOWPOS_CENTERED_DISPLAY(original_displayID));
+		SDL_SetRenderLogicalPresentation(
+				screen_renderer, w, h, SDL_LOGICAL_PRESENTATION_LETTERBOX,
+				SDL_SCALEMODE_LINEAR);
 	}
 
 	// Do an initial draw/fill
