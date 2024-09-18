@@ -727,7 +727,7 @@ SDL_bool Handle_device_connection_event(void* userdata, SDL_Event* event) {
  */
 static void Init() {
 	const Uint32 init_flags
-			= SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD;
+			= SDL_INIT_VIDEO | SDL_INIT_GAMEPAD;
 	// Let SDL3 choose its own audio/video drivers until proved otherwise.
 	// ( SDL3 ) SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "DirectSound");
 	// ( SDL3 ) SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland,x11");
