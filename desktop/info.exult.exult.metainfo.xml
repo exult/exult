@@ -9,7 +9,7 @@
   <summary>A cross-platform engine for the Ultima 7 games</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <launchable type="desktop-id">info.exult.exult</launchable>
-  <project_license> GPL-2.0-only</project_license>
+  <project_license>GPL-2.0-only</project_license>
   <url type="homepage">https://exult.info/</url>
   <description>
     <p>Exult is a project to recreate Ultima 7 for modern operating systems, using the game's original plot, data, and graphics files.</p>
