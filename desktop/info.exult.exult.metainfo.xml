@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+  <id>info.exult.exult</id>
+  <name>Exult Ultima 7 Engine</name>
+  <developer id="info.exult.exult">
+    <name>Exult Contributors</name>
+    <url>https://github.com/exult/exult/graphs/contributors</url>
+  </developer>
+  <summary>A cross-platform engine for the Ultima 7 games</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <launchable type="desktop-id">info.exult.exult</launchable>
+  <project_license> GPL-2.0-only</project_license>
+  <url type="homepage">https://exult.info/</url>
+  <description>
+    <p>Exult is a project to recreate Ultima 7 for modern operating systems, using the game's original plot, data, and graphics files.</p>
+    <p>Ultima 7, an RPG from the early 1990's, still has a huge following. But, being a DOS game with a very nonstandard memory manager, it is difficult to run it on the latest computers. Exult is a project to create an Ultima 7 game engine that runs on modern operating systems, capable of using the data and graphics files that come with the game.</p>
+    <p>Exult is written in C++ and runs on, at least, Linux, Mac OS X and Windows using the SDL library to make porting to other platforms relatively easy. The current version supports all of "Ultima 7: The Black Gate" and "Ultima 7 part 2: The Serpent Isle", allowing you to finish both games. This is only possible due to the work done by other fans who have decoded the various Ultima 7 data files, especially Gary Thompson, Maxim Shatskih, Jakob Schonberg, and Wouter Dijkslag.</p>
+    <p>Exult aims to let those people who own Ultima 7 (copyright 1993) play the game on modern hardware, in as close to (or perhaps even surpassing) its original splendor as is possible. You need to own "Ultima 7: The Black Gate" and/or "Ultima 7: Serpent Isle" and optionally the add-ons (not required to run) in order to use Exult, and we encourage you to buy a legal copy.</p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image type="source">https://exult.info/images/screenshots/mainmenu.png</image>
+      <caption>Select the game to play</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://exult.info/images/screenshots/si.png</image>
+      <caption>Supports all of the Ultima 7 games, including The Serpent Isle</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://exult.info/images/screenshots/gamemenu.png</image>
+      <caption>Includes various high-quality scaling algorithms for the original low-resolution artwork</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://exult.info/images/screenshots/gameplaymenu.png</image>
+      <caption>A wide range of customization options</caption>
+    </screenshot>
+  </screenshots>
+  <categories>
+    <category>Game</category>
+  </categories>
+  <releases type="external" url="https://raw.githubusercontent.com/exult/exult/master/desktop/info.exult.exult.releases.xml" />
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-fantasy">intense</content_attribute>
+    <content_attribute id="violence-bloodshed">intense</content_attribute>
+    <content_attribute id="violence-desecration">moderate</content_attribute>
+    <content_attribute id="violence-slavery">mild</content_attribute>
+    <content_attribute id="drugs-alcohol">moderate</content_attribute>
+    <content_attribute id="drugs-narcotics">moderate</content_attribute>
+    <content_attribute id="sex-nudity">mild</content_attribute>
+    <content_attribute id="sex-themes">moderate</content_attribute>
+    <content_attribute id="language-profanity">mild</content_attribute>
+    <content_attribute id="language-humor">intense</content_attribute>
+    <content_attribute id="language-discrimination">intense</content_attribute>
+    <content_attribute id="money-gambling">moderate</content_attribute>
+  </content_rating>
+  <update_contact>https://github.com/exult/exult/issues</update_contact>
+</component>
