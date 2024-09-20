@@ -554,19 +554,17 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 #if 0
 			// This does not appear to have any effect
 			SDL_SetWindowFullscreenMode(
-					screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0, SDL_TRUE));
+					screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0, true));
 #endif
-			SDL_SetWindowFullscreen(
-					screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
+			SDL_SetWindowFullscreen(screen_window, fullscreen);
 		} else {
 			screen_window = SDL_CreateWindow("", w / scale, h / scale, flags);
 #if 0
 			// This does not appear to have any effect
 			SDL_SetWindowFullscreenMode(
-					screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0, SDL_TRUE));
+					screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0, true));
 #endif
-			SDL_SetWindowFullscreen(
-					screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
+			SDL_SetWindowFullscreen(screen_window, fullscreen);
 		}
 		if (screen_window == nullptr) {
 			cout << "Couldn't create window: " << SDL_GetError() << std::endl;
@@ -667,19 +665,17 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 #if 0
 		// This does not appear to have any effect
 		SDL_SetWindowFullscreenMode(
-				screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w, h, 0.0, SDL_TRUE));
+				screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w, h, 0.0, true));
 #endif
-		SDL_SetWindowFullscreen(
-				screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
+		SDL_SetWindowFullscreen(screen_window, fullscreen);
 	} else {
 		screen_window = SDL_CreateWindow("", w, h, flags);
 #if 0
 		// This does not appear to have any effect
 		SDL_SetWindowFullscreenMode(
-				screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w, h, 0.0, SDL_TRUE));
+				screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w, h, 0.0, true));
 #endif
-		SDL_SetWindowFullscreen(
-				screen_window, (fullscreen ? SDL_TRUE : SDL_FALSE));
+		SDL_SetWindowFullscreen(screen_window, fullscreen);
 	}
 	if (screen_window == nullptr) {
 		cout << "Couldn't create window: " << SDL_GetError() << std::endl;

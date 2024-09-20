@@ -672,7 +672,7 @@ static void SetIcon() {
 		}
 	}
 	SDL_SetSurfaceColorKey(
-			iconsurface, SDL_TRUE,
+			iconsurface, true,
 			SDL_MapRGB(
 					iconsurface_format, iconsurface_palette, iconpal[0].r,
 					iconpal[0].g, iconpal[0].b));
@@ -694,7 +694,7 @@ void Open_game_controller(SDL_JoystickID joystick_index) {
 	}
 }
 
-SDL_bool Handle_device_connection_event(void* userdata, SDL_Event* event) {
+bool Handle_device_connection_event(void* userdata, SDL_Event* event) {
 	ignore_unused_variable_warning(userdata);
 	// Make sure that game-controllers are opened and closed, as they
 	// become connected or disconnected.
@@ -716,10 +716,10 @@ SDL_bool Handle_device_connection_event(void* userdata, SDL_Event* event) {
 	}
 	}
 
-	// Returning SDL_TRUE will tell SDL3, which can invoke this via a callback
+	// Returning true will tell SDL3, which can invoke this via a callback
 	// setup through SDL_AddEventWatch, to make sure the event gets posted
 	// to its event-queue (rather than dropping it).
-	return SDL_TRUE;
+	return true;
 }
 
 /*
@@ -1069,8 +1069,8 @@ static void Init() {
 										// Get scale factor for mouse.
 #ifdef USE_EXULTSTUDIO
 	Server_init();    // Initialize server (for map-editor).
-	SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_TRUE);
-	SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, SDL_TRUE);
+	SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
+	SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, true);
 #endif
 }
 
@@ -1447,7 +1447,7 @@ bool Translate_keyboard(
 		unicode = SDL_GetKeyFromScancode(
 				event.key.scancode,
 				(event.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)),
-				SDL_FALSE);
+				false);
 		unicode = (unicode & SDLK_SCANCODE_MASK ? 0 : unicode);
 	} else {
 		return false;
@@ -1708,7 +1708,7 @@ static void Handle_event(SDL_Event& event) {
 		break;
 	}
 	case SDL_EVENT_MOUSE_BUTTON_DOWN: {
-		SDL_SetWindowMouseGrab(gwin->get_win()->get_screen_window(), SDL_TRUE);
+		SDL_SetWindowMouseGrab(gwin->get_win()->get_screen_window(), true);
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		if (dont_move_mode) {
 			break;
@@ -1844,7 +1844,7 @@ static void Handle_event(SDL_Event& event) {
 		break;
 	}
 	case SDL_EVENT_MOUSE_BUTTON_UP: {
-		SDL_SetWindowMouseGrab(gwin->get_win()->get_screen_window(), SDL_FALSE);
+		SDL_SetWindowMouseGrab(gwin->get_win()->get_screen_window(), false);
 		if (dont_move_mode) {
 			break;
 		}
@@ -2342,7 +2342,7 @@ static bool Get_click(
 			switch (event.type) {
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
 				SDL_SetWindowMouseGrab(
-						gwin->get_win()->get_screen_window(), SDL_TRUE);
+						gwin->get_win()->get_screen_window(), true);
 				if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
 					break;
 				}
@@ -2358,7 +2358,7 @@ static bool Get_click(
 				break;
 			case SDL_EVENT_MOUSE_BUTTON_UP:
 				SDL_SetWindowMouseGrab(
-						gwin->get_win()->get_screen_window(), SDL_FALSE);
+						gwin->get_win()->get_screen_window(), false);
 				if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
 					break;
 				}

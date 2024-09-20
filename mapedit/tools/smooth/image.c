@@ -23,7 +23,7 @@ int img_read(char* filein) {
 	SDL_IOStream* rw;
 	if (!strcmp(filein,
 				"-")) {    // stdin as input. Shouldn't work but we try anyways
-		// rw = SDL_IOFromFP(stdin, SDL_FALSE);
+		// rw = SDL_IOFromFP(stdin, false);
 		return -1;    // Not supported in SDL3
 	} else {          // a regular file name
 		rw = SDL_IOFromFile(filein, "rb");

@@ -45,12 +45,12 @@ namespace {
 //   event.common.timestamp = timestamp; // 0 in here
 //   event.key.scancode = aSDL_Scancode;
 //   event.key.key      = SDL_GetKeyFromScancode(
-//           aSDL_Scancode, SDL_KMOD_NONE, SDL_FALSE);
+//           aSDL_Scancode, SDL_KMOD_NONE, false);
 //   event.key.mod      = 0;
 //   event.key.raw      = rawcode;       // 0 in here
-//   event.key.down     = SDL_TRUE  ( state == SDL_PRESSED ) or
-//                        SDL_FALSE ( state == SDL_RELEASED );
-//   event.key.repeat   = SDL_FALSE;
+//   event.key.down     = true  ( state == SDL_PRESSED ) or
+//                        false ( state == SDL_RELEASED );
+//   event.key.repeat   = false;
 //   event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
 //   event.key.which    = keyboardID;    // 0 in here
 //   SDL_PushEvent(&event);
@@ -81,9 +81,9 @@ namespace {
 	event.type         = SDL_EVENT_KEY_DOWN;
 	event.key.scancode = self.recurringKeycode;
 	event.key.key      = SDL_GetKeyFromScancode(
-            self.recurringKeycode, SDL_KMOD_NONE, SDL_FALSE);
-	event.key.down     = SDL_TRUE;
-	event.key.repeat   = SDL_FALSE;
+            self.recurringKeycode, SDL_KMOD_NONE, false);
+	event.key.down     = true;
+	event.key.repeat   = false;
 	event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
 	SDL_PushEvent(&event);
 	[self performSelector:@selector(sendRecurringKeycode)
@@ -98,9 +98,9 @@ namespace {
 	event.type         = SDL_EVENT_KEY_DOWN;
 	event.key.scancode = keycode;
 	event.key.key      = SDL_GetKeyFromScancode(
-            keycode, SDL_KMOD_NONE, SDL_FALSE);
-	event.key.down     = SDL_TRUE;
-	event.key.repeat   = SDL_FALSE;
+            keycode, SDL_KMOD_NONE, false);
+	event.key.down     = true;
+	event.key.repeat   = false;
 	event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
 	SDL_PushEvent(&event);
 	self.recurringKeycode = keycode;
@@ -124,9 +124,9 @@ namespace {
 	event.type         = SDL_EVENT_KEY_UP;
 	event.key.scancode = keycode;
 	event.key.key      = SDL_GetKeyFromScancode(
-            keycode, SDL_KMOD_NONE, SDL_FALSE);
-	event.key.down     = SDL_FALSE;
-	event.key.repeat   = SDL_FALSE;
+            keycode, SDL_KMOD_NONE, false);
+	event.key.down     = false;
+	event.key.repeat   = false;
 	event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
 	SDL_PushEvent(&event);
 }
@@ -140,9 +140,9 @@ namespace {
 	event.type         = SDL_EVENT_KEY_DOWN;
 	event.key.scancode = keycode;
 	event.key.key      = SDL_GetKeyFromScancode(
-            keycode, SDL_KMOD_NONE, SDL_FALSE);
-	event.key.down     = SDL_TRUE;
-	event.key.repeat   = SDL_FALSE;
+            keycode, SDL_KMOD_NONE, false);
+	event.key.down     = true;
+	event.key.repeat   = false;
 	event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
 	SDL_PushEvent(&event);
 }
@@ -156,9 +156,9 @@ namespace {
 	event.type         = SDL_EVENT_KEY_UP;
 	event.key.scancode = keycode;
 	event.key.key      = SDL_GetKeyFromScancode(
-            keycode, SDL_KMOD_NONE, SDL_FALSE);
-	event.key.down     = SDL_FALSE;
-	event.key.repeat   = SDL_FALSE;
+            keycode, SDL_KMOD_NONE, false);
+	event.key.down     = false;
+	event.key.repeat   = false;
 	event.key.windowID = 0; // keyboard->focus ? keyboard->focus->id : 0;
 	SDL_PushEvent(&event);
 }
