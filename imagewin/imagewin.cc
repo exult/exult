@@ -552,17 +552,25 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 		if (screen_window != nullptr) {
 			SDL_SetWindowSize(screen_window, w / scale, h / scale);
 #if 0
-			// This does not appear to have any effect
-			SDL_SetWindowFullscreenMode(
-					screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0, true));
+			{
+				SDL_DisplayMode closest_mode;
+				// This does not appear to have any effect
+				if (SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0, true, &closest_mode)) {
+					SDL_SetWindowFullscreenMode(screen_window, &closest_mode);
+				}
+			}
 #endif
 			SDL_SetWindowFullscreen(screen_window, fullscreen);
 		} else {
 			screen_window = SDL_CreateWindow("", w / scale, h / scale, flags);
 #if 0
-			// This does not appear to have any effect
-			SDL_SetWindowFullscreenMode(
-					screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0, true));
+			{
+				SDL_DisplayMode closest_mode;
+				// This does not appear to have any effect
+				if (SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w / scale, h / scale, 0.0, true, &closest_mode)) {
+					SDL_SetWindowFullscreenMode(screen_window, &closest_mode);
+				}
+			}
 #endif
 			SDL_SetWindowFullscreen(screen_window, fullscreen);
 		}
@@ -663,17 +671,25 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	if (screen_window != nullptr) {
 		SDL_SetWindowSize(screen_window, w, h);
 #if 0
-		// This does not appear to have any effect
-		SDL_SetWindowFullscreenMode(
-				screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w, h, 0.0, true));
+		{
+			SDL_DisplayMode closest_mode;
+			// This does not appear to have any effect
+			if (SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w, h, 0.0, true, &closest_mode)) {
+				SDL_SetWindowFullscreenMode(screen_window, &closest_mode);
+			}
+		}
 #endif
 		SDL_SetWindowFullscreen(screen_window, fullscreen);
 	} else {
 		screen_window = SDL_CreateWindow("", w, h, flags);
 #if 0
-		// This does not appear to have any effect
-		SDL_SetWindowFullscreenMode(
-				screen_window, SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w, h, 0.0, true));
+		{
+			SDL_DisplayMode closest_mode;
+			// This does not appear to have any effect
+			if (SDL_GetClosestFullscreenDisplayMode(SDL_GetPrimaryDisplay(), w, h, 0.0, true, &closest_mode)) {
+				SDL_SetWindowFullscreenMode(screen_window, &closest_mode);
+			}
+		}
 #endif
 		SDL_SetWindowFullscreen(screen_window, fullscreen);
 	}
@@ -716,8 +732,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 		// high resolution fullscreen needs this to make the whole screen
 		// available
 		SDL_SetRenderLogicalPresentation(
-				screen_renderer, w, h, SDL_LOGICAL_PRESENTATION_LETTERBOX,
-				SDL_SCALEMODE_LINEAR);
+				screen_renderer, w, h, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 	} else {
 		// make sure the window has the right dimensions
 		SDL_SetWindowSize(screen_window, w, h);
@@ -727,8 +742,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 				SDL_WINDOWPOS_CENTERED_DISPLAY(original_displayID),
 				SDL_WINDOWPOS_CENTERED_DISPLAY(original_displayID));
 		SDL_SetRenderLogicalPresentation(
-				screen_renderer, w, h, SDL_LOGICAL_PRESENTATION_LETTERBOX,
-				SDL_SCALEMODE_LINEAR);
+				screen_renderer, w, h, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 	}
 
 	// Do an initial draw/fill
