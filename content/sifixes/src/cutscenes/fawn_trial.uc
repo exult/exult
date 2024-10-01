@@ -29,6 +29,9 @@ void FawnTrialBarks 0x939 (var quality) {
 		partySetTrialFacing();
 		delayedBark(trialnpc, "@" + getPoliteTitle() + "...@", 10);
 		delayedBark(AVATAR, "@" + getTrialNPC(false) + "!@", 5);
+		if (YELINDA->get_item_flag(ASLEEP)) {
+			YELINDA->clear_item_flag(ASLEEP);
+		}
 		abort;
 	} else if (quality == 0x00FD) {
 		script item {
