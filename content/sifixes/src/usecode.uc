@@ -161,4 +161,5 @@
 #include "misc/list_field.uc"
 // Allows Hound of Doskar to track Anti-Shamino with Beatrix' Book.
 #include "npcs/hound.uc"
-
+// Fixes Topo's schedule to let him be at the inn when he is eating.
+#include "npcs/topo.uc"
