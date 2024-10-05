@@ -1321,7 +1321,7 @@ static void Handle_events() {
 			int       x  = Mouse::mouse->get_mousex();
 			int       y  = Mouse::mouse->get_mousey();
 			const int ms = SDL_GetMouseState(nullptr,nullptr);
-			if ((SDL_BUTTON(3) & ms) && !right_on_gump) {
+			if ((SDL_BUTTON_RMASK & ms) && !right_on_gump) {
 				gwin->start_actor(x, y, Mouse::mouse->avatar_speed);
 			} else if (ticks > last_rest) {
 				const int resttime = ticks - last_rest;
@@ -1970,7 +1970,7 @@ static void Handle_event(SDL_Event& event) {
 		}
 
 		// Dragging with left button?
-		if (event.motion.state & SDL_BUTTON(1)) {
+		if (event.motion.state & SDL_BUTTON_LMASK) {
 #ifdef USE_EXULTSTUDIO    // Painting?
 			if (cheat.in_map_editor()) {
 				if (cheat.get_edit_shape() >= 0
@@ -1999,7 +1999,7 @@ static void Handle_event(SDL_Event& event) {
 			dragged = gwin->drag(mx, my);
 		}
 		// Dragging with right?
-		else if ((event.motion.state & SDL_BUTTON(3)) && !right_on_gump) {
+		else if ((event.motion.state & SDL_BUTTON_RMASK) && !right_on_gump) {
 			if (avatar_can_act && gwin->main_actor_can_act_charmed()) {
 				gwin->start_actor(mx, my, Mouse::mouse->avatar_speed);
 			}
@@ -2395,7 +2395,7 @@ static bool Get_click(
 
 				Mouse::mouse->move(mx, my);
 				Mouse::mouse_update = true;
-				if (drag_ok && (event.motion.state & SDL_BUTTON(1))) {
+				if (drag_ok && (event.motion.state & SDL_BUTTON_LMASK)) {
 					dragged = gwin->drag(mx, my);
 				}
 				break;
@@ -2668,7 +2668,7 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 			const int ms = SDL_GetMouseState(nullptr,nullptr);
 			int       mx  = Mouse::mouse->get_mousex();
 			int       my  = Mouse::mouse->get_mousey();
-			if (SDL_BUTTON(3) & ms) {
+			if (SDL_BUTTON_RMASK & ms) {
 				Shift_wizards_eye(mx, my);
 			}
 			gwin->set_all_dirty();

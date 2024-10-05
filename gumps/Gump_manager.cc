@@ -639,7 +639,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		Mouse::mouse->move(gx, gy);
 		Mouse::mouse_update = true;
 		// Dragging with left button?
-		if (event.motion.state & SDL_BUTTON(1)) {
+		if (event.motion.state & SDL_BUTTON_LMASK) {
 			gump->mouse_drag(gx, gy);
 		}
 		break;
