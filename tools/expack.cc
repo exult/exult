@@ -131,7 +131,7 @@ long get_file_size(string& fname) {
 	}
 
 	try {
-		auto pFin = U7open_in(fname.c_str(), is_text_file(fname));
+		auto pFin = U7open_in(fname, is_text_file(fname));
 		if (!pFin) {
 			cerr << "Failed to open " << fname << endl;
 			return 0;
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
 				}
 				set_mode(mode, RESPONSE);
 				try {
-					pRespfile = U7open_in(fname.c_str(), true);
+					pRespfile = U7open_in(fname, true);
 				} catch (const file_open_exception& e) {
 					cerr << e.what() << endl;
 					exit(1);
@@ -346,7 +346,7 @@ int main(int argc, char** argv) {
 				make_uppercase(hprefix);
 			}
 			try {
-				pHeader = U7open_out(hname.c_str(), true);
+				pHeader = U7open_out(hname, true);
 			} catch (const file_open_exception& e) {
 				cerr << e.what() << endl;
 				exit(1);

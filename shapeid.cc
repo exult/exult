@@ -217,9 +217,9 @@ void Shape_manager::load() {
 
 		vector<pair<int, int>> imports;
 		imports.emplace_back(0, 0);
-		if (U7exists(sourcesi.first.c_str())) {
+		if (U7exists(sourcesi.first)) {
 			files[SF_SPRITES_VGA].import_shapes(sourcesi, imports);
-		} else if (U7exists(sourcebg.first.c_str())) {
+		} else if (U7exists(sourcebg.first)) {
 			files[SF_SPRITES_VGA].import_shapes(sourcebg, imports);
 		} else {
 			// Create lots of pixel frames.
