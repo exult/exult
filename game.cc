@@ -356,7 +356,7 @@ void Game::write_game_xml() {
 
 	U7mkdir("<PATCH>", 0755);    // Create dir. if not already there.
 	if (U7exists(name)) {
-		U7remove(name.c_str());
+		U7remove(name);
 	}
 	const string  root = xml_root;
 	Configuration xml(name, root);
@@ -366,11 +366,11 @@ void Game::write_game_xml() {
 		key += resource.first;
 		const str_int_pair& val = resource.second;
 		if (val.str) {
-			xml.set(key.c_str(), val.str, false);
+			xml.set(key, val.str, false);
 		}
 		if (val.num != 0) {
 			key += "/num";
-			xml.set(key.c_str(), val.num, false);
+			xml.set(key, val.num, false);
 		}
 	}
 	for (auto& shape : shapes) {
@@ -378,7 +378,7 @@ void Game::write_game_xml() {
 		key += "/shapes/";
 		key += shape.first;
 		const int num = shape.second;
-		xml.set(key.c_str(), num, false);
+		xml.set(key, num, false);
 	}
 	xml.write_back();
 }

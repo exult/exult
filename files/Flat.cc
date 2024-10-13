@@ -47,5 +47,5 @@ bool Flat::is_flat(IDataSource* in) {
  *  @return If the file exists, true; false otherwise.
  */
 bool Flat::is_flat(const std::string& fname) {
-	return U7exists(fname.c_str());
+	return U7exists(fname);
 }

@@ -68,23 +68,6 @@ using std::exit;
 
 #define SCALE_BIT(factor) (1 << ((factor)-1))
 
-const Image_window::ScalerType  Image_window::NoScaler(-1);
-const Image_window::ScalerConst Image_window::point("Point");
-const Image_window::ScalerConst Image_window::interlaced("Interlaced");
-const Image_window::ScalerConst Image_window::bilinear("Bilinear");
-const Image_window::ScalerConst Image_window::BilinearPlus("BilinearPlus");
-const Image_window::ScalerConst Image_window::SaI("2xSaI");
-const Image_window::ScalerConst Image_window::SuperEagle("SuperEagle");
-const Image_window::ScalerConst Image_window::Super2xSaI("Super2xSaI");
-const Image_window::ScalerConst Image_window::Scale2x("Scale2x");
-const Image_window::ScalerConst Image_window::Hq2x("Hq2X");
-const Image_window::ScalerConst Image_window::Hq3x("Hq3x");
-const Image_window::ScalerConst Image_window::Hq4x("Hq4x");
-const Image_window::ScalerConst Image_window::_2xBR("2xBR");
-const Image_window::ScalerConst Image_window::_3xBR("3xBR");
-const Image_window::ScalerConst Image_window::_4xBR("4xBR");
-const Image_window::ScalerConst Image_window::NumScalers(nullptr);
-
 Image_window::ScalerVector        Image_window::p_scalers;
 const Image_window::ScalerVector& Image_window::Scalers
 		= Image_window::p_scalers;
@@ -270,9 +253,10 @@ Image_window::ScalerVector::~ScalerVector() {
 	}
 }
 
-Image_window::ScalerType Image_window::get_scaler_for_name(const char* scaler) {
+Image_window::ScalerType Image_window::get_scaler_for_name(
+		std::string_view scaler) {
 	for (int s = 0; s < NumScalers; s++) {
-		if (!Pentagram::strcasecmp(scaler, Scalers[s].name)) {
+		if (Pentagram::iequals(scaler, Scalers[s].name)) {
 			return s;
 		}
 	}
@@ -1215,93 +1199,94 @@ bool Image_window::get_draw_dims(
 	return true;
 }
 
-Image_window::FillMode Image_window::string_to_fillmode(const char* str) {
+Image_window::FillMode Image_window::string_to_fillmode(std::string_view str) {
 	// If only C++ had reflection capabilities...
 
-	if (!Pentagram::strcasecmp(str, "Fill")) {
+	if (Pentagram::iequals(str, "Fill")) {
 		return Fill;
-	} else if (!Pentagram::strcasecmp(str, "Fit")) {
+	} else if (Pentagram::iequals(str, "Fit")) {
 		return Fit;
-	} else if (!Pentagram::strcasecmp(str, "Aspect Correct Fit")) {
+	} else if (Pentagram::iequals(str, "Aspect Correct Fit")) {
 		return AspectCorrectFit;
 	} else if (
-			!Pentagram::strcasecmp(str, "Centre")
-			|| !Pentagram::strcasecmp(str, "Center")) {
+			Pentagram::iequals(str, "Centre")
+			|| Pentagram::iequals(str, "Center")) {
 		return Centre;
 	} else if (
-			!Pentagram::strcasecmp(str, "Aspect Correct Centre")
-			|| !Pentagram::strcasecmp(str, "Aspect Correct Center")
-			|| !Pentagram::strcasecmp(str, "Centre Aspect Correct")
-			|| !Pentagram::strcasecmp(str, "Center Aspect Correct")) {
+			Pentagram::iequals(str, "Aspect Correct Centre")
+			|| Pentagram::iequals(str, "Aspect Correct Center")
+			|| Pentagram::iequals(str, "Centre Aspect Correct")
+			|| Pentagram::iequals(str, "Center Aspect Correct")) {
 		return AspectCorrectCentre;
 	} else if (
-			!Pentagram::strncasecmp(str, "Centre ", 7)
-			|| !Pentagram::strncasecmp(str, "Center ", 7)) {
-		str += 7;
-		if (*str != 'X' && *str != 'x') {
+			Pentagram::iequals(str.substr(0, 7), "Centre ")
+			|| Pentagram::iequals(str.substr(0, 7), "Center ")) {
+		str.remove_prefix(7);
+		if (str.front() != 'X' && str.front() != 'x') {
 			return static_cast<FillMode>(0);
 		}
 
-		++str;
-		if (!std::isdigit(static_cast<unsigned char>(*str))) {
+		str.remove_prefix(1);
+		if (std::isdigit(static_cast<unsigned char>(str.front())) == 0) {
 			return static_cast<FillMode>(0);
 		}
 
 		char*               end;
-		const unsigned long f = std::strtoul(str, &end, 10);
-		str += (end - str);
+		const unsigned long f = std::strtoul(str.data(), &end, 10);
+		str.remove_prefix(end - str.data());
 
-		if (f >= (65536 - Centre) / 2 || *str) {
+		if (f >= (65536 - Centre) / 2 || str.front() != 0) {
 			return static_cast<FillMode>(0);
 		}
 
 		return static_cast<FillMode>(Centre + f * 2);
 	} else if (
-			!Pentagram::strncasecmp(str, "Aspect Correct Centre ", 22)
-			|| !Pentagram::strncasecmp(str, "Aspect Correct Center ", 22)
-			|| !Pentagram::strncasecmp(str, "Centre Aspect Correct ", 22)
-			|| !Pentagram::strncasecmp(str, "Center Aspect Correct ", 22)) {
-		str += 22;
-		if (*str != 'X' && *str != 'x') {
+			Pentagram::iequals(str.substr(0, 22), "Aspect Correct Centre ")
+			|| Pentagram::iequals(str.substr(0, 22), "Aspect Correct Center ")
+			|| Pentagram::iequals(str.substr(0, 22), "Centre Aspect Correct ")
+			|| Pentagram::iequals(
+					str.substr(0, 22), "Center Aspect Correct ")) {
+		str.remove_prefix(22);
+		if (str.front() != 'X' && str.front() != 'x') {
 			return static_cast<FillMode>(0);
 		}
 
-		++str;
-		if (!std::isdigit(static_cast<unsigned char>(*str))) {
+		str.remove_prefix(1);
+		if (std::isdigit(static_cast<unsigned char>(str.front())) == 0) {
 			return static_cast<FillMode>(0);
 		}
 
 		char*               end;
-		const unsigned long f = std::strtoul(str, &end, 10);
-		str += (end - str);
+		const unsigned long f = std::strtoul(str.data(), &end, 10);
+		str.remove_prefix(end - str.data());
 
-		if (f >= (65536 - AspectCorrectCentre) / 2 || *str) {
+		if (f >= (65536 - AspectCorrectCentre) / 2 || str.front() != 0) {
 			return static_cast<FillMode>(0);
 		}
 
 		return static_cast<FillMode>(AspectCorrectCentre + f * 2);
 	} else {
-		if (!std::isdigit(static_cast<unsigned char>(*str))) {
+		if (std::isdigit(static_cast<unsigned char>(str.front())) == 0) {
 			return static_cast<FillMode>(0);
 		}
 
 		char*               end;
-		const unsigned long fx = std::strtoul(str, &end, 10);
-		str += (end - str);
+		const unsigned long fx = std::strtoul(str.data(), &end, 10);
+		str.remove_prefix(end - str.data());
 
-		if (fx > 65535 || (*str != 'X' && *str != 'x')) {
+		if (fx > 65535 || (str.front() != 'X' && str.front() != 'x')) {
 			return static_cast<FillMode>(0);
 		}
 
-		++str;
-		if (!std::isdigit(static_cast<unsigned char>(*str))) {
+		str.remove_prefix(1);
+		if (std::isdigit(static_cast<unsigned char>(str.front())) == 0) {
 			return static_cast<FillMode>(0);
 		}
 
-		const unsigned long fy = std::strtoul(str, &end, 10);
-		str += (end - str);
+		const unsigned long fy = std::strtoul(str.data(), &end, 10);
+		str.remove_prefix(end - str.data());
 
-		if (fy > 65535 || *str) {
+		if (fy > 65535 || str.front() != 0) {
 			return static_cast<FillMode>(0);
 		}
 

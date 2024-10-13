@@ -138,12 +138,16 @@ Modal_gump::DragType Modal_gump::GetDragType() {
 		std::string value;
 		config->value(
 				"config/gameplay/modal_gump_dragging", value, "offscreen");
-		SetDragType(
-				!Pentagram::strcasecmp(value.c_str(), "always")
-						? DragType::Always
-				: !Pentagram::strcasecmp(value.c_str(), "never")
-						? DragType::Never
-						: DragType::Offscreen);
+		const auto newType = [&]() {
+			if (Pentagram::iequals(value, "always")) {
+				return DragType::Always;
+			}
+			if (Pentagram::iequals(value, "never")) {
+				return DragType::Never;
+			}
+			return DragType::Offscreen;
+		}();
+		SetDragType(newType);
 	}
 
 	return dragType;

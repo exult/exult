@@ -1,3 +1,4 @@
+#include "istring.h"
 #include "span.h"
 #include "uctools.h"
 
@@ -79,7 +80,7 @@ void add_label() {
 		exit(0);
 	}
 	for (i = 0; i < lindex; i++) {
-		if (!strcasecmp(token, labels[i])) {
+		if (Pentagram::iequals(token, labels[i])) {
 			printf("Warning: label '%s' already exists.\n", token);
 			return;
 		}
@@ -91,7 +92,7 @@ void add_label() {
 int get_label() {
 	unsigned i;
 	for (i = 0; i < lindex; i++) {
-		if (!strcasecmp(token, labels[i])) {
+		if (Pentagram::iequals(token, labels[i])) {
 			return offsets[i];
 		}
 	}
@@ -247,7 +248,7 @@ int main(int argc, char* argv[]) {
 			} else if (token[0] == '.') {
 				indata = 0;
 				for (i = 0; i < compsize; i++) {
-					if (!strcasecmp(compiler_table[i], token)) {
+					if (Pentagram::iequals(compiler_table[i], token)) {
 						read_token(fi);
 						sscanf(token, "%x", &word);
 						emit_word(word);
@@ -289,7 +290,7 @@ int main(int argc, char* argv[]) {
 					sscanf(token, "%x", &byteval);
 					emit_byte(byteval);
 				}
-			} else if (!strcasecmp(token, "dw")) {
+			} else if (Pentagram::iequals(token, "dw")) {
 				read_token(fi);
 				sscanf(token, "%x", &word);
 				emit_word(word);
@@ -298,7 +299,7 @@ int main(int argc, char* argv[]) {
 					if (!opcode_table[i].mnemonic) {
 						continue;
 					}
-					if (!strcasecmp(opcode_table[i].mnemonic, token)) {
+					if (Pentagram::iequals(opcode_table[i].mnemonic, token)) {
 						if (opcode_table[i].nbytes == 0
 							&& opcode_table[i].type == 0) {
 							emit_byte(i);
@@ -372,7 +373,7 @@ int main(int argc, char* argv[]) {
 							case op_push:
 								read_token(fi);
 								for (i = 0; i < pushsize; i++) {
-									if (!strcasecmp(
+									if (Pentagram::iequals(
 												push_table[i].mnemonic,
 												token)) {
 										emit_byte(push_table[i].type);
@@ -388,7 +389,7 @@ int main(int argc, char* argv[]) {
 							case op_pop:
 								read_token(fi);
 								for (i = 0; i < popsize; i++) {
-									if (!strcasecmp(
+									if (Pentagram::iequals(
 												pop_table[i].mnemonic, token)) {
 										emit_byte(pop_table[i].type);
 										break;

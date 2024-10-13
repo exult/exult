@@ -136,13 +136,13 @@ int CoreAudioMidiDriver::open() {
 					} else {
 						f = soundfont;
 					}
-					if (U7exists(f.c_str())) {
+					if (U7exists(f)) {
 						soundfont = f;
 					}
 				}
 				std::cout << "Loading SoundFont '" << soundfont << "'"
 						  << std::endl;
-				if (!soundfont.empty() && U7exists(soundfont.c_str())) {
+				if (!soundfont.empty() && U7exists(soundfont)) {
 					OSErr    err = noErr;
 					CFURLRef url = CFURLCreateFromFileSystemRepresentation(
 							kCFAllocatorDefault,
