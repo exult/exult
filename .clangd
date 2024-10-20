@@ -33,7 +33,7 @@ If:
   PathMatch: .*\.h
   PathExclude: [ios/.*, mapedit/tools/mockup/.*, mapedit/tools/smooth/.*]
 CompileFlags:
-  Add: [-xc++-user-header, -std=c++17]
+  Add: [-xc++-user-header, -std=c++17, -DVERSION="1.9.0git"]
 ---
 If:
   PathMatch: [.*\.c]
