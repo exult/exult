@@ -174,7 +174,7 @@ static void Drop_dragged_npc(int npcnum, int x, int y);
 static void Drop_dragged_combo(int cnt, U7_combo_data* combo, int x, int y);
 static void Move_grid(int x, int y, int prevx, int prevy,
 		bool ireg, int xtiles, int ytiles, int tiles_right, int tiles_below);
-static int  drag_prevx = 0, drag_prevy = 0;
+static int  drag_prevx  = -1, drag_prevy = -1;
 static int  drag_shfile = -1;
 static int  drag_shpnum = -1, drag_shfnum = -1;
 static int  drag_cbcnt    = -1;
@@ -2205,25 +2205,35 @@ static void Handle_event(SDL_Event& event) {
 #endif
 		break;
 	}
+	case SDL_EVENT_DROP_COMPLETE: // Drag pointer left the window, handle as -1, -1 DROP_POSITION
 	case SDL_EVENT_DROP_POSITION: {
 #ifdef USE_EXULTSTUDIO
-		// activate Exult for drag'n'drop
-		SDL_RaiseWindow(gwin->get_win()->get_screen_window());
-		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		int   x;
 		int   y;
-		float fx = event.drop.x, fy = event.drop.y;
-		x = int(fx);
-		y = int(fy);
+		SDL_RaiseWindow(gwin->get_win()->get_screen_window());
+		if (event.type == SDL_EVENT_DROP_POSITION) {
+			// activate Exult for drag'n'drop
+			SDL_ConvertEventToRenderCoordinates(renderer, &event);
+			float fx = event.drop.x, fy = event.drop.y;
+			x = int(fx);
+			y = int(fy);
+		} else {
+			x = -1;
+			y = -1;
+		}
 #	ifdef DEBUG
-		cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, type = "
-			 << event.drop.type << ", at x = " << x << ", y = " << y << endl;
+		cout << "(EXULT) SDL_EVENT_DROP_"
+			 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION" : "COMPLETE")
+			 << " Event, type = " << event.drop.type
+			 << ", at x = " << x << ", y = " << y << endl;
 #	endif
 		if (drag_shpnum != -1) {
 			int file = drag_shfile, shape = drag_shpnum, frame = drag_shfnum;
 #	ifdef DEBUG
-			cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, Shape: file = "
-				 << file << ", shape = " << shape << ", frame = " << frame
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION" : "COMPLETE")
+				 << " Event, Shape: file = " << file
+				 << ", shape = " << shape << ", frame = " << frame
 				 << ", at x = " << x << ", y = " << y << endl;
 #	endif
 			if (shape >= 0) {    // Moving a shape?
@@ -2239,8 +2249,10 @@ static void Handle_event(SDL_Event& event) {
 				combo_tiles_below = drag_cbbtiles;
 			int combo_cnt         = drag_cbcnt;
 #	ifdef DEBUG
-			cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, Combo: xtiles = "
-				 << combo_xtiles << ", ytiles = " << combo_ytiles
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION" : "COMPLETE")
+				 << " Event, Combo: xtiles = " << combo_xtiles
+				 << ", ytiles = " << combo_ytiles
 				 << ", tiles_right = " << combo_tiles_right
 				 << ", tiles_below = " << combo_tiles_below
 				 << ", count = " << combo_cnt << ", at x = " << x
@@ -2253,8 +2265,9 @@ static void Handle_event(SDL_Event& event) {
 			}
 		} else if (drag_cnknum != -1) {
 #	ifdef DEBUG
-			cout << "(EXULT) SDL_EVENT_DROP_POSITION Event, Chunk: num = "
-				 << drag_cnknum
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION" : "COMPLETE")
+				 << " Event, Chunk: num = " << drag_cnknum
 				 << ", at x = " << x << ", y = " << y << endl;
 #	endif
 			int cx, cy;
@@ -2270,7 +2283,9 @@ static void Handle_event(SDL_Event& event) {
 		drag_prevx = x;
 		drag_prevy = y;
 #	ifdef DEBUG
-		cout << "(EXULT) SDL_EVENT_DROP_POSITION Event complete" << endl;
+		cout << "(EXULT) SDL_EVENT_DROP_"
+			 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION" : "COMPLETE")
+			 << " Event complete" << endl;
 #	endif
 #endif
 		break;
