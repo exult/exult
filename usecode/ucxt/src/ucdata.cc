@@ -392,7 +392,7 @@ void UCData::dump_flags(ostream& o) {
 void UCData::file_open(const string& filename) {
 	/* Open a usecode file */
 	try {
-		_pFile = U7open_in(filename.c_str(), false);
+		_pFile = U7open_in(filename, false);
 	} catch (const std::exception& err) {
 	}
 }
@@ -402,7 +402,7 @@ void UCData::load_globals(ostream& o) {
 		return;
 	}
 	try {
-		auto pGflags = U7open_in(_global_flags_file.c_str(), false);
+		auto pGflags = U7open_in(_global_flags_file, false);
 		if (!pGflags) {
 			cout << "error. failed to open " << _global_flags_file
 				 << ". exiting." << endl;

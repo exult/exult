@@ -25,8 +25,8 @@
 #include "exult_constants.h"
 #include "fnames.h"
 
+#include <memory>
 #include <string>
-#include <vector>
 
 class MidiDriver;
 

@@ -107,16 +107,16 @@ ModInfo::ModInfo(
 
 	config_path = "mod_info/mod_title";
 	default_dir = mod;
-	modconfig.value(config_path, mod_title, default_dir.c_str());
+	modconfig.value(config_path, mod_title, default_dir);
 
 	config_path = "mod_info/display_string";
 	default_dir = "Description missing!";
-	modconfig.value(config_path, menustring, default_dir.c_str());
+	modconfig.value(config_path, menustring, default_dir);
 
 	config_path = "mod_info/required_version";
 	default_dir = "0.0.00R";
 	string modversion;
-	modconfig.value(config_path, modversion, default_dir.c_str());
+	modconfig.value(config_path, modversion, default_dir);
 	if (modversion == default_dir) {
 		// Required version is missing; assume the mod to be incompatible
 		compatible = false;
@@ -169,14 +169,14 @@ ModInfo::ModInfo(
 	// Read codepage first.
 	config_path = "mod_info/codepage";
 	default_dir = "ASCII";    // Ultima VII 7-bit ASCII code page.
-	modconfig.value(config_path, codepage, default_dir.c_str());
+	modconfig.value(config_path, codepage, default_dir);
 
 	// Where game data is. This is defaults to a non-writable location because
 	// mods_dir does too.
 	config_path = "mod_info/patch";
 	default_dir = data_directory + "/patch";
 	string patchdir;
-	modconfig.value(config_path, patchdir, default_dir.c_str());
+	modconfig.value(config_path, patchdir, default_dir);
 	ReplaceMacro(patchdir, mods_macro, mods_dir);
 	ReplaceMacro(patchdir, mod_path_macro, data_directory);
 	add_system_path(
@@ -184,36 +184,36 @@ ModInfo::ModInfo(
 	// Where usecode source is found; defaults to same as patch.
 	config_path = "mod_info/source";
 	string sourcedir;
-	modconfig.value(config_path, sourcedir, default_dir.c_str());
+	modconfig.value(config_path, sourcedir, default_dir);
 	ReplaceMacro(sourcedir, mods_macro, mods_dir);
 	ReplaceMacro(sourcedir, mod_path_macro, data_directory);
 	add_system_path(
 			"<" + system_path_tag + "_SOURCE>", get_system_path(sourcedir));
 
-	U7mkdir(mods_save_dir.c_str(), 0755);
-	U7mkdir(savedata_directory.c_str(), 0755);
+	U7mkdir(mods_save_dir, 0755);
+	U7mkdir(savedata_directory, 0755);
 
 	// The following paths default to user-writable locations.
 	config_path = "mod_info/gamedat_path";
 	default_dir = savedata_directory + "/gamedat";
 	string gamedatdir;
-	modconfig.value(config_path, gamedatdir, default_dir.c_str());
+	modconfig.value(config_path, gamedatdir, default_dir);
 	// Path 'macros' for relative paths:
 	ReplaceMacro(gamedatdir, mods_macro, mods_save_dir);
 	ReplaceMacro(gamedatdir, mod_path_macro, savedata_directory);
 	add_system_path(
 			"<" + system_path_tag + "_GAMEDAT>", get_system_path(gamedatdir));
-	U7mkdir(gamedatdir.c_str(), 0755);
+	U7mkdir(gamedatdir, 0755);
 
 	config_path = "mod_info/savegame_path";
 	string savedir;
-	modconfig.value(config_path, savedir, savedata_directory.c_str());
+	modconfig.value(config_path, savedir, savedata_directory);
 	// Path 'macros' for relative paths:
 	ReplaceMacro(savedir, mods_macro, mods_save_dir);
 	ReplaceMacro(savedir, mod_path_macro, savedata_directory);
 	add_system_path(
 			"<" + system_path_tag + "_SAVEGAME>", get_system_path(savedir));
-	U7mkdir(savedir.c_str(), 0755);
+	U7mkdir(savedir, 0755);
 
 #ifdef DEBUG_PATHS
 	cout << "path prefix of " << cfgname << " mod " << mod_title
@@ -242,9 +242,8 @@ string get_game_identity(const char* savename, const string& title) {
 	if (!U7exists(savename)) {
 		return title;
 	}
-	if (!Flex::is_flex(savename))
+	if (!Flex::is_flex(savename)) {
 #ifdef HAVE_ZIP_SUPPORT
-	{
 		unzFile unzipfile = unzOpen(get_system_path(savename).c_str());
 		if (unzipfile) {
 			// Find IDENTITY, ignoring case.
@@ -271,11 +270,10 @@ string get_game_identity(const char* savename, const string& title) {
 				}
 			}
 		}
-	}
 #else
-		return title.c_str();
+		return title;
 #endif
-	else {
+	} else {
 		IFileDataSource in(savename);
 
 		in.seek(0x54);    // Get to where file count sits.
@@ -341,23 +339,23 @@ ModManager::ModManager(
 		// <path> setting: default is "$gameprefix".
 		config_path = base_cfg_path + "/path";
 		default_dir = get_system_path("<GAMEHOME>") + "/" + cfgname;
-		config->value(config_path.c_str(), game_path, default_dir.c_str());
+		config->value(config_path, game_path, default_dir);
 
 		// <static_path> setting: default is "$game_path/static".
 		config_path = base_cfg_path + "/static_path";
 		default_dir = game_path + "/static";
-		config->value(config_path.c_str(), static_dir, default_dir.c_str());
+		config->value(config_path, static_dir, default_dir);
 
 		// Read codepage too.
 		config_path = base_cfg_path + "/codepage";
 		default_dir = "ASCII";    // Ultima VII 7-bit ASCII code page.
-		config->value(config_path, codepage, default_dir.c_str());
+		config->value(config_path, codepage, default_dir);
 
 		// And edit flag.
 		string cfgediting;
 		config_path = base_cfg_path + "/editing";
 		default_dir = "no";    // Not editing.
-		config->value(config_path, cfgediting, default_dir.c_str());
+		config->value(config_path, cfgediting, default_dir);
 		editing = (cfgediting == "yes");
 	}
 
@@ -518,18 +516,18 @@ ModManager::ModManager(
 		// <mods> setting: default is "$game_path/mods".
 		config_path = base_cfg_path + "/mods";
 		default_dir = game_path + "/mods";
-		config->value(config_path.c_str(), mods_dir, default_dir.c_str());
+		config->value(config_path, mods_dir, default_dir);
 		add_system_path("<" + path_prefix + "_MODS>", mods_dir);
 
 		// <patch> setting: default is "$game_path/patch".
 		config_path = base_cfg_path + "/patch";
 		default_dir = game_path + "/patch";
-		config->value(config_path.c_str(), patch_dir, default_dir.c_str());
+		config->value(config_path, patch_dir, default_dir);
 		add_system_path("<" + path_prefix + "_PATCH>", patch_dir);
 
 		// <source> setting: default is "$game_path/source".
 		config_path = base_cfg_path + "/source";
-		config->value(config_path.c_str(), patch_dir, default_dir.c_str());
+		config->value(config_path, patch_dir, default_dir);
 		add_system_path("<" + path_prefix + "_SOURCE>", "");
 #ifdef DEBUG_PATHS
 		if (!silent) {
@@ -658,16 +656,16 @@ void ModManager::get_game_paths(const string& game_path) {
 	// <savegame_path> setting: default is "$dataprefix".
 	config_path = base_cfg_path + "/savegame_path";
 	default_dir = saveprefix;
-	config->value(config_path.c_str(), savegame_dir, default_dir.c_str());
+	config->value(config_path, savegame_dir, default_dir);
 	add_system_path("<" + path_prefix + "_SAVEGAME>", savegame_dir);
-	U7mkdir(savegame_dir.c_str(), 0755);
+	U7mkdir(savegame_dir, 0755);
 
 	// <gamedat_path> setting: default is "$dataprefix/gamedat".
 	config_path = base_cfg_path + "/gamedat_path";
 	default_dir = saveprefix + "/gamedat";
-	config->value(config_path.c_str(), gamedat_dir, default_dir.c_str());
+	config->value(config_path, gamedat_dir, default_dir);
 	add_system_path("<" + path_prefix + "_GAMEDAT>", gamedat_dir);
-	U7mkdir(gamedat_dir.c_str(), 0755);
+	U7mkdir(gamedat_dir, 0755);
 
 #ifdef DEBUG_PATHS
 	cout << "setting " << cfgname << " gamedat directory to: " << gamedat_dir
@@ -721,7 +719,7 @@ GameManager::GameManager(bool silent) {
 		base_conf += '/';
 		base_conf += gameentry;
 		base_conf += "/title";
-		config->value(base_conf, game_title, base_title.c_str());
+		config->value(base_conf, game_title, base_title);
 		const bool need_title = game_title == base_title;
 		// This checks static identity and sets game type.
 		const ModManager game

@@ -831,7 +831,7 @@ void Shape_chooser::edit_shape(
 	const int    frnum  = info[selected].framenum;
 	string       filestr("<SAVEGAME>");    // Set up filename.
 	filestr += "/itmp";                    // "Image tmp" directory.
-	U7mkdir(filestr.c_str(), 0755);        // Create if not already there.
+	U7mkdir(filestr, 0755);        // Create if not already there.
 	// Lookup <SAVEGAME>.
 	filestr = get_system_path(filestr);
 	char* ext;

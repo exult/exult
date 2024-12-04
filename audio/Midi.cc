@@ -699,7 +699,7 @@ bool MyMidiPlayer::init_device(bool timbre_load) {
 	config->set("config/audio/midi/use_oggs", ogg_enabled ? "yes" : "no", true);
 
 	// Midi driver type.
-	config->value("config/audio/midi/driver", s, driver_default.c_str());
+	config->value("config/audio/midi/driver", s, driver_default);
 
 	if (s == "normal") {
 		config->set("config/audio/midi/driver", "default", true);

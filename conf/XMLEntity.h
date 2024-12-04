@@ -19,33 +19,35 @@
 #ifndef XMLENTITY_H
 #define XMLENTITY_H
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 std::string encode_entity(const std::string& s);
 
 class XMLnode {
-protected:
+	using PXMLnode = std::unique_ptr<XMLnode>;
 	std::string           id;
 	std::string           content;
-	std::vector<XMLnode*> nodelist;
+	std::vector<PXMLnode> nodelist;
 	bool                  no_close = false;
 
 public:
 	XMLnode() = default;
 
-	XMLnode(const std::string& i) : id(i) {}
+	explicit XMLnode(std::string_view i) : id(i) {}
 
 	XMLnode(const XMLnode&) = delete;
 	XMLnode(XMLnode&&)      = default;
-	~XMLnode();
+	~XMLnode()              = default;
 
-	XMLnode&           operator=(const XMLnode&) = delete;
-	XMLnode&           operator=(XMLnode&&)      = default;
-	const std::string& reference(const std::string&, bool&);
-	const XMLnode*     subtree(const std::string&) const;
+	XMLnode&         operator=(const XMLnode&) = delete;
+	XMLnode&         operator=(XMLnode&&)      = default;
+	std::string_view reference(std::string_view, bool&) const;
+	const XMLnode*   subtree(std::string_view) const;
 
-	const std::string& value() const {
+	std::string_view value() const {
 		return content;
 	}
 
@@ -53,23 +55,23 @@ public:
 	using KeyTypeList = std::vector<KeyType>;
 
 	bool searchpairs(
-			KeyTypeList& ktl, const std::string& basekey,
-			const std::string& currkey, const unsigned int pos);
-	void selectpairs(KeyTypeList& ktl, const std::string& currkey);
+			KeyTypeList& ktl, std::string_view basekey,
+			std::string_view currkey, const unsigned int pos);
+	void selectpairs(KeyTypeList& ktl, std::string_view currkey);
 
 	std::string dump(int depth = 0);
 	void        dump(
-				   std::ostream& o, const std::string& indentstr,
+				   std::ostream& o, std::string_view indentstr,
 				   const unsigned int depth = 0) const;
 
-	void xmlassign(const std::string& key, const std::string& value);
-	void xmlparse(const std::string& s, std::size_t& pos);
+	void xmlassign(std::string_view key, std::string_view value);
+	void xmlparse(std::string_view s, std::size_t& pos);
 
 	void listkeys(
-			const std::string&, std::vector<std::string>&,
+			std::string_view, std::vector<std::string>&,
 			bool longformat = true) const;
 
-	void remove(const std::string& key, bool valueonly);
+	void remove(std::string_view key, bool valueonly);
 };
 
 #endif

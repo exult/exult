@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "chunklst.h"
 #include "combo.h"
 #include "exceptions.h"
+#include "istring.h"
 #include "npclst.h"
 #include "paledit.h"
 #include "shapegroup.h"
@@ -95,7 +96,7 @@ Object_browser* Image_file_info::create_browser(
 ) {
 	auto* chooser = new Shape_chooser(ifile, palbuf, 400, 64, g, this);
 	// Fonts?  Show 'A' as the default.
-	if (strcasecmp(basename.c_str(), "fonts.vga") == 0) {
+	if (Pentagram::iequals(basename, "fonts.vga")) {
 		chooser->set_framenum0('A');
 	}
 	if (this == vgafile) {    // Main 'shapes.vga' file?
@@ -421,8 +422,8 @@ Object_browser* Flex_file_info::create_browser(
 		Shape_group*     g           // Group, or 0.
 ) {
 	const char* bname = basename.c_str();
-	if (strcasecmp(bname, "palettes.flx") == 0
-		|| strcasecmp(".pal", bname + strlen(bname) - 4) == 0) {
+	if (Pentagram::iequals(bname, "palettes.flx")
+		|| Pentagram::iequals(".pal", bname + strlen(bname) - 4)) {
 		return new Palette_edit(this);
 	}
 	return new Combo_chooser(vgafile->get_ifile(), this, palbuf, 400, 64, g);
@@ -517,16 +518,16 @@ static bool Create_file(
 ) {
 	try {
 		const int namelen = strlen(basename);
-		if (strcasecmp(".flx", basename + namelen - 4) == 0) {
+		if (Pentagram::iequals(".flx", basename + namelen - 4)) {
 			// We can create an empty flx.
 			OFileDataSource   out(pathname.c_str());    // May throw exception.
 			const Flex_writer writer(out, "Written by ExultStudio", 0);
 			return true;
-		} else if (strcasecmp(".pal", basename + namelen - 4) == 0) {
+		} else if (Pentagram::iequals(".pal", basename + namelen - 4)) {
 			// Empty 1-palette file.
-			U7open_out(pathname.c_str());    // May throw exception.
+			U7open_out(pathname);    // May throw exception.
 			return true;
-		} else if (strcasecmp("npcs", basename) == 0) {
+		} else if (Pentagram::iequals("npcs", basename)) {
 			return true;    // Don't need file.
 		}
 	} catch (exult_exception& e) {
@@ -546,7 +547,7 @@ Shape_file_info* Shape_file_set::create(
 ) {
 	// Already have it open?
 	for (auto* file : files) {
-		if (strcasecmp(file->basename.c_str(), basename) == 0) {
+		if (Pentagram::iequals(file->basename, basename)) {
 			return file;    // Found it.
 		}
 	}
@@ -567,42 +568,42 @@ Shape_file_info* Shape_file_set::create(
 	string      group_name(basename);    // Create groups file.
 	group_name += ".grp";
 	auto* groups = new Shape_group_file(group_name.c_str());
-	if (strcasecmp(basename, "shapes.vga") == 0) {
+	if (Pentagram::iequals(basename, "shapes.vga")) {
 		return append(new Image_file_info(
 				basename, fullname,
 				new Shapes_vga_file(spath, U7_SHAPE_SHAPES, ppath), groups));
-	} else if (strcasecmp(basename, "gumps.vga") == 0) {
+	} else if (Pentagram::iequals(basename, "gumps.vga")) {
 		return append(new Image_file_info(
 				basename, fullname, new Vga_file(spath, U7_SHAPE_GUMPS, ppath),
 				groups));
-	} else if (strcasecmp(basename, "faces.vga") == 0) {
+	} else if (Pentagram::iequals(basename, "faces.vga")) {
 		return append(new Image_file_info(
 				basename, fullname, new Vga_file(spath, U7_SHAPE_FACES, ppath),
 				groups));
-	} else if (strcasecmp(basename, "sprites.vga") == 0) {
+	} else if (Pentagram::iequals(basename, "sprites.vga")) {
 		return append(new Image_file_info(
 				basename, fullname,
 				new Vga_file(spath, U7_SHAPE_SPRITES, ppath), groups));
-	} else if (strcasecmp(basename, "paperdol.vga") == 0) {
+	} else if (Pentagram::iequals(basename, "paperdol.vga")) {
 		return append(new Image_file_info(
 				basename, fullname,
 				new Vga_file(spath, U7_SHAPE_PAPERDOL, ppath), groups));
-	} else if (strcasecmp(basename, "fonts.vga") == 0) {
+	} else if (Pentagram::iequals(basename, "fonts.vga")) {
 		return append(new Image_file_info(
 				basename, fullname, new Vga_file(spath, U7_SHAPE_FONTS, ppath),
 				groups));
-	} else if (strcasecmp(basename, "u7chunks") == 0) {
+	} else if (Pentagram::iequals(basename, "u7chunks")) {
 		auto file = U7open_in(fullname);
 		return append(new Chunks_file_info(
 				basename, fullname, std::move(file), groups));
-	} else if (strcasecmp(basename, "npcs") == 0) {
+	} else if (Pentagram::iequals(basename, "npcs")) {
 		return append(new Npcs_file_info(basename, fullname, groups));
 	} else if (
-			strcasecmp(basename, "combos.flx") == 0
-			|| strcasecmp(basename, "palettes.flx") == 0) {
+			Pentagram::iequals(basename, "combos.flx")
+			|| Pentagram::iequals(basename, "palettes.flx")) {
 		return append(new Flex_file_info(
 				basename, fullname, new FlexFile(fullname), groups));
-	} else if (strcasecmp(".pal", basename + strlen(basename) - 4) == 0) {
+	} else if (Pentagram::iequals(".pal", basename + strlen(basename) - 4)) {
 		// Single palette?
 		auto pIn = U7open_in(fullname);
 		if (!pIn) {
@@ -637,7 +638,7 @@ Shape_file_info* Shape_file_set::create(
 
 Shape_file_info* Shape_file_set::get_npc_browser() {
 	for (auto* file : files) {
-		if (strcasecmp(file->basename.c_str(), "npcs") == 0) {
+		if (Pentagram::iequals(file->basename, "npcs")) {
 			return file;    // Found it.
 		}
 	}

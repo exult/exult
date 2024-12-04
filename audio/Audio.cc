@@ -290,7 +290,7 @@ bool Audio::can_sfx(const std::string& file, std::string* out) {
 		} else {
 			f = file;
 		}
-		if (U7exists(f.c_str())) {
+		if (U7exists(f)) {
 			if (out) {
 				*out = std::move(f);
 			}
@@ -330,7 +330,7 @@ bool Audio::have_midi_sfx(std::string* out) {
 bool Audio::have_config_sfx(const std::string& game, std::string* out) {
 	string       s;
 	const string d = "config/disk/game/" + game + "/waves";
-	config->value(d.c_str(), s, "---");
+	config->value(d, s, "---");
 	return (s != "---") && can_sfx(s, out);
 }
 
@@ -375,7 +375,7 @@ void Audio::Init_sfx() {
 			} else {
 				pflex = flex;
 			}
-			config->set(d.c_str(), pflex, true);
+			config->set(d, pflex, true);
 		} else {
 			cerr << "Digital SFX's file specified: " << flex
 				 << "... but file not found, and fallbacks are missing" << endl;

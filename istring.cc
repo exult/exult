@@ -28,27 +28,33 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "istring.h"
 
+#include <algorithm>
 #include <cctype>
 #include <limits>
+#include <type_traits>
 
 namespace Pentagram {
+	template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+	inline int sgn(T val) {
+		return (static_cast<int>(T{0} < val)) - (static_cast<int>(val < T{0}));
+	}
 
 	int strncasecmp(const char* s1, const char* s2, std::size_t length) {
-		sint32 c1;
+		char c1;
 
 		do {
-			c1        = static_cast<unsigned char>(*s1++);
-			sint32 c2 = static_cast<unsigned char>(*s2++);
+			c1      = *s1++;
+			char c2 = *s2++;
 
 			if ((length--) == 0) {
 				return 0;    // strings are equal until end point
 			}
 
 			if (c1 != c2) {
-				c1 = std::toupper(c1);
-				c2 = std::toupper(c2);
+				c1 = Pentagram::toupper(c1);
+				c2 = Pentagram::toupper(c2);
 				if (c1 != c2) {
-					return (c1 < c2) ? -1 : 1;    // strings not equal
+					return sgn(c1 - c2);    // strings not equal
 				}
 			}
 		} while (c1 != 0);
@@ -59,5 +65,4 @@ namespace Pentagram {
 	int strcasecmp(const char* s1, const char* s2) {
 		return strncasecmp(s1, s2, std::numeric_limits<std::size_t>::max());
 	}
-
 }    // namespace Pentagram
