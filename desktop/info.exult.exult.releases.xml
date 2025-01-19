@@ -37,6 +37,7 @@
       <li>Immobile NPCs were able to move (e.g. Reapers)</li>
       <li>Enemies poison now</li>
     </ul>
+    </description>
     <url>https://github.com/exult/exult/releases/tag/v1.10</url>
   </release>
   <release version="1.8" date="2022-04-16">
