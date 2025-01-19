@@ -1,5 +1,5 @@
 <releases>
-  <release version="1.11" date="2024-09-25">
+  <release version="1.10.1" date="2024-09-25">
     <description>
     <ul>
       <li>Fixed crash on Windows by increasing compatibility with old CPUs</li>
@@ -7,6 +7,7 @@
       <li>Fixed new releases being unable to download and install our mods on Windows</li>
       <li>Added new icons for our main platform (thanks Florian Piesche)</li>
     </ul>
+    </description>
     <url>https://github.com/exult/exult/releases/tag/v1.10.1</url>
   </release>
   <release version="1.10" date="2024-09-09">
