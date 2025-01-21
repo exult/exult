@@ -6,7 +6,7 @@
     <name>Exult Contributors</name>
     <url>https://github.com/exult/exult/graphs/contributors</url>
   </developer>
-  <summary>A cross-platform engine for the Ultima VII games</summary>
+  <summary>Cross-platform engine for the Ultima VII games</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-2.0-only</project_license>
   <launchable type="desktop-id">info.exult.exult.desktop</launchable>
@@ -38,9 +38,6 @@
       <caption>A wide range of customization options</caption>
     </screenshot>
   </screenshots>
-  <categories>
-    <category>Game</category>
-  </categories>
   <releases>
     <release version="1.10.1" date="2024-09-25">
       <url>https://github.com/exult/exult/releases/tag/v1.10.1</url>
