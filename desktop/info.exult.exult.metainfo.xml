@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component>
+<component type="desktop-application">
   <id>info.exult.exult</id>
   <name>Exult Ultima VII Engine</name>
   <developer id="info.exult.exult">
@@ -8,9 +8,12 @@
   </developer>
   <summary>A cross-platform engine for the Ultima VII games</summary>
   <metadata_license>CC0-1.0</metadata_license>
-  <launchable type="desktop-id">info.exult.exult</launchable>
   <project_license>GPL-2.0-only</project_license>
+  <launchable type="desktop-id">info.exult.exult.desktop</launchable>
   <url type="homepage">https://exult.info/</url>
+  <url type="bugtracker">https://github.com/exult/exult/issues</url>
+  <url type="help">https://exult.info/docs.php</url>
+  <url type="vcs-browser">https://github.com/exult/exult</url>
   <description>
     <p>Exult is a project to recreate Ultima VII for modern operating systems, using the game's original plot, data, and graphics files.</p>
     <p>Ultima VII, an RPG from the early 1990's, still has a huge following. But, being a DOS game with a very nonstandard memory manager, it is difficult to run it on the latest computers. Exult is a project to create an Ultima VII game engine that runs on modern operating systems, capable of using the data and graphics files that come with the game.</p>
@@ -38,7 +41,26 @@
   <categories>
     <category>Game</category>
   </categories>
-  <releases type="external" url="https://raw.githubusercontent.com/exult/exult/master/desktop/info.exult.exult.releases.xml" />
+  <releases>
+    <release version="1.10.1" date="2024-09-25">
+      <url>https://github.com/exult/exult/releases/tag/v1.10.1</url>
+    </release>
+    <release version="1.10" date="2024-09-09">
+      <url>https://github.com/exult/exult/releases/tag/v1.10</url>
+    </release>
+    <release version="1.8" date="2022-04-16">
+      <url>https://github.com/exult/exult/releases/tag/v1.8</url>
+    </release>
+    <release version="1.6" date="2020-04-17">
+      <url>https://github.com/exult/exult/releases/tag/v1.6</url>
+    </release>
+    <release version="1.2" date="2016-03-12">
+      <url>https://github.com/exult/exult/releases/tag/v1.2</url>
+    </release>
+    <release version="1.00" date="2022-04-12">
+      <url>https://github.com/exult/exult/releases/tag/v1.00</url>
+    </release>
+  </releases>
   <content_rating type="oars-1.1">
     <content_attribute id="violence-fantasy">intense</content_attribute>
     <content_attribute id="violence-bloodshed">intense</content_attribute>
@@ -54,4 +76,25 @@
     <content_attribute id="money-gambling">moderate</content_attribute>
   </content_rating>
   <update_contact>https://github.com/exult/exult/issues</update_contact>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <requires>
+    <internet>offline-only</internet>
+  </requires>
+  <provides>
+    <binary>exult_studio</binary>
+    <binary>exult</binary>
+  </provides>
+  <categories>
+      <category>Game</category>
+      <category>RolePlaying</category>
+  </categories>
+  <keywords>
+    <keyword>Ultima</keyword>
+    <keyword>avatar</keyword>
+    <keyword>fantasy</keyword>
+    <keyword>retro</keyword>
+  </keywords>
 </component>
