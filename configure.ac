@@ -955,7 +955,7 @@ AC_ARG_WITH([desktopdir],
 	esac])
 AC_SUBST([DESKTOPDIR])
 
-ICONDIR="${datadir}/icons"
+ICONDIR="${datadir}/icons/hicolor/512x512/apps"
 AC_ARG_WITH([icondir],
 	AS_HELP_STRING([--with-icondir=DIR],[change icon directory]),
 	[case "${withval}" in
@@ -968,6 +968,23 @@ AC_ARG_WITH([icondir],
 		;;
 	esac])
 AC_SUBST([ICONDIR])
+
+SVGDIR="${datadir}/icons/hicolor/scalable/apps"
+AC_ARG_WITH([svgdir],
+	AS_HELP_STRING([--with-svgdir=DIR],[change svg directory]),
+	[case "${withval}" in
+		yes)
+		;;
+		no)
+		;;
+		*)
+			SVGDIR="${withval}"
+		;;
+	esac])
+AC_SUBST([SVGDIR])
+
+METADIR="${datadir}/metainfo"
+AC_SUBST([METADIR])
 
 # ---------------------------------------------------------------------
 # Workaround for 'ar' warning in libtool
