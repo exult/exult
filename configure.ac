@@ -41,6 +41,7 @@ cxx_compilers="g++ clang++ c++ gpp aCC CC cxx cc++ cl.exe FCC KCC RCC xlC_r xlC"
 
 # determine windowing system from 'host'
 AC_MSG_CHECKING([windowing system])
+HOME_DATADIR="${XDG_CONFIG_HOME:-${HOME}/.config}"
 case "$host_os" in
 	linux-android*)
 		# Android cross compiled from Linux, supported.
@@ -116,6 +117,7 @@ case "$host_os" in
 		SYSLIBS="-framework CoreFoundation -framework AudioUnit -framework AudioToolbox -framework CoreMIDI"
 		CXXFLAGS="$CXXFLAGS -stdlib=libc++ -pthread"
 		EXULT_DATADIR="/Library/Application\ Support/Exult/data"
+		HOME_DATADIR="${HOME}/Library/Application\ Support"
 		ARCH=macosx
 		dnl swap around clang for OSX
 		cxx_compilers="clang++ g++ c++ gpp aCC CC cxx cc++ cl.exe FCC KCC RCC xlC_r xlC"
@@ -903,35 +905,66 @@ else
 fi
 
 # GIMP plugin
-AM_CONDITIONAL(GIMP_PLUGIN, false)
-AC_ARG_ENABLE(gimp-plugin, AS_HELP_STRING([--enable-gimp-plugin], [Build the GIMP plugin @<:@default no@:>@]),,enable_gimp_plugin=no)
+AM_CONDITIONAL(GIMP3_PLUGIN, false)
+AM_CONDITIONAL(GIMP2_PLUGIN, false)
+AC_ARG_ENABLE(gimp-plugin,
+	AS_HELP_STRING([--enable-gimp-plugin@<:@=yes|system|user|no@:>@],
+		[Build the GIMP plugin, yes or system for system install (requires root), user for user install, @<:@default no@:>@]),,enable_gimp_plugin=no)
 AC_MSG_CHECKING([whether to build the GIMP plugin])
-if test x$enable_gimp_plugin = xyes; then
+if test x$enable_gimp_plugin != xno; then
 	AC_MSG_RESULT(yes)
-	AC_MSG_CHECKING([for gimptool])
-	AC_CHECK_PROGS(GIMPTOOL, gimptool-2.0)
-	if test -z "$GIMPTOOL"; then
-		AC_MSG_RESULT([no, not building GIMP plugin])
-	else
+	AC_CHECK_PROGS(GIMPTOOL, gimptool-3.0)
+	if test -n "$GIMPTOOL"; then
 		AC_MSG_CHECKING([for GIMP version])
 		gimp_version=`$GIMPTOOL --version`
-		AX_COMPARE_VERSION([$gimp_version], [ge], [2.8.0], [dnl
-			dnl $gimp_version >= 2.8.0
-			AC_MSG_RESULT([found $gimp_version >= 2.8.0])
+		AX_COMPARE_VERSION([$gimp_version], [ge], [3.0.0], [dnl
+			dnl $gimp_version >= 3.0.0
+			AC_MSG_RESULT([found $gimp_version >= 3.0.0])
 			AC_SUBST(GIMPTOOL)
-			AM_CONDITIONAL(GIMP_PLUGIN, true)
-			GIMP_PLUGIN_PREFIX=`$GIMPTOOL --gimpplugindir`
+			AM_CONDITIONAL(GIMP3_PLUGIN, true)
+			AS_IF([test x$enable_gimp_plugin != xuser],
+				[GIMP_PLUGIN_PREFIX=`$GIMPTOOL --gimpplugindir`],
+				[GIMP_PLUGIN_PREFIX="${HOME_DATADIR}/GIMP/3.0"])
 			GIMP_PLUGIN_PREFIX="$GIMP_PLUGIN_PREFIX/plug-ins"
 			AC_SUBST(GIMP_PLUGIN_PREFIX)
 			AC_DEFINE(HAVE_GIMP, 1, [Have GIMP])
-			GIMP_INCLUDES=`$PKG_CONFIG --cflags gimpui-2.0`
-			GIMP_LIBS=`$PKG_CONFIG --libs gimpui-2.0`
+			GIMP_INCLUDES=`$PKG_CONFIG --cflags gimpui-3.0`
+			GIMP_LIBS=`$PKG_CONFIG --libs gimpui-3.0`
 			AC_SUBST(GIMP_INCLUDES)
 			AC_SUBST(GIMP_LIBS)
 		], [
-			dnl $gimp_version < 2.8.0
-			AC_MSG_RESULT([found $gimp_version < 2.8.0 - disabling plugin])
+			dnl $gimp_version < 3.0.0
+			AC_MSG_RESULT([found $gimp_version < 3.0.0 - disabling plugin])
 		])
+	else
+		AC_CHECK_PROGS(GIMPTOOL, gimptool-2.0)
+		if test -n "$GIMPTOOL"; then
+			AC_MSG_CHECKING([for GIMP 2 version])
+			gimp_version=`$GIMPTOOL --version`
+			AX_COMPARE_VERSION([$gimp_version], [ge], [2.8.0], [dnl
+				dnl $gimp_version >= 2.8.0
+				AC_MSG_RESULT([found $gimp_version >= 2.8.0])
+				AC_SUBST(GIMPTOOL)
+				AM_CONDITIONAL(GIMP2_PLUGIN, true)
+				AS_IF([test x$enable_gimp_plugin != xuser],
+					[GIMP_PLUGIN_PREFIX=`$GIMPTOOL --gimpplugindir`],
+					[GIMP_PLUGIN_PREFIX="${HOME_DATADIR}/GIMP/2.0"])
+				GIMP_PLUGIN_PREFIX="$GIMP_PLUGIN_PREFIX/plug-ins"
+				AC_SUBST(GIMP_PLUGIN_PREFIX)
+				AC_DEFINE(HAVE_GIMP, 1, [Have GIMP])
+				GIMP_INCLUDES=`$PKG_CONFIG --cflags gimpui-2.0`
+				GIMP_LIBS=`$PKG_CONFIG --libs gimpui-2.0`
+				AC_SUBST(GIMP_INCLUDES)
+				AC_SUBST(GIMP_LIBS)
+			], [
+				dnl $gimp_version < 2.8.0
+				AC_MSG_RESULT([found $gimp_version < 2.8.0 - disabling plugin])
+			])
+		else
+			echo "The Gimp plugin requires the Gimp either in version 3 or in version 2, but neither is installed."
+			echo "Please try again, either with the Gimp installed, or with '--disable-gimp-plugin'."
+			exit 1
+		fi
 	fi
 else
 	AC_MSG_RESULT(no)
@@ -1397,6 +1430,9 @@ else
 	fi
 	if test x$enable_gnome_shp_thumbnailer = xyes; then
 		echo GDK-Pixbuf................. : `$PKG_CONFIG --modversion gdk-pixbuf-2.0`
+	fi
+	if test -n "$GIMPTOOL"; then
+		echo GIMP....................... : `$GIMPTOOL --version`
 	fi
 	echo
 fi

@@ -94,9 +94,14 @@ To build Exult Studio, you must install the following:
             mingw-w64-${MSYSTEM_CARCH}-zlib \
             mingw-w64-${MSYSTEM_CARCH}-icu
 
-To build the Gimp Plug-In, you must install the following:
+To build the Gimp 2 Plug-In, you must install the following:
     pacman -S --noconfirm --needed \
             mingw-w64-${MSYSTEM_CARCH}-gtk2 \
+            mingw-w64-${MSYSTEM_CARCH}-gimp2
+
+To build the Gimp 3 Plug-In, you must install the following:
+    pacman -S --noconfirm --needed \
+            mingw-w64-${MSYSTEM_CARCH}-gtk3 \
             mingw-w64-${MSYSTEM_CARCH}-gimp
 
 You now have everything needed to build any of the components you want.
@@ -116,6 +121,8 @@ to be installed to. This depends on the version of Gimp you use:
         C:/Users/<username>/.gimp-2.8/plug-ins
     Gimp 2.10 and newer:
         C:/Users/<username>/AppData/Roaming/GIMP/<version>/plug-ins
+    Gimp 3.0 and newer:
+        C:/Users/<username>/AppData/Roaming/GIMP/<version>/plug-ins/u7shp
 
 If you are compiling Exult Studio, it will be installed to the same directory
 that Exult when you compile it. You can change that directory in the same way.

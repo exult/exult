@@ -120,6 +120,7 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.sys }}
+          update: true
           install: |
             base-devel git zip
             ${{ matrix.env }}-toolchain ${{ matrix.env }}-binutils ${{ matrix.env }}-ntldd ${{ matrix.env }}-SDL2

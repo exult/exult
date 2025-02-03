@@ -5,19 +5,25 @@ AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/shapes \
 	$(GTK_CFLAGS) $(PNG_CFLAGS) $(ICU_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 	$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DEXULT_DATADIR=\"$(EXULT_DATADIR)\"
 
-if GIMP_PLUGIN
-GIMP_PLUGINS=u7shp
+if GIMP3_PLUGIN
+GIMP_PLUGIN_SRC = u7shp
+GIMP_PLUGINS = u7shp
 else
-GIMP_PLUGINS=
+if GIMP2_PLUGIN
+GIMP_PLUGIN_SRC = u7shp-old
+GIMP_PLUGINS = u7shp
+else
+GIMP_PLUGINS =
+endif
 endif
 
 if BUILD_STUDIO
-bin_PROGRAMS = exult_studio
+bin_PROGRAMS = exult_studio $(GIMP_PLUGINS)
 else
-bin_PROGRAMS =
+bin_PROGRAMS = $(GIMP_PLUGINS)
 endif
 
-u7shp_SOURCES = u7shp.cc
+u7shp_SOURCES = $(GIMP_PLUGIN_SRC).cc
 
 u7shp_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/files -I$(top_srcdir)/headers \
 	-I$(top_srcdir)/shapes -I$(top_srcdir)/imagewin -I$(top_srcdir)/files \
@@ -101,12 +107,18 @@ EXTRA_DIST=	\
 	uniquepal.c \
 	logo.xpm
 
-if GIMP_PLUGIN
+if GIMP3_PLUGIN
+install-exec-local:
+	install -d $(DESTDIR)$(GIMP_PLUGIN_PREFIX)/u7shp
+	install -c $(GIMP_PLUGINS) $(DESTDIR)$(GIMP_PLUGIN_PREFIX)/u7shp
+else
+if GIMP2_PLUGIN
 install-exec-local:
 	install -d $(DESTDIR)$(GIMP_PLUGIN_PREFIX)
 	install -c $(GIMP_PLUGINS) $(DESTDIR)$(GIMP_PLUGIN_PREFIX)
 else
 install-exec-local:
+endif
 endif
 
 CLEANFILES = *~ u7shp$(EXEEXT)

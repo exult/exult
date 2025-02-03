@@ -33,6 +33,7 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           msystem: MSYS
+          update: true
           install: |
             base-devel git p7zip zip
             mingw-w64-x86_64-toolchain mingw-w64-x86_64-binutils mingw-w64-x86_64-ntldd mingw-w64-x86_64-SDL2
@@ -103,7 +104,7 @@ jobs:
           cp ${{ env.EXULT_SNAPSHOT_PATH }}/Exult.exe ./windows-snapshot
           cp ${{ env.EXULT_SNAPSHOT_PATH }}/ExultStudio.exe ./windows-snapshot
           cp ${{ env.EXULT_SNAPSHOT_PATH }}/ExultTools.exe ./windows-snapshot
-          cp ${{ env.EXULT_SNAPSHOT_PATH }}/Gimp20Plugin.exe ./windows-snapshot
+          cp ${{ env.EXULT_SNAPSHOT_PATH }}/Gimp30Plugin.exe ./windows-snapshot
           cp ${{ env.EXULT_SNAPSHOT_PATH }}/Keyring.zip ./windows-snapshot
           cp ${{ env.EXULT_SNAPSHOT_PATH }}/SFisland.zip ./windows-snapshot
           cp ${{ env.EXULT_SNAPSHOT_PATH }}/Sifixes.zip ./windows-snapshot

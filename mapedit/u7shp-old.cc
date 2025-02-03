@@ -1,9 +1,9 @@
 /*
- * SHP loading file filter for The GIMP version 3.x.
+ * SHP loading file filter for The GIMP version 2.x.
  *
  * (C) 2000-2001 Tristan Tarrant
  * (C) 2001-2004 Willem Jan Palenstijn
- * (C) 2010-2025 The Exult Team
+ * (C) 2010-2022 The Exult Team
  *
  * You can find the most recent version of this file in the Exult sources,
  * available from https://exult.info/
@@ -13,16 +13,10 @@
 #	include "config.h"
 #endif
 
-/*
- * GIMP Side of the Shape load / export plugin
- */
-
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
-#	pragma GCC diagnostic ignored "-Wvariadic-macros"
-#	pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #	if !defined(__llvm__) && !defined(__clang__)
 #		pragma GCC diagnostic ignored "-Wpedantic"
 #		pragma GCC diagnostic ignored "-Wuseless-cast"
@@ -44,7 +38,6 @@
 #	define GDK_DISABLE_DEPRECATION_WARNINGS
 #	define GLIB_DISABLE_DEPRECATION_WARNINGS
 #endif    // USE_STRICT_GTK
-#include <glib/gstdio.h>
 #include <gtk/gtk.h>
 #include <libgimp/gimp.h>
 #include <libgimp/gimpui.h>
@@ -59,236 +52,23 @@
 #include "ignore_unused_variable_warning.h"
 #include "vgafile.h"
 
-#include <cerrno>
 #include <iostream>
 #include <string>
 #include <vector>
 
-/*
- * GIMP Side of the Shape load / export plugin
- *   Borrowed from plug-ins/common/file-cel.c
- *      -- KISS CEL file format plug-in
- *      -- (copyright) 1997,1998 Nick Lamb (njl195@zepler.org.uk)
+/* Declare some local functions.
  */
-
-#define LOAD_PROC      "file-shp-load"
-#define EXPORT_PROC    "file-shp-export"
-#define PLUG_IN_BINARY "file-shp"
-#define PLUG_IN_ROLE   "gimp-file-shp"
-
-using Shp      = struct _Shp;
-using ShpClass = struct _ShpClass;
-
-struct _Shp {
-	GimpPlugIn parent_instance;
-};
-
-struct _ShpClass {
-	GimpPlugInClass parent_class;
-};
-
-#define SHP_TYPE (shp_get_type())
-#define SHP(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), SHP_TYPE, Shp))
-
-GType shp_get_type(void) G_GNUC_CONST;
-
-static GList*         shp_query_procedures(GimpPlugIn* plug_in);
-static GimpProcedure* shp_create_procedure(
-		GimpPlugIn* plug_in, const gchar* name);
-
-static GimpValueArray* shp_load(
-		GimpProcedure* procedure, GimpRunMode run_mode, GFile* file,
-		GimpMetadata* metadata, GimpMetadataLoadFlags* flags,
-		GimpProcedureConfig* config, gpointer run_data);
-static GimpValueArray* shp_export(
-		GimpProcedure* procedure, GimpRunMode run_mode, GimpImage* image,
-		GFile* file, GimpExportOptions* options, GimpMetadata* metadata,
-		GimpProcedureConfig* config, gpointer run_data);
-static gboolean shp_palette_dialog(
-		const gchar* title, GimpProcedure* procedure,
-		GimpProcedureConfig* config);
-
-static gint       load_palette(GFile* file, guchar palette[], GError** error);
-static GimpImage* load_image(
-		GFile* file, GFile* palette_file, GimpRunMode run_mode, GError** error);
-static gboolean export_image(
-		GFile* file, GimpImage* image, GimpRunMode run_mode, GError** error);
-
-#ifdef __GNUC__
-#	pragma GCC diagnostic push
-#	pragma GCC diagnostic ignored "-Wold-style-cast"
-#	if defined(__llvm__) || defined(__clang__)
-#		pragma GCC diagnostic ignored "-Wunused-parameter"
-#		if __clang_major__ >= 16
-#			pragma GCC diagnostic ignored "-Wcast-function-type-strict"
-#		endif
-#	endif
-#endif    // __GNUC__
-G_DEFINE_TYPE(Shp, shp, GIMP_TYPE_PLUG_IN)
-GIMP_MAIN(SHP_TYPE)
-#ifdef __GNUC__
-#	pragma GCC diagnostic pop
-#endif    // __GNUC__
-
-static void shp_class_init(ShpClass* klass) {
-	GimpPlugInClass* plug_in_class  = GIMP_PLUG_IN_CLASS(klass);
-	plug_in_class->query_procedures = shp_query_procedures;
-	plug_in_class->create_procedure = shp_create_procedure;
-	plug_in_class->set_i18n         = nullptr;
-}
-
-static void shp_init(Shp* shp) {
-	ignore_unused_variable_warning(shp);
-}
-
-static GList* shp_query_procedures(GimpPlugIn* plug_in) {
-	ignore_unused_variable_warning(plug_in);
-	GList* list = nullptr;
-	list        = g_list_append(list, g_strdup(LOAD_PROC));
-	list        = g_list_append(list, g_strdup(EXPORT_PROC));
-	return list;
-}
-
-static GimpProcedure* shp_create_procedure(
-		GimpPlugIn* plug_in, const gchar* name) {
-	GimpProcedure* procedure = nullptr;
-	if (!strcmp(name, LOAD_PROC)) {
-		procedure = gimp_load_procedure_new(
-				plug_in, name, GIMP_PDB_PROC_TYPE_PLUGIN, shp_load, nullptr,
-				nullptr);
-		gimp_procedure_set_menu_label(procedure, "Ultima VII Shape");
-		gimp_procedure_set_documentation(
-				procedure, "Loads files in Ultima VII Shape file format",
-				"This plug-in loads individual Ultima VII "
-				"Shape files.",
-				name);
-		gimp_procedure_set_attribution(
-				procedure, "The Exult Team", "The Exult Team", "2010-2025");
-		gimp_file_procedure_set_extensions(
-				GIMP_FILE_PROCEDURE(procedure), "shp");
-		gimp_procedure_add_file_argument(
-				procedure, "palette-file", "_Palette file",
-				"PAL file to load palette from", GIMP_FILE_CHOOSER_ACTION_OPEN,
-				TRUE, nullptr, G_PARAM_READWRITE);
-	} else if (!strcmp(name, EXPORT_PROC)) {
-		procedure = gimp_export_procedure_new(
-				plug_in, name, GIMP_PDB_PROC_TYPE_PLUGIN, FALSE, shp_export,
-				nullptr, nullptr);
-		gimp_procedure_set_image_types(procedure, "RGB*, INDEXED*");
-		gimp_procedure_set_menu_label(procedure, "Ultima VII Shape");
-		gimp_procedure_set_documentation(
-				procedure, "Exports files in Ultima VII Shape file format",
-				"This plug-in exports individual Ultima VII "
-				"Shape files.",
-				name);
-		gimp_procedure_set_attribution(
-				procedure, "The Exult Team", "The Exult Team", "2010-2025");
-		gimp_file_procedure_set_handles_remote(
-				GIMP_FILE_PROCEDURE(procedure), TRUE);
-		gimp_file_procedure_set_extensions(
-				GIMP_FILE_PROCEDURE(procedure), "shp");
-		gimp_export_procedure_set_capabilities(
-				GIMP_EXPORT_PROCEDURE(procedure),
-				static_cast<GimpExportCapabilities>(
-						GIMP_EXPORT_CAN_HANDLE_RGB
-						| GIMP_EXPORT_CAN_HANDLE_ALPHA
-						| GIMP_EXPORT_CAN_HANDLE_LAYERS
-						| GIMP_EXPORT_CAN_HANDLE_INDEXED),
-				nullptr, nullptr, nullptr);
-		gimp_procedure_add_file_argument(
-				procedure, "palette-file", "_Palette file",
-				"PAL file to save palette to", GIMP_FILE_CHOOSER_ACTION_OPEN,
-				TRUE, nullptr, G_PARAM_READWRITE);
-	}
-	return procedure;
-}
-
-static GimpValueArray* shp_load(
-		GimpProcedure* procedure, GimpRunMode run_mode, GFile* file,
-		GimpMetadata* metadata, GimpMetadataLoadFlags* flags,
-		GimpProcedureConfig* config, gpointer run_data) {
-	ignore_unused_variable_warning(
-			procedure, run_mode, file, metadata, flags, config, run_data);
-	GimpValueArray* return_vals;
-	GimpImage*      image        = nullptr;
-	GFile*          palette_file = nullptr;
-	GError*         error        = nullptr;
-
-	gegl_init(nullptr, nullptr);
-
-	if (error != nullptr) {
-		return gimp_procedure_new_return_values(
-				procedure, GIMP_PDB_EXECUTION_ERROR, error);
-	}
-
-	g_object_get(config, "palette-file", &palette_file, nullptr);
-	if (run_mode != GIMP_RUN_NONINTERACTIVE) {
-		if (!shp_palette_dialog("Load PAL Palette", procedure, config)) {
-			return gimp_procedure_new_return_values(
-					procedure, GIMP_PDB_CANCEL, nullptr);
-		}
-		g_clear_object(&palette_file);
-		g_object_get(config, "palette-file", &palette_file, nullptr);
-	}
-
-	image = load_image(file, palette_file, run_mode, &error);
-	g_clear_object(&palette_file);
-	if (!image) {
-		return gimp_procedure_new_return_values(
-				procedure, GIMP_PDB_EXECUTION_ERROR, error);
-	}
-	return_vals = gimp_procedure_new_return_values(
-			procedure, GIMP_PDB_SUCCESS, nullptr);
-	GIMP_VALUES_SET_IMAGE(return_vals, 1, image);
-	return return_vals;
-}
-
-static GimpValueArray* shp_export(
-		GimpProcedure* procedure, GimpRunMode run_mode, GimpImage* image,
-		GFile* file, GimpExportOptions* options, GimpMetadata* metadata,
-		GimpProcedureConfig* config, gpointer run_data) {
-	ignore_unused_variable_warning(
-			procedure, run_mode, image, file, options, metadata, config,
-			run_data);
-	GimpPDBStatusType status = GIMP_PDB_SUCCESS;
-	GimpExportReturn  expret = GIMP_EXPORT_IGNORE;
-	GError*           error  = nullptr;
-
-	gegl_init(nullptr, nullptr);
-
-	expret = gimp_export_options_get_image(options, &image);
-
-	if (!export_image(file, image, run_mode, &error)) {
-		status = GIMP_PDB_EXECUTION_ERROR;
-	}
-
-	if (expret == GIMP_EXPORT_EXPORT) {
-		gimp_image_delete(image);
-	}
-
-	return gimp_procedure_new_return_values(procedure, status, error);
-}
-
-static gboolean shp_palette_dialog(
-		const gchar* title, GimpProcedure* procedure,
-		GimpProcedureConfig* config) {
-	GtkWidget* dialog;
-	gboolean   run;
-
-	gimp_ui_init(PLUG_IN_BINARY);
-	dialog = gimp_procedure_dialog_new(
-			GIMP_PROCEDURE(procedure), GIMP_PROCEDURE_CONFIG(config), title);
-	gimp_procedure_dialog_set_ok_label(GIMP_PROCEDURE_DIALOG(dialog), "_Open");
-	gimp_procedure_dialog_fill(GIMP_PROCEDURE_DIALOG(dialog), nullptr);
-	run = gimp_procedure_dialog_run(GIMP_PROCEDURE_DIALOG(dialog));
-
-	gtk_widget_destroy(dialog);
-	return run;
-}
-
-/*
- * Exult Side of the Shape load / export plugin
- */
+static void query();
+static void run(
+		const gchar* name, gint nparams, const GimpParam* param,
+		gint* nreturn_vals, GimpParam** return_vals);
+static void   load_palette(const std::string& filename);
+static void   choose_palette();
+static gint32 load_image(gchar* filename);
+static gint32 save_image(
+		gchar* filename, gint32 image_ID, gint32 drawable_ID,
+		gint32 orig_image_ID);
+static GimpRunMode run_mode;
 
 static guchar gimp_cmap[768] = {
 		0x00, 0x00, 0x00, 0xF8, 0xF0, 0xCC, 0xF4, 0xE4, 0xA4, 0xF0, 0xDC, 0x78,
@@ -356,13 +136,129 @@ static guchar gimp_cmap[768] = {
 		0xFC, 0xFC, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFC, 0x00, 0xFC, 0x00, 0x00,
 		0xFC, 0xFC, 0xFC, 0x61, 0x61, 0x61, 0xC0, 0xC0, 0xC0, 0xFC, 0x00, 0xF1};
 
-static gint load_palette(GFile* file, guchar palette[], GError** error) {
-	ignore_unused_variable_warning(file, palette, error);
-	const U7object pal(gimp_file_get_utf8_name(file), 0);
+GimpPlugInInfo PLUG_IN_INFO = {
+		nullptr, /* init_proc  */
+		nullptr, /* quit_proc  */
+		query,   /* query_proc */
+		run,     /* run_proc   */
+};
+
+struct u7frame {
+	guchar* pixels;
+	size_t  datalen;
+	gint16  leftX;
+	gint16  leftY;
+	gint16  rightX;
+	gint16  rightY;
+	gint16  width;
+	gint16  height;
+};
+
+struct u7shape {
+	u7frame* frames;
+	size_t   num_frames;
+};
+
+MAIN()    // NOLINT
+
+static void query(void) {
+	constexpr static const GimpParamDef load_args[] = {
+			{ GIMP_PDB_INT32,     const_cast<gchar*>("run_mode"),
+			 const_cast<gchar*>("Interactive, non-interactive")},
+			{GIMP_PDB_STRING,     const_cast<gchar*>("filename"),
+			 const_cast<gchar*>("The name of the file to load")},
+			{GIMP_PDB_STRING, const_cast<gchar*>("raw_filename"),
+			 const_cast<gchar*>("The name entered")            }
+    };
+	constexpr static const GimpParamDef load_return_vals[] = {
+			{GIMP_PDB_IMAGE, const_cast<gchar*>("image"),
+			 const_cast<gchar*>("Output image")}
+    };
+	constexpr static const gint nload_args
+			= sizeof(load_args) / sizeof(load_args[0]);
+	constexpr static const gint nload_return_vals
+			= (sizeof(load_return_vals) / sizeof(load_return_vals[0]));
+
+	constexpr static const GimpParamDef save_args[] = {
+			{   GIMP_PDB_INT32,     const_cast<gchar*>("run_mode"),
+			 const_cast<gchar*>("Interactive, non-interactive")},
+			{   GIMP_PDB_IMAGE,        const_cast<gchar*>("image"),
+			 const_cast<gchar*>("Image to save")               },
+			{GIMP_PDB_DRAWABLE,     const_cast<gchar*>("drawable"),
+			 const_cast<gchar*>("Drawable to save")            },
+			{  GIMP_PDB_STRING,     const_cast<gchar*>("filename"),
+			 const_cast<gchar*>("The name of the file to save")},
+			{  GIMP_PDB_STRING, const_cast<gchar*>("raw_filename"),
+			 const_cast<gchar*>("The name entered")            }
+    };
+	constexpr static const gint nsave_args
+			= sizeof(save_args) / sizeof(save_args[0]);
+
+	gimp_install_procedure(
+			"file_shp_load", "loads files in Ultima VII SHP format",
+			"FIXME: write help for shp_load", "Tristan Tarrant",
+			"Tristan Tarrant", "2000", "<Load>/SHP", nullptr, GIMP_PLUGIN,
+			nload_args, nload_return_vals, load_args, load_return_vals);
+
+	gimp_register_magic_load_handler("file_shp_load", "shp", "", "");
+
+	gimp_install_procedure(
+			"file_shp_save", "Save files in Ultima VII SHP format",
+			"FIXME: write help for shp_save", "Tristan Tarrant",
+			"Tristan Tarrant", "2000", "<Save>/SHP", "INDEXEDA", GIMP_PLUGIN,
+			nsave_args, 0, save_args, nullptr);
+
+	gimp_register_save_handler("file_shp_save", "shp", "");
+}
+
+static void run(
+		const gchar* name, gint nparams, const GimpParam* param,
+		gint* nreturn_vals, GimpParam** return_vals) {
+	ignore_unused_variable_warning(nparams);
+	static GimpParam values[2];
+
+	gegl_init(nullptr, nullptr);
+
+	run_mode = static_cast<GimpRunMode>(param[0].data.d_int32);
+
+	*nreturn_vals           = 1;
+	*return_vals            = values;
+	values[0].type          = GIMP_PDB_STATUS;
+	values[0].data.d_status = GIMP_PDB_EXECUTION_ERROR;
+
+	GimpPDBStatusType status = GIMP_PDB_SUCCESS;
+	if (strcmp(name, "file_shp_load") == 0) {
+		gimp_ui_init("u7shp", false);
+		if (run_mode != GIMP_RUN_NONINTERACTIVE) {
+			choose_palette();
+		}
+		const gint32 image_ID = load_image(param[1].data.d_string);
+
+		if (image_ID != -1) {
+			*nreturn_vals          = 2;
+			values[1].type         = GIMP_PDB_IMAGE;
+			values[1].data.d_image = image_ID;
+		} else {
+			status = GIMP_PDB_EXECUTION_ERROR;
+		}
+	} else if (strcmp(name, "file_shp_save") == 0) {
+		const gint32 orig_image_ID = param[1].data.d_int32;
+		const gint32 image_ID      = orig_image_ID;
+		const gint32 drawable_ID   = param[2].data.d_int32;
+		save_image(
+				param[3].data.d_string, image_ID, drawable_ID, orig_image_ID);
+	} else {
+		status = GIMP_PDB_CALLING_ERROR;
+	}
+	values[0].data.d_status = status;
+}
+
+static void load_palette(const std::string& filename) {
+	const U7object pal(filename, 0);
 	size_t         len;
 	auto           data = pal.retrieve(len);
 	if (!data || len == 0) {
-		return 0;
+		return;
 	}
 	const auto* ptr = data.get();
 	if (len == 768) {
@@ -382,7 +278,32 @@ static gint load_palette(GFile* file, guchar palette[], GError** error) {
 			Read1(ptr);    // Skip entry from second palette
 		}
 	}
-	return 256;
+}
+
+std::string file_select(const gchar* title) {
+	GtkFileChooser* fsel = GTK_FILE_CHOOSER(gtk_file_chooser_dialog_new(
+			title, nullptr, GTK_FILE_CHOOSER_ACTION_OPEN, "_Cancel",
+			GTK_RESPONSE_CANCEL, "_Open", GTK_RESPONSE_ACCEPT, nullptr));
+	GtkWidget*      btn  = gtk_dialog_get_widget_for_response(
+            GTK_DIALOG(fsel), GTK_RESPONSE_CANCEL);
+	GtkWidget* img = gtk_image_new_from_icon_name(
+			"window-close", GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(btn), img);
+	btn = gtk_dialog_get_widget_for_response(
+			GTK_DIALOG(fsel), GTK_RESPONSE_ACCEPT);
+	img = gtk_image_new_from_icon_name("document-open", GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(btn), img);
+	gtk_window_set_modal(GTK_WINDOW(fsel), true);
+	if (gtk_dialog_run(GTK_DIALOG(fsel)) == GTK_RESPONSE_ACCEPT) {
+		std::string filename(gtk_file_chooser_get_filename(fsel));
+		return filename;
+	} else {
+		return "";
+	}
+}
+
+static void choose_palette() {
+	load_palette(file_select("Choose palette"));
 }
 
 struct Bounds {
@@ -407,25 +328,11 @@ Bounds get_shape_bounds(Shape_file& shape) {
 	return Bounds{7, 0, 0, 7};
 }
 
-/* Load Shape image into GIMP */
-
-static GimpImage* load_image(
-		GFile* file, GFile* palette_file, GimpRunMode run_mode,
-		GError** error) {
-	ignore_unused_variable_warning(file, palette_file, run_mode, error);
-	if (!g_file_query_exists(file, nullptr)) {
-		return nullptr;
-	}
-	Shape_file shape(gimp_file_get_utf8_name(file));
-	if (shape.get_num_frames() == 0) {
-		return nullptr;
-	}
+static gint32 load_image(gchar* filename) {
+	Shape_file shape(filename);
 #ifdef DEBUG
 	std::cout << "num_frames = " << shape.get_num_frames() << '\n';
 #endif
-	if (palette_file) {
-		load_palette(palette_file, nullptr, error);
-	}
 	const Bounds  bounds = get_shape_bounds(shape);
 	GimpImageType image_type;
 	if (shape.is_rle()) {
@@ -434,25 +341,23 @@ static GimpImage* load_image(
 		image_type = GIMP_INDEXED_IMAGE;
 	}
 
-	GimpImage* image = gimp_image_new(
+	const gint32 image_ID = gimp_image_new(
 			bounds.xleft + bounds.xright + 1, bounds.yabove + bounds.ybelow + 1,
 			GIMP_INDEXED);
-	gimp_palette_set_colormap(
-			gimp_image_get_palette(image), babl_format("R'G'B' u8"), gimp_cmap,
-			256 * 3);
+	gimp_image_set_filename(image_ID, filename);
+	gimp_image_set_colormap(image_ID, gimp_cmap, 256);
 	int framenum = 0;
 	for (auto& frame : shape) {
 		const std::string framename = "Frame " + std::to_string(framenum);
-		GimpLayer*        layer     = gimp_layer_new(
-                image, framename.c_str(), frame->get_width(),
-                frame->get_height(), image_type, 100,
-                gimp_image_get_default_new_layer_mode(image));
-		gimp_image_insert_layer(image, layer, nullptr, 0);
+		const gint32      layer_ID  = gimp_layer_new(
+                image_ID, framename.c_str(), frame->get_width(),
+                frame->get_height(), image_type, 100, GIMP_NORMAL_MODE);
+		gimp_image_insert_layer(image_ID, layer_ID, -1, 0);
 		gimp_item_transform_translate(
-				GIMP_ITEM(layer), bounds.xleft - frame->get_xleft(),
+				layer_ID, bounds.xleft - frame->get_xleft(),
 				bounds.yabove - frame->get_yabove());
 
-		GeglBuffer* drawable = gimp_drawable_get_buffer(GIMP_DRAWABLE(layer));
+		GeglBuffer*         drawable = gimp_drawable_get_buffer(layer_ID);
 		const GeglRectangle rect{
 				0, 0, gegl_buffer_get_width(drawable),
 				gegl_buffer_get_height(drawable)};
@@ -487,22 +392,23 @@ static GimpImage* load_image(
 		framenum++;
 	}
 
-	gimp_image_add_hguide(image, bounds.yabove);
-	gimp_image_add_vguide(image, bounds.xleft);
+	gimp_image_add_hguide(image_ID, bounds.yabove);
+	gimp_image_add_vguide(image_ID, bounds.xleft);
 #ifdef DEBUG
 	std::cout << "Added hguide=" << bounds.yabove << '\n'
 			  << "Added vguide=" << bounds.xleft << '\n';
 #endif
 
-	return image;
+	return image_ID;
 }
 
-static gboolean export_image(
-		GFile* file, GimpImage* image, GimpRunMode run_mode, GError** error) {
-	ignore_unused_variable_warning(file, image, run_mode, error);
+static gint32 save_image(
+		gchar* filename, gint32 image_ID, gint32 drawable_ID,
+		gint32 orig_image_ID) {
+	ignore_unused_variable_warning(drawable_ID, orig_image_ID);
 	if (run_mode != GIMP_RUN_NONINTERACTIVE) {
 		std::string name_buf("Saving ");
-		name_buf += gimp_file_get_utf8_name(file);
+		name_buf += filename;
 		name_buf += ':';
 		gimp_progress_init(name_buf.c_str());
 	}
@@ -510,16 +416,17 @@ static gboolean export_image(
 	// Find the guides...
 	int hotx = -1;
 	int hoty = -1;
-	for (gint32 guide_ID = gimp_image_find_next_guide(image, 0); guide_ID > 0;
-		 guide_ID        = gimp_image_find_next_guide(image, guide_ID)) {
+	for (gint32 guide_ID = gimp_image_find_next_guide(image_ID, 0);
+		 guide_ID > 0;
+		 guide_ID = gimp_image_find_next_guide(image_ID, guide_ID)) {
 #ifdef DEBUG
 		std::cout << "Found guide " << guide_ID << ':';
 #endif
 
-		switch (gimp_image_get_guide_orientation(image, guide_ID)) {
+		switch (gimp_image_get_guide_orientation(image_ID, guide_ID)) {
 		case GIMP_ORIENTATION_HORIZONTAL:
 			if (hoty < 0) {
-				hoty = gimp_image_get_guide_position(image, guide_ID);
+				hoty = gimp_image_get_guide_position(image_ID, guide_ID);
 #ifdef DEBUG
 				std::cout << " horizontal=" << hoty << '\n';
 #endif
@@ -527,7 +434,7 @@ static gboolean export_image(
 			break;
 		case GIMP_ORIENTATION_VERTICAL:
 			if (hotx < 0) {
-				hotx = gimp_image_get_guide_position(image, guide_ID);
+				hotx = gimp_image_get_guide_position(image_ID, guide_ID);
 #ifdef DEBUG
 				std::cout << " vertical=" << hotx << '\n';
 #endif
@@ -538,25 +445,22 @@ static gboolean export_image(
 		}
 	}
 
-	GList* layers  = g_list_reverse(gimp_image_list_layers(image));
-	gint32 nlayers = g_list_length(layers);
-	std::cout << "SHP: Exporting " << g_list_length(layers) << " layers"
-			  << std::endl;
+	// get a list of layers for this image_ID
+	int     nlayers;
+	gint32* layers = gimp_image_get_layers(image_ID, &nlayers);
 
-	if (layers && !gimp_drawable_is_indexed(GIMP_DRAWABLE(layers->data))) {
+	if (nlayers > 0 && !gimp_drawable_is_indexed(layers[0])) {
 		g_message("SHP: You can only save indexed images!");
-		return FALSE;
+		return -1;
 	}
 
-	Shape  shape(nlayers);
-	GList* cur_layer = g_list_first(layers);
+	Shape shape(nlayers);
+	int   layer = nlayers - 1;
 	for (auto& frame : shape) {
-		GeglBuffer* drawable
-				= gimp_drawable_get_buffer(GIMP_DRAWABLE(cur_layer->data));
-		gint offsetX;
-		gint offsetY;
-		gimp_drawable_get_offsets(
-				GIMP_DRAWABLE(cur_layer->data), &offsetX, &offsetY);
+		GeglBuffer* drawable = gimp_drawable_get_buffer(layers[layer]);
+		gint        offsetX;
+		gint        offsetY;
+		gimp_drawable_offsets(layers[layer], &offsetX, &offsetY);
 		const int    width           = gegl_buffer_get_width(drawable);
 		const int    height          = gegl_buffer_get_height(drawable);
 		const int    xleft           = hotx - offsetX;
@@ -587,16 +491,15 @@ static gboolean export_image(
 		}
 		frame = std::make_unique<Shape_frame>(
 				outptr, width, height, xleft, yabove, has_alpha);
-		cur_layer = g_list_next(cur_layer);
+		layer--;
 	}
 
-	OFileDataSource ds(gimp_file_get_utf8_name(file));
+	OFileDataSource ds(filename);
 	if (!ds.good()) {
-		g_message("SHP: can't create \"%s\"\n", gimp_file_get_utf8_name(file));
+		g_message("SHP: can't create \"%s\"\n", filename);
 		return -1;
 	}
 	shape.write(ds);
-	g_list_free(layers);
 
-	return TRUE;
+	return 0;
 }

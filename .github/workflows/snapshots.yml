@@ -64,7 +64,7 @@ jobs:
             Exult.exe
             ExultStudio.exe
             ExultTools.exe
-            Gimp20Plugin.exe
+            Gimp30Plugin.exe
       - name: Generate VirusTotal Body
         if: ${{ (env.HAVE_WINDOWS_SNAPSHOT == 'true' && env.HAVE_ANDROID_SNAPSHOT == 'true')}}
         run: |
@@ -92,7 +92,7 @@ jobs:
             Exult.exe
             ExultStudio.exe
             ExultTools.exe
-            Gimp20Plugin.exe
+            Gimp30Plugin.exe
             Keyring.zip
             SFisland.zip
             Sifixes.zip

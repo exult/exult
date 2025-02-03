@@ -55,8 +55,8 @@ else ifeq ($(MSYSTEM),UCRT64)
 	CC:=gcc
 	CXX:=g++
 else ifeq ($(MSYSTEM),CLANGARM64)
-// march=native should not be used when building official releases
-// so if we start making official ARM build this needs to be changed
+# march=native should not be used when building official releases
+# so if we start making official ARM build this needs to be changed
 	ARCHTYPE:=-march=native
 	ARCHFLAGS:=-m64
 	CC:=clang
@@ -67,8 +67,6 @@ else
 	CC:=gcc
 	CXX:=g++
 endif
-
-
 
 ifdef USE_CONSOLE
 	SUBSYSTEM:=-mconsole
@@ -135,10 +133,19 @@ ES_INCLUDES:=$(GTK_INCLUDES) $(FREETYPE2_INCLUDES) $(ICU_INCLUDES)
 ES_LIBS:=$(GTK_LIBS) $(FREETYPE2_LIBS) $(ICU_LIBS) $(ZIP_LIBS) -lpng -luuid -lole32 -lwinmm -lws2_32 $(SUBSYSTEM)
 
 ### GIMP libs and includes, for the GIMP plugin.
-# If this doesn't work, insert output of 'gimptool --cflags' manually
-GIMP_INCLUDES:=$(shell pkg-config --cflags gimpui-2.0 gtk+-2.0)
-# If this doesn't work, insert output of 'gimptool --libs' manually
+GIMP3_INSTALLED:=$(shell pkg-config --silence-errors --cflags gimpui-3.0)
+GIMP2_INSTALLED:=$(shell pkg-config --silence-errors --cflags gimpui-2.0)
+ifneq ($(GIMP3_INSTALLED),$())
+PLUGIN_SRC:=u7shp
+GIMP_INCLUDES:=$(GIMP3_INSTALLED)
+GIMP_LIBS:=$(shell pkg-config --libs gimpui-3.0)
+else
+ifneq ($(GIMP2_INSTALLED),$())
+PLUGIN_SRC:=u7shp-old
+GIMP_INCLUDES:=$(GIMP2_INSTALLED)
 GIMP_LIBS:=$(shell pkg-config --libs gimpui-2.0)
+endif
+endif
 
 ### Ogg vorbis inclides
 OGG_INCLUDES:=$(shell pkg-config --cflags ogg vorbis vorbisfile)
@@ -555,10 +562,18 @@ exult_studio$(EXEEXT): $(BG_PAPERDOLL) $(FLEXES) $(ES_OBJS)
 exultstudioico.o: $(SRC)/win32/exultstudioico.rc $(SRC)/win32/exultstudio.ico win32/exult_studio.exe.manifest
 	windres --include-dir $(SRC)/win32 $(SRC)/win32/exultstudioico.rc $@
 
-mapedit/u7shp.o: CPPFLAGS:=$(PLUGIN_CPPFLAGS)
-
+ifneq ($(PLUGIN_SRC),$())
+mapedit/u7shp.o: mapedit/$(PLUGIN_SRC).cc
+	$(CXX) $(CXXFLAGS) $(PLUGIN_CPPFLAGS) -c -o $(@) mapedit/$(PLUGIN_SRC).cc
+else
+mapedit/u7shp.o:
+	$(error Neither Gimp 3 nor Gimp 2 is installed, cannot build the Gimp plugin)
+endif
+# The libgexiv2 is a GLib wrapper for the Exiv2 metadata library, that the Plugin does not need.
+# It exports some std::string symbols from the libstdc++, so the Plugin gets linking or loading errors.
+# => Remove the libgexiv2 from the library list ( Feb 2025 ).
 u7shp$(EXEEXT) : mapedit/u7shp.o $(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
-	$(CXX) $(LDFLAGS) -o $(@) $+ $(GIMP_LIBS) -mwindows
+	$(CXX) $(LDFLAGS) -o $(@) $+ $(subst -lgexiv2,,$(GIMP_LIBS)) -mwindows
 
 install: $(EXEC)
 	mkdir -p $(U7PATH)
@@ -737,9 +752,11 @@ plugin: u7shp$(EXEEXT)
 plugininstall: plugin
 	mkdir -p $(GIMPPATH)
 	strip u7shp$(EXEEXT) -o $(GIMPPATH)/u7shp$(EXEEXT)
-	# Note: Gimp has everything a plugin needs already, so we don't
-	# need to ship anything else really.
+	# Note: Gimp has almost everything a plugin needs already, so we don't
+	# need to do this step.
 	#$(call copy_dlls_for_exe, u7shp$(EXEEXT), $(GIMPPATH))
+	# But we do need the GCC runtime & C++ libraries for CLang built Gimp 3, for a GCC built plugin.
+	for ff in $$($(MSYSTEM_PREFIX)/bin/ntldd u7shp$(EXEEXT) | grep -oE 'libgcc_s_seh-1\.dll|libstdc\+\+-6\.dll' | sort -u); do cp $(MSYSTEM_PREFIX)/bin/$$ff $(GIMPPATH)/$$ff; done
 
 plugindist: GIMPPATH:=$(DISTPATH)/GimpPlugin-$(MSYSTEM_CARCH)
 plugindist: plugin plugininstall
@@ -748,7 +765,7 @@ plugindist: plugin plugininstall
 	u2d $(GIMPPATH)/*.txt
 	cp win32/exult_shpplugin_installer.iss $(DISTPATH)
 
-allclean: clean toolsclean studioclean modsclean
+allclean: clean toolsclean studioclean modsclean pluginclean
 	rm -f exconfig.dll exconfig_rc.o win32/exconfig.o
 	rm -f Exult\ Source\ Code.url
 
