@@ -1032,11 +1032,13 @@ void Chunk_chooser::insert_response(const unsigned char* data, int datalen) {
 		} else {
 			memset(data, 0, chunksz);
 		}
-		if (tnum >= 0 && tnum < num_chunks - 1) {
-			chunklist.insert(chunklist.begin() + tnum + 1, data);
-		} else {    // If -1, append to end.
-			chunklist.push_back(data);
-		}
+		// FIXME - for now only append to the end which prevents ordering errors 
+		// in chunk groups. Ideally this should update existing chunk groups as well.
+		// if (tnum >= 0 && tnum < num_chunks - 1) {
+		//	chunklist.insert(chunklist.begin() + tnum + 1, data);
+		// } else    // If -1, append to end.*/
+		chunklist.push_back(data);
+
 		update_num_chunks(num_chunks + 1);
 		render();
 	}
