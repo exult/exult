@@ -353,6 +353,13 @@ int Path_walking_actor_action::handle_event(Actor* actor) {
  */
 
 bool Path_walking_actor_action::open_door(Actor* actor, Game_object* door) {
+	// Check if already handling a door interaction
+	if (handling_door || door_sequence_complete) {
+		return false;
+	}
+	// Set the handling flag to indicate a door is being processed
+	handling_door = true;
+
 	const Tile_coord cur = actor->get_tile();
 	// Get door's footprint in tiles.
 	const TileRect foot = door->get_footprint();
@@ -400,10 +407,12 @@ bool Path_walking_actor_action::open_door(Actor* actor, Game_object* door) {
 				actor, past,
 				new Sequence_actor_action(
 						new Frames_actor_action(frames.data(), frames.size()),
-						new Activate_actor_action(door),
+						new Door_activate_action(door, this),
 						new Frames_actor_action(&standframe, 1))));
+		door_sequence_complete = true;
 		return true;
 	}
+	handling_door = false;
 	return false;
 }
 

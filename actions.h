@@ -133,6 +133,9 @@ private:
 		subseq = sub;
 	}
 
+	bool handling_door = false;    // Temporary flag to track door handling
+	bool door_sequence_complete;
+
 public:
 	Path_walking_actor_action(
 			PathFinder* p = nullptr, int maxblk = 3, int pers = 0);
@@ -160,6 +163,18 @@ public:
 	Actor_action* kill() override {
 		deleted = true;
 		return this;
+	}
+
+	void set_handling_door(bool val) {
+		handling_door = val;
+	}
+
+	bool is_door_sequence_complete() const {
+		return door_sequence_complete;
+	}
+
+	void set_door_sequence_complete() {
+		door_sequence_complete = true;
 	}
 };
 
@@ -392,6 +407,23 @@ class Change_actor_action : public Actor_action {
 public:
 	Change_actor_action(Game_object* o, int sh, int fr, int ql);
 	int handle_event(Actor* actor) override;
+};
+
+/*
+ *  Action to open a door.
+ */
+class Door_activate_action : public Activate_actor_action {
+	Path_walking_actor_action* path_action;
+
+public:
+	Door_activate_action(Game_object* o, Path_walking_actor_action* p)
+			: Activate_actor_action(o), path_action(p) {}
+
+	int handle_event(Actor* actor) override {
+		int ret = Activate_actor_action::handle_event(actor);
+		path_action->set_handling_door(false);
+		return ret;
+	}
 };
 
 #endif /* INCL_ACTIONS */
