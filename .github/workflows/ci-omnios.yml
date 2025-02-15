@@ -120,8 +120,9 @@ jobs:
           pkg update
           pkg install gcc13
           pkg install llvm-17
-          curl -ORL https://pkgsrc.SmartOS.org/packages/SmartOS/bootstrap/bootstrap-2023Q4-x86_64.tar.gz
-          tar -zxpf bootstrap-2023Q4-x86_64.tar.gz -C /
+          pkg install clang-17
+          curl -ORL https://pkgsrc.SmartOS.org/packages/SmartOS/bootstrap/bootstrap-2024Q4-x86_64.tar.gz
+          tar -zxpf bootstrap-2024Q4-x86_64.tar.gz -C /
           export PATH=/opt/local/bin:/opt/local/sbin:$PATH
           export MANPATH=/opt/local/man:$MANPATH
           pkgin update
@@ -143,5 +144,5 @@ jobs:
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \
             --enable-zip-support --enable-shared --enable-midi-sfx --enable-gnome-shp-thumbnailer --enable-data --enable-mods \
             --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects \
-            CXX=g++ CC=gcc
+            CXX=clang++ CC=clang
           make -j 2
