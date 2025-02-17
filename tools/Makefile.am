@@ -65,14 +65,24 @@ gnome_shp_thumbnailer_LDADD = \
 	$(PNG_LIBS) $(ZLIB_LIBS) $(SYSLIBS) $(GDK_PIXBUF_LIBS)
 
 if BUILD_GTHUMB
-## Does not work:
-#thumbnailerdir=$(datadir)/thumbnailers
-## Needs to be in /usr/share/thumbnailers
-thumbnailerdir=/usr/share/thumbnailers
+# The actual executable "gnome_shp_thumbnailer" is in <Exult>/bin
+#  It needs two files visible from XDG_DATA_HOME or one of XDG_DATA_DIRS :
+#   <XDG_DATA_HOME or one of XDG_DATA_DIRS>/mime/packages/x-shapefile.xml
+#     Defines the MIME type "image/x-shapefile"
+#   <XDG_DATA_HOME or one of XDG_DATA_DIRS>/thumbnailers/gnome_u7shapes.thumbnailer
+#     Thumbnails the U7 Shapes with "gnome_shp_thumbnailers"
+# The installation XDG_DATA_HOME or XDG_DATA_DIRS are chosen using
+#  --enable-gnome-shp-thumbnailer=Target
+#   with Target "yes" or "system" ( default ) => /usr/share ( requires root )
+#   with Target "local"                       => /usr/local/share ( requires root )
+#   with Target "user"                        => ~/.local/share
+#   with Target "ingame"                      => <Exult>/share ( requires setting this folder in XDG_DATA_DIRS )
+#
+thumbnailerdir=$(DESTDIR)$(GTHUMB_PREFIX)/thumbnailers
 thumbnailer_in_files=$(top_srcdir)/tools/gnome_u7shapes.thumbnailer.in
 thumbnailer_DATA=$(thumbnailer_in_files:.thumbnailer.in=.thumbnailer)
 gnome_shp_thumbnailer_DATA=x-shapefile.xml
-gnome_shp_thumbnailerdir=$(DESTDIR)$(datadir)/mime/packages
+gnome_shp_thumbnailerdir=$(DESTDIR)$(GTHUMB_PREFIX)/mime/packages
 
 # Rule to make the service file with bindir expanded
 $(thumbnailer_DATA): $(thumbnailer_in_files)
@@ -117,10 +127,10 @@ cmanip_LDADD = \
 
 if BUILD_GTHUMB
 install-data-hook:
-	update-mime-database $(DESTDIR)$(datadir)/mime || :
+	update-mime-database $(DESTDIR)$(GTHUMB_PREFIX)/mime || :
 
 uninstall-hook:
-	update-mime-database $(DESTDIR)$(datadir)/mime || :
+	update-mime-database $(DESTDIR)$(GTHUMP_PREFIX)/mime || :
 else
 install-data-hook:
 uninstall-hook:

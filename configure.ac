@@ -41,7 +41,8 @@ cxx_compilers="g++ clang++ c++ gpp aCC CC cxx cc++ cl.exe FCC KCC RCC xlC_r xlC"
 
 # determine windowing system from 'host'
 AC_MSG_CHECKING([windowing system])
-HOME_DATADIR="${XDG_CONFIG_HOME:-${HOME}/.config}"
+HOME_CFGDIR="${XDG_CONFIG_HOME:-${HOME}/.config}"
+HOME_SHRDIR="${XDG_DATA_HOME:-${HOME}/.local/share}"
 case "$host_os" in
 	linux-android*)
 		# Android cross compiled from Linux, supported.
@@ -117,7 +118,7 @@ case "$host_os" in
 		SYSLIBS="-framework CoreFoundation -framework AudioUnit -framework AudioToolbox -framework CoreMIDI"
 		CXXFLAGS="$CXXFLAGS -stdlib=libc++ -pthread"
 		EXULT_DATADIR="/Library/Application\ Support/Exult/data"
-		HOME_DATADIR="${HOME}/Library/Application\ Support"
+		HOME_CFGDIR="${HOME}/Library/Application\ Support"
 		ARCH=macosx
 		dnl swap around clang for OSX
 		cxx_compilers="clang++ g++ c++ gpp aCC CC cxx cc++ cl.exe FCC KCC RCC xlC_r xlC"
@@ -882,9 +883,10 @@ else
 fi
 
 # gnome-shp-thumbnailer
-AC_ARG_ENABLE(gnome-shp-thumbnailer, AS_HELP_STRING([--enable-gnome-shp-thumbnailer], [Build Gnome SHP Thumbnailer @<:@default no@:>@]),,enable_gnome_shp_thumbnailer=no)
+AC_ARG_ENABLE(gnome-shp-thumbnailer, AS_HELP_STRING([--enable-gnome-shp-thumbnailer@<:@=yes|system|local|user|ingame|no@:>@],
+		[Build Gnome SHP Thumbnailer, yes or system and local for system (local) install (requires root), user for user install, ingame for Exult ingame install (requires XDG_DATA_DIRS) @<:@default no@:>@]),,enable_gnome_shp_thumbnailer=no)
 AC_MSG_CHECKING([whether to build the Gnome SHP Thumbnailer])
-if test x$enable_gnome_shp_thumbnailer = xyes; then
+if test x$enable_gnome_shp_thumbnailer != xno; then
 	AC_MSG_RESULT(yes)
 	# needs Gdk-Pixbuf
 	PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf-2.0, have_gdk_pixbuf=yes, have_gdk_pixbuf=no)
@@ -899,6 +901,16 @@ if test x$enable_gnome_shp_thumbnailer = xyes; then
 		exit 1
 	fi
 	AM_CONDITIONAL(BUILD_GTHUMB, true)
+	if   test x$enable_gnome_shp_thumbnailer == xlocal; then
+		GTHUMB_PREFIX="/usr/local/share"
+	elif test x$enable_gnome_shp_thumbnailer == xuser; then
+		GTHUMB_PREFIX="${HOME_SHRDIR}"
+	elif test x$enable_gnome_shp_thumbnailer == xingame; then
+		GTHUMB_PREFIX="${datadir}"
+	else
+		GTHUMB_PREFIX="/usr/share"
+	fi
+	AC_SUBST(GTHUMB_PREFIX)
 else
 	AM_CONDITIONAL(BUILD_GTHUMB, false)
 	AC_MSG_RESULT(no)
@@ -924,7 +936,7 @@ if test x$enable_gimp_plugin != xno; then
 			AM_CONDITIONAL(GIMP3_PLUGIN, true)
 			AS_IF([test x$enable_gimp_plugin != xuser],
 				[GIMP_PLUGIN_PREFIX=`$GIMPTOOL --gimpplugindir`],
-				[GIMP_PLUGIN_PREFIX="${HOME_DATADIR}/GIMP/3.0"])
+				[GIMP_PLUGIN_PREFIX="${HOME_CFGDIR}/GIMP/3.0"])
 			GIMP_PLUGIN_PREFIX="$GIMP_PLUGIN_PREFIX/plug-ins"
 			AC_SUBST(GIMP_PLUGIN_PREFIX)
 			AC_DEFINE(HAVE_GIMP, 1, [Have GIMP])
@@ -948,7 +960,7 @@ if test x$enable_gimp_plugin != xno; then
 				AM_CONDITIONAL(GIMP2_PLUGIN, true)
 				AS_IF([test x$enable_gimp_plugin != xuser],
 					[GIMP_PLUGIN_PREFIX=`$GIMPTOOL --gimpplugindir`],
-					[GIMP_PLUGIN_PREFIX="${HOME_DATADIR}/GIMP/2.0"])
+					[GIMP_PLUGIN_PREFIX="${HOME_CFGDIR}/GIMP/2.0"])
 				GIMP_PLUGIN_PREFIX="$GIMP_PLUGIN_PREFIX/plug-ins"
 				AC_SUBST(GIMP_PLUGIN_PREFIX)
 				AC_DEFINE(HAVE_GIMP, 1, [Have GIMP])
