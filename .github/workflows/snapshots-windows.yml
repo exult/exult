@@ -36,11 +36,11 @@ jobs:
           update: true
           install: |
             base-devel git p7zip zip
-            mingw-w64-x86_64-toolchain mingw-w64-x86_64-binutils mingw-w64-x86_64-ntldd mingw-w64-x86_64-SDL2
-            mingw-w64-x86_64-fluidsynth mingw-w64-x86_64-libtimidity mingw-w64-x86_64-libogg mingw-w64-x86_64-libvorbis
-            mingw-w64-x86_64-munt-mt32emu mingw-w64-x86_64-libpng mingw-w64-x86_64-zlib mingw-w64-x86_64-SDL2_image
-            mingw-w64-x86_64-gtk3 mingw-w64-x86_64-adwaita-icon-theme mingw-w64-x86_64-libxml2 mingw-w64-x86_64-freetype
-            mingw-w64-x86_64-gimp mingw-w64-x86_64-icu
+            mingw-w64-clang-x86_64-toolchain mingw-w64-clang-x86_64-binutils mingw-w64-clang-x86_64-ntldd mingw-w64-clang-x86_64-SDL2
+            mingw-w64-clang-x86_64-fluidsynth mingw-w64-clang-x86_64-libtimidity mingw-w64-clang-x86_64-libogg mingw-w64-clang-x86_64-libvorbis
+            mingw-w64-clang-x86_64-munt-mt32emu mingw-w64-clang-x86_64-libpng mingw-w64-clang-x86_64-zlib mingw-w64-clang-x86_64-SDL2_image
+            mingw-w64-clang-x86_64-gtk3 mingw-w64-clang-x86_64-adwaita-icon-theme mingw-w64-clang-x86_64-libxml2 mingw-w64-clang-x86_64-freetype
+            mingw-w64-clang-x86_64-gimp mingw-w64-clang-x86_64-icu
             mingw-w64-i686-toolchain mingw-w64-i686-binutils mingw-w64-i686-ntldd mingw-w64-i686-SDL2
             mingw-w64-i686-fluidsynth mingw-w64-i686-libtimidity mingw-w64-i686-libogg mingw-w64-i686-libvorbis
             mingw-w64-i686-libpng mingw-w64-i686-zlib mingw-w64-i686-SDL2_image
@@ -93,7 +93,7 @@ jobs:
       - name: Build x86_64
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         env:
-          MSYSTEM: MINGW64
+          MSYSTEM: CLANG64
           ARCH: x86_64
         run: |
           SNAPSHOT_PATH=$(cygpath -m ~/Exult-dist)

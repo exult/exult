@@ -50,13 +50,12 @@ PrivilegesRequired=none
 
 [Files]
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-; The official Gimp 3 is built with CLang, but the Shape plugin is built with GCC, this we need the DLLs libgcc_s_seh and libstdc++
+; The official Gimp 3 32 bits is built with MingW32 and so is Exult, the official Gimp 3 64 bits is built with CLang64 and so is Exult
+; => The dependent DLLs of the Gimp plugin are provided by Gimp
 ; 32-bit files
 Source: "GimpPlugin-i686\u7shp.exe"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: not Is64BitGIMP
 ; 64-bit files
 Source: "GimpPlugin-x86_64\u7shp.exe"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: Is64BitGIMP
-Source: "GimpPlugin-x86_64\libgcc_s_seh-1.dll"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: Is64BitGIMP
-Source: "GimpPlugin-x86_64\libstdc++-6.dll"; DestDir: "{userappdata}\gimp\3.0\plug-ins\u7shp"; Flags: ignoreversion; Check: Is64BitGIMP
 
 [Code]
 const
