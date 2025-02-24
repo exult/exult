@@ -211,6 +211,19 @@ int Path_walking_actor_action::handle_event(Actor* actor) {
 		set_subseq(nullptr);
 		// He was stopped, so restore speed.
 		actor->set_frame_time(speed);
+		if (!door_sequence_complete) {
+			// Activate the door after walking past it
+			Game_object_shared door_ptr = door_obj.lock();
+			if (door_ptr) {
+				const int savequal = door_ptr->get_quality();
+				door_ptr->set_quality(0);
+				door_ptr->activate();
+				door_ptr->set_quality(savequal);
+			}
+			door_sequence_complete
+					= true;           // Set the flag to prevent re-activation
+			handling_door = false;    // Reset the handling flag
+		}
 		return speed;    // Come back in a moment.
 	}
 	Tile_coord tile;
@@ -353,6 +366,14 @@ int Path_walking_actor_action::handle_event(Actor* actor) {
  */
 
 bool Path_walking_actor_action::open_door(Actor* actor, Game_object* door) {
+	// Check if already handling a door interaction
+	if (handling_door || door_sequence_complete) {
+		return false;
+	}
+	// Set the handling flag to indicate a door is being processed
+	handling_door = true;
+	door_obj      = weak_from_obj(door);    // Store the door
+
 	const Tile_coord cur = actor->get_tile();
 	// Get door's footprint in tiles.
 	const TileRect foot = door->get_footprint();
@@ -389,21 +410,16 @@ bool Path_walking_actor_action::open_door(Actor* actor, Game_object* door) {
 #ifdef DEBUG
 		cout << "Path_walking_actor_action::open_door()" << endl;
 #endif
-		const std::array frames{
-				static_cast<signed char>(
-						actor->get_dir_framenum(dir, Actor::standing)),
-				static_cast<signed char>(
-						actor->get_dir_framenum(dir, Actor::ready_frame)),
-		};
-		signed char standframe = frames[0];
+		door_sequence_complete = false;    // Reset the flag
+		// Set the actor to walk past the door
 		set_subseq(create_action_sequence(
 				actor, past,
-				new Sequence_actor_action(
-						new Frames_actor_action(frames.data(), frames.size()),
-						new Activate_actor_action(door),
-						new Frames_actor_action(&standframe, 1))));
+				new Frames_actor_action(
+						actor->get_dir_framenum(dir, Actor::standing),
+						100)));    // Short delay
 		return true;
 	}
+	handling_door = false;
 	return false;
 }
 

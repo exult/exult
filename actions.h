@@ -118,16 +118,19 @@ protected:
 	PathFinder* path;                   // Allocated pathfinder.
 	bool        deleted = false;        // True if the action has been killed.
 private:
-	int           original_dir;                // From src. to dest. (0-7).
-	int           speed          = 0;          // Time between frames.
-	bool          from_offscreen = false;      // Walking from offscreen.
-	Actor_action* subseq         = nullptr;    // For opening doors.
-	unsigned char blocked        = 0;          // Blocked-tile retries.
-	unsigned char max_blocked;                 // Try this many times.
-	unsigned char blocked_frame = 0;           // Frame for blocked tile.
-	unsigned char persistence;
-	Tile_coord    blocked_tile;    // Tile to retry.
-
+	int              original_dir;                // From src. to dest. (0-7).
+	int              speed          = 0;          // Time between frames.
+	bool             from_offscreen = false;      // Walking from offscreen.
+	Actor_action*    subseq         = nullptr;    // For opening doors.
+	Game_object_weak door_obj;                    // Store the door object
+	bool             handling_door          = false;
+	bool             door_sequence_complete = false;
+	unsigned char    blocked                = 0;    // Blocked-tile retries.
+	unsigned char    max_blocked;                   // Try this many times.
+	unsigned char    blocked_frame = 0;             // Frame for blocked tile.
+	unsigned char    persistence;
+	Tile_coord       blocked_tile;    // Tile to retry.
+	
 	void set_subseq(Actor_action* sub) {
 		delete subseq;
 		subseq = sub;
