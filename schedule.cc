@@ -2260,9 +2260,33 @@ void Sleep_schedule::now_what() {
 	switch (state) {
 	case 0: {    // Find path to bed.
 		if (!bed_obj) {
-			// Just lie down at current spot.
-			const int dirbits = npc->get_framenum() & (0x30);
-			npc->change_frame(Actor::sleep_frame | dirbits);
+			static const int possible_dirs[] = { west, north };
+			Tile_coord npc_pos = npc->get_tile();
+			int sleep_dir_frame = npc->get_dir_framenum(west, Actor::sleep_frame);
+			const int ztiles = npc->get_info().get_3d_height();
+
+			for (int direction : possible_dirs) {
+				int frame = npc->get_dir_framenum(direction, Actor::sleep_frame);
+				bool blocked = false;
+				// to check for enough visible room we have to use the height of
+				// the frame but it is offset by 1 to the NPC position
+				if (direction == west) {
+					Tile_coord testTile1(npc_pos.tx + 1, npc_pos.ty, npc_pos.tz);
+					Tile_coord testTile2(npc_pos.tx - (ztiles - 1), npc_pos.ty, npc_pos.tz);
+					if (npc->is_blocked(testTile1, 0) || npc->is_blocked(testTile2, 0))
+						blocked = true;
+				} else if (direction == north) {
+					Tile_coord testTile1(npc_pos.tx, npc_pos.ty + 1, npc_pos.tz);
+					Tile_coord testTile2(npc_pos.tx, npc_pos.ty - ztiles, npc_pos.tz);
+					if (npc->is_blocked(testTile1, 0) || npc->is_blocked(testTile2, 0))
+						blocked = true;
+				}
+				if (!blocked) {
+					sleep_dir_frame = frame;
+					break;
+				}
+			}
+			npc->change_frame(sleep_dir_frame);
 			npc->force_sleep();
 			return;
 		}
