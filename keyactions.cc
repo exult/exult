@@ -692,6 +692,15 @@ void ActionMoveSelected(const int* params) {
 	cheat.move_selected(params[0], params[1], params[2]);
 }
 
+void ActionCycleFrames(const int* params) {
+	cheat.cycle_selected_frame(params[0]);
+}
+
+void ActionRotateFrames(const int* params) {
+	ignore_unused_variable_warning(params);
+	cheat.rotate_selected_frame();
+}
+
 //  { ActionToggleEggs, 0, "Toggle egg display", cheat_keys, NONE },
 void ActionToggleEggs(const int* params) {
 	ignore_unused_variable_warning(params);

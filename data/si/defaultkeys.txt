@@ -50,6 +50,9 @@ Ctrl-pagedown	move_selected	 0  0 -1
 Ctrl-C		copy
 Ctrl-x		cut
 Ctrl-v		paste
+Ctrl-KP+	cycle_frames_next	 1
+Ctrl-KP-	cycle_frames_prev	-1
+CTRL-KP*	rotate_frames
 
 F2		cheat_screen
 F3		map_teleport

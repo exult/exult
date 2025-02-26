@@ -742,6 +742,47 @@ void Cheat::move_selected(int dx, int dy, int dz) {
 	}
 }
 
+/*
+ *  Cycle the frame of the selected objects.
+ */
+void Cheat::cycle_selected_frame(int direction) {
+	if (selected.empty()) {
+		return;
+	}
+	for (auto& it : selected) {
+		Game_object* obj          = it.get();
+		int          shape        = obj->get_shapenum();
+		int          maxFrames    = obj->get_num_frames();
+		int          currentFrame = obj->get_framenum();
+		int          newFrame     = currentFrame + direction;
+
+		if (newFrame >= maxFrames) {
+			newFrame = 0;
+		} else if (newFrame < 0) {
+			newFrame = maxFrames - 1;
+		}
+
+		obj->change_frame(newFrame);
+		gwin->add_dirty(obj);
+	}
+	gwin->set_all_dirty();
+}
+
+/*
+ *  Rotate the frame of the selected objects.
+ */
+void Cheat::rotate_selected_frame() {
+	if (selected.empty()) {
+		return;
+	}
+	for (auto& it : selected) {
+		Game_object* obj = it.get();
+		obj->change_frame(obj->get_rotated_frame(1));
+		gwin->add_dirty(obj);
+	}
+	gwin->set_all_dirty();
+}
+
 bool Cheat::is_selected(Game_object* o) {
 	for (auto& it : selected) {
 		if (o == it.get()) {

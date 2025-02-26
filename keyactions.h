@@ -75,6 +75,8 @@ void ActionCreateShape(const int* params);
 void ActionDeleteObject(const int* params);
 void ActionDeleteSelected(const int* params);
 void ActionMoveSelected(const int* params);
+void ActionCycleFrames(const int* params);
+void ActionRotateFrames(const int* params);
 void ActionToggleEggs(const int* params);
 void ActionGodMode(const int* params);
 void ActionGender(const int* params);

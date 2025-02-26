@@ -205,6 +205,8 @@ public:
 	void delete_selected();
 	void move_selected_objs(int dx, int dy, int dz);
 	void move_selected(int dx, int dy, int dz);
+	void cycle_selected_frame(int direction);
+	void rotate_selected_frame();
 
 	const std::vector<Game_object_shared>& get_selected() const {
 		return selected;
