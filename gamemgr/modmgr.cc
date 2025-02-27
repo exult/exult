@@ -512,6 +512,7 @@ ModManager::ModManager(
 	{
 		string patch_dir;
 		string mods_dir;
+		string src_dir;
 		string default_dir;
 		string config_path;
 
@@ -529,8 +530,10 @@ ModManager::ModManager(
 
 		// <source> setting: default is "$game_path/source".
 		config_path = base_cfg_path + "/source";
-		config->value(config_path.c_str(), patch_dir, default_dir.c_str());
-		add_system_path("<" + path_prefix + "_SOURCE>", "");
+		default_dir = game_path + "/source";
+		config->value(config_path.c_str(), src_dir, default_dir.c_str());
+		add_system_path("<" + path_prefix + "_SOURCE>", src_dir);
+
 #ifdef DEBUG_PATHS
 		if (!silent) {
 			cout << "path prefix of " << cfgname << " is: " << path_prefix
@@ -541,8 +544,8 @@ ModManager::ModManager(
 				 << " patch directory to: " << patch_dir << endl;
 			cout << "setting " << cfgname
 				 << " modifications directory to: " << mods_dir << endl;
-			cout << "setting " << cfgname << " source directory to: " << src_dir
-				 << endl;
+			cout << "setting " << cfgname
+				 << " source directory to: " << src_dir << endl;
 		}
 #endif
 	}
