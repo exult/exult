@@ -2417,7 +2417,8 @@ USECODE_INTRINSIC(start_speech) {
 	bool okay    = false;
 	speech_track = parms[0].get_int_value();
 	if (speech_track >= 0) {
-		okay = Audio::get_ptr()->start_speech(speech_track);
+		ucmachine->do_speech(speech_track);
+		okay = true;
 	}
 	if (!okay) {
 		// Failed?  Clear faces.  (Fixes SI).
@@ -2444,7 +2445,8 @@ USECODE_INTRINSIC(start_blocking_speech) {
 	bool okay    = false;
 	speech_track = parms[0].get_int_value();
 	if (speech_track >= 0) {
-		okay = Audio::get_ptr()->start_speech(speech_track);
+		ucmachine->do_speech(speech_track);
+		okay = true;
 	}
 	if (!okay) {
 		// Failed?  Clear faces.  (Fixes SI).

@@ -33,6 +33,7 @@
 #include "gameclk.h"
 #include "gamewin.h"
 #include "headers/ios_state.hpp"
+#include "ucmachine.h"
 #include "ucinternal.h"
 #include "ucscriptop.h"
 #include "useval.h"
@@ -636,7 +637,8 @@ int Usecode_script::exec(
 			const Usecode_value& val   = code->get_elem(++i);
 			const int            track = val.get_int_value();
 			if (track >= 0) {
-				Audio::get_ptr()->start_speech(track);
+				Usecode_machine* ucmachine;
+				ucmachine->do_speech(track);
 			}
 			break;
 		}
