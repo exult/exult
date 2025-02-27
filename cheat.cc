@@ -751,7 +751,6 @@ void Cheat::cycle_selected_frame(int direction) {
 	}
 	for (auto& it : selected) {
 		Game_object* obj          = it.get();
-		int          shape        = obj->get_shapenum();
 		int          maxFrames    = obj->get_num_frames();
 		int          currentFrame = obj->get_framenum();
 		int          newFrame     = currentFrame + direction;
