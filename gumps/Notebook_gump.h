@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -107,6 +107,10 @@ public:
 		return false;
 	}
 
+	bool word_exceeds_line_length(
+			const std::string& text, int offset, int curpage);
+	void        add_new_with_line_breaks(const std::string& text, int gflag);
+	std::string get_next_line(const std::string& text);
 	static void initialize();
 	static void write();    // Write it out to gamedat.
 	static void read();     // Read it in.

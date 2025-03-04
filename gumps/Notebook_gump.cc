@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2024 The Exult Team
+Copyright (C) 2000-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -44,6 +44,7 @@ using std::ofstream;
 using std::ostream;
 using std::string;
 using std::vector;
+#include <sstream>
 
 vector<One_note*>    Notebook_gump::notes;
 bool                 Notebook_gump::initialized = false;    // Set when read in.
@@ -129,6 +130,7 @@ public:
 	}
 
 	void write(ostream& out);    // Write out as XML.
+	void add_text_with_line_breaks(const std::string& text);
 };
 
 /*
@@ -383,23 +385,28 @@ bool Notebook_gump::paint_page(
  */
 
 void Notebook_gump::change_page(int delta) {
+	if (delta == 0) {
+		return;
+	}
+
 	const int topleft = curpage & ~1;
+	int       new_page;
+
 	if (delta > 0) {
-		const int nxt = topleft + 2;
-		if (nxt >= static_cast<int>(page_info.size())) {
+		new_page = topleft + 2;
+		if (new_page >= static_cast<int>(page_info.size())) {
 			return;
 		}
-		curpage = nxt;
-		curnote = page_info[curpage].notenum;
-		updnx = cursor.offset = 0;
-	} else if (delta < 0) {
+	} else {
 		if (topleft == 0) {
 			return;
 		}
-		curpage = topleft - 2;
-		curnote = page_info[curpage].notenum;
-		updnx = cursor.offset = 0;
+		new_page = topleft - 2;
 	}
+
+	curpage = new_page;
+	curnote = page_info[curpage].notenum;
+	updnx = cursor.offset = 0;
 	paint();
 }
 
@@ -721,11 +728,58 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 		if (chr >= 256 || !isascii(chr)) {
 			return false;
 		}
+		// Special case: ignore "^" character
+		if (chr == '^') {
+			return true;
+		}
 		if (ev.key.keysym.mod & (KMOD_SHIFT | KMOD_CAPS)) {
 			chr = toupper(chr);
 		}
-		note->insert(chr, cursor.offset);
-		++cursor.offset;
+
+		// Check if adding this character would make the current word too long
+		// by simulating inserting the character and then checking
+		string test_text = note->text;
+		test_text.insert(cursor.offset, 1, chr);
+
+		if (word_exceeds_line_length(test_text, cursor.offset + 1, curpage)) {
+			// Find the start of the current word
+			int word_start = cursor.offset;
+			while (word_start > 0 && test_text[word_start - 1] != ' '
+				   && test_text[word_start - 1] != '\n') {
+				word_start--;
+			}
+
+			// If this is a single word that's too long by itself
+			// (rather than a line that's too long because of multiple words)
+			if (word_start == 0 || test_text[word_start - 1] == '\n') {
+				// Insert a newline BEFORE the character that would make
+				// it too long
+				note->insert('\n', cursor.offset);
+				++cursor.offset;
+
+				// Then insert the character on the new line
+				note->insert(chr, cursor.offset);
+				++cursor.offset;
+			} else {
+				// Normal case - break at word boundary
+				note->insert(chr, cursor.offset);
+				++cursor.offset;
+
+				// Insert newline after the most recent space
+				int pos = cursor.offset - 1;
+				while (pos > 0 && note->text[pos] != ' ') {
+					pos--;
+				}
+				if (pos > 0) {
+					note->text[pos] = '\n';
+				}
+			}
+		} else {
+			// Normal case, just insert the character
+			note->insert(chr, cursor.offset);
+			++cursor.offset;
+		}
+
 		paint();    // (Not very efficient...)
 		if (need_next_page()) {
 			next_page();
@@ -756,8 +810,29 @@ void Notebook_gump::add_gflag_text(int gflag, const string& text) {
 		}
 	}
 	if (gwin->get_allow_autonotes()) {
-		add_new(text, gflag);
+		instance->add_new_with_line_breaks(text, gflag);
 	}
+}
+
+/*
+ *  Add a new note with proper line breaking. Reuses One_note's line breaking
+ * logic.
+ */
+void Notebook_gump::add_new_with_line_breaks(const string& text, int gflag) {
+	Game_clock*      clk = gwin->get_clock();
+	const Tile_coord t   = gwin->get_main_actor()->get_tile();
+
+	// Create a new note
+	One_note* note = new One_note(
+			clk->get_day(), clk->get_hour(), clk->get_minute(), t.tx, t.ty, "",
+			gflag);
+	note->is_new = true;
+
+	// Use existing line breaking logic from One_note
+	note->add_text_with_line_breaks(text);
+
+	// Add the note to the collection
+	notes.push_back(note);
 }
 
 /*
@@ -820,7 +895,8 @@ void Notebook_gump::read() {
 			}
 		} else if (notend.first == "note/text") {
 			if (note) {
-				note->set_text(notend.second);
+				// Add text with line breaks directly to the note
+				note->add_text_with_line_breaks(notend.second);
 			}
 		} else if (notend.first == "note/gflag") {
 			int gf;
@@ -877,5 +953,185 @@ void Notebook_gump::read_auto_text() {
 				reader.get_global_section_strings(auto_text);
 			}
 		}
+	}
+}
+
+bool Notebook_gump::word_exceeds_line_length(
+		const string& text, int offset, int curpage) {
+	// Find the end of the current word.
+	int word_end = offset;
+
+	// Find the start of the current word.
+	int word_start = word_end;
+	while (word_start > 0 && text[word_start - 1] != ' '
+		   && text[word_start - 1] != '\n') {
+		--word_start;
+	}
+
+	// Calculate the length of the current word.
+	int word_length = offset - word_start;
+
+	// Get the text area for the current page.
+	TileRect box = Get_text_area((curpage % 2) != 0, false);
+
+	// Calculate the available width on the current line.
+	// Find the last newline character before the offset
+	int last_newline = 0;
+	for (int i = 0; i < word_start; ++i) {
+		if (text[i] == '\n') {
+			last_newline = i + 1;    // Start after the newline
+		}
+	}
+
+	// Calculate the width of the current line up to the start of the word
+	string current_line = text.substr(last_newline, word_start - last_newline);
+
+	// Calculate line width once and use it consistently
+	int current_line_width = sman->get_text_width(font, current_line.c_str());
+
+	// Get the width of the word
+	int word_width = sman->get_text_width(
+			font, text.substr(word_start, word_length).c_str());
+
+	// Always treat words with trailing
+	// punctuation as if the punctuation weren't there
+	bool has_punct
+			= (word_length > 1 && ispunct(text[word_start + word_length - 1]));
+	int base_word_width = word_width;
+
+	if (has_punct) {
+		// Get just the word without the trailing punctuation
+		base_word_width = sman->get_text_width(
+				font, text.substr(word_start, word_length - 1).c_str());
+	}
+
+	// Use base_word_width for consistency with add_text_with_line_breaks
+	return current_line_width + (has_punct ? base_word_width : word_width)
+		   > box.w;
+}
+
+void One_note::add_text_with_line_breaks(const std::string& input) {
+	Shape_manager* sman      = Shape_manager::get_instance();
+	TileRect       box       = Get_text_area(false, false);
+	int            max_width = box.w;
+
+	// Clear existing text before formatting
+	this->text = "";
+
+	// Strip existing newlines and replace with spaces
+	// to ensure proper re-wrapping of long lines
+	std::string processed_input = input;
+	for (size_t i = 0; i < processed_input.size(); ++i) {
+		if (processed_input[i] == '\n') {
+			processed_input[i] = ' ';
+		}
+	}
+
+	std::istringstream iss(processed_input);
+	std::string        word;
+	std::string        current_line;
+	int                current_line_width = 0;
+
+	// Parse word by word, not line by line
+	while (iss >> word) {
+		// Calculate word width
+		int word_width = sman->get_text_width(font, word.c_str());
+
+		// Handle very long words that need to be broken up
+		// mid-word
+		if (word_width > max_width) {
+			// First add any existing content as its own line
+			if (!current_line.empty()) {
+				this->text += current_line + "\n";
+				current_line       = "";
+				current_line_width = 0;
+			}
+
+			// Now break up the long word
+			std::string remaining_word = word;
+
+			while (!remaining_word.empty()) {
+				std::string part       = "";
+				int         part_width = 0;
+
+				// Build up the part character by character until it's almost at
+				// max width
+				for (size_t i = 0; i < remaining_word.length(); ++i) {
+					std::string test_part = part + remaining_word[i];
+					int         test_width
+							= sman->get_text_width(font, test_part.c_str());
+
+					if (test_width >= max_width) {
+						break;
+					}
+
+					part       = test_part;
+					part_width = test_width;
+				}
+
+				if (part.empty()) {
+					// Even a single character is too wide - take the first char
+					// anyway
+					part       = remaining_word.substr(0, 1);
+					part_width = sman->get_text_width(font, part.c_str());
+				}
+
+				// Add this part to the text
+				if (!current_line.empty()) {
+					this->text += current_line + "\n";
+				}
+				current_line       = part;
+				current_line_width = part_width;
+
+				// Remove the used part from the remaining word
+				remaining_word = remaining_word.substr(part.length());
+
+				// If there's more to come, add this part as a complete line
+				if (!remaining_word.empty()) {
+					this->text += current_line + "\n";
+					current_line       = "";
+					current_line_width = 0;
+				}
+			}
+			continue;    // Skip the rest of the loop for this word
+		}
+
+		// Check for punctuation at the end of the word
+		bool has_punct
+				= (word.length() > 1 && ispunct(word[word.length() - 1]));
+		int base_word_width = word_width;
+
+		if (has_punct) {
+			// Get just the word without the trailing punctuation
+			base_word_width = sman->get_text_width(
+					font, word.substr(0, word.length() - 1).c_str());
+		}
+
+		// Space width (if needed)
+		int space_width
+				= current_line_width > 0 ? sman->get_text_width(font, " ") : 0;
+
+		// Check if adding this word would exceed max width
+		if (current_line_width > 0
+			&& current_line_width + space_width + base_word_width
+					   >= max_width) {
+			// Line would be too long, start a new line
+			this->text += current_line + "\n";
+			current_line       = word;
+			current_line_width = word_width;    // Use FULL width for tracking
+		} else {
+			// Word fits on the current line
+			if (!current_line.empty()) {
+				current_line += " ";
+				current_line_width += space_width;
+			}
+			current_line += word;
+			current_line_width += word_width;
+		}
+	}
+
+	// Add the final line if there's anything left
+	if (!current_line.empty()) {
+		this->text += current_line;
 	}
 }
