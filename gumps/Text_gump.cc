@@ -145,7 +145,6 @@ int Text_gump::paint_page(const TileRect& box, int start) {
 												 // end-of-text
 
 					// Use same check for both page break markers
-					const char* nextBreak = nullptr;
 					if ((pageBreakStar > eol + (epage == extraBreak ? 3 : 1)
 						 && pageBreakStar < earliest)
 						|| (extraBreak > eol + (epage == extraBreak ? 3 : 1)
