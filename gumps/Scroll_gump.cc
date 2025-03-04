@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -39,5 +39,5 @@ Scroll_gump::Scroll_gump(int fnt, int gump)
 void Scroll_gump::paint() {
 	// Paint the gump itself.
 	paint_shape(x, y);
-	curend = paint_page(TileRect(52, 30, 142, 118), curtop);
+	curend = paint_page(TileRect(51, 31, 142, 118), curtop);
 }

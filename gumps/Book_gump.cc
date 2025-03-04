@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -40,7 +40,7 @@ void Book_gump::paint() {
 	// Paint the gump itself.
 	paint_shape(x, y);
 	// Paint left page.
-	curend = paint_page(TileRect(36, 10, 122, 130), curtop);
+	curend = paint_page(TileRect(35, 8, 125, 130), curtop);
 	// Paint right page.
-	curend = paint_page(TileRect(174, 10, 122, 130), curend);
+	curend = paint_page(TileRect(173, 8, 125, 130), curend);
 }
