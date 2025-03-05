@@ -136,6 +136,14 @@ jobs:
           pkgin -y install fontconfig
           pkgin -y install gtk2+ gtk3+ pango
           pkgin -y install babl libX11 libXext
+          pkgin -y install git cmake libusb libunwind ffmpeg7
+          git clone https://github.com/libsdl-org/SDL SDL3
+          cd SDL3
+          mkdir -p build
+          cmake -B build -S .
+          cmake --build build
+          cmake --install build
+          cd ..
         run: |
           export PATH=/opt/local/bin:/opt/local/sbin:$PATH
           export MANPATH=/opt/local/man:$MANPATH
