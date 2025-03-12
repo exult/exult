@@ -33,10 +33,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //	Generic FILE_MIME, TEXT_MIME Targets
 #if defined(MACOSX)
 #	define U7_TARGET_DROPFILE_NAME_MIME "public.file-url"
-#	define U7_TARGET_DROPTEXT_NAME_MIME "UTF8_STRING"
+#	define U7_TARGET_DROPTEXT_NAME_GENERIC "UTF8_STRING"
+#	define U7_TARGET_DROPTEXT_NAME_MIME "public.utf8-plain-text"
 #else
 #	define U7_TARGET_DROPFILE_NAME_MIME "text/uri-list"
-#	define U7_TARGET_DROPTEXT_NAME_MIME "UTF8_STRING"
+#	define U7_TARGET_DROPTEXT_NAME_GENERIC "UTF8_STRING"
+#	define U7_TARGET_DROPTEXT_NAME_MIME "text/plain;charset=utf-8"
 #endif    // MACOSX
 
 //	Target information for dragging a shape:
