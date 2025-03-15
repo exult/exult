@@ -80,6 +80,11 @@ bool Gump_ToggleTextButton::activate(MouseButton button) {
 	return true;
 }
 
+void Gump_ToggleTextButton::setselection(int selectionnum) {
+	set_frame(selectionnum);
+	gwin->add_dirty(get_rect());
+}
+
 bool Gump_ToggleTextButton::push(MouseButton button) {
 	if (button == MouseButton::Left || button == MouseButton::Right) {
 		set_pushed(button);

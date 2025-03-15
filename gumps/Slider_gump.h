@@ -82,7 +82,7 @@ public:
 	Slider_gump(int mival, int mxval, int step, int defval);
 
 	int get_val() {    // Get last value set.
-		return widget->get_val();
+		return widget->getselection();
 	}
 
 	// Paint it and its contents.

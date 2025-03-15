@@ -22,7 +22,26 @@
 #	include "LowLevelMidiDriver.h"
 #	include "common_types.h"
 
-#	include <fluidsynth.h>
+// If  configure hasn't specified which one to use attempt to autodetect
+// try fluidlite.h first
+#if !defined(USING_FLUIDSYNTH) && !defined(USING_FLUIDLITE)
+#if __has_include(<fluidlite.h>)
+#	define USING_FLUIDLITE 1
+#elif __has_include(<fluidsynth.h>)
+#	define USING_FLUIDSYNTH 1
+#endif
+#endif
+
+#	ifdef USING_FLUIDSYNTH
+#		include <fluidsynth.h>
+#		define FLUID_VERSION    "FluidSynth " FLUIDSYNTH_VERSION
+#	elif defined(USING_FLUIDLITE)
+#		include <fluidlite.h>
+#		define FLUID_VERSION   "FluidLite " FLUIDLITE_VERSION
+#		ifndef FLUID_OK
+#			define FLUID_OK 0
+#		endif
+#	endif
 
 #	include <stack>
 
@@ -45,12 +64,15 @@ public:
 		return &desc;
 	}
 
+	std::vector<ConfigSetting_widget::Definition> GetSettings() override;
+
+
 protected:
 	// Because GCC complains about casting from const to non-const...
 	int setInt(const char* name, int val);
 	int setNum(const char* name, double val);
 	int setStr(const char* name, const char* val);
-	int getStr(const char* name, char** pval);
+	int getStr(const char* name, char* val, size_t size);
 
 	// LowLevelMidiDriver implementation
 	int  open() override;

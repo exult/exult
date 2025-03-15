@@ -51,7 +51,11 @@ public:
 		return true;
 	}
 
-	virtual bool run();
+	void close() override {
+		done = true;
+	}
+
+	bool run() override;
 
 	bool is_draggable() const override {
 		return !no_dragging;
@@ -84,19 +88,13 @@ private:
 	// the user drags it completely off screen only valid while dragging
 	int lastgood_x, lastgood_y;
 
-protected:
-	// If set this gump cannot be dragged
-	bool no_dragging;
 
-	TileRect procedural_background;
-
-	ShapeID checkmark_background;
-
+public:
 	// Colours used to draw the background.
 	struct ProceduralColours {
 		uint8 border     = 0;      // black
 		uint8 Background = 142;    // brown
-		uint8 Highlight;           // 2 brighter than backgriund
+		uint8 Highlight;           // 2 brighter than background
 		uint8 Highlight2;          // 4 brighter than background
 		uint8 Shadow;              // 2 darker tab background
 
@@ -114,7 +112,13 @@ protected:
 		void RemapColours(int newramp);
 	};
 
-	// Change as desired
+protected:
+	// If set this gump cannot be dragged
+	bool no_dragging;
+
+	TileRect procedural_background;
+
+	ShapeID checkmark_background;	// Change as desired
 	ProceduralColours procedural_colours;
 
 	//! Set ths gump to have a procedurally drawn background

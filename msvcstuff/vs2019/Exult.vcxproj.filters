@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -731,6 +731,21 @@
     <ClCompile Include="..\..\audio\midi_drivers\FluidSynthMidiDriver.cpp">
       <Filter>audio\midi_drivers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gumps\AdvancedOptions_gump.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\ConfigSetting_widget.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\Scrollable_widget.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\DropDown_widget.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gumps\StringList_widget.cc">
+      <Filter>gumps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\actions.h">
@@ -1443,6 +1458,27 @@
     </ClInclude>
     <ClInclude Include="..\..\audio\midi_drivers\FluidSynthMidiDriver.h">
       <Filter>audio\midi_drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\midi_drivers\XMidiRecyclable.h">
+      <Filter>audio\midi_drivers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\AdvancedOptions_gump.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\StringList_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\ConfigSetting_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\Scrollable_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\DropDown_widget.h">
+      <Filter>gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gumps\IterableGump_widget.h">
+      <Filter>gumps</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

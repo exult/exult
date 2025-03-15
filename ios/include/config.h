@@ -42,6 +42,7 @@
 #define USE_FMOPL_MIDI
 
 #define USE_FLUIDSYNTH_MIDI
+#define USING_FLUIDLITE 1
 
 #define USE_MT32EMU_MIDI
 
@@ -75,9 +76,6 @@
 
 /* Enable Midi Sfx */
 /* #undef ENABLE_MIDISFX */
-
-/* Enable fluidsynth midi */
-/* #undef USE_FLUIDSYNTH_MIDI */
 
 /* Enable timidity midi */
 /*#define USE_TIMIDITY_MIDI 1*/

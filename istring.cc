@@ -37,12 +37,12 @@ namespace Pentagram {
 		sint32 c1;
 
 		do {
-			c1        = static_cast<unsigned char>(*s1++);
-			sint32 c2 = static_cast<unsigned char>(*s2++);
-
 			if ((length--) == 0) {
 				return 0;    // strings are equal until end point
 			}
+			c1        = static_cast<unsigned char>(*s1++);
+			sint32 c2 = static_cast<unsigned char>(*s2++);
+
 
 			if (c1 != c2) {
 				c1 = std::toupper(c1);

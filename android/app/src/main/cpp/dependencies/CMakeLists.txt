@@ -55,9 +55,10 @@ ProcessorCount(NCPU)
 
 # Pull in dependencies
 include(ExternalProject)
+add_subdirectory("fluidlite")
 add_subdirectory("ogg")
 add_subdirectory("vorbis")
-add_subdirectory("fluidsynth")
+#add_subdirectory("fluidsynth")
 add_subdirectory("mt32emu")
 add_subdirectory("sdl")
 add_subdirectory("exult")

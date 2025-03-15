@@ -178,7 +178,12 @@ GUMPS_OBJS:= \
 	gumps/Text_gump.o \
 	gumps/InputOptions_gump.o \
 	gumps/VideoOptions_gump.o \
-	gumps/Yesno_gump.o
+	gumps/Yesno_gump.o \
+	gumps/StringList_widget.o \
+	gumps/AdvancedOptions_gump.o \
+	gumps/ConfigSetting_widget.o \
+	gumps/DropDown_widget.o \
+	gumps/Scrollable_widget.o
 
 IMAGEWIN_OBJS:=\
 	imagewin/ibuf8.o \
@@ -520,6 +525,8 @@ gumps/Modal_gump.o : gumps/Modal_gump.cc $(EXULT_FLX)
 gumps/Newfile_gump.o : gumps/Newfile_gump.cc $(EXULT_FLX)
 
 gumps/Notebook_gump.o : gumps/Notebook_gump.cc $(EXULT_FLX)
+
+gumps/Scrollable_widget.o : gumps/Scrollable_widget.cc $(EXULT_FLX)
 
 gumps/ShortcutBar_gump.o : gumps/ShortcutBar_gump.cc $(EXULT_FLX)
 

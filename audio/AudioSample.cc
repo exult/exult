@@ -29,9 +29,9 @@ namespace Pentagram {
 
 	AudioSample::AudioSample(std::unique_ptr<uint8[]> buffer_, uint32 size_)
 			: bits(0), frame_size(0), decompressor_size(0),
-			  decompressor_align(0), length(0), buffer_size(size_),
+			  decompressor_align(0), buffer_limit(size_),
 			  buffer(std::move(buffer_)), refcount(1), sample_rate(0),
-			  stereo(false) {}
+			  stereo(false), length(0) {}
 
 	AudioSample* AudioSample::createAudioSample(
 			std::unique_ptr<uint8[]> data, uint32 size) {

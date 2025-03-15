@@ -165,7 +165,6 @@ namespace Pentagram {
 		stereo             = false;
 		decompressor_size  = sizeof(VocDecompData);
 		decompressor_align = alignof(VocDecompData);
-		length             = size_;
 	}
 
 	void VocAudioSample::initDecompressor(void* DecompData) const {
@@ -231,7 +230,7 @@ namespace Pentagram {
 	bool VocAudioSample::advanceChunk(void* DecompData) const {
 		auto* decomp = static_cast<VocDecompData*>(DecompData);
 
-		if (decomp->pos == buffer_size) {
+		if (decomp->pos == buffer_limit) {
 			return false;
 		}
 

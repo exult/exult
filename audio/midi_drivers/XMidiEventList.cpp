@@ -1,6 +1,6 @@
 /*
 Copyright (C) 2003  The Pentagram Team
-Copyright (C) 2007-2022  The Exult Team
+Copyright (C) 2007-2025  The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -31,6 +31,11 @@ using std::size_t;
 using std::string;
 
 // #include "gamma.h"
+
+// XMidiRecyclable<XMidiEventList> FreeList
+template <>
+XMidiRecyclable<XMidiEventList>::FreeList
+		XMidiRecyclable<XMidiEventList>::FreeList::instance{};
 
 //
 // XMidiEventList stuff
@@ -136,14 +141,14 @@ uint32 XMidiEventList::convertListToMTrk(ODataSource* dest) {
 
 		last_status = event->status;
 
-		switch (event->status >> 4) {
+		switch (event->getStatusType()) {
 		// 2 bytes data
 		// Note off, Note on, Aftertouch, Controller and Pitch Wheel
-		case 0x8:
-		case 0x9:
-		case 0xA:
-		case 0xB:
-		case 0xE:
+		case MidiStatus::NoteOff:
+		case MidiStatus::NoteOn:
+		case MidiStatus::Aftertouch:
+		case MidiStatus::Controller:
+		case MidiStatus::PitchWheel:
 			if (dest) {
 				dest->write1(event->data[0]);
 				dest->write1(event->data[1]);
@@ -152,9 +157,9 @@ uint32 XMidiEventList::convertListToMTrk(ODataSource* dest) {
 			break;
 
 		// 1 bytes data
-		// Program Change and Channel Pressure
-		case 0xC:
-		case 0xD:
+		// Program Change and Channel Touch
+		case MidiStatus::Program:
+		case MidiStatus::ChannelTouch:
 			if (dest) {
 				dest->write1(event->data[0]);
 			}
@@ -163,7 +168,7 @@ uint32 XMidiEventList::convertListToMTrk(ODataSource* dest) {
 
 		// Variable length
 		// SysEx
-		case 0xF:
+		case MidiStatus::Sysex:
 			if (event->status == 0xFF) {
 				if (dest) {
 					dest->write1(event->data[0]);
@@ -174,9 +179,10 @@ uint32 XMidiEventList::convertListToMTrk(ODataSource* dest) {
 			i += putVLQ(dest, event->ex.sysex_data.len);
 
 			if (event->ex.sysex_data.len) {
+				auto sysex_buffer = event->ex.sysex_data.buffer();
 				for (j = 0; j < event->ex.sysex_data.len; j++) {
 					if (dest) {
-						dest->write1(event->ex.sysex_data.buffer[j]);
+						dest->write1(sysex_buffer[j]);
 					}
 					i++;
 				}
@@ -214,8 +220,26 @@ uint32 XMidiEventList::convertListToMTrk(ODataSource* dest) {
 
 void XMidiEventList::decrementCounter() {
 	if (--counter < 0) {
+		// Lock the mutex here
+		auto lock = lockMutex();
 		events->FreeThis();
 		events = nullptr;
-		delete this;
+		FreeThis();
 	}
+}
+
+uint32 XMidiEventList::getLength() {
+	if (length) {
+		return length;
+	}
+
+	for (auto ev = events; ev; ev = ev->next) {
+		length = std::max<uint32>(length, ev->time);
+
+		if (ev->getStatusType() == MidiStatus::NoteOn) {
+			length = std::max<uint32>(
+					length, ev->time + ev->ex.note_on.duration);
+		}
+	}
+	return length;
 }

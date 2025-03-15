@@ -198,9 +198,15 @@ public:
 	bool start_speech(int num, bool wait = false);
 	void stop_speech();
 	bool is_speech_playing();
-	int  wait_for_speech(
-			 std::function<int(Uint32 ms)> waitfunc
-			 = std::function<int(Uint32 ms)>());
+
+	// Get the mixer instance id speech is using
+	sint32 get_speech_id() {
+		return speech_id;
+	}
+
+	int wait_for_speech(
+			std::function<int(Uint32 ms)> waitfunc
+			= std::function<int(Uint32 ms)>());
 
 	bool is_speech_enabled() const {
 		return speech_enabled;

@@ -213,4 +213,46 @@ void CoreMidiDriver::increaseThreadPriority() {
 	pthread_setschedparam(self, policy, &param);
 }
 
+std::vector<ConfigSetting_widget::Definition> CoreMidiDriver::GetSettings() {
+	ConfigSetting_widget::Definition midi_device{
+			"CoreMIDI Device",                            // label
+			"config/audio/midi/coremidi_device",          // config_setting
+			0,                                            // additional
+			false,                                        // required
+			false,                                        // unique
+			ConfigSetting_widget::Definition::dropdown    // setting_type
+	};
+
+	// List all the midi devices and fill midi_device.valid.string
+	ItemCount dests = MIDIGetNumberOfDestinations();
+	midi_device.choices.reserve(int(dests) + 1);
+
+	// List device ID and names of CoreMidi destinations
+	// kMIDIPropertyDisplayName is not compatible with OS X SDK < 10.4
+
+	for (ItemCount i = 0; i < dests; i++) {
+		MIDIEndpointRef dest     = MIDIGetDestination(i);
+		std::string     destname = "Unknown / Invalid";
+		if (dest != 0u) {
+			CFStringRef midiname = nullptr;
+			if (MIDIObjectGetStringProperty(
+						dest, kMIDIPropertyDisplayName, &midiname)
+				== noErr) {
+				const char* s = CFStringGetCStringPtr(
+						midiname, kCFStringEncodingMacRoman);
+				if (s != nullptr) {
+					std::string id = std::to_string(int(i));
+					midi_device.choices.push_back({s, id, id});
+				}
+			}
+		}
+		std::cout << i << ": " << destname.c_str() << endl;
+	}
+	midi_device.default_value = "0";
+
+	auto settings = MidiDriver::GetSettings();
+	settings.push_back(std::move(midi_device));
+	return settings;
+}
+
 #endif    // USE_CORE_MIDI

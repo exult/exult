@@ -1,4 +1,4 @@
-// !$*UTF8*$!
+﻿// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
@@ -13,7 +13,6 @@
 		8A057F9227A8362E00948459 /* CoreAudioMidiDriver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A057F8427A835AF00948459 /* CoreAudioMidiDriver.cpp */; };
 		8A1C58211FE7D91B00738E40 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A1C581B1FE7D91B00738E40 /* libz.tbd */; };
 		8A1FC4272571C747007B86DD /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340BF1F8977FB000696C7 /* CoreMotion.framework */; };
-		8A204E2629F572E900E7D3E2 /* libfluidsynth.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A204E2529F572DF00E7D3E2 /* libfluidsynth.a */; };
 		8A2C52511DE6E1810016E16A /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A7F1F8E1DE5BDD40066F6FC /* CoreFoundation.framework */; };
 		8A2C52591DE6E8E50016E16A /* crc.cc in Sources */ = {isa = PBXBuildFile; fileRef = E700DD671A6E3161006C8BE4 /* crc.cc */; };
 		8A2C525A1DE6E8E90016E16A /* Flat.cc in Sources */ = {isa = PBXBuildFile; fileRef = E700DD6A1A6E3161006C8BE4 /* Flat.cc */; };
@@ -29,6 +28,11 @@
 		8A33B5DE2C2051B800075AF4 /* Mixer_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5DA2C2051B800075AF4 /* Mixer_gump.cc */; };
 		8A33B5DF2C2051B800075AF4 /* Modal_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5DC2C2051B800075AF4 /* Modal_gump.cc */; };
 		8A33B5E02C2051B800075AF4 /* Slider_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5DD2C2051B800075AF4 /* Slider_widget.cc */; };
+		8A33B5E22C2051B800075AF4 /* StringList_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5E12C2051B800075AF4 /* StringList_widget.cc */; };
+		8A33B5E62C2051B800075AF4 /* Scrollable_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5E52C2051B800075AF4 /* Scrollable_widget.cc */; };
+		8A33B5E92C2051B800075AF4 /* DropDown_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5E82C2051B800075AF4 /* DropDown_widget.cc */; };
+		8A33B5EC2C2051B800075AF4 /* ConfigSetting_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5EB2C2051B800075AF4 /* ConfigSetting_widget.cc */; };
+		8A33B5EF2C2051B800075AF4 /* AdvancedOptions_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5EE2C2051B800075AF4 /* AdvancedOptions_gump.cc */; };
 		8A45A3B8247C068500F12F4D /* joythumb-glass.png in Resources */ = {isa = PBXBuildFile; fileRef = 8A45A3AC247C068500F12F4D /* joythumb-glass.png */; };
 		8A5252C4257188A5005AD385 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A5252A725718897005AD385 /* libSDL2.a */; };
 		8A599C2224605925006E3252 /* libmt32emu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A599C21246058A9006E3252 /* libmt32emu.a */; };
@@ -54,6 +58,7 @@
 		8AC797C81C8D0E4F001AF014 /* zip.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8AC797C61C8D0E4F001AF014 /* zip.cc */; };
 		8AD4A9311A92B9DB0004762D /* InputOptions_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8AD4A92F1A92B9DB0004762D /* InputOptions_gump.cc */; };
 		8ADFFDF625DE791000FC4D3A /* verify.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8ADFFDF425DE791000FC4D3A /* verify.cc */; };
+		8AF119BE2D1F81BA008B25BE /* libfluidlite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AF119AD2D1F816B008B25BE /* libfluidlite.a */; };
 		8AF2AFDF2016708100696E08 /* joypad-glass-southwest.png in Resources */ = {isa = PBXBuildFile; fileRef = 8AF2AFD62016707F00696E08 /* joypad-glass-southwest.png */; };
 		8AF2AFE02016708100696E08 /* joypad-glass-north.png in Resources */ = {isa = PBXBuildFile; fileRef = 8AF2AFD72016708000696E08 /* joypad-glass-north.png */; };
 		8AF2AFE12016708100696E08 /* joypad-glass.png in Resources */ = {isa = PBXBuildFile; fileRef = 8AF2AFD82016708000696E08 /* joypad-glass.png */; };
@@ -271,20 +276,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		8A204E2229F572DF00E7D3E2 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 8A204E1D29F572DF00E7D3E2 /* FluidSynth.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 8A9A029629F3DEFE000AF341;
-			remoteInfo = make_tables;
-		};
-		8A204E2429F572DF00E7D3E2 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 8A204E1D29F572DF00E7D3E2 /* FluidSynth.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 8A9A012E29F32EEF000AF341;
-			remoteInfo = fluidsynth;
-		};
 		8A38FFF31DE6F68400B942F9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
@@ -376,6 +367,13 @@
 			remoteGlobalIDString = E2D187CF28A5673500D2B4F1;
 			remoteInfo = "xcFramework-iOS";
 		};
+		8AF119AC2D1F816B008B25BE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8AF119A82D1F816B008B25BE /* fluidlite.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E700E0351A6E41C5006C8BE4;
+			remoteInfo = libfluidlite;
+		};
 		E738C84D1A6FFF58003A950D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E738C8491A6FFF58003A950D /* libogg.xcodeproj */;
@@ -402,12 +400,22 @@
 		8A057F9127A835AF00948459 /* CoreAudioMidiDriver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CoreAudioMidiDriver.h; sourceTree = "<group>"; };
 		8A0C19E11D6D9F1800B9105A /* sibetaintrinsics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sibetaintrinsics.h; sourceTree = "<group>"; };
 		8A1C581B1FE7D91B00738E40 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
-		8A204E1D29F572DF00E7D3E2 /* FluidSynth.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FluidSynth.xcodeproj; path = "fluidsynth-sans-glib/xcode-ios/FluidSynth.xcodeproj"; sourceTree = "<group>"; };
 		8A33B5C92C2051B800075AF4 /* Slider_widget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Slider_widget.h; path = ../gumps/Slider_widget.h; sourceTree = "<group>"; };
 		8A33B5DA2C2051B800075AF4 /* Mixer_gump.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mixer_gump.cc; path = ../gumps/Mixer_gump.cc; sourceTree = "<group>"; };
 		8A33B5DB2C2051B800075AF4 /* Mixer_gump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Mixer_gump.h; path = ../gumps/Mixer_gump.h; sourceTree = "<group>"; };
 		8A33B5DC2C2051B800075AF4 /* Modal_gump.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Modal_gump.cc; path = ../gumps/Modal_gump.cc; sourceTree = "<group>"; };
 		8A33B5DD2C2051B800075AF4 /* Slider_widget.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Slider_widget.cc; path = ../gumps/Slider_widget.cc; sourceTree = "<group>"; };
+		8A33B5E12C2051B800075AF4 /* StringList_widget.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StringList_widget.cc; path = ../gumps/StringList_widget.cc; sourceTree = "<group>"; };
+		8A33B5E32C2051B800075AF4 /* StringList_widget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StringList_widget.h; path = ../gumps/StringList_widget.h; sourceTree = "<group>"; };
+		8A33B5E42C2051B800075AF4 /* IterableGump_widget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IterableGump_widget.h; path = ../gumps/IterableGump_widget.h; sourceTree = "<group>"; };
+		8A33B5E52C2051B800075AF4 /* Scrollable_widget.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Scrollable_widget.cc; path = ../gumps/Scrollable_widget.cc; sourceTree = "<group>"; };
+		8A33B5E72C2051B800075AF4 /* Scrollable_widget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Scrollable_widget.h; path = ../gumps/Scrollable_widget.h; sourceTree = "<group>"; };
+		8A33B5E82C2051B800075AF4 /* DropDown_widget.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DropDown_widget.cc; path = ../gumps/DropDown_widget.cc; sourceTree = "<group>"; };
+		8A33B5EA2C2051B800075AF4 /* DropDown_widget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DropDown_widget.h; path = ../gumps/DropDown_widget.h; sourceTree = "<group>"; };
+		8A33B5EB2C2051B800075AF4 /* ConfigSetting_widget.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConfigSetting_widget.cc; path = ../gumps/ConfigSetting_widget.cc; sourceTree = "<group>"; };
+		8A33B5ED2C2051B800075AF4 /* ConfigSetting_widget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ConfigSetting_widget.h; path = ../gumps/ConfigSetting_widget.h; sourceTree = "<group>"; };
+		8A33B5EE2C2051B800075AF4 /* AdvancedOptions_gump.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AdvancedOptions_gump.cc; path = ../gumps/AdvancedOptions_gump.cc; sourceTree = "<group>"; };
+		8A33B5F02C2051B800075AF4 /* AdvancedOptions_gump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AdvancedOptions_gump.h; path = ../gumps/AdvancedOptions_gump.h; sourceTree = "<group>"; };
 		8A45A3AC247C068500F12F4D /* joythumb-glass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joythumb-glass.png"; sourceTree = "<group>"; };
 		8A52528E25718896005AD385 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = SDL/Xcode/SDL/SDL.xcodeproj; sourceTree = "<group>"; };
 		8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = libmt32emu.xcodeproj; sourceTree = "<group>"; };
@@ -446,6 +454,7 @@
 		8AD4A9301A92B9DB0004762D /* InputOptions_gump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InputOptions_gump.h; path = ../gumps/InputOptions_gump.h; sourceTree = "<group>"; };
 		8ADFFDF425DE791000FC4D3A /* verify.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = verify.cc; path = ../verify.cc; sourceTree = "<group>"; };
 		8ADFFDF525DE791000FC4D3A /* verify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = verify.h; path = ../verify.h; sourceTree = "<group>"; };
+		8AF119A82D1F816B008B25BE /* fluidlite.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = fluidlite.xcodeproj; sourceTree = "<group>"; };
 		8AF2AFD62016707F00696E08 /* joypad-glass-southwest.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joypad-glass-southwest.png"; sourceTree = "<group>"; };
 		8AF2AFD72016708000696E08 /* joypad-glass-north.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joypad-glass-north.png"; sourceTree = "<group>"; };
 		8AF2AFD82016708000696E08 /* joypad-glass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joypad-glass.png"; sourceTree = "<group>"; };
@@ -901,7 +910,7 @@
 				8A599C2224605925006E3252 /* libmt32emu.a in Frameworks */,
 				E738C8551A6FFF71003A950D /* libogg.a in Frameworks */,
 				E738C8561A6FFF75003A950D /* libvorbis.a in Frameworks */,
-				8A204E2629F572E900E7D3E2 /* libfluidsynth.a in Frameworks */,
+				8AF119BE2D1F81BA008B25BE /* libfluidlite.a in Frameworks */,
 				8A1C58211FE7D91B00738E40 /* libz.tbd in Frameworks */,
 				8A8340D51F8979D3000696C7 /* AudioToolbox.framework in Frameworks */,
 				8A8340D11F897827000696C7 /* AVFoundation.framework in Frameworks */,
@@ -1010,15 +1019,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		8A204E1E29F572DF00E7D3E2 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				8A204E2329F572DF00E7D3E2 /* make_tables */,
-				8A204E2529F572DF00E7D3E2 /* libfluidsynth.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		8A52528F25718896005AD385 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -1053,6 +1053,14 @@
 			);
 			name = sha1;
 			path = ../files/sha1;
+			sourceTree = "<group>";
+		};
+		8AF119A92D1F816B008B25BE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8AF119AD2D1F816B008B25BE /* libfluidlite.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		E700DAF31A6E2CE7006C8BE4 /* audio */ = {
@@ -1442,6 +1450,17 @@
 				8A33B5DC2C2051B800075AF4 /* Modal_gump.cc */,
 				8A33B5DD2C2051B800075AF4 /* Slider_widget.cc */,
 				8A33B5C92C2051B800075AF4 /* Slider_widget.h */,
+				8A33B5E12C2051B800075AF4 /* StringList_widget.cc */,
+				8A33B5E32C2051B800075AF4 /* StringList_widget.h */,
+				8A33B5E42C2051B800075AF4 /* IterableGump_widget.h */,
+				8A33B5E52C2051B800075AF4 /* Scrollable_widget.cc */,
+				8A33B5E72C2051B800075AF4 /* Scrollable_widget.h */,
+				8A33B5E82C2051B800075AF4 /* DropDown_widget.cc */,
+				8A33B5EA2C2051B800075AF4 /* DropDown_widget.h */,
+				8A33B5EB2C2051B800075AF4 /* ConfigSetting_widget.cc */,
+				8A33B5ED2C2051B800075AF4 /* ConfigSetting_widget.h */,
+				8A33B5EE2C2051B800075AF4 /* AdvancedOptions_gump.cc */,
+				8A33B5F02C2051B800075AF4 /* AdvancedOptions_gump.h */,
 				8AB53D8A1C9CA0A90084C69D /* ShortcutBar_gump.cc */,
 				8AB53D8B1C9CA0A90084C69D /* ShortcutBar_gump.h */,
 				8AD4A92F1A92B9DB0004762D /* InputOptions_gump.cc */,
@@ -1722,7 +1741,7 @@
 				8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */,
 				E738C8491A6FFF58003A950D /* libogg.xcodeproj */,
 				E738C84F1A6FFF65003A950D /* libvorbis.xcodeproj */,
-				8A204E1D29F572DF00E7D3E2 /* FluidSynth.xcodeproj */,
+				8AF119A82D1F816B008B25BE /* fluidlite.xcodeproj */,
 			);
 			name = Libs;
 			sourceTree = "<group>";
@@ -1796,8 +1815,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 8A204E1E29F572DF00E7D3E2 /* Products */;
-					ProjectRef = 8A204E1D29F572DF00E7D3E2 /* FluidSynth.xcodeproj */;
+					ProductGroup = 8AF119A92D1F816B008B25BE /* Products */;
+					ProjectRef = 8AF119A82D1F816B008B25BE /* fluidlite.xcodeproj */;
 				},
 				{
 					ProductGroup = 8A599C1D246058A9006E3252 /* Products */;
@@ -1825,20 +1844,6 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		8A204E2329F572DF00E7D3E2 /* make_tables */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = make_tables;
-			remoteRef = 8A204E2229F572DF00E7D3E2 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		8A204E2529F572DF00E7D3E2 /* libfluidsynth.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libfluidsynth.a;
-			remoteRef = 8A204E2429F572DF00E7D3E2 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		8A52529F25718897005AD385 /* SDL2.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -1921,6 +1926,13 @@
 			fileType = wrapper.framework;
 			path = SDL2.framework;
 			remoteRef = 8A9A02B829F3E170000AF341 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8AF119AD2D1F816B008B25BE /* libfluidlite.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libfluidlite.a;
+			remoteRef = 8AF119AC2D1F816B008B25BE /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		E738C84E1A6FFF58003A950D /* libogg.a */ = {
@@ -2016,6 +2028,11 @@
 				E700DF751A6E34C6006C8BE4 /* useval.cc in Sources */,
 				E700DD5E1A6E3121006C8BE4 /* sfxinf.cc in Sources */,
 				E700DCAE1A6E30A7006C8BE4 /* shapeid.cc in Sources */,
+				8A33B5EF2C2051B800075AF4 /* AdvancedOptions_gump.cc in Sources */,
+				8A33B5EC2C2051B800075AF4 /* ConfigSetting_widget.cc in Sources */,
+				8A33B5E92C2051B800075AF4 /* DropDown_widget.cc in Sources */,
+				8A33B5E62C2051B800075AF4 /* Scrollable_widget.cc in Sources */,
+				8A33B5E22C2051B800075AF4 /* StringList_widget.cc in Sources */,
 				8A33B5E02C2051B800075AF4 /* Slider_widget.cc in Sources */,
 				E700DE241A6E344D006C8BE4 /* ibuf8.cc in Sources */,
 				8A9A03B029F42948000AF341 /* FluidSynthMidiDriver.cpp in Sources */,
@@ -2284,7 +2301,7 @@
 					./libmt32em/mt32emu/src/c_interface,
 					./libmt32em/mt32emu/src/srchelper/srctools/src,
 					./libmt32em/mt32emu/src/srchelper/srctools/include,
-					"./fluidsynth-sans-glib/include/**",
+					./fluidlite/include,
 				);
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
@@ -2337,7 +2354,7 @@
 					./libmt32em/mt32emu/src/c_interface,
 					./libmt32em/mt32emu/src/srchelper/srctools/src,
 					./libmt32em/mt32emu/src/srchelper/srctools/include,
-					"./fluidsynth-sans-glib/include/**",
+					./fluidlite/include,
 				);
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";

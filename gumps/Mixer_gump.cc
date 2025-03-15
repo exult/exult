@@ -249,16 +249,16 @@ void Mixer_gump::save_settings() {
 	MyMidiPlayer* midi = audio->get_midi();
 	if (midi) {
 		if (oggslider) {
-			midi->SetOggMusicVolume(oggslider->get_val(), true);
+			midi->SetOggMusicVolume(oggslider->getselection(), true);
 		} else if (midislider) {
-			midi->SetMidiMusicVolume(midislider->get_val(), true);
+			midi->SetMidiMusicVolume(midislider->getselection(), true);
 		}
 	}
 	if (sfxslider) {
-		audio->set_sfx_volume(sfxslider->get_val(), true);
+		audio->set_sfx_volume(sfxslider->getselection(), true);
 	}
 	if (speechslider) {
-		audio->set_speech_volume(speechslider->get_val(), true);
+		audio->set_speech_volume(speechslider->getselection(), true);
 	}
 
 	config->write_back();
@@ -316,7 +316,7 @@ void Mixer_gump::paint() {
 
 		midislider->paint();
 		gumpman->paint_num(
-				midislider->get_val(), x + colx[6], y + rowy[0], font);
+				midislider->getselection(), x + colx[6], y + rowy[0], font);
 	}
 	if (oggslider) {
 		if (midislider) {
@@ -338,8 +338,8 @@ void Mixer_gump::paint() {
 		}
 		oggslider->paint();
 		gumpman->paint_num(
-				oggslider->get_val(), x + colx[6], y + rowy[num_sliders - 3],
-				font);
+				oggslider->getselection(), x + colx[6],
+				y + rowy[num_sliders - 3], font);
 	}
 	font->paint_text_right_aligned(
 			ib8, "SFX:", x + colx[1], y + rowy[num_sliders - 2]);
@@ -357,8 +357,8 @@ void Mixer_gump::paint() {
 		}
 		sfxslider->paint();
 		gumpman->paint_num(
-				sfxslider->get_val(), x + colx[6], y + rowy[num_sliders - 2],
-				font);
+				sfxslider->getselection(), x + colx[6],
+				y + rowy[num_sliders - 2], font);
 	} else {
 		font->paint_text(
 				iwin->get_ib8(), " disabled", x + colx[1],
@@ -380,8 +380,8 @@ void Mixer_gump::paint() {
 		}
 		speechslider->paint();
 		gumpman->paint_num(
-				speechslider->get_val(), x + colx[6], y + rowy[num_sliders - 1],
-				font);
+				speechslider->getselection(), x + colx[6],
+				y + rowy[num_sliders - 1], font);
 	} else {
 		font->paint_text(
 				iwin->get_ib8(), " disabled", x + colx[1],

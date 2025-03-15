@@ -40,6 +40,9 @@ libgumps_la_SOURCES = \
 	Slider_gump.h	\
 	Slider_widget.cc	\
 	Slider_widget.h	\
+	StringList_widget.cc \
+	StringList_widget.h  \
+	IterableGump_widget.h \
 	Spellbook_gump.cc	\
 	Spellbook_gump.h	\
 	Stats_gump.cc	\
@@ -84,7 +87,15 @@ libgumps_la_SOURCES = \
 	ItemMenu_gump.cc \
 	ItemMenu_gump.h	\
 	InputOptions_gump.cc	\
-	InputOptions_gump.h
+	InputOptions_gump.h \
+	AdvancedOptions_gump.cc \
+	AdvancedOptions_gump.h \
+	ConfigSetting_widget.cc \
+	ConfigSetting_widget.h \
+	DropDown_widget.cc \
+	DropDown_widget.h \
+	Scrollable_widget.cc \
+	Scrollable_widget.h
 endif
 
 CLEANFILES = *~

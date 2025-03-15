@@ -1,6 +1,6 @@
 /*
 Copyright (C) 2003  The Pentagram Team
-Copyright (C) 2013-2022  The Exult Team
+Copyright (C) 2013-2025  The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -89,7 +89,7 @@ public:
 		XMidiEvent* prev = nullptr;
 		XMidiEvent* note = notes;
 		while (note) {
-			if ((note->status & 0xF) == (event->status & 0xF)
+			if (note->getChannel() == (event->getChannel())
 				&& note->data[0] == event->data[0]) {
 				if (prev) {
 					prev->ex.note_on.next_note = note->ex.note_on.next_note;
@@ -149,7 +149,7 @@ public:
 		// XMidiEvent *prev = 0;
 		XMidiEvent* note = notes;
 		while (note) {
-			if ((note->status & 0xF) == (event->status & 0xF)
+			if ((note->getChannel()) == (event->getChannel())
 				&& note->data[0] == event->data[0]) {
 				note->ex.note_on.actualvel = event->data[1];
 				return;

@@ -551,7 +551,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 						gx, gy, SDL_MouseButton_to_Gump(event.button.button))
 				&& gwin->get_mouse3rd()) {
 				gump->key_down(SDLK_RETURN);
-				gump->text_input(SDLK_RETURN, SDLK_RETURN, false);
+				gump->character_input(SDLK_RETURN, SDLK_RETURN, false);
 			}
 		} else if (event.button.button == 3) {
 			rightclick = true;
@@ -647,9 +647,6 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 			event.key.keysym.sym = SDLK_UNKNOWN;
 		}
 		{
-			if (event.key.keysym.sym == SDLK_ESCAPE) {
-				return false;
-			}
 			if ((event.key.keysym.sym == SDLK_s)
 				&& (event.key.keysym.mod & KMOD_ALT)
 				&& (event.key.keysym.mod & KMOD_CTRL)) {
@@ -671,9 +668,18 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 			translate_numpad(
 					event.key.keysym.sym, keysym_unicode, event.key.keysym.mod);
 			gump->key_down(event.key.keysym.sym);
-			gump->text_input(
+			bool handled = gump->character_input(
 					event.key.keysym.sym, keysym_unicode,
 					(event.key.keysym.mod & (KMOD_SHIFT | KMOD_CAPS)) != 0);
+
+			// we'll allow the gump to handle escape first
+			// before closing the gump
+			if (!handled)
+			{
+				if (event.key.keysym.sym == SDLK_ESCAPE) {
+					return false;
+				}
+			}
 
 			break;
 		}

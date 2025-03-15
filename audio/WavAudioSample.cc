@@ -115,8 +115,10 @@ WavAudioSample::WavAudioSample(std::unique_ptr<uint8[]> buffer_, uint32 size)
 	stereo = channels == 2;
 	bits   = bits_per_sample;
 
-	buffer_size = pos_data + size_data;
-	start_pos   = pos_data;
+	buffer_limit = pos_data + size_data;
+	start_pos    = pos_data;
+
+	length = size_data / (bits_per_sample / (stereo ? 4 : 8));
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	byte_swap = false;

@@ -29,6 +29,7 @@ Boston, MA  02111-1307, USA.
 
 #include "common_types.h"
 #include "ignore_unused_variable_warning.h"
+#include "rect.h"
 
 #include <memory>
 
@@ -105,6 +106,30 @@ protected:
 	Image_buffer(unsigned int w, unsigned int h, int dpth);
 
 public:
+	// class to create objects that get the clip rect from the input image_Buffer
+	// and restores the clip rect when the object goes out of scope
+	class ClipRectSave {
+		Image_buffer* buf;
+		TileRect      clip;
+	public:
+		ClipRectSave(Image_buffer* buf) : buf(buf) {
+			buf->get_clip(clip.x, clip.y, clip.w, clip.h);
+		}
+
+		~ClipRectSave() {
+			buf->set_clip(clip.x, clip.y, clip.w, clip.h);
+		}
+		operator const TileRect&() const {
+			return clip;
+		}
+		const TileRect&Rect() const {
+			return clip;
+		}
+	};
+
+	ClipRectSave SaveClip() {
+		return ClipRectSave(this);
+	}
 	friend class Image_buffer8;
 
 	virtual ~Image_buffer() {

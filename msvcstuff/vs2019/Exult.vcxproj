@@ -372,6 +372,7 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <ClCompile Include="..\..\gumps\Slider_widget.cc" />
     <ClCompile Include="..\..\gumps\Spellbook_gump.cc" />
     <ClCompile Include="..\..\gumps\Stats_gump.cc" />
+    <ClCompile Include="..\..\gumps\StringList_widget.cc" />
     <ClCompile Include="..\..\gumps\Text_button.cc" />
     <ClCompile Include="..\..\gumps\Text_gump.cc" />
     <ClCompile Include="..\..\gumps\VideoOptions_gump.cc" />
@@ -480,6 +481,10 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <ClCompile Include="..\..\verify.cc" />
     <ClCompile Include="..\..\version.cc" />
     <ClCompile Include="..\..\windrag.cc" />
+    <ClCompile Include="..\..\gumps\DropDown_widget.cc" />
+    <ClCompile Include="..\..\gumps\AdvancedOptions_gump.cc" />
+    <ClCompile Include="..\..\gumps\ConfigSetting_widget.cc" />
+    <ClCompile Include="..\..\gumps\Scrollable_widget.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\actions.h" />
@@ -503,6 +508,7 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <ClInclude Include="..\..\audio\midi_drivers\XMidiEventList.h" />
     <ClInclude Include="..\..\audio\midi_drivers\XMidiFile.h" />
     <ClInclude Include="..\..\audio\midi_drivers\XMidiNoteStack.h" />
+    <ClInclude Include="..\..\audio\midi_drivers\XMidiRecyclable.h" />
     <ClInclude Include="..\..\audio\midi_drivers\XMidiSequence.h" />
     <ClInclude Include="..\..\audio\midi_drivers\XMidiSequenceHandler.h" />
     <ClInclude Include="..\..\audio\OggAudioSample.h" />
@@ -575,6 +581,7 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <ClInclude Include="..\..\gumps\Gump_widget.h" />
     <ClInclude Include="..\..\gumps\InputOptions_gump.h" />
     <ClInclude Include="..\..\gumps\ItemMenu_gump.h" />
+    <ClInclude Include="..\..\gumps\IterableGump_widget.h" />
     <ClInclude Include="..\..\gumps\Jawbone_gump.h" />
     <ClInclude Include="..\..\gumps\GameEngineOptions_gump.h" />
     <ClInclude Include="..\..\gumps\misc_buttons.h" />
@@ -718,7 +725,12 @@ echo.  &gt;&gt;..\..\gitinfo.h</Command>
     <ClInclude Include="..\..\verify.h" />
     <ClInclude Include="..\..\version.h" />
     <ClInclude Include="..\..\windrag.h" />
+    <ClInclude Include="..\..\gumps\AdvancedOptions_gump.h" />
+    <ClInclude Include="..\..\gumps\DropDown_widget.h" />
     <ClInclude Include="msvc_include.h" />
+    <ClInclude Include="..\..\gumps\ConfigSetting_widget.h" />
+    <ClInclude Include="..\..\gumps\Scrollable_widget.h" />
+    <ClInclude Include="..\..\gumps\StringList_widget.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\..\conf\config.xml" />

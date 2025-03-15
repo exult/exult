@@ -1,0 +1,361 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8AF119902D1F75FC008B25BE /* fluid_list.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF119862D1F75FC008B25BE /* fluid_list.c */; };
+		8AF119912D1F75FC008B25BE /* fluid_dsp_float.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF119822D1F75FC008B25BE /* fluid_dsp_float.c */; };
+		8AF119922D1F75FC008B25BE /* fluid_hash.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF119842D1F75FC008B25BE /* fluid_hash.c */; };
+		8AF119932D1F75FC008B25BE /* fluid_tuning.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF1198D2D1F75FC008B25BE /* fluid_tuning.c */; };
+		8AF119942D1F75FC008B25BE /* fluid_voice.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF1198E2D1F75FC008B25BE /* fluid_voice.c */; };
+		8AF119962D1F75FC008B25BE /* fluid_ramsfont.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF119882D1F75FC008B25BE /* fluid_ramsfont.c */; };
+		8AF119972D1F75FC008B25BE /* fluid_chorus.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF1197F2D1F75FC008B25BE /* fluid_chorus.c */; };
+		8AF119982D1F75FC008B25BE /* fluid_synth.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF1198B2D1F75FC008B25BE /* fluid_synth.c */; };
+		8AF119992D1F75FC008B25BE /* fluid_settings.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF1198A2D1F75FC008B25BE /* fluid_settings.c */; };
+		8AF1199A2D1F75FC008B25BE /* fluid_sys.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF1198C2D1F75FC008B25BE /* fluid_sys.c */; };
+		8AF1199B2D1F75FC008B25BE /* fluid_init.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF119852D1F75FC008B25BE /* fluid_init.c */; };
+		8AF1199C2D1F75FC008B25BE /* fluid_defsfont.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF119812D1F75FC008B25BE /* fluid_defsfont.c */; };
+		8AF1199D2D1F75FC008B25BE /* fluid_rev.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF119892D1F75FC008B25BE /* fluid_rev.c */; };
+		8AF1199E2D1F75FC008B25BE /* fluid_mod.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF119872D1F75FC008B25BE /* fluid_mod.c */; };
+		8AF1199F2D1F75FC008B25BE /* fluid_chan.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF1197E2D1F75FC008B25BE /* fluid_chan.c */; };
+		8AF119A02D1F75FC008B25BE /* fluid_conv.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF119802D1F75FC008B25BE /* fluid_conv.c */; };
+		8AF119A12D1F75FC008B25BE /* fluid_gen.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AF119832D1F75FC008B25BE /* fluid_gen.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		8AF1197E2D1F75FC008B25BE /* fluid_chan.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_chan.c; path = fluidlite/src/fluid_chan.c; sourceTree = "<group>"; };
+		8AF1197F2D1F75FC008B25BE /* fluid_chorus.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_chorus.c; path = fluidlite/src/fluid_chorus.c; sourceTree = "<group>"; };
+		8AF119802D1F75FC008B25BE /* fluid_conv.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_conv.c; path = fluidlite/src/fluid_conv.c; sourceTree = "<group>"; };
+		8AF119812D1F75FC008B25BE /* fluid_defsfont.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_defsfont.c; path = fluidlite/src/fluid_defsfont.c; sourceTree = "<group>"; };
+		8AF119822D1F75FC008B25BE /* fluid_dsp_float.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_dsp_float.c; path = fluidlite/src/fluid_dsp_float.c; sourceTree = "<group>"; };
+		8AF119832D1F75FC008B25BE /* fluid_gen.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_gen.c; path = fluidlite/src/fluid_gen.c; sourceTree = "<group>"; };
+		8AF119842D1F75FC008B25BE /* fluid_hash.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_hash.c; path = fluidlite/src/fluid_hash.c; sourceTree = "<group>"; };
+		8AF119852D1F75FC008B25BE /* fluid_init.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_init.c; path = fluidlite/src/fluid_init.c; sourceTree = "<group>"; };
+		8AF119862D1F75FC008B25BE /* fluid_list.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_list.c; path = fluidlite/src/fluid_list.c; sourceTree = "<group>"; };
+		8AF119872D1F75FC008B25BE /* fluid_mod.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_mod.c; path = fluidlite/src/fluid_mod.c; sourceTree = "<group>"; };
+		8AF119882D1F75FC008B25BE /* fluid_ramsfont.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_ramsfont.c; path = fluidlite/src/fluid_ramsfont.c; sourceTree = "<group>"; };
+		8AF119892D1F75FC008B25BE /* fluid_rev.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_rev.c; path = fluidlite/src/fluid_rev.c; sourceTree = "<group>"; };
+		8AF1198A2D1F75FC008B25BE /* fluid_settings.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_settings.c; path = fluidlite/src/fluid_settings.c; sourceTree = "<group>"; };
+		8AF1198B2D1F75FC008B25BE /* fluid_synth.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_synth.c; path = fluidlite/src/fluid_synth.c; sourceTree = "<group>"; };
+		8AF1198C2D1F75FC008B25BE /* fluid_sys.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_sys.c; path = fluidlite/src/fluid_sys.c; sourceTree = "<group>"; };
+		8AF1198D2D1F75FC008B25BE /* fluid_tuning.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_tuning.c; path = fluidlite/src/fluid_tuning.c; sourceTree = "<group>"; };
+		8AF1198E2D1F75FC008B25BE /* fluid_voice.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_voice.c; path = fluidlite/src/fluid_voice.c; sourceTree = "<group>"; };
+		E700E0351A6E41C5006C8BE4 /* libfluidlite.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libfluidlite.a; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		E700E02C1A6E41C5006C8BE4 = {
+			isa = PBXGroup;
+			children = (
+				E700E04F1A6E41F7006C8BE4 /* Sources */,
+				E700E0361A6E41C5006C8BE4 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E700E0361A6E41C5006C8BE4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E700E0351A6E41C5006C8BE4 /* libfluidlite.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E700E04F1A6E41F7006C8BE4 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				8AF1197E2D1F75FC008B25BE /* fluid_chan.c */,
+				8AF1197F2D1F75FC008B25BE /* fluid_chorus.c */,
+				8AF119802D1F75FC008B25BE /* fluid_conv.c */,
+				8AF119812D1F75FC008B25BE /* fluid_defsfont.c */,
+				8AF119822D1F75FC008B25BE /* fluid_dsp_float.c */,
+				8AF119832D1F75FC008B25BE /* fluid_gen.c */,
+				8AF119842D1F75FC008B25BE /* fluid_hash.c */,
+				8AF119852D1F75FC008B25BE /* fluid_init.c */,
+				8AF119862D1F75FC008B25BE /* fluid_list.c */,
+				8AF119872D1F75FC008B25BE /* fluid_mod.c */,
+				8AF119882D1F75FC008B25BE /* fluid_ramsfont.c */,
+				8AF119892D1F75FC008B25BE /* fluid_rev.c */,
+				8AF1198A2D1F75FC008B25BE /* fluid_settings.c */,
+				8AF1198B2D1F75FC008B25BE /* fluid_synth.c */,
+				8AF1198C2D1F75FC008B25BE /* fluid_sys.c */,
+				8AF1198D2D1F75FC008B25BE /* fluid_tuning.c */,
+				8AF1198E2D1F75FC008B25BE /* fluid_voice.c */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E700E0341A6E41C5006C8BE4 /* libfluidlite */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E700E0491A6E41C5006C8BE4 /* Build configuration list for PBXNativeTarget "libfluidlite" */;
+			buildPhases = (
+				8AF119A22D1F7651008B25BE /* ShellScript */,
+				E700E0311A6E41C5006C8BE4 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = libfluidlite;
+			productName = libfluidlite;
+			productReference = E700E0351A6E41C5006C8BE4 /* libfluidlite.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E700E02D1A6E41C5006C8BE4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1620;
+			};
+			buildConfigurationList = E700E0301A6E41C5006C8BE4 /* Build configuration list for PBXProject "fluidlite" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E700E02C1A6E41C5006C8BE4;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E700E0341A6E41C5006C8BE4 /* libfluidlite */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		8AF119A22D1F7651008B25BE /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				$PROJECT_DIR/fluidlite/include/fluidlite/fluid_config.h,
+				$PROJECT_DIR/fluidlite/include/fluidlite/version.h,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cp $PROJECT_DIR/fluidlite/src/fluid_config.cmake $PROJECT_DIR/fluidlite/src/fluid_config.h\nsed -i '' -e 's/@fluidlite_VERSION@/1.2.2/g' -e 's/@FLUIDLITE_SF3_SUPPORT@/SF3_DISABLED/g' -e 's/#cmakedefine01 HAVE_STRING_H/#define HAVE_STRING_H 1/g' -e 's/#cmakedefine01 HAVE_STDLIB_H/#define HAVE_STDLIB_H 1/g' -e 's/#cmakedefine01 HAVE_STDIO_H/#define HAVE_STDIO_H 1/g' -e 's/#cmakedefine01 HAVE_STDARG_H/#define HAVE_STDARG_H 1/g' -e 's/#cmakedefine01 HAVE_MATH_H/#define HAVE_MATH_H 1/g' -e 's/#cmakedefine01 HAVE_LIMITS_H/#define HAVE_LIMITS_H 1/g' -e 's/#cmakedefine01 HAVE_FCNTL_H/#define HAVE_FCNTL_H 1/g' -e 's/#cmakedefine01 DEBUG/#define DEBUG 0/g' -e 's/#cmakedefine WORDS_BIGENDIAN//g' -e 's/#cmakedefine WITH_FLOAT/#define WITH_FLOAT/g' $PROJECT_DIR/fluidlite/src/fluid_config.h\ncp $PROJECT_DIR/fluidlite/src/version.cmake $PROJECT_DIR/fluidlite/include/fluidlite/version.h\ncp $PROJECT_DIR/fluidlite/src/version.cmake $PROJECT_DIR/fluidlite/include/fluidlite/version.h\nsed -i '' -e 's/@fluidlite_VERSION@/1.2.2/g' -e 's/@fluidlite_VERSION_MAJOR@/1/g' -e 's/@fluidlite_VERSION_MINOR@/2/g' -e 's/@fluidlite_VERSION_PATCH@/2/g' $PROJECT_DIR/fluidlite/include/fluidlite/version.h\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E700E0311A6E41C5006C8BE4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8AF119902D1F75FC008B25BE /* fluid_list.c in Sources */,
+				8AF119912D1F75FC008B25BE /* fluid_dsp_float.c in Sources */,
+				8AF119922D1F75FC008B25BE /* fluid_hash.c in Sources */,
+				8AF119932D1F75FC008B25BE /* fluid_tuning.c in Sources */,
+				8AF119942D1F75FC008B25BE /* fluid_voice.c in Sources */,
+				8AF119962D1F75FC008B25BE /* fluid_ramsfont.c in Sources */,
+				8AF119972D1F75FC008B25BE /* fluid_chorus.c in Sources */,
+				8AF119982D1F75FC008B25BE /* fluid_synth.c in Sources */,
+				8AF119992D1F75FC008B25BE /* fluid_settings.c in Sources */,
+				8AF1199A2D1F75FC008B25BE /* fluid_sys.c in Sources */,
+				8AF1199B2D1F75FC008B25BE /* fluid_init.c in Sources */,
+				8AF1199C2D1F75FC008B25BE /* fluid_defsfont.c in Sources */,
+				8AF1199D2D1F75FC008B25BE /* fluid_rev.c in Sources */,
+				8AF1199E2D1F75FC008B25BE /* fluid_mod.c in Sources */,
+				8AF1199F2D1F75FC008B25BE /* fluid_chan.c in Sources */,
+				8AF119A02D1F75FC008B25BE /* fluid_conv.c in Sources */,
+				8AF119A12D1F75FC008B25BE /* fluid_gen.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		E700E0471A6E41C5006C8BE4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					./fluidlite/src,
+					./fluidlite/include,
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		E700E0481A6E41C5006C8BE4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_INHIBIT_ALL_WARNINGS = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					./fluidlite/src,
+					./fluidlite/include,
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		E700E04A1A6E41C5006C8BE4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
+				HEADER_SEARCH_PATHS = (
+					$PROJECT_DIR/fluidlite/src,
+					$PROJECT_DIR/fluidlite/include,
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		E700E04B1A6E41C5006C8BE4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
+				HEADER_SEARCH_PATHS = (
+					$PROJECT_DIR/fluidlite/src,
+					$PROJECT_DIR/fluidlite/include,
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E700E0301A6E41C5006C8BE4 /* Build configuration list for PBXProject "fluidlite" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E700E0471A6E41C5006C8BE4 /* Debug */,
+				E700E0481A6E41C5006C8BE4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E700E0491A6E41C5006C8BE4 /* Build configuration list for PBXNativeTarget "libfluidlite" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E700E04A1A6E41C5006C8BE4 /* Debug */,
+				E700E04B1A6E41C5006C8BE4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E700E02D1A6E41C5006C8BE4 /* Project object */;
+}

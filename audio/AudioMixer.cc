@@ -378,6 +378,36 @@ void AudioMixer::get2DPosition(
 	}
 }
 
+uint32 Pentagram::AudioMixer::GetPlaybackLength(sint32 instance_id) {
+	if (instance_id < 0 || channels.empty() || !audio_ok) {
+		return UINT32_MAX;
+	}
+	const std::lock_guard<SDLAudioDevice> lock(*device);
+	auto                                  it = std::find_if(
+            channels.begin(), channels.end(), [instance_id](auto& channel) {
+                return channel.getInstanceId() == instance_id;
+            });
+	if (it != channels.end()) {
+		return it->getPlaybackLength();
+	}
+	return UINT32_MAX;
+}
+
+uint32 Pentagram::AudioMixer::GetPlaybackPosition(sint32 instance_id) {
+	if (instance_id < 0 || channels.empty() || !audio_ok) {
+		return UINT32_MAX;
+	}
+	const std::lock_guard<SDLAudioDevice> lock(*device);
+	auto                                  it = std::find_if(
+            channels.begin(), channels.end(), [instance_id](auto& channel) {
+                return channel.getInstanceId() == instance_id;
+            });
+	if (it != channels.end()) {
+		return it->getPlaybackPosition();
+	}
+	return UINT32_MAX;
+}
+
 void AudioMixer::sdlAudioCallback(void* userdata, Uint8* stream, int len) {
 	auto* mixer = static_cast<AudioMixer*>(userdata);
 	// Unfortunately, SDL does not guarantee that stream will be aligned to

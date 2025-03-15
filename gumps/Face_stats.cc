@@ -157,7 +157,7 @@ public:
 
 	Gump_button* on_button(int mx, int my) override;
 
-	TileRect get_rect() override;
+	TileRect get_rect() const override;
 
 	bool is_draggable() const override {
 		return false;
@@ -280,7 +280,7 @@ void Portrait_button::paint() {
 	}
 }
 
-TileRect Portrait_button::get_rect() {
+TileRect Portrait_button::get_rect() const {
 	TileRect rect = Face_button::get_rect();
 	if (hit || pois || prot || para || charm || curse) {
 		rect.enlarge(2);

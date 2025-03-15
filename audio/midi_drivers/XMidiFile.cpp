@@ -1,6 +1,6 @@
 /*
 Copyright (C) 2003-2005  The Pentagram Team
-Copyright (C) 2006-2022  The Exult Team
+Copyright (C) 2006-2025  The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cmath>
 #include <cstddef>
 #include <cstdlib>
+#include <utility>
 
 using std::atof;
 using std::atoi;
@@ -630,13 +631,28 @@ static RhythmSetupData U7PercussionData[] = {
 
 GammaTable<unsigned char> XMidiFile::VolumeCurve(128);
 
+//
+// XMidiRecyclable static variables for XMidiEvent
+// Placed here because XMidiEvent doesn't have it's own source file
+//
+
+// XMidiEvent FreeList
+template <>
+XMidiRecyclable<XMidiEvent>::FreeList
+		XMidiRecyclable<XMidiEvent>::FreeList::instance{};
+
+// we always use the mutex from the XMidiEvent specialization
+template <>
+std::unique_ptr<std::recursive_mutex> XMidiRecyclable<XMidiEvent>::Mutex{};
+
 // Constructor
-XMidiFile::XMidiFile(IDataSource* source, int pconvert)
+XMidiFile::XMidiFile(
+		IDataSource* source, int pconvert, std::string_view drivername)
 		: num_tracks(0), events(nullptr), convert_type(pconvert),
 		  do_reverb(false), do_chorus(false) {
 	std::memset(bank127, 0, sizeof(bank127));
 
-	ExtractTracks(source);
+	ExtractTracks(source, drivername);
 
 	// SysEx data
 	if (pconvert >= XMIDIFILE_HINT_U7VOICE_MT_FILE) {
@@ -666,8 +682,10 @@ XMidiEventList* XMidiFile::GetEventList(uint32 track) {
 
 // Sets current to the new event and updates list
 void XMidiFile::CreateNewEvent(int time) {
+	// Update length if needed
+	length = std::max(length, time);
 	if (!list) {
-		list = current = new XMidiEvent{};
+		list = current = XMidiEvent::Create();
 		if (time > 0) {
 			current->time = time;
 		}
@@ -675,7 +693,7 @@ void XMidiFile::CreateNewEvent(int time) {
 	}
 
 	if (time < 0 || list->time > time) {
-		auto* event = new XMidiEvent{};
+		auto* event = XMidiEvent::Create();
 		event->next = list;
 		list = current = event;
 		return;
@@ -687,7 +705,7 @@ void XMidiFile::CreateNewEvent(int time) {
 
 	while (current->next) {
 		if (current->next->time > time) {
-			auto* event = new XMidiEvent{};
+			auto* event = XMidiEvent::Create();
 
 			event->next   = current->next;
 			current->next = event;
@@ -699,7 +717,7 @@ void XMidiFile::CreateNewEvent(int time) {
 		current = current->next;
 	}
 
-	current->next = new XMidiEvent{};
+	current->next = XMidiEvent::Create();
 	current       = current->next;
 	current->time = time;
 }
@@ -772,9 +790,9 @@ void XMidiFile::ApplyFirstState(first_state& fs, int chan_mask) {
 
 		// Copy Patch Change Event
 		temp           = patch;
-		patch          = new XMidiEvent{};
+		patch          = XMidiEvent::Create();
 		patch->time    = temp->time;
-		patch->status  = channel | (MIDI_STATUS_PROG_CHANGE << 4);
+		patch->status  = channel | (int(MidiStatus::Program));
 		patch->data[0] = temp->data[0];
 
 		// Copy Volume
@@ -785,8 +803,8 @@ void XMidiFile::ApplyFirstState(first_state& fs, int chan_mask) {
 		}
 
 		temp         = vol;
-		vol          = new XMidiEvent{};
-		vol->status  = channel | (MIDI_STATUS_CONTROLLER << 4);
+		vol          = XMidiEvent::Create();
+		vol->status  = channel | (int(MidiStatus::Controller));
 		vol->data[0] = 7;
 
 		if (!temp) {
@@ -808,8 +826,8 @@ void XMidiFile::ApplyFirstState(first_state& fs, int chan_mask) {
 
 		temp = bank;
 
-		bank         = new XMidiEvent{};
-		bank->status = channel | (MIDI_STATUS_CONTROLLER << 4);
+		bank         = XMidiEvent::Create();
+		bank->status = channel | (int(MidiStatus::Controller));
 
 		if (!temp) {
 			bank->data[1] = 0;
@@ -825,8 +843,8 @@ void XMidiFile::ApplyFirstState(first_state& fs, int chan_mask) {
 		}
 
 		temp         = pan;
-		pan          = new XMidiEvent{};
-		pan->status  = channel | (MIDI_STATUS_CONTROLLER << 4);
+		pan          = XMidiEvent::Create();
+		pan->status  = channel | (int(MidiStatus::Controller));
 		pan->data[0] = 10;
 
 		if (!temp) {
@@ -836,15 +854,15 @@ void XMidiFile::ApplyFirstState(first_state& fs, int chan_mask) {
 		}
 
 		if (do_reverb) {
-			reverb          = new XMidiEvent{};
-			reverb->status  = channel | (MIDI_STATUS_CONTROLLER << 4);
+			reverb          = XMidiEvent::Create();
+			reverb->status  = channel | (int(MidiStatus::Controller));
 			reverb->data[0] = 91;
 			reverb->data[1] = reverb_value;
 		}
 
 		if (do_chorus) {
-			chorus          = new XMidiEvent{};
-			chorus->status  = channel | (MIDI_STATUS_CONTROLLER << 4);
+			chorus          = XMidiEvent::Create();
+			chorus->status  = channel | (int(MidiStatus::Controller));
 			chorus->data[0] = 93;
 			chorus->data[1] = chorus_value;
 		}
@@ -877,6 +895,70 @@ void XMidiFile::ApplyFirstState(first_state& fs, int chan_mask) {
 	}
 }
 
+void XMidiFile::SpreadEvents() {
+	int  offset      = 0;
+	bool hit_note_on = false;
+
+	// This is the event that end the current span used in phase2
+	// The initial value for this is the note on event in phase 1
+	XMidiEvent* span_end = list;
+
+	// Phase 1 Add a gap between all events before first note on and offset all
+	// subsequent events
+	for (XMidiEvent* event = list; event; event = event->next) {
+		event->time += offset;
+		// increment offset if we havent hit a note on
+		if (!hit_note_on && event->getStatusType() == MidiStatus::NoteOn) {
+			span_end    = event;
+			hit_note_on = true;
+
+		} else if (!hit_note_on) {
+			offset++;
+		}
+	}
+	// Update length
+	length += offset;
+
+	// Phase 2 Make sure there are gaps between all non time critical events but
+	// no not alter time critical events
+	for (XMidiEvent* span_start = span_end; span_start; span_start = span_end) {
+		int gapcount = 1;
+		int endtime  = length;
+		// clear span end
+		span_end = nullptr;
+
+		// Search for span end and count events
+		for (XMidiEvent* event = span_start->next; event; event = event->next) {
+			if (!event->is_time_critical()) {
+				gapcount++;
+			} else {
+				span_end = event;
+				endtime  = event->time;
+
+				break;
+			}
+		}
+
+		if (gapcount > 1) {
+			// gap for betweeen events;
+			int gap = (endtime - span_start->time) / gapcount;
+
+			if (gap > 0) {
+				gapcount = 1;
+				// Adjust times
+				for (XMidiEvent* event = span_start->next; event;
+					 event             = event->next) {
+					if (!event->is_time_critical()) {
+						event->time = span_start->time + gapcount++ * gap;
+					} else {
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
 //
 // AdjustTimings
 //
@@ -895,7 +977,8 @@ void XMidiFile::AdjustTimings(uint32 ppqn) {
 
 	// Virtual playing
 	XMidiNoteStack notes;
-
+	// Clear length because it will be wrong here and we  will recalculate it
+	length = 0;
 	for (XMidiEvent* event = list; event; event = event->next) {
 		// Note 64 bit int is required because multiplication by tempo can
 		// require 52 bits in some circumstances
@@ -910,11 +993,14 @@ void XMidiFile::AdjustTimings(uint32 ppqn) {
 
 		time_prev   = event->time;
 		event->time = (hs * 6) / 5 + (6 * hs_rem) / (5 * ppqn);
+		// Update length
+		length = std::max(length, event->time);
 
 		// Note on and note off handling
 		if (event->status <= 0x9F) {
 			// Add if it's a note on and remove if it's a note off
-			if ((event->status >> 4) == MIDI_STATUS_NOTE_ON && event->data[1]) {
+			if (event->getStatusType() == MidiStatus::NoteOn
+				&& event->data[1]) {
 				notes.Push(event);
 			} else {
 				XMidiEvent* prev = notes.FindAndPop(event);
@@ -924,13 +1010,15 @@ void XMidiFile::AdjustTimings(uint32 ppqn) {
 			}
 
 		} else if (event->status == 0xFF && event->data[0] == 0x51) {
-			tempo = (event->ex.sysex_data.buffer[0] << 16)
-					+ (event->ex.sysex_data.buffer[1] << 8)
-					+ event->ex.sysex_data.buffer[2];
+			auto sysex_buffer = event->ex.sysex_data.buffer();
+			if (sysex_buffer && event->ex.sysex_data.len >= 3) {
+				tempo = (sysex_buffer[0] << 16) + (sysex_buffer[1] << 8)
+						+ sysex_buffer[2];
 
-			event->ex.sysex_data.buffer[0] = 0x07;
-			event->ex.sysex_data.buffer[1] = 0xA1;
-			event->ex.sysex_data.buffer[2] = 0x20;
+				sysex_buffer[0] = 0x07;
+				sysex_buffer[1] = 0xA1;
+				sysex_buffer[2] = 0x20;
+			}
 		}
 	}
 
@@ -1001,7 +1089,8 @@ int XMidiFile::ConvertEvent(
 				 && bank127[status & 0xF])
 				|| convert_type == XMIDIFILE_CONVERT_MT32_TO_GS) {
 			CreateNewEvent(time);
-			current->status  = 0xB0 | (status & 0xF);
+			current->status = int(MidiStatus::Controller)
+							  | (status & int(MidiStatus::ChannelMask));
 			current->data[0] = 0;
 			current->data[1] = mt32asgs[data * 2 + 1];
 
@@ -1013,7 +1102,8 @@ int XMidiFile::ConvertEvent(
 			}
 		} else if (convert_type == XMIDIFILE_CONVERT_MT32_TO_GS127) {
 			CreateNewEvent(time);
-			current->status  = 0xB0 | (status & 0xF);
+			current->status = int(MidiStatus::Controller)
+							  | (status & int(MidiStatus::ChannelMask));
 			current->data[0] = 0;
 			current->data[1] = 127;
 
@@ -1064,12 +1154,16 @@ int XMidiFile::ConvertEvent(
 			}
 		}
 		// Sequence Branch Index
-		else if (current->data[0] == XMIDI_CONTROLLER_SEQ_BRANCH_INDEX) {
+		else if (
+				MidiController(current->data[0])
+				== MidiController::XSequenceBranchIndex) {
 			current->ex.branch_index.next_branch = branches;
 			branches                             = current;
 		}
 		// XMidi Bank Change
-		else if (current->data[0] == XMIDI_CONTROLLER_BANK_CHANGE) {
+		else if (
+				MidiController(current->data[0])
+				== MidiController::XBankChange) {
 			// Add it to the patch and bank change list
 			if (x_patch_bank_first == nullptr) {
 				x_patch_bank_first = current;
@@ -1088,7 +1182,7 @@ int XMidiFile::ConvertEvent(
 	current->data[1] = source->read1();
 
 	// Volume modify the volume controller, only if converting
-	if (convert_type && (current->status >> 4) == MIDI_STATUS_CONTROLLER
+	if (convert_type && current->getStatusType() == MidiStatus::Controller
 		&& current->data[0] == 7) {
 		current->data[1] = VolumeCurve[current->data[1]];
 	}
@@ -1111,7 +1205,7 @@ int XMidiFile::ConvertNote(
 	current->data[1] = source->read1();
 
 	// Volume modify the note on's, only if converting
-	if (convert_type && (current->status >> 4) == MIDI_STATUS_NOTE_ON
+	if (convert_type && current->getStatusType() == MidiStatus::NoteOn
 		&& current->data[1]) {
 		current->data[1] = VolumeCurve[current->data[1]];
 	}
@@ -1170,20 +1264,15 @@ int XMidiFile::ConvertSystemMessage(
 		current->data[0] = source->read1();
 		i++;
 	}
-
-	i += GetVLQ(source, current->ex.sysex_data.len);
+	uint32 len;
+	i += GetVLQ(source, len);
+	auto sysex_buffer = current->ex.sysex_data.set_len(len);
 
 	if (!current->ex.sysex_data.len) {
-		current->ex.sysex_data.buffer = nullptr;
 		return i;
 	}
 
-	current->ex.sysex_data.buffer
-			= new unsigned char[current->ex.sysex_data.len];
-
-	source->read(
-			reinterpret_cast<char*>(current->ex.sysex_data.buffer),
-			current->ex.sysex_data.len);
+	source->read(reinterpret_cast<char*>(sysex_buffer), len);
 
 	return i + current->ex.sysex_data.len;
 }
@@ -1195,13 +1284,16 @@ int XMidiFile::CreateMT32SystemMessage(
 		const void* data, IDataSource* source) {
 	CreateNewEvent(time);
 	// SysEx status
-	current->status = 0xF0;
+	current->status = int(MidiStatus::Sysex);
 
-	// Allocate the buffer
-	current->ex.sysex_data.len  = sysex_data_start + len + 2;
-	unsigned char* sysex_buffer = current->ex.sysex_data.buffer
-			= new unsigned char[current->ex.sysex_data.len];
+	// Set the buffer len, will allocate a needed
+	auto sysex_buffer
+			= current->ex.sysex_data.set_len(sysex_data_start + len + 2);
 
+	// If set_len fails, we are in big trouble
+	if (!sysex_buffer) {
+		return 0;
+	}
 	// MT32 Sysex Header
 	sysex_buffer[0] = 0x41;    // Roland SysEx ID
 	sysex_buffer[1] = 0x10;    // Device ID (assume 0x10, Device 17)
@@ -1277,30 +1369,30 @@ int XMidiFile::ConvertFiletoList(
 			status = source->read1();
 		}
 
-		switch (status >> 4) {
-		case MIDI_STATUS_NOTE_ON:
+		switch (status & MidiStatus::TypeMask) {
+		case MidiStatus::NoteOn:
 			retval |= 1 << (status & 0xF);
 			ConvertNote(time, status, source, play_size);
 			break;
 
-		case MIDI_STATUS_NOTE_OFF:
+		case MidiStatus::NoteOff:
 			ConvertNote(time, status, source, 2);
 			break;
 
 		// 2 byte data
-		case MIDI_STATUS_AFTERTOUCH:
-		case MIDI_STATUS_CONTROLLER:
-		case MIDI_STATUS_PITCH_WHEEL:
+		case MidiStatus::Aftertouch:
+		case MidiStatus::Controller:
+		case MidiStatus::PitchWheel:
 			ConvertEvent(time, status, source, 2, fs);
 			break;
 
 		// 1 byte data
-		case MIDI_STATUS_PROG_CHANGE:
-		case MIDI_STATUS_PRESSURE:
+		case MidiStatus::Program:
+		case MidiStatus::ChannelTouch:
 			ConvertEvent(time, status, source, 1, fs);
 			break;
 
-		case MIDI_STATUS_SYSEX:
+		case MidiStatus::Sysex:
 			if (status == 0xFF) {
 				const int pos  = source->getPos();
 				uint32    data = source->read1();
@@ -1357,13 +1449,14 @@ int XMidiFile::ExtractTracksFromXmi(IDataSource* source) {
 		branches           = nullptr;
 		x_patch_bank_first = nullptr;
 		x_patch_bank_cur   = nullptr;
+		length             = 0;
 		memset(&fs, 0, sizeof(fs));
 
 		const int begin = source->getPos();
 
 		// Convert it
 		const int chan_mask = ConvertFiletoList(source, true, fs);
-
+		SpreadEvents();
 		// Apply the first state
 		//		ApplyFirstState(fs, chan_mask);
 
@@ -1379,6 +1472,8 @@ int XMidiFile::ExtractTracksFromXmi(IDataSource* source) {
 		events[num]->branches     = branches;
 		events[num]->chan_mask    = chan_mask;
 		events[num]->x_patch_bank = x_patch_bank_first;
+		events[num]->setLength(length);
+		length = 0;
 
 		// Increment Counter
 		num++;
@@ -1402,6 +1497,7 @@ int XMidiFile::ExtractTracksFromMid(
 	first_state fs;
 	memset(&fs, 0, sizeof(fs));
 
+	length             = 0;
 	list               = nullptr;
 	branches           = nullptr;
 	x_patch_bank_first = nullptr;
@@ -1425,14 +1521,17 @@ int XMidiFile::ExtractTracksFromMid(
 		if (!type1) {
 			ApplyFirstState(fs, chan_mask);
 			AdjustTimings(ppqn);
+			SpreadEvents();
 			events[num]->events       = list;
 			events[num]->branches     = branches;
 			events[num]->chan_mask    = chan_mask;
 			events[num]->x_patch_bank = x_patch_bank_first;
-			branches                  = nullptr;
-			list                      = nullptr;
-			x_patch_bank_first        = nullptr;
-			x_patch_bank_cur          = nullptr;
+			events[num]->setLength(length);
+			branches           = nullptr;
+			list               = nullptr;
+			x_patch_bank_first = nullptr;
+			x_patch_bank_cur   = nullptr;
+			length             = 0;
 			memset(&fs, 0, sizeof(fs));
 			chan_mask = 0;
 		}
@@ -1445,10 +1544,12 @@ int XMidiFile::ExtractTracksFromMid(
 	if (type1) {
 		ApplyFirstState(fs, chan_mask);
 		AdjustTimings(ppqn);
+		SpreadEvents();
 		events[0]->events       = list;
 		events[0]->branches     = branches;
 		events[0]->chan_mask    = chan_mask;
 		events[0]->x_patch_bank = x_patch_bank_first;
+		events[0]->setLength(length);
 		return num == num_tracks ? 1 : 0;
 	}
 
@@ -1456,60 +1557,110 @@ int XMidiFile::ExtractTracksFromMid(
 	return num;
 }
 
-int XMidiFile::ExtractTracks(IDataSource* source) {
+int XMidiFile::ExtractTracks(IDataSource* source, std::string_view drivername) {
 	const int format_hint = convert_type;
 
 	if (convert_type >= XMIDIFILE_HINT_U7VOICE_MT_FILE) {
 		convert_type = XMIDIFILE_CONVERT_NOCONVERSION;
 	}
-
 	string s;
 
 	config->value("config/audio/midi/reverb/enabled", s, "no");
+	std::string config_key;
+	bool        changed = false;
+	if (!drivername.empty()) {
+		config_key = "config/audio/midi/reverb/enabled_";
+		config_key += drivername;
+		config->value(config_key, s, s.c_str());
+		changed |= !config->key_exists(config_key);
+	}
+
 	if (s == "yes") {
 		do_reverb = true;
+	};
+	if (!config_key.empty()) {
+		config->set(config_key, s, false);
 	}
-	config->set("config/audio/midi/reverb/enabled", s, true);
 
 	config->value("config/audio/midi/reverb/level", s, "---");
+	if (!drivername.empty()) {
+		config_key = "config/audio/midi/reverb/level_";
+		config_key += drivername;
+		config->value(config_key, s, s.c_str());
+		changed |= !config->key_exists(config_key);
+	}
+
 	if (s == "---") {
 		config->value("config/audio/midi/reverb", s, "64");
+		changed = true;
 	}
+	if (!config_key.empty()) {
+		config->set(config_key, s, false);
+	}
+
 	reverb_value = atoi(s.c_str());
 	if (reverb_value > 127) {
+		changed      = true;
 		reverb_value = 127;
 	} else if (reverb_value < 0) {
 		reverb_value = 0;
+		changed      = true;
 	}
-	config->set("config/audio/midi/reverb/level", reverb_value, true);
-
+	if (!config_key.empty()) {
+		config->set(config_key, reverb_value, false);
+	}
 	config->value("config/audio/midi/chorus/enabled", s, "no");
+	if (!drivername.empty()) {
+		config_key = "config/audio/midi/chorus/enabled_";
+		config_key += drivername;
+		config->value(config_key, s, s.c_str());
+		changed |= !config->key_exists(config_key);
+	}
+
 	if (s == "yes") {
 		do_chorus = true;
 	}
-	config->set("config/audio/midi/chorus/enabled", s, true);
+	if (!config_key.empty()) {
+		config->set(config_key, s, false);
+	}
 
 	config->value("config/audio/midi/chorus/level", s, "---");
+	if (!drivername.empty()) {
+		config_key = "config/audio/midi/chorus/level_";
+		config_key += drivername;
+		config->value(config_key, s, s.c_str());
+		changed |= !config->key_exists(config_key);
+	}
 	if (s == "---") {
 		config->value("config/audio/midi/chorus", s, "16");
+		changed = true;
 	}
 	chorus_value = atoi(s.c_str());
 	if (chorus_value > 127) {
 		chorus_value = 127;
+		changed      = true;
 	} else if (chorus_value < 0) {
 		chorus_value = 0;
+		changed      = true;
 	}
-	config->set("config/audio/midi/chorus/level", chorus_value, true);
+	if (!config_key.empty()) {
+		config->set(config_key, chorus_value, false);
+	}
 
 	config->value("config/audio/midi/volume_curve", s, "---");
 	if (s == "---") {
 		config->value("config/audio/midi/gamma", s, "1");
+		changed = true;
 	}
 	VolumeCurve.set_gamma(atof(s.c_str()));
 	const int igam = std::lround(VolumeCurve.get_gamma() * 10000);
 	char      buf[32];
 	snprintf(buf, sizeof(buf), "%d.%04d", igam / 10000, igam % 10000);
-	config->set("config/audio/midi/volume_curve", buf, true);
+	config->set("config/audio/midi/volume_curve", buf, false);
+
+	if (changed) {
+		config->write_back();
+	}
 
 	// Read first 4 bytes of header
 	source->read(buf, 4);
@@ -1679,7 +1830,7 @@ int XMidiFile::ExtractTracks(IDataSource* source) {
 				continue;
 			}
 
-			return ExtractTracks(source);
+			return ExtractTracks(source, drivername);
 		}
 
 		perr << "Failed to find midi data in RIFF Midi" << endl;
@@ -1759,8 +1910,8 @@ int XMidiFile::ExtractTracksFromU7V(IDataSource* source) {
 
 	i = 0;
 	while (U7PercussionNotes[i]) {
-		// Work out how many we can send at a time
-		for (j = i + 1; U7PercussionNotes[j]; j++) {
+		// Work out how many we can send at a time max 6
+		for (j = i + 1; j < i + 6 && U7PercussionNotes[j]; j++) {
 			// If the next isn't actually the next, then we can't upload it
 			if (U7PercussionNotes[j - 1] + 1 != U7PercussionNotes[j]) {
 				break;
@@ -1905,7 +2056,7 @@ void XMidiFile::CreateEventList() {
 	auto* newevents = new XMidiEventList*[num_tracks];    // new XMidiEvent
 														  // *[info.tracks];
 	for (int i = 0; i < num_tracks; i++) {
-		newevents[i] = new XMidiEventList{};
+		newevents[i] = XMidiEventList::Create();
 	}
 	events = newevents;
 }

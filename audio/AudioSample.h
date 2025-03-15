@@ -34,15 +34,17 @@ namespace Pentagram {
 		int    frame_size;
 		uint32 decompressor_size;
 		uint32 decompressor_align;
-		uint32 length;
 
-		uint32                   buffer_size;
+		uint32                   buffer_limit;
 		std::unique_ptr<uint8[]> buffer;
 
 		uint32 refcount;
 
+		// these are mutable so the const method initDecompressor can change them as needed
+
 		mutable uint32 sample_rate;
 		mutable bool   stereo;
+		mutable uint32 length;
 
 	public:
 		AudioSample(std::unique_ptr<uint8[]> buffer, uint32 size);
@@ -73,7 +75,7 @@ namespace Pentagram {
 		}
 
 		//! get AudioSample length (in samples)
-		inline uint32 getLength() const {
+		inline uint32 getPlaybackLength() const {
 			return length;
 		}
 
@@ -81,7 +83,7 @@ namespace Pentagram {
 		virtual uint32 decompressFrame(void* DecompData, void* samples) const
 				= 0;
 
-		void rewind(void* DecompData) const {
+		virtual void rewind(void* DecompData) const {
 			freeDecompressor(DecompData);
 			initDecompressor(DecompData);
 		}

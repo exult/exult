@@ -418,20 +418,20 @@ int FMOplMidiDriver::midi_calc_volume(int channel, int vel) {
 // Send a single packed midi command to the Opl (to be played now)
 //
 void FMOplMidiDriver::send(uint32 b) {
-	const unsigned char channel = static_cast<char>(b & 0x0F);
+	const auto channel = uint8(b & 0x0F);
 
 	// Discard everything on channel 9 for now
 	if (channel == 9 && !xmidibanks[127]) {
 		return;
 	}
 
-	switch (b & 0xF0) {
-	case 0x80: /*note off */
+	switch (b & MidiStatus::TypeMask) {
+	case MidiStatus::NoteOff: /*note off */
 		// Quick hack, but we should never use it. since note offs will never be
 		// sent
 		b &= 0xFFFF;
 		[[fallthrough]];
-	case 0x90: { /*note on */
+	case MidiStatus::NoteOn: { /*note on */
 		auto note = static_cast<unsigned char>((b >> 8) & 0x7F);
 		auto vel  = static_cast<unsigned char>((b >> 16) & 0x7F);
 
@@ -506,7 +506,7 @@ void FMOplMidiDriver::send(uint32 b) {
 		}
 	} break;
 
-	case 0xa0: { /*key after touch */
+	case MidiStatus::Aftertouch: { /*key after touch */
 		auto      note = static_cast<unsigned char>((b >> 8) & 0x7F);
 		auto      vel  = static_cast<unsigned char>((b >> 16) & 0x7F);
 		const int nv   = midi_calc_volume(channel, vel);
@@ -519,27 +519,27 @@ void FMOplMidiDriver::send(uint32 b) {
 		}
 	} break;
 
-	case 0xb0: { /* control change */
-		auto ctrl = static_cast<unsigned char>((b >> 8) & 0x7F);
-		auto vel  = static_cast<unsigned char>((b >> 16) & 0x7F);
+	case MidiStatus::Controller: { /* control change */
+		auto ctrl = MidiController((b >> 8) & 0x7F);
+		auto vel  = uint8((b >> 16) & 0x7F);
 
 		/* FIXME: Except for Volume, the Modulation and Sustain
 		   code is just a random guess. */
 		switch (ctrl) {
-		case 0x00: /* Bank Change */
+		case MidiController::Bank: /* Bank Change */
 			break;
-		case 0x01: /* Modulation */
+		case MidiController::ModWheel: /* Modulation */
 			for (int i = 0; i < 9; i++) {
 				if (chp[i].channel == channel) {
 					midi_write_adlib(0x20 + adlib_opadd[i], vel);
 				}
 			}
 			break;
-		case 0x07: /* Volume */
+		case MidiController::Volume: /* Volume */
 			ch[channel].vol = vel;
 			midi_update_volume(channel);
 			break;
-		case 0x0A: /* Pan */
+		case MidiController::Pan: /* Pan */
 			ch[channel].pan = vel;
 			for (int i = 0; i < 9; i++) {
 				if (chp[i].channel == channel) {
@@ -547,11 +547,11 @@ void FMOplMidiDriver::send(uint32 b) {
 				}
 			}
 			break;
-		case 0x0B: /* Expression */
+		case MidiController::Expression: /* Expression */
 			ch[channel].expression = vel;
 			midi_update_volume(channel);
 			break;
-		case 0x40: /* Sustain on/off */
+		case MidiController::Sustain: /* Sustain on/off */
 			ch[channel].sustain = vel;
 
 			// if sustain ending turn off voices as needed
@@ -563,12 +563,35 @@ void FMOplMidiDriver::send(uint32 b) {
 				}
 			}
 			break;
-		case 0x5B: /* Extended depth effect */
+		case MidiController::ResetControllers: /* Reset all controllers*/
+			// we'll just call ourself with all the controllers'
+			// default values
+			send(channel | (int(MidiStatus::PitchWheel)) | 0x400000);
+			send(channel | (int(MidiStatus::Controller))
+				 | (int(MidiController::Bank) << 8) | 0);
+			send(channel | (int(MidiStatus::Controller))
+				 | (int(MidiController::ModWheel) << 8) | 0x40);
+			send(channel | (int(MidiStatus::Controller))
+				 | (int(MidiController::Volume) << 8) | 127);
+			send(channel | (int(MidiStatus::Controller))
+				 | (int(MidiController::Expression) << 8) | 127);
+			send(channel | (int(MidiStatus::Controller))
+				 | (int(MidiController::Pan) << 8) | 64);
+			send(channel | (int(MidiStatus::Controller))
+				 | (int(MidiController::Sustain) << 8) | 0);
+			send(channel | (int(MidiStatus::Controller))
+				 | (int(MidiController::Effect) << 8) | 0);
+			send(channel | (int(MidiStatus::Controller))
+				 | (int(MidiController::Chorus) << 8) | 0);
+			send(channel | (int(MidiStatus::Controller))
+				 | (int(MidiController::XBankChange) << 8) | 0);
+			break;
+		case MidiController::Effect: /* Extended depth effect */
 			// debug(1,
 			//			"MIDI sub-command 0xB0 (Control Change) case %02X
 			//(Extended Depth) not handled in MIDIEMU driver.", ctrl);
 			break;
-		case 0x5D: /* Chorus depth */
+		case MidiController::Chorus: /* Chorus depth */
 			// debug(1,
 			//			"MIDI sub-command 0xB0 (Control Change) case %02X
 			//(Chorus Depth) not handled in MIDIEMU driver.", 			ctrl);
@@ -576,46 +599,46 @@ void FMOplMidiDriver::send(uint32 b) {
 		//
 		// XMIDI
 		//
-		case XMIDI_CONTROLLER_CHAN_LOCK:
+		case MidiController::XChanLock:
 			// PERR("Uh oh. Detected a XMIDI Channel Lock (" << (int) vel << ")
 			// on channel " << (int) channel << ", but we don't support them");
 			break;
-		case XMIDI_CONTROLLER_CHAN_LOCK_PROT:
+		case MidiController::XChanLockProtect:
 			// PERR("Uh oh. Detected a XMIDI Channel Lock Protect (" << (int)
 			// vel << ") on channel " << (int) channel << ", but we don't
 			// support them");
 			break;
-		case XMIDI_CONTROLLER_VOICE_PROT:
+		case MidiController::XVoiceProtect:
 			// PERR("Uh oh. Detected a XMIDI Voice Protect (" << (int) vel << ")
 			// on channel " << (int) channel << ", but we don't support them");
 			break;
-		case XMIDI_CONTROLLER_TIMBRE_PROT:
+		case MidiController::XTimbreProtect:
 			// PERR("Uh oh. Detected a XMIDI Timbre Protect (" << (int) vel <<
 			// ") on channel " << (int) channel << ", but we don't support
 			// them");
 			break;
-		case XMIDI_CONTROLLER_BANK_CHANGE:
+		case MidiController::XBankChange:
 			// POUT("Detected a XMIDI Bank Change (" << (int) vel << ") on
 			// channel " << (int) channel);
 			//  Set the bank
 			ch[channel].xmidi_bank = vel;
 			break;
-		case XMIDI_CONTROLLER_IND_CTRL_PREFIX:
+		case MidiController::XIndirectCtrlPrefix:
 			// PERR("Uh oh. Detected a XMIDI Indirect Controller Prefix (" <<
 			// (int) vel << ") on channel " << (int) channel << ", but we don't
 			// support them");
 			break;
-		case XMIDI_CONTROLLER_CLEAR_BB_COUNT:
+		case MidiController::XClearBBCount:
 			// PERR("Uh oh. Detected a XMIDI Clear Beat/Bar Count (" << (int)
 			// vel << ") on channel " << (int) channel << ", but we don't
 			// support them");
 			break;
-		case XMIDI_CONTROLLER_CALLBACK_TRIG:
+		case MidiController::XCallbackTrigger:
 			// PERR("Uh oh. Detected a XMIDI Callback Trigger (" << (int) vel <<
 			// ") on channel " << (int) channel << ", but we don't support
 			// them");
 			break;
-		case XMIDI_CONTROLLER_SEQ_BRANCH_INDEX:
+		case MidiController::XSequenceBranchIndex:
 			// PERR("Uh oh. Detected a XMIDI Sequence Branch Index (" << (int)
 			// vel << ") on channel " << (int) channel << ", but we don't
 			// support them");
@@ -623,7 +646,7 @@ void FMOplMidiDriver::send(uint32 b) {
 		//
 		// END XMIDI
 		//
-		case 0x7B: /* All notes off */
+		case MidiController::AllNotesOff: /* All notes off */
 			for (int i = 0; i < 9; i++) {
 				// if (chp[i].channel == channel) {
 				midi_fm_endnote(i);
@@ -638,7 +661,7 @@ void FMOplMidiDriver::send(uint32 b) {
 		}
 	} break;
 
-	case 0xc0: { /* patch change */
+	case MidiStatus::Program: { /* patch change */
 		auto instrument  = static_cast<unsigned char>((b >> 8) & 0x7F);
 		ch[channel].inum = instrument;
 		// std::POUT << "Setting instrument: " << static_cast<unsigned
@@ -674,12 +697,12 @@ void FMOplMidiDriver::send(uint32 b) {
 
 	} break;
 
-	case 0xd0: /* channel touch */
+	case MidiStatus::ChannelTouch: /* channel touch */
 		// debug(1, "MIDI command 0xD0 (Channel Touch) not handled in MIDIEMU
 		// driver.");
 		break;
 
-	case 0xe0: {
+	case MidiStatus::PitchWheel: {
 		// break;						/* pitch wheel */
 		const int pitchbend   = ((b >> 8) & 0x7F) | (((b >> 16) & 0x7F) << 7);
 		ch[channel].pitchbend = pitchbend;

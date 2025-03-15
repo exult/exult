@@ -69,6 +69,10 @@ public:
 
 	bool is_track_playing(int num);
 	int  get_current_track() const;
+	// Get track length in MS or UIN32_MAX on error
+	uint32 get_track_length();
+	// Get track position in MS or UIN32_MAX on error
+	uint32 get_track_position();
 
 	bool is_repeating() {
 		return repeating;
@@ -84,9 +88,11 @@ public:
 
 	void set_midi_driver(const std::string& desired_driver, bool use_oggs);
 
-	std::string get_midi_driver() {
+	std::string_view get_midi_driver() {
 		return midi_driver_name;
 	}
+
+	std::string_view get_actual_midi_driver_name();
 
 	bool get_ogg_enabled() const {
 		return ogg_enabled;

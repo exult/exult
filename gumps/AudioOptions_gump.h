@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define AUDIOOPTIONS_GUMP_H
 
 #include "Audio.h"
+#include "ConfigSetting_widget.h"
 #include "Modal_gump.h"
 
 #include <array>
@@ -43,8 +44,7 @@ private:
 		id_music_looping,
 		id_music_digital,
 		id_midi_driver,
-		id_midi_conv,
-		id_midi_effects,
+		id_advanced,
 		id_sfx_enabled,
 		id_sfx_pack,
 		id_sfx_conv = id_sfx_pack,
@@ -69,10 +69,8 @@ private:
 	int                sample_rate;
 	int                o_sample_rate;
 	int                midi_enabled;
-	int                midi_conversion;
 	int                midi_ogg_enabled;
 	int                midi_driver;
-	int                midi_reverb_chorus;
 	Audio::LoopingType midi_looping;
 	int                sfx_enabled;
 	int                sfx_package;
@@ -94,6 +92,8 @@ private:
 	bool have_digital_sfx() const {
 		return have_roland_pack || have_blaster_pack || have_custom_pack;
 	}
+
+	std::vector<ConfigSetting_widget::Definition> advancedsettings;
 
 public:
 	AudioOptions_gump();
@@ -118,6 +118,7 @@ public:
 	void cancel();
 	void help();
 	void mixer();
+	void advanced();
 
 	void toggle_audio_enabled(int state) {
 		audio_enabled = state;
@@ -151,14 +152,6 @@ public:
 
 	void change_music_looping(int state) {
 		midi_looping = static_cast<Audio::LoopingType>(state);
-	}
-
-	void toggle_midi_conv(int state) {
-		midi_conversion = state;
-	}
-
-	void toggle_midi_effects(int state) {
-		midi_reverb_chorus = state;
 	}
 
 	void toggle_sfx_enabled(int state) {

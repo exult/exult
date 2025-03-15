@@ -1,6 +1,6 @@
 /*
 Copyright (C) 2003-2005  The Pentagram Team
-Copyright (C) 2007-2022  The Exult team
+Copyright (C) 2007-2025  The Exult team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -41,6 +41,8 @@ class XMidiSequence;
 //! \note Only 2 simultaneous playing sequences required for Ultima 8
 #define LLMD_NUM_SEQ 4
 
+#define NEW_PRODUCESAMPLES_TIMING 1
+
 //! An Abstract implementation of MidiDriver for Simple Low Level support of
 //! Midi playback
 //!
@@ -49,7 +51,7 @@ class XMidiSequence;
 //!  however it is strongly recommended that it is implemented. If it's not
 //!  implemented, the main Pentagram thread MAY use too much CPU time and cause
 //!  timing problems. Similar, implemeting yield() is a good idea too.
-class LowLevelMidiDriver : public MidiDriver, private XMidiSequenceHandler {
+class LowLevelMidiDriver : public MidiDriver, public XMidiSequenceHandler {
 public:
 	~LowLevelMidiDriver() override;
 
@@ -69,6 +71,22 @@ public:
 	bool   isSequencePlaying(int seq_num) override;
 	void   setSequenceRepeat(int seq_num, bool newrepeat) override;
 	uint32 getSequenceCallbackData(int seq_num) override;
+
+	uint32 getPlaybackLength(int seq_num) override {
+		if (seq_num < 0 || seq_num >= LLMD_NUM_SEQ) {
+			return UINT32_MAX;
+		}
+		// Length is in 120 Hz ticks need toconvert to ms
+		return (length[seq_num] * 25) / 3;
+	}
+
+	uint32 getPlaybackPosition(int seq_num) override {
+		if (seq_num < 0 || seq_num >= LLMD_NUM_SEQ) {
+			return UINT32_MAX;
+		}
+		// Position is in 120 Hz ticks need to convert to ms
+		return (position[seq_num] * 25) / 3;
+	}
 
 	void produceSamples(sint16* samples, uint32 bytes) override;
 
@@ -200,23 +218,50 @@ private:
 	bool uploading_timbres;    // Set in 'uploading' timbres mode
 
 	// Communications
-	std::queue<ComMessage>                   messages;
-	std::unique_ptr<std::mutex>              mutex;
-	std::unique_ptr<std::mutex>              cbmutex;
-	std::unique_ptr<std::condition_variable> cond;
-	sint32                                   peekComMessageType();
+	std::queue<ComMessage>                       messages;
+	std::unique_ptr<std::recursive_mutex>        mutex;
+	std::unique_ptr<std::condition_variable_any> cond;
+	sint32                                       peekComMessageType();
 	void sendComMessage(const ComMessage& message);
 	void waitTillNoComMessages();
 
-	// State
-	bool   playing[LLMD_NUM_SEQ];          // Only set by thread
-	sint32 callback_data[LLMD_NUM_SEQ];    // Only set by thread
+	// State Readable by main game thread
+	std::atomic_bool     playing[LLMD_NUM_SEQ];          // Only set by thread
+	std::atomic_int32_t  callback_data[LLMD_NUM_SEQ];    // Only set by thread
+	uint32               length[LLMD_NUM_SEQ];           // Not used by thread
+	std::atomic_uint32_t position[LLMD_NUM_SEQ];
 
+	// anyone can use our lock if needed
+public:
+	std::unique_lock<std::recursive_mutex> LockMutex(bool trylock = false) {
+		// create mutex if it doesn't yet exist.
+		// Shouldn't happen
+		// No one should be calling this before initialization of a midi driver
+		// Could in theory lead to a race condition but that would require
+		// someone to call this from 2 different threads This cannot lead to a
+		// race condition with the midi playback thread as the mutex will
+		// already exist
+
+		if (!mutex) {
+			mutex = std::make_unique<std::recursive_mutex>();
+		}
+		if (trylock) {
+			return std::unique_lock(*mutex, std::try_to_lock);
+		}
+
+		return std::unique_lock(*mutex);
+	}
+
+private:
 	// Shared Data
 	std::atomic_uchar global_volume = 100;
 
-	// Xmidi clock 1/6000th second granuality
-	std::chrono::duration<uint32, std::ratio<1, 6000>> xmidi_clock;
+	// Xmidi clock 1/6000th second granuality. Will overflow after 198 hours,
+	// good luck to anyone who plays Exult for 8 straight days continuously An
+	// overflow here may stop playback of any tracks currently playing when the
+	// oveflow occurs, but new tracks should play normally
+	std::chrono::duration<uint32, std::ratio<1, 6000>> xmidi_clock
+			= decltype(xmidi_clock)(0);
 	// Any current delay we must observe before starting a new track
 	decltype(xmidi_clock) start_track_delay_until = decltype(xmidi_clock)(0);
 	// The delay to use between stopping and starting tracks. 1500 ticks is
@@ -235,7 +280,9 @@ private:
 	uint32 total_seconds;          // xmidi_clock = total_seconds*6000
 	uint32 samples_this_second;    //		+
 								   // samples_this_second*6000/sample_rate;
+#if !NEW_PRODUCESAMPLES_TIMING
 	uint32 samples_per_iteration;
+#endif
 
 	// Thread Based Only Data
 	std::unique_ptr<std::thread> thread;

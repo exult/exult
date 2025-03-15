@@ -46,7 +46,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TB_RT_HIGHLIGHT 139
 
 Text_button::Text_button(
-		Gump* p, const std::string& str, int x, int y, int w, int h)
+		Gump_Base* p, const std::string_view& str, int x, int y, int w, int h)
 		: Gump_button(p, 0, x, y, SF_OTHER), text(str), width(w), height(h) {
 	init();
 }
@@ -61,8 +61,9 @@ void Text_button::init() {
 	text_y = 2 + (height - 11) / 2;
 
 	// We will get the text width
-	const int text_width = fontManager.get_font("SMALL_BLACK_FONT")
-								   ->get_text_width(text.c_str());
+	font = fontManager.get_font(TB_FONTNAME);
+
+	const int text_width = font->get_text_width(text.c_str());
 
 	if (width < text_width + 4) {
 		width = text_width + 4;
@@ -74,15 +75,14 @@ void Text_button::init() {
 
 void Text_button::paint() {
 	Image_window8* iwin = gwin->get_win();
+	auto* ib8 = iwin->get_ib8();
 
 	int offset = 0;
-	int px     = x;
-	int py     = y;
+	int px     = 0;
+	int py     = 0;
 
-	if (parent) {
-		px += parent->get_x();
-		py += parent->get_y();
-	}
+	local_to_screen(px, py);
+
 
 	// The the push dependant edges
 	if (is_pushed()) {
@@ -168,20 +168,22 @@ void Text_button::paint() {
 	iwin->fill8(
 			TB_RT_HIGHLIGHT, 1, 1, px + width + offset - 3, py + offset + 2);
 
-	fontManager.get_font(TB_FONTNAME)
-			->paint_text(
-					iwin->get_ib8(), text.c_str(), px + text_x + offset,
+	// Clip text 
+	auto clipsave =ib8->SaveClip();
+	TileRect newclip  = clipsave.Rect().intersect(TileRect(
+            px + offset, py + offset, width - 2 - offset, height - offset));
+	ib8->set_clip(newclip.x, newclip.y, newclip.w, newclip.h);
+	// Paint text
+	font->paint_text(
+					ib8, text.c_str(), px + text_x + offset,
 					py + text_y + offset);
 }
 
 bool Text_button::on_widget(int mx, int my) const {
-	int px = x;
-	int py = y;
+	int px = 0;
+	int py = 0;
 
-	if (parent) {
-		px += parent->get_x();
-		py += parent->get_y();
-	}
+	local_to_screen(px, py);
 
 	if (mx < px || mx >= px + width) {
 		return false;
@@ -191,3 +193,10 @@ bool Text_button::on_widget(int mx, int my) const {
 	}
 	return true;
 }
+
+TileRect Text_button::get_rect() const {
+	TileRect rect(0, 0, width, height);
+	local_to_screen(rect.x, rect.y);
+	return rect;
+}
+

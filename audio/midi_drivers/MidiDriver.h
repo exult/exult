@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef MIDIDRIVER_H_INCLUDED
 #define MIDIDRIVER_H_INCLUDED
 
+#include "ConfigSetting_widget.h"
 #include "common_types.h"
 #include "ignore_unused_variable_warning.h"
 
@@ -124,6 +125,18 @@ public:
 	//! \param repeat The new value for the repeaat flag
 	virtual void setSequenceRepeat(int seq_num, bool repeat) = 0;
 
+	// Get Sequence length in ms, returns UINT32_MAX if unsupported or error
+	virtual uint32 getPlaybackLength(int seq_num) {
+		ignore_unused_variable_warning(seq_num);
+		return UINT32_MAX;
+	}
+
+	// Get Sequence position in ms, returns UINT32_MAX if unsupported or error
+	virtual uint32 getPlaybackPosition(int seq_num) {
+		ignore_unused_variable_warning(seq_num);
+		return UINT32_MAX;
+	}
+
 	//! Get the callback data for a specified sequence
 	//! \param seq_num The Sequence to get callback data from
 	virtual uint32 getSequenceCallbackData(int seq_num) {
@@ -133,6 +146,12 @@ public:
 
 	//! Is this a Software Synth/Sample producer
 	virtual bool isSampleProducer() {
+		return false;
+	}
+
+	/// can this device use the Real Mt32 Convert Option
+	/// Should only be true for Hardwaer Midi Ports
+	virtual bool isRealMT32Supported() const {
 		return false;
 	}
 
@@ -186,6 +205,13 @@ public:
 	//! \return The created MidiDriver instance
 	static std::shared_ptr<MidiDriver> createInstance(
 			const std::string& desired_driver, uint32 sample_rate, bool stereo);
+
+	static std::vector<ConfigSetting_widget::Definition> get_midi_driver_settings(
+			const std::string& name);
+
+	virtual std::vector<ConfigSetting_widget::Definition> GetSettings() {
+		return {};
+	}
 
 protected:
 	std::string Name;

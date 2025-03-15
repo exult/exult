@@ -44,6 +44,10 @@ public:
 
 	UnixSeqMidiDriver();
 
+	bool isRealMT32Supported() const override {
+		return true;
+	}
+
 protected:
 	int  open() override;
 	void close() override;

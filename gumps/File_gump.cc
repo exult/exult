@@ -603,7 +603,7 @@ bool File_gump::mouse_up(
  *  Handle character that was typed.
  */
 
-bool File_gump::text_input(int chr, int unicode, bool shift_pressed) {
+bool File_gump::character_input(int chr, int unicode, bool shift_pressed) {
 	ignore_unused_variable_warning(unicode);
 	if (!focus) {    // Text field?
 		return true;
@@ -663,7 +663,7 @@ bool File_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	}
 
 	if (chr < ' ') {
-		return true;    // Ignore other special chars.
+		return Modal_gump::character_input(chr,unicode,shift_pressed);    /// Ignore other special chars and let parent class handle them
 	}
 	if (chr < 256 && isascii(chr)) {
 		if (shift_pressed) {

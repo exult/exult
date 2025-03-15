@@ -158,6 +158,99 @@ std::shared_ptr<MidiDriver> MidiDriver::createInstance(
 	return new_driver;
 }
 
+std::vector<ConfigSetting_widget::Definition> MidiDriver::
+		get_midi_driver_settings(const std::string& driver_name) {
+	std::vector<ConfigSetting_widget::Definition> result;
+	std::shared_ptr<MidiDriver>                   driver = {};
+	for (const auto* midi_driver : midi_drivers) {
+		// Found it (case insensitive)
+		if (!Pentagram::strcasecmp(driver_name.c_str(), midi_driver->name)) {
+			// Create an instance of te driver object
+			// so we can query it's capabilities
+			driver = midi_driver->createInstance();
+			if (driver) {
+				result = driver->GetSettings();
+			}
+			break;
+		}
+	}
+	result.reserve(result.size() + 4);
+	// Add in the default settings
+	if (driver && !driver->isFMSynth() && !driver->isMT32()) {
+		ConfigSetting_widget::Definition convert{
+				"device type",    // label
+				"config/audio/midi/convert_"
+						+ driver->getName(),                  // config_setting
+				0,                                            // additional
+				true,                                         // required
+				false,                                        // unique
+				ConfigSetting_widget::Definition::dropdown    // setting_type
+		};
+		// Get the default from the global setting if it exists
+		std::string s;
+		config->value("config/audio/midi/convert", s, "gm");
+		convert.default_value.swap(s);
+
+		convert.choices.push_back(ConfigSetting_widget::Definition::Choice{
+				"General Midi", "gm", "gm"});
+		convert.choices.push_back(
+				ConfigSetting_widget::Definition::Choice{"GS", "gs", "gs"});
+		convert.choices.push_back(ConfigSetting_widget::Definition::Choice{
+				"GS127", "gs127", "gs127"});
+		convert.choices.push_back(ConfigSetting_widget::Definition::Choice{
+				"Fake MT32", "fakemt32", "fakemt32"});
+		// Real MT32 Option is only for devices that support a hardware port
+		if (driver->isRealMT32Supported()) {
+			convert.choices.push_back(ConfigSetting_widget::Definition::Choice{
+					"Real MT32", "none", "mt32"});
+		} else {
+			// make sure the config setting and the default is not mt32
+			if (convert.default_value == "mt32") {
+				convert.default_value = "fakemt32";
+			}
+
+			config->value(convert.config_setting, s, convert.default_value);
+			if (s == "mt32") {
+				config->set(convert.config_setting, "fakemt32", true);
+			}
+		}
+
+		result.push_back(convert);
+
+		// Reverb and Chorus
+		ConfigSetting_widget::Definition reverb{
+				"Reverb Effect",    // label
+				"config/audio/midi/reverb/enabled_"
+						+ driver->getName(),                // config_setting
+				0,                                          // additional
+				true,                                       // required
+				false,                                      // unique
+				ConfigSetting_widget::Definition::button    // setting_type
+		};
+		ConfigSetting_widget::Definition chorus{
+				"Chorus Effect",    // label
+				"config/audio/midi/chorus/enabled_"
+						+ driver->getName(),                // config_setting
+				0,                                          // additional
+				true,                                       // required
+				false,                                      // unique
+				ConfigSetting_widget::Definition::button    // setting_type
+		};
+		reverb.choices.push_back({"Yes", "yes", "yes"});
+		reverb.choices.push_back({"No", "no", "no"});
+		config->value("config/audio/midi/reverb/enabled", s, "no");
+		reverb.default_value.swap(s);
+		chorus.choices.push_back({"Yes", "yes", "yes"});
+		chorus.choices.push_back({"No", "no", "no"});
+		config->value("config/audio/midi/chorus/enabled", s, "no");
+		chorus.default_value.swap(s);
+		result.push_back(reverb);
+		result.push_back(chorus);
+	}
+
+	return result;
+}
+
 std::string MidiDriver::getConfigSetting(
 		const std::string& name, const std::string& defaultval) {
 	std::string key = "config/audio/midi/";

@@ -40,7 +40,7 @@ using std::string;
 #	include <tchar.h>
 #	include <windows.h>
 
-int U7ListFiles(const std::string& mask, FileList& files) {
+int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 	const string    path(get_system_path(mask));
 	const TCHAR*    lpszT;
 	WIN32_FIND_DATA fileinfo;
@@ -76,7 +76,9 @@ int U7ListFiles(const std::string& mask, FileList& files) {
 	}
 
 #	ifdef DEBUG
-	std::cerr << "U7ListFiles: " << mask << " = " << path << std::endl;
+	if (!quiet) {
+		std::cerr << "U7ListFiles: " << mask << " = " << path << std::endl;
+	}
 #	endif
 
 	// Now search the files
@@ -96,7 +98,9 @@ int U7ListFiles(const std::string& mask, FileList& files) {
 
 			files.push_back(filename);
 #	ifdef DEBUG
-			std::cerr << filename << std::endl;
+			if (!quiet) {
+				std::cerr << filename << std::endl;
+			}
 #	endif
 			delete[] filename;
 		} while (FindNextFile(handle, &fileinfo));
@@ -120,7 +124,7 @@ int U7ListFiles(const std::string& mask, FileList& files) {
 #	else
 		str = lpMsgBuf;
 #	endif
-		std::cerr << "Error while listing files: " << str << std::endl;
+		if(!quiet) std::cerr << "Error while listing files: " << str << std::endl;
 		LocalFree(lpMsgBuf);
 	}
 
@@ -141,7 +145,7 @@ int U7ListFiles(const std::string& mask, FileList& files) {
 #		include <SDL_system.h>
 #	endif
 
-static int U7ListFilesImp(const std::string& path, FileList& files) {
+static int U7ListFilesImp(const std::string& path, FileList& files,bool quiet) {
 	glob_t globres;
 	int    err = glob(path.c_str(), GLOB_NOSORT, nullptr, &globres);
 
@@ -155,21 +159,21 @@ static int U7ListFilesImp(const std::string& path, FileList& files) {
 	case 3:    // no matches
 		return 0;
 	default:    // error
-		std::cerr << "Glob error " << err << std::endl;
+		if(!quiet)std::cerr << "Glob error " << err << std::endl;
 		return err;
 	}
 }
 
-int U7ListFiles(const std::string& mask, FileList& files) {
+int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 	string path(get_system_path(mask));
-	int    result = U7ListFilesImp(path, files);
+	int    result = U7ListFilesImp(path, files,quiet);
 #	ifdef ANDROID
 	// TODO: If SDL ever adds directory traversal to rwops use it instead of
 	// glob() so that we pick up platform-specific paths and behaviors like
 	// this.
 	if (result != 0) {
 		result = U7ListFilesImp(
-				SDL_AndroidGetInternalStoragePath() + ("/" + path), files);
+				SDL_AndroidGetInternalStoragePath() + ("/" + path), files,quiet);
 	}
 #	endif
 	return result;

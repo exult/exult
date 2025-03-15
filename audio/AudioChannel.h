@@ -43,7 +43,8 @@ namespace Pentagram {
 		uint32 frame_evenodd = 0;    // which buffer is 'frame0'
 		uint32 frame0_size   = 0;    // Size of the frame0 buffer in samples
 		uint32 frame1_size   = 0;    // Size of the frame1 buffer in samples
-		uint32 position      = 0;    // Position in frame0 buffer
+		uint32 position      = 0;    // Position in frame0 buffer in source samples
+		uint32 overall_position = 0;    // Overall position of playback
 		int    lvol, rvol;           // 0-256
 		int    distance;             // 0 - 256
 		int    balance;              // -256 - 256
@@ -95,6 +96,10 @@ namespace Pentagram {
 		sint32 getLoop() const {
 			return loop;
 		}
+
+		uint32 getPlaybackLength() const;
+
+		uint32 getPlaybackPosition() const;
 
 		void setVolume(int lvol_, int rvol_) {
 			lvol = lvol_;

@@ -32,9 +32,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 bool Gump_widget::on_widget(
 		int mx, int my    // Point in window.
 ) const {
-	screen_to_local(mx, my);
+	// if shapenum is invalid just use rect
+	if (get_shapenum() < 0 || get_framenum() < 0) {
+		return get_rect().has_point(mx, my);
+	}
+	int lx = mx, ly = my;
+	screen_to_local(lx, ly);
 	Shape_frame* cshape = get_shape();
-	return (cshape != nullptr) ? cshape->has_point(mx, my) : false;
+	return (cshape != nullptr) ? cshape->has_point(lx, ly)
+							   : get_rect().has_point(mx, my);
 }
 
 /*
@@ -54,7 +60,7 @@ void Gump_widget::paint() {
  *  Get screen area used by a gump.
  */
 
-TileRect Gump_widget::get_rect() {
+TileRect Gump_widget::get_rect() const {
 	int sx = 0;
 	int sy = 0;
 
@@ -69,4 +75,43 @@ TileRect Gump_widget::get_rect() {
 	return TileRect(
 			sx - s->get_xleft(), sy - s->get_yabove(), s->get_width(),
 			s->get_height());
+}
+
+void Gump_widget::paintSorted(
+		Sort_Order sort, Sort_Order& next, Sort_Order& highest) {
+	if (sort_order > highest) {
+		highest = sort_order;
+	}
+	if (sort_order > sort && (sort_order < next || sort_order < highest)) {
+		next = sort_order;
+	}
+	if (sort_order == sort) {
+		// Save clipping rect
+		auto                       ibuf = gwin->get_win()->get_ibuf();
+		Image_buffer::ClipRectSave clip(ibuf);
+		// If top most clear clip and allow to overdraw everything
+		if (sort == Sort_Order::ontop) {
+			ibuf->clear_clip();
+		}
+		paint();
+	}
+}
+
+Gump_widget* Gump_widget::findSorted(
+		int sx, int sy, Sort_Order sort, Sort_Order& next, Sort_Order& highest,
+		Gump_widget* before) {
+	if (this == before) {
+		return nullptr;
+	}
+	if (sort_order > highest) {
+		highest = sort_order;
+	}
+	if (sort_order > sort && (sort_order < next || sort_order < highest)) {
+		next = sort_order;
+	}
+	if (sort_order == sort && on_widget(sx, sy)
+		&& sort_order != Sort_Order::hidden) {
+		return this;
+	}
+	return nullptr;
 }

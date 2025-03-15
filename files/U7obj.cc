@@ -101,8 +101,7 @@ U7multiobject::U7multiobject(const File_spec& file0, int objnum)
 U7multiobject::U7multiobject(
 		const File_spec& file0, const File_spec& file1, int objnum)
 		: buffer(nullptr), length(0), object(file0, objnum) {
-	std::array objects{
-			U7object(file1, objnum), U7object(file0, objnum)};
+	std::array objects{U7object(file1, objnum), U7object(file0, objnum)};
 	set_object(objects);
 }
 
@@ -178,13 +177,17 @@ U7multiobject& U7multiobject::operator=(const U7multiobject& rhs) {
  *  @return Buffer created with new[] containing the contents of
  *  the object or null on any failure.
  */
-unique_ptr<unsigned char[]> U7multiobject::retrieve(size_t& len) const {
+unique_ptr<unsigned char[]> U7multiobject::retrieve(
+		size_t& len, bool nullterminate) const {
 	len = length;
 	if (length == 0) {
 		// This means we didn't find the object on construction.
 		return nullptr;
 	}
-	auto buf = make_unique<unsigned char[]>(len);
+	auto buf = make_unique<unsigned char[]>(len + (nullterminate ? 1 : 0));
 	std::copy_n(buffer.get(), len, buf.get());
+	if (nullterminate) {
+		buf[len] = 0;
+	}
 	return buf;
 }

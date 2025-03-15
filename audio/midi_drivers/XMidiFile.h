@@ -1,6 +1,6 @@
 /*
 Copyright (C) 2003-2005  The Pentagram Team
-Copyright (C) 2009-2022  The Exult Team
+Copyright (C) 2009-2025  The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -53,6 +53,7 @@ private:
 	XMidiEvent* current;
 	XMidiEvent* x_patch_bank_cur;
 	XMidiEvent* x_patch_bank_first;
+	int         length;
 
 	static const char mt32asgm[128];
 	static const char mt32asgs[256];
@@ -70,7 +71,9 @@ private:
 
 public:
 	XMidiFile() = delete;    // No default constructor
-	XMidiFile(IDataSource* source, int pconvert);
+	XMidiFile(
+			IDataSource* source, int pconvert,
+			std::string_view drivername = {});
 	~XMidiFile();
 
 	int number_of_tracks() {
@@ -106,6 +109,9 @@ private:
 
 	void AdjustTimings(uint32 ppqn);    // This is used by Midi's ONLY!
 	void ApplyFirstState(first_state& fs, int chan_mask);
+	// Space out events where it makes sense to reduce simultaneous events
+	// MT32 doesn't like too many simultaneous controller change events
+	void SpreadEvents();
 
 	int ConvertNote(
 			const int time, const unsigned char status, IDataSource* source,
@@ -128,7 +134,7 @@ private:
 			IDataSource* source, const uint32 ppqn, const int num_tracks,
 			const bool type1);
 
-	int ExtractTracks(IDataSource* source);
+	int ExtractTracks(IDataSource* source, std::string_view drivername);
 
 	int  ExtractTracksFromU7V(IDataSource* source);
 	int  ExtractTracksFromXMIDIMT(IDataSource* source);

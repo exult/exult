@@ -176,15 +176,20 @@ void Modal_gump::SetProceduralBackground(
 				PT_RampRemapAllFrom | Checkbg_paletteramp);
 	}
 
+	bool resizing = procedural_background && procedural_background != backsize;
 	procedural_background = backsize;
 	// Enlarge by 2 for the 3d edge and black border
 	procedural_background.enlarge(2);
 
 	// create checkmark button
-	// if don't already have one
-	if (std::none_of(elems.begin(), elems.end(), [](auto elem) -> bool {
-			return dynamic_cast<Checkmark_button*>(elem) != nullptr;
-		})) {
+	// if don't already have one or we are resizing
+	auto existing
+			= std::find_if(elems.begin(), elems.end(), [](auto elem) -> bool {
+				  return dynamic_cast<Checkmark_button*>(elem) != nullptr;
+			  });
+
+	//
+	if (resizing || existing == elems.end()) {
 		int checkx = backsize.x, checky = backsize.y;
 
 		auto cmbshape = checkmark_background.get_shape();
@@ -203,13 +208,19 @@ void Modal_gump::SetProceduralBackground(
 			cmbbottom -= 6;
 			cmbtop = cmbbottom - 40;
 		}
-		// Create button here so we ccan get it's shape for positioning
-		auto checkmarkbutton = new Checkmark_button(this, 0, 0);
-		auto checkshape      = checkmarkbutton->get_shape();
-		int  csleft          = -20;
-		int  cswidth         = 20;
-		int  csheight        = 20;
-		int  cstop           = -20;
+		// Create button here so we can get it's shape for positioning
+		Checkmark_button* checkmarkbutton;
+		if (existing == elems.end()) {
+			checkmarkbutton = new Checkmark_button(this, 0, 0);
+			elems.push_back(checkmarkbutton);
+		} else {
+			checkmarkbutton = static_cast<Checkmark_button*>(*existing);
+		}
+		auto checkshape = checkmarkbutton->get_shape();
+		int  csleft     = -20;
+		int  cswidth    = 20;
+		int  csheight   = 20;
+		int  cstop      = -20;
 
 		if (checkshape) {
 			csleft   = -checkshape->get_xleft();
@@ -222,8 +233,8 @@ void Modal_gump::SetProceduralBackground(
 		checkx = (cmbright + cmbleft - cswidth) / 2 - csleft;
 		checky = (cmbbottom + cmbtop - csheight) / 2 + cstop;
 
+		// move it to correct position
 		checkmarkbutton->set_pos(checkx, checky);
-		elems.push_back(checkmarkbutton);
 	}
 	// Set colours
 	procedural_colours = ProceduralColours();
@@ -292,9 +303,10 @@ TileRect Modal_gump::get_rect() const {
 			int cmbleft   = procedural_background.x;
 			int cmbbottom = procedural_background.y + procedural_background.h;
 			int cmbtop    = cmbbottom;
-			int cmbright  = procedural_background.x;
+			int cmbright  = procedural_background.x + procedural_background.w;
 			cmbleft -= cmbshape->get_xleft();
 			cmbbottom += cmbshape->get_ybelow();
+			cmbright += cmbshape->get_xright();
 			cmbtop -= cmbshape->get_yabove();
 			int      cmbwidth  = cmbright - cmbleft;
 			int      cmbheight = cmbbottom - cmbtop;

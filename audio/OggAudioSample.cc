@@ -47,6 +47,8 @@ namespace Pentagram {
 		decompressor_align = alignof(OggDecompData);
 		bits               = 16;
 		locked             = false;
+		// we set this in initDecompressor
+		length = 0;
 	}
 
 	OggAudioSample::OggAudioSample(std::unique_ptr<uint8[]> buffer, uint32 size)
@@ -56,6 +58,8 @@ namespace Pentagram {
 		decompressor_align = alignof(OggDecompData);
 		bits               = 16;
 		locked             = false;
+		// we set this in initDecompressor
+		length = 0;
 	}
 
 	size_t OggAudioSample::read_func(
@@ -115,7 +119,7 @@ namespace Pentagram {
 			locked             = true;
 			decomp->datasource = this->oggdata.get();
 		} else {
-			decomp->datasource = new IBufferDataView(buffer, buffer_size);
+			decomp->datasource = new IBufferDataView(buffer, buffer_limit);
 		}
 
 		decomp->datasource->seek(0);
@@ -126,7 +130,19 @@ namespace Pentagram {
 		vorbis_info* info = ov_info(&decomp->ov, -1);
 		sample_rate = decomp->last_rate = info->rate;
 		stereo = decomp->last_stereo = info->channels == 2;
-		decomp->freed                = false;
+
+		// Set the sample length if needed
+		if (!length) {
+			// seek to beginning as there seems to be a bug that sometimes
+			// ov_pcm_total can report the wrong value if the state is not
+			// reset to 0 see https://stackoverflow.com/a/72482773
+			ov_raw_seek(&decomp->ov, 0);
+			length = ov_pcm_total(&decomp->ov, -1);
+		}
+		// seek to 0 for good measure here
+		ov_raw_seek(&decomp->ov, 0);
+
+		decomp->freed = false;
 	}
 
 	void OggAudioSample::freeDecompressor(void* DecompData) const {
@@ -145,6 +161,14 @@ namespace Pentagram {
 
 		decomp->datasource = nullptr;
 		decomp->~OggDecompData();
+	}
+
+	void OggAudioSample::rewind(void* DecompData) const {
+		auto* decomp = static_cast<OggDecompData*>(DecompData);
+		if (ov_raw_seek(&decomp->ov, 0) != 0) {
+			// If raw seek fails just call themuch more expensive method in the base class
+			AudioSample::rewind(DecompData);
+		}
 	}
 
 	uint32 OggAudioSample::decompressFrame(

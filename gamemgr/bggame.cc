@@ -766,8 +766,8 @@ void BG_Game::scene_guardian() {
 	constexpr static const int Forehead_Dist = 49;
 
 	constexpr static const std::array text_times{
-			250,   1700,  5250,  8200,  10550, 12900, 16000,
-			19950, 22700, 27200, 32400, 36400, 39650, 42400};
+			250,   1700,  5250,  8200,  10550, 12900, 16000, 19950,
+			22700, 27200, 32400, 36400, 39650, 42400, 44000};
 
 	constexpr static const size_t text_num_frames = text_times.size();
 
@@ -988,10 +988,12 @@ void BG_Game::scene_guardian() {
 						= fontManager.get_font("GUARDIAN_FONT");
 				const U7multiobject textobj(MAINSHP_FLX, PATCH_MAINSHP, 0x0D);
 				size_t              txt_len;
-				auto                txt = textobj.retrieve(txt_len);
-				char*               txt_ptr;
-				char*               txt_end;
-				char*               next_txt;
+				auto                txt = textobj.retrieve(
+                        txt_len,
+                        true);    // Must null terminate
+				char* txt_ptr;
+				char* txt_end;
+				char* next_txt;
 				next_txt = txt_ptr = reinterpret_cast<char*>(txt.get());
 
 				const int txt_height = font->get_text_height();
@@ -1016,16 +1018,20 @@ void BG_Game::scene_guardian() {
 				int           time  = 0;
 				unsigned long start = SDL_GetTicks();
 
-				const bool speech = Audio::get_ptr()->is_audio_enabled()
-									&& Audio::get_ptr()->is_speech_enabled();
-				const bool subtitles
-						= !speech || Audio::get_ptr()->is_speech_with_subs();
+				auto       audio     = Audio::get_ptr();
+				const bool speech    = audio && audio->is_speech_enabled();
+				const bool subtitles = !speech || audio->is_speech_with_subs();
 
 				auto AdvanceTextPointer = [&]() {
-					txt_ptr  = next_txt;
-					txt_end  = strchr(txt_ptr, '\r');
-					*txt_end = '\0';
-					next_txt = txt_end + 2;
+					txt_ptr = next_txt;
+					txt_end = strchr(txt_ptr, '\r');
+					if (txt_end) {
+						*txt_end = '\0';
+						next_txt = txt_end + 2;
+					} else {
+						// can't find next, so disable subtitles
+						text_index = text_num_frames;
+					}
 				};
 				auto EraseAndDraw = [&](Image_buffer* backup, Shape_frame* fra,
 										int shnum, int frnum, int dist) {
@@ -1087,7 +1093,11 @@ void BG_Game::scene_guardian() {
 					text_index = text_num_frames;    // Disable subtitles
 				}
 				// start speech
-				while (time < 47537) {
+				// Loop till speech has stopped or there is nolipsync data
+				// previously was time < 47537 but this caused long translations
+				// of speech to cut early
+				while ((speech && audio->is_speech_playing())
+					   || (!speech && lipsync.have_events())) {
 					bool need_redraw = false;
 					if (next_code && lipsync.have_events()
 						&& time >= next_time) {

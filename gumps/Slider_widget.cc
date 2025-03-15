@@ -157,7 +157,7 @@ void Slider_widget::move_diamond(int dir) {
 	gwin->add_dirty(get_rect());
 }
 
-TileRect Slider_widget::get_rect() {
+TileRect Slider_widget::get_rect() const {
 	// Widget has no background shape so get rect needs to calculate the
 	// union of all the parts of the widget
 

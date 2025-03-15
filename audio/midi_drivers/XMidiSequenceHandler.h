@@ -50,7 +50,7 @@ public:
 
 	//! Handle an XMIDI Callback Trigger Event
 	//! \param sequence_id The id of the sequence doing the callback
-	//! \param data data[1] of the XMIDI_CONTROLLER_CALLBACK_TRIG event
+	//! \param data data[1] of the MidiController::XCallbackTrigger event
 	virtual void handleCallbackTrigger(uint16 sequence_id, uint8 data) = 0;
 
 	//! Get global volume

@@ -269,10 +269,11 @@ void Image_buffer8::draw_line8(
 
 		int tl = point_side_of_line(startx, starty, endx, endy, clipx, clipy);
 		int tr = point_side_of_line(
+				startx, starty, endx, endy, clipx + clipw, clipy);
+		int bl = point_side_of_line(
 				startx, starty, endx, endy, clipx, clipy + cliph);
-		int bl = point_side_of_line(startx, starty, endx, endy, clipx, clipy);
 		int br = point_side_of_line(
-				startx, starty, endx, endy, clipx, clipy + cliph);
+				startx, starty, endx, endy, clipx + clipw, clipy + cliph);
 
 		// negative upbove or left of all points
 		if (tl < 0 && tr < 0 && br < 0 && bl < 0) {

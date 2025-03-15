@@ -38,7 +38,7 @@ public:
 	void unpush(MouseButton button) override;
 	bool activate(MouseButton button) override;
 
-	int getselection() const {
+	int getselection() const override {
 		return get_framenum();
 	}
 

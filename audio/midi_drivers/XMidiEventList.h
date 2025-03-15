@@ -1,6 +1,6 @@
 /*
 Copyright (C) 2003  The Pentagram Team
-Copyright (C) 2010-2022  The Exult Team
+Copyright (C) 2010-2025  The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -25,23 +25,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class ODataSource;
 
 #include "XMidiEvent.h"
+#include "XMidiRecyclable.h"
 
-class XMidiEventList {
-	int counter;
+class XMidiEventList : public XMidiRecyclable<XMidiEventList> {
+	int    counter = 0;
+	uint32 length  = 0;
 
 	// Helper funcs for Write
 	int    putVLQ(ODataSource* dest, uint32 value);
 	uint32 convertListToMTrk(ODataSource* dest);
 
 public:
-	uint16      chan_mask;
-	XMidiEvent* events;
+	uint16      chan_mask = 0;
+	XMidiEvent* events    = nullptr;
 
 	//! XMidiFile Seq Branch Index controllers. For Ult126 = loop start
-	XMidiEvent* branches;
+	XMidiEvent* branches = nullptr;
 
 	//! Patch and Bank change events
-	XMidiEvent* x_patch_bank;
+	XMidiEvent* x_patch_bank = nullptr;
+
+	XMidiEventList() {}
 
 	//! Write the list to a DataSource
 	int write(ODataSource* dest);
@@ -53,6 +57,12 @@ public:
 
 	//! Decrement the counter and delete the event list, if possible
 	void decrementCounter();
+
+	uint32 getLength();
+
+	void setLength(uint32 length) {
+		this->length = length;
+	}
 
 	//! Find the Sequence Branch Event for the index
 	//! \param index The index to search for
@@ -70,5 +80,10 @@ public:
 		return b;
 	}
 };
+
+// needed explicit instantiation declaration to supress warnings from clang
+template <>
+XMidiRecyclable<XMidiEventList>::FreeList
+		XMidiRecyclable<XMidiEventList>::FreeList::instance;
 
 #endif    // XMIDIEVENTLIST_H_INCLUDED

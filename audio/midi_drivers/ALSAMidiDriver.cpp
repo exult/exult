@@ -124,14 +124,14 @@ int ALSAMidiDriver::open() {
 		return -1;
 	}
 
-	if (my_snd_seq_open(&seq_handle)) {
+	if (!seq_handle && my_snd_seq_open(&seq_handle)) {
 		perr << "ALSAMidiDriver: Can't open sequencer" << std::endl;
 		return -1;
 	}
 
 	isOpen = true;
-	snd_seq_client_info_malloc(&clt_info);
-	snd_seq_port_info_malloc(&prt_info);
+	if (!clt_info) snd_seq_client_info_malloc(&clt_info);
+	if (!prt_info) snd_seq_port_info_malloc(&prt_info);
 
 	my_client = snd_seq_client_id(seq_handle);
 	snd_seq_set_client_name(seq_handle, "PENTAGRAM");
@@ -365,4 +365,53 @@ void ALSAMidiDriver::send_event(bool do_flush) {
 	}
 }
 
+std::vector<ConfigSetting_widget::Definition> ALSAMidiDriver::GetSettings() {
+	if (!seq_handle && my_snd_seq_open(&seq_handle)) {
+		perr << "ALSAMidiDriver: Can't open sequencer" << std::endl;
+		return {};
+	}
+	if (!clt_info) {
+		snd_seq_client_info_malloc(&clt_info);
+	}
+	if (!prt_info) {
+		snd_seq_port_info_malloc(&prt_info);
+	}
+
+	ConfigSetting_widget::Definition ports{
+			"ALSA PORT",                                  // label
+			"config/audio/midi/alsa_port",                // config_setting
+			0,                                            // additional
+			false,                                         // required
+			false,                                        // unique
+			ConfigSetting_widget::Definition::dropdown    // setting_type
+	};
+
+	bool first = true;
+	while (find_next_port(first)) {
+		first = false;
+		if (identify_port()) {
+			std::string label;
+			std::string value;
+
+			value = std::to_string(clt_id);
+			value += ":";
+			value += std::to_string(prt_id);
+			label = clt_name;
+			label += " : ";
+			label += prt_name;
+
+			ports.choices.push_back({label, value, value});
+		}
+	}
+
+	ports.default_value = "";
+
+	// close will deallocate infos and handle for us
+	// but only if not open because if open they will be frred later
+	if (!isOpen) close();
+
+	auto settings = MidiDriver::GetSettings();
+	settings.push_back(std::move(ports));
+	return settings;
+}
 #endif

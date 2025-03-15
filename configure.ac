@@ -571,13 +571,20 @@ fi
 
 # fluidsynth midi driver
 PKG_CHECK_MODULES(FluidSynth, fluidsynth, HAVEFLUIDSYNTH=yes, HAVEFLUIDSYNTH=no)
-AC_ARG_ENABLE(fluidsynth, AS_HELP_STRING([--disable-fluidsynth], [Disable fluidsynth midi support]),,enable_fluidsynth=yes)
+PKG_CHECK_MODULES(FluidLite, fluidlite, HAVEFLUIDLITE=yes, HAVEFLUIDLITE=no)
+AC_ARG_WITH([fluidsynth], AS_HELP_STRING([--with-fluidsynth=no|yes|lite], [Enable fluidsynth midi support]),[enable_fluidsynth="$withval"],[enable_fluidsynth="yes"])
 AC_MSG_CHECKING([if we want to use fluidsynth midi])
-if test x$HAVEFLUIDSYNTH = xyes; then
-	if test x$enable_fluidsynth = xyes; then
+if test x$HAVEFLUIDSYNTH = xyes || test x$HAVEFLUIDLITE = xyes; then
+	if test x$enable_fluidsynth = xyes || test x$enable_fluidsynth = xlite; then
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
-		FLUIDSYNTH_LIBS="-lfluidsynth"
+		if test x$enable_fluidsynth = xyes; then
+			FLUIDSYNTH_LIBS="-lfluidsynth"
+			AC_DEFINE(USING_FLUIDSYNTH, 1,[Using FluidSynth])
+		else
+			FLUIDSYNTH_LIBS="-lfluidlite"
+			AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
+		fi
 	else
 		AC_MSG_RESULT(no)
 	fi
@@ -1428,6 +1435,10 @@ else
 	if test x$enable_fluidsynth = xyes; then
 		PKG_CHECK_EXISTS(fluidsynth,
 			echo Fluidsynth................. : `$PKG_CONFIG --modversion fluidsynth`)
+	fi
+	if test x$enable_fluidsynth = xlite; then
+		PKG_CHECK_EXISTS(fluidsynth,
+			echo FluidLite.................. : `$PKG_CONFIG --modversion fluidlite`)
 	fi
 	if test x$enable_zip_support = xyes ; then
 		PKG_CHECK_EXISTS(zlib,

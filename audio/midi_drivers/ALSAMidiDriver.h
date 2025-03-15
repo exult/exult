@@ -53,6 +53,12 @@ public:
 		return &desc;
 	}
 
+	std::vector<ConfigSetting_widget::Definition> GetSettings() override;
+
+	bool isRealMT32Supported() const override {
+		return true;
+	}
+
 protected:
 	int  open() override;
 	void close() override;

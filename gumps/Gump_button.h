@@ -31,17 +31,32 @@ class Gump_button : public Gump_widget {
 private:
 	MouseButton pushed_button;    // MouseButton::Unknown if in unpushed state.
 
+	bool self_managed;    // Self managed button handles it's own input.
+						  // on_button will return nullptr if self managed
+	MouseButton dragging = MouseButton::Unknown;    // Button beingg held while
+													// dragging mouse
+
 public:
 	friend class Gump;
 
 	Gump_button(
 			Gump_Base* par, int shnum, int px, int py,
-			ShapeFile shfile = SF_GUMPS_VGA)
+			ShapeFile shfile = SF_GUMPS_VGA, bool self_managed=false)
 			: Gump_widget(par, shnum, px, py, 0, shfile),
-			  pushed_button(MouseButton::Unknown) {}
+			  pushed_button(MouseButton::Unknown), self_managed(self_managed) {}
 
+	// Only respond to this is we are not self managed
 	Gump_button* on_button(int mx, int my) override {
-		return on_widget(mx, my) ? this : nullptr;
+		return !self_managed && on_widget(mx, my) ? this : nullptr;
+	}
+
+	// Want input focus if self managed and pushed or dragging
+	Gump_widget* Input_first() override {
+		return self_managed
+							   && (pushed_button != MouseButton::Unknown
+								   || dragging != MouseButton::Unknown)
+					   ? this
+					   : nullptr;
 	}
 
 	// What to do when 'clicked':
@@ -52,6 +67,17 @@ public:
 	virtual void unpush(MouseButton button);
 	void         paint() override;
 
+	// Self managed input handling
+	bool mouse_down(int mx, int my, MouseButton button) override;
+	bool mouse_up(int mx, int my, MouseButton button) override;
+	bool mouse_drag(int mx, int my) override;
+
+	bool is_self_managed() const {
+		return self_managed;
+	}
+	void set_self_managed(bool set)  {
+		self_managed = set;		
+	}
 	MouseButton get_pushed() {
 		return pushed_button;
 	}
@@ -117,7 +143,9 @@ private:
 template <typename Parent, typename Base>
 class CallbackButtonBase<Parent, Base> : public Base {
 public:
-	using CallbackType   = void (Parent::*)();
+	using CallbackType  = void (Parent::*)();
+	using CallbackType2 = void (Parent::*)(
+			Gump_widget* sender, Gump_Base::MouseButton button);
 	using CallbackParams = std::tuple<>;
 
 	template <typename... Ts>
@@ -125,17 +153,27 @@ public:
 			: Base(par, std::forward<Ts>(args)...), parent(par),
 			  on_click(std::forward<CallbackType>(callback)) {}
 
+	// Construct with a callback that has arguments for sender and MouseButton
+	template <typename... Ts>
+	CallbackButtonBase(Parent* par, CallbackType2&& callback, Ts&&... args)
+			: Base(par, std::forward<Ts>(args)...), parent(par),
+			  on_click2(std::forward<CallbackType2>(callback)) {}
+
 	bool activate(Gump_Base::MouseButton button) override {
-		if (button != Gump_Base::MouseButton::Left) {
-			return false;
+		if (on_click && button == Gump_Base::MouseButton::Left) {
+			(parent->*on_click)();
+			return true;
+		} else if (on_click2) {
+			(parent->*on_click2)(this, button);
+			return true;
 		}
-		(parent->*on_click)();
-		return true;
+		return false;
 	}
 
 private:
-	Parent*      parent;
-	CallbackType on_click;
+	Parent*       parent;
+	CallbackType  on_click  = nullptr;
+	CallbackType2 on_click2 = nullptr;
 };
 
 template <typename Parent, typename... Args>

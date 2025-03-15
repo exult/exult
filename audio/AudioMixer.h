@@ -68,8 +68,12 @@ namespace Pentagram {
 		bool set2DPosition(sint32 instance_id, int distance, int angle);
 		void get2DPosition(sint32 instance_id, int& distance, int& angle) const;
 
-		void openMidiOutput();
-		void closeMidiOutput();
+		// Get playback length in MS or UIN32_MAX on error
+		uint32 GetPlaybackLength(sint32 instance_id);
+		// Get playback position in MS or UIN32_MAX on error
+		uint32 GetPlaybackPosition(sint32 instance_id);
+		void   openMidiOutput();
+		void   closeMidiOutput();
 
 		MyMidiPlayer* getMidiPlayer() const {
 			return midi;

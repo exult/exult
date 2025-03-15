@@ -240,4 +240,35 @@ void WindowsMidiDriver::increaseThreadPriority() {
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
 }
 
+std::vector<ConfigSetting_widget::Definition> WindowsMidiDriver::GetSettings() {
+	ConfigSetting_widget::Definition midi_device{
+			"Win32 MIDI Device",                          // label
+			"config/audio/midi/win32_device",             // config_setting
+			0,                                            // additional
+			false,                                        // required
+			false,                                        // unique
+			ConfigSetting_widget::Definition::dropdown    // setting_type
+	};
+
+	// List all the midi devices and fill midi_device.valid.string
+	MIDIOUTCAPS caps;
+	auto        dev_count = static_cast<signed long>(midiOutGetNumDevs());
+	midi_device.choices.reserve(dev_count + 1);
+
+	for (signed long i = -1; i < dev_count; i++) {
+		midiOutGetDevCaps(static_cast<UINT>(i), &caps, sizeof(caps));
+		ConfigSetting_widget::Definition::Choice choice{
+				caps.szPname, caps.szPname, std::to_string(i)};
+		if (i == -1) {
+			choice.value.swap(choice.alternative);
+		}
+		midi_device.choices.push_back(choice);
+	}
+	midi_device.default_value = "-1";
+
+	auto settings = MidiDriver::GetSettings();
+	settings.push_back(std::move(midi_device));
+	return settings;
+}
+
 #endif    // USE_WINDOWS_MIDI

@@ -284,4 +284,45 @@ void CoreAudioMidiDriver::increaseThreadPriority() {
 	pthread_setschedparam(self, policy, &param);
 }
 
+std::vector<ConfigSetting_widget::Definition> CoreAudioMidiDriver::
+		GetSettings() {
+	ConfigSetting_widget::Definition soundfont{
+			"Soundfont",                                  // label
+			"config/audio/midi/coreaudio_soundfont",      // config_setting
+			0,                                            // additional
+			false,                                        // required
+			true,                                         // unique
+			ConfigSetting_widget::Definition::dropdown    // setting_type
+	};
+	soundfont.add_filenames_to_choices("<BUNDLE>/*.sf2");
+	soundfont.add_filenames_to_choices("<DATA>/*.sf2");
+	soundfont.add_filenames_to_choices("<BUNDLE>/*.SF2");
+	soundfont.add_filenames_to_choices("<DATA>/*.SF2");
+	soundfont.add_filenames_to_choices("<BUNDLE>/*.dls");
+	soundfont.add_filenames_to_choices("<DATA>/*.dls");
+	soundfont.add_filenames_to_choices("<BUNDLE>/*.DLS");
+	soundfont.add_filenames_to_choices("<DATA>/*.DLS");
+
+#	ifdef __IPHONEOS__
+	// IOS must set a soundfont and set the default to the first
+	// found. If there is no soundfont then add in unset
+	// choice. The gump will complain if the users tries to usethis
+	if (soundfont.choices.empty()) {
+		soundfont.choices.push_back({"(Unset)", "", ""});
+
+		soundfont.required = true;
+	}
+
+	soundfont.default_value = soundfont.choices.front().value;
+#	else
+	// MacOS can use system default
+	soundfont.choices.push_back({"(System Default)", "", ""});
+	soundfont.default_value = "";
+#	endif
+	soundfont.sort_choices();
+
+	auto settings = MidiDriver::GetSettings();
+	settings.push_back(soundfont);
+	return settings;
+}
 #endif    // USE_CORE_AUDIO_MIDI

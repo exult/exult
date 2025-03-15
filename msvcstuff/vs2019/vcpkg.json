@@ -9,7 +9,7 @@
     "libogg",
     "libvorbis",
     "libmt32emu",
-    "fluidsynth",
+    "fluidlite",
     "dirent"
   ]
 }

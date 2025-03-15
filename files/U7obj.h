@@ -129,7 +129,8 @@ public:
 	U7multiobject(U7multiobject&&)            = default;
 	U7multiobject& operator=(U7multiobject&&) = default;
 
-	std::unique_ptr<unsigned char[]> retrieve(std::size_t& len) const;
+	std::unique_ptr<unsigned char[]> retrieve(
+			std::size_t& len, bool nullterminate = false) const;
 };
 
 #endif

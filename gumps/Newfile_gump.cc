@@ -811,7 +811,7 @@ bool Newfile_gump::text_input(const char* text) {
  *  Handle character that was typed.
  */
 
-bool Newfile_gump::text_input(int chr, int unicode, bool shift_pressed) {
+bool Newfile_gump::character_input(int chr, int unicode, bool shift_pressed) {
 	bool update_details = false;
 	int  repaint        = false;
 
@@ -881,7 +881,7 @@ bool Newfile_gump::text_input(int chr, int unicode, bool shift_pressed) {
 	default:
 		ignore_unused_variable_warning(unicode);
 		if (chr < ' ') {
-			return true;    // Ignore other special chars.
+			return Modal_gump::character_input(chr,unicode,shift_pressed);    // Ignore other special chars and let parent class handle them
 		}
 
 		if (chr < 256 && isascii(chr)) {

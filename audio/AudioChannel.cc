@@ -64,15 +64,16 @@ namespace Pentagram {
 		stop();
 		sample = sample_;
 
-		loop        = loop_;
-		priority    = priority_;
-		lvol        = lvol_;
-		rvol        = rvol_;
-		paused      = paused_;
-		pitch_shift = pitch_shift_;
-		instance_id = instance_id_;
-		distance    = 0;
-		balance     = 0;
+		loop             = loop_;
+		priority         = priority_;
+		lvol             = lvol_;
+		rvol             = rvol_;
+		paused           = paused_;
+		pitch_shift      = pitch_shift_;
+		instance_id      = instance_id_;
+		distance         = 0;
+		balance          = 0;
+		overall_position = 0;
 
 		if (!sample) {
 			return;
@@ -144,9 +145,10 @@ namespace Pentagram {
 
 		// Update fp_speed
 		fp_speed = (pitch_shift * sample->getRate()) / sample_rate;
-
 		// Get and Mix data
 		do {
+			int startpos = position;
+
 			// 8 bit resampling
 			if (sample->getBits() == 8) {
 				if (!sample->isStereo() && stereo) {
@@ -177,7 +179,9 @@ namespace Pentagram {
 							stream, bytes);    // Stereo Sample to Stereo Output
 				}
 			}
-
+			overall_position
+					+= (position - startpos)
+					   / (sample->getBits() / (sample->isStereo() ? 4 : 8));
 			// We ran out of data
 			if (bytes || (position == frame0_size)) {
 				// No more data
@@ -202,6 +206,20 @@ namespace Pentagram {
 		} while (bytes != 0);
 	}
 
+	uint32 AudioChannel::getPlaybackLength() const {
+		if (!sample) {
+			return UINT32_MAX;
+		}
+		return ((sample->getPlaybackLength()) * UINT64_C(1000)) / sample->getRate();
+	}
+
+	uint32 AudioChannel::getPlaybackPosition() const {
+		if (!sample) {
+			return UINT32_MAX;
+		}
+		return (overall_position * UINT64_C(1000)) / sample->getRate();
+	}
+
 	// Decompress a frame
 	void AudioChannel::DecompressNextFrame() {
 		// Get next frame of data
@@ -213,6 +231,7 @@ namespace Pentagram {
 			if (loop != -1) {
 				loop--;
 			}
+			overall_position = 0;
 			sample->rewind(decomp);
 			frame1_size = sample->decompressFrame(decomp, src2);
 		} else if (!frame1_size) {
