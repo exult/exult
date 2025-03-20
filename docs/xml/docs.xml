@@ -134,7 +134,9 @@
 					case of Windows OS it also depends on the version of Windows.
 				</para>
 					<ul>
-						<li>On Linux systems you can expect to find it in <kbd>$HOME/.exult.cfg</kbd></li>
+						<li>On Linux systems you can expect to find it in <kbd>$HOME/.exult.cfg</kbd>, or
+						  in <kbd>$HOME/.var/apps/info.exult.exult/config/exult.cfg</kbd> if using the
+						  <extref target="https://flathub.org/apps/info.exult.exult">Flatpak package</extref></li>
 						<li>macOS saves it to <kbd>~/Library/Preferences/exult.cfg</kbd></li>
 						<li>Windows (7, 8, 10, 11) save exult.cfg to <kbd>LOCAL_APPDATA\Exult</kbd>,
 							but on these this translates to <kbd>C:\Users\YourUsername\AppData\Local\Exult</kbd></li>
@@ -197,12 +199,14 @@
 			</body>
 		</sub>
 		<sub name="default_nix">
-			<header>Path-Settings for Linux based systems</header>
+			<header>Default game folders on Linux</header>
 			<body>
 				<para>
 					As on macOS, <Exult/> uses a default path on Linux systems for its data folder and the game files.
-					<Exult/> will automatically look for these in <kbd>/usr/local/share/exult</kbd> unless you entered
-					different paths in exult.cfg.<br/>
+					Unless you configure custom paths in <kbd>exult.cfg</kbd>, <Exult/> will automatically look for
+					the game data files in <kbd>/usr/local/share/exult</kbd>, or in the case of the the
+					<extref target="https://flathub.org/apps/info.exult.exult">Flatpak package</extref>, in
+					<kbd>$HOME/.var/app/info.exult.exult/data/</kbd>.<br/>
 					<strong>But</strong> you will need to follow our gamename standard when you name the game
 					folders, see <ref1 target="terms"/>, otherwise <Exult/> will not find them there.
 				</para>
@@ -465,7 +469,7 @@
 					<img alt="Volume Mixer" src="images/docs08.png"/>
 				</para>
 				<para>
-					When you have enabled digital music <strong>and</strong> and another midi driver you can set 
+					When you have enabled digital music <strong>and</strong> and another midi driver you can set
 					both volumes for music.
 				</para>
 				<para>
@@ -620,7 +624,7 @@
 					There are three general ways that music is played in <Exult/>. One is using MIDI, which
 					plays the music through any MIDI device, software synthesizers (TiMidity,FluidSynth) or
 					even MIDI device emulators like Munt MT-32 Emulator (or <Exult/>'s built-in MT32Emu).
-					Another way is Digital Music encoded into OGG (similar to MP3) which was recorded 
+					Another way is Digital Music encoded into OGG (similar to MP3) which was recorded
 					directly from a Roland MT-32.
 					The third option is FMOpl which emulates Opl2/Adlib.<br/>
 					The MIDI files are converted on-the-fly from the original Ultima VII MT-32 files to
@@ -679,9 +683,9 @@
 						(N = 0 to 9) which are loaded in numerical order (0 first), plus the old
 						&lt;fluidsynth_soundfont&gt; entry, which loads after all others.<br/>
 						<extref target="https://www.fluidsynth.org/api/LoadingSoundfonts.html">FluidSynth Documentation:</extref>
-						<kbd>The loaded SoundFonts are treated as a stack, where each new loaded SoundFont is 
+						<kbd>The loaded SoundFonts are treated as a stack, where each new loaded SoundFont is
 						placed at the top of the stack. When selecting presets by bank and program numbers,
-						SoundFonts are searched beginning at the top of the stack. In the case where there are 
+						SoundFonts are searched beginning at the top of the stack. In the case where there are
 						presets in different SoundFonts with identical bank and program numbers, the preset from
 						the most recently loaded SoundFont is used.</kbd></li>
 					<li><strong>MT32Emu</strong><br/>
@@ -689,6 +693,8 @@
 						the ROM set 'CM32L_CONTROL.ROM' and 'CM32L_PCM.ROM' in the <Exult/> data folder.
 						If both sets are present the CM32L ROM-set will be used.<br/>
 						On case sensitive Operating Systems these files have to be saved in uppercase.</li>
+						For the <extref target="https://flathub.org/apps/info.exult.exult">Flatpak package</extref>
+						on Linux, these should be stored in <kbd>$HOME/.var/app/info.exult.exult/data/mt32emu/</kbd>.
 					<li><strong>Windows</strong><br/>
 						Using the Windows MIDI driver.</li>
 					<li><strong>CoreAudio</strong><br/>
@@ -1537,6 +1543,12 @@
 					Unfortunately, since there are always advancements in the map editing, mods that are
 					no longer maintained might no longer work correctly with current versions of <Exult/>.
 				</para>
+				<para>Please note that the Linux Flatpak package for Linux already includes several mods
+				    as part of the package; you do not need to install these separately. You can however
+					install additional mods by extracting them to
+					<kbd>$HOME/.var/app/info.exult.exult/data/gamename/mods/</kbd>; Exult will detect both
+					the bundled mods and custom ones installed here.
+				</para>
 			</body>
 		</sub>
 		<sub name="patch_install">
@@ -1831,7 +1843,7 @@
 				</ol>
 				<para>
 					Alternately, if you have purchased the game from another site or own a hard copy on CD (or the original floppy
-					disks), you should be able to place the contents in a zip file (or other common archive format) and copy it to 
+					disks), you should be able to place the contents in a zip file (or other common archive format) and copy it to
 					your device. The important part is to zip the folder <strong>STATIC</strong> and its content. For example:<br/>
 					<kbd>game</kbd><br/>
 					<kbd>blackgate</kbd><br/>
@@ -1876,11 +1888,11 @@
 					for manual installation' zip file from our
 					<extref target="https://exult.info/download.php">download page</extref>.<br/>
 					In the <Exult/>launcher, select the Audio tab, tap on <strong>Zipped all-in-one audio pack</strong> checkmark.
-					This will open a file browser which you can use to select the archive you downloaded, and the installer will 
+					This will open a file browser which you can use to select the archive you downloaded, and the installer will
 					take care of extracting the required data files and installing them in the correct places.
 				</para>
 				<para>
-					For the MT32 emulation of the music you need the MT32 ROMs and both ROMs need their filenames to be 
+					For the MT32 emulation of the music you need the MT32 ROMs and both ROMs need their filenames to be
 					uppercase. Once you have the zipped ROMs on your android device, tap the <strong>Zipped MT32 ROMs</strong>
 					checkbox on the left, select the zip in the file browser, and the files will be installed.<br/>
 					Keep in mind that the MT32 ROM files are copyrighted and thus we are not offering a download. You need to dump
