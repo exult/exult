@@ -1544,7 +1544,7 @@
 					no longer maintained might no longer work correctly with current versions of <Exult/>.
 				</para>
 				<para>
-					Please note that the Linux Flatpak package for Linux already includes several mods
+					Please note that the Flatpak package for Linux systems already includes several mods
 					as part of the package; you do not need to install these separately. You can however
 					install additional mods by extracting them to
 					<kbd>$HOME/.var/app/info.exult.exult/data/gamename/mods/</kbd>; Exult will detect both
