@@ -16,7 +16,18 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
+#endif    // __GNUC__
 #include <SDL3/SDL_keycode.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
+
 #ifdef HAVE_CONFIG_H
 #	include <config.h>
 #endif

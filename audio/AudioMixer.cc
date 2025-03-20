@@ -34,8 +34,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
 #include <SDL3/SDL.h>
+static const SDL_AudioDeviceID EXSDL_AUDIO_DEVICE_DEFAULT_PLAYBACK =
+		SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -102,7 +107,7 @@ AudioMixer::AudioMixer(int sample_rate_, bool stereo_, int num_channels_)
 	// Open SDL Audio (even though we may not need it)
 	SDL_InitSubSystem(SDL_INIT_AUDIO);
 	stream = SDL_OpenAudioDeviceStream(
-			SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desired, sdlAudioCallback,
+			EXSDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desired, sdlAudioCallback,
 			this);
 	audio_ok = (stream != nullptr);
 

@@ -23,6 +23,7 @@
 #endif
 
 #include "endianio.h"
+#include "ignore_unused_variable_warning.h"
 #include "version.h"
 
 #include <array>
@@ -594,6 +595,7 @@ namespace {
 
 #ifdef NO_CPUID
 	bool CPUID(uint32_t leaf, uint32_t subleaf, std::array<uint32_t, 4>& regs) {
+		ignore_unused_variable_warning(leaf, subleaf, regs);
 		return false;
 	}
 #endif
