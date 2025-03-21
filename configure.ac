@@ -923,6 +923,23 @@ else
 	AC_MSG_RESULT(no)
 fi
 
+# Aseprite plugin
+AM_CONDITIONAL(ASEPRITE_PLUGIN, false)
+AC_ARG_ENABLE(aseprite-plugin,
+	AS_HELP_STRING([--enable-aseprite-plugin], [Build the Aseprite plugin @<:@default no@:>@]),, enable_aseprite_plugin=no)
+AC_MSG_CHECKING([whether to build the Aseprite plugin])
+if test x$enable_aseprite_plugin = xyes; then
+	AC_MSG_RESULT(yes)
+	if test x$have_png = xno; then
+		echo "The Aseprite Plugin requires the PNG (aka the Portable Network Graphics)."
+		echo "Please try again, either with the PNG installed, or with '--disable_aseprite_plugin'."
+		exit 1
+	fi
+	AM_CONDITIONAL(ASEPRITE_PLUGIN, true)
+else
+	AC_MSG_RESULT(no)
+fi
+
 # GIMP plugin
 AM_CONDITIONAL(GIMP3_PLUGIN, false)
 AM_CONDITIONAL(GIMP2_PLUGIN, false)
@@ -1370,6 +1387,7 @@ usecode/ucxt/data/Makefile
 usecode/ucxt/include/Makefile
 usecode/ucxt/src/Makefile
 mapedit/Makefile
+mapedit/tools/aseprite_plugin/Makefile
 server/Makefile
 ])
 AC_OUTPUT
@@ -1486,6 +1504,7 @@ echo Build Exult mods........... : $enable_mods
 echo Create zipped Savegames.... : $enable_zip_support
 echo Build GIMP SHP plugin...... : $enable_gimp_plugin
 echo Build Exult SHP Thumbnailer : $enable_shp_thumbnailer
+echo Build Aseprite SHP plugin...: $enable_aseprite_plugin
 echo
 echo Debug :
 echo Build Usecode debugger..... : $enable_usecode_debugger

@@ -575,6 +575,12 @@ endif
 u7shp$(EXEEXT) : mapedit/u7shp.o $(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
 	$(CXX) $(LDFLAGS) -o $(@) $+ $(subst -lgexiv2,,$(GIMP_LIBS)) -mwindows
 
+mapedit/tools/aseprite_plugin/exult_shp$(EXEEXT): mapedit/tools/aseprite_plugin/exult_shp.cc \
+	$(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o mapedit/tools/aseprite_plugin/exult_shp.o $<
+	$(CXX) $(LDFLAGS) -o $@ mapedit/tools/aseprite_plugin/exult_shp.o $(FILE_OBJS) shapes/vgafile.o \
+	imagewin/ibuf8.o imagewin/imagebuf.o -lpng -mwindows
+
 install: $(EXEC)
 	mkdir -p $(U7PATH)
 	strip $(EXEC) -o $(U7PATH)/$(EXEC)
@@ -765,7 +771,21 @@ plugindist: plugin plugininstall
 	u2d $(GIMPPATH)/*.txt
 	cp win32/exult_shpplugin_installer.iss $(DISTPATH)
 
-allclean: clean toolsclean studioclean modsclean pluginclean
+aseprite-pluginclean:
+	rm -f mapedit/tools/aseprite_plugin/exult_shp$(EXEEXT) mapedit/tools/aseprite_plugin/exult_shp.o
+
+aseprite-plugin: mapedit/tools/aseprite_plugin/exult_shp$(EXEEXT)
+
+aseprite-plugindist: ASEPRITEPATH:=$(DISTPATH)/AsepritePlugin-$(MSYSTEM_CARCH)
+aseprite-plugindist: aseprite-plugin
+	mkdir -p $(ASEPRITEPATH)
+	cp mapedit/tools/aseprite_plugin/exult_shp$(EXEEXT) $(ASEPRITEPATH)
+	cp mapedit/tools/aseprite_plugin/main.lua $(ASEPRITEPATH)
+	cp mapedit/tools/aseprite_plugin/package.json $(ASEPRITEPATH)
+	cp mapedit/tools/aseprite_plugin/Readme.txt $(ASEPRITEPATH)
+	$(call copy_dlls_for_exe, mapedit/tools/aseprite_plugin/exult_shp$(EXEEXT), $(ASEPRITEPATH))
+
+allclean: clean toolsclean studioclean modsclean pluginclean aseprite-pluginclean
 	rm -f exconfig.dll exconfig_rc.o win32/exconfig.o
 	rm -f Exult\ Source\ Code.url
 
