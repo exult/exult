@@ -22,9 +22,7 @@
 
 #include "Astar.h"
 
-extern std::vector<Tile_coord> Find_path(
-		const Tile_coord&, const Tile_coord&, const Pathfinder_client* client,
-		int& plen);
+#include "path.h"
 
 /*
  *  Find path from source to destination.
@@ -34,13 +32,15 @@ extern std::vector<Tile_coord> Find_path(
 bool Astar::NewPath(
 		const Tile_coord& s, const Tile_coord& d,
 		const Pathfinder_client* client) {
+	auto [new_path, success] = Find_path(s, d, client);
+
 	src        = s;    // Store start, destination.
 	dest       = d;
-	path       = Find_path(s, d, client, pathlen);
+	path       = std::move(new_path);
 	next_index = 0;
 	dir        = 1;
-	stop       = pathlen;
-	return !path.empty();
+	stop       = path.size();
+	return success;
 }
 
 /*
@@ -67,7 +67,7 @@ bool Astar::GetNextStep(Tile_coord& n, bool& done) {
 bool Astar::set_backwards() {
 	dir        = -1;
 	stop       = -1;
-	next_index = pathlen - 1;
+	next_index = path.size() - 1;
 	return true;
 }
 

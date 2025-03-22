@@ -857,6 +857,7 @@
 		E700DFA71A6E372A006C8BE4 /* Astar.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Astar.cc; sourceTree = "<group>"; };
 		E700DFA81A6E372A006C8BE4 /* Astar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Astar.h; sourceTree = "<group>"; };
 		E700DFAC1A6E372A006C8BE4 /* path.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = path.cc; sourceTree = "<group>"; };
+		E700DFAC2A6E372A006C8BE4 /* path.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = path.h; sourceTree = "<group>"; };
 		E700DFAD1A6E372A006C8BE4 /* PathFinder.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PathFinder.cc; sourceTree = "<group>"; };
 		E700DFAE1A6E372A006C8BE4 /* PathFinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathFinder.h; sourceTree = "<group>"; };
 		E700DFAF1A6E372A006C8BE4 /* Zombie.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Zombie.cc; sourceTree = "<group>"; };
@@ -1634,6 +1635,7 @@
 				E700DFA71A6E372A006C8BE4 /* Astar.cc */,
 				E700DFA81A6E372A006C8BE4 /* Astar.h */,
 				E700DFAC1A6E372A006C8BE4 /* path.cc */,
+				E700DFAC2A6E372A006C8BE4 /* path.h */,
 				E700DFAD1A6E372A006C8BE4 /* PathFinder.cc */,
 				E700DFAE1A6E372A006C8BE4 /* PathFinder.h */,
 				E700DFAF1A6E372A006C8BE4 /* Zombie.cc */,

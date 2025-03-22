@@ -1099,6 +1099,9 @@
     <ClInclude Include="..\..\pathfinder\Astar.h">
       <Filter>pathfinder</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\pathfinder\path.h">
+      <Filter>pathfinder</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\pathfinder\PathFinder.h">
       <Filter>pathfinder</Filter>
     </ClInclude>

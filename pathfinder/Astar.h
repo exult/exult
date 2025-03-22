@@ -25,7 +25,6 @@
 
 class Astar : public PathFinder {
 	std::vector<Tile_coord> path;              // Coords. to goal.
-	int                     pathlen    = 0;    // Length of path.
 	int                     dir        = 0;    // 1 or -1.
 	int                     stop       = 0;    // Index to stop at.
 	int                     next_index = 0;    // Index of next tile to return.

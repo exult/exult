@@ -22,6 +22,8 @@
 #	include <config.h>
 #endif
 
+#include "path.h"
+
 #include "PathFinder.h"
 #include "exult_constants.h"
 #include "hash_utils.h"
@@ -34,22 +36,15 @@ using std::endl;
 using std::size_t;
 using std::vector;
 
-std::vector<Tile_coord> Find_path(
-		const Tile_coord&        start,     // Where to start from.
-		const Tile_coord&        goal,      // Where to end up.
-		const Pathfinder_client* client,    // Provides costs.
-		int&                     pathlen    // Length of path returned.
-);
-
 /*
  *  Iterate through neighbors of a tile (in 2 dimensions).
  */
 class Neighbor_iterator {
 	Tile_coord tile;          // Original tile.
 	static int coords[16];    // Coords to go through ((x,y) pairs)
-	int        index;         // 0-7.
+	int        index{};       // 0-7.
 public:
-	Neighbor_iterator(const Tile_coord& t) : tile(t), index(0) {}
+	Neighbor_iterator(const Tile_coord& t) : tile(t) {}
 
 	// Get next neighbor.
 	int operator()(Tile_coord& newt) noexcept {
@@ -122,35 +117,34 @@ public:
 	}
 
 	// Create path back to start.
-	std::vector<Tile_coord> create_path(int& pathlen) {
-		int cnt = 1;    // This.
+	std::vector<Tile_coord> create_path() {
+		size_t pathlen = 0;    // Start at 0 as we don't want starting tile.
 		// Count back to start.
 		Search_node* each = this;
 		while ((each = each->parent) != nullptr) {
-			cnt++;
+			pathlen++;
 		}
-		pathlen = cnt - 1;    // Don't want starting tile.
 		std::vector<Tile_coord> result(pathlen);
 		each = this;
-		for (int i = pathlen - 1; i >= 0; i--) {
-			result[i] = each->tile;
-			each      = each->parent;
+		for (size_t i = pathlen; i > 0; i--) {
+			result[i - 1] = each->tile;
+			each          = each->parent;
 		}
 		return result;
 	}
 #ifdef VERIFYCHAIN
-	// Returns 0 if bad chain.
-	int verify_chain(Search_node* last, int removed = 0) {
-		if (!last) {
-			return 1;
+	// Returns false if bad chain.
+	bool verify_chain(Search_node* last, bool removed = false) {
+		if (last == nullptr) {
+			return true;
 		}
-		int          found = 0;
+		bool         found = false;
 		Search_node* prev  = last;
-		int          cnt   = 0;
+		size_t       cnt   = 0;
 		do {
 			Search_node* next = prev->priority_next;
 			if (next == this) {
-				found = 1;
+				found = true;
 			}
 			prev = next;
 			if (cnt > 10000) {
@@ -158,12 +152,12 @@ public:
 			}
 		} while (prev != last);
 		if (!found && !removed) {
-			return 0;
+			return false;
 		}
 		if (cnt == 10000) {
-			return 0;
+			return false;
 		}
-		return 1;
+		return true;
 	}
 #endif
 	// Add to chain of same priorities.
@@ -370,19 +364,18 @@ public:
 	}
 };
 
-static int tracing = 0;
+static bool tracing = false;
 
 /*
  *  First cut at using the A* pathfinding algorithm.
  *
- *  Output: ->(allocated) array of Tile_coords to follow, or 0 if failed.
+ *  Output: pair<path vector, flag> where flag is true if path found.
  */
 
-std::vector<Tile_coord> Find_path(
-		const Tile_coord&        start,     // Where to start from.
-		const Tile_coord&        goal,      // Where to end up.
-		const Pathfinder_client* client,    // Provides costs.
-		int&                     pathlen    // Length of path returned.
+std::pair<std::vector<Tile_coord>, bool> Find_path(
+		const Tile_coord&        start,    // Where to start from.
+		const Tile_coord&        goal,     // Where to end up.
+		const Pathfinder_client* client    // Provides costs.
 ) {
 	A_star_queue nodes;    // The priority queue & hash table.
 	int          max_cost = client->estimate_cost(start, goal);
@@ -401,7 +394,7 @@ std::vector<Tile_coord> Find_path(
 		const Tile_coord curtile = node->get_tile();
 		if (client->at_goal(curtile, goal)) {
 			// Success.
-			return node->create_path(pathlen);
+			return {node->create_path(), true};
 		}
 		// Go through surrounding tiles.
 		Neighbor_iterator get_next(curtile);
@@ -437,6 +430,6 @@ std::vector<Tile_coord> Find_path(
 			}
 		}
 	}
-	pathlen = 0;    // Failed if here.
-	return {};
+	// Failed if here.
+	return {{}, false};
 }
