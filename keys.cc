@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2001-2022 The Exult Team
+ *  Copyright (C) 2001-2025 The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -479,6 +479,7 @@ void KeyBinder::ShowHelp() const {
 	scroll = new Scroll_gump();
 
 	for (const auto& iter : keyhelp) {
+		scroll->set_from_help(true);
 		scroll->add_text(iter.c_str());
 	}
 
@@ -497,6 +498,7 @@ void KeyBinder::ShowCheatHelp() const {
 	scroll = new Scroll_gump();
 
 	for (const auto& iter : cheathelp) {
+		scroll->set_from_help(true);
 		scroll->add_text(iter.c_str());
 	}
 
@@ -515,6 +517,7 @@ void KeyBinder::ShowMapeditHelp() const {
 	scroll = new Scroll_gump();
 
 	for (const auto& iter : mapedithelp) {
+		scroll->set_from_help(true);
 		scroll->add_text(iter.c_str());
 	}
 
@@ -530,6 +533,7 @@ void KeyBinder::ShowMapeditHelp() const {
 
 void KeyBinder::ShowBrowserKeys() const {
 	auto* scroll = new Scroll_gump();
+	scroll->set_from_help(true);
 	scroll->add_text("Esc - Exits the shape browser");
 	scroll->add_text("down - Increase shape by 1");
 	scroll->add_text("R - toggle palette rotation");

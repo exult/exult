@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2001-2024 The Exult Team
+ *  Copyright (C) 2001-2025 The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -143,6 +143,7 @@ void ActionAbout(const int* params) {
 	Scroll_gump* scroll;
 	scroll = new Scroll_gump();
 
+	scroll->set_from_help(true);
 	// add_text has strange behaviour
 	// \n and ~ both act as a newline with slightly different spacing
 	// it automatically adds a newline if the

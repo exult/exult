@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,19 +26,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 class Text_gump : public Gump {
 protected:
-	char* text;       // The text.
-	int   textlen;    // Length of text.
-	int   curtop;     // Offset of top of current page.
-	int   curend;     // Offset past end of current page(s).
-	int   font;       // The shape in fonts.vga to use
+	char* text;         // The text.
+	int   textlen;      // Length of text.
+	int   curtop;       // Offset of top of current page.
+	int   curend;       // Offset past end of current page(s).
+	int   font;         // The shape in fonts.vga to use
+	bool  from_help;    // Text is from help system
 
 public:
 	Text_gump(int shapenum, int fnt = 4)
 			: Gump(nullptr, shapenum), text(nullptr), textlen(0), curtop(0),
-			  curend(0), font(fnt) {}
+			  curend(0), font(fnt), from_help(false) {}
 
 	~Text_gump() override {
 		delete[] text;
+	}
+
+	void set_from_help(bool val) {
+		from_help = val;
 	}
 
 	void add_text(const char* str);    // Append text.

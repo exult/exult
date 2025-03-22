@@ -40,7 +40,8 @@ void Text_gump::add_text(const char* str) {
 		newtext = text;
 		if (newtext[textlen - 1] != '*') {
 			// Scrolls in SI break page with embedded 0x00
-			if (GAME_SI && get_shapenum() == game->get_shape("gumps/scroll")) {
+			if (GAME_SI && get_shapenum() == game->get_shape("gumps/scroll")
+				&& !from_help) {
 				newtext += "*";
 			} else {
 				newtext += "~";
@@ -119,7 +120,8 @@ int Text_gump::paint_page(const TileRect& box, int start) {
 		if (endoff > 0) {
 			// Check for a page‑break marker
 			if (epage && get_shapenum() == game->get_shape("gumps/scroll")) {
-				if (GAME_SI && start == 0 && ypos <= 5 * textheight) {
+				if (GAME_SI && start == 0 && ypos <= 5 * textheight
+					&& !from_help) {
 					// ignore page breaks on the first 5 lines of a scroll
 					str    = pageBreakStar + 1;
 					curend = str - text;
