@@ -1451,6 +1451,10 @@ bool SI_Game::new_game(Vga_file& shapes) {
 	Avatar_default_skin* defskin  = Shapeinfo_lookup::GetDefaultAvSkin();
 	Skin_data*           skindata = Shapeinfo_lookup::GetSkinInfoSafe(
             defskin->default_skin, defskin->default_female, true);
+	SDL_Window* window = gwin->get_win()->get_screen_window();
+	if (!SDL_TextInputActive(window)) {
+		SDL_StartTextInput(window);
+	}
 	do {
 		Delay();
 		if (redraw) {
@@ -1482,12 +1486,15 @@ bool SI_Game::new_game(Vga_file& shapes) {
 			gwin->get_win()->show();
 			redraw = false;
 		}
+		SDL_Renderer* renderer
+				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
 			Uint16 keysym_unicode = 0;
 			bool   isTextInput    = false;
-			if (event.type == SDL_MOUSEBUTTONDOWN
-				|| event.type == SDL_MOUSEBUTTONUP) {
+			SDL_ConvertEventToRenderCoordinates(renderer, &event);
+			if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN
+				|| event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
 				const SDL_Rect rectName   = {topx + 10, menuy + 10, 130, 16};
 				const SDL_Rect rectSex    = {topx + 10, menuy + 25, 130, 16};
 				const SDL_Rect rectOnward = {topx + 10, topy + 180, 130, 16};
@@ -1496,31 +1503,34 @@ bool SI_Game::new_game(Vga_file& shapes) {
 				gwin->get_win()->screen_to_game(
 						event.button.x, event.button.y, gwin->get_fastmouse(),
 						point.x, point.y);
-				if (SDL_EnclosePoints(&point, 1, &rectName, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
+				if (SDL_GetRectEnclosingPoints(&point, 1, &rectName, nullptr)) {
+					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 0;
 					} else if (selected == 0 && touchui != nullptr) {
 						touchui->promptForName(npc_name);
 					}
 					redraw = true;
-				} else if (SDL_EnclosePoints(&point, 1, &rectSex, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
+				} else if (SDL_GetRectEnclosingPoints(
+								   &point, 1, &rectSex, nullptr)) {
+					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 1;
 					} else if (selected == 1) {
 						skindata = Shapeinfo_lookup::GetNextSelSkin(
 								skindata, true, true);
 					}
 					redraw = true;
-				} else if (SDL_EnclosePoints(&point, 1, &rectOnward, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
+				} else if (SDL_GetRectEnclosingPoints(
+								   &point, 1, &rectOnward, nullptr)) {
+					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 2;
 					} else if (selected == 2) {
 						editing = false;
 						ok      = true;
 					}
 					redraw = true;
-				} else if (SDL_EnclosePoints(&point, 1, &rectReturn, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
+				} else if (SDL_GetRectEnclosingPoints(
+								   &point, 1, &rectReturn, nullptr)) {
+					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 3;
 					} else if (selected == 3) {
 						editing = false;
@@ -1538,15 +1548,15 @@ bool SI_Game::new_game(Vga_file& shapes) {
 						redraw = true;
 					}
 				}
-			} else if (event.type == SDL_TEXTINPUT) {
-				isTextInput          = true;
-				keysym_unicode       = event.text.text[0];
-				event.type           = SDL_KEYDOWN;
-				event.key.keysym.sym = SDLK_UNKNOWN;
+			} else if (event.type == SDL_EVENT_TEXT_INPUT) {
+				isTextInput    = true;
+				keysym_unicode = event.text.text[0];
+				event.type     = SDL_EVENT_KEY_DOWN;
+				event.key.key  = SDLK_UNKNOWN;
 			}
-			if (event.type == SDL_KEYDOWN) {
+			if (event.type == SDL_EVENT_KEY_DOWN) {
 				redraw = true;
-				switch (event.key.keysym.sym) {
+				switch (event.key.key) {
 				case SDLK_SPACE:
 					if (selected == 0) {
 						const int len = strlen(npc_name);
@@ -1631,6 +1641,9 @@ bool SI_Game::new_game(Vga_file& shapes) {
 			}
 		}
 	} while (editing);
+	if (SDL_TextInputActive(window)) {
+		SDL_StopTextInput(window);
+	}
 
 	gwin->clear_screen();
 

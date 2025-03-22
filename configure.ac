@@ -479,11 +479,9 @@ fi
 # ---------------------------------------------------------------------
 
 if test x$enable_android_apk = xno; then
-	PKG_CHECK_MODULES(SDL, sdl2 >= 2.0.16, , AC_MSG_ERROR([[*** SDL not found!]]))
+	PKG_CHECK_MODULES(SDL, sdl3, , AC_MSG_ERROR([[*** SDL not found!]]))
 	AC_DEFINE(HAVE_SDL_H, 1, [Define to 1 if you have the "SDL.h" header file])
 	AM_CONDITIONAL(HAVE_SDL, true)
-	AC_SUBST(SDL_CFLAGS)
-	AC_SUBST(SDL_LIBS)
 else
 	AM_CONDITIONAL(HAVE_SDL, false)
 fi
@@ -554,14 +552,13 @@ else
 fi
 
 # ALSA midi driver
-AC_CHECK_HEADER(alsa/asoundlib.h, HAVEALSA=yes, HAVEALSA=no)
+PKG_CHECK_MODULES(ALSA, alsa, have_alsa=yes, have_alsa=no)
 AC_ARG_ENABLE(alsa, AS_HELP_STRING([--disable-alsa], [Disable ALSA midi support]),,enable_alsa=yes)
 AC_MSG_CHECKING([if we want to use ALSA midi])
-if test x$HAVEALSA = xyes; then
+if test x$have_alsa = xyes; then
 	if test x$enable_alsa = xyes; then
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(USE_ALSA_MIDI, 1, [Enable ALSA midi])
-		ALSA_LIBS="-lasound"
 	else
 		AC_MSG_RESULT(no)
 	fi
@@ -570,21 +567,26 @@ else
 fi
 
 # fluidsynth midi driver
-PKG_CHECK_MODULES(FluidSynth, fluidsynth, HAVEFLUIDSYNTH=yes, HAVEFLUIDSYNTH=no)
-PKG_CHECK_MODULES(FluidLite, fluidlite, HAVEFLUIDLITE=yes, HAVEFLUIDLITE=no)
-AC_ARG_WITH([fluidsynth], AS_HELP_STRING([--with-fluidsynth=no|yes|lite], [Enable fluidsynth midi support]),[enable_fluidsynth="$withval"],[enable_fluidsynth="yes"])
+PKG_CHECK_MODULES(FLUIDSYNTH, fluidsynth, have_fluidsynth=yes, have_fluidsynth=no)
+PKG_CHECK_MODULES(FLUIDLITE, fluidlite, have_fluidlite=yes, have_fluidlite=no)
+AC_ARG_ENABLE(fluidsynth,
+	AS_HELP_STRING([--enable-fluidsynth@<:@=yes|lite|no@:>@],
+		[Enable fluidsynth midi support, lite for FluidLite, @<:@default yes@:>@]),,enable_fluidsynth=yes)
 AC_MSG_CHECKING([if we want to use fluidsynth midi])
-if test x$HAVEFLUIDSYNTH = xyes || test x$HAVEFLUIDLITE = xyes; then
-	if test x$enable_fluidsynth = xyes || test x$enable_fluidsynth = xlite; then
-		AC_MSG_RESULT(yes)
+if test x$have_fluidsynth = xyes || test x$have_fluidlite = xyes; then
+	if test x$enable_fluidsynth = xyes; then
 		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
-		if test x$enable_fluidsynth = xyes; then
-			FLUIDSYNTH_LIBS="-lfluidsynth"
-			AC_DEFINE(USING_FLUIDSYNTH, 1,[Using FluidSynth])
-		else
-			FLUIDSYNTH_LIBS="-lfluidlite"
+		if test x$have_fluidlite = xyes; then
+			AC_MSG_RESULT(lite)
 			AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
+		else
+			AC_MSG_RESULT(yes)
+			AC_DEFINE(USING_FLUIDSYNTH, 1,[Using FluidSynth])
 		fi
+	elif test x$enable_fluidsynth = xlite && test x$have_fluidlite = xyes; then
+		AC_MSG_RESULT(lite)
+		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
+		AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
 	else
 		AC_MSG_RESULT(no)
 	fi
@@ -593,10 +595,10 @@ else
 fi
 
 # mt32emu midi driver
-PKG_CHECK_MODULES(MT32EMU, mt32emu, HAVEMT32EMU=yes, HAVEMT32EMU=no)
+PKG_CHECK_MODULES(MT32EMU, mt32emu, have_mt32emu=yes, have_mt32emu=no)
 AC_ARG_ENABLE(mt32emu, AS_HELP_STRING([--disable-mt32emu], [Disable mt32emu midi support]),,enable_mt32emu=yes)
 AC_MSG_CHECKING([if we want to use mt32emu midi])
-if test x$HAVEMT32EMU = xyes; then
+if test x$have_mt32emu = xyes; then
 	if test x$enable_mt32emu = xyes; then
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(USE_MT32EMU_MIDI, 1, [Enable mt32emu])
@@ -631,6 +633,7 @@ if test x$enable_zip_support = xyes ; then
 fi
 AC_MSG_CHECKING([for zipped savegame support])
 if test x$enable_zip_support = xyes ; then
+	AC_MSG_RESULT(yes)
 	# disabled for now (non-portable):
 
 	# link statically against zlib if using gcc
@@ -638,11 +641,10 @@ if test x$enable_zip_support = xyes ; then
 	#	ZLIB_LIBS="-Wl,-Bstatic -lz -Wl,-Bdynamic"
 	# else
 	if test x$enable_static_libs = xno -o x$ARCH != xmacosx; then
-		ZLIB_LIBS="-lz"
+		PKG_CHECK_MODULES(ZLIB, zlib)
 	fi
 	# fi
 	AC_DEFINE(HAVE_ZIP_SUPPORT, 1, [Have zip support])
-	AC_MSG_RESULT(yes)
 else
 	AC_MSG_RESULT(no)
 fi
@@ -725,22 +727,17 @@ if test x$enable_exult_studio = xyes; then
 # Gtk
 	PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 3.16, have_gtk=yes, have_gtk=no)
 # Freetype2 (optional, used in ExultStudio, shapes/fontgen.cc)
-	PKG_CHECK_MODULES(CHKFREETYPE, freetype2, chk_freetype=yes, chk_freetype=no)
+	PKG_CHECK_EXISTS(freetype2, chk_freetype=yes, chk_freetype=no)
 	if test x$chk_freetype = xyes; then
-		FREETYPE2_LIBS=`$PKG_CONFIG --libs freetype2`
+		CHKFREETYPE2_LIBS=`$PKG_CONFIG --libs freetype2`
 		SAVED_LDFLAGS="$LDFLAGS"
-		LDFLAGS="$LDFLAGS $FREETYPE2_LIBS"
+		LDFLAGS="$LDFLAGS $CHKFREETYPE2_LIBS"
 		AC_CHECK_FUNC(FT_Init_FreeType, have_freetype=yes, have_freetype=no)
 		LDFLAGS="$SAVED_LDFLAGS"
-		FREETYPE2_INCLUDES=`$PKG_CONFIG --cflags freetype2`
 		if test x$have_freetype = xyes; then
+			PKG_CHECK_MODULES(FREETYPE2, freetype2)
 			AC_DEFINE(HAVE_FREETYPE2, 1, [Have freetype2])
-		else
-			FREETYPE2_LIBS=
-			FREETYPE2_INCLUDES=
 		fi
-		AC_SUBST(FREETYPE2_LIBS)
-		AC_SUBST(FREETYPE2_INCLUDES)
 	fi
 fi
 
@@ -939,7 +936,6 @@ if test x$enable_gimp_plugin != xno; then
 		AX_COMPARE_VERSION([$gimp_version], [ge], [3.0.0], [dnl
 			dnl $gimp_version >= 3.0.0
 			AC_MSG_RESULT([found $gimp_version >= 3.0.0])
-			AC_SUBST(GIMPTOOL)
 			AM_CONDITIONAL(GIMP3_PLUGIN, true)
 			AS_IF([test x$enable_gimp_plugin != xuser],
 				[GIMP_PLUGIN_PREFIX=`$GIMPTOOL --gimpplugindir`],
@@ -947,10 +943,7 @@ if test x$enable_gimp_plugin != xno; then
 			GIMP_PLUGIN_PREFIX="$GIMP_PLUGIN_PREFIX/plug-ins"
 			AC_SUBST(GIMP_PLUGIN_PREFIX)
 			AC_DEFINE(HAVE_GIMP, 1, [Have GIMP])
-			GIMP_INCLUDES=`$PKG_CONFIG --cflags gimpui-3.0`
-			GIMP_LIBS=`$PKG_CONFIG --libs gimpui-3.0`
-			AC_SUBST(GIMP_INCLUDES)
-			AC_SUBST(GIMP_LIBS)
+			PKG_CHECK_MODULES(GIMP, gimpui-3.0)
 		], [
 			dnl $gimp_version < 3.0.0
 			AC_MSG_RESULT([found $gimp_version < 3.0.0 - disabling plugin])
@@ -963,7 +956,6 @@ if test x$enable_gimp_plugin != xno; then
 			AX_COMPARE_VERSION([$gimp_version], [ge], [2.8.0], [dnl
 				dnl $gimp_version >= 2.8.0
 				AC_MSG_RESULT([found $gimp_version >= 2.8.0])
-				AC_SUBST(GIMPTOOL)
 				AM_CONDITIONAL(GIMP2_PLUGIN, true)
 				AS_IF([test x$enable_gimp_plugin != xuser],
 					[GIMP_PLUGIN_PREFIX=`$GIMPTOOL --gimpplugindir`],
@@ -971,10 +963,7 @@ if test x$enable_gimp_plugin != xno; then
 				GIMP_PLUGIN_PREFIX="$GIMP_PLUGIN_PREFIX/plug-ins"
 				AC_SUBST(GIMP_PLUGIN_PREFIX)
 				AC_DEFINE(HAVE_GIMP, 1, [Have GIMP])
-				GIMP_INCLUDES=`$PKG_CONFIG --cflags gimpui-2.0`
-				GIMP_LIBS=`$PKG_CONFIG --libs gimpui-2.0`
-				AC_SUBST(GIMP_INCLUDES)
-				AC_SUBST(GIMP_LIBS)
+				PKG_CHECK_MODULES(GIMP, gimpui-2.0)
 			], [
 				dnl $gimp_version < 2.8.0
 				AC_MSG_RESULT([found $gimp_version < 2.8.0 - disabling plugin])
@@ -1216,16 +1205,6 @@ done
 
 CXXFLAGS="$CXXFLAGS $SANITIZERS"
 
-# SDL parachute?
-AC_ARG_ENABLE(sdl-parachute, AS_HELP_STRING([--enable-sdl-parachute], [Use SDL parachute @<:@default yes@:>@]),,enable_sdl_parachute=yes)
-AC_MSG_CHECKING([if we should disable the SDL parachute])
-if test x$enable_sdl_parachute = xno; then
-	AC_MSG_RESULT(yes)
-	AC_DEFINE(NO_SDL_PARACHUTE, 1, [Disable SDL parachute])
-else
-	AC_MSG_RESULT(no)
-fi
-
 # ---------------------------------------------------------------------
 # Warning level
 # ---------------------------------------------------------------------
@@ -1308,11 +1287,6 @@ AS_IF([ test $cross_compiling = yes ], [
 # Generate output
 # ---------------------------------------------------------------------
 
-AC_SUBST(SDL_CFLAGS)
-AC_SUBST(SDL_LIBS)
-AC_SUBST(OGG_LIBS)
-AC_SUBST(VORBISFILE_LIBS)
-AC_SUBST(VORBIS_LIBS)
 AC_SUBST(WINDOWING_SYSTEM)
 AC_SUBST(EXE_TARGET)
 AC_SUBST(EXULT_DATADIR)
@@ -1321,11 +1295,6 @@ AC_SUBST(ICON_FILE)
 AC_SUBST(DEBUG_LEVEL)
 AC_SUBST(OPT_LEVEL)
 AC_SUBST(WARNINGS)
-AC_SUBST(ZLIB_LIBS)
-AC_SUBST(MT32EMU_LIBS)
-AC_SUBST(MT32EMU_CFLAGS)
-AC_SUBST(FLUIDSYNTH_LIBS)
-AC_SUBST(ALSA_LIBS)
 AC_SUBST(AR_FLAGS)
 
 AC_CONFIG_FILES([
@@ -1419,7 +1388,7 @@ if test x$enable_android_apk != xno; then
 	echo Java....................... : $java_version
 	echo
 else
-	echo SDL........................ : `$PKG_CONFIG --modversion sdl2`
+	echo SDL........................ : `$PKG_CONFIG --modversion sdl3`
 	PKG_CHECK_EXISTS(ogg,
 		echo Ogg.........................: `$PKG_CONFIG --modversion ogg`)
 	PKG_CHECK_EXISTS(vorbis,
@@ -1437,7 +1406,7 @@ else
 			echo Fluidsynth................. : `$PKG_CONFIG --modversion fluidsynth`)
 	fi
 	if test x$enable_fluidsynth = xlite; then
-		PKG_CHECK_EXISTS(fluidsynth,
+		PKG_CHECK_EXISTS(fluidlite,
 			echo FluidLite.................. : `$PKG_CONFIG --modversion fluidlite`)
 	fi
 	if test x$enable_zip_support = xyes ; then
@@ -1494,7 +1463,6 @@ echo Debug non Readied Objects.. : $enable_nonreadied_objects
 echo
 echo Compilation :
 echo Enable compiler sanitizers. : $enable_sanitizers
-echo Enable SDL parachute....... : $enable_sdl_parachute
 echo Build with static libraries : $enable_static_libs
 echo Turn all warnings to errors : $enable_warning_errors
 echo Turn pedantics to errors... : $enable_pedantic_errors

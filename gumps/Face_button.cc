@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Paperdoll_gump.h"
 #include "actors.h"
 #include "gamewin.h"
-#include "ignore_unused_variable_warning.h"
 #include "npcdollinf.h"
 
 Face_button::Face_button(Gump* par, int px, int py, Actor* a)

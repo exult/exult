@@ -2467,9 +2467,12 @@ USECODE_INTRINSIC(start_blocking_speech) {
 			Delay();                 // Wait a fraction of a second.
 			Mouse::mouse->hide();    // Turn off mouse.
 			Mouse::mouse_update = false;
+			SDL_Renderer* renderer
+					= SDL_GetRenderer(gwin->get_win()->get_screen_window());
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
-				if (event.type == SDL_MOUSEMOTION) {
+				SDL_ConvertEventToRenderCoordinates(renderer, &event);
+				if (event.type == SDL_EVENT_MOUSE_MOTION) {
 					// Mouse scale factor
 					int mx;
 					int my;

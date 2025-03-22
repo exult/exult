@@ -28,8 +28,11 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -37,6 +40,11 @@
 #include "imagebuf.h"
 #include "font.h"
 #include "shapeid.h"
+
+extern bool Translate_keyboard(
+		const SDL_Event& event, SDL_Keycode& code, SDL_Keycode& unicode,
+		bool numpad);
+
 class Gump;
 class Game_object;
 class Game_window;
@@ -89,10 +97,8 @@ public:
 	void update_gumps();
 	void paint(bool modal);
 
-	bool        double_clicked(int x, int y, Game_object*& obj);
-	bool        handle_kbd_event(void* ev);
-	static void translate_numpad(
-			SDL_Keycode& code, uint16& unicode, uint16 mod);
+	bool double_clicked(int x, int y, Game_object*& obj);
+	bool handle_kbd_event(void* ev);
 
 	inline bool can_right_click_close() {
 		return right_click_close;

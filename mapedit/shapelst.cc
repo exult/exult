@@ -1735,11 +1735,13 @@ void Shape_chooser::drag_data_get(
 		gpointer data    // ->Shape_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET of Shape for '"
+	cout << "In DRAG_DATA_GET of Shape for " << info << " and '"
 		 << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
 		 << endl;
 	auto* chooser = static_cast<Shape_chooser*>(data);
-	if (chooser->selected < 0 || info != U7_TARGET_SHAPEID) {
+	if (chooser->selected < 0
+		|| (info != U7_TARGET_SHAPEID && info != U7_TARGET_SHAPEID + 100
+			&& info != U7_TARGET_SHAPEID + 200)) {
 		return;    // Not sure about this.
 	}
 	guchar buf[U7DND_DATA_LENGTH(3)];
@@ -1751,7 +1753,8 @@ void Shape_chooser::drag_data_get(
 	const int          len
 			= Store_u7_shapeid(buf, file, shinfo.shapenum, shinfo.framenum);
 	cout << "Setting selection data (" << shinfo.shapenum << '/'
-		 << shinfo.framenum << ')' << endl;
+		 << shinfo.framenum << ')' << " (" << len << ") '" << buf << "'"
+		 << endl;
 	// Set data.
 	gtk_selection_data_set(
 			seldata, gtk_selection_data_get_target(seldata), 8, buf, len);
@@ -1772,6 +1775,10 @@ gint Shape_chooser::drag_begin(
 	if (chooser->selected < 0) {
 		return false;    // ++++Display a halt bitmap.
 	}
+	int file = chooser->ifile->get_u7drag_type();
+	if (file == U7_SHAPE_UNK) {
+		file = U7_SHAPE_SHAPES;    // Just assume it's shapes.vga.
+	}
 	// Get ->shape.
 	const Shape_entry& shinfo = chooser->info[chooser->selected];
 	Shape_frame*       shape
@@ -1779,6 +1786,13 @@ gint Shape_chooser::drag_begin(
 	if (!shape) {
 		return false;
 	}
+	unsigned char  buf[Exult_server::maxlength];
+	unsigned char* ptr = &buf[0];
+	little_endian::Write2(ptr, file);
+	little_endian::Write2(ptr, shinfo.shapenum);
+	little_endian::Write2(ptr, shinfo.framenum);
+	ExultStudio* studio = ExultStudio::get_instance();
+	studio->send_to_server(Exult_server::drag_shape, buf, ptr - buf);
 	chooser->set_drag_icon(context, shape);    // Set icon for dragging.
 	return true;
 }
