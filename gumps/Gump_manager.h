@@ -42,7 +42,8 @@
 #include "shapeid.h"
 
 extern bool Translate_keyboard(
-		SDL_Event event, SDL_Keycode& code, SDL_Keycode& unicode, bool numpad);
+		const SDL_Event& event, SDL_Keycode& code, SDL_Keycode& unicode,
+		bool numpad);
 
 class Gump;
 class Game_object;

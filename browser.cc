@@ -220,7 +220,6 @@ void ShapeBrowser::browse_shapes() {
 		if (SDL_PollEvent(&event) && event.type == SDL_EVENT_KEY_DOWN) {
 			redraw           = true;
 			const bool shift = event.key.mod & SDL_KMOD_SHIFT;
-			// int ctrl = event.key.mod & SDL_KMOD_CTRL;
 			switch (event.key.key) {
 			case SDLK_ESCAPE:
 				looping = false;

@@ -724,11 +724,9 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 		break;
 	default:
 		if (unicode < ' ') {
-			//			return false;    // Ignore other special chars.
 			return true;    // Ignore other special chars.
 		}
 		if (unicode >= 256 || !isascii(unicode)) {
-			//			return false;
 			return true;
 		}
 		// Special case: ignore "^" character

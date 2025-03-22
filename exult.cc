@@ -729,13 +729,13 @@ static void Init() {
 	const Uint32 init_flags
 			= SDL_INIT_VIDEO | SDL_INIT_GAMEPAD;
 	// Let SDL3 choose its own audio/video drivers until proved otherwise.
-	// ( SDL3 ) SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "DirectSound");
-	// ( SDL3 ) SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland,x11");
+	// Remove SDL_HINT_AUDIO_DRIVER set as "DirectSound"
+	// Remove SDL_HINT_VIDEO_DRIVER set as "wayland,x11"
 	const Uint32 joyinit = 0;
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "Landscape");
 	Mouse::use_touch_input = true;
-	// SDL_SetHint(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0");
+	// Remove SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE set as "0"
 #	if defined(SDL_PLATFORM_IOS)
 	SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "2");
 #	endif
@@ -749,9 +749,9 @@ static void Init() {
 	//     2- By SDL 3 disabling MOUSE_RELATIVE_MODE_WARP at
 	//        Windowed <-> Fullscreen transitions on Wayland or XWayland.
 	//        [ Resetting that hint in Exult then became useless. ]
-	// SDL_SetHint(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0" );
+	// Remove SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE set as "0"
 	// Do not confuse that Hint with :
-	// SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "0");
+	//        SDL_HINT_MOUSE_RELATIVE_MODE_WARP         set as "0"
 	if (!SDL_Init(init_flags | joyinit)) {
 		cerr << "Unable to initialize SDL: " << SDL_GetError() << endl;
 		exit(-1);
@@ -1408,10 +1408,12 @@ static void Handle_events() {
 }
 
 bool Translate_keyboard(
-		SDL_Event event, SDL_Keycode& chr, SDL_Keycode& unicode, bool numpad) {
+		const SDL_Event& event, SDL_Keycode& chr, SDL_Keycode& unicode,
+		bool numpad) {
 	unicode = 0;
 
 	if (event.type == SDL_EVENT_TEXT_INPUT) {
+		// Convert UTF-8 to UCS-4
 		chr = SDLK_UNKNOWN;
 		if ((event.text.text[0] & 0x80) == 0x00) {
 			unicode = event.text.text[0];
@@ -1453,6 +1455,7 @@ bool Translate_keyboard(
 		return false;
 	}
 	if (numpad) {
+		// Extract Numeric Keypad UCS-4
 		const bool numlock_active = (event.key.mod & SDL_KMOD_NUM) != 0;
 		switch (event.key.scancode) {
 		case SDL_SCANCODE_KP_ENTER:
@@ -1606,7 +1609,6 @@ static void Handle_event(SDL_Event& event) {
 	static uint32 last_b1_click     = 0;
 	static uint32 last_b3_click     = 0;
 	static uint32 last_b1down_click = 0;
-	// cout << "Event " << (int) event.type << " received" << endl;
 	switch (event.type) {
 	// Quick saving to make sure no game progress gets lost
 	// when the app goes into background
@@ -2020,7 +2022,7 @@ static void Handle_event(SDL_Event& event) {
 #endif
 		break;
 	}
-	case SDL_EVENT_WINDOW_MOUSE_ENTER:
+	case SDL_EVENT_WINDOW_MOUSE_ENTER: {
 		int   x;
 		int   y;
 		float fx, fy;
@@ -2031,6 +2033,7 @@ static void Handle_event(SDL_Event& event) {
 		Mouse::mouse->move(x, y);
 		gwin->set_painted();
 		break;
+	}
 	case SDL_EVENT_WINDOW_FOCUS_GAINED:
 		gwin->get_focus();
 		break;
@@ -2053,8 +2056,6 @@ static void Handle_event(SDL_Event& event) {
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		int x;
 		int y;
-		//		float fx, fy;
-		//		SDL_GetMouseState(&fx, &fy);
 		float fx = event.drop.x, fy = event.drop.y;
 		x = int(fx);
 		y = int(fy);
