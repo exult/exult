@@ -24,6 +24,8 @@ Exult Release Checklist
         (PACKAGE_STRING, PACKAGE_VERSION, VERSION)
   - ios/info.plist
         (CFBundleShortVersionString)
+  - mapedit/tools/aseprite_plugin/package.json
+        (version)
 
 * make sure the Windows installers doesn't refer to a Git snapshot
   - win32/exult_installer.iss, win32/exult_studio_installer.iss, win32/exult_tools_installer.iss
