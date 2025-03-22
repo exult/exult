@@ -140,7 +140,7 @@ jobs:
           git clone https://github.com/libsdl-org/SDL SDL3
           cd SDL3
           mkdir -p build
-          CC=clang CXX=clang++ CMAKE_INSTALL_PREFIX=/opt/local cmake -B build -S .
+          cmake -B build -S .
           cmake --build build
           cmake --install build
           cd ..

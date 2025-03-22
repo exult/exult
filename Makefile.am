@@ -5,7 +5,7 @@ AM_CPPFLAGS = -I$(srcdir) -I$(srcdir)/headers -I$(srcdir)/imagewin -I$(srcdir)/s
 	-I$(srcdir)/objs -I$(srcdir)/conf -I$(srcdir)/files -I$(srcdir)/gumps \
 	-I$(srcdir)/audio -I$(srcdir)/audio/midi_drivers -I$(srcdir)/pathfinder \
 	-I$(srcdir)/usecode -I$(srcdir)/shapes/shapeinf \
-	$(SDL_CFLAGS) $(VORBIS_CFLAGS) $(OGG_CFLAGS) $(PNG_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
+	$(SDL_CFLAGS) $(OGG_CFLAGS) $(PNG_CFLAGS) $(INCDIRS) $(WINDOWING_SYSTEM) \
 	$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DEXULT_DATADIR=\"$(EXULT_DATADIR)\"
 
 SUBDIRS = files conf data shapes imagewin pathfinder \
@@ -142,7 +142,7 @@ EXULTLIBS = \
 EXULTLIBADD = \
 	$(EXULTLIBS) $(PNG_LIBS) \
 	$(SDL_LIBS) $(SYSLIBS) $(x_libraries) $(ICON_FILE) \
-	$(ZLIB_LIBS) $(VORBIS_LIBS) $(VORBISFILE_LIBS) $(OGG_LIBS) $(MT32EMU_LIBS) $(FLUIDSYNTH_LIBS) $(ALSA_LIBS)
+	$(ZLIB_LIBS) $(OGG_LIBS) $(MT32EMU_LIBS) $(FLUIDLITE_LIBS) $(FLUIDSYNTH_LIBS) $(ALSA_LIBS)
 
 EXULTDEPENDENCIES = $(ICON_FILE) $(EXULTLIBS)
 

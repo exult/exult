@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/files \
 		-I$(top_srcdir)/audio -I$(top_srcdir)/audio/midi_drivers \
 		-I$(top_srcdir)/conf -I$(top_srcdir)/usecode -I$(top_srcdir)/data \
 		-I$(top_srcdir)/shapes/shapeinf \
-		$(SDL_CFLAGS) $(VORBIS_CFLAGS) $(OGG_CFLAGS) $(INCDIRS)	\
+		$(SDL_CFLAGS) $(OGG_CFLAGS) $(INCDIRS) \
 		$(WINDOWING_SYSTEM) $(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS)
 
 if BUILD_EXULT
