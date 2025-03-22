@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <mutex>
 #include <new>
 #include <type_traits>
+#include <utility>
 
 struct XMidiEvent;
 
@@ -112,7 +113,7 @@ private:
 		static FreeList instance;
 
 		static bool empty() {
-			return !instance.Head;
+			return instance.Head == nullptr;
 		}
 
 		static void FreeIt(T* obj) {
@@ -126,7 +127,7 @@ private:
 		}
 
 		static T* Pop() {
-			if (!instance.Head) {
+			if (instance.Head == nullptr) {
 				return nullptr;
 			}
 			instance.count--;
