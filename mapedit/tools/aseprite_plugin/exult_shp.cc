@@ -177,6 +177,9 @@ bool importSHP(
 		std::cout << "Using default palette" << std::endl;
 	}
 
+	// Sanitize the output path to prevent path traversal attacks
+	std::string sanitizedOutputPath = sanitizeFilePath(outputPngFilename);
+
 	// Extract the base filename from shpFilename (remove path and extension)
 	std::string baseFilename = shpFilename;
 
@@ -198,8 +201,8 @@ bool importSHP(
 	// Create output directory path if needed
 	std::string outputDir = "";
 
-	// Extract directory from outputPngFilename if there is one
-	std::string outputPath  = outputPngFilename;
+	// Extract directory from sanitizedOutputPath if there is one
+	std::string outputPath  = sanitizedOutputPath;
 	size_t      lastPathSep = outputPath.find_last_of("/\\");
 	if (lastPathSep != std::string::npos) {
 		outputDir = outputPath.substr(0, lastPathSep + 1);
@@ -245,6 +248,10 @@ bool importSHP(
 				= finalOutputBase + "_" + std::to_string(i) + ".png";
 		std::string metadataFilename
 				= finalOutputBase + "_" + std::to_string(i) + ".meta";
+				
+		// Sanitize the final complete paths before using them
+        std::string sanitizedFrameFilename = sanitizeFilePath(frameFilename.c_str());
+        std::string sanitizedMetadataFilename = sanitizeFilePath(metadataFilename.c_str());
 
 		// Get frame data and dimensions - make sure to get the actual
 		// dimensions for this frame
@@ -260,12 +267,12 @@ bool importSHP(
 // Write frame info to metadata file
 #ifdef _WIN32
 		// Windows implementation
-		FILE* metaFile = fopen(metadataFilename.c_str(), "w");
+		FILE* metaFile = fopen(sanitizedMetadataFilename.c_str(), "w");
 #else
 		// Unix/Mac implementation with restricted permissions (0644 =
 		// rw-r--r--)
 		int fd = open(
-				metadataFilename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+				sanitizedMetadataFilename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		FILE* metaFile = (fd >= 0) ? fdopen(fd, "w") : NULL;
 		if (!metaFile && fd >= 0) {
 			close(fd);
@@ -294,7 +301,7 @@ bool importSHP(
 
 		// Create PNG from frame data with the correct dimensions
 		if (!saveFrameToPNG(
-					frameFilename.c_str(), pixels, frameWidth, frameHeight,
+					sanitizedFrameFilename.c_str(), pixels, frameWidth, frameHeight,
 					palette)) {
 			std::cerr << "Error: Failed to save frame " << i << " to PNG"
 					  << std::endl;
@@ -656,18 +663,23 @@ int main(int argc, char* argv[]) {
 
 		return 0;
 	} else if (mode == "export") {
-		const char* pngFilename = argv[2];
-		const char* shpOutput   = argv[3];
-		int         offsetX     = (argc > 5) ? atoi(argv[5]) : 0;
-		int         offsetY     = (argc > 6) ? atoi(argv[6]) : 0;
+		// Sanitize input paths to prevent path traversal attacks
+		std::string sanitizedPngPath = sanitizeFilePath(argv[2]);
+		std::string sanitizedShpPath = sanitizeFilePath(argv[3]);
+		
+		int offsetX = (argc > 5) ? atoi(argv[5]) : 0;
+		int offsetY = (argc > 6) ? atoi(argv[6]) : 0;
 
 		// Sanitize the metadata file path
 		std::string metadataPath = "";
 		if (argc > 7) {
 			metadataPath = sanitizeFilePath(argv[7]);
 		}
+		
 		if (exportSHP(
-					pngFilename, shpOutput, offsetX, offsetY,
+					sanitizedPngPath.c_str(), 
+					sanitizedShpPath.c_str(), 
+					offsetX, offsetY,
 					metadataPath.c_str())) {
 			std::cout << "Successfully converted PNG to SHP" << std::endl;
 			return 0;
