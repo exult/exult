@@ -24,7 +24,10 @@
 #include "ignore_unused_variable_warning.h"
 #include "vgafile.h"
 
+#include <fcntl.h>
 #include <png.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include <cstring>
 #include <iostream>
@@ -104,6 +107,48 @@ bool saveFrameToPNG(
 		const char* filename, const unsigned char* data, int width, int height,
 		unsigned char* palette);
 
+// Sanitize a filename to prevent path traversal attacks
+std::string sanitizeFilename(const std::string& input) {
+	std::string sanitized;
+
+	for (char c : input) {
+		// Allow only alphanumeric characters, underscore, hyphen, and period
+		if (isalnum(c) || c == '_' || c == '-' || c == '.') {
+			sanitized += c;
+		} else {
+			// Replace potentially dangerous characters with underscore
+			sanitized += '_';
+		}
+	}
+
+	return sanitized;
+}
+
+// Sanitize a file path to prevent directory traversal attacks
+std::string sanitizeFilePath(const char* input) {
+	if (!input || !*input) {
+		return "";
+	}
+
+	std::string path = input;
+	std::string sanitized;
+	std::string filename;
+
+	// Extract the path and filename
+	size_t lastSlash = path.find_last_of("/\\");
+	if (lastSlash != std::string::npos) {
+		sanitized = path.substr(0, lastSlash + 1);
+		filename  = path.substr(lastSlash + 1);
+	} else {
+		filename = path;
+	}
+
+	// Sanitize just the filename part
+	sanitized += sanitizeFilename(filename);
+
+	return sanitized;
+}
+
 // Import SHP to PNG
 bool importSHP(
 		const char* shpFilename, const char* outputPngFilename,
@@ -146,6 +191,9 @@ bool importSHP(
 	if (lastDot != std::string::npos) {
 		baseFilename = baseFilename.substr(0, lastDot);
 	}
+
+	// Sanitize the filename to prevent path traversal attacks
+	baseFilename = sanitizeFilename(baseFilename);
 
 	// Create output directory path if needed
 	std::string outputDir = "";
@@ -209,8 +257,21 @@ bool importSHP(
 		std::cout << "Frame " << i << " dimensions: " << frameWidth << "x"
 				  << frameHeight << std::endl;
 
-		// Write frame info to metadata file
+// Write frame info to metadata file
+#ifdef _WIN32
+		// Windows implementation
 		FILE* metaFile = fopen(metadataFilename.c_str(), "w");
+#else
+		// Unix/Mac implementation with restricted permissions (0644 =
+		// rw-r--r--)
+		int fd = open(
+				metadataFilename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		FILE* metaFile = (fd >= 0) ? fdopen(fd, "w") : NULL;
+		if (!metaFile && fd >= 0) {
+			close(fd);
+		}
+#endif
+
 		if (metaFile) {
 			// Write frame dimensions to metadata
 			fprintf(metaFile, "frame_width=%d\nframe_height=%d\n", frameWidth,
@@ -248,8 +309,20 @@ bool importSHP(
 bool saveFrameToPNG(
 		const char* filename, const unsigned char* data, int width, int height,
 		unsigned char* palette) {
-	// Create file for writing
-	FILE* fp = fopen(filename, "wb");
+	// Create file for writing with restricted permissions
+	FILE* fp = nullptr;
+#ifdef _WIN32
+	// Windows implementation
+	fp = fopen(filename, "wb");
+#else
+	// Unix/Mac implementation with restricted permissions (0644 = rw-r--r--)
+	int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	fp     = (fd >= 0) ? fdopen(fd, "wb") : nullptr;
+	if (!fp && fd >= 0) {
+		close(fd);
+	}
+#endif
+
 	if (!fp) {
 		std::cerr << "Error: Failed to open file for writing: " << filename
 				  << std::endl;
@@ -450,23 +523,16 @@ bool exportSHP(
 
 		// Read the image data
 		std::vector<png_bytep>     row_pointers(height);
-		std::vector<unsigned char> imageData(width * height);
+		std::vector<unsigned char> imageData(
+				static_cast<size_t>(width) * static_cast<size_t>(height));
 
 		for (int y = 0; y < height; y++) {
-			row_pointers[y] = &imageData[y * width];
+			row_pointers[y] = &imageData
+									  [static_cast<size_t>(y)
+									   * static_cast<size_t>(width)];
 		}
 
 		png_read_image(png_ptr, row_pointers.data());
-
-		// Get transparency information if available
-		png_bytep     trans        = NULL;
-		int           num_trans    = 0;
-		png_color_16p trans_values = NULL;
-
-		if (png_get_tRNS(
-					png_ptr, info_ptr, &trans, &num_trans, &trans_values)) {
-			// PNG has transparency data
-		}
 
 		// Clean up PNG read
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
@@ -590,13 +656,19 @@ int main(int argc, char* argv[]) {
 
 		return 0;
 	} else if (mode == "export") {
-		const char* pngFilename  = argv[2];
-		const char* shpOutput    = argv[3];
-		int         offsetX      = (argc > 5) ? atoi(argv[5]) : 0;
-		int         offsetY      = (argc > 6) ? atoi(argv[6]) : 0;
-		const char* metadataFile = (argc > 7) ? argv[7] : nullptr;
+		const char* pngFilename = argv[2];
+		const char* shpOutput   = argv[3];
+		int         offsetX     = (argc > 5) ? atoi(argv[5]) : 0;
+		int         offsetY     = (argc > 6) ? atoi(argv[6]) : 0;
 
-		if (exportSHP(pngFilename, shpOutput, offsetX, offsetY, metadataFile)) {
+		// Sanitize the metadata file path
+		std::string metadataPath = "";
+		if (argc > 7) {
+			metadataPath = sanitizeFilePath(argv[7]);
+		}
+		if (exportSHP(
+					pngFilename, shpOutput, offsetX, offsetY,
+					metadataPath.c_str())) {
 			std::cout << "Successfully converted PNG to SHP" << std::endl;
 			return 0;
 		} else {
