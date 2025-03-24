@@ -132,7 +132,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Build
         run: |
-          make -j 2 -f Makefile.mingw DEBUG=1 USECODE_CONTAINER=1 USECODE_DEBUGGER=1 SHOW_NONREADIED_OBJECTS=1 Exult.exe exult_studio.exe tools u7shp.exe exconfig.dll
+          make -j 2 -f Makefile.mingw DEBUG=1 USECODE_CONTAINER=1 USECODE_DEBUGGER=1 SHOW_NONREADIED_OBJECTS=1 Exult.exe exult_studio.exe tools u7shp.exe exult_shp.exe exconfig.dll
           for ff in $(find content -name 'Makefile.mingw' -exec dirname {} \;); do
             pushd "${ff}"
             make -j 2 -f Makefile.mingw

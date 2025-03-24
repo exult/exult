@@ -536,7 +536,7 @@ PLUGIN_CPPFLAGS:=$(strip -DVERSION=\"$(VERSION)\" -DEXULT_DATADIR=\"data\" \
 CFLAGS:=-MMD -fdiagnostics-color=always $(ARCHFLAGS) $(ARCHTYPE) $(strip $(OPT_LEVEL) -Wall -Wextra -pedantic -mms-bitfields) \
 	$(call make_system, $(call clean_includes, $(GIMP_INCLUDES)))
 
-OBJECTS:=$(OBJS) $(TOOL_OBJS) $(ES_OBJS) mapedit/u7shp.o
+OBJECTS:=$(OBJS) $(TOOL_OBJS) $(ES_OBJS) mapedit/u7shp.o mapedit/tools/aseprite_plugin/exult_shp.o
 
 MISC_OBJS:=exultstudioico.o windrag.o
 
@@ -574,6 +574,12 @@ endif
 # => Remove the libgexiv2 from the library list ( Feb 2025 ).
 u7shp$(EXEEXT) : mapedit/u7shp.o $(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
 	$(CXX) $(LDFLAGS) -o $(@) $+ $(subst -lgexiv2,,$(GIMP_LIBS)) -mwindows
+
+mapedit/tools/aseprite_plugin/exult_shp.o: mapedit/tools/aseprite_plugin/exult_shp.cc
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $(@) $<
+
+exult_shp$(EXEEXT): mapedit/tools/aseprite_plugin/exult_shp.o $(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
+	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -mwindows
 
 install: $(EXEC)
 	mkdir -p $(U7PATH)
@@ -765,7 +771,21 @@ plugindist: plugin plugininstall
 	u2d $(GIMPPATH)/*.txt
 	cp win32/exult_shpplugin_installer.iss $(DISTPATH)
 
-allclean: clean toolsclean studioclean modsclean pluginclean
+aseprite-pluginclean:
+	rm -f exult_shp$(EXEEXT) mapedit/tools/aseprite_plugin/exult_shp.o mapedit/tools/aseprite_plugin/exult_shp.d
+
+aseprite-plugin: exult_shp$(EXEEXT)
+
+aseprite-plugindist: ASEPRITEPATH:=$(DISTPATH)/AsepritePlugin-$(MSYSTEM_CARCH)
+aseprite-plugindist: aseprite-plugin
+	mkdir -p $(ASEPRITEPATH)
+	strip exult_shp$(EXEEXT) -o $(ASEPRITEPATH)/exult_shp$(EXEEXT)
+	cp mapedit/tools/aseprite_plugin/main.lua $(ASEPRITEPATH)
+	cp mapedit/tools/aseprite_plugin/package.json $(ASEPRITEPATH)
+	cp mapedit/tools/aseprite_plugin/Readme.txt $(ASEPRITEPATH)
+	$(call copy_dlls_for_exe, $(ASEPRITEPATH)/exult_shp$(EXEEXT), $(ASEPRITEPATH))
+
+allclean: clean toolsclean studioclean modsclean pluginclean aseprite-pluginclean
 	rm -f exconfig.dll exconfig_rc.o win32/exconfig.o
 	rm -f Exult\ Source\ Code.url
 

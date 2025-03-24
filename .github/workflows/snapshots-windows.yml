@@ -99,7 +99,7 @@ jobs:
           SNAPSHOT_PATH=$(cygpath -m ~/Exult-dist)
           cd $GITHUB_WORKSPACE/exult-$ARCH
           mkdir -p ${SNAPSHOT_PATH}
-          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=${SNAPSHOT_PATH} dist studiodist toolsdist plugindist
+          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=${SNAPSHOT_PATH} dist studiodist toolsdist plugindist aseprite-plugindist
           echo "EXULT_SNAPSHOT_PATH=${SNAPSHOT_PATH}" >> $GITHUB_ENV
       - name: Create installers
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
@@ -112,6 +112,7 @@ jobs:
           "/c/Program Files/7-Zip/7z.exe" -tzip a Keyring.zip -mx9 -mmt ./bgkeyring/*
           "/c/Program Files/7-Zip/7z.exe" -tzip a SFisland.zip -mx9 -mmt ./islefaq/*
           "/c/Program Files/7-Zip/7z.exe" -tzip a Sifixes.zip -mx9 -mmt ./sifixes/*
+          "/c/Program Files/7-Zip/7z.exe" -tzip a exult_shp_win64.aseprite-extension -mx9 -mmt ./AsepritePlugin-x86_64/*
           echo "GITHUB_REF=v1.9.0.$(date --utc +'%Y%m%d')" >> $GITHUB_ENV
       - name: Save artifacts
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
@@ -125,6 +126,7 @@ jobs:
           cp ${{ env.EXULT_SNAPSHOT_PATH }}/Keyring.zip ./windows-snapshot
           cp ${{ env.EXULT_SNAPSHOT_PATH }}/SFisland.zip ./windows-snapshot
           cp ${{ env.EXULT_SNAPSHOT_PATH }}/Sifixes.zip ./windows-snapshot
+          cp ${{ env.EXULT_SNAPSHOT_PATH }}/exult_shp_win64.aseprite-extension ./windows-snapshot
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
