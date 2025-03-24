@@ -482,8 +482,6 @@ if test x$enable_android_apk = xno; then
 	PKG_CHECK_MODULES(SDL, sdl2 >= 2.0.16, , AC_MSG_ERROR([[*** SDL not found!]]))
 	AC_DEFINE(HAVE_SDL_H, 1, [Define to 1 if you have the "SDL.h" header file])
 	AM_CONDITIONAL(HAVE_SDL, true)
-	AC_SUBST(SDL_CFLAGS)
-	AC_SUBST(SDL_LIBS)
 else
 	AM_CONDITIONAL(HAVE_SDL, false)
 fi
@@ -536,10 +534,10 @@ fi
 # Optional components
 # ---------------------------------------------------------------------
 
-# Timidity midi driver
+# Timidity MIDI driver
 AC_ARG_ENABLE(timidity_midi, AS_HELP_STRING([--disable-timidity-midi], [Disable timidity midi support]),,enable_timidity_midi=yes)
 AC_ARG_WITH(timidity, AS_HELP_STRING([--with-timidity=path], [path to timidity.cfg (optional)]),,)
-AC_MSG_CHECKING([if we want to use timidity midi])
+AC_MSG_CHECKING([if we can use timidity midi])
 if test x$enable_timidity_midi = xyes; then
 	AC_MSG_RESULT(yes)
 	AC_DEFINE(USE_TIMIDITY_MIDI, 1, [Enable timidity midi])
@@ -553,60 +551,76 @@ else
 	AC_MSG_RESULT(no)
 fi
 
-# ALSA midi driver
-AC_CHECK_HEADER(alsa/asoundlib.h, HAVEALSA=yes, HAVEALSA=no)
+# ALSA MIDI driver
 AC_ARG_ENABLE(alsa, AS_HELP_STRING([--disable-alsa], [Disable ALSA midi support]),,enable_alsa=yes)
-AC_MSG_CHECKING([if we want to use ALSA midi])
-if test x$HAVEALSA = xyes; then
-	if test x$enable_alsa = xyes; then
+AC_MSG_CHECKING([if we want to use alsa midi])
+if test x$enable_alsa = xyes; then
+	AC_MSG_RESULT(yes)
+	PKG_CHECK_MODULES(ALSA, alsa, have_alsa=yes, have_alsa=no)
+	AC_MSG_CHECKING([if we can use alsa midi])
+	if test x$have_alsa = xyes; then
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(USE_ALSA_MIDI, 1, [Enable ALSA midi])
-		ALSA_LIBS="-lasound"
 	else
-		AC_MSG_RESULT(no)
+		AC_MSG_RESULT([no; alsa not installed])
 	fi
 else
-	AC_MSG_RESULT([no; libasound not found])
+	AC_MSG_RESULT(no)
 fi
 
-# fluidsynth midi driver
-PKG_CHECK_MODULES(FluidSynth, fluidsynth, HAVEFLUIDSYNTH=yes, HAVEFLUIDSYNTH=no)
-PKG_CHECK_MODULES(FluidLite, fluidlite, HAVEFLUIDLITE=yes, HAVEFLUIDLITE=no)
-AC_ARG_WITH([fluidsynth], AS_HELP_STRING([--with-fluidsynth=no|yes|lite], [Enable fluidsynth midi support]),[enable_fluidsynth="$withval"],[enable_fluidsynth="yes"])
+# FluidSynth and FluidLite MIDI driver
+AC_ARG_ENABLE(fluidsynth,
+	AS_HELP_STRING([--enable-fluidsynth@<:@=yes|lite|no@:>@],
+		[Enable fluidsynth midi support, lite for fluidlite, @<:@default yes@:>@]),,enable_fluidsynth=yes)
 AC_MSG_CHECKING([if we want to use fluidsynth midi])
-if test x$HAVEFLUIDSYNTH = xyes || test x$HAVEFLUIDLITE = xyes; then
-	if test x$enable_fluidsynth = xyes || test x$enable_fluidsynth = xlite; then
+if test x$enable_fluidsynth = xyes; then
+	AC_MSG_RESULT(yes)
+	PKG_CHECK_MODULES(FLUIDSYNTH, fluidsynth, have_fluidsynth=yes, have_fluidsynth=no)
+	PKG_CHECK_MODULES(FLUIDLITE, fluidlite, have_fluidlite=yes, have_fluidlite=no)
+	AC_MSG_CHECKING([if we can use fluidsynth midi])
+	if test x$have_fluidlite = xyes; then
+		AC_MSG_RESULT(lite)
+		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
+		AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
+	elif test x$have_fluidsynth = xyes; then
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
-		if test x$enable_fluidsynth = xyes; then
-			FLUIDSYNTH_LIBS="-lfluidsynth"
-			AC_DEFINE(USING_FLUIDSYNTH, 1,[Using FluidSynth])
-		else
-			FLUIDSYNTH_LIBS="-lfluidlite"
-			AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
-		fi
+		AC_DEFINE(USING_FLUIDSYNTH, 1,[Using FluidSynth])
 	else
-		AC_MSG_RESULT(no)
+		AC_MSG_RESULT([no; fluidsynth and fluidlite not installed])
+	fi
+elif test x$enable_fluidsynth = xlite; then
+	AC_MSG_RESULT(lite)
+	PKG_CHECK_MODULES(FLUIDLITE, fluidlite, have_fluidlite=yes, have_fluidlite=no)
+	AC_MSG_CHECKING([if we can use fluidsynth midi])
+	if test x$have_fluidlite = xyes; then
+		AC_MSG_RESULT(lite)
+		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
+		AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
+	else
+		AC_MSG_RESULT([no; fluidsynth not installed])
 	fi
 else
-		AC_MSG_RESULT([no; Package FluidSynth not found])
+	AC_MSG_RESULT(no)
 fi
 
 # mt32emu midi driver
-PKG_CHECK_MODULES(MT32EMU, mt32emu, HAVEMT32EMU=yes, HAVEMT32EMU=no)
 AC_ARG_ENABLE(mt32emu, AS_HELP_STRING([--disable-mt32emu], [Disable mt32emu midi support]),,enable_mt32emu=yes)
 AC_MSG_CHECKING([if we want to use mt32emu midi])
-if test x$HAVEMT32EMU = xyes; then
-	if test x$enable_mt32emu = xyes; then
+if test x$enable_mt32emu = xyes; then
+	AC_MSG_RESULT(yes)
+	PKG_CHECK_MODULES(MT32EMU, mt32emu, have_mt32emu=yes, have_mt32emu=no)
+	AC_MSG_CHECKING([if we can use mt32emu midi])
+	if test x$have_mt32emu = xyes; then
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(USE_MT32EMU_MIDI, 1, [Enable mt32emu])
 		AM_CONDITIONAL(BUILD_MT32EMU, true)
 	else
-		AC_MSG_RESULT(no)
+		AC_MSG_RESULT([no; mt32emu not installed])
 		AM_CONDITIONAL(BUILD_MT32EMU, false)
 	fi
 else
-	AC_MSG_RESULT(no; mt32emu.h not found)
+	AC_MSG_RESULT(no)
 	AM_CONDITIONAL(BUILD_MT32EMU, false)
 fi
 
@@ -626,11 +640,9 @@ fi
 
 # zipped savegame support
 AC_ARG_ENABLE(zip-support, AS_HELP_STRING([--enable-zip-support], [Enable zipped savegame support @<:@default yes@:>@]),,enable_zip_support=yes)
+AC_MSG_CHECKING([if we want to use zipped savegame support])
 if test x$enable_zip_support = xyes ; then
-	AC_CHECK_HEADER(zlib.h,,enable_zip_support=no)
-fi
-AC_MSG_CHECKING([for zipped savegame support])
-if test x$enable_zip_support = xyes ; then
+	AC_MSG_RESULT(yes)
 	# disabled for now (non-portable):
 
 	# link statically against zlib if using gcc
@@ -638,18 +650,25 @@ if test x$enable_zip_support = xyes ; then
 	#	ZLIB_LIBS="-Wl,-Bstatic -lz -Wl,-Bdynamic"
 	# else
 	if test x$enable_static_libs = xno -o x$ARCH != xmacosx; then
-		ZLIB_LIBS="-lz"
+		PKG_CHECK_MODULES(ZLIB, zlib, have_zlib=yes, have_zlib=no)
+	else
+		have_zlib=yes
 	fi
 	# fi
-	AC_DEFINE(HAVE_ZIP_SUPPORT, 1, [Have zip support])
-	AC_MSG_RESULT(yes)
+	AC_MSG_CHECKING([if we can use zipped savegame support])
+	if test x$have_zlib = xyes; then
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(HAVE_ZIP_SUPPORT, 1, [Have zip support])
+	else
+		AC_MSG_RESULT([no; zlib not installed])
+	fi
 else
 	AC_MSG_RESULT(no)
 fi
 
 # HQnX scaler
 AC_ARG_ENABLE(all_hq_scalers, AS_HELP_STRING([--enable-all-hq-scalers], [Enable hq2x, hq3x, hq4x scaler support @<:@default yes@:>@]),,enable_all_hq_scalers=yes)
-AC_MSG_CHECKING([if we should build all hq scaler])
+AC_MSG_CHECKING([if we should build all hq scalers])
 if test x$enable_all_hq_scalers = xyes; then
 	enable_hq2x=yes
 	enable_hq3x=yes
@@ -719,78 +738,74 @@ if test x$enable_android_apk = xyes; then
 fi
 
 # library dependencies
+AC_MSG_CHECKING([if we want to build Exult Studio])
 if test x$enable_exult_studio = xyes; then
+	AC_MSG_RESULT(yes)
 # Icu
 	PKG_CHECK_MODULES(ICU, icu-uc, have_icu=yes, have_icu=no)
 # Gtk
 	PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 3.16, have_gtk=yes, have_gtk=no)
 # Freetype2 (optional, used in ExultStudio, shapes/fontgen.cc)
-	PKG_CHECK_MODULES(CHKFREETYPE, freetype2, chk_freetype=yes, chk_freetype=no)
-	if test x$chk_freetype = xyes; then
-		FREETYPE2_LIBS=`$PKG_CONFIG --libs freetype2`
-		SAVED_LDFLAGS="$LDFLAGS"
-		LDFLAGS="$LDFLAGS $FREETYPE2_LIBS"
-		AC_CHECK_FUNC(FT_Init_FreeType, have_freetype=yes, have_freetype=no)
-		LDFLAGS="$SAVED_LDFLAGS"
-		FREETYPE2_INCLUDES=`$PKG_CONFIG --cflags freetype2`
-		if test x$have_freetype = xyes; then
-			AC_DEFINE(HAVE_FREETYPE2, 1, [Have freetype2])
-		else
-			FREETYPE2_LIBS=
-			FREETYPE2_INCLUDES=
-		fi
-		AC_SUBST(FREETYPE2_LIBS)
-		AC_SUBST(FREETYPE2_INCLUDES)
+	PKG_CHECK_MODULES(FREETYPE2, freetype2, have_freetype=yes, have_freetype=no)
+	if test x$have_freetype = xyes; then
+		AC_DEFINE(HAVE_FREETYPE2, 1, [Have freetype2])
 	fi
+else
+	AC_MSG_RESULT(no)
 fi
 
 # Exult Studio
-AC_MSG_CHECKING([whether to build Exult Studio])
 if test x$enable_exult_studio = xyes; then
-	AC_MSG_RESULT(yes)
+	AC_MSG_CHECKING([if we can build Exult Studio])
 	if test x$have_gtk = xno; then
+		AC_MSG_RESULT([no; gtk+ is not installed])
 		echo "Exult Studio requires the GTK+ (aka the GIMP Tool Kit), but it is not installed."
 		echo "Please try again, either with the GTK+ installed as 3.16 or newer, or with '--disable-exult-studio'."
 		exit 1
 	fi
 	if test x$have_icu = xno; then
+		AC_MSG_RESULT([no; icu is not installed])
 		echo "Exult Studio requires the ICU (aka the International Components for Unicode), but it is not installed."
 		echo "Please try again, either with the ICU installed, or with '--disable-exult-studio'."
 		exit 1
 	fi
 	if test x$have_png = xno; then
+		AC_MSG_RESULT([no; libpng is not installed])
 		echo "Exult Studio requires the PNG (aka the Portable Network Graphics), but it is not installed."
 		echo "Please try again, either with the PNG installed, or with '--disable-exult-studio'."
 		exit 1
 	fi
 	if test x$ARCH = xmacosx; then
+		AC_MSG_RESULT(yes)
 		AC_CHECK_PROG(has_gtk_mac_bundler, gtk-mac-bundler, yes)
 		if test x$has_gtk_mac_bundler != xyes; then
 			echo "Warning: Bundling Exult Studio on macOS requires GTK Mac Bundler"
 			echo "         https://gitlab.gnome.org/GNOME/gtk-mac-bundler"
 		fi
+	else
+		AC_MSG_RESULT(yes)
 	fi
 	AM_CONDITIONAL(BUILD_STUDIO, true)
 	AM_CONDITIONAL(BUILD_SHAPES, true)
 else
 	AM_CONDITIONAL(BUILD_STUDIO, false)
-	AC_MSG_RESULT(no)
 fi
 
 # support for Exult Studio
-AC_ARG_ENABLE(exult-studio-support, AS_HELP_STRING([--enable-exult-studio-support], [Enable ExultStudio support @<:@default no@:>@]),,enable_exult_studio_support=no)
-AC_MSG_CHECKING([whether to enable support for Exult Studio])
-if test "$WINDOWING_SYSTEM" != -DXWIN -a "$WINDOWING_SYSTEM" != -D_WIN32 -a "$WINDOWING_SYSTEM" != -DMACOSX; then
-	enable_exult_studio_support=no
-fi
-
-if test x$enable_exult_studio = xyes; then
+AC_ARG_ENABLE(exult-studio-support, AS_HELP_STRING([--enable-exult-studio-support], [Build Exult Studio support into Exult @<:@default no@:>@]),,enable_exult_studio_support=no)
+AC_MSG_CHECKING([if we want to build support for Exult Studio])
+if test x$enable_exult_studio_support = xyes -o x$enable_exult_studio = xyes; then
+	# Implicitly, --enable-exult-studio drags --enable-exult-studio-support
 	enable_exult_studio_support=yes
-fi
-
-if test x$enable_exult_studio_support = xyes ; then
 	AC_MSG_RESULT(yes)
-	AC_DEFINE(USE_EXULTSTUDIO, 1, [Use Exult Studio])
+	AC_MSG_CHECKING([if we can build support for Exult Studio])
+	if test "$WINDOWING_SYSTEM" != -DXWIN -a "$WINDOWING_SYSTEM" != -D_WIN32 -a "$WINDOWING_SYSTEM" != -DMACOSX; then
+		AC_MSG_RESULT([no; windowing system "$WINDOWING_SYSTEM" not supported])
+		enable_exult_studio_support=no
+	else
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(USE_EXULTSTUDIO, 1, [Use Exult Studio])
+	fi
 else
 	AC_MSG_RESULT(no)
 fi
@@ -892,21 +907,25 @@ fi
 # shp-thumbnailer
 AC_ARG_ENABLE(shp-thumbnailer, AS_HELP_STRING([--enable-shp-thumbnailer@<:@=yes|system|local|user|ingame|no@:>@],
 		[Build Exult SHP Thumbnailer, yes or system and local for system (local) install (requires root), user for user install, ingame for Exult ingame install (requires XDG_DATA_DIRS) @<:@default no@:>@]),,enable_shp_thumbnailer=no)
-AC_MSG_CHECKING([whether to build the Exult SHP Thumbnailer])
+AC_MSG_CHECKING([if we want to build the Exult SHP Thumbnailer])
 if test x$enable_shp_thumbnailer != xno; then
 	AC_MSG_RESULT(yes)
 	# needs Gdk-Pixbuf
 	PKG_CHECK_MODULES(GDK_PIXBUF, gdk-pixbuf-2.0, have_gdk_pixbuf=yes, have_gdk_pixbuf=no)
+	AC_MSG_CHECKING([if we can build the Exult SHP Thumbnailer])
 	if test x$have_gdk_pixbuf = xno; then
+		AC_MSG_RESULT([no; gdk-pixbuf is not installed])
 		echo "The Exult shp thumbnailer requires Gdk-Pixbuf."
 		echo "Please try again, either with Gdk-Pixbuf-2.0, or with '--disable-shp-thumbnailer'."
 		exit 1
 	fi
 	if test x$have_png = xno; then
+		AC_MSG_RESULT([no; libpng is not installed])
 		echo "The Exult shp thumbnailer requires the PNG (aka the Portable Network Graphics)."
 		echo "Please try again, either with the PNG installed, or with '--disable-shp-thumbnailer'."
 		exit 1
 	fi
+	AC_MSG_RESULT(yes)
 	AM_CONDITIONAL(BUILD_EXULT_THUMB, true)
 	if   test x$enable_shp_thumbnailer == xlocal; then
 		EXULT_THUMB_PREFIX="/usr/local/share"
@@ -946,57 +965,39 @@ AM_CONDITIONAL(GIMP2_PLUGIN, false)
 AC_ARG_ENABLE(gimp-plugin,
 	AS_HELP_STRING([--enable-gimp-plugin@<:@=yes|system|user|no@:>@],
 		[Build the GIMP plugin, yes or system for system install (requires root), user for user install, @<:@default no@:>@]),,enable_gimp_plugin=no)
-AC_MSG_CHECKING([whether to build the GIMP plugin])
+AC_MSG_CHECKING([if we want to build the GIMP plugin])
 if test x$enable_gimp_plugin != xno; then
 	AC_MSG_RESULT(yes)
-	AC_CHECK_PROGS(GIMPTOOL, gimptool-3.0)
-	if test -n "$GIMPTOOL"; then
-		AC_MSG_CHECKING([for GIMP version])
-		gimp_version=`$GIMPTOOL --version`
-		AX_COMPARE_VERSION([$gimp_version], [ge], [3.0.0], [dnl
-			dnl $gimp_version >= 3.0.0
-			AC_MSG_RESULT([found $gimp_version >= 3.0.0])
-			AC_SUBST(GIMPTOOL)
-			AM_CONDITIONAL(GIMP3_PLUGIN, true)
-			AS_IF([test x$enable_gimp_plugin != xuser],
-				[GIMP_PLUGIN_PREFIX=`$GIMPTOOL --gimpplugindir`],
-				[GIMP_PLUGIN_PREFIX="${HOME_CFGDIR}/GIMP/3.0"])
+	PKG_CHECK_MODULES(GIMP, [gimpui-3.0 gimp-3.0 >= 3.0.0], have_gimp3=yes, have_gimp3=no)
+	if test x$have_gimp3 = xyes; then
+		AM_CONDITIONAL(GIMP3_PLUGIN, true)
+		if test x$enable_gimp_plugin != xuser; then
+			PKG_CHECK_VAR(GIMP_PLUGIN_PREFIX, gimp-3.0, gimplibdir)
+		else
+			GIMP_PLUGIN_PREFIX="${HOME_CFGDIR}/GIMP/3.0"
+		fi
+		GIMP_PLUGIN_PREFIX="$GIMP_PLUGIN_PREFIX/plug-ins"
+		AC_SUBST(GIMP_PLUGIN_PREFIX)
+		AC_DEFINE(HAVE_GIMP, 1, [Have GIMP])
+		AC_MSG_CHECKING([if we can build the GIMP 3 plugin])
+		AC_MSG_RESULT([yes; for GIMP $gimp_version >= 3.0.0])
+	else
+		PKG_CHECK_MODULES(GIMP, [gimpui-2.0 gimp-2.0 >= 2.8.0], have_gimp2=yes, have_gimp2=no)
+		if test x$have_gimp2 = xyes; then
+			AM_CONDITIONAL(GIMP2_PLUGIN, true)
+			if test x$enable_gimp_plugin != xuser; then
+				PKG_CHECK_VAR(GIMP_PLUGIN_PREFIX, gimp-2.0, gimplibdir)
+			else
+				GIMP_PLUGIN_PREFIX="${HOME_CFGDIR}/GIMP/2.0"
+			fi
 			GIMP_PLUGIN_PREFIX="$GIMP_PLUGIN_PREFIX/plug-ins"
 			AC_SUBST(GIMP_PLUGIN_PREFIX)
 			AC_DEFINE(HAVE_GIMP, 1, [Have GIMP])
-			GIMP_INCLUDES=`$PKG_CONFIG --cflags gimpui-3.0`
-			GIMP_LIBS=`$PKG_CONFIG --libs gimpui-3.0`
-			AC_SUBST(GIMP_INCLUDES)
-			AC_SUBST(GIMP_LIBS)
-		], [
-			dnl $gimp_version < 3.0.0
-			AC_MSG_RESULT([found $gimp_version < 3.0.0 - disabling plugin])
-		])
-	else
-		AC_CHECK_PROGS(GIMPTOOL, gimptool-2.0)
-		if test -n "$GIMPTOOL"; then
-			AC_MSG_CHECKING([for GIMP 2 version])
-			gimp_version=`$GIMPTOOL --version`
-			AX_COMPARE_VERSION([$gimp_version], [ge], [2.8.0], [dnl
-				dnl $gimp_version >= 2.8.0
-				AC_MSG_RESULT([found $gimp_version >= 2.8.0])
-				AC_SUBST(GIMPTOOL)
-				AM_CONDITIONAL(GIMP2_PLUGIN, true)
-				AS_IF([test x$enable_gimp_plugin != xuser],
-					[GIMP_PLUGIN_PREFIX=`$GIMPTOOL --gimpplugindir`],
-					[GIMP_PLUGIN_PREFIX="${HOME_CFGDIR}/GIMP/2.0"])
-				GIMP_PLUGIN_PREFIX="$GIMP_PLUGIN_PREFIX/plug-ins"
-				AC_SUBST(GIMP_PLUGIN_PREFIX)
-				AC_DEFINE(HAVE_GIMP, 1, [Have GIMP])
-				GIMP_INCLUDES=`$PKG_CONFIG --cflags gimpui-2.0`
-				GIMP_LIBS=`$PKG_CONFIG --libs gimpui-2.0`
-				AC_SUBST(GIMP_INCLUDES)
-				AC_SUBST(GIMP_LIBS)
-			], [
-				dnl $gimp_version < 2.8.0
-				AC_MSG_RESULT([found $gimp_version < 2.8.0 - disabling plugin])
-			])
+			AC_MSG_CHECKING([if we can build the GIMP 2 plugin])
+			AC_MSG_RESULT([yes; for GIMP $gimp_version >= 2.8.0])
 		else
+			AC_MSG_CHECKING([if we can build the GIMP plugin])
+			AC_MSG_RESULT([no; GIMP 2 and GIMP 3 not installed])
 			echo "The Gimp plugin requires the Gimp either in version 3 or in version 2, but neither is installed."
 			echo "Please try again, either with the Gimp installed, or with '--disable-gimp-plugin'."
 			exit 1
@@ -1325,11 +1326,6 @@ AS_IF([ test $cross_compiling = yes ], [
 # Generate output
 # ---------------------------------------------------------------------
 
-AC_SUBST(SDL_CFLAGS)
-AC_SUBST(SDL_LIBS)
-AC_SUBST(OGG_LIBS)
-AC_SUBST(VORBISFILE_LIBS)
-AC_SUBST(VORBIS_LIBS)
 AC_SUBST(WINDOWING_SYSTEM)
 AC_SUBST(EXE_TARGET)
 AC_SUBST(EXULT_DATADIR)
@@ -1338,11 +1334,6 @@ AC_SUBST(ICON_FILE)
 AC_SUBST(DEBUG_LEVEL)
 AC_SUBST(OPT_LEVEL)
 AC_SUBST(WARNINGS)
-AC_SUBST(ZLIB_LIBS)
-AC_SUBST(MT32EMU_LIBS)
-AC_SUBST(MT32EMU_CFLAGS)
-AC_SUBST(FLUIDSYNTH_LIBS)
-AC_SUBST(ALSA_LIBS)
 AC_SUBST(AR_FLAGS)
 
 AC_CONFIG_FILES([
@@ -1455,7 +1446,7 @@ else
 			echo Fluidsynth................. : `$PKG_CONFIG --modversion fluidsynth`)
 	fi
 	if test x$enable_fluidsynth = xlite; then
-		PKG_CHECK_EXISTS(fluidsynth,
+		PKG_CHECK_EXISTS(fluidlite,
 			echo FluidLite.................. : `$PKG_CONFIG --modversion fluidlite`)
 	fi
 	if test x$enable_zip_support = xyes ; then
@@ -1469,11 +1460,17 @@ else
 		echo GLIB....................... : `$PKG_CONFIG --modversion glib-2.0`
 		echo GTK+....................... : `$PKG_CONFIG --modversion gtk+-3.0`
 	fi
+	if test x$have_freetype = xyes; then
+		echo FreeType2.................. : `$PKG_CONFIG --modversion freetype2`
+	fi
 	if test x$enable_shp_thumbnailer = xyes; then
 		echo GDK-Pixbuf................. : `$PKG_CONFIG --modversion gdk-pixbuf-2.0`
 	fi
-	if test -n "$GIMPTOOL"; then
-		echo GIMP....................... : `$GIMPTOOL --version`
+	if test x$have_gimp3 = xyes;then
+		echo GIMP....................... : `$PKG_CONFIG --modversion gimpui-3.0`
+	fi
+	if test x$have_gimp2 = xyes;then
+		echo GIMP....................... : `$PKG_CONFIG --modversion gimpui-2.0`
 	fi
 	echo
 fi
@@ -1502,8 +1499,16 @@ echo Build tools................ : $enable_tools
 echo Build usecode compiler..... : $enable_compiler
 echo Build Exult mods........... : $enable_mods
 echo Create zipped Savegames.... : $enable_zip_support
-echo Build GIMP SHP plugin...... : $enable_gimp_plugin
-echo Build Exult SHP Thumbnailer : $enable_shp_thumbnailer
+if test x$enable_gimp_plugin != xno; then
+	echo Build GIMP SHP plugin...... : $enable_gimp_plugin into $GIMP_PLUGIN_PREFIX
+else
+	echo Build GIMP SHP plugin...... : $enable_gimp_plugin
+fi
+if test x$enable_shp_thumbnailer != xno; then
+	echo Build Exult SHP Thumbnailer : $enable_shp_thumbnailer into $EXULT_THUMB_PREFIX
+else
+	echo Build Exult SHP Thumbnailer : $enable_shp_thumbnailer
+fi
 echo Build Aseprite SHP plugin...: $enable_aseprite_plugin
 echo
 echo Debug :

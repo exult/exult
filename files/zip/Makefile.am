@@ -1,4 +1,4 @@
-AM_CPPFLAGS = $(SDL_CFLAGS) $(INCDIRS) -I$(top_srcdir)/headers $(WINDOWING_SYSTEM) \
+AM_CPPFLAGS = $(SDL_CFLAGS) $(ZLIB_CFLAGS) $(INCDIRS) -I$(top_srcdir)/headers $(WINDOWING_SYSTEM) \
 		$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS)
 
 noinst_LTLIBRARIES = libminizip.la

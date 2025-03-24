@@ -139,6 +139,7 @@ jobs:
         run: |
           cd ./../build
           ./../exult/configure --enable-data --enable-android-apk=debug \
+            --with-android-arch=arm64-v8a \
             --disable-exult --disable-tools --disable-timidity-midi --disable-alsa \
             --disable-fluidsynth --disable-mt32emu --disable-all-hq-scalers \
             --disable-nxbr --disable-zip-support --disable-sdl-parachute
