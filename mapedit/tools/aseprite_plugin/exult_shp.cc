@@ -396,10 +396,8 @@ bool exportSHP(
 	shapeFile.resize(numFrames);
 
 	// Load each PNG frame and create Shape_frames
-	for (int frameIdx = 0; frameIdx < numFrames; frameIdx++) {
-		volatile int volatileIdx
-				= frameIdx;    // Use a separate volatile variable
-
+	volatile int frameIdx = 0;
+	while (frameIdx < numFrames) {
 		// Construct the PNG filename
 		std::string pngFilename
 				= std::string(basePath) + std::to_string(frameIdx) + ".png";
@@ -522,6 +520,9 @@ bool exportSHP(
 
 		// Clean up the pixel data
 		delete[] pixels;
+
+		// Increment at the end of the loop
+		frameIdx = frameIdx + 1;
 	}
 
 	// Create an OFileDataSource for writing
