@@ -14,7 +14,7 @@
       Keep in mind that the MT32 ROM files are copyrighted and thus we are not offering a download. You need to dump the ROMs yourself to legally use these. 
     </p>
     <p><b><u>FluidSynth Soundfont</u></b><br/>
-      For MIDI music playback on android, we are using FluidSynth. This needs a soundfont in SF2 format. And the soundfont needs to be named "default.sf2" (all in lower case) and needs to be in a zip file. Once you have the zipped soundfont on your android device, tap the checkbox on the left, select the zip in the file browser, and the file will be installed.
+      For MIDI music playback on android, we are using FluidSynth which requires requires a soundfont in SF2 format, archived in a Zip file. You can have more than one soundfont in the Zip, as our Audio settings allow you to choose which soundfont to use. Once you have the zipped soundfont on your android device, tap the checkbox on the left, select the zip in the file browser, and the file will be installed.
     </p>
     <p></p>
     <p>

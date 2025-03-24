@@ -50,7 +50,7 @@ class ExultAudioDataPackContent extends ExultContent {
     m_filenameToFoundFlag.put("si01.ogg", false); // implies all si music files are present
     m_MT32filenameToFoundFlag.put("MT32_CONTROL.ROM", false);
     m_MT32filenameToFoundFlag.put("MT32_PCM.ROM", false);
-    m_SF2filenameToFoundFlag.put("default.sf2", false);
+    m_SF2filenameToFoundFlag.put("sf2_placeholder", false);
 
     m_installPath = context.getFilesDir().toPath().resolve("data");
   }
@@ -80,7 +80,17 @@ class ExultAudioDataPackContent extends ExultContent {
     } else if (m_audioName.equals("mt32roms")) {
       foundFlag = m_MT32filenameToFoundFlag.get(keepCaseFileName);
     } else if (m_audioName.equals("soundfont")) {
-      foundFlag = m_SF2filenameToFoundFlag.get(keepCaseFileName);
+      // Check for SF2 files by extension instead of specific filename
+      if (lowerCaseFileName.endsWith(".sf2")) {
+        // We found an SF2 file, consider that a match to our placeholder
+        foundFlag = m_SF2filenameToFoundFlag.containsKey("sf2_placeholder") ? false : null;
+        // If we haven't already found an SF2 file, we'll process this one
+        if (!m_SF2filenameToFoundFlag.get("sf2_placeholder")) {
+              m_filenamesFound = 1;
+        }
+      } else {
+        foundFlag = null;
+      }
     }
     // If it's not a file we're looking for, or if it has already been found, move along.
     if (null == foundFlag || true == foundFlag) {
@@ -142,7 +152,7 @@ class ExultAudioDataPackContent extends ExultContent {
     } else if (m_audioName.equals("mt32roms")) {
       return m_MT32filenameToFoundFlag.size() == m_filenamesFound;
     } else if (m_audioName.equals("soundfont")) {
-      return m_SF2filenameToFoundFlag.size() == m_filenamesFound;
+      return m_filenamesFound >= 1;
     }
     return false;
   }
