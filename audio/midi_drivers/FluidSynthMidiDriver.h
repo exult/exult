@@ -24,13 +24,13 @@
 
 // If  configure hasn't specified which one to use attempt to autodetect
 // try fluidlite.h first
-#if !defined(USING_FLUIDSYNTH) && !defined(USING_FLUIDLITE)
-#if __has_include(<fluidlite.h>)
-#	define USING_FLUIDLITE 1
-#elif __has_include(<fluidsynth.h>)
-#	define USING_FLUIDSYNTH 1
-#endif
-#endif
+#	if !defined(USING_FLUIDSYNTH) && !defined(USING_FLUIDLITE)
+#		if __has_include(<fluidlite.h>)
+#			define USING_FLUIDLITE 1
+#		elif __has_include(<fluidsynth.h>)
+#			define USING_FLUIDSYNTH 1
+#		endif
+#	endif
 
 #	ifdef USING_FLUIDSYNTH
 #		include <fluidsynth.h>
