@@ -18,7 +18,7 @@
  * Boston, MA  02111-1307, USA.
  */
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #import <UIKit/UIKit.h>
 
 @protocol KeyInputDelegate
@@ -28,13 +28,13 @@
 
 @interface DPadView : UIView
 
-@property(nonatomic, retain) UIImage*            backgroundImage;
-@property(nonatomic, retain) NSArray*            images;
-@property(nonatomic, assign) bool                vjoyIsActive;
-@property(nonatomic, assign) CGPoint             vjoyCenter;
-@property(nonatomic, assign) CGPoint             vjoyCurrent;
-@property(nonatomic, assign) SDL_GameController* vjoyController;
-@property(nonatomic, weak) UITouch*              vjoyInputSource;
+@property(nonatomic, retain) UIImage*     backgroundImage;
+@property(nonatomic, retain) NSArray*     images;
+@property(nonatomic, assign) bool         vjoyIsActive;
+@property(nonatomic, assign) CGPoint      vjoyCenter;
+@property(nonatomic, assign) CGPoint      vjoyCurrent;
+@property(nonatomic, assign) SDL_Gamepad* vjoyController;
+@property(nonatomic, weak) UITouch*       vjoyInputSource;
 
 @end
 

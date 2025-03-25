@@ -208,7 +208,7 @@ public:
 	virtual void remove(Game_object* obj);
 	// Paint it and its contents.
 	virtual void paint_elems();
-	void paint() override;
+	void         paint() override;
 	// Close (and delete).
 	void close() override;
 

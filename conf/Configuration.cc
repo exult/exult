@@ -176,9 +176,9 @@ bool Configuration::read_config_file(
 	// Or if it's not a relative path.
 	if (!is_path_absolute(get_system_path(input_filename))) {
 #if (defined(XWIN) || defined(MACOSX) || defined(_WIN32) \
-	 || defined(__IPHONEOS__))
+	 || defined(SDL_PLATFORM_IOS))
 		fname = "<CONFIG>/";
-#	if (defined(XWIN) && !defined(MACOSX) && !defined(__IPHONEOS__))
+#	if (defined(XWIN) && !defined(MACOSX) && !defined(SDL_PLATFORM_IOS))
 		fname += ".";
 #	endif
 		fname += input_filename;
