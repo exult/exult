@@ -50,7 +50,7 @@ protected:
 
 private:
 	char                    m_buffer[8];
-	struct SDL_RWops*       m_context;
+	struct SDL_IOStream*    m_context;
 	std::ios_base::openmode m_openMode;
 	std::ios_base::openmode m_currentMode;
 };

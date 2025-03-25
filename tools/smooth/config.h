@@ -1,4 +1,4 @@
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 int   close_config(FILE* f);
 FILE* open_config(const char* configfile);

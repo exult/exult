@@ -25,7 +25,7 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -663,7 +663,10 @@ bool File_gump::character_input(int chr, int unicode, bool shift_pressed) {
 	}
 
 	if (chr < ' ') {
-		return Modal_gump::character_input(chr,unicode,shift_pressed);    /// Ignore other special chars and let parent class handle them
+		return Modal_gump::character_input(
+				chr, unicode,
+				shift_pressed);    /// Ignore other special chars and let parent
+								   /// class handle them
 	}
 	if (chr < 256 && isascii(chr)) {
 		if (shift_pressed) {

@@ -130,8 +130,12 @@ int ALSAMidiDriver::open() {
 	}
 
 	isOpen = true;
-	if (!clt_info) snd_seq_client_info_malloc(&clt_info);
-	if (!prt_info) snd_seq_port_info_malloc(&prt_info);
+	if (!clt_info) {
+		snd_seq_client_info_malloc(&clt_info);
+	}
+	if (!prt_info) {
+		snd_seq_port_info_malloc(&prt_info);
+	}
 
 	my_client = snd_seq_client_id(seq_handle);
 	snd_seq_set_client_name(seq_handle, "PENTAGRAM");
@@ -381,7 +385,7 @@ std::vector<ConfigSetting_widget::Definition> ALSAMidiDriver::GetSettings() {
 			"ALSA PORT",                                  // label
 			"config/audio/midi/alsa_port",                // config_setting
 			0,                                            // additional
-			false,                                         // required
+			false,                                        // required
 			false,                                        // unique
 			ConfigSetting_widget::Definition::dropdown    // setting_type
 	};
@@ -408,7 +412,9 @@ std::vector<ConfigSetting_widget::Definition> ALSAMidiDriver::GetSettings() {
 
 	// close will deallocate infos and handle for us
 	// but only if not open because if open they will be frred later
-	if (!isOpen) close();
+	if (!isOpen) {
+		close();
+	}
 
 	auto settings = MidiDriver::GetSettings();
 	settings.push_back(std::move(ports));

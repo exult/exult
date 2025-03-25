@@ -29,13 +29,13 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
-#include "imagebuf.h"
 #include "font.h"
+#include "imagebuf.h"
 #include "shapeid.h"
 class Gump;
 class Game_object;

@@ -18,8 +18,8 @@
 
 #include "android_log_streambuf.h"
 
-#include <SDL2/SDL_main.h>
-#include <SDL2/SDL_system.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_system.h>
 #include <android/log.h>
 #include <jni.h>
 
@@ -34,7 +34,7 @@ public:
 };
 
 static bool getAutoLaunch() {
-	auto jniEnv = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+	auto jniEnv = static_cast<JNIEnv*>(SDL_GetAndroidJNIEnv());
 
 	auto launcherclass = jniEnv->FindClass("info/exult/ExultLauncherActivity");
 	auto exultLauncherActivityObject = jniEnv->CallStaticObjectMethod(
@@ -48,7 +48,7 @@ static bool getAutoLaunch() {
 }
 
 static void setAutoLaunch(bool autoLaunch) {
-	auto jniEnv        = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+	auto jniEnv        = static_cast<JNIEnv*>(SDL_GetAndroidJNIEnv());
 	auto launcherclass = jniEnv->FindClass("info/exult/ExultLauncherActivity");
 	auto exultLauncherActivityObject = jniEnv->CallStaticObjectMethod(
 			launcherclass, jniEnv->GetStaticMethodID(
