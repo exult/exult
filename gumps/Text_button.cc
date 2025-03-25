@@ -75,14 +75,13 @@ void Text_button::init() {
 
 void Text_button::paint() {
 	Image_window8* iwin = gwin->get_win();
-	auto* ib8 = iwin->get_ib8();
+	auto*          ib8  = iwin->get_ib8();
 
 	int offset = 0;
 	int px     = 0;
 	int py     = 0;
 
 	local_to_screen(px, py);
-
 
 	// The the push dependant edges
 	if (is_pushed()) {
@@ -168,15 +167,14 @@ void Text_button::paint() {
 	iwin->fill8(
 			TB_RT_HIGHLIGHT, 1, 1, px + width + offset - 3, py + offset + 2);
 
-	// Clip text 
-	auto clipsave =ib8->SaveClip();
+	// Clip text
+	auto     clipsave = ib8->SaveClip();
 	TileRect newclip  = clipsave.Rect().intersect(TileRect(
             px + offset, py + offset, width - 2 - offset, height - offset));
 	ib8->set_clip(newclip.x, newclip.y, newclip.w, newclip.h);
 	// Paint text
 	font->paint_text(
-					ib8, text.c_str(), px + text_x + offset,
-					py + text_y + offset);
+			ib8, text.c_str(), px + text_x + offset, py + text_y + offset);
 }
 
 bool Text_button::on_widget(int mx, int my) const {
@@ -199,4 +197,3 @@ TileRect Text_button::get_rect() const {
 	local_to_screen(rect.x, rect.y);
 	return rect;
 }
-

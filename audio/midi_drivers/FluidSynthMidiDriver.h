@@ -34,10 +34,10 @@
 
 #	ifdef USING_FLUIDSYNTH
 #		include <fluidsynth.h>
-#		define FLUID_VERSION    "FluidSynth " FLUIDSYNTH_VERSION
+#		define FLUID_VERSION "FluidSynth " FLUIDSYNTH_VERSION
 #	elif defined(USING_FLUIDLITE)
 #		include <fluidlite.h>
-#		define FLUID_VERSION   "FluidLite " FLUIDLITE_VERSION
+#		define FLUID_VERSION "FluidLite " FLUIDLITE_VERSION
 #		ifndef FLUID_OK
 #			define FLUID_OK 0
 #		endif
@@ -65,7 +65,6 @@ public:
 	}
 
 	std::vector<ConfigSetting_widget::Definition> GetSettings() override;
-
 
 protected:
 	// Because GCC complains about casting from const to non-const...

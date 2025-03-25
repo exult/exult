@@ -2397,10 +2397,9 @@ int ExultStudio::prompt(
 ) {
 	static GtkWidget* dlg = nullptr;
 	if (!dlg) {    // First time?
-		dlg                    = get_widget("prompt3_dialog");
-		GtkWidget* draw =
-			gtk_image_new_from_icon_name("exult_warning",
-					GTK_ICON_SIZE_DIALOG);
+		dlg             = get_widget("prompt3_dialog");
+		GtkWidget* draw = gtk_image_new_from_icon_name(
+				"exult_warning", GTK_ICON_SIZE_DIALOG);
 		GtkWidget* hbox = get_widget("prompt3_hbox");
 		gtk_widget_set_visible(draw, true);
 		gtk_box_pack_start(GTK_BOX(hbox), draw, false, false, 12);

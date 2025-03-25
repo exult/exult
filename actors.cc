@@ -4419,7 +4419,8 @@ void Actor::die(Game_object* attacker) {
 	// Get location.
 	const Tile_coord pos = get_tile();
 	// properties[static_cast<int>(health)] = -50;
-	// before creating the body, make sure polymorphed NPCs revert to their shape
+	// before creating the body, make sure polymorphed NPCs revert to their
+	// shape
 	if (get_flag(Obj_flags::polymorph)) {
 		clear_flag(Obj_flags::polymorph);
 		if (shape_save != -1) {

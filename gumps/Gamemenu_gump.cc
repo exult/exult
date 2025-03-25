@@ -53,7 +53,7 @@ static const char* audioopttext = "Audio Options";
 static const char* displaytext  = "Game Display";
 static const char* enginetext   = "Game Engine";
 static const char* inputtext    = "Game Input";
-#ifndef __IPHONEOS__
+#ifndef SDL_PLATFORM_IOS
 [[maybe_unused]] static const char* quitmenutext = "Quit to Menu";
 static const char*                  quittext     = "Quit";
 #endif
@@ -84,7 +84,7 @@ Gamemenu_gump::Gamemenu_gump() : Modal_gump(nullptr, -1) {
 	buttons[id_input] = std::make_unique<Gamemenu_button>(
 			this, &Gamemenu_gump::input_options, inputtext, colx, rowy[y++],
 			108, 11);
-#ifndef __IPHONEOS__
+#ifndef SDL_PLATFORM_IOS
 	if (!gwin->is_in_exult_menu()) {
 		buttons[id_quit] = std::make_unique<Gamemenu_button>(
 				this, &Gamemenu_gump::quit_exult, quittext, colx, rowy[y++],

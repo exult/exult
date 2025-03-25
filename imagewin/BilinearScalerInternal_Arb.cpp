@@ -128,11 +128,12 @@ namespace Pentagram { namespace BilinearScaler {
 		// of the add values above
 		// end_y is the y limit for current block
 		// end_x is the x limit for the current block
-		// After a block is finished the end values are advanced by 1<<16 that represents 1 source pixel
+		// After a block is finished the end values are advanced by 1<<16 that
+		// represents 1 source pixel
 		fixedu1616 start_x = (sw << 16) - (add_x * dw);
 		fixedu1616 start_y = (sh << 16) - (add_y * dh);
 		fixedu1616 end_y   = 1 << 16;
-		fixedu1616 end_x = 1 << 16;
+		fixedu1616 end_x   = 1 << 16;
 
 		// Offset by half a source pixel when doing 0.5x scaling
 		// looks a bit better
@@ -143,8 +144,8 @@ namespace Pentagram { namespace BilinearScaler {
 			start_y += 0x8000;
 		}
 
-		// Current Fixed point position in source buffer 
-		// This is avanced by add values from above when a dest pixel is 
+		// Current Fixed point position in source buffer
+		// This is avanced by add values from above when a dest pixel is
 		// written
 		// Dest pixels will be written while pos_? is less than end_?
 		// The filtering coefficents for dest pixels are calculated using the
@@ -152,11 +153,13 @@ namespace Pentagram { namespace BilinearScaler {
 		fixedu1616 pos_y = start_y;
 		fixedu1616 pos_x = start_x;
 
-		//This is the dest pointer to the start of the current line of the current block
-		//This gets set to the value of next_block when advancing to the block to right
+		// This is the dest pointer to the start of the current line of the
+		// current block This gets set to the value of next_block when advancing
+		// to the block to right
 		uint8* blockline_start = nullptr;
-		// This is the dest pointer of the top left pixel of the next blocck to the right
-		uint8* next_block      = nullptr;
+		// This is the dest pointer of the top left pixel of the next blocck to
+		// the right
+		uint8* next_block = nullptr;
 
 		// if no clipping is requested only disable clipping x if the source
 		// actually has the neeeded width to safely read the entire line
@@ -190,7 +193,7 @@ namespace Pentagram { namespace BilinearScaler {
 		}
 
 		// Src Loop Y
-		fixedu1616    block_start_x = start_x;
+		fixedu1616 block_start_x = start_x;
 		fixedu1616 block_start_y = pos_y;
 
 		while (texel != yloop_end) {
@@ -198,9 +201,9 @@ namespace Pentagram { namespace BilinearScaler {
 			ReadTexelsV<Manip>(blockheight, texel, tpitch, a, b, c, d, e);
 			// advance texel pointer by 1 to the next column
 			texel++;
-			end_x = 1 << 16;
-			block_start_x       = start_x;
-			block_start_y       = pos_y;
+			end_x         = 1 << 16;
+			block_start_x = start_x;
+			block_start_y = pos_y;
 
 			next_block = pixel;
 			// Src Loop X, loops while there are 2 or more columns available

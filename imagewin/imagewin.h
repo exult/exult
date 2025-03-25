@@ -41,13 +41,13 @@ Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
 struct SDL_Surface;
-struct SDL_RWops;
+struct SDL_IOStream;
 
 /*
  *   Here's the top-level class to use for image buffers.  Image_window
@@ -180,13 +180,17 @@ protected:
 	bool          fullscreen;      // Rendering fullscreen.
 	int           game_width;
 	int           game_height;
-	int           saved_game_width; // Normally this is the same as game_width and is used by the PaintIntoGuardBand code so it can change and restore the value of game_width
-	int           saved_game_height;// Normally this is the same as game_height and is used by the PaintIntoGuardBand code so it can change and restore the value of game_height
-	int           inter_width;
-	int           inter_height;
+	int saved_game_width;     // Normally this is the same as game_width and is
+							  // used by the PaintIntoGuardBand code so it can
+							  // change and restore the value of game_width
+	int saved_game_height;    // Normally this is the same as game_height and is
+							  // used by the PaintIntoGuardBand code so it can
+							  // change and restore the value of game_height
+	int inter_width;
+	int inter_height;
 
-	// Guardband around the edge of the draw surface to allow scalers to run 
-	// without per pixel bounds checking and to allow rounding up to 
+	// Guardband around the edge of the draw surface to allow scalers to run
+	// without per pixel bounds checking and to allow rounding up to
 	// multiples of 4. It should  not be less than 4 and there is no reason for
 	// it to be bigger.
 	const int guard_band = 4;
@@ -323,8 +327,8 @@ public:
 			FillMode fmode = AspectCorrectCentre, int fillsclr = point)
 			: ibuf(ib), scale(scl), scaler(sclr), uses_palette(true),
 			  fullscreen(fs), game_width(gamew), game_height(gameh),
-			  saved_game_width(gamew), saved_game_height(gameh), fill_mode(fmode),
-			  fill_scaler(fillsclr), screen_window(nullptr),
+			  saved_game_width(gamew), saved_game_height(gameh),
+			  fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
 			  paletted_surface(nullptr), display_surface(nullptr),
 			  inter_surface(nullptr), draw_surface(nullptr) {
 		static_init();
@@ -452,16 +456,16 @@ public:
 	}
 
 	// This method adjusts buffer dimensions so gamewin can draw into the
-	// guard band on the right and bottom in order to prevent fine black lines 
-	// when scalers read from the guardband Must call EndPaintIntoGuardBand 
-	// after calling this Parmeters are the region to be painted. This will be 
-	// clipped against buffer dimension and enlarged into the guardband. If 
-	// Parameters are nullptr they are treated as if they are zero when 
+	// guard band on the right and bottom in order to prevent fine black lines
+	// when scalers read from the guardband Must call EndPaintIntoGuardBand
+	// after calling this Parmeters are the region to be painted. This will be
+	// clipped against buffer dimension and enlarged into the guardband. If
+	// Parameters are nullptr they are treated as if they are zero when
 	// clipping the other coordinates.
-	// This method does nothing if ShouldPaintIntoGuardband() returns false 
+	// This method does nothing if ShouldPaintIntoGuardband() returns false
 	void BeginPaintIntoGuardBand(int* x, int* y, int* w, int* h);
 
-	// Reset iwin and buffers back to normal after calling 
+	// Reset iwin and buffers back to normal after calling
 	// BeginPaintIntoGuardBand
 	void EndPaintIntoGuardBand();
 
@@ -593,6 +597,6 @@ public:
 		ibuf->put(src, destx, desty);
 	}
 
-	bool screenshot(SDL_RWops* dst);
+	bool screenshot(SDL_IOStream* dst);
 };
 #endif /* INCL_IMAGEWIN    */

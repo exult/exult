@@ -203,7 +203,7 @@ bool AdvancedOptions_gump::character_input(
 	// try input first widget only
 	for (auto& child : elems) {
 		auto found = child->Input_first();
-		if (found && found->character_input(chr,unicode,shift_pressed)) {
+		if (found && found->character_input(chr, unicode, shift_pressed)) {
 			return true;
 		}
 	}

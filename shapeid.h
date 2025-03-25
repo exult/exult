@@ -26,8 +26,8 @@
 #include "singles.h"
 
 #include <memory>
-#include <vector>
 #include <optional>
+#include <vector>
 
 class Shape_frame;
 class Shape_info;
@@ -341,8 +341,7 @@ public:
 		}
 		sman->paint_shape(
 				xoff, yoff, cache.shape,
-				force_trans?*force_trans:cache.has_trans,
-				transtable);
+				force_trans ? *force_trans : cache.has_trans, transtable);
 	}
 
 	void paint_invisible(int xoff, int yoff) const {
@@ -373,7 +372,8 @@ public:
 };
 
 /*
- *  An interface used in Get_click(): This will be painted on top of everything else
+ *  An interface used in Get_click(): This will be painted on top of everything
+ * else
  */
 class Paintable {
 public:
@@ -381,20 +381,18 @@ public:
 	virtual ~Paintable() = default;
 };
 
-// A paintable that should be painted as a background and not on top of everything.
-class BackgroundPaintable : public Paintable {
-};
+// A paintable that should be painted as a background and not on top of
+// everything.
+class BackgroundPaintable : public Paintable {};
 
 class ImageBufferPaintable : public BackgroundPaintable {
 	std::unique_ptr<Image_buffer> buffer;
-	int x,y;
+	int                           x, y;
 
 public:
 	// Construct from an existing Image_buffer
-	ImageBufferPaintable(std::unique_ptr<Image_buffer>&& buffer, int x, int y) :
-			buffer(std::move(buffer)),
-			x(x),y(y) {
-	}
+	ImageBufferPaintable(std::unique_ptr<Image_buffer>&& buffer, int x, int y)
+			: buffer(std::move(buffer)), x(x), y(y) {}
 
 	// Construct from a screenshot of the current screen
 	ImageBufferPaintable();

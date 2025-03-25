@@ -41,7 +41,7 @@ public:
 
 	Gump_button(
 			Gump_Base* par, int shnum, int px, int py,
-			ShapeFile shfile = SF_GUMPS_VGA, bool self_managed=false)
+			ShapeFile shfile = SF_GUMPS_VGA, bool self_managed = false)
 			: Gump_widget(par, shnum, px, py, 0, shfile),
 			  pushed_button(MouseButton::Unknown), self_managed(self_managed) {}
 
@@ -75,9 +75,11 @@ public:
 	bool is_self_managed() const {
 		return self_managed;
 	}
-	void set_self_managed(bool set)  {
-		self_managed = set;		
+
+	void set_self_managed(bool set) {
+		self_managed = set;
 	}
+
 	MouseButton get_pushed() {
 		return pushed_button;
 	}

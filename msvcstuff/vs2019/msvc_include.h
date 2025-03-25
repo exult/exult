@@ -34,7 +34,7 @@
 #	define _CRT_SECURE_NO_WARNINGS_GLOBALS 1
 #	define _CRT_OBSOLETE_NO_WARNINGS       1
 #	define _WINSOCK_DEPRECATED_NO_WARNINGS 1
-#	define FKG_FORCED_USAGE                1 // disables warning about GetVersionEx
+#	define FKG_FORCED_USAGE                1    // disables warning about GetVersionEx
 // #pragma warning (disable: 4101) // unreferenced local variable
 // #pragma warning (disable: 4309) // truncation of constant value
 #	pragma warning(disable : 4305)    // truncation from 'const int' to 'char'
@@ -58,17 +58,17 @@
 #pragma warning(3 : 4189)
 
 #include <windows.h>
-#define USE_XBR_SCALER 1
-#define USE_HQ2X_SCALER 1
-#define USE_HQ3X_SCALER 1
-#define USE_HQ4X_SCALER 1
-#define USE_FMOPL_MIDI   1
-#define USE_WINDOWS_MIDI 1
-#define USE_MT32EMU_MIDI 1
+#define USE_XBR_SCALER      1
+#define USE_HQ2X_SCALER     1
+#define USE_HQ3X_SCALER     1
+#define USE_HQ4X_SCALER     1
+#define USE_FMOPL_MIDI      1
+#define USE_WINDOWS_MIDI    1
+#define USE_MT32EMU_MIDI    1
 #define USE_FLUIDSYNTH_MIDI 1
-#define HAVE_STDIO_H     1
-#define HAVE_ZIP_SUPPORT 1
-#define HAVE_PNG_H       1
+#define HAVE_STDIO_H        1
+#define HAVE_ZIP_SUPPORT    1
+#define HAVE_PNG_H          1
 #ifdef USE_CONSOLE
 // Disable SDL Main
 #	define SDL_MAIN_HANDLED 1
@@ -97,10 +97,10 @@ namespace std {
 */
 
 #endif    //  _MSC_VER <= 1938
-inline int strcasecmp(const char* s1, const char* s2)
-{
+inline int strcasecmp(const char* s1, const char* s2) {
 	return _strcmpi(s1, s2);
 }
+
 inline int strncasecmp(const char* s1, const char* s2, size_t n) {
 	return _strnicmp(s1, s2, n);
 }

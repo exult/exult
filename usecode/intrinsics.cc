@@ -635,7 +635,7 @@ USECODE_INTRINSIC(get_npc_name) {
 	auto get_name = [&](const Usecode_value& val) -> std::string {
 		Game_object* obj = get_item(val);
 		if (obj != nullptr) {
-			Actor *npc = as_actor(obj);
+			Actor* npc = as_actor(obj);
 			return npc != nullptr ? npc->get_npc_name() : obj->get_name();
 		}
 		return unknown;
@@ -645,7 +645,7 @@ USECODE_INTRINSIC(get_npc_name) {
 	Usecode_value ret;
 	if (cnt != 0) {
 		// Do array.
-		ret = Usecode_value(0, nullptr);
+		ret      = Usecode_value(0, nullptr);
 		int size = 0;
 		for (int i = 0; i < cnt; i++) {
 			const std::string name = get_name(parms[0].get_elem(i));
@@ -2467,7 +2467,7 @@ USECODE_INTRINSIC(start_blocking_speech) {
 			Mouse::mouse_update = false;
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
-				if (event.type == SDL_MOUSEMOTION) {
+				if (event.type == SDL_EVENT_MOUSE_MOTION) {
 					// Mouse scale factor
 					int mx;
 					int my;

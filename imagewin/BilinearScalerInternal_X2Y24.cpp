@@ -96,7 +96,7 @@ namespace Pentagram { namespace BilinearScaler {
 		// Number of loops that can run.
 		// this is the number of blocks we can safely scale without
 		// per pixel checking for buffer overruns
-		
+
 		int numyloops = (sh - 1) / linesperxloop;
 		int numxloops = (sw - 1) / blockwidth;
 
@@ -143,8 +143,8 @@ namespace Pentagram { namespace BilinearScaler {
 		// if request no clamping, check to see if y remains in the bounds of
 		// the texture. If it does we can disable clipping on y
 		// heights not multple of linesperxloop always need clipping
-		if ((sy + blockheight + numyloops * linesperxloop) < tex_h
-			&& !clamp_src && !(sh % linesperxloop)) {
+		if ((sy + blockheight + numyloops * linesperxloop) < tex_h && !clamp_src
+			&& !(sh % linesperxloop)) {
 			numyloops++;
 			clip_y    = false;
 			yloop_end = texel + (numyloops * linesperxloop) * tpitch;
@@ -163,8 +163,7 @@ namespace Pentagram { namespace BilinearScaler {
 				return true;
 			}
 			// Read first column of 5 lines into abcde
-			ReadTexelsV<Manip>(
-					blockheight, texel, tpitch, a, b, c, d, e, f);
+			ReadTexelsV<Manip>(blockheight, texel, tpitch, a, b, c, d, e, f);
 			// advance texel pointer by 1 to the next column
 			texel++;
 

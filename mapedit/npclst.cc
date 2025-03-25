@@ -950,10 +950,10 @@ void Npc_chooser::all_frames_toggled(GtkToggleButton* btn, gpointer data) {
 		gtk_widget_set_visible(chooser->hscroll, false);
 	}
 	// The old index is no longer valid, so we need to remember the shape.
-	int       indx    = chooser->selected >= 0
-								? chooser->selected
-								: static_cast<int>(chooser->rows[chooser->row0].index0);
-	const int npcnum  = chooser->info[indx].npcnum;
+	int       indx   = chooser->selected >= 0
+							   ? chooser->selected
+							   : static_cast<int>(chooser->rows[chooser->row0].index0);
+	const int npcnum = chooser->info[indx].npcnum;
 	chooser->reset_selected();
 	chooser->setup_info();
 	indx = chooser->find_npc(npcnum);

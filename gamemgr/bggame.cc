@@ -642,7 +642,7 @@ void BG_Game::scene_butterfly() {
 #define FLASH_SHAPE1(x, y, shape, frame, delay)                              \
 	do {                                                                     \
 		sman->paint_shape((x), (y), shapes.get_shape((shape), (frame)));     \
-		win->ShowFillGuardBand();                                                         \
+		win->ShowFillGuardBand();                                            \
 		WAITDELAYCYCLE1((delay));                                            \
 		win->put(backup.get(), (x) - s->get_xleft(), (y) - s->get_yabove()); \
 	} while (0)
@@ -650,7 +650,7 @@ void BG_Game::scene_butterfly() {
 #define FLASH_SHAPE2(x, y, shape, frame, delay)                              \
 	do {                                                                     \
 		sman->paint_shape((x), (y), shapes.get_shape((shape), (frame)));     \
-		win->ShowFillGuardBand();                                                         \
+		win->ShowFillGuardBand();                                            \
 		WAITDELAYCYCLE4((delay));                                            \
 		win->put(backup.get(), (x) - s->get_xleft(), (y) - s->get_yabove()); \
 	} while (0)
@@ -711,7 +711,7 @@ public:
 	}
 };
 
-// Simple RAII wrapper for SDL_FreeSurface
+// Simple RAII wrapper for SDL_DestroySurface
 class SDL_SurfaceOwner {
 	SDL_Surface* surf;
 
@@ -724,7 +724,7 @@ public:
 					  draw->format->Bmask, draw->format->Amask)) {}
 
 	~SDL_SurfaceOwner() noexcept {
-		SDL_FreeSurface(surf);
+		SDL_DestroySurface(surf);
 	}
 
 	SDL_Surface* get() noexcept {
@@ -2279,8 +2279,8 @@ bool BG_Game::new_game(Vga_file& shapes) {
 		while (SDL_PollEvent(&event)) {
 			Uint16 keysym_unicode = 0;
 			bool   isTextInput    = false;
-			if (event.type == SDL_MOUSEBUTTONDOWN
-				|| event.type == SDL_MOUSEBUTTONUP) {
+			if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN
+				|| event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
 				const SDL_Rect rectName   = {topx + 10, menuy + 10, 130, 16};
 				const SDL_Rect rectSex    = {topx + 10, menuy + 25, 130, 16};
 				const SDL_Rect rectOnward = {topx + 10, topy + 180, 130, 16};
@@ -2289,31 +2289,34 @@ bool BG_Game::new_game(Vga_file& shapes) {
 				gwin->get_win()->screen_to_game(
 						event.button.x, event.button.y, gwin->get_fastmouse(),
 						point.x, point.y);
-				if (SDL_EnclosePoints(&point, 1, &rectName, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
+				if (SDL_GetRectEnclosingPoints(&point, 1, &rectName, nullptr)) {
+					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 0;
 					} else if (selected == 0 && touchui != nullptr) {
 						touchui->promptForName(npc_name);
 					}
 					redraw = true;
-				} else if (SDL_EnclosePoints(&point, 1, &rectSex, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
+				} else if (SDL_GetRectEnclosingPoints(
+								   &point, 1, &rectSex, nullptr)) {
+					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 1;
 					} else if (selected == 1) {
 						skindata = Shapeinfo_lookup::GetNextSelSkin(
 								skindata, si_installed, true);
 					}
 					redraw = true;
-				} else if (SDL_EnclosePoints(&point, 1, &rectOnward, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
+				} else if (SDL_GetRectEnclosingPoints(
+								   &point, 1, &rectOnward, nullptr)) {
+					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 2;
 					} else if (selected == 2) {
 						editing = false;
 						ok      = true;
 					}
 					redraw = true;
-				} else if (SDL_EnclosePoints(&point, 1, &rectReturn, nullptr)) {
-					if (event.type == SDL_MOUSEBUTTONDOWN) {
+				} else if (SDL_GetRectEnclosingPoints(
+								   &point, 1, &rectReturn, nullptr)) {
+					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 3;
 					} else if (selected == 3) {
 						editing = false;
@@ -2331,13 +2334,13 @@ bool BG_Game::new_game(Vga_file& shapes) {
 						redraw = true;
 					}
 				}
-			} else if (event.type == SDL_TEXTINPUT) {
+			} else if (event.type == SDL_EVENT_TEXT_INPUT) {
 				isTextInput          = true;
 				keysym_unicode       = event.text.text[0];
-				event.type           = SDL_KEYDOWN;
+				event.type           = SDL_EVENT_KEY_DOWN;
 				event.key.keysym.sym = SDLK_UNKNOWN;
 			}
-			if (event.type == SDL_KEYDOWN) {
+			if (event.type == SDL_EVENT_KEY_DOWN) {
 				redraw = true;
 				switch (event.key.keysym.sym) {
 				case SDLK_SPACE:

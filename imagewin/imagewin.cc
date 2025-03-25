@@ -53,13 +53,13 @@ Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
 bool SaveIMG_RW(
-		SDL_Surface* saveme, SDL_RWops* dst, bool freedst, int guardband);
+		SDL_Surface* saveme, SDL_IOStream* dst, bool freedst, int guardband);
 
 using std::cerr;
 using std::cout;
@@ -363,9 +363,9 @@ void Image_window::static_init() {
 	Uint32          Bmask;
 	Uint32          Amask;
 	if (SDL_GetDesktopDisplayMode(0, &dispmode) == 0
-		&& SDL_PixelFormatEnumToMasks(
+		&& SDL_GetMasksForPixelFormat(
 				   dispmode.format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)
-				   == SDL_TRUE) {
+				   == true) {
 		desktop_displaymode = dispmode;
 		desktop_depth       = bpp;
 	} else {
@@ -471,7 +471,7 @@ void Image_window::static_init() {
 		}
 	}
 
-#if !defined(__IPHONEOS__) && !defined(ANDROID)
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
 	if (windowed == 0) {
 		cerr << "SDL Reports 640x400 windowed surfaces are not OK. Windowed "
 				"scalers may not work properly."
@@ -529,7 +529,7 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 			w, h, scale, fill_mode, game_width, game_height, inter_width,
 			inter_height);
 	saved_game_height = game_height;
-	saved_game_width = game_width;
+	saved_game_width  = game_width;
 	if (!try_scaler(w, h)) {
 		// Try fallback to point scaler if it failed, if it doesn't work, we
 		// probably can't run
@@ -538,7 +538,7 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 	}
 
 	if (!paletted_surface && !force_bpp) {    // No scaling, or failed?
-		uint32 flags = SDL_SWSURFACE | SDL_WINDOW_ALLOW_HIGHDPI;
+		uint32 flags = SDL_SWSURFACE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 		if (fullscreen) {
 			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 		}
@@ -575,7 +575,7 @@ void Image_window::create_surface(unsigned int w, unsigned int h) {
 		Uint32 sGmask;
 		Uint32 sBmask;
 		Uint32 sAmask;
-		SDL_PixelFormatEnumToMasks(
+		SDL_GetMasksForPixelFormat(
 				desktop_displaymode.format, &sbpp, &sRmask, &sGmask, &sBmask,
 				&sAmask);
 		display_surface = SDL_CreateRGBSurface(
@@ -641,7 +641,8 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	int  hwdepth = bpp;
 	bool highdpi;
 	config->value("config/video/highdpi", highdpi, false);
-	uint32 flags = SDL_SWSURFACE | (highdpi ? SDL_WINDOW_ALLOW_HIGHDPI : 0);
+	uint32 flags
+			= SDL_SWSURFACE | (highdpi ? SDL_WINDOW_HIGH_PIXEL_DENSITY : 0);
 	if (fullscreen) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
@@ -672,7 +673,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 		int dw;
 		int dh;
 		// with HighDPi this returns the higher resolutions
-		SDL_GetRendererOutputSize(screen_renderer, &dw, &dh);
+		SDL_GetCurrentRenderOutputSize(screen_renderer, &dw, &dh);
 #ifdef SIMULATE_HIDPI
 		constexpr float simulated = SIMULATE_HIDPI + 0.f;
 		if (simulated && dw == w && dh == h) {
@@ -690,7 +691,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 		nativescale = float(dw) / sw;
 		// high resolution fullscreen needs this to make the whole screen
 		// available
-		SDL_RenderSetLogicalSize(screen_renderer, w, h);
+		SDL_SetRenderLogicalPresentation(screen_renderer, w, h);
 	} else {
 		// make sure the window has the right dimensions
 		SDL_SetWindowSize(screen_window, w, h);
@@ -706,7 +707,7 @@ bool Image_window::create_scale_surfaces(int w, int h, int bpp) {
 	Uint32 sGmask;
 	Uint32 sBmask;
 	Uint32 sAmask;
-	SDL_PixelFormatEnumToMasks(
+	SDL_GetMasksForPixelFormat(
 			desktop_displaymode.format, &sbpp, &sRmask, &sGmask, &sBmask,
 			&sAmask);
 
@@ -832,10 +833,10 @@ bool Image_window::try_scaler(int w, int h) {
 void Image_window::free_surface() {
 	if (draw_surface != nullptr && draw_surface != display_surface
 		&& draw_surface != inter_surface) {
-		SDL_FreeSurface(draw_surface);
+		SDL_DestroySurface(draw_surface);
 	}
 	if (inter_surface != nullptr && inter_surface != display_surface) {
-		SDL_FreeSurface(inter_surface);
+		SDL_DestroySurface(inter_surface);
 	}
 	paletted_surface = nullptr;
 	inter_surface    = nullptr;
@@ -869,13 +870,13 @@ void Image_window::resized(
 			return;*/       // Nothing changed.
 		free_surface();    // Delete old image.
 	}
-	scale           = newsc;
-	scaler          = newscaler;
-	fullscreen      = newfs;
-	game_width = newgw;
+	scale       = newsc;
+	scaler      = newscaler;
+	fullscreen  = newfs;
+	game_width  = newgw;
 	game_height = newgh;
-	fill_mode                      = fmode;
-	fill_scaler                    = fillsclr;
+	fill_mode   = fmode;
+	fill_scaler = fillsclr;
 	create_surface(neww, newh);    // Create new one.
 }
 
@@ -887,7 +888,8 @@ void Image_window::show(int x, int y, int w, int h) {
 	if (!ready()) {
 		return;
 	}
-	// call EndPaintIntoGuardBand just in case. It is safe to call it when not needed 
+	// call EndPaintIntoGuardBand just in case. It is safe to call it when not
+	// needed
 	EndPaintIntoGuardBand();
 
 	int srcx = 0;
@@ -897,7 +899,6 @@ void Image_window::show(int x, int y, int w, int h) {
 	}
 	x -= get_start_x();
 	y -= get_start_y();
-
 
 	// we can only include guard band in the buffersize if inter_surface is not
 	// display_surface otherwise scalers will write out of bounds. A separate
@@ -1066,7 +1067,7 @@ void Image_window::toggle_fullscreen() {
 	}
 }
 
-void Image_window::BeginPaintIntoGuardBand(int* x, int* y, int* w, int* h) {	 
+void Image_window::BeginPaintIntoGuardBand(int* x, int* y, int* w, int* h) {
 	int tx = 0, ty = 0, tw = 0, th = 0;
 
 	if (!x) {
@@ -1083,10 +1084,12 @@ void Image_window::BeginPaintIntoGuardBand(int* x, int* y, int* w, int* h) {
 	}
 
 	// adjust ibuf and game dimension things so we can draw into the right and
-	// bottom guardband to avoid blacklines when scalers read the gurdband 
-	// Only do this is guardband painting should be used and if the adjustments 
+	// bottom guardband to avoid blacklines when scalers read the gurdband
+	// Only do this is guardband painting should be used and if the adjustments
 	//  haven't already been done
-	if (ShouldPaintIntoGuardband() && (game_width == saved_game_width || game_height == saved_game_height)) {
+	if (ShouldPaintIntoGuardband()
+		&& (game_width == saved_game_width
+			|| game_height == saved_game_height)) {
 		// Adjust clip rect on the buffer
 		int cx, cy, cw, ch;
 		ibuf->get_clip(cx, cy, cw, ch);
@@ -1118,10 +1121,11 @@ void Image_window::BeginPaintIntoGuardBand(int* x, int* y, int* w, int* h) {
 		}
 
 		// we only allow drawing into half the guardband on the right and botom
-		// and not at all on the top and left as none of the scalers will try 
+		// and not at all on the top and left as none of the scalers will try
 		// reading out of bounds to the left or up
-		// draw surface includes 2 guard bands of extrapixels so to allow 
-		//drawing into half a guardband we need to subtract 1.5 guardbands from the draw surface dimensions
+		// draw surface includes 2 guard bands of extrapixels so to allow
+		// drawing into half a guardband we need to subtract 1.5 guardbands from
+		// the draw surface dimensions
 		ibuf->width  = draw_surface->w - 3 * guard_band / 2;
 		ibuf->height = draw_surface->h - 3 * guard_band / 2;
 		// set the new clipping rectangle after updating the buffer dimensions
@@ -1165,7 +1169,7 @@ void Image_window::FillGuardband() {
 	end      = ptr + (ibuf->height + guard_band) * draw_surface->pitch;
 
 	while (ptr != end) {
-		// guard_band is a constant and should be 4 
+		// guard_band is a constant and should be 4
 		// Compilers should be smart enough to optimize the memset away into a
 		// 32bit write so no performance impact using memset here
 		memset(ptr + 1, *ptr, guard_band);
@@ -1173,7 +1177,7 @@ void Image_window::FillGuardband() {
 	}
 }
 
-bool Image_window::screenshot(SDL_RWops* dst) {
+bool Image_window::screenshot(SDL_IOStream* dst) {
 	if (!paletted_surface) {
 		return false;
 	}
@@ -1486,7 +1490,7 @@ void Image_window::UpdateRect(SDL_Surface* surf, int x, int y, int w, int h) {
 	SDL_UpdateTexture(screen_texture, nullptr, surf->pixels, surf->pitch);
 	ignore_unused_variable_warning(x, y, w, h);
 	// SDL_Rect destRect = {x, y, w, h};
-	SDL_RenderCopy(screen_renderer, screen_texture, nullptr, nullptr);
+	SDL_RenderTexture(screen_renderer, screen_texture, nullptr, nullptr);
 	SDL_RenderPresent(screen_renderer);
 }
 
@@ -1504,9 +1508,9 @@ int Image_window::VideoModeOK(int width, int height) {
 		Uint32          Bmask;
 		Uint32          Amask;
 		if (SDL_GetDisplayMode(0, j, &dispmode) == 0
-			&& SDL_PixelFormatEnumToMasks(
+			&& SDL_GetMasksForPixelFormat(
 					   dispmode.format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask)
-					   == SDL_TRUE
+					   == true
 			&& dispmode.w == width && dispmode.h == height) {
 			return nbpp;
 		}

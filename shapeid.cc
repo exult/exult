@@ -262,12 +262,13 @@ void Shape_manager::load() {
 	{
 		const auto& blendsflexspec
 				= GAME_BG ? File_spec(
-						  BUNDLE_CHECK(BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX),
-						  EXULT_BG_FLX_BLENDS_DAT)
+									BUNDLE_CHECK(
+											BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX),
+									EXULT_BG_FLX_BLENDS_DAT)
 						  : File_spec(
-								  BUNDLE_CHECK(
-										  BUNDLE_EXULT_SI_FLX, EXULT_SI_FLX),
-								  EXULT_SI_FLX_BLENDS_DAT);
+									BUNDLE_CHECK(
+											BUNDLE_EXULT_SI_FLX, EXULT_SI_FLX),
+									EXULT_SI_FLX_BLENDS_DAT);
 		const U7multiobject in(BLENDS, blendsflexspec, PATCH_BLENDS, 0);
 		size_t              len;
 		ptr = in.retrieve(len);

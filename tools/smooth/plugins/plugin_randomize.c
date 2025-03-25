@@ -81,7 +81,7 @@ int plugin_parse(char* line) {
 				color[let] = '\0';
 				sscanf(color, "%02x%02x%02x", &r, &g, &b);
 				col[glob_idx][idx] = ((r << 16) | (g << 8) | (b));
-				col[glob_idx][0] = idx - 1;
+				col[glob_idx][0]   = idx - 1;
 			}
 			newrec = 1;
 			let    = 0;

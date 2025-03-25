@@ -28,7 +28,7 @@
 
 // without that define utils.cc errors with a "use of undeclared identifier
 // EXULT_DATADIR"
-#if (defined(MACOSX) || defined(__IPHONEOS__)) && !defined(EXULT_DATADIR)
+#if (defined(MACOSX) || defined(SDL_PLATFORM_IOS)) && !defined(EXULT_DATADIR)
 #	define EXULT_DATADIR "data"
 #endif
 
@@ -172,7 +172,7 @@
 
 #define PATCH_KEYS "<PATCH>/patchkeys.txt"
 
-#define GUMP_AREA_INFO "<STATIC>/gump_area_info.txt"
+#define GUMP_AREA_INFO       "<STATIC>/gump_area_info.txt"
 #define PATCH_GUMP_AREA_INFO "<PATCH>/gump_area_info.txt"
 
 #define EXULT_SERVER "<GAMEDAT>/exultserver"

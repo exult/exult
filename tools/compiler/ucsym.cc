@@ -516,7 +516,7 @@ Uc_function_symbol* Uc_function_symbol::create(
 			}
 			return type;
 		};
-		const auto& parms      = sym->get_parms();
+		const auto& parms = sym->get_parms();
 		for (size_t i = 0; i < p.size(); i++) {
 			if (p[i]->get_sym_type() != parms[i]->get_sym_type()
 				|| (p[i]->get_sym_type() == Uc_symbol::Class

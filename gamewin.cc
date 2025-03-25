@@ -391,7 +391,7 @@ Game_window::Game_window(
 	config->set(
 			"config/gameplay/allow_autonotes", allow_autonotes ? "yes" : "no",
 			false);
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	const string default_scroll_with_mouse = "no";
 	const string default_item_menu         = "yes";
 	const string default_dpad_location     = "right";

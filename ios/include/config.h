@@ -210,7 +210,7 @@
 /* Define to 1 if you have the `pow' function. */
 #define HAVE_POW 1
 
-/* Define to 1 if you have the "SDL.h" header file */
+/* Define to 1 if you have the <SDL3/SDL.h> header file */
 #define HAVE_SDL_H 1
 
 /* Define to 1 if you have the `select' function. */

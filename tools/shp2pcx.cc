@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //    when the code is a stand alone executable, which shp2pcx is.
 #include "common_types.h"
 
-#include <SDL_endian.h>
+#include <SDL3/SDL_endian.h>
 
 #include <cassert>
 #include <cstdio>

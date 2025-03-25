@@ -23,7 +23,7 @@
 #include "palette.h"
 #include "rect.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include <climits>
 #include <memory>
@@ -114,29 +114,30 @@ private:
 	std::vector<Hotspot> hotspots;
 
 	struct {
-		int          highlight     = 0;
-		Uint32       highlighttime = 0;
-		char         input[17]     = {0};
-		int          command       = 0;
-		bool         activate      = false;
-		const char*  custom_prompt = nullptr;
-		int          saved_value   = 0;
-		long         val_min       = LONG_MIN;
-		long         val_max       = LONG_MAX;
-		long         value;
-		Uint32       last_swipe = 0;
+		int         highlight     = 0;
+		Uint32      highlighttime = 0;
+		char        input[17]     = {0};
+		int         command       = 0;
+		bool        activate      = false;
+		const char* custom_prompt = nullptr;
+		int         saved_value   = 0;
+		long        val_min       = LONG_MIN;
+		long        val_max       = LONG_MAX;
+		long        value;
+		Uint32      last_swipe = 0;
 		// Accumulated swipe deltas. We treat these as a vector
 		float swipe_dx = 0;
 		float swipe_dy = 0;
 
-		private:
+	private:
 		Cheat_Prompt mode = CP_Command;
 
-		public:
+	public:
 		Cheat_Prompt GetMode() {
 			return mode;
 		}
-		void SetMode(Cheat_Prompt newmode, bool clearinput=true) {
+
+		void SetMode(Cheat_Prompt newmode, bool clearinput = true) {
 			// Clear the input if changing to or from a text/value input mode
 			if (clearinput) {
 				input[0] = 0;

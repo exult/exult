@@ -68,14 +68,14 @@ public:
 	STDMETHOD_(ULONG, Release)() override;
 
 	STDMETHOD(DragEnter)
-	(IDataObject* pDataObject, DWORD grfKeyState, POINTL pt,
-	 DWORD* pdwEffect) override;
+	(IDataObject* pDataObject, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
+			override;
 	STDMETHOD(DragOver)
 	(DWORD grfKeyState, POINTL pt, DWORD* pdwEffect) override;
 	STDMETHOD(DragLeave)() override;
 	STDMETHOD(Drop)
-	(IDataObject* pDataObject, DWORD grfKeyState, POINTL pt,
-	 DWORD* pdwEffect) override;
+	(IDataObject* pDataObject, DWORD grfKeyState, POINTL pt, DWORD* pdwEffect)
+			override;
 
 	bool is_valid(IDataObject* pDataObject);
 };

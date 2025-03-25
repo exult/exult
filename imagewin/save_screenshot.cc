@@ -40,7 +40,7 @@ It has been partly rewritten to use an SDL surface as input.
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -79,11 +79,11 @@ static void png_error_SDL(png_structp ctx, png_const_charp str) {
 
 static void png_write_SDL(
 		png_structp png_ptr, png_bytep data, png_size_t length) {
-	SDL_RWops* rw = static_cast<SDL_RWops*>(png_get_io_ptr(png_ptr));
-	SDL_RWwrite(rw, data, sizeof(png_byte), length);
+	SDL_IOStream* rw = static_cast<SDL_IOStream*>(png_get_io_ptr(png_ptr));
+	SDL_WriteIO(rw, data, sizeof(png_byte), length);
 }
 
-static bool save_image(SDL_Surface* surface, SDL_RWops* dst, int guardband) {
+static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 	png_structp  png_ptr;
 	png_infop    info_ptr;
 	png_colorp   pal_ptr;
@@ -195,7 +195,7 @@ struct PCX_Header {
 	Uint8  filler[58];
 };
 
-static void writeline(SDL_RWops* dst, Uint8* buffer, int bytes) {
+static void writeline(SDL_IOStream* dst, Uint8* buffer, int bytes) {
 	Uint8* finish = buffer + bytes;
 
 	while (buffer < finish) {
@@ -208,17 +208,17 @@ static void writeline(SDL_RWops* dst, Uint8* buffer, int bytes) {
 		}
 
 		if (value < 0xc0 && count == 1) {
-			SDL_RWwrite(dst, &value, 1, 1);
+			SDL_WriteIO(dst, &value, 1, 1);
 		} else {
 			Uint8 tmp = count + 0xc0;
-			SDL_RWwrite(dst, &tmp, 1, 1);
-			SDL_RWwrite(dst, &value, 1, 1);
+			SDL_WriteIO(dst, &tmp, 1, 1);
+			SDL_WriteIO(dst, &value, 1, 1);
 		}
 	}
 }
 
 static void save_8(
-		SDL_RWops* dst, int width, int height, int pitch, Uint8* buffer) {
+		SDL_IOStream* dst, int width, int height, int pitch, Uint8* buffer) {
 	for (int row = 0; row < height; ++row) {
 		writeline(dst, buffer, width);
 		buffer += pitch;
@@ -226,7 +226,8 @@ static void save_8(
 }
 
 static void save_24(
-		SDL_RWops* dst, int width, int height, int pitch, const Uint8* buffer) {
+		SDL_IOStream* dst, int width, int height, int pitch,
+		const Uint8* buffer) {
 	auto* line = new Uint8[width];
 
 	for (int y = 0; y < height; ++y) {
@@ -241,7 +242,7 @@ static void save_24(
 	delete[] line;
 }
 
-static bool save_image(SDL_Surface* surface, SDL_RWops* dst, int guardband) {
+static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 	Uint8* cmap   = nullptr;
 	int    colors = 0;
 	int    width  = surface->w - 2 * guardband;
@@ -286,23 +287,23 @@ static bool save_image(SDL_Surface* surface, SDL_RWops* dst, int guardband) {
 	header.reserved = 0;
 
 	/* write header */
-	/*  fp_offset = SDL_RWtell(dst);*/
-	SDL_RWwrite(dst, &header, sizeof(PCX_Header), 1);
+	/*  fp_offset = SDL_TellIO(dst);*/
+	SDL_WriteIO(dst, &header, sizeof(PCX_Header), 1);
 
 	if (cmap) {
 		save_8(dst, width, height, pitch, pixels);
 
 		/* write palette */
 		Uint8 tmp = 0x0c;
-		SDL_RWwrite(dst, &tmp, 1, 1);
-		SDL_RWwrite(dst, cmap, 3, colors);
+		SDL_WriteIO(dst, &tmp, 1, 1);
+		SDL_WriteIO(dst, cmap, 3, colors);
 
 		/* fill unused colors */
 		tmp = 0;
 		for (int i = colors; i < 256; i++) {
-			SDL_RWwrite(dst, &tmp, 1, 1);
-			SDL_RWwrite(dst, &tmp, 1, 1);
-			SDL_RWwrite(dst, &tmp, 1, 1);
+			SDL_WriteIO(dst, &tmp, 1, 1);
+			SDL_WriteIO(dst, &tmp, 1, 1);
+			SDL_WriteIO(dst, &tmp, 1, 1);
 		}
 
 		delete[] cmap;
@@ -316,7 +317,7 @@ static bool save_image(SDL_Surface* surface, SDL_RWops* dst, int guardband) {
 #endif    // HAVE_PNG_H
 
 bool SaveIMG_RW(
-		SDL_Surface* saveme, SDL_RWops* dst, bool freedst, int guardband) {
+		SDL_Surface* saveme, SDL_IOStream* dst, bool freedst, int guardband) {
 	SDL_Surface* surface;
 	bool         found_error = false;
 
@@ -360,8 +361,9 @@ bool SaveIMG_RW(
 				bounds.y = 0;
 				bounds.w = saveme->w;
 				bounds.h = saveme->h;
-				if (SDL_LowerBlit(saveme, &bounds, surface, &bounds) < 0) {
-					SDL_FreeSurface(surface);
+				if (SDL_BlitSurfaceUnchecked(saveme, &bounds, surface, &bounds)
+					< 0) {
+					SDL_DestroySurface(surface);
 					cout << "Couldn't convert image to 24 bpp for screenshot";
 					found_error = true;
 					surface     = nullptr;
@@ -378,12 +380,12 @@ bool SaveIMG_RW(
 		/* Close it up.. */
 		SDL_UnlockSurface(surface);
 		if (surface != saveme) {
-			SDL_FreeSurface(surface);
+			SDL_DestroySurface(surface);
 		}
 	}
 
 	if (freedst && dst) {
-		SDL_RWclose(dst);
+		SDL_CloseIO(dst);
 	}
 
 	if (!found_error) {

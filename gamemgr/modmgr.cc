@@ -544,8 +544,8 @@ ModManager::ModManager(
 				 << " patch directory to: " << patch_dir << endl;
 			cout << "setting " << cfgname
 				 << " modifications directory to: " << mods_dir << endl;
-			cout << "setting " << cfgname
-				 << " source directory to: " << src_dir << endl;
+			cout << "setting " << cfgname << " source directory to: " << src_dir
+				 << endl;
 		}
 #endif
 	}

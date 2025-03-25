@@ -214,7 +214,7 @@ bool Text_msg_file_reader::parse_contents() {
 
 [[nodiscard]] std::optional<int> Text_msg_file_reader::get_version() const {
 	if (this->contents.empty()) {
-			return std::nullopt;
+		return std::nullopt;
 	}
 	constexpr static const std::string_view versionstr("version");
 	int                                     firstMsg;

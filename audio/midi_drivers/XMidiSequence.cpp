@@ -406,7 +406,7 @@ void XMidiSequence::ChannelShadow::updateForEvent(XMidiEvent* new_event) {
 }
 
 void XMidiSequence::sendEvent() {
-	unsigned int chan = event->getChannel();
+	unsigned int     chan = event->getChannel();
 	const MidiStatus type = event->getStatusType();
 	uint32           data = event->data[0] | (event->data[1] << 8);
 
@@ -479,7 +479,6 @@ void XMidiSequence::applyShadow(int i) {
 			i | int(MidiStatus::Controller)
 					| (int(MidiController::ResetControllers) << 8));
 
-	
 	// Pitch Wheel
 	if (shadows[i].pitchWheel != def.pitchWheel) {
 		handler->sequenceSendEvent(

@@ -1974,9 +1974,8 @@ void Shape_chooser::all_frames_toggled(GtkToggleButton* btn, gpointer data) {
 	int shnum = -1;
 	if (chooser->info.size() != 0) {
 		// The old index is no longer valid, so we need to remember the shape.
-		indx  = chooser->selected >= 0
-									? chooser->selected
-									: chooser->rows[chooser->row0].index0;
+		indx  = chooser->selected >= 0 ? chooser->selected
+									   : chooser->rows[chooser->row0].index0;
 		shnum = chooser->info[indx].shapenum;
 	}
 	chooser->reset_selected();
@@ -2507,7 +2506,7 @@ void Shape_chooser::update_statusbar() {
 											  : (otmsg == -1 || otmsg >= get_num_misc_names()
 														 ? ""
 														 : get_misc_name(
-																 otmsg));
+																   otmsg));
 							if (!otmsgstr) {
 								otmsgstr = "";
 							}

@@ -64,8 +64,8 @@ namespace NS_TIMIDITY {
 
 /* This is for use with the SDL library */
 #		define SDL
-#		if (defined(WIN32) || defined(_WIN32)) && !defined(__WIN32__)
-#			define __WIN32__
+#		if (defined(WIN32) || defined(_WIN32)) && !defined(SDL_PLATFORM_WIN32)
+#			define SDL_PLATFORM_WIN32
 #		endif
 
 /* When a patch file can't be opened, one of these extensions is
@@ -198,7 +198,7 @@ namespace NS_TIMIDITY {
 #		endif /* __linux__ */
 
 /* Win32 on Intel machines */
-#		ifdef __WIN32__
+#		ifdef SDL_PLATFORM_WIN32
 #			define TIMIDITY_LITTLE_ENDIAN
 #		endif
 
@@ -232,7 +232,7 @@ namespace NS_TIMIDITY {
    then specify the library directory in the configuration file. */
 #		define CONFIG_FILE "timidity.cfg"
 #		ifndef DEFAULT_TIMIDITY_PATH
-#			ifdef __WIN32__
+#			ifdef SDL_PLATFORM_WIN32
 #				define DEFAULT_TIMIDITY_PATH "\\TIMIDITY"
 #			else
 #				define DEFAULT_TIMIDITY_PATH "/usr/share/timidity"
@@ -283,7 +283,7 @@ using final_volume_t = sint32;
 #		endif
 
 /* The path separator (D.M.) */
-#		ifdef __WIN32__
+#		ifdef SDL_PLATFORM_WIN32
 #			define PATH_SEP    '\\'
 #			define PATH_STRING "\\"
 #		else

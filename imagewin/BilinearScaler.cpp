@@ -64,19 +64,19 @@ namespace Pentagram { namespace BilinearScaler {
 			// 2 X 2.4 Y aka Aspect Correcting 2x
 			// This has some implicit requirements.
 			// sh must be a multiple of 5 and dh must be a multiple of 12
-			// This is pretty much has to be true if source and dest heights are integers
-			// Source height scaled by 2.4 only results in an integer if source height 
-			// is a multiple of 5 and 2.4 multipled by a multiple of 5 is always a multiple of 12
-			if (!result &&
-					(sw * 2 == dw) && (dh * 5 == sh * 12)) {
+			// This is pretty much has to be true if source and dest heights are
+			// integers Source height scaled by 2.4 only results in an integer
+			// if source height is a multiple of 5 and 2.4 multipled by a
+			// multiple of 5 is always a multiple of 12
+			if (!result && (sw * 2 == dw) && (dh * 5 == sh * 12)) {
 				result = BilinearScalerInternal_X2Y24<uintX, Manip, uintS>(
 						tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
 			}
 			// 1 X 1.2 Y aka Aspect Correction with no scaling
-			// Same as above there is implicit requiements except dh must be a multiple of 6
-			if (!result &&
-					(sw == dw) && (dh * 5 == sh * 6) && !(sh % 5)
-					&& !(sw % 4)) {
+			// Same as above there is implicit requiements except dh must be a
+			// multiple of 6
+			if (!result && (sw == dw) && (dh * 5 == sh * 6) && !(sh % 5)
+				&& !(sw % 4)) {
 				result = BilinearScalerInternal_X1Y12<uintX, Manip, uintS>(
 						tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
 			}
@@ -113,7 +113,6 @@ namespace Pentagram { namespace BilinearScaler {
 				uint16, Manip565to565, uint16>::ScaleBilinear;
 #endif
 	}
-
 
 	bool Scaler::ScaleArbitrary() const {
 		return true;

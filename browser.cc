@@ -25,7 +25,7 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -214,15 +214,15 @@ void ShapeBrowser::browse_shapes() {
 			redraw = false;
 		}
 		Delay();
-		if (SDL_PollEvent(&event) && event.type == SDL_KEYDOWN) {
+		if (SDL_PollEvent(&event) && event.type == SDL_EVENT_KEY_DOWN) {
 			redraw           = true;
-			const bool shift = event.key.keysym.mod & KMOD_SHIFT;
-			// int ctrl = event.key.keysym.mod & KMOD_CTRL;
+			const bool shift = event.key.keysym.mod & SDL_KMOD_SHIFT;
+			// int ctrl = event.key.keysym.mod & SDL_KMOD_CTRL;
 			switch (event.key.keysym.sym) {
 			case SDLK_ESCAPE:
 				looping = false;
 				break;
-			case SDLK_v:
+			case SDLK_V:
 				handle_key(shift, current_file, num_files);
 				current_shape = 0;
 				current_frame = 0;
@@ -231,21 +231,21 @@ void ShapeBrowser::browse_shapes() {
 				fname  = game->get_resource(buf).str;
 				shapes = new Vga_file(fname);
 				break;
-			case SDLK_p:
+			case SDLK_P:
 				handle_key(shift, current_palette, num_palettes);
 				current_xform = -1;
 				break;
-			case SDLK_r:
+			case SDLK_R:
 				do_palette_rotation = !do_palette_rotation;
 				break;
 
-			case SDLK_x:
+			case SDLK_X:
 				handle_key(shift, current_xform, num_xforms);
 				break;
 				// Shapes
-			case SDLK_s:
-				if ((event.key.keysym.mod & KMOD_ALT)
-					&& (event.key.keysym.mod & KMOD_CTRL)) {
+			case SDLK_S:
+				if ((event.key.keysym.mod & SDL_KMOD_ALT)
+					&& (event.key.keysym.mod & SDL_KMOD_CTRL)) {
 					make_screenshot(true);
 				} else {
 					handle_key(shift, current_shape, num_shapes);
@@ -260,7 +260,7 @@ void ShapeBrowser::browse_shapes() {
 				handle_key(false, current_shape, num_shapes);
 				current_frame = 0;
 				break;
-			case SDLK_j:    // Jump by 20.
+			case SDLK_J:    // Jump by 20.
 				handle_key(shift, current_shape, num_shapes, 20);
 				current_frame = 0;
 				break;
@@ -273,7 +273,7 @@ void ShapeBrowser::browse_shapes() {
 				current_frame = 0;
 				break;
 				// Frames
-			case SDLK_f:
+			case SDLK_F:
 				handle_key(shift, current_frame, num_frames);
 				break;
 			case SDLK_LEFT:
@@ -282,7 +282,7 @@ void ShapeBrowser::browse_shapes() {
 			case SDLK_RIGHT:
 				handle_key(false, current_frame, num_frames);
 				break;
-			case SDLK_k:
+			case SDLK_K:
 				keybinder->ShowBrowserKeys();
 				break;
 			default:

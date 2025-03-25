@@ -33,7 +33,7 @@ protected:
 	int         height;
 
 	std::shared_ptr<Font> font;
-	void init();
+	void                  init();
 
 public:
 	Text_button(
@@ -41,7 +41,7 @@ public:
 			int h = 0);
 	void paint() override;
 
-	bool on_widget(int mx, int my) const override;
+	bool     on_widget(int mx, int my) const override;
 	TileRect get_rect() const override;
 };
 

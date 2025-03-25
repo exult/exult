@@ -709,7 +709,7 @@ bool Newfile_gump::mouse_up(
 bool Newfile_gump::mousewheel_up(int mx, int my) {
 	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
-	if (mod & KMOD_ALT) {
+	if (mod & SDL_KMOD_ALT) {
 		scroll_page(-1);
 	} else {
 		scroll_line(-1);
@@ -720,7 +720,7 @@ bool Newfile_gump::mousewheel_up(int mx, int my) {
 bool Newfile_gump::mousewheel_down(int mx, int my) {
 	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
-	if (mod & KMOD_ALT) {
+	if (mod & SDL_KMOD_ALT) {
 		scroll_page(1);
 	} else {
 		scroll_line(1);
@@ -881,7 +881,10 @@ bool Newfile_gump::character_input(int chr, int unicode, bool shift_pressed) {
 	default:
 		ignore_unused_variable_warning(unicode);
 		if (chr < ' ') {
-			return Modal_gump::character_input(chr,unicode,shift_pressed);    // Ignore other special chars and let parent class handle them
+			return Modal_gump::character_input(
+					chr, unicode,
+					shift_pressed);    // Ignore other special chars and let
+									   // parent class handle them
 		}
 
 		if (chr < 256 && isascii(chr)) {

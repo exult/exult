@@ -358,7 +358,8 @@ int ShortcutBar_gump::handle_event(SDL_Event* event) {
 		return 0;
 	}
 
-	if ((event->type == SDL_MOUSEBUTTONDOWN || event->type == SDL_MOUSEBUTTONUP)
+	if ((event->type == SDL_EVENT_MOUSE_BUTTON_DOWN
+		 || event->type == SDL_EVENT_MOUSE_BUTTON_UP)
 		&& handle_events) {
 		int x;
 		int y;
@@ -378,9 +379,9 @@ int ShortcutBar_gump::handle_event(SDL_Event* event) {
 				// do not click "through" a gump
 				return 0;
 			}
-			if (event->type == SDL_MOUSEBUTTONDOWN) {
+			if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 				sdl_mouse_down(event, x, y);
-			} else if (event->type == SDL_MOUSEBUTTONUP) {
+			} else if (event->type == SDL_EVENT_MOUSE_BUTTON_UP) {
 				sdl_mouse_up(event, x, y);
 			}
 			return 1;

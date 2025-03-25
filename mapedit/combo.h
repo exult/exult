@@ -116,6 +116,7 @@ public:
 	void reset_selected() {
 		selected = -1;
 	}
+
 	void render() override {
 		render_area(nullptr);
 	}

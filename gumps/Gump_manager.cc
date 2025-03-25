@@ -525,14 +525,14 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	Uint16 keysym_unicode = 0;
 
 	switch (event.type) {
-	case SDL_FINGERDOWN: {
+	case SDL_EVENT_FINGER_DOWN: {
 		if ((!Mouse::use_touch_input) && (event.tfinger.fingerId != 0)) {
 			Mouse::use_touch_input = true;
 			gwin->set_painted();
 		}
 		break;
 	}
-	case SDL_MOUSEBUTTONDOWN:
+	case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		gwin->get_win()->screen_to_game(
 				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 
@@ -562,7 +562,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 					gx, gy, SDL_MouseButton_to_Gump(event.button.button));
 		}
 		break;
-	case SDL_MOUSEBUTTONUP:
+	case SDL_EVENT_MOUSE_BUTTON_UP:
 		gwin->get_win()->screen_to_game(
 				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 		if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
@@ -580,7 +580,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 			}
 		}
 		break;
-	case SDL_FINGERMOTION: {
+	case SDL_EVENT_FINGER_MOTION: {
 		gwin->get_win()->screen_to_game(
 				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 		static int  numFingers = 0;
@@ -610,7 +610,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		break;
 	}
 	// Mousewheel scrolling with SDL2.
-	case SDL_MOUSEWHEEL: {
+	case SDL_EVENT_MOUSE_WHEEL: {
 		if (event.wheel.y > 0) {
 			gump->mousewheel_up(
 					Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
@@ -620,7 +620,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		}
 		break;
 	}
-	case SDL_MOUSEMOTION:
+	case SDL_EVENT_MOUSE_MOTION:
 		if (Mouse::use_touch_input
 			&& event.motion.which != EXSDL_TOUCH_MOUSEID) {
 			Mouse::use_touch_input = false;
@@ -631,32 +631,32 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		Mouse::mouse->move(gx, gy);
 		Mouse::mouse_update = true;
 		// Dragging with left button?
-		if (event.motion.state & SDL_BUTTON(1)) {
+		if (event.motion.state & SDL_BUTTON_MASK(1)) {
 			gump->mouse_drag(gx, gy);
 		}
 		break;
-	case SDL_QUIT:
+	case SDL_EVENT_QUIT:
 		if (okay_to_quit()) {
 			return false;
 		}
 		break;
-	case SDL_KEYDOWN:
-	case SDL_TEXTINPUT:
-		if (event.type == SDL_TEXTINPUT) {
+	case SDL_EVENT_KEY_DOWN:
+	case SDL_EVENT_TEXT_INPUT:
+		if (event.type == SDL_EVENT_TEXT_INPUT) {
 			keysym_unicode       = event.text.text[0];
 			event.key.keysym.sym = SDLK_UNKNOWN;
 		}
 		{
-			if ((event.key.keysym.sym == SDLK_s)
-				&& (event.key.keysym.mod & KMOD_ALT)
-				&& (event.key.keysym.mod & KMOD_CTRL)) {
+			if ((event.key.keysym.sym == SDLK_S)
+				&& (event.key.keysym.mod & SDL_KMOD_ALT)
+				&& (event.key.keysym.mod & SDL_KMOD_CTRL)) {
 				make_screenshot(true);
 				return true;
 			}
 			// Alt-x for quit
-			if ((event.key.keysym.sym == SDLK_x)
-				&& (event.key.keysym.mod & KMOD_ALT
-					|| event.key.keysym.mod & KMOD_GUI)) {
+			if ((event.key.keysym.sym == SDLK_X)
+				&& (event.key.keysym.mod & SDL_KMOD_ALT
+					|| event.key.keysym.mod & SDL_KMOD_GUI)) {
 				if (okay_to_quit()) {
 					return false;
 				}
@@ -670,12 +670,12 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 			gump->key_down(event.key.keysym.sym);
 			bool handled = gump->character_input(
 					event.key.keysym.sym, keysym_unicode,
-					(event.key.keysym.mod & (KMOD_SHIFT | KMOD_CAPS)) != 0);
+					(event.key.keysym.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS))
+							!= 0);
 
 			// we'll allow the gump to handle escape first
 			// before closing the gump
-			if (!handled)
-			{
+			if (!handled) {
 				if (event.key.keysym.sym == SDLK_ESCAPE) {
 					return false;
 				}
@@ -703,7 +703,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 
 void Gump_manager::translate_numpad(
 		SDL_Keycode& code, uint16& unicode, uint16 mod) {
-	const bool numlock_active = (mod & KMOD_NUM) != 0;
+	const bool numlock_active = (mod & SDL_KMOD_NUM) != 0;
 	unicode                   = 0;
 	switch (code) {
 	case SDLK_KP_0:

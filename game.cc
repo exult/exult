@@ -458,7 +458,7 @@ bool Game::show_menu(bool skip) {
 		const int choice  = menu->handle_events(gwin, menu_mouse);
 		switch (choice) {
 		case -1:    // Exit
-#ifdef __IPHONEOS__
+#ifdef SDL_PLATFORM_IOS
 			break;
 #else
 			pal->fade_out(c_fade_out_time);
@@ -648,7 +648,7 @@ int wait_delay(int ms, int startcol, int ncol, int rotspd) {
 		// this may be a bit risky... How fast can events be generated?
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
-			case SDL_KEYDOWN:
+			case SDL_EVENT_KEY_DOWN:
 				switch (event.key.keysym.sym) {
 				case SDLK_RSHIFT:
 				case SDLK_LSHIFT:
@@ -662,9 +662,9 @@ int wait_delay(int ms, int startcol, int ncol, int rotspd) {
 				case SDLK_CAPSLOCK:
 				case SDLK_SCROLLLOCK:
 					break;
-				case SDLK_s:
-					if ((event.key.keysym.mod & KMOD_ALT)
-						&& (event.key.keysym.mod & KMOD_CTRL)) {
+				case SDLK_S:
+					if ((event.key.keysym.mod & SDL_KMOD_ALT)
+						&& (event.key.keysym.mod & SDL_KMOD_CTRL)) {
 						make_screenshot(true);
 					}
 					break;
@@ -678,9 +678,9 @@ int wait_delay(int ms, int startcol, int ncol, int rotspd) {
 					break;
 				}
 				break;
-			case SDL_MOUSEBUTTONDOWN:
+			case SDL_EVENT_MOUSE_BUTTON_DOWN:
 				break;
-			case SDL_MOUSEBUTTONUP: {
+			case SDL_EVENT_MOUSE_BUTTON_UP: {
 				if (event.button.button == 3 || event.button.button == 1) {
 					if (ticks1 - last_b3_click < 500) {
 						return 1;

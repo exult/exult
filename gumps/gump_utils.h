@@ -26,7 +26,7 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -43,7 +43,7 @@ inline void Delay() {
 	for (;;) {
 		SDL_PumpEvents();
 		if ((SDL_PeepEvents(
-					 nullptr, 0, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)
+					 nullptr, 0, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST)
 			 != 0)
 			|| (static_cast<Sint32>(SDL_GetTicks())
 				>= static_cast<Sint32>(expiration))) {

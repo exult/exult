@@ -124,7 +124,9 @@ int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 #	else
 		str = lpMsgBuf;
 #	endif
-		if(!quiet) std::cerr << "Error while listing files: " << str << std::endl;
+		if (!quiet) {
+			std::cerr << "Error while listing files: " << str << std::endl;
+		}
 		LocalFree(lpMsgBuf);
 	}
 
@@ -142,10 +144,11 @@ int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 #	include <glob.h>
 
 #	ifdef ANDROID
-#		include <SDL_system.h>
+#		include <SDL3/SDL_system.h>
 #	endif
 
-static int U7ListFilesImp(const std::string& path, FileList& files,bool quiet) {
+static int U7ListFilesImp(
+		const std::string& path, FileList& files, bool quiet) {
 	glob_t globres;
 	int    err = glob(path.c_str(), GLOB_NOSORT, nullptr, &globres);
 
@@ -159,21 +162,24 @@ static int U7ListFilesImp(const std::string& path, FileList& files,bool quiet) {
 	case 3:    // no matches
 		return 0;
 	default:    // error
-		if(!quiet)std::cerr << "Glob error " << err << std::endl;
+		if (!quiet) {
+			std::cerr << "Glob error " << err << std::endl;
+		}
 		return err;
 	}
 }
 
 int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 	string path(get_system_path(mask));
-	int    result = U7ListFilesImp(path, files,quiet);
+	int    result = U7ListFilesImp(path, files, quiet);
 #	ifdef ANDROID
 	// TODO: If SDL ever adds directory traversal to rwops use it instead of
 	// glob() so that we pick up platform-specific paths and behaviors like
 	// this.
 	if (result != 0) {
 		result = U7ListFilesImp(
-				SDL_AndroidGetInternalStoragePath() + ("/" + path), files,quiet);
+				SDL_GetAndroidInternalStoragePath() + ("/" + path), files,
+				quiet);
 	}
 #	endif
 	return result;

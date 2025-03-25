@@ -354,7 +354,8 @@ void Game_window::paint(
 	if (!win->ready()) {
 		return;
 	}
-	// This will adjust and clip the rectangle as appropriate, it may end up bigger or smaller
+	// This will adjust and clip the rectangle as appropriate, it may end up
+	// bigger or smaller
 	win->BeginPaintIntoGuardBand(&x, &y, &w, &h);
 	int gx = x;
 	int gy = y;

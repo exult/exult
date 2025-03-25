@@ -18,7 +18,7 @@
 
 #include "android_log_streambuf.h"
 
-#include <SDL2/SDL_system.h>
+#include <SDL3/SDL_system.h>
 #include <android/log.h>
 
 #include <iostream>
@@ -27,7 +27,7 @@ AndroidLog_streambuf::AndroidLog_streambuf(int priority, const char* tag)
 		: m_priority{priority}, m_tag{tag} {
 	jnithread = std::this_thread::get_id();
 
-	m_jniEnv      = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+	m_jniEnv      = static_cast<JNIEnv*>(SDL_GetAndroidJNIEnv());
 	auto* jclass  = m_jniEnv->FindClass("info/exult/ExultActivity");
 	auto* jmethod = m_jniEnv->GetStaticMethodID(
 			jclass, "instance", "()Linfo/exult/ExultActivity;");

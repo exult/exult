@@ -17,8 +17,8 @@
 
 #include "defs.h"
 
-#include <SDL.h>
-#include <SDL_image.h>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,21 +68,22 @@ int main(int argc, char** argv) {
 		printf("The image file is not in 8 bpp ( reported %d ). Converting it "
 			   "to 8 bpp.\n",
 			   mock_map->format->BitsPerPixel);
-		SDL_PixelFormat* format8 = SDL_AllocFormat(SDL_PIXELFORMAT_INDEX8);
+		SDL_PixelFormat* format8
+				= SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_INDEX8);
 		if (SDL_SetPixelFormatPalette(format8, mock_map->format->palette) < 0) {
 			fprintf(stderr, "Couldn't transfer palette %s: %s\n", argv[1],
 					SDL_GetError());
-			SDL_FreeSurface(mock_map);
+			SDL_DestroySurface(mock_map);
 			exit(-1);
 		}
 		SDL_Surface* converted8 = SDL_ConvertSurface(mock_map, format8, 0);
 		if (converted8 == NULL) {
 			fprintf(stderr, "Couldn't convert %s: %s\n", argv[1],
 					SDL_GetError());
-			SDL_FreeSurface(mock_map);
+			SDL_DestroySurface(mock_map);
 			exit(-1);
 		}
-		SDL_FreeSurface(mock_map);
+		SDL_DestroySurface(mock_map);
 		mock_map = converted8;
 		SDL_FreeFormat(format8);
 	}
@@ -186,7 +187,7 @@ int main(int argc, char** argv) {
 	}
 	fclose(f);
 	// clean up
-	SDL_FreeSurface(mock_map);
+	SDL_DestroySurface(mock_map);
 	SDL_Quit();
 	printf("Done!\n");
 	return 0;

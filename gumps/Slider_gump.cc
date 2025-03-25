@@ -301,7 +301,7 @@ bool Slider_gump::key_down(int chr) {
 bool Slider_gump::mousewheel_up(int mx, int my) {
 	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
-	if (mod & KMOD_ALT) {
+	if (mod & SDL_KMOD_ALT) {
 		move_diamond(-10 * step_val);
 	} else {
 		move_diamond(-step_val);
@@ -312,7 +312,7 @@ bool Slider_gump::mousewheel_up(int mx, int my) {
 bool Slider_gump::mousewheel_down(int mx, int my) {
 	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
-	if (mod & KMOD_ALT) {
+	if (mod & SDL_KMOD_ALT) {
 		move_diamond(10 * step_val);
 	} else {
 		move_diamond(step_val);
