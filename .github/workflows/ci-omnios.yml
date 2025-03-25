@@ -136,10 +136,25 @@ jobs:
           pkgin -y install fontconfig
           pkgin -y install gtk2+ gtk3+ pango
           pkgin -y install babl libX11 libXext
+          pkgin -y install git cmake libusb libunwind ffmpeg7
+          git -c advice.detachedHead=false clone --branch release-3.2.10 --depth 1 https://github.com/libsdl-org/SDL SDL3
+          cd SDL3
+          mkdir -p build
+          cmake -B build -S .
+          cmake --build build
+          cmake --install build
+          cd ..
+          git -c advice.detachedHead=false clone --branch release-3.2.0 --depth 1 https://github.com/libsdl-org/SDL_image SDL3_image
+          cd SDL3_image
+          mkdir -p build
+          cmake -B build -S .
+          cmake --build build
+          cmake --install build
+          cd ..
         run: |
-          export PATH=/opt/local/bin:/opt/local/sbin:$PATH
-          export MANPATH=/opt/local/man:$MANPATH
-          export PKG_CONFIG_PATH=/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:/opt/ooce/lib/amd64/pkgconfig:$PKG_CONFIG_PATH
+          export PATH=/opt/local/bin:/opt/local/sbin:/usr/local/bin:$PATH
+          export MANPATH=/opt/local/man:/opt/local/share/man:/usr/local/share/man:$MANPATH
+          export PKG_CONFIG_PATH=/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:/opt/ooce/lib/amd64/pkgconfig:/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
           autoreconf -v -i
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \
             --enable-zip-support --enable-shared --enable-midi-sfx --enable-shp-thumbnailer --enable-data --enable-mods \

@@ -123,9 +123,9 @@ jobs:
           update: true
           install: |
             base-devel git zip
-            ${{ matrix.env }}-toolchain ${{ matrix.env }}-binutils ${{ matrix.env }}-ntldd ${{ matrix.env }}-SDL2
+            ${{ matrix.env }}-toolchain ${{ matrix.env }}-binutils ${{ matrix.env }}-ntldd ${{ matrix.env }}-sdl3
             ${{ matrix.env }}-fluidsynth ${{ matrix.env }}-libtimidity ${{ matrix.env }}-libogg ${{ matrix.env }}-libvorbis
-            ${{ matrix.env }}-munt-mt32emu ${{ matrix.env }}-libpng ${{ matrix.env }}-zlib ${{ matrix.env }}-SDL2_image
+            ${{ matrix.env }}-munt-mt32emu ${{ matrix.env }}-libpng ${{ matrix.env }}-zlib ${{ matrix.env }}-sdl3-image
             ${{ matrix.env }}-gtk3 ${{ matrix.env }}-adwaita-icon-theme ${{ matrix.env }}-libxml2 ${{ matrix.env }}-freetype
             ${{ matrix.env }}-gimp ${{ matrix.env }}-icu
       - name: Checkout code
