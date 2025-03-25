@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #			pragma GCC diagnostic ignored "-Wmacro-redefined"
 #		endif
 #	endif    // __GNUC__
-#	ifdef __IPHONEOS__
+#	ifdef SDL_PLATFORM_IOS
 #		include <mt32emu.h>
 #	else
 #		include <mt32emu/mt32emu.h>

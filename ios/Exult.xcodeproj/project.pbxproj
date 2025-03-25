@@ -2284,7 +2284,7 @@
 				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"HAVE_CONFIG_H=1",
-					"__IPHONEOS__=1",
+					"SDL_PLATFORM_IOS=1",
 					"DEBUG=1",
 				);
 				HEADER_SEARCH_PATHS = (
@@ -2338,7 +2338,7 @@
 				GCC_PREFIX_HEADER = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"HAVE_CONFIG_H=1",
-					"__IPHONEOS__=1",
+					"SDL_PLATFORM_IOS=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",

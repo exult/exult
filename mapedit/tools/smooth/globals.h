@@ -28,7 +28,7 @@ typedef void* libhandle_t;
 // since we use indexed images, we have a limitation of 256 colours
 #define MAX_COLOURS 256
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 // note: there are some almost static stuff and some very variable stuff
 // global's variables

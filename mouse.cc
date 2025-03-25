@@ -27,7 +27,7 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -162,7 +162,6 @@ void Mouse::show() {
 int Mouse::fast_offset_x = 0;
 int Mouse::fast_offset_y = 0;
 
-
 // Apply the fastmouse offset to a position
 // This is used by Image_window::screen_to_game
 
@@ -176,7 +175,7 @@ void Mouse::apply_fast_offset(int& gx, int& gy) {
 // Unapply the fastmouse offset to a position
 // This is used by Image_window::game_to_screen
 
- void Mouse::unapply_fast_offset(int& gx, int& gy) {
+void Mouse::unapply_fast_offset(int& gx, int& gy) {
 	if (gwin->get_fastmouse()) {
 		gx -= fast_offset_x;
 		gy -= fast_offset_y;

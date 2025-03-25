@@ -88,7 +88,6 @@ private:
 	// the user drags it completely off screen only valid while dragging
 	int lastgood_x, lastgood_y;
 
-
 public:
 	// Colours used to draw the background.
 	struct ProceduralColours {
@@ -118,7 +117,7 @@ protected:
 
 	TileRect procedural_background;
 
-	ShapeID checkmark_background;	// Change as desired
+	ShapeID           checkmark_background;    // Change as desired
 	ProceduralColours procedural_colours;
 
 	//! Set ths gump to have a procedurally drawn background

@@ -639,8 +639,8 @@ void Usecode_internal::say_string() {
 int Usecode_internal::get_face_shape(
 		Usecode_value& arg1, Actor*& npc, int& frame) {
 	Conversation::noface = false;
-	npc       = as_actor(get_item(arg1));
-	int shape = -1;
+	npc                  = as_actor(get_item(arg1));
+	int shape            = -1;
 	if (arg1.is_int()) {
 		shape = std::abs(arg1.get_int_value());
 		if (shape == 356) {    // Avatar.
@@ -665,7 +665,7 @@ int Usecode_internal::get_face_shape(
 			&& (iact = this->frame->caller_item->as_actor()) != nullptr
 			&& iact->get_npc_num() == 277) {
 			// we set a face but we are not displaying it
-			shape = 277;
+			shape                = 277;
 			Conversation::noface = true;
 		}
 	}
