@@ -50,7 +50,7 @@ using std::endl;
 
 #ifdef HAVE_PNG_H
 
-#	include "png.h"
+#	include <png.h>
 
 /*
  * SDL_SavePNG -- libpng-based SDL_Surface writer.

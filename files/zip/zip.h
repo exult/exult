@@ -56,7 +56,7 @@ extern "C" {
 #	endif
 
 #	define ZLIB_CONST
-#	include "zlib.h"
+#	include <zlib.h>
 
 struct zip_internal;
 using zipFile = zip_internal*;

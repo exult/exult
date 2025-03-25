@@ -52,7 +52,7 @@ extern "C" {
 #	endif
 
 #	define ZLIB_CONST
-#	include "zlib.h"
+#	include <zlib.h>
 
 struct unz_s;
 using unzFile = unz_s*;
