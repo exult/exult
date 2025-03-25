@@ -228,7 +228,7 @@ ifeq (n,$(findstring n,$(firstword -$(MAKEFLAGS))))
 			-isystem $(MSYSTEM_PREFIX)/include/c++/v1 \
 			-isystem $(WITH_ANDROID_HEADERS) \
 			-isystem $(WITH_ANDROID_HEADERS)/x86_64-linux-android \
-			-Iandroid/lib/include -Iandroid/app/src/main/cpp
+			-I$(SRC)/android/lib/include -I$(SRC)/android/app/src/main/cpp
 		ANDROID_OBJS:=\
 			android/app/src/main/cpp/android_log_streambuf.o \
 			android/app/src/main/cpp/exult_android_main.o \
@@ -518,6 +518,9 @@ CPPFLAGS:=$(strip -DVERSION=\"$(VERSION)\" -DEXULT_DATADIR=\"data\" \
 	-I$(SRC)/usecode/ucxt/include -I$(SRC)/mapedit -I$(SRC)/shapes/shapeinf \
 	$(call make_system, $(call clean_includes, $(FLUIDSYNTH_CFLAGS) $(TIMIDITY_CFLAGS) $(SDL_CFLAGS) $(ZIP_CFLAGS) $(MT32EMU_CFLAGS) $(ES_INCLUDES))) \
 	$(EXTRA_OPTIONS))
+ifneq ($(ANDROID_CFLAGS),)
+CPPFLAGS += $(ANDROID_CFLAGS)
+endif
 
 PLUGIN_CPPFLAGS:=$(strip -DVERSION=\"$(VERSION)\" -DEXULT_DATADIR=\"data\" \
 	-DNOMINMAX=1 -D_USE_MATH_DEFINES -DHAVE_NETDB_H=0 $(SYSFLAGS) \
