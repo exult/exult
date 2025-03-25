@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -166,7 +166,8 @@ namespace Pentagram {
 	void OggAudioSample::rewind(void* DecompData) const {
 		auto* decomp = static_cast<OggDecompData*>(DecompData);
 		if (ov_raw_seek(&decomp->ov, 0) != 0) {
-			// If raw seek fails just call themuch more expensive method in the base class
+			// If raw seek fails just call themuch more expensive method in the
+			// base class
 			AudioSample::rewind(DecompData);
 		}
 	}

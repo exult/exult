@@ -25,7 +25,7 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -547,10 +547,10 @@ bool Spellbook_gump::handle_kbd_event(void* vev) {
 	const SDL_Event& ev  = *static_cast<SDL_Event*>(vev);
 	const int        chr = ev.key.keysym.sym;
 
-	if (ev.type == SDL_KEYUP) {
+	if (ev.type == SDL_EVENT_KEY_UP) {
 		return true;    // Ignoring key-up at present.
 	}
-	if (ev.type != SDL_KEYDOWN) {
+	if (ev.type != SDL_EVENT_KEY_DOWN) {
 		return false;
 	}
 	switch (chr) {

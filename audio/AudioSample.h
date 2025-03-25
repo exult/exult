@@ -40,7 +40,8 @@ namespace Pentagram {
 
 		uint32 refcount;
 
-		// these are mutable so the const method initDecompressor can change them as needed
+		// these are mutable so the const method initDecompressor can change
+		// them as needed
 
 		mutable uint32 sample_rate;
 		mutable bool   stereo;

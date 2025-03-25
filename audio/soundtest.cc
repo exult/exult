@@ -25,7 +25,7 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -183,7 +183,7 @@ void SoundTester::test_sound() {
 		while (looping && !redraw && SDL_GetTicks() < repainttime) {
 			Delay();
 			while (looping && !redraw && SDL_PollEvent(&event)) {
-				if (event.type == SDL_KEYDOWN) {
+				if (event.type == SDL_EVENT_KEY_DOWN) {
 					redraw = true;
 					switch (event.key.keysym.sym) {
 					case SDLK_ESCAPE:
@@ -203,10 +203,10 @@ void SoundTester::test_sound() {
 						}
 						break;
 #ifdef DEBUG
-					case SDLK_d: {
-						std::string   flex   = player && player->is_adlib()
-													   ? MAINMUS_AD
-													   : MAINMUS;
+					case SDLK_D: {
+						std::string flex = player && player->is_adlib()
+												   ? MAINMUS_AD
+												   : MAINMUS;
 
 						std::unique_ptr<IDataSource> mid_data
 								= open_music_flex(flex, song);
@@ -230,7 +230,7 @@ void SoundTester::test_sound() {
 						}
 					} break;
 #endif
-					case SDLK_r:
+					case SDLK_R:
 						repeat = !repeat;
 						// Change repeat flag of the player to match us if it is
 						// playing our selected song
@@ -238,9 +238,9 @@ void SoundTester::test_sound() {
 							player->set_repeat(repeat);
 						}
 						break;
-					case SDLK_s:
-						if ((event.key.keysym.mod & KMOD_ALT)
-							&& (event.key.keysym.mod & KMOD_CTRL)) {
+					case SDLK_S:
+						if ((event.key.keysym.mod & SDL_KMOD_ALT)
+							&& (event.key.keysym.mod & SDL_KMOD_CTRL)) {
 							make_screenshot(true);
 						} else {
 							audio->stop_music();

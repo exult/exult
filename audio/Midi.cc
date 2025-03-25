@@ -562,18 +562,19 @@ void MyMidiPlayer::set_music_conversion(int conv) {
 		return;
 	}
 	// no driver do nothing
-	if (!midi_driver) 
+	if (!midi_driver) {
 		return;
-	
+	}
+
 	if (!ogg_enabled || !ogg_is_playing()) {    // if ogg is playing we don't
 												// care about drivers
 		stop_music();
 	}
 
-		std::string convert_key
-				= "config/audio/midi/convert_" + midi_driver->getName();
+	std::string convert_key
+			= "config/audio/midi/convert_" + midi_driver->getName();
 
-		music_conversion = conv;
+	music_conversion = conv;
 
 	switch (music_conversion) {
 	case XMIDIFILE_CONVERT_MT32_TO_GS:
@@ -776,7 +777,9 @@ bool MyMidiPlayer::init_device(bool timbre_load) {
 	if (s == "gs") {
 		music_conversion = XMIDIFILE_CONVERT_MT32_TO_GS;
 		// Only allow MT32 if driver created and it allows it
-	} else if (s == "mt32" && (midi_driver && midi_driver->isRealMT32Supported())) {
+	} else if (
+			s == "mt32"
+			&& (midi_driver && midi_driver->isRealMT32Supported())) {
 		music_conversion = XMIDIFILE_CONVERT_NOCONVERSION;
 	} else if (s == "none") {
 		music_conversion = XMIDIFILE_CONVERT_NOCONVERSION;
@@ -908,7 +911,8 @@ void MyMidiPlayer::start_sound_effect(int num) {
 
 	// Read the data into the XMIDI class
 	// It's already GM, so dont convert
-	XMidiFile midfile(mid_data.get(), effects_conversion, midi_driver->getName());
+	XMidiFile midfile(
+			mid_data.get(), effects_conversion, midi_driver->getName());
 
 	// Now give the xmidi object to the midi device
 	XMidiEventList* eventlist = midfile.GetEventList(0);

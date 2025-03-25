@@ -23,7 +23,7 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -114,14 +114,14 @@ SdlRwopsStreambuf* SdlRwopsStreambuf::open(
 		return nullptr;
 	}
 
-	m_context = SDL_RWFromFile(s, mdstr);
+	m_context = SDL_IOFromFile(s, mdstr);
 	if (!m_context) {
 		return nullptr;
 	}
 	m_openMode = mode;
 	if (mode & std::ios_base::ate) {
-		if (SDL_RWseek(m_context, 0, RW_SEEK_END) == -1) {
-			SDL_RWclose(m_context);
+		if (SDL_SeekIO(m_context, 0, SDL_IO_SEEK_END) == -1) {
+			SDL_CloseIO(m_context);
 			m_context = nullptr;
 			return nullptr;
 		}
@@ -134,12 +134,13 @@ SdlRwopsStreambuf* SdlRwopsStreambuf::close() {
 		return nullptr;
 	}
 
-	std::unique_ptr<SDL_RWops, int (*)(SDL_RWops*)> h(m_context, SDL_RWclose);
-	auto                                            rt = this;
+	std::unique_ptr<SDL_IOStream, int (*)(SDL_IOStream*)> h(
+			m_context, SDL_CloseIO);
+	auto rt = this;
 	if (sync()) {
 		rt = nullptr;
 	}
-	if (SDL_RWclose(h.release())) {
+	if (SDL_CloseIO(h.release())) {
 		rt = nullptr;
 	}
 	m_context = nullptr;
@@ -173,7 +174,7 @@ typename SdlRwopsStreambuf::int_type SdlRwopsStreambuf::underflow() {
 	if (gptr() == egptr()) {
 		std::memmove(eback(), egptr() - unget_sz, unget_sz * sizeof(char_type));
 		std::size_t nmemb = egptr() - eback() - unget_sz;
-		nmemb             = SDL_RWread(m_context, eback() + unget_sz, 1, nmemb);
+		nmemb             = SDL_ReadIO(m_context, eback() + unget_sz, 1, nmemb);
 		if (nmemb != 0) {
 			setg(eback(), eback() + unget_sz, eback() + unget_sz + nmemb);
 			c = traits_type::to_int_type(*gptr());
@@ -226,7 +227,7 @@ typename SdlRwopsStreambuf::int_type SdlRwopsStreambuf::overflow(int_type c) {
 	}
 	if (pptr() != pbase()) {
 		const std::size_t nmemb = static_cast<std::size_t>(pptr() - pbase());
-		if (SDL_RWwrite(m_context, pbase(), sizeof(char_type), nmemb)
+		if (SDL_WriteIO(m_context, pbase(), sizeof(char_type), nmemb)
 			!= nmemb) {
 			return traits_type::eof();
 		}
@@ -244,21 +245,21 @@ typename SdlRwopsStreambuf::pos_type SdlRwopsStreambuf::seekoff(
 	int whence;
 	switch (dir) {
 	case std::ios_base::beg:
-		whence = RW_SEEK_SET;
+		whence = SDL_IO_SEEK_SET;
 		break;
 	case std::ios_base::cur:
-		whence = RW_SEEK_CUR;
+		whence = SDL_IO_SEEK_CUR;
 		break;
 	case std::ios_base::end:
-		whence = RW_SEEK_END;
+		whence = SDL_IO_SEEK_END;
 		break;
 	default:
 		return pos_type(off_type(-1));
 	}
-	if (SDL_RWseek(m_context, width * off, whence) == -1) {
+	if (SDL_SeekIO(m_context, width * off, whence) == -1) {
 		return pos_type(off_type(-1));
 	}
-	const pos_type r = SDL_RWtell(m_context);
+	const pos_type r = SDL_TellIO(m_context);
 	return r;
 }
 
@@ -267,7 +268,7 @@ typename SdlRwopsStreambuf::pos_type SdlRwopsStreambuf::seekpos(
 	if (!m_context || sync()) {
 		return pos_type(off_type(-1));
 	}
-	if (SDL_RWseek(m_context, sp, RW_SEEK_SET) == -1) {
+	if (SDL_SeekIO(m_context, sp, SDL_IO_SEEK_SET) == -1) {
 		return pos_type(off_type(-1));
 	}
 	return sp;
@@ -292,7 +293,7 @@ int SdlRwopsStreambuf::sync() {
 	} else if (m_currentMode & std::ios_base::in) {
 		off_type c;
 		c = egptr() - gptr();
-		if (SDL_RWseek(m_context, -c, RW_SEEK_CUR) == -1) {
+		if (SDL_SeekIO(m_context, -c, SDL_IO_SEEK_CUR) == -1) {
 			return -1;
 		}
 		setg(nullptr, nullptr, nullptr);

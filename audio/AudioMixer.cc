@@ -35,7 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -84,7 +84,7 @@ AudioMixer::AudioMixer(int sample_rate_, bool stereo_, int num_channels_)
 	SDL_AudioSpec desired{};
 	SDL_AudioSpec obtained;
 
-	desired.format   = AUDIO_S16SYS;
+	desired.format   = SDL_AUDIO_S16;
 	desired.freq     = sample_rate_;
 	desired.channels = stereo_ ? 2 : 1;
 	desired.callback = sdlAudioCallback;
@@ -93,7 +93,7 @@ AudioMixer::AudioMixer(int sample_rate_, bool stereo_, int num_channels_)
 	// Set update rate to 30 Hz, or there abouts. This should be more than
 	// adequate for everyone. Note: setting this to 1 Hz (/1) causes Exult to
 	// hang on MacOS.
-	desired.samples = 1;
+	desired.samples                    = 1;
 	const int SAMPLE_BUFFER_PER_SECOND = 30;
 	while (desired.samples <= desired.freq / SAMPLE_BUFFER_PER_SECOND) {
 		desired.samples <<= 1;
