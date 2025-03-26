@@ -5,7 +5,7 @@
       Exult enables you to play Ultima VII, but you still need to purchase/own a copy of the original game files, and copy the data files to your device.
     </p>
     <p>
-      Currently, the easiest way to do this is by purchasing the <a href="https://www.gog.com/game/ultima_7_complete">Ultima&trade; 7 The Complete Edition</a> from <a href="https://www.gog.com/">GOG.com</a>.  After purchasing the game, follow these steps to download it onto this device:
+      Currently, the easiest way to do this is by purchasing the <a href="https://www.gog.com/game/ultima_7_complete">Ultima&trade; 7 The Complete Edition</a> from <a href="https://www.gog.com/">GOG.com</a>. After purchasing the game, follow these steps to download it onto this device:
     </p>
     <ol>
       <li>Browse to <a href="https://www.gog.com/">GOG.com</a> and log in to your account</li>
@@ -16,10 +16,13 @@
       <li>Tap the game name to download it.  This should place a .pkg file in your Downloads folder</li>
     </ol>
     <p>
-      Alternately, if you have purchased the game from another site or own a hard copy on CD (or the original floppy disks), you should be able to place the contents in a zip file (or other common archive format) and copy it to your device.  The important part is to zip the folder <b>STATIC</b> and its content.
+      Alternately, if you have purchased the game from another site or own a hard copy on CD (or the original floppy disks), you should be able to place the contents in a zip file (or other common archive format) and copy it to your device. The important part is to zip the folder <b>STATIC</b> and its content.
     </p>
     <p>
-      After you have downloaded your .pkg file (or otherwise loaded another archive), you can tap one of the checkboxes on the left, corresponding to the game you are installing.  This will open a file browser which you can use to select the archive you downloaded, and the installer will take care of extracting the required data files and installing them in the correct places.
+      Our installer also allows you to download your game from an URL.
+    </p>
+    <p>
+      After you have downloaded your .pkg file (or otherwise loaded another archive), you can tap one of the checkboxes on the left, corresponding to the game you are installing. This will open a file browser which you can use to select the archive you downloaded, and the installer will take care of extracting the required data files and installing them in the correct places.
     </p>
     <p>
       Once you have successfully installed the game data, you are free to delete the .pkg (or other archive); it will no longer be needed or used by Exult after installation.

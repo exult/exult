@@ -2,19 +2,19 @@
 <resources>
   <string name="audio_packs_card_text"><![CDATA[
     <p><b><u>Audio Data Pack</u></b><br/>
-      Exult can optionally make use of digital music and sound effects packages.  This android port is set up to make use of the all-in-one package.  To install it, browse to the <a href="https://exult.info/download.php">Exult Downloads page</a> and tap on &quot;Zipped all-in-one audio pack for manual installation&quot;.
+      Exult can optionally make use of digital music and sound effects packages. This android port is set up to make use of the all-in-one package. You can either have this launcher download the pack from our download page and install it, or browse to our <a href="https://exult.info/download.php">Exult Downloads page</a> and tap on &quot;Zipped all-in-one audio pack to download it for manual installation&quot;.
     </p>
     <p>
-      After you have downloaded the .zip file, tap the checkbox on the left.  This will open a file browser which you can use to select the archive you downloaded, and the installer will take care of extracting the required data files and installing them in the correct places.
+      After you have downloaded the .zip file, tap the checkbox on the left. This will open a file browser which you can use to select the archive you downloaded, and the installer will take care of extracting the required data files and installing them in the correct places.
     </p>
     <p><b><u>MT32 ROMs</u></b><br/>
-      For the MT32 emulation of the music you need the MT32 ROMs and the two ROMs need their filenames to be uppercase. Once you have the zipped ROMs on your android device, tap the checkbox on the left, select the zip in the file browser, and the files will be installed.
+      For the MT32 emulation of the music you need the MT32 ROMs and the two ROMs need their filenames to be uppercase. Once you have the zipped ROMs on your android device, tap the checkbox on the left, select the zip in the file browser, and the files will be installed. Alternatively you can enter an URL to download and install it from.
     </p>
     <p>
       Keep in mind that the MT32 ROM files are copyrighted and thus we are not offering a download. You need to dump the ROMs yourself to legally use these. 
     </p>
     <p><b><u>FluidSynth Soundfont</u></b><br/>
-      For MIDI music playback on android, we are using FluidSynth which requires requires a soundfont in SF2 format, archived in a Zip file. You can have more than one soundfont in the Zip, as our Audio settings allow you to choose which soundfont to use. Once you have the zipped soundfont on your android device, tap the checkbox on the left, select the zip in the file browser, and the file will be installed.
+      For MIDI music playback on android, we are using FluidSynth which requires requires a soundfont in SF2 format, archived in a Zip file. You can have more than one soundfont in the Zip, as our Audio settings allow you to choose which soundfont to use. Once you have the zipped soundfont on your android device, tap the checkbox on the left, select the zip in the file browser, and the file will be installed. Alternatively you can enter an URL to download and install it from.
     </p>
     <p></p>
     <p>

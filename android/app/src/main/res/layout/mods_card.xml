@@ -36,6 +36,9 @@
 	<tag
             android:id="@+id/game"
             android:value="forgeofvirtue" />
+    <tag
+            android:id="@+id/downloadUrl"
+            android:value="https://exult.info/snapshots/Keyring.zip" />
       </CheckBox>
 
       <CheckBox
@@ -49,6 +52,9 @@
 	<tag
             android:id="@+id/game"
             android:value="silverseed" />
+    <tag
+            android:id="@+id/downloadUrl"
+            android:value="https://exult.info/snapshots/Sifixes.zip" />
       </CheckBox>
 
       <CheckBox
@@ -62,6 +68,9 @@
 	<tag
             android:id="@+id/game"
             android:value="forgeofvirtue" />
+    <tag
+            android:id="@+id/downloadUrl"
+            android:value="https://exult.info/snapshots/SFisland.zip" />
       </CheckBox>
 
       <CheckBox
@@ -75,6 +84,9 @@
 	<tag
             android:id="@+id/game"
             android:value="forgeofvirtue" />
+    <tag
+            android:id="@+id/downloadUrl"
+            android:value="https://exult.info/snapshots/Ultima6.zip" />
       </CheckBox>
 
       <CheckBox
@@ -88,6 +100,9 @@
 	<tag
             android:id="@+id/game"
             android:value="silverseed" />
+    <tag
+            android:id="@+id/downloadUrl"
+            android:value="https://exult.info/snapshots/Glimmerscape_SI_mod_by_Donfrow.zip" />
       </CheckBox>
     </LinearLayout>
 
