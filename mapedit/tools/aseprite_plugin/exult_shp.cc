@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -223,10 +224,9 @@ namespace {
 		// Create full transparency array - 0 is fully transparent, 255 is fully
 		// opaque
 		png_byte trans[256];
-		for (size_t i = 0; i < std::size(trans); i++) {
-			// Make only index 255 transparent
-			trans[i] = (i == 255) ? 0 : 255;
-		}
+		std::transform(std::begin(trans), std::end(trans), trans, [](size_t i) {
+			return (i == 255) ? 0 : 255;
+		});
 
 		// Set transparency for all palette entries, with index 255 being
 		// transparent
