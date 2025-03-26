@@ -676,7 +676,8 @@ int main(int argc, char* argv[]) {
 		}
 
 		return 0;
-	} else if (mode == "export") {
+	}
+	if (mode == "export") {
 		// Sanitize input paths to prevent path traversal attacks
 		std::string sanitizedPngPath = sanitizeFilePath(argv[2]);
 		std::string sanitizedShpPath = sanitizeFilePath(argv[3]);
@@ -695,12 +696,10 @@ int main(int argc, char* argv[]) {
 					metadataPath)) {
 			std::cout << "Successfully converted PNG to SHP" << std::endl;
 			return 0;
-		} else {
-			std::cerr << "Failed to convert PNG to SHP" << std::endl;
-			return 1;
 		}
-	} else {
-		std::cerr << "Unknown mode. Use 'import' or 'export'." << std::endl;
+		std::cerr << "Failed to convert PNG to SHP" << std::endl;
 		return 1;
 	}
+	std::cerr << "Unknown mode. Use 'import' or 'export'." << std::endl;
+	return 1;
 }
