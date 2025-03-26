@@ -35,9 +35,11 @@
 #include <string>
 #include <vector>
 
+using Palette_t = std::array<unsigned char, 768>;
+
 namespace {
 	// Default Exult palette - copied from u7shp-old.cc
-	unsigned char DefaultPalette[768]
+	Palette_t DefaultPalette
 			= {0x00, 0x00, 0x00, 0xF8, 0xF0, 0xCC, 0xF4, 0xE4, 0xA4, 0xF0, 0xDC,
 			   0x78, 0xEC, 0xD0, 0x50, 0xEC, 0xC8, 0x28, 0xD8, 0xAC, 0x20, 0xC4,
 			   0x94, 0x18, 0xB0, 0x80, 0x10, 0x9C, 0x68, 0x0C, 0x88, 0x54, 0x08,
@@ -156,7 +158,7 @@ namespace {
 	// Save a frame to a PNG file
 	bool saveFrameToPNG(
 			const std::string& filename, const unsigned char* data, int width,
-			int height, unsigned char* palette) {
+			int height, const Palette_t& palette) {
 		// Create file for writing with restricted permissions
 		FILE* fp = nullptr;
 #ifdef _WIN32
@@ -210,25 +212,25 @@ namespace {
 
 		// Set up the palette
 		png_color png_palette[256];
-		for (int i = 0; i < 256; i++) {
+		for (size_t i = 0; i < std::size(png_palette); i++) {
 			png_palette[i].red   = palette[i * 3];
 			png_palette[i].green = palette[i * 3 + 1];
 			png_palette[i].blue  = palette[i * 3 + 2];
 		}
 
-		png_set_PLTE(png_ptr, info_ptr, png_palette, 256);
+		png_set_PLTE(png_ptr, info_ptr, png_palette, std::size(png_palette));
 
 		// Create full transparency array - 0 is fully transparent, 255 is fully
 		// opaque
 		png_byte trans[256];
-		for (int i = 0; i < 256; i++) {
+		for (size_t i = 0; i < std::size(trans); i++) {
 			// Make only index 255 transparent
 			trans[i] = (i == 255) ? 0 : 255;
 		}
 
 		// Set transparency for all palette entries, with index 255 being
 		// transparent
-		png_set_tRNS(png_ptr, info_ptr, trans, 256, nullptr);
+		png_set_tRNS(png_ptr, info_ptr, trans, std::size(trans), nullptr);
 
 		// Write the PNG info
 		png_write_info(png_ptr, info_ptr);
@@ -257,15 +259,15 @@ namespace {
 			const std::string& outputPngFilename,
 			const std::string& paletteFile) {
 		// Load palette - either from specified file or use default game palette
-		unsigned char palette[768];
+		Palette_t palette;
 
 		if (!paletteFile.empty()) {
 			// Load from specified palette file
 			U7object pal_obj(paletteFile, 0);
 			size_t   len;
 			auto     buf = pal_obj.retrieve(len);
-			if (buf && len >= 768) {
-				std::memcpy(palette, buf.get(), 768);
+			if (buf && len >= palette.size()) {
+				std::copy_n(palette.begin(), palette.size(), buf.get());
 				std::cout << "Using palette from file: " << paletteFile
 						  << std::endl;
 			} else {
@@ -273,11 +275,11 @@ namespace {
 						<< "Warning: Could not load palette file, using default"
 						<< std::endl;
 				// Use default palette as fallback
-				std::memcpy(palette, DefaultPalette, 768);
+				palette = DefaultPalette;
 			}
 		} else {
 			// Always use the default palette
-			std::memcpy(palette, DefaultPalette, 768);
+			palette = DefaultPalette;
 			std::cout << "Using default palette" << std::endl;
 		}
 
