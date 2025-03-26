@@ -297,7 +297,7 @@ namespace {
 		}
 
 		// Remove extension if present
-		size_t lastDot = baseFilename.find_last_of(".");
+		size_t lastDot = baseFilename.find_last_of('.');
 		if (lastDot != std::string::npos) {
 			baseFilename = baseFilename.substr(0, lastDot);
 		}
