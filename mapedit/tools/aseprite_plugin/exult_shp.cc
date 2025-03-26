@@ -112,11 +112,13 @@ namespace {
 	// Sanitize a filename to prevent path traversal attacks
 	std::string sanitizeFilename(const std::string& input) {
 		std::string sanitized;
+		sanitized.reserve(input.size());
 
-		for (char c : input) {
+		for (const char c : input) {
 			// Allow only alphanumeric characters, underscore, hyphen, and
 			// period
-			if (isalnum(c) || c == '_' || c == '-' || c == '.') {
+			auto uchr = static_cast<unsigned char>(c);
+			if (isalnum(uchr) != 0 || c == '_' || c == '-' || c == '.') {
 				sanitized += c;
 			} else {
 				// Replace potentially dangerous characters with underscore
@@ -128,12 +130,11 @@ namespace {
 	}
 
 	// Sanitize a file path to prevent directory traversal attacks
-	std::string sanitizeFilePath(const char* input) {
-		if (!input || !*input) {
+	std::string sanitizeFilePath(const std::string& path) {
+		if (path.empty()) {
 			return "";
 		}
 
-		std::string path = input;
 		std::string sanitized;
 		std::string filename;
 
@@ -154,17 +155,17 @@ namespace {
 
 	// Save a frame to a PNG file
 	bool saveFrameToPNG(
-			const char* filename, const unsigned char* data, int width,
+			const std::string& filename, const unsigned char* data, int width,
 			int height, unsigned char* palette) {
 		// Create file for writing with restricted permissions
 		FILE* fp = nullptr;
 #ifdef _WIN32
 		// Windows implementation
-		fp = fopen(filename, "wb");
+		fp = fopen(filename.c_str(), "wb");
 #else
 		// Unix/Mac implementation with restricted permissions (0644 =
 		// rw-r--r--)
-		int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		fp     = (fd >= 0) ? fdopen(fd, "wb") : nullptr;
 		if (!fp && fd >= 0) {
 			close(fd);
@@ -252,12 +253,13 @@ namespace {
 
 	// Import SHP to PNG
 	bool importSHP(
-			const char* shpFilename, const char* outputPngFilename,
-			const char* paletteFile) {
+			const std::string& shpFilename,
+			const std::string& outputPngFilename,
+			const std::string& paletteFile) {
 		// Load palette - either from specified file or use default game palette
 		unsigned char palette[768];
 
-		if (strlen(paletteFile) > 0) {
+		if (!paletteFile.empty()) {
 			// Load from specified palette file
 			U7object pal_obj(paletteFile, 0);
 			size_t   len;
@@ -280,7 +282,7 @@ namespace {
 		}
 
 		// Sanitize the output path to prevent path traversal attacks
-		std::string sanitizedOutputPath = sanitizeFilePath(outputPngFilename);
+		std::string outputPath = sanitizeFilePath(outputPngFilename);
 
 		// Extract the base filename from shpFilename (remove path and
 		// extension)
@@ -302,11 +304,10 @@ namespace {
 		baseFilename = sanitizeFilename(baseFilename);
 
 		// Create output directory path if needed
-		std::string outputDir = "";
+		std::string outputDir;
 
-		// Extract directory from sanitizedOutputPath if there is one
-		std::string outputPath  = sanitizedOutputPath;
-		size_t      lastPathSep = outputPath.find_last_of("/\\");
+		// Extract directory from outputPath if there is one
+		size_t lastPathSep = outputPath.find_last_of("/\\");
 		if (lastPathSep != std::string::npos) {
 			outputDir = outputPath.substr(0, lastPathSep + 1);
 		}
@@ -319,7 +320,7 @@ namespace {
 		std::cout << "Final output base: " << finalOutputBase << std::endl;
 
 		// Load SHP file using Shape_file constructor
-		Shape_file shape(shpFilename);
+		Shape_file shape(shpFilename.c_str());
 
 		int frameCount = shape.get_num_frames();
 		if (frameCount == 0) {
@@ -354,9 +355,9 @@ namespace {
 
 			// Sanitize the final complete paths before using them
 			std::string sanitizedFrameFilename
-					= sanitizeFilePath(frameFilename.c_str());
+					= sanitizeFilePath(frameFilename);
 			std::string sanitizedMetadataFilename
-					= sanitizeFilePath(metadataFilename.c_str());
+					= sanitizeFilePath(metadataFilename);
 
 			// Get frame data and dimensions - make sure to get the actual
 			// dimensions for this frame
@@ -408,8 +409,8 @@ namespace {
 
 			// Create PNG from frame data with the correct dimensions
 			if (!saveFrameToPNG(
-						sanitizedFrameFilename.c_str(), pixels, frameWidth,
-						frameHeight, palette)) {
+						sanitizedFrameFilename, pixels, frameWidth, frameHeight,
+						palette)) {
 				std::cerr << "Error: Failed to save frame " << i << " to PNG"
 						  << std::endl;
 				return false;
@@ -421,14 +422,15 @@ namespace {
 
 	// Export PNG to SHP
 	bool exportSHP(
-			const char* basePath, const char* outputShpFilename,
-			int defaultOffsetX, int defaultOffsetY, const char* metadataFile) {
+			const std::string& basePath, const std::string& outputShpFilename,
+			int defaultOffsetX, int defaultOffsetY,
+			const std::string& metadataFile) {
 		std::cout << "Exporting to SHP: " << outputShpFilename << std::endl;
 		std::cout << "Using base path: " << basePath << std::endl;
 		std::cout << "Using metadata file: " << metadataFile << std::endl;
 
 		// Read metadata to get number of frames and offsets
-		FILE* metaFile = fopen(metadataFile, "r");
+		FILE* metaFile = fopen(metadataFile.c_str(), "r");
 		if (!metaFile) {
 			std::cerr << "Error: Unable to open metadata file: " << metadataFile
 					  << std::endl;
@@ -492,8 +494,9 @@ namespace {
 		volatile int frameIdx = 0;
 		while (frameIdx < numFrames) {
 			// Construct the PNG filename
-			std::string pngFilename
-					= std::string(basePath) + std::to_string(frameIdx) + ".png";
+			std::string pngFilename = basePath;
+			pngFilename += std::to_string(frameIdx);
+			pngFilename += ".png";
 
 			// Open the PNG file
 			FILE* fp = fopen(pngFilename.c_str(), "rb");
@@ -654,11 +657,11 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 
-		const char* shpFilename = argv[2];
-		const char* outputPath  = argv[3];
+		std::string shpFilename = argv[2];
+		std::string outputPath  = argv[3];
 
 		// Handle optional parameters
-		const char* paletteFile = "";
+		std::string paletteFile;
 
 		// Parse remaining arguments
 		for (int i = 4; i < argc; i++) {
@@ -670,7 +673,7 @@ int main(int argc, char* argv[]) {
 		std::cout << "Loading SHP file: " << shpFilename << std::endl;
 		std::cout << "Output path: " << outputPath << std::endl;
 		std::cout << "Palette file: "
-				  << (strlen(paletteFile) > 0 ? paletteFile : "default")
+				  << (!paletteFile.empty() ? paletteFile : "default")
 				  << std::endl;
 
 		if (!importSHP(shpFilename, outputPath, paletteFile)) {
@@ -688,14 +691,14 @@ int main(int argc, char* argv[]) {
 		int offsetY = (argc > 6) ? atoi(argv[6]) : 0;
 
 		// Sanitize the metadata file path
-		std::string metadataPath = "";
+		std::string metadataPath;
 		if (argc > 7) {
 			metadataPath = sanitizeFilePath(argv[7]);
 		}
 
 		if (exportSHP(
-					sanitizedPngPath.c_str(), sanitizedShpPath.c_str(), offsetX,
-					offsetY, metadataPath.c_str())) {
+					sanitizedPngPath, sanitizedShpPath, offsetX, offsetY,
+					metadataPath)) {
 			std::cout << "Successfully converted PNG to SHP" << std::endl;
 			return 0;
 		} else {
