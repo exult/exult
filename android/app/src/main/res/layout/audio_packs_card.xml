@@ -33,6 +33,9 @@
 	<tag
             android:id="@+id/name"
             android:value="allInOne" />
+	<tag
+            android:id="@+id/downloadUrl"
+            android:value="https://downloads.sourceforge.net/project/exult/exult-data/exult_audio.zip" />
       </CheckBox>
       <CheckBox
           android:id="@+id/audioRomCheckBox"

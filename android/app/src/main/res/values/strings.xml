@@ -3,4 +3,6 @@
     <string name="shortcut_launcher_shortlabel">Force Start Launcher</string>
     <string name="shortcut_launcher_longlabel">Force Start Launcher</string>
     <string name="shortcut_launcher_disabledmessage">Force Start Launcher Disabled</string>
+    <item name="name" type="id"/>
+    <item name="downloadUrl" type="id"/>
 </resources>

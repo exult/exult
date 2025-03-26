@@ -2,13 +2,16 @@
 <resources>
   <string name="mods_card_text"><![CDATA[
     <p>
-      Exult can optionally make use of mods that change the original games or add entirely new content.  This android port is currently set up to make use of the three mods maintained by the Exult project, the excellent Ultima VI remake and Glimmerscape.  To install them, browse to the <a href="https://exult.info/download.php">Exult Downloads page</a> and tap on the mods under &quot;Mod Snapshots&quot; you are interested in to download them.
+      Exult can optionally make use of mods that change the original games or add entirely new content. This android port is currently set up to make use of the three mods maintained by the Exult project, the excellent Ultima VI remake and Glimmerscape. You can either have this launcher download the mods from our download page and install it, or browse to the <a href="https://exult.info/download.php">Exult Downloads page</a> and download the mods you are interested in.
     </p>
     <p>
-      After you have downloaded the .zip file(s), you can tap the corresponding checkboxes on the left.  These will open a file browser which you can use to select the archive(s) you downloaded, and the installer will take care of extracting the required data files and installing them in the correct places.
+      After you have downloaded the .zip file(s), you can tap the corresponding checkboxes on the left. These will open a file browser which you can use to select the archive(s) you downloaded, and the installer will take care of extracting the required data files and installing them in the correct places.
     </p>
     <p>
       Once you have successfully installed the mod(s), you are free to delete the .zip files; they will no longer be needed or used by Exult after installation.
+    </p>
+    <p>
+      If you wish to install a mod that is not listed on the left hand side, click the "INSTALL CUSTOM MODS" button. But be aware that these cannot be uninstalled from the launcher.
     </p>
   ]]></string>
 </resources>
