@@ -109,11 +109,6 @@ namespace {
 			   0x00, 0xFF, 0x00, 0xFC, 0x00, 0xFC, 0x00, 0x00, 0xFC, 0xFC, 0xFC,
 			   0x61, 0x61, 0x61, 0xC0, 0xC0, 0xC0, 0xFC, 0x00, 0xF1};
 
-	// Function prototype
-	bool saveFrameToPNG(
-			const char* filename, const unsigned char* data, int width,
-			int height, unsigned char* palette);
-
 	// Sanitize a filename to prevent path traversal attacks
 	std::string sanitizeFilename(const std::string& input) {
 		std::string sanitized;
@@ -155,6 +150,104 @@ namespace {
 		sanitized += sanitizeFilename(filename);
 
 		return sanitized;
+	}
+
+	// Save a frame to a PNG file
+	bool saveFrameToPNG(
+			const char* filename, const unsigned char* data, int width,
+			int height, unsigned char* palette) {
+		// Create file for writing with restricted permissions
+		FILE* fp = nullptr;
+#ifdef _WIN32
+		// Windows implementation
+		fp = fopen(filename, "wb");
+#else
+		// Unix/Mac implementation with restricted permissions (0644 =
+		// rw-r--r--)
+		int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		fp     = (fd >= 0) ? fdopen(fd, "wb") : nullptr;
+		if (!fp && fd >= 0) {
+			close(fd);
+		}
+#endif
+
+		if (!fp) {
+			std::cerr << "Error: Failed to open file for writing: " << filename
+					  << std::endl;
+			return false;
+		}
+
+		// Initialize libpng structures
+		png_structp png_ptr = png_create_write_struct(
+				PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+		if (!png_ptr) {
+			fclose(fp);
+			return false;
+		}
+
+		png_infop info_ptr = png_create_info_struct(png_ptr);
+		if (!info_ptr) {
+			png_destroy_write_struct(&png_ptr, nullptr);
+			fclose(fp);
+			return false;
+		}
+
+		if (setjmp(png_jmpbuf(png_ptr))) {
+			png_destroy_write_struct(&png_ptr, &info_ptr);
+			fclose(fp);
+			return false;
+		}
+
+		png_init_io(png_ptr, fp);
+
+		// Set image attributes for indexed color PNG
+		png_set_IHDR(
+				png_ptr, info_ptr, width, height,
+				8,    // bit depth
+				PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE,
+				PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+
+		// Set up the palette
+		png_color png_palette[256];
+		for (int i = 0; i < 256; i++) {
+			png_palette[i].red   = palette[i * 3];
+			png_palette[i].green = palette[i * 3 + 1];
+			png_palette[i].blue  = palette[i * 3 + 2];
+		}
+
+		png_set_PLTE(png_ptr, info_ptr, png_palette, 256);
+
+		// Create full transparency array - 0 is fully transparent, 255 is fully
+		// opaque
+		png_byte trans[256];
+		for (int i = 0; i < 256; i++) {
+			// Make only index 255 transparent
+			trans[i] = (i == 255) ? 0 : 255;
+		}
+
+		// Set transparency for all palette entries, with index 255 being
+		// transparent
+		png_set_tRNS(png_ptr, info_ptr, trans, 256, nullptr);
+
+		// Write the PNG info
+		png_write_info(png_ptr, info_ptr);
+
+		// Allocate memory for row pointers
+		std::vector<png_bytep> row_pointers(height);
+		for (int y = 0; y < height; ++y) {
+			row_pointers[y] = const_cast<png_bytep>(&data[y * width]);
+		}
+
+		// Write image data
+		png_write_image(png_ptr, row_pointers.data());
+		png_write_end(png_ptr, nullptr);
+
+		// Clean up
+		png_destroy_write_struct(&png_ptr, &info_ptr);
+		fclose(fp);
+
+		std::cout << "Successfully saved PNG: " << filename << std::endl;
+		return true;
 	}
 
 	// Import SHP to PNG
@@ -323,104 +416,6 @@ namespace {
 			}
 		}
 
-		return true;
-	}
-
-	// Save a frame to a PNG file
-	bool saveFrameToPNG(
-			const char* filename, const unsigned char* data, int width,
-			int height, unsigned char* palette) {
-		// Create file for writing with restricted permissions
-		FILE* fp = nullptr;
-#ifdef _WIN32
-		// Windows implementation
-		fp = fopen(filename, "wb");
-#else
-		// Unix/Mac implementation with restricted permissions (0644 =
-		// rw-r--r--)
-		int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-		fp     = (fd >= 0) ? fdopen(fd, "wb") : nullptr;
-		if (!fp && fd >= 0) {
-			close(fd);
-		}
-#endif
-
-		if (!fp) {
-			std::cerr << "Error: Failed to open file for writing: " << filename
-					  << std::endl;
-			return false;
-		}
-
-		// Initialize libpng structures
-		png_structp png_ptr = png_create_write_struct(
-				PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-		if (!png_ptr) {
-			fclose(fp);
-			return false;
-		}
-
-		png_infop info_ptr = png_create_info_struct(png_ptr);
-		if (!info_ptr) {
-			png_destroy_write_struct(&png_ptr, nullptr);
-			fclose(fp);
-			return false;
-		}
-
-		if (setjmp(png_jmpbuf(png_ptr))) {
-			png_destroy_write_struct(&png_ptr, &info_ptr);
-			fclose(fp);
-			return false;
-		}
-
-		png_init_io(png_ptr, fp);
-
-		// Set image attributes for indexed color PNG
-		png_set_IHDR(
-				png_ptr, info_ptr, width, height,
-				8,    // bit depth
-				PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE,
-				PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-
-		// Set up the palette
-		png_color png_palette[256];
-		for (int i = 0; i < 256; i++) {
-			png_palette[i].red   = palette[i * 3];
-			png_palette[i].green = palette[i * 3 + 1];
-			png_palette[i].blue  = palette[i * 3 + 2];
-		}
-
-		png_set_PLTE(png_ptr, info_ptr, png_palette, 256);
-
-		// Create full transparency array - 0 is fully transparent, 255 is fully
-		// opaque
-		png_byte trans[256];
-		for (int i = 0; i < 256; i++) {
-			// Make only index 255 transparent
-			trans[i] = (i == 255) ? 0 : 255;
-		}
-
-		// Set transparency for all palette entries, with index 255 being
-		// transparent
-		png_set_tRNS(png_ptr, info_ptr, trans, 256, nullptr);
-
-		// Write the PNG info
-		png_write_info(png_ptr, info_ptr);
-
-		// Allocate memory for row pointers
-		std::vector<png_bytep> row_pointers(height);
-		for (int y = 0; y < height; ++y) {
-			row_pointers[y] = const_cast<png_bytep>(&data[y * width]);
-		}
-
-		// Write image data
-		png_write_image(png_ptr, row_pointers.data());
-		png_write_end(png_ptr, nullptr);
-
-		// Clean up
-		png_destroy_write_struct(&png_ptr, &info_ptr);
-		fclose(fp);
-
-		std::cout << "Successfully saved PNG: " << filename << std::endl;
 		return true;
 	}
 
