@@ -248,7 +248,7 @@ bool importSHP(
 				= finalOutputBase + "_" + std::to_string(i) + ".png";
 		std::string metadataFilename
 				= finalOutputBase + "_" + std::to_string(i) + ".meta";
-				
+
 		// Sanitize the final complete paths before using them
         std::string sanitizedFrameFilename = sanitizeFilePath(frameFilename.c_str());
         std::string sanitizedMetadataFilename = sanitizeFilePath(metadataFilename.c_str());
@@ -666,7 +666,7 @@ int main(int argc, char* argv[]) {
 		// Sanitize input paths to prevent path traversal attacks
 		std::string sanitizedPngPath = sanitizeFilePath(argv[2]);
 		std::string sanitizedShpPath = sanitizeFilePath(argv[3]);
-		
+
 		int offsetX = (argc > 5) ? atoi(argv[5]) : 0;
 		int offsetY = (argc > 6) ? atoi(argv[6]) : 0;
 
@@ -675,10 +675,10 @@ int main(int argc, char* argv[]) {
 		if (argc > 7) {
 			metadataPath = sanitizeFilePath(argv[7]);
 		}
-		
+
 		if (exportSHP(
-					sanitizedPngPath.c_str(), 
-					sanitizedShpPath.c_str(), 
+					sanitizedPngPath.c_str(),
+					sanitizedShpPath.c_str(),
 					offsetX, offsetY,
 					metadataPath.c_str())) {
 			std::cout << "Successfully converted PNG to SHP" << std::endl;
