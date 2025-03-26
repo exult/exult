@@ -167,12 +167,12 @@ namespace {
 		// rw-r--r--)
 		int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		fp     = (fd >= 0) ? fdopen(fd, "wb") : nullptr;
-		if (!fp && fd >= 0) {
+		if ((fp == nullptr) && fd >= 0) {
 			close(fd);
 		}
 #endif
 
-		if (!fp) {
+		if (fp == nullptr) {
 			std::cerr << "Error: Failed to open file for writing: " << filename
 					  << std::endl;
 			return false;
@@ -181,13 +181,13 @@ namespace {
 		// Initialize libpng structures
 		png_structp png_ptr = png_create_write_struct(
 				PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-		if (!png_ptr) {
+		if (png_ptr == nullptr) {
 			fclose(fp);
 			return false;
 		}
 
 		png_infop info_ptr = png_create_info_struct(png_ptr);
-		if (!info_ptr) {
+		if (info_ptr == nullptr) {
 			png_destroy_write_struct(&png_ptr, nullptr);
 			fclose(fp);
 			return false;
@@ -333,7 +333,7 @@ namespace {
 		int height = 0;
 		for (int i = 0; i < frameCount; i++) {
 			Shape_frame* frame = shape.get_frame(i);
-			if (!frame) {
+			if (frame == nullptr) {
 				continue;
 			}
 			width  = std::max(width, frame->get_width());
@@ -343,7 +343,7 @@ namespace {
 		// Create individual PNG for each frame
 		for (int i = 0; i < frameCount; i++) {
 			Shape_frame* frame = shape.get_frame(i);
-			if (!frame) {
+			if (frame == nullptr) {
 				continue;
 			}
 
@@ -381,12 +381,12 @@ namespace {
 					= open(sanitizedMetadataFilename.c_str(),
 						   O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			FILE* metaFile = (fd >= 0) ? fdopen(fd, "w") : nullptr;
-			if (!metaFile && fd >= 0) {
+			if ((metaFile == nullptr) && fd >= 0) {
 				close(fd);
 			}
 #endif
 
-			if (metaFile) {
+			if (metaFile != nullptr) {
 				// Write frame dimensions to metadata
 				fprintf(metaFile, "frame_width=%d\nframe_height=%d\n",
 						frameWidth, frameHeight);
@@ -431,7 +431,7 @@ namespace {
 
 		// Read metadata to get number of frames and offsets
 		FILE* metaFile = fopen(metadataFile.c_str(), "r");
-		if (!metaFile) {
+		if (metaFile == nullptr) {
 			std::cerr << "Error: Unable to open metadata file: " << metadataFile
 					  << std::endl;
 			return false;
@@ -442,7 +442,7 @@ namespace {
 		char                             line[256];
 		std::vector<std::pair<int, int>> offsets;
 
-		while (fgets(line, sizeof(line), metaFile)) {
+		while (fgets(line, sizeof(line), metaFile) != nullptr) {
 			// Remove newline if present
 			size_t len = strlen(line);
 			if (len > 0 && line[len - 1] == '\n') {
@@ -456,7 +456,7 @@ namespace {
 						std::make_pair(defaultOffsetX, defaultOffsetY));
 			} else if (
 					strncmp(line, "frame", 5) == 0
-					&& strstr(line, "offset_x=")) {
+					&& (strstr(line, "offset_x=") != nullptr)) {
 				// Parse frame index and offset_x value
 				int frameIndex = 0;
 				int offsetX    = 0;
@@ -466,7 +466,7 @@ namespace {
 				}
 			} else if (
 					strncmp(line, "frame", 5) == 0
-					&& strstr(line, "offset_y=")) {
+					&& (strstr(line, "offset_y=") != nullptr)) {
 				// Parse frame index and offset_y value
 				int frameIndex = 0;
 				int offsetY    = 0;
@@ -500,7 +500,7 @@ namespace {
 
 			// Open the PNG file
 			FILE* fp = fopen(pngFilename.c_str(), "rb");
-			if (!fp) {
+			if (fp == nullptr) {
 				std::cerr << "Error: Could not open frame file: " << pngFilename
 						  << std::endl;
 				return false;
@@ -509,13 +509,13 @@ namespace {
 			// Initialize PNG read structures
 			png_structp png_ptr = png_create_read_struct(
 					PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-			if (!png_ptr) {
+			if (png_ptr == nullptr) {
 				fclose(fp);
 				return false;
 			}
 
 			png_infop info_ptr = png_create_info_struct(png_ptr);
-			if (!info_ptr) {
+			if (info_ptr == nullptr) {
 				png_destroy_read_struct(&png_ptr, nullptr, nullptr);
 				fclose(fp);
 				return false;
