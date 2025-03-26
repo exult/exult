@@ -157,8 +157,8 @@ namespace {
 
 	// Save a frame to a PNG file
 	bool saveFrameToPNG(
-			const std::string& filename, const unsigned char* data, int width,
-			int height, const Palette_t& palette) {
+			const std::string& filename, const unsigned char* data,
+			size_t width, size_t height, const Palette_t& palette) {
 		// Create file for writing with restricted permissions
 		FILE* fp = nullptr;
 #ifdef _WIN32
@@ -213,9 +213,9 @@ namespace {
 		// Set up the palette
 		png_color png_palette[256];
 		for (size_t i = 0; i < std::size(png_palette); i++) {
-			png_palette[i].red   = palette[i * 3];
-			png_palette[i].green = palette[i * 3 + 1];
-			png_palette[i].blue  = palette[i * 3 + 2];
+			png_palette[i].red   = palette[(i * 3)];
+			png_palette[i].green = palette[(i * 3) + 1];
+			png_palette[i].blue  = palette[(i * 3) + 2];
 		}
 
 		png_set_PLTE(png_ptr, info_ptr, png_palette, std::size(png_palette));
@@ -237,7 +237,7 @@ namespace {
 
 		// Allocate memory for row pointers
 		std::vector<png_bytep> row_pointers(height);
-		for (int y = 0; y < height; ++y) {
+		for (size_t y = 0; y < height; ++y) {
 			row_pointers[y] = const_cast<png_bytep>(&data[y * width]);
 		}
 
