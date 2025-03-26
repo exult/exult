@@ -533,9 +533,9 @@ namespace {
 			png_read_info(png_ptr, info_ptr);
 
 			// Get image dimensions
-			int width      = png_get_image_width(png_ptr, info_ptr);
-			int height     = png_get_image_height(png_ptr, info_ptr);
-			int color_type = png_get_color_type(png_ptr, info_ptr);
+			size_t width      = png_get_image_width(png_ptr, info_ptr);
+			size_t height     = png_get_image_height(png_ptr, info_ptr);
+			int    color_type = png_get_color_type(png_ptr, info_ptr);
 
 			// Make sure it's an indexed color image
 			if (color_type != PNG_COLOR_TYPE_PALETTE) {
@@ -547,14 +547,11 @@ namespace {
 			}
 
 			// Read the image data
+			std::vector<unsigned char> imageData(width * height);
 			std::vector<png_bytep>     row_pointers(height);
-			std::vector<unsigned char> imageData(
-					static_cast<size_t>(width) * static_cast<size_t>(height));
 
-			for (int y = 0; y < height; y++) {
-				row_pointers[y] = &imageData
-										  [static_cast<size_t>(y)
-										   * static_cast<size_t>(width)];
+			for (size_t y = 0; y < height; y++) {
+				row_pointers[y] = &imageData[y * width];
 			}
 
 			png_read_image(png_ptr, row_pointers.data());
@@ -570,16 +567,16 @@ namespace {
 
 			// Create a buffer for the frame data - DON'T pre-fill with
 			// transparency
-			unsigned char* pixels = new unsigned char[width * height];
+			auto pixels = std::make_unique<unsigned char[]>(width * height);
 
 			// Copy all pixels from PNG, treating index 255 as transparent
-			for (int y = 0; y < height; y++) {
-				for (int x = 0; x < width; x++) {
-					unsigned char pixel = imageData[y * width + x];
+			for (size_t y = 0; y < height; y++) {
+				for (size_t x = 0; x < width; x++) {
+					unsigned char pixel = imageData[(y * width) + x];
 
 					// Store the original pixel value - Shape_frame expects
 					// index 255 to be transparent
-					pixels[y * width + x] = pixel;
+					pixels[(y * width) + x] = pixel;
 				}
 			}
 
@@ -595,25 +592,20 @@ namespace {
 			try {
 				// Create the frame - must use the constructor that takes raw
 				// pixel data
-				std::unique_ptr<Shape_frame> frame
-						= std::make_unique<Shape_frame>(
-								pixels,           // raw pixel data
-								width, height,    // dimensions
-								xleft, yabove,    // offsets
-								true              // make a copy of the data
-						);
+				auto frame = std::make_unique<Shape_frame>(
+						std::move(pixels),    // raw pixel data
+						width, height,        // dimensions
+						xleft, yabove,        // offsets
+						true                  // make a copy of the data
+				);
 
 				// Add the frame to the shape file
 				shapeFile.set_frame(std::move(frame), frameIdx);
 			} catch (std::exception& e) {
 				std::cerr << "Exception creating Shape_frame: " << e.what()
 						  << std::endl;
-				delete[] pixels;
 				return false;
 			}
-
-			// Clean up the pixel data
-			delete[] pixels;
 
 			// Increment at the end of the loop
 			frameIdx = frameIdx + 1;
