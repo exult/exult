@@ -117,4 +117,4 @@ $(APK_ASSETS): $(APK_ASSETS_DIR)/%: $(abs_top_srcdir)/data/%
 # The NDK build also utilizes this codebase rather than downloading a
 # separate copy.
 $(SDL_SOURCE_DIR):
-	$(GIT) -c advice.detachedHead=false clone --branch release-2.32.0 --depth 1 https://github.com/libsdl-org/SDL.git $@
+	$(GIT) -c advice.detachedHead=false clone --depth 1 https://github.com/libsdl-org/SDL.git $@

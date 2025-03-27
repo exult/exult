@@ -40,14 +40,17 @@ Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
 
 struct SDL_Surface;
-struct SDL_RWops;
+struct SDL_IOStream;
 
 /*
  *   Here's the top-level class to use for image buffers.  Image_window
@@ -157,6 +160,7 @@ public:
 	static const ScalerConst _2xBR;
 	static const ScalerConst _3xBR;
 	static const ScalerConst _4xBR;
+	static const ScalerConst SDLScaler;
 	static const ScalerConst NumScalers;
 
 	// Gets the draw surface and intersurface dims.
@@ -194,9 +198,7 @@ protected:
 	struct SDL_Window*     screen_window;
 	struct SDL_Renderer*   screen_renderer;
 	struct SDL_Texture*    screen_texture;
-	// Returns 0 on failure, else highest bpp for resolution
-	static int VideoModeOK(int width, int height);
-	void       UpdateRect(SDL_Surface* surf, int x, int y, int w, int h);
+	void                   UpdateRect(SDL_Surface* surf);
 
 	SDL_Surface* paletted_surface;    // Surface that palette is set on (Example
 									  // res)
@@ -310,7 +312,20 @@ public:
 		return screen_window;
 	}
 
-	int Get_best_bpp(int w, int h, int bpp, uint32 flags);
+	// Looks for the best resolution from the width x height and fullscreen :
+	// - A portrait requirement height > width can never be found,
+	// - In Windowed, only the Desktop resolution is suitable,
+	//      and only if it is larger or equal than width x height,
+	// - In Fullscreen, a Fullscreen mode of the display is suitable
+	//      if it is equal to width x height.
+	// If the required bits per pixel bpp is left to default ( 0 ),
+	//      the largest bits per pixel in 8, 16, 32 is returned
+	//      from the suitable resolutions, otherwise 0 is returned.
+	// If the required bits per pixel bpp is set ( to one of 8, 16, 32 ),
+	//      the exact same bits per pixel is returned if a suitable resolution
+	//      admits this bpp, otherwise 0 is returned.
+	static int VideoModeOK(int width, int height, bool fullscreen, int bpp = 0);
+	int        Get_best_bpp(int w, int h, int bpp);
 
 	// Create with given buffer.
 	Image_window(
@@ -320,6 +335,7 @@ public:
 			: ibuf(ib), scale(scl), scaler(sclr), uses_palette(true),
 			  fullscreen(fs), game_width(gamew), game_height(gameh),
 			  fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
+			  screen_renderer(nullptr), screen_texture(nullptr),
 			  paletted_surface(nullptr), display_surface(nullptr),
 			  inter_surface(nullptr), draw_surface(nullptr) {
 		static_init();
@@ -540,6 +556,6 @@ public:
 		ibuf->put(src, destx, desty);
 	}
 
-	bool screenshot(SDL_RWops* dst);
+	bool screenshot(SDL_IOStream* dst);
 };
 #endif /* INCL_IMAGEWIN    */

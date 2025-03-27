@@ -52,8 +52,6 @@ private:
 	uint32                 o_game_resolution;
 	int                    o_fill_scaler;
 	Image_window::FillMode o_fill_mode;
-	bool                   highdpi;
-	bool                   o_highdpi;
 
 	Image_window::FillMode startup_fill_mode;
 
@@ -118,7 +116,10 @@ public:
 	}
 
 	void set_fill_scaler(int f_scaler) {
-		fill_scaler = f_scaler;
+		fill_scaler
+				= (f_scaler == Image_window::SDLScaler  ? 2
+				   : f_scaler == Image_window::bilinear ? 1
+														: 0);
 	}
 
 	void set_fill_mode(Image_window::FillMode f_mode) {
@@ -145,6 +146,7 @@ public:
 	void toggle_fullscreen(int state) {
 		if (share_settings) {
 			fullscreen = state;
+			rebuild_dynamic_buttons();
 		} else {
 			load_settings(state);    // overwrites old settings
 			rebuild_buttons();
@@ -179,10 +181,6 @@ public:
 
 	void toggle_share_settings(int state) {
 		share_settings = state;
-	}
-
-	void toggle_high_dpi(int state) {
-		highdpi = state;
 	}
 };
 

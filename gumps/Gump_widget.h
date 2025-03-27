@@ -21,7 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Gump.h"
 #include "exceptions.h"
-#include "ignore_unused_variable_warning.h"
 #include "rect.h"
 #include "shapeid.h"
 

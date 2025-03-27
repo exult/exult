@@ -142,16 +142,16 @@ int Text_gump::paint_page(const TileRect& box, int start) {
 					}
 
 					// Use existing markers to find earliest upcoming marker
-					char* earliest = text + textlen; // default: measure to
-													 // end-of-text
+					char* earliest = text + textlen;    // default: measure to
+														// end-of-text
 
 					// Use same check for both page break markers
 					if ((pageBreakStar > eol + 1 && pageBreakStar < earliest)
-						 || (extraBreak > eol + (epage == extraBreak ? 3 : 1)
-							 && extraBreak < earliest)) {
+						|| (extraBreak > eol + (epage == extraBreak ? 3 : 1)
+							&& extraBreak < earliest)) {
 						earliest = (pageBreakStar && pageBreakStar < earliest)
-								   ? pageBreakStar
-								   : extraBreak;
+										   ? pageBreakStar
+										   : extraBreak;
 					}
 
 					// Temporarily replace the character at 'earliest' with
