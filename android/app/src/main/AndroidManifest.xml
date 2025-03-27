@@ -50,7 +50,7 @@
 
     <!-- Create a Java class extending SDLActivity and place it in a
          directory under app/src/main/java matching the package, e.g. app/src/main/java/com/gamemaker/game/MyGame.java
- 
+
          then replace "SDLActivity" with the name of your class (e.g. "MyGame")
          in the XML below.
 
@@ -80,8 +80,9 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <meta-data android:name="android.app.shortcuts"
-                   android:resource="@xml/shortcuts" /> 
+            <meta-data 
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" /> 
         </activity>
         <activity android:name="ExultActivity"
             android:exported="true"
