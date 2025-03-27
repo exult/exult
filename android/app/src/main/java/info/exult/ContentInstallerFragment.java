@@ -19,7 +19,6 @@
 package info.exult;
 
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -32,24 +31,9 @@ import android.webkit.WebView;
 import android.widget.CheckBox;
 import androidx.fragment.app.Fragment;
 import java.util.HashMap;
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import android.text.InputType;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
-import java.util.function.Consumer;
-import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import android.webkit.WebViewClient;
-import android.content.DialogInterface;
 import android.widget.Button;
 import android.view.Gravity;
 import android.graphics.drawable.GradientDrawable;
@@ -63,6 +47,8 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
   private final int m_layout;
   private final int m_text;
   private AlertDialog m_progressDialog;
+  private CustomModInstaller customModInstaller;
+  private ContentDownloader contentDownloader;
 
   ContentInstallerFragment(int layout, int text) {
     m_layout = layout;
@@ -83,11 +69,11 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
       if (buttonIndex > 0) {
         htmlContent = htmlContent.substring(0, buttonIndex);
       }
-      
+
       webView.loadDataWithBaseURL(null, htmlContent, "text/html", "utf-8", null);
       webView.setBackgroundColor(Color.TRANSPARENT);
       webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
-      
+
       // External URL handling
       webView.setWebViewClient(new WebViewClient() {
         @Override
@@ -101,7 +87,7 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
         }
       });
     }
-    
+
     ViewGroup contentLayout = (ViewGroup) view.findViewById(R.id.contentLayout);
     if (contentLayout != null) {
         // Add custom mod button
@@ -112,25 +98,25 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
         // Apply proper theming to match launchExultButton
         int[] attrs = new int[] { android.R.attr.colorPrimary };
         android.content.res.TypedArray a = getContext().obtainStyledAttributes(attrs);
-        int color = a.getColor(0, Color.parseColor("#3F51B5")); // Default to Material Blue if theme attr not found
+        int color = a.getColor(0, Color.parseColor("#3F51B5"));
         a.recycle();
 
         // Create rounded corner background
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.RECTANGLE);
         shape.setColor(color);
-        shape.setCornerRadius(getResources().getDisplayMetrics().density * 4); // 4dp rounded corners
+        shape.setCornerRadius(getResources().getDisplayMetrics().density * 4);
 
         // Apply the styling
         customModButton.setBackground(shape);
         customModButton.setTextColor(Color.WHITE);
         customModButton.setAllCaps(true);
-        customModButton.setElevation(0); // Remove any elevation/shadow
+        customModButton.setElevation(0);
 
         // Set the button height and width using standard Android dimensions
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.WRAP_CONTENT,
-            (int) (getResources().getDisplayMetrics().density * 36)); // 36dp is standard Android button height
+            (int) (getResources().getDisplayMetrics().density * 36));
         params.gravity = Gravity.CENTER_HORIZONTAL;
         params.topMargin = 40;
         params.bottomMargin = 20;
@@ -138,9 +124,8 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
         contentLayout.addView(customModButton, params);
 
         // Use minimum width to match standard buttons
-        customModButton.setMinWidth((int) (getResources().getDisplayMetrics().density * 88)); // Standard min width
-        
-        // Continue with the rest of the contentLayout processing
+        customModButton.setMinWidth((int) (getResources().getDisplayMetrics().density * 88));
+
         // Reuse the existing activity variable defined above
         for (int i = 0; i < contentLayout.getChildCount() - 1; ++i) {
             // Note: -1 to skip the button we just added
@@ -170,6 +155,52 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
         new AlertDialog.Builder(getContext())
             .setView(inflater.inflate(R.layout.progress_dialog, container, false))
             .create();
+
+    // Initialize our helper classes
+    customModInstaller = new CustomModInstaller(
+        getContext(), 
+        this, 
+        m_progressReporter,
+        new CustomModInstaller.ModInstallCallback() {
+            @Override
+            public void onInstallStarted(ExultContent content, int requestCode) {
+                m_requestCodeToContent.put(requestCode, content);
+            }
+
+            @Override
+            public void onInstallComplete(boolean successful, String details, int requestCode) {
+                handleContentDone(requestCode, successful, details);
+            }
+
+            @Override
+            public void onCancelled(int requestCode) {
+                CheckBox checkBox = m_requestCodeToCheckbox.get(requestCode);
+                if (checkBox != null) {
+                    checkBox.setChecked(false);
+                }
+            }
+        });
+
+    contentDownloader = new ContentDownloader(
+        getContext(),
+        getActivity(),
+        m_progressDialog,
+        m_requestCodeToCheckbox,
+        new ContentDownloader.DownloadCallback() {
+            @Override
+            public void onDownloadComplete(Uri fileUri, int requestCode, File tempFile) {
+                processDownloadedFile(fileUri, requestCode, tempFile);
+            }
+
+            @Override
+            public void onDownloadFailed(String errorMessage, int requestCode) {
+                handleContentDone(requestCode, false, errorMessage);
+                CheckBox checkBox = m_requestCodeToCheckbox.get(requestCode);
+                if (checkBox != null) {
+                    checkBox.setChecked(false);
+                }
+            }
+        });
 
     return view;
   }
@@ -221,7 +252,7 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
     if (checked) {
       // Get hardcoded URL if it exists
       String hardcodedUrl = (String) view.getTag(R.id.downloadUrl);
-      
+
       // Show options dialog
       AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
       builder.setTitle("Install " + checkBox.getText());
@@ -233,7 +264,7 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
       } else {
         options = new String[]{"Select file on your device", "Download from URL"};
       }
-      
+
       builder.setItems(options, (dialog, which) -> {
         if (which == 0) {
           // Select file from device (existing functionality)
@@ -302,17 +333,17 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
     }
 
     // For custom mod request code
-    if (requestCode == 9999) { // Match the customModRequestCode
-      Uri uri = resultData.getData();
-      handleCustomModInstallation(uri, requestCode, null);
-      return;
+    if (requestCode == CustomModInstaller.getRequestCode()) {
+        Uri uri = resultData.getData();
+        customModInstaller.handleFilePickerResult(uri, requestCode, null);
+        return;
     }
 
     Uri uri = resultData.getData();
-    
+
     // Check if this is the custom mod
     CheckBox checkBox = m_requestCodeToCheckbox.get(requestCode);
-    
+
     // Perform operations on the document using its URI on a separate thread
     new Thread(
             () -> {
@@ -355,81 +386,13 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
    * @param requestCode The requestCode associated with the content
    */
   private void downloadFileFromUrl(String url, int requestCode) {
-    // Create a temporary file to save the download
-    File outputDir = getContext().getCacheDir();
-    File outputFile;
-    
-    try {
-      outputFile = File.createTempFile("exult_download_", ".tmp", outputDir);
-    } catch (IOException e) {
-      handleContentDone(requestCode, false, "Could not create temporary file: " + e.getMessage());
-      return;
-    }
-
-    // Show progress dialog
-    getActivity().runOnUiThread(() -> {
-      m_progressDialog.setTitle("Downloading");
-      m_progressDialog.setMessage("Starting download...");
-      m_progressDialog.show();
-    });
-
-    // Download the file in a background thread
-    new Thread(() -> {
-      try {
-        URL downloadUrl = new URL(url);
-        HttpURLConnection connection = (HttpURLConnection) downloadUrl.openConnection();
-        connection.connect();
-
-        if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-          handleContentDone(requestCode, false, "Server returned HTTP " + connection.getResponseCode());
-          return;
-        }
-
-        // Get file size
-        int fileLength = connection.getContentLength();
-
-        // Download the file
-        InputStream input = new BufferedInputStream(connection.getInputStream());
-        OutputStream output = new FileOutputStream(outputFile);
-
-        byte[] data = new byte[4096];
-        long total = 0;
-        int count;
-        while ((count = input.read(data)) != -1) {
-          total += count;
-          
-          // Update progress
-          final int progress = fileLength > 0 ? (int) (total * 100 / fileLength) : -1;
-          final String progressText = progress >= 0 ? progress + "%" : "Downloading...";
-          getActivity().runOnUiThread(() -> {
-            m_progressDialog.setMessage(progressText);
-          });
-          
-          output.write(data, 0, count);
-        }
-
-        output.flush();
-        output.close();
-        input.close();
-
-        // Process the downloaded file
-        Uri fileUri = Uri.fromFile(outputFile);
-        processDownloadedFile(fileUri, requestCode, outputFile);
-        
-      } catch (Exception e) {
-        Log.e("ExultLauncherActivity", "Download exception", e);
-        handleContentDone(requestCode, false, "Download failed: " + e.getMessage());
-      }
-    }).start();
+    contentDownloader.downloadFileFromUrl(url, requestCode);
   }
 
   /**
    * Process the downloaded file similar to onActivityResult
    */
   private void processDownloadedFile(Uri uri, int requestCode, File tempFile) {
-    // Check if this is the custom mod
-    CheckBox checkBox = m_requestCodeToCheckbox.get(requestCode);
-    
     // Regular content handling
     ExultContent content = m_requestCodeToContent.get(requestCode);
     if (null == content) {
@@ -438,201 +401,36 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
         }
         return;
     }
-    
-    // Continue with normal installation - don't modify the content object
+
+    // Continue with normal installation
     try {
         if (content.isInstalled()) {
             content.uninstall(m_progressReporter);
         }
+
+        // Use a simplified reporter that handles temp file cleanup
         content.install(
             uri,
             m_progressReporter,
             (successful, details) -> {
-                // Clean up temp file after installation
-                tempFile.delete();
+                if (tempFile != null) {
+                    tempFile.delete();
+                }
                 handleContentDone(requestCode, successful, details);
             });
     } catch (Exception e) {
-        tempFile.delete();
-        Log.d("ExultLauncherActivity", "exception processing downloaded content: " + e.toString());
-        handleContentDone(requestCode, false, e.getMessage());
-    }
-
-    getActivity().runOnUiThread(() -> {
-        if (m_progressDialog != null && m_progressDialog.isShowing()) {
-            m_progressDialog.dismiss();
-        }
-    });
-  }
-
-  /**
-   * Handles the special case of a custom mod installation.
-   * Prompts the user for mod name and game type.
-   */
-  private void handleCustomModInstallation(Uri fileUri, int requestCode, File tempFile) {
-    // First, scan the archive to find any .cfg files
-    scanArchiveForCfg(fileUri, (cfgName) -> {
-        // Continue with installation using the found CFG name or user input
-        showCustomModDialog(fileUri, requestCode, tempFile, cfgName);
-    });
-  }
-
-  /**
-   * Scans an archive file for .cfg files to use as the mod name
-   */
-  private void scanArchiveForCfg(Uri fileUri, Consumer<String> callback) {
-    new Thread(() -> {
-        String foundCfgName = null;
-        
-        try {
-            ContentResolver resolver = getContext().getContentResolver();
-            InputStream inputStream = resolver.openInputStream(fileUri);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-            
-            try (ArchiveInputStream archiveStream = new ArchiveStreamFactory()
-                    .createArchiveInputStream(bufferedInputStream)) {
-                
-                ArchiveEntry entry;
-                while ((entry = archiveStream.getNextEntry()) != null) {
-                    String name = entry.getName();
-                    if (name.toLowerCase().endsWith(".cfg")) {
-                        // Extract base name without extension and path
-                        String baseName = new File(name).getName();
-                        foundCfgName = baseName.substring(0, baseName.length() - 4); // Remove .cfg
-                        break;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.e("ExultLauncherActivity", "Error scanning archive", e);
-        }
-        
-        // Return to the UI thread with result
-        final String cfgName = foundCfgName;
-        getActivity().runOnUiThread(() -> callback.accept(cfgName));
-    }).start();
-  }
-
-  /**
-   * Shows the custom mod dialog, pre-filling with the CFG name if found
-   */
-  private void showCustomModDialog(Uri fileUri, int requestCode, File tempFile, String suggestedName) {
-    // Create a safe final mod name
-    final String modName = (suggestedName != null && !suggestedName.isEmpty()) 
-        ? suggestedName 
-        : "customMod_" + System.currentTimeMillis();
-    
-    // Create dialog builder
-    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-    builder.setTitle("Custom Mod Information");
-    
-    // Create layout programmatically (simpler and more reliable)
-    LinearLayout layout = new LinearLayout(getContext());
-    layout.setOrientation(LinearLayout.VERTICAL);
-    layout.setPadding(50, 30, 50, 30);
-    
-    // Display mod name (read-only)
-    TextView nameLabel = new TextView(getContext());
-    nameLabel.setText("Mod Name:");
-    layout.addView(nameLabel);
-    
-    TextView nameDisplay = new TextView(getContext());
-    nameDisplay.setPadding(20, 10, 20, 30);
-    nameDisplay.setTextSize(16);
-    nameDisplay.setText(modName);
-    layout.addView(nameDisplay);
-    
-    // Add a note about the name
-    TextView nameNote = new TextView(getContext());
-    nameNote.setText("This name was detected from the mod archive");
-    nameNote.setTextSize(12);
-    nameNote.setPadding(20, 0, 20, 20);
-    layout.addView(nameNote);
-    
-    // Add game type checkbox
-    final CheckBox serpentIsleCheckbox = new CheckBox(getContext());
-    serpentIsleCheckbox.setText("This is a Serpent Isle mod (unchecked = Black Gate mod)");
-    layout.addView(serpentIsleCheckbox);
-    
-    builder.setView(layout);
-    
-    // Set up install button
-    builder.setPositiveButton("Install", (dialog, which) -> {
-        // Determine game type
-        String gameType = serpentIsleCheckbox.isChecked() ? "silverseed" : "forgeofvirtue";
-        
-        // Create content object with correct parameter order
-        ExultContent customContent = new ExultModContent(gameType, modName, getContext());
-        
-        // Store content and install
-        m_requestCodeToContent.put(requestCode, customContent);
-        try {
-            customContent.install(
-                fileUri,
-                m_progressReporter,
-                new ExultContent.DoneReporter() {
-                    @Override
-                    public void report(boolean successful, String details) {
-                        if (tempFile != null) {
-                            tempFile.delete();
-                        }
-                        handleContentDone(requestCode, successful, details);
-                    }
-                });
-        } catch (Exception e) {
-            if (tempFile != null) {
-                tempFile.delete();
-            }
-            handleContentDone(requestCode, false, e.getMessage());
-        }
-    });
-    
-    // Set up cancel button
-    builder.setNegativeButton("Cancel", (dialog, which) -> {
         if (tempFile != null) {
             tempFile.delete();
         }
-        CheckBox checkBox = m_requestCodeToCheckbox.get(requestCode);
-        if (checkBox != null) {
-            checkBox.setChecked(false);
-        }
-    });
-    
-    builder.show();
-  }
+        handleContentDone(requestCode, false, e.getMessage());
+    }
+ }
 
   /**
    * Shows a dialog for entering a URL to download content
    */
   private void showUrlInputDialog(int requestCode) {
-    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-    builder.setTitle("Download Content");
-    builder.setMessage("Enter URL to download content");
-    
-    // Set up the input
-    final EditText input = new EditText(getContext());
-    input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
-    builder.setView(input);
-    
-    // Set up the buttons
-    builder.setPositiveButton("Download", (dialog, which) -> {
-      String url = input.getText().toString();
-      CheckBox checkBox = m_requestCodeToCheckbox.get(requestCode);
-      if (!url.isEmpty()) {
-          downloadFileFromUrl(url, requestCode);
-      } else if (checkBox != null) {
-          checkBox.setChecked(false);
-      }
-    });
-    
-    builder.setNegativeButton("Cancel", (dialog, which) -> {
-      CheckBox checkBox = m_requestCodeToCheckbox.get(requestCode);
-      if (checkBox != null) {
-        checkBox.setChecked(false);
-      }
-    });
-    
-    builder.show();
+    contentDownloader.showUrlInputDialog(requestCode);
   }
 
   @Override
@@ -641,23 +439,10 @@ public abstract class ContentInstallerFragment extends Fragment implements View.
     if (m_progressDialog != null && m_progressDialog.isShowing()) {
         m_progressDialog.dismiss();
     }
-    // If you add the executor from point 2:
-    // executor.shutdown();
   }
 
   // New method to handle launching the file picker for custom mods
   private void launchCustomModFilePicker() {
-    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-    intent.addCategory(Intent.CATEGORY_OPENABLE);
-    intent.setType("*/*");
-    
-    // Use a special request code for custom mods
-    int customModRequestCode = 9999; // Choose a unique request code that won't conflict
-    
-    // Store a reference to handle this request later
-    ExultContent placeholderContent = new ExultModContent("placeholder", "customMod", getContext());
-    m_requestCodeToContent.put(customModRequestCode, placeholderContent);
-    
-    startActivityForResult(intent, customModRequestCode);
+    customModInstaller.launchFilePicker();
   }
 }
