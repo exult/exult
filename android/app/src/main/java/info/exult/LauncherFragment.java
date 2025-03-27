@@ -27,41 +27,45 @@ import android.widget.CheckBox;
 import androidx.fragment.app.Fragment;
 
 public class LauncherFragment extends Fragment implements View.OnClickListener {
-  // Probably not ideal to be assuming/referencing the parent activity from a fragment,
-  // but I haven't come up with a better way to handle auto-launch yet.
-  private ExultLauncherActivity getExultLauncherActivity() {
-    return (ExultLauncherActivity) getActivity();
-  }
+	// Probably not ideal to be assuming/referencing the parent activity from a
+	// fragment, but I haven't come up with a better way to handle auto-launch
+	// yet.
+	private ExultLauncherActivity getExultLauncherActivity() {
+		return (ExultLauncherActivity)getActivity();
+	}
 
-  @Override
-  public View onCreateView(
-      LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	@Override
+	public View onCreateView(
+			LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		View view = inflater.inflate(R.layout.launcher_card, container, false);
 
-    View view = inflater.inflate(R.layout.launcher_card, container, false);
+		// Route auto-launch toggles to this class
+		CheckBox autoLaunchCheckBox
+				= (CheckBox)view.findViewById(R.id.autoLaunchCheckBox);
+		autoLaunchCheckBox.setOnClickListener(this);
 
-    // Route auto-launch toggles to this class
-    CheckBox autoLaunchCheckBox = (CheckBox) view.findViewById(R.id.autoLaunchCheckBox);
-    autoLaunchCheckBox.setOnClickListener(this);
+		// Set the initial auto-launch state
+		autoLaunchCheckBox.setChecked(
+				getExultLauncherActivity().getAutoLaunch());
 
-    // Set the initial auto-launch state
-    autoLaunchCheckBox.setChecked(getExultLauncherActivity().getAutoLaunch());
+		// Route launch clicks to this class
+		Button launchExultButton
+				= (Button)view.findViewById(R.id.launchExultButton);
+		launchExultButton.setOnClickListener(this);
 
-    // Route launch clicks to this class
-    Button launchExultButton = (Button) view.findViewById(R.id.launchExultButton);
-    launchExultButton.setOnClickListener(this);
+		return view;
+	}
 
-    return view;
-  }
-
-  @Override
-  public void onClick(View view) {
-    int id = view.getId();
-    if (id == R.id.autoLaunchCheckBox) {
-      CheckBox checkBox = (CheckBox) view;
-      boolean checked = checkBox.isChecked();
-      getExultLauncherActivity().setAutoLaunch(checked);
-    } else if (id == R.id.launchExultButton) {
-      getExultLauncherActivity().launchExult();
-    }
-  }
+	@Override
+	public void onClick(View view) {
+		int id = view.getId();
+		if (id == R.id.autoLaunchCheckBox) {
+			CheckBox checkBox = (CheckBox)view;
+			boolean  checked  = checkBox.isChecked();
+			getExultLauncherActivity().setAutoLaunch(checked);
+		} else if (id == R.id.launchExultButton) {
+			getExultLauncherActivity().launchExult();
+		}
+	}
 }

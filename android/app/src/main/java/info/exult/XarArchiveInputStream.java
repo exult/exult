@@ -31,91 +31,93 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 
 class XarArchiveInputStream extends ArchiveInputStream {
-  private static final byte[] XAR_MAGIC = "xar!".getBytes();
-  private Iterator<XarEntry> m_nextXarEntry;
-  private InputStream m_xarEntryInputStream;
+	private static final byte[] XAR_MAGIC = "xar!".getBytes();
+	private Iterator<XarEntry>  m_nextXarEntry;
+	private InputStream         m_xarEntryInputStream;
 
-  XarArchiveInputStream(InputStream inputStream) {
-    XarSource xarSource = new InputStreamXarSource(inputStream);
-    List<XarEntry> xarEntries = null;
-    try {
-      xarEntries = xarSource.getEntries();
-    } catch (Exception e) {
-      Log.d("XarArchiveInputStream", "exception getting XAR entries: " + e.toString());
-      // TODO: throw something?
-    }
+	XarArchiveInputStream(InputStream inputStream) {
+		XarSource      xarSource  = new InputStreamXarSource(inputStream);
+		List<XarEntry> xarEntries = null;
+		try {
+			xarEntries = xarSource.getEntries();
+		} catch (Exception e) {
+			Log.d("XarArchiveInputStream",
+				  "exception getting XAR entries: " + e.toString());
+			// TODO: throw something?
+		}
 
-    // Awful hack to get access to entry offsets so we can sort the and ensure in-order access from
-    // the InputStream.
-    // This is needed because the sprylab xar decoder returns the entries in alphabetical order
-    // rather than sorting
-    // them by offset, and it doesn't expose the offset field publicly.
-    Field xarEntryOffsetField_ = null;
-    try {
-      xarEntryOffsetField_ = XarEntry.class.getDeclaredField("offset");
-      xarEntryOffsetField_.setAccessible(true);
-    } catch (Exception e) {
-      Log.d("ExultLauncherActivity", "exception accessing XarEntry offset field: " + e.toString());
-    }
-    final Field xarEntryOffsetField = xarEntryOffsetField_;
-    xarEntries.sort(
-        new Comparator<XarEntry>() {
-          @Override
-          public int compare(XarEntry xarEntry1, XarEntry xarEntry2) {
-            long offset1 = 0;
-            long offset2 = 0;
-            try {
-              offset1 = (long) xarEntryOffsetField.get(xarEntry1);
-              offset2 = (long) xarEntryOffsetField.get(xarEntry2);
-            } catch (Exception e) {
-              Log.d("ExultLauncherActivity", "exception reading offset: " + e.toString());
-            }
-            if (offset1 < offset2) {
-              return -1;
-            }
-            if (offset1 > offset2) {
-              return 1;
-            }
-            return 0;
-          }
-        });
+		// Awful hack to get access to entry offsets so we can sort the and
+		// ensure in-order access from the InputStream. This is needed because
+		// the sprylab xar decoder returns the entries in alphabetical order
+		// rather than sorting
+		// them by offset, and it doesn't expose the offset field publicly.
+		Field xarEntryOffsetField_ = null;
+		try {
+			xarEntryOffsetField_ = XarEntry.class.getDeclaredField("offset");
+			xarEntryOffsetField_.setAccessible(true);
+		} catch (Exception e) {
+			Log.d("ExultLauncherActivity",
+				  "exception accessing XarEntry offset field: " + e.toString());
+		}
+		final Field xarEntryOffsetField = xarEntryOffsetField_;
+		xarEntries.sort(new Comparator<XarEntry>() {
+			@Override
+			public int compare(XarEntry xarEntry1, XarEntry xarEntry2) {
+				long offset1 = 0;
+				long offset2 = 0;
+				try {
+					offset1 = (long)xarEntryOffsetField.get(xarEntry1);
+					offset2 = (long)xarEntryOffsetField.get(xarEntry2);
+				} catch (Exception e) {
+					Log.d("ExultLauncherActivity",
+						  "exception reading offset: " + e.toString());
+				}
+				if (offset1 < offset2) {
+					return -1;
+				}
+				if (offset1 > offset2) {
+					return 1;
+				}
+				return 0;
+			}
+		});
 
-    m_nextXarEntry = xarEntries.iterator();
-  }
+		m_nextXarEntry = xarEntries.iterator();
+	}
 
-  @Override
-  public ArchiveEntry getNextEntry() throws IOException {
-    if (!m_nextXarEntry.hasNext()) {
-      return null;
-    }
-    XarEntry xarEntry = m_nextXarEntry.next();
-    if (xarEntry.isDirectory()) {
-      m_xarEntryInputStream = null;
-    } else {
-      m_xarEntryInputStream = xarEntry.getInputStream();
-    }
-    return new XarArchiveEntry(xarEntry);
-  }
+	@Override
+	public ArchiveEntry getNextEntry() throws IOException {
+		if (!m_nextXarEntry.hasNext()) {
+			return null;
+		}
+		XarEntry xarEntry = m_nextXarEntry.next();
+		if (xarEntry.isDirectory()) {
+			m_xarEntryInputStream = null;
+		} else {
+			m_xarEntryInputStream = xarEntry.getInputStream();
+		}
+		return new XarArchiveEntry(xarEntry);
+	}
 
-  @Override
-  public int read() throws IOException {
-    return m_xarEntryInputStream.read();
-  }
+	@Override
+	public int read() throws IOException {
+		return m_xarEntryInputStream.read();
+	}
 
-  @Override
-  public int read(byte[] b, int off, int len) throws IOException {
-    return m_xarEntryInputStream.read(b, off, len);
-  }
+	@Override
+	public int read(byte[] b, int off, int len) throws IOException {
+		return m_xarEntryInputStream.read(b, off, len);
+	}
 
-  public static boolean matches(byte[] signature, int length) {
-    if (length < XAR_MAGIC.length) {
-      return false;
-    }
-    for (int i = 0; i < XAR_MAGIC.length; ++i) {
-      if (signature[i] != XAR_MAGIC[i]) {
-        return false;
-      }
-    }
-    return true;
-  }
+	public static boolean matches(byte[] signature, int length) {
+		if (length < XAR_MAGIC.length) {
+			return false;
+		}
+		for (int i = 0; i < XAR_MAGIC.length; ++i) {
+			if (signature[i] != XAR_MAGIC[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

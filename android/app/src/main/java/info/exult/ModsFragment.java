@@ -22,19 +22,18 @@ import android.util.Log;
 import android.view.View;
 
 public class ModsFragment extends ContentInstallerFragment {
+	ModsFragment() {
+		super(R.layout.mods_card, R.string.mods_card_text);
+	}
 
-  ModsFragment() {
-    super(R.layout.mods_card, R.string.mods_card_text);
-  }
+	@Override
+	protected ExultContent buildContentFromView(String name, View view) {
+		if ("customMod".equals(name)) {
+			// Create a placeholder that will be replaced later
+			return new ExultModContent("placeholder", name, getContext());
+		}
 
-  @Override
-  protected ExultContent buildContentFromView(String name, View view) {
-    if ("customMod".equals(name)) {
-      // Create a placeholder that will be replaced later
-      return new ExultModContent("placeholder", name, getContext());
-    }
-
-    String game = (String) view.getTag(R.id.game);
-    return new ExultModContent(game, name, getContext());
-  }
+		String game = (String)view.getTag(R.id.game);
+		return new ExultModContent(game, name, getContext());
+	}
 }
