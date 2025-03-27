@@ -98,49 +98,57 @@ public abstract class ContentInstallerFragment
 		ViewGroup contentLayout
 				= (ViewGroup)view.findViewById(R.id.contentLayout);
 		if (contentLayout != null) {
-			// Add custom mod button
-			Button customModButton = new Button(
-					getContext(), null, android.R.attr.buttonStyle);
-			customModButton.setText("Install Custom Mod");
-			customModButton.setOnClickListener(
-					v -> launchCustomModFilePicker());
+			// Only add the custom mod button if this is the Mods fragment
+			if (shouldShowCustomModButton()) {
+				// Add custom mod button
+				Button customModButton = new Button(
+						getContext(), null, android.R.attr.buttonStyle);
+				customModButton.setText("Install Custom Mod");
+				customModButton.setOnClickListener(
+						v -> launchCustomModFilePicker());
 
-			// Apply proper theming to match launchExultButton
-			int[] attrs = new int[] {android.R.attr.colorPrimary};
-			android.content.res.TypedArray a
-					= getContext().obtainStyledAttributes(attrs);
-			int color = a.getColor(0, Color.parseColor("#3F51B5"));
-			a.recycle();
+				// Apply proper theming to match launchExultButton
+				int[] attrs = new int[] {android.R.attr.colorPrimary};
+				android.content.res.TypedArray a
+						= getContext().obtainStyledAttributes(attrs);
+				int color = a.getColor(0, Color.parseColor("#3F51B5"));
+				a.recycle();
 
-			// Create rounded corner background
-			GradientDrawable shape = new GradientDrawable();
-			shape.setShape(GradientDrawable.RECTANGLE);
-			shape.setColor(color);
-			shape.setCornerRadius(
-					getResources().getDisplayMetrics().density * 4);
+				// Create rounded corner background
+				GradientDrawable shape = new GradientDrawable();
+				shape.setShape(GradientDrawable.RECTANGLE);
+				shape.setColor(color);
+				shape.setCornerRadius(
+						getResources().getDisplayMetrics().density * 4);
 
-			// Apply the styling
-			customModButton.setBackground(shape);
-			customModButton.setTextColor(Color.WHITE);
-			customModButton.setAllCaps(true);
-			customModButton.setElevation(0);
+				// Apply the styling
+				customModButton.setBackground(shape);
+				customModButton.setTextColor(Color.WHITE);
+				customModButton.setAllCaps(true);
+				customModButton.setElevation(0);
 
-			// Set the button height and width using standard Android dimensions
-			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.WRAP_CONTENT,
-					(int)(getResources().getDisplayMetrics().density * 36));
-			params.gravity      = Gravity.CENTER_HORIZONTAL;
-			params.topMargin    = 40;
-			params.bottomMargin = 20;
+				// Set the button height and width using standard Android
+				// dimensions
+				LinearLayout.LayoutParams params
+						= new LinearLayout.LayoutParams(
+								LinearLayout.LayoutParams.WRAP_CONTENT,
+								(int)(getResources().getDisplayMetrics().density
+									  * 36));
+				params.gravity      = Gravity.CENTER_HORIZONTAL;
+				params.topMargin    = 40;
+				params.bottomMargin = 20;
 
-			contentLayout.addView(customModButton, params);
+				contentLayout.addView(customModButton, params);
 
-			// Use minimum width to match standard buttons
-			customModButton.setMinWidth(
-					(int)(getResources().getDisplayMetrics().density * 88));
+				// Use minimum width to match standard buttons
+				customModButton.setMinWidth(
+						(int)(getResources().getDisplayMetrics().density * 88));
+			}
 
 			// Reuse the existing activity variable defined above
-			for (int i = 0; i < contentLayout.getChildCount() - 1; ++i) {
+			for (int i = 0; i < contentLayout.getChildCount()
+										- (shouldShowCustomModButton() ? 1 : 0);
+				 ++i) {
 				// Note: -1 to skip the button we just added
 				View   viewInContentLayout = contentLayout.getChildAt(i);
 				String name = (String)viewInContentLayout.getTag(R.id.name);
@@ -460,5 +468,15 @@ public abstract class ContentInstallerFragment
 	// New method to handle launching the file picker for custom mods
 	private void launchCustomModFilePicker() {
 		customModInstaller.launchFilePicker();
+	}
+
+	/**
+	 * Determines whether this fragment should show the custom mod button.
+	 * Default is false. Override in subclasses to enable.
+	 *
+	 * @return true if the fragment should show the custom mod button
+	 */
+	protected boolean shouldShowCustomModButton() {
+		return false;    // Default to false - subclasses can override
 	}
 }
