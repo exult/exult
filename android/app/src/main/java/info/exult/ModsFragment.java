@@ -27,6 +27,11 @@ public class ModsFragment extends ContentInstallerFragment {
 	}
 
 	@Override
+	protected boolean shouldShowCustomModButton() {
+		return true;    // Only the mods fragment should show this button
+	}
+
+	@Override
 	protected ExultContent buildContentFromView(String name, View view) {
 		if ("customMod".equals(name)) {
 			// Create a placeholder that will be replaced later
