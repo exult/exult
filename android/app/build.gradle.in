@@ -37,10 +37,10 @@ android {
         }
         debug {
             externalNativeBuild {
-              cmake {
-                  arguments.add("-DEXULT_ANDROID_DEBUG=@EXULT_ANDROID_DEBUG@")
-                  arguments.add("-DEXULT_ANDROID_OPT=@EXULT_ANDROID_OPT@")
-              }
+                cmake {
+                    arguments.add("-DEXULT_ANDROID_DEBUG=@EXULT_ANDROID_DEBUG@")
+                    arguments.add("-DEXULT_ANDROID_OPT=@EXULT_ANDROID_OPT@")
+                }
             }
         }
     }
