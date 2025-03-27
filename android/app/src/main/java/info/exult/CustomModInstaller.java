@@ -32,187 +32,198 @@ import androidx.fragment.app.Fragment;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.util.function.Consumer;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
-import java.util.function.Consumer;
 
 /**
  * Handles the installation of custom mods in Exult.
  */
 public class CustomModInstaller {
-    private static final int CUSTOM_MOD_REQUEST_CODE = 9999;
-    
-    private final Context context;
-    private final Fragment parentFragment;
-    private final ExultContent.ProgressReporter progressReporter;
-    private final ModInstallCallback callback;
+	private static final int CUSTOM_MOD_REQUEST_CODE = 9999;
 
-    public interface ModInstallCallback {
-        void onInstallStarted(ExultContent content, int requestCode);
-        void onInstallComplete(boolean successful, String details, int requestCode);
-        void onCancelled(int requestCode);
-    }
+	private final Context  context;
+	private final Fragment parentFragment;
+	private final ExultContent.ProgressReporter progressReporter;
+	private final ModInstallCallback            callback;
 
-    public CustomModInstaller(Context context, Fragment parentFragment, 
-                             ExultContent.ProgressReporter progressReporter,
-                             ModInstallCallback callback) {
-        this.context = context;
-        this.parentFragment = parentFragment;
-        this.progressReporter = progressReporter;
-        this.callback = callback;
-    }
+	public interface ModInstallCallback {
+		void onInstallStarted(ExultContent content, int requestCode);
+		void onInstallComplete(
+				boolean successful, String details, int requestCode);
+		void onCancelled(int requestCode);
+	}
 
-    /**
-     * Launches the file picker to select a mod file
-     */
-    public void launchFilePicker() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
+	public CustomModInstaller(
+			Context context, Fragment parentFragment,
+			ExultContent.ProgressReporter progressReporter,
+			ModInstallCallback            callback) {
+		this.context          = context;
+		this.parentFragment   = parentFragment;
+		this.progressReporter = progressReporter;
+		this.callback         = callback;
+	}
 
-        // Create a placeholder content
-        ExultContent placeholderContent = new ExultModContent("placeholder", "customMod", context);
+	/**
+	 * Launches the file picker to select a mod file
+	 */
+	public void launchFilePicker() {
+		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+		intent.addCategory(Intent.CATEGORY_OPENABLE);
+		intent.setType("*/*");
 
-        // Notify callback of installation start
-        callback.onInstallStarted(placeholderContent, CUSTOM_MOD_REQUEST_CODE);
+		// Create a placeholder content
+		ExultContent placeholderContent
+				= new ExultModContent("placeholder", "customMod", context);
 
-        // Launch the file picker
-        parentFragment.startActivityForResult(intent, CUSTOM_MOD_REQUEST_CODE);
-    }
+		// Notify callback of installation start
+		callback.onInstallStarted(placeholderContent, CUSTOM_MOD_REQUEST_CODE);
 
-    /**
-     * Handles the result from the file picker
-     */
-    public void handleFilePickerResult(Uri fileUri, int requestCode, File tempFile) {
-        // Scan the archive for CFG files to auto-detect mod name
-        scanArchiveForCfg(fileUri, (cfgName) -> {
-            // Show dialog with the found name
-            showCustomModDialog(fileUri, requestCode, tempFile, cfgName);
-        });
-    }
+		// Launch the file picker
+		parentFragment.startActivityForResult(intent, CUSTOM_MOD_REQUEST_CODE);
+	}
 
-    /**
-     * Scans an archive file for .cfg files to use as the mod name
-     */
-    private void scanArchiveForCfg(Uri fileUri, Consumer<String> callback) {
-        new Thread(() -> {
-            String foundCfgName = null;
+	/**
+	 * Handles the result from the file picker
+	 */
+	public void handleFilePickerResult(
+			Uri fileUri, int requestCode, File tempFile) {
+		// Scan the archive for CFG files to auto-detect mod name
+		scanArchiveForCfg(fileUri, (cfgName) -> {
+			// Show dialog with the found name
+			showCustomModDialog(fileUri, requestCode, tempFile, cfgName);
+		});
+	}
 
-            try {
-                ContentResolver resolver = context.getContentResolver();
-                InputStream inputStream = resolver.openInputStream(fileUri);
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+	/**
+	 * Scans an archive file for .cfg files to use as the mod name
+	 */
+	private void scanArchiveForCfg(Uri fileUri, Consumer<String> callback) {
+		new Thread(() -> {
+			String foundCfgName = null;
 
-                try (ArchiveInputStream archiveStream = new ArchiveStreamFactory()
-                        .createArchiveInputStream(bufferedInputStream)) {
-                    
-                    ArchiveEntry entry;
-                    while ((entry = archiveStream.getNextEntry()) != null) {
-                        String name = entry.getName();
-                        if (name.toLowerCase().endsWith(".cfg")) {
-                            // Extract base name without extension and path
-                            String baseName = new File(name).getName();
-                            foundCfgName = baseName.substring(0, baseName.length() - 4); // Remove .cfg
-                            break;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                Log.e("CustomModInstaller", "Error scanning archive", e);
-            }
+			try {
+				ContentResolver resolver    = context.getContentResolver();
+				InputStream     inputStream = resolver.openInputStream(fileUri);
+				BufferedInputStream bufferedInputStream
+						= new BufferedInputStream(inputStream);
 
-            // Return to the UI thread with result
-            final String cfgName = foundCfgName;
-            parentFragment.getActivity().runOnUiThread(() -> callback.accept(cfgName));
-        }).start();
-    }
+				try (ArchiveInputStream archiveStream
+					 = new ArchiveStreamFactory().createArchiveInputStream(
+							 bufferedInputStream)) {
+					ArchiveEntry entry;
+					while ((entry = archiveStream.getNextEntry()) != null) {
+						String name = entry.getName();
+						if (name.toLowerCase().endsWith(".cfg")) {
+							// Extract base name without extension and path
+							String baseName = new File(name).getName();
+							foundCfgName    = baseName.substring(
+                                    0, baseName.length() - 4);    // Remove .cfg
+							break;
+						}
+					}
+				}
+			} catch (Exception e) {
+				Log.e("CustomModInstaller", "Error scanning archive", e);
+			}
 
-    /**
-     * Shows the custom mod dialog with the detected name
-     */
-    private void showCustomModDialog(Uri fileUri, int requestCode, File tempFile, String suggestedName) {
-        // Create a safe final mod name
-        final String modName = (suggestedName != null && !suggestedName.isEmpty()) 
-            ? suggestedName 
-            : "customMod_" + System.currentTimeMillis();
+			// Return to the UI thread with result
+			final String cfgName = foundCfgName;
+			parentFragment.getActivity().runOnUiThread(
+					() -> callback.accept(cfgName));
+		}).start();
+	}
 
-        // Create dialog builder
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Custom Mod Information");
+	/**
+	 * Shows the custom mod dialog with the detected name
+	 */
+	private void showCustomModDialog(
+			Uri fileUri, int requestCode, File tempFile, String suggestedName) {
+		// Create a safe final mod name
+		final String modName
+				= (suggestedName != null && !suggestedName.isEmpty())
+						  ? suggestedName
+						  : "customMod_" + System.currentTimeMillis();
 
-        // Create layout programmatically
-        LinearLayout layout = new LinearLayout(context);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(50, 30, 50, 30);
+		// Create dialog builder
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		builder.setTitle("Custom Mod Information");
 
-        // Display mod name (read-only)
-        TextView nameLabel = new TextView(context);
-        nameLabel.setText("Mod Name:");
-        layout.addView(nameLabel);
+		// Create layout programmatically
+		LinearLayout layout = new LinearLayout(context);
+		layout.setOrientation(LinearLayout.VERTICAL);
+		layout.setPadding(50, 30, 50, 30);
 
-        TextView nameDisplay = new TextView(context);
-        nameDisplay.setPadding(20, 10, 20, 30);
-        nameDisplay.setTextSize(16);
-        nameDisplay.setText(modName);
-        layout.addView(nameDisplay);
+		// Display mod name (read-only)
+		TextView nameLabel = new TextView(context);
+		nameLabel.setText("Mod Name:");
+		layout.addView(nameLabel);
 
-        // Add a note about the name
-        TextView nameNote = new TextView(context);
-        nameNote.setText("This name was detected from the mod archive");
-        nameNote.setTextSize(12);
-        nameNote.setPadding(20, 0, 20, 20);
-        layout.addView(nameNote);
+		TextView nameDisplay = new TextView(context);
+		nameDisplay.setPadding(20, 10, 20, 30);
+		nameDisplay.setTextSize(16);
+		nameDisplay.setText(modName);
+		layout.addView(nameDisplay);
 
-        // Add game type checkbox
-        final CheckBox serpentIsleCheckbox = new CheckBox(context);
-        serpentIsleCheckbox.setText("This is a Serpent Isle mod (unchecked = Black Gate mod)");
-        layout.addView(serpentIsleCheckbox);
+		// Add a note about the name
+		TextView nameNote = new TextView(context);
+		nameNote.setText("This name was detected from the mod archive");
+		nameNote.setTextSize(12);
+		nameNote.setPadding(20, 0, 20, 20);
+		layout.addView(nameNote);
 
-        builder.setView(layout);
+		// Add game type checkbox
+		final CheckBox serpentIsleCheckbox = new CheckBox(context);
+		serpentIsleCheckbox.setText(
+				"This is a Serpent Isle mod (unchecked = Black Gate mod)");
+		layout.addView(serpentIsleCheckbox);
 
-        // Set up install button
-        builder.setPositiveButton("Install", (dialog, which) -> {
-            // Determine game type
-            String gameType = serpentIsleCheckbox.isChecked() ? "silverseed" : "forgeofvirtue";
+		builder.setView(layout);
 
-            // Create content object
-            ExultContent customContent = new ExultModContent(gameType, modName, context);
+		// Set up install button
+		builder.setPositiveButton("Install", (dialog, which) -> {
+			// Determine game type
+			String gameType = serpentIsleCheckbox.isChecked() ? "silverseed"
+															  : "forgeofvirtue";
 
-            // Perform installation
-            try {
-                customContent.install(
-                    fileUri,
-                    progressReporter,
-                    (successful, details) -> {
-                        if (tempFile != null) {
-                            tempFile.delete();
-                        }
-                        callback.onInstallComplete(successful, details, requestCode);
-                    });
-            } catch (Exception e) {
-                if (tempFile != null) {
-                    tempFile.delete();
-                }
-                callback.onInstallComplete(false, e.getMessage(), requestCode);
-            }
-        });
+			// Create content object
+			ExultContent customContent
+					= new ExultModContent(gameType, modName, context);
 
-        // Set up cancel button
-        builder.setNegativeButton("Cancel", (dialog, which) -> {
-            if (tempFile != null) {
-                tempFile.delete();
-            }
-            callback.onCancelled(requestCode);
-        });
+			// Perform installation
+			try {
+				customContent.install(
+						fileUri, progressReporter, (successful, details) -> {
+							if (tempFile != null) {
+								tempFile.delete();
+							}
+							callback.onInstallComplete(
+									successful, details, requestCode);
+						});
+			} catch (Exception e) {
+				if (tempFile != null) {
+					tempFile.delete();
+				}
+				callback.onInstallComplete(false, e.getMessage(), requestCode);
+			}
+		});
 
-        builder.show();
-    }
+		// Set up cancel button
+		builder.setNegativeButton("Cancel", (dialog, which) -> {
+			if (tempFile != null) {
+				tempFile.delete();
+			}
+			callback.onCancelled(requestCode);
+		});
 
-    /**
-     * Get the custom mod request code
-     */
-    public static int getRequestCode() {
-        return CUSTOM_MOD_REQUEST_CODE;
-    }
+		builder.show();
+	}
+
+	/**
+	 * Get the custom mod request code
+	 */
+	public static int getRequestCode() {
+		return CUSTOM_MOD_REQUEST_CODE;
+	}
 }
