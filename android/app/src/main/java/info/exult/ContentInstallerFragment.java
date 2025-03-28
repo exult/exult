@@ -25,6 +25,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +35,7 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import java.io.File;
 import java.util.HashMap;
@@ -72,6 +74,9 @@ public abstract class ContentInstallerFragment
 			if (buttonIndex > 0) {
 				htmlContent = htmlContent.substring(0, buttonIndex);
 			}
+
+			// Apply theme color to content
+			htmlContent = applyThemeColorToContent(htmlContent);
 
 			webView.loadDataWithBaseURL(
 					null, htmlContent, "text/html", "utf-8", null);
@@ -478,5 +483,55 @@ public abstract class ContentInstallerFragment
 	 */
 	protected boolean shouldShowCustomModButton() {
 		return false;    // Default to false - subclasses can override
+	}
+
+	/**
+	 * Applies the theme's colorOnSecondary to the HTML content
+	 * This works with both existing span color elements and plain HTML
+	 */
+	private String applyThemeColorToContent(String htmlContent) {
+		// Get colorOnSecondary from the current theme
+		TypedValue typedValue = new TypedValue();
+		getContext().getTheme().resolveAttribute(
+				com.google.android.material.R.attr.colorOnSecondary, typedValue,
+				true);
+
+		// If we couldn't resolve it, try alternative approaches
+		if (typedValue.type == TypedValue.TYPE_NULL) {
+			// Try to get the color directly from resources
+			typedValue.data = ContextCompat.getColor(
+					getContext(),
+					R.color.white);    // Default fallback
+
+			try {
+				// Try to get the color resource ID
+				int colorResId = getResources().getIdentifier(
+						"colorOnSecondary", "color",
+						getContext().getPackageName());
+				if (colorResId != 0) {
+					typedValue.data
+							= ContextCompat.getColor(getContext(), colorResId);
+				}
+			} catch (Exception e) {
+				Log.e("ContentInstaller", "Error getting theme color", e);
+			}
+		}
+
+		// Convert the color to a hex string without alpha
+		String hexColor = String.format("#%06X", (0xFFFFFF & typedValue.data));
+
+		// Check if the content already has a span with color
+		if (htmlContent.contains("<span style=\"color:")) {
+			// Replace existing color with our theme color
+			htmlContent = htmlContent.replaceAll(
+					"<span style=\"color:[^\"]*\"",
+					"<span style=\"color:" + hexColor + "\"");
+		} else {
+			// Wrap the entire content in a span with our theme color
+			htmlContent = "<span style=\"color:" + hexColor + "\">"
+						  + htmlContent + "</span>";
+		}
+
+		return htmlContent;
 	}
 }

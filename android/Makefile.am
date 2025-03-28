@@ -52,11 +52,13 @@ APK_SOURCE_TREE = \
 	$(abs_builddir)/app/src/main/java/info/exult \
 	$(abs_builddir)/app/src/main/res/layout \
 	$(abs_builddir)/app/src/main/res/values \
+	$(abs_builddir)/app/src/main/res/values-night \
 	$(abs_builddir)/app/src/main/res/xml \
 	$(abs_builddir)/app/src/main/res/drawable/ankh.png \
 	$(abs_builddir)/app/src/main/res/drawable/back.gif \
 	$(abs_builddir)/app/src/main/res/drawable/exult_logo_nice.png \
-	$(abs_builddir)/app/src/main/res/drawable/tile_back.xml
+	$(abs_builddir)/app/src/main/res/drawable/tile_back.xml \
+	$(abs_builddir)/app/src/main/res/drawable-night/back.gif
 
 # Pull together all the components into the full staged APK build tree
 APK_BUILD_TREE = $(APK_SOURCE_TREE) $(LIBSDL_JAVA_DIR) $(SHARED_IMAGE_ASSETS) $(APK_ASSETS)
