@@ -530,6 +530,21 @@ if test x$ARCH = xmacosx; then
 	fi
 fi
 
+AM_CONDITIONAL(WITH_OSX_INSTALLER_SIGNATURE, false)
+AC_ARG_WITH(macosx-installer-signature,
+	AS_HELP_STRING([--with-macosx-installer-signature=identity], [identity for code signing macOS installers @<:@default "Developer ID Installer"@:>@]),
+	[with_macosx_installer_signature="$withval"],
+	[with_macosx_installer_signature=""])
+if test x$ARCH = xmacosx; then
+	if test x"$with_macosx_installer_signature" != x; then
+		if test x"$with_macosx_installer_signature" = xyes; then
+			with_macosx_installer_signature="Developer ID Installer"
+		fi
+		AM_CONDITIONAL(WITH_OSX_INSTALLER_SIGNATURE, true)
+		OSX_INSTALLER_SIGNATURE="$with_macosx_installer_signature"
+		AC_SUBST(OSX_INSTALLER_SIGNATURE)
+	fi
+fi
 # ---------------------------------------------------------------------
 # Optional components
 # ---------------------------------------------------------------------
@@ -1529,6 +1544,9 @@ if test x$ARCH = xmacosx; then
 fi
 if test x"$with_macosx_code_signature" != x; then
 	echo macOS code sign ID...... : $with_macosx_code_signature
+fi
+if test x"$with_macosx_installer_signature" != x; then
+	echo macOS Installer sign ID. : $with_macosx_installer_signature
 fi
 if test ${cross_compiling} = yes; then
 	echo

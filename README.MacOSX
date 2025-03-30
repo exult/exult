@@ -135,15 +135,23 @@ For building a disk image for Exult Studio, run:
   make studiodmg
 
 
-How to build the Gimp 3.0 plug-in
+How to build the GIMP 3.0 plug-in
 ---------------------------------
 
-Currently the only reliable way is to follow the instructions of how to build 
-The Gimp on https://developer.gimp.org/core/setup/build/macos/.
-Unfortunately as this is not relying on any prebuilt packages, it takes a long 
-time to build everything. But the developers of 
-https://gitlab.gnome.org/Infrastructure/gimp-macos-build are looking into making 
-plug-in creation easier.
+Download the "Plugin Developer" Release for macOS from 
+https://download.gimp.org/gimp/v3.0/macos/, e.g. for Apple Silicon download
+gimp-3.0.2-arm64-plugin-developer.dmg.
+The Gimp.app bundle in the DMG contains all the needed files to build the
+GIMP 3.0 plug-in.
+Copy the Gimp.app from the DMG anywhere on your hard drive and use these
+imports to point at the needed developer files:
+
+  export PATH=/path_to/gimp.app/contents/macos/:$PATH
+  export CPPFLAGS='-I/path_to/gimp.app/Contents/Resources/include'
+  export CFLAGS='-I/path_to/gimp.app/Contents/Resources/include'
+  export CXXFLAGS='-I/path_to/gimp.app/Contents/Resources/include'
+  export LDFLAGS='-L/path_to/gimp.app/Contents/Resources/lib'
+  export PKG_CONFIG_PATH=/path_to/gimp.app/Contents/Resources/lib/pkgconfig
 
 Then re-run Exult's configure and make
   ./configure --enable-tools --enable-gimp-plugin=user
@@ -152,9 +160,24 @@ Then re-run Exult's configure and make
 
 The Gimp plug-in "u7shp" will be installed into 
 ~/Library/Application Support/GIMP/3.0/plug-ins/u7shp.
-Note that this is ot a static build of the plug-in and relies on your 
-gimp-macos-build installation.
-So if you uninstall gimp-macos-build the plug-in will cease to work.
+
+To make it work you will need to add an "rpath" to the plug-in which allows
+it to be used with The GIMP:
+  install_name_tool -add_rpath /Applications/GIMP.app/Contents/Resources/ $HOME/Library/Application\ Support/GIMP/3.0/plug-ins/u7shp/u7shp
+
+(If your The GIMP bundle is named differently or in another folder on your macOS, change the path to GIMP.app accordingly)
+
+
+How to build the GIMP 3.0 plug-in for distribution
+--------------------------------------------------
+
+The same instructions as above apply only you don't run make install but
+  ./configure --enable-tools --enable-gimp-plugin=user
+  make
+  make gimp_package
+
+This will create the package installer Gimp30plugin.pkg, the rpath is pre-added to it.
+
 
 How to build the Gimp 2.x plug-in
 ---------------------------------

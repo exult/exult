@@ -131,6 +131,39 @@ studiodmg: studiobundle
 	  "./Studio-snapshot/"
 	rm -rf Studio-snapshot
 
+if GIMP3_PLUGIN
+gimp_package:
+	mkdir -p package
+	mkdir -p ./package/plugin
+	mkdir -p ./package/script
+	mkdir -p ./package/res
+	install_name_tool -add_rpath /Applications/GIMP.app/Contents/Resources/ ./mapedit/u7shp
+	strip ./mapedit/u7shp -o ./package/plugin/u7shp
+	cp $(srcdir)/mapedit/gimpmacos.txt ./package/plugin/ReadMe.txt
+	cp $(srcdir)/macosx/gimp_plugin_postinstall ./package/script/postinstall
+	cp $(srcdir)/desktop/exult.png ./package/res
+	cp $(srcdir)/COPYING ./package/res
+	chmod +x ./package/script/postinstall
+if WITH_OSX_CODE_SIGNATURE
+	codesign --options runtime --deep --timestamp -f -s "$(OSX_CODE_SIGNATURE)" ./package/plugin/u7shp
+endif
+	pkgbuild \
+	  --nopayload \
+	  --identifier info.exult.shp.pkg \
+	  --scripts ./package/script \
+	  --root ./package/plugin \
+	  ./plugin.pkg
+	productbuild \
+	  --distribution $(srcdir)/macosx/gimp_plugin_distribution.xml \
+	  --resources ./package/res \
+	  ./Gimp30plugin.pkg
+if WITH_OSX_INSTALLER_SIGNATURE
+	codesign --options runtime --deep --timestamp -f -s "$(OSX_INSTALLER_SIGNATURE)" ./Gimp30plugin.pkg
+endif
+	-rm -rf ./package
+	-rm -rf ./plugin.pkg
+endif
+
 clean-local:
 	-rm -f Exult-snapshot.dmg
 	-rm -f ExultStudio-snapshot.dmg
@@ -138,3 +171,6 @@ clean-local:
 	-rm -f tmpicnsES.rsrc
 	-rm -rf $(bundle_name)
 	-rm -rf $(studio_name)
+	-rm -rf ./Gimp30plugin.pkg
+
+
