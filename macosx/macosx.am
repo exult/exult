@@ -158,7 +158,7 @@ endif
 	  --resources ./package/res \
 	  ./Gimp30plugin.pkg
 if WITH_OSX_INSTALLER_SIGNATURE
-	codesign --options runtime --deep --timestamp -f -s "$(OSX_INSTALLER_SIGNATURE)" ./Gimp30plugin.pkg
+	productsign  --timestamp --sign "$(OSX_INSTALLER_SIGNATURE)" ./Gimp30plugin.pkg ./signed_Gimp30plugin.pkg
 endif
 	-rm -rf ./package
 	-rm -rf ./plugin.pkg
@@ -171,6 +171,7 @@ clean-local:
 	-rm -f tmpicnsES.rsrc
 	-rm -rf $(bundle_name)
 	-rm -rf $(studio_name)
-	-rm -rf ./Gimp30plugin.pkg
+	-rm -rf Gimp30plugin.pkg
+	-rm -rf signed_Gimp30plugin.pkg
 
 
