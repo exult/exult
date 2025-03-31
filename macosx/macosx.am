@@ -24,21 +24,43 @@ bundle: ${EXE_TARGET}
 	$(INSTALL_DATA) $(srcdir)/README $(bundle_name)/Contents/Documents
 	$(INSTALL_DATA) $(srcdir)/README.MacOSX $(bundle_name)/Contents/Documents
 if WITH_OSX_CODE_SIGNATURE
-	codesign --options runtime --deep --timestamp -f -s "$(OSX_CODE_SIGNATURE)" $(bundle_name)
+	  codesign \
+	  --options runtime \
+	  --deep \
+	  --timestamp \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  $(bundle_name)
 endif
 
 bundle_shared: bundle
 	dylibbundler -ns -od -b -x $(bundle_name)/Contents/MacOS/$(bin_PROGRAMS) -d $(bundle_name)/Contents/Resources/lib -p @executable_path/../Resources/lib -i /usr/lib
 if WITH_OSX_CODE_SIGNATURE
-	codesign --options runtime --timestamp -f -s "$(OSX_CODE_SIGNATURE)" $(bundle_name)/contents/resources/lib/*.dylib
+	  codesign \
+	  --options runtime \
+	  --timestamp \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  $(bundle_name)/Contents/Resources/lib/*.dylib
 endif
 
 studiobundle: $(exult_studio)
 	SOURCE=$(abs_top_srcdir) BUILD_DIR=$(abs_top_builddir) gtk-mac-bundler $(srcdir)/macosx/exult_studio.bundle
 if WITH_OSX_CODE_SIGNATURE
-	codesign --options runtime --timestamp -f -s "$(OSX_CODE_SIGNATURE)" $(studio_name)/contents/resources/lib/*.dylib
-	codesign --options runtime --timestamp -f -s "$(OSX_CODE_SIGNATURE)" $(studio_name)/Contents/Resources/lib/gdk-pixbuf-2.0/2.10.0/loaders/*.so
-	codesign --options runtime --deep --timestamp -f -s "$(OSX_CODE_SIGNATURE)" $(studio_name)
+	codesign \
+	  --options runtime \
+	  --timestamp \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  $(studio_name)/Contents/Resources/lib/*.dylib
+	codesign \
+	  --options runtime \
+	  --timestamp 
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  $(studio_name)/Contents/Resources/lib/gdk-pixbuf-2.0/2.10.0/loaders/*.so
+	codesign \
+	  --options runtime \
+	  --deep \
+	  --timestamp \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  $(studio_name)
 endif
 
 # Don't try to build/install the MacOS bundle if we are building libexult
@@ -71,8 +93,8 @@ osxdmg: bundle
 	cp -R $(bundle_name) ./Exult-snapshot/
 	create-dmg \
 	  --volname "Exult Git Snapshot" \
-	  --volicon "./macosx/exult.icns" \
-	  --background "./macosx/diskback.png" \
+	  --volicon "$(srcdir)/macosx/exult.icns" \
+	  --background "$(srcdir)/macosx/diskback.png" \
 	  --window-pos 200 120 \
 	  --window-size 685 545 \
 	  --text-size 14 \
@@ -112,8 +134,8 @@ studiodmg: studiobundle
 	cp -R $(studio_name) ./Studio-snapshot/
 	create-dmg \
 	  --volname "Exult Studio Git Snapshot" \
-	  --volicon "./macosx/exult_studio.icns" \
-	  --background "./macosx/diskback.png" \
+	  --volicon "$(srcdir)/macosx/exult_studio.icns" \
+	  --background "$(srcdir)/macosx/diskback.png" \
 	  --window-pos 200 120 \
 	  --window-size 685 545 \
 	  --text-size 14 \
@@ -132,20 +154,36 @@ studiodmg: studiobundle
 	rm -rf Studio-snapshot
 
 if GIMP3_PLUGIN
+u7shp: u7shp-deps
+	$(MAKE) -C mapedit u7shp$(EXEEXT)
+
+u7shp-deps:
+	$(MAKE) -C imagewin libimagewin.la  
+	$(MAKE) -C shapes libshapes.la
+	$(MAKE) -C files libu7file.la
+
 gimp_package:
+	test -f ./mapedit/u7shp$(EXEEXT) || $(MAKE) u7shp
 	mkdir -p package
 	mkdir -p ./package/plugin
 	mkdir -p ./package/script
 	mkdir -p ./package/res
-	install_name_tool -add_rpath /Applications/GIMP.app/Contents/Resources/ ./mapedit/u7shp
-	strip ./mapedit/u7shp -o ./package/plugin/u7shp
+	install_name_tool \
+	  -add_rpath /Applications/GIMP.app/Contents/Resources/ \
+	  ./mapedit/u7shp
+	$(INSTALL_PROGRAM) ./mapedit/u7shp$(EXEEXT) ./package/plugin/
 	cp $(srcdir)/mapedit/gimpmacos.txt ./package/plugin/ReadMe.txt
 	cp $(srcdir)/macosx/gimp_plugin_postinstall ./package/script/postinstall
 	cp $(srcdir)/desktop/exult.png ./package/res
 	cp $(srcdir)/COPYING ./package/res
 	chmod +x ./package/script/postinstall
 if WITH_OSX_CODE_SIGNATURE
-	codesign --options runtime --timestamp -f -s "$(OSX_CODE_SIGNATURE)" ./package/plugin/u7shp
+	codesign \
+	  --options runtime \
+	  --timestamp \
+	  --entitlements $(srcdir)/macosx/gimp_plugin_entitlements.plist \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  ./package/plugin/u7shp
 endif
 	pkgbuild \
 	  --nopayload \
@@ -158,10 +196,42 @@ endif
 	  --resources ./package/res \
 	  ./Gimp30plugin.pkg
 if WITH_OSX_INSTALLER_SIGNATURE
-	productsign --timestamp --sign "$(OSX_INSTALLER_SIGNATURE)" ./Gimp30plugin.pkg ./signed_Gimp30plugin.pkg
+	productsign \
+	  --timestamp \
+	  --sign "$(OSX_INSTALLER_SIGNATURE)" \
+	  ./Gimp30plugin.pkg \
+	  ./signed_Gimp30plugin.pkg
 endif
 	-rm -rf ./package
 	-rm -rf ./plugin.pkg
+endif
+
+if ASEPRITE_PLUGIN
+exult_shp: exult_shp-deps
+	$(MAKE) -C mapedit/tools/aseprite_plugin exult_shp$(EXEEXT)
+
+exult_shp-deps:
+	$(MAKE) -C imagewin libimagewin.la  
+	$(MAKE) -C shapes libshapes.la
+	$(MAKE) -C files libu7file.la
+
+aseprite_package:
+	test -f ./mapedit/tools/aseprite_plugin/exult_shp$(EXEEXT) || $(MAKE) exult_shp
+	mkdir -p aseprite
+	$(INSTALL_PROGRAM) ./mapedit/tools/aseprite_plugin/exult_shp$(EXEEXT) ./aseprite/
+	cp $(srcdir)/mapedit/tools/aseprite_plugin/Readme.txt ./aseprite/
+	cp $(srcdir)/mapedit/tools/aseprite_plugin/main.lua ./aseprite/
+	cp $(srcdir)/mapedit/tools/aseprite_plugin/package.json ./aseprite/
+if WITH_OSX_CODE_SIGNATURE
+	codesign \
+	  --options runtime \
+	  --timestamp \
+	  --entitlements $(srcdir)/macosx/gimp_plugin_entitlements.plist \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  ./aseprite/exult_shp
+endif
+	zip -rj ./exult_shp_macos.aseprite-extension ./aseprite
+	-rm -rf ./aseprite
 endif
 
 clean-local:
@@ -171,7 +241,6 @@ clean-local:
 	-rm -f tmpicnsES.rsrc
 	-rm -rf $(bundle_name)
 	-rm -rf $(studio_name)
-	-rm -rf Gimp30plugin.pkg
-	-rm -rf signed_Gimp30plugin.pkg
-
-
+	-rm -f Gimp30plugin.pkg
+	-rm -f signed_Gimp30plugin.pkg
+	-rm -f exult_shp_macos.aseprite-extension

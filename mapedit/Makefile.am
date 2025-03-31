@@ -17,9 +17,9 @@ GIMP_PLUGINS =
 endif
 endif
 
-#if ASEPRITE_PLUGIN
+if ASEPRITE_PLUGIN
 SUBDIRS = tools/aseprite_plugin
-#end
+endif
 
 if BUILD_STUDIO
 bin_PROGRAMS = exult_studio $(GIMP_PLUGINS)
