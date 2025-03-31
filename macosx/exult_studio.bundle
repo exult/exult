@@ -7,8 +7,11 @@
 		<prefix name="source">
 			${env:SOURCE}
 		</prefix>
+		<prefix name="build_dir">
+			${env:BUILD_DIR}
+		</prefix>
 		<destination overwrite="yes">
-			${prefix:source}
+			${prefix:build_dir}
 		</destination>
 		<gtk>
 			gtk+-3.0
@@ -16,10 +19,10 @@
 		<run-install-name-tool/>
 	</meta>
 	<plist>
-		${project}/exult_studio_info.plist
+		${prefix:build_dir}/macosx/exult_studio_info.plist
 	</plist>
 	<main-binary>
-		${prefix:source}/mapedit/exult_studio
+		${prefix:build_dir}/mapedit/exult_studio
 	</main-binary>
 	<binary>
 		${prefix}/lib/gdk-pixbuf-2.0/${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}/loaders/*.so
