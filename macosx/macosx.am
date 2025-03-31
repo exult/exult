@@ -52,7 +52,7 @@ if WITH_OSX_CODE_SIGNATURE
 	  $(studio_name)/Contents/Resources/lib/*.dylib
 	codesign \
 	  --options runtime \
-	  --timestamp 
+	  --timestamp \
 	  -f -s "$(OSX_CODE_SIGNATURE)" \
 	  $(studio_name)/Contents/Resources/lib/gdk-pixbuf-2.0/2.10.0/loaders/*.so
 	codesign \
