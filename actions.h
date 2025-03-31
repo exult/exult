@@ -130,7 +130,7 @@ private:
 	unsigned char    blocked_frame = 0;             // Frame for blocked tile.
 	unsigned char    persistence;
 	Tile_coord       blocked_tile;    // Tile to retry.
-	
+
 	void set_subseq(Actor_action* sub) {
 		delete subseq;
 		subseq = sub;

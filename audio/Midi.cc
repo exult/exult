@@ -47,6 +47,18 @@ using std::cout;
 using std::endl;
 using std::string;
 
+#ifdef DEBUG
+inline char* formatTicks() {
+	static char formattedTicks[32];
+	uint64      ticks = SDL_GetTicks();
+	snprintf(
+			formattedTicks, 32, "[ %5u.%03u ] ",
+			static_cast<uint32>(ticks / 1000),
+			static_cast<uint32>(ticks % 1000));
+	return formattedTicks;
+}
+#endif
+
 //
 // Midi devices types and conversions
 //
@@ -144,8 +156,8 @@ bool MyMidiPlayer::start_music(
 	}
 
 #ifdef DEBUG
-	cout << "Audio subsystem request: Music track # " << num << " in " << flex
-		 << endl;
+	cout << formatTicks() << "Audio subsystem request: MIDI Music track # "
+		 << num << " in flex " << flex << endl;
 #endif
 
 	stop_music();
@@ -240,8 +252,8 @@ bool MyMidiPlayer::start_music(
 	repeating     = repeat;
 
 #ifdef DEBUG
-	cout << "Audio subsystem request: Music track # " << num << " in file "
-		 << fname << endl;
+	cout << formatTicks() << "Audio subsystem request: MIDI Music track # "
+		 << num << " in file " << fname << endl;
 #endif
 
 	// OGG Handling
@@ -562,18 +574,19 @@ void MyMidiPlayer::set_music_conversion(int conv) {
 		return;
 	}
 	// no driver do nothing
-	if (!midi_driver) 
+	if (!midi_driver) {
 		return;
-	
+	}
+
 	if (!ogg_enabled || !ogg_is_playing()) {    // if ogg is playing we don't
 												// care about drivers
 		stop_music();
 	}
 
-		std::string convert_key
-				= "config/audio/midi/convert_" + midi_driver->getName();
+	std::string convert_key
+			= "config/audio/midi/convert_" + midi_driver->getName();
 
-		music_conversion = conv;
+	music_conversion = conv;
 
 	switch (music_conversion) {
 	case XMIDIFILE_CONVERT_MT32_TO_GS:
@@ -776,7 +789,9 @@ bool MyMidiPlayer::init_device(bool timbre_load) {
 	if (s == "gs") {
 		music_conversion = XMIDIFILE_CONVERT_MT32_TO_GS;
 		// Only allow MT32 if driver created and it allows it
-	} else if (s == "mt32" && (midi_driver && midi_driver->isRealMT32Supported())) {
+	} else if (
+			s == "mt32"
+			&& (midi_driver && midi_driver->isRealMT32Supported())) {
 		music_conversion = XMIDIFILE_CONVERT_NOCONVERSION;
 	} else if (s == "none") {
 		music_conversion = XMIDIFILE_CONVERT_NOCONVERSION;
@@ -867,7 +882,8 @@ void MyMidiPlayer::produceSamples(sint16* stream, uint32 bytes) {
 #ifdef ENABLE_MIDISFX
 void MyMidiPlayer::start_sound_effect(int num) {
 #	ifdef DEBUG
-	cout << "Audio subsystem request: sound effect # " << num << endl;
+	cout << formatTicks() << "Audio subsystem request: MIDI SFX sound effect # "
+		 << num << endl;
 #	endif
 
 	int real_num = num;
@@ -908,7 +924,8 @@ void MyMidiPlayer::start_sound_effect(int num) {
 
 	// Read the data into the XMIDI class
 	// It's already GM, so dont convert
-	XMidiFile midfile(mid_data.get(), effects_conversion, midi_driver->getName());
+	XMidiFile midfile(
+			mid_data.get(), effects_conversion, midi_driver->getName());
 
 	// Now give the xmidi object to the midi device
 	XMidiEventList* eventlist = midfile.GetEventList(0);

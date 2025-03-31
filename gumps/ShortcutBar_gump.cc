@@ -34,7 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "fnames.h"
 #include "game.h"
 #include "gamewin.h"
-#include "ignore_unused_variable_warning.h"
 #include "keyactions.h"
 #include "party.h"
 #include "shapeid.h"
@@ -358,7 +357,8 @@ int ShortcutBar_gump::handle_event(SDL_Event* event) {
 		return 0;
 	}
 
-	if ((event->type == SDL_MOUSEBUTTONDOWN || event->type == SDL_MOUSEBUTTONUP)
+	if ((event->type == SDL_EVENT_MOUSE_BUTTON_DOWN
+		 || event->type == SDL_EVENT_MOUSE_BUTTON_UP)
 		&& handle_events) {
 		int x;
 		int y;
@@ -378,9 +378,9 @@ int ShortcutBar_gump::handle_event(SDL_Event* event) {
 				// do not click "through" a gump
 				return 0;
 			}
-			if (event->type == SDL_MOUSEBUTTONDOWN) {
+			if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 				sdl_mouse_down(event, x, y);
-			} else if (event->type == SDL_MOUSEBUTTONUP) {
+			} else if (event->type == SDL_EVENT_MOUSE_BUTTON_UP) {
 				sdl_mouse_up(event, x, y);
 			}
 			return 1;
@@ -406,8 +406,8 @@ void ShortcutBar_gump::sdl_mouse_down(SDL_Event* event, int mx, int my) {
  * Just push an event to main thread so that our global shortcut bar instance
  * can catch it.
  */
-static Uint32 didMouseUp(Uint32 interval, void* param) {
-	ignore_unused_variable_warning(interval);
+static Uint32 didMouseUp(void* param, SDL_TimerID timerID, Uint32 interval) {
+	ignore_unused_variable_warning(timerID, interval);
 	SDL_Event event;
 	SDL_zero(event);
 	event.type       = ShortcutBar_gump::eventType;

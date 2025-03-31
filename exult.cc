@@ -81,20 +81,10 @@
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif    // __GNUC__
-#include <SDL.h>
-static const Uint32 EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+static const SDL_MouseID EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
 static const SDL_TouchID EXSDL_MOUSE_TOUCHID = SDL_MOUSE_TOUCHID;
-#ifdef __GNUC__
-#	pragma GCC diagnostic pop
-#endif    // __GNUC__
-
-#ifdef __GNUC__
-#	pragma GCC diagnostic push
-#	pragma GCC diagnostic ignored "-Wvariadic-macros"
-#endif    // __GNUC__
-#define Font _XFont_
-#include <SDL_syswm.h>
-#undef Font
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -102,9 +92,6 @@ static const SDL_TouchID EXSDL_MOUSE_TOUCHID = SDL_MOUSE_TOUCHID;
 #ifdef USE_EXULTSTUDIO /* Only needed for communication with exult studio */
 #	if HAVE_SYS_TIME_H
 #		include <sys/time.h>
-#	endif
-#	ifdef _WIN32
-#		include "windrag.h"
 #	endif
 #	include "chunks.h"
 #	include "chunkter.h"
@@ -119,7 +106,7 @@ static const SDL_TouchID EXSDL_MOUSE_TOUCHID = SDL_MOUSE_TOUCHID;
 
 using namespace Pentagram;
 
-#ifdef __IPHONEOS__
+#ifdef SDL_PLATFORM_IOS
 #	include "ios_utils.h"
 #elif defined(ANDROID)
 #	include "TouchUI_Android.h"
@@ -134,29 +121,6 @@ using std::exit;
 using std::string;
 using std::toupper;
 using std::vector;
-
-#if (defined(_WIN32) \
-	 || (defined(MACOSX) && defined(XWIN) && defined(USE_EXULTSTUDIO)))
-
-static int SDLCALL SDL_putenv(const char* _var) {
-	char* ptr = nullptr;
-	char* var = SDL_strdup(_var);
-	if (var == nullptr) {
-		return -1; /* we don't set errno. */
-	}
-
-	ptr = SDL_strchr(var, '=');
-	if (ptr == nullptr) {
-		SDL_free(var);
-		return -1;
-	}
-
-	*ptr = '\0'; /* split the string into name and value. */
-	SDL_setenv(var, ptr + 1, 1);
-	SDL_free(var);
-	return 0;
-}
-#endif
 
 Configuration* config      = nullptr;
 KeyBinder*     keybinder   = nullptr;
@@ -189,11 +153,6 @@ extern void initialise_usecode_debugger();
 
 int current_scaleval = 1;
 
-#if defined(_WIN32) && defined(USE_EXULTSTUDIO)
-static HWND    hgwin;
-static Windnd* windnd = nullptr;
-#endif
-
 /*
  *  Local functions:
  */
@@ -206,15 +165,24 @@ static void set_scaleval(int new_scaleval);
 #ifdef USE_EXULTSTUDIO
 static void Move_dragged_shape(
 		int shape, int frame, int x, int y, int prevx, int prevy, bool show);
-#	ifdef _WIN32
 static void Move_dragged_combo(
 		int xtiles, int ytiles, int tiles_right, int tiles_below, int x, int y,
 		int prevx, int prevy, bool show);
-#	endif
 static void Drop_dragged_shape(int shape, int frame, int x, int y);
 static void Drop_dragged_chunk(int chunknum, int x, int y);
 static void Drop_dragged_npc(int npcnum, int x, int y);
 static void Drop_dragged_combo(int cnt, U7_combo_data* combo, int x, int y);
+static void Move_grid(
+		int x, int y, int prevx, int prevy, bool ireg, int xtiles, int ytiles,
+		int tiles_right, int tiles_below);
+static int drag_prevx = -1, drag_prevy = -1;
+static int drag_shfile = -1;
+static int drag_shpnum = -1, drag_shfnum = -1;
+static int drag_cbcnt    = -1;
+static int drag_cbxtiles = -1, drag_cbytiles = -1;
+static int drag_cbrtiles = -1, drag_cbbtiles = -1;
+static int drag_npcnum = -1;
+static int drag_cnknum = -1;
 #endif
 static void BuildGameMap(BaseGameInfo* game, int mapnum);
 static void Handle_events();
@@ -248,10 +216,10 @@ static bool                 show_items_clicked = false;
 static int                  left_down_x = 0, left_down_y = 0;
 static int                  joy_aim_x = 0, joy_aim_y = 0;
 Mouse::Avatar_Speed_Factors joy_speed_factor = Mouse::medium_speed_factor;
-static Uint32               last_speed_cursor = 0; // When we last updated the mouse cursor
+static Uint32 last_speed_cursor = 0;    // When we last updated the mouse cursor
 #if defined _WIN32
-void        do_cleanup_output() {
-    cleanup_output("std");
+void do_cleanup_output() {
+	cleanup_output("std");
 }
 #endif
 
@@ -271,7 +239,7 @@ int main(int argc, char* argv[]) {
 	int  result;
 	Args parameters;
 
-	// Use SDL_RWops for file I/O in the main game engine for better
+	// Use SDL_IOStream for file I/O in the main game engine for better
 	// cross-platform support.  Standalone utilities continue to default
 	// to the default std::fstream-based file I/O to avoid taking an SDL
 	// dependency.
@@ -458,7 +426,7 @@ int main(int argc, char* argv[]) {
 		delete game;
 		Audio::Destroy();    // Deinit the sound system.
 		delete config;
-		SDL_VideoQuit();
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
 		SDL_Quit();
 		result = 0;
 	} catch (const exult_exception& e) {
@@ -509,7 +477,8 @@ int exult_main(const char* runpath) {
 		config->set("config/video/fill_scaler", "point", false);
 		config->set("config/video/share_video_settings", "yes", false);
 		config->set("config/video/fullscreen", "no", false);
-		config->set("config/video/force_bpp", 0, false);
+		// [SDL 3] force_bpp is set to 32 in imagewin/imagewin.cc
+		// discard the config/video/force_bpp
 
 		config->write_back();
 	}
@@ -540,7 +509,7 @@ int exult_main(const char* runpath) {
 	add_system_path("<MODS>", "mods");
 
 	std::cout << "Exult path settings:" << std::endl;
-#if defined(MACOSX) || defined(__IPHONEOS__)
+#if defined(MACOSX) || defined(SDL_PLATFORM_IOS)
 	if (is_system_path_defined("<APP_BUNDLE_RES>")) {
 		std::cout << "Bundled Data  : " << get_system_path("<BUNDLE>")
 				  << std::endl;
@@ -630,7 +599,7 @@ int exult_main(const char* runpath) {
 
 	cheat.init();
 
-#ifdef __IPHONEOS__
+#ifdef SDL_PLATFORM_IOS
 	touchui = new TouchUI_iOS();
 #elif defined(ANDROID)
 	touchui = new TouchUI_Android();
@@ -666,10 +635,6 @@ int exult_main(const char* runpath) {
 	//  main menu and select another scenario". Becaule DnD isn't registered
 	//  until you really enter the game, we remove it here to prevent possible
 	//  bugs invilved with registering DnD a second time over an old variable.
-#	if defined(_WIN32)
-	RevokeDragDrop(hgwin);
-	windnd->Release();
-#	endif
 	Server_close();
 #endif
 
@@ -688,38 +653,42 @@ static void SetIcon() {
 		iconpal[i].g = ExultIcon::header_data_cmap[i][1];
 		iconpal[i].b = ExultIcon::header_data_cmap[i][2];
 	}
-	SDL_Surface* iconsurface = SDL_CreateRGBSurface(
-			0, ExultIcon::width, ExultIcon::height, 32, 0, 0, 0, 0);
+	SDL_Surface* iconsurface = SDL_CreateSurface(
+			ExultIcon::width, ExultIcon::height,
+			SDL_GetPixelFormatForMasks(32, 0, 0, 0, 0));
 	if (iconsurface == nullptr) {
 		cout << "Error creating icon surface: " << SDL_GetError() << std::endl;
 		return;
 	}
+	const SDL_PixelFormatDetails* iconsurface_format
+			= SDL_GetPixelFormatDetails(iconsurface->format);
+	SDL_Palette* iconsurface_palette = SDL_GetSurfacePalette(iconsurface);
 	for (int y = 0; y < static_cast<int>(ExultIcon::height); ++y) {
 		for (int x = 0; x < static_cast<int>(ExultIcon::width); ++x) {
 			const int idx = ExultIcon::header_data[(y * ExultIcon::height) + x];
 			const Uint32 pix = SDL_MapRGB(
-					iconsurface->format, iconpal[idx].r, iconpal[idx].g,
-					iconpal[idx].b);
+					iconsurface_format, iconsurface_palette, iconpal[idx].r,
+					iconpal[idx].g, iconpal[idx].b);
 			const SDL_Rect destRect = {x, y, 1, 1};
-			SDL_FillRect(iconsurface, &destRect, pix);
+			SDL_FillSurfaceRect(iconsurface, &destRect, pix);
 		}
 	}
-	SDL_SetColorKey(
-			iconsurface, SDL_TRUE,
+	SDL_SetSurfaceColorKey(
+			iconsurface, true,
 			SDL_MapRGB(
-					iconsurface->format, iconpal[0].r, iconpal[0].g,
-					iconpal[0].b));
+					iconsurface_format, iconsurface_palette, iconpal[0].r,
+					iconpal[0].g, iconpal[0].b));
 	SDL_SetWindowIcon(gwin->get_win()->get_screen_window(), iconsurface);
-	SDL_FreeSurface(iconsurface);
+	SDL_DestroySurface(iconsurface);
 #endif
 }
 
-void Open_game_controller(int joystick_index) {
-	SDL_GameController* input_device = SDL_GameControllerOpen(joystick_index);
+void Open_game_controller(SDL_JoystickID joystick_index) {
+	SDL_Gamepad* input_device = SDL_OpenGamepad(joystick_index);
 	if (input_device) {
-		SDL_GameControllerGetJoystick(input_device);
+		SDL_GetGamepadJoystick(input_device);
 		std::cout << "Game controller attached and open: \""
-				  << SDL_GameControllerName(input_device) << '"' << std::endl;
+				  << SDL_GetGamepadName(input_device) << '"' << std::endl;
 	} else {
 		std::cout
 				<< "Game controller attached, but it failed to open. Error: \""
@@ -727,24 +696,21 @@ void Open_game_controller(int joystick_index) {
 	}
 }
 
-int Handle_device_connection_event(void* userdata, SDL_Event* event) {
+bool Handle_device_connection_event(void* userdata, SDL_Event* event) {
 	ignore_unused_variable_warning(userdata);
 	// Make sure that game-controllers are opened and closed, as they
 	// become connected or disconnected.
 	switch (event->type) {
-	case SDL_CONTROLLERDEVICEADDED: {
-		const SDL_JoystickID joystick_id
-				= SDL_JoystickGetDeviceInstanceID(event->cdevice.which);
-		if (!SDL_GameControllerFromInstanceID(joystick_id)) {
-			Open_game_controller(event->cdevice.which);
+	case SDL_EVENT_GAMEPAD_ADDED: {
+		if (!SDL_GetGamepadFromID(event->gdevice.which)) {
+			Open_game_controller(event->gdevice.which);
 		}
 		break;
 	}
-	case SDL_CONTROLLERDEVICEREMOVED: {
-		SDL_GameController* input_device
-				= SDL_GameControllerFromInstanceID(event->cdevice.which);
+	case SDL_EVENT_GAMEPAD_REMOVED: {
+		SDL_Gamepad* input_device = SDL_GetGamepadFromID(event->gdevice.which);
 		if (input_device) {
-			SDL_GameControllerClose(input_device);
+			SDL_CloseGamepad(input_device);
 			input_device = nullptr;
 			std::cout << "Game controller detached and closed." << std::endl;
 		}
@@ -752,67 +718,65 @@ int Handle_device_connection_event(void* userdata, SDL_Event* event) {
 	}
 	}
 
-	// Returning 1 will tell SDL2, which can invoke this via a callback
+	// Returning true will tell SDL3, which can invoke this via a callback
 	// setup through SDL_AddEventWatch, to make sure the event gets posted
 	// to its event-queue (rather than dropping it).
-	return 1;
+	return true;
 }
 
 /*
  *  Initialize and create main window.
  */
 static void Init() {
-	const Uint32 init_flags
-			= SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER;
-#ifdef NO_SDL_PARACHUTE
-	const Uint32 parachute = SDL_INIT_NOPARACHUTE;
-#else
-	const Uint32 parachute = 0;
-#endif
-#ifdef _WIN32
-	SDL_putenv("SDL_AUDIODRIVER=DirectSound");
-#elif defined(MACOSX) && defined(XWIN) && defined(USE_EXULTSTUDIO)
-	// Exult Studio drag'n'drop with SDL2 < 2.0.15 requires Exult
-	// to use X11. Hence, we force the issue.
-	SDL_putenv("SDL_VIDEODRIVER=x11");
-#elif defined(MACOSX)
-	SDL_SetHint(SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE, "0");
-#endif
-	SDL_SetHint(SDL_HINT_ORIENTATIONS, "Landscape");
-#if 0
-	const Uint32 joyinit = SDL_INIT_JOYSTICK;
-#else
+	const Uint32 init_flags = SDL_INIT_VIDEO | SDL_INIT_GAMEPAD;
+	// Let SDL3 choose its own audio/video drivers until proved otherwise.
+	// Remove SDL_HINT_AUDIO_DRIVER set as "DirectSound"
+	// Remove SDL_HINT_VIDEO_DRIVER set as "wayland,x11"
 	const Uint32 joyinit = 0;
-#endif
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
+	SDL_SetHint(SDL_HINT_ORIENTATIONS, "Landscape");
 	Mouse::use_touch_input = true;
-#endif
-#ifdef __IPHONEOS__
+	// Remove SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE set as "0"
+#	if defined(SDL_PLATFORM_IOS)
 	SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, "2");
+#	endif
 #endif
-	if (SDL_Init(init_flags | parachute | joyinit) < 0) {
+	// SDL3 lost the pointer when switching Windowed <-> Fullscreen in Wayland
+	//   This was fixed
+	//     1- By disabling SDL_HINT_VIDEO_WAYLAND_EMULATE_MOUSE_WARP
+	//        here in Exult.
+	//        [ That hint was generalized to other video backends than Wayland
+	//          as SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE. ]
+	//     2- By SDL 3 disabling MOUSE_RELATIVE_MODE_WARP at
+	//        Windowed <-> Fullscreen transitions on Wayland or XWayland.
+	//        [ Resetting that hint in Exult then became useless. ]
+	// Remove SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE set as "0"
+	// Do not confuse that Hint with :
+	//        SDL_HINT_MOUSE_RELATIVE_MODE_WARP         set as "0"
+	if (!SDL_Init(init_flags | joyinit)) {
 		cerr << "Unable to initialize SDL: " << SDL_GetError() << endl;
 		exit(-1);
 	}
 	std::atexit(SDL_Quit);
 
-	SDL_SysWMinfo info;    // Get system info.
-
 	// KBD repeat should be nice.
-	SDL_ShowCursor(0);
-	SDL_VERSION(&info.version)
+	SDL_HideCursor();
 
 	// Open any connected game controllers.
-	for (int i = 0, n = SDL_NumJoysticks(); i < n; ++i) {
-		if (SDL_IsGameController(i)) {
-			Open_game_controller(i);
+	SDL_JoystickID* joysticks = SDL_GetJoysticks(nullptr);
+	if (joysticks) {
+		for (int i = 0; joysticks[i]; ++i) {
+			if (SDL_IsGamepad(joysticks[i])) {
+				Open_game_controller(joysticks[i]);
+			}
 		}
+		SDL_free(joysticks);
 	}
 	// Listen for game controller device connection and disconnection
 	// events. Registering a listener allows these events to be received
 	// and processed via any event-processing loop, of which Exult has
 	// many, without needing to modify each individual loop, and to
-	// make sure that SDL_GameController objects are always ready.
+	// make sure that SDL_Gamepad objects are always ready.
 	SDL_AddEventWatch(Handle_device_connection_event, nullptr);
 
 	// Load games and mods; also stores system paths:
@@ -942,7 +906,119 @@ static void Init() {
 			newgame->setup_game_paths();
 			exit(verify_files(newgame));
 		}
+#ifdef DEBUG
+		{
+			int ix;
+			int compVers = SDL_VERSION, linkVers = SDL_GetVersion();
 
+			cout << "SDL Initialized, Exult compiled against SDL "
+				 << SDL_VERSIONNUM_MAJOR(compVers) << "."
+				 << SDL_VERSIONNUM_MINOR(compVers) << "."
+				 << SDL_VERSIONNUM_MICRO(compVers)
+				 << ", Exult running against SDL "
+				 << SDL_VERSIONNUM_MAJOR(linkVers) << "."
+				 << SDL_VERSIONNUM_MINOR(linkVers) << "."
+				 << SDL_VERSIONNUM_MICRO(linkVers) << endl;
+			cout << "SDL Video :" << endl;
+			cout << "    Hint VIDEO_DRIVER is '"
+				 << (SDL_GetHint(SDL_HINT_VIDEO_DRIVER)
+							 ? SDL_GetHint(SDL_HINT_VIDEO_DRIVER)
+							 : "(null)")
+				 << "', Current Video Driver is '"
+				 << (SDL_GetCurrentVideoDriver() ? SDL_GetCurrentVideoDriver()
+												 : "(null)")
+				 << "'" << endl;
+			for (ix = 0; ix < SDL_GetNumVideoDrivers(); ix++) {
+				cout << "    [ " << ix << " ] Video Driver is '"
+					 << SDL_GetVideoDriver(ix) << "'" << endl;
+			}
+			SDL_DisplayID* display_ids = SDL_GetDisplays(nullptr);
+			for (ix = 0; display_ids[ix]; ix++) {
+				const SDL_DisplayMode* currMode
+						= SDL_GetCurrentDisplayMode(display_ids[ix]);
+				int    nbpp;
+				Uint32 Rmask;
+				Uint32 Gmask;
+				Uint32 Bmask;
+				Uint32 Amask;
+				SDL_GetMasksForPixelFormat(
+						currMode->format, &nbpp, &Rmask, &Gmask, &Bmask,
+						&Amask);
+				cout << "    [ " << ix << " ] Video Display Mode [ ID is "
+					 << display_ids[ix] << " ] is '" << currMode->w << "x"
+					 << currMode->h << "' at '" << currMode->refresh_rate
+					 << "Hz' for " << nbpp << " bpp" << endl;
+			}
+			SDL_free(display_ids);
+			const char* rname = SDL_GetRendererName(
+					SDL_GetRenderer(gwin->get_win()->get_screen_window()));
+			cout << "    Hint RENDER_DRIVER is '"
+				 << (SDL_GetHint(SDL_HINT_RENDER_DRIVER)
+							 ? SDL_GetHint(SDL_HINT_RENDER_DRIVER)
+							 : "(null)")
+				 << "', Current Render Driver is '"
+				 << (rname ? rname : "(null)") << "'" << endl;
+			for (ix = 0; ix < SDL_GetNumRenderDrivers(); ix++) {
+				cout << "    [ " << ix << " ] Video Renderer is '"
+					 << (SDL_GetRenderDriver(ix) ? SDL_GetRenderDriver(ix)
+												 : "(null)")
+					 << "'" << endl;
+			}
+			cout << "SDL Audio :" << endl;
+			cout << "    Hint AUDIO_DRIVER is '"
+				 << (SDL_GetHint(SDL_HINT_AUDIO_DRIVER)
+							 ? SDL_GetHint(SDL_HINT_AUDIO_DRIVER)
+							 : "(null)")
+				 << "', Current Audio Driver is '"
+				 << (SDL_GetCurrentAudioDriver() ? SDL_GetCurrentAudioDriver()
+												 : "(null)")
+				 << "'" << endl;
+			for (ix = 0; ix < SDL_GetNumAudioDrivers(); ix++) {
+				cout << "    [ " << ix << " ] Audio Driver is '"
+					 << SDL_GetAudioDriver(ix) << "'" << endl;
+			}
+			SDL_AudioDeviceID* devices;
+			int                num_devices;
+			devices = SDL_GetAudioRecordingDevices(&num_devices);
+			for (ix = 0; ix < num_devices; ix++) {
+				SDL_AudioSpec as;
+				int           frames = 0;
+				cout << "    [ " << ix << " ] Audio Device [ ID is "
+					 << devices[ix] << " ] is [recording] '"
+					 << (SDL_GetAudioDeviceName(devices[ix])
+								 ? SDL_GetAudioDeviceName(devices[ix])
+								 : "(null)")
+					 << "'";
+				if (!SDL_GetAudioDeviceFormat(devices[ix], &as, &frames)) {
+					cout << ", " << static_cast<int>(as.channels)
+						 << " channel(s) at '" << as.freq << "Hz', " << frames
+						 << " frames" << endl;
+				} else {
+					cout << endl;
+				}
+			}
+			SDL_free(devices);
+			devices = SDL_GetAudioPlaybackDevices(&num_devices);
+			for (ix = 0; ix < num_devices; ix++) {
+				SDL_AudioSpec as;
+				int           frames = 0;
+				cout << "    [ " << ix << " ] Audio Device [ ID is "
+					 << devices[ix] << " ] is [playback] '"
+					 << (SDL_GetAudioDeviceName(devices[ix])
+								 ? SDL_GetAudioDeviceName(devices[ix])
+								 : "(null)")
+					 << "'";
+				if (!SDL_GetAudioDeviceFormat(devices[ix], &as, &frames)) {
+					cout << ", " << static_cast<int>(as.channels)
+						 << " channel(s) at '" << as.freq << "Hz', " << frames
+						 << " frames" << endl;
+				} else {
+					cout << endl;
+				}
+			}
+			SDL_free(devices);
+		}
+#endif
 		Game::create_game(newgame);
 		Audio* audio = Audio::get_ptr();
 		audio->Init_sfx();
@@ -993,22 +1069,9 @@ static void Init() {
 	gwin->setup_game(arg_edit_mode);    // This will start the scene.
 										// Get scale factor for mouse.
 #ifdef USE_EXULTSTUDIO
-#	ifndef _WIN32
-	SDL_GetWindowWMInfo(gwin->get_win()->get_screen_window(), &info);
 	Server_init();    // Initialize server (for map-editor).
-	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
-#	else
-	SDL_GetWindowWMInfo(gwin->get_win()->get_screen_window(), &info);
-	hgwin = info.info.win.window;
-	Server_init();    // Initialize server (for map-editor).
-	OleInitialize(nullptr);
-	windnd = new Windnd(
-			hgwin, Move_dragged_shape, Move_dragged_combo, Drop_dragged_shape,
-			Drop_dragged_chunk, Drop_dragged_npc, Drop_dragged_combo);
-	if (FAILED(RegisterDragDrop(hgwin, windnd))) {
-		cout << "Something's wrong with OLE2 ..." << endl;
-	}
-#	endif
+	SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
+	SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, true);
 #endif
 }
 
@@ -1071,10 +1134,10 @@ static void Paint_with_shape(
 	const int        shnum = cheat.get_edit_shape();
 	int              frnum;
 	const SDL_Keymod mod = SDL_GetModState();
-	if (mod & KMOD_ALT) {    // ALT?  Pick random frame.
+	if (mod & SDL_KMOD_ALT) {    // ALT?  Pick random frame.
 		const ShapeID id(shnum, 0);
 		frnum = std::rand() % id.get_num_frames();
-	} else if (mod & KMOD_CTRL) {    // Cycle through frames.
+	} else if (mod & SDL_KMOD_CTRL) {    // Cycle through frames.
 		frnum = cheat.get_edit_frame();
 		const ShapeID id(shnum, 0);
 		const int     nextframe = (frnum + 1) % id.get_num_frames();
@@ -1258,8 +1321,8 @@ static void Handle_events() {
 			&& gwin->main_actor_can_act_charmed()) {
 			int       x  = Mouse::mouse->get_mousex();
 			int       y  = Mouse::mouse->get_mousey();
-			const int ms = SDL_GetMouseState(nullptr,nullptr);
-			if ((SDL_BUTTON(3) & ms) && !right_on_gump) {
+			const int ms = SDL_GetMouseState(nullptr, nullptr);
+			if ((SDL_BUTTON_RMASK & ms) && !right_on_gump) {
 				gwin->start_actor(x, y, Mouse::mouse->avatar_speed);
 			} else if (ticks > last_rest) {
 				const int resttime = ticks - last_rest;
@@ -1345,16 +1408,185 @@ static void Handle_events() {
 	}
 }
 
-static inline bool EnteredWindow(SDL_Event& event) {
-	return event.window.event == SDL_WINDOWEVENT_ENTER;
-}
+bool Translate_keyboard(
+		const SDL_Event& event, SDL_Keycode& chr, SDL_Keycode& unicode,
+		bool numpad) {
+	unicode = 0;
 
-static inline bool GainedFocus(SDL_Event& event) {
-	return event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED;
-}
-
-static inline bool LostFocus(SDL_Event& event) {
-	return event.window.event == SDL_WINDOWEVENT_FOCUS_LOST;
+	if (event.type == SDL_EVENT_TEXT_INPUT) {
+		// Convert UTF-8 to UCS-4
+		chr = SDLK_UNKNOWN;
+		if ((event.text.text[0] & 0x80) == 0x00) {
+			unicode = event.text.text[0];
+		} else if (
+				(event.text.text[0] & 0xE0) == 0xC0
+				&& (event.text.text[1] & 0xC0) == 0x80) {
+			unicode = ((event.text.text[0] & 0x1F) << 6)
+					  | ((event.text.text[1] & 0x3F));
+		} else if (
+				(event.text.text[0] & 0xF0) == 0xE0
+				&& (event.text.text[1] & 0xC0) == 0x80
+				&& (event.text.text[2] & 0xC0) == 0x80) {
+			unicode = ((event.text.text[0] & 0x0F) << 12)
+					  | ((event.text.text[1] & 0x3F) << 6)
+					  | ((event.text.text[2] & 0x3F));
+		} else if (
+				(event.text.text[0] & 0xF8) == 0xF0
+				&& (event.text.text[1] & 0xC0) == 0x80
+				&& (event.text.text[1] & 0xC0) == 0x80
+				&& (event.text.text[1] & 0xC0) == 0x80) {
+			unicode = ((event.text.text[0] & 0x07) << 18)
+					  | ((event.text.text[1] & 0x3F) << 12)
+					  | ((event.text.text[2] & 0x3F) << 6)
+					  | ((event.text.text[3] & 0x3F));
+		} else {    // Invalid UTF-8
+			unicode = 0;
+		}
+	} else if (
+			event.type == SDL_EVENT_KEY_DOWN
+			|| event.type == SDL_EVENT_KEY_UP) {
+		// Handle Shift all variants, Simulate NumLock set
+		chr     = event.key.key;
+		unicode = SDL_GetKeyFromScancode(
+				event.key.scancode,
+				(event.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)), false);
+		unicode = (unicode & SDLK_SCANCODE_MASK ? 0 : unicode);
+	} else {
+		return false;
+	}
+	if (numpad) {
+		// Extract Numeric Keypad UCS-4
+		const bool numlock_active = (event.key.mod & SDL_KMOD_NUM) != 0;
+		switch (event.key.scancode) {
+		case SDL_SCANCODE_KP_ENTER:
+			chr     = SDLK_RETURN;
+			unicode = SDLK_RETURN;
+			break;
+		case SDL_SCANCODE_KP_PLUS:
+			chr     = SDLK_PLUS;
+			unicode = '+';
+			break;
+		case SDL_SCANCODE_KP_MINUS:
+			chr     = SDLK_MINUS;
+			unicode = '-';
+			break;
+		case SDL_SCANCODE_KP_MULTIPLY:
+			chr     = SDLK_ASTERISK;
+			unicode = '*';
+			break;
+		case SDL_SCANCODE_KP_DIVIDE:
+			chr     = SDLK_SLASH;
+			unicode = '/';
+			break;
+		case SDL_SCANCODE_KP_PERIOD:
+			if (numlock_active) {
+				chr     = SDLK_PERIOD;
+				unicode = '.';
+			} else {
+				chr     = SDLK_DELETE;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_0:
+			if (numlock_active) {
+				chr     = SDLK_0;
+				unicode = '0';
+			} else {
+				chr     = SDLK_INSERT;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_1:
+			if (numlock_active) {
+				chr     = SDLK_1;
+				unicode = '1';
+			} else {
+				chr     = SDLK_END;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_2:
+			if (numlock_active) {
+				chr     = SDLK_2;
+				unicode = '2';
+			} else {
+				chr     = SDLK_DOWN;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_3:
+			if (numlock_active) {
+				chr     = SDLK_3;
+				unicode = '3';
+			} else {
+				chr     = SDLK_PAGEDOWN;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_4:
+			if (numlock_active) {
+				chr     = SDLK_4;
+				unicode = '4';
+			} else {
+				chr     = SDLK_LEFT;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_5:
+			if (numlock_active) {
+				chr     = SDLK_5;
+				unicode = '5';
+			} else {
+				chr     = SDLK_CLEAR;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_6:
+			if (numlock_active) {
+				chr     = SDLK_6;
+				unicode = '6';
+			} else {
+				chr     = SDLK_RIGHT;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_7:
+			if (numlock_active) {
+				chr     = SDLK_7;
+				unicode = '7';
+			} else {
+				chr     = SDLK_HOME;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_8:
+			if (numlock_active) {
+				chr     = SDLK_8;
+				unicode = '8';
+			} else {
+				chr     = SDLK_UP;
+				unicode = 0;
+			}
+			break;
+		case SDL_SCANCODE_KP_9:
+			if (numlock_active) {
+				chr     = SDLK_9;
+				unicode = '9';
+			} else {
+				chr     = SDLK_PAGEUP;
+				unicode = 0;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	return (event.key.key != SDLK_LSHIFT && event.key.key != SDLK_RSHIFT
+			&& event.key.key != SDLK_CAPSLOCK && event.key.key != SDLK_RCTRL
+			&& event.key.key != SDLK_LCTRL && event.key.key != SDLK_RALT
+			&& event.key.key != SDLK_LALT && event.key.key != SDLK_LGUI
+			&& event.key.key != SDLK_RGUI && event.key.key != SDLK_MODE
+			&& event.key.key != SDLK_NUMLOCKCLEAR);
 }
 
 /*
@@ -1371,16 +1603,16 @@ static void Handle_event(SDL_Event& event) {
 	Gump_manager* gump_man = gwin->get_gump_man();
 	Gump*         gump     = nullptr;
 
+	SDL_Renderer* renderer
+			= SDL_GetRenderer(gwin->get_win()->get_screen_window());
 	// For detecting double-clicks.
 	static uint32 last_b1_click     = 0;
 	static uint32 last_b3_click     = 0;
 	static uint32 last_b1down_click = 0;
-	// cout << "Event " << (int) event.type << " received"<<endl;
 	switch (event.type) {
 	// Quick saving to make sure no game progress gets lost
 	// when the app goes into background
-	case SDL_APP_WILLENTERBACKGROUND: {
-		Game_window* gwin = Game_window::get_instance();
+	case SDL_EVENT_WILL_ENTER_BACKGROUND: {
 		try {
 			gwin->write();
 		} catch (exult_exception& /*e*/) {
@@ -1388,29 +1620,27 @@ static void Handle_event(SDL_Event& event) {
 		}
 		break;
 	}
-	case SDL_CONTROLLERAXISMOTION: {
+	case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
 		// Ignore axis changes on anything but a specific thumb-stick
 		// on the game-controller.
-		if (event.caxis.axis != SDL_CONTROLLER_AXIS_LEFTX
-			&& event.caxis.axis != SDL_CONTROLLER_AXIS_LEFTY) {
+		if (event.gaxis.axis != SDL_GAMEPAD_AXIS_LEFTX
+			&& event.gaxis.axis != SDL_GAMEPAD_AXIS_LEFTY) {
 			break;
 		}
 
-		SDL_GameController* input_device
-				= SDL_GameControllerFromInstanceID(event.caxis.which);
+		SDL_Gamepad* input_device = SDL_GetGamepadFromID(event.gaxis.which);
 		if (input_device && !dont_move_mode && avatar_can_act
 			&& gwin->main_actor_can_act_charmed()) {
-			auto get_normalized_axis
-					= [input_device](SDL_GameControllerAxis axis) {
-						  return SDL_GameControllerGetAxis(input_device, axis)
-								 / static_cast<float>(SDL_JOYSTICK_AXIS_MAX);
-					  };
+			auto get_normalized_axis = [input_device](SDL_GamepadAxis axis) {
+				return SDL_GetGamepadAxis(input_device, axis)
+					   / static_cast<float>(SDL_JOYSTICK_AXIS_MAX);
+			};
 			// Collect both of the controller thumb-stick's axis values.
 			// The input-event only carries one axis, and each thumb-stick
 			// has two axes.  Both axes' values are needed in order to
 			// call start_actor.
-			float axis_x = get_normalized_axis(SDL_CONTROLLER_AXIS_LEFTX);
-			float axis_y = get_normalized_axis(SDL_CONTROLLER_AXIS_LEFTY);
+			float axis_x = get_normalized_axis(SDL_GAMEPAD_AXIS_LEFTX);
+			float axis_y = get_normalized_axis(SDL_GAMEPAD_AXIS_LEFTY);
 
 			// Dead-zone is applied to each axis, X and Y, on the game's 2d
 			// plane. All axis readings below this are ignored
@@ -1471,16 +1701,17 @@ static void Handle_event(SDL_Event& event) {
 		}
 		break;
 	}
-	case SDL_FINGERDOWN: {
-		if ((!Mouse::use_touch_input) &&
-			(event.tfinger.touchId != EXSDL_MOUSE_TOUCHID)) {
+	case SDL_EVENT_FINGER_DOWN: {
+		if ((!Mouse::use_touch_input)
+			&& (event.tfinger.touchID != EXSDL_MOUSE_TOUCHID)) {
 			Mouse::use_touch_input = true;
 			gwin->set_painted();
 		}
 		break;
 	}
-	case SDL_MOUSEBUTTONDOWN: {
-		SDL_SetWindowGrab(gwin->get_win()->get_screen_window(), SDL_TRUE);
+	case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+		SDL_SetWindowMouseGrab(gwin->get_win()->get_screen_window(), true);
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		if (dont_move_mode) {
 			break;
 		}
@@ -1508,7 +1739,7 @@ static void Handle_event(SDL_Event& event) {
 					if (cheat.get_edit_shape() >= 0 &&
 						// But always if painting.
 						(cheat.get_edit_mode() == Cheat::paint
-						 || (SDL_GetModState() & KMOD_SHIFT))) {
+						 || (SDL_GetModState() & SDL_KMOD_SHIFT))) {
 						Paint_with_shape(event, false);
 						break;
 					} else if (
@@ -1519,12 +1750,12 @@ static void Handle_event(SDL_Event& event) {
 					} else if (cheat.get_edit_mode() == Cheat::select_chunks) {
 						Select_chunks(
 								event, false,
-								(SDL_GetModState() & KMOD_CTRL) != 0);
+								(SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 						break;
 					} else if (cheat.get_edit_mode() == Cheat::combo_pick) {
 						Select_for_combo(
 								event, false,
-								(SDL_GetModState() & KMOD_CTRL) != 0);
+								(SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 						break;
 					}
 					// Don't drag if not in 'move' mode.
@@ -1564,14 +1795,15 @@ static void Handle_event(SDL_Event& event) {
 		break;
 	}
 	// two-finger scrolling of view port with SDL2.
-	case SDL_FINGERMOTION: {
+	case SDL_EVENT_FINGER_MOTION: {
 		if (!cheat() || !gwin->can_scroll_with_mouse()) {
 			break;
 		}
-		static int  numFingers = 0;
-		SDL_Finger* finger0    = SDL_GetTouchFinger(event.tfinger.touchId, 0);
-		if (finger0) {
-			numFingers = SDL_GetNumTouchFingers(event.tfinger.touchId);
+		static int   numFingers = 0;
+		SDL_Finger** fingers
+				= SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
+		if (fingers) {
+			SDL_free(fingers);
 		}
 		if (numFingers > 1) {
 			if (event.tfinger.dy < 0) {
@@ -1588,19 +1820,19 @@ static void Handle_event(SDL_Event& event) {
 		break;
 	}
 	// Mousewheel scrolling of view port with SDL2.
-	case SDL_MOUSEWHEEL: {
+	case SDL_EVENT_MOUSE_WHEEL: {
 		if (!cheat() || !gwin->can_scroll_with_mouse()) {
 			break;
 		}
 		const SDL_Keymod mod = SDL_GetModState();
 		if (event.wheel.y > 0) {
-			if (mod & KMOD_ALT) {
+			if (mod & SDL_KMOD_ALT) {
 				ActionScrollLeft(nullptr);
 			} else {
 				ActionScrollUp(nullptr);
 			}
 		} else if (event.wheel.y < 0) {
-			if (mod & KMOD_ALT) {
+			if (mod & SDL_KMOD_ALT) {
 				ActionScrollRight(nullptr);
 			} else {
 				ActionScrollDown(nullptr);
@@ -1613,11 +1845,12 @@ static void Handle_event(SDL_Event& event) {
 		}
 		break;
 	}
-	case SDL_MOUSEBUTTONUP: {
-		SDL_SetWindowGrab(gwin->get_win()->get_screen_window(), SDL_FALSE);
+	case SDL_EVENT_MOUSE_BUTTON_UP: {
+		SDL_SetWindowMouseGrab(gwin->get_win()->get_screen_window(), false);
 		if (dont_move_mode) {
 			break;
 		}
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		int x;
 		int y;
 		gwin->get_win()->screen_to_game(
@@ -1705,7 +1938,7 @@ static void Handle_event(SDL_Event& event) {
 				// Identify item(s) clicked on.
 				if (cheat.in_map_editor()) {
 					gwin->show_items(
-							x, y, (SDL_GetModState() & KMOD_CTRL) != 0);
+							x, y, (SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 				} else {
 					show_items_time    = curtime + 500;
 					show_items_clicked = true;
@@ -1715,7 +1948,8 @@ static void Handle_event(SDL_Event& event) {
 		}
 		break;
 	}
-	case SDL_MOUSEMOTION: {
+	case SDL_EVENT_MOUSE_MOTION: {
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		int mx;
 		int my;
 		if (Mouse::use_touch_input
@@ -1738,12 +1972,12 @@ static void Handle_event(SDL_Event& event) {
 		}
 
 		// Dragging with left button?
-		if (event.motion.state & SDL_BUTTON(1)) {
+		if (event.motion.state & SDL_BUTTON_LMASK) {
 #ifdef USE_EXULTSTUDIO    // Painting?
 			if (cheat.in_map_editor()) {
 				if (cheat.get_edit_shape() >= 0
 					&& (cheat.get_edit_mode() == Cheat::paint
-						|| (SDL_GetModState() & KMOD_SHIFT))) {
+						|| (SDL_GetModState() & SDL_KMOD_SHIFT))) {
 					Paint_with_shape(event, true);
 					break;
 				} else if (
@@ -1753,11 +1987,13 @@ static void Handle_event(SDL_Event& event) {
 					break;
 				} else if (cheat.get_edit_mode() == Cheat::select_chunks) {
 					Select_chunks(
-							event, true, (SDL_GetModState() & KMOD_CTRL) != 0);
+							event, true,
+							(SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 					break;
 				} else if (cheat.get_edit_mode() == Cheat::combo_pick) {
 					Select_for_combo(
-							event, true, (SDL_GetModState() & KMOD_CTRL) != 0);
+							event, true,
+							(SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 					break;
 				}
 			}
@@ -1765,7 +2001,7 @@ static void Handle_event(SDL_Event& event) {
 			dragged = gwin->drag(mx, my);
 		}
 		// Dragging with right?
-		else if ((event.motion.state & SDL_BUTTON(3)) && !right_on_gump) {
+		else if ((event.motion.state & SDL_BUTTON_RMASK) && !right_on_gump) {
 			if (avatar_can_act && gwin->main_actor_can_act_charmed()) {
 				gwin->start_actor(mx, my, Mouse::mouse->avatar_speed);
 			}
@@ -1774,7 +2010,7 @@ static void Handle_event(SDL_Event& event) {
 		else if (
 				cheat.in_map_editor() && cheat.get_edit_shape() >= 0
 				&& (cheat.get_edit_mode() == Cheat::paint
-					|| (SDL_GetModState() & KMOD_SHIFT))) {
+					|| (SDL_GetModState() & SDL_KMOD_SHIFT))) {
 			static int prevx = -1;
 			static int prevy = -1;
 			Move_dragged_shape(
@@ -1786,78 +2022,91 @@ static void Handle_event(SDL_Event& event) {
 #endif
 		break;
 	}
-	case SDL_WINDOWEVENT:
-		if (EnteredWindow(event)) {
-			int x;
-			int y;
-			SDL_GetMouseState(&x, &y);
-			gwin->get_win()->screen_to_game(x, y, gwin->get_fastmouse(), x, y);
-			Mouse::mouse->move(x, y);
-			gwin->set_painted();
-		}
-
-		if (GainedFocus(event)) {
-			gwin->get_focus();
-		} else if (LostFocus(event)) {
-			gwin->lose_focus();
-		}
+	case SDL_EVENT_WINDOW_MOUSE_ENTER: {
+		int   x;
+		int   y;
+		float fx, fy;
+		SDL_GetMouseState(&fx, &fy);
+		x = int(fx);
+		y = int(fy);
+		gwin->get_win()->screen_to_game(x, y, gwin->get_fastmouse(), x, y);
+		Mouse::mouse->move(x, y);
+		gwin->set_painted();
 		break;
-	case SDL_QUIT:
+	}
+	case SDL_EVENT_WINDOW_FOCUS_GAINED:
+		gwin->get_focus();
+		break;
+	case SDL_EVENT_WINDOW_FOCUS_LOST:
+		gwin->lose_focus();
+		break;
+	case SDL_EVENT_QUIT:
 		gwin->get_gump_man()->okay_to_quit();
 		break;
-	case SDL_KEYDOWN:    // Keystroke.
-	case SDL_KEYUP:
+	case SDL_EVENT_KEY_DOWN:    // Keystroke.
+	case SDL_EVENT_KEY_UP:
 		if (!dragging &&    // ESC while dragging causes crashes.
 			!gwin->get_gump_man()->handle_kbd_event(&event)) {
 			keybinder->HandleEvent(event);
 		}
 		break;
-	case SDL_DROPFILE: {
+	case SDL_EVENT_DROP_TEXT:
+	case SDL_EVENT_DROP_FILE: {
 #ifdef USE_EXULTSTUDIO
-#	ifndef _WIN32
-		int x;
-		int y;
-		SDL_GetMouseState(&x, &y);
-#		ifdef DEBUG
-		cout << "(EXULT) SDL_DROPFILE Event, type = " << event.drop.type
-			 << ", file (" << strlen(event.drop.file) << ") = '"
-			 << event.drop.file << "', at x = " << x << ", y = " << y << endl;
-#		endif
-		constexpr static auto deleter = [](char* file) {
-			SDL_free(file);
-		};
-		std::unique_ptr<char, decltype(deleter)> file_owner(
-				event.drop.file, deleter);
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
+		int   x;
+		int   y;
+		float fx = event.drop.x, fy = event.drop.y;
+		x = int(fx);
+		y = int(fy);
+#	ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_"
+			 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
+			 << " Event, type = " << event.drop.type << ", file ("
+			 << strlen(event.drop.data) << ") = '" << event.drop.data
+			 << "', at x = " << x << ", y = " << y << endl;
+#	endif
 		const unsigned char* data
-				= reinterpret_cast<const unsigned char*>(event.drop.file);
+				= reinterpret_cast<const unsigned char*>(event.drop.data);
 		if (Is_u7_shapeid(data) == true) {
 			// Get shape info.
 			int file, shape, frame;
 			Get_u7_shapeid(data, file, shape, frame);
-			cout << "(EXULT) SDL_DROPFILE Event, Shape: file = " << file
-				 << ", shape = " << shape << ", frame = " << frame << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
+				 << " Event, Shape: file = " << data << ", shape = " << shape
+				 << ", frame = " << frame << ", at x = " << x << ", y = " << y
+				 << endl;
 			if (shape >= 0) {    // Dropping a shape?
 				if (file == U7_SHAPE_SHAPES) {
 					// For now, just allow "shapes.vga".
 					Drop_dragged_shape(shape, frame, x, y);
 				}
 			}
+			drag_shpnum = -1;
 		} else if (Is_u7_chunkid(data) == true) {
 			// A whole chunk.
 			int chunknum;
 			Get_u7_chunkid(data, chunknum);
-			cout << "(EXULT) SDL_DROPFILE Event, Chunk: num = " << chunknum
-				 << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
+				 << " Event, Chunk: num = " << chunknum << ", at x = " << x
+				 << ", y = " << y << endl;
 			if (chunknum >= 0) {    // A whole chunk.
 				Drop_dragged_chunk(chunknum, x, y);
 			}
+			drag_cnknum = -1;
 		} else if (Is_u7_npcid(data) == true) {
 			int npcnum;
 			Get_u7_npcid(data, npcnum);
-			cout << "(EXULT) SDL_DROPFILE Event, Npc: num = " << npcnum << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
+				 << " Event, Npc: num = " << npcnum << ", at x = " << x
+				 << ", y = " << y << endl;
 			if (npcnum >= 0) {    // An NPC.
 				Drop_dragged_npc(npcnum, x, y);
 			}
+			drag_npcnum = -1;
 		} else if (Is_u7_comboid(data) == true) {
 			int combo_xtiles, combo_ytiles, combo_tiles_right,
 					combo_tiles_below, combo_cnt;
@@ -1866,23 +2115,201 @@ static void Handle_event(SDL_Event& event) {
 					data, combo_xtiles, combo_ytiles, combo_tiles_right,
 					combo_tiles_below, combo_cnt, combo);
 			std::unique_ptr<U7_combo_data[]> combo_owner(combo);
-			cout << "(EXULT) SDL_DROPFILE Event, Combo: xtiles = "
-				 << combo_xtiles << ", ytiles = " << combo_ytiles
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
+				 << " Event, Combo: xtiles = " << combo_xtiles
+				 << ", ytiles = " << combo_ytiles
 				 << ", tiles_right = " << combo_tiles_right
 				 << ", tiles_below = " << combo_tiles_below
-				 << ", count = " << combo_cnt << endl;
+				 << ", count = " << combo_cnt << ", at x = " << x
+				 << ", y = " << y << endl;
 			if (combo_cnt >= 0 && combo) {
 				Drop_dragged_combo(combo_cnt, combo, x, y);
 			}
+			drag_cbcnt = -1;
 		}
-#		ifdef DEBUG
-		cout << "(EXULT) SDL_DROPFILE Event complete" << endl;
-#		endif
+#	ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_"
+			 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
+			 << " Event complete" << endl;
+#	endif
+#endif
+		break;
+	}
+	case SDL_EVENT_DROP_BEGIN: {
+#ifdef USE_EXULTSTUDIO
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
+		int   x;
+		int   y;
+		float fx = event.drop.x, fy = event.drop.y;
+		x = int(fx);
+		y = int(fy);
+#	ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, type = " << event.drop.type
+			 << ", at x = " << x << ", y = " << y << endl;
+#	endif
+		drag_prevx = -1;
+		drag_prevy = -1;
+		if (drag_shpnum != -1) {
+			int file = drag_shfile, shape = drag_shpnum, frame = drag_shfnum;
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Shape: file = " << file
+				 << ", shape = " << shape << ", frame = " << frame
+				 << ", at x = " << x << ", y = " << y << endl;
+#	endif
+			if (shape >= 0) {    // Moving a shape?
+				if (file == U7_SHAPE_SHAPES) {
+					// For now, just allow "shapes.vga".
+					Move_dragged_shape(
+							shape, frame, x, y, drag_prevx, drag_prevy, true);
+				}
+			}
+		} else if (drag_cbcnt != -1) {
+			int combo_xtiles = drag_cbxtiles, combo_ytiles = drag_cbytiles;
+			int combo_tiles_right = drag_cbrtiles;
+			int combo_tiles_below = drag_cbbtiles;
+			int combo_cnt         = drag_cbcnt;
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Combo: xtiles = "
+				 << combo_xtiles << ", ytiles = " << combo_ytiles
+				 << ", tiles_right = " << combo_tiles_right
+				 << ", tiles_below = " << combo_tiles_below
+				 << ", count = " << combo_cnt << ", at x = " << x
+				 << ", y = " << y << endl;
+#	endif
+			if (combo_cnt >= 0) {
+				Move_dragged_combo(
+						combo_xtiles, combo_ytiles, combo_tiles_right,
+						combo_tiles_below, x, y, drag_prevx, drag_prevy, true);
+			}
+		} else if (drag_cnknum != -1) {
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Chunk: num = "
+				 << drag_cnknum << ", at x = " << x << ", y = " << y << endl;
+#	endif
+			int cx, cy;
+			gwin->get_win()->screen_to_game(x, y, false, cx, cy);
+			cx = ((gwin->get_scrolltx() + (cx / c_tilesize))
+				  / c_tiles_per_chunk)
+				 * c_tiles_per_chunk;
+			cy = ((gwin->get_scrollty() + (cy / c_tilesize))
+				  / c_tiles_per_chunk)
+				 * c_tiles_per_chunk;
+			cx = ((cx - gwin->get_scrolltx()) * c_tilesize) + c_chunksize;
+			cy = ((cy - gwin->get_scrollty()) * c_tilesize) + c_chunksize;
+			gwin->get_win()->game_to_screen(cx, cy, false, x, y);
+			Move_grid(
+					x, y, drag_prevx, drag_prevy, false, c_tiles_per_chunk,
+					c_tiles_per_chunk, 0, 0);
+			gwin->show();
+		}
+		drag_prevx = x;
+		drag_prevy = y;
+#	ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event complete" << endl;
+#	endif
+#endif
+		break;
+	}
+	case SDL_EVENT_DROP_COMPLETE:    // Drag pointer left the window, handle as
+									 // -1, -1 DROP_POSITION
+	case SDL_EVENT_DROP_POSITION: {
+#ifdef USE_EXULTSTUDIO
+		int x;
+		int y;
+		SDL_RaiseWindow(gwin->get_win()->get_screen_window());
+		if (event.type == SDL_EVENT_DROP_POSITION) {
+			// activate Exult for drag'n'drop
+			SDL_ConvertEventToRenderCoordinates(renderer, &event);
+			float fx = event.drop.x, fy = event.drop.y;
+			x = int(fx);
+			y = int(fy);
+		} else {
+			x = -1;
+			y = -1;
+		}
+#	ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_"
+			 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
+													   : "COMPLETE")
+			 << " Event, type = " << event.drop.type << ", at x = " << x
+			 << ", y = " << y << endl;
+#	endif
+		if (drag_shpnum != -1) {
+			int file = drag_shfile, shape = drag_shpnum, frame = drag_shfnum;
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
+														   : "COMPLETE")
+				 << " Event, Shape: file = " << file << ", shape = " << shape
+				 << ", frame = " << frame << ", at x = " << x << ", y = " << y
+				 << endl;
+#	endif
+			if (shape >= 0) {    // Moving a shape?
+				if (file == U7_SHAPE_SHAPES) {
+					// For now, just allow "shapes.vga".
+					Move_dragged_shape(
+							shape, frame, x, y, drag_prevx, drag_prevy, true);
+				}
+			}
+		} else if (drag_cbcnt != -1) {
+			int combo_xtiles = drag_cbxtiles, combo_ytiles = drag_cbytiles;
+			int combo_tiles_right = drag_cbrtiles,
+				combo_tiles_below = drag_cbbtiles;
+			int combo_cnt         = drag_cbcnt;
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
+														   : "COMPLETE")
+				 << " Event, Combo: xtiles = " << combo_xtiles
+				 << ", ytiles = " << combo_ytiles
+				 << ", tiles_right = " << combo_tiles_right
+				 << ", tiles_below = " << combo_tiles_below
+				 << ", count = " << combo_cnt << ", at x = " << x
+				 << ", y = " << y << endl;
+#	endif
+			if (combo_cnt >= 0) {
+				Move_dragged_combo(
+						combo_xtiles, combo_ytiles, combo_tiles_right,
+						combo_tiles_below, x, y, drag_prevx, drag_prevy, true);
+			}
+		} else if (drag_cnknum != -1) {
+#	ifdef DEBUG
+			cout << "(EXULT) SDL_EVENT_DROP_"
+				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
+														   : "COMPLETE")
+				 << " Event, Chunk: num = " << drag_cnknum << ", at x = " << x
+				 << ", y = " << y << endl;
+#	endif
+			int cx, cy;
+			gwin->get_win()->screen_to_game(x, y, false, cx, cy);
+			cx = ((gwin->get_scrolltx() + (cx / c_tilesize))
+				  / c_tiles_per_chunk)
+				 * c_tiles_per_chunk;
+			cy = ((gwin->get_scrollty() + (cy / c_tilesize))
+				  / c_tiles_per_chunk)
+				 * c_tiles_per_chunk;
+			cx = ((cx - gwin->get_scrolltx()) * c_tilesize) + c_chunksize;
+			cy = ((cy - gwin->get_scrollty()) * c_tilesize) + c_chunksize;
+			gwin->get_win()->game_to_screen(cx, cy, false, x, y);
+			Move_grid(
+					x, y, drag_prevx, drag_prevy, false, c_tiles_per_chunk,
+					c_tiles_per_chunk, 0, 0);
+			gwin->show();
+		}
+		drag_prevx = x;
+		drag_prevy = y;
+#	ifdef DEBUG
+		cout << "(EXULT) SDL_EVENT_DROP_"
+			 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
+													   : "COMPLETE")
+			 << " Event complete" << endl;
 #	endif
 #endif
 		break;
 	}
 	default:
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		if (event.type == ShortcutBar_gump::eventType) {
 			if (!dragged) {
 				if (g_shortcutBar) {    // just in case
@@ -1909,6 +2336,8 @@ static bool Get_click(
 	dragging            = false;    // Init.
 	uint32 last_rotate  = 0;
 	g_waiting_for_click = true;
+	SDL_Renderer* renderer
+			= SDL_GetRenderer(gwin->get_win()->get_screen_window());
 	while (true) {
 		SDL_Event event;
 		Delay();    // Wait a fraction of a second.
@@ -1942,10 +2371,11 @@ static bool Get_click(
 		// Mouse scale factor
 		static bool rightclick;
 		while (SDL_PollEvent(&event)) {
+			SDL_ConvertEventToRenderCoordinates(renderer, &event);
 			switch (event.type) {
-			case SDL_MOUSEBUTTONDOWN:
-				SDL_SetWindowGrab(
-						gwin->get_win()->get_screen_window(), SDL_TRUE);
+			case SDL_EVENT_MOUSE_BUTTON_DOWN:
+				SDL_SetWindowMouseGrab(
+						gwin->get_win()->get_screen_window(), true);
 				if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
 					break;
 				}
@@ -1959,9 +2389,9 @@ static bool Get_click(
 					dragged  = false;
 				}
 				break;
-			case SDL_MOUSEBUTTONUP:
-				SDL_SetWindowGrab(
-						gwin->get_win()->get_screen_window(), SDL_FALSE);
+			case SDL_EVENT_MOUSE_BUTTON_UP:
+				SDL_SetWindowMouseGrab(
+						gwin->get_win()->get_screen_window(), false);
 				if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
 					break;
 				}
@@ -1989,7 +2419,7 @@ static bool Get_click(
 					}
 				}
 				break;
-			case SDL_MOUSEMOTION: {
+			case SDL_EVENT_MOUSE_MOTION: {
 				int mx;
 				int my;
 				gwin->get_win()->screen_to_game(
@@ -1998,14 +2428,14 @@ static bool Get_click(
 
 				Mouse::mouse->move(mx, my);
 				Mouse::mouse_update = true;
-				if (drag_ok && (event.motion.state & SDL_BUTTON(1))) {
+				if (drag_ok && (event.motion.state & SDL_BUTTON_LMASK)) {
 					dragged = gwin->drag(mx, my);
 				}
 				break;
 			}
-			case SDL_KEYDOWN: {
+			case SDL_EVENT_KEY_DOWN: {
 				//+++++ convert to unicode first?
-				const int c = event.key.keysym.sym;
+				const int c = event.key.key;
 				switch (c) {
 				case SDLK_ESCAPE:
 					g_waiting_for_click = false;
@@ -2026,14 +2456,14 @@ static bool Get_click(
 					if (keybinder->IsMotionEvent(event)) {
 						break;
 					}
-					if ((c == 's') && (event.key.keysym.mod & KMOD_ALT)
-						&& (event.key.keysym.mod & KMOD_CTRL)) {
+					if ((c == SDLK_S) && (event.key.mod & SDL_KMOD_ALT)
+						&& (event.key.mod & SDL_KMOD_CTRL)) {
 						make_screenshot(true);
 						break;
 					}
 					if (chr) {    // Looking for a character?
-						*chr = (event.key.keysym.mod & KMOD_SHIFT) ? toupper(c)
-																   : c;
+						*chr = (event.key.mod & SDL_KMOD_SHIFT) ? toupper(c)
+																: c;
 						g_waiting_for_click = false;
 						return true;
 					}
@@ -2041,12 +2471,12 @@ static bool Get_click(
 				}
 				break;
 			}
-			case SDL_WINDOWEVENT:
-				if (GainedFocus(event)) {
-					gwin->get_focus();
-				} else if (LostFocus(event)) {
-					gwin->lose_focus();
-				}
+			case SDL_EVENT_WINDOW_FOCUS_GAINED:
+				gwin->get_focus();
+				break;
+			case SDL_EVENT_WINDOW_FOCUS_LOST:
+				gwin->lose_focus();
+				break;
 			}
 		}
 		if (dragging) {
@@ -2122,10 +2552,13 @@ void Wait_for_arrival(
 		Mouse::mouse->hide();    // Turn off mouse.
 		Mouse::mouse_update = false;
 
+		SDL_Renderer* renderer
+				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
+			SDL_ConvertEventToRenderCoordinates(renderer, &event);
 			switch (event.type) {
-			case SDL_MOUSEMOTION:
+			case SDL_EVENT_MOUSE_MOTION:
 				gwin->get_win()->screen_to_game(
 						event.motion.x, event.motion.y, gwin->get_fastmouse(),
 						mx, my);
@@ -2215,10 +2648,13 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 
 		Mouse::mouse->hide();    // Turn off mouse.
 		Mouse::mouse_update = false;
+		SDL_Renderer* renderer
+				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
+			SDL_ConvertEventToRenderCoordinates(renderer, &event);
 			switch (event.type) {
-			case SDL_FINGERMOTION: {
+			case SDL_EVENT_FINGER_MOTION: {
 				if (event.tfinger.dy > 0) {
 					gwin->view_down();
 				} else if (event.tfinger.dy < 0) {
@@ -2231,7 +2667,7 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 				}
 				break;
 			}
-			case SDL_MOUSEMOTION: {
+			case SDL_EVENT_MOUSE_MOTION: {
 				int mx;
 				int my;
 				gwin->get_win()->screen_to_game(
@@ -2244,8 +2680,8 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 				Mouse::mouse_update = true;
 				break;
 			}
-			case SDL_KEYDOWN:
-				if (event.key.keysym.sym == SDLK_ESCAPE) {
+			case SDL_EVENT_KEY_DOWN:
+				if (event.key.key == SDLK_ESCAPE) {
 					timeout = true;
 				}
 			}
@@ -2262,11 +2698,10 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 		// Show animation every 1/20 sec.
 		if (ticks > last_repaint + 50 || gwin->was_painted()) {
 			// Right mouse button down?
-
-			const int ms = SDL_GetMouseState(nullptr,nullptr);
-			int       mx  = Mouse::mouse->get_mousex();
-			int       my  = Mouse::mouse->get_mousey();
-			if (SDL_BUTTON(3) & ms) {
+			const int ms = SDL_GetMouseState(nullptr, nullptr);
+			int       mx = Mouse::mouse->get_mousex();
+			int       my = Mouse::mouse->get_mousey();
+			if (SDL_BUTTON_RMASK & ms) {
 				Shift_wizards_eye(mx, my);
 			}
 			gwin->set_all_dirty();
@@ -2388,7 +2823,7 @@ void make_screenshot(bool silent) {
 			eman->center_text("Too many screenshots");
 		}
 	} else {
-		SDL_RWops* dst = SDL_RWFromFile(fn, "wb");
+		SDL_IOStream* dst = SDL_IOFromFile(fn, "wb");
 
 		if (gwin->get_win()->screenshot(dst)) {
 			cout << "Screenshot saved in " << fn << endl;
@@ -2484,7 +2919,7 @@ void BuildGameMap(BaseGameInfo* game, int mapnum) {
 				snprintf(
 						fn, strsize, "%s/u7map%02x." EXULT_IMAGE_SUFFIX,
 						savegamepath.c_str(), (12 * y) + x);
-				SDL_RWops* dst = SDL_RWFromFile(fn, "wb");
+				SDL_IOStream* dst = SDL_IOFromFile(fn, "wb");
 				cerr << x << "," << y << ": ";
 				gwin->get_win()->screenshot(dst);
 			}
@@ -2529,13 +2964,11 @@ void setup_video(
 	const string vidStr(
 			(fullscreen || share_settings) ? "config/video"
 										   : "config/video/window");
-	bool high_dpi;
-	config->value("config/video/highdpi", high_dpi, true);
 	if (read_config) {
 #ifdef DEBUG
 		cout << "Reading video menu adjustable configuration options" << endl;
 #endif
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 		// Default resolution is 320x240 with 1x scaling
 		const int    w                   = 320;
 		const int    h                   = 240;
@@ -2544,7 +2977,8 @@ void setup_video(
 		const string default_fill_scaler = "point";
 		const string default_fmode       = "Fill";
 		fullscreen                       = true;
-		config->set("config/video/force_bpp", 32, true);
+		// [SDL 3] force_bpp is set to 32 in imagewin/imagewin.cc
+		// discard the config/video/force_bpp
 #else
 		// Default resolution is 320x240 with 2x scaling
 		const int    w                   = 320;
@@ -2577,7 +3011,8 @@ void setup_video(
 		config->value(vidStr + "/scale", scaleval, sc);
 		scaler = Image_window::get_scaler_for_name(sclr.c_str());
 		// Ensure a default scaler if a wrong scaler name is set
-		if (scaler == Image_window::NoScaler) {
+		if (scaler == Image_window::NoScaler
+			|| scaler == Image_window::SDLScaler) {
 			scaler = Image_window::get_scaler_for_name(default_scaler.c_str());
 		}
 		// Ensure proper values for scaleval based on scaler.
@@ -2588,18 +3023,20 @@ void setup_video(
 			scaleval = 4;
 		} else if (
 				scaler != Image_window::point
+				&& scaler != Image_window::SDLScaler
 				&& scaler != Image_window::interlaced
 				&& scaler != Image_window::bilinear) {
 			scaleval = 2;
 		}
 		int dw = resx * scaleval;
 		int dh = resy * scaleval;
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 		// Default display is desktop
-		SDL_DisplayMode dispmode;
-		if (SDL_GetDesktopDisplayMode(0, &dispmode) == 0) {
-			dw = dispmode.w;
-			dh = dispmode.h;
+		const SDL_DisplayMode* dispmode
+				= SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+		if (dispmode) {
+			dw = dispmode->w;
+			dh = dispmode->h;
 		}
 #else
 		// Default display is 1024x768
@@ -2610,7 +3047,6 @@ void setup_video(
 		config->value(vidStr + "/display/height", resy, dh);
 		config->value(vidStr + "/game/width", gw, 320);
 		config->value(vidStr + "/game/height", gh, 200);
-		SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, high_dpi ? "0" : "1");
 		config->value(vidStr + "/fill_mode", fmode_string, default_fmode);
 		fillmode = Image_window::string_to_fillmode(fmode_string.c_str());
 		if (fillmode == 0) {
@@ -2644,7 +3080,6 @@ void setup_video(
 		config->set((vidStr + "/scale_method").c_str(), scalerName, false);
 		config->set((vidStr + "/fill_mode").c_str(), fmode_string, false);
 		config->set((vidStr + "/fill_scaler").c_str(), fillScalerName, false);
-		config->set("config/video/highdpi", high_dpi ? "yes" : "no", false);
 	}
 	if (video_init) {
 #ifdef DEBUG
@@ -2697,8 +3132,7 @@ void setup_video(
 		videoGump->set_scaler(scaler);
 		videoGump->set_resolution(resx << 16 | resy);
 		videoGump->set_game_resolution(gw << 16 | gh);
-		videoGump->set_fill_scaler(
-				fill_scaler == Image_window::bilinear ? 1 : 0);
+		videoGump->set_fill_scaler(fill_scaler);
 		videoGump->set_fill_mode(fillmode);
 	}
 }
@@ -2806,7 +3240,6 @@ static void Move_dragged_shape(
 	}
 }
 
-#	ifdef _WIN32
 /*
  *  Show where a shape dragged from a shape-chooser will go.
  */
@@ -2825,7 +3258,6 @@ static void Move_dragged_combo(
 		gwin->show();
 	}
 }
-#	endif
 
 /*
  *  Create an object as moveable (IREG) or fixed.
@@ -3001,4 +3433,37 @@ void Drop_dragged_combo(
 	gwin->set_all_dirty();    // For now, until we clear out grid.
 }
 
+void Set_dragged_shape(int file, int shnum, int frnum) {
+	drag_shfile = file;
+	drag_shpnum = shnum;
+	drag_shfnum = frnum;
+	drag_cbcnt  = -1;
+	drag_npcnum = -1;
+	drag_cnknum = -1;
+}
+
+void Set_dragged_combo(int cnt, int xtl, int ytl, int rtl, int btl) {
+	drag_shpnum   = -1;
+	drag_cbcnt    = cnt;
+	drag_cbxtiles = xtl;
+	drag_cbytiles = ytl;
+	drag_cbrtiles = rtl;
+	drag_cbbtiles = btl;
+	drag_npcnum   = -1;
+	drag_cnknum   = -1;
+}
+
+void Set_dragged_npc(int npcnum) {
+	drag_shpnum = -1;
+	drag_cbcnt  = -1;
+	drag_npcnum = npcnum;
+	drag_cnknum = -1;
+}
+
+void Set_dragged_chunk(int chunknum) {
+	drag_shpnum = -1;
+	drag_cbcnt  = -1;
+	drag_npcnum = -1;
+	drag_cnknum = chunknum;
+}
 #endif

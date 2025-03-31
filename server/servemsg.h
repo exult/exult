@@ -89,6 +89,10 @@ namespace Exult_server {
 		container          = 40,    // Edit container object.
 		cont_show_gump     = 41,    // Displays a container's gump.
 		reload_shapes_info = 42,    // Reload shapes info.
+		drag_shape         = 43,    // Begin drag of a Shape.
+		drag_combo         = 44,    // Begin drag of a Combo.
+		drag_npc           = 45,    // Begin drag of a NPC.
+		drag_chunk         = 46,    // Begin drag of a Chunk.
 		usecode_debugging  = 128
 	};
 

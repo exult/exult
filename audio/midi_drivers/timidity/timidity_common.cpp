@@ -137,7 +137,7 @@ static PathList* pathlist = nullptr;
 			return nullptr;
 		}
 
-#	ifndef __WIN32__
+#	ifndef SDL_PLATFORM_WIN32
 		if (name[0] != PATH_SEP) {
 #	else
 	if (name[0] != '\\' && name[0] != '/' && name[1] != ':') {
@@ -149,7 +149,7 @@ static PathList* pathlist = nullptr;
 				int l             = static_cast<int>(strlen(plp->path));
 				if (l) {
 					strcpy(current_filename, plp->path);
-#	ifndef __WIN32__
+#	ifndef SDL_PLATFORM_WIN32
 					if (current_filename[l - 1] != PATH_SEP)
 #	else
 				if (current_filename[l - 1] != '\\'

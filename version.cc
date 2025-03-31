@@ -23,6 +23,7 @@
 #endif
 
 #include "endianio.h"
+#include "ignore_unused_variable_warning.h"
 #include "version.h"
 
 #include <array>
@@ -298,14 +299,6 @@ void getVersionInfo(std::ostream& out) {
 	out << "USECODE_DEBUGGER";
 #endif
 
-#ifdef NO_SDL_PARACHUTE
-	if (!firstoption) {
-		out << ", ";
-	}
-	firstoption = false;
-	out << "NO_SDL_PARACHUTE";
-#endif
-
 #ifdef HAVE_ZIP_SUPPORT
 	if (!firstoption) {
 		out << ", ";
@@ -553,7 +546,7 @@ void getVersionInfo(std::ostream& out) {
 	out << "FreeBSD";
 #elif (defined(MACOSX))
 	out << "macOS";
-#elif (defined(__IPHONEOS__))
+#elif (defined(SDL_PLATFORM_IOS))
 	out << "iOS";
 #elif (defined(NETBSD))
 	out << "NetBSD";
@@ -602,6 +595,7 @@ namespace {
 
 #ifdef NO_CPUID
 	bool CPUID(uint32_t leaf, uint32_t subleaf, std::array<uint32_t, 4>& regs) {
+		ignore_unused_variable_warning(leaf, subleaf, regs);
 		return false;
 	}
 #endif

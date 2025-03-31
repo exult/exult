@@ -50,7 +50,7 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif    // __GNUC__
-static const Uint32 EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
+static const SDL_MouseID EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -520,19 +520,24 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	//          : gwin->get_win()->get_scale();
 	static bool rightclick;
 
-	int    gx;
-	int    gy;
-	Uint16 keysym_unicode = 0;
+	int           gx;
+	int           gy;
+	SDL_Keycode   keysym_unicode = 0;
+	SDL_Keycode   chr            = 0;
+	SDL_Renderer* renderer
+			= SDL_GetRenderer(gwin->get_win()->get_screen_window());
 
 	switch (event.type) {
-	case SDL_FINGERDOWN: {
-		if ((!Mouse::use_touch_input) && (event.tfinger.fingerId != 0)) {
+	case SDL_EVENT_FINGER_DOWN: {
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
+		if ((!Mouse::use_touch_input) && (event.tfinger.fingerID != 0)) {
 			Mouse::use_touch_input = true;
 			gwin->set_painted();
 		}
 		break;
 	}
-	case SDL_MOUSEBUTTONDOWN:
+	case SDL_EVENT_MOUSE_BUTTON_DOWN:
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(
 				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 
@@ -550,8 +555,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 			if (!gump->mouse_down(
 						gx, gy, SDL_MouseButton_to_Gump(event.button.button))
 				&& gwin->get_mouse3rd()) {
-				gump->key_down(SDLK_RETURN);
-				gump->character_input(SDLK_RETURN, SDLK_RETURN, false);
+				gump->key_down(SDLK_RETURN, SDLK_RETURN);
 			}
 		} else if (event.button.button == 3) {
 			rightclick = true;
@@ -562,7 +566,8 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 					gx, gy, SDL_MouseButton_to_Gump(event.button.button));
 		}
 		break;
-	case SDL_MOUSEBUTTONUP:
+	case SDL_EVENT_MOUSE_BUTTON_UP:
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(
 				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 		if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
@@ -580,13 +585,15 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 			}
 		}
 		break;
-	case SDL_FINGERMOTION: {
+	case SDL_EVENT_FINGER_MOTION: {
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(
 				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
-		static int  numFingers = 0;
-		SDL_Finger* finger0    = SDL_GetTouchFinger(event.tfinger.touchId, 0);
-		if (finger0) {
-			numFingers = SDL_GetNumTouchFingers(event.tfinger.touchId);
+		static int   numFingers = 0;
+		SDL_Finger** fingers
+				= SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
+		if (fingers) {
+			SDL_free(fingers);
 		}
 		if (numFingers > 1) {
 			if (event.tfinger.dy < 0) {
@@ -610,7 +617,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		break;
 	}
 	// Mousewheel scrolling with SDL2.
-	case SDL_MOUSEWHEEL: {
+	case SDL_EVENT_MOUSE_WHEEL: {
 		if (event.wheel.y > 0) {
 			gump->mousewheel_up(
 					Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
@@ -620,69 +627,55 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		}
 		break;
 	}
-	case SDL_MOUSEMOTION:
+	case SDL_EVENT_MOUSE_MOTION:
 		if (Mouse::use_touch_input
 			&& event.motion.which != EXSDL_TOUCH_MOUSEID) {
 			Mouse::use_touch_input = false;
 		}
+		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		gwin->get_win()->screen_to_game(
 				event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 
 		Mouse::mouse->move(gx, gy);
 		Mouse::mouse_update = true;
 		// Dragging with left button?
-		if (event.motion.state & SDL_BUTTON(1)) {
+		if (event.motion.state & SDL_BUTTON_LMASK) {
 			gump->mouse_drag(gx, gy);
 		}
 		break;
-	case SDL_QUIT:
+	case SDL_EVENT_QUIT:
 		if (okay_to_quit()) {
 			return false;
 		}
 		break;
-	case SDL_KEYDOWN:
-	case SDL_TEXTINPUT:
-		if (event.type == SDL_TEXTINPUT) {
-			keysym_unicode       = event.text.text[0];
-			event.key.keysym.sym = SDLK_UNKNOWN;
-		}
+	case SDL_EVENT_KEY_DOWN:
+	case SDL_EVENT_TEXT_INPUT:
+		Translate_keyboard(event, chr, keysym_unicode, true);
 		{
-			if ((event.key.keysym.sym == SDLK_s)
-				&& (event.key.keysym.mod & KMOD_ALT)
-				&& (event.key.keysym.mod & KMOD_CTRL)) {
+			if ((chr == SDLK_S) && (event.key.mod & SDL_KMOD_ALT)
+				&& (event.key.mod & SDL_KMOD_CTRL)) {
 				make_screenshot(true);
 				return true;
 			}
 			// Alt-x for quit
-			if ((event.key.keysym.sym == SDLK_x)
-				&& (event.key.keysym.mod & KMOD_ALT
-					|| event.key.keysym.mod & KMOD_GUI)) {
+			if ((chr == SDLK_X)
+				&& ((event.key.mod & SDL_KMOD_ALT)
+					|| event.key.mod & SDL_KMOD_GUI)) {
 				if (okay_to_quit()) {
 					return false;
 				}
 			}
 
-			if (event.key.keysym.sym > +'~') {
-				keysym_unicode = event.key.keysym.sym;
-			}
-			translate_numpad(
-					event.key.keysym.sym, keysym_unicode, event.key.keysym.mod);
-			gump->key_down(event.key.keysym.sym);
-			bool handled = gump->character_input(
-					event.key.keysym.sym, keysym_unicode,
-					(event.key.keysym.mod & (KMOD_SHIFT | KMOD_CAPS)) != 0);
-
+			bool handled = gump->key_down(chr, keysym_unicode);
 			// we'll allow the gump to handle escape first
 			// before closing the gump
-			if (!handled)
-			{
-				if (event.key.keysym.sym == SDLK_ESCAPE) {
+			if (!handled) {
+				if (chr == SDLK_ESCAPE) {
 					return false;
 				}
 			}
-
-			break;
 		}
+		break;
 	default:
 		if (event.type == TouchUI::eventType) {
 			if (event.user.code == TouchUI::EVENT_CODE_TEXT_INPUT) {
@@ -699,92 +692,6 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		break;
 	}
 	return true;
-}
-
-void Gump_manager::translate_numpad(
-		SDL_Keycode& code, uint16& unicode, uint16 mod) {
-	const bool numlock_active = (mod & KMOD_NUM) != 0;
-	unicode                   = 0;
-	switch (code) {
-	case SDLK_KP_0:
-		if (numlock_active) {
-			code    = SDLK_0;
-			unicode = '0';
-		}
-		break;
-	case SDLK_KP_1:
-		if (numlock_active) {
-			code    = SDLK_1;
-			unicode = '1';
-		} else {
-			code = SDLK_END;
-		}
-		break;
-	case SDLK_KP_2:
-		if (numlock_active) {
-			code    = SDLK_2;
-			unicode = '2';
-		} else {
-			code = SDLK_DOWN;
-		}
-		break;
-	case SDLK_KP_3:
-		if (numlock_active) {
-			code    = SDLK_3;
-			unicode = '3';
-		} else {
-			code = SDLK_PAGEDOWN;
-		}
-		break;
-	case SDLK_KP_4:
-		if (numlock_active) {
-			code    = SDLK_4;
-			unicode = '4';
-		} else {
-			code = SDLK_LEFT;
-		}
-		break;
-	case SDLK_KP_5:
-		if (numlock_active) {
-			code    = SDLK_5;
-			unicode = '5';
-		}
-		break;
-	case SDLK_KP_6:
-		if (numlock_active) {
-			code    = SDLK_6;
-			unicode = '6';
-		} else {
-			code = SDLK_RIGHT;
-		}
-		break;
-	case SDLK_KP_7:
-		if (numlock_active) {
-			code    = SDLK_7;
-			unicode = '7';
-		} else {
-			code = SDLK_HOME;
-		}
-		break;
-	case SDLK_KP_8:
-		if (numlock_active) {
-			code    = SDLK_8;
-			unicode = '8';
-		} else {
-			code = SDLK_UP;
-		}
-		break;
-	case SDLK_KP_9:
-		if (numlock_active) {
-			code    = SDLK_9;
-			unicode = '9';
-		} else {
-			code = SDLK_PAGEUP;
-		}
-		break;
-	default:
-		break;
-	}
 }
 
 /*
