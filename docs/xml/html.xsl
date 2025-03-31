@@ -7,8 +7,8 @@
 	<!-- Keys -->
 	<xsl:key name="sub_ref" match="sub" use="@name" />
 	<xsl:key name="section_ref" match="section" use="@title" />
-	<xsl:template match="o:br"><br/></xsl:template>
-	<xsl:template match="o:hr"><hr/></xsl:template>
+	<xsl:template match="br"><br/></xsl:template>
+	<xsl:template match="hr"><hr/></xsl:template>
 	<!-- Templates -->
 	<xsl:template name="TOC">
 		<xsl:for-each select="section">

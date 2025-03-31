@@ -13,7 +13,7 @@ The latest version of this document can be found at https://exult.info/docs.php
 2.1. Installation
 2.2. Location of exult.cfg
 2.3. Default game folders on macOS
-2.4. Path-Settings for Linux based systems
+2.4. Default game folders on Linux
 2.5. Command line options
 2.6. Error Log
 
@@ -188,7 +188,7 @@ Word of advice: Don't mix the files from BG and SI.
 Most of the options in Exult can be changed from the Setup menu when you run Exult or via the Game Options menu. Exult stores these changes in a configuration file. Except for changing paths to the games you shouldn't need to edit the file. Very few options need manual editing.
  However if you need to edit the configuration file, it is extensively explained in 11. The exult.cfg file.
 The location of the file varies depending on the Operating System and in the case of Windows OS it also depends on the version of Windows.
-* On Linux systems you can expect to find it in $HOME/.exult.cfg
+* On Linux systems you can expect to find it in $HOME/.exult.cfg, or in $HOME/.var/apps/info.exult.exult/config/exult.cfg if using the Flatpak package
 * macOS saves it to ~/Library/Preferences/exult.cfg
 * Windows (7, 8, 10, 11) save exult.cfg to LOCAL_APPDATA\Exult, but on these this translates to C:\Users\YourUsername\AppData\Local\Exult
 * On all supported Windows versions you can quickly access this folder by executing
@@ -215,9 +215,9 @@ If you followed all the instructions and Exult still won't recognize the games, 
 At 11.4. Path-Settings for macOS you can see an exult.cfg example with the macOS defaults.
 
 
-2.4. Path-Settings for Linux based systems
+2.4. Default game folders on Linux
 
-As on macOS, Exult uses a default path on Linux systems for its data folder and the game files. Exult will automatically look for these in /usr/local/share/exult unless you entered different paths in exult.cfg.
+As on macOS, Exult uses a default path on Linux systems for its data folder and the game files. Unless you configure custom paths in exult.cfg, Exult will automatically look for the game data files in /usr/local/share/exult, or in the case of the the Flatpak package, in $HOME/.var/app/info.exult.exult/data/.
 But you will need to follow our gamename standard when you name the game folders, see 1.3. Terms we use in regard to Exult and Ultima VII , otherwise Exult will not find them there.
 Example: User named FooBar on Ubuntu. BG is installed to /usr/local/share/exult/blackgate and SI is installed to /usr/local/share/exult/serpentisle. When you run Exult it will automatically recognize that BG and SI are installed. You do not need to edit exult.cfg, which is saved to $HOME/.exult.cfg.
  When you save a game in BG the savegame will be saved to $HOME/.exult/blackgate/, for SI to $HOME/.exult/serpentisle/.
@@ -991,6 +991,7 @@ To install a mod unzip or move the mod files (if they come unzipped) into your g
  Now start a new game, choose the mod in the menu and enjoy the mod.
 Please read the readme(.txt) that should have come with the mods. In there you will normally find further instructions and what the mod is about and how to experience the changes in the game.
 Unfortunately, since there are always advancements in the map editing, mods that are no longer maintained might no longer work correctly with current versions of Exult.
+Please note that the Flatpak package for Linux systems already includes several mods as part of the package; you do not need to install these separately. You can however install additional mods by extracting them to $HOME/.var/app/info.exult.exult/data/gamename/mods/; Exult will detect both the bundled mods and custom ones installed here.
 
 
 8.3. Installing Patches

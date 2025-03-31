@@ -67,7 +67,7 @@
 <p> The latest version of this document can be found
 									<a href="https://exult.info/docs.php">here</a></p>
 <br><p><a href="#Introduction">1. Introduction</a><br><a href="#exult_version">1.1. Exult Version</a><br><a href="#whatis_exult">1.2. What is <em>Exult</em>?</a><br><a href="#terms">1.3. Terms we use in regard to Exult and Ultima VII</a><br></p>
-<p><a href="#Configurations">2. Configurations</a><br><a href="#installation">2.1. Installation</a><br><a href="#exult_config_location">2.2. Location of exult.cfg</a><br><a href="#default_macos">2.3. Default game folders on macOS</a><br><a href="#default_nix">2.4. Path-Settings for Linux based systems</a><br><a href="#command_line">2.5. Command line options</a><br><a href="#error_log">2.6. Error Log</a><br></p>
+<p><a href="#Configurations">2. Configurations</a><br><a href="#installation">2.1. Installation</a><br><a href="#exult_config_location">2.2. Location of exult.cfg</a><br><a href="#default_macos">2.3. Default game folders on macOS</a><br><a href="#default_nix">2.4. Default game folders on Linux</a><br><a href="#command_line">2.5. Command line options</a><br><a href="#error_log">2.6. Error Log</a><br></p>
 <p><a href="#Exult-Setup-and-Game-Menu">3. Exult Setup and Game Menu</a><br><a href="#open_menu">3.1. Access to the <em>Exult</em> Setup and Game menu</a><br><a href="#savemenu">3.2. Load/Save Game</a><br><a href="#video_gump">3.3. Video Options</a><br><a href="#audio_gump">3.4. Audio Options</a><br><a href="#volume_mixer_gump">3.5. Volume Mixer</a><br><a href="#game_engine_gump">3.6. Game Engine</a><br><a href="#game_display_gump">3.7. Game Display</a><br><a href="#game_input_gump">3.8. Game Input</a><br><a href="#quit_game">3.9. Quit</a><br></p>
 <p><a href="#Audio">4. Audio</a><br><a href="#music">4.1. Music</a><br><a href="#midi_music">4.2. MIDI Music</a><br><a href="#limits_music">4.3. Abilities and limitations of the MIDI music engine</a><br><a href="#win32_device">4.4. Windows MIDI Mapper</a><br><a href="#coremidi_device">4.5. macOS CoreMidi device ID</a><br><a href="#digital_music">4.6. Digital Music</a><br><a href="#wave_sfx">4.7. Digital Wave Sound Effects</a><br><a href="#all_in_one_pack">4.8. All-in-One Audio Data pack and installers</a><br><a href="#digital_music_install">4.9. Installation of the digital music packs</a><br><a href="#wave_sfx_install">4.10. Installation of the digital wave sound effects</a><br><a href="#speech">4.11. Speech</a><br><a href="#audio_toggle">4.12. Toggle Audio</a><br><a href="#linux_alsa">4.13. Linux and Audio</a><br></p>
 <p><a href="#Video">5. Video</a><br><a href="#resolution">5.1. Resolution</a><br><a href="#video_fill_modes">5.2. Fill modes</a><br><a href="#res_cheating">5.3. Higher resolution is cheating</a><br><a href="#scaler">5.4. Scaler</a><br></p>
@@ -223,7 +223,9 @@
 					case of Windows OS it also depends on the version of Windows.
 				</p>
 					<ul>
-						<li>On Linux systems you can expect to find it in <span class="highlight"><kbd>$HOME/.exult.cfg</kbd></span>
+						<li>On Linux systems you can expect to find it in <span class="highlight"><kbd>$HOME/.exult.cfg</kbd></span>, or
+						  in <span class="highlight"><kbd>$HOME/.var/apps/info.exult.exult/config/exult.cfg</kbd></span> if using the
+						  <a href="https://flathub.org/apps/info.exult.exult">Flatpak package</a>
 </li>
 						<li>macOS saves it to <span class="highlight"><kbd>~/Library/Preferences/exult.cfg</kbd></span>
 </li>
@@ -287,12 +289,14 @@
 				</p>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="default_nix">2.4. Path-Settings for Linux based systems</a></strong></td></tr>
+<tr><td><strong><a id="default_nix">2.4. Default game folders on Linux</a></strong></td></tr>
 <tr><td>
 				<p>
 					As on macOS, <em>Exult</em> uses a default path on Linux systems for its data folder and the game files.
-					<em>Exult</em> will automatically look for these in <span class="highlight"><kbd>/usr/local/share/exult</kbd></span> unless you entered
-					different paths in exult.cfg.<br>
+					Unless you configure custom paths in <span class="highlight"><kbd>exult.cfg</kbd></span>, <em>Exult</em> will automatically look for
+					the game data files in <span class="highlight"><kbd>/usr/local/share/exult</kbd></span>, or in the case of the the
+					<a href="https://flathub.org/apps/info.exult.exult">Flatpak package</a>, in
+					<span class="highlight"><kbd>$HOME/.var/app/info.exult.exult/data/</kbd></span>.<br>
 					<strong>But</strong> you will need to follow our gamename standard when you name the game
 					folders, see <a href="#terms">1.3. Terms we use in regard to Exult and Ultima VII</a>, otherwise <em>Exult</em> will not find them there.
 				</p>
@@ -836,6 +840,8 @@
 						the ROM set 'CM32L_CONTROL.ROM' and 'CM32L_PCM.ROM' in the <em>Exult</em> data folder.
 						If both sets are present the CM32L ROM-set will be used.<br>
 						On case sensitive Operating Systems these files have to be saved in uppercase.</li>
+						For the <a href="https://flathub.org/apps/info.exult.exult">Flatpak package</a>
+						on Linux, these should be stored in <span class="highlight"><kbd>$HOME/.var/app/info.exult.exult/data/mt32emu/</kbd></span>.
 					<li>
 <strong>Windows</strong><br>
 						Using the Windows MIDI driver.</li>
@@ -2216,6 +2222,13 @@
 				<p>
 					Unfortunately, since there are always advancements in the map editing, mods that are
 					no longer maintained might no longer work correctly with current versions of <em>Exult</em>.
+				</p>
+				<p>
+					Please note that the Flatpak package for Linux systems already includes several mods
+					as part of the package; you do not need to install these separately. You can however
+					install additional mods by extracting them to
+					<span class="highlight"><kbd>$HOME/.var/app/info.exult.exult/data/gamename/mods/</kbd></span>; Exult will detect both
+					the bundled mods and custom ones installed here.
 				</p>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
