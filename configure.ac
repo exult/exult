@@ -958,7 +958,7 @@ else
 fi
 
 # Aseprite plugin
-AM_CONDITIONAL(ASEPRITE_PLUGIN, false)
+AM_CONDITIONAL(BUILD_ASEPRITE_PLUGIN, false)
 AC_ARG_ENABLE(aseprite-plugin,
 	AS_HELP_STRING([--enable-aseprite-plugin], [Build the Aseprite plugin @<:@default no@:>@]),, enable_aseprite_plugin=no)
 AC_MSG_CHECKING([whether to build the Aseprite plugin])
@@ -969,7 +969,7 @@ if test x$enable_aseprite_plugin = xyes; then
 		echo "Please try again, either with the PNG installed, or with '--disable_aseprite_plugin'."
 		exit 1
 	fi
-	AM_CONDITIONAL(ASEPRITE_PLUGIN, true)
+	AM_CONDITIONAL(BUILD_ASEPRITE_PLUGIN, true)
 else
 	AC_MSG_RESULT(no)
 fi
@@ -977,6 +977,7 @@ fi
 # GIMP plugin
 AM_CONDITIONAL(GIMP3_PLUGIN, false)
 AM_CONDITIONAL(GIMP2_PLUGIN, false)
+AM_CONDITIONAL(BUILD_GIMP_PLUGIN, false)
 AC_ARG_ENABLE(gimp-plugin,
 	AS_HELP_STRING([--enable-gimp-plugin@<:@=yes|system|user|no@:>@],
 		[Build the GIMP plugin, yes or system for system install (requires root), user for user install, @<:@default no@:>@]),,enable_gimp_plugin=no)
@@ -986,6 +987,7 @@ if test x$enable_gimp_plugin != xno; then
 	PKG_CHECK_MODULES(GIMP, [gimpui-3.0 gimp-3.0 >= 3.0.0], have_gimp3=yes, have_gimp3=no)
 	if test x$have_gimp3 = xyes; then
 		AM_CONDITIONAL(GIMP3_PLUGIN, true)
+		AM_CONDITIONAL(BUILD_GIMP_PLUGIN, true)
 		if test x$enable_gimp_plugin != xuser; then
 			PKG_CHECK_VAR(GIMP_PLUGIN_PREFIX, gimp-3.0, gimplibdir)
 		else
@@ -1000,6 +1002,7 @@ if test x$enable_gimp_plugin != xno; then
 		PKG_CHECK_MODULES(GIMP, [gimpui-2.0 gimp-2.0 >= 2.8.0], have_gimp2=yes, have_gimp2=no)
 		if test x$have_gimp2 = xyes; then
 			AM_CONDITIONAL(GIMP2_PLUGIN, true)
+			AM_CONDITIONAL(BUILD_GIMP_PLUGIN, true)
 			if test x$enable_gimp_plugin != xuser; then
 				PKG_CHECK_VAR(GIMP_PLUGIN_PREFIX, gimp-2.0, gimplibdir)
 			else
@@ -1330,7 +1333,7 @@ AS_IF([ test $cross_compiling = yes ], [
 		echo "While cross compiling you need to have a build system native"
 		echo "head2data in your path to build part of Exult's tools."
 		echo "After you natively compiled Exult you will find head2data"
-		echo "in the usecode/ucxt subfolder."
+		echo "in the tools/ucxt subfolder."
 		if test x$HEAD2DATA_PROG = xno; then
 			AC_MSG_ERROR([Could not find head2data in your path, cannot generate data files for tools.])
 		fi
@@ -1378,6 +1381,14 @@ gumps/Makefile
 pathfinder/Makefile
 flic/Makefile
 tools/Makefile
+tools/compiler/Makefile
+tools/ucxt/Makefile
+tools/ucxt/Docs/Makefile
+tools/ucxt/data/Makefile
+tools/ucxt/include/Makefile
+tools/ucxt/src/Makefile
+tools/aseprite_plugin/Makefile
+tools/gimp_plugin/Makefile
 data/Makefile
 docs/Makefile
 desktop/Makefile
@@ -1386,14 +1397,7 @@ imagewin/Makefile
 shapes/Makefile
 shapes/shapeinf/Makefile
 usecode/Makefile
-usecode/compiler/Makefile
-usecode/ucxt/Makefile
-usecode/ucxt/Docs/Makefile
-usecode/ucxt/data/Makefile
-usecode/ucxt/include/Makefile
-usecode/ucxt/src/Makefile
 mapedit/Makefile
-mapedit/tools/aseprite_plugin/Makefile
 server/Makefile
 ])
 AC_OUTPUT

@@ -2,7 +2,7 @@
 # Instead, run makefile_builder.sh from the parent directory.
 
 # Base of the exult source
-UCCDIR:=$(top_srcdir)/usecode/compiler
+UCCDIR:=$(top_srcdir)/tools/compiler
 UCC:=$(UCCDIR)/ucc
 
 EXPACKDIR:=$(top_srcdir)/tools

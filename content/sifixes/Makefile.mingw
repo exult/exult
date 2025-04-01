@@ -77,6 +77,7 @@ USECODE_OBJECTS :=	\
 	src/npcs/skullcrusher_automatons.uc	\
 	src/npcs/spinebreaker_automatons.uc	\
 	src/npcs/thoxa.uc	\
+	src/npcs/topo.uc	\
 	src/spells/spells.uc	\
 	src/usecode.uc
 

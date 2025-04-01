@@ -660,22 +660,22 @@ UCC_OBJS:=\
 	ucparse.o \
 	uclex.o \
 	usecode/ucsymtbl.o \
-	usecode/compiler/ucmain.o \
-	usecode/compiler/ucexpr.o \
-	usecode/compiler/ucfun.o \
-	usecode/compiler/ucloc.o \
-	usecode/compiler/ucstmt.o \
-	usecode/compiler/ucsym.o \
-	usecode/compiler/ucclass.o
+	tools/compiler/ucmain.o \
+	tools/compiler/ucexpr.o \
+	tools/compiler/ucfun.o \
+	tools/compiler/ucloc.o \
+	tools/compiler/ucstmt.o \
+	tools/compiler/ucsym.o \
+	tools/compiler/ucclass.o
 
 ucc$(EXEEXT) : $(UCC_OBJS) files/utils.h usecode/bgintrinsics.h usecode/siintrinsics.h usecode/sibetaintrinsics.h usecode/opcodes.h usecode/ucsymtbl.h
 	$(CXX) $(LDFLAGS) -o $(@) $(UCC_OBJS)
 
-ucparse.cc: usecode/compiler/ucparse.yy
-	bison -d -Wno-yacc usecode/compiler/ucparse.yy -o ucparse.cc --header=ucparse.h
+ucparse.cc: tools/compiler/ucparse.yy
+	bison -d -Wno-yacc tools/compiler/ucparse.yy -o ucparse.cc --header=ucparse.h
 
-uclex.cc: usecode/compiler/uclex.ll
-	flex -o uclex.cc usecode/compiler/uclex.ll
+uclex.cc: tools/compiler/uclex.ll
+	flex -o uclex.cc tools/compiler/uclex.ll
 
 UCXT_OBJS:=\
 	$(CONF_OBJS) \
@@ -683,10 +683,10 @@ UCXT_OBJS:=\
 	$(FILE_OBJS) \
 	gamemgr/modmgr.o \
 	usecode/ucsymtbl.o \
-	usecode/ucxt/src/ops.o \
-	usecode/ucxt/src/ucdata.o \
-	usecode/ucxt/src/ucfunc.o \
-	usecode/ucxt/src/ucxt.o
+	tools/ucxt/src/ops.o \
+	tools/ucxt/src/ucdata.o \
+	tools/ucxt/src/ucfunc.o \
+	tools/ucxt/src/ucxt.o
 
 ucxt$(EXEEXT) : $(UCXT_OBJS)
 	$(CXX) $(LDFLAGS) -o $(@) $(UCXT_OBJS) $(ZIP_LIBS)
@@ -701,12 +701,12 @@ TOOL_OBJS:=tools/expack.o $(FILE_OBJS) tools/cmanip.o tools/ipack.o $(IPACK_OBJS
 	tools/splitshp.o $(SMOOTH_OBJS) mapedit/tools/smooth/plugins/plugin_smooth.o \
 	mapedit/tools/smooth/plugins/plugin_randomize.o mapedit/tools/smooth/plugins/plugin_stream.o \
 	tools/textpack.o tools/u7voice2syx.o tools/wuc.o $(UCXT_OBJS) $(UCC_OBJS) \
-	$(CONFREGRESS_OBJS) usecode/ucxt/head2data.o tools/exult_shp_thumbnailer.o
+	$(CONFREGRESS_OBJS) tools/ucxt/head2data.o tools/exult_shp_thumbnailer.o
 
-head2data.o : usecode/ucxt/head2data.cc usecode/bgintrinsics.h usecode/siintrinsics.h usecode/sibetaintrinsics.h
+head2data.o : tools/ucxt/head2data.cc usecode/bgintrinsics.h usecode/siintrinsics.h usecode/sibetaintrinsics.h
 
-head2data$(EXEEXT) : usecode/ucxt/head2data.o $(FILE_OBJS) usecode/bgintrinsics.h usecode/siintrinsics.h usecode/sibetaintrinsics.h
-	$(CXX) $(LDFLAGS) -o $(@) usecode/ucxt/head2data.o $(FILE_OBJS)
+head2data$(EXEEXT) : tools/ucxt/head2data.o $(FILE_OBJS) usecode/bgintrinsics.h usecode/siintrinsics.h usecode/sibetaintrinsics.h
+	$(CXX) $(LDFLAGS) -o $(@) tools/ucxt/head2data.o $(FILE_OBJS)
 
 head2data.test: head2data$(EXEEXT)
 	$(SRC)/head2data$(EXEEXT) data/u7bgintrinsics.data data/u7siintrinsics.data data/u7sibetaintrinsics.data
@@ -765,4 +765,4 @@ toolsclean:
 	rm -f $(UCXT_OBJS) ucxt$(EXEEXT)
 	rm -f $(UCC_OBJS) ucc$(EXEEXT) ucparse.cc ucparse.h uclex.cc
 	rm -f $(CONFREGRESS_OBJS) confregress$(EXEEXT)
-	rm -f usecode/ucxt/head2data.o head2data$(EXEEXT) data/u7bgintrinsics.data data/u7siintrinsics.data data/u7sibetaintrinsics.data
+	rm -f tools/ucxt/head2data.o head2data$(EXEEXT) data/u7bgintrinsics.data data/u7siintrinsics.data data/u7sibetaintrinsics.data

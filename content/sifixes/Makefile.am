@@ -2,7 +2,7 @@
 # Instead, run makefile_builder.sh from the parent directory.
 
 # Base of the exult source
-UCCDIR:=$(top_srcdir)/usecode/compiler
+UCCDIR:=$(top_srcdir)/tools/compiler
 UCC:=$(UCCDIR)/ucc
 
 EXPACKDIR:=$(top_srcdir)/tools
@@ -67,6 +67,7 @@ USECODE_OBJECTS :=	\
 	src/npcs/skullcrusher_automatons.uc	\
 	src/npcs/spinebreaker_automatons.uc	\
 	src/npcs/thoxa.uc	\
+	src/npcs/topo.uc	\
 	src/spells/spells.uc	\
 	src/usecode.uc
 
