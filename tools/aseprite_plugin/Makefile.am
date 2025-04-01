@@ -13,11 +13,6 @@ endif
 
 exult_shp_SOURCES = $(ASEPRITE_PLUGIN_SRC).cc
 
-exult_shp_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/files -I$(top_srcdir)/headers \
-	-I$(top_srcdir)/shapes -I$(top_srcdir)/imagewin -I$(top_srcdir)/files \
-	$(PNG_CFLAGS) $(INCDIRS) \
-	$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DHAVE_CONFIG_H
-
 exult_shp_LDADD = \
 	$(top_builddir)/imagewin/libimagewin.la	\
 	$(top_builddir)/shapes/libshapes.la \

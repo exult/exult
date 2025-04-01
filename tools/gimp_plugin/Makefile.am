@@ -1,6 +1,6 @@
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/files -I$(top_srcdir)/headers \
-	-I$(top_srcdir)/shapes -I$(top_srcdir)/imagewin -I$(top_srcdir)/files \
-	$(PNG_CFLAGS) $(INCDIRS) \
+	-I$(top_srcdir)/shapes -I$(top_srcdir)/imagewin -I$(top_srcdir)/mapedit \
+	$(GIMP_CFLAGS) $(GTK_CFLAGS) $(PNG_CFLAGS) $(ICU_CFLAGS) $(INCDIRS) \
 	$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DHAVE_CONFIG_H
 
 if GIMP3_PLUGIN
@@ -16,11 +16,6 @@ endif
 endif
 
 u7shp_SOURCES = $(GIMP_PLUGIN_SRC).cc
-
-u7shp_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/files -I$(top_srcdir)/headers \
-	-I$(top_srcdir)/shapes -I$(top_srcdir)/imagewin -I$(top_srcdir)/files \
-	$(GIMP_CFLAGS) $(GTK_CFLAGS) $(PNG_CFLAGS) $(ICU_CFLAGS) $(INCDIRS) \
-	$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DHAVE_CONFIG_H
 
 u7shp_LDADD = \
 	$(top_builddir)/imagewin/libimagewin.la	\
