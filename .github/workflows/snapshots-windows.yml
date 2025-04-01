@@ -61,11 +61,10 @@ jobs:
           cd $GITHUB_WORKSPACE
           mkdir -p munt
           cd munt
-          which cmake
           cmake --version
           cmake ./../libmt32emu -Dmunt_WITH_MT32EMU_SMF2WAV=FALSE -Dmunt_WITH_MT32EMU_QT=FALSE -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           ninja install
-      - name: Download and manually install SDL2_image-devel-2.8.8-mingw.tar.gz
+      - name: Download and manually install SDL2_image-devel-2.8.8-mingw.tar.gz for i686
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         env:
           MSYSTEM: MINGW32
