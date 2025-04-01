@@ -70,9 +70,11 @@ jobs:
           MSYSTEM: MINGW32
           ARCH: i686
         run: |
-         curl -L https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.8/SDL2_image-devel-2.8.8-mingw.tar.gz |gunzip |tar x
+         curl -L https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.8/SDL2_image-devel-2.8.8-mingw.tar.gz -o SDL2_image-devel-2.8.8-mingw.tar.gz
+         echo 67446b12f14e4667b76a5721c91e419363e65b74b66cde8057edb29add90cd42 *SDL2_image-devel-2.8.8-mingw.tar.gz | sha256sum.exe -c
+         tar xfz SDL2_image-devel-2.8.8-mingw.tar.gz
          cp -r -v SDL2_image-2.8.8/i686-w64-mingw32/* $MINGW_PREFIX
-         rm -r -f SDL2_image-2.8.8
+         rm -r -f SDL2_image-2.8.8 SDL2_image-devel-2.8.8-mingw.tar.gz
       - name: Checkout code for i686 build
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         uses: actions/checkout@v4
