@@ -3,8 +3,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir)/files -I$(top_srcdir)/usec
 	-I$(top_srcdir)/conf $(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) $(SDL_CFLAGS) \
 	$(GDK_PIXBUF_CFLAGS) $(PNG_CFLAGS)
 
-SUBDIRS = . ucxt
-
 if CROSS_COMPILING
 if BUILD_TOOLS
 EXPACK_BIN = expack
@@ -31,15 +29,21 @@ EXULT_THUMB=
 endif
 
 if BUILD_COMPILER
-SUBDIRS = $(SUBDIRS) compiler
+COMPILER_DIR = compiler
+else
+COMPILER_DIR =
 endif
 
 if BUILD_ASEPRITE_PLUGIN
-SUBDIRS = $(SUBDIRS) aseprite_plugin
+ASEPRITE_DIR = aseprite_plugin
+else
+ASEPRITE_DIR =
 endif
 
 if BUILD_GIMP_PLUGIN
-SUBDIRS = $(SUBDIRS) gimp_plugin
+GIMP_DIR = gimp_plugin
+else
+GIMP_DIR =
 endif
 
 if BUILD_TOOLS
@@ -49,6 +53,8 @@ else
 EXTRATOOLS =
 NOINSTTOOLS =
 endif
+
+SUBDIRS = . ucxt $(COMPILER_DIR) $(ASEPRITE_DIR) $(GIMP_DIR)
 
 bin_PROGRAMS = $(EXPACK_BIN) $(EXTRATOOLS) $(IPACK) $(EXULT_THUMB)
 noinst_PROGRAMS = $(NOINSTTOOLS)
