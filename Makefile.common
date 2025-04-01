@@ -597,28 +597,28 @@ ipack$(EXEEXT) : $(IPACK_OBJS)
 mklink$(EXEEXT) : tools/mklink.o
 	$(CXX) $(LDFLAGS) -o $(@) tools/mklink.o
 
-mockup$(EXEEXT): mapedit/tools/mockup/main.o
-	$(CC) $(LDFLAGS) -o $(@) mapedit/tools/mockup/main.o $(subst -mwindows,-mconsole,$(SDL_IMAGE_LIBS))
+mockup$(EXEEXT): tools/mockup/main.o
+	$(CC) $(LDFLAGS) -o $(@) tools/mockup/main.o $(subst -mwindows,-mconsole,$(SDL_IMAGE_LIBS))
 
 rip$(EXEEXT) : tools/rip.o
 	$(CXX) $(LDFLAGS) -o $(@) tools/rip.o
 
-libsmooth_randomize$(LIBEXT): mapedit/tools/smooth/plugins/plugin_randomize.o
-	$(CXX) -shared -o $(@) mapedit/tools/smooth/plugins/plugin_randomize.o $(subst -mwindows,-mconsole,$(SDL_LIBS)) $(LDFLAGS)
+libsmooth_randomize$(LIBEXT): tools/smooth/plugins/plugin_randomize.o
+	$(CXX) -shared -o $(@) tools/smooth/plugins/plugin_randomize.o $(subst -mwindows,-mconsole,$(SDL_LIBS)) $(LDFLAGS)
 
-libsmooth_smooth$(LIBEXT): mapedit/tools/smooth/plugins/plugin_smooth.o
-	$(CXX) -shared -o $(@) mapedit/tools/smooth/plugins/plugin_smooth.o $(subst -mwindows,-mconsole,$(SDL_LIBS)) $(LDFLAGS)
+libsmooth_smooth$(LIBEXT): tools/smooth/plugins/plugin_smooth.o
+	$(CXX) -shared -o $(@) tools/smooth/plugins/plugin_smooth.o $(subst -mwindows,-mconsole,$(SDL_LIBS)) $(LDFLAGS)
 
-libsmooth_stream$(LIBEXT): mapedit/tools/smooth/plugins/plugin_stream.o
-	$(CXX) -shared -o $(@) mapedit/tools/smooth/plugins/plugin_stream.o $(subst -mwindows,-mconsole,$(SDL_LIBS)) $(LDFLAGS)
+libsmooth_stream$(LIBEXT): tools/smooth/plugins/plugin_stream.o
+	$(CXX) -shared -o $(@) tools/smooth/plugins/plugin_stream.o $(subst -mwindows,-mconsole,$(SDL_LIBS)) $(LDFLAGS)
 
 SMOOTH_OBJS:=\
-	mapedit/tools/smooth/config.o \
-	mapedit/tools/smooth/image.o \
-	mapedit/tools/smooth/linked.o \
-	mapedit/tools/smooth/param.o \
-	mapedit/tools/smooth/plugin.o \
-	mapedit/tools/smooth/smooth.o
+	tools/smooth/config.o \
+	tools/smooth/image.o \
+	tools/smooth/linked.o \
+	tools/smooth/param.o \
+	tools/smooth/plugin.o \
+	tools/smooth/smooth.o
 
 smooth$(EXEEXT) : $(SMOOTH_OBJS)
 	$(CC) $(LDFLAGS) -o $(@) $(SMOOTH_OBJS) $(subst -mwindows,-mconsole,$(SDL_IMAGE_LIBS))
@@ -697,9 +697,9 @@ confregress$(EXEEXT)  : $(CONFREGRESS_OBJS)
 	$(CXX) $(LDFLAGS) -o $(@) $(CONFREGRESS_OBJS)
 
 TOOL_OBJS:=tools/expack.o $(FILE_OBJS) tools/cmanip.o tools/ipack.o $(IPACK_OBJS) \
-	mapedit/tools/mockup/main.o tools/mklink.o tools/rip.o tools/shp2pcx.o \
-	tools/splitshp.o $(SMOOTH_OBJS) mapedit/tools/smooth/plugins/plugin_smooth.o \
-	mapedit/tools/smooth/plugins/plugin_randomize.o mapedit/tools/smooth/plugins/plugin_stream.o \
+	tools/mockup/main.o tools/mklink.o tools/rip.o tools/shp2pcx.o \
+	tools/splitshp.o $(SMOOTH_OBJS) tools/smooth/plugins/plugin_smooth.o \
+	tools/smooth/plugins/plugin_randomize.o tools/smooth/plugins/plugin_stream.o \
 	tools/textpack.o tools/u7voice2syx.o tools/wuc.o $(UCXT_OBJS) $(UCC_OBJS) \
 	$(CONFREGRESS_OBJS) tools/ucxt/head2data.o tools/exult_shp_thumbnailer.o
 
@@ -749,15 +749,15 @@ toolsclean:
 	rm -f tools/expack.o expack$(EXEEXT) $(FILE_OBJS)
 	rm -f tools/cmanip.o cmanip$(EXEEXT)
 	rm -f tools/ipack.o ipack$(EXEEXT) $(IPACK_OBJS)
-	rm -f mapedit/tools/mockup/main.o mockup$(EXEEXT)
+	rm -f tools/mockup/main.o mockup$(EXEEXT)
 	rm -f tools/mklink.o mklink$(EXEEXT)
 	rm -f tools/rip.o rip$(EXEEXT)
 	rm -f tools/shp2pcx.o shp2pcx$(EXEEXT)
 	rm -f tools/splitshp.o splitshp$(EXEEXT)
 	rm -f $(SMOOTH_OBJS) smooth$(EXEEXT)
-	rm -f libsmooth_randomize$(LIBEXT) mapedit/tools/smooth/plugins/plugin_smooth.o
-	rm -f libsmooth_smooth$(LIBEXT) mapedit/tools/smooth/plugins/plugin_randomize.o
-	rm -f libsmooth_stream$(LIBEXT) mapedit/tools/smooth/plugins/plugin_stream.o
+	rm -f libsmooth_randomize$(LIBEXT) tools/smooth/plugins/plugin_smooth.o
+	rm -f libsmooth_smooth$(LIBEXT) tools/smooth/plugins/plugin_randomize.o
+	rm -f libsmooth_stream$(LIBEXT) tools/smooth/plugins/plugin_stream.o
 	rm -f tools/textpack.o textpack$(EXEEXT)
 	rm -f tools/u7voice2syx.o u7voice2syx$(EXEEXT)
 	rm -f tools/wuc.o wuc$(EXEEXT)
