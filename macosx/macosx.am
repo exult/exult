@@ -206,7 +206,7 @@ endif
 	-rm -rf ./plugin.pkg
 endif
 
-if ASEPRITE_PLUGIN
+if BUILD_ASEPRITE_PLUGIN
 exult_shp: exult_shp-deps
 	$(MAKE) -C tools/aseprite_plugin exult_shp$(EXEEXT)
 
