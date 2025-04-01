@@ -514,8 +514,8 @@ CPPFLAGS:=$(strip -DVERSION=\"$(VERSION)\" -DEXULT_DATADIR=\"data\" \
 	-I$(SRC) -I$(SRC)/audio -I$(SRC)/audio/midi_drivers -I$(SRC)/conf -I$(SRC)/data \
 	-I$(SRC)/files -I$(SRC)/files/zip -I$(SRC)/gamemgr -I$(SRC)/gumps -I$(SRC)/headers \
 	-I$(SRC)/imagewin -I$(SRC)/ios/include -I$(SRC)/objs -I$(SRC)/pathfinder -I$(SRC)/server \
-	-I$(SRC)/shapes -I$(SRC)/tools -I$(SRC)/usecode -I$(SRC)/usecode/compiler \
-	-I$(SRC)/usecode/ucxt/include -I$(SRC)/mapedit -I$(SRC)/shapes/shapeinf \
+	-I$(SRC)/shapes -I$(SRC)/tools -I$(SRC)/usecode -I$(SRC)/tools/compiler \
+	-I$(SRC)/tools/ucxt/include -I$(SRC)/mapedit -I$(SRC)/shapes/shapeinf \
 	$(call make_system, $(call clean_includes, $(FLUIDSYNTH_CFLAGS) $(TIMIDITY_CFLAGS) $(SDL_CFLAGS) $(ZIP_CFLAGS) $(MT32EMU_CFLAGS) $(ES_INCLUDES))) \
 	$(EXTRA_OPTIONS))
 ifneq ($(ANDROID_CFLAGS),)
@@ -531,15 +531,15 @@ PLUGIN_CPPFLAGS:=$(strip -DVERSION=\"$(VERSION)\" -DEXULT_DATADIR=\"data\" \
 	-I$(SRC) -I$(SRC)/audio -I$(SRC)/audio/midi_drivers -I$(SRC)/conf -I$(SRC)/data \
 	-I$(SRC)/files -I$(SRC)/files/zip -I$(SRC)/gamemgr -I$(SRC)/gumps -I$(SRC)/headers \
 	-I$(SRC)/imagewin -I$(SRC)/ios/include -I$(SRC)/objs -I$(SRC)/pathfinder -I$(SRC)/server \
-	-I$(SRC)/shapes -I$(SRC)/tools -I$(SRC)/usecode -I$(SRC)/usecode/compiler \
-	-I$(SRC)/usecode/ucxt/include -I$(SRC)/mapedit -I$(SRC)/shapes/shapeinf \
+	-I$(SRC)/shapes -I$(SRC)/tools -I$(SRC)/usecode -I$(SRC)/tools/compiler \
+	-I$(SRC)/tools/ucxt/include -I$(SRC)/mapedit -I$(SRC)/shapes/shapeinf \
 	$(call make_system, $(call clean_includes, $(GIMP_INCLUDES))) \
 	$(EXTRA_OPTIONS))
 
 CFLAGS:=-MMD -fdiagnostics-color=always $(ARCHFLAGS) $(ARCHTYPE) $(strip $(OPT_LEVEL) -Wall -Wextra -pedantic -mms-bitfields) \
 	$(call make_system, $(call clean_includes, $(GIMP_INCLUDES)))
 
-OBJECTS:=$(OBJS) $(TOOL_OBJS) $(ES_OBJS) mapedit/u7shp.o mapedit/tools/aseprite_plugin/exult_shp.o
+OBJECTS:=$(OBJS) $(TOOL_OBJS) $(ES_OBJS) tools/gimp_plugin/u7shp.o tools/aseprite_plugin/exult_shp.o
 
 MISC_OBJS:=exultstudioico.o windrag.o
 
@@ -566,22 +566,22 @@ exultstudioico.o: $(SRC)/win32/exultstudioico.rc $(SRC)/win32/exultstudio.ico wi
 	windres --include-dir $(SRC)/win32 $(SRC)/win32/exultstudioico.rc $@
 
 ifneq ($(PLUGIN_SRC),$())
-mapedit/u7shp.o: mapedit/$(PLUGIN_SRC).cc
-	$(CXX) $(CXXFLAGS) $(PLUGIN_CPPFLAGS) -c -o $(@) mapedit/$(PLUGIN_SRC).cc
+tools/gimp_plugin/u7shp.o: tools/gimp_plugin/$(PLUGIN_SRC).cc
+	$(CXX) $(CXXFLAGS) $(PLUGIN_CPPFLAGS) -c -o $(@) tools/gimp_plugin/$(PLUGIN_SRC).cc
 else
-mapedit/u7shp.o:
+tools/gimp_plugin/u7shp.o:
 	$(error Neither Gimp 3 nor Gimp 2 is installed, cannot build the Gimp plugin)
 endif
 # The libgexiv2 is a GLib wrapper for the Exiv2 metadata library, that the Plugin does not need.
 # It exports some std::string symbols from the libstdc++, so the Plugin gets linking or loading errors.
 # => Remove the libgexiv2 from the library list ( Feb 2025 ).
-u7shp$(EXEEXT) : mapedit/u7shp.o $(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
+u7shp$(EXEEXT) : tools/gimp_plugin/u7shp.o $(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
 	$(CXX) $(LDFLAGS) -o $(@) $+ $(subst -lgexiv2,,$(GIMP_LIBS)) -mwindows
 
-mapedit/tools/aseprite_plugin/exult_shp.o: mapedit/tools/aseprite_plugin/exult_shp.cc
+tools/aseprite_plugin/exult_shp.o: tools/aseprite_plugin/exult_shp.cc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $(@) $<
 
-exult_shp$(EXEEXT): mapedit/tools/aseprite_plugin/exult_shp.o $(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
+exult_shp$(EXEEXT): tools/aseprite_plugin/exult_shp.o $(FILE_OBJS) shapes/vgafile.o imagewin/ibuf8.o imagewin/imagebuf.o
 	$(CXX) $(LDFLAGS) -o $@ $+ -lpng -mwindows
 
 install: $(EXEC)
@@ -670,10 +670,10 @@ toolsinstall: tools
 	for ff in $(TOOL_EXES); do strip $$ff -o $(U7PATH)/tools/$$ff; done
 	$(call copy_dlls_for_exe, ucxt$(EXEEXT) $(TOOL_EXES), $(U7PATH))
 	mkdir -p $(U7PATH)/data
-	cp usecode/ucxt/data/events.data $(U7PATH)/data
-	cp usecode/ucxt/data/flags.data $(U7PATH)/data
-	cp usecode/ucxt/data/u7opcodes.data $(U7PATH)/data
-	cp usecode/ucxt/data/u7misc.data $(U7PATH)/data
+	cp tools/ucxt/data/events.data $(U7PATH)/data
+	cp tools/ucxt/data/flags.data $(U7PATH)/data
+	cp tools/ucxt/data/u7opcodes.data $(U7PATH)/data
+	cp tools/ucxt/data/u7misc.data $(U7PATH)/data
 	cp data/bginclude.uc $(U7PATH)/data
 	cp data/u7bgintrinsics.data $(U7PATH)/data
 	cp data/u7siintrinsics.data $(U7PATH)/data
@@ -693,16 +693,16 @@ toolsdist: tools toolsinstall Exult\ Source\ Code.url
 	cp tools/u7siflag.txt $(U7PATH)/tools
 	cp tools/ucformat.txt $(U7PATH)/tools
 	cp docs/ucc.txt $(U7PATH)/tools
-	cp mapedit/tools/mockup/README $(U7PATH)/tools/mockup.txt
-	cp mapedit/tools/mockup/mappings.txt $(U7PATH)/tools
-	cp mapedit/tools/mockup/mappings_alternative.txt $(U7PATH)/tools
-	cp mapedit/tools/mockup/map.png $(U7PATH)/tools
-	cp mapedit/tools/smooth/README $(U7PATH)/tools/smooth.txt
-	cp mapedit/tools/smooth/smooth.conf $(U7PATH)/tools
-	cp mapedit/tools/smooth/rough.bmp $(U7PATH)/tools
-	cp mapedit/tools/smooth/smoothed.bmp $(U7PATH)/tools
-	cp usecode/ucxt/Docs/README $(U7PATH)/ucxt.txt
-	cp usecode/ucxt/Docs/ucxtread.txt $(U7PATH)
+	cp tools/mockup/README $(U7PATH)/tools/mockup.txt
+	cp tools/mockup/mappings.txt $(U7PATH)/tools
+	cp tools/mockup/mappings_alternative.txt $(U7PATH)/tools
+	cp tools/mockup/map.png $(U7PATH)/tools
+	cp tools/smooth/README $(U7PATH)/tools/smooth.txt
+	cp tools/smooth/smooth.conf $(U7PATH)/tools
+	cp tools/smooth/rough.bmp $(U7PATH)/tools
+	cp tools/smooth/smoothed.bmp $(U7PATH)/tools
+	cp tools/ucxt/Docs/README $(U7PATH)/ucxt.txt
+	cp tools/ucxt/Docs/ucxtread.txt $(U7PATH)
 	cp AUTHORS $(U7PATH)/AUTHORS.txt
 	cp Exult\ Source\ Code.url $(U7PATH)
 	cp COPYING $(U7PATH)/COPYING.txt
@@ -754,7 +754,7 @@ studiodist: exult_studio$(EXEEXT) studioinstall  Exult\ Source\ Code.url
 	cp win32/exult_studio_installer.iss $(DISTPATH)
 
 pluginclean:
-	rm -f u7shp$(EXEEXT) mapedit/u7shp.o mapedit/u7shp.d
+	rm -f u7shp$(EXEEXT) tools/gimp_plugin/u7shp.o tools/gimp_plugin/u7shp.d
 
 plugin: u7shp$(EXEEXT)
 
@@ -770,12 +770,12 @@ plugininstall: plugin
 plugindist: GIMPPATH:=$(DISTPATH)/GimpPlugin-$(MSYSTEM_CARCH)
 plugindist: plugin plugininstall
 	mkdir -p $(DISTPATH)
-	cp mapedit/gimpwin32.txt $(GIMPPATH)
+	cp tools/gimp_plugin/gimpwin32.txt $(GIMPPATH)
 	u2d $(GIMPPATH)/*.txt
 	cp win32/exult_shpplugin_installer.iss $(DISTPATH)
 
 aseprite-pluginclean:
-	rm -f exult_shp$(EXEEXT) mapedit/tools/aseprite_plugin/exult_shp.o mapedit/tools/aseprite_plugin/exult_shp.d
+	rm -f exult_shp$(EXEEXT) tools/aseprite_plugin/exult_shp.o tools/aseprite_plugin/exult_shp.d
 
 aseprite-plugin: exult_shp$(EXEEXT)
 
@@ -783,9 +783,9 @@ aseprite-plugindist: ASEPRITEPATH:=$(DISTPATH)/AsepritePlugin-$(MSYSTEM_CARCH)
 aseprite-plugindist: aseprite-plugin
 	mkdir -p $(ASEPRITEPATH)
 	strip exult_shp$(EXEEXT) -o $(ASEPRITEPATH)/exult_shp$(EXEEXT)
-	cp mapedit/tools/aseprite_plugin/main.lua $(ASEPRITEPATH)
-	cp mapedit/tools/aseprite_plugin/package.json $(ASEPRITEPATH)
-	cp mapedit/tools/aseprite_plugin/Readme.txt $(ASEPRITEPATH)
+	cp tools/aseprite_plugin/main.lua $(ASEPRITEPATH)
+	cp tools/aseprite_plugin/package.json $(ASEPRITEPATH)
+	cp tools/aseprite_plugin/Readme.txt $(ASEPRITEPATH)
 	$(call copy_dlls_for_exe, $(ASEPRITEPATH)/exult_shp$(EXEEXT), $(ASEPRITEPATH))
 
 allclean: clean toolsclean studioclean modsclean pluginclean aseprite-pluginclean

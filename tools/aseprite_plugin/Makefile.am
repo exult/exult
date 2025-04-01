@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/files -I$(top_srcdir)/headers \
 	$(PNG_CFLAGS) $(INCDIRS) \
 	$(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) -DHAVE_CONFIG_H
 
-if ASEPRITE_PLUGIN
+if BUILD_ASEPRITE_PLUGIN
 ASEPRITE_PLUGIN_SRC = exult_shp
 ASEPRITE_PLUGINS = exult_shp
 bin_PROGRAMS = $(ASEPRITE_PLUGINS)

@@ -45,5 +45,5 @@ USECODE_BLOCK = [USECODE_CALL]+
 
 USECODE_CALL = Consists of (ubyte8) opcode and a variable number of trailing
 	bytes, depending upon which opcode.
-	See: usecode/ucxt/Docs/opcodes.txt for more information.
+	See: tools/ucxt/Docs/opcodes.txt for more information.
 

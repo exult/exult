@@ -3,6 +3,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir)/files -I$(top_srcdir)/usec
 	-I$(top_srcdir)/conf $(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS) $(SDL_CFLAGS) \
 	$(GDK_PIXBUF_CFLAGS) $(PNG_CFLAGS)
 
+SUBDIRS = . ucxt
+
 if CROSS_COMPILING
 if BUILD_TOOLS
 EXPACK_BIN = expack
@@ -26,6 +28,18 @@ if BUILD_EXULT_THUMB
 EXULT_THUMB=exult_shp_thumbnailer
 else
 EXULT_THUMB=
+endif
+
+if BUILD_COMPILER
+SUBDIRS = $(SUBDIRS) compiler
+endif
+
+if BUILD_ASEPRITE_PLUGIN
+SUBDIRS = $(SUBDIRS) aseprite_plugin
+endif
+
+if BUILD_GIMP_PLUGIN
+SUBDIRS = $(SUBDIRS) gimp_plugin
 endif
 
 if BUILD_TOOLS

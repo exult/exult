@@ -4,8 +4,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/headers -I$(top_srcdir) -I$(top_srcdir)/files -I$(
 		-I$(top_srcdir)/server $(SDL_CFLAGS) $(OGG_CFLAGS) $(INCDIRS) \
 		$(WINDOWING_SYSTEM) $(DEBUG_LEVEL) $(OPT_LEVEL) $(WARNINGS) $(CPPFLAGS)
 
-SUBDIRS = . compiler ucxt
-
 noinst_LTLIBRARIES = libusecode.la
 
 libusecode_la_SOURCES = \
