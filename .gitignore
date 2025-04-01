@@ -72,7 +72,7 @@ data/exult_si_flx.h
 /exult
 files/rwregress
 mapedit/exult_studio
-mapedit/u7shp
+tools/gimp_plugin/u7shp
 tools/cmanip
 tools/expack
 tools/exult_shp_thumbnailer
@@ -85,13 +85,14 @@ tools/splitshp
 tools/textpack
 tools/u7voice2syx
 tools/wuc
-usecode/compiler/ucc
-usecode/compiler/ucparse.output
-usecode/ucxt/data/u7bgintrinsics.data
-usecode/ucxt/data/u7siintrinsics.data
-usecode/ucxt/data/u7sibetaintrinsics.data
-usecode/ucxt/head2data
-usecode/ucxt/src/ucxt
+tools/compiler/ucc
+tools/compiler/ucparse.output
+tools/ucxt/data/u7bgintrinsics.data
+tools/ucxt/data/u7siintrinsics.data
+tools/ucxt/data/u7sibetaintrinsics.data
+tools/ucxt/head2data
+tools/ucxt/src/ucxt
+tools/aseprite_plugin/exult_shp
 
 # Automake/autoconf
 .libs
@@ -309,7 +310,7 @@ gitinfo.h
 android/app/build.gradle
 android/app/src/main/res/drawable/*.png
 
-#files in data thatshould not be in git
+#files in data that should not be in git
 data/exult_studio.glade
 /data/music
 /data/jmsfx.flx
