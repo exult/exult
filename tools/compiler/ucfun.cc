@@ -866,15 +866,15 @@ void Uc_function::gen(std::ostream& out) {
 #define USECODE_INTRINSIC_PTR(NAME) STRVIEW(UI_##NAME)
 
 constexpr const std::array bg_intrinsic_table{
-#include "../bgintrinsics.h"
+#include "usecode/bgintrinsics.h"
 };
 
 constexpr const std::array si_intrinsic_table{
-#include "../siintrinsics.h"
+#include "usecode/siintrinsics.h"
 };
 
 constexpr const std::array sibeta_intrinsic_table{
-#include "../sibetaintrinsics.h"
+#include "usecode/sibetaintrinsics.h"
 };
 #undef USECODE_INTRINSIC_PTR
 #undef STRVIEW
