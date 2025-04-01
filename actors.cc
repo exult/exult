@@ -3034,6 +3034,10 @@ int Actor::reduce_health(
 		// No more pushover banes!
 		if (npc) {    // Just to be sure.
 			set_oppressor(npc->get_npc_num());
+			// Unset target, so that we are not endlessly pursuing
+			// fleeing targets that no longer take damage in
+			// tournament mode.
+			npc->set_target(nullptr);
 		}
 		ucmachine->call_usecode(get_usecode(), this, Usecode_machine::died);
 		return 0;    // If needed, NPC usecode does the killing (possibly
