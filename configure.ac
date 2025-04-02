@@ -167,8 +167,6 @@ m4_if(m4_version_compare(m4_defn([AC_AUTOCONF_VERSION]), [2.70]), [1], [dnl
 AC_PROG_YACC
 AM_CONDITIONAL(LEXYACC, test -n "$YACC")
 
-AC_DISABLE_SHARED([])
-
 LT_INIT
 AC_SUBST(LIBTOOL_DEPS)
 
@@ -840,6 +838,14 @@ if test x$enable_tools = xno; then
 else
 	AM_CONDITIONAL(BUILD_TOOLS, true)
 	AC_MSG_RESULT(no)
+	PKG_CHECK_MODULES(SDL2_IMAGE, SDL2_image, have_sdl2_image=yes, have_have_sdl2_image=no)
+	if test x$have_sdl2_image = xyes; then
+		AM_CONDITIONAL(HAVE_SDL2_IMAGE, true)
+	else
+		AM_CONDITIONAL(HAVE_SDL2_IMAGE, false)
+		AC_MSG_WARN([Unable to find SDL2_image library (https://github.com/libsdl-org/SDL_image)])
+		AC_MSG_WARN([Tools mockup and smooth disabled])
+	fi
 fi
 
 # Build compiler?
@@ -1389,6 +1395,8 @@ tools/ucxt/include/Makefile
 tools/ucxt/src/Makefile
 tools/aseprite_plugin/Makefile
 tools/gimp_plugin/Makefile
+tools/mockup/Makefile
+tools/smooth/Makefile
 data/Makefile
 docs/Makefile
 desktop/Makefile
@@ -1448,6 +1456,10 @@ if test x$enable_android_apk != xno; then
 	echo
 else
 	echo SDL........................ : `$PKG_CONFIG --modversion sdl2`
+	if test x$have_sdl2_image = xyes; then
+		PKG_CHECK_EXISTS(sdl2_image,
+			echo SDL_image.................. : `$PKG_CONFIG --modversion SDL2_image`)
+	fi
 	PKG_CHECK_EXISTS(ogg,
 		echo Ogg.........................: `$PKG_CONFIG --modversion ogg`)
 	PKG_CHECK_EXISTS(vorbis,
