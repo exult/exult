@@ -828,6 +828,7 @@ fi
 # ---------------------------------------------------------------------
 
 # Build any external programs?
+AM_CONDITIONAL(HAVE_SDL2_IMAGE, false)
 AC_ARG_ENABLE(tools, AS_HELP_STRING([--disable-tools], [Only build the main program]),,enable_tools=yes)
 AC_MSG_CHECKING([whether to build only the main program])
 if test x$enable_tools = xno; then
@@ -842,7 +843,6 @@ else
 	if test x$have_sdl2_image = xyes; then
 		AM_CONDITIONAL(HAVE_SDL2_IMAGE, true)
 	else
-		AM_CONDITIONAL(HAVE_SDL2_IMAGE, false)
 		AC_MSG_WARN([Unable to find SDL2_image library (https://github.com/libsdl-org/SDL_image)])
 		AC_MSG_WARN([Tools mockup and smooth disabled])
 	fi
