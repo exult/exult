@@ -175,7 +175,7 @@ EXTRA_DIST = 	\
 	FAQ \
 	README.md \
 	README.win32 \
-	README.MacOSX \
+	README.macOS \
 	Makefile.common \
 	Makefile.mingw \
 	Info.plist.in \

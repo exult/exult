@@ -57,8 +57,8 @@
 	<data dest="${bundle}/Contents/Resources/Documents/README.txt">
 		${prefix:source}/README
 	</data>
-	<data dest="${bundle}/Contents/Resources/Documents/README.MacOSX.txt">
-		${prefix:source}/README.MacOSX
+	<data dest="${bundle}/Contents/Resources/Documents/README.macOS.txt">
+		${prefix:source}/README.macOS
 	</data>
 	<data>
 		${prefix}/share/icons

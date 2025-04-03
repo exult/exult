@@ -22,7 +22,7 @@ bundle: ${EXE_TARGET}
 	$(INSTALL_DATA) $(srcdir)/FAQ $(bundle_name)/Contents/Documents
 	$(INSTALL_DATA) $(srcdir)/NEWS $(bundle_name)/Contents/Documents
 	$(INSTALL_DATA) $(srcdir)/README $(bundle_name)/Contents/Documents
-	$(INSTALL_DATA) $(srcdir)/README.MacOSX $(bundle_name)/Contents/Documents
+	$(INSTALL_DATA) $(srcdir)/README.macOS $(bundle_name)/Contents/Documents
 if WITH_OSX_CODE_SIGNATURE
 	  codesign \
 	  --options runtime \
@@ -76,7 +76,7 @@ osxdmg: bundle
 	cp $(srcdir)/AUTHORS ./Exult-snapshot/Authors
 	cp $(srcdir)/COPYING ./Exult-snapshot/License
 	cp $(srcdir)/NEWS ./Exult-snapshot/News
-	cp $(srcdir)/README.MacOSX ./Exult-snapshot/ReadMe.MacOSX
+	cp $(srcdir)/README.macOS ./Exult-snapshot/ReadMe.macOS
 	cp $(srcdir)/docs/ReadMe.html ./Exult-snapshot/ReadMe.html
 	cp $(srcdir)/docs/faq.html ./Exult-snapshot/FAQ.html
 	cp $(srcdir)/docs/images/docs*.* ./Exult-snapshot/images
@@ -87,7 +87,7 @@ osxdmg: bundle
 	SetFile -t ttro -c ttxt ./Exult-snapshot/Authors
 	SetFile -t ttro -c ttxt ./Exult-snapshot/License
 	SetFile -t ttro -c ttxt ./Exult-snapshot/News
-	SetFile -t ttro -c ttxt ./Exult-snapshot/ReadMe.MacOSX
+	SetFile -t ttro -c ttxt ./Exult-snapshot/ReadMe.macOS
 	SetFile -a E ./Exult-snapshot/ReadMe.html
 	SetFile -a E "./Exult-snapshot/Git revision.url"
 	cp -R $(bundle_name) ./Exult-snapshot/
@@ -107,7 +107,7 @@ osxdmg: bundle
 	  --icon "News" 274 395 \
 	  --icon "License" 371 395 \
 	  --icon "Authors" 468 395 \
-	  --icon "ReadMe.MacOSX" 564 395 \
+	  --icon "ReadMe.macOS" 564 395 \
 	  --hdiutil-quiet \
 	  --no-internet-enable \
 	  "Exult-snapshot.dmg" \
@@ -119,7 +119,7 @@ studiodmg: studiobundle
 	mkdir -p ./Studio-snapshot/images
 	cp $(srcdir)/AUTHORS ./Studio-snapshot/Authors
 	cp $(srcdir)/COPYING ./Studio-snapshot/License
-	cp $(srcdir)/README.MacOSX ./Studio-snapshot/ReadMe.MacOSX
+	cp $(srcdir)/README.macOS ./Studio-snapshot/ReadMe.macOS
 	cp $(srcdir)/docs/exult_studio.html ./Studio-snapshot/Manual.html
 	cp $(srcdir)/docs/images/studio*.* ./Studio-snapshot/images
 	cp $(srcdir)/docs/images/*.gif ./Studio-snapshot/images
@@ -128,7 +128,7 @@ studiodmg: studiobundle
 	SetFile -a V ./Studio-snapshot/images
 	SetFile -t ttro -c ttxt ./Studio-snapshot/Authors
 	SetFile -t ttro -c ttxt ./Studio-snapshot/License
-	SetFile -t ttro -c ttxt ./Studio-snapshot/ReadMe.MacOSX
+	SetFile -t ttro -c ttxt ./Studio-snapshot/ReadMe.macOS
 	SetFile -a E ./Studio-snapshot/Manual.html
 	SetFile -a E "./Studio-snapshot/Git revision.url"
 	cp -R $(studio_name) ./Studio-snapshot/
@@ -146,7 +146,7 @@ studiodmg: studiobundle
 	  --icon "Manual.html" 164 395 \
 	  --icon "License" 260 395 \
 	  --icon "Authors" 356 395 \
-	  --icon "ReadMe.MacOSX" 452 395 \
+	  --icon "ReadMe.macOS" 452 395 \
 	  --hdiutil-quiet \
 	  --no-internet-enable \
 	  "ExultStudio-snapshot.dmg" \
