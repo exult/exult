@@ -28,16 +28,22 @@ if WITH_OSX_CODE_SIGNATURE
 	  --options runtime \
 	  --deep \
 	  --timestamp \
+	  --strip-disallowed-xattrs \
 	  -f -s "$(OSX_CODE_SIGNATURE)" \
 	  $(bundle_name)
 endif
 
 bundle_shared: bundle
-	dylibbundler -ns -od -b -x $(bundle_name)/Contents/MacOS/$(bin_PROGRAMS) -d $(bundle_name)/Contents/Resources/lib -p @executable_path/../Resources/lib -i /usr/lib
+	dylibbundler -ns -od -b \
+	  -x $(bundle_name)/Contents/MacOS/$(bin_PROGRAMS) \
+	  -d $(bundle_name)/Contents/Resources/lib \
+	  -p @executable_path/../Resources/lib \
+	  -i /usr/lib
 if WITH_OSX_CODE_SIGNATURE
 	  codesign \
 	  --options runtime \
 	  --timestamp \
+	  --strip-disallowed-xattrs \
 	  -f -s "$(OSX_CODE_SIGNATURE)" \
 	  $(bundle_name)/Contents/Resources/lib/*.dylib
 endif
@@ -48,17 +54,15 @@ if WITH_OSX_CODE_SIGNATURE
 	codesign \
 	  --options runtime \
 	  --timestamp \
+	  --strip-disallowed-xattrs \
 	  -f -s "$(OSX_CODE_SIGNATURE)" \
-	  $(studio_name)/Contents/Resources/lib/*.dylib
-	codesign \
-	  --options runtime \
-	  --timestamp \
-	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  $(studio_name)/Contents/Resources/lib/*.dylib \
 	  $(studio_name)/Contents/Resources/lib/gdk-pixbuf-2.0/2.10.0/loaders/*.so
 	codesign \
 	  --options runtime \
 	  --deep \
 	  --timestamp \
+	  --strip-disallowed-xattrs \
 	  -f -s "$(OSX_CODE_SIGNATURE)" \
 	  $(studio_name)
 endif
@@ -181,6 +185,7 @@ if WITH_OSX_CODE_SIGNATURE
 	codesign \
 	  --options runtime \
 	  --timestamp \
+	  --strip-disallowed-xattrs \
 	  --entitlements $(srcdir)/macosx/gimp_plugin_entitlements.plist \
 	  -f -s "$(OSX_CODE_SIGNATURE)" \
 	  ./package/plugin/u7shp
@@ -219,6 +224,11 @@ aseprite_package:
 	test -f ./tools/aseprite_plugin/exult_shp$(EXEEXT) || $(MAKE) exult_shp
 	mkdir -p aseprite
 	$(INSTALL_PROGRAM) ./tools/aseprite_plugin/exult_shp$(EXEEXT) ./aseprite/
+	dylibbundler -cd -b -ns -of -od \
+	  -x ./aseprite/exult_shp \
+	  -d ./aseprite/libs \
+	  -p @executable_path/libs/ \
+	  -i /usr/lib
 	cp $(srcdir)/tools/aseprite_plugin/Readme.txt ./aseprite/
 	cp $(srcdir)/tools/aseprite_plugin/main.lua ./aseprite/
 	cp $(srcdir)/tools/aseprite_plugin/package.json ./aseprite/
@@ -226,12 +236,92 @@ if WITH_OSX_CODE_SIGNATURE
 	codesign \
 	  --options runtime \
 	  --timestamp \
+	  --strip-disallowed-xattrs \
 	  --entitlements $(srcdir)/macosx/gimp_plugin_entitlements.plist \
 	  -f -s "$(OSX_CODE_SIGNATURE)" \
 	  ./aseprite/exult_shp
+	codesign \
+	  --options runtime \
+	  --timestamp \
+	  --strip-disallowed-xattrs \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  ./aseprite/libs/*.dylib
 endif
 	zip -rj ./exult_shp_macos.aseprite-extension ./aseprite
 	-rm -rf ./aseprite
+endif
+
+if BUILD_TOOLS
+tools_package:
+	mkdir -p toolspack/data
+	strip ./tools/cmanip -o ./toolspack/cmanip
+	strip ./tools/expack -o ./toolspack/expack
+	strip ./tools/ipack -o ./toolspack/ipack
+	strip ./tools/mklink -o ./toolspack/mklink
+	strip ./tools/rip -o ./toolspack/rip
+	strip ./tools/shp2pcx -o ./toolspack/shp2pcx
+	strip ./tools/splitshp -o ./toolspack/splitshp
+	strip ./tools/textpack -o ./toolspack/textpack
+	strip ./tools/u7voice2syx -o ./toolspack/u7voice2syx
+	strip ./tools/wuc -o ./toolspack/wuc
+	strip ./tools/compiler/ucc -o ./toolspack/ucc
+	strip ./tools/ucxt/head2data -o ./toolspack/head2data
+	strip ./tools/ucxt/src/ucxt -o ./toolspack/ucxt
+	strip ./tools/mockup/mockup -o ./toolspack/mockup
+	strip ./tools/smooth/smooth -o ./toolspack/smooth
+	cp ./tools/smooth/*.so ./toolspack/
+	cp $(srcdir)/tools/*.txt ./toolspack
+	cp $(srcdir)/tools/README ./toolspack
+	cp $(srcdir)/tools/mockup/*.txt ./toolspack
+	cp $(srcdir)/tools/mockup/map.png ./toolspack
+	cp $(srcdir)/tools/mockup/README ./toolspack/mockup.txt
+	cp $(srcdir)/tools/mockup/LICENCE ./toolspack/LICENCE.txt
+	cp $(srcdir)/tools/smooth/README ./toolspack/smooth.txt
+	cp $(srcdir)/tools/smooth/smooth.conf ./toolspack
+	cp $(srcdir)/tools/smooth/*.bmp ./toolspack
+	cp $(srcdir)/docs/ucc.txt ./toolspack
+	cp $(srcdir)/tools/ucxt/data/*.data ./toolspack/data
+	cp $(srcdir)/data/bginclude.uc ./toolspack/data
+	cp ./tools/ucxt/data/*.data ./toolspack/data
+	dylibbundler -cd -b -ns -of -od \
+	  -x ./toolspack/ipack \
+	  -x ./toolspack/ucxt \
+	  -x ./toolspack/mockup \
+	  -x ./toolspack/smooth \
+	  -x ./toolspack/libsmooth_randomize.so \
+	  -x ./toolspack/libsmooth_smooth.so \
+	  -x ./toolspack/libsmooth_stream.so \
+	  -d ./toolspack/libs \
+	  -p @executable_path/libs/ \
+	  -i /usr/lib
+if WITH_OSX_CODE_SIGNATURE
+	codesign \
+	  --options runtime \
+	  --timestamp \
+	  --strip-disallowed-xattrs \
+	  -f -s "$(OSX_CODE_SIGNATURE)" \
+	  ./toolspack/ipack \
+	  ./toolspack/expack \
+	  ./toolspack/cmanip \
+	  ./toolspack/expack \
+	  ./toolspack/ipack \
+	  ./toolspack/mklink \
+	  ./toolspack/rip \
+	  ./toolspack/shp2pcx \
+	  ./toolspack/splitshp \
+	  ./toolspack/textpack \
+	  ./toolspack/u7voice2syx \
+	  ./toolspack/wuc \
+	  ./toolspack/ucc \
+	  ./toolspack/head2data \
+	  ./toolspack/ucxt \
+	  ./toolspack/mockup \
+	  ./toolspack/smooth \
+	  ./toolspack/*.so \
+	  ./toolspack/libs/*.dylib
+endif
+	(cd ./toolspack && zip -r ../exult_tools_macOS.zip .)
+	-rm -rf ./toolspack
 endif
 
 clean-local:
@@ -244,3 +334,4 @@ clean-local:
 	-rm -f Gimp30plugin.pkg
 	-rm -f signed_Gimp30plugin.pkg
 	-rm -f exult_shp_macos.aseprite-extension
+	-rm -f exult_tools_macOS.zip
