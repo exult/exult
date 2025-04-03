@@ -263,3 +263,5 @@ bg/introsfx_mt32_flx.h: bg/introsfx_mt32.flx
 
 bg/introsfx_sb_flx.h: bg/introsfx_sb.flx
 
+all-local: exult.flx exult_bg.flx exult_si.flx
+	-cp -fR $(srcdir)/*.flx $(builddir) 2>/dev/null
