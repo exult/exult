@@ -93,6 +93,8 @@ tools/ucxt/data/u7sibetaintrinsics.data
 tools/ucxt/head2data
 tools/ucxt/src/ucxt
 tools/aseprite_plugin/exult_shp
+tools/mockup/mockup
+tools/smooth/smooth
 
 # Automake/autoconf
 .libs
