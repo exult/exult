@@ -61,7 +61,7 @@
 
 #define USE_FMOPL_MIDI   1
 #define USE_WINDOWS_MIDI 1
-#define USE_MT32EMU_MIDI 1
+//#define USE_MT32EMU_MIDI 1
 //#define USE_FLUIDSYNTH_MIDI 1
 #define HAVE_STDIO_H     1
 #define HAVE_ZIP_SUPPORT 1
