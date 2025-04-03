@@ -106,7 +106,7 @@ jobs:
       run: |
         cd $Env:VCPKG_INSTALLATION_ROOT
         git fetch
-        git pull
+        git merge --ff-only db1ddd0
         .\bootstrap-vcpkg.bat
         vcpkg integrate install
 
@@ -141,7 +141,7 @@ jobs:
       run: |
         cd $Env:VCPKG_INSTALLATION_ROOT
         git fetch
-        git pull
+        git merge --ff-only db1ddd0
         .\bootstrap-vcpkg.bat
         vcpkg integrate install
 
