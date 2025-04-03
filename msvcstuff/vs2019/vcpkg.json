@@ -8,6 +8,8 @@
     "zlib",
     "libogg",
     "libvorbis",
+    "libmt32emu",
+    "fluidlite",
     "dirent"
   ]
 }

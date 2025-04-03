@@ -101,9 +101,15 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Integrate vcpkg 
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: vcpkg integrate install
+    - name: Update and Integrate vcpkg 
+      working-directory: ${{env.GITHUB_WORKSPACE}}     
+      run: |
+        cd $Env:VCPKG_INSTALLATION_ROOT
+        git fetch
+        git pull
+        .\bootstrap-vcpkg.bat
+        vcpkg integrate install
+
 
     - name: Install VCPKG packages for Exult
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -130,9 +136,14 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Integrate vcpkg 
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: vcpkg integrate install
+    - name: Update and Integrate vcpkg 
+      working-directory: ${{env.GITHUB_WORKSPACE}}     
+      run: |
+        cd $Env:VCPKG_INSTALLATION_ROOT
+        git fetch
+        git pull
+        .\bootstrap-vcpkg.bat
+        vcpkg integrate install
 
     - name: Install VCPKG packages for Studio
       working-directory: ${{env.GITHUB_WORKSPACE}}
