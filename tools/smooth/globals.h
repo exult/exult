@@ -44,9 +44,9 @@ EXTERN glob_variables g_variables;
 typedef struct g_stat_struct {
 	int          debug;          // stat
 	SDL_Surface* image_in;       // stat
-	char*        filein;         // stat
-	char*        fileout;        // stat
-	char*        config_file;    // stat
+	const char*  filein;         // stat
+	const char*  fileout;        // stat
+	const char*  config_file;    // stat
 } glob_statics;
 
 EXTERN glob_statics g_statics;

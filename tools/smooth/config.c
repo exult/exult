@@ -22,7 +22,7 @@ int close_config(FILE* f) {
 	return fclose(f);
 }
 
-FILE* open_config(char* configfile) {
+FILE* open_config(const char* configfile) {
 	if (g_statics.debug) {
 		printf("\nConfig file: %s\n********************\n", configfile);
 	}

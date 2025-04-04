@@ -8,6 +8,6 @@ ExternalProject_Add(
   SOURCE_DIR        @EXULT_SOURCE_DIR@
   INSTALL_DIR       @DEPENDENCIES_INSTALL_DIR@
   CONFIGURE_COMMAND autoreconf -v -i <SOURCE_DIR>
-            COMMAND . @ENVFILE@ && <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --host=@ANDROID_LLVM_TRIPLE@ --enable-libexult --enable-shared --disable-data --disable-tools --enable-zip-support --enable-midi-sfx --enable-mt32emu --enable-fluidsynth=lite --disable-alsa --disable-timidity-midi --disable-oggtest --disable-vorbistest --with-optimization=@EXULT_ANDROID_OPT@ --with-debug=@EXULT_ANDROID_DEBUG@
+            COMMAND . @ENVFILE@ && <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --host=@ANDROID_LLVM_TRIPLE@ --enable-libexult --enable-shared --disable-data --disable-tools --enable-zip-support --enable-midi-sfx --enable-mt32emu --enable-fluidsynth=lite --disable-alsa --disable-timidity-midi --with-optimization=@EXULT_ANDROID_OPT@ --with-debug=@EXULT_ANDROID_DEBUG@
   BUILD_COMMAND     make -j@NCPU@ -s LIBTOOLFLAGS="--silent"
 )

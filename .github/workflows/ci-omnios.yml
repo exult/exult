@@ -130,7 +130,7 @@ jobs:
           pkgin -y install at-spi2-core xorgproto
           pkgin -y install alsa-lib fluidsynth libogg libvorbis
           pkgin -y install autoconf autoconf-archive automake bison flex gettext \
-                           git glib2 gmake icu json-glib libtool pkgconf SDL2
+                           git glib2 gmake icu json-glib libtool pkgconf SDL2 SDL2_image
           pkgin -y install cairo gdk-pixbuf2 gegl gimp png
           pkgin -y install freetype2 harfbuzz
           pkgin -y install fontconfig

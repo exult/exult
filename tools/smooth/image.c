@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int img_read(char* filein) {
+int img_read(const char* filein) {
 	if (g_statics.debug) {
 		printf("Reading from %s\n", filein);
 		fflush(stdout);
@@ -112,7 +112,7 @@ int img_read(char* filein) {
 	return 0;
 }
 
-int img_write(char* img_out) {
+int img_write(const char* img_out) {
 	if (g_statics.debug) {
 		printf("Writing to %s\n", img_out);
 		fflush(stdout);
