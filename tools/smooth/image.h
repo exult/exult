@@ -1,5 +1,5 @@
-int   img_read(char* filein);
-int   img_write(char* img_out);
+int   img_read(const char* filein);
+int   img_write(const char* img_out);
 Uint8 getpixel(SDL_Surface* surface, int x, int y);
 void  putpixel(SDL_Surface* surface, int x, int y, Uint8 pixel);
 char* transform(int index);

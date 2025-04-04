@@ -111,7 +111,7 @@ jobs:
           brew update
           brew upgrade || true
           brew install automake libtool pkg-config libpng zlib libogg libvorbis fluid-synth freetype gtk+3 libxml2 bison flex
-          brew install sdl2 icu4c mt32emu autoconf-archive
+          brew install sdl2 sdl2_image icu4c mt32emu autoconf-archive
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Run autoreconf
@@ -125,7 +125,7 @@ jobs:
           export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig:$(brew --prefix icu4c)/lib/pkgconfig"
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler \
             --enable-zip-support --enable-shared --enable-shp-thumbnailer --enable-data --enable-mods --enable-aseprite-plugin \
-            --disable-alsa --disable-timidity-midi --disable-oggtest --disable-vorbistest
+            --disable-alsa --disable-timidity-midi
       - name: Build
         run: |
           export LDFLAGS="-L$(brew --prefix bison)/lib -L$(brew --prefix flex)/lib -L$(brew --prefix zlib)/lib"

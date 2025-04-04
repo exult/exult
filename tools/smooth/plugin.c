@@ -65,7 +65,7 @@ int plug_unload(libhandle_t a_hdl) {
 #endif
 }
 
-void* plug_load_func(libhandle_t a_hdl, char* func_name) {
+void* plug_load_func(libhandle_t a_hdl, const char* func_name) {
 	// Colourless: Unix specific part. Add your #def here
 #ifdef _WIN32
 	// Need to add _ to the start of the function names in windows

@@ -47,7 +47,7 @@ jobs:
             sudo apt-fast update
           fi
           sudo apt-fast install -y \
-            zlib1g-dev libogg-dev libvorbis-dev libasound2-dev libfluidsynth-dev libsdl2-dev libpng-dev libfreetype6-dev libgtk2.0-dev libgtk-3-dev \
+            zlib1g-dev libogg-dev libvorbis-dev libasound2-dev libfluidsynth-dev libsdl2-dev libsdl2-image-dev libpng-dev libfreetype6-dev libgtk2.0-dev libgtk-3-dev \
             libgdk-pixbuf2.0-dev libxml2-dev bison flex timidity libgimp2.0-dev libicu-dev autoconf-archive
       - name: Download Coverity Build Tool
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
@@ -67,7 +67,7 @@ jobs:
         run: |
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \
             --enable-zip-support --enable-shared --enable-midi-sfx --enable-shp-thumbnailer --enable-data --enable-mods \
-            --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects --disable-oggtest --disable-vorbistest \
+            --with-usecode-debugger=yes --enable-usecode-container --enable-nonreadied-objects \
             --enable-aseprite-plugin
       - name: Build with cov-build
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}

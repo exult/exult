@@ -67,9 +67,9 @@ int plugin_parse(char* line) {
 	int          let      = 0;
 	unsigned int idx      = 0;
 	char         color[7] = {0};
-	unsigned     r        = 0;
-	unsigned     g        = 0;
-	unsigned     b        = 0;
+	colour_hex   r        = 0;
+	colour_hex   g        = 0;
+	colour_hex   b        = 0;
 
 	// in this case we know we should receive 18 parameters
 	// 1 for slave, 1 for master and 16 for the resulting colour
@@ -98,9 +98,7 @@ int plugin_parse(char* line) {
 					col[glob_idx][idx] = 0;
 				} else {
 					sscanf(color, "%02x%02x%02x", &r, &g, &b);
-					col[glob_idx][idx]
-							= ((((colour_hex)r) << 16) | (((colour_hex)g) << 8)
-							   | ((colour_hex)b));
+					col[glob_idx][idx] = ((r << 16) | (g << 8) | (b));
 				}
 			}
 			newrec = 1;

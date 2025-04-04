@@ -55,9 +55,9 @@ int plugin_parse(char* line) {
 	int          let      = 0;
 	unsigned int idx      = 0;
 	char         color[7] = {0};
-	unsigned     r        = 0;
-	unsigned     g        = 0;
-	unsigned     b        = 0;
+	colour_hex   r        = 0;
+	colour_hex   g        = 0;
+	colour_hex   b        = 0;
 
 	if (my_g_stat.debug > 3) {
 		printf("Parsing %s\n", line);
@@ -80,9 +80,7 @@ int plugin_parse(char* line) {
 			if (newrec == 0) {
 				color[let] = '\0';
 				sscanf(color, "%02x%02x%02x", &r, &g, &b);
-				col[glob_idx][idx]
-						= ((((colour_hex)r) << 16) | (((colour_hex)g) << 8)
-						   | ((colour_hex)b));
+				col[glob_idx][idx] = ((r << 16) | (g << 8) | (b));
 				col[glob_idx][0] = idx - 1;
 			}
 			newrec = 1;

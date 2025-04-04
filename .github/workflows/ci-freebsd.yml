@@ -122,7 +122,7 @@ jobs:
           pkg install -y at-spi2-core
           pkg install -y alsa-lib fluidsynth libogg libvorbis
           pkg install -y autoconf autoconf-archive automake bison flex gettext-runtime \
-                         git glib gmake icu json-glib libtool pkgconf sdl2
+                         git glib gmake icu json-glib libtool pkgconf sdl2 sdl2_image
           pkg install -y cairo gdk-pixbuf2 gegl gimp-app png
           pkg install -y freetype2 harfbuzz
           pkg install -y fontconfig
