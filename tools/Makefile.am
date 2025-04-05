@@ -54,7 +54,7 @@ EXTRATOOLS =
 NOINSTTOOLS =
 endif
 
-if HAVE_SDL2_IMAGE
+if HAVE_SDL_IMAGE
 MOCKUP_DIR = mockup
 SMOOTH_DIR = smooth
 else

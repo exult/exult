@@ -828,7 +828,7 @@ fi
 # ---------------------------------------------------------------------
 
 # Build any external programs?
-AM_CONDITIONAL(HAVE_SDL2_IMAGE, false)
+AM_CONDITIONAL(HAVE_SDL_IMAGE, false)
 AC_ARG_ENABLE(tools, AS_HELP_STRING([--disable-tools], [Only build the main program]),,enable_tools=yes)
 AC_MSG_CHECKING([whether to build only the main program])
 if test x$enable_tools = xno; then
@@ -839,9 +839,9 @@ if test x$enable_tools = xno; then
 else
 	AM_CONDITIONAL(BUILD_TOOLS, true)
 	AC_MSG_RESULT(no)
-	PKG_CHECK_MODULES(SDL2_IMAGE, SDL2_image, have_sdl2_image=yes, have_have_sdl2_image=no)
-	if test x$have_sdl2_image = xyes; then
-		AM_CONDITIONAL(HAVE_SDL2_IMAGE, true)
+	PKG_CHECK_MODULES(SDL_IMAGE, SDL2_image, have_sdl_image=yes, have_sdl_image=no)
+	if test x$have_sdl_image = xyes; then
+		AM_CONDITIONAL(HAVE_SDL_IMAGE, true)
 	else
 		AC_MSG_WARN([Unable to find SDL2_image library (https://github.com/libsdl-org/SDL_image)])
 		AC_MSG_WARN([Tools mockup and smooth disabled])
@@ -1456,8 +1456,8 @@ if test x$enable_android_apk != xno; then
 	echo
 else
 	echo SDL........................ : `$PKG_CONFIG --modversion sdl2`
-	if test x$have_sdl2_image = xyes; then
-		PKG_CHECK_EXISTS(sdl2_image,
+	if test x$have_sdl_image = xyes; then
+		PKG_CHECK_EXISTS(SDL2_image,
 			echo SDL_image.................. : `$PKG_CONFIG --modversion SDL2_image`)
 	fi
 	PKG_CHECK_EXISTS(ogg,
