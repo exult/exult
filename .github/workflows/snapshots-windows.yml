@@ -51,7 +51,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: munt/munt
-          ref: libmt32emu_2_7_1
+          ref: libmt32emu_2_7_2
           path: libmt32emu
       - name: Install mingw32/mt32emu
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
@@ -62,7 +62,7 @@ jobs:
           mkdir -p munt
           cd munt
           cmake --version
-          cmake ./../libmt32emu -Dmunt_WITH_MT32EMU_SMF2WAV=FALSE -Dmunt_WITH_MT32EMU_QT=FALSE -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          cmake ./../libmt32emu -Dmunt_WITH_MT32EMU_SMF2WAV=FALSE -Dmunt_WITH_MT32EMU_QT=FALSE -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
           ninja install
       - name: Download and manually install SDL2_image-devel-2.8.8-mingw.tar.gz for i686
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}

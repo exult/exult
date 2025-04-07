@@ -54,7 +54,7 @@
 /* MT32EMU Version */
 #	define MT32EMU_VERSION_MAJOR 2
 #	define MT32EMU_VERSION_MINOR 7
-#	define MT32EMU_VERSION_PATCH 1
+#	define MT32EMU_VERSION_PATCH 2
 #	define MT32EMU_VERSION                                                    \
 		"$(MT32EMU_VERSION_MAJOR).$(MT32EMU_VERSION_MINOR).$(MT32EMU_VERSION_" \
 		"PATCH)"
