@@ -586,36 +586,41 @@ AC_ARG_ENABLE(fluidsynth,
 	AS_HELP_STRING([--enable-fluidsynth@<:@=yes|lite|no@:>@],
 		[Enable fluidsynth midi support, lite for fluidlite, @<:@default yes@:>@]),,enable_fluidsynth=yes)
 AC_MSG_CHECKING([if we want to use fluidsynth midi])
+PKG_CHECK_MODULES(FLUIDSYNTH, fluidsynth, have_fluidsynth=yes, have_fluidsynth=no)
+PKG_CHECK_MODULES(FLUIDLITE, fluidlite, have_fluidlite=yes, have_fluidlite=no)
 if test x$enable_fluidsynth = xyes; then
 	AC_MSG_RESULT(yes)
-	PKG_CHECK_MODULES(FLUIDSYNTH, fluidsynth, have_fluidsynth=yes, have_fluidsynth=no)
-	PKG_CHECK_MODULES(FLUIDLITE, fluidlite, have_fluidlite=yes, have_fluidlite=no)
 	AC_MSG_CHECKING([if we can use fluidsynth midi])
-	if test x$have_fluidlite = xyes; then
-		AC_MSG_RESULT(lite)
-		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
-		AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
-	elif test x$have_fluidsynth = xyes; then
+	if test x$have_fluidsynth = xyes; then
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
 		AC_DEFINE(USING_FLUIDSYNTH, 1,[Using FluidSynth])
+		FLUID_LIBS="$FLUIDSYNTH_LIBS"
+	elif test x$have_fluidlite = xyes; then
+		enable_fluidsynth=lite
+		AC_MSG_RESULT(lite)
+		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
+		AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
+		FLUID_LIBS="$FLUIDLITE_LIBS"
 	else
-		AC_MSG_RESULT([no; fluidsynth and fluidlite not installed])
+		AC_MSG_RESULT([no; fluidsynth or fluidlite not installed])
 	fi
 elif test x$enable_fluidsynth = xlite; then
 	AC_MSG_RESULT(lite)
-	PKG_CHECK_MODULES(FLUIDLITE, fluidlite, have_fluidlite=yes, have_fluidlite=no)
 	AC_MSG_CHECKING([if we can use fluidsynth midi])
 	if test x$have_fluidlite = xyes; then
 		AC_MSG_RESULT(lite)
 		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
 		AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
+		FLUID_LIBS="$FLUIDLITE_LIBS"
 	else
-		AC_MSG_RESULT([no; fluidsynth not installed])
+		AC_MSG_RESULT([no; fluidlite not installed])
 	fi
 else
 	AC_MSG_RESULT(no)
+	enable_fluidsynth=no
 fi
+AC_SUBST([FLUID_LIBS])
 
 # mt32emu midi driver
 AC_ARG_ENABLE(mt32emu, AS_HELP_STRING([--disable-mt32emu], [Disable mt32emu midi support]),,enable_mt32emu=yes)
@@ -1472,13 +1477,15 @@ else
 		PKG_CHECK_EXISTS(mt32emu,
 			echo MT32emu.................... : `$PKG_CONFIG --modversion mt32emu`)
 	fi
-	if test x$enable_fluidsynth = xyes; then
-		PKG_CHECK_EXISTS(fluidsynth,
-			echo Fluidsynth................. : `$PKG_CONFIG --modversion fluidsynth`)
-	fi
-	if test x$enable_fluidsynth = xlite; then
-		PKG_CHECK_EXISTS(fluidlite,
-			echo FluidLite.................. : `$PKG_CONFIG --modversion fluidlite`)
+	if test x$enable_fluidsynth != xno; then
+		if test x$enable_fluidsynth = xyes; then
+			PKG_CHECK_EXISTS(fluidsynth,
+				echo Fluidsynth................. : `$PKG_CONFIG --modversion fluidsynth`)
+		fi
+		if test x$enable_fluidsynth = xlite; then
+			PKG_CHECK_EXISTS(fluidlite,
+				echo FluidLite.................. : `$PKG_CONFIG --modversion fluidlite`)
+		fi
 	fi
 	if test x$enable_zip_support = xyes ; then
 		PKG_CHECK_EXISTS(zlib,
