@@ -586,10 +586,10 @@ AC_ARG_ENABLE(fluidsynth,
 	AS_HELP_STRING([--enable-fluidsynth@<:@=yes|lite|no@:>@],
 		[Enable fluidsynth midi support, lite for fluidlite, @<:@default yes@:>@]),,enable_fluidsynth=yes)
 AC_MSG_CHECKING([if we want to use fluidsynth midi])
-PKG_CHECK_MODULES(FLUIDSYNTH, fluidsynth, have_fluidsynth=yes, have_fluidsynth=no)
-PKG_CHECK_MODULES(FLUIDLITE, fluidlite, have_fluidlite=yes, have_fluidlite=no)
 if test x$enable_fluidsynth = xyes; then
 	AC_MSG_RESULT(yes)
+	PKG_CHECK_MODULES(FLUIDSYNTH, fluidsynth, have_fluidsynth=yes, have_fluidsynth=no)
+	PKG_CHECK_MODULES(FLUIDLITE, fluidlite, have_fluidlite=yes, have_fluidlite=no)
 	AC_MSG_CHECKING([if we can use fluidsynth midi])
 	if test x$have_fluidsynth = xyes; then
 		AC_MSG_RESULT(yes)
@@ -597,24 +597,32 @@ if test x$enable_fluidsynth = xyes; then
 		AC_DEFINE(USING_FLUIDSYNTH, 1,[Using FluidSynth])
 		FLUID_LIBS="$FLUIDSYNTH_LIBS"
 	elif test x$have_fluidlite = xyes; then
-		enable_fluidsynth=lite
-		AC_MSG_RESULT(lite)
+		AC_MSG_RESULT([no, using fluidlite])
 		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
 		AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
 		FLUID_LIBS="$FLUIDLITE_LIBS"
+		enable_fluidsynth=lite
 	else
 		AC_MSG_RESULT([no; fluidsynth or fluidlite not installed])
 	fi
 elif test x$enable_fluidsynth = xlite; then
-	AC_MSG_RESULT(lite)
-	AC_MSG_CHECKING([if we can use fluidsynth midi])
+	AC_MSG_RESULT([yes, using fluidlite])
+	PKG_CHECK_MODULES(FLUIDLITE, fluidlite, have_fluidlite=yes, have_fluidlite=no)
+	PKG_CHECK_MODULES(FLUIDSYNTH, fluidsynth, have_fluidsynth=yes, have_fluidsynth=no)
+	AC_MSG_CHECKING([if we can use fluidlite midi])
 	if test x$have_fluidlite = xyes; then
-		AC_MSG_RESULT(lite)
+		AC_MSG_RESULT([yes, using fluidlite])
 		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
 		AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
 		FLUID_LIBS="$FLUIDLITE_LIBS"
+	elif test x$have_fluidsynth = xyes; then
+		AC_MSG_RESULT([no, using fluidsynth instead])
+		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
+		AC_DEFINE(USING_FLUIDSYNTH, 1,[Using FluidSynth])
+		FLUID_LIBS="$FLUIDSYNTH_LIBS"
+		enable_fluidsynth=yes
 	else
-		AC_MSG_RESULT([no; fluidlite not installed])
+		AC_MSG_RESULT([no; fluidlite or fluidsynth not installed])
 	fi
 else
 	AC_MSG_RESULT(no)
