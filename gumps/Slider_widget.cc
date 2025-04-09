@@ -21,7 +21,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Gump_manager.h"
 #include "gamewin.h"
 
-#include <SDL.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
+#endif    // __GNUC__
+#include <SDL3/SDL.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 
 #include <cmath>
 
@@ -344,7 +355,8 @@ bool Slider_widget::mouse_drag(
  *  Handle ASCII character typed.
  */
 
-bool Slider_widget::key_down(int chr) {
+bool Slider_widget::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
+	ignore_unused_variable_warning(unicode);
 	switch (chr) {
 	case SDLK_LEFT:
 		clicked_left_arrow();
@@ -359,7 +371,7 @@ bool Slider_widget::key_down(int chr) {
 bool Slider_widget::mousewheel_up(int mx, int my) {
 	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
-	if (mod & KMOD_ALT) {
+	if (mod & SDL_KMOD_ALT) {
 		move_diamond(-10 * step_val);
 	} else {
 		move_diamond(-step_val);
@@ -370,7 +382,7 @@ bool Slider_widget::mousewheel_up(int mx, int my) {
 bool Slider_widget::mousewheel_down(int mx, int my) {
 	ignore_unused_variable_warning(mx, my);
 	const SDL_Keymod mod = SDL_GetModState();
-	if (mod & KMOD_ALT) {
+	if (mod & SDL_KMOD_ALT) {
 		move_diamond(10 * step_val);
 	} else {
 		move_diamond(step_val);

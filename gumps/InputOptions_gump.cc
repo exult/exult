@@ -24,8 +24,11 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -105,7 +108,7 @@ void InputOptions_gump::build_buttons() {
 			this, &InputOptions_gump::toggle_scroll_mouse, yesNo, scroll_mouse,
 			colx[5], rowy[++y_index], 44);
 
-#ifndef __IPHONEOS__
+#ifndef SDL_PLATFORM_IOS
 	buttons[id_mouse3rd] = std::make_unique<InputTextToggle>(
 			this, &InputOptions_gump::toggle_mouse3rd, yesNo, mouse3rd, colx[5],
 			rowy[++y_index], 44);

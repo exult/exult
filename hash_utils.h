@@ -22,8 +22,8 @@
 #include "common_types.h"
 
 #include <cstring>
-#include <unordered_map> // IWYU pragma: export
-#include <unordered_set> // IWYU pragma: export
+#include <unordered_map>    // IWYU pragma: export
+#include <unordered_set>    // IWYU pragma: export
 
 /*
  *  Hash function for strings:

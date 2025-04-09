@@ -66,8 +66,7 @@ public:
 	// Handle events:
 	bool mouse_down(int mx, int my, MouseButton button) override;
 	bool mouse_up(int mx, int my, MouseButton button) override;
-	using Modal_gump::character_input;
-	bool character_input(int chr, int unicode, bool shift_pressed)
+	bool key_down(SDL_Keycode chr, SDL_Keycode unicode)
 			override;    // Character typed.
 };
 

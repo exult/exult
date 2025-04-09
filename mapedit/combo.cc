@@ -950,11 +950,13 @@ void Combo_chooser::drag_data_get(
 		gpointer data    // ->Shape_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET of Combo for '"
+	cout << "In DRAG_DATA_GET of Combo for " << info << " and '"
 		 << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
 		 << endl;
 	auto* chooser = static_cast<Combo_chooser*>(data);
-	if (chooser->selected < 0 || info != U7_TARGET_COMBOID) {
+	if (chooser->selected < 0
+		|| (info != U7_TARGET_COMBOID && info != U7_TARGET_COMBOID + 100
+			&& info != U7_TARGET_COMBOID + 200)) {
 		return;    // Not sure about this.
 	}
 	// Get combo #.
@@ -981,6 +983,8 @@ void Combo_chooser::drag_data_get(
             buf, foot.w, foot.h, foot.x + foot.w - 1 - hot->tx,
             foot.y + foot.h - 1 - hot->ty, cnt, ents);
 	assert(len <= buflen);
+	cout << "Setting selection data (" << num << ')' << " (" << len << ") '"
+		 << buf << "'" << endl;
 	// Set data.
 	gtk_selection_data_set(
 			seldata, gtk_selection_data_get_target(seldata), 8, buf, len);
@@ -1010,6 +1014,17 @@ gint Combo_chooser::drag_begin(
 	Combo_member* hot = combo->members[combo->hot_index];
 	Shape_frame*  shape
 			= combo->shapes_file->get_shape(hot->shapenum, hot->framenum);
+	const int      cnt  = combo->members.size();
+	const TileRect foot = combo->tilefoot;
+	unsigned char  buf[Exult_server::maxlength];
+	unsigned char* ptr = &buf[0];
+	little_endian::Write2(ptr, cnt);
+	little_endian::Write2(ptr, foot.w);
+	little_endian::Write2(ptr, foot.h);
+	little_endian::Write2(ptr, foot.x + foot.w - 1 - hot->tx);
+	little_endian::Write2(ptr, foot.y + foot.h - 1 - hot->ty);
+	ExultStudio* studio = ExultStudio::get_instance();
+	studio->send_to_server(Exult_server::drag_combo, buf, ptr - buf);
 	if (shape) {
 		chooser->set_drag_icon(context, shape);
 	}

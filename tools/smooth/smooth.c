@@ -49,11 +49,11 @@ void clean_up(int ret) {
 
 	// clean up image_in
 	if (g_statics.image_in != NULL) {
-		SDL_FreeSurface(g_statics.image_in);
+		SDL_DestroySurface(g_statics.image_in);
 	}
 	// clean up image_out
 	if (g_variables.image_out != NULL) {
-		SDL_FreeSurface(g_variables.image_out);
+		SDL_DestroySurface(g_variables.image_out);
 	}
 
 	// quit
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
 	}
 
 	// initialise SDL
-	if ((SDL_Init(SDL_INIT_VIDEO) == -1)) {
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		printf("Couldn't initialise SDL: %s\n", SDL_GetError());
 		exit(-1);
 	}

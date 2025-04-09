@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "chunklst.h"
 #include "combo.h"
 #include "exceptions.h"
+#include "ignore_unused_variable_warning.h"
 #include "npclst.h"
 #include "paledit.h"
 #include "shapegroup.h"
@@ -126,6 +127,7 @@ void Image_file_info::flush() {
 	try {
 		write_file(filestr.c_str(), shapes.data(), nshapes, !ifile->is_flex());
 	} catch (exult_exception& e) {
+		ignore_unused_variable_warning(e);
 		EStudio::Alert("Error writing '%s'", filestr.c_str());
 		return;
 	}
@@ -530,6 +532,7 @@ static bool Create_file(
 			return true;    // Don't need file.
 		}
 	} catch (exult_exception& e) {
+		ignore_unused_variable_warning(e);
 		EStudio::Alert("Error writing '%s'", pathname.c_str());
 	}
 	return false;    // Might add more later.
