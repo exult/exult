@@ -817,7 +817,7 @@ bool Newfile_gump::character_input(int chr, int unicode, bool shift_pressed) {
 
 	// Are we selected on some text?
 	if (selected == -3) {
-		return true;
+		return false;
 	}
 
 	switch (chr) {

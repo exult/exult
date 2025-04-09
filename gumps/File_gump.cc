@@ -606,7 +606,7 @@ bool File_gump::mouse_up(
 bool File_gump::character_input(int chr, int unicode, bool shift_pressed) {
 	ignore_unused_variable_warning(unicode);
 	if (!focus) {    // Text field?
-		return true;
+		return false;
 	}
 	switch (chr) {
 	case SDLK_RETURN:    // If only 'Save', do it.
