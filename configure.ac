@@ -595,11 +595,13 @@ if test x$enable_fluidsynth = xyes; then
 		AC_MSG_RESULT(yes)
 		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
 		AC_DEFINE(USING_FLUIDSYNTH, 1,[Using FluidSynth])
+		FLUID_CFLAGS="$FLUIDSYNTH_CFLAGS"
 		FLUID_LIBS="$FLUIDSYNTH_LIBS"
 	elif test x$have_fluidlite = xyes; then
 		AC_MSG_RESULT([no, using fluidlite])
 		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
 		AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
+		FLUID_CFLAGS="$FLUIDLITE_CFLAGS"
 		FLUID_LIBS="$FLUIDLITE_LIBS"
 		enable_fluidsynth=lite
 	else
@@ -614,11 +616,13 @@ elif test x$enable_fluidsynth = xlite; then
 		AC_MSG_RESULT([yes, using fluidlite])
 		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
 		AC_DEFINE(USING_FLUIDLITE, 1,[Using FluidLite])
+		FLUID_CFLAGS="$FLUIDLITE_CFLAGS"
 		FLUID_LIBS="$FLUIDLITE_LIBS"
 	elif test x$have_fluidsynth = xyes; then
 		AC_MSG_RESULT([no, using fluidsynth instead])
 		AC_DEFINE(USE_FLUIDSYNTH_MIDI, 1, [Enable fluidsynth midi])
 		AC_DEFINE(USING_FLUIDSYNTH, 1,[Using FluidSynth])
+		FLUID_CFLAGS="$FLUIDSYNTH_CFLAGS"
 		FLUID_LIBS="$FLUIDSYNTH_LIBS"
 		enable_fluidsynth=yes
 	else
@@ -628,6 +632,7 @@ else
 	AC_MSG_RESULT(no)
 	enable_fluidsynth=no
 fi
+AC_SUBST([FLUID_CFLAGS])
 AC_SUBST([FLUID_LIBS])
 
 # mt32emu midi driver

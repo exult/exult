@@ -118,7 +118,7 @@ jobs:
         copyback: false
         prepare: |
           pkg update
-          pkg upgrade
+          pkg upgrade-y
           pkg install -y at-spi2-core
           pkg install -y alsa-lib fluidsynth libogg libvorbis
           pkg install -y autoconf autoconf-archive automake bison flex gettext-runtime \
