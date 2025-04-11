@@ -4415,6 +4415,14 @@ void Actor::die(Game_object* attacker) {
 	// Get location.
 	const Tile_coord pos = get_tile();
 	// properties[static_cast<int>(health)] = -50;
+	// before creating the body, make sure polymorphed NPCs revert to their shape
+	if (get_flag(Obj_flags::polymorph)) {
+		clear_flag(Obj_flags::polymorph);
+		if (shape_save != -1) {
+			set_shape(shape_save);
+			shape_save = -1;
+		}
+	}
 	const Shape_info&   info       = get_info();
 	const Monster_info* minfo      = info.get_monster_info();
 	const bool          frost_serp = GAME_SI && get_shapenum() == 832;
