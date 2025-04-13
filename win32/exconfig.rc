@@ -36,7 +36,7 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "Exult Config Helper DLL for InnoSetup\0"
-            VALUE "FileVersion", "1, 11, 0\0"
+            VALUE "FileVersion", "1.11.0git\0"
             VALUE "InternalName", "exconfig\0"
             VALUE "LegalCopyright", "Copyright © 2024\0"
             VALUE "LegalTrademarks", "\0"

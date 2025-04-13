@@ -2,6 +2,7 @@ Exult Release Checklist
 ------------------------
 
 * make sure all (visible) copyright dates are up to date
+  (tools/scripts/update_copyright_year.sh can be used for this)
   - version dialog in ActionAbout (keyactions.cc)
   - Info.plist.in
   - win32/exultico.rc, win32/exultstudioico.rc
@@ -10,6 +11,7 @@ Exult Release Checklist
 * branch off the release in git (e.g v1.10.x)
 
 * make sure all version numbers are up to date
+  (tools/scripts/update_version_number.sh can be used for this)
   - configure.ac
   - Makefile.common
   - win32/exconfig.rc, win32/exultico.rc, win32/exultstudioico.rc
@@ -20,7 +22,7 @@ Exult Release Checklist
         (AppVerName, VersionInfoVersion)
   - msvcstuff/vs2019/msvc_include.h
         (VERSION)
-  - ios/includes/config.h
+  - ios/include/config.h
         (PACKAGE_STRING, PACKAGE_VERSION, VERSION)
   - ios/info.plist
         (CFBundleShortVersionString)
@@ -28,10 +30,12 @@ Exult Release Checklist
         (version)
 
 * make sure the Windows installers doesn't refer to a Git snapshot
+  (tools/scripts/update_version_number.sh can be used for this)
   - win32/exult_installer.iss, win32/exult_studio_installer.iss, win32/exult_tools_installer.iss
         (AppVerName)
   
 * make sure the osxdmg, studiodmg and clean-local target doesn't refer to a Git snapshot
+  (tools/scripts/update_version_number.sh can be used for this)
   - macosx/macosx.am (--volname "...", dmg filename)
 
 * update NEWS; make sure version and date are correct
