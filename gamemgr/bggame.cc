@@ -2227,6 +2227,7 @@ bool BG_Game::new_game(Vga_file& shapes) {
 		oldpal.load(INTROPAL_DAT, PATCH_INTROPAL, 6);
 		oldpal.create_palette_map(pal, transto.data());
 	}
+	gwin->clear_screen(true);
 	pal->apply(true);
 	do {
 		Delay();
