@@ -1,3 +1,30 @@
+04/??/25	v1.12
+		New higer resolution icons for Exult and Exult Studio.
+		Better graphics for the uncut SI intro.
+		Several MIDI music fixes.
+		Advanced Audio Settings for the MIDI drivers that allows choosing
+		which soundfont to use, MIDI conversion, chorus and reverb.
+		You can now use FluidLite instead of FluidSynth when compiling Exult.
+		Fixed crash in SI training.
+		Running again doors properly opens and closes it.
+		Scrolls in SI are now properly displayed.
+		Schedules eat-at-inn and desk work were broken.
+		Antimagic rain caused by the cube generator is now dissipating fast enough.
+		Fixed using too close objects.
+		Polymorphed NPCs will revert back to their original bodies when they died.
+		List field fights in SI are now properly handled.
+		The Android port now allows to download games and mods you want to install.
+		The GIMP 3.0 plug-in for SHP files.
+		Aseprite plug-in for SHP files.
+
+		Known issues:
+
+		Antimagic rain caused by the cube generator is not dissipating as fast as it should
+		Exult does not return to the game menu after beating the game (instead it quits)
+		Some schedules need more detailed love
+		Several bugs that need more in depth looking at but no plot stopping bugs
+
+
 09/09/24	v1.10
 
 		The Android port is now fully working
