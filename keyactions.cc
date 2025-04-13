@@ -150,7 +150,7 @@ void ActionAbout(const int* params) {
 	// added text does not start with a ~
 	// so ending a line with a newline causes double newlines
 	scroll->add_text("Exult V" VERSION "~");
-	scroll->add_text("(C) 1998-2024 Exult Team~");
+	scroll->add_text("(C) 1998-2025 Exult Team~");
 	scroll->add_text("Available under the terms of the ");
 	scroll->add_text("GNU General Public License~");
 	scroll->add_text("https://exult.info~");
