@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2021-2022  The Exult Team
+ *  Copyright (C) 2021-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -220,18 +220,31 @@ public abstract class ExultContent {
 			return false;
 		}
 
+		// Convert filename to lowercase, but only if it's not a .cfg file
+		String filename = destination.getFileName().toString();
+		Path finalDestination;
+		
+		if (!filename.toLowerCase().endsWith(".cfg")) {
+			// Convert to lowercase for non-cfg files
+			filename = filename.toLowerCase();
+			finalDestination = destination.getParent().resolve(filename);
+		} else {
+			// Keep original case for .cfg files
+			finalDestination = destination;
+		}
+		
 		// Create any missing directories.
-		Path parent = destination.getParent();
+		Path parent = finalDestination.getParent();
 		if (null != parent) {
 			Files.createDirectories(parent);
 		}
 
-		// Install the file.
+		// Install the file with lowercase filename (or original case for .cfg).
 		Files.copy(
-				inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
+				inputStream, finalDestination, StandardCopyOption.REPLACE_EXISTING);
 
 		// Record this file in the manifest for the content.
-		m_manifest.add(destination.toString());
+		m_manifest.add(finalDestination.toString());
 
 		return false;
 	}
