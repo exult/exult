@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE readme SYSTEM "docs.dtd">
-<readme title="Exult" changed="19 January 2025 (GMT)">
+<readme title="Exult" changed="16 April 2025 (GMT)">
 	<section title="Introduction">
 		<sub name="exult_version">
 			<header>Exult Version</header>
@@ -451,11 +451,32 @@
 						choose between our standard SFX packs, Roland MT32 and Soundblaster, see <ref target="wave_sfx"/>.
 						This option is not available in the <Exult/> Setup.</li>
 					<li><strong>Speech</strong><br/>
-						ptions on whether you hear the voices of the Guardian or the Great Earth Serpent, also toggles subtitles.</li>
+						Options on whether you hear the voices of the Guardian or the Great Earth Serpent, also toggles subtitles.</li>
 					<li><strong>APPLY/HELP/CANCEL</strong><br/>
 						Applies your changes without closing the Audio Options. If you don't want to apply your changes,
 						click CANCEL.</li>
 				</ul>
+			</body>
+		</sub>
+		<sub name="advanced_midi_gump">
+			<header>Advanced Audio Settings</header>
+			<body>
+				<para>
+					Some MIDI drivers additional settings that can be accessed via the button
+					<strong>SETTINGS</strong> of the Audio Options.<br/>
+					Most allow setting the MIDI conversion, reverb and chorus, but for some drivers that are
+					able to make use of custom soundfonts, are able to select one.
+				</para>
+				<para>
+					<img alt="Advanced Audio Settings Windows" src="images/docs10.png"/>
+				</para>
+				<para>
+					FluidSynth allows stacking soundfonts (see <ref1 target="midi_music"/>) and you can
+					select a different one for each of the 10 slots.
+				</para>
+				<para>
+					<img alt="Advanced Audio Settings FluidSynth" src="images/docs11.png"/>
+				</para>
 			</body>
 		</sub>
 		<sub name="volume_mixer_gump">
@@ -675,38 +696,35 @@
 						is another software synthesizer, which uses SoundFont 2 technology without need for a
 						SoundFont-compatible sound card. It is available for many Operating Systems and in contrast
 						to TiMidity still actively developed.<br/>
-						To use FluidSynth you just need to edit exult.cfg and point
-						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;fluidsynth_soundfont&gt;
-						to the SoundFont you want to use.<br/>
-						<Exult/> supports FluidSynth's SoundFont stack. SoundFonts are specified in the
-						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;fluidsynth_soundfontN&gt; exult.cfg entries
-						(N = 0 to 9) which are loaded in numerical order (0 first), plus the old
-						&lt;fluidsynth_soundfont&gt; entry, which loads after all others.<br/>
+						To use FluidSynth you just need to copy a Soundfont file into the data and select it in the 
+						<ref1 target="advanced_midi_gump"/>.<br/>
+						<Exult/> supports FluidSynth's SoundFont stack. SoundFonts can be selected in the 
+						<ref1 target="advanced_midi_gump"/>.<br/>
 						<extref target="https://www.fluidsynth.org/api/LoadingSoundfonts.html">FluidSynth Documentation:</extref>
 						<kbd>The loaded SoundFonts are treated as a stack, where each new loaded SoundFont is
 						placed at the top of the stack. When selecting presets by bank and program numbers,
 						SoundFonts are searched beginning at the top of the stack. In the case where there are
 						presets in different SoundFonts with identical bank and program numbers, the preset from
-						the most recently loaded SoundFont is used.</kbd></li>
+						the most recently loaded SoundFont is used.</kbd><br/>
+						As a lightweight alternative to FluidSynth, <Exult/> can be compiled against 
+						<extref target="https://github.com/divideconcept/FluidLite">FluidLite</extref>.</li>
 					<li><strong>MT32Emu</strong><br/>
 						Roland MT32 emulation requires either the ROM set 'MT32_CONTROL.ROM' and 'MT32_PCM.ROM' or
 						the ROM set 'CM32L_CONTROL.ROM' and 'CM32L_PCM.ROM' in the <Exult/> data folder.
 						If both sets are present the CM32L ROM-set will be used.<br/>
-						On case sensitive Operating Systems these files have to be saved in uppercase.</li>
+						On case sensitive Operating Systems these files have to be saved in uppercase.<br/>
 						For the <extref target="https://flathub.org/apps/info.exult.exult">Flatpak package</extref>
-						on Linux, these should be stored in <kbd>$HOME/.var/app/info.exult.exult/data/mt32emu/</kbd>.
+						on Linux, these should be stored in <kbd>$HOME/.var/app/info.exult.exult/data/mt32emu/</kbd>.</li>
 					<li><strong>Windows</strong><br/>
 						Using the Windows MIDI driver.</li>
 					<li><strong>CoreAudio</strong><br/>
-						uses XMIDI on macOS and iOS. You can use a different SoundFont than macOS' default by pointing
-						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;coreaudio_soundfont&gt; to it in exult.cfg.<br/>
+						uses XMIDI on macOS and iOS. You can use a different SoundFont than macOS' default by copying a 
+						Soundfont file into the data and select it in the <ref1 target="advanced_midi_gump"/>.<br/>
 						On iOS there is no default SoundFont thus you have to provide one yourself.</li>
 					<li><strong>CoreMIDI</strong><br/>
 						on macOS this MIDI driver allows using a real MIDI device like a Roland MT32 or software
 						MIDI devices like Munt MT-32 Emulator. If you have more than one MIDI device you can choose the
-						the device by setting the device ID in exult.cfg
-						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;coremidi_device&gt;
-						- see <ref target="coremidi_device"/>.<br/>
+						the device in the <ref1 target="advanced_midi_gump"/>.<br/>
 						On iOS you can use a real device through an USB-to-MIDI adapter that is connected to the
 						Lightning or USB-C port of the iOS device.</li>
 					<li><strong>Alsa</strong><br/>
@@ -719,10 +737,10 @@
 						<ref target="audio_gump"/>.</li>
 				</ul>
 				<para>
-					For drivers that use a real MIDI device, the device type for MIDI can be changed to:
+					For drivers that use a real or system MIDI device, the MIDI conversion can be changed to:
 				</para>
 				<ul>
-					<li><strong>MT32</strong><br/>
+					<li><strong>Real MT32</strong><br/>
 						This option will output the music with nothing changed. Because
 						the mapping will be for MT32s you should only use this option if
 						you have a MT32 compatible device. With this option <Exult/> will
@@ -2200,7 +2218,7 @@
 							<comment>game pauses (e.g. not the focused window). MIDI music is currently not paused.</comment>
 							</configtag>
 							<configtag name="sample_rate">
-							22050
+							44100
 							<comment>**set the sample rate of <Exult/>.</comment>
 							</configtag>
 							<configtag name="stereo">
@@ -2212,10 +2230,10 @@
 									yes
 									<comment>**enable/disable sound effects.</comment>
 								</configtag>
-							<configtag name="sfx_volume">
-								100
-								<comment>**Sound effects volume.</comment>
-							</configtag>
+								<configtag name="sfx_volume">
+									100
+									<comment>**Sound effects volume.</comment>
+								</configtag>
 							</configtag>
 							<configtag name="speech">
 								<configtag name="enabled">
@@ -2247,8 +2265,24 @@
 								<comment>CoreMidi, UnixSeqDevice. </comment>
 								<comment>See <ref target="music"/> for details.</comment>
 								</configtag>
-								<configtag name="convert">
+								<configtag name="convert_Windows">
 								gm
+								<comment>**see <ref target="midi_music"/></comment>
+								</configtag>
+								<configtag name="convert_FluidSynth">
+								gm
+								<comment>**see <ref target="midi_music"/></comment>
+								</configtag>
+								<configtag name="convert_Timidity">
+								none
+								<comment>**see <ref target="midi_music"/></comment>
+								</configtag>
+								<configtag name="convert_CoreAudio">
+								gm
+								<comment>**see <ref target="midi_music"/></comment>
+								</configtag>
+								<configtag name="convert_CoreMidi">
+								none
 								<comment>**see <ref target="midi_music"/></comment>
 								</configtag>
 								<configtag name="looping">
@@ -2256,23 +2290,83 @@
 								<comment>**Changes music looping, options are auto, never, endless, limited. See <ref target="music"/></comment>
 								</configtag>
 								<configtag name="chorus">
-									<configtag name="enabled">
+									<configtag name="enabled_Windows">
 									no
 									<comment>**alters the way MIDI is played.</comment>
 									</configtag>
-									<configtag name="level" manual="true">
+									<configtag name="level_Windows" manual="true">
 									0
 									<comment>**how much the MIDI is altered. Value can be 0-127.</comment>
+									</configtag>
+									<configtag name="enabled_FMOpl">
+									no
+									</configtag>
+									<configtag name="level_FMOpl" manual="true">
+									0
+									</configtag>
+									<configtag name="enabled_Timidity">
+									no
+									</configtag>
+									<configtag name="level_Timidity" manual="true">
+									0
+									</configtag>
+									<configtag name="enabled_CoreAudio">
+									no
+									</configtag>
+									<configtag name="level_CoreAudio" manual="true">
+									0
+									</configtag>
+									<configtag name="enabled_CoreMidi">
+									no
+									</configtag>
+									<configtag name="level_CoreMidi" manual="true">
+									0
+									</configtag>
+									<configtag name="enabled_FluidSynth">
+									no
+									</configtag>
+									<configtag name="level_FluidSynth" manual="true">
+									0
 									</configtag>
 								</configtag>
 								<configtag name="reverb">
-									<configtag name="enabled">
+									<configtag name="enabled_Windows">
 									no
 									<comment>**alters the way MIDI is played.</comment>
 									</configtag>
-									<configtag name="level" manual="true">
+									<configtag name="level_Windows" manual="true">
 									0
 									<comment>**how much the MIDI is altered. Value can be 0-127.</comment>
+									</configtag>
+									<configtag name="enabled_FMOpl">
+									no
+									</configtag>
+									<configtag name="level_FMOpl" manual="true">
+									0
+									</configtag>
+									<configtag name="enabled_Timidity">
+									no
+									</configtag>
+									<configtag name="level_Timidity" manual="true">
+									0
+									</configtag>
+									<configtag name="enabled_CoreAudio">
+									no
+									</configtag>
+									<configtag name="level_CoreAudio" manual="true">
+									0
+									</configtag>
+									<configtag name="enabled_CoreMidi">
+									no
+									</configtag>
+									<configtag name="level_CoreMidi" manual="true">
+									0
+									</configtag>
+									<configtag name="enabled_FluidSynth">
+									no
+									</configtag>
+									<configtag name="level_FluidSynth" manual="true">
+									0
 									</configtag>
 								</configtag>
 								<configtag name="precacheTimbers" manual="true">
@@ -3159,6 +3253,27 @@
 		</sub>
 	</section>
 	<section title="Changes to the Documentation">
+		<sub name="15042025">
+			<header>- 16 April 2025</header>
+			<body>
+				<ul>
+					<li><ref1 target="advanced_midi_gump"/> added.</li>
+					<li><ref1 target="midi_music"/> FluidLite can be used.</li>
+					<li><ref1 target="exult_config"/> New audio advanced settings in the cfg.</li>
+				</ul>
+			</body>
+		</sub>
+		<sub name="20032025">
+			<header>- 20 March 2025</header>
+			<body>
+				<ul>
+					<li><ref1 target="exult_config_location"/> Flatpak cfg path.</li>
+					<li><ref1 target="default_nix"/> Flatpak default paths.</li>
+					<li><ref1 target="midi_music"/> Flatpack MT32 ROM paths.</li>
+					<li><ref1 target="mods_install"/> Flatpack already installs some Mods by default.</li>
+				</ul>
+			</body>
+		</sub>
 		<sub name="19012025">
 			<header>- 19 January 2025</header>
 			<body>
@@ -3211,46 +3326,6 @@
 					<li><section_ref target="Installing the original Ultima VII games for use with Exult"/> Resorted this since installing from floppies is very outdated.</li>
 					<li><ref1 target="files_note"/> Added a note that we only need the STATIC folder.</li>
 					<li><ref1 target="gog_windows"/> added innoextract instructions for *nix.</li>
-				</ul>
-			</body>
-		</sub>
-		<sub name="11022022">
-			<header>- 11 February 2022</header>
-			<body>
-				<ul>
-					<li><ref1 target="command_line"/> Add t'--verify-files'.</li>
-					<li><section_ref target="Exult Setup and Game Menu"/> Moved this section closer to the top.</li>
-					<li><ref1 target="midi_music"/> Mentioned that UnixSeqDevice is shortened in the Audio options menu.</li>
-					<li><ref1 target="scaler"/> reordered and deleted OpenGl scaler.</li>
-					<li><ref1 target="ios_games"/> Don't use the Files app on iOS to transfer the games.</li>
-					<li><section_ref target="The exult.cfg file"/> Moved the in depth explanation of the cfg file to the bottom.</li>
-				</ul>
-			</body>
-		</sub>
-		<sub name="24012022">
-			<header>- 24 January 2022</header>
-			<body>
-				<ul>
-					<li><ref1 target="exult_config"/> cfg setting to disable the extended SI intro.</li>
-					<li><ref1 target="all_in_one_pack"/> The Windows installer will optionally install the audio pack.</li>
-					<li><ref1 target="speech"/> speech with subtitles is possible.</li>
-					<li><section_ref target="Exult Setup and Game Menu"/> Following the reorder of the options, this needed an overhaul.</li>
-					<li><ref1 target="ios_games"/> Don't use the Files app on iOS to transfer the games.</li>
-				</ul>
-			</body>
-		</sub>
-		<sub name="20022021">
-			<header>- 20 February 2021</header>
-			<body>
-				<ul>
-					<li>Changed links to our homepage to exult.info, SDL to SDL2, Mac OS X to macOS.</li>
-					<li>Removed references to Windows CE/Pocket PC.</li>
-					<li>Many little changes to wordings and indentation.</li>
-					<li><ref1 target="exult_config"/> Added options for extended SI intro and Speech with subtitles.</li>
-					<li><ref1 target="movement"/> iOS movement added.</li>
-					<li><ref1 target="input_gump"/> is new and needed a screenshot as well.</li>
-					<li><ref1 target="ios_games"/> iTunes file sharing is done differently on newer macOS systems.</li>
-					<li><ref1 target="gog_mac"/> again adapted to GOG changes of the Mac installer.</li>
 				</ul>
 			</body>
 		</sub>

@@ -1,5 +1,5 @@
 Exult Documentation
-last changed: 19 January 2025 (GMT)
+last changed: 16 April 2025 (GMT)
 
 The latest version of this document can be found at https://exult.info/docs.php
 
@@ -22,11 +22,12 @@ The latest version of this document can be found at https://exult.info/docs.php
 3.2. Load/Save Game
 3.3. Video Options
 3.4. Audio Options
-3.5. Volume Mixer
-3.6. Game Engine
-3.7. Game Display
-3.8. Game Input
-3.9. Quit
+3.5. Advanced Audio Settings
+3.6. Volume Mixer
+3.7. Game Engine
+3.8. Game Display
+3.9. Game Input
+3.10. Quit
 
 4. Audio
 4.1. Music
@@ -114,15 +115,14 @@ The latest version of this document can be found at https://exult.info/docs.php
 13.2. Contacting us
 
 14. Changes to the Documentation
-14.1. - 19 January 2025
-14.2. - 06 January 2025
-14.3. - 03 July 2024
-14.4. - 25 April 2024
-14.5. - 23 April 2024
-14.6. - 11 February 2022
-14.7. - 24 January 2022
-14.8. - 20 February 2021
-14.9. older changes
+14.1. - 16 April 2025
+14.2. - 20 March 2025
+14.3. - 19 January 2025
+14.4. - 06 January 2025
+14.5. - 03 July 2024
+14.6. - 25 April 2024
+14.7. - 23 April 2024
+14.8. older changes
 
 
 --------------------------------------------------------------------------------
@@ -348,7 +348,7 @@ In this option screen you are able to determine how Exult displays the game.
 Look at 4. Audio to see explanation on the settings.
 
 * Volume Mixer
- opens our Volume Mixer, see see 3.5..
+ opens our Volume Mixer, see see 3.6..
 * Audio
  Enable or disable all Audio in Exult.
 * sample rate
@@ -372,13 +372,22 @@ Look at 4. Audio to see explanation on the settings.
 * Pack
  choose between our standard SFX packs, Roland MT32 and Soundblaster, see 4.7.. This option is not available in the Exult Setup.
 * Speech
- ptions on whether you hear the voices of the Guardian or the Great Earth Serpent, also toggles subtitles.
+ Options on whether you hear the voices of the Guardian or the Great Earth Serpent, also toggles subtitles.
 * APPLY/HELP/CANCEL
  Applies your changes without closing the Audio Options. If you don't want to apply your changes, click CANCEL.
 
 
 
-3.5. Volume Mixer
+3.5. Advanced Audio Settings
+
+Some MIDI drivers additional settings that can be accessed via the button SETTINGS of the Audio Options.
+ Most allow setting the MIDI conversion, reverb and chorus, but for some drivers that are able to make use of custom soundfonts, are able to select one.
+
+FluidSynth allows stacking soundfonts (see 4.2. MIDI Music ) and you can select a different one for each of the 10 slots.
+
+
+
+3.6. Volume Mixer
 
 Our Volume Mixer allows changing the volume of music, sfx and speech independently. Our different midi drivers each save their own volume.
 
@@ -386,7 +395,7 @@ When you have enabled digital music and and another midi driver you can set both
 
 
 
-3.6. Game Engine
+3.7. Game Engine
 
 
 * Take automatic Notes
@@ -413,7 +422,7 @@ When you have enabled digital music and and another midi driver you can set both
 
 
 
-3.7. Game Display
+3.8. Game Display
 
 
 * Status Bars
@@ -439,7 +448,7 @@ When you have enabled digital music and and another midi driver you can set both
 
 
 
-3.8. Game Input
+3.9. Game Input
 
 
 * Doubleclick closes gumps
@@ -463,7 +472,7 @@ When you have enabled digital music and and another midi driver you can set both
 
 
 
-3.9. Quit
+3.10. Quit
 
 Exits Exult. This option is only available in the in-game menu.
  On iOS and Android this is not available (both don't allow you to quit apps directly).
@@ -502,19 +511,21 @@ The MIDI driver can be changed to:
  is a software synthesizer that can play MIDI files without a hardware synthesizer. You can install TiMidity on all major Operating systems. You need to place tmidity.cfg into the same folder where the Exult executable is installed to, otherwise TiMidity will not work. On linux systems it needs to be in ~/.exult.
 * FluidSynth
  is another software synthesizer, which uses SoundFont 2 technology without need for a SoundFont-compatible sound card. It is available for many Operating Systems and in contrast to TiMidity still actively developed.
- To use FluidSynth you just need to edit exult.cfg and point <config><audio><midi><fluidsynth_soundfont> to the SoundFont you want to use.
-Exult supports FluidSynth's SoundFont stack. SoundFonts are specified in the <config><audio><midi><fluidsynth_soundfontN> exult.cfg entries (N = 0 to 9) which are loaded in numerical order (0 first), plus the old <fluidsynth_soundfont> entry, which loads after all others.
+ To use FluidSynth you just need to copy a Soundfont file into the data and select it in the 3.5. Advanced Audio Settings .
+Exult supports FluidSynth's SoundFont stack. SoundFonts can be selected in the 3.5. Advanced Audio Settings .
 FluidSynth Documentation:The loaded SoundFonts are treated as a stack, where each new loaded SoundFont is placed at the top of the stack. When selecting presets by bank and program numbers, SoundFonts are searched beginning at the top of the stack. In the case where there are presets in different SoundFonts with identical bank and program numbers, the preset from the most recently loaded SoundFont is used.
+ As a lightweight alternative to FluidSynth, Exult can be compiled against FluidLite.
 * MT32Emu
  Roland MT32 emulation requires either the ROM set 'MT32_CONTROL.ROM' and 'MT32_PCM.ROM' or the ROM set 'CM32L_CONTROL.ROM' and 'CM32L_PCM.ROM' in the Exult data folder. If both sets are present the CM32L ROM-set will be used.
  On case sensitive Operating Systems these files have to be saved in uppercase.
+ For the Flatpak package on Linux, these should be stored in $HOME/.var/app/info.exult.exult/data/mt32emu/.
 * Windows
  Using the Windows MIDI driver.
 * CoreAudio
- uses XMIDI on macOS and iOS. You can use a different SoundFont than macOS' default by pointing <config><audio><midi><coreaudio_soundfont> to it in exult.cfg.
+ uses XMIDI on macOS and iOS. You can use a different SoundFont than macOS' default by copying a Soundfont file into the data and select it in the 3.5. Advanced Audio Settings .
  On iOS there is no default SoundFont thus you have to provide one yourself.
 * CoreMIDI
- on macOS this MIDI driver allows using a real MIDI device like a Roland MT32 or software MIDI devices like Munt MT-32 Emulator. If you have more than one MIDI device you can choose the the device by setting the device ID in exult.cfg <config><audio><midi><coremidi_device> - see 4.5..
+ on macOS this MIDI driver allows using a real MIDI device like a Roland MT32 or software MIDI devices like Munt MT-32 Emulator. If you have more than one MIDI device you can choose the the device in the 3.5. Advanced Audio Settings .
  On iOS you can use a real device through an USB-to-MIDI adapter that is connected to the Lightning or USB-C port of the iOS device.
 * Alsa
  uses ALSA on Linux systems. If your ALSA port is not on 65:0 you need to change <config><audio><midi><alsa_port> in the exult.cfg.
@@ -522,8 +533,8 @@ FluidSynth Documentation:The loaded SoundFonts are treated as a stack, where eac
  Linux systems write to special symbolic file, default '/dev/sequencer'. This can be changed at <config><audio><midi><unixseqdevice> in the exult.cfg.
  Because of size constraints we abbreviated it to UnixSeq in the 3.4..
 
-For drivers that use a real MIDI device, the device type for MIDI can be changed to:
-* MT32
+For drivers that use a real or system MIDI device, the MIDI conversion can be changed to:
+* Real MT32
  This option will output the music with nothing changed. Because the mapping will be for MT32s you should only use this option if you have a MT32 compatible device. With this option Exult will also send SysEx messages to the Roland MT32 display, which are nice to watch when you have such a device.
 * GM
  This will convert the MT32 patches to standard General MIDI patches. Conversion is fairly accurate but some instruments may be different.
@@ -1105,7 +1116,7 @@ When playing you have a dpad overlaying the game screen which by default is on t
  Tapping with your finger is equal to a left click in the game.
  The green (and eventually red (combat)) movement cursor and the hand pointer are invisible on iOS as they are more distracting than helping when you control and click with your finger.
 When you do a long touch on a location and then release the finger, the Avatar will pathfind to this spot.
-There is also a helper menu when you click near objects in the games, which can be helpful on the smaller iPhone screens but can be disabled in 3.8. Game Input .
+There is also a helper menu when you click near objects in the games, which can be helpful on the smaller iPhone screens but can be disabled in 3.9. Game Input .
 
 
 9.6. iOS automatic saves
@@ -1184,7 +1195,7 @@ When playing you have a dpad overlaying the game screen which by default is on t
  Tapping with your finger is equal to a left click in the game.
  The green (and eventually red (combat)) movement cursor and the hand pointer are invisible on Android as they are more distracting than helping when you control and click with your finger.
 When you do a long touch on a location and then release the finger, the Avatar will pathfind to this spot.
-There is also a helper menu when you click near objects in the games, which can be helpful on the smaller iPhone screens but can be disabled in 3.8. Game Input .
+There is also a helper menu when you click near objects in the games, which can be helpful on the smaller iPhone screens but can be disabled in 3.9. Game Input .
 
 
 10.8. Android automatic saves
@@ -1440,7 +1451,7 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
 				game pauses (e.g. not the focused window). MIDI music is currently not paused.
     </disablepause>
     <sample_rate>
-    22050
+    44100
 				**set the sample rate of Exult.
     </sample_rate>
     <stereo>
@@ -1487,33 +1498,109 @@ Note: the settings in exult.cfg are the same on all operating systems (except wh
 				CoreMidi, UnixSeqDevice.
 				See 4.1. for details.
       </driver>
-      <convert>
+      <convert_Windows>
       gm
 				**see 4.2.
-      </convert>
+      </convert_Windows>
+      <convert_FluidSynth>
+      gm
+				**see 4.2.
+      </convert_FluidSynth>
+      <convert_Timidity>
+      none
+				**see 4.2.
+      </convert_Timidity>
+      <convert_CoreAudio>
+      gm
+				**see 4.2.
+      </convert_CoreAudio>
+      <convert_CoreMidi>
+      none
+				**see 4.2.
+      </convert_CoreMidi>
       <looping>
       yes
 				**Changes music looping, options are auto, never, endless, limited. See 4.1.
       </looping>
       <chorus>
-        <enabled>
+        <enabled_Windows>
         no
 				**alters the way MIDI is played.
-        </enabled>
-        <level>
+        </enabled_Windows>
+        <level_Windows>
         0
 				**how much the MIDI is altered. Value can be 0-127.
-        </level>
+        </level_Windows>
+        <enabled_FMOpl>
+        no
+        </enabled_FMOpl>
+        <level_FMOpl>
+        0
+        </level_FMOpl>
+        <enabled_Timidity>
+        no
+        </enabled_Timidity>
+        <level_Timidity>
+        0
+        </level_Timidity>
+        <enabled_CoreAudio>
+        no
+        </enabled_CoreAudio>
+        <level_CoreAudio>
+        0
+        </level_CoreAudio>
+        <enabled_CoreMidi>
+        no
+        </enabled_CoreMidi>
+        <level_CoreMidi>
+        0
+        </level_CoreMidi>
+        <enabled_FluidSynth>
+        no
+        </enabled_FluidSynth>
+        <level_FluidSynth>
+        0
+        </level_FluidSynth>
       </chorus>
       <reverb>
-        <enabled>
+        <enabled_Windows>
         no
 				**alters the way MIDI is played.
-        </enabled>
-        <level>
+        </enabled_Windows>
+        <level_Windows>
         0
 				**how much the MIDI is altered. Value can be 0-127.
-        </level>
+        </level_Windows>
+        <enabled_FMOpl>
+        no
+        </enabled_FMOpl>
+        <level_FMOpl>
+        0
+        </level_FMOpl>
+        <enabled_Timidity>
+        no
+        </enabled_Timidity>
+        <level_Timidity>
+        0
+        </level_Timidity>
+        <enabled_CoreAudio>
+        no
+        </enabled_CoreAudio>
+        <level_CoreAudio>
+        0
+        </level_CoreAudio>
+        <enabled_CoreMidi>
+        no
+        </enabled_CoreMidi>
+        <level_CoreMidi>
+        0
+        </level_CoreMidi>
+        <enabled_FluidSynth>
+        no
+        </enabled_FluidSynth>
+        <level_FluidSynth>
+        0
+        </level_FluidSynth>
       </reverb>
       <precacheTimbers>
         <onStartup>
@@ -2117,30 +2204,47 @@ You can contact the Exult team through our Github Discussions page.
 --------------------------------------------------------------------------------
 
 14. Changes to the Documentation
-14.1. - 19 January 2025
+14.1. - 16 April 2025
+
+* 3.5. Advanced Audio Settings added.
+* 4.2. MIDI Music FluidLite can be used.
+* 11.1. Settings in exult.cfg New audio advanced settings in the cfg.
+
+
+
+14.2. - 20 March 2025
+
+* 2.2. Location of exult.cfg Flatpak cfg path.
+* 2.4. Default game folders on Linux Flatpak default paths.
+* 4.2. MIDI Music Flatpack MT32 ROM paths.
+* 8.2. Installing Mods Flatpack already installs some Mods by default.
+
+
+
+14.3. - 19 January 2025
 
 * 4. Audio added more information on MIDI drivers.
 * 10.3. The Exult Launcher on Android added to explain ways to toggle autolaunch.
 
 
 
-14.2. - 06 January 2025
+14.4. - 06 January 2025
 
 * 10. Android Guide added.
 
 
 
-14.3. - 03 July 2024
+14.5. - 03 July 2024
 
 * 3.4. Audio Options settings changed and Volume Mixer was added.
-* 3.5. Volume Mixer macOS no longer uses the Console.app to show stdout.
+* 3.6. Volume Mixer macOS no longer uses the Console.app to show stdout.
 * 4.1. Music explain different looping settings.
 * 8.7. Problems with case sensitive file systems (e.g. Linux) added note about possible problems with mods.
 * 11.1. Settings in exult.cfg added volume settings.
 
 
 
-14.4. - 25 April 2024
+14.6. - 25 April 2024
 
 * Replaced *nix with Linux as people are mostly looking for Linux and might get confused.
 * Removed documentation for unsupported Windows versions.
@@ -2150,7 +2254,7 @@ You can contact the Exult team through our Github Discussions page.
 
 
 
-14.5. - 23 April 2024
+14.7. - 23 April 2024
 
 * 2.5. Command line options Added the shortcut to starting the Serpent Isle beta.
 * 4.13. Linux and Audio Alsa port magic by Dragon Baroque.
@@ -2162,41 +2266,7 @@ You can contact the Exult team through our Github Discussions page.
 
 
 
-14.6. - 11 February 2022
-
-* 2.5. Command line options Add t'--verify-files'.
-* 3. Exult Setup and Game Menu Moved this section closer to the top.
-* 4.2. MIDI Music Mentioned that UnixSeqDevice is shortened in the Audio options menu.
-* 5.4. Scaler reordered and deleted OpenGl scaler.
-* 9.3. Installing the games on your iPhone/iPad Don't use the Files app on iOS to transfer the games.
-* 11. The exult.cfg file Moved the in depth explanation of the cfg file to the bottom.
-
-
-
-14.7. - 24 January 2022
-
-* 11.1. Settings in exult.cfg cfg setting to disable the extended SI intro.
-* 4.8. All-in-One Audio Data pack and installers The Windows installer will optionally install the audio pack.
-* 4.11. Speech speech with subtitles is possible.
-* 3. Exult Setup and Game Menu Following the reorder of the options, this needed an overhaul.
-* 9.3. Installing the games on your iPhone/iPad Don't use the Files app on iOS to transfer the games.
-
-
-
-14.8. - 20 February 2021
-
-* Changed links to our homepage to exult.info, SDL to SDL2, Mac OS X to macOS.
-* Removed references to Windows CE/Pocket PC.
-* Many little changes to wordings and indentation.
-* 11.1. Settings in exult.cfg Added options for extended SI intro and Speech with subtitles.
-* 6.1. Movement iOS movement added.
-* 1.1. is new and needed a screenshot as well.
-* 9.3. Installing the games on your iPhone/iPad iTunes file sharing is done differently on newer macOS systems.
-* 12.2. Using GOG.com's installer for macOS again adapted to GOG changes of the Mac installer.
-
-
-
-14.9. older changes
+14.8. older changes
 
 For older changes of the documentation, please see its git history.
 

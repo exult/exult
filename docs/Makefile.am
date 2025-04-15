@@ -11,6 +11,11 @@ nobase_doc_DATA = \
 	images/docs04.png		\
 	images/docs05.png		\
 	images/docs06.png		\
+	images/docs07.png		\
+	images/docs08.png		\
+	images/docs09.png		\
+	images/docs10.png		\
+	images/docs11.png		\
 	images/exult_logo.gif		\
 	images/studio01.png		\
 	images/studio02.png		\

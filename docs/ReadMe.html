@@ -62,13 +62,13 @@
 <h1>Exult - Documentation
 								</h1>
 <p>last changed:
-									19 January 2025 (GMT)</p>
+									16 April 2025 (GMT)</p>
 <hr>
 <p> The latest version of this document can be found
 									<a href="https://exult.info/docs.php">here</a></p>
 <br><p><a href="#Introduction">1. Introduction</a><br><a href="#exult_version">1.1. Exult Version</a><br><a href="#whatis_exult">1.2. What is <em>Exult</em>?</a><br><a href="#terms">1.3. Terms we use in regard to Exult and Ultima VII</a><br></p>
 <p><a href="#Configurations">2. Configurations</a><br><a href="#installation">2.1. Installation</a><br><a href="#exult_config_location">2.2. Location of exult.cfg</a><br><a href="#default_macos">2.3. Default game folders on macOS</a><br><a href="#default_nix">2.4. Default game folders on Linux</a><br><a href="#command_line">2.5. Command line options</a><br><a href="#error_log">2.6. Error Log</a><br></p>
-<p><a href="#Exult-Setup-and-Game-Menu">3. Exult Setup and Game Menu</a><br><a href="#open_menu">3.1. Access to the <em>Exult</em> Setup and Game menu</a><br><a href="#savemenu">3.2. Load/Save Game</a><br><a href="#video_gump">3.3. Video Options</a><br><a href="#audio_gump">3.4. Audio Options</a><br><a href="#volume_mixer_gump">3.5. Volume Mixer</a><br><a href="#game_engine_gump">3.6. Game Engine</a><br><a href="#game_display_gump">3.7. Game Display</a><br><a href="#game_input_gump">3.8. Game Input</a><br><a href="#quit_game">3.9. Quit</a><br></p>
+<p><a href="#Exult-Setup-and-Game-Menu">3. Exult Setup and Game Menu</a><br><a href="#open_menu">3.1. Access to the <em>Exult</em> Setup and Game menu</a><br><a href="#savemenu">3.2. Load/Save Game</a><br><a href="#video_gump">3.3. Video Options</a><br><a href="#audio_gump">3.4. Audio Options</a><br><a href="#advanced_midi_gump">3.5. Advanced Audio Settings</a><br><a href="#volume_mixer_gump">3.6. Volume Mixer</a><br><a href="#game_engine_gump">3.7. Game Engine</a><br><a href="#game_display_gump">3.8. Game Display</a><br><a href="#game_input_gump">3.9. Game Input</a><br><a href="#quit_game">3.10. Quit</a><br></p>
 <p><a href="#Audio">4. Audio</a><br><a href="#music">4.1. Music</a><br><a href="#midi_music">4.2. MIDI Music</a><br><a href="#limits_music">4.3. Abilities and limitations of the MIDI music engine</a><br><a href="#win32_device">4.4. Windows MIDI Mapper</a><br><a href="#coremidi_device">4.5. macOS CoreMidi device ID</a><br><a href="#digital_music">4.6. Digital Music</a><br><a href="#wave_sfx">4.7. Digital Wave Sound Effects</a><br><a href="#all_in_one_pack">4.8. All-in-One Audio Data pack and installers</a><br><a href="#digital_music_install">4.9. Installation of the digital music packs</a><br><a href="#wave_sfx_install">4.10. Installation of the digital wave sound effects</a><br><a href="#speech">4.11. Speech</a><br><a href="#audio_toggle">4.12. Toggle Audio</a><br><a href="#linux_alsa">4.13. Linux and Audio</a><br></p>
 <p><a href="#Video">5. Video</a><br><a href="#resolution">5.1. Resolution</a><br><a href="#video_fill_modes">5.2. Fill modes</a><br><a href="#res_cheating">5.3. Higher resolution is cheating</a><br><a href="#scaler">5.4. Scaler</a><br></p>
 <p><a href="#Movement-and-Keys">6. Movement and Keys</a><br><a href="#movement">6.1. Movement</a><br><a href="#exult_keys">6.2. Keyboard commands</a><br><a href="#exult_cheats">6.3. Cheat keys</a><br><a href="#studio_keys">6.4. Map Editing keys</a><br></p>
@@ -79,7 +79,7 @@
 <p><a href="#The-exult.cfg-file">11. The exult.cfg file</a><br><a href="#exult_config">11.1. Settings in exult.cfg</a><br><a href="#path_config">11.2. Path-Settings</a><br><a href="#path_config_nt5">11.3. Path-Settings for Windows</a><br><a href="#path_config_osx">11.4. Path-Settings for macOS</a><br><a href="#path_config_nix">11.5. Path-Settings for Linux/Unix systems</a><br><a href="#advanced_config">11.6. Advanced Configuration: Using both the original and the Add-Ons</a><br></p>
 <p><a href="#Installing-the-original-Ultima-VII-games-for-use-with-Exult">12. Installing the original Ultima VII games for use with Exult</a><br><a href="#gog_windows">12.1. Using GOG.com's installer for Windows</a><br><a href="#gog_mac">12.2. Using GOG.com's installer for macOS</a><br><a href="#cdrom_install">12.3. Installing the CD-ROM versions of Ultima VII</a><br><a href="#dosbox_floppy">12.4. Installing the floppy disks of BG/SI using DOSBox</a><br><a href="#dosbox_addons">12.5. Installing the floppy disks of the Add-Ons FoV/SS using DOSBox</a><br><a href="#bg_manual">12.6. Manual installation of the BG floppy disks</a><br><a href="#si_manual">12.7. Manual installation of the SI floppy disks</a><br><a href="#win32_floppy">12.8. Installing the floppy disks of BG/SI on Windows</a><br><a href="#win32_addons">12.9. Installing the floppy disks of the Add-Ons FoV/SS on Windows</a><br><a href="#files_note">12.10. Exult only needs one folder</a><br></p>
 <p><a href="#Credits-and-Contact">13. Credits and Contact</a><br><a href="#thanks">13.1. Thanks</a><br><a href="#contact">13.2. Contacting us</a><br></p>
-<p><a href="#Changes-to-the-Documentation">14. Changes to the Documentation</a><br><a href="#19012025">14.1. - 19 January 2025</a><br><a href="#06012025">14.2. - 06 January 2025</a><br><a href="#03072024">14.3. - 03 July 2024</a><br><a href="#25042024">14.4. - 25 April 2024</a><br><a href="#23042024">14.5. - 23 April 2024</a><br><a href="#11022022">14.6. - 11 February 2022</a><br><a href="#24012022">14.7. - 24 January 2022</a><br><a href="#20022021">14.8. - 20 February 2021</a><br><a href="#older_changes">14.9. older changes</a><br></p>
+<p><a href="#Changes-to-the-Documentation">14. Changes to the Documentation</a><br><a href="#15042025">14.1. - 16 April 2025</a><br><a href="#20032025">14.2. - 20 March 2025</a><br><a href="#19012025">14.3. - 19 January 2025</a><br><a href="#06012025">14.4. - 06 January 2025</a><br><a href="#03072024">14.5. - 03 July 2024</a><br><a href="#25042024">14.6. - 25 April 2024</a><br><a href="#23042024">14.7. - 23 April 2024</a><br><a href="#older_changes">14.8. older changes</a><br></p>
 <hr class="full-width">
 <table class="full-width">
 <tr><th class="left-aligned"><a id="Introduction">1. Introduction</a></th></tr>
@@ -525,7 +525,7 @@
 				<ul>
 					<li>
 <strong>Volume Mixer</strong><br>
-						opens our Volume Mixer, see see <a href="#volume_mixer_gump">3.5.</a>.</li>
+						opens our Volume Mixer, see see <a href="#volume_mixer_gump">3.6.</a>.</li>
 					<li>
 <strong>Audio</strong><br>
 						Enable or disable all Audio in <em>Exult</em>.</li>
@@ -563,7 +563,7 @@
 						This option is not available in the <em>Exult</em> Setup.</li>
 					<li>
 <strong>Speech</strong><br>
-						ptions on whether you hear the voices of the Guardian or the Great Earth Serpent, also toggles subtitles.</li>
+						Options on whether you hear the voices of the Guardian or the Great Earth Serpent, also toggles subtitles.</li>
 					<li>
 <strong>APPLY/HELP/CANCEL</strong><br>
 						Applies your changes without closing the Audio Options. If you don't want to apply your changes,
@@ -571,7 +571,27 @@
 				</ul>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="volume_mixer_gump">3.5. Volume Mixer</a></strong></td></tr>
+<tr><td><strong><a id="advanced_midi_gump">3.5. Advanced Audio Settings</a></strong></td></tr>
+<tr><td>
+				<p>
+					Some MIDI drivers additional settings that can be accessed via the button
+					<strong>SETTINGS</strong> of the Audio Options.<br>
+					Most allow setting the MIDI conversion, reverb and chorus, but for some drivers that are
+					able to make use of custom soundfonts, are able to select one.
+				</p>
+				<p>
+					<img alt="Advanced Audio Settings Windows" src="images/docs10.png">
+				</p>
+				<p>
+					FluidSynth allows stacking soundfonts (see <a href="#midi_music">4.2. MIDI Music</a>) and you can
+					select a different one for each of the 10 slots.
+				</p>
+				<p>
+					<img alt="Advanced Audio Settings FluidSynth" src="images/docs11.png">
+				</p>
+			</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td><strong><a id="volume_mixer_gump">3.6. Volume Mixer</a></strong></td></tr>
 <tr><td>
 				<p>
 					Our Volume Mixer allows changing the volume of music, sfx and speech independently.
@@ -589,7 +609,7 @@
 				</p>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="game_engine_gump">3.6. Game Engine</a></strong></td></tr>
+<tr><td><strong><a id="game_engine_gump">3.7. Game Engine</a></strong></td></tr>
 <tr><td>
 				<p>
 					<img alt="Game Engine" src="images/docs05.png">
@@ -645,7 +665,7 @@
 				</ul>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="game_display_gump">3.7. Game Display</a></strong></td></tr>
+<tr><td><strong><a id="game_display_gump">3.8. Game Display</a></strong></td></tr>
 <tr><td>
 				<p>
 					<img alt="Game Display" src="images/docs06.png">
@@ -698,7 +718,7 @@
 				</ul>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="game_input_gump">3.8. Game Input</a></strong></td></tr>
+<tr><td><strong><a id="game_input_gump">3.9. Game Input</a></strong></td></tr>
 <tr><td>
 				<p>
 					<img alt="Game Input" src="images/docs07.png">
@@ -744,7 +764,7 @@
 				</ul>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="quit_game">3.9. Quit</a></strong></td></tr>
+<tr><td><strong><a id="quit_game">3.10. Quit</a></strong></td></tr>
 <tr><td>
 				<p>
 					Exits <em>Exult</em>. This option is only available in the in-game menu.<br>
@@ -820,43 +840,39 @@
 						is another software synthesizer, which uses SoundFont 2 technology without need for a
 						SoundFont-compatible sound card. It is available for many Operating Systems and in contrast
 						to TiMidity still actively developed.<br>
-						To use FluidSynth you just need to edit exult.cfg and point
-						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;fluidsynth_soundfont&gt;
-						to the SoundFont you want to use.<br>
-						<em>Exult</em> supports FluidSynth's SoundFont stack. SoundFonts are specified in the
-						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;fluidsynth_soundfontN&gt; exult.cfg entries
-						(N = 0 to 9) which are loaded in numerical order (0 first), plus the old
-						&lt;fluidsynth_soundfont&gt; entry, which loads after all others.<br>
+						To use FluidSynth you just need to copy a Soundfont file into the data and select it in the
+						<a href="#advanced_midi_gump">3.5. Advanced Audio Settings</a>.<br>
+						<em>Exult</em> supports FluidSynth's SoundFont stack. SoundFonts can be selected in the
+						<a href="#advanced_midi_gump">3.5. Advanced Audio Settings</a>.<br>
 						<a href="https://www.fluidsynth.org/api/LoadingSoundfonts.html">FluidSynth Documentation:</a>
 						<span class="highlight"><kbd>The loaded SoundFonts are treated as a stack, where each new loaded SoundFont is
 						placed at the top of the stack. When selecting presets by bank and program numbers,
 						SoundFonts are searched beginning at the top of the stack. In the case where there are
 						presets in different SoundFonts with identical bank and program numbers, the preset from
-						the most recently loaded SoundFont is used.</kbd></span>
-</li>
+						the most recently loaded SoundFont is used.</kbd></span><br>
+						As a lightweight alternative to FluidSynth, <em>Exult</em> can be compiled against
+						<a href="https://github.com/divideconcept/FluidLite">FluidLite</a>.</li>
 					<li>
 <strong>MT32Emu</strong><br>
 						Roland MT32 emulation requires either the ROM set 'MT32_CONTROL.ROM' and 'MT32_PCM.ROM' or
 						the ROM set 'CM32L_CONTROL.ROM' and 'CM32L_PCM.ROM' in the <em>Exult</em> data folder.
 						If both sets are present the CM32L ROM-set will be used.<br>
-						On case sensitive Operating Systems these files have to be saved in uppercase.</li>
+						On case sensitive Operating Systems these files have to be saved in uppercase.<br>
 						For the <a href="https://flathub.org/apps/info.exult.exult">Flatpak package</a>
-						on Linux, these should be stored in <span class="highlight"><kbd>$HOME/.var/app/info.exult.exult/data/mt32emu/</kbd></span>.
+						on Linux, these should be stored in <span class="highlight"><kbd>$HOME/.var/app/info.exult.exult/data/mt32emu/</kbd></span>.</li>
 					<li>
 <strong>Windows</strong><br>
 						Using the Windows MIDI driver.</li>
 					<li>
 <strong>CoreAudio</strong><br>
-						uses XMIDI on macOS and iOS. You can use a different SoundFont than macOS' default by pointing
-						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;coreaudio_soundfont&gt; to it in exult.cfg.<br>
+						uses XMIDI on macOS and iOS. You can use a different SoundFont than macOS' default by copying a
+						Soundfont file into the data and select it in the <a href="#advanced_midi_gump">3.5. Advanced Audio Settings</a>.<br>
 						On iOS there is no default SoundFont thus you have to provide one yourself.</li>
 					<li>
 <strong>CoreMIDI</strong><br>
 						on macOS this MIDI driver allows using a real MIDI device like a Roland MT32 or software
 						MIDI devices like Munt MT-32 Emulator. If you have more than one MIDI device you can choose the
-						the device by setting the device ID in exult.cfg
-						&lt;config&gt;&lt;audio&gt;&lt;midi&gt;&lt;coremidi_device&gt;
-						- see <a href="#coremidi_device">4.5.</a>.<br>
+						the device in the <a href="#advanced_midi_gump">3.5. Advanced Audio Settings</a>.<br>
 						On iOS you can use a real device through an USB-to-MIDI adapter that is connected to the
 						Lightning or USB-C port of the iOS device.</li>
 					<li>
@@ -871,11 +887,11 @@
 						<a href="#audio_gump">3.4.</a>.</li>
 				</ul>
 				<p>
-					For drivers that use a real MIDI device, the device type for MIDI can be changed to:
+					For drivers that use a real or system MIDI device, the MIDI conversion can be changed to:
 				</p>
 				<ul>
 					<li>
-<strong>MT32</strong><br>
+<strong>Real MT32</strong><br>
 						This option will output the music with nothing changed. Because
 						the mapping will be for MT32s you should only use this option if
 						you have a MT32 compatible device. With this option <em>Exult</em> will
@@ -2469,7 +2485,7 @@
 				</p>
 				<p>
 					There is also a helper menu when you click near objects in the games, which can be helpful on
-					the smaller iPhone screens but can be disabled in <a href="#game_input_gump">3.8. Game Input</a>.
+					the smaller iPhone screens but can be disabled in <a href="#game_input_gump">3.9. Game Input</a>.
 				</p>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -2624,7 +2640,7 @@
 				</p>
 				<p>
 					There is also a helper menu when you click near objects in the games, which can be helpful on
-					the smaller iPhone screens but can be disabled in <a href="#game_input_gump">3.8. Game Input</a>.
+					the smaller iPhone screens but can be disabled in <a href="#game_input_gump">3.9. Game Input</a>.
 				</p>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -3202,7 +3218,7 @@
 								sample_rate&gt;
 							</td></tr>
 <tr><td style="text-indent:32pt">
-							22050
+							44100
 							</td></tr>
 <tr><td style="text-indent:32pt">&lt;/
 							sample_rate&gt;
@@ -3232,8 +3248,8 @@
 								sfx_volume&gt;
 							</td></tr>
 <tr><td style="text-indent:48pt">
-								100
-								</td></tr>
+									100
+									</td></tr>
 <tr><td style="text-indent:48pt">&lt;/
 							sfx_volume&gt;
 						</td></tr>
@@ -3304,13 +3320,49 @@
 							driver&gt;
 						</td></tr>
 <tr><td style="text-indent:48pt">&lt;
-								convert&gt;
+								convert_Windows&gt;
 							</td></tr>
 <tr><td style="text-indent:48pt">
 								gm
 								</td></tr>
 <tr><td style="text-indent:48pt">&lt;/
-							convert&gt;
+							convert_Windows&gt;
+						</td></tr>
+<tr><td style="text-indent:48pt">&lt;
+								convert_FluidSynth&gt;
+							</td></tr>
+<tr><td style="text-indent:48pt">
+								gm
+								</td></tr>
+<tr><td style="text-indent:48pt">&lt;/
+							convert_FluidSynth&gt;
+						</td></tr>
+<tr><td style="text-indent:48pt">&lt;
+								convert_Timidity&gt;
+							</td></tr>
+<tr><td style="text-indent:48pt">
+								none
+								</td></tr>
+<tr><td style="text-indent:48pt">&lt;/
+							convert_Timidity&gt;
+						</td></tr>
+<tr><td style="text-indent:48pt">&lt;
+								convert_CoreAudio&gt;
+							</td></tr>
+<tr><td style="text-indent:48pt">
+								gm
+								</td></tr>
+<tr><td style="text-indent:48pt">&lt;/
+							convert_CoreAudio&gt;
+						</td></tr>
+<tr><td style="text-indent:48pt">&lt;
+								convert_CoreMidi&gt;
+							</td></tr>
+<tr><td style="text-indent:48pt">
+								none
+								</td></tr>
+<tr><td style="text-indent:48pt">&lt;/
+							convert_CoreMidi&gt;
 						</td></tr>
 <tr><td style="text-indent:48pt">&lt;
 								looping&gt;
@@ -3325,17 +3377,17 @@
 								chorus&gt;
 							</td></tr>
 <tr><td style="text-indent:64pt">&lt;
-								enabled&gt;
+								enabled_Windows&gt;
 							</td></tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
 <tr><td style="text-indent:64pt">&lt;/
-							enabled&gt;
+							enabled_Windows&gt;
 						</td></tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">&lt;
-								level&gt;
+								level_Windows&gt;
 							</td></tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
@@ -3343,7 +3395,112 @@
 									</td></tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">&lt;/
-							level&gt;
+							level_Windows&gt;
+						</td></tr>
+<tr><td style="text-indent:64pt">&lt;
+								enabled_FMOpl&gt;
+							</td></tr>
+<tr><td style="text-indent:64pt">
+									no
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/
+							enabled_FMOpl&gt;
+						</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;
+								level_FMOpl&gt;
+							</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									0
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/
+							level_FMOpl&gt;
+						</td></tr>
+<tr><td style="text-indent:64pt">&lt;
+								enabled_Timidity&gt;
+							</td></tr>
+<tr><td style="text-indent:64pt">
+									no
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/
+							enabled_Timidity&gt;
+						</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;
+								level_Timidity&gt;
+							</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									0
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/
+							level_Timidity&gt;
+						</td></tr>
+<tr><td style="text-indent:64pt">&lt;
+								enabled_CoreAudio&gt;
+							</td></tr>
+<tr><td style="text-indent:64pt">
+									no
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/
+							enabled_CoreAudio&gt;
+						</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;
+								level_CoreAudio&gt;
+							</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									0
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/
+							level_CoreAudio&gt;
+						</td></tr>
+<tr><td style="text-indent:64pt">&lt;
+								enabled_CoreMidi&gt;
+							</td></tr>
+<tr><td style="text-indent:64pt">
+									no
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/
+							enabled_CoreMidi&gt;
+						</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;
+								level_CoreMidi&gt;
+							</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									0
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/
+							level_CoreMidi&gt;
+						</td></tr>
+<tr><td style="text-indent:64pt">&lt;
+								enabled_FluidSynth&gt;
+							</td></tr>
+<tr><td style="text-indent:64pt">
+									no
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/
+							enabled_FluidSynth&gt;
+						</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;
+								level_FluidSynth&gt;
+							</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									0
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/
+							level_FluidSynth&gt;
 						</td></tr>
 <tr><td style="text-indent:48pt">&lt;/
 							chorus&gt;
@@ -3352,17 +3509,17 @@
 								reverb&gt;
 							</td></tr>
 <tr><td style="text-indent:64pt">&lt;
-								enabled&gt;
+								enabled_Windows&gt;
 							</td></tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
 <tr><td style="text-indent:64pt">&lt;/
-							enabled&gt;
+							enabled_Windows&gt;
 						</td></tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">&lt;
-								level&gt;
+								level_Windows&gt;
 							</td></tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
@@ -3370,7 +3527,112 @@
 									</td></tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">&lt;/
-							level&gt;
+							level_Windows&gt;
+						</td></tr>
+<tr><td style="text-indent:64pt">&lt;
+								enabled_FMOpl&gt;
+							</td></tr>
+<tr><td style="text-indent:64pt">
+									no
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/
+							enabled_FMOpl&gt;
+						</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;
+								level_FMOpl&gt;
+							</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									0
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/
+							level_FMOpl&gt;
+						</td></tr>
+<tr><td style="text-indent:64pt">&lt;
+								enabled_Timidity&gt;
+							</td></tr>
+<tr><td style="text-indent:64pt">
+									no
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/
+							enabled_Timidity&gt;
+						</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;
+								level_Timidity&gt;
+							</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									0
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/
+							level_Timidity&gt;
+						</td></tr>
+<tr><td style="text-indent:64pt">&lt;
+								enabled_CoreAudio&gt;
+							</td></tr>
+<tr><td style="text-indent:64pt">
+									no
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/
+							enabled_CoreAudio&gt;
+						</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;
+								level_CoreAudio&gt;
+							</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									0
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/
+							level_CoreAudio&gt;
+						</td></tr>
+<tr><td style="text-indent:64pt">&lt;
+								enabled_CoreMidi&gt;
+							</td></tr>
+<tr><td style="text-indent:64pt">
+									no
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/
+							enabled_CoreMidi&gt;
+						</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;
+								level_CoreMidi&gt;
+							</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									0
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/
+							level_CoreMidi&gt;
+						</td></tr>
+<tr><td style="text-indent:64pt">&lt;
+								enabled_FluidSynth&gt;
+							</td></tr>
+<tr><td style="text-indent:64pt">
+									no
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/
+							enabled_FluidSynth&gt;
+						</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;
+								level_FluidSynth&gt;
+							</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									0
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/
+							level_FluidSynth&gt;
 						</td></tr>
 <tr><td style="text-indent:48pt">&lt;/
 							reverb&gt;
@@ -4944,7 +5206,33 @@
 <table class="full-width">
 <tr><th class="left-aligned"><a id="Changes-to-the-Documentation">14. Changes to the Documentation</a></th></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="19012025">14.1. - 19 January 2025</a></strong></td></tr>
+<tr><td><strong><a id="15042025">14.1. - 16 April 2025</a></strong></td></tr>
+<tr><td>
+				<ul>
+					<li>
+<a href="#advanced_midi_gump">3.5. Advanced Audio Settings</a> added.</li>
+					<li>
+<a href="#midi_music">4.2. MIDI Music</a> FluidLite can be used.</li>
+					<li>
+<a href="#exult_config">11.1. Settings in exult.cfg</a> New audio advanced settings in the cfg.</li>
+				</ul>
+			</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td><strong><a id="20032025">14.2. - 20 March 2025</a></strong></td></tr>
+<tr><td>
+				<ul>
+					<li>
+<a href="#exult_config_location">2.2. Location of exult.cfg</a> Flatpak cfg path.</li>
+					<li>
+<a href="#default_nix">2.4. Default game folders on Linux</a> Flatpak default paths.</li>
+					<li>
+<a href="#midi_music">4.2. MIDI Music</a> Flatpack MT32 ROM paths.</li>
+					<li>
+<a href="#mods_install">8.2. Installing Mods</a> Flatpack already installs some Mods by default.</li>
+				</ul>
+			</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td><strong><a id="19012025">14.3. - 19 January 2025</a></strong></td></tr>
 <tr><td>
 				<ul>
 					<li>
@@ -4954,7 +5242,7 @@
 				</ul>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="06012025">14.2. - 06 January 2025</a></strong></td></tr>
+<tr><td><strong><a id="06012025">14.4. - 06 January 2025</a></strong></td></tr>
 <tr><td>
 				<ul>
 					<li>
@@ -4962,13 +5250,13 @@
 				</ul>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="03072024">14.3. - 03 July 2024</a></strong></td></tr>
+<tr><td><strong><a id="03072024">14.5. - 03 July 2024</a></strong></td></tr>
 <tr><td>
 				<ul>
 					<li>
 <a href="#audio_gump">3.4. Audio Options</a> settings changed and Volume Mixer was added.</li>
 					<li>
-<a href="#volume_mixer_gump">3.5. Volume Mixer</a> macOS no longer uses the Console.app to show stdout.</li>
+<a href="#volume_mixer_gump">3.6. Volume Mixer</a> macOS no longer uses the Console.app to show stdout.</li>
 					<li>
 <a href="#music">4.1. Music</a> explain different looping settings.</li>
 					<li>
@@ -4978,7 +5266,7 @@
 				</ul>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="25042024">14.4. - 25 April 2024</a></strong></td></tr>
+<tr><td><strong><a id="25042024">14.6. - 25 April 2024</a></strong></td></tr>
 <tr><td>
 				<ul>
 					<li>Replaced *nix with Linux as people are mostly looking for Linux and might get confused.</li>
@@ -4991,7 +5279,7 @@
 				</ul>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="23042024">14.5. - 23 April 2024</a></strong></td></tr>
+<tr><td><strong><a id="23042024">14.7. - 23 April 2024</a></strong></td></tr>
 <tr><td>
 				<ul>
 					<li>
@@ -5011,60 +5299,7 @@
 				</ul>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="11022022">14.6. - 11 February 2022</a></strong></td></tr>
-<tr><td>
-				<ul>
-					<li>
-<a href="#command_line">2.5. Command line options</a> Add t'--verify-files'.</li>
-					<li>
-<a href="#Exult-Setup-and-Game-Menu">3. Exult Setup and Game Menu</a> Moved this section closer to the top.</li>
-					<li>
-<a href="#midi_music">4.2. MIDI Music</a> Mentioned that UnixSeqDevice is shortened in the Audio options menu.</li>
-					<li>
-<a href="#scaler">5.4. Scaler</a> reordered and deleted OpenGl scaler.</li>
-					<li>
-<a href="#ios_games">9.3. Installing the games on your iPhone/iPad</a> Don't use the Files app on iOS to transfer the games.</li>
-					<li>
-<a href="#The-exult.cfg-file">11. The exult.cfg file</a> Moved the in depth explanation of the cfg file to the bottom.</li>
-				</ul>
-			</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="24012022">14.7. - 24 January 2022</a></strong></td></tr>
-<tr><td>
-				<ul>
-					<li>
-<a href="#exult_config">11.1. Settings in exult.cfg</a> cfg setting to disable the extended SI intro.</li>
-					<li>
-<a href="#all_in_one_pack">4.8. All-in-One Audio Data pack and installers</a> The Windows installer will optionally install the audio pack.</li>
-					<li>
-<a href="#speech">4.11. Speech</a> speech with subtitles is possible.</li>
-					<li>
-<a href="#Exult-Setup-and-Game-Menu">3. Exult Setup and Game Menu</a> Following the reorder of the options, this needed an overhaul.</li>
-					<li>
-<a href="#ios_games">9.3. Installing the games on your iPhone/iPad</a> Don't use the Files app on iOS to transfer the games.</li>
-				</ul>
-			</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="20022021">14.8. - 20 February 2021</a></strong></td></tr>
-<tr><td>
-				<ul>
-					<li>Changed links to our homepage to exult.info, SDL to SDL2, Mac OS X to macOS.</li>
-					<li>Removed references to Windows CE/Pocket PC.</li>
-					<li>Many little changes to wordings and indentation.</li>
-					<li>
-<a href="#exult_config">11.1. Settings in exult.cfg</a> Added options for extended SI intro and Speech with subtitles.</li>
-					<li>
-<a href="#movement">6.1. Movement</a> iOS movement added.</li>
-					<li>
-<a href="#input_gump">1.1. </a> is new and needed a screenshot as well.</li>
-					<li>
-<a href="#ios_games">9.3. Installing the games on your iPhone/iPad</a> iTunes file sharing is done differently on newer macOS systems.</li>
-					<li>
-<a href="#gog_mac">12.2. Using GOG.com's installer for macOS</a> again adapted to GOG changes of the Mac installer.</li>
-				</ul>
-			</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td><strong><a id="older_changes">14.9. older changes</a></strong></td></tr>
+<tr><td><strong><a id="older_changes">14.8. older changes</a></strong></td></tr>
 <tr><td>
 				<p>
 					For older changes of the documentation, please see its git history.
@@ -5082,7 +5317,7 @@
 									<a href="https://github.com/exult/exult/discussions">Contact us.</a></span></address></td></tr>
 </table></td></tr>
 <tr><td class="centered"><address><span style="font-size: smaller">Last modified:
-						19 January 2025 (GMT)</span></address></td></tr>
+						16 April 2025 (GMT)</span></address></td></tr>
 <tr><td class="centered"><div align="center"><!--#exec cgi="cgi-bin/vipcounter_xml.pl"--></div></td></tr>
 </table></div></body>
 </html>
