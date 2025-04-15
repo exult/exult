@@ -224,7 +224,7 @@ aseprite_package:
 	test -f ./tools/aseprite_plugin/exult_shp$(EXEEXT) || $(MAKE) exult_shp
 	mkdir -p aseprite
 	$(INSTALL_PROGRAM) ./tools/aseprite_plugin/exult_shp$(EXEEXT) ./aseprite/
-	dylibbundler -cd -b -ns -of -od \
+	dylibbundler -cd -b -ns -of \
 	  -x ./aseprite/exult_shp \
 	  -d ./aseprite \
 	  -p @executable_path/ \
