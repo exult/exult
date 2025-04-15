@@ -226,8 +226,8 @@ aseprite_package:
 	$(INSTALL_PROGRAM) ./tools/aseprite_plugin/exult_shp$(EXEEXT) ./aseprite/
 	dylibbundler -cd -b -ns -of -od \
 	  -x ./aseprite/exult_shp \
-	  -d ./aseprite/libs \
-	  -p @executable_path/libs/ \
+	  -d ./aseprite \
+	  -p @executable_path/ \
 	  -i /usr/lib
 	cp $(srcdir)/tools/aseprite_plugin/Readme.txt ./aseprite/
 	cp $(srcdir)/tools/aseprite_plugin/main.lua ./aseprite/
