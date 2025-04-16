@@ -245,7 +245,7 @@ if WITH_OSX_CODE_SIGNATURE
 	  --timestamp \
 	  --strip-disallowed-xattrs \
 	  -f -s "$(OSX_CODE_SIGNATURE)" \
-	  ./aseprite/libs/*.dylib
+	  ./aseprite/*.dylib
 endif
 	zip -rj ./exult_shp_macos.aseprite-extension ./aseprite
 	-rm -rf ./aseprite
