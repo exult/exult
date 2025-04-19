@@ -32,7 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "databuf.h"
 #include "game.h"
 #include "gamewin.h"
-#include "ignore_unused_variable_warning.h"
 #include "misc_buttons.h"
 #include "msgfile.h"
 #include "objiter.h"

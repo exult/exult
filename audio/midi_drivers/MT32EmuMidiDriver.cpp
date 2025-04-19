@@ -148,7 +148,8 @@ int MT32EmuMidiDriver::open() {
 		mt32src = new SampleRateConverter(
 				*mt32, sample_rate, SamplerateConversionQuality_GOOD);
 	}
-	//  Must use DELAY_SHORT_MESSAGES_ONLY or IMMEDIATE to allow immediate processing of sysex
+	//  Must use DELAY_SHORT_MESSAGES_ONLY or IMMEDIATE to allow immediate
+	//  processing of sysex
 	mt32->setMIDIDelayMode(MT32Emu::MIDIDelayMode_DELAY_SHORT_MESSAGES_ONLY);
 
 	ROMImage::freeROMImage(controlROMImage);

@@ -61,7 +61,7 @@ vector<string>       Notebook_gump::auto_text;
 
 const int font  = 4;    // Small black.
 const int vlead = 1;    // Extra inter-line spacing.
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 const int pagey = 7;    // Top of text area of page.
 #else
 const int pagey = 10;    // Top of text area of page.
@@ -245,7 +245,7 @@ void Notebook_gump::add_new(const string& text, int gflag) {
 
 Notebook_gump::Notebook_gump()
 		: Gump(nullptr, EXULT_FLX_NOTEBOOK_SHP, SF_EXULT_FLX) {
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	// on iOS the Notebook gump needs to be aligned with the top
 	set_pos(5, -2);
 #endif
@@ -275,8 +275,9 @@ Notebook_gump* Notebook_gump::create() {
 		instance = new Notebook_gump;
 		if (touchui != nullptr) {
 			touchui->hideGameControls();
-			if (!SDL_IsTextInputActive()) {
-				SDL_StartTextInput();
+			SDL_Window* window = gwin->get_win()->get_screen_window();
+			if (!SDL_TextInputActive(window)) {
+				SDL_StartTextInput(window);
 			}
 		}
 	}
@@ -307,8 +308,9 @@ Notebook_gump::~Notebook_gump() {
 		if (!gumpman->gump_mode()) {
 			touchui->showGameControls();
 		}
-		if (SDL_IsTextInputActive()) {
-			SDL_StopTextInput();
+		SDL_Window* window = gwin->get_win()->get_screen_window();
+		if (SDL_TextInputActive(window)) {
+			SDL_StopTextInput(window);
 		}
 	}
 }
@@ -337,7 +339,7 @@ bool Notebook_gump::paint_page(
 		snprintf(
 				buf, sizeof(buf), "Day %d, %02d:%02d%s", note->day, h ? h : 12,
 				note->minute, ampm);
-#if defined(__IPHONEOS__) || defined(ANDROID)
+#if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 		const int fontnum = 4;
 		const int yoffset = 0;
 #else
@@ -439,14 +441,15 @@ Gump_button* Notebook_gump::on_button(
 	int       coff   = sman->find_cursor(
             font, note->text.c_str() + offset, x + box.x, y + box.y, box.w,
             box.h, mx, my, vlead);
+	SDL_Window* window = gwin->get_win()->get_screen_window();
 	if (coff >= 0) {    // Found it?
 		curpage       = topleft;
 		curnote       = page_info[curpage].notenum;
 		cursor.offset = offset + coff;
 		paint();
 		updnx = cursor.x - x - lpagex;
-		if (!SDL_IsTextInputActive()) {
-			SDL_StartTextInput();
+		if (!SDL_TextInputActive(window)) {
+			SDL_StartTextInput(window);
 		}
 	} else {
 		offset += -coff;    // New offset.
@@ -470,8 +473,8 @@ Gump_button* Notebook_gump::on_button(
 			cursor.offset = offset + coff;
 			paint();
 			updnx = cursor.x - x - rpagex;
-			if (!SDL_IsTextInputActive()) {
-				SDL_StartTextInput();
+			if (!SDL_TextInputActive(window)) {
+				SDL_StartTextInput(window);
 			}
 		}
 	}
@@ -646,16 +649,15 @@ void Notebook_gump::up_arrow() {
  *  Handle keystroke.
  */
 bool Notebook_gump::handle_kbd_event(void* vev) {
-	SDL_Event& ev      = *static_cast<SDL_Event*>(vev);
-	uint16     unicode = 0;    // Unicode is way different in SDL2
-	Gump_manager::translate_numpad(
-			ev.key.keysym.sym, unicode, ev.key.keysym.mod);
-	int chr = ev.key.keysym.sym;
+	SDL_Event&  ev      = *static_cast<SDL_Event*>(vev);
+	SDL_Keycode unicode = 0;    // Unicode is way different in SDL2
+	SDL_Keycode chr     = 0;
+	Translate_keyboard(ev, chr, unicode, true);
 
-	if (ev.type == SDL_KEYUP) {
+	if (ev.type == SDL_EVENT_KEY_UP) {
 		return true;    // Ignoring key-up at present.
 	}
-	if (ev.type != SDL_KEYDOWN) {
+	if (ev.type != SDL_EVENT_KEY_DOWN) {
 		return false;
 	}
 	if (curpage >= static_cast<int>(page_info.size())) {
@@ -665,7 +667,6 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 	One_note*           note  = notes[pinfo.notenum];
 	switch (chr) {
 	case SDLK_RETURN:
-	case SDLK_KP_ENTER:
 		note->insert('\n', cursor.offset);
 		++cursor.offset;
 		paint();    // (Not very efficient...)
@@ -722,24 +723,21 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 		change_page(1);
 		break;
 	default:
-		if (chr < ' ') {
-			return false;    // Ignore other special chars.
+		if (unicode < ' ') {
+			return true;    // Ignore other special chars.
 		}
-		if (chr >= 256 || !isascii(chr)) {
-			return false;
-		}
-		// Special case: ignore "^" character
-		if (chr == '^') {
+		if (unicode >= 256 || !isascii(unicode)) {
 			return true;
 		}
-		if (ev.key.keysym.mod & (KMOD_SHIFT | KMOD_CAPS)) {
-			chr = toupper(chr);
+		// Special case: ignore "^" character
+		if (unicode == '^') {
+			return true;
 		}
 
 		// Check if adding this character would make the current word too long
 		// by simulating inserting the character and then checking
 		string test_text = note->text;
-		test_text.insert(cursor.offset, 1, chr);
+		test_text.insert(cursor.offset, 1, unicode);
 
 		if (word_exceeds_line_length(test_text, cursor.offset + 1, curpage)) {
 			// Find the start of the current word
@@ -758,11 +756,11 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 				++cursor.offset;
 
 				// Then insert the character on the new line
-				note->insert(chr, cursor.offset);
+				note->insert(unicode, cursor.offset);
 				++cursor.offset;
 			} else {
 				// Normal case - break at word boundary
-				note->insert(chr, cursor.offset);
+				note->insert(unicode, cursor.offset);
 				++cursor.offset;
 
 				// Insert newline after the most recent space
@@ -776,7 +774,7 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 			}
 		} else {
 			// Normal case, just insert the character
-			note->insert(chr, cursor.offset);
+			note->insert(unicode, cursor.offset);
 			++cursor.offset;
 		}
 

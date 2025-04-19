@@ -43,7 +43,6 @@ namespace Pentagram {
 			c1        = static_cast<unsigned char>(*s1++);
 			sint32 c2 = static_cast<unsigned char>(*s2++);
 
-
 			if (c1 != c2) {
 				c1 = std::toupper(c1);
 				c2 = std::toupper(c2);

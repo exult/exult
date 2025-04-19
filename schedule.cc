@@ -26,8 +26,11 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -476,7 +479,7 @@ Street_maintenance_schedule::Street_maintenance_schedule(
 
 void Street_maintenance_schedule::now_what() {
 	if (paction) {    // First time?
-		// Set to follow given path.
+					  // Set to follow given path.
 #ifdef DEBUG
 		cout << npc->get_name() << " walking for street maintenance" << endl;
 #endif

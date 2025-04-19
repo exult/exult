@@ -23,7 +23,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Text_button.h"
 #include "gamewin.h"
 
-#include <SDL_keycode.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wold-style-cast"
+#	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
+#endif    // __GNUC__
+#include <SDL3/SDL_keycode.h>
+#ifdef __GNUC__
+#	pragma GCC diagnostic pop
+#endif    // __GNUC__
 
 #include <cctype>
 
@@ -180,9 +191,8 @@ bool DropDown_widget::mouse_drag(int mx, int my) {
 	return false;
 }
 
-bool DropDown_widget::character_input(
-		int chr, int unicode, bool shift_pressed) {
-	ignore_unused_variable_warning(unicode, shift_pressed);
+bool DropDown_widget::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
+	ignore_unused_variable_warning(unicode);
 	if (!active) {
 		return false;
 	}

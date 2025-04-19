@@ -80,8 +80,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #		pragma GCC diagnostic push
 #		pragma GCC diagnostic ignored "-Wold-style-cast"
 #		pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#		if !defined(__llvm__) && !defined(__clang__)
+#			pragma GCC diagnostic ignored "-Wuseless-cast"
+#		endif
 #	endif    // __GNUC__
-#	include <SDL.h>
+#	include <SDL3/SDL.h>
 #	ifdef __GNUC__
 #		pragma GCC diagnostic pop
 #	endif    // __GNUC__
@@ -195,6 +198,11 @@ void Server_close() {
 /*
  *  A message from a client is available, so handle it.
  */
+
+extern void Set_dragged_shape(int file, int shnum, int frnum);
+extern void Set_dragged_combo(int cnt, int xtl, int ytl, int rtl, int btl);
+extern void Set_dragged_npc(int npcnum);
+extern void Set_dragged_chunk(int chunknum);
 
 static void Handle_client_message(
 		int& fd    // Socket to client.  May be closed.
@@ -388,6 +396,32 @@ static void Handle_client_message(
 				client_socket, Exult_server::unused_shapes, data, sz);
 		break;
 	}
+	case Exult_server::drag_combo: {
+		const int cnt = little_endian::Read2(ptr);
+		const int xtl = little_endian::Read2(ptr);
+		const int ytl = little_endian::Read2(ptr);
+		const int rtl = little_endian::Read2(ptr);
+		const int btl = little_endian::Read2(ptr);
+		Set_dragged_combo(cnt, xtl, ytl, rtl, btl);
+		break;
+	}
+	case Exult_server::drag_shape: {
+		const int file  = little_endian::Read2(ptr);
+		const int shnum = little_endian::Read2(ptr);
+		const int frnum = little_endian::Read2s(ptr);
+		Set_dragged_shape(file, shnum, frnum);
+		break;
+	}
+	case Exult_server::drag_npc: {
+		const int npcnum = little_endian::Read2(ptr);
+		Set_dragged_npc(npcnum);
+		break;
+	}
+	case Exult_server::drag_chunk: {
+		const int chunknum = little_endian::Read2(ptr);
+		Set_dragged_chunk(chunknum);
+		break;
+	}
 	case Exult_server::locate_shape: {
 		const int      shnum = little_endian::Read2(ptr);
 		const int      frnum = little_endian::Read2s(ptr);
@@ -537,7 +571,7 @@ void Server_delay(Message_handler handle_message) {
 	for (;;) {
 		SDL_PumpEvents();
 		if ((SDL_PeepEvents(
-					 nullptr, 0, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)
+					 nullptr, 0, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST)
 			 != 0)
 			|| (static_cast<Sint32>(SDL_GetTicks())
 				>= static_cast<Sint32>(expiration))) {
