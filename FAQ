@@ -185,7 +185,7 @@ The snapshot is the newest source code of the program. It is updated every night
 
 1.11. How do I compile a source code snapshot for my OS?
 
-The source code snapshots contain the files Readme.win32, Readme.MacOSX that explain everything. The instructions for Linux systems are traditionally in the file called INSTALL.
+The source code snapshots contain the files Readme.windows, Readme.MacOSX that explain everything. The instructions for Linux systems are traditionally in the file called INSTALL.
 
 
 1.12. What is the latest version of Exult?

@@ -174,7 +174,7 @@ EXTRA_DIST = 	\
 	README \
 	FAQ \
 	README.md \
-	README.win32 \
+	README.windows \
 	README.macOS \
 	Makefile.common \
 	Makefile.mingw \

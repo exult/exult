@@ -72,7 +72,7 @@ Source: Exult-i686\FAQ.txt; DestDir: {app}; Flags: ignoreversion; Components: Do
 Source: Exult-i686\NEWS.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
 Source: Exult-i686\ReadMe.html; DestDir: {app}; Flags: ignoreversion isreadme; Components: Docs
 Source: Exult-i686\README.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
-Source: Exult-i686\README.win32.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
+Source: Exult-i686\README.windows.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
 Source: Exult-i686\sidefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
 Source: Exult-i686\images\*.gif; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
 Source: Exult-i686\images\docs*.png; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
@@ -91,7 +91,7 @@ Name: {group}\Readme; Filename: {app}\ReadMe.html; Flags: createonlyiffileexists
 Name: {group}\Exult Source Code; Filename : {app}\Exult Source Code.url; Components: Icons
 ; Name: {group}\COPYING; Filename: {app}\COPYING.txt; Flags: createonlyiffileexists; Components: Icons
 ; Name: {group}\ChangeLog; Filename: {app}\ChangeLog.txt; Flags: createonlyiffileexists; Components: Icons
-; Name: {group}\Readme Win32; Filename: {app}\README.win32.txt; Flags: createonlyiffileexists; Components: Icons
+; Name: {group}\Readme Windows; Filename: {app}\README.windows.txt; Flags: createonlyiffileexists; Components: Icons
 ; Name: {group}\NEWS; Filename: {app}\NEWS.txt; Flags: createonlyiffileexists; Components: Icons
 
 [Run]

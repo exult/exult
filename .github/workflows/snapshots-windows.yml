@@ -45,7 +45,7 @@ jobs:
             mingw-w64-i686-fluidsynth mingw-w64-i686-libtimidity mingw-w64-i686-libogg mingw-w64-i686-libvorbis
             mingw-w64-i686-libpng mingw-w64-i686-zlib 
             mingw-w64-i686-gtk3 mingw-w64-i686-adwaita-icon-theme mingw-w64-i686-libxml2 mingw-w64-i686-freetype
-            mingw-w64-i686-gimp mingw-w64-i686-icu mingw-w64-i686-cmake
+            mingw-w64-i686-gimp mingw-w64-i686-autotools mingw-w64-i686-cmake 
       - name: Checkout munt
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         uses: actions/checkout@v4
@@ -64,17 +64,40 @@ jobs:
           cmake --version
           cmake ./../libmt32emu -Dmunt_WITH_MT32EMU_SMF2WAV=FALSE -Dmunt_WITH_MT32EMU_QT=FALSE -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
           ninja install
-      - name: Download and manually install SDL2_image-devel-2.8.8-mingw.tar.gz for i686
+      - name: Download and manually install SDL2_image-devel-2.8.8-mingw.tar.gz for mingw32 i686
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         env:
           MSYSTEM: MINGW32
           ARCH: i686
         run: |
          curl -L https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.8/SDL2_image-devel-2.8.8-mingw.tar.gz -o SDL2_image-devel-2.8.8-mingw.tar.gz
+         echo Checking sha256 hash 
          echo 67446b12f14e4667b76a5721c91e419363e65b74b66cde8057edb29add90cd42 *SDL2_image-devel-2.8.8-mingw.tar.gz | sha256sum.exe -c
          tar xfz SDL2_image-devel-2.8.8-mingw.tar.gz
          cp -r -v SDL2_image-2.8.8/i686-w64-mingw32/* $MINGW_PREFIX
          rm -r -f SDL2_image-2.8.8 SDL2_image-devel-2.8.8-mingw.tar.gz
+      - name: Download, build and install icu4c 77.1 for mingw32 i686
+        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
+        env:
+          MSYSTEM: MINGW32
+          ARCH: i686
+        run: |
+         curl -L https://github.com/unicode-org/icu/releases/download/release-77-1/icu4c-77_1-src.tgz -o icu4c-77_1-src.tgz
+         echo Checking sha256 hash 
+         echo 588e431f77327c39031ffbb8843c0e3bc122c211374485fa87dc5f3faff24061 *icu4c-77_1-src.tgz | sha256sum.exe -c
+         tar xfz icu4c-77_1-src.tgz
+         cd icu/source 
+         autoreconf -vfi
+         ./configure \
+         --enable-shared \
+         --with-data-packaging=dll \
+         --disable-tests \
+         --disable-samples \
+         --enable-release
+         make -j
+         make -j install 
+         cd ../..
+         rm -r -f icu4c-77_1-src.tgz icu 
       - name: Checkout code for i686 build
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         uses: actions/checkout@v4

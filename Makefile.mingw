@@ -636,7 +636,7 @@ dist:   $(EXEC) exconfig.dll install Exult\ Source\ Code.url mods
 	cp NEWS $(U7PATH)/NEWS.txt
 	cp README $(U7PATH)/README.txt
 	cp docs/ReadMe.html $(U7PATH)
-	cp README.win32 $(U7PATH)/README.win32.txt
+	cp README.windows $(U7PATH)/README.windows.txt
 	cp win32/README-SDL.txt $(U7PATH)/README-SDL.txt
 	cp data/bg/defaultkeys.txt $(U7PATH)/bgdefaultkeys.txt
 	cp data/si/defaultkeys.txt $(U7PATH)/sidefaultkeys.txt

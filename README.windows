@@ -55,7 +55,16 @@ the shell. Do so.
 
 Now it is time to make a choice: whether to build Exult on 32- or 64-bit: start
 the corresponding shell ("MSYS2 MinGW 32-bit" or "MSYS2 MinGW 64-bit") from the
-start menu.
+start menu. We do not recommend trying to make 32 bit build as some needed 
+dependency packages are unavailable when trying to build using mingw32 as the 
+maintainers of mingw are in the process of dropping  32bit support. pacman 
+commands will fail when trying to install the unavailable packages. in this 
+case you'll need to build the missing dependencies from source yourself using 
+mingw32 and install them. As of 21 April 2025 the following pacages are missing
+for mingw32 
+* mt32emu: needed by Exult,
+* SDL2_image: needed by some tools
+* icu needed by Exult Studio
 
     **Warning**
     It is IMPORTANT that you use either of these two shells and NOT the
