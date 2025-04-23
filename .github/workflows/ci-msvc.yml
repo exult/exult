@@ -6,6 +6,7 @@
 name: ci-msvc
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "**"
@@ -75,10 +76,16 @@ env:
 
   BUILD_PROJECTS_ES: exult_studio
 
+  VCPKGINSTALLED_PATH: ${{format('{0}/msvcstuff/vs2019/vcpkg_installed/x64-windows', github.workspace) }}
+  
+  VCPKGINSTALLED_PATH_ES: ${{format('{0}/msvcstuff/vs2019/exult_studio/vcpkg_installed/x64-windows', github.workspace) }}
+
   TARGET_VCPKG_MANIFEST_INSTALL: VcpkgInstallManifestDependencies
 
-  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+  #No automatic binary caching until microsoft fixes it
+  VCPKG_BINARY_SOURCES: "clear"
 
+  
 permissions:
   contents: read
 
@@ -91,35 +98,48 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Export GitHub Actions cache environment variables
-      uses: actions/github-script@v7
-      with:
-        script: |
-          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-        
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Update and Integrate vcpkg 
+    - name: Setup vcpkg for Exult
       working-directory: ${{env.GITHUB_WORKSPACE}}     
       run: |
         cd $Env:VCPKG_INSTALLATION_ROOT
-        git fetch
-        git merge --ff-only db1ddd0
         .\bootstrap-vcpkg.bat
-        vcpkg integrate install
+        ./vcpkg integrate install
+        'VCPKG_REV='|Out-File -Append -NoNewLine ${{ github.env }}
+        git rev-parse HEAD|Out-File -Append ${{ github.env }}
 
+    - name: Restore VCPKG packages for Exult from Cache 
+      uses: actions/cache/restore@v4
+      id: exult-vcpkg-cache-restore
+      with:
+        path: ${{env.VCPKGINSTALLED_PATH}}
+        # Use the git rev hash of vcpkg in the cache key because things are not 
+        # entirely compatible between versions and when the Windows runner image
+        # updates about every 2 weeks the version of vcpkg is updated causing 
+        # bad caching behaviour during the switch over period
+        key: exult-vcpkg-packages-${{env.VCPKG_REV}}-${{github.sha}}
+        restore-keys: |
+          exult-vcpkg-packages-${{env.VCPKG_REV}}
 
     - name: Install VCPKG packages for Exult
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /v:${{ runner.debug =='1' && 'detailed' || 'normal' }} /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}}\Exult.vcxproj /t:${{env.TARGET_VCPKG_MANIFEST_INSTALL}}
 
+    - name: Save VCPKG packages for Exult to cache
+      id: exult-vcpkg-cache-save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ${{env.VCPKGINSTALLED_PATH}}
+        key: exult-vcpkg-packages-${{env.VCPKG_REV}}-${{github.sha}}
+     
     - name: Build Exult
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /v:${{ runner.debug =='1' && 'detailed' || 'normal' }} /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}} /t:${{env.BUILD_PROJECTS}}
-  ci-msvc-exult_studio:
 
+  ci-msvc-exult_studio:
     runs-on: windows-2022
     if: ${{ github.repository_owner == 'exult' || github.repository_owner == 'wench' }}
 
@@ -136,19 +156,44 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Update and Integrate vcpkg 
+    - name: Setup vcpkg for Studio
       working-directory: ${{env.GITHUB_WORKSPACE}}     
       run: |
         cd $Env:VCPKG_INSTALLATION_ROOT
-        git fetch
-        git merge --ff-only db1ddd0
         .\bootstrap-vcpkg.bat
-        vcpkg integrate install
+        ./vcpkg integrate install
+        'VCPKG_REV='|Out-File -Append -NoNewLine ${{ github.env }}
+        git rev-parse HEAD|Out-File -Append ${{ github.env }}
+
+    - name: Restore VCPKG packages for Studio from Cache 
+      uses: actions/cache/restore@v4
+      id: studio-vcpkg-cache-restore
+      with:
+        path: ${{env.VCPKGINSTALLED_PATH_ES}}
+        key: studio-vcpkg-packages-${{env.VCPKG_REV}}-${{github.sha}}
+        restore-keys: |
+          studio-vcpkg-packages-${{env.VCPKG_REV}}
 
     - name: Install VCPKG packages for Studio
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /v:${{ runner.debug =='1' && 'detailed' || 'normal' }} /m /p:Configuration=${{env.BUILD_CONFIGURATION_ES}} /p:Platform=${{env.BUILD_PLATFORM_ES}} ${{env.SOLUTION_FILE_PATH}}\exult_studio\exult_studio.vcxproj /t:${{env.TARGET_VCPKG_MANIFEST_INSTALL}}
 
+    - name: Save Studio VCPKG packages to cache
+      id: studio-vcpkg-cache-save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ${{env.VCPKGINSTALLED_PATH_ES}}
+        key: studio-vcpkg-packages-${{env.VCPKG_REV}}-${{github.sha}}
+
+    - name: Restore VCPKG packages for Exult from Cache 
+      uses: actions/cache/restore@v4
+      id: exult-vcpkg-cache-restore
+      with:
+        path: ${{env.VCPKGINSTALLED_PATH}}
+        key: exult-vcpkg-packages-${{env.VCPKG_REV}}-${{github.sha}}
+        restore-keys: |
+          exult-vcpkg-packages-${{env.VCPKG_REV}}
     - name: Build exult_studio
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /v:${{ runner.debug =='1' && 'detailed' || 'normal' }} /m /p:Configuration=${{env.BUILD_CONFIGURATION_ES}} /p:Platform=${{env.BUILD_PLATFORM_ES}} ${{env.SOLUTION_FILE_PATH}} /t:${{env.BUILD_PROJECTS_ES}}
