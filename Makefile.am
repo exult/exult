@@ -331,7 +331,7 @@ gitinfo.h: $(srcdir)/.git/index $(srcdir)/.git/HEAD $(srcdir)/.git/config Makefi
 		echo >> gitinfo-new.h; \
 		git tag -l --points-at HEAD --format="#define GIT_TAG \"%(refname:short)\"" >> gitinfo-new.h; \
 		echo >> gitinfo-new.h; \
-		git branch --points-at=HEAD --format="#define GIT_REMOTE_BRANCH \"%(upstream:strip=-1)\"" >> gitinfo-new.h; \
+		git branch  --omit-empty --list "`git branch --show-current`" --format="%(if)%(upstream)%(then)#define GIT_REMOTE_BRANCH \"%(upstream:strip=-1)\"%(end)" >> gitinfo-new.h; \
 		echo >> gitinfo-new.h; \
 		echo "#define GIT_REMOTE_URL \"`git ls-remote --get-url`\"" >> gitinfo-new.h; \
 		echo >> gitinfo-new.h; \
