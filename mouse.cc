@@ -1,7 +1,7 @@
 /*
  *  mouse.cc - Mouse pointers.
  *
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -162,7 +162,6 @@ void Mouse::show() {
 int Mouse::fast_offset_x = 0;
 int Mouse::fast_offset_y = 0;
 
-
 // Apply the fastmouse offset to a position
 // This is used by Image_window::screen_to_game
 
@@ -176,7 +175,7 @@ void Mouse::apply_fast_offset(int& gx, int& gy) {
 // Unapply the fastmouse offset to a position
 // This is used by Image_window::game_to_screen
 
- void Mouse::unapply_fast_offset(int& gx, int& gy) {
+void Mouse::unapply_fast_offset(int& gx, int& gy) {
 	if (gwin->get_fastmouse()) {
 		gx -= fast_offset_x;
 		gy -= fast_offset_y;
@@ -329,22 +328,32 @@ void Mouse::set_speed_cursor() {
 			gwin->get_shape_location(gwin->get_main_actor(), ax, ay);
 		}
 
-		const int       dy           = ay - mousey;
-		const int       dx           = mousex - ax;
-		const Direction dir          = Get_direction_NoWrap(dy, dx);
+		const int       dy  = ay - mousey;
+		const int       dx  = mousex - ax;
+		const Direction dir = Get_direction_NoWrap(dy, dx);
 
-		// Replace the gamewin_dims with our fixed 200x200 rectangle
-		const TileRect  speed_rect(ax - 100, ay - 100, 200, 200); // 200x200 rectangle centered on avatar
-		const bool      in_speed_rect = (mousex >= speed_rect.x && mousex < speed_rect.x + speed_rect.w &&
-									   mousey >= speed_rect.y && mousey < speed_rect.y + speed_rect.h);
+		// Create a speed rectangle that's a third of the game window dimensions
+		// but with a minimum size of 200x200
+		const TileRect game_rect = gwin->get_game_rect();
+		const int      rect_size
+				= std::max(200, std::min(game_rect.w, game_rect.h) / 2);
+		const TileRect speed_rect(
+				ax - rect_size / 2, ay - rect_size / 2, rect_size, rect_size);
+		const bool in_speed_rect
+				= (mousex >= speed_rect.x
+				   && mousex < speed_rect.x + speed_rect.w
+				   && mousey >= speed_rect.y
+				   && mousey < speed_rect.y + speed_rect.h);
 
 		float speed_section = 1.0f;
 		if (in_speed_rect) {
-			// Only calculate speed_section within our 200x200 rectangle
-			speed_section = max(max(-static_cast<float>(dx) / 100.0f,
-								  static_cast<float>(dx) / 100.0f),
-							  max(static_cast<float>(dy) / 100.0f,
-								  -static_cast<float>(dy) / 100.0f));
+			// Calculate speed_section based on the dynamic rectangle size
+			const int half_size = rect_size / 2;
+			speed_section
+					= max(max(-static_cast<float>(dx) / half_size,
+							  static_cast<float>(dx) / half_size),
+						  max(static_cast<float>(dy) / half_size,
+							  -static_cast<float>(dy) / half_size));
 		}
 
 		const bool      nearby_hostile        = gwin->is_hostile_nearby();
@@ -352,7 +361,7 @@ void Mouse::set_speed_cursor() {
 		Usecode_script* scr                   = nullptr;
 		Actor*          act                   = gwin->get_main_actor();
 		while ((scr = Usecode_script::find_active(act, scr)) != nullptr) {
-			// We should only be here is scripts are nohalt, but just
+			// We should only be here if scripts are nohalt, but just
 			// in case...
 			if (scr->is_no_halt()) {
 				has_active_nohalt_scr = true;
@@ -361,46 +370,48 @@ void Mouse::set_speed_cursor() {
 		}
 
 		const int base_speed = 200 * gwin->get_std_delay();
-if (!in_speed_rect) {
-    // Beyond the 200x200 rectangle - use long arrow with fast movement
-    // But respect combat/hostile conditions just like inside the rectangle
-    if (gwin->in_combat()) {
-        cursor = get_medium_combat_arrow(dir);  // No long combat arrows exist
-        avatar_speed = base_speed / medium_combat_speed_factor;
-    } else if (nearby_hostile || has_active_nohalt_scr) {
-        cursor = get_medium_arrow(dir);
-        avatar_speed = base_speed / medium_speed_factor;
-    } else {
-        cursor = get_long_arrow(dir);
-        avatar_speed = base_speed / fast_speed_factor;
-    }
-} else if (speed_section < 0.4f) {
-    // Inside the rectangle with low speed_section - use short arrow
-    if (gwin->in_combat()) {
-        cursor = get_short_combat_arrow(dir);
-    } else {
-        cursor = get_short_arrow(dir);
-    }
-    avatar_speed = base_speed / slow_speed_factor;
-} else if (
-		speed_section < 0.8f || gwin->in_combat() || nearby_hostile
-		|| has_active_nohalt_scr) {
-	if (gwin->in_combat()) {
-		cursor = get_medium_combat_arrow(dir);
-	} else {
-		cursor = get_medium_arrow(dir);
-	}
-	if (gwin->in_combat() || nearby_hostile) {
-		avatar_speed = base_speed / medium_combat_speed_factor;
-	} else {
-		avatar_speed = base_speed / medium_speed_factor;
-	}
-} else /* Fast - NB, we can't get here in combat mode; there is no
-		* long combat arrow, nor is there a fast combat speed. */
-{
-	cursor       = get_long_arrow(dir);
-	avatar_speed = base_speed / fast_speed_factor;
-}
+		if (!in_speed_rect) {
+			// Beyond the 200x200 rectangle - use long arrow with fast movement
+			// But respect combat/hostile conditions just like inside the
+			// rectangle
+			if (gwin->in_combat()) {
+				cursor = get_medium_combat_arrow(
+						dir);    // No long combat arrows exist
+				avatar_speed = base_speed / medium_combat_speed_factor;
+			} else if (nearby_hostile || has_active_nohalt_scr) {
+				cursor       = get_medium_arrow(dir);
+				avatar_speed = base_speed / medium_speed_factor;
+			} else {
+				cursor       = get_long_arrow(dir);
+				avatar_speed = base_speed / fast_speed_factor;
+			}
+		} else if (speed_section < 0.4f) {
+			// Inside the rectangle with low speed_section - use short arrow
+			if (gwin->in_combat()) {
+				cursor = get_short_combat_arrow(dir);
+			} else {
+				cursor = get_short_arrow(dir);
+			}
+			avatar_speed = base_speed / slow_speed_factor;
+		} else if (
+				speed_section < 0.8f || gwin->in_combat() || nearby_hostile
+				|| has_active_nohalt_scr) {
+			if (gwin->in_combat()) {
+				cursor = get_medium_combat_arrow(dir);
+			} else {
+				cursor = get_medium_arrow(dir);
+			}
+			if (gwin->in_combat() || nearby_hostile) {
+				avatar_speed = base_speed / medium_combat_speed_factor;
+			} else {
+				avatar_speed = base_speed / medium_speed_factor;
+			}
+		} else /* Fast - NB, we can't get here in combat mode; there is no
+				* long combat arrow, nor is there a fast combat speed. */
+		{
+			cursor       = get_long_arrow(dir);
+			avatar_speed = base_speed / fast_speed_factor;
+		}
 	}
 
 	if (cursor != dontchange) {
