@@ -332,7 +332,7 @@ void Mouse::set_speed_cursor() {
 		const int       dx  = mousex - ax;
 		const Direction dir = Get_direction_NoWrap(dy, dx);
 
-		// Create a speed rectangle that's a third of the game window dimensions
+		// Create a speed rectangle that's half of the game window dimensions
 		// but with a minimum size of 200x200
 		const TileRect game_rect = gwin->get_game_rect();
 		const int      rect_size
