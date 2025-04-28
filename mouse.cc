@@ -335,8 +335,9 @@ void Mouse::set_speed_cursor() {
 		// Create a speed rectangle that's half of the game window dimensions
 		// but with a minimum size of 200x200
 		const TileRect game_rect = gwin->get_game_rect();
-		const int      rect_size
-				= std::max(200, std::min(game_rect.w, game_rect.h) / 2);
+		const int      rect_size = std::max(
+                std::min(200, std::min(game_rect.w, game_rect.h)),
+                std::min(game_rect.w, game_rect.h) / 2);
 		const TileRect speed_rect(
 				ax - rect_size / 2, ay - rect_size / 2, rect_size, rect_size);
 		const bool in_speed_rect
