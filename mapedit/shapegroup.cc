@@ -799,6 +799,7 @@ C_EXPORT void on_group_shape_remove_clicked(
 	Shape_group* grp     = chooser->get_group();
 	const int    i       = chooser->get_selected();
 	if (grp && i >= 0) {
+		chooser->reset_selected();
 		grp->del(i);
 		ExultStudio::get_instance()->update_group_windows(grp);
 	}

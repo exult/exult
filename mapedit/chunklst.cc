@@ -894,7 +894,7 @@ void Chunk_chooser::end_terrain_editing() {
 void Chunk_chooser::unselect(bool need_render    // 1 to render and show.
 ) {
 	if (selected >= 0) {
-		selected  = -1;
+		reset_selected();
 		locate_cx = locate_cy = -1;
 		if (need_render) {
 			render();

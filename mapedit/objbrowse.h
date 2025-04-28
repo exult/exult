@@ -68,6 +68,9 @@ public:
 	int get_selected() {    // Return index of sel'd item, or -1.
 		return selected < 0 ? -1 : index0 + selected;
 	}
+	void reset_selected() {
+		selected = -1;
+	}
 
 	GtkWidget* get_find_text() {    // Get 'find' text widget.
 		return find_text;

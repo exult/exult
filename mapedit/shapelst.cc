@@ -1970,16 +1970,23 @@ void Shape_chooser::all_frames_toggled(GtkToggleButton* btn, gpointer data) {
 	} else {
 		gtk_widget_set_visible(chooser->hscroll, false);
 	}
-	// The old index is no longer valid, so we need to remember the shape.
-	int       indx    = chooser->selected >= 0
-								? chooser->selected
-								: static_cast<int>(chooser->rows[chooser->row0].index0);
-	const int shnum   = chooser->info[indx].shapenum;
-	chooser->selected = -1;
+	int indx  = -1;
+	int shnum = -1;
+	if (chooser->info.size() != 0) {
+		// The old index is no longer valid, so we need to remember the shape.
+		indx  = chooser->selected >= 0
+									? chooser->selected
+									: chooser->rows[chooser->row0].index0;
+		shnum = chooser->info[indx].shapenum;
+	}
+	chooser->reset_selected();
 	chooser->setup_info();
-	indx = chooser->find_shape(shnum);
-	if (indx >= 0) {    // Get back to given shape.
-		chooser->goto_index(indx);
+	chooser->render();
+	if (shnum >= 0) {
+		indx = chooser->find_shape(shnum);
+		if (indx >= 0) {    // Get back to given shape.
+			chooser->goto_index(indx);
+		}
 	}
 }
 
@@ -2429,7 +2436,7 @@ Shape_chooser::~Shape_chooser() {
 void Shape_chooser::unselect(bool need_render    // 1 to render and show.
 ) {
 	if (selected >= 0) {
-		selected = -1;
+		reset_selected();
 		// Update spin button for frame #.
 		gtk_adjustment_set_value(frame_adj, 0);
 		gtk_widget_set_sensitive(fspin, false);
