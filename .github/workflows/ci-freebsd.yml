@@ -128,6 +128,21 @@ jobs:
           pkg install -y fontconfig
           pkg install -y gtk2 gtk3 pango
           pkg install -y babl libX11 libXext
+          pkg install -y git cmake libunwind ffmpeg
+          git -c advice.detachedHead=false clone --branch release-3.2.10 --depth 1 https://github.com/libsdl-org/SDL SDL3
+          cd SDL3
+          mkdir -p build
+          cmake -B build -S .
+          cmake --build build
+          cmake --install build
+          cd ..
+          git -c advice.detachedHead=false clone --branch release-3.2.0 --depth 1 https://github.com/libsdl-org/SDL_image SDL3_image
+          cd SDL3_image
+          mkdir -p build
+          cmake -B build -S .
+          cmake --build build
+          cmake --install build
+          cd ..
         run: |
           autoreconf -v -i
           ./configure --with-debug=extreme --enable-exult-studio --enable-exult-studio-support --enable-compiler --enable-gimp-plugin \

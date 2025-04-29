@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Gump_ToggleButton.h"
 
-#include "Gump.h"
 #include "gamewin.h"
 
 bool Gump_ToggleButton::activate(MouseButton button) {

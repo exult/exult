@@ -43,7 +43,7 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 @synthesize     vjoyIsActive;       // true when the vjoy is active
 @synthesize     vjoyCenter;         // center of the vjoy
 @synthesize     vjoyCurrent;        // current position of the vjoy
-@synthesize     vjoyController;     // the vjoy's SDL_GameController
+@synthesize     vjoyGamepad;        // the vjoy's SDL_Gamepad
 @synthesize     vjoyInputSource;    // where vjoy input is coming from
 
 - (id)initWithFrame:(CGRect)frame {
@@ -52,22 +52,32 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 		self.backgroundColor = [UIColor clearColor];
 		self.backgroundImage = [UIImage imageNamed:@"joythumb-glass.png"];
 
-		int vjoy_index = SDL_JoystickAttachVirtual(
-				SDL_JOYSTICK_TYPE_GAMECONTROLLER, SDL_CONTROLLER_AXIS_MAX,
-				SDL_CONTROLLER_BUTTON_MAX, 0);
-		if (vjoy_index < 0) {
-			printf("SDL_JoystickAttachVirtual failed: %s\n", SDL_GetError());
+		SDL_VirtualJoystickTouchpadDesc virtual_touchpad = { 1, { 0, 0, 0 } };
+		SDL_VirtualJoystickSensorDesc virtual_sensor = { SDL_SENSOR_ACCEL, 0.0f };
+		SDL_VirtualJoystickDesc       desc;
+
+		SDL_INIT_INTERFACE(&desc);
+		desc.type       = SDL_JOYSTICK_TYPE_GAMEPAD;
+		desc.naxes      = SDL_GAMEPAD_AXIS_COUNT;
+		desc.nbuttons   = SDL_GAMEPAD_BUTTON_COUNT;
+		desc.ntouchpads = 1;
+		desc.touchpads  = &virtual_touchpad;
+		desc.nsensors   = 1;
+		desc.sensors    = &virtual_sensor;
+		SDL_JoystickID vjoy_id = SDL_AttachVirtualJoystick(&desc);
+		if (!vjoy_id) {
+			printf("SDL_AttachVirtualJoystick failed: %s\n", SDL_GetError());
 		} else {
-			self.vjoyController = SDL_GameControllerOpen(vjoy_index);
-			if (!self.vjoyController) {
-				printf("SDL_GameControllerOpen failed for virtual joystick: "
+			self.vjoyGamepad = SDL_OpenGamepad(vjoy_id);
+			if (!self.vjoyGamepad) {
+				printf("SDL_OpenGamepad failed for virtual joystick: "
 					   "%s\n",
 					   SDL_GetError());
-				SDL_JoystickDetachVirtual(vjoy_index);
+				SDL_DetachVirtualJoystick(vjoy_id);
 			}
 		}
 		[self reset];
-		// printf("VJOY INIT, controller=%p\n", (void*)self.vjoyController);
+		// printf("VJOY INIT, controller=%p\n", (void*)self.vjoyGamepad);
 	}
 	return self;
 }
@@ -79,18 +89,19 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 }
 
 - (void)dealloc {
-	if (vjoyController) {
-		const SDL_JoystickID vjoy_controller_id = SDL_JoystickInstanceID(
-				SDL_GameControllerGetJoystick(vjoyController));
-		SDL_GameControllerClose(vjoyController);
-		for (int i = 0, n = SDL_NumJoysticks(); i < n; ++i) {
-			const SDL_JoystickID current_id
-					= SDL_JoystickGetDeviceInstanceID(i);
-			if (current_id == vjoy_controller_id) {
-				// printf("detach virtual at id:%d, index:%d\n", current_id, i);
-				SDL_JoystickDetachVirtual(i);
-				break;
+	if (vjoyGamepad) {
+		SDL_CloseGamepad(vjoyGamepad);
+		SDL_JoystickID* joysticks = SDL_GetJoysticks(NULL);
+		if (joysticks) {
+			for (int i = 0; joysticks[i]; ++i) {
+				if (SDL_IsJoystickVirtual(joysticks[i])) {
+					// printf("detach virtual at id:%d, index:%d\n",
+					// joysticks[i], i);
+					SDL_DetachVirtualJoystick(joysticks[i]);
+					break;
+				}
 			}
+			SDL_free(joysticks);
 		}
 	}
 
@@ -101,12 +112,12 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 
 - (void)reset {
 	self.vjoyIsActive = false;
-	SDL_JoystickSetVirtualAxis(
-			SDL_GameControllerGetJoystick(self.vjoyController),
-			SDL_CONTROLLER_AXIS_LEFTX, 0);
-	SDL_JoystickSetVirtualAxis(
-			SDL_GameControllerGetJoystick(self.vjoyController),
-			SDL_CONTROLLER_AXIS_LEFTY, 0);
+	SDL_SetJoystickVirtualAxis(
+			SDL_GetGamepadJoystick(self.vjoyGamepad),
+			SDL_GAMEPAD_AXIS_LEFTX, 0);
+	SDL_SetJoystickVirtualAxis(
+			SDL_GetGamepadJoystick(self.vjoyGamepad),
+			SDL_GAMEPAD_AXIS_LEFTY, 0);
 	self.vjoyCenter = self.vjoyCurrent = CGPointMake(0, 0);
 	self.vjoyInputSource               = nil;
 	[self updateViewTransform];
@@ -142,12 +153,12 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 		self.vjoyInputSource = touch;
 		self.vjoyCenter = self.vjoyCurrent = [touch locationInView:self];
 		self.vjoyIsActive                  = true;
-		SDL_JoystickSetVirtualAxis(
-				SDL_GameControllerGetJoystick(self.vjoyController),
-				SDL_CONTROLLER_AXIS_LEFTX, 0);
-		SDL_JoystickSetVirtualAxis(
-				SDL_GameControllerGetJoystick(self.vjoyController),
-				SDL_CONTROLLER_AXIS_LEFTY, 0);
+		SDL_SetJoystickVirtualAxis(
+				SDL_GetGamepadJoystick(self.vjoyGamepad),
+				SDL_GAMEPAD_AXIS_LEFTX, 0);
+		SDL_SetJoystickVirtualAxis(
+				SDL_GetGamepadJoystick(self.vjoyGamepad),
+				SDL_GAMEPAD_AXIS_LEFTY, 0);
 		[self updateViewTransform];
 		// printf("VJOY START\n");
 	}
@@ -182,14 +193,14 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 		// Update vjoy state
 		const Sint16 joy_axis_x_raw
 				= (Sint16)((dx / gVJoyRadius) * SDL_JOYSTICK_AXIS_MAX);
-		SDL_JoystickSetVirtualAxis(
-				SDL_GameControllerGetJoystick(self.vjoyController),
-				SDL_CONTROLLER_AXIS_LEFTX, joy_axis_x_raw);
+		SDL_SetJoystickVirtualAxis(
+				SDL_GetGamepadJoystick(self.vjoyGamepad),
+				SDL_GAMEPAD_AXIS_LEFTX, joy_axis_x_raw);
 		const Sint16 joy_axis_y_raw
 				= (Sint16)((dy / gVJoyRadius) * SDL_JOYSTICK_AXIS_MAX);
-		SDL_JoystickSetVirtualAxis(
-				SDL_GameControllerGetJoystick(self.vjoyController),
-				SDL_CONTROLLER_AXIS_LEFTY, joy_axis_y_raw);
+		SDL_SetJoystickVirtualAxis(
+				SDL_GetGamepadJoystick(self.vjoyGamepad),
+				SDL_GAMEPAD_AXIS_LEFTY, joy_axis_y_raw);
 
 		// Update visuals
 		[self updateViewTransform];

@@ -24,8 +24,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wold-style-cast"
 #	pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#	if !defined(__llvm__) && !defined(__clang__)
+#		pragma GCC diagnostic ignored "-Wuseless-cast"
+#	endif
 #endif    // __GNUC__
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #ifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif    // __GNUC__
@@ -155,11 +158,11 @@ bool Yesno_gump::mouse_up(
  *  Handle ASCII character typed.
  */
 
-bool Yesno_gump::key_down(int chr) {
-	if (chr == 'y' || chr == 'Y' || chr == SDLK_RETURN
-		|| chr == SDLK_KP_ENTER) {
+bool Yesno_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
+	ignore_unused_variable_warning(unicode);
+	if (chr == SDLK_Y || chr == SDLK_RETURN) {
 		set_answer(1);
-	} else if (chr == 'n' || chr == 'N' || chr == SDLK_ESCAPE) {
+	} else if (chr == SDLK_N || chr == SDLK_ESCAPE) {
 		set_answer(0);
 	}
 	return true;
@@ -176,11 +179,12 @@ bool Yesno_gump::ask(
 		Paintable* paint, const char* font) {
 	// make sure gumps are loaded
 	auto sm = Shape_manager::get_instance();
-	if (!sm->are_gumps_loaded())
+	if (!sm->are_gumps_loaded()) {
 		sm->load_gumps_minimal();
+	}
 	Yesno_gump dlg(txt, font);
 	bool       answer;
-	if (!gumpman->do_modal_gump(&dlg, Mouse::hand,paint)) {
+	if (!gumpman->do_modal_gump(&dlg, Mouse::hand, paint)) {
 		answer = false;
 	} else {
 		answer = dlg.get_answer();

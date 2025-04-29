@@ -36,16 +36,16 @@ jobs:
           update: true
           install: |
             base-devel git p7zip zip
-            mingw-w64-clang-x86_64-toolchain mingw-w64-clang-x86_64-binutils mingw-w64-clang-x86_64-ntldd mingw-w64-clang-x86_64-SDL2
+            mingw-w64-clang-x86_64-toolchain mingw-w64-clang-x86_64-binutils mingw-w64-clang-x86_64-ntldd mingw-w64-clang-x86_64-sdl3
             mingw-w64-clang-x86_64-fluidsynth mingw-w64-clang-x86_64-libtimidity mingw-w64-clang-x86_64-libogg mingw-w64-clang-x86_64-libvorbis
-            mingw-w64-clang-x86_64-munt-mt32emu mingw-w64-clang-x86_64-libpng mingw-w64-clang-x86_64-zlib mingw-w64-clang-x86_64-SDL2_image
+            mingw-w64-clang-x86_64-munt-mt32emu mingw-w64-clang-x86_64-libpng mingw-w64-clang-x86_64-zlib mingw-w64-clang-x86_64-sdl3-image
             mingw-w64-clang-x86_64-gtk3 mingw-w64-clang-x86_64-adwaita-icon-theme mingw-w64-clang-x86_64-libxml2 mingw-w64-clang-x86_64-freetype
             mingw-w64-clang-x86_64-gimp mingw-w64-clang-x86_64-icu
-            mingw-w64-i686-toolchain mingw-w64-i686-binutils mingw-w64-i686-ntldd mingw-w64-i686-SDL2
+            mingw-w64-i686-toolchain mingw-w64-i686-binutils mingw-w64-i686-ntldd
             mingw-w64-i686-fluidsynth mingw-w64-i686-libtimidity mingw-w64-i686-libogg mingw-w64-i686-libvorbis
-            mingw-w64-i686-libpng mingw-w64-i686-zlib 
+            mingw-w64-i686-libpng mingw-w64-i686-zlib
             mingw-w64-i686-gtk3 mingw-w64-i686-adwaita-icon-theme mingw-w64-i686-libxml2 mingw-w64-i686-freetype
-            mingw-w64-i686-gimp mingw-w64-i686-autotools mingw-w64-i686-cmake 
+            mingw-w64-i686-gimp mingw-w64-i686-autotools mingw-w64-i686-cmake
       - name: Checkout munt
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         uses: actions/checkout@v4
@@ -64,18 +64,30 @@ jobs:
           cmake --version
           cmake ./../libmt32emu -Dmunt_WITH_MT32EMU_SMF2WAV=FALSE -Dmunt_WITH_MT32EMU_QT=FALSE -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
           ninja install
-      - name: Download and manually install SDL2_image-devel-2.8.8-mingw.tar.gz for mingw32 i686
+      - name: Download and manually install SDL3-devel-3.2.10-mingw.tar.gz for mingw32 i686
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         env:
           MSYSTEM: MINGW32
           ARCH: i686
         run: |
-         curl -L https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.8/SDL2_image-devel-2.8.8-mingw.tar.gz -o SDL2_image-devel-2.8.8-mingw.tar.gz
-         echo Checking sha256 hash 
-         echo 67446b12f14e4667b76a5721c91e419363e65b74b66cde8057edb29add90cd42 *SDL2_image-devel-2.8.8-mingw.tar.gz | sha256sum.exe -c
-         tar xfz SDL2_image-devel-2.8.8-mingw.tar.gz
-         cp -r -v SDL2_image-2.8.8/i686-w64-mingw32/* $MINGW_PREFIX
-         rm -r -f SDL2_image-2.8.8 SDL2_image-devel-2.8.8-mingw.tar.gz
+         curl -L https://github.com/libsdl-org/SDL/releases/download/release-3.2.10/SDL3-devel-3.2.10-mingw.tar.gz -o SDL3-devel-3.2.10-mingw.tar.gz
+         echo Checking sha256 hash
+         echo 7ae252153992997470918917f899ef7e414c77b33685f43232a4f56c9cb75ac3 *SDL3-devel-3.2.10-mingw.tar.gz | sha256sum.exe -c
+         tar xfz SDL3-devel-3.2.10-mingw.tar.gz
+         cp -r -v SDL3-3.2.10/i686-w64-mingw32/* $MINGW_PREFIX
+         rm -r -f SDL3-3.2.10 SDL3-devel-3.2.10-mingw.tar.gz
+      - name: Download and manually install SDL3_image-devel-3.2.4-mingw.tar.gz for mingw32 i686
+        if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
+        env:
+          MSYSTEM: MINGW32
+          ARCH: i686
+        run: |
+         curl -L https://github.com/libsdl-org/SDL_image/releases/download/release-3.2.4/SDL3_image-devel-3.2.4-mingw.tar.gz -o SDL3_image-devel-3.2.4-mingw.tar.gz
+         echo Checking sha256 hash
+         echo ae95f264b62cd8e4750ef91d5b25f82729e676e1fb45ec50abdca49289aa81b6 *SDL3_image-devel-3.2.4-mingw.tar.gz | sha256sum.exe -c
+         tar xfz SDL3_image-devel-3.2.4-mingw.tar.gz
+         cp -r -v SDL3_image-3.2.4/i686-w64-mingw32/* $MINGW_PREFIX
+         rm -r -f SDL3_image-3.2.4 SDL3_image-devel-3.2.4-mingw.tar.gz
       - name: Download, build and install icu4c 77.1 for mingw32 i686
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         env:
@@ -83,10 +95,10 @@ jobs:
           ARCH: i686
         run: |
          curl -L https://github.com/unicode-org/icu/releases/download/release-77-1/icu4c-77_1-src.tgz -o icu4c-77_1-src.tgz
-         echo Checking sha256 hash 
+         echo Checking sha256 hash
          echo 588e431f77327c39031ffbb8843c0e3bc122c211374485fa87dc5f3faff24061 *icu4c-77_1-src.tgz | sha256sum.exe -c
          tar xfz icu4c-77_1-src.tgz
-         cd icu/source 
+         cd icu/source
          autoreconf -vfi
          ./configure \
          --enable-shared \
@@ -95,9 +107,9 @@ jobs:
          --disable-samples \
          --enable-release
          make -j
-         make -j install 
+         make -j install
          cd ../..
-         rm -r -f icu4c-77_1-src.tgz icu 
+         rm -r -f icu4c-77_1-src.tgz icu
       - name: Checkout code for i686 build
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
         uses: actions/checkout@v4

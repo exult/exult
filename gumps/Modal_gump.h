@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MODAL_GUMP_H
 
 #include "Gump.h"
-#include "ignore_unused_variable_warning.h"
 
 #include <chrono>
 
@@ -88,7 +87,6 @@ private:
 	// the user drags it completely off screen only valid while dragging
 	int lastgood_x, lastgood_y;
 
-
 public:
 	// Colours used to draw the background.
 	struct ProceduralColours {
@@ -118,7 +116,7 @@ protected:
 
 	TileRect procedural_background;
 
-	ShapeID checkmark_background;	// Change as desired
+	ShapeID           checkmark_background;    // Change as desired
 	ProceduralColours procedural_colours;
 
 	//! Set ths gump to have a procedurally drawn background
