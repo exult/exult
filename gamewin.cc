@@ -493,10 +493,12 @@ Game_window::Game_window(
  *  Blank out screen.
  */
 void Game_window::clear_screen(bool update) {
+	win->BeginPaintIntoGuardBand(nullptr, nullptr, nullptr, nullptr);
 	win->fill8(
 			0, win->get_full_width(), win->get_full_height(),
 			win->get_start_x(), win->get_start_y());
 
+	win->EndPaintIntoGuardBand();
 	// update screen
 	if (update) {
 		show(true);
@@ -2944,6 +2946,7 @@ void Game_window::setup_game(bool map_editing) {
 }
 
 void Game_window::plasma(int w, int h, int x, int y, int startc, int endc) {
+	win->BeginPaintIntoGuardBand(&x, &y, &w, &h);
 	Image_buffer8* ibuf = get_win()->get_ib8();
 
 	ibuf->fill8(startc, w, h, x, y);
@@ -2960,6 +2963,7 @@ void Game_window::plasma(int w, int h, int x, int y, int startc, int endc) {
 			ibuf->fill8(pc, 1, 3, px2, py2 - 1);
 		}
 	}
+	win->EndPaintIntoGuardBand();
 	painted = true;
 }
 

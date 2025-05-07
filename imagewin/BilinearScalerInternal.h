@@ -20,268 +20,214 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "BilinearScaler.h"
 #include "manip.h"
 
+#include <cstddef>
 #include <cstring>
-
+#include <type_traits>
 #define COMPILE_ALL_BILINEAR_SCALERS
 
-namespace Pentagram {
+// Note BSI in these Macrsos is juat a standin for Bilinear Scaler Internal to
+// make sure they do not step on the toes of Macros that may have been defined
+// elsewhere
+#ifdef _MSC_VER
+// MSVC macro for Force inlining a function
+#	define BSI_FORCE_INLINE __forceinline
+#elif defined(__clang__)
+// Clang macro for Force inlining a function
+#	define BSI_FORCE_INLINE [[clang::always_inline]] inline
+#elif defined __GNUC__
+// GCC macro for Force inlining a function
+#	define BSI_FORCE_INLINE [[gnu::always_inline]] inline
+#else
+// Fallback Macro without forced inlining for other compilers
+#	define BSI_FORCE_INLINE inline
+#endif
 
-	template <typename uintX>
-	inline void WritePix(uint8* dest, uintX val) {
-		std::memcpy(dest, &val, sizeof(uintX));
+namespace Pentagram { namespace BilinearScaler {
+
+	// A simple typedef representing an unsigned 16.16 fixed point value
+	//  Is actually a uint_fast32_t because need 32 bits but don't really care
+	//  how the compiler actually represents it and we prefer the compiler gives
+	//  us the fastest compatible integer type that is at least 32 bit
+	typedef uint_fast32_t fixedu1616;
+
+	template <typename limit_t = std::nullptr_t>
+	// Checks to see if the destination pixel pointer has exceeded the limit
+	// If it has the pointer has exceeded the limit it return false = clipped
+	// If limit is unset or set to nullptr then no check is done and
+	// it returns true = unclipped
+	BSI_FORCE_INLINE bool IsUnclipped(uint8* dest, limit_t limit = nullptr) {
+		return (std::is_null_pointer<limit_t>::value
+				|| dest < static_cast<uint8*>(limit));
 	}
 
-#define SimpleLerp(a, b, fac)  ((b << 8) + ((a) - (b)) * (fac))
-#define SimpleLerp2(a, b, fac) ((b << 16) + ((a) - (b)) * (fac))
+	template <typename uintX, typename limit_t = std::nullptr_t>
+	// Write a piexl if desthas not exceeded limit
+	BSI_FORCE_INLINE void WritePix(
+			uint8* dest, uintX val, limit_t limit = nullptr) {
+		if (IsUnclipped(dest, limit)) {
+			std::memcpy(dest, &val, sizeof(uintX));
+		}
+	}
 
-#define CopyLerp(d, a, b, f)                       \
-	do {                                           \
-		(d)[0] = SimpleLerp2(b[0], a[0], f) >> 16; \
-		(d)[1] = SimpleLerp2(b[1], a[1], f) >> 16; \
-		(d)[2] = SimpleLerp2(b[2], a[2], f) >> 16; \
-	} while (false)
+	// Do a linear interpolation between 2 values using an 8 bit
+	// interpolation factor
+	// result is shifted left by 8
+	// if fac is 256 the result is a
+	// if fac is 0 the result is b
+	BSI_FORCE_INLINE uint_fast32_t
+			SimpleLerp8(uint_fast32_t a, uint_fast32_t b, uint_fast32_t fac) {
+		return (b << 8) + (a - b) * fac;
+	}
 
-#define FilterPixel(a, b, f, g, fx, fy)                                \
-	do {                                                               \
-		WritePix<uintX>(                                               \
-				pixel, Manip::rgb(                                     \
-							   SimpleLerp(                             \
-									   SimpleLerp(a[0], f[0], fx),     \
-									   SimpleLerp(b[0], g[0], fx), fy) \
-									   >> 16,                          \
-							   SimpleLerp(                             \
-									   SimpleLerp(a[1], f[1], fx),     \
-									   SimpleLerp(b[1], g[1], fx), fy) \
-									   >> 16,                          \
-							   SimpleLerp(                             \
-									   SimpleLerp(a[2], f[2], fx),     \
-									   SimpleLerp(b[2], g[2], fx), fy) \
-									   >> 16));                        \
-	} while (false)
+	// Do a linear interpolation between 2 values using a 16 bit
+	// interpolation factor
+	// result is shifted left by 16
+	// if fac is 65536 the result is a
+	// if fac is 0 the result is b
+	BSI_FORCE_INLINE uint_fast32_t
+			SimpleLerp16(uint_fast32_t a, uint_fast32_t b, uint_fast32_t fac) {
+		return (b << 16) + (a - (b)) * fac;
+	}
 
-#define ScalePixel2x(a, b, f, g)                                       \
-	do {                                                               \
-		WritePix<uintX>(pixel, Manip::rgb(a[0], a[1], a[2]));          \
-		WritePix<uintX>(                                               \
-				pixel + sizeof(uintX),                                 \
-				Manip::rgb(                                            \
-						(a[0] + f[0]) >> 1, (a[1] + f[1]) >> 1,        \
-						(a[2] + f[2]) >> 1));                          \
-		pixel += pitch;                                                \
-		WritePix<uintX>(                                               \
-				pixel, Manip::rgb(                                     \
-							   (a[0] + b[0]) >> 1, (a[1] + b[1]) >> 1, \
-							   (a[2] + b[2]) >> 1));                   \
-		WritePix<uintX>(                                               \
-				pixel + sizeof(uintX),                                 \
-				Manip::rgb(                                            \
-						(a[0] + b[0] + f[0] + g[0]) >> 2,              \
-						(a[1] + b[1] + f[1] + g[1]) >> 2,              \
-						(a[2] + b[2] + f[2] + g[2]) >> 2));            \
-		pixel += pitch;                                                \
-	} while (false)
+	template <
+			class uintX, class Manip, class uintS,
+			typename limit_t = std::nullptr_t>
+	// interpolate a pixel from a 2x2 texel block
+	BSI_FORCE_INLINE void Interpolate2x2BlockTo1(
+			const uint8* const tl, const uint8* const bl, const uint8* const tr,
+			const uint8* const br, const uint_fast32_t fx,
+			const uint_fast32_t fy, uint8* const pixel,
+			limit_t limit = nullptr) {
+		if (IsUnclipped(pixel, limit)) {
+			WritePix<uintX>(
+					pixel,
+					Manip::rgb(
+							SimpleLerp8(
+									SimpleLerp8(tl[0], tr[0], fx),
+									SimpleLerp8(bl[0], br[0], fx), fy)
+									>> 16,
+							SimpleLerp8(
+									SimpleLerp8(tl[1], tr[1], fx),
+									SimpleLerp8(bl[1], br[1], fx), fy)
+									>> 16,
+							SimpleLerp8(
+									SimpleLerp8(tl[2], tr[2], fx),
+									SimpleLerp8(bl[2], br[2], fx), fy)
+									>> 16),
+					limit);
+		}
+	}
 
-#define X2Xy24xLerps(c0, c1, y)                                              \
-	do {                                                                     \
-		WritePix<uintX>(                                                     \
-				pixel,                                                       \
-				Manip::rgb(cols[c0][y][0], cols[c0][y][1], cols[c0][y][2])); \
-		WritePix<uintX>(                                                     \
-				pixel + sizeof(uintX),                                       \
-				Manip::rgb(                                                  \
-						(cols[c0][y][0] + cols[c1][y][0]) >> 1,              \
-						(cols[c0][y][1] + cols[c1][y][1]) >> 1,              \
-						(cols[c0][y][2] + cols[c1][y][2]) >> 1));            \
-	} while (false)
+	template <
+			class uintX, class Manip, class uintS,
+			typename limit_t = std::nullptr_t>
+	/// This is mostly a specialization of Interpolate2x2BlockByAny in
+	/// BilinearScalerInternal_Arb.cpp with unrolled loops to geneate a 2 pixel
+	/// row between the input texels using the given filtering coefficents
+	/// \param tl Top Left source pixel
+	/// \param bl Bottom Left source pixel
+	/// \param tr Top Right source pixel
+	/// \param br Bottom Right source pixel
+	/// \param x1 horizontal filtering coefficent for left pixel (256 - 0)
+	/// \param x2 horizontal filtering coefficent for right pixel (256 - 0)
+	/// \param y vertical filtering coefficent for both pixels (256 - 0)
+	BSI_FORCE_INLINE void Interpolate2x2BlockTo2x1(
+			const uint8* const tl, const uint8* const bl, const uint8* const tr,
+			const uint8* const br, const uint_fast32_t x1, uint_fast32_t x2,
+			uint_fast32_t y, uint8* pixel, const limit_t limit = nullptr) {
+		Interpolate2x2BlockTo1<uintX, Manip, uintS>(
+				tl, bl, tr, br, x1, y, pixel, limit);
+		Interpolate2x2BlockTo1<uintX, Manip, uintS>(
+				tl, bl, tr, br, x2, y, pixel + sizeof(uintX), limit);
+	}
 
-#define X2xY24xInnerLoop(c0, c1)  \
-	do {                          \
-		X2Xy24xLerps(c0, c1, 0);  \
-		pixel += pitch;           \
-		X2Xy24xLerps(c0, c1, 1);  \
-		pixel += pitch;           \
-		X2Xy24xLerps(c0, c1, 2);  \
-		pixel += pitch;           \
-		X2Xy24xLerps(c0, c1, 3);  \
-		pixel += pitch;           \
-		X2Xy24xLerps(c0, c1, 4);  \
-		pixel += pitch;           \
-		X2Xy24xLerps(c0, c1, 5);  \
-		pixel += pitch;           \
-		X2Xy24xLerps(c0, c1, 6);  \
-		pixel += pitch;           \
-		X2Xy24xLerps(c0, c1, 7);  \
-		pixel += pitch;           \
-		X2Xy24xLerps(c0, c1, 8);  \
-		pixel += pitch;           \
-		X2Xy24xLerps(c0, c1, 9);  \
-		pixel += pitch;           \
-		X2Xy24xLerps(c0, c1, 10); \
-		pixel += pitch;           \
-		X2Xy24xLerps(c0, c1, 11); \
-		pixel += pitch;           \
-	} while (false)
+	// Read 1 texel
+	template <class Manip, typename texel_t, typename Ta>
+	// Overload of Vardic ReadTexelsV fundion that reads one texel if clipping
+	// is 1 or greater
+	BSI_FORCE_INLINE void ReadTexelsV(
+			const uint_fast8_t clipping, texel_t* texel, size_t, Ta& a) {
+		// Read a if we can
+		if (clipping >= 1) {
+			Manip::split_source(*texel, a[0], a[1], a[2]);
+		}
+	}
 
-#define X2xY24xDoColsA()                     \
-	do {                                     \
-		CopyLerp(cols[0][0], a, b, 0x0000);  \
-		CopyLerp(cols[0][1], a, b, 0x6AAA);  \
-		CopyLerp(cols[0][2], a, b, 0xD554);  \
-		CopyLerp(cols[0][3], b, c, 0x3FFE);  \
-		CopyLerp(cols[0][4], b, c, 0xAAA8);  \
-		CopyLerp(cols[0][5], c, d, 0x1552);  \
-		CopyLerp(cols[0][6], c, d, 0x7FFC);  \
-		CopyLerp(cols[0][7], c, d, 0xEAA6);  \
-		CopyLerp(cols[0][8], d, e, 0x5550);  \
-		CopyLerp(cols[0][9], d, e, 0xBFFA);  \
-		CopyLerp(cols[0][10], e, l, 0x2AA4); \
-		CopyLerp(cols[0][11], e, l, 0x954E); \
-	} while (false)
+	template <
+			class Manip, typename texel_t, typename Ta, typename Tb,
+			typename... Args>
+	// Vardic function to read 2 or more texels Vertically with a clipping value
+	// to specify how many can be read. If a texel can't be read it is  given
+	// the same value as the previously read one. If all texels are clipped they
+	// all get the value a had before reading was attempted
+	BSI_FORCE_INLINE void ReadTexelsV(
+			const uint_fast8_t clipping, texel_t* texel, size_t tpitch, Ta& a,
+			Tb& b, Args&... more) {
+		// Read a
+		ReadTexelsV<Manip>(clipping, texel, tpitch, a);
 
-#define X2xY24xDoColsB()                     \
-	do {                                     \
-		CopyLerp(cols[1][0], f, g, 0x0000);  \
-		CopyLerp(cols[1][1], f, g, 0x6AAA);  \
-		CopyLerp(cols[1][2], f, g, 0xD554);  \
-		CopyLerp(cols[1][3], g, h, 0x3FFE);  \
-		CopyLerp(cols[1][4], g, h, 0xAAA8);  \
-		CopyLerp(cols[1][5], h, i, 0x1552);  \
-		CopyLerp(cols[1][6], h, i, 0x7FFC);  \
-		CopyLerp(cols[1][7], h, i, 0xEAA6);  \
-		CopyLerp(cols[1][8], i, j, 0x5550);  \
-		CopyLerp(cols[1][9], i, j, 0xBFFA);  \
-		CopyLerp(cols[1][10], j, k, 0x2AA4); \
-		CopyLerp(cols[1][11], j, k, 0x954E); \
-	} while (false)
+		// Copy a to b if b can't be read
+		if (clipping == 1) {
+			b[0] = a[0];
+			b[1] = a[1];
+			b[2] = a[2];
+			//  recursive call to copy b to the rest of the args
+			ReadTexelsV<Manip>(0, texel + tpitch, tpitch, b, more...);
+		}
+		// Recursive call to read b and the rest of the args
+		else {
+			ReadTexelsV<Manip>(
+					clipping - 1, texel + tpitch, tpitch, b, more...);
+		}
+	}
 
-#define X1xY12xCopy(y) \
-	WritePix<uintX>(pixel, Manip::rgb(cols[y][0], cols[y][1], cols[y][2]))
-
-#define X1xY12xInnerLoop() \
-	do {                   \
-		X1xY12xCopy(0);    \
-		pixel += pitch;    \
-		X1xY12xCopy(1);    \
-		pixel += pitch;    \
-		X1xY12xCopy(2);    \
-		pixel += pitch;    \
-		X1xY12xCopy(3);    \
-		pixel += pitch;    \
-		X1xY12xCopy(4);    \
-		pixel += pitch;    \
-		X1xY12xCopy(5);    \
-		pixel += pitch;    \
-	} while (false)
-
-#define X1xY12xDoCols()                  \
-	do {                                 \
-		CopyLerp(cols[0], a, b, 0x0000); \
-		CopyLerp(cols[1], a, b, 0xD554); \
-		CopyLerp(cols[2], b, c, 0xAAA8); \
-		CopyLerp(cols[3], c, d, 0x7FFC); \
-		CopyLerp(cols[4], d, e, 0x5550); \
-		CopyLerp(cols[5], e, l, 0x2AA4); \
-	} while (false)
-
-#define ArbInnerLoop(a, b, f, g)                                  \
-	do {                                                          \
-		if (pos_y < end_y)                                        \
-			do {                                                  \
-				pos_x = dst_x;                                    \
-				pixel = blockline_start;                          \
-				/* Dest Loop X */                                 \
-				if (pos_x < end_x)                                \
-					do {                                          \
-						FilterPixel(                              \
-								a, b, f, g, (end_x - pos_x) >> 8, \
-								(end_y - pos_y) >> 8);            \
-						pixel += sizeof(uintX);                   \
-						pos_x += add_x;                           \
-					} while (pos_x < end_x);                      \
-				if (!next_block)                                  \
-					next_block = pixel;                           \
-				blockline_start += pitch;                         \
-				pos_y += add_y;                                   \
-			} while (pos_y < end_y);                              \
-		end_y += 1 << 16;                                         \
-	} while (false)
-
-#define Read5(a, b, c, d, e)                                          \
-	do {                                                              \
-		Manip::split_source(*(texel + tpitch * 0), a[0], a[1], a[2]); \
-		Manip::split_source(*(texel + tpitch * 1), b[0], b[1], b[2]); \
-		Manip::split_source(*(texel + tpitch * 2), c[0], c[1], c[2]); \
-		Manip::split_source(*(texel + tpitch * 3), d[0], d[1], d[2]); \
-		Manip::split_source(*(texel + tpitch * 4), e[0], e[1], e[2]); \
-	} while (false)
-
-#define Read5_Clipped(a, b, c, d, e)                                  \
-	do {                                                              \
-		Manip::split_source(*(texel + tpitch * 0), a[0], a[1], a[2]); \
-		Manip::split_source(*(texel + tpitch * 1), b[0], b[1], b[2]); \
-		Manip::split_source(*(texel + tpitch * 2), c[0], c[1], c[2]); \
-		Manip::split_source(*(texel + tpitch * 3), d[0], d[1], d[2]); \
-		e[0] = d[0];                                                  \
-		e[1] = d[1];                                                  \
-		e[2] = d[2];                                                  \
-	} while (false)
-
-#define Read6(a, b, c, d, e, l)                                       \
-	do {                                                              \
-		Manip::split_source(*(texel + tpitch * 0), a[0], a[1], a[2]); \
-		Manip::split_source(*(texel + tpitch * 1), b[0], b[1], b[2]); \
-		Manip::split_source(*(texel + tpitch * 2), c[0], c[1], c[2]); \
-		Manip::split_source(*(texel + tpitch * 3), d[0], d[1], d[2]); \
-		Manip::split_source(*(texel + tpitch * 4), e[0], e[1], e[2]); \
-		Manip::split_source(*(texel + tpitch * 5), l[0], l[1], l[2]); \
-	} while (false)
-
-#define Read6_Clipped(a, b, c, d, e, l)                               \
-	do {                                                              \
-		Manip::split_source(*(texel + tpitch * 0), a[0], a[1], a[2]); \
-		Manip::split_source(*(texel + tpitch * 1), b[0], b[1], b[2]); \
-		Manip::split_source(*(texel + tpitch * 2), c[0], c[1], c[2]); \
-		Manip::split_source(*(texel + tpitch * 3), d[0], d[1], d[2]); \
-		Manip::split_source(*(texel + tpitch * 4), e[0], e[1], e[2]); \
-		l[0] = e[0];                                                  \
-		l[1] = e[1];                                                  \
-		l[2] = e[2];                                                  \
-	} while (false)
-
-	// Very very simple point scaler
+	// Bilinear scaler specialized for 2x scaling only
 	template <class uintX, class Manip, class uintS>
 	bool BilinearScalerInternal_2x(
-			SDL_Surface* tex, sint32 sx, sint32 sy, sint32 sw, sint32 sh,
-			uint8* pixel, sint32 dw, sint32 dh, sint32 pitch, bool clamp_src);
+			SDL_Surface* tex, uint_fast32_t sx, uint_fast32_t sy,
+			uint_fast32_t sw, uint_fast32_t sh, uint8* pixel, uint_fast32_t dw,
+			uint_fast32_t dh, uint_fast32_t pitch, bool clamp_src);
 
+	// Bilinear Scaler specialized for 2x horizontal 2.4x vertical scaling aka
+	// aspect correct 2x.
 	template <class uintX, class Manip, class uintS>
 	bool BilinearScalerInternal_X2Y24(
-			SDL_Surface* tex, sint32 sx, sint32 sy, sint32 sw, sint32 sh,
-			uint8* pixel, sint32 dw, sint32 dh, sint32 pitch, bool clamp_src);
+			SDL_Surface* tex, uint_fast32_t sx, uint_fast32_t sy,
+			uint_fast32_t sw, uint_fast32_t sh, uint8* pixel, uint_fast32_t dw,
+			uint_fast32_t dh, uint_fast32_t pitch, bool clamp_src);
 
+	// Bilinear Scaler specialized for 1x horizontal 1.2x vertical scaling aka
+	// aspect correction with no scaling.
 	template <class uintX, class Manip, class uintS>
 	bool BilinearScalerInternal_X1Y12(
-			SDL_Surface* tex, sint32 sx, sint32 sy, sint32 sw, sint32 sh,
-			uint8* pixel, sint32 dw, sint32 dh, sint32 pitch, bool clamp_src);
+			SDL_Surface* tex, uint_fast32_t sx, uint_fast32_t sy,
+			uint_fast32_t sw, uint_fast32_t sh, uint8* pixel, uint_fast32_t dw,
+			uint_fast32_t dh, uint_fast32_t pitch, bool clamp_src);
 
+	// Arbitrary Bilinear scaler capable of scaling by any integer or non
+	// integer factor with no restrictions
 	template <class uintX, class Manip, class uintS>
 	bool BilinearScalerInternal_Arb(
-			SDL_Surface* tex, sint32 sx, sint32 sy, sint32 sw, sint32 sh,
-			uint8* pixel, sint32 dw, sint32 dh, sint32 pitch, bool clamp_src);
+			SDL_Surface* tex, uint_fast32_t sx, uint_fast32_t sy,
+			uint_fast32_t sw, uint_fast32_t sh, uint8* pixel, uint_fast32_t dw,
+			uint_fast32_t dh, uint_fast32_t pitch, bool clamp_src);
 
 #ifdef COMPILE_GAMMA_CORRECT_SCALERS
-#	define InstantiateFunc(func, a, b, c)                                    \
-		template bool func<a, b, c>(                                          \
-				SDL_Surface*, sint32, sint32, sint32, sint32, uint8*, sint32, \
-				sint32, sint32, bool);                                        \
-		template bool func<a, b##_GC, c>(                                     \
-				SDL_Surface*, sint32, sint32, sint32, sint32, uint8*, sint32, \
-				sint32, sint32, bool)
+#	define InstantiateFunc(func, a, b, c)                                 \
+		template bool func<a, b, c>(                                       \
+				SDL_Surface*, uint_fast32_t, uint_fast32_t, uint_fast32_t, \
+				uint_fast32_t, uint8*, uint_fast32_t, uint_fast32_t,       \
+				uint_fast32_t, bool);                                      \
+		template bool func<a, b##_GC, c>(                                  \
+				SDL_Surface*, uint_fast32_t, uint_fast32_t, uint_fast32_t, \
+				uint_fast32_t, uint8*, uint_fast32_t, uint_fast32_t,       \
+				uint_fast32_t, bool)
 #else
-#	define InstantiateFunc(func, a, b, c)                                    \
-		template bool func<a, b, c>(                                          \
-				SDL_Surface*, sint32, sint32, sint32, sint32, uint8*, sint32, \
-				sint32, sint32, bool)
+#	define InstantiateFunc(func, a, b, c)                                 \
+		template bool func<a, b, c>(                                       \
+				SDL_Surface*, uint_fast32_t, uint_fast32_t, uint_fast32_t, \
+				uint_fast32_t, uint8*, uint_fast32_t, uint_fast32_t,       \
+				uint_fast32_t, bool)
 #endif
 
 #ifdef COMPILE_ALL_BILINEAR_SCALERS
@@ -299,4 +245,4 @@ namespace Pentagram {
 		InstantiateFunc(func, uint32, Manip8to32, uint8); \
 		InstantiateFunc(func, uint32, Manip32to32, uint32)
 #endif
-}    // namespace Pentagram
+}}    // namespace Pentagram::BilinearScaler

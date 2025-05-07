@@ -58,7 +58,10 @@
 #pragma warning(3 : 4189)
 
 #include <windows.h>
-
+#define USE_XBR_SCALER 1
+#define USE_HQ2X_SCALER 1
+#define USE_HQ3X_SCALER 1
+#define USE_HQ4X_SCALER 1
 #define USE_FMOPL_MIDI   1
 #define USE_WINDOWS_MIDI 1
 #define USE_MT32EMU_MIDI 1

@@ -359,6 +359,7 @@ int playfli::play(
 
 		ticks += fli_speed * 10;
 
+		win->FillGuardband();
 		if (!dont_show && !skip_frame) {
 			win->show();
 		}

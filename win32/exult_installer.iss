@@ -75,6 +75,7 @@ Source: Exult-i686\README.txt; DestDir: {app}; Flags: ignoreversion; Components:
 Source: Exult-i686\README.windows.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
 Source: Exult-i686\sidefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
 Source: Exult-i686\images\*.gif; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
+Source: Exult-i686\images\*.svg; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
 Source: Exult-i686\images\docs*.png; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
 Source: Exult-i686\Data\exult.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
 Source: Exult-i686\Data\exult_bg.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult

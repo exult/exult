@@ -38,6 +38,7 @@ Source: Studio-i686\COPYING.txt; DestDir: {app}; Flags: onlyifdoesntexist
 Source: Studio-i686\Exult Source Code.url; DestDir: {app}; Flags: ignoreversion;
 Source: Studio-i686\AUTHORS.txt; DestDir: {app}; Flags: onlyifdoesntexist
 Source: Studio-i686\images\*.gif; DestDir: {app}\images\; Flags: ignoreversion
+Source: Studio-i686\images\*.svg; DestDir: {app}\images\; Flags: ignoreversion
 Source: Studio-i686\images\studio*.png; DestDir: {app}\images\; Flags: ignoreversion
 Source: Studio-i686\exult_studio.html; DestDir: {app}; Flags: ignoreversion
 Source: Studio-i686\exult_studio.txt; DestDir: {app}; Flags: ignoreversion

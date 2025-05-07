@@ -632,6 +632,7 @@ dist:   $(EXEC) exconfig.dll install Exult\ Source\ Code.url mods
 	cp docs/faq.html $(U7PATH)
 	mkdir -p $(U7PATH)/images
 	cp docs/images/*.gif $(U7PATH)/images
+	cp docs/images/*.svg $(U7PATH)/images
 	cp docs/images/docs*.png $(U7PATH)/images
 	cp NEWS $(U7PATH)/NEWS.txt
 	cp README $(U7PATH)/README.txt
@@ -746,6 +747,7 @@ studiodist: exult_studio$(EXEEXT) studioinstall  Exult\ Source\ Code.url
 	cp docs/exult_studio.txt $(U7PATH)
 	mkdir -p $(U7PATH)/images
 	cp docs/images/*.gif $(U7PATH)/images
+	cp docs/images/*.svg $(U7PATH)/images
 	cp docs/images/studio*.png $(U7PATH)/images
 	cp AUTHORS $(U7PATH)/AUTHORS.txt
 	cp COPYING $(U7PATH)/COPYING.txt

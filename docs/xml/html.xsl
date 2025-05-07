@@ -40,7 +40,7 @@
 				<table class="borderless full-width">
 					<tr>
 						<td class="centered">
-							<img src="images/exult_logo.gif" width="181" height="127" alt="Exult Logo" />
+							<img src="images/exult_logo_nice.svg" width="181" height="127" alt="Exult Logo" />
 						</td>
 					</tr>
 					<tr>

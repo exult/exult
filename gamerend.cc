@@ -354,6 +354,8 @@ void Game_window::paint(
 	if (!win->ready()) {
 		return;
 	}
+	// This will adjust and clip the rectangle as appropriate, it may end up bigger or smaller
+	win->BeginPaintIntoGuardBand(&x, &y, &w, &h);
 	int gx = x;
 	int gy = y;
 	int gw = w;
@@ -432,6 +434,8 @@ void Game_window::paint(
 		// Set palette for lights.
 		clock->set_light_source(carried_light + light_sources, in_dungeon);
 	}
+
+	win->EndPaintIntoGuardBand();
 	win->clear_clip();
 }
 
