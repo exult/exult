@@ -28,11 +28,13 @@
 #include "actors.h"
 #include "databuf.h"
 #include "exceptions.h"
+#include "exult.h"
 #include "fnames.h"
 #include "game.h"
 #include "gameclk.h"
 #include "gamemap.h"
 #include "gamewin.h"
+#include "listfiles.h"
 #include "party.h"
 #include "span.h"
 #include "utils.h"
@@ -44,6 +46,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
@@ -253,14 +256,10 @@ void Game_window::restore_gamedat(int num    // 0-9, currently.
  *  List of 'gamedat' files to save (in addition to 'iregxx'):
  */
 constexpr static const std::array bgsavefiles{
-		GSCRNSHOT, GSAVEINFO,    // MUST BE FIRST!!
-		IDENTITY,                // MUST BE #2
 		GEXULTVER, GNEWGAMEVER, NPC_DAT, MONSNPCS,  USEVARS,
 		USEDAT,    FLAGINIT,    GWINDAT, GSCHEDULE, NOTEBOOKXML};
 
 constexpr static const std::array sisavefiles{
-		GSCRNSHOT, GSAVEINFO,    // MUST BE FIRST!!
-		IDENTITY,                // MUST BE #2
 		GEXULTVER, GNEWGAMEVER, NPC_DAT,   MONSNPCS,   USEVARS,    USEDAT,
 		FLAGINIT,  GWINDAT,     GSCHEDULE, KEYRINGDAT, NOTEBOOKXML};
 
@@ -426,7 +425,7 @@ void Game_window::read_save_names() {
 	}
 }
 
-void Game_window::write_saveinfo() {
+void Game_window::write_saveinfo(bool screenshot) {
 	int save_count = 1;
 
 	{
@@ -510,12 +509,16 @@ void Game_window::write_saveinfo() {
 		}
 	}
 
-	{
+	if (screenshot) {
+		std::cout << "Creating screenshot for savegame" << std::endl;
 		// Save Shape
 		std::unique_ptr<Shape_file> map = create_mini_screenshot();
 		// Open file; throws an exception - Don't care
 		OFileDataSource out(GSCRNSHOT);
 		map->save(&out);
+	} else if (U7exists(GSCRNSHOT)) {
+		// Delete the old one if it exists
+		U7remove(GSCRNSHOT);
 	}
 
 	{
@@ -1114,6 +1117,15 @@ bool Game_window::save_gamedat_zip(
 	const std::string filestr = get_system_path(fname);
 	zipFile           zipfile = zipOpen(filestr.c_str(), 1);
 
+	// We need to explicitly save these as they are no longer included in 
+	// savefiles and they should always be stored first and as level 1
+	// Screenshot may not exist so only include it if it exists
+	if (U7exists(GSCRNSHOT)) {
+		Save_level1(zipfile, GSCRNSHOT);
+	}
+	Save_level1(zipfile, GSAVEINFO);
+	Save_level1(zipfile, IDENTITY);
+
 	// Level 1 Compression
 	if (save_compression != 2) {
 		for (const auto* savefile : savefiles) {
@@ -1138,12 +1150,6 @@ bool Game_window::save_gamedat_zip(
 	}
 	// Level 2 Compression
 	else {
-		// Keep saveinfo, screenshot, identity using normal compression
-		// There are always files 0 - 2
-		Save_level1(zipfile, GSCRNSHOT);
-		Save_level1(zipfile, GSAVEINFO);
-		Save_level1(zipfile, IDENTITY);
-
 		// Start the GAMEDAT file.
 		Begin_level2(zipfile, 0);
 
@@ -1185,3 +1191,83 @@ bool Game_window::save_gamedat_zip(
 }
 
 #endif
+
+void Game_window::MakeEmergencySave(const char* savename) {
+	// Using mostly std::filesystem here insteaf of U7 functions to avoid
+	// repeated looking up paths
+
+	// Set default savegame name
+	if (!savename) {
+		savename = "Crash Save";
+	}
+	std::cerr << "Trying to create an emergency save named \"" << savename
+			  << "\"" << std::endl;
+
+	// find the next available savegame index
+	int freesaveindex = -1;
+
+	// Just check if the save files exist
+	// The NewFileGump uses a more complicated method with no actual limit
+	// but I want this simple and unlimited seems like a bad idea for this
+	// Dont ever expect a user to have 1000 save games so I think this is ok
+	for (int i = 0; i < 1000; i++) {
+		char filename[std::size(SAVENAME) + 2];
+		snprintf(
+				filename, sizeof(filename), SAVENAME, i,
+				GAME_BG   ? "bg"
+				: GAME_SI ? "si"
+						  : "dev");
+
+		if (!U7exists(filename)) {
+			freesaveindex = i;
+			break;
+		}
+	}
+
+	if (freesaveindex == -1) {
+		std::cerr << " unable to find free save number for emergency save"
+				  << std::endl;
+	} else {
+		// Get the gamedat path and the crashtemp path
+		auto gamedatpath   = get_system_path("<GAMEDAT>");
+		auto crashtemppath = get_system_path("<GAMEDAT>.crashtemp");
+
+		// change <GAMEDAT> to point to crashtemp
+		add_system_path("<GAMEDAT>", crashtemppath);
+
+		// Remove old crashtemp if it exists
+		std::filesystem::remove_all(crashtemppath);
+
+		// create dorectory for crashtemp
+		std::filesystem::create_directory(crashtemppath);
+
+		// Copy the files from gamedat to crashtemp by iterating the directory
+		// manually so we can continue on failure
+		// std::filesystem::copy_all crashes on the exultserver file
+		for (const auto& entry :
+			 std::filesystem::directory_iterator(gamedatpath)) {
+			auto newpath
+					= crashtemppath + "/" + entry.path().filename().string();
+
+			// Copy files ignoring errors
+			std::error_code ec;
+			std::filesystem::copy_file(entry.path(), newpath, ec);
+		}
+
+		// Write out current gamestate to gamedat
+		std::cerr << " attempting to save current gamestate to gamedat"
+				  << std::endl;
+		write(true);
+
+		// save it as the save
+		std::cerr << " attempting to save gamedat as \"" << savename << "\""
+				  << std::endl;
+		save_gamedat(freesaveindex, savename);
+
+		// Remove crashtemp
+		std::filesystem::remove_all(crashtemppath);
+
+		// Put <GAMEDAT> back to how it was
+		add_system_path("<GAMEDAT>", gamedatpath);
+	}
+}

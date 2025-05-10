@@ -25,6 +25,7 @@
 #include "databuf.h"
 #include "exult_constants.h"
 #include "fnames.h"
+#include "game.h"
 #include "hash_utils.h"
 #include "modmgr.h"
 #include "sha1/sha1.h"
@@ -34,8 +35,17 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <tuple>
 
-using File2HashMap = std::map<const char*, const char*>;
+struct FileHash {
+	const char* hash;
+	const char* alternative;
+
+	FileHash(const char* hash, const char* alternative = nullptr)
+			: hash(hash), alternative(alternative) {}
+};
+
+using File2HashMap = std::map<const char*, FileHash>;
 extern const File2HashMap blackgate_files;
 extern const File2HashMap portenoire_files;
 extern const File2HashMap puertanegra_files;
@@ -49,12 +59,13 @@ extern const File2HashMap silverseed_files;
 int verify_files(BaseGameInfo* game) {
 	const File2HashMap empty_map;
 	const auto get_filelist = [&empty_map, game]() -> const File2HashMap& {
-		switch (game->get_game_type()) {
+		switch (game ? game->get_game_type() : Game::get_game_type()) {
 		case BLACK_GATE:
-			if (game->have_expansion()) {
+			if (game ? game->have_expansion() : Game::has_expansion()) {
 				return forgeofvirtue_files;
 			}
-			switch (game->get_game_language()) {
+			switch (game ? game->get_game_language()
+						 : Game::get_game_language()) {
 			case ENGLISH:
 				return blackgate_files;
 			case FRENCH:
@@ -66,13 +77,14 @@ int verify_files(BaseGameInfo* game) {
 			}
 			break;
 		case SERPENT_ISLE:
-			if (game->have_expansion()) {
+			if (game ? game->have_expansion() : Game::has_expansion()) {
 				return silverseed_files;
 			}
-			if (game->is_si_beta()) {
+			if (game ? game->is_si_beta() : Game::is_si_beta()) {
 				return serpentbeta_files;
 			}
-			switch (game->get_game_language()) {
+			switch (game ? game->get_game_language()
+						 : Game::get_game_language()) {
 			case ENGLISH:
 				return blackgate_files;
 			case FRENCH:
@@ -111,11 +123,18 @@ int verify_files(BaseGameInfo* game) {
 		const auto length   = ds.getSize();
 		const auto data     = ds.readN(length);
 		const auto hash_str = sha1::toHexString(sha1::calc(data.get(), length));
-		if (strcmp(hash, hash_str.data()) != 0) {
+		bool hashgood = strcmp(hash.hash, hash_str.data()) == 0;
+		if (!hashgood && hash.alternative) {
+			hashgood = strcmp(hash.alternative, hash_str.data()) == 0;
+		}
+		if (!hashgood) {
 			errors++;
 			std::cout << "Hash mismatch for file '" << file << "':" << std::endl
-					  << "\tExpected hash: " << hash << std::endl
-					  << "\tActual hash:   " << hash_str.data() << std::endl;
+					  << "\tExpected hash: " << hash.hash << std::endl;
+			if (hash.alternative) {
+				std::cout << "\tOr:            " << hash.alternative << std::endl;
+			}
+				std::cout << "\tActual hash:   " << hash_str.data() << std::endl;
 		}
 	}
 	std::cout << "========================================" << std::endl
@@ -172,7 +191,11 @@ const File2HashMap blackgate_files{
 		{       U7MAP, "960b7834f455e918c4088076c2629eb50cfb827b"},
 		{    U7SPEECH, "7af1fbda6e0fbdbc07ed8a851de16aa99fa4bb4e"},
 		{ U7VOICE_FLX, "cc276cc23dd3c900ef3e8af26d6384df3dbee14c"},
-		{     USECODE, "570aa419ee8ccd76343162b59ec71fcbea72e1a7"},
+		// 2 hashes for BG Usecode 
+		// First is v3.4 timestamped 1992-05-27 16:46:38
+		// Second is v3.0 Timestamped 1992-03-11 23:08:40
+		{     USECODE, {"570aa419ee8ccd76343162b59ec71fcbea72e1a7",
+		                "272653ec0075da961f9393c716da0baf5f3e19f1"}}, 
 		{     WEAPONS, "cea42a72a7cf46703f1168f9d49c912aa8d157e6"},
 		{      WGTVOL, "554d1788918468507b0bb4e4fa19087cd99d3610"},
 		{        WIHH, "2546cfe8e7d227d170f82b82db51c422ec04f88f"},

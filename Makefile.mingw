@@ -405,7 +405,7 @@ endif
 CXXFLAGS:=-MMD -std=c++17 -fdiagnostics-color=always $(ARCHFLAGS) $(ARCHTYPE) $(strip $(OPT_LEVEL) $(WARNINGS) -mms-bitfields)
 
 LDFLAGS:=$(ARCHFLAGS) $(ARCHTYPE)
-LIBS:=-lmingw32 $(SDL_LIBS) $(ZIP_LIBS) -lpng $(OGG_LIBS) $(FLUIDSYNTH_LIBS) $(TIMIDITY_LIBS) $(MT32EMU_LIBS) -ldsound -luuid -lole32 -lwinmm -lws2_32 $(SUBSYSTEM) $(MTHREADS)
+LIBS:=-lmingw32 $(SDL_LIBS) $(ZIP_LIBS) -lpng $(OGG_LIBS) $(FLUIDSYNTH_LIBS) $(TIMIDITY_LIBS) $(MT32EMU_LIBS) -ldsound -luuid -lole32 -lwinmm -lws2_32 -lDbghelp $(SUBSYSTEM) $(MTHREADS)
 
 EXEC:=Exult.exe
 EXEEXT:=.exe
@@ -496,6 +496,11 @@ ES_SHAPES_OBJS:=\
 	shapes/shapeinf/sfxinf.o \
 	shapes/shapeinf/warminf.o \
 	shapes/shapeinf/weaponinf.o
+
+WIN32_OBJS:=\
+	win32/crash.o
+
+OBJS += $(WIN32_OBJS)	
 
 MODS = bgkeyring islefaq sifixes
 

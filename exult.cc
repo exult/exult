@@ -469,7 +469,20 @@ int main(int argc, char* argv[]) {
 		if (e.get_errno() != 0) {
 			perror("Error Description");
 		}
+		if (e.sourcefile()) {
+			cout << "SourceFile: " << e.sourcefile() << endl;
+			cout << "line: " << e.line() << endl;
+		}
 		cerr << "============================" << endl;
+
+		// Verify Game Files before we exit just incase the unhandled exception
+		// was caused by a bad file
+		verify_files(nullptr);
+
+		// make an emergency save
+		if (gwin && gwin->get_main_actor()) {
+			gwin->MakeEmergencySave();
+		}
 		result = e.get_errno();
 	}
 
@@ -497,6 +510,11 @@ int exult_main(const char* runpath) {
 		config->read_config_file(USER_CONFIGURATION_FILE);
 	}
 
+#if defined _WIN32
+	// Install the crash handler after we've loaded config
+	extern void WindowsInstallCrashHandler();
+	WindowsInstallCrashHandler();
+#endif
 	// reset-video command line option
 	if (arg_reset_video) {
 		config->set("config/video/display/width", 1024, false);

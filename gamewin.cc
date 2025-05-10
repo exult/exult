@@ -1369,7 +1369,7 @@ bool Game_window::init_gamedat(bool create) {
  *  Output: 0 if error, already reported.
  */
 
-void Game_window::write() {
+void Game_window::write(bool nopaint) {
 	// Lets just show a nice message on screen first
 
 	const int width       = get_width();
@@ -1379,11 +1379,13 @@ void Game_window::write() {
 	const int text_height = shape_man->get_text_height(0);
 	const int text_width  = shape_man->get_text_width(0, "Saving Game");
 
-	win->fill_translucent8(0, width, height, 0, 0, shape_man->get_xform(8));
-	shape_man->paint_text(
-			0, "Saving Game", centre_x - text_width / 2,
-			centre_y - text_height);
-	show(true);
+	if (!nopaint) {
+		win->fill_translucent8(0, width, height, 0, 0, shape_man->get_xform(8));
+		shape_man->paint_text(
+				0, "Saving Game", centre_x - text_width / 2,
+				centre_y - text_height);
+		show(true);
+	}
 	for (auto* map : maps) {
 		map->write_ireg();    // Write ireg files.
 	}
@@ -1391,7 +1393,7 @@ void Game_window::write() {
 	usecode->write();          // Usecode.dat (party, global flags).
 	Notebook_gump::write();    // Write out journal.
 	write_gwin();              // Write our data.
-	write_saveinfo();
+	write_saveinfo(!nopaint);
 }
 
 /*

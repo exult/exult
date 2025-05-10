@@ -701,7 +701,7 @@ public:
 	/*
 	 *  Save/restore/startup:
 	 */
-	void write();                          // Write out to 'gamedat'.
+	void write(bool nopaint=false);                          // Write out to 'gamedat'.
 	void read();                           // Read in 'gamedat'.
 	void write_gwin();                     // Write gamedat/gamewin.dat.
 	void read_gwin();                      // Read gamedat/gamewin.dat.
@@ -733,7 +733,7 @@ private:
 	void restore_flex_files(IDataSource& in, const char* basepath);
 
 public:
-	void write_saveinfo();    // Write the save info to gamedat
+	void write_saveinfo(bool screenshot=true);    // Write the save info to gamedat
 
 	// Get saved-game name.
 	inline const std::string& get_save_name(size_t i) const {
@@ -753,6 +753,13 @@ public:
 	void save_gamedat(const char* fname, const char* savename);
 	void save_gamedat(int num, const char* savename);
 	bool init_gamedat(bool create);    // Initialize gamedat directory
+
+	// Emergency save Creates a new save in the next available index
+	// It preserves the existing GAMEDAT
+	// and it does not paint the saving game message on screen or create the
+	// miniscreenshot
+	void MakeEmergencySave(const char* savename=nullptr);
+
 #ifdef HAVE_ZIP_SUPPORT
 private:
 	bool save_gamedat_zip(const char* fname, const char* savename);

@@ -31,15 +31,27 @@
 class exult_exception : public std::exception {
 	std::string what_;
 	int         errno_;
+	const char* sourcefile_;
+	int         line_;
 
 public:
-	explicit exult_exception(std::string what_arg)
-			: what_(std::move(what_arg)), errno_(errno) {}
+	explicit exult_exception(
+			std::string what_arg, const char* sourcefile = nullptr, int line = 0)
+			: what_(std::move(what_arg)), errno_(errno), sourcefile_(sourcefile),
+			  line_(line) {}
 
 	const char* what() const noexcept override {
 		return what_.c_str();
 	}
 
+	const char* sourcefile() const
+	{
+		return sourcefile_;
+	}
+	int line() const
+	{
+		return line_;
+	}
 	int get_errno() const {
 		return errno_;
 	}
@@ -53,7 +65,8 @@ class quit_exception : public exult_exception {
 	int result_;
 
 public:
-	explicit quit_exception(int result = 0)
+	explicit quit_exception(
+			int result = 0)
 			: exult_exception("Quit"), result_(result) {}
 
 	int get_result() const {
@@ -78,40 +91,62 @@ protected:
 
 class file_exception : public exult_exception {
 public:
-	explicit file_exception(std::string what_arg)
-			: exult_exception(std::move(what_arg)) {}
+	explicit file_exception(
+			std::string what_arg, const char* sourcefile, int line)
+			: exult_exception(std::move(what_arg),sourcefile,line) {}
 };
 
 class file_open_exception : public file_exception {
 	static const std::string prefix_;
 
 public:
-	explicit file_open_exception(const std::string& file)
-			: file_exception("Error opening file " + file) {}
+	explicit file_open_exception(
+			const std::string& file,const char* sourcefile, int line)
+			: file_exception("Error opening file " + file, sourcefile, line) {}
 };
+
 
 class file_write_exception : public file_exception {
 	static const std::string prefix_;
 
 public:
-	explicit file_write_exception(const std::string& file)
-			: file_exception("Error writing to file " + file) {}
+	explicit file_write_exception(
+			const std::string& file, const char* sourcefile, int line)
+			: file_exception(
+					  "Error writing to file " + file, sourcefile, line) {}
 };
 
 class file_read_exception : public file_exception {
 	static const std::string prefix_;
 
 public:
-	explicit file_read_exception(const std::string& file)
-			: file_exception("Error reading from file " + file) {}
+	explicit file_read_exception(
+			const std::string& file, const char* sourcefile, int line)
+			: file_exception(
+					  "Error reading from file " + file, sourcefile, line) {}
 };
+
 
 class wrong_file_type_exception : public file_exception {
 public:
 	explicit wrong_file_type_exception(
-			const std::string& file, const std::string& type)
-			: file_exception("File " + file + " is not of type " + type) {}
+			const std::string& file, const std::string& type,
+			const char* sourcefile, int line)
+			: file_exception("File " + file + " is not of type " + type,sourcefile,line) {}
 };
+
+//
+// Macros to automatically set Sourcefile and line arguments
+//
+#define file_exception(what_arg) file_exception(what_arg, __FILE__, __LINE__)
+#define file_open_exception(file) file_open_exception(file, __FILE__, __LINE__)
+#define file_write_exception(file) \
+	file_write_exception(file, __FILE__, __LINE__)
+
+#define file_read_exception(file) \
+	file_read_exception(file,  __FILE__, __LINE__)
+
+#define wrong_file_type_exception(file, type) wrong_file_type_exception(file,type,__FILE__,__LINE__)
 
 /*
  *  Exception that gets fired when the user aborts something

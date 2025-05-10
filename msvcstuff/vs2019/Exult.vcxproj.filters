@@ -746,6 +746,9 @@
     <ClCompile Include="..\..\gumps\StringList_widget.cc">
       <Filter>gumps</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\win32\crash.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\actions.h">
