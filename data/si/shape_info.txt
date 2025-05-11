@@ -49,7 +49,7 @@
 
 %%section shape_sfx
 #	Format
-#		:shapenum/sfxnum/delay/range/rand/extra/volume
+#		:shapenum/sfxnum/chance/range/rand/extra/volume/framenum
 #	Only the first two parameters are required.
 #	delay is a flag (either 0 or 1) which indicates extra delay
 #	between successive plays. If it is 1 and the shape does *not*
@@ -66,6 +66,8 @@
 #	twelve times for midnight).
 #	Volume is used to control individual sfx volume levels. If no value 
 #	is given, 100% volume will be assumed.
+*	framenum sets which frame plays the sfx, -1 is the default and plays
+*	for all frames.
 #
 #	Surf (109)
 :612/109/0/0/0/0/20

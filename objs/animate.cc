@@ -196,6 +196,18 @@ void Shape_sfx::update(bool play) {
 		return;
 	}
 
+	// Check if only a specific framenum should play the SFX
+	if (sfxinf->get_frame() != -1) {
+		int frame_for_sfx = sfxinf->get_frame();
+		int current_frame = obj->get_framenum();
+		// Check if framenum is valid
+		int num_frames = obj->get_num_frames();
+		if (frame_for_sfx >= 0 && frame_for_sfx < num_frames) {
+			// Play only on the specific framenum
+			play = (current_frame == frame_for_sfx);
+		}
+	}
+
 	if (looping) {
 		play = true;
 	}

@@ -42,6 +42,7 @@ class SFX_info : public Base_info {
 	int  chance;    // % chance of playing the SFX.
 	int  extra;     // For grandfather clock.
 	int  volume;    // For volume of individual SFX
+	int  frame;	    // Frame number to play the SFX on
 
 public:
 	friend class Shape_info;
@@ -93,6 +94,10 @@ public:
 
 	int get_volume() const {
 		return volume;
+	}
+
+	int get_frame() const {
+		return frame;
 	}
 
 	int get_extra_sfx() const {
