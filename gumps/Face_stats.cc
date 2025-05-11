@@ -42,6 +42,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define PORTRAIT_WIDTH  40
 #define PORTRAIT_HEIGHT 35
 
+// Frames for the Badge shape
+enum BadgeFrames {
+	ASLEEP = 0,
+	POISONED,
+	CHARMED,
+	HUNGRY,
+	PROTECTED,
+	CURSED,
+	PARALYZED,
+	FREEZING,
+	NUM_BADGES
+};
+
 class Stat_bar : public Gump_button {
 	Actor*        actor;
 	int           prop;
@@ -145,12 +158,16 @@ protected:
 	bool      para;
 	bool      charm;
 	bool      curse;
+	bool      freezing;
+	bool      hungry;
+	bool      asleep;
 
 public:
 	Portrait_button(Gump* par, int px, int py, Actor* a);
 	~Portrait_button() override;
 	void double_clicked(int x, int y) override;
 	void paint() override;
+	void paintBadge(int frame, int position);
 
 	// update dirty region, if required
 	void update_widget() override;
@@ -176,12 +193,15 @@ Portrait_button::Portrait_button(Gump* par, int px, int py, Actor* a)
 				PALETTE_INDEX_BLUE);
 	}
 
-	hit   = actor->was_hit();
-	pois  = actor->get_flag(Obj_flags::poisoned);
-	prot  = actor->get_flag(Obj_flags::protection);
-	para  = actor->get_flag(Obj_flags::paralyzed);
-	charm = actor->get_flag(Obj_flags::charmed);
-	curse = actor->get_flag(Obj_flags::cursed);
+	hit      = actor->was_hit();
+	pois     = actor->get_flag(Obj_flags::poisoned);
+	prot     = actor->get_flag(Obj_flags::protection);
+	para     = actor->get_flag(Obj_flags::paralyzed);
+	charm    = actor->get_flag(Obj_flags::charmed);
+	curse    = actor->get_flag(Obj_flags::cursed);
+	freezing = actor->get_flag(Obj_flags::freeze);
+	hungry   = actor->get_property(static_cast<int>(Actor::food_level)) <= 9;
+	asleep   = actor->get_flag(Obj_flags::asleep);
 
 	gwin->add_dirty(get_rect());
 }
@@ -225,16 +245,24 @@ void Portrait_button::update_widget() {
 		|| prot != actor->get_flag(Obj_flags::protection)
 		|| para != actor->get_flag(Obj_flags::paralyzed)
 		|| charm != actor->get_flag(Obj_flags::charmed)
-		|| curse != actor->get_flag(Obj_flags::cursed)) {
+		|| curse != actor->get_flag(Obj_flags::cursed)
+		|| freezing != actor->get_flag(Obj_flags::freeze)
+		|| hungry
+				   != (actor->get_property(static_cast<int>(Actor::food_level))
+					   <= 9)
+		|| asleep != actor->get_flag(Obj_flags::asleep)) {
 		TileRect r = get_rect();
 		gwin->add_dirty(r);
-		hit   = actor->was_hit();
-		pois  = actor->get_flag(Obj_flags::poisoned);
-		prot  = actor->get_flag(Obj_flags::protection);
-		para  = actor->get_flag(Obj_flags::paralyzed);
-		charm = actor->get_flag(Obj_flags::charmed);
-		curse = actor->get_flag(Obj_flags::cursed);
-		r     = get_rect();
+		hit      = actor->was_hit();
+		pois     = actor->get_flag(Obj_flags::poisoned);
+		prot     = actor->get_flag(Obj_flags::protection);
+		para     = actor->get_flag(Obj_flags::paralyzed);
+		charm    = actor->get_flag(Obj_flags::charmed);
+		curse    = actor->get_flag(Obj_flags::cursed);
+		freezing = actor->get_flag(Obj_flags::freeze);
+		hungry = actor->get_property(static_cast<int>(Actor::food_level)) <= 9;
+		asleep = actor->get_flag(Obj_flags::asleep);
+		r      = get_rect();
 		gwin->add_dirty(r);
 	}
 }
@@ -249,26 +277,23 @@ void Portrait_button::paint() {
 	Shape_frame* s = get_shape();
 
 	if (s) {
-		int px = x;
-		int py = y;
+		int sx = 0;
+		int sy = 0;
 
-		if (parent) {
-			px += parent->get_x();
-			py += parent->get_y();
-		}
+		local_to_screen(sx, sy);
 
 		if (hit) {
-			sman->paint_outline(px, py, s, HIT_PIXEL);
+			sman->paint_outline(sx, sy, s, HIT_PIXEL);
 		} else if (charm) {
-			sman->paint_outline(px, py, s, CHARMED_PIXEL);
+			sman->paint_outline(sx, sy, s, CHARMED_PIXEL);
 		} else if (para) {
-			sman->paint_outline(px, py, s, PARALYZE_PIXEL);
+			sman->paint_outline(sx, sy, s, PARALYZE_PIXEL);
 		} else if (prot) {
-			sman->paint_outline(px, py, s, PROTECT_PIXEL);
+			sman->paint_outline(sx, sy, s, PROTECT_PIXEL);
 		} else if (curse) {
-			sman->paint_outline(px, py, s, CURSED_PIXEL);
+			sman->paint_outline(sx, sy, s, CURSED_PIXEL);
 		} else if (pois) {
-			sman->paint_outline(px, py, s, POISON_PIXEL);
+			sman->paint_outline(sx, sy, s, POISON_PIXEL);
 		}
 	}
 
@@ -278,13 +303,44 @@ void Portrait_button::paint() {
 	if (mana) {
 		mana->paint();
 	}
+	int badge = 0;
+	// Badges paint over bars
+	if (asleep) {
+		paintBadge(ASLEEP, badge++);
+	}
+	if (pois) {
+		paintBadge(POISONED, badge++);
+	}
+	if (charm) {
+		paintBadge(CHARMED, badge++);
+	}
+	if (hungry) {
+		paintBadge(HUNGRY, badge++);
+	}
+	if (prot) {
+		paintBadge(PROTECTED, badge++);
+	}
+	if (curse) {
+		paintBadge(CURSED, badge++);
+	}
+	if (para) {
+		paintBadge(PARALYZED, badge++);
+	}
+	if (freezing) {
+		paintBadge(FREEZING, badge++);
+	}
+}
+
+void Portrait_button::paintBadge(int frame, int position) {
+	ShapeID sid(EXULT_FLX_FS_BADGES_SHP, frame, SF_EXULT_FLX);
+	int     sx = position * 6 - 8;
+	int     sy = 11;
+	local_to_screen(sx, sy);
+	sid.paint_shape(sx, sy);
 }
 
 TileRect Portrait_button::get_rect() const {
 	TileRect rect = Face_button::get_rect();
-	if (hit || pois || prot || para || charm || curse) {
-		rect.enlarge(2);
-	}
 
 	if (hp) {
 		const TileRect r = hp->get_rect();
@@ -294,6 +350,9 @@ TileRect Portrait_button::get_rect() const {
 		const TileRect r = mana->get_rect();
 		rect             = rect.add(r);
 	}
+
+	// always enlarge by 3 around the shape to account for badges and outlines
+	rect.enlarge(3);
 
 	return rect;
 }

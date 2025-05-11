@@ -113,6 +113,9 @@ public:
 	void show(bool tf);    // Show/hide.
 	void render_area(GdkRectangle* area);
 
+	void reset_selected() {
+		selected = -1;
+	}
 	void render() override {
 		render_area(nullptr);
 	}

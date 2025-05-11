@@ -2,7 +2,7 @@
   "name": "exult-shp",
   "displayName": "Ultima VII SHP Format",
   "description": "Import and export Ultima VII SHP files",
-  "version": "1.11.0git",
+  "version": "1.13.0git",
   "author": {
     "name": "The Exult Team"
   },

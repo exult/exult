@@ -43,7 +43,8 @@ EXULT_FLX_OBJECTS = \
 	scroll_left.shp \
 	scroll_right.shp \
 	checkmark_background.shp \
-	mixer.shp
+	mixer.shp \
+	fs_badges.shp
 
 EXULT_BG_FLX_OBJECTS = \
 	bg/flx.in \

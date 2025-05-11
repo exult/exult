@@ -814,15 +814,6 @@
 					<strong>tagged invalid</strong> if we don't receive a save game after we requested it.
 				</para>
 				<para>
-					You can also use our
-					<extref target="https://github.com/exult/exult/discussions">forum</extref>
-					to report bugs. But if you do, please follow the guidelines mentioned above. Though
-					be aware that bugs submitted to the bug tracker are more likely to get attention than bugs
-					submitted to the forum.<br/>
-					And if you report to the forum, also follow the "one bug per report" rule, a post with
-					many bug reports in it is likely to have some bugs overlooked in the end.
-				</para>
-				<para>
 					So if you want to have a bug fixed, please follow these steps!
 				</para>
 			</body>
@@ -859,7 +850,7 @@
 						effects to play at the same time and also balance the effect when it is a continuous
 						one, meaning its volume is affected how near you are the sfx playing object and also
 						differs between left and right. However we found the fire effects to be terrible in
-						quality and have disabled these. So no cracking fire for the flaming sword,
+						quality and have disabled these. So no crackling fire for the flaming sword,
 						campfires, etc.</li>
 				</ul>
 			</body>

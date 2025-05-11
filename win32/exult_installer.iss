@@ -1,12 +1,12 @@
 [Setup]
 AppName=Exult
-AppVerName=Exult 1.11.0git Snapshot
+AppVerName=Exult 1.13.0git Snapshot
 AppPublisher=The Exult Team
 AppPublisherURL=https://exult.info/
 AppSupportURL=https://exult.info/
 AppUpdatesURL=https://exult.info/
 ; Setup exe version number:
-VersionInfoVersion=1.11.0
+VersionInfoVersion=1.13.0
 DisableDirPage=no
 DefaultDirName={code:GetExultInstDir|{autopf}\Exult}
 DisableProgramGroupPage=no
@@ -75,6 +75,7 @@ Source: Exult-i686\README.txt; DestDir: {app}; Flags: ignoreversion; Components:
 Source: Exult-i686\README.windows.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
 Source: Exult-i686\sidefaultkeys.txt; DestDir: {app}; Flags: ignoreversion; Components: Docs
 Source: Exult-i686\images\*.gif; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
+Source: Exult-i686\images\*.svg; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
 Source: Exult-i686\images\docs*.png; DestDir: {app}\images; Flags: ignoreversion nocompression; Components: Docs
 Source: Exult-i686\Data\exult.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult
 Source: Exult-i686\Data\exult_bg.flx; DestDir: {app}\data; Flags: ignoreversion; Components: Exult

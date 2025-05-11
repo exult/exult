@@ -483,8 +483,6 @@ To see a list of open bug reports go to https://github.com/exult/exult/issues an
 10. One bug per subject please. It's easier to track what has been fixed if you follow this.
 
 Any bug report that requires a save game will most likely be tagged invalid if we don't receive a save game after we requested it.
-You can also use our forum to report bugs. But if you do, please follow the guidelines mentioned above. Though be aware that bugs submitted to the bug tracker are more likely to get attention than bugs submitted to the forum.
- And if you report to the forum, also follow the "one bug per report" rule, a post with many bug reports in it is likely to have some bugs overlooked in the end.
 So if you want to have a bug fixed, please follow these steps!
 
 
@@ -497,7 +495,7 @@ Exult often behaves and works differently than the original Ultima VII. These be
 * Birds and animals open doors and such, like the human and sentient creatures of Britannia do. You should rarely encounter this anymore since there are better intelligence checks, but it can still happen.
 * The way the Avatar and the companions walk. Is it 2 frames or 3 frames? This has been changed a lot as this was disputed almost every four weeks. Finally it works like the original and the Avatar uses two frames and the companions use three frames.
 * Some music loops endlessly in Exult. This is actually a correction of a bug in the original. We respects the midi looping flag as set by Ultima VII's original data files but the original didn't. Users who prefer the original (broken) are able to choose so in the Game menu.
-* Some sound effects (sfx) are missing. While we still haven't implemented some sfx, most are playing and we have improved upon the original by allowing more sound effects to play at the same time and also balance the effect when it is a continuous one, meaning its volume is affected how near you are the sfx playing object and also differs between left and right. However we found the fire effects to be terrible in quality and have disabled these. So no cracking fire for the flaming sword, campfires, etc.
+* Some sound effects (sfx) are missing. While we still haven't implemented some sfx, most are playing and we have improved upon the original by allowing more sound effects to play at the same time and also balance the effect when it is a continuous one, meaning its volume is affected how near you are the sfx playing object and also differs between left and right. However we found the fire effects to be terrible in quality and have disabled these. So no crackling fire for the flaming sword, campfires, etc.
 
 
 

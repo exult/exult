@@ -29,7 +29,7 @@ AppPublisherURL=https://exult.info/
 AppSupportURL=https://exult.info/
 AppUpdatesURL=https://exult.info/
 ; Setup exe version number:
-VersionInfoVersion=1.11.0
+VersionInfoVersion=1.13.0
 DisableDirPage=yes
 DefaultDirName="{userappdata}\gimp\3.0\plug-ins\u7shp"
 DisableProgramGroupPage=yes

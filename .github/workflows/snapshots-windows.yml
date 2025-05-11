@@ -112,7 +112,7 @@ jobs:
           SNAPSHOT_PATH=$(cygpath -m ~/Exult-dist)
           cd $GITHUB_WORKSPACE/exult-$ARCH
           mkdir -p ${SNAPSHOT_PATH}
-          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=${SNAPSHOT_PATH} dist studiodist toolsdist plugindist
+          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=${SNAPSHOT_PATH} DEBUG_LEVEL=-g1 dist studiodist toolsdist plugindist
           for ff in bgkeyring islefaq sifixes; do
             pushd content/${ff}
             make -j 2 -f Makefile.mingw ${ff}dir=${SNAPSHOT_PATH}/${ff} install
@@ -134,7 +134,7 @@ jobs:
           SNAPSHOT_PATH=$(cygpath -m ~/Exult-dist)
           cd $GITHUB_WORKSPACE/exult-$ARCH
           mkdir -p ${SNAPSHOT_PATH}
-          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=${SNAPSHOT_PATH} dist studiodist toolsdist plugindist aseprite-plugindist
+          make -j 2 -f Makefile.mingw SNAPSHOT=1 DISTPATH=${SNAPSHOT_PATH} DEBUG_LEVEL=-g1 dist studiodist toolsdist plugindist aseprite-plugindist
           echo "EXULT_SNAPSHOT_PATH=${SNAPSHOT_PATH}" >> $GITHUB_ENV
       - name: Create installers
         if: ${{ env.EXULT_REPO_ALIVE == 'true' }}
@@ -167,3 +167,11 @@ jobs:
         with:
           name: "windows snapshot"
           path: windows-snapshot
+      - name: Upload unstripped executable artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Unstripped Windows executables"
+          path: |
+           exult-i686/Exult.exe 
+           exult-x86_64/Exult.exe
+          compression-level: 9

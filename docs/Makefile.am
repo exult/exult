@@ -28,7 +28,8 @@ nobase_doc_DATA = \
 	images/studio09.png		\
 	images/studio10.png		\
 	images/studiobgiregs.png	\
-	images/studiosiiregs.png
+	images/studiosiiregs.png	\
+	images/exult_logo_nice.svg
 
 EXTRA_DIST =		\
 	xml/docs.dtd	\

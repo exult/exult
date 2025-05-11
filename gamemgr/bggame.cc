@@ -471,7 +471,7 @@ void BG_Game::scene_lord_british() {
 		// Lord British presents...  (sh. 0x11)
 		pal->load(INTROPAL_DAT, PATCH_INTROPAL, 3);
 		sman->paint_shape(topx, topy, shapes.get_shape(lord_british_shp, 0));
-
+		gwin->get_win()->FillGuardband();
 		pal->fade_in(c_fade_in_time);
 		if (1 == wait_delay(2000)) {
 			throw UserBreakException();
@@ -524,7 +524,7 @@ void BG_Game::scene_butterfly() {
 				topy + y - butterfly->get_yabove());
 		sman->paint_shape(
 				topx + x, topy + y, shapes.get_shape(butterfly_shp, frame));
-		win->show();
+		win->ShowFillGuardBand();
 		WAITDELAY(delay);
 		win->put(
 				backup, topx + x - butterfly->get_xleft(),
@@ -559,7 +559,7 @@ void BG_Game::scene_butterfly() {
 		sman->paint_shape(topx, topy, shapes.get_shape(trees_shp, 0));
 		sman->paint_shape(
 				topx + 160, topy + 50, shapes.get_shape(ultima_text_shp, 0));
-
+		win->FillGuardband();
 		// Keep it dark for some more time, playing the music
 		WAITDELAY(4500);    //  - was WAITDELAY(3500);
 
@@ -568,7 +568,7 @@ void BG_Game::scene_butterfly() {
 
 		WAITDELAY(4000);
 
-		win->show();
+		win->ShowFillGuardBand();
 
 		WAITDELAY(7100);
 
@@ -642,7 +642,7 @@ void BG_Game::scene_butterfly() {
 #define FLASH_SHAPE1(x, y, shape, frame, delay)                              \
 	do {                                                                     \
 		sman->paint_shape((x), (y), shapes.get_shape((shape), (frame)));     \
-		win->show();                                                         \
+		win->ShowFillGuardBand();                                                         \
 		WAITDELAYCYCLE1((delay));                                            \
 		win->put(backup.get(), (x) - s->get_xleft(), (y) - s->get_yabove()); \
 	} while (0)
@@ -650,7 +650,7 @@ void BG_Game::scene_butterfly() {
 #define FLASH_SHAPE2(x, y, shape, frame, delay)                              \
 	do {                                                                     \
 		sman->paint_shape((x), (y), shapes.get_shape((shape), (frame)));     \
-		win->show();                                                         \
+		win->ShowFillGuardBand();                                                         \
 		WAITDELAYCYCLE4((delay));                                            \
 		win->put(backup.get(), (x) - s->get_xleft(), (y) - s->get_yabove()); \
 	} while (0)
@@ -811,7 +811,7 @@ void BG_Game::scene_guardian() {
 			ticks = SDL_GetTicks();
 			while (true) {
 				win->get_ibuf()->fill_static(0, 7, 15);
-				win->show();
+				win->ShowFillGuardBand();
 				WAITDELAYCYCLE1(2);
 				if (SDL_GetTicks() > ticks + 400) {    // 400)
 					break;
@@ -822,13 +822,13 @@ void BG_Game::scene_guardian() {
 					sfxfile, INTROSFX_MT32_FLX_INTRO_MT_STATIC2_WAV);
 
 			win->put(plasma.get(), win->get_start_x(), win->get_start_y());
-			win->show();
+			win->ShowFillGuardBand();
 			WAITDELAYCYCLE1(200);
 
 			ticks = SDL_GetTicks();
 			while (true) {
 				win->get_ibuf()->fill_static(0, 7, 15);
-				win->show();
+				win->ShowFillGuardBand();
 				WAITDELAYCYCLE1(2);
 				if (SDL_GetTicks() > ticks + 200) {
 					break;
@@ -839,13 +839,13 @@ void BG_Game::scene_guardian() {
 					sfxfile, INTROSFX_MT32_FLX_INTRO_MT_STATIC3_WAV);
 
 			win->put(plasma.get(), win->get_start_x(), win->get_start_y());
-			win->show();
+			win->ShowFillGuardBand();
 			WAITDELAYCYCLE1(200);
 
 			ticks = SDL_GetTicks();
 			while (true) {
 				win->get_ibuf()->fill_static(0, 7, 15);
-				win->show();
+				win->ShowFillGuardBand();
 				WAITDELAYCYCLE1(2);
 				if (SDL_GetTicks() > ticks + 100) {
 					break;
@@ -853,7 +853,7 @@ void BG_Game::scene_guardian() {
 			}
 
 			win->put(plasma.get(), win->get_start_x(), win->get_start_y());
-			win->show();
+			win->ShowFillGuardBand();
 		}
 
 		//
@@ -929,7 +929,7 @@ void BG_Game::scene_guardian() {
 			}
 
 			sman->paint_shape(centerx, centery, shapes.get_shape(0x23, 15));
-			win->show();
+			win->ShowFillGuardBand();
 
 			WAITDELAYCYCLE1(500);    // - show his face for half a second
 			// before he opens his eyes.
@@ -1075,9 +1075,9 @@ void BG_Game::scene_guardian() {
 						DrawSpeech();
 					}
 
-					win->show();
+					win->ShowFillGuardBand();
 					WAITDELAYCYCLE5(15);
-					win->show();
+					win->ShowFillGuardBand();
 					time = (SDL_GetTicks() - start);
 				}
 
@@ -1117,15 +1117,15 @@ void BG_Game::scene_guardian() {
 					if (need_redraw) {
 						DrawSpeech();
 					}
-					win->show();
+					win->ShowFillGuardBand();
 					WAITDELAYCYCLE6(15);
-					win->show();
+					win->ShowFillGuardBand();
 					time = (SDL_GetTicks() - start);
 				}
 
-				win->show();
+				win->ShowFillGuardBand();
 				WAITDELAYCYCLE6(1000);
-				win->show();
+				win->ShowFillGuardBand();
 
 				win->put(backup3.get(), 0, txt_ypos);
 				win->put(
@@ -1165,7 +1165,7 @@ void BG_Game::scene_guardian() {
 						centery - s->get_yabove());
 			}
 
-			win->show();
+			win->ShowFillGuardBand();
 		}
 		WAITDELAYCYCLE1(1200);
 
@@ -1180,7 +1180,7 @@ void BG_Game::scene_guardian() {
 		ticks = SDL_GetTicks();
 		while (true) {
 			win->get_ibuf()->fill_static(0, 7, 15);
-			win->show();
+			win->ShowFillGuardBand();
 			WAITDELAYCYCLE1(2);
 			if (SDL_GetTicks() > ticks + 400) {
 				break;
@@ -1352,13 +1352,13 @@ namespace {    // anonymous
 					staticScreen.get(),
 					centerx + 12 - screenShape->get_width() / 2,
 					centery - 22 - screenShape->get_height() / 2);
-			win->show();
+			win->ShowFillGuardBand();
 			drawHand = false;
 			break;
 		case eFLASH_FAKE_TITLE:
 		case eSHOW_FAKE_TITLE:
 			sman->paint_shape(centerx + 12, centery - 22, screenShape);
-			win->show();
+			win->ShowFillGuardBand();
 			drawHand = false;
 			if (currOp == eSHOW_FAKE_TITLE) {
 				currBackground = currOp;
@@ -1372,7 +1372,7 @@ namespace {    // anonymous
 					centery - 22 - screenShape->get_height() / 2);
 			if (currOp == eBLACK_SCREEN) {
 				currBackground = currOp;
-				win->show();
+				win->ShowFillGuardBand();
 				drawHand = false;
 			}
 			break;
@@ -1381,7 +1381,7 @@ namespace {    // anonymous
 		}
 
 		if (drawHand) {
-			win->show();
+			win->ShowFillGuardBand();
 		}
 
 		scriptPosition++;
@@ -1461,7 +1461,7 @@ void BG_Game::scene_desk() {
 					win->put(
 							zoomed.get(), 0 + (win->get_game_width() - 320) / 2,
 							0 + (win->get_game_height() - 200) / 2);
-					win->show();
+					win->ShowFillGuardBand();
 					int delta = next_ticks - SDL_GetTicks();
 					if (delta < 0) {
 						delta = 0;
@@ -1474,7 +1474,7 @@ void BG_Game::scene_desk() {
 			win->put(
 					unzoomed.get(), 0 + (win->get_game_width() - 320) / 2,
 					0 + (win->get_game_height() - 200) / 2);
-			win->show();
+			win->ShowFillGuardBand();
 		}
 
 		{
@@ -1489,7 +1489,7 @@ void BG_Game::scene_desk() {
 
 		// "Something is obviously amiss"
 		sman->paint_shape(centerx, centery + 50, shapes.get_shape(0x15, 0));
-		win->show();
+		win->ShowFillGuardBand();
 		WAITDELAY(3000);
 
 		// TODO: misaligned?
@@ -1509,7 +1509,7 @@ void BG_Game::scene_desk() {
 				sman->paint_shape(
 						centerx, centery + 50, shapes.get_shape(0x16, 0));
 			}
-			win->show();
+			win->ShowFillGuardBand();
 			WAITDELAY(110);    // was 30
 		}
 
@@ -1533,7 +1533,7 @@ void BG_Game::scene_desk() {
 					topx + 319, topy + 199 - i, shapes.get_shape(0x0B, 0));
 			// "The mystical Orb beckons you"
 			sman->paint_shape(centerx, topy, shapes.get_shape(0x17, 0));
-			win->show();
+			win->ShowFillGuardBand();
 			WAITDELAYCYCLE2(110);
 		}
 
@@ -1552,7 +1552,7 @@ void BG_Game::scene_desk() {
 		sman->paint_shape(topx + 319, topy + 149, shapes.get_shape(0x0B, 0));
 		// "It has opened gateways to Britannia in the past"
 		sman->paint_shape(centerx, topy, shapes.get_shape(0x18, 0));
-		win->show();
+		win->ShowFillGuardBand();
 
 		WAITDELAYCYCLE2(3200);
 		pal->fade_out(100);
@@ -1602,7 +1602,7 @@ void BG_Game::scene_moongate() {
 			sman->paint_shape(centerx, centery + 50, shapes.get_shape(0x1C, 0));
 		}
 
-		win->show();
+		win->ShowFillGuardBand();
 		WAITDELAYCYCLE3(80);
 	}
 
@@ -1654,7 +1654,7 @@ void BG_Game::scene_moongate() {
 			win->put(
 					zoomed.get(), 0 + (win->get_game_width() - 320) / 2,
 					0 + (win->get_game_height() - 200) / 2);
-			win->show();
+			win->ShowFillGuardBand();
 			int delta = next_ticks - SDL_GetTicks();
 			if (delta < 0) {
 				delta = 0;
@@ -1830,7 +1830,7 @@ void BG_Game::end_game(bool success, bool within_game) {
 				if (subtitles) {
 					endfont2->draw_text(ibuf, width, height, message);
 				}
-				win->show();
+				win->ShowFillGuardBand();
 				if (wait_delay(0, 0, 1)) {
 					throw UserSkipException();
 				}
@@ -1858,7 +1858,7 @@ void BG_Game::end_game(bool success, bool within_game) {
 				if (subtitles) {
 					endfont2->draw_text(ibuf, width, height, message);
 				}
-				win->show();
+				win->ShowFillGuardBand();
 				if (wait_delay(0, 0, 1)) {
 					throw UserSkipException();
 				}
@@ -1983,7 +1983,7 @@ void BG_Game::end_game(bool success, bool within_game) {
 								get_text_msg(txt_screen0 + m));
 					}
 				}
-				win->show();
+				win->ShowFillGuardBand();
 				if (wait_delay(10, 0, 1)) {
 					throw UserSkipException();
 				}
@@ -2139,7 +2139,7 @@ void BG_Game::end_game(bool success, bool within_game) {
 	} catch (const UserSkipException& /*x*/) {
 		pal->set_brightness(80);    // Set readable brightness
 		win->fill8(0);
-		win->show();
+		win->ShowFillGuardBand();
 	}
 
 	if (midi) {
@@ -2272,7 +2272,7 @@ bool BG_Game::new_game(Vga_file& shapes) {
 			}
 			font->draw_text(
 					ibuf, topx + 60, menuy + 10, disp_name, transto.data());
-			gwin->get_win()->show();
+			gwin->get_win()->ShowFillGuardBand();
 			redraw = false;
 		}
 

@@ -180,12 +180,16 @@ protected:
 	bool          fullscreen;      // Rendering fullscreen.
 	int           game_width;
 	int           game_height;
+	int           saved_game_width; // Normally this is the same as game_width and is used by the PaintIntoGuardBand code so it can change and restore the value of game_width
+	int           saved_game_height;// Normally this is the same as game_height and is used by the PaintIntoGuardBand code so it can change and restore the value of game_height
 	int           inter_width;
 	int           inter_height;
 
-	static const int
-			guard_band;    // Guardband around the edge of the draw surface to
-						   // allow scalers to run without clipping
+	// Guardband around the edge of the draw surface to allow scalers to run 
+	// without per pixel bounds checking and to allow rounding up to 
+	// multiples of 4. It should  not be less than 4 and there is no reason for
+	// it to be bigger.
+	const int guard_band = 4;
 
 	FillMode fill_mode;
 	int      fill_scaler;
@@ -319,7 +323,8 @@ public:
 			FillMode fmode = AspectCorrectCentre, int fillsclr = point)
 			: ibuf(ib), scale(scl), scaler(sclr), uses_palette(true),
 			  fullscreen(fs), game_width(gamew), game_height(gameh),
-			  fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
+			  saved_game_width(gamew), saved_game_height(gameh), fill_mode(fmode),
+			  fill_scaler(fillsclr), screen_window(nullptr),
 			  paletted_surface(nullptr), display_surface(nullptr),
 			  inter_surface(nullptr), draw_surface(nullptr) {
 		static_init();
@@ -444,6 +449,54 @@ public:
 	// Rotate palette colors.
 	virtual void rotate_colors(int first, int num, int upd) {
 		ignore_unused_variable_warning(first, num, upd);
+	}
+
+	// This method adjusts buffer dimensions so gamewin can draw into the
+	// guard band on the right and bottom in order to prevent fine black lines 
+	// when scalers read from the guardband Must call EndPaintIntoGuardBand 
+	// after calling this Parmeters are the region to be painted. This will be 
+	// clipped against buffer dimension and enlarged into the guardband. If 
+	// Parameters are nullptr they are treated as if they are zero when 
+	// clipping the other coordinates.
+	// This method does nothing if ShouldPaintIntoGuardband() returns false 
+	void BeginPaintIntoGuardBand(int* x, int* y, int* w, int* h);
+
+	// Reset iwin and buffers back to normal after calling 
+	// BeginPaintIntoGuardBand
+	void EndPaintIntoGuardBand();
+
+	// whether or not we should do guardband painting
+	// Criteria is using a scaler other than point and there is a guardband
+	bool ShouldPaintIntoGuardband() {
+		// Only if actually scaling
+		if (draw_surface == display_surface) {
+			return false;
+		}
+
+		// If rendering to inter_surface, the scaling is only being done uing
+		// the fill_scaler and if is point we don't need to do this
+		if (draw_surface == inter_surface && point == fill_scaler) {
+			return false;
+		}
+
+		// if inter is the same as display the scaling is only being done by
+		// scaler and if is point we don't need to do this
+		if (display_surface == inter_surface && point == scaler) {
+			return false;
+		}
+
+		// Is there even a guardband
+		return guard_band > 0;
+	}
+
+	// Fill the right and bottom guardband by duplicating edge pixels across it
+	// Used during cinematic sequences
+	void FillGuardband();
+
+	// Show but first fill guardband
+	void ShowFillGuardBand() {
+		FillGuardband();
+		show();
 	}
 
 	/*

@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.69])
-AC_INIT([Exult],[1.11.0git],[],[exult],[https://exult.info/])
+AC_INIT([Exult],[1.13.0git],[],[exult],[https://exult.info/])
 AC_CONFIG_SRCDIR([exult.cc])
 
 # ---------------------------------------------------------------------

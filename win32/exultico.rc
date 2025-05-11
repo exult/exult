@@ -38,8 +38,8 @@ IDI_ICON1               ICON    DISCARDABLE     "exult.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,11,0,0
- PRODUCTVERSION 1,11,0,0
+ FILEVERSION 1,13,0,0
+ PRODUCTVERSION 1,13,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -56,12 +56,12 @@ BEGIN
         BEGIN
             //VALUE "CompanyName", "The Exult Team\0"
             VALUE "FileDescription", "Exult Ultima VII Engine\0"
-            VALUE "FileVersion", "1.11.0git\0"
+            VALUE "FileVersion", "1.13.0git\0"
             VALUE "InternalName", "Exult\0"
             VALUE "LegalCopyright", "Copyright © 1998-2025\0"
             VALUE "OriginalFilename", "Exult.exe\0"
             VALUE "ProductName", "Exult Ultima VII Engine\0"
-            VALUE "ProductVersion", "1.11.0git\0"
+            VALUE "ProductVersion", "1.13.0git\0"
         END
     END
     BLOCK "VarFileInfo"

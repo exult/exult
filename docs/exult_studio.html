@@ -20,6 +20,12 @@
 	:link:active :visited:active { color: #ffcc33; }
 	span.highlight { color: maroon; }
 	tr.highlight { color: #62186f; }
+	.non-selectable-comment {
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
 	table.borderless {
 		border-spacing: 0;
 		border-width: 0;
@@ -54,7 +60,7 @@
 </head>
 <body><div align="center"><table class="borderless site-width">
 <tr><td class="centered"><table class="borderless full-width">
-<tr><td class="centered"><img src="images/exult_logo.gif" width="181" height="127" alt="Exult Logo"></td></tr>
+<tr><td class="centered"><img src="images/exult_logo_nice.svg" width="181" height="127" alt="Exult Logo"></td></tr>
 <tr><td>&nbsp;</td></tr>
 <tr><td>&nbsp;</td></tr>
 </table></td></tr>
@@ -311,42 +317,39 @@
 						an example for editing BG:</li>
 				</ul>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								game&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								blackgate&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								title&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;game&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;blackgate&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;title&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							blackgate
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							title&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								path&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/title&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							./blackgate
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							path&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								patch&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/path&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;patch&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							./blackgate/patch
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							patch&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;/
-							blackgate&gt;
-						</td></tr>
+<tr><td style="text-indent:32pt">&lt;/patch&gt;</td></tr>
+<tr><td style="text-indent:16pt">&lt;/blackgate&gt;</td></tr>
 </table>
 				<p>
 					<b><i><span style="font-size: larger">IMPORTANT:</span></i></b> <em>Exult Studio</em> requires the "patch" folder to be writeable. If you don't have write access
@@ -368,66 +371,64 @@
 					via exult.cfg. Those settings are:
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								estudio&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								main&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								width&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;estudio&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;main&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;width&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">** width of the program window</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								640
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							width&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								height&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/width&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;height&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">** height of the program window</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								400
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							height&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							main&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								default_game&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/height&gt;</td></tr>
+<tr><td style="text-indent:32pt">&lt;/main&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;default_game&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">** default game to edit (games must be specified in</span><span class="non-selectable-comment">&lt;game&gt; part of exult.cfg)</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							gamename
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							default_game&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								image_editor&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/default_game&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;image_editor&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">** command that calls the image editor.</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							gimp-remote -n
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							image_editor&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								background_color&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/image_editor&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;background_color&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">** background color for the shape-chooser. Use the preference</span><span class="non-selectable-comment">dialog of Exult Studio for this.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							0
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							background_color&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;/
-							estudio&gt;
-						</td></tr>
+<tr><td style="text-indent:32pt">&lt;/background_color&gt;</td></tr>
+<tr><td style="text-indent:16pt">&lt;/estudio&gt;</td></tr>
 </table>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>

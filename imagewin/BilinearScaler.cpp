@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "BilinearScalerInternal.h"
 #include "manip.h"
 
-namespace Pentagram {
+namespace Pentagram { namespace BilinearScaler {
 
 	template <class uintX, class Manip, class uintS>
 	class BilinearScalerInternal {
@@ -33,50 +33,69 @@ namespace Pentagram {
 				SDL_Surface* tex, sint32 sx, sint32 sy, sint32 sw, sint32 sh,
 				uint8* pixel, sint32 dw, sint32 dh, sint32 pitch,
 				bool clamp_src) {
+			//
+			// Clip the source rect to the size of tex and adjust dest rect
+			// as appropriate
+			//
+			int_fast32_t tex_w = tex->w, tex_h = tex->h;
+
+			// clip y
+			if ((sh + sy) > tex_h) {
+				auto nsh = tex_h - sy;
+				dh       = (dh * nsh) / sh;
+				sh       = nsh;
+			}
+			// clip x
+			if ((sw + sx) > tex_w) {
+				auto nsw = tex_w - sx;
+				dw       = (dh * nsw) / sw;
+				sw       = nsw;
+			}
+
+			//
+			// Call the correct specialized function as appropriate
+			//
+			bool result = false;
 			// 2x Scaling
-			if ((sw * 2 == dw) && (sh * 2 == dh) && !(sh % 4) && !(sw % 4)) {
-				return BilinearScalerInternal_2x<uintX, Manip, uintS>(
+			if (!result && (sw * 2 == dw) && (sh * 2 == dh)) {
+				result = BilinearScalerInternal_2x<uintX, Manip, uintS>(
 						tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
 			}
-			// 2 X 2.4 Y
-			else if (
-					(sw * 2 == dw) && (dh * 5 == sh * 12) && !(sh % 5)
-					&& !(sw % 4)) {
-				return BilinearScalerInternal_X2Y24<uintX, Manip, uintS>(
+			// 2 X 2.4 Y aka Aspect Correcting 2x
+			// This has some implicit requirements.
+			// sh must be a multiple of 5 and dh must be a multiple of 12
+			// This is pretty much has to be true if source and dest heights are integers
+			// Source height scaled by 2.4 only results in an integer if source height 
+			// is a multiple of 5 and 2.4 multipled by a multiple of 5 is always a multiple of 12
+			if (!result &&
+					(sw * 2 == dw) && (dh * 5 == sh * 12)) {
+				result = BilinearScalerInternal_X2Y24<uintX, Manip, uintS>(
 						tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
 			}
-			// 1 X 1.2 Y
-			else if (
+			// 1 X 1.2 Y aka Aspect Correction with no scaling
+			// Same as above there is implicit requiements except dh must be a multiple of 6
+			if (!result &&
 					(sw == dw) && (dh * 5 == sh * 6) && !(sh % 5)
 					&& !(sw % 4)) {
-				return BilinearScalerInternal_X1Y12<uintX, Manip, uintS>(
+				result = BilinearScalerInternal_X1Y12<uintX, Manip, uintS>(
 						tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
 			}
-			// Arbitrary
-			else if (!(sh % 4) && !(sw % 4)) {
+			// Arbitrary has no restrictions
+			if (!result) {
 				return BilinearScalerInternal_Arb<uintX, Manip, uintS>(
 						tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
-			} else {
-				const int ow = sw & 3;
-				dw -= ow * dw / sw;
-				sw -= ow;
-
-				const int oh = sh & 3;
-				dh -= oh * dh / sh;
-				sh -= oh;
-
-				return ScaleBilinear(
-						tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
 			}
+
+			return result;
 		}
 	};
 
-	BilinearScaler::BilinearScaler() {
+	Scaler::Scaler() {
 		Scale8To8  = nullptr;
 		Scale8To32 = BilinearScalerInternal<
-				uint32, Manip8to32, uint8>::ScaleBilinear;
+				uint32_t, Manip8to32, uint8>::ScaleBilinear;
 		Scale32To32 = BilinearScalerInternal<
-				uint32, Manip32to32, uint32>::ScaleBilinear;
+				uint32_t, Manip32to32, uint32_t>::ScaleBilinear;
 
 #ifdef COMPILE_ALL_BILINEAR_SCALERS
 		Scale8To565 = BilinearScalerInternal<
@@ -95,24 +114,21 @@ namespace Pentagram {
 #endif
 	}
 
-	uint32 BilinearScaler::ScaleBits() const {
-		return 0xFFFFFFFF;
-	}
 
-	bool BilinearScaler::ScaleArbitrary() const {
+	bool Scaler::ScaleArbitrary() const {
 		return true;
 	}
 
-	const char* BilinearScaler::ScalerName() const {
+	const char* Scaler::ScalerName() const {
 		return "bilinear";
 	}
 
-	const char* BilinearScaler::ScalerDesc() const {
+	const char* Scaler::ScalerDesc() const {
 		return "Bilinear Filtering Scaler";
 	}
 
-	const char* BilinearScaler::ScalerCopyright() const {
-		return "Copyright (C) 2005 The Pentagram Team, 2010 The Exult Team";
+	const char* Scaler::ScalerCopyright() const {
+		return "Copyright (C) 2005 The Pentagram Team, 2025 The Exult Team";
 	}
 
-}    // namespace Pentagram
+}}    // namespace Pentagram::BilinearScaler

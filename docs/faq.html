@@ -20,6 +20,12 @@
 	:link:active :visited:active { color: #ffcc33; }
 	span.highlight { color: maroon; }
 	tr.highlight { color: #62186f; }
+	.non-selectable-comment {
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
 	table.borderless {
 		border-spacing: 0;
 		border-width: 0;
@@ -54,7 +60,7 @@
 </head>
 <body><div align="center"><table class="borderless site-width">
 <tr><td class="centered"><table class="borderless full-width">
-<tr><td class="centered"><img src="images/exult_logo.gif" width="181" height="127" alt="Exult Logo"></td></tr>
+<tr><td class="centered"><img src="images/exult_logo_nice.svg" width="181" height="127" alt="Exult Logo"></td></tr>
 <tr><td>&nbsp;</td></tr>
 <tr><td>&nbsp;</td></tr>
 </table></td></tr>
@@ -878,15 +884,6 @@
 					<strong>tagged invalid</strong> if we don't receive a save game after we requested it.
 				</p>
 				<p>
-					You can also use our
-					<a href="https://github.com/exult/exult/discussions">forum</a>
-					to report bugs. But if you do, please follow the guidelines mentioned above. Though
-					be aware that bugs submitted to the bug tracker are more likely to get attention than bugs
-					submitted to the forum.<br>
-					And if you report to the forum, also follow the "one bug per report" rule, a post with
-					many bug reports in it is likely to have some bugs overlooked in the end.
-				</p>
-				<p>
 					So if you want to have a bug fixed, please follow these steps!
 				</p>
 			</td></tr>
@@ -922,7 +919,7 @@
 						effects to play at the same time and also balance the effect when it is a continuous
 						one, meaning its volume is affected how near you are the sfx playing object and also
 						differs between left and right. However we found the fire effects to be terrible in
-						quality and have disabled these. So no cracking fire for the flaming sword,
+						quality and have disabled these. So no crackling fire for the flaming sword,
 						campfires, etc.</li>
 				</ul>
 			</td></tr>

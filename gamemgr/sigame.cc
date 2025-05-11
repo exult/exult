@@ -298,12 +298,12 @@ void SI_Game::play_intro() {
 		int count = *selected_intro_counts++;
 		for (int j = 0; j < count; j++) {
 			next = fli0.play(win, 0, 0, next, j * 5);
-			win->show();
+			win->ShowFillGuardBand();
 			wait_delay(0, 0, 1);
 		}
 
 		next = fli0.play(win, 0, 0, next, 100);
-		win->show();
+		win->ShowFillGuardBand();
 
 		if (wait_delay(3000, 0, 1)) {
 			throw UserBreakException();
@@ -312,7 +312,7 @@ void SI_Game::play_intro() {
 		count = *selected_intro_counts++;
 		for (int j = count; j; j--) {
 			next = fli0.play(win, 0, 0, next, j * 5);
-			win->show();
+			win->ShowFillGuardBand();
 			wait_delay(0, 0, 1);
 		}
 
@@ -375,7 +375,7 @@ void SI_Game::play_intro() {
 
 			prev = num;
 			next += 75;
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(1, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -404,7 +404,7 @@ void SI_Game::play_intro() {
 
 			prev = num;
 			next += 75;
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(1, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -427,7 +427,7 @@ void SI_Game::play_intro() {
 
 			prev = num;
 			next += 75;
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(1, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -454,7 +454,7 @@ void SI_Game::play_intro() {
 
 			prev = num;
 			next += 75;
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(1, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -463,7 +463,7 @@ void SI_Game::play_intro() {
 		count = *selected_intro_counts++;
 		for (int j = count; j; j--) {
 			next = fli1.play(win, 0, 0, next, j * 5);
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -483,7 +483,7 @@ void SI_Game::play_intro() {
 		count = *selected_intro_counts++;
 		for (int j = 0; j < count; j++) {
 			next = fli2.play(win, 0, 0, next, j * 5);
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -494,7 +494,7 @@ void SI_Game::play_intro() {
 		count = *selected_intro_counts++;
 		for (j = 0; j < count; j++) {
 			next = fli2.play(win, j, j, next);
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -521,14 +521,14 @@ void SI_Game::play_intro() {
 						get_text_msg(my_leige));
 			}
 
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
 		}
 
 		next = fli2.play(win, j, j, next);
-		win->show();
+		win->ShowFillGuardBand();
 		wait_delay(0, 0, 1);
 
 		const char* const all_we[2]
@@ -553,7 +553,7 @@ void SI_Game::play_intro() {
 						centery + 87, all_we[1]);
 			}
 
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -579,7 +579,7 @@ void SI_Game::play_intro() {
 					centery + 87, and_a[1]);
 		}
 
-		win->show();
+		win->ShowFillGuardBand();
 		j++;
 
 		count = *selected_intro_counts++;
@@ -623,7 +623,7 @@ void SI_Game::play_intro() {
 						get_text_msg(indeed + 1));
 			}
 
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -649,7 +649,7 @@ void SI_Game::play_intro() {
 		count = *selected_intro_counts++;
 		for (j = 0; j < count; j++) {
 			next = fli3.play(win, j, j, next) + 20;
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -675,7 +675,7 @@ void SI_Game::play_intro() {
 						get_text_msg(stand_back));
 			}
 
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -756,7 +756,7 @@ void SI_Game::play_intro() {
 						ibuf, centerx, centery + 87, get_text_msg(there_i + 1));
 			}
 
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -770,7 +770,7 @@ void SI_Game::play_intro() {
 				sman->paint_shape(centerx - 36, centery, sf);
 			}
 
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -786,7 +786,7 @@ void SI_Game::play_intro() {
 		count = *selected_intro_counts++;
 		for (j = 0; j < count; j++) {
 			next = fli5.play(win, 0, 0, next, j * 5);
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -812,7 +812,7 @@ void SI_Game::play_intro() {
 						ibuf, centerx, centery + 87, get_text_msg(tis_my + 2));
 			}
 
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -828,7 +828,7 @@ void SI_Game::play_intro() {
 		count = *selected_intro_counts++;
 		for (j = 0; j < count; j++) {
 			next = fli6.play(win, j, j, next) + 30;
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -851,7 +851,7 @@ void SI_Game::play_intro() {
 				sifont->center_text(ibuf, centerx, centery + 74, zot);
 			}
 
-			win->show();
+			win->ShowFillGuardBand();
 			if (wait_delay(0, 0, 1)) {
 				throw UserBreakException();
 			}
@@ -867,12 +867,12 @@ void SI_Game::play_intro() {
 		count = *selected_intro_counts++;
 		for (j = 0; j < count; j++) {
 			next = fli8.play(win, 0, 0, next, j * 5);
-			win->show();
+			win->ShowFillGuardBand();
 			wait_delay(0, 0, 1);
 		}
 
 		next = fli8.play(win, 0, 0, next, 100);
-		win->show();
+		win->ShowFillGuardBand();
 		wait_delay(0, 0, 1);
 
 		count = *selected_intro_counts++;
@@ -885,7 +885,7 @@ void SI_Game::play_intro() {
 		count = *selected_intro_counts++;
 		for (j = count; j; j--) {
 			next = fli8.play(win, 0, 0, next, j * 5);
-			win->show();
+			win->ShowFillGuardBand();
 			wait_delay(0, 0, 1);
 		}
 	} catch (const UserBreakException& /*x*/) {
@@ -1375,7 +1375,7 @@ void SI_Game::end_game(bool success, bool within_game) {
 		}
 
 		if (updated) {
-			win->show();
+			win->ShowFillGuardBand();
 		}
 
 		if (wait_delay(0, 0, 1)) {
@@ -1391,7 +1391,7 @@ void SI_Game::end_game(bool success, bool within_game) {
 		// Fade out for 1 sec (50 cycles)
 		pal->set_brightness(80);    // Set readable brightness
 		win->fill8(0);
-		win->show();
+		win->ShowFillGuardBand();
 
 		// Congratulations screen
 		// show only when finishing a game and not when viewed from menu
@@ -1479,7 +1479,7 @@ bool SI_Game::new_game(Vga_file& shapes) {
 				snprintf(disp_name, max_len + 2, "%s", npc_name);
 			}
 			font->draw_text(ibuf, topx + 60, menuy + 10, disp_name);
-			gwin->get_win()->show();
+			gwin->get_win()->ShowFillGuardBand();
 			redraw = false;
 		}
 		SDL_Event event;

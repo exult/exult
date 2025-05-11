@@ -499,7 +499,7 @@ void Combo_editor::set_combo(
 	delete combo;
 	combo      = newcombo;
 	file_index = findex;
-	selected   = -1;
+	reset_selected();
 	ExultStudio::get_instance()->set_entry(
 			"combo_name", combo->name.c_str(), true);
 	set_controls();    // No selection now.
@@ -708,7 +708,7 @@ void Combo_editor::add(
 void Combo_editor::remove() {
 	if (selected >= 0) {
 		combo->remove(selected);
-		selected = -1;
+		reset_selected();
 		set_controls();
 		render();
 	}
@@ -796,7 +796,7 @@ void Combo_chooser::select(int new_sel) {
 void Combo_chooser::unselect(bool need_render    // 1 to render and show.
 ) {
 	if (selected >= 0) {
-		selected = -1;
+		reset_selected();
 		if (need_render) {
 			render();
 		}
@@ -1006,6 +1006,9 @@ gint Combo_chooser::drag_begin(
 	// Get ->combo.
 	const int num   = chooser->info[chooser->selected].num;
 	Combo*    combo = chooser->combos[num];
+	if (combo->members.size() == 0) {
+		return false;    // ++++Display a halt bitmap.
+	}
 	// Show 'hot' member as icon.
 	Combo_member* hot = combo->members[combo->hot_index];
 	Shape_frame*  shape
@@ -1241,7 +1244,7 @@ void Combo_chooser::remove() {
 	if (EStudio::Prompt("Okay to remove selected combo?", "Yes", "no") != 0) {
 		return;
 	}
-	selected     = -1;
+	reset_selected();
 	Combo* todel = combos[tnum];
 	delete todel;    // Delete from our list.
 	combos.erase(combos.begin() + tnum);

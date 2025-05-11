@@ -24,6 +24,7 @@
 
 #include "endianio.h"
 #include "version.h"
+#include "ignore_unused_variable_warning.h"
 
 #include <array>
 #include <cstdint>
@@ -225,14 +226,12 @@ void getVersionInfo(std::ostream& out) {
 	 */
 
 #if (defined(__TIME__) || defined(__DATE__))
-	out << "Built at: ";
-#	ifdef __DATE__
-	out << __DATE__ << " ";
-#	endif
-#	ifdef __TIME__
-	out << __TIME__;
-#	endif
-	out << '\n';
+	// try to store date and time in fixed sized static const arrays so memory 
+	//layout does not change between builds of the same code revision by the 
+	//same compiler
+	static const char datestr[std::max<int>(std::size("" __DATE__),32)] = "" __DATE__;
+	static const char timestr[std::max<int>(std::size("" __TIME__),32)] = "" __TIME__;
+	out << "Built at: " << datestr << " " << timestr << '\n';		
 #endif
 
 	/*
@@ -602,6 +601,7 @@ namespace {
 
 #ifdef NO_CPUID
 	bool CPUID(uint32_t leaf, uint32_t subleaf, std::array<uint32_t, 4>& regs) {
+		ignore_unused_variable_warning(leaf, subleaf, regs);
 		return false;
 	}
 #endif

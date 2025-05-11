@@ -954,7 +954,7 @@ void Npc_chooser::all_frames_toggled(GtkToggleButton* btn, gpointer data) {
 								? chooser->selected
 								: static_cast<int>(chooser->rows[chooser->row0].index0);
 	const int npcnum  = chooser->info[indx].npcnum;
-	chooser->selected = -1;
+	chooser->reset_selected();
 	chooser->setup_info();
 	indx = chooser->find_npc(npcnum);
 	if (indx >= 0) {    // Get back to given shape.
@@ -1209,7 +1209,7 @@ Npc_chooser::~Npc_chooser() {
 void Npc_chooser::unselect(bool need_render    // 1 to render and show.
 ) {
 	if (selected >= 0) {
-		selected = -1;
+		reset_selected();
 		// Update spin button for frame #.
 		gtk_adjustment_set_value(frame_adj, 0);
 		gtk_widget_set_sensitive(fspin, false);

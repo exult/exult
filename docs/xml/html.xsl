@@ -40,7 +40,7 @@
 				<table class="borderless full-width">
 					<tr>
 						<td class="centered">
-							<img src="images/exult_logo.gif" width="181" height="127" alt="Exult Logo" />
+							<img src="images/exult_logo_nice.svg" width="181" height="127" alt="Exult Logo" />
 						</td>
 					</tr>
 					<tr>
@@ -122,6 +122,12 @@
 	:link:active :visited:active { color: #ffcc33; }
 	span.highlight { color: maroon; }
 	tr.highlight { color: #62186f; }
+	.non-selectable-comment {
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
 	table.borderless {
 		border-spacing: 0;
 		border-width: 0;
@@ -491,20 +497,29 @@
 				<xsl:choose>
 					<xsl:when test="count(child::configtag)>0">
 						<tr class="{$row-class}">
-							<td style="text-indent:{$indent}pt">&lt;
-								<xsl:value-of select="@name" />&gt;
+							<td style="text-indent:{$indent}pt">
+								<xsl:text>&lt;</xsl:text>
+								<xsl:value-of select="@name" />
+								<xsl:text>&gt;</xsl:text>
+							</td>
+							<td>
+								<xsl:apply-templates select="comment"/>
 							</td>
 						</tr>
 						<xsl:apply-templates select="configtag">
-							<xsl:with-param name="indent">
-								<xsl:value-of select="$indent+16" />
+							<xsl:with-param name="indent"><xsl:value-of select="$indent+16" />
 							</xsl:with-param>
 						</xsl:apply-templates>
 					</xsl:when>
 					<xsl:otherwise>
 						<tr class="{$row-class}">
-							<td style="text-indent:{$indent}pt">&lt;
-								<xsl:value-of select="@name" />&gt;
+							<td style="text-indent:{$indent}pt">
+								<xsl:text>&lt;</xsl:text>
+								<xsl:value-of select="@name" />
+								<xsl:text>&gt;</xsl:text>
+							</td>
+							<td rowspan="3">
+								<xsl:apply-templates select="comment"/>
 							</td>
 						</tr>
 						<tr class="{$row-class}">
@@ -517,8 +532,10 @@
 				<xsl:if
 					test="@closing-tag='yes'">
 					<tr class="{$row-class}">
-						<td style="text-indent:{$indent}pt">&lt;/
-							<xsl:value-of select="@name" />&gt;
+						<td style="text-indent:{$indent}pt">
+							<xsl:text>&lt;/</xsl:text>
+							<xsl:value-of select="@name" />
+							<xsl:text>&gt;</xsl:text>
 						</td>
 					</tr>
 				</xsl:if>
@@ -527,8 +544,13 @@
 				<xsl:choose>
 					<xsl:when test="count(child::configtag)>0">
 						<tr>
-							<td style="text-indent:{$indent}pt">&lt;
-								<xsl:value-of select="@name" />&gt;
+							<td style="text-indent:{$indent}pt">
+								<xsl:text>&lt;</xsl:text>
+								<xsl:value-of select="@name" />
+								<xsl:text>&gt;</xsl:text>
+							</td>
+							<td>
+								<xsl:apply-templates select="comment"/>
 							</td>
 						</tr>
 						<xsl:apply-templates select="configtag">
@@ -539,8 +561,13 @@
 					</xsl:when>
 					<xsl:otherwise>
 						<tr>
-							<td style="text-indent:{$indent}pt">&lt;
-								<xsl:value-of select="@name" />&gt;
+							<td style="text-indent:{$indent}pt">
+								<xsl:text>&lt;</xsl:text>
+								<xsl:value-of select="@name" />
+								<xsl:text>&gt;</xsl:text>
+							</td>
+							<td rowspan="3">
+								<xsl:apply-templates select="comment"/>
 							</td>
 						</tr>
 						<tr>
@@ -553,8 +580,10 @@
 				<xsl:if
 					test="@closing-tag='yes'">
 					<tr>
-						<td style="text-indent:{$indent}pt">&lt;/
-							<xsl:value-of select="@name" />&gt;
+						<td style="text-indent:{$indent}pt">
+							<xsl:text>&lt;/</xsl:text>
+							<xsl:value-of select="@name" />
+							<xsl:text>&gt;</xsl:text>
 						</td>
 					</tr>
 				</xsl:if>
@@ -562,6 +591,8 @@
 		</xsl:choose>
 	</xsl:template>
 	<xsl:template match="comment">
-		<xsl:apply-templates />
+		<span class="non-selectable-comment">
+			<xsl:apply-templates />
+		</span>
 	</xsl:template>
 </xsl:stylesheet>

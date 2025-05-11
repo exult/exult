@@ -331,6 +331,7 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 
 	} changemouse(mouse);
 
+	gwin->get_win()->FillGuardband();
 	gwin->show(true);
 	mouse->show();
 

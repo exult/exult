@@ -85,6 +85,7 @@ osxdmg: bundle
 	cp $(srcdir)/docs/faq.html ./Exult-snapshot/FAQ.html
 	cp $(srcdir)/docs/images/docs*.* ./Exult-snapshot/images
 	cp $(srcdir)/docs/images/*.gif ./Exult-snapshot/images
+	cp $(srcdir)/docs/images/*.svg ./Exult-snapshot/images
 	ln -s -f /Applications "./Exult-snapshot/Drag'n'drop here"
 	echo "[InternetShortcut]\nURL=https://github.com/exult/exult/commit/$(REVISION)" > "./Exult-snapshot/Git revision.url"
 	SetFile -a V ./Exult-snapshot/images
@@ -93,6 +94,7 @@ osxdmg: bundle
 	SetFile -t ttro -c ttxt ./Exult-snapshot/News
 	SetFile -t ttro -c ttxt ./Exult-snapshot/ReadMe.macOS
 	SetFile -a E ./Exult-snapshot/ReadMe.html
+	SetFile -a E ./Exult-snapshot/FAQ.html
 	SetFile -a E "./Exult-snapshot/Git revision.url"
 	cp -R $(bundle_name) ./Exult-snapshot/
 	create-dmg \
@@ -127,6 +129,7 @@ studiodmg: studiobundle
 	cp $(srcdir)/docs/exult_studio.html ./Studio-snapshot/Manual.html
 	cp $(srcdir)/docs/images/studio*.* ./Studio-snapshot/images
 	cp $(srcdir)/docs/images/*.gif ./Studio-snapshot/images
+	cp $(srcdir)/docs/images/*.svg ./Studio-snapshot/images
 	ln -s -f /Applications "./Studio-snapshot/Drag'n'drop here"
 	echo "[InternetShortcut]\nURL=https://github.com/exult/exult/commit/$(REVISION)" > "./Studio-snapshot/Git revision.url"
 	SetFile -a V ./Studio-snapshot/images

@@ -493,10 +493,12 @@ Game_window::Game_window(
  *  Blank out screen.
  */
 void Game_window::clear_screen(bool update) {
+	win->BeginPaintIntoGuardBand(nullptr, nullptr, nullptr, nullptr);
 	win->fill8(
 			0, win->get_full_width(), win->get_full_height(),
 			win->get_start_x(), win->get_start_y());
 
+	win->EndPaintIntoGuardBand();
 	// update screen
 	if (update) {
 		show(true);
@@ -1367,7 +1369,7 @@ bool Game_window::init_gamedat(bool create) {
  *  Output: 0 if error, already reported.
  */
 
-void Game_window::write() {
+void Game_window::write(bool nopaint) {
 	// Lets just show a nice message on screen first
 
 	const int width       = get_width();
@@ -1377,11 +1379,13 @@ void Game_window::write() {
 	const int text_height = shape_man->get_text_height(0);
 	const int text_width  = shape_man->get_text_width(0, "Saving Game");
 
-	win->fill_translucent8(0, width, height, 0, 0, shape_man->get_xform(8));
-	shape_man->paint_text(
-			0, "Saving Game", centre_x - text_width / 2,
-			centre_y - text_height);
-	show(true);
+	if (!nopaint) {
+		win->fill_translucent8(0, width, height, 0, 0, shape_man->get_xform(8));
+		shape_man->paint_text(
+				0, "Saving Game", centre_x - text_width / 2,
+				centre_y - text_height);
+		show(true);
+	}
 	for (auto* map : maps) {
 		map->write_ireg();    // Write ireg files.
 	}
@@ -1389,7 +1393,7 @@ void Game_window::write() {
 	usecode->write();          // Usecode.dat (party, global flags).
 	Notebook_gump::write();    // Write out journal.
 	write_gwin();              // Write our data.
-	write_saveinfo();
+	write_saveinfo(!nopaint);
 }
 
 /*
@@ -1722,7 +1726,7 @@ void Game_window::start_actor_alt(
 		Game_object* block = main_actor->is_moving()
 									 ? nullptr
 									 : main_actor->find_blocking(
-											 start.get_neighbor(dir), dir);
+											   start.get_neighbor(dir), dir);
 		// We already know the blocking object isn't the avatar, so don't
 		// double check it here.
 		if (!block || !block->move_aside(main_actor, dir)) {
@@ -2944,6 +2948,7 @@ void Game_window::setup_game(bool map_editing) {
 }
 
 void Game_window::plasma(int w, int h, int x, int y, int startc, int endc) {
+	win->BeginPaintIntoGuardBand(&x, &y, &w, &h);
 	Image_buffer8* ibuf = get_win()->get_ib8();
 
 	ibuf->fill8(startc, w, h, x, y);
@@ -2960,6 +2965,7 @@ void Game_window::plasma(int w, int h, int x, int y, int startc, int endc) {
 			ibuf->fill8(pc, 1, 3, px2, py2 - 1);
 		}
 	}
+	win->EndPaintIntoGuardBand();
 	painted = true;
 }
 

@@ -704,7 +704,7 @@ int wait_delay(int ms, int startcol, int ncol, int rotspd) {
 			while (ticks2 > last_rotate + rot_speed) {
 				last_rotate += rot_speed;
 			}
-			gwin->get_win()->show();
+			gwin->get_win()->ShowFillGuardBand();
 		}
 	}
 

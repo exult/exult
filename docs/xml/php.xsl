@@ -320,9 +320,14 @@
 				<xsl:choose>
 					<xsl:when test="count(child::configtag)>0">
 						<tr class="{$row-class}">
-							<td style="text-indent:{$indent}pt">&lt;
-								<xsl:value-of select="@name" />&gt;
+							<td style="text-indent:{$indent}pt">
+								<xsl:text>&lt;</xsl:text>
+								<xsl:value-of select="@name" />
+								<xsl:text>&gt;</xsl:text>
 								<xsl:comment></xsl:comment>
+							</td>
+							<td>
+								<xsl:apply-templates select="comment"/>
 							</td>
 						</tr>
 						<xsl:apply-templates select="configtag">
@@ -333,9 +338,14 @@
 					</xsl:when>
 					<xsl:otherwise>
 						<tr class="{$row-class}">
-							<td style="text-indent:{$indent}pt">&lt;
-								<xsl:value-of select="@name" />&gt;
+							<td style="text-indent:{$indent}pt">
+								<xsl:text>&lt;</xsl:text>
+								<xsl:value-of select="@name" />
+								<xsl:text>&gt;</xsl:text>
 								<xsl:comment></xsl:comment>
+							</td>
+							<td rowspan="3">
+								<xsl:apply-templates select="comment"/>
 							</td>
 						</tr>
 						<tr class="{$row-class}">
@@ -349,8 +359,10 @@
 				<xsl:if
 					test="@closing-tag='yes'">
 					<tr class="{$row-class}">
-						<td style="text-indent:{$indent}pt">&lt;/
-							<xsl:value-of select="@name" />&gt;
+						<td style="text-indent:{$indent}pt">
+							<xsl:text>&lt;/</xsl:text>
+							<xsl:value-of select="@name" />
+							<xsl:text>&gt;</xsl:text>
 							<xsl:comment></xsl:comment>
 						</td>
 					</tr>
@@ -360,9 +372,14 @@
 				<xsl:choose>
 					<xsl:when test="count(child::configtag)>0">
 						<tr>
-							<td style="text-indent:{$indent}pt">&lt;
-								<xsl:value-of select="@name" />&gt;
+							<td style="text-indent:{$indent}pt">
+								<xsl:text>&lt;</xsl:text>
+								<xsl:value-of select="@name" />
+								<xsl:text>&gt;</xsl:text>
 								<xsl:comment></xsl:comment>
+							</td>
+							<td>
+								<xsl:apply-templates select="comment"/>
 							</td>
 						</tr>
 						<xsl:apply-templates select="configtag">
@@ -373,9 +390,14 @@
 					</xsl:when>
 					<xsl:otherwise>
 						<tr>
-							<td style="text-indent:{$indent}pt">&lt;
-								<xsl:value-of select="@name" />&gt;
+							<td style="text-indent:{$indent}pt">
+								<xsl:text>&lt;</xsl:text>
+								<xsl:value-of select="@name" />
+								<xsl:text>&gt;</xsl:text>
 								<xsl:comment></xsl:comment>
+							</td>
+							<td rowspan="3">
+								<xsl:apply-templates select="comment"/>
 							</td>
 						</tr>
 						<tr>
@@ -389,8 +411,10 @@
 				<xsl:if
 					test="@closing-tag='yes'">
 					<tr>
-						<td style="text-indent:{$indent}pt">&lt;/
-							<xsl:value-of select="@name" />&gt;
+						<td style="text-indent:{$indent}pt">
+							<xsl:text>&lt;/</xsl:text>
+							<xsl:value-of select="@name" />
+							<xsl:text>&gt;</xsl:text>
 							<xsl:comment></xsl:comment>
 						</td>
 					</tr>
@@ -399,6 +423,8 @@
 		</xsl:choose>
 	</xsl:template>
 	<xsl:template match="comment">
-		<xsl:apply-templates />
+		<span class="non-selectable-comment">
+			<xsl:apply-templates />
+		</span>
 	</xsl:template>
 </xsl:stylesheet>

@@ -2294,7 +2294,7 @@
 									no
 									<comment>**alters the way MIDI is played.</comment>
 									</configtag>
-									<configtag name="level_Windows" manual="true">
+									<configtag name="level_Windows">
 									0
 									<comment>**how much the MIDI is altered. Value can be 0-127.</comment>
 									</configtag>
@@ -2381,36 +2381,36 @@
 									<comment>loaded.</comment>
 									</configtag>
 								</configtag>
-								<configtag name="win32_device" manual="true">
+								<configtag name="win32_device">
 								-1
 								<comment>**choose the Windows MIDI Device. See <ref target="win32_device"/></comment>
 								</configtag>
-								<configtag name="coreaudio_soundfont" manual="true">
+								<configtag name="coreaudio_soundfont">
 								path
 								<comment>**path to the sound font you want to use for CoreAudio on macOS. </comment>
 								<comment>CoreAudio uses the system sound font by default.</comment>
 								</configtag>
-								<configtag name="coremidi_device" manual="true">
+								<configtag name="coremidi_device">
 								0
 								<comment>**select the CoreMidi device ID on macOS. </comment>
 								<comment>You need to start Exult from Terminal.app to see the IDs when you select CoreMidi as Midi driver.</comment>
 								<comment>See <ref target="coremidi_device"/>.</comment>
 								</configtag>
-								<configtag name="alsa_port" manual="true">
+								<configtag name="alsa_port">
 								65:0
 								<comment>**use this to change the ALSA port when you have chosen alsa as your driver </comment>
 								<comment>(format: XX:YY).</comment>
 								</configtag>
-								<configtag name="unixseqdevice" manual="true">
+								<configtag name="unixseqdevice">
 								/dev/sequencer
 								<comment>**the device to be used when you have chosen the driver UnixSeqDevice</comment>
 								</configtag>
-								<configtag name="fluidsynth_soundfont" manual="true">
+								<configtag name="fluidsynth_soundfont">
 								path
 								<comment>**path to the sound font that will be used to render the MIDI music </comment>
 								<comment>when FluidSynth is chosen as driver.</comment>
 								</configtag>
-								<configtag name="fluidsynth_soundfontN" manual="true">
+								<configtag name="fluidsynth_soundfontN">
 								path
 								<comment>**support for FluidSynth SoundFont stack, add multiple SoundFonts </comment>
 								<comment>(N = 0 to 9). See <ref target="midi_music"/>.</comment>

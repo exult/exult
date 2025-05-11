@@ -730,7 +730,7 @@ void Palette_edit::show_palette(int palnum) {
 void Palette_edit::unselect(bool need_render    // 1 to render and show.
 ) {
 	if (selected >= 0) {
-		selected = -1;
+		reset_selected();
 		if (need_render) {
 			render();
 		}

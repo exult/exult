@@ -20,6 +20,12 @@
 	:link:active :visited:active { color: #ffcc33; }
 	span.highlight { color: maroon; }
 	tr.highlight { color: #62186f; }
+	.non-selectable-comment {
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
 	table.borderless {
 		border-spacing: 0;
 		border-width: 0;
@@ -54,7 +60,7 @@
 </head>
 <body><div align="center"><table class="borderless site-width">
 <tr><td class="centered"><table class="borderless full-width">
-<tr><td class="centered"><img src="images/exult_logo.gif" width="181" height="127" alt="Exult Logo"></td></tr>
+<tr><td class="centered"><img src="images/exult_logo_nice.svg" width="181" height="127" alt="Exult Logo"></td></tr>
 <tr><td>&nbsp;</td></tr>
 <tr><td>&nbsp;</td></tr>
 </table></td></tr>
@@ -971,24 +977,26 @@
 					To change the MIDI Device open exult.cfg and change
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								audio&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								midi&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								win32_device&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;audio&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;midi&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;win32_device&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								-1
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							win32_device&gt;
-						</td></tr>
+<tr><td style="text-indent:48pt">&lt;/win32_device&gt;</td></tr>
 </table>
 				<p>
 					with the device you want to use.
@@ -1027,24 +1035,26 @@
 					To change the MIDI Device open exult.cfg and change
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								audio&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								midi&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								coremidi_device&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;audio&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;midi&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;coremidi_device&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								0
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							coremidi_device&gt;
-						</td></tr>
+<tr><td style="text-indent:48pt">&lt;/coremidi_device&gt;</td></tr>
 </table>
 				<p>
 					with the device ID of the device you want to use.
@@ -1144,33 +1154,33 @@
 					&lt;music_path&gt; to exult.cfg. Example:
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								disk&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								data_path&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;disk&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;data_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							data
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							data_path&gt;
-						</td></tr>
+<tr><td style="text-indent:32pt">&lt;/data_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								music_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;music_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 							data/music
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							music_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/music_path&gt;</td></tr>
 </table>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -1198,36 +1208,32 @@
 					An example of how the relevant part of exult.cfg looks when you prefer the SoundBlaster SFX:
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								blackgate&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								waves&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;blackgate&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;waves&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:16pt">
 						jmsfx.flx
 						</td></tr>
-<tr><td style="text-indent:16pt">&lt;/
-							waves&gt;
-						</td></tr>
-<tr><td style="text-indent:0pt">&lt;/
-							blackgate&gt;
-						</td></tr>
-<tr><td style="text-indent:0pt">&lt;
-								serpentisle&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								waves&gt;
-							</td></tr>
+<tr><td style="text-indent:16pt">&lt;/waves&gt;</td></tr>
+<tr><td style="text-indent:0pt">&lt;/blackgate&gt;</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;serpentisle&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;waves&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:16pt">
 						jmsisfx.flx
 						</td></tr>
-<tr><td style="text-indent:16pt">&lt;/
-							waves&gt;
-						</td></tr>
-<tr><td style="text-indent:0pt">&lt;/
-							serpentisle&gt;
-						</td></tr>
+<tr><td style="text-indent:16pt">&lt;/waves&gt;</td></tr>
+<tr><td style="text-indent:0pt">&lt;/serpentisle&gt;</td></tr>
 </table>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -2144,45 +2150,45 @@
 					Example:
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								disk&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								game&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								gamename&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;disk&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;game&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;gamename&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to\gamename
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								autonotes&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;autonotes&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/gamename/autonotes.txt
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							autonotes&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							gamename&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/autonotes&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/gamename&gt;</td></tr>
 </table>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -2274,57 +2280,56 @@
 					file if you need to.
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								disk&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								game&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								gamename&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;disk&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;game&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;gamename&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/gamename
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								mods&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;mods&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/gamename/mods
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							mods&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/mods&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								patch&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;patch&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/gamename/patch
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							patch&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							gamename&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/patch&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/gamename&gt;</td></tr>
 </table>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -2686,1543 +2691,1447 @@
 					<strong>all</strong> operating systems (except when explicitly stated below).
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								disk&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;disk&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								save_compression_level&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;save_compression_level&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**save games are now compressed as zip files. 0 disables compression, </span><span class="non-selectable-comment">1 enables it, 2 compresses even a bit better. Default is 1.</span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 							1
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							save_compression_level&gt;
-						</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/save_compression_level&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								data_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;data_path&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**this is where <em>Exult</em> stores its data files that are needed to run (e.g. exult???.flx files)</span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 							data
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							data_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/data_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								music_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;music_path&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**optional. Location of digital music. See also <a href="#digital_music">4.6.</a></span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 							data/music
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							music_path&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								game&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								blackgate&gt;
-							</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/music_path&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;game&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;blackgate&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**path to the BG game. See <a href="#path_config">11.2.</a> before changing it.</span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/blackgate
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								savegame_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;savegame_path&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**optional. Default is the same as &lt;path&gt;, change to whatever you like. </span><span class="non-selectable-comment">Also see <a href="#path_config">11.2.</a> before changing it.</span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									optional_path
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							savegame_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/savegame_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								static_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;static_path&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**optional. See <a href="#path_config">11.2.</a> before changing it.</span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/blackgate/static
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							static_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/static_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								gamedat_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;gamedat_path&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**optional. See <a href="#path_config">11.2.</a> before changing it.</span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									optional_path/gamedat
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							gamedat_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/gamedat_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								keys&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:64pt">
-									(default)
-									</td></tr>
-<tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							keys&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								autonotes&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;keys&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**configure custom key bindings or leave the (default) </span><span class="non-selectable-comment">- see <a href="#exult_keys">6.2.</a></span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									(default)
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							autonotes&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								waves&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/keys&gt;</td></tr>
+<tr class="
+		highlight">
+<td style="text-indent:64pt">&lt;autonotes&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**set path to a custom autonotes file or leave the (default) </span><span class="non-selectable-comment">- see <a href="#autonotebook">7.3.</a></span>
+</td>
+</tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									(default)
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/autonotes&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;waves&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**optional setting see <a href="#wave_sfx">4.7.</a> for configuration</span></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									jmsfx.flx
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							waves&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/waves&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								mods&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;mods&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**optional. See <a href="#mods_path">8.4.</a></span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									optional_path/mods
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							mods&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/mods&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								patch&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;patch&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**optional. See <a href="#mods_path">8.4.</a></span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									optional_path/patch
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							patch&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							blackgate&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								serpentisle&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/patch&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/blackgate&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;serpentisle&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**path to the SI game. See <a href="#path_config">11.2.</a> before changing it.</span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/serpentisle
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								savegame_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;savegame_path&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**optional. Default is the same as &lt;path&gt;, change to whatever you like. </span><span class="non-selectable-comment">Also see <a href="#path_config">11.2.</a> before changing it.</span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									optional_path
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							savegame_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/savegame_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								static_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;static_path&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**optional. See <a href="#path_config">11.2.</a> before changing it.</span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/serpentisle/static
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							static_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/static_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								gamedat_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;gamedat_path&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**optional. See <a href="#path_config">11.2.</a> before changing it.</span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									optional_path/gamedat
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							gamedat_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/gamedat_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								keys&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:64pt">
-									(default)
-									</td></tr>
-<tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							keys&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								autonotes&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;keys&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**configure custom key bindings or leave the (default)</span><span class="non-selectable-comment">- see <a href="#exult_keys">6.2.</a></span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									(default)
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							autonotes&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								waves&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/keys&gt;</td></tr>
+<tr class="
+		highlight">
+<td style="text-indent:64pt">&lt;autonotes&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**set path to a custom autonotes file or leave the (default)</span><span class="non-selectable-comment">- see <a href="#autonotebook">7.3.</a></span>
+</td>
+</tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+									(default)
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/autonotes&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;waves&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**optional setting see <a href="#wave_sfx">4.7.</a> for configuration</span></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									jmsisfx.flx
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							waves&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/waves&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								mods&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;mods&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**optional. See <a href="#mods_path">8.4.</a></span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									optional_path/mods
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							mods&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/mods&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								patch&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;patch&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**optional. See <a href="#mods_path">8.4.</a></span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									optional_path/patch
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							patch&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							serpentisle&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							game&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;/
-							disk&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								gameplay&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								facestats&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/patch&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/serpentisle&gt;</td></tr>
+<tr><td style="text-indent:32pt">&lt;/game&gt;</td></tr>
+<tr><td style="text-indent:16pt">&lt;/disk&gt;</td></tr>
+<tr>
+<td style="text-indent:16pt">&lt;gameplay&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;facestats&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**activates the status faces and the position on the screen.</span><span class="non-selectable-comment">-1 disable,0 left, 1 middle, 2 right.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							-1
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							facestats&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								textbackground&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/facestats&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;textbackground&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**with this enabled all the text in the games have a colored background </span><span class="non-selectable-comment">to improve readability. 0 gives a solid light gray,  1 dark purple, </span><span class="non-selectable-comment">2 bright yellow, 3 light blue, 4 dark green, 5 dark red, 6 purple, </span><span class="non-selectable-comment">7 orange, 8 light gray, 9 green, 10 yellow, 11 pale blue, 12 dark green, </span><span class="non-selectable-comment">13 red, 14 bright white, 15 dark gray, 16 white. -1 disables this.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							-1
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							textbackground&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								fastmouse&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/textbackground&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;fastmouse&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**enables faster cursor movement in full screen mode.</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							fastmouse&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								mouse3rd&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/fastmouse&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;mouse3rd&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**enables using of the middle mouse button.</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							yes
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							mouse3rd&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								double_click_closes_gumps&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/mouse3rd&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;double_click_closes_gumps&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							double_click_closes_gumps&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								right_click_closes_gumps&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/double_click_closes_gumps&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;right_click_closes_gumps&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							right_click_closes_gumps&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								allow_right_pathfind&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/right_click_closes_gumps&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;allow_right_pathfind&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**right-clicking lets the Avatar walk automatically </span><span class="non-selectable-comment">to where you clicked. it defaults to double click but </span><span class="non-selectable-comment">you can opt for a single click or disable it.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							double
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							allow_right_pathfind&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								scroll_with_mouse&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/allow_right_pathfind&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;scroll_with_mouse&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**when in cheat mode allow to scroll the game view with the mouse-</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							scroll_with_mouse&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								gumps_dont_pause_game&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/scroll_with_mouse&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;gumps_dont_pause_game&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**yes doesn't pause the game when gumps are shown.</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							yes
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							gumps_dont_pause_game&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								cheat&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/gumps_dont_pause_game&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;cheat&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**enable/disable cheats</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							yes
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							cheat&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								bg_paperdolls&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/cheat&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;bg_paperdolls&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**yes enables SI style paperdolls in BG.</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							bg_paperdolls&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								smooth_scrolling&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/bg_paperdolls&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;smooth_scrolling&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**0/25/50/75/100 percentage of how smooth the game scrolls when the avatar </span><span class="non-selectable-comment">moves. 0 disables smooth scrolling and uses the "jerky" scrolling of the </span><span class="non-selectable-comment">original game.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							0
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							smooth_scrolling&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								skip_intro&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/smooth_scrolling&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;skip_intro&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**this skips the scripted first scene in BG and SI during which you can't move.</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							skip_intro&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								skip_splash&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/skip_intro&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;skip_splash&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**this skips the splash screen, the intro before you get to the</span><span class="non-selectable-comment"> game menu. Disabling it brings you straight to the game menu.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							skip_splash&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								extended_intro&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/skip_splash&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;extended_intro&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**view the extended intro of SI instead</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							yes
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							extended_intro&gt;
-						</td></tr>
+<tr><td style="text-indent:32pt">&lt;/extended_intro&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								formation&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;formation&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**yes forces the party to walk in a formation similar to the original game.</span><span class="non-selectable-comment">See <a href="faq.html#party_formation">FAQ</a> in the FAQ.</span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 							yes
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							formation&gt;
-						</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/formation&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								step_tile_delta&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;step_tile_delta&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**Controls how far the Avatar will move before <em>Exult</em> recalculates the </span><span class="non-selectable-comment">Avatar's and the party's movement. Bigger # avoids jerkiness, but may cause other </span><span class="non-selectable-comment">problems.</span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 							8
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							step_tile_delta&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								alternate_drop&gt;
-							</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/step_tile_delta&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;alternate_drop&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**Dropping stacks of items will drop the whole stack without asking how many when enabled. </span><span class="non-selectable-comment">Hold '<span class="highlight">Ctrl</span>' while dropping to split the stack. </span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							alternate_drop&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								allow_autonotes&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/alternate_drop&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;allow_autonotes&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**Automatically fill the notebook with entries when game flags are set. </span><span class="non-selectable-comment">See <a href="#autonotebook">7.3.</a></span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							allow_autonotes&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								combat&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								difficulty&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/allow_autonotes&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;combat&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;difficulty&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**0 is default, negative values make combat easier, positive makes it </span><span class="non-selectable-comment">harder. It affects the chance of a hit, and the HP's lost if a hit occurs. </span><span class="non-selectable-comment">Ranges from -3 to 3 (easiest to hardest).</span>
+</td>
+</tr>
 <tr><td style="text-indent:48pt">
 								0
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							difficulty&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								mode&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/difficulty&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;mode&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**original or key pause. On key pause the game pauses when you hit space </span><span class="non-selectable-comment">so you can make changes in combat.</span>
+</td>
+</tr>
 <tr><td style="text-indent:48pt">
 								original
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							mode&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								show_hits&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/mode&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;show_hits&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**no is default. With yes you see the hit points of NPCs </span><span class="non-selectable-comment">in brackets after their name.</span>
+</td>
+</tr>
 <tr><td style="text-indent:48pt">
 								no
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							show_hits&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								charmDifficulty&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/show_hits&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;charmDifficulty&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**with normal the Avatar behaves as in the original game. When he is charmed </span><span class="non-selectable-comment">he will be highlighted as charmed and the status icon will show but you can control him as usual. </span><span class="non-selectable-comment">"hard" will neither allow the player to control the Avatar nor access his inventory.</span>
+</td>
+</tr>
 <tr><td style="text-indent:48pt">
 								normal
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							charmDifficulty&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							combat&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								extended_intro&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/charmDifficulty&gt;</td></tr>
+<tr><td style="text-indent:32pt">&lt;/combat&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;extended_intro&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**The implementation of the extended intro is now default for an SI game. </span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							yes
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							extended_intro&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;/
-							gameplay&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								audio&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								enabled&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/extended_intro&gt;</td></tr>
+<tr><td style="text-indent:16pt">&lt;/gameplay&gt;</td></tr>
+<tr>
+<td style="text-indent:16pt">&lt;audio&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;enabled&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**enable/disable all audio - this takes precedence over the </span><span class="non-selectable-comment">other audio settings.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							yes
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							enabled&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								disablepause&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/enabled&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;disablepause&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**enable/disable the pausing of SFX and digital music when the </span><span class="non-selectable-comment">game pauses (e.g. not the focused window). MIDI music is currently not paused.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							disablepause&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								sample_rate&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/disablepause&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;sample_rate&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**set the sample rate of <em>Exult</em>.</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							44100
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							sample_rate&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								stereo&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/sample_rate&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;stereo&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**enable/disable stereo sound.</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							yes
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							stereo&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								effects&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								enabled&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/stereo&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;effects&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;enabled&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**enable/disable sound effects.</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 									yes
 									</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							enabled&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								sfx_volume&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/enabled&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;sfx_volume&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**Sound effects volume.</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 									100
 									</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							sfx_volume&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							effects&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								speech&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								enabled&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/sfx_volume&gt;</td></tr>
+<tr><td style="text-indent:32pt">&lt;/effects&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;speech&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;enabled&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**enable/disable speech.</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								yes
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							enabled&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								with_subs&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/enabled&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;with_subs&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**enable/disable displaying subtitles while speech plays.</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								no
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							with_subs&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								speech_volume&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/with_subs&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;speech_volume&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**Speech volume.</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 									100
 									</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							speech_volume&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							speech&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								midi&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								enabled&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/speech_volume&gt;</td></tr>
+<tr><td style="text-indent:32pt">&lt;/speech&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;midi&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;enabled&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**enable/disable ALL Music.</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								yes
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							enabled&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								use_oggs&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/enabled&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;use_oggs&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**use pre-recorded ogg files for music - see <a href="#music">4.1.</a></span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								no
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							use_oggs&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								driver&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/use_oggs&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;driver&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**choose your music driver between default, MT32Emu, FluidSynth, FMOPL, </span><span class="non-selectable-comment">TiMidity, Windows, alsa, CoreAudio, </span><span class="non-selectable-comment">CoreMidi, UnixSeqDevice. </span><span class="non-selectable-comment">See <a href="#music">4.1.</a> for details.</span>
+</td>
+</tr>
 <tr><td style="text-indent:48pt">
 								default
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							driver&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								convert_Windows&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/driver&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;convert_Windows&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**see <a href="#midi_music">4.2.</a></span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								gm
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							convert_Windows&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								convert_FluidSynth&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/convert_Windows&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;convert_FluidSynth&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**see <a href="#midi_music">4.2.</a></span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								gm
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							convert_FluidSynth&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								convert_Timidity&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/convert_FluidSynth&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;convert_Timidity&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**see <a href="#midi_music">4.2.</a></span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								none
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							convert_Timidity&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								convert_CoreAudio&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/convert_Timidity&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;convert_CoreAudio&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**see <a href="#midi_music">4.2.</a></span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								gm
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							convert_CoreAudio&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								convert_CoreMidi&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/convert_CoreAudio&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;convert_CoreMidi&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**see <a href="#midi_music">4.2.</a></span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								none
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							convert_CoreMidi&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								looping&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/convert_CoreMidi&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;looping&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**Changes music looping, options are auto, never, endless, limited. See <a href="#music">4.1.</a></span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								yes
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							looping&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								chorus&gt;
-							</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_Windows&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/looping&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;chorus&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_Windows&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**alters the way MIDI is played.</span></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_Windows&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_Windows&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;level_Windows&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**how much the MIDI is altered. Value can be 0-127.</span></td>
+</tr>
+<tr><td style="text-indent:64pt">
+									0
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/level_Windows&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_FMOpl&gt;</td>
+<td rowspan="3"></td>
+</tr>
+<tr><td style="text-indent:64pt">
+									no
+									</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_FMOpl&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_Windows&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;level_FMOpl&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_Windows&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_FMOpl&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/level_FMOpl&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_Timidity&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_FMOpl&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_Timidity&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_FMOpl&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;level_Timidity&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_FMOpl&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_Timidity&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/level_Timidity&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_CoreAudio&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_Timidity&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_CoreAudio&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_Timidity&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;level_CoreAudio&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_Timidity&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_CoreAudio&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/level_CoreAudio&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_CoreMidi&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_CoreAudio&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_CoreMidi&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_CoreAudio&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;level_CoreMidi&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_CoreAudio&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_CoreMidi&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/level_CoreMidi&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_FluidSynth&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_CoreMidi&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_FluidSynth&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_CoreMidi&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;level_FluidSynth&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_CoreMidi&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_FluidSynth&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/level_FluidSynth&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/chorus&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;reverb&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_Windows&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**alters the way MIDI is played.</span></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_FluidSynth&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_Windows&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_FluidSynth&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;level_Windows&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**how much the MIDI is altered. Value can be 0-127.</span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_FluidSynth&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							chorus&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								reverb&gt;
-							</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_Windows&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/level_Windows&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_FMOpl&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_Windows&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_FMOpl&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_Windows&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;level_FMOpl&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_Windows&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_FMOpl&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/level_FMOpl&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_Timidity&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_FMOpl&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_Timidity&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_FMOpl&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;level_Timidity&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_FMOpl&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_Timidity&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/level_Timidity&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_CoreAudio&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_Timidity&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_CoreAudio&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_Timidity&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;level_CoreAudio&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_Timidity&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_CoreAudio&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/level_CoreAudio&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_CoreMidi&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_CoreAudio&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_CoreMidi&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_CoreAudio&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;level_CoreMidi&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_CoreAudio&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_CoreMidi&gt;
-							</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/level_CoreMidi&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;enabled_FluidSynth&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									no
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_CoreMidi&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/enabled_FluidSynth&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_CoreMidi&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;level_FluidSynth&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_CoreMidi&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								enabled_FluidSynth&gt;
-							</td></tr>
-<tr><td style="text-indent:64pt">
-									no
-									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							enabled_FluidSynth&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/level_FluidSynth&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/reverb&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								level_FluidSynth&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:48pt">&lt;precacheTimbers&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">
-									0
-									</td></tr>
-<tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							level_FluidSynth&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							reverb&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								precacheTimbers&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								onStartup&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;onStartup&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**when enabled it preloads the entire timbre bank on starting </span><span class="non-selectable-comment">up <em>Exult</em> with a penalty on start up time.</span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									no
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							onStartup&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/onStartup&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								onPlay&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;onPlay&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**only preloads needed timbres and patches when a song gets </span><span class="non-selectable-comment">loaded.</span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									yes
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							onPlay&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/onPlay&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							precacheTimbers&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								win32_device&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">
+		highlight"><td style="text-indent:48pt">&lt;/precacheTimbers&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;win32_device&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**choose the Windows MIDI Device. See <a href="#win32_device">4.4.</a></span></td>
+</tr>
+<tr><td style="text-indent:48pt">
 								-1
 								</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							win32_device&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								coreaudio_soundfont&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">
+<tr><td style="text-indent:48pt">&lt;/win32_device&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;coreaudio_soundfont&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**path to the sound font you want to use for CoreAudio on macOS. </span><span class="non-selectable-comment">CoreAudio uses the system sound font by default.</span>
+</td>
+</tr>
+<tr><td style="text-indent:48pt">
 								path
 								</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							coreaudio_soundfont&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								coremidi_device&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">
+<tr><td style="text-indent:48pt">&lt;/coreaudio_soundfont&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;coremidi_device&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**select the CoreMidi device ID on macOS. </span><span class="non-selectable-comment">You need to start Exult from Terminal.app to see the IDs when you select CoreMidi as Midi driver.</span><span class="non-selectable-comment">See <a href="#coremidi_device">4.5.</a>.</span>
+</td>
+</tr>
+<tr><td style="text-indent:48pt">
 								0
 								</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							coremidi_device&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								alsa_port&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">
+<tr><td style="text-indent:48pt">&lt;/coremidi_device&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;alsa_port&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**use this to change the ALSA port when you have chosen alsa as your driver </span><span class="non-selectable-comment">(format: XX:YY).</span>
+</td>
+</tr>
+<tr><td style="text-indent:48pt">
 								65:0
 								</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							alsa_port&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								unixseqdevice&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">
+<tr><td style="text-indent:48pt">&lt;/alsa_port&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;unixseqdevice&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**the device to be used when you have chosen the driver UnixSeqDevice</span></td>
+</tr>
+<tr><td style="text-indent:48pt">
 								/dev/sequencer
 								</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							unixseqdevice&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								fluidsynth_soundfont&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">
+<tr><td style="text-indent:48pt">&lt;/unixseqdevice&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;fluidsynth_soundfont&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**path to the sound font that will be used to render the MIDI music </span><span class="non-selectable-comment">when FluidSynth is chosen as driver.</span>
+</td>
+</tr>
+<tr><td style="text-indent:48pt">
 								path
 								</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							fluidsynth_soundfont&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								fluidsynth_soundfontN&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">
+<tr><td style="text-indent:48pt">&lt;/fluidsynth_soundfont&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;fluidsynth_soundfontN&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**support for FluidSynth SoundFont stack, add multiple SoundFonts </span><span class="non-selectable-comment">(N = 0 to 9). See <a href="#midi_music">4.2.</a>.</span>
+</td>
+</tr>
+<tr><td style="text-indent:48pt">
 								path
 								</td></tr>
+<tr><td style="text-indent:48pt">&lt;/fluidsynth_soundfontN&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							fluidsynth_soundfontN&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								volume_curve&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:48pt">&lt;volume_curve&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**set volume (kind of at least, best don't change)</span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:48pt">
 								1.000000
 								</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							volume_curve&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								volume_FMOpl&gt;
-							</td></tr>
+		highlight"><td style="text-indent:48pt">&lt;/volume_curve&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;volume_FMOpl&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**FMOpl volume</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								100
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							volume_FMOpl&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								volume_ogg&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/volume_FMOpl&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;volume_ogg&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**Digital Music volume</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								100
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							volume_ogg&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								volume_CoreAudio&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/volume_ogg&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;volume_CoreAudio&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**CoreAudio volume</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								100
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							volume_CoreAudio&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								volume_MT32Emu&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/volume_CoreAudio&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;volume_MT32Emu&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**MT32 volume</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								100
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							volume_MT32Emu&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								volume_FluidSynth&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/volume_MT32Emu&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;volume_FluidSynth&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**FluidSynth volume</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								100
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							volume_FluidSynth&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							midi&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;/
-							audio&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								video&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								share_video_settings&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/volume_FluidSynth&gt;</td></tr>
+<tr><td style="text-indent:32pt">&lt;/midi&gt;</td></tr>
+<tr><td style="text-indent:16pt">&lt;/audio&gt;</td></tr>
+<tr>
+<td style="text-indent:16pt">&lt;video&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;share_video_settings&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**yes means that fullscreen and windowed mode share the same</span><span class="non-selectable-comment">video settings.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							yes
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							share_video_settings&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								fullscreen&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/share_video_settings&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;fullscreen&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**do you want to play full screen?</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							fullscreen&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								scale_method&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/fullscreen&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;scale_method&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**choose different scalers here - see <a href="#scaler">5.4.</a> - applies to fullscreen if video settings are not shared.</span></td>
+</tr>
 <tr><td style="text-indent:32pt">
 								2xSaI
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							scale_method&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								scale&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/scale_method&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;scale&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**2 enables / 1 disables scaling, some scalers support higher values. </span><span class="non-selectable-comment">See <a href="#scaler">5.4.</a> - applies to fullscreen if video settings are not shared.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 								2
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							scale&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								display&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								width&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/scale&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;display&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;width&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**here you choose the resolution of the Exult window.</span><span class="non-selectable-comment">The default will be the lowest resolution that your system supports.</span><span class="non-selectable-comment">Applies to fullscreen if video settings are not shared.</span>
+</td>
+</tr>
 <tr><td style="text-indent:48pt">
 									640
 									</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							width&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								height&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/width&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;height&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:48pt">
 									480
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							height&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							display&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								game&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								width&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/height&gt;</td></tr>
+<tr><td style="text-indent:32pt">&lt;/display&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;game&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;width&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**here you choose at what resolution you run the games in the</span><span class="non-selectable-comment"><em>Exult</em> window. 320x200 is the resolution of the original.</span><span class="non-selectable-comment">0x0 means that <em>Exult</em> will determine the best way to match</span><span class="non-selectable-comment">game resolution to <em>Exult</em> resolution - applies to fullscreen if video settings are not shared.</span>
+</td>
+</tr>
 <tr><td style="text-indent:48pt">
 									320
 									</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							width&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								height&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/width&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;height&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:48pt">
 									200
 								</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							height&gt;
-						</td></tr>
+<tr><td style="text-indent:48pt">&lt;/height&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								border&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:48pt">&lt;border&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								red&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;red&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**if game resolution doesn't match <em>Exult</em> resolution </span><span class="non-selectable-comment">you have borders around the game res. With these you can </span><span class="non-selectable-comment">change the black default border color - applies to fullscreen if video settings are not shared.</span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 										0
 										</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							red&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/red&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								green&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:64pt">
-										0
-									</td></tr>
-<tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							green&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								blue&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;green&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 										0
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							blue&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/green&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							border&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							game&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								fill_mode&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;blue&gt;</td>
+<td rowspan="3"></td>
+</tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">
+										0
+									</td></tr>
+<tr class="
+		highlight"><td style="text-indent:64pt">&lt;/blue&gt;</td></tr>
+<tr class="
+		highlight"><td style="text-indent:48pt">&lt;/border&gt;</td></tr>
+<tr><td style="text-indent:32pt">&lt;/game&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;fill_mode&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**Possible options are Fill, Fit, Aspect Correct Fit, Centre and Aspect Correct Centre.</span><span class="non-selectable-comment">Please see <a href="#video_fill_modes">5.2.</a> for more information about these options.</span><span class="non-selectable-comment">Applies to fullscreen if video settings are not shared.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 								Centre
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							fill_mode&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								fill_scaler&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/fill_mode&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;fill_scaler&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**Chose between Point and Bilinear.</span><span class="non-selectable-comment">Please see <a href="#video_fill_modes">5.2.</a> for more information about this - applies to fullscreen if video settings are not shared.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 								Bilinear
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							fill_scaler&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								windows&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								scale_method&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/fill_scaler&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;windows&gt;</td>
+<td><span class="non-selectable-comment">settings for display in a  window. Same applies as to fullscreen.</span></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;scale_method&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:48pt">
 							2xSaI
 							</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							scale_method&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								scale&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/scale_method&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;scale&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								2
 							</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							scale&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								display&gt;
-							</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								width&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/scale&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;display&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:64pt">&lt;width&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									640
 								</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							width&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								height&gt;
-							</td></tr>
+<tr><td style="text-indent:64pt">&lt;/width&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;height&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									240
 								</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							height&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							display&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								game&gt;
-							</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								width&gt;
-							</td></tr>
+<tr><td style="text-indent:64pt">&lt;/height&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/display&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;game&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:64pt">&lt;width&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									320
 								</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							width&gt;
-						</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								height&gt;
-							</td></tr>
+<tr><td style="text-indent:64pt">&lt;/width&gt;</td></tr>
+<tr>
+<td style="text-indent:64pt">&lt;height&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									200
 								</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							height&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							game&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								fill_mode&gt;
-							</td></tr>
+<tr><td style="text-indent:64pt">&lt;/height&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/game&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;fill_mode&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								Centre
 							</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							fill_mode&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								fill_scaler&gt;
-							</td></tr>
+<tr><td style="text-indent:48pt">&lt;/fill_mode&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;fill_scaler&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">Please see <a href="#video_fill_modes">5.2.</a> for more information about this.</span></td>
+</tr>
 <tr><td style="text-indent:48pt">
 								Bilinear
 							</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							fill_scaler&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							windows&gt;
-						</td></tr>
+<tr><td style="text-indent:48pt">&lt;/fill_scaler&gt;</td></tr>
+<tr><td style="text-indent:32pt">&lt;/windows&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								force_bpp&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;force_bpp&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**force output bpp. Valid values are 	0 (for any), 8, 16 or 32.</span><span class="non-selectable-comment">If set to 8 most scalers will not work and will display as the</span><span class="non-selectable-comment">fallback point scaler.</span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 								0
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							force_bpp&gt;
-						</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/force_bpp&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								disable_fades&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;disable_fades&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**"no" enables fading between different menu points</span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 							no
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							disable_fades&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								fps&gt;
-							</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/disable_fades&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;fps&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**Speed setting. Might help when the game seems too slow or too fast.</span><span class="non-selectable-comment"> The in game menu shows this setting in the Gameplay menu.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							10
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							fps&gt;
-						</td></tr>
+<tr><td style="text-indent:32pt">&lt;/fps&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								gamma&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;gamma&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								red&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">
-								1
-								</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							red&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								green&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:48pt">&lt;red&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**set gamma levels to adjust brightness, same as +/- in game</span></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:48pt">
 								1
 								</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							green&gt;
-						</td></tr>
+		highlight"><td style="text-indent:48pt">&lt;/red&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								blue&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:48pt">&lt;green&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:48pt">
 								1
 								</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							blue&gt;
-						</td></tr>
+		highlight"><td style="text-indent:48pt">&lt;/green&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							gamma&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;/
-							video&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								shortcutbar&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								use_shortcutbar&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:48pt">&lt;blue&gt;</td>
+<td rowspan="3"></td>
+</tr>
+<tr class="
+		highlight"><td style="text-indent:48pt">
+								1
+								</td></tr>
+<tr class="
+		highlight"><td style="text-indent:48pt">&lt;/blue&gt;</td></tr>
+<tr class="
+		highlight"><td style="text-indent:32pt">&lt;/gamma&gt;</td></tr>
+<tr><td style="text-indent:16pt">&lt;/video&gt;</td></tr>
+<tr>
+<td style="text-indent:16pt">&lt;shortcutbar&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;use_shortcutbar&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**options are yes/translucent (will not be translucent if not on </span><span class="non-selectable-comment">map, default on iOS)</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							no
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							use_shortcutbar&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								use_outline_color&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/use_shortcutbar&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;use_outline_color&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**outline around shortcutbar buttons only if the bar is on the map.</span><span class="non-selectable-comment">Options are: no, green, white, yellow, blue, red, purple, black (default).</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							black
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							use_outline_color&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								hide_missing_items&gt;
-							</td></tr>
+<tr><td style="text-indent:32pt">&lt;/use_outline_color&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;hide_missing_items&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**hides ShortcutBar buttons for items the party doesn't have.</span><span class="non-selectable-comment">no shows those buttons greyed out.</span>
+</td>
+</tr>
 <tr><td style="text-indent:32pt">
 							yes
 							</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							hide_missing_items&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;/
-							shortcutbar&gt;
-						</td></tr>
+<tr><td style="text-indent:32pt">&lt;/hide_missing_items&gt;</td></tr>
+<tr><td style="text-indent:16pt">&lt;/shortcutbar&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:16pt">&lt;
-								debug&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:16pt">&lt;debug&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								trace&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;trace&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								usecode&gt;
-							</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">
-								no
-								</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							usecode&gt;
-						</td></tr>
-<tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								intrinsics&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:48pt">&lt;usecode&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**options are yes/no/verbose. This is used to trace the </span><span class="non-selectable-comment">executed Usecode. (You shouldn't need this unless you are a programmer.)</span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:48pt">
 								no
 								</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							intrinsics&gt;
-						</td></tr>
+		highlight"><td style="text-indent:48pt">&lt;/usecode&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								combat&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:48pt">&lt;intrinsics&gt;</td>
+<td rowspan="3">
+<span class="non-selectable-comment">**options are yes/no. Used to trace intrinsics. </span><span class="non-selectable-comment">(You shouldn't need this unless you are a programmer.)</span>
+</td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:48pt">
 								no
 								</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							combat&gt;
-						</td></tr>
+		highlight"><td style="text-indent:48pt">&lt;/intrinsics&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							trace&gt;
-						</td></tr>
+		highlight">
+<td style="text-indent:48pt">&lt;combat&gt;</td>
+<td rowspan="3"><span class="non-selectable-comment">**options are yes/no. If enabled, show combat messages.</span></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:16pt">&lt;/
-							debug&gt;
-						</td></tr>
-<tr><td style="text-indent:0pt">&lt;/
-							config&gt;
-						</td></tr>
+		highlight"><td style="text-indent:48pt">
+								no
+								</td></tr>
+<tr class="
+		highlight"><td style="text-indent:48pt">&lt;/combat&gt;</td></tr>
+<tr class="
+		highlight"><td style="text-indent:32pt">&lt;/trace&gt;</td></tr>
+<tr class="
+		highlight"><td style="text-indent:16pt">&lt;/debug&gt;</td></tr>
+<tr><td style="text-indent:0pt">&lt;/config&gt;</td></tr>
 </table>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -4237,105 +4146,100 @@
 					'known games' - see <a href="#terms">1.3.</a>):
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								disk&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;disk&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								data_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;data_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 							data
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							data_path&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								game&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								gamename&gt;
-							</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/data_path&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;game&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;gamename&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/gamename
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								static_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;static_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/gamename/static
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							static_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/static_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								savegame_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;savegame_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									optional_path
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							savegame_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/savegame_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								gamedat_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;gamedat_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									optional_path/gamedat
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							gamedat_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/gamedat_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								mods&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;mods&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/gamename/mods
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							mods&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/mods&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								patch&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;patch&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/gamename/patch
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							patch&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							gamename&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/patch&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/gamename&gt;</td></tr>
 </table>
 				<p>
 					But normally you don't need to. On starting up, <em>Exult</em> will first read which games
@@ -4396,105 +4300,100 @@
 					On Windows (7, 8, 10, 11), <em>Exult</em> uses the special system folder <span class="highlight"><kbd>LOCAL_APPDATA</kbd></span>:
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								disk&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;disk&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								data_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;data_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 							data
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							data_path&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								game&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								gamename&gt;
-							</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/data_path&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;game&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;gamename&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to\gamename
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								static_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;static_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/gamename/static
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							static_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/static_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								savegame_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;savegame_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									LOCAL_APPDATA\Exult\gamename
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							savegame_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/savegame_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								gamedat_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;gamedat_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									LOCAL_APPDATA\Exult\gamename\gamedat
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							gamedat_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/gamedat_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								mods&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;mods&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to\gamename\mods
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							mods&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/mods&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								patch&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;patch&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to\gamename\patch
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							patch&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							gamename&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/patch&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/gamename&gt;</td></tr>
 </table>
 				<p>
 					<span class="highlight"><kbd>LOCAL_APPDATA\Exult</kbd></span> translates to <span class="highlight"><kbd>C:\Users\YourUsername\AppData\Local\Exult</kbd></span>.<br>
@@ -4527,105 +4426,100 @@
 					On macOS <em>Exult</em> uses a couple of different folders to follow Apple's guidelines:
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								disk&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;disk&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								data_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;data_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 								/Library/Application Support/Exult/data
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							data_path&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								game&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								gamename&gt;
-							</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/data_path&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;game&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;gamename&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									/Library/Application Support/Exult/gamename
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								static_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;static_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									/Library/Application Support/Exult/gamename/static
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							static_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/static_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								savegame_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;savegame_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									~/Library/Application Support/exult/gamename
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							savegame_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/savegame_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								gamedat_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;gamedat_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									~/Library/Application Support/exult/gamename/gamedat
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							gamedat_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/gamedat_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								mods&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;mods&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									/Library/Application Support/exult/gamename/mods
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							mods&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/mods&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								patch&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;patch&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									/Library/Application Support/exult/gamename/patch
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							patch&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							gamename&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/patch&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/gamename&gt;</td></tr>
 </table>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -4635,105 +4529,100 @@
 					On Linux/Unix based systems <em>Exult</em> uses:
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								disk&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;disk&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;
-								data_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:32pt">&lt;data_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:32pt">
 							/usr/local/share/exult
 							</td></tr>
 <tr class="
-		highlight"><td style="text-indent:32pt">&lt;/
-							data_path&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								game&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								gamename&gt;
-							</td></tr>
+		highlight"><td style="text-indent:32pt">&lt;/data_path&gt;</td></tr>
+<tr>
+<td style="text-indent:32pt">&lt;game&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;gamename&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									/usr/local/share/exult/gamename
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								static_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;static_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									/usr/local/share/exult/gamename/static
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							static_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/static_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								savegame_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;savegame_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									$HOME/.exult/gamename
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							savegame_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/savegame_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								gamedat_path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;gamedat_path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									$HOME/.exult/gamename/gamedat
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							gamedat_path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/gamedat_path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								mods&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;mods&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									/usr/local/share/exult/gamename/mods
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							mods&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/mods&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								patch&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;patch&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									/usr/local/share/exult/gamename/patch
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							patch&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							gamename&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/patch&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/gamename&gt;</td></tr>
 </table>
 			</td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -4746,91 +4635,82 @@
 					You now just have to add the tags for the two games.
 				</p>
 				<table class="borderless">
-<tr><td style="text-indent:0pt">&lt;
-								config&gt;
-							</td></tr>
-<tr><td style="text-indent:16pt">&lt;
-								disk&gt;
-							</td></tr>
-<tr><td style="text-indent:32pt">&lt;
-								game&gt;
-							</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								blackgate&gt;
-							</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+<tr>
+<td style="text-indent:0pt">&lt;config&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:16pt">&lt;disk&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:32pt">&lt;game&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:48pt">&lt;blackgate&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									path_to/blackgate
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							blackgate&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/blackgate&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								forgeofvirtue&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:48pt">&lt;forgeofvirtue&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/forgeofvirtue
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							forgeofvirtue&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;
-								serpentisle&gt;
-							</td></tr>
-<tr><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+		highlight"><td style="text-indent:48pt">&lt;/forgeofvirtue&gt;</td></tr>
+<tr>
+<td style="text-indent:48pt">&lt;serpentisle&gt;</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr><td style="text-indent:64pt">
 									path_to/serpentisle
 									</td></tr>
-<tr><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
-<tr><td style="text-indent:48pt">&lt;/
-							serpentisle&gt;
-						</td></tr>
+<tr><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
+<tr><td style="text-indent:48pt">&lt;/serpentisle&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;
-								silverseed&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:48pt">&lt;silverseed&gt;</td>
+<td></td>
+</tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;
-								path&gt;
-							</td></tr>
+		highlight">
+<td style="text-indent:64pt">&lt;path&gt;</td>
+<td rowspan="3"></td>
+</tr>
 <tr class="
 		highlight"><td style="text-indent:64pt">
 									path_to/silverseed
 									</td></tr>
 <tr class="
-		highlight"><td style="text-indent:64pt">&lt;/
-							path&gt;
-						</td></tr>
+		highlight"><td style="text-indent:64pt">&lt;/path&gt;</td></tr>
 <tr class="
-		highlight"><td style="text-indent:48pt">&lt;/
-							silverseed&gt;
-						</td></tr>
-<tr><td style="text-indent:32pt">&lt;/
-							game&gt;
-						</td></tr>
-<tr><td style="text-indent:16pt">&lt;/
-							disk&gt;
-						</td></tr>
+		highlight"><td style="text-indent:48pt">&lt;/silverseed&gt;</td></tr>
+<tr><td style="text-indent:32pt">&lt;/game&gt;</td></tr>
+<tr><td style="text-indent:16pt">&lt;/disk&gt;</td></tr>
 </table>
 				<p>
 					If you only own one version of the game, you don't have to worry about this
