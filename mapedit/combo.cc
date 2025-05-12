@@ -46,7 +46,7 @@ class Game_object;
 
 const int border = 2;    // Border at bottom, sides of each
 //   combo in browser.
-const int maxtiles = 32;    // Max. width/height in tiles.
+const int maxtiles = 96;    // Max. width/height in tiles.
 
 /*
  *  Open combo window (if not already open).
@@ -302,7 +302,7 @@ void Combo::add(
 			|| box.x + box.w - tilefoot.x > maxtiles
 			|| tilefoot.y + tilefoot.h - box.y > maxtiles
 			|| box.y + box.h - tilefoot.y > maxtiles) {
-			EStudio::Alert("New object is too far (> 32) from others");
+			EStudio::Alert("New object is too far (> 96) from others");
 			return;
 		}
 		// Add to footprint.
