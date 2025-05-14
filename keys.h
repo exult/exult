@@ -100,7 +100,7 @@ public:
 
 private:
 	void ParseText(char* text, int len);
-	void ParseLine(char* line);
+	void ParseLine(char* line, int lineNumber);
 	void FillParseMaps();
 };
 

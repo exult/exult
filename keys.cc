@@ -586,14 +586,16 @@ void KeyBinder::ShowBrowserKeys() const {
 void KeyBinder::ParseText(char* text, int len) {
 	char*      ptr;
 	char*      end;
-	const char LF = '\n';
+	const char LF                 = '\n';
+	int        currentLineInBlock = 0;    // Added line counter
 
 	ptr = text;
 
 	// last (useful) line must end with LF
 	while ((ptr - text) < len && (end = strchr(ptr, LF)) != nullptr) {
 		*end = '\0';
-		ParseLine(ptr);
+		currentLineInBlock++;                  // Increment line counter
+		ParseLine(ptr, currentLineInBlock);    // Pass line number
 		ptr = end + 1;
 	}
 }
@@ -602,10 +604,14 @@ static void skipspace(string& s) {
 	const size_t i = s.find_first_not_of(chardata.whitespace);
 	if (i && i != string::npos) {
 		s.erase(0, i);
+	} else if (
+			i == string::npos && !s.empty()
+			&& s.find_first_of(chardata.whitespace) == 0) {
+		s.clear();
 	}
 }
 
-void KeyBinder::ParseLine(char* line) {
+void KeyBinder::ParseLine(char* line, int lineNumber) {
 	size_t     i;
 	SDL_Keysym k;
 	ActionType a;
@@ -654,7 +660,8 @@ void KeyBinder::ParseLine(char* line) {
 			to_uppercase(t);
 
 			if (t.length() == 0) {
-				cerr << "Keybinder: parse error in line: " << s << endl;
+				cerr << "Keybinder: parse error (empty key token) in line "
+					 << lineNumber << ": " << line << endl;
 				return;
 			} else if (t.length() == 1) {
 				// translate 1-letter keys straight to SDL_Keycode
@@ -664,7 +671,9 @@ void KeyBinder::ParseLine(char* line) {
 					c     = std::tolower(c);    // need lowercase
 					k.sym = static_cast<SDL_Keycode>(c);
 				} else {
-					cerr << "Keybinder: unsupported key: " << keycode << endl;
+					cerr << "Keybinder: unsupported key '" << keycode
+						 << "' in line " << lineNumber << ": " << line << endl;
+					return;
 				}
 			} else {
 				// lookup in table
@@ -672,7 +681,8 @@ void KeyBinder::ParseLine(char* line) {
 				if (key_index != keys.end()) {
 					k.sym = key_index->second;
 				} else {
-					cerr << "Keybinder: unsupported key: " << keycode << endl;
+					cerr << "Keybinder: unsupported key '" << keycode
+						 << "' in line " << lineNumber << ": " << line << endl;
 					return;
 				}
 			}
@@ -680,23 +690,32 @@ void KeyBinder::ParseLine(char* line) {
 	}
 
 	if (k.sym == SDLK_UNKNOWN) {
-		cerr << "Keybinder: parse error in line: " << s << endl;
+		cerr << "Keybinder: parse error (unknown key symbol) in line "
+			 << lineNumber << ": " << line << endl;
 		return;
 	}
 
 	// get function
 	skipspace(s);
 
-	i        = s.find_first_of(chardata.whitespace);
-	string t = s.substr(0, i);
+	i               = s.find_first_of(chardata.whitespace);
+	string t_action = s.substr(0, i);
 	s.erase(0, i);
-	to_uppercase(t);
+	to_uppercase(t_action);
 
-	auto action_index = actions.find(t);
+	if (t_action.empty() && i == string::npos
+		&& s.empty()) {    // Check if action string is genuinely missing
+		cerr << "Keybinder: parse error (missing action) in line " << lineNumber
+			 << ": " << line << endl;
+		return;
+	}
+
+	auto action_index = actions.find(t_action);
 	if (action_index != actions.end()) {
 		a.action = action_index->second;
 	} else {
-		cerr << "Keybinder: unsupported action: " << t << endl;
+		cerr << "Keybinder: unsupported action '" << t_action << "' in line "
+			 << lineNumber << ": " << line << endl;
 		return;
 	}
 
@@ -708,36 +727,42 @@ void KeyBinder::ParseLine(char* line) {
 	if (!strcmp(a.action->s, "CALL_USECODE")) {
 		// Want to allow function name.
 		if (s.length() && s[0] != '#') {
-			i              = s.find_first_of(chardata.whitespace);
-			const string t = s.substr(0, i);
+			i                        = s.find_first_of(chardata.whitespace);
+			const string param_token = s.substr(0, i);
 			s.erase(0, i);
 			skipspace(s);
 
-			int p = atoi(t.c_str());
-			if (!p) {
+			int p = atoi(param_token.c_str());
+			if (!p && param_token != "0") {
 				// No conversion? Try as function name.
 				Usecode_machine* usecode
 						= Game_window::get_instance()->get_usecode();
-				p = usecode->find_function(t.c_str());
-			} else if (p < 0) {
-				p = -1;
+				p = usecode->find_function(param_token.c_str());
+				if (p == -1 && !param_token.empty()) {
+					cerr << "Keybinder: warning: CALL_USECODE function '"
+						 << param_token << "' not found (line " << lineNumber
+						 << ": " << line << ")" << endl;
+				}
 			}
 			a.params[np++] = p;
 		}
 	}
 	while (s.length() && s[0] != '#' && np < c_maxparams) {
-		i              = s.find_first_of(chardata.whitespace);
-		const string t = s.substr(0, i);
+		i                        = s.find_first_of(chardata.whitespace);
+		const string param_token = s.substr(0, i);
 		s.erase(0, i);
 		skipspace(s);
+		if (param_token.empty()) {
+			continue;    // Skip if empty param string (e.g. multiple spaces)
+		}
 
-		const int p    = atoi(t.c_str());
+		const int p    = atoi(param_token.c_str());
 		a.params[np++] = p;
 	}
 
 	// read optional help comment
 	if (s.length() >= 1 && s[0] == '#') {
-		if (s.length() >= 2 && s[1] == '-') {
+		if (s.length() >= 2 && s[1] == '-') {    // don't show in help
 			show = false;
 		} else {
 			s.erase(0, 1);
@@ -797,16 +822,18 @@ void KeyBinder::LoadFromFileInternal(const char* filename) {
 		return;
 	}
 	auto& keyfile = *pKeyfile;
-	char  temp[1024];    // 1024 should be long enough
+	char  temp[1024];        // 1024 should be long enough
+	int   lineNumber = 0;    // Initialize line number
 	while (!keyfile.eof()) {
+		lineNumber++;    // Increment for each line attempt
 		keyfile.getline(temp, 1024);
-		if (keyfile.gcount() >= 1023) {
-			cerr << "Keybinder: parse error: line too long. Skipping rest of "
-					"file."
-				 << endl;
+		// Check if getline failed (and not just EOF)
+		if (keyfile.fail() && !keyfile.eof()) {    // Genuine read error
+			cerr << "Keybinder: file read error on line " << lineNumber
+				 << " of " << filename << endl;
 			return;
 		}
-		ParseLine(temp);
+		ParseLine(temp, lineNumber);
 	}
 }
 
