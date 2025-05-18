@@ -49,7 +49,8 @@ public:
 		paint         = 1,    // Left-mouse dragging paints shapes.
 		paint_chunks  = 2,    // Left-dragging paints whole chunks.
 		combo_pick    = 3,    // Left-click adds item to combo.
-		select_chunks = 4     // Select whole chunks.
+		select_chunks = 4,    // Select whole chunks.
+		edit_pick     = 5     // Left-click adds item to selection.
 	};
 
 private:

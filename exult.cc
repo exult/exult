@@ -1261,12 +1261,14 @@ static void Select_for_combo(
 		cheat.append_selected(obj);
 		gwin->add_dirty(obj);
 	}
-	if (Object_out(
-				client_socket,
-				toggle ? Exult_server::combo_toggle : Exult_server::combo_pick,
-				nullptr, t.tx, t.ty, t.tz, id.get_shapenum(), id.get_framenum(),
-				0, name)
-		== -1) {
+	if (cheat.get_edit_mode() == Cheat::combo_pick
+		&& Object_out(
+				   client_socket,
+				   toggle ? Exult_server::combo_toggle
+						  : Exult_server::combo_pick,
+				   nullptr, t.tx, t.ty, t.tz, id.get_shapenum(),
+				   id.get_framenum(), 0, name)
+				   == -1) {
 		cout << "Error sending shape to ExultStudio" << endl;
 	}
 }
@@ -1770,7 +1772,9 @@ static void Handle_event(SDL_Event& event) {
 								event, false,
 								(SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 						break;
-					} else if (cheat.get_edit_mode() == Cheat::combo_pick) {
+					} else if (
+							cheat.get_edit_mode() == Cheat::combo_pick
+							|| cheat.get_edit_mode() == Cheat::edit_pick) {
 						Select_for_combo(
 								event, false,
 								(SDL_GetModState() & SDL_KMOD_CTRL) != 0);
@@ -2008,7 +2012,9 @@ static void Handle_event(SDL_Event& event) {
 							event, true,
 							(SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 					break;
-				} else if (cheat.get_edit_mode() == Cheat::combo_pick) {
+				} else if (
+						cheat.get_edit_mode() == Cheat::combo_pick
+						|| cheat.get_edit_mode() == Cheat::edit_pick) {
 					Select_for_combo(
 							event, true,
 							(SDL_GetModState() & SDL_KMOD_CTRL) != 0);

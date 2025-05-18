@@ -315,11 +315,10 @@ void Mouse::set_speed_cursor() {
 			cursor = med_combat_arrows[0];
 			break;    // Med. N red arrow.
 		case Cheat::combo_pick:
-			cursor = greenselect;
-			break;
 		case Cheat::select_chunks:
+		case Cheat::edit_pick:
 			cursor = greenselect;
-			break;    // Nice to have somethin else.
+			break;    // Nice to have something else.
 		}
 	} else if (Combat::is_paused()) {
 		cursor = short_combat_arrows[0];    // Short N red arrow.
