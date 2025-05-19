@@ -1230,7 +1230,7 @@ static void Select_chunks(
 }
 
 /*
- *  Select for combo.
+ *  Select for combo and edit
  */
 static void Select_for_combo(
 		SDL_Event& event,
@@ -1261,6 +1261,7 @@ static void Select_for_combo(
 		cheat.append_selected(obj);
 		gwin->add_dirty(obj);
 	}
+	// only send the data if we are in combo mode
 	if (cheat.get_edit_mode() == Cheat::combo_pick
 		&& Object_out(
 				   client_socket,
