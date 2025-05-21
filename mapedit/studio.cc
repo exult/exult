@@ -1512,6 +1512,10 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 		if (!(basegame = gamemanager->get_ss())) {
 			cerr << "Silver Seed not found." << endl;
 		}
+	} else if (gamename == CFG_DEMO_NAME) {
+		if (!(basegame = gamemanager->get_devel())) {
+			cerr << "Demo Game not found." << endl;
+		}
 	} else {
 		if ((curr_game = gamemanager->find_game_index(gamename)) < 0) {
 			cerr << "Game '" << gamename << "' not found." << endl;

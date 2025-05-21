@@ -1,7 +1,7 @@
 /*
  *  modmgr.h - Mod manager for Exult.
  *
- *  Copyright (C) 2006-2022  The Exult Team
+ *  Copyright (C) 2006-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -246,6 +246,7 @@ protected:
 	ModManager*             si;
 	ModManager*             ss;
 	ModManager*             sib;
+	ModManager*             dev;
 	std::vector<ModManager> games;
 	void                    print_found(
 							   ModManager* game, const char* flex, const char* title,
@@ -286,6 +287,10 @@ public:
 		return sib != nullptr;
 	}
 
+	bool is_devel_installed() const {
+		return dev != nullptr;
+	}
+
 	ModManager* find_game(const std::string& name);
 
 	ModManager* get_bg() {
@@ -306,6 +311,10 @@ public:
 
 	ModManager* get_sib() {
 		return sib;
+	}
+
+	ModManager* get_devel() {
+		return dev;
 	}
 
 	int  find_game_index(const std::string& name);

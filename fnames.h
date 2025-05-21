@@ -2,7 +2,7 @@
  *  fnames.h - Names of data files for Exult.
  *
  *  Copyright (C) 1999  Jeffrey S. Freedman
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -189,6 +189,7 @@
 #define CFG_SI_ES_NAME "islaserpiente"
 #define CFG_SS_NAME    "silverseed"
 #define CFG_SIB_NAME   "serpentbeta"
+#define CFG_DEMO_NAME  "demo"
 
 // U7 game titles in "exult.cfg":
 #define CFG_BG_TITLE    "ULTIMA VII\nTHE BLACK GATE"
@@ -200,6 +201,7 @@
 #define CFG_SI_ES_TITLE "ULTIMA VII PART 2\nLA ISLA SERPIENTE"
 #define CFG_SS_TITLE    "ULTIMA VII PART 2\nTHE SILVER SEED"
 #define CFG_SIB_TITLE   "ULTIMA VII PART 2\nSERPENT ISLE BETA"
+#define CFG_DEMO_TITLE  "EXULT\nDEMO GAME"
 
 // Exult SFX Packages:
 #define SFX_ROLAND_BG  "sqsfxbg.flx"
