@@ -1,7 +1,7 @@
 /*
  *  gamedat.cc - Create gamedat files from a savegame.
  *
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -201,7 +201,10 @@ void Game_window::restore_gamedat(const char* fname    // Name of savegame file.
 	// trailing slash
 	IFileDataSource in(fname);
 	if (!in.good()) {
-		if (!Game::is_editing()) {    // Ok if map-editing.
+		if (!Game::is_editing()
+			&& Game::get_game_type()
+					   != EXULT_DEVEL_GAME) {    // Ok if map-editing or devel
+												 // game.
 			throw file_read_exception(fname);
 		}
 		std::cerr << "Warning (map-editing): Couldn't open '" << fname << "'"
