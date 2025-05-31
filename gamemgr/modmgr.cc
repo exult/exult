@@ -1,7 +1,7 @@
 /*
  *  modmgr.cc - Mod manager for Exult.
  *
- *  Copyright (C) 2006-2022  The Exult Team
+ *  Copyright (C) 2006-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -368,16 +368,30 @@ ModManager::ModManager(
 	found = U7exists(initgam_path);
 
 	string static_identity;
+	char   fname[50];
+	string id = get_game_identity(fname, cfgname);
 	if (found) {
 		static_identity = get_game_identity(initgam_path.c_str(), cfgname);
+		if (static_identity != "ULTIMA7" && static_identity != "FORGE"
+			&& static_identity != "SERPENT ISLE"
+			&& static_identity != "SILVER SEED") {
+			static_identity = "DEVEL GAME";
+		}
 		if (!silent) {
 			cout << "found game with identity '" << static_identity << "'"
 				 << endl;
 		}
-	} else {    // New game still under development.
+	} else if (id == CFG_DEMO_NAME && U7exists(game_path)) {
 		static_identity = "DEVEL GAME";
 		if (!silent) {
-			cout << "but it wasn't there." << endl;
+			cout << "found Demo game with identity '" << static_identity << "'"
+				 << endl;
+		}
+	} else if (U7exists(game_path)) {    // New game still under development.
+		static_identity = "DEVEL GAME";
+		if (!silent) {
+			cout << "found game with identity '" << static_identity << "'"
+				 << endl;
 		}
 	}
 
@@ -490,12 +504,19 @@ ModManager::ModManager(
 			new_title = CFG_SS_TITLE;
 		}
 	} else {
-		type        = EXULT_DEVEL_GAME;
-		language    = ENGLISH;
-		expansion   = false;
-		sibeta      = false;
-		path_prefix = "DEVEL" + to_uppercase(name);
-		new_title   = menu;    // To be safe.
+		type      = EXULT_DEVEL_GAME;
+		language  = ENGLISH;
+		expansion = false;
+		sibeta    = false;
+		if (id == CFG_DEMO_NAME) {
+			path_prefix = to_uppercase(CFG_DEMO_NAME);
+			if (needtitle) {
+				new_title = CFG_DEMO_TITLE;
+			}
+		} else {
+			path_prefix = "DEVEL" + to_uppercase(name);
+			new_title   = menu;    // To be safe.
+		}
 	}
 
 	// If the "default" path selected above is already taken, then use a unique
@@ -616,7 +637,7 @@ void ModManager::add_mod(const string& mod, const string& modconfig) {
 // Checks the game 'gam' for the presence of the mod given in 'arg_modname'
 // and checks the mod's compatibility. If the mod exists and is compatible with
 // Exult, returns a reference to the mod; otherwise, returns the mod's parent
-// game. Outputs error messages is the mod is not found or is not compatible.
+// game. Outputs error messages if the mod is not found or is not compatible.
 BaseGameInfo* ModManager::get_mod(const string& name, bool checkversion) {
 	ModInfo* newgame = nullptr;
 	if (has_mods()) {
@@ -683,7 +704,7 @@ void ModManager::get_game_paths(const string& game_path) {
 // GameManager: class that manages the installed games
 GameManager::GameManager(bool silent) {
 	games.clear();
-	bg = fov = si = ss = sib = nullptr;
+	bg = fov = si = ss = sib = dev = nullptr;
 
 	// Search for games defined in exult.cfg:
 	const string              config_path("config/disk/game");
@@ -692,18 +713,19 @@ GameManager::GameManager(bool silent) {
 	std::vector<string>       checkgames;
 	checkgames.reserve(
 			gamestrs.size()
-			+ 5);    // +5 in case the four below are not in the cfg.
+			+ 6);    // +6 in case the six below are not in the cfg.
 	// The original games plus expansions.
 	checkgames.emplace_back(CFG_BG_NAME);
 	checkgames.emplace_back(CFG_FOV_NAME);
 	checkgames.emplace_back(CFG_SI_NAME);
 	checkgames.emplace_back(CFG_SS_NAME);
 	checkgames.emplace_back(CFG_SIB_NAME);
+	checkgames.emplace_back(CFG_DEMO_NAME);
 
 	for (const auto& gamestr : gamestrs) {
 		if (gamestr != CFG_BG_NAME && gamestr != CFG_FOV_NAME
 			&& gamestr != CFG_SI_NAME && gamestr != CFG_SS_NAME
-			&& gamestr != CFG_SIB_NAME) {
+			&& gamestr != CFG_SIB_NAME && gamestr != CFG_DEMO_NAME) {
 			checkgames.push_back(gamestr);
 		}
 	}
@@ -714,6 +736,7 @@ GameManager::GameManager(bool silent) {
 	int siind  = -1;
 	int ssind  = -1;
 	int sibind = -1;
+	int devind = -1;
 
 	for (const auto& gameentry : checkgames) {
 		// Load the paths for all games found:
@@ -729,7 +752,8 @@ GameManager::GameManager(bool silent) {
 		// This checks static identity and sets game type.
 		const ModManager game
 				= ModManager(gameentry, game_title, need_title, silent);
-		if (!game.being_edited() && !game.is_there()) {
+		if (!game.being_edited() && !game.is_there()
+			&& game.get_game_type() != EXULT_DEVEL_GAME) {
 			continue;
 		}
 		if (game.get_game_type() == BLACK_GATE) {
@@ -752,6 +776,10 @@ GameManager::GameManager(bool silent) {
 			} else if (siind == -1) {
 				siind = games.size();
 			}
+		} else if (game.get_game_type() == EXULT_DEVEL_GAME) {
+			if (devind == -1) {
+				devind = games.size();
+			}
 		}
 
 		games.push_back(game);
@@ -771,6 +799,10 @@ GameManager::GameManager(bool silent) {
 	}
 	if (sibind >= 0) {
 		sib = &(games[sibind]);
+	}
+
+	if (devind >= 0) {
+		dev = &(games[devind]);
 	}
 
 	// Sane defaults.
