@@ -258,7 +258,26 @@ public:
 	void set_number_npcs(bool num) {
 		npc_numbers = num;
 	}
+
+
+	enum class FoodUse {
+		Manual    = 0,
+		Automatic = 1,
+		Disabled  = 2
+	};
+
+private:
+	FoodUse food_use = FoodUse::Manual;
+
+public:
+	FoodUse GetFoodUse(bool saved=false) {
+
+		return enabled||saved?food_use:FoodUse::Manual;
+	}
+
+	void SetFoodUse(FoodUse newuse, bool writeout);
 };
+
 
 extern Cheat cheat;
 

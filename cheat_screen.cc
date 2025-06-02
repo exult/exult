@@ -215,18 +215,18 @@ void CheatScreen::show_screen() {
 	pal.Generate_remap_xformtable(hovertable.colors, hoverremaps);
 	ClearState clear(state);
 
-	Mouse::mouse->hide();
-	Mouse::Mouse_shapes saveshape = Mouse::mouse->get_shape();
-	Mouse::mouse->set_shape(Mouse::hand);
+	Mouse::mouse()->hide();
+	Mouse::Mouse_shapes saveshape = Mouse::mouse()->get_shape();
+	Mouse::mouse()->set_shape(Mouse::hand);
 
 	buttons_down.clear();
 	// Start the loop
 	NormalLoop();
 
-	Mouse::mouse->set_shape(saveshape);
-	Mouse::mouse->hide();
+	Mouse::mouse()->set_shape(saveshape);
+	Mouse::mouse()->hide();
 	gwin->paint();
-	Mouse::mouse->show();
+	Mouse::mouse()->show();
 
 	// Resume the game clock
 	gwin->get_tqueue()->resume(SDL_GetTicks());
@@ -525,7 +525,7 @@ bool CheatScreen::SharedInput() {
 	// more that adequate for Cheat Screen If anyone needs to do smooth animaion
 	// the can change this
 	auto repainttime = SDL_GetTicks() + 100;
-	Mouse::mouse->hide();    // Turn off mouse.
+	Mouse::mouse()->hide();    // Turn off mouse.
 	std::memset(&event, 0, sizeof(event));
 
 	while (SDL_GetTicks() < repainttime) {
@@ -663,7 +663,7 @@ bool CheatScreen::SharedInput() {
 							event.motion.x, event.motion.y,
 							gwin->get_fastmouse(), gx, gy);
 
-					Mouse::mouse->move(gx, gy);
+					Mouse::mouse()->move(gx, gy);
 					Mouse::mouse_update = true;
 
 				} break;
@@ -929,12 +929,13 @@ bool CheatScreen::SharedInput() {
 			return false;
 		}
 		gwin->rotatecolours();
-		Mouse::mouse->show();    // Re-display mouse.
+		Mouse::mouse()->show();    // Re-display mouse.
 		if (gwin->show() || Mouse::mouse_update) {
-			Mouse::mouse->blit_dirty();
+			Mouse::mouse()->blit_dirty();
 		}
-		Mouse::mouse->hide();    // Need to immediately turn off here to prevent
-								 // flickering after repaint of whole screen
+		Mouse::mouse()
+				->hide();    // Need to immediately turn off here to prevent
+							 // flickering after repaint of whole screen
 	}
 	return false;
 }
@@ -978,8 +979,8 @@ SDL_Keycode CheatScreen::CheckHotspots(int mx, int my, int radius) {
 }
 
 void CheatScreen::PaintHotspots() {
-	int mx = Mouse::mouse->get_mousex();
-	int my = Mouse::mouse->get_mousey();
+	int mx = Mouse::mouse()->get_mousex();
+	int my = Mouse::mouse()->get_mousey();
 	for (const auto& hs : hotspots) {
 		if (hs) {
 			if (hs.has_point(mx, my)) {
@@ -4188,9 +4189,9 @@ int CheatScreen::AddLeftRightMenuItem(
 
 void CheatScreen::EndFrame() {
 	PaintHotspots();
-	Mouse::mouse->show();
+	Mouse::mouse()->show();
 	gwin->get_win()->show();
-	Mouse::mouse->hide();    // Must immediately hide to prevent flickering
+	Mouse::mouse()->hide();    // Must immediately hide to prevent flickering
 }
 
 const int CheatScreen::button_down_finger;

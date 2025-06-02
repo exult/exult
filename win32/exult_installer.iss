@@ -233,6 +233,10 @@ begin
   UnZip(ExpandConstant(src), ExpandConstant(target));
 end;
 
+procedure DeleteModData(modDataDir,GameModPath :string);
+begin
+  DelTree(GameModPath+'\'+modDataDir,True,True,True);
+end;
 //
 // Create the Directory browsing page
 //
@@ -442,20 +446,27 @@ begin
         ExtractMe('{tmp}\exult_audio.zip','{app}\data\');
       if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\keyring')) AND (iBGVerified = 1) then begin
         ExtractTemporaryFile('bgkeyring.zip');
+        DeleteModData('Keyring\data',sBGmods);
         ExtractMe('{tmp}\bgkeyring.zip',sBGmods);
       end;
-      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\sfisland')) AND (iBGVerified = 1) then begin
+      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\sfisland')) AND (iBGVerified = 1) then begin      
         ExtractTemporaryFile('islefaq.zip');
+        DeleteModData('islefaq\patch',sBGmods);
         ExtractMe('{tmp}\islefaq.zip',sBGmods);
       end;
       if (PrevItemAChecked <> WizardIsComponentSelected('downloads\mods\sifixes')) AND (iSIVerified = 1) then begin
         ExtractTemporaryFile('sifixes.zip');
+        DeleteModData('sifixes\data',sSImods);
         ExtractMe('{tmp}\sifixes.zip',sSImods);
       end;
-      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\3rdpartymods\ultima6')) AND (iBGVerified = 1) then
+      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\3rdpartymods\ultima6')) AND (iBGVerified = 1) then begin
+        DeleteModData('Ultima6v1.2\patch',sBGmods);
         ExtractMe('{tmp}\Ultima6.zip',sBGmods);
-      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\3rdpartymods\glimmerscape')) AND (iSIVerified = 1) then
+      end;
+      if (PrevItemAChecked <> WizardIsComponentSelected('downloads\3rdpartymods\glimmerscape')) AND (iSIVerified = 1) then begin      
+        DeleteModData('glimmerscape\data',sSImods);
         ExtractMe('{tmp}\Glimmerscape_SI_mod_by_Donfrow.zip',sSImods);
+      end;
 
     // Wine doesn't support the Windows built-in unzip method hence will crash at installing the downloads
     end else if RegKeyExists(HKEY_LOCAL_MACHINE, 'Software\Wine') then begin

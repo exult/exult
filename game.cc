@@ -417,8 +417,7 @@ bool Game::show_menu(bool skip) {
 		return gwin->init_gamedat(first);
 	}
 	IExultDataSource mouse_data(MAINSHP_FLX, PATCH_MAINSHP, 19);
-	menu_mouse   = new Mouse(gwin, mouse_data);
-	Mouse::mouse = menu_mouse;
+	Mouse            menu_mouse(gwin, mouse_data);
 
 	top_menu();
 	MenuList* menu = nullptr;
@@ -455,7 +454,7 @@ bool Game::show_menu(bool skip) {
 		}
 
 		bool      created = false;
-		const int choice  = menu->handle_events(gwin, menu_mouse);
+		const int choice  = menu->handle_events(gwin);
 		switch (choice) {
 		case -1:    // Exit
 #ifdef SDL_PLATFORM_IOS
@@ -463,9 +462,6 @@ bool Game::show_menu(bool skip) {
 #else
 			pal->fade_out(c_fade_out_time);
 			Audio::get_ptr()->stop_music();
-			delete menu_mouse;
-			menu_mouse   = nullptr;
-			Mouse::mouse = nullptr;
 			delete menu;
 			throw quit_exception();
 #endif
@@ -536,9 +532,6 @@ bool Game::show_menu(bool skip) {
 	}
 	delete menu;
 	Audio::get_ptr()->stop_music();
-	Mouse::mouse = nullptr;
-	delete menu_mouse;
-	menu_mouse = nullptr;
 	return play;
 }
 

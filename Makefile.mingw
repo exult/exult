@@ -798,6 +798,7 @@ aseprite-plugindist: aseprite-plugin
 	cp tools/aseprite_plugin/main.lua $(ASEPRITEPATH)
 	cp tools/aseprite_plugin/package.json $(ASEPRITEPATH)
 	cp tools/aseprite_plugin/Readme.txt $(ASEPRITEPATH)
+	cp tools/aseprite_plugin/u7.pal $(ASEPRITEPATH)
 	$(call copy_dlls_for_exe, $(ASEPRITEPATH)/exult_shp$(EXEEXT), $(ASEPRITEPATH))
 
 allclean: clean toolsclean studioclean modsclean pluginclean aseprite-pluginclean

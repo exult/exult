@@ -235,6 +235,7 @@ aseprite_package:
 	cp $(srcdir)/tools/aseprite_plugin/Readme.txt ./aseprite/
 	cp $(srcdir)/tools/aseprite_plugin/main.lua ./aseprite/
 	cp $(srcdir)/tools/aseprite_plugin/package.json ./aseprite/
+	cp $(srcdir)/tools/aseprite_plugin/u7.pal ./aseprite/
 if WITH_OSX_CODE_SIGNATURE
 	codesign \
 	  --options runtime \

@@ -255,7 +255,7 @@ void ActionUseItem(const int* params) {
 	const int qual     = params[2] == -1 ? c_any_qual : params[2];
 	Game_window::get_instance()->activate_item(params[0], framenum, qual);
 
-	Mouse::mouse->set_speed_cursor();
+	Mouse::mouse()->set_speed_cursor();
 }
 
 //  { ActionUseItem, 3, "Use food", dont_show, NONE },
@@ -265,7 +265,7 @@ void ActionUseFood(const int* params) {
 	if (gwin->activate_item(377) ||                 // Food
 		(GAME_SI && gwin->activate_item(404)) ||    // Special SI food
 		gwin->activate_item(616)) {                 // Drinks
-		Mouse::mouse->set_speed_cursor();
+		Mouse::mouse()->set_speed_cursor();
 	}
 }
 
@@ -278,7 +278,7 @@ void ActionCallUsecode(const int* params) {
 			params[0], nullptr,
 			static_cast<Usecode_machine::Usecode_events>(params[1]));
 
-	Mouse::mouse->set_speed_cursor();
+	Mouse::mouse()->set_speed_cursor();
 }
 
 //  { ActionCombat, 0, "Toggle combat", normal_keys, NONE },
@@ -287,14 +287,14 @@ void ActionCombat(const int* params) {
 	Game_window* gwin = Game_window::get_instance();
 	gwin->toggle_combat();
 	gwin->paint();
-	Mouse::mouse->set_speed_cursor();
+	Mouse::mouse()->set_speed_cursor();
 }
 
 //  { ActionCombatPause, 0, "Pause combat", normal_keys, NONE },
 void ActionCombatPause(const int* params) {
 	ignore_unused_variable_warning(params);
 	Combat::toggle_pause();
-	Mouse::mouse->set_speed_cursor();
+	Mouse::mouse()->set_speed_cursor();
 }
 
 //  { ActionTarget, 0, "Target mode", normal_keys, NONE },
@@ -306,7 +306,7 @@ void ActionTarget(const int* params) {
 		return;
 	}
 	Game_window::get_instance()->double_clicked(x, y);
-	Mouse::mouse->set_speed_cursor();
+	Mouse::mouse()->set_speed_cursor();
 }
 
 //  { ActionInventory, 1, "Show inventory", normal_keys, NONE },
@@ -350,7 +350,7 @@ void ActionInventory(const int* params) {
 		actor->show_inventory();    // force showing inv.
 	}
 
-	Mouse::mouse->set_speed_cursor();
+	Mouse::mouse()->set_speed_cursor();
 }
 
 //  { ActionTryKeys, 0, "Try keys", normal_keys, NONE },
@@ -395,7 +395,7 @@ void ActionTryKeys(const int* params) {
 			}
 		}
 	}
-	Mouse::mouse->flash_shape(Mouse::redx);    // Nothing matched.
+	Mouse::mouse()->flash_shape(Mouse::redx);    // Nothing matched.
 }
 
 //  { ActionStats, 1, "Show stats", normal_keys, NONE },
@@ -438,7 +438,7 @@ void ActionStats(const int* params) {
 				actor, game->get_shape("gumps/statsdisplay"));
 	}
 
-	Mouse::mouse->set_speed_cursor();
+	Mouse::mouse()->set_speed_cursor();
 }
 
 //  { ActionCombatStats, 0, "Show Combat stats", normal_keys, SERPENT_ISLE }

@@ -777,15 +777,15 @@ void LowLevelMidiDriver::produceSamples(sint16* samples, uint32 bytes) {
 			// Only do sample production if there has been a midi event recently
 			// or there are sequences
 			static bool shown_message = false;
-			if ((time_last_send + no_produce_threshold) 
-					>= std::chrono::steady_clock::now()
-				|| std::count(
-						   sequences, sequences + std::size(sequences), nullptr)
+			if ((time_last_send + no_produce_threshold)
+						>= std::chrono::steady_clock::now()
+				|| static_cast<size_t>(std::count(
+						   sequences, sequences + std::size(sequences),
+						   nullptr))
 						   != std::size(sequences)) {
 				lowLevelProduceSamples(samples, samples_to_produce);
 				shown_message = false;
-			} else if (!shown_message)
-			{
+			} else if (!shown_message) {
 				COUT("no midi activity in " << no_produce_threshold.count()
 											<< "ms skipping sample production");
 				shown_message = true;

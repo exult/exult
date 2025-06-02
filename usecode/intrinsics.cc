@@ -2203,7 +2203,7 @@ USECODE_INTRINSIC(flash_mouse) {
 		shape = Mouse::redx;
 		break;
 	}
-	Mouse::mouse->flash_shape(shape);
+	Mouse::mouse()->flash_shape(shape);
 	return no_ret;
 }
 
@@ -2459,11 +2459,11 @@ USECODE_INTRINSIC(start_blocking_speech) {
 			show_npc_face(sh, fr);
 		}
 
-		const bool os           = Mouse::mouse->is_onscreen();
+		const bool os           = Mouse::mouse()->is_onscreen();
 		uint32     last_repaint = 0;    // For insuring animation repaints.
 		do {
-			Delay();                 // Wait a fraction of a second.
-			Mouse::mouse->hide();    // Turn off mouse.
+			Delay();                   // Wait a fraction of a second.
+			Mouse::mouse()->hide();    // Turn off mouse.
 			Mouse::mouse_update = false;
 			SDL_Renderer* renderer
 					= SDL_GetRenderer(gwin->get_win()->get_screen_window());
@@ -2477,7 +2477,7 @@ USECODE_INTRINSIC(start_blocking_speech) {
 					gwin->get_win()->screen_to_game(
 							event.motion.x, event.motion.y,
 							gwin->get_fastmouse(), mx, my);
-					Mouse::mouse->move(mx, my);
+					Mouse::mouse()->move(mx, my);
 					Mouse::mouse_update = true;
 				}
 			}
@@ -2492,10 +2492,10 @@ USECODE_INTRINSIC(start_blocking_speech) {
 				}
 			}
 
-			Mouse::mouse->show();    // Re-display mouse.
+			Mouse::mouse()->show();    // Re-display mouse.
 			// Blit to screen if necessary, or if mouse changed.
 			if (!gwin->show() && Mouse::mouse_update) {
-				Mouse::mouse->blit_dirty();
+				Mouse::mouse()->blit_dirty();
 			}
 		} while (Audio::get_ptr()->is_voice_playing());
 
@@ -2507,7 +2507,7 @@ USECODE_INTRINSIC(start_blocking_speech) {
 		}
 
 		if (!os) {
-			Mouse::mouse->hide();
+			Mouse::mouse()->hide();
 		}
 	}
 	return Usecode_value(okay ? 1 : 0);

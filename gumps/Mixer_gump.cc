@@ -535,7 +535,7 @@ bool Mixer_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 
 		if (!inputslider) {
 			inputslider = GetSlider(
-					Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
+					Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
 			clearer = inputslider;
 		}
 		if (inputslider && inputslider->key_down(chr, unicode)) {

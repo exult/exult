@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "items.h"
 
 #include "databuf.h"
+#include "exceptions.h"
 #include "exult_flx.h"
 #include "fnames.h"
 #include "msgfile.h"
@@ -301,14 +302,34 @@ static void Setup_text(
 		Text_msg_file_reader reader(exultmsg);
 		first_msg = reader.get_global_section_strings(msglist);
 	}
-	const unsigned total_msgs = static_cast<int>(msglist.size() - 0x400);
-	if (first_msg >= 0) {
+
+	//
+	if (first_msg >= 0x400) {
 		first_msg -= 0x400;
+		const size_t total_msgs = msglist.size() - 0x400;
+		text_msgs.resize(std::max(total_msgs, text_msgs.size()));
+		for (unsigned i = first_msg; i < total_msgs; i++) {
+			text_msgs[i] = msglist[i + 0x400];
+		}
 	}
-	text_msgs.resize(total_msgs);
-	for (unsigned i = first_msg; i < total_msgs; i++) {
-		text_msgs[i] = msglist[i + 0x400];
+	// If no text mesages were loaded retry with the default exult ones
+	if (text_msgs.empty()) {
+		static bool tried_default = false;
+
+		if (!tried_default) {
+			auto defaultexultmsg = IExultDataSource(
+					BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX),
+					EXULT_FLX_EXULTMSG_TXT);
+			tried_default = true;
+			Setup_text(txtfile, defaultexultmsg);
+			return;
+		} else {
+			throw exult_exception(
+					"Failed to load any messages from exultmsg", __FILE__,
+					__LINE__);
+		}
 	}
+
 	// Now read in textmsg.txt
 	Text_msg_file_reader reader(txtfile);
 	reader.get_section_strings(SHAPES_SECT, item_names);
@@ -327,7 +348,7 @@ void Setup_text(bool si, bool expansion, bool sibeta) {
 	// TODO: allow multilingual exultmsg.txt files.
 	auto exultmsg = [&]() {
 		if (is_patch && U7exists(PATCH_EXULTMSG)) {
-			return IExultDataSource(PATCH_EXULTMSG, -1);
+			return IExultDataSource(PATCH_EXULTMSG, 0);
 		}
 
 		return IExultDataSource(

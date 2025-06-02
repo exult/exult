@@ -320,36 +320,22 @@ void MenuList::set_cancel(int val) {
 	has_cancel = true;
 }
 
-int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
+int MenuList::handle_events(Game_window* gwin) {
 	const int count = entries.size();
 	for (int i = 0; i < count; i++) {
 		entries[i]->dirty = true;
 	}
 
-	struct ChangeMouse {
-		Mouse* old;
-
-		ChangeMouse(Mouse* mouse) {
-			old          = Mouse::mouse;
-			Mouse::mouse = mouse;
-		}
-
-		~ChangeMouse() {
-			Mouse::mouse = old;
-		}
-
-	} changemouse(mouse);
-
 	gwin->get_win()->FillGuardband();
 	gwin->show(true);
-	mouse->show();
+	Mouse::mouse()->show();
 
 	bool exit_loop = false;
 	do {
 		Delay();
-		const bool mouse_visible = mouse->is_onscreen();
+		const bool mouse_visible = Mouse::mouse()->is_onscreen();
 		if (mouse_visible) {
-			mouse->hide();
+			Mouse::mouse()->hide();
 		}
 		// redraw items if they're dirty
 		for (int i = 0; i < count; i++) {
@@ -357,8 +343,8 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 		}
 		// redraw mouse if visible
 		if (mouse_visible) {
-			mouse->show();
-			mouse->blit_dirty();
+			Mouse::mouse()->show();
+			Mouse::mouse()->blit_dirty();
 		}
 		bool          mouse_updated = false;
 		SDL_Renderer* renderer
@@ -377,10 +363,10 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 						event.motion.x, event.motion.y, gwin->get_fastmouse(),
 						gx, gy);
 				if (!mouse_updated) {
-					mouse->hide();
+					Mouse::mouse()->hide();
 				}
 				mouse_updated = true;
-				mouse->move(gx, gy);
+				Mouse::mouse()->move(gx, gy);
 				set_selection(gx, gy);
 				// mouse->show();
 				// mouse->blit_dirty();
@@ -392,8 +378,8 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 
 					// if invisible, redraw mouse
 					set_selection(gx, gy);
-					mouse->show();
-					mouse->blit_dirty();
+					Mouse::mouse()->show();
+					Mouse::mouse()->blit_dirty();
 					mouse_updated = false;
 				}
 			} else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
@@ -406,8 +392,8 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 				}
 			} else if (event.type == SDL_EVENT_KEY_DOWN) {
 				mouse_updated = false;
-				mouse->hide();
-				mouse->blit_dirty();
+				Mouse::mouse()->hide();
+				Mouse::mouse()->blit_dirty();
 				switch (event.key.key) {
 				case SDLK_ESCAPE:
 					if (has_cancel) {
@@ -450,7 +436,7 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 						&& (event.key.mod & SDL_KMOD_CTRL)) {
 						make_screenshot(true);
 					}
-					// FALLTHROUGH
+					[[fallthrough]];
 				default: {
 					// let key be processed by selected menu-item
 					if (selected) {
@@ -469,11 +455,11 @@ int MenuList::handle_events(Game_window* gwin, Mouse* mouse) {
 			}
 		}
 		if (mouse_updated) {
-			mouse->show();
-			mouse->blit_dirty();
+			Mouse::mouse()->show();
+			Mouse::mouse()->blit_dirty();
 		}
 	} while (!exit_loop);
-	mouse->hide();
+	Mouse::mouse()->hide();
 	if (entries[selection]->get_has_id()) {
 		return entries[selection]->get_id();
 	} else {

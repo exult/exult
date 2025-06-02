@@ -39,6 +39,7 @@ private:
 	int                      mode;
 	bool                     charmDiff;
 	int                      cheats;
+	int                      feeding;
 
 	enum button_ids {
 		id_first = 0,
@@ -54,6 +55,7 @@ private:
 		id_charmDiff,
 		id_difficulty,
 		id_cheats,
+		id_feeding,
 		id_count
 	};
 
@@ -71,6 +73,7 @@ public:
 	bool mouse_up(int mx, int my, MouseButton button) override;
 
 	void build_buttons();
+	void update_cheat_buttons();
 
 	void load_settings();
 	void save_settings();
@@ -111,6 +114,11 @@ public:
 
 	void toggle_cheats(int state) {
 		cheats = state;
+		update_cheat_buttons();
+	}
+
+	void toggle_feeding(int state) {
+		feeding = state;
 	}
 };
 

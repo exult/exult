@@ -56,8 +56,8 @@ Dragging_info::Dragging_info(
 		  old_pos(-1, -1, -1), old_foot(0, 0, 0, 0), old_lift(-1),
 		  quantity(obj->get_quantity()), readied_index(-1), mousex(-1),
 		  mousey(-1), paintx(-1000), painty(-1000),
-		  mouse_shape(Mouse::mouse->get_shape()), rect(0, 0, 0, 0), okay(true),
-		  possible_theft(false) {
+		  mouse_shape(Mouse::mouse()->get_shape()), rect(0, 0, 0, 0),
+		  okay(true), possible_theft(false) {
 	rect = gwin->get_shape_rect(obj.get());
 	rect.enlarge(8);    // Make a little bigger.
 }
@@ -72,8 +72,8 @@ Dragging_info::Dragging_info(
 		: obj(nullptr), is_new(false), gump(nullptr), button(nullptr),
 		  old_pos(-1, -1, -1), old_foot(0, 0, 0, 0), old_lift(-1), quantity(0),
 		  readied_index(-1), mousex(x), mousey(y), paintx(-1000), painty(-1000),
-		  mouse_shape(Mouse::mouse->get_shape()), rect(0, 0, 0, 0), okay(false),
-		  possible_theft(false) {
+		  mouse_shape(Mouse::mouse()->get_shape()), rect(0, 0, 0, 0),
+		  okay(false), possible_theft(false) {
 	// First see if it's a gump.
 	gump                 = gumpman->find_gump(x, y);
 	Game_object* to_drag = nullptr;
@@ -142,7 +142,7 @@ bool Dragging_info::start(
 		// Don't want to move walls.
 		if (!cheat.in_hack_mover() && !obj->is_dragable()
 			&& !obj->get_owner()) {
-			Mouse::mouse->flash_shape(Mouse::tooheavy);
+			Mouse::mouse()->flash_shape(Mouse::tooheavy);
 			Audio::get_ptr()->play_sound_effect(Audio::game_sfx(76));
 			obj  = nullptr;
 			gump = nullptr;
@@ -154,14 +154,14 @@ bool Dragging_info::start(
 			if (!cheat.in_hack_mover()
 				&& !Fast_pathfinder_client::is_grabable(
 						gwin->get_main_actor(), obj.get())) {
-				Mouse::mouse->flash_shape(Mouse::redx);
+				Mouse::mouse()->flash_shape(Mouse::redx);
 				obj  = nullptr;
 				okay = false;
 				return false;
 			}
 		}
 	}
-	Mouse::mouse->set_shape(Mouse::hand);
+	Mouse::mouse()->set_shape(Mouse::hand);
 	// Remove text, so that we don't potentially paint the object under and
 	// the mouse pointer over it.
 	gwin->get_effects()->remove_text_effects();
@@ -181,7 +181,7 @@ bool Dragging_info::start(
 				obj  = nullptr;
 				gump = nullptr;
 				okay = false;
-				Mouse::mouse->flash_shape(Mouse::outofrange);
+				Mouse::mouse()->flash_shape(Mouse::outofrange);
 				return false;
 			}
 			if (owner) {
@@ -269,7 +269,7 @@ bool Dragging_info::drop(
 		bool moved       // has mouse moved from starting pos?
 ) {
 	bool handled = moved;
-	Mouse::mouse->set_shape(mouse_shape);
+	Mouse::mouse()->set_shape(mouse_shape);
 	if (button) {
 		button->unpush(Gump::MouseButton::Left);
 		if (button->on_button(x, y)) {
@@ -320,7 +320,7 @@ static bool Check_weight(
 	}
 	const int wt = owner->get_weight() + to_drop->get_weight();
 	if (wt / 10 > owner->get_max_weight()) {
-		Mouse::mouse->flash_shape(Mouse::tooheavy);
+		Mouse::mouse()->flash_shape(Mouse::tooheavy);
 		Audio::get_ptr()->play_sound_effect(Audio::game_sfx(76));
 		return false;
 	}
@@ -368,7 +368,7 @@ bool Dragging_info::drop_on_gump(
 	Main_actor* main_actor = gwin->get_main_actor();
 	// always red X and ding when putting into itself
 	if (owner_obj == obj.get()) {
-		Mouse::mouse->flash_shape(Mouse::redx);
+		Mouse::mouse()->flash_shape(Mouse::redx);
 		Audio::get_ptr()->play_sound_effect(Audio::game_sfx(76));
 		return false;
 	}
@@ -376,7 +376,7 @@ bool Dragging_info::drop_on_gump(
 	if (owner_obj && !cheat.in_hack_mover()
 		&& !Fast_pathfinder_client::is_grabable(main_actor, owner_obj)) {
 		// Object was not grabable
-		Mouse::mouse->flash_shape(Mouse::outofrange);
+		Mouse::mouse()->flash_shape(Mouse::outofrange);
 		return false;
 	}
 	if (!Check_weight(gwin, to_drop, on_gump->get_cont_or_actor(x, y))) {
@@ -395,7 +395,7 @@ bool Dragging_info::drop_on_gump(
 				obj->modify_quantity(quantity - nq);
 			}
 		}
-		Mouse::mouse->flash_shape(Mouse::wontfit);
+		Mouse::mouse()->flash_shape(Mouse::wontfit);
 		return false;
 	}
 	return true;
@@ -422,7 +422,7 @@ bool Dragging_info::drop_on_map(
 ) {
 	// Attempting to drop off screen?
 	if (x < 0 || y < 0 || x >= gwin->get_width() || y >= gwin->get_height()) {
-		Mouse::mouse->flash_shape(Mouse::redx);
+		Mouse::mouse()->flash_shape(Mouse::redx);
 		Audio::get_ptr()->play_sound_effect(Audio::game_sfx(76));
 		return false;
 	}
@@ -461,12 +461,12 @@ bool Dragging_info::drop_on_map(
 		} else if (
 				// Object is too tall to drop on.
 				(lift = found->get_info().get_3d_height()) > max_lift) {
-			Mouse::mouse->flash_shape(Mouse::redx);
+			Mouse::mouse()->flash_shape(Mouse::redx);
 			Audio::get_ptr()->play_sound_effect(Audio::game_sfx(76));
 			return false;
 		} else {
 			// Too high.
-			Mouse::mouse->flash_shape(Mouse::blocked);
+			Mouse::mouse()->flash_shape(Mouse::blocked);
 			Audio::get_ptr()->play_sound_effect(Audio::game_sfx(76));
 			return false;
 		}
@@ -478,7 +478,7 @@ bool Dragging_info::drop_on_map(
 	}
 
 	if (dropped <= 0) {
-		Mouse::mouse->flash_shape(Mouse::redx);
+		Mouse::mouse()->flash_shape(Mouse::redx);
 		Audio::get_ptr()->play_sound_effect(Audio::game_sfx(76));
 		return false;
 	}

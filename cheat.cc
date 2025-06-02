@@ -33,6 +33,7 @@
 #include "effects.h"
 #include "exult.h"
 #include "game.h"
+#include "istring.h"
 #include "gameclk.h"
 #include "gamemap.h"
 #include "gamewin.h"
@@ -118,6 +119,19 @@ void Cheat::init() {
 	std::string cheating;
 	config->value("config/gameplay/cheat", cheating, "no");
 	enabled = cheating == "yes";
+
+	std::string feeding;
+	config->value("config/gameplay/feeding", feeding, "manual");
+	if (!Pentagram::strcasecmp(feeding.c_str(),"disabled")) {
+		food_use = FoodUse::Disabled;
+	}
+	else if (!Pentagram::strcasecmp(feeding.c_str(),"automatic")) {
+		food_use = FoodUse ::Automatic;
+	}
+	else
+	{
+		food_use = FoodUse::Manual;
+	}
 }
 
 void Cheat::finish_init() {
@@ -1018,8 +1032,8 @@ void Cheat::cursor_teleport() const {
 		return;
 	}
 
-	int        x = Mouse::mouse->get_mousex();
-	int        y = Mouse::mouse->get_mousey();
+	int        x = Mouse::mouse()->get_mousex();
+	int        y = Mouse::mouse()->get_mousey();
 	Tile_coord t(
 			gwin->get_scrolltx() + x / c_tilesize,
 			gwin->get_scrollty() + y / c_tilesize, 0);
@@ -1083,8 +1097,8 @@ void Cheat::delete_object() {
 		return;
 	}
 
-	int          x = Mouse::mouse->get_mousex();
-	int          y = Mouse::mouse->get_mousey();
+	int          x = Mouse::mouse()->get_mousex();
+	int          y = Mouse::mouse()->get_mousey();
 	Game_object* obj;
 	Gump*        gump = gwin->get_gump_man()->find_gump(x, y);
 	if (gump) {
@@ -1235,5 +1249,19 @@ void Cheat::toggle_number_npcs() {
 		eman->center_text("NPC Numbers Enabled");
 	} else {
 		eman->center_text("NPC Numbers Disabled");
+	}
+}
+
+void Cheat::SetFoodUse(FoodUse newuse, bool writeout) {
+	food_use = newuse;
+
+	if (newuse == FoodUse::Manual) {
+		config->set("config/gameplay/feeding", "manual", writeout);
+	}
+	if (newuse == FoodUse::Automatic) {
+		config->set("config/gameplay/feeding", "automatic", writeout);
+	}
+	if (newuse == FoodUse::Disabled) {
+		config->set("config/gameplay/feeding", "disabled", writeout);
 	}
 }

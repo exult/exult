@@ -191,7 +191,7 @@ public:
 	}
 
 	void paint(Game_window* gwin);
-	int  handle_events(Game_window* gwin, Mouse* mouse);
+	int  handle_events(Game_window* gwin);
 
 	int get_selection() {
 		return selection;

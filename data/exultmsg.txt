@@ -149,3 +149,5 @@
 #mixer gump popup error message
 0x588: Failed to play midi test track
 0x589: Failed to play ogg test track
+#message for Automatic feding
+0x590: Out of Food

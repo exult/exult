@@ -552,10 +552,10 @@ void Game_map::write_ifix_objects(int schunk    // Superchunk # (0-143).
 	OFileDataSource ifix(get_schunk_file_name(PATCH_U7IFIX, schunk, fname));
 	// +++++Use game title.
 	const int count = c_chunks_per_schunk * c_chunks_per_schunk;
-	const Flex_header::Flex_vers vers
-			= !New_shapes() ? Flex_header::orig : Flex_header::exult_v2;
-	bool        v2 = vers == Flex_header::exult_v2;
-	Flex_writer writer(ifix, "Exult", count, vers);
+
+	// Always save as V2 to support 8 bit lift
+	bool        v2 = true;
+	Flex_writer writer(ifix, "Exult", count, Flex_header::exult_v2);
 	const int   scy = 16 * (schunk / 12);    // Get abs. chunk coords.
 	const int   scx = 16 * (schunk % 12);
 	// Go through chunks.
@@ -647,7 +647,7 @@ void Game_map::get_ifix_chunk_objects(
 		for (int i = 0; i < cnt; i++, ent += 5) {
 			int               tx    = (ent[0] >> 4) & 0xf;
 			int               ty    = ent[0] & 0xf;
-			int               tz    = ent[1] & 0xf;
+			int               tz    = ent[1];    // allow full 8 bit lift in v2
 			int               shnum = ent[2] + 256 * ent[3];
 			int               frnum = ent[4];
 			const Shape_info& info  = ShapeID::get_info(shnum);

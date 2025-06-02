@@ -325,11 +325,6 @@ void GameDisplayOptions_gump::paint() {
 				iwin->get_ib8(), "Paperdolls:", x + colx[0],
 				y + rowy[++y_index] + 1);
 	}
-	if (buttons[id_paperdolls]) {
-		font->paint_text(
-				iwin->get_ib8(), "Paperdolls:", x + colx[0],
-				y + rowy[++y_index] + 1);
-	}
 	if (buttons[id_android_autolaunch]) {
 		font->paint_text(
 				iwin->get_ib8(), "Android autolaunch:", x + colx[0],

@@ -364,9 +364,8 @@ int MyMidiPlayer::setup_timbre_for_track(std::string& str) {
 	}
 
 	set_timbre_lib(lib);
-
-	// Nothing if the device is real
-	if (midi_driver->isFMSynth() || midi_driver->isMT32()) {
+	// Nothing if no driver or if the device is real
+	if (!midi_driver || midi_driver->isFMSynth() || midi_driver->isMT32()) {
 		return XMIDIFILE_CONVERT_NOCONVERSION;
 	}
 

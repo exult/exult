@@ -276,11 +276,12 @@ private:
 	// Time we can next send sysex at
 	std::chrono::milliseconds next_sysex;
 
-	// Time lastevent was sent at 
+	// Time lastevent was sent at
 	std::chrono::steady_clock::time_point time_last_send
-			= std::chrono::steady_clock::time_point::min();	
+			= std::chrono::steady_clock::time_point::min();
 
-	// If no events were sent in the last threshold time, sample production will be skipped
+	// If no events were sent in the last threshold time, sample production
+	//    will be skipped
 	std::chrono::milliseconds no_produce_threshold
 			= std::chrono::milliseconds(2000);
 	// Software Synth only Data

@@ -172,8 +172,6 @@ void ExultMenu::setup() {
 		return;
 	}
 
-	Mouse::mouse = menu_mouse;
-
 	gwin->clear_screen(true);
 
 	Palette* gpal = gwin->get_pal();
@@ -183,7 +181,6 @@ void ExultMenu::setup() {
 	Gamemenu_gump::do_exult_menu();
 	gwin->set_in_exult_menu(false);
 
-	Mouse::mouse = nullptr;
 	delete exult_menu_game;
 	game = nullptr;
 
@@ -354,7 +351,7 @@ BaseGameInfo* ExultMenu::show_mods_menu(ModManager* selgame) {
 				gwin->get_win()->get_end_x() - font->get_text_width(VERSION),
 				gwin->get_win()->get_end_y() - font->get_text_height() - 5,
 				VERSION);
-		const int choice = menu->handle_events(gwin, menu_mouse);
+		const int choice = menu->handle_events(gwin);
 		switch (choice) {
 		case -10:    // The incompatibility notice; do nothing
 			break;
@@ -439,7 +436,6 @@ BaseGameInfo* ExultMenu::run() {
 	IExultDataSource mouse_data(
 			BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_POINTERS_SHP);
 	Mouse mouse(gwin, mouse_data);
-	menu_mouse = &mouse;
 
 	// Must check this or it will crash as midi
 	// may not be initialised
@@ -482,7 +478,7 @@ BaseGameInfo* ExultMenu::run() {
 				gwin->get_win()->get_end_x() - font->get_text_width(VERSION),
 				gwin->get_win()->get_end_y() - font->get_text_height() - 5,
 				VERSION);
-		const int choice = menu->handle_events(gwin, menu_mouse);
+		const int choice = menu->handle_events(gwin);
 
 		switch (choice) {
 		case -4:    // Setup

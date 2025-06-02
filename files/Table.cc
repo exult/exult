@@ -58,9 +58,15 @@ bool Table::is_table(IDataSource* in) {
 	const size_t pos       = in->getPos();
 	const size_t file_size = in->getSize();
 
+	if (!file_size) {
+		return false;
+	}
 	in->seek(0);
 	while (true) {
 		const uint16 size = in->read2();
+		if (!in->good()) {
+			return false;
+		}
 
 		// End of table marker.
 		if (size == 65535) {
@@ -71,6 +77,7 @@ bool Table::is_table(IDataSource* in) {
 			in->seek(pos);
 			return false;
 		}
+
 	}
 
 	in->seek(pos);

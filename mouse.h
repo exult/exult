@@ -100,13 +100,35 @@ public:
 
 	int avatar_speed;
 
-	static bool   mouse_update;
-	static Mouse* mouse;
+	static bool mouse_update;
+
+private:
+	// This is updated By MakeCurrent to point to the current mouse object
+	// that is being used when the current mouse is destructed this is set to
+	// previous
+	static Mouse* current_mouse;
+
+	// The previous current mouse when MakeCurrent was called
+	// This forms a linked list with head current of the active
+	// mouse objects
+	// MakeCurrent() and  ~Mouse() will update the list as needed
+	Mouse* previous = nullptr;
+
+public:
+	// Get the current Mouse
+	static Mouse* mouse() {
+		return current_mouse;
+	}
+
+	// Make this mouse object the current object
+	// Automatically called by the constructors
+	void MakeCurrent();
 
 	Mouse(Game_window* gw);
 	Mouse(Game_window* gw, IDataSource& shapes);
+	~Mouse();
 
-	void show();    // Paint it.
+	void show(unsigned char* trans = nullptr);    // Paint it.
 
 	void hide() {    // Restore area under mouse.
 		if (onscreen) {

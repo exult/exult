@@ -645,17 +645,23 @@ function exportSHP()
   else
     dlg:label{
       id="noOffsets",
-      text="No layers have offset data. You'll be prompted to set offsets for each layer."
+      text="No layers have offset data. You can set them individually or use defaults."
+    }
+    dlg:check{
+      id="useDefaultOffsets",
+      text="Use 0,0 as offset for all layers",
+      selected=false
     }
   end
 
   -- Add option to edit existing offsets
-  dlg:check{
-    id="editExisting",
-    text="Edit existing offsets",
-    selected=false
-  }
-
+  if layersWithOffsets > 0 then
+    dlg:check{
+      id="editExisting",
+      text="Edit existing offsets",
+      selected=false
+    }
+  end
   -- Store dialog result in outer scope
   local dialogResult = false
   local exportSettings = {}
@@ -667,6 +673,11 @@ function exportSHP()
       dialogResult = true
       exportSettings.outFile = dlg.data.outFile
       exportSettings.editExisting = dlg.data.editExisting
+      if layersWithOffsets == 0 then
+        exportSettings.useDefaultOffsets = dlg.data.useDefaultOffsets
+      else
+        exportSettings.useDefaultOffsets = false
+      end
       dlg:close()
     end
   }
@@ -737,87 +748,103 @@ function exportSHP()
     end
   end
 
-  -- Second pass: Prompt for missing offsets
-  for i, layerData in ipairs(layerOffsets) do
-    if layerData.needsPrompt then
-      -- Make this layer visible and others invisible for visual reference
-      for j, otherLayer in ipairs(sprite.layers) do
-        otherLayer.isVisible = (j == i)
-      end
-
-      -- Create prompt dialog for this specific layer
-      local layerDlg = Dialog("Layer Offset")
-
-      -- Get cleaner name (without offset info)
-      local cleanName = sprite.layers[i].name:gsub(" %[.*%]$", "")
-
-      layerDlg:label{
-        id="info",
-        text="Set offset for " .. cleanName .. " (" .. i .. " of " .. #sprite.layers .. ")"
+  -- Second pass: Prompt for missing offsets OR use defaults if selected
+  if layersWithOffsets == 0 and exportSettings.useDefaultOffsets then
+    debug("Using default offsets for all layers as requested.")
+    for i, layer in ipairs(sprite.layers) do
+      layerOffsets[i] = {
+        x = defaultOffsetX,
+        y = defaultOffsetY
       }
-
-      -- If we have existing data, use it as default
-      local cel = sprite.layers[i]:cel(1)
-      local existingData = cel and getCelOffsetData(cel)
-      local initialX = defaultOffsetX
-      local initialY = defaultOffsetY
-
-      if existingData then
-        initialX = existingData.offsetX
-        initialY = existingData.offsetY
-      end
-
-      layerDlg:number{
-        id="offsetX",
-        label="Offset X:",
-        text=tostring(initialX),
-        decimals=0
-      }
-
-      layerDlg:number{
-        id="offsetY",
-        label="Offset Y:",
-        text=tostring(initialY),
-        decimals=0
-      }
-
-      local layerResult = false
-
-      layerDlg:button{
-        id="ok",
-        text="OK",
-        onclick=function()
-          layerResult = true
-          layerOffsets[i] = {
-            x = layerDlg.data.offsetX,
-            y = layerDlg.data.offsetY
-          }
-          layerDlg:close()
-        end
-      }
-
-      -- Show dialog and wait for result
-      layerDlg:show{wait=true}
-
-      -- If user cancelled, use defaults or existing data
-      if not layerResult then
-        if existingData then
-          layerOffsets[i] = {
-            x = existingData.offsetX,
-            y = existingData.offsetY
-          }
-        else
-          layerOffsets[i] = {
-            x = defaultOffsetX,
-            y = defaultOffsetY
-          }
-        end
-      end
-
-      -- Store the value in the cel for future use
+      -- Store the default value in the cel for future use and consistency
       local cel = sprite.layers[i]:cel(1)
       if cel then
         setCelOffsetData(cel, layerOffsets[i].x, layerOffsets[i].y)
+      end
+      debug("Applied default offset to layer " .. i .. ": " .. defaultOffsetX .. "," .. defaultOffsetY)
+    end
+  else -- Original logic: prompt if needed
+    for i, layerData in ipairs(layerOffsets) do
+      if layerData.needsPrompt then
+        -- Make this layer visible and others invisible for visual reference
+        for j, otherLayer in ipairs(sprite.layers) do
+          otherLayer.isVisible = (j == i)
+        end
+
+        -- Create prompt dialog for this specific layer
+        local layerDlg = Dialog("Layer Offset")
+
+        -- Get cleaner name (without offset info)
+        local cleanName = sprite.layers[i].name:gsub(" %[.*%]$", "")
+
+        layerDlg:label{
+          id="info",
+          text="Set offset for " .. cleanName .. " (" .. i .. " of " .. #sprite.layers .. ")"
+        }
+
+        -- If we have existing data, use it as default
+        local cel = sprite.layers[i]:cel(1)
+        local existingData = cel and getCelOffsetData(cel)
+        local initialX = defaultOffsetX
+        local initialY = defaultOffsetY
+
+        if existingData then
+          initialX = existingData.offsetX
+          initialY = existingData.offsetY
+        end
+
+        layerDlg:number{
+          id="offsetX",
+          label="Offset X:",
+          text=tostring(initialX),
+          decimals=0
+        }
+
+        layerDlg:number{
+          id="offsetY",
+          label="Offset Y:",
+          text=tostring(initialY),
+          decimals=0
+        }
+
+        local layerResult = false
+
+        layerDlg:button{
+          id="ok",
+          text="OK",
+          onclick=function()
+            layerResult = true
+            layerOffsets[i] = {
+              x = layerDlg.data.offsetX,
+              y = layerDlg.data.offsetY
+            }
+            layerDlg:close()
+          end
+        }
+
+        -- Show dialog and wait for result
+        layerDlg:show{wait=true}
+
+        -- If user cancelled, use defaults or existing data
+        if not layerResult then
+          if existingData then
+            layerOffsets[i] = {
+              x = existingData.offsetX,
+              y = existingData.offsetY
+            }
+          else
+            layerOffsets[i] = {
+              x = defaultOffsetX,
+              y = defaultOffsetY
+            }
+          end
+        end
+
+        -- Store the value in the cel for future use
+        local cel = sprite.layers[i]:cel(1)
+        if cel then
+          setCelOffsetData(cel, layerOffsets[i].x, layerOffsets[i].y)
+        end
       end
     end
   end
@@ -864,6 +891,91 @@ function exportSHP()
   end
 end
 
+-- Function to convert active sprite's palette to U7 style (transparent index 255)
+local function convertPaletteToU7()
+  debug("Conversion to U7 palette command initiated.")
+  local sprite = app.sprite
+  if not sprite then
+    showError("No active sprite to convert.")
+    return
+  end
+
+  if sprite.colorMode ~= ColorMode.INDEXED then
+    showError("Sprite is not in Indexed color mode. Cannot convert palette.")
+    return
+  end
+
+  app.transaction( "Convert to U7 Palette", function()
+    debug("Changing pixel format to RGB...")
+    app.command.ChangePixelFormat {
+      ui = false,
+      format = "rgb"
+    }
+    debug("Pixel format changed to RGB.")
+
+    -- Using a slightly altered default U7 palette.
+    -- The color cycle and opaque colors (idx 224 - 255) are set to full transparency
+    -- to prevent matching these colors in the RGB->Indexed mode step.
+    local u7PalettePath = app.fs.joinPath(pluginDir, "u7.pal") 
+    debug("Attempting to load U7 palette from: " .. u7PalettePath)
+
+    if not app.fs.isFile(u7PalettePath) then
+      showError("u7.pal not found in the extension folder: " .. u7PalettePath .. "\nPlease ensure u7.pal is in the " .. pluginName .. " extension directory.")
+      return
+    end
+
+    local u7Palette = Palette{ fromFile = u7PalettePath }
+    if not u7Palette then
+      showError("Failed to load u7.pal from: " .. u7PalettePath)
+      return
+    end
+    debug("u7.pal loaded successfully.")
+
+    sprite:setPalette(u7Palette)
+    debug("Sprite's active palette has been set to the loaded u7.pal.")
+
+    debug("Changing pixel format back to Indexed (should use current sprite palette)")
+    app.command.ChangePixelFormat {
+      ui = false,
+      format = "indexed",
+      dithering = "",
+      rgmap = "default"
+    }
+    debug("Pixel format changed back to Indexed using u7.pal.")
+
+    debug("Replacing color indices 0->255 and 87->0...")
+    if sprite.spec.colorMode == ColorMode.INDEXED then
+      for _, cel in ipairs(sprite.cels) do
+        if cel then
+          local image = cel.image
+          local newImage = Image(image.spec) 
+          newImage:drawImage(image, 0, 0) 
+          for y = 0, newImage.height - 1 do
+            for x = 0, newImage.width - 1 do
+              local currentPixel = newImage:getPixel(x, y)
+              if currentPixel == 0 then
+                newImage:putPixel(x, y, 255)
+              elseif currentPixel == 87 then 
+                newImage:putPixel(x, y, 0)
+              end
+            end
+          end
+          cel.image = newImage
+        end
+      end
+      debug("Color index 0 replaced with 255, and index 87 replaced with 0, across all cels.")
+      debug("Setting sprite palette's transparentColor to 255.")
+      sprite.transparentColor = 255
+    else
+      debug("Sprite is not in Indexed mode after conversion, skipping color replacement.")
+    end
+
+    app.refresh()
+    app.alert("Sprite palette converted to U7 style (using u7.pal, transparent index 255).")
+  end)
+end
+
+
 function init(plugin)
   debug("Initializing plugin...")
 
@@ -874,16 +986,28 @@ function init(plugin)
   -- Register commands
   plugin:newCommand{
     id="ImportSHP",
-    title="Import SHP...",
+    title="Import U7 SHP...",
     group="file_import",
     onclick=function() importSHP() end
   }
 
   plugin:newCommand{
     id="ExportSHP",
-    title="Export SHP...",
+    title="Export to U7 SHP...",
     group="file_export",
     onclick=exportSHP
+  }
+
+  plugin:newCommand{
+    id = pluginName .. "ConvertU7Palette",
+    title = "Convert to U7 palette...",
+    group = "sprite_color",
+    onclick = function()
+      convertPaletteToU7()
+    end,
+    onenabled = function()
+      return app.sprite and app.sprite.colorMode == ColorMode.INDEXED
+    end
   }
 end
 

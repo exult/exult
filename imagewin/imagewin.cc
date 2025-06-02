@@ -1285,8 +1285,8 @@ void Image_window::screen_to_game(int sx, int sy, bool fast, int& gx, int& gy) {
 	if (fast) {
 		gx = sx + get_start_x();
 		gy = sy + get_start_y();
-		if (Mouse::mouse) {
-			Mouse::mouse->apply_fast_offset(gx, gy);
+		if (Mouse::mouse()) {
+			Mouse::mouse()->apply_fast_offset(gx, gy);
 		}
 	} else {
 		gx = (sx * inter_width) / (scale * get_display_width()) + get_start_x();
@@ -1297,8 +1297,8 @@ void Image_window::screen_to_game(int sx, int sy, bool fast, int& gx, int& gy) {
 
 void Image_window::game_to_screen(int gx, int gy, bool fast, int& sx, int& sy) {
 	if (fast) {
-		if (Mouse::mouse) {
-			Mouse::mouse->unapply_fast_offset(gx, gy);
+		if (Mouse::mouse()) {
+			Mouse::mouse()->unapply_fast_offset(gx, gy);
 		}
 		sx = gx - get_start_x();
 		sy = gy - get_start_y();

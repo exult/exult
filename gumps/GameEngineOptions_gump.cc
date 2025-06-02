@@ -92,12 +92,13 @@ void GameEngineOptions_gump::help() {
 	SDL_OpenURL("https://exult.info/docs.php#game_engine_gump");
 }
 
+static const int small_size = 44;
+static const int large_size = 85;
+static int       y_index    = 0;
+
 void GameEngineOptions_gump::build_buttons() {
 	const std::vector<std::string> yesNo = {"No", "Yes"};
-
-	int y_index    = 0;
-	int small_size = 44;
-	int large_size = 85;
+	y_index                              = 0;
 
 	buttons[id_allow_autonotes] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_allow_autonotes, yesNo,
@@ -140,6 +141,26 @@ void GameEngineOptions_gump::build_buttons() {
 	buttons[id_cheats] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_cheats, yesNo, cheats,
 			colx[5], rowy[++y_index], small_size);
+	update_cheat_buttons();
+}
+
+void GameEngineOptions_gump::update_cheat_buttons() {
+	int y_index = ::y_index;
+
+	if (!cheats)
+	{
+		buttons[id_feeding].reset();
+	}
+	else
+	{
+		std::vector<std::string> feedingOpts
+				= {"Manual", "Automatic", "Disabled"};
+		buttons[id_feeding] = std::make_unique<GameEngineTextToggle>(
+				this, &GameEngineOptions_gump::toggle_feeding,
+				std::move(feedingOpts), feeding, colx[5]-41, rowy[++y_index],
+				large_size);
+
+	}
 }
 
 void GameEngineOptions_gump::load_settings() {
@@ -179,6 +200,7 @@ void GameEngineOptions_gump::load_settings() {
 			frames = i;
 		}
 	}
+	feeding = int(cheat.GetFoodUse(true));
 }
 
 GameEngineOptions_gump::GameEngineOptions_gump() : Modal_gump(nullptr, -1) {
@@ -228,6 +250,7 @@ void GameEngineOptions_gump::save_settings() {
 	gwin->set_std_delay(1000 / fps);
 	config->set("config/video/fps", fps, false);
 	cheat.set_enabled(cheats != 0);
+	cheat.SetFoodUse(Cheat::FoodUse(feeding),false);
 	gumpman->set_gumps_dont_pause_game(!gumps_pause);
 	config->set(
 			"config/gameplay/gumps_dont_pause_game", gumps_pause ? "no" : "yes",
@@ -270,6 +293,11 @@ void GameEngineOptions_gump::paint() {
 			y + rowy[++y_index] + 1);
 	font->paint_text(
 			iwin->get_ib8(), "Cheats:", x + colx[0], y + rowy[++y_index] + 1);
+	if (buttons[id_feeding]) {
+		font->paint_text(
+				iwin->get_ib8(), "Feeding:", x + colx[0],
+				y + rowy[++y_index] + 1);
+	}
 	gwin->set_painted();
 }
 

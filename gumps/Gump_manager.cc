@@ -601,16 +601,16 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 							gx, gy,
 							SDL_MouseButton_to_Gump(event.button.button))) {
 					gump->mousewheel_up(
-							Mouse::mouse->get_mousex(),
-							Mouse::mouse->get_mousey());
+							Mouse::mouse()->get_mousex(),
+							Mouse::mouse()->get_mousey());
 				}
 			} else if (event.tfinger.dy > 0) {
 				if (!gump->mouse_down(
 							gx, gy,
 							SDL_MouseButton_to_Gump(event.button.button))) {
 					gump->mousewheel_down(
-							Mouse::mouse->get_mousex(),
-							Mouse::mouse->get_mousey());
+							Mouse::mouse()->get_mousex(),
+							Mouse::mouse()->get_mousey());
 				}
 			}
 		}
@@ -620,10 +620,10 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	case SDL_EVENT_MOUSE_WHEEL: {
 		if (event.wheel.y > 0) {
 			gump->mousewheel_up(
-					Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
+					Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
 		} else if (event.wheel.y < 0) {
 			gump->mousewheel_down(
-					Mouse::mouse->get_mousex(), Mouse::mouse->get_mousey());
+					Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
 		}
 		break;
 	}
@@ -636,7 +636,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		gwin->get_win()->screen_to_game(
 				event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 
-		Mouse::mouse->move(gx, gy);
+		Mouse::mouse()->move(gx, gy);
 		Mouse::mouse_update = true;
 		// Dragging with left button?
 		if (event.motion.state & SDL_BUTTON_LMASK) {
@@ -716,9 +716,9 @@ bool Gump_manager::do_modal_gump(
 	// Pause the game
 	gwin->get_tqueue()->pause(SDL_GetTicks());
 
-	const Mouse::Mouse_shapes saveshape = Mouse::mouse->get_shape();
+	const Mouse::Mouse_shapes saveshape = Mouse::mouse()->get_shape();
 	if (shape != Mouse::dontchange) {
-		Mouse::mouse->set_shape(shape);
+		Mouse::mouse()->set_shape(shape);
 	}
 	bool escaped = false;
 	background   = dynamic_cast<BackgroundPaintable*>(paint);
@@ -731,14 +731,14 @@ bool Gump_manager::do_modal_gump(
 	if (paint) {
 		paint->paint();
 	}
-	Mouse::mouse->show();
+	Mouse::mouse()->show();
 	gwin->show();
 	if (touchui != nullptr) {
 		touchui->hideGameControls();
 	}
 	do {
-		Delay();                 // Wait a fraction of a second.
-		Mouse::mouse->hide();    // Turn off mouse.
+		Delay();                   // Wait a fraction of a second.
+		Mouse::mouse()->hide();    // Turn off mouse.
 		Mouse::mouse_update = false;
 		SDL_Event event;
 		while (!escaped && !gump->is_done() && SDL_PollEvent(&event)) {
@@ -752,15 +752,15 @@ bool Gump_manager::do_modal_gump(
 			}
 		}
 		gwin->rotatecolours();
-		Mouse::mouse->show();         // Re-display mouse.
+		Mouse::mouse()->show();       // Re-display mouse.
 		if (!gwin->show() &&          // Blit to screen if necessary.
 			Mouse::mouse_update) {    // If not, did mouse change?
-			Mouse::mouse->blit_dirty();
+			Mouse::mouse()->blit_dirty();
 		}
 	} while (!gump->is_done() && !escaped && quitting_time == QUIT_TIME_NO);
-	Mouse::mouse->hide();
+	Mouse::mouse()->hide();
 	remove_gump(gump);
-	Mouse::mouse->set_shape(saveshape);
+	Mouse::mouse()->set_shape(saveshape);
 	// Leave mouse off.
 	gwin->paint();
 	gwin->show(true);

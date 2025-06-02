@@ -69,7 +69,7 @@ void SoundTester::test_sound() {
 	const int width      = 6;
 	int       sfx_id     = -1;
 
-	Mouse::mouse->hide();
+	Mouse::mouse()->hide();
 
 	gwin->get_tqueue()->pause(SDL_GetTicks());
 
@@ -309,7 +309,7 @@ void SoundTester::test_sound() {
 	gwin->get_tqueue()->resume(SDL_GetTicks());
 
 	gwin->paint();
-	Mouse::mouse->show();
+	Mouse::mouse()->show();
 	gwin->show();
 }
 

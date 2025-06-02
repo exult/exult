@@ -1201,7 +1201,7 @@ bool Combat_schedule::attack_target(
 	if (attacker->get_effective_range(winf, reach) < dist) {
 		// We are out of range.
 		if (flash_mouse) {
-			Mouse::mouse->flash_shape(Mouse::outofrange);
+			Mouse::mouse()->flash_shape(Mouse::outofrange);
 		}
 		return false;
 	}
@@ -1213,7 +1213,7 @@ bool Combat_schedule::attack_target(
 	const Game_object_shared ammo_keep = shared_from_obj(ammo);
 	if (need_ammo && !ammo) {
 		if (flash_mouse) {
-			Mouse::mouse->flash_shape(Mouse::outofammo);
+			Mouse::mouse()->flash_shape(Mouse::outofammo);
 		}
 		// We don't have ammo, so bail out.
 		return false;

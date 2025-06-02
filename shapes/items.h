@@ -174,6 +174,7 @@ const int congrats_si = 0x17F;    // to 0x187
 
 const int mixergump_midi_test_failed = 0x188;
 const int mixergump_ogg_test_failed  = 0x189;
+const int msg_out_of_food  = 0x190;
 //	Misc. text (frames, etc.) start at 0x500 in text.flx.
 const int misc_name0 = 0x500;
 

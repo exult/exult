@@ -630,8 +630,8 @@ int exult_main(const char* runpath) {
 		game->write_game_xml();
 	}
 
-	Mouse::mouse = new Mouse(gwin);
-	Mouse::mouse->set_shape(Mouse::hand);
+	Mouse mouse(gwin);
+	Mouse::mouse()->set_shape(Mouse::hand);
 
 	if (touchui != nullptr) {
 		touchui->showButtonControls();
@@ -1105,16 +1105,15 @@ static int Play() {
 		quitting_time = QUIT_TIME_NO;
 		Handle_events();
 		if (quitting_time == QUIT_TIME_RESTART) {
-			Mouse::mouse->hide();    // Turn off mouse.
-			gwin->read();            // Restart
-									 /////gwin->setup_game();
+			Mouse::mouse()->hide();    // Turn off mouse.
+			gwin->read();              // Restart
+									   /////gwin->setup_game();
 			//// setup_game is already being called from inside
 			//// of gwin->read(), so no need to call it here, I hope...
 		}
 	} while (quitting_time == QUIT_TIME_RESTART);
 
 	delete gwin;
-	delete Mouse::mouse;
 
 	Audio::Destroy();    // Deinit the sound system.
 	delete keybinder;
@@ -1304,7 +1303,7 @@ static void Handle_events() {
 		// int scale = gwin->get_fastmouse() ? 1 :
 		//              gwin->get_win()->get_scale();
 
-		Mouse::mouse->hide();    // Turn off mouse.
+		Mouse::mouse()->hide();    // Turn off mouse.
 		Mouse::mouse_update = false;
 
 		// Get current time.
@@ -1343,11 +1342,11 @@ static void Handle_events() {
 		// always check every loop
 		if ((!gwin->is_moving() || gwin->get_step_tile_delta() == 1)
 			&& gwin->main_actor_can_act_charmed()) {
-			int       x  = Mouse::mouse->get_mousex();
-			int       y  = Mouse::mouse->get_mousey();
+			int       x  = Mouse::mouse()->get_mousex();
+			int       y  = Mouse::mouse()->get_mousey();
 			const int ms = SDL_GetMouseState(nullptr, nullptr);
 			if ((SDL_BUTTON_RMASK & ms) && !right_on_gump) {
-				gwin->start_actor(x, y, Mouse::mouse->avatar_speed);
+				gwin->start_actor(x, y, Mouse::mouse()->avatar_speed);
 			} else if (ticks > last_rest) {
 				const int resttime = ticks - last_rest;
 				gwin->get_main_actor()->resting(resttime);
@@ -1419,15 +1418,15 @@ static void Handle_events() {
 		// update mousecursor appearance if needed
 		if (last_speed_cursor + 100 < SDL_GetTicks() && !dragging) {
 			last_speed_cursor = SDL_GetTicks();
-			Mouse::mouse->set_speed_cursor();
+			Mouse::mouse()->set_speed_cursor();
 			Mouse::mouse_update = true;
 		}
-		Mouse::mouse->show();    // Re-display mouse.
+		Mouse::mouse()->show();    // Re-display mouse.
 		gwin->rotatecolours();
 
 		if (!gwin->show() &&          // Blit to screen if necessary.
 			Mouse::mouse_update) {    // If not, did mouse change?
-			Mouse::mouse->blit_dirty();
+			Mouse::mouse()->blit_dirty();
 		}
 	}
 }
@@ -1791,7 +1790,7 @@ static void Handle_event(SDL_Event& event) {
 				}
 #endif
 				dragging = gwin->start_dragging(x, y);
-				// Mouse::mouse->set_shape(Mouse::hand);
+				// Mouse::mouse()->set_shape(Mouse::hand);
 				dragged = false;
 			}
 			left_down_x = x;
@@ -1815,7 +1814,7 @@ static void Handle_event(SDL_Event& event) {
 			} else if (avatar_can_act && gwin->main_actor_can_act_charmed()) {
 				// Try removing old queue entry.
 				gwin->get_tqueue()->remove(gwin->get_main_actor());
-				gwin->start_actor(x, y, Mouse::mouse->avatar_speed);
+				gwin->start_actor(x, y, Mouse::mouse()->avatar_speed);
 			}
 		}
 		break;
@@ -1901,7 +1900,7 @@ static void Handle_event(SDL_Event& event) {
 					&& curtime - last_b3_click > 500
 					&& gwin->main_actor_can_act_charmed()) {
 					gwin->start_actor_along_path(
-							x, y, Mouse::mouse->avatar_speed);
+							x, y, Mouse::mouse()->avatar_speed);
 				}
 
 				// Last right click within .5 secs (doubleclick)?
@@ -1910,7 +1909,7 @@ static void Handle_event(SDL_Event& event) {
 						&& curtime - last_b3_click < 500
 						&& gwin->main_actor_can_act_charmed()) {
 					gwin->start_actor_along_path(
-							x, y, Mouse::mouse->avatar_speed);
+							x, y, Mouse::mouse()->avatar_speed);
 				}
 
 				else {
@@ -1926,7 +1925,7 @@ static void Handle_event(SDL_Event& event) {
 			bool         click_handled = false;
 			if (dragging) {
 				click_handled = gwin->drop_dragged(x, y, dragged);
-				Mouse::mouse->set_speed_cursor();
+				Mouse::mouse()->set_speed_cursor();
 			}
 			if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
 				break;
@@ -1939,7 +1938,7 @@ static void Handle_event(SDL_Event& event) {
 				// This function handles the trouble of deciding what to
 				// do when the avatar cannot act.
 				gwin->double_clicked(x, y);
-				Mouse::mouse->set_speed_cursor();
+				Mouse::mouse()->set_speed_cursor();
 				show_items_clicked = false;
 				break;
 			}
@@ -1951,7 +1950,8 @@ static void Handle_event(SDL_Event& event) {
 				&& (curtime - last_b1down_click > 500) && avatar_can_act
 				&& gwin->main_actor_can_act_charmed() && !dragging
 				&& !gump_man->find_gump(x, y, false)) {
-				gwin->start_actor_along_path(x, y, Mouse::mouse->avatar_speed);
+				gwin->start_actor_along_path(
+						x, y, Mouse::mouse()->avatar_speed);
 				dragging = dragged = false;
 				break;
 			}
@@ -1985,10 +1985,10 @@ static void Handle_event(SDL_Event& event) {
 		gwin->get_win()->screen_to_game(
 				event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
 
-		Mouse::mouse->move(mx, my);
+		Mouse::mouse()->move(mx, my);
 		if (!dragging) {
 			last_speed_cursor = SDL_GetTicks();
-			Mouse::mouse->set_speed_cursor();
+			Mouse::mouse()->set_speed_cursor();
 		}
 		Mouse::mouse_update = true;    // Need to blit mouse.
 		if (right_on_gump
@@ -2031,7 +2031,7 @@ static void Handle_event(SDL_Event& event) {
 		// Dragging with right?
 		else if ((event.motion.state & SDL_BUTTON_RMASK) && !right_on_gump) {
 			if (avatar_can_act && gwin->main_actor_can_act_charmed()) {
-				gwin->start_actor(mx, my, Mouse::mouse->avatar_speed);
+				gwin->start_actor(mx, my, Mouse::mouse()->avatar_speed);
 			}
 		}
 #ifdef USE_EXULTSTUDIO    // Painting?
@@ -2058,7 +2058,7 @@ static void Handle_event(SDL_Event& event) {
 		x = int(fx);
 		y = int(fy);
 		gwin->get_win()->screen_to_game(x, y, gwin->get_fastmouse(), x, y);
-		Mouse::mouse->move(x, y);
+		Mouse::mouse()->move(x, y);
 		gwin->set_painted();
 		break;
 	}
@@ -2372,7 +2372,7 @@ static bool Get_click(
 
 		const uint32 ticks = SDL_GetTicks();
 		Game::set_ticks(ticks);
-		Mouse::mouse->hide();    // Turn off mouse.
+		Mouse::mouse()->hide();    // Turn off mouse.
 		Mouse::mouse_update = false;
 
 		if (rotate_colors) {
@@ -2454,7 +2454,7 @@ static bool Get_click(
 						event.motion.x, event.motion.y, gwin->get_fastmouse(),
 						mx, my);
 
-				Mouse::mouse->move(mx, my);
+				Mouse::mouse()->move(mx, my);
 				Mouse::mouse_update = true;
 				if (drag_ok && (event.motion.state & SDL_BUTTON_LMASK)) {
 					dragged = gwin->drag(mx, my);
@@ -2510,10 +2510,10 @@ static bool Get_click(
 		if (dragging) {
 			gwin->paint_dirty();
 		}
-		Mouse::mouse->show();    // Turn on mouse.
-		if (!gwin->show() &&     // Blit to screen if necessary.
+		Mouse::mouse()->show();    // Turn on mouse.
+		if (!gwin->show() &&       // Blit to screen if necessary.
 			Mouse::mouse_update) {
-			Mouse::mouse->blit_dirty();
+			Mouse::mouse()->blit_dirty();
 		}
 	}
 	g_waiting_for_click = false;
@@ -2538,19 +2538,19 @@ bool Get_click(
 	if (chr) {
 		*chr = 0;    // Init.
 	}
-	const Mouse::Mouse_shapes saveshape = Mouse::mouse->get_shape();
+	const Mouse::Mouse_shapes saveshape = Mouse::mouse()->get_shape();
 	if (shape != Mouse::dontchange) {
-		Mouse::mouse->set_shape(shape);
+		Mouse::mouse()->set_shape(shape);
 	}
 	if (paint) {
 		paint->paint();
 	}
-	Mouse::mouse->show();
+	Mouse::mouse()->show();
 	gwin->show(true);    // Want to see new mouse.
 	gwin->get_tqueue()->pause(Game::get_ticks());
 	const bool ret = Get_click(x, y, chr, drag_ok, rotate_colors);
 	gwin->get_tqueue()->resume(Game::get_ticks());
-	Mouse::mouse->set_shape(saveshape);
+	Mouse::mouse()->set_shape(saveshape);
 	return ret;
 }
 
@@ -2568,7 +2568,7 @@ void Wait_for_arrival(
 	int mx;
 	int my;
 
-	const bool    os           = Mouse::mouse->is_onscreen();
+	const bool    os           = Mouse::mouse()->is_onscreen();
 	uint32        last_repaint = 0;    // For insuring animation repaints.
 	Actor_action* orig_action  = actor->get_action();
 	const uint32  stop_time    = SDL_GetTicks() + maxticks;
@@ -2577,7 +2577,7 @@ void Wait_for_arrival(
 		   && actor->get_tile() != dest && !timeout) {
 		Delay();    // Wait a fraction of a second.
 
-		Mouse::mouse->hide();    // Turn off mouse.
+		Mouse::mouse()->hide();    // Turn off mouse.
 		Mouse::mouse_update = false;
 
 		SDL_Renderer* renderer
@@ -2591,7 +2591,7 @@ void Wait_for_arrival(
 						event.motion.x, event.motion.y, gwin->get_fastmouse(),
 						mx, my);
 
-				Mouse::mouse->move(mx, my);
+				Mouse::mouse()->move(mx, my);
 				Mouse::mouse_update = true;
 				break;
 			}
@@ -2613,15 +2613,15 @@ void Wait_for_arrival(
 			}
 		}
 
-		Mouse::mouse->show();         // Re-display mouse.
+		Mouse::mouse()->show();       // Re-display mouse.
 		if (!gwin->show() &&          // Blit to screen if necessary.
 			Mouse::mouse_update) {    // If not, did mouse change?
-			Mouse::mouse->blit_dirty();
+			Mouse::mouse()->blit_dirty();
 		}
 	}
 
 	if (!os) {
-		Mouse::mouse->hide();
+		Mouse::mouse()->hide();
 	}
 }
 
@@ -2662,7 +2662,7 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 	const int cx = gwin->get_width() / 2;
 	const int cy = gwin->get_height() / 2;
 
-	const bool   os           = Mouse::mouse->is_onscreen();
+	const bool   os           = Mouse::mouse()->is_onscreen();
 	const uint32 stop_time    = SDL_GetTicks() + msecs;
 	uint32       last_repaint = 0;    // For insuring animation repaints.
 	bool         timeout      = false;
@@ -2674,7 +2674,7 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 
 		Delay();    // Wait a fraction of a second.
 
-		Mouse::mouse->hide();    // Turn off mouse.
+		Mouse::mouse()->hide();    // Turn off mouse.
 		Mouse::mouse_update = false;
 		SDL_Renderer* renderer
 				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
@@ -2702,8 +2702,8 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 						event.motion.x, event.motion.y, gwin->get_fastmouse(),
 						mx, my);
 
-				Mouse::mouse->move(mx, my);
-				Mouse::mouse->set_shape(Mouse::mouse->get_short_arrow(
+				Mouse::mouse()->move(mx, my);
+				Mouse::mouse()->set_shape(Mouse::mouse()->get_short_arrow(
 						Get_direction_NoWrap(cy - my, mx - cx)));
 				Mouse::mouse_update = true;
 				break;
@@ -2727,8 +2727,8 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 		if (ticks > last_repaint + 50 || gwin->was_painted()) {
 			// Right mouse button down?
 			const int ms = SDL_GetMouseState(nullptr, nullptr);
-			int       mx = Mouse::mouse->get_mousex();
-			int       my = Mouse::mouse->get_mousey();
+			int       mx = Mouse::mouse()->get_mousex();
+			int       my = Mouse::mouse()->get_mousey();
 			if (SDL_BUTTON_RMASK & ms) {
 				Shift_wizards_eye(mx, my);
 			}
@@ -2760,10 +2760,10 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 			}
 		}
 
-		Mouse::mouse->show();         // Re-display mouse.
+		Mouse::mouse()->show();       // Re-display mouse.
 		if (!gwin->show() &&          // Blit to screen if necessary.
 			Mouse::mouse_update) {    // If not, did mouse change?
-			Mouse::mouse->blit_dirty();
+			Mouse::mouse()->blit_dirty();
 		}
 		if (touchui != nullptr) {
 			touchui->showGameControls();
@@ -2771,7 +2771,7 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 	}
 
 	if (!os) {
-		Mouse::mouse->hide();
+		Mouse::mouse()->hide();
 	}
 	gwin->center_view(gwin->get_main_actor()->get_tile());
 }

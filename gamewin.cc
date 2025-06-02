@@ -1412,7 +1412,7 @@ void Game_window::read() {
 	// DON'T do anything that might paint()
 	// before calling read_npcs!!
 	setup_game(cheat.in_map_editor());    // Read NPC's, usecode.
-	Mouse::mouse->set_speed_cursor();
+	Mouse::mouse()->set_speed_cursor();
 }
 
 /*
@@ -1889,7 +1889,7 @@ void Game_window::start_actor_along_path(
 	if (!main_actor->walk_path_to_tile(dest, speed)) {
 		cout << "Couldn't find path for Avatar." << endl;
 		if (touch_pathfind) {
-			Mouse::mouse->flash_shape(Mouse::blocked);
+			Mouse::mouse()->flash_shape(Mouse::blocked);
 		}
 	} else {
 		if (touch_pathfind) {
@@ -2353,7 +2353,7 @@ void Game_window::paused_combat_select(
 				scrollty + (y + liftpixels) / c_tilesize, lift);
 		// Aim within 1 tile.
 		if (!npc->walk_path_to_tile(dest, std_delay, 0, 1)) {
-			Mouse::mouse->flash_shape(Mouse::blocked);
+			Mouse::mouse()->flash_shape(Mouse::blocked);
 		} else {    // Make sure he's in combat mode.
 			npc->set_target(nullptr, true);
 		}
@@ -2362,7 +2362,7 @@ void Game_window::paused_combat_select(
 	Actor* target = obj->as_actor();
 	// Don't attack party or body.
 	if ((target && target->is_in_party()) || obj->get_info().is_body_shape()) {
-		Mouse::mouse->flash_shape(Mouse::redx);
+		Mouse::mouse()->flash_shape(Mouse::redx);
 		return;
 	}
 	npc->set_target(obj, true);
@@ -2424,7 +2424,7 @@ void Game_window::double_clicked(
 		if (obj && !obj->as_actor() && !cheat.in_hack_mover() &&
 			//! Is_sign(obj->get_shapenum()) &&
 			!Fast_pathfinder_client::is_grabable(main_actor, obj)) {
-			Mouse::mouse->flash_shape(Mouse::blocked);
+			Mouse::mouse()->flash_shape(Mouse::blocked);
 			return;
 		}
 	}

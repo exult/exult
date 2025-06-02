@@ -132,9 +132,23 @@ jobs:
         uses: actions/checkout@v4
       - name: Build
         run: |
-          make -j 2 -f Makefile.mingw DEBUG=1 USECODE_CONTAINER=1 USECODE_DEBUGGER=1 SHOW_NONREADIED_OBJECTS=1 Exult.exe exult_studio.exe tools u7shp.exe exult_shp.exe exconfig.dll
+          make -j 2 -f Makefile.mingw DEBUG=1 USECODE_CONTAINER=1 USECODE_DEBUGGER=1 SHOW_NONREADIED_OBJECTS=1 DISTPATH=disttest Exult.exe exult_studio.exe tools u7shp.exe exult_shp.exe exconfig.dll dist studiodist toolsdist plugindist aseprite-plugindist
           for ff in $(find content -name 'Makefile.mingw' -exec dirname {} \;); do
             pushd "${ff}"
             make -j 2 -f Makefile.mingw
             popd
           done
+          cd disttest
+          mv exconfig-x86_64.dll exconfig-i686.dll
+          mkdir Exult-i686
+          cp -r Exult-x86_64/* Exult-i686
+          mkdir studio-i686
+          cp -r studio-x86_64/* studio-i686          
+          mkdir tools-i686
+          cp -r tools-x86_64/* tools-i686   
+          mkdir GimpPlugin-i686
+          cp -r GimpPlugin-x86_64/* GimpPlugin-i686
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_studio_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_tools_installer.iss
+          "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" exult_shpplugin_installer.iss

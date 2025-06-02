@@ -46,7 +46,6 @@ private:
 	int                       centerx, centery;
 	int                       pagesize;
 	void                      calc_win();
-	Mouse*                    menu_mouse;
 	std::unique_ptr<MenuList> create_main_menu(int first = 0);
 	std::unique_ptr<MenuList> create_mods_menu(
 			ModManager* selgame, int first = 0);

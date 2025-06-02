@@ -2233,16 +2233,23 @@ bool BG_Game::new_game(Vga_file& shapes) {
 	}
 	gwin->clear_screen(true);
 	pal->apply(true);
+	if (Mouse::mouse()
+		&& !Mouse::use_touch_input) {            // If not primarily touch input
+		Mouse::mouse()->show(transto.data());    // Attempt to make the mouse
+												 // visible initially
+	}
 	SDL_Window* window = gwin->get_win()->get_screen_window();
-#if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
-	SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "SDL_RETURN_KEY_HIDES_IME");
-#endif
+#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
 	if (!SDL_TextInputActive(window)) {
 		SDL_StartTextInput(window);
 	}
+#endif
 	do {
 		Delay();
 		if (redraw) {
+			if (Mouse::mouse()) {
+				Mouse::mouse()->hide();
+			}
 			gwin->clear_screen();
 			sman->paint_shape(
 					topx, topy, shapes.get_shape(0x2, 0), false,
@@ -2283,8 +2290,13 @@ bool BG_Game::new_game(Vga_file& shapes) {
 			}
 			font->draw_text(
 					ibuf, topx + 60, menuy + 10, disp_name, transto.data());
+			if (Mouse::mouse()) {
+				Mouse::mouse()->show(transto.data());
+			}
 			gwin->get_win()->ShowFillGuardBand();
 			redraw = false;
+		} else if (Mouse::mouse() && Mouse::mouse()->is_onscreen()) {
+			gwin->get_win()->ShowFillGuardBand();
 		}
 		SDL_Renderer* renderer
 				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
@@ -2293,6 +2305,19 @@ bool BG_Game::new_game(Vga_file& shapes) {
 			Uint16 keysym_unicode = 0;
 			bool   isTextInput    = false;
 			SDL_ConvertEventToRenderCoordinates(renderer, &event);
+
+			if (event.type == SDL_EVENT_MOUSE_MOTION) {
+				int mx;
+				int my;
+				gwin->get_win()->screen_to_game(
+						event.motion.x, event.motion.y, gwin->get_fastmouse(),
+						mx, my);
+				Mouse::mouse()->hide();
+				Mouse::mouse()->move(mx, my);
+				Mouse::mouse_update = true;
+				Mouse::mouse()->show(transto.data());
+			}
+
 			if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN
 				|| event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
 				const SDL_Rect rectName   = {topx + 10, menuy + 10, 130, 16};
@@ -2444,10 +2469,10 @@ bool BG_Game::new_game(Vga_file& shapes) {
 	if (SDL_TextInputActive(window)) {
 		SDL_StopTextInput(window);
 	}
-#if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
-	SDL_ResetHint(SDL_HINT_RETURN_KEY_HIDES_IME);
-#endif
-
+	// Hide mouse on way out to clear the mouse's dirty box
+	if (Mouse::mouse()) {
+		Mouse::mouse()->hide();
+	}
 	gwin->clear_screen();
 
 	if (ok) {

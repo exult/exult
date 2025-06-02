@@ -348,7 +348,7 @@ void Spellbook_gump::do_spell(int spell) {
 	} else
 #endif
 			if (!book->can_do_spell(gwin->get_main_actor(), spell))
-		Mouse::mouse->flash_shape(Mouse::redx);
+		Mouse::mouse()->flash_shape(Mouse::redx);
 	else {
 		Spellbook_object* save_book = book;
 		close();    // We've just been deleted!

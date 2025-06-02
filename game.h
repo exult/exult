@@ -60,7 +60,6 @@ private:
 	rsc_map             resources;
 	Configuration*      xml = nullptr; /* Shapes/resources from XML file. */
 	std::vector<char*>  xmlstrings;
-	Mouse*              menu_mouse;
 	static std::string  gametitle;
 	static std::string  modtitle;
 	static unsigned int ticks;

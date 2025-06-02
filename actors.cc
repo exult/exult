@@ -1020,12 +1020,46 @@ void Actor::say_hunger_message() {
  */
 
 void Actor::use_food() {
-	if (get_info().does_not_eat() || (gear_powers & Frame_flags::doesnt_eat)) {
+	if (get_info().does_not_eat() || (gear_powers & Frame_flags::doesnt_eat)
+		|| cheat.GetFoodUse() == Cheat::FoodUse::Disabled) {
 		return;
 	}
 	int food = get_property(static_cast<int>(food_level));
 	food -= (rand() % 4);    // Average 1.5 level/hour.
 	set_property(static_cast<int>(food_level), food);
+
+	// if dead asleep or paralyzed, immediately exit here, can't auto eat and can't say hunger message
+	if (get_flag(Obj_flags::paralyzed) || get_flag(Obj_flags::asleep) || get_flag(Obj_flags::dead))
+	{
+		return;
+	}
+
+	// Automatic feeding 
+		if (cheat.GetFoodUse() == Cheat::FoodUse::Automatic) {
+		Game_window* gwin = Game_window::get_instance();
+			for (; food <= 9;
+				 food   = get_property(static_cast<int>(food_level))) {
+			// intercept the click_on_item call made by the food-usecode
+			Usecode_machine* ucmachine = gwin->get_usecode();
+			Game_object*     oldtarg;
+			Tile_coord*      oldtile;
+			ucmachine->save_intercept(oldtarg, oldtile);
+			ucmachine->intercept_click_on_item(this);
+			Game_window* gwin    = Game_window::get_instance();
+			bool         hadfood = gwin->activate_item(377) ||    // Food
+						   (GAME_SI && gwin->activate_item(404))
+						   ||                           // Special SI food
+						   gwin->activate_item(616);    // Drinks
+
+			ucmachine->restore_intercept(oldtarg, oldtile);
+			Mouse::mouse()->set_speed_cursor();
+			if (!hadfood) {
+				gwin->get_main_actor()->say(msg_out_of_food);
+				COUT(get_text_msg(msg_out_of_food));
+				break;
+			}
+		}
+	}
 	if (food > 9) {
 		return;
 	}

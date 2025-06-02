@@ -70,12 +70,30 @@ short Mouse::long_arrows[8]  = {24, 25, 26, 27, 28, 29, 30, 31};
 short Mouse::short_combat_arrows[8] = {32, 33, 34, 35, 36, 37, 38, 39};
 short Mouse::med_combat_arrows[8]   = {40, 41, 42, 43, 44, 45, 46, 47};
 
-Mouse* Mouse::mouse        = nullptr;
-bool   Mouse::mouse_update = false;
+Mouse* Mouse::current_mouse = nullptr;
+bool   Mouse::mouse_update  = false;
 
 /*
  *  Create.
  */
+
+void Mouse::MakeCurrent() {
+	// we are already current so do nothing
+	if (this == current_mouse) {
+		return;
+	}
+	// remove this from the current list if it is in it
+	for (Mouse** list = &current_mouse; *list; list = &(*list)->previous) {
+		if (this == *list) {
+			*list    = previous;
+			previous = nullptr;
+			break;
+		}
+	}
+
+	previous      = current_mouse;
+	current_mouse = this;
+}
 
 Mouse::Mouse(Game_window* gw    // Where to draw.
 			 )
@@ -94,6 +112,7 @@ Mouse::Mouse(Game_window* gw    // Where to draw.
 	}
 	Init();
 	set_shape(get_short_arrow(east));    // +++++For now.
+	MakeCurrent();
 }
 
 Mouse::Mouse(
@@ -110,6 +129,18 @@ Mouse::Mouse(
 	pointers.load(&shapes);
 	Init();
 	set_shape0(0);
+	MakeCurrent();
+}
+
+Mouse::~Mouse() {
+	// remove this from the current list if it is in it
+	for (Mouse** list = &current_mouse; *list; list = &(*list)->previous) {
+		if (this == *list) {
+			*list    = previous;
+			previous = nullptr;
+			break;
+		}
+	}
 }
 
 void Mouse::Init() {
@@ -149,7 +180,7 @@ void Mouse::Init() {
  *  Show the mouse.
  */
 
-void Mouse::show() {
+void Mouse::show(unsigned char* trans) {
 	if (should_hide_frame(cur_framenum)) {
 		hide();
 		return;
@@ -160,7 +191,11 @@ void Mouse::show() {
 		iwin->get(backup.get(), box.x, box.y);
 		// Paint new location.
 		//		cur->paint_rle(iwin->get_ib8(), mousex, mousey);
-		cur->paint_rle(mousex, mousey);
+		if (trans) {
+			cur->paint_rle_remapped(mousex, mousey, trans);
+		} else {
+			cur->paint_rle(mousex, mousey);
+		}
 	}
 }
 
