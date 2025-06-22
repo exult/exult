@@ -539,55 +539,6 @@ bool Audio::start_music(
 	return false;
 }
 
-void Audio::start_music_combat(Combat_song song, bool continuous) {
-#ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: Combat Music start "
-		 << int(song) << endl;
-#endif
-	if (!audio_enabled || !music_enabled || !mixer || !mixer->getMidiPlayer()) {
-		return;
-	}
-
-	int num = -1;
-
-	switch (song) {
-	case CSBattle_Over:
-		num = Audio::game_music(9);
-		break;
-
-	case CSAttacked1:
-		num = Audio::game_music(11);
-		break;
-
-	case CSAttacked2:
-		num = Audio::game_music(12);
-		break;
-
-	case CSVictory:
-		num = Audio::game_music(15);
-		break;
-
-	case CSRun_Away:
-		num = Audio::game_music(16);
-		break;
-
-	case CSDanger:
-		num = Audio::game_music(10);
-		break;
-
-	case CSHidden_Danger:
-		num = Audio::game_music(18);
-		break;
-
-	default:
-		CERR("Error: Unable to Find combat track for song " << song << ".");
-		break;
-	}
-
-	mixer->getMidiPlayer()->start_music(
-			num, continuous && music_looping != LoopingType::Never);
-}
-
 void Audio::stop_music() {
 #ifdef DEBUG
 	cout << formatTicks() << "Audio subsystem request: Music stop" << endl;

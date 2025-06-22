@@ -94,6 +94,67 @@ bool In_ammo_family(int shnum, int family) {
 }
 
 /*
+ *  Start music for combat.
+ *  If continuous is true, the music will not be stopped when combat ends.
+ */
+
+void Combat_schedule::start_music_combat(Combat_song song, bool continuous) {
+#ifdef DEBUG
+	cout << "Audio subsystem request: Combat Music start " << int(song) << endl;
+#endif
+	if (!Audio::get_ptr()) {
+		return;
+	}
+
+	int num = -1;
+
+	switch (song) {
+	case CSBattle_Over:
+		num = Audio::game_music(9);
+		break;
+
+	case CSAttacked1:
+		num = Audio::game_music(11);
+		break;
+
+	case CSAttacked2:
+		num = Audio::game_music(12);
+		break;
+
+	case CSVictory:
+		num = Audio::game_music(15);
+		break;
+
+	case CSRun_Away:
+		num = Audio::game_music(16);
+		break;
+
+	case CSDanger:
+		num = Audio::game_music(10);
+		break;
+
+	case CSHidden_Danger:
+		// ++++ FIXME: This should play when the Avatar (or party?) successfully
+		// flees in combat.
+		num = Audio::game_music(18);
+		break;
+
+	case CSAvatar_died:
+		// In the original this plays when the Avatar dies in combat and the
+		// game reloads. As we have almost instant load times, this makes no
+		// sense to play.
+		num = Audio::game_music(17);
+		break;
+
+	default:
+		CERR("Error: Unable to Find combat track for song " << song << ".");
+		return;    // Unknown song
+	}
+
+	Audio::get_ptr()->start_music(num, continuous);
+}
+
+/*
  *  Start music if battle has recently started.
  */
 
@@ -111,8 +172,7 @@ void Combat_schedule::start_battle() {
 	Game_object* target = npc->get_target();
 	if (npc == gwin->get_main_actor() && curtime - battle_time >= 30000
 		&& (!opponents.empty() || (target && target->as_actor()))) {
-		Audio::get_ptr()->start_music_combat(
-				(rand() % 2) ? CSAttacked1 : CSAttacked2, false);
+		start_music_combat((rand() % 2) ? CSAttacked1 : CSAttacked2, false);
 		battle_time     = curtime;
 		battle_end_time = curtime - 1;
 	}
@@ -141,8 +201,7 @@ void Combat_schedule::monster_died() {
 	// Figure #seconds battle lasted.
 	const unsigned long len  = (battle_end_time - battle_time) / 1000;
 	const bool          hard = len > 15u && (rand() % 60u < len);
-	Audio::get_ptr()->start_music_combat(
-			hard ? CSBattle_Over : CSVictory, false);
+	start_music_combat(hard ? CSBattle_Over : CSVictory, false);
 }
 
 /*
@@ -1349,6 +1408,16 @@ bool Combat_schedule::attack_target(
 		if (!autohit && !target->try_to_hit(attacker, attval)) {
 			return false;    // Missed.
 		}
+		// Avatar/Party was hit, in case the background music is CSDanger, play
+		// attack music.
+		if (target == gwin->get_main_actor()
+			|| (target->as_actor() && target->as_actor()->is_in_party())) {
+			MyMidiPlayer* player = Audio::get_ptr()->get_midi();
+			if (player
+				&& player->get_current_track() == Audio::game_music(10)) {
+				start_music_combat(CSAttacked1, false);
+			}
+		}
 		target->play_hit_sfx(weapon, false);
 		// if (weapon == 704)    // Powder keg.
 		if (info.is_explosive()) {    // Powder keg.
@@ -1752,7 +1821,7 @@ void Combat_schedule::ending(int /* newtype */
 			}
 		}
 		if (found) {
-			Audio::get_ptr()->start_music_combat(CSRun_Away, false);
+			start_music_combat(CSRun_Away, false);
 		}
 	}
 }

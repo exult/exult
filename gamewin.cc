@@ -164,7 +164,15 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 	const int     weather        = gwin->get_effects()->get_weather();
 	const bool    nighttime      = bghour < 6 || bghour > 20;
 	const bool    nearby_hostile = gwin->is_hostile_nearby();
-	if (nearby_hostile && !gwin->in_combat()) {
+	MyMidiPlayer* player         = Audio::get_ptr()->get_midi();
+	if (laststate == DangerNear && !nearby_hostile) {
+		// Immediately play hidden danger music when hostiles disappear
+		if (player) {
+			Audio::get_ptr()->start_music(Audio::game_music(18), true);
+		}
+		laststate    = Outside;    // Reset state
+		currentstate = Outside;    // Set to normal state
+	} else if (nearby_hostile && !gwin->in_combat()) {
 		currentstate = DangerNear;
 	} else if (gwin->is_in_dungeon()) {
 		currentstate = Dungeon;
@@ -178,7 +186,6 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 		currentstate = Outside;
 	}
 
-	MyMidiPlayer* player = Audio::get_ptr()->get_midi();
 	// The background sfx tracks only play for Digital Music, MT32emu,
 	// MT32/FakeMT32 FMOpl is not sounding acceptable even though the original
 	// used it.

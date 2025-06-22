@@ -55,19 +55,6 @@ class Tile_coord;
 #define MAX_SOUND_FALLOFF 24
 
 /*
- *	Music:
- */
-enum Combat_song {
-	CSBattle_Over,
-	CSAttacked1,
-	CSAttacked2,
-	CSVictory,
-	CSRun_Away,
-	CSDanger,
-	CSHidden_Danger
-};
-
-/*
  *	This is a resource-management class for SFX. Maybe make it a
  *	template class and use for other resources also?
  *	Based on code by Sam Lantinga et al on:
@@ -167,7 +154,6 @@ public:
 	bool start_music(
 			const std::string& fname, int num, bool continuous = false,
 			MyMidiPlayer::ForceType force = MyMidiPlayer::Force_None);
-	void start_music_combat(Combat_song song, bool continuous);
 	void stop_music();
 	int  play_sound_effect(
 			 int num, int volume = AUDIO_MAX_VOLUME, int balance = 0,

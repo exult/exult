@@ -30,6 +30,20 @@ class Game_object;
 class Spellbook_object;
 
 /*
+ *	Combat Music:
+ */
+enum Combat_song {
+	CSBattle_Over,
+	CSAttacked1,
+	CSAttacked2,
+	CSVictory,
+	CSRun_Away,
+	CSDanger,
+	CSHidden_Danger,
+	CSAvatar_died
+};
+
+/*
  *  Combat schedule:
  */
 class Combat_schedule : public Schedule {
@@ -100,6 +114,7 @@ public:
 	static void stop_attacking_invisible(Game_object* npc);
 	void        now_what() override;    // Npc calls this when it's done
 	void im_dormant() override;         // Npc calls this when it goes dormant.
+	static void start_music_combat(Combat_song song, bool continuous);
 	void ending(int newtype) override;    // Switching to another schedule.
 	void set_weapon(bool removed = false) override;    // Set weapon info.
 	void set_hand_to_hand();
