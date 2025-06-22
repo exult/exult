@@ -155,6 +155,44 @@ void Combat_schedule::start_music_combat(Combat_song song, bool continuous) {
 }
 
 /*
+ *  Check for nearby hostiles and play danger music if needed.
+ */
+
+void Combat_schedule::danger_music() {
+	Game_window* gwin = Game_window::get_instance();
+	if (gwin->in_combat()) {
+		return;    // Already in combat, let combat music handle it
+	}
+
+	MyMidiPlayer* player = Audio::get_ptr()->get_midi();
+	if (!player) {
+		return;
+	}
+	const bool nearby_hostile = gwin->is_hostile_nearby();
+	const int  current_track  = player->get_current_track();
+
+	// Check if any combat music is currently playing
+	bool is_combat_music_playing
+			= (current_track == Audio::game_music(9) ||     // CSBattle_Over
+			   current_track == Audio::game_music(10) ||    // CSDanger
+			   current_track == Audio::game_music(11) ||    // CSAttacked1
+			   current_track == Audio::game_music(12) ||    // CSAttacked2
+			   current_track == Audio::game_music(15) ||    // CSVictory
+			   current_track == Audio::game_music(16) ||    // CSRun_Away
+			   current_track == Audio::game_music(17) ||    // CSAvatar_died
+			   current_track == Audio::game_music(18)       // CSHidden_Danger
+			);
+
+	if (nearby_hostile && !is_combat_music_playing) {
+		// Hostiles nearby but not playing danger music
+		start_music_combat(CSDanger, false);
+	} else if (!nearby_hostile && current_track == Audio::game_music(10)) {
+		// Escaped hostiles - switch to hidden danger
+		start_music_combat(CSHidden_Danger, false);
+	}
+}
+
+/*
  *  Start music if battle has recently started.
  */
 

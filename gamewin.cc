@@ -124,8 +124,7 @@ class Background_noise : public Time_sensitive {
 		Dungeon,
 		Nighttime,
 		RainStorm,
-		SnowStorm,
-		DangerNear
+		SnowStorm
 	} laststate;    // Last state for SFX music tracks,
 
 	// 1 outside, 2 dungeon, 3 nighttime, 4 rainstorm,
@@ -160,21 +159,11 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 
 	unsigned long delay = 8000;
 	Song_states   currentstate;
-	const int     bghour         = gwin->get_clock()->get_hour();
-	const int     weather        = gwin->get_effects()->get_weather();
-	const bool    nighttime      = bghour < 6 || bghour > 20;
-	const bool    nearby_hostile = gwin->is_hostile_nearby();
-	MyMidiPlayer* player         = Audio::get_ptr()->get_midi();
-	if (laststate == DangerNear && !nearby_hostile) {
-		// Immediately play hidden danger music when hostiles disappear
-		if (player) {
-			Audio::get_ptr()->start_music(Audio::game_music(18), true);
-		}
-		laststate    = Outside;    // Reset state
-		currentstate = Outside;    // Set to normal state
-	} else if (nearby_hostile && !gwin->in_combat()) {
-		currentstate = DangerNear;
-	} else if (gwin->is_in_dungeon()) {
+	const int     bghour    = gwin->get_clock()->get_hour();
+	const int     weather   = gwin->get_effects()->get_weather();
+	const bool    nighttime = bghour < 6 || bghour > 20;
+	Combat_schedule::danger_music();
+	if (gwin->is_in_dungeon()) {
 		currentstate = Dungeon;
 	} else if (weather == 2) {
 		currentstate = RainStorm;
@@ -186,6 +175,7 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 		currentstate = Outside;
 	}
 
+	MyMidiPlayer* player = Audio::get_ptr()->get_midi();
 	// The background sfx tracks only play for Digital Music, MT32emu,
 	// MT32/FakeMT32 FMOpl is not sounding acceptable even though the original
 	// used it.
@@ -199,16 +189,13 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 			&& Audio::get_ptr()->is_music_enabled()) {
 			// Conditions: not playing music, playing a background music
 			if (curr_track == -1 || gwin->is_background_track(curr_track)
-				|| (((currentstate == Dungeon) || currentstate == DangerNear)
+				|| ((currentstate == Dungeon)
 					&& !is_combat_music(curr_track))) {
 				// Not already playing music
 				int tracknum = 255;
 
 				// Get the relevant track number.
-				if (nearby_hostile && !gwin->in_combat()) {
-					tracknum  = Audio::game_music(10);
-					laststate = DangerNear;
-				} else if (gwin->is_in_dungeon()) {
+				if (gwin->is_in_dungeon()) {
 					if (play_bg_tracks) {
 						tracknum = Audio::game_music(52);
 					}

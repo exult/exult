@@ -115,6 +115,7 @@ public:
 	void        now_what() override;    // Npc calls this when it's done
 	void im_dormant() override;         // Npc calls this when it goes dormant.
 	static void start_music_combat(Combat_song song, bool continuous);
+	static void danger_music();
 	void ending(int newtype) override;    // Switching to another schedule.
 	void set_weapon(bool removed = false) override;    // Set weapon info.
 	void set_hand_to_hand();
