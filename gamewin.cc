@@ -3186,9 +3186,7 @@ bool Game_window::is_hostile_nearby() const {
 	 * get_nearby_npcs, but on the other hand, its a negligible point.
 	 */
 	Actor_vector nearby;
-	if (!cheat.in_god_mode()) {
-		get_nearby_npcs(nearby);
-	}
+	get_nearby_npcs(nearby);
 
 	bool nearby_hostile = false;
 	for (auto& actor : nearby) {

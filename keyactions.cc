@@ -555,7 +555,7 @@ int get_walking_speed(const int* params) {
 	int          speed;
 	if (parm == 2) {
 		speed = Mouse::slow_speed_factor;
-	} else if (gwin->in_combat() || gwin->is_hostile_nearby()) {
+	} else if (gwin->in_combat() || (gwin->is_hostile_nearby()  && !cheat.in_god_mode())) {
 		speed = Mouse::medium_combat_speed_factor;
 	} else {
 		speed = parm == 1 ? Mouse::medium_speed_factor

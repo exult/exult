@@ -400,7 +400,7 @@ void Mouse::set_speed_cursor() {
 							  -static_cast<float>(dy) / half_size));
 		}
 
-		const bool      nearby_hostile        = gwin->is_hostile_nearby();
+		const bool      nearby_hostile        = gwin->is_hostile_nearby() && !cheat.in_god_mode();
 		bool            has_active_nohalt_scr = false;
 		Usecode_script* scr                   = nullptr;
 		Actor*          act                   = gwin->get_main_actor();
