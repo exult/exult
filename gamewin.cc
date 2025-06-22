@@ -1404,7 +1404,13 @@ void Game_window::read() {
 	setup_load_palette();
 
 	clear_world(true);    // Wipe clean.
-	read_gwin();          // Read our data.
+
+	// Re-add background noise to queue after clear_world() removed it
+	if (background_noise) {
+		tqueue->add(Game::get_ticks() + 5000, background_noise);
+	}
+
+	read_gwin();    // Read our data.
 	// DON'T do anything that might paint()
 	// before calling read_npcs!!
 	setup_game(cheat.in_map_editor());    // Read NPC's, usecode.
