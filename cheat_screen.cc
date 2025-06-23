@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -165,8 +165,8 @@ void CheatScreen::show_screen() {
 	const str_int_pair& pal_tuple_patch
 			= game->get_resource("palettes/patch/0");
 	pal.load(pal_tuple_static.str, pal_tuple_patch.str, pal_tuple_static.num);
-	
-	// init fontcolor transform table, default does nothing 
+
+	// init fontcolor transform table, default does nothing
 	for (size_t i = 0; i < std::size(fontcolor.colors); i++) {
 		fontcolor.colors[i] = i;
 	}
@@ -210,7 +210,6 @@ void CheatScreen::show_screen() {
 
 	pal.apply();
 
-
 	const int remaps[] = {
 			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 - 1,
 	};
@@ -222,7 +221,7 @@ void CheatScreen::show_screen() {
 	};
 
 	pal.Generate_remap_xformtable(hovertable.colors, hoverremaps);
-	
+
 	// Make sure the font colour is properly remapped
 	if (fontcolor[0]) {
 		highlighttable.colors[fontcolor[0]] = highlighttable.colors[8];
@@ -2025,6 +2024,7 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 		case SDLK_C:                        // Change shape
 			if (state.input[0] == 'b') {    // Browser
 				int n;
+				clear_buttons();    // Clear all button states before browser
 				if (!cheat.get_browser_shape(i, n)) {
 					state.SetMode(CP_WrongShapeFile);
 					break;
@@ -2666,6 +2666,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 
 		if (state.input[0] == 'b') {    // Browser
 			int n;
+			clear_buttons();    // Clear all button states before browser
 			if (!cheat.get_browser_shape(i, n)) {
 				state.SetMode(CP_WrongShapeFile);
 				break;

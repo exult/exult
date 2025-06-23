@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -104,18 +104,99 @@ void ShapeBrowser::browse_shapes() {
 	Palette     pal;
 	char        buf[255];
 	const char* fname;
-
-	snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
-	fname = game->get_resource(buf).str;
-	if (!shapes) {
-		shapes = new Vga_file(fname);
-	}
-	bool      looping             = true;
-	bool      redraw              = true;
-	bool      do_palette_rotation = true;
-	bool      bounding_box        = false;
-	SDL_Event event;
+	bool        looping             = true;
+	bool        redraw              = true;
+	bool        do_palette_rotation = true;
+	bool        bounding_box        = false;
+	SDL_Event   event;
 	// int active;
+
+	auto get_patch_sources = [&](const char* main_file)
+			-> std::vector<std::pair<std::string, int>> {
+		std::vector<std::pair<std::string, int>> sources;
+		sources.emplace_back(main_file, -1);    // Main file
+
+		std::string base_name(main_file);
+		if (base_name.find("faces.vga") != std::string::npos) {
+			sources.emplace_back(PATCH_FACES, -1);
+		} else if (base_name.find("gumps.vga") != std::string::npos) {
+			sources.emplace_back(PATCH_GUMPS, -1);
+		} else if (base_name.find("sprites.vga") != std::string::npos) {
+			sources.emplace_back(PATCH_SPRITES, -1);
+		} else if (base_name.find("mainshp.flx") != std::string::npos) {
+			sources.emplace_back(PATCH_MAINSHP, -1);
+		} else if (base_name.find("endshape.flx") != std::string::npos) {
+			sources.emplace_back(PATCH_ENDSHAPE, -1);
+		} else if (base_name.find("fonts.vga") != std::string::npos) {
+			sources.emplace_back(PATCH_FONTS, -1);
+		}
+
+		return sources;
+	};
+
+	auto get_shape_frame = [&](int shape, int frame) -> Shape_frame* {
+		if (current_file == 0) {
+			return sman->get_shapes().get_shape(shape, frame);
+		} else {
+			// Use the browser's shapes for other files, including patches
+			if (!shapes) {
+				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
+				fname = game->get_resource(buf).str;
+
+				std::vector<std::pair<std::string, int>> sources
+						= get_patch_sources(fname);
+				shapes = new Vga_file();
+				shapes->load(sources);
+			}
+			return shapes->get_shape(shape, frame);
+		}
+	};
+
+	auto get_num_shapes = [&]() -> int {
+		if (current_file == 0) {
+			return sman->get_shapes().get_num_shapes();
+		} else {
+			if (!shapes) {
+				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
+				fname = game->get_resource(buf).str;
+
+				std::vector<std::pair<std::string, int>> sources
+						= get_patch_sources(fname);
+				shapes = new Vga_file();
+				shapes->load(sources);
+			}
+			return shapes->get_num_shapes();
+		}
+	};
+
+	auto get_num_frames = [&](int shape) -> int {
+		if (current_file == 0) {
+			return sman->get_shapes().get_num_frames(shape);
+		} else {
+			if (!shapes) {
+				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
+				fname = game->get_resource(buf).str;
+
+				std::vector<std::pair<std::string, int>> sources
+						= get_patch_sources(fname);
+				shapes = new Vga_file();
+				shapes->load(sources);
+			}
+			return shapes->get_num_frames(shape);
+		}
+	};
+
+	if (!shapes && current_file > 0) {
+		snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
+		fname = game->get_resource(buf).str;
+
+		std::vector<std::pair<std::string, int>> sources
+				= get_patch_sources(fname);
+		shapes = new Vga_file();
+		shapes->load(sources);
+	} else if (current_file == 0) {
+		fname = "shapes.vga";
+	}
 
 	do {
 		if (redraw) {
@@ -142,14 +223,14 @@ void ShapeBrowser::browse_shapes() {
 			// font->draw_text(ibuf, 0, 170, buf);
 			font->paint_text_fixedwidth(ibuf, buf, 2, maxy - 30, 8);
 
-			num_shapes = shapes->get_num_shapes();
+			num_shapes = get_num_shapes();
 			snprintf(
 					buf, sizeof(buf), "Shape: %2d/%d", current_shape,
 					num_shapes - 1);
 			// font->draw_text(ibuf, 0, 180, buf);
 			font->paint_text_fixedwidth(ibuf, buf, 2, maxy - 20, 8);
 
-			num_frames = shapes->get_num_frames(current_shape);
+			num_frames = get_num_frames(current_shape);
 			snprintf(
 					buf, sizeof(buf), "Frame: %2d/%d", current_frame,
 					num_frames - 1);
@@ -164,7 +245,7 @@ void ShapeBrowser::browse_shapes() {
 
 			if (num_frames) {
 				Shape_frame* frame
-						= shapes->get_shape(current_shape, current_frame);
+						= get_shape_frame(current_shape, current_frame);
 
 				if (frame) {
 					snprintf(
@@ -250,9 +331,18 @@ void ShapeBrowser::browse_shapes() {
 				current_shape = 0;
 				current_frame = 0;
 				delete shapes;
-				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
-				fname  = game->get_resource(buf).str;
-				shapes = new Vga_file(fname);
+				shapes = nullptr;
+				if (current_file > 0) {
+					snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
+					fname = game->get_resource(buf).str;
+
+					std::vector<std::pair<std::string, int>> sources
+							= get_patch_sources(fname);
+					shapes = new Vga_file();
+					shapes->load(sources);
+				} else {
+					fname = "shapes.vga";
+				}
 				break;
 			case SDLK_P:
 				handle_key(shift, current_palette, num_palettes);
@@ -314,7 +404,6 @@ void ShapeBrowser::browse_shapes() {
 				keybinder->ShowBrowserKeys();
 				break;
 			default:
-
 				break;
 			}
 		}
@@ -325,7 +414,9 @@ void ShapeBrowser::browse_shapes() {
 }
 
 bool ShapeBrowser::get_shape(int& shape, int& frame) {
-	if (!shapes || current_file != 0) {
+	Shape_manager* sman = Shape_manager::get_instance();
+	if (current_shape >= sman->get_shapes().get_num_shapes()
+		|| current_file != 0) {
 		return false;
 	} else {
 		shape = current_shape;
