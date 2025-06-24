@@ -42,6 +42,7 @@
 #include "gump_utils.h"
 #include "items.h"
 #include "keys.h"
+#include "palette.h"
 #include "shapeid.h"
 
 ShapeBrowser::ShapeBrowser() {
@@ -86,22 +87,42 @@ void ShapeBrowser::browse_shapes() {
 	Shape_manager* sman = Shape_manager::get_instance();
 	Image_buffer8* ibuf = gwin->get_win()->get_ib8();
 
-	// Try to get the Font form Blackgate first because it looks better than the
-	// SI one
-	auto font = std::make_shared<Font>();
-	if (font->load(U7MAINSHP_FLX, 9, 1) != 0) {
-		font.reset();
+	Palette             pal;
+	const str_int_pair& pal_tuple_static = game->get_resource("palettes/0");
+	const str_int_pair& pal_tuple_patch
+			= game->get_resource("palettes/patch/0");
+	pal.load(pal_tuple_static.str, pal_tuple_patch.str, pal_tuple_static.num);
+
+	Xform_palette fontcolor;
+	for (size_t i = 0; i < std::size(fontcolor.colors); i++) {
+		fontcolor.colors[i] = i;
 	}
 
-	// Get the font for this game if don't already have it
-	if (!font) {
-		font = fontManager.get_font("MENU_FONT");
+	// Try to use SMALL_BLACK_FONT and remap black to white
+	auto font = fontManager.get_font("SMALL_BLACK_FONT");
+	if (font) {
+		fontcolor.colors[0] = pal.find_color(256, 256, 256);
+	} else {
+		// Reset fontcolor black so it maps to black
+		fontcolor.colors[0] = 0;
+
+		// Try to get the Font from Blackgate first because it looks better than
+		// the SI one
+		font = std::make_shared<Font>();
+		if (font->load(U7MAINSHP_FLX, 9, 1) != 0) {
+			font.reset();
+		}
+
+		// Get the font for this game if don't already have it
+		if (!font) {
+			font = fontManager.get_font("MENU_FONT");
+		}
 	}
+
 	const int   maxx    = gwin->get_width();
 	const int   centerx = maxx / 2;
 	const int   maxy    = gwin->get_height();
 	const int   centery = maxy / 2;
-	Palette     pal;
 	char        buf[255];
 	const char* fname;
 	bool        looping             = true;
@@ -109,7 +130,6 @@ void ShapeBrowser::browse_shapes() {
 	bool        do_palette_rotation = true;
 	bool        bounding_box        = false;
 	SDL_Event   event;
-	// int active;
 
 	auto get_patch_sources = [&](const char* main_file)
 			-> std::vector<std::pair<std::string, int>> {
@@ -217,31 +237,33 @@ void ShapeBrowser::browse_shapes() {
 			}
 
 			pal.apply();
-			font->paint_text_fixedwidth(ibuf, "Show [K]eys", 2, maxy - 50, 8);
+
+			font->paint_text_fixedwidth(
+					ibuf, "Show [K]eys", 2, maxy - 50, 8, fontcolor.colors);
 
 			snprintf(buf, sizeof(buf), "VGA File: '%s'", fname);
-			// font->draw_text(ibuf, 0, 170, buf);
-			font->paint_text_fixedwidth(ibuf, buf, 2, maxy - 30, 8);
+			font->paint_text_fixedwidth(
+					ibuf, buf, 2, maxy - 30, 8, fontcolor.colors);
 
 			num_shapes = get_num_shapes();
 			snprintf(
 					buf, sizeof(buf), "Shape: %2d/%d", current_shape,
 					num_shapes - 1);
-			// font->draw_text(ibuf, 0, 180, buf);
-			font->paint_text_fixedwidth(ibuf, buf, 2, maxy - 20, 8);
+			font->paint_text_fixedwidth(
+					ibuf, buf, 2, maxy - 20, 8, fontcolor.colors);
 
 			num_frames = get_num_frames(current_shape);
 			snprintf(
 					buf, sizeof(buf), "Frame: %2d/%d", current_frame,
 					num_frames - 1);
-			// font->draw_text(ibuf, 160, 180, buf);
-			font->paint_text_fixedwidth(ibuf, buf, 162, maxy - 20, 8);
+			font->paint_text_fixedwidth(
+					ibuf, buf, 162, maxy - 20, 8, fontcolor.colors);
 
 			snprintf(
 					buf, sizeof(buf), "Palette: %s, %d", pal_tuple.str,
 					pal_tuple.num);
-			// font->draw_text(ibuf, 0, 190, buf);
-			font->paint_text_fixedwidth(ibuf, buf, 2, maxy - 10, 8);
+			font->paint_text_fixedwidth(
+					ibuf, buf, 2, maxy - 10, 8, fontcolor.colors);
 
 			if (num_frames) {
 				Shape_frame* frame
@@ -251,8 +273,8 @@ void ShapeBrowser::browse_shapes() {
 					snprintf(
 							buf, sizeof(buf), "%d x %d", frame->get_width(),
 							frame->get_height());
-					// font->draw_text(ibuf, 32, 32, buf);
-					font->paint_text_fixedwidth(ibuf, buf, 2, 22, 8);
+					font->paint_text_fixedwidth(
+							ibuf, buf, 2, 22, 8, fontcolor.colors);
 
 					// Coords for shape to be drawn (centre of the screen)
 					const int x = gwin->get_width() / 2;
@@ -288,17 +310,16 @@ void ShapeBrowser::browse_shapes() {
 								info.get_3d_xtiles(current_frame),
 								info.get_3d_ytiles(current_frame),
 								info.get_3d_height());
-						font->paint_text_fixedwidth(ibuf, buf, 2, 12, 8);
+						font->paint_text_fixedwidth(
+								ibuf, buf, 2, 12, 8, fontcolor.colors);
 
 						// TODO: do we want to display something other than
 						// this for shapes >= 1024?
 						if (current_shape < get_num_item_names()
 							&& get_item_name(current_shape)) {
-							// font->draw_text(ibuf, 32, 16,
-							// get_item_name(current_shape));
 							font->paint_text_fixedwidth(
-									ibuf, get_item_name(current_shape), 2, 2,
-									8);
+									ibuf, get_item_name(current_shape), 2, 2, 8,
+									fontcolor.colors);
 						}
 						if (bounding_box) {
 							info.paint_bbox(
