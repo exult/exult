@@ -1,4 +1,4 @@
-﻿// !$*UTF8*$!
+// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
@@ -36,6 +36,7 @@
 		8A45A3B8247C068500F12F4D /* joythumb-glass.png in Resources */ = {isa = PBXBuildFile; fileRef = 8A45A3AC247C068500F12F4D /* joythumb-glass.png */; };
 		8A599C2224605925006E3252 /* libmt32emu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A599C21246058A9006E3252 /* libmt32emu.a */; };
 		8A6013712057CFAD00FCA555 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A6013662057CF0C00FCA555 /* Metal.framework */; };
+		8A70793E2E0C6D5C009CDF56 /* libfluidsynth.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A70793D2E0C6D44009CDF56 /* libfluidsynth.a */; };
 		8A7F1F7E1DE5B7820066F6FC /* expack.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A7F1F7D1DE5B7820066F6FC /* expack.cc */; };
 		8A8340C91F897806000696C7 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340C81F897806000696C7 /* GameController.framework */; };
 		8A8340D01F897827000696C7 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340CC1F897826000696C7 /* AVKit.framework */; };
@@ -58,7 +59,6 @@
 		8AC797C81C8D0E4F001AF014 /* zip.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8AC797C61C8D0E4F001AF014 /* zip.cc */; };
 		8AD4A9311A92B9DB0004762D /* InputOptions_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8AD4A92F1A92B9DB0004762D /* InputOptions_gump.cc */; };
 		8ADFFDF625DE791000FC4D3A /* verify.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8ADFFDF425DE791000FC4D3A /* verify.cc */; };
-		8AF119BE2D1F81BA008B25BE /* libfluidlite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AF119AD2D1F816B008B25BE /* libfluidlite.a */; };
 		8AE0D3C92A9BF2330036A3D9 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A52529F25718897005AD385 /* SDL3.framework */; };
 		8AF2AFDF2016708100696E08 /* joypad-glass-southwest.png in Resources */ = {isa = PBXBuildFile; fileRef = 8AF2AFD62016707F00696E08 /* joypad-glass-southwest.png */; };
 		8AF2AFE02016708100696E08 /* joypad-glass-north.png in Resources */ = {isa = PBXBuildFile; fileRef = 8AF2AFD72016708000696E08 /* joypad-glass-north.png */; };
@@ -298,19 +298,19 @@
 			remoteGlobalIDString = 4F58F7AA67A348AC99788A8C;
 			remoteInfo = mt32emu;
 		};
-		8A9A02B829F3E170000AF341 /* PBXContainerItemProxy */ = {
+		8A70793A2E0C6D44009CDF56 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 8A52528E25718896005AD385 /* SDL.xcodeproj */;
+			containerPortal = 8A7079352E0C6D44009CDF56 /* libfluidsynth.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = E2D187CF28A5673500D2B4F1;
-			remoteInfo = "xcFramework-iOS";
+			remoteGlobalIDString = 8A9A029629F3DEFE000AF341;
+			remoteInfo = make_tables;
 		};
-		8AF119AC2D1F816B008B25BE /* PBXContainerItemProxy */ = {
+		8A70793C2E0C6D44009CDF56 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 8AF119A82D1F816B008B25BE /* fluidlite.xcodeproj */;
+			containerPortal = 8A7079352E0C6D44009CDF56 /* libfluidsynth.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = E700E0351A6E41C5006C8BE4;
-			remoteInfo = libfluidlite;
+			remoteGlobalIDString = 8A9A012E29F32EEF000AF341;
+			remoteInfo = fluidsynth;
 		};
 		E738C84D1A6FFF58003A950D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -372,6 +372,7 @@
 		8A52528E25718896005AD385 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = SDL/Xcode/SDL/SDL.xcodeproj; sourceTree = "<group>"; };
 		8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = libmt32emu.xcodeproj; sourceTree = "<group>"; };
 		8A6013662057CF0C00FCA555 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		8A7079352E0C6D44009CDF56 /* libfluidsynth.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = libfluidsynth.xcodeproj; sourceTree = "<group>"; };
 		8A7F1F721DE5B72A0066F6FC /* expack */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = expack; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A7F1F7D1DE5B7820066F6FC /* expack.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = expack.cc; path = ../tools/expack.cc; sourceTree = "<group>"; };
 		8A7F1F8E1DE5BDD40066F6FC /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
@@ -406,7 +407,6 @@
 		8AD4A9301A92B9DB0004762D /* InputOptions_gump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InputOptions_gump.h; path = ../gumps/InputOptions_gump.h; sourceTree = "<group>"; };
 		8ADFFDF425DE791000FC4D3A /* verify.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = verify.cc; path = ../verify.cc; sourceTree = "<group>"; };
 		8ADFFDF525DE791000FC4D3A /* verify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = verify.h; path = ../verify.h; sourceTree = "<group>"; };
-		8AF119A82D1F816B008B25BE /* fluidlite.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = fluidlite.xcodeproj; sourceTree = "<group>"; };
 		8AF2AFD62016707F00696E08 /* joypad-glass-southwest.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joypad-glass-southwest.png"; sourceTree = "<group>"; };
 		8AF2AFD72016708000696E08 /* joypad-glass-north.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joypad-glass-north.png"; sourceTree = "<group>"; };
 		8AF2AFD82016708000696E08 /* joypad-glass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joypad-glass.png"; sourceTree = "<group>"; };
@@ -861,9 +861,9 @@
 			files = (
 				8AE0D3C92A9BF2330036A3D9 /* SDL3.framework in Frameworks */,
 				8A599C2224605925006E3252 /* libmt32emu.a in Frameworks */,
+				8A70793E2E0C6D5C009CDF56 /* libfluidsynth.a in Frameworks */,
 				E738C8551A6FFF71003A950D /* libogg.a in Frameworks */,
 				E738C8561A6FFF75003A950D /* libvorbis.a in Frameworks */,
-				8AF119BE2D1F81BA008B25BE /* libfluidlite.a in Frameworks */,
 				8A1C58211FE7D91B00738E40 /* libz.tbd in Frameworks */,
 				8A8340D51F8979D3000696C7 /* AudioToolbox.framework in Frameworks */,
 				8A8340D11F897827000696C7 /* AVFoundation.framework in Frameworks */,
@@ -988,6 +988,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		8A7079362E0C6D44009CDF56 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8A70793B2E0C6D44009CDF56 /* make_tables */,
+				8A70793D2E0C6D44009CDF56 /* libfluidsynth.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		8A8728DD1DD8B011005AC3FC /* sha1 */ = {
 			isa = PBXGroup;
 			children = (
@@ -996,14 +1005,6 @@
 			);
 			name = sha1;
 			path = ../files/sha1;
-			sourceTree = "<group>";
-		};
-		8AF119A92D1F816B008B25BE /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				8AF119AD2D1F816B008B25BE /* libfluidlite.a */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		E700DAF31A6E2CE7006C8BE4 /* audio */ = {
@@ -1683,9 +1684,9 @@
 			children = (
 				8A52528E25718896005AD385 /* SDL.xcodeproj */,
 				8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */,
+				8A7079352E0C6D44009CDF56 /* libfluidsynth.xcodeproj */,
 				E738C8491A6FFF58003A950D /* libogg.xcodeproj */,
 				E738C84F1A6FFF65003A950D /* libvorbis.xcodeproj */,
-				8AF119A82D1F816B008B25BE /* fluidlite.xcodeproj */,
 			);
 			name = Libs;
 			sourceTree = "<group>";
@@ -1760,8 +1761,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 8AF119A92D1F816B008B25BE /* Products */;
-					ProjectRef = 8AF119A82D1F816B008B25BE /* fluidlite.xcodeproj */;
+					ProductGroup = 8A7079362E0C6D44009CDF56 /* Products */;
+					ProjectRef = 8A7079352E0C6D44009CDF56 /* libfluidsynth.xcodeproj */;
 				},
 				{
 					ProductGroup = 8A599C1D246058A9006E3252 /* Products */;
@@ -1803,11 +1804,18 @@
 			remoteRef = 8A599C20246058A9006E3252 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		8AF119AD2D1F816B008B25BE /* libfluidlite.a */ = {
+		8A70793B2E0C6D44009CDF56 /* make_tables */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = make_tables;
+			remoteRef = 8A70793A2E0C6D44009CDF56 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8A70793D2E0C6D44009CDF56 /* libfluidsynth.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libfluidlite.a;
-			remoteRef = 8AF119AC2D1F816B008B25BE /* PBXContainerItemProxy */;
+			path = libfluidsynth.a;
+			remoteRef = 8A70793C2E0C6D44009CDF56 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		E738C84E1A6FFF58003A950D /* libogg.a */ = {
@@ -1867,6 +1875,10 @@
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2177,7 +2189,7 @@
 					./libmt32em/mt32emu/src/c_interface,
 					./libmt32em/mt32emu/src/srchelper/srctools/src,
 					./libmt32em/mt32emu/src/srchelper/srctools/include,
-					./fluidlite/include,
+					./fluidsynth/include,
 				);
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
@@ -2231,7 +2243,7 @@
 					./libmt32em/mt32emu/src/c_interface,
 					./libmt32em/mt32emu/src/srchelper/srctools/src,
 					./libmt32em/mt32emu/src/srchelper/srctools/include,
-					./fluidlite/include,
+					./fluidsynth/include,
 				);
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";

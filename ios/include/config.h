@@ -41,9 +41,13 @@
 
 #define USE_FMOPL_MIDI
 
-#define USE_FLUIDSYNTH_MIDI
-#define USING_FLUIDLITE 1
+/* Enable fluidsynth midi */
+#define USE_FLUIDSYNTH_MIDI 1
 
+/* Using FluidSynth */
+#define USING_FLUIDSYNTH 1
+
+/* Enable mt32emu */
 #define USE_MT32EMU_MIDI
 
 #ifndef MT32EMU_CONFIG_H
@@ -73,6 +77,79 @@
  */
 #	define MT32EMU_EXPORTS_TYPE 3
 #endif
+
+/* FluidSynth defines */
+
+/* OS abstraction to use. */
+#define OSAL_cpp11 1
+
+/* Define to 1 if you have C++ filesystem support */
+#define HAVE_CXX_FILESYSTEM 1
+
+/* whether or not we are supporting CoreMIDI */
+#define COREMIDI_SUPPORT 1
+
+/* Soundfont to load automatically in some use cases */
+#define DEFAULT_SOUNDFONT "default.sf2"
+
+/* Define if compiling the mixer with multi-thread support */
+#define ENABLE_MIXER_THREADS 1
+
+/* Define to 1 if you have the <errno.h> header file. */
+#define HAVE_ERRNO_H 1
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#define HAVE_FCNTL_H 1
+
+/* Define to 1 if you have the <math.h> header file. */
+#define HAVE_MATH_H 1
+
+/* Define to 1 if you have the <limits.h> header file. */
+#define HAVE_LIMITS_H 1
+
+/* Define if the compiler supports VLA */ 
+#define SUPPORTS_VLA 1 
+
+/* Define to 1 if you have the sinf() function. */
+#define HAVE_SINF 1
+
+/* Define to 1 if you have the cosf() function. */
+#define HAVE_COSF 1
+
+/* Define to 1 if you have the fabsf() function. */
+#define HAVE_FABSF 1
+
+/* Define to 1 if you have the powf() function. */
+#define HAVE_POWF 1
+
+/* Define to 1 if you have the sqrtf() function. */
+#define HAVE_SQRTF 1
+
+/* Define to 1 if you have the logf() function. */
+#define HAVE_LOGF 1
+
+/* Define to 1 if you have the socklen_t type. */
+#define HAVE_SOCKLEN_T 1
+
+/* Define to 1 if you have the ANSI C header files. */
+#define STDC_HEADERS 1
+
+/* Define to 1 if you have the inet_ntop() function. */
+#define HAVE_INETNTOP 1
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#define HAVE_SYS_MMAN_H 1
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#define HAVE_STDIO_H 1
+
+/* Define to 1 if you have the <stdarg.h> header file. */
+#define HAVE_STDARG_H 1
+
+/* Define to 1 if you have the <pthread.h> header file. */
+#define HAVE_PTHREAD_H 1
+
+/* end of FluidSynth defines */
 
 /* Enable Midi Sfx */
 /* #undef ENABLE_MIDISFX */
