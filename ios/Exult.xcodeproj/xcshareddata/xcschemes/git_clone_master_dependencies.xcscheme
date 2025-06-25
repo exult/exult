@@ -10,7 +10,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "clone the libraries&apos; master"
-               scriptText = "git clone https://github.com/FluidSynth/fluidsynth ${WORKSPACE_PATH}/../../fluidlite || true&#10;git clone https://github.com/xiph/ogg ${WORKSPACE_PATH}/../../libogg || true&#10;git clone https://github.com/xiph/vorbis ${WORKSPACE_PATH}/../../libvorbis || true&#10;git clone https://github.com/munt/munt ${WORKSPACE_PATH}/../../libmt32emu || true&#10;git clone https://github.com/libsdl-org/sdl ${WORKSPACE_PATH}/../../SDL || true&#10;">
+               scriptText = "git clone https://github.com/FluidSynth/fluidsynth ${WORKSPACE_PATH}/../../fluidsynth || true&#10;git clone https://github.com/xiph/ogg ${WORKSPACE_PATH}/../../libogg || true&#10;git clone https://github.com/xiph/vorbis ${WORKSPACE_PATH}/../../libvorbis || true&#10;git clone https://github.com/munt/munt ${WORKSPACE_PATH}/../../libmt32emu || true&#10;git clone https://github.com/libsdl-org/sdl ${WORKSPACE_PATH}/../../SDL || true&#10;">
             </ActionContent>
          </ExecutionAction>
       </PreActions>
