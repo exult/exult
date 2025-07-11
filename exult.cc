@@ -1051,12 +1051,27 @@ static void Init() {
 		bool skip_splash;
 		config->value("config/gameplay/skip_splash", skip_splash);
 
+		// Check for mod overriding skip_splash
+		bool force_skip_splash = false;
+		if (gamemanager) {
+			ModManager* current_game_mgr
+					= gamemanager->find_game(Game::get_gametitle());
+			if (current_game_mgr && !Game::get_modtitle().empty()) {
+				BaseGameInfo* current_mod = current_game_mgr->get_mod(
+						Game::get_modtitle(), false);
+				ModInfo* mod_info = dynamic_cast<ModInfo*>(current_mod);
+				if (mod_info && mod_info->has_force_skip_splash_set()) {
+					force_skip_splash = mod_info->get_force_skip_splash();
+				}
+			}
+		}
+
 		// Make sure we have a proper palette before playing the intro.
 		gwin->get_pal()->load(
 				BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX),
 				EXULT_FLX_EXULT0_PAL);
 		gwin->get_pal()->apply();
-		if (!skip_splash
+		if ((!skip_splash && !force_skip_splash)
 			&& (Game::get_game_type() != EXULT_DEVEL_GAME
 				|| U7exists(INTRO_DAT))) {
 			if (midi) {

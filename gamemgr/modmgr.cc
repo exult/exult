@@ -215,6 +215,29 @@ ModInfo::ModInfo(
 			"<" + system_path_tag + "_SAVEGAME>", get_system_path(savedir));
 	U7mkdir(savedir.c_str(), 0755);
 
+	config_path = "mod_info/skip_splash";
+	string skip_splash_str;
+	has_force_skip_splash = modconfig.key_exists(config_path);
+	if (has_force_skip_splash) {
+		modconfig.value(config_path, skip_splash_str);
+		force_skip_splash
+				= (skip_splash_str == "yes" || skip_splash_str == "true");
+	} else {
+		force_skip_splash = false;
+	}
+
+	config_path = "mod_info/force_digital_music";
+	string force_digital_music_str;
+	has_force_digital_music = modconfig.key_exists(config_path);
+	if (has_force_digital_music) {
+		modconfig.value(config_path, force_digital_music_str);
+		force_digital_music
+				= (force_digital_music_str == "yes"
+				   || force_digital_music_str == "true");
+	} else {
+		force_digital_music = false;
+	}
+
 #ifdef DEBUG_PATHS
 	cout << "path prefix of " << cfgname << " mod " << mod_title
 		 << " is: " << system_path_tag << endl;
@@ -226,6 +249,9 @@ ModInfo::ModInfo(
 		 << " patch directory to: " << get_system_path(patchdir) << endl;
 	cout << "setting " << cfgname
 		 << " source directory to: " << get_system_path(sourcedir) << endl;
+	cout << "setting " << cfgname
+		 << " Force Skip Splash to: " << (force_skip_splash ? "yes" : "no")
+		 << endl;
 #endif
 }
 

@@ -158,6 +158,10 @@ class ModInfo : public BaseGameInfo {
 protected:
 	std::string configfile;
 	bool        compatible;
+	bool        force_skip_splash;
+	bool        has_force_skip_splash;
+	bool        force_digital_music;
+	bool        has_force_digital_music;
 
 public:
 	ModInfo(Exult_Game game, Game_Language lang, const std::string& name,
@@ -172,6 +176,22 @@ public:
 		cfg  = new Configuration(configfile, "modinfo");
 		root = "mod_info/";
 		return true;
+	}
+
+	bool get_force_skip_splash() const {
+		return force_skip_splash;
+	}
+
+	bool has_force_skip_splash_set() const {
+		return has_force_skip_splash;
+	}
+
+	bool get_force_digital_music() const {
+		return force_digital_music;
+	}
+
+	bool has_force_digital_music_set() const {
+		return has_force_digital_music;
 	}
 };
 

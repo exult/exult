@@ -421,6 +421,20 @@ bool Game::show_menu(bool skip) {
 
 	top_menu();
 	MenuList* menu = nullptr;
+	// Check for mod override
+	bool force_skip_splash = false;
+	if (gamemanager) {
+		ModManager* current_game_mgr
+				= gamemanager->find_game(Game::get_gametitle());
+		if (current_game_mgr && !Game::get_modtitle().empty()) {
+			BaseGameInfo* current_mod
+					= current_game_mgr->get_mod(Game::get_modtitle(), false);
+			ModInfo* mod_info = dynamic_cast<ModInfo*>(current_mod);
+			if (mod_info && mod_info->has_force_skip_splash_set()) {
+				force_skip_splash = mod_info->get_force_skip_splash();
+			}
+		}
+	}
 
 	constexpr static const std::array menuchoices{0x04, 0x05, 0x08, 0x06,
 												  0x11, 0x12, 0x07};
@@ -437,6 +451,11 @@ bool Game::show_menu(bool skip) {
 			menu       = new MenuList();
 			int offset = 0;
 			for (size_t i = 0; i < menuchoices.size(); i++) {
+				// Skip the introduction option if a mod force_skip_splash
+				if (i == 0 && force_skip_splash) {
+					continue;
+				}
+
 				if ((i != 4 && i != 5)
 					|| (i == 4 && U7exists("<SAVEGAME>/quotes.flg"))
 					|| (i == 5 && U7exists("<SAVEGAME>/endgame.flg"))) {
