@@ -185,6 +185,10 @@ public:
 
 	bool ogg_is_playing() const;
 
+	void set_ogg_enabled(bool enabled) {
+		ogg_enabled = enabled;
+	}
+
 private:
 	bool ogg_play_track(const std::string& filename, int num, bool repeat);
 	void ogg_stop_track();

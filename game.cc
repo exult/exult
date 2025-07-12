@@ -423,6 +423,7 @@ bool Game::show_menu(bool skip) {
 	MenuList* menu = nullptr;
 	// Check for mod override
 	bool force_skip_splash = false;
+	bool clean_menu        = false;
 	if (gamemanager) {
 		ModManager* current_game_mgr
 				= gamemanager->find_game(Game::get_gametitle());
@@ -432,6 +433,9 @@ bool Game::show_menu(bool skip) {
 			ModInfo* mod_info = dynamic_cast<ModInfo*>(current_mod);
 			if (mod_info && mod_info->has_force_skip_splash_set()) {
 				force_skip_splash = mod_info->get_force_skip_splash();
+			}
+			if (mod_info && mod_info->has_clean_menu_set()) {
+				clean_menu = mod_info->get_clean_menu();
 			}
 		}
 	}
@@ -451,11 +455,23 @@ bool Game::show_menu(bool skip) {
 			menu       = new MenuList();
 			int offset = 0;
 			for (size_t i = 0; i < menuchoices.size(); i++) {
-				// Skip the introduction option if a mod force_skip_splash
-				if (i == 0 && force_skip_splash) {
-					continue;
+				// Skip menu options based on mod settings
+				bool skip_option = false;
+
+				// Skip 0x04 (View Introduction) if mods force_skip_splash
+				if (force_skip_splash && i == 0) {
+					skip_option = true;
 				}
 
+				// Skip 0x04 (View Introduction), 0x06 (Credits), 0x11 (Quotes),
+				// 0x12 (End Game) if mods enable clean_menu
+				if (clean_menu && (i == 0 || i == 3 || i == 4 || i == 5)) {
+					skip_option = true;
+				}
+
+				if (skip_option) {
+					continue;
+				}
 				if ((i != 4 && i != 5)
 					|| (i == 4 && U7exists("<SAVEGAME>/quotes.flg"))
 					|| (i == 5 && U7exists("<SAVEGAME>/endgame.flg"))) {

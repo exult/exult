@@ -226,6 +226,16 @@ ModInfo::ModInfo(
 		force_skip_splash = false;
 	}
 
+	config_path = "mod_info/clean_menu";
+	string clean_menu_str;
+	has_clean_menu = modconfig.key_exists(config_path);
+	if (has_clean_menu) {
+		modconfig.value(config_path, clean_menu_str);
+		clean_menu = (clean_menu_str == "yes" || clean_menu_str == "true");
+	} else {
+		clean_menu = false;
+	}
+
 	config_path = "mod_info/force_digital_music";
 	string force_digital_music_str;
 	has_force_digital_music = modconfig.key_exists(config_path);
@@ -251,6 +261,12 @@ ModInfo::ModInfo(
 		 << " source directory to: " << get_system_path(sourcedir) << endl;
 	cout << "setting " << cfgname
 		 << " Force Skip Splash to: " << (force_skip_splash ? "yes" : "no")
+		 << endl;
+	cout << "setting " << cfgname
+		 << " Clean Menu to: " << (clean_menu ? "yes" : "no")
+		 << endl;
+	cout << "forcing " << cfgname
+		 << " Digital Music to: " << (force_digital_music ? "yes" : "no")
 		 << endl;
 #endif
 }

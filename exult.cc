@@ -1051,8 +1051,9 @@ static void Init() {
 		bool skip_splash;
 		config->value("config/gameplay/skip_splash", skip_splash);
 
-		// Check for mod overriding skip_splash
-		bool force_skip_splash = false;
+		// Check for mod overrides
+		bool force_skip_splash   = false;
+		bool force_digital_music = false;
 		if (gamemanager) {
 			ModManager* current_game_mgr
 					= gamemanager->find_game(Game::get_gametitle());
@@ -1063,6 +1064,17 @@ static void Init() {
 				if (mod_info && mod_info->has_force_skip_splash_set()) {
 					force_skip_splash = mod_info->get_force_skip_splash();
 				}
+				if (mod_info->has_force_digital_music_set()) {
+					force_digital_music = mod_info->get_force_digital_music();
+				}
+			}
+		}
+
+		// Digital music if forced by mod
+		if (force_digital_music) {
+			MyMidiPlayer* midi = audio->get_midi();
+			if (midi) {
+				midi->set_ogg_enabled(true);
 			}
 		}
 

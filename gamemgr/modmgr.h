@@ -160,6 +160,8 @@ protected:
 	bool        compatible;
 	bool        force_skip_splash;
 	bool        has_force_skip_splash;
+	bool        clean_menu;
+	bool        has_clean_menu;
 	bool        force_digital_music;
 	bool        has_force_digital_music;
 
@@ -184,6 +186,14 @@ public:
 
 	bool has_force_skip_splash_set() const {
 		return has_force_skip_splash;
+	}
+
+	bool get_clean_menu() const {
+		return clean_menu;
+	}
+
+	bool has_clean_menu_set() const {
+		return has_clean_menu;
 	}
 
 	bool get_force_digital_music() const {
