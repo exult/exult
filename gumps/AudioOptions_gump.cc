@@ -44,6 +44,7 @@
 #include "MidiDriver.h"
 #include "Mixer_gump.h"
 #include "XMidiFile.h"
+#include "Yesno_gump.h"
 #include "exult.h"
 #include "exult_constants.h"
 #include "exult_flx.h"
@@ -518,6 +519,40 @@ void AudioOptions_gump::save_settings() {
 		track_playing = midi->get_current_track();
 		looping       = midi->is_repeating();
 	}
+
+	// Check if mod forces digital music but user is trying to disable it
+	if (midi_ogg_enabled == 0) {
+		if (!Game::get_modtitle().empty()) {
+			std::string mod_cfg_path = get_system_path("<MODS>") + "/"
+									   + Game::get_modtitle() + ".cfg";
+			if (U7exists(mod_cfg_path)) {
+				Configuration modconfig(mod_cfg_path, "modinfo");
+				std::string   force_digital_music_str;
+				bool          has_force_digital_music
+						= modconfig.key_exists("mod_info/force_digital_music");
+				if (has_force_digital_music) {
+					modconfig.value(
+							"mod_info/force_digital_music",
+							force_digital_music_str);
+					bool force_digital_music
+							= (force_digital_music_str == "yes"
+							   || force_digital_music_str == "true");
+					if (force_digital_music) {
+						std::string warning_message
+								= "The mod \"" + Game::get_modtitle()
+								  + "\" requires Digital Music.\nDisable "
+									"anyway?";
+						if (!Yesno_gump::ask(
+									warning_message.c_str(), nullptr,
+									"TINY_BLACK_FONT")) {
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	config->set("config/audio/sample_rate", sample_rates[sample_rate], false);
 	config->set("config/audio/stereo", speaker_type ? "yes" : "no", false);
 	if (sample_rates[sample_rate] != static_cast<uint32>(o_sample_rate)
