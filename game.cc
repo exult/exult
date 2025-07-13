@@ -488,8 +488,35 @@ bool Game::show_menu(bool skip) {
 			menu->set_selection(2);
 		}
 
-		bool      created = false;
-		const int choice  = menu->handle_events(gwin);
+		bool created = false;
+
+		if (!Game::get_modtitle().empty()) {
+			string display_text
+					= Game::get_modtitle();    // Fallback to mod title
+
+			if (gamemanager) {
+				ModManager* current_game_mgr
+						= gamemanager->find_game(Game::get_gametitle());
+				if (current_game_mgr) {
+					BaseGameInfo* current_mod = current_game_mgr->get_mod(
+							Game::get_modtitle(), false);
+					ModInfo* mod_info = dynamic_cast<ModInfo*>(current_mod);
+					if (mod_info) {
+						display_text = mod_info->get_menu_string();
+					}
+				}
+			}
+
+			std::shared_ptr<Font> font = fontManager.get_font("MENU_FONT");
+			font->draw_text(
+					ibuf,
+					gwin->get_width()
+							- font->get_text_width(display_text.c_str()) - 5,
+					gwin->get_height() - font->get_text_height() - 5,
+					display_text.c_str());
+		}
+
+		const int choice = menu->handle_events(gwin);
 		switch (choice) {
 		case -1:    // Exit
 #ifdef SDL_PLATFORM_IOS
