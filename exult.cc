@@ -1072,7 +1072,6 @@ static void Init() {
 
 		// Digital music if forced by mod
 		if (force_digital_music) {
-			MyMidiPlayer* midi = audio->get_midi();
 			if (midi) {
 				midi->set_ogg_enabled(true);
 			}
