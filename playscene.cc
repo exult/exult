@@ -506,7 +506,6 @@ void ScenePlayer::play_flic_with_audio(
 					},
 					cmd_variant);
 		}
-
 	} catch (const UserSkipException&) {
 		audio->stop_music();
 		for (int id : audio_ids) {
@@ -556,7 +555,6 @@ void ScenePlayer::show_delay_text(const TextSection& section) {
 		}
 
 		win->ShowFillGuardBand();
-
 	} catch (const UserSkipException&) {
 		// Stop all audio and re-throw to exit the scene player.
 		Audio* audio = Audio::get_ptr();
@@ -743,7 +741,6 @@ void ScenePlayer::play_scene() {
 		wait_for_audio_completion();
 
 		finish_scene();
-
 	} catch (const UserSkipException&) {
 		finish_scene();
 	}
@@ -940,7 +937,6 @@ void ScenePlayer::display_subtitle(const SubtitleCommand& cmd) {
                 alignment, cmd.text, font, screen_center);
 
 		font->draw_text(win->get_ib8(), x, y, cmd.text.c_str());
-
 	} catch (const std::exception& e) {
 		std::cerr << "Play_Scene Error: displaying subtitle: " << e.what()
 				  << std::endl;

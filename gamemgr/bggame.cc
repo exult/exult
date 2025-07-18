@@ -435,7 +435,6 @@ void BG_Game::play_intro() {
 		********************************************************************/
 
 		scene_moongate();
-
 	} catch (const UserBreakException& /*x*/) {
 	}
 

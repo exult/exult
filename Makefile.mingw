@@ -564,6 +564,8 @@ exult_studio$(EXEEXT): $(BG_PAPERDOLL) $(FLEXES) $(ES_OBJS)
 exultstudioico.o: $(SRC)/win32/exultstudioico.rc $(SRC)/win32/exultstudio.ico win32/exult_studio.exe.manifest
 	windres --include-dir $(SRC)/win32 $(SRC)/win32/exultstudioico.rc $@
 
+playscene.o: data/exult_flx.h
+
 ifneq ($(PLUGIN_SRC),$())
 tools/gimp_plugin/u7shp.o: tools/gimp_plugin/$(PLUGIN_SRC).cc
 	$(CXX) $(CXXFLAGS) $(PLUGIN_CPPFLAGS) -c -o $(@) tools/gimp_plugin/$(PLUGIN_SRC).cc
