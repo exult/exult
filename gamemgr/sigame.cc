@@ -38,6 +38,7 @@
 #include "mappatch.h"
 #include "miscinf.h"
 #include "palette.h"
+#include "playscene.h"
 #include "shapeid.h"
 #include "span.h"
 #include "touchui.h"
@@ -257,6 +258,11 @@ static int get_frame() {
 void SI_Game::play_intro() {
 	Audio* audio = Audio::get_ptr();
 	audio->stop_music();
+	if (scene_available("intro")) {
+		// Play the custom intro scene
+		play_scene("intro");
+		return;
+	}
 	MyMidiPlayer* midi = audio->get_midi();
 	if (midi) {
 		midi->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_INTRO);
@@ -1102,6 +1108,11 @@ void SI_Game::end_game(bool success, bool within_game) {
 	waitforspeech();
 	Audio* audio = Audio::get_ptr();
 	audio->stop_music();
+	if (scene_available("endgame")) {
+		// Play the custom endgame scene
+		play_scene("endgame");
+		return;
+	}
 	MyMidiPlayer* midi = audio->get_midi();
 	if (midi) {
 		midi->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_ENDGAME);
@@ -1409,6 +1420,11 @@ void SI_Game::end_game(bool success, bool within_game) {
 }
 
 void SI_Game::show_quotes() {
+	if (scene_available("quotes")) {
+		// Play the custom quotes scene
+		play_scene("quotes");
+		return;
+	}
 	Audio::get_ptr()->start_music(
 			32, false, MyMidiPlayer::Force_None, MAINSHP_FLX);
 	TextScroller quotes(
@@ -1418,6 +1434,12 @@ void SI_Game::show_quotes() {
 }
 
 void SI_Game::show_credits() {
+	if (scene_available("credits")) {
+		// Play the custom credits scene
+		play_scene("credits");
+		U7open_out("<SAVEGAME>/quotes.flg");
+		return;
+	}
 	pal->load(MAINSHP_FLX, PATCH_MAINSHP, 26);
 	Audio::get_ptr()->start_music(
 			30, false, MyMidiPlayer::Force_None, MAINSHP_FLX);

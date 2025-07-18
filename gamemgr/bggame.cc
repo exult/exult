@@ -43,6 +43,7 @@
 #include "miscinf.h"
 #include "modmgr.h"
 #include "palette.h"
+#include "playscene.h"
 #include "shapeid.h"
 #include "touchui.h"
 #include "txtscroll.h"
@@ -390,6 +391,11 @@ BG_Game::BG_Game() : shapes(ENDSHAPE_FLX, -1, PATCH_ENDSHAPE) {
 void BG_Game::play_intro() {
 	Audio* audio = Audio::get_ptr();
 	audio->stop_music();
+	if (scene_available("intro")) {
+		// Play the custom intro scene
+		play_scene("intro");
+		return;
+	}
 	MyMidiPlayer* midi = audio->get_midi();
 	if (midi) {
 		midi->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_INTRO);
@@ -429,6 +435,7 @@ void BG_Game::play_intro() {
 		********************************************************************/
 
 		scene_moongate();
+
 	} catch (const UserBreakException& /*x*/) {
 	}
 
@@ -1731,7 +1738,11 @@ std::vector<unsigned int> BG_Game::get_congratulations_messages() {
 
 void BG_Game::end_game(bool success, bool within_game) {
 	waitforspeech();
-
+	if (scene_available("endgame")) {
+		// Play the custom endgame scene
+		play_scene("endgame");
+		return;
+	}
 	std::shared_ptr<Font> font = fontManager.get_font("MENU_FONT");
 
 	if (!success) {
@@ -2158,6 +2169,11 @@ void BG_Game::end_game(bool success, bool within_game) {
 }
 
 void BG_Game::show_quotes() {
+	if (scene_available("quotes")) {
+		// Play the custom quotes scene
+		play_scene("quotes");
+		return;
+	}
 	Audio::get_ptr()->start_music(
 			quotes_midi, false, MyMidiPlayer::Force_None, INTROMUS);
 	TextScroller quotes(
@@ -2167,6 +2183,12 @@ void BG_Game::show_quotes() {
 }
 
 void BG_Game::show_credits() {
+	if (scene_available("credits")) {
+		// Play the custom credits scene
+		play_scene("credits");
+		U7open_out("<SAVEGAME>/quotes.flg");
+		return;
+	}
 	pal->load(INTROPAL_DAT, PATCH_INTROPAL, 6);
 	Audio::get_ptr()->start_music(
 			credits_midi, false, MyMidiPlayer::Force_None, INTROMUS);

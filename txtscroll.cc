@@ -31,6 +31,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <sstream>
 
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
@@ -54,10 +55,10 @@ using std::strncmp;
 using std::unique_ptr;
 using std::vector;
 
+// Legacy constructor
 TextScroller::TextScroller(
-		const char* archive, int index, std::shared_ptr<Font> fnt, Shape* shp) {
-	font        = fnt;
-	shapes      = shp;
+		const char* archive, int index, std::shared_ptr<Font> fnt, Shape* shp)
+		: font(fnt), shapes(shp) {
 	auto txtobj = [&]() {
 		// Hack to patch MAINSHP_FLX.
 		if (!strncmp(archive, MAINSHP_FLX, sizeof(MAINSHP_FLX) - 1)) {
@@ -65,38 +66,40 @@ TextScroller::TextScroller(
 		}
 		return U7multiobject(archive, index);
 	}();
-	size_t     len;
-	const char CR = '\r';
-	const char LF = '\n';
+	size_t len;
 
 	const unique_ptr<unsigned char[]> txt = txtobj.retrieve(len);
 	if (!txt || len <= 0) {
-		text = new vector<string>();
 		return;
 	}
-	char* ptr = reinterpret_cast<char*>(txt.get());
-	char* end = ptr + len;
+	std::string        content(reinterpret_cast<char*>(txt.get()), len);
+	std::istringstream stream(content);
+	load_from_stream(stream);
+}
 
-	text = new vector<string>();
-	while (ptr < end) {
-		char* start = ptr;
-		ptr         = strchr(ptr, LF);
-		if (ptr) {
-			if (*(ptr - 1) == CR) {    // It's CR/LF
-				*(ptr - 1) = 0;
-			} else {
-				*ptr = 0;
-			}
-			text->emplace_back(start);
-			ptr += 1;
-		} else {
-			break;
-		}
-	}
+// Modern constructor for in-memory text
+TextScroller::TextScroller(
+		const std::string& text_content, std::shared_ptr<Font> fnt, Shape* shp)
+		: font(fnt), shapes(shp) {
+	std::istringstream stream(text_content);
+	load_from_stream(stream);
 }
 
 TextScroller::~TextScroller() {
-	delete text;
+	// No longer need to 'delete text;'
+}
+
+void TextScroller::load_from_stream(std::istream& stream) {
+	string     line;
+	const char CR = '\r';
+
+	while (std::getline(stream, line)) {
+		// Handle CR/LF endings
+		if (!line.empty() && line.back() == CR) {
+			line.pop_back();
+		}
+		lines.push_back(line);
+	}
 }
 
 int TextScroller::show_line(
@@ -111,15 +114,14 @@ int TextScroller::show_line(
 	//  \R    right aligned to left center line
 	//  |     carriage return (stay on same line)
 	//  #xxx  display character with number xxx
-	const string str = (*text)[index];
-	const char*  ptr = str.c_str();
-	char*        txt = new char[strlen(ptr) + 1];
+	const string& str = lines[index];
+	const char*   ptr = str.c_str();
+	char*         txt = new char[strlen(ptr) + 1];
 
-	char*     txtptr = txt;
-	int       ypos   = y;
-	const int vspace = 2;    // 2 extra pixels between lines
-	// Align text to the left by default
-	int       align    = -1;
+	char*     txtptr   = txt;
+	int       ypos     = y;
+	const int vspace   = 2;    // 2 extra pixels between lines
+	int       align    = -2;
 	int       xpos     = left;
 	const int center   = (right + left) / 2;
 	bool      add_line = true;
@@ -149,7 +151,9 @@ int TextScroller::show_line(
 			}
 			*txtptr = 0;
 
-			if (align < 0) {
+			if (align == -2) {
+				xpos = left + 10;
+			} else if (align == -1) {
 				xpos = center - font->get_text_width(txt);
 			} else if (align == 0) {
 				xpos = center - font->get_text_width(txt) / 2;
@@ -195,7 +199,7 @@ bool TextScroller::run(Game_window* gwin) {
 	const int          endy      = topy + 200;
 	uint32             starty    = endy;
 	uint32             startline = 0;
-	const unsigned int maxlines  = text->size();
+	const unsigned int maxlines  = lines.size();
 	if (!maxlines) {
 		gwin->clear_screen();
 		gwin->show(true);
@@ -206,7 +210,6 @@ bool TextScroller::run(Game_window* gwin) {
 	SDL_Event event;
 	uint32    next_time = SDL_GetTicks() + 200;
 	uint32    incr      = 120;
-	//  pal.apply();
 	gwin->get_pal()->apply();
 
 	while (looping) {
@@ -229,7 +232,6 @@ bool TextScroller::run(Game_window* gwin) {
 				}
 			}
 		} while (ypos < endy);
-		//		pal.apply();
 		gwin->show(true);
 		do {
 			// this could be a problem when too many events are produced
@@ -265,8 +267,4 @@ bool TextScroller::run(Game_window* gwin) {
 	gwin->clear_screen();
 	gwin->show(true);
 	return complete;
-}
-
-int TextScroller::get_count() {
-	return text->size();
 }

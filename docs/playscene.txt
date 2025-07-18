@@ -1,0 +1,146 @@
+Playscene 
+=========
+
+Allows creating scripted cutscenes using the media Exult knows how to handle.
+Namely FLIC animations, audio files OGG, WAV, VOC and also playback of a games'
+music and sfx tracks.
+
+To start a scripted scene use
+		if (scene_available("name")) {
+			play_scene("name");
+		}
+
+'scene_available("name")' looks for the files name_info.txt and name.flx in
+a game's or a mod's patch folder, which play_scene("name") will play back.
+
+Exult will automatically look for intro, endgame, quotes and credits
+cutscenes in the above mentioned folders (files: intro_info.txt,
+intro.flx, endgame_info.txt, ...) and play these instead of the orignal.
+
+The script is loosely based on the format we use for de-hardcoded shape
+informations.
+
+There are three possible sections:
+	- version (only used if we significantly alter the format and need
+	  to discard older scripts)
+
+	- scene: This is for playing FLIC animations, audio and subtitles.
+	
+	- text: This is for displaying text, either as scrolling (bottom -> top)
+	  or as pages that are shwon with a dely. Audio can be played back as well.
+
+You can have several scene and text sections which will be played in the 
+written order.
+
+In the future it might be possible to start cutscenes via usecode.
+
+
+Example Script:
+---------------
+
+%%section version
+:1
+%%endsection
+
+%%section scene
+#		:flic/index_number/fade_in/fade_out
+#
+#		:sfx/sfx_number/frame_number/continue
+#
+#		:track/track_number/frame_number/continue
+#
+#		:ogg/index_number/frame_number/continue
+#
+#		:wave/index_number/frame_number/continue
+#
+#		:voc/index_number/frame_number/continue
+#		When speech is disabled, VOCs will not play.
+#
+#		:subtitle/index_number/frame_number/line_number/font/color/duration
+#		Subtitles are dependent on our global options. Color is not working atm.
+#
+#		index_number is the order of files in the corresponding flx file.
+#
+#		frame_number of the playing flic on which audio starts playing
+#
+#		continue lets audio play continue playing even though it's scene or 
+#		text section has finished playing.
+#
+
+:flic/0/0/0
+:track/22/10/1
+:sfx/36/0/0
+
+%%endsection
+
+%%section text
+#		:text/index_number/font/color/scroll_or_delay(duration)
+#
+#		:sfx/sfx_number/textblock_number/continue
+#
+#		:track/track_number/textblock_number/continue
+#		Tracks' volume can only be changed by the Volume Mixer.
+#
+#		:ogg/index_number/textblock_number/continue
+#
+#		:wave/index_number/textblock_number/continue
+#
+#		:voc/index_number/textblock_number/continue
+#
+#		index_number is the order of files in the corresponding flx file.
+#
+#		font switches between our Credits font and Hot font. The shape is the same
+#		but the possible colors are different.
+#
+#		Credits font colors: 0=light orange,  1=bright orange , 2=green, 3=white,
+#		4=bright pink, 5=white & grey screen, 6=bright green, 7=dark pink,
+#		8=white & red screen, 9=white & dark purple screen, 10=pink, 11=pink & dark reddish screen,
+#		12=menu blue, 13=green/yellow, 14=deep red, 15=yellow, 16=grey, 17=pink/brownred
+#
+#		Hot font colors:  0=light orange, 1=orange, 2=green, 3=white/grey,
+#		4=bright orange, 5=orange & grey screen, 6=yellow, 7=dark orange, 
+#		8=yellow & red screen, 9=yellow & dark purple screen, 10=dark orange, 11=dark orange & dark reddish screen,
+#		12=lighter blue, 13=dark grey/yellow, 14=deep blue, 15=washed out pink, 16=bright green,  17=pink/brownred
+#
+#		textblock_number counts the blocks of texts (starting with 0) that are sperated by empty lines and 
+#		on which audio will start playing. Other than delay text, scrolling text only allows instant start 
+#		of audio (set to 0)
+#
+#		continue lets audio play continue playing even though it's scene or 
+#		text section has finished playing.
+#
+#		scroll_or_delay(duration): 0 for scrolling text, 1 for text in blocks that have a delay of 3000ms
+#		before the next block is shown. Any number higher than 1 is the new delay time in milliseconds.
+#
+#		Text format: 
+#			- Lines that begin with \C are centered.
+#			- Lines that begin with \L are left alligned to the right of the center.
+#			- Lines that begin with \R are right alligned to the left of the center.
+#			- Lines without these begin at the left with 10px margin.
+#			- empty lines will trigger a new page in delayed text or show as empty in scrolling text.
+#
+#		Text example:
+#		Unformatted text begins at the left with 10px margin.
+#		\CCentered text.
+#		\LLeft aligned to the right of the center.
+#		\RRight aligned to the left of the center.
+#
+
+:text/1/0/12/1
+:track/22/0/0
+:sfx/36/0/0
+
+%%endsection
+
+
+Notes and limitations
+---------------------
+
+- Audio volume is tied to the global volume set in the Volume Mixer. Track is using the music volume, sfx, wave and ogg
+  the sound effects volume and voc the speech volume.
+- As ogg's can and should be played regardless of the digital music setting, ogg playback is treated as sfx playback.
+- Scrolling text only allows starting audio at the beginning as our textscroll function has no means to tell us its state.
+- Scrolling text speed cannot be set but sped up by holding down SHIFT.
+- Subtitles' color cannot be set as these depend on the palette of the underlying flic animation.
+- The listed colors are for a BG game, in case of SI the colors are different again. You might just have to test it out.
+- ESC stops the cutscene completely, SPACE skips to the enxt section.

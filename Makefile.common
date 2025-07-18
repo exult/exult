@@ -30,6 +30,7 @@ MAIN_OBJS:=actions.o \
 	palette.o \
 	party.o \
 	paths.o \
+	playscene.o \
 	readnpcs.o \
 	schedule.o \
 	shapeid.o \

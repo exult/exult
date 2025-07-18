@@ -260,6 +260,9 @@
     <ClCompile Include="..\..\paths.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\playscene.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\readnpcs.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -850,6 +853,9 @@
     <ClInclude Include="..\..\paths.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClCompile Include="..\..\playscene.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClInclude Include="..\..\rect.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -99,6 +99,8 @@ EXULTSOURCES =	\
 	paths.cc	\
 	paths.h		\
 	headers/pent_include.h	\
+	playscene.cc	\
+	playscene.h	\
 	readnpcs.cc	\
 	rect.h		\
 	schedule.cc	\

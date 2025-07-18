@@ -19,6 +19,7 @@
 #ifndef TEXT_SCROLLER_H
 #define TEXT_SCROLLER_H
 
+#include <istream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -30,18 +31,28 @@ class Palette;
 
 class TextScroller {
 private:
-	std::shared_ptr<Font>     font;
-	Shape*                    shapes;
-	std::vector<std::string>* text;
+	std::shared_ptr<Font>    font;
+	Shape*                   shapes;
+	std::vector<std::string> lines;
+	void                     load_from_stream(std::istream& stream);
 
 public:
+	// reading from legacy U7multiobject
 	TextScroller(
-			const char* archive, int index, std::shared_ptr<Font> fnt,
+			const char* archive, int index, std::shared_ptr<Font> font,
+			Shape* shp);
+	// reading from an in-memory string
+	TextScroller(
+			const std::string& text_content, std::shared_ptr<Font> font,
 			Shape* shp);
 	~TextScroller();
+
 	bool run(Game_window* gwin);
 	int  show_line(Game_window* gwin, int left, int right, int y, int index);
-	int  get_count();
+
+	int get_count() const {
+		return lines.size();
+	}
 };
 
 #endif

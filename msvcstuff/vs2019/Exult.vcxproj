@@ -473,6 +473,7 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClCompile Include="..\..\pathfinder\PathFinder.cc" />
     <ClCompile Include="..\..\pathfinder\Zombie.cc" />
     <ClCompile Include="..\..\paths.cc" />
+    <ClCompile Include="..\..\pplayscene.cc" />
     <ClCompile Include="..\..\readnpcs.cc" />
     <ClCompile Include="..\..\schedule.cc" />
     <ClCompile Include="..\..\server\objserial.cc" />
@@ -709,6 +710,7 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClInclude Include="..\..\pathfinder\PathFinder.h" />
     <ClInclude Include="..\..\pathfinder\Zombie.h" />
     <ClInclude Include="..\..\paths.h" />
+    <ClInclude Include="..\..\playscene.h" />
     <ClInclude Include="..\..\rect.h" />
     <ClInclude Include="..\..\schedule.h" />
     <ClInclude Include="..\..\server\objserial.h" />

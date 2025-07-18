@@ -34,6 +34,7 @@
 		8A33B5EC2C2051B800075AF4 /* ConfigSetting_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5EB2C2051B800075AF4 /* ConfigSetting_widget.cc */; };
 		8A33B5EF2C2051B800075AF4 /* AdvancedOptions_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5EE2C2051B800075AF4 /* AdvancedOptions_gump.cc */; };
 		8A38EB4F2E29B4D200450868 /* liblibfluidlite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A38EB4E2E29B4D200450868 /* liblibfluidlite.a */; };
+		8A38EB772E2AA11300450868 /* playscene.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A38EB762E2AA11300450868 /* playscene.cc */; };
 		8A45A3B8247C068500F12F4D /* joythumb-glass.png in Resources */ = {isa = PBXBuildFile; fileRef = 8A45A3AC247C068500F12F4D /* joythumb-glass.png */; };
 		8A599C2224605925006E3252 /* libmt32emu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A599C21246058A9006E3252 /* libmt32emu.a */; };
 		8A6013712057CFAD00FCA555 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A6013662057CF0C00FCA555 /* Metal.framework */; };
@@ -364,6 +365,8 @@
 		8A38EB492E29B49400450868 /* libfluidlite.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = libfluidlite.xcodeproj; sourceTree = "<group>"; };
 		8A38EB4C2E29B4C200450868 /* liblibfluidlite.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = liblibfluidlite.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A38EB4E2E29B4D200450868 /* liblibfluidlite.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = liblibfluidlite.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		8A38EB752E2AA11300450868 /* playscene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = playscene.h; path = ../playscene.h; sourceTree = SOURCE_ROOT; };
+		8A38EB762E2AA11300450868 /* playscene.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = playscene.cc; path = ../playscene.cc; sourceTree = SOURCE_ROOT; };
 		8A45A3AC247C068500F12F4D /* joythumb-glass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joythumb-glass.png"; sourceTree = "<group>"; };
 		8A52528E25718896005AD385 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = SDL/Xcode/SDL/SDL.xcodeproj; sourceTree = "<group>"; };
 		8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = libmt32emu.xcodeproj; sourceTree = "<group>"; };
@@ -1152,6 +1155,8 @@
 				E700DC751A6E30A7006C8BE4 /* party.h */,
 				E700DC761A6E30A7006C8BE4 /* paths.cc */,
 				E700DC771A6E30A7006C8BE4 /* paths.h */,
+				8A38EB752E2AA11300450868 /* playscene.h */,
+				8A38EB762E2AA11300450868 /* playscene.cc */,
 				E700DC781A6E30A7006C8BE4 /* readnpcs.cc */,
 				E700DC791A6E30A7006C8BE4 /* rect.h */,
 				E700DC7A1A6E30A7006C8BE4 /* schedule.cc */,
@@ -2033,6 +2038,7 @@
 				E700DD651A6E3121006C8BE4 /* vgafile.cc in Sources */,
 				E700DD3B1A6E3121006C8BE4 /* items.cc in Sources */,
 				E700DF4F1A6E34C6006C8BE4 /* ucmachine.cc in Sources */,
+				8A38EB772E2AA11300450868 /* playscene.cc in Sources */,
 				E700DBBA1A6E2CE7006C8BE4 /* Audio.cc in Sources */,
 				E700DC1F1A6E2CE7006C8BE4 /* XMidiFile.cpp in Sources */,
 				E700DC9F1A6E30A7006C8BE4 /* gamerend.cc in Sources */,
