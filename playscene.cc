@@ -170,10 +170,11 @@ bool ScenePlayer::parse_scene_section(
 		const string& type_str = parts[0];
 
 		if (type_str == "flic") {
-			commands.emplace_back(FlicCommand{
-					.index           = safe_stoi(parts, 1),
-					.fade_in_frames  = safe_stoi(parts, 2),
-					.fade_out_frames = safe_stoi(parts, 3)});
+			int index           = safe_stoi(parts, 1);
+			int fade_in_frames  = safe_stoi(parts, 2);
+			int fade_out_frames = safe_stoi(parts, 3);
+			commands.emplace_back(
+					FlicCommand{index, fade_in_frames, fade_out_frames});
 		} else if (type_str == "subtitle") {
 			if (parts.size() < 6) {
 				continue;
@@ -209,12 +210,12 @@ bool ScenePlayer::parse_scene_section(
 				audio_type = AudioCommand::Type::VOC;
 			}
 
+			int index          = safe_stoi(parts, 1);
+			int start_frame    = safe_stoi(parts, 2);
+			int stop_condition = safe_stoi(parts, 3);
+
 			commands.emplace_back(AudioCommand{
-					.audio_type     = audio_type,
-					.index          = safe_stoi(parts, 1),
-					.start_frame    = safe_stoi(parts, 2),
-					.stop_condition = safe_stoi(parts, 3),
-			});
+					audio_type, index, start_frame, stop_condition});
 		}
 	}
 	return true;
@@ -506,6 +507,7 @@ void ScenePlayer::play_flic_with_audio(
 					},
 					cmd_variant);
 		}
+
 	} catch (const UserSkipException&) {
 		audio->stop_music();
 		for (int id : audio_ids) {
@@ -555,6 +557,7 @@ void ScenePlayer::show_delay_text(const TextSection& section) {
 		}
 
 		win->ShowFillGuardBand();
+
 	} catch (const UserSkipException&) {
 		// Stop all audio and re-throw to exit the scene player.
 		Audio* audio = Audio::get_ptr();
@@ -741,6 +744,7 @@ void ScenePlayer::play_scene() {
 		wait_for_audio_completion();
 
 		finish_scene();
+
 	} catch (const UserSkipException&) {
 		finish_scene();
 	}
@@ -767,12 +771,11 @@ AudioCommand ScenePlayer::parse_audio_command(
 		audio_type = AudioCommand::Type::VOC;
 	}
 
-	return AudioCommand{
-			.audio_type     = audio_type,
-			.index          = safe_stoi(parts, 1),
-			.start_frame    = safe_stoi(parts, 2),
-			.stop_condition = safe_stoi(parts, 3),
-	};
+	int index          = safe_stoi(parts, 1);
+	int start_frame    = safe_stoi(parts, 2);
+	int stop_condition = safe_stoi(parts, 3);
+
+	return AudioCommand{audio_type, index, start_frame, stop_condition};
 }
 
 void ScenePlayer::start_audio_by_type(
@@ -937,6 +940,7 @@ void ScenePlayer::display_subtitle(const SubtitleCommand& cmd) {
                 alignment, cmd.text, font, screen_center);
 
 		font->draw_text(win->get_ib8(), x, y, cmd.text.c_str());
+
 	} catch (const std::exception& e) {
 		std::cerr << "Play_Scene Error: displaying subtitle: " << e.what()
 				  << std::endl;
