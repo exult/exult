@@ -63,9 +63,16 @@ Example Script:
 #
 #		frame_number of the playing flic on which audio starts playing
 #
-#		continue lets audio play continue playing even though it's scene or 
+#		continue lets audio play continue playing even though it's scene or
 #		text section has finished playing.
 #
+#		line_number: subtitle texts are using numbered lines and then the same
+#		format as text in the section text - see below
+#		Example:
+#		001:\CTis is a centered subtitle
+#
+#		duration is the number of frames a subtitle is shwon on screen
+#		(default is 15 frames). 
 
 :flic/0/0/0
 :track/22/10/1
@@ -144,3 +151,29 @@ Notes and limitations
 - Subtitles' color cannot be set as these depend on the palette of the underlying flic animation.
 - The listed colors are for a BG game, in case of SI the colors are different again. You might just have to test it out.
 - ESC stops the cutscene completely, SPACE skips to the enxt section.
+
+
+Scene FLX creation
+------------------
+
+To create the FLX file you need expack from our tools and for ease of use a build script.
+
+For example an intro cutscene:
+- In your patch folder or mods data folder create 'intro_info.txt' and the folder 'intro'.
+- Place all the files you need for your cutscene into the 'intro' folder. 
+  For example 'animation1.flc', 'animation2.flc', 'music.ogg', 'sfx1.wav', 'voice1.voc', 'text1.txt', 'subtitles.txt'
+- create a text file called 'intro.in' in the 'intro' folder and add all the files and point at where the flx should
+  be created (example below).
+- run expack -i intro.in
+
+intro.in example (this will create intro.flx in the same folder that holds intro_info.txt):
+
+../intro.flx
+animation1.flc
+animation2.flc
+music.ogg
+sfx1.wav
+voice1.voc
+text1.txt
+subtitles.txt
+
