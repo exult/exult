@@ -3237,6 +3237,12 @@ obj->obj_sprite_effect(int sprite, int rel_x, int rel_y, int vel_x, int vel_y,
               the sprite frame will go through all of its frames. If negative,
               the sprite will go through all of its frames *once*.
 
+string UI_play_scene(string text)
+    Plays scripted cutscene after checking whether the files text_info.txt and 
+    text.flx exist in the patch folder.
+  Parameters:
+    text    The base name of the cutscene files.
+
 ================================================================================
 OTHER INTRINSICS
 ================================================================================

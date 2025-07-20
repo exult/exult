@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -137,6 +137,10 @@ public:
 	}
 
 	void set_palette(const unsigned char palnew[768]);
+
+	int get_palette_index() const {
+		return palette;
+	}
 
 	static void set_border(int r, int g, int b) {
 		border[0] = r;

@@ -5,7 +5,7 @@
  *  be included within .cc's in the 'usecode' directory.
  *
  *
- *  Copyright (C) 2001-2022  The Exult Team
+ *  Copyright (C) 2001-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -422,6 +422,7 @@ class Usecode_internal : public Usecode_machine {
 	USECODE_INTRINSIC_DECL(remove_spell);
 	USECODE_INTRINSIC_DECL(create_barge_object);
 	USECODE_INTRINSIC_DECL(in_usecode_path);
+	USECODE_INTRINSIC_DECL(play_scene);
 
 	/*
 	 *  Other private methods:

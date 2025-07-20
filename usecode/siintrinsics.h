@@ -3,7 +3,7 @@
  *
  *  Note:   This is used in the virtual machine and the Usecode compiler.
  *
- *  Copyright (C) 2001-2022  The Exult Team
+ *  Copyright (C) 2001-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -257,7 +257,7 @@ USECODE_INTRINSIC_PTR(get_random),                               // 0x00
 		USECODE_INTRINSIC_PTR(close_gumps2),             // 0xd9
 		USECODE_INTRINSIC_PTR(close_gump2),              // 0xda
 		USECODE_INTRINSIC_PTR(game_day),                 // 0xdb (Exult)
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xdc
+		USECODE_INTRINSIC_PTR(play_scene),               // 0xdc (Exult)
 		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xdd
 		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xde
 		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xdf

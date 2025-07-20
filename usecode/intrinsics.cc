@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@
 #include "mouse.h"
 #include "palette.h"
 #include "party.h"
+#include "playscene.h"
 #include "ready.h"
 #include "rect.h"
 #include "schedule.h"
@@ -3055,6 +3056,35 @@ USECODE_INTRINSIC(play_sound_effect2) {
 	cout << "Sound effect(2) " << parms[0].get_int_value()
 		 << " request in usecode" << endl;
 #endif
+	return no_ret;
+}
+
+USECODE_INTRINSIC(play_scene) {
+	if (num_parms < 1) {
+		return no_ret;
+	}
+
+	const char* scene_name_str = parms[0].get_str_value();
+	if (!scene_name_str) {
+		return no_ret;
+	}
+
+	std::string scene_name(scene_name_str);
+	if (scene_available(scene_name)) {
+		// fade outs in scenes will screw up the palette, so we save current
+		// palette index and restore it after the scene is played.
+		int prev_palette = gwin->get_pal()->get_palette_index();
+		// Pause the queue.
+		gwin->get_tqueue()->pause(Game::get_ticks());
+		play_scene(scene_name);
+
+		// Restore the palette index.
+		gwin->get_pal()->load(PALETTES_FLX, PATCH_PALETTES, prev_palette);
+		gwin->get_pal()->apply(true);
+		// Resume the queue.
+		gwin->get_tqueue()->resume(Game::get_ticks());
+	}
+
 	return no_ret;
 }
 
