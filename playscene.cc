@@ -690,9 +690,6 @@ void ScenePlayer::show_text_section(
 		}
 	}
 end_text_section:;
-	if (section.color != 0) {
-		load_palette_by_color(0);
-	}
 
 	// Stop audio that should stop at the end of the text section
 	for (size_t i = 0; i < section.audio_commands.size(); i++) {
@@ -717,6 +714,9 @@ void ScenePlayer::play_scene() {
 	}
 
 	try {
+		// Save the current palette index to restore it later.
+		prev_palette = gwin->get_pal()->get_palette_index();
+
 		active_audio_ids.clear();
 
 		gwin->clear_screen(true);
@@ -855,11 +855,11 @@ void ScenePlayer::finish_scene() {
 
 	audio->cancel_streams();
 
-	gwin->clear_screen(true);
-
-	gwin->get_pal()->fade_out(30);    // 30 cycles fade out
-
-	gwin->clear_screen(true);
+	if (prev_palette != -1) {
+		gwin->get_pal()->load(PALETTES_FLX, PATCH_PALETTES, prev_palette);
+		gwin->get_pal()->apply(true);
+	}
+	gwin->get_pal()->fade_out(c_fade_out_time);
 }
 
 bool ScenePlayer::load_text_from_flx(int index, std::string& out_text) {

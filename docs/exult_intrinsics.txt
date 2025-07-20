@@ -2631,9 +2631,9 @@ obj->teleport_to_saved_pos(bool flag)
   Parameters:
     obj     If this is not the avatar, nothing happens. Otherwise, the party is
             teleported to the stored position.
-    flag    This optional parameter controls controls whether or party members
-            that are paralyzed or asleep; if true, these members will be
-            teleported, otherwise, they won't defaults to false.
+    flag    This optional parameter controls whether avatar or party members
+            that are paralyzed or asleep are teleported; if true, these members
+            will be teleported, otherwise, they won't; defaults to false.
 
 ================================================================================
 WEATHER/TIME INTRINSICS
@@ -3237,11 +3237,17 @@ obj->obj_sprite_effect(int sprite, int rel_x, int rel_y, int vel_x, int vel_y,
               the sprite frame will go through all of its frames. If negative,
               the sprite will go through all of its frames *once*.
 
-string UI_play_scene(string text)
-    Plays scripted cutscene after checking whether the files text_info.txt and 
-    text.flx exist in the patch folder.
+UI_play_scene(string text, bool fade_out, bool fade_in)                  [Exult]
+
+    Plays scripted animated and/or text cutscene after checking whether the
+    files text_info.txt and text.flx exist in the patch folder.
+
   Parameters:
-    text    The base name of the cutscene files.
+    text        The base name of the cutscene files.
+    fade_out    This optional parameter controls whether the game fades out to
+                the scene; defaults to true.
+    fade_in     This optional parameter controls whether the the scene fades in
+                to the game; defaults to true.
 
 ================================================================================
 OTHER INTRINSICS

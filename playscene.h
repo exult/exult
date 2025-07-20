@@ -145,6 +145,7 @@ private:
 							 const TextEntry& entry, const TextSection& section);
 	void process_section_content(
 			const std::string& section_name, const std::string& content);
+	int prev_palette = -1;
 
 public:
 	ScenePlayer(

@@ -3069,18 +3069,26 @@ USECODE_INTRINSIC(play_scene) {
 		return no_ret;
 	}
 
+	// Optional fade_out and fade_in parameters (default: true)
+	bool fade_out = num_parms > 1 ? parms[1].get_int_value() != 0 : true;
+	bool fade_in  = num_parms > 2 ? parms[2].get_int_value() != 0 : true;
+
 	std::string scene_name(scene_name_str);
 	if (scene_available(scene_name)) {
-		// fade outs in scenes will screw up the palette, so we save current
-		// palette index and restore it after the scene is played.
-		int prev_palette = gwin->get_pal()->get_palette_index();
 		// Pause the queue.
 		gwin->get_tqueue()->pause(Game::get_ticks());
+
+		if (fade_out) {
+			gwin->get_pal()->fade_out(c_fade_out_time);
+		}
 		play_scene(scene_name);
 
-		// Restore the palette index.
-		gwin->get_pal()->load(PALETTES_FLX, PATCH_PALETTES, prev_palette);
-		gwin->get_pal()->apply(true);
+		if (fade_in) {
+			gwin->get_pal()->fade_in(c_fade_in_time);
+		} else {
+			gwin->get_pal()->fade_in(0);
+		}
+
 		// Resume the queue.
 		gwin->get_tqueue()->resume(Game::get_ticks());
 	}
