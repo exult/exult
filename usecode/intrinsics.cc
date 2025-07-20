@@ -3081,8 +3081,11 @@ USECODE_INTRINSIC(play_scene) {
 		if (fade_out) {
 			gwin->get_pal()->fade_out(c_fade_out_time);
 		}
+
 		play_scene(scene_name);
 
+		gwin->set_all_dirty();
+		gwin->paint();
 		if (fade_in) {
 			gwin->get_pal()->fade_in(c_fade_in_time);
 		} else {
