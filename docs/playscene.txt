@@ -1,21 +1,16 @@
 Playscene 
 =========
 
-Allows creating scripted cutscenes using the media Exult knows how to handle.
+Allows creating animated and/or text cutscenes using the media Exult knows how to handle.
 Namely FLIC animations, audio files OGG, WAV, VOC and also playback of a games'
 music and sfx tracks.
 
-To start a scripted scene use
-		if (scene_available("name")) {
-			play_scene("name");
-		}
-
-'scene_available("name")' looks for the files name_info.txt and name.flx in
-a game's or a mod's patch folder, which play_scene("name") will play back.
-
 Exult will automatically look for intro, endgame, quotes and credits
-cutscenes in the above mentioned folders (files: intro_info.txt,
+cutscenes in a game's or a mod's patch folder (files: intro_info.txt,
 intro.flx, endgame_info.txt, ...) and play these instead of the orignal.
+
+You can use these cutscnes in game with the UI_play_scene intrinsic (see 
+exult_intrinsics.txt for details).
 
 The script is loosely based on the format we use for de-hardcoded shape
 informations.
@@ -32,8 +27,6 @@ There are three possible sections:
 You can have several scene and text sections which will be played in the 
 written order.
 
-In the future it might be possible to start cutscenes via usecode.
-
 
 Example Script:
 ---------------
@@ -43,7 +36,10 @@ Example Script:
 %%endsection
 
 %%section scene
-#		:flic/index_number/fade_in/fade_out
+#		:flic/index_number/delay
+#		The delay between FLIC frames is read from the FLIC file. Use 0 to keep
+#		that delay or use any value in milliseconds to override that. The higher
+#		the delay, the slower the animation.
 #
 #		:sfx/sfx_number/frame_number/continue
 #
@@ -73,8 +69,9 @@ Example Script:
 #
 #		duration is the number of frames a subtitle is shwon on screen
 #		(default is 15 frames). 
+#
 
-:flic/0/0/0
+:flic/0/0
 :track/22/10/1
 :sfx/36/0/0
 
@@ -150,7 +147,7 @@ Notes and limitations
 - Scrolling text speed cannot be set but sped up by holding down SHIFT.
 - Subtitles' color cannot be set as these depend on the palette of the underlying flic animation.
 - The listed colors are for a BG game, in case of SI the colors are different again. You might just have to test it out.
-- ESC stops the cutscene completely, SPACE skips to the enxt section.
+- ESC stops the cutscene completely, while SPACE skips to the enxt section.
 
 
 Scene FLX creation
