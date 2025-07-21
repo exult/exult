@@ -36,6 +36,10 @@ public:
 		int speed;
 	};
 
+	void set_speed(int speed) {
+		fli_speed = speed;
+	}
+
 private:
 	enum FlicChunks {
 		FLI_COLOR256 = 4,

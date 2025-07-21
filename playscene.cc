@@ -170,11 +170,9 @@ bool ScenePlayer::parse_scene_section(
 		const string& type_str = parts[0];
 
 		if (type_str == "flic") {
-			int index           = safe_stoi(parts, 1);
-			int fade_in_frames  = safe_stoi(parts, 2);
-			int fade_out_frames = safe_stoi(parts, 3);
-			commands.emplace_back(
-					FlicCommand{index, fade_in_frames, fade_out_frames});
+			int index = safe_stoi(parts, 1);
+			int delay = parts.size() > 2 ? safe_stoi(parts, 2) : 0;
+			commands.emplace_back(FlicCommand{index, delay});
 		} else if (type_str == "subtitle") {
 			if (parts.size() < 6) {
 				continue;
@@ -409,6 +407,10 @@ void ScenePlayer::play_flic_with_audio(
 
 		playfli fli(flx_path.c_str(), flic_cmd->index);
 
+		// If delay is set, override fli_speed
+		if (flic_cmd->delay > 0) {
+			fli.set_speed(flic_cmd->delay / 10);
+		}
 		// Start audio tracks that should play immediately (frame 0)
 		if (timed_commands.count(0)) {
 			for (const auto& cmd_pair : timed_commands[0]) {
@@ -423,10 +425,6 @@ void ScenePlayer::play_flic_with_audio(
 						},
 						cmd_pair.first);
 			}
-		}
-
-		if (flic_cmd->fade_in_frames > 0) {
-			gwin->get_pal()->fade_in(flic_cmd->fade_in_frames);
 		}
 
 		// Play the flic
@@ -485,10 +483,6 @@ void ScenePlayer::play_flic_with_audio(
 			case SkipAction::NONE:
 				break;
 			}
-		}
-
-		if (flic_cmd->fade_out_frames > 0) {
-			gwin->get_pal()->fade_out(flic_cmd->fade_out_frames);
 		}
 
 		gwin->clear_screen(true);
@@ -859,7 +853,6 @@ void ScenePlayer::finish_scene() {
 		gwin->get_pal()->load(PALETTES_FLX, PATCH_PALETTES, prev_palette);
 		gwin->get_pal()->apply(true);
 	}
-	gwin->get_pal()->fade_out(c_fade_out_time);
 }
 
 bool ScenePlayer::load_text_from_flx(int index, std::string& out_text) {
