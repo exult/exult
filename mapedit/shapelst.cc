@@ -1308,6 +1308,45 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 		delete[] fullname;
 		return;
 	}
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (IS_FLAT(shnum) && file_info == studio->get_vgafile()) {
+		// The shape is an 8x8 tile from shapes.vga, check the size of the png
+		int i = 0;
+		int f = 0;
+		while (U7exists(fullname)) {
+			int            w;
+			int            h;
+			int            rowsize;
+			int            xoff;
+			int            yoff;
+			int            palsize;
+			unsigned char* pixels;
+			unsigned char* oldpal;
+			// Import, with 255 = transp. index.
+			if (!Import_png8(
+						fullname, 255, w, h, rowsize, xoff, yoff, pixels,
+						oldpal, palsize)) {
+				delete[] fullname;
+				return;    // Just return if error, for now.
+			}
+			delete[] oldpal;
+			delete[] pixels;
+			if ((w != c_tilesize) || (h != c_tilesize)) {
+				f++;
+			}
+			i++;
+			snprintf(fullname, namelen, "%s%02d.png", fname, i);
+		}
+		snprintf(fullname, namelen, "%s%02d.png", fname, 0);
+		if (f > 0) {
+			std::string msg = "Unable to import all frames into a tile:\n";
+			msg += "\tThere are " + std::to_string(f) + " frames among ";
+			msg += std::to_string(i) + " \n\twith a size not 8px * 8px";
+			studio->prompt(msg.c_str(), "OK", nullptr, nullptr);
+			delete[] fullname;
+			return;
+		}
+	}
 	int           i = 0;
 	unsigned char pal[3 * 256];    // Get current palette.
 	Get_rgb_palette(palette, pal);
@@ -1316,7 +1355,6 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 		delete[] fullname;
 		return;
 	}
-	ExultStudio* studio = ExultStudio::get_instance();
 	while (U7exists(fullname)) {
 		int            w;
 		int            h;
@@ -2258,18 +2296,15 @@ GtkWidget* Shape_chooser::create_popup() {
 		Add_menu_item(
 				popup, "Import frame...", G_CALLBACK(on_shapes_popup_import),
 				this);
-		if (!IS_FLAT(info[selected].shapenum)
-			|| file_info != studio->get_vgafile()) {
-			// Separator.
-			Add_menu_item(popup);
-			// Export/import all frames.
-			Add_menu_item(
-					popup, "Export all frames...",
-					G_CALLBACK(on_shapes_popup_export_all), this);
-			Add_menu_item(
-					popup, "Import all frames...",
-					G_CALLBACK(on_shapes_popup_import_all), this);
-		}
+		// Separator.
+		Add_menu_item(popup);
+		// Export/import all frames.
+		Add_menu_item(
+				popup, "Export all frames...",
+				G_CALLBACK(on_shapes_popup_export_all), this);
+		Add_menu_item(
+				popup, "Import all frames...",
+				G_CALLBACK(on_shapes_popup_import_all), this);
 	}
 	if (ifile->is_flex()) {    // Multiple-shapes file (.vga)?
 		if (selected >= 0
