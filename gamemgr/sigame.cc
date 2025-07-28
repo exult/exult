@@ -1421,6 +1421,7 @@ void SI_Game::end_game(bool success, bool within_game) {
 
 void SI_Game::show_quotes() {
 	if (scene_available("quotes")) {
+		Audio::get_ptr()->stop_music();
 		// Play the custom quotes scene
 		play_scene("quotes");
 		return;
@@ -1435,6 +1436,7 @@ void SI_Game::show_quotes() {
 
 void SI_Game::show_credits() {
 	if (scene_available("credits")) {
+		Audio::get_ptr()->stop_music();
 		// Play the custom credits scene
 		play_scene("credits");
 		U7open_out("<SAVEGAME>/quotes.flg");
@@ -1457,7 +1459,8 @@ bool SI_Game::new_game(Vga_file& shapes) {
 
 	if (Mouse::mouse()
 		&& !Mouse::use_touch_input) {    // If not primarily touch input
-		Mouse::mouse()->show();    // Attempt to make the mouse visible initially
+		Mouse::mouse()
+				->show();    // Attempt to make the mouse visible initially
 	}
 	Vga_file faces_vga;
 	faces_vga.load(FACES_VGA, PATCH_FACES);

@@ -1737,7 +1737,9 @@ std::vector<unsigned int> BG_Game::get_congratulations_messages() {
 
 void BG_Game::end_game(bool success, bool within_game) {
 	waitforspeech();
+	Audio* audio = Audio::get_ptr();
 	if (scene_available("endgame")) {
+		audio->stop_music();
 		// Play the custom endgame scene
 		play_scene("endgame");
 		return;
@@ -1773,7 +1775,6 @@ void BG_Game::end_game(bool success, bool within_game) {
 		return;
 	}
 
-	Audio* audio = Audio::get_ptr();
 	audio->stop_music();
 	MyMidiPlayer* midi = audio->get_midi();
 	if (midi) {
@@ -2169,6 +2170,7 @@ void BG_Game::end_game(bool success, bool within_game) {
 
 void BG_Game::show_quotes() {
 	if (scene_available("quotes")) {
+		Audio::get_ptr()->stop_music();
 		// Play the custom quotes scene
 		play_scene("quotes");
 		return;
@@ -2183,6 +2185,7 @@ void BG_Game::show_quotes() {
 
 void BG_Game::show_credits() {
 	if (scene_available("credits")) {
+		Audio::get_ptr()->stop_music();
 		// Play the custom credits scene
 		play_scene("credits");
 		U7open_out("<SAVEGAME>/quotes.flg");
