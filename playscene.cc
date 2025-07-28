@@ -76,6 +76,24 @@ namespace {
 		}
 		return tokens;
 	}
+
+	string process_escape_sequences(const string& text) {
+		string result;
+		for (size_t i = 0; i < text.length(); ++i) {
+			if (text[i] == '\\' && i + 1 < text.length()) {
+				if (text[i + 1] == 'n') {
+					result += '\n';    // Replace \n with actual newline
+					i++;               // Skip the 'n'
+				} else {
+					result += text[i];    // Keep the backslash for other
+										  // sequences
+				}
+			} else {
+				result += text[i];
+			}
+		}
+		return result;
+	}
 }    // namespace
 
 ScenePlayer::ScenePlayer(
@@ -92,7 +110,7 @@ ScenePlayer::ScenePlayer(
 	fontManager.add_font("HOT_FONT", fname, EXULT_FLX_FONTON_SHP, 1);
 }
 
-ScenePlayer::~ScenePlayer() = default;
+ScenePlayer::~ScenePlayer() {}
 
 bool ScenePlayer::scene_available() const {
 	return U7exists(flx_path.c_str()) && U7exists(info_path.c_str());
@@ -180,13 +198,18 @@ bool ScenePlayer::parse_scene_section(
 
 			SubtitleCommand cmd;
 			cmd.text_file_index = safe_stoi(parts, 1);
-			cmd.start_frame     = safe_stoi(parts, 2);
+			cmd.start_time_ms   = safe_stoi(parts, 2);
 			cmd.line_number     = safe_stoi(parts, 3);
 			cmd.font_type       = safe_stoi(parts, 4);
 			cmd.color           = safe_stoi(parts, 5);
-			cmd.duration_frames
-					= safe_stoi(parts, 6, 15);    // Default duration 15 frames
 
+			cmd.position
+					= safe_stoi(parts, 6, 0);    // 0=bottom, 1=center, 2=top
+			cmd.duration_ms = 2000;              // Default duration
+			if (parts.size() > 7) {
+				cmd.duration_ms
+						= safe_stoi(parts, 7, 2000);    // Custom duration
+			}
 			if (load_subtitle_from_file(
 						cmd.text_file_index, cmd.line_number, cmd.text,
 						cmd.alignment)) {
@@ -208,12 +231,15 @@ bool ScenePlayer::parse_scene_section(
 				audio_type = AudioCommand::Type::VOC;
 			}
 
-			int index          = safe_stoi(parts, 1);
-			int start_frame    = safe_stoi(parts, 2);
-			int stop_condition = safe_stoi(parts, 3);
+			int index = safe_stoi(parts, 1);
+
+			uint32 start_time_ms  = safe_stoi(parts, 2);
+			uint32 stop_time_ms   = safe_stoi(parts, 3, 0);
+			int    stop_condition = safe_stoi(parts, 4, 0);
 
 			commands.emplace_back(AudioCommand{
-					audio_type, index, start_frame, stop_condition});
+					audio_type, index, start_time_ms, stop_time_ms,
+					stop_condition});
 		}
 	}
 	return true;
@@ -385,18 +411,40 @@ void ScenePlayer::play_flic_with_audio(
 
 	std::vector<std::pair<SubtitleCommand, int>> active_subtitles;
 
-	// Map frame numbers to a list of commands that start on that frame.
-	std::map<int, std::vector<std::pair<SceneCommand, size_t>>> timed_commands;
+	// Map timestamps to a list of commands
+	std::map<uint32, std::vector<std::pair<SceneCommand, size_t>>>
+			timed_commands;
 	for (size_t i = 0; i < commands.size(); ++i) {
 		const auto& cmd_variant = commands[i];
 		std::visit(
 				[&](auto&& cmd) {
 					using T = std::decay_t<decltype(cmd)>;
-					if constexpr (
-							std::is_same_v<T, AudioCommand>
-							|| std::is_same_v<T, SubtitleCommand>) {
-						timed_commands[cmd.start_frame].push_back(
+					if constexpr (std::is_same_v<T, AudioCommand>) {
+						timed_commands[cmd.start_time_ms].push_back(
 								{cmd_variant, i});
+					} else if constexpr (std::is_same_v<T, SubtitleCommand>) {
+						timed_commands[cmd.start_time_ms].push_back(
+								{cmd_variant, i});
+					}
+				},
+				cmd_variant);
+	}
+
+	// Map to track audio stop times
+	std::map<int, uint32> audio_stop_times;    // <command_index, stop_time_ms>
+
+	// Process commands to find those with stop times
+	for (size_t i = 0; i < commands.size(); ++i) {
+		const auto& cmd_variant = commands[i];
+		std::visit(
+				[&](auto&& cmd) {
+					using T = std::decay_t<decltype(cmd)>;
+					if constexpr (std::is_same_v<T, AudioCommand>) {
+						if (cmd.stop_time_ms > 0) {
+							// Calculate absolute stop time
+							audio_stop_times[i]
+									= cmd.start_time_ms + cmd.stop_time_ms;
+						}
 					}
 				},
 				cmd_variant);
@@ -411,7 +459,8 @@ void ScenePlayer::play_flic_with_audio(
 		if (flic_cmd->delay > 0) {
 			fli.set_speed(flic_cmd->delay / 10);
 		}
-		// Start audio tracks that should play immediately (frame 0)
+
+		// Start audio tracks that should play immediately (time 0)
 		if (timed_commands.count(0)) {
 			for (const auto& cmd_pair : timed_commands[0]) {
 				std::visit(
@@ -421,6 +470,11 @@ void ScenePlayer::play_flic_with_audio(
 								start_audio_by_type(
 										cmd, audio_ids, command_audio_ids,
 										cmd_pair.second);
+							} else if constexpr (std::is_same_v<
+														 T, SubtitleCommand>) {
+								uint32 end_time
+										= cmd.start_time_ms + cmd.duration_ms;
+								active_subtitles.push_back({cmd, end_time});
 							}
 						},
 						cmd_pair.first);
@@ -431,41 +485,94 @@ void ScenePlayer::play_flic_with_audio(
 		playfli::fliinfo finfo;
 		fli.info(&finfo);
 
-		uint32 next = SDL_GetTicks();
+		uint32 section_start_time
+				= SDL_GetTicks();    // Track section's start time
+		uint32 next_frame_time = section_start_time;
 
 		for (unsigned int i = 0; i < static_cast<unsigned>(finfo.frames); i++) {
-			next = fli.play(gwin->get_win(), i, i, next);
+			// Calculate elapsed time within this section
+			uint32 elapsed_ms = SDL_GetTicks() - section_start_time;
 
-			// Check if any commands are scheduled for the current frame 'i'.
-			if (timed_commands.count(i)) {
-				for (const auto& cmd_pair : timed_commands[i]) {
-					const auto&  command_variant = cmd_pair.first;
-					const size_t original_index  = cmd_pair.second;
-
-					std::visit(
-							[&](auto&& cmd) {
-								using T = std::decay_t<decltype(cmd)>;
-								if constexpr (std::is_same_v<
-													  T, SubtitleCommand>) {
-									active_subtitles.push_back(
-											{cmd, cmd.duration_frames});
-								} else if constexpr (std::is_same_v<
-															 T, AudioCommand>) {
-									start_audio_by_type(
-											cmd, audio_ids, command_audio_ids,
-											original_index);
-								}
-							},
-							command_variant);
+			// Check if any commands are scheduled for the current time
+			for (auto it = timed_commands.begin();
+				 it != timed_commands.end();) {
+				if (it->first <= elapsed_ms) {
+					for (const auto& cmd_pair : it->second) {
+						std::visit(
+								[&](auto&& cmd) {
+									using T = std::decay_t<decltype(cmd)>;
+									if constexpr (std::is_same_v<
+														  T, SubtitleCommand>) {
+										uint32 end_time
+												= elapsed_ms + cmd.duration_ms;
+										active_subtitles.push_back(
+												{cmd, end_time});
+									} else if constexpr (
+											std::is_same_v<T, AudioCommand>) {
+										start_audio_by_type(
+												cmd, audio_ids,
+												command_audio_ids,
+												cmd_pair.second);
+									}
+								},
+								cmd_pair.first);
+					}
+					it = timed_commands.erase(it);
+				} else {
+					++it;
 				}
 			}
 
+			// Check if any playing audio should stop at the current time
+			for (auto it = audio_stop_times.begin();
+				 it != audio_stop_times.end();) {
+				if (elapsed_ms >= it->second) {
+					// Time to stop this audio
+					const auto& cmd_variant = commands[it->first];
+					std::visit(
+							[&](auto&& cmd) {
+								using T = std::decay_t<decltype(cmd)>;
+								if constexpr (std::is_same_v<T, AudioCommand>) {
+									stop_audio_by_type(
+											cmd, command_audio_ids[it->first]);
+								}
+							},
+							cmd_variant);
+					it = audio_stop_times.erase(it);
+				} else {
+					++it;
+				}
+			}
+			// Play the current frame
+			next_frame_time = fli.play(gwin->get_win(), i, i, next_frame_time);
+
+			// Draw active subtitles directly on the frame
+			std::string combined_text;
+			for (auto& subtitle : active_subtitles) {
+				if (elapsed_ms >= subtitle.first.start_time_ms
+					&& elapsed_ms < static_cast<uint32>(subtitle.second)) {
+					if (!combined_text.empty()) {
+						combined_text += "\n";
+					}
+					combined_text += subtitle.first.text;
+				}
+			}
+
+			// Draw the combined subtitle text if any
+			if (!combined_text.empty()) {
+				SubtitleCommand temp_cmd = active_subtitles.empty()
+												   ? SubtitleCommand{}
+												   : active_subtitles[0].first;
+				temp_cmd.text            = combined_text;
+
+				// Draw directly on the window buffer
+				display_subtitle(temp_cmd);
+			}
+
+			// Clean up expired subtitles
 			for (auto it = active_subtitles.begin();
 				 it != active_subtitles.end();) {
-				display_subtitle(it->first);
-				it->second--;
-
-				if (it->second <= 0) {
+				if (elapsed_ms >= static_cast<uint32>(it->second)) {
 					it = active_subtitles.erase(it);
 				} else {
 					++it;
@@ -567,55 +674,71 @@ void ScenePlayer::show_delay_text(const TextSection& section) {
 void ScenePlayer::show_text_section(
 		const TextSection& section, std::vector<int>& audio_ids) {
 	std::map<int, std::vector<int>> command_audio_ids;
-	size_t                          next_command_index = 0;
 
-	// Sort audio commands by start time for easy processing
-	std::vector<std::pair<SceneCommand, size_t>> sorted_commands;
+	std::map<uint32, std::vector<std::pair<SceneCommand, size_t>>>
+			timed_commands;
+
+	// Sort audio commands by start time
 	for (size_t i = 0; i < section.audio_commands.size(); i++) {
 		const auto& cmd_variant = section.audio_commands[i];
-		sorted_commands.push_back({cmd_variant, i});
+
+		std::visit(
+				[&](auto&& cmd) {
+					using T = std::decay_t<decltype(cmd)>;
+					if constexpr (std::is_same_v<T, AudioCommand>) {
+						// For text sections, we use page index as frame,
+						// so multiply by a reasonable delay per page
+						uint32 start_time_ms = cmd.start_time_ms;
+						timed_commands[start_time_ms].push_back(
+								{cmd_variant, i});
+					}
+				},
+				cmd_variant);
 	}
 
-	std::sort(
-			sorted_commands.begin(), sorted_commands.end(),
-			[](const auto& a, const auto& b) {
-				auto get_start_frame = [](auto&& arg) -> int {
-					using T = std::decay_t<decltype(arg)>;
-					if constexpr (
-							std::is_same_v<T, AudioCommand>
-							|| std::is_same_v<T, SubtitleCommand>) {
-						return arg.start_frame;
+	// Map to track audio stop times
+	std::map<int, uint32> audio_stop_times;    // <command_index, stop_time_ms>
+
+	// Process commands to find those with stop times
+	for (size_t i = 0; i < section.audio_commands.size(); ++i) {
+		const auto& cmd_variant = section.audio_commands[i];
+		std::visit(
+				[&](auto&& cmd) {
+					using T = std::decay_t<decltype(cmd)>;
+					if constexpr (std::is_same_v<T, AudioCommand>) {
+						if (cmd.stop_time_ms > 0) {
+							// Calculate absolute stop time
+							audio_stop_times[i]
+									= cmd.start_time_ms + cmd.stop_time_ms;
+						}
 					}
-					return 0;
-				};
-				int frame_a = std::visit(get_start_frame, a.first);
-				int frame_b = std::visit(get_start_frame, b.first);
-				return frame_a < frame_b;
-			});
+				},
+				cmd_variant);
+	}
 
 	load_palette_by_color(section.color);
 
 	if (section.is_scrolling) {
 		// Start any audio that should play immediately (time 0)
-		for (const auto& cmd_pair : sorted_commands) {
-			std::visit(
-					[&](auto&& cmd) {
-						using T = std::decay_t<decltype(cmd)>;
-						if constexpr (std::is_same_v<T, AudioCommand>) {
-							if (cmd.start_frame == 0) {
+		if (timed_commands.count(0)) {
+			for (const auto& cmd_pair : timed_commands[0]) {
+				std::visit(
+						[&](auto&& cmd) {
+							using T = std::decay_t<decltype(cmd)>;
+							if constexpr (std::is_same_v<T, AudioCommand>) {
 								start_audio_by_type(
 										cmd, audio_ids, command_audio_ids,
 										cmd_pair.second);
 							}
-						}
-					},
-					cmd_pair.first);
+						},
+						cmd_pair.first);
+			}
 		}
 
 		show_scrolling_text(section);
-
 	} else {
 		size_t current_page_index = 0;
+		uint32 section_start_time = SDL_GetTicks();
 
 		while (current_page_index < section.entries.size()) {
 			switch (check_break()) {
@@ -632,40 +755,74 @@ void ScenePlayer::show_text_section(
 			TextSection single_page_section = section;
 			single_page_section.entries = {section.entries[current_page_index]};
 			show_delay_text(single_page_section);
+			// Calculate elapsed time since section start
+			uint32 page_display_time = SDL_GetTicks();
+			uint32 elapsed_ms        = SDL_GetTicks() - section_start_time;
 
-			// Trigger any audio commands scheduled for this page index.
-			while (next_command_index < sorted_commands.size()) {
-				const auto& cmd_pair = sorted_commands[next_command_index];
-				bool        command_triggered = false;
-
-				std::visit(
-						[&](auto&& cmd) {
-							using T = std::decay_t<decltype(cmd)>;
-							if constexpr (std::is_same_v<T, AudioCommand>) {
-								if (cmd.start_frame
-									== static_cast<int>(current_page_index)) {
-									start_audio_by_type(
-											cmd, audio_ids, command_audio_ids,
-											cmd_pair.second);
-									command_triggered = true;
-								} else if (
-										cmd.start_frame > static_cast<int>(
-												current_page_index)) {
-									return;
-								}
-							}
-						},
-						cmd_pair.first);
-
-				if (command_triggered) {
-					next_command_index++;
+			// Trigger any audio commands scheduled for this time
+			for (auto it = timed_commands.begin();
+				 it != timed_commands.end();) {
+				if (it->first <= elapsed_ms) {
+					for (const auto& cmd_pair : it->second) {
+						std::visit(
+								[&](auto&& cmd) {
+									using T = std::decay_t<decltype(cmd)>;
+									if constexpr (std::is_same_v<
+														  T, AudioCommand>) {
+										start_audio_by_type(
+												cmd, audio_ids,
+												command_audio_ids,
+												cmd_pair.second);
+									}
+								},
+								cmd_pair.first);
+					}
+					it = timed_commands.erase(it);
 				} else {
-					break;
+					++it;
 				}
 			}
 
-			// Wait for a 3-second timeout or user input to advance the page.
-			uint32 page_display_time = SDL_GetTicks();
+			for (auto it = audio_stop_times.begin();
+				 it != audio_stop_times.end();) {
+				if (elapsed_ms >= it->second) {
+					// Time to stop this audio
+					const auto& cmd_variant = section.audio_commands[it->first];
+					std::visit(
+							[&](auto&& cmd) {
+								using T = std::decay_t<decltype(cmd)>;
+								if constexpr (std::is_same_v<T, AudioCommand>) {
+									stop_audio_by_type(
+											cmd, command_audio_ids[it->first]);
+								}
+							},
+							cmd_variant);
+					it = audio_stop_times.erase(it);
+				} else {
+					++it;
+				}
+			}
+
+			// Wait for page display timeout or user input
+			elapsed_ms = page_display_time - section_start_time;
+			for (auto it = audio_stop_times.begin();
+				 it != audio_stop_times.end();) {
+				if (elapsed_ms >= it->second) {
+					const auto& cmd_variant = section.audio_commands[it->first];
+					std::visit(
+							[&](auto&& cmd) {
+								using T = std::decay_t<decltype(cmd)>;
+								if constexpr (std::is_same_v<T, AudioCommand>) {
+									stop_audio_by_type(
+											cmd, command_audio_ids[it->first]);
+								}
+							},
+							cmd_variant);
+					it = audio_stop_times.erase(it);
+				} else {
+					++it;
+				}
+			}
 			while (SDL_GetTicks() - page_display_time
 				   < static_cast<uint32_t>(section.delay_ms)) {
 				switch (check_break()) {
@@ -673,7 +830,6 @@ void ScenePlayer::show_text_section(
 					throw UserSkipException();
 				case SkipAction::NEXT_SECTION:
 					goto end_text_section;
-					break;
 				case SkipAction::NONE:
 					break;
 				}
@@ -692,8 +848,7 @@ end_text_section:;
 				[&](auto&& cmd) {
 					using T = std::decay_t<decltype(cmd)>;
 					if constexpr (std::is_same_v<T, AudioCommand>) {
-						if (cmd.stop_condition
-							== 0) {    // Stop at end of section
+						if (cmd.stop_condition == 0) {
 							stop_audio_by_type(cmd, command_audio_ids[i]);
 						}
 					}
@@ -762,11 +917,14 @@ AudioCommand ScenePlayer::parse_audio_command(
 		audio_type = AudioCommand::Type::VOC;
 	}
 
-	int index          = safe_stoi(parts, 1);
-	int start_frame    = safe_stoi(parts, 2);
-	int stop_condition = safe_stoi(parts, 3);
+	int index = safe_stoi(parts, 1);
 
-	return AudioCommand{audio_type, index, start_frame, stop_condition};
+	uint32 start_time_ms  = safe_stoi(parts, 2);
+	uint32 stop_time_ms   = safe_stoi(parts, 3, 0);
+	int    stop_condition = safe_stoi(parts, 4, 0);
+
+	return AudioCommand{
+			audio_type, index, start_time_ms, stop_time_ms, stop_condition};
 }
 
 void ScenePlayer::start_audio_by_type(
@@ -893,10 +1051,12 @@ bool ScenePlayer::load_subtitle_from_file(
 		// Read line-by-line instead of loading the whole file content again.
 		while (std::getline(iss, line)) {
 			if (line.rfind(target_prefix, 0) == 0) {
-				string text_content   = line.substr(target_prefix.length());
+				string text_content = line.substr(target_prefix.length());
+				// First process formatting codes like \C, \L, \R
 				ParsedTextLine parsed = parse_text_formatting(text_content);
-				out_text              = parsed.text;
-				out_alignment         = parsed.alignment;
+				// Then process \n as actual newlines
+				out_text      = process_escape_sequences(parsed.text);
+				out_alignment = parsed.alignment;
 				return true;
 			}
 		}
@@ -923,13 +1083,88 @@ void ScenePlayer::display_subtitle(const SubtitleCommand& cmd) {
 
 		Image_window8* win           = gwin->get_win();
 		int            screen_center = gwin->get_width() / 2;
-		int            y             = gwin->get_height() - 25;
+		int            screen_height = gwin->get_height();
 
+		// Define alignment once
 		int alignment = cmd.alignment & 0xFF;
-		int x         = calculate_text_x_position(
-                alignment, cmd.text, font, screen_center);
 
-		font->draw_text(win->get_ib8(), x, y, cmd.text.c_str());
+		// Determine text color (0 = default 172, otherwise use specified color)
+		uint8 text_color = (cmd.color == 0) ? 172 : cmd.color;
+
+		unsigned char color_translation[256];
+		std::fill_n(color_translation, 256, text_color);
+
+		// Black outline translation table
+		unsigned char outline_translation[256];
+		std::fill_n(outline_translation, 256, 0);    // 0 is black
+
+		// Split text by newlines
+		std::istringstream       iss(cmd.text);
+		std::string              line;
+		std::vector<std::string> lines;
+		while (std::getline(iss, line)) {
+			lines.push_back(line);
+		}
+
+		// Calculate total height for positioning
+		int line_height  = font->get_text_height();
+		int total_height = lines.size() * line_height;
+
+		// Determine starting y position based on position value
+		int y = screen_height - 25;    // Default to bottom position
+
+		switch (cmd.position) {
+		case 1:    // Center of screen
+			y = (screen_height / 2) - (total_height / 2);
+			break;
+		case 2:        // Top of screen with margin
+			y = 25;    // 25 pixel margin from top
+			break;
+		case 0:    // Bottom (default)
+		default:
+			// For bottom position, adjust for multiple lines
+			y = screen_height - 25 - (lines.size() - 1) * line_height;
+			break;
+		}
+
+		// Draw each line with proper alignment
+		for (const auto& text_line : lines) {
+			int x = calculate_text_x_position(
+					alignment, text_line, font, screen_center);
+
+			// Draw outline by rendering the text 8 times with offsets
+			font->draw_text(
+					win->get_ib8(), x - 1, y - 1, text_line.c_str(),
+					outline_translation);
+			font->draw_text(
+					win->get_ib8(), x, y - 1, text_line.c_str(),
+					outline_translation);
+			font->draw_text(
+					win->get_ib8(), x + 1, y - 1, text_line.c_str(),
+					outline_translation);
+			font->draw_text(
+					win->get_ib8(), x - 1, y, text_line.c_str(),
+					outline_translation);
+			font->draw_text(
+					win->get_ib8(), x + 1, y, text_line.c_str(),
+					outline_translation);
+			font->draw_text(
+					win->get_ib8(), x - 1, y + 1, text_line.c_str(),
+					outline_translation);
+			font->draw_text(
+					win->get_ib8(), x, y + 1, text_line.c_str(),
+					outline_translation);
+			font->draw_text(
+					win->get_ib8(), x + 1, y + 1, text_line.c_str(),
+					outline_translation);
+
+			// Draw the actual text in the desired color on top
+			font->draw_text(
+					win->get_ib8(), x, y, text_line.c_str(), color_translation);
+
+			y += line_height;
+		}
+
 	} catch (const std::exception& e) {
 		std::cerr << "Play_Scene Error: displaying subtitle: " << e.what()
 				  << std::endl;

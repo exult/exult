@@ -19,6 +19,8 @@
 #ifndef PLAYSCENE_H
 #define PLAYSCENE_H
 
+#include "common_types.h"
+
 #include <map>
 #include <memory>
 #include <string>
@@ -41,21 +43,23 @@ struct AudioCommand {
 		WAVE,
 		VOC
 	};
-	Type audio_type;
-	int  index;
-	int  start_frame;
-	int  stop_condition;    // e.g., 0 for stop at end
+	Type   audio_type;
+	int    index;
+	uint32 start_time_ms;
+	uint32 stop_time_ms;
+	int    stop_condition;
 };
 
 struct SubtitleCommand {
 	int         text_file_index;
-	int         start_frame;
+	uint32      start_time_ms;
 	int         line_number;
 	int         font_type;
 	int         color;
-	int         duration_frames;
+	uint32      duration_ms;
 	std::string text;
 	int         alignment;
+	int         position;    // 0=bottom, 1=center, 2=top
 };
 
 using SceneCommand = std::variant<FlicCommand, AudioCommand, SubtitleCommand>;
@@ -128,6 +132,8 @@ private:
 						int index, int line_number, std::string& out_text,
 						int& out_alignment);
 	void display_subtitle(const SubtitleCommand& cmd);
+
+	std::vector<std::pair<SubtitleCommand, uint32>> active_subtitles;
 
 	struct ParsedTextLine {
 		std::string text;
