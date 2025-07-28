@@ -79,22 +79,24 @@ namespace {
 
 	string process_escape_sequences(const string& text) {
 		string result;
-		for (size_t i = 0; i < text.length(); ++i) {
+		size_t i = 0;
+		while (i < text.length()) {
 			if (text[i] == '\\' && i + 1 < text.length()) {
 				if (text[i + 1] == 'n') {
 					result += '\n';    // Replace \n with actual newline
-					i++;               // Skip the 'n'
+					i += 2;            // Skip both '\' and 'n'
 				} else {
-					result += text[i];    // Keep the backslash for other
-										  // sequences
+					result += text[i];
+					i++;
 				}
 			} else {
 				result += text[i];
+				i++;
 			}
 		}
 		return result;
 	}
-}    // namespace
+}
 
 ScenePlayer::ScenePlayer(
 		Game_window* gw, const string& scene_name, bool use_subtitles,
