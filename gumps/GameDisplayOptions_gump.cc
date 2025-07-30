@@ -262,6 +262,7 @@ void GameDisplayOptions_gump::save_settings() {
 	config->set(
 			"config/gameplay/extended_intro", extended_intro ? "yes" : "no",
 			false);
+	gwin->set_extended_intro(extended_intro);
 	config->set(
 			"config/gameplay/skip_splash", menu_intro ? "yes" : "no", false);
 	if (sman->can_use_paperdolls()

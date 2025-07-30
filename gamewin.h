@@ -148,7 +148,7 @@ class Game_window {
 	uint8        use_shortcutbar;    // 0 = no, 1 = trans, 2 = yes
 	Pixel_colors outline_color;
 	bool         sb_hide_missing;
-	bool         extended_intro;
+	bool         extended_intro;	// option to use SI's extended intro
 
 	// Touch Options
 	bool item_menu;
