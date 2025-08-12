@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2011-2024 The Exult Team
+Copyright (C) 2011-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -301,6 +301,11 @@ ShortcutBar_gump::ShortcutBar_gump(int placex, int placey)
 	assert(init == 0); // Protect against re-entry
 	init = true;*/
 
+	Usecode_machine* usecode = Game_window::get_instance()->get_usecode();
+	bool             in_first_scene
+			= (GAME_BG
+			   && !usecode->get_global_flag(Usecode_machine::did_first_scene))
+			  || (GAME_SI && !usecode->get_global_flag(3));
 	if (ShortcutBar_gump::eventType == std::numeric_limits<uint32>::max()) {
 		ShortcutBar_gump::eventType = SDL_RegisterEvents(1);
 	}
@@ -314,8 +319,10 @@ ShortcutBar_gump::ShortcutBar_gump(int placex, int placey)
 		buttonItem.pushed = false;
 	}
 	createButtons();
-	gumpman->add_gump(this);
-	has_changed = true;
+	if (!in_first_scene) {
+		gumpman->add_gump(this);
+		has_changed = true;
+	}
 }
 
 ShortcutBar_gump::~ShortcutBar_gump() {

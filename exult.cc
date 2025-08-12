@@ -687,8 +687,9 @@ int exult_main(const char* runpath) {
 		touchui->showButtonControls();
 		// TODO(Marzo): This is probably the wrong place for this
 		Usecode_machine* usecode = Game_window::get_instance()->get_usecode();
-		if (!usecode->get_global_flag(Usecode_machine::did_first_scene)
-			&& GAME_BG) {
+		if ((GAME_BG
+			 && !usecode->get_global_flag(Usecode_machine::did_first_scene))
+			|| (GAME_SI && !usecode->get_global_flag(3))) {
 			touchui->hideGameControls();
 		} else {
 			touchui->showGameControls();

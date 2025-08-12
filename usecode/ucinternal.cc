@@ -2,7 +2,7 @@
  *  ucinternal.cc - Interpreter for usecode.
  *
  *  Copyright (C) 1999  Jeffrey S. Freedman
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,9 +25,11 @@
 #endif
 
 #include "Audio.h"
+#include "Face_stats.h"
 #include "Gump.h"
 #include "Gump_manager.h"
 #include "Notebook_gump.h"
+#include "ShortcutBar_gump.h"
 #include "Text_gump.h"
 #include "actions.h"
 #include "actors.h"
@@ -2720,6 +2722,25 @@ int Usecode_internal::run() {
 					// ++++KLUDGE for Monk Isle:
 					if (offset == 0x272 && GAME_SI) {
 						gflags[offset] = 0;
+					}
+					// ++++KLUDGE for reactivating Face Stats and shortcut bar
+					// after the first scene
+					if ((offset == 0x3b && GAME_BG)
+						|| (offset == 0x03 && GAME_SI)) {
+						int facestats_mode = -1;
+						config->value(
+								"config/gameplay/facestats", facestats_mode,
+								-1);
+						if (facestats_mode >= 0) {
+							Face_stats::CreateGump();
+						}
+						if (g_shortcutBar
+							&& !gumpman->find_gump(
+									g_shortcutBar->get_x(),
+									g_shortcutBar->get_y())) {
+							gumpman->add_gump(g_shortcutBar);
+							g_shortcutBar->set_changed();
+						}
 					}
 				}
 				break;

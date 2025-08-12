@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2001-2022 The Exult Team
+Copyright (C) 2001-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "game.h"
 #include "gamewin.h"
 #include "party.h"
+#include "ucmachine.h"
 
 #define PALETTE_INDEX_RED   22
 #define PALETTE_INDEX_GREEN 64
@@ -589,9 +590,22 @@ Face_stats* Face_stats::self = nullptr;
 
 // Creates if doesn't already exist
 void Face_stats::CreateGump() {
-	if (!self) {
-		self = new Face_stats();
-		gumpman->add_gump(self);
+	Usecode_machine* usecode = Game_window::get_instance()->get_usecode();
+	bool             in_first_scene
+			= (GAME_BG
+			   && !usecode->get_global_flag(Usecode_machine::did_first_scene))
+			  || (GAME_SI && !usecode->get_global_flag(3));
+	if (in_first_scene) {
+		if (self) {
+			gumpman->close_gump(self);
+			self = nullptr;
+		}
+	} else {
+		// Show face stats in all other cases
+		if (!self) {
+			self = new Face_stats();
+			gumpman->add_gump(self);
+		}
 	}
 }
 
@@ -619,6 +633,19 @@ void Face_stats::AdvanceState() {
 
 // Used for updating mana bar when magic value changes and when gwin resizes
 void Face_stats::UpdateButtons() {
+	Usecode_machine* usecode = Game_window::get_instance()->get_usecode();
+	bool             in_first_scene
+			= (GAME_BG
+			   && !usecode->get_global_flag(Usecode_machine::did_first_scene))
+			  || (GAME_SI && !usecode->get_global_flag(3));
+	if (in_first_scene) {
+		if (self) {
+			gumpman->close_gump(self);
+			self = nullptr;
+		}
+		return;
+	}
+
 	if (!self) {
 		return;
 	} else {
