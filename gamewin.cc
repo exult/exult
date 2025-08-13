@@ -7,7 +7,7 @@
 /*
  *
  *  Copyright (C) 1998-1999  Jeffrey S. Freedman
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -1148,8 +1148,8 @@ void Game_window::set_camera_actor(Actor* a) {
 bool Game_window::scroll_if_needed(Tile_coord t) {
 	bool scrolled = false;
 	// 1 lift = 1/2 tile.
-	const int tx = DECR_TILE(t.tx,t.tz / 2);
-	const int ty = DECR_TILE(t.ty,t.tz / 2);
+	const int tx = DECR_TILE(t.tx, t.tz / 2);
+	const int ty = DECR_TILE(t.ty, t.tz / 2);
 	if (Tile_coord::gte(DECR_TILE(scroll_bounds.x), tx)) {
 		view_left();
 		scrolled = true;
@@ -1393,7 +1393,7 @@ void Game_window::write(bool nopaint) {
 	}
 	for (auto* map : maps) {
 		if (map) {
-			map->write_ireg(); // Write ireg files.
+			map->write_ireg();    // Write ireg files.
 		}
 	}
 	write_npcs();              // Write out npc.dat.
@@ -2902,7 +2902,7 @@ void Game_window::setup_game(bool map_editing) {
 	usecode->read();    // Read the usecode flags
 	cycle_load_palette();
 
-	if (Game::get_game_type() == BLACK_GATE && !map_editing) {
+	if (GAME_BG && !map_editing) {
 		string yn;    // Override from config. file.
 		// Skip intro. scene?
 		config->value("config/gameplay/skip_intro", yn, "no");
@@ -3145,10 +3145,10 @@ void Game_window::setup_load_palette() {
 		return;
 	}
 
-	if (Game::get_game_type() == BLACK_GATE) {
+	if (GAME_BG) {
 		plasma_start_color = BG_PLASMA_START_COLOR;
 		plasma_cycle_range = BG_PLASMA_CYCLE_RANGE;
-	} else {    // Default: if (Game::get_game_type()==SERPENT_ISLE)
+	} else {    // Default: if (GAME_SI)
 		plasma_start_color = SI_PLASMA_START_COLOR;
 		plasma_cycle_range = SI_PLASMA_CYCLE_RANGE;
 	}
@@ -3159,9 +3159,9 @@ void Game_window::setup_load_palette() {
 		   plasma_start_color + plasma_cycle_range - 1);
 
 	// Load the palette
-	if (Game::get_game_type() == BLACK_GATE) {
+	if (GAME_BG) {
 		pal->load(INTROPAL_DAT, PATCH_INTROPAL, 2);
-	} else if (Game::get_game_type() == SERPENT_ISLE) {
+	} else if (GAME_SI) {
 		pal->load(MAINSHP_FLX, PATCH_MAINSHP, 1);
 	}
 
