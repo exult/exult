@@ -71,7 +71,8 @@ public:
 	};
 
 	enum Global_flag_names {
-		did_first_scene       = 0x3b,    // Went through 1st scene with Iolo.
+		si_did_first_scene = 0x03,    // After Iolo's talk at the start of SI.
+		did_first_scene    = 0x3b,    // Went through 1st scene with Iolo.
 		have_trinsic_password = 0x3d,
 		found_stable_key      = 0x3c,
 		left_trinsic          = 0x57,

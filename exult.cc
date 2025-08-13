@@ -689,7 +689,9 @@ int exult_main(const char* runpath) {
 		Usecode_machine* usecode = Game_window::get_instance()->get_usecode();
 		if ((GAME_BG
 			 && !usecode->get_global_flag(Usecode_machine::did_first_scene))
-			|| (GAME_SI && !usecode->get_global_flag(3))) {
+			|| (GAME_SI
+				&& !usecode->get_global_flag(
+						Usecode_machine::si_did_first_scene))) {
 			touchui->hideGameControls();
 		} else {
 			touchui->showGameControls();

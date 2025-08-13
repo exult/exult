@@ -2725,21 +2725,25 @@ int Usecode_internal::run() {
 					}
 					// ++++KLUDGE for reactivating Face Stats and shortcut bar
 					// after the first scene
-					if ((offset == 0x3b && GAME_BG)
-						|| (offset == 0x03 && GAME_SI)) {
+					if ((offset == Usecode_machine::did_first_scene && GAME_BG)
+						|| (offset == Usecode_machine::si_did_first_scene
+							&& GAME_SI)) {
 						int facestats_mode = -1;
 						config->value(
 								"config/gameplay/facestats", facestats_mode,
 								-1);
 						if (facestats_mode >= 0) {
-							Face_stats::CreateGump();
+							Face_stats::load_config(config);
 						}
-						if (g_shortcutBar
-							&& !gumpman->find_gump(
-									g_shortcutBar->get_x(),
-									g_shortcutBar->get_y())) {
-							gumpman->add_gump(g_shortcutBar);
-							g_shortcutBar->set_changed();
+						if (gwin->using_shortcutbar()) {
+							if (!g_shortcutBar) {
+								g_shortcutBar = new ShortcutBar_gump(0, 0);
+							} else if (!gumpman->find_gump(
+											   g_shortcutBar->get_x(),
+											   g_shortcutBar->get_y())) {
+								gumpman->add_gump(g_shortcutBar);
+								g_shortcutBar->set_changed();
+							}
 						}
 					}
 				}
