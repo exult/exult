@@ -90,6 +90,9 @@ public:
 	static void RemoveGump();
 	static void AdvanceState();
 	static void UpdateButtons();
+	static void HideGump();
+	static void ShowGump();
+	static bool Visible();
 	static void save_config(Configuration* config);
 	static void load_config(Configuration* config);
 };

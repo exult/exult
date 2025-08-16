@@ -82,6 +82,35 @@ void ShortcutBar_gump::update_gump() {
 	}
 }
 
+// Hide the gump without destroying it
+void ShortcutBar_gump::HideGump() {
+	if (g_shortcutBar) {
+		gumpman->remove_gump(
+				g_shortcutBar);
+	}
+}
+
+// Show the gump if it exists
+void ShortcutBar_gump::ShowGump() {
+	if (g_shortcutBar) {
+		gumpman->add_gump(g_shortcutBar);
+	}
+}
+
+// Check if the gump is currently visible
+bool ShortcutBar_gump::Visible() {
+	if (!g_shortcutBar) {
+		return false;
+	}
+
+	for (auto it = gumpman->begin(); it != gumpman->end(); it++) {
+		if (*it == g_shortcutBar) {
+			return true;
+		}
+	}
+	return false;
+}
+
 /*
  * To align button shapes vertically, we need to micro-manage the shapeOffsetY
  * values to shift shapes up or down.

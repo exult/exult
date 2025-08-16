@@ -31,6 +31,8 @@
 #include "mouse.h"
 #include "touchui.h"
 #include "useval.h"
+#include "Face_stats.h"
+#include "ShortcutBar_gump.h"
 
 using std::size_t;
 using std::string;
@@ -130,6 +132,10 @@ void Conversation::init_faces() {
 		finfo = nullptr;
 		if (touchui != nullptr) {
 			touchui->showGameControls();
+		}
+		if (!Face_stats::Visible() && !ShortcutBar_gump::Visible()) {
+			Face_stats::ShowGump();
+			ShortcutBar_gump::ShowGump();
 		}
 	}
 	num_faces       = 0;
@@ -247,6 +253,10 @@ void Conversation::show_face(int shape, int frame, int slot) {
 	if (touchui != nullptr) {
 		touchui->hideGameControls();
 	}
+	if (Face_stats::Visible() && ShortcutBar_gump::Visible()) {
+		Face_stats::HideGump();
+		ShortcutBar_gump::HideGump();
+	}
 	gwin->get_win()->clear_clip();
 }
 
@@ -331,6 +341,10 @@ void Conversation::remove_slot_face(int slot) {
 		last_face_shown = j - 1;
 		if (touchui != nullptr && num_faces == 0) {
 			touchui->showGameControls();
+		}
+		if (!Face_stats::Visible() && !ShortcutBar_gump::Visible() && num_faces == 0) {
+			Face_stats::ShowGump();
+			ShortcutBar_gump::ShowGump();
 		}
 	}
 }

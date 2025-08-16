@@ -2728,22 +2728,13 @@ int Usecode_internal::run() {
 					if ((offset == Usecode_machine::did_first_scene && GAME_BG)
 						|| (offset == Usecode_machine::si_did_first_scene
 							&& GAME_SI)) {
-						int facestats_mode = -1;
-						config->value(
-								"config/gameplay/facestats", facestats_mode,
-								-1);
-						if (facestats_mode >= 0) {
-							Face_stats::load_config(config);
+						if (touchui != nullptr) {
+							touchui->showGameControls();
 						}
-						if (gwin->using_shortcutbar()) {
-							if (!g_shortcutBar) {
-								g_shortcutBar = new ShortcutBar_gump(0, 0);
-							} else if (!gumpman->find_gump(
-											   g_shortcutBar->get_x(),
-											   g_shortcutBar->get_y())) {
-								gumpman->add_gump(g_shortcutBar);
-								g_shortcutBar->set_changed();
-							}
+						if (!Face_stats::Visible()
+							&& !ShortcutBar_gump::Visible()) {
+							Face_stats::ShowGump();
+							ShortcutBar_gump::ShowGump();
 						}
 					}
 				}

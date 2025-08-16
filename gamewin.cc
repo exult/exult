@@ -81,6 +81,7 @@
 #include "utils.h"
 #include "version.h"
 #include "virstone.h"
+#include "touchui.h"
 
 #include <cstdarg>
 #include <cstdio>
@@ -2950,16 +2951,27 @@ void Game_window::setup_game(bool map_editing) {
 	set_all_dirty();
 	painted = true;                     // Main loop uses this.
 	gump_man->close_all_gumps(true);    // Kill gumps.
+	Face_stats::load_config(config);
+	if (using_shortcutbar()) {
+		g_shortcutBar = new ShortcutBar_gump(0, 0);
+	}
+	if (touchui != nullptr) {
+		touchui->showButtonControls();
+		touchui->showGameControls();
+	}
 	// During the first scene do not show the UI elements,
 	// unless the Avatar is free to move (possibly in mods).
-	if ((GAME_BG && usecode->get_global_flag(Usecode_machine::did_first_scene))
+	if ((GAME_BG && !usecode->get_global_flag(Usecode_machine::did_first_scene))
 		|| (GAME_SI
-			&& usecode->get_global_flag(Usecode_machine::si_did_first_scene))
-		|| (!main_actor_dont_move() && main_actor_can_act()
-			&& main_actor_can_act_charmed())) {
-		Face_stats::load_config(config);
-		if (using_shortcutbar()) {
-			g_shortcutBar = new ShortcutBar_gump(0, 0);
+			&& !usecode->get_global_flag(Usecode_machine::si_did_first_scene))
+		|| (main_actor_dont_move() && !main_actor_can_act()
+			&& !main_actor_can_act_charmed())) {
+		if (touchui != nullptr) {
+			touchui->hideGameControls();
+		}
+		if (Face_stats::Visible() && ShortcutBar_gump::Visible()) {
+			Face_stats::HideGump();
+			ShortcutBar_gump::HideGump();
 		}
 	}
 

@@ -587,6 +587,34 @@ Container_game_object* Face_stats::find_actor(int mx, int my) {
 int         Face_stats::mode = 0;
 Face_stats* Face_stats::self = nullptr;
 
+// Hide the gump without destroying it
+void Face_stats::HideGump() {
+	if (self) {
+		gumpman->remove_gump(self);
+	}
+}
+
+// Show the gump if it exists
+void Face_stats::ShowGump() {
+	if (self) {
+		gumpman->add_gump(self);
+	}
+}
+
+// Check if the gump is currently visible
+bool Face_stats::Visible() {
+	if (!self) {
+		return false;
+	}
+
+	for (auto it = gumpman->begin(); it != gumpman->end(); it++) {
+		if (*it == self) {
+			return true;
+		}
+	}
+	return false;
+}
+
 // Creates if doesn't already exist
 void Face_stats::CreateGump() {
 	if (!self) {

@@ -31,6 +31,7 @@
 #include "Audio.h"
 #include "AudioMixer.h"
 #include "Configuration.h"
+#include "Face_stats.h"
 #include "Gump_button.h"
 #include "Gump_manager.h"
 #include "Scroll_gump.h"
@@ -688,21 +689,6 @@ int exult_main(const char* runpath) {
 
 	Mouse mouse(gwin);
 	Mouse::mouse()->set_shape(Mouse::hand);
-
-	if (touchui != nullptr) {
-		touchui->showButtonControls();
-		// TODO(Marzo): This is probably the wrong place for this
-		Usecode_machine* usecode = Game_window::get_instance()->get_usecode();
-		if ((GAME_BG
-			 && !usecode->get_global_flag(Usecode_machine::did_first_scene))
-			|| (GAME_SI
-				&& !usecode->get_global_flag(
-						Usecode_machine::si_did_first_scene))) {
-			touchui->hideGameControls();
-		} else {
-			touchui->showGameControls();
-		}
-	}
 
 	const int result = Play();    // start game
 
@@ -2813,6 +2799,10 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 			touchui->showButtonControls();
 			touchui->hideGameControls();
 		}
+		if (Face_stats::Visible() && ShortcutBar_gump::Visible()) {
+			Face_stats::HideGump();
+			ShortcutBar_gump::HideGump();
+		}
 
 		Delay();    // Wait a fraction of a second.
 
@@ -2909,6 +2899,10 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 		}
 		if (touchui != nullptr) {
 			touchui->showGameControls();
+		}
+		if (!Face_stats::Visible() && !ShortcutBar_gump::Visible()) {
+			Face_stats::ShowGump();
+			ShortcutBar_gump::ShowGump();
 		}
 	}
 

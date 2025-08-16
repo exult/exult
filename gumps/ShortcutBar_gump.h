@@ -112,7 +112,10 @@ public:
 		has_changed = true;
 	}
 
-	void check_for_updates(int shnum);
+	void        check_for_updates(int shnum);
+	static void HideGump();
+	static void ShowGump();
+	static bool Visible();
 
 private:
 	ShortcutBarButtonItem buttonItems[MAX_SHORTCUT_BAR_ITEMS];
