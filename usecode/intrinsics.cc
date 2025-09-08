@@ -3010,6 +3010,7 @@ USECODE_INTRINSIC(get_party_list2) {
 USECODE_INTRINSIC(set_camera) {
 	ignore_unused_variable_warning(num_parms);
 	// Set_camera(actor)
+	gumpman->close_all_gumps();
 	Actor* actor = as_actor(get_item(parms[0]));
 	if (actor) {
 		gwin->set_camera_actor(actor);
@@ -3022,7 +3023,24 @@ USECODE_INTRINSIC(set_camera) {
 			activate_cached(t);    // Mar-10-01 - For Test of Love.
 		}
 	}
-
+	// toggling game controls and face/shortcut bar for SI crystal ball scenes
+	if (actor == gwin->get_main_actor()) {
+		if (touchui != nullptr) {
+			touchui->showGameControls();
+		}
+		if (!Face_stats::Visible() && !ShortcutBar_gump::Visible()) {
+			Face_stats::ShowGump();
+			ShortcutBar_gump::ShowGump();
+		}
+	} else {
+		if (touchui != nullptr) {
+			touchui->hideGameControls();
+		}
+		if (Face_stats::Visible() || ShortcutBar_gump::Visible()) {
+			Face_stats::HideGump();
+			ShortcutBar_gump::HideGump();
+		}
+	}
 	return no_ret;
 }
 

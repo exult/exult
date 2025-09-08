@@ -131,12 +131,16 @@ void Conversation::init_faces() {
 	for (Npc_face_info*& finfo : face_info) {
 		delete finfo;
 		finfo = nullptr;
-		if (touchui != nullptr) {
-			touchui->showGameControls();
-		}
-		if (!Face_stats::Visible() && !ShortcutBar_gump::Visible()) {
-			Face_stats::ShowGump();
-			ShortcutBar_gump::ShowGump();
+		// only restore the UI if the Avatar is the main actor so crystal ball
+		// scenes remain UI free
+		if (gwin->get_camera_actor() == gwin->get_main_actor()) {
+			if (touchui != nullptr) {
+				touchui->showGameControls();
+			}
+			if (!Face_stats::Visible() && !ShortcutBar_gump::Visible()) {
+				Face_stats::ShowGump();
+				ShortcutBar_gump::ShowGump();
+			}
 		}
 	}
 	num_faces       = 0;
@@ -343,13 +347,17 @@ void Conversation::remove_slot_face(int slot) {
 			}
 		}
 		last_face_shown = j - 1;
-		if (touchui != nullptr && num_faces == 0) {
-			touchui->showGameControls();
-		}
-		if (!Face_stats::Visible() && !ShortcutBar_gump::Visible()
-			&& num_faces == 0) {
-			Face_stats::ShowGump();
-			ShortcutBar_gump::ShowGump();
+		// only restore the UI if the Avatar is the main actor so crystal ball
+		// scenes remain UI free
+		if (gwin->get_camera_actor() == gwin->get_main_actor()) {
+			if (touchui != nullptr && num_faces == 0) {
+				touchui->showGameControls();
+			}
+			if (!Face_stats::Visible() && !ShortcutBar_gump::Visible()
+				&& num_faces == 0) {
+				Face_stats::ShowGump();
+				ShortcutBar_gump::ShowGump();
+			}
 		}
 	}
 }
