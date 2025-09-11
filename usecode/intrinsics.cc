@@ -2897,8 +2897,19 @@ USECODE_INTRINSIC(set_item_flag) {
 	case Obj_flags::bg_dont_move:
 		obj->set_flag(flag);
 		// Get out of combat mode.
-		if (obj == gwin->get_main_actor() && gwin->in_combat()) {
-			gwin->toggle_combat();
+		if (obj == gwin->get_main_actor()) {
+			if (gwin->in_combat()) {
+				gwin->toggle_combat();
+			}
+			if (touchui != nullptr) {
+				touchui->hideGameControls();
+			}
+			if (Face_stats::Visible()) {
+				Face_stats::HideGump();
+			}
+			if (ShortcutBar_gump::Visible()) {
+				ShortcutBar_gump::HideGump();
+			}
 		}
 		// Show change in status.
 		gwin->set_all_dirty();
@@ -2946,6 +2957,17 @@ USECODE_INTRINSIC(clear_item_flag) {
 		if (flag == Obj_flags::dont_move || flag == Obj_flags::bg_dont_move) {
 			// Show change in status.
 			show_pending_text();    // Fixes Lydia-tatoo.
+			if (obj == gwin->get_main_actor()) {
+				if (touchui != nullptr) {
+					touchui->showGameControls();
+				}
+				if (!Face_stats::Visible()) {
+					Face_stats::ShowGump();
+				}
+				if (!ShortcutBar_gump::Visible()) {
+					ShortcutBar_gump::ShowGump();
+				}
+			}
 			gwin->set_all_dirty();
 		} else if (Is_moving_barge_flag(flag)) {
 			// Stop barge object is on or part of.
@@ -3026,6 +3048,7 @@ USECODE_INTRINSIC(get_party_list2) {
 USECODE_INTRINSIC(set_camera) {
 	ignore_unused_variable_warning(num_parms);
 	// Set_camera(actor)
+	gumpman->close_all_gumps();
 	Actor* actor = as_actor(get_item(parms[0]));
 	if (actor) {
 		gwin->set_camera_actor(actor);
