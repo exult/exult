@@ -131,14 +131,16 @@ void Conversation::init_faces() {
 	for (Npc_face_info*& finfo : face_info) {
 		delete finfo;
 		finfo = nullptr;
-		if (touchui != nullptr) {
-			touchui->showGameControls();
-		}
-		if (!Face_stats::Visible()) {
-			Face_stats::ShowGump();
-		}
-		if (!ShortcutBar_gump::Visible()) {
-			ShortcutBar_gump::ShowGump();
+		if (!gwin->main_actor_dont_move()) {
+			if (touchui != nullptr) {
+				touchui->showGameControls();
+			}
+			if (!Face_stats::Visible()) {
+				Face_stats::ShowGump();
+			}
+			if (!ShortcutBar_gump::Visible()) {
+				ShortcutBar_gump::ShowGump();
+			}
 		}
 	}
 	num_faces       = 0;
@@ -347,11 +349,10 @@ void Conversation::remove_slot_face(int slot) {
 			}
 		}
 		last_face_shown = j - 1;
-		if (touchui != nullptr && num_faces == 0) {
-			touchui->showGameControls();
-		}
-
-		if (num_faces == 0) {
+		if (!gwin->main_actor_dont_move() && num_faces == 0) {
+			if (touchui != nullptr) {
+				touchui->showGameControls();
+			}
 			if (!Face_stats::Visible()) {
 				Face_stats::ShowGump();
 			}
