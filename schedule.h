@@ -734,18 +734,25 @@ class Forge_schedule : public Schedule {
 	Game_object_weak anvil;
 	Game_object_weak trough;
 	Game_object_weak bellows;
+	Game_object_weak bucket;
+	Game_object_weak well;
+	Game_object_weak well2;
+	
 
 	enum {
 		put_sword_on_firepit,
 		use_bellows,
 		get_tongs,
 		sword_on_anvil,
+		place_tongs,
 		get_hammer,
 		use_hammer,
-		walk_to_trough,
+		place_hammer,
+		get_bucket,
 		fill_trough,
-		get_tongs2,
 		use_trough,
+		use_well,
+		wait_for_well_anim,
 		done
 	} state;
 

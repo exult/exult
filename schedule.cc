@@ -4876,22 +4876,87 @@ void Forge_schedule::now_what() {
 	// Often want to get within 1 tile.
 	Actor_pathfinder_client cost(npc, 1);
 
+	// create bool blank_on_firepit, blank_on_anvil
+	Game_object* anvil_obj             = npc->find_closest(991);
+	Game_object* firepit_obj           = npc->find_closest(739);
+	anvil                              = weak_from_obj(anvil_obj);
+	firepit                            = weak_from_obj(firepit_obj);
+	const Game_object_shared blank_obj = blank.lock();
+	Tile_coord               firepit_top(-1, -1, -1);
+	if (firepit_obj) {
+		const TileRect    ffoot = firepit_obj->get_footprint();
+		const Shape_info& finfo = firepit_obj->get_info();
+		firepit_top             = Tile_coord(
+                ffoot.x + ffoot.w / 2 + 1, ffoot.y + ffoot.h / 2,
+                firepit_obj->get_lift() + finfo.get_3d_height());
+	}
+	Tile_coord anvil_top(-1, -1, -1);
+	if (anvil_obj) {
+		const TileRect    afoot = anvil_obj->get_footprint();
+		const Shape_info& ainfo = anvil_obj->get_info();
+		anvil_top               = Tile_coord(
+                afoot.x + 2, afoot.y,
+                anvil_obj->get_lift() + ainfo.get_3d_height());
+	}
+	bool blank_on_firepit = false;
+	bool blank_on_anvil   = false;
+	if (blank_obj) {
+		const Tile_coord blank_pos = blank_obj->get_tile();
+		blank_on_firepit = (firepit_top.tx != -1) && (blank_pos == firepit_top);
+		blank_on_anvil   = (anvil_top.tx != -1) && (blank_pos == anvil_top);
+	}
+
 	switch (state) {
 	case put_sword_on_firepit: {
 		Game_object_shared blank_obj = blank.lock();
+		// Check inventory
 		if (!blank_obj) {
-			Game_object* found = npc->find_closest(668);
-			if (found) {
-				blank_obj = found->shared_from_this();
+			Game_object_vector have;
+			if (npc->get_objects(have, 668, c_any_qual, c_any_framenum) > 0) {
+				blank_obj = have[0]->shared_from_this();
 			}
-			// TODO: go and get it...
 		}
+
+		// Otherwise look nearby and queue a pickup
+		if (!blank_obj) {
+			if (Game_object* nearest = npc->find_closest(668)) {
+				blank_obj = nearest->shared_from_this();
+				blank     = Game_object_weak(blank_obj);
+				if (nearest->get_outermost() != npc) {
+					const int dist = npc->distance(nearest);
+					if (dist <= 2) {
+						// Standing by it: grab directly, no path
+						npc->set_action(new Pickup_actor_action(nearest, 250));
+						break;
+					}
+					if (set_pickup_item_action(
+								npc, nearest, gwin->get_std_delay())) {
+						break;
+					}
+					// If no path but close enough, try direct pickup
+					npc->set_action(new Pickup_actor_action(nearest, 250));
+					break;
+				}
+			}
+		}
+
+		// Nowhere to be found, let's create it
 		if (!blank_obj) {
 			blank_obj = std::make_shared<Ireg_game_object>(668, 0, 0, 0);
 			blank_obj->move(npc->get_tile());
 			gwin->add_dirty(blank_obj.get());
 		}
-		blank                    = Game_object_weak(blank_obj);
+		blank = Game_object_weak(blank_obj);
+
+		if (!blank_on_firepit && blank_obj->get_outermost() != npc) {
+			if (set_pickup_item_action(
+						npc, blank_obj.get(), gwin->get_std_delay())) {
+				break;
+			}
+			npc->set_action(new Pickup_actor_action(blank_obj.get(), 250));
+			break;
+		}
+
 		Game_object* firepit_obj = npc->find_closest(739);
 		firepit                  = weak_from_obj(firepit_obj);
 		if (!firepit_obj) {
@@ -4916,6 +4981,25 @@ void Forge_schedule::now_what() {
 					new Pickup_actor_action(blank_obj.get(), bpos, 250));
 		}
 
+		const Game_object_shared tongs_obj = tongs.lock();
+		Game_object*             lh        = npc->get_readied(lhand);
+		if (tongs_obj && lh == tongs_obj.get()) {
+			state = place_tongs;
+			break;
+		}
+
+		Game_object* trough_obj = npc->find_closest(719);
+		trough                  = weak_from_obj(trough_obj);
+
+		if (trough_obj->get_framenum() == 0) {
+			const Tile_coord tpos
+					= trough_obj->get_tile() + Tile_coord(0, 2, 0);
+			Actor_action* pact = Path_walking_actor_action::create_path(
+					npcpos, tpos, cost);
+			npc->set_action(pact);
+			state = get_bucket;
+			break;
+		}
 		state = use_bellows;
 		break;
 	}
@@ -4925,7 +5009,7 @@ void Forge_schedule::now_what() {
 		const Game_object_shared blank_obj   = blank.lock();
 		bellows                              = weak_from_obj(bellows_obj);
 		firepit                              = weak_from_obj(firepit_obj);
-		if (!bellows_obj || !firepit_obj || !blank_obj) {
+		if (!bellows_obj || !firepit_obj || !blank_obj || !blank_on_firepit) {
 			// uh-oh... try again in a few second
 			npc->start(250, 2500);
 			state = put_sword_on_firepit;
@@ -4978,16 +5062,83 @@ void Forge_schedule::now_what() {
 		break;
 	}
 	case get_tongs: {
+		// If a pickup/walk action is already queued, wait for it to finish.
+		if (npc->get_action()) {
+			break;
+		}
+
 		Game_object_shared tongs_obj = tongs.lock();
+
+		// Check inventory
+		if (!tongs_obj) {
+			Game_object_vector have;
+			if (npc->get_objects(have, 994, c_any_qual, c_any_framenum) > 0) {
+				tongs_obj = have[0]->shared_from_this();
+			}
+		}
+
+		// Otherwise look nearby and queue a pickup
+		if (!tongs_obj) {
+			if (Game_object* nearest = npc->find_closest(994)) {
+				tongs_obj = nearest->shared_from_this();
+				tongs     = Game_object_weak(tongs_obj);
+				if (nearest->get_outermost() != npc) {
+					const int dist = npc->distance(nearest);
+					if (dist <= 2) {
+						// Standing by it: grab directly, no path
+						npc->set_action(new Pickup_actor_action(nearest, 250));
+						break;
+					}
+					if (set_pickup_item_action(
+								npc, nearest, gwin->get_std_delay())) {
+						break;
+					}
+					// If no path but close enough, try direct pickup
+					npc->set_action(new Pickup_actor_action(nearest, 250));
+					break;
+				}
+			}
+		}
+
+		// Nowhere to be found, let's create it
 		if (!tongs_obj) {
 			tongs_obj = std::make_shared<Ireg_game_object>(994, 0, 0, 0);
-			tongs     = Game_object_weak(tongs_obj);
+			npc->add_readied(tongs_obj.get(), lhand);
+			npc->add_dirty();
 		}
-		npc->empty_hands();    // make sure the tongs can be equipped
-		npc->add_readied(tongs_obj.get(), lhand);
-		npc->add_dirty();
 
-		state = sword_on_anvil;
+		tongs = Game_object_weak(tongs_obj);
+
+		if (tongs_obj->get_outermost() != npc) {
+			if (set_pickup_item_action(
+						npc, tongs_obj.get(), gwin->get_std_delay())) {
+				break;
+			}
+			npc->set_action(new Pickup_actor_action(tongs_obj.get(), 250));
+			break;
+		}
+
+		// Equip only if not already readied
+		Game_object* lh = npc->get_readied(lhand);
+		if (lh != tongs_obj.get()) {
+			if (lh) {
+				npc->empty_hands();
+			}
+			npc->add_readied(tongs_obj.get(), lhand);
+			npc->add_dirty();
+		}
+
+		if (blank_on_firepit) {
+			state = sword_on_anvil;
+			break;
+		}
+		if (blank_on_anvil) {
+			state = use_trough;
+			break;
+		}
+
+		// Blank is neither on anvil nor firepit, so start over
+		state = put_sword_on_firepit;
 		break;
 	}
 	case sword_on_anvil: {
@@ -5027,29 +5178,183 @@ void Forge_schedule::now_what() {
 					new Pickup_actor_action(blank_obj.get(), 250),
 					new Pickup_actor_action(blank_obj.get(), bpos, 250)));
 		}
-		state = get_hammer;
+		state = place_tongs;
+		break;
+	}
+	case place_tongs: {
+		const Game_object_shared tongs_obj  = tongs.lock();
+		Game_object*             trough_obj = npc->find_closest(719);
+		trough                              = weak_from_obj(trough_obj);
+
+		if (!tongs_obj) {
+			if (blank_on_firepit) {
+				if (trough_obj->get_framenum() == 0) {
+					const Tile_coord tpos
+							= trough_obj->get_tile() + Tile_coord(0, 2, 0);
+					Actor_action* pact = Path_walking_actor_action::create_path(
+							npcpos, tpos, cost);
+					npc->set_action(pact);
+					state = get_bucket;
+					break;
+				}
+				state = use_bellows;
+				break;
+			}
+			if (blank_on_anvil) {
+				state = get_hammer;
+				break;
+			}
+		}
+
+		// If a pickup/walk action is already queued, wait for it to finish.
+		if (npc->get_action()) {
+			break;
+		}
+
+		// If tongs are still readied, enqueue the placement and wait.
+		if (npc->get_readied(lhand) == tongs_obj.get()) {
+			Game_object* table_obj = npc->find_closest(1003);
+			if (!table_obj) {
+				tongs_obj->remove_this();
+				npc->empty_hands();
+				npc->add_dirty();
+				break;
+			}
+
+			// Walk to a spot adjacent to the table
+			const Tile_coord tpos
+					= Map_chunk::find_spot(table_obj->get_tile(), 1, npc);
+			Actor_action* pact = nullptr;
+			if (tpos.tx != -1) {
+				pact = Path_walking_actor_action::create_path(
+						npc->get_tile(), tpos, cost);
+			}
+
+			// Compute a spot on top of the table to place the tongs
+			const TileRect    foot = table_obj->get_footprint();
+			const Shape_info& info = table_obj->get_info();
+			Tile_coord        drop(
+                    foot.x + foot.w / 2, foot.y + foot.h / 2,
+                    table_obj->get_lift() + info.get_3d_height());
+
+			if (pact) {
+				npc->set_action(new Sequence_actor_action(
+						pact,
+						new Pickup_actor_action(tongs_obj.get(), drop, 250)));
+			} else {
+				npc->set_action(
+						new Pickup_actor_action(tongs_obj.get(), drop, 250));
+			}
+			break;
+		}
+		npc->empty_hands();
+		npc->add_dirty();
+
+		// If blank is at firepit top, go heat it but check trough first; if at
+		// anvil top, get hammer
+		if (blank_on_firepit) {
+			if (trough_obj->get_framenum() == 0) {
+				const Tile_coord tpos
+						= trough_obj->get_tile() + Tile_coord(0, 2, 0);
+				Actor_action* pact = Path_walking_actor_action::create_path(
+						npcpos, tpos, cost);
+				npc->set_action(pact);
+				state = get_bucket;
+				break;
+			}
+			state = use_bellows;
+			break;
+		}
+		if (blank_on_anvil) {
+			state = get_hammer;
+			break;
+		}
+		// Default fallback if blank isn’t where expected.
+		state = put_sword_on_firepit;
 		break;
 	}
 	case get_hammer: {
+		// If a pickup/walk action is already queued, wait for it to finish.
+		if (npc->get_action()) {
+			break;
+		}
+
+		// If tongs are still readied in left hand, place them on a table first
+		Game_object*             left      = npc->get_readied(lhand);
+		const Game_object_shared tongs_obj = tongs.lock();
+		if (left == tongs_obj.get()) {
+			state = place_tongs;
+			break;
+		}
+
 		Game_object_shared hammer_obj = hammer.lock();
+
+		// Check inventory
+		if (!hammer_obj) {
+			Game_object_vector have;
+			if (npc->get_objects(have, 623, c_any_qual, c_any_framenum) > 0) {
+				hammer_obj = have[0]->shared_from_this();
+			}
+		}
+
+		// Otherwise look nearby and queue a pickup
+		if (!hammer_obj) {
+			if (Game_object* nearest = npc->find_closest(623)) {
+				hammer_obj = nearest->shared_from_this();
+				hammer     = Game_object_weak(hammer_obj);
+				if (nearest->get_outermost() != npc) {
+					const int dist = npc->distance(nearest);
+					if (dist <= 2) {
+						// Standing by it: grab directly, no path
+						npc->set_action(new Pickup_actor_action(nearest, 250));
+						break;
+					}
+					if (set_pickup_item_action(
+								npc, nearest, gwin->get_std_delay())) {
+						break;
+					}
+					// If no path but close enough, try direct pickup
+					npc->set_action(new Pickup_actor_action(nearest, 250));
+					break;
+				}
+			}
+		}
+
+		// Nowhere to be found, let's create it
 		if (!hammer_obj) {
 			hammer_obj = std::make_shared<Ireg_game_object>(623, 0, 0, 0);
-			hammer     = Game_object_weak(hammer_obj);
+			npc->add_readied(hammer_obj.get(), lhand);
+			npc->add_dirty();
 		}
-		npc->add_dirty();
-		const Game_object_shared tongs_obj = tongs.lock();
-		if (tongs_obj) {
-			tongs_obj->remove_this();
-			tongs = Game_object_weak();
+		hammer = Game_object_weak(hammer_obj);
+
+		if (hammer_obj->get_outermost() != npc) {
+			if (set_pickup_item_action(
+						npc, hammer_obj.get(), gwin->get_std_delay())) {
+				break;
+			}
+			npc->set_action(new Pickup_actor_action(hammer_obj.get(), 250));
+			break;
 		}
-		npc->empty_hands();    // make sure the hammer can be equipped
-		npc->add_readied(hammer_obj.get(), lhand);
-		npc->add_dirty();
+
+		// Equip only if not already readied
+		Game_object* lh = npc->get_readied(lhand);
+		if (lh != hammer_obj.get()) {
+			if (lh) {
+				npc->empty_hands();
+			}
+			npc->add_readied(hammer_obj.get(), lhand);
+			npc->add_dirty();
+		}
 
 		state = use_hammer;
 		break;
 	}
 	case use_hammer: {
+		// If a pickup/walk action is already queued, wait for it to finish.
+		if (npc->get_action()) {
+			break;
+		}
 		Game_object* anvil_obj             = npc->find_closest(991);
 		Game_object* firepit_obj           = npc->find_closest(739);
 		anvil                              = weak_from_obj(anvil_obj);
@@ -5060,6 +5365,17 @@ void Forge_schedule::now_what() {
 			npc->start(250, 2500);
 			state = put_sword_on_firepit;
 			return;
+		}
+
+		// Before hammering, make sure we stand next to the anvil
+		if (npc->distance(anvil_obj) > 2) {
+			const Tile_coord tpos = anvil_obj->get_tile() + Tile_coord(0, 1, 0);
+			if (Actor_action* pact
+				= Path_walking_actor_action::create_path(npcpos, tpos, cost)) {
+				npc->set_action(pact);
+				npc->start(gwin->get_std_delay());
+				return;    // stay in use_hammer, will run again when idle
+			}
 		}
 
 		signed char frames[12];
@@ -5080,38 +5396,133 @@ void Forge_schedule::now_what() {
 		a[8]     = new Frames_actor_action(0x00, 0, firepit_obj);
 		a[9]     = nullptr;
 		npc->set_action(new Sequence_actor_action(a));
-
-		state = walk_to_trough;
+		state = place_hammer;
 		break;
 	}
-	case walk_to_trough: {
-		npc->add_dirty();
+	case place_hammer: {
+		// If a pickup/walk action is already queued, wait for it to finish.
+		if (npc->get_action()) {
+			break;
+		}
 		const Game_object_shared hammer_obj = hammer.lock();
-		if (hammer_obj) {
-			hammer_obj->remove_this();
-		}
-		npc->add_dirty();
-
-		Game_object* trough_obj = npc->find_closest(719);
-		trough                  = weak_from_obj(trough_obj);
-		if (!trough_obj) {
-			// uh-oh... try again in a few seconds
-			npc->start(250, 2500);
-			state = put_sword_on_firepit;
-			return;
-		}
-
-		if (trough_obj->get_framenum() == 0) {
-			const Tile_coord tpos
-					= trough_obj->get_tile() + Tile_coord(0, 2, 0);
-			Actor_action* pact = Path_walking_actor_action::create_path(
-					npcpos, tpos, cost);
-			npc->set_action(pact);
-			state = fill_trough;
+		if (!hammer_obj) {
+			// Nothing to place; continue toward trough
+			state = get_tongs;
 			break;
 		}
 
-		state = get_tongs2;
+		// If hammer is still readied, enqueue placement and wait
+		if (npc->get_readied(lhand) == hammer_obj.get()) {
+			Game_object* table_obj = npc->find_closest(1003);
+			if (!table_obj) {
+				hammer_obj->remove_this();
+				npc->empty_hands();
+				npc->add_dirty();
+				state = get_tongs;
+				break;
+			}
+			const Tile_coord tpos
+					= Map_chunk::find_spot(table_obj->get_tile(), 1, npc);
+			Actor_action* pact = nullptr;
+			if (tpos.tx != -1) {
+				pact = Path_walking_actor_action::create_path(
+						npc->get_tile(), tpos, cost);
+			}
+			const TileRect    foot = table_obj->get_footprint();
+			const Shape_info& info = table_obj->get_info();
+			Tile_coord        drop(
+                    foot.x + foot.w / 2, foot.y + foot.h / 2,
+                    table_obj->get_lift() + info.get_3d_height());
+
+			if (pact) {
+				npc->set_action(new Sequence_actor_action(
+						pact,
+						new Pickup_actor_action(hammer_obj.get(), drop, 250)));
+			} else {
+				npc->set_action(
+						new Pickup_actor_action(hammer_obj.get(), drop, 250));
+			}
+			break;
+		}
+		state = get_tongs;
+		break;
+	}
+	case get_bucket: {
+		// If a pickup/walk action is already queued, wait for it to finish.
+		if (npc->get_action()) {
+			break;
+		}
+
+		Game_object_shared bucket_obj = bucket.lock();
+
+		// Check inventory
+		if (!bucket_obj) {
+			Game_object_vector have;
+			int                cnt = 0;
+			cnt += npc->get_objects(have, 810, c_any_qual, 0);
+			cnt += npc->get_objects(have, 810, c_any_qual, 1);
+			if (cnt > 0) {
+				bucket_obj = have[0]->shared_from_this();
+			}
+		}
+
+		// Otherwise look nearby and queue a pickup
+		if (!bucket_obj) {
+			Game_object_vector nearby;
+			npc->find_nearby(nearby, 810, 24, 0, c_any_qual, c_any_framenum);
+			nearby.erase(
+					std::remove_if(
+							nearby.begin(), nearby.end(),
+							[](Game_object* o) {
+								return o->get_framenum() > 1;
+							}),
+					nearby.end());
+
+			if (!nearby.empty()) {
+				Game_object* nearest = find_nearest(npc, nearby);
+				bucket_obj           = nearest->shared_from_this();
+				bucket               = Game_object_weak(bucket_obj);
+				if (nearest->get_outermost() != npc) {
+					const int dist = npc->distance(nearest);
+					if (dist <= 2) {
+						// Standing by it: grab directly, no path
+						npc->set_action(new Pickup_actor_action(nearest, 250));
+						break;
+					}
+					if (set_pickup_item_action(
+								npc, nearest, gwin->get_std_delay())) {
+						break;
+					}
+					// If no path but close enough, try direct pickup
+					npc->set_action(new Pickup_actor_action(nearest, 250));
+					break;
+				}
+			}
+		}
+
+		// Nowhere to be found, let's create it
+		if (!bucket_obj) {
+			bucket_obj = std::make_shared<Ireg_game_object>(810, 0, 0, 0);
+			npc->add(bucket_obj.get());
+		}
+		bucket = Game_object_weak(bucket_obj);
+
+		if (bucket_obj->get_outermost() != npc) {
+			if (set_pickup_item_action(
+						npc, bucket_obj.get(), gwin->get_std_delay())) {
+				break;
+			}
+			npc->set_action(new Pickup_actor_action(bucket_obj.get(), 250));
+			break;
+		}
+
+		Game_object* well_obj = npc->find_closest(470);
+		well                  = weak_from_obj(well_obj);
+		if (well_obj) {
+			state = use_well;
+			break;
+		}
+		state = fill_trough;
 		break;
 	}
 	case fill_trough: {
@@ -5123,24 +5534,58 @@ void Forge_schedule::now_what() {
 			state = put_sword_on_firepit;
 			return;
 		}
+
+		Game_object* well_obj = npc->find_closest(470);
+		well                  = weak_from_obj(well_obj);
+
 		const int dir = npc->get_direction(trough_obj);
-		trough_obj->change_frame(3);
 		npc->change_frame(npc->get_dir_framenum(dir, Actor::bow_frame));
-
-		state = get_tongs2;
-		break;
-	}
-	case get_tongs2: {
-		Game_object_shared tongs_obj = tongs.lock();
-		if (!tongs_obj) {
-			tongs_obj = std::make_shared<Ireg_game_object>(994, 0, 0, 0);
-			tongs     = Game_object_weak(tongs_obj);
+		if (!well_obj) {
+			trough_obj->change_frame(3);
+		} else {
+			int current_frame = trough_obj->get_framenum();
+			int new_frame     = std::min(current_frame + 1, 3);
+			trough_obj->change_frame(new_frame);
 		}
-		npc->empty_hands();    // make sure the tongs can be equipped
-		npc->add_readied(tongs_obj.get(), lhand);
-		npc->add_dirty();
 
-		state = use_trough;
+		if (trough_obj->get_framenum() < 3) {
+			// Need more filling, go back to well or wait
+			if (well_obj) {
+				const Tile_coord tpos
+						= well_obj->get_tile() + Tile_coord(0, 1, 0);
+				Actor_action* pact = Path_walking_actor_action::create_path(
+						npcpos, tpos, cost);
+				npc->set_action(pact);
+				state = use_well;
+				break;
+			} else {
+				// No well, just wait a bit and try again
+				npc->start(250, 2000);
+			}
+			break;
+		}
+
+		const Game_object_shared bucket_obj = bucket.lock();
+		if (bucket_obj && trough_obj->get_framenum() == 3) {
+			// Change bucket to full when there is no well nearby
+			if (!well_obj && bucket_obj->get_framenum() != 1) {
+				bucket_obj->change_frame(1);
+			}
+			// Find a free spot on the ground near the blacksmith
+			const Tile_coord npcpos = npc->get_tile();
+			const Tile_coord drop_spot
+					= Map_chunk::find_spot(npcpos, 3, 810, 0);
+
+			if (drop_spot.tx != -1) {
+				npc->set_action(new Pickup_actor_action(
+						bucket_obj.get(), drop_spot, 250));
+			} else {
+				// If no free spot found, just remove it
+				bucket_obj->remove_this();
+				bucket = Game_object_weak();
+			}
+		}
+		state = use_bellows;
 		break;
 	}
 	case use_trough: {
@@ -5170,17 +5615,22 @@ void Forge_schedule::now_what() {
 				troughframe = 0;
 			}
 
-			const int   dir      = npc->get_direction(trough_obj);
-			signed char npcframe = npc->get_dir_framenum(dir, Actor::bow_frame);
+			signed char npc_bow   = npc->get_dir_framenum(1, Actor::bow_frame);
+			signed char npc_stand = npc->get_dir_framenum(1, Actor::standing);
 
-			auto** a = new Actor_action*[7];
+			auto** a = new Actor_action*[11];
 			a[0]     = pact;
 			a[1]     = new Pickup_actor_action(blank_obj.get(), 250);
 			a[2]     = pact2;
-			a[3]     = new Frames_actor_action(&npcframe, 1, 250);
-			a[4]     = new Frames_actor_action(&troughframe, 1, 0, trough_obj);
-			a[5]     = new Frames_actor_action(0x00, 0, blank_obj.get());
-			a[6]     = nullptr;
+			a[3]     = new Frames_actor_action(&npc_bow, 1, 250);
+			a[4]     = new Frames_actor_action(&npc_stand, 1, 250);
+			a[5]     = new Frames_actor_action(&npc_bow, 1, 250);
+			a[6]     = new Frames_actor_action(&npc_stand, 1, 250);
+			a[7]     = new Frames_actor_action(&npc_bow, 1, 250);
+			a[8]     = new Frames_actor_action(&troughframe, 1, 0, trough_obj);
+			a[9]     = new Frames_actor_action(0x00, 0, blank_obj.get());
+			a[10]    = nullptr;
+
 			npc->set_action(new Sequence_actor_action(a));
 		} else {
 			// Don't leak the paths
@@ -5191,18 +5641,130 @@ void Forge_schedule::now_what() {
 					new Pickup_actor_action(blank_obj.get(), 250),
 					new Frames_actor_action(0, 0, blank_obj.get())));
 		}
-
 		state = done;
 		break;
 	}
-	case done: {
-		npc->add_dirty();
-		const Game_object_shared tongs_obj = tongs.lock();
-		if (tongs_obj) {
-			tongs_obj->remove_this();
+	case use_well: {
+		Game_object* well_obj  = npc->find_closest(470);
+		Game_object* well2_obj = npc->find_closest(740);
+		well                   = weak_from_obj(well_obj);
+		well2                  = weak_from_obj(well2_obj);
+
+		if (!well2_obj) {
+			// uh-oh... try again in a few seconds
+			npc->start(250, 2500);
+			state = put_sword_on_firepit;
+			return;
 		}
-		npc->add_dirty();
+
+		const Tile_coord tpos = well_obj->get_tile() + Tile_coord(-1, 1, 0);
+		Actor_action*    pact
+				= Path_walking_actor_action::create_path(npcpos, tpos, cost);
+		const Tile_coord tpos2 = well_obj->get_tile() + Tile_coord(-6, 0, 0);
+		Actor_action*    pact2
+				= Path_walking_actor_action::create_path(tpos, tpos2, cost);
+		Actor_action* pact3
+				= Path_walking_actor_action::create_path(tpos2, tpos, cost);
+
+		signed char npc_reach = npc->get_dir_framenum(1, Actor::reach1_frame);
+		signed char frames[12];
+		const int   cnt = npc->get_attack_frames(623, false, 4, frames);
+		if (cnt) {
+			npc->set_action(new Frames_actor_action(frames, cnt));
+		}
+		signed char frames2[12];
+		const int   cnt2 = npc->get_attack_frames(623, false, 0, frames2);
+		if (cnt2) {
+			npc->set_action(new Frames_actor_action(frames2, cnt2));
+		}
+
+		if (pact && pact2 && pact3) {
+			Actor_action** a = nullptr;
+			// Vanilla BG had way less well frames
+			if (GAME_BG && !GAME_FOV) {
+				a     = new Actor_action*[20];
+				a[0]  = pact;
+				a[1]  = new Face_pos_actor_action(well2_obj, 250);
+				a[2]  = new Frames_actor_action(&npc_reach, 1, 250);
+				a[3]  = new Frames_actor_action(0x01, 50, well2_obj);
+				a[4]  = pact2;
+				a[5]  = new Frames_actor_action(frames, cnt);
+				a[6]  = new Frames_actor_action(0x02, 5, well2_obj);
+				a[7]  = new Frames_actor_action(frames, cnt);
+				a[8]  = new Frames_actor_action(0x03, 5, well2_obj);
+				a[9]  = new Frames_actor_action(frames2, cnt);
+				a[10] = new Frames_actor_action(0x03, 5, well2_obj);
+				a[11] = new Frames_actor_action(frames2, cnt2);
+				a[12] = new Frames_actor_action(0x04, 5, well2_obj);
+				a[13] = new Frames_actor_action(frames2, cnt2);
+				a[14] = new Frames_actor_action(0x05, 5, well2_obj);
+				a[15] = pact3;
+				a[16] = new Face_pos_actor_action(well2_obj, 250);
+				a[17] = new Frames_actor_action(&npc_reach, 1, 250);
+				a[18] = new Frames_actor_action(0x00, 50, well2_obj);
+				a[19] = nullptr;
+			} else {
+				a     = new Actor_action*[30];
+				a[0]  = pact;
+				a[1]  = new Face_pos_actor_action(well2_obj, 250);
+				a[2]  = new Frames_actor_action(&npc_reach, 1, 250);
+				a[3]  = new Frames_actor_action(0x01, 50, well2_obj);
+				a[4]  = pact2;
+				a[5]  = new Frames_actor_action(frames, cnt);
+				a[6]  = new Frames_actor_action(0x02, 5, well2_obj);
+				a[7]  = new Frames_actor_action(frames, cnt);
+				a[8]  = new Frames_actor_action(0x03, 5, well2_obj);
+				a[9]  = new Frames_actor_action(frames, cnt);
+				a[10] = new Frames_actor_action(0x04, 5, well2_obj);
+				a[11] = new Frames_actor_action(frames, cnt);
+				a[12] = new Frames_actor_action(0x05, 5, well2_obj);
+				a[13] = new Frames_actor_action(frames, cnt);
+				a[14] = new Frames_actor_action(0x06, 5, well2_obj);
+				a[15] = new Frames_actor_action(frames2, cnt2);
+				a[16] = new Frames_actor_action(0x07, 5, well2_obj);
+				a[17] = new Frames_actor_action(frames2, cnt2);
+				a[18] = new Frames_actor_action(0x08, 5, well2_obj);
+				a[19] = new Frames_actor_action(frames2, cnt2);
+				a[20] = new Frames_actor_action(0x09, 5, well2_obj);
+				a[21] = new Frames_actor_action(frames2, cnt2);
+				a[22] = new Frames_actor_action(0x0A, 5, well2_obj);
+				a[23] = new Frames_actor_action(frames2, cnt2);
+				a[24] = new Frames_actor_action(0x0B, 5, well2_obj);
+				a[25] = pact3;
+				a[26] = new Face_pos_actor_action(well2_obj, 250);
+				a[27] = new Frames_actor_action(&npc_reach, 1, 250);
+				a[28] = new Frames_actor_action(0x00, 50, well2_obj);
+				a[29] = nullptr;
+			}
+			npc->set_action(new Sequence_actor_action(a));
+			state = wait_for_well_anim;
+			break;
+		} else {
+			// Don't leak the paths
+			delete pact;
+			delete pact2;
+			delete pact3;
+		}
+		break;
+	}
+	case wait_for_well_anim: {
+		if (!npc->get_action()) {
+			Game_object* trough_obj = npc->find_closest(719);
+			trough                  = weak_from_obj(trough_obj);
+			const Tile_coord tpos
+					= trough_obj->get_tile() + Tile_coord(0, 2, 0);
+			Actor_action* pact = Path_walking_actor_action::create_path(
+					npcpos, tpos, cost);
+			npc->set_action(pact);
+			state = fill_trough;
+			break;
+		}
+		npc->start(gwin->get_std_delay(), 250);
+		break;
+	}
+	case done: {
 		state = put_sword_on_firepit;
+		break;
 	}
 	}
 	npc->start(250, 100);    // Back in queue.
@@ -5224,7 +5786,10 @@ void Forge_schedule::ending(int new_type    // New schedule.
 	if (hammer_obj) {
 		hammer_obj->remove_this();
 	}
-
+	const Game_object_shared bucket_obj = bucket.lock();
+	if (bucket_obj) {
+		bucket_obj->remove_this();
+	}
 	const Game_object_shared blank_obj = blank.lock();
 	if (blank_obj) {
 		blank_obj->remove_this();
