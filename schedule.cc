@@ -1,7 +1,7 @@
 /*
  *  Schedule.cc - Schedules for characters.
  *
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -4975,10 +4975,13 @@ void Forge_schedule::now_what() {
                 firepit_obj->get_lift() + info.get_3d_height());
 		if (pact) {
 			npc->set_action(new Sequence_actor_action(
-					pact, new Pickup_actor_action(blank_obj.get(), bpos, 250)));
+					pact, new Pickup_actor_action(blank_obj.get(), bpos, 250),
+					new Play_sfx_actor_action(74, firepit_obj, 190)));
 		} else {
-			npc->set_action(
-					new Pickup_actor_action(blank_obj.get(), bpos, 250));
+			delete pact;
+			npc->set_action(new Sequence_actor_action(
+					new Pickup_actor_action(blank_obj.get(), bpos, 250),
+					new Play_sfx_actor_action(74, firepit_obj, 190)));
 		}
 
 		const Game_object_shared tongs_obj = tongs.lock();
@@ -5020,42 +5023,50 @@ void Forge_schedule::now_what() {
 		Actor_action*    pact
 				= Path_walking_actor_action::create_path(npcpos, tpos, cost);
 
-		auto** a = new Actor_action*[35];
+		auto** a = new Actor_action*[43];
 		a[0]     = pact;
 		a[1]     = new Face_pos_actor_action(bellows_obj, 250);
 		a[2]     = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-		a[3]     = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
-		a[4]     = new Frames_actor_action(0x20 | Actor::standing, 0);
-		a[5]     = new Frames_actor_action(0x01, 0, firepit_obj);
-		a[6]     = new Frames_actor_action(0x01, 0, blank_obj.get());
-		a[7]     = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-		a[8]     = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
-		a[9]     = new Frames_actor_action(0x20 | Actor::standing, 0);
-		a[10]    = new Frames_actor_action(0x02, 0, blank_obj.get());
-		a[11]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-		a[12]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
-		a[13]    = new Frames_actor_action(0x20 | Actor::standing, 0);
-		a[14]    = new Frames_actor_action(0x02, 0, firepit_obj);
-		a[15]    = new Frames_actor_action(0x03, 0, blank_obj.get());
-		a[16]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-		a[17]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
-		a[18]    = new Frames_actor_action(0x20 | Actor::standing, 0);
-		a[19]    = new Frames_actor_action(0x03, 0, firepit_obj);
-		a[20]    = new Frames_actor_action(0x04, 0, blank_obj.get());
-		a[21]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-		a[22]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
-		a[23]    = new Frames_actor_action(0x20 | Actor::standing, 0);
-		a[24]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-		a[25]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
-		a[26]    = new Frames_actor_action(0x20 | Actor::standing, 0);
-		a[27]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-		a[28]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
-		a[29]    = new Frames_actor_action(0x20 | Actor::standing, 0);
-		a[30]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
+		a[3]     = new Play_sfx_actor_action(47, bellows_obj, 190);
+		a[4]     = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
+		a[5]     = new Frames_actor_action(0x20 | Actor::standing, 0);
+		a[6]     = new Frames_actor_action(0x01, 0, firepit_obj);
+		a[7]     = new Frames_actor_action(0x01, 0, blank_obj.get());
+		a[8]     = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
+		a[9]     = new Play_sfx_actor_action(47, bellows_obj, 190);
+		a[10]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
+		a[11]    = new Frames_actor_action(0x20 | Actor::standing, 0);
+		a[12]    = new Frames_actor_action(0x02, 0, blank_obj.get());
+		a[13]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
+		a[14]    = new Play_sfx_actor_action(47, bellows_obj, 190);
+		a[15]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
+		a[16]    = new Frames_actor_action(0x20 | Actor::standing, 0);
+		a[17]    = new Frames_actor_action(0x02, 0, firepit_obj);
+		a[18]    = new Frames_actor_action(0x03, 0, blank_obj.get());
+		a[19]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
+		a[20]    = new Play_sfx_actor_action(47, bellows_obj, 190);
+		a[21]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
+		a[22]    = new Frames_actor_action(0x20 | Actor::standing, 0);
+		a[23]    = new Frames_actor_action(0x03, 0, firepit_obj);
+		a[24]    = new Frames_actor_action(0x04, 0, blank_obj.get());
+		a[25]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
+		a[26]    = new Play_sfx_actor_action(47, bellows_obj, 190);
+		a[27]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
+		a[28]    = new Frames_actor_action(0x20 | Actor::standing, 0);
+		a[29]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
+		a[30]    = new Play_sfx_actor_action(47, bellows_obj, 190);
 		a[31]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
 		a[32]    = new Frames_actor_action(0x20 | Actor::standing, 0);
-		a[33]    = new Frames_actor_action(0x00, 0, bellows_obj);
-		a[34]    = nullptr;
+		a[33]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
+		a[34]    = new Play_sfx_actor_action(47, bellows_obj, 190);
+		a[35]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
+		a[36]    = new Frames_actor_action(0x20 | Actor::standing, 0);
+		a[37]    = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
+		a[38]    = new Play_sfx_actor_action(47, bellows_obj, 190);
+		a[39]    = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
+		a[40]    = new Frames_actor_action(0x20 | Actor::standing, 0);
+		a[41]    = new Frames_actor_action(0x00, 0, bellows_obj);
+		a[42]    = nullptr;
 
 		npc->set_action(new Sequence_actor_action(a));
 		state = get_tongs;
@@ -5167,16 +5178,22 @@ void Forge_schedule::now_what() {
                 foot.x + 2, foot.y,
                 anvil_obj->get_lift() + info.get_3d_height());
 		if (pact && pact2) {
-			npc->set_action(new Sequence_actor_action(
-					pact, new Pickup_actor_action(blank_obj.get(), 250), pact2,
-					new Pickup_actor_action(blank_obj.get(), bpos, 250)));
+			auto** a = new Actor_action*[6];
+			a[0]     = pact;
+			a[1]     = new Pickup_actor_action(blank_obj.get(), 250);
+			a[2]     = pact2;
+			a[3]     = new Pickup_actor_action(blank_obj.get(), bpos, 250);
+			a[4]     = new Play_sfx_actor_action(74, anvil_obj);
+			a[5]     = nullptr;
+			npc->set_action(new Sequence_actor_action(a));
 		} else {
 			// Don't leak the paths
 			delete pact;
 			delete pact2;
 			npc->set_action(new Sequence_actor_action(
 					new Pickup_actor_action(blank_obj.get(), 250),
-					new Pickup_actor_action(blank_obj.get(), bpos, 250)));
+					new Pickup_actor_action(blank_obj.get(), bpos, 250),
+					new Play_sfx_actor_action(74, anvil_obj, 190)));
 		}
 		state = place_tongs;
 		break;
@@ -5240,10 +5257,12 @@ void Forge_schedule::now_what() {
 			if (pact) {
 				npc->set_action(new Sequence_actor_action(
 						pact,
-						new Pickup_actor_action(tongs_obj.get(), drop, 250)));
+						new Pickup_actor_action(tongs_obj.get(), drop, 250),
+						new Play_sfx_actor_action(74, table_obj)));
 			} else {
-				npc->set_action(
-						new Pickup_actor_action(tongs_obj.get(), drop, 250));
+				npc->set_action(new Sequence_actor_action(
+						new Pickup_actor_action(tongs_obj.get(), drop, 250),
+						new Play_sfx_actor_action(74, table_obj, 190)));
 			}
 			break;
 		}
@@ -5384,17 +5403,19 @@ void Forge_schedule::now_what() {
 			npc->set_action(new Frames_actor_action(frames, cnt));
 		}
 
-		auto** a = new Actor_action*[10];
+		auto** a = new Actor_action*[12];
 		a[0]     = new Frames_actor_action(frames, cnt);
-		a[1]     = new Frames_actor_action(0x03, 0, blank_obj.get());
-		a[2]     = new Frames_actor_action(0x02, 0, firepit_obj);
-		a[3]     = new Frames_actor_action(frames, cnt);
-		a[4]     = new Frames_actor_action(0x02, 0, blank_obj.get());
-		a[5]     = new Frames_actor_action(0x01, 0, firepit_obj);
-		a[6]     = new Frames_actor_action(frames, cnt);
-		a[7]     = new Frames_actor_action(0x01, 0, blank_obj.get());
-		a[8]     = new Frames_actor_action(0x00, 0, firepit_obj);
-		a[9]     = nullptr;
+		a[1]     = new Play_sfx_actor_action(45, anvil_obj, 190);
+		a[2]     = new Frames_actor_action(0x03, 0, blank_obj.get());
+		a[3]     = new Frames_actor_action(0x02, 0, firepit_obj);
+		a[4]     = new Frames_actor_action(frames, cnt);
+		a[5]     = new Play_sfx_actor_action(45, anvil_obj, 190);
+		a[6]     = new Frames_actor_action(0x02, 0, blank_obj.get());
+		a[7]     = new Frames_actor_action(frames, cnt);
+		a[8]     = new Play_sfx_actor_action(45, anvil_obj, 190);
+		a[9]     = new Frames_actor_action(0x01, 0, blank_obj.get());
+		a[10]    = new Frames_actor_action(0x00, 0, firepit_obj);
+		a[11]    = nullptr;
 		npc->set_action(new Sequence_actor_action(a));
 		state = place_hammer;
 		break;
@@ -5437,10 +5458,12 @@ void Forge_schedule::now_what() {
 			if (pact) {
 				npc->set_action(new Sequence_actor_action(
 						pact,
-						new Pickup_actor_action(hammer_obj.get(), drop, 250)));
+						new Pickup_actor_action(hammer_obj.get(), drop, 250),
+						new Play_sfx_actor_action(74, table_obj, 190)));
 			} else {
-				npc->set_action(
-						new Pickup_actor_action(hammer_obj.get(), drop, 250));
+				npc->set_action(new Sequence_actor_action(
+						new Pickup_actor_action(hammer_obj.get(), drop, 250),
+						new Play_sfx_actor_action(74, table_obj, 190)));
 			}
 			break;
 		}
@@ -5540,6 +5563,8 @@ void Forge_schedule::now_what() {
 
 		const int dir = npc->get_direction(trough_obj);
 		npc->change_frame(npc->get_dir_framenum(dir, Actor::bow_frame));
+		Audio::get_ptr()->play_sound_effect(
+				Audio::game_sfx(40), trough_obj, 190);
 		if (!well_obj) {
 			trough_obj->change_frame(3);
 		} else {
@@ -5577,8 +5602,10 @@ void Forge_schedule::now_what() {
 					= Map_chunk::find_spot(npcpos, 3, 810, 0);
 
 			if (drop_spot.tx != -1) {
-				npc->set_action(new Pickup_actor_action(
-						bucket_obj.get(), drop_spot, 250));
+				npc->set_action(new Sequence_actor_action(
+						new Pickup_actor_action(
+								bucket_obj.get(), drop_spot, 250),
+						new Play_sfx_actor_action(74, bucket_obj.get(), 190)));
 			} else {
 				// If no free spot found, just remove it
 				bucket_obj->remove_this();
@@ -5618,18 +5645,17 @@ void Forge_schedule::now_what() {
 			signed char npc_bow   = npc->get_dir_framenum(1, Actor::bow_frame);
 			signed char npc_stand = npc->get_dir_framenum(1, Actor::standing);
 
-			auto** a = new Actor_action*[11];
+			auto** a = new Actor_action*[10];
 			a[0]     = pact;
 			a[1]     = new Pickup_actor_action(blank_obj.get(), 250);
 			a[2]     = pact2;
 			a[3]     = new Frames_actor_action(&npc_bow, 1, 250);
-			a[4]     = new Frames_actor_action(&npc_stand, 1, 250);
-			a[5]     = new Frames_actor_action(&npc_bow, 1, 250);
-			a[6]     = new Frames_actor_action(&npc_stand, 1, 250);
-			a[7]     = new Frames_actor_action(&npc_bow, 1, 250);
-			a[8]     = new Frames_actor_action(&troughframe, 1, 0, trough_obj);
-			a[9]     = new Frames_actor_action(0x00, 0, blank_obj.get());
-			a[10]    = nullptr;
+			a[4]     = new Play_sfx_actor_action(46, trough_obj, 190);
+			a[5]     = new Frames_actor_action(&npc_stand, 1, 250);
+			a[6]     = new Effect_actor_action(9, trough_obj, -10, -15, 0, 0);
+			a[7]     = new Frames_actor_action(&troughframe, 1, 0, trough_obj);
+			a[8]     = new Frames_actor_action(0x00, 0, blank_obj.get());
+			a[9]     = nullptr;
 
 			npc->set_action(new Sequence_actor_action(a));
 		} else {
@@ -5682,59 +5708,80 @@ void Forge_schedule::now_what() {
 			Actor_action** a = nullptr;
 			// Vanilla BG had way less well frames
 			if (GAME_BG && !GAME_FOV) {
-				a     = new Actor_action*[20];
+				a     = new Actor_action*[28];
 				a[0]  = pact;
 				a[1]  = new Face_pos_actor_action(well2_obj, 250);
 				a[2]  = new Frames_actor_action(&npc_reach, 1, 250);
-				a[3]  = new Frames_actor_action(0x01, 50, well2_obj);
-				a[4]  = pact2;
-				a[5]  = new Frames_actor_action(frames, cnt);
-				a[6]  = new Frames_actor_action(0x02, 5, well2_obj);
-				a[7]  = new Frames_actor_action(frames, cnt);
-				a[8]  = new Frames_actor_action(0x03, 5, well2_obj);
-				a[9]  = new Frames_actor_action(frames2, cnt);
-				a[10] = new Frames_actor_action(0x03, 5, well2_obj);
-				a[11] = new Frames_actor_action(frames2, cnt2);
-				a[12] = new Frames_actor_action(0x04, 5, well2_obj);
-				a[13] = new Frames_actor_action(frames2, cnt2);
-				a[14] = new Frames_actor_action(0x05, 5, well2_obj);
-				a[15] = pact3;
-				a[16] = new Face_pos_actor_action(well2_obj, 250);
-				a[17] = new Frames_actor_action(&npc_reach, 1, 250);
-				a[18] = new Frames_actor_action(0x00, 50, well2_obj);
-				a[19] = nullptr;
-			} else {
-				a     = new Actor_action*[30];
-				a[0]  = pact;
-				a[1]  = new Face_pos_actor_action(well2_obj, 250);
-				a[2]  = new Frames_actor_action(&npc_reach, 1, 250);
-				a[3]  = new Frames_actor_action(0x01, 50, well2_obj);
-				a[4]  = pact2;
-				a[5]  = new Frames_actor_action(frames, cnt);
-				a[6]  = new Frames_actor_action(0x02, 5, well2_obj);
-				a[7]  = new Frames_actor_action(frames, cnt);
-				a[8]  = new Frames_actor_action(0x03, 5, well2_obj);
+				a[3]  = new Play_sfx_actor_action(27, well2_obj, 190);
+				a[4]  = new Frames_actor_action(0x01, 50, well2_obj);
+				a[5]  = pact2;
+				a[6]  = new Frames_actor_action(frames, cnt);
+				a[7]  = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[8]  = new Frames_actor_action(0x02, 5, well2_obj);
 				a[9]  = new Frames_actor_action(frames, cnt);
-				a[10] = new Frames_actor_action(0x04, 5, well2_obj);
-				a[11] = new Frames_actor_action(frames, cnt);
-				a[12] = new Frames_actor_action(0x05, 5, well2_obj);
-				a[13] = new Frames_actor_action(frames, cnt);
-				a[14] = new Frames_actor_action(0x06, 5, well2_obj);
-				a[15] = new Frames_actor_action(frames2, cnt2);
-				a[16] = new Frames_actor_action(0x07, 5, well2_obj);
-				a[17] = new Frames_actor_action(frames2, cnt2);
-				a[18] = new Frames_actor_action(0x08, 5, well2_obj);
+				a[10] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[11] = new Play_sfx_actor_action(40, well_obj, 190);
+				a[12] = new Frames_actor_action(0x03, 5, well2_obj);
+				a[13] = new Frames_actor_action(frames2, cnt);
+				a[14] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[15] = new Frames_actor_action(0x03, 5, well2_obj);
+				a[16] = new Frames_actor_action(frames2, cnt2);
+				a[17] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[18] = new Frames_actor_action(0x04, 5, well2_obj);
 				a[19] = new Frames_actor_action(frames2, cnt2);
-				a[20] = new Frames_actor_action(0x09, 5, well2_obj);
-				a[21] = new Frames_actor_action(frames2, cnt2);
-				a[22] = new Frames_actor_action(0x0A, 5, well2_obj);
-				a[23] = new Frames_actor_action(frames2, cnt2);
-				a[24] = new Frames_actor_action(0x0B, 5, well2_obj);
-				a[25] = pact3;
-				a[26] = new Face_pos_actor_action(well2_obj, 250);
-				a[27] = new Frames_actor_action(&npc_reach, 1, 250);
-				a[28] = new Frames_actor_action(0x00, 50, well2_obj);
-				a[29] = nullptr;
+				a[20] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[21] = new Frames_actor_action(0x05, 5, well2_obj);
+				a[22] = pact3;
+				a[23] = new Face_pos_actor_action(well2_obj, 250);
+				a[24] = new Frames_actor_action(&npc_reach, 1, 250);
+				a[25] = new Play_sfx_actor_action(27, well2_obj, 190);
+				a[26] = new Frames_actor_action(0x00, 50, well2_obj);
+				a[27] = nullptr;
+			} else {
+				a     = new Actor_action*[43];
+				a[0]  = pact;
+				a[1]  = new Face_pos_actor_action(well2_obj, 250);
+				a[2]  = new Frames_actor_action(&npc_reach, 1, 250);
+				a[3]  = new Play_sfx_actor_action(74, well2_obj, 190);
+				a[4]  = new Frames_actor_action(0x01, 50, well2_obj);
+				a[5]  = pact2;
+				a[6]  = new Frames_actor_action(frames, cnt);
+				a[7]  = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[8]  = new Frames_actor_action(0x02, 5, well2_obj);
+				a[9]  = new Frames_actor_action(frames, cnt);
+				a[10] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[11] = new Frames_actor_action(0x03, 5, well2_obj);
+				a[12] = new Frames_actor_action(frames, cnt);
+				a[13] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[14] = new Frames_actor_action(0x04, 5, well2_obj);
+				a[15] = new Frames_actor_action(frames, cnt);
+				a[16] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[17] = new Frames_actor_action(0x05, 5, well2_obj);
+				a[18] = new Frames_actor_action(frames, cnt);
+				a[19] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[20] = new Play_sfx_actor_action(40, well_obj, 190);
+				a[21] = new Frames_actor_action(0x06, 5, well2_obj);
+				a[22] = new Frames_actor_action(frames2, cnt2);
+				a[23] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[24] = new Frames_actor_action(0x07, 5, well2_obj);
+				a[25] = new Frames_actor_action(frames2, cnt2);
+				a[26] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[27] = new Frames_actor_action(0x08, 5, well2_obj);
+				a[28] = new Frames_actor_action(frames2, cnt2);
+				a[29] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[30] = new Frames_actor_action(0x09, 5, well2_obj);
+				a[31] = new Frames_actor_action(frames2, cnt2);
+				a[32] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[33] = new Frames_actor_action(0x0A, 5, well2_obj);
+				a[34] = new Frames_actor_action(frames2, cnt2);
+				a[35] = new Play_sfx_actor_action(30, well2_obj, 190);
+				a[36] = new Frames_actor_action(0x0B, 5, well2_obj);
+				a[37] = pact3;
+				a[38] = new Face_pos_actor_action(well2_obj, 250);
+				a[39] = new Frames_actor_action(&npc_reach, 1, 250);
+				a[40] = new Play_sfx_actor_action(74, well2_obj, 190);
+				a[41] = new Frames_actor_action(0x00, 50, well2_obj);
+				a[42] = nullptr;
 			}
 			npc->set_action(new Sequence_actor_action(a));
 			state = wait_for_well_anim;

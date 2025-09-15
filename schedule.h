@@ -1,7 +1,7 @@
 /*
  *  Schedule.h - Schedules for characters.
  *
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -737,7 +737,6 @@ class Forge_schedule : public Schedule {
 	Game_object_weak bucket;
 	Game_object_weak well;
 	Game_object_weak well2;
-	
 
 	enum {
 		put_sword_on_firepit,
