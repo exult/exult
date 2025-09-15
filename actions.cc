@@ -1,7 +1,7 @@
 /*
  *  actions.cc - Action controllers for actors.
  *
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,10 +25,12 @@
 #include "actions.h"
 
 #include "Astar.h"
+#include "Audio.h"
 #include "Zombie.h"
 #include "actors.h"
 #include "cheat.h"
 #include "dir.h"
+#include "effects.h"
 #include "frameseq.h"
 #include "gamewin.h"
 #include "ignore_unused_variable_warning.h"
@@ -1010,6 +1012,50 @@ int Change_actor_action::handle_event(Actor* actor) {
 		obj_ptr->set_shape(shnum, frnum);
 		obj_ptr->set_quality(qual);
 		gwin->add_dirty(obj_ptr.get());
+	}
+	return 0;
+}
+
+/**
+ *  Action to play an effect
+ */
+
+Effect_actor_action::Effect_actor_action(
+		int type, Game_object* obj, int dx, int dy, int d, int frm, int reps)
+		: effect_type(type), object(weak_from_obj(obj)), deltax(dx), deltay(dy),
+		  delay(d), starting_frame(frm), repetitions(reps) {}
+
+int Effect_actor_action::handle_event(Actor* actor) {
+	ignore_unused_variable_warning(actor);
+
+	Game_object_shared obj = object.lock();
+	if (obj) {
+		Game_window*     gwin    = Game_window::get_instance();
+		Effects_manager* effects = gwin->get_effects();
+
+		effects->add_effect(std::make_unique<Sprites_effect>(
+				effect_type, obj.get(), deltax, deltay, delay, starting_frame,
+				repetitions));
+	}
+	return 0;
+}
+
+/**
+ *  Action to play a sound effect.
+ */
+
+Play_sfx_actor_action::Play_sfx_actor_action(
+		int sfx_id, Game_object* obj, int vol, int rep)
+		: sound_id(sfx_id), object(weak_from_obj(obj)), volume(vol),
+		  repeat(rep) {}
+
+int Play_sfx_actor_action::handle_event(Actor* actor) {
+	ignore_unused_variable_warning(actor);
+
+	Game_object_shared obj = object.lock();
+	if (obj) {
+		Audio* audio = Audio::get_ptr();
+		audio->play_sound_effect(sound_id, obj.get(), volume, repeat);
 	}
 	return 0;
 }

@@ -1,7 +1,7 @@
 /*
  *  actions.h - Action controllers for actors.
  *
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -395,6 +395,61 @@ class Change_actor_action : public Actor_action {
 public:
 	Change_actor_action(Game_object* o, int sh, int fr, int ql);
 	int handle_event(Actor* actor) override;
+};
+
+/*
+ *  Action to play an effect.
+ */
+
+class Effect_actor_action : public Actor_action {
+private:
+	int              effect_type;       // Type of effect
+	Game_object_weak object;            // Object to attach effect to
+	int              deltax, deltay;    // Offsets
+	int              delay;             // Delay before starting
+	int              starting_frame;    // Starting frame
+	int              repetitions;       // Repetitions
+
+public:
+	Effect_actor_action(
+			int type, Game_object* obj, int dx = 0, int dy = 0, int d = 0,
+			int frm = 0, int reps = 0);
+
+	int handle_event(Actor* actor) override;
+
+	int get_speed() const override {
+		return 0;
+	}
+
+	void stop(Actor* actor) override {
+		ignore_unused_variable_warning(actor);
+	}
+};
+
+/*
+ *  Action to play a sound effect.
+ */
+
+class Play_sfx_actor_action : public Actor_action {
+private:
+	int              sound_id;    // ID of sound effect to play
+	Game_object_weak object;      // Object that is the source of sound
+	int              volume;      // Volume (0-256)
+	int              repeat;      // Repeat count (0 = once)
+
+public:
+	Play_sfx_actor_action(
+			int sfx_id, Game_object* obj, int vol = 255, int rep = 0);
+
+	int handle_event(Actor* actor) override;
+
+	int get_speed() const override {
+		return 0;
+	}
+
+	void stop(Actor* actor) override {
+		ignore_unused_variable_warning(actor);
+	}
 };
 
 #endif /* INCL_ACTIONS */
