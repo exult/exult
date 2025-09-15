@@ -4957,8 +4957,6 @@ void Forge_schedule::now_what() {
 			break;
 		}
 
-		Game_object* firepit_obj = npc->find_closest(739);
-		firepit                  = weak_from_obj(firepit_obj);
 		if (!firepit_obj) {
 			// uh-oh... try again in a few seconds
 			npc->start(250, 2500);
@@ -4995,11 +4993,11 @@ void Forge_schedule::now_what() {
 		trough                  = weak_from_obj(trough_obj);
 
 		if (trough_obj->get_framenum() == 0) {
-			const Tile_coord tpos
+			const Tile_coord tpos2
 					= trough_obj->get_tile() + Tile_coord(0, 2, 0);
-			Actor_action* pact = Path_walking_actor_action::create_path(
-					npcpos, tpos, cost);
-			npc->set_action(pact);
+			Actor_action* pact2 = Path_walking_actor_action::create_path(
+					npcpos, tpos2, cost);
+			npc->set_action(pact2);
 			state = get_bucket;
 			break;
 		}
@@ -5153,11 +5151,6 @@ void Forge_schedule::now_what() {
 		break;
 	}
 	case sword_on_anvil: {
-		Game_object* anvil_obj             = npc->find_closest(991);
-		Game_object* firepit_obj           = npc->find_closest(739);
-		anvil                              = weak_from_obj(anvil_obj);
-		firepit                            = weak_from_obj(firepit_obj);
-		const Game_object_shared blank_obj = blank.lock();
 		if (!anvil_obj || !firepit_obj || !blank_obj) {
 			// uh-oh... try again in a few second
 			npc->start(250, 2500);
@@ -5374,11 +5367,6 @@ void Forge_schedule::now_what() {
 		if (npc->get_action()) {
 			break;
 		}
-		Game_object* anvil_obj             = npc->find_closest(991);
-		Game_object* firepit_obj           = npc->find_closest(739);
-		anvil                              = weak_from_obj(anvil_obj);
-		firepit                            = weak_from_obj(firepit_obj);
-		const Game_object_shared blank_obj = blank.lock();
 		if (!anvil_obj || !firepit_obj || !blank_obj) {
 			// uh-oh... try again in a few seconds
 			npc->start(250, 2500);
@@ -5597,7 +5585,6 @@ void Forge_schedule::now_what() {
 				bucket_obj->change_frame(1);
 			}
 			// Find a free spot on the ground near the blacksmith
-			const Tile_coord npcpos = npc->get_tile();
 			const Tile_coord drop_spot
 					= Map_chunk::find_spot(npcpos, 3, 810, 0);
 
@@ -5616,11 +5603,9 @@ void Forge_schedule::now_what() {
 		break;
 	}
 	case use_trough: {
-		Game_object* trough_obj            = npc->find_closest(719);
-		Game_object* anvil_obj             = npc->find_closest(991);
-		trough                             = weak_from_obj(trough_obj);
-		anvil                              = weak_from_obj(anvil_obj);
-		const Game_object_shared blank_obj = blank.lock();
+		Game_object* trough_obj = npc->find_closest(719);
+		trough                  = weak_from_obj(trough_obj);
+
 		if (!trough_obj || !anvil_obj || !blank_obj) {
 			// uh-oh... try again in a few seconds
 			npc->start(250, 2500);
