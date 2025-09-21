@@ -41,6 +41,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 namespace Pentagram {
@@ -229,6 +230,8 @@ public:
 		effects_enabled = ena;
 	}
 
+	bool is_sfx_playing(int num);
+
 	bool is_audio_enabled() const {
 		return audio_enabled;
 	}
@@ -243,7 +246,8 @@ public:
 	};
 
 private:
-	LoopingType music_looping;
+	LoopingType                               music_looping;
+	std::unordered_map<int, std::vector<int>> active_sfx_;
 
 public:
 	LoopingType get_music_looping() const {

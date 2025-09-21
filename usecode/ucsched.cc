@@ -641,9 +641,12 @@ int Usecode_script::exec(
 			break;
 		}
 		case sfx: {    // Play sound effect!
-			const Usecode_value& val = code->get_elem(++i);
-			Audio::get_ptr()->play_sound_effect(
-					val.get_int_value(), optr.get());
+			const Usecode_value& val    = code->get_elem(++i);
+			const int            sfx_id = val.get_int_value();
+			// Skip if this exact SFX is already playing
+			if (!Audio::get_ptr()->is_sfx_playing(sfx_id)) {
+				Audio::get_ptr()->play_sound_effect(sfx_id, optr.get());
+			}
 			break;
 		}
 		case face_dir: {    // Parm. is dir. (0-7).  0=north.

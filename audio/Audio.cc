@@ -39,6 +39,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
@@ -705,6 +706,9 @@ int Audio::play_wave_sfx(
 	mixer->set2DPosition(instance_id, distance, balance);
 	mixer->setPaused(instance_id, false);
 
+	// Track active instance for this numeric SFX
+	active_sfx_[num].push_back(instance_id);
+
 	return instance_id;
 }
 
@@ -868,6 +872,11 @@ void Audio::stop_sound_effect(int chan) {
 		return;
 	}
 	mixer->stopSample(chan);
+
+	for (auto& kv : active_sfx_) {
+		auto& vec = kv.second;
+		vec.erase(std::remove(vec.begin(), vec.end(), chan), vec.end());
+	}
 }
 
 /*
@@ -882,12 +891,29 @@ void Audio::stop_sound_effects() {
 	if (sfxs) {
 		sfxs->flush(mixer.get());
 	}
-
+	active_sfx_.clear();
 #ifdef ENABLE_MIDISFX
 	if (mixer && mixer->getMidiPlayer()) {
 		mixer->getMidiPlayer()->stop_sound_effects();
 	}
 #endif
+}
+
+bool Audio::is_sfx_playing(int num) {    // add
+	auto it = active_sfx_.find(num);
+	if (it == active_sfx_.end() || !mixer) {
+		return false;
+	}
+	auto& vec = it->second;
+	// Prune finished instances
+	vec.erase(
+			std::remove_if(
+					vec.begin(), vec.end(),
+					[this](int id) {
+						return !mixer->isPlaying(id);
+					}),
+			vec.end());
+	return !vec.empty();
 }
 
 void Audio::set_audio_enabled(bool ena) {
