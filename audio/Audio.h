@@ -41,7 +41,6 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 namespace Pentagram {
@@ -247,7 +246,7 @@ public:
 
 private:
 	LoopingType                               music_looping;
-	std::unordered_map<int, std::vector<int>> active_sfx_;
+	std::map<int, std::vector<int>> active_sfx_;
 
 public:
 	LoopingType get_music_looping() const {

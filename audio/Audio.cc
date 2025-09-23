@@ -39,7 +39,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <algorithm>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
@@ -706,7 +705,7 @@ int Audio::play_wave_sfx(
 	mixer->set2DPosition(instance_id, distance, balance);
 	mixer->setPaused(instance_id, false);
 
-	// Track active instance for this numeric SFX
+	// Track active instance for this SFX
 	active_sfx_[num].push_back(instance_id);
 
 	return instance_id;
