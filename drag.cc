@@ -83,6 +83,9 @@ Dragging_info::Dragging_info(
 			// Save location info.
 			gump->get_shape_location(to_drag, paintx, painty);
 			old_pos = Tile_coord(to_drag->get_tx(), to_drag->get_ty(), 0);
+			if (Main_actor* act = gwin->get_main_actor()) {
+				old_lift = act->get_lift();
+			}
 		} else if ((button = gump->on_button(x, y)) != nullptr) {
 			gump = nullptr;
 			if (!button->is_draggable()) {
@@ -677,12 +680,22 @@ int Game_window::drop_at_lift(
 	}
 	if (Map_chunk::is_blocked(
 				info.get_3d_height(), at_lift, tx - xtiles + 1, ty - ytiles + 1,
-				xtiles, ytiles, lift, move_flags, max_drop)
-		|| (!cheat.in_hack_mover() &&
-			// Check for path to location.
-			!Fast_pathfinder_client::is_grabable(
-					main_actor, Tile_coord(tx, ty, lift)))) {
+				xtiles, ytiles, lift, move_flags, max_drop)) {
 		return 0;
+	}
+
+	// Needs to be reachable, except when it is just lower, so the object can
+	// fall down.
+	if (!cheat.in_hack_mover()) {
+		bool grabbable = Fast_pathfinder_client::is_grabable(
+				main_actor, Tile_coord(tx, ty, lift));
+		if (!grabbable && main_actor->get_lift() > lift) {
+			grabbable = Fast_pathfinder_client::is_grabable(
+					main_actor, Tile_coord(tx, ty, main_actor->get_lift()));
+		}
+		if (!grabbable) {
+			return 0;
+		}
 	}
 
 	to_drop->set_invalid();
