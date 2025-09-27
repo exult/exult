@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2021-2022  The Exult Team
+ *  Copyright (C) 2021-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -51,6 +51,9 @@ public class ExultActivity extends SDLActivity {
 			= 75;    // horizontal inset from edge
 	private static final int DPAD_MARGIN_V_DP
 			= 90;    // vertical inset from bottom
+	// Glyphs for pause/play button
+	private static final String GLYPH_PAUSE = "\u23F8";    // ⏸
+	private static final String GLYPH_PLAY  = "\u25B6";    // ⏵
 
 	/**
 	 * This method clears the console buffer.
@@ -110,6 +113,44 @@ public class ExultActivity extends SDLActivity {
 		});
 	}
 
+	public void showPauseControls() {
+		runOnUiThread(() -> {
+			RelativeLayout.LayoutParams pauseLp
+					= (RelativeLayout.LayoutParams)
+							  m_pauseTextView.getLayoutParams();
+			final boolean hasRel
+					= pauseLp.getRule(RelativeLayout.RIGHT_OF) != 0
+					  || pauseLp.getRule(RelativeLayout.LEFT_OF) != 0;
+
+			if (!hasRel) {
+				final int                   gap = dpToPx(12);
+				RelativeLayout.LayoutParams escLp
+						= (RelativeLayout.LayoutParams)
+								  m_escTextView.getLayoutParams();
+
+				if (escLp.getRule(RelativeLayout.ALIGN_PARENT_LEFT) != 0) {
+					// ESC on left -> Pause to its right
+					pauseLp.addRule(
+							RelativeLayout.RIGHT_OF, m_escTextView.getId());
+					pauseLp.leftMargin  = gap;
+					pauseLp.rightMargin = 0;
+				} else {
+					// ESC on right -> Pause to its left
+					pauseLp.addRule(
+							RelativeLayout.LEFT_OF, m_escTextView.getId());
+					pauseLp.rightMargin = gap;
+					pauseLp.leftMargin  = 0;
+				}
+				m_pauseTextView.setLayoutParams(pauseLp);
+			}
+			m_pauseTextView.setVisibility(View.VISIBLE);
+		});
+	}
+
+	public void hidePauseControls() {
+		runOnUiThread(() -> m_pauseTextView.setVisibility(View.GONE));
+	}
+
 	public void hideGameControls() {
 		runOnUiThread(() -> { m_dpadImageView.setVisibility(View.GONE); });
 	}
@@ -119,37 +160,74 @@ public class ExultActivity extends SDLActivity {
 			RelativeLayout.LayoutParams escLayoutParams
 					= (RelativeLayout.LayoutParams)
 							  m_escTextView.getLayoutParams();
+			RelativeLayout.LayoutParams pauseLayoutParams
+					= (RelativeLayout.LayoutParams)
+							  m_pauseTextView.getLayoutParams();
+
 			escLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 			escLayoutParams.removeRule(RelativeLayout.ALIGN_PARENT_TOP);
+			pauseLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+			pauseLayoutParams.removeRule(RelativeLayout.ALIGN_PARENT_TOP);
+
+			// Clear relative rules
+			pauseLayoutParams.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
+			pauseLayoutParams.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+			pauseLayoutParams.removeRule(RelativeLayout.RIGHT_OF);
+			pauseLayoutParams.removeRule(RelativeLayout.LEFT_OF);
+			// Reset margins
+			final int gap = dpToPx(12);
 
 			switch (dpadLocation) {
 			case "left":
+				// D-pad left -> ESC on right, Pause to its left
 				escLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 				escLayoutParams.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
+
+				pauseLayoutParams.addRule(
+						RelativeLayout.LEFT_OF, m_escTextView.getId());
+				pauseLayoutParams.rightMargin = gap;
+				pauseLayoutParams.leftMargin  = 0;
 				break;
 			case "right":
+				// D-pad right -> ESC on left, Pause to its right
 				escLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
 				escLayoutParams.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+
+				pauseLayoutParams.addRule(
+						RelativeLayout.RIGHT_OF, m_escTextView.getId());
+				pauseLayoutParams.leftMargin  = gap;
+				pauseLayoutParams.rightMargin = 0;
 				break;
 			default:
+				// D-pad disabled -> ESC on left, Pause to its right
 				escLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
 				escLayoutParams.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+
+				pauseLayoutParams.addRule(
+						RelativeLayout.RIGHT_OF, m_escTextView.getId());
+				pauseLayoutParams.leftMargin  = gap;
+				pauseLayoutParams.rightMargin = 0;
 				break;
 			}
 			m_escTextView.setLayoutParams(escLayoutParams);
+			m_pauseTextView.setLayoutParams(pauseLayoutParams);
 			m_escTextView.setVisibility(View.VISIBLE);
 		});
 	}
 
 	public void hideButtonControls() {
-		runOnUiThread(() -> { m_escTextView.setVisibility(View.GONE); });
+		runOnUiThread(() -> {
+			m_escTextView.setVisibility(View.GONE);
+			m_pauseTextView.setVisibility(View.GONE);
+		});
 	}
 
 	private TextView m_escTextView;
+	private TextView m_pauseTextView;
 
 	private ImageView m_dpadImageView;
-	private int mParentOnScreenX = 0;
-	private int mParentOnScreenY = 0;
+	private int       mParentOnScreenX = 0;
+	private int       mParentOnScreenY = 0;
 	// Virtual joystick state
 	private boolean mVjoyActive   = false;
 	private float   mVjoyCenterX  = 0f;
@@ -162,6 +240,8 @@ public class ExultActivity extends SDLActivity {
 	public native void sendEscapeKeypress();
 
 	public native void setName(String name);
+
+	public native void sendPauseKeypress();
 
 	public void promptForName(String name) {
 		runOnUiThread(() -> {
@@ -208,6 +288,7 @@ public class ExultActivity extends SDLActivity {
 		m_instance = this;
 
 		m_escTextView = new TextView(this);
+		m_escTextView.setId(View.generateViewId());
 		m_escTextView.setBackground(getResources().getDrawable(R.drawable.btn));
 		m_escTextView.setPadding(20, 20, 20, 20);
 		m_escTextView.setAutoSizeTextTypeWithDefaults(
@@ -249,6 +330,60 @@ public class ExultActivity extends SDLActivity {
 					return true;
 				default:
 					// Appease CodeFactor with a default case
+					break;
+				}
+				return false;
+			}
+		});
+
+		// Pause button
+		m_pauseTextView = new TextView(this);
+		m_pauseTextView.setId(View.generateViewId());
+		m_pauseTextView.setBackground(
+				getResources().getDrawable(R.drawable.btn));
+		m_pauseTextView.setPadding(20, 20, 20, 20);
+		m_pauseTextView.setAutoSizeTextTypeWithDefaults(
+				TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
+		m_pauseTextView.setGravity(Gravity.CENTER);
+		m_pauseTextView.setText(GLYPH_PAUSE);
+
+		RelativeLayout.LayoutParams pauseParams
+				= new RelativeLayout.LayoutParams(btnW, btnH);
+		pauseParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		pauseParams.addRule(RelativeLayout.RIGHT_OF, m_escTextView.getId());
+		pauseParams.leftMargin = dpToPx(12);
+		m_pauseTextView.setLayoutParams(pauseParams);
+
+		m_pauseTextView.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				boolean inside
+						= !(event.getX() < 0 || event.getY() < 0
+							|| event.getX() > v.getMeasuredWidth()
+							|| event.getY() > v.getMeasuredHeight());
+				switch (event.getActionMasked()) {
+				case MotionEvent.ACTION_DOWN:
+					m_pauseTextView.setBackground(
+							getResources().getDrawable(R.drawable.btnpressed));
+					return true;
+				case MotionEvent.ACTION_MOVE:
+					m_pauseTextView.setBackground(getResources().getDrawable(
+							inside ? R.drawable.btnpressed : R.drawable.btn));
+					return true;
+				case MotionEvent.ACTION_UP:
+					m_pauseTextView.setBackground(
+							getResources().getDrawable(R.drawable.btn));
+					if (inside) {
+						// Toggle glyph ⏸ <-> ⏵
+						String cur = m_pauseTextView.getText().toString();
+						m_pauseTextView.setText(
+								GLYPH_PAUSE.equals(cur) ? GLYPH_PLAY
+														: GLYPH_PAUSE);
+						// Send SPACE keypress
+						sendPauseKeypress();
+					}
+					return true;
+				default:
 					break;
 				}
 				return false;
@@ -355,7 +490,9 @@ public class ExultActivity extends SDLActivity {
 		hideGameControls();
 		hideButtonControls();
 		mLayout.addView(m_escTextView);
+		mLayout.addView(m_pauseTextView);
 		mLayout.addView(m_dpadImageView);
+		m_pauseTextView.setVisibility(View.GONE);
 	}
 
 	private void resetDpadDock() {
