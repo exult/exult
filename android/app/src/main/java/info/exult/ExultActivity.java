@@ -52,8 +52,8 @@ public class ExultActivity extends SDLActivity {
 	private static final int DPAD_MARGIN_V_DP
 			= 90;    // vertical inset from bottom
 	// Glyphs for pause/play button
-	private static final String GLYPH_PAUSE = "\u23F8";    // ⏸
-	private static final String GLYPH_PLAY  = "\u25B6";    // ⏵
+	private static final String GLYPH_PAUSE = "\u23F8\uFE0F";    // ⏸
+	private static final String GLYPH_PLAY  = "\u25B6\uFE0F";    // ⏵
 
 	/**
 	 * This method clears the console buffer.
@@ -141,6 +141,7 @@ public class ExultActivity extends SDLActivity {
 					pauseLp.rightMargin = gap;
 					pauseLp.leftMargin  = 0;
 				}
+				m_pauseTextView.setText(GLYPH_PAUSE);
 				m_pauseTextView.setLayoutParams(pauseLp);
 			}
 			m_pauseTextView.setVisibility(View.VISIBLE);
