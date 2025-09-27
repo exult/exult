@@ -421,7 +421,7 @@ static NSString* const kGlyphPlay  = @"\u25B6\uFE0F";    // ▶
 	UIViewController* controller = window.rootViewController;
 	CGRect            rcScreen   = controller.view.bounds;
 	CGSize            sizeDpad   = CGSizeMake(100, 100);
-	double            margin     = 100;
+	const CGFloat     margin     = 100;
 
 	std::string str;
 	double      left = rcScreen.size.width - sizeDpad.width - margin;
@@ -430,7 +430,7 @@ static NSString* const kGlyphPlay  = @"\u25B6\uFE0F";    // ▶
 		return CGRectZero;
 	}
 	if (str == "left") {
-		left = 0;
+		left = margin;
 	}
 	CGRect rcDpad = CGRectMake(
 			left, rcScreen.size.height - sizeDpad.height - margin,
@@ -440,6 +440,7 @@ static NSString* const kGlyphPlay  = @"\u25B6\uFE0F";    // ▶
 
 - (void)onDpadLocationChanged {
 	self.dpad.frame = [self calcRectForDPad];
+	[self layoutButtonsForDpadLocation];
 }
 
 - (GamePadButton*)createButton:(NSString*)title
@@ -454,10 +455,70 @@ static NSString* const kGlyphPlay  = @"\u25B6\uFE0F";    // ▶
 	NSAssert(buttonPressed != nil, @"Failed to load image 'btnpressed.png'");
 
 	btn.images    = @[button, buttonPressed];
-	btn.textColor = [UIColor whiteColor];
+	btn.textColor = [UIColor blackColor];
 	btn.title     = title;
 	btn.delegate  = self;
 	return btn;
+}
+
+- (void)layoutButtonsForDpadLocation {
+	UIWindow* window = [[[UIApplication sharedApplication] delegate] window];
+	UIViewController* controller = window.rootViewController;
+	CGRect            rcScreen   = controller.view.bounds;
+	CGSize            sizeButton = CGSizeMake(60, 40);
+	const CGFloat     btnMargin  = 10.0;    // ESC margin from edge
+	const CGFloat     gap        = 12.0;    // gap between ESC and Pause
+
+	std::string dpadLoc;
+	config->value("config/touch/dpad_location", dpadLoc, "right");
+
+	// ESC goes opposite the D-Pad
+	BOOL escOnLeft = YES;
+	if (dpadLoc == "left") {
+		escOnLeft = NO;    // D-Pad on left -> ESC on right
+	} else if (dpadLoc == "right") {
+		escOnLeft = YES;    // D-Pad on right -> ESC on left
+	} else {                // "no" or unknown
+		escOnLeft = YES;
+	}
+
+	CGRect rcEsc;
+	if (escOnLeft) {
+		rcEsc = CGRectMake(
+				btnMargin, rcScreen.size.height - sizeButton.height - btnMargin,
+				sizeButton.width, sizeButton.height);
+	} else {
+		rcEsc = CGRectMake(
+				rcScreen.size.width - sizeButton.width - btnMargin,
+				rcScreen.size.height - sizeButton.height - btnMargin,
+				sizeButton.width, sizeButton.height);
+	}
+
+	if (self.btn1) {
+		self.btn1.frame = rcEsc;
+		// Ensure it is on-screen when visible
+		if (self.btn1.alpha > 0.0 && self.btn1.superview == nil) {
+			[controller.view addSubview:self.btn1];
+		}
+	}
+
+	// If Pause is visible, keep it adjacent to ESC
+	if (self.btn2 && self.btn2.alpha > 0.0) {
+		CGRect rcPause;
+		if (escOnLeft) {
+			rcPause = CGRectMake(
+					CGRectGetMaxX(rcEsc) + gap, rcEsc.origin.y,
+					sizeButton.width, sizeButton.height);
+		} else {
+			rcPause = CGRectMake(
+					CGRectGetMinX(rcEsc) - gap - sizeButton.width,
+					rcEsc.origin.y, sizeButton.width, sizeButton.height);
+		}
+		self.btn2.frame = rcPause;
+		if (self.btn2.superview == nil) {
+			[controller.view addSubview:self.btn2];
+		}
+	}
 }
 
 - (void)showGameControls {
@@ -487,27 +548,18 @@ static NSString* const kGlyphPlay  = @"\u25B6\uFE0F";    // ▶
 	UIWindow* window = [[[UIApplication sharedApplication] delegate] window];
 	UIViewController* controller = window.rootViewController;
 
-	CGRect        rcScreen   = controller.view.bounds;
-	CGSize        sizeButton = CGSizeMake(60, 40);
-	const CGFloat gap        = 12.0;
+	// Lay out based on current D-Pad location
+	[self layoutButtonsForDpadLocation];
 
-	CGRect rcEsc = CGRectMake(
-			10, rcScreen.size.height - sizeButton.height, sizeButton.width,
-			sizeButton.height);
-	self.btn1.frame = rcEsc;
-	[controller.view addSubview:self.btn1];
-
+	// Ensure ESC is visible and on view
+	if (self.btn1.superview == nil) {
+		[controller.view addSubview:self.btn1];
+	}
 	self.btn1.alpha = 1;
 
-	// If Pause already exists and is visible, keep it next to ESC
-	if (self.btn2 != nil && self.btn2.alpha > 0.0) {
-		CGRect rcPause = CGRectMake(
-				CGRectGetMaxX(rcEsc) + gap, rcEsc.origin.y, sizeButton.width,
-				sizeButton.height);
-		self.btn2.frame = rcPause;
-		if (self.btn2.superview == nil) {
-			[controller.view addSubview:self.btn2];
-		}
+	// If Pause is already visible, keep it placed next to ESC
+	if (self.btn2 && self.btn2.alpha > 0.0 && self.btn2.superview == nil) {
+		[controller.view addSubview:self.btn2];
 	}
 }
 
@@ -534,23 +586,13 @@ static NSString* const kGlyphPlay  = @"\u25B6\uFE0F";    // ▶
 		[self showButtonControls];
 	}
 
-	CGSize        sizeButton = CGSizeMake(60, 40);
-	const CGFloat gap        = 12.0;
-	CGRect        rcEsc      = self.btn1 ? self.btn1.frame
-										 : CGRectMake(
-                                       10,
-                                       controller.view.bounds.size.height
-                                               - sizeButton.height,
-                                       sizeButton.width, sizeButton.height);
-	CGRect        rcPause    = CGRectMake(
-            CGRectGetMaxX(rcEsc) + gap, rcEsc.origin.y, sizeButton.width,
-            sizeButton.height);
-	self.btn2.frame = rcPause;
+	// Place next to ESC respecting D-Pad side
+	[self layoutButtonsForDpadLocation];
 
 	if (self.btn2.superview == nil) {
 		[controller.view addSubview:self.btn2];
 	}
-	self.btn2.title = kGlyphPause;
+	self.btn2.title = kGlyphPause;    // start with Pause glyph
 	self.btn2.alpha = 1;
 }
 

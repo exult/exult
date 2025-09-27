@@ -300,12 +300,11 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 - (void)drawRect:(CGRect)rect {
 	NSUInteger bkgIndex;
 	UIColor*   color = nil;
+	color            = [self.textColor colorWithAlphaComponent:0.8];
 
 	if (!self.pressed) {
-		color    = [self.textColor colorWithAlphaComponent:0.3];
 		bkgIndex = 0;
 	} else {
-		color    = [self.textColor colorWithAlphaComponent:0.8];
 		bkgIndex = 1;
 	}
 
