@@ -790,9 +790,15 @@ void Game_window::toggle_combat() {
 			if (targ && targ->get_flag(Obj_flags::in_party)) {
 				act->set_target(nullptr);
 			}
+			if (touchui != nullptr && Combat::mode != Combat::original) {
+				touchui->showPauseControls();
+			}
 		}
 	} else {                 // Ending combat.
 		Combat::resume();    // Make sure not still paused.
+		if (touchui != nullptr && Combat::mode != Combat::original) {
+			touchui->hidePauseControls();
+		}
 	}
 	if (g_shortcutBar) {
 		g_shortcutBar->set_changed();

@@ -65,6 +65,8 @@ namespace {
 @property(nonatomic, assign) SDL_Scancode   recurringKeycode;
 
 - (void)promptForName:(NSString*)name;
+- (void)showPauseControls;
+- (void)hidePauseControls;
 
 @end
 
@@ -275,6 +277,9 @@ namespace {
 @synthesize btn1;
 @synthesize btn2;
 @synthesize recurringKeycode;
+// Toggle glyphs for the Pause button
+static NSString* const kGlyphPause = @"\u23F8\uFE0F";    // ⏸
+static NSString* const kGlyphPlay  = @"\u25B6\uFE0F";    // ▶
 
 - (void)sendRecurringKeycode {
 	//	SDL_SendKeyboardKey(0, 0, 0, self.recurringKeycode, SDL_PRESSED);
@@ -349,6 +354,11 @@ namespace {
 - (void)buttonUp:(GamePadButton*)btn {
 	NSNumber*  code    = btn.keyCodes[0];
 	const auto keycode = static_cast<SDL_Scancode>([code integerValue]);
+	if (btn == self.btn2) {
+		NSString* cur = btn.title;
+		btn.title =
+				[cur isEqualToString:kGlyphPause] ? kGlyphPlay : kGlyphPause;
+	}
 	//	SDL_SendKeyboardKey(0, 0, 0, keycode, SDL_RELEASED);
 	SDL_Event event;
 	SDL_zero(event);
@@ -411,7 +421,7 @@ namespace {
 	UIViewController* controller = window.rootViewController;
 	CGRect            rcScreen   = controller.view.bounds;
 	CGSize            sizeDpad   = CGSizeMake(100, 100);
-	double            margin     = 100;
+	const CGFloat     margin     = 100;
 
 	std::string str;
 	double      left = rcScreen.size.width - sizeDpad.width - margin;
@@ -420,7 +430,7 @@ namespace {
 		return CGRectZero;
 	}
 	if (str == "left") {
-		left = 0;
+		left = margin;
 	}
 	CGRect rcDpad = CGRectMake(
 			left, rcScreen.size.height - sizeDpad.height - margin,
@@ -430,6 +440,7 @@ namespace {
 
 - (void)onDpadLocationChanged {
 	self.dpad.frame = [self calcRectForDPad];
+	[self layoutButtonsForDpadLocation];
 }
 
 - (GamePadButton*)createButton:(NSString*)title
@@ -443,14 +454,71 @@ namespace {
 	NSAssert(button != nil, @"Failed to load image 'btn.png'");
 	NSAssert(buttonPressed != nil, @"Failed to load image 'btnpressed.png'");
 
-	btn.images = @[
-		button,
-		buttonPressed,
-	];
-	btn.textColor = [UIColor whiteColor];
+	btn.images    = @[button, buttonPressed];
+	btn.textColor = [UIColor blackColor];
 	btn.title     = title;
 	btn.delegate  = self;
 	return btn;
+}
+
+- (void)layoutButtonsForDpadLocation {
+	UIWindow* window = [[[UIApplication sharedApplication] delegate] window];
+	UIViewController* controller = window.rootViewController;
+	CGRect            rcScreen   = controller.view.bounds;
+	CGSize            sizeButton = CGSizeMake(60, 40);
+	const CGFloat     btnMargin  = 10.0;    // ESC margin from edge
+	const CGFloat     gap        = 12.0;    // gap between ESC and Pause
+
+	std::string dpadLoc;
+	config->value("config/touch/dpad_location", dpadLoc, "right");
+
+	// ESC goes opposite the D-Pad
+	BOOL escOnLeft = YES;
+	if (dpadLoc == "left") {
+		escOnLeft = NO;    // D-Pad on left -> ESC on right
+	} else if (dpadLoc == "right") {
+		escOnLeft = YES;    // D-Pad on right -> ESC on left
+	} else {                // "no" or unknown
+		escOnLeft = YES;
+	}
+
+	CGRect rcEsc;
+	if (escOnLeft) {
+		rcEsc = CGRectMake(
+				btnMargin, rcScreen.size.height - sizeButton.height - btnMargin,
+				sizeButton.width, sizeButton.height);
+	} else {
+		rcEsc = CGRectMake(
+				rcScreen.size.width - sizeButton.width - btnMargin,
+				rcScreen.size.height - sizeButton.height - btnMargin,
+				sizeButton.width, sizeButton.height);
+	}
+
+	if (self.btn1) {
+		self.btn1.frame = rcEsc;
+		// Ensure it is on-screen when visible
+		if (self.btn1.alpha > 0.0 && self.btn1.superview == nil) {
+			[controller.view addSubview:self.btn1];
+		}
+	}
+
+	// If Pause is visible, keep it adjacent to ESC
+	if (self.btn2 && self.btn2.alpha > 0.0) {
+		CGRect rcPause;
+		if (escOnLeft) {
+			rcPause = CGRectMake(
+					CGRectGetMaxX(rcEsc) + gap, rcEsc.origin.y,
+					sizeButton.width, sizeButton.height);
+		} else {
+			rcPause = CGRectMake(
+					CGRectGetMinX(rcEsc) - gap - sizeButton.width,
+					rcEsc.origin.y, sizeButton.width, sizeButton.height);
+		}
+		self.btn2.frame = rcPause;
+		if (self.btn2.superview == nil) {
+			[controller.view addSubview:self.btn2];
+		}
+	}
 }
 
 - (void)showGameControls {
@@ -480,20 +548,58 @@ namespace {
 	UIWindow* window = [[[UIApplication sharedApplication] delegate] window];
 	UIViewController* controller = window.rootViewController;
 
-	CGRect rcScreen   = controller.view.bounds;
-	CGSize sizeButton = CGSizeMake(60, 40);
+	// Lay out based on current D-Pad location
+	[self layoutButtonsForDpadLocation];
 
-	CGRect rcButton = CGRectMake(
-			10, rcScreen.size.height - sizeButton.height, sizeButton.width,
-			sizeButton.height);
-	self.btn1.frame = rcButton;
-	[controller.view addSubview:self.btn1];
-
+	// Ensure ESC is visible and on view
+	if (self.btn1.superview == nil) {
+		[controller.view addSubview:self.btn1];
+	}
 	self.btn1.alpha = 1;
+
+	// If Pause is already visible, keep it placed next to ESC
+	if (self.btn2 && self.btn2.alpha > 0.0 && self.btn2.superview == nil) {
+		[controller.view addSubview:self.btn2];
+	}
 }
 
 - (void)hideButtonControls {
-	self.btn1.alpha = 0;
+	if (self.btn1) {
+		self.btn1.alpha = 0;
+	}
+	if (self.btn2) {
+		self.btn2.alpha = 0;
+	}
+}
+
+- (void)showPauseControls {
+	UIWindow* window = [[[UIApplication sharedApplication] delegate] window];
+	UIViewController* controller = window.rootViewController;
+	if (self.btn2 == nil) {
+		self.btn2 = [self createButton:kGlyphPause
+							   keycode:static_cast<int>(SDL_SCANCODE_SPACE)
+								  rect:CGRectZero];
+	}
+
+	// Ensure ESC is laid out to anchor Pause next to it
+	if (self.btn1 == nil || self.btn1.alpha == 0.0) {
+		[self showButtonControls];
+	}
+
+	// Place next to ESC respecting D-Pad side
+	[self layoutButtonsForDpadLocation];
+
+	if (self.btn2.superview == nil) {
+		[controller.view addSubview:self.btn2];
+	}
+	self.btn2.title = kGlyphPause;    // start with Pause glyph
+	self.btn2.alpha = 1;
+}
+
+- (void)hidePauseControls {
+	if (self.btn2) {
+		self.btn2.alpha = 0;
+	}
 }
 
 @end
@@ -533,6 +639,14 @@ void TouchUI_iOS::showButtonControls() {
 
 void TouchUI_iOS::hideButtonControls() {
 	[gDefaultManager hideButtonControls];
+}
+
+void TouchUI_iOS::showPauseControls() {
+	[gDefaultManager showPauseControls];
+}
+
+void TouchUI_iOS::hidePauseControls() {
+	[gDefaultManager hidePauseControls];
 }
 
 void TouchUI_iOS::onDpadLocationChanged() {

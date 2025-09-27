@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2021-2022  The Exult Team
+ *  Copyright (C) 2021-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,6 +46,14 @@ extern "C" JNIEXPORT void JNICALL
 	touchUI->sendEscapeKeypress();
 }
 
+extern "C" JNIEXPORT void JNICALL
+		Java_info_exult_ExultActivity_sendPauseKeypress(
+				JNIEnv* env, jobject self) {
+	ignore_unused_variable_warning(env, self);
+	auto* touchUI = TouchUI_Android::getInstance();
+	touchUI->sendPauseKeypress();
+}
+
 extern "C" JNIEXPORT void JNICALL Java_info_exult_ExultActivity_setName(
 		JNIEnv* env, jobject self, jstring javaName) {
 	ignore_unused_variable_warning(self);
@@ -76,6 +84,17 @@ void TouchUI_Android::sendEscapeKeypress() {
 	SDL_PushEvent(&event);
 }
 
+void TouchUI_Android::sendPauseKeypress() {
+	SDL_Event event = {};
+	event.key.key   = SDLK_SPACE;    // act like pressing space
+
+	event.type = SDL_EVENT_KEY_DOWN;
+	SDL_PushEvent(&event);
+
+	event.type = SDL_EVENT_KEY_UP;
+	SDL_PushEvent(&event);
+}
+
 TouchUI_Android::TouchUI_Android() {
 	m_instance    = this;
 	m_jniEnv      = static_cast<JNIEnv*>(SDL_GetAndroidJNIEnv());
@@ -91,6 +110,10 @@ TouchUI_Android::TouchUI_Android() {
 			jclass, "showButtonControls", "(Ljava/lang/String;)V");
 	m_hideButtonControlsMethod
 			= m_jniEnv->GetMethodID(jclass, "hideButtonControls", "()V");
+	m_showPauseControlsMethod
+			= m_jniEnv->GetMethodID(jclass, "showPauseControls", "()V");
+	m_hidePauseControlsMethod
+			= m_jniEnv->GetMethodID(jclass, "hidePauseControls", "()V");
 	m_promptForNameMethod = m_jniEnv->GetMethodID(
 			jclass, "promptForName", "(Ljava/lang/String;)V");
 
@@ -167,6 +190,14 @@ void TouchUI_Android::showButtonControls() {
 
 void TouchUI_Android::hideButtonControls() {
 	m_jniEnv->CallVoidMethod(m_exultActivityObject, m_hideButtonControlsMethod);
+}
+
+void TouchUI_Android::showPauseControls() {
+	m_jniEnv->CallVoidMethod(m_exultActivityObject, m_showPauseControlsMethod);
+}
+
+void TouchUI_Android::hidePauseControls() {
+	m_jniEnv->CallVoidMethod(m_exultActivityObject, m_hidePauseControlsMethod);
 }
 
 void TouchUI_Android::onDpadLocationChanged() {}

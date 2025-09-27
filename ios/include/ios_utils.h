@@ -31,6 +31,8 @@ public:
 	void hideGameControls() final;
 	void showButtonControls() final;
 	void hideButtonControls() final;
+	void showPauseControls() final;
+	void hidePauseControls() final;
 	void onDpadLocationChanged() final;
 };
 

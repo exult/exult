@@ -2074,14 +2074,20 @@ static void Handle_event(SDL_Event& event) {
 				last_b1_click = curtime;
 			}
 
-			if (gwin->get_touch_pathfind() && !click_handled
-				&& (curtime - last_b1down_click > 500) && avatar_can_act
-				&& gwin->main_actor_can_act_charmed() && !dragging
-				&& !gump_man->find_gump(x, y, false)) {
-				gwin->start_actor_along_path(
-						x, y, Mouse::mouse()->avatar_speed);
-				dragging = dragged = false;
-				break;
+			if (!click_handled && (curtime - last_b1down_click > 500)) {
+				if (touchui != nullptr && Combat::is_paused()
+					&& gwin->in_combat()) {
+					gwin->paused_combat_select(x, y);
+					break;
+				}
+				if (gwin->get_touch_pathfind() && avatar_can_act
+					&& gwin->main_actor_can_act_charmed() && !dragging
+					&& !gump_man->find_gump(x, y, false)) {
+					gwin->start_actor_along_path(
+							x, y, Mouse::mouse()->avatar_speed);
+					dragging = dragged = false;
+					break;
+				}
 			}
 
 			if (!click_handled && avatar_can_act && left_down_x - 1 <= x
