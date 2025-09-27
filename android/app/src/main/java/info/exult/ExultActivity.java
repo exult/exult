@@ -118,32 +118,33 @@ public class ExultActivity extends SDLActivity {
 			RelativeLayout.LayoutParams pauseLp
 					= (RelativeLayout.LayoutParams)
 							  m_pauseTextView.getLayoutParams();
-			final boolean hasRel
-					= pauseLp.getRule(RelativeLayout.RIGHT_OF) != 0
-					  || pauseLp.getRule(RelativeLayout.LEFT_OF) != 0;
+			final int gap = dpToPx(12);
 
-			if (!hasRel) {
-				final int                   gap = dpToPx(12);
-				RelativeLayout.LayoutParams escLp
-						= (RelativeLayout.LayoutParams)
-								  m_escTextView.getLayoutParams();
+			// Anchor next to ESC based on its current side
+			RelativeLayout.LayoutParams escLp
+					= (RelativeLayout.LayoutParams)
+							  m_escTextView.getLayoutParams();
 
-				if (escLp.getRule(RelativeLayout.ALIGN_PARENT_LEFT) != 0) {
-					// ESC on left -> Pause to its right
-					pauseLp.addRule(
-							RelativeLayout.RIGHT_OF, m_escTextView.getId());
-					pauseLp.leftMargin  = gap;
-					pauseLp.rightMargin = 0;
-				} else {
-					// ESC on right -> Pause to its left
-					pauseLp.addRule(
-							RelativeLayout.LEFT_OF, m_escTextView.getId());
-					pauseLp.rightMargin = gap;
-					pauseLp.leftMargin  = 0;
-				}
-				m_pauseTextView.setText(GLYPH_PAUSE);
-				m_pauseTextView.setLayoutParams(pauseLp);
+			// Clear conflicting rules so RIGHT_OF/LEFT_OF take effect
+			pauseLp.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
+			pauseLp.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+			pauseLp.removeRule(RelativeLayout.RIGHT_OF);
+			pauseLp.removeRule(RelativeLayout.LEFT_OF);
+
+			if (escLp.getRule(RelativeLayout.ALIGN_PARENT_LEFT) != 0) {
+				// ESC on left -> Pause to its right
+				pauseLp.addRule(RelativeLayout.RIGHT_OF, m_escTextView.getId());
+				pauseLp.leftMargin  = gap;
+				pauseLp.rightMargin = 0;
+			} else {
+				// ESC on right -> Pause to its left
+				pauseLp.addRule(RelativeLayout.LEFT_OF, m_escTextView.getId());
+				pauseLp.rightMargin = gap;
+				pauseLp.leftMargin  = 0;
 			}
+			m_pauseTextView.setLayoutParams(pauseLp);
+
+			m_pauseTextView.setText(GLYPH_PAUSE);
 			m_pauseTextView.setVisibility(View.VISIBLE);
 		});
 	}
