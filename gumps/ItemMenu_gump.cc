@@ -30,11 +30,43 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "exult.h"
 #include "exult_flx.h"
 #include "gamewin.h"
+#include "items.h"
 #include "shapeinf.h"
 
 using Itemmenu_button = CallbackTextButton<Itemmenu_gump>;
 using Itemmenu_object = CallbackTextButton<Itemmenu_gump, Game_object*>;
 using ObjectParams    = Itemmenu_object::CallbackParams;
+
+class Strings : public GumpStrings {
+public:
+	static auto ShowInventory() {
+		return get_text_msg(0x650 - msg_file_start);
+	}
+
+	static auto Talkto() {
+		return get_text_msg(0x651 - msg_file_start);
+	}
+
+	static auto ShowContents() {
+		return get_text_msg(0x652 - msg_file_start);
+	}
+
+	static auto Interactwith() {
+		return get_text_msg(0x653 - msg_file_start);
+	}
+
+	static auto Pickup() {
+		return get_text_msg(0x654 - msg_file_start);
+	}
+
+	static auto Moveto() {
+		return get_text_msg(0x655 - msg_file_start);
+	}
+
+	static auto Donothing() {
+		return get_text_msg(0x656 - msg_file_start);
+	}
+};
 
 void Itemmenu_gump::select_object(Game_object* obj) {
 	objectSelected = obj;
@@ -88,7 +120,8 @@ Itemmenu_gump::Itemmenu_gump(Game_object_map_xy* mobjxy, int cx, int cy)
 		btop += button_spacing_y;
 	}
 	buttons.push_back(std::make_unique<Itemmenu_button>(
-			this, &Itemmenu_gump::cancel_menu, "Cancel", 10, btop, 59, 20));
+			this, &Itemmenu_gump::cancel_menu, Strings::Cancel(), 10, btop, 59,
+			20));
 	fix_position(buttons.size());
 }
 
@@ -110,8 +143,8 @@ Itemmenu_gump::Itemmenu_gump(Game_object* obj, int ox, int oy, int cx, int cy)
 	const bool in_party = objectSelected->get_flag(Obj_flags::in_party);
 	if (in_party || (is_npc_or_monster && cheat.in_pickpocket())) {
 		buttons.push_back(std::make_unique<Itemmenu_button>(
-				this, &Itemmenu_gump::set_inventory, "Show Inventory", 10, btop,
-				59, 20));
+				this, &Itemmenu_gump::set_inventory, Strings::ShowInventory(),
+				10, btop, 59, 20));
 		btop += button_spacing_y;
 	}
 	const bool is_avatar = objectSelected == gwin->get_main_actor();
@@ -121,11 +154,11 @@ Itemmenu_gump::Itemmenu_gump(Game_object* obj, int ox, int oy, int cx, int cy)
 			|| objectSelected->usecode_exists())) {
 		std::string useText;
 		if (is_npc_or_monster) {
-			useText = "Talk to";
+			useText = Strings::Talkto();
 		} else if (cls == Shape_info::container) {
-			useText = "Show Contents";
+			useText = Strings::ShowContents();
 		} else {
-			useText = "Interact with";
+			useText = Strings::Interactwith();
 		}
 		buttons.push_back(std::make_unique<Itemmenu_button>(
 				this, &Itemmenu_gump::set_use, useText, 10, btop, 59, 20));
@@ -133,14 +166,17 @@ Itemmenu_gump::Itemmenu_gump(Game_object* obj, int ox, int oy, int cx, int cy)
 	}
 	if (cheat.in_hack_mover() || objectSelected->is_dragable()) {
 		buttons.push_back(std::make_unique<Itemmenu_button>(
-				this, &Itemmenu_gump::set_pickup, "Pickup", 10, btop, 59, 20));
+				this, &Itemmenu_gump::set_pickup, Strings::Pickup(), 10, btop,
+				59, 20));
 		btop += button_spacing_y;
 		buttons.push_back(std::make_unique<Itemmenu_button>(
-				this, &Itemmenu_gump::set_move, "Move to", 10, btop, 59, 20));
+				this, &Itemmenu_gump::set_move, Strings::Moveto(), 10, btop, 59,
+				20));
 		btop += button_spacing_y;
 	}
 	buttons.push_back(std::make_unique<Itemmenu_button>(
-			this, &Itemmenu_gump::cancel_menu, "Do nothing", 10, btop, 59, 20));
+			this, &Itemmenu_gump::cancel_menu, Strings::Donothing(), 10, btop,
+			59, 20));
 	fix_position(buttons.size());
 }
 

@@ -197,89 +197,96 @@ void Set_misc_name(unsigned num, const char* name) {
  */
 
 static void Setup_item_names(
-		IDataSource& items, IDataSource& msgs, bool si, bool expansion,
-		bool sibeta) {
-	vector<string> msglist;
-	int            first_msg;    // First in exultmsg.txt.  Should
-	//   follow those in text.flx.
-	int total_msgs     = 0;
-	int num_item_names = 0;
-	int num_text_msgs  = 0;
-	int num_misc_names = 0;
+		IDataSource& items, std::vector<File_spec>& exultmsgs, bool si,
+		bool expansion, bool sibeta) {
+	vector<std::optional<string>> msglist;
+	int            num_item_names = 0;
+	int            num_text_msgs  = 0;
+	int            num_misc_names = 0;
+	int            flxcnt         = 0;
+	int            i;
 
-	items.seek(0x54);
-	int flxcnt = items.read4();
-	first_msg = num_item_names = flxcnt;
-	if (flxcnt > 0x400) {
-		num_item_names = 0x400;
-		num_text_msgs  = flxcnt - 0x400;
-		if (flxcnt > 0x500) {
-			num_text_msgs  = 0x100;
-			num_misc_names = flxcnt - 0x500;
-			int last_name;    // Discard all starting from this.
-			if (si) {
-				last_name = 0x686;
-			} else {
-				last_name = 0x600;
-			}
-			if (flxcnt > last_name) {
-				num_misc_names = last_name - 0x500;
-				flxcnt         = last_name;
+	if (items.good()) {
+		items.seek(0x54);
+		num_item_names = flxcnt = items.read4();
+		if (flxcnt > 0x400) {
+			num_item_names = 0x400;
+			num_text_msgs  = flxcnt - 0x400;
+			if (flxcnt > 0x500) {
+				num_text_msgs  = 0x100;
+				num_misc_names = flxcnt - 0x500;
+				int last_name;    // Discard all starting from this.
+				if (si) {
+					last_name = 0x686;
+				} else {
+					last_name = 0x600;
+				}
+				if (flxcnt > last_name) {
+					num_misc_names = last_name - 0x500;
+					flxcnt         = last_name;
+				}
 			}
 		}
-		total_msgs = num_text_msgs;
 	}
-	if (msgs.good()) {
-		// Exult msgs. too?
-		Text_msg_file_reader reader(msgs);
-		first_msg = reader.get_global_section_strings(msglist);
-		if (first_msg >= 0) {
-			first_msg -= 0x400;
-			if (first_msg < num_text_msgs) {
-				cerr << "Exult msg. # " << first_msg
-					 << " conflicts with 'text.flx'" << endl;
+	for (const auto& exultmsgfs : exultmsgs) {
+		IExultDataSource msgs(exultmsgfs, 0);
+		if (msgs.good()) {
+			// Exult msgs. too?
+			Text_msg_file_reader reader(msgs);
+			int first_msg = reader.get_global_section_strings(msglist);
+			if (first_msg >= msg_file_start) {
+				first_msg -= msg_file_start;
+				if (first_msg < num_text_msgs) {
+					cerr << "Exult msg. # " << first_msg
+						 << " conflicts with 'text.flx'" << endl;
+					first_msg = num_text_msgs;
+				}
+				const size_t total_msgs = msglist.size() - msg_file_start;
+				text_msgs.resize(std::max(total_msgs, text_msgs.size()));
+				for (unsigned i = first_msg; i < total_msgs; i++) {
+					std::optional<string>& msg = msglist[i + msg_file_start];
+					if (msg) {
+						text_msgs[i] = msg.value();
+					}
+				}
+			} else {
 				first_msg = num_text_msgs;
 			}
-			total_msgs = static_cast<int>(msglist.size() - 0x400);
-		} else {
-			first_msg = num_text_msgs;
 		}
 	}
 	item_names.resize(num_item_names);
-	text_msgs.resize(total_msgs);
+	text_msgs.resize(std::max<size_t>(num_text_msgs, text_msgs.size()));
 	misc_names.resize(num_misc_names);
 	// Hack alert: move SI misc_names around to match those of SS.
-	const bool doremap = si && (!expansion || sibeta);
-	if (doremap) {
-		flxcnt -= 17;    // Just to be safe.
-	}
-	int i;
-	for (i = 0; i < flxcnt; i++) {
-		items.seek(0x80 + (i * 8));
-		const int itemoffs = items.read4();
-		if (itemoffs == 0) {
-			continue;
+	if (flxcnt) {
+		const bool doremap = si && (!expansion || sibeta);
+		if (doremap) {
+			flxcnt -= 17;    // Just to be safe.
 		}
-		const int itemlen = items.read4();
-		items.seek(itemoffs);
-		string newitem;
-		items.read(newitem, itemlen);
-		if (i < num_item_names) {
-			item_names[i] = std::move(newitem);
-		} else if (i - num_item_names < num_text_msgs) {
-			if (sibeta && (i - num_item_names) >= 0xd2) {
-				text_msgs[i - num_item_names + 1] = std::move(newitem);
-			} else {
-				text_msgs[i - num_item_names] = std::move(newitem);
+		for (i = 0; i < flxcnt; i++) {
+			items.seek(0x80 + (i * 8));
+			const int itemoffs = items.read4();
+			if (itemoffs == 0) {
+				continue;
 			}
-		} else {
-			const size_t new_index = remap_index(
-					doremap, i - num_item_names - num_text_msgs, sibeta);
-			misc_names[new_index] = std::move(newitem);
+			const int itemlen = items.read4();
+			items.seek(itemoffs);
+			string newitem;
+			items.read(newitem, itemlen);
+			if (i < num_item_names) {
+				item_names[i] = std::move(newitem);
+			} else if (i - num_item_names < num_text_msgs) {
+				if (sibeta && (i - num_item_names) >= 0xd2) {
+					text_msgs[i - num_item_names + 1] = std::move(newitem);
+				} else {
+					text_msgs[i - num_item_names] = std::move(newitem);
+				}
+			} else {
+				const size_t new_index = remap_index(
+						doremap, i - num_item_names - num_text_msgs, sibeta);
+				misc_names[new_index] = std::move(newitem);
+			}
 		}
-	}
-	for (i = first_msg; i < total_msgs; i++) {
-		text_msgs[i] = msglist[i + 0x400];
 	}
 }
 
@@ -293,68 +300,98 @@ static void Setup_item_names(
  */
 
 static void Setup_text(
-		IDataSource& txtfile,    // All text.
-		IDataSource& exultmsg) {
+		IDataSource&            txtfile,    // All text.
+		std::vector<File_spec>& exultmsgs) {
 	// Start by reading from exultmsg
-	vector<string> msglist;
-	int            first_msg;
-	{
-		Text_msg_file_reader reader(exultmsg);
-		first_msg = reader.get_global_section_strings(msglist);
-	}
+	for (auto exultmsgfs : exultmsgs) {
+		vector<std::optional<string>> msglist;
+		int              first_msg = 0;
+		IExultDataSource exultmsg(exultmsgfs.name, exultmsgfs.index);
+		if (exultmsg.good()) {
+			{
+				Text_msg_file_reader reader(exultmsg);
+				first_msg = reader.get_global_section_strings(msglist);
+			}
 
-	//
-	if (first_msg >= 0x400) {
-		first_msg -= 0x400;
-		const size_t total_msgs = msglist.size() - 0x400;
-		text_msgs.resize(std::max(total_msgs, text_msgs.size()));
-		for (unsigned i = first_msg; i < total_msgs; i++) {
-			text_msgs[i] = msglist[i + 0x400];
+			//
+			if (first_msg >= msg_file_start) {
+				first_msg -= msg_file_start;
+				const size_t total_msgs = msglist.size() - msg_file_start;
+				text_msgs.resize(std::max(total_msgs, text_msgs.size()));
+				for (unsigned i = first_msg; i < total_msgs; i++) {
+					std::optional<string> &msg = msglist[i + msg_file_start];
+					if (msg) {
+						text_msgs[i] = msg.value();
+					}
+				}
+			}
 		}
 	}
 	// If no text mesages were loaded retry with the default exult ones
 	if (text_msgs.empty()) {
-		static bool tried_default = false;
-
-		if (!tried_default) {
-			auto defaultexultmsg = IExultDataSource(
-					BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX),
-					EXULT_FLX_EXULTMSG_TXT);
-			tried_default = true;
-			Setup_text(txtfile, defaultexultmsg);
-			return;
-		} else {
-			throw exult_exception(
-					"Failed to load any messages from exultmsg", __FILE__,
-					__LINE__);
-		}
+		throw exult_exception(
+				"Failed to load any messages from exultmsg", __FILE__,
+				__LINE__);
 	}
 
 	// Now read in textmsg.txt
-	Text_msg_file_reader reader(txtfile);
-	reader.get_section_strings(SHAPES_SECT, item_names);
-	reader.get_section_strings(MSGS_SECT, text_msgs);
-	reader.get_section_strings(MISC_SECT, misc_names);
+	if (txtfile.good()) {
+		Text_msg_file_reader reader(txtfile);
+		reader.get_section_strings(SHAPES_SECT, item_names);
+		reader.get_section_strings(MSGS_SECT, text_msgs);
+		reader.get_section_strings(MISC_SECT, misc_names);
+	}
 }
 
 /*
  *  Setup item names and text messages.
  */
 
-void Setup_text(bool si, bool expansion, bool sibeta) {
+void Setup_text(bool si, bool expansion, bool sibeta, Game_Language language) {
 	Free_text();
-	const bool is_patch = is_system_path_defined("<PATCH>");
-	// Always read from exultmsg.txt
-	// TODO: allow multilingual exultmsg.txt files.
-	auto exultmsg = [&]() {
-		if (is_patch && U7exists(PATCH_EXULTMSG)) {
-			return IExultDataSource(PATCH_EXULTMSG, 0);
-		}
-
-		return IExultDataSource(
+	const bool             is_patch = is_system_path_defined("<PATCH>");
+	std::vector<File_spec> exultmsgs;
+	exultmsgs.reserve(4);
+	// Always read exultmsg.txt from exult.flx
+	exultmsgs.push_back(File_spec(
+			BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_EXULTMSG_TXT));
+	// Then load the language specific exultmsg from exult.flx
+	int         exultflx_msg_lang_index = -1;
+	const char* patch_exultmsg_lang     = nullptr;
+	switch (language) {
+	case Game_Language::FRENCH:
+		exultflx_msg_lang_index = EXULT_FLX_EXULTMSG_FR_TXT;
+		patch_exultmsg_lang     = PATCH_EXULTMSG_FR;
+		break;
+	case Game_Language::GERMAN:
+		exultflx_msg_lang_index = EXULT_FLX_EXULTMSG_DE_TXT;
+		patch_exultmsg_lang     = PATCH_EXULTMSG_DE;
+		break;
+	case Game_Language::SPANISH:
+		exultflx_msg_lang_index = EXULT_FLX_EXULTMSG_ES_TXT;
+		patch_exultmsg_lang     = PATCH_EXULTMSG_ES;
+		break;
+		// English messages are always loaded so do not need to explicitly load
+		// them here
+	case Game_Language::ENGLISH:
+	default:
+		break;
+	}
+	// Then load the language specific exultmsg from exult.flx
+	if (exultflx_msg_lang_index != -1) {
+		exultmsgs.push_back(File_spec(
 				BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX),
-				EXULT_FLX_EXULTMSG_TXT);
-	}();
+				exultflx_msg_lang_index));
+	}
+
+	if (is_patch) {
+		// Then load the patch exultmsg then  finally load load the
+		exultmsgs.push_back(File_spec(PATCH_EXULTMSG, 0));
+		// finally load load the language specific patch
+		if (patch_exultmsg_lang) {
+			exultmsgs.push_back(File_spec(patch_exultmsg_lang, 0));
+		}
+	}
 
 	// Exult new-style messages?
 	if (is_patch && U7exists(PATCH_TEXTMSGS)) {
@@ -362,13 +399,13 @@ void Setup_text(bool si, bool expansion, bool sibeta) {
 		if (!txtfile.good()) {
 			return;
 		}
-		Setup_text(txtfile, exultmsg);
+		Setup_text(txtfile, exultmsgs);
 	} else if (U7exists(TEXTMSGS)) {
 		IFileDataSource txtfile(TEXTMSGS, true);
 		if (!txtfile.good()) {
 			return;
 		}
-		Setup_text(txtfile, exultmsg);
+		Setup_text(txtfile, exultmsgs);
 	} else {
 		IFileDataSource textflx = [&]() {
 			if (is_patch && U7exists(PATCH_TEXT)) {
@@ -376,10 +413,8 @@ void Setup_text(bool si, bool expansion, bool sibeta) {
 			}
 			return IFileDataSource(TEXT_FLX);
 		}();
-		if (!textflx.good()) {
-			return;
-		}
-		Setup_item_names(textflx, exultmsg, si, expansion, sibeta);
+
+		Setup_item_names(textflx, exultmsgs, si, expansion, sibeta);
 	}
 }
 

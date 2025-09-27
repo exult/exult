@@ -45,6 +45,8 @@ private:
 public:
 	Gamemenu_gump();
 
+	void createButtons();
+
 	// Paint it and its contents.
 	void paint() override;
 

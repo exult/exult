@@ -215,7 +215,7 @@ void CoreMidiDriver::increaseThreadPriority() {
 
 std::vector<ConfigSetting_widget::Definition> CoreMidiDriver::GetSettings() {
 	ConfigSetting_widget::Definition midi_device{
-			"CoreMIDI Device",                            // label
+			Strings::CoreMIDIDevice(),                            // label
 			"config/audio/midi/coremidi_device",          // config_setting
 			0,                                            // additional
 			false,                                        // required

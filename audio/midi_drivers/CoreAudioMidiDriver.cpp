@@ -287,7 +287,7 @@ void CoreAudioMidiDriver::increaseThreadPriority() {
 std::vector<ConfigSetting_widget::Definition> CoreAudioMidiDriver::
 		GetSettings() {
 	ConfigSetting_widget::Definition soundfont{
-			"Soundfont",                                  // label
+			Strings::Soundfont(),                                  // label
 			"config/audio/midi/coreaudio_soundfont",      // config_setting
 			0,                                            // additional
 			false,                                        // required

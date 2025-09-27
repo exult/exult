@@ -98,10 +98,7 @@ public:
 		return y;
 	}
 
-	void set_pos(int newx, int newy) override {
-		x = newx;
-		y = newy;
-	}
+	void set_pos(int newx, int newy) override;
 
 	void screen_to_local(int& sx, int& sy) const override {
 		sx -= x;
@@ -178,7 +175,11 @@ public:
 			for (auto& child : container) {
 				if (!child) {
 					continue;
+				}	
+				if (&*child == before) {
+					break;
 				}
+
 				Gump_widget* found = child->findSorted(
 						sx, sy, Sort_Order(s), next, highest, before);
 				if (found) {

@@ -34,6 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "game.h"
 #include "gameclk.h"
 #include "gamewin.h"
+#include "items.h"
 #include "msgfile.h"
 #include "touchui.h"
 
@@ -45,6 +46,21 @@ using std::ostream;
 using std::string;
 using std::vector;
 #include <sstream>
+
+class Strings : public GumpStrings {
+public:
+	static auto Day() {
+		return get_text_msg(0x658 - msg_file_start);
+	}
+
+	static auto am() {
+		return get_text_msg(0x659 - msg_file_start);
+	}
+
+	static auto pm() {
+		return get_text_msg(0x65A - msg_file_start);
+	}
+};
 
 vector<One_note*>    Notebook_gump::notes;
 bool                 Notebook_gump::initialized = false;    // Set when read in.
@@ -330,15 +346,15 @@ bool Notebook_gump::paint_page(
 	const bool find_cursor = (note == notes[curnote] && cursor.x < 0);
 	if (offset == 0) {    // Print note info. at start.
 		char        buf[60];
-		const char* ampm = "am";
+		const char* ampm = Strings::am();
 		int         h    = note->hour;
 		if (h >= 12) {
 			h -= 12;
-			ampm = "pm";
+			ampm = Strings::pm();
 		}
 		snprintf(
-				buf, sizeof(buf), "Day %d, %02d:%02d%s", note->day, h ? h : 12,
-				note->minute, ampm);
+				buf, sizeof(buf), "%s %d, %02d:%02d%s", Strings::Day(),
+				note->day, h ? h : 12, note->minute, ampm);
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 		const int fontnum = 4;
 		const int yoffset = 0;

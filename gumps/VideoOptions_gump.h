@@ -60,7 +60,8 @@ private:
 		id_apply = id_first,
 		id_help,
 		id_cancel,
-		id_fullscreen,
+		id_first_setting,
+		id_fullscreen = id_first_setting,
 		id_share_settings,
 		id_high_dpi,
 		id_resolution,    // id_resolution and all past it

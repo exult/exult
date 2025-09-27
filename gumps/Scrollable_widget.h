@@ -201,6 +201,8 @@ public:
 
 	// Vertically stack children with given halign
 	bool arrange_children();
+
+	void expand(int deltax, int deltay);
 };
 
 #endif

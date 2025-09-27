@@ -23,12 +23,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Enabled_button.h"
 
 #include "gamewin.h"
-
-const char* Enabled_button::selections[] = {"Disabled", "Enabled"};
+#include "items.h"
 
 /*
  *  Redisplay as 'pushed'.
  */
+
+Enabled_button::Enabled_button(
+		Gump* par, int selectionnum, int px, int py, int width, int height)
+		: Text_button(par, "", px, py, width, height),
+		  selections{GumpStrings::Disabled(), GumpStrings::Enabled()} {
+	set_frame(selectionnum);
+	text = selections[selectionnum];
+	init();
+}
 
 bool Enabled_button::push(MouseButton button) {
 	if (button == MouseButton::Left || button == MouseButton::Middle) {

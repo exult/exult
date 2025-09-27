@@ -39,6 +39,7 @@
 #include "gamemgr/sigame.h"
 #include "gamewin.h"
 #include "items.h"
+#include "istring.h"
 #include "keys.h"
 #include "menulist.h"
 #include "mouse.h"
@@ -62,7 +63,7 @@ bool          Game::new_game_flag = false;
 bool          Game::editing_flag  = false;
 Game*         game                = nullptr;
 Exult_Game    Game::game_type     = NONE;
-Game_Language Game::language      = ENGLISH;
+Game_Language Game::language      = Game_Language::ENGLISH;
 bool          Game::expansion     = false;
 bool          Game::sibeta        = false;
 
@@ -95,7 +96,7 @@ Game::Game() {
 
 Game::~Game() {
 	game_type = NONE;
-	language  = ENGLISH;
+	language  = Game_Language::ENGLISH;
 	delete xml;
 	while (!xmlstrings.empty()) {
 		char* str = xmlstrings.back();
@@ -163,6 +164,46 @@ Game* Game::create_game(BaseGameInfo* mygame) {
 	cout << endl;
 
 	return game;
+}
+
+Game_Language Game::get_game_message_language() {
+	std::string value;
+	Game_Language selected
+			=  get_game_language();
+
+	for (int i = 0; i < 2; i++) {
+		if (i == 0) {
+			config->value("config/gameplay/language", value, "");
+		} else if(get_game_type() != NONE) {
+			config->value(
+					"config/disk/game/" + Game::get_gametitle() + "/language",
+					value, "");			
+		} else {
+			continue;
+		}
+
+		// make the string lowercase
+		Pentagram::tolower(value);
+		// Only
+		if (value == "en") {
+			selected = Game_Language::ENGLISH;
+		} else if (value == "fr") {
+			selected = Game_Language::FRENCH;
+		} else if (value == "de") {
+			selected = Game_Language::GERMAN;
+		} else if (value == "es") {
+			selected = Game_Language::SPANISH;
+		}
+	}
+	return selected;
+	;
+}
+
+void Game::setup_text() {
+	Setup_text(
+			get_game_type() == SERPENT_ISLE, has_expansion(),
+			get_game_type() == SERPENT_ISLE && is_si_beta(),
+			get_game_message_language());
 }
 
 void Game::show_congratulations(Palette* pal0) {

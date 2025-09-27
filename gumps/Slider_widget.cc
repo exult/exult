@@ -183,6 +183,7 @@ TileRect Slider_widget::get_rect() const {
 							   dshape->get_width(), dshape->get_width())
 					 : TileRect(diamondx, diamondy, 8, 8);
 
+	local_to_screen(diamondrect.x, diamondrect.y);
 	return leftrect.add(rightrect).add(diamondrect);
 }
 

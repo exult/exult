@@ -41,6 +41,7 @@
 #include "game.h"
 #include "gamewin.h"
 #include "gump_utils.h"
+#include "items.h"
 #include "jawbone.h"
 #include "npcnear.h"
 #include "spellbook.h"
@@ -495,7 +496,7 @@ bool Gump_manager::okay_to_quit(Paintable* paint) {
 		return false;
 	}
 	inthis = true;
-	if (Yesno_gump::ask("Do you really want to quit?", paint)) {
+	if (Yesno_gump::ask(GumpStrings::Doyoureallywanttoquit_(), paint)) {
 		quitting_time = QUIT_TIME_YES;
 	}
 	inthis = false;

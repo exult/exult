@@ -178,7 +178,7 @@ std::vector<ConfigSetting_widget::Definition> MidiDriver::
 	// Add in the default settings
 	if (driver && !driver->isFMSynth() && !driver->isMT32()) {
 		ConfigSetting_widget::Definition convert{
-				"device type",    // label
+				Strings::devicetype(),    // label
 				"config/audio/midi/convert_"
 						+ driver->getName(),                  // config_setting
 				0,                                            // additional
@@ -192,17 +192,17 @@ std::vector<ConfigSetting_widget::Definition> MidiDriver::
 		convert.default_value.swap(s);
 
 		convert.choices.push_back(ConfigSetting_widget::Definition::Choice{
-				"General Midi", "gm", "gm"});
+				Strings::GeneralMidi(), "gm", "gm"});
 		convert.choices.push_back(
 				ConfigSetting_widget::Definition::Choice{"GS", "gs", "gs"});
 		convert.choices.push_back(ConfigSetting_widget::Definition::Choice{
-				"GS127", "gs127", "gs127"});
+				Strings::GS127(), "gs127", "gs127"});
 		convert.choices.push_back(ConfigSetting_widget::Definition::Choice{
-				"Fake MT32", "fakemt32", "fakemt32"});
+				Strings::FakeMT32(), " fakemt32 ", " fakemt32 "});
 		// Real MT32 Option is only for devices that support a hardware port
 		if (driver->isRealMT32Supported()) {
 			convert.choices.push_back(ConfigSetting_widget::Definition::Choice{
-					"Real MT32", "none", "mt32"});
+					Strings::RealMT32(), "none", "mt32"});
 		} else {
 			// make sure the config setting and the default is not mt32
 			if (convert.default_value == "mt32") {
@@ -219,7 +219,7 @@ std::vector<ConfigSetting_widget::Definition> MidiDriver::
 
 		// Reverb and Chorus
 		ConfigSetting_widget::Definition reverb{
-				"Reverb Effect",    // label
+				Strings::ReverbEffect(),    // label
 				"config/audio/midi/reverb/enabled_"
 						+ driver->getName(),                // config_setting
 				0,                                          // additional
@@ -228,7 +228,7 @@ std::vector<ConfigSetting_widget::Definition> MidiDriver::
 				ConfigSetting_widget::Definition::button    // setting_type
 		};
 		ConfigSetting_widget::Definition chorus{
-				"Chorus Effect",    // label
+				Strings::ChorusEffect(),    // label
 				"config/audio/midi/chorus/enabled_"
 						+ driver->getName(),                // config_setting
 				0,                                          // additional
@@ -236,12 +236,12 @@ std::vector<ConfigSetting_widget::Definition> MidiDriver::
 				false,                                      // unique
 				ConfigSetting_widget::Definition::button    // setting_type
 		};
-		reverb.choices.push_back({"Yes", "yes", "yes"});
-		reverb.choices.push_back({"No", "no", "no"});
+		reverb.choices.push_back({GumpStrings::Yes(), "yes", "yes"});
+		reverb.choices.push_back({GumpStrings::No(), "no", "no"});
 		config->value("config/audio/midi/reverb/enabled", s, "no");
 		reverb.default_value.swap(s);
-		chorus.choices.push_back({"Yes", "yes", "yes"});
-		chorus.choices.push_back({"No", "no", "no"});
+		chorus.choices.push_back({GumpStrings::Yes(), "yes", "yes"});
+		chorus.choices.push_back({GumpStrings::No(), "no", "no"});
 		config->value("config/audio/midi/chorus/enabled", s, "no");
 		chorus.default_value.swap(s);
 		result.push_back(reverb);

@@ -21,18 +21,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Text_button.h"
 
+#include <array>
 #include <string>
 
 class Enabled_button : public Text_button {
 public:
 	Enabled_button(
 			Gump* par, int selectionnum, int px, int py, int width,
-			int height = 0)
-			: Text_button(par, "", px, py, width, height) {
-		set_frame(selectionnum);
-		text = selections[selectionnum];
-		init();
-	}
+			int height = 0);
 
 	bool push(MouseButton button) override;
 	void unpush(MouseButton button) override;
@@ -45,7 +41,7 @@ public:
 	virtual void toggle(int state) = 0;
 
 protected:
-	static const char* selections[];
+	std::array<const char*, 2> selections;
 };
 
 template <typename Parent>

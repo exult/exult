@@ -34,10 +34,11 @@ private:
 	enum button_ids {
 		id_first = 0,
 		id_apply = id_first,
-		id_cancel,
 		id_help,
+		id_cancel,
 		id_mixer,
-		id_audio_enabled,
+		id_first_setting,
+		id_audio_enabled = id_first_setting,
 		id_sample_rate,
 		id_speaker_type,
 		id_music_enabled,
@@ -112,6 +113,7 @@ public:
 	void rebuild_midi_driver_buttons();
 	void rebuild_mididriveroption_buttons();
 	void rebuild_sfx_buttons();
+	void do_arrange();
 
 	void load_settings();
 	void save_settings();

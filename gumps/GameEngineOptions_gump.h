@@ -44,9 +44,10 @@ private:
 	enum button_ids {
 		id_first = 0,
 		id_ok    = id_first,
-		id_cancel,
 		id_help,
-		id_allow_autonotes,
+		id_cancel,
+		id_first_setting,
+		id_allow_autonotes = id_first_setting,
 		id_gumps_pause,
 		id_alternate_drop,
 		id_frames,
@@ -60,6 +61,8 @@ private:
 	};
 
 	std::array<std::unique_ptr<Gump_button>, id_count> buttons;
+
+	int y_index_cheats_start = 0;
 
 public:
 	GameEngineOptions_gump();

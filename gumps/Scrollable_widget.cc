@@ -87,6 +87,8 @@ Scrollable_widget::Scrollable_widget(
 			= std::make_shared<Scrolling_pane>(this, border_size, 0);
 	scrollrect = TileRect(
 			scroll_start_x, scroll_start_y, sliderw, ypos - scroll_start_y);
+	// Call run to update scrollbar state
+	run();
 }
 
 bool Scrollable_widget::run() {
@@ -106,6 +108,9 @@ bool Scrollable_widget::run() {
 			}
 		}
 		repaint |= std::exchange(pane->scroll_offset, 0) != 0;
+		// Recalculate width for no scrollbar
+		width = scrollrect.x;
+		scrollrect.w = 0;
 	} else {
 		for (int i = id_first_button; i <= id_last_button; i++) {
 			auto& button = children[i];
@@ -114,6 +119,9 @@ bool Scrollable_widget::run() {
 						   != Sort_Order::normal;
 			}
 		}
+		// recalculate width for scrollbar
+		width = scrollrect.x + children[id_line_up]->get_shape()->get_width();
+		scrollrect.w = sliderw;
 	}
 	for (auto& child : children) {
 		if (child) {
@@ -372,6 +380,23 @@ bool Scrollable_widget::arrange_children() {
 		child->set_pos(x, y);
 	}
 	return changed;
+}
+
+void Scrollable_widget::expand(int deltax, int deltay) {
+	width += deltax;
+	height += deltay;
+	scrollrect.x += deltax;
+	scrollrect.h += deltay;
+	
+	// Move scrolbar widgets
+
+	for (int index = id_first_button; index <= id_last_button; index++)
+	{
+		auto widget = children[index];
+		if (widget) {		
+		widget->set_pos(widget->get_x() + deltax, widget->get_y()+(index>=id_page_down?deltay:0));
+		}
+	}	
 }
 
 Scrollable_widget::Scrolling_pane::Scrolling_pane(

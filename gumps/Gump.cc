@@ -114,9 +114,13 @@ void Gump::set_pos() {
 	x         = 0;
 	y         = 0;
 	auto rect = get_rect();
-
+	// mark old position dirty
+	gwin->add_dirty(rect);
 	x = (gwin->get_width() - rect.w) / 2 - rect.x;
 	y = (gwin->get_height() - rect.h) / 2 - rect.y;
+
+	// mark new position dirty
+	gwin->add_dirty(get_rect());
 }
 
 void Gump::set_pos(int newx, int newy) {    // Set new spot on screen.
@@ -199,14 +203,14 @@ void Gump::set_object_area(
 		&& get_shapefile() == SF_GUMPS_VGA) {
 		auto section = gump_area_info->get_global_section();
 		if (size_t(get_shapenum()) < section.size()) {
-			auto sv = section[(get_shapenum())];
-			if (sv.size()) {
+			auto osv = section[(get_shapenum())];
+			if (osv && osv.value().size()) {
 				// Read 6 ints
 				int  vals[6];
 				bool success = true;
 
 				for (int& v : vals) {
-					if (!(success = read_int_and_advance(sv, v))) {
+					if (!(success = read_int_and_advance(osv.value(), v))) {
 						break;
 					}
 				}

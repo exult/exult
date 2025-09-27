@@ -242,7 +242,7 @@ void WindowsMidiDriver::increaseThreadPriority() {
 
 std::vector<ConfigSetting_widget::Definition> WindowsMidiDriver::GetSettings() {
 	ConfigSetting_widget::Definition midi_device{
-			"Win32 MIDI Device",                          // label
+			Strings::Win32MIDIDevice(),                   // label
 			"config/audio/midi/win32_device",             // config_setting
 			0,                                            // additional
 			false,                                        // required

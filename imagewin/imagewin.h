@@ -97,6 +97,7 @@ public:
 
 	struct ScalerInfo {
 		const char*            name;
+		int                    displayname_msg_index;
 		uint32                 size_mask;
 		Pentagram::ArbScaler*  arb;
 		Image_window::scalefun fun8to565;
@@ -131,6 +132,8 @@ public:
 	static inline const char* get_name_for_scaler(int num) {
 		return Scalers[num].name;
 	}
+
+	static const char* get_displayname_for_scaler(int num);
 
 	struct ScalerConst {
 		const char* const Name;

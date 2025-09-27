@@ -98,8 +98,12 @@ public:
 	}
 
 	static Game_Language get_game_language() {
-		return language;
+		return game_type != NONE ? language : Game_Language::ENGLISH;
 	}
+
+	static Game_Language get_game_message_language();
+
+	static void setup_text();
 
 	static bool has_expansion() {
 		return expansion;
@@ -111,7 +115,7 @@ public:
 
 	// Get a code represeting gametype, language, xp and beta state
 	static uint32 Get_unique_gamecode() {
-		return game_type ^ expansion << 31 ^ sibeta << 30 ^ language << 24;
+		return game_type ^ expansion << 31 ^ sibeta << 30 ^ uint32(language) << 24;
 	}
 
 	static const char* get_avname();

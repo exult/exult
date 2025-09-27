@@ -33,8 +33,8 @@ private:
 	enum button_ids {
 		id_first = 0,
 		id_ok    = id_first,
-		id_cancel,
 		id_help,
+		id_cancel,
 		id_count
 	};
 
@@ -87,6 +87,9 @@ protected:
 	bool key_down(SDL_Keycode chr, SDL_Keycode unicode)
 			override;    // Character typed.
 
+	void PaintSlider(
+			Image_window8* iwin, Slider_widget* slider, const char* label,
+			bool use3dslidertrack=true);
 	//
 	// Implementation of Slider_widget::ICallback
 	//

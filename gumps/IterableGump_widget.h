@@ -84,6 +84,9 @@ public:
 				= Gump_widget::findSorted(sx, sy, sort, next, highest, before);
 
 		for (auto& child : *this) {
+			if (!child) {
+				continue;
+			}	
 			if (&*child == before) {
 				break;
 			}

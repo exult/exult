@@ -496,8 +496,8 @@ int Font::paint_text_fixedwidth(
 				= font_shapes->get_frame(static_cast<unsigned char>(chr));
 		if (!shape || !shape->is_rle()) {
 			std::cerr << " unable to find rle frame for character '"
-					  << char(chr) << "' 0x" << std::hex << chr
-					  << " in font" << std::endl;
+					  << char(chr) << "' 0x" << std::hex << chr << " in font"
+					  << std::endl;
 			continue;
 		}
 		x += w = (width - shape->get_width()) / 2;
@@ -535,8 +535,8 @@ int Font::paint_text_fixedwidth(
 				static_cast<unsigned char>(chr = *text++));
 		if (!shape || !shape->is_rle()) {
 			std::cerr << " unable to find rle frame for character '"
-					  << char(chr) << "' 0x" << std::hex << chr
-					  << " in font" << std::endl;
+					  << char(chr) << "' 0x" << std::hex << chr << " in font"
+					  << std::endl;
 			continue;
 		}
 		x += w = (width - shape->get_width()) / 2;
@@ -588,6 +588,32 @@ int Font::get_text_width(
 		}
 	}
 	return width;
+}
+
+void Font::get_text_box_dims(
+		const char* text, int& width, int& height, int vert_lead) {
+	width         = 0;
+	height        = 0;
+	int cur_width = 0;
+
+	int num_lines = 1;
+	if (font_shapes) {
+		short chr;
+		while ((chr = *text++) != 0) {
+			if (chr == '\n') {
+				num_lines++;
+				width     = std::max(width, cur_width);
+				cur_width = 0;
+			}
+			Shape_frame* shape
+					= font_shapes->get_frame(static_cast<unsigned char>(chr));
+			if (shape && shape->is_rle()) {
+				cur_width += shape->get_width() + hor_lead;
+			}
+		}
+		width  = std::max(width, cur_width);
+		height = num_lines * (get_text_height() + vert_lead + ver_lead);
+	}
 }
 
 /*

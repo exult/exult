@@ -35,6 +35,7 @@ Boston, MA  02111-1307, USA.
 #include "PointScaler.h"
 #include "common_types.h"
 #include "istring.h"
+#include "items.h"
 #include "manip.h"
 #include "mouse.h"
 
@@ -116,13 +117,16 @@ Image_window::ScalerVector::ScalerVector() {
 
 	// This is all the names of the scalers. It needs to match the ScalerType
 	// enum
-	const ScalerInfo point = {"Point", 0xFFFFFFFF, new Pentagram::PointScaler(),
-							  nullptr, nullptr,    nullptr,
-							  nullptr, nullptr};
+	const ScalerInfo point = {"Point",    0x69A - msg_file_start,
+							  0xFFFFFFFF, new Pentagram::PointScaler(),
+							  nullptr,    nullptr,
+							  nullptr,    nullptr,
+							  nullptr};
 	push_back(point);
 
 	const ScalerInfo Interlaced
 			= {"Interlaced",
+			   0x69B - msg_file_start,
 			   0xFFFFFFFE,
 			   nullptr,
 			   &Image_window::show_scaled8to565_interlace,
@@ -133,13 +137,16 @@ Image_window::ScalerVector::ScalerVector() {
 	push_back(Interlaced);
 
 	const ScalerInfo Bilinear
-			= {"Bilinear", 0xFFFFFFFF, new Pentagram::BilinearScaler::Scaler(),
-			   nullptr,    nullptr,    nullptr,
-			   nullptr,    nullptr};
+			= {"Bilinear", 0x69C - msg_file_start,
+			   0xFFFFFFFF, new Pentagram::BilinearScaler::Scaler(),
+			   nullptr,    nullptr,
+			   nullptr,    nullptr,
+			   nullptr};
 	push_back(Bilinear);
 
 	const ScalerInfo BilinearPlus
 			= {"BilinearPlus",
+			   0x69D - msg_file_start,
 			   SCALE_BIT(2),
 			   nullptr,
 			   &Image_window::show_scaled8to565_BilinearPlus,
@@ -151,6 +158,7 @@ Image_window::ScalerVector::ScalerVector() {
 
 	const ScalerInfo _2xSaI
 			= {"2xSaI",
+			   0,
 			   SCALE_BIT(2),
 			   nullptr,
 			   &Image_window::show_scaled8to565_2xSaI,
@@ -162,6 +170,7 @@ Image_window::ScalerVector::ScalerVector() {
 
 	const ScalerInfo SuperEagle
 			= {"SuperEagle",
+			   0,
 			   SCALE_BIT(2),
 			   nullptr,
 			   &Image_window::show_scaled8to565_SuperEagle,
@@ -173,6 +182,7 @@ Image_window::ScalerVector::ScalerVector() {
 
 	const ScalerInfo Super2xSaI
 			= {"Super2xSaI",
+			   0,
 			   SCALE_BIT(2),
 			   nullptr,
 			   &Image_window::show_scaled8to565_Super2xSaI,
@@ -184,6 +194,7 @@ Image_window::ScalerVector::ScalerVector() {
 
 	const ScalerInfo Scale2X
 			= {"Scale2X",
+			   0,
 			   SCALE_BIT(2),
 			   nullptr,
 			   &Image_window::show_scaled8to565_2x_noblur,
@@ -196,6 +207,7 @@ Image_window::ScalerVector::ScalerVector() {
 #ifdef USE_HQ2X_SCALER
 	const ScalerInfo Hq2x
 			= {"Hq2x",
+			   0,
 			   SCALE_BIT(2),
 			   nullptr,
 			   &Image_window::show_scaled8to565_Hq2x,
@@ -209,6 +221,7 @@ Image_window::ScalerVector::ScalerVector() {
 #ifdef USE_HQ3X_SCALER
 	const ScalerInfo Hq3x
 			= {"Hq3x",
+			   0,
 			   SCALE_BIT(3),
 			   nullptr,
 			   &Image_window::show_scaled8to565_Hq3x,
@@ -222,6 +235,7 @@ Image_window::ScalerVector::ScalerVector() {
 #ifdef USE_HQ4X_SCALER
 	const ScalerInfo Hq4x
 			= {"Hq4x",
+			   0,
 			   SCALE_BIT(4),
 			   nullptr,
 			   &Image_window::show_scaled8to565_Hq4x,
@@ -235,6 +249,7 @@ Image_window::ScalerVector::ScalerVector() {
 #ifdef USE_XBR_SCALER
 	const ScalerInfo _2xbr
 			= {"2xBR",
+			   0,
 			   SCALE_BIT(2),
 			   nullptr,
 			   &Image_window::show_scaled8to565_2xBR,
@@ -245,6 +260,7 @@ Image_window::ScalerVector::ScalerVector() {
 	push_back(_2xbr);
 	const ScalerInfo _3xbr
 			= {"3xBR",
+			   0,
 			   SCALE_BIT(3),
 			   nullptr,
 			   &Image_window::show_scaled8to565_3xBR,
@@ -255,6 +271,7 @@ Image_window::ScalerVector::ScalerVector() {
 	push_back(_3xbr);
 	const ScalerInfo _4xbr
 			= {"4xBR",
+			   0,
 			   SCALE_BIT(4),
 			   nullptr,
 			   &Image_window::show_scaled8to565_4xBR,
@@ -264,8 +281,9 @@ Image_window::ScalerVector::ScalerVector() {
 			   nullptr};
 	push_back(_4xbr);
 #endif
-	const ScalerInfo SDLScaler = {"SDLScaler", 0xFFFFFFFF, nullptr, nullptr,
-								  nullptr,     nullptr,    nullptr, nullptr};
+	const ScalerInfo SDLScaler
+			= {"SDLScaler", 0,       0xFFFFFFFF, nullptr, nullptr,
+			   nullptr,     nullptr, nullptr,    nullptr};
 	push_back(SDLScaler);
 }
 
@@ -283,6 +301,11 @@ Image_window::ScalerType Image_window::get_scaler_for_name(const char* scaler) {
 	}
 
 	return NoScaler;
+}
+
+const char* Image_window::get_displayname_for_scaler(int num) {
+	return num ? get_text_msg(Scalers[num].displayname_msg_index)
+			   : get_name_for_scaler(num);
 }
 
 /*

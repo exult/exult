@@ -128,7 +128,7 @@ private:
 public:
 	ConfigSetting_widget() = delete;
 	ConfigSetting_widget(
-			Gump_Base* parent, int px, int py, int button_width, int col2,
+			Gump_Base* parent, int px, int py, int button_width,
 			const Definition& setting, std::shared_ptr<Font> font,
 			int line_gap);
 

@@ -8,7 +8,6 @@
 class AdvancedOptions_gump : public Modal_gump {
 	std::string           title;
 	std::string           helpurl;
-	std::shared_ptr<Font> font;
 	Scrollable_widget*    scroll;
 	Gump_button*          apply;
 	Gump_button*          cancel;

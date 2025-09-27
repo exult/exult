@@ -50,12 +50,37 @@
 #include "items.h"
 using std::string;
 
-static const int rowy[] = {8, 21, 34, 47, 61, 74};
-static const int colx[] = {35, 84, 95, 117, 206, 215, 253};
+// Translatable Strings
+class Strings : public GumpStrings {
+public:
+	static auto Failedtoplaymiditesttrack() {
+		return get_text_msg(0x5A0 - msg_file_start);
+	}
 
-static const char* oktext     = "OK";
-static const char* canceltext = "CANCEL";
-static const char* helptext   = "HELP";
+	static auto Failedtoplayoggtesttrack() {
+		return get_text_msg(0x5A1 - msg_file_start);
+	}
+
+	static auto Music_() {
+		return get_text_msg(0x5A2 - msg_file_start);
+	}
+
+	static auto MIDIMusic_() {
+		return get_text_msg(0x5A3 - msg_file_start);
+	}
+
+	static auto OGGMusic_() {
+		return get_text_msg(0x5A4 - msg_file_start);
+	}
+
+	static auto SFX_() {
+		return get_text_msg(0x5A5 - msg_file_start);
+	}
+
+	static auto Speech_() {
+		return get_text_msg(0x5A6 - msg_file_start);
+	}
+};
 
 using Mixer_button     = CallbackButton<Mixer_gump>;
 using Mixer_Textbutton = CallbackTextButton<Mixer_gump>;
@@ -176,7 +201,7 @@ std::shared_ptr<Slider_widget> Mixer_gump::GetSlider(int sx, int sy) {
 Mixer_gump::Mixer_gump() : Modal_gump(nullptr, -1) {
 	load_settings();
 
-	TileRect gumprect = TileRect(29, 0, 227, rowy[num_sliders + 1] + 1);
+	TileRect gumprect = TileRect(0, 0, 158, yForRow(num_sliders + 1) + 1);
 
 	// If both ogg and midi make it slightly wider to the left
 	if ((initial_music_midi != -1) && (initial_music_ogg != -1)) {
@@ -196,26 +221,32 @@ Mixer_gump::Mixer_gump() : Modal_gump(nullptr, -1) {
 	auto shiddiamond = ShapeID(EXULT_FLX_SAV_SLIDER_SHP, 0, SF_EXULT_FLX);
 	auto shidleft    = ShapeID(EXULT_FLX_SCROLL_LEFT_SHP, 0, SF_EXULT_FLX);
 	auto shidright   = ShapeID(EXULT_FLX_SCROLL_RIGHT_SHP, 0, SF_EXULT_FLX);
+
 	if (initial_music_midi != -1) {
 		midislider = std::make_shared<Slider_widget>(
-				this, colx[1], rowy[0] - 13, shidleft, shidright, shiddiamond,
-				0, 100, 1, initial_music_midi, slider_width);
+				this,
+				label_margin + font->get_text_width(Strings::MIDIMusic_()),
+				yForRow(0) - 13, shidleft, shidright, shiddiamond, 0, 100, 1,
+				initial_music_midi, slider_width);
 	}
 	if (initial_music_ogg != -1) {
 		oggslider = std::make_shared<Slider_widget>(
-				this, colx[1], rowy[num_sliders - 3] - 13, shidleft, shidright,
-				shiddiamond, 0, 100, 1, initial_music_ogg, slider_width);
+				this, label_margin + font->get_text_width(Strings::OGGMusic_()),
+				yForRow(num_sliders - 3) - 13, shidleft, shidright, shiddiamond,
+				0, 100, 1, initial_music_ogg, slider_width);
 	}
 
 	if (initial_sfx != -1) {
 		sfxslider = std::make_shared<Slider_widget>(
-				this, colx[1], rowy[num_sliders - 2] - 13, shidleft, shidright,
-				shiddiamond, 0, 100, 1, initial_sfx, slider_width);
+				this, label_margin + font->get_text_width(Strings::SFX_()),
+				yForRow(num_sliders - 2) - 13, shidleft, shidright, shiddiamond,
+				0, 100, 1, initial_sfx, slider_width);
 	}
 	if (initial_speech != -1) {
 		speechslider = std::make_shared<Slider_widget>(
-				this, colx[1], rowy[num_sliders - 1] - 13, shidleft, shidright,
-				shiddiamond, 0, 100, 1, initial_speech, slider_width);
+				this, label_margin + font->get_text_width(Strings::Speech_()),
+				yForRow(num_sliders - 1) - 13, shidleft, shidright, shiddiamond,
+				0, 100, 1, initial_speech, slider_width);
 	}
 	auto Shapediamond = shiddiamond.get_shape();
 	if (Shapediamond) {
@@ -224,15 +255,22 @@ Mixer_gump::Mixer_gump() : Modal_gump(nullptr, -1) {
 
 	// Ok
 	buttons[id_ok] = std::make_unique<Mixer_Textbutton>(
-			this, &Mixer_gump::close, oktext, colx[0] - 2, rowy[num_sliders],
-			50);
-	// Cancel
-	buttons[id_cancel] = std::make_unique<Mixer_Textbutton>(
-			this, &Mixer_gump::cancel, canceltext, colx[4], rowy[num_sliders],
+			this, &Mixer_gump::close, Strings::OK(), 25, yForRow(num_sliders),
 			50);
 	// Help
 	buttons[id_help] = std::make_unique<Mixer_Textbutton>(
-			this, &Mixer_gump::help, helptext, colx[3], rowy[num_sliders], 50);
+			this, &Mixer_gump::help, Strings::HELP(), 50, yForRow(num_sliders),
+			50);
+
+	// Cancel
+	buttons[id_cancel] = std::make_unique<Mixer_Textbutton>(
+			this, &Mixer_gump::cancel, Strings::CANCEL(), 75,
+			yForRow(num_sliders), 50);
+
+	// resize gump and reposition widgets
+	ResizeWidthToFitWidgets(tcb::span(&midislider, 4), 28);
+	HorizontalArrangeWidgets(tcb::span(buttons.data() + id_ok, 3));
+	RightAlignWidgets(tcb::span(&midislider, 4), 28);
 }
 
 Mixer_gump::~Mixer_gump() {
@@ -267,6 +305,30 @@ void Mixer_gump::save_settings() {
 	config->write_back();
 }
 
+void Mixer_gump::PaintSlider(
+		Image_window8* iwin, Slider_widget* slider, const char* label,
+		bool use3dslidertrack) {
+	auto rect = slider->get_rect();
+	font->paint_text_right_aligned(iwin->get_ib8(), label, rect.x, rect.y+2);
+
+	if (use3dslidertrack) {
+		iwin->get_ib8()->draw_beveled_box(
+				rect.x + 12, rect.y+2, slider_width, slider_height, 1,
+				slider_track_color, slider_track_color + 2,
+				slider_track_color + 4, slider_track_color - 2,
+				slider_track_color - 4);
+	} else {
+		iwin->get_ib8()->draw_box(
+				rect.x + 12, y + yForRow(0), slider_width, slider_height, 0,
+				slider_track_color, 0xff);
+	}
+
+	slider->paint();
+
+	gumpman->paint_num(
+			slider->getselection(), rect.x + rect.w + 24, rect.y + 2, font);
+}
+
 void Mixer_gump::paint() {
 	Modal_gump::paint();
 	for (auto& btn : buttons) {
@@ -274,121 +336,52 @@ void Mixer_gump::paint() {
 			btn->paint();
 		}
 	}
-	std::shared_ptr<Font> font = fontManager.get_font("SMALL_BLACK_FONT");
-	// font is required
-	if (!font) {
-		std::cerr << "Mixer_gump::paint() unable to get SMALL_BLACK_FONT "
-					 "closing gump."
-				  << std::endl;
-		cancel();
-		return;
-	}
 
 	Image_window8* iwin = gwin->get_win();
-	auto           ib8  = iwin->get_ib8();
 
-	bool use3dslidertrack = true;
+	int disabled_text_pos
+			= x + std::max(procedural_background.w - slider_width - 68, 84);
 
-	// if don't have both music sliders
-	if (!midislider || !oggslider) {
-		font->paint_text_right_aligned(ib8, "Music:", x + colx[1], y + rowy[0]);
-	}
 	// if have neither
 	if (!midislider && !oggslider) {
+		font->paint_text_right_aligned(
+				iwin->get_ib8(), Strings::Music_(), disabled_text_pos,
+				y + yForRow(0));
+
 		font->paint_text(
-				iwin->get_ib8(), " disabled", x + colx[1], y + rowy[0]);
+				iwin->get_ib8(), Strings::disabled(), disabled_text_pos,
+				y + yForRow(0));
 	}
 	// midi Slider
 	if (midislider) {
-		if (oggslider) {
-			font->paint_text_right_aligned(
-					iwin->get_ib8(), "MIDI Music:", x + colx[1], y + rowy[0]);
-		}
-
-		if (use3dslidertrack) {
-			ib8->draw_beveled_box(
-					x + colx[2] + 1, y + rowy[0], slider_width, slider_height,
-					1, slider_track_color, slider_track_color + 2,
-					slider_track_color + 4, slider_track_color - 2,
-					slider_track_color - 4);
-		} else {
-			ib8->draw_box(
-					x + colx[2] + 1, y + rowy[0], slider_width, slider_height,
-					0, slider_track_color, 0xff);
-		}
-
-		midislider->paint();
-		gumpman->paint_num(
-				midislider->getselection(), x + colx[6], y + rowy[0], font);
+		PaintSlider(
+				iwin, midislider.get(),
+				oggslider ? Strings::MIDIMusic_() : Strings::Music_());
 	}
 	if (oggslider) {
-		if (midislider) {
-			font->paint_text_right_aligned(
-					iwin->get_ib8(), "OGG Music:", x + colx[1],
-					y + rowy[num_sliders - 3]);
-		}
-
-		if (use3dslidertrack) {
-			ib8->draw_beveled_box(
-					x + colx[2] + 1, y + rowy[num_sliders - 3], slider_width,
-					slider_height, 1, slider_track_color,
-					slider_track_color + 2, slider_track_color + 4,
-					slider_track_color - 2, slider_track_color - 4);
-		} else {
-			ib8->draw_box(
-					x + colx[2] + 1, y + rowy[num_sliders - 3], slider_width,
-					slider_height, 0, slider_track_color, 0xff);
-		}
-		oggslider->paint();
-		gumpman->paint_num(
-				oggslider->getselection(), x + colx[6],
-				y + rowy[num_sliders - 3], font);
+		PaintSlider(
+				iwin, oggslider.get(),
+				midislider ? Strings::OGGMusic_() : Strings::Music_());
 	}
-	font->paint_text_right_aligned(
-			ib8, "SFX:", x + colx[1], y + rowy[num_sliders - 2]);
 	if (sfxslider) {
-		if (use3dslidertrack) {
-			ib8->draw_beveled_box(
-					x + colx[2] + 1, y + rowy[num_sliders - 2], slider_width,
-					slider_height, 1, slider_track_color,
-					slider_track_color + 2, slider_track_color + 4,
-					slider_track_color - 2, slider_track_color - 4);
-		} else {
-			ib8->draw_box(
-					x + colx[2] + 1, y + rowy[num_sliders - 2], slider_width,
-					slider_height, 0, slider_track_color, 0xff);
-		}
-		sfxslider->paint();
-		gumpman->paint_num(
-				sfxslider->getselection(), x + colx[6],
-				y + rowy[num_sliders - 2], font);
+		PaintSlider(iwin, sfxslider.get(), Strings::SFX_());
 	} else {
+		font->paint_text_right_aligned(
+				iwin->get_ib8(), Strings::SFX_(), disabled_text_pos,
+				y + yForRow(num_sliders - 2));
 		font->paint_text(
-				iwin->get_ib8(), " disabled", x + colx[1],
-				y + rowy[num_sliders - 2]);
+				iwin->get_ib8(), Strings::disabled(), disabled_text_pos,
+				y + yForRow(num_sliders - 2));
 	}
-	font->paint_text_right_aligned(
-			ib8, "Speech:", x + colx[1], y + rowy[num_sliders - 1]);
 	if (speechslider) {
-		if (use3dslidertrack) {
-			ib8->draw_beveled_box(
-					x + colx[2] + 1, y + rowy[num_sliders - 1], slider_width,
-					slider_height, 1, slider_track_color,
-					slider_track_color + 2, slider_track_color + 4,
-					slider_track_color - 2, slider_track_color - 4);
-		} else {
-			ib8->draw_box(
-					x + colx[2] + 1, y + rowy[num_sliders - 1], slider_width,
-					slider_height, 0, slider_track_color, 0xff);
-		}
-		speechslider->paint();
-		gumpman->paint_num(
-				speechslider->getselection(), x + colx[6],
-				y + rowy[num_sliders - 1], font);
+		PaintSlider(iwin, speechslider.get(), Strings::Speech_());
 	} else {
+		font->paint_text_right_aligned(
+				iwin->get_ib8(), Strings::Speech_(), disabled_text_pos,
+				y + yForRow(num_sliders - 1));
 		font->paint_text(
-				iwin->get_ib8(), " disabled", x + colx[1],
-				y + rowy[num_sliders - 1]);
+				iwin->get_ib8(), Strings::disabled(), disabled_text_pos,
+				y + yForRow(num_sliders - 1));
 	}
 
 	gwin->set_painted();
@@ -588,10 +581,9 @@ void Mixer_gump::OnSliderValueChanged(Slider_widget* sender, int newvalue) {
 				if (!midi->start_music(
 							Audio::game_music(test_music_track), false,
 							MyMidiPlayer::Force_Midi)) {
-					auto msg = get_text_msg(mixergump_midi_test_failed);
 					SetPopupMessage(
-
-							msg + (" #" + std::to_string(test_music_track)));
+							Strings::Failedtoplaymiditesttrack()
+							+ (" #" + std::to_string(test_music_track)));
 				}
 			}
 		}
@@ -609,8 +601,9 @@ void Mixer_gump::OnSliderValueChanged(Slider_widget* sender, int newvalue) {
 				if (!midi->start_music(
 							Audio::game_music(test_music_track), false,
 							MyMidiPlayer::Force_Ogg)) {
-					auto msg = get_text_msg(mixergump_ogg_test_failed);
-					SetPopupMessage(msg + (" " + midi->GetOggFailed()));
+					SetPopupMessage(
+							Strings::Failedtoplayoggtesttrack()
+							+ (" " + midi->GetOggFailed()));
 				}
 			}
 		}

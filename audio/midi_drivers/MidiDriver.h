@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ConfigSetting_widget.h"
 #include "common_types.h"
 #include "ignore_unused_variable_warning.h"
+#include "items.h"
 
 #include <atomic>
 #include <string>
@@ -32,6 +33,54 @@ class IDataSource;
 //! The Basic High Level Pentagram Midi Driver interface.
 class MidiDriver : public std::enable_shared_from_this<MidiDriver> {
 protected:
+	// Translatable Strings from exultmsg.txt used by Midi Drivers
+	class Strings {
+	public:
+		static auto ReverbEffect() {
+			return get_text_msg(0x6A0 - 0x400);
+		}
+
+		static auto ChorusEffect() {
+			return get_text_msg(0x6A1 - 0x400);
+		}
+
+		static auto devicetype() {
+			return get_text_msg(0x6A2 - 0x400);
+		}
+
+		static auto GeneralMidi() {
+			return get_text_msg(0x6A3 - 0x400);
+		}
+
+		static auto GS127() {
+			return get_text_msg(0x6A4 - 0x400);
+		}
+
+		static auto FakeMT32() {
+			return get_text_msg(0x6A5 - 0x400);
+		}
+
+		static auto RealMT32() {
+			return get_text_msg(0x6A6 - 0x400);
+		}
+
+		static auto Soundfont() {
+			return get_text_msg(0x6A7 - 0x400);
+		}
+
+		static auto Win32MIDIDevice() {
+			return get_text_msg(0x6A8 - 0x400);
+		}
+
+		static auto ALSAPORT() {
+			return get_text_msg(0x6A9 - 0x400);
+		}
+
+		static auto CoreMIDIDevice() {
+			return get_text_msg(0x6AA - 0x400);
+		}
+	};
+
 	std::atomic_bool initialized = false;
 
 public:

@@ -76,6 +76,15 @@ TileRect Gump_widget::get_rect() const {
 			s->get_height());
 }
 
+void Gump_widget::set_pos(int newx, int newy) {
+	// Set old rect dirty
+	gwin->add_dirty(get_rect());
+	x = newx;
+	y = newy;
+	// Set new rect dirty
+	gwin->add_dirty(get_rect());
+}
+
 void Gump_widget::paintSorted(
 		Sort_Order sort, Sort_Order& next, Sort_Order& highest) {
 	if (sort_order > highest) {

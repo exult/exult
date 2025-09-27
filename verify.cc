@@ -66,13 +66,13 @@ int verify_files(BaseGameInfo* game) {
 			}
 			switch (game ? game->get_game_language()
 						 : Game::get_game_language()) {
-			case ENGLISH:
+            case Game_Language::ENGLISH:
 				return blackgate_files;
-			case FRENCH:
+            case Game_Language::FRENCH:
 				return portenoire_files;
-			case GERMAN:
+            case Game_Language::GERMAN:
 				return schwarzepforte_files;
-			case SPANISH:
+            case Game_Language::SPANISH:
 				return puertanegra_files;
 			}
 			break;
@@ -85,13 +85,13 @@ int verify_files(BaseGameInfo* game) {
 			}
 			switch (game ? game->get_game_language()
 						 : Game::get_game_language()) {
-			case ENGLISH:
+            case Game_Language::ENGLISH:
 				return blackgate_files;
-			case FRENCH:
-			case GERMAN:
+            case Game_Language::FRENCH:
+            case Game_Language::GERMAN:
 				// These do not exist
 				break;
-			case SPANISH:
+            case Game_Language::SPANISH:
 				return islaserpiente_files;
 			}
 			break;

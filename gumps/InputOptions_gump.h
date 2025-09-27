@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string>
 
 class Gump_button;
+class Font;
 
 class InputOptions_gump : public Modal_gump {
 private:
@@ -42,9 +43,10 @@ private:
 	enum button_ids {
 		id_first = 0,
 		id_ok    = id_first,
-		id_cancel,
 		id_help,
-		id_doubleclick,
+		id_cancel,
+		id_first_setting,
+		id_doubleclick = id_first_setting,
 		id_rightclick_close,
 		id_right_pathfind,
 		id_scroll_mouse,

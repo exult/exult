@@ -30,8 +30,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Modal_gump::Modal_gump(
 		Container_game_object* cont, int initx, int inity, int shnum,
-		ShapeFile shfile)
+		ShapeFile shfile, std::shared_ptr<Font> font)
 		: Gump(cont, initx, inity, shnum, shfile), done(false), pushed(nullptr),
+		  font(font ? font : fontManager.get_font("SMALL_BLACK_FONT")),
 		  drag_mx(INT_MIN), drag_my(INT_MIN), no_dragging(false),
 		  procedural_background(0, 0, 0, 0) {
 	GetDragType();
@@ -39,8 +40,11 @@ Modal_gump::Modal_gump(
 
 // Create centered.
 
-Modal_gump::Modal_gump(Container_game_object* cont, int shnum, ShapeFile shfile)
+Modal_gump::Modal_gump(
+		Container_game_object* cont, int shnum, ShapeFile shfile,
+		std::shared_ptr<Font> font)
 		: Gump(cont, shnum, shfile), done(false), pushed(nullptr),
+		  font(font ? font : fontManager.get_font("SMALL_BLACK_FONT")),
 		  drag_mx(INT_MIN), drag_my(INT_MIN), no_dragging(false),
 		  procedural_background(0, 0, 0, 0) {
 	GetDragType();
@@ -277,7 +281,6 @@ void Modal_gump::paint() {
 
 	// if we have a message to display, check the timeout
 	if (!popup_message.empty()) {
-		std::shared_ptr<Font> font = fontManager.get_font("SMALL_BLACK_FONT");
 		int messagew = font->get_text_width(popup_message.c_str());
 		int messageh = font->get_text_height() + 8;
 		int messagex = backrect.x + backrect.w / 2 - messagew / 2;
@@ -340,4 +343,17 @@ void Modal_gump::ProceduralColours::RemapColours(int newramp) {
 	Highlight  = pal->remap_colour_to_ramp(Highlight, newramp);
 	Highlight2 = pal->remap_colour_to_ramp(Highlight2, newramp);
 	Shadow     = pal->remap_colour_to_ramp(Shadow, newramp);
+}
+
+int Modal_gump::get_button_pos_for_label(const char* label) {
+	return font->get_text_width(label) + label_margin * 2;
+}
+
+void Modal_gump::ResizeWidthToFitText(const char* text) {
+	int width = 0, height;
+	font->get_text_box_dims(text, width, height);
+	procedural_background.w
+			= std::max(procedural_background.w, width + label_margin * 2);
+
+	set_pos();
 }

@@ -56,6 +56,81 @@
 
 using std::unique_ptr;
 
+class Strings {
+public:
+	static auto FIRST() {
+		return get_text_msg(0x2B0);
+	}
+
+	static auto PREVIOUS() {
+		return get_text_msg(0x2B1);
+	}
+
+	static auto NEXT() {
+		return get_text_msg(0x2B2);
+	}
+
+	static auto LAST() {
+		return get_text_msg(0x2B3);
+	}
+
+	static auto SHOWMODS() {
+		return get_text_msg(0x2B4);
+	}
+
+	static auto SETUP() {
+		return get_text_msg(0x2B5);
+	}
+
+	static auto CREDITS() {
+		return get_text_msg(0x2B6);
+	}
+
+	static auto QUOTES() {
+		return get_text_msg(0x2B7);
+	}
+
+	static auto HELP() {
+		return get_text_msg(0x2B8);
+	}
+
+	static auto EXIT() {
+		return get_text_msg(0x2B9);
+	}
+
+	static auto WRONGEXULTVERSION() {
+		return get_text_msg(0x2BA);
+	}
+
+	static auto RETURNTOMAINMENU() {
+		return get_text_msg(0x2BB);
+	}
+
+	static const char* no_games(int line) {
+		if (line < 0 || line > 3) {
+			return nullptr;
+		} else {
+			return get_text_msg(0x2Bc + line);
+		}
+	}
+
+	static auto Pleaseedittheconfigurationfile_() {
+		return get_text_msg(0x2C0);
+	}
+
+	static auto PressESCtoexit_() {
+		return get_text_msg(0x2C1);
+	}
+
+	static auto PleaseaddthegamesinFileSharing() {
+		return get_text_msg(0x2C2);
+	}
+
+	static auto Touchscreenforhelp_() {
+		return get_text_msg(0x2C3);
+	}
+};
+
 #define MAX_GAMES 100
 
 static inline bool handle_menu_click(
@@ -97,8 +172,9 @@ void create_scroller_menu(
 		MenuList* menu, std::shared_ptr<Font> fonton,
 		std::shared_ptr<Font> font, int first, int pagesize, int num_choices,
 		int xpos, int ypos) {
-	constexpr static const std::array menuscroller{
-			"FIRST", "PREVIOUS", "NEXT", "LAST"};
+	const std::array menuscroller{
+			Strings::FIRST(), Strings::PREVIOUS(), Strings::NEXT(),
+			Strings::LAST()};
 	assert(menuscroller.size() == 4);
 	const int max_width = maximum_size(font, menuscroller, xpos);
 	xpos                = xpos - max_width * 3 / 2;
@@ -164,7 +240,7 @@ void ExultMenu::setup() {
 
 	// Load text messages if needed
 	if (!get_num_text_msgs()) {
-		Setup_text(GAME_SI, Game::has_expansion(), GAME_SIB);
+		Game::setup_text();
 	}
 
 	if (!Shape_manager::get_instance()->load_gumps_minimal()) {
@@ -223,7 +299,7 @@ std::unique_ptr<MenuList> ExultMenu::create_main_menu(int first) {
 		menu->add_entry(entry);
 		if (exultgame.has_mods()) {
 			auto* mod_entry = new MenuTextEntry(
-					navfonton, navfont, "SHOW MODS", menux,
+					navfonton, navfont, Strings::SHOWMODS(), menux,
 					ypos + entry->get_height() + 4);
 			mod_entry->set_id(i + MAX_GAMES);
 			menu->add_entry(mod_entry);
@@ -238,12 +314,12 @@ std::unique_ptr<MenuList> ExultMenu::create_main_menu(int first) {
 			centerx,
 			gwin->get_win()->get_end_y() - 5 * font->get_text_height());
 
-	constexpr static const std::array menuchoices{
-			"SETUP", "CREDITS", "QUOTES",
+	const std::array menuchoices{
+			Strings::SETUP(), Strings::CREDITS(), Strings::QUOTES(),
 #ifdef SDL_PLATFORM_IOS
-			"HELP"
+			Strings::HELP()
 #else
-			"EXIT"
+			Strings::EXIT()
 #endif
 	};
 	const int max_width = maximum_size(font, menuchoices, centerx);
@@ -285,8 +361,8 @@ std::unique_ptr<MenuList> ExultMenu::create_mods_menu(
 
 		if (!exultmod.is_mod_compatible()) {
 			auto* incentry = new MenuGameEntry(
-					navfonton, navfont, "WRONG EXULT VERSION", nullptr, menux,
-					ypos + entry->get_height() + 4);
+					navfonton, navfont, Strings::WRONGEXULTVERSION(), nullptr,
+					menux, ypos + entry->get_height() + 4);
 			// Accept no clicks:
 			incentry->set_enabled(false);
 			menu->add_entry(incentry);
@@ -301,9 +377,9 @@ std::unique_ptr<MenuList> ExultMenu::create_mods_menu(
 			centerx,
 			gwin->get_win()->get_end_y() - 5 * font->get_text_height());
 
-	constexpr static const std::array menuchoices{"RETURN TO MAIN MENU"};
-	const int max_width = maximum_size(font, menuchoices, centerx);
-	xpos                = centerx - max_width * (menuchoices.size() - 1) / 2;
+	const std::array menuchoices{Strings::RETURNTOMAINMENU()};
+	const int        max_width = maximum_size(font, menuchoices, centerx);
+	xpos = centerx - max_width * (menuchoices.size() - 1) / 2;
 	ypos = gwin->get_win()->get_end_y() - 3 * font->get_text_height();
 	for (size_t i = 0; i < menuchoices.size(); i++) {
 		auto* entry
@@ -379,6 +455,9 @@ BaseGameInfo* ExultMenu::show_mods_menu(ModManager* selgame) {
 }
 
 BaseGameInfo* ExultMenu::run() {
+	// Load text messages for translatable text
+	Game::setup_text();
+
 	Palette*       gpal = gwin->get_pal();
 	Shape_manager* sman = Shape_manager::get_instance();
 
@@ -392,18 +471,20 @@ BaseGameInfo* ExultMenu::run() {
 	if (!gamemanager->get_game_count()) {
 // OS Specific messages
 #ifdef SDL_PLATFORM_IOS
-		const char game_missing_msg[] = "Please add the games in File Sharing";
-		const char close_screen_msg[] = "Touch screen for help!";
+		const char* game_missing_msg
+				= Strings::PleaseaddthegamesinFileSharing();
+		const char* close_screen_msg = Strings::Touchscreenforhelp_();
 #else
-		const char game_missing_msg[] = "Please edit the configuration file.";
-		const char close_screen_msg[] = "Press ESC to exit.";
+		const char* game_missing_msg
+				= Strings::Pleaseedittheconfigurationfile_();
+		const char* close_screen_msg = Strings::PressESCtoexit_();
 #endif
 		// Create our message and programatically center it.
 		const char* const message[8] = {
-				"Welcome to Exult",
-				"",
-				"To play you need the static data for either",
-				R"("The Black Gate" or "Serpent Isle".)",
+				Strings::no_games(0),
+				Strings::no_games(1),
+				Strings::no_games(2),
+				Strings::no_games(3),
 				game_missing_msg,
 				"",
 				"",

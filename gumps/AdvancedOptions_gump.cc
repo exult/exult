@@ -24,6 +24,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "StringList_widget.h"
 #include "Yesno_gump.h"
 #include "gamewin.h"
+#include "items.h"
+
+class Strings : public GumpStrings {
+public:
+	static auto Applyanyway() {
+		return get_text_msg(0x5F0 - msg_file_start);
+	}
+};
 
 AdvancedOptions_gump::AdvancedOptions_gump(
 		std::vector<ConfigSetting_widget::Definition>* settings,
@@ -31,58 +39,69 @@ AdvancedOptions_gump::AdvancedOptions_gump(
 		std::function<void()> applycallback)
 		: Modal_gump(nullptr, -1), title(std::move(title)),
 		  helpurl(std::move(helpurl)),
-		  font(fontManager.get_font("SMALL_BLACK_FONT")),
 		  applycallback(applycallback) {
 	elems.reserve(5);
-	TileRect rect = TileRect(0, 0, 220, 186);
+	TileRect rect = TileRect(0, 0, 200, 186);
 	SetProceduralBackground(rect, -1, true);
 
 	int button_w = 100;
 	int scrolly  = 20;
-	// Using raw pointers because contents of elems gets deletesd when Gump
+	// Using raw pointers because contents of elems gets deleted when Gump
 	// destructor is called
 	int scrollw = rect.w - 16;
 	scroll      = new Scrollable_widget(
-            this, 0, scrolly, scrollw, rect.h - scrolly - 16, 2,
+            this, label_margin-2, scrolly, scrollw, rect.h - scrolly - 16, 2,
             Scrollable_widget::ScrollbarType::Auto, true,
             procedural_colours.Shadow);
 	elems.push_back(scroll);
 
+	int max_width = 0;
 	for (auto& setting : *settings) {
-		scroll->add_child(std::make_shared<ConfigSetting_widget>(
-				this, 0, 0, button_w, scrollw - button_w, setting, font, 2));
+		auto csw = std::make_shared<ConfigSetting_widget>(
+				this, 0, 0, button_w, setting, font, 2);
+		max_width = std::max(max_width, csw->get_rect().w);
+
+		scroll->add_child(std::move(csw));
 	}
 	// run the scroll bar so it can up update itself
 	scroll->run();
-	// Got rid of the scroll bar
-	if (!scroll->scroll_enabled()) {
-		// So reposition the widgets
-
-		for (auto& child : scroll->get_children_iterable()) {
+	// If there is no scrollbar the widget width should be scrollw+12
+	max_width        = std::max(max_width, scroll->GetUsableArea().w);
+	scroll->expand(1+max_width - scroll->GetUsableArea().w, 0);
+	// Shift the buttons as needed so they right align on the edge of the Scrllable
+	for (auto& child : scroll->get_children_iterable()) {
 			auto csw = dynamic_cast<ConfigSetting_widget*>(child.get());
 			if (csw) {
-				csw->shift_buttons_x(12);
+				// Shift the buttons so they all right aligned
+				csw->shift_buttons_x(max_width - csw->get_rect().w);
 			}
 		}
-	}
+	
 
 	// Apply
 	int buttony    = 173;
 	int button_gap = 20;
+	const int id_ok      = elems.size();
 	elems.push_back(
 			apply = new CallbackTextButton<AdvancedOptions_gump>(
-					this, &AdvancedOptions_gump::on_apply, "APPLY",
+					this, &AdvancedOptions_gump::on_apply, Strings::APPLY(),
 					rect.w / 2 - 25 - 50 - button_gap, buttony, 50));
-	// Cancel
-	elems.push_back(
-			cancel = new CallbackTextButton<AdvancedOptions_gump>(
-					this, &AdvancedOptions_gump::on_cancel, "CANCEL",
-					rect.w / 2 - 25, buttony, 50));
 	// Help
 	elems.push_back(
 			help = new CallbackTextButton<AdvancedOptions_gump>(
-					this, &AdvancedOptions_gump::on_help, "HELP",
+					this, &AdvancedOptions_gump::on_help, Strings::HELP(),
 					rect.w / 2 + 25 + button_gap, buttony, 50));
+	// Cancel
+	elems.push_back(
+			cancel = new CallbackTextButton<AdvancedOptions_gump>(
+					this, &AdvancedOptions_gump::on_cancel, Strings::CANCEL(),
+					rect.w / 2 - 25, buttony, 50));
+
+	// resize to fit everything
+	ResizeWidthToFitWidgets(tcb::span(elems.data(),elems.size()),2);
+	ResizeWidthToFitText(this->title.c_str());
+	HorizontalArrangeWidgets(
+			tcb::span(elems.data() + id_ok, 3));
 
 	// set all buttons in elems to self managed
 	for (auto elem : elems) {
@@ -213,12 +232,12 @@ bool AdvancedOptions_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 void AdvancedOptions_gump::paint() {
 	auto ib = gwin->get_win()->get_ib8();
 	Modal_gump::paint();
-	auto rect = get_rect();
-	rect.x    = 0;
-	rect.y    = 0;
-	local_to_screen(rect.x, rect.y);
+	int titlex    = label_margin;
+	int titley    = 1;
+	local_to_screen(titlex, titley);
 	// Draw Title
-	font->paint_text_box(ib, title.c_str(), rect.x + 1, rect.y + 1, rect.w, 30);
+	font->paint_text_box(
+			ib, title.c_str(), titlex, titley, procedural_background.w, 30);
 
 	Image_buffer::ClipRectSave clip(ib);
 	TileRect                   newclip = clip.Rect().intersect(get_rect());
@@ -245,7 +264,7 @@ void AdvancedOptions_gump::on_apply() {
 		if (csw) {
 			std::string validation_message = csw->Validate();
 			if (!validation_message.empty()) {
-				validation_message += " Apply anyway?";
+				validation_message += Strings::Applyanyway();
 				if (!Yesno_gump::ask(
 							validation_message.c_str(), nullptr,
 							"TINY_BLACK_FONT")) {

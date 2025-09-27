@@ -34,6 +34,7 @@
 #include "game.h"
 #include "gameclk.h"
 #include "gamewin.h"
+#include "items.h"
 #include "listfiles.h"
 #include "miscinf.h"
 #include "mouse.h"
@@ -55,6 +56,94 @@ using std::strncpy;
 using std::time;
 using std::time_t;
 using std::tm;
+
+class Strings : public GumpStrings {
+public:
+	static auto Avatar() {
+		return get_text_msg(0x660 - msg_file_start);
+	}
+
+	static auto Exp() {
+		return get_text_msg(0x661 - msg_file_start);
+	}
+
+	static auto Hp() {
+		return get_text_msg(0x662 - msg_file_start);
+	}
+
+	static auto Str() {
+		return get_text_msg(0x663 - msg_file_start);
+	}
+
+	static auto Dxt() {
+		return get_text_msg(0x664 - msg_file_start);
+	}
+
+	static auto Int() {
+		return get_text_msg(0x665 - msg_file_start);
+	}
+
+	static auto Trn() {
+		return get_text_msg(0x666 - msg_file_start);
+	}
+
+	static auto GameDay() {
+		return get_text_msg(0x667 - msg_file_start);
+	}
+
+	static auto GameTime() {
+		return get_text_msg(0x668 - msg_file_start);
+	}
+
+	static auto SaveCount() {
+		return get_text_msg(0x669 - msg_file_start);
+	}
+
+	static auto Date() {
+		return get_text_msg(0x66A - msg_file_start);
+	}
+
+	static auto Time() {
+		return get_text_msg(0x66B - msg_file_start);
+	}
+
+	static auto File() {
+		return get_text_msg(0x66C - msg_file_start);
+	}
+
+	static auto LOAD() {
+		return get_text_msg(0x66D - msg_file_start);
+	}
+
+	static auto SAVE() {
+		return get_text_msg(0x66E - msg_file_start);
+	}
+#ifdef DELETE 
+#undef DELETE
+#endif
+	static auto DELETE() {
+		return get_text_msg(0x66F - msg_file_start);
+	}
+
+	static auto month_Abbreviation(int month) {
+		if (month < 0 || month > 11) {
+			return "";
+		}
+
+		return get_text_msg(0x670 - msg_file_start + month);
+	}
+
+	static auto ordinal_numeral_suffix(int num) {
+		if ((num % 10) == 1 && num != 11) {
+			return get_text_msg(0x67C - msg_file_start);    // st
+		} else if ((num % 10) == 2 && num != 12) {
+			return get_text_msg(0x67D - msg_file_start);    // nd
+		} else if ((num % 10) == 3 && num != 13) {
+			return get_text_msg(0x67E - msg_file_start);    // rd
+		}
+		return get_text_msg(0x67F - msg_file_start);    // th
+	}
+};
 
 /*
  *  Macros:
@@ -88,30 +177,10 @@ const short Newfile_gump::scrollh = 129;    // Height of Scroll Bar
 const short Newfile_gump::sliderw = 7;      // Width of Slider
 const short Newfile_gump::sliderh = 7;      // Height of Slider
 
-const short Newfile_gump::infox        = 224;
-const short Newfile_gump::infoy        = 67;
-const short Newfile_gump::infow        = 92;
-const short Newfile_gump::infoh        = 79;
-const char  Newfile_gump::infostring[] = "Avatar: %s\n"
-										 "Exp: %i  Hp: %i\n"
-										 "Str: %i  Dxt: %i\n"
-										 "Int: %i  Trn: %i\n"
-										 "\n"
-										 "Game Day: %i\n"
-										 "Game Time: %02i:%02i\n"
-										 "\n"
-										 "Save Count: %i\n"
-										 "Date: %i%s %s %04i\n"
-										 "Time: %02i:%02i";
-
-const char* Newfile_gump::months[12]
-		= {"Jan",  "Feb", "March", "April", "May", "June",
-		   "July", "Aug", "Sept",  "Oct",   "Nov", "Dec"};
-
-static const char* loadtext   = "LOAD";
-static const char* savetext   = "SAVE";
-static const char* deletetext = "DELETE";
-static const char* canceltext = "CANCEL";
+const short Newfile_gump::infox = 224;
+const short Newfile_gump::infoy = 67;
+const short Newfile_gump::infow = 92;
+const short Newfile_gump::infoh = 79;
 
 /*
  *  One of our buttons.
@@ -139,8 +208,8 @@ Newfile_gump::Newfile_gump()
 
 	// Cancel
 	buttons[id_close] = std::make_unique<Newfile_Textbutton>(
-			this, &Newfile_gump::close, canceltext, btn_cols[3], btn_rows[0],
-			59);
+			this, &Newfile_gump::close, Strings::CANCEL(), btn_cols[3],
+			btn_rows[0], 59);
 
 	// Scrollers.
 	buttons[id_page_up] = std::make_unique<Newfile_button>(
@@ -438,28 +507,36 @@ void Newfile_gump::paint() {
 
 		char info[320];
 
-		const char* suffix = "th";
-
-		if ((details->real_day % 10) == 1 && details->real_day != 11) {
-			suffix = "st";
-		} else if ((details->real_day % 10) == 2 && details->real_day != 12) {
-			suffix = "nd";
-		} else if ((details->real_day % 10) == 3 && details->real_day != 13) {
-			suffix = "rd";
-		}
-
 		snprintf(
-				info, sizeof(info), infostring, party[0].name, party[0].exp,
-				party[0].health, party[0].str, party[0].dext, party[0].intel,
-				party[0].training, details->game_day, details->game_hour,
-				details->game_minute, details->save_count, details->real_day,
-				suffix, months[details->real_month - 1], details->real_year,
-				details->real_hour, details->real_minute);
+				info, std::size(info),
+				"%s: %s\n"
+				"%s: %i  %s: %i\n"
+				"%s: %i  %s %i\n"
+				"%s: %i  %s: %i\n"
+				"\n"
+				"%s: %i\n"
+				"%s: %02i:%02i\n"
+				"\n"
+				"%s: %i\n"
+				"%s: %i%s %s %04i\n"
+				"%s: %02i:%02i",
+
+				Strings::Avatar(), party[0].name, Strings::Exp(), party[0].exp,
+				Strings::Hp(), party[0].health, Strings::Str(), party[0].str,
+				Strings::Dxt(), party[0].dext, Strings::Int(), party[0].intel,
+				Strings::Trn(), party[0].training, Strings::GameDay(),
+				details->game_day, Strings::GameTime(), details->game_hour,
+				details->game_minute, Strings::SaveCount(), details->save_count,
+				Strings::Date(), details->real_day,
+				Strings::ordinal_numeral_suffix(details->real_day),
+				Strings::month_Abbreviation(details->real_month - 1),
+				details->real_year, Strings::Time(), details->real_hour,
+				details->real_minute);
+		info[std::size(info) - 1] = 0;
 
 		if (filename) {
-			std::strncat(info, "\nFile: ", sizeof(info) - strlen(info) - 1);
-
-			int offset = strlen(filename);
+			size_t cursize = strlen(info);
+			int    offset  = strlen(filename);
 
 			while (offset--) {
 				if (filename[offset] == '/' || filename[offset] == '\\') {
@@ -467,15 +544,18 @@ void Newfile_gump::paint() {
 					break;
 				}
 			}
-			std::strncat(
-					info, filename + offset, sizeof(info) - strlen(info) - 1);
+
+			snprintf(
+					info + cursize, std::size(info) - cursize - 1, "\n%s: %s",
+					Strings::File(), filename + offset);
+			info[std::size(info) - 1] = 0;
 		}
 
 		sman->paint_text_box(4, info, x + infox, y + infoy, infow, infoh);
 
 	} else {
 		if (filename) {
-			char info[64] = "File: ";
+			char info[64];
 
 			int offset = strlen(filename);
 
@@ -485,8 +565,10 @@ void Newfile_gump::paint() {
 					break;
 				}
 			}
-			std::strncat(
-					info, filename + offset, sizeof(info) - strlen(info) - 1);
+			snprintf(
+					info, std::size(info), "\n%s: %s", Strings::File(),
+					filename + offset);
+			info[std::size(info) - 1] = 0;
 			sman->paint_text_box(4, info, x + infox, y + infoy, infow, infoh);
 		}
 
@@ -643,24 +725,24 @@ bool Newfile_gump::mouse_down(
 
 	if (!buttons[id_load] && want_load) {
 		buttons[id_load] = std::make_unique<Newfile_Textbutton>(
-				this, &Newfile_gump::load, loadtext, btn_cols[1], btn_rows[0],
-				39);
+				this, &Newfile_gump::load, Strings::LOAD(), btn_cols[1],
+				btn_rows[0], 39);
 	} else if (buttons[id_load] && !want_load) {
 		buttons[id_load].reset();
 	}
 
 	if (!buttons[id_save] && want_save) {
 		buttons[id_save] = std::make_unique<Newfile_Textbutton>(
-				this, &Newfile_gump::save, savetext, btn_cols[0], btn_rows[0],
-				40);
+				this, &Newfile_gump::save, Strings::SAVE(), btn_cols[0],
+				btn_rows[0], 40);
 	} else if (buttons[id_save] && !want_save) {
 		buttons[id_save].reset();
 	}
 
 	if (!buttons[id_delete] && want_delete) {
 		buttons[id_delete] = std::make_unique<Newfile_Textbutton>(
-				this, &Newfile_gump::delete_file, deletetext, btn_cols[2],
-				btn_rows[0], 59);
+				this, &Newfile_gump::delete_file, Strings::DELETE(),
+				btn_cols[2], btn_rows[0], 59);
 	} else if (buttons[id_delete] && !want_delete) {
 		buttons[id_delete].reset();
 	}
@@ -789,8 +871,8 @@ bool Newfile_gump::text_input(const char* text) {
 
 	if (newname[id_load] && !buttons[id_save]) {
 		buttons[id_save] = std::make_unique<Newfile_Textbutton>(
-				this, &Newfile_gump::save, savetext, btn_cols[0], btn_rows[0],
-				40);
+				this, &Newfile_gump::save, Strings::SAVE(), btn_cols[0],
+				btn_rows[0], 40);
 		buttons[id_save]->paint();
 	}
 
@@ -889,8 +971,8 @@ bool Newfile_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 				// Added first character?  Need 'Save' button.
 				if (newname[0] && !buttons[id_save]) {
 					buttons[id_save] = std::make_unique<Newfile_Textbutton>(
-							this, &Newfile_gump::save, savetext, btn_cols[0],
-							btn_rows[0], 40);
+							this, &Newfile_gump::save, Strings::SAVE(),
+							btn_cols[0], btn_rows[0], 40);
 					buttons[id_save]->paint();
 				}
 

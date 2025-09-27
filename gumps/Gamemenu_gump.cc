@@ -34,68 +34,104 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "VideoOptions_gump.h"
 #include "Yesno_gump.h"
 #include "exult.h"
-#include "exult_flx.h"
 #include "gameclk.h"
 #include "gamewin.h"
+#include "items.h"
 #include "mouse.h"
 
 #include <string>
 
 using std::string;
 
-static const int rowy[] = {4, 17, 30, 43, 56, 69, 82};
-static const int colx   = 31;
+class Strings : public GumpStrings {
+public:
+	static auto LoadSaveGame() {
+		return get_text_msg(0x5E0 - msg_file_start);
+	}
 
-static const char* loadsavetext = "Load/Save Game";
-static const char* videoopttext = "Video Options";
-static const char* audioopttext = "Audio Options";
-static const char* displaytext  = "Game Display";
-static const char* enginetext   = "Game Engine";
-static const char* inputtext    = "Game Input";
-#ifndef SDL_PLATFORM_IOS
-[[maybe_unused]] static const char* quitmenutext = "Quit to Menu";
-static const char*                  quittext     = "Quit";
-#endif
+	static auto VideoOptions() {
+		return get_text_msg(0x5E1 - msg_file_start);
+	}
+
+	static auto AudioOptions() {
+		return get_text_msg(0x5E2 - msg_file_start);
+	}
+
+	static auto GameDisplay() {
+		return get_text_msg(0x5E3 - msg_file_start);
+	}
+
+	static auto GameEngine() {
+		return get_text_msg(0x5E4 - msg_file_start);
+	}
+
+	static auto GameInput() {
+		return get_text_msg(0x5E5 - msg_file_start);
+	}
+
+	static auto Quit() {
+		return get_text_msg(0x5E6 - msg_file_start);
+	}
+};
 
 using Gamemenu_button = CallbackTextButton<Gamemenu_gump>;
 
 Gamemenu_gump::Gamemenu_gump() : Modal_gump(nullptr, -1) {
-	SetProceduralBackground(TileRect(29, 2, 112, 91), -1);
+	SetProceduralBackground(TileRect(0, 2, 100, yForRow(7)), -1);
 
-	int y = 0;
+	createButtons();
+}
+
+void Gamemenu_gump::createButtons() {
+	int y                      = 0;
+	int margin                 = 4;
+	int preferred_button_width = 108;
 	if (!gwin->is_in_exult_menu()) {
 		buttons[id_load_save] = std::make_unique<Gamemenu_button>(
-				this, &Gamemenu_gump::loadsave, loadsavetext, colx, rowy[y++],
-				108, 11);
+				this, &Gamemenu_gump::loadsave, Strings::LoadSaveGame(), margin,
+				yForRow(y++), preferred_button_width, 11);
 	}
 	buttons[id_video_options] = std::make_unique<Gamemenu_button>(
-			this, &Gamemenu_gump::video_options, videoopttext, colx, rowy[y++],
-			108, 11);
+			this, &Gamemenu_gump::video_options, Strings::VideoOptions(),
+			margin, yForRow(y++), preferred_button_width, 11);
 	buttons[id_audio_options] = std::make_unique<Gamemenu_button>(
-			this, &Gamemenu_gump::audio_options, audioopttext, colx, rowy[y++],
-			108, 11);
+			this, &Gamemenu_gump::audio_options, Strings::AudioOptions(),
+			margin, yForRow(y++), preferred_button_width, 11);
 	buttons[id_game_engine_options] = std::make_unique<Gamemenu_button>(
-			this, &Gamemenu_gump::game_engine_options, enginetext, colx,
-			rowy[y++], 108, 11);
+			this, &Gamemenu_gump::game_engine_options, Strings::GameEngine(),
+			margin, yForRow(y++), preferred_button_width, 11);
 	buttons[id_game_display_options] = std::make_unique<Gamemenu_button>(
-			this, &Gamemenu_gump::game_display_options, displaytext, colx,
-			rowy[y++], 108, 11);
+			this, &Gamemenu_gump::game_display_options, Strings::GameDisplay(),
+			margin, yForRow(y++), preferred_button_width, 11);
 	buttons[id_input] = std::make_unique<Gamemenu_button>(
-			this, &Gamemenu_gump::input_options, inputtext, colx, rowy[y++],
-			108, 11);
+			this, &Gamemenu_gump::input_options, Strings::GameInput(), margin,
+			yForRow(y++), preferred_button_width, 11);
 #ifndef SDL_PLATFORM_IOS
 	if (!gwin->is_in_exult_menu()) {
 		buttons[id_quit] = std::make_unique<Gamemenu_button>(
-				this, &Gamemenu_gump::quit_exult, quittext, colx, rowy[y++],
-				108, 11);
+				this, &Gamemenu_gump::quit_exult, Strings::Quit(), margin,
+				yForRow(y++), preferred_button_width, 11);
 	}
 #endif
+
+	// Resize to fit all
+	ResizeWidthToFitWidgets(tcb::span(buttons.data(), buttons.size()), margin);
+
+	// Right align all the buttons
+	RightAlignWidgets(tcb::span(buttons.data(), buttons.size()), margin);
+
+	// Resize to fit the height of the buttons
+	SetProceduralBackground(
+			TileRect(
+					0, yForRow(0) - margin, procedural_background.w,
+					yForRow(y) + margin),
+			-1, true);
 }
 
 //++++++ IMPLEMENT RETURN_TO_MENU!
 void Gamemenu_gump::quit(bool return_to_menu) {
 	ignore_unused_variable_warning(return_to_menu);
-	if (!Yesno_gump::ask("Do you really want to quit?")) {
+	if (!Yesno_gump::ask(Strings::Doyoureallywanttoquit_())) {
 		return;
 	}
 	quitting_time = QUIT_TIME_YES;
@@ -136,6 +172,8 @@ void Gamemenu_gump::game_display_options() {
 	auto* gp_opts = new GameDisplayOptions_gump();
 	gumpman->do_modal_gump(gp_opts, Mouse::hand);
 	delete gp_opts;
+	// Language might have changed so recreate buttons
+	createButtons();
 }
 
 void Gamemenu_gump::game_engine_options() {

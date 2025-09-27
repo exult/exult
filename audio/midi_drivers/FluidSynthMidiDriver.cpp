@@ -36,7 +36,7 @@ const MidiDriver::MidiDriverDesc FluidSynthMidiDriver::desc
 std::vector<ConfigSetting_widget::Definition> FluidSynthMidiDriver::
 		GetSettings() {
 	ConfigSetting_widget::Definition soundfont{
-			"Soundfont",                                  // label
+			Strings::Soundfont(),                                  // label
 			"config/audio/midi/fluidsynth_soundfont",     // config_setting
 			10,                                           // additional
 			true,                                         // required

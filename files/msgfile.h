@@ -36,7 +36,7 @@
 class IDataSource;
 
 class Text_msg_file_reader {
-	using Section_data  = std::vector<std::string_view>;
+	using Section_data  = std::vector<std::optional<std::string_view>>;
 	using Text_msg_data = std::map<std::string_view, Section_data, std::less<>>;
 	using Text_msg_first = std::map<std::string_view, uint32, std::less<>>;
 	std::string    contents;
@@ -56,6 +56,13 @@ public:
 	}
 
 	uint32 get_global_section_strings(std::vector<std::string>& strings) const {
+		strings.clear();
+		for (const auto& s : global_section) {			
+			strings.emplace_back(s.value_or(std::string()));
+		}
+		return global_first;
+	}
+	uint32 get_global_section_strings(std::vector<std::optional<std::string>>& strings) const {
 		strings.clear();
 		for (const auto& s : global_section) {
 			strings.emplace_back(s);
@@ -77,6 +84,20 @@ public:
 	uint32 get_section_strings(
 			std::string_view          sectionName,
 			std::vector<std::string>& strings) const {
+		strings.clear();
+		if (has_section(sectionName)) {
+			for (const auto& s : items.at(sectionName)) {
+				strings.emplace_back(s.value_or(std::string()));
+			}
+			return firsts.at(sectionName);
+		}
+		return 0;
+	}
+
+
+	uint32 get_section_strings(
+			std::string_view          sectionName,
+			std::vector<std::optional<std::string>>& strings) const {
 		strings.clear();
 		if (has_section(sectionName)) {
 			for (const auto& s : items.at(sectionName)) {

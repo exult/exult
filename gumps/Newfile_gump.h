@@ -142,13 +142,10 @@ protected:
 	static const short sliderh;    // Height of Slider
 
 	// Side Text
-	static const short infox;           // X Offset for info
-	static const short infoy;           // Y Offset for info
-	static const short infow;           // Width of info box
-	static const short infoh;           // Height of info box
-	static const char  infostring[];    // Text format for info
-
-	static const char* months[12];    // Names of the months
+	static const short infox;    // X Offset for info
+	static const short infoy;    // Y Offset for info
+	static const short infow;    // Width of info box
+	static const short infoh;    // Height of info box
 
 	unsigned char restored = 0;    // Set to 1 if we restored a game.
 

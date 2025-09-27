@@ -119,6 +119,9 @@ public:
 	// Get text width.
 	int get_text_width(const char* text);
 	int get_text_width(const char* text, int textlen);
+	// Get dimensions of text box for multiline string
+	void get_text_box_dims(
+			const char* text, int& width, int& height, int vert_lead = 0);
 	// Get text height, baseline.
 	int get_text_height();
 	int get_text_baseline();

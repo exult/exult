@@ -382,7 +382,7 @@ std::vector<ConfigSetting_widget::Definition> ALSAMidiDriver::GetSettings() {
 	}
 
 	ConfigSetting_widget::Definition ports{
-			"ALSA PORT",                                  // label
+			Strings::ALSAPORT(),                                  // label
 			"config/audio/midi/alsa_port",                // config_setting
 			0,                                            // additional
 			false,                                        // required

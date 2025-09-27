@@ -35,7 +35,7 @@ class GameManager;
 class BaseGameInfo {
 protected:
 	Exult_Game    type     = NONE;       // Game type
-	Game_Language language = ENGLISH;    // Official translation language
+	Game_Language language = Game_Language::ENGLISH;    // Official translation language
 	std::string   cfgname;               // What the game is called in Exult.cfg
 	std::string   path_prefix;           // System path prefix for the game/mod.
 	std::string   mod_title;             // Internal mod name, the mod's title

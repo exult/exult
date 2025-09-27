@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "StringList_widget.h"
 #include "gamewin.h"
 #include "istring.h"
+#include "items.h"
 #include "listfiles.h"
 #include "utils.h"
 
@@ -31,8 +32,45 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int         ConfigSetting_widget::bgstripe     = 0;
 const uint8 ConfigSetting_widget::bgcolours[4] = {143, 143, 143, 143};
 
+class Strings {
+public:
+	static auto Default() {
+		return get_text_msg(0x5f8 - msg_file_start);
+	}
+
+	static auto Unset() {
+		return get_text_msg(0x5F9 - msg_file_start);
+	}
+
+	static auto Allvaluesfor() {
+		return get_text_msg(0x5FA - msg_file_start);
+	}
+
+	static auto settingmustbeunique_() {
+		return get_text_msg(0x5FB - msg_file_start);
+	}
+
+	static auto AtleastOnevaluefor() {
+		return get_text_msg(0x5FC - msg_file_start);
+	}
+
+	static auto settingmustbeset_() {
+		return get_text_msg(0x5FD - msg_file_start);
+	}
+};
+
+constexpr static int Count_digits10(unsigned val) {
+	int digits = 1;
+
+	while (val /= 10) {
+		digits++;
+	}
+
+	return digits;
+}
+
 ConfigSetting_widget::ConfigSetting_widget(
-		Gump_Base* parent, int px, int py, int butonwidth, int col2,
+		Gump_Base* parent, int px, int py, int butonwidth,
 		const Definition& s, std::shared_ptr<Font> font, int line_gap)
 		: IterableGump_widget(parent, -1, px, py, -1), setting(s), font(font) {
 	if (setting.additional < 0) {
@@ -48,7 +86,7 @@ ConfigSetting_widget::ConfigSetting_widget(
 		// add the default choice into settings
 		std::string label = setting.default_value;
 		if (label.empty()) {
-			label = "(Default)";
+			label = Strings::Default();
 		}
 		setting.choices.push_back(
 				{std::move(label), setting.default_value,
@@ -59,8 +97,8 @@ ConfigSetting_widget::ConfigSetting_widget(
 	emptychoice = setting.find_choice("");
 	if (emptychoice == -1 && (!setting.required || setting.additional > 0)) {
 		emptychoice = setting.choices.size();
-		setting.choices.push_back(
-				ConfigSetting_widget::Definition::Choice{"(Unset)", "", ""});
+		setting.choices.push_back(ConfigSetting_widget::Definition::Choice{
+				Strings::Unset(), "", ""});
 	}
 
 	// convert choices into string vector
@@ -72,6 +110,8 @@ ConfigSetting_widget::ConfigSetting_widget(
 	}
 	int offset_y  = 0;
 	missingchoice = -1;
+	int widget_x  = font->get_text_width(setting.label.c_str())
+			  + Count_digits10(setting.additional) * font->get_text_width("0") + Modal_gump::label_margin;
 	for (int i = -1; i < setting.additional; i++) {
 		std::string      config_key;
 		std::string_view default_value;
@@ -109,13 +149,14 @@ ConfigSetting_widget::ConfigSetting_widget(
 
 		initial[i + 1] = current_index;
 
+
 		// create widget
 		switch (setting.setting_type) {
 		case Definition::dropdown: {
 			children[i + 1] = std::make_unique<
 					CallbackButtonBase<ConfigSetting_widget, DropDown_widget>>(
 					this, &ConfigSetting_widget::onselectionmb, sv_choices,
-					current_index, col2, offset_y, butonwidth);
+					current_index, widget_x, offset_y, butonwidth);
 
 			break;
 		}
@@ -124,14 +165,14 @@ ConfigSetting_widget::ConfigSetting_widget(
 			children[i + 1] = std::make_unique<CallbackButtonBase<
 					ConfigSetting_widget, StringList_widget>>(
 					this, &ConfigSetting_widget::onselectionmb, sv_choices,
-					current_index, col2, offset_y, colours, butonwidth, 0);
+					current_index, widget_x, offset_y, colours, butonwidth, 0);
 			break;
 		}
 		case Definition::button: {
 			children[i + 1] = std::make_unique<
 					SelfManagedCallbackToggleTextButton<ConfigSetting_widget>>(
 					this, &ConfigSetting_widget::onselection, sv_choices,
-					current_index, col2, offset_y, butonwidth, 0);
+					current_index, widget_x, offset_y, butonwidth, 0);
 
 			break;
 		}
@@ -156,16 +197,6 @@ void ConfigSetting_widget::shift_buttons_x(int offset) {
 			child->set_pos(child->get_x() + offset, child->get_y());
 		}
 	}
-}
-
-constexpr static int Count_digits10(unsigned val) {
-	int digits = 1;
-
-	while (val /= 10) {
-		digits++;
-	}
-
-	return digits;
 }
 
 static int int_to_str(unsigned val, char* str) {
@@ -343,10 +374,11 @@ std::string ConfigSetting_widget::Validate() {
 	}
 
 	if (setting.unique && collision) {
-		return "All values for " + setting.label + " setting must be unique. ";
+		return Strings::Allvaluesfor() + (" " + setting.label + " ")
+			   + Strings::settingmustbeunique_();
 	} else if (setting.required && !have) {
-		return "At least One value for " + setting.label
-			   + " setting must be set. ";
+		return Strings::AtleastOnevaluefor() + (" " + setting.label + " ")
+			   + Strings::settingmustbeset_();
 	}
 
 	return std::string();

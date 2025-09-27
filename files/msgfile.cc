@@ -229,7 +229,7 @@ bool Text_msg_file_reader::parse_contents() {
 	}
 
 	int         version;
-	auto        versionStr = (*data)[0];
+	auto versionStr = (*data)[0].value_or(std::string_view());
 	const auto* start      = versionStr.data();
 	const auto* end        = std::next(start, versionStr.size());
 	if (std::from_chars(start, end, version).ec != std::errc()) {
