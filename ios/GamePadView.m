@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2010, 2011, 2015  Chaoji Li
- * Copyright (C) 2016-2022 The Exult Team
+ * Copyright (C) 2016-2025 The Exult Team
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -38,13 +38,13 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 
 /** DPadView */
 @implementation DPadView
-@synthesize     backgroundImage;
-@synthesize     images;
-@synthesize     vjoyIsActive;       // true when the vjoy is active
-@synthesize     vjoyCenter;         // center of the vjoy
-@synthesize     vjoyCurrent;        // current position of the vjoy
-@synthesize     vjoyGamepad;        // the vjoy's SDL_Gamepad
-@synthesize     vjoyInputSource;    // where vjoy input is coming from
+@synthesize backgroundImage;
+@synthesize images;
+@synthesize vjoyIsActive;       // true when the vjoy is active
+@synthesize vjoyCenter;         // center of the vjoy
+@synthesize vjoyCurrent;        // current position of the vjoy
+@synthesize vjoyGamepad;        // the vjoy's SDL_Gamepad
+@synthesize vjoyInputSource;    // where vjoy input is coming from
 
 - (id)initWithFrame:(CGRect)frame {
 	self = [super initWithFrame:frame];
@@ -52,18 +52,20 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 		self.backgroundColor = [UIColor clearColor];
 		self.backgroundImage = [UIImage imageNamed:@"joythumb-glass.png"];
 
-		SDL_VirtualJoystickTouchpadDesc virtual_touchpad = { 1, { 0, 0, 0 } };
-		SDL_VirtualJoystickSensorDesc virtual_sensor = { SDL_SENSOR_ACCEL, 0.0f };
+		SDL_VirtualJoystickTouchpadDesc virtual_touchpad = {
+				1, {0, 0, 0}
+        };
+		SDL_VirtualJoystickSensorDesc virtual_sensor = {SDL_SENSOR_ACCEL, 0.0f};
 		SDL_VirtualJoystickDesc       desc;
 
 		SDL_INIT_INTERFACE(&desc);
-		desc.type       = SDL_JOYSTICK_TYPE_GAMEPAD;
-		desc.naxes      = SDL_GAMEPAD_AXIS_COUNT;
-		desc.nbuttons   = SDL_GAMEPAD_BUTTON_COUNT;
-		desc.ntouchpads = 1;
-		desc.touchpads  = &virtual_touchpad;
-		desc.nsensors   = 1;
-		desc.sensors    = &virtual_sensor;
+		desc.type              = SDL_JOYSTICK_TYPE_GAMEPAD;
+		desc.naxes             = SDL_GAMEPAD_AXIS_COUNT;
+		desc.nbuttons          = SDL_GAMEPAD_BUTTON_COUNT;
+		desc.ntouchpads        = 1;
+		desc.touchpads         = &virtual_touchpad;
+		desc.nsensors          = 1;
+		desc.sensors           = &virtual_sensor;
 		SDL_JoystickID vjoy_id = SDL_AttachVirtualJoystick(&desc);
 		if (!vjoy_id) {
 			printf("SDL_AttachVirtualJoystick failed: %s\n", SDL_GetError());
@@ -113,11 +115,11 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 - (void)reset {
 	self.vjoyIsActive = false;
 	SDL_SetJoystickVirtualAxis(
-			SDL_GetGamepadJoystick(self.vjoyGamepad),
-			SDL_GAMEPAD_AXIS_LEFTX, 0);
+			SDL_GetGamepadJoystick(self.vjoyGamepad), SDL_GAMEPAD_AXIS_LEFTX,
+			0);
 	SDL_SetJoystickVirtualAxis(
-			SDL_GetGamepadJoystick(self.vjoyGamepad),
-			SDL_GAMEPAD_AXIS_LEFTY, 0);
+			SDL_GetGamepadJoystick(self.vjoyGamepad), SDL_GAMEPAD_AXIS_LEFTY,
+			0);
 	self.vjoyCenter = self.vjoyCurrent = CGPointMake(0, 0);
 	self.vjoyInputSource               = nil;
 	[self updateViewTransform];
@@ -230,13 +232,13 @@ const double gVJoyRadius = 80.0;    // max-radius of vjoy
 
 /** GamePadButton */
 @implementation GamePadButton
-@synthesize     pressed;
-@synthesize     keyCodes;
-@synthesize     style;
-@synthesize     title;
-@synthesize     images;
-@synthesize     textColor;
-@synthesize     delegate;
+@synthesize pressed;
+@synthesize keyCodes;
+@synthesize style;
+@synthesize title;
+@synthesize images;
+@synthesize textColor;
+@synthesize delegate;
 
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent*)event {
 	if (self.style == GamePadButtonStyleCircle) {
