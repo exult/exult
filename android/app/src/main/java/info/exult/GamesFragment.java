@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2021-2022  The Exult Team
+ *  Copyright (C) 2021-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,5 +33,15 @@ public class GamesFragment extends ContentInstallerFragment {
 			crc32 = Long.decode(crc32String);
 		}
 		return new ExultGameContent(name, view.getContext(), crc32);
+	}
+
+	@Override
+	protected boolean showOnlyInstalledEntries() {
+		return true;
+	}
+
+	@Override
+	protected boolean shouldShowInstallGameButton() {
+		return true;
 	}
 }

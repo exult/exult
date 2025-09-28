@@ -30,11 +30,16 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import java.io.File;
@@ -54,10 +59,128 @@ public abstract class ContentInstallerFragment
 	private CustomModInstaller customModInstaller;
 	private ContentDownloader  contentDownloader;
 	private PatchInstaller     patchInstaller;
+	private static final int   REQUEST_INSTALL_GAME = 9100;
+	private final java.util.Map<Long, String> m_crcToGameName
+			= new java.util.HashMap<>();
+	private ActivityResultLauncher<String[]>
+			m_contentPickerLauncher;    // for list-row installs
+	private ActivityResultLauncher<String[]>
+				m_installGamePickerLauncher;    // for "Install Game" button
+	private int m_pendingRequestCode
+			= -1;    // ties list-row selection to the right content
 
 	ContentInstallerFragment(int layout, int text) {
 		m_layout = layout;
 		m_text   = text;
+	}
+
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		// Picker for list-row "Select file on your device"
+		m_contentPickerLauncher = registerForActivityResult(
+				new ActivityResultContracts.OpenDocument(), Uri -> {
+					final Uri uri         = Uri;
+					final int requestCode = m_pendingRequestCode;
+					m_pendingRequestCode  = -1;
+
+					if (uri == null) {
+						// User cancelled; uncheck if we have a checkbox
+						CheckBox cb = m_requestCodeToCheckbox.get(requestCode);
+						if (cb != null)
+							cb.setChecked(false);
+						return;
+					}
+					new Thread(() -> {
+						try {
+							ExultContent content
+									= m_requestCodeToContent.get(requestCode);
+							if (content == null)
+								return;
+							content.install(
+									uri, m_progressReporter,
+									(successful, details) -> {
+										handleContentDone(
+												requestCode, successful,
+												details);
+									});
+						} catch (Exception e) {
+							Log.d("ContentInstaller", "install failed: " + e);
+							requireActivity().runOnUiThread(
+									() -> showErrorDialog(e.getMessage()));
+						}
+					}).start();
+				});
+
+		// Picker for the "Install Game" button (CRC detect mainshp.flx, then
+		// install)
+		m_installGamePickerLauncher = registerForActivityResult(
+				new ActivityResultContracts.OpenDocument(), Uri -> {
+					final Uri uri = Uri;
+					if (uri == null)
+						return;
+
+					new Thread(() -> {
+						try {
+							Long crc = detectMainshpCrc(
+									uri);    // already scanning for mainshp.flx
+							if (crc == null) {
+								requireActivity().runOnUiThread(
+										()
+												-> showErrorDialog(
+														"Could not find "
+														+ "mainshp.flx in the "
+														+ "selected file."));
+								return;
+							}
+							final String shortName = m_crcToGameName.get(crc);
+							if (shortName == null) {
+								requireActivity().runOnUiThread(
+										()
+												-> showErrorDialog(
+														"Unknown game CRC 0x"
+														+ Long.toHexString(crc)
+														+ (". Unable to "
+														   + "determine "
+														   + "game.")));
+								return;
+							}
+
+							ExultContent content = new ExultGameContent(
+									shortName, getContext(), crc);
+							// Block install if the shortname folder already has
+							// any variant installed
+							if (content instanceof ExultGameContent
+								&& ((ExultGameContent)content)
+										   .isAnyVariantInstalledInFolder()) {
+								requireActivity().runOnUiThread(
+										()
+												-> showErrorDialog(
+														"A game is already "
+														+ "installed in folder "
+														+ "'" + shortName
+														+ ("'. Please "
+														   + "uninstall it "
+														   + "first.")));
+								return;
+							}
+
+							content.install(
+									uri, m_progressReporter,
+									(successful, details) -> {
+										handleContentDone(
+												REQUEST_INSTALL_GAME,
+												successful, details);
+									});
+						} catch (Exception e) {
+							Log.d("ContentInstaller",
+								  "Install Game failed: " + e);
+							requireActivity().runOnUiThread(
+									() -> showErrorDialog(e.getMessage()));
+						}
+					}).start();
+				});
 	}
 
 	@Override
@@ -88,15 +211,32 @@ public abstract class ContentInstallerFragment
 			webView.setWebViewClient(new WebViewClient() {
 				@Override
 				public boolean shouldOverrideUrlLoading(
-						WebView view, String url) {
-					if (url.startsWith("http://")
-						|| url.startsWith("https://")) {
-						Intent browserIntent = new Intent(
-								Intent.ACTION_VIEW, Uri.parse(url));
-						startActivity(browserIntent);
+						WebView view, WebResourceRequest request) {
+					Uri    uri    = request.getUrl();
+					String scheme = uri != null ? uri.getScheme() : null;
+					if ("http".equalsIgnoreCase(scheme)
+						|| "https".equalsIgnoreCase(scheme)) {
+						Intent i = new Intent(Intent.ACTION_VIEW, uri);
+						view.getContext().startActivity(i);
 						return true;
 					}
-					return super.shouldOverrideUrlLoading(view, url);
+					return false;
+				}
+
+				@SuppressWarnings("deprecation")
+				@Override
+				public boolean shouldOverrideUrlLoading(
+						WebView view, String url) {
+					// Fallback for pre-Lollipop devices
+					if (url != null
+						&& (url.startsWith("http://")
+							|| url.startsWith("https://"))) {
+						Intent i = new Intent(
+								Intent.ACTION_VIEW, Uri.parse(url));
+						view.getContext().startActivity(i);
+						return true;
+					}
+					return false;
 				}
 			});
 		}
@@ -109,6 +249,44 @@ public abstract class ContentInstallerFragment
 					= getContext().obtainStyledAttributes(attrs);
 			int color = a.getColor(0, Color.parseColor("#3F51B5"));
 			a.recycle();
+
+			// Games tab: add "Install Game" button
+			if (shouldShowInstallGameButton()) {
+				Button installGameButton = new Button(
+						getContext(), null, android.R.attr.buttonStyle);
+				installGameButton.setText("Install Game");
+				installGameButton.setOnClickListener(
+						v -> launchInstallGameFilePicker());
+
+				GradientDrawable shape = new GradientDrawable();
+				shape.setShape(GradientDrawable.RECTANGLE);
+				shape.setColor(color);
+				shape.setCornerRadius(
+						getResources().getDisplayMetrics().density * 4);
+				installGameButton.setBackground(shape);
+				installGameButton.setTextColor(Color.WHITE);
+				installGameButton.setAllCaps(true);
+				installGameButton.setElevation(0);
+
+				LinearLayout.LayoutParams params
+						= new LinearLayout.LayoutParams(
+								LinearLayout.LayoutParams.WRAP_CONTENT,
+								(int)(getResources().getDisplayMetrics().density
+									  * 36));
+				params.gravity = Gravity.CENTER_HORIZONTAL;
+				params.topMargin
+						= (int)(getResources().getDisplayMetrics().density
+								* 10);
+				params.bottomMargin
+						= (int)(getResources().getDisplayMetrics().density * 8);
+				contentLayout.addView(installGameButton, params);
+				installGameButton.setMinWidth(
+						(int)(getResources().getDisplayMetrics().density * 88));
+
+				// Build CRC->name map from the games rows (so we can resolve
+				// CRC to folder)
+				buildCrcToGameNameMap(contentLayout);
+			}
 			// Only add the custom mod button if this is the Mods fragment
 			if (shouldShowCustomModButton()) {
 				// Add custom mod button
@@ -184,20 +362,31 @@ public abstract class ContentInstallerFragment
 						(int)(getResources().getDisplayMetrics().density * 88));
 			}
 			// Reuse the existing activity variable defined above
-			for (int i = 0; i < contentLayout.getChildCount()
-										- (shouldShowCustomModButton() ? 2 : 1);
+			for (int i = 0;
+				 i < contentLayout.getChildCount()
+							 - (shouldShowCustomModButton() ? 2 : 0)
+							 - (shouldShowInstallGameButton() ? 1 : 0);
 				 ++i) {
 				// Note: -1 to skip the button we just added
 				View   viewInContentLayout = contentLayout.getChildAt(i);
 				String name = (String)viewInContentLayout.getTag(R.id.name);
-				if (null == name) {
+				if (name == null) {
 					continue;
 				}
 				ExultContent content
 						= buildContentFromView(name, viewInContentLayout);
-				if (null == content) {
+				if (content == null) {
 					continue;
 				}
+
+				if (showOnlyInstalledEntries() && !content.isInstalled()) {
+					viewInContentLayout.setVisibility(View.GONE);
+					continue;    // don't wire listeners/mappings for hidden
+								 // rows
+				} else {
+					viewInContentLayout.setVisibility(View.VISIBLE);
+				}
+
 				int requestCode = m_requestCodeToContent.size() + 1;
 				m_nameToRequestCode.put(name, requestCode);
 				m_requestCodeToContent.put(requestCode, content);
@@ -271,6 +460,11 @@ public abstract class ContentInstallerFragment
 		return view;
 	}
 
+	// Only Games tab should show this button
+	protected boolean shouldShowInstallGameButton() {
+		return false;
+	}
+
 	protected abstract ExultContent
 			buildContentFromView(String name, View view);
 
@@ -290,6 +484,10 @@ public abstract class ContentInstallerFragment
 			int requestCode, boolean successful, String details) {
 		getActivity().runOnUiThread(() -> {
 			if (successful) {
+				if (requestCode == REQUEST_INSTALL_GAME
+					|| showOnlyInstalledEntries()) {
+					refreshContentList();
+				}
 				return;
 			}
 			AlertDialog.Builder builder
@@ -297,16 +495,17 @@ public abstract class ContentInstallerFragment
 			builder.setTitle("Content Installer");
 			builder.setMessage("Error: " + details);
 			builder.setPositiveButton("Dismiss", (dialog, which) -> {});
-			AlertDialog alert = builder.create();
-			alert.show();
+			builder.create().show();
 
 			// Only try to uncheck the checkbox if one exists for this request
 			// code
-			Log.d("foobar",
-				  "unchecking checkbox for requestCode " + requestCode);
 			CheckBox checkBox = m_requestCodeToCheckbox.get(requestCode);
 			if (checkBox != null) {
 				checkBox.setChecked(false);
+			}
+
+			if (showOnlyInstalledEntries()) {
+				refreshContentList();
 			}
 		});
 	}
@@ -315,40 +514,39 @@ public abstract class ContentInstallerFragment
 		CheckBox checkBox = (CheckBox)view;
 		boolean  checked  = checkBox.isChecked();
 
-		if (checked) {
-			// Get hardcoded URL if it exists
-			String hardcodedUrl = (String)view.getTag(R.id.downloadUrl);
+		if (showOnlyInstalledEntries() && checked) {
+			checkBox.setChecked(true);
+			new AlertDialog.Builder(view.getContext())
+					.setTitle("Install Game")
+					.setMessage(
+							"Use the Install Game button to install.\n"
+							+ "It detects your game by the mainshp.flx CRC.")
+					.setPositiveButton("OK", null)
+					.show();
+			return;
+		}
 
-			// Show options dialog
+		if (checked) {
+			String hardcodedUrl = (String)view.getTag(R.id.downloadUrl);
 			AlertDialog.Builder builder
 					= new AlertDialog.Builder(view.getContext());
 			builder.setTitle("Install " + checkBox.getText());
-
-			// Determine options based on whether a hardcoded URL exists
-			String[] options;
-			if (hardcodedUrl != null && !hardcodedUrl.isEmpty()) {
-				options = new String[] {
-						"Select file on your device",
-						"Download from Exult website"};
-			} else {
-				options = new String[] {
-						"Select file on your device", "Download from URL"};
-			}
-
+			String[] options
+					= (hardcodedUrl != null && !hardcodedUrl.isEmpty())
+							  ? new String
+										[] {"Select file on your device",
+											"Download from Exult website"}
+							  : new String[] {
+										"Select file on your device",
+										"Download from URL"};
 			builder.setItems(options, (dialog, which) -> {
 				if (which == 0) {
-					// Select file from device (existing functionality)
-					Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-					intent.addCategory(Intent.CATEGORY_OPENABLE);
-					intent.setType("*/*");
-					startActivityForResult(intent, requestCode);
+					m_pendingRequestCode = requestCode;
+					m_contentPickerLauncher.launch(new String[] {"*/*"});
 				} else if (which == 1) {
-					// Download option selected
 					if (hardcodedUrl != null && !hardcodedUrl.isEmpty()) {
-						// Use hardcoded URL directly
 						downloadFileFromUrl(hardcodedUrl, requestCode);
 					} else {
-						// Show URL input dialog
 						showUrlInputDialog(requestCode);
 					}
 				}
@@ -356,87 +554,201 @@ public abstract class ContentInstallerFragment
 			builder.setOnCancelListener(dialog -> checkBox.setChecked(false));
 			builder.show();
 		} else {
+			// uninstall (unchanged, but posts UI refresh)
+			final CheckBox      clickedCb = (CheckBox)view;
 			AlertDialog.Builder builder
 					= new AlertDialog.Builder(view.getContext());
-			builder.setTitle("Uninstall " + checkBox.getText() + "?");
+			builder.setTitle("Uninstall " + clickedCb.getText() + "?");
 			builder.setMessage(
-					"This will uninstall " + checkBox.getText()
+					"This will uninstall " + clickedCb.getText()
 					+ ".  Are you sure?");
 			builder.setPositiveButton("Yes", (dialog, which) -> {
 				new Thread(() -> {
 					ExultContent content
 							= m_requestCodeToContent.get(requestCode);
-					if (null == content) {
-						return;
-					}
-					if (content.isInstalled()) {
-						try {
-							content.uninstall(m_progressReporter);
-						} catch (Exception e) {
-							Log.d("ExultLauncherActivity",
-								  "exception deleting " + content.getName()
-										  + ": " + e.toString());
+					try {
+						if (content != null && content.isInstalled()) {
+							content.uninstall(m_progressReporter);    // synchronous
+																	  // delete
 						}
+					} catch (Exception e) {
+						Log.d("ExultLauncherActivity",
+							  "exception deleting "
+									  + (content != null ? content.getName()
+														 : "?")
+									  + ": " + e);
 					}
+					requireActivity().runOnUiThread(() -> {
+						// For tabs that show all items, uncheck the exact
+						// checkbox the user tapped. On Games tab
+						// (installed-only), the row will be hidden, so skip
+						// manual uncheck.
+						if (!showOnlyInstalledEntries()) {
+							clickedCb.setChecked(false);
+						}
+						// Now rebuild rows/mappings; Games tab hides the
+						// uninstalled row here.
+						refreshContentList();
+					});
 				}).start();
 			});
 			builder.setNegativeButton(
-					"No", (dialog, which) -> { checkBox.setChecked(true); });
-			AlertDialog alert = builder.create();
-			alert.show();
+					"No", (dialog, which) -> { clickedCb.setChecked(true); });
+			builder.create().show();
 		}
 	}
 
-	@Override
-	public void onActivityResult(
-			int requestCode, int resultCode, Intent resultData) {
-		super.onActivityResult(requestCode, resultCode, resultData);
-		if (null == resultData) {
-			// User cancelled file selection
-			CheckBox checkBox = m_requestCodeToCheckbox.get(requestCode);
-			if (checkBox != null) {
-				checkBox.setChecked(false);
-			}
-			return;
-		}
-
-		if (requestCode == PatchInstaller.getRequestCode()) {
-			Uri uri = resultData.getData();
-			patchInstaller.handleFilePickerResult(uri);
-			return;
-		}
-
-		// For custom mod request code
-		if (requestCode == CustomModInstaller.getRequestCode()) {
-			Uri uri = resultData.getData();
-			customModInstaller.handleFilePickerResult(uri, requestCode, null);
-			return;
-		}
-
-		Uri uri = resultData.getData();
-
-		// Check if this is the custom mod
-		CheckBox checkBox = m_requestCodeToCheckbox.get(requestCode);
-
-		// Perform operations on the document using its URI on a separate thread
-		new Thread(() -> {
+	private void buildCrcToGameNameMap(ViewGroup contentLayout) {
+		m_crcToGameName.clear();
+		int rows = contentLayout.getChildCount()
+				   - (shouldShowCustomModButton() ? 2 : 0)
+				   - (shouldShowInstallGameButton() ? 1 : 0);
+		if (rows < 0)
+			rows = 0;
+		for (int i = 0; i < rows; i++) {
+			View   row    = contentLayout.getChildAt(i);
+			String name   = (String)row.getTag(R.id.name);
+			String crcStr = (String)row.getTag(R.id.crc32);
+			if (name == null || crcStr == null)
+				continue;
 			try {
-				ExultContent content = m_requestCodeToContent.get(requestCode);
-				if (null == content) {
-					return;
-				}
-				if (content.isInstalled()) {
-					content.uninstall(m_progressReporter);
-				}
-				content.install(
-						uri, m_progressReporter, (successful, details) -> {
-							handleContentDone(requestCode, successful, details);
-						});
-			} catch (Exception e) {
-				Log.d("ExultLauncherActivity",
-					  "exception opening content: " + e.toString());
+				Long crc = Long.decode(crcStr);
+				m_crcToGameName.put(crc, name);
+			} catch (Exception ignored) {
 			}
-		}).start();
+		}
+	}
+
+	private void launchInstallGameFilePicker() {
+		m_installGamePickerLauncher.launch(new String[] {"*/*"});
+	}
+
+	// Recursively detect CRC of mainshp.flx inside archives/compressed streams
+	private Long detectMainshpCrc(Uri sourceUri) throws Exception {
+		java.io.InputStream in
+				= getContext().getContentResolver().openInputStream(sourceUri);
+		try (java.io.BufferedInputStream bin
+			 = new java.io.BufferedInputStream(in)) {
+			org.apache.commons.compress.archivers.ArchiveInputStream ais
+					= info.exult.ArchiveStreamFactoryWithXar
+							  .createArchiveInputStream(bin);
+			if (ais == null)
+				return null;
+			return scanArchiveForMainshpCrc(ais);
+		}
+	}
+
+	private Long scanArchiveForMainshpCrc(
+			org.apache.commons.compress.archivers.ArchiveInputStream ais)
+			throws Exception {
+		org.apache.commons.compress.archivers.ArchiveEntry entry;
+		org.apache.commons.compress.compressors
+				.CompressorStreamFactory compFactory
+				= new org.apache.commons.compress.compressors
+						  .CompressorStreamFactory();
+
+		byte[] buf = new byte[8192];
+		while ((entry = ais.getNextEntry()) != null) {
+			if (entry.isDirectory())
+				continue;
+
+			String name = entry.getName();
+			if (name != null && name.toLowerCase().endsWith("mainshp.flx")) {
+				java.util.zip.CheckedInputStream cis
+						= new java.util.zip.CheckedInputStream(
+								ais, new java.util.zip.CRC32());
+				while (cis.read(buf) != -1) { /* consume */
+				}
+				return cis.getChecksum().getValue();
+			}
+
+			// Try as compressed stream
+			java.io.InputStream nested = new java.io.BufferedInputStream(ais);
+			try {
+				nested = new java.io.BufferedInputStream(
+						compFactory.createCompressorInputStream(nested));
+			} catch (org.apache.commons.compress.compressors
+							 .CompressorException ignored) {
+			}
+
+			// Then try as archive
+			org.apache.commons.compress.archivers.ArchiveInputStream nestedAis
+					= null;
+			try {
+				nestedAis = info.exult.ArchiveStreamFactoryWithXar
+									.createArchiveInputStream(nested);
+			} catch (org.apache.commons.compress.archivers
+							 .ArchiveException ignored) {
+			}
+			if (nestedAis != null) {
+				Long crc = scanArchiveForMainshpCrc(nestedAis);
+				if (crc != null)
+					return crc;
+			}
+		}
+		return null;
+	}
+
+	private void refreshContentList() {
+		View root = getView();
+		if (root == null)
+			return;
+
+		ViewGroup contentLayout = root.findViewById(R.id.contentLayout);
+		if (contentLayout == null)
+			return;
+
+		// Clear old mappings so requestCodes and listeners are rebuilt
+		m_nameToRequestCode.clear();
+		m_requestCodeToContent.clear();
+		m_requestCodeToCheckbox.clear();
+
+		// Determine how many children are the rows (exclude action buttons if
+		// present)
+		int rows = contentLayout.getChildCount()
+				   - (shouldShowCustomModButton() ? 2 : 0)
+				   - (shouldShowInstallGameButton() ? 1 : 0);
+		if (rows < 0)
+			rows = 0;
+
+		for (int i = 0; i < rows; ++i) {
+			View   row  = contentLayout.getChildAt(i);
+			String name = (String)row.getTag(R.id.name);
+			if (name == null)
+				continue;
+
+			ExultContent content = buildContentFromView(name, row);
+			if (content == null)
+				continue;
+
+			// In Games tab, hide rows that are not installed
+			if (showOnlyInstalledEntries() && !content.isInstalled()) {
+				row.setVisibility(View.GONE);
+				continue;
+			} else {
+				row.setVisibility(View.VISIBLE);
+			}
+
+			int requestCode = m_requestCodeToContent.size() + 1;
+			m_nameToRequestCode.put(name, requestCode);
+			m_requestCodeToContent.put(requestCode, content);
+
+			// Expecting CheckBox rows
+			if (row instanceof CheckBox) {
+				CheckBox cb = (CheckBox)row;
+				m_requestCodeToCheckbox.put(requestCode, cb);
+				cb.setOnClickListener(this);
+				cb.setChecked(content.isInstalled());
+			} else {
+				// Still wire click listener if not a CheckBox for any reason
+				row.setOnClickListener(this);
+			}
+		}
+
+		// Rebuild CRC -> game name map for the Install Game button
+		if (shouldShowInstallGameButton()) {
+			buildCrcToGameNameMap(contentLayout);
+		}
 	}
 
 	@Override
@@ -451,6 +763,20 @@ public abstract class ContentInstallerFragment
 		onCheckboxClicked(view, requestCode);
 	}
 
+	@Override
+	public void onResume() {
+		super.onResume();
+		// Re-evaluate installed games when the tab becomes visible again
+		try {
+			java.lang.reflect.Method m
+					= ContentInstallerFragment.class.getDeclaredMethod(
+							"refreshContentList");
+			m.setAccessible(true);
+			m.invoke(this);
+		} catch (Exception ignored) {
+		}
+	}
+
 	/**
 	 * Downloads a file from the specified URL and prepares it for installation.
 	 *
@@ -462,7 +788,7 @@ public abstract class ContentInstallerFragment
 	}
 
 	/**
-	 * Process the downloaded file similar to onActivityResult
+	 * Process the downloaded file
 	 */
 	private void processDownloadedFile(
 			Uri uri, int requestCode, File tempFile) {
@@ -503,6 +829,15 @@ public abstract class ContentInstallerFragment
 		contentDownloader.showUrlInputDialog(requestCode);
 	}
 
+	private void showErrorDialog(String msg) {
+		AlertDialog.Builder builder
+				= new AlertDialog.Builder(getView().getContext());
+		builder.setTitle("Install Game");
+		builder.setMessage("Error: " + msg);
+		builder.setPositiveButton("Dismiss", (d, w) -> {});
+		builder.create().show();
+	}
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -528,6 +863,11 @@ public abstract class ContentInstallerFragment
 	 */
 	protected boolean shouldShowCustomModButton() {
 		return false;    // Default to false - subclasses can override
+	}
+
+	// Show only entries that are already installed (Games tab)
+	protected boolean showOnlyInstalledEntries() {
+		return false;
 	}
 
 	/**

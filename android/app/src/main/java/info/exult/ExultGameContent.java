@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2021-2022  The Exult Team
+ *  Copyright (C) 2021-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,8 +20,11 @@ package info.exult;
 
 import android.content.Context;
 import android.util.Log;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
@@ -39,6 +42,52 @@ class ExultGameContent extends ExultContent {
                 "static");
 	}
 
+	public boolean isAnyVariantInstalledInFolder() {
+		try {
+			java.nio.file.Path mainshp = m_installPath.resolve("mainshp.flx");
+			return java.nio.file.Files.exists(mainshp)
+					&& !java.nio.file.Files.isDirectory(mainshp);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isInstalled() {
+		// Determine installed variant by CRC of mainshp.flx inside installed
+		// static folder.
+		try {
+			java.nio.file.Path mainshp = m_installPath.resolve("mainshp.flx");
+			if (!Files.exists(mainshp) || Files.isDirectory(mainshp)) {
+				return false;
+			}
+			// If this row has an expected CRC, compare; otherwise treat
+			// presence as installed.
+			if (m_expectedCrc32 != null) {
+				long actual = computeCrc32(mainshp);
+				return (actual & 0xffffffffL)
+						== (m_expectedCrc32.longValue() & 0xffffffffL);
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	private static long computeCrc32(java.nio.file.Path file)
+			throws IOException {
+		byte[]              buf = new byte[8192];
+		java.util.zip.CRC32 crc = new java.util.zip.CRC32();
+		try (BufferedInputStream in
+			 = new BufferedInputStream(new FileInputStream(file.toFile()))) {
+			int r;
+			while ((r = in.read(buf)) != -1) {
+				crc.update(buf, 0, r);
+			}
+		}
+		return crc.getValue();
+	}
+
 	@Override
 	protected boolean identify(
 			Path location, ArchiveEntry archiveEntry, InputStream inputStream)
@@ -54,10 +103,10 @@ class ExultGameContent extends ExultContent {
 			return false;
 		}
 
-		// The Exult engine looks for "initgame.dat" to indicate a valid game.
+		// The Exult engine looks for "mainshp.flx" to indicate a valid game.
 		Path fullPath = getFullArchivePath(location, archiveEntry);
 		if (!fullPath.getFileName().toString().toLowerCase().equals(
-					"initgame.dat")) {
+					"mainshp.flx")) {
 			return false;
 		}
 

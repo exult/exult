@@ -26,13 +26,13 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
 	private static class TabData {
-		public TabData(String name, Class fragment) {
+		public final String name;
+		public final Class<? extends Fragment> fragment;
+
+		public TabData(String name, Class<? extends Fragment> fragment) {
 			this.name     = name;
 			this.fragment = fragment;
 		}
-
-		public String name;
-		public Class  fragment;
 	}
 
 	private static final TabData[] TABS

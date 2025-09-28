@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2021-2022  The Exult Team
+ *  Copyright (C) 2021-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,41 +28,36 @@ import org.apache.commons.io.IOUtils;
 
 /**
  * Adds detection of Xar archives to ArchiveStreamFactory, which is missing in
- * Apache Commons Compress 1.20 API.
- *
- * @see https://commons.apache.org/proper/commons-compress/javadocs/api-1.20/
+ * Apache Commons Compress API.
  */
-class ArchiveStreamFactoryWithXar extends ArchiveStreamFactory {
-	/** Constant (value {@value}) used to identify the XAR archive format. */
-	public static final String XAR = "xar";
 
-	/** Sufficient bytes from start of a XAR file to match magic number. */
-	private static final int XAR_SIGNATURE_SIZE = 4;
+public final class ArchiveStreamFactoryWithXar {
+	public static final String XAR                = "xar";
+	private static final int   XAR_SIGNATURE_SIZE = 4;
 
-	@Override
-	public ArchiveInputStream createArchiveInputStream(final InputStream in)
-			throws ArchiveException {
+	private ArchiveStreamFactoryWithXar() {}
+
+	public static ArchiveInputStream createArchiveInputStream(
+			final InputStream in) throws ArchiveException {
 		return createArchiveInputStream(detect(in), in);
 	}
 
-	@Override
-	public ArchiveInputStream createArchiveInputStream(
-			String archiverName, InputStream in) throws ArchiveException {
+	public static ArchiveInputStream createArchiveInputStream(
+			final String archiverName, final InputStream in)
+			throws ArchiveException {
 		try {
-			if (archiverName.equals(XAR)) {
+			if (XAR.equals(archiverName)) {
 				return new XarArchiveInputStream(in);
-			} else {
-				return super.createArchiveInputStream(archiverName, in);
 			}
+			return new ArchiveStreamFactory().createArchiveInputStream(
+					archiverName, in);
 		} catch (IOException e) {
-			throw new ArchiveException("Failed to create XAR archive input stream", e);
+			throw new ArchiveException(
+					"Failed to create XAR archive input stream", e);
 		}
 	}
 
-	/**
-	 * Adds XAR detection to
-	 * org.apache.commons.compress.archivers.ArchiveStreamFactory.detect().
-	 */
+	// Adds XAR detection to ArchiveStreamFactory.detect()
 	public static String detect(InputStream in) throws ArchiveException {
 		if (in != null && in.markSupported()) {
 			final byte[] signature = new byte[XAR_SIGNATURE_SIZE];
@@ -79,13 +74,5 @@ class ArchiveStreamFactoryWithXar extends ArchiveStreamFactory {
 			}
 		}
 		return ArchiveStreamFactory.detect(in);
-	}
-
-	@Override
-	public Set<String> getInputStreamArchiveNames() {
-		Set<String> inputStreamArchiveNames
-				= super.getInputStreamArchiveNames();
-		inputStreamArchiveNames.add(XAR);
-		return inputStreamArchiveNames;
 	}
 }

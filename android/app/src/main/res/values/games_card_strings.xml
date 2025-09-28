@@ -32,7 +32,7 @@
     </p>
     <p>
       After you have downloaded your .pkg file (or otherwise loaded another archive), you can
-      tap one of the checkboxes on the left, corresponding to the game you are installing.
+      tap <b>INSTALL GAME</b>.
       This will open a file browser which you can use to select the archive you downloaded,
       and the installer will take care of extracting the required data files and installing
       them in the correct places.

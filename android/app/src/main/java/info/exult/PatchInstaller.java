@@ -37,15 +37,17 @@ import java.util.Map;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 /**
  * Handles installing a patch ZIP into a game's "patch" folder.
  */
 public class PatchInstaller {
-	private static final int PATCH_REQUEST_CODE = 9998;
 
 	private final Context  context;
-	private final Fragment parentFragment;
+    private final Fragment parentFragment;
+    private final ActivityResultLauncher<String[]> filePickerLauncher;
 
 	// Map short folder names to friendly display names
 	private static final Map<String, String> DISPLAY_NAMES = new HashMap<>();
@@ -64,22 +66,20 @@ public class PatchInstaller {
 	}
 
 	public PatchInstaller(Context context, Fragment parentFragment) {
-		this.context        = context;
-		this.parentFragment = parentFragment;
-	}
+        this.context = context;
+        this.parentFragment = parentFragment;
+        this.filePickerLauncher = parentFragment.registerForActivityResult(
+                new ActivityResultContracts.OpenDocument(),
+                uri -> {
+                    if (uri != null) {
+                        handleFilePickerResult(uri);
+                    }
+                });
+    }
 
-	public static int getRequestCode() {
-		return PATCH_REQUEST_CODE;
-	}
-
-	public void launchFilePicker() {
-		android.content.Intent intent = new android.content.Intent(
-				android.content.Intent.ACTION_OPEN_DOCUMENT);
-		intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);
-		intent.setType("*/*");    // let user pick any; we’ll validate via
-								  // archive sniff
-		parentFragment.startActivityForResult(intent, PATCH_REQUEST_CODE);
-	}
+    public void launchFilePicker() {
+        filePickerLauncher.launch(new String[] {"*/*"});
+    }
 
 	public void handleFilePickerResult(Uri fileUri) {
 		// Query installed games, then prompt user to choose target
@@ -119,7 +119,7 @@ public class PatchInstaller {
 	}
 
 	private List<GameEntry> getInstalledGames() {
-		// Consider a game “installed” if filesDir/<game>/static/initgame.dat
+		// Consider a game “installed” if filesDir/<game>/static/mainshp.flx
 		// exists
 		List<GameEntry> games    = new ArrayList<>();
 		File            filesDir = context.getFilesDir();
@@ -130,7 +130,7 @@ public class PatchInstaller {
 		for (File f : children) {
 			if (!f.isDirectory())
 				continue;
-			File init = new File(new File(f, "static"), "initgame.dat");
+			File init = new File(new File(f, "static"), "mainshp.flx");
 			if (init.exists()) {
 				final String shortName = f.getName();
 				games.add(new GameEntry(shortName, toDisplayName(shortName)));

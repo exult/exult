@@ -31,6 +31,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.WindowCompat;
 import org.libsdl.app.SDLActivity;
 
@@ -291,7 +293,8 @@ public class ExultActivity extends SDLActivity {
 
 		m_escTextView = new TextView(this);
 		m_escTextView.setId(View.generateViewId());
-		m_escTextView.setBackground(getResources().getDrawable(R.drawable.btn));
+		m_escTextView.setBackground(
+				AppCompatResources.getDrawable(this, R.drawable.btn));
 		m_escTextView.setPadding(20, 20, 20, 20);
 		m_escTextView.setAutoSizeTextTypeWithDefaults(
 				TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
@@ -316,16 +319,17 @@ public class ExultActivity extends SDLActivity {
 							|| event.getY() > v.getMeasuredHeight());
 				switch (event.getActionMasked()) {
 				case MotionEvent.ACTION_DOWN:
-					m_escTextView.setBackground(
-							getResources().getDrawable(R.drawable.btnpressed));
+					m_escTextView.setBackground(AppCompatResources.getDrawable(
+							v.getContext(), R.drawable.btnpressed));
 					return true;
 				case MotionEvent.ACTION_MOVE:
-					m_escTextView.setBackground(getResources().getDrawable(
+					m_escTextView.setBackground(AppCompatResources.getDrawable(
+							v.getContext(),
 							inside ? R.drawable.btnpressed : R.drawable.btn));
 					return true;
 				case MotionEvent.ACTION_UP:
-					m_escTextView.setBackground(
-							getResources().getDrawable(R.drawable.btn));
+					m_escTextView.setBackground(AppCompatResources.getDrawable(
+							v.getContext(), R.drawable.btn));
 					if (inside) {
 						sendEscapeKeypress();
 					}
@@ -342,7 +346,7 @@ public class ExultActivity extends SDLActivity {
 		m_pauseTextView = new TextView(this);
 		m_pauseTextView.setId(View.generateViewId());
 		m_pauseTextView.setBackground(
-				getResources().getDrawable(R.drawable.btn));
+				AppCompatResources.getDrawable(this, R.drawable.btn));
 		m_pauseTextView.setPadding(20, 20, 20, 20);
 		m_pauseTextView.setAutoSizeTextTypeWithDefaults(
 				TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
@@ -366,15 +370,20 @@ public class ExultActivity extends SDLActivity {
 				switch (event.getActionMasked()) {
 				case MotionEvent.ACTION_DOWN:
 					m_pauseTextView.setBackground(
-							getResources().getDrawable(R.drawable.btnpressed));
+							AppCompatResources.getDrawable(
+									v.getContext(), R.drawable.btnpressed));
 					return true;
 				case MotionEvent.ACTION_MOVE:
-					m_pauseTextView.setBackground(getResources().getDrawable(
-							inside ? R.drawable.btnpressed : R.drawable.btn));
+					m_pauseTextView.setBackground(
+							AppCompatResources.getDrawable(
+									v.getContext(),
+									inside ? R.drawable.btnpressed
+										   : R.drawable.btn));
 					return true;
 				case MotionEvent.ACTION_UP:
 					m_pauseTextView.setBackground(
-							getResources().getDrawable(R.drawable.btn));
+							AppCompatResources.getDrawable(
+									v.getContext(), R.drawable.btn));
 					if (inside) {
 						// Toggle glyph ⏸ <-> ⏵
 						String cur = m_pauseTextView.getText().toString();

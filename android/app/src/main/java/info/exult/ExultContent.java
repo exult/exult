@@ -274,16 +274,13 @@ public abstract class ExultContent {
 		InputStream inputStream = m_contentResolver.openInputStream(sourceUri);
 		BufferedInputStream bufferedInputStream
 				= new BufferedInputStream(inputStream);
-		ArchiveStreamFactory archiveStreamFactory
-				= new ArchiveStreamFactoryWithXar();
 		CompressorStreamFactory compressorStreamFactory
 				= new CompressorStreamFactory();
 
 		// Set up the initial top-level archive in the stack to start
 		// processing.
 		archiveStack.push(new LocationAndArchive(
-				null, archiveStreamFactory.createArchiveInputStream(
-							  bufferedInputStream)));
+				null, info.exult.ArchiveStreamFactoryWithXar.createArchiveInputStream(bufferedInputStream)));
 
 		// Proceed with DFS archive processing until the visitor terminates the
 		// search.
@@ -330,7 +327,7 @@ public abstract class ExultContent {
 				ArchiveInputStream nestedArchiveInputStream = null;
 				try {
 					nestedArchiveInputStream
-							= archiveStreamFactory.createArchiveInputStream(
+							= info.exult.ArchiveStreamFactoryWithXar.createArchiveInputStream(
 									nestedInputStream);
 				} catch (ArchiveException e) {
 					// Ignore exception; this was a speculative attempt to

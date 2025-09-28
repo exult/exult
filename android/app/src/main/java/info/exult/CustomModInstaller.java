@@ -28,6 +28,8 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -45,8 +47,9 @@ public class CustomModInstaller {
 
 	private final Context  context;
 	private final Fragment parentFragment;
-	private final ExultContent.ProgressReporter progressReporter;
+	private final ExultContent.ProgressReporter reporter;
 	private final ModInstallCallback            callback;
+	private final ActivityResultLauncher<String[]> filePickerLauncher;
 
 	public interface ModInstallCallback {
 		void onInstallStarted(ExultContent content, int requestCode);
@@ -56,32 +59,31 @@ public class CustomModInstaller {
 	}
 
 	public CustomModInstaller(
-			Context context, Fragment parentFragment,
-			ExultContent.ProgressReporter progressReporter,
+			Context context, Fragment fragment,
+			ExultContent.ProgressReporter reporter,
 			ModInstallCallback            callback) {
-		this.context          = context;
-		this.parentFragment   = parentFragment;
-		this.progressReporter = progressReporter;
-		this.callback         = callback;
+		this.context        = context;
+		this.parentFragment = fragment;
+		this.reporter       = reporter;
+		this.callback       = callback;
+
+		this.filePickerLauncher = fragment.registerForActivityResult(
+				new ActivityResultContracts.OpenDocument(), uri -> {
+					if (uri != null) {
+						// Reuse existing flow
+						handleFilePickerResult(uri, getRequestCode(), null);
+					} else {
+						// propagate cancellation so checkbox is reset
+						callback.onCancelled(getRequestCode());
+					}
+				});
 	}
 
 	/**
 	 * Launches the file picker to select a mod file
 	 */
 	public void launchFilePicker() {
-		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-		intent.addCategory(Intent.CATEGORY_OPENABLE);
-		intent.setType("*/*");
-
-		// Create a placeholder content
-		ExultContent placeholderContent
-				= new ExultModContent("placeholder", "customMod", context);
-
-		// Notify callback of installation start
-		callback.onInstallStarted(placeholderContent, CUSTOM_MOD_REQUEST_CODE);
-
-		// Launch the file picker
-		parentFragment.startActivityForResult(intent, CUSTOM_MOD_REQUEST_CODE);
+		filePickerLauncher.launch(new String[] {"*/*"});
 	}
 
 	/**
@@ -194,7 +196,7 @@ public class CustomModInstaller {
 			// Perform installation
 			try {
 				customContent.install(
-						fileUri, progressReporter, (successful, details) -> {
+						fileUri, reporter, (successful, details) -> {
 							if (tempFile != null) {
 								tempFile.delete();
 							}
