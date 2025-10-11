@@ -68,6 +68,9 @@ using std::ostream;
 using std::rand;
 using std::string;
 
+// Global flag for desk-bell activation
+Game_object_weak bell_just_rung;
+
 /*
  *  Determines the object's usecode function.
  */
@@ -1003,6 +1006,11 @@ void Game_object::activate(int event) {
 		gumpman->add_gump(this, gump);
 		return;
 	}
+
+	if (get_shapenum() == 675 && get_framenum() == 20) {
+		bell_just_rung = weak_from_this();
+	}
+
 	ucmachine->call_usecode(
 			get_usecode(), this,
 			static_cast<Usecode_machine::Usecode_events>(event));

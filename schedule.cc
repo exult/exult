@@ -49,6 +49,7 @@
 #include "ignore_unused_variable_warning.h"
 #include "items.h"
 #include "monstinf.h"
+#include "path.h"
 #include "paths.h"
 #include "schedule.h"
 #include "span.h"
@@ -210,6 +211,170 @@ Game_object* Schedule::find_nearest(Actor* actor, Game_object_vector& nearby) {
 		}
 	}
 	return nearest;
+}
+
+/*
+ *  Respond to a bell, if close enough.
+ *
+ *  Output: true if we started responding (and are now interrupted).
+ */
+
+bool Schedule::try_respond_to_bell(int max_distance) {
+	if (interrupted_for_bell) {
+		return false;
+	}
+
+	Game_object_shared bell;
+	{
+		bell = bell_just_rung.lock();
+		if (!bell) {
+			return false;
+		}
+		bell_just_rung.reset();
+	}
+
+	const int dist = npc->distance(bell.get());
+	if (dist > max_distance) {
+		bell_just_rung = bell;
+		return false;
+	}
+
+	// Find all nearby NPCs whose schedules support bell responses
+	Actor_vector nearby_npcs;
+	npc->find_nearby_actors(nearby_npcs, c_any_shapenum, max_distance);
+
+	struct CandidateCost {
+		Actor* npc;
+		int    total_cost;    // sum of step costs along the A* path
+	};
+
+	std::vector<CandidateCost> candidates;
+
+	const Tile_coord bell_tile = bell->get_tile();
+
+	// Find NPC with shortest path to bell
+	for (auto* nearby_npc : nearby_npcs) {
+		// Only NPCs with schedules that actively check for bells
+		if (nearby_npc->get_schedule_type() != Schedule::tend_shop
+			&& nearby_npc->get_schedule_type() != Schedule::waiter) {
+			continue;
+		}
+		if (nearby_npc->distance(bell.get()) > max_distance) {
+			continue;
+		}
+
+		Approach_object_pathfinder_client cost(nearby_npc, bell.get(), 3);
+
+		// Compute full path with A* (no action created here)
+		auto [steps, ok] = Find_path(nearby_npc->get_tile(), bell_tile, &cost);
+		if (!ok) {
+			continue;    // unreachable
+		}
+
+		// Sum the true step costs along the path
+		int        total = 0;
+		Tile_coord from  = nearby_npc->get_tile();
+		bool       bad   = false;
+		for (const Tile_coord& step_to_orig : steps) {
+			Tile_coord to = step_to_orig;
+			int        sc = cost.get_step_cost(from, to);
+			if (sc < 0) {
+				bad = true;    // should not happen if A* succeeded, but be safe
+				break;
+			}
+			total += sc;
+			from = to;
+		}
+		if (bad) {
+			continue;
+		}
+
+		candidates.push_back({nearby_npc, total});
+	}
+
+	if (candidates.empty()) {
+		bell_just_rung = bell;
+		return false;
+	}
+
+	auto best = std::min_element(
+			candidates.begin(), candidates.end(),
+			[](const CandidateCost& a, const CandidateCost& b) {
+				return a.total_cost < b.total_cost;
+			});
+
+	Actor* best_npc = best->npc;
+
+	if (best_npc != npc) {
+		bell_just_rung = bell;
+		return false;
+	}
+
+	// Winner: build action now
+	pre_interrupt_pos    = npc->get_tile();
+	interrupted_for_bell = true;
+
+	Approach_object_pathfinder_client winner_cost(npc, bell.get(), 3);
+	Actor_action* path_to_bell = Path_walking_actor_action::create_path(
+			npc->get_tile(), bell_tile, winner_cost);
+
+	if (!path_to_bell) {
+		// Unexpected (path existed moments ago); let others retry
+		interrupted_for_bell = false;
+		bell_just_rung       = bell;
+		return false;
+	}
+
+	npc->set_action(new Sequence_actor_action(
+			path_to_bell, new Face_pos_actor_action(bell.get(), 500),
+			new Frames_actor_action(nullptr, 0, 2000)));
+	npc->start(gwin->get_std_delay());
+	return true;
+}
+
+/*
+ *  Handle bell interrupt state
+ *
+ *  Output: true if still interrupted.
+ */
+
+bool Schedule::handle_bell_interrupt() {
+	if (!interrupted_for_bell) {
+		return false;
+	}
+
+	// Check if NPC is done with their action
+	if (npc->get_action() == nullptr) {
+		// Check if we're close enough to original position
+		if (npc->get_tile().distance(pre_interrupt_pos) <= 2) {
+			// We're back; clear the flag and resume
+			interrupted_for_bell = false;
+			pre_interrupt_pos    = Tile_coord(-1, -1, -1);
+			return false;    // No longer interrupted
+		} else {
+			// Not back yet; path there
+			Actor_pathfinder_client cost(npc, 0);
+			Actor_action* return_pact = Path_walking_actor_action::create_path(
+					npc->get_tile(), pre_interrupt_pos, cost);
+
+			if (return_pact) {
+				npc->set_action(new Sequence_actor_action(
+						return_pact,
+						new Face_pos_actor_action(pre_interrupt_pos, 200)));
+				npc->start(gwin->get_std_delay());
+			} else {
+				// Can't path back, just resume schedule here
+				interrupted_for_bell = false;
+				pre_interrupt_pos    = Tile_coord(-1, -1, -1);
+				return false;    // No longer interrupted
+			}
+		}
+	} else {
+		// Still executing action; check again soon
+		npc->start(gwin->get_std_delay(), 250);
+	}
+
+	return true;    // Still interrupted
 }
 
 /*
@@ -1653,6 +1818,12 @@ Loiter_schedule::Loiter_schedule(
  */
 
 void Loiter_schedule::now_what() {
+	// First, check if we're returning from a bell interrupt.
+	if (handle_bell_interrupt()) {
+		return;    // Still handling interrupt, don't continue with normal
+				   // schedule
+	}
+
 	if (rand() % 3 == 0) {    // Check for lamps, etc.
 		if (try_street_maintenance()) {
 			return;    // We no longer exist.
@@ -1665,9 +1836,17 @@ void Loiter_schedule::now_what() {
 		 && !(GAME_SI && npc->get_shapenum() == 0x355)
 		 && try_proximity_usecode(12))
 		|| (npc->get_schedule_type() == Schedule::tend_shop
-			&& try_proximity_usecode(8))) {
+			&& try_proximity_usecode(4))) {
 		return;
 	}
+
+	// Shopkeepers respond to bell rings.
+	if (npc->get_schedule_type() == Schedule::tend_shop) {
+		if (try_respond_to_bell(30)) {
+			return;    // Interrupted to respond to bell.
+		}
+	}
+
 	const int newx = center.tx - dist + rand() % (2 * dist);
 	const int newy = center.ty - dist + rand() % (2 * dist);
 	// Wait a bit.
@@ -3769,6 +3948,11 @@ static void Prep_animation(Actor* npc, Game_object* table) {
  */
 
 void Waiter_schedule::now_what() {
+	// First, check if we're returning from a bell interrupt.
+	if (handle_bell_interrupt()) {
+		return;    // Still handling interrupt, don't continue with normal
+				   // schedule
+	}
 	Game_object* food;
 
 	if (state == wait_at_counter
@@ -3790,6 +3974,12 @@ void Waiter_schedule::now_what() {
 			return;
 		}
 	}
+
+	// Waiter respond to bell rings.
+	if (try_respond_to_bell(30)) {
+		return;    // Interrupted to respond to bell.
+	}
+
 	switch (state) {
 	case waiter_setup:
 		items_in_hand = Count_waiter_objects(npc);

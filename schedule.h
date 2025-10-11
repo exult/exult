@@ -43,15 +43,29 @@ using Game_object_vector = std::vector<Game_object*>;
  */
 class Schedule : public Game_singletons {
 protected:
-	Actor*     npc;                            // Who this controls.
-	Tile_coord blocked;                        // Tile where actor was blocked.
-	Tile_coord start_pos;                      // When schedule created.
-	short      prev_type;                      // Actor's previous schedule.
-	int        street_maintenance_failures;    // # times failed to find path.
-	long       street_maintenance_time;        // Time (msecs) when last tried.
+	Actor*     npc;                             // Who this controls.
+	Tile_coord blocked;                         // Tile where actor was blocked.
+	Tile_coord start_pos;                       // When schedule created.
+	short      prev_type;                       // Actor's previous schedule.
+	int        street_maintenance_failures;     // # times failed to find path.
+	long       street_maintenance_time;         // Time (msecs) when last tried.
+	bool       interrupted_for_bell = false;    // Currently responding to bell.
+	Tile_coord pre_interrupt_pos;    // Position before bell interrupt.
+
+	// Handle the bell interrupt state machine. Returns true if still
+	// interrupted.
+	bool handle_bell_interrupt();
+
 public:
 	Schedule(Actor* n);
 	virtual ~Schedule() = default;
+
+	bool is_interrupted_for_bell() const {
+		return interrupted_for_bell;
+	}
+
+	// Check and handle bell rings (called from now_what()).
+	virtual bool try_respond_to_bell(int max_distance = 20);
 
 	int get_prev_type() const {
 		return prev_type;
@@ -358,6 +372,7 @@ protected:
 	Tile_coord center;    // Center of rectangle.
 	int        dist;      // Distance in tiles to roam in each
 						  //   dir.
+
 public:
 	Loiter_schedule(Actor* n, int d = 12);
 	void now_what() override;    // Now what should NPC do?

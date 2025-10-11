@@ -659,4 +659,6 @@ public:
 	void write_ifix(ODataSource* ifix, bool v2) override;
 };
 
+extern Game_object_weak bell_just_rung;
+
 #endif
