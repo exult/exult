@@ -5,7 +5,7 @@
  **/
 
 /*
-Copyright (C) 2000-2022 The Exult Team
+Copyright (C) 2000-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -847,7 +847,8 @@ void Map_chunk::add(Game_object* newobj    // Object to add.
 	if (cache) {    // Add to cache.
 		cache->update_object(this, newobj, true);
 	}
-	if (ord.info.is_light_source()) {    // Count light sources.
+	// Count light sources.
+	if (ord.info.get_object_light(newobj->get_framenum()) > 0) {
 		if (dungeon_levels && is_dungeon(newobj->get_tx(), newobj->get_ty())) {
 			dungeon_lights.insert(newobj);
 		} else {
@@ -912,7 +913,7 @@ void Map_chunk::remove(Game_object* remove) {
 	if (ext_above) {
 		gmap->get_chunk(cx, cy - 1)->from_below--;
 	}
-	if (info.is_light_source()) {    // Count light sources.
+	if (info.get_object_light(frame) > 0) {    // Count light sources.
 		if (dungeon_levels && is_dungeon(tx, ty)) {
 			dungeon_lights.erase(remove);
 		} else {
@@ -1436,7 +1437,7 @@ void Map_chunk::setup_dungeon_levels() {
 		non_dungeon_lights.clear();
 		next.reset();
 		while ((each = next.get_next()) != nullptr) {
-			if (each->get_info().is_light_source()) {
+			if (each->get_info().get_object_light(each->get_framenum()) > 0) {
 				if (is_dungeon(each->get_tx(), each->get_ty())) {
 					dungeon_lights.insert(each);
 				} else {

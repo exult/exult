@@ -2,7 +2,7 @@
  *  gamerend.cc - Rendering methods.
  *
  *  Copyright (C) 1998-1999  Jeffrey S. Freedman
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -596,7 +596,8 @@ int Game_render::paint_chunk_objects(
 									 : olist->get_non_dungeon_lights();
 		for (const auto& obj : lights) {
 			const Shape_info& info = obj->get_info();
-			if (info.is_light_source()) {    // Count light sources.
+			if (info.get_object_light(obj->get_framenum())
+				> 0) {    // Count light sources.
 				light_sources += get_light_strength(obj, main_actor);
 			}
 		}

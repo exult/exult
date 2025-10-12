@@ -2,7 +2,7 @@
  *  objs.cc - Game objects.
  *
  *  Copyright (C) 1998-1999  Jeffrey S. Freedman
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2025  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -590,7 +590,50 @@ void Game_object::move(int newtx, int newty, int newlift, int newmap) {
 
 void Game_object::change_frame(int frnum) {
 	gwin->add_dirty(this);    // Set to repaint old area.
+							  // Track brightness change when changing frames
+	const int old_brightness = get_info().get_object_light(get_framenum());
+
 	set_frame(frnum);
+
+	// Update light status if brightness changed across zero threshold
+	const int new_brightness = get_info().get_object_light(frnum);
+
+	// For objects on the ground
+	if (chunk
+		&& ((old_brightness == 0 && new_brightness > 0)
+			|| (old_brightness > 0 && new_brightness == 0))) {
+		if (chunk->dungeon_levels && chunk->is_dungeon(get_tx(), get_ty())) {
+			chunk->dungeon_lights.erase(this);
+		} else {
+			chunk->non_dungeon_lights.erase(this);
+		}
+		// Add to appropriate light set if now emitting light
+		if (new_brightness > 0) {
+			if (chunk->dungeon_levels
+				&& chunk->is_dungeon(get_tx(), get_ty())) {
+				chunk->dungeon_lights.insert(this);
+			} else {
+				chunk->non_dungeon_lights.insert(this);
+			}
+		}
+	}
+
+	// For objects in an actor's hands
+	Container_game_object* container = get_owner();
+	if (container) {
+		Actor* actor = container->as_actor();
+		if (actor) {
+			const int index = actor->find_readied(this);
+			// Check if it's in either hand
+			if (index == lhand || index == rhand) {
+				if (old_brightness != new_brightness) {
+					actor->remove_light_source(old_brightness);
+					actor->add_light_source(new_brightness);
+				}
+			}
+		}
+	}
+
 	gwin->add_dirty(this);    // Set to repaint new.
 }
 

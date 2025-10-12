@@ -6,7 +6,7 @@
 
 /*
 Copyright (C) 1998  Jeffrey S. Freedman
-Copyright (C) 1999-2022 The Exult Team
+Copyright (C) 1999-2025 The Exult Team
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -456,13 +456,21 @@ bool Shape_info::is_shape_accepted(int shape) const {
 }
 
 int Shape_info::get_object_light(int frame) const {
-	if (!is_light_source()) {
-		// Don't bother checking if not a light source.
-		return 0;
-	}
+	// First honor explicit entries from shape_info.txt %%section light_data,
+	// even if the shape isn't originally set as a light source.
 	const Light_info* inf = Search_vector_data_single_wildcard(
 			lightinf, (frame & 31), &Light_info::frame);
-	return inf ? inf->light : 1;    // Default to candle-strength.
+	if (inf) {
+		return inf->light;
+	}
+
+	// Fall back to default behavior for flagged light sources.
+	if (is_light_source()) {
+		return 1;
+	}
+
+	// Otherwise, no light.
+	return 0;
 }
 
 int Shape_info::get_object_warmth(int frame) const {
@@ -483,8 +491,8 @@ void Shape_info::set_3d(
 	zt &= 7;
 	tfa[2]  = (tfa[2] & ~63) | xt | (yt << 3);
 	tfa[0]  = (tfa[0] & ~(7 << 5)) | (zt << 5);
-	dims[0] = (xt + 1)&7;
-	dims[1] = (yt + 1)&7;
+	dims[0] = (xt + 1) & 7;
+	dims[1] = (yt + 1) & 7;
 	dims[2] = zt;
 }
 
