@@ -596,8 +596,7 @@ int Game_render::paint_chunk_objects(
 									 : olist->get_non_dungeon_lights();
 		for (const auto& obj : lights) {
 			const Shape_info& info = obj->get_info();
-			if (info.get_object_light(obj->get_framenum())
-				> 0) {
+			if (info.get_object_light(obj->get_framenum()) > 0) {
 				// Count light sources.
 				light_sources += get_light_strength(obj, main_actor);
 			}
