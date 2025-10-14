@@ -292,6 +292,7 @@
 0x631:Combat Difficulty:
 0x632:Cheats:
 0x633:Feeding:
+0x634:Enhancements:
 
 #InputOptions_gump.cc
 0x640:Single

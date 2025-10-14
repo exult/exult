@@ -40,6 +40,7 @@ private:
 	bool                     charmDiff;
 	int                      cheats;
 	int                      feeding;
+	int                      enhancements;
 
 	enum button_ids {
 		id_first = 0,
@@ -57,6 +58,7 @@ private:
 		id_difficulty,
 		id_cheats,
 		id_feeding,
+		id_enhancements,
 		id_count
 	};
 
@@ -122,6 +124,10 @@ public:
 
 	void toggle_feeding(int state) {
 		feeding = state;
+	}
+
+	void toggle_enhancements(int state) {
+		enhancements = state;
 	}
 };
 

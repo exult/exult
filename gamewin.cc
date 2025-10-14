@@ -299,7 +299,8 @@ Game_window::Game_window(
 		  save_names{}, mouse3rd(false), fastmouse(false),
 		  double_click_closes_gumps(false), text_bg(false), step_tile_delta(8),
 		  allow_right_pathfind(2), scroll_with_mouse(false),
-		  alternate_drop(false), allow_autonotes(false), in_exult_menu(false),
+		  alternate_drop(false), allow_autonotes(false),
+		  allow_enhancements(false), in_exult_menu(false),
 		  extended_intro(false), load_palette_timer(0), plasma_start_color(0),
 		  plasma_cycle_range(0), skip_lift(255), paint_eggs(false),
 		  armageddon(false), walk_in_formation(false), debug(0), blits(0),
@@ -387,6 +388,11 @@ Game_window::Game_window(
 	allow_autonotes = str == "yes";
 	config->set(
 			"config/gameplay/allow_autonotes", allow_autonotes ? "yes" : "no",
+			false);
+	config->value("config/gameplay/enhancements", str, "yes");
+	allow_enhancements = str == "yes";
+	config->set(
+			"config/gameplay/enhancements", allow_enhancements ? "yes" : "no",
 			false);
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	const string default_scroll_with_mouse = "no";

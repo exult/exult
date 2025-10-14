@@ -110,9 +110,8 @@ void Schedule::set_action_sequence(
 ) {
 	const bool persistant
 			= actor->get_npc_num() == 0 || actor->get_party_id() >= 0;
-	actor->set_action(
-			Actor_action::create_action_sequence(
-					actor, dest, when_there, from_off_screen, persistant));
+	actor->set_action(Actor_action::create_action_sequence(
+			actor, dest, when_there, from_off_screen, persistant));
 	actor->start(250, delay);    // Get into time queue.
 }
 
@@ -222,7 +221,7 @@ Game_object* Schedule::find_nearest(Actor* actor, Game_object_vector& nearby) {
  */
 
 bool Schedule::try_respond_to_bell(int max_distance) {
-	if (interrupted_for_bell) {
+	if (!gwin->get_allow_enhancements() || interrupted_for_bell) {
 		return false;
 	}
 
@@ -341,6 +340,15 @@ bool Schedule::try_respond_to_bell(int max_distance) {
  */
 
 bool Schedule::handle_bell_interrupt() {
+	// If enhancements were turned off while responding to bell, abort
+	// gracefully.
+	if (!gwin->get_allow_enhancements() && interrupted_for_bell) {
+		interrupted_for_bell = false;
+		pre_interrupt_pos    = Tile_coord(-1, -1, -1);
+		npc->set_action(nullptr);
+		return false;
+	}
+
 	if (!interrupted_for_bell) {
 		return false;
 	}
@@ -478,9 +486,8 @@ int Schedule::try_street_maintenance() {
 				}
 			}
 			Approach_object_pathfinder_client cost(npc, obj, 1);
-			pact.reset(
-					Path_walking_actor_action::create_path(
-							npcpos, obj->get_tile(), cost));
+			pact.reset(Path_walking_actor_action::create_path(
+					npcpos, obj->get_tile(), cost));
 			if (pact) {
 				found = obj;
 				break;
@@ -612,8 +619,7 @@ bool Schedule_with_objects::drop_item(
  *  Run usecode function.
  */
 
-void Scripted_schedule::run(
-		int id    // A Usecode function #.
+void Scripted_schedule::run(int id    // A Usecode function #.
 ) {
 	if (id) {
 		ucmachine->call_method(inst, id, npc);
@@ -795,8 +801,7 @@ void Street_maintenance_schedule::ending(int newtype) {
  *  Get actual schedule (for Usecode intrinsic).
  */
 
-int Street_maintenance_schedule::get_actual_type(
-		Actor* /* npc */
+int Street_maintenance_schedule::get_actual_type(Actor* /* npc */
 ) const {
 	return prev_type;
 }
@@ -1666,8 +1671,7 @@ void Patrol_schedule::now_what() {
  *  End of patrol
  */
 
-void Patrol_schedule::ending(
-		int new_type    // New schedule.
+void Patrol_schedule::ending(int new_type    // New schedule.
 ) {
 	ignore_unused_variable_warning(new_type);
 	const Game_object_shared hammer_obj = hammer.lock();
@@ -2647,8 +2651,7 @@ void Sleep_schedule::im_dormant() {
  *  Wakeup time.
  */
 
-void Sleep_schedule::ending(
-		int new_type    // New schedule.
+void Sleep_schedule::ending(int new_type    // New schedule.
 ) {
 	// Needed for Skara Brae.
 	if (new_type == static_cast<int>(wait) ||
@@ -3233,8 +3236,7 @@ void Desk_schedule::im_dormant() {
  *	Done.
  */
 
-void Desk_schedule::ending(
-		int new_type    // New schedule.
+void Desk_schedule::ending(int new_type    // New schedule.
 ) {
 	ignore_unused_variable_warning(new_type);
 	cleanup();
@@ -3741,8 +3743,7 @@ bool Waiter_schedule::walk_to_work_spot(bool counter) {
  *  Output: false if failed.
  */
 
-bool Waiter_schedule::walk_to_customer(
-		int min_delay    // Min. delay in msecs.
+bool Waiter_schedule::walk_to_customer(int min_delay    // Min. delay in msecs.
 ) {
 	if (customer) {
 		if (customer->get_schedule_type() != Schedule::eat_at_inn) {
@@ -4271,8 +4272,7 @@ void Waiter_schedule::now_what() {
  *  Waiter schedule is done.
  */
 
-void Waiter_schedule::ending(
-		int new_type    // New schedule.
+void Waiter_schedule::ending(int new_type    // New schedule.
 ) {
 	ignore_unused_variable_warning(new_type);
 	// Remove what he/she is carrying.
@@ -4700,8 +4700,7 @@ void Sew_schedule::now_what() {
  *  Sewing schedule is done.
  */
 
-void Sew_schedule::ending(
-		int new_type    // New schedule.
+void Sew_schedule::ending(int new_type    // New schedule.
 ) {
 	ignore_unused_variable_warning(new_type);
 	// Remove shears.
@@ -6065,8 +6064,7 @@ void Forge_schedule::now_what() {
  *  Forge schedule is done.
  */
 
-void Forge_schedule::ending(
-		int new_type    // New schedule.
+void Forge_schedule::ending(int new_type    // New schedule.
 ) {
 	ignore_unused_variable_warning(new_type);
 	// Remove any tools.
@@ -6326,8 +6324,7 @@ void Walk_to_schedule::im_dormant() {
  *  Get actual schedule (for Usecode intrinsic).
  */
 
-int Walk_to_schedule::get_actual_type(
-		Actor* /* npc */
+int Walk_to_schedule::get_actual_type(Actor* /* npc */
 ) const {
 	return new_schedule;
 }

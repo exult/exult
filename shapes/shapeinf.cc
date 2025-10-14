@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "shapeinf.h"
 
+#include "Configuration.h"
 #include "ammoinf.h"
 #include "aniinf.h"
 #include "armorinf.h"
@@ -456,6 +457,12 @@ bool Shape_info::is_shape_accepted(int shape) const {
 }
 
 int Shape_info::get_object_light(int frame) const {
+	std::string enhanced;
+	config->value("config/gameplay/enhancements", enhanced, "no");
+	if (!is_light_source() && enhanced == "no") {
+		// No enhancements and not a light source.
+		return 0;
+	}
 	// First honor explicit entries from shape_info.txt %%section light_data,
 	// even if the shape isn't originally set as a light source.
 	const Light_info* inf = Search_vector_data_single_wildcard(

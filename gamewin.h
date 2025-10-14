@@ -145,6 +145,7 @@ class Game_window {
 	bool alternate_drop;    // don't split stacks, can be inverted with a CTRL
 							// key modifier
 	bool         allow_autonotes;
+	bool         allow_enhancements;
 	bool         in_exult_menu;      // used for menu options
 	uint8        use_shortcutbar;    // 0 = no, 1 = trans, 2 = yes
 	Pixel_colors outline_color;
@@ -327,6 +328,14 @@ public:
 
 	void set_allow_autonotes(bool s) {
 		allow_autonotes = s;
+	}
+
+	bool get_allow_enhancements() const {
+		return allow_enhancements;
+	}
+
+	void set_allow_enhancements(bool s) {
+		allow_enhancements = s;
 	}
 
 	bool is_in_exult_menu() const {    // used for menu options

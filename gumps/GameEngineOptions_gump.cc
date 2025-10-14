@@ -138,6 +138,10 @@ namespace {
 		static auto Feeding_() {
 			return get_text_msg(0x633 - msg_file_start);
 		}
+
+		static auto Enhancements_() {
+			return get_text_msg(0x634 - msg_file_start);
+		}
 	};
 
 	std::array framerates{2, 4, 5, 6, 8, 10, -1};
@@ -177,34 +181,43 @@ void GameEngineOptions_gump::build_buttons() {
 
 	buttons[id_allow_autonotes] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_allow_autonotes, yesNo,
-			allow_autonotes, get_button_pos_for_label(Strings::Takeautomaticnotes_()), yForRow(y_index), small_size);
+			allow_autonotes,
+			get_button_pos_for_label(Strings::Takeautomaticnotes_()),
+			yForRow(y_index), small_size);
 
 	buttons[id_gumps_pause] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_gumps_pause, yesNo,
-			gumps_pause, get_button_pos_for_label(Strings::Gumpspausegame_()), yForRow(++y_index), small_size);
+			gumps_pause, get_button_pos_for_label(Strings::Gumpspausegame_()),
+			yForRow(++y_index), small_size);
 
 	buttons[id_alternate_drop] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_alternate_drop, yesNo,
-			alternate_drop, get_button_pos_for_label(Strings::Alternativedraganddrop_()), yForRow(++y_index), small_size);
+			alternate_drop,
+			get_button_pos_for_label(Strings::Alternativedraganddrop_()),
+			yForRow(++y_index), small_size);
 
 	buttons[id_frames] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_frames, frametext, frames,
-			get_button_pos_for_label(Strings::Speed_()), yForRow(++y_index), small_size);
+			get_button_pos_for_label(Strings::Speed_()), yForRow(++y_index),
+			small_size);
 
 	buttons[id_show_hits] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_show_hits, yesNo, show_hits,
-			get_button_pos_for_label(Strings::CombatShowHits_()), yForRow(++y_index), small_size);
+			get_button_pos_for_label(Strings::CombatShowHits_()),
+			yForRow(++y_index), small_size);
 
 	// std::vector<std::string> modes = {"Original", "Space pauses"};
 	buttons[id_mode] = std::make_unique<GameEngineTextToggle>(
-			this, &GameEngineOptions_gump::toggle_mode, yesNo, mode, get_button_pos_for_label(Strings::CombatpausedwithSpace_()),
+			this, &GameEngineOptions_gump::toggle_mode, yesNo, mode,
+			get_button_pos_for_label(Strings::CombatpausedwithSpace_()),
 			yForRow(++y_index), small_size);
 
 	std::vector<std::string> charmedDiff = {Strings::Normal(), Strings::Hard()};
 	buttons[id_charmDiff] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_charmDiff,
-			std::move(charmedDiff), charmDiff, get_button_pos_for_label(Strings::CombatCharmedDifficulty_()), yForRow(++y_index),
-			small_size);
+			std::move(charmedDiff), charmDiff,
+			get_button_pos_for_label(Strings::CombatCharmedDifficulty_()),
+			yForRow(++y_index), small_size);
 
 	std::vector<std::string> diffs
 			= {Strings::Easiest3(), Strings::Easier2(), Strings::Easier1(),
@@ -212,11 +225,18 @@ void GameEngineOptions_gump::build_buttons() {
 			   Strings::Hardest3()};
 	buttons[id_difficulty] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_difficulty, std::move(diffs),
-			difficulty, get_button_pos_for_label(Strings::CombatDifficulty_()), yForRow(++y_index), large_size);
+			difficulty, get_button_pos_for_label(Strings::CombatDifficulty_()),
+			yForRow(++y_index), large_size);
+
+	buttons[id_enhancements] = std::make_unique<GameEngineTextToggle>(
+			this, &GameEngineOptions_gump::toggle_enhancements, yesNo,
+			enhancements, get_button_pos_for_label(Strings::Enhancements_()),
+			yForRow(++y_index), small_size);
 
 	buttons[id_cheats] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_cheats, yesNo, cheats,
-			get_button_pos_for_label(Strings::Cheats_()), yForRow(++y_index), small_size);
+			get_button_pos_for_label(Strings::Cheats_()), yForRow(++y_index),
+			small_size);
 	y_index_cheats_start = y_index;
 	update_cheat_buttons();
 }
@@ -231,8 +251,9 @@ void GameEngineOptions_gump::update_cheat_buttons() {
 				Strings::Manual(), Strings::Automatic(), Strings::Disabled()};
 		buttons[id_feeding] = std::make_unique<GameEngineTextToggle>(
 				this, &GameEngineOptions_gump::toggle_feeding,
-				std::move(feedingOpts), feeding, get_button_pos_for_label(Strings::Feeding_()), yForRow(++y_index),
-				large_size);
+				std::move(feedingOpts), feeding,
+				get_button_pos_for_label(Strings::Feeding_()),
+				yForRow(++y_index), large_size);
 	}
 
 	// Risize to fit all
@@ -263,6 +284,7 @@ void GameEngineOptions_gump::load_settings() {
 	charmDiff             = Combat::charmed_more_difficult;
 	alternate_drop        = gwin->get_alternate_drop();
 	allow_autonotes       = gwin->get_allow_autonotes();
+	enhancements          = gwin->get_allow_enhancements();
 	gumps_pause           = !gumpman->gumps_dont_pause_game();
 	frames                = -1;
 	size_t num_framerates = num_default_rates;
@@ -288,7 +310,6 @@ void GameEngineOptions_gump::load_settings() {
 GameEngineOptions_gump::GameEngineOptions_gump() : Modal_gump(nullptr, -1) {
 	SetProceduralBackground(TileRect(0, 0, 100, yForRow(13)), -1);
 
-
 	// Ok
 	buttons[id_ok] = std::make_unique<GameEngineOptions_button>(
 			this, &GameEngineOptions_gump::close, Strings::OK(), 25,
@@ -299,8 +320,8 @@ GameEngineOptions_gump::GameEngineOptions_gump() : Modal_gump(nullptr, -1) {
 			yForRow(12), 50);
 	// Cancel
 	buttons[id_cancel] = std::make_unique<GameEngineOptions_button>(
-			this, &GameEngineOptions_gump::cancel, Strings::CANCEL(),
-			75, yForRow(12), 50);
+			this, &GameEngineOptions_gump::cancel, Strings::CANCEL(), 75,
+			yForRow(12), 50);
 
 	load_settings();
 	build_buttons();
@@ -329,6 +350,9 @@ void GameEngineOptions_gump::save_settings() {
 	config->set(
 			"config/gameplay/allow_autonotes", allow_autonotes ? "yes" : "no",
 			false);
+	gwin->set_allow_enhancements(enhancements);
+	config->set(
+			"config/gameplay/enhancements", enhancements ? "yes" : "no", false);
 	const int fps = framerates[frames];
 	gwin->set_std_delay(1000 / fps);
 	config->set("config/video/fps", fps, false);
@@ -348,8 +372,8 @@ void GameEngineOptions_gump::paint() {
 			btn->paint();
 		}
 	}
-	Image_window8*        iwin    = gwin->get_win();
-	int                   y_index = 0;
+	Image_window8* iwin    = gwin->get_win();
+	int            y_index = 0;
 	font->paint_text(
 			iwin->get_ib8(), Strings::Takeautomaticnotes_(), x + label_margin,
 			y + yForRow(y_index) + 1);
@@ -357,8 +381,8 @@ void GameEngineOptions_gump::paint() {
 			iwin->get_ib8(), Strings::Gumpspausegame_(), x + label_margin,
 			y + yForRow(++y_index) + 1);
 	font->paint_text(
-			iwin->get_ib8(), Strings::Alternativedraganddrop_(), x + label_margin,
-			y + yForRow(++y_index) + 1);
+			iwin->get_ib8(), Strings::Alternativedraganddrop_(),
+			x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(
 			iwin->get_ib8(), Strings::Speed_(), x + label_margin,
 			y + yForRow(++y_index) + 1);
@@ -366,13 +390,16 @@ void GameEngineOptions_gump::paint() {
 			iwin->get_ib8(), Strings::CombatShowHits_(), x + label_margin,
 			y + yForRow(++y_index) + 1);
 	font->paint_text(
-			iwin->get_ib8(), Strings::CombatpausedwithSpace_(), x + label_margin,
-			y + yForRow(++y_index) + 1);
+			iwin->get_ib8(), Strings::CombatpausedwithSpace_(),
+			x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(
-			iwin->get_ib8(), Strings::CombatCharmedDifficulty_(), x + label_margin,
-			y + yForRow(++y_index) + 1);
+			iwin->get_ib8(), Strings::CombatCharmedDifficulty_(),
+			x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(
 			iwin->get_ib8(), Strings::CombatDifficulty_(), x + label_margin,
+			y + yForRow(++y_index) + 1);
+	font->paint_text(
+			iwin->get_ib8(), Strings::Enhancements_(), x + label_margin,
 			y + yForRow(++y_index) + 1);
 	font->paint_text(
 			iwin->get_ib8(), Strings::Cheats_(), x + label_margin,
