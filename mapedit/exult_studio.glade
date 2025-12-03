@@ -13947,6 +13947,7 @@ Coordinates</property>
                                             <property name="hexpand">False</property>
                                             <property name="vexpand">False</property>
                                             <property name="use-underline">True</property>
+                                            <property name="tooltip-text" translatable="yes">Browsing Usecode is not yet available.&#10;Please enter the Usecode directly.</property>
                                             <signal name="clicked" handler="on_shinfo_weapon_uc_browse_clicked" swapped="no"/>
                                           </object>
                                           <packing>
@@ -14008,6 +14009,7 @@ Coordinates</property>
                                             <property name="hexpand">False</property>
                                             <property name="vexpand">False</property>
                                             <property name="use-underline">True</property>
+                                            <property name="tooltip-text" translatable="yes">Browsing Usecode is not yet available.&#10;Please enter the Usecode directly.</property>
                                             <signal name="clicked" handler="on_shinfo_weapon_usecode_browse_clicked" swapped="no"/>
                                           </object>
                                           <packing>
@@ -14933,6 +14935,7 @@ Coordinates</property>
                                             <property name="vexpand">False</property>
                                             <property name="use-underline">True</property>
                                             <property name="draw-indicator">True</property>
+                                            <property name="tooltip-text" translatable="yes">When "No Damage" flag is enabled you can toggle On Hit Usecode.</property>
                                             <signal name="toggled" handler="on_shinfo_ammo_usecode_check_toggled" swapped="no"/>
                                           </object>
                                           <packing>
@@ -14972,6 +14975,7 @@ Coordinates</property>
                                             <property name="hexpand">False</property>
                                             <property name="vexpand">False</property>
                                             <property name="use-underline">True</property>
+                                            <property name="tooltip-text" translatable="yes">Browsing Usecode is not yet available.&#10;Please enter the Usecode directly.</property>
                                             <signal name="clicked" handler="on_shinfo_ammo_usecode_browse_clicked" swapped="no"/>
                                           </object>
                                           <packing>
