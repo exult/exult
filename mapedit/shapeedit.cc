@@ -2374,14 +2374,17 @@ C_EXPORT void on_shinfo_ammo_pow7_toggled(
 	studio->set_sensitive("shinfo_ammo_usecode_check", no_damage);
 
 	if (no_damage) {
-		// If no damage is enabled, enable the spin based on the toggle state
+		// If no damage is enabled, enable entry and browse based on the toggle
+		// state
 		const bool has_usecode
 				= studio->get_toggle("shinfo_ammo_usecode_check");
 		studio->set_sensitive("shinfo_ammo_usecode", has_usecode);
+		studio->set_sensitive("shinfo_ammo_usecode_browse", has_usecode);
 	} else {
-		// If damage is enabled, just disable the spin (don't uncheck the
-		// toggle)
+		// If damage is enabled, just disable entry and browse (don't uncheck
+		// the toggle)
 		studio->set_sensitive("shinfo_ammo_usecode", false);
+		studio->set_sensitive("shinfo_ammo_usecode_browse", false);
 	}
 }
 
@@ -2391,8 +2394,19 @@ C_EXPORT void on_shinfo_ammo_usecode_check_toggled(
 	const bool   on     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	const bool   no_damage = studio->get_toggle("shinfo_ammo_pow7");
-	// Only enable spin if toggle is on AND no damage is set
+	// Only enable entry and browse if toggle is on AND no damage is set
 	studio->set_sensitive("shinfo_ammo_usecode", on && no_damage);
+	studio->set_sensitive("shinfo_ammo_usecode_browse", on && no_damage);
+}
+
+C_EXPORT void on_shinfo_ammo_usecode_browse_clicked(
+		GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	const char*  uc     = studio->browse_usecode(true);
+	if (*uc) {
+		studio->set_entry("shinfo_ammo_usecode", uc, true);
+	}
 }
 
 C_EXPORT void on_shinfo_single_sfx_toggled(
@@ -2428,14 +2442,17 @@ C_EXPORT void on_shinfo_weapon_pow7_toggled(
 	studio->set_sensitive("shinfo_weapon_usecode_check", no_damage);
 
 	if (no_damage) {
-		// If no damage is enabled, enable the spin based on the toggle state
+		// If no damage is enabled, enable entry and browse based on the toggle
+		// state
 		const bool has_usecode
 				= studio->get_toggle("shinfo_weapon_usecode_check");
 		studio->set_sensitive("shinfo_weapon_usecode", has_usecode);
+		studio->set_sensitive("shinfo_weapon_usecode_browse", has_usecode);
 	} else {
-		// If damage is enabled, just disable the spin (don't uncheck the
-		// toggle)
+		// If damage is enabled, just disable entry and browse (don't uncheck
+		// the toggle)
 		studio->set_sensitive("shinfo_weapon_usecode", false);
+		studio->set_sensitive("shinfo_weapon_usecode_browse", false);
 	}
 }
 
@@ -2445,8 +2462,9 @@ C_EXPORT void on_shinfo_weapon_usecode_check_toggled(
 	const bool   on     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	const bool   no_damage = studio->get_toggle("shinfo_weapon_pow7");
-	// Only enable spin if toggle is on AND no damage is set
+	// Only enable entry and browse if toggle is on AND no damage is set
 	studio->set_sensitive("shinfo_weapon_usecode", on && no_damage);
+	studio->set_sensitive("shinfo_weapon_usecode_browse", on && no_damage);
 }
 
 /*
@@ -2459,6 +2477,16 @@ C_EXPORT void on_shinfo_weapon_uc_browse_clicked(
 	const char*  uc     = studio->browse_usecode(true);
 	if (*uc) {
 		studio->set_entry("shinfo_weapon_uc", uc, true);
+	}
+}
+
+C_EXPORT void on_shinfo_weapon_usecode_browse_clicked(
+		GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	const char*  uc     = studio->browse_usecode(true);
+	if (*uc) {
+		studio->set_entry("shinfo_weapon_usecode", uc, true);
 	}
 }
 
@@ -2666,10 +2694,12 @@ void ExultStudio::init_shape_notebook(
 		const bool no_damage   = winfo->get_powers() & Weapon_data::no_damage;
 		const int  usecode     = info.get_on_hit_usecode();
 		const bool has_usecode = (usecode >= 0);
-		set_sensitive("shinfo_weapon_usecode_check", no_damage);
 		set_toggle("shinfo_weapon_usecode_check", has_usecode);
+		set_entry("shinfo_weapon_usecode", has_usecode ? usecode : 0, true);
+		// Then set sensitivities based on no_damage state
+		set_sensitive("shinfo_weapon_usecode_check", no_damage);
 		set_sensitive("shinfo_weapon_usecode", has_usecode && no_damage);
-		set_spin("shinfo_weapon_usecode", has_usecode ? usecode : 0);
+		set_sensitive("shinfo_weapon_usecode_browse", has_usecode && no_damage);
 	}
 	const Ammo_info* ainfo = info.get_ammo_info();
 	set_toggle("shinfo_ammo_check", ainfo != nullptr);
@@ -2701,12 +2731,11 @@ void ExultStudio::init_shape_notebook(
 		set_toggle("shinfo_ammo_flag7", no_damage);
 		const int  usecode     = info.get_on_hit_usecode();
 		const bool has_usecode = (usecode >= 0);
+		set_toggle("shinfo_ammo_usecode_check", has_usecode);
+		set_entry("shinfo_ammo_usecode", has_usecode ? usecode : 0, true);
 		set_sensitive("shinfo_ammo_usecode_check", no_damage);
-		set_toggle("shinfo_ammo_usecode_check", has_usecode, no_damage);
 		set_sensitive("shinfo_ammo_usecode", has_usecode && no_damage);
-		set_spin(
-				"shinfo_ammo_usecode", has_usecode ? usecode : 0,
-				has_usecode && no_damage);
+		set_sensitive("shinfo_ammo_usecode_browse", has_usecode && no_damage);
 	}
 	const Armor_info* arinfo = info.get_armor_info();
 	set_toggle("shinfo_armor_check", arinfo != nullptr);
@@ -3729,8 +3758,8 @@ void ExultStudio::save_shape_notebook(
 		if (get_toggle("shinfo_weapon_usecode_check")
 			|| get_toggle("shinfo_ammo_usecode_check")) {
 			const int usecode = get_toggle("shinfo_weapon_check")
-										? get_spin("shinfo_weapon_usecode")
-										: get_spin("shinfo_ammo_usecode");
+										? get_num_entry("shinfo_weapon_usecode")
+										: get_num_entry("shinfo_ammo_usecode");
 			info.set_on_hit_usecode(usecode);
 		} else {
 			info.set_on_hit_usecode(-1);
