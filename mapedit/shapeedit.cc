@@ -2364,6 +2364,37 @@ C_EXPORT void on_shinfo_ammo_special_check_toggled(
 	ExultStudio::get_instance()->set_sensitive("shinfo_ammo_drop", !on);
 }
 
+C_EXPORT void on_shinfo_ammo_pow7_toggled(
+		GtkToggleButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const bool no_damage = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
+	ExultStudio* studio  = ExultStudio::get_instance();
+
+	// Enable/disable the usecode checkbox based on no_damage
+	studio->set_sensitive("shinfo_ammo_usecode_check", no_damage);
+
+	if (no_damage) {
+		// If no damage is enabled, enable the spin based on the toggle state
+		const bool has_usecode
+				= studio->get_toggle("shinfo_ammo_usecode_check");
+		studio->set_sensitive("shinfo_ammo_usecode", has_usecode);
+	} else {
+		// If damage is enabled, just disable the spin (don't uncheck the
+		// toggle)
+		studio->set_sensitive("shinfo_ammo_usecode", false);
+	}
+}
+
+C_EXPORT void on_shinfo_ammo_usecode_check_toggled(
+		GtkToggleButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const bool   on     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
+	ExultStudio* studio = ExultStudio::get_instance();
+	const bool   no_damage = studio->get_toggle("shinfo_ammo_pow7");
+	// Only enable spin if toggle is on AND no damage is set
+	studio->set_sensitive("shinfo_ammo_usecode", on && no_damage);
+}
+
 C_EXPORT void on_shinfo_single_sfx_toggled(
 		GtkToggleButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
@@ -2385,6 +2416,37 @@ C_EXPORT void on_shinfo_sfx_frame_check_toggled(
 	const bool   on     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_sfx_frame", on);
+}
+
+C_EXPORT void on_shinfo_weapon_pow7_toggled(
+		GtkToggleButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const bool no_damage = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
+	ExultStudio* studio  = ExultStudio::get_instance();
+
+	// Enable/disable the usecode checkbox based on no_damage
+	studio->set_sensitive("shinfo_weapon_usecode_check", no_damage);
+
+	if (no_damage) {
+		// If no damage is enabled, enable the spin based on the toggle state
+		const bool has_usecode
+				= studio->get_toggle("shinfo_weapon_usecode_check");
+		studio->set_sensitive("shinfo_weapon_usecode", has_usecode);
+	} else {
+		// If damage is enabled, just disable the spin (don't uncheck the
+		// toggle)
+		studio->set_sensitive("shinfo_weapon_usecode", false);
+	}
+}
+
+C_EXPORT void on_shinfo_weapon_usecode_check_toggled(
+		GtkToggleButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const bool   on     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
+	ExultStudio* studio = ExultStudio::get_instance();
+	const bool   no_damage = studio->get_toggle("shinfo_weapon_pow7");
+	// Only enable spin if toggle is on AND no damage is set
+	studio->set_sensitive("shinfo_weapon_usecode", on && no_damage);
 }
 
 /*
@@ -2601,6 +2663,13 @@ void ExultStudio::init_shape_notebook(
 		set_optmenu("shinfo_proj_frames", winfo->get_actor_frames(true));
 		set_spin("shinfo_proj_rotation", winfo->get_rotation_speed());
 		set_optmenu("shinfo_proj_speed", winfo->get_missile_speed() - 1);
+		const bool no_damage   = winfo->get_powers() & Weapon_data::no_damage;
+		const int  usecode     = info.get_on_hit_usecode();
+		const bool has_usecode = (usecode >= 0);
+		set_sensitive("shinfo_weapon_usecode_check", no_damage);
+		set_toggle("shinfo_weapon_usecode_check", has_usecode);
+		set_sensitive("shinfo_weapon_usecode", has_usecode && no_damage);
+		set_spin("shinfo_weapon_usecode", has_usecode ? usecode : 0);
 	}
 	const Ammo_info* ainfo = info.get_ammo_info();
 	set_toggle("shinfo_ammo_check", ainfo != nullptr);
@@ -2628,6 +2697,16 @@ void ExultStudio::init_shape_notebook(
 		set_optmenu(
 				"shinfo_ammo_drop", ainfo->get_drop_type(),
 				!ainfo->is_homing());
+		const bool no_damage = ainfo->get_powers() & Weapon_data::no_damage;
+		set_toggle("shinfo_ammo_flag7", no_damage);
+		const int  usecode     = info.get_on_hit_usecode();
+		const bool has_usecode = (usecode >= 0);
+		set_sensitive("shinfo_ammo_usecode_check", no_damage);
+		set_toggle("shinfo_ammo_usecode_check", has_usecode, no_damage);
+		set_sensitive("shinfo_ammo_usecode", has_usecode && no_damage);
+		set_spin(
+				"shinfo_ammo_usecode", has_usecode ? usecode : 0,
+				has_usecode && no_damage);
 	}
 	const Armor_info* arinfo = info.get_armor_info();
 	set_toggle("shinfo_armor_check", arinfo != nullptr);
@@ -3644,6 +3723,17 @@ void ExultStudio::save_shape_notebook(
 		} else {
 			ainfo->set_homing(false);
 			ainfo->set_drop_type(get_optmenu("shinfo_ammo_drop"));
+		}
+	}
+	if (get_toggle("shinfo_weapon_check") || get_toggle("shinfo_ammo_check")) {
+		if (get_toggle("shinfo_weapon_usecode_check")
+			|| get_toggle("shinfo_ammo_usecode_check")) {
+			const int usecode = get_toggle("shinfo_weapon_check")
+										? get_spin("shinfo_weapon_usecode")
+										: get_spin("shinfo_ammo_usecode");
+			info.set_on_hit_usecode(usecode);
+		} else {
+			info.set_on_hit_usecode(-1);
 		}
 	}
 	if (!get_toggle("shinfo_armor_check")) {

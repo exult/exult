@@ -406,6 +406,11 @@
     <property name="step-increment">1</property>
     <property name="page-increment">4</property>
   </object>
+  <object class="GtkAdjustment" id="adjustment155">
+    <property name="upper">65535</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
   <object class="GtkAdjustment" id="adjustment16">
     <property name="upper">100</property>
     <property name="value">4</property>
@@ -13703,6 +13708,7 @@ Coordinates</property>
                                     <property name="vexpand">False</property>
                                     <property name="use-underline">True</property>
                                     <property name="draw-indicator">True</property>
+                                    <signal name="toggled" handler="on_shinfo_weapon_pow7_toggled" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="left-attach">2</property>
@@ -13897,51 +13903,124 @@ Coordinates</property>
                                 <property name="vexpand">False</property>
                                 <property name="label-xalign">0</property>
                                 <child>
-                                  <object class="GtkBox" id="hbox67">
+                                  <object class="GtkBox" id="vbox85">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="margin-start">4</property>
                                     <property name="margin-end">4</property>
                                     <property name="margin-top">2</property>
                                     <property name="margin-bottom">2</property>
-                                    <property name="orientation">horizontal</property>
+                                    <property name="orientation">vertical</property>
                                     <child>
-                                      <object class="GtkEntry" id="shinfo_weapon_uc">
+                                      <object class="GtkBox" id="hbox67">
                                         <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="halign">center</property>
-                                        <property name="valign">center</property>
-                                        <property name="margin-start">0</property>
-                                        <property name="margin-end">2</property>
-                                        <property name="margin-top">0</property>
-                                        <property name="margin-bottom">0</property>
-                                        <property name="hexpand">False</property>
-                                        <property name="vexpand">False</property>
-                                        <property name="primary-icon-activatable">False</property>
-                                        <property name="secondary-icon-activatable">False</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="orientation">horizontal</property>
+                                        <child>
+                                          <object class="GtkEntry" id="shinfo_weapon_uc">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="halign">center</property>
+                                            <property name="valign">center</property>
+                                            <property name="margin-start">0</property>
+                                            <property name="margin-end">2</property>
+                                            <property name="margin-top">0</property>
+                                            <property name="margin-bottom">0</property>
+                                            <property name="hexpand">False</property>
+                                            <property name="vexpand">False</property>
+                                            <property name="primary-icon-activatable">False</property>
+                                            <property name="secondary-icon-activatable">False</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkButton" id="shinfo_weapon_uc_browse">
+                                            <property name="label" translatable="yes">Browse</property>
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="receives-default">False</property>
+                                            <property name="halign">center</property>
+                                            <property name="valign">center</property>
+                                            <property name="margin-start">2</property>
+                                            <property name="margin-end">0</property>
+                                            <property name="margin-top">0</property>
+                                            <property name="margin-bottom">0</property>
+                                            <property name="hexpand">False</property>
+                                            <property name="vexpand">False</property>
+                                            <property name="use-underline">True</property>
+                                            <signal name="clicked" handler="on_shinfo_weapon_uc_browse_clicked" swapped="no"/>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
                                       </object>
                                       <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
                                         <property name="position">0</property>
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkButton" id="shinfo_weapon_uc_browse">
-                                        <property name="label" translatable="yes">Browse</property>
+                                      <object class="GtkBox" id="hbox71">
                                         <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="receives-default">False</property>
-                                        <property name="halign">center</property>
-                                        <property name="valign">center</property>
-                                        <property name="margin-start">2</property>
-                                        <property name="margin-end">0</property>
-                                        <property name="margin-top">0</property>
-                                        <property name="margin-bottom">0</property>
-                                        <property name="hexpand">False</property>
-                                        <property name="vexpand">False</property>
-                                        <property name="use-underline">True</property>
-                                        <signal name="clicked" handler="on_shinfo_weapon_uc_browse_clicked" swapped="no"/>
+                                        <property name="can-focus">False</property>
+                                        <property name="margin-top">4</property>
+                                        <property name="orientation">horizontal</property>
+                                        <child>
+                                          <object class="GtkCheckButton" id="shinfo_weapon_usecode_check">
+                                            <property name="label" translatable="yes">On hit</property>
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="receives-default">False</property>
+                                           <property name="halign">center</property>
+                                            <property name="valign">center</property>
+                                            <property name="margin-start">0</property>
+                                            <property name="margin-end">2</property>
+                                            <property name="margin-top">0</property>
+                                            <property name="margin-bottom">0</property>
+                                            <property name="use-underline">True</property>
+                                            <property name="draw-indicator">True</property>
+                                            <signal name="toggled" handler="on_shinfo_weapon_usecode_check_toggled" swapped="no"/>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                       </child>
+                                        <child>
+                                          <object class="GtkSpinButton" id="shinfo_weapon_usecode">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="halign">fill</property>
+                                            <property name="valign">center</property>
+                                            <property name="margin-start">2</property>
+                                            <property name="margin-end">0</property>
+                                            <property name="margin-top">0</property>
+                                            <property name="margin-bottom">0</property>
+                                            <property name="hexpand">False</property>
+                                            <property name="vexpand">False</property>
+                                            <property name="width-chars">8</property>
+                                            <property name="adjustment">adjustment155</property>
+                                            <property name="climb-rate">1</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
                                       </object>
                                       <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
                                         <property name="position">1</property>
                                       </packing>
                                     </child>
@@ -14502,7 +14581,7 @@ Coordinates</property>
                                     </child>
                                     <child>
                                       <object class="GtkCheckButton" id="shinfo_ammo_pow7">
-                                        <property name="label" translatable="yes">No damage</property>
+                                        <property name="label" translatable="yes">No Damage</property>
                                         <property name="visible">True</property>
                                         <property name="can-focus">True</property>
                                         <property name="receives-default">False</property>
@@ -14516,6 +14595,7 @@ Coordinates</property>
                                         <property name="vexpand">False</property>
                                         <property name="use-underline">True</property>
                                         <property name="draw-indicator">True</property>
+                                        <signal name="toggled" handler="on_shinfo_ammo_pow7_toggled" swapped="no"/>
                                       </object>
                                       <packing>
                                         <property name="left-attach">2</property>
@@ -14669,7 +14749,6 @@ Coordinates</property>
                                     </child>
                                     <child>
                                       <object class="GtkCheckButton" id="shinfo_ammo_flag7">
-                                        <property name="sensitive">False</property>
                                         <property name="can-focus">True</property>
                                         <property name="receives-default">False</property>
                                         <property name="halign">fill</property>
@@ -14795,6 +14874,93 @@ Coordinates</property>
                           </object>
                           <packing>
                             <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox" id="hbox86">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">fill</property>
+                            <property name="valign">fill</property>
+                            <property name="margin-start">0</property>
+                            <property name="margin-end">0</property>
+                            <property name="margin-top">1</property>
+                            <property name="margin-bottom">0</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">False</property>
+                            <property name="orientation">horizontal</property>
+                            <child>
+                              <object class="GtkFrame" id="frame406">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="halign">fill</property>
+                                <property name="valign">fill</property>
+                                <property name="margin-start">2</property>
+                                <property name="margin-end">2</property>
+                                <property name="margin-top">1</property>
+                                <property name="margin-bottom">1</property>
+                                <property name="hexpand">False</property>
+                                <property name="vexpand">False</property>
+                                <property name="label-xalign">0</property>
+                                <child>
+                                  <object class="GtkBox" id="hbox87">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="margin-start">4</property>
+                                    <property name="margin-end">4</property>
+                                    <property name="margin-top">2</property>
+                                    <property name="margin-bottom">2</property>
+                                    <property name="orientation">horizontal</property>
+                                    <property name="spacing">4</property>
+                                    <child>
+                                      <object class="GtkCheckButton" id="shinfo_ammo_usecode_check">
+                                        <property name="label" translatable="yes">On hit</property>
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">False</property>
+                                        <property name="halign">center</property>
+                                        <property name="valign">center</property>
+                                        <property name="use-underline">True</property>
+                                        <property name="draw-indicator">True</property>
+                                        <signal name="toggled" handler="on_shinfo_ammo_usecode_check_toggled" swapped="no"/>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSpinButton" id="shinfo_ammo_usecode">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="halign">fill</property>
+                                        <property name="valign">center</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="width-chars">5</property>
+                                        <property name="adjustment">adjustment155</property>
+                                        <property name="climb-rate">1</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child type="label">
+                                  <object class="GtkLabel" id="label_ammo_usecode">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="label" translatable="yes">Usecode</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                       </object>
