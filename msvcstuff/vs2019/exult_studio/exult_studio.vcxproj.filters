@@ -162,6 +162,9 @@
     <ClCompile Include="..\..\..\shapes\shapeinf\frusefun.cc">
       <Filter>Shapes\Shapeinf</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\shapes\shapeinf\gumpinf.cc">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\shapes\shapeinf\lightinf.cc">
       <Filter>Shapes\Shapeinf</Filter>
     </ClCompile>
@@ -409,6 +412,9 @@
       <Filter>Shapes\Shapeinf</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\shapes\shapeinf\frusefun.h">
+      <Filter>Shapes\Shapeinf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\shapes\shapeinf\gumpinf.h">
       <Filter>Shapes\Shapeinf</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\shapes\shapeinf\lightinf.h">
