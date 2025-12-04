@@ -129,7 +129,6 @@ public:
  *  A gump contains an image of an open container from "gumps.vga".
  */
 class Gump : nonreplicatable, public Gump_Base {
-	static std::unique_ptr<class Text_msg_file_reader> gump_area_info;
 
 protected:
 	Gump() = delete;

@@ -534,6 +534,7 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClCompile Include="..\..\shapes\shapeinf\frflags.cc" />
     <ClCompile Include="..\..\shapes\shapeinf\frnameinf.cc" />
     <ClCompile Include="..\..\shapes\shapeinf\frusefun.cc" />
+    <ClInclude Include="..\..\shapes\shapeinf\gumpinf.cc" />
     <ClCompile Include="..\..\shapes\shapeinf\lightinf.cc" />
     <ClCompile Include="..\..\shapes\shapeinf\monstinf.cc" />
     <ClCompile Include="..\..\shapes\shapeinf\npcdollinf.cc" />
@@ -774,6 +775,7 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClInclude Include="..\..\shapes\shapeinf\frflags.h" />
     <ClInclude Include="..\..\shapes\shapeinf\frnameinf.h" />
     <ClInclude Include="..\..\shapes\shapeinf\frusefun.h" />
+    <ClInclude Include="..\..\shapes\shapeinf\gumpinf.h" />
     <ClInclude Include="..\..\shapes\shapeinf\lightinf.h" />
     <ClInclude Include="..\..\shapes\shapeinf\monstinf.h" />
     <ClInclude Include="..\..\shapes\shapeinf\npcdollinf.h" />

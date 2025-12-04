@@ -37,6 +37,7 @@
 #include "frflags.h"
 #include "frnameinf.h"
 #include "frusefun.h"
+#include "gumpinf.h"
 #include "ignore_unused_variable_warning.h"
 #include "lightinf.h"
 #include "monstinf.h"
@@ -355,6 +356,120 @@ void Shapes_vga_file::Write_Paperdoll_text_data_file(Exult_Game game) {
 	Write_text_data_file("paperdol_info", writers, 3, game);
 }
 
+void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
+	// Create a temporary map to hold gump info keyed by shape number
+	std::map<int, const Gump_info*> gump_data;
+
+	// Collect all gump info that needs to be written
+	for (const auto& [shapenum, gumpinf] : Gump_info::gump_info_map) {
+		if (gumpinf.has_area || gumpinf.has_checkmark) {
+			gump_data[shapenum] = &gumpinf;
+		}
+	}
+
+	if (gump_data.empty()) {
+		// Nothing to write
+		return;
+	}
+
+	// Writer for container area
+	class Container_area_writer {
+		const std::map<int, const Gump_info*>& data;
+
+	public:
+		Container_area_writer(const std::map<int, const Gump_info*>& d)
+				: data(d) {}
+
+		size_t count() const {
+			size_t cnt = 0;
+			for (const auto& [shapenum, info] : data) {
+				if (info->has_area) {
+					cnt++;
+				}
+			}
+			return cnt;
+		}
+
+		void write(std::ostream& out, Exult_Game game) {
+			ignore_unused_variable_warning(game);
+			if (count() == 0) {
+				return;
+			}
+			out << "%%section container_area" << std::endl;
+			for (const auto& [shapenum, info] : data) {
+				if (info->has_area) {
+					out << ":" << shapenum << "/" << info->container_x << "/"
+						<< info->container_y << "/" << info->container_w << "/"
+						<< info->container_h << std::endl;
+				}
+			}
+			out << "%%endsection" << std::endl;
+		}
+	};
+
+	// Writer for checkmark position
+	class Checkmark_pos_writer {
+		const std::map<int, const Gump_info*>& data;
+
+	public:
+		Checkmark_pos_writer(const std::map<int, const Gump_info*>& d)
+				: data(d) {}
+
+		size_t count() const {
+			size_t cnt = 0;
+			for (const auto& [shapenum, info] : data) {
+				if (info->has_checkmark) {
+					cnt++;
+				}
+			}
+			return cnt;
+		}
+
+		void write(std::ostream& out, Exult_Game game) {
+			ignore_unused_variable_warning(game);
+			if (count() == 0) {
+				return;
+			}
+			out << "%%section checkmark_pos" << std::endl;
+			for (const auto& [shapenum, info] : data) {
+				if (info->has_checkmark) {
+					out << ":" << shapenum << "/" << info->checkmark_x << "/"
+						<< info->checkmark_y << std::endl;
+				}
+			}
+			out << "%%endsection" << std::endl;
+		}
+	};
+
+	// Check if we have anything to write
+	Container_area_writer container_writer(gump_data);
+	Checkmark_pos_writer  checkmark_writer(gump_data);
+	const size_t          total_cnt
+			= container_writer.count() + checkmark_writer.count();
+
+	if (total_cnt == 0) {
+		return;
+	}
+
+	// Open output file
+	auto pOut = U7open_out("<PATCH>/gump_info.txt", true);
+	if (!pOut) {
+		return;
+	}
+	auto& out = *pOut;
+
+	// Write header
+	out << "#\tExult " << VERSION << " gump info file."
+		<< "\tWritten by ExultStudio." << std::endl;
+	out << "%%section version" << std::endl
+		<< ":1" << std::endl
+		<< "%%endsection" << std::endl;
+
+	// Write sections
+	container_writer.write(out, game);
+	checkmark_writer.write(out, game);
+}
+
 /*
  *  Write out data files about shapes.
  */
@@ -501,6 +616,7 @@ void Shapes_vga_file::write_info(Exult_Game game) {
 	Write_Shapeinf_text_data_file(game);
 	Write_Bodies_text_data_file(game);
 	Write_Paperdoll_text_data_file(game);
+	Write_Gumpinf_text_data_file(game);    // Add this line
 }
 
 void Animation_info::write(

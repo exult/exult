@@ -39,6 +39,7 @@
 #include "frflags.h"
 #include "frnameinf.h"
 #include "frusefun.h"
+#include "gumpinf.h"
 #include "ignore_unused_variable_warning.h"
 #include "lightinf.h"
 #include "monstinf.h"
@@ -488,6 +489,58 @@ void Shapes_vga_file::Read_Paperdoll_text_data_file(
 			"paperdol_info", readers, sections, editing, game_type, flxres);
 }
 
+void Shapes_vga_file::Read_Gumpinf_text_data_file(
+		bool editing, Exult_Game game_type) {
+	std::array sections{"container_area"sv, "checkmark_pos"sv};
+
+	// Functor for reading container area
+	class Container_area_functor {
+	public:
+		bool operator()(
+				std::istream& in, int version, bool patch, Exult_Game game,
+				Gump_info& info) {
+			ignore_unused_variable_warning(version, patch, game);
+			info.container_x = ReadInt(in);
+			info.container_y = ReadInt(in);
+			info.container_w = ReadInt(in);
+			info.container_h = ReadInt(in);
+			info.has_area    = true;
+			return true;
+		}
+	};
+
+	// Functor for reading checkmark position
+	class Checkmark_pos_functor {
+	public:
+		bool operator()(
+				std::istream& in, int version, bool patch, Exult_Game game,
+				Gump_info& info) {
+			ignore_unused_variable_warning(version, patch, game);
+			info.checkmark_x   = ReadInt(in);
+			info.checkmark_y   = ReadInt(in);
+			info.has_checkmark = true;
+			return true;
+		}
+	};
+
+	// Create readers using the functor pattern
+	using Container_area_reader
+			= Functor_multidata_reader<Gump_info, Container_area_functor>;
+	using Checkmark_pos_reader
+			= Functor_multidata_reader<Gump_info, Checkmark_pos_functor>;
+
+	std::array readers = make_unique_array<Base_reader>(
+			std::make_unique<Container_area_reader>(Gump_info::gump_info_map),
+			std::make_unique<Checkmark_pos_reader>(Gump_info::gump_info_map));
+	static_assert(sections.size() == readers.size());
+
+	const int flxres = game_type == BLACK_GATE ? EXULT_BG_FLX_GUMP_INFO_TXT
+											   : EXULT_SI_FLX_GUMP_INFO_TXT;
+
+	Read_text_data_file(
+			"gump_info", readers, sections, editing, game_type, flxres);
+}
+
 /*
  *  Reload static data for weapons, ammo and mosters to
  *  fix data that was lost by earlier versions of ES.
@@ -523,6 +576,7 @@ void Shapes_vga_file::reload_info(Exult_Game game    // Which game.
 ) {
 	info_read = false;
 	info.clear();
+	Gump_info::clear();
 	read_info(game);
 }
 
@@ -718,6 +772,7 @@ bool Shapes_vga_file::read_info(
 	Read_Shapeinf_text_data_file(editing, game);
 	Read_Bodies_text_data_file(editing, game);
 	Read_Paperdoll_text_data_file(editing, game);
+	Read_Gumpinf_text_data_file(editing, game);
 
 	// Ensure valid ready spots for all shapes.
 	const unsigned char defready = game == BLACK_GATE ? backpack : rhand;
