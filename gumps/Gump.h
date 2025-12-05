@@ -129,7 +129,6 @@ public:
  *  A gump contains an image of an open container from "gumps.vga".
  */
 class Gump : nonreplicatable, public Gump_Base {
-
 protected:
 	Gump() = delete;
 	Container_game_object* container;    // What this gump shows.

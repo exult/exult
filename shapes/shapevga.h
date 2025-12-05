@@ -51,6 +51,8 @@ class Shapes_vga_file : public Vga_file {
 	void Write_Paperdoll_text_data_file(Exult_Game game_type);
 	void Write_Gumpinf_text_data_file(Exult_Game game_type);
 
+	friend class ExultStudio;
+
 public:
 	Shapes_vga_file() = default;
 	Shapes_vga_file(const char* nm, int u7drag = -1, const char* nm2 = nullptr);

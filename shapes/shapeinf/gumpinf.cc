@@ -37,6 +37,10 @@ const Gump_info* Gump_info::get_gump_info(int shapenum) {
 	return it != gump_info_map.end() ? &it->second : nullptr;
 }
 
+Gump_info& Gump_info::get_or_create_gump_info(int shapenum) {
+	return gump_info_map[shapenum];
+}
+
 void Gump_info::clear() {
 	gump_info_map.clear();
 }

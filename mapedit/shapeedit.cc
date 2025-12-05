@@ -38,6 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "frflags.h"
 #include "frnameinf.h"
 #include "frusefun.h"
+#include "gumpinf.h"
 #include "items.h"
 #include "lightinf.h"
 #include "monstinf.h"
@@ -63,8 +64,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <map>
 #include <sstream>
 #include <string>
+#include <string_view>
 
 using std::string;
+using namespace std::literals;
 
 // HP Info columns
 enum {
@@ -825,6 +828,30 @@ C_EXPORT void on_shinfo_frame_changed(
 	studio->set_shape_notebook_frame(gtk_spin_button_get_value_as_int(button));
 	// Force repaint of shape.
 	gtk_widget_queue_draw(studio->get_widget("shinfo_draw"));
+}
+
+/*
+ *  Container toggle changed.
+ */
+C_EXPORT void on_shinfo_gumpobj_container_toggle_toggled(
+		GtkToggleButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const bool   on     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
+	ExultStudio* studio = ExultStudio::get_instance();
+	studio->set_sensitive("shinfo_gumpobj_container_content", on);
+	studio->set_sensitive("shinfo_gumpobj_container_preview", on);
+}
+
+/*
+ *  Checkmark toggle changed.
+ */
+C_EXPORT void on_shinfo_gumpobj_checkmark_toggle_toggled(
+		GtkToggleButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const bool   on     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
+	ExultStudio* studio = ExultStudio::get_instance();
+	studio->set_sensitive("shinfo_gumpobj_checkmark_content", on);
+	studio->set_sensitive("shinfo_gumpobj_checkmark_preview", on);
 }
 
 const auto TreeIterDeleter = [](GtkTreeIter* iter) {
@@ -4730,11 +4757,72 @@ void ExultStudio::open_shape_window(
 		gtk_tree_store_clear(store);
 	}
 
-	GtkWidget* notebook = get_widget("shinfo_notebook");
+	GtkWidget* notebook      = get_widget("shinfo_notebook");
+	GtkWidget* gump_notebook = get_widget("shinfo_gump_notebook");
+
+	const bool is_gumps
+			= file_info && file_info->get_basename()
+			  && strcmp(file_info->get_basename(), "gumps.vga") == 0;
+
 	if (info) {
+		// Regular shapes.vga - show shape notebook, hide gump notebook
 		init_shape_notebook(*info, notebook, shnum, frnum);
+		gtk_widget_set_visible(notebook, true);
+		gtk_widget_set_visible(gump_notebook, false);
+	} else if (is_gumps) {
+		// For gumps.vga, hide shape notebook and show gump notebook
+		gtk_widget_set_visible(notebook, false);
+		gtk_widget_set_visible(gump_notebook, true);
+
+		// Ensure gump info is loaded - load it independently for gumps.vga
+		static bool gump_info_loaded = false;
+		if (!gump_info_loaded) {
+			if (vgafile && vgafile->get_ifile()) {
+				Shapes_vga_file* svga
+						= dynamic_cast<Shapes_vga_file*>(vgafile->get_ifile());
+				if (svga) {
+					svga->Read_Gumpinf_text_data_file(true, get_game_type());
+					gump_info_loaded = true;
+				}
+			}
+		}
+
+		const Gump_info* gumpinf = Gump_info::get_gump_info(shnum);
+
+		if (gumpinf && gumpinf->has_area) {
+			set_toggle("shinfo_gumpobj_container_toggle", true);
+			set_spin("shinfo_gumpobj_container_x", gumpinf->container_x);
+			set_spin("shinfo_gumpobj_container_y", gumpinf->container_y);
+			set_spin("shinfo_gumpobj_container_w", gumpinf->container_w);
+			set_spin("shinfo_gumpobj_container_h", gumpinf->container_h);
+			set_sensitive("shinfo_gumpobj_container_content", true);
+			set_sensitive("shinfo_gumpobj_container_preview", true);
+		} else {
+			set_toggle("shinfo_gumpobj_container_toggle", false);
+			set_spin("shinfo_gumpobj_container_x", 0);
+			set_spin("shinfo_gumpobj_container_y", 0);
+			set_spin("shinfo_gumpobj_container_w", 0);
+			set_spin("shinfo_gumpobj_container_h", 0);
+			set_sensitive("shinfo_gumpobj_container_content", false);
+			set_sensitive("shinfo_gumpobj_container_preview", false);
+		}
+
+		if (gumpinf && gumpinf->has_checkmark) {
+			set_toggle("shinfo_gumpobj_checkmark_toggle", true);
+			set_spin("shinfo_gumpobj_checkmark_x", gumpinf->checkmark_x);
+			set_spin("shinfo_gumpobj_checkmark_y", gumpinf->checkmark_y);
+			set_sensitive("shinfo_gumpobj_checkmark_content", true);
+			set_sensitive("shinfo_gumpobj_checkmark_preview", true);
+		} else {
+			set_toggle("shinfo_gumpobj_checkmark_toggle", false);
+			set_spin("shinfo_gumpobj_checkmark_x", 0);
+			set_spin("shinfo_gumpobj_checkmark_y", 0);
+			set_sensitive("shinfo_gumpobj_checkmark_content", false);
+			set_sensitive("shinfo_gumpobj_checkmark_preview", false);
+		}
 	} else {
 		gtk_widget_set_visible(notebook, false);
+		gtk_widget_set_visible(gump_notebook, false);
 	}
 	gtk_widget_set_visible(shapewin, true);
 }
@@ -4782,6 +4870,36 @@ void ExultStudio::save_shape_window() {
 	}
 	if (info) {
 		save_shape_notebook(*info, shnum, frnum);
+	}
+	const bool is_gumps
+			= file_info && file_info->get_basename()
+			  && strcmp(file_info->get_basename(), "gumps.vga") == 0;
+
+	if (is_gumps) {
+		// Get or create Gump_info entry
+		Gump_info& gumpinf = Gump_info::get_or_create_gump_info(shnum);
+
+		// Save container data
+		if (get_toggle("shinfo_gumpobj_container_toggle")) {
+			gumpinf.container_x = get_spin("shinfo_gumpobj_container_x");
+			gumpinf.container_y = get_spin("shinfo_gumpobj_container_y");
+			gumpinf.container_w = get_spin("shinfo_gumpobj_container_w");
+			gumpinf.container_h = get_spin("shinfo_gumpobj_container_h");
+			gumpinf.has_area    = true;
+		} else {
+			gumpinf.has_area = false;
+		}
+
+		// Save checkmark data
+		if (get_toggle("shinfo_gumpobj_checkmark_toggle")) {
+			gumpinf.checkmark_x   = get_spin("shinfo_gumpobj_checkmark_x");
+			gumpinf.checkmark_y   = get_spin("shinfo_gumpobj_checkmark_y");
+			gumpinf.has_checkmark = true;
+		} else {
+			gumpinf.has_checkmark = false;
+		}
+
+		shape_info_modified = true;
 	}
 }
 

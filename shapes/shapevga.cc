@@ -494,31 +494,29 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(
 	std::array sections{"container_area"sv, "checkmark_pos"sv};
 
 	// Functor for reading container area
-	class Container_area_functor {
-	public:
+	struct Container_area_functor {
 		bool operator()(
 				std::istream& in, int version, bool patch, Exult_Game game,
-				Gump_info& info) {
+				Gump_info& ginfo) const {
 			ignore_unused_variable_warning(version, patch, game);
-			info.container_x = ReadInt(in);
-			info.container_y = ReadInt(in);
-			info.container_w = ReadInt(in);
-			info.container_h = ReadInt(in);
-			info.has_area    = true;
+			ginfo.container_x = ReadInt(in);
+			ginfo.container_y = ReadInt(in);
+			ginfo.container_w = ReadInt(in);
+			ginfo.container_h = ReadInt(in);
+			ginfo.has_area    = true;
 			return true;
 		}
 	};
 
 	// Functor for reading checkmark position
-	class Checkmark_pos_functor {
-	public:
+	struct Checkmark_pos_functor {
 		bool operator()(
 				std::istream& in, int version, bool patch, Exult_Game game,
-				Gump_info& info) {
+				Gump_info& ginfo) const {
 			ignore_unused_variable_warning(version, patch, game);
-			info.checkmark_x   = ReadInt(in);
-			info.checkmark_y   = ReadInt(in);
-			info.has_checkmark = true;
+			ginfo.checkmark_x   = ReadInt(in);
+			ginfo.checkmark_y   = ReadInt(in);
+			ginfo.has_checkmark = true;
 			return true;
 		}
 	};

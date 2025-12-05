@@ -39,6 +39,7 @@ public:
 	Gump_info();
 
 	static const Gump_info* get_gump_info(int shapenum);
+	static Gump_info&       get_or_create_gump_info(int shapenum);
 	static void             clear();
 };
 
