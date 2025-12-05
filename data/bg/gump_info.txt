@@ -18,28 +18,28 @@
 # crate
 :1/50/20/80/24
 
-#barrel
+# barrel
 :8/32/32/40/40
 
-#bag
+# bag
 :9/48/20/66/44
 
-#backpack
+# backpack
 :10/36/36/85/40
 
-#basket
+# basket
 :11/42/32/70/26
 
-#chest
+# chest
 :22/40/18/60/37
 
-#shipshold
+# shipshold
 :26/38/10/82/80
 
-#drawer
+# drawer
 :27/36/12/70/26
 
-#body
+# body
 :53/36/46/84/40
 
 %%endsection
@@ -50,34 +50,79 @@
 # Format:
 # Shape in :Gumps.vga/Check X/Check Y
 
-# gumps/box
+# box
 :0/8/56
 
-#crate
+# crate
 :1/8/64
 
-#barrel
+# barrel
 :8/12/124
 
-#bag
+# bag
 :9/8/66
 
-#backpack
+# backpack
 :10/8/62
 
-#basket
+# basket
 :11/8/56
 
-#chest
+# chest
 :22/8/46
 
-#shipshold
+# shipshold
 :26/8/92
 
-#drawer
+# drawer
 :27/8/46
 
-#body
+# body
 :53/8/70
+
+# original file gump
+:3/8/150
+
+# slider
+:14/6/30
+
+# spellbook
+:38/7/54
+
+# stats
+:42/6/136
+
+# avatar m
+:57/6/136
+
+# avatar f
+:58/6/136
+
+# Iolo
+:59/6/136
+
+# Spark
+:60/6/136
+
+# Shamino
+:61/6/136
+
+# Dupre
+:62/6/136
+
+# Jaana
+:64/6/136
+
+# Sentri
+:65/6/136
+
+# Julia
+:66/6/136
+
+# Katrina
+:67/6/136
+
+# Tseramed
+:68/6/136
 
 %%endsection
