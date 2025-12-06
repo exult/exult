@@ -831,27 +831,27 @@ C_EXPORT void on_shinfo_frame_changed(
 }
 
 /*
- *  Container toggle changed.
+ *  Gump class changed.
  */
-C_EXPORT void on_shinfo_gumpobj_container_toggle_toggled(
-		GtkToggleButton* btn, gpointer user_data) {
-	ignore_unused_variable_warning(user_data);
-	const bool   on     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
-	ExultStudio* studio = ExultStudio::get_instance();
-	studio->set_sensitive("shinfo_gumpobj_container_content", on);
-	studio->set_sensitive("shinfo_gumpobj_container_preview", on);
-}
+C_EXPORT gboolean
+		on_shinfo_gumpobj_class_changed(GtkWidget* widget, gpointer data) {
+	ignore_unused_variable_warning(data);
+	const int    gump_class = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+	ExultStudio* studio     = ExultStudio::get_instance();
 
-/*
- *  Checkmark toggle changed.
- */
-C_EXPORT void on_shinfo_gumpobj_checkmark_toggle_toggled(
-		GtkToggleButton* btn, gpointer user_data) {
-	ignore_unused_variable_warning(user_data);
-	const bool   on     = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
-	ExultStudio* studio = ExultStudio::get_instance();
-	studio->set_sensitive("shinfo_gumpobj_checkmark_content", on);
-	studio->set_sensitive("shinfo_gumpobj_checkmark_preview", on);
+	// Enable/disable controls based on class
+	const bool is_container     = (gump_class == 1);    // Container
+	const bool is_checkmarkgump = (gump_class == 2);    // Checkmarkgump
+
+	studio->set_sensitive("shinfo_gumpobj_container_content", is_container);
+	studio->set_sensitive(
+			"shinfo_gumpobj_checkmark_content",
+			is_container || is_checkmarkgump);
+
+	// Checkmark shape always inactive
+	studio->set_sensitive("shinfo_gumpobj_checkmark_shape", false);
+
+	return true;
 }
 
 const auto TreeIterDeleter = [](GtkTreeIter* iter) {
@@ -4789,41 +4789,62 @@ void ExultStudio::open_shape_window(
 
 		const Gump_info* gumpinf = Gump_info::get_gump_info(shnum);
 
+		// Determine gump class
+		int gump_class = 0;    // Undefined
+		if (gumpinf) {
+			if (gumpinf->is_checkmark) {
+				gump_class = 3;    // Checkmark
+			} else if (gumpinf->is_special) {
+				gump_class = 4;    // Special
+			} else if (gumpinf->has_area) {
+				gump_class = 1;    // Container
+			} else if (gumpinf->has_checkmark) {
+				gump_class = 2;    // Checkmarkgump
+			}
+		}
+
+		set_optmenu("shinfo_gumpobj_class", gump_class);
+
 		if (gumpinf && gumpinf->has_area) {
-			set_toggle("shinfo_gumpobj_container_toggle", true);
 			set_spin("shinfo_gumpobj_container_x", gumpinf->container_x);
 			set_spin("shinfo_gumpobj_container_y", gumpinf->container_y);
 			set_spin("shinfo_gumpobj_container_w", gumpinf->container_w);
 			set_spin("shinfo_gumpobj_container_h", gumpinf->container_h);
 			set_sensitive("shinfo_gumpobj_container_content", true);
-			set_sensitive("shinfo_gumpobj_container_preview", true);
 		} else {
-			set_toggle("shinfo_gumpobj_container_toggle", false);
 			set_spin("shinfo_gumpobj_container_x", 0);
 			set_spin("shinfo_gumpobj_container_y", 0);
 			set_spin("shinfo_gumpobj_container_w", 0);
 			set_spin("shinfo_gumpobj_container_h", 0);
-			set_sensitive("shinfo_gumpobj_container_content", false);
-			set_sensitive("shinfo_gumpobj_container_preview", false);
+			set_sensitive("shinfo_gumpobj_container_content", gump_class == 1);
 		}
 
 		if (gumpinf && gumpinf->has_checkmark) {
-			set_toggle("shinfo_gumpobj_checkmark_toggle", true);
 			set_spin("shinfo_gumpobj_checkmark_x", gumpinf->checkmark_x);
 			set_spin("shinfo_gumpobj_checkmark_y", gumpinf->checkmark_y);
+			set_spin(
+					"shinfo_gumpobj_checkmark_shape", gumpinf->checkmark_shape);
 			set_sensitive("shinfo_gumpobj_checkmark_content", true);
-			set_sensitive("shinfo_gumpobj_checkmark_preview", true);
 		} else {
-			set_toggle("shinfo_gumpobj_checkmark_toggle", false);
 			set_spin("shinfo_gumpobj_checkmark_x", 0);
 			set_spin("shinfo_gumpobj_checkmark_y", 0);
-			set_sensitive("shinfo_gumpobj_checkmark_content", false);
-			set_sensitive("shinfo_gumpobj_checkmark_preview", false);
+			set_spin("shinfo_gumpobj_checkmark_shape", 0);
+			set_sensitive(
+					"shinfo_gumpobj_checkmark_content",
+					gump_class == 1 || gump_class == 2);
 		}
+		// Checkmark_shape inactive for now as
+		// setting the checkmark shape is not yet de-hardcoded
+		set_sensitive("shinfo_gumpobj_checkmark_shape", false);
+
+		const bool is_checkmark = gumpinf && gumpinf->is_checkmark;
+		const bool is_special   = gumpinf && gumpinf->is_special;
+		set_sensitive("shinfo_gumpobj_class", !is_checkmark && !is_special);
 	} else {
 		gtk_widget_set_visible(notebook, false);
 		gtk_widget_set_visible(gump_notebook, false);
 	}
+
 	gtk_widget_set_visible(shapewin, true);
 }
 

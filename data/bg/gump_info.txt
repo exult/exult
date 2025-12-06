@@ -10,7 +10,7 @@
 # Sets the Object area of each gump.
 # Gump::set_object_area uses this to override the default values defined in the c++ code
 # Format:
-# :Shape in Gumps.vga/Area X/Area Y/Area W/Area H
+# :Shape in Gumps.vga/position X/position Y/Area W/Area H
 
 # box
 :0/46/28/74/32
@@ -48,81 +48,130 @@
 # Sets the checkmark position on each gump.
 # Gump::set_object_area uses this to override the default values defined in the c++ code
 # Format:
-# Shape in :Gumps.vga/Check X/Check Y
+# Shape in :Gumps.vga/position X/position Y/checkmark shape
 
 # box
-:0/8/56
+:0/8/56/2
 
 # crate
-:1/8/64
+:1/8/64/2
 
 # barrel
-:8/12/124
+:8/12/124/2
 
 # bag
-:9/8/66
+:9/8/66/2
 
 # backpack
-:10/8/62
+:10/8/62/2
 
 # basket
-:11/8/56
+:11/8/56/2
 
 # chest
-:22/8/46
+:22/8/46/2
 
 # shipshold
-:26/8/92
+:26/8/92/2
 
 # drawer
-:27/8/46
+:27/8/46/2
 
 # body
-:53/8/70
+:53/8/70/2
 
 # original file gump
-:3/8/150
+:3/8/150/2
 
 # slider
-:14/6/30
+:14/6/30/2
 
 # spellbook
-:38/7/54
+:38/7/54/2
 
 # stats
-:42/6/136
+:42/6/136/2
 
 # avatar m
-:57/6/136
+:57/6/136/2
 
 # avatar f
-:58/6/136
+:58/6/136/2
 
 # Iolo
-:59/6/136
+:59/6/136/2
 
 # Spark
-:60/6/136
+:60/6/136/2
 
 # Shamino
-:61/6/136
+:61/6/136/2
 
 # Dupre
-:62/6/136
+:62/6/136/2
 
 # Jaana
-:64/6/136
+:64/6/136/2
 
 # Sentri
-:65/6/136
+:65/6/136/2
 
 # Julia
-:66/6/136
+:66/6/136/2
 
 # Katrina
-:67/6/136
+:67/6/136/2
 
 # Tseramed
-:68/6/136
+:68/6/136/2
 
+%%endsection
+
+%%section special
+# These are gumps that can neither be gumps nor have checkmark to close them.
+:2
+:4
+:5
+:6
+:7
+:12
+:15
+:16
+:17
+:18
+:19
+:20
+:21
+:23
+:24
+:25
+:28
+:29
+:30
+:31
+:32
+:33
+:34
+:35
+:36
+:37
+:38
+:39
+:40
+:41
+:42
+:44
+:45
+:46
+:48
+:49
+:50
+:51
+:52
+:54
+:55
+:56
+:69
+:70
+:71
 %%endsection

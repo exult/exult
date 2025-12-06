@@ -491,7 +491,7 @@ void Shapes_vga_file::Read_Paperdoll_text_data_file(
 
 void Shapes_vga_file::Read_Gumpinf_text_data_file(
 		bool editing, Exult_Game game_type) {
-	std::array sections{"container_area"sv, "checkmark_pos"sv};
+	std::array sections{"container_area"sv, "checkmark_pos"sv, "special"sv};
 
 	// Functor for reading container area
 	struct Container_area_functor {
@@ -514,22 +514,37 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(
 				std::istream& in, int version, bool patch, Exult_Game game,
 				Gump_info& ginfo) const {
 			ignore_unused_variable_warning(version, patch, game);
-			ginfo.checkmark_x   = ReadInt(in);
-			ginfo.checkmark_y   = ReadInt(in);
-			ginfo.has_checkmark = true;
+			ginfo.checkmark_x     = ReadInt(in);
+			ginfo.checkmark_y     = ReadInt(in);
+			ginfo.checkmark_shape = ReadInt(in);
+			ginfo.has_checkmark   = true;
 			return true;
 		}
 	};
 
-	// Create readers using the functor pattern
+	// Functor for reading special shapes
+	struct Special_functor {
+		bool operator()(
+				std::istream& in, int version, bool patch, Exult_Game game,
+				Gump_info& ginfo) const {
+			ignore_unused_variable_warning(in, version, patch, game);
+			ginfo.is_special = true;
+			return true;
+		}
+	};
+
+	// The template parameters are: <Info, Functor>  (Info comes FIRST!)
+	// The constructor takes: std::map<int, Info>&
 	using Container_area_reader
 			= Functor_multidata_reader<Gump_info, Container_area_functor>;
 	using Checkmark_pos_reader
 			= Functor_multidata_reader<Gump_info, Checkmark_pos_functor>;
+	using Special_reader = Functor_multidata_reader<Gump_info, Special_functor>;
 
 	std::array readers = make_unique_array<Base_reader>(
 			std::make_unique<Container_area_reader>(Gump_info::gump_info_map),
-			std::make_unique<Checkmark_pos_reader>(Gump_info::gump_info_map));
+			std::make_unique<Checkmark_pos_reader>(Gump_info::gump_info_map),
+			std::make_unique<Special_reader>(Gump_info::gump_info_map));
 	static_assert(sections.size() == readers.size());
 
 	const int flxres = game_type == BLACK_GATE ? EXULT_BG_FLX_GUMP_INFO_TXT
@@ -537,6 +552,15 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(
 
 	Read_text_data_file(
 			"gump_info", readers, sections, editing, game_type, flxres);
+
+	for (auto& [shnum, ginfo] : Gump_info::gump_info_map) {
+		if (ginfo.has_checkmark && ginfo.checkmark_shape > 0) {
+			// Mark the checkmark shape itself
+			auto& checkmark_info
+					= Gump_info::gump_info_map[ginfo.checkmark_shape];
+			checkmark_info.is_checkmark = true;
+		}
+	}
 }
 
 /*

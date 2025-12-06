@@ -33,8 +33,11 @@ public:
 	int  container_h;
 	int  checkmark_x;
 	int  checkmark_y;
+	int  checkmark_shape;
 	bool has_area;
 	bool has_checkmark;
+	bool is_checkmark;
+	bool is_special;
 
 	Gump_info();
 

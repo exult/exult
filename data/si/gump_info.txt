@@ -10,7 +10,7 @@
 # Sets the Object area of each gump.
 # Gump::set_object_area uses this to override the default values defined in the c++ code
 # Format:
-# :Shape in Gumps.vga/Area X/Area Y/Area W/Area H
+# :Shape in Gumps.vga/position X/position Y/Area W/Area H
 
 # box
 :0/46/28/74/32
@@ -18,31 +18,31 @@
 # crate
 :1/50/20/80/24
 
-# barrel
+#barrel
 :8/32/32/40/40
 
-# bag
+#bag
 :9/48/20/66/44
 
-# backpack
+#backpack
 :10/36/36/85/40
 
-# basket
+#basket
 :11/42/32/70/26
 
-# chest
+#chest
 :18/40/18/60/37
 
-# shipshold
+#shipshold
 :21/38/10/82/80
 
-# drawer
+#drawer
 :22/36/12/70/26
 
-# tree
+#tree
 :64/62/22/36/44
 
-# body
+#body
 :48/36/46/84/40
 
 %%endsection
@@ -51,75 +51,131 @@
 # This file is used to set the checkmark position on each gump.
 # Gump::set_object_area uses this to override the default values defined in the c++ code
 # Format:
-# Shape in :Gumps.vga/Check X/Check Y
+# Shape in :Gumps.vga/position X/position Y/checkmark shape
 
 # box
-:0/8/56
+:0/8/56/2
 
 # crate
-:1/8/64
+:1/8/64/2
 
 # barrel
-:8/12/124
+:8/12/124/2
 
 # bag
-:9/8/66
+:9/8/66/2
 
 # backpack
-:10/8/62
+:10/8/62/2
 
 # basket
-:11/8/56
+:11/8/56/2
 
 # chest
-:18/8/46
+:18/8/46/2
 
 # shipshold
-:21/8/92
+:21/8/92/2
 
 # drawer
-:22/8/46
+:22/8/46/2
 
 # tree
-:64/9/100
+:64/9/100/2
 
 # body
-:48/8/70
+:48/8/70/2
 
 # original file gump
-:3/8/150
+:3/8/150/2
 
 # slider
-:14/6/30
+:14/6/30/2
 
 # spellbook
-:38/7/54
+:38/7/54/2
 
 # stats
-:42/6/136
+:42/6/136/2
 
 # jawbone
-:56/10/109
+:56/10/109/2
 
 # combat stats 1
-:58/7/95
+:58/7/95/2
 
 # combat stats 2
-:59/7/95
+:59/7/95/2
 
 # combat stats 3
-:60/7/95
+:60/7/95/2
 
 # combat stats 4
-:61/7/95
+:61/7/95/2
 
 # combat stats 5
-:62/7/95
+:62/7/95/2
 
 # combat stats 6
-:63/7/95
+:63/7/95/2
 
 # magic scroll
-:65/8/68
+:65/8/68/2
 
+%%endsection
+
+%%section special
+# These are gumps that can neither be gumps nor have checkmark to close them.
+:2
+:4
+:5
+:6
+:7
+:12
+:15
+:16
+:17
+:19
+:20
+:23
+:24
+:25
+:26
+:27
+:28
+:29
+:30
+:31
+:32
+:33
+:34
+:35
+:36
+:37
+:39
+:40
+:41
+:43
+:44
+:45
+:46
+:47
+:49
+:50
+:51
+:52
+:53
+:54
+:55
+:57
+:66
+:67
+:68
+:69
+:70
+:71
+:72
+:73
+:74
+:91
 %%endsection
