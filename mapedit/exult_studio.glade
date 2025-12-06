@@ -24281,7 +24281,7 @@
                   <object class="GtkFrame" id="frame_gumpobj_class">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="halign">fill</property>
+                    <property name="halign">start</property>
                     <property name="valign">start</property>
                     <property name="margin-bottom">4</property>
                     <property name="label-xalign">0</property>
@@ -24333,7 +24333,7 @@
                   <object class="GtkFrame" id="frame_gumpobj_container">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="halign">fill</property>
+                    <property name="halign">start</property>
                     <property name="valign">start</property>
                     <property name="margin-bottom">2</property>
                     <property name="label-xalign">0</property>
@@ -24553,7 +24553,7 @@
                   <object class="GtkFrame" id="frame_gumpobj_checkmark">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="halign">fill</property>
+                    <property name="halign">start</property>
                     <property name="valign">start</property>
                     <property name="label-xalign">0</property>
                     <child>
@@ -24758,7 +24758,7 @@
               <object class="GtkLabel" id="label_gump_tab">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Gump</property>
+                <property name="label" translatable="yes">Object</property>
               </object>
               <packing>
                 <property name="tab-fill">False</property>
