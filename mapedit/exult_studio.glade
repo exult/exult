@@ -624,14 +624,14 @@
     <property name="upper">200</property>
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
-    </object>
+  </object>
   <object class="GtkAdjustment" id="adjustment504">
     <property name="lower">0</property>
     <property name="upper">320</property>
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
-    <object class="GtkAdjustment" id="adjustment505">
+  <object class="GtkAdjustment" id="adjustment505">
     <property name="lower">0</property>
     <property name="upper">200</property>
     <property name="step-increment">1</property>
@@ -24255,519 +24255,495 @@
             <property name="position">2</property>
           </packing>
         </child>
-<child>
-  <object class="GtkNotebook" id="shinfo_gump_notebook">
-    <property name="visible">True</property>
-    <property name="can-focus">True</property>
-    <property name="halign">fill</property>
-    <property name="valign">fill</property>
-    <property name="margin-start">0</property>
-    <property name="margin-end">0</property>
-    <property name="margin-top">1</property>
-    <property name="margin-bottom">1</property>
-    <property name="hexpand">False</property>
-    <property name="vexpand">False</property>
-    <property name="scrollable">True</property>
-    <child>
-      <object class="GtkBox" id="shinfo_gumpobj_box">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">fill</property>
-        <property name="valign">fill</property>
-        <property name="margin-start">4</property>
-        <property name="margin-end">4</property>
-        <property name="margin-top">2</property>
-        <property name="margin-bottom">2</property>
-        <property name="hexpand">False</property>
-        <property name="vexpand">False</property>
-        <property name="orientation">vertical</property>
         <child>
-          <object class="GtkFrame" id="frame_gumpobj_container">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">fill</property>
-        <property name="valign">start</property>
-        <property name="margin-start">0</property>
-        <property name="margin-end">0</property>
-        <property name="margin-top">0</property>
-        <property name="margin-bottom">2</property>
-        <property name="hexpand">False</property>
-        <property name="vexpand">False</property>
-        <property name="label-xalign">0</property>
-        <child>
-          <object class="GtkBox" id="shinfo_gumpobj_container_box">
+          <object class="GtkNotebook" id="shinfo_gump_notebook">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="can-focus">True</property>
             <property name="halign">fill</property>
-            <property name="valign">start</property>
+            <property name="valign">fill</property>
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
-            <property name="margin-top">0</property>
-            <property name="margin-bottom">2</property>
+            <property name="margin-top">1</property>
+            <property name="margin-bottom">1</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">4</property>
+            <property name="scrollable">True</property>
             <child>
-              <object class="GtkCheckButton" id="shinfo_gumpobj_container_toggle">
-                <property name="label" translatable="yes">Container</property>
+              <object class="GtkBox" id="shinfo_gumpobj_box">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="halign">start</property>
+                <property name="can-focus">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">fill</property>
+                <property name="margin-start">4</property>
+                <property name="margin-end">4</property>
+                <property name="margin-top">2</property>
+                <property name="margin-bottom">2</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkFrame" id="frame_gumpobj_container">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">fill</property>
+                    <property name="valign">start</property>
+                    <property name="margin-start">0</property>
+                    <property name="margin-end">0</property>
+                    <property name="margin-top">0</property>
+                    <property name="margin-bottom">2</property>
+                    <property name="hexpand">False</property>
+                    <property name="vexpand">False</property>
+                    <property name="label-xalign">0</property>
+                    <child>
+                      <object class="GtkBox" id="shinfo_gumpobj_container_box">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">fill</property>
+                        <property name="valign">start</property>
+                        <property name="margin-start">4</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-top">2</property>
+                        <property name="margin-bottom">2</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">4</property>
+                        <child>
+                          <object class="GtkCheckButton" id="shinfo_gumpobj_container_toggle">
+                            <property name="label" translatable="yes">Container</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="halign">start</property>
+                            <property name="valign">center</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">False</property>
+                            <property name="use-underline">True</property>
+                            <property name="draw-indicator">True</property>
+                            <signal name="toggled" handler="on_shinfo_gumpobj_container_toggle_toggled" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox" id="shinfo_gumpobj_container_content">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="sensitive">False</property>
+                            <property name="halign">start</property>
+                            <property name="valign">start</property>
+                            <property name="margin-start">0</property>
+                            <property name="margin-end">8</property>
+                            <property name="margin-top">4</property>
+                            <property name="margin-bottom">4</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">False</property>
+                            <property name="orientation">vertical</property>
+                            <property name="spacing">8</property>
+                            <child>
+                              <object class="GtkBox" id="hbox_gumpobj_container_params">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="halign">start</property>
+                                <property name="valign">start</property>
+                                <property name="margin-start">8</property>
+                                <property name="hexpand">False</property>
+                                <property name="vexpand">False</property>
+                                <property name="orientation">horizontal</property>
+                                <property name="spacing">8</property>
+                                <child>
+                                  <object class="GtkFrame" id="frame_gumpobj_container_position">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="valign">start</property>
+                                    <property name="hexpand">False</property>
+                                    <property name="vexpand">False</property>
+                                    <property name="label-xalign">0</property>
+                                    <child>
+                                      <object class="GtkBox" id="hbox_gumpobj_container_position">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">start</property>
+                                        <property name="valign">start</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                        <property name="hexpand">False</property>
+                                        <property name="vexpand">False</property>
+                                        <property name="orientation">horizontal</property>
+                                        <property name="spacing">8</property>
+                                        <child>
+                                          <object class="GtkSpinButton" id="shinfo_gumpobj_container_x">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="halign">start</property>
+                                            <property name="valign">center</property>
+                                            <property name="width-chars">5</property>
+                                            <property name="adjustment">adjustment500</property>
+                                            <property name="climb-rate">1</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkSpinButton" id="shinfo_gumpobj_container_y">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="halign">start</property>
+                                            <property name="valign">center</property>
+                                            <property name="width-chars">5</property>
+                                            <property name="adjustment">adjustment501</property>
+                                            <property name="climb-rate">1</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child type="label">
+                                      <object class="GtkLabel" id="label_gumpobj_container_position">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="label" translatable="yes">Position (x,y)</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkFrame" id="frame_gumpobj_container_size">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="valign">start</property>
+                                    <property name="hexpand">False</property>
+                                    <property name="vexpand">False</property>
+                                    <property name="label-xalign">0</property>
+                                    <child>
+                                      <object class="GtkBox" id="hbox_gumpobj_container_size">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">start</property>
+                                        <property name="valign">start</property>
+                                        <property name="margin-start">4</property>
+                                        <property name="margin-end">4</property>
+                                        <property name="margin-top">2</property>
+                                        <property name="margin-bottom">2</property>
+                                        <property name="hexpand">False</property>
+                                        <property name="vexpand">False</property>
+                                        <property name="orientation">horizontal</property>
+                                        <property name="spacing">8</property>
+                                        <child>
+                                          <object class="GtkSpinButton" id="shinfo_gumpobj_container_w">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="halign">start</property>
+                                            <property name="valign">center</property>
+                                            <property name="width-chars">5</property>
+                                            <property name="adjustment">adjustment502</property>
+                                            <property name="climb-rate">1</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkSpinButton" id="shinfo_gumpobj_container_h">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="halign">start</property>
+                                            <property name="valign">center</property>
+                                            <property name="width-chars">5</property>
+                                            <property name="adjustment">adjustment503</property>
+                                            <property name="climb-rate">1</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child type="label">
+                                      <object class="GtkLabel" id="label_gumpobj_container_size">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="label" translatable="yes">Area (width,height)</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="shinfo_gumpobj_container_preview">
+                                <property name="label" translatable="yes">Preview</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">False</property>
+                                <property name="halign">start</property>
+                                <property name="valign">center</property>
+                                <property name="margin-start">4</property>
+                                <property name="hexpand">False</property>
+                                <property name="vexpand">False</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-indicator">True</property>
+                                <signal name="toggled" handler="on_shinfo_gumpobj_container_preview_toggled" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="label_gumpobj_container">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Container</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="frame_gumpobj_checkmark">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">fill</property>
+                    <property name="valign">start</property>
+                    <property name="margin-start">0</property>
+                    <property name="margin-end">0</property>
+                    <property name="margin-top">4</property>
+                    <property name="margin-bottom">2</property>
+                    <property name="hexpand">False</property>
+                    <property name="vexpand">False</property>
+                    <property name="label-xalign">0</property>
+                    <child>
+                      <object class="GtkBox" id="shinfo_gumpobj_checkmark_box">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">fill</property>
+                        <property name="valign">start</property>
+                        <property name="margin-start">4</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-top">2</property>
+                        <property name="margin-bottom">2</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">4</property>
+                        <child>
+                          <object class="GtkCheckButton" id="shinfo_gumpobj_checkmark_toggle">
+                            <property name="label" translatable="yes">Checkmark</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="halign">start</property>
+                            <property name="valign">center</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">False</property>
+                            <property name="use-underline">True</property>
+                            <property name="draw-indicator">True</property>
+                            <signal name="toggled" handler="on_shinfo_gumpobj_checkmark_toggle_toggled" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox" id="shinfo_gumpobj_checkmark_content">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="sensitive">False</property>
+                            <property name="halign">fill</property>
+                            <property name="valign">start</property>
+                            <property name="margin-start">8</property>
+                            <property name="margin-end">0</property>
+                            <property name="margin-top">0</property>
+                            <property name="margin-bottom">0</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">False</property>
+                            <property name="orientation">vertical</property>
+                            <property name="spacing">4</property>
+                            <child>
+                              <!-- Position frame -->
+                              <object class="GtkFrame" id="frame_gumpobj_checkmark_position">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="halign">start</property>
+                                <property name="valign">start</property>
+                                <property name="hexpand">False</property>
+                                <property name="vexpand">False</property>
+                                <property name="label-xalign">0</property>
+                                <child>
+                                  <object class="GtkBox" id="hbox_gumpobj_checkmark_position">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="valign">start</property>
+                                    <property name="margin-start">4</property>
+                                    <property name="margin-end">4</property>
+                                    <property name="margin-top">2</property>
+                                    <property name="margin-bottom">2</property>
+                                    <property name="hexpand">False</property>
+                                    <property name="vexpand">False</property>
+                                    <property name="orientation">horizontal</property>
+                                    <property name="spacing">8</property>
+                                    <child>
+                                      <object class="GtkSpinButton" id="shinfo_gumpobj_checkmark_x">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="halign">start</property>
+                                        <property name="valign">center</property>
+                                        <property name="width-chars">5</property>
+                                        <property name="adjustment">adjustment504</property>
+                                        <property name="climb-rate">1</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSpinButton" id="shinfo_gumpobj_checkmark_y">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="halign">start</property>
+                                        <property name="valign">center</property>
+                                        <property name="width-chars">5</property>
+                                        <property name="adjustment">adjustment505</property>
+                                        <property name="climb-rate">1</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child type="label">
+                                  <object class="GtkLabel" id="label_gumpobj_checkmark_position">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="label" translatable="yes">Position (x,y)</property>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="shinfo_gumpobj_checkmark_preview">
+                            <property name="label" translatable="yes">Preview</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="receives-default">False</property>
+                            <property name="halign">start</property>
+                            <property name="valign">center</property>
+                            <property name="margin-start">4</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">False</property>
+                            <property name="use-underline">True</property>
+                            <property name="draw-indicator">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="label_gumpobj_checkmark">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Checkmark</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="label_gumpobj">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
                 <property name="valign">center</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="use-underline">True</property>
-                <property name="draw-indicator">True</property>
-                <signal name="toggled" handler="on_shinfo_gumpobj_container_toggle_toggled" swapped="no"/>
+                <property name="label" translatable="yes">Gump Object</property>
+                <property name="justify">center</property>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkBox" id="shinfo_gumpobj_container_content">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="sensitive">False</property>
-            <property name="halign">fill</property>
-            <property name="valign">start</property>
-            <property name="margin-start">20</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">0</property>
-            <property name="margin-bottom">0</property>
-            <property name="hexpand">False</property>
-            <property name="vexpand">False</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">4</property>
-            <child>
-              <!-- Position frame -->
-              <object class="GtkFrame" id="frame_gumpobj_container_position">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">start</property>
-                <property name="valign">start</property>
-                <property name="hexpand">False</property>
-                <property name="vexpand">False</property>
-                <property name="label-xalign">0</property>
-                <child>
-                  <object class="GtkBox" id="hbox_gumpobj_container_position">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">start</property>
-                    <property name="valign">start</property>
-                    <property name="margin-start">4</property>
-                    <property name="margin-end">4</property>
-                    <property name="margin-top">2</property>
-                    <property name="margin-bottom">2</property>
-                    <property name="hexpand">False</property>
-                    <property name="vexpand">False</property>
-                    <property name="orientation">horizontal</property>
-                    <property name="spacing">8</property>
-                    <child>
-                      <object class="GtkSpinButton" id="shinfo_gumpobj_container_x">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="halign">start</property>
-                        <property name="valign">center</property>
-                        <property name="width-chars">5</property>
-                        <property name="adjustment">adjustment500</property>
-                        <property name="climb-rate">1</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSpinButton" id="shinfo_gumpobj_container_y">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="halign">start</property>
-                        <property name="valign">center</property>
-                        <property name="width-chars">5</property>
-                        <property name="adjustment">adjustment501</property>
-                        <property name="climb-rate">1</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel" id="label_gumpobj_container_position">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Position (x,y)</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <!-- Width frame -->
-              <object class="GtkFrame" id="frame_gumpobj_container_width">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">start</property>
-                <property name="valign">start</property>
-                <property name="hexpand">False</property>
-                <property name="vexpand">False</property>
-                <property name="label-xalign">0</property>
-                <child>
-                  <object class="GtkBox" id="hbox_gumpobj_container_width">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">start</property>
-                    <property name="valign">start</property>
-                    <property name="margin-start">4</property>
-                    <property name="margin-end">4</property>
-                    <property name="margin-top">2</property>
-                    <property name="margin-bottom">2</property>
-                    <property name="hexpand">False</property>
-                    <property name="vexpand">False</property>
-                    <property name="orientation">horizontal</property>
-                    <property name="spacing">8</property>
-                    <child>
-                      <object class="GtkSpinButton" id="shinfo_gumpobj_container_w">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="halign">start</property>
-                        <property name="valign">center</property>
-                        <property name="width-chars">5</property>
-                        <property name="adjustment">adjustment502</property>
-                        <property name="climb-rate">1</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel" id="label_gumpobj_container_width">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Width</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <!-- Height frame -->
-              <object class="GtkFrame" id="frame_gumpobj_container_height">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">start</property>
-                <property name="valign">start</property>
-                <property name="hexpand">False</property>
-                <property name="vexpand">False</property>
-                <property name="label-xalign">0</property>
-                <child>
-                  <object class="GtkBox" id="hbox_gumpobj_container_height">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">start</property>
-                    <property name="valign">start</property>
-                    <property name="margin-start">4</property>
-                    <property name="margin-end">4</property>
-                    <property name="margin-top">2</property>
-                    <property name="margin-bottom">2</property>
-                    <property name="hexpand">False</property>
-                    <property name="vexpand">False</property>
-                    <property name="orientation">horizontal</property>
-                    <property name="spacing">8</property>
-                    <child>
-                      <object class="GtkSpinButton" id="shinfo_gumpobj_container_h">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="halign">start</property>
-                        <property name="valign">center</property>
-                        <property name="width-chars">5</property>
-                        <property name="adjustment">adjustment503</property>
-                        <property name="climb-rate">1</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel" id="label_gumpobj_container_height">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Height</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
         </child>
-        <child>
-          <object class="GtkCheckButton" id="shinfo_gumpobj_container_preview">
-            <property name="label" translatable="yes">Preview</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="sensitive">False</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="valign">center</property>
-            <property name="margin-start">20</property>
-            <property name="hexpand">False</property>
-            <property name="vexpand">False</property>
-            <property name="use-underline">True</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-    <child type="label">
-      <object class="GtkLabel" id="label_gumpobj_container">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Container</property>
-      </object>
-    </child>
-  </object>
-  <packing>
-    <property name="expand">False</property>
-    <property name="fill">True</property>
-    <property name="position">0</property>
-  </packing>
-</child>
-        <child>
-          <object class="GtkFrame" id="frame_gumpobj_checkmark">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="halign">fill</property>
-    <property name="valign">start</property>
-    <property name="margin-start">0</property>
-    <property name="margin-end">0</property>
-    <property name="margin-top">4</property>
-    <property name="margin-bottom">2</property>
-    <property name="hexpand">False</property>
-    <property name="vexpand">False</property>
-    <property name="label-xalign">0</property>
-    <child>
-      <object class="GtkBox" id="shinfo_gumpobj_checkmark_box">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">fill</property>
-        <property name="valign">start</property>
-        <property name="margin-start">4</property>
-        <property name="margin-end">4</property>
-        <property name="margin-top">2</property>
-        <property name="margin-bottom">2</property>
-        <property name="hexpand">False</property>
-        <property name="vexpand">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">4</property>
-        <child>
-          <object class="GtkCheckButton" id="shinfo_gumpobj_checkmark_toggle">
-            <property name="label" translatable="yes">Checkmark</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="valign">center</property>
-            <property name="hexpand">False</property>
-            <property name="vexpand">False</property>
-            <property name="use-underline">True</property>
-            <property name="draw-indicator">True</property>
-            <signal name="toggled" handler="on_shinfo_gumpobj_checkmark_toggle_toggled" swapped="no"/>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="shinfo_gumpobj_checkmark_content">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="sensitive">False</property>
-            <property name="halign">fill</property>
-            <property name="valign">start</property>
-            <property name="margin-start">20</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">0</property>
-            <property name="margin-bottom">0</property>
-            <property name="hexpand">False</property>
-            <property name="vexpand">False</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">4</property>
-            <child>
-              <!-- Position frame -->
-              <object class="GtkFrame" id="frame_gumpobj_checkmark_position">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">start</property>
-                <property name="valign">start</property>
-                <property name="hexpand">False</property>
-                <property name="vexpand">False</property>
-                <property name="label-xalign">0</property>
-                <child>
-                  <object class="GtkBox" id="hbox_gumpobj_checkmark_position">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">start</property>
-                    <property name="valign">start</property>
-                    <property name="margin-start">4</property>
-                    <property name="margin-end">4</property>
-                    <property name="margin-top">2</property>
-                    <property name="margin-bottom">2</property>
-                    <property name="hexpand">False</property>
-                    <property name="vexpand">False</property>
-                    <property name="orientation">horizontal</property>
-                    <property name="spacing">8</property>
-                    <child>
-                      <object class="GtkSpinButton" id="shinfo_gumpobj_checkmark_x">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="halign">start</property>
-                        <property name="valign">center</property>
-                        <property name="width-chars">5</property>
-                        <property name="adjustment">adjustment504</property>
-                        <property name="climb-rate">1</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSpinButton" id="shinfo_gumpobj_checkmark_y">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="halign">start</property>
-                        <property name="valign">center</property>
-                        <property name="width-chars">5</property>
-                        <property name="adjustment">adjustment505</property>
-                        <property name="climb-rate">1</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel" id="label_gumpobj_checkmark_position">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Position (x,y)</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="shinfo_gumpobj_checkmark_preview">
-            <property name="label" translatable="yes">Preview</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="sensitive">False</property>
-            <property name="receives-default">False</property>
-            <property name="halign">start</property>
-            <property name="valign">center</property>
-            <property name="margin-start">20</property>
-            <property name="hexpand">False</property>
-            <property name="vexpand">False</property>
-            <property name="use-underline">True</property>
-            <property name="draw-indicator">True</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-    <child type="label">
-      <object class="GtkLabel" id="label_gumpobj_checkmark">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Checkmark</property>
-      </object>
-    </child>
-  </object>
-  <packing>
-    <property name="expand">False</property>
-    <property name="fill">True</property>
-    <property name="position">1</property>
-  </packing>
-</child>
-      </object>
-    </child>
-    <child type="tab">
-      <object class="GtkLabel" id="label_gumpobj">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="halign">center</property>
-        <property name="valign">center</property>
-        <property name="hexpand">False</property>
-        <property name="vexpand">False</property>
-        <property name="label" translatable="yes">Gump Object</property>
-        <property name="justify">center</property>
-      </object>
-    </child>
-  </object>
-  <packing>
-    <property name="position">1</property>
-  </packing>
-</child>
       </object>
     </child>
   </object>
