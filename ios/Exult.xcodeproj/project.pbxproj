@@ -34,6 +34,7 @@
 		8A33B5EC2C2051B800075AF4 /* ConfigSetting_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5EB2C2051B800075AF4 /* ConfigSetting_widget.cc */; };
 		8A33B5EF2C2051B800075AF4 /* AdvancedOptions_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A33B5EE2C2051B800075AF4 /* AdvancedOptions_gump.cc */; };
 		8A38EB772E2AA11300450868 /* playscene.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A38EB762E2AA11300450868 /* playscene.cc */; };
+		8A3D5ADF2EE1D9420044D0FF /* gumpinf.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A3D5ADE2EE1D9420044D0FF /* gumpinf.cc */; };
 		8A45A3B8247C068500F12F4D /* joythumb-glass.png in Resources */ = {isa = PBXBuildFile; fileRef = 8A45A3AC247C068500F12F4D /* joythumb-glass.png */; };
 		8A599C2224605925006E3252 /* libmt32emu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A599C21246058A9006E3252 /* libmt32emu.a */; platformFilter = ios; };
 		8A6013712057CFAD00FCA555 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A6013662057CF0C00FCA555 /* Metal.framework */; };
@@ -365,6 +366,8 @@
 		8A33B5F02C2051B800075AF4 /* AdvancedOptions_gump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AdvancedOptions_gump.h; path = ../gumps/AdvancedOptions_gump.h; sourceTree = "<group>"; };
 		8A38EB752E2AA11300450868 /* playscene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = playscene.h; path = ../playscene.h; sourceTree = SOURCE_ROOT; };
 		8A38EB762E2AA11300450868 /* playscene.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = playscene.cc; path = ../playscene.cc; sourceTree = SOURCE_ROOT; };
+		8A3D5ADD2EE1D9420044D0FF /* gumpinf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gumpinf.h; sourceTree = "<group>"; };
+		8A3D5ADE2EE1D9420044D0FF /* gumpinf.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = gumpinf.cc; sourceTree = "<group>"; };
 		8A45A3AC247C068500F12F4D /* joythumb-glass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "joythumb-glass.png"; sourceTree = "<group>"; };
 		8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = libmt32emu.xcodeproj; sourceTree = "<group>"; };
 		8A6013662057CF0C00FCA555 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
@@ -1269,6 +1272,8 @@
 				E700DD1C1A6E3121006C8BE4 /* frnameinf.h */,
 				E700DD1D1A6E3121006C8BE4 /* frusefun.cc */,
 				E700DD1E1A6E3121006C8BE4 /* frusefun.h */,
+				8A3D5ADD2EE1D9420044D0FF /* gumpinf.h */,
+				8A3D5ADE2EE1D9420044D0FF /* gumpinf.cc */,
 				FE4F4F1A887E52F238D70180 /* lightinf.cc */,
 				48254DD28D1E318C3881BC91 /* lightinf.h */,
 				E700DD221A6E3121006C8BE4 /* monstinf.cc */,
@@ -2070,6 +2075,7 @@
 				E700DE261A6E344D006C8BE4 /* imagebuf.cc in Sources */,
 				E700DBDC1A6E2CE7006C8BE4 /* CoreMidiDriver.cpp in Sources */,
 				E700DBBD1A6E2CE7006C8BE4 /* AudioSample.cc in Sources */,
+				8A3D5ADF2EE1D9420044D0FF /* gumpinf.cc in Sources */,
 				E700DE9E1A6E3497006C8BE4 /* Yesno_gump.cc in Sources */,
 				E700DC901A6E30A7006C8BE4 /* args.cc in Sources */,
 				8AB53D8C1C9CA0A90084C69D /* ShortcutBar_gump.cc in Sources */,

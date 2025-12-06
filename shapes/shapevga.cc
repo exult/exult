@@ -39,6 +39,7 @@
 #include "frflags.h"
 #include "frnameinf.h"
 #include "frusefun.h"
+#include "gumpinf.h"
 #include "ignore_unused_variable_warning.h"
 #include "lightinf.h"
 #include "monstinf.h"
@@ -488,6 +489,80 @@ void Shapes_vga_file::Read_Paperdoll_text_data_file(
 			"paperdol_info", readers, sections, editing, game_type, flxres);
 }
 
+void Shapes_vga_file::Read_Gumpinf_text_data_file(
+		bool editing, Exult_Game game_type) {
+	std::array sections{"container_area"sv, "checkmark_pos"sv, "special"sv};
+
+	// Functor for reading container area
+	struct Container_area_functor {
+		bool operator()(
+				std::istream& in, int version, bool patch, Exult_Game game,
+				Gump_info& ginfo) const {
+			ignore_unused_variable_warning(version, patch, game);
+			ginfo.container_x = ReadInt(in);
+			ginfo.container_y = ReadInt(in);
+			ginfo.container_w = ReadInt(in);
+			ginfo.container_h = ReadInt(in);
+			ginfo.has_area    = true;
+			return true;
+		}
+	};
+
+	// Functor for reading checkmark position
+	struct Checkmark_pos_functor {
+		bool operator()(
+				std::istream& in, int version, bool patch, Exult_Game game,
+				Gump_info& ginfo) const {
+			ignore_unused_variable_warning(version, patch, game);
+			ginfo.checkmark_x     = ReadInt(in);
+			ginfo.checkmark_y     = ReadInt(in);
+			ginfo.checkmark_shape = ReadInt(in);
+			ginfo.has_checkmark   = true;
+			return true;
+		}
+	};
+
+	// Functor for reading special shapes
+	struct Special_functor {
+		bool operator()(
+				std::istream& in, int version, bool patch, Exult_Game game,
+				Gump_info& ginfo) const {
+			ignore_unused_variable_warning(in, version, patch, game);
+			ginfo.is_special = true;
+			return true;
+		}
+	};
+
+	// The template parameters are: <Info, Functor>  (Info comes FIRST!)
+	// The constructor takes: std::map<int, Info>&
+	using Container_area_reader
+			= Functor_multidata_reader<Gump_info, Container_area_functor>;
+	using Checkmark_pos_reader
+			= Functor_multidata_reader<Gump_info, Checkmark_pos_functor>;
+	using Special_reader = Functor_multidata_reader<Gump_info, Special_functor>;
+
+	std::array readers = make_unique_array<Base_reader>(
+			std::make_unique<Container_area_reader>(Gump_info::gump_info_map),
+			std::make_unique<Checkmark_pos_reader>(Gump_info::gump_info_map),
+			std::make_unique<Special_reader>(Gump_info::gump_info_map));
+	static_assert(sections.size() == readers.size());
+
+	const int flxres = game_type == BLACK_GATE ? EXULT_BG_FLX_GUMP_INFO_TXT
+											   : EXULT_SI_FLX_GUMP_INFO_TXT;
+
+	Read_text_data_file(
+			"gump_info", readers, sections, editing, game_type, flxres);
+
+	for (auto& [shnum, ginfo] : Gump_info::gump_info_map) {
+		if (ginfo.has_checkmark && ginfo.checkmark_shape > 0) {
+			// Mark the checkmark shape itself
+			auto& checkmark_info
+					= Gump_info::gump_info_map[ginfo.checkmark_shape];
+			checkmark_info.is_checkmark = true;
+		}
+	}
+}
+
 /*
  *  Reload static data for weapons, ammo and mosters to
  *  fix data that was lost by earlier versions of ES.
@@ -523,6 +598,7 @@ void Shapes_vga_file::reload_info(Exult_Game game    // Which game.
 ) {
 	info_read = false;
 	info.clear();
+	Gump_info::clear();
 	read_info(game);
 }
 
@@ -718,6 +794,7 @@ bool Shapes_vga_file::read_info(
 	Read_Shapeinf_text_data_file(editing, game);
 	Read_Bodies_text_data_file(editing, game);
 	Read_Paperdoll_text_data_file(editing, game);
+	Read_Gumpinf_text_data_file(editing, game);
 
 	// Ensure valid ready spots for all shapes.
 	const unsigned char defready = game == BLACK_GATE ? backpack : rhand;

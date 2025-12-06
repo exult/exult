@@ -27,21 +27,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "U7obj.h"
 #include "cheat.h"
 #include "contain.h"
-#include "data/exult_bg_flx.h"
-#include "data/exult_si_flx.h"
-#include "databuf.h"
 #include "game.h"
 #include "gamewin.h"
+#include "gumpinf.h"
 #include "misc_buttons.h"
-#include "msgfile.h"
 #include "objiter.h"
 #include "utils.h"
 
 #include <algorithm>
 #include <cctype>
 #include <charconv>
-
-std::unique_ptr<Text_msg_file_reader> Gump::gump_area_info;
+#include <sstream>
 
 /*
  *  Create a gump.
@@ -135,103 +131,25 @@ void Gump::set_pos(int newx, int newy) {    // Set new spot on screen.
 	gwin->add_dirty(get_rect());
 }
 
-/*
- *  Sets object area and creates checkmark button
- */
-
-static bool read_int_and_advance(std::string_view& line, int& val) {
-	// Remove whitspace from start
-	while (line.size() && std::isspace(line.front())) {
-		line.remove_prefix(1);
-	}
-
-	if (!line.size()) {
-		return false;
-	}
-
-	// find the comma or end
-	size_t comma = line.find(',', 0);
-	if (comma == line.npos) {
-		comma = line.size();
-	}
-	auto sub = line.substr(0, comma);
-
-	// remove white space at end of subsctring befor comma
-	while (sub.size() && std::isspace(sub.back())) {
-		sub.remove_suffix(1);
-	}
-
-	if (!sub.size()) {
-		return false;
-	}
-
-	auto res = std::from_chars(sub.data(), sub.data() + sub.size(), val, 10);
-	if (res.ptr != sub.data() + sub.size()) {
-		return false;
-	}
-
-	if (comma + 1 >= line.size()) {
-		line = std::string_view();
-	} else {
-		line = line.substr(comma + 1);
-	}
-
-	return true;
-}
-
 void Gump::set_object_area(
 		TileRect area, int checkx, int checky, bool set_check) {
-	if (!gump_area_info) {
-		File_spec flx;
-		if (GAME_BG) {
-			flx = File_spec(
-					BUNDLE_CHECK(BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX),
-					EXULT_BG_FLX_GUMP_AREA_INFO_TXT);
-		} else if (GAME_SI) {
-			flx = File_spec(
-					BUNDLE_CHECK(BUNDLE_EXULT_SI_FLX, EXULT_SI_FLX),
-					EXULT_SI_FLX_GUMP_AREA_INFO_TXT);
-		}
-
-		IExultDataSource datasource(
-				flx, GUMP_AREA_INFO, PATCH_GUMP_AREA_INFO, 0);
-		gump_area_info = std::make_unique<Text_msg_file_reader>(datasource);
-	}
-
-	// if we sucesfully read it  try to use it
-	if (gump_area_info && get_shapenum() >= 0
-		&& get_shapefile() == SF_GUMPS_VGA) {
-		auto section = gump_area_info->get_global_section();
-		if (size_t(get_shapenum()) < section.size()) {
-			auto osv = section[(get_shapenum())];
-			auto sv  = osv.value_or(std::string_view());
-			if (sv.size()) {
-				// Read 6 ints
-				int  vals[6];
-				bool success = true;
-
-				for (int& v : vals) {
-					if (!(success = read_int_and_advance(sv, v))) {
-						break;
-					}
-				}
-
-				// succeeded in parsing line, so update the values
-				if (success) {
-					area.x = vals[0];
-					area.y = vals[1];
-					area.w = vals[2];
-					area.h = vals[3];
-					checkx = vals[4];
-					checky = vals[5];
-				} else {
-					std::cerr << "Failed to parse line in "
-								 "gump_area_info.txt for gump "
-							  << get_shapenum() << std::endl;
-				}
+	// Try to read container area and checkmark position from gump_info.txt
+	if (get_shapenum() >= 0 && get_shapefile() == SF_GUMPS_VGA) {
+		const Gump_info* info = Gump_info::get_gump_info(get_shapenum());
+		if (info) {
+			if (info->has_area) {
+				area.x = info->container_x;
+				area.y = info->container_y;
+				area.w = info->container_w;
+				area.h = info->container_h;
+			}
+			if (info->has_checkmark) {
+				checkx = info->checkmark_x;
+				checky = info->checkmark_y;
 			}
 		}
 	}
+
 	object_area = area;
 	if (set_check
 		&& std::none_of(elems.begin(), elems.end(), [](auto elem) -> bool {
@@ -571,7 +489,7 @@ bool Gump::isOffscreen(bool partially) const {
 	auto iwin = gwin->get_win();
 
 	// convert to full image window coords from game window coords
-	rect.shift(-iwin->get_start_x(), -iwin->get_start_y()); 
+	rect.shift(-iwin->get_start_x(), -iwin->get_start_y());
 
 	if (partially) {
 		return rect.x < 0 || rect.y < 0
@@ -579,8 +497,7 @@ bool Gump::isOffscreen(bool partially) const {
 			   || (rect.y + rect.h) > iwin->get_full_height();
 	} else {
 		return rect.x >= iwin->get_full_width()
-			   || rect.y >= iwin->get_full_height()
-			   || (rect.x + rect.w) <= 0
+			   || rect.y >= iwin->get_full_height() || (rect.x + rect.w) <= 0
 			   || (rect.y + rect.h) <= 0;
 	}
 }

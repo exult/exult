@@ -484,6 +484,7 @@ ES_SHAPES_OBJS:=\
 	shapes/shapeinf/frnameinf.o \
 	shapes/shapeinf/frflags.o \
 	shapes/shapeinf/frusefun.o \
+	shapes/shapeinf/gumpinf.o \
 	shapes/shapeinf/lightinf.o \
 	shapes/shapeinf/monstinf.o \
 	shapes/shapeinf/npcdollinf.o \
