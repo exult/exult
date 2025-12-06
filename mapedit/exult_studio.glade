@@ -13976,7 +13976,7 @@
                                             <property name="valign">center</property>
                                             <property name="hexpand">False</property>
                                             <property name="vexpand">False</property>
-                                            <property name="tooltip-text" translatable="yes">Browsing Usecode is not yet available.&#10;Please enter the Usecode directly.</property>
+                                            <property name="tooltip-text" translatable="yes">Browsing Usecode is only available for modded Usecode.&#10;Please enter original Usecode directly.</property>
                                             <property name="use-underline">True</property>
                                             <signal name="clicked" handler="on_shinfo_weapon_uc_browse_clicked" swapped="no"/>
                                           </object>
@@ -14039,7 +14039,7 @@
                                             <property name="valign">center</property>
                                             <property name="hexpand">False</property>
                                             <property name="vexpand">False</property>
-                                            <property name="tooltip-text" translatable="yes">Browsing Usecode is not yet available.&#10;Please enter the Usecode directly.</property>
+                                            <property name="tooltip-text" translatable="yes">Browsing Usecode is only available for modded Usecode.&#10;Please enter original Usecode directly.</property>
                                             <property name="use-underline">True</property>
                                             <signal name="clicked" handler="on_shinfo_weapon_usecode_browse_clicked" swapped="no"/>
                                           </object>
@@ -15005,7 +15005,7 @@
                                             <property name="valign">center</property>
                                             <property name="hexpand">False</property>
                                             <property name="vexpand">False</property>
-                                            <property name="tooltip-text" translatable="yes">Browsing Usecode is not yet available.&#10;Please enter the Usecode directly.</property>
+                                            <property name="tooltip-text" translatable="yes">Browsing Usecode is only available for modded Usecode.&#10;Please enter original Usecode directly.</property>
                                             <property name="use-underline">True</property>
                                             <signal name="clicked" handler="on_shinfo_ammo_usecode_browse_clicked" swapped="no"/>
                                           </object>
