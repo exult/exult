@@ -1303,18 +1303,6 @@
       </row>
     </data>
   </object>
-  <object class="GtkImage" id="close_img13">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">window-close</property>
-    <property name="use-fallback">True</property>
-  </object>
-  <object class="GtkImage" id="close_img37">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="icon-name">window-close</property>
-    <property name="use-fallback">True</property>
-  </object>
   <object class="GtkListStore" id="criteria_liststore">
     <columns>
       <!-- column-name criteria -->
@@ -3498,6 +3486,8 @@
   <object class="GtkWindow" id="egg_window">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Exult Egg</property>
+    <property name="default-width">950</property>
+    <property name="default-height">510</property>
     <signal name="delete-event" handler="on_egg_window_delete_event" swapped="no"/>
     <child>
       <object class="GtkBox" id="vbox2">
@@ -3510,10 +3500,10 @@
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
             <property name="valign">center</property>
-            <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">0</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-start">5</property>
+            <property name="margin-end">5</property>
+            <property name="margin-top">2</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
@@ -3792,7 +3782,7 @@
                         <property name="margin-start">4</property>
                         <property name="margin-end">4</property>
                         <property name="margin-top">2</property>
-                        <property name="margin-bottom">2</property>
+                        <property name="margin-bottom">7</property>
                         <property name="vexpand">False</property>
                         <property name="width-chars">5</property>
                         <property name="primary-icon-activatable">False</property>
@@ -5776,7 +5766,7 @@
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="egg_apply_btn">
                 <property name="label">_Apply</property>
@@ -5784,7 +5774,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
@@ -5806,10 +5796,10 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
-                <property name="margin-end">0</property>
+                <property name="margin-end">5</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
@@ -5830,12 +5820,12 @@
           <object class="GtkStatusbar" id="egg_status">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="halign">fill</property>
+            <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
             <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-bottom">3</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
           </object>
@@ -6308,10 +6298,10 @@
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
             <property name="valign">fill</property>
-            <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-start">4</property>
+            <property name="margin-end">4</property>
+            <property name="margin-top">2</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="orientation">horizontal</property>
@@ -9216,7 +9206,30 @@
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">start</property>
+            <child>
+              <object class="GtkButton" id="npc_show_gump">
+                <property name="label" translatable="yes">_Show gump</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="receives-default">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">end</property>
+                <property name="margin-start">5</property>
+                <property name="margin-end">0</property>
+                <property name="margin-top">0</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">False</property>
+                <property name="use-underline">True</property>
+                <signal name="clicked" handler="on_npc_show_gump_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">0</property>
+                <property name="secondary">False</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkButton" id="npc_apply_btn">
                 <property name="label">_Apply</property>
@@ -9224,8 +9237,8 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
+                <property name="halign">fill</property>
+                <property name="valign">end</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
                 <property name="margin-top">0</property>
@@ -9236,7 +9249,8 @@
                 <signal name="clicked" handler="on_npc_apply_btn_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">0</property>
+                <property name="position">1</property>
+                <property name="secondary">True</property>
               </packing>
             </child>
             <child>
@@ -9246,10 +9260,10 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
+                <property name="halign">fill</property>
+                <property name="valign">end</property>
                 <property name="margin-start">2</property>
-                <property name="margin-end">2</property>
+                <property name="margin-end">5</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
@@ -9258,29 +9272,8 @@
                 <signal name="clicked" handler="on_npc_cancel_btn_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="npc_show_gump">
-                <property name="label" translatable="yes">_Show gump</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="can-default">True</property>
-                <property name="receives-default">False</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="margin-start">2</property>
-                <property name="margin-end">0</property>
-                <property name="margin-top">0</property>
-                <property name="margin-bottom">0</property>
-                <property name="hexpand">False</property>
-                <property name="vexpand">False</property>
-                <property name="use-underline">True</property>
-                <signal name="clicked" handler="on_npc_show_gump_clicked" swapped="no"/>
-              </object>
-              <packing>
                 <property name="position">2</property>
+                <property name="secondary">True</property>
               </packing>
             </child>
           </object>
@@ -9292,12 +9285,12 @@
           <object class="GtkStatusbar" id="npc_status">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="halign">fill</property>
+            <property name="halign">center</property>
             <property name="valign">center</property>
-            <property name="margin-start">0</property>
+            <property name="margin-start">5</property>
             <property name="margin-end">0</property>
             <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
           </object>
@@ -10160,10 +10153,10 @@
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
             <property name="valign">fill</property>
-            <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">0</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-start">6</property>
+            <property name="margin-end">6</property>
+            <property name="margin-top">2</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="orientation">horizontal</property>
@@ -10478,10 +10471,10 @@
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
             <property name="valign">fill</property>
-            <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-start">6</property>
+            <property name="margin-end">6</property>
+            <property name="margin-top">2</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="label-xalign">0</property>
@@ -10582,15 +10575,15 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">end</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
+            <property name="margin-end">2</property>
             <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-bottom">5</property>
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="obj_okay">
                 <property name="label">_OK</property>
@@ -10598,7 +10591,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
@@ -10620,7 +10613,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">2</property>
@@ -10642,10 +10635,10 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
-                <property name="margin-end">0</property>
+                <property name="margin-end">3</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
@@ -10668,6 +10661,7 @@
   <object class="GtkWindow" id="shape_window">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Exult Shape Info</property>
+    <property name="resizable">False</property>
     <signal name="delete-event" handler="on_shape_window_delete_event" swapped="no"/>
     <child>
       <object class="GtkBox" id="vbox21">
@@ -10679,13 +10673,13 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">start</property>
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
             <property name="margin-top">0</property>
             <property name="margin-bottom">1</property>
             <property name="hexpand">False</property>
-            <property name="vexpand">True</property>
+            <property name="vexpand">False</property>
             <property name="label-xalign">0</property>
             <child>
               <object class="GtkBox" id="hbox13">
@@ -10712,8 +10706,8 @@
                     <property name="label-xalign">0</property>
                     <child>
                       <object class="GtkDrawingArea" id="shinfo_draw">
-                        <property name="width-request">80</property>
-                        <property name="height-request">80</property>
+                        <property name="width-request">150</property>
+                        <property name="height-request">150</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="margin-start">4</property>
@@ -24174,15 +24168,16 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">end</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-end">5</property>
+            <property name="margin-top">4</property>
+            <property name="margin-bottom">5</property>
             <property name="hexpand">False</property>
-            <property name="vexpand">True</property>
+            <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
+            <property name="spacing">4</property>
             <child>
               <object class="GtkButton" id="shinfo_okay">
                 <property name="label">_OK</property>
@@ -24191,10 +24186,10 @@
                 <property name="can-default">True</property>
                 <property name="has-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
-                <property name="margin-end">2</property>
+                <property name="margin-end">0</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
@@ -24213,10 +24208,10 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
-                <property name="margin-start">2</property>
-                <property name="margin-end">2</property>
+                <property name="margin-start">0</property>
+                <property name="margin-end">0</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
@@ -24235,9 +24230,9 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
-                <property name="margin-start">2</property>
+                <property name="margin-start">0</property>
                 <property name="margin-end">0</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
@@ -24782,6 +24777,8 @@
       <object class="GtkBox" id="vbox23">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="width-request">600</property>
+        <property name="height-request">700</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkFrame" id="frame112">
@@ -24789,10 +24786,10 @@
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
             <property name="valign">center</property>
-            <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">0</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-start">4</property>
+            <property name="margin-end">4</property>
+            <property name="margin-top">2</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="label-xalign">0</property>
@@ -24871,10 +24868,10 @@
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
             <property name="valign">fill</property>
-            <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-start">4</property>
+            <property name="margin-end">4</property>
+            <property name="margin-top">2</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="hscrollbar-policy">never</property>
@@ -24894,15 +24891,15 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">end</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-end">3</property>
+            <property name="margin-top">2</property>
+            <property name="margin-bottom">5</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="equip_okay">
                 <property name="label">_OK</property>
@@ -24910,7 +24907,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
@@ -24932,7 +24929,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">2</property>
@@ -24954,10 +24951,10 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
-                <property name="margin-end">0</property>
+                <property name="margin-end">2</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
@@ -24985,6 +24982,8 @@
       <object class="GtkBox" id="vbox24">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="width-request">850</property>
+        <property name="height-request">450</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkFrame" id="frame114">
@@ -25280,15 +25279,15 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">end</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">0</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-end">2</property>
+            <property name="margin-top">3</property>
+            <property name="margin-bottom">4</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="prompt3_yes">
                 <property name="label" translatable="yes">_Yes</property>
@@ -25296,7 +25295,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
@@ -25318,9 +25317,9 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
-                <property name="margin-start">2</property>
+                <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
@@ -25340,10 +25339,10 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
-                <property name="margin-start">2</property>
-                <property name="margin-end">0</property>
+                <property name="margin-start">0</property>
+                <property name="margin-end">2</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
@@ -25367,12 +25366,13 @@
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
             <property name="valign">fill</property>
-            <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-start">4</property>
+            <property name="margin-end">4</property>
+            <property name="margin-top">2</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
+            <property name="shadow-type">none</property>
             <property name="label-xalign">0</property>
             <child>
               <object class="GtkBox" id="prompt3_hbox">
@@ -25425,6 +25425,8 @@
       <object class="GtkBox" id="vbox26">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-top">15</property>
+        <property name="vexpand">True</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkAspectFrame" id="aspectframe1">
@@ -25439,7 +25441,7 @@
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="label-xalign">0</property>
-            <property name="shadow-type">etched-out</property>
+            <property name="shadow-type">none</property>
             <property name="obey-child">False</property>
             <child>
               <!-- n-columns=2 n-rows=2 -->
@@ -25455,7 +25457,7 @@
                     <property name="margin-start">2</property>
                     <property name="margin-end">0</property>
                     <property name="margin-top">1</property>
-                    <property name="margin-bottom">0</property>
+                    <property name="margin-bottom">1</property>
                     <property name="hexpand">False</property>
                     <property name="vexpand">False</property>
                   </object>
@@ -25559,12 +25561,13 @@
             <property name="halign">fill</property>
             <property name="valign">center</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
+            <property name="margin-end">2</property>
             <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-bottom">6</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="loc_close">
                 <property name="label">C_lose</property>
@@ -25572,17 +25575,15 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
-                <property name="margin-end">0</property>
+                <property name="margin-end">4</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">close_img13</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_loc_close_clicked" swapped="no"/>
               </object>
               <packing>
@@ -25600,11 +25601,17 @@
   <object class="GtkWindow" id="prefs_window">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">ExultStudio Preferences</property>
+    <property name="default-width">450</property>
+    <property name="default-height">210</property>
     <signal name="delete-event" handler="on_prefs_window_delete_event" swapped="no"/>
     <child>
       <object class="GtkBox" id="vbox27">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
+        <property name="margin-top">2</property>
+        <property name="margin-bottom">2</property>
         <property name="orientation">vertical</property>
         <child>
           <!-- n-columns=2 n-rows=4 -->
@@ -25955,15 +25962,15 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">start</property>
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-top">3</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="prefs_okay">
                 <property name="label">_OK</property>
@@ -25971,7 +25978,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
@@ -25993,7 +26000,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">2</property>
@@ -26015,7 +26022,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">0</property>
@@ -26047,6 +26054,8 @@
       <object class="GtkBox" id="vbox28">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">1</property>
+        <property name="margin-end">1</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkFrame" id="frame129">
@@ -26318,6 +26327,8 @@
                           <object class="GtkDrawingArea" id="new_shape_font_color_draw">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="width-request">30</property>
+                            <property name="height-request">30</property>
                             <property name="margin-start">4</property>
                             <property name="margin-end">4</property>
                             <property name="margin-top">2</property>
@@ -26392,15 +26403,15 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">center</property>
+            <property name="valign">end</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-end">5</property>
+            <property name="margin-top">3</property>
+            <property name="margin-bottom">5</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="new_shape_okay">
                 <property name="label">_OK</property>
@@ -26408,7 +26419,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
@@ -26430,7 +26441,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">0</property>
@@ -26484,7 +26495,7 @@
                 <property name="margin-start">4</property>
                 <property name="margin-end">4</property>
                 <property name="margin-top">2</property>
-                <property name="margin-bottom">2</property>
+                <property name="margin-bottom">4</property>
                 <child>
                   <object class="GtkBox" id="vbox30">
                     <property name="visible">True</property>
@@ -26649,15 +26660,15 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">end</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-end">4</property>
+            <property name="margin-top">3</property>
+            <property name="margin-bottom">5</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="export_tiles_okay">
                 <property name="label">_OK</property>
@@ -26665,7 +26676,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
@@ -26687,10 +26698,10 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
-                <property name="margin-end">0</property>
+                <property name="margin-end">2</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
@@ -26725,10 +26736,10 @@
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
             <property name="valign">fill</property>
-            <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">0</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-start">6</property>
+            <property name="margin-end">6</property>
+            <property name="margin-top">2</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
@@ -26779,10 +26790,11 @@
           <object class="GtkBox" id="vbox32">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="height-request">300</property>
             <property name="halign">fill</property>
             <property name="valign">fill</property>
-            <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
+            <property name="margin-start">6</property>
+            <property name="margin-end">6</property>
             <property name="margin-top">1</property>
             <property name="margin-bottom">1</property>
             <property name="hexpand">False</property>
@@ -27055,7 +27067,7 @@
             <property name="valign">fill</property>
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
+            <property name="margin-top">3</property>
             <property name="margin-bottom">0</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
@@ -27064,12 +27076,13 @@
               <object class="GtkButtonBox" id="hbuttonbox12">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="valign">end</property>
                 <property name="margin-start">4</property>
-                <property name="margin-end">4</property>
-                <property name="margin-top">2</property>
-                <property name="margin-bottom">2</property>
+                <property name="margin-end">2</property>
+                <property name="margin-top">4</property>
+                <property name="margin-bottom">4</property>
                 <property name="orientation">horizontal</property>
-                <property name="layout-style">spread</property>
+                <property name="layout-style">end</property>
                 <child>
                   <object class="GtkButton" id="combo_ok">
                     <property name="label">_OK</property>
@@ -27077,7 +27090,7 @@
                     <property name="can-focus">True</property>
                     <property name="can-default">True</property>
                     <property name="receives-default">False</property>
-                    <property name="halign">center</property>
+                    <property name="halign">fill</property>
                     <property name="valign">center</property>
                     <property name="margin-start">0</property>
                     <property name="margin-end">2</property>
@@ -27099,7 +27112,7 @@
                     <property name="can-focus">True</property>
                     <property name="can-default">True</property>
                     <property name="receives-default">False</property>
-                    <property name="halign">center</property>
+                    <property name="halign">fill</property>
                     <property name="valign">center</property>
                     <property name="margin-start">2</property>
                     <property name="margin-end">2</property>
@@ -27121,10 +27134,10 @@
                     <property name="can-focus">True</property>
                     <property name="can-default">True</property>
                     <property name="receives-default">False</property>
-                    <property name="halign">center</property>
+                    <property name="halign">fill</property>
                     <property name="valign">center</property>
                     <property name="margin-start">2</property>
-                    <property name="margin-end">0</property>
+                    <property name="margin-end">2</property>
                     <property name="margin-top">0</property>
                     <property name="margin-bottom">0</property>
                     <property name="hexpand">False</property>
@@ -27154,6 +27167,8 @@
       <object class="GtkBox" id="vbox33">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="width-request">320</property>
+        <property name="height-request">200</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkScrolledWindow" id="scrolledwindow6">
@@ -27187,13 +27202,14 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">end</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-end">4</property>
+            <property name="margin-top">3</property>
+            <property name="margin-bottom">5</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
+            <property name="layout-style">end</property>
             <property name="orientation">horizontal</property>
             <child>
               <object class="GtkButton" id="msg_done">
@@ -27202,17 +27218,15 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
-                <property name="margin-end">0</property>
+                <property name="margin-end">2</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
-                <property name="image">close_img37</property>
                 <property name="use-underline">True</property>
-                <property name="always-show-image">True</property>
                 <signal name="clicked" handler="exult_widget_hide" object="msg_win" swapped="yes"/>
               </object>
               <packing>
@@ -27478,15 +27492,15 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">end</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">0</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-end">2</property>
+            <property name="margin-top">3</property>
+            <property name="margin-bottom">3</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="newmap_ok">
                 <property name="label">_OK</property>
@@ -27494,7 +27508,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
@@ -27516,10 +27530,10 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
-                <property name="margin-end">0</property>
+                <property name="margin-end">2</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
@@ -27545,8 +27559,8 @@
             <property name="valign">fill</property>
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-top">3</property>
+            <property name="margin-bottom">1</property>
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="orientation">vertical</property>
@@ -27839,11 +27853,17 @@
   <object class="GtkWindow" id="barge_window">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Exult Barge</property>
+    <property name="default-width">400</property>
+    <property name="default-height">175</property>
     <signal name="delete-event" handler="exult_widget_hide" swapped="no"/>
     <child>
       <object class="GtkBox" id="vbox40">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">6</property>
+        <property name="margin-end">6</property>
+        <property name="margin-top">4</property>
+        <property name="margin-bottom">2</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox" id="hbox48">
@@ -28038,16 +28058,16 @@
           <object class="GtkButtonBox" id="hbuttonbox14">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="halign">fill</property>
-            <property name="valign">center</property>
+            <property name="halign">end</property>
+            <property name="valign">start</property>
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-top">3</property>
+            <property name="margin-bottom">3</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="barge_apply_btn">
                 <property name="label">_Apply</property>
@@ -28055,8 +28075,8 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
+                <property name="halign">fill</property>
+                <property name="valign">start</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
                 <property name="margin-top">0</property>
@@ -28077,8 +28097,8 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
+                <property name="halign">fill</property>
+                <property name="valign">start</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">0</property>
                 <property name="margin-top">0</property>
@@ -28101,12 +28121,12 @@
           <object class="GtkStatusbar" id="barge_status">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="halign">fill</property>
+            <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
-            <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-top">2</property>
+            <property name="margin-bottom">4</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
           </object>
@@ -28125,6 +28145,11 @@
       <object class="GtkBox" id="vbox48">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="width-request">550</property>
+        <property name="margin-start">6</property>
+        <property name="margin-end">6</property>
+        <property name="margin-top">6</property>
+        <property name="margin-bottom">6</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox" id="hbox52">
@@ -28505,7 +28530,7 @@
               <object class="GtkFrame" id="frame198">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="halign">fill</property>
+                <property name="halign">start</property>
                 <property name="valign">fill</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
@@ -28518,6 +28543,7 @@
                   <object class="GtkBox" id="hbox56">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="halign">start</property>
                     <property name="margin-start">4</property>
                     <property name="margin-end">4</property>
                     <property name="margin-top">2</property>
@@ -28577,27 +28603,6 @@
               </object>
               <packing>
                 <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="cont_show_gump">
-                <property name="label" translatable="yes">_Show Gump</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="halign">fill</property>
-                <property name="valign">center</property>
-                <property name="margin-start">2</property>
-                <property name="margin-end">0</property>
-                <property name="margin-top">0</property>
-                <property name="margin-bottom">0</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">False</property>
-                <property name="use-underline">True</property>
-                <signal name="clicked" handler="on_cont_show_gump_clicked" swapped="no"/>
-              </object>
-              <packing>
-                <property name="position">1</property>
               </packing>
             </child>
           </object>
@@ -28715,7 +28720,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">end</property>
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
             <property name="margin-top">1</property>
@@ -28723,7 +28728,29 @@
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">start</property>
+            <child>
+              <object class="GtkButton" id="cont_show_gump">
+                <property name="label" translatable="yes">_Show Gump</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">center</property>
+                <property name="margin-start">0</property>
+                <property name="margin-end">0</property>
+                <property name="margin-top">0</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">False</property>
+                <property name="use-underline">True</property>
+                <signal name="clicked" handler="on_cont_show_gump_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">0</property>
+                <property name="secondary">False</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkButton" id="cont_ok">
                 <property name="label">_OK</property>
@@ -28731,7 +28758,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
@@ -28743,7 +28770,8 @@
                 <signal name="clicked" handler="on_cont_okay_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">0</property>
+                <property name="position">1</property>
+                <property name="secondary">True</property>
               </packing>
             </child>
             <child>
@@ -28753,7 +28781,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">2</property>
@@ -28765,7 +28793,8 @@
                 <signal name="clicked" handler="on_cont_apply_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
+                <property name="secondary">True</property>
               </packing>
             </child>
             <child>
@@ -28775,7 +28804,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">0</property>
@@ -28787,7 +28816,8 @@
                 <signal name="clicked" handler="on_cont_cancel_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">2</property>
+                <property name="position">3</property>
+                <property name="secondary">True</property>
               </packing>
             </child>
           </object>
@@ -28801,8 +28831,8 @@
   <object class="GtkDialog" id="game_selection">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Select Game</property>
-    <property name="default-width">600</property>
-    <property name="default-height">300</property>
+    <property name="default-width">800</property>
+    <property name="default-height">400</property>
     <property name="type-hint">dialog</property>
     <signal name="close" handler="exult_widget_hide" swapped="no"/>
     <child internal-child="vbox">
@@ -28810,6 +28840,10 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
+        <property name="margin-start">4</property>
+        <property name="margin-end">1</property>
+        <property name="margin-top">2</property>
+        <property name="margin-bottom">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox" id="dialog-action_area4">
             <property name="visible">True</property>
@@ -28817,13 +28851,13 @@
             <property name="halign">fill</property>
             <property name="valign">fill</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
+            <property name="margin-end">2</property>
             <property name="margin-top">0</property>
             <property name="margin-bottom">1</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="gameselect_ok">
                 <property name="label">_OK</property>
@@ -28831,11 +28865,11 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
-                <property name="margin-end">2</property>
-                <property name="margin-top">0</property>
+                <property name="margin-end">0</property>
+                <property name="margin-top">4</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
@@ -28853,11 +28887,11 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
-                <property name="margin-start">2</property>
+                <property name="margin-start">0</property>
                 <property name="margin-end">0</property>
-                <property name="margin-top">0</property>
+                <property name="margin-top">4</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
@@ -28980,7 +29014,7 @@
                 <property name="halign">fill</property>
                 <property name="valign">fill</property>
                 <property name="margin-start">2</property>
-                <property name="margin-end">0</property>
+                <property name="margin-end">4</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
                 <property name="hexpand">True</property>
@@ -29164,13 +29198,18 @@
       <object class="GtkBox" id="dialog-vbox5">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="width-request">550</property>
+        <property name="margin-start">3</property>
+        <property name="margin-end">3</property>
+        <property name="margin-top">3</property>
+        <property name="margin-bottom">2</property>
         <property name="orientation">vertical</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox" id="dialog-action_area5">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">end</property>
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
             <property name="margin-top">0</property>
@@ -29178,29 +29217,7 @@
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
-            <child>
-              <object class="GtkButton" id="usecodes_cancel">
-                <property name="label">_Cancel</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="can-default">True</property>
-                <property name="receives-default">False</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="margin-start">0</property>
-                <property name="margin-end">2</property>
-                <property name="margin-top">0</property>
-                <property name="margin-bottom">0</property>
-                <property name="hexpand">False</property>
-                <property name="vexpand">False</property>
-                <property name="use-underline">True</property>
-                <signal name="clicked" handler="on_usecodes_cancel_clicked" swapped="no"/>
-              </object>
-              <packing>
-                <property name="position">0</property>
-              </packing>
-            </child>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="usecodes_ok">
                 <property name="label">_OK</property>
@@ -29208,7 +29225,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">0</property>
@@ -29218,6 +29235,28 @@
                 <property name="vexpand">False</property>
                 <property name="use-underline">True</property>
                 <signal name="clicked" handler="on_usecodes_ok_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="usecodes_cancel">
+                <property name="label">_Cancel</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="receives-default">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">center</property>
+                <property name="margin-start">0</property>
+                <property name="margin-end">2</property>
+                <property name="margin-top">0</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">False</property>
+                <property name="use-underline">True</property>
+                <signal name="clicked" handler="on_usecodes_cancel_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="position">1</property>
@@ -29238,7 +29277,7 @@
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
             <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-bottom">4</property>
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="orientation">vertical</property>
@@ -29511,12 +29550,18 @@
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Set Game Information</property>
     <property name="modal">True</property>
+    <property name="default-width">600</property>
+    <property name="default-height">400</property>
     <property name="type-hint">dialog</property>
     <signal name="delete-event" handler="exult_widget_hide" swapped="no"/>
     <child>
       <object class="GtkBox" id="vbox115">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">4</property>
+        <property name="margin-end">4</property>
+        <property name="margin-top">2</property>
+        <property name="margin-bottom">2</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox" id="hbox143">
@@ -29524,10 +29569,10 @@
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
             <property name="valign">fill</property>
-            <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
+            <property name="margin-start">2</property>
+            <property name="margin-end">2</property>
             <property name="margin-top">0</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="orientation">horizontal</property>
@@ -29691,15 +29736,15 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
-            <property name="valign">fill</property>
+            <property name="valign">end</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
+            <property name="margin-end">2</property>
             <property name="margin-top">1</property>
-            <property name="margin-bottom">0</property>
+            <property name="margin-bottom">3</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
-            <property name="layout-style">spread</property>
+            <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="gameinfo_apply">
                 <property name="label">_Apply</property>
@@ -29707,7 +29752,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">0</property>
                 <property name="margin-end">2</property>
@@ -29729,7 +29774,7 @@
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">0</property>

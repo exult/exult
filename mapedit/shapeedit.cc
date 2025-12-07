@@ -4845,6 +4845,13 @@ void ExultStudio::open_shape_window(
 		gtk_widget_set_visible(gump_notebook, false);
 	}
 
+	// Reset the main shape drawing to a smaller size each time shape_window is
+	// opened.
+	GtkWidget* draw_area = get_widget("shinfo_draw");
+	if (draw_area) {
+		gtk_widget_set_size_request(draw_area, 150, 150);
+	}
+
 	gtk_widget_set_visible(shapewin, true);
 }
 
