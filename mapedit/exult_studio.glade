@@ -9202,7 +9202,7 @@
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
             <property name="margin-top">1</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-bottom">5</property>
             <property name="hexpand">False</property>
             <property name="vexpand">True</property>
             <property name="orientation">horizontal</property>
@@ -9231,6 +9231,29 @@
               </packing>
             </child>
             <child>
+              <object class="GtkButton" id="npc_okay_btn">
+                <property name="label">_OK</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="receives-default">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">end</property>
+                <property name="margin-start">0</property>
+                <property name="margin-end">2</property>
+                <property name="margin-top">0</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">False</property>
+                <property name="use-underline">True</property>
+                <signal name="clicked" handler="on_npc_okay_btn_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">1</property>
+                <property name="secondary">True</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="npc_apply_btn">
                 <property name="label">_Apply</property>
                 <property name="visible">True</property>
@@ -9249,7 +9272,7 @@
                 <signal name="clicked" handler="on_npc_apply_btn_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
                 <property name="secondary">True</property>
               </packing>
             </child>
@@ -9272,7 +9295,7 @@
                 <signal name="clicked" handler="on_npc_cancel_btn_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">2</property>
+                <property name="position">3</property>
                 <property name="secondary">True</property>
               </packing>
             </child>

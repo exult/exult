@@ -55,6 +55,16 @@ C_EXPORT void on_open_npc_activate(GtkMenuItem* menuitem, gpointer user_data) {
 }
 
 /*
+ *  Npc window's OK button.
+ */
+C_EXPORT void on_npc_okay_btn_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio::get_instance()->set_npc_modified();
+	ExultStudio::get_instance()->save_npc_window();
+	ExultStudio::get_instance()->close_npc_window();
+}
+
+/*
  *  Npc window's Apply button.
  */
 C_EXPORT void on_npc_apply_btn_clicked(GtkButton* btn, gpointer user_data) {
@@ -246,8 +256,14 @@ void ExultStudio::open_npc_window(
 		if (!init_npc_window(data, datalen)) {
 			return;
 		}
+		gtk_widget_set_visible(get_widget("npc_show_gump"), true);
+		gtk_widget_set_visible(get_widget("npc_okay_btn"), true);
+		gtk_widget_set_visible(get_widget("npc_status"), false);
 	} else {
 		init_new_npc();
+		gtk_widget_set_visible(get_widget("npc_show_gump"), false);
+		gtk_widget_set_visible(get_widget("npc_okay_btn"), false);
+		gtk_widget_set_visible(get_widget("npc_status"), true);
 	}
 	gtk_widget_set_visible(npcwin, true);
 }
