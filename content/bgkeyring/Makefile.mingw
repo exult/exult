@@ -290,6 +290,7 @@ install: all
 	cp data/combos.flx $(bgkeyringdir)/Keyring/data/combos.flx
 	cp data/container.dat $(bgkeyringdir)/Keyring/data/container.dat
 	cp data/equip.dat $(bgkeyringdir)/Keyring/data/equip.dat
+	cp data/game_info.txt $(bgkeyringdir)/Keyring/data/game_info.txt
 	cp data/initgame.dat $(bgkeyringdir)/Keyring/data/initgame.dat
 	cp data/minimaps.vga $(bgkeyringdir)/Keyring/data/minimaps.vga
 	cp data/monsters.dat $(bgkeyringdir)/Keyring/data/monsters.dat

@@ -271,6 +271,7 @@ bgkeyringdata_DATA :=	\
 	data/combos.flx	\
 	data/container.dat	\
 	data/equip.dat	\
+	data/gump_info.txt	\
 	data/initgame.dat	\
 	data/minimaps.vga	\
 	data/monsters.dat	\
