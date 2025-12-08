@@ -23,8 +23,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class Gump_info {
 	static std::map<int, Gump_info> gump_info_map;
+	static bool                     any_modified;
 
 	friend class Shapes_vga_file;
+
+	bool container_from_patch;
+	bool checkmark_from_patch;
+	bool special_from_patch;
+
+	bool container_modified;
+	bool checkmark_modified;
+	bool special_modified;
 
 public:
 	int  container_x;
@@ -40,6 +49,58 @@ public:
 	bool is_special;
 
 	Gump_info();
+
+	// Check if we need to write these sections
+	bool is_container_dirty() const {
+		return container_from_patch || container_modified;
+	}
+
+	bool is_checkmark_dirty() const {
+		return checkmark_from_patch || checkmark_modified;
+	}
+
+	bool is_special_dirty() const {
+		return special_from_patch || special_modified;
+	}
+
+	// Setters for patch flags
+	void set_container_from_patch(bool tf) {
+		container_from_patch = tf;
+	}
+
+	void set_checkmark_from_patch(bool tf) {
+		checkmark_from_patch = tf;
+	}
+
+	void set_special_from_patch(bool tf) {
+		special_from_patch = tf;
+	}
+
+	// Setters for modified flags
+	void set_container_modified(bool v) {
+		container_modified = v;
+		if (v) {
+			any_modified = true;
+		}
+	}
+
+	void set_checkmark_modified(bool v) {
+		checkmark_modified = v;
+		if (v) {
+			any_modified = true;
+		}
+	}
+
+	void set_special_modified(bool v) {
+		special_modified = v;
+		if (v) {
+			any_modified = true;
+		}
+	}
+
+	static bool was_any_modified() {
+		return any_modified;
+	}
 
 	static const Gump_info* get_gump_info(int shapenum);
 	static Gump_info&       get_or_create_gump_info(int shapenum);

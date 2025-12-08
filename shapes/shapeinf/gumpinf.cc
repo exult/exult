@@ -26,10 +26,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // Storage for gump info - static member
 std::map<int, Gump_info> Gump_info::gump_info_map;
+bool                     Gump_info::any_modified = false;
 
 Gump_info::Gump_info()
-		: container_x(0), container_y(0), container_w(0), container_h(0),
-		  checkmark_x(0), checkmark_y(0), checkmark_shape(0), has_area(false),
+		: container_from_patch(false), checkmark_from_patch(false),
+		  special_from_patch(false), container_modified(false),
+		  checkmark_modified(false), special_modified(false), container_x(0),
+		  container_y(0), container_w(0), container_h(0), checkmark_x(0),
+		  checkmark_y(0), checkmark_shape(0), has_area(false),
 		  has_checkmark(false), is_checkmark(false), is_special(false) {}
 
 const Gump_info* Gump_info::get_gump_info(int shapenum) {
@@ -43,4 +47,5 @@ Gump_info& Gump_info::get_or_create_gump_info(int shapenum) {
 
 void Gump_info::clear() {
 	gump_info_map.clear();
+	any_modified = false;
 }

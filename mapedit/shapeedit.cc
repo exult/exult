@@ -476,6 +476,20 @@ C_EXPORT gboolean on_shape_window_delete_event(
 }
 
 /*
+ *  Shape Gump info
+ */
+// Stubs for upcoming gump info preview toggles
+C_EXPORT void on_shinfo_gumpobj_container_preview_toggled(
+		GtkToggleButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+}
+
+C_EXPORT void on_shinfo_gumpobj_checkmark_preview_toggled(
+		GtkToggleButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+}
+
+/*
  *  Weapon ammo type changed.
  */
 C_EXPORT gboolean
@@ -848,8 +862,19 @@ C_EXPORT gboolean
 			"shinfo_gumpobj_checkmark_content",
 			is_container || is_checkmarkgump);
 
-	// Checkmark shape always inactive
+	// Pending a de-hardcoding of checkmark shapes:
+	// Checkmark shape always inactive.
 	studio->set_sensitive("shinfo_gumpobj_checkmark_shape", false);
+	// If changing to container or checkmarkgump and checkmark shape is 0,
+	// set it to 2 (the default checkmark shape)
+	if (is_container || is_checkmarkgump) {
+		const int current_checkmark_shape
+				= studio->get_spin("shinfo_gumpobj_checkmark_shape");
+		if (current_checkmark_shape == 0) {
+			studio->set_spin("shinfo_gumpobj_checkmark_shape", 2);
+			studio->set_sensitive("shinfo_gumpobj_checkmark_shape", false);
+		}
+	}
 
 	return true;
 }
@@ -4096,6 +4121,9 @@ void ExultStudio::open_shape_window(
 				},
 				get_widget("shinfo_frame"), -1, ifile, palbuf.get(),
 				get_widget("shinfo_draw"));
+		g_object_set_data(
+				G_OBJECT(get_widget("shinfo_draw")), "shape_single",
+				shape_single);
 		body_single = new Shape_single(
 				get_widget("shinfo_body_shape"), nullptr,
 				[](int shnum) -> bool {
@@ -4903,31 +4931,64 @@ void ExultStudio::save_shape_window() {
 			= file_info && file_info->get_basename()
 			  && strcmp(file_info->get_basename(), "gumps.vga") == 0;
 
+	// In save_shape_window(), replace the is_gumps block:
+
 	if (is_gumps) {
 		// Get or create Gump_info entry
 		Gump_info& gumpinf = Gump_info::get_or_create_gump_info(shnum);
 
-		// Save container data
-		if (get_toggle("shinfo_gumpobj_container_toggle")) {
-			gumpinf.container_x = get_spin("shinfo_gumpobj_container_x");
-			gumpinf.container_y = get_spin("shinfo_gumpobj_container_y");
-			gumpinf.container_w = get_spin("shinfo_gumpobj_container_w");
-			gumpinf.container_h = get_spin("shinfo_gumpobj_container_h");
-			gumpinf.has_area    = true;
-		} else {
-			gumpinf.has_area = false;
+		const int  gump_class   = get_optmenu("shinfo_gumpobj_class");
+		const bool is_container = (gump_class == 1);
+		const bool is_ck_gump   = (gump_class == 2);
+		const bool is_special   = (gump_class == 4);
+
+		// Special flag
+		if (gumpinf.is_special != is_special) {
+			gumpinf.is_special = is_special;
+			gumpinf.set_special_modified(true);
 		}
 
-		// Save checkmark data
-		if (get_toggle("shinfo_gumpobj_checkmark_toggle")) {
-			gumpinf.checkmark_x   = get_spin("shinfo_gumpobj_checkmark_x");
-			gumpinf.checkmark_y   = get_spin("shinfo_gumpobj_checkmark_y");
-			gumpinf.has_checkmark = true;
-		} else {
-			gumpinf.has_checkmark = false;
+		// Container section - only save if this is a Container class
+		if (is_container) {
+			const int new_x = get_spin("shinfo_gumpobj_container_x");
+			const int new_y = get_spin("shinfo_gumpobj_container_y");
+			const int new_w = get_spin("shinfo_gumpobj_container_w");
+			const int new_h = get_spin("shinfo_gumpobj_container_h");
+
+			// Only mark as modified if values actually changed
+			if (!gumpinf.has_area || gumpinf.container_x != new_x
+				|| gumpinf.container_y != new_y || gumpinf.container_w != new_w
+				|| gumpinf.container_h != new_h) {
+				gumpinf.container_x = new_x;
+				gumpinf.container_y = new_y;
+				gumpinf.container_w = new_w;
+				gumpinf.container_h = new_h;
+				gumpinf.has_area    = true;
+				gumpinf.set_container_modified(true);
+			}
+		}
+
+		if ((is_container || is_ck_gump)
+			&& gtk_widget_get_sensitive(
+					get_widget("shinfo_gumpobj_checkmark_x"))) {
+			const int new_x     = get_spin("shinfo_gumpobj_checkmark_x");
+			const int new_y     = get_spin("shinfo_gumpobj_checkmark_y");
+			const int new_shape = get_spin("shinfo_gumpobj_checkmark_shape");
+
+			// Only mark as modified if values actually changed
+			if (!gumpinf.has_checkmark || gumpinf.checkmark_x != new_x
+				|| gumpinf.checkmark_y != new_y
+				|| gumpinf.checkmark_shape != new_shape) {
+				gumpinf.checkmark_x     = new_x;
+				gumpinf.checkmark_y     = new_y;
+				gumpinf.checkmark_shape = new_shape;
+				gumpinf.has_checkmark   = true;
+				gumpinf.set_checkmark_modified(true);
+			}
 		}
 
 		shape_info_modified = true;
+		gtk_widget_queue_draw(get_widget("shinfo_draw"));
 	}
 }
 

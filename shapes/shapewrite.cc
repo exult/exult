@@ -357,117 +357,72 @@ void Shapes_vga_file::Write_Paperdoll_text_data_file(Exult_Game game) {
 }
 
 void Shapes_vga_file::Write_Gumpinf_text_data_file(Exult_Game game) {
-	// Create a temporary map to hold gump info keyed by shape number
-	std::map<int, const Gump_info*> gump_data;
+	ignore_unused_variable_warning(game);
 
-	// Collect all gump info that needs to be written
+	// Collect entries that should be in the patch file
+	std::map<int, const Gump_info*> container_data;
+	std::map<int, const Gump_info*> checkmark_data;
+	std::map<int, const Gump_info*> special_data;
+
 	for (const auto& [shapenum, gumpinf] : Gump_info::gump_info_map) {
-		if (gumpinf.has_area || gumpinf.has_checkmark) {
-			gump_data[shapenum] = &gumpinf;
+		if (gumpinf.has_area && gumpinf.is_container_dirty()) {
+			container_data[shapenum] = &gumpinf;
+		}
+		if (gumpinf.has_checkmark && gumpinf.is_checkmark_dirty()) {
+			checkmark_data[shapenum] = &gumpinf;
+		}
+		if (gumpinf.is_special && gumpinf.is_special_dirty()) {
+			special_data[shapenum] = &gumpinf;
 		}
 	}
 
-	if (gump_data.empty()) {
-		// Nothing to write
+	if (container_data.empty() && checkmark_data.empty()
+		&& special_data.empty()) {
 		return;
 	}
 
-	// Writer for container area
-	class Container_area_writer {
-		const std::map<int, const Gump_info*>& data;
-
-	public:
-		Container_area_writer(const std::map<int, const Gump_info*>& d)
-				: data(d) {}
-
-		size_t count() const {
-			size_t cnt = 0;
-			for (const auto& [shapenum, info] : data) {
-				if (info->has_area) {
-					cnt++;
-				}
-			}
-			return cnt;
-		}
-
-		void write(std::ostream& out, Exult_Game game) {
-			ignore_unused_variable_warning(game);
-			if (count() == 0) {
-				return;
-			}
-			out << "%%section container_area" << std::endl;
-			for (const auto& [shapenum, info] : data) {
-				if (info->has_area) {
-					out << ":" << shapenum << "/" << info->container_x << "/"
-						<< info->container_y << "/" << info->container_w << "/"
-						<< info->container_h << std::endl;
-				}
-			}
-			out << "%%endsection" << std::endl;
-		}
-	};
-
-	// Writer for checkmark position
-	class Checkmark_pos_writer {
-		const std::map<int, const Gump_info*>& data;
-
-	public:
-		Checkmark_pos_writer(const std::map<int, const Gump_info*>& d)
-				: data(d) {}
-
-		size_t count() const {
-			size_t cnt = 0;
-			for (const auto& [shapenum, info] : data) {
-				if (info->has_checkmark) {
-					cnt++;
-				}
-			}
-			return cnt;
-		}
-
-		void write(std::ostream& out, Exult_Game game) {
-			ignore_unused_variable_warning(game);
-			if (count() == 0) {
-				return;
-			}
-			out << "%%section checkmark_pos" << std::endl;
-			for (const auto& [shapenum, info] : data) {
-				if (info->has_checkmark) {
-					out << ":" << shapenum << "/" << info->checkmark_x << "/"
-						<< info->checkmark_y << std::endl;
-				}
-			}
-			out << "%%endsection" << std::endl;
-		}
-	};
-
-	// Check if we have anything to write
-	Container_area_writer container_writer(gump_data);
-	Checkmark_pos_writer  checkmark_writer(gump_data);
-	const size_t          total_cnt
-			= container_writer.count() + checkmark_writer.count();
-
-	if (total_cnt == 0) {
-		return;
-	}
-
-	// Open output file
 	auto pOut = U7open_out("<PATCH>/gump_info.txt", true);
 	if (!pOut) {
 		return;
 	}
 	auto& out = *pOut;
 
-	// Write header
 	out << "#\tExult " << VERSION << " gump info file."
 		<< "\tWritten by ExultStudio." << std::endl;
 	out << "%%section version" << std::endl
 		<< ":1" << std::endl
 		<< "%%endsection" << std::endl;
 
-	// Write sections
-	container_writer.write(out, game);
-	checkmark_writer.write(out, game);
+	// container_area
+	if (!container_data.empty()) {
+		out << "%%section container_area" << std::endl;
+		for (const auto& [shapenum, info] : container_data) {
+			out << ":" << shapenum << "/" << info->container_x << "/"
+				<< info->container_y << "/" << info->container_w << "/"
+				<< info->container_h << std::endl;
+		}
+		out << "%%endsection" << std::endl;
+	}
+
+	// checkmark_pos
+	if (!checkmark_data.empty()) {
+		out << "%%section checkmark_pos" << std::endl;
+		for (const auto& [shapenum, info] : checkmark_data) {
+			out << ":" << shapenum << "/" << info->checkmark_x << "/"
+				<< info->checkmark_y << "/" << info->checkmark_shape
+				<< std::endl;
+		}
+		out << "%%endsection" << std::endl;
+	}
+
+	// special
+	if (!special_data.empty()) {
+		out << "%%section special" << std::endl;
+		for (const auto& [shapenum, info] : special_data) {
+			out << ":" << shapenum << std::endl;
+		}
+		out << "%%endsection" << std::endl;
+	}
 }
 
 /*

@@ -491,6 +491,9 @@ void Shapes_vga_file::Read_Paperdoll_text_data_file(
 
 void Shapes_vga_file::Read_Gumpinf_text_data_file(
 		bool editing, Exult_Game game_type) {
+	if (Gump_info::was_any_modified()) {
+		return;
+	}
 	std::array sections{"container_area"sv, "checkmark_pos"sv, "special"sv};
 
 	// Functor for reading container area
@@ -504,6 +507,9 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(
 			ginfo.container_w = ReadInt(in);
 			ginfo.container_h = ReadInt(in);
 			ginfo.has_area    = true;
+			if (patch) {
+				ginfo.set_container_from_patch(true);
+			}
 			return true;
 		}
 	};
@@ -513,11 +519,14 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(
 		bool operator()(
 				std::istream& in, int version, bool patch, Exult_Game game,
 				Gump_info& ginfo) const {
-			ignore_unused_variable_warning(version, patch, game);
+			ignore_unused_variable_warning(version, game);
 			ginfo.checkmark_x     = ReadInt(in);
 			ginfo.checkmark_y     = ReadInt(in);
 			ginfo.checkmark_shape = ReadInt(in);
 			ginfo.has_checkmark   = true;
+			if (patch) {
+				ginfo.set_checkmark_from_patch(true);
+			}
 			return true;
 		}
 	};
@@ -527,8 +536,11 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(
 		bool operator()(
 				std::istream& in, int version, bool patch, Exult_Game game,
 				Gump_info& ginfo) const {
-			ignore_unused_variable_warning(in, version, patch, game);
+			ignore_unused_variable_warning(in, version, game);
 			ginfo.is_special = true;
+			if (patch) {
+				ginfo.set_special_from_patch(true);
+			}
 			return true;
 		}
 	};
