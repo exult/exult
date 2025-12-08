@@ -506,28 +506,28 @@ bool Gump::isOffscreen(bool partially) const {
 
 void Container_gump::initialize(int shnum) {
 	if (shnum == game->get_shape("gumps/box")) {
-		set_object_area(TileRect(46, 28, 74, 32), 8, 56);
+		set_object_area(TileRect(46, 28, 74, 32), 24, 44);
 	} else if (shnum == game->get_shape("gumps/crate")) {
-		set_object_area(TileRect(50, 20, 80, 24), 8, 64);
+		set_object_area(TileRect(50, 20, 80, 24), 24, 52);
 	} else if (shnum == game->get_shape("gumps/barrel")) {
-		set_object_area(TileRect(32, 32, 40, 40), 12, 124);
+		set_object_area(TileRect(32, 32, 40, 40), 28, 112);
 	} else if (shnum == game->get_shape("gumps/bag")) {
-		set_object_area(TileRect(48, 20, 66, 44), 8, 66);
+		set_object_area(TileRect(48, 20, 66, 44), 24, 54);
 	} else if (shnum == game->get_shape("gumps/backpack")) {
-		set_object_area(TileRect(36, 36, 85, 40), 8, 62);
+		set_object_area(TileRect(36, 36, 85, 40), 24, 50);
 	} else if (shnum == game->get_shape("gumps/basket")) {
-		set_object_area(TileRect(42, 32, 70, 26), 8, 56);
+		set_object_area(TileRect(42, 32, 70, 26), 24, 44);
 	} else if (shnum == game->get_shape("gumps/chest")) {
-		set_object_area(TileRect(40, 18, 60, 37), 8, 46);
+		set_object_area(TileRect(40, 18, 60, 37), 24, 34);
 	} else if (shnum == game->get_shape("gumps/shipshold")) {
-		set_object_area(TileRect(38, 10, 82, 80), 8, 92);
+		set_object_area(TileRect(38, 10, 82, 80), 24, 80);
 	} else if (shnum == game->get_shape("gumps/drawer")) {
-		set_object_area(TileRect(36, 12, 70, 26), 8, 46);
+		set_object_area(TileRect(36, 12, 70, 26), 24, 34);
 	} else if (shnum == game->get_shape("gumps/tree")) {
-		set_object_area(TileRect(62, 22, 36, 44), 9, 100);
+		set_object_area(TileRect(62, 22, 36, 44), 25, 88);
 	} else if (shnum == game->get_shape("gumps/body")) {
-		set_object_area(TileRect(36, 46, 84, 40), 8, 70);
+		set_object_area(TileRect(36, 46, 84, 40), 24, 58);
 	} else {
-		set_object_area(TileRect(52, 22, 60, 40), 8, 64);
+		set_object_area(TileRect(52, 22, 60, 40), 24, 52);
 	}
 }
