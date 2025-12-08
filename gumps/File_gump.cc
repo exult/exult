@@ -319,7 +319,7 @@ void Gump_text::lose_focus() {
  */
 
 File_gump::File_gump() : Modal_gump(nullptr, game->get_shape("gumps/fileio")) {
-	set_object_area(TileRect(0, 0, 0, 0), 8, 150);
+	set_object_area(TileRect(0, 0, 0, 0), 24, 138);
 
 	int ty = texty;
 	for (size_t i = 0; i < names.size(); i++, ty += texth) {

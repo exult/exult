@@ -42,7 +42,7 @@ static const int rowy[7] = {15, 29, 42, 73, 87, 93, 106};
  */
 CombatStats_gump::CombatStats_gump(int initx, int inity)
 		: Gump(nullptr, initx, inity, game->get_shape("gumps/cstats/1")) {
-	set_object_area(TileRect(0, 0, 0, 0), 7, 95);
+	set_object_area(TileRect(0, 0, 0, 0), 23, 83);
 
 	party_size = gwin->get_party(party, 1);
 

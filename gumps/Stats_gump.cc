@@ -130,14 +130,14 @@ static int Show_atts(
  */
 Stats_gump::Stats_gump(Container_game_object* cont, int initx, int inity)
 		: Gump(cont, initx, inity, game->get_shape("gumps/statsdisplay")) {
-	set_object_area(TileRect(0, 0, 0, 0), 6, 136);
+	set_object_area(TileRect(0, 0, 0, 0), 22, 124);
 }
 
 Stats_gump::Stats_gump(
 		Container_game_object* cont, int initx, int inity, int shnum,
 		ShapeFile shfile)
 		: Gump(cont, initx, inity, shnum, shfile) {
-	set_object_area(TileRect(0, 0, 0, 0), 6, 136);
+	set_object_area(TileRect(0, 0, 0, 0), 22, 124);
 }
 
 /*

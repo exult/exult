@@ -155,8 +155,6 @@ void Gump::set_object_area(
 		&& std::none_of(elems.begin(), elems.end(), [](auto elem) -> bool {
 			   return dynamic_cast<Checkmark_button*>(elem) != nullptr;
 		   })) {
-		checkx += 16;
-		checky -= 12;
 		elems.push_back(new Checkmark_button(this, checkx, checky));
 	}
 }

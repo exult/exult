@@ -270,7 +270,7 @@ Notebook_gump::Notebook_gump()
 	cursor.x = cursor.y = -1;
 	cursor.line = cursor.nlines = 0;
 	// (Obj. area doesn't matter.)
-	set_object_area(TileRect(36, 10, 100, 100), 7, 40);
+	set_object_area(TileRect(36, 10, 100, 100), 23, 28);
 	if (page_info.empty()) {
 		page_info.emplace_back(0, 0);
 	}

@@ -106,7 +106,7 @@ Actor_gump::Actor_gump(
 		int shnum                // Shape #.
 		)
 		: Gump(cont, initx, inity, shnum) {
-	set_object_area(TileRect(26, 0, 104, 132), 6, 136);
+	set_object_area(TileRect(26, 0, 104, 132), 22, 124);
 	Actor* npc = cont->as_actor();
 	add_elem(new Heart_button(this, heart.x, heart.y));
 	if (npc->get_npc_num() == 0) {

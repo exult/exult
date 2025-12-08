@@ -218,7 +218,7 @@ Paperdoll_gump::Paperdoll_gump(
 		)
 		: Gump(cont, initx, inity, 123, SF_PAPERDOL_VGA) {
 	ignore_unused_variable_warning(shnum);
-	set_object_area(TileRect(26, 0, 104, 140), 6, 145);
+	set_object_area(TileRect(26, 0, 104, 140), 22, 133);
 
 	// Create Heart button
 	heart_button = new Heart_button(this, heart.x, heart.y);

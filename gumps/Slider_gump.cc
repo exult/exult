@@ -45,7 +45,7 @@ Slider_gump::Slider_gump(
 			ShapeID(game->get_shape("gumps/slider_diamond"), 0, SF_GUMPS_VGA),
 			mival, mxval, step, defval, 64);
 
-	set_object_area(TileRect(0, 0, 0, 0), 6, 30);
+	set_object_area(TileRect(0, 0, 0, 0), 22, 18);
 }
 
 void Slider_gump::OnSliderValueChanged(Slider_widget* sender, int newvalue) {

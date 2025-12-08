@@ -197,7 +197,7 @@ Newfile_gump::Newfile_gump()
 				  nullptr, gwin->get_width() / 2 - 160,
 				  gwin->get_height() / 2 - 100, EXULT_FLX_SAVEGUMP_SHP,
 				  SF_EXULT_FLX) {
-	set_object_area(TileRect(0, 0, 320, 200), -22, 190);    //+++++ ???
+	set_object_area(TileRect(0, 0, 320, 200), -6, 178);    //+++++ ???
 
 	newname[0] = 0;
 

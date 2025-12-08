@@ -275,7 +275,7 @@ void Spellbook_gump::set_avail() {
 Spellbook_gump::Spellbook_gump(Spellbook_object* b)
 		: Spelltype_gump(SPELLBOOK), page(0), turning_page(0), book(b) {
 	handles_kbd = true;
-	set_object_area(TileRect(36, 28, 102, 66), 7, 54);
+	set_object_area(TileRect(36, 28, 102, 66), 23, 42);
 
 	// Where to paint page marks:
 	const int lpagex  = 43;
@@ -613,7 +613,7 @@ bool Spellbook_gump::handle_kbd_event(void* vev) {
 Spellscroll_gump::Spellscroll_gump(Game_object* s)
 		: Spelltype_gump(game->get_shape("gumps/spell_scroll")), scroll(s),
 		  spell(nullptr) {
-	set_object_area(TileRect(30, 29, 50, 29), 8, 68);
+	set_object_area(TileRect(30, 29, 50, 29), 24, 56);
 
 	// Get dims. of a spell.
 	Shape_frame* spshape = ShapeID(SCROLLSPELLS, 0, SF_GUMPS_VGA).get_shape();

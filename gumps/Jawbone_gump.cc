@@ -42,7 +42,7 @@ Jawbone_gump::Jawbone_gump(
 		)
 		: Gump(cont, initx, inity, game->get_shape("gumps/jawbone")),
 		  jawbone(cont) {
-	set_object_area(TileRect(0, 0, 138, 116), 10, 109);
+	set_object_area(TileRect(0, 0, 138, 116), 26, 97);
 }
 
 bool Jawbone_gump::add(
