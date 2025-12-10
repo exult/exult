@@ -295,7 +295,9 @@ public:
 	void read_map();
 	void write_shape_info(bool force = false);
 	void reload_usecode();
+	void update_connect_button(bool connected);
 	void set_play(gboolean play);
+	void update_play_button(bool playing);
 	void set_tile_grid(gboolean grid);
 	void set_edit_lift(int lift);
 	void set_hide_lift(int lift);

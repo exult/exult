@@ -1785,10 +1785,16 @@
     <property name="icon-name">document-open</property>
     <property name="use-fallback">True</property>
   </object>
+  <object class="GtkImage" id="connect_button_image">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">folder-publicshare-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
   <object class="GtkImage" id="play_img23">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">media-playback-start</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
     <property name="use-fallback">True</property>
   </object>
   <object class="GtkListStore" id="proj_frames_liststore">
@@ -2724,14 +2730,39 @@
                     <property name="margin-bottom">2</property>
                     <property name="orientation">horizontal</property>
                     <child>
+                      <object class="GtkToggleButton" id="connect_button">
+                        <property name="label">Disconnect</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="width-request">113</property>
+                        <property name="halign">start</property>
+                        <property name="valign">fill</property>
+                        <property name="margin-start">0</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="image">connect_button_image</property>
+                        <property name="use-underline">True</property>
+                        <property name="always-show-image">True</property>
+                        <signal name="toggled" handler="on_connect_button_toggled" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
                       <object class="GtkToggleButton" id="play_button">
                         <property name="label">_Play</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="receives-default">False</property>
+                        <property name="width-request">66</property>
                         <property name="halign">center</property>
                         <property name="valign">fill</property>
-                        <property name="margin-start">0</property>
+                        <property name="margin-start">2</property>
                         <property name="margin-end">2</property>
                         <property name="margin-top">0</property>
                         <property name="margin-bottom">0</property>
@@ -2743,7 +2774,7 @@
                         <signal name="clicked" handler="on_play_button_clicked" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="position">0</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -2778,7 +2809,7 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="position">1</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
@@ -2849,7 +2880,7 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="position">2</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                     <child>
@@ -2920,7 +2951,7 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                     <child>
@@ -2955,7 +2986,7 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="position">4</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>

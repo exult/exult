@@ -405,10 +405,25 @@ C_EXPORT void on_unused_shapes1_activate(
 	ExultStudio::get_instance()->send_to_server(Exult_server::unused_shapes);
 }
 
+C_EXPORT void on_connect_button_toggled(
+		GtkToggleButton* button, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+
+	if (gtk_toggle_button_get_active(button)) {
+		studio->connect_to_server();
+	} else {
+		studio->disconnect_from_server();
+	}
+}
+
 C_EXPORT void on_play_button_clicked(
 		GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
-	ExultStudio::get_instance()->set_play(gtk_toggle_button_get_active(button));
+	ExultStudio* studio  = ExultStudio::get_instance();
+	const bool   playing = gtk_toggle_button_get_active(button);
+	studio->set_play(playing);
+	studio->update_play_button(playing);
 }
 
 C_EXPORT void on_tile_grid_button_toggled(
@@ -2912,6 +2927,8 @@ void ExultStudio::read_from_server() {
 			Exult_server::disconnect_from_server();
 #endif
 			server_input_tag = -1;
+			update_connect_button(false);
+			update_play_button(false);
 			// Try again every 4 secs.
 			g_timeout_add(4000, Reconnect, this);
 		}
@@ -3007,6 +3024,8 @@ bool ExultStudio::connect_to_server() {
 	const std::string servename = get_system_path(EXULT_SERVER);
 	if (!U7exists(GAMEDAT) || (stat(servename.c_str(), &fs)) != 0) {
 		cout << "Can't find gamedat for socket" << endl;
+		update_connect_button(false);
+		update_play_button(false);
 		return false;
 	}
 	server_socket = server_input_tag = -1;
@@ -3040,6 +3059,7 @@ bool ExultStudio::connect_to_server() {
 	// Close existing socket.
 	if (server_socket != -1) {
 		Exult_server::disconnect_from_server();
+		update_connect_button(false);
 	}
 	if (server_input_tag != -1) {
 		g_source_remove(server_input_tag);
@@ -3057,6 +3077,7 @@ bool ExultStudio::connect_to_server() {
 	cout << "Connected to server" << endl;
 	send_to_server(Exult_server::info);    // Request version, etc.
 	set_edit_menu(false, false);           // For now, init. edit menu.
+	update_connect_button(true);
 	return true;
 }
 
@@ -3066,6 +3087,70 @@ void ExultStudio::disconnect_from_server() {
 #else
 	Exult_server::disconnect_from_server();
 #endif
+	update_connect_button(false);
+	update_play_button(false);
+}
+
+void ExultStudio::update_connect_button(bool connected) {
+	GtkWidget* button = get_widget("connect_button");
+	GtkWidget* image  = get_widget("connect_button_image");
+
+	if (!button || !image) {
+		return;
+	}
+
+	gtk_button_set_label(
+			GTK_BUTTON(button), connected ? "Disconnect" : "Connect");
+	// Update the icon based on connection status
+	if (connected) {
+		gtk_image_set_from_icon_name(
+				GTK_IMAGE(image), "folder-publicshare-symbolic",
+				GTK_ICON_SIZE_BUTTON);
+	} else {
+		gtk_image_set_from_icon_name(
+				GTK_IMAGE(image), "media-record-symbolic",
+				GTK_ICON_SIZE_BUTTON);
+	}
+
+	// Update button state without triggering the signal
+	g_signal_handlers_block_matched(
+			button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
+			reinterpret_cast<void*>(on_connect_button_toggled), nullptr);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), connected);
+	g_signal_handlers_unblock_matched(
+			button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
+			reinterpret_cast<void*>(on_connect_button_toggled), nullptr);
+}
+
+void ExultStudio::update_play_button(bool playing) {
+	GtkWidget* button = get_widget("play_button");
+	GtkWidget* image  = get_widget("play_img23");
+
+	if (!button || !image) {
+		return;
+	}
+
+	// Update label and icon based on play state
+	gtk_button_set_label(GTK_BUTTON(button), playing ? "Edit" : "Play");
+
+	if (playing) {
+		gtk_image_set_from_icon_name(
+				GTK_IMAGE(image), "media-playback-stop-symbolic",
+				GTK_ICON_SIZE_BUTTON);
+	} else {
+		gtk_image_set_from_icon_name(
+				GTK_IMAGE(image), "media-playback-start-symbolic",
+				GTK_ICON_SIZE_BUTTON);
+	}
+
+	// Update button state without triggering the signal
+	g_signal_handlers_block_matched(
+			button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
+			reinterpret_cast<void*>(on_play_button_clicked), nullptr);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), playing);
+	g_signal_handlers_unblock_matched(
+			button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
+			reinterpret_cast<void*>(on_play_button_clicked), nullptr);
 }
 
 /*
@@ -3096,7 +3181,8 @@ void ExultStudio::info_received(
 	// Set controls to what Exult thinks.
 	set_spin("edit_lift_spin", edlift);
 	set_spin("hide_lift_spin", hdlift);
-	set_toggle("play_button", !editing);
+	update_play_button(!editing);
+	update_connect_button(true);
 	set_toggle("tile_grid_button", grid);
 	if (edmode >= 0 && static_cast<unsigned>(edmode) < mode_names.size()) {
 		GtkWidget* mitem = get_widget(mode_names[edmode]);
