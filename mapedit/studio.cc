@@ -224,6 +224,12 @@ C_EXPORT void on_read_map_menu_activate(
 	ExultStudio::get_instance()->read_map();
 }
 
+C_EXPORT void on_write_minimap_menu_activate(
+        GtkMenuItem* menuitem, gpointer user_data) {
+    ignore_unused_variable_warning(menuitem, user_data);
+    ExultStudio::get_instance()->write_minimap();
+}
+
 C_EXPORT void on_save_shape_info1_activate(
 		GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
@@ -2041,6 +2047,14 @@ void ExultStudio::write_map() {
 
 void ExultStudio::read_map() {
 	send_to_server(Exult_server::read_map);
+}
+
+/*
+ *  Write out minimap.
+ */
+
+void ExultStudio::write_minimap() {
+    send_to_server(Exult_server::write_minimap);
 }
 
 /*

@@ -2606,6 +2606,15 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkMenuItem" id="write_minimap_menu">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Write _Minimap</property>
+                        <property name="use-underline">True</property>
+                        <signal name="activate" handler="on_write_minimap_menu_activate" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkMenuItem" id="new_combo1">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>

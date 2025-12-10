@@ -94,6 +94,7 @@ namespace Exult_server {
 		drag_npc           = 45,    // Begin drag of a NPC.
 		drag_chunk         = 46,    // Begin drag of a Chunk.
 		edit_pick          = 47,    // Selecting Shapes for editing.
+		write_minimap      = 48,    // Save minimap.
 		usecode_debugging  = 128
 	};
 

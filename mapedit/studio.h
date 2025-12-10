@@ -295,6 +295,7 @@ public:
 	void read_map();
 	void write_shape_info(bool force = false);
 	void reload_usecode();
+	void write_minimap();
 	void update_connect_button(bool connected);
 	void set_play(gboolean play);
 	void update_play_button(bool playing);

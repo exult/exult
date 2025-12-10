@@ -545,6 +545,9 @@ static void Handle_client_message(
 		}
 		break;
 	}
+	case Exult_server::write_minimap:
+		Game_map::write_minimap();
+		break;
 	case Exult_server::reload_shapes_info:
 		Shape_manager::get_instance()->reload_shape_info();
 		break;
