@@ -225,9 +225,9 @@ C_EXPORT void on_read_map_menu_activate(
 }
 
 C_EXPORT void on_write_minimap_menu_activate(
-        GtkMenuItem* menuitem, gpointer user_data) {
-    ignore_unused_variable_warning(menuitem, user_data);
-    ExultStudio::get_instance()->write_minimap();
+		GtkMenuItem* menuitem, gpointer user_data) {
+	ignore_unused_variable_warning(menuitem, user_data);
+	ExultStudio::get_instance()->write_minimap();
 }
 
 C_EXPORT void on_save_shape_info1_activate(
@@ -426,8 +426,19 @@ C_EXPORT void on_connect_button_toggled(
 C_EXPORT void on_play_button_clicked(
 		GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
-	ExultStudio* studio  = ExultStudio::get_instance();
-	const bool   playing = gtk_toggle_button_get_active(button);
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (studio->get_server_socket() < 0) {
+		g_signal_handlers_block_matched(
+				button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
+				reinterpret_cast<void*>(on_play_button_clicked), nullptr);
+		gtk_toggle_button_set_active(
+				button, !gtk_toggle_button_get_active(button));
+		g_signal_handlers_unblock_matched(
+				button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
+				reinterpret_cast<void*>(on_play_button_clicked), nullptr);
+		return;
+	}
+	const bool playing = gtk_toggle_button_get_active(button);
 	studio->set_play(playing);
 	studio->update_play_button(playing);
 }
@@ -2054,7 +2065,7 @@ void ExultStudio::read_map() {
  */
 
 void ExultStudio::write_minimap() {
-    send_to_server(Exult_server::write_minimap);
+	send_to_server(Exult_server::write_minimap);
 }
 
 /*
@@ -3107,24 +3118,13 @@ void ExultStudio::disconnect_from_server() {
 
 void ExultStudio::update_connect_button(bool connected) {
 	GtkWidget* button = get_widget("connect_button");
-	GtkWidget* image  = get_widget("connect_button_image");
 
-	if (!button || !image) {
+	if (!button) {
 		return;
 	}
 
 	gtk_button_set_label(
 			GTK_BUTTON(button), connected ? "Disconnect" : "Connect");
-	// Update the icon based on connection status
-	if (connected) {
-		gtk_image_set_from_icon_name(
-				GTK_IMAGE(image), "folder-publicshare-symbolic",
-				GTK_ICON_SIZE_BUTTON);
-	} else {
-		gtk_image_set_from_icon_name(
-				GTK_IMAGE(image), "media-record-symbolic",
-				GTK_ICON_SIZE_BUTTON);
-	}
 
 	// Update button state without triggering the signal
 	g_signal_handlers_block_matched(
@@ -3149,7 +3149,7 @@ void ExultStudio::update_play_button(bool playing) {
 
 	if (playing) {
 		gtk_image_set_from_icon_name(
-				GTK_IMAGE(image), "media-playback-stop-symbolic",
+				GTK_IMAGE(image), "media-playback-pause-symbolic",
 				GTK_ICON_SIZE_BUTTON);
 	} else {
 		gtk_image_set_from_icon_name(
