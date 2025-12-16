@@ -38,8 +38,8 @@
 #include "ignore_unused_variable_warning.h"
 #include "objiter.h"
 
-#include <cstdio>
 #include <algorithm>
+#include <cstdio>
 
 /*
  *  Paint just the map with given top-left-corner tile.
@@ -346,14 +346,13 @@ int Game_render::get_light_strength(
 }
 
 void Game_render::increment_bbox_index() {
-	int bbox_indices[] = {15,0, 22, 38,5, 64,80,94,-1};
+	int  bbox_indices[] = {15, 0, 22, 38, 5, 64, 80, 94, -1};
 	auto start          = bbox_indices;
 	auto end            = bbox_indices + std::size(bbox_indices);
 
-	size_t found = std::find(start, end, bbox_palindex)-start;
+	size_t found = std::find(start, end, bbox_palindex) - start;
 
-	if (found < std::size(bbox_indices))
-	{
+	if (found < std::size(bbox_indices)) {
 		bbox_palindex = bbox_indices[(found + 1) % std::size(bbox_indices)];
 	}
 	Game_window::get_instance()->set_all_dirty();
@@ -650,8 +649,7 @@ void Game_render::paint_object(Game_object* obj) {
 	Game_window::get_instance()->get_shape_location(obj, bbox_x, bbox_y);
 
 	// paint bbox back
-	if (bbox_palindex != -1)
-	{		
+	if (bbox_palindex != -1) {
 		obj->get_info().paint_bbox(
 				bbox_x, bbox_y, obj->get_framenum(),
 				Game_window::get_instance()->get_win()->get_ib8(),

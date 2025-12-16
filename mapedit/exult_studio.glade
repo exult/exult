@@ -989,6 +989,41 @@
       </row>
     </data>
   </object>
+  <object class="GtkListStore" id="bbox_color_liststore">
+    <columns>
+      <!-- column-name bbox_color -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">None</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">White</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Black</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Red</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Orange</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Yellow</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Green</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Blue</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Purple</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkListStore" id="ammo_drop_liststore">
     <columns>
       <!-- column-name ammo_drop -->
@@ -2822,6 +2857,68 @@
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkFrame" id="frame_bbox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">fill</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="label-xalign">0</property>
+                        <child>
+                          <object class="GtkBox" id="bbox_hbox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">4</property>
+                            <property name="margin-end">4</property>
+                            <property name="margin-top">2</property>
+                            <property name="margin-bottom">2</property>
+                            <property name="orientation">horizontal</property>
+                            <property name="spacing">6</property>
+                            <child>
+                              <object class="GtkLabel" id="label_bbox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="halign">end</property>
+                                <property name="valign">center</property>
+                                <property name="label" translatable="yes">3D Bounding boxes</property>
+                              </object>
+                              <packing>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkComboBox" id="bbox_color_combo">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="valign">center</property>
+                                <property name="wrap-width">1</property>
+                                <property name="model">bbox_color_liststore</property>
+                                <property name="active">0</property>
+                                <signal name="changed" handler="on_bbox_color_combo_changed" swapped="no"/>
+                                <child>
+                                  <object class="GtkCellRendererText" id="bbox_color_renderer"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
                       <object class="GtkFrame" id="frame49">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -2836,7 +2933,7 @@
                         <property name="label-xalign">0</property>
                         <child>
                           <object class="GtkBox" id="hbox10">
-                            <property name="visible">True</property>
+                            <property name="visible">False</property>
                             <property name="can-focus">False</property>
                             <property name="margin-start">4</property>
                             <property name="margin-end">4</property>
@@ -2889,7 +2986,7 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                     <child>
@@ -2995,7 +3092,7 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="position">5</property>
+                        <property name="position">6</property>
                       </packing>
                     </child>
                   </object>

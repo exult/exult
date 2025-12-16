@@ -450,6 +450,13 @@ C_EXPORT void on_tile_grid_button_toggled(
 			gtk_toggle_button_get_active(button));
 }
 
+C_EXPORT void on_bbox_color_combo_changed(
+		GtkComboBox* combo, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const int index = gtk_combo_box_get_active(combo);
+	ExultStudio::get_instance()->set_bounding_box(index);
+}
+
 C_EXPORT void on_edit_lift_spin_changed(
 		GtkSpinButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
@@ -2123,6 +2130,23 @@ void ExultStudio::set_tile_grid(gboolean grid    // True to show.
 	unsigned char* ptr = &data[0];
 	little_endian::Write2(ptr, grid ? 1 : 0);    // Map_edit = !play.
 	send_to_server(Exult_server::tile_grid, data, ptr - data);
+}
+
+/*
+ *  Tell Exult to set bounding box color.
+ */
+
+void ExultStudio::set_bounding_box(int index) {
+	// Map index to palette indices
+	// None, White, Black, Red, Orange, Yellow, Green, Blue, Purple
+	const int bbox_indices[] = {-1, 15, 0, 22, 38, 5, 64, 80, 94};
+	const int palette_index
+			= (index >= 0 && index < 9) ? bbox_indices[index] : -1;
+
+	unsigned char  data[Exult_server::maxlength];
+	unsigned char* ptr = &data[0];
+	little_endian::Write2(ptr, palette_index);
+	send_to_server(Exult_server::show_bboxes, data, ptr - data);
 }
 
 /*

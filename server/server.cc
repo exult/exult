@@ -43,6 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	include "gamewin.h"
 #	include "objserial.h"
 #	include "servemsg.h"
+#	include "gamerend.h"
 
 #	include <fcntl.h>
 #	include <unistd.h>
@@ -551,6 +552,12 @@ static void Handle_client_message(
 	case Exult_server::reload_shapes_info:
 		Shape_manager::get_instance()->reload_shape_info();
 		break;
+	case Exult_server::show_bboxes: {
+		const int index = little_endian::Read2s(ptr);
+		gwin->get_render()->set_bbox_index(index);
+		gwin->set_all_dirty();
+		break;
+	}
 	case Exult_server::usecode_debugging:
 #	ifdef USECODE_DEBUGGER
 		Handle_debug_message(&data[0], datalen);

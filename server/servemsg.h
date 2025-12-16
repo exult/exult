@@ -95,6 +95,7 @@ namespace Exult_server {
 		drag_chunk         = 46,    // Begin drag of a Chunk.
 		edit_pick          = 47,    // Selecting Shapes for editing.
 		write_minimap      = 48,    // Save minimap.
+		show_bboxes        = 49,    // Set bounding boxes color.
 		usecode_debugging  = 128
 	};
 

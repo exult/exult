@@ -58,7 +58,13 @@ public:
 
 	void increment_bbox_index();
 
-	int get_bbox_index() { return bbox_palindex;}
+	void set_bbox_index(int index) {
+		bbox_palindex = index;
+	}
+
+	int get_bbox_index() {
+		return bbox_palindex;
+	}
 };
 
 #endif

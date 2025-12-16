@@ -300,6 +300,7 @@ public:
 	void set_play(gboolean play);
 	void update_play_button(bool playing);
 	void set_tile_grid(gboolean grid);
+	void set_bounding_box(int index);
 	void set_edit_lift(int lift);
 	void set_hide_lift(int lift);
 	void set_edit_terrain(gboolean terrain);
