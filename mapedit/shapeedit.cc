@@ -476,20 +476,6 @@ C_EXPORT gboolean on_shape_window_delete_event(
 }
 
 /*
- *  Shape Gump info
- */
-// Stubs for upcoming gump info preview toggles
-C_EXPORT void on_shinfo_gumpobj_container_preview_toggled(
-		GtkToggleButton* btn, gpointer user_data) {
-	ignore_unused_variable_warning(btn, user_data);
-}
-
-C_EXPORT void on_shinfo_gumpobj_checkmark_preview_toggled(
-		GtkToggleButton* btn, gpointer user_data) {
-	ignore_unused_variable_warning(btn, user_data);
-}
-
-/*
  *  Weapon ammo type changed.
  */
 C_EXPORT gboolean
@@ -2546,8 +2532,7 @@ C_EXPORT void on_shinfo_weapon_usecode_browse_clicked(
  *  Set frame-dependent fields in the shape-editing notebook.
  */
 
-void ExultStudio::set_shape_notebook_frame(
-		int frnum    // Frame # to set.
+void ExultStudio::set_shape_notebook_frame(int frnum    // Frame # to set.
 ) {
 	auto* file_info = static_cast<Shape_file_info*>(
 			g_object_get_data(G_OBJECT(shapewin), "file_info"));
@@ -2571,6 +2556,9 @@ void ExultStudio::set_shape_notebook_frame(
 	if (!info) {
 		return;
 	}
+	set_spin("shinfo_xtiles", info->get_3d_xtiles(frnum));
+	set_spin("shinfo_ytiles", info->get_3d_ytiles(frnum));
+	set_spin("shinfo_ztiles", info->get_3d_height());
 
 	unsigned char wx;
 	unsigned char wy;    // Weapon-in-hand offset.
@@ -3676,9 +3664,8 @@ void ExultStudio::save_shape_notebook(
 		int         frnum     // Frame #.
 ) {
 	static const int classes[] = {0, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14};
-	info.set_shape_class(
-			static_cast<Shape_info::Shape_class>(
-					classes[get_optmenu("shinfo_shape_class")]));
+	info.set_shape_class(static_cast<Shape_info::Shape_class>(
+			classes[get_optmenu("shinfo_shape_class")]));
 	info.set_3d(
 			get_spin("shinfo_xtiles"), get_spin("shinfo_ytiles"),
 			get_spin("shinfo_ztiles"));
@@ -3989,9 +3976,8 @@ void ExultStudio::save_shape_notebook(
 				const int chance
 						= menu == 0 ? 100
 									: (menu == 1 ? 0
-												 : get_spin(
-														   "shinfo_animation_"
-														   "freezechance"));
+												 : get_spin("shinfo_animation_"
+															"freezechance"));
 				aniinf->set_freeze_first_chance(chance);
 				int rec;
 				if (get_toggle("shinfo_animation_rectype")) {
@@ -4115,41 +4101,31 @@ void ExultStudio::open_shape_window(
 	// Note: ifile and vgafile can't possibly be null if we are here.
 	Vga_file* ifile = file_info->get_ifile();
 	if (palbuf) {
-		GtkSpinButton* bbox_spinbuttons[3]
-				= {GTK_SPIN_BUTTON(get_widget("shinfo_xtiles")),
-				   GTK_SPIN_BUTTON(get_widget("shinfo_ytiles")),
-				   GTK_SPIN_BUTTON(get_widget("shinfo_ztiles"))};
-		GtkSpinButton** bbox_ptrs = bbox_spinbuttons;
-		if (bbox_spinbuttons[0] && info) {
-			gtk_spin_button_set_value(
-					GTK_SPIN_BUTTON(bbox_spinbuttons[0]),
-					info->get_3d_xtiles(frnum));
-
+		if (file_info == gumpfile) {
+			shape_single = new Shape_gump_single(
+					get_widget("shinfo_shape"), nullptr,
+					[](int shnum) -> bool {
+						return shnum >= 0;
+					},
+					get_widget("shinfo_frame"), -1, ifile, palbuf.get(),
+					get_widget("shinfo_draw"));
+		} else if (file_info == vgafile) {
+			shape_single = new Shape_shape_single(
+					get_widget("shinfo_shape"), nullptr,
+					[](int shnum) -> bool {
+						return shnum >= 0;
+					},
+					get_widget("shinfo_frame"), -1, ifile, palbuf.get(),
+					get_widget("shinfo_draw"));
 		} else {
-			bbox_ptrs = nullptr;
+			shape_single = new Shape_single(
+					get_widget("shinfo_shape"), nullptr,
+					[](int shnum) -> bool {
+						return shnum >= 0;
+					},
+					get_widget("shinfo_frame"), -1, ifile, palbuf.get(),
+					get_widget("shinfo_draw"));
 		}
-		if (bbox_spinbuttons[1] && info) {
-			gtk_spin_button_set_value(
-					GTK_SPIN_BUTTON(bbox_spinbuttons[1]),
-					info->get_3d_ytiles(frnum));
-		} else {
-			bbox_ptrs = nullptr;
-		}
-		if (bbox_spinbuttons[2] && info) {
-			gtk_spin_button_set_value(
-					GTK_SPIN_BUTTON(bbox_spinbuttons[2]),
-					info->get_3d_height());
-		} else {
-			bbox_ptrs = nullptr;
-		}
-
-		shape_single = new Shape_single(
-				get_widget("shinfo_shape"), nullptr,
-				[](int shnum) -> bool {
-					return shnum >= 0;
-				},
-				get_widget("shinfo_frame"), -1, ifile, palbuf.get(),
-				get_widget("shinfo_draw"), false, bbox_ptrs);
 		g_object_set_data(
 				G_OBJECT(get_widget("shinfo_draw")), "shape_single",
 				shape_single);
@@ -4817,16 +4793,12 @@ void ExultStudio::open_shape_window(
 	GtkWidget* notebook      = get_widget("shinfo_notebook");
 	GtkWidget* gump_notebook = get_widget("shinfo_gump_notebook");
 
-	const bool is_gumps
-			= file_info && file_info->get_basename()
-			  && strcmp(file_info->get_basename(), "gumps.vga") == 0;
-
 	if (info) {
 		// Regular shapes.vga - show shape notebook, hide gump notebook
 		init_shape_notebook(*info, notebook, shnum, frnum);
 		gtk_widget_set_visible(notebook, true);
 		gtk_widget_set_visible(gump_notebook, false);
-	} else if (is_gumps) {
+	} else if (file_info == gumpfile) {
 		// For gumps.vga, hide shape notebook and show gump notebook
 		gtk_widget_set_visible(notebook, false);
 		gtk_widget_set_visible(gump_notebook, true);
@@ -4956,13 +4928,8 @@ void ExultStudio::save_shape_window() {
 	if (info) {
 		save_shape_notebook(*info, shnum, frnum);
 	}
-	const bool is_gumps
-			= file_info && file_info->get_basename()
-			  && strcmp(file_info->get_basename(), "gumps.vga") == 0;
 
-	// In save_shape_window(), replace the is_gumps block:
-
-	if (is_gumps) {
+	if (file_info == gumpfile) {
 		// Get or create Gump_info entry
 		Gump_info& gumpinf = Gump_info::get_or_create_gump_info(shnum);
 

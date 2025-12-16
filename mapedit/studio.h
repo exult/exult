@@ -229,10 +229,6 @@ public:
 		return self;
 	}
 
-	Shape_single* get_shape_single() {
-		return shape_single;
-	}
-
 	int find_misc_name(const char* id) const;
 	int add_misc_name(const char* id);
 

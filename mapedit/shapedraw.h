@@ -35,7 +35,8 @@ using Drop_callback
 #include "studio.h"
 
 /*
- *  This class can draw shapes from a .vga file.
+ *  The class Shape_draw draws shapes from a .vga file.
+ *    It is used in the various Shape Browsers, and by the class Shape_single.
  */
 class Shape_draw {
 protected:
@@ -49,7 +50,7 @@ protected:
 	void*          drop_user_data;
 	bool           dragging;    // Dragging from here.
 public:
-	static const int outline_color = 249;	// Palette index of outline color
+	static const int outline_color = 249;    // Palette index of outline color
 
 	Shape_draw(Vga_file* i, const unsigned char* palbuf, GtkWidget* drw);
 	virtual ~Shape_draw();
@@ -77,10 +78,10 @@ public:
 	}
 
 	virtual void draw_shape(Shape_frame* shape, int x, int y);
-	void draw_shape(int shapenum, int framenum, int x, int y);
-	void draw_shape_outline(
-			int shapenum, int framenum, int x, int y, unsigned char color);
-	void         draw_shape_centered(int shapenum, int framenum);
+	void         draw_shape(int shapenum, int framenum, int x, int y);
+	void         draw_shape_outline(
+					int shapenum, int framenum, int x, int y, unsigned char color);
+	void draw_shape_centered(int shapenum, int framenum, int& x, int& y);
 	virtual void render();    // Update what gets shown.
 	void         set_background_color(guint32 c);
 
@@ -99,6 +100,15 @@ public:
 	}
 };
 
+/*
+ * The Shape_single class draws a single shape from a .vga file.
+ *   It is used in various places of the Shape Editor.
+ *   It tracks a Shape and a Frame GtkSpinButton.
+ */
+
+class Shape_shape_single;
+class Shape_gump_single;
+
 class Shape_single : public Shape_draw {
 protected:
 	GtkWidget* shape;             // The ShapeID   holding GtkWidget :
@@ -116,12 +126,6 @@ protected:
 	gulong drop_connect;     // The Draw  Widget g_signal_connect drop ID
 	gulong hide_connect;     // The Hide  Widget g_signal_connect changed ID
 
-	struct {
-		int        value=0;
-		GtkSpinButton* widget=nullptr;
-		gulong     connect=0;
-	} bbox[3];
-
 public:
 	Shape_single(
 			GtkWidget* shp,        // The ShapeID   holding GtkWidget.
@@ -129,16 +133,11 @@ public:
 			bool (*shvld)(int),    // The ShapeUD   validating lambda.
 			GtkWidget* frm,        // The FrameID   holding GtkWidget.
 			int        vgnum,      // The D&D U7_SHAPE_xxx VGA file category.
-			Vga_file*  vg,         // The VGA File         for the Shape_draw
-								   // constructor.
+			Vga_file*  vg,         // The VGA File for the Shape_draw ctor.
 			const unsigned char*
-					   palbuf,    // The Palette for the Shape_draw constructor.
-			GtkWidget* drw,       // The GtkDrawingArea   for the Shape_draw
-								  // constructor.
-			
-			bool hdd = false,
-			GtkSpinButton** bbox_widgets= nullptr
-		);    // Whether the Shape should be hidden.
+					   palbuf,    // The Palette for the Shape_draw ctor.
+			GtkWidget* drw,       // The GtkDrawingArea for the Shape_draw ctor.
+			bool       hdd = false);    // Whether the Shape should be hidden.
 	~Shape_single() override;
 	static void     on_shape_changed(GtkWidget* widget, gpointer user_data);
 	static void     on_frame_changed(GtkWidget* widget, gpointer user_data);
@@ -148,10 +147,111 @@ public:
 			int filenum, int shapenum, int framenum, gpointer user_data);
 	static void on_state_changed(
 			GtkWidget* widget, GtkStateFlags flags, gpointer user_data);
-	static void on_bbox_changed(GtkSpinButton* self, gpointer user_data);
 
-	void Set_BBox(int x, int y, int z);
+	virtual Shape_shape_single* get_shape_shape_single() {
+		return nullptr;
+	}
+
+	virtual Shape_gump_single* get_shape_gump_single() {
+		return nullptr;
+	}
+};
+
+/*
+ * The Shape_gump_single class draws a single Gump shape from the gumps.vga.
+ *   It is used only in the top left window of the Shape Editor.
+ *   It displays the Gump Preview according to the Container + Checkmark
+ *      GtkSpinButton and GtkCheckButton widgets.
+ */
+
+class Shape_gump_single : public Shape_single {
+protected:
+	GtkWidget* container_x_widget;
+	gulong     container_x_connect;
+	GtkWidget* container_y_widget;
+	gulong     container_y_connect;
+	GtkWidget* container_w_widget;
+	gulong     container_w_connect;
+	GtkWidget* container_h_widget;
+	gulong     container_h_connect;
+	GtkWidget* show_container_widget;
+	gulong     show_container_connect;
+	gulong     show_container_altered;
+	GtkWidget* checkmark_x_widget;
+	gulong     checkmark_x_connect;
+	GtkWidget* checkmark_y_widget;
+	gulong     checkmark_y_connect;
+	GtkWidget* checkmark_shape_widget;
+	gulong     checkmark_shape_connect;
+	GtkWidget* show_checkmark_widget;
+	gulong     show_checkmark_connect;
+	gulong     show_checkmark_altered;
+
+public:
+	Shape_gump_single(
+			GtkWidget* shp,        // The ShapeID   holding GtkWidget.
+			GtkWidget* shpnm,      // The ShapeName holding GtkWidget.
+			bool (*shvld)(int),    // The ShapeUD   validating lambda.
+			GtkWidget* frm,        // The FrameID   holding GtkWidget.
+			int        vgnum,      // The D&D U7_SHAPE_xxx VGA file category.
+			Vga_file*  vg,         // The VGA File for the Shape_draw ctor.
+			const unsigned char*
+					   palbuf,    // The Palette for the Shape_draw ctor.
+			GtkWidget* drw,       // The GtkDrawingArea for the Shape_draw ctor.
+			bool       hdd = false);    // Whether the Shape should be hidden.
+	~Shape_gump_single() override;
+	static gboolean on_draw_expose_event(
+			GtkWidget* widget, cairo_t* cairo, gpointer user_data);
+
+	Shape_gump_single* get_shape_gump_single() override {
+		return this;
+	}
+
+	static void on_widget_changed(GtkWidget* widget, gpointer user_data);
+	static void on_widget_state(
+			GtkWidget* widget, GtkStateFlags flags, gpointer user_data);
+};
+
+/*
+ * The Shape_shape_single class draws a single Shape from the shapes.vga.
+ *   It is used only in the top left window of the Shape Editor.
+ *   It displays the 3D Ouline according to
+ *      the 3D GtkSpinButton and GtkCheckButton widgets.
+ */
+
+class Shape_shape_single : public Shape_single {
+protected:
+	GtkWidget* shape_3d_x_widget;
+	gulong     shape_3d_x_connect;
+	GtkWidget* shape_3d_y_widget;
+	gulong     shape_3d_y_connect;
+	GtkWidget* shape_3d_z_widget;
+	gulong     shape_3d_z_connect;
+	GtkWidget* show_shape_3d_widget;
+	gulong     show_shape_3d_connect;
+
+public:
+	Shape_shape_single(
+			GtkWidget* shp,        // The ShapeID   holding GtkWidget.
+			GtkWidget* shpnm,      // The ShapeName holding GtkWidget.
+			bool (*shvld)(int),    // The ShapeUD   validating lambda.
+			GtkWidget* frm,        // The FrameID   holding GtkWidget.
+			int        vgnum,      // The D&D U7_SHAPE_xxx VGA file category.
+			Vga_file*  vg,         // The VGA File for the Shape_draw ctor.
+			const unsigned char*
+					   palbuf,    // The Palette for the Shape_draw ctor.
+			GtkWidget* drw,       // The GtkDrawingArea for the Shape_draw ctor.
+			bool       hdd = false);    // Whether the Shape should be hidden.
+	~Shape_shape_single() override;
 	void draw_shape(Shape_frame* shape, int x, int y) override;
+
+	Shape_shape_single* get_shape_shape_single() override {
+		return this;
+	}
+
+	static void on_widget_changed(GtkWidget* widget, gpointer user_data);
+	static void on_widget_state(
+			GtkWidget* widget, GtkStateFlags flags, gpointer user_data);
 };
 
 #endif

@@ -11053,6 +11053,48 @@
                 <property name="vexpand">False</property>
                 <property name="orientation">vertical</property>
                 <child>
+                  <object class="GtkFrame" id="frame506">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">fill</property>
+                    <property name="valign">fill</property>
+                    <property name="margin-start">0</property>
+                    <property name="margin-end">0</property>
+                    <property name="margin-top">0</property>
+                    <property name="margin-bottom">0</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">False</property>
+                    <property name="label-xalign">0</property>
+                    <child>
+                      <object class="GtkCheckButton" id="shinfo_tiles_preview">
+                        <property name="label" translatable="yes">3D Bounding Box</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">8</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <property name="draw-indicator">True</property>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="label507">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Preview</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkBox" id="hbox145">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -11400,7 +11442,7 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
@@ -11556,7 +11598,7 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
@@ -12218,7 +12260,7 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
                 <child>
@@ -12822,7 +12864,7 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="position">3</property>
+                    <property name="position">4</property>
                   </packing>
                 </child>
               </object>
@@ -24586,7 +24628,6 @@
                             <property name="vexpand">False</property>
                             <property name="use-underline">True</property>
                             <property name="draw-indicator">True</property>
-                            <signal name="toggled" handler="on_shinfo_gumpobj_container_preview_toggled" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -24789,7 +24830,6 @@
                             <property name="vexpand">False</property>
                             <property name="use-underline">True</property>
                             <property name="draw-indicator">True</property>
-                            <signal name="toggled" handler="on_shinfo_gumpobj_checkmark_preview_toggled" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
