@@ -1891,6 +1891,102 @@
     <property name="icon-name">media-playback-stop-symbolic</property>
     <property name="use-fallback">True</property>
   </object>
+  <object class="GtkImage" id="audio_play_sfx">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_sfx">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_play_sfx_weapon">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_sfx_weapon">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_play_hitsfx">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_hitsfx">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_play_monster_sfx">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_monster_sfx">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_play_explosion_sfx">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_explosion_sfx">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_play_juke">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_juke">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_play_egg_sfx">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_egg_sfx">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_play_speech">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_speech">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
   <object class="GtkListStore" id="proj_frames_liststore">
     <columns>
       <!-- column-name proj_frames -->
@@ -4460,21 +4556,68 @@
                     <property name="vexpand">False</property>
                     <property name="label-xalign">0</property>
                     <child>
-                      <object class="GtkSpinButton" id="juke_song">
+                      <object class="GtkBox" id="juke_song_box">
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">fill</property>
                         <property name="valign">center</property>
-                        <property name="margin-start">4</property>
-                        <property name="margin-end">4</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
                         <property name="margin-top">2</property>
                         <property name="margin-bottom">2</property>
+                        <property name="hexpand">True</property>
                         <property name="vexpand">False</property>
-                        <property name="width-chars">5</property>
-                        <property name="primary-icon-activatable">False</property>
-                        <property name="secondary-icon-activatable">False</property>
-                        <property name="adjustment">adjustment149</property>
-                        <property name="climb-rate">1</property>
-                        <property name="wrap">True</property>
+                        <property name="orientation">horizontal</property>
+                        <child>
+                          <object class="GtkSpinButton" id="juke_song">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="valign">center</property>
+                            <property name="margin-start">2</property>
+                            <property name="margin-end">2</property>
+                            <property name="margin-top">0</property>
+                            <property name="margin-bottom">0</property>
+                            <property name="hexpand">True</property>
+                            <property name="vexpand">False</property>
+                            <property name="width-chars">5</property>
+                            <property name="primary-icon-activatable">False</property>
+                            <property name="secondary-icon-activatable">False</property>
+                            <property name="adjustment">adjustment149</property>
+                            <property name="climb-rate">1</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="juke_song_play">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                            <property name="valign">center</property>
+                            <property name="relief">none</property>
+                            <property name="image">audio_play_juke</property>
+                            <signal name="clicked" handler="on_juke_song_play_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="juke_song_stop">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                            <property name="valign">center</property>
+                            <property name="relief">none</property>
+                            <property name="image">audio_stop_juke</property>
+                            <signal name="clicked" handler="on_juke_song_stop_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
                       </object>
                     </child>
                     <child type="label">
@@ -4577,21 +4720,68 @@
                     <property name="vexpand">False</property>
                     <property name="label-xalign">0</property>
                     <child>
-                      <object class="GtkSpinButton" id="sfx_number">
+                      <object class="GtkBox" id="sfx_number_box">
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">fill</property>
                         <property name="valign">center</property>
-                        <property name="margin-start">4</property>
-                        <property name="margin-end">4</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
                         <property name="margin-top">2</property>
                         <property name="margin-bottom">2</property>
+                        <property name="hexpand">True</property>
                         <property name="vexpand">False</property>
-                        <property name="width-chars">5</property>
-                        <property name="primary-icon-activatable">False</property>
-                        <property name="secondary-icon-activatable">False</property>
-                        <property name="adjustment">adjustment148</property>
-                        <property name="climb-rate">1</property>
-                        <property name="wrap">True</property>
+                        <property name="orientation">horizontal</property>
+                        <child>
+                          <object class="GtkSpinButton" id="sfx_number">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="valign">center</property>
+                            <property name="margin-start">2</property>
+                            <property name="margin-end">2</property>
+                            <property name="margin-top">0</property>
+                            <property name="margin-bottom">0</property>
+                            <property name="hexpand">True</property>
+                            <property name="vexpand">False</property>
+                            <property name="width-chars">5</property>
+                            <property name="primary-icon-activatable">False</property>
+                            <property name="secondary-icon-activatable">False</property>
+                            <property name="adjustment">adjustment148</property>
+                            <property name="climb-rate">1</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="sfx_number_play">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                            <property name="valign">center</property>
+                            <property name="relief">none</property>
+                            <property name="image">audio_play_egg_sfx</property>
+                            <signal name="clicked" handler="on_egg_sfx_play_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="sfx_number_stop">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                            <property name="valign">center</property>
+                            <property name="relief">none</property>
+                            <property name="image">audio_stop_egg_sfx</property>
+                            <signal name="clicked" handler="on_egg_sfx_stop_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
                       </object>
                     </child>
                     <child type="label">
@@ -4681,21 +4871,68 @@
                 <property name="vexpand">False</property>
                 <property name="label-xalign">0</property>
                 <child>
-                  <object class="GtkSpinButton" id="speech_number">
+                  <object class="GtkBox" id="speech_number_box">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">fill</property>
                     <property name="valign">center</property>
-                    <property name="margin-start">4</property>
-                    <property name="margin-end">4</property>
+                    <property name="margin-start">2</property>
+                    <property name="margin-end">2</property>
                     <property name="margin-top">2</property>
                     <property name="margin-bottom">2</property>
+                    <property name="hexpand">True</property>
                     <property name="vexpand">False</property>
-                    <property name="width-chars">5</property>
-                    <property name="primary-icon-activatable">False</property>
-                    <property name="secondary-icon-activatable">False</property>
-                    <property name="adjustment">adjustment147</property>
-                    <property name="climb-rate">1</property>
-                    <property name="wrap">True</property>
+                    <property name="orientation">horizontal</property>
+                    <child>
+                      <object class="GtkSpinButton" id="speech_number">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">False</property>
+                        <property name="width-chars">5</property>
+                        <property name="primary-icon-activatable">False</property>
+                        <property name="secondary-icon-activatable">False</property>
+                        <property name="adjustment">adjustment147</property>
+                        <property name="climb-rate">1</property>
+                        <property name="wrap">True</property>
+                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="speech_number_play">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="valign">center</property>
+                        <property name="relief">none</property>
+                        <property name="image">audio_play_speech</property>
+                        <signal name="clicked" handler="on_speech_play_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="speech_stop">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="valign">center</property>
+                        <property name="relief">none</property>
+                        <property name="image">audio_stop_speech</property>
+                        <signal name="clicked" handler="on_speech_stop_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
                   </object>
                 </child>
                 <child type="label">
@@ -13537,8 +13774,8 @@
                                         <property name="can-focus">True</property>
                                         <property name="receives-default">True</property>
                                         <property name="valign">center</property>
-                                        <property name="image">audio_play_img3</property>
                                         <property name="relief">none</property>
+                                        <property name="image">audio_play_sfx_weapon</property>
                                         <signal name="clicked" handler="on_shinfo_weapon_sfx_play_clicked" swapped="no"/>
                                       </object>
                                       <packing>
@@ -13551,8 +13788,8 @@
                                         <property name="can-focus">True</property>
                                         <property name="receives-default">True</property>
                                         <property name="valign">center</property>
-                                        <property name="image">audio_stop_img3</property>
                                         <property name="relief">none</property>
+                                        <property name="image">audio_stop_sfx_weapon</property>
                                         <signal name="clicked" handler="on_shinfo_weapon_sfx_stop_clicked" swapped="no"/>
                                       </object>
                                       <packing>
@@ -13621,7 +13858,7 @@
                                         <property name="can-focus">True</property>
                                         <property name="receives-default">True</property>
                                         <property name="valign">center</property>
-                                        <property name="image">audio_play_img4</property>
+                                        <property name="image">audio_play_hitsfx</property>
                                         <property name="relief">none</property>
                                         <signal name="clicked" handler="on_shinfo_weapon_hitsfx_play_clicked" swapped="no"/>
                                       </object>
@@ -13635,7 +13872,7 @@
                                         <property name="can-focus">True</property>
                                         <property name="receives-default">True</property>
                                         <property name="valign">center</property>
-                                        <property name="image">audio_stop_img4</property>
+                                        <property name="image">audio_stop_hitsfx</property>
                                         <property name="relief">none</property>
                                         <signal name="clicked" handler="on_shinfo_weapon_hitsfx_stop_clicked" swapped="no"/>
                                       </object>
@@ -16179,20 +16416,67 @@
                         <property name="vexpand">False</property>
                         <property name="label-xalign">0</property>
                         <child>
-                          <object class="GtkSpinButton" id="shinfo_monster_sfx">
+                          <object class="GtkBox" id="shinfo_monster_sfx_box">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">fill</property>
                             <property name="valign">center</property>
-                            <property name="margin-start">4</property>
-                            <property name="margin-end">4</property>
+                            <property name="margin-start">2</property>
+                            <property name="margin-end">2</property>
                             <property name="margin-top">2</property>
                             <property name="margin-bottom">2</property>
+                            <property name="hexpand">True</property>
                             <property name="vexpand">False</property>
-                            <property name="width-chars">5</property>
-                            <property name="primary-icon-activatable">False</property>
-                            <property name="secondary-icon-activatable">False</property>
-                            <property name="adjustment">adjustment70</property>
-                            <property name="climb-rate">1</property>
+                            <property name="orientation">horizontal</property>
+                            <child>
+                              <object class="GtkSpinButton" id="shinfo_monster_sfx">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="valign">center</property>
+                                <property name="margin-start">2</property>
+                                <property name="margin-end">2</property>
+                                <property name="margin-top">0</property>
+                                <property name="margin-bottom">0</property>
+                                <property name="hexpand">True</property>
+                                <property name="vexpand">False</property>
+                                <property name="width-chars">5</property>
+                                <property name="primary-icon-activatable">False</property>
+                                <property name="secondary-icon-activatable">False</property>
+                                <property name="adjustment">adjustment70</property>
+                                <property name="climb-rate">1</property>
+                              </object>
+                              <packing>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="shinfo_monster_sfx_play">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <property name="valign">center</property>
+                                <property name="relief">none</property>
+                                <property name="image">audio_play_monster_sfx</property>
+                                <signal name="clicked" handler="on_shinfo_monster_sfx_play_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="shinfo_monster_sfx_stop">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <property name="valign">center</property>
+                                <property name="relief">none</property>
+                                <property name="image">audio_stop_monster_sfx</property>
+                                <signal name="clicked" handler="on_shinfo_monster_sfx_stop_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
                           </object>
                         </child>
                         <child type="label">
@@ -18624,13 +18908,43 @@
                                             <property name="position">1</property>
                                           </packing>
                                         </child>
+                                        <child>
+                                          <object class="GtkButton" id="shinfo_explosion_sfx_play">
+                                            <property name="visible">True</property>
+                                            <property name="sensitive">False</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="receives-default">True</property>
+                                            <property name="valign">center</property>
+                                            <property name="relief">none</property>
+                                            <property name="image">audio_play_explosion_sfx</property>
+                                            <signal name="clicked" handler="on_shinfo_explosion_sfx_play_clicked" swapped="no"/>
+                                          </object>
+                                          <packing>
+                                            <property name="position">2</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkButton" id="shinfo_explosion_sfx_stop">
+                                            <property name="visible">True</property>
+                                            <property name="sensitive">False</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="receives-default">True</property>
+                                            <property name="valign">center</property>
+                                            <property name="relief">none</property>
+                                            <property name="image">audio_stop_explosion_sfx</property>
+                                            <signal name="clicked" handler="on_shinfo_explosion_sfx_stop_clicked" swapped="no"/>
+                                          </object>
+                                          <packing>
+                                            <property name="position">3</property>
+                                          </packing>
+                                        </child>
                                       </object>
                                     </child>
                                     <child type="label">
                                       <object class="GtkLabel" id="label253">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
-                                        <property name="label" translatable="yes">SFX</property>
+                                        <property name="label" translatable="yes">Explosion SFX</property>
                                       </object>
                                     </child>
                                   </object>
@@ -20153,7 +20467,7 @@
                                     <property name="can-focus">True</property>
                                     <property name="receives-default">True</property>
                                     <property name="valign">center</property>
-                                    <property name="image">audio_play_img2</property>
+                                    <property name="image">audio_play_sfx</property>
                                     <property name="relief">none</property>
                                     <signal name="clicked" handler="on_shinfo_sfx_play_clicked" swapped="no"/>
                                   </object>
@@ -20167,7 +20481,7 @@
                                     <property name="can-focus">True</property>
                                     <property name="receives-default">True</property>
                                     <property name="valign">center</property>
-                                    <property name="image">audio_stop_img2</property>
+                                    <property name="image">audio_stop_sfx</property>
                                     <property name="relief">none</property>
                                     <signal name="clicked" handler="on_shinfo_sfx_stop_clicked" swapped="no"/>
                                   </object>

@@ -806,6 +806,8 @@ C_EXPORT gboolean on_shinfo_explosion_sfx_type_toggled(
 	const bool   on     = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->set_sensitive("shinfo_explosion_sfx_number", on);
+	studio->set_sensitive("shinfo_explosion_sfx_play", on);
+	studio->set_sensitive("shinfo_explosion_sfx_stop", on);
 	return true;
 }
 
@@ -878,6 +880,42 @@ C_EXPORT void on_shinfo_weapon_hitsfx_play_clicked(
  *  Weapon hit sound effect stop button clicked.
  */
 C_EXPORT void on_shinfo_weapon_hitsfx_stop_clicked(
+		GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	stop_audio_playback();
+}
+
+/*
+ *  Monster attack sound effect play button clicked.
+ */
+C_EXPORT void on_shinfo_monster_sfx_play_clicked(
+		GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	play_sfx_from_spin("shinfo_monster_sfx");
+}
+
+/*
+ *  Monster attack sound effect stop button clicked.
+ */
+C_EXPORT void on_shinfo_monster_sfx_stop_clicked(
+		GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	stop_audio_playback();
+}
+
+/*
+ *  Explosion sound effect play button clicked.
+ */
+C_EXPORT void on_shinfo_explosion_sfx_play_clicked(
+		GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	play_sfx_from_spin("shinfo_explosion_sfx_number");
+}
+
+/*
+ *  Explosion sound effect stop button clicked.
+ */
+C_EXPORT void on_shinfo_explosion_sfx_stop_clicked(
 		GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	stop_audio_playback();
@@ -4163,6 +4201,13 @@ void ExultStudio::open_shape_window(
 	if (!shapewin) {    // First time?
 		shapewin = get_widget("shape_window");
 	}
+	// Reset audio track spin buttons to prevent values from persisting
+	// across different shapes.
+	set_spin("shinfo_sfx_first", -1);
+	set_spin("shinfo_weapon_sfx", -1);
+	set_spin("shinfo_weapon_hitsfx", -1);
+	set_spin("shinfo_monster_sfx", -1);
+	set_spin("shinfo_explosion_sfx_number", -1);
 	// Ifile might have changed.
 	delete shape_single;
 	shape_single = nullptr;

@@ -145,12 +145,20 @@ void ExultStudio::open_egg_window(
 		if (!init_egg_window(data, datalen)) {
 			return;
 		}
-	} else if (first_time) {    // Init. empty dialog first time.
-		set_toggle("teleport_coord", true);
-		set_sensitive("teleport_x", true);
-		set_sensitive("teleport_y", true);
-		set_sensitive("teleport_z", true);
-		set_sensitive("teleport_eggnum", false);
+	} else {    // Init. empty dialog.
+		if (first_time) {
+			set_toggle("teleport_coord", true);
+			set_sensitive("teleport_x", true);
+			set_sensitive("teleport_y", true);
+			set_sensitive("teleport_z", true);
+			set_sensitive("teleport_eggnum", false);
+		}
+		// Reset audio track values to 0.
+		set_spin("juke_song", 0);
+		set_toggle("juke_cont", false);
+		set_spin("sfx_number", 0);
+		set_toggle("sfx_cont", false);
+		set_spin("speech_number", 0);
 	}
 	gtk_widget_set_visible(eggwin, true);
 }
@@ -446,4 +454,80 @@ int ExultStudio::save_egg_window() {
 	}
 	close_egg_window();
 	return 1;
+}
+
+/*
+ *  Helper function to play audio from egg editor.
+ */
+static void play_egg_audio(
+		int type, const char* spin_name, int volume = 100,
+		bool repeat = false) {
+	ExultStudio* studio = ExultStudio::get_instance();
+	const int    track  = studio->get_spin(spin_name);
+
+	if (track >= 0) {
+		studio->play_audio(type, track, volume, repeat);
+	}
+}
+
+/*
+ *  Helper function to stop audio playback.
+ */
+static void stop_egg_audio() {
+	ExultStudio::get_instance()->stop_audio();
+}
+
+/*
+ *  Jukebox play button clicked.
+ */
+C_EXPORT void on_juke_song_play_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	const bool   repeat = studio->get_toggle("juke_cont");
+	// type = 0 for music
+	play_egg_audio(0, "juke_song", 100, repeat);
+}
+
+/*
+ *  Jukebox stop button clicked.
+ */
+C_EXPORT void on_juke_song_stop_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	stop_egg_audio();
+}
+
+/*
+ *  Egg SFX play button clicked.
+ */
+C_EXPORT void on_egg_sfx_play_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	const bool   repeat = studio->get_toggle("sfx_cont");
+	// type = 1 for SFX
+	play_egg_audio(1, "sfx_number", 100, repeat);
+}
+
+/*
+ *  Egg SFX stop button clicked.
+ */
+C_EXPORT void on_egg_sfx_stop_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	stop_egg_audio();
+}
+
+/*
+ *  Speech play button clicked.
+ */
+C_EXPORT void on_speech_play_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	// type = 2 for speech
+	play_egg_audio(2, "speech_number");
+}
+
+/*
+ *  Speech stop button clicked.
+ */
+C_EXPORT void on_speech_stop_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	stop_egg_audio();
 }
