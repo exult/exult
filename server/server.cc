@@ -44,7 +44,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	include "objserial.h"
 #	include "servemsg.h"
 #	include "gamerend.h"
-
+#	include "Audio.h"
+#	include "Midi.h"
+	
 #	include <fcntl.h>
 #	include <unistd.h>
 
@@ -556,6 +558,53 @@ static void Handle_client_message(
 		const int index = little_endian::Read2s(ptr);
 		gwin->get_render()->set_bbox_index(index);
 		gwin->set_all_dirty();
+		break;
+	}
+	case Exult_server::play_audio: {
+		const int  type   = Read1(ptr);    // 0=music, 1=sfx, 2=voice
+		const int  track  = little_endian::Read2(ptr);
+		const int  volume = little_endian::Read2(ptr);
+		const bool repeat = Read1(ptr) != 0;
+
+		Audio* audio = Audio::get_ptr();
+		if (!audio) {
+			break;
+		}
+
+		switch (type) {
+		case 0: {    // Music
+			audio->stop_music();
+			// Set music volumes
+			MyMidiPlayer* midi = audio->get_midi();
+			if (midi) {
+				midi->SetMidiMusicVolume(volume, false);
+				midi->SetOggMusicVolume(volume, false);
+			}
+			audio->start_music(track, repeat);
+			break;
+		}
+		case 1:    // SFX
+			audio->stop_sound_effects();
+			audio->play_sound_effect(track, volume, 0, repeat ? -1 : 0, 0);
+			break;
+		case 2:    // Voice
+			audio->stop_speech();
+			audio->set_speech_volume(volume, false);
+			audio->start_speech(track, false);
+			break;
+		default:
+			cerr << "Unknown audio type: " << type << endl;
+			break;
+		}
+		break;
+	}
+	case Exult_server::stop_audio: {
+		Audio* audio = Audio::get_ptr();
+		if (audio) {
+			audio->stop_music();
+			audio->stop_sound_effects();
+			audio->stop_speech();
+		}
 		break;
 	}
 	case Exult_server::usecode_debugging:

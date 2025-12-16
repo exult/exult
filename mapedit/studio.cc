@@ -230,6 +230,60 @@ C_EXPORT void on_write_minimap_menu_activate(
 	ExultStudio::get_instance()->write_minimap();
 }
 
+C_EXPORT void on_play_audio_activate(
+		GtkMenuItem* menuitem, gpointer user_data) {
+	ignore_unused_variable_warning(menuitem, user_data);
+	ExultStudio::get_instance()->play_audio_dialog();
+}
+
+C_EXPORT void on_audio_type_combo_changed(
+		GtkComboBox* combo, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const int    type         = gtk_combo_box_get_active(combo);
+	ExultStudio* studio       = ExultStudio::get_instance();
+	GtkWidget*   repeat_check = studio->get_widget("audio_repeat_check");
+
+	if (repeat_check) {
+		// Disable repeat checkbox for voice (type == 2)
+		gtk_widget_set_sensitive(repeat_check, type != 2);
+		if (type == 2) {
+			gtk_toggle_button_set_active(
+					GTK_TOGGLE_BUTTON(repeat_check), false);
+		}
+	}
+}
+
+C_EXPORT void on_play_audio_play_clicked(
+		GtkButton* button, gpointer user_data) {
+	ignore_unused_variable_warning(button, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+
+	GtkWidget* type_combo   = studio->get_widget("audio_type_combo");
+	GtkWidget* track_spin   = studio->get_widget("audio_track_spin");
+	GtkWidget* volume_spin  = studio->get_widget("audio_volume_spin");
+	GtkWidget* repeat_check = studio->get_widget("audio_repeat_check");
+
+	if (!type_combo || !track_spin || !volume_spin || !repeat_check) {
+		return;
+	}
+
+	const int type = gtk_combo_box_get_active(GTK_COMBO_BOX(type_combo));
+	const int track
+			= gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(track_spin));
+	const int volume
+			= gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(volume_spin));
+	const bool repeat
+			= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(repeat_check));
+
+	studio->play_audio(type, track, volume, repeat);
+}
+
+C_EXPORT void on_play_audio_stop_clicked(
+		GtkButton* button, gpointer user_data) {
+	ignore_unused_variable_warning(button, user_data);
+	ExultStudio::get_instance()->stop_audio();
+}
+
 C_EXPORT void on_save_shape_info1_activate(
 		GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
@@ -3939,4 +3993,59 @@ void ExultStudio::create_zoom_controls() {
 	g_signal_connect(
 			G_OBJECT(zcheck), "toggled",
 			G_CALLBACK(ExultStudio::on_zoom_bilinear), this);
+}
+
+/*
+ *  Open audio playback dialog.
+ */
+
+void ExultStudio::play_audio_dialog() {
+	GtkWidget* dialog = get_widget("play_audio_dialog");
+	if (!dialog) {
+		return;
+	}
+
+	// Reset dialog to defaults
+	GtkWidget* type_combo   = get_widget("audio_type_combo");
+	GtkWidget* track_spin   = get_widget("audio_track_spin");
+	GtkWidget* volume_spin  = get_widget("audio_volume_spin");
+	GtkWidget* repeat_check = get_widget("audio_repeat_check");
+
+	if (type_combo) {
+		gtk_combo_box_set_active(GTK_COMBO_BOX(type_combo), 0);
+	}
+	if (track_spin) {
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(track_spin), 0);
+	}
+	if (volume_spin) {
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(volume_spin), 100);
+	}
+	if (repeat_check) {
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(repeat_check), false);
+		gtk_widget_set_sensitive(repeat_check, true);    // Enable by default
+	}
+
+	gtk_widget_show(dialog);
+}
+
+/*
+ *  Play audio (music/sfx/voice).
+ */
+
+void ExultStudio::play_audio(int type, int track, int volume, bool repeat) {
+	unsigned char  data[Exult_server::maxlength];
+	unsigned char* ptr = &data[0];
+	Write1(ptr, type);    // 0=music, 1=sfx, 2=voice
+	little_endian::Write2(ptr, track);
+	little_endian::Write2(ptr, volume);
+	Write1(ptr, repeat ? 1 : 0);
+	send_to_server(Exult_server::play_audio, data, ptr - data);
+}
+
+/*
+ *  Stop all audio playback.
+ */
+
+void ExultStudio::stop_audio() {
+	send_to_server(Exult_server::stop_audio, nullptr, 0);
 }

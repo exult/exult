@@ -934,6 +934,17 @@
     <property name="step-increment">1</property>
     <property name="page-increment">4</property>
   </object>
+  <object class="GtkAdjustment" id="audio_track_adj">
+    <property name="upper">255</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="audio_volume_adj">
+    <property name="upper">100</property>
+    <property name="value">100</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
   <object class="GtkListStore" id="alignment_liststore">
     <columns>
       <!-- column-name alignment -->
@@ -1832,6 +1843,18 @@
     <property name="icon-name">media-playback-start-symbolic</property>
     <property name="use-fallback">True</property>
   </object>
+  <object class="GtkImage" id="audio_play_img1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_img1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
   <object class="GtkListStore" id="proj_frames_liststore">
     <columns>
       <!-- column-name proj_frames -->
@@ -2689,6 +2712,15 @@
                         <property name="label" translatable="yes">Fix old shape info</property>
                         <property name="use-underline">True</property>
                         <signal name="activate" handler="on_fix_old_shape_info_activate" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="play_audio_menu">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">_Audio Tester</property>
+                        <property name="use-underline">True</property>
+                        <signal name="activate" handler="on_play_audio_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -29991,6 +30023,172 @@
               <packing>
                 <property name="position">1</property>
               </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="play_audio_dialog">
+    <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Audio Tester</property>
+    <signal name="delete-event" handler="exult_widget_hide" swapped="no"/>
+    <child>
+      <object class="GtkBox" id="audio_vbox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child>
+          <object class="GtkGrid" id="play_audio_grid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">6</property>
+            <property name="column-spacing">6</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">10</property>
+            <property name="margin-bottom">10</property>
+            <child>
+              <object class="GtkComboBoxText" id="audio_type_combo">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="active">0</property>
+                <property name="halign">center</property>
+                <signal name="changed" handler="on_audio_type_combo_changed" swapped="no"/>
+                <items>
+                  <item translatable="yes">Music</item>
+                  <item translatable="yes">SFX</item>
+                  <item translatable="yes">Voice</item>
+                </items>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">end</property>
+                <property name="label" translatable="yes">Track:</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="audio_track_spin">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="adjustment">audio_track_adj</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">end</property>
+                <property name="label" translatable="yes">Volume:</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="audio_volume_spin">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="adjustment">audio_volume_adj</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="audio_repeat_check">
+                <property name="label" translatable="yes">Repeat</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="halign">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">3</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkButton" id="play_audio_play_btn">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="use-underline">True</property>
+                    <property name="image">audio_play_img1</property>
+                    <property name="always-show-image">True</property>
+                    <signal name="clicked" handler="on_play_audio_play_clicked" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="play_audio_stop_btn">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="use-underline">True</property>
+                    <property name="image">audio_stop_img1</property>
+                    <property name="always-show-image">True</property>
+                    <signal name="clicked" handler="on_play_audio_stop_clicked" swapped="no"/>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">4</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButtonBox" id="audio_button_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">end</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-bottom">10</property>
+            <property name="layout-style">end</property>
+            <child>
+              <object class="GtkButton" id="play_audio_close">
+                <property name="label">_Close</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="use-underline">True</property>
+                <signal name="clicked" handler="exult_widget_hide" object="play_audio_dialog" swapped="yes"/>
+              </object>
             </child>
           </object>
           <packing>

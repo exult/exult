@@ -297,6 +297,9 @@ public:
 	void reload_usecode();
 	void write_minimap();
 	void update_connect_button(bool connected);
+	void play_audio_dialog();
+	void play_audio(int type, int track, int volume, bool repeat);
+	void stop_audio();
 	void set_play(gboolean play);
 	void update_play_button(bool playing);
 	void set_tile_grid(gboolean grid);

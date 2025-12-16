@@ -96,6 +96,8 @@ namespace Exult_server {
 		edit_pick          = 47,    // Selecting Shapes for editing.
 		write_minimap      = 48,    // Save minimap.
 		show_bboxes        = 49,    // Set bounding boxes color.
+		play_audio         = 50,    // Play audio (music/sfx/voice).
+		stop_audio         = 51,    // Stop all audio playback.
 		usecode_debugging  = 128
 	};
 
