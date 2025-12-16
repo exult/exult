@@ -810,6 +810,80 @@ C_EXPORT gboolean on_shinfo_explosion_sfx_type_toggled(
 }
 
 /*
+ *  Helper function to play SFX from a spin button.
+ */
+static void play_sfx_from_spin(const char* spin_name, int volume = 100) {
+	ExultStudio* studio = ExultStudio::get_instance();
+	const int    track  = studio->get_spin(spin_name);
+
+	if (track >= 0) {
+		// type = 1 for SFX
+		studio->play_audio(1, track, volume, false);
+	}
+}
+
+/*
+ *  Helper function to stop audio playback.
+ */
+static void stop_audio_playback() {
+	ExultStudio::get_instance()->stop_audio();
+}
+
+/*
+ *  SFX play button clicked.
+ */
+C_EXPORT void on_shinfo_sfx_play_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	const int    volume = studio->get_spin("shinfo_sfx_volume");
+	play_sfx_from_spin("shinfo_sfx_first", volume >= 0 ? volume : 100);
+}
+
+/*
+ *  SFX stop button clicked.
+ */
+C_EXPORT void on_shinfo_sfx_stop_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	stop_audio_playback();
+}
+
+/*
+ *  Weapon sound effect play button clicked.
+ */
+C_EXPORT void on_shinfo_weapon_sfx_play_clicked(
+		GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	play_sfx_from_spin("shinfo_weapon_sfx");
+}
+
+/*
+ *  Weapon sound effect stop button clicked.
+ */
+C_EXPORT void on_shinfo_weapon_sfx_stop_clicked(
+		GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	stop_audio_playback();
+}
+
+/*
+ *  Weapon hit sound effect play button clicked.
+ */
+C_EXPORT void on_shinfo_weapon_hitsfx_play_clicked(
+		GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	play_sfx_from_spin("shinfo_weapon_hitsfx");
+}
+
+/*
+ *  Weapon hit sound effect stop button clicked.
+ */
+C_EXPORT void on_shinfo_weapon_hitsfx_stop_clicked(
+		GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	stop_audio_playback();
+}
+
+/*
  *  Shape window's Equip-Edit button.
  */
 C_EXPORT void on_open_equip_button_clicked(GtkButton* btn, gpointer user_data) {

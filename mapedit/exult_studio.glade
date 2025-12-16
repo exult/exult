@@ -1849,7 +1849,43 @@
     <property name="icon-name">media-playback-start-symbolic</property>
     <property name="use-fallback">True</property>
   </object>
+  <object class="GtkImage" id="audio_play_img2">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+    <object class="GtkImage" id="audio_play_img3">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+    <object class="GtkImage" id="audio_play_img4">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-start-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
   <object class="GtkImage" id="audio_stop_img1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_img2">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_img3">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-playback-stop-symbolic</property>
+    <property name="use-fallback">True</property>
+  </object>
+  <object class="GtkImage" id="audio_stop_img4">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="icon-name">media-playback-stop-symbolic</property>
@@ -13470,20 +13506,59 @@
                                 <property name="vexpand">False</property>
                                 <property name="label-xalign">0</property>
                                 <child>
-                                  <object class="GtkSpinButton" id="shinfo_weapon_sfx">
+                                  <object class="GtkBox" id="shinfo_weapon_sfx_box">
                                     <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="valign">center</property>
+                                    <property name="can-focus">False</property>
                                     <property name="margin-start">4</property>
                                     <property name="margin-end">4</property>
                                     <property name="margin-top">2</property>
                                     <property name="margin-bottom">2</property>
-                                    <property name="vexpand">False</property>
-                                    <property name="width-chars">5</property>
-                                    <property name="primary-icon-activatable">False</property>
-                                    <property name="secondary-icon-activatable">False</property>
-                                    <property name="adjustment">adjustment85</property>
-                                    <property name="climb-rate">1</property>
+                                    <property name="orientation">horizontal</property>
+                                    <property name="spacing">4</property>
+                                    <child>
+                                      <object class="GtkSpinButton" id="shinfo_weapon_sfx">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="vexpand">False</property>
+                                        <property name="width-chars">5</property>
+                                        <property name="primary-icon-activatable">False</property>
+                                        <property name="secondary-icon-activatable">False</property>
+                                        <property name="adjustment">adjustment85</property>
+                                        <property name="climb-rate">1</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkButton" id="shinfo_weapon_sfx_play">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="image">audio_play_img3</property>
+                                        <property name="relief">none</property>
+                                        <signal name="clicked" handler="on_shinfo_weapon_sfx_play_clicked" swapped="no"/>
+                                      </object>
+                                      <packing>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkButton" id="shinfo_weapon_sfx_stop">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="image">audio_stop_img3</property>
+                                        <property name="relief">none</property>
+                                        <signal name="clicked" handler="on_shinfo_weapon_sfx_stop_clicked" swapped="no"/>
+                                      </object>
+                                      <packing>
+                                        <property name="position">2</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                 </child>
                                 <child type="label">
@@ -13515,20 +13590,59 @@
                                 <property name="vexpand">False</property>
                                 <property name="label-xalign">0</property>
                                 <child>
-                                  <object class="GtkSpinButton" id="shinfo_weapon_hitsfx">
+                                  <object class="GtkBox" id="shinfo_weapon_hitsfx_box">
                                     <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="valign">center</property>
+                                    <property name="can-focus">False</property>
                                     <property name="margin-start">4</property>
                                     <property name="margin-end">4</property>
                                     <property name="margin-top">2</property>
                                     <property name="margin-bottom">2</property>
-                                    <property name="vexpand">False</property>
-                                    <property name="width-chars">5</property>
-                                    <property name="primary-icon-activatable">False</property>
-                                    <property name="secondary-icon-activatable">False</property>
-                                    <property name="adjustment">adjustment84</property>
-                                    <property name="climb-rate">1</property>
+                                    <property name="orientation">horizontal</property>
+                                    <property name="spacing">4</property>
+                                    <child>
+                                      <object class="GtkSpinButton" id="shinfo_weapon_hitsfx">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="vexpand">False</property>
+                                        <property name="width-chars">5</property>
+                                        <property name="primary-icon-activatable">False</property>
+                                        <property name="secondary-icon-activatable">False</property>
+                                        <property name="adjustment">adjustment84</property>
+                                        <property name="climb-rate">1</property>
+                                      </object>
+                                      <packing>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkButton" id="shinfo_weapon_hitsfx_play">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="image">audio_play_img4</property>
+                                        <property name="relief">none</property>
+                                        <signal name="clicked" handler="on_shinfo_weapon_hitsfx_play_clicked" swapped="no"/>
+                                      </object>
+                                      <packing>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkButton" id="shinfo_weapon_hitsfx_stop">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="image">audio_stop_img4</property>
+                                        <property name="relief">none</property>
+                                        <signal name="clicked" handler="on_shinfo_weapon_hitsfx_stop_clicked" swapped="no"/>
+                                      </object>
+                                      <packing>
+                                        <property name="position">2</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                 </child>
                                 <child type="label">
@@ -19937,7 +20051,7 @@
                     <property name="vexpand">False</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <!-- n-columns=3 n-rows=2 -->
+                      <!-- n-columns=3 n-rows=3 -->
                       <object class="GtkGrid" id="table34">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -19950,12 +20064,186 @@
                         <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
                         <child>
-                          <object class="GtkFrame" id="frame236">
+                          <object class="GtkFrame" id="frame266">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">fill</property>
                             <property name="valign">fill</property>
                             <property name="margin-start">0</property>
+                            <property name="margin-end">2</property>
+                            <property name="margin-top">0</property>
+                            <property name="margin-bottom">1</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">True</property>
+                            <property name="label-xalign">0</property>
+                            <child>
+                              <object class="GtkCheckButton" id="shinfo_single_sfx">
+                                <property name="label" translatable="yes">Single Sound Effect</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">False</property>
+                                <property name="valign">center</property>
+                                <property name="margin-start">4</property>
+                                <property name="margin-end">4</property>
+                                <property name="margin-top">2</property>
+                                <property name="margin-bottom">2</property>
+                                <property name="vexpand">False</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-indicator">True</property>
+                                <signal name="toggled" handler="on_shinfo_single_sfx_toggled" swapped="no"/>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel" id="label299">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Type</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFrame" id="frame232">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">fill</property>
+                            <property name="valign">fill</property>
+                            <property name="margin-start">2</property>
+                            <property name="margin-end">0</property>
+                            <property name="margin-top">0</property>
+                            <property name="margin-bottom">1</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">False</property>
+                            <property name="label-xalign">0</property>
+                            <child>
+                              <object class="GtkBox" id="shinfo_sfx_buttons_box">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="margin-start">4</property>
+                                <property name="margin-end">4</property>
+                                <property name="margin-top">2</property>
+                                <property name="margin-bottom">2</property>
+                                <property name="orientation">horizontal</property>
+                                <property name="spacing">4</property>
+                                <child>
+                                  <object class="GtkSpinButton" id="shinfo_sfx_first">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="valign">center</property>
+                                    <property name="vexpand">False</property>
+                                    <property name="width-chars">5</property>
+                                    <property name="primary-icon-activatable">False</property>
+                                    <property name="secondary-icon-activatable">False</property>
+                                    <property name="adjustment">adjustment45</property>
+                                    <property name="climb-rate">1</property>
+                                  </object>
+                                  <packing>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="shinfo_sfx_play_btn">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">True</property>
+                                    <property name="valign">center</property>
+                                    <property name="image">audio_play_img2</property>
+                                    <property name="relief">none</property>
+                                    <signal name="clicked" handler="on_shinfo_sfx_play_clicked" swapped="no"/>
+                                  </object>
+                                  <packing>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="shinfo_sfx_stop_btn">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">True</property>
+                                    <property name="valign">center</property>
+                                    <property name="image">audio_stop_img2</property>
+                                    <property name="relief">none</property>
+                                    <signal name="clicked" handler="on_shinfo_sfx_stop_clicked" swapped="no"/>
+                                  </object>
+                                  <packing>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel" id="label262">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Sound Effect</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">0</property>
+                            <property name="width">2</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFrame" id="frame235">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">fill</property>
+                            <property name="valign">fill</property>
+                            <property name="margin-start">0</property>
+                            <property name="margin-end">2</property>
+                            <property name="margin-top">0</property>
+                            <property name="margin-bottom">1</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">False</property>
+                            <property name="label-xalign">0</property>
+                            <child>
+                              <object class="GtkSpinButton" id="shinfo_sfx_chance">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="valign">center</property>
+                                <property name="margin-start">4</property>
+                                <property name="margin-end">4</property>
+                                <property name="margin-top">2</property>
+                                <property name="margin-bottom">2</property>
+                                <property name="vexpand">False</property>
+                                <property name="width-chars">5</property>
+                                <property name="primary-icon-activatable">False</property>
+                                <property name="secondary-icon-activatable">False</property>
+                                <property name="adjustment">adjustment46</property>
+                                <property name="climb-rate">1</property>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel" id="label263">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Probability</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">1</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFrame" id="frame236">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">fill</property>
+                            <property name="valign">fill</property>
+                            <property name="margin-start">2</property>
                             <property name="margin-end">2</property>
                             <property name="margin-top">1</property>
                             <property name="margin-bottom">0</property>
@@ -19991,7 +20279,7 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="left-attach">0</property>
+                            <property name="left-attach">1</property>
                             <property name="top-attach">1</property>
                             <property name="width">1</property>
                             <property name="height">1</property>
@@ -20036,7 +20324,7 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="left-attach">0</property>
+                            <property name="left-attach">1</property>
                             <property name="top-attach">2</property>
                             <property name="width">1</property>
                             <property name="height">1</property>
@@ -20119,7 +20407,7 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="left-attach">1</property>
+                            <property name="left-attach">2</property>
                             <property name="top-attach">2</property>
                             <property name="width">1</property>
                             <property name="height">1</property>
@@ -20164,7 +20452,7 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="left-attach">1</property>
+                            <property name="left-attach">2</property>
                             <property name="top-attach">1</property>
                             <property name="width">1</property>
                             <property name="height">1</property>
@@ -20247,143 +20535,8 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="left-attach">2</property>
-                            <property name="top-attach">1</property>
-                            <property name="width">1</property>
-                            <property name="height">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkFrame" id="frame235">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">fill</property>
-                            <property name="valign">fill</property>
-                            <property name="margin-start">2</property>
-                            <property name="margin-end">0</property>
-                            <property name="margin-top">0</property>
-                            <property name="margin-bottom">1</property>
-                            <property name="hexpand">False</property>
-                            <property name="vexpand">False</property>
-                            <property name="label-xalign">0</property>
-                            <child>
-                              <object class="GtkSpinButton" id="shinfo_sfx_chance">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <property name="valign">center</property>
-                                <property name="margin-start">4</property>
-                                <property name="margin-end">4</property>
-                                <property name="margin-top">2</property>
-                                <property name="margin-bottom">2</property>
-                                <property name="vexpand">False</property>
-                                <property name="width-chars">5</property>
-                                <property name="primary-icon-activatable">False</property>
-                                <property name="secondary-icon-activatable">False</property>
-                                <property name="adjustment">adjustment46</property>
-                                <property name="climb-rate">1</property>
-                              </object>
-                            </child>
-                            <child type="label">
-                              <object class="GtkLabel" id="label263">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Probability</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="left-attach">2</property>
-                            <property name="top-attach">0</property>
-                            <property name="width">1</property>
-                            <property name="height">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkFrame" id="frame232">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">fill</property>
-                            <property name="valign">fill</property>
-                            <property name="margin-start">2</property>
-                            <property name="margin-end">2</property>
-                            <property name="margin-top">0</property>
-                            <property name="margin-bottom">1</property>
-                            <property name="hexpand">False</property>
-                            <property name="vexpand">False</property>
-                            <property name="label-xalign">0</property>
-                            <child>
-                              <object class="GtkSpinButton" id="shinfo_sfx_first">
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <property name="valign">center</property>
-                                <property name="margin-start">4</property>
-                                <property name="margin-end">4</property>
-                                <property name="margin-top">2</property>
-                                <property name="margin-bottom">2</property>
-                                <property name="vexpand">False</property>
-                                <property name="width-chars">5</property>
-                                <property name="primary-icon-activatable">False</property>
-                                <property name="secondary-icon-activatable">False</property>
-                                <property name="adjustment">adjustment45</property>
-                                <property name="climb-rate">1</property>
-                              </object>
-                            </child>
-                            <child type="label">
-                              <object class="GtkLabel" id="label262">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Sound Effect</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
-                            <property name="top-attach">0</property>
-                            <property name="width">1</property>
-                            <property name="height">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkFrame" id="frame266">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">fill</property>
-                            <property name="valign">fill</property>
-                            <property name="margin-start">0</property>
-                            <property name="margin-end">2</property>
-                            <property name="margin-top">0</property>
-                            <property name="margin-bottom">1</property>
-                            <property name="hexpand">False</property>
-                            <property name="vexpand">True</property>
-                            <property name="label-xalign">0</property>
-                            <child>
-                              <object class="GtkCheckButton" id="shinfo_single_sfx">
-                                <property name="label" translatable="yes">Single Sound Effect</property>
-                                <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <property name="receives-default">False</property>
-                                <property name="valign">center</property>
-                                <property name="margin-start">4</property>
-                                <property name="margin-end">4</property>
-                                <property name="margin-top">2</property>
-                                <property name="margin-bottom">2</property>
-                                <property name="vexpand">False</property>
-                                <property name="use-underline">True</property>
-                                <property name="draw-indicator">True</property>
-                                <signal name="toggled" handler="on_shinfo_single_sfx_toggled" swapped="no"/>
-                              </object>
-                            </child>
-                            <child type="label">
-                              <object class="GtkLabel" id="label299">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Type</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
                             <property name="left-attach">0</property>
-                            <property name="top-attach">0</property>
+                            <property name="top-attach">2</property>
                             <property name="width">1</property>
                             <property name="height">1</property>
                           </packing>
