@@ -46,7 +46,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	include "gamerend.h"
 #	include "Audio.h"
 #	include "Midi.h"
-	
+
 #	include <fcntl.h>
 #	include <unistd.h>
 
@@ -571,49 +571,69 @@ static void Handle_client_message(
 			break;
 		}
 
+		unsigned char  response[Exult_server::maxlength];
+		unsigned char* wptr      = &response[0];
+		const char*    error_msg = nullptr;
+
 		// Check if audio is enabled at all
 		if (!audio->is_audio_enabled()) {
-			cerr << "Audio Tester: Cannot play - audio is disabled in Exult" << endl;
-			break;
+			error_msg = "Audio is disabled in Exult. Enable it in Exult's "
+						"Audio settings.";
+		} else {
+			switch (type) {
+			case 0: {    // Music
+				if (!audio->is_music_enabled()) {
+					error_msg = "Music is disabled in Exult. Enable it in "
+								"Exult's Audio settings.";
+				} else {
+					audio->stop_music();
+					// Set music volumes
+					MyMidiPlayer* midi = audio->get_midi();
+					if (midi) {
+						midi->SetMidiMusicVolume(volume, false);
+						midi->SetOggMusicVolume(volume, false);
+					}
+					audio->start_music(track, repeat);
+				}
+				break;
+			}
+			case 1:    // SFX
+				if (!audio->are_effects_enabled()) {
+					error_msg = "Sound effects are disabled in Exult. Enable "
+								"them in Exult's Audio settings.";
+				} else {
+					audio->stop_sound_effects();
+					audio->play_sound_effect(
+							track, volume, 0, repeat ? -1 : 0, 0);
+				}
+				break;
+			case 2:    // Voice
+				if (!audio->is_speech_enabled()) {
+					error_msg = "Speech is disabled in Exult. Enable it in "
+								"Exult's Audio settings.";
+				} else {
+					audio->stop_speech();
+					audio->set_speech_volume(volume, false);
+					audio->start_speech(track, false);
+				}
+				break;
+			default:
+				error_msg = "Unknown audio type requested.";
+				break;
+			}
 		}
 
-		switch (type) {
-		case 0: {    // Music
-			if (!audio->is_music_enabled()) {
-				cerr << "Audio Tester: Cannot play music - music is disabled in Exult" << endl;
-				break;
-			}
-			audio->stop_music();
-			// Set music volumes
-			MyMidiPlayer* midi = audio->get_midi();
-			if (midi) {
-				midi->SetMidiMusicVolume(volume, false);
-				midi->SetOggMusicVolume(volume, false);
-			}
-			audio->start_music(track, repeat);
-			break;
+		// Send response back to Studio
+		if (error_msg) {
+			Write1(wptr, 0);    // 0 = error
+			strcpy(reinterpret_cast<char*>(wptr), error_msg);
+			wptr += strlen(error_msg) + 1;
+		} else {
+			Write1(wptr, 1);    // 1 = success
 		}
-		case 1:    // SFX
-			if (!audio->are_effects_enabled()) {
-				cerr << "Audio Tester: Cannot play SFX - sound effects are disabled in Exult" << endl;
-				break;
-			}
-			audio->stop_sound_effects();
-			audio->play_sound_effect(track, volume, 0, repeat ? -1 : 0, 0);
-			break;
-		case 2:    // Voice
-			if (!audio->is_speech_enabled()) {
-				cerr << "Audio Tester: Cannot play speech - speech is disabled in Exult" << endl;
-				break;
-			}
-			audio->stop_speech();
-			audio->set_speech_volume(volume, false);
-			audio->start_speech(track, false);
-			break;
-		default:
-			cerr << "Unknown audio type: " << type << endl;
-			break;
-		}
+		Exult_server::Send_data(
+				client_socket, Exult_server::play_audio, response,
+				wptr - response);
 		break;
 	}
 	case Exult_server::stop_audio: {

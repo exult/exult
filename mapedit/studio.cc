@@ -3043,6 +3043,19 @@ void ExultStudio::read_from_server() {
 	case Exult_server::select_status:
 		set_edit_menu(data[0] != 0, data[1] != 0);
 		break;
+	case Exult_server::play_audio: {
+		// Response from Exult after play_audio request
+		if (datalen < 1) {
+			break;
+		}
+		const unsigned char* ptr    = data;
+		const int            status = Read1(ptr);
+		if (status == 0 && datalen > 1) {    // Error
+			const char* error_msg = reinterpret_cast<const char*>(ptr);
+			EStudio::Alert("%s", error_msg);
+		}
+		break;
+	}
 	case Exult_server::usecode_debugging:
 		cerr << "Warning: got a usecode debugging message! (ignored)" << endl;
 		break;
