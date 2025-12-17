@@ -420,6 +420,7 @@ ES_SERVER_OBJS:=\
 	server/servewin32.o
 
 MAPEDIT_OBJS:=\
+	mapedit/audiotest.o \
 	mapedit/bargeedit.o \
 	mapedit/chunklst.o \
 	mapedit/combo.o \

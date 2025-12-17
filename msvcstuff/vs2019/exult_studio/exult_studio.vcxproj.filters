@@ -186,6 +186,9 @@
     <ClCompile Include="..\..\..\shapes\shapeinf\weaponinf.cc">
       <Filter>Shapes\Shapeinf</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\audiotest.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\mapedit\bargeedit.cc">
       <Filter>Mapedit</Filter>
     </ClCompile>

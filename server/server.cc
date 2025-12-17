@@ -571,8 +571,18 @@ static void Handle_client_message(
 			break;
 		}
 
+		// Check if audio is enabled at all
+		if (!audio->is_audio_enabled()) {
+			cerr << "Audio Tester: Cannot play - audio is disabled in Exult" << endl;
+			break;
+		}
+
 		switch (type) {
 		case 0: {    // Music
+			if (!audio->is_music_enabled()) {
+				cerr << "Audio Tester: Cannot play music - music is disabled in Exult" << endl;
+				break;
+			}
 			audio->stop_music();
 			// Set music volumes
 			MyMidiPlayer* midi = audio->get_midi();
@@ -584,10 +594,18 @@ static void Handle_client_message(
 			break;
 		}
 		case 1:    // SFX
+			if (!audio->are_effects_enabled()) {
+				cerr << "Audio Tester: Cannot play SFX - sound effects are disabled in Exult" << endl;
+				break;
+			}
 			audio->stop_sound_effects();
 			audio->play_sound_effect(track, volume, 0, repeat ? -1 : 0, 0);
 			break;
 		case 2:    // Voice
+			if (!audio->is_speech_enabled()) {
+				cerr << "Audio Tester: Cannot play speech - speech is disabled in Exult" << endl;
+				break;
+			}
 			audio->stop_speech();
 			audio->set_speech_volume(volume, false);
 			audio->start_speech(track, false);

@@ -10,6 +10,7 @@ bin_PROGRAMS = exult_studio
 endif
 
 exult_studio_SOURCES = \
+	audiotest.cc \
 	bargeedit.cc \
 	chunklst.cc \
 	chunklst.h \

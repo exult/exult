@@ -248,6 +248,7 @@ exit /b 0
     <ClCompile Include="..\..\..\gamemgr\modmgr.cc" />
     <ClCompile Include="..\..\..\imagewin\ibuf8.cc" />
     <ClCompile Include="..\..\..\imagewin\imagebuf.cc" />
+    <ClCompile Include="..\..\..\mapedit\audiotest.cc" />
     <ClCompile Include="..\..\..\mapedit\bargeedit.cc" />
     <ClCompile Include="..\..\..\mapedit\chunklst.cc" />
     <ClCompile Include="..\..\..\mapedit\combo.cc" />
