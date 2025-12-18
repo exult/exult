@@ -52,6 +52,15 @@ C_EXPORT void on_open_egg_activate(GtkMenuItem* menuitem, gpointer user_data) {
 }
 
 /*
+ *  Egg window's OK button.
+ */
+C_EXPORT void on_egg_okay_btn_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio::get_instance()->save_egg_window();
+	ExultStudio::get_instance()->close_egg_window();
+}
+
+/*
  *  Egg window's Apply button.
  */
 C_EXPORT void on_egg_apply_btn_clicked(GtkButton* btn, gpointer user_data) {
@@ -138,13 +147,16 @@ void ExultStudio::open_egg_window(
 	}
 	// Init. egg address to null.
 	g_object_set_data(G_OBJECT(eggwin), "user_data", nullptr);
-	// Make 'apply' sensitive.
+	// Make 'apply' and 'cancel' sensitive.
 	gtk_widget_set_sensitive(get_widget("egg_apply_btn"), true);
+	gtk_widget_set_sensitive(get_widget("egg_cancel_btn"), true);
 	remove_statusbar("egg_status", egg_ctx, egg_status_id);
 	if (data) {
 		if (!init_egg_window(data, datalen)) {
 			return;
 		}
+		gtk_widget_set_visible(get_widget("egg_okay_btn"), true);
+		gtk_widget_set_visible(get_widget("egg_status"), false);
 	} else {    // Init. empty dialog.
 		if (first_time) {
 			set_toggle("teleport_coord", true);
@@ -159,6 +171,8 @@ void ExultStudio::open_egg_window(
 		set_spin("sfx_number", 0);
 		set_toggle("sfx_cont", false);
 		set_spin("speech_number", 0);
+		gtk_widget_set_visible(get_widget("egg_okay_btn"), false);
+		gtk_widget_set_visible(get_widget("egg_status"), true);
 	}
 	gtk_widget_set_visible(eggwin, true);
 }
@@ -447,8 +461,9 @@ int ExultStudio::save_egg_window() {
 	if (!addr) {
 		egg_status_id = set_statusbar(
 				"egg_status", egg_ctx, "Click on map at place to insert egg");
-		// Make 'apply' insensitive.
+		// Make 'apply' and 'cancel' insensitive.
 		gtk_widget_set_sensitive(get_widget("egg_apply_btn"), false);
+		gtk_widget_set_sensitive(get_widget("egg_cancel_btn"), false);
 		waiting_for_server = Egg_response;
 		return 1;    // Leave window open.
 	}

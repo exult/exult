@@ -6204,11 +6204,33 @@
             <property name="margin-start">0</property>
             <property name="margin-end">0</property>
             <property name="margin-top">1</property>
-            <property name="margin-bottom">1</property>
+            <property name="margin-bottom">5</property>
             <property name="hexpand">False</property>
-            <property name="vexpand">True</property>
+            <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
             <property name="layout-style">end</property>
+            <child>
+              <object class="GtkButton" id="egg_okay_btn">
+                <property name="label">_OK</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="receives-default">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">end</property>
+                <property name="margin-start">0</property>
+                <property name="margin-end">2</property>
+                <property name="margin-top">0</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">False</property>
+                <property name="use-underline">True</property>
+                <signal name="clicked" handler="on_egg_okay_btn_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkButton" id="egg_apply_btn">
                 <property name="label">_Apply</property>
@@ -6217,8 +6239,8 @@
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
                 <property name="halign">fill</property>
-                <property name="valign">center</property>
-                <property name="margin-start">0</property>
+                <property name="valign">end</property>
+                <property name="margin-start">2</property>
                 <property name="margin-end">2</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
@@ -6228,7 +6250,7 @@
                 <signal name="clicked" handler="on_egg_apply_btn_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -6239,7 +6261,7 @@
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
                 <property name="halign">fill</property>
-                <property name="valign">center</property>
+                <property name="valign">end</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">5</property>
                 <property name="margin-top">0</property>
@@ -6250,7 +6272,7 @@
                 <signal name="clicked" handler="on_egg_cancel_btn_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
@@ -6264,10 +6286,10 @@
             <property name="can-focus">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
-            <property name="margin-start">0</property>
+            <property name="margin-start">5</property>
             <property name="margin-end">0</property>
             <property name="margin-top">1</property>
-            <property name="margin-bottom">3</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
           </object>
