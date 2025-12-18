@@ -650,7 +650,6 @@ int ExultStudio::save_npc_window() {
 	if (npcchoose) {
 		npcchoose->update_npc(npc_num);
 	}
-	close_npc_window();
 	return 1;
 }
 

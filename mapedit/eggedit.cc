@@ -467,7 +467,6 @@ int ExultStudio::save_egg_window() {
 		waiting_for_server = Egg_response;
 		return 1;    // Leave window open.
 	}
-	close_egg_window();
 	return 1;
 }
 

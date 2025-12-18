@@ -210,6 +210,5 @@ int ExultStudio::save_barge_window() {
 		waiting_for_server = Barge_response;
 		return 1;    // Leave window open.
 	}
-	close_barge_window();
 	return 1;
 }
