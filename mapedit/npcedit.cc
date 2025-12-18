@@ -123,6 +123,21 @@ C_EXPORT void on_npc_usecode_browse_clicked(
 	}
 }
 
+/*
+ *  Face spin button changed.
+ */
+C_EXPORT void on_npc_face_changed(GtkSpinButton* button, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	const int    face   = gtk_spin_button_get_value_as_int(button);
+
+	// Update label99 in npc_face_frame to show current face number
+	GtkWidget* frame = studio->get_widget("npc_face_frame");
+	char*      label = g_strdup_printf("Face #%d", face);
+	gtk_frame_set_label(GTK_FRAME(frame), label);
+	g_free(label);
+}
+
 // Schedule names.
 
 static const char* sched_names[32]
@@ -233,12 +248,17 @@ void ExultStudio::open_npc_window(
 		}
 		if (facefile && palbuf) {
 			npc_face_single = new Shape_single(
-					get_widget("npc_face_frame"), nullptr,
+					get_widget("npc_face"), nullptr,
 					[](int shnum) -> bool {
 						return (shnum >= 0) && (shnum < 1024);
 					},
 					nullptr, U7_SHAPE_FACES, facefile->get_ifile(),
 					palbuf.get(), get_widget("npc_face_draw"));
+
+			// Update label99 when face spin button changes
+			npc_face_changed_handler = g_signal_connect(
+					G_OBJECT(get_widget("npc_face")), "changed",
+					G_CALLBACK(on_npc_face_changed), nullptr);
 		}
 		npc_ctx = gtk_statusbar_get_context_id(
 				GTK_STATUSBAR(get_widget("npc_status")), "Npc Editor");
@@ -362,19 +382,17 @@ void ExultStudio::init_new_npc() {
 	// Usually, usecode = 0x400 + num.
 	set_entry("npc_usecode_entry", 0x400 + npc_num, true, npc_num >= 256);
 	// Usually, face = npc_num.
+	set_spin("npc_face", npc_num);
 	{
 		GtkWidget* widget = get_widget("npc_face_frame");
-		g_object_set_data(
-				G_OBJECT(widget), "user_data",
-				reinterpret_cast<gpointer>(uintptr(npc_num)));
-		char* label = g_strdup_printf("Face #%d", npc_num);
+		char*      label  = g_strdup_printf("Face #%d", npc_num);
 		gtk_frame_set_label(GTK_FRAME(widget), label);
 		g_free(label);
 	}
+	set_spin("npc_shape", -1);
+	set_spin("npc_frame", 0);
 	set_entry("npc_name_entry", "");
 	set_entry("npc_ident_entry", 0);
-	set_entry("npc_shape", -1);
-	set_entry("npc_frame", 0);
 	set_optmenu("npc_attack_mode", 0);
 	set_optmenu("npc_alignment", 0);
 	// Clear flag buttons.
@@ -449,14 +467,12 @@ int ExultStudio::init_npc_window(unsigned char* data, int datalen) {
 	set_entry("npc_num_entry", npc_num, true, false);
 	set_entry("npc_ident_entry", ident);
 	// Shape/frame.
-	set_entry("npc_shape", shape);
-	set_entry("npc_frame", 16);
+	set_spin("npc_shape", shape);
+	set_spin("npc_frame", 16);
+	set_spin("npc_face", face);
 	{
 		GtkWidget* widget = get_widget("npc_face_frame");
-		g_object_set_data(
-				G_OBJECT(widget), "user_data",
-				reinterpret_cast<gpointer>(uintptr(face)));
-		char* label = g_strdup_printf("Face #%d", face);
+		char*      label  = g_strdup_printf("Face #%d", face);
 		gtk_frame_set_label(GTK_FRAME(widget), label);
 		g_free(label);
 	}
@@ -556,15 +572,13 @@ int ExultStudio::save_npc_window() {
 	const int         ty = -1;
 	const int         tz = -1;    // +++++For now.
 	const std::string name(convertFromUTF8(get_text_entry("npc_name_entry")));
-	const short       npc_num = get_num_entry("npc_num_entry");
-	const short       ident   = get_num_entry("npc_ident_entry");
-	const int         shape   = get_num_entry("npc_shape");
-	const int         frame   = get_num_entry("npc_frame");
-	GtkWidget*        fw      = get_widget("npc_face_frame");
-	const int         face    = reinterpret_cast<sintptr>(
-            g_object_get_data(G_OBJECT(fw), "user_data"));
-	const int   usecode    = get_num_entry("npc_usecode_entry");
-	const char* usecodefun = "";
+	const short       npc_num    = get_num_entry("npc_num_entry");
+	const short       ident      = get_num_entry("npc_ident_entry");
+	const int         shape      = get_num_entry("npc_shape");
+	const int         frame      = get_num_entry("npc_frame");
+	const int         face       = get_spin("npc_face");
+	const int         usecode    = get_num_entry("npc_usecode_entry");
+	const char*       usecodefun = "";
 	if (!usecode) {
 		usecodefun = get_text_entry("npc_usecode_entry");
 	}

@@ -934,6 +934,21 @@
     <property name="step-increment">1</property>
     <property name="page-increment">4</property>
   </object>
+  <object class="GtkAdjustment" id="npc_shape_adj">
+    <property name="upper">2048</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="npc_frame_adj">
+    <property name="upper">100</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">4</property>
+  </object>
+  <object class="GtkAdjustment" id="npc_face_adj">
+    <property name="upper">1024</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
   <object class="GtkAdjustment" id="audio_track_adj">
     <property name="upper">255</property>
     <property name="step-increment">1</property>
@@ -6383,7 +6398,7 @@
                     <property name="vexpand">False</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <!-- n-columns=2 n-rows=2 -->
+                      <!-- n-columns=3 n-rows=3 -->
                       <object class="GtkGrid" id="table5">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -6442,13 +6457,13 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">fill</property>
-                            <property name="valign">fill</property>
+                            <property name="valign">start</property>
                             <property name="margin-start">0</property>
                             <property name="margin-end">2</property>
                             <property name="margin-top">1</property>
                             <property name="margin-bottom">0</property>
                             <property name="hexpand">False</property>
-                            <property name="vexpand">True</property>
+                            <property name="vexpand">False</property>
                             <property name="label-xalign">0</property>
                             <child>
                               <object class="GtkBox" id="hbox66">
@@ -6521,7 +6536,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">fill</property>
-                            <property name="valign">fill</property>
+                            <property name="valign">start</property>
                             <property name="margin-start">2</property>
                             <property name="margin-end">0</property>
                             <property name="margin-top">1</property>
@@ -6601,6 +6616,141 @@
                             <property name="height">1</property>
                           </packing>
                         </child>
+                        <child>
+                          <object class="GtkFrame" id="frame39">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">fill</property>
+                            <property name="valign">start</property>
+                            <property name="margin-start">0</property>
+                            <property name="margin-end">2</property>
+                            <property name="margin-top">1</property>
+                            <property name="margin-bottom">1</property>
+                            <property name="hexpand">True</property>
+                            <property name="vexpand">False</property>
+                            <property name="label-xalign">0</property>
+                            <child>
+                              <object class="GtkSpinButton" id="npc_shape">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="valign">center</property>
+                                <property name="margin-start">4</property>
+                                <property name="margin-end">4</property>
+                                <property name="margin-top">2</property>
+                                <property name="margin-bottom">2</property>
+                                <property name="vexpand">False</property>
+                                <property name="width-chars">5</property>
+                                <property name="primary-icon-activatable">False</property>
+                                <property name="secondary-icon-activatable">False</property>
+                                <property name="adjustment">npc_shape_adj</property>
+                                <property name="climb-rate">1</property>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel" id="label104">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Shape #</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="left-attach">2</property>
+                            <property name="top-attach">0</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFrame" id="frame40">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">fill</property>
+                            <property name="valign">start</property>
+                            <property name="margin-start">2</property>
+                            <property name="margin-end">0</property>
+                            <property name="margin-top">1</property>
+                            <property name="margin-bottom">1</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">False</property>
+                            <property name="label-xalign">0</property>
+                            <child>
+                              <object class="GtkSpinButton" id="npc_frame">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="valign">center</property>
+                                <property name="margin-start">4</property>
+                                <property name="margin-end">4</property>
+                                <property name="margin-top">2</property>
+                                <property name="margin-bottom">2</property>
+                                <property name="vexpand">False</property>
+                                <property name="width-chars">5</property>
+                                <property name="primary-icon-activatable">False</property>
+                                <property name="secondary-icon-activatable">False</property>
+                                <property name="adjustment">npc_frame_adj</property>
+                                <property name="climb-rate">1</property>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel" id="label105">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Frame #</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="left-attach">2</property>
+                            <property name="top-attach">1</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFrame" id="face_frame">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">fill</property>
+                            <property name="valign">start</property>
+                            <property name="margin-start">0</property>
+                            <property name="margin-end">2</property>
+                            <property name="margin-top">1</property>
+                            <property name="margin-bottom">0</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">True</property>
+                            <property name="label-xalign">0</property>
+                            <child>
+                              <object class="GtkSpinButton" id="npc_face">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="valign">center</property>
+                                <property name="margin-start">4</property>
+                                <property name="margin-end">4</property>
+                                <property name="margin-top">2</property>
+                                <property name="margin-bottom">2</property>
+                                <property name="vexpand">False</property>
+                                <property name="width-chars">5</property>
+                                <property name="primary-icon-activatable">False</property>
+                                <property name="secondary-icon-activatable">False</property>
+                                <property name="adjustment">npc_face_adj</property>
+                                <property name="climb-rate">1</property>
+                              </object>
+                            </child>
+                            <child type="label">
+                              <object class="GtkLabel" id="label_face">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Face #</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">2</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="position">0</property>
@@ -6612,8 +6762,8 @@
                   </packing>
                 </child>
                 <child>
-                  <!-- n-columns=2 n-rows=2 -->
-                  <object class="GtkGrid" id="table6">
+                  <object class="GtkFrame" id="frame107">
+                    <property name="width-request">64</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">fill</property>
@@ -6622,127 +6772,21 @@
                     <property name="margin-end">0</property>
                     <property name="margin-top">0</property>
                     <property name="margin-bottom">0</property>
-                    <property name="hexpand">True</property>
+                    <property name="hexpand">False</property>
                     <property name="vexpand">False</property>
+                    <property name="label-xalign">0</property>
                     <child>
-                      <object class="GtkFrame" id="frame107">
-                        <property name="width-request">64</property>
+                      <object class="GtkDrawingArea" id="npc_draw">
+                        <property name="width-request">80</property>
+                        <property name="height-request">80</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="halign">fill</property>
-                        <property name="valign">fill</property>
-                        <property name="margin-start">2</property>
-                        <property name="margin-end">0</property>
-                        <property name="margin-top">0</property>
-                        <property name="margin-bottom">1</property>
-                        <property name="hexpand">True</property>
-                        <property name="vexpand">True</property>
-                        <property name="label-xalign">0</property>
-                        <child>
-                          <object class="GtkDrawingArea" id="npc_draw">
-                            <property name="width-request">80</property>
-                            <property name="height-request">80</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="margin-start">4</property>
-                            <property name="margin-end">4</property>
-                            <property name="margin-top">2</property>
-                            <property name="margin-bottom">2</property>
-                            <!-- <signal name="expose-event" handler="on_npc_draw_expose_event" swapped="no"/> -->
-                          </object>
-                        </child>
+                        <property name="margin-start">4</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-top">2</property>
+                        <property name="margin-bottom">2</property>
+                        <!-- <signal name="expose-event" handler="on_npc_draw_expose_event" swapped="no"/> -->
                       </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">0</property>
-                        <property name="width">1</property>
-                        <property name="height">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkFrame" id="frame39">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">fill</property>
-                        <property name="valign">fill</property>
-                        <property name="margin-start">0</property>
-                        <property name="margin-end">2</property>
-                        <property name="margin-top">0</property>
-                        <property name="margin-bottom">1</property>
-                        <property name="hexpand">True</property>
-                        <property name="vexpand">False</property>
-                        <property name="label-xalign">0</property>
-                        <child>
-                          <object class="GtkEntry" id="npc_shape">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="valign">center</property>
-                            <property name="margin-start">4</property>
-                            <property name="margin-end">4</property>
-                            <property name="margin-top">2</property>
-                            <property name="margin-bottom">2</property>
-                            <property name="vexpand">False</property>
-                            <property name="primary-icon-activatable">False</property>
-                            <property name="secondary-icon-activatable">False</property>
-                            <!-- <signal name="focus-out-event" handler="on_npc_shape_focus_out_event" swapped="no"/> -->
-                          </object>
-                        </child>
-                        <child type="label">
-                          <object class="GtkLabel" id="label104">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Shape #</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">0</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkFrame" id="frame40">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">fill</property>
-                        <property name="valign">fill</property>
-                        <property name="margin-start">0</property>
-                        <property name="margin-end">2</property>
-                        <property name="margin-top">1</property>
-                        <property name="margin-bottom">0</property>
-                        <property name="hexpand">False</property>
-                        <property name="vexpand">False</property>
-                        <property name="label-xalign">0</property>
-                        <child>
-                          <object class="GtkEntry" id="npc_frame">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="valign">center</property>
-                            <property name="margin-start">4</property>
-                            <property name="margin-end">4</property>
-                            <property name="margin-top">2</property>
-                            <property name="margin-bottom">2</property>
-                            <property name="vexpand">False</property>
-                            <property name="primary-icon-activatable">False</property>
-                            <property name="secondary-icon-activatable">False</property>
-                          </object>
-                        </child>
-                        <child type="label">
-                          <object class="GtkLabel" id="label105">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Frame #</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">1</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -6758,6 +6802,7 @@
         </child>
         <child>
           <object class="GtkBox" id="hbox8">
+
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
@@ -9726,7 +9771,7 @@
                 <property name="receives-default">False</property>
                 <property name="halign">fill</property>
                 <property name="valign">end</property>
-                <property name="margin-start">0</property>
+                <property name="margin-start">2</property>
                 <property name="margin-end">2</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>

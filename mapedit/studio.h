@@ -151,6 +151,7 @@ private:
 	// Npc editor:
 	GtkWidget*    npcwin;
 	Shape_single *npc_single, *npc_face_single;
+	gulong        npc_face_changed_handler;
 	int           npc_ctx;
 	guint         npc_status_id;
 	// Object editor:
@@ -272,6 +273,10 @@ public:
 
 	Combo_editor* get_combowin() {
 		return combowin;
+	}
+
+	gulong get_npc_face_changed_handler() const {
+		return npc_face_changed_handler;
 	}
 
 	void set_msg_callback(Msg_callback cb, void* client) {
