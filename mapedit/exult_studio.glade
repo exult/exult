@@ -28578,16 +28578,12 @@
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Exult Barge</property>
     <property name="default-width">400</property>
-    <property name="default-height">175</property>
+    <property name="resizable">False</property>
     <signal name="delete-event" handler="exult_widget_hide" swapped="no"/>
     <child>
       <object class="GtkBox" id="vbox40">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-start">6</property>
-        <property name="margin-end">6</property>
-        <property name="margin-top">4</property>
-        <property name="margin-bottom">2</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox" id="hbox48">
@@ -28595,9 +28591,9 @@
             <property name="can-focus">False</property>
             <property name="halign">fill</property>
             <property name="valign">fill</property>
-            <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
-            <property name="margin-top">0</property>
+            <property name="margin-start">5</property>
+            <property name="margin-end">5</property>
+            <property name="margin-top">3</property>
             <property name="margin-bottom">1</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
@@ -28782,16 +28778,38 @@
           <object class="GtkButtonBox" id="hbuttonbox14">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="halign">end</property>
-            <property name="valign">start</property>
+            <property name="halign">fill</property>
+            <property name="valign">fill</property>
             <property name="margin-start">0</property>
-            <property name="margin-end">0</property>
+            <property name="margin-end">5</property>
             <property name="margin-top">3</property>
-            <property name="margin-bottom">3</property>
+            <property name="margin-bottom">6</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
             <property name="orientation">horizontal</property>
             <property name="layout-style">end</property>
+            <child>
+              <object class="GtkButton" id="barge_okay_btn">
+                <property name="label">_OK</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="receives-default">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">end</property>
+                <property name="margin-start">0</property>
+                <property name="margin-end">2</property>
+                <property name="margin-top">0</property>
+                <property name="margin-bottom">0</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">False</property>
+                <property name="use-underline">True</property>
+                <signal name="clicked" handler="on_egg_okay_btn_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkButton" id="barge_apply_btn">
                 <property name="label">_Apply</property>
@@ -28800,8 +28818,8 @@
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
                 <property name="halign">fill</property>
-                <property name="valign">start</property>
-                <property name="margin-start">0</property>
+                <property name="valign">end</property>
+                <property name="margin-start">2</property>
                 <property name="margin-end">2</property>
                 <property name="margin-top">0</property>
                 <property name="margin-bottom">0</property>
@@ -28811,7 +28829,7 @@
                 <signal name="clicked" handler="on_barge_apply_btn_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -28822,7 +28840,7 @@
                 <property name="can-default">True</property>
                 <property name="receives-default">False</property>
                 <property name="halign">fill</property>
-                <property name="valign">start</property>
+                <property name="valign">end</property>
                 <property name="margin-start">2</property>
                 <property name="margin-end">0</property>
                 <property name="margin-top">0</property>
@@ -28833,7 +28851,7 @@
                 <signal name="clicked" handler="on_barge_cancel_btn_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
@@ -28847,10 +28865,10 @@
             <property name="can-focus">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
-            <property name="margin-start">0</property>
+            <property name="margin-start">5</property>
             <property name="margin-end">0</property>
-            <property name="margin-top">2</property>
-            <property name="margin-bottom">4</property>
+            <property name="margin-top">1</property>
+            <property name="margin-bottom">2</property>
             <property name="hexpand">False</property>
             <property name="vexpand">False</property>
           </object>

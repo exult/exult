@@ -49,6 +49,15 @@ C_EXPORT void on_open_barge_activate(
 }
 
 /*
+ *  Barge window's OK button.
+ */
+C_EXPORT void on_barge_okay_btn_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio::get_instance()->save_barge_window();
+	ExultStudio::get_instance()->close_barge_window();
+}
+
+/*
  *  Barge window's Apply button.
  */
 C_EXPORT void on_barge_apply_btn_clicked(GtkButton* btn, gpointer user_data) {
@@ -90,14 +99,21 @@ void ExultStudio::open_barge_window(
 	}
 	// Init. barge address to null.
 	g_object_set_data(G_OBJECT(bargewin), "user_data", nullptr);
-	// Make 'apply' sensitive.
+	// Make 'apply' and 'cancelsensitive.
 	gtk_widget_set_sensitive(get_widget("barge_apply_btn"), true);
+	gtk_widget_set_sensitive(get_widget("barge_cancel_btn"), true);
 	remove_statusbar("barge_status", barge_ctx, barge_status_id);
 	if (data) {
 		if (!init_barge_window(data, datalen)) {
 			return;
 		}
-	} else if (first_time) {    // Init. empty dialog first time.
+		gtk_widget_set_visible(get_widget("barge_okay_btn"), true);
+		gtk_widget_set_visible(get_widget("barge_status"), false);
+	} else {
+		if (first_time) {    // Init. empty dialog first time.
+		}
+		gtk_widget_set_visible(get_widget("barge_okay_btn"), false);
+		gtk_widget_set_visible(get_widget("barge_status"), true);
 	}
 	gtk_widget_set_visible(bargewin, true);
 }
@@ -188,8 +204,9 @@ int ExultStudio::save_barge_window() {
 		barge_status_id = set_statusbar(
 				"barge_status", barge_ctx,
 				"Click on map to set lower-right corner of  barge");
-		// Make 'apply' insensitive.
+		// Make 'apply' and 'cancel' insensitive.
 		gtk_widget_set_sensitive(get_widget("barge_apply_btn"), false);
+		gtk_widget_set_sensitive(get_widget("barge_cancel_btn"), false);
 		waiting_for_server = Barge_response;
 		return 1;    // Leave window open.
 	}
