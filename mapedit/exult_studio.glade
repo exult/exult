@@ -2704,7 +2704,7 @@
                       <object class="GtkMenuItem" id="set_game_information">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">_Set Game Information</property>
+                        <property name="label" translatable="yes">_Set Game Information...</property>
                         <property name="use-underline">True</property>
                         <signal name="activate" handler="on_set_game_information_activate" swapped="no"/>
                       </object>
@@ -2856,7 +2856,7 @@
                       <object class="GtkMenuItem" id="fix_old_shape_info1">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Fix old shape info</property>
+                        <property name="label" translatable="yes">Fix old shape info...</property>
                         <property name="use-underline">True</property>
                         <signal name="activate" handler="on_fix_old_shape_info_activate" swapped="no"/>
                       </object>
@@ -2865,7 +2865,7 @@
                       <object class="GtkMenuItem" id="play_audio_menu">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">_Audio Tester</property>
+                        <property name="label" translatable="yes">_Audio Tester...</property>
                         <property name="use-underline">True</property>
                         <signal name="activate" handler="on_play_audio_activate" swapped="no"/>
                       </object>
