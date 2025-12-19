@@ -302,6 +302,7 @@ public:
 	void reload_usecode();
 	void write_minimap();
 	void update_connect_button(bool connected);
+	void update_menu_items(bool connected);
 	void play_audio_dialog();
 	void play_audio(int type, int track, int volume, bool repeat);
 	void stop_audio();

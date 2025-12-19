@@ -1691,6 +1691,7 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	}
 	setup_file_list();           // Set up file-list window.
 	set_browser("", nullptr);    // No browser.
+	update_menu_items(false);    // Initially set menus as disconnected
 	connect_to_server();         // Connect to server with 'gamedat'.
 }
 
@@ -3141,6 +3142,7 @@ bool ExultStudio::connect_to_server() {
 	send_to_server(Exult_server::info);    // Request version, etc.
 	set_edit_menu(false, false);           // For now, init. edit menu.
 	update_connect_button(true);
+	update_menu_items(true);
 	return true;
 }
 
@@ -3152,6 +3154,62 @@ void ExultStudio::disconnect_from_server() {
 #endif
 	update_connect_button(false);
 	update_play_button(false);
+	update_menu_items(false);
+}
+
+void ExultStudio::update_menu_items(bool connected) {
+	// Get the menu widgets
+	GtkWidget* edit_menu  = get_widget("edit1_menu");
+	GtkWidget* mode_menu  = get_widget("mode1_menu");
+	GtkWidget* map_menu   = get_widget("map1_menu");
+	GtkWidget* tools_menu = get_widget("tools1_menu");
+
+	// Set all Edit menu items sensitivity
+	if (edit_menu) {
+		GList* edit_children
+				= gtk_container_get_children(GTK_CONTAINER(edit_menu));
+		for (GList* l = edit_children; l != nullptr; l = l->next) {
+			gtk_widget_set_sensitive(GTK_WIDGET(l->data), connected);
+		}
+		g_list_free(edit_children);
+	}
+
+	// Set all Mode menu items sensitivity
+	if (mode_menu) {
+		GList* mode_children
+				= gtk_container_get_children(GTK_CONTAINER(mode_menu));
+		for (GList* l = mode_children; l != nullptr; l = l->next) {
+			gtk_widget_set_sensitive(GTK_WIDGET(l->data), connected);
+		}
+		g_list_free(mode_children);
+	}
+
+	// Set all Map menu items sensitivity
+	if (map_menu) {
+		GList* map_children
+				= gtk_container_get_children(GTK_CONTAINER(map_menu));
+		for (GList* l = map_children; l != nullptr; l = l->next) {
+			gtk_widget_set_sensitive(GTK_WIDGET(l->data), connected);
+		}
+		g_list_free(map_children);
+	}
+
+	// Set Tools menu items - all inactive except "Compile Usecode"
+	if (tools_menu) {
+		GtkWidget* compile_usecode = get_widget("compileusecode1");
+		GList*     tools_children
+				= gtk_container_get_children(GTK_CONTAINER(tools_menu));
+		for (GList* l = tools_children; l != nullptr; l = l->next) {
+			GtkWidget* item = GTK_WIDGET(l->data);
+			// Keep "Compile Usecode" always active
+			if (item == compile_usecode) {
+				gtk_widget_set_sensitive(item, TRUE);
+			} else {
+				gtk_widget_set_sensitive(item, connected);
+			}
+		}
+		g_list_free(tools_children);
+	}
 }
 
 void ExultStudio::update_connect_button(bool connected) {
