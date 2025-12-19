@@ -2970,7 +2970,6 @@
                         <property name="image">connect_button_image</property>
                         <property name="use-underline">True</property>
                         <property name="always-show-image">True</property>
-                        <signal name="toggled" handler="on_connect_button_toggled" swapped="no"/>
                       </object>
                       <packing>
                         <property name="position">0</property>
@@ -2994,7 +2993,6 @@
                         <property name="image">play_img23</property>
                         <property name="use-underline">True</property>
                         <property name="always-show-image">True</property>
-                        <signal name="clicked" handler="on_play_button_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="position">1</property>

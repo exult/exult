@@ -205,6 +205,16 @@ private:
 	int w_at_close;
 	int h_at_close;
 
+	// Widgets, Callbacks, HandlerIDs of the main_window
+	GtkWidget*  connect_button;
+	gulong      connect_button_handler_id;
+	static void on_connect_button_toggled(
+			GtkToggleButton* button, gpointer user_data);
+	GtkWidget*  play_button;
+	gulong      play_button_handler_id;
+	static void on_play_button_toggled(
+			GtkToggleButton* button, gpointer user_data);
+
 public:
 	ExultStudio(int argc, char** argv);
 	~ExultStudio();

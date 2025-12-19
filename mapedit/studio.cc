@@ -411,11 +411,9 @@ C_EXPORT void on_unused_shapes1_activate(
 	ExultStudio::get_instance()->send_to_server(Exult_server::unused_shapes);
 }
 
-C_EXPORT void on_connect_button_toggled(
+C_EXPORT void ExultStudio::on_connect_button_toggled(
 		GtkToggleButton* button, gpointer user_data) {
-	ignore_unused_variable_warning(user_data);
-	ExultStudio* studio = ExultStudio::get_instance();
-
+	auto* studio = static_cast<ExultStudio*>(user_data);
 	if (gtk_toggle_button_get_active(button)) {
 		studio->connect_to_server();
 	} else {
@@ -423,19 +421,19 @@ C_EXPORT void on_connect_button_toggled(
 	}
 }
 
-C_EXPORT void on_play_button_clicked(
+C_EXPORT void ExultStudio::on_play_button_toggled(
 		GtkToggleButton* button, gpointer user_data) {
-	ignore_unused_variable_warning(user_data);
-	ExultStudio* studio = ExultStudio::get_instance();
+	auto* studio = static_cast<ExultStudio*>(user_data);
+	if (!studio || !studio->play_button_handler_id) {
+		return;
+	}
 	if (studio->get_server_socket() < 0) {
-		g_signal_handlers_block_matched(
-				button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
-				reinterpret_cast<void*>(on_play_button_clicked), nullptr);
+		g_signal_handler_block(
+				G_OBJECT(button), studio->play_button_handler_id);
 		gtk_toggle_button_set_active(
 				button, !gtk_toggle_button_get_active(button));
-		g_signal_handlers_unblock_matched(
-				button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
-				reinterpret_cast<void*>(on_play_button_clicked), nullptr);
+		g_signal_handler_unblock(
+				G_OBJECT(button), studio->play_button_handler_id);
 		return;
 	}
 	const bool playing = gtk_toggle_button_get_active(button);
@@ -571,7 +569,9 @@ ExultStudio::ExultStudio(int argc, char** argv)
 		  compile_box(nullptr), ucbrowsewin(nullptr), gameinfowin(nullptr),
 		  game_type(BLACK_GATE), expansion(false), sibeta(false), curr_game(-1),
 		  curr_mod(-1), server_socket(-1), server_input_tag(-1),
-		  waiting_for_server(nullptr) {
+		  waiting_for_server(nullptr), connect_button(nullptr),
+		  connect_button_handler_id(0), play_button(nullptr),
+		  play_button_handler_id(0) {
 #ifdef _WIN32
 	// Enable the GTK+ 3 OLE Drag and Drop
 	g_setenv("GDK_WIN32_USE_EXPERIMENTAL_OLE2_DND", "1", 0);
@@ -923,6 +923,19 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	// More setting up...
 	// Connect signals automagically.
 	gtk_builder_connect_signals(app_xml, nullptr);
+	// Manually connect button signals to store handler IDs for blocking
+	connect_button = get_widget("connect_button");
+	play_button    = get_widget("play_button");
+	if (connect_button) {
+		connect_button_handler_id = g_signal_connect(
+				connect_button, "toggled",
+				G_CALLBACK(ExultStudio::on_connect_button_toggled), this);
+	}
+	if (play_button) {
+		play_button_handler_id = g_signal_connect(
+				play_button, "toggled",
+				G_CALLBACK(ExultStudio::on_play_button_toggled), this);
+	}
 	int w;
 	int h;    // Get main window dims.
 	config->value("config/estudio/main/width", w, 0);
@@ -3227,13 +3240,13 @@ void ExultStudio::update_connect_button(bool connected) {
 			GTK_BUTTON(button), connected ? "Disconnect" : "Connect");
 
 	// Update button state without triggering the signal
-	g_signal_handlers_block_matched(
-			button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
-			reinterpret_cast<void*>(on_connect_button_toggled), nullptr);
+	if (connect_button_handler_id) {
+		g_signal_handler_block(G_OBJECT(button), connect_button_handler_id);
+	}
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), connected);
-	g_signal_handlers_unblock_matched(
-			button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
-			reinterpret_cast<void*>(on_connect_button_toggled), nullptr);
+	if (connect_button_handler_id) {
+		g_signal_handler_unblock(G_OBJECT(button), connect_button_handler_id);
+	}
 }
 
 void ExultStudio::update_play_button(bool playing) {
@@ -3258,13 +3271,13 @@ void ExultStudio::update_play_button(bool playing) {
 	}
 
 	// Update button state without triggering the signal
-	g_signal_handlers_block_matched(
-			button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
-			reinterpret_cast<void*>(on_play_button_clicked), nullptr);
+	if (play_button_handler_id) {
+		g_signal_handler_block(G_OBJECT(button), play_button_handler_id);
+	}
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), playing);
-	g_signal_handlers_unblock_matched(
-			button, G_SIGNAL_MATCH_FUNC, 0, 0, nullptr,
-			reinterpret_cast<void*>(on_play_button_clicked), nullptr);
+	if (play_button_handler_id) {
+		g_signal_handler_unblock(G_OBJECT(button), play_button_handler_id);
+	}
 }
 
 /*
