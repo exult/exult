@@ -1158,6 +1158,10 @@ Object_browser* ExultStudio::create_browser(const char* fname) {
 	}
 	Object_browser* chooser = curfile->get_browser(vgafile, palbuf.get());
 	setup_groups();    // Set up 'groups' page.
+	// Reset modified flag after initial setup to avoid false positives
+	if (curfile->get_groups()) {
+		curfile->get_groups()->set_clean();
+	}
 	return chooser;
 }
 

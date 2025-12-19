@@ -155,6 +155,10 @@ public:
 		modified = true;
 	}
 
+	void set_clean() {
+		modified = false;
+	}
+
 	bool is_modified() {
 		return modified;
 	}
