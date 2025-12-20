@@ -411,7 +411,7 @@ C_EXPORT void on_unused_shapes1_activate(
 	ExultStudio::get_instance()->send_to_server(Exult_server::unused_shapes);
 }
 
-C_EXPORT void ExultStudio::on_connect_button_toggled(
+void ExultStudio::on_connect_button_toggled(
 		GtkToggleButton* button, gpointer user_data) {
 	auto* studio = static_cast<ExultStudio*>(user_data);
 	if (gtk_toggle_button_get_active(button)) {
@@ -421,7 +421,7 @@ C_EXPORT void ExultStudio::on_connect_button_toggled(
 	}
 }
 
-C_EXPORT void ExultStudio::on_play_button_toggled(
+void ExultStudio::on_play_button_toggled(
 		GtkToggleButton* button, gpointer user_data) {
 	auto* studio = static_cast<ExultStudio*>(user_data);
 	if (!studio || !studio->play_button_handler_id) {
