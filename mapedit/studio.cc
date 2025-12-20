@@ -936,6 +936,8 @@ ExultStudio::ExultStudio(int argc, char** argv)
 				play_button, "toggled",
 				G_CALLBACK(ExultStudio::on_play_button_toggled), this);
 	}
+	// Set initial state for menus and toolbar - disconnected
+	update_menu_items(false);
 	int w;
 	int h;    // Get main window dims.
 	config->value("config/estudio/main/width", w, 0);
@@ -3129,6 +3131,7 @@ bool ExultStudio::connect_to_server() {
 		perror("Socket connect");
 		close(server_socket);
 		server_socket = -1;
+		update_connect_button(false);
 		return false;
 	}
 	GIOChannel* gio  = g_io_channel_unix_new(server_socket);
@@ -3226,6 +3229,41 @@ void ExultStudio::update_menu_items(bool connected) {
 			}
 		}
 		g_list_free(tools_children);
+	}
+
+	// Set toolbar widgets sensitivity
+	GtkWidget* play_btn       = get_widget("play_button");
+	GtkWidget* tile_grid      = get_widget("tile_grid_button");
+	GtkWidget* bbox_color     = get_widget("bbox_color_combo");
+	GtkWidget* bbox_label     = get_widget("label_bbox");
+	GtkWidget* edit_lift      = get_widget("edit_lift_spin");
+	GtkWidget* hide_lift      = get_widget("hide_lift_spin");
+	GtkWidget* hide_lift_lbl  = get_widget("hide_lift_label");
+	GtkWidget* edit_terrain   = get_widget("checkbutton30");
+
+	if (play_btn) {
+		gtk_widget_set_sensitive(play_btn, connected);
+	}
+	if (tile_grid) {
+		gtk_widget_set_sensitive(tile_grid, connected);
+	}
+	if (bbox_color) {
+		gtk_widget_set_sensitive(bbox_color, connected);
+	}
+	if (bbox_label) {
+		gtk_widget_set_sensitive(bbox_label, connected);
+	}
+	if (edit_lift) {
+		gtk_widget_set_sensitive(edit_lift, connected);
+	}
+	if (hide_lift) {
+		gtk_widget_set_sensitive(hide_lift, connected);
+	}
+	if (hide_lift_lbl) {
+		gtk_widget_set_sensitive(hide_lift_lbl, connected);
+	}
+	if (edit_terrain) {
+		gtk_widget_set_sensitive(edit_terrain, connected);
 	}
 }
 
