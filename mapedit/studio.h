@@ -300,11 +300,13 @@ public:
 	}
 
 	Shape_group_file* get_cur_groups();
+
 	Shape_preset_file* get_cur_presets() {
 		return presets_file;
 	}
-	void              set_browser(const char* name, Object_browser* obj);
-	bool              has_focus();    // Any of our windows has focus?
+
+	void set_browser(const char* name, Object_browser* obj);
+	bool has_focus();    // Any of our windows has focus?
 
 	void            create_new_game(const char* dir);
 	void            new_game();
@@ -366,6 +368,7 @@ public:
 	void clone_preset();
 	void rename_preset();
 	void del_preset();
+	void apply_preset();
 	void save_presets();
 	bool presets_modified();
 	void save_shape_to_preset(const char* preset_name);

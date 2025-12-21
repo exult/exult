@@ -37,8 +37,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "objserial.h"
 #include "shapefile.h"
 #include "shapegroup.h"
-#include "shapepresets.h"
 #include "shapelst.h"
+#include "shapepresets.h"
 #include "shapevga.h"
 #include "u7drag.h"
 #include "ucbrowse.h"
@@ -538,22 +538,21 @@ ExultStudio::ExultStudio(int argc, char** argv)
 		  background_color(0x808080), shape_scale(0), shape_bilinear(false),
 		  shape_info_modified(false), shape_names_modified(false),
 		  npc_modified(false), files(nullptr), presets_file(nullptr),
-		  curfile(nullptr),
-		  vgafile(nullptr), facefile(nullptr), fontfile(nullptr),
-		  gumpfile(nullptr), spritefile(nullptr), paperdolfile(nullptr),
-		  browser(nullptr), bargewin(nullptr), barge_ctx(0), barge_status_id(0),
-		  eggwin(nullptr), egg_monster_single(nullptr),
-		  egg_missile_single(nullptr), egg_ctx(0), egg_status_id(0),
-		  npcwin(nullptr), npc_single(nullptr), npc_face_single(nullptr),
-		  npc_face_changed_handler(0), npc_ctx(0), npc_status_id(0),
-		  objwin(nullptr), obj_single(nullptr), contwin(nullptr),
-		  cont_single(nullptr), shapewin(nullptr), shape_single(nullptr),
-		  gump_single(nullptr), body_single(nullptr), explosion_single(nullptr),
-		  weapon_family_single(nullptr), weapon_projectile_single(nullptr),
-		  ammo_family_single(nullptr), ammo_sprite_single(nullptr),
-		  cntrules_shape_single(nullptr), frameflags_frame_single(nullptr),
-		  effhps_frame_single(nullptr), framenames_frame_single(nullptr),
-		  frameusecode_frame_single(nullptr),
+		  curfile(nullptr), vgafile(nullptr), facefile(nullptr),
+		  fontfile(nullptr), gumpfile(nullptr), spritefile(nullptr),
+		  paperdolfile(nullptr), browser(nullptr), bargewin(nullptr),
+		  barge_ctx(0), barge_status_id(0), eggwin(nullptr),
+		  egg_monster_single(nullptr), egg_missile_single(nullptr), egg_ctx(0),
+		  egg_status_id(0), npcwin(nullptr), npc_single(nullptr),
+		  npc_face_single(nullptr), npc_face_changed_handler(0), npc_ctx(0),
+		  npc_status_id(0), objwin(nullptr), obj_single(nullptr),
+		  contwin(nullptr), cont_single(nullptr), shapewin(nullptr),
+		  shape_single(nullptr), gump_single(nullptr), body_single(nullptr),
+		  explosion_single(nullptr), weapon_family_single(nullptr),
+		  weapon_projectile_single(nullptr), ammo_family_single(nullptr),
+		  ammo_sprite_single(nullptr), cntrules_shape_single(nullptr),
+		  frameflags_frame_single(nullptr), effhps_frame_single(nullptr),
+		  framenames_frame_single(nullptr), frameusecode_frame_single(nullptr),
 		  objpaperdoll_wframe_single(nullptr),
 		  objpaperdoll_spotframe_single(nullptr),
 		  brightness_frame_single(nullptr), warmth_frame_single(nullptr),
@@ -1723,10 +1722,10 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	}
 	setup_file_list();           // Set up file-list window.
 	set_browser("", nullptr);    // No browser.
-	
+
 	// Load or create presets file for this game
 	delete presets_file;
-	presets_file = nullptr;
+	presets_file             = nullptr;
 	const string preset_path = get_system_path("<PATCH>") + "/"
 							   + Shape_preset_file::get_default_filename();
 	if (U7exists(preset_path)) {
@@ -1735,7 +1734,7 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	if (!presets_file) {
 		presets_file = new Shape_preset_file(preset_path.c_str());
 	}
-	
+
 	update_menu_items(false);    // Initially set menus as disconnected
 	connect_to_server();         // Connect to server with 'gamedat'.
 }

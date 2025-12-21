@@ -31,10 +31,11 @@ class ODataSource;
  *  A preset that stores complete shape configuration data.
  */
 class Shape_preset {
-	std::string          name;      // Name of this preset.
-	Shape_preset_file*   file;      // Where this comes from.
-	bool                 modified;
-	std::map<std::string, std::string> data;  // Key-value pairs for all shape data
+	std::string        name;    // Name of this preset.
+	Shape_preset_file* file;    // Where this comes from.
+	bool               modified;
+	std::map<std::string, std::string>
+			data;    // Key-value pairs for all shape data
 
 public:
 	friend class Shape_preset_file;
@@ -54,15 +55,15 @@ public:
 	}
 
 	// Get/set preset data
-	void set_value(const std::string& key, const std::string& value);
+	void        set_value(const std::string& key, const std::string& value);
 	std::string get_value(const std::string& key) const;
-	bool has_value(const std::string& key) const;
-	
+	bool        has_value(const std::string& key) const;
+
 	// Data access
 	const std::map<std::string, std::string>& get_data() const {
 		return data;
 	}
-	
+
 	void clear_data() {
 		data.clear();
 	}
@@ -83,8 +84,8 @@ public:
  *  Manages a file of shape presets.
  */
 class Shape_preset_file {
-	std::string                       filename;
-	std::vector<Shape_preset*>        presets;
+	std::string                filename;
+	std::vector<Shape_preset*> presets;
 
 public:
 	bool modified;    // Changes not saved yet.
@@ -109,11 +110,12 @@ public:
 	int           find_index(const char* nm);
 	Shape_preset* create(const char* nm);
 	void          remove(Shape_preset* preset);
-	bool          write();              // Write out to file.
+	bool          write();                 // Write out to file.
 	bool          read(const char* nm);    // Read in from file nm.
 
 	static Shape_preset_file* read_file(const char* pathname);
-	static const char*        get_default_filename() {
+
+	static const char* get_default_filename() {
 		return "shape_info.pre";
 	}
 };
