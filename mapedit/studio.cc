@@ -37,6 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "objserial.h"
 #include "shapefile.h"
 #include "shapegroup.h"
+#include "shapepresets.h"
 #include "shapelst.h"
 #include "shapevga.h"
 #include "u7drag.h"
@@ -536,7 +537,8 @@ ExultStudio::ExultStudio(int argc, char** argv)
 		  static_path(nullptr), image_editor(nullptr), default_game(nullptr),
 		  background_color(0x808080), shape_scale(0), shape_bilinear(false),
 		  shape_info_modified(false), shape_names_modified(false),
-		  npc_modified(false), files(nullptr), curfile(nullptr),
+		  npc_modified(false), files(nullptr), presets_file(nullptr),
+		  curfile(nullptr),
 		  vgafile(nullptr), facefile(nullptr), fontfile(nullptr),
 		  gumpfile(nullptr), spritefile(nullptr), paperdolfile(nullptr),
 		  browser(nullptr), bargewin(nullptr), barge_ctx(0), barge_status_id(0),
@@ -1654,6 +1656,9 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	// Clear gump info from previous game.
 	Gump_info::clear();
 	reset_gump_info_loaded();
+	// Clear presets from previous game.
+	delete presets_file;
+	presets_file = nullptr;
 	// These were owned by 'files':
 	curfile             = nullptr;
 	browser             = nullptr;
@@ -1718,6 +1723,19 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	}
 	setup_file_list();           // Set up file-list window.
 	set_browser("", nullptr);    // No browser.
+	
+	// Load or create presets file for this game
+	delete presets_file;
+	presets_file = nullptr;
+	const string preset_path = get_system_path("<PATCH>") + "/"
+							   + Shape_preset_file::get_default_filename();
+	if (U7exists(preset_path)) {
+		presets_file = Shape_preset_file::read_file(preset_path.c_str());
+	}
+	if (!presets_file) {
+		presets_file = new Shape_preset_file(preset_path.c_str());
+	}
+	
 	update_menu_items(false);    // Initially set menus as disconnected
 	connect_to_server();         // Connect to server with 'gamedat'.
 }

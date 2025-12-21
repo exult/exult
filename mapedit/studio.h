@@ -85,9 +85,11 @@ struct Equip_row_widgets;
 class Shape_file_set;
 class Shape_file_info;
 class Shape_group_file;
+class Shape_preset_file;
 class Shape_single;
 class Object_browser;
 class Shape_group;
+class Shape_preset;
 class Locator;
 class Usecode_browser;
 class Combo_editor;
@@ -129,6 +131,7 @@ private:
 	bool                             npc_modified;
 	Shape_file_set*                  files;            // All the shape files.
 	std::vector<GtkWindow*>          group_windows;    // All 'group' windows.
+	Shape_preset_file*               presets_file;     // Shape presets.
 	Shape_file_info*                 curfile;     // Current browser file info.
 	Shape_file_info*                 vgafile;     // Main 'shapes.vga'.
 	Shape_file_info*                 facefile;    // 'faces.vga'.
@@ -297,6 +300,9 @@ public:
 	}
 
 	Shape_group_file* get_cur_groups();
+	Shape_preset_file* get_cur_presets() {
+		return presets_file;
+	}
 	void              set_browser(const char* name, Object_browser* obj);
 	bool              has_focus();    // Any of our windows has focus?
 
@@ -353,6 +359,17 @@ public:
 	void update_chunk_groups(int tnum);
 	void update_chunk_groups_for_deletion(int tnum);
 	void update_chunk_groups_for_swap(int tnum);
+	// Presets:
+	void setup_presets_list();
+	void export_preset();
+	void import_presets();
+	void clone_preset();
+	void rename_preset();
+	void del_preset();
+	void save_presets();
+	bool presets_modified();
+	void save_shape_to_preset(const char* preset_name);
+	void load_preset_to_shape(const char* preset_name);
 	// Objects:
 	void open_obj_window(unsigned char* data, int datalen);
 	void close_obj_window();

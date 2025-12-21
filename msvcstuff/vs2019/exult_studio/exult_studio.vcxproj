@@ -269,6 +269,7 @@ exit /b 0
     <ClCompile Include="..\..\..\mapedit\shapefile.cc" />
     <ClCompile Include="..\..\..\mapedit\shapegroup.cc" />
     <ClCompile Include="..\..\..\mapedit\shapelst.cc" />
+    <ClCompile Include="..\..\..\mapedit\shapepresets.cc" />
     <ClCompile Include="..\..\..\mapedit\studio.cc" />
     <ClCompile Include="..\..\..\mapedit\ucbrowse.cc" />
     <ClCompile Include="..\..\..\server\objserial.cc" />
@@ -355,6 +356,7 @@ exit /b 0
     <ClInclude Include="..\..\..\mapedit\shapefile.h" />
     <ClInclude Include="..\..\..\mapedit\shapegroup.h" />
     <ClInclude Include="..\..\..\mapedit\shapelst.h" />
+    <ClInclude Include="..\..\..\mapedit\shapepresets.h" />
     <ClInclude Include="..\..\..\mapedit\studio.h" />
     <ClInclude Include="..\..\..\mapedit\ucbrowse.h" />
     <ClInclude Include="..\..\..\server\objserial.h" />

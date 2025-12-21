@@ -44,6 +44,8 @@ exult_studio_SOURCES = \
 	shapegroup.h \
 	shapelst.cc \
 	shapelst.h \
+	shapepresets.cc \
+	shapepresets.h \
 	ucbrowse.cc \
 	ucbrowse.h \
 	gtk_redefines.h

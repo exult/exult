@@ -249,6 +249,9 @@
     <ClCompile Include="..\..\..\mapedit\shapelst.cc">
       <Filter>Mapedit</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\shapepresets.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\mapedit\studio.cc">
       <Filter>Mapedit</Filter>
     </ClCompile>
@@ -475,6 +478,9 @@
       <Filter>Mapedit</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mapedit\shapelst.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\shapepresets.h">
       <Filter>Mapedit</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mapedit\studio.h">

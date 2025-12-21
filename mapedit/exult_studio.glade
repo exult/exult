@@ -2360,6 +2360,16 @@
       </row>
     </data>
   </object>
+  <object class="GtkListStore" id="presets_liststore">
+    <columns>
+      <!-- column-name preset_name -->
+      <column type="gchararray"/>
+      <!-- column-name shape_pixbuf -->
+      <column type="GdkPixbuf"/>
+      <!-- column-name shape_number -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="main_window">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -11520,7 +11530,7 @@
                 <property name="vexpand">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkFrame" id="frame506">
+                  <object class="GtkBox" id="hbox_preview_presets">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">fill</property>
@@ -11531,28 +11541,49 @@
                     <property name="margin-bottom">0</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">False</property>
-                    <property name="label-xalign">0</property>
+                    <property name="orientation">horizontal</property>
+                    <property name="spacing">2</property>
                     <child>
-                      <object class="GtkCheckButton" id="shinfo_tiles_preview">
-                        <property name="label" translatable="yes">3D Bounding Box</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">False</property>
-                        <property name="halign">start</property>
-                        <property name="valign">center</property>
-                        <property name="margin-start">8</property>
-                        <property name="hexpand">False</property>
-                        <property name="vexpand">False</property>
-                        <property name="use-underline">True</property>
-                        <property name="draw-indicator">True</property>
-                      </object>
-                    </child>
-                    <child type="label">
-                      <object class="GtkLabel" id="label507">
+                      <object class="GtkFrame" id="frame506">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Preview</property>
+                        <property name="halign">fill</property>
+                        <property name="valign">fill</property>
+                        <property name="margin-start">0</property>
+                        <property name="margin-end">0</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">False</property>
+                        <property name="label-xalign">0</property>
+                        <child>
+                          <object class="GtkCheckButton" id="shinfo_tiles_preview">
+                            <property name="label" translatable="yes">3D Bounding Box</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="halign">start</property>
+                            <property name="valign">center</property>
+                            <property name="margin-start">8</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">False</property>
+                            <property name="use-underline">True</property>
+                            <property name="draw-indicator">True</property>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="label507">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Preview</property>
+                          </object>
+                        </child>
                       </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -20951,6 +20982,225 @@
               </packing>
             </child>
             <child>
+              <object class="GtkBox" id="shinfo_presets_box">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">fill</property>
+                <property name="valign">fill</property>
+                <property name="margin-start">4</property>
+                <property name="margin-end">4</property>
+                <property name="margin-top">4</property>
+                <property name="margin-bottom">4</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">8</property>
+                <child>
+                  <object class="GtkScrolledWindow" id="preset_scrolled">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="shadow-type">in</property>
+                    <child>
+                      <object class="GtkTreeView" id="presets_list">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">True</property>
+                        <property name="model">presets_liststore</property>
+                        <property name="headers-visible">True</property>
+                        <signal name="row-activated" handler="on_presets_list_row_activated" swapped="no"/>
+                        <signal name="cursor-changed" handler="on_presets_list_cursor_changed" swapped="no"/>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="preset_name_column">
+                            <property name="title" translatable="yes">Preset Name</property>
+                            <property name="expand">True</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="preset_name_renderer"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="preset_shape_column">
+                            <property name="title" translatable="yes">Shape</property>
+                            <property name="expand">False</property>
+                            <child>
+                              <object class="GtkCellRendererPixbuf" id="preset_shape_renderer"/>
+                              <attributes>
+                                <attribute name="pixbuf">1</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkTreeViewColumn" id="preset_shapenum_column">
+                            <property name="title" translatable="yes">Shape #</property>
+                            <property name="expand">False</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="preset_shapenum_renderer"/>
+                              <attributes>
+                                <attribute name="text">2</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="preset_entry_box">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="orientation">horizontal</property>
+                    <property name="spacing">4</property>
+                    <child>
+                      <object class="GtkEntry" id="preset_name_entry">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="placeholder-text" translatable="yes">Enter preset name...</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="preset_new_button">
+                        <property name="label" translatable="yes">New</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <signal name="clicked" handler="on_preset_new_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButtonBox" id="preset_button_box">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="layout-style">start</property>
+                    <property name="spacing">4</property>
+                    <child>
+                      <object class="GtkButton" id="preset_export_button">
+                        <property name="label" translatable="yes">Export</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <signal name="clicked" handler="on_preset_export_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="preset_import_button">
+                        <property name="label" translatable="yes">Import</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <signal name="clicked" handler="on_preset_import_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="preset_clone_button">
+                        <property name="label" translatable="yes">Clone</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <signal name="clicked" handler="on_preset_clone_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="preset_rename_button">
+                        <property name="label" translatable="yes">Rename</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <signal name="clicked" handler="on_preset_rename_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="preset_delete_button">
+                        <property name="label" translatable="yes">Delete</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <signal name="clicked" handler="on_preset_delete_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="position">15</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel" id="label_presets_tab">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="hexpand">False</property>
+                <property name="vexpand">False</property>
+                <property name="label" translatable="yes">Presets</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="position">15</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkBox" id="shinfo_cntrules_box">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -21229,7 +21479,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">15</property>
+                <property name="position">16</property>
               </packing>
             </child>
             <child type="tab">
@@ -21243,7 +21493,7 @@
                 <property name="label" translatable="yes">Content Rules</property>
               </object>
               <packing>
-                <property name="position">15</property>
+                <property name="position">16</property>
               </packing>
             </child>
             <child>
@@ -21932,7 +22182,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">16</property>
+                <property name="position">17</property>
               </packing>
             </child>
             <child type="tab">
@@ -21946,7 +22196,7 @@
                 <property name="label" translatable="yes">Frame Flags</property>
               </object>
               <packing>
-                <property name="position">16</property>
+                <property name="position">17</property>
               </packing>
             </child>
             <child>
@@ -22367,7 +22617,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">17</property>
+                <property name="position">18</property>
               </packing>
             </child>
             <child type="tab">
@@ -22382,7 +22632,7 @@
                 <property name="justify">center</property>
               </object>
               <packing>
-                <property name="position">17</property>
+                <property name="position">18</property>
               </packing>
             </child>
             <child>
@@ -22979,7 +23229,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">18</property>
+                <property name="position">19</property>
               </packing>
             </child>
             <child type="tab">
@@ -22993,7 +23243,7 @@
                 <property name="label" translatable="yes">Frame Names</property>
               </object>
               <packing>
-                <property name="position">18</property>
+                <property name="position">19</property>
               </packing>
             </child>
             <child>
@@ -23410,7 +23660,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">19</property>
+                <property name="position">20</property>
               </packing>
             </child>
             <child type="tab">
@@ -23424,7 +23674,7 @@
                 <property name="label" translatable="yes">Frame Usecode</property>
               </object>
               <packing>
-                <property name="position">19</property>
+                <property name="position">20</property>
               </packing>
             </child>
             <child>
@@ -24240,7 +24490,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">20</property>
+                <property name="position">21</property>
               </packing>
             </child>
             <child type="tab">
@@ -24254,7 +24504,7 @@
                 <property name="label" translatable="yes">Obj Paperdoll</property>
               </object>
               <packing>
-                <property name="position">20</property>
+                <property name="position">21</property>
               </packing>
             </child>
             <child>
@@ -24575,7 +24825,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">21</property>
+                <property name="position">22</property>
               </packing>
             </child>
             <child type="tab">
@@ -24590,7 +24840,7 @@
                 <property name="justify">center</property>
               </object>
               <packing>
-                <property name="position">21</property>
+                <property name="position">22</property>
               </packing>
             </child>
             <child>
@@ -24909,7 +25159,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">22</property>
+                <property name="position">23</property>
               </packing>
             </child>
             <child type="tab">
@@ -24924,7 +25174,7 @@
                 <property name="justify">center</property>
               </object>
               <packing>
-                <property name="position">22</property>
+                <property name="position">23</property>
               </packing>
             </child>
           </object>

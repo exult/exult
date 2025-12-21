@@ -441,6 +441,7 @@ MAPEDIT_OBJS:=\
 	mapedit/shapefile.o \
 	mapedit/shapegroup.o \
 	mapedit/shapelst.o \
+	mapedit/shapepresets.o \
 	mapedit/studio.o \
 	mapedit/ucbrowse.o \
 	usecode/ucsymtbl.o
