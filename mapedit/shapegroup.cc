@@ -740,20 +740,30 @@ void ExultStudio::duplicate_group() {
 	Shape_group_file* groups = curfile->get_groups();
 	Shape_group*      orig   = groups->get(row);
 
-	// Create new name with " copy" suffix
-	string newname = orig->get_name();
-	newname += " copy";
+	// Create a simple dialog to get new name
+	GtkWidget* dialog = gtk_message_dialog_new(
+			GTK_WINDOW(get_widget("main_window")), GTK_DIALOG_MODAL,
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
+			"Enter name for cloned group:");
+	GtkWidget* content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	GtkWidget* entry   = gtk_entry_new();
+	gtk_entry_set_text(GTK_ENTRY(entry), orig->get_name());
+	gtk_container_add(GTK_CONTAINER(content), entry);
+	gtk_widget_show(entry);
 
-	// Make sure the new name is unique
-	int    copynum  = 2;
-	string testname = newname;
-	while (groups->find(testname.c_str()) >= 0) {
-		testname = newname + " " + std::to_string(copynum);
-		copynum++;
+	const gint  response      = gtk_dialog_run(GTK_DIALOG(dialog));
+	const char* new_name_cstr = (response == GTK_RESPONSE_OK)
+										? gtk_entry_get_text(GTK_ENTRY(entry))
+										: nullptr;
+	string      new_name      = new_name_cstr ? new_name_cstr : "";
+	gtk_widget_destroy(dialog);
+
+	if (new_name.empty() || new_name == orig->get_name()) {
+		return;
 	}
 
 	// Create the duplicate group
-	auto* duplicate = new Shape_group(testname.c_str(), groups);
+	auto* duplicate = new Shape_group(new_name.c_str(), groups);
 
 	// Copy all shape IDs from original using the public add() method
 	for (int i = 0; i < orig->size(); i++) {
@@ -765,7 +775,7 @@ void ExultStudio::duplicate_group() {
 	GtkTreeIter   newiter;
 	gtk_tree_store_append(store, &newiter, nullptr);
 	gtk_tree_store_set(
-			store, &newiter, GRP_FILE_COLUMN, testname.c_str(),
+			store, &newiter, GRP_FILE_COLUMN, new_name.c_str(),
 			GRP_GROUP_COLUMN, duplicate, -1);
 }
 
@@ -842,6 +852,13 @@ void ExultStudio::export_group() {
 	gtk_file_chooser_set_do_overwrite_confirmation(
 			GTK_FILE_CHOOSER(dialog), true);
 
+	// Set default folder to patch directory
+	if (is_system_path_defined("<PATCH>")) {
+		const std::string patchdir = get_system_path("<PATCH>");
+		gtk_file_chooser_set_current_folder(
+				GTK_FILE_CHOOSER(dialog), patchdir.c_str());
+	}
+
 	// Add filter for .grp files
 	GtkFileFilter* filter = gtk_file_filter_new();
 	gtk_file_filter_set_name(filter, "Group files (*.grp)");
@@ -897,6 +914,13 @@ void ExultStudio::import_groups() {
 			"Import Groups File", GTK_WINDOW(get_widget("main_window")),
 			GTK_FILE_CHOOSER_ACTION_OPEN, "_Cancel", GTK_RESPONSE_CANCEL,
 			"_Open", GTK_RESPONSE_ACCEPT, nullptr);
+
+	// Set default folder to patch directory
+	if (is_system_path_defined("<PATCH>")) {
+		const std::string patchdir = get_system_path("<PATCH>");
+		gtk_file_chooser_set_current_folder(
+				GTK_FILE_CHOOSER(dialog), patchdir.c_str());
+	}
 
 	// Add filter for .grp files
 	GtkFileFilter* filter = gtk_file_filter_new();
