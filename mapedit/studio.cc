@@ -2044,7 +2044,7 @@ void ExultStudio::setup_file_list() {
 			model, "Shape Files", "*.vga,*.shp", ShapeArchive, 1, "combos.flx",
 			ComboArchive);
 	add_to_tree(
-			model, "Map Files", "u7chunks", ChunksArchive, 1, "npcs",
+			model, "Map Files", "u7chunks", ChunksArchive, 1, "NPCs",
 			NpcsArchive);
 	add_to_tree(model, "Palette Files", "*.pal,palettes.flx", PaletteFile, 0);
 
