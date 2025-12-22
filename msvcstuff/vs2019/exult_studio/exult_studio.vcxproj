@@ -261,6 +261,7 @@ exit /b 0
     <ClCompile Include="..\..\..\mapedit\maps.cc" />
     <ClCompile Include="..\..\..\mapedit\npcedit.cc" />
     <ClCompile Include="..\..\..\mapedit\npclst.cc" />
+    <ClCompile Include="..\..\..\mapedit\npcpresets.cc" />
     <ClCompile Include="..\..\..\mapedit\objbrowse.cc" />
     <ClCompile Include="..\..\..\mapedit\objedit.cc" />
     <ClCompile Include="..\..\..\mapedit\paledit.cc" />
@@ -350,6 +351,7 @@ exit /b 0
     <ClInclude Include="..\..\..\mapedit\gtk_redefines.h" />
     <ClInclude Include="..\..\..\mapedit\locator.h" />
     <ClInclude Include="..\..\..\mapedit\npclst.h" />
+    <ClInclude Include="..\..\..\mapedit\npcpresets.h" />
     <ClInclude Include="..\..\..\mapedit\objbrowse.h" />
     <ClInclude Include="..\..\..\mapedit\paledit.h" />
     <ClInclude Include="..\..\..\mapedit\shapedraw.h" />

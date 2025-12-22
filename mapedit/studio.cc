@@ -34,6 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "items.h"
 #include "locator.h"
 #include "modmgr.h"
+#include "npcpresets.h"
 #include "objserial.h"
 #include "shapefile.h"
 #include "shapegroup.h"
@@ -538,10 +539,10 @@ ExultStudio::ExultStudio(int argc, char** argv)
 		  background_color(0x808080), shape_scale(0), shape_bilinear(false),
 		  shape_info_modified(false), shape_names_modified(false),
 		  npc_modified(false), files(nullptr), presets_file(nullptr),
-		  curfile(nullptr), vgafile(nullptr), facefile(nullptr),
-		  fontfile(nullptr), gumpfile(nullptr), spritefile(nullptr),
-		  paperdolfile(nullptr), browser(nullptr), bargewin(nullptr),
-		  barge_ctx(0), barge_status_id(0), eggwin(nullptr),
+		  npc_presets_file(nullptr), curfile(nullptr), vgafile(nullptr),
+		  facefile(nullptr), fontfile(nullptr), gumpfile(nullptr),
+		  spritefile(nullptr), paperdolfile(nullptr), browser(nullptr),
+		  bargewin(nullptr), barge_ctx(0), barge_status_id(0), eggwin(nullptr),
 		  egg_monster_single(nullptr), egg_missile_single(nullptr), egg_ctx(0),
 		  egg_status_id(0), npcwin(nullptr), npc_single(nullptr),
 		  npc_face_single(nullptr), npc_face_changed_handler(0), npc_ctx(0),
@@ -1658,6 +1659,8 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	// Clear presets from previous game.
 	delete presets_file;
 	presets_file = nullptr;
+	delete npc_presets_file;
+	npc_presets_file = nullptr;
 	// These were owned by 'files':
 	curfile             = nullptr;
 	browser             = nullptr;
@@ -1733,6 +1736,17 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	}
 	if (!presets_file) {
 		presets_file = new Shape_preset_file(preset_path.c_str());
+	}
+
+	// Load or create NPC presets file for this game
+	delete npc_presets_file;
+	npc_presets_file             = nullptr;
+	const string npc_preset_path = get_system_path("<PATCH>") + "/npcs.pre";
+	if (U7exists(npc_preset_path)) {
+		npc_presets_file = Npc_preset_file::read_file(npc_preset_path.c_str());
+	}
+	if (!npc_presets_file) {
+		npc_presets_file = new Npc_preset_file(npc_preset_path.c_str());
 	}
 
 	update_menu_items(false);    // Initially set menus as disconnected

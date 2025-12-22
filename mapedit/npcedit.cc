@@ -140,7 +140,7 @@ C_EXPORT void on_npc_face_changed(GtkSpinButton* button, gpointer user_data) {
 
 // Schedule names.
 
-static const char* sched_names[32]
+const char* sched_names[32]
 		= {"Combat",    "Horiz. Pace", "Vert. Pace", "Talk",       "Dance",
 		   "Eat",       "Farm",        "Tend Shop",  "Miner",      "Hound",
 		   "Stand",     "Loiter",      "Wander",     "Blacksmith", "Sleep",
@@ -285,6 +285,7 @@ void ExultStudio::open_npc_window(
 		gtk_widget_set_visible(get_widget("npc_okay_btn"), false);
 		gtk_widget_set_visible(get_widget("npc_status"), true);
 	}
+	setup_npc_presets_list();
 	gtk_widget_set_visible(npcwin, true);
 }
 
@@ -329,7 +330,7 @@ static bool Get_prop_spin(
  *  Output: true if successful, with cbox, fnum returned.
  */
 
-static bool Get_flag_cbox(
+bool Get_flag_cbox(
 		GList*           list,          // Entry in table of flags.
 		unsigned long*   oflags,        // Object flags.
 		unsigned long*   xflags,        // Extra object flags.

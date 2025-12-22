@@ -433,6 +433,7 @@ MAPEDIT_OBJS:=\
 	mapedit/maps.o \
 	mapedit/npcedit.o \
 	mapedit/npclst.o \
+	mapedit/npcpresets.o \
 	mapedit/objbrowse.o \
 	mapedit/objedit.o \
 	mapedit/paledit.o \

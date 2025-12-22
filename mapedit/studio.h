@@ -86,10 +86,12 @@ class Shape_file_set;
 class Shape_file_info;
 class Shape_group_file;
 class Shape_preset_file;
+class Npc_preset_file;
 class Shape_single;
 class Object_browser;
 class Shape_group;
 class Shape_preset;
+class Npc_preset;
 class Locator;
 class Usecode_browser;
 class Combo_editor;
@@ -132,6 +134,7 @@ private:
 	Shape_file_set*                  files;            // All the shape files.
 	std::vector<GtkWindow*>          group_windows;    // All 'group' windows.
 	Shape_preset_file*               presets_file;     // Shape presets.
+	Npc_preset_file*                 npc_presets_file;    // NPC presets.
 	Shape_file_info*                 curfile;     // Current browser file info.
 	Shape_file_info*                 vgafile;     // Main 'shapes.vga'.
 	Shape_file_info*                 facefile;    // 'faces.vga'.
@@ -373,6 +376,18 @@ public:
 	bool presets_modified();
 	void save_shape_to_preset(const char* preset_name);
 	void load_preset_to_shape(const char* preset_name);
+	// NPC Presets:
+	void setup_npc_presets_list();
+	void export_npc_preset();
+	void import_npc_presets();
+	void clone_npc_preset();
+	void rename_npc_preset();
+	void del_npc_preset();
+	void apply_npc_preset();
+	void save_npc_presets();
+	bool npc_presets_modified();
+	void save_npc_to_preset(const char* preset_name);
+	void load_npc_preset_to_npc(const char* preset_name);
 	// Objects:
 	void open_obj_window(unsigned char* data, int datalen);
 	void close_obj_window();
@@ -565,6 +580,15 @@ inline std::string convertFromUTF8(const char* src_str) {
 
 // Reset gump info loaded flag when switching games
 void reset_gump_info_loaded();
+
+// Helper function from npcedit.cc for reading flag checkboxes
+bool Get_flag_cbox(
+		GList* list, unsigned long* oflags, unsigned long* xflags,
+		unsigned long* type_flags, GtkCheckButton*& cbox, unsigned long*& bits,
+		int& fnum);
+
+// Schedule names from npcedit.cc
+extern const char* sched_names[32];
 
 struct ExultRgbCmap {
 	guint32 colors[256];

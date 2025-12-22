@@ -225,6 +225,9 @@
     <ClCompile Include="..\..\..\mapedit\npclst.cc">
       <Filter>Mapedit</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\mapedit\npcpresets.cc">
+      <Filter>Mapedit</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\mapedit\objbrowse.cc">
       <Filter>Mapedit</Filter>
     </ClCompile>
@@ -460,6 +463,9 @@
       <Filter>Mapedit</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mapedit\npclst.h">
+      <Filter>Mapedit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\mapedit\npcpresets.h">
       <Filter>Mapedit</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\mapedit\objbrowse.h">
