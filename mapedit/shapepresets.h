@@ -116,7 +116,7 @@ public:
 	static Shape_preset_file* read_file(const char* pathname);
 
 	static const char* get_default_filename() {
-		return "shape_info.pre";
+		return "shapes.vga.pre";
 	}
 };
 

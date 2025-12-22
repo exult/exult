@@ -700,6 +700,66 @@ void ExultStudio::rename_preset() {
 }
 
 /*
+ *  Apply shape properties from a specified shape number.
+ */
+void ExultStudio::apply_preset_from_shape() {
+	// Check if shape window is open
+	if (!shapewin || !gtk_widget_get_visible(shapewin)) {
+		EStudio::Alert("Please open the shape info window first");
+		return;
+	}
+
+	// Get the source shape number from the spin button
+	GtkWidget* spin_widget = get_widget("preset_apply_shape_spin");
+	const int  source_shape
+			= gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spin_widget));
+	const int current_shape = get_num_entry("shinfo_shape");
+
+	// Silently fail if source shape == current shape
+	if (source_shape == current_shape) {
+		return;
+	}
+
+	// Ask user for confirmation before applying
+	char msg[128];
+	snprintf(
+			msg, sizeof(msg),
+			"Apply shape #%d properties to the current shape #%d?",
+			source_shape, current_shape);
+	if (EStudio::Prompt(msg, "Yes", "No") != 0) {
+		return;
+	}
+
+	// Get the shape info for the current shape
+	auto* info = static_cast<Shape_info*>(
+			g_object_get_data(G_OBJECT(shapewin), "user_data"));
+	if (!info) {
+		return;
+	}
+
+	// Get the Shapes_vga_file to access shape info by shape number
+	auto* svga = static_cast<Shapes_vga_file*>(vgafile->get_ifile());
+	if (!svga) {
+		EStudio::Alert("Cannot access shape information");
+		return;
+	}
+
+	// Get the shape info for the source shape
+	Shape_info& source_info = svga->get_info(source_shape);
+
+	// Copy all shape data from source shape to current shape
+	*info = source_info;
+
+	// Mark as modified
+	shape_info_modified = true;
+
+	// Re-initialize the shape notebook with the copied data
+	const int frnum = get_num_entry("shinfo_frame");
+	init_shape_notebook(
+			*info, get_widget("shinfo_notebook"), current_shape, frnum);
+}
+
+/*
  *  Delete the selected preset.
  */
 void ExultStudio::del_preset() {
@@ -788,4 +848,10 @@ C_EXPORT void on_presets_list_cursor_changed(
 		GtkTreeView* treeview, gpointer user_data) {
 	ignore_unused_variable_warning(treeview, user_data);
 	// Could enable/disable buttons based on selection here
+}
+
+C_EXPORT void on_preset_apply_from_shape_clicked(
+		GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio::get_instance()->apply_preset_from_shape();
 }
