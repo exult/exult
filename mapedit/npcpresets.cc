@@ -162,7 +162,7 @@ void Npc_preset::read(IDataSource& in) {
 
 	// Schedules (8 time slots)
 	for (int i = 0; i < 8; i++) {
-		const int type = in.read2();
+		const int type = static_cast<int16_t>(in.read2());
 		if (type >= 0) {
 			data["sched_" + std::to_string(i)] = std::to_string(type);
 		}
