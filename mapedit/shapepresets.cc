@@ -313,7 +313,7 @@ void ExultStudio::setup_presets_list() {
 /*
  *  Save presets to file.
  */
-void ExultStudio::save_presets() {
+void ExultStudio::save_shape_presets() {
 	if (presets_file && presets_file->modified) {
 		presets_file->write();
 	}
@@ -322,7 +322,7 @@ void ExultStudio::save_presets() {
 /*
  *  Check if presets have been modified.
  */
-bool ExultStudio::presets_modified() {
+bool ExultStudio::shape_presets_modified() {
 	return presets_file && presets_file->modified;
 }
 
@@ -380,9 +380,6 @@ void ExultStudio::save_shape_to_preset(const char* preset_name) {
 		EStudio::Alert("Invalid shape number");
 		return;
 	}
-
-	// Save immediately to disk
-	save_presets();
 
 	setup_presets_list();
 }

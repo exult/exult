@@ -2534,6 +2534,15 @@
                                 <signal name="activate" handler="on_save_combos1_activate" swapped="no"/>
                               </object>
                             </child>
+                            <child>
+                              <object class="GtkMenuItem" id="save_presets1">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">_Presets</property>
+                                <property name="use-underline">True</property>
+                                <signal name="activate" handler="on_save_presets1_activate" swapped="no"/>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>

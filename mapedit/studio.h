@@ -372,8 +372,8 @@ public:
 	void rename_preset();
 	void del_preset();
 	void apply_preset();
-	void save_presets();
-	bool presets_modified();
+	void save_shape_presets();
+	bool shape_presets_modified();
 	void save_shape_to_preset(const char* preset_name);
 	void load_preset_to_shape(const char* preset_name);
 	// NPC Presets:

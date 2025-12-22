@@ -516,9 +516,6 @@ void ExultStudio::save_npc_to_preset(const char* preset_name) {
 		preset->set_value(key, std::to_string(sched_type));
 	}
 
-	// Save immediately to disk
-	save_npc_presets();
-
 	setup_npc_presets_list();
 }
 

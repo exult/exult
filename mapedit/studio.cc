@@ -310,6 +310,14 @@ C_EXPORT void on_save_combos1_activate(
 	ExultStudio::get_instance()->save_combos();
 }
 
+C_EXPORT void on_save_presets1_activate(
+		GtkMenuItem* menuitem, gpointer user_data) {
+	ignore_unused_variable_warning(menuitem, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	studio->save_shape_presets();
+	studio->save_npc_presets();
+}
+
 C_EXPORT void on_reload_css_activate(
 		GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
@@ -2056,7 +2064,9 @@ void ExultStudio::setup_file_list() {
  */
 
 void ExultStudio::save_all() {
-	save_groups();    // Group files.
+	save_groups();           // Group files.
+	save_shape_presets();    // Shape presets.
+	save_npc_presets();      // NPC presets.
 	if (files) {
 		// Get back any changed images.
 		Shape_chooser::check_editing_files();
@@ -2074,6 +2084,12 @@ void ExultStudio::save_all() {
 
 bool ExultStudio::need_to_save() {
 	if (groups_modified()) {
+		return true;
+	}
+	if (shape_presets_modified()) {
+		return true;
+	}
+	if (npc_presets_modified()) {
 		return true;
 	}
 	if (files && files->is_modified()) {

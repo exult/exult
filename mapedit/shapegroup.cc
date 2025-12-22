@@ -1309,8 +1309,6 @@ void ExultStudio::save_groups() {
 			gfile->write();
 		}
 	}
-	// Also save presets when groups are saved
-	save_presets();
 }
 
 /*
