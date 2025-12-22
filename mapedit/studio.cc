@@ -1749,7 +1749,8 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	// Load or create NPC presets file for this game
 	delete npc_presets_file;
 	npc_presets_file             = nullptr;
-	const string npc_preset_path = get_system_path("<PATCH>") + "/npcs.pre";
+	const string npc_preset_path = get_system_path("<PATCH>") + "/"
+								   + Npc_preset_file::get_default_filename();
 	if (U7exists(npc_preset_path)) {
 		npc_presets_file = Npc_preset_file::read_file(npc_preset_path.c_str());
 	}

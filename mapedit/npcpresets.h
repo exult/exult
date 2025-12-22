@@ -112,6 +112,10 @@ public:
 	bool                    write();
 	bool                    read(const char* nm);
 	static Npc_preset_file* read_file(const char* pathname);
+
+	static const char* get_default_filename() {
+		return "npcs.pre";
+	}
 };
 
 /*
