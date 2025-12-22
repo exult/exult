@@ -585,7 +585,7 @@ void ExultStudio::import_presets() {
 
 	Shape_preset_file* import_file = Shape_preset_file::read_file(filename);
 	if (!import_file) {
-		EStudio::Alert("Failed to read preset file");
+		EStudio::Alert("This is not a Shape preset. Import aborted.");
 		g_free(filename);
 		return;
 	}
@@ -595,10 +595,14 @@ void ExultStudio::import_presets() {
 	for (int i = 0; i < count; i++) {
 		Shape_preset* src = import_file->get(i);
 		if (src) {
+			// Append " imported" to the preset name
+			std::string imported_name
+					= std::string(src->get_name()) + " imported";
+
 			// Check if preset already exists
-			Shape_preset* dest = presets_file->find(src->get_name());
+			Shape_preset* dest = presets_file->find(imported_name.c_str());
 			if (!dest) {
-				dest = presets_file->create(src->get_name());
+				dest = presets_file->create(imported_name.c_str());
 			}
 
 			dest->clear_data();
