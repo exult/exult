@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <unistd.h>
 
+#include <climits>
 #include <cstring>
 #include <iostream> /* For debugging msgs. */
 
@@ -110,7 +111,11 @@ namespace Exult_server {
 			//+++++++++Eat the chars.
 			return -1;
 		}
+#	ifdef _WIN32
+		const int bytes_read = read(socket, data, dlen);    // Read data.
+#	else
 		const ssize_t bytes_read = read(socket, data, dlen);    // Read data.
+#	endif
 		if (bytes_read < 0 || bytes_read > INT_MAX) {
 			cout << "Read error or overflow" << endl;
 			return -1;
