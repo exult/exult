@@ -890,7 +890,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	w_at_close = 0;
 	h_at_close = 0;
 	assert(app);
-	glade_path = g_strdup(path);
+	glade_path = g_strdup(path.c_str());
 
 	string csspath;
 	if (!cssdir) {
