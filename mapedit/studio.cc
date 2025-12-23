@@ -3201,7 +3201,9 @@ bool ExultStudio::connect_to_server() {
 		cerr << "Server socket path too long: " << servename << endl;
 		return false;
 	}
-	strcpy(addr.sun_path, servename.c_str());
+	strncpy(addr.sun_path, servename.c_str(), sizeof(addr.sun_path) - 1);
+	addr.sun_path[sizeof(addr.sun_path) - 1]
+			= '\0';    // Ensure null termination
 	server_socket = socket(PF_LOCAL, SOCK_STREAM, 0);
 	if (server_socket < 0) {
 		perror("Failed to open map-editor socket");

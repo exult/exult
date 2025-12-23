@@ -286,7 +286,7 @@ void Npcs_file_info::setup() {
 	const unsigned char* newptr = &buf[0];
 	num_npcs                    = little_endian::Read2(newptr);
 	// Validate num_npcs to prevent excessive allocation
-	if (num_npcs < 0 || num_npcs > 10000) {    // Reasonable upper limit
+	if (num_npcs > 1024) {    // Reasonable upper limit
 		cerr << "Invalid NPC count received from server: " << num_npcs << endl;
 		return;
 	}

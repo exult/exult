@@ -159,7 +159,9 @@ void Server_init() {
 			listen_socket = -1;
 			return;
 		}
-		strcpy(addr.sun_path, servename.c_str());
+		strncpy(addr.sun_path, servename.c_str(), sizeof(addr.sun_path) - 1);
+		addr.sun_path[sizeof(addr.sun_path) - 1]
+				= '\0';    // Ensure null termination
 		if (bind(listen_socket, reinterpret_cast<sockaddr*>(&addr),
 				 sizeof(addr.sun_family) + strlen(addr.sun_path) + 1)
 					== -1
