@@ -892,25 +892,27 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	assert(app);
 	glade_path = g_strdup(path);
 
+	string csspath;
 	if (!cssdir) {
 		cssdir = datastr.c_str();
 	}
 	if (cssdir) {
-		strcpy(path, cssdir);
+		csspath = cssdir;
 	} else if (U7exists(EXULT_DATADIR "/exult_studio.css")) {
-		strcpy(path, EXULT_DATADIR);
+		csspath = EXULT_DATADIR;
 	} else {
-		strcpy(path, ".");
+		csspath = ".";
 	}
-	strcat(path, "/exult_studio.css");
+	csspath += "/exult_studio.css";
 	// Load the CSS provider
 	css_provider = gtk_css_provider_new();
 	assert(css_provider);
 	gtk_widget_set_sensitive(get_widget("reload_css"), true);
-	cout << "Looking for CSS at '" << path << "'... ";
-	if (U7exists(path)) {
+	cout << "Looking for CSS at '" << csspath << "'... ";
+	if (U7exists(csspath)) {
 		cout << "loading." << endl;
-		if (!gtk_css_provider_load_from_path(css_provider, path, &error)) {
+		if (!gtk_css_provider_load_from_path(
+					css_provider, csspath.c_str(), &error)) {
 			cerr << "Couldn't load css file: " << error->message << endl;
 			cerr << "ExultStudio proceeds without it. "
 				 << "You can fix it and reload it in 'File > Reload > Style "
@@ -924,7 +926,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	gtk_style_context_add_provider_for_screen(
 			gdk_screen_get_default(), GTK_STYLE_PROVIDER(css_provider),
 			GTK_STYLE_PROVIDER_PRIORITY_USER);
-	css_path = g_strdup(path);
+	css_path = g_strdup(csspath.c_str());
 
 	mainnotebook = GTK_NOTEBOOK(get_widget("notebook3"));
 
