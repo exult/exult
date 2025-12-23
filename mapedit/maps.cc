@@ -101,6 +101,17 @@ static bool Copy_static_file(
 ) {
 	char srcname[128];
 	char destname[128];
+	// Check length to prevent buffer overflow
+	if (strlen(pname) >= sizeof(destname) - 20) {    // -20 for map dir suffix
+		std::cerr << "Name too long for Get_mapped_name: " << pname
+				  << std::endl;
+		return false;
+	}
+	if (strlen(sname) >= sizeof(srcname) - 20) {
+		std::cerr << "Name too long for Get_mapped_name: " << sname
+				  << std::endl;
+		return false;
+	}
 	Get_mapped_name(pname, tomap, destname);
 	Get_mapped_name(pname, frommap, srcname);    // Patch?
 	if (U7exists(srcname) && EStudio::Copy_file(srcname, destname)) {
