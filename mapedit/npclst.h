@@ -60,8 +60,8 @@ public:
 class Npc_row {
 	friend class Npc_chooser;
 	short    height = 0;    // In pixels.
-	long     y;             // Absolute y-coord. in pixels.
-	unsigned index0;        // Index of 1st Npc_entry in row.
+	long     y      = 0;    // Absolute y-coord. in pixels.
+	unsigned index0 = 0;    // Index of 1st Npc_entry in row.
 };
 
 /*
