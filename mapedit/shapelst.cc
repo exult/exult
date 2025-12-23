@@ -88,7 +88,7 @@ public:
 	// Create for single frame:
 	Editing_file(const char* vganm, const char* pnm, time_t m, int sh, int fr)
 			: vga_basename(vganm), pathname(pnm), mtime(m), shapenum(sh),
-			  framenum(fr), tiles(0) {}
+			  framenum(fr), tiles(0), bycolumns(false) {}
 
 	// Create tiled:
 	Editing_file(
@@ -831,7 +831,11 @@ void Shape_chooser::edit_shape(
 	const int    frnum  = info[selected].framenum;
 	string       filestr("<SAVEGAME>");    // Set up filename.
 	filestr += "/itmp";                    // "Image tmp" directory.
-	U7mkdir(filestr.c_str(), 0755);        // Create if not already there.
+	if (U7mkdir(filestr.c_str(), 0755)
+		== -1) {    // Create if not already there.
+		EStudio::Alert("Error creating directory: %s", filestr.c_str());
+		return;
+	}
 	// Lookup <SAVEGAME>.
 	filestr = get_system_path(filestr);
 	char* ext;
