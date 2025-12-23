@@ -850,13 +850,13 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	if (!xmldir) {
 		xmldir = datastr.c_str();
 	}
-	char path[256];    // Set up paths.
+	std::string path;    // Set up paths.
 	if (xmldir) {
-		strcpy(path, xmldir);
+		path = xmldir;
 	} else if (U7exists(EXULT_DATADIR "/exult_studio.glade")) {
-		strcpy(path, EXULT_DATADIR);
+		path = EXULT_DATADIR;
 	} else {
-		strcpy(path, ".");
+		path = ".";
 	}
 #if !defined(_WIN32) && !defined(MACOSX)
 	string iconstr = datastr + "/../icons/";
@@ -864,11 +864,11 @@ ExultStudio::ExultStudio(int argc, char** argv)
 			gtk_icon_theme_get_for_screen(gdk_screen_get_default()),
 			iconstr.c_str());
 #endif
-	strcat(path, "/exult_studio.glade");
+	path += "/exult_studio.glade";
 	// Load the Glade interface
 	GError* error = nullptr;
 	app_xml       = gtk_builder_new();
-	if (!gtk_builder_add_from_file(app_xml, path, &error)) {
+	if (!gtk_builder_add_from_file(app_xml, path.c_str(), &error)) {
 		g_warning("Couldn't load builder file: %s", error->message);
 		g_error_free(error);
 		exit(1);
