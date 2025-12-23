@@ -3194,6 +3194,11 @@ bool ExultStudio::connect_to_server() {
 	sockaddr_un addr;
 	addr.sun_family  = AF_UNIX;
 	addr.sun_path[0] = 0;
+	// Check length to prevent buffer overflow
+	if (servename.length() >= sizeof(addr.sun_path)) {
+		cerr << "Server socket path too long: " << servename << endl;
+		return false;
+	}
 	strcpy(addr.sun_path, servename.c_str());
 	server_socket = socket(PF_LOCAL, SOCK_STREAM, 0);
 	if (server_socket < 0) {
