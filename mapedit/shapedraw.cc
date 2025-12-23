@@ -199,8 +199,9 @@ Shape_draw::Shape_draw(
 		const unsigned char* palbuf,    // Palette, 3*256 bytes (rgb triples).
 		GtkWidget*           drw        // Drawing area to use.
 		)
-		: ifile(i), draw(drw), drawgc(nullptr), iwin(nullptr), palette(nullptr),
-		  drop_callback(nullptr), drop_user_data(nullptr), dragging(false) {
+		: ifile(i), draw(drw), drawgc(nullptr), drawfg(0), iwin(nullptr),
+		  palette(nullptr), drop_callback(nullptr), drop_user_data(nullptr),
+		  dragging(false) {
 	palette = new ExultRgbCmap;
 	for (int i = 0; i < 256; i++) {
 		palette->colors[i] = (palbuf[3 * i] << 16) * 4
