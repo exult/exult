@@ -110,7 +110,12 @@ namespace Exult_server {
 			//+++++++++Eat the chars.
 			return -1;
 		}
-		datalen = read(socket, data, dlen);    // Read data.
+		const ssize_t bytes_read = read(socket, data, dlen);    // Read data.
+		if (bytes_read < 0 || bytes_read > INT_MAX) {
+			cout << "Read error or overflow" << endl;
+			return -1;
+		}
+		datalen = static_cast<int>(bytes_read);
 
 		if (datalen < dlen) {
 			cout << "Failed to read all " << dlen << " bytes" << endl;
