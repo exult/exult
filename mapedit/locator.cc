@@ -452,6 +452,9 @@ void Locator::goto_mouse(
 	//   vscrolled() don't send to Exult.
 	GtkAllocation alloc = {0, 0, 0, 0};
 	gtk_widget_get_allocation(draw, &alloc);
+	if (alloc.width <= 0 || alloc.height <= 0) {
+		return;    // Widget not ready yet.
+	}
 	tx     = (mx * c_num_tiles) / alloc.width;
 	ty     = (my * c_num_tiles) / alloc.height;
 	int cx = tx / c_tiles_per_chunk;
