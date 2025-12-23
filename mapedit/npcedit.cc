@@ -610,9 +610,9 @@ int ExultStudio::save_npc_window() {
 		}
 	}
 	g_list_free(children);
-	int           properties[12];    // Get properties.
-	GtkContainer* ptable = GTK_CONTAINER(get_widget("npc_props_table"));
-	children             = g_list_first(gtk_container_get_children(ptable));
+	int           properties[12] = {0};    // Get properties (initialize to 0).
+	GtkContainer* ptable         = GTK_CONTAINER(get_widget("npc_props_table"));
+	children = g_list_first(gtk_container_get_children(ptable));
 	for (GList* list = children; list; list = g_list_next(list)) {
 		GtkSpinButton* spin;
 		int            pnum;
@@ -701,6 +701,10 @@ C_EXPORT void on_npc_set_sched(
 	const char* name   = gtk_buildable_get_name(GTK_BUILDABLE(btn));
 	const char* numptr = name + strlen(name) - 1;
 	char        lname[20];    // Set up label name.
+	if (strlen(numptr)
+		>= sizeof(lname) - 10) {    // Check for "npc_sched" + numptr
+		return;
+	}
 	strcpy(lname, "npc_sched");
 	strcat(lname, numptr);    // Same number as button.
 	ExultStudio*  studio   = ExultStudio::get_instance();
