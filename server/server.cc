@@ -153,6 +153,12 @@ void Server_init() {
 #		else
 		sockaddr_un addr;
 		addr.sun_family = AF_UNIX;
+		if (servename.length() >= sizeof(addr.sun_path)) {
+			cerr << "Server socket path too long: " << servename << endl;
+			close(listen_socket);
+			listen_socket = -1;
+			return;
+		}
 		strcpy(addr.sun_path, servename.c_str());
 		if (bind(listen_socket, reinterpret_cast<sockaddr*>(&addr),
 				 sizeof(addr.sun_family) + strlen(addr.sun_path) + 1)
@@ -165,8 +171,11 @@ void Server_init() {
 			listen_socket = -1;
 		} else {    // Set to be non-blocking.
 			cout << "Listening on socket " << listen_socket << endl;
-			fcntl(listen_socket, F_SETFL,
-				  fcntl(listen_socket, F_GETFL) | O_NONBLOCK);
+			if (fcntl(listen_socket, F_SETFL,
+					  fcntl(listen_socket, F_GETFL) | O_NONBLOCK)
+				== -1) {
+				perror("Failed to set socket non-blocking");
+			}
 		}
 #		ifdef HAVE_GETADDRINFOX
 		freeaddrinfo(ai);
@@ -565,6 +574,12 @@ static void Handle_client_message(
 		const int  track  = little_endian::Read2(ptr);
 		const int  volume = little_endian::Read2(ptr);
 		const bool repeat = Read1(ptr) != 0;
+
+		// Validate track number
+		if (track < 0 || track > 255) {
+			cerr << "Invalid audio track number: " << track << endl;
+			break;
+		}
 
 		Audio* audio = Audio::get_ptr();
 		if (!audio) {
