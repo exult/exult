@@ -52,7 +52,8 @@ using std::endl;
 
 Exec_process::Exec_process()
 		: child_stdin(-1), child_stdout(-1), child_stderr(-1), child_pid(-1),
-		  stdout_tag(-1), stderr_tag(-1), reader(nullptr) {}
+		  stdout_tag(-1), stderr_tag(-1), reader(nullptr),
+		  reader_data(nullptr) {}
 
 /*
  *  Clean up.
