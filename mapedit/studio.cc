@@ -3045,7 +3045,7 @@ void ExultStudio::read_from_server() {
 	Exult_server::Msg_type id;
 	const int              datalen
 			= Exult_server::Receive_data(server_socket, id, data, sizeof(data));
-	if (datalen < 0) {
+	if (datalen < 0 || datalen > static_cast<int>(sizeof(data))) {
 		cout << "Error reading from server" << endl;
 		if (server_socket == -1) {    // Socket closed?
 			g_source_remove(server_input_tag);
