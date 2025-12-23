@@ -56,10 +56,16 @@ int main(int argc, char** argv) {
 	}
 #endif
 
-	ExultStudio studio(argc, argv);
-	studio.run();
+	try {
+		ExultStudio studio(argc, argv);
+		studio.run();
+	} catch (const std::exception& e) {
+		std::cerr << "Error: " << e.what() << std::endl;
+		return 1;
+	}
 
 #ifdef _WIN32
 	cleanup_output("studio_");
 #endif
+	return 0;
 }
