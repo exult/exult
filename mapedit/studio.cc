@@ -2125,7 +2125,8 @@ bool ExultStudio::need_to_save() {
 		return true;
 	}
 	// Ask Exult about the map.
-	if (Send_data(server_socket, Exult_server::info) != -1) {
+	if (server_socket >= 0
+		&& Send_data(server_socket, Exult_server::info) != -1) {
 		// Should get immediate answer.
 		unsigned char          data[Exult_server::maxlength];
 		Exult_server::Msg_type id;
