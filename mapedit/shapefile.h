@@ -163,8 +163,8 @@ public:
 class Estudio_npc {
 	friend class Npc_chooser;
 	friend class Npcs_file_info;
-	short       shapenum;
-	bool        unused;
+	short       shapenum = 0;
+	bool        unused   = false;
 	std::string name;
 
 public:
