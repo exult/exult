@@ -2658,7 +2658,10 @@ void ExultStudio::set_shape_notebook_frame(int frnum    // Frame # to set.
 ) {
 	auto* file_info = static_cast<Shape_file_info*>(
 			g_object_get_data(G_OBJECT(shapewin), "file_info"));
-	const int    shnum = get_num_entry("shinfo_shape");
+	const int shnum = get_num_entry("shinfo_shape");
+	if (shnum < 0) {
+		return;    // Invalid shape number
+	}
 	Vga_file*    ifile = file_info->get_ifile();
 	Shape_frame* shape = ifile->get_shape(shnum, frnum);
 	if (shape == nullptr) {
@@ -5037,7 +5040,7 @@ void ExultStudio::save_shape_window() {
 		if (!oldname) {
 			oldname = "";
 		}
-		if (strcmp(nm, oldname) != 0) {
+		if (shnum >= 0 && strcmp(nm, oldname) != 0) {
 			// Name changed.
 			Set_item_name(shnum, nm);
 			shape_names_modified = true;
