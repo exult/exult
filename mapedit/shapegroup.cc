@@ -1118,7 +1118,7 @@ C_EXPORT void on_group_down_clicked(
             G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
 	Shape_group* grp     = chooser->get_group();
 	const int    i       = chooser->get_selected();
-	if (grp && i < grp->size() - 1) {    // Moving down.
+	if (grp && i >= 0 && i < grp->size() - 1) {    // Moving down.
 		grp->swap(i);
 		ExultStudio::get_instance()->update_group_windows(grp);
 	}
