@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ignore_unused_variable_warning.h"
 #include "objbrowse.h"
 #include "shapefile.h"
+#include "shapelst.h"
 #include "shapevga.h"
 #include "studio.h"
 #include "utils.h"
@@ -1100,27 +1101,31 @@ C_EXPORT gboolean on_group_window_delete_event(
 }
 
 C_EXPORT void on_group_up_clicked(GtkToggleButton* button, gpointer user_data) {
-	ignore_unused_variable_warning(user_data);
-	auto*        chooser = static_cast<Object_browser*>(g_object_get_data(
+	ignore_unused_variable_warning(user_data, button);
+	auto*        chooser = static_cast<Shape_chooser*>(g_object_get_data(
             G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
 	Shape_group* grp     = chooser->get_group();
 	const int    i       = chooser->get_selected();
 	if (grp && i > 0) {    // Moving item up.
 		grp->swap(i - 1);
 		ExultStudio::get_instance()->update_group_windows(grp);
+		// Move selection up with the shape
+		chooser->select(i - 1);
 	}
 }
 
 C_EXPORT void on_group_down_clicked(
 		GtkToggleButton* button, gpointer user_data) {
-	ignore_unused_variable_warning(user_data);
-	auto*        chooser = static_cast<Object_browser*>(g_object_get_data(
+	ignore_unused_variable_warning(user_data, button);
+	auto*        chooser = static_cast<Shape_chooser*>(g_object_get_data(
             G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
 	Shape_group* grp     = chooser->get_group();
 	const int    i       = chooser->get_selected();
 	if (grp && i >= 0 && i < grp->size() - 1) {    // Moving down.
 		grp->swap(i);
 		ExultStudio::get_instance()->update_group_windows(grp);
+		// Move selection down with the shape
+		chooser->select(i + 1);
 	}
 }
 
@@ -1275,6 +1280,30 @@ void ExultStudio::open_group_window(Shape_group* grp) {
 	// Set xml as data on window.
 	g_object_set_data(G_OBJECT(grpwin), "xml", xml);
 	g_object_set_data(G_OBJECT(grpwin), "browser", chooser);
+
+	// Store backup of original group state for cancel functionality
+	auto* backup_shapes = new std::vector<int>();
+	for (int i = 0; i < grp->size(); i++) {
+		backup_shapes->push_back((*grp)[i]);
+	}
+	auto* backup_name     = new std::string(grp->get_name());
+	auto* backup_modified = new bool(grp->get_file()->is_modified());
+
+	g_object_set_data_full(
+			G_OBJECT(grpwin), "backup_shapes", backup_shapes,
+			[](gpointer data) {
+				delete static_cast<std::vector<int>*>(data);
+			});
+	g_object_set_data_full(
+			G_OBJECT(grpwin), "backup_name", backup_name, [](gpointer data) {
+				delete static_cast<std::string*>(data);
+			});
+	g_object_set_data_full(
+			G_OBJECT(grpwin), "backup_modified", backup_modified,
+			[](gpointer data) {
+				delete static_cast<bool*>(data);
+			});
+
 	// Set window title, name field.
 	string title("Exult Group:  ");
 	title += grp->get_name();
@@ -1370,4 +1399,147 @@ void ExultStudio::update_group_windows(
 			chooser->render();
 		}
 	}
+}
+
+/*
+ *  Apply changes from the group window.
+ */
+static void apply_group_window_changes(GtkWidget* grpwin) {
+	ExultStudio* studio = ExultStudio::get_instance();
+	auto*        xml    = static_cast<GtkBuilder*>(
+            g_object_get_data(G_OBJECT(grpwin), "xml"));
+	auto* chooser = static_cast<Object_browser*>(
+			g_object_get_data(G_OBJECT(grpwin), "browser"));
+
+	if (!xml || !chooser) {
+		return;
+	}
+
+	Shape_group* grp = chooser->get_group();
+	if (!grp) {
+		return;
+	}
+
+	// Get the new name from the entry field
+	GtkWidget* name_entry = studio->get_widget(xml, "group_name");
+	if (name_entry) {
+		const char* new_name = gtk_entry_get_text(GTK_ENTRY(name_entry));
+		if (new_name && *new_name) {
+			// Update the group name (set_name takes char*, but we copy the
+			// string internally)
+			grp->set_name(const_cast<char*>(new_name));
+
+			// Update window title
+			std::string title("Exult Group:  ");
+			title += new_name;
+			gtk_window_set_title(GTK_WINDOW(grpwin), title.c_str());
+		}
+	}
+
+	// Mark the group as modified (changes to shapes are already applied)
+	grp->set_modified();
+
+	// Update the backup to reflect current state
+	auto* backup_shapes = static_cast<std::vector<int>*>(
+			g_object_get_data(G_OBJECT(grpwin), "backup_shapes"));
+	if (backup_shapes) {
+		backup_shapes->clear();
+		for (int i = 0; i < grp->size(); i++) {
+			backup_shapes->push_back((*grp)[i]);
+		}
+	}
+
+	auto* backup_name = static_cast<std::string*>(
+			g_object_get_data(G_OBJECT(grpwin), "backup_name"));
+	if (backup_name) {
+		*backup_name = grp->get_name();
+	}
+
+	// Update the backup modified state
+	auto* backup_modified = static_cast<bool*>(
+			g_object_get_data(G_OBJECT(grpwin), "backup_modified"));
+	if (backup_modified) {
+		*backup_modified = grp->get_file()->is_modified();
+	}
+
+	// Refresh the groups list in the main window
+	studio->setup_groups();
+}
+
+/*
+ *  OK button clicked.
+ */
+C_EXPORT void on_group_okay_clicked(GtkButton* button, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	GtkWidget* grpwin = gtk_widget_get_toplevel(GTK_WIDGET(button));
+
+	// Apply the changes
+	apply_group_window_changes(grpwin);
+
+	// Close the window
+	ExultStudio::get_instance()->close_group_window(grpwin);
+}
+
+/*
+ *  Apply button clicked.
+ */
+C_EXPORT void on_group_apply_clicked(GtkButton* button, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	GtkWidget* grpwin = gtk_widget_get_toplevel(GTK_WIDGET(button));
+
+	// Apply the changes but keep the window open
+	apply_group_window_changes(grpwin);
+}
+
+/*
+ *  Cancel button clicked.
+ */
+C_EXPORT void on_group_cancel_clicked(GtkButton* button, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	GtkWidget* grpwin = gtk_widget_get_toplevel(GTK_WIDGET(button));
+
+	auto* chooser = static_cast<Object_browser*>(
+			g_object_get_data(G_OBJECT(grpwin), "browser"));
+
+	if (chooser) {
+		Shape_group* grp = chooser->get_group();
+		if (grp) {
+			// Restore the original shape IDs from backup
+			auto* backup_shapes = static_cast<std::vector<int>*>(
+					g_object_get_data(G_OBJECT(grpwin), "backup_shapes"));
+			if (backup_shapes) {
+				// Clear current shapes and restore from backup
+				while (grp->size() > 0) {
+					grp->del(0);
+				}
+				for (int shape_id : *backup_shapes) {
+					grp->add(shape_id);
+				}
+			}
+
+			// Restore the original name from backup
+			auto* backup_name = static_cast<std::string*>(
+					g_object_get_data(G_OBJECT(grpwin), "backup_name"));
+			if (backup_name) {
+				grp->set_name(const_cast<char*>(backup_name->c_str()));
+			}
+
+			// Restore the original modified state
+			auto* backup_modified = static_cast<bool*>(
+					g_object_get_data(G_OBJECT(grpwin), "backup_modified"));
+			if (backup_modified) {
+				if (*backup_modified) {
+					grp->get_file()->set_modified();
+				} else {
+					grp->get_file()->set_clean();
+				}
+			}
+
+			// Update all group windows to reflect the restored state
+			ExultStudio::get_instance()->update_group_windows(grp);
+		}
+	}
+
+	// Close the window
+	ExultStudio::get_instance()->close_group_window(grpwin);
 }

@@ -92,7 +92,6 @@ class Shape_chooser : public Object_browser, public Shape_draw {
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
 	void tell_server_shape();    // Tell Exult what shape is selected.
-	void select(int new_sel);    // Show new selection.
 	void render() override;      // Draw list.
 
 	void set_background_color(guint32 c) override {
@@ -105,6 +104,9 @@ class Shape_chooser : public Object_browser, public Shape_draw {
 	void scroll_to_frame();             // Scroll so sel. frame is visible.
 	int  find_shape(int shnum);         // Find index for given shape.
 	void goto_index(unsigned index);    // Get desired index in view.
+
+public:
+	void select(int new_sel);    // Show new selection.
 
 	int get_selected_id() override {
 		return selected < 0 ? -1 : info[selected].shapenum;
