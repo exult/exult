@@ -805,27 +805,60 @@ void Shape_chooser::edit_shape(
 	string       filestr("<SAVEGAME>");    // Set up filename.
 	filestr += "/itmp";                    // "Image tmp" directory.
 	U7mkdir(filestr.c_str(), 0755);        // Create if not already there.
-	// Lookup <SAVEGAME>.
-	filestr = get_system_path(filestr);
+	// Lookup <SAVEGAME> and get the base directory for security checks.
+	const string base_dir = get_system_path(filestr);
+	filestr               = base_dir;
 
 	// Check if user wants SHP or PNG format
 	const char* filetype = studio->get_edit_filetype();
 	bool use_shp = (filetype != nullptr && strcmp(filetype, ".SHP") == 0);
 	const char* ext_str = use_shp ? ".shp" : ".png";
 
+	// Sanitize basename to prevent path traversal
+	const char* basename = file_info->get_basename();
+	string      safe_basename;
+	for (const char* p = basename; *p; ++p) {
+		// Only allow alphanumeric, underscore, hyphen, and dot
+		if ((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z')
+			|| (*p >= '0' && *p <= '9') || *p == '_' || *p == '-'
+			|| *p == '.') {
+			safe_basename += *p;
+		}
+	}
+	if (safe_basename.empty()) {
+		safe_basename = "shape";    // Default if basename was all invalid chars
+	}
+
 	char* ext;
 	if (!tiles) {    // Create name from file,shape,frame.
 		ext = g_strdup_printf(
-				"/%s.s%d_f%d%s", file_info->get_basename(), shnum, frnum,
-				ext_str);
+				"/%s.s%d_f%d%s", safe_basename.c_str(), shnum, frnum, ext_str);
 	} else {    // Tiled.
 		ext = g_strdup_printf(
-				"/%s.s%d_%c%d%s", file_info->get_basename(), shnum,
+				"/%s.s%d_%c%d%s", safe_basename.c_str(), shnum,
 				(bycols ? 'c' : 'r'), tiles, ext_str);
 	}
 	filestr += ext;
 	g_free(ext);
-	const char* fname = filestr.c_str();
+
+	// Validate the final path is within base_dir to prevent path traversal
+	string canonical_path = filestr;
+	// Normalize path separators and remove any ".." components
+	size_t pos = 0;
+	while ((pos = canonical_path.find("..")) != string::npos) {
+		cerr << "Path traversal attempt detected in: " << canonical_path
+			 << endl;
+		return;    // Reject paths with ".."
+	}
+
+	// Ensure final path starts with base directory
+	if (canonical_path.find(base_dir) != 0) {
+		cerr << "Path validation failed: " << canonical_path << " not within "
+			 << base_dir << endl;
+		return;
+	}
+
+	const char* fname = canonical_path.c_str();
 	cout << "Writing image '" << fname << "'" << endl;
 	time_t mtime;
 	if (!tiles) {    // One frame?
