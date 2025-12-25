@@ -543,25 +543,26 @@ C_EXPORT gboolean on_main_window_focus_in_event(
 
 ExultStudio::ExultStudio(int argc, char** argv)
 		: glade_path(nullptr), css_path(nullptr), css_provider(nullptr),
-		  static_path(nullptr), image_editor(nullptr), default_game(nullptr),
-		  background_color(0x808080), shape_scale(0), shape_bilinear(false),
-		  shape_info_modified(false), shape_names_modified(false),
-		  npc_modified(false), files(nullptr), presets_file(nullptr),
-		  npc_presets_file(nullptr), curfile(nullptr), vgafile(nullptr),
-		  facefile(nullptr), fontfile(nullptr), gumpfile(nullptr),
-		  spritefile(nullptr), paperdolfile(nullptr), browser(nullptr),
-		  bargewin(nullptr), barge_ctx(0), barge_status_id(0), eggwin(nullptr),
-		  egg_monster_single(nullptr), egg_missile_single(nullptr), egg_ctx(0),
-		  egg_status_id(0), npcwin(nullptr), npc_single(nullptr),
-		  npc_face_single(nullptr), npc_face_changed_handler(0), npc_ctx(0),
-		  npc_status_id(0), objwin(nullptr), obj_single(nullptr),
-		  contwin(nullptr), cont_single(nullptr), shapewin(nullptr),
-		  shape_single(nullptr), gump_single(nullptr), body_single(nullptr),
-		  explosion_single(nullptr), weapon_family_single(nullptr),
-		  weapon_projectile_single(nullptr), ammo_family_single(nullptr),
-		  ammo_sprite_single(nullptr), cntrules_shape_single(nullptr),
-		  frameflags_frame_single(nullptr), effhps_frame_single(nullptr),
-		  framenames_frame_single(nullptr), frameusecode_frame_single(nullptr),
+		  static_path(nullptr), image_editor(nullptr), edit_filetype(nullptr),
+		  default_game(nullptr), background_color(0x808080), shape_scale(0),
+		  shape_bilinear(false), shape_info_modified(false),
+		  shape_names_modified(false), npc_modified(false), files(nullptr),
+		  presets_file(nullptr), npc_presets_file(nullptr), curfile(nullptr),
+		  vgafile(nullptr), facefile(nullptr), fontfile(nullptr),
+		  gumpfile(nullptr), spritefile(nullptr), paperdolfile(nullptr),
+		  browser(nullptr), bargewin(nullptr), barge_ctx(0), barge_status_id(0),
+		  eggwin(nullptr), egg_monster_single(nullptr),
+		  egg_missile_single(nullptr), egg_ctx(0), egg_status_id(0),
+		  npcwin(nullptr), npc_single(nullptr), npc_face_single(nullptr),
+		  npc_face_changed_handler(0), npc_ctx(0), npc_status_id(0),
+		  objwin(nullptr), obj_single(nullptr), contwin(nullptr),
+		  cont_single(nullptr), shapewin(nullptr), shape_single(nullptr),
+		  gump_single(nullptr), body_single(nullptr), explosion_single(nullptr),
+		  weapon_family_single(nullptr), weapon_projectile_single(nullptr),
+		  ammo_family_single(nullptr), ammo_sprite_single(nullptr),
+		  cntrules_shape_single(nullptr), frameflags_frame_single(nullptr),
+		  effhps_frame_single(nullptr), framenames_frame_single(nullptr),
+		  frameusecode_frame_single(nullptr),
 		  objpaperdoll_wframe_single(nullptr),
 		  objpaperdoll_spotframe_single(nullptr),
 		  brightness_frame_single(nullptr), warmth_frame_single(nullptr),
@@ -1002,6 +1003,10 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	config->value("config/estudio/image_editor", iedit, "gimp");
 	image_editor = g_strdup(iedit.c_str());
 	config->set("config/estudio/image_editor", iedit, true);
+	string ftype;    // Get image-edit filetype.
+	config->value("config/estudio/edit_filetype", ftype, ".PNG");
+	edit_filetype = g_strdup(ftype.c_str());
+	config->set("config/estudio/edit_filetype", ftype, true);
 	// Init. 'Mode' menu, since Glade
 	//   doesn't seem to do it right.
 	GSList* group = nullptr;
@@ -1111,6 +1116,7 @@ ExultStudio::~ExultStudio() {
 	g_object_unref(G_OBJECT(app_xml));
 	g_free(static_path);
 	g_free(image_editor);
+	g_free(edit_filetype);
 	g_free(default_game);
 	self = nullptr;
 	delete config;
@@ -2925,6 +2931,10 @@ void ExultStudio::reload_css() {
 void ExultStudio::open_preferences() {
 	set_entry("prefs_image_editor", image_editor ? image_editor : "");
 	set_entry("prefs_default_game", default_game ? default_game : "");
+	// Set image type combobox: 0 = .PNG, 1 = .SHP
+	int ftype_index
+			= (edit_filetype && strcmp(edit_filetype, ".SHP") == 0) ? 1 : 0;
+	set_optmenu("prefs_image_type", ftype_index);
 	GtkWidget* backgrnd = get_widget("prefs_background");
 	g_object_set_data(
 			G_OBJECT(backgrnd), "user_data",
@@ -2945,6 +2955,12 @@ void ExultStudio::save_preferences() {
 	g_free(image_editor);
 	image_editor = g_strdup(text);
 	config->set("config/estudio/image_editor", image_editor, true);
+	// Save image type from combobox: 0 = .PNG, 1 = .SHP
+	int         ftype_index = get_optmenu("prefs_image_type");
+	const char* ftype_str   = (ftype_index == 1) ? ".SHP" : ".PNG";
+	g_free(edit_filetype);
+	edit_filetype = g_strdup(ftype_str);
+	config->set("config/estudio/edit_filetype", edit_filetype, true);
 	text = get_text_entry("prefs_default_game");
 	g_free(default_game);
 	default_game = g_strdup(text);

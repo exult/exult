@@ -117,6 +117,7 @@ private:
 	GtkCssProvider*     css_provider;
 	char*               static_path;
 	char*               image_editor;
+	char*               edit_filetype;
 	char*               default_game;
 	guint32             background_color;
 	static ExultStudio* self;
@@ -271,6 +272,10 @@ public:
 
 	const char* get_image_editor() {
 		return image_editor;
+	}
+
+	const char* get_edit_filetype() {
+		return edit_filetype;
 	}
 
 	Shape_file_set* get_files() {
