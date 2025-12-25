@@ -31,12 +31,52 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <ctime>
 #include <memory>
+#include <string>
 #include <vector>
 
 class Vga_file;
 class Image_buffer8;
 class Shapes_vga_file;
-class Editing_file;
+
+/*
+ *  Information about a file being edited externally.
+ */
+class Editing_file {
+	std::string vga_basename;    // Name of image file this comes from.
+	std::string pathname;        // Full path to file.
+	time_t      mtime;           // Last modification time.
+	int         shapenum;        // Shape number.
+	int         framenum;        // Frame number.
+	int         tiles;           // If > 0, #8x8 tiles per row or col.
+	bool        bycolumns;       // If true tile by column first.
+	bool is_shp;    // If true, file is SHP format (whole shape), else PNG
+					// (single frame).
+
+	// Private constructor for tiled
+	Editing_file(
+			const char* vganm, const char* pnm, time_t m, int sh, int ts,
+			bool bycol, int /*unused*/)
+			: vga_basename(vganm), pathname(pnm), mtime(m), shapenum(sh),
+			  framenum(0), tiles(ts), bycolumns(bycol), is_shp(false) {}
+
+public:
+	friend class Shape_chooser;
+
+	// Create for single frame (PNG) or whole shape (SHP):
+	Editing_file(
+			const char* vganm, const char* pnm, time_t m, int sh, int fr,
+			bool shp)
+			: vga_basename(vganm), pathname(pnm), mtime(m), shapenum(sh),
+			  framenum(fr), tiles(0), bycolumns(false), is_shp(shp) {}
+
+	// Factory method for tiled (PNG only):
+	static std::unique_ptr<Editing_file> create_tiled(
+			const char* vganm, const char* pnm, time_t m, int sh, int ts,
+			bool bycol) {
+		return std::unique_ptr<Editing_file>(
+				new Editing_file(vganm, pnm, m, sh, ts, bycol, 0));
+	}
+};
 
 /*
  *  Store information about an individual shape shown in the list.

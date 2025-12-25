@@ -72,33 +72,6 @@ int Shape_chooser::check_editing_timer = -1;
 #define IS_FLAT(shnum) ((shnum) < c_first_obj_shape)
 
 /*
- *  Here's a description of a file being edited by an external program
- *  like Gimp or Photoshop.
- */
-class Editing_file {
-	string vga_basename;          // Name of image file this comes from.
-	string pathname;              // Full path to file.
-	time_t mtime;                 // Last modification time.
-	int    shapenum, framenum;    // Shape/frame.
-	int    tiles;                 // If > 0, #8x8 tiles per row or col.
-	bool   bycolumns;             // If true tile by column first.
-public:
-	friend class Shape_chooser;
-
-	// Create for single frame:
-	Editing_file(const char* vganm, const char* pnm, time_t m, int sh, int fr)
-			: vga_basename(vganm), pathname(pnm), mtime(m), shapenum(sh),
-			  framenum(fr), tiles(0), bycolumns(false) {}
-
-	// Create tiled:
-	Editing_file(
-			const char* vganm, const char* pnm, time_t m, int sh, int ts,
-			bool bycol)
-			: vga_basename(vganm), pathname(pnm), mtime(m), shapenum(sh),
-			  framenum(0), tiles(ts), bycolumns(bycol) {}
-};
-
-/*
  *  Callback for when a shape is dropped on our draw area.
  */
 
@@ -834,14 +807,21 @@ void Shape_chooser::edit_shape(
 	U7mkdir(filestr.c_str(), 0755);        // Create if not already there.
 	// Lookup <SAVEGAME>.
 	filestr = get_system_path(filestr);
+
+	// Check if user wants SHP or PNG format
+	const char* filetype = studio->get_edit_filetype();
+	bool use_shp = (filetype != nullptr && strcmp(filetype, ".SHP") == 0);
+	const char* ext_str = use_shp ? ".shp" : ".png";
+
 	char* ext;
 	if (!tiles) {    // Create name from file,shape,frame.
 		ext = g_strdup_printf(
-				"/%s.s%d_f%d.png", file_info->get_basename(), shnum, frnum);
+				"/%s.s%d_f%d%s", file_info->get_basename(), shnum, frnum,
+				ext_str);
 	} else {    // Tiled.
 		ext = g_strdup_printf(
-				"/%s.s%d_%c%d.png", file_info->get_basename(), shnum,
-				(bycols ? 'c' : 'r'), tiles);
+				"/%s.s%d_%c%d%s", file_info->get_basename(), shnum,
+				(bycols ? 'c' : 'r'), tiles, ext_str);
 	}
 	filestr += ext;
 	g_free(ext);
@@ -849,19 +829,40 @@ void Shape_chooser::edit_shape(
 	cout << "Writing image '" << fname << "'" << endl;
 	time_t mtime;
 	if (!tiles) {    // One frame?
-		mtime = export_png(fname);
-		if (!mtime) {
-			return;
+		if (use_shp) {
+			// Export entire shape as SHP file (all frames)
+			Shape* shp = ifile->extract_shape(shnum);
+			if (!shp) {
+				return;
+			}
+			Image_file_info::write_file(fname, &shp, 1, true);
+			struct stat statbuf;
+			if (stat(fname, &statbuf) != 0) {
+				return;
+			}
+			mtime = statbuf.st_mtime;
+		} else {
+			// Export as PNG file (single frame)
+			mtime = export_png(fname);
+			if (!mtime) {
+				return;
+			}
 		}
 		// Store info. about file.
 		editing_files.push_back(std::make_unique<Editing_file>(
-				file_info->get_basename(), fname, mtime, shnum, frnum));
+				file_info->get_basename(), fname, mtime, shnum, frnum,
+				use_shp));
 	} else {
+		// Tiled editing only supported for PNG
+		if (use_shp) {
+			Alert("Tiled editing is only supported with PNG format.");
+			return;
+		}
 		mtime = export_tiled_png(fname, tiles, bycols);
 		if (!mtime) {
 			return;
 		}
-		editing_files.push_back(std::make_unique<Editing_file>(
+		editing_files.push_back(Editing_file::create_tiled(
 				file_info->get_basename(), fname, mtime, shnum, tiles, bycols));
 	}
 	string cmd(studio->get_image_editor());
@@ -1185,18 +1186,65 @@ void Shape_chooser::read_back_edited(Editing_file* ed) {
 	if (!finfo) {
 		return;
 	}
-	unsigned char  pal[3 * 256];    // Convert to 0-255 RGB's.
-	unsigned char* palbuf = studio->get_palbuf();
-	for (int i = 0; i < 3 * 256; i++) {
-		pal[i] = palbuf[i] * 4;
-	}
-	if (!ed->tiles) {
-		Import_png(
-				ed->pathname.c_str(), finfo, pal, ed->shapenum, ed->framenum);
+
+	if (ed->is_shp) {
+		// Import entire shape from SHP file
+		try {
+			IFileDataSource ds(ed->pathname.c_str());
+			// Check to see if it is a valid shape file.
+			const int size = ds.getSize();
+			if (size <= 8) {    // Minimum valid size
+				cerr << "SHP file too small: " << ed->pathname << endl;
+				return;
+			}
+			const int len = ds.read4();
+			int       first;
+			if (len != size || (first = ds.read4()) > size
+				|| (first % 4) != 0) {
+				cerr << "Invalid SHP file: " << ed->pathname << endl;
+				return;
+			}
+			// Get the original shape and load the edited data into it
+			Vga_file* ifile = finfo->get_ifile();
+			if (!ifile) {
+				cerr << "Error: Could not get ifile" << endl;
+				return;
+			}
+			Shape* shape = ifile->extract_shape(ed->shapenum);
+			if (!shape) {
+				return;
+			}
+
+			// Load the edited shape data (replaces all frames)
+			ds.seek(0);
+			shape->load(&ds);
+			shape->set_modified();
+			finfo->set_modified();
+		} catch (const std::exception& e) {
+			cerr << "Error reading SHP file " << ed->pathname << ": "
+				 << e.what() << endl;
+			return;
+		}
 	} else {
-		Import_png_tiles(
-				ed->pathname.c_str(), finfo, pal, ed->shapenum, ed->tiles,
-				ed->bycolumns);
+		// Import from PNG file
+		unsigned char  pal[3 * 256];    // Convert to 0-255 RGB's.
+		unsigned char* palbuf = studio->get_palbuf();
+		if (!palbuf) {
+			cerr << "Error: Could not get palette buffer" << endl;
+			return;
+		}
+		for (int i = 0; i < 3 * 256; i++) {
+			pal[i] = palbuf[i] * 4;
+		}
+		if (!ed->tiles) {
+			Import_png(
+					ed->pathname.c_str(), finfo, pal, ed->shapenum,
+					ed->framenum);
+		} else {
+			Import_png_tiles(
+					ed->pathname.c_str(), finfo, pal, ed->shapenum, ed->tiles,
+					ed->bycolumns);
+		}
 	}
 }
 
