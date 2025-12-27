@@ -8976,9 +8976,52 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button13">
-                        <property name="label" translatable="yes">Game</property>
+                      <object class="GtkButton" id="sched_loc0_current">
+                        <property name="label" translatable="yes">Set current position</property>
                         <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc0_click">
+                        <property name="label" translatable="yes">Set in game</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_click" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc0_locate">
+                        <property name="label" translatable="yes">Locate</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
                         <property name="halign">center</property>
@@ -8990,10 +9033,10 @@
                         <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
                         <property name="use-underline">True</property>
-                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_sched_loc_locate" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -9084,9 +9127,52 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button20">
-                        <property name="label" translatable="yes">Game</property>
+                      <object class="GtkButton" id="sched_loc1_current">
+                        <property name="label" translatable="yes">Set current position</property>
                         <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc1_click">
+                        <property name="label" translatable="yes">Set in game</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_click" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc1_locate">
+                        <property name="label" translatable="yes">Locate</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
                         <property name="halign">center</property>
@@ -9098,10 +9184,10 @@
                         <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
                         <property name="use-underline">True</property>
-                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_sched_loc_locate" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -9192,9 +9278,52 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button21">
-                        <property name="label" translatable="yes">Game</property>
+                      <object class="GtkButton" id="sched_loc2_current">
+                        <property name="label" translatable="yes">Set current position</property>
                         <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc2_click">
+                        <property name="label" translatable="yes">Set in game</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_click" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc2_locate">
+                        <property name="label" translatable="yes">Locate</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
                         <property name="halign">center</property>
@@ -9206,10 +9335,10 @@
                         <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
                         <property name="use-underline">True</property>
-                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_sched_loc_locate" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -9300,9 +9429,52 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button22">
-                        <property name="label" translatable="yes">Game</property>
+                      <object class="GtkButton" id="sched_loc3_current">
+                        <property name="label" translatable="yes">Set current position</property>
                         <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc3_click">
+                        <property name="label" translatable="yes">Set in game</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_click" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc3_locate">
+                        <property name="label" translatable="yes">Locate</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
                         <property name="halign">center</property>
@@ -9314,10 +9486,10 @@
                         <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
                         <property name="use-underline">True</property>
-                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_sched_loc_locate" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -9408,9 +9580,52 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button23">
-                        <property name="label" translatable="yes">Game</property>
+                      <object class="GtkButton" id="sched_loc4_current">
+                        <property name="label" translatable="yes">Set current position</property>
                         <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc4_click">
+                        <property name="label" translatable="yes">Set in game</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_click" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc4_locate">
+                        <property name="label" translatable="yes">Locate</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
                         <property name="halign">center</property>
@@ -9422,10 +9637,10 @@
                         <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
                         <property name="use-underline">True</property>
-                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_sched_loc_locate" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -9516,9 +9731,52 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button24">
-                        <property name="label" translatable="yes">Game</property>
+                      <object class="GtkButton" id="sched_loc5_current">
+                        <property name="label" translatable="yes">Set current position</property>
                         <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc5_click">
+                        <property name="label" translatable="yes">Set in game</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_click" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc5_locate">
+                        <property name="label" translatable="yes">Locate</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
                         <property name="halign">center</property>
@@ -9530,10 +9788,10 @@
                         <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
                         <property name="use-underline">True</property>
-                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_sched_loc_locate" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -9624,9 +9882,52 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button25">
-                        <property name="label" translatable="yes">Game</property>
+                      <object class="GtkButton" id="sched_loc6_current">
+                        <property name="label" translatable="yes">Set current position</property>
                         <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc6_click">
+                        <property name="label" translatable="yes">Set in game</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_click" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc6_locate">
+                        <property name="label" translatable="yes">Locate</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
                         <property name="halign">center</property>
@@ -9638,10 +9939,10 @@
                         <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
                         <property name="use-underline">True</property>
-                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_sched_loc_locate" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -9732,9 +10033,52 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button26">
-                        <property name="label" translatable="yes">Game</property>
+                      <object class="GtkButton" id="sched_loc7_current">
+                        <property name="label" translatable="yes">Set current position</property>
                         <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc7_click">
+                        <property name="label" translatable="yes">Set in game</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_sched_loc_click" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="sched_loc7_locate">
+                        <property name="label" translatable="yes">Locate</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
                         <property name="halign">center</property>
@@ -9746,10 +10090,10 @@
                         <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
                         <property name="use-underline">True</property>
-                        <signal name="clicked" handler="on_sched_loc_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_sched_loc_locate" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="position">3</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>

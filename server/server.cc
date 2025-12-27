@@ -36,9 +36,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	include "barge.h"
 #	include "cheat.h"
 #	include "chunkter.h"
+#	include "chunks.h"
 #	include "effects.h"
 #	include "egg.h"
 #	include "endianio.h"
+#	include "exult.h"
 #	include "gamemap.h"
 #	include "gamewin.h"
 #	include "objserial.h"
@@ -375,12 +377,19 @@ static void Handle_client_message(
 		// +++Later int txs = Read4(ptr);
 		// int tys = Read4(ptr);
 		// int scale = Read4(ptr);
+		// Check if we also have a tz coordinate (for centering on a specific
+		// tile). If datalen indicates more data, read tz; otherwise use 0.
+		int tz = 0;
+		if (datalen >= 12) {    // 4 bytes tx + 4 bytes ty + 4 bytes tz
+			tz = little_endian::Read4(ptr);
+		}
 		// Only set if chunk changed.
 		if (tx / c_tiles_per_chunk != gwin->get_scrolltx() / c_tiles_per_chunk
 			|| ty / c_tiles_per_chunk
 					   != gwin->get_scrollty() / c_tiles_per_chunk) {
-			gwin->set_scrolls(tx, ty);
-			gwin->set_all_dirty();
+			// Use center_view to properly center on the coordinates.
+			const Tile_coord coord(tx, ty, tz);
+			gwin->center_view(coord);
 		}
 		break;
 	}
@@ -678,6 +687,34 @@ static void Handle_client_message(
 		// Clear any selections/picking state
 		cheat.clear_selected();
 		break;
+	case Exult_server::get_user_click: {
+		// Wait for user to click on map and send back the coordinates.
+		int x;
+		int y;
+		if (!Get_click(x, y, Mouse::hand, nullptr)) {
+			// User cancelled (ESC or right-click).
+			Exult_server::Send_data(client_socket, Exult_server::cancel);
+			break;
+		}
+		// Convert screen pixel coords to tile coords.
+		Actor*    main_actor = gwin->get_main_actor();
+		const int lift       = main_actor ? main_actor->get_lift() : 0;
+		const int liftpixels = 4 * lift;
+		int       tx = gwin->get_scrolltx() + (x + liftpixels) / c_tilesize;
+		int       ty = gwin->get_scrollty() + (y + liftpixels) / c_tilesize;
+		// Wrap coordinates.
+		tx = (tx + c_num_tiles) % c_num_tiles;
+		ty = (ty + c_num_tiles) % c_num_tiles;
+		// Send back the tile coordinates.
+		unsigned char  data[Exult_server::maxlength];
+		unsigned char* wptr = &data[0];
+		little_endian::Write2(wptr, tx);
+		little_endian::Write2(wptr, ty);
+		little_endian::Write2(wptr, lift);
+		Exult_server::Send_data(
+				client_socket, Exult_server::get_user_click, data, wptr - data);
+		break;
+	}
 	case Exult_server::usecode_debugging:
 #	ifdef USECODE_DEBUGGER
 		Handle_debug_message(&data[0], datalen);

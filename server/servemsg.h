@@ -99,6 +99,7 @@ namespace Exult_server {
 		play_audio         = 50,    // Play audio (music/sfx/voice).
 		stop_audio         = 51,    // Stop all audio playback.
 		clear_selection    = 52,    // Clear current selection.
+		get_user_click     = 53,    // Request map click, returns tile coords.
 		usecode_debugging  = 128
 	};
 

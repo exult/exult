@@ -105,8 +105,8 @@ C_EXPORT void on_npc_show_gump_clicked(GtkButton* btn, gpointer user_data) {
  */
 C_EXPORT void on_npc_locate_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
-	ExultStudio* studio = ExultStudio::get_instance();
-	const short npc_num = studio->get_num_entry("npc_num_entry");
+	ExultStudio*   studio  = ExultStudio::get_instance();
+	const short    npc_num = studio->get_num_entry("npc_num_entry");
 	unsigned char  data[Exult_server::maxlength];
 	unsigned char* ptr = &data[0];
 	little_endian::Write2(ptr, npc_num);
@@ -163,6 +163,20 @@ const char* sched_names[32]
 		   "Desk Work", "Follow"};
 
 /*
+ *  Enable/disable locate button based on whether coordinates are valid.
+ */
+static void Update_locate_button(
+		ExultStudio* studio,
+		int          time,    // 0-7.
+		int tx, int ty) {
+	char* locate_btn_name = g_strdup_printf("sched_loc%d_locate", time);
+	// Enable if either x or y coordinate is non-zero.
+	const bool has_coords = (tx != 0 || ty != 0);
+	studio->set_sensitive(locate_btn_name, has_coords);
+	g_free(locate_btn_name);
+}
+
+/*
  *  Set a line in the schedule page.
  */
 
@@ -197,6 +211,8 @@ static void Set_schedule_line(
 	spin = GTK_WIDGET(list->data);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), tz);
 	g_list_free(children);
+	// Update locate button state based on coordinates.
+	Update_locate_button(studio, time, tx, ty);
 }
 
 /*
@@ -765,14 +781,24 @@ static void Game_loc_response(
 	spin = GTK_WIDGET(list->data);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), tz);
 	g_list_free(children);
+
+	// Enable locate button since we now have coordinates.
+	const char* box_name = gtk_buildable_get_name(GTK_BUILDABLE(box));
+	if (strncmp(box_name, "sched_loc", 9) == 0) {
+		const int sched_num = box_name[9] - '0';
+		if (sched_num >= 0 && sched_num <= 7) {
+			ExultStudio* studio = ExultStudio::get_instance();
+			Update_locate_button(studio, sched_num, tx, ty);
+		}
+	}
 }
 
 /*
- *  One of the "Game" buttons to set location from current game position.
+ *  "Set current position" button - set location from current game position.
  */
 
 C_EXPORT void on_sched_loc_clicked(
-		GtkWidget* btn,    // One of the 'Game' buttons.
+		GtkWidget* btn,    // One of the 'Set current position' buttons.
 		gpointer   user_data) {
 	ignore_unused_variable_warning(user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
@@ -783,4 +809,126 @@ C_EXPORT void on_sched_loc_clicked(
 	} else {
 		studio->set_msg_callback(Game_loc_response, box);
 	}
+}
+
+/*
+ *  Callback for receiving clicked map coordinates for schedule location.
+ */
+static void Game_click_loc_response(
+		Exult_server::Msg_type id, const unsigned char* data, int datalen,
+		void* client) {
+	ignore_unused_variable_warning(datalen);
+	ExultStudio*  studio    = ExultStudio::get_instance();
+	GtkStatusbar* statusbar = GTK_STATUSBAR(studio->get_widget("npc_status"));
+	const int     ctx = gtk_statusbar_get_context_id(statusbar, "Npc Editor");
+
+	if (id == Exult_server::cancel) {
+		// User cancelled the click operation.
+		// Clear and hide statusbar, then re-enable buttons.
+		gtk_statusbar_remove_all(statusbar, ctx);
+		gtk_widget_set_visible(studio->get_widget("npc_status"), false);
+		studio->set_sensitive("npc_okay_btn", true);
+		studio->set_sensitive("npc_apply_btn", true);
+		studio->set_sensitive("npc_cancel_btn", true);
+		return;
+	}
+	if (id != Exult_server::get_user_click) {
+		return;
+	}
+	// Get box with loc. spin btns.
+	auto*     box = static_cast<GtkBox*>(client);
+	const int tx  = little_endian::Read2(data);
+	const int ty  = little_endian::Read2(data);
+	const int tz  = little_endian::Read2(data);
+	GList*    children
+			= g_list_first(gtk_container_get_children(GTK_CONTAINER(box)));
+	GList*     list = children;
+	GtkWidget* spin = GTK_WIDGET(list->data);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), tx);
+	list = g_list_next(list);
+	spin = GTK_WIDGET(list->data);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), ty);
+	list = g_list_next(list);
+	spin = GTK_WIDGET(list->data);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), tz);
+	g_list_free(children);
+
+	// Enable locate button since we now have coordinates.
+	const char* box_name = gtk_buildable_get_name(GTK_BUILDABLE(box));
+	if (strncmp(box_name, "sched_loc", 9) == 0) {
+		const int sched_num = box_name[9] - '0';
+		if (sched_num >= 0 && sched_num <= 7) {
+			Update_locate_button(studio, sched_num, tx, ty);
+		}
+	}
+
+	// Clear and hide statusbar, then re-enable buttons.
+	gtk_statusbar_remove_all(statusbar, ctx);
+	gtk_widget_set_visible(studio->get_widget("npc_status"), false);
+	studio->set_sensitive("npc_okay_btn", true);
+	studio->set_sensitive("npc_apply_btn", true);
+	studio->set_sensitive("npc_cancel_btn", true);
+}
+
+/*
+ *  "Set to click" button - wait for user to click in Exult and capture
+ * coordinates.
+ */
+
+C_EXPORT void on_sched_loc_click(
+		GtkWidget* btn,    // One of the 'Set to click' buttons.
+		gpointer   user_data) {
+	ignore_unused_variable_warning(user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	// Get location box.
+	GtkBox* box = GTK_BOX(gtk_widget_get_parent(btn));
+	// Send request for user click.
+	if (Send_data(studio->get_server_socket(), Exult_server::get_user_click)
+		== -1) {
+		cout << "Error sending message to server" << endl;
+	} else {
+		// Show status message and disable buttons while waiting.
+		GtkStatusbar* statusbar
+				= GTK_STATUSBAR(studio->get_widget("npc_status"));
+		const int ctx = gtk_statusbar_get_context_id(statusbar, "Npc Editor");
+		studio->set_statusbar(
+				"npc_status", ctx, "Click on map to set schedule position");
+		gtk_widget_set_visible(studio->get_widget("npc_status"), true);
+		studio->set_sensitive("npc_okay_btn", false);
+		studio->set_sensitive("npc_apply_btn", false);
+		studio->set_sensitive("npc_cancel_btn", false);
+		// Use waiting_for_server mechanism like NPC creation does.
+		studio->set_msg_callback(Game_click_loc_response, box);
+	}
+}
+
+/*
+ *  "Locate" button - center Exult view on the schedule location coordinates.
+ */
+
+C_EXPORT void on_sched_loc_locate(
+		GtkWidget* btn,    // One of the 'Locate' buttons.
+		gpointer   user_data) {
+	ignore_unused_variable_warning(user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	// Get location box.
+	GtkBox* box = GTK_BOX(gtk_widget_get_parent(btn));
+
+	// Read coordinates from spinbuttons.
+	GList* children
+			= g_list_first(gtk_container_get_children(GTK_CONTAINER(box)));
+	GList*     list = children;
+	GtkWidget* spin = GTK_WIDGET(list->data);
+	const int  tx   = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spin));
+	list            = g_list_next(list);
+	spin            = GTK_WIDGET(list->data);
+	const int ty    = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spin));
+	g_list_free(children);
+
+	// Send view_pos command to center on these coordinates.
+	unsigned char  data[Exult_server::maxlength];
+	unsigned char* ptr = &data[0];
+	little_endian::Write4(ptr, tx);
+	little_endian::Write4(ptr, ty);
+	studio->send_to_server(Exult_server::view_pos, data, ptr - data);
 }

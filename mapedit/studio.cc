@@ -3108,6 +3108,7 @@ void ExultStudio::read_from_server() {
 	case Exult_server::delete_terrain:
 	case Exult_server::locate_shape:
 	case Exult_server::game_pos:
+	case Exult_server::get_user_click:
 		if (waiting_for_server) {    // Send msg. to callback.
 			waiting_for_server(id, data, datalen, waiting_client);
 			waiting_for_server = nullptr;
