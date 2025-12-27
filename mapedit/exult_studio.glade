@@ -29916,6 +29916,49 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkFrame" id="cont_show_gump_frame">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">fill</property>
+                    <property name="valign">center</property>
+                    <property name="margin-start">0</property>
+                    <property name="margin-end">0</property>
+                    <property name="margin-top">1</property>
+                    <property name="margin-bottom">0</property>
+                    <property name="hexpand">False</property>
+                    <property name="vexpand">False</property>
+                    <property name="label-xalign">0</property>
+                    <child>
+                      <object class="GtkButton" id="cont_show_gump">
+                        <property name="label" translatable="yes">_Show Gump</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">fill</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">4</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-top">2</property>
+                        <property name="margin-bottom">2</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_cont_show_gump_clicked" swapped="no"/>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel" id="cont_show_gump_label">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Gump</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="position">1</property>
@@ -30238,28 +30281,6 @@
             <property name="orientation">horizontal</property>
             <property name="layout-style">start</property>
             <child>
-              <object class="GtkButton" id="cont_show_gump">
-                <property name="label" translatable="yes">_Show Gump</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="halign">fill</property>
-                <property name="valign">center</property>
-                <property name="margin-start">0</property>
-                <property name="margin-end">0</property>
-                <property name="margin-top">0</property>
-                <property name="margin-bottom">0</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">False</property>
-                <property name="use-underline">True</property>
-                <signal name="clicked" handler="on_cont_show_gump_clicked" swapped="no"/>
-              </object>
-              <packing>
-                <property name="position">0</property>
-                <property name="secondary">False</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkButton" id="cont_ok">
                 <property name="label">_OK</property>
                 <property name="visible">True</property>
@@ -30278,7 +30299,7 @@
                 <signal name="clicked" handler="on_cont_okay_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="position">0</property>
                 <property name="secondary">True</property>
               </packing>
             </child>
@@ -30301,7 +30322,7 @@
                 <signal name="clicked" handler="on_cont_apply_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">2</property>
+                <property name="position">1</property>
                 <property name="secondary">True</property>
               </packing>
             </child>
@@ -30324,7 +30345,7 @@
                 <signal name="clicked" handler="on_cont_cancel_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="position">3</property>
+                <property name="position">2</property>
                 <property name="secondary">True</property>
               </packing>
             </child>
