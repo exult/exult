@@ -101,6 +101,19 @@ C_EXPORT void on_npc_show_gump_clicked(GtkButton* btn, gpointer user_data) {
 }
 
 /*
+ *  Locate NPC in game.
+ */
+C_EXPORT void on_npc_locate_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	const short npc_num = studio->get_num_entry("npc_num_entry");
+	unsigned char  data[Exult_server::maxlength];
+	unsigned char* ptr = &data[0];
+	little_endian::Write2(ptr, npc_num);
+	studio->send_to_server(Exult_server::locate_npc, data, ptr - data);
+}
+
+/*
  *  Npc window's close button.
  */
 C_EXPORT gboolean on_npc_window_delete_event(
@@ -276,12 +289,14 @@ void ExultStudio::open_npc_window(
 		if (!init_npc_window(data, datalen)) {
 			return;
 		}
-		gtk_widget_set_visible(get_widget("npc_show_gump"), true);
+		set_sensitive("npc_show_gump", true);
+		set_sensitive("npc_locate_frame", true);
 		gtk_widget_set_visible(get_widget("npc_okay_btn"), true);
 		gtk_widget_set_visible(get_widget("npc_status"), false);
 	} else {
 		init_new_npc();
-		gtk_widget_set_visible(get_widget("npc_show_gump"), false);
+		set_sensitive("npc_show_gump", false);
+		set_sensitive("npc_locate_frame", false);
 		gtk_widget_set_visible(get_widget("npc_okay_btn"), false);
 		gtk_widget_set_visible(get_widget("npc_status"), true);
 	}
