@@ -215,10 +215,12 @@ void Cheat::toggle_map_editor() {
 			}
 			if (U7exists(app_path)) {
 				// Convert relative path to absolute path for --args -x
-				char* resolved_path = realpath(app_path.c_str(), nullptr);
-				if (resolved_path != nullptr) {
-					app_path = resolved_path;
-					free(resolved_path);
+				if (app_path.length() < PATH_MAX) {
+					char* resolved_path = realpath(app_path.c_str(), nullptr);
+					if (resolved_path != nullptr) {
+						app_path = resolved_path;
+						free(resolved_path);
+					}
 				}
 				data_path = app_path;
 				cmnd      = "open ";
