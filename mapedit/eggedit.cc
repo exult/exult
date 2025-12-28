@@ -46,11 +46,11 @@ class Egg_object;
  * warnings.
  */
 inline gpointer int_to_gpointer(int value) {
-	return reinterpret_cast<gpointer>(static_cast<glong>(value));
+	return reinterpret_cast<gpointer>(static_cast<intptr_t>(value));
 }
 
 inline int gpointer_to_int(gpointer ptr) {
-	return static_cast<int>(reinterpret_cast<glong>(ptr));
+	return static_cast<int>(reinterpret_cast<intptr_t>(ptr));
 }
 
 /*
