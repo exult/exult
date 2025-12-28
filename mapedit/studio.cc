@@ -3203,6 +3203,7 @@ void ExultStudio::read_from_server() {
  */
 bool ExultStudio::connect_to_server() {
 	if (!static_path) {
+		update_connect_button(false);
 		return false;    // No place to go.
 	}
 #ifndef _WIN32
@@ -3230,6 +3231,7 @@ bool ExultStudio::connect_to_server() {
 	// Check length to prevent buffer overflow
 	if (servename.length() >= sizeof(addr.sun_path)) {
 		cerr << "Server socket path too long: " << servename << endl;
+		update_connect_button(false);
 		return false;
 	}
 	strncpy(addr.sun_path, servename.c_str(), sizeof(addr.sun_path) - 1);
@@ -3238,6 +3240,7 @@ bool ExultStudio::connect_to_server() {
 	server_socket = socket(PF_LOCAL, SOCK_STREAM, 0);
 	if (server_socket < 0) {
 		perror("Failed to open map-editor socket");
+		update_connect_button(false);
 		return false;
 	}
 	// Set to be non-blocking.
@@ -3274,6 +3277,7 @@ bool ExultStudio::connect_to_server() {
 		> 0) {
 		server_input_tag = g_timeout_add(50, Read_from_server, this);
 	} else {
+		update_connect_button(false);
 		return false;
 	}
 #endif
