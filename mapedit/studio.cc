@@ -1041,6 +1041,10 @@ ExultStudio::~ExultStudio() {
 	config->set("config/estudio/main/height", h, true);
 	config->set("config/estudio/shape_scale", shape_scale, true);
 	config->set("config/estudio/shape_bilinear", shape_bilinear, true);
+	// Clean up server connection before deleting files.
+	if (server_socket >= 0 || server_input_tag >= 0) {
+		disconnect_from_server();
+	}
 	Free_text();
 	g_free(glade_path);
 	if (css_path) {
@@ -1118,12 +1122,6 @@ ExultStudio::~ExultStudio() {
 		gtk_widget_destroy(gameinfowin);
 	}
 	gameinfowin = nullptr;
-	if (server_input_tag >= 0) {
-		g_source_remove(server_input_tag);
-	}
-	if (server_socket >= 0) {
-		disconnect_from_server();
-	}
 	g_object_unref(G_OBJECT(app_xml));
 	g_free(static_path);
 	g_free(image_editor);
@@ -3291,11 +3289,19 @@ bool ExultStudio::connect_to_server() {
 }
 
 void ExultStudio::disconnect_from_server() {
+	// Remove the input callback first to prevent reads on closed socket
+	if (server_input_tag != -1) {
+		g_source_remove(server_input_tag);
+		server_input_tag = -1;
+	}
 #ifndef _WIN32
-	close(server_socket);
+	if (server_socket >= 0) {
+		close(server_socket);
+	}
 #else
 	Exult_server::disconnect_from_server();
 #endif
+	server_socket = -1;
 	update_connect_button(false);
 	update_play_button(false);
 	update_menu_items(false);
@@ -3463,8 +3469,6 @@ void ExultStudio::info_received(
 				"Expected ExultServer version %d, but got %d",
 				Exult_server::version, vers);
 		disconnect_from_server();
-		g_source_remove(server_input_tag);
-		server_socket = server_input_tag = -1;
 		return;
 	}
 	// Set controls to what Exult thinks.
