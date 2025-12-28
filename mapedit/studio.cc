@@ -156,6 +156,17 @@ static void Filelist_selection(GtkTreeView* treeview, GtkTreePath* path) {
 		studio->set_browser("Chunk Browser", studio->create_browser(text));
 		break;
 	case NpcsArchive:
+		// Check if connected to Exult
+		if (studio->get_server_socket() < 0) {
+			g_free(text);
+			// Select "Map Files" instead (path "1")
+			GtkTreePath* map_files_path = gtk_tree_path_new_from_string("1");
+			gtk_tree_view_set_cursor(treeview, map_files_path, nullptr, false);
+			gtk_tree_path_free(map_files_path);
+			EStudio::Alert(
+					"To view NPCs Exult Studio must be connected to Exult.");
+			return;
+		}
 		studio->set_browser("NPC Browser", studio->create_browser(text));
 		break;
 	case PaletteFile:
@@ -2709,6 +2720,19 @@ int ExultStudio::prompt(
 		// Make logo show to left.
 		gtk_box_reorder_child(GTK_BOX(hbox), draw, 0);
 	}
+	// Find the currently focused window to use as parent
+	GtkWindow* parent    = GTK_WINDOW(app);    // Default to main window
+	GList*     toplevels = gtk_window_list_toplevels();
+	for (GList* l = toplevels; l != nullptr; l = l->next) {
+		GtkWindow* win = GTK_WINDOW(l->data);
+		if (gtk_window_has_toplevel_focus(win)) {
+			parent = win;
+			break;
+		}
+	}
+	g_list_free(toplevels);
+	gtk_window_set_transient_for(GTK_WINDOW(dlg), parent);
+
 	gtk_label_set_text(GTK_LABEL(get_widget("prompt3_label")), msg);
 	set_button("prompt3_yes", choice0);
 	if (choice1) {
@@ -2725,9 +2749,10 @@ int ExultStudio::prompt(
 	}
 	prompt_choice = -1;
 	gtk_window_set_modal(GTK_WINDOW(dlg), true);
-	gtk_widget_set_visible(dlg, true);    // Should be modal.
-	while (prompt_choice == -1) {         // Spin.
-		gtk_main_iteration();             // (Blocks).
+	gtk_window_present(GTK_WINDOW(dlg));    // Make sure it's on top
+	gtk_widget_set_visible(dlg, true);      // Should be modal.
+	while (prompt_choice == -1) {           // Spin.
+		gtk_main_iteration();               // (Blocks).
 	}
 	gtk_widget_set_visible(dlg, false);
 	assert(prompt_choice >= 0 && prompt_choice <= 2);
