@@ -3008,10 +3008,17 @@ static gint Reconnect(gpointer data    // ->ExultStudio.
  *  Output: false if error sending (reported).
  */
 
+// Static flags to track error reporting
+static bool send_to_server_error_reported = false;
+static bool gamedat_socket_error_reported = false;
+
 bool ExultStudio::send_to_server(
 		Exult_server::Msg_type id, unsigned char* data, int datalen) {
 	if (Send_data(server_socket, id, data, datalen) == -1) {
-		cerr << "Error sending to server" << endl;
+		if (!send_to_server_error_reported) {
+			cerr << "Error sending to server" << endl;
+			send_to_server_error_reported = true;
+		}
 		return false;
 	}
 	return true;
@@ -3185,7 +3192,10 @@ bool ExultStudio::connect_to_server() {
 	struct stat       fs;
 	const std::string servename = get_system_path(EXULT_SERVER);
 	if (!U7exists(GAMEDAT) || (stat(servename.c_str(), &fs)) != 0) {
-		cout << "Can't find gamedat for socket" << endl;
+		if (!gamedat_socket_error_reported) {
+			cout << "Can't find gamedat for socket" << endl;
+			gamedat_socket_error_reported = true;
+		}
 		update_connect_button(false);
 		update_play_button(false);
 		return false;
@@ -3245,6 +3255,9 @@ bool ExultStudio::connect_to_server() {
 	}
 #endif
 	cout << "Connected to server" << endl;
+	// Reset error flags on successful connection.
+	send_to_server_error_reported = false;
+	gamedat_socket_error_reported = false;
 	send_to_server(Exult_server::info);    // Request version, etc.
 	set_edit_menu(false, false);           // For now, init. edit menu.
 	update_connect_button(true);
