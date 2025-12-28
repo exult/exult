@@ -260,6 +260,10 @@ public:
 		return server_socket;
 	}
 
+	bool is_server_connected() const {
+		return server_input_tag >= 0;
+	}
+
 	guint32 get_background_color() const {
 		return background_color;
 	}

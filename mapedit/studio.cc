@@ -157,7 +157,7 @@ static void Filelist_selection(GtkTreeView* treeview, GtkTreePath* path) {
 		break;
 	case NpcsArchive:
 		// Check if connected to Exult
-		if (studio->get_server_socket() < 0) {
+		if (!studio->is_server_connected()) {
 			g_free(text);
 			// Select "Map Files" instead (path "1")
 			GtkTreePath* map_files_path = gtk_tree_path_new_from_string("1");
@@ -446,7 +446,7 @@ void ExultStudio::on_connect_button_toggled(
 void ExultStudio::on_play_button_toggled(
 		GtkToggleButton* button, gpointer user_data) {
 	auto* studio = static_cast<ExultStudio*>(user_data);
-	if (studio->get_server_socket() < 0) {
+	if (!studio->is_server_connected()) {
 		g_signal_handlers_block_matched(
 				G_OBJECT(button), G_SIGNAL_MATCH_ID,
 				studio->play_button_signal_id, 0, nullptr, nullptr, nullptr);
