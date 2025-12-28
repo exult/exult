@@ -359,15 +359,17 @@ int ExultStudio::init_egg_window(unsigned char* data, int datalen) {
 		if (qual == 255) {
 			set_toggle("teleport_coord", true);
 			const int schunk = data1 >> 8;
-			const int tx = (schunk % 12) * c_tiles_per_schunk + (data2 & 0xff);
-			const int ty = (schunk / 12) * c_tiles_per_schunk + (data2 >> 8);
-			const int tz = data3 & 0xff;
-			set_entry("teleport_x", tx, true);
-			set_entry("teleport_y", ty, true);
-			set_entry("teleport_z", tz);
+			const int teleport_x
+					= (schunk % 12) * c_tiles_per_schunk + (data2 & 0xff);
+			const int teleport_y
+					= (schunk / 12) * c_tiles_per_schunk + (data2 >> 8);
+			const int teleport_z = data3 & 0xff;
+			set_entry("teleport_x", teleport_x, true);
+			set_entry("teleport_y", teleport_y, true);
+			set_entry("teleport_z", teleport_z);
 			set_spin("teleport_eggnum", 0, false);
 			// Update locate button state.
-			Update_teleport_locate_button(this, tx, ty);
+			Update_teleport_locate_button(this, teleport_x, teleport_y);
 		} else {    // Egg #.
 			set_toggle("teleport_coord", false);
 			set_entry("teleport_x", 0, false, false);

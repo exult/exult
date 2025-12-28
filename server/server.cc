@@ -715,14 +715,15 @@ static void Handle_client_message(
 		// Send back the tile coordinates and map number.
 		Game_map*      gmap   = gwin->get_map();
 		const int      mapnum = gmap ? gmap->get_num() : 0;
-		unsigned char  data[Exult_server::maxlength];
-		unsigned char* wptr = &data[0];
+		unsigned char  response_data[Exult_server::maxlength];
+		unsigned char* wptr = &response_data[0];
 		little_endian::Write2(wptr, tx);
 		little_endian::Write2(wptr, ty);
 		little_endian::Write2(wptr, lift);
 		little_endian::Write2(wptr, mapnum);
 		Exult_server::Send_data(
-				client_socket, Exult_server::get_user_click, data, wptr - data);
+				client_socket, Exult_server::get_user_click, response_data,
+				wptr - response_data);
 		break;
 	}
 	case Exult_server::locate_egg: {
@@ -736,8 +737,8 @@ static void Handle_client_message(
 		if (datalen < 2) {
 			break;    // Not enough data for quality value.
 		}
-		const unsigned char* ptr  = &data[0];
-		const int            qual = little_endian::Read2(ptr);
+		const unsigned char* egg_ptr = &data[0];
+		const int            qual    = little_endian::Read2(egg_ptr);
 		// Validate quality is in reasonable range (0-255 for egg numbers).
 		if (qual < 0 || qual > 255) {
 			break;
@@ -747,8 +748,8 @@ static void Handle_client_message(
 		int  origin_y       = -1;
 		bool use_constraint = false;
 		if (datalen >= 10) {    // 2 + 4 + 4 bytes.
-			origin_x       = little_endian::Read4(ptr);
-			origin_y       = little_endian::Read4(ptr);
+			origin_x       = little_endian::Read4(egg_ptr);
+			origin_y       = little_endian::Read4(egg_ptr);
 			use_constraint = true;
 		}
 		Game_map* gmap   = gwin->get_map();
@@ -805,11 +806,11 @@ static void Handle_client_message(
 		if (datalen < 14) {
 			break;    // Not enough data (4+4+4+2 bytes).
 		}
-		const unsigned char* ptr    = &data[0];
-		const int            tx     = little_endian::Read4(ptr);
-		const int            ty     = little_endian::Read4(ptr);
-		const int            tz     = little_endian::Read4(ptr);
-		const int            mapnum = little_endian::Read2(ptr);
+		const unsigned char* intermap_ptr = &data[0];
+		const int            tx           = little_endian::Read4(intermap_ptr);
+		const int            ty           = little_endian::Read4(intermap_ptr);
+		const int            tz           = little_endian::Read4(intermap_ptr);
+		const int            mapnum       = little_endian::Read2(intermap_ptr);
 
 		// Get current map number.
 		Game_map* current_map    = gwin->get_map();
