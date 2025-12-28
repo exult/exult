@@ -33,10 +33,10 @@
 #include "effects.h"
 #include "exult.h"
 #include "game.h"
-#include "istring.h"
 #include "gameclk.h"
 #include "gamemap.h"
 #include "gamewin.h"
+#include "istring.h"
 #include "miscinf.h"
 #include "mouse.h"
 #include "objiter.h"
@@ -122,14 +122,11 @@ void Cheat::init() {
 
 	std::string feeding;
 	config->value("config/gameplay/feeding", feeding, "manual");
-	if (!Pentagram::strcasecmp(feeding.c_str(),"disabled")) {
+	if (!Pentagram::strcasecmp(feeding.c_str(), "disabled")) {
 		food_use = FoodUse::Disabled;
-	}
-	else if (!Pentagram::strcasecmp(feeding.c_str(),"automatic")) {
+	} else if (!Pentagram::strcasecmp(feeding.c_str(), "automatic")) {
 		food_use = FoodUse ::Automatic;
-	}
-	else
-	{
+	} else {
 		food_use = FoodUse::Manual;
 	}
 }
@@ -210,10 +207,18 @@ void Cheat::toggle_map_editor() {
 #	endif
 			std::string data_path;
 #	ifdef MACOSX
-			// first try whether the Exult_Studio app bundle is installed
-			// and use its data folder
-			std::string app_path("/Applications/Exult_Studio.app");
+			// First try current folder, then /Applications for Exult_Studio app
+			// bundle and use its data folder
+			std::string app_path("./Exult_Studio.app");
+			if (!U7exists(app_path)) {
+				app_path = "/Applications/Exult_Studio.app";
+			}
 			if (U7exists(app_path)) {
+				// Convert relative path to absolute path for --args -x
+				char resolved_path[PATH_MAX];
+				if (realpath(app_path.c_str(), resolved_path) != nullptr) {
+					app_path = resolved_path;
+				}
 				data_path = app_path;
 				cmnd      = "open ";
 				cmnd += app_path;
