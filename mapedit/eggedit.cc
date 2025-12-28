@@ -42,6 +42,39 @@ using std::string;
 class Egg_object;
 
 /*
+ *  Helper functions to wrap GLib pointer conversions and avoid old-style cast
+ * warnings.
+ */
+inline gpointer int_to_gpointer(int value) {
+	return reinterpret_cast<gpointer>(static_cast<glong>(value));
+}
+
+inline int gpointer_to_int(gpointer ptr) {
+	return static_cast<int>(reinterpret_cast<glong>(ptr));
+}
+
+/*
+ *  Enable/disable locate button based on whether coordinates or egg number are
+ * valid.
+ */
+static void Update_teleport_locate_button(ExultStudio* studio, int tx, int ty) {
+	// Check if using coordinates or egg number mode.
+	const bool using_coords = studio->get_toggle("teleport_coord");
+	bool       has_location = false;
+
+	if (using_coords) {
+		// Enable if either x or y coordinate is non-zero.
+		has_location = (tx != 0 || ty != 0);
+	} else {
+		// Enable if egg number is non-zero.
+		const int egg_num = studio->get_spin("teleport_eggnum");
+		has_location      = (egg_num != 0);
+	}
+
+	studio->set_sensitive("teleport_locate", has_location);
+}
+
+/*
  *  Open egg window.
  */
 
@@ -111,6 +144,18 @@ C_EXPORT void on_teleport_coord_toggled(
 	studio->set_sensitive("teleport_y", on);
 	studio->set_sensitive("teleport_z", on);
 	studio->set_sensitive("teleport_eggnum", !on);
+
+	// Update locate button based on current mode and values.
+	if (on) {
+		// Coordinate mode - check if coordinates are valid.
+		const int tx = studio->get_num_entry("teleport_x");
+		const int ty = studio->get_num_entry("teleport_y");
+		Update_teleport_locate_button(studio, tx, ty);
+	} else {
+		// Egg number mode - check if egg number is valid.
+		Update_teleport_locate_button(studio, 0, 0);    // Will check egg_num
+														// internally.
+	}
 }
 
 /*
@@ -165,6 +210,11 @@ void ExultStudio::open_egg_window(
 			set_sensitive("teleport_z", true);
 			set_sensitive("teleport_eggnum", false);
 		}
+		// Disable locate and show egg buttons in creation mode.
+		set_sensitive("teleport_locate", false);
+		set_sensitive("teleport_show_egg", false);
+		set_sensitive("intermap_locate", false);
+		set_sensitive("intermap_show_egg", false);
 		// Reset audio track values to 0.
 		set_spin("juke_song", 0);
 		set_toggle("juke_cont", false);
@@ -221,6 +271,40 @@ int ExultStudio::init_egg_window(unsigned char* data, int datalen) {
 	}
 	// Store address with window.
 	g_object_set_data(G_OBJECT(eggwin), "user_data", addr);
+	// Store egg's map position.
+	g_object_set_data(G_OBJECT(eggwin), "egg_tx", int_to_gpointer(tx));
+	g_object_set_data(G_OBJECT(eggwin), "egg_ty", int_to_gpointer(ty));
+	g_object_set_data(G_OBJECT(eggwin), "egg_tz", int_to_gpointer(tz));
+	// Store egg's map number - request it from server.
+	g_object_set_data(G_OBJECT(eggwin), "egg_mapnum", int_to_gpointer(-1));
+	// Request current map number from server.
+	if (Send_data(get_server_socket(), Exult_server::game_pos) != -1) {
+		set_msg_callback(
+				[](Exult_server::Msg_type id, const unsigned char* data,
+				   int datalen, void* client) {
+					ignore_unused_variable_warning(datalen, client);
+					if (id != Exult_server::game_pos) {
+						return;
+					}
+					ExultStudio* studio = ExultStudio::get_instance();
+					GtkWidget*   eggwin = studio->get_widget("egg_window");
+					// Skip tx, ty, tz (3 * 2 bytes).
+					data += 6;
+					const int mapnum = little_endian::Read2(data);
+					// Store egg's map number.
+					g_object_set_data(
+							G_OBJECT(eggwin), "egg_mapnum",
+							int_to_gpointer(mapnum));
+					cout << "Egg is on map " << mapnum << endl;
+					// Enable "Show egg" button for intermap widget.
+					studio->set_sensitive("intermap_show_egg", true);
+				},
+				nullptr);
+	}
+	cout << "Editing egg at position (" << tx << ", " << ty << ", " << tz << ")"
+		 << endl;
+	// Enable the "Show egg" button since we have a valid egg position.
+	set_sensitive("teleport_show_egg", true);
 	GtkWidget* notebook = get_widget("notebook1");
 	if (notebook) {    // 1st is monster (1).
 		gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), type - 1);
@@ -275,20 +359,23 @@ int ExultStudio::init_egg_window(unsigned char* data, int datalen) {
 		if (qual == 255) {
 			set_toggle("teleport_coord", true);
 			const int schunk = data1 >> 8;
-			set_entry(
-					"teleport_x",
-					(schunk % 12) * c_tiles_per_schunk + (data2 & 0xff), true);
-			set_entry(
-					"teleport_y",
-					(schunk / 12) * c_tiles_per_schunk + (data2 >> 8), true);
-			set_entry("teleport_z", data3 & 0xff);
+			const int tx = (schunk % 12) * c_tiles_per_schunk + (data2 & 0xff);
+			const int ty = (schunk / 12) * c_tiles_per_schunk + (data2 >> 8);
+			const int tz = data3 & 0xff;
+			set_entry("teleport_x", tx, true);
+			set_entry("teleport_y", ty, true);
+			set_entry("teleport_z", tz);
 			set_spin("teleport_eggnum", 0, false);
+			// Update locate button state.
+			Update_teleport_locate_button(this, tx, ty);
 		} else {    // Egg #.
 			set_toggle("teleport_coord", false);
 			set_entry("teleport_x", 0, false, false);
 			set_entry("teleport_y", 0, false, false);
 			set_entry("teleport_z", 0, false, false);
 			set_spin("teleport_eggnum", qual);
+			// Disable locate button.
+			Update_teleport_locate_button(this, 0, 0);
 		}
 		break;
 	}
@@ -544,4 +631,350 @@ C_EXPORT void on_speech_play_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT void on_speech_stop_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	stop_egg_audio();
+}
+
+/*
+ *  Received game position for teleport.
+ */
+static void Teleport_loc_response(
+		Exult_server::Msg_type id, const unsigned char* data, int datalen,
+		void* client) {
+	ignore_unused_variable_warning(datalen, client);
+	if (id != Exult_server::game_pos) {
+		return;
+	}
+	ExultStudio* studio = ExultStudio::get_instance();
+	const int    tx     = little_endian::Read2(data);
+	const int    ty     = little_endian::Read2(data);
+	const int    tz     = little_endian::Read2(data);
+
+	studio->set_entry("teleport_x", tx, false, false);
+	studio->set_entry("teleport_y", ty, false, false);
+	studio->set_entry("teleport_z", tz, false, false);
+
+	// Enable locate button since we now have coordinates.
+	Update_teleport_locate_button(studio, tx, ty);
+}
+
+/*
+ *  "Set current position" button - set teleport location from current game
+ * position.
+ */
+C_EXPORT void on_teleport_loc_clicked(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (Send_data(studio->get_server_socket(), Exult_server::game_pos) == -1) {
+		cout << "Error sending message to server" << endl;
+	} else {
+		studio->set_msg_callback(Teleport_loc_response, nullptr);
+	}
+}
+
+/*
+ *  Callback for receiving clicked map coordinates for teleport location.
+ */
+static void Teleport_click_loc_response(
+		Exult_server::Msg_type id, const unsigned char* data, int datalen,
+		void* client) {
+	ignore_unused_variable_warning(datalen, client);
+	ExultStudio*  studio    = ExultStudio::get_instance();
+	GtkStatusbar* statusbar = GTK_STATUSBAR(studio->get_widget("egg_status"));
+	const int     ctx = gtk_statusbar_get_context_id(statusbar, "Egg Editor");
+
+	if (id == Exult_server::cancel) {
+		// User cancelled the click operation.
+		// Clear and hide statusbar, then re-enable buttons.
+		gtk_statusbar_remove_all(statusbar, ctx);
+		gtk_widget_set_visible(studio->get_widget("egg_status"), false);
+		studio->set_sensitive("egg_okay_btn", true);
+		studio->set_sensitive("egg_apply_btn", true);
+		studio->set_sensitive("egg_cancel_btn", true);
+		return;
+	}
+	if (id != Exult_server::get_user_click) {
+		return;
+	}
+
+	const int tx = little_endian::Read2(data);
+	const int ty = little_endian::Read2(data);
+	const int tz = little_endian::Read2(data);
+
+	studio->set_entry("teleport_x", tx, false, false);
+	studio->set_entry("teleport_y", ty, false, false);
+	studio->set_entry("teleport_z", tz, false, false);
+
+	// Enable locate button since we now have coordinates.
+	Update_teleport_locate_button(studio, tx, ty);
+
+	// Clear and hide statusbar, then re-enable buttons.
+	gtk_statusbar_remove_all(statusbar, ctx);
+	gtk_widget_set_visible(studio->get_widget("egg_status"), false);
+	studio->set_sensitive("egg_okay_btn", true);
+	studio->set_sensitive("egg_apply_btn", true);
+	studio->set_sensitive("egg_cancel_btn", true);
+}
+
+/*
+ *  "Set in game" button - wait for user to click in Exult and capture
+ * coordinates.
+ */
+C_EXPORT void on_teleport_loc_click(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	// Send request for user click.
+	if (Send_data(studio->get_server_socket(), Exult_server::get_user_click)
+		== -1) {
+		cout << "Error sending message to server" << endl;
+	} else {
+		// Show status message and disable buttons while waiting.
+		GtkStatusbar* statusbar
+				= GTK_STATUSBAR(studio->get_widget("egg_status"));
+		const int ctx = gtk_statusbar_get_context_id(statusbar, "Egg Editor");
+		studio->set_statusbar(
+				"egg_status", ctx, "Click on map to set teleport position");
+		gtk_widget_set_visible(studio->get_widget("egg_status"), true);
+		studio->set_sensitive("egg_okay_btn", false);
+		studio->set_sensitive("egg_apply_btn", false);
+		studio->set_sensitive("egg_cancel_btn", false);
+		// Use waiting_for_server mechanism like NPC creation does.
+		studio->set_msg_callback(Teleport_click_loc_response, nullptr);
+	}
+}
+
+/*
+ *  "Show egg" button - center Exult view on the egg's original position.
+ */
+C_EXPORT void on_teleport_show_egg(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	GtkWidget*   eggwin = studio->get_widget("egg_window");
+
+	// Retrieve the egg's stored position.
+	const int tx
+			= gpointer_to_int(g_object_get_data(G_OBJECT(eggwin), "egg_tx"));
+	const int ty
+			= gpointer_to_int(g_object_get_data(G_OBJECT(eggwin), "egg_ty"));
+	const int tz
+			= gpointer_to_int(g_object_get_data(G_OBJECT(eggwin), "egg_tz"));
+
+	// Send view_pos command with tz to always trigger centering.
+	unsigned char  data[Exult_server::maxlength];
+	unsigned char* ptr = &data[0];
+	if (ptr + 12 > data + Exult_server::maxlength) {
+		return;    // Safety check, should not happen.
+	}
+	little_endian::Write4(ptr, tx);
+	little_endian::Write4(ptr, ty);
+	little_endian::Write4(ptr, tz);
+	studio->send_to_server(Exult_server::view_pos, data, ptr - data);
+}
+
+/*
+ *  "Locate" button - center Exult view on the teleport location coordinates or
+ * find the path egg.
+ */
+C_EXPORT void on_teleport_loc_locate(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+
+	const bool using_coords = studio->get_toggle("teleport_coord");
+
+	if (using_coords) {
+		// Read coordinates from entry fields and center view on them.
+		const int tx = studio->get_num_entry("teleport_x");
+		const int ty = studio->get_num_entry("teleport_y");
+
+		// Send view_pos command to center on these coordinates.
+		unsigned char  data[Exult_server::maxlength];
+		unsigned char* ptr = &data[0];
+		// Ensure buffer has space for two 4-byte values (8 bytes total).
+		if (ptr + 8 > data + Exult_server::maxlength) {
+			return;    // Safety check, should not happen.
+		}
+		little_endian::Write4(ptr, tx);
+		little_endian::Write4(ptr, ty);
+		studio->send_to_server(Exult_server::view_pos, data, ptr - data);
+	} else {
+		// Using egg number - send locate_egg command with the egg path number.
+		const int egg_num = studio->get_spin("teleport_eggnum");
+		// Validate egg number is in valid range (0-255).
+		if (egg_num < 0 || egg_num > 255) {
+			return;    // Invalid egg number.
+		}
+		// Get the egg's origin position for distance constraint.
+		GtkWidget* eggwin   = studio->get_widget("egg_window");
+		const int  origin_x = gpointer_to_int(
+                g_object_get_data(G_OBJECT(eggwin), "egg_tx"));
+		const int origin_y = gpointer_to_int(
+				g_object_get_data(G_OBJECT(eggwin), "egg_ty"));
+
+		unsigned char  data[Exult_server::maxlength];
+		unsigned char* ptr = &data[0];
+		// Ensure buffer has space for 2-byte egg_num + two 4-byte coordinates.
+		if (ptr + 10 > data + Exult_server::maxlength) {
+			return;    // Safety check, should not happen.
+		}
+		little_endian::Write2(ptr, egg_num);
+		little_endian::Write4(ptr, origin_x);
+		little_endian::Write4(ptr, origin_y);
+		studio->send_to_server(Exult_server::locate_egg, data, ptr - data);
+	}
+}
+
+/*
+ *  "Set current position" button for intermap - set intermap location from
+ * current game position.
+ */
+C_EXPORT void on_intermap_set_pos(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (Send_data(studio->get_server_socket(), Exult_server::game_pos) == -1) {
+		cout << "Error sending message to server" << endl;
+	} else {
+		studio->set_msg_callback(
+				[](Exult_server::Msg_type id, const unsigned char* data,
+				   int datalen, void* client) {
+					ignore_unused_variable_warning(datalen, client);
+					if (id != Exult_server::game_pos) {
+						return;
+					}
+					ExultStudio* studio = ExultStudio::get_instance();
+					const int    tx     = little_endian::Read2(data);
+					const int    ty     = little_endian::Read2(data);
+					const int    tz     = little_endian::Read2(data);
+					const int    mapnum = little_endian::Read2(data);
+
+					studio->set_entry("intermap_x", tx, false, false);
+					studio->set_entry("intermap_y", ty, false, false);
+					studio->set_entry("intermap_z", tz, false, false);
+					studio->set_spin("intermap_mapnum", mapnum);
+				},
+				nullptr);
+	}
+}
+
+/*
+ *  "Set in game" button for intermap - wait for user to click in Exult and
+ * capture coordinates.
+ */
+C_EXPORT void on_intermap_set_ingame(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (Send_data(studio->get_server_socket(), Exult_server::get_user_click)
+		== -1) {
+		cout << "Error sending message to server" << endl;
+	} else {
+		GtkStatusbar* statusbar
+				= GTK_STATUSBAR(studio->get_widget("egg_status"));
+		const int ctx = gtk_statusbar_get_context_id(statusbar, "Egg Editor");
+		studio->set_statusbar(
+				"egg_status", ctx, "Click on map to set intermap position");
+		gtk_widget_set_visible(studio->get_widget("egg_status"), true);
+		studio->set_sensitive("egg_okay_btn", false);
+		studio->set_sensitive("egg_apply_btn", false);
+		studio->set_sensitive("egg_cancel_btn", false);
+		studio->set_msg_callback(
+				[](Exult_server::Msg_type id, const unsigned char* data,
+				   int datalen, void* client) {
+					ignore_unused_variable_warning(datalen, client);
+					ExultStudio*  studio = ExultStudio::get_instance();
+					GtkStatusbar* statusbar
+							= GTK_STATUSBAR(studio->get_widget("egg_status"));
+					const int ctx = gtk_statusbar_get_context_id(
+							statusbar, "Egg Editor");
+
+					if (id == Exult_server::cancel) {
+						gtk_statusbar_remove_all(statusbar, ctx);
+						gtk_widget_set_visible(
+								studio->get_widget("egg_status"), false);
+						studio->set_sensitive("egg_okay_btn", true);
+						studio->set_sensitive("egg_apply_btn", true);
+						studio->set_sensitive("egg_cancel_btn", true);
+						return;
+					}
+					if (id != Exult_server::get_user_click) {
+						return;
+					}
+
+					const int tx     = little_endian::Read2(data);
+					const int ty     = little_endian::Read2(data);
+					const int tz     = little_endian::Read2(data);
+					const int mapnum = little_endian::Read2(data);
+
+					studio->set_entry("intermap_x", tx, false, false);
+					studio->set_entry("intermap_y", ty, false, false);
+					studio->set_entry("intermap_z", tz, false, false);
+					studio->set_spin("intermap_mapnum", mapnum);
+
+					gtk_statusbar_remove_all(statusbar, ctx);
+					gtk_widget_set_visible(
+							studio->get_widget("egg_status"), false);
+					studio->set_sensitive("egg_okay_btn", true);
+					studio->set_sensitive("egg_apply_btn", true);
+					studio->set_sensitive("egg_cancel_btn", true);
+				},
+				nullptr);
+	}
+}
+
+/*
+ *  "Locate" button for intermap - center view on intermap destination,
+ * switching maps if needed.
+ */
+C_EXPORT void on_intermap_locate(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+
+	// Read coordinates and map number from entry fields.
+	const int tx     = studio->get_num_entry("intermap_x");
+	const int ty     = studio->get_num_entry("intermap_y");
+	const int tz     = studio->get_num_entry("intermap_z");
+	const int mapnum = studio->get_spin("intermap_mapnum");
+
+	// Don't overwrite egg_mapnum here - it should remain the egg's original
+	// map, not the destination map.
+
+	// Send locate_intermap command with coordinates and map number.
+	unsigned char  data[Exult_server::maxlength];
+	unsigned char* ptr = &data[0];
+	if (ptr + 14 > data + Exult_server::maxlength) {
+		return;    // Safety check.
+	}
+	little_endian::Write4(ptr, tx);
+	little_endian::Write4(ptr, ty);
+	little_endian::Write4(ptr, tz);
+	little_endian::Write2(ptr, mapnum);
+	studio->send_to_server(Exult_server::locate_intermap, data, ptr - data);
+}
+
+/*
+ *  "Show egg" button for intermap - center view on egg's original position,
+ * switching maps if needed.
+ */
+C_EXPORT void on_intermap_show_egg(GtkButton* btn, gpointer user_data) {
+	ignore_unused_variable_warning(btn, user_data);
+	ExultStudio* studio = ExultStudio::get_instance();
+	GtkWidget*   eggwin = studio->get_widget("egg_window");
+
+	// Retrieve the egg's stored position and map number.
+	const int tx
+			= gpointer_to_int(g_object_get_data(G_OBJECT(eggwin), "egg_tx"));
+	const int ty
+			= gpointer_to_int(g_object_get_data(G_OBJECT(eggwin), "egg_ty"));
+	const int tz
+			= gpointer_to_int(g_object_get_data(G_OBJECT(eggwin), "egg_tz"));
+	const int mapnum = gpointer_to_int(
+			g_object_get_data(G_OBJECT(eggwin), "egg_mapnum"));
+
+	// Send locate_intermap command with egg's coordinates and map number.
+	unsigned char  data[Exult_server::maxlength];
+	unsigned char* ptr = &data[0];
+	if (ptr + 14 > data + Exult_server::maxlength) {
+		return;    // Safety check.
+	}
+	little_endian::Write4(ptr, tx);
+	little_endian::Write4(ptr, ty);
+	little_endian::Write4(ptr, tz);
+	little_endian::Write2(ptr, mapnum);
+	studio->send_to_server(Exult_server::locate_intermap, data, ptr - data);
 }

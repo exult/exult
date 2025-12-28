@@ -43,6 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	include "exult.h"
 #	include "gamemap.h"
 #	include "gamewin.h"
+#	include "objiter.h"
 #	include "objserial.h"
 #	include "servemsg.h"
 #	include "gamerend.h"
@@ -382,12 +383,15 @@ static void Handle_client_message(
 		int tz = 0;
 		if (datalen >= 12) {    // 4 bytes tx + 4 bytes ty + 4 bytes tz
 			tz = little_endian::Read4(ptr);
-		}
-		// Only set if chunk changed.
-		if (tx / c_tiles_per_chunk != gwin->get_scrolltx() / c_tiles_per_chunk
-			|| ty / c_tiles_per_chunk
-					   != gwin->get_scrollty() / c_tiles_per_chunk) {
-			// Use center_view to properly center on the coordinates.
+			// When tz is provided, always center (used by "show egg" button).
+			const Tile_coord coord(tx, ty, tz);
+			gwin->center_view(coord);
+		} else if (
+				tx / c_tiles_per_chunk
+						!= gwin->get_scrolltx() / c_tiles_per_chunk
+				|| ty / c_tiles_per_chunk
+						   != gwin->get_scrollty() / c_tiles_per_chunk) {
+			// Only set if chunk changed (backward compatibility).
 			const Tile_coord coord(tx, ty, tz);
 			gwin->center_view(coord);
 		}
@@ -523,10 +527,13 @@ static void Handle_client_message(
 		break;
 	case Exult_server::game_pos: {
 		const Tile_coord pos  = gwin->get_main_actor()->get_tile();
-		unsigned char*   wptr = &data[0];
+		Game_map*        gmap = gwin->get_map();
+		const int mapnum = gmap ? gmap->get_num() : 0;    // Current map number.
+		unsigned char* wptr = &data[0];
 		little_endian::Write2(wptr, pos.tx);
 		little_endian::Write2(wptr, pos.ty);
 		little_endian::Write2(wptr, pos.tz);
+		little_endian::Write2(wptr, mapnum);
 		Exult_server::Send_data(
 				client_socket, Exult_server::game_pos, data, wptr - data);
 		break;
@@ -705,14 +712,118 @@ static void Handle_client_message(
 		// Wrap coordinates.
 		tx = (tx + c_num_tiles) % c_num_tiles;
 		ty = (ty + c_num_tiles) % c_num_tiles;
-		// Send back the tile coordinates.
+		// Send back the tile coordinates and map number.
+		Game_map*      gmap   = gwin->get_map();
+		const int      mapnum = gmap ? gmap->get_num() : 0;
 		unsigned char  data[Exult_server::maxlength];
 		unsigned char* wptr = &data[0];
 		little_endian::Write2(wptr, tx);
 		little_endian::Write2(wptr, ty);
 		little_endian::Write2(wptr, lift);
+		little_endian::Write2(wptr, mapnum);
 		Exult_server::Send_data(
 				client_socket, Exult_server::get_user_click, data, wptr - data);
+		break;
+	}
+	case Exult_server::locate_egg: {
+		// Locate path egg by quality/path number and center view on it.
+		// Uses the same search criteria as teleport eggs in the game:
+		// - Shape 275 (egg shape)
+		// - Frame 6 (path egg marker)
+		// - Type 9 (path egg type)
+		// - Matching quality
+		// - Within 256 tiles of origin (if provided)
+		if (datalen < 2) {
+			break;    // Not enough data for quality value.
+		}
+		const unsigned char* ptr  = &data[0];
+		const int            qual = little_endian::Read2(ptr);
+		// Validate quality is in reasonable range (0-255 for egg numbers).
+		if (qual < 0 || qual > 255) {
+			break;
+		}
+		// Check if origin coordinates are provided for distance constraint.
+		int  origin_x       = -1;
+		int  origin_y       = -1;
+		bool use_constraint = false;
+		if (datalen >= 10) {    // 2 + 4 + 4 bytes.
+			origin_x       = little_endian::Read4(ptr);
+			origin_y       = little_endian::Read4(ptr);
+			use_constraint = true;
+		}
+		Game_map* gmap   = gwin->get_map();
+		const int num_cx = c_num_chunks;
+		const int num_cy = c_num_chunks;
+		bool      found  = false;
+
+		// Search through all chunks for a path egg with matching quality.
+		for (int cy = 0; cy < num_cy && !found; cy++) {
+			for (int cx = 0; cx < num_cx && !found; cx++) {
+				Map_chunk* chunk = gmap->get_chunk_safely(cx, cy);
+				if (!chunk) {
+					continue;
+				}
+				Object_iterator next(chunk->get_objects());
+				Game_object*    obj;
+				while ((obj = next.get_next()) != nullptr) {
+					if (obj->is_egg()) {
+						Egg_object* egg = obj->as_egg();
+						if (!egg) {
+							continue;    // Safety check, should not happen.
+						}
+						// Match criteria: shape 275, frame 6, type 9 (path),
+						// quality matches.
+						if (egg->get_shapenum() == 275
+							&& egg->get_framenum() == 6
+							&& egg->get_type() == Egg_object::path
+							&& egg->get_quality() == qual) {
+							// Check distance constraint if origin provided.
+							if (use_constraint) {
+								const Tile_coord egg_pos = egg->get_tile();
+								const int        dx   = egg_pos.tx - origin_x;
+								const int        dy   = egg_pos.ty - origin_y;
+								const int        dist = dx * dx + dy * dy;
+								// 256 tiles = 65536 squared distance.
+								if (dist > 65536) {
+									continue;    // Too far, keep searching.
+								}
+							}
+							// Found it - center view on this egg.
+							gwin->center_view(egg->get_tile());
+							found = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+		break;
+	}
+	case Exult_server::locate_intermap: {
+		// Locate intermap destination by coordinates and map number.
+		// Switches maps if necessary, then centers view on coordinates.
+		if (datalen < 14) {
+			break;    // Not enough data (4+4+4+2 bytes).
+		}
+		const unsigned char* ptr    = &data[0];
+		const int            tx     = little_endian::Read4(ptr);
+		const int            ty     = little_endian::Read4(ptr);
+		const int            tz     = little_endian::Read4(ptr);
+		const int            mapnum = little_endian::Read2(ptr);
+
+		// Get current map number.
+		Game_map* current_map    = gwin->get_map();
+		const int current_mapnum = current_map ? current_map->get_num() : 0;
+
+		// Switch maps if needed.
+		if (mapnum != current_mapnum) {
+			const Tile_coord pos = gwin->get_main_actor()->get_tile();
+			gwin->teleport_party(pos, true, mapnum);
+		}
+
+		// Center view on the coordinates.
+		const Tile_coord coord(tx, ty, tz);
+		gwin->center_view(coord);
 		break;
 	}
 	case Exult_server::usecode_debugging:

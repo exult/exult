@@ -100,6 +100,8 @@ namespace Exult_server {
 		stop_audio         = 51,    // Stop all audio playback.
 		clear_selection    = 52,    // Clear current selection.
 		get_user_click     = 53,    // Request map click, returns tile coords.
+		locate_egg         = 54,    // Locate egg by quality/path number.
+		locate_intermap    = 55,    // Locate intermap destination (x,y,z,map).
 		usecode_debugging  = 128
 	};
 

@@ -5366,6 +5366,28 @@
                 <property name="vexpand">False</property>
                 <property name="orientation">vertical</property>
                 <child>
+                  <object class="GtkCheckButton" id="teleport_coord">
+                    <property name="label" translatable="yes">Use Coordinates</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="halign">start</property>
+                    <property name="valign">center</property>
+                    <property name="margin-start">0</property>
+                    <property name="margin-end">0</property>
+                    <property name="margin-top">0</property>
+                    <property name="margin-bottom">2</property>
+                    <property name="hexpand">False</property>
+                    <property name="vexpand">False</property>
+                    <property name="use-underline">True</property>
+                    <property name="draw-indicator">True</property>
+                    <signal name="toggled" handler="on_teleport_coord_toggled" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkFrame" id="frame22">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -5581,22 +5603,61 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="teleport_coord">
-                            <property name="label" translatable="yes">Use&#10;Coordinates</property>
+                          <object class="GtkBox" id="teleport_button_box">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">False</property>
-                            <property name="halign">center</property>
-                            <property name="valign">center</property>
-                            <property name="margin-start">2</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="valign">start</property>
+                            <property name="margin-start">4</property>
                             <property name="margin-end">0</property>
                             <property name="margin-top">0</property>
                             <property name="margin-bottom">0</property>
                             <property name="hexpand">False</property>
                             <property name="vexpand">False</property>
-                            <property name="use-underline">True</property>
-                            <property name="draw-indicator">True</property>
-                            <signal name="toggled" handler="on_teleport_coord_toggled" swapped="no"/>
+                            <property name="orientation">horizontal</property>
+                            <property name="spacing">2</property>
+                            <child>
+                              <object class="GtkButton" id="teleport_current">
+                                <property name="label" translatable="yes">Set current position</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">False</property>
+                                <property name="halign">center</property>
+                                <property name="valign">center</property>
+                                <property name="margin-start">0</property>
+                                <property name="margin-end">0</property>
+                                <property name="margin-top">0</property>
+                                <property name="margin-bottom">0</property>
+                                <property name="hexpand">False</property>
+                                <property name="vexpand">False</property>
+                                <property name="use-underline">True</property>
+                                <signal name="clicked" handler="on_teleport_loc_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="teleport_click">
+                                <property name="label" translatable="yes">Set in game</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">False</property>
+                                <property name="halign">center</property>
+                                <property name="valign">center</property>
+                                <property name="margin-start">0</property>
+                                <property name="margin-end">0</property>
+                                <property name="margin-top">0</property>
+                                <property name="margin-bottom">0</property>
+                                <property name="hexpand">False</property>
+                                <property name="vexpand">False</property>
+                                <property name="use-underline">True</property>
+                                <signal name="clicked" handler="on_teleport_loc_click" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
                             <property name="position">1</property>
@@ -5613,7 +5674,7 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
@@ -5656,7 +5717,62 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="teleport_locate_box">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="orientation">horizontal</property>
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkButton" id="teleport_locate">
+                        <property name="label" translatable="yes">Show target</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">0</property>
+                        <property name="margin-end">0</property>
+                        <property name="margin-top">2</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_teleport_loc_locate" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="teleport_show_egg">
+                        <property name="label" translatable="yes">Show egg</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">0</property>
+                        <property name="margin-end">0</property>
+                        <property name="margin-top">2</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_teleport_show_egg" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">3</property>
                   </packing>
                 </child>
               </object>
@@ -6143,6 +6259,67 @@
                             <property name="position">0</property>
                           </packing>
                         </child>
+                        <child>
+                          <object class="GtkBox" id="intermap_button_box_inline">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="valign">start</property>
+                            <property name="margin-start">4</property>
+                            <property name="margin-end">0</property>
+                            <property name="margin-top">0</property>
+                            <property name="margin-bottom">0</property>
+                            <property name="hexpand">False</property>
+                            <property name="vexpand">False</property>
+                            <property name="orientation">horizontal</property>
+                            <property name="spacing">2</property>
+                            <child>
+                              <object class="GtkButton" id="intermap_set_pos">
+                                <property name="label" translatable="yes">Set current position</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">False</property>
+                                <property name="halign">center</property>
+                                <property name="valign">center</property>
+                                <property name="margin-start">0</property>
+                                <property name="margin-end">0</property>
+                                <property name="margin-top">0</property>
+                                <property name="margin-bottom">0</property>
+                                <property name="hexpand">False</property>
+                                <property name="vexpand">False</property>
+                                <property name="use-underline">True</property>
+                                <signal name="clicked" handler="on_intermap_set_pos" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="intermap_set_ingame">
+                                <property name="label" translatable="yes">Set in game</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">False</property>
+                                <property name="halign">center</property>
+                                <property name="valign">center</property>
+                                <property name="margin-start">0</property>
+                                <property name="margin-end">0</property>
+                                <property name="margin-top">0</property>
+                                <property name="margin-bottom">0</property>
+                                <property name="hexpand">False</property>
+                                <property name="vexpand">False</property>
+                                <property name="use-underline">True</property>
+                                <signal name="clicked" handler="on_intermap_set_ingame" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </object>
                     </child>
                     <child type="label">
@@ -6198,6 +6375,56 @@
                   </object>
                   <packing>
                     <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="intermap_locate_box">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="orientation">horizontal</property>
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkButton" id="intermap_locate">
+                        <property name="label" translatable="yes">Show target</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">0</property>
+                        <property name="margin-end">0</property>
+                        <property name="margin-top">2</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_intermap_locate" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="intermap_show_egg">
+                        <property name="label" translatable="yes">Show egg</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">0</property>
+                        <property name="margin-end">0</property>
+                        <property name="margin-top">2</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="use-underline">True</property>
+                        <signal name="clicked" handler="on_intermap_show_egg" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
