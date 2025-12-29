@@ -2740,8 +2740,8 @@ int ExultStudio::prompt(
 	GList*     toplevels = gtk_window_list_toplevels();
 	for (GList* l = toplevels; l != nullptr; l = l->next) {
 		GtkWindow* win = GTK_WINDOW(l->data);
-		// Don't use the dialog itself as parent, and check for focus
-		if (win != GTK_WINDOW(dlg) && gtk_window_has_toplevel_focus(win)) {
+		// Don't use the dialog itself as parent, and check for active window
+		if (win != GTK_WINDOW(dlg) && gtk_window_is_active(win)) {
 			parent = win;
 			break;
 		}
