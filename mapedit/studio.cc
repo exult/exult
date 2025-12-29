@@ -3204,6 +3204,7 @@ void ExultStudio::read_from_server() {
 bool ExultStudio::connect_to_server() {
 	if (!static_path) {
 		update_connect_button(false);
+		update_play_button(false);
 		return false;    // No place to go.
 	}
 #ifndef _WIN32
@@ -3232,6 +3233,7 @@ bool ExultStudio::connect_to_server() {
 	if (servename.length() >= sizeof(addr.sun_path)) {
 		cerr << "Server socket path too long: " << servename << endl;
 		update_connect_button(false);
+		update_play_button(false);
 		return false;
 	}
 	strncpy(addr.sun_path, servename.c_str(), sizeof(addr.sun_path) - 1);
@@ -3241,6 +3243,7 @@ bool ExultStudio::connect_to_server() {
 	if (server_socket < 0) {
 		perror("Failed to open map-editor socket");
 		update_connect_button(false);
+		update_play_button(false);
 		return false;
 	}
 	// Set to be non-blocking.
@@ -3254,6 +3257,7 @@ bool ExultStudio::connect_to_server() {
 		close(server_socket);
 		server_socket = -1;
 		update_connect_button(false);
+		update_play_button(false);
 		return false;
 	}
 	GIOChannel* gio  = g_io_channel_unix_new(server_socket);
@@ -3278,6 +3282,7 @@ bool ExultStudio::connect_to_server() {
 		server_input_tag = g_timeout_add(50, Read_from_server, this);
 	} else {
 		update_connect_button(false);
+		update_play_button(false);
 		return false;
 	}
 #endif
