@@ -1291,9 +1291,11 @@ void ExultStudio::create_new_game(const char* dir    // Directory for new game.
 	d                       = gameconfig + "/path";
 	config->set(d.c_str(), dirstr, false);
 	d = gameconfig + "/editing";    // We are editing.
-	config->set(d.c_str(), "yes", true);
+	config->set(d.c_str(), "yes", false);
 	d = gameconfig + "/title";
 	config->set(d.c_str(), gamestr, false);
+	// Write config to disk before loading the game
+	config->write_back();
 	string esdir;    // Get dir. for new files.
 	config->value("config/disk/data_path", esdir, EXULT_DATADIR);
 	esdir += "/estudio/new";
@@ -1317,6 +1319,10 @@ void ExultStudio::create_new_game(const char* dir    // Directory for new game.
 	// Add new game to master list.
 	gamemanager->add_game(gamestr, gamestr);
 	set_game_path(gamestr);    // Open as current game.
+	// Process any pending GTK events after loading game
+	while (gtk_events_pending()) {
+		gtk_main_iteration();
+	}
 	write_shape_info(true);    // Create initial .dat files.
 }
 
@@ -2178,15 +2184,26 @@ void ExultStudio::write_shape_info(bool force    // If set, always write.
 ) {
 	if ((force || shape_info_modified) && vgafile) {
 		auto* svga = static_cast<Shapes_vga_file*>(vgafile->get_ifile());
-		// Make sure data's been read in.
-		svga->read_info(game_type, true);
+
+		// Check if shape info files exist before trying to read them
+		const string patch_path  = get_system_path("<PATCH>");
+		const string tfa_file    = patch_path + "/tfa.dat";
+		const bool   files_exist = U7exists(tfa_file);
+
+		if (files_exist) {
+			// Make sure data's been read in.
+			svga->read_info(game_type, true);
+		}
+
 		svga->write_info(game_type);
-		// Tell Exult to reload.
-		unsigned char  buf[Exult_server::maxlength];
-		unsigned char* ptr    = &buf[0];
-		ExultStudio*   studio = ExultStudio::get_instance();
-		studio->send_to_server(
-				Exult_server::reload_shapes_info, buf, ptr - buf);
+		// Tell Exult to reload (only if connected).
+		if (is_server_connected()) {
+			unsigned char  buf[Exult_server::maxlength];
+			unsigned char* ptr    = &buf[0];
+			ExultStudio*   studio = ExultStudio::get_instance();
+			studio->send_to_server(
+					Exult_server::reload_shapes_info, buf, ptr - buf);
+		}
 	}
 	shape_info_modified = false;
 	if (force || shape_names_modified) {
@@ -2723,7 +2740,8 @@ int ExultStudio::prompt(
 	GList*     toplevels = gtk_window_list_toplevels();
 	for (GList* l = toplevels; l != nullptr; l = l->next) {
 		GtkWindow* win = GTK_WINDOW(l->data);
-		if (gtk_window_has_toplevel_focus(win)) {
+		// Don't use the dialog itself as parent, and check for focus
+		if (win != GTK_WINDOW(dlg) && gtk_window_has_toplevel_focus(win)) {
 			parent = win;
 			break;
 		}
