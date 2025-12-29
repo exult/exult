@@ -31,6 +31,7 @@
 #include "chunks.h"
 #include "drag.h"
 #include "effects.h"
+#include "egg.h"
 #include "exult.h"
 #include "game.h"
 #include "gameclk.h"
@@ -856,9 +857,16 @@ void Cheat::cut(bool copy) {
 		Game_object*       obj = it.get();
 		const Tile_coord   t   = obj->get_outermost()->get_tile();
 		if (copy) {
-			// TEST+++++REALLY want a 'clone()'.
-			newobj = gwin->get_map()->create_ireg_object(
-					obj->get_shapenum(), obj->get_framenum());
+			// Check if this is an egg and clone it properly
+			Egg_object* egg = obj->as_egg();
+			if (egg) {
+				// Clone the egg with all its data
+				newobj = egg->clone_egg(0, 0, 0);
+			} else {
+				// Regular object - create new ireg object
+				newobj = gwin->get_map()->create_ireg_object(
+						obj->get_shapenum(), obj->get_framenum());
+			}
 		} else {    // Cut:  Remove but don't delete.
 			newobj = obj->shared_from_this();
 			obj->remove_this(&keep);
@@ -919,9 +927,18 @@ void Cheat::paste(
 		const int liftpix = ((t.tz - hot.tz) * c_tilesize) / 2;
 		const int x       = mx + (t.tx - hot.tx) * c_tilesize - liftpix;
 		const int y       = my + (t.ty - hot.ty) * c_tilesize - liftpix;
-		// +++++Use clone().
-		const Game_object_shared newobj
-				= Create_object(gwin, obj->get_shapenum(), obj->get_framenum());
+
+		Game_object_shared newobj;
+		// Check if this is an egg - if so, clone it with all data
+		Egg_object* egg = obj->as_egg();
+		if (egg) {
+			newobj = egg->clone_egg(0, 0, 0);
+		} else {
+			// Regular object - create using Create_object
+			newobj = Create_object(
+					gwin, obj->get_shapenum(), obj->get_framenum());
+		}
+
 		Dragging_info drag(newobj);
 		if (drag.drop(x, y, true)) {    // (Dels if it fails.)
 			append_selected(newobj.get());

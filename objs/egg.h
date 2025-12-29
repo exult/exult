@@ -164,6 +164,9 @@ public:
 		ignore_unused_variable_warning(s);
 	}
 
+	// Clone this egg with all its data
+	Egg_object_shared clone_egg(int tilex, int tiley, int lift) const;
+
 	// Can this be clicked on?
 	bool         is_findable() override;
 	virtual void set(int crit, int dist);

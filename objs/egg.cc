@@ -853,6 +853,29 @@ Egg_object::~Egg_object() {
 }
 
 /*
+ *  Clone this egg with all its data.
+ */
+
+Egg_object_shared Egg_object::clone_egg(int tilex, int tiley, int lift) const {
+	// Reconstruct itype from egg properties
+	unsigned short itype = type & 0xf;
+	itype |= ((criteria & 7) << 4);
+	itype |= (((flags >> nocturnal) & 1) << 7);
+	itype |= (((flags >> once) & 1) << 8);
+	itype |= (((flags >> hatched) & 1) << 9);
+	itype |= ((distance & 0x1f) << 10);
+	itype |= (((flags >> auto_reset) & 1) << 15);
+
+	// Check if this egg has an animator
+	const bool animated = (animator != nullptr);
+
+	// Create the new egg using the static factory method
+	return create_egg(
+			animated, get_shapenum(), get_framenum(), tilex, tiley, lift, itype,
+			probability, data1, data2, data3, get_str1());
+}
+
+/*
  *  Set active area after being added to its chunk.
  */
 
