@@ -2662,19 +2662,73 @@ void ExultStudio::set_shape_notebook_frame(int frnum    // Frame # to set.
 	if (shnum < 0) {
 		return;    // Invalid shape number
 	}
+
+	// Save current frame data to cache before switching frames
+	if (current_shape_frame >= 0 && current_shape_frame != frnum) {
+		// Cache current frame's values
+		Frame_cache cache;
+		cache.xright                           = get_spin("shinfo_originx");
+		cache.ybelow                           = get_spin("shinfo_originy");
+		cache.wihx                             = get_spin("shinfo_wihx");
+		cache.wihy                             = get_spin("shinfo_wihy");
+		shape_frame_cache[current_shape_frame] = cache;
+	}
+
+	// Update the current frame tracker
+	current_shape_frame = frnum;
+
+	// Suppress signals while loading data to avoid false "modified" flag
+	set_frame_field_signal_suppressed(true);
+
+	// Load frame data - check cache first, then load from original
 	Vga_file*    ifile = file_info->get_ifile();
 	Shape_frame* shape = ifile->get_shape(shnum, frnum);
-	if (shape == nullptr) {
-		set_spin("shinfo_originx", 0, 0, 0);
-		set_spin("shinfo_originy", 0, 0, 0);
+
+	// Check if we have cached values for this frame
+	auto cache_it = shape_frame_cache.find(frnum);
+	if (cache_it != shape_frame_cache.end()) {
+		// Load from cache
+		const Frame_cache& cache = cache_it->second;
+		if (shape) {
+			set_spin(
+					"shinfo_originx", cache.xright, -shape->get_width(),
+					shape->get_width());
+			set_spin(
+					"shinfo_originy", cache.ybelow, -shape->get_height(),
+					shape->get_height());
+		} else {
+			set_spin("shinfo_originx", cache.xright, 0, 0);
+			set_spin("shinfo_originy", cache.ybelow, 0, 0);
+		}
+		set_spin("shinfo_wihx", cache.wihx, 0, 255);
+		set_spin("shinfo_wihy", cache.wihy, 0, 255);
 	} else {
-		set_spin(
-				"shinfo_originx", shape->get_xright(), -shape->get_width(),
-				shape->get_width());
-		set_spin(
-				"shinfo_originy", shape->get_ybelow(), -shape->get_height(),
-				shape->get_height());
+		// Load from original data
+		if (shape == nullptr) {
+			set_spin("shinfo_originx", 0, 0, 0);
+			set_spin("shinfo_originy", 0, 0, 0);
+		} else {
+			set_spin(
+					"shinfo_originx", shape->get_xright(), -shape->get_width(),
+					shape->get_width());
+			set_spin(
+					"shinfo_originy", shape->get_ybelow(), -shape->get_height(),
+					shape->get_height());
+		}
+
+		const auto* info = static_cast<const Shape_info*>(
+				g_object_get_data(G_OBJECT(shapewin), "user_data"));
+		if (info) {
+			unsigned char wx;
+			unsigned char wy;    // Weapon-in-hand offset.
+			info->get_weapon_offset(frnum, wx, wy);
+			set_spin("shinfo_wihx", wx, 0, 255);
+			set_spin("shinfo_wihy", wy, 0, 255);
+		}
 	}
+
+	// Re-enable signals for user edits
+	set_frame_field_signal_suppressed(false);
 
 	const auto* info = static_cast<const Shape_info*>(
 			g_object_get_data(G_OBJECT(shapewin), "user_data"));
@@ -2684,12 +2738,6 @@ void ExultStudio::set_shape_notebook_frame(int frnum    // Frame # to set.
 	set_spin("shinfo_xtiles", info->get_3d_xtiles(frnum));
 	set_spin("shinfo_ytiles", info->get_3d_ytiles(frnum));
 	set_spin("shinfo_ztiles", info->get_3d_height());
-
-	unsigned char wx;
-	unsigned char wy;    // Weapon-in-hand offset.
-	info->get_weapon_offset(frnum, wx, wy);
-	set_spin("shinfo_wihx", wx, 0, 255);    // Negative???
-	set_spin("shinfo_wihy", wy, 0, 255);
 }
 
 inline short get_spots(short spot) {
@@ -4214,6 +4262,11 @@ void ExultStudio::open_shape_window(
 	if (!shapewin) {    // First time?
 		shapewin = get_widget("shape_window");
 	}
+
+	// Clear cache for new shape
+	shape_frame_cache.clear();
+	current_shape_frame = -1;
+
 	// Reset audio track spin buttons to prevent values from persisting
 	// across different shapes.
 	set_spin("shinfo_sfx_first", -1);
@@ -5015,6 +5068,9 @@ void ExultStudio::open_shape_window(
 	// Populate the presets list
 	setup_presets_list();
 
+	// Set current frame tracker
+	current_shape_frame = frnum;
+
 	gtk_widget_set_visible(shapewin, true);
 }
 
@@ -5030,6 +5086,35 @@ void ExultStudio::save_shape_window() {
 	auto* file_info = static_cast<Shape_file_info*>(
 			g_object_get_data(G_OBJECT(shapewin), "file_info"));
 	Vga_file* ifile = file_info->get_ifile();
+
+	// Apply all cached frame changes
+	for (const auto& entry : shape_frame_cache) {
+		const int          frame_num = entry.first;
+		const Frame_cache& cache     = entry.second;
+		// Apply origin changes
+		Shape_frame* frame = ifile->get_shape(shnum, frame_num);
+		if (frame != nullptr) {
+			if (cache.xright != frame->get_xright()
+				|| cache.ybelow != frame->get_ybelow()) {
+				file_info->set_modified();
+				frame->set_offset(cache.xright, cache.ybelow);
+				Shape* shape = ifile->extract_shape(shnum);
+				if (shape != nullptr) {
+					shape->set_modified();
+				}
+			}
+		}
+
+		// Apply weapon offset changes
+		if (info) {
+			info->set_weapon_offset(frame_num, cache.wihx, cache.wihy);
+			shape_info_modified = true;
+		}
+	}
+
+	// Clear the cache after applying
+	shape_frame_cache.clear();
+
 	if (info) {    // If 'shapes.vga', get name.
 		const string locnm(convertFromUTF8(get_text_entry("shinfo_name")));
 		const gchar* nm = locnm.c_str();
@@ -5057,7 +5142,9 @@ void ExultStudio::save_shape_window() {
 			file_info->set_modified();
 			frame->set_offset(xright, ybelow);
 			Shape* shape = ifile->extract_shape(shnum);
-			shape->set_modified();
+			if (shape != nullptr) {
+				shape->set_modified();
+			}
 		}
 	}
 	if (info) {
@@ -5130,5 +5217,7 @@ void ExultStudio::save_shape_window() {
 void ExultStudio::close_shape_window() {
 	if (shapewin) {
 		gtk_widget_set_visible(shapewin, false);
+		shape_frame_cache.clear();    // Clear cached changes
+		current_shape_frame = -1;     // Reset frame tracker
 	}
 }

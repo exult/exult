@@ -182,6 +182,16 @@ private:
 			*npcpaperdoll_hframe_single, *npcpaperdoll_hhelm_single;
 	Shape_single *objpaperdoll_frame0_single, *objpaperdoll_frame1_single,
 			*objpaperdoll_frame2_single, *objpaperdoll_frame3_single;
+
+	// Cache for frame-specific modifications
+	struct Frame_cache {
+		int xright, ybelow;    // Origin
+		int wihx, wihy;        // Weapon offset
+	};
+
+	std::map<int, Frame_cache> shape_frame_cache;    // frame# -> cached data
+	int        current_shape_frame;    // Currently displayed frame
+	bool       suppress_frame_field_signal;
 	GtkWidget* equipwin;
 	// Map locator:
 	Locator* locwin;
@@ -440,6 +450,15 @@ public:
 	void       init_shape_notebook(
 				  const Shape_info& info, GtkWidget* book, int shnum, int frnum);
 	void save_shape_notebook(Shape_info& info, int shnum, int frnum);
+
+	bool is_frame_field_signal_suppressed() const {
+		return suppress_frame_field_signal;
+	}
+
+	void set_frame_field_signal_suppressed(bool suppressed) {
+		suppress_frame_field_signal = suppressed;
+	}
+
 	void open_shape_window(
 			int shnum, int frnum, Shape_file_info* file_info,
 			const char* shname, Shape_info* info = nullptr);
