@@ -1232,8 +1232,9 @@ void Shape_chooser::read_back_edited(Editing_file* ed) {
 			}
 			const int len = ds.read4();
 			int       first;
-			if (len != size || (first = ds.read4()) > size
-				|| (first % 4) != 0) {
+			if (((size % (c_tilesize * c_tilesize)) != 0)
+				&& (len != size || (first = ds.read4()) > size
+					|| (first % 4) != 0)) {
 				cerr << "Invalid SHP file: " << ed->pathname << endl;
 				return;
 			}
@@ -1510,21 +1511,32 @@ void Shape_chooser::import_shape(const char* fname, gpointer user_data) {
 		if (chooser->selected < 0) {
 			return;    // Shouldn't happen.
 		}
+		ExultStudio* studio = ExultStudio::get_instance();
+		// Low shape in 'shapes.vga'?
+		const bool flat = IS_FLAT(chooser->info[chooser->selected].shapenum)
+						  && chooser->file_info == studio->get_vgafile();
 		IFileDataSource ds(fname);
-		// Check to see if it is a valid shape file.
-		// We never get here through a flat, so we don't deal
-		// with that case. These tests aren't perfect!
-		const int size = ds.getSize();
-		const int len  = ds.read4();
-		int       first;
-		if (len != size || (first = ds.read4()) > size || (first % 4) != 0) {
-			return;
+		const int       size = ds.getSize();
+		// Check to see if it is a valid shape file, Flat to Flat, RLE to RLE.
+		if (flat) {
+			if (size % (c_tilesize * c_tilesize) != 0) {
+				return;
+			}
+		} else {
+			const int len = ds.read4();
+			int       first;
+			if (len != size || (first = ds.read4()) > size
+				|| (first % 4) != 0) {
+				return;
+			}
 		}
 		const int shnum = chooser->info[chooser->selected].shapenum;
 		Shape*    shp   = chooser->ifile->extract_shape(shnum);
 		ds.seek(0);
 		shp->load(&ds);
 		shp->set_modified();
+		// Repaint main window.
+		chooser->setup_info(true);
 		chooser->render();
 		chooser->file_info->set_modified();
 	}
@@ -2402,9 +2414,7 @@ GtkWidget* Shape_chooser::create_popup() {
 				G_CALLBACK(on_shapes_popup_import_all), this);
 	}
 	if (ifile->is_flex()) {    // Multiple-shapes file (.vga)?
-		if (selected >= 0
-			&& (!IS_FLAT(info[selected].shapenum)
-				|| file_info != studio->get_vgafile())) {
+		if (selected >= 0) {
 			// Separator.
 			Add_menu_item(popup);
 			// Export/import shape.
