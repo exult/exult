@@ -5207,7 +5207,7 @@ void Npc_actor::set_schedule_time_type(int time, int type) {
  *  Set schedule location.
  */
 
-void Npc_actor::set_schedule_time_location(int time, int x, int y) {
+void Npc_actor::set_schedule_time_location(int time, int x, int y, int z) {
 	int i;
 
 	for (i = 0; i < num_schedules; i++) {
@@ -5227,11 +5227,11 @@ void Npc_actor::set_schedule_time_location(int time, int x, int y) {
 					schedules[i].get_time());
 		}
 
-		scheds[num_schedules].set(x, y, 0, 0, static_cast<unsigned char>(time));
+		scheds[num_schedules].set(x, y, z, 0, static_cast<unsigned char>(time));
 		set_schedules(scheds, num_schedules + 1);
 	} else {    // Did find it
 		schedules[i].set(
-				x, y, 0, schedules[i].get_type(),
+				x, y, z, schedules[i].get_type(),
 				static_cast<unsigned char>(time));
 	}
 }

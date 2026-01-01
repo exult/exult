@@ -816,8 +816,8 @@ public:
 		ignore_unused_variable_warning(time, type);
 	}
 
-	virtual void set_schedule_time_location(int time, int x, int y) {
-		ignore_unused_variable_warning(time, x, y);
+	virtual void set_schedule_time_location(int time, int x, int y, int z = 0) {
+		ignore_unused_variable_warning(time, x, y, z);
 	}
 
 	virtual void remove_schedule(int time) {
@@ -921,7 +921,7 @@ public:
 	// Set schedule list.
 	void set_schedules(Schedule_change* list, int cnt) override;
 	void set_schedule_time_type(int time, int type) override;
-	void set_schedule_time_location(int time, int x, int y) override;
+	void set_schedule_time_location(int time, int x, int y, int z = 0) override;
 	void remove_schedule(int time) override;
 	void get_schedules(Schedule_change*& list, int& cnt) const override;
 	// Move and change frame.
