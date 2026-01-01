@@ -54,24 +54,26 @@ public:
 class Egg_object : public Egglike_game_object {
 	static Game_object_shared editing;    // Egg being edited by ExultStudio.
 protected:
-	unsigned char            type;           // One of the below types.
-	unsigned char            probability;    // 1-100, chance of egg activating.
-	unsigned char            criteria : 3;    // How it's activated.  See below.
-	unsigned                 distance : 6;    // Distance for activation (0-31).
-	unsigned                 flags    : 4;    // Formed from below flags.
-	unsigned short           data1, data2, data3;    // More data, dep. on type.
-	TileRect                 area;                   // Active area.
-	unsigned char            solid_area;    // 1 if area is solid, 0 if outline.
-	Animator*                animator;      // Controls animation.
-	void                     init_field(unsigned char ty);
+	unsigned char  type;                   // One of the below types.
+	unsigned char  probability;            // 1-100, chance of egg activating.
+	unsigned char  criteria : 3;           // How it's activated.  See below.
+	unsigned       distance : 6;           // Distance for activation (0-31).
+	unsigned       flags    : 4;           // Formed from below flags.
+	unsigned short data1, data2, data3;    // More data, dep. on type.
+	TileRect       area;                   // Active area.
+	unsigned char  solid_area;             // 1 if area is solid, 0 if outline.
+	Animator*      animator;               // Controls animation.
+	void           init_field(unsigned char ty);
+
+public:
+	friend class Button_egg;
+
+	// Create egg from type and parameters
 	static Egg_object_shared create_egg(
 			bool animated, int shnum, int frnum, unsigned int tx,
 			unsigned int ty, unsigned int tz, unsigned short itype,
 			unsigned char prob, short data1, short data2, short data3,
 			const char* str1 = nullptr);
-
-public:
-	friend class Button_egg;
 
 	enum Egg_types {    // Types of eggs:
 		monster  = 1,

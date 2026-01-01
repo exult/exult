@@ -245,7 +245,7 @@ USECODE_INTRINSIC_PTR(get_random),                               // 0x00
 		USECODE_INTRINSIC_PTR(close_gump2),              // 0xd9
 		USECODE_INTRINSIC_PTR(game_day),                 // 0xda (Exult)
 		USECODE_INTRINSIC_PTR(play_scene),               // 0xdb (Exult)
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xdc
+		USECODE_INTRINSIC_PTR(create_new_egg),           // 0xdc (Exult)
 		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xdd
 		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xde
 		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xdf
