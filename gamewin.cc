@@ -2045,10 +2045,9 @@ bool Game_window::activate_item(
 	// Special case: Archwizard mode spellbook - create a temporary one with
 	// all spells.
 	if (shnum == 761 && cheat.in_wizard_mode()) {
-		static unsigned char all_spells[9]
+		unsigned char all_spells[9]
 				= {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-		static Spellbook_object wizard_spellbook(
-				761, 0, 0, 0, 0, all_spells, 255);
+		Spellbook_object wizard_spellbook(761, 0, 0, 0, 0, all_spells, 255);
 		wizard_spellbook.activate();
 		return true;
 	}
