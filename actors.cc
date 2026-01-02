@@ -2034,8 +2034,14 @@ bool Actor::teleport_offscreen_to_schedule(const Tile_coord& dest, int dist) {
 void Actor::set_schedule_and_loc(
 		int new_schedule_type, const Tile_coord& dest,
 		int delay) {    // -1 for random delay.
-	stop();             // Stop moving.
-	if (schedule) {     // End prev.
+	// If NPC already has the target schedule type, is busy, and is
+	// reasonably close to the destination, don't interrupt them.
+	if (schedule && schedule_type == new_schedule_type && schedule->is_busy()
+		&& distance(dest) <= 16) {
+		return;    // Let them finish what they're doing.
+	}
+	stop();            // Stop moving.
+	if (schedule) {    // End prev.
 		schedule->ending(new_schedule_type);
 	}
 	old_schedule_loc = dest;

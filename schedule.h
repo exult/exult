@@ -148,6 +148,12 @@ public:
 		ignore_unused_variable_warning(b);
 	}
 
+	// Returns true if schedule is in the middle of an activity.
+	// Used to avoid interrupting NPCs who are busy.
+	virtual bool is_busy() const {
+		return false;
+	}
+
 	// For Usecode intrinsic.
 	virtual int get_actual_type(Actor* npc) const;
 	// Look for foes.
@@ -308,6 +314,10 @@ public:
 	Preach_schedule(Actor* n) : Schedule(n), state(find_podium) {}
 
 	void now_what() override;    // Now what should NPC do?
+
+	bool is_busy() const override {
+		return state != find_podium;
+	}
 };
 
 /*
@@ -451,6 +461,10 @@ public:
 			  state(start) {}
 
 	void now_what() override;    // Now what should NPC do?
+
+	bool is_busy() const override {
+		return state != start && state != wander;
+	}
 };
 
 /*
@@ -470,6 +484,10 @@ public:
 	Miner_schedule(Actor* n) : Tool_schedule(n, 624), state(find_ore) {}
 
 	void now_what() override;    // Now what should NPC do?
+
+	bool is_busy() const override {
+		return state != find_ore && state != wander;
+	}
 };
 
 /*
@@ -556,6 +574,10 @@ public:
 	void now_what() override;              // Now what should NPC do?
 	void ending(int new_type) override;    // Switching to another schedule.
 	void im_dormant() override;            // Just went dormant.
+
+	bool is_busy() const override {
+		return state != desk_setup;
+	}
 };
 
 /*
@@ -594,6 +616,10 @@ class Lab_schedule : public Schedule {
 public:
 	Lab_schedule(Actor* n);
 	void now_what() override;    // Now what should NPC do?
+
+	bool is_busy() const override {
+		return state != start;
+	}
 };
 
 /*
@@ -665,6 +691,10 @@ public:
 	Waiter_schedule(Actor* n);
 	void now_what() override;              // Now what should NPC do?
 	void ending(int new_type) override;    // Switching to another schedule.
+
+	bool is_busy() const override {
+		return state != waiter_setup && state != wait_at_counter;
+	}
 };
 
 /*
@@ -704,6 +734,10 @@ public:
 	Sew_schedule(Actor* n);
 	void now_what() override;              // Now what should NPC do?
 	void ending(int new_type) override;    // Switching to another schedule.
+
+	bool is_busy() const override {
+		return state != get_wool && state != done;
+	}
 };
 
 /*
@@ -741,6 +775,10 @@ public:
 	Bake_schedule(Actor* n);
 	void now_what() override;
 	void ending(int new_type) override;
+
+	bool is_busy() const override {
+		return state != find_leftovers && state != to_flour;
+	}
 };
 
 /*
@@ -784,6 +822,10 @@ public:
 	Forge_schedule(Actor* n);
 	void now_what() override;              // Now what should NPC do?
 	void ending(int new_type) override;    // Switching to another schedule
+
+	bool is_busy() const override {
+		return state != put_sword_on_firepit && state != done;
+	}
 };
 
 /*
