@@ -669,8 +669,9 @@ void ExultStudio::apply_npc_preset() {
 	// Load the preset values to the NPC window
 	load_npc_preset_to_npc(preset_name);
 
-	// Mark as modified
+	// Mark as modified and dirty
 	set_npc_modified();
+	set_npc_window_dirty(true);
 }
 
 /*

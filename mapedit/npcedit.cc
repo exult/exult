@@ -65,6 +65,93 @@ C_EXPORT void on_npc_okay_btn_clicked(GtkButton* btn, gpointer user_data) {
 }
 
 /*
+ *  Helper to mark NPC window as dirty (having unsaved changes).
+ *  Should NOT be called for: frame +/-, show gump, locate buttons, presets
+ * widget, tab switching
+ */
+static void mark_npc_window_dirty() {
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (!studio->is_npc_window_initializing()) {
+		studio->set_npc_window_dirty(true);
+	}
+}
+
+/*
+ *  Generic callback to mark NPC window dirty on any widget change.
+ */
+C_EXPORT void on_npc_generic_changed(GtkWidget* widget, gpointer user_data) {
+	ignore_unused_variable_warning(widget, user_data);
+	mark_npc_window_dirty();
+}
+
+/*
+ *  Connect signals to mark NPC window dirty on edits.
+ */
+static void connect_npc_dirty_signals(GtkWidget* npcwin) {
+	static bool signals_connected = false;
+	if (signals_connected) {
+		return;    // Only connect once
+	}
+	signals_connected = true;
+
+	// Connect generic dirty marker to common widget signals
+	auto mark_dirty_cb = G_CALLBACK(+[](GtkWidget*, gpointer) -> gboolean {
+		mark_npc_window_dirty();
+		return false;    // Allow signal to propagate
+	});
+
+	// Get the main container and recursively connect to all editing widgets
+	GtkWidget* main_box = gtk_bin_get_child(GTK_BIN(npcwin));
+	if (main_box) {
+		std::function<void(GtkWidget*)> connect_recursive
+				= [&](GtkWidget* widget) {
+					  const char* widget_name = gtk_widget_get_name(widget);
+
+					  // Skip excluded widgets (frame navigation, show gump,
+					  // locate, preset widget, notebook tabs)
+					  if (widget_name
+						  && (strstr(widget_name, "frame_inc") != nullptr
+							  || strstr(widget_name, "frame_dec") != nullptr
+							  || strcmp(widget_name, "npc_frame") == 0
+							  || strstr(widget_name, "show_gump") != nullptr
+							  || strstr(widget_name, "locate") != nullptr
+							  || strcmp(widget_name, "npc_notebook") == 0
+							  || strcmp(widget_name, "npc_presets_box") == 0)) {
+						  // Skip these widgets completely (don't recurse)
+						  return;
+					  } else if (GTK_IS_NOTEBOOK(widget)) {
+						  // Don't connect to notebook's switch-page signal
+						  // But still recurse into its pages
+					  } else if (GTK_IS_SPIN_BUTTON(widget)) {
+						  g_signal_connect(
+								  widget, "value-changed", mark_dirty_cb,
+								  nullptr);
+					  } else if (GTK_IS_ENTRY(widget)) {
+						  g_signal_connect(
+								  widget, "changed", mark_dirty_cb, nullptr);
+					  } else if (GTK_IS_TOGGLE_BUTTON(widget)) {
+						  g_signal_connect(
+								  widget, "toggled", mark_dirty_cb, nullptr);
+					  } else if (GTK_IS_COMBO_BOX(widget)) {
+						  g_signal_connect(
+								  widget, "changed", mark_dirty_cb, nullptr);
+					  }
+
+					  // Recurse into containers
+					  if (GTK_IS_CONTAINER(widget)) {
+						  GList* children = gtk_container_get_children(
+								  GTK_CONTAINER(widget));
+						  for (GList* l = children; l != nullptr; l = l->next) {
+							  connect_recursive(GTK_WIDGET(l->data));
+						  }
+						  g_list_free(children);
+					  }
+				  };
+		connect_recursive(main_box);
+	}
+}
+
+/*
  *  Npc window's Apply button.
  */
 C_EXPORT void on_npc_apply_btn_clicked(GtkButton* btn, gpointer user_data) {
@@ -78,7 +165,16 @@ C_EXPORT void on_npc_apply_btn_clicked(GtkButton* btn, gpointer user_data) {
  */
 C_EXPORT void on_npc_cancel_btn_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
-	ExultStudio::get_instance()->close_npc_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (studio->is_npc_window_dirty()) {
+		const int answer = EStudio::Prompt(
+				"NPC has unsaved changes. Discard them?", "Yes", "No");
+		if (answer != 0) {    // User chose No
+			return;
+		}
+		studio->set_npc_window_dirty(false);
+	}
+	studio->close_npc_window();
 }
 
 /*
@@ -119,7 +215,16 @@ C_EXPORT void on_npc_locate_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT gboolean on_npc_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
-	ExultStudio::get_instance()->close_npc_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (studio->is_npc_window_dirty()) {
+		const int answer = EStudio::Prompt(
+				"NPC has unsaved changes. Discard them?", "Yes", "No");
+		if (answer != 0) {    // User chose No
+			return true;      // Block window close
+		}
+		studio->set_npc_window_dirty(false);
+	}
+	studio->close_npc_window();
 	return true;
 }
 
@@ -327,6 +432,7 @@ void ExultStudio::open_npc_window(
 void ExultStudio::close_npc_window() {
 	if (npcwin) {
 		gtk_widget_set_visible(npcwin, false);
+		npc_window_dirty = false;
 	}
 }
 
@@ -462,6 +568,20 @@ void ExultStudio::init_new_npc() {
  */
 
 int ExultStudio::init_npc_window(unsigned char* data, int datalen) {
+	// Check for unsaved changes before opening new NPC
+	if (npcwin && gtk_widget_get_visible(npcwin) && is_npc_window_dirty()) {
+		const int answer = EStudio::Prompt(
+				"NPC has unsaved changes. Discard them?", "Yes", "No");
+		if (answer != 0) {    // User chose No
+			return 0;
+		}
+		// Clear dirty flag
+		set_npc_window_dirty(false);
+	}
+
+	// Set initializing flag to prevent marking dirty during setup
+	npc_window_initializing = true;
+
 	Actor*          addr;
 	int             tx;
 	int             ty;
@@ -555,6 +675,13 @@ int ExultStudio::init_npc_window(unsigned char* data, int datalen) {
 		}
 		Set_schedule_line(this, time, sched.type, sched.tx, sched.ty, sched.tz);
 	}
+
+	// Initialization complete - allow dirty marking now
+	npc_window_initializing = false;
+
+	// Connect signals to track changes (only happens once)
+	connect_npc_dirty_signals(npcwin);
+
 	return 1;
 }
 
@@ -597,6 +724,8 @@ static void Npc_response(
 
 int ExultStudio::save_npc_window() {
 	cout << "In save_npc_window()" << endl;
+	// Clear dirty flag since we're saving
+	npc_window_dirty = false;
 	// Get npc (null if creating new).
 	auto* addr = static_cast<Actor*>(
 			g_object_get_data(G_OBJECT(npcwin), "user_data"));
@@ -710,6 +839,8 @@ void ExultStudio::schedule_btn_clicked(
 			label, num >= 0 && num < 32 ? sched_names[num] : "-----");
 	cout << "Chose schedule " << num << endl;
 	gtk_widget_set_visible(studio->get_widget("schedule_dialog"), false);
+	// Mark window dirty since schedule was changed
+	mark_npc_window_dirty();
 }
 
 /*

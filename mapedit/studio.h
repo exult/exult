@@ -190,10 +190,27 @@ private:
 	};
 
 	std::map<int, Frame_cache> shape_frame_cache;    // frame# -> cached data
-	int        current_shape_frame;    // Currently displayed frame
-	bool       suppress_frame_field_signal;
-	bool       shape_window_dirty;           // Unsaved changes in shape window
-	bool       shape_window_initializing;    // True during window setup
+	int  current_shape_frame;    // Currently displayed frame
+	bool suppress_frame_field_signal;
+	bool shape_window_dirty;           // Unsaved changes in shape window
+	bool shape_window_initializing;    // True during window setup
+
+	// NPC window dirty tracking
+	struct Npc_backup {
+		int           face;
+		int           shape;
+		int           properties[10];
+		int           alignment;
+		int           attack_mode;
+		unsigned long oflags;
+		unsigned long xflags;
+		unsigned long type_flags;
+		int           schedules[8];    // Schedule types for 8 time slots
+	};
+
+	bool npc_window_dirty;           // Unsaved changes in NPC window
+	bool npc_window_initializing;    // True during window setup
+
 	GtkWidget* equipwin;
 	// Map locator:
 	Locator* locwin;
@@ -237,7 +254,7 @@ private:
 			GtkToggleButton* button, gpointer user_data);
 
 public:
-	Shape_info* temp_shape_info;             // Backup for preset undo
+	Shape_info* temp_shape_info;    // Backup for preset undo
 
 	ExultStudio(int argc, char** argv);
 	~ExultStudio();
@@ -569,6 +586,18 @@ public:
 
 	bool is_shape_window_initializing() const {
 		return shape_window_initializing;
+	}
+
+	void set_npc_window_dirty(bool dirty = true) {
+		npc_window_dirty = dirty;
+	}
+
+	bool is_npc_window_dirty() const {
+		return npc_window_dirty;
+	}
+
+	bool is_npc_window_initializing() const {
+		return npc_window_initializing;
 	}
 
 	const std::string& get_encoding() const {
