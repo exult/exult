@@ -192,6 +192,8 @@ private:
 	std::map<int, Frame_cache> shape_frame_cache;    // frame# -> cached data
 	int        current_shape_frame;    // Currently displayed frame
 	bool       suppress_frame_field_signal;
+	bool       shape_window_dirty;           // Unsaved changes in shape window
+	bool       shape_window_initializing;    // True during window setup
 	GtkWidget* equipwin;
 	// Map locator:
 	Locator* locwin;
@@ -553,6 +555,18 @@ public:
 
 	void set_npc_modified() {
 		npc_modified = true;
+	}
+
+	void set_shape_window_dirty(bool dirty = true) {
+		shape_window_dirty = dirty;
+	}
+
+	bool is_shape_window_dirty() const {
+		return shape_window_dirty;
+	}
+
+	bool is_shape_window_initializing() const {
+		return shape_window_initializing;
 	}
 
 	const std::string& get_encoding() const {

@@ -61,6 +61,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <array>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <map>
 #include <sstream>
 #include <string>
@@ -447,6 +448,36 @@ void ExultStudio::new_equip_record() {
 }
 
 /*
+ *  Helper to mark shape window as dirty (having unsaved changes).
+ *
+ *  IMPORTANT: This should be called at the START of editing callbacks that
+ *  modify data, but NOT for:
+ *  - Frame navigation (shinfo_frame_inc/dec buttons)
+ *  - Play/stop audio buttons (all on_shinfo_*_play/stop_clicked)
+ *  - Tab switching in the notebook
+ *  - View toggles like "3D bounding box" (if implemented)
+ *
+ *  When adding new editing callbacks, add mark_shape_window_dirty() at
+ *  the beginning unless it's one of the excluded types above.
+ */
+static void mark_shape_window_dirty() {
+	ExultStudio* studio = ExultStudio::get_instance();
+	// Don't mark dirty if we're still initializing the window
+	if (!studio->is_shape_window_initializing()) {
+		studio->set_shape_window_dirty(true);
+	}
+}
+
+/*
+ *  Generic callback to mark shape window dirty on any widget change.
+ *  Can be connected to "changed", "toggled", "value-changed" signals.
+ */
+C_EXPORT void on_shinfo_generic_changed(GtkWidget* widget, gpointer user_data) {
+	ignore_unused_variable_warning(widget, user_data);
+	mark_shape_window_dirty();
+}
+
+/*
  *  Shape window's Okay, Apply buttons.
  */
 C_EXPORT void on_shinfo_okay_clicked(GtkButton* btn, gpointer user_data) {
@@ -465,7 +496,17 @@ C_EXPORT void on_shinfo_apply_clicked(GtkButton* btn, gpointer user_data) {
  */
 C_EXPORT void on_shinfo_cancel_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
-	ExultStudio::get_instance()->close_shape_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (studio->is_shape_window_dirty()) {
+		const int answer = EStudio::Prompt(
+				"Shape has unsaved changes. Discard them?", "Yes", "No");
+		if (answer != 0) {    // User chose No
+			return;
+		}
+		// User chose Discard - reset the dirty flag
+		studio->set_shape_window_dirty(false);
+	}
+	studio->close_shape_window();
 }
 
 /*
@@ -474,7 +515,18 @@ C_EXPORT void on_shinfo_cancel_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT gboolean on_shape_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
-	ExultStudio::get_instance()->close_shape_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (studio->is_shape_window_dirty()) {
+		const int answer = EStudio::Prompt(
+				"Shape has unsaved changes. Discard them?", "Discard",
+				"Cancel");
+		if (answer != 0) {    // User chose Cancel
+			return true;      // Block window close
+		}
+		// User chose Discard - reset the dirty flag
+		studio->set_shape_window_dirty(false);
+	}
+	studio->close_shape_window();
 	return true;
 }
 
@@ -484,6 +536,7 @@ C_EXPORT gboolean on_shape_window_delete_event(
 C_EXPORT gboolean
 		on_shinfo_weapon_ammo_changed(GtkWidget* widget, gpointer data) {
 	ignore_unused_variable_warning(data);
+	mark_shape_window_dirty();
 	const int    sel    = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	const bool   on     = sel == 0;
 	ExultStudio* studio = ExultStudio::get_instance();
@@ -497,6 +550,7 @@ C_EXPORT gboolean
 C_EXPORT gboolean
 		on_shinfo_weapon_sprite_changed(GtkWidget* widget, gpointer data) {
 	ignore_unused_variable_warning(data);
+	mark_shape_window_dirty();
 	const int    sel    = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	const bool   on     = sel == 0;
 	ExultStudio* studio = ExultStudio::get_instance();
@@ -510,6 +564,7 @@ C_EXPORT gboolean
 C_EXPORT gboolean
 		on_shinfo_ammo_sprite_changed(GtkWidget* widget, gpointer data) {
 	ignore_unused_variable_warning(data);
+	mark_shape_window_dirty();
 	const int    sel    = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	const bool   on     = sel == 0;
 	ExultStudio* studio = ExultStudio::get_instance();
@@ -958,6 +1013,7 @@ void reset_gump_info_loaded() {
 C_EXPORT gboolean
 		on_shinfo_gumpobj_class_changed(GtkWidget* widget, gpointer data) {
 	ignore_unused_variable_warning(data);
+	mark_shape_window_dirty();
 	const int    gump_class = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	ExultStudio* studio     = ExultStudio::get_instance();
 
@@ -4252,6 +4308,78 @@ static inline void add_terminal_columns(
  *  Open the shape-editing window.
  */
 
+/*
+ *  Helper to connect dirty-marking signals to shape window widgets.
+ *  This is called AFTER initialization to avoid marking dirty during setup.
+ */
+static void connect_shape_dirty_signals(GtkWidget* shapewin) {
+	static bool signals_connected = false;
+	if (signals_connected) {
+		return;    // Only connect once
+	}
+	signals_connected = true;
+
+	// Connect generic dirty marker to common widget signals
+	auto mark_dirty_cb = G_CALLBACK(+[](GtkWidget*, gpointer) -> gboolean {
+		mark_shape_window_dirty();
+		return false;    // Allow signal to propagate
+	});
+
+	// Get the main container and recursively connect to all editing widgets
+	GtkWidget* main_box = gtk_bin_get_child(GTK_BIN(shapewin));
+	if (main_box) {
+		std::function<void(GtkWidget*)> connect_recursive
+				= [&](GtkWidget* widget) {
+					  const char* widget_name = gtk_widget_get_name(widget);
+
+					  // Skip excluded widgets (frame navigation, audio
+					  // controls, notebook/tabs, entire preset widget)
+					  if (widget_name
+						  && (strstr(widget_name, "_play") != nullptr
+							  || strstr(widget_name, "_stop") != nullptr
+							  || strstr(widget_name, "frame_inc") != nullptr
+							  || strstr(widget_name, "frame_dec") != nullptr
+							  || strcmp(widget_name, "shinfo_notebook") == 0
+							  || strcmp(widget_name, "shinfo_presets_box")
+										 == 0)) {
+						  // Skip these widgets completely (don't recurse)
+						  return;
+					  } else if (GTK_IS_NOTEBOOK(widget)) {
+						  // Don't connect to notebook's switch-page signal
+						  // But still recurse into its pages
+					  } else if (GTK_IS_RADIO_BUTTON(widget)) {
+						  // Skip radio buttons - they're used for switching
+						  // views (gump/body/paperdoll) which shouldn't mark
+						  // the window dirty
+					  } else if (GTK_IS_SPIN_BUTTON(widget)) {
+						  g_signal_connect(
+								  widget, "value-changed", mark_dirty_cb,
+								  nullptr);
+					  } else if (GTK_IS_ENTRY(widget)) {
+						  g_signal_connect(
+								  widget, "changed", mark_dirty_cb, nullptr);
+					  } else if (GTK_IS_TOGGLE_BUTTON(widget)) {
+						  g_signal_connect(
+								  widget, "toggled", mark_dirty_cb, nullptr);
+					  } else if (GTK_IS_COMBO_BOX(widget)) {
+						  g_signal_connect(
+								  widget, "changed", mark_dirty_cb, nullptr);
+					  }
+
+					  // Recurse into containers
+					  if (GTK_IS_CONTAINER(widget)) {
+						  GList* children = gtk_container_get_children(
+								  GTK_CONTAINER(widget));
+						  for (GList* l = children; l != nullptr; l = l->next) {
+							  connect_recursive(GTK_WIDGET(l->data));
+						  }
+						  g_list_free(children);
+					  }
+				  };
+		connect_recursive(main_box);
+	}
+}
+
 void ExultStudio::open_shape_window(
 		int              shnum,        // Shape #.
 		int              frnum,        // Frame #.
@@ -4259,13 +4387,28 @@ void ExultStudio::open_shape_window(
 		const char*      shname,       // ->shape name, or null.
 		Shape_info*      info          // Info. if in main object shapes.
 ) {
+	// Check if current shape has unsaved changes
+	if (shapewin && gtk_widget_get_visible(shapewin) && shape_window_dirty) {
+		const int answer = EStudio::Prompt(
+				"Shape has unsaved changes. Discard them?", "Yes", "No");
+		if (answer != 0) {    // User chose No
+			return;           // Don't open new shape
+		}
+		// User chose Yes - reset the dirty flag
+		shape_window_dirty = false;
+	}
+
 	if (!shapewin) {    // First time?
 		shapewin = get_widget("shape_window");
 	}
 
+	// Block dirty marking during initialization
+	shape_window_initializing = true;
+
 	// Clear cache for new shape
 	shape_frame_cache.clear();
 	current_shape_frame = -1;
+	shape_window_dirty  = false;
 
 	// Reset audio track spin buttons to prevent values from persisting
 	// across different shapes.
@@ -5071,6 +5214,13 @@ void ExultStudio::open_shape_window(
 	// Set current frame tracker
 	current_shape_frame = frnum;
 
+	// Connect dirty-marking signals AFTER all initialization is complete
+	// This ensures opening the editor doesn't mark it dirty
+	connect_shape_dirty_signals(shapewin);
+
+	// Initialization complete - allow dirty marking now
+	shape_window_initializing = false;
+
 	gtk_widget_set_visible(shapewin, true);
 }
 
@@ -5086,6 +5236,9 @@ void ExultStudio::save_shape_window() {
 	auto* file_info = static_cast<Shape_file_info*>(
 			g_object_get_data(G_OBJECT(shapewin), "file_info"));
 	Vga_file* ifile = file_info->get_ifile();
+
+	// Clear dirty flag since we're saving
+	shape_window_dirty = false;
 
 	// Apply all cached frame changes
 	for (const auto& entry : shape_frame_cache) {
@@ -5217,7 +5370,8 @@ void ExultStudio::save_shape_window() {
 void ExultStudio::close_shape_window() {
 	if (shapewin) {
 		gtk_widget_set_visible(shapewin, false);
-		shape_frame_cache.clear();    // Clear cached changes
-		current_shape_frame = -1;     // Reset frame tracker
+		shape_frame_cache.clear();      // Clear cached changes
+		current_shape_frame = -1;       // Reset frame tracker
+		shape_window_dirty  = false;    // Reset dirty flag
 	}
 }
