@@ -237,6 +237,8 @@ private:
 			GtkToggleButton* button, gpointer user_data);
 
 public:
+	Shape_info* temp_shape_info;             // Backup for preset undo
+
 	ExultStudio(int argc, char** argv);
 	~ExultStudio();
 	bool okay_to_close();

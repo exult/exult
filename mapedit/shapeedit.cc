@@ -503,7 +503,22 @@ C_EXPORT void on_shinfo_cancel_clicked(GtkButton* btn, gpointer user_data) {
 		if (answer != 0) {    // User chose No
 			return;
 		}
-		// User chose Discard - reset the dirty flag
+		// User chose Discard - restore from backup if preset was applied
+		if (studio->temp_shape_info) {
+			auto* info = static_cast<Shape_info*>(
+					g_object_get_data(G_OBJECT(studio->get_widget("shape_window")), "user_data"));
+			if (info) {
+				*info = *studio->temp_shape_info;
+				const int shnum = studio->get_num_entry("shinfo_shape");
+				const int frnum = studio->get_num_entry("shinfo_frame");
+				if (shnum >= 0 && frnum >= 0) {
+					studio->init_shape_notebook(
+							*info, studio->get_widget("shinfo_notebook"), shnum, frnum);
+				}
+			}
+			delete studio->temp_shape_info;
+			studio->temp_shape_info = nullptr;
+		}
 		studio->set_shape_window_dirty(false);
 	}
 	studio->close_shape_window();
@@ -523,7 +538,22 @@ C_EXPORT gboolean on_shape_window_delete_event(
 		if (answer != 0) {    // User chose Cancel
 			return true;      // Block window close
 		}
-		// User chose Discard - reset the dirty flag
+		// User chose Discard - restore from backup if preset was applied
+		if (studio->temp_shape_info) {
+			auto* info = static_cast<Shape_info*>(
+					g_object_get_data(G_OBJECT(studio->get_widget("shape_window")), "user_data"));
+			if (info) {
+				*info = *studio->temp_shape_info;
+				const int shnum = studio->get_num_entry("shinfo_shape");
+				const int frnum = studio->get_num_entry("shinfo_frame");
+				if (shnum >= 0 && frnum >= 0) {
+					studio->init_shape_notebook(
+							*info, studio->get_widget("shinfo_notebook"), shnum, frnum);
+				}
+			}
+			delete studio->temp_shape_info;
+			studio->temp_shape_info = nullptr;
+		}
 		studio->set_shape_window_dirty(false);
 	}
 	studio->close_shape_window();
@@ -5237,8 +5267,12 @@ void ExultStudio::save_shape_window() {
 			g_object_get_data(G_OBJECT(shapewin), "file_info"));
 	Vga_file* ifile = file_info->get_ifile();
 
-	// Clear dirty flag since we're saving
+	// Clear dirty flag and temp backup since we're saving
 	shape_window_dirty = false;
+	if (temp_shape_info) {
+		delete temp_shape_info;
+		temp_shape_info = nullptr;
+	}
 
 	// Apply all cached frame changes
 	for (const auto& entry : shape_frame_cache) {
@@ -5373,5 +5407,10 @@ void ExultStudio::close_shape_window() {
 		shape_frame_cache.clear();      // Clear cached changes
 		current_shape_frame = -1;       // Reset frame tracker
 		shape_window_dirty  = false;    // Reset dirty flag
+		// Clear temp backup
+		if (temp_shape_info) {
+			delete temp_shape_info;
+			temp_shape_info = nullptr;
+		}
 	}
 }

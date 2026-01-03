@@ -469,11 +469,20 @@ void ExultStudio::apply_preset() {
 	// Get the shape info for the preset shape
 	Shape_info& preset_info = svga->get_info(preset_shape_num);
 
+	// Save current state for undo before applying preset
+	// Delete old backup if it exists to prevent memory leak
+	if (temp_shape_info) {
+		delete temp_shape_info;
+		temp_shape_info = nullptr;
+	}
+	temp_shape_info = new Shape_info(*info);
+
 	// Copy all shape data from preset shape to current shape
 	*info = preset_info;
 
 	// Mark as modified
 	shape_info_modified = true;
+	set_shape_window_dirty(true);
 
 	// Re-initialize the shape notebook with the copied data
 	const int frnum = get_num_entry("shinfo_frame");
@@ -749,11 +758,21 @@ void ExultStudio::apply_preset_from_shape() {
 	// Get the shape info for the source shape
 	Shape_info& source_info = svga->get_info(source_shape);
 
+	// Save current state for undo before applying preset
+	ExultStudio* studio = ExultStudio::get_instance();
+	// Delete old backup if it exists to prevent memory leak
+	if (studio->temp_shape_info) {
+		delete studio->temp_shape_info;
+		studio->temp_shape_info = nullptr;
+	}
+	studio->temp_shape_info = new Shape_info(*info);
+
 	// Copy all shape data from source shape to current shape
 	*info = source_info;
 
 	// Mark as modified
 	shape_info_modified = true;
+	studio->set_shape_window_dirty(true);
 
 	// Re-initialize the shape notebook with the copied data
 	const int frnum = get_num_entry("shinfo_frame");
