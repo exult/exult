@@ -937,7 +937,7 @@ object UI_create_new_object(int shape)
     'UI_update_last_created' intrinsic or inside a container through the
     'UI_give_last_created' intrinsic.
 
-object UI_create_new_object2(int shape, int pos[])                   [SI, Exult]
+object UI_create_new_object2(int shape, int pos[], int frame)        [SI, Exult]
 
     Creates a new object with the specified shape and places it in the game
     world at the supplied location.
@@ -947,6 +947,7 @@ object UI_create_new_object2(int shape, int pos[])                   [SI, Exult]
              shape, the object is created with all equipment specified by the
              shape's equipment entry.
     pos      The location where the new object is to be placed.
+    frame    Optional. The frame number for the object. Default is 0.
 
     The location can be specified by arrays ranging from 1 to 4 components. The
     meaning of these components is as follows:
@@ -965,6 +966,108 @@ object UI_create_new_object2(int shape, int pos[])                   [SI, Exult]
     An object reference to the newly created object. This object is placed in
     the game world exactly as if UI_update_last_created(pos) had been called,
     and hence will *not* be in the 'last created' stack.
+
+object UI_create_new_egg(int type, int pos[], int criteria, int probability,
+                         int distance, int flags, int data1, int data2,
+                         int data3, int data4, int data5)                [Exult]
+
+    Creates an egg object at the specified location. Eggs are invisible trigger
+    objects that activate under certain conditions.
+
+  Parameters:
+    type         The egg type (1-11). This also determines the egg's frame.
+                 1=monster, 2=jukebox, 3=soundsfx, 4=voice, 5=usecode,
+                 6=missile, 7=teleport, 8=weather, 9=path, 10=button, 11=intermap
+    pos          The location where the egg is to be placed (same format as
+                 UI_create_new_object2).
+    criteria     Optional. Activation criteria (0-7). Default is 0 (cached_in).
+                 0=cached_in, 1=party_near, 2=avatar_near, 3=avatar_far,
+                 4=avatar_footpad, 5=party_footpad, 6=something_on,
+                 7=external_criteria
+    probability  Optional. Probability of activation (1-100). Default is 100.
+    distance     Optional. Activation distance (0-31). Default is 0.
+    flags        Optional. Egg flags as a bitmask. Default is 0.
+                 Bit 0: nocturnal (only activates at night)
+                 Bit 1: once (only activates once)
+                 Bit 2: hatched (egg has already been triggered)
+                 Bit 3: auto_reset (can trigger again after hatching)
+    data1-data5  Optional. Type-specific data (see below). Defaults are 0.
+
+  Return:
+    An object reference to the newly created egg. The egg is placed in the game
+    world at the specified location.
+
+  Notes:
+    The data parameters are user-friendly and encoded internally. Their meaning
+    depends on the egg type:
+
+    Monster (1):
+      data1 = monster shape number
+      data2 = monster frame number
+      data3 = spawn count (how many monsters to spawn)
+      data4 = schedule type (0=combat, 1=horiz_pace, 2=vert_pace, etc.)
+      data5 = alignment (0=neutral, 1=good, 2=evil, 3=chaotic)
+
+    Jukebox (2):
+      data1 = music track number
+      data2 = continuous (0=play once, 1=loop)
+
+    Soundsfx (3):
+      data1 = sound effect number
+      data2 = continuous (0=play once, 1=loop)
+
+    Voice (4):
+      data1 = speech number
+
+    Usecode (5):
+      data1 = usecode function number (or function name)
+      data2 = quality
+
+    Missile (6):
+      data1 = missile shape number
+      data2 = direction (0-7 for compass directions, 8 for party member):
+              0=north, 1=northeast, 2=east, 3=southeast, 4=south,
+              5=southwest, 6=west, 7=northwest, 8=party member
+      data3 = delay
+
+    Teleport (7):
+      If data2==0 and data3==0 and data1<256:
+        data1 = path egg number to teleport to
+      Otherwise (coordinate mode):
+        data1 = destination X coordinate
+        data2 = destination Y coordinate
+        data3 = destination Z coordinate (lift)
+
+    Weather (8):
+      data1 = weather type (0=halt/normal, 1=snow, 2=storm, 3=sparkle, 
+              4=fog, 5=overcast, 6=clouds)
+      data2 = duration
+
+    Path (9):
+      data1 = path egg quality number
+
+    Button (10):
+      data1 = distance (triggers nearby external_criteria eggs)
+
+    Intermap (11):
+      data1 = destination X coordinate
+      data2 = destination Y coordinate
+      data3 = destination Z coordinate (lift)
+      data4 = destination map number
+
+  Examples:
+    // Create a usecode egg that calls function deleteLicheEggs
+    var egg = UI_create_new_egg(5, [1457, 472, 0], 0, 100, 5, 0, 
+                                deleteLicheEggs, 0, 0);
+
+    // Create a teleport egg to coordinates (1500, 2000, 0)
+    var egg = UI_create_new_egg(7, pos, 2, 100, 3, 0, 1500, 2000, 0);
+
+    // Create a monster egg spawning 3 goblins (shape 400)
+    var egg = UI_create_new_egg(1, pos, 1, 100, 5, 0, 400, 0, 3, 0, 2);
+
+    // Create a jukebox egg playing track 15 on loop
+    var egg = UI_create_new_egg(2, pos, 2, 100, 0, 0, 15, 1, 0);
 
 UI_create_barge_object(int width, int height, int dir)                   [Exult]
 
