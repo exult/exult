@@ -192,7 +192,6 @@ private:
 	std::map<int, Frame_cache> shape_frame_cache;    // frame# -> cached data
 	int  current_shape_frame;    // Currently displayed frame
 	bool suppress_frame_field_signal;
-	bool shape_window_dirty;           // Unsaved changes in shape window
 	bool shape_window_initializing;    // True during window setup
 
 	// NPC window dirty tracking
@@ -208,7 +207,6 @@ private:
 		int           schedules[8];    // Schedule types for 8 time slots
 	};
 
-	bool npc_window_dirty;           // Unsaved changes in NPC window
 	bool npc_window_initializing;    // True during window setup
 
 	GtkWidget* equipwin;
@@ -255,6 +253,10 @@ private:
 
 public:
 	Shape_info* temp_shape_info;    // Backup for preset undo
+
+	// Dirty flags for window tracking (public for external access)
+	bool shape_window_dirty;    // Unsaved changes in shape window
+	bool npc_window_dirty;      // Unsaved changes in NPC window
 
 	ExultStudio(int argc, char** argv);
 	~ExultStudio();
@@ -483,9 +485,13 @@ public:
 	void open_shape_window(
 			int shnum, int frnum, Shape_file_info* file_info,
 			const char* shname, Shape_info* info = nullptr);
-	void        save_shape_window();
-	void        close_shape_window();
-	void        create_zoom_controls();
+	void save_shape_window();
+	void close_shape_window();
+	void create_zoom_controls();
+
+	// Unified discard prompt helper for windows
+	bool prompt_for_discard(bool& dirty_flag, const char* entity_name);
+
 	static void on_zoom_bilinear(GtkToggleButton* btn, gpointer user_data);
 	static void on_zoom_up(GtkButton* btn, gpointer user_data);
 	static void on_zoom_down(GtkButton* btn, gpointer user_data);

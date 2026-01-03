@@ -38,6 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 
 using std::cout;
 using std::endl;
@@ -166,13 +167,8 @@ C_EXPORT void on_npc_apply_btn_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT void on_npc_cancel_btn_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (studio->is_npc_window_dirty()) {
-		const int answer = EStudio::Prompt(
-				"NPC has unsaved changes. Discard them?", "Yes", "No");
-		if (answer != 0) {    // User chose No
-			return;
-		}
-		studio->set_npc_window_dirty(false);
+	if (!studio->prompt_for_discard(studio->npc_window_dirty, "NPC")) {
+		return;    // User canceled
 	}
 	studio->close_npc_window();
 }
@@ -216,13 +212,8 @@ C_EXPORT gboolean on_npc_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (studio->is_npc_window_dirty()) {
-		const int answer = EStudio::Prompt(
-				"NPC has unsaved changes. Discard them?", "Yes", "No");
-		if (answer != 0) {    // User chose No
-			return true;      // Block window close
-		}
-		studio->set_npc_window_dirty(false);
+	if (!studio->prompt_for_discard(studio->npc_window_dirty, "NPC")) {
+		return true;    // Block window close
 	}
 	studio->close_npc_window();
 	return true;
@@ -569,14 +560,10 @@ void ExultStudio::init_new_npc() {
 
 int ExultStudio::init_npc_window(unsigned char* data, int datalen) {
 	// Check for unsaved changes before opening new NPC
-	if (npcwin && gtk_widget_get_visible(npcwin) && is_npc_window_dirty()) {
-		const int answer = EStudio::Prompt(
-				"NPC has unsaved changes. Discard them?", "Yes", "No");
-		if (answer != 0) {    // User chose No
-			return 0;
+	if (npcwin && gtk_widget_get_visible(npcwin)) {
+		if (!prompt_for_discard(npc_window_dirty, "NPC")) {
+			return 0;    // User canceled
 		}
-		// Clear dirty flag
-		set_npc_window_dirty(false);
 	}
 
 	// Set initializing flag to prevent marking dirty during setup

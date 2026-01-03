@@ -497,29 +497,25 @@ C_EXPORT void on_shinfo_apply_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT void on_shinfo_cancel_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (studio->is_shape_window_dirty()) {
-		const int answer = EStudio::Prompt(
-				"Shape has unsaved changes. Discard them?", "Yes", "No");
-		if (answer != 0) {    // User chose No
-			return;
-		}
-		// User chose Discard - restore from backup if preset was applied
-		if (studio->temp_shape_info) {
-			auto* info = static_cast<Shape_info*>(
-					g_object_get_data(G_OBJECT(studio->get_widget("shape_window")), "user_data"));
-			if (info) {
-				*info = *studio->temp_shape_info;
-				const int shnum = studio->get_num_entry("shinfo_shape");
-				const int frnum = studio->get_num_entry("shinfo_frame");
-				if (shnum >= 0 && frnum >= 0) {
-					studio->init_shape_notebook(
-							*info, studio->get_widget("shinfo_notebook"), shnum, frnum);
-				}
+	if (!studio->prompt_for_discard(studio->shape_window_dirty, "Shape")) {
+		return;    // User canceled
+	}
+	// User chose Discard - restore from backup if preset was applied
+	if (studio->temp_shape_info) {
+		auto* info = static_cast<Shape_info*>(g_object_get_data(
+				G_OBJECT(studio->get_widget("shape_window")), "user_data"));
+		if (info) {
+			*info           = *studio->temp_shape_info;
+			const int shnum = studio->get_num_entry("shinfo_shape");
+			const int frnum = studio->get_num_entry("shinfo_frame");
+			if (shnum >= 0 && frnum >= 0) {
+				studio->init_shape_notebook(
+						*info, studio->get_widget("shinfo_notebook"), shnum,
+						frnum);
 			}
-			delete studio->temp_shape_info;
-			studio->temp_shape_info = nullptr;
 		}
-		studio->set_shape_window_dirty(false);
+		delete studio->temp_shape_info;
+		studio->temp_shape_info = nullptr;
 	}
 	studio->close_shape_window();
 }
@@ -531,30 +527,25 @@ C_EXPORT gboolean on_shape_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (studio->is_shape_window_dirty()) {
-		const int answer = EStudio::Prompt(
-				"Shape has unsaved changes. Discard them?", "Discard",
-				"Cancel");
-		if (answer != 0) {    // User chose Cancel
-			return true;      // Block window close
-		}
-		// User chose Discard - restore from backup if preset was applied
-		if (studio->temp_shape_info) {
-			auto* info = static_cast<Shape_info*>(
-					g_object_get_data(G_OBJECT(studio->get_widget("shape_window")), "user_data"));
-			if (info) {
-				*info = *studio->temp_shape_info;
-				const int shnum = studio->get_num_entry("shinfo_shape");
-				const int frnum = studio->get_num_entry("shinfo_frame");
-				if (shnum >= 0 && frnum >= 0) {
-					studio->init_shape_notebook(
-							*info, studio->get_widget("shinfo_notebook"), shnum, frnum);
-				}
+	if (!studio->prompt_for_discard(studio->shape_window_dirty, "Shape")) {
+		return true;    // Block window close
+	}
+	// User chose Discard - restore from backup if preset was applied
+	if (studio->temp_shape_info) {
+		auto* info = static_cast<Shape_info*>(g_object_get_data(
+				G_OBJECT(studio->get_widget("shape_window")), "user_data"));
+		if (info) {
+			*info           = *studio->temp_shape_info;
+			const int shnum = studio->get_num_entry("shinfo_shape");
+			const int frnum = studio->get_num_entry("shinfo_frame");
+			if (shnum >= 0 && frnum >= 0) {
+				studio->init_shape_notebook(
+						*info, studio->get_widget("shinfo_notebook"), shnum,
+						frnum);
 			}
-			delete studio->temp_shape_info;
-			studio->temp_shape_info = nullptr;
 		}
-		studio->set_shape_window_dirty(false);
+		delete studio->temp_shape_info;
+		studio->temp_shape_info = nullptr;
 	}
 	studio->close_shape_window();
 	return true;
@@ -4369,7 +4360,6 @@ static void connect_shape_dirty_signals(GtkWidget* shapewin) {
 							  || strstr(widget_name, "_stop") != nullptr
 							  || strstr(widget_name, "frame_inc") != nullptr
 							  || strstr(widget_name, "frame_dec") != nullptr
-							  || strcmp(widget_name, "shinfo_notebook") == 0
 							  || strcmp(widget_name, "shinfo_presets_box")
 										 == 0)) {
 						  // Skip these widgets completely (don't recurse)
@@ -4418,14 +4408,10 @@ void ExultStudio::open_shape_window(
 		Shape_info*      info          // Info. if in main object shapes.
 ) {
 	// Check if current shape has unsaved changes
-	if (shapewin && gtk_widget_get_visible(shapewin) && shape_window_dirty) {
-		const int answer = EStudio::Prompt(
-				"Shape has unsaved changes. Discard them?", "Yes", "No");
-		if (answer != 0) {    // User chose No
-			return;           // Don't open new shape
+	if (shapewin && gtk_widget_get_visible(shapewin)) {
+		if (!prompt_for_discard(shape_window_dirty, "Shape")) {
+			return;    // User canceled, don't open new shape
 		}
-		// User chose Yes - reset the dirty flag
-		shape_window_dirty = false;
 	}
 
 	if (!shapewin) {    // First time?

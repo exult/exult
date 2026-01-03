@@ -587,8 +587,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 		  objpaperdoll_frame1_single(nullptr),
 		  objpaperdoll_frame2_single(nullptr),
 		  objpaperdoll_frame3_single(nullptr), current_shape_frame(-1),
-		  suppress_frame_field_signal(false), shape_window_dirty(false),
-		  shape_window_initializing(false), npc_window_dirty(false),
+		  suppress_frame_field_signal(false), shape_window_initializing(false),
 		  npc_window_initializing(false), equipwin(nullptr), locwin(nullptr),
 		  combowin(nullptr), compilewin(nullptr), compile_box(nullptr),
 		  ucbrowsewin(nullptr), gameinfowin(nullptr), game_type(BLACK_GATE),
@@ -597,7 +596,8 @@ ExultStudio::ExultStudio(int argc, char** argv)
 		  connect_button(nullptr), connect_button_handler_id(0),
 		  connect_button_signal_id(0), play_button(nullptr),
 		  play_button_handler_id(0), play_button_signal_id(0),
-		  temp_shape_info(nullptr) {
+		  temp_shape_info(nullptr), shape_window_dirty(false),
+		  npc_window_dirty(false) {
 #ifdef _WIN32
 	// Enable the GTK+ 3 OLE Drag and Drop
 	g_setenv("GDK_WIN32_USE_EXPERIMENTAL_OLE2_DND", "1", 0);
@@ -1792,6 +1792,30 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 
 	update_menu_items(false);    // Initially set menus as disconnected
 	connect_to_server();         // Connect to server with 'gamedat'.
+}
+
+/*
+ *  Unified prompt for discarding unsaved changes.
+ *  Returns true if should proceed (discarded or not dirty), false if canceled.
+ */
+bool ExultStudio::prompt_for_discard(
+		bool& dirty_flag, const char* entity_name) {
+	if (!dirty_flag) {
+		return true;    // Not dirty, proceed
+	}
+
+	char prompt[256];
+	snprintf(
+			prompt, sizeof(prompt), "%s has unsaved changes. Discard them?",
+			entity_name);
+	const int answer = EStudio::Prompt(prompt, "Yes", "No");
+	if (answer != 0) {
+		return false;    // User chose No
+	}
+
+	// User chose Yes
+	dirty_flag = false;
+	return true;
 }
 
 /*
