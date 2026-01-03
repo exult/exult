@@ -3434,7 +3434,8 @@ USECODE_INTRINSIC(run_schedule) {
 
 USECODE_INTRINSIC(modify_schedule) {
 	ignore_unused_variable_warning(num_parms);
-	// modify_schedule ( npc, time, activity, [x, y] )
+	// modify_schedule ( npc, time, activity, [x, y] ) or
+	// modify_schedule ( npc, time, activity, [x, y, z] )
 
 	Actor* actor = as_actor(get_item(parms[0]));
 
@@ -3447,9 +3448,13 @@ USECODE_INTRINSIC(modify_schedule) {
 	const int sched = parms[2].get_int_value();
 	const int tx    = parms[3].get_elem(0).get_int_value();
 	const int ty    = parms[3].get_elem(1).get_int_value();
+	// Optional z coordinate (defaults to 0 for backward compatibility).
+	const int tz = (parms[3].get_array_size() >= 3)
+						   ? parms[3].get_elem(2).get_int_value()
+						   : 0;
 
 	actor->set_schedule_time_type(time, sched);
-	actor->set_schedule_time_location(time, tx, ty);
+	actor->set_schedule_time_location(time, tx, ty, tz);
 
 	return no_ret;
 }
