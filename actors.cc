@@ -2278,6 +2278,10 @@ bool Actor::figure_weapon_pos(
  *  Run usecode when double-clicked.
  */
 void Actor::activate(int event) {
+	// If event==2, open basic properties instead of NPC editor
+	if (event == 2 && edit_basic_properties()) {
+		return;
+	}
 	if (edit()) {
 		return;
 	}
@@ -2362,6 +2366,12 @@ bool Actor::edit() {
 	}
 #endif
 	return false;
+}
+
+bool Actor::edit_basic_properties() {
+	// Call the base Game_object::edit() to open basic properties
+	// instead of the Actor-specific editor
+	return Game_object::edit();
 }
 
 /*
@@ -4194,10 +4204,9 @@ int Actor::figure_hit_points(
 	if (explodes && !explosion) {    // Explosions shouldn't explode again.
 									 // Time to explode.
 		const Tile_coord offset(0, 0, get_info().get_3d_height() / 2);
-		eman->add_effect(
-				std::make_unique<Explosion_effect>(
-						get_tile() + offset, nullptr, 0, weapon_shape,
-						ammo_shape, attacker));
+		eman->add_effect(std::make_unique<Explosion_effect>(
+				get_tile() + offset, nullptr, 0, weapon_shape, ammo_shape,
+				attacker));
 		// The explosion will handle the damage.
 		return -1;
 	}

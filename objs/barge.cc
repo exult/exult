@@ -761,9 +761,13 @@ void Barge_object::paint() {
  *  Edit in ExultStudio.
  */
 
-void Barge_object::activate(int /* event */
-) {
-	edit();
+void Barge_object::activate(int event) {
+	// If event==2, open basic properties instead of barge editor
+	if (event == 2) {
+		edit_basic_properties();
+	} else {
+		edit();
+	}
 }
 
 /*
@@ -791,6 +795,12 @@ bool Barge_object::edit() {
 	}
 #endif
 	return false;
+}
+
+bool Barge_object::edit_basic_properties() {
+	// Call the base Game_object::edit() to open basic properties
+	// instead of the Barge-specific editor
+	return Game_object::edit();
 }
 
 /*

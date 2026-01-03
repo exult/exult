@@ -456,6 +456,10 @@ bool Container_game_object::show_gump(int event) {
  */
 
 void Container_game_object::activate(int event) {
+	// If event==2, open basic properties instead of container editor
+	if (event == 2 && edit_basic_properties()) {
+		return;
+	}
 	if (edit()) {
 		return;    // Map-editing.
 	}
@@ -493,6 +497,12 @@ bool Container_game_object::edit() {
 	}
 #endif
 	return false;
+}
+
+bool Container_game_object::edit_basic_properties() {
+	// Call the base Game_object::edit() to open basic properties
+	// instead of the Container-specific editor
+	return Game_object::edit();
 }
 
 /*

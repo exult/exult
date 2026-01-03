@@ -135,7 +135,8 @@ public:
 	// Render.
 	void paint() override;
 	void activate(int event = 1) override;
-	bool edit() override;    // Edit in ExultStudio.
+	bool edit() override;            // Edit in ExultStudio.
+	bool edit_basic_properties();    // Edit basic properties in ExultStudio.
 	// Saved from ExultStudio.
 	static void update_from_studio(unsigned char* data, int datalen);
 	// Step onto an (adjacent) tile.

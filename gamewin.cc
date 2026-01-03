@@ -2498,7 +2498,9 @@ void Game_window::double_clicked(
 	cout << "Object name is " << obj->get_name() << endl;
 #endif
 	usecode->init_conversation();
-	obj->activate();
+	// Check if CTRL is pressed to open basic properties instead
+	const bool ctrl_pressed = (SDL_GetModState() & SDL_KMOD_CTRL) != 0;
+	obj->activate(ctrl_pressed ? 2 : 1);
 	npc_prox->wait(4);    // Delay "barking" for 4 secs.
 }
 
@@ -2989,7 +2991,8 @@ void Game_window::setup_game(bool map_editing) {
 	}
 	// During the first scene do not show the UI elements,
 	// unless the Avatar is free to move (possibly in mods).
-	if ((GAME_BG && !usecode->get_global_flag_bool(Usecode_machine::did_first_scene))
+	if ((GAME_BG
+		 && !usecode->get_global_flag_bool(Usecode_machine::did_first_scene))
 		|| (GAME_SI
 			&& !usecode->get_global_flag_bool(
 					Usecode_machine::si_did_first_scene))
@@ -3261,10 +3264,9 @@ bool Game_window::is_hostile_nearby() const {
 }
 
 bool Game_window::failed_copy_protection() {
-	const bool confused = main_actor->get_flag(Obj_flags::confused);
-	const bool failureFlag
-			= usecode->get_global_flag_bool(
-							 Usecode_machine::failed_copy_protect);
+	const bool confused    = main_actor->get_flag(Obj_flags::confused);
+	const bool failureFlag = usecode->get_global_flag_bool(
+			Usecode_machine::failed_copy_protect);
 	return (GAME_SI && confused) || (GAME_BG && failureFlag);
 }
 

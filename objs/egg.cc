@@ -1194,8 +1194,11 @@ void Egg_object::paint() {
  *  Run usecode when double-clicked.
  */
 
-void Egg_object::activate(int /* event */
-) {
+void Egg_object::activate(int event) {
+	// If event==2, open basic properties instead of egg editor
+	if (event == 2 && edit_basic_properties()) {
+		return;
+	}
 	if (!edit()) {
 		hatch(nullptr, false);
 	}
@@ -1235,6 +1238,12 @@ bool Egg_object::edit() {
 	}
 #endif
 	return false;
+}
+
+bool Egg_object::edit_basic_properties() {
+	// Call the base Game_object::edit() to open basic properties
+	// instead of the Egg-specific editor
+	return Game_object::edit();
 }
 
 /*
