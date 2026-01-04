@@ -99,6 +99,7 @@ class Combo_editor : public Shape_draw {
 	Combo*     combo;               // Combo being edited.
 	int        selected;            // Index of selected item in combo.
 	bool       setting_controls;    // To avoid callbacks when setting.
+	bool       dirty;               // Has combo been modified?
 	int        file_index;          // Entry # in 'combos.flx', or -1 if
 	//   new.
 	// Set to edit existing combo.
@@ -134,6 +135,17 @@ public:
 	bool is_visible() {
 		return gtk_widget_get_visible(GTK_WIDGET(win));
 	}
+
+	bool is_dirty() const {
+		return dirty;
+	}
+
+	void set_dirty(bool d) {
+		dirty = d;
+	}
+
+	// Prompt for discard if dirty. Returns true if can proceed.
+	bool prompt_for_discard();
 };
 
 /**********************************************************************

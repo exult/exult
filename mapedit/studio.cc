@@ -1826,21 +1826,21 @@ bool ExultStudio::prompt_for_discard(
 	snprintf(
 			prompt, sizeof(prompt), "%s has unsaved changes. Discard them?",
 			entity_name);
-	const int answer
-			= EStudio::Prompt(prompt, "Yes, do not ask again", "Yes", "No");
+	const int answer = EStudio::Prompt(
+			prompt, "Yes, never ask again", "Yes", "No");
 
-	if (answer == 2) {
-		// User chose Yes
+	if (answer == 0) {
+		// User chose "Yes, never ask again"
+		config->set(config_key.c_str(), "no", true);
 		dirty_flag = false;
 		return true;
-	} else if (answer == 0) {
-		// User chose "Yes, do not ask again"
-		config->set(config_key.c_str(), "no", true);
+	} else if (answer == 1) {
+		// User chose Yes
 		dirty_flag = false;
 		return true;
 	}
 
-	// User chose No (answer == 1)
+	// User chose No (answer == 2)
 	return false;
 }
 
@@ -3233,13 +3233,19 @@ void ExultStudio::read_from_server() {
 		}
 		break;
 	case Exult_server::combo_pick:
-		open_combo_window();    // Open if necessary.
+		// Open if necessary, but don't re-open if already visible.
+		if (!combowin || !combowin->is_visible()) {
+			open_combo_window();
+		}
 		if (combowin) {
 			combowin->add(data, datalen, false);
 		}
 		break;
 	case Exult_server::combo_toggle:
-		open_combo_window();    // Open if necessary.
+		// Open if necessary, but don't re-open if already visible.
+		if (!combowin || !combowin->is_visible()) {
+			open_combo_window();
+		}
 		if (combowin) {
 			combowin->add(data, datalen, true);
 		}

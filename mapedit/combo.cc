@@ -63,12 +63,13 @@ C_EXPORT void on_new_combo1_activate(
 }
 
 void ExultStudio::open_combo_window() {
-	if (combowin && combowin->is_visible()) {
-		return;    // Already open.
-	}
 	if (!vgafile) {
 		EStudio::Alert("'shapes.vga' file isn't present");
 		return;
+	}
+	// Prompt if existing combo has unsaved changes.
+	if (combowin && !combowin->prompt_for_discard()) {
+		return;    // User chose not to discard.
 	}
 	auto* svga = static_cast<Shapes_vga_file*>(vgafile->get_ifile());
 	delete combowin;    // Delete old (svga may have changed).
@@ -146,6 +147,48 @@ C_EXPORT void on_combo_ok_clicked(GtkButton* button, gpointer user_data) {
             g_object_get_data(G_OBJECT(win), "user_data"));
 	combo->save();
 	gtk_widget_set_visible(win, false);
+}
+
+/*
+ *  Combo window's Cancel button.
+ */
+C_EXPORT void on_combo_cancel_clicked(GtkButton* button, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	GtkWidget* win   = gtk_widget_get_toplevel(GTK_WIDGET(button));
+	auto*      combo = static_cast<Combo_editor*>(
+            g_object_get_data(G_OBJECT(win), "user_data"));
+	if (combo && !combo->prompt_for_discard()) {
+		return;    // User chose not to discard
+	}
+	ExultStudio::get_instance()->close_combo_window();
+}
+
+/*
+ *  Combo name entry changed.
+ */
+C_EXPORT void on_combo_name_changed(GtkEntry* entry, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	auto* combo = static_cast<Combo_editor*>(g_object_get_data(
+			G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(entry))),
+			"user_data"));
+	if (combo) {
+		combo->set_dirty(true);
+	}
+}
+
+/*
+ *  Combo window's close button (X).
+ */
+C_EXPORT gboolean on_combo_win_delete_event(
+		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
+	ignore_unused_variable_warning(widget, event, user_data);
+	auto* combo = static_cast<Combo_editor*>(g_object_get_data(
+			G_OBJECT(widget), "user_data"));
+	if (combo && !combo->prompt_for_discard()) {
+		return true;    // Block window close
+	}
+	ExultStudio::get_instance()->close_combo_window();
+	return true;
 }
 
 C_EXPORT void on_combo_locx_changed(GtkSpinButton* button, gpointer user_data) {
@@ -511,6 +554,7 @@ void Combo_editor::set_combo(
 	delete combo;
 	combo      = newcombo;
 	file_index = findex;
+	dirty      = false;    // Loading existing combo, not dirty.
 	reset_selected();
 	ExultStudio::get_instance()->set_entry(
 			"combo_name", combo->name.c_str(), true);
@@ -529,7 +573,7 @@ Combo_editor::Combo_editor(
 		: Shape_draw(
 				  svga, palbuf,
 				  ExultStudio::get_instance()->get_widget("combo_draw")),
-		  selected(-1), setting_controls(false), file_index(-1) {
+		  selected(-1), setting_controls(false), dirty(false), file_index(-1) {
 	static bool first = true;
 	combo             = new Combo(svga);
 	win               = ExultStudio::get_instance()->get_widget("combo_win");
@@ -542,6 +586,9 @@ Combo_editor::Combo_editor(
 				draw, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK
 							  | GDK_BUTTON_RELEASE_MASK
 							  | GDK_BUTTON1_MOTION_MASK);
+		g_signal_connect(
+				G_OBJECT(win), "delete-event",
+				G_CALLBACK(on_combo_win_delete_event), nullptr);
 		first = false;
 	}
 	set_controls();
@@ -662,6 +709,7 @@ void Combo_editor::set_order() {
 		combo->members[selected]       = tmp;
 		selected += dir;
 	}
+	dirty = true;
 	render();
 }
 
@@ -678,6 +726,7 @@ void Combo_editor::set_position() {
 	m->tx               = combo->starttx + studio->get_spin("combo_locx");
 	m->ty               = combo->startty + studio->get_spin("combo_locy");
 	m->tz               = studio->get_spin("combo_locz");
+	dirty = true;
 	render();
 }
 
@@ -710,6 +759,7 @@ void Combo_editor::add(
 		return;
 	}
 	combo->add(tx, ty, tz, shape, frame, toggle);
+	dirty = true;
 	render();
 }
 
@@ -720,6 +770,7 @@ void Combo_editor::add(
 void Combo_editor::remove() {
 	if (selected >= 0) {
 		combo->remove(selected);
+		dirty = true;
 		reset_selected();
 		set_controls();
 		render();
@@ -751,6 +802,16 @@ void Combo_editor::save() {
 	if (chooser) {    // Browser open?
 		file_index = chooser->add(new Combo(*combo), file_index);
 	}
+	dirty = false;    // Saved, no longer dirty.
+}
+
+/*
+ *  Prompt user if combo has unsaved changes.
+ *  Returns true if okay to proceed (discarded or not dirty).
+ */
+
+bool Combo_editor::prompt_for_discard() {
+	return ExultStudio::get_instance()->prompt_for_discard(dirty, "Combo");
 }
 
 /*
@@ -1292,19 +1353,22 @@ void Combo_chooser::edit() {
 	if (selected < 0) {
 		return;
 	}
-	Combo_editor* combowin = ExultStudio::get_instance()->get_combowin();
-	if (combowin && combowin->is_visible()) {
-		EStudio::Alert("You're already editing a combo");
-		return;
+	ExultStudio*  studio   = ExultStudio::get_instance();
+	Combo_editor* combowin = studio->get_combowin();
+	// Prompt if existing combo has unsaved changes.
+	if (combowin && combowin->is_visible() && !combowin->prompt_for_discard()) {
+		return;    // User chose not to discard.
 	}
-	const int    tnum   = info[selected].num;
-	ExultStudio* studio = ExultStudio::get_instance();
-	studio->open_combo_window();    // Open it.
-	Combo_editor* ed = studio->get_combowin();
-	if (!ed || !ed->is_visible()) {
-		return;    // Failed.  Shouldn't happen.
+	const int tnum = info[selected].num;
+	// Open window if not already visible.
+	if (!combowin || !combowin->is_visible()) {
+		studio->open_combo_window();
+		combowin = studio->get_combowin();
+		if (!combowin || !combowin->is_visible()) {
+			return;    // Failed.
+		}
 	}
-	ed->set_combo(new Combo(*(combos[tnum])), tnum);
+	combowin->set_combo(new Combo(*(combos[tnum])), tnum);
 }
 
 /*
