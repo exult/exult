@@ -594,31 +594,34 @@ USECODE_INTRINSIC(create_new_egg) {
 	//   button(10):  [distance]
 	//   intermap(11): [dest_x, dest_y, dest_z, mapnum]
 
+	if (num_parms != 7) {
+		cerr << "create_new_egg: Expected 7 arguments, got " << num_parms
+			 << endl;
+		return Usecode_value(static_cast<Game_object*>(nullptr));
+	}
+
 	const int type = parms[0].get_int_value();
 	if (type < 1 || type > 11) {
 		cerr << "create_new_egg: Invalid egg type " << type << endl;
 		return Usecode_value(static_cast<Game_object*>(nullptr));
 	}
 
-	// Optional parameters with defaults
-	const int criteria    = (num_parms >= 3) ? parms[2].get_int_value() : 0;
-	const int probability = (num_parms >= 4) ? parms[3].get_int_value() : 100;
-	const int distance    = (num_parms >= 5) ? parms[4].get_int_value() : 0;
-	const int flags       = (num_parms >= 6) ? parms[5].get_int_value() : 0;
+	const int criteria    = parms[2].get_int_value();
+	const int probability = parms[3].get_int_value();
+	const int distance    = parms[4].get_int_value();
+	const int flags       = parms[5].get_int_value();
 
 	// Extract data array elements
-	int user_data[5] = {0, 0, 0, 0, 0};
-	if (num_parms >= 7) {
-		const Usecode_value& data_param = parms[6];
-		if (data_param.is_array()) {
-			const int data_cnt = data_param.get_array_size();
-			for (int i = 0; i < data_cnt && i < 5; i++) {
-				user_data[i] = data_param.get_elem(i).get_int_value();
-			}
-		} else {
-			// Single value, treat as first element
-			user_data[0] = data_param.get_int_value();
+	int                      user_data[5]{};
+	const Usecode_value& data_param = parms[6];
+	if (data_param.is_array()) {
+		const int data_cnt = data_param.get_array_size();
+		for (int i = 0; i < data_cnt && i < 5; i++) {
+			user_data[i] = data_param.get_elem(i).get_int_value();
 		}
+	} else {
+		// Single value, treat as first element
+		user_data[0] = data_param.get_int_value();
 	}
 
 	// Convert user-friendly parameters to internal encoding.
