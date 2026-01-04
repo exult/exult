@@ -50,6 +50,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <unistd.h>
 
 #include <array>
+#include <cctype>
 #include <cerrno>
 #include <cstdarg>
 #include <cstdio> /* These are for sockets. */
@@ -1804,18 +1805,43 @@ bool ExultStudio::prompt_for_discard(
 		return true;    // Not dirty, proceed
 	}
 
+	// Build config path: config/estudio/prompt/{entity}_discard
+	std::string config_key = "config/estudio/prompt/";
+	std::string entity_lower;
+	for (const char* p = entity_name; *p; ++p) {
+		entity_lower += static_cast<char>(std::tolower(*p));
+	}
+	config_key += entity_lower;
+	config_key += "_discard";
+
+	// Check if prompting is disabled via config
+	std::string prompt_setting;
+	config->value(config_key.c_str(), prompt_setting, "yes");
+	if (prompt_setting == "no") {
+		dirty_flag = false;
+		return true;    // Config says don't prompt, just discard
+	}
+
 	char prompt[256];
 	snprintf(
 			prompt, sizeof(prompt), "%s has unsaved changes. Discard them?",
 			entity_name);
-	const int answer = EStudio::Prompt(prompt, "Yes", "No");
-	if (answer != 0) {
-		return false;    // User chose No
+	const int answer
+			= EStudio::Prompt(prompt, "Yes, do not ask again", "Yes", "No");
+
+	if (answer == 2) {
+		// User chose Yes
+		dirty_flag = false;
+		return true;
+	} else if (answer == 0) {
+		// User chose "Yes, do not ask again"
+		config->set(config_key.c_str(), "no", true);
+		dirty_flag = false;
+		return true;
 	}
 
-	// User chose Yes
-	dirty_flag = false;
-	return true;
+	// User chose No (answer == 1)
+	return false;
 }
 
 /*
