@@ -558,12 +558,12 @@ USECODE_INTRINSIC(create_new_object2) {
 	// Pretty sure this is for creating monsters with equipment!
 
 	const int shapenum = parms[0].get_int_value();
-	const int frame    = (num_parms >= 3) ? parms[2].get_int_value() : 0;
+	const int frame    = (num_parms >= 3) ? parms[2].get_int_value() : -1;
 
 	// Create regular object, and equip if monster.
 	const Game_object_shared obj = create_object(shapenum, true);
 	if (obj) {
-		if (frame != 0) {
+		if (frame >= 0) {
 			obj->set_frame(frame);
 		}
 		UI_update_last_created(1, &parms[1]);
@@ -574,26 +574,25 @@ USECODE_INTRINSIC(create_new_object2) {
 
 USECODE_INTRINSIC(create_new_egg) {
 	// create_new_egg(type, loc, [criteria], [probability], [distance],
-	//                [flags], [data1], [data2], [data3], [data4], [data5]).
+	//                [flags], [data]).
 	// Creates an egg object at the specified location.
 	// Egg types: 1=monster, 2=jukebox, 3=soundsfx, 4=voice, 5=usecode,
 	//            6=missile, 7=teleport, 8=weather, 9=path, 10=button,
 	//            11=intermap
 	//
-	// User-friendly data parameters (encoded internally):
-	//   monster(1):  data1=shape, data2=frame, data3=count, data4=schedule,
-	//                data5=alignment
-	//   jukebox(2):  data1=song, data2=continuous (0/1)
-	//   soundsfx(3): data1=sfx_num, data2=continuous (0/1)
-	//   voice(4):    data1=speech_num
-	//   usecode(5):  data1=usecode_fun, data2=quality
-	//   missile(6):  data1=shape, data2=direction, data3=delay
-	//   teleport(7): data1=dest_x, data2=dest_y, data3=dest_z
-	//                (or data1=egg_num if data2==0 && data3==0)
-	//   weather(8):  data1=weather_type, data2=duration
-	//   path(9):     data1=path_num
-	//   button(10):  data1=distance
-	//   intermap(11): data1=dest_x, data2=dest_y, data3=dest_z, data4=mapnum
+	// data is an array of type-specific parameters:
+	//   monster(1):  [shape, frame, count, schedule, alignment]
+	//   jukebox(2):  [song, continuous (0/1)]
+	//   soundsfx(3): [sfx_num, continuous (0/1)]
+	//   voice(4):    [speech_num]
+	//   usecode(5):  [usecode_fun, quality]
+	//   missile(6):  [shape, direction, delay]
+	//   teleport(7): [dest_x, dest_y, dest_z]
+	//                (or [egg_num] if single element)
+	//   weather(8):  [weather_type, duration]
+	//   path(9):     [path_num]
+	//   button(10):  [distance]
+	//   intermap(11): [dest_x, dest_y, dest_z, mapnum]
 
 	const int type = parms[0].get_int_value();
 	if (type < 1 || type > 11) {
@@ -606,11 +605,21 @@ USECODE_INTRINSIC(create_new_egg) {
 	const int probability = (num_parms >= 4) ? parms[3].get_int_value() : 100;
 	const int distance    = (num_parms >= 5) ? parms[4].get_int_value() : 0;
 	const int flags       = (num_parms >= 6) ? parms[5].get_int_value() : 0;
-	const int user_data1  = (num_parms >= 7) ? parms[6].get_int_value() : 0;
-	const int user_data2  = (num_parms >= 8) ? parms[7].get_int_value() : 0;
-	const int user_data3  = (num_parms >= 9) ? parms[8].get_int_value() : 0;
-	const int user_data4  = (num_parms >= 10) ? parms[9].get_int_value() : 0;
-	const int user_data5  = (num_parms >= 11) ? parms[10].get_int_value() : 0;
+
+	// Extract data array elements
+	int user_data[5] = {0, 0, 0, 0, 0};
+	if (num_parms >= 7) {
+		const Usecode_value& data_param = parms[6];
+		if (data_param.is_array()) {
+			const int data_cnt = data_param.get_array_size();
+			for (int i = 0; i < data_cnt && i < 5; i++) {
+				user_data[i] = data_param.get_elem(i).get_int_value();
+			}
+		} else {
+			// Single value, treat as first element
+			user_data[0] = data_param.get_int_value();
+		}
+	}
 
 	// Convert user-friendly parameters to internal encoding.
 	// Also determine egg shape and frame (from egg.cc).
@@ -622,13 +631,12 @@ USECODE_INTRINSIC(create_new_egg) {
 
 	switch (type) {
 	case 1: {    // Monster
-		// User: data1=shape, data2=frame, data3=count, data4=schedule,
-		//       data5=alignment
-		const int shape     = user_data1;
-		const int monframe  = user_data2;
-		const int count     = user_data3;
-		const int schedule  = user_data4;
-		const int alignment = user_data5;
+		// data: [shape, frame, count, schedule, alignment]
+		const int shape     = user_data[0];
+		const int monframe  = user_data[1];
+		const int count     = user_data[2];
+		const int schedule  = user_data[3];
+		const int alignment = user_data[4];
 		// Encode data1: [schedule<<8 | (count<<2) | alignment]
 		data1 = ((schedule & 0xff) << 8) | ((count & 0x3f) << 2)
 				| (alignment & 0x3);
@@ -646,41 +654,41 @@ USECODE_INTRINSIC(create_new_egg) {
 		break;
 	}
 	case 2:    // Jukebox
-		// User: data1=song, data2=continuous
-		data1 = (user_data1 & 0xff) | ((user_data2 ? 1 : 0) << 8);
+		// data: [song, continuous]
+		data1 = (user_data[0] & 0xff) | ((user_data[1] ? 1 : 0) << 8);
 		frame = 2;
 		break;
 	case 3:    // Soundsfx
-		// User: data1=sfx_num, data2=continuous
-		data1 = (user_data1 & 0xff) | ((user_data2 ? 1 : 0) << 8);
+		// data: [sfx_num, continuous]
+		data1 = (user_data[0] & 0xff) | ((user_data[1] ? 1 : 0) << 8);
 		frame = 1;
 		break;
 	case 4:    // Voice
-		// User: data1=speech_num
-		data1 = user_data1 & 0xff;
+		// data: [speech_num]
+		data1 = user_data[0] & 0xff;
 		frame = 3;
 		break;
 	case 5:    // Usecode
-		// User: data1=usecode_fun, data2=quality
-		data1 = user_data2 & 0xff;    // quality
-		data2 = user_data1;           // usecode function
+		// data: [usecode_fun, quality]
+		data1 = user_data[1] & 0xff;    // quality
+		data2 = user_data[0];           // usecode function
 		frame = 7;
 		break;
 	case 6: {    // Missile
-		// User: data1=shape, data2=direction, data3=delay
-		const int direction = user_data2;
-		data1               = user_data1;    // shape
-		data2               = (direction & 0xff) | ((user_data3 & 0xff) << 8);
+		// data: [shape, direction, delay]
+		const int direction = user_data[1];
+		data1               = user_data[0];    // shape
+		data2               = (direction & 0xff) | ((user_data[2] & 0xff) << 8);
 		shapenum            = 200;
 		frame               = (direction < 8) ? (2 + (direction / 2)) : 1;
 		break;
 	}
 	case 7: {    // Teleport
-		// User: data1=dest_x, data2=dest_y, data3=dest_z
-		// Or:   data1=egg_num (if data2==0 && data3==0)
-		const int dest_x = user_data1;
-		const int dest_y = user_data2;
-		const int dest_z = user_data3;
+		// data: [dest_x, dest_y, dest_z]
+		// Or:   [egg_num] (if single element)
+		const int dest_x = user_data[0];
+		const int dest_y = user_data[1];
+		const int dest_z = user_data[2];
 		if (dest_y == 0 && dest_z == 0 && dest_x < 256) {
 			// Egg number mode
 			data1 = dest_x & 0xff;
@@ -699,26 +707,26 @@ USECODE_INTRINSIC(create_new_egg) {
 		break;
 	}
 	case 8:    // Weather
-		// User: data1=weather_type, data2=duration
-		data1 = (user_data1 & 0xff) | ((user_data2 & 0xff) << 8);
+		// data: [weather_type, duration]
+		data1 = (user_data[0] & 0xff) | ((user_data[1] & 0xff) << 8);
 		frame = 4;
 		break;
 	case 9:    // Path
-		// User: data1=path_num
-		data1 = user_data1 & 0xff;
+		// data: [path_num]
+		data1 = user_data[0] & 0xff;
 		frame = 6;
 		break;
 	case 10:    // Button
-		// User: data1=distance
-		data1 = user_data1 & 0xff;
+		// data: [distance]
+		data1 = user_data[0] & 0xff;
 		frame = 7;
 		break;
 	case 11: {    // Intermap
-		// User: data1=dest_x, data2=dest_y, data3=dest_z, data4=mapnum
-		const int dest_x = user_data1;
-		const int dest_y = user_data2;
-		const int dest_z = user_data3;
-		const int mapnum = user_data4;
+		// data: [dest_x, dest_y, dest_z, mapnum]
+		const int dest_x = user_data[0];
+		const int dest_y = user_data[1];
+		const int dest_z = user_data[2];
+		const int mapnum = user_data[3];
 		const int sx     = dest_x / c_tiles_per_schunk;
 		const int sy     = dest_y / c_tiles_per_schunk;
 		const int schunk = sy * 12 + sx;
