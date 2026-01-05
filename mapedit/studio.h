@@ -211,6 +211,7 @@ private:
 	bool cont_window_initializing;     // True during window setup
 	bool obj_window_initializing;      // True during window setup
 	bool barge_window_initializing;    // True during window setup
+	bool egg_window_initializing;      // True during window setup
 
 	GtkWidget* equipwin;
 	// Map locator:
@@ -263,6 +264,7 @@ public:
 	bool cont_window_dirty;     // Unsaved changes in container window
 	bool obj_window_dirty;      // Unsaved changes in object window
 	bool barge_window_dirty;    // Unsaved changes in barge window
+	bool egg_window_dirty;      // Unsaved changes in egg window
 
 	ExultStudio(int argc, char** argv);
 	~ExultStudio();
@@ -646,6 +648,18 @@ public:
 
 	bool is_barge_window_initializing() const {
 		return barge_window_initializing;
+	}
+
+	void set_egg_window_dirty(bool dirty = true) {
+		egg_window_dirty = dirty;
+	}
+
+	bool is_egg_window_dirty() const {
+		return egg_window_dirty;
+	}
+
+	bool is_egg_window_initializing() const {
+		return egg_window_initializing;
 	}
 
 	const std::string& get_encoding() const {

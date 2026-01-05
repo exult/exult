@@ -42,6 +42,84 @@ using std::string;
 class Egg_object;
 
 /*
+ *  Mark the egg window as dirty (having unsaved changes).
+ */
+static void mark_egg_window_dirty() {
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (!studio->is_egg_window_initializing()) {
+		studio->set_egg_window_dirty(true);
+	}
+}
+
+/*
+ *  Generic event handler to mark egg window as dirty on any widget change.
+ */
+static gboolean on_egg_event(
+		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
+	ignore_unused_variable_warning(widget, event, user_data);
+	mark_egg_window_dirty();
+	return false;    // Allow event to propagate
+}
+
+/*
+ *  Recursively connect event signals to all widgets to track changes.
+ */
+static void connect_widget_events(GtkWidget* widget) {
+	// Connect appropriate signals based on widget type
+	if (GTK_IS_SPIN_BUTTON(widget) || GTK_IS_SCALE(widget)) {
+		g_signal_connect(
+				G_OBJECT(widget), "value-changed", G_CALLBACK(on_egg_event),
+				nullptr);
+	} else if (GTK_IS_ENTRY(widget)) {
+		g_signal_connect(
+				G_OBJECT(widget), "changed", G_CALLBACK(on_egg_event), nullptr);
+	} else if (GTK_IS_TOGGLE_BUTTON(widget)) {
+		g_signal_connect(
+				G_OBJECT(widget), "toggled", G_CALLBACK(on_egg_event), nullptr);
+	} else if (GTK_IS_COMBO_BOX(widget)) {
+		g_signal_connect(
+				G_OBJECT(widget), "changed", G_CALLBACK(on_egg_event), nullptr);
+	}
+
+	// Recursively process container children
+	if (GTK_IS_CONTAINER(widget) && !GTK_IS_NOTEBOOK(widget)) {
+		GList* children = gtk_container_get_children(GTK_CONTAINER(widget));
+		for (GList* iter = children; iter != nullptr;
+			 iter        = g_list_next(iter)) {
+			connect_widget_events(GTK_WIDGET(iter->data));
+		}
+		g_list_free(children);
+	} else if (GTK_IS_NOTEBOOK(widget)) {
+		// For notebooks, connect to children but not the notebook itself
+		const int n_pages = gtk_notebook_get_n_pages(GTK_NOTEBOOK(widget));
+		for (int i = 0; i < n_pages; i++) {
+			GtkWidget* page
+					= gtk_notebook_get_nth_page(GTK_NOTEBOOK(widget), i);
+			if (page) {
+				connect_widget_events(page);
+			}
+		}
+	}
+}
+
+/*
+ *  Connect signals for egg window to mark window as dirty on any change.
+ */
+static void connect_egg_dirty_signals(ExultStudio* studio) {
+	GtkWidget* notebook = studio->get_widget("notebook1");
+	if (notebook) {
+		// Connect to all widgets in the notebook except tab switches
+		connect_widget_events(notebook);
+	}
+
+	// Also connect to common properties outside the notebook
+	GtkWidget* eggwin = studio->get_widget("egg_window");
+	if (eggwin) {
+		connect_widget_events(eggwin);
+	}
+}
+
+/*
  *  Helper functions to wrap GLib pointer conversions and avoid old-style cast
  * warnings.
  */
@@ -106,7 +184,16 @@ C_EXPORT void on_egg_apply_btn_clicked(GtkButton* btn, gpointer user_data) {
  */
 C_EXPORT void on_egg_cancel_btn_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
-	ExultStudio::get_instance()->close_egg_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+
+	// Check if there are unsaved changes
+	if (studio->is_egg_window_dirty()) {
+		if (!studio->prompt_for_discard(studio->egg_window_dirty, "egg")) {
+			return;    // User chose not to discard
+		}
+	}
+
+	studio->close_egg_window();
 }
 
 /*
@@ -115,7 +202,16 @@ C_EXPORT void on_egg_cancel_btn_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT gboolean on_egg_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
-	ExultStudio::get_instance()->close_egg_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+
+	// Check if there are unsaved changes
+	if (studio->is_egg_window_dirty()) {
+		if (!studio->prompt_for_discard(studio->egg_window_dirty, "egg")) {
+			return true;    // Block the close event
+		}
+	}
+
+	studio->close_egg_window();
 	return true;
 }
 
@@ -244,6 +340,14 @@ void ExultStudio::close_egg_window() {
  */
 
 int ExultStudio::init_egg_window(unsigned char* data, int datalen) {
+	// Check if window is already visible and dirty (opening another egg while
+	// editor is dirty)
+	if (eggwin && gtk_widget_get_visible(eggwin) && egg_window_dirty) {
+		if (!prompt_for_discard(egg_window_dirty, "egg")) {
+			return 0;    // User chose not to discard changes
+		}
+	}
+
 	Egg_object* addr;
 	int         tx;
 	int         ty;
@@ -269,6 +373,9 @@ int ExultStudio::init_egg_window(unsigned char* data, int datalen) {
 		cout << "Error decoding egg" << endl;
 		return 0;
 	}
+	// Set initializing flag before loading data
+	egg_window_initializing = true;
+
 	// Store address with window.
 	g_object_set_data(G_OBJECT(eggwin), "user_data", addr);
 	// Store egg's map position.
@@ -407,6 +514,18 @@ int ExultStudio::init_egg_window(unsigned char* data, int datalen) {
 	default:
 		break;
 	}
+
+	// Connect dirty tracking signals on first time
+	static bool signals_connected = false;
+	if (!signals_connected) {
+		connect_egg_dirty_signals(this);
+		signals_connected = true;
+	}
+
+	// Clear dirty and initializing flags after loading data
+	egg_window_dirty        = false;
+	egg_window_initializing = false;
+
 	return 1;
 }
 
@@ -555,8 +674,12 @@ int ExultStudio::save_egg_window() {
 		gtk_widget_set_sensitive(get_widget("egg_apply_btn"), false);
 		gtk_widget_set_sensitive(get_widget("egg_cancel_btn"), false);
 		waiting_for_server = Egg_response;
+		// Clear dirty flag after successful save
+		egg_window_dirty = false;
 		return 1;    // Leave window open.
 	}
+	// Clear dirty flag after successful save
+	egg_window_dirty = false;
 	return 1;
 }
 
