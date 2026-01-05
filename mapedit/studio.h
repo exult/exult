@@ -570,6 +570,11 @@ public:
 			  const char* choice2 = nullptr);
 	int find_palette_color(int r, int g, int b);
 
+	// Dirty tracking utilities
+	void connect_widget_signals(
+			GtkWidget* widget, GCallback callback, gpointer user_data,
+			const char* const* excluded_names = nullptr, int num_excluded = 0);
+
 	Exult_Game get_game_type() const {
 		return game_type;
 	}

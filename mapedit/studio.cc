@@ -1849,6 +1849,77 @@ bool ExultStudio::prompt_for_discard(
 }
 
 /*
+ *  Recursively connect dirty tracking signals to all editable widgets.
+ *  This is a generic utility that can be used by any editor window.
+ *
+ *  - Connects "value-changed" to spin buttons and scales
+ *  - Connects "changed" to entries and combo boxes
+ *  - Connects "toggled" to toggle buttons/check boxes
+ *  - Skips notebooks themselves (tab switches don't dirty)
+ *  - Recursively processes all container children
+ *
+ *  @param widget         The widget to process (recurses into containers)
+ *  @param callback       The callback function to connect
+ *  @param user_data      User data to pass to the callback
+ *  @param excluded_names Optional array of widget names to skip
+ *  @param num_excluded   Number of entries in excluded_names array
+ */
+void ExultStudio::connect_widget_signals(
+		GtkWidget* widget, GCallback callback, gpointer user_data,
+		const char* const* excluded_names, int num_excluded) {
+	if (!widget) {
+		return;
+	}
+
+	// Check if this widget should be excluded
+	const char* widget_name = gtk_widget_get_name(widget);
+	if (widget_name && excluded_names) {
+		for (int i = 0; i < num_excluded; i++) {
+			if (excluded_names[i]
+				&& strcmp(widget_name, excluded_names[i]) == 0) {
+				return;    // Skip this widget and its children
+			}
+		}
+	}
+
+	// Connect appropriate signal based on widget type
+	if (GTK_IS_SPIN_BUTTON(widget) || GTK_IS_SCALE(widget)) {
+		g_signal_connect(
+				G_OBJECT(widget), "value-changed", callback, user_data);
+	} else if (GTK_IS_ENTRY(widget)) {
+		g_signal_connect(G_OBJECT(widget), "changed", callback, user_data);
+	} else if (GTK_IS_TOGGLE_BUTTON(widget)) {
+		g_signal_connect(G_OBJECT(widget), "toggled", callback, user_data);
+	} else if (GTK_IS_COMBO_BOX(widget)) {
+		g_signal_connect(G_OBJECT(widget), "changed", callback, user_data);
+	}
+
+	// Recurse into containers, but handle notebooks specially
+	if (GTK_IS_NOTEBOOK(widget)) {
+		// Process notebook pages without connecting to the notebook itself
+		const int n_pages = gtk_notebook_get_n_pages(GTK_NOTEBOOK(widget));
+		for (int i = 0; i < n_pages; i++) {
+			GtkWidget* page
+					= gtk_notebook_get_nth_page(GTK_NOTEBOOK(widget), i);
+			if (page) {
+				connect_widget_signals(
+						page, callback, user_data, excluded_names,
+						num_excluded);
+			}
+		}
+	} else if (GTK_IS_CONTAINER(widget)) {
+		GList* children = gtk_container_get_children(GTK_CONTAINER(widget));
+		for (GList* iter = children; iter != nullptr;
+			 iter        = g_list_next(iter)) {
+			connect_widget_signals(
+					GTK_WIDGET(iter->data), callback, user_data, excluded_names,
+					num_excluded);
+		}
+		g_list_free(children);
+	}
+}
+
+/*
  *  Update chunk groups for a new chunk.
  */
 void ExultStudio::update_chunk_groups(int tnum) {

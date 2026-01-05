@@ -42,52 +42,13 @@ using std::endl;
 class Container_game_object;
 
 /*
- *  Helper to mark container window as dirty (having unsaved changes).
+ *  Callback to mark container window as dirty on any widget change.
  */
-static void mark_cont_window_dirty() {
+static void on_cont_changed(GtkWidget* widget, gpointer user_data) {
+	ignore_unused_variable_warning(widget, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	if (!studio->is_cont_window_initializing()) {
 		studio->set_cont_window_dirty(true);
-	}
-}
-
-/*
- *  Generic callback to mark container window dirty on any widget change.
- */
-C_EXPORT void on_cont_generic_changed(GtkWidget* widget, gpointer user_data) {
-	ignore_unused_variable_warning(widget, user_data);
-	mark_cont_window_dirty();
-}
-
-/*
- *  Connect signals to mark container window dirty on edits.
- */
-static void connect_cont_dirty_signals(GtkWidget* contwin) {
-	ignore_unused_variable_warning(contwin);
-	ExultStudio* studio = ExultStudio::get_instance();
-
-	// Connect spin buttons
-	const char* spin_widgets[]
-			= {"cont_shape", "cont_frame", "cont_quality",   "cont_x",
-			   "cont_y",     "cont_z",     "cont_resistance"};
-	for (const char* name : spin_widgets) {
-		GtkWidget* widget = studio->get_widget(name);
-		if (widget) {
-			g_signal_connect(
-					G_OBJECT(widget), "value-changed",
-					G_CALLBACK(on_cont_generic_changed), nullptr);
-		}
-	}
-
-	// Connect toggle buttons
-	const char* toggle_widgets[] = {"cont_invisible", "cont_okay_to_take"};
-	for (const char* name : toggle_widgets) {
-		GtkWidget* widget = studio->get_widget(name);
-		if (widget) {
-			g_signal_connect(
-					G_OBJECT(widget), "toggled",
-					G_CALLBACK(on_cont_generic_changed), nullptr);
-		}
 	}
 }
 
@@ -202,7 +163,7 @@ void ExultStudio::open_cont_window(
 	// Connect signals (only once)
 	static bool signals_connected = false;
 	if (!signals_connected) {
-		connect_cont_dirty_signals(contwin);
+		connect_widget_signals(contwin, G_CALLBACK(on_cont_changed), nullptr);
 		signals_connected = true;
 	}
 	if (!init_cont_window(data, datalen)) {

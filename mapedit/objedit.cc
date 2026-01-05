@@ -41,40 +41,13 @@ using std::endl;
 class Game_object;
 
 /*
- *  Helper to mark object window as dirty (having unsaved changes).
+ *  Callback to mark object window as dirty on any widget change.
  */
-static void mark_obj_window_dirty() {
+static void on_obj_changed(GtkWidget* widget, gpointer user_data) {
+	ignore_unused_variable_warning(widget, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	if (!studio->is_obj_window_initializing()) {
 		studio->set_obj_window_dirty(true);
-	}
-}
-
-/*
- *  Generic callback to mark object window dirty on any widget change.
- */
-C_EXPORT void on_obj_generic_changed(GtkWidget* widget, gpointer user_data) {
-	ignore_unused_variable_warning(widget, user_data);
-	mark_obj_window_dirty();
-}
-
-/*
- *  Connect signals to mark object window dirty on edits.
- */
-static void connect_obj_dirty_signals(GtkWidget* objwin) {
-	ignore_unused_variable_warning(objwin);
-	ExultStudio* studio = ExultStudio::get_instance();
-
-	// Connect spin buttons
-	const char* spin_widgets[] = {"obj_shape", "obj_frame", "obj_quality",
-								  "obj_x",     "obj_y",     "obj_z"};
-	for (const char* name : spin_widgets) {
-		GtkWidget* widget = studio->get_widget(name);
-		if (widget) {
-			g_signal_connect(
-					G_OBJECT(widget), "value-changed",
-					G_CALLBACK(on_obj_generic_changed), nullptr);
-		}
 	}
 }
 
@@ -167,7 +140,7 @@ void ExultStudio::open_obj_window(
 	// Connect signals (only once)
 	static bool signals_connected = false;
 	if (!signals_connected) {
-		connect_obj_dirty_signals(objwin);
+		connect_widget_signals(objwin, G_CALLBACK(on_obj_changed), nullptr);
 		signals_connected = true;
 	}
 	if (!init_obj_window(data, datalen)) {

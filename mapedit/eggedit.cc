@@ -42,80 +42,13 @@ using std::string;
 class Egg_object;
 
 /*
- *  Mark the egg window as dirty (having unsaved changes).
+ *  Callback to mark egg window as dirty on any widget change.
  */
-static void mark_egg_window_dirty() {
+static void on_egg_changed(GtkWidget* widget, gpointer user_data) {
+	ignore_unused_variable_warning(widget, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	if (!studio->is_egg_window_initializing()) {
 		studio->set_egg_window_dirty(true);
-	}
-}
-
-/*
- *  Generic event handler to mark egg window as dirty on any widget change.
- */
-static gboolean on_egg_event(
-		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
-	ignore_unused_variable_warning(widget, event, user_data);
-	mark_egg_window_dirty();
-	return false;    // Allow event to propagate
-}
-
-/*
- *  Recursively connect event signals to all widgets to track changes.
- */
-static void connect_widget_events(GtkWidget* widget) {
-	// Connect appropriate signals based on widget type
-	if (GTK_IS_SPIN_BUTTON(widget) || GTK_IS_SCALE(widget)) {
-		g_signal_connect(
-				G_OBJECT(widget), "value-changed", G_CALLBACK(on_egg_event),
-				nullptr);
-	} else if (GTK_IS_ENTRY(widget)) {
-		g_signal_connect(
-				G_OBJECT(widget), "changed", G_CALLBACK(on_egg_event), nullptr);
-	} else if (GTK_IS_TOGGLE_BUTTON(widget)) {
-		g_signal_connect(
-				G_OBJECT(widget), "toggled", G_CALLBACK(on_egg_event), nullptr);
-	} else if (GTK_IS_COMBO_BOX(widget)) {
-		g_signal_connect(
-				G_OBJECT(widget), "changed", G_CALLBACK(on_egg_event), nullptr);
-	}
-
-	// Recursively process container children
-	if (GTK_IS_CONTAINER(widget) && !GTK_IS_NOTEBOOK(widget)) {
-		GList* children = gtk_container_get_children(GTK_CONTAINER(widget));
-		for (GList* iter = children; iter != nullptr;
-			 iter        = g_list_next(iter)) {
-			connect_widget_events(GTK_WIDGET(iter->data));
-		}
-		g_list_free(children);
-	} else if (GTK_IS_NOTEBOOK(widget)) {
-		// For notebooks, connect to children but not the notebook itself
-		const int n_pages = gtk_notebook_get_n_pages(GTK_NOTEBOOK(widget));
-		for (int i = 0; i < n_pages; i++) {
-			GtkWidget* page
-					= gtk_notebook_get_nth_page(GTK_NOTEBOOK(widget), i);
-			if (page) {
-				connect_widget_events(page);
-			}
-		}
-	}
-}
-
-/*
- *  Connect signals for egg window to mark window as dirty on any change.
- */
-static void connect_egg_dirty_signals(ExultStudio* studio) {
-	GtkWidget* notebook = studio->get_widget("notebook1");
-	if (notebook) {
-		// Connect to all widgets in the notebook except tab switches
-		connect_widget_events(notebook);
-	}
-
-	// Also connect to common properties outside the notebook
-	GtkWidget* eggwin = studio->get_widget("egg_window");
-	if (eggwin) {
-		connect_widget_events(eggwin);
 	}
 }
 
@@ -518,7 +451,7 @@ int ExultStudio::init_egg_window(unsigned char* data, int datalen) {
 	// Connect dirty tracking signals on first time
 	static bool signals_connected = false;
 	if (!signals_connected) {
-		connect_egg_dirty_signals(this);
+		connect_widget_signals(eggwin, G_CALLBACK(on_egg_changed), nullptr);
 		signals_connected = true;
 	}
 

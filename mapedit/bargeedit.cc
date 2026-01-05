@@ -38,47 +38,13 @@ using std::endl;
 class Barge_object;
 
 /*
- *  Helper to mark barge window as dirty (having unsaved changes).
+ *  Callback to mark barge window as dirty on any widget change.
  */
-static void mark_barge_window_dirty() {
+static void on_barge_changed(GtkWidget* widget, gpointer user_data) {
+	ignore_unused_variable_warning(widget, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	if (!studio->is_barge_window_initializing()) {
 		studio->set_barge_window_dirty(true);
-	}
-}
-
-/*
- *  Generic callback to mark barge window dirty on any widget change.
- */
-C_EXPORT void on_barge_generic_changed(GtkWidget* widget, gpointer user_data) {
-	ignore_unused_variable_warning(widget, user_data);
-	mark_barge_window_dirty();
-}
-
-/*
- *  Connect signals to mark barge window dirty on edits.
- */
-static void connect_barge_dirty_signals(GtkWidget* bargewin) {
-	ignore_unused_variable_warning(bargewin);
-	ExultStudio* studio = ExultStudio::get_instance();
-
-	// Connect spin buttons
-	const char* spin_widgets[] = {"barge_xtiles", "barge_ytiles"};
-	for (const char* name : spin_widgets) {
-		GtkWidget* widget = studio->get_widget(name);
-		if (widget) {
-			g_signal_connect(
-					G_OBJECT(widget), "value-changed",
-					G_CALLBACK(on_barge_generic_changed), nullptr);
-		}
-	}
-
-	// Connect option menu
-	GtkWidget* dir_widget = studio->get_widget("barge_dir");
-	if (dir_widget) {
-		g_signal_connect(
-				G_OBJECT(dir_widget), "changed",
-				G_CALLBACK(on_barge_generic_changed), nullptr);
 	}
 }
 
@@ -157,7 +123,7 @@ void ExultStudio::open_barge_window(
 	// Connect signals (only once)
 	static bool signals_connected = false;
 	if (!signals_connected) {
-		connect_barge_dirty_signals(bargewin);
+		connect_widget_signals(bargewin, G_CALLBACK(on_barge_changed), nullptr);
 		signals_connected = true;
 	}
 	// Make 'apply' and 'cancel' sensitive.
