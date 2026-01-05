@@ -498,7 +498,9 @@ public:
 	void create_zoom_controls();
 
 	// Unified discard prompt helper for windows
-	bool prompt_for_discard(bool& dirty_flag, const char* entity_name);
+	bool prompt_for_discard(
+			bool& dirty_flag, const char* entity_name,
+			GtkWindow* parent = nullptr);
 
 	static void on_zoom_bilinear(GtkToggleButton* btn, gpointer user_data);
 	static void on_zoom_up(GtkButton* btn, gpointer user_data);
@@ -567,7 +569,7 @@ public:
 	void  set_sensitive(const char* name, bool tf);
 	int   prompt(
 			  const char* msg, const char* choice0, const char* choice1 = nullptr,
-			  const char* choice2 = nullptr);
+			  const char* choice2 = nullptr, GtkWindow* parent = nullptr);
 	int find_palette_color(int r, int g, int b);
 
 	// Dirty tracking utilities
@@ -682,7 +684,7 @@ public:
 namespace EStudio {
 	int Prompt(
 			const char* msg, const char* choice0, const char* choice1 = nullptr,
-			const char* choice2 = nullptr);
+			const char* choice2 = nullptr, GtkWindow* parent = nullptr);
 	void       Alert(const char* msg, ...) ATTR_PRINTF(1, 2);
 	GtkWidget* Add_menu_item(
 			GtkWidget* menu, const char* label = nullptr,

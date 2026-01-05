@@ -82,8 +82,10 @@ C_EXPORT void on_barge_apply_btn_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT void on_barge_cancel_btn_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
+	GtkWindow*   parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(btn)));
 	if (studio->is_barge_window_dirty()
-		&& !studio->prompt_for_discard(studio->barge_window_dirty, "Barge")) {
+		&& !studio->prompt_for_discard(
+				studio->barge_window_dirty, "Barge", parent)) {
 		return;    // User chose not to discard
 	}
 	studio->close_barge_window();
@@ -97,7 +99,8 @@ C_EXPORT gboolean on_barge_window_delete_event(
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	if (studio->is_barge_window_dirty()
-		&& !studio->prompt_for_discard(studio->barge_window_dirty, "Barge")) {
+		&& !studio->prompt_for_discard(
+				studio->barge_window_dirty, "Barge", GTK_WINDOW(widget))) {
 		return true;    // Block window close
 	}
 	studio->close_barge_window();
@@ -164,7 +167,8 @@ void ExultStudio::close_barge_window() {
 int ExultStudio::init_barge_window(unsigned char* data, int datalen) {
 	// Check for unsaved changes before opening new barge
 	if (bargewin && gtk_widget_get_visible(bargewin)) {
-		if (!prompt_for_discard(barge_window_dirty, "Barge")) {
+		if (!prompt_for_discard(
+					barge_window_dirty, "Barge", GTK_WINDOW(bargewin))) {
 			return 0;    // User canceled
 		}
 	}

@@ -497,7 +497,9 @@ C_EXPORT void on_shinfo_apply_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT void on_shinfo_cancel_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (!studio->prompt_for_discard(studio->shape_window_dirty, "Shape")) {
+	GtkWindow*   parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(btn)));
+	if (!studio->prompt_for_discard(
+				studio->shape_window_dirty, "Shape", parent)) {
 		return;    // User canceled
 	}
 	// User chose Discard - restore from backup if preset was applied
@@ -527,7 +529,8 @@ C_EXPORT gboolean on_shape_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (!studio->prompt_for_discard(studio->shape_window_dirty, "Shape")) {
+	if (!studio->prompt_for_discard(
+				studio->shape_window_dirty, "Shape", GTK_WINDOW(widget))) {
 		return true;    // Block window close
 	}
 	// User chose Discard - restore from backup if preset was applied
@@ -4409,7 +4412,8 @@ void ExultStudio::open_shape_window(
 ) {
 	// Check if current shape has unsaved changes
 	if (shapewin && gtk_widget_get_visible(shapewin)) {
-		if (!prompt_for_discard(shape_window_dirty, "Shape")) {
+		if (!prompt_for_discard(
+					shape_window_dirty, "Shape", GTK_WINDOW(shapewin))) {
 			return;    // User canceled, don't open new shape
 		}
 	}

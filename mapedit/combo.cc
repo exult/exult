@@ -169,8 +169,7 @@ C_EXPORT void on_combo_cancel_clicked(GtkButton* button, gpointer user_data) {
 C_EXPORT void on_combo_name_changed(GtkEntry* entry, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	auto* combo = static_cast<Combo_editor*>(g_object_get_data(
-			G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(entry))),
-			"user_data"));
+			G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(entry))), "user_data"));
 	if (combo) {
 		combo->set_dirty(true);
 	}
@@ -182,8 +181,8 @@ C_EXPORT void on_combo_name_changed(GtkEntry* entry, gpointer user_data) {
 C_EXPORT gboolean on_combo_win_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
-	auto* combo = static_cast<Combo_editor*>(g_object_get_data(
-			G_OBJECT(widget), "user_data"));
+	auto* combo = static_cast<Combo_editor*>(
+			g_object_get_data(G_OBJECT(widget), "user_data"));
 	if (combo && !combo->prompt_for_discard()) {
 		return true;    // Block window close
 	}
@@ -726,7 +725,7 @@ void Combo_editor::set_position() {
 	m->tx               = combo->starttx + studio->get_spin("combo_locx");
 	m->ty               = combo->startty + studio->get_spin("combo_locy");
 	m->tz               = studio->get_spin("combo_locz");
-	dirty = true;
+	dirty               = true;
 	render();
 }
 
@@ -811,7 +810,8 @@ void Combo_editor::save() {
  */
 
 bool Combo_editor::prompt_for_discard() {
-	return ExultStudio::get_instance()->prompt_for_discard(dirty, "Combo");
+	return ExultStudio::get_instance()->prompt_for_discard(
+			dirty, "Combo", GTK_WINDOW(win));
 }
 
 /*

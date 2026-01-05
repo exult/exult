@@ -118,10 +118,12 @@ C_EXPORT void on_egg_apply_btn_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT void on_egg_cancel_btn_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
+	GtkWindow*   parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(btn)));
 
 	// Check if there are unsaved changes
 	if (studio->is_egg_window_dirty()) {
-		if (!studio->prompt_for_discard(studio->egg_window_dirty, "egg")) {
+		if (!studio->prompt_for_discard(
+					studio->egg_window_dirty, "Egg", parent)) {
 			return;    // User chose not to discard
 		}
 	}
@@ -139,7 +141,8 @@ C_EXPORT gboolean on_egg_window_delete_event(
 
 	// Check if there are unsaved changes
 	if (studio->is_egg_window_dirty()) {
-		if (!studio->prompt_for_discard(studio->egg_window_dirty, "egg")) {
+		if (!studio->prompt_for_discard(
+					studio->egg_window_dirty, "Egg", GTK_WINDOW(widget))) {
 			return true;    // Block the close event
 		}
 	}
@@ -276,7 +279,7 @@ int ExultStudio::init_egg_window(unsigned char* data, int datalen) {
 	// Check if window is already visible and dirty (opening another egg while
 	// editor is dirty)
 	if (eggwin && gtk_widget_get_visible(eggwin) && egg_window_dirty) {
-		if (!prompt_for_discard(egg_window_dirty, "egg")) {
+		if (!prompt_for_discard(egg_window_dirty, "Egg", GTK_WINDOW(eggwin))) {
 			return 0;    // User chose not to discard changes
 		}
 	}

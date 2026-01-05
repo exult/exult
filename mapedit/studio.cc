@@ -1804,7 +1804,7 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
  *  Returns true if should proceed (discarded or not dirty), false if canceled.
  */
 bool ExultStudio::prompt_for_discard(
-		bool& dirty_flag, const char* entity_name) {
+		bool& dirty_flag, const char* entity_name, GtkWindow* parent) {
 	if (!dirty_flag) {
 		return true;    // Not dirty, proceed
 	}
@@ -1830,8 +1830,8 @@ bool ExultStudio::prompt_for_discard(
 	snprintf(
 			prompt, sizeof(prompt), "%s has unsaved changes. Discard them?",
 			entity_name);
-	const int answer
-			= EStudio::Prompt(prompt, "Yes, never ask again", "Yes", "No");
+	const int answer = EStudio::Prompt(
+			prompt, "Yes, never ask again", "Yes", "No", parent);
 
 	if (answer == 0) {
 		// User chose "Yes, never ask again"
@@ -2853,10 +2853,11 @@ C_EXPORT void on_prompt3_cancel_clicked(
  */
 
 int ExultStudio::prompt(
-		const char* msg,        // Question to ask.
-		const char* choice0,    // 1st choice.
-		const char* choice1,    // 2nd choice, or nullptr.
-		const char* choice2     // 3rd choice, or nullptr.
+		const char* msg,          // Question to ask.
+		const char* choice0,      // 1st choice.
+		const char* choice1,      // 2nd choice, or nullptr.
+		const char* choice2,      // 3rd choice, or nullptr.
+		GtkWindow*  parent_win    // Parent window, or nullptr for auto-detect.
 ) {
 	static GtkWidget* dlg = nullptr;
 	if (!dlg) {    // First time?
@@ -2869,18 +2870,22 @@ int ExultStudio::prompt(
 		// Make logo show to left.
 		gtk_box_reorder_child(GTK_BOX(hbox), draw, 0);
 	}
-	// Find the currently focused window to use as parent
-	GtkWindow* parent    = GTK_WINDOW(app);    // Default to main window
-	GList*     toplevels = gtk_window_list_toplevels();
-	for (GList* l = toplevels; l != nullptr; l = l->next) {
-		GtkWindow* win = GTK_WINDOW(l->data);
-		// Don't use the dialog itself as parent, and check for active window
-		if (win != GTK_WINDOW(dlg) && gtk_window_is_active(win)) {
-			parent = win;
-			break;
+	// Use provided parent, or find the currently focused window
+	GtkWindow* parent = parent_win;
+	if (!parent) {
+		parent           = GTK_WINDOW(app);    // Default to main window
+		GList* toplevels = gtk_window_list_toplevels();
+		for (GList* l = toplevels; l != nullptr; l = l->next) {
+			GtkWindow* win = GTK_WINDOW(l->data);
+			// Don't use the dialog itself as parent, and check for active
+			// window
+			if (win != GTK_WINDOW(dlg) && gtk_window_is_active(win)) {
+				parent = win;
+				break;
+			}
 		}
+		g_list_free(toplevels);
 	}
-	g_list_free(toplevels);
 	gtk_window_set_transient_for(GTK_WINDOW(dlg), parent);
 
 	gtk_label_set_text(GTK_LABEL(get_widget("prompt3_label")), msg);
@@ -2918,10 +2923,11 @@ namespace EStudio {
 			const char* msg,        // Question to ask.
 			const char* choice0,    // 1st choice.
 			const char* choice1,    // 2nd choice, or nullptr.
-			const char* choice2     // 3rd choice, or nullptr.
+			const char* choice2,    // 3rd choice, or nullptr.
+			GtkWindow*  parent    // Parent window, or nullptr for auto-detect.
 	) {
 		return ExultStudio::get_instance()->prompt(
-				msg, choice0, choice1, choice2);
+				msg, choice0, choice1, choice2, parent);
 	}
 
 	/*

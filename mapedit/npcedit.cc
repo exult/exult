@@ -91,7 +91,8 @@ C_EXPORT void on_npc_apply_btn_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT void on_npc_cancel_btn_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (!studio->prompt_for_discard(studio->npc_window_dirty, "NPC")) {
+	GtkWindow*   parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(btn)));
+	if (!studio->prompt_for_discard(studio->npc_window_dirty, "NPC", parent)) {
 		return;    // User canceled
 	}
 	studio->close_npc_window();
@@ -136,7 +137,8 @@ C_EXPORT gboolean on_npc_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (!studio->prompt_for_discard(studio->npc_window_dirty, "NPC")) {
+	if (!studio->prompt_for_discard(
+				studio->npc_window_dirty, "NPC", GTK_WINDOW(widget))) {
 		return true;    // Block window close
 	}
 	studio->close_npc_window();
@@ -485,7 +487,7 @@ void ExultStudio::init_new_npc() {
 int ExultStudio::init_npc_window(unsigned char* data, int datalen) {
 	// Check for unsaved changes before opening new NPC
 	if (npcwin && gtk_widget_get_visible(npcwin)) {
-		if (!prompt_for_discard(npc_window_dirty, "NPC")) {
+		if (!prompt_for_discard(npc_window_dirty, "NPC", GTK_WINDOW(npcwin))) {
 			return 0;    // User canceled
 		}
 	}

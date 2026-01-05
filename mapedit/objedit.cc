@@ -74,8 +74,10 @@ C_EXPORT void on_obj_apply_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT void on_obj_cancel_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
+	GtkWindow*   parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(btn)));
 	if (studio->is_obj_window_dirty()
-		&& !studio->prompt_for_discard(studio->obj_window_dirty, "Object")) {
+		&& !studio->prompt_for_discard(
+				studio->obj_window_dirty, "Object", parent)) {
 		return;    // User chose not to discard
 	}
 	studio->close_obj_window();
@@ -97,7 +99,8 @@ C_EXPORT gboolean on_obj_window_delete_event(
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	if (studio->is_obj_window_dirty()
-		&& !studio->prompt_for_discard(studio->obj_window_dirty, "Object")) {
+		&& !studio->prompt_for_discard(
+				studio->obj_window_dirty, "Object", GTK_WINDOW(widget))) {
 		return true;    // Block window close
 	}
 	studio->close_obj_window();
@@ -168,7 +171,8 @@ void ExultStudio::close_obj_window() {
 int ExultStudio::init_obj_window(unsigned char* data, int datalen) {
 	// Check for unsaved changes before opening new object
 	if (objwin && gtk_widget_get_visible(objwin)) {
-		if (!prompt_for_discard(obj_window_dirty, "Object")) {
+		if (!prompt_for_discard(
+					obj_window_dirty, "Object", GTK_WINDOW(objwin))) {
 			return 0;    // User canceled
 		}
 	}

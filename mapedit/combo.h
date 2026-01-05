@@ -144,6 +144,10 @@ public:
 		dirty = d;
 	}
 
+	GtkWindow* get_window() const {
+		return GTK_WINDOW(win);
+	}
+
 	// Prompt for discard if dirty. Returns true if can proceed.
 	bool prompt_for_discard();
 };
