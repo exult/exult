@@ -41,6 +41,44 @@ using std::endl;
 class Game_object;
 
 /*
+ *  Helper to mark object window as dirty (having unsaved changes).
+ */
+static void mark_obj_window_dirty() {
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (!studio->is_obj_window_initializing()) {
+		studio->set_obj_window_dirty(true);
+	}
+}
+
+/*
+ *  Generic callback to mark object window dirty on any widget change.
+ */
+C_EXPORT void on_obj_generic_changed(GtkWidget* widget, gpointer user_data) {
+	ignore_unused_variable_warning(widget, user_data);
+	mark_obj_window_dirty();
+}
+
+/*
+ *  Connect signals to mark object window dirty on edits.
+ */
+static void connect_obj_dirty_signals(GtkWidget* objwin) {
+	ignore_unused_variable_warning(objwin);
+	ExultStudio* studio = ExultStudio::get_instance();
+
+	// Connect spin buttons
+	const char* spin_widgets[]
+			= {"obj_shape", "obj_frame", "obj_quality", "obj_x", "obj_y", "obj_z"};
+	for (const char* name : spin_widgets) {
+		GtkWidget* widget = studio->get_widget(name);
+		if (widget) {
+			g_signal_connect(
+					G_OBJECT(widget), "value-changed",
+					G_CALLBACK(on_obj_generic_changed), nullptr);
+		}
+	}
+}
+
+/*
  *  Object window's Okay button.
  */
 C_EXPORT void on_obj_okay_clicked(GtkButton* btn, gpointer user_data) {
@@ -62,7 +100,13 @@ C_EXPORT void on_obj_apply_clicked(GtkButton* btn, gpointer user_data) {
  */
 C_EXPORT void on_obj_cancel_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
-	ExultStudio::get_instance()->close_obj_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (studio->is_obj_window_dirty()
+		&& !studio->prompt_for_discard(
+				studio->obj_window_dirty, "Object")) {
+		return;    // User chose not to discard
+	}
+	studio->close_obj_window();
 }
 
 /*
@@ -79,7 +123,13 @@ C_EXPORT void on_obj_rotate_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT gboolean on_obj_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
-	ExultStudio::get_instance()->close_obj_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (studio->is_obj_window_dirty()
+		&& !studio->prompt_for_discard(
+				studio->obj_window_dirty, "Object")) {
+		return true;    // Block window close
+	}
+	studio->close_obj_window();
 	return true;
 }
 
@@ -116,6 +166,12 @@ void ExultStudio::open_obj_window(
 	}
 	// Init. obj address to null.
 	g_object_set_data(G_OBJECT(objwin), "user_data", nullptr);
+	// Connect signals (only once)
+	static bool signals_connected = false;
+	if (!signals_connected) {
+		connect_obj_dirty_signals(objwin);
+		signals_connected = true;
+	}
 	if (!init_obj_window(data, datalen)) {
 		return;
 	}
@@ -139,6 +195,18 @@ void ExultStudio::close_obj_window() {
  */
 
 int ExultStudio::init_obj_window(unsigned char* data, int datalen) {
+	// Check for unsaved changes before opening new object
+	if (objwin && gtk_widget_get_visible(objwin)) {
+		if (!prompt_for_discard(obj_window_dirty, "Object")) {
+			return 0;    // User canceled
+		}
+	}
+
+	// Set initializing flag to prevent marking dirty during setup
+	obj_window_initializing = true;
+	// Clear dirty flag for new object
+	obj_window_dirty = false;
+
 	Game_object* addr;
 	int          tx;
 	int          ty;
@@ -179,6 +247,9 @@ int ExultStudio::init_obj_window(unsigned char* data, int datalen) {
 				adj, (nframes - 1) | 32);    // So we can rotate.
 		g_signal_emit_by_name(G_OBJECT(adj), "changed");
 	}
+
+	// Initialization complete - allow dirty marking now
+	obj_window_initializing = false;
 	return 1;
 }
 
@@ -213,6 +284,7 @@ int ExultStudio::save_obj_window() {
 		return 0;
 	}
 	cout << "Sent object data to server" << endl;
+	ExultStudio::get_instance()->set_obj_window_dirty(false);
 	return 1;
 }
 
