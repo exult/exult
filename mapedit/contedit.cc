@@ -201,8 +201,7 @@ void ExultStudio::open_cont_window(
 	}
 	// Init. cont address to null.
 	g_object_set_data(G_OBJECT(contwin), "user_data", nullptr);
-	// Clear dirty flag and connect signals
-	ExultStudio::get_instance()->set_cont_window_dirty(false);
+	// Connect signals (only once)
 	static bool signals_connected = false;
 	if (!signals_connected) {
 		connect_cont_dirty_signals(contwin);
@@ -231,8 +230,17 @@ void ExultStudio::close_cont_window() {
  */
 
 int ExultStudio::init_cont_window(unsigned char* data, int datalen) {
+	// Check for unsaved changes before opening new container
+	if (contwin && gtk_widget_get_visible(contwin)) {
+		if (!prompt_for_discard(cont_window_dirty, "Container")) {
+			return 0;    // User canceled
+		}
+	}
+
 	// Set initializing flag to prevent marking dirty during setup
 	cont_window_initializing = true;
+	// Clear dirty flag for new container
+	cont_window_dirty = false;
 
 	Container_game_object* addr;
 	int                    tx;
