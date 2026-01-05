@@ -38,6 +38,51 @@ using std::endl;
 class Barge_object;
 
 /*
+ *  Helper to mark barge window as dirty (having unsaved changes).
+ */
+static void mark_barge_window_dirty() {
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (!studio->is_barge_window_initializing()) {
+		studio->set_barge_window_dirty(true);
+	}
+}
+
+/*
+ *  Generic callback to mark barge window dirty on any widget change.
+ */
+C_EXPORT void on_barge_generic_changed(GtkWidget* widget, gpointer user_data) {
+	ignore_unused_variable_warning(widget, user_data);
+	mark_barge_window_dirty();
+}
+
+/*
+ *  Connect signals to mark barge window dirty on edits.
+ */
+static void connect_barge_dirty_signals(GtkWidget* bargewin) {
+	ignore_unused_variable_warning(bargewin);
+	ExultStudio* studio = ExultStudio::get_instance();
+
+	// Connect spin buttons
+	const char* spin_widgets[] = {"barge_xtiles", "barge_ytiles"};
+	for (const char* name : spin_widgets) {
+		GtkWidget* widget = studio->get_widget(name);
+		if (widget) {
+			g_signal_connect(
+					G_OBJECT(widget), "value-changed",
+					G_CALLBACK(on_barge_generic_changed), nullptr);
+		}
+	}
+
+	// Connect option menu
+	GtkWidget* dir_widget = studio->get_widget("barge_dir");
+	if (dir_widget) {
+		g_signal_connect(
+				G_OBJECT(dir_widget), "changed",
+				G_CALLBACK(on_barge_generic_changed), nullptr);
+	}
+}
+
+/*
  *  Open barge window.
  */
 
@@ -70,7 +115,12 @@ C_EXPORT void on_barge_apply_btn_clicked(GtkButton* btn, gpointer user_data) {
  */
 C_EXPORT void on_barge_cancel_btn_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
-	ExultStudio::get_instance()->close_barge_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (studio->is_barge_window_dirty()
+		&& !studio->prompt_for_discard(studio->barge_window_dirty, "Barge")) {
+		return;    // User chose not to discard
+	}
+	studio->close_barge_window();
 }
 
 /*
@@ -79,7 +129,12 @@ C_EXPORT void on_barge_cancel_btn_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT gboolean on_barge_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
-	ExultStudio::get_instance()->close_barge_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (studio->is_barge_window_dirty()
+		&& !studio->prompt_for_discard(studio->barge_window_dirty, "Barge")) {
+		return true;    // Block window close
+	}
+	studio->close_barge_window();
 	return true;
 }
 
@@ -99,7 +154,13 @@ void ExultStudio::open_barge_window(
 	}
 	// Init. barge address to null.
 	g_object_set_data(G_OBJECT(bargewin), "user_data", nullptr);
-	// Make 'apply' and 'cancelsensitive.
+	// Connect signals (only once)
+	static bool signals_connected = false;
+	if (!signals_connected) {
+		connect_barge_dirty_signals(bargewin);
+		signals_connected = true;
+	}
+	// Make 'apply' and 'cancel' sensitive.
 	gtk_widget_set_sensitive(get_widget("barge_apply_btn"), true);
 	gtk_widget_set_sensitive(get_widget("barge_cancel_btn"), true);
 	remove_statusbar("barge_status", barge_ctx, barge_status_id);
@@ -135,6 +196,18 @@ void ExultStudio::close_barge_window() {
  */
 
 int ExultStudio::init_barge_window(unsigned char* data, int datalen) {
+	// Check for unsaved changes before opening new barge
+	if (bargewin && gtk_widget_get_visible(bargewin)) {
+		if (!prompt_for_discard(barge_window_dirty, "Barge")) {
+			return 0;    // User canceled
+		}
+	}
+
+	// Set initializing flag to prevent marking dirty during setup
+	barge_window_initializing = true;
+	// Clear dirty flag for new barge
+	barge_window_dirty = false;
+
 	Barge_object* addr;
 	int           tx;
 	int           ty;
@@ -155,6 +228,9 @@ int ExultStudio::init_barge_window(unsigned char* data, int datalen) {
 	set_spin("barge_xtiles", xtiles);
 	set_spin("barge_ytiles", ytiles);
 	set_optmenu("barge_dir", dir);
+
+	// Initialization complete - allow dirty marking now
+	barge_window_initializing = false;
 	return 1;
 }
 
@@ -200,6 +276,7 @@ int ExultStudio::save_barge_window() {
 		return 0;
 	}
 	cout << "Sent barge data to server" << endl;
+	ExultStudio::get_instance()->set_barge_window_dirty(false);
 	if (!addr) {
 		barge_status_id = set_statusbar(
 				"barge_status", barge_ctx,

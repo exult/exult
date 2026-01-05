@@ -207,9 +207,10 @@ private:
 		int           schedules[8];    // Schedule types for 8 time slots
 	};
 
-	bool npc_window_initializing;    // True during window setup
-	bool cont_window_initializing;   // True during window setup
-	bool obj_window_initializing;    // True during window setup
+	bool npc_window_initializing;      // True during window setup
+	bool cont_window_initializing;     // True during window setup
+	bool obj_window_initializing;      // True during window setup
+	bool barge_window_initializing;    // True during window setup
 
 	GtkWidget* equipwin;
 	// Map locator:
@@ -261,6 +262,7 @@ public:
 	bool npc_window_dirty;      // Unsaved changes in NPC window
 	bool cont_window_dirty;     // Unsaved changes in container window
 	bool obj_window_dirty;      // Unsaved changes in object window
+	bool barge_window_dirty;    // Unsaved changes in barge window
 
 	ExultStudio(int argc, char** argv);
 	~ExultStudio();
@@ -632,6 +634,18 @@ public:
 
 	bool is_obj_window_initializing() const {
 		return obj_window_initializing;
+	}
+
+	void set_barge_window_dirty(bool dirty = true) {
+		barge_window_dirty = dirty;
+	}
+
+	bool is_barge_window_dirty() const {
+		return barge_window_dirty;
+	}
+
+	bool is_barge_window_initializing() const {
+		return barge_window_initializing;
 	}
 
 	const std::string& get_encoding() const {

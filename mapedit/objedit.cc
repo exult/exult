@@ -66,8 +66,8 @@ static void connect_obj_dirty_signals(GtkWidget* objwin) {
 	ExultStudio* studio = ExultStudio::get_instance();
 
 	// Connect spin buttons
-	const char* spin_widgets[]
-			= {"obj_shape", "obj_frame", "obj_quality", "obj_x", "obj_y", "obj_z"};
+	const char* spin_widgets[] = {"obj_shape", "obj_frame", "obj_quality",
+								  "obj_x",     "obj_y",     "obj_z"};
 	for (const char* name : spin_widgets) {
 		GtkWidget* widget = studio->get_widget(name);
 		if (widget) {
@@ -102,8 +102,7 @@ C_EXPORT void on_obj_cancel_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	if (studio->is_obj_window_dirty()
-		&& !studio->prompt_for_discard(
-				studio->obj_window_dirty, "Object")) {
+		&& !studio->prompt_for_discard(studio->obj_window_dirty, "Object")) {
 		return;    // User chose not to discard
 	}
 	studio->close_obj_window();
@@ -125,8 +124,7 @@ C_EXPORT gboolean on_obj_window_delete_event(
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	if (studio->is_obj_window_dirty()
-		&& !studio->prompt_for_discard(
-				studio->obj_window_dirty, "Object")) {
+		&& !studio->prompt_for_discard(studio->obj_window_dirty, "Object")) {
 		return true;    // Block window close
 	}
 	studio->close_obj_window();

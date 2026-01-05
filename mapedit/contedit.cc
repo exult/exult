@@ -67,10 +67,9 @@ static void connect_cont_dirty_signals(GtkWidget* contwin) {
 	ExultStudio* studio = ExultStudio::get_instance();
 
 	// Connect spin buttons
-	const char* spin_widgets[] = {"cont_shape",  "cont_frame",
-								  "cont_quality", "cont_x",
-								  "cont_y",       "cont_z",
-								  "cont_resistance"};
+	const char* spin_widgets[]
+			= {"cont_shape", "cont_frame", "cont_quality",   "cont_x",
+			   "cont_y",     "cont_z",     "cont_resistance"};
 	for (const char* name : spin_widgets) {
 		GtkWidget* widget = studio->get_widget(name);
 		if (widget) {
@@ -81,8 +80,7 @@ static void connect_cont_dirty_signals(GtkWidget* contwin) {
 	}
 
 	// Connect toggle buttons
-	const char* toggle_widgets[]
-			= {"cont_invisible", "cont_okay_to_take"};
+	const char* toggle_widgets[] = {"cont_invisible", "cont_okay_to_take"};
 	for (const char* name : toggle_widgets) {
 		GtkWidget* widget = studio->get_widget(name);
 		if (widget) {
