@@ -42,6 +42,58 @@ using std::endl;
 class Container_game_object;
 
 /*
+ *  Helper to mark container window as dirty (having unsaved changes).
+ */
+static void mark_cont_window_dirty() {
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (!studio->is_cont_window_initializing()) {
+		studio->set_cont_window_dirty(true);
+	}
+}
+
+/*
+ *  Generic callback to mark container window dirty on any widget change.
+ */
+C_EXPORT void on_cont_generic_changed(GtkWidget* widget, gpointer user_data) {
+	ignore_unused_variable_warning(widget, user_data);
+	mark_cont_window_dirty();
+}
+
+/*
+ *  Connect signals to mark container window dirty on edits.
+ */
+static void connect_cont_dirty_signals(GtkWidget* contwin) {
+	ignore_unused_variable_warning(contwin);
+	ExultStudio* studio = ExultStudio::get_instance();
+
+	// Connect spin buttons
+	const char* spin_widgets[] = {"cont_shape",  "cont_frame",
+								  "cont_quality", "cont_x",
+								  "cont_y",       "cont_z",
+								  "cont_resistance"};
+	for (const char* name : spin_widgets) {
+		GtkWidget* widget = studio->get_widget(name);
+		if (widget) {
+			g_signal_connect(
+					G_OBJECT(widget), "value-changed",
+					G_CALLBACK(on_cont_generic_changed), nullptr);
+		}
+	}
+
+	// Connect toggle buttons
+	const char* toggle_widgets[]
+			= {"cont_invisible", "cont_okay_to_take"};
+	for (const char* name : toggle_widgets) {
+		GtkWidget* widget = studio->get_widget(name);
+		if (widget) {
+			g_signal_connect(
+					G_OBJECT(widget), "toggled",
+					G_CALLBACK(on_cont_generic_changed), nullptr);
+		}
+	}
+}
+
+/*
  *  Container window's Okay button.
  */
 C_EXPORT void on_cont_okay_clicked(GtkButton* btn, gpointer user_data) {
@@ -63,7 +115,13 @@ C_EXPORT void on_cont_apply_clicked(GtkButton* btn, gpointer user_data) {
  */
 C_EXPORT void on_cont_cancel_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
-	ExultStudio::get_instance()->close_cont_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (studio->is_cont_window_dirty()
+		&& !studio->prompt_for_discard(
+				studio->cont_window_dirty, "Container")) {
+		return;    // User chose not to discard
+	}
+	studio->close_cont_window();
 }
 
 /*
@@ -99,7 +157,13 @@ C_EXPORT void on_cont_rotate_clicked(GtkButton* btn, gpointer user_data) {
 C_EXPORT gboolean on_cont_window_delete_event(
 		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
-	ExultStudio::get_instance()->close_cont_window();
+	ExultStudio* studio = ExultStudio::get_instance();
+	if (studio->is_cont_window_dirty()
+		&& !studio->prompt_for_discard(
+				studio->cont_window_dirty, "Container")) {
+		return true;    // Block window close
+	}
+	studio->close_cont_window();
 	return true;
 }
 
@@ -137,6 +201,13 @@ void ExultStudio::open_cont_window(
 	}
 	// Init. cont address to null.
 	g_object_set_data(G_OBJECT(contwin), "user_data", nullptr);
+	// Clear dirty flag and connect signals
+	ExultStudio::get_instance()->set_cont_window_dirty(false);
+	static bool signals_connected = false;
+	if (!signals_connected) {
+		connect_cont_dirty_signals(contwin);
+		signals_connected = true;
+	}
 	if (!init_cont_window(data, datalen)) {
 		return;
 	}
@@ -160,6 +231,9 @@ void ExultStudio::close_cont_window() {
  */
 
 int ExultStudio::init_cont_window(unsigned char* data, int datalen) {
+	// Set initializing flag to prevent marking dirty during setup
+	cont_window_initializing = true;
+
 	Container_game_object* addr;
 	int                    tx;
 	int                    ty;
@@ -203,6 +277,9 @@ int ExultStudio::init_cont_window(unsigned char* data, int datalen) {
 				adj, (nframes - 1) | 32);    // So we can rotate.
 		g_signal_emit_by_name(G_OBJECT(adj), "changed");
 	}
+
+	// Initialization complete - allow dirty marking now
+	cont_window_initializing = false;
 	return 1;
 }
 
@@ -236,6 +313,7 @@ int ExultStudio::save_cont_window() {
 		return 0;
 	}
 	cout << "Sent container data to server" << endl;
+	ExultStudio::get_instance()->set_cont_window_dirty(false);
 	return 1;
 }
 

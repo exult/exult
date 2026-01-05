@@ -208,6 +208,7 @@ private:
 	};
 
 	bool npc_window_initializing;    // True during window setup
+	bool cont_window_initializing;   // True during window setup
 
 	GtkWidget* equipwin;
 	// Map locator:
@@ -257,6 +258,7 @@ public:
 	// Dirty flags for window tracking (public for external access)
 	bool shape_window_dirty;    // Unsaved changes in shape window
 	bool npc_window_dirty;      // Unsaved changes in NPC window
+	bool cont_window_dirty;     // Unsaved changes in container window
 
 	ExultStudio(int argc, char** argv);
 	~ExultStudio();
@@ -604,6 +606,18 @@ public:
 
 	bool is_npc_window_initializing() const {
 		return npc_window_initializing;
+	}
+
+	void set_cont_window_dirty(bool dirty = true) {
+		cont_window_dirty = dirty;
+	}
+
+	bool is_cont_window_dirty() const {
+		return cont_window_dirty;
+	}
+
+	bool is_cont_window_initializing() const {
+		return cont_window_initializing;
 	}
 
 	const std::string& get_encoding() const {
