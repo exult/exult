@@ -164,7 +164,7 @@ static void Filelist_selection(GtkTreeView* treeview, GtkTreePath* path) {
 			GtkTreePath* map_files_path = gtk_tree_path_new_from_string("1");
 			gtk_tree_view_set_cursor(treeview, map_files_path, nullptr, false);
 			gtk_tree_path_free(map_files_path);
-			
+
 			// Check if prompting is disabled via config
 			std::string prompt_setting;
 			config->value(
@@ -2463,7 +2463,8 @@ void ExultStudio::set_edit_terrain(gboolean terrain    // True/false
 					"Ok, never warn again", "Ok");
 			if (answer == 0) {
 				// User chose "Ok, never warn again"
-				config->set("config/estudio/prompt/terrain_warning", "no", true);
+				config->set(
+						"config/estudio/prompt/terrain_warning", "no", true);
 			}
 		}
 	}
@@ -3051,6 +3052,26 @@ C_EXPORT void on_prefs_okay_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	ExultStudio::get_instance()->save_preferences();
 	gtk_widget_set_visible(gtk_widget_get_toplevel(GTK_WIDGET(button)), false);
+}
+
+/*
+ *  'Reset' was hit in prompts section.
+ */
+
+C_EXPORT void on_prefs_prompts_reset_clicked(
+		GtkButton* button, gpointer user_data) {
+	ignore_unused_variable_warning(button, user_data);
+
+	// Reset all prompt settings to "yes"
+	config->set("config/estudio/prompt/terrain_warning", "yes", true);
+	config->set("config/estudio/prompt/npcs_listview", "yes", true);
+	config->set("config/estudio/prompt/barge_discard", "yes", true);
+	config->set("config/estudio/prompt/combo_discard", "yes", true);
+	config->set("config/estudio/prompt/egg_discard", "yes", true);
+	config->set("config/estudio/prompt/container_discard", "yes", true);
+	config->set("config/estudio/prompt/npc_discard", "yes", true);
+	config->set("config/estudio/prompt/object_discard", "yes", true);
+	config->set("config/estudio/prompt/shape_discard", "yes", true);
 }
 
 /*
