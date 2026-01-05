@@ -164,8 +164,22 @@ static void Filelist_selection(GtkTreeView* treeview, GtkTreePath* path) {
 			GtkTreePath* map_files_path = gtk_tree_path_new_from_string("1");
 			gtk_tree_view_set_cursor(treeview, map_files_path, nullptr, false);
 			gtk_tree_path_free(map_files_path);
-			EStudio::Alert(
-					"To view NPCs Exult Studio must be connected to Exult.");
+			
+			// Check if prompting is disabled via config
+			std::string prompt_setting;
+			config->value(
+					"config/estudio/prompt/npcs_listview", prompt_setting,
+					"yes");
+			if (prompt_setting != "no") {
+				const int answer = EStudio::Prompt(
+						"To view NPCs Exult Studio must be connected to Exult.",
+						"Ok, never warn again", "Ok");
+				if (answer == 0) {
+					// User chose "Ok, never warn again"
+					config->set(
+							"config/estudio/prompt/npcs_listview", "no", true);
+				}
+			}
 			return;
 		}
 		studio->set_browser("NPC Browser", studio->create_browser(text));
@@ -2438,9 +2452,20 @@ void ExultStudio::set_edit_terrain(gboolean terrain    // True/false
 		set_spin("hide_lift_spin", 255, true);
 	} else {    // Disable "Hide lift".
 		set_sensitive("hide_lift_spin", false);
-		// Alert user about chunk editing behavior
-		EStudio::Alert("Changing chunks in one place applies these changes to "
-					   "all other instances of this chunk as well.");
+		// Check if prompting is disabled via config
+		std::string prompt_setting;
+		config->value(
+				"config/estudio/prompt/terrain_warning", prompt_setting, "yes");
+		if (prompt_setting != "no") {
+			const int answer = EStudio::Prompt(
+					"Changing chunks in one place applies these changes to "
+					"all other instances of this chunk as well.",
+					"Ok, never warn again", "Ok");
+			if (answer == 0) {
+				// User chose "Ok, never warn again"
+				config->set("config/estudio/prompt/terrain_warning", "no", true);
+			}
+		}
 	}
 	// Set edit-mode to paint.
 	GtkWidget* mitem = get_widget(terrain ? "paint1" : "move1");
