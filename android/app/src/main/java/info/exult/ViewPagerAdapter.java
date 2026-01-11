@@ -40,6 +40,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 			   new TabData("Games", GamesFragment.class),
 			   new TabData("Audio Data", AudioPacksFragment.class),
 			   new TabData("Mods & Patches", ModsFragment.class),
+			   new TabData("Savegames", SavegamesFragment.class),
 			   new TabData("Console Log", ConsoleLogFragment.class)};
 
 	public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
