@@ -390,6 +390,7 @@ void AudioOptions_gump::rebuild_midi_driver_buttons() {
 	}
 
 	if (midi_ogg_enabled) {
+		do_arrange();
 		return;
 	}
 
@@ -524,10 +525,12 @@ void AudioOptions_gump::load_settings() {
 		num_sample_rates = 5;
 	}
 
+	// OGG Vorbis support read from config as midi might not be enabled yet
+	config->value("config/audio/midi/use_oggs", s, "no");
+	midi_ogg_enabled = (s == "yes" ? 1 : 0);
+
 	MyMidiPlayer* midi = Audio::get_ptr()->get_midi();
 	if (midi) {
-		midi_ogg_enabled = midi->get_ogg_enabled();
-
 		s = midi->get_midi_driver();
 		for (midi_driver = 0; midi_driver < MidiDriver::getDriverCount();
 			 midi_driver++) {
@@ -543,10 +546,6 @@ void AudioOptions_gump::load_settings() {
 	} else {
 		// String for default value for driver type
 		std::string driver_default = "default";
-
-		// OGG Vorbis support
-		config->value("config/audio/midi/use_oggs", s, "no");
-		midi_ogg_enabled = (s == "yes" ? 1 : 0);
 
 		config->value("config/audio/midi/driver", s, driver_default.c_str());
 
