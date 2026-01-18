@@ -3622,42 +3622,33 @@ USECODE_INTRINSIC(set_new_schedules) {
 	}
 
 	if (!parms[1].is_array()) {
-		if (parms[2].is_array() || parms[3].is_array()) {
-			cerr << "set_new_schedules: inconsistent parameters! Parameters 3 "
-					"and 4 should not be arrays if parameter 1 is not an array."
+		if (parms[2].is_array()) {
+			cerr << "set_new_schedules: inconsistent parameters! Parameter 3 "
+					"should not be an array if parameter 2 is not an array."
 				 << endl;
-			for (size_t ii = 2; ii < 4; ii++) {
-				if (parms[ii].is_array()) {
-					if (parms[ii].get_array_size() < 1) {
-						num_errors++;
-						cerr << "set_new_schedules: parameter " << (ii + 1)
-							 << " has insufficient elements! At least 1 "
-								"element is required."
-							 << endl;
-					} else if (!parms[ii].is_int()) {
-						num_errors++;
-						cerr << "set_new_schedules: parameter " << (ii + 1)
-							 << " element 0 is not an integer!" << endl;
-					}
-				}
+			if (parms[2].get_array_size() < 1) {
+				num_errors++;
+				cerr << "set_new_schedules: parameter 3 has insufficient "
+						"elements! At least 1 element is required."
+					 << endl;
+			} else if (!parms[2].get_elem(0).is_int()) {
+				num_errors++;
+				cerr << "set_new_schedules: parameter 3 element 0 is not an "
+						"integer!"
+					 << endl;
 			}
 		}
 	} else {
-		for (size_t ii = 2; ii < 4; ii++) {
-			if (!parms[2].is_array()) {
-				cerr << "set_new_schedules: inconsistent parameters! Parameter "
-					 << (ii + 1)
-					 << " should be an array if parameter 1 is an array."
-					 << endl;
-				num_errors++;
-			}
-			if (parms[2].get_array_size() < count) {
-				cerr << "set_new_schedules: parameter 3 has insufficient "
-						"elements! "
-						"At least "
-					 << count << " elements are required." << endl;
-				num_errors++;
-			}
+		if (!parms[2].is_array()) {
+			cerr << "set_new_schedules: inconsistent parameters! Parameter 3 "
+					"should be an array if parameter 2 is an array."
+				 << endl;
+			num_errors++;
+		} else if (parms[2].get_array_size() < count) {
+			cerr << "set_new_schedules: parameter 3 has insufficient "
+					"elements! At least "
+				 << count << " elements are required." << endl;
+			num_errors++;
 		}
 	}
 
@@ -3687,7 +3678,8 @@ USECODE_INTRINSIC(set_new_schedules) {
 				have_3d_positions
 						? static_cast<int>(parms[3].get_elem(2).get_int_value())
 						: 0};
-		list.emplace_back(sched, time, tile);
+		list.emplace_back(time, sched, tile);
+
 	} else {
 		for (auto timeIt = parms[1].cbegin(), schedIt = parms[2].cbegin(),
 				  locIt = parms[3].cbegin();
@@ -3702,7 +3694,7 @@ USECODE_INTRINSIC(set_new_schedules) {
 					have_3d_positions
 							? static_cast<int>(locIt++->get_int_value())
 							: 0};
-			list.emplace_back(sched, time, tile);
+			list.emplace_back(time, sched, tile);
 		}
 	}
 
