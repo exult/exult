@@ -1,7 +1,7 @@
 /*
  *  tqueue.h - A queue of time-based events for animation.
  *
- *  Copyright (C) 2000-2022 The Exult Team
+ *  Copyright (C) 2000-2026 The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -66,15 +66,16 @@ struct Queue_entry {
 			sp_handler;    // Shared pointer to object to activate
 	uintptr udata;         // Data to pass to handler.
 	uint32  time;          // Time when this is due.
-	uint32  pause_added = 0;  // pause_time when this was added (0 if not paused)
+	uint32  pause_added
+			= 0;    // pause_time when this was added (0 if not paused)
 
 	inline void set(
 			uint32 t, Time_sensitive* h, uintptr ud,
 			std::shared_ptr<Time_sensitive> sp, uint32 pause_t = 0) {
-		time       = t;
-		handler    = h;
-		udata      = ud;
-		sp_handler = sp;
+		time        = t;
+		handler     = h;
+		udata       = ud;
+		sp_handler  = sp;
 		pause_added = pause_t;
 	}
 };

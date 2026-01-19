@@ -1,7 +1,7 @@
 /*
  *  tqueue.cc - A queue of time-based events for animation.
  *
- *  Copyright (C) 2000-2022  The Exult Team
+ *  Copyright (C) 2000-2026  The Exult Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -62,11 +62,12 @@ void Time_queue::add(
 		uint32 t, std::shared_ptr<Time_sensitive> obj, uintptr ud) {
 	obj->queue_cnt++;    // It's going in, no matter what.
 	Queue_entry newent;
-	uint32 added_pause_time = 0;
+	uint32      added_pause_time = 0;
 	if (paused && !obj->always) {    // Paused?
 		// Messy, but we need to fix time.
 		t -= SDL_GetTicks() - pause_time;
-		added_pause_time = pause_time;  // Track which pause cycle this belongs to
+		added_pause_time
+				= pause_time;    // Track which pause cycle this belongs to
 	}
 	newent.set(t, nullptr, ud, obj, added_pause_time);
 	auto insertionPoint = std::upper_bound(data.begin(), data.end(), newent);
@@ -80,11 +81,12 @@ void Time_queue::add(
 ) {
 	obj->queue_cnt++;    // It's going in, no matter what.
 	Queue_entry newent;
-	uint32 added_pause_time = 0;
+	uint32      added_pause_time = 0;
 	if (paused && !obj->always) {    // Paused?
 		// Messy, but we need to fix time.
 		t -= SDL_GetTicks() - pause_time;
-		added_pause_time = pause_time;  // Track which pause cycle this belongs to
+		added_pause_time
+				= pause_time;    // Track which pause cycle this belongs to
 	}
 	newent.set(t, obj, ud, nullptr, added_pause_time);
 	auto insertionPoint = std::upper_bound(data.begin(), data.end(), newent);
@@ -297,9 +299,9 @@ void Time_queue::resume(uint32 curtime) {
 	if (paused == 0 || --paused > 0) {    // Only unpause when stack empty.
 		return;                           // Not paused.
 	}
-	const int diff = curtime - pause_time;
-	const uint32 current_pause_time = pause_time;  // Save before clearing
-	pause_time     = 0;
+	const int    diff               = curtime - pause_time;
+	const uint32 current_pause_time = pause_time;    // Save before clearing
+	pause_time                      = 0;
 	if (diff < 0) {    // Should not happen.
 		return;
 	}
@@ -307,8 +309,8 @@ void Time_queue::resume(uint32 curtime) {
 	for (auto& it : data) {
 		Time_sensitive* obj = it.handler ? it.handler : it.sp_handler.get();
 		if (obj && !obj->always && it.pause_added == current_pause_time) {
-			it.time += diff;    // Push entries ahead.
-			it.pause_added = 0; // Mark as adjusted
+			it.time += diff;       // Push entries ahead.
+			it.pause_added = 0;    // Mark as adjusted
 		}
 	}
 }
