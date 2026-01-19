@@ -62,11 +62,13 @@ void Time_queue::add(
 		uint32 t, std::shared_ptr<Time_sensitive> obj, uintptr ud) {
 	obj->queue_cnt++;    // It's going in, no matter what.
 	Queue_entry newent;
+	uint32 added_pause_time = 0;
 	if (paused && !obj->always) {    // Paused?
 		// Messy, but we need to fix time.
 		t -= SDL_GetTicks() - pause_time;
+		added_pause_time = pause_time;  // Track which pause cycle this belongs to
 	}
-	newent.set(t, nullptr, ud, obj);
+	newent.set(t, nullptr, ud, obj, added_pause_time);
 	auto insertionPoint = std::upper_bound(data.begin(), data.end(), newent);
 	data.insert(insertionPoint, newent);
 }
@@ -78,11 +80,13 @@ void Time_queue::add(
 ) {
 	obj->queue_cnt++;    // It's going in, no matter what.
 	Queue_entry newent;
+	uint32 added_pause_time = 0;
 	if (paused && !obj->always) {    // Paused?
 		// Messy, but we need to fix time.
 		t -= SDL_GetTicks() - pause_time;
+		added_pause_time = pause_time;  // Track which pause cycle this belongs to
 	}
-	newent.set(t, obj, ud, nullptr);
+	newent.set(t, obj, ud, nullptr, added_pause_time);
 	auto insertionPoint = std::upper_bound(data.begin(), data.end(), newent);
 	data.insert(insertionPoint, newent);
 }
@@ -294,13 +298,17 @@ void Time_queue::resume(uint32 curtime) {
 		return;                           // Not paused.
 	}
 	const int diff = curtime - pause_time;
+	const uint32 current_pause_time = pause_time;  // Save before clearing
 	pause_time     = 0;
 	if (diff < 0) {    // Should not happen.
 		return;
 	}
+	// Only shift entries that were added during THIS pause cycle
 	for (auto& it : data) {
-		if (!it.handler->always) {
+		Time_sensitive* obj = it.handler ? it.handler : it.sp_handler.get();
+		if (obj && !obj->always && it.pause_added == current_pause_time) {
 			it.time += diff;    // Push entries ahead.
+			it.pause_added = 0; // Mark as adjusted
 		}
 	}
 }

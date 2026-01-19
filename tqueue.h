@@ -66,14 +66,16 @@ struct Queue_entry {
 			sp_handler;    // Shared pointer to object to activate
 	uintptr udata;         // Data to pass to handler.
 	uint32  time;          // Time when this is due.
+	uint32  pause_added = 0;  // pause_time when this was added (0 if not paused)
 
 	inline void set(
 			uint32 t, Time_sensitive* h, uintptr ud,
-			std::shared_ptr<Time_sensitive> sp) {
+			std::shared_ptr<Time_sensitive> sp, uint32 pause_t = 0) {
 		time       = t;
 		handler    = h;
 		udata      = ud;
 		sp_handler = sp;
+		pause_added = pause_t;
 	}
 };
 
