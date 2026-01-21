@@ -28,6 +28,7 @@
 #include "ios_state.hpp"
 
 #include <algorithm>
+#include <array>
 #include <charconv>
 #include <cstdlib>
 #include <iostream>
@@ -35,6 +36,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 using std::cerr;
@@ -46,10 +48,76 @@ using std::string;
 using std::stringstream;
 using std::vector;
 
+/*
+ *  Translation table for UTF-8 encoded special characters to font hex
+ * positions. The font shapes have these characters at positions
+ * that don't match their UTF-8 encoding, so we need to translate them.
+ */
+static const std::unordered_map<std::string_view, char> utf8_to_font_hex = {
+		{"\xC3\x87", 0x01}, // Ç (C cedilla uppercase)
+		{"\xC3\xBC", 0x02}, // ü (u umlaut)
+		{"\xC3\xA9", 0x03}, // é (e acute)
+		{"\xC3\xA2", 0x04}, // â (a circumflex)
+		{"\xC3\xA4", 0x05}, // ä (a umlaut)
+		{"\xC3\xA0", 0x06}, // à (a grave)
+		{"\xC3\xA7", 0x07}, // ç (c cedilla lowercase)
+		{"\xC3\xAA", 0x08}, // ê (e circumflex)
+		{"\xC3\xAB", 0x0b}, // ë (e umlaut)
+		{"\xC3\xA8", 0x0c}, // è (e grave)
+		{"\xC3\xAF", 0x0e}, // ï (i umlaut)
+		{"\xC3\xAE", 0x0f}, // î (i circumflex)
+		{"\xC3\xAC", 0x10}, // ì (i grave)
+		{"\xC3\x84", 0x11}, // Ä (A umlaut uppercase)
+		{"\xC3\x88", 0x12}, // È (E grave uppercase)
+		{"\xC3\xB4", 0x13}, // ô (o circumflex)
+		{"\xC3\xB6", 0x14}, // ö (o umlaut)
+		{"\xC3\xBB", 0x15}, // û (u circumflex)
+		{"\xC3\xB9", 0x16}, // ù (u grave)
+		{"\xC3\x96", 0x17}, // Ö (O umlaut uppercase)
+		{"\xC3\x9C", 0x18}, // Ü (U umlaut uppercase)
+		{"\xC3\xA1", 0x19}, // á (a acute)
+		{"\xC3\x9F", 0x1c}, // ß (German sharp S)
+		{"\xC3\xAD", 0x1d}, // í (i acute)
+		{"\xC3\xB3", 0x1e}, // ó (o acute)
+		{"\xC3\xBA", 0x1f}, // ú (u acute)
+};
+
+/*
+ *  Translate UTF-8 encoded special characters to font hex positions.
+ *  This modifies the string in place, converting multi-byte UTF-8 sequences
+ *  to single bytes that match the font file positions.
+ */
+static void translate_utf8_to_font_hex(std::string& text) {
+	std::string result;
+	result.reserve(text.size());
+
+	size_t i = 0;
+	while (i < text.size()) {
+		// Check for 2-byte UTF-8 sequence (0xC0-0xDF followed by 0x80-0xBF)
+		if (i + 1 < text.size()
+			&& (static_cast<unsigned char>(text[i]) & 0xE0) == 0xC0) {
+			std::string_view seq(text.data() + i, 2);
+			auto             it = utf8_to_font_hex.find(seq);
+			if (it != utf8_to_font_hex.end()) {
+				result += it->second;
+				i += 2;
+				continue;
+			}
+		}
+		// Not a recognized UTF-8 sequence, copy byte as-is
+		result += text[i];
+		++i;
+	}
+
+	text = std::move(result);
+}
+
 Text_msg_file_reader::Text_msg_file_reader() : global_first(0) {}
 
 Text_msg_file_reader::Text_msg_file_reader(IDataSource& in) : global_first(0) {
 	in.read(contents, in.getAvail());
+	// Translate UTF-8 special characters to font hex positions
+	translate_utf8_to_font_hex(contents);
 	if (!parse_contents()) {
 		cerr << "Error parsing text message file" << endl;
 		global_section.clear();
@@ -229,7 +297,7 @@ bool Text_msg_file_reader::parse_contents() {
 	}
 
 	int         version;
-	auto versionStr = (*data)[0].value_or(std::string_view());
+	auto        versionStr = (*data)[0].value_or(std::string_view());
 	const auto* start      = versionStr.data();
 	const auto* end        = std::next(start, versionStr.size());
 	if (std::from_chars(start, end, version).ec != std::errc()) {

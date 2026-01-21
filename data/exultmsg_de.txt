@@ -1,17 +1,17 @@
 # These messages are used in the Exult engine, and follow the
 # game-specific ones.
-0x500:Stell den Stuhl zurck!
+0x500:Stell den Stuhl zurück!
 0x501:Dieb!!
 0x502:Du Schurke!!
 0x503:Nicht lustig!
 0x504:Wer hat meinen Stuhl bewegt??
-0x505:Du siehst aus, als wrde es dir gut gehn.
+0x505:Du siehst aus, als würde es dir gut gehn.
 0x506:Alles klar?
-0x507:Bereit fr das Dessert?
+0x507:Bereit für das Dessert?
 0x508:Guten Appetit!
-0x509:Spezialitt des Hauses!
+0x509:Spezialität des Hauses!
 0x50a:Avatar!  Benimm dich!
-0x50b:Hast Du bemerkt, da schon jemand im Bett liegt?
+0x50b:Hast Du bemerkt, daß schon jemand im Bett liegt?
 0x50c:Der Benutzer dieses Bettes wird wohl gerade keinen Wert auf Gesellschaft legen.
 0x50d:So einfach wirst du mich nicht los!
 0x50e:Ah, hier bist du!
@@ -25,61 +25,61 @@
 #0x514:DAS ENDE VON BRITANNIA...
 0x515:NEIN! Das darfst du nicht!
 0x516:Ich verfluche dich!  Sei verflucht!
-0x517:Die Schwarze Pforte ist zerstrt!
-0x518:Der Wchter konnte aufgehalten werden!
+0x517:Die Schwarze Pforte ist zerstört!
+0x518:Der Wächter konnte aufgehalten werden!
 # End1
-0x519:Avatar! Glaubst du, da du mich
+0x519:Avatar! Glaubst du, daß du mich
 0x51A:besiegt hast? Denk nochmal nach!
 0x51B:Du kannst Britannia nicht mehr
 0x51C:verlassen. Ich hingegen kann jede
 0x51D:Welt betreten! Hmmm...
 0x51E:vielleicht mache ich deine armselige
-0x51F:Erde zu meinem NCHSTEN Ziel!
+0x51F:Erde zu meinem NÄCHSTEN Ziel!
 0x520:
 # End2
 0x521:Es wird Monate dauern, bis Britannia
 0x522:sich von dieser entscheidenden
 0x523:Schlacht um die Schwarze Pforte
-0x524:und von den Intrigen des Wchters
+0x524:und von den Intrigen des Wächters
 0x525:erholen wird. Doch das
-0x526:Gute hat das Bse besiegt!
-0x527:Als Du nach Britain zurckkehrst,
-0x528:verkndet Lord British, da die
+0x526:Gute hat das Böse besiegt!
+0x527:Als Du nach Britain zurückkehrst,
+0x528:verkündet Lord British, daß die
 0x529:Gemeinschaft ihrer Macht enthoben
 0x52A:und alle ihre Niederlassungen in
-0x52B:Britannia zerstrt werden sollten.
+0x52B:Britannia zerstört werden sollten.
 # End3
 0x52C:Deine Frustration, Britannia nicht
-0x52D:verlassen zu knnen, wird von der
+0x52D:verlassen zu können, wird von der
 0x52E:Genugtuung des Sieges und der
 0x52F:Befriedigung, die entsetzlichen
-0x530:Morde aufgeklrt zu haben,
-0x531:bertroffen. Selbst der Mord an
+0x530:Morde aufgeklärt zu haben,
+0x531:übertroffen. Selbst der Mord an
 0x532:Sparks Vater ist durch die
 0x533:Beseitigung der heuchlerischen
-0x534:Gemeinschaft gercht.
+0x534:Gemeinschaft gerächt.
 # End4
-0x535:Zudem es dir momentan nicht mglich
+0x535:Zudem es dir momentan nicht möglich
 0x536:ist, etwas gegen die Drohung des
-0x537:Wchters auszurichten, beunruhigt
+0x537:Wächters auszurichten, beunruhigt
 0x538:dich auch noch ein anderer Gedanke...
 0x539:Was ist aus dem Satan Batlin
 0x53A:geworden, dem es auf irgendeine
 0x53B:Weise gelang, seiner Strafe durch
 0x53C:Flucht zu entgehen?
 # End5
-0x53D:Doch davon erzhlt eine andere
+0x53D:Doch davon erzählt eine andere
 0x53E:Geschichte... Eine Geschichte,
 0x53F:die dich zu Serpent Isle, einem
 0x540:Ort namens Schlangeninsel,
-0x541:fhren wird ...
+0x541:führen wird ...
 #Congratulations
-0x542:Herzlichen Glckwunsch! Du hast
+0x542:Herzlichen Glückwunsch! Du hast
 0x543:Ultima VII gemeistert! Du brauchtest
 0x544: und |nur |genau | Jahr| Jahre| Monat| Monate| Tag| Tage| Stunde| Stunden|negative Zeit!
 0x545:Bitte schreibe Lord British und 
-0x546:erzhle @RichardGarriott auf
-0x547:Twitter von deiner groartigen und
+0x546:erzähle @RichardGarriott auf
+0x547:Twitter von deiner großartigen und
 0x548:bewundernswerten Leistung!
-0x549:Er wird sich ber Post aus
+0x549:Er wird sich über Post aus
 0x54A:Deutschland freuen!

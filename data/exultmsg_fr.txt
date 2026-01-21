@@ -1,21 +1,21 @@
 # These messages are used in the Exult engine, and follow the
 # game-specific ones.
-0x500:Remets cette chaise  sa place !
+0x500:Remets cette chaise à sa place !
 0x501:Voleur !!
 0x502:Sale rascal !!
-0x503:C'est pas drle!
-0x504:Qui a dplac ma chaise ??
+0x503:C'est pas drôle!
+0x504:Qui a déplacé ma chaise ??
 0x505:On dirait que tu vas bien.
 0x506:Tout va bien ?
 0x507:Un dessert ?
-0x508:Bon apptit !
-0x509:Spcialit de la maison !
+0x508:Bon appétit !
+0x509:Spécialité de la maison !
 0x50a:Avatar ! Retiens-toi !
-0x50b:Tu vois bien que le lit est occup !
+0x50b:Tu vois bien que le lit est occupé !
 0x50c:La personne dans ce lit n'a pas l'air de vouloir de compagnie.
 0x50d:Tu ne me perdras pas si facilement !
 0x50e:Ah, te voila !
-0x50f:Trouv !
+0x50f:Trouvé !
 # Intro messages
 0x510:with help from
 0x511:The Exult Team
@@ -25,36 +25,36 @@
 0x514:LA FIN DE BRITANNIA TELLE QU'ELLE EXISTA...
 0x515:Non! Tu ne dois pas!
 0x516:Sois maudit Avatar! Sois maudit!
-0x517:La Porte Noire est dtruite.
-0x518:Le Gardien a t cart.
+0x517:La Porte Noire est détruite.
+0x518:Le Gardien a été écarté.
 # End1
-0x519:Avatar! Tu crois avoir gagn?
-0x51A:Rflchis bien!
+0x519:Avatar! Tu crois avoir gagné?
+0x51A:Réfléchis bien!
 0x51B:Tu ne peux quitter Britannia,
 0x51C:alors que je suis libre
-0x51D:de pntrer dans d'autres mondes!
+0x51D:de pénétrer dans d'autres mondes!
 0x51E:Hmmm...
-0x51F:Peut-tre que ta chtive Terre sera
+0x51F:Peut-être que ta châtive Terre sera
 0x520:ma PROCHAINE cible!
 # End2
 0x521:Dans les mois qui ont suivi la bataille
-0x522:corse de la Porte Noire, Britannia
+0x522:corsée de la Porte Noire, Britannia
 0x523:est sur la longue route
-0x524:du rtablissement de
+0x524:du rétablissement de
 0x525:ses divers maux.
 0x526:A ton retour sur Britain,
-0x527:Lord British dcrta que
-0x528:La Confrrie serait proscrite,
+0x527:Lord British décréta que
+0x528:La Confrérie serait proscrite,
 0x529:et que toutes les cellules seraient
-0x52A:rapidement dtruites.
+0x52A:rapidement détruites.
 0x52B:
 # End3
 0x52C:La frustration que tu ressens pour
-0x52D:avoir t en rade sur Britannia est
-0x52E:quelque peu allge par la satisfaction
-0x52F:d'avoir rsolu les horribles meurtres
-0x530:commis par La Confrrie et mme veng
-0x531:la mort du pre de Spark.
+0x52D:avoir été en rade sur Britannia est
+0x52E:quelque peu allégée par la satisfaction
+0x52F:d'avoir résolu les horribles meurtres
+0x530:commis par La Confrérie et même vengé
+0x531:la mort du père de Spark.
 0x532:
 0x533:
 0x534:
@@ -62,24 +62,24 @@
 0x535:Bien que tu sois, pour l'instant,
 0x536:impuissant devant l' ultime
 0x537:menace du Gardien, une
-0x538:autre pense te tracasse...
+0x538:autre pensée te tracasse...
 0x539:Qu'est-il advenu du diabolique Batlin,
-0x53A:qui est parvenu  s' chapper?
+0x53A:qui est parvenu à s' échapper?
 0x53B:
 0x53C:
 # End5
 0x53D:Mais cecy est une autre histoire...
-0x53E:qui t' amnera
+0x53E:qui t' amènera
 0x53F:dans un endroit qui s' appelle
 0x540:L' Isle Serpent...
 0x541:
 #Congratulations
-0x542:Flicitations!
+0x542:Félicitations!
 0x543:Tu as accompli Ultima VII en
-0x544: & |seulement |exactement | anne| annes| mois| mois| jour| jours| heure| heures|temps négatif!
-0x545:S'il te plat crit  Lord British,
+0x544: & |seulement |exactement | année| années| mois| mois| jour| jours| heure| heures|temps négatif!
+0x545:S'il te plaît écrit à Lord British,
 0x546:@RichardGarriott sur Twitter,
 0x547:pour lui communiquer ta
-0x548:russite!
+0x548:réussite!
 0x549:
 0x54A:
