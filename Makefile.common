@@ -331,33 +331,33 @@ EXULT_FLX_OBJECTS := \
 
 EXULT_FONTS_ORIGINAL_VGA := data/fonts_original.vga data/fonts_original_vga.h
 EXULT_FONTS_ORIGINAL_VGA_OBJECTS := \
-	fonts/original.in \
-	fonts/0_original.shp \
-	fonts/1_wood_runic.shp \
-	fonts/2_small_black.shp \
-	fonts/3_metal_runic.shp \
-	fonts/4_tiny_black.shp \
-	fonts/5_tiny_white.shp \
-	fonts/6_gold_runic.shp \
-	fonts/7_original.shp \
-	fonts/8_tiny_ophidian.shp \
-	fonts/9_metal_ophidian.shp \
-	fonts/10_gold_ophidian.shp
+	data/fonts/original.in \
+	data/fonts/0_original.shp \
+	data/fonts/1_wood_runic.shp \
+	data/fonts/2_small_black.shp \
+	data/fonts/3_metal_runic.shp \
+	data/fonts/4_tiny_black.shp \
+	data/fonts/5_tiny_white.shp \
+	data/fonts/6_gold_runic.shp \
+	data/fonts/7_original.shp \
+	data/fonts/8_tiny_ophidian.shp \
+	data/fonts/9_metal_ophidian.shp \
+	data/fonts/10_gold_ophidian.shp
 
 EXULT_FONTS_SERIF_VGA := data/fonts_serif.vga data/fonts_serif_vga.h
 EXULT_FONTS_SERIF_VGA_OBJECTS := \
-	fonts/serif.in \
-	fonts/0_serif.shp \
-	fonts/1_wood_runic.shp \
-	fonts/2_small_black.shp \
-	fonts/3_metal_runic.shp \
-	fonts/4_tiny_black.shp \
-	fonts/5_tiny_white.shp \
-	fonts/6_gold_runic.shp \
-	fonts/7_serif.shp \
-	fonts/8_tiny_ophidian.shp \
-	fonts/9_metal_ophidian.shp \
-	fonts/10_gold_ophidian.shp
+	data/fonts/serif.in \
+	data/fonts/0_serif.shp \
+	data/fonts/1_wood_runic.shp \
+	data/fonts/2_small_black.shp \
+	data/fonts/3_metal_runic.shp \
+	data/fonts/4_tiny_black.shp \
+	data/fonts/5_tiny_white.shp \
+	data/fonts/6_gold_runic.shp \
+	data/fonts/7_serif.shp \
+	data/fonts/8_tiny_ophidian.shp \
+	data/fonts/9_metal_ophidian.shp \
+	data/fonts/10_gold_ophidian.shp
 
 EXULT_BG_FLX := data/exult_bg.flx data/exult_bg_flx.h
 EXULT_BG_FLX_OBJECTS := \
@@ -397,7 +397,7 @@ EXULT_BG_INTROSFX_MT32_OBJECTS = \
 
 EXULT_BG_INTROSFX_SB := data/bg/introsfx_sb.flx data/bg/introsfx_sb.h
 EXULT_BG_INTROSFX_SB_OBJECTS = \
-	data/bg/introsfx_mt.in \
+	data/bg/introsfx_sb.in \
 	data/bg/intro_sb_static1.wav \
 	data/bg/intro_sb_static2.wav \
 	data/bg/intro_sb_static3.wav \

@@ -10,6 +10,8 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\data\flx.in" />
+    <CustomBuild Include="..\..\..\data\fonts\original.in"/>
+    <CustomBuild Include="..\..\..\data\fonts\serif.in"/>
     <CustomBuild Include="..\..\..\data\si\flx.in">
       <Filter>si</Filter>
     </CustomBuild>
