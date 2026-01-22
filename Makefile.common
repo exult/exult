@@ -325,7 +325,39 @@ EXULT_FLX_OBJECTS := \
 	data/endfont.shp \
 	data/transparentmenu.shp \
 	data/checkmark_background.shp \
-	data/fs_badges.shp
+	data/fs_badges.shp \
+	data/fonts_original.vga \
+	data/fonts_serif.vga
+
+EXULT_FONTS_ORIGINAL_VGA := data/fonts_original.vga data/fonts_original_vga.h
+EXULT_FONTS_ORIGINAL_VGA_OBJECTS := \
+	fonts/original.in \
+	fonts/0_original.shp \
+	fonts/1_wood_runic.shp \
+	fonts/2_small_black.shp \
+	fonts/3_metal_runic.shp \
+	fonts/4_tiny_black.shp \
+	fonts/5_tiny_white.shp \
+	fonts/6_gold_runic.shp \
+	fonts/7_original.shp \
+	fonts/8_tiny_ophidian.shp \
+	fonts/9_metal_ophidian.shp \
+	fonts/10_gold_ophidian.shp
+
+EXULT_FONTS_SERIF_VGA := data/fonts_serif.vga data/fonts_serif_vga.h
+EXULT_FONTS_SERIF_VGA_OBJECTS := \
+	fonts/serif.in \
+	fonts/0_serif.shp \
+	fonts/1_wood_runic.shp \
+	fonts/2_small_black.shp \
+	fonts/3_metal_runic.shp \
+	fonts/4_tiny_black.shp \
+	fonts/5_tiny_white.shp \
+	fonts/6_gold_runic.shp \
+	fonts/7_serif.shp \
+	fonts/8_tiny_ophidian.shp \
+	fonts/9_metal_ophidian.shp \
+	fonts/10_gold_ophidian.shp
 
 EXULT_BG_FLX := data/exult_bg.flx data/exult_bg_flx.h
 EXULT_BG_FLX_OBJECTS := \
@@ -557,6 +589,12 @@ expack$(EXEEXT) : tools/expack.o $(FILE_OBJS)
 $(EXULT_FLX): expack$(EXEEXT) $(EXULT_FLX_OBJECTS)
 	$(SRC)/expack$(EXEEXT) -i data/flx.in
 
+$(EXULT_FONTS_ORIGINAL_VGA): expack$(EXEEXT) $(EXULT_FONTS_ORIGINAL_VGA_OBJECTS)
+	$(SRC)/expack$(EXEEXT) -i data/fonts/original.in
+
+$(EXULT_FONTS_SERIF_VGA): expack$(EXEEXT) $(EXULT_FONTS_SERIF_VGA_OBJECTS)
+	$(SRC)/expack$(EXEEXT) -i data/fonts/serif.in
+
 $(EXULT_BG_FLX): expack$(EXEEXT) $(EXULT_BG_FLX_OBJECTS)
 	$(SRC)/expack$(EXEEXT) -i data/bg/flx.in
 
@@ -743,7 +781,7 @@ gitinfo.h: .git/index .git/HEAD .git/config Makefile.common
 .git/config:
 
 clean:
-	rm -f $(OBJS) $(OBJS:%.o=%.d) tools/expack.o $(EXEC) expack$(EXEEXT) tools/ipack.o ipack$(EXEEXT) data/exult.flx data/exult_flx.h data/exult_bg.flx data/exult_bg_flx.h data/exult_si.flx data/exult_si_flx.h data/bg/bg_paperdol.vga data/bg/bg_mr_faces.vga data/bg/bg_paperdol_vga.h data/bg/bg_mr_faces_vga.h gitinfo.h
+	rm -f $(OBJS) $(OBJS:%.o=%.d) tools/expack.o $(EXEC) expack$(EXEEXT) tools/ipack.o ipack$(EXEEXT) data/exult.flx data/exult_flx.h data/exult_bg.flx data/exult_bg_flx.h data/exult_si.flx data/exult_si_flx.h data/bg/bg_paperdol.vga data/bg/bg_mr_faces.vga data/bg/bg_paperdol_vga.h data/bg/bg_mr_faces_vga.h gitinfo.h data/fonts_original.vga data/fonts_original.vga.h data/fonts_serif.vga data/fonts_serif.vga.h
 
 tools:  expack$(EXEEXT) cmanip$(EXEEXT) ipack$(EXEEXT) mklink$(EXEEXT) mockup$(EXEEXT) rip$(EXEEXT) shp2pcx$(EXEEXT) smooth$(EXEEXT) splitshp$(EXEEXT) textpack$(EXEEXT) wuc$(EXEEXT) u7voice2syx$(EXEEXT) ucc$(EXEEXT) ucxt$(EXEEXT)  \
 	$(SRC)/head2data$(EXEEXT) head2data.test libsmooth_randomize$(LIBEXT) libsmooth_smooth$(LIBEXT) libsmooth_stream$(LIBEXT) exult_shp_thumbnailer$(EXEEXT)
