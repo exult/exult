@@ -149,6 +149,7 @@ void ShapeBrowser::browse_shapes() {
 			sources.emplace_back(PATCH_ENDSHAPE, -1);
 		} else if (base_name.find("fonts.vga") != std::string::npos) {
 			sources.emplace_back(PATCH_FONTS, -1);
+			sources.emplace_back(PATCH_EXULT_FONTS, -1);
 		}
 
 		return sources;
@@ -296,7 +297,6 @@ void ShapeBrowser::browse_shapes() {
 								y - frame->get_yabove() - 1);
 					}
 
-
 					// Stuff that should only be drawn for object shapes in
 					// shapes.vga
 					if (current_file == 0) {
@@ -324,14 +324,14 @@ void ShapeBrowser::browse_shapes() {
 						if (bounding_box) {
 							info.paint_bbox(
 									x, y, current_frame,
-									gwin->get_win()->get_ibuf(), 255,2);
+									gwin->get_win()->get_ibuf(), 255, 2);
 						}
 						// draw shape
 						sman->paint_shape(x, y, frame, true);
 						if (bounding_box) {
 							info.paint_bbox(
 									x, y, current_frame,
-									gwin->get_win()->get_ibuf(), 255,1);
+									gwin->get_win()->get_ibuf(), 255, 1);
 						}
 
 					} else {

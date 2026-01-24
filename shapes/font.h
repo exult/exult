@@ -122,9 +122,14 @@ public:
 	// Get dimensions of text box for multiline string
 	void get_text_box_dims(
 			const char* text, int& width, int& height, int vert_lead = 0);
-	// Get text height, baseline.
+	// Get text height, baseline, and vertical lead.
 	int get_text_height();
 	int get_text_baseline();
+
+	int get_ver_lead() const {
+		return ver_lead;
+	}
+
 	int find_cursor(
 			const char* text, int x, int y, int w, int h, int cx, int cy,
 			int vert_lead);

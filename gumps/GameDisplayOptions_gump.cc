@@ -215,6 +215,18 @@ public:
 	static auto Spanish() {
 		return get_text_msg(0x5D7 - msg_file_start);
 	}
+
+	static auto Fonts_() {
+		return get_text_msg(0x5D8 - msg_file_start);
+	}
+
+	static auto Original() {
+		return get_text_msg(0x5D9 - msg_file_start);
+	}
+
+	static auto Serif() {
+		return get_text_msg(0x5DA - msg_file_start);
+	}
 };
 
 using GameDisplayOptions_button = CallbackTextButton<GameDisplayOptions_gump>;
@@ -365,16 +377,21 @@ void GameDisplayOptions_gump::build_buttons() {
 			language, get_button_pos_for_label(Strings::Language_()),
 			yForRow(++y_index), large_size);
 
+	auto fonts_txt
+			= std::vector<std::string>{Strings::Original(), Strings::Serif()};
+	buttons[id_fonts] = std::make_unique<GameDisplayTextToggle>(
+			this, &GameDisplayOptions_gump::toggle_fonts, fonts_txt, fonts,
+			get_button_pos_for_label(Strings::Fonts_()), yForRow(++y_index),
+			large_size);
+
 	// Risize to fit all
 	ResizeWidthToFitWidgets(tcb::span(buttons.data() + id_first, id_count));
 
 	HorizontalArrangeWidgets(tcb::span(buttons.data() + id_ok, 3));
 
 	// Right align other setting buttons
-	RightAlignWidgets(
-			tcb::span(
-					buttons.data() + id_first_setting,
-					id_count - id_first_setting));
+	RightAlignWidgets(tcb::span(
+			buttons.data() + id_first_setting, id_count - id_first_setting));
 }
 
 void GameDisplayOptions_gump::load_settings() {
@@ -414,10 +431,18 @@ void GameDisplayOptions_gump::load_settings() {
 	} else {
 		language = 0;
 	}
+
+	config->value("config/gameplay/fonts", value, "original");
+	Pentagram::tolower(value);
+	if (value == "serif") {
+		fonts = 1;
+	} else {
+		fonts = 0;    // original or disabled
+	}
 }
 
 GameDisplayOptions_gump::GameDisplayOptions_gump() : Modal_gump(nullptr, -1) {
-	SetProceduralBackground(TileRect(0, 2, 100, yForRow(13)), -1);
+	SetProceduralBackground(TileRect(0, 2, 100, yForRow(14)), -1);
 
 	for (auto& btn : buttons) {
 		btn.reset();
@@ -504,6 +529,14 @@ void GameDisplayOptions_gump::save_settings() {
 		// Setup text incase language changed
 		Game::setup_text();
 	}
+
+	const char* fontcodes[] = {"original", "serif"};
+	if (fonts >= 0 && size_t(fonts) < std::size(fontcodes)) {
+		config->set("config/gameplay/fonts", fontcodes[fonts], false);
+		// Reload fonts if font selection changed
+		Game::setup_fonts();
+	}
+
 	config->write_back();
 }
 
@@ -561,6 +594,11 @@ void GameDisplayOptions_gump::paint() {
 	if (buttons[id_language]) {
 		font->paint_text(
 				iwin->get_ib8(), Strings::Language_(), x + label_margin,
+				y + yForRow(++y_index) + 1);
+	}
+	if (buttons[id_fonts]) {
+		font->paint_text(
+				iwin->get_ib8(), Strings::Fonts_(), x + label_margin,
 				y + yForRow(++y_index) + 1);
 	}
 	gwin->set_painted();

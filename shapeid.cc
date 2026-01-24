@@ -27,12 +27,14 @@
 #include "U7file.h"
 #include "U7fileman.h"
 #include "data/exult_bg_flx.h"
+#include "data/exult_flx.h"
 #include "data/exult_si_flx.h"
 #include "exceptions.h"
 #include "fnames.h"
 #include "fontvga.h"
 #include "game.h"
 #include "gamewin.h"
+#include "istring.h"
 #include "miscinf.h"
 #include "u7drag.h"
 #include "utils.h"
@@ -252,8 +254,26 @@ void Shape_manager::load() {
 
 	read_shape_info();
 
+	// Load fonts from config-selected source
+	std::string font_config;
+	config->value("config/gameplay/fonts", font_config, "original");
+	Pentagram::tolower(font_config);
+
+	File_spec font_source;
+	File_spec font_patch;
+	if (font_config == "serif") {
+		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_SERIF_VGA);
+		font_patch  = PATCH_EXULT_FONTS;
+	} else if (font_config == "original") {
+		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA);
+		font_patch  = PATCH_EXULT_FONTS;
+	} else {    // "disabled" - use original FONTS_VGA
+		font_source = FONTS_VGA;
+		font_patch  = PATCH_FONTS;
+	}
+
 	fonts = make_unique<Fonts_vga_file>();
-	fonts->init();
+	fonts->init(font_source, font_patch);
 
 	// Get translucency tables.
 	unique_ptr<unsigned char[]>
@@ -375,9 +395,27 @@ void Shape_manager::reload_shapes(int shape_kind    // Type from u7drag.h.
 	case U7_SHAPE_GUMPS:
 		files[SF_GUMPS_VGA].load(GUMPS_VGA, PATCH_GUMPS);
 		break;
-	case U7_SHAPE_FONTS:
-		fonts->init();
+	case U7_SHAPE_FONTS: {
+		// Reload fonts respecting the user's font selection
+		std::string font_config;
+		config->value("config/gameplay/fonts", font_config, "original");
+		Pentagram::tolower(font_config);
+
+		File_spec font_source;
+		File_spec font_patch;
+		if (font_config == "serif") {
+			font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_SERIF_VGA);
+			font_patch  = PATCH_EXULT_FONTS;
+		} else if (font_config == "original") {
+			font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA);
+			font_patch  = PATCH_EXULT_FONTS;
+		} else {    // "disabled" - use original FONTS_VGA
+			font_source = FONTS_VGA;
+			font_patch  = PATCH_FONTS;
+		}
+		fonts->init(font_source, font_patch);
 		break;
+	}
 	case U7_SHAPE_FACES:
 		files[SF_FACES_VGA].load(FACES_VGA, PATCH_FACES);
 		break;
@@ -390,6 +428,16 @@ void Shape_manager::reload_shapes(int shape_kind    // Type from u7drag.h.
 	default:
 		cerr << "Type not supported:  " << shape_kind << endl;
 		break;
+	}
+}
+
+/*
+ *  Reload fonts from a different source.
+ */
+void Shape_manager::reload_fonts(
+		const File_spec& font_source, const File_spec& font_patch) {
+	if (fonts) {
+		fonts->init(font_source, font_patch);
 	}
 }
 

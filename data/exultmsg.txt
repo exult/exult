@@ -217,6 +217,9 @@
 0x5D5:French
 0x5D6:German
 0x5D7:Spanish
+0x5D8:Fonts:
+0x5D9:Original
+0x5DA:Serif
 
 # Gamemenu_gump.cc
 0x5E0:Load/Save Game

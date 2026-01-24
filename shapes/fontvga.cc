@@ -29,7 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "fontvga.h"
 
 #include "Flex.h"
-#include "fnames.h"
 
 #include <array>
 
@@ -65,9 +64,10 @@ constexpr static const std::array hlead{-2, -1, 0, -1, 0, 0, -1, -2, -1, -1};
  *  Initialize.
  */
 
-void Fonts_vga_file::init() {
-	FlexFile     sfonts(FONTS_VGA);
-	FlexFile     pfonts(PATCH_FONTS);
+void Fonts_vga_file::init(
+		const File_spec& font_source, const File_spec& font_patch) {
+	FlexFile     sfonts(font_source);
+	FlexFile     pfonts(font_patch);
 	const size_t sn       = sfonts.number_of_objects();
 	const size_t pn       = pfonts.number_of_objects();
 	const size_t numfonts = std::max(sn, pn);
@@ -75,6 +75,6 @@ void Fonts_vga_file::init() {
 
 	for (size_t i = 0; i < numfonts; i++) {
 		fonts[i] = std::make_shared<Font>(
-				FONTS_VGA, PATCH_FONTS, i, i < hlead.size() ? hlead[i] : 0, 0);
+				font_source, font_patch, i, i < hlead.size() ? hlead[i] : 0, 0);
 	}
 }

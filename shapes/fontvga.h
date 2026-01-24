@@ -26,6 +26,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include "U7obj.h"
+#include "fnames.h"
 #include "font.h"
 #include "vgafile.h"
 
@@ -37,7 +39,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class Fonts_vga_file : public Vga_file {
 	std::vector<std::shared_ptr<Font>> fonts;    // Fonts from fonts.vga file.
 public:
-	void init();
+	void init(
+			const File_spec& font_source = FONTS_VGA,
+			const File_spec& font_patch  = PATCH_FONTS);
 
 	// Text rendering:
 	int paint_text_box(

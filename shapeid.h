@@ -108,12 +108,16 @@ public:
 	void load();                  // Read in files.
 	bool load_gumps_minimal();    // Read in files needed to display gumps.
 	void reload_shapes(int shape_kind);    // Reload a shape file.
+	void reload_fonts(
+			const File_spec& font_source,
+			const File_spec& font_patch
+			= PATCH_FONTS);    // Reload fonts from a different source.
 	void reload_shape_info();
 
 	static unsigned char get_special_pixel(int pixel) {
 		if (pixel > -256 && pixel < 0) {
 			return -pixel;
-		} else if (pixel >=0 && pixel < NPIXCOLORS) {
+		} else if (pixel >= 0 && pixel < NPIXCOLORS) {
 			return get_instance()->special_pixels[pixel];
 		}
 		return 255;

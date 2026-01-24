@@ -24,6 +24,7 @@
 
 #include "Audio.h"
 #include "AudioMixer.h"
+#include "Configuration.h"
 #include "data/bg/introsfx_mt32_flx.h"
 #include "data/exult_bg_flx.h"
 #include "data/exult_flx.h"
@@ -38,6 +39,7 @@
 #include "gump_utils.h"
 #include "imagewin/ArbScaler.h"
 #include "imagewin/imagewin.h"
+#include "istring.h"
 #include "items.h"
 #include "mappatch.h"
 #include "miscinf.h"
@@ -223,16 +225,52 @@ BG_Game::BG_Game() : shapes(ENDSHAPE_FLX, -1, PATCH_ENDSHAPE) {
 		add_resource("xforms/18", XFORMTBL, 18);
 		add_resource("xforms/19", XFORMTBL, 19);
 	}
-	fontManager.add_font("MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1);
-	fontManager.add_font("END2_FONT", ENDGAME, PATCH_ENDGAME, 4, -1);
-	fontManager.add_font("END3_FONT", ENDGAME, PATCH_ENDGAME, 5, -2);
-	fontManager.add_font("NORMAL_FONT", FONTS_VGA, PATCH_FONTS, 0, -1);
-	fontManager.add_font("SMALL_BLACK_FONT", FONTS_VGA, PATCH_FONTS, 2, 0);
-	fontManager.add_font("TINY_BLACK_FONT", FONTS_VGA, PATCH_FONTS, 4, 0);
-	fontManager.add_font("GUARDIAN_FONT", MAINSHP_FLX, PATCH_MAINSHP, 3, -2);
-	fontManager.add_font(
-			"EXULT_END_FONT", File_spec(EXULT_FLX, EXULT_FLX_ENDFONT_SHP),
-			PATCH_ENDFONT, 0, -1);
+	// Load from mainshp.flx as not all official translations have the
+	// same order of characters
+	fontManager.add_font("MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1, 1);
+
+	// Load fonts from config-selected source
+	std::string font_config;
+	config->value("config/gameplay/fonts", font_config, "original");
+	Pentagram::tolower(font_config);
+
+	File_spec   font_source;
+	const char* font_patch = nullptr;
+	int         vlead      = 0;
+	if (font_config == "serif") {
+		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_SERIF_VGA);
+		font_patch  = PATCH_EXULT_FONTS;
+	} else if (font_config == "original") {
+		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA);
+		font_patch  = PATCH_EXULT_FONTS;
+		vlead       = -5;
+	} else {
+		font_source = FONTS_VGA;
+		font_patch  = PATCH_FONTS;
+		vlead       = -5;
+	}
+
+	fontManager.add_font("NORMAL_FONT", font_source, font_patch, 0, -1);
+	fontManager.add_font("SMALL_BLACK_FONT", font_source, font_patch, 2, 0);
+	fontManager.add_font("TINY_BLACK_FONT", font_source, font_patch, 4, 0);
+
+	if (font_config == "original" || font_config == "serif") {
+		fontManager.add_font("GUARDIAN_FONT", font_source, font_patch, 11, -2);
+		fontManager.add_font("END2_FONT", font_source, font_patch, 12, -1);
+		fontManager.add_font(
+				"END3_FONT", font_source, font_patch, 13, -2, vlead);
+		fontManager.add_font(
+				"END4_FONT", font_source, font_patch, 14, -2, vlead);
+	} else {
+		fontManager.add_font(
+				"GUARDIAN_FONT", MAINSHP_FLX, PATCH_MAINSHP, 3, -2);
+		fontManager.add_font("END2_FONT", ENDGAME, PATCH_ENDGAME, 4, -1);
+		fontManager.add_font("END3_FONT", ENDGAME, PATCH_ENDGAME, 5, -2, vlead);
+		fontManager.add_font(
+				"END4_FONT", File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
+				PATCH_EXULT_FONTS, 14, 0, vlead);
+	}
+
 	auto& mp = gwin->get_map_patches();
 	// Sawdust in Iolo's hut is at lift 2, should be 0
 	// FIXME - the original had some way to deal with this
@@ -1832,6 +1870,7 @@ void BG_Game::end_game(bool success, bool within_game) {
 		}
 		std::shared_ptr<Font> endfont2 = fontManager.get_font("END2_FONT");
 		std::shared_ptr<Font> endfont3 = fontManager.get_font("END3_FONT");
+		std::shared_ptr<Font> endfont4 = fontManager.get_font("END4_FONT");
 		std::shared_ptr<Font> normal   = fontManager.get_font("NORMAL_FONT");
 
 		{
@@ -1984,7 +2023,9 @@ void BG_Game::end_game(bool success, bool within_game) {
 		fli3.info(&finfo);
 
 		int m;
-		int starty = (gwin->get_height() - endfont3->get_text_height() * 8) / 2;
+		int line_height
+				= endfont3->get_text_height() + endfont3->get_ver_lead();
+		int starty = (gwin->get_height() - line_height * 8) / 2;
 
 		next = SDL_GetTicks();
 		for (const unsigned int i = next + 28000; i > next;) {
@@ -1994,8 +2035,7 @@ void BG_Game::end_game(bool success, bool within_game) {
 				if (subtitles) {
 					for (m = 0; m < 8; m++) {
 						endfont3->center_text(
-								ibuf, centerx,
-								starty + endfont3->get_text_height() * m,
+								ibuf, centerx, starty + line_height * m,
 								get_text_msg(txt_screen0 + m));
 					}
 				}
@@ -2029,16 +2069,14 @@ void BG_Game::end_game(bool success, bool within_game) {
 		// Paint backgound black
 		win->fill8(0);
 
-		// Because of the German version we have to fit 11 lines of height 20
-		// into a screen of 200 pixels so starty has needs to be a tiny bit in
-		// the negative but not -10
-		starty = (gwin->get_height() - normal->get_text_height() * 11) / 2.5;
+		line_height = endfont4->get_text_height() + endfont4->get_ver_lead();
+		starty      = (gwin->get_height() - line_height * 11) / 2;
 
 		for (unsigned int i = 0; i < 11; i++) {
 			const char* message = get_text_msg(txt_screen1 + i);
-			normal->draw_text(
-					ibuf, centerx - normal->get_text_width(message) / 2,
-					starty + normal->get_text_height() * i, message);
+			endfont4->draw_text(
+					ibuf, centerx - endfont4->get_text_width(message) / 2,
+					starty + line_height * i, message);
 		}
 
 		// Fade in for 1 sec (50 cycles)
@@ -2063,13 +2101,13 @@ void BG_Game::end_game(bool success, bool within_game) {
 		// Paint backgound black
 		win->fill8(0);
 
-		starty = (gwin->get_height() - normal->get_text_height() * 9) / 2;
+		starty = (gwin->get_height() - line_height * 9) / 2;
 
 		for (unsigned int i = 0; i < 9; i++) {
 			const char* message = get_text_msg(txt_screen2 + i);
-			normal->draw_text(
-					ibuf, centerx - normal->get_text_width(message) / 2,
-					starty + normal->get_text_height() * i, message);
+			endfont4->draw_text(
+					ibuf, centerx - endfont4->get_text_width(message) / 2,
+					starty + line_height * i, message);
 		}
 
 		// Fade in for 1 sec (50 cycles)
@@ -2094,13 +2132,13 @@ void BG_Game::end_game(bool success, bool within_game) {
 		// Paint backgound black
 		win->fill8(0);
 
-		starty = (gwin->get_height() - normal->get_text_height() * 8) / 2;
+		starty = (gwin->get_height() - line_height * 8) / 2;
 
 		for (unsigned int i = 0; i < 8; i++) {
 			const char* message = get_text_msg(txt_screen3 + i);
-			normal->draw_text(
-					ibuf, centerx - normal->get_text_width(message) / 2,
-					starty + normal->get_text_height() * i, message);
+			endfont4->draw_text(
+					ibuf, centerx - endfont4->get_text_width(message) / 2,
+					starty + line_height * i, message);
 		}
 
 		// Fade in for 1 sec (50 cycles)
@@ -2125,13 +2163,13 @@ void BG_Game::end_game(bool success, bool within_game) {
 		// Paint backgound black
 		win->fill8(0);
 
-		starty = (gwin->get_height() - normal->get_text_height() * 5) / 2;
+		starty = (gwin->get_height() - line_height * 5) / 2;
 
 		for (unsigned int i = 0; i < 5; i++) {
 			const char* message = get_text_msg(txt_screen4 + i);
-			normal->draw_text(
-					ibuf, centerx - normal->get_text_width(message) / 2,
-					starty + normal->get_text_height() * i, message);
+			endfont4->draw_text(
+					ibuf, centerx - endfont4->get_text_width(message) / 2,
+					starty + line_height * i, message);
 		}
 
 		// Fade in for 1 sec (50 cycles)

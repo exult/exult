@@ -23,6 +23,7 @@
 #include "sigame.h"
 
 #include "Audio.h"
+#include "Configuration.h"
 #include "common_types.h"
 #include "data/exult_flx.h"
 #include "data/exult_si_flx.h"
@@ -34,6 +35,7 @@
 #include "gamewin.h"
 #include "gump_utils.h"
 #include "ignore_unused_variable_warning.h"
+#include "istring.h"
 #include "items.h"
 #include "mappatch.h"
 #include "miscinf.h"
@@ -196,13 +198,47 @@ SI_Game::SI_Game() {
 		add_resource("xforms/18", XFORMTBL, 18);
 		add_resource("xforms/19", XFORMTBL, 19);
 	}
+	// Load from mainshp.flx as not all official translations have the
+	// same order of characters
 	fontManager.add_font("MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1);
-	fontManager.add_font("SIINTRO_FONT", INTRO_DAT, PATCH_INTRO, 14, 0);
-	fontManager.add_font("SMALL_BLACK_FONT", FONTS_VGA, PATCH_FONTS, 2, 0);
-	fontManager.add_font("TINY_BLACK_FONT", FONTS_VGA, PATCH_FONTS, 4, 0);
-	fontManager.add_font(
-			"EXULT_END_FONT", File_spec(EXULT_FLX, EXULT_FLX_ENDFONT_SHP),
-			PATCH_ENDFONT, 0, -1);
+
+	// Load fonts from config-selected source
+	std::string font_config;
+	config->value("config/gameplay/fonts", font_config, "original");
+	Pentagram::tolower(font_config);
+
+	File_spec   font_source;
+	const char* font_patch = nullptr;
+	int         vlead      = 0;
+	if (font_config == "serif") {
+		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_SERIF_VGA);
+		font_patch  = PATCH_EXULT_FONTS;
+		vlead       = -5;
+	} else if (font_config == "original") {
+		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA);
+		font_patch  = PATCH_EXULT_FONTS;
+		vlead       = -10;
+	} else {    // "disabled"
+		font_source = FONTS_VGA;
+		font_patch  = PATCH_FONTS;
+		vlead       = -10;
+	}
+
+	fontManager.add_font("SMALL_BLACK_FONT", font_source, font_patch, 2, 0);
+	fontManager.add_font("TINY_BLACK_FONT", font_source, font_patch, 4, 0);
+
+	if (font_config == "original" || font_config == "serif") {
+		fontManager.add_font(
+				"SIINTRO_FONT", font_source, font_patch, 15, 0, vlead);
+		fontManager.add_font(
+				"END4_FONT", font_source, font_patch, 14, -2, vlead);
+	} else {
+		fontManager.add_font("SIINTRO_FONT", INTRO_DAT, PATCH_INTRO, 14, 0);
+		fontManager.add_font(
+				"END4_FONT", File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
+				PATCH_EXULT_FONTS, 14, 0, vlead);
+	}
+
 	// TODO: Verify if these map patches make sense for SI Beta, and come up
 	// with patches specific to it.
 	if (GAME_SI && !is_si_beta()) {
@@ -269,6 +305,7 @@ void SI_Game::play_intro() {
 	}
 
 	std::shared_ptr<Font> sifont = fontManager.get_font("SIINTRO_FONT");
+	int                   vlead  = sifont->get_ver_lead();
 
 	const bool speech = audio->is_audio_enabled() && audio->is_speech_enabled();
 	const bool subtitles = !speech || Audio::get_ptr()->is_speech_with_subs();
@@ -402,10 +439,12 @@ void SI_Game::play_intro() {
 
 			if (jive) {
 				sifont->center_text(
-						ibuf, centerx, centery + 50, get_text_msg(dick_castle));
+						ibuf, centerx, centery + 50 + vlead,
+						get_text_msg(dick_castle));
 			} else {
 				sifont->center_text(
-						ibuf, centerx, centery + 50, get_text_msg(lord_castle));
+						ibuf, centerx, centery + 50 + vlead,
+						get_text_msg(lord_castle));
 			}
 
 			prev = num;
@@ -454,7 +493,7 @@ void SI_Game::play_intro() {
 
 			for (int i = 0; i < 3; i++) {
 				sifont->center_text(
-						ibuf, centerx, centery + 50 + 15 * i,
+						ibuf, centerx, centery + 50 + vlead + 15 * i,
 						get_text_msg(bg_fellow + i));
 			}
 
@@ -519,11 +558,11 @@ void SI_Game::play_intro() {
 
 			if (jive) {
 				sifont->draw_text(
-						ibuf, centerx + 30, centery + 87,
+						ibuf, centerx + 30, centery + 87 + vlead,
 						get_text_msg(yo_homes));
 			} else if (subtitles) {
 				sifont->draw_text(
-						ibuf, centerx + 30, centery + 87,
+						ibuf, centerx + 30, centery + 87 + vlead,
 						get_text_msg(my_leige));
 			}
 
@@ -553,10 +592,10 @@ void SI_Game::play_intro() {
 			if (subtitles || jive) {
 				sifont->draw_text(
 						ibuf, centerx + 150 - sifont->get_text_width(all_we[0]),
-						centery + 74, all_we[0]);
+						centery + 74 + vlead, all_we[0]);
 				sifont->draw_text(
 						ibuf, centerx + 160 - sifont->get_text_width(all_we[1]),
-						centery + 87, all_we[1]);
+						centery + 87 + vlead, all_we[1]);
 			}
 
 			win->ShowFillGuardBand();
@@ -579,10 +618,10 @@ void SI_Game::play_intro() {
 					= {get_text_msg(and_a0), get_text_msg(and_a0 + 1)};
 			sifont->draw_text(
 					ibuf, centerx + 150 - sifont->get_text_width(and_a[0]),
-					centery + 74, and_a[0]);
+					centery + 74 + vlead, and_a[0]);
 			sifont->draw_text(
 					ibuf, centerx + 150 - sifont->get_text_width(and_a[1]),
-					centery + 87, and_a[1]);
+					centery + 87 + vlead, and_a[1]);
 		}
 
 		win->ShowFillGuardBand();
@@ -620,12 +659,14 @@ void SI_Game::play_intro() {
 
 			if (jive) {
 				sifont->draw_text(
-						ibuf, topx + 40, centery + 74, get_text_msg(iree));
+						ibuf, topx + 40, centery + 74 + vlead,
+						get_text_msg(iree));
 			} else if (subtitles) {
 				sifont->draw_text(
-						ibuf, topx + 40, centery + 74, get_text_msg(indeed));
+						ibuf, topx + 40, centery + 74 + vlead,
+						get_text_msg(indeed));
 				sifont->draw_text(
-						ibuf, topx + 40, centery + 87,
+						ibuf, topx + 40, centery + 87 + vlead,
 						get_text_msg(indeed + 1));
 			}
 
@@ -674,10 +715,11 @@ void SI_Game::play_intro() {
 
 			if (jive) {
 				sifont->draw_text(
-						ibuf, topx + 70, centery + 60, get_text_msg(jump_back));
+						ibuf, topx + 70, centery + 60 + vlead,
+						get_text_msg(jump_back));
 			} else if (subtitles) {
 				sifont->draw_text(
-						ibuf, topx + 70, centery + 60,
+						ibuf, topx + 70, centery + 60 + vlead,
 						get_text_msg(stand_back));
 			}
 
@@ -730,36 +772,46 @@ void SI_Game::play_intro() {
 
 			if (j < 100 && jive) {
 				sifont->center_text(
-						ibuf, centerx, centery + 74, get_text_msg(batlin2));
+						ibuf, centerx, centery + 74 + vlead,
+						get_text_msg(batlin2));
 				sifont->center_text(
-						ibuf, centerx, centery + 87, get_text_msg(batlin2 + 1));
+						ibuf, centerx, centery + 87 + vlead,
+						get_text_msg(batlin2 + 1));
 			} else if (j < 200 && jive) {
 				sifont->center_text(
-						ibuf, centerx, centery + 74, get_text_msg(you_must));
+						ibuf, centerx, centery + 74 + vlead,
+						get_text_msg(you_must));
 				sifont->center_text(
-						ibuf, centerx, centery + 87,
+						ibuf, centerx, centery + 87 + vlead,
 						get_text_msg(you_must + 1));
 			} else if (j < 300 && jive) {
 				sifont->center_text(
-						ibuf, centerx, centery + 74, get_text_msg(soon_i));
+						ibuf, centerx, centery + 74 + vlead,
+						get_text_msg(soon_i));
 				sifont->center_text(
-						ibuf, centerx, centery + 87, get_text_msg(soon_i + 1));
+						ibuf, centerx, centery + 87 + vlead,
+						get_text_msg(soon_i + 1));
 			} else if (j < 100 && (subtitles)) {
 				sifont->center_text(
-						ibuf, centerx, centery + 74, get_text_msg(batlin));
+						ibuf, centerx, centery + 74 + vlead,
+						get_text_msg(batlin));
 				sifont->center_text(
-						ibuf, centerx, centery + 87, get_text_msg(batlin + 1));
+						ibuf, centerx, centery + 87 + vlead,
+						get_text_msg(batlin + 1));
 			} else if (j < 200 && (subtitles)) {
 				sifont->center_text(
-						ibuf, centerx, centery + 74, get_text_msg(you_shall));
+						ibuf, centerx, centery + 74 + vlead,
+						get_text_msg(you_shall));
 				sifont->center_text(
-						ibuf, centerx, centery + 87,
+						ibuf, centerx, centery + 87 + vlead,
 						get_text_msg(you_shall + 1));
 			} else if (j < 300 && (subtitles)) {
 				sifont->center_text(
-						ibuf, centerx, centery + 74, get_text_msg(there_i));
+						ibuf, centerx, centery + 74 + vlead,
+						get_text_msg(there_i));
 				sifont->center_text(
-						ibuf, centerx, centery + 87, get_text_msg(there_i + 1));
+						ibuf, centerx, centery + 87 + vlead,
+						get_text_msg(there_i + 1));
 			}
 
 			win->ShowFillGuardBand();
@@ -810,12 +862,15 @@ void SI_Game::play_intro() {
 
 			if (j < 20 && (subtitles || jive)) {
 				sifont->center_text(
-						ibuf, centerx, centery + 74, get_text_msg(tis_my));
+						ibuf, centerx, centery + 74 + vlead,
+						get_text_msg(tis_my));
 			} else if (j > 22 && (subtitles || jive)) {
 				sifont->center_text(
-						ibuf, centerx, centery + 74, get_text_msg(tis_my + 1));
+						ibuf, centerx, centery + 74 + vlead,
+						get_text_msg(tis_my + 1));
 				sifont->center_text(
-						ibuf, centerx, centery + 87, get_text_msg(tis_my + 2));
+						ibuf, centerx, centery + 87 + vlead,
+						get_text_msg(tis_my + 2));
 			}
 
 			win->ShowFillGuardBand();
@@ -854,7 +909,7 @@ void SI_Game::play_intro() {
 			next = fli7.play(win, j, j, next) + 30;
 
 			if (j > 55 && jive) {
-				sifont->center_text(ibuf, centerx, centery + 74, zot);
+				sifont->center_text(ibuf, centerx, centery + 74 + vlead, zot);
 			}
 
 			win->ShowFillGuardBand();
@@ -1067,6 +1122,7 @@ struct ExSubEvent {
 	const int             first_sub;
 	const int             num_subs;
 	std::shared_ptr<Font> sub_font;
+	int                   vlead = sub_font->get_ver_lead();
 
 	ExSubEvent(
 			uint32 t, const int first, const int cnt, std::shared_ptr<Font> fnt)
@@ -1076,13 +1132,13 @@ struct ExSubEvent {
 		int suby;
 		switch (num_subs) {
 		case 1:
-			suby = centery + 87;
+			suby = centery + 87 + vlead;
 			break;
 		case 2:
-			suby = centery + 74;
+			suby = centery + 74 + vlead;
 			break;
 		default:
-			suby = centery + 61;
+			suby = centery + 61 + vlead;
 			break;
 		}
 		for (int ii = first_sub; ii < first_sub + num_subs; ii++, suby += 13) {
