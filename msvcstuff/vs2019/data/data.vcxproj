@@ -178,10 +178,10 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(OutDir)expack.exe" -i "%(RelativeDir)./%(Filename)%(Extension)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(OutDir)expack.exe" -i "%(RelativeDir)./%(Filename)%(Extension)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(OutDir)expack.exe" -i "%(RelativeDir)./%(Filename)%(Extension)"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RelativeDir)fonts_original.vga;%(RelativeDir)fonts_original_vga.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)fonts_original.vga;%(RelativeDir)fonts_original_vga.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RelativeDir)fonts_original.vga;%(RelativeDir)fonts_original_vga.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)fonts_original.vga;%(RelativeDir)fonts_original_vga.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RelativeDir)../fonts_original.vga;%(RelativeDir)../fonts_original_vga.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)../fonts_original.vga;%(RelativeDir)../fonts_original_vga.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RelativeDir)../fonts_original.vga;%(RelativeDir)../fonts_original_vga.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)../fonts_original.vga;%(RelativeDir)../fonts_original_vga.h</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -195,10 +195,10 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(OutDir)expack.exe" -i "%(RelativeDir)./%(Filename)%(Extension)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(OutDir)expack.exe" -i "%(RelativeDir)./%(Filename)%(Extension)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(OutDir)expack.exe" -i "%(RelativeDir)./%(Filename)%(Extension)"</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RelativeDir)fonts_serif.vga;%(RelativeDir)fonts_serif_vga.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)fonts_serif.vga;%(RelativeDir)fonts_serif_vga.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RelativeDir)fonts_serif.vga;%(RelativeDir)fonts_serif_vga.h</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)fonts_serif.vga;%(RelativeDir)fonts_serif_vga.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RelativeDir)../fonts_serif.vga;%(RelativeDir)../fonts_serif_vga.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)../fonts_serif.vga;%(RelativeDir)../fonts_serif_vga.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RelativeDir)../fonts_serif.vga;%(RelativeDir)../fonts_serif_vga.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)../fonts_serif.vga;%(RelativeDir)../fonts_serif_vga.h</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
