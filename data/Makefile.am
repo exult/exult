@@ -58,7 +58,12 @@ EXULT_FONTS_ORIGINAL_VGA_OBJECTS = \
 	fonts/7_original.shp \
 	fonts/8_tiny_ophidian.shp \
 	fonts/9_metal_ophidian.shp \
-	fonts/10_gold_ophidian.shp
+	fonts/10_gold_ophidian.shp \
+	fonts/3_mainshp_original.shp \
+	fonts/4_endgame_original.shp \
+	fonts/5_endgame_original.shp \
+	fonts/6_endgame_original.shp \
+	fonts/14_intro_original.shp
 
 EXULT_FONTS_SERIF_VGA_OBJECTS = \
 	fonts/serif.in \
@@ -72,7 +77,12 @@ EXULT_FONTS_SERIF_VGA_OBJECTS = \
 	fonts/7_serif.shp \
 	fonts/8_tiny_ophidian.shp \
 	fonts/9_metal_ophidian.shp \
-	fonts/10_gold_ophidian.shp
+	fonts/10_gold_ophidian.shp \
+	fonts/3_mainshp_serif.shp \
+	fonts/4_endgame_serif.shp \
+	fonts/5_endgame_serif.shp \
+	fonts/6_endgame_serif.shp \
+	fonts/14_intro_serif.shp
 
 EXULT_BG_FLX_OBJECTS = \
 	bg/flx.in \
@@ -278,7 +288,7 @@ fonts_original.vga: $(expack) $(EXULT_FONTS_ORIGINAL_VGA_OBJECTS)
 fonts_serif.vga: $(expack) $(EXULT_FONTS_SERIF_VGA_OBJECTS)
 	$(expack) -i $(srcdir)/fonts/serif.in
 
-exult.flx: $(expack) $(EXULT_FLX_OBJECTS)
+exult.flx: $(expack) $(EXULT_FLX_OBJECTS) fonts_original.vga fonts_serif.vga
 	$(expack) -i $(srcdir)/flx.in
 
 exult_bg.flx: $(expack) $(EXULT_BG_FLX_OBJECTS) bg/bg_paperdol.vga bg/bg_mr_faces.vga bg/introsfx_mt32.flx bg/introsfx_sb.flx
@@ -298,6 +308,10 @@ exult_flx.h: exult.flx
 exult_bg_flx.h: exult_bg.flx
 
 exult_si_flx.h: exult_si.flx
+
+fonts_original.vga.h: fonts_original.vga
+
+fonts_serif.vga.h: fonts_serif.vga
 
 bg/introsfx_mt32_flx.h: bg/introsfx_mt32.flx
 

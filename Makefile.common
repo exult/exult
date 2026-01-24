@@ -342,7 +342,12 @@ EXULT_FONTS_ORIGINAL_VGA_OBJECTS := \
 	data/fonts/7_original.shp \
 	data/fonts/8_tiny_ophidian.shp \
 	data/fonts/9_metal_ophidian.shp \
-	data/fonts/10_gold_ophidian.shp
+	data/fonts/10_gold_ophidian.shp \
+	data/fonts/3_mainshp_original.shp \
+	data/fonts/4_endgame_original.shp \
+	data/fonts/5_endgame_original.shp \
+	data/fonts/6_endgame_original.shp \
+	data/fonts/14_intro_original.shp
 
 EXULT_FONTS_SERIF_VGA := data/fonts_serif.vga data/fonts_serif_vga.h
 EXULT_FONTS_SERIF_VGA_OBJECTS := \
@@ -357,7 +362,12 @@ EXULT_FONTS_SERIF_VGA_OBJECTS := \
 	data/fonts/7_serif.shp \
 	data/fonts/8_tiny_ophidian.shp \
 	data/fonts/9_metal_ophidian.shp \
-	data/fonts/10_gold_ophidian.shp
+	data/fonts/10_gold_ophidian.shp \
+	data/fonts/3_mainshp_serif.shp \
+	data/fonts/4_endgame_serif.shp \
+	data/fonts/5_endgame_serif.shp \
+	data/fonts/6_endgame_serif.shp \
+	data/fonts/14_intro_serif.shp
 
 EXULT_BG_FLX := data/exult_bg.flx data/exult_bg_flx.h
 EXULT_BG_FLX_OBJECTS := \

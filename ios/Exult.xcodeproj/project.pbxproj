@@ -1901,7 +1901,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/flx.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/bg/bg_mr_faces.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/bg/bg_paperdol.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/bg/introsfx_mt.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/bg/introsfx_sb.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/bg/flx.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/si/flx.in\n[[ -d $PROJECT_DIR/data ]] || mkdir $PROJECT_DIR/data\ncp -p $PROJECT_DIR/../data/*.flx $PROJECT_DIR/data/\n";
+			shellScript = "$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/fonts/original.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/fonts/serif.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/flx.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/bg/bg_mr_faces.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/bg/bg_paperdol.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/bg/introsfx_mt.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/bg/introsfx_sb.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/bg/flx.in\n$TARGET_BUILD_DIR/expack  -i $PROJECT_DIR/../data/si/flx.in\n[[ -d $PROJECT_DIR/data ]] || mkdir $PROJECT_DIR/data\ncp -p $PROJECT_DIR/../data/*.flx $PROJECT_DIR/data/\n";
 		};
 		8ADCFD632BF3AFA2004702F9 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
