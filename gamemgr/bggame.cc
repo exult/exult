@@ -260,14 +260,14 @@ BG_Game::BG_Game() : shapes(ENDSHAPE_FLX, -1, PATCH_ENDSHAPE) {
 		fontManager.add_font(
 				"END3_FONT", font_source, font_patch, 13, -2, vlead);
 		fontManager.add_font(
-				"END4_FONT", font_source, font_patch, 14, -2, vlead);
+				"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
 	} else {
 		fontManager.add_font(
 				"GUARDIAN_FONT", MAINSHP_FLX, PATCH_MAINSHP, 3, -2);
 		fontManager.add_font("END2_FONT", ENDGAME, PATCH_ENDGAME, 4, -1);
 		fontManager.add_font("END3_FONT", ENDGAME, PATCH_ENDGAME, 5, -2, vlead);
 		fontManager.add_font(
-				"END4_FONT", File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
+				"EXULT_END_FONT", File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
 				PATCH_EXULT_FONTS, 14, 0, vlead);
 	}
 
@@ -1870,7 +1870,7 @@ void BG_Game::end_game(bool success, bool within_game) {
 		}
 		std::shared_ptr<Font> endfont2 = fontManager.get_font("END2_FONT");
 		std::shared_ptr<Font> endfont3 = fontManager.get_font("END3_FONT");
-		std::shared_ptr<Font> endfont4 = fontManager.get_font("END4_FONT");
+		std::shared_ptr<Font> exultendfont = fontManager.get_font("EXULT_END_FONT");
 		std::shared_ptr<Font> normal   = fontManager.get_font("NORMAL_FONT");
 
 		{
@@ -2069,13 +2069,13 @@ void BG_Game::end_game(bool success, bool within_game) {
 		// Paint backgound black
 		win->fill8(0);
 
-		line_height = endfont4->get_text_height() + endfont4->get_ver_lead();
+		line_height = exultendfont->get_text_height() + exultendfont->get_ver_lead();
 		starty      = (gwin->get_height() - line_height * 11) / 2;
 
 		for (unsigned int i = 0; i < 11; i++) {
 			const char* message = get_text_msg(txt_screen1 + i);
-			endfont4->draw_text(
-					ibuf, centerx - endfont4->get_text_width(message) / 2,
+			exultendfont->draw_text(
+					ibuf, centerx - exultendfont->get_text_width(message) / 2,
 					starty + line_height * i, message);
 		}
 
@@ -2105,8 +2105,8 @@ void BG_Game::end_game(bool success, bool within_game) {
 
 		for (unsigned int i = 0; i < 9; i++) {
 			const char* message = get_text_msg(txt_screen2 + i);
-			endfont4->draw_text(
-					ibuf, centerx - endfont4->get_text_width(message) / 2,
+			exultendfont->draw_text(
+					ibuf, centerx - exultendfont->get_text_width(message) / 2,
 					starty + line_height * i, message);
 		}
 
@@ -2136,8 +2136,8 @@ void BG_Game::end_game(bool success, bool within_game) {
 
 		for (unsigned int i = 0; i < 8; i++) {
 			const char* message = get_text_msg(txt_screen3 + i);
-			endfont4->draw_text(
-					ibuf, centerx - endfont4->get_text_width(message) / 2,
+			exultendfont->draw_text(
+					ibuf, centerx - exultendfont->get_text_width(message) / 2,
 					starty + line_height * i, message);
 		}
 
@@ -2167,8 +2167,8 @@ void BG_Game::end_game(bool success, bool within_game) {
 
 		for (unsigned int i = 0; i < 5; i++) {
 			const char* message = get_text_msg(txt_screen4 + i);
-			endfont4->draw_text(
-					ibuf, centerx - endfont4->get_text_width(message) / 2,
+			exultendfont->draw_text(
+					ibuf, centerx - exultendfont->get_text_width(message) / 2,
 					starty + line_height * i, message);
 		}
 

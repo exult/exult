@@ -322,7 +322,6 @@ EXULT_FLX_OBJECTS := \
 	data/exultmsg_de.txt \
 	data/exultmsg_es.txt \
 	data/exultmsg_fr.txt \
-	data/endfont.shp \
 	data/transparentmenu.shp \
 	data/checkmark_background.shp \
 	data/fs_badges.shp \

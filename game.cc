@@ -255,14 +255,14 @@ void Game::setup_fonts() {
 	fontManager.add_font("SMALL_BLACK_FONT", font_source, font_patch, 2, 0, 1);
 	fontManager.remove_font("TINY_BLACK_FONT");
 	fontManager.add_font("TINY_BLACK_FONT", font_source, font_patch, 4, 0, 1);
-	// Reload END4_FONT
-	fontManager.remove_font("END4_FONT");
+	// Reload EXULT_END_FONT
+	fontManager.remove_font("EXULT_END_FONT");
 	if (font_config == "original" || font_config == "serif") {
 		fontManager.add_font(
-				"END4_FONT", font_source, font_patch, 14, -2, vlead);
+				"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
 	} else {
 		fontManager.add_font(
-				"END4_FONT", File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
+				"EXULT_END_FONT", File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
 				PATCH_EXULT_FONTS, 14, -2, vlead);
 	}
 }
@@ -279,9 +279,9 @@ void Game::show_congratulations(Palette* pal0) {
 	gwin->clear_screen(true);
 	win->fill8(0);
 
-	std::shared_ptr<Font> end_font = fontManager.get_font("END4_FONT");
+	std::shared_ptr<Font> exultendfont = fontManager.get_font("EXULT_END_FONT");
 	const int             line_height
-			= end_font->get_text_height() + end_font->get_ver_lead();
+			= exultendfont->get_text_height() + exultendfont->get_ver_lead();
 	const int starty = (gwin->get_height() - line_height * 8) / 2;
 
 	// calculate the time it took to complete the game
@@ -378,12 +378,12 @@ void Game::show_congratulations(Palette* pal0) {
 				displayMessage += '.';
 			}
 			message = displayMessage.c_str();
-			end_font->draw_text(
-					ibuf, centerx - end_font->get_text_width(message) / 2,
+			exultendfont->draw_text(
+					ibuf, centerx - exultendfont->get_text_width(message) / 2,
 					starty + line_height * i, message);
 		} else {
-			end_font->draw_text(
-					ibuf, centerx - end_font->get_text_width(message) / 2,
+			exultendfont->draw_text(
+					ibuf, centerx - exultendfont->get_text_width(message) / 2,
 					starty + line_height * i, message);
 		}
 	}
