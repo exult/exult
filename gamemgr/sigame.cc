@@ -233,11 +233,11 @@ SI_Game::SI_Game() {
 		fontManager.add_font(
 				"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
 	} else {
-		fontManager.add_font("SIINTRO_FONT", INTRO_DAT, PATCH_INTRO, 14, 0);
+		fontManager.add_font("SIINTRO_FONT", INTRO_DAT, PATCH_INTRO, 14, 0, -5);
 		fontManager.add_font(
 				"EXULT_END_FONT",
 				File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
-				PATCH_ORIGINAL_FONTS, 14, 0, vlead);
+				PATCH_ORIGINAL_FONTS, 14, -2, vlead);
 	}
 
 	// TODO: Verify if these map patches make sense for SI Beta, and come up

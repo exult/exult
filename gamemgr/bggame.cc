@@ -265,11 +265,11 @@ BG_Game::BG_Game() : shapes(ENDSHAPE_FLX, -1, PATCH_ENDSHAPE) {
 		fontManager.add_font(
 				"GUARDIAN_FONT", MAINSHP_FLX, PATCH_MAINSHP, 3, -2);
 		fontManager.add_font("END2_FONT", ENDGAME, PATCH_ENDGAME, 4, -1);
-		fontManager.add_font("END3_FONT", ENDGAME, PATCH_ENDGAME, 5, -2, vlead);
+		fontManager.add_font("END3_FONT", ENDGAME, PATCH_ENDGAME, 5, -2);
 		fontManager.add_font(
 				"EXULT_END_FONT",
 				File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
-				PATCH_ORIGINAL_FONTS, 14, 0, vlead);
+				PATCH_ORIGINAL_FONTS, 14, -2 , vlead);
 	}
 
 	auto& mp = gwin->get_map_patches();
