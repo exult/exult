@@ -31,7 +31,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Flex.h"
 #include "chunklst.h"
 #include "combo.h"
+#include "data/exult_flx.h"
 #include "exceptions.h"
+#include "fnames.h"
 #include "ignore_unused_variable_warning.h"
 #include "npclst.h"
 #include "paledit.h"
@@ -96,7 +98,9 @@ Object_browser* Image_file_info::create_browser(
 ) {
 	auto* chooser = new Shape_chooser(ifile, palbuf, 400, 64, g, this);
 	// Fonts?  Show 'A' as the default.
-	if (strcasecmp(basename.c_str(), "fonts.vga") == 0) {
+	if (strcasecmp(basename.c_str(), "fonts.vga") == 0
+		|| strcasecmp(basename.c_str(), "fonts_original.vga") == 0
+		|| strcasecmp(basename.c_str(), "fonts_serif.vga") == 0) {
 		chooser->set_framenum0('A');
 	}
 	if (this == vgafile) {    // Main 'shapes.vga' file?
@@ -557,6 +561,30 @@ Shape_file_info* Shape_file_set::create(
 		if (strcasecmp(file->basename.c_str(), basename) == 0) {
 			return file;    // Found it.
 		}
+	}
+	// Handle files from exult.flx.
+	if (strcasecmp(basename, "fonts_original.vga") == 0) {
+		string group_name(basename);
+		group_name += ".grp";
+		auto*       groups   = new Shape_group_file(group_name.c_str());
+		const char* exultflx = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
+		std::vector<std::pair<std::string, int>> sources;
+		sources.emplace_back(exultflx, EXULT_FLX_FONTS_ORIGINAL_VGA);
+		sources.emplace_back(PATCH_ORIGINAL_FONTS, -1);    // Patch file
+		return append(new Image_file_info(
+				basename, exultflx, new Vga_file(sources, U7_SHAPE_FONTS),
+				groups));
+	} else if (strcasecmp(basename, "fonts_serif.vga") == 0) {
+		string group_name(basename);
+		group_name += ".grp";
+		auto*       groups   = new Shape_group_file(group_name.c_str());
+		const char* exultflx = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
+		std::vector<std::pair<std::string, int>> sources;
+		sources.emplace_back(exultflx, EXULT_FLX_FONTS_SERIF_VGA);
+		sources.emplace_back(PATCH_SERIF_FONTS, -1);    // Patch file
+		return append(new Image_file_info(
+				basename, exultflx, new Vga_file(sources, U7_SHAPE_FONTS),
+				groups));
 	}
 	// Look in 'static', 'patch'.
 	const string sstr    = string("<STATIC>/") + basename;

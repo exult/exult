@@ -2130,6 +2130,12 @@ void add_to_tree(
 				if (!strcasecmp(fname, "font0000.vga")) {
 					continue;
 				}
+				// Skip fonts_original.vga and fonts_serif.vga - handled
+				// separately.
+				if (!strcasecmp(fname, "fonts_original.vga")
+					|| !strcasecmp(fname, "fonts_serif.vga")) {
+					continue;
+				}
 				// See if also in 'patch'.
 				string fullpath(ppath);
 				string lowfname(fname);
@@ -2211,9 +2217,34 @@ void ExultStudio::setup_file_list() {
 		gtk_tree_path_free(nullpath);
 		gtk_tree_store_clear(model);
 	}
-	add_to_tree(
-			model, "Shape Files", "*.vga,*.shp", ShapeArchive, 1, "combos.flx",
-			ComboArchive);
+	// Font files from exult.flx: only add as extras if not in patch.
+	// If in patch, they'll be picked up by the normal directory scan.
+	const bool has_patch_fonts_original = U7exists(PATCH_ORIGINAL_FONTS);
+	const bool has_patch_fonts_serif    = U7exists(PATCH_SERIF_FONTS);
+	const int  fonts_extra_cnt          = (!has_patch_fonts_original ? 1 : 0)
+								+ (!has_patch_fonts_serif ? 1 : 0);
+	if (!has_patch_fonts_original && !has_patch_fonts_serif) {
+		add_to_tree(
+				model, "Shape Files", "*.vga,*.shp", ShapeArchive,
+				1 + fonts_extra_cnt, "combos.flx", ComboArchive,
+				"FONTS_ORIGINAL.VGA", ShapeArchive, "FONTS_SERIF.VGA",
+				ShapeArchive);
+	} else if (!has_patch_fonts_original) {
+		add_to_tree(
+				model, "Shape Files", "*.vga,*.shp", ShapeArchive,
+				1 + fonts_extra_cnt, "combos.flx", ComboArchive,
+				"FONTS_ORIGINAL.VGA", ShapeArchive);
+	} else if (!has_patch_fonts_serif) {
+		add_to_tree(
+				model, "Shape Files", "*.vga,*.shp", ShapeArchive,
+				1 + fonts_extra_cnt, "combos.flx", ComboArchive,
+				"FONTS_SERIF.VGA", ShapeArchive);
+	} else {
+		// Both are in patch, no extras needed for font files.
+		add_to_tree(
+				model, "Shape Files", "*.vga,*.shp", ShapeArchive, 1,
+				"combos.flx", ComboArchive);
+	}
 	add_to_tree(
 			model, "Map Files", "u7chunks", ChunksArchive, 1, "NPCs",
 			NpcsArchive);

@@ -239,10 +239,10 @@ BG_Game::BG_Game() : shapes(ENDSHAPE_FLX, -1, PATCH_ENDSHAPE) {
 	int         vlead      = 0;
 	if (font_config == "serif") {
 		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_SERIF_VGA);
-		font_patch  = PATCH_EXULT_FONTS;
+		font_patch  = PATCH_SERIF_FONTS;
 	} else if (font_config == "original") {
 		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA);
-		font_patch  = PATCH_EXULT_FONTS;
+		font_patch  = PATCH_ORIGINAL_FONTS;
 		vlead       = -5;
 	} else {
 		font_source = FONTS_VGA;
@@ -267,8 +267,9 @@ BG_Game::BG_Game() : shapes(ENDSHAPE_FLX, -1, PATCH_ENDSHAPE) {
 		fontManager.add_font("END2_FONT", ENDGAME, PATCH_ENDGAME, 4, -1);
 		fontManager.add_font("END3_FONT", ENDGAME, PATCH_ENDGAME, 5, -2, vlead);
 		fontManager.add_font(
-				"EXULT_END_FONT", File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
-				PATCH_EXULT_FONTS, 14, 0, vlead);
+				"EXULT_END_FONT",
+				File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
+				PATCH_ORIGINAL_FONTS, 14, 0, vlead);
 	}
 
 	auto& mp = gwin->get_map_patches();
@@ -1870,8 +1871,9 @@ void BG_Game::end_game(bool success, bool within_game) {
 		}
 		std::shared_ptr<Font> endfont2 = fontManager.get_font("END2_FONT");
 		std::shared_ptr<Font> endfont3 = fontManager.get_font("END3_FONT");
-		std::shared_ptr<Font> exultendfont = fontManager.get_font("EXULT_END_FONT");
-		std::shared_ptr<Font> normal   = fontManager.get_font("NORMAL_FONT");
+		std::shared_ptr<Font> exultendfont
+				= fontManager.get_font("EXULT_END_FONT");
+		std::shared_ptr<Font> normal = fontManager.get_font("NORMAL_FONT");
 
 		{
 			const char* message = get_text_msg(you_cannot_do_that);
@@ -2069,8 +2071,9 @@ void BG_Game::end_game(bool success, bool within_game) {
 		// Paint backgound black
 		win->fill8(0);
 
-		line_height = exultendfont->get_text_height() + exultendfont->get_ver_lead();
-		starty      = (gwin->get_height() - line_height * 11) / 2;
+		line_height = exultendfont->get_text_height()
+					  + exultendfont->get_ver_lead();
+		starty = (gwin->get_height() - line_height * 11) / 2;
 
 		for (unsigned int i = 0; i < 11; i++) {
 			const char* message = get_text_msg(txt_screen1 + i);

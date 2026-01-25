@@ -219,10 +219,10 @@ void Game::setup_fonts() {
 	int         vlead      = 0;
 	if (font_config == "serif") {
 		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_SERIF_VGA);
-		font_patch  = PATCH_EXULT_FONTS;
+		font_patch  = PATCH_SERIF_FONTS;
 	} else if (font_config == "original") {
 		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA);
-		font_patch  = PATCH_EXULT_FONTS;
+		font_patch  = PATCH_ORIGINAL_FONTS;
 		vlead       = -5;
 	} else {    // "disabled"
 		font_source = FONTS_VGA;
@@ -262,8 +262,9 @@ void Game::setup_fonts() {
 				"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
 	} else {
 		fontManager.add_font(
-				"EXULT_END_FONT", File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
-				PATCH_EXULT_FONTS, 14, -2, vlead);
+				"EXULT_END_FONT",
+				File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
+				PATCH_ORIGINAL_FONTS, 14, -2, vlead);
 	}
 }
 

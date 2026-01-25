@@ -212,11 +212,11 @@ SI_Game::SI_Game() {
 	int         vlead      = 0;
 	if (font_config == "serif") {
 		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_SERIF_VGA);
-		font_patch  = PATCH_EXULT_FONTS;
+		font_patch  = PATCH_SERIF_FONTS;
 		vlead       = -5;
 	} else if (font_config == "original") {
 		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA);
-		font_patch  = PATCH_EXULT_FONTS;
+		font_patch  = PATCH_ORIGINAL_FONTS;
 		vlead       = -10;
 	} else {    // "disabled"
 		font_source = FONTS_VGA;
@@ -235,8 +235,9 @@ SI_Game::SI_Game() {
 	} else {
 		fontManager.add_font("SIINTRO_FONT", INTRO_DAT, PATCH_INTRO, 14, 0);
 		fontManager.add_font(
-				"EXULT_END_FONT", File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
-				PATCH_EXULT_FONTS, 14, 0, vlead);
+				"EXULT_END_FONT",
+				File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
+				PATCH_ORIGINAL_FONTS, 14, 0, vlead);
 	}
 
 	// TODO: Verify if these map patches make sense for SI Beta, and come up

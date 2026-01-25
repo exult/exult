@@ -34,10 +34,12 @@
 #endif    // __GNUC__
 
 #include "browser.h"
+#include "Configuration.h"
 #include "exult.h"
 #include "files/U7file.h"
 #include "font.h"
 #include "game.h"
+#include "istring.h"
 #include "gamewin.h"
 #include "gump_utils.h"
 #include "items.h"
@@ -148,8 +150,17 @@ void ShapeBrowser::browse_shapes() {
 		} else if (base_name.find("endshape.flx") != std::string::npos) {
 			sources.emplace_back(PATCH_ENDSHAPE, -1);
 		} else if (base_name.find("fonts.vga") != std::string::npos) {
-			sources.emplace_back(PATCH_FONTS, -1);
-			sources.emplace_back(PATCH_EXULT_FONTS, -1);
+			// Add patch based on user's font configuration
+			std::string font_config;
+			config->value("config/gameplay/fonts", font_config, "original");
+			Pentagram::tolower(font_config);
+			if (font_config == "serif") {
+				sources.emplace_back(PATCH_SERIF_FONTS, -1);
+			} else if (font_config == "original") {
+				sources.emplace_back(PATCH_ORIGINAL_FONTS, -1);
+			} else {    // "disabled" - use original FONTS_VGA
+				sources.emplace_back(PATCH_FONTS, -1);
+			}
 		}
 
 		return sources;
