@@ -263,10 +263,10 @@ void Shape_manager::load() {
 	File_spec font_patch;
 	if (font_config == "serif") {
 		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_SERIF_VGA);
-		font_patch  = PATCH_EXULT_FONTS;
+		font_patch  = PATCH_SERIF_FONTS;
 	} else if (font_config == "original") {
 		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA);
-		font_patch  = PATCH_EXULT_FONTS;
+		font_patch  = PATCH_ORIGINAL_FONTS;
 	} else {    // "disabled" - use original FONTS_VGA
 		font_source = FONTS_VGA;
 		font_patch  = PATCH_FONTS;
@@ -405,10 +405,10 @@ void Shape_manager::reload_shapes(int shape_kind    // Type from u7drag.h.
 		File_spec font_patch;
 		if (font_config == "serif") {
 			font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_SERIF_VGA);
-			font_patch  = PATCH_EXULT_FONTS;
+			font_patch  = PATCH_SERIF_FONTS;
 		} else if (font_config == "original") {
 			font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA);
-			font_patch  = PATCH_EXULT_FONTS;
+			font_patch  = PATCH_ORIGINAL_FONTS;
 		} else {    // "disabled" - use original FONTS_VGA
 			font_source = FONTS_VGA;
 			font_patch  = PATCH_FONTS;
