@@ -785,6 +785,18 @@ void Map_chunk::add_dependencies(
 				}
 			}
 		}
+		// Sleeping actors should always render below awake actors.
+		const Actor* newactor = newobj->as_actor();
+		const Actor* objactor = obj->as_actor();
+		if (newactor && objactor) {
+			const bool new_asleep = newactor->get_flag(Obj_flags::asleep);
+			const bool obj_asleep = objactor->get_flag(Obj_flags::asleep);
+			if (new_asleep && !obj_asleep) {
+				cmp = -1;    // Asleep newobj renders before awake obj.
+			} else if (!new_asleep && obj_asleep) {
+				cmp = 1;    // Awake newobj renders after asleep obj.
+			}
+		}
 		if (cmp == 1) {    // Bigger than this object?
 			newobj->dependencies.insert(obj);
 			obj->dependors.insert(newobj);
