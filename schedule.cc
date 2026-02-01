@@ -2616,11 +2616,13 @@ void Sleep_schedule::now_what() {
 		// Put NPC on top of bed, making sure that children are
 		// not completely covered by sheets.
 		int delta = calculate_bed_offset(npc);
+		// Set asleep flag BEFORE move so dependencies are calculated correctly.
+		npc->force_sleep();
+		// With bedspread: place at bed's z-level (render order handled in
+		// Map_chunk::add_dependencies). Without: place on top of bed frame.
 		npc->move(
 				bedloc.tx + delta, bedloc.ty + delta,
 				bedloc.tz + (bedspread ? 0 : info.get_3d_height()));
-		// Either call bed usecode for avatar or put NPC to sleep.
-		npc->force_sleep();
 		state = 2;
 		if (for_nap_time) {    // Usecode 622 handles sleeping.
 			// Calling it may delete us, though.

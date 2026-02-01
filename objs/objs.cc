@@ -1345,9 +1345,9 @@ inline void Compare_ranges(
 		}
 		// from1 == from2
 		else if (to1 < to2) {
-			cmp = 1;
-		} else if (to1 > to2) {
 			cmp = -1;
+		} else if (to1 > to2) {
+			cmp = 1;
 		} else {
 			cmp = 0;
 		}
@@ -1403,6 +1403,12 @@ int Game_object::compare(
 	}
 	if (xcmp >= 0 && ycmp >= 0 && zcmp >= 0) {
 		return TRACE_COMPARE(1);    // GTE in all dimensions.
+	}
+	// fix tapestries in Fawn, LB's castle
+	if (xover && yover && zover && inf1.tz == inf2.tz) {
+		if (!xcmp || !ycmp) {    // Inside N-S wall?  Take shorter.
+			return -zcmp;
+		}
 	}
 	if (xcmp <= 0 && ycmp <= 0 && zcmp <= 0) {
 		return TRACE_COMPARE(-1);    // LTE in all dimensions.

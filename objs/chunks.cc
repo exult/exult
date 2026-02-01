@@ -770,6 +770,21 @@ void Map_chunk::add_dependencies(
 			&& obj->get_shapenum() == 0xd1 && obj->get_framenum() == 17) {
 			cmp = 1;
 		}
+		// Sleeping NPCs should render before bedspread covers but after bed
+		// frames.
+		const Actor* actor = newobj->as_actor();
+		if (actor && actor->get_flag(Obj_flags::asleep)) {
+			const int bedshape = obj->get_shapenum();
+			if (bedshape == 696 || bedshape == 1011 || bedshape == 363
+				|| bedshape == 312) {
+				const int frnum   = obj->get_framenum();
+				const int spread0 = GAME_SI ? 7 : 3;
+				const int spread1 = GAME_SI ? 20 : 16;
+				if (frnum >= spread0 && frnum <= spread1 && !(frnum % 2)) {
+					cmp = -1;    // NPC renders before bedspread.
+				}
+			}
+		}
 		if (cmp == 1) {    // Bigger than this object?
 			newobj->dependencies.insert(obj);
 			obj->dependors.insert(newobj);
