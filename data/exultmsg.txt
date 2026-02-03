@@ -433,4 +433,83 @@
 0X6C2:Please add the games in File Sharing
 0X6C3:Touch screen for help!
 
+#Misc
+# SI copy protection failed
+0x6F0:Oink!
+0x6F1:Oink
+
+# keyactions.cc
+0x6FA: Saving game failed!
+0x6FB: Game saved
+0x6FC: Restoring game failed!
+0x6FD: Game restored
+0x6FE: Object created
+
+# cheat.cc screen messages
+0x700: God Mode Enabled
+0x701: God Mode Disabled
+0x702: Archwizard Mode Enabled
+0x703: Archwizard Mode Disabled
+0x704: Map Editor Mode Enabled
+0x705: Map Editor Mode Disabled
+0x706: Infravision Enabled
+0x707: Infravision Disabled
+0x708: Pick Pocket Enabled
+0x709: Pick Pocket Disabled
+0x70A: Hack mover Enabled
+0x70B: Hack mover Disabled
+0x70C: Avatar is now male
+0x70D: Avatar is now female
+0x70E: Eggs display enabled
+0x70F: Eggs display disabled
+0x710: Level up!
+0x711: Maximum level reached
+0x712: Game clock incremented to 
+0x713: Teleport!!!
+0x714: Map not found
+0x715: To map #
+0x716: Added 100 gold coins
+0x717: Object created
+0x718: No room
+0x719: Can only create from 'shapes.vga'
+0x71A: Object deleted
+0x71B: Party healed
+0x71C: NPC Tool Actor Grabbing Enabled
+0x71D: NPC Tool Actor Grabbing Disabled
+0x71E: NPC Numbers Enabled
+0x71F: NPC Numbers Disabled
+
+# combat.cc
+0x730: Combat resumed
+0x731: Combat paused
+
+# exult.cc
+0x740: Too many screenshots
+0x741: Screenshot
+0x742: Screenshot failed
+0x743: Gamma Set to
+
+# game.cc
+0x74A: You must start a new game first.
+0x74B: Press ESC to return.
+
+# gamewin.cc
+# NPC ...
+0x750:  does not exist.
+# NPC ...
+0x751:  is not on the map.
+0x752: Searching for shape 
+0x753: Not found
+0x754: Saving Game
+
+# gamemap.cc
+0x760: Scanning superchunk 
+0x761: Encoding chunks
+0x762: Creating minimap 
+
+# server.cc
+0x770: Terrain-Editing Aborted
+0x771: Terrain-Editing Done
+0x772: Terrain-Editing Enabled
+0x773: Map #
 

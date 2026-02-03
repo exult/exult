@@ -726,9 +726,12 @@ bool Game::show_menu(bool skip) {
 
 void Game::journey_failed_text() {
 	std::shared_ptr<Font> font = fontManager.get_font("MENU_FONT");
+	// "You must start a new game first."
 	font->center_text(
-			ibuf, centerx, centery + 30, "You must start a new game first.");
-	font->center_text(ibuf, centerx, centery + 42, "Press ESC to return.");
+			ibuf, centerx, centery + 30, get_text_msg(0x74A - msg_file_start));
+	//"Press ESC to return."
+	font->center_text(
+			ibuf, centerx, centery + 42, get_text_msg(0x74B - msg_file_start));
 	pal->fade_in(50);
 	while (!wait_delay(10))
 		;

@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "actors.h"
 #include "game.h"
 #include "gamewin.h"
+#include "items.h"
 #include "misc_buttons.h"
 
 /*
@@ -69,13 +70,14 @@ void CombatStats_gump::paint() {
 	Gump::paint();
 
 	if (gwin->failed_copy_protection()) {
-		const int oinkx = 91;
+		const int   oinkx = 91;
+		const char* oink  = get_text_msg(0x6F1 - msg_file_start);    // "Oink!"
 		for (int i = 0; i < party_size; i++) {
-			sman->paint_text(2, "Oink", x + oinkx + i * coldx, y + rowy[1]);
-			sman->paint_text(2, "Oink", x + oinkx + i * coldx, y + rowy[2]);
+			sman->paint_text(2, oink, x + oinkx + i * coldx, y + rowy[1]);
+			sman->paint_text(2, oink, x + oinkx + i * coldx, y + rowy[2]);
 		}
-		sman->paint_text(2, "Oink", x + oinkx, y + rowy[5]);
-		sman->paint_text(2, "Oink", x + oinkx, y + rowy[6]);
+		sman->paint_text(2, oink, x + oinkx, y + rowy[5]);
+		sman->paint_text(2, oink, x + oinkx, y + rowy[6]);
 	} else {
 		// stats for all party members
 		for (int i = 0; i < party_size; i++) {

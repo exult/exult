@@ -42,6 +42,7 @@
 #include "game.h"
 #include "gamewin.h" /* With some work, could get rid of this. */
 #include "ios_state.hpp"
+#include "items.h"
 #include "jawbone.h"
 #include "mappatch.h"
 #include "objiter.cc" /* Yes we #include the .cc here on purpose! Please don't "fix" this */
@@ -1604,9 +1605,10 @@ void Game_map::find_unused_shapes(
 	for (int sc = 0; sc < c_num_schunks * c_num_schunks; sc++) {
 		cout << '.';
 		cout.flush();
-		char msg[80];
-		snprintf(msg, sizeof(msg), "Scanning superchunk %d", sc);
-		gwin->get_effects()->center_text(msg);
+		std::ostringstream msg;
+		msg << get_text_msg(0x760 - msg_file_start)
+			<< sc;    // "Scanning superchunk ..."
+		gwin->get_effects()->center_text(msg.str().c_str());
 		gwin->paint();
 		gwin->show();
 		if (!schunk_read[sc]) {
@@ -1770,7 +1772,6 @@ void Game_map::create_minimap(
  */
 
 bool Game_map::write_minimap() {
-	char msg[80];
 	// A pixel for each possible chunk.
 	const int      num_chunks   = chunk_terrains->size();
 	auto           chunk_pixels = std::make_unique<unsigned char[]>(num_chunks);
@@ -1781,7 +1782,8 @@ bool Game_map::write_minimap() {
 	get_all_terrain();
 	pal.set(PALETTE_DAY, 100, false);
 	Effects_manager* eman = gwin->get_effects();
-	eman->center_text("Encoding chunks");
+	eman->center_text(
+			get_text_msg(0x761 - msg_file_start));    // "Encoding chunks"
 	gwin->paint();
 	gwin->show();
 	for (auto* ter : *chunk_terrains) {
@@ -1811,8 +1813,10 @@ bool Game_map::write_minimap() {
 	Shape                    shape;
 	for (int i = 0; i < nmaps; ++i) {
 		if (maps[i]) {
-			snprintf(msg, sizeof(msg), "Creating minimap %d", i);
-			eman->center_text(msg);
+			std::ostringstream msg;
+			msg << get_text_msg(0x762 - msg_file_start)
+				<< i;    // "Creating minimap ..."
+			eman->center_text(msg.str().c_str());
 			gwin->paint();
 			gwin->show();
 			maps[i]->create_minimap(&shape, chunk_pixels.get());

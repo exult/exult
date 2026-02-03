@@ -972,7 +972,7 @@ Game_object* Game_object::get_outermost() {
 
 void Game_object::say(const char* text) {
 	if (gwin->failed_copy_protection()) {
-		text = "Oink!";
+		text = get_text_msg(0x6F0 - msg_file_start);    // "Oink!"
 	}
 	eman->add_text(text, this);
 }

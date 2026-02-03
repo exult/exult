@@ -2013,10 +2013,12 @@ void Combat::toggle_pause() {
 	}
 	if (paused) {
 		resume();    // Text is probably for debugging.
-		eman->center_text("Combat resumed");
+		eman->center_text(
+				get_text_msg(0x730 - msg_file_start));    // "Combat resumed"
 	} else {
 		gwin->get_tqueue()->pause(SDL_GetTicks());
-		eman->center_text("Combat paused");
+		eman->center_text(
+				get_text_msg(0x731 - msg_file_start));    // "Combat paused"
 		paused = true;
 		if (touchui != nullptr) {
 			touchui->hideGameControls();

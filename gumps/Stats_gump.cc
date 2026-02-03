@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "exult_flx.h"
 #include "game.h"
 #include "gamewin.h"
+#include "items.h"
 #include "misc_buttons.h"
 
 /*
@@ -195,17 +196,11 @@ void Stats_gump::paint() {
 			x + namex + (namew - sman->get_text_width(2, nm.c_str())) / 2,
 			y + namey);
 	if (gwin->failed_copy_protection()) {
-		const int oinkx = 96;
-		sman->paint_text(2, "Oink!", x + oinkx, y + texty[0]);
-		sman->paint_text(2, "Oink!", x + oinkx, y + texty[1]);
-		sman->paint_text(2, "Oink!", x + oinkx, y + texty[2]);
-		sman->paint_text(2, "Oink!", x + oinkx, y + texty[3]);
-		sman->paint_text(2, "Oink!", x + oinkx, y + texty[4]);
-		sman->paint_text(2, "Oink!", x + oinkx, y + texty[5]);
-		sman->paint_text(2, "Oink!", x + oinkx, y + texty[6]);
-		sman->paint_text(2, "Oink!", x + oinkx, y + texty[7]);
-		sman->paint_text(2, "Oink!", x + oinkx, y + texty[8]);
-		sman->paint_text(2, "Oink!", x + oinkx, y + texty[9]);
+		const int   oinkx = 96;
+		const char* oink  = get_text_msg(0x6F0 - msg_file_start);    // "Oink"
+		for (int i = 0; i < 10; i++) {
+			sman->paint_text(2, oink, x + oinkx, y + texty[i]);
+		}
 	} else {
 		gman->paint_num(
 				act->get_effective_prop(Actor::strength), x + textx,

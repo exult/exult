@@ -88,6 +88,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <sstream>
 
 #ifdef USE_EXULTSTUDIO
 #	include "servemsg.h"
@@ -107,6 +108,37 @@ using std::srand;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+namespace {
+
+	class Strings {
+	public:
+		static auto DoesNotExist() {
+			return get_text_msg(0x750 - msg_file_start);
+		}
+
+		static auto IsNotOnTheMap() {
+			return get_text_msg(0x751 - msg_file_start);
+		}
+
+		static auto SearchingForShape() {
+			return get_text_msg(0x752 - msg_file_start);
+		}
+
+		static auto NotFound() {
+			return get_text_msg(0x753 - msg_file_start);
+		}
+
+		static auto SavingGame() {
+			return get_text_msg(0x754 - msg_file_start);
+		}
+
+		static auto Oink() {
+			return get_text_msg(0x6F0 - msg_file_start);
+		}
+	};
+
+}    // namespace
 
 // THE game window:
 Game_window* Game_window::game_window = nullptr;
@@ -847,28 +879,26 @@ Actor* Game_window::get_npc(long npc_num) const {
  */
 
 void Game_window::locate_npc(int npc_num) {
-	char   msg[80];
-	Actor* npc = get_npc(npc_num);
+	std::ostringstream msg;
+	Actor*             npc = get_npc(npc_num);
 	if (!npc) {
-		snprintf(msg, sizeof(msg), "NPC %d does not exist.", npc_num);
-		effects->center_text(msg);
+		msg << "NPC " << npc_num << Strings::DoesNotExist();
+		effects->center_text(msg.str().c_str());
 	} else if (npc->is_pos_invalid()) {
-		snprintf(msg, sizeof(msg), "NPC %d is not on the map.", npc_num);
-		effects->center_text(msg);
+		msg << "NPC " << npc_num << Strings::IsNotOnTheMap();
+		effects->center_text(msg.str().c_str());
 	} else {
 		// ++++WHAT IF on a different map???
 		const Tile_coord pos = npc->get_tile();
 		center_view(pos);
 		cheat.clear_selected();
 		cheat.append_selected(npc);
-		snprintf(
-				msg, sizeof(msg), "NPC %d: '%s'.", npc_num,
-				npc->get_npc_name().c_str());
+		msg << "NPC " << npc_num << ": '" << npc->get_npc_name() << "'.";
 		const int above = pos.tz + npc->get_info().get_3d_height() - 1;
 		if (skip_above_actor > above) {
 			set_above_main_actor(above);
 		}
-		effects->center_text(msg);
+		effects->center_text(msg.str().c_str());
 	}
 }
 
@@ -991,15 +1021,15 @@ bool Game_window::locate_shape(
 ) {
 	// Get (first) selected object.
 	const std::vector<Game_object_shared>& sel = cheat.get_selected();
-	Game_object* start = !sel.empty() ? (sel[0]).get() : nullptr;
-	char         msg[80];
-	snprintf(msg, sizeof(msg), "Searching for shape %d", shapenum);
-	effects->center_text(msg);
+	Game_object*       start = !sel.empty() ? (sel[0]).get() : nullptr;
+	std::ostringstream msg;
+	msg << Strings::SearchingForShape() << shapenum;
+	effects->center_text(msg.str().c_str());
 	paint();
 	show();
 	Game_object* obj = map->locate_shape(shapenum, upwards, start, frnum, qual);
 	if (!obj) {
-		effects->center_text("Not found");
+		effects->center_text(Strings::NotFound());
 		return false;    // Not found.
 	}
 	effects->remove_text_effects();
@@ -1396,12 +1426,12 @@ void Game_window::write(bool nopaint) {
 	const int height      = get_height();
 	const int centre_y    = height / 2;
 	const int text_height = shape_man->get_text_height(0);
-	const int text_width  = shape_man->get_text_width(0, "Saving Game");
+	const int text_width  = shape_man->get_text_width(0, Strings::SavingGame());
 
 	if (!nopaint) {
 		win->fill_translucent8(0, width, height, 0, 0, shape_man->get_xform(8));
 		shape_man->paint_text(
-				0, "Saving Game", centre_x - text_width / 2,
+				0, Strings::SavingGame(), centre_x - text_width / 2,
 				centre_y - text_height);
 		show(true);
 	}
@@ -2240,7 +2270,7 @@ void Game_window::show_items(
 		std::string namestr = Get_object_name(obj);
 		if (Game_window::get_instance()->failed_copy_protection()
 			&& (npc == main_actor || !npc)) {    // Avatar and items
-			namestr = "Oink!";
+			namestr = Strings::Oink();
 		}
 		// Combat and an NPC?
 		if (in_combat() && Combat::mode != Combat::original && npc) {

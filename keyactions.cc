@@ -42,16 +42,42 @@
 #include "exult_constants.h"
 #include "game.h"
 #include "gamemap.h"
-#include "gamewin.h"
 #include "gamerend.h"
+#include "gamewin.h"
 #include "gump_utils.h"
 #include "ignore_unused_variable_warning.h"
+#include "items.h"
 #include "keys.h"
 #include "mouse.h"
 #include "palette.h"
 #include "party.h"
 #include "ucmachine.h"
 #include "version.h"
+
+namespace {
+	class Strings {
+	public:
+		static auto SavingGameFailed() {
+			return get_text_msg(0x6FA - msg_file_start);
+		}
+
+		static auto GameSaved() {
+			return get_text_msg(0x6FB - msg_file_start);
+		}
+
+		static auto RestoringGameFailed() {
+			return get_text_msg(0x6FC - msg_file_start);
+		}
+
+		static auto GameRestored() {
+			return get_text_msg(0x6FD - msg_file_start);
+		}
+
+		static auto ObjectCreated() {
+			return get_text_msg(0x6FE - msg_file_start);
+		}
+	};
+}    // namespace
 
 /*
  *  Get the i'th party member, with the 0'th being the Avatar.
@@ -116,10 +142,10 @@ void ActionQuicksave(const int* params) {
 	try {
 		gwin->write();
 	} catch (exult_exception& /*e*/) {
-		gwin->get_effects()->center_text("Saving game failed!");
+		gwin->get_effects()->center_text(Strings::SavingGameFailed());
 		return;
 	}
-	gwin->get_effects()->center_text("Game saved");
+	gwin->get_effects()->center_text(Strings::GameSaved());
 	gwin->got_bad_feeling(8);
 }
 
@@ -130,10 +156,10 @@ void ActionQuickrestore(const int* params) {
 	try {
 		gwin->read();
 	} catch (exult_exception& /*e*/) {
-		gwin->get_effects()->center_text("Restoring game failed!");
+		gwin->get_effects()->center_text(Strings::RestoringGameFailed());
 		return;
 	}
-	gwin->get_effects()->center_text("Game restored");
+	gwin->get_effects()->center_text(Strings::GameRestored());
 	gwin->paint();
 }
 
@@ -556,7 +582,9 @@ int get_walking_speed(const int* params) {
 	int          speed;
 	if (parm == 2) {
 		speed = Mouse::slow_speed_factor;
-	} else if (gwin->in_combat() || (gwin->is_hostile_nearby()  && !cheat.in_god_mode())) {
+	} else if (
+			gwin->in_combat()
+			|| (gwin->is_hostile_nearby() && !cheat.in_god_mode())) {
 		speed = Mouse::medium_combat_speed_factor;
 	} else {
 		speed = parm == 1 ? Mouse::medium_speed_factor
@@ -670,7 +698,7 @@ void ActionCreateShape(const int* params) {
 		const int    qual     = params[2] == -1 ? c_any_qual : params[2];
 		const int    framenum = params[1] == -1 ? 0 : params[1];
 		gwin->get_main_actor()->add_quantity(delta, shapenum, qual, framenum);
-		gwin->get_effects()->center_text("Object created");
+		gwin->get_effects()->center_text(Strings::ObjectCreated());
 	}
 }
 

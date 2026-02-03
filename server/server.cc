@@ -43,6 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	include "exult.h"
 #	include "gamemap.h"
 #	include "gamewin.h"
+#	include "items.h"
 #	include "objiter.h"
 #	include "objserial.h"
 #	include "servemsg.h"
@@ -55,6 +56,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #	include <cstdio>
 #	include <cstdlib>
+#	include <iomanip>
+#	include <sstream>
 
 #	if HAVE_SYS_TYPES_H
 #		include <sys/types.h>
@@ -98,6 +101,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 using std::cerr;
 using std::cout;
 using std::endl;
+
+namespace {
+
+	class Strings {
+	public:
+		static auto TerrainEditingAborted() {
+			return get_text_msg(0x770 - msg_file_start);
+		}
+
+		static auto TerrainEditingDone() {
+			return get_text_msg(0x771 - msg_file_start);
+		}
+
+		static auto TerrainEditingEnabled() {
+			return get_text_msg(0x772 - msg_file_start);
+		}
+
+		static auto MapNumber() {
+			return get_text_msg(0x773 - msg_file_start);
+		}
+	};
+
+}    // namespace
+
 /*
  *  Sockets, etc.
  */
@@ -347,10 +374,10 @@ static void Handle_client_message(
 		// 1=on, 0=off, -1=undo.
 		const int onoff = little_endian::Read2s(ptr);
 		// skip_lift==0 <==> terrain-editing.
-		gwin->skip_lift = onoff == 1 ? 0 : 256;
-		static const char* const msgs[3]
-				= {"Terrain-Editing Aborted", "Terrain-Editing Done",
-				   "Terrain-Editing Enabled"};
+		gwin->skip_lift           = onoff == 1 ? 0 : 256;
+		const char* const msgs[3] = {
+				Strings::TerrainEditingAborted(), Strings::TerrainEditingDone(),
+				Strings::TerrainEditingEnabled()};
 		if (onoff == 0) {    // End/commit.
 			Game_map::commit_terrain_edits();
 		} else if (onoff == -1) {
@@ -539,12 +566,13 @@ static void Handle_client_message(
 		break;
 	}
 	case Exult_server::goto_map: {
-		char             msg[80];
 		const Tile_coord pos = gwin->get_main_actor()->get_tile();
 		const int        num = little_endian::Read2(ptr);
 		gwin->teleport_party(pos, true, num);
-		snprintf(msg, sizeof(msg), "Map #%02x", num);
-		gwin->get_effects()->center_text(msg);
+		std::ostringstream msg;
+		msg << Strings::MapNumber() << std::hex << std::setfill('0')
+			<< std::setw(2) << num;
+		gwin->get_effects()->center_text(msg.str().c_str());
 		break;
 	}
 	case Exult_server::cont_show_gump: {

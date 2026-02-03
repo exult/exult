@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "contain.h"
 #include "game.h"
 #include "gamewin.h"
+#include "items.h"
 #include "misc_buttons.h"
 #include "miscinf.h"
 #include "npcdollinf.h"
@@ -539,7 +540,9 @@ void Paperdoll_gump::paint() {
 	const int weight     = actor->get_weight() / 10;
 	char      text[20];
 	if (gwin->failed_copy_protection()) {
-		snprintf(text, sizeof(text), "Oink!");
+		snprintf(
+				text, sizeof(text), "%s",
+				get_text_msg(0x6F0 - msg_file_start));    // "Oink!"
 	} else {
 		snprintf(text, sizeof(text), "%d/%d", weight, max_weight);
 	}

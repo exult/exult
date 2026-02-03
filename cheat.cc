@@ -38,6 +38,7 @@
 #include "gamemap.h"
 #include "gamewin.h"
 #include "istring.h"
+#include "items.h"
 #include "miscinf.h"
 #include "mouse.h"
 #include "objiter.h"
@@ -84,6 +85,139 @@ using std::setw;
 
 using std::cout;
 using std::endl;
+
+namespace {
+	class Strings {
+	public:
+		static auto GodModeEnabled() {
+			return get_text_msg(0x700 - msg_file_start);
+		}
+
+		static auto GodModeDisabled() {
+			return get_text_msg(0x701 - msg_file_start);
+		}
+
+		static auto ArchwizardModeEnabled() {
+			return get_text_msg(0x702 - msg_file_start);
+		}
+
+		static auto ArchwizardModeDisabled() {
+			return get_text_msg(0x703 - msg_file_start);
+		}
+
+		static auto MapEditorModeEnabled() {
+			return get_text_msg(0x704 - msg_file_start);
+		}
+
+		static auto MapEditorModeDisabled() {
+			return get_text_msg(0x705 - msg_file_start);
+		}
+
+		static auto InfravisionEnabled() {
+			return get_text_msg(0x706 - msg_file_start);
+		}
+
+		static auto InfravisionDisabled() {
+			return get_text_msg(0x707 - msg_file_start);
+		}
+
+		static auto PickPocketEnabled() {
+			return get_text_msg(0x708 - msg_file_start);
+		}
+
+		static auto PickPocketDisabled() {
+			return get_text_msg(0x709 - msg_file_start);
+		}
+
+		static auto HackMoverEnabled() {
+			return get_text_msg(0x70A - msg_file_start);
+		}
+
+		static auto HackMoverDisabled() {
+			return get_text_msg(0x70B - msg_file_start);
+		}
+
+		static auto AvatarNowMale() {
+			return get_text_msg(0x70C - msg_file_start);
+		}
+
+		static auto AvatarNowFemale() {
+			return get_text_msg(0x70D - msg_file_start);
+		}
+
+		static auto EggsDisplayEnabled() {
+			return get_text_msg(0x70E - msg_file_start);
+		}
+
+		static auto EggsDisplayDisabled() {
+			return get_text_msg(0x70F - msg_file_start);
+		}
+
+		static auto LevelUp() {
+			return get_text_msg(0x710 - msg_file_start);
+		}
+
+		static auto MaximumLevelReached() {
+			return get_text_msg(0x711 - msg_file_start);
+		}
+
+		static auto GameClockIncrementedTo() {
+			return get_text_msg(0x712 - msg_file_start);
+		}
+
+		static auto Teleport() {
+			return get_text_msg(0x713 - msg_file_start);
+		}
+
+		static auto MapNotFound() {
+			return get_text_msg(0x714 - msg_file_start);
+		}
+
+		static auto ToMap() {
+			return get_text_msg(0x715 - msg_file_start);
+		}
+
+		static auto Added100GoldCoins() {
+			return get_text_msg(0x716 - msg_file_start);
+		}
+
+		static auto ObjectCreated() {
+			return get_text_msg(0x717 - msg_file_start);
+		}
+
+		static auto NoRoom() {
+			return get_text_msg(0x718 - msg_file_start);
+		}
+
+		static auto CanOnlyCreateFromShapesVga() {
+			return get_text_msg(0x719 - msg_file_start);
+		}
+
+		static auto ObjectDeleted() {
+			return get_text_msg(0x71A - msg_file_start);
+		}
+
+		static auto PartyHealed() {
+			return get_text_msg(0x71B - msg_file_start);
+		}
+
+		static auto NPCToolActorGrabbingEnabled() {
+			return get_text_msg(0x71C - msg_file_start);
+		}
+
+		static auto NPCToolActorGrabbingDisabled() {
+			return get_text_msg(0x71D - msg_file_start);
+		}
+
+		static auto NPCNumbersEnabled() {
+			return get_text_msg(0x71E - msg_file_start);
+		}
+
+		static auto NPCNumbersDisabled() {
+			return get_text_msg(0x71F - msg_file_start);
+		}
+	};
+}    // namespace
 
 Cheat cheat;
 
@@ -160,14 +294,14 @@ void Cheat::toggle_god() {
 
 	god_mode = !god_mode;
 	if (god_mode) {
-		eman->center_text("God Mode Enabled");
+		eman->center_text(Strings::GodModeEnabled());
 		Actor*    party[9];    // Set attack mode to 'nearest'.
 		const int cnt = gwin->get_party(party, 1);
 		for (int i = 0; i < cnt; i++) {
 			party[i]->set_attack_mode(Actor::nearest);
 		}
 	} else {
-		eman->center_text("God Mode Disabled");
+		eman->center_text(Strings::GodModeDisabled());
 	}
 }
 
@@ -178,9 +312,9 @@ void Cheat::toggle_wizard() {
 
 	wizard_mode = !wizard_mode;
 	if (wizard_mode) {
-		eman->center_text("Archwizard Mode Enabled");
+		eman->center_text(Strings::ArchwizardModeEnabled());
 	} else {
-		eman->center_text("Archwizard Mode Disabled");
+		eman->center_text(Strings::ArchwizardModeDisabled());
 	}
 }
 
@@ -191,7 +325,7 @@ void Cheat::toggle_map_editor() {
 
 	map_editor = !map_editor;
 	if (map_editor) {
-		eman->center_text("Map Editor Mode Enabled");
+		eman->center_text(Strings::MapEditorModeEnabled());
 		// Stop time.
 		gwin->set_time_stopped(-1);
 #ifdef USE_EXULTSTUDIO              /* Launch ExultStudio! */
@@ -276,7 +410,7 @@ void Cheat::toggle_map_editor() {
 #endif
 	} else {
 		clear_selected();    // Selection goes away.
-		eman->center_text("Map Editor Mode Disabled");
+		eman->center_text(Strings::MapEditorModeDisabled());
 		// Stop time-stop.
 		gwin->set_time_stopped(0);
 	}
@@ -445,9 +579,9 @@ void Cheat::toggle_infravision() {
 
 	infravision = !infravision;
 	if (infravision) {
-		eman->center_text("Infravision Enabled");
+		eman->center_text(Strings::InfravisionEnabled());
 	} else {
-		eman->center_text("Infravision Disabled");
+		eman->center_text(Strings::InfravisionDisabled());
 	}
 	gclock->set_palette();
 }
@@ -459,10 +593,10 @@ void Cheat::toggle_pickpocket() {
 
 	pickpocket = !pickpocket;
 	if (pickpocket) {
-		eman->center_text("Pick Pocket Enabled");
+		eman->center_text(Strings::PickPocketEnabled());
 		gwin->get_pal()->set(0);
 	} else {
-		eman->center_text("Pick Pocket Disabled");
+		eman->center_text(Strings::PickPocketDisabled());
 	}
 }
 
@@ -473,9 +607,9 @@ void Cheat::toggle_hack_mover() {
 
 	hack_mover = !hack_mover;
 	if (hack_mover) {
-		eman->center_text("Hack mover Enabled");
+		eman->center_text(Strings::HackMoverEnabled());
 	} else {
-		eman->center_text("Hack mover Disabled");
+		eman->center_text(Strings::HackMoverDisabled());
 	}
 }
 
@@ -486,10 +620,10 @@ void Cheat::change_gender() const {
 
 	if (gwin->get_main_actor()->get_type_flag(Actor::tf_sex)) {
 		gwin->get_main_actor()->clear_type_flag(Actor::tf_sex);
-		eman->center_text("Avatar is now male");
+		eman->center_text(Strings::AvatarNowMale());
 	} else {
 		gwin->get_main_actor()->set_type_flag(Actor::tf_sex);
-		eman->center_text("Avatar is now female");
+		eman->center_text(Strings::AvatarNowFemale());
 	}
 	gwin->set_all_dirty();
 }
@@ -501,9 +635,9 @@ void Cheat::toggle_eggs() const {
 
 	gwin->paint_eggs = !gwin->paint_eggs;
 	if (gwin->paint_eggs) {
-		eman->center_text("Eggs display enabled");
+		eman->center_text(Strings::EggsDisplayEnabled());
 	} else {
-		eman->center_text("Eggs display disabled");
+		eman->center_text(Strings::EggsDisplayDisabled());
 	}
 	gwin->paint();
 }
@@ -568,9 +702,9 @@ void Cheat::levelup_party() const {
 	}
 
 	if (leveledup) {
-		eman->center_text("Level up!");
+		eman->center_text(Strings::LevelUp());
 	} else {
-		eman->center_text("Maximum level reached");
+		eman->center_text(Strings::MaximumLevelReached());
 	}
 }
 
@@ -582,7 +716,7 @@ void Cheat::fake_time_period() const {
 	if (!map_editor) {
 		std::ostringstream s;
 		gwin->get_clock()->fake_next_period();
-		s << "Game clock incremented to " << gclock->get_hour() << ":"
+		s << Strings::GameClockIncrementedTo() << gclock->get_hour() << ":"
 		  << setfill('0') << setw(2) << gclock->get_minute();
 		eman->center_text(s.str().c_str());
 	}
@@ -1049,7 +1183,7 @@ void Cheat::map_teleport() const {
 		touchui->showGameControls();
 	}
 	gwin->teleport_party(t);
-	eman->center_text("Teleport!!!");
+	eman->center_text(Strings::Teleport());
 }
 
 void Cheat::cursor_teleport() const {
@@ -1064,7 +1198,7 @@ void Cheat::cursor_teleport() const {
 			gwin->get_scrollty() + y / c_tilesize, 0);
 	t.fixme();
 	gwin->teleport_party(t);
-	eman->center_text("Teleport!!!");
+	eman->center_text(Strings::Teleport());
 }
 
 void Cheat::next_map_teleport() const {
@@ -1074,14 +1208,15 @@ void Cheat::next_map_teleport() const {
 		// Look from 0.
 		newmap = Find_next_map(0, curmap);
 		if (newmap == -1) {
-			eman->center_text("Map not found");
+			eman->center_text(Strings::MapNotFound());
 			return;
 		}
 	}
 	gwin->teleport_party(gwin->get_main_actor()->get_tile(), true, newmap);
-	char msg[80];
-	snprintf(msg, sizeof(msg), "To map #%02x", newmap);
-	eman->center_text(msg);
+	std::ostringstream s;
+	s << Strings::ToMap() << std::hex << std::setfill('0') << std::setw(2)
+	  << newmap;
+	eman->center_text(s.str().c_str());
 }
 
 void Cheat::create_coins() const {
@@ -1090,7 +1225,7 @@ void Cheat::create_coins() const {
 	}
 
 	gwin->get_main_actor()->add_quantity(100, 644);
-	eman->center_text("Added 100 gold coins");
+	eman->center_text(Strings::Added100GoldCoins());
 }
 
 void Cheat::create_last_shape() const {
@@ -1108,12 +1243,12 @@ void Cheat::create_last_shape() const {
 				gwin->get_main_actor()->get_tile(), 4, obj.get(), 2);
 		if (t.tx != -1) {
 			obj->move(t);
-			eman->center_text("Object created");
+			eman->center_text(Strings::ObjectCreated());
 		} else {
-			eman->center_text("No room");
+			eman->center_text(Strings::NoRoom());
 		}
 	} else {
-		eman->center_text("Can only create from 'shapes.vga'");
+		eman->center_text(Strings::CanOnlyCreateFromShapesVga());
 	}
 }
 
@@ -1135,7 +1270,7 @@ void Cheat::delete_object() {
 	if (obj) {
 		clear_selected();    // Unselect all.
 		obj->remove_this();
-		eman->center_text("Object deleted");
+		eman->center_text(Strings::ObjectDeleted());
 		gwin->paint();
 	}
 }
@@ -1194,7 +1329,7 @@ void Cheat::heal_party() const {
 		}
 	}
 
-	eman->center_text("Party healed");
+	eman->center_text(Strings::PartyHealed());
 	gwin->paint();
 }
 
@@ -1242,9 +1377,9 @@ void Cheat::toggle_grab_actor() {
 
 	grab_actor = !grab_actor;
 	if (grab_actor) {
-		eman->center_text("NPC Tool Actor Grabbing Enabled");
+		eman->center_text(Strings::NPCToolActorGrabbingEnabled());
 	} else {
-		eman->center_text("NPC Tool Actor Grabbing Disabled");
+		eman->center_text(Strings::NPCToolActorGrabbingDisabled());
 	}
 }
 
@@ -1271,9 +1406,9 @@ void Cheat::toggle_number_npcs() {
 
 	npc_numbers = !npc_numbers;
 	if (npc_numbers) {
-		eman->center_text("NPC Numbers Enabled");
+		eman->center_text(Strings::NPCNumbersEnabled());
 	} else {
-		eman->center_text("NPC Numbers Disabled");
+		eman->center_text(Strings::NPCNumbersDisabled());
 	}
 }
 

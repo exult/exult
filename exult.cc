@@ -79,6 +79,8 @@
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <iomanip>
+#include <sstream>
 
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
@@ -2985,7 +2987,8 @@ void make_screenshot(bool silent) {
 
 	if (!namefound) {
 		if (!silent) {
-			eman->center_text("Too many screenshots");
+			eman->center_text(get_text_msg(
+					0x740 - msg_file_start));    // "Too many screenshots"
 		}
 	} else {
 		SDL_IOStream* dst = SDL_IOFromFile(fn, "wb");
@@ -2993,11 +2996,13 @@ void make_screenshot(bool silent) {
 		if (gwin->get_win()->screenshot(dst)) {
 			cout << "Screenshot saved in " << fn << endl;
 			if (!silent) {
-				eman->center_text("Screenshot");
+				eman->center_text(get_text_msg(
+						0x741 - msg_file_start));    // "Screenshot"
 			}
 		} else {
 			if (!silent) {
-				eman->center_text("Screenshot failed");
+				eman->center_text(get_text_msg(
+						0x742 - msg_file_start));    // "Screenshot failed"
 			}
 		}
 	}
@@ -3016,10 +3021,10 @@ void change_gamma(bool down) {
 
 	// Message
 	Image_window8::get_gamma(r, g, b);
-	snprintf(
-			text, sizeof(text), "Gamma Set to R: %04.2f G: %04.2f B: %04.2f", r,
-			g, b);
-	gwin->get_effects()->center_text(text);
+	std::ostringstream s;
+	s << get_text_msg(0x743 - msg_file_start) << std::fixed    // "Gamma set to"
+	  << std::setprecision(2) << " R: " << r << " G: " << g << " B: " << b;
+	gwin->get_effects()->center_text(s.str().c_str());
 
 	int igam = std::lround(r * 10000);
 	snprintf(text, sizeof(text), "%d.%04d", igam / 10000, igam % 10000);

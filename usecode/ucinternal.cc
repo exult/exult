@@ -45,6 +45,7 @@
 #include "gamemap.h"
 #include "gamewin.h"
 #include "ios_state.hpp"
+#include "items.h"
 #include "keyring.h"
 #include "miscinf.h"
 #include "monsters.h"
@@ -912,7 +913,7 @@ void Usecode_internal::item_say(Usecode_value& objval, Usecode_value& strval) {
 		// Added Nov01,01 to fix 'locate':
 		eman->remove_text_effect(obj);
 		if (gwin->failed_copy_protection()) {
-			str = "Oink!";
+			str = get_text_msg(0x6F0 - msg_file_start);    // "Oink!"
 		}
 		eman->add_text(str, obj);
 	}
