@@ -508,6 +508,10 @@ int Shape_manager::get_text_height(int fontnum) {
 	return fonts->get_text_height(fontnum);
 }
 
+int Shape_manager::get_text_line_height(int fontnum) {
+	return fonts->get_text_line_height(fontnum);
+}
+
 int Shape_manager::get_text_baseline(int fontnum) {
 	return fonts->get_text_baseline(fontnum);
 }

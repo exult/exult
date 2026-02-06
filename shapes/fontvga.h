@@ -78,6 +78,12 @@ public:
 		return fonts[fontnum]->get_text_height();
 	}
 
+	// Get text height including vertical leading (for line spacing).
+	int get_text_line_height(int fontnum) {
+		return fonts[fontnum]->get_text_height()
+			   + fonts[fontnum]->get_ver_lead();
+	}
+
 	int get_text_baseline(int fontnum) {
 		return fonts[fontnum]->get_text_baseline();
 	}

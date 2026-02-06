@@ -28,9 +28,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "fontvga.h"
 
+#include "Configuration.h"
 #include "Flex.h"
+#include "game.h"
+#include "istring.h"
 
 #include <array>
+
+extern Configuration* config;
 
 // using std::string;
 
@@ -61,11 +66,31 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 constexpr static const std::array hlead{-2, -1, 0, -1, 0, 0, -1, -2, -1, -1};
 
 /*
+ *  Default vertical leads, by fontnum.
+ */
+static const std::array default_vlead{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+/*
  *  Initialize.
  */
 
 void Fonts_vga_file::init(
 		const File_spec& font_source, const File_spec& font_patch) {
+	// The built-in original or the original German/French BG fonts
+	// have taller special letters that need tighter line spacing,
+	// so we adjust the vertical leads for those fonts.
+	auto        vlead = default_vlead;
+	std::string font_config;
+	config->value("config/gameplay/fonts", font_config, "original");
+	Pentagram::tolower(font_config);
+	if (font_config == "original"
+		|| (font_config == "disabled" && Game::get_game_type() == BLACK_GATE
+			&& (Game::get_game_language() == Game_Language::GERMAN
+				|| Game::get_game_language() == Game_Language::FRENCH))) {
+		vlead[0] = -5;
+		vlead[7] = -5;
+	}
+
 	FlexFile     sfonts(font_source);
 	FlexFile     pfonts(font_patch);
 	const size_t sn       = sfonts.number_of_objects();
@@ -75,6 +100,7 @@ void Fonts_vga_file::init(
 
 	for (size_t i = 0; i < numfonts; i++) {
 		fonts[i] = std::make_shared<Font>(
-				font_source, font_patch, i, i < hlead.size() ? hlead[i] : 0, 0);
+				font_source, font_patch, i, i < hlead.size() ? hlead[i] : 0,
+				i < vlead.size() ? vlead[i] : 0);
 	}
 }

@@ -207,6 +207,8 @@ public:
 	int get_text_width(int fontnum, const char* text, int textlen);
 	// Get text height, baseline.
 	int get_text_height(int fontnum);
+	// Get text height including vertical leading (for line spacing).
+	int get_text_line_height(int fontnum);
 	int get_text_baseline(int fontnum);
 	int find_cursor(
 			int fontnum, const char* text, int x, int y, int w, int h, int cx,

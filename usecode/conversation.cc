@@ -149,7 +149,7 @@ void Conversation::init_faces() {
 
 void Conversation::set_face_rect(
 		Npc_face_info* info, Npc_face_info* prev, int screenw, int screenh) {
-	const int text_height = sman->get_text_height(0);
+	const int text_height = sman->get_text_line_height(0);
 	// Figure starting y-coord.
 	// Get character's portrait.
 	Shape_frame* face   = info->shape.get_shapenum() >= 0
@@ -439,7 +439,7 @@ void Conversation::show_avatar_choices(int num_choices, char** choices) {
 	const TileRect sbox        = gwin->get_game_rect();
 	int            x           = 0;
 	int            y           = 0;    // Keep track of coords. in box.
-	const int      height      = sman->get_text_height(0);
+	const int      line_height = sman->get_text_line_height(0);
 	const int      space_width = sman->get_text_width(0, " ");
 
 	// Get main actor's portrait, checking for Petra flag.
@@ -477,13 +477,13 @@ void Conversation::show_avatar_choices(int num_choices, char** choices) {
 		fy = sbox.h - 2 - face->get_height();
 		fx = 8;
 	} else if (!prev) {
-		fy = sbox.h - face->get_height() - 3 * height;
+		fy = sbox.h - face->get_height() - 3 * line_height;
 	} else {
 		fy = prev->text_rect.y + prev->last_text_height;
 		if (fy < prev->face_rect.y + prev->face_rect.h) {
 			fy = prev->face_rect.y + prev->face_rect.h;
 		}
-		fy += height;
+		fy += line_height;
 	}
 	TileRect mbox(fx, fy, face->get_width(), face->get_height());
 	mbox        = mbox.intersect(sbox);
@@ -491,13 +491,16 @@ void Conversation::show_avatar_choices(int num_choices, char** choices) {
 	// Set to where to draw sentences.
 	TileRect tbox(
 			mbox.x + mbox.w + 8, mbox.y + 4, sbox.w - mbox.x - mbox.w - 16,
-			5 * height);    // Try 5 lines.
+			5 * line_height);    // Try 5 lines.
 	tbox = tbox.intersect(sbox);
 	// Draw portrait.
 	sman->paint_shape(
 			mbox.x + face->get_xleft(), mbox.y + face->get_yabove(), face);
 	delete[] conv_choices;    // Set up new list of choices.
-	conv_choices = new TileRect[num_choices + 1];
+	conv_choices        = new TileRect[num_choices + 1];
+	const int text_bg   = gwin->get_text_bg();
+	const int bg_offset = (sman->get_text_height(0) - line_height) / 2;
+	// First pass: determine positions and draw all backgrounds.
 	for (int i = 0; i < num_choices; i++) {
 		char text[256];
 		text[0] = 127;    // A circle.
@@ -506,16 +509,26 @@ void Conversation::show_avatar_choices(int num_choices, char** choices) {
 		if (x > 0 && x + width >= tbox.w) {
 			// Start a new line.
 			x = 0;
-			y += height - 1;
+			y += line_height - 1;
 		}
 		// Store info.
-		conv_choices[i] = TileRect(tbox.x + x, tbox.y + y, width, height);
+		conv_choices[i] = TileRect(tbox.x + x, tbox.y + y, width, line_height);
 		conv_choices[i] = conv_choices[i].intersect(sbox);
 		avatar_face     = avatar_face.add(conv_choices[i]);
-		sman->paint_text_box(
-				0, text, tbox.x + x, tbox.y + y, width + space_width, height, 0,
-				false, false, gwin->get_text_bg());
+		// Draw shading with line_height, shifted down to align with text.
+		if (text_bg >= 0) {
+			gwin->get_win()->fill_translucent8(
+					0, width + space_width, line_height, tbox.x + x,
+					tbox.y + y + bg_offset, sman->get_xform(text_bg));
+		}
 		x += width + space_width;
+	}
+	// Second pass: draw all text on top of backgrounds.
+	for (int i = 0; i < num_choices; i++) {
+		char text[256];
+		text[0] = 127;    // A circle.
+		strcpy(&text[1], choices[i]);
+		sman->paint_text(0, text, conv_choices[i].x, conv_choices[i].y);
 	}
 	avatar_face.enlarge((3 * c_tilesize) / 4);    // Encloses entire area.
 	avatar_face = avatar_face.intersect(sbox);
