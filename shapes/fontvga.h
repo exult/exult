@@ -41,7 +41,8 @@ class Fonts_vga_file : public Vga_file {
 public:
 	void init(
 			const File_spec& font_source = FONTS_VGA,
-			const File_spec& font_patch  = PATCH_FONTS);
+			const File_spec& font_patch  = PATCH_FONTS,
+			const int* vlead_overrides = nullptr, int num_overrides = 0);
 
 	// Text rendering:
 	int paint_text_box(

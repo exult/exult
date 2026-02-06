@@ -56,6 +56,28 @@ using std::vector;
 Shape_manager* Shape_manager::instance = nullptr;
 
 /*
+ *  Override vlead for fonts that need tighter line spacing.
+ *  The built-in original fonts and BG German/French fonts have taller
+ *  special letters.
+ */
+constexpr static int num_vlead_overrides                 = 10;
+static int           vlead_override[num_vlead_overrides] = {};
+
+static void override_vleads() {
+	std::fill_n(vlead_override, num_vlead_overrides, 0);
+	std::string font_config;
+	config->value("config/gameplay/fonts", font_config, "original");
+	Pentagram::tolower(font_config);
+	if (font_config == "original"
+		|| (font_config == "disabled" && Game::get_game_type() == BLACK_GATE
+			&& (Game::get_game_language() == Game_Language::GERMAN
+				|| Game::get_game_language() == Game_Language::FRENCH))) {
+		vlead_override[0] = -5;
+		vlead_override[7] = -5;
+	}
+}
+
+/*
  *  Singletons:
  */
 Game_window*     Game_singletons::gwin      = nullptr;
@@ -273,7 +295,8 @@ void Shape_manager::load() {
 	}
 
 	fonts = make_unique<Fonts_vga_file>();
-	fonts->init(font_source, font_patch);
+	override_vleads();
+	fonts->init(font_source, font_patch, vlead_override, num_vlead_overrides);
 
 	// Get translucency tables.
 	unique_ptr<unsigned char[]>
@@ -413,7 +436,9 @@ void Shape_manager::reload_shapes(int shape_kind    // Type from u7drag.h.
 			font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA);
 			font_patch  = PATCH_ORIGINAL_FONTS;
 		}
-		fonts->init(font_source, font_patch);
+		override_vleads();
+		fonts->init(
+				font_source, font_patch, vlead_override, num_vlead_overrides);
 		break;
 	}
 	case U7_SHAPE_FACES:
@@ -437,7 +462,9 @@ void Shape_manager::reload_shapes(int shape_kind    // Type from u7drag.h.
 void Shape_manager::reload_fonts(
 		const File_spec& font_source, const File_spec& font_patch) {
 	if (fonts) {
-		fonts->init(font_source, font_patch);
+		override_vleads();
+		fonts->init(
+				font_source, font_patch, vlead_override, num_vlead_overrides);
 	}
 }
 
