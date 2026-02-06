@@ -1786,6 +1786,8 @@ void BG_Game::end_game(bool success, bool within_game) {
 	std::shared_ptr<Font> font = fontManager.get_font("MENU_FONT");
 
 	if (!success) {
+		audio->stop_music();
+		audio->stop_sound_effects();
 		TextScroller text(MAINSHP_FLX, 0x15, font, nullptr);
 		gwin->clear_screen();
 		pal->load(INTROPAL_DAT, PATCH_INTROPAL, 0);
@@ -1794,7 +1796,7 @@ void BG_Game::end_game(bool success, bool within_game) {
 		}
 
 		pal->fade_in(c_fade_in_time);
-		wait_delay(10000);
+		wait_delay(14000);
 		pal->fade_out(c_fade_out_time);
 
 		gwin->clear_screen();
