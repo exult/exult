@@ -353,7 +353,7 @@ void Game::show_congratulations(Palette* pal0) {
 		while (*ptr) {
 			buf[0] = *ptr;
 			if (*ptr == '@') {
-				atfont->draw_text(ibuf, cur_x, y, buf);
+				atfont->draw_text(ibuf, cur_x, y - 3, buf);
 				cur_x += atfont->get_text_width(buf);
 			} else {
 				exultendfont->draw_text(ibuf, cur_x, y, buf);
