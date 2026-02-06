@@ -34,17 +34,18 @@ private:
 	std::shared_ptr<Font>    font;
 	Shape*                   shapes;
 	std::vector<std::string> lines;
+	bool                     translate_menu_chars;
 	void                     load_from_stream(std::istream& stream);
 
 public:
 	// reading from legacy U7multiobject
 	TextScroller(
 			const char* archive, int index, std::shared_ptr<Font> font,
-			Shape* shp);
+			Shape* shp, bool translate_menu_chars = false);
 	// reading from an in-memory string
 	TextScroller(
 			const std::string& text_content, std::shared_ptr<Font> font,
-			Shape* shp);
+			Shape* shp, bool translate_menu_chars = false);
 	~TextScroller();
 
 	bool run(Game_window* gwin);

@@ -346,7 +346,9 @@ EXULT_FONTS_ORIGINAL_VGA_OBJECTS := \
 	data/fonts/4_endgame_original.shp \
 	data/fonts/5_endgame_original.shp \
 	data/fonts/6_endgame_original.shp \
-	data/fonts/14_intro_original.shp
+	data/fonts/14_intro_original.shp \
+	data/fonts/9_mainshp_bg.shp \
+	data/fonts/9_mainshp_si.shp
 
 EXULT_FONTS_SERIF_VGA := data/fonts_serif.vga data/fonts_serif_vga.h
 EXULT_FONTS_SERIF_VGA_OBJECTS := \

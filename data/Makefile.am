@@ -62,7 +62,9 @@ EXULT_FONTS_ORIGINAL_VGA_OBJECTS = \
 	fonts/4_endgame_original.shp \
 	fonts/5_endgame_original.shp \
 	fonts/6_endgame_original.shp \
-	fonts/14_intro_original.shp
+	fonts/14_intro_original.shp \
+	fonts/9_mainshp_bg.shp \
+	fonts/9_mainshp_si.shp
 
 EXULT_FONTS_SERIF_VGA_OBJECTS = \
 	fonts/serif.in \

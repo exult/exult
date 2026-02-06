@@ -227,14 +227,15 @@ void Game::setup_fonts() {
 	if (font_config == "serif") {
 		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_SERIF_VGA);
 		font_patch  = PATCH_SERIF_FONTS;
+		vlead       = GAME_SI ? -5 : 0;
 	} else if (font_config == "disabled") {
 		font_source = FONTS_VGA;
 		font_patch  = PATCH_FONTS;
-		vlead       = -5;
+		vlead       = GAME_SI ? -10 : -5;
 	} else {    // "original"
 		font_source = File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA);
 		font_patch  = PATCH_ORIGINAL_FONTS;
-		vlead       = -5;
+		vlead       = GAME_SI ? -10 : -5;
 	}
 
 	// Reload the Fonts_vga_file fonts (used by conversations and other indexed
@@ -244,34 +245,72 @@ void Game::setup_fonts() {
 		sman->reload_fonts(font_source, font_patch);
 	}
 
-	// Remove and reload the fonts that depend on the font source
+	// Common fonts for both games
+	fontManager.remove_font("SMALL_BLACK_FONT");
+	fontManager.add_font("SMALL_BLACK_FONT", font_source, font_patch, 2, 0);
+	fontManager.remove_font("TINY_BLACK_FONT");
+	fontManager.add_font("TINY_BLACK_FONT", font_source, font_patch, 4, 0);
+
+	// Game-specific fonts
 	if (GAME_BG) {
 		fontManager.remove_font("NORMAL_FONT");
-		fontManager.add_font("NORMAL_FONT", font_source, font_patch, 0, -1, 1);
-	}
-	if (GAME_SI) {
-		fontManager.remove_font("SIINTRO_FONT");
+		fontManager.add_font("NORMAL_FONT", font_source, font_patch, 0, -1);
+
+		fontManager.remove_font("MENU_FONT");
+		fontManager.remove_font("GUARDIAN_FONT");
+		fontManager.remove_font("END2_FONT");
+		fontManager.remove_font("END3_FONT");
+		fontManager.remove_font("EXULT_END_FONT");
+		fontManager.remove_font("EXULT_AT_FONT");
+
 		if (font_config == "original" || font_config == "serif") {
+			fontManager.add_font("MENU_FONT", font_source, font_patch, 16, 1);
 			fontManager.add_font(
-					"SIINTRO_FONT", font_source, font_patch, 15, 0, vlead);
+					"GUARDIAN_FONT", font_source, font_patch, 11, -2);
+			fontManager.add_font("END2_FONT", font_source, font_patch, 12, -1);
+			fontManager.add_font(
+					"END3_FONT", font_source, font_patch, 13, -2, vlead);
+			fontManager.add_font(
+					"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
 		} else {
-			fontManager.add_font("SIINTRO_FONT", INTRO_DAT, PATCH_INTRO, 14, 0);
+			fontManager.add_font(
+					"MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1, 1);
+			fontManager.add_font(
+					"GUARDIAN_FONT", MAINSHP_FLX, PATCH_MAINSHP, 3, -2);
+			fontManager.add_font("END2_FONT", ENDGAME, PATCH_ENDGAME, 4, -1);
+			fontManager.add_font("END3_FONT", ENDGAME, PATCH_ENDGAME, 5, -2);
+			fontManager.add_font(
+					"EXULT_END_FONT", font_source, font_patch, 0, -2);
+			fontManager.add_font(
+					"EXULT_AT_FONT",
+					File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
+					PATCH_ORIGINAL_FONTS, 14, -2);
 		}
 	}
-	fontManager.remove_font("SMALL_BLACK_FONT");
-	fontManager.add_font("SMALL_BLACK_FONT", font_source, font_patch, 2, 0, 1);
-	fontManager.remove_font("TINY_BLACK_FONT");
-	fontManager.add_font("TINY_BLACK_FONT", font_source, font_patch, 4, 0, 1);
-	// Reload EXULT_END_FONT
-	fontManager.remove_font("EXULT_END_FONT");
-	if (font_config == "original" || font_config == "serif") {
-		fontManager.add_font(
-				"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
-	} else {
-		fontManager.add_font(
-				"EXULT_END_FONT",
-				File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
-				PATCH_ORIGINAL_FONTS, 14, -2, vlead);
+
+	if (GAME_SI) {
+		fontManager.remove_font("MENU_FONT");
+		fontManager.remove_font("SIINTRO_FONT");
+		fontManager.remove_font("EXULT_END_FONT");
+		fontManager.remove_font("EXULT_AT_FONT");
+
+		if (font_config == "original" || font_config == "serif") {
+			fontManager.add_font("MENU_FONT", font_source, font_patch, 17, 1);
+			fontManager.add_font(
+					"SIINTRO_FONT", font_source, font_patch, 15, 0, vlead);
+			fontManager.add_font(
+					"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
+		} else {
+			fontManager.add_font("MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1);
+			fontManager.add_font(
+					"SIINTRO_FONT", INTRO_DAT, PATCH_INTRO, 14, 0, -5);
+			fontManager.add_font(
+					"EXULT_END_FONT", font_source, font_patch, 0, -2);
+			fontManager.add_font(
+					"EXULT_AT_FONT",
+					File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
+					PATCH_ORIGINAL_FONTS, 14, -2);
+		}
 	}
 }
 
@@ -291,6 +330,43 @@ void Game::show_congratulations(Palette* pal0) {
 	const int             line_height
 			= exultendfont->get_text_height() + exultendfont->get_ver_lead();
 	const int starty = (gwin->get_height() - line_height * 8) / 2;
+
+	// Check if we need special @ handling for disabled fonts
+	std::string font_config;
+	config->value("config/gameplay/fonts", font_config, "original");
+	Pentagram::tolower(font_config);
+	const bool need_at_fallback = (font_config == "disabled");
+
+	// Helper lambda to draw text with @ fallback when font_config is disabled
+	// In disabled mode, @ needs to come from a different font (EXULT_AT_FONT)
+	auto draw_with_at_fallback = [&](int x, int y, const char* text) {
+		if (!need_at_fallback || !strchr(text, '@')) {
+			// No @ or not disabled mode, draw normally
+			exultendfont->draw_text(ibuf, x, y, text);
+			return;
+		}
+		// Draw text with @ from EXULT_AT_FONT
+		std::shared_ptr<Font> atfont = fontManager.get_font("EXULT_AT_FONT");
+		int                   cur_x  = x;
+		const char*           ptr    = text;
+		char                  buf[2] = {0, 0};
+		while (*ptr) {
+			buf[0] = *ptr;
+			if (*ptr == '@') {
+				atfont->draw_text(ibuf, cur_x, y, buf);
+				cur_x += atfont->get_text_width(buf);
+			} else {
+				exultendfont->draw_text(ibuf, cur_x, y, buf);
+				cur_x += exultendfont->get_text_width(buf);
+			}
+			ptr++;
+		}
+	};
+
+	// Helper to get centered x position
+	auto get_centered_x = [&](const char* text) {
+		return centerx - exultendfont->get_text_width(text) / 2;
+	};
 
 	// calculate the time it took to complete the game
 	// in exultmsg.txt it is "%d year s ,  %d month s , &  %d day s"
@@ -386,13 +462,11 @@ void Game::show_congratulations(Palette* pal0) {
 				displayMessage += '.';
 			}
 			message = displayMessage.c_str();
-			exultendfont->draw_text(
-					ibuf, centerx - exultendfont->get_text_width(message) / 2,
-					starty + line_height * i, message);
+			draw_with_at_fallback(
+					get_centered_x(message), starty + line_height * i, message);
 		} else {
-			exultendfont->draw_text(
-					ibuf, centerx - exultendfont->get_text_width(message) / 2,
-					starty + line_height * i, message);
+			draw_with_at_fallback(
+					get_centered_x(message), starty + line_height * i, message);
 		}
 	}
 

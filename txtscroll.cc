@@ -22,11 +22,14 @@
 
 #include "txtscroll.h"
 
+#include "Configuration.h"
 #include "common_types.h"
+#include "exult_constants.h"
 #include "files/U7file.h"
 #include "font.h"
 #include "game.h"
 #include "gamewin.h"
+#include "istring.h"
 #include "shapeid.h"
 
 #include <cstdlib>
@@ -57,8 +60,9 @@ using std::vector;
 
 // Legacy constructor
 TextScroller::TextScroller(
-		const char* archive, int index, std::shared_ptr<Font> fnt, Shape* shp)
-		: font(fnt), shapes(shp) {
+		const char* archive, int index, std::shared_ptr<Font> fnt, Shape* shp,
+		bool translate_menu)
+		: font(fnt), shapes(shp), translate_menu_chars(translate_menu) {
 	auto txtobj = [&]() {
 		// Hack to patch MAINSHP_FLX.
 		if (!strncmp(archive, MAINSHP_FLX, sizeof(MAINSHP_FLX) - 1)) {
@@ -79,14 +83,60 @@ TextScroller::TextScroller(
 
 // Modern constructor for in-memory text
 TextScroller::TextScroller(
-		const std::string& text_content, std::shared_ptr<Font> fnt, Shape* shp)
-		: font(fnt), shapes(shp) {
+		const std::string& text_content, std::shared_ptr<Font> fnt, Shape* shp,
+		bool translate_menu)
+		: font(fnt), shapes(shp), translate_menu_chars(translate_menu) {
 	std::istringstream stream(text_content);
 	load_from_stream(stream);
 }
 
 TextScroller::~TextScroller() {
 	// No longer need to 'delete text;'
+}
+
+/*
+ *  Translate special characters for MENU_FONT compatibility.
+ *  When using built-in fonts, the characters ™️ © are not at the positions
+ *  the original used in MAINSHP.FLX' menu font.
+ *  - BG/SI English/Spanish: 0x01 and 0x02 -> 0x8C and 0x8D
+ *  - BG French: 0x0F and 0x1F -> 0x8C and 0x8D
+ *  - BG German BG: 0x03 and 0x04 -> 0x8C and 0x8D
+ */
+static void translate_menu_font_chars(std::string& line) {
+	// Check if we need to translate (only for original/serif fonts)
+	std::string font_config;
+	config->value("config/gameplay/fonts", font_config, "original");
+	Pentagram::tolower(font_config);
+
+	if (font_config == "disabled") {
+		return;    // No translation needed when using mainshp.flx fonts
+	}
+
+	// Determine which characters to translate based on game language
+	char from1, from2;
+	if (Game::get_game_type() == BLACK_GATE
+		&& Game::get_game_language() == Game_Language::GERMAN) {
+		from1 = 0x03;
+		from2 = 0x04;
+	} else if (
+			Game::get_game_type() == BLACK_GATE
+			&& Game::get_game_language() == Game_Language::FRENCH) {
+		from1 = 0x0F;
+		from2 = 0x1F;
+	} else {
+		// BG English/Spanish and SI
+		from1 = 0x01;
+		from2 = 0x02;
+	}
+
+	// Translate the characters
+	for (char& c : line) {
+		if (c == from1) {
+			c = static_cast<char>(0x8C);
+		} else if (c == from2) {
+			c = static_cast<char>(0x8D);
+		}
+	}
 }
 
 void TextScroller::load_from_stream(std::istream& stream) {
@@ -97,6 +147,10 @@ void TextScroller::load_from_stream(std::istream& stream) {
 		// Handle CR/LF endings
 		if (!line.empty() && line.back() == CR) {
 			line.pop_back();
+		}
+		// Translate special characters for menu font (credits/quotes only)
+		if (translate_menu_chars) {
+			translate_menu_font_chars(line);
 		}
 		lines.push_back(line);
 	}
@@ -168,16 +222,13 @@ int TextScroller::show_line(
 			++ptr;
 		} else if (*ptr == '#') {
 			ptr++;
-			if (*ptr == '#') {    // Double hash
-				*txtptr++ = *ptr++;
+			if (*ptr == 'S') {    // #S - skip/ignore this sequence
+				ptr++;
 				continue;
 			}
-			char  numerical[4] = {0, 0, 0, 0};
-			char* num          = numerical;
-			while (std::isdigit(static_cast<unsigned char>(*ptr))) {
-				*num++ = *ptr++;
-			}
-			*txtptr++ = atoi(numerical);
+			// Use the byte value of the character after # directly
+			// (e.g., ## outputs 0x23, #\x8C outputs 0x8C)
+			*txtptr++ = *ptr++;
 		} else {
 			*txtptr++ = *ptr++;
 		}

@@ -198,9 +198,6 @@ SI_Game::SI_Game() {
 		add_resource("xforms/18", XFORMTBL, 18);
 		add_resource("xforms/19", XFORMTBL, 19);
 	}
-	// Load from mainshp.flx as not all official translations have the
-	// same order of characters
-	fontManager.add_font("MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1);
 
 	// Load fonts from config-selected source
 	std::string font_config;
@@ -228,16 +225,19 @@ SI_Game::SI_Game() {
 	fontManager.add_font("TINY_BLACK_FONT", font_source, font_patch, 4, 0);
 
 	if (font_config == "original" || font_config == "serif") {
+		fontManager.add_font("MENU_FONT", font_source, font_patch, 17, 1);
 		fontManager.add_font(
 				"SIINTRO_FONT", font_source, font_patch, 15, 0, vlead);
 		fontManager.add_font(
 				"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
 	} else {
+		fontManager.add_font("MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1);
 		fontManager.add_font("SIINTRO_FONT", INTRO_DAT, PATCH_INTRO, 14, 0, -5);
+		fontManager.add_font("EXULT_END_FONT", FONTS_VGA, PATCH_FONTS, 0, -2);
 		fontManager.add_font(
-				"EXULT_END_FONT",
+				"EXULT_AT_FONT",
 				File_spec(EXULT_FLX, EXULT_FLX_FONTS_ORIGINAL_VGA),
-				PATCH_ORIGINAL_FONTS, 14, -2, vlead);
+				PATCH_ORIGINAL_FONTS, 14, -2);
 	}
 
 	// TODO: Come up with patches specific to SI Beta.
@@ -1486,7 +1486,7 @@ void SI_Game::show_quotes() {
 			32, false, MyMidiPlayer::Force_None, MAINSHP_FLX);
 	TextScroller quotes(
 			MAINSHP_FLX, 0x10, fontManager.get_font("MENU_FONT"),
-			menushapes.extract_shape(0x14));
+			menushapes.extract_shape(0x14), true);
 	quotes.run(gwin);
 }
 
@@ -1503,7 +1503,7 @@ void SI_Game::show_credits() {
 			30, false, MyMidiPlayer::Force_None, MAINSHP_FLX);
 	TextScroller credits(
 			MAINSHP_FLX, 0x0E, fontManager.get_font("MENU_FONT"),
-			menushapes.extract_shape(0x14));
+			menushapes.extract_shape(0x14), true);
 	if (credits.run(gwin)) {    // Watched through the entire sequence?
 		U7open_out("<SAVEGAME>/quotes.flg");
 	}
