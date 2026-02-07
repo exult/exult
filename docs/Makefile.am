@@ -1,7 +1,11 @@
-man_MANS = exult.6 expack.1 ipack.1 shp2pcx.1 splitshp.1 textpack.1 ucc.1
+man_MANS = exult.6 expack.1 ipack.1 shp2pcx.1 splitshp.1 textpack.1
 
 if BUILD_STUDIO
 man_MANS += exult_studio.1
+endif
+
+if BUILD_COMPILER
+man_MANS += ucc.1
 endif
 
 nobase_doc_DATA = \
