@@ -26,12 +26,15 @@
 #include "ShortcutBar_gump.h"
 #include "actors.h"
 #include "data/exult_bg_flx.h"
+#include "effects.h"
 #include "exult.h"
 #include "game.h"
 #include "gamewin.h"
+#include "gump_utils.h"
 #include "miscinf.h"
 #include "mouse.h"
 #include "touchui.h"
+#include "tqueue.h"
 #include "useval.h"
 
 using std::size_t;
@@ -370,6 +373,24 @@ void Conversation::remove_slot_face(int slot) {
 void Conversation::show_npc_message(const char* msg) {
 	if (last_face_shown == -1) {
 		return;
+	}
+	// Wait for any sprite effects to finish before showing text.
+	Effects_manager* eman = gwin->get_effects();
+	if (eman->has_active_sprites()) {
+		// Pause the queue so only 'always' entries fire (no usecode).
+		const uint32 now = SDL_GetTicks();
+		gwin->get_tqueue()->pause(now);
+		eman->set_sprites_always(true);
+		while (eman->has_active_sprites()) {
+			Delay();
+			const uint32 ticks = SDL_GetTicks();
+			Game::set_ticks(ticks);
+			gwin->get_tqueue()->activate(ticks);
+			gwin->paint();
+			gwin->show();
+		}
+		eman->set_sprites_always(false);
+		gwin->get_tqueue()->resume(SDL_GetTicks());
 	}
 	Npc_face_info* info = face_info[last_face_shown];
 	const int      font

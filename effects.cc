@@ -250,6 +250,29 @@ int Effects_manager::get_weather() {
 }
 
 /**
+ *  Check if there are any active sprite effects (non-weather).
+ */
+
+bool Effects_manager::has_active_sprites() const {
+	return std::any_of(effects.cbegin(), effects.cend(), [](const auto& ef) {
+		return ef->is_sprite();
+	});
+}
+
+/**
+ *  Temporarily set/clear the 'always' flag on all active sprite effects.
+ *  This allows sprites to animate when the time queue is paused.
+ */
+
+void Effects_manager::set_sprites_always(bool tf) {
+	for (auto& ef : effects) {
+		if (ef->is_sprite()) {
+			ef->set_always(tf);
+		}
+	}
+}
+
+/**
  * Construct and store game window singleton
  * TODO check if passing it from other scope
  * won't be better

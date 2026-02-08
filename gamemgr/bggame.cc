@@ -260,7 +260,7 @@ BG_Game::BG_Game() : shapes(ENDSHAPE_FLX, -1, PATCH_ENDSHAPE) {
 		fontManager.add_font(
 				"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
 	} else {
-		fontManager.add_font("MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1, 1);
+		fontManager.add_font("MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1);
 		fontManager.add_font(
 				"GUARDIAN_FONT", MAINSHP_FLX, PATCH_MAINSHP, 3, -2);
 		fontManager.add_font("END2_FONT", ENDGAME, PATCH_ENDGAME, 4, -1);
