@@ -201,10 +201,10 @@ ExultMenu::ExultMenu(Game_window* gw) {
 	gwin              = gw;
 	ibuf              = gwin->get_win()->get_ib8();
 	const char* fname = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
-	fontManager.add_font("CREDITS_FONT", fname, EXULT_FLX_FONT_SHP, 1);
-	fontManager.add_font("HOT_FONT", fname, EXULT_FLX_FONTON_SHP, 1);
-	fontManager.add_font("NAV_FONT", fname, EXULT_FLX_NAVFONT_SHP, 1);
-	fontManager.add_font("HOT_NAV_FONT", fname, EXULT_FLX_NAVFONTON_SHP, 1);
+	fontManager.add_font("CREDITS_FONT", File_spec(fname, EXULT_FLX_FONTS_ORIGINAL_VGA), PATCH_ORIGINAL_FONTS, 18, 1);
+	fontManager.add_font("HOT_FONT", File_spec(fname, EXULT_FLX_FONTS_ORIGINAL_VGA), PATCH_ORIGINAL_FONTS, 19, 1);
+	fontManager.add_font("NAV_FONT", File_spec(fname, EXULT_FLX_FONTS_ORIGINAL_VGA), PATCH_ORIGINAL_FONTS, 20, 1);
+	fontManager.add_font("HOT_NAV_FONT", File_spec(fname, EXULT_FLX_FONTS_ORIGINAL_VGA), PATCH_ORIGINAL_FONTS, 21, 1);
 	calc_win();
 	exult_flx.load(fname);
 }

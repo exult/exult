@@ -289,10 +289,6 @@ EXULT_FLX_OBJECTS := \
 	data/exult_logo.shp \
 	data/exult0.pal \
 	data/meditown.mid \
-	data/font.shp \
-	data/fonton.shp \
-	data/navfont.shp \
-	data/navfonton.shp \
 	data/pointers.shp \
 	data/extras.shp \
 	data/notebook.shp \
@@ -348,7 +344,11 @@ EXULT_FONTS_ORIGINAL_VGA_OBJECTS := \
 	data/fonts/6_endgame_original.shp \
 	data/fonts/14_intro_original.shp \
 	data/fonts/9_mainshp_bg.shp \
-	data/fonts/9_mainshp_si.shp
+	data/fonts/9_mainshp_si.shp \
+	data/fonts/font.shp \
+	data/fonts/fonton.shp \
+	data/fonts/navfont.shp \
+	data/fonts/navfonton.shp
 
 EXULT_FONTS_SERIF_VGA := data/fonts_serif.vga data/fonts_serif_vga.h
 EXULT_FONTS_SERIF_VGA_OBJECTS := \
@@ -368,7 +368,13 @@ EXULT_FONTS_SERIF_VGA_OBJECTS := \
 	data/fonts/4_endgame_serif.shp \
 	data/fonts/5_endgame_serif.shp \
 	data/fonts/6_endgame_serif.shp \
-	data/fonts/14_intro_serif.shp
+	data/fonts/14_intro_serif.shp \
+	data/fonts/9_mainshp_bg.shp \
+	data/fonts/9_mainshp_si.shp \
+	data/fonts/font.shp \
+	data/fonts/fonton.shp \
+	data/fonts/navfont.shp \
+	data/fonts/navfonton.shp
 
 EXULT_BG_FLX := data/exult_bg.flx data/exult_bg_flx.h
 EXULT_BG_FLX_OBJECTS := \

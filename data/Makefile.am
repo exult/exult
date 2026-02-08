@@ -5,10 +5,6 @@ EXULT_FLX_OBJECTS = \
 	exult_logo.shp		\
 	exult0.pal		\
 	meditown.mid		\
-	font.shp		\
-	fonton.shp		\
-	navfont.shp		\
-	navfonton.shp		\
 	pointers.shp		\
 	extras.shp		\
 	notebook.shp		\
@@ -64,7 +60,11 @@ EXULT_FONTS_ORIGINAL_VGA_OBJECTS = \
 	fonts/6_endgame_original.shp \
 	fonts/14_intro_original.shp \
 	fonts/9_mainshp_bg.shp \
-	fonts/9_mainshp_si.shp
+	fonts/9_mainshp_si.shp \
+	fonts/font.shp \
+	fonts/fonton.shp \
+	fonts/navfont.shp \
+	fonts/navfonton.shp
 
 EXULT_FONTS_SERIF_VGA_OBJECTS = \
 	fonts/serif.in \
@@ -83,7 +83,13 @@ EXULT_FONTS_SERIF_VGA_OBJECTS = \
 	fonts/4_endgame_serif.shp \
 	fonts/5_endgame_serif.shp \
 	fonts/6_endgame_serif.shp \
-	fonts/14_intro_serif.shp
+	fonts/14_intro_serif.shp \
+	fonts/9_mainshp_bg.shp \
+	fonts/9_mainshp_si.shp \
+	fonts/font.shp \
+	fonts/fonton.shp \
+	fonts/navfont.shp \
+	fonts/navfonton.shp
 
 EXULT_BG_FLX_OBJECTS = \
 	bg/flx.in \
