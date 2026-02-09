@@ -3528,9 +3528,13 @@ USECODE_INTRINSIC(si_path_run_usecode) {
 	const int always = parms[5].get_int_value();
 	Actor*    npc    = as_actor(get_item(parms[0]));
 	// Wake up NPCs so they can move.
-	if (npc->get_schedule_type() == Schedule::wait
-		&& npc->get_flag(Obj_flags::asleep)) {
-		npc->clear_flag(Obj_flags::asleep);
+	if (npc->get_schedule_type() == Schedule::wait) {
+		if (npc->get_flag(Obj_flags::asleep)) {
+			npc->clear_flag(Obj_flags::asleep);
+		}
+		if (npc->get_flag(Obj_flags::paralyzed)) {
+			npc->clear_flag(Obj_flags::paralyzed);
+		}
 	}
 	path_run_usecode(
 			parms[0], parms[1], parms[4], parms[3], parms[2], true,
