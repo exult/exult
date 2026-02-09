@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Clang-Format
-        uses: jidicula/clang-format-action
+        uses: jidicula/clang-format-action@v4.16.0
         with:
           fallback-style: file
           clang-format-version: 19
