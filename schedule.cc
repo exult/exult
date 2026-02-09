@@ -6257,6 +6257,18 @@ void Walk_to_schedule::now_what() {
 	if (npc->get_flag(Obj_flags::asleep)) {
 		npc->clear_flag(Obj_flags::asleep);
 	}
+	if (npc->get_flag(Obj_flags::paralyzed)) {
+		if (retries > 0) {
+			// Still paralyzed after delay, force clear it
+			npc->clear_flag(Obj_flags::paralyzed);
+			retries = 0;    // Reset for path-finding
+		} else {
+			// Wait a bit and try again
+			retries++;
+			npc->start(250, 500);
+			return;
+		}
+	}
 	if (npc->distance(dest) <= 3) {
 		// Close enough!
 		npc->set_schedule_type(new_schedule);
