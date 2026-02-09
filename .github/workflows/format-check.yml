@@ -2,13 +2,7 @@ name: Format check
 
 on:
   push:
-    paths:
-      - '**/*.h'
-      - '**/*.cc'
   pull_request:
-    paths:
-      - '**/*.h'
-      - '**/*.cc'
 
 jobs:
   clang-format-check:
