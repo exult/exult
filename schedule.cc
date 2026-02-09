@@ -6253,6 +6253,10 @@ Walk_to_schedule::Walk_to_schedule(
  */
 
 void Walk_to_schedule::now_what() {
+	// Wake up NPCs so they can walk to their schedule.
+	if (npc->get_flag(Obj_flags::asleep)) {
+		npc->clear_flag(Obj_flags::asleep);
+	}
 	if (npc->distance(dest) <= 3) {
 		// Close enough!
 		npc->set_schedule_type(new_schedule);

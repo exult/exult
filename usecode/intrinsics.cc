@@ -3526,6 +3526,12 @@ USECODE_INTRINSIC(si_path_run_usecode) {
 	// exec(npc, loc(x,y,z), eventid, itemref, usecode#, flag_always).
 	// Schedule Npc to walk to loc and then execute usecode.
 	const int always = parms[5].get_int_value();
+	Actor*    npc    = as_actor(get_item(parms[0]));
+	// Wake up NPCs so they can move.
+	if (npc->get_schedule_type() == Schedule::wait
+		&& npc->get_flag(Obj_flags::asleep)) {
+		npc->clear_flag(Obj_flags::asleep);
+	}
 	path_run_usecode(
 			parms[0], parms[1], parms[4], parms[3], parms[2], true,
 			always != 0);
