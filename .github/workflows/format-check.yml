@@ -1,0 +1,28 @@
+name: Format check
+
+on:
+  push:
+    paths:
+      - '**/*.h'
+      - '**/*.cc'
+  pull_request:
+    paths:
+      - '**/*.h'
+      - '**/*.cc'
+
+jobs:
+  clang-format-check:
+    name: Clang-Format Check (informational)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Run clang-format (dry-run)
+        run: |
+          find . -iname '*.h' -o -iname '*.cc' -print0 | xargs -0 clang-format --dry-run --style=file
+        continue-on-error: true
