@@ -13,9 +13,9 @@ jobs:
       - name: Install clang-format
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format
+          sudo apt-get install -y clang-format:19
 
       - name: Run clang-format (dry-run)
         run: |
-          find . -iname '*.h' -o -iname '*.cc' -print0 | xargs -0 clang-format --dry-run --style=file
+          find . -iname '*.h' -o -iname '*.cc' -print0 | xargs -0 clang-format-19 --dry-run --style=file
         continue-on-error: true
