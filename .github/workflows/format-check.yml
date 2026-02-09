@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Clang-Format
         uses: jidicula/clang-format-action
-        fallback-style: file
-        clang-format-version: 19
+        with:
+          fallback-style: file
+          clang-format-version: 19
         continue-on-error: true
