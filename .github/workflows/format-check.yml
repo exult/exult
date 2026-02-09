@@ -1,6 +1,7 @@
 name: Format check
 
 on:
+  push:
   pull_request:
 
 jobs:
@@ -10,12 +11,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install clang-format
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang-format:19
-
-      - name: Run clang-format (dry-run)
-        run: |
-          find . -iname '*.h' -o -iname '*.cc' -print0 | xargs -0 clang-format-19 --dry-run --style=file
+      - name: Clang-Format
+        uses: jidicula/clang-format-action
+        fallback-style: file
+        clang-format-version: 19
         continue-on-error: true
