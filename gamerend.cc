@@ -115,14 +115,10 @@ static void Paint_grid(
 	const int lift       = cheat.get_edit_lift();
 	const int liftpixels = lift * (c_tilesize / 2) + 1;
 	for (int y = 0; y < ytiles; y++) {
-		win->fill_translucent8(
-				0, xtiles * c_tilesize, 1, -liftpixels,
-				y * c_tilesize - liftpixels, xform);
+		win->fill_translucent8(0, xtiles * c_tilesize, 1, -liftpixels, y * c_tilesize - liftpixels, xform);
 	}
 	for (int x = 0; x < xtiles; x++) {
-		win->fill_translucent8(
-				0, 1, ytiles * c_tilesize, x * c_tilesize - liftpixels,
-				-liftpixels, xform);
+		win->fill_translucent8(0, 1, ytiles * c_tilesize, x * c_tilesize - liftpixels, -liftpixels, xform);
 	}
 }
 
@@ -140,17 +136,14 @@ static void Paint_selected_chunks(
 	int            cy;    // Chunk #'s.
 	// Paint all the flat scenery.
 	for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
-		const int yoff = Figure_screen_offset(cy, gwin->get_scrollty())
-						 - gwin->get_scrollty_lo();
+		const int yoff = Figure_screen_offset(cy, gwin->get_scrollty()) - gwin->get_scrollty_lo();
 		for (cx = start_chunkx; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
 			Map_chunk* chunk = map->get_chunk(cx, cy);
 			if (!chunk->is_selected()) {
 				continue;
 			}
-			const int xoff = Figure_screen_offset(cx, gwin->get_scrolltx())
-							 - gwin->get_scrolltx_lo();
-			win->fill_translucent8(
-					0, c_chunksize, c_chunksize, xoff, yoff, xform);
+			const int xoff = Figure_screen_offset(cx, gwin->get_scrolltx()) - gwin->get_scrolltx_lo();
+			win->fill_translucent8(0, c_chunksize, c_chunksize, xoff, yoff, xform);
 		}
 	}
 }
@@ -159,8 +152,7 @@ static void Paint_selected_chunks(
  *  Just paint terrain.  This is for terrain_editing mode.
  */
 
-void Game_render::paint_terrain_only(
-		int start_chunkx, int start_chunky, int stop_chunkx, int stop_chunky) {
+void Game_render::paint_terrain_only(int start_chunkx, int start_chunky, int stop_chunkx, int stop_chunky) {
 	Game_window*   gwin = Game_window::get_instance();
 	Game_map*      map  = gwin->map;
 	Shape_manager* sman = Shape_manager::get_instance();
@@ -169,19 +161,15 @@ void Game_render::paint_terrain_only(
 	// Paint all the flat scenery.
 	for (int pass = 1; pass <= 3; pass++) {
 		for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
-			const int yoff = Figure_screen_offset(cy, gwin->scrollty)
-							 - gwin->get_scrollty_lo();
+			const int yoff = Figure_screen_offset(cy, gwin->scrollty) - gwin->get_scrollty_lo();
 			for (cx = start_chunkx; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
-				const int xoff = Figure_screen_offset(cx, gwin->scrolltx)
-								 - gwin->get_scrolltx_lo();
+				const int xoff = Figure_screen_offset(cx, gwin->scrolltx) - gwin->get_scrolltx_lo();
 				if (pass < 3) {
 					Map_chunk* chunk = map->get_chunk(cx, cy);
 					chunk->get_terrain()->render_all(cx, cy, pass);
 				}
 				if (cheat.in_map_editor() && pass == 3) {
-					Paint_chunk_outline(
-							gwin, sman->get_special_pixel(HIT_PIXEL), cx, cy,
-							map->get_terrain_num(cx, cy), xoff, yoff);
+					Paint_chunk_outline(gwin, sman->get_special_pixel(HIT_PIXEL), cx, cy, map->get_terrain_num(cx, cy), xoff, yoff);
 				}
 			}
 		}
@@ -222,55 +210,40 @@ int Game_render::paint_map(
 	// The chunk limits were increased by 1 to support the Smooth Scrolling.
 	// The same increase had to be added into the Game_map::read_map_data
 	//   which builds the chunk cache that the Edit Terrain mode relies on.
-	int stop_chunkx = 2
-					  + (scrolltx + (x + w + c_tilesize - 2) / c_tilesize
-						 + c_tiles_per_chunk / 2)
-								/ c_tiles_per_chunk;
-	int stop_chunky = 2
-					  + (scrollty + (y + h + c_tilesize - 2) / c_tilesize
-						 + c_tiles_per_chunk / 2)
-								/ c_tiles_per_chunk;
+	int stop_chunkx = 2 + (scrolltx + (x + w + c_tilesize - 2) / c_tilesize + c_tiles_per_chunk / 2) / c_tiles_per_chunk;
+	int stop_chunky = 2 + (scrollty + (y + h + c_tilesize - 2) / c_tilesize + c_tiles_per_chunk / 2) / c_tiles_per_chunk;
 	// Wrap around the world:
 	stop_chunkx = (stop_chunkx + c_num_chunks) % c_num_chunks;
 	stop_chunky = (stop_chunky + c_num_chunks) % c_num_chunks;
 	if (!gwin->skip_lift) {    // Special mode for editing?
-		paint_terrain_only(
-				start_chunkx, start_chunky, stop_chunkx, stop_chunky);
+		paint_terrain_only(start_chunkx, start_chunky, stop_chunkx, stop_chunky);
 		return 10;    // Pretend there's lots of light!
 	}
 	int cx;
 	int cy;    // Chunk #'s.
 	// Paint all the flat scenery.
 	for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
-		const int yoff
-				= Figure_screen_offset(cy, scrollty) - gwin->get_scrollty_lo();
+		const int yoff = Figure_screen_offset(cy, scrollty) - gwin->get_scrollty_lo();
 		for (cx = start_chunkx; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
-			const int xoff = Figure_screen_offset(cx, scrolltx)
-							 - gwin->get_scrolltx_lo();
+			const int xoff = Figure_screen_offset(cx, scrolltx) - gwin->get_scrolltx_lo();
 			paint_chunk_flats(cx, cy, xoff, yoff);
 		}
 	}
 	// Now the flat RLE terrain.
 	for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
-		const int yoff
-				= Figure_screen_offset(cy, scrollty) - gwin->get_scrollty_lo();
+		const int yoff = Figure_screen_offset(cy, scrollty) - gwin->get_scrollty_lo();
 		for (cx = start_chunkx; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
-			const int xoff = Figure_screen_offset(cx, scrolltx)
-							 - gwin->get_scrolltx_lo();
+			const int xoff = Figure_screen_offset(cx, scrolltx) - gwin->get_scrolltx_lo();
 			paint_chunk_flat_rles(cx, cy, xoff, yoff);
 		}
 	}
 	// Draw the chunk grid in Map editor cheat mode.
 	if (cheat.in_map_editor()) {
 		for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
-			const int yoff = Figure_screen_offset(cy, scrollty)
-							 - gwin->get_scrollty_lo();
+			const int yoff = Figure_screen_offset(cy, scrollty) - gwin->get_scrollty_lo();
 			for (cx = start_chunkx; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
-				const int xoff = Figure_screen_offset(cx, scrolltx)
-								 - gwin->get_scrolltx_lo();
-				Paint_chunk_outline(
-						gwin, sman->get_special_pixel(HIT_PIXEL), cx, cy,
-						map->get_terrain_num(cx, cy), xoff, yoff);
+				const int xoff = Figure_screen_offset(cx, scrolltx) - gwin->get_scrolltx_lo();
+				Paint_chunk_outline(gwin, sman->get_special_pixel(HIT_PIXEL), cx, cy, map->get_terrain_num(cx, cy), xoff, yoff);
 			}
 		}
 	}
@@ -278,26 +251,19 @@ int Game_render::paint_map(
 	//   diagonally NE.
 	const int tmp_stopy = DECR_CHUNK(start_chunky);
 	for (cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
-		for (int dx = start_chunkx, dy = cy;
-			 dx != stop_chunkx && dy != tmp_stopy;
-			 dx = INCR_CHUNK(dx), dy = DECR_CHUNK(dy)) {
+		for (int dx = start_chunkx, dy = cy; dx != stop_chunkx && dy != tmp_stopy; dx = INCR_CHUNK(dx), dy = DECR_CHUNK(dy)) {
 			light_sources += paint_chunk_objects(dx, dy);
 		}
 	}
-	for (cx = (start_chunkx + 1) % c_num_chunks; cx != stop_chunkx;
-		 cx = INCR_CHUNK(cx)) {
-		for (int dx = cx, dy = (stop_chunky - 1 + c_num_chunks) % c_num_chunks;
-			 dx != stop_chunkx && dy != tmp_stopy;
+	for (cx = (start_chunkx + 1) % c_num_chunks; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
+		for (int dx = cx, dy = (stop_chunky - 1 + c_num_chunks) % c_num_chunks; dx != stop_chunkx && dy != tmp_stopy;
 			 dx = INCR_CHUNK(dx), dy = DECR_CHUNK(dy)) {
 			light_sources += paint_chunk_objects(dx, dy);
 		}
 	}
 	/// Dungeon Blackness (but disable in map editor mode)
-	if (static_cast<int>(gwin->in_dungeon) >= gwin->skip_above_actor
-		&& !cheat.in_map_editor()) {
-		paint_blackness(
-				start_chunkx, start_chunky, stop_chunkx, stop_chunky,
-				gwin->ice_dungeon ? 73 : 0);
+	if (static_cast<int>(gwin->in_dungeon) >= gwin->skip_above_actor && !cheat.in_map_editor()) {
+		paint_blackness(start_chunkx, start_chunky, stop_chunkx, stop_chunky, gwin->ice_dungeon ? 73 : 0);
 	}
 
 	// Outline selected objects.
@@ -316,16 +282,13 @@ int Game_render::paint_map(
 			Paint_grid(gwin, sman->get_xform(16));
 		}
 		if (cheat.get_edit_mode() == Cheat::select_chunks) {
-			Paint_selected_chunks(
-					gwin, sman->get_xform(13), start_chunkx, start_chunky,
-					stop_chunkx, stop_chunky);
+			Paint_selected_chunks(gwin, sman->get_xform(13), start_chunkx, start_chunky, stop_chunkx, stop_chunky);
 		}
 	}
 	return light_sources;
 }
 
-static int Get_light_strength(
-		const Game_object* obj, const Game_object* av, int brightness) {
+static int Get_light_strength(const Game_object* obj, const Game_object* av, int brightness) {
 	// Note: originals do not seem to use center tile.
 	const Tile_coord t1 = obj->get_center_tile();
 	const Tile_coord t2 = av->get_center_tile();
@@ -338,11 +301,9 @@ static int Get_light_strength(
 	return dist_decay_factor * brightness;
 }
 
-int Game_render::get_light_strength(
-		const Game_object* obj, const Game_object* av) const {
+int Game_render::get_light_strength(const Game_object* obj, const Game_object* av) const {
 	const Shape_info& info = obj->get_info();
-	return Get_light_strength(
-			obj, av, info.get_object_light(obj->get_framenum()));
+	return Get_light_strength(obj, av, info.get_object_light(obj->get_framenum()));
 }
 
 void Game_render::increment_bbox_index() {
@@ -404,23 +365,18 @@ void Game_window::paint(
 	win->set_clip(x, y, w, h);    // Clip to this area.
 	// Fill black into unpainted regions
 	if (y < 0) {
-		win->fill8(
-				pal->get_border_index(), w, -y, x, y);    // Region above window
+		win->fill8(pal->get_border_index(), w, -y, x, y);    // Region above window
 	}
 	if (x < 0) {
-		win->fill8(
-				pal->get_border_index(), -x, get_height(), x,
-				0);    // Region left of window
+		win->fill8(pal->get_border_index(), -x, get_height(), x,
+				   0);    // Region left of window
 	}
 	if ((x + w) > get_width()) {
-		win->fill8(
-				pal->get_border_index(), (x + w) - get_width(), get_height(),
-				get_width(), 0);    // Region right of window
+		win->fill8(pal->get_border_index(), (x + w) - get_width(), get_height(), get_width(), 0);    // Region right of window
 	}
 	if ((y + h) > get_height()) {
-		win->fill8(
-				pal->get_border_index(), w, (y + h) - get_height(), x,
-				get_height());    // below window
+		win->fill8(pal->get_border_index(), w, (y + h) - get_height(), x,
+				   get_height());    // below window
 	}
 
 	gump_man->paint(false);
@@ -437,8 +393,7 @@ void Game_window::paint(
 		const int cnt           = get_party(party, 1);
 		int       carried_light = 0;
 		for (int i = 0; i < cnt; i++) {
-			carried_light += Get_light_strength(
-					party[i], main_actor, party[i]->get_light_source());
+			carried_light += Get_light_strength(party[i], main_actor, party[i]->get_light_source());
 		}
 		// Also check light spell.
 		if (special_light && clock->get_total_minutes() > special_light) {
@@ -567,8 +522,7 @@ void Game_render::paint_chunk_flats(
 	// Paint flat tiles.
 	Image_buffer8* cflats = olist->get_rendered_flats();
 	if (cflats) {
-		gwin->win->copy8(
-				cflats->get_bits(), c_chunksize, c_chunksize, xoff, yoff);
+		gwin->win->copy8(cflats->get_bits(), c_chunksize, c_chunksize, xoff, yoff);
 	}
 }
 
@@ -605,9 +559,7 @@ int Game_render::paint_chunk_objects(
 	int               light_sources = 0;    // Also check for light sources.
 	Main_actor* const main_actor    = gwin->get_main_actor();
 	if (main_actor != nullptr) {
-		const auto& lights = gwin->is_in_dungeon()
-									 ? olist->get_dungeon_lights()
-									 : olist->get_non_dungeon_lights();
+		const auto& lights = gwin->is_in_dungeon() ? olist->get_dungeon_lights() : olist->get_non_dungeon_lights();
 		for (const auto& light_obj : lights) {
 			const Shape_info& info = light_obj->get_info();
 			if (info.get_object_light(light_obj->get_framenum()) > 0) {
@@ -651,17 +603,13 @@ void Game_render::paint_object(Game_object* obj) {
 	// paint bbox back
 	if (bbox_palindex != -1) {
 		obj->get_info().paint_bbox(
-				bbox_x, bbox_y, obj->get_framenum(),
-				Game_window::get_instance()->get_win()->get_ib8(),
-				bbox_palindex, 2);
+				bbox_x, bbox_y, obj->get_framenum(), Game_window::get_instance()->get_win()->get_ib8(), bbox_palindex, 2);
 	}
 	obj->paint();    // Finally, paint this one.
 	// paint bbox front
 	if (bbox_palindex != -1) {
 		obj->get_info().paint_bbox(
-				bbox_x, bbox_y, obj->get_framenum(),
-				Game_window::get_instance()->get_win()->get_ib8(),
-				bbox_palindex, 1);
+				bbox_x, bbox_y, obj->get_framenum(), Game_window::get_instance()->get_win()->get_ib8(), bbox_palindex, 1);
 	}
 }
 
@@ -699,9 +647,7 @@ void Game_window::paint_dirty() {
  *  black them all out at the same time.
  */
 
-void Game_render::paint_blackness(
-		int start_chunkx, int start_chunky, int stop_chunkx, int stop_chunky,
-		int index) {
+void Game_render::paint_blackness(int start_chunkx, int start_chunky, int stop_chunkx, int stop_chunky, int index) {
 	Game_window* gwin = Game_window::get_instance();
 	// Calculate the offset due to the lift (4x the lift).
 	const int off = gwin->in_dungeon << 2;
@@ -710,18 +656,14 @@ void Game_render::paint_blackness(
 	for (int cy = start_chunky; cy != stop_chunky; cy = INCR_CHUNK(cy)) {
 		for (int cx = start_chunkx; cx != stop_chunkx; cx = INCR_CHUNK(cx)) {
 			// Coord of the left edge
-			const int xoff = Figure_screen_offset(cx, gwin->scrolltx) - off
-							 - gwin->get_scrolltx_lo();
+			const int xoff = Figure_screen_offset(cx, gwin->scrolltx) - off - gwin->get_scrolltx_lo();
 			// Coord of the top edge
-			int y = Figure_screen_offset(cy, gwin->scrollty) - off
-					- gwin->get_scrollty_lo();
+			int y = Figure_screen_offset(cy, gwin->scrollty) - off - gwin->get_scrollty_lo();
 
 			// Need the chunk cache (needs to be setup!)
 			Map_chunk* mc = gwin->map->get_chunk(cx, cy);
 			if (!mc->has_dungeon()) {
-				gwin->win->fill8(
-						index, c_tilesize * c_tiles_per_chunk,
-						c_tilesize * c_tiles_per_chunk, xoff, y);
+				gwin->win->fill8(index, c_tilesize * c_tiles_per_chunk, c_tilesize * c_tiles_per_chunk, xoff, y);
 				continue;
 			}
 			// For each line in the chunk

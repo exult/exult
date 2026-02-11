@@ -80,9 +80,8 @@ namespace Pentagram {
 			return length;
 		}
 
-		virtual void   initDecompressor(void* DecompData) const = 0;
-		virtual uint32 decompressFrame(void* DecompData, void* samples) const
-				= 0;
+		virtual void   initDecompressor(void* DecompData) const               = 0;
+		virtual uint32 decompressFrame(void* DecompData, void* samples) const = 0;
 
 		virtual void rewind(void* DecompData) const {
 			freeDecompressor(DecompData);
@@ -111,8 +110,7 @@ namespace Pentagram {
 			return false;
 		}
 
-		static AudioSample* createAudioSample(
-				std::unique_ptr<uint8[]> data, uint32 size);
+		static AudioSample* createAudioSample(std::unique_ptr<uint8[]> data, uint32 size);
 	};
 
 }    // namespace Pentagram

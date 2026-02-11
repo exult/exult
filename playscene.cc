@@ -39,16 +39,12 @@ using std::unique_ptr;
 using std::vector;
 
 namespace {
-	int safe_stoi(
-			const std::vector<std::string>& parts, size_t index,
-			int default_value = 0) {
+	int safe_stoi(const std::vector<std::string>& parts, size_t index, int default_value = 0) {
 		if (index < parts.size()) {
 			try {
 				return std::stoi(parts[index]);
 			} catch (const std::invalid_argument&) {
-				std::cerr << "Invalid integer at index " << index
-						  << ", using default value: " << default_value
-						  << std::endl;
+				std::cerr << "Invalid integer at index " << index << ", using default value: " << default_value << std::endl;
 			}
 		}
 		return default_value;
@@ -116,11 +112,8 @@ namespace {
 	scope_exit(Callable&&) -> scope_exit<Callable>;
 }    // namespace
 
-ScenePlayer::ScenePlayer(
-		Game_window* gw, const string& scene_name_, bool use_subtitles,
-		bool use_speech)
-		: gwin(gw), scene_name(scene_name_), subtitles(use_subtitles),
-		  speech_enabled(use_speech) {
+ScenePlayer::ScenePlayer(Game_window* gw, const string& scene_name_, bool use_subtitles, bool use_speech)
+		: gwin(gw), scene_name(scene_name_), subtitles(use_subtitles), speech_enabled(use_speech) {
 	flx_path  = "<PATCH>/" + scene_name_ + ".flx";
 	info_path = "<PATCH>/" + scene_name_ + "_info.txt";
 
@@ -151,8 +144,7 @@ bool ScenePlayer::parse_info_file() {
 	while (std::getline(*file, line)) {
 		string trimmed_line = trim(line);
 
-		if (current_section_name.empty()
-			&& (trimmed_line.empty() || trimmed_line[0] == '#')) {
+		if (current_section_name.empty() && (trimmed_line.empty() || trimmed_line[0] == '#')) {
 			continue;
 		}
 
@@ -189,8 +181,7 @@ bool ScenePlayer::parse_info_file() {
 	return true;
 }
 
-bool ScenePlayer::parse_scene_section(
-		const string& content, vector<SceneCommand>& commands) {
+bool ScenePlayer::parse_scene_section(const string& content, vector<SceneCommand>& commands) {
 	std::istringstream iss(content);
 	string             line;
 
@@ -213,8 +204,7 @@ bool ScenePlayer::parse_scene_section(
 			int fade_in   = parts.size() > 3 ? safe_stoi(parts, 3) : 0;
 			int fade_out  = parts.size() > 4 ? safe_stoi(parts, 4) : 0;
 			int end_delay = parts.size() > 5 ? safe_stoi(parts, 5) : 0;
-			commands.emplace_back(
-					FlicCommand{index, delay, fade_in, fade_out, end_delay});
+			commands.emplace_back(FlicCommand{index, delay, fade_in, fade_out, end_delay});
 		} else if (type_str == "subtitle") {
 			if (parts.size() < 6) {
 				continue;
@@ -227,21 +217,15 @@ bool ScenePlayer::parse_scene_section(
 			cmd.font_type       = safe_stoi(parts, 4);
 			cmd.color           = safe_stoi(parts, 5);
 
-			cmd.position
-					= safe_stoi(parts, 6, 0);    // 0=bottom, 1=center, 2=top
-			cmd.duration_ms = 2000;              // Default duration
+			cmd.position    = safe_stoi(parts, 6, 0);    // 0=bottom, 1=center, 2=top
+			cmd.duration_ms = 2000;                      // Default duration
 			if (parts.size() > 7) {
-				cmd.duration_ms
-						= safe_stoi(parts, 7, 2000);    // Custom duration
+				cmd.duration_ms = safe_stoi(parts, 7, 2000);    // Custom duration
 			}
-			if (load_subtitle_from_file(
-						cmd.text_file_index, cmd.line_number, cmd.text,
-						cmd.alignment)) {
+			if (load_subtitle_from_file(cmd.text_file_index, cmd.line_number, cmd.text, cmd.alignment)) {
 				commands.emplace_back(cmd);
 			}
-		} else if (
-				type_str == "sfx" || type_str == "track" || type_str == "ogg"
-				|| type_str == "wave" || type_str == "voc") {
+		} else if (type_str == "sfx" || type_str == "track" || type_str == "ogg" || type_str == "wave" || type_str == "voc") {
 			AudioCommand::Type audio_type;
 			if (type_str == "sfx") {
 				audio_type = AudioCommand::Type::SFX;
@@ -261,17 +245,13 @@ bool ScenePlayer::parse_scene_section(
 			uint32 stop_time_ms   = safe_stoi(parts, 3, 0);
 			int    stop_condition = safe_stoi(parts, 4, 0);
 
-			commands.emplace_back(
-					AudioCommand{
-							audio_type, index, start_time_ms, stop_time_ms,
-							stop_condition});
+			commands.emplace_back(AudioCommand{audio_type, index, start_time_ms, stop_time_ms, stop_condition});
 		}
 	}
 	return true;
 }
 
-bool ScenePlayer::parse_text_section(
-		const string& content, TextSection& section) {
+bool ScenePlayer::parse_text_section(const string& content, TextSection& section) {
 	std::istringstream iss(content);
 	string             line;
 
@@ -293,22 +273,18 @@ bool ScenePlayer::parse_text_section(
 
 		if (type_str == "text") {
 			if (parts.size() < 5) {
-				std::cerr << "Play_Scene Error: Invalid text command format: "
-						  << line << std::endl;
+				std::cerr << "Play_Scene Error: Invalid text command format: " << line << std::endl;
 				continue;
 			}
 
-			int index = std::stoi(parts[1]);
-			int font_type
-					= std::stoi(parts[2]);      // 0=CREDITS_FONT, 1=HOT_FONT
-			int color = std::stoi(parts[3]);    // Color index
-			int mode  = std::stoi(
-                    parts[4]);    // 0=scroll, 1=delay(default), >1=delay(ms)
+			int index     = std::stoi(parts[1]);
+			int font_type = std::stoi(parts[2]);    // 0=CREDITS_FONT, 1=HOT_FONT
+			int color     = std::stoi(parts[3]);    // Color index
+			int mode      = std::stoi(parts[4]);    // 0=scroll, 1=delay(default), >1=delay(ms)
 
 			string text_content;
 			if (!load_text_from_flx(index, text_content)) {
-				std::cerr << "Play_Scene Error: Could not load text " << index
-						  << " from FLX file" << std::endl;
+				std::cerr << "Play_Scene Error: Could not load text " << index << " from FLX file" << std::endl;
 				continue;
 			}
 
@@ -381,9 +357,7 @@ bool ScenePlayer::parse_text_section(
 					section.entries.push_back(entry);
 				}
 			}
-		} else if (
-				type_str == "sfx" || type_str == "track" || type_str == "ogg"
-				|| type_str == "wave" || type_str == "voc") {
+		} else if (type_str == "sfx" || type_str == "track" || type_str == "ogg" || type_str == "wave" || type_str == "voc") {
 			SceneCommand cmd = parse_audio_command(type_str, parts);
 			section.audio_commands.push_back(cmd);
 		}
@@ -410,8 +384,7 @@ ScenePlayer::SkipAction ScenePlayer::check_break() {
 	return SkipAction::NONE;
 }
 
-void ScenePlayer::play_flic_with_audio(
-		const vector<SceneCommand>& commands, std::vector<int>& audio_ids) {
+void ScenePlayer::play_flic_with_audio(const vector<SceneCommand>& commands, std::vector<int>& audio_ids) {
 	if (commands.empty()) {
 		return;
 	}
@@ -441,19 +414,16 @@ void ScenePlayer::play_flic_with_audio(
 	std::vector<std::pair<SubtitleCommand, int>> current_subtitles;
 
 	// Map timestamps to a list of commands
-	std::map<uint32, std::vector<std::pair<SceneCommand, size_t>>>
-			timed_commands;
+	std::map<uint32, std::vector<std::pair<SceneCommand, size_t>>> timed_commands;
 	for (size_t i = 0; i < commands.size(); ++i) {
 		const auto& cmd_variant = commands[i];
 		std::visit(
 				[&](auto&& cmd) noexcept {
 					using T = std::decay_t<decltype(cmd)>;
 					if constexpr (std::is_same_v<T, AudioCommand>) {
-						timed_commands[cmd.start_time_ms].push_back(
-								{cmd_variant, i});
+						timed_commands[cmd.start_time_ms].push_back({cmd_variant, i});
 					} else if constexpr (std::is_same_v<T, SubtitleCommand>) {
-						timed_commands[cmd.start_time_ms].push_back(
-								{cmd_variant, i});
+						timed_commands[cmd.start_time_ms].push_back({cmd_variant, i});
 					}
 				},
 				cmd_variant);
@@ -471,8 +441,7 @@ void ScenePlayer::play_flic_with_audio(
 					if constexpr (std::is_same_v<T, AudioCommand>) {
 						if (cmd.stop_time_ms > 0) {
 							// Calculate absolute stop time
-							audio_stop_times[i]
-									= cmd.start_time_ms + cmd.stop_time_ms;
+							audio_stop_times[i] = cmd.start_time_ms + cmd.stop_time_ms;
 						}
 					}
 				},
@@ -516,13 +485,9 @@ void ScenePlayer::play_flic_with_audio(
 						[&](auto&& cmd) noexcept {
 							using T = std::decay_t<decltype(cmd)>;
 							if constexpr (std::is_same_v<T, AudioCommand>) {
-								start_audio_by_type(
-										cmd, audio_ids, command_audio_ids,
-										cmd_pair.second);
-							} else if constexpr (std::is_same_v<
-														 T, SubtitleCommand>) {
-								uint32 end_time
-										= cmd.start_time_ms + cmd.duration_ms;
+								start_audio_by_type(cmd, audio_ids, command_audio_ids, cmd_pair.second);
+							} else if constexpr (std::is_same_v<T, SubtitleCommand>) {
+								uint32 end_time = cmd.start_time_ms + cmd.duration_ms;
 								current_subtitles.push_back({cmd, end_time});
 							}
 						},
@@ -546,8 +511,7 @@ void ScenePlayer::play_flic_with_audio(
 			for (int step = 0; step <= fade_steps; step++) {
 				int fade_brightness = (step * 100) / fade_steps;
 
-				fli.play(
-						gwin->get_win(), 0, 0, SDL_GetTicks(), fade_brightness);
+				fli.play(gwin->get_win(), 0, 0, SDL_GetTicks(), fade_brightness);
 
 				gwin->get_win()->ShowFillGuardBand();
 
@@ -578,25 +542,17 @@ void ScenePlayer::play_flic_with_audio(
 			uint32 elapsed_ms = SDL_GetTicks() - section_start_time;
 
 			// Check if any commands are scheduled for the current time
-			for (auto it = timed_commands.begin();
-				 it != timed_commands.end();) {
+			for (auto it = timed_commands.begin(); it != timed_commands.end();) {
 				if (it->first <= elapsed_ms) {
 					for (const auto& cmd_pair : it->second) {
 						std::visit(
 								[&](auto&& cmd) noexcept {
 									using T = std::decay_t<decltype(cmd)>;
-									if constexpr (std::is_same_v<
-														  T, SubtitleCommand>) {
-										uint32 end_time
-												= elapsed_ms + cmd.duration_ms;
-										current_subtitles.push_back(
-												{cmd, end_time});
-									} else if constexpr (
-											std::is_same_v<T, AudioCommand>) {
-										start_audio_by_type(
-												cmd, audio_ids,
-												command_audio_ids,
-												cmd_pair.second);
+									if constexpr (std::is_same_v<T, SubtitleCommand>) {
+										uint32 end_time = elapsed_ms + cmd.duration_ms;
+										current_subtitles.push_back({cmd, end_time});
+									} else if constexpr (std::is_same_v<T, AudioCommand>) {
+										start_audio_by_type(cmd, audio_ids, command_audio_ids, cmd_pair.second);
 									}
 								},
 								cmd_pair.first);
@@ -608,8 +564,7 @@ void ScenePlayer::play_flic_with_audio(
 			}
 
 			// Check if any playing audio should stop at the current time
-			for (auto it = audio_stop_times.begin();
-				 it != audio_stop_times.end();) {
+			for (auto it = audio_stop_times.begin(); it != audio_stop_times.end();) {
 				if (elapsed_ms >= it->second) {
 					// Time to stop this audio
 					const auto& cmd_variant = commands[it->first];
@@ -617,8 +572,7 @@ void ScenePlayer::play_flic_with_audio(
 							[&](auto&& cmd) noexcept {
 								using T = std::decay_t<decltype(cmd)>;
 								if constexpr (std::is_same_v<T, AudioCommand>) {
-									stop_audio_by_type(
-											cmd, command_audio_ids[it->first]);
+									stop_audio_by_type(cmd, command_audio_ids[it->first]);
 								}
 							},
 							cmd_variant);
@@ -630,14 +584,12 @@ void ScenePlayer::play_flic_with_audio(
 
 			int brightness = 100;
 
-			next_frame_time = fli.play(
-					gwin->get_win(), i, i, next_frame_time, brightness);
+			next_frame_time = fli.play(gwin->get_win(), i, i, next_frame_time, brightness);
 
 			// Draw active subtitles directly on the frame
 			std::string combined_text;
 			for (auto& subtitle : current_subtitles) {
-				if (elapsed_ms >= subtitle.first.start_time_ms
-					&& elapsed_ms < static_cast<uint32>(subtitle.second)) {
+				if (elapsed_ms >= subtitle.first.start_time_ms && elapsed_ms < static_cast<uint32>(subtitle.second)) {
 					if (!combined_text.empty()) {
 						combined_text += "\n";
 					}
@@ -647,9 +599,7 @@ void ScenePlayer::play_flic_with_audio(
 
 			// Draw the combined subtitle text if any
 			if (!combined_text.empty()) {
-				SubtitleCommand temp_cmd = current_subtitles.empty()
-												   ? SubtitleCommand{}
-												   : current_subtitles[0].first;
+				SubtitleCommand temp_cmd = current_subtitles.empty() ? SubtitleCommand{} : current_subtitles[0].first;
 				temp_cmd.text            = combined_text;
 
 				// Draw directly on the window buffer
@@ -657,8 +607,7 @@ void ScenePlayer::play_flic_with_audio(
 			}
 
 			// Clean up expired subtitles
-			for (auto it = current_subtitles.begin();
-				 it != current_subtitles.end();) {
+			for (auto it = current_subtitles.begin(); it != current_subtitles.end();) {
 				if (elapsed_ms >= static_cast<uint32>(it->second)) {
 					it = current_subtitles.erase(it);
 				} else {
@@ -688,9 +637,7 @@ void ScenePlayer::play_flic_with_audio(
 			for (int step = fade_steps; step >= 0; step--) {
 				int brightness = (step * 100) / fade_steps;
 
-				fli.play(
-						gwin->get_win(), finfo.frames - 1, finfo.frames - 1,
-						SDL_GetTicks(), brightness);
+				fli.play(gwin->get_win(), finfo.frames - 1, finfo.frames - 1, SDL_GetTicks(), brightness);
 
 				gwin->get_win()->ShowFillGuardBand();
 
@@ -707,8 +654,7 @@ void ScenePlayer::play_flic_with_audio(
 
 			if (flic_cmd->end_delay > 0) {
 				uint32 delay_start = SDL_GetTicks();
-				while (SDL_GetTicks() - delay_start
-					   < static_cast<uint32>(flic_cmd->end_delay)) {
+				while (SDL_GetTicks() - delay_start < static_cast<uint32>(flic_cmd->end_delay)) {
 					SkipAction action = check_break();
 					if (action == SkipAction::EXIT_SCENE) {
 						throw UserSkipException();    // Exit entire scene
@@ -720,11 +666,9 @@ void ScenePlayer::play_flic_with_audio(
 				}
 			}
 		}
-		if (flic_cmd != nullptr && flic_cmd->end_delay > 0 && !user_skipped
-			&& !(flic_cmd->fade_out > 0)) {
+		if (flic_cmd != nullptr && flic_cmd->end_delay > 0 && !user_skipped && !(flic_cmd->fade_out > 0)) {
 			uint32 delay_start = SDL_GetTicks();
-			while (SDL_GetTicks() - delay_start
-				   < static_cast<uint32>(flic_cmd->end_delay)) {
+			while (SDL_GetTicks() - delay_start < static_cast<uint32>(flic_cmd->end_delay)) {
 				SkipAction action = check_break();
 				if (action == SkipAction::EXIT_SCENE) {
 					throw UserSkipException();    // Exit entire scene
@@ -778,9 +722,8 @@ void ScenePlayer::show_delay_text(const TextSection& section) {
 
 		for (size_t i = 0; i < parsed_lines.size(); i++) {
 			const auto& parsed = parsed_lines[i];
-			int         x      = calculate_text_x_position(
-                    parsed.alignment, parsed.text, font, screen_center);
-			int y = start_y + (i * font->get_text_height());
+			int         x      = calculate_text_x_position(parsed.alignment, parsed.text, font, screen_center);
+			int         y      = start_y + (i * font->get_text_height());
 
 			font->draw_text(win->get_ib8(), x, y, parsed.text.c_str());
 		}
@@ -800,12 +743,10 @@ void ScenePlayer::show_delay_text(const TextSection& section) {
 	}
 }
 
-void ScenePlayer::show_text_section(
-		const TextSection& section, std::vector<int>& audio_ids) {
+void ScenePlayer::show_text_section(const TextSection& section, std::vector<int>& audio_ids) {
 	std::map<int, std::vector<int>> command_audio_ids;
 
-	std::map<uint32, std::vector<std::pair<SceneCommand, size_t>>>
-			timed_commands;
+	std::map<uint32, std::vector<std::pair<SceneCommand, size_t>>> timed_commands;
 
 	if (section.entries.empty()) {
 		return;
@@ -821,8 +762,7 @@ void ScenePlayer::show_text_section(
 						// For text sections, we use page index as frame,
 						// so multiply by a reasonable delay per page
 						uint32 start_time_ms = cmd.start_time_ms;
-						timed_commands[start_time_ms].push_back(
-								{cmd_variant, i});
+						timed_commands[start_time_ms].push_back({cmd_variant, i});
 					}
 				},
 				cmd_variant);
@@ -840,8 +780,7 @@ void ScenePlayer::show_text_section(
 					if constexpr (std::is_same_v<T, AudioCommand>) {
 						if (cmd.stop_time_ms > 0) {
 							// Calculate absolute stop time
-							audio_stop_times[i]
-									= cmd.start_time_ms + cmd.stop_time_ms;
+							audio_stop_times[i] = cmd.start_time_ms + cmd.stop_time_ms;
 						}
 					}
 				},
@@ -875,9 +814,7 @@ void ScenePlayer::show_text_section(
 						[&](auto&& cmd) noexcept {
 							using T = std::decay_t<decltype(cmd)>;
 							if constexpr (std::is_same_v<T, AudioCommand>) {
-								start_audio_by_type(
-										cmd, audio_ids, command_audio_ids,
-										cmd_pair.second);
+								start_audio_by_type(cmd, audio_ids, command_audio_ids, cmd_pair.second);
 							}
 						},
 						cmd_pair.first);
@@ -902,26 +839,21 @@ void ScenePlayer::show_text_section(
 
 			// Display the current page
 			TextSection single_page_section = section;
-			single_page_section.entries = {section.entries[current_page_index]};
+			single_page_section.entries     = {section.entries[current_page_index]};
 			show_delay_text(single_page_section);
 			// Calculate elapsed time since section start
 			uint32 page_display_time = SDL_GetTicks();
 			uint32 elapsed_ms        = SDL_GetTicks() - section_start_time;
 
 			// Trigger any audio commands scheduled for this time
-			for (auto it = timed_commands.begin();
-				 it != timed_commands.end();) {
+			for (auto it = timed_commands.begin(); it != timed_commands.end();) {
 				if (it->first <= elapsed_ms) {
 					for (const auto& cmd_pair : it->second) {
 						std::visit(
 								[&](auto&& cmd) noexcept {
 									using T = std::decay_t<decltype(cmd)>;
-									if constexpr (std::is_same_v<
-														  T, AudioCommand>) {
-										start_audio_by_type(
-												cmd, audio_ids,
-												command_audio_ids,
-												cmd_pair.second);
+									if constexpr (std::is_same_v<T, AudioCommand>) {
+										start_audio_by_type(cmd, audio_ids, command_audio_ids, cmd_pair.second);
 									}
 								},
 								cmd_pair.first);
@@ -932,8 +864,7 @@ void ScenePlayer::show_text_section(
 				}
 			}
 
-			for (auto it = audio_stop_times.begin();
-				 it != audio_stop_times.end();) {
+			for (auto it = audio_stop_times.begin(); it != audio_stop_times.end();) {
 				if (elapsed_ms >= it->second) {
 					// Time to stop this audio
 					const auto& cmd_variant = section.audio_commands[it->first];
@@ -941,8 +872,7 @@ void ScenePlayer::show_text_section(
 							[&](auto&& cmd) noexcept {
 								using T = std::decay_t<decltype(cmd)>;
 								if constexpr (std::is_same_v<T, AudioCommand>) {
-									stop_audio_by_type(
-											cmd, command_audio_ids[it->first]);
+									stop_audio_by_type(cmd, command_audio_ids[it->first]);
 								}
 							},
 							cmd_variant);
@@ -954,16 +884,14 @@ void ScenePlayer::show_text_section(
 
 			// Wait for page display timeout or user input
 			elapsed_ms = page_display_time - section_start_time;
-			for (auto it = audio_stop_times.begin();
-				 it != audio_stop_times.end();) {
+			for (auto it = audio_stop_times.begin(); it != audio_stop_times.end();) {
 				if (elapsed_ms >= it->second) {
 					const auto& cmd_variant = section.audio_commands[it->first];
 					std::visit(
 							[&](auto&& cmd) noexcept {
 								using T = std::decay_t<decltype(cmd)>;
 								if constexpr (std::is_same_v<T, AudioCommand>) {
-									stop_audio_by_type(
-											cmd, command_audio_ids[it->first]);
+									stop_audio_by_type(cmd, command_audio_ids[it->first]);
 								}
 							},
 							cmd_variant);
@@ -972,8 +900,7 @@ void ScenePlayer::show_text_section(
 					++it;
 				}
 			}
-			while (SDL_GetTicks() - page_display_time
-				   < static_cast<uint32_t>(section.delay_ms)) {
+			while (SDL_GetTicks() - page_display_time < static_cast<uint32_t>(section.delay_ms)) {
 				switch (check_break()) {
 				case SkipAction::EXIT_SCENE:
 					guard.dismiss();
@@ -1036,8 +963,7 @@ void ScenePlayer::wait_for_audio_completion() {
 	SDL_Delay(500);
 }
 
-AudioCommand ScenePlayer::parse_audio_command(
-		const std::string& type_str, const std::vector<std::string>& parts) {
+AudioCommand ScenePlayer::parse_audio_command(const std::string& type_str, const std::vector<std::string>& parts) {
 	AudioCommand::Type audio_type;
 	if (type_str == "sfx") {
 		audio_type = AudioCommand::Type::SFX;
@@ -1057,14 +983,12 @@ AudioCommand ScenePlayer::parse_audio_command(
 	uint32 stop_time_ms   = safe_stoi(parts, 3, 0);
 	int    stop_condition = safe_stoi(parts, 4, 0);
 
-	return AudioCommand{
-			audio_type, index, start_time_ms, stop_time_ms, stop_condition};
+	return AudioCommand{audio_type, index, start_time_ms, stop_time_ms, stop_condition};
 }
 
 void ScenePlayer::start_audio_by_type(
-		const AudioCommand& cmd, std::vector<int>& audio_ids,
-		std::map<int, std::vector<int>>& command_audio_ids,
-		size_t                           command_index) {
+		const AudioCommand& cmd, std::vector<int>& audio_ids, std::map<int, std::vector<int>>& command_audio_ids,
+		size_t command_index) {
 	Audio* audio = Audio::get_ptr();
 	if (audio == nullptr) {
 		return;
@@ -1079,9 +1003,7 @@ void ScenePlayer::start_audio_by_type(
 			active_audio_ids.push_back(id);
 			command_audio_ids[command_index].push_back(id);
 		}
-	} else if (
-			cmd.audio_type == AudioCommand::Type::OGG
-			|| cmd.audio_type == AudioCommand::Type::WAVE) {
+	} else if (cmd.audio_type == AudioCommand::Type::OGG || cmd.audio_type == AudioCommand::Type::WAVE) {
 		File_spec sfxfile(flx_path.c_str(), cmd.index);
 		int       id = audio->play_sound_effect(sfxfile, 0, 255);
 		if (id != -1) {
@@ -1094,12 +1016,11 @@ void ScenePlayer::start_audio_by_type(
 			return;
 		}
 
-		U7multiobject voc_obj(flx_path.c_str(), cmd.index);
-		size_t        len;
+		U7multiobject                          voc_obj(flx_path.c_str(), cmd.index);
+		size_t                                 len;
 		const std::unique_ptr<unsigned char[]> voc_data = voc_obj.retrieve(len);
 		if (voc_data && len > 0) {
-			int id = audio->copy_and_play_speech(
-					voc_data.get(), len, false, 255);
+			int id = audio->copy_and_play_speech(voc_data.get(), len, false, 255);
 			if (id != -1) {
 				audio_ids.push_back(id);
 				active_audio_ids.push_back(id);
@@ -1109,8 +1030,7 @@ void ScenePlayer::start_audio_by_type(
 	}
 }
 
-void ScenePlayer::stop_audio_by_type(
-		const AudioCommand& cmd, const std::vector<int>& command_ids) {
+void ScenePlayer::stop_audio_by_type(const AudioCommand& cmd, const std::vector<int>& command_ids) {
 	Audio* audio = Audio::get_ptr();
 	if (audio == nullptr) {
 		return;
@@ -1158,14 +1078,12 @@ bool ScenePlayer::load_text_from_flx(int index, std::string& out_text) {
 		out_text = std::string(reinterpret_cast<char*>(txt.get()), len);
 		return true;
 	} catch (const std::exception& e) {
-		std::cerr << "Play_Scene Error: loading text from flx: " << e.what()
-				  << std::endl;
+		std::cerr << "Play_Scene Error: loading text from flx: " << e.what() << std::endl;
 		return false;
 	}
 }
 
-bool ScenePlayer::load_subtitle_from_file(
-		int index, int line_number, std::string& out_text, int& out_alignment) {
+bool ScenePlayer::load_subtitle_from_file(int index, int line_number, std::string& out_text, int& out_alignment) {
 	try {
 		U7multiobject                          txtobj(flx_path.c_str(), index);
 		size_t                                 len;
@@ -1178,9 +1096,8 @@ bool ScenePlayer::load_subtitle_from_file(
 		target_prefix.insert(0, 3 - target_prefix.length(), '0');
 		target_prefix += ":";
 
-		std::istringstream iss(
-				std::string(reinterpret_cast<char*>(txt.get()), len));
-		std::string line;
+		std::istringstream iss(std::string(reinterpret_cast<char*>(txt.get()), len));
+		std::string        line;
 
 		// Read line-by-line instead of loading the whole file content
 		// again.
@@ -1197,8 +1114,7 @@ bool ScenePlayer::load_subtitle_from_file(
 		}
 		return false;
 	} catch (const std::exception& e) {
-		std::cerr << "Play_Scene Error: loading subtitle: " << e.what()
-				  << std::endl;
+		std::cerr << "Play_Scene Error: loading subtitle: " << e.what() << std::endl;
 		return false;
 	}
 }
@@ -1266,45 +1182,26 @@ void ScenePlayer::display_subtitle(const SubtitleCommand& cmd) {
 
 		// Draw each line with proper alignment
 		for (const auto& text_line : lines) {
-			int x = calculate_text_x_position(
-					alignment, text_line, font, screen_center);
+			int x = calculate_text_x_position(alignment, text_line, font, screen_center);
 
 			// Draw outline by rendering the text 8 times with offsets
-			font->draw_text(
-					win->get_ib8(), x - 1, y - 1, text_line.c_str(),
-					outline_translation);
-			font->draw_text(
-					win->get_ib8(), x, y - 1, text_line.c_str(),
-					outline_translation);
-			font->draw_text(
-					win->get_ib8(), x + 1, y - 1, text_line.c_str(),
-					outline_translation);
-			font->draw_text(
-					win->get_ib8(), x - 1, y, text_line.c_str(),
-					outline_translation);
-			font->draw_text(
-					win->get_ib8(), x + 1, y, text_line.c_str(),
-					outline_translation);
-			font->draw_text(
-					win->get_ib8(), x - 1, y + 1, text_line.c_str(),
-					outline_translation);
-			font->draw_text(
-					win->get_ib8(), x, y + 1, text_line.c_str(),
-					outline_translation);
-			font->draw_text(
-					win->get_ib8(), x + 1, y + 1, text_line.c_str(),
-					outline_translation);
+			font->draw_text(win->get_ib8(), x - 1, y - 1, text_line.c_str(), outline_translation);
+			font->draw_text(win->get_ib8(), x, y - 1, text_line.c_str(), outline_translation);
+			font->draw_text(win->get_ib8(), x + 1, y - 1, text_line.c_str(), outline_translation);
+			font->draw_text(win->get_ib8(), x - 1, y, text_line.c_str(), outline_translation);
+			font->draw_text(win->get_ib8(), x + 1, y, text_line.c_str(), outline_translation);
+			font->draw_text(win->get_ib8(), x - 1, y + 1, text_line.c_str(), outline_translation);
+			font->draw_text(win->get_ib8(), x, y + 1, text_line.c_str(), outline_translation);
+			font->draw_text(win->get_ib8(), x + 1, y + 1, text_line.c_str(), outline_translation);
 
 			// Draw the actual text in the desired color on top
-			font->draw_text(
-					win->get_ib8(), x, y, text_line.c_str(), color_translation);
+			font->draw_text(win->get_ib8(), x, y, text_line.c_str(), color_translation);
 
 			y += line_height;
 		}
 
 	} catch (const std::exception& e) {
-		std::cerr << "Play_Scene Error: displaying subtitle: " << e.what()
-				  << std::endl;
+		std::cerr << "Play_Scene Error: displaying subtitle: " << e.what() << std::endl;
 	}
 }
 
@@ -1328,13 +1225,11 @@ void ScenePlayer::show_scrolling_text(const TextSection& section) {
 			(void)scroller.run(gwin);
 		}
 	} catch (const std::exception& e) {
-		std::cerr << "Play_scene Error: showing scrolling text: " << e.what()
-				  << std::endl;
+		std::cerr << "Play_scene Error: showing scrolling text: " << e.what() << std::endl;
 	}
 }
 
-ScenePlayer::ParsedTextLine ScenePlayer::parse_text_formatting(
-		const std::string& line) {
+ScenePlayer::ParsedTextLine ScenePlayer::parse_text_formatting(const std::string& line) {
 	ParsedTextLine result;
 	result.alignment = 0;
 	result.text      = line;
@@ -1356,8 +1251,7 @@ ScenePlayer::ParsedTextLine ScenePlayer::parse_text_formatting(
 }
 
 int ScenePlayer::calculate_text_x_position(
-		int alignment, const std::string& text,
-		const std::shared_ptr<Font>& font, int screen_center) {
+		int alignment, const std::string& text, const std::shared_ptr<Font>& font, int screen_center) {
 	switch (alignment) {
 	case 1:
 		// Center
@@ -1382,15 +1276,13 @@ std::shared_ptr<Font> ScenePlayer::get_font_by_type(int font_type) {
 }
 
 void ScenePlayer::load_palette_by_color(int color) {
-	const str_int_pair& palette_resource
-			= game->get_resource(("palettes/" + std::to_string(color)).c_str());
+	const str_int_pair& palette_resource = game->get_resource(("palettes/" + std::to_string(color)).c_str());
 	if (palette_resource.str != nullptr) {
 		try {
 			gwin->get_pal()->load(palette_resource.str, palette_resource.num);
 			gwin->get_pal()->apply();
 		} catch (const std::exception& e) {
-			std::cerr << "Play_scene Error: loading palette " << color << ": "
-					  << e.what() << std::endl;
+			std::cerr << "Play_scene Error: loading palette " << color << ": " << e.what() << std::endl;
 			gwin->get_pal()->apply();
 		}
 	} else {
@@ -1398,8 +1290,7 @@ void ScenePlayer::load_palette_by_color(int color) {
 	}
 }
 
-void ScenePlayer::process_section_content(
-		const std::string& section_name, const std::string& content) {
+void ScenePlayer::process_section_content(const std::string& section_name, const std::string& content) {
 	if (section_name.empty() || content.empty()) {
 		return;
 	}
@@ -1423,13 +1314,10 @@ bool scene_available(const string& scene_name) {
 }
 
 void play_scene(const string& scene_name) {
-	Game_window* gwin         = Game_window::get_instance();
-	Audio*       audio        = Audio::get_ptr();
-	const bool   speech_is_on = audio != nullptr && audio->is_audio_enabled()
-							  && audio->is_speech_enabled();
-	const bool subtitles_are_on
-			= !speech_is_on
-			  || (audio != nullptr && audio->is_speech_with_subs());
-	ScenePlayer player(gwin, scene_name, subtitles_are_on, speech_is_on);
+	Game_window* gwin             = Game_window::get_instance();
+	Audio*       audio            = Audio::get_ptr();
+	const bool   speech_is_on     = audio != nullptr && audio->is_audio_enabled() && audio->is_speech_enabled();
+	const bool   subtitles_are_on = !speech_is_on || (audio != nullptr && audio->is_speech_with_subs());
+	ScenePlayer  player(gwin, scene_name, subtitles_are_on, speech_is_on);
 	player.play_scene();
 }

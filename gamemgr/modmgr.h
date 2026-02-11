@@ -34,29 +34,25 @@ class GameManager;
 
 class BaseGameInfo {
 protected:
-	Exult_Game    type = NONE;    // Game type
-	Game_Language language
-			= Game_Language::ENGLISH;    // Official translation language
-	std::string cfgname;                 // What the game is called in Exult.cfg
-	std::string path_prefix;             // System path prefix for the game/mod.
-	std::string mod_title;               // Internal mod name, the mod's title
-	std::string menustring;              // Text displayed in mods menu
-	bool        expansion = false;       // For FoV/SS ONLY.
-	bool        sibeta    = false;       // For beta version of SI.
-	bool        found     = false;       // If the game/mod is found.
-	bool editing = false;    // Game is being edited and may have missing files.
-	std::string codepage = "ASCII";    // Game/mod codepage (mainly for ES).
+	Exult_Game    type     = NONE;                      // Game type
+	Game_Language language = Game_Language::ENGLISH;    // Official translation language
+	std::string   cfgname;                              // What the game is called in Exult.cfg
+	std::string   path_prefix;                          // System path prefix for the game/mod.
+	std::string   mod_title;                            // Internal mod name, the mod's title
+	std::string   menustring;                           // Text displayed in mods menu
+	bool          expansion = false;                    // For FoV/SS ONLY.
+	bool          sibeta    = false;                    // For beta version of SI.
+	bool          found     = false;                    // If the game/mod is found.
+	bool          editing   = false;                    // Game is being edited and may have missing files.
+	std::string   codepage  = "ASCII";                  // Game/mod codepage (mainly for ES).
 public:
 	BaseGameInfo() = default;
 
 	BaseGameInfo(
-			const Exult_Game ty, const Game_Language lang, std::string cf,
-			std::string mt, std::string pt, std::string ms, bool exp, bool sib,
-			bool f, bool ed, std::string cp)
-			: type(ty), language(lang), cfgname(std::move(cf)),
-			  path_prefix(std::move(pt)), mod_title(std::move(mt)),
-			  menustring(std::move(ms)), expansion(exp), sibeta(sib), found(f),
-			  editing(ed), codepage(std::move(cp)) {}
+			const Exult_Game ty, const Game_Language lang, std::string cf, std::string mt, std::string pt, std::string ms, bool exp,
+			bool sib, bool f, bool ed, std::string cp)
+			: type(ty), language(lang), cfgname(std::move(cf)), path_prefix(std::move(pt)), mod_title(std::move(mt)),
+			  menustring(std::move(ms)), expansion(exp), sibeta(sib), found(f), editing(ed), codepage(std::move(cp)) {}
 
 	BaseGameInfo(const BaseGameInfo&) = default;
 	virtual ~BaseGameInfo()           = default;
@@ -174,9 +170,8 @@ protected:
 	bool        has_force_digital_music;
 
 public:
-	ModInfo(Exult_Game game, Game_Language lang, const std::string& name,
-			const std::string& mod, const std::string& path, bool exp, bool sib,
-			bool ed, const std::string& cfg);
+	ModInfo(Exult_Game game, Game_Language lang, const std::string& name, const std::string& mod, const std::string& path, bool exp,
+			bool sib, bool ed, const std::string& cfg);
 
 	bool is_mod_compatible() const {
 		return compatible;
@@ -245,9 +240,7 @@ protected:
 	std::string          static_identity;
 
 public:
-	ModManager(
-			const std::string& name, const std::string& menu, bool needtitle,
-			bool silent = false);
+	ModManager(const std::string& name, const std::string& menu, bool needtitle, bool silent = false);
 	ModManager() = default;
 
 	std::vector<ModInfo>& get_mod_list() {
@@ -302,9 +295,7 @@ public:
 		return false;
 	}
 
-	static int InstallModZip(
-			std::string& zipfilename, ModManager* game_override,
-			GameManager* gamemanager);
+	static int InstallModZip(std::string& zipfilename, ModManager* game_override, GameManager* gamemanager);
 
 	const std::string& getIdentity() {
 		return static_identity;
@@ -321,9 +312,7 @@ protected:
 	ModManager*             sib;
 	ModManager*             dev;
 	std::vector<ModManager> games;
-	void                    print_found(
-							   ModManager* game, const char* flex, const char* title,
-							   const char* cfgname, const char* basepath, bool silent);
+	void print_found(ModManager* game, const char* flex, const char* title, const char* cfgname, const char* basepath, bool silent);
 
 public:
 	GameManager(bool silent = false);

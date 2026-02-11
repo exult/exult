@@ -97,8 +97,7 @@ void Container_io(
 		Serial& io,                   // Where to store data.
 		Obj*&   addr,                 // Address.
 		int& tx, int& ty, int& tz,    // Absolute tile coords.
-		int& shape, int& frame, int& quality, std::string& name,
-		unsigned char& resistance, bool& invisible, bool& okay_to_take) {
+		int& shape, int& frame, int& quality, std::string& name, unsigned char& resistance, bool& invisible, bool& okay_to_take) {
 	Common_obj_io(io, addr, tx, ty, tz, shape, frame);
 	io << quality << name << resistance << invisible << okay_to_take;
 }
@@ -130,13 +129,11 @@ void Egg_object_io(
 		Serial& io,                   // Where to store data.
 		Obj*&   addr,                 // Address.
 		int& tx, int& ty, int& tz,    // Absolute tile coords.
-		int& shape, int& frame, int& type, int& criteria, int& probability,
-		int& distance, bool& nocturnal, bool& once, bool& hatched,
-		bool& auto_reset, int& data1, int& data2, int& data3,
-		std::string& str1) {
+		int& shape, int& frame, int& type, int& criteria, int& probability, int& distance, bool& nocturnal, bool& once,
+		bool& hatched, bool& auto_reset, int& data1, int& data2, int& data3, std::string& str1) {
 	Common_obj_io(io, addr, tx, ty, tz, shape, frame);
-	io << type << criteria << probability << distance << nocturnal << once
-	   << hatched << auto_reset << data1 << data2 << data3 << str1;
+	io << type << criteria << probability << distance << nocturnal << once << hatched << auto_reset << data1 << data2 << data3
+	   << str1;
 }
 
 /*
@@ -150,8 +147,7 @@ static void Npc_actor_io(
 		Serial& io,                   // Where to store data.
 		Obj*&   addr,                 // Address.
 		int& tx, int& ty, int& tz,    // Absolute tile coords.
-		int& shape, int& frame, int& face, std::string& name, short& npc_num,
-		short& ident, int& usecode, std::string& usecodefun,
+		int& shape, int& frame, int& face, std::string& name, short& npc_num, short& ident, int& usecode, std::string& usecodefun,
 		int (&properties)[12],    // Must have room for 12.
 		short& attack_mode, short& alignment,
 		unsigned long&   oflags,           // Object flags.
@@ -169,8 +165,7 @@ static void Npc_actor_io(
 	io << attack_mode << alignment << oflags << xflags << type_flags;
 	io << num_schedules;
 	for (i = 0; i < num_schedules; i++) {
-		io << schedules[i].time << schedules[i].type << schedules[i].tx
-		   << schedules[i].ty << schedules[i].tz;
+		io << schedules[i].time << schedules[i].type << schedules[i].tx << schedules[i].ty << schedules[i].tz;
 	}
 }
 
@@ -221,14 +216,11 @@ int Container_out(
 		int                          fd,      // Socket.
 		const Container_game_object* addr,    // Address.
 		int tx, int ty, int tz,               // Absolute tile coords.
-		int shape, int frame, int quality, std::string name,
-		unsigned char resistance, bool invisible, bool okay_to_take) {
+		int shape, int frame, int quality, std::string name, unsigned char resistance, bool invisible, bool okay_to_take) {
 	static unsigned char buf[Exult_server::maxlength];
 	unsigned char*       ptr = &buf[0];
 	Serial_out           io(ptr);
-	Container_io(
-			io, addr, tx, ty, tz, shape, frame, quality, name, resistance,
-			invisible, okay_to_take);
+	Container_io(io, addr, tx, ty, tz, shape, frame, quality, name, resistance, invisible, okay_to_take);
 	return Exult_server::Send_data(fd, Exult_server::container, buf, ptr - buf);
 }
 
@@ -243,13 +235,10 @@ bool Container_in(
 		int                     datalen,    // Length of data.
 		Container_game_object*& addr,       // Address.
 		int& tx, int& ty, int& tz,          // Absolute tile coords.
-		int& shape, int& frame, int& quality, std::string& name,
-		unsigned char& resistance, bool& invisible, bool& okay_to_take) {
+		int& shape, int& frame, int& quality, std::string& name, unsigned char& resistance, bool& invisible, bool& okay_to_take) {
 	const unsigned char* ptr = data;
 	Serial_in            io(ptr);
-	Container_io(
-			io, addr, tx, ty, tz, shape, frame, quality, name, resistance,
-			invisible, okay_to_take);
+	Container_io(io, addr, tx, ty, tz, shape, frame, quality, name, resistance, invisible, okay_to_take);
 	return (ptr - data) == datalen;
 }
 
@@ -299,16 +288,14 @@ int Egg_object_out(
 		int               fd,      // Socket.
 		const Egg_object* addr,    // Address.
 		int tx, int ty, int tz,    // Absolute tile coords.
-		int shape, int frame, int type, int criteria, int probability,
-		int distance, bool nocturnal, bool once, bool hatched, bool auto_reset,
-		int data1, int data2, int data3, std::string str1) {
+		int shape, int frame, int type, int criteria, int probability, int distance, bool nocturnal, bool once, bool hatched,
+		bool auto_reset, int data1, int data2, int data3, std::string str1) {
 	static unsigned char buf[Exult_server::maxlength];
 	unsigned char*       ptr = &buf[0];
 	Serial_out           io(ptr);
 	Egg_object_io(
-			io, addr, tx, ty, tz, shape, frame, type, criteria, probability,
-			distance, nocturnal, once, hatched, auto_reset, data1, data2, data3,
-			str1);
+			io, addr, tx, ty, tz, shape, frame, type, criteria, probability, distance, nocturnal, once, hatched, auto_reset, data1,
+			data2, data3, str1);
 	return Exult_server::Send_data(fd, Exult_server::egg, buf, ptr - buf);
 }
 
@@ -323,16 +310,13 @@ bool Egg_object_in(
 		int                  datalen,    // Length of data.
 		Egg_object*&         addr,       // Address.
 		int& tx, int& ty, int& tz,       // Absolute tile coords.
-		int& shape, int& frame, int& type, int& criteria, int& probability,
-		int& distance, bool& nocturnal, bool& once, bool& hatched,
-		bool& auto_reset, int& data1, int& data2, int& data3,
-		std::string& str1) {
+		int& shape, int& frame, int& type, int& criteria, int& probability, int& distance, bool& nocturnal, bool& once,
+		bool& hatched, bool& auto_reset, int& data1, int& data2, int& data3, std::string& str1) {
 	const unsigned char* ptr = data;
 	Serial_in            io(ptr);
 	Egg_object_io(
-			io, addr, tx, ty, tz, shape, frame, type, criteria, probability,
-			distance, nocturnal, once, hatched, auto_reset, data1, data2, data3,
-			str1);
+			io, addr, tx, ty, tz, shape, frame, type, criteria, probability, distance, nocturnal, once, hatched, auto_reset, data1,
+			data2, data3, str1);
 	return (ptr - data) == datalen;
 }
 
@@ -346,9 +330,8 @@ int Npc_actor_out(
 		int          fd,           // Socket.
 		const Actor* addr,         // Address.
 		int tx, int ty, int tz,    // Absolute tile coords.
-		int shape, int frame, int face, std::string name, short npc_num,
-		short ident, int usecode, std::string usecodefun, int (&properties)[12],
-		short attack_mode, short alignment,
+		int shape, int frame, int face, std::string name, short npc_num, short ident, int usecode, std::string usecodefun,
+		int (&properties)[12], short attack_mode, short alignment,
 		unsigned long    oflags,           // Object flags.
 		unsigned long    xflags,           // Extra object flags.
 		unsigned long    type_flags,       // Movement flags.
@@ -359,9 +342,8 @@ int Npc_actor_out(
 	unsigned char*       ptr = &buf[0];
 	Serial_out           io(ptr);
 	Npc_actor_io(
-			io, addr, tx, ty, tz, shape, frame, face, name, npc_num, ident,
-			usecode, usecodefun, properties, attack_mode, alignment, oflags,
-			xflags, type_flags, num_schedules, schedules);
+			io, addr, tx, ty, tz, shape, frame, face, name, npc_num, ident, usecode, usecodefun, properties, attack_mode, alignment,
+			oflags, xflags, type_flags, num_schedules, schedules);
 	return Exult_server::Send_data(fd, Exult_server::npc, buf, ptr - buf);
 }
 
@@ -376,8 +358,7 @@ bool Npc_actor_in(
 		int                  datalen,    // Length of data.
 		Actor*&              addr,       // Address.
 		int& tx, int& ty, int& tz,       // Absolute tile coords.
-		int& shape, int& frame, int& face, std::string& name, short& npc_num,
-		short& ident, int& usecode, std::string& usecodefun,
+		int& shape, int& frame, int& face, std::string& name, short& npc_num, short& ident, int& usecode, std::string& usecodefun,
 		int (&properties)[12], short& attack_mode, short& alignment,
 		unsigned long&   oflags,           // Object flags.
 		unsigned long&   xflags,           // Extra object flags.
@@ -388,9 +369,8 @@ bool Npc_actor_in(
 	const unsigned char* ptr = data;
 	Serial_in            io(ptr);
 	Npc_actor_io(
-			io, addr, tx, ty, tz, shape, frame, face, name, npc_num, ident,
-			usecode, usecodefun, properties, attack_mode, alignment, oflags,
-			xflags, type_flags, num_schedules, schedules);
+			io, addr, tx, ty, tz, shape, frame, face, name, npc_num, ident, usecode, usecodefun, properties, attack_mode, alignment,
+			oflags, xflags, type_flags, num_schedules, schedules);
 	return (ptr - data) == datalen;
 }
 
@@ -409,8 +389,7 @@ void Game_info_io(
 		bool&   map_modified,    // Map was changed.
 		int&    edit_mode        // Mode we're in.
 ) {
-	io << version << edit_lift << hide_lift << map_editing << tile_grid
-	   << map_modified << edit_mode;
+	io << version << edit_lift << hide_lift << map_editing << tile_grid << map_modified << edit_mode;
 }
 
 /*
@@ -432,9 +411,7 @@ int Game_info_out(
 	static unsigned char buf[Exult_server::maxlength];
 	unsigned char*       ptr = &buf[0];
 	Serial_out           io(ptr);
-	Game_info_io(
-			io, version, edit_lift, hide_lift, map_editing, tile_grid,
-			map_modified, edit_mode);
+	Game_info_io(io, version, edit_lift, hide_lift, map_editing, tile_grid, map_modified, edit_mode);
 	return Exult_server::Send_data(fd, Exult_server::info, buf, ptr - buf);
 }
 
@@ -457,8 +434,6 @@ bool Game_info_in(
 ) {
 	const unsigned char* ptr = data;
 	Serial_in            io(ptr);
-	Game_info_io(
-			io, version, edit_lift, hide_lift, map_editing, tile_grid,
-			map_modified, edit_mode);
+	Game_info_io(io, version, edit_lift, hide_lift, map_editing, tile_grid, map_modified, edit_mode);
 	return (ptr - data) == datalen;
 }

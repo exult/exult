@@ -62,64 +62,52 @@ const int sc = 512;     // Serpent scales.
 const int wh = 1024;    // Worm's hart.
 
 // Black Gate:
-unsigned short Spellbook_object::bg_reagents[9 * 8] = {
-		0, 0, 0, 0, 0, 0, 0, 0,    // Linear spells require no reagents.
-		// Circle 1:
-		gr | gn | mr, gr | gn, ns | ss, gr | ss, sa | ss, sa, ns, gr | gn,
-		// Circle 2:
-		bm | sa, bp | mr, bp | sa, mr | sa, gr | gn | mr, gr | gn | sa,
-		bp | bm | mr, bm | ns | mr | sa | bp | ss,
-		// Circle 3:
-		gr | ns | sa, gr | gn | ss, ns | mr | bm, sa | gn | gr | mr, ns | ss,
-		ns | mr, bp | ns | bm, ns | ss | bp,
-		// Circle 4:
-		ss | mr, bp | sa | mr, mr | bp | bm, gr | mr | ns | sa, mr | bp | bm,
-		bm | sa, bm | mr | ns | ss | sa, bm | sa,
-		// Circle 5:
-		bp | ns | ss, mr | gr | bm, gr | bp | sa | ss, bm | bp | mr | sa,
-		gn | ss | mr | gr, ns | bm, bp | sa | ss, gn | ns | ss,
-		// Circle 6:
-		gr | mr | ns, sa | ss | bm | gn | ns | mr, bp | mr | ss | sa,
-		sa | bp | bm, mr | ns | sa | bm, ns | ss | bp, gn | ss | bp,
-		bm | sa | mr,
-		// Circle 7:
-		mr | ss, bp | ns | sa, bm | bp | mr | ss | sa, bp | mr | ss | sa,
-		bm | mr | ns | sa, bp | ns | ss | mr, bp | gn | mr, gr | gn | mr | ss,
-		// Circle 8:
-		bp | bm | gr | gn | mr | ns | ss | sa, bm | mr | ns | sa,
-		gr | gn | mr | ns | bm, mr | ns | bm | bp, gr | gn | ss | sa,
-		bm | gr | mr, bp | mr | ns, bm | gr | mr};
+unsigned short Spellbook_object::bg_reagents[9 * 8]
+		= {0, 0, 0, 0, 0, 0, 0, 0,    // Linear spells require no reagents.
+		   // Circle 1:
+		   gr | gn | mr, gr | gn, ns | ss, gr | ss, sa | ss, sa, ns, gr | gn,
+		   // Circle 2:
+		   bm | sa, bp | mr, bp | sa, mr | sa, gr | gn | mr, gr | gn | sa, bp | bm | mr, bm | ns | mr | sa | bp | ss,
+		   // Circle 3:
+		   gr | ns | sa, gr | gn | ss, ns | mr | bm, sa | gn | gr | mr, ns | ss, ns | mr, bp | ns | bm, ns | ss | bp,
+		   // Circle 4:
+		   ss | mr, bp | sa | mr, mr | bp | bm, gr | mr | ns | sa, mr | bp | bm, bm | sa, bm | mr | ns | ss | sa, bm | sa,
+		   // Circle 5:
+		   bp | ns | ss, mr | gr | bm, gr | bp | sa | ss, bm | bp | mr | sa, gn | ss | mr | gr, ns | bm, bp | sa | ss, gn | ns | ss,
+		   // Circle 6:
+		   gr | mr | ns, sa | ss | bm | gn | ns | mr, bp | mr | ss | sa, sa | bp | bm, mr | ns | sa | bm, ns | ss | bp,
+		   gn | ss | bp, bm | sa | mr,
+		   // Circle 7:
+		   mr | ss, bp | ns | sa, bm | bp | mr | ss | sa, bp | mr | ss | sa, bm | mr | ns | sa, bp | ns | ss | mr, bp | gn | mr,
+		   gr | gn | mr | ss,
+		   // Circle 8:
+		   bp | bm | gr | gn | mr | ns | ss | sa, bm | mr | ns | sa, gr | gn | mr | ns | bm, mr | ns | bm | bp, gr | gn | ss | sa,
+		   bm | gr | mr, bp | mr | ns, bm | gr | mr};
 // Serpent Isle:
 unsigned short Spellbook_object::si_reagents[9 * 8] = {
 		// Circle 1:
 		gr | gn | mr, gr | gn, ns | ss, gr | ss, sa | ss, sa, ns, bp | bm | mr,
 		// Circle 2:
-		gr | gn, bm | sa, ns | sa, bp | sa | wh, mr | sa, gr | gn | ss,
-		gr | gn | mr, gr | gn | sa,
+		gr | gn, bm | sa, ns | sa, bp | sa | wh, mr | sa, gr | gn | ss, gr | gn | mr, gr | gn | sa,
 		// Circle 3:
-		gr | gn | wh, gr | ns | sa, bp | mr, bp | gr, gr | gn | mr | sa,
-		ns | ss, bp | ns | ss, bp | mr | sa,
+		gr | gn | wh, gr | ns | sa, bp | mr, bp | gr, gr | gn | mr | sa, ns | ss, bp | ns | ss, bp | mr | sa,
 		// Circle 4:
-		bm | mr, gr | ss, mr | sa, sa | bm | gr | mr | ss | sc,
-		gr | mr | ns | sa, bm | sa, bp | ss, bm | sa,
+		bm | mr, gr | ss, mr | sa, sa | bm | gr | mr | ss | sc, gr | mr | ns | sa, bm | sa, bp | ss, bm | sa,
 		// Circle 5:
-		mr | ss, bp | gr | ss | sa, bm | bp | mr | sa, gr | gn | mr | ss,
-		bm | ns, gn | ns | ss, sa | bm | mr | ns | ss, bp | gr | mr | sa,
+		mr | ss, bp | gr | ss | sa, bm | bp | mr | sa, gr | gn | mr | ss, bm | ns, gn | ns | ss, sa | bm | mr | ns | ss,
+		bp | gr | mr | sa,
 		// Circle 6:
-		bp | ns | ss, gr | mr | ns, gr | mr | ns, bp | wh | ss | sa,
-		bp | wh | mr | ss | sa, bm | bp | wh | sa, bm | gn | sa,
+		bp | ns | ss, gr | mr | ns, gr | mr | ns, bp | wh | ss | sa, bp | wh | mr | ss | sa, bm | bp | wh | sa, bm | gn | sa,
 		mr | sa | ss | sc,
 		// Circle 7:
-		bp | mr | ss | sa, bm | mr | ns | sa, gr | gn, bp | gn | mr,
-		bm | ns | sa, gr | gn | mr | ss, bp | bm | mr | ss, bp | mr | sa,
+		bp | mr | ss | sa, bm | mr | ns | sa, gr | gn, bp | gn | mr, bm | ns | sa, gr | gn | mr | ss, bp | bm | mr | ss,
+		bp | mr | sa,
 		// Circle 8:
-		wh | ss, bs | bp | ns | sa, bm | bp | mr | ss | sa, bm | bp | mr,
-		bm | gr | ss | wh | sc, bm | bp | gr | ss | wh | sc, gr | mr | sa,
-		bp | bs | mr | ns,
+		wh | ss, bs | bp | ns | sa, bm | bp | mr | ss | sa, bm | bp | mr, bm | gr | ss | wh | sc, bm | bp | gr | ss | wh | sc,
+		gr | mr | sa, bp | bs | mr | ns,
 		// Circle 9:
-		bm | mr | ns | sa, bm | bs | gr | gn | mr | ns, bp | bm | mr | ns,
-		bm | bs | bp | ns | sa, bp | gr | mr | ss | sa, bm | gr | mr | ss,
-		bm | gr | mr, ns | sa | wh | sc | bs};
+		bm | mr | ns | sa, bm | bs | gr | gn | mr | ns, bp | bm | mr | ns, bm | bs | bp | ns | sa, bp | gr | mr | ss | sa,
+		bm | gr | mr | ss, bm | gr | mr, ns | sa | wh | sc | bs};
 
 /*
  *  Get usecode function for a given spell:
@@ -141,13 +129,11 @@ bool Spellbook_object::has_ring(Actor* act) {
  */
 
 Spellbook_object::Spellbook_object(
-		int shapenum, int framenum, unsigned int shapex, unsigned int shapey,
-		unsigned int   lft,
+		int shapenum, int framenum, unsigned int shapex, unsigned int shapey, unsigned int lft,
 		unsigned char* c,       // Circle spell flags.
 		unsigned char  bmark    // Spell bookmark.
 		)
-		: Ireg_game_object(shapenum, framenum, shapex, shapey, lft),
-		  bookmark(bmark == 255 ? -1 : bmark) {
+		: Ireg_game_object(shapenum, framenum, shapex, shapey, lft), bookmark(bmark == 255 ? -1 : bmark) {
 	memcpy(circles, c, sizeof(circles));
 	// Point to reagent table.
 	reagents = GAME_SI ? si_reagents : bg_reagents;
@@ -290,10 +276,7 @@ void Spellbook_object::execute_spell(
 		ucmachine->intercept_click_on_item(nullptr);
 	}
 
-	ucmachine->call_usecode(
-			Get_usecode(spell), act,
-			in_combat ? Usecode_machine::weapon
-					  : Usecode_machine::double_click);
+	ucmachine->call_usecode(Get_usecode(spell), act, in_combat ? Usecode_machine::weapon : Usecode_machine::double_click);
 
 	// Restore previous intercept_item.
 	ucmachine->restore_intercept(oldtarg, oldtile);

@@ -38,18 +38,13 @@ protected:
 
 public:
 	Stats_gump(Container_game_object* cont, int initx, int inity);
-	Stats_gump(
-			Container_game_object* cont, int initx, int inity, int shnum,
-			ShapeFile shfile);
+	Stats_gump(Container_game_object* cont, int initx, int inity, int shnum, ShapeFile shfile);
 	static Stats_gump* create(Game_object* npc_obj, int x, int y);
 
 	// Add object.
-	bool add(
-			Game_object* obj, int mx = -1, int my = -1, int sx = -1,
-			int sy = -1, bool dont_check = false,
-			bool combine = false) override {
-		ignore_unused_variable_warning(
-				obj, mx, my, sx, sy, dont_check, combine);
+	bool add(Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false)
+			override {
+		ignore_unused_variable_warning(obj, mx, my, sx, sy, dont_check, combine);
 		return false;    // Can't drop onto it.
 	}
 

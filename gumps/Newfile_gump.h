@@ -155,13 +155,13 @@ protected:
 	int       num_games  = 0;          // Number of save games
 	int       first_free = 0;          // The number of the first free savegame
 
-	std::unique_ptr<Shape_file> cur_shot;       // Screenshot for current game
-	SaveGame_Details* cur_details = nullptr;    // Details of current game
-	SaveGame_Party*   cur_party   = nullptr;    // Party of current game
+	std::unique_ptr<Shape_file> cur_shot;                 // Screenshot for current game
+	SaveGame_Details*           cur_details = nullptr;    // Details of current game
+	SaveGame_Party*             cur_party   = nullptr;    // Party of current game
 
 	// Gamedat is being used as a 'quicksave'
-	int last_selected = -4;    // keeping track of the selected line for iOS
-	std::unique_ptr<Shape_file> gd_shot;    // Screenshot in Gamedat
+	int                         last_selected = -4;      // keeping track of the selected line for iOS
+	std::unique_ptr<Shape_file> gd_shot;                 // Screenshot in Gamedat
 	SaveGame_Details*           gd_details = nullptr;    // Details in Gamedat
 	SaveGame_Party*             gd_party   = nullptr;    // Parts in Gamedat
 
@@ -169,12 +169,12 @@ protected:
 	SaveGame_Details* details     = nullptr;    // The game details to show
 	SaveGame_Party*   party       = nullptr;    // The party to show
 	bool              is_readable = false;      // Is the save game readable
-	const char* filename = nullptr;    // Filename of the savegame, if exists
+	const char*       filename    = nullptr;    // Filename of the savegame, if exists
 
-	int  list_position = -2;    // The position in the savegame list (top game)
-	int  selected = -3;    // The savegame that has been selected (num in list)
-	int  cursor   = 0;     // The position of the cursor
-	int  slide_start = -1;                  // Pixel (v) where a slide started
+	int  list_position = -2;                // The position in the savegame list (top game)
+	int  selected      = -3;                // The savegame that has been selected (num in list)
+	int  cursor        = 0;                 // The position of the cursor
+	int  slide_start   = -1;                // Pixel (v) where a slide started
 	char newname[MAX_SAVEGAME_NAME_LEN];    // The new name for the game
 
 	int BackspacePressed();
@@ -230,8 +230,7 @@ public:
 	bool mouse_down(int mx, int my, MouseButton button) override;
 	bool mouse_up(int mx, int my, MouseButton button) override;
 	bool mouse_drag(int mx, int my) override;
-	bool key_down(SDL_Keycode chr, SDL_Keycode unicode)
-			override;    // Character typed.
+	bool key_down(SDL_Keycode chr, SDL_Keycode unicode) override;    // Character typed.
 
 	bool mousewheel_up(int mx, int my) override;
 	bool mousewheel_down(int mx, int my) override;

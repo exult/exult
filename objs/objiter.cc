@@ -37,11 +37,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
 template <class D>
-D_Recursive_object_iterator<D>::D_Recursive_object_iterator(
-		Game_object* start    // Start here.
-		)
-		: child(nullptr),
-		  elems(start->get_outermost()->get_chunk()->get_objects()) {
+D_Recursive_object_iterator<D>::D_Recursive_object_iterator(Game_object* start    // Start here.
+															)
+		: child(nullptr), elems(start->get_outermost()->get_chunk()->get_objects()) {
 	// Get what obj. is in (or itself).
 	Game_object* owner = start->get_outermost();
 	Game_object* obj;    // Find owner within its chunk.

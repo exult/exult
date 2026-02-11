@@ -39,20 +39,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <cctype>
 
 DropDown_widget::DropDown_widget(
-		Gump_Base* par, const std::vector<std::string>& selections,
-		int selection, int px, int py, int width)
-		: IterableGump_widget(par, -1, px, py, selection),
-		  selections(selections), active(false) {
+		Gump_Base* par, const std::vector<std::string>& selections, int selection, int px, int py, int width)
+		: IterableGump_widget(par, -1, px, py, selection), selections(selections), active(false) {
 	children.resize(id_count);
 	children[id_button] = button
-			= std::make_shared<CallbackButtonBase<DropDown_widget, Button>>(
-					this, &DropDown_widget::onbutton, width, 0);
+			= std::make_shared<CallbackButtonBase<DropDown_widget, Button>>(this, &DropDown_widget::onbutton, width, 0);
 	Modal_gump::ProceduralColours colours = {};
 	auto                          rect    = button->get_rect();
-	list                                  = std::make_shared<
-											 CallbackButtonBase<DropDown_widget, StringList_widget>>(
-			this, &DropDown_widget::onlist, selections, selection, 0, rect.h,
-			colours, 0, 0);
+	list                                  = std::make_shared<CallbackButtonBase<DropDown_widget, StringList_widget>>(
+            this, &DropDown_widget::onlist, selections, selection, 0, rect.h, colours, 0, 0);
 
 	button->set_self_managed(true);
 	button->set_text(selections[selection]);
@@ -73,9 +68,7 @@ DropDown_widget::DropDown_widget(
 		screen_to_local(sx, sy);
 
 		auto scrollable = std::make_shared<Scrollable_widget>(
-				this, 0, sy, rect.w, gwin->get_height() - 2, 1,
-				Scrollable_widget::ScrollbarType::Always, false,
-				colours.Shadow);
+				this, 0, sy, rect.w, gwin->get_height() - 2, 1, Scrollable_widget::ScrollbarType::Always, false, colours.Shadow);
 
 		scrollable->add_child(list);
 		children[id_popup] = scrollable;
@@ -215,8 +208,7 @@ bool DropDown_widget::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 	case SDLK_DOWN:
 		// move selection down
 		{
-			int newsel = std::min<int>(
-					selections.size(), std::max(0, list->getselection() + 1));
+			int newsel = std::min<int>(selections.size(), std::max(0, list->getselection() + 1));
 			list->setselection(newsel);
 			set_frame(newsel);
 		}
@@ -282,9 +274,7 @@ void DropDown_widget::show_popup(bool show) {
 		int diffy = std::max(0, rect.y + rect.h - gwin->get_height());
 
 		if (diffy > 0 || diffx > 0) {
-			popup->set_pos(
-					popup_sx = popup->get_x() - diffx,
-					popup_sy = popup->get_y() - diffy);
+			popup->set_pos(popup_sx = popup->get_x() - diffx, popup_sy = popup->get_y() - diffy);
 			local_to_screen(popup_sx, popup_sy);
 		} else {
 			popup_sx = rect.x;
@@ -303,9 +293,9 @@ void DropDown_widget::show_popup(bool show) {
 void DropDown_widget::Button::paint() {
 	Text_button::paint();
 
-	auto*      ib8      = gwin->get_win()->get_ib8();
-	const auto clipsave = ib8->SaveClip();
-	auto       draw_area     = get_draw_area();
+	auto*      ib8       = gwin->get_win()->get_ib8();
+	const auto clipsave  = ib8->SaveClip();
+	auto       draw_area = get_draw_area();
 	local_to_screen(draw_area.x, draw_area.y);
 
 	int arrowx = draw_area.x + width - 8;

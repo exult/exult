@@ -67,7 +67,7 @@ public:
 	void paint() override;
 	void close() override;
 
-		void build_buttons();
+	void build_buttons();
 
 	void load_settings();
 	void save_settings();

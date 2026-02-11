@@ -6,17 +6,16 @@
 #include <functional>
 
 class AdvancedOptions_gump : public Modal_gump {
-	std::string           title;
-	std::string           helpurl;
-	Scrollable_widget*    scroll;
-	Gump_button*          apply;
-	Gump_button*          cancel;
-	Gump_button*          help;
+	std::string        title;
+	std::string        helpurl;
+	Scrollable_widget* scroll;
+	Gump_button*       apply;
+	Gump_button*       cancel;
+	Gump_button*       help;
 
 public:
 	AdvancedOptions_gump(
-			std::vector<ConfigSetting_widget::Definition>* settings,
-			std::string&& title, std::string&& helpurl,
+			std::vector<ConfigSetting_widget::Definition>* settings, std::string&& title, std::string&& helpurl,
 			std::function<void()> applycallback);
 	~AdvancedOptions_gump() override;
 

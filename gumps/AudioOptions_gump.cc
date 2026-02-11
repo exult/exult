@@ -207,11 +207,8 @@ void AudioOptions_gump::advanced() {
 		midi_driver_name = MidiDriver::getDriverName(midi_driver);
 	}
 	AdvancedOptions_gump aog(
-			&advancedsettings,
-			Strings::Advancedsettingsfor() + ("\n" + midi_driver_name + " ")
-					+ Strings::mididriver_(),
-			"https://exult.info/docs.html#advanced_midi_gump",
-			[midi_driver_name] {
+			&advancedsettings, Strings::Advancedsettingsfor() + ("\n" + midi_driver_name + " ") + Strings::mididriver_(),
+			"https://exult.info/docs.html#advanced_midi_gump", [midi_driver_name] {
 				MyMidiPlayer* midi = Audio::get_ptr()->get_midi();
 				if (!midi || !Audio::get_ptr()->is_music_enabled()) {
 					return;
@@ -225,13 +222,10 @@ void AudioOptions_gump::advanced() {
 				auto looping       = midi->is_repeating();
 				midi->destroyMidiDriver();
 				midi->can_play_midi();
-				if (!gwin->is_background_track(track_playing)
-					|| midi->get_ogg_enabled() || midi->is_mt32()
+				if (!gwin->is_background_track(track_playing) || midi->get_ogg_enabled() || midi->is_mt32()
 					|| gwin->is_in_exult_menu()) {
 					if (gwin->is_in_exult_menu()) {
-						Audio::get_ptr()->start_music(
-								EXULT_FLX_MEDITOWN_MID, true,
-								MyMidiPlayer::Force_None, EXULT_FLX);
+						Audio::get_ptr()->start_music(EXULT_FLX_MEDITOWN_MID, true, MyMidiPlayer::Force_None, EXULT_FLX);
 					} else {
 						Audio::get_ptr()->start_music(track_playing, looping);
 					}
@@ -300,28 +294,23 @@ void AudioOptions_gump::rebuild_buttons() {
 	}
 
 	std::vector<std::string> sampleRates = {"11025", "22050", "44100", "48000"};
-	if (!sample_rate_str.empty()
-		&& std::find(sampleRates.cbegin(), sampleRates.cend(), sample_rate_str)
-				   == sampleRates.cend()) {
+	if (!sample_rate_str.empty() && std::find(sampleRates.cbegin(), sampleRates.cend(), sample_rate_str) == sampleRates.cend()) {
 		sampleRates.push_back(sample_rate_str);
 	}
 
 	buttons[id_sample_rate] = std::make_unique<AudioTextToggle>(
-			this, &AudioOptions_gump::toggle_sample_rate,
-			std::move(sampleRates), sample_rate,
+			this, &AudioOptions_gump::toggle_sample_rate, std::move(sampleRates), sample_rate,
 			get_button_pos_for_label(Strings::samplerate()), yForRow(2), 59);
 
-	std::vector<std::string> speaker_types
-			= {Strings::Mono(), Strings::Stereo()};
-	buttons[id_speaker_type] = std::make_unique<AudioTextToggle>(
-			this, &AudioOptions_gump::toggle_speaker_type,
-			std::move(speaker_types), speaker_type,
-			get_button_pos_for_label(Strings::speakertype()), yForRow(3), 59);
+	std::vector<std::string> speaker_types = {Strings::Mono(), Strings::Stereo()};
+	buttons[id_speaker_type]               = std::make_unique<AudioTextToggle>(
+            this, &AudioOptions_gump::toggle_speaker_type, std::move(speaker_types), speaker_type,
+            get_button_pos_for_label(Strings::speakertype()), yForRow(3), 59);
 
 	// music on/off
 	buttons[id_music_enabled] = std::make_unique<AudioEnabledToggle>(
-			this, &AudioOptions_gump::toggle_music_enabled, midi_enabled,
-			get_button_pos_for_label(Strings::Music_()), yForRow(4), 59);
+			this, &AudioOptions_gump::toggle_music_enabled, midi_enabled, get_button_pos_for_label(Strings::Music_()), yForRow(4),
+			59);
 	if (midi_enabled) {
 		rebuild_midi_buttons();
 	}
@@ -341,21 +330,17 @@ void AudioOptions_gump::rebuild_buttons() {
 #endif
 
 	buttons[id_sfx_enabled] = std::make_unique<AudioTextToggle>(
-			this, &AudioOptions_gump::toggle_sfx_enabled,
-			std::move(sfx_options), sfx_enabled,
+			this, &AudioOptions_gump::toggle_sfx_enabled, std::move(sfx_options), sfx_enabled,
 			get_button_pos_for_label(Strings::SFX_()), yForRow(10), 59);
 	if (sfx_enabled) {
 		rebuild_sfx_buttons();
 	}
 
 	// speech on/off
-	std::vector<std::string> speech_options
-			= {Strings::Subtitlesonly(), Strings::Voiceonly(),
-			   Strings::VoiceSubtitles()};
-	buttons[id_speech_enabled] = std::make_unique<AudioTextToggle>(
-			this, &AudioOptions_gump::toggle_speech_enabled,
-			std::move(speech_options), speech_option,
-			get_button_pos_for_label(Strings::Speech_()), yForRow(12), 108);
+	std::vector<std::string> speech_options = {Strings::Subtitlesonly(), Strings::Voiceonly(), Strings::VoiceSubtitles()};
+	buttons[id_speech_enabled]              = std::make_unique<AudioTextToggle>(
+            this, &AudioOptions_gump::toggle_speech_enabled, std::move(speech_options), speech_option,
+            get_button_pos_for_label(Strings::Speech_()), yForRow(12), 108);
 	do_arrange();
 }
 
@@ -370,17 +355,14 @@ void AudioOptions_gump::rebuild_midi_buttons() {
 
 	// ogg enabled/disabled
 	buttons[id_music_digital] = std::make_unique<AudioEnabledToggle>(
-			this, &AudioOptions_gump::toggle_music_digital, midi_ogg_enabled,
-			get_button_pos_for_label(Strings::digitalmusic()), yForRow(6), 59);
+			this, &AudioOptions_gump::toggle_music_digital, midi_ogg_enabled, get_button_pos_for_label(Strings::digitalmusic()),
+			yForRow(6), 59);
 
 	// looping type
-	std::vector<std::string> looping_options
-			= {Strings::Never(), Strings::Limited(), Strings::Auto(),
-			   Strings::Endless()};
-	buttons[id_music_looping] = std::make_unique<AudioTextToggle>(
-			this, &AudioOptions_gump::change_music_looping,
-			std::move(looping_options), static_cast<int>(midi_looping),
-			get_button_pos_for_label(Strings::looping()), yForRow(5), 59);
+	std::vector<std::string> looping_options = {Strings::Never(), Strings::Limited(), Strings::Auto(), Strings::Endless()};
+	buttons[id_music_looping]                = std::make_unique<AudioTextToggle>(
+            this, &AudioOptions_gump::change_music_looping, std::move(looping_options), static_cast<int>(midi_looping),
+            get_button_pos_for_label(Strings::looping()), yForRow(5), 59);
 	rebuild_midi_driver_buttons();
 }
 
@@ -403,8 +385,7 @@ void AudioOptions_gump::rebuild_midi_driver_buttons() {
 
 	// midi driver
 	buttons[id_midi_driver] = std::make_unique<AudioTextToggle>(
-			this, &AudioOptions_gump::toggle_midi_driver,
-			std::move(midi_drivertext), midi_driver,
+			this, &AudioOptions_gump::toggle_midi_driver, std::move(midi_drivertext), midi_driver,
 			get_button_pos_for_label(Strings::mididriver()), yForRow(7), 74);
 
 	rebuild_mididriveroption_buttons();
@@ -415,9 +396,7 @@ void AudioOptions_gump::rebuild_sfx_buttons() {
 
 	if (!sfx_enabled) {
 		return;
-	} else if (
-			sfx_enabled == 1 && have_digital_sfx()
-			&& !gwin->is_in_exult_menu()) {
+	} else if (sfx_enabled == 1 && have_digital_sfx() && !gwin->is_in_exult_menu()) {
 		std::vector<std::string> sfx_digitalpacks;
 		if (have_roland_pack) {
 			sfx_digitalpacks.emplace_back(Strings::RolandMT32());
@@ -429,8 +408,7 @@ void AudioOptions_gump::rebuild_sfx_buttons() {
 			sfx_digitalpacks.emplace_back(Strings::Custom());
 		}
 		buttons[id_sfx_pack] = std::make_unique<AudioTextToggle>(
-				this, &AudioOptions_gump::toggle_sfx_pack,
-				std::move(sfx_digitalpacks), sfx_package,
+				this, &AudioOptions_gump::toggle_sfx_pack, std::move(sfx_digitalpacks), sfx_package,
 				get_button_pos_for_label(Strings::pack()), yForRow(11), 92);
 	}
 #ifdef ENABLE_MIDISFX
@@ -439,10 +417,8 @@ void AudioOptions_gump::rebuild_sfx_buttons() {
 
 		// sfx conversion
 		buttons[id_sfx_pack] = std::make_unique<AudioTextToggle>(
-				this, &AudioOptions_gump::toggle_sfx_pack,
-				std::move(sfx_conversiontext), sfx_conversion == 5 ? 1 : 0,
-				get_button_pos_for_label(Strings::conversion()), yForRow(11),
-				59);
+				this, &AudioOptions_gump::toggle_sfx_pack, std::move(sfx_conversiontext), sfx_conversion == 5 ? 1 : 0,
+				get_button_pos_for_label(Strings::conversion()), yForRow(11), 59);
 	}
 #endif
 	do_arrange();
@@ -460,10 +436,7 @@ void AudioOptions_gump::do_arrange() {
 	}
 
 	// Right align other setting buttons
-	RightAlignWidgets(
-			tcb::span(
-					buttons.data() + id_first_setting,
-					id_count - id_first_setting));
+	RightAlignWidgets(tcb::span(buttons.data() + id_first_setting, id_count - id_first_setting));
 }
 
 void AudioOptions_gump::rebuild_mididriveroption_buttons() {
@@ -472,14 +445,12 @@ void AudioOptions_gump::rebuild_mididriveroption_buttons() {
 		s = MidiDriver::getDriverName(midi_driver);
 	}
 
-	advancedsettings = MidiDriver::get_midi_driver_settings(
-			MidiDriver::getDriverName(midi_driver));
+	advancedsettings = MidiDriver::get_midi_driver_settings(MidiDriver::getDriverName(midi_driver));
 
 	// put advanced setting button on now empty row 13
 	if (!advancedsettings.empty()) {
 		buttons[id_advanced] = std::make_unique<AudioOptions_button>(
-				this, &AudioOptions_gump::advanced, Strings::SETTINGS(), 100,
-				yForRow(8), 50);
+				this, &AudioOptions_gump::advanced, Strings::SETTINGS(), 100, yForRow(8), 50);
 	} else {
 		buttons[id_advanced].reset();
 	}
@@ -496,9 +467,7 @@ void AudioOptions_gump::load_settings() {
 	const bool sfx_on = (Audio::get_ptr()->are_effects_enabled());
 	speech_option
 			= (Audio::get_ptr()->is_speech_enabled()
-					   ? (Audio::get_ptr()->is_speech_with_subs()
-								  ? speech_on_with_subtitles
-								  : speech_on)
+					   ? (Audio::get_ptr()->is_speech_with_subs() ? speech_on_with_subtitles : speech_on)
 					   : speech_off);
 	midi_looping = Audio::get_ptr()->get_music_looping();
 	speaker_type = true;    // stereo
@@ -532,8 +501,7 @@ void AudioOptions_gump::load_settings() {
 	MyMidiPlayer* midi = Audio::get_ptr()->get_midi();
 	if (midi) {
 		s = midi->get_midi_driver();
-		for (midi_driver = 0; midi_driver < MidiDriver::getDriverCount();
-			 midi_driver++) {
+		for (midi_driver = 0; midi_driver < MidiDriver::getDriverCount(); midi_driver++) {
 			const std::string name = MidiDriver::getDriverName(midi_driver);
 			if (!Pentagram::strcasecmp(name.c_str(), s.c_str())) {
 				break;
@@ -555,8 +523,7 @@ void AudioOptions_gump::load_settings() {
 			config->set("config/audio/midi/use_oggs", "yes", true);
 			midi_driver = MidiDriver::getDriverCount();
 		} else {
-			for (midi_driver = 0; midi_driver < MidiDriver::getDriverCount();
-				 midi_driver++) {
+			for (midi_driver = 0; midi_driver < MidiDriver::getDriverCount(); midi_driver++) {
 				const std::string name = MidiDriver::getDriverName(midi_driver);
 				if (!Pentagram::strcasecmp(name.c_str(), s.c_str())) {
 					break;
@@ -576,8 +543,7 @@ void AudioOptions_gump::load_settings() {
 #endif
 	}
 
-	const std::string d
-			= "config/disk/game/" + Game::get_gametitle() + "/waves";
+	const std::string d = "config/disk/game/" + Game::get_gametitle() + "/waves";
 	config->value(d.c_str(), s, "---");
 	if (have_roland_pack && s == rolandpack) {
 		sfx_package = 0;
@@ -610,8 +576,7 @@ void AudioOptions_gump::load_settings() {
 
 AudioOptions_gump::AudioOptions_gump() : Modal_gump(nullptr, -1) {
 	const int bottomrow_gap = 0;
-	SetProceduralBackground(
-			TileRect(0, 0, 100, yForRow(14) + 2 * bottomrow_gap), -1);
+	SetProceduralBackground(TileRect(0, 0, 100, yForRow(14) + 2 * bottomrow_gap), -1);
 
 	const Exult_Game  game  = Game::get_game_type();
 	const std::string title = Game::get_gametitle();
@@ -623,17 +588,14 @@ AudioOptions_gump::AudioOptions_gump() : Modal_gump(nullptr, -1) {
 	strip_path(rolandpack);
 	strip_path(blasterpack);
 	strip_path(midipack);
-	have_custom_pack = have_config_pack && configpack != rolandpack
-					   && configpack != blasterpack;
+	have_custom_pack = have_config_pack && configpack != rolandpack && configpack != blasterpack;
 
 	nsfxopts  = 1;    // For "Disabled".
 	nsfxpacks = 0;
 	if (have_digital_sfx()) {
 		// Have digital sfx.
 		nsfxopts++;
-		nsfxpacks += static_cast<int>(have_roland_pack)
-					 + static_cast<int>(have_blaster_pack)
-					 + static_cast<int>(have_custom_pack);
+		nsfxpacks += static_cast<int>(have_roland_pack) + static_cast<int>(have_blaster_pack) + static_cast<int>(have_custom_pack);
 		if (have_custom_pack) {
 			sfx_custompack = configpack;
 		}
@@ -645,25 +607,20 @@ AudioOptions_gump::AudioOptions_gump() : Modal_gump(nullptr, -1) {
 	load_settings();
 
 	// Volume Mixer
-	buttons[id_mixer] = std::make_unique<AudioOptions_button>(
-			this, &AudioOptions_gump::mixer, Strings::VOLUMEMIXER(), 50,
-			yForRow(0), 95);
+	buttons[id_mixer]
+			= std::make_unique<AudioOptions_button>(this, &AudioOptions_gump::mixer, Strings::VOLUMEMIXER(), 50, yForRow(0), 95);
 	// audio on/off
 	buttons[id_audio_enabled] = std::make_unique<AudioEnabledToggle>(
-			this, &AudioOptions_gump::toggle_audio_enabled, audio_enabled,
-			procedural_background.w - 59, yForRow(1), 59);
+			this, &AudioOptions_gump::toggle_audio_enabled, audio_enabled, procedural_background.w - 59, yForRow(1), 59);
 	// Apply
 	buttons[id_apply] = std::make_unique<AudioOptions_button>(
-			this, &AudioOptions_gump::save_settings, Strings::APPLY(), 25,
-			yForRow(13) + bottomrow_gap, 50);
+			this, &AudioOptions_gump::save_settings, Strings::APPLY(), 25, yForRow(13) + bottomrow_gap, 50);
 	// Help
 	buttons[id_help] = std::make_unique<AudioOptions_button>(
-			this, &AudioOptions_gump::help, Strings::HELP(), 50,
-			yForRow(13) + bottomrow_gap, 50);
+			this, &AudioOptions_gump::help, Strings::HELP(), 50, yForRow(13) + bottomrow_gap, 50);
 	// Cancel
 	buttons[id_cancel] = std::make_unique<AudioOptions_button>(
-			this, &AudioOptions_gump::cancel, Strings::CANCEL(), 100,
-			yForRow(13) + bottomrow_gap, 50);
+			this, &AudioOptions_gump::cancel, Strings::CANCEL(), 100, yForRow(13) + bottomrow_gap, 50);
 
 	rebuild_buttons();
 	do_arrange();
@@ -684,29 +641,19 @@ void AudioOptions_gump::save_settings() {
 	// Check if mod forces digital music but user is trying to disable it
 	if (midi_ogg_enabled == 0) {
 		if (!Game::get_modtitle().empty()) {
-			std::string mod_cfg_path = get_system_path("<MODS>") + "/"
-									   + Game::get_modtitle() + ".cfg";
+			std::string mod_cfg_path = get_system_path("<MODS>") + "/" + Game::get_modtitle() + ".cfg";
 			if (U7exists(mod_cfg_path)) {
 				Configuration modconfig(mod_cfg_path, "modinfo");
 				std::string   force_digital_music_str;
-				bool          has_force_digital_music
-						= modconfig.key_exists("mod_info/force_digital_music");
+				bool          has_force_digital_music = modconfig.key_exists("mod_info/force_digital_music");
 				if (has_force_digital_music) {
-					modconfig.value(
-							"mod_info/force_digital_music",
-							force_digital_music_str);
-					bool force_digital_music
-							= (force_digital_music_str == "yes"
-							   || force_digital_music_str == "true");
+					modconfig.value("mod_info/force_digital_music", force_digital_music_str);
+					bool force_digital_music = (force_digital_music_str == "yes" || force_digital_music_str == "true");
 					if (force_digital_music) {
-						std::string warning_message
-								= Strings::Themod()
-								  + ((" \"" + Game::get_modtitle() + "\" ")
-									 + Strings::requiresDigitalMusic_())
-								  + "\n" + Strings::Disableanyway_();
-						if (!Yesno_gump::ask(
-									warning_message.c_str(), nullptr,
-									"TINY_BLACK_FONT")) {
+						std::string warning_message = Strings::Themod()
+													  + ((" \"" + Game::get_modtitle() + "\" ") + Strings::requiresDigitalMusic_())
+													  + "\n" + Strings::Disableanyway_();
+						if (!Yesno_gump::ask(warning_message.c_str(), nullptr, "TINY_BLACK_FONT")) {
 							return;
 						}
 					}
@@ -717,8 +664,7 @@ void AudioOptions_gump::save_settings() {
 
 	config->set("config/audio/sample_rate", sample_rates[sample_rate], false);
 	config->set("config/audio/stereo", speaker_type ? "yes" : "no", false);
-	if (sample_rates[sample_rate] != static_cast<uint32>(o_sample_rate)
-		|| speaker_type != o_speaker_type) {
+	if (sample_rates[sample_rate] != static_cast<uint32>(o_sample_rate) || speaker_type != o_speaker_type) {
 		Audio::Destroy();
 		Audio::Init();
 		midi = Audio::get_ptr()->get_midi();    // old pointer got deleted
@@ -733,30 +679,20 @@ void AudioOptions_gump::save_settings() {
 		Audio::get_ptr()->stop_sound_effects();
 	}
 	Audio::get_ptr()->set_speech_enabled(speech_option != speech_off);
-	Audio::get_ptr()->set_speech_with_subs(
-			speech_option == speech_on_with_subtitles);
+	Audio::get_ptr()->set_speech_with_subs(speech_option == speech_on_with_subtitles);
 	Audio::get_ptr()->set_music_looping(midi_looping);
 
 	config->set("config/audio/enabled", audio_enabled ? "yes" : "no", false);
-	config->set(
-			"config/audio/midi/enabled", midi_enabled ? "yes" : "no", false);
-	config->set(
-			"config/audio/effects/enabled", sfx_enabled ? "yes" : "no", false);
-	config->set(
-			"config/audio/speech/enabled",
-			(speech_option != speech_off) ? "yes" : "no", false);
-	config->set(
-			"config/audio/speech/with_subs",
-			(speech_option == speech_on_with_subtitles) ? "yes" : "no", false);
+	config->set("config/audio/midi/enabled", midi_enabled ? "yes" : "no", false);
+	config->set("config/audio/effects/enabled", sfx_enabled ? "yes" : "no", false);
+	config->set("config/audio/speech/enabled", (speech_option != speech_off) ? "yes" : "no", false);
+	config->set("config/audio/speech/with_subs", (speech_option == speech_on_with_subtitles) ? "yes" : "no", false);
 
 	const char* midi_looping_values[] = {"never", "limited", "auto", "endless"};
-	config->set(
-			"config/audio/midi/looping",
-			midi_looping_values[static_cast<int>(midi_looping)], false);
+	config->set("config/audio/midi/looping", midi_looping_values[static_cast<int>(midi_looping)], false);
 
-	const std::string d
-			= "config/disk/game/" + Game::get_gametitle() + "/waves";
-	std::string waves;
+	const std::string d = "config/disk/game/" + Game::get_gametitle() + "/waves";
+	std::string       waves;
 	if (!gwin->is_in_exult_menu()) {
 		int i = 0;
 		if (have_roland_pack && sfx_package == i++) {
@@ -771,9 +707,7 @@ void AudioOptions_gump::save_settings() {
 		}
 	}
 #ifdef ENABLE_MIDISFX
-	config->set(
-			"config/audio/effects/midi",
-			sfx_enabled == 1 + have_digital_sfx() ? "yes" : "no", false);
+	config->set("config/audio/effects/midi", sfx_enabled == 1 + have_digital_sfx() ? "yes" : "no", false);
 #endif
 	if (midi) {
 		std::string s = "default";
@@ -788,9 +722,7 @@ void AudioOptions_gump::save_settings() {
 		if (midi_driver == MidiDriver::getDriverCount()) {
 			config->set("config/audio/midi/driver", "default", false);
 		} else {
-			config->set(
-					"config/audio/midi/driver",
-					MidiDriver::getDriverName(midi_driver), false);
+			config->set("config/audio/midi/driver", MidiDriver::getDriverName(midi_driver), false);
 		}
 
 #ifdef ENABLE_MIDISFX
@@ -807,14 +739,10 @@ void AudioOptions_gump::save_settings() {
 	config->write_back();
 	Audio::get_ptr()->Init_sfx();
 	// restart music track if one was playing and isn't anymore
-	if (midi && Audio::get_ptr()->is_music_enabled()
-		&& midi->get_current_track() != track_playing
-		&& (!gwin->is_background_track(track_playing) || midi->get_ogg_enabled()
-			|| midi->is_mt32())) {
+	if (midi && Audio::get_ptr()->is_music_enabled() && midi->get_current_track() != track_playing
+		&& (!gwin->is_background_track(track_playing) || midi->get_ogg_enabled() || midi->is_mt32())) {
 		if (gwin->is_in_exult_menu()) {
-			Audio::get_ptr()->start_music(
-					EXULT_FLX_MEDITOWN_MID, true, MyMidiPlayer::Force_None,
-					EXULT_FLX);
+			Audio::get_ptr()->start_music(EXULT_FLX_MEDITOWN_MID, true, MyMidiPlayer::Force_None, EXULT_FLX);
 		} else {
 			Audio::get_ptr()->start_music(track_playing, looping);
 		}
@@ -831,51 +759,28 @@ void AudioOptions_gump::paint() {
 
 	Image_window8* iwin = gwin->get_win();
 
-	font->paint_text(
-			iwin->get_ib8(), Strings::Audio_(), x + label_margin,
-			y + yForRow(1) + 1);
+	font->paint_text(iwin->get_ib8(), Strings::Audio_(), x + label_margin, y + yForRow(1) + 1);
 	if (audio_enabled) {
-		font->paint_text(
-				iwin->get_ib8(), Strings::samplerate(), x + label_margin,
-				y + yForRow(2) + 1);
-		font->paint_text(
-				iwin->get_ib8(), Strings::speakertype(), x + label_margin,
-				y + yForRow(3) + 1);
-		font->paint_text(
-				iwin->get_ib8(), Strings::Music_(), x + label_margin,
-				y + yForRow(4) + 1);
+		font->paint_text(iwin->get_ib8(), Strings::samplerate(), x + label_margin, y + yForRow(2) + 1);
+		font->paint_text(iwin->get_ib8(), Strings::speakertype(), x + label_margin, y + yForRow(3) + 1);
+		font->paint_text(iwin->get_ib8(), Strings::Music_(), x + label_margin, y + yForRow(4) + 1);
 		if (midi_enabled) {
-			font->paint_text(
-					iwin->get_ib8(), Strings::looping(), x + label_margin,
-					y + yForRow(5) + 1);
-			font->paint_text(
-					iwin->get_ib8(), Strings::digitalmusic(), x + label_margin,
-					y + yForRow(6) + 1);
+			font->paint_text(iwin->get_ib8(), Strings::looping(), x + label_margin, y + yForRow(5) + 1);
+			font->paint_text(iwin->get_ib8(), Strings::digitalmusic(), x + label_margin, y + yForRow(6) + 1);
 			if (!midi_ogg_enabled) {
-				font->paint_text(
-						iwin->get_ib8(), Strings::mididriver(),
-						x + label_margin, y + yForRow(7) + 1);
+				font->paint_text(iwin->get_ib8(), Strings::mididriver(), x + label_margin, y + yForRow(7) + 1);
 			}
 		}
-		font->paint_text(
-				iwin->get_ib8(), Strings::SFX_(), x + label_margin,
-				y + yForRow(10) + 1);
-		if (sfx_enabled == 1 && have_digital_sfx()
-			&& !gwin->is_in_exult_menu()) {
-			font->paint_text(
-					iwin->get_ib8(), Strings::pack(), x + label_margin,
-					y + yForRow(11) + 1);
+		font->paint_text(iwin->get_ib8(), Strings::SFX_(), x + label_margin, y + yForRow(10) + 1);
+		if (sfx_enabled == 1 && have_digital_sfx() && !gwin->is_in_exult_menu()) {
+			font->paint_text(iwin->get_ib8(), Strings::pack(), x + label_margin, y + yForRow(11) + 1);
 		}
 #ifdef ENABLE_MIDISFX
 		else if (sfx_enabled == midi_state) {
-			font->paint_text(
-					iwin->get_ib8(), Strings::conversion(), x + label_margin,
-					y + yForRow(11) + 1);
+			font->paint_text(iwin->get_ib8(), Strings::conversion(), x + label_margin, y + yForRow(11) + 1);
 		}
 #endif
-		font->paint_text(
-				iwin->get_ib8(), Strings::Speech_(), x + label_margin,
-				y + yForRow(12) + 1);
+		font->paint_text(iwin->get_ib8(), Strings::Speech_(), x + label_margin, y + yForRow(12) + 1);
 	}
 	gwin->set_painted();
 }

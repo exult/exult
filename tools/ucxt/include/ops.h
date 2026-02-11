@@ -31,9 +31,7 @@
 
 std::vector<std::string> qnd_ocsplit(const std::string& s);
 
-void map_type_size(
-		const std::vector<std::string>&             param_types,
-		std::vector<std::pair<unsigned int, bool>>& param_sizes);
+void map_type_size(const std::vector<std::string>& param_types, std::vector<std::pair<unsigned int, bool>>& param_sizes);
 
 static inline std::string strip_backticks(const std::string& s) {
 	if (s.size() == 2 && s[0] == '`' && s[1] == '`') {
@@ -47,19 +45,15 @@ static inline std::string strip_backticks(const std::string& s) {
 /* Just a basic class to tie together half a dozen initialisation routines. */
 class ucxtInit {
 public:
-	ucxtInit(const std::string& new_ucxtdata = std::string("ucxt.data"))
-			: ucxtdata(new_ucxtdata) {}
+	ucxtInit(const std::string& new_ucxtdata = std::string("ucxt.data")) : ucxtdata(new_ucxtdata) {}
 
 	void init(const Configuration& config, const UCOptions& options);
 
 private:
-	std::string get_datadir(
-			const Configuration& config, const UCOptions& options);
-	void misc();
-	void opcodes();
-	void intrinsics(
-			const std::string& intrinsic_data,
-			const std::string& intrinsic_root);
+	std::string get_datadir(const Configuration& config, const UCOptions& options);
+	void        misc();
+	void        opcodes();
+	void        intrinsics(const std::string& intrinsic_data, const std::string& intrinsic_root);
 
 	const std::string ucxtdata;
 	std::string       datadir;
@@ -84,8 +78,7 @@ class UCOpcodeData {
 public:
 	UCOpcodeData() = default;
 
-	UCOpcodeData(unsigned int op, const Configuration::KeyTypeList& ktl)
-			: opcode(op) {
+	UCOpcodeData(unsigned int op, const Configuration::KeyTypeList& ktl) : opcode(op) {
 		for (const auto& k : ktl) {
 			switch (k.first[0]) {
 			case 'a':
@@ -137,14 +130,11 @@ public:
 				if (k.first == "name") {
 					name = strip_backticks(k.second);
 				} else if (k.first == "num_bytes") {
-					num_bytes = static_cast<unsigned int>(
-							strtol(k.second.c_str(), nullptr, 0));
+					num_bytes = static_cast<unsigned int>(strtol(k.second.c_str(), nullptr, 0));
 				} else if (k.first == "num_pop") {
-					num_pop = static_cast<unsigned int>(
-							strtol(k.second.c_str(), nullptr, 0));
+					num_pop = static_cast<unsigned int>(strtol(k.second.c_str(), nullptr, 0));
 				} else if (k.first == "num_push") {
-					num_push = static_cast<unsigned int>(
-							strtol(k.second.c_str(), nullptr, 0));
+					num_push = static_cast<unsigned int>(strtol(k.second.c_str(), nullptr, 0));
 				} else if (k.first == "nosemicolon/") {
 					flag_nosemicolon = true;
 				} else if (k.first == "new_effect/") {
@@ -178,8 +168,7 @@ public:
 			case '!':    // ignore, it's a comment or something.
 				break;
 			default:
-				std::cerr << "invalid key `" << k.first << "` value `"
-						  << k.second << "`" << std::endl;
+				std::cerr << "invalid key `" << k.first << "` value `" << k.second << "`" << std::endl;
 			}
 		}
 		map_type_size(param_types, param_sizes);
@@ -245,10 +234,9 @@ public:
 
 	std::vector<std::string> param_types;
 	// values caluclated from param_types
-	std::vector<std::pair<unsigned int, bool>>
-			param_sizes;    // .first==size of parameter in bytes
-							// .second==whether to treat it as a relative offset
-							// and calculate for it
+	std::vector<std::pair<unsigned int, bool>> param_sizes;    // .first==size of parameter in bytes
+															   // .second==whether to treat it as a relative offset
+															   // and calculate for it
 };
 
 extern std::vector<UCOpcodeData>                          opcode_table_data;

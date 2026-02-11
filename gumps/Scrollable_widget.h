@@ -29,8 +29,7 @@ class Scrollable_widget : public Gump_widget {
 
 	std::vector<std::shared_ptr<Gump_widget>> children;
 
-	class Scrolling_pane : public IterableGump_widget<
-								   std::vector<std::shared_ptr<Gump_widget>>> {
+	class Scrolling_pane : public IterableGump_widget<std::vector<std::shared_ptr<Gump_widget>>> {
 	public:
 		std::vector<std::shared_ptr<Gump_widget>> children;
 
@@ -63,9 +62,8 @@ public:
 	};
 
 	Scrollable_widget(
-			Gump_Base* parent, int x, int y, int inner_width, int inner_height,
-			int border_size, ScrollbarType type, bool nopagebuttons,
-			int scrollbg);
+			Gump_Base* parent, int x, int y, int inner_width, int inner_height, int border_size, ScrollbarType type,
+			bool nopagebuttons, int scrollbg);
 
 	TileRect get_rect() const override {
 		TileRect rect(0, 0, width, height);
@@ -79,8 +77,7 @@ public:
 		arrange_children();
 	}
 
-	IterableGump_widget<std::vector<std::shared_ptr<Gump_widget>>>&
-			get_children_iterable() {
+	IterableGump_widget<std::vector<std::shared_ptr<Gump_widget>>>& get_children_iterable() {
 		return *pane;
 	}
 
@@ -188,15 +185,13 @@ public:
 			Gump_widget::local_to_screen(x, y);
 		}
 
-		return TileRect(
-				x, y, scrollrect.x - 2 * border_size, height - 2 * border_size);
+		return TileRect(x, y, scrollrect.x - 2 * border_size, height - 2 * border_size);
 	}
 
 	int Get_ChildHeight() const;
 
 	bool scroll_enabled() {
-		return children[id_line_up]
-			   && children[id_line_up]->sort_order != Sort_Order::hidden;
+		return children[id_line_up] && children[id_line_up]->sort_order != Sort_Order::hidden;
 	}
 
 	// Vertically stack children with given halign

@@ -134,15 +134,13 @@ int main() {
 
 	// Process the usecode file
 	while (!usecode.eof()) {
-		usecode_func& u_ptr = functions.get(func_num);
-		u_ptr.where         = func_pos;    // Remember start of function
-		u_ptr.size = little_endian::Read2(usecode);    // Read the function size
-		const uint16 data_size
-				= little_endian::Read2(usecode);    // Read the data size
+		usecode_func& u_ptr    = functions.get(func_num);
+		u_ptr.where            = func_pos;                         // Remember start of function
+		u_ptr.size             = little_endian::Read2(usecode);    // Read the function size
+		const uint16 data_size = little_endian::Read2(usecode);    // Read the data size
 		// Skip the data section, number of args and local vars
 		usecode.ignore(data_size + 4);
-		u_ptr.num_call = little_endian::Read2(
-				usecode);    // Read number of called functions
+		u_ptr.num_call = little_endian::Read2(usecode);    // Read number of called functions
 		// Read table
 		u_ptr.called.reserve(u_ptr.num_call);
 		for (size_t i = 0; i < u_ptr.num_call; i++) {

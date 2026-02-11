@@ -88,9 +88,7 @@ inline void Chunk_terrain::paint_tile(
 ) {
 	Shape_frame* shape = get_shape(tilex, tiley);
 	if (shape && !shape->is_rle()) {    // Only do flat tiles.
-		rendered_flats->copy8(
-				shape->get_data(), c_tilesize, c_tilesize, tilex * c_tilesize,
-				tiley * c_tilesize);
+		rendered_flats->copy8(shape->get_data(), c_tilesize, c_tilesize, tilex * c_tilesize, tiley * c_tilesize);
 	} else if (shape && shape->is_rle()) {
 		// Still want to draw a flat tile under rle shapes to fix black gaps in
 		// ice caves The original didn't clear it's frame buffer and gaps
@@ -103,8 +101,7 @@ inline void Chunk_terrain::paint_tile(
 		// Look at the tiles around this one for a suitable flat
 		for (int y = -1; !shape && y <= 1; y++) {
 			for (int x = -1; !shape && x <= 1; x++) {
-				if (tilex + x >= 0 && tilex + x < c_tiles_per_chunk
-					&& tiley + y > 0 && tiley + y < c_tiles_per_chunk) {
+				if (tilex + x >= 0 && tilex + x < c_tiles_per_chunk && tiley + y > 0 && tiley + y < c_tiles_per_chunk) {
 					auto sid = get_flat(tilex + x, tiley + y);
 					// Skip palette cycling void tile
 					if (sid.get_shapenum() == 12 && sid.get_framenum() == 0) {
@@ -130,9 +127,7 @@ inline void Chunk_terrain::paint_tile(
 
 		// Got a flat so draw it
 		if (shape) {
-			rendered_flats->copy8(
-					shape->get_data(), c_tilesize, c_tilesize,
-					tilex * c_tilesize, tiley * c_tilesize);
+			rendered_flats->copy8(shape->get_data(), c_tilesize, c_tilesize, tilex * c_tilesize, tiley * c_tilesize);
 		}
 	}
 }
@@ -145,8 +140,7 @@ Chunk_terrain::Chunk_terrain(
 		const unsigned char* data,        // Chunk data.
 		bool                 v2_chunks    // 3 bytes/shape.
 		)
-		: undo_shapes(nullptr), num_clients(0), modified(false),
-		  rendered_flats(nullptr), render_queue_next(nullptr),
+		: undo_shapes(nullptr), num_clients(0), modified(false), rendered_flats(nullptr), render_queue_next(nullptr),
 		  render_queue_prev(nullptr) {
 	for (int tiley = 0; tiley < c_tiles_per_chunk; tiley++) {
 		for (int tilex = 0; tilex < c_tiles_per_chunk; tilex++) {
@@ -172,8 +166,7 @@ Chunk_terrain::Chunk_terrain(
  */
 
 Chunk_terrain::Chunk_terrain(const Chunk_terrain& c2)
-		: undo_shapes(nullptr), num_clients(0), modified(true),
-		  rendered_flats(nullptr), render_queue_next(nullptr),
+		: undo_shapes(nullptr), num_clients(0), modified(true), rendered_flats(nullptr), render_queue_next(nullptr),
 		  render_queue_prev(nullptr) {
 	for (int tiley = 0; tiley < c_tiles_per_chunk; tiley++) {
 		for (int tilex = 0; tilex < c_tiles_per_chunk; tilex++) {
@@ -200,9 +193,7 @@ Chunk_terrain::~Chunk_terrain() {
 void Chunk_terrain::set_flat(int tilex, int tiley, const ShapeID& id) {
 	if (!undo_shapes) {    // Create backup.
 		undo_shapes = new ShapeID[256];
-		std::memcpy(
-				reinterpret_cast<char*>(undo_shapes),
-				reinterpret_cast<char*>(&shapes[0]), sizeof(shapes));
+		std::memcpy(reinterpret_cast<char*>(undo_shapes), reinterpret_cast<char*>(&shapes[0]), sizeof(shapes));
 	}
 	shapes[16 * tiley + tilex] = id;
 	modified                   = true;
@@ -231,9 +222,7 @@ bool Chunk_terrain::commit_edits() {
 
 void Chunk_terrain::abort_edits() {
 	if (undo_shapes) {
-		std::memcpy(
-				reinterpret_cast<char*>(&shapes[0]),
-				reinterpret_cast<char*>(undo_shapes), sizeof(shapes));
+		std::memcpy(reinterpret_cast<char*>(&shapes[0]), reinterpret_cast<char*>(undo_shapes), sizeof(shapes));
 		delete[] undo_shapes;
 		undo_shapes = nullptr;
 	}
@@ -262,7 +251,7 @@ Image_buffer8* Chunk_terrain::render_flats() {
 			// Grown too big.  Remove last.
 			Chunk_terrain* last = render_queue->render_queue_prev;
 			last->free_rendered_flats();
-			render_queue->render_queue_prev = last->render_queue_prev;
+			render_queue->render_queue_prev            = last->render_queue_prev;
 			last->render_queue_prev->render_queue_next = render_queue;
 			last->render_queue_next = last->render_queue_prev = nullptr;
 			queue_size--;
@@ -309,8 +298,7 @@ void Chunk_terrain::render_all(
 			}
 			if (!shape->is_rle() && pass == 1) {
 				iwin->copy8(
-						shape->get_data(), c_tilesize, c_tilesize,
-						(ctx + tilex - scrolltx) * c_tilesize,
+						shape->get_data(), c_tilesize, c_tilesize, (ctx + tilex - scrolltx) * c_tilesize,
 						(cty + tiley - scrollty) * c_tilesize);
 			} else if (shape->is_rle() && pass == 2) {    // RLE.
 				int              x;

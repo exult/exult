@@ -25,8 +25,7 @@ class Configuration {
 public:
 	Configuration() : xmltree(new XMLnode("config")), rootname("config") {}
 
-	Configuration(const std::string& fname, const std::string& root)
-			: xmltree(new XMLnode(root)), rootname(root) {
+	Configuration(const std::string& fname, const std::string& root) : xmltree(new XMLnode(root)), rootname(root) {
 		if (!fname.empty()) {
 			read_config_file(fname);
 		}
@@ -36,30 +35,20 @@ public:
 		delete xmltree;
 	}
 
-	bool read_config_file(
-			const std::string& input_filename,
-			const std::string& root = std::string());
-	bool read_abs_config_file(
-			const std::string& input_filename,
-			const std::string& root = std::string());
+	bool read_config_file(const std::string& input_filename, const std::string& root = std::string());
+	bool read_abs_config_file(const std::string& input_filename, const std::string& root = std::string());
 
 	bool read_config_string(const std::string&);
 
-	void value(
-			const std::string& key, std::string& ret,
-			const std::string& defaultvalue) const;
-	void value(
-			const std::string& key, bool& ret, bool defaultvalue = false) const;
+	void value(const std::string& key, std::string& ret, const std::string& defaultvalue) const;
+	void value(const std::string& key, bool& ret, bool defaultvalue = false) const;
 	void value(const std::string& key, int& ret, int defaultvalue = 0) const;
 
-	void value(
-			const std::string& key, std::string& ret,
-			const char* defaultvalue = "") const {
+	void value(const std::string& key, std::string& ret, const char* defaultvalue = "") const {
 		value(key, ret, std::string(defaultvalue));
 	}
 
-	void value(const char* key, std::string& ret, const char* defaultvalue = "")
-			const {
+	void value(const char* key, std::string& ret, const char* defaultvalue = "") const {
 		value(std::string(key), ret, defaultvalue);
 	}
 
@@ -82,8 +71,7 @@ public:
 	void remove(const std::string& key, bool write_out);
 
 	// Return a list of keys that are subsidiary to the supplied key
-	std::vector<std::string> listkeys(
-			const std::string& key, bool longformat = true);
+	std::vector<std::string> listkeys(const std::string& key, bool longformat = true);
 	std::vector<std::string> listkeys(const char* key, bool longformat = true);
 
 	std::string   dump();    // Assembles a readable representation

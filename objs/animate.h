@@ -70,8 +70,7 @@ class Shape_sfx : public Game_singletons {
 	bool               looping;     // If the SFX should loop until stopped.
 public:
 	// Create & start playing sound.
-	Shape_sfx(Game_object* o)
-			: obj(o), channel{-1, -1}, distance(0), last_sfx(-1) {
+	Shape_sfx(Game_object* o) : obj(o), channel{-1, -1}, distance(0), last_sfx(-1) {
 		sfxinf = obj->get_info().get_sfx_info();
 		if (sfxinf) {
 			last_sfx = 0;
@@ -142,9 +141,9 @@ public:
  */
 class Frame_animator : public Animator {
 	const Animation_info* aniinf;
-	unsigned short        first_frame;    // Initial frame of animation cycle
-	unsigned short        currpos;        // Current position in the animation.
-	unsigned short        nframes;        // Number of frames in cycle.
+	unsigned short        first_frame;      // Initial frame of animation cycle
+	unsigned short        currpos;          // Current position in the animation.
+	unsigned short        nframes;          // Number of frames in cycle.
 	unsigned short        frame_counter;    // When to increase frame.
 	unsigned int          created;          // Time created
 	unsigned short        last_shape;       // To check if we need to re init
@@ -210,9 +209,7 @@ public:
 class Animated_object : public Terrain_game_object {
 	Animator* animator;    // Controls animation.
 public:
-	Animated_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft = 0);
+	Animated_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft = 0);
 	~Animated_object() override;
 	// Render.
 	void paint() override;
@@ -220,9 +217,7 @@ public:
 	// +++++Needed on this one:
 	// Get coord. where this was placed.
 	Tile_coord get_original_tile_coord() const override {
-		return get_tile()
-			   + Tile_coord(
-					   -animator->get_deltax(), -animator->get_deltay(), 0);
+		return get_tile() + Tile_coord(-animator->get_deltax(), -animator->get_deltay(), 0);
 	}
 };
 
@@ -233,18 +228,14 @@ public:
 class Animated_ireg_object : public Ireg_game_object {
 	Animator* animator;    // Controls animation.
 public:
-	Animated_ireg_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft = 0);
+	Animated_ireg_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft = 0);
 	~Animated_ireg_object() override;
 	// Render.
 	void paint() override;
 
 	// Get coord. where this was placed.
 	Tile_coord get_original_tile_coord() const override {
-		return get_tile()
-			   + Tile_coord(
-					   -animator->get_deltax(), -animator->get_deltay(), 0);
+		return get_tile() + Tile_coord(-animator->get_deltax(), -animator->get_deltay(), 0);
 	}
 
 	// Write out to IREG file.
@@ -258,18 +249,14 @@ public:
 class Animated_ifix_object : public Ifix_game_object {
 	Animator* animator;    // Controls animation.
 public:
-	Animated_ifix_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft = 0);
+	Animated_ifix_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft = 0);
 	~Animated_ifix_object() override;
 	// Render.
 	void paint() override;
 
 	// Get coord. where this was placed.
 	Tile_coord get_original_tile_coord() const override {
-		return get_tile()
-			   + Tile_coord(
-					   -animator->get_deltax(), -animator->get_deltay(), 0);
+		return get_tile() + Tile_coord(-animator->get_deltax(), -animator->get_deltay(), 0);
 	}
 
 	void write_ifix(ODataSource* ifix, bool v2) override;

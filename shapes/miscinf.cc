@@ -92,10 +92,8 @@ int get_skinvar(const std::string& key) {
  */
 class Shapeinfo_entry_parser {
 public:
-	virtual ~Shapeinfo_entry_parser() noexcept = default;
-	virtual void parse_entry(
-			int index, istream& src, bool for_patch, int version)
-			= 0;
+	virtual ~Shapeinfo_entry_parser() noexcept                                     = default;
+	virtual void parse_entry(int index, istream& src, bool for_patch, int version) = 0;
 
 	int ReadInt(istream& src, int off = 1) {
 		src.ignore(off);
@@ -129,8 +127,7 @@ class Int_pair_parser : public Shapeinfo_entry_parser {
 public:
 	explicit Int_pair_parser(map<int, int>& tbl) : table(tbl) {}
 
-	void parse_entry(
-			int index, istream& src, bool for_patch, int version) final {
+	void parse_entry(int index, istream& src, bool for_patch, int version) final {
 		ignore_unused_variable_warning(index, for_patch, version);
 		const int key  = ReadInt(src, 0);
 		const int data = ReadInt(src);
@@ -144,8 +141,7 @@ class Bool_parser : public Shapeinfo_entry_parser {
 public:
 	explicit Bool_parser(map<int, bool>& tbl) : table(tbl) {}
 
-	void parse_entry(
-			int index, istream& src, bool for_patch, int version) final {
+	void parse_entry(int index, istream& src, bool for_patch, int version) final {
 		ignore_unused_variable_warning(index, for_patch, version);
 		const int key = ReadInt(src, 0);
 		table[key]    = true;
@@ -158,11 +154,9 @@ class Shape_imports_parser : public Shapeinfo_entry_parser {
 	int                     shape;
 
 public:
-	Shape_imports_parser(vector<pair<int, int>>& tbl, map<string, int>& sh)
-			: table(tbl), shapevars(sh), shape(c_max_shapes) {}
+	Shape_imports_parser(vector<pair<int, int>>& tbl, map<string, int>& sh) : table(tbl), shapevars(sh), shape(c_max_shapes) {}
 
-	void parse_entry(
-			int index, istream& src, bool for_patch, int version) final {
+	void parse_entry(int index, istream& src, bool for_patch, int version) final {
 		ignore_unused_variable_warning(index, for_patch, version);
 		pair<int, int> data;
 		data.second = ReadInt(src, 0);    // The real shape.
@@ -190,11 +184,9 @@ class Shaperef_parser : public Shapeinfo_entry_parser {
 	map<string, int>&       shapevars;
 
 public:
-	Shaperef_parser(vector<pair<int, int>>& tbl, map<string, int>& sh)
-			: table(tbl), shapevars(sh) {}
+	Shaperef_parser(vector<pair<int, int>>& tbl, map<string, int>& sh) : table(tbl), shapevars(sh) {}
 
-	void parse_entry(
-			int index, istream& src, bool for_patch, int version) final {
+	void parse_entry(int index, istream& src, bool for_patch, int version) final {
 		ignore_unused_variable_warning(index, for_patch, version);
 		pair<int, int> data;
 		data.first = ReadInt(src, 0);    // The spot.
@@ -220,22 +212,18 @@ class Paperdoll_source_parser : public Shapeinfo_entry_parser {
 	bool                       erased_for_patch;
 
 public:
-	explicit Paperdoll_source_parser(vector<pair<string, int>>& tbl)
-			: table(tbl), erased_for_patch(false) {}
+	explicit Paperdoll_source_parser(vector<pair<string, int>>& tbl) : table(tbl), erased_for_patch(false) {}
 
-	void parse_entry(
-			int index, istream& src, bool for_patch, int version) final;
+	void parse_entry(int index, istream& src, bool for_patch, int version) final;
 };
 
 class Def_av_shape_parser : public Shapeinfo_entry_parser {
 	map<bool, Base_Avatar_info>& table;
 
 public:
-	explicit Def_av_shape_parser(map<bool, Base_Avatar_info>& tbl)
-			: table(tbl) {}
+	explicit Def_av_shape_parser(map<bool, Base_Avatar_info>& tbl) : table(tbl) {}
 
-	void parse_entry(
-			int index, istream& src, bool for_patch, int version) final {
+	void parse_entry(int index, istream& src, bool for_patch, int version) final {
 		ignore_unused_variable_warning(index, for_patch, version);
 		const bool       fmale = ReadInt(src, 0) != 0;
 		Base_Avatar_info entry;
@@ -252,8 +240,7 @@ class Base_av_race_parser : public Shapeinfo_entry_parser {
 public:
 	explicit Base_av_race_parser(Avatar_default_skin& tbl) : table(tbl) {}
 
-	void parse_entry(
-			int index, istream& src, bool for_patch, int version) final {
+	void parse_entry(int index, istream& src, bool for_patch, int version) final {
 		ignore_unused_variable_warning(index, for_patch, version);
 		table.default_skin   = ReadInt(src, 0);
 		table.default_female = ReadInt(src) != 0;
@@ -265,8 +252,7 @@ class Multiracial_parser : public Shapeinfo_entry_parser {
 	map<string, int>&  shapevars;
 
 public:
-	explicit Multiracial_parser(vector<Skin_data>& tbl, map<string, int>& sh)
-			: table(tbl), shapevars(sh) {}
+	explicit Multiracial_parser(vector<Skin_data>& tbl, map<string, int>& sh) : table(tbl), shapevars(sh) {}
 
 	int ReadVar(istream& src) {
 		src.ignore(1);
@@ -281,14 +267,12 @@ public:
 		return ReadInt(src, 0);
 	}
 
-	void parse_entry(
-			int index, istream& src, bool for_patch, int version) final {
+	void parse_entry(int index, istream& src, bool for_patch, int version) final {
 		ignore_unused_variable_warning(index);
 		Skin_data entry;
-		entry.skin_id = ReadInt(src, 0);
-		Avatar_data::last_skin
-				= std::max(entry.skin_id, Avatar_data::last_skin);
-		entry.is_female = ReadInt(src) != 0;
+		entry.skin_id          = ReadInt(src, 0);
+		Avatar_data::last_skin = std::max(entry.skin_id, Avatar_data::last_skin);
+		entry.is_female        = ReadInt(src) != 0;
 		if ((entry.shape_num = ReadVar(src)) < 0) {
 			return;
 		}
@@ -304,8 +288,7 @@ public:
 			unsigned int i;
 			int          found = -1;
 			for (i = 0; i < table.size(); i++) {
-				if (table[i].skin_id == entry.skin_id
-					&& table[i].is_female == entry.is_female) {
+				if (table[i].skin_id == entry.skin_id && table[i].is_female == entry.is_female) {
 					found = i;
 					break;
 				}
@@ -327,8 +310,7 @@ public:
 	explicit Avatar_usecode_parser(map<int, Usecode_function_data>& tbl)
 			: table(tbl), usecode(Game_window::get_instance()->get_usecode()) {}
 
-	void parse_entry(
-			int index, istream& src, bool for_patch, int version) final {
+	void parse_entry(int index, istream& src, bool for_patch, int version) final {
 		ignore_unused_variable_warning(index, for_patch, version);
 		Usecode_function_data entry;
 		const int             type = ReadInt(src, 0);
@@ -343,16 +325,14 @@ public:
 	}
 };
 
-void Paperdoll_source_parser::parse_entry(
-		int index, istream& src, bool for_patch, int version) {
+void Paperdoll_source_parser::parse_entry(int index, istream& src, bool for_patch, int version) {
 	ignore_unused_variable_warning(index, version);
 	if (!erased_for_patch && for_patch) {
 		table.clear();
 	}
 	string line;
 	src >> line;
-	if (line == "static" || (GAME_BG && line == "bg")
-		|| (GAME_SI && line == "si")) {
+	if (line == "static" || (GAME_BG && line == "bg") || (GAME_SI && line == "si")) {
 		table.emplace_back(PAPERDOL, -1);
 	} else if (line == "si") {
 		table.emplace_back("<SERPENT_STATIC>/paperdol.vga", -1);
@@ -409,13 +389,12 @@ void Shapeinfo_lookup::Read_data_file(
 		return Text_msg_file_reader(ds);
 	}();
 
-	int static_version = value_or(static_reader.get_version());
-	int patch_version  = value_or(patch_reader.get_version());
+	int                      static_version = value_or(static_reader.get_version());
+	int                      patch_version  = value_or(patch_reader.get_version());
 	std::vector<std::string> strings;
 
 	for (size_t i = 0; i < sections.size(); i++) {
-		uint32 firstMsg
-				= static_reader.get_section_strings(sections[i], strings);
+		uint32 firstMsg = static_reader.get_section_strings(sections[i], strings);
 		for (size_t j = firstMsg; j < strings.size(); j++) {
 			if (!strings[j].empty()) {
 				stringstream src(strings[j]);
@@ -425,8 +404,7 @@ void Shapeinfo_lookup::Read_data_file(
 	}
 
 	for (size_t i = 0; i < sections.size(); i++) {
-		uint32 firstMsg
-				= patch_reader.get_section_strings(sections[i], strings);
+		uint32 firstMsg = patch_reader.get_section_strings(sections[i], strings);
 		for (size_t j = firstMsg; j < strings.size(); j++) {
 			if (!strings[j].empty()) {
 				stringstream src(strings[j]);
@@ -444,18 +422,12 @@ void Shapeinfo_lookup::setup_shape_files() {
 		return;
 	}
 	data = make_unique<Shapeinfo_data>();
-	std::array sections{
-			"paperdoll_source"sv, "gump_imports"sv, "blue_shapes"sv,
-			"multiracial_imports"sv};
+	std::array sections{"paperdoll_source"sv, "gump_imports"sv, "blue_shapes"sv, "multiracial_imports"sv};
 	std::array parsers = make_unique_array<Shapeinfo_entry_parser>(
-			std::make_unique<Paperdoll_source_parser>(
-					data->paperdoll_source_table),
-			std::make_unique<Shape_imports_parser>(
-					data->imported_gump_shapes, data->gumpvars),
-			std::make_unique<Shaperef_parser>(
-					data->blue_shapes, data->gumpvars),
-			std::make_unique<Shape_imports_parser>(
-					data->imported_skin_shapes, data->skinvars));
+			std::make_unique<Paperdoll_source_parser>(data->paperdoll_source_table),
+			std::make_unique<Shape_imports_parser>(data->imported_gump_shapes, data->gumpvars),
+			std::make_unique<Shaperef_parser>(data->blue_shapes, data->gumpvars),
+			std::make_unique<Shape_imports_parser>(data->imported_skin_shapes, data->skinvars));
 	static_assert(sections.size() == parsers.size());
 	Read_data_file("shape_files", sections, parsers);
 	// For safety.
@@ -475,16 +447,12 @@ void Shapeinfo_lookup::setup_avatar_data() {
 		return;
 	}
 	avdata = make_unique<Avatar_data>();
-	std::array sections{"defaultshape"sv,      "baseracesex"sv,
-						"multiracial_table"sv, "unselectable_races_table"sv,
-						"petra_face_table"sv,  "usecode_info"sv};
+	std::array sections{"defaultshape"sv,     "baseracesex"sv, "multiracial_table"sv, "unselectable_races_table"sv,
+						"petra_face_table"sv, "usecode_info"sv};
 	std::array parsers = make_unique_array<Shapeinfo_entry_parser>(
-			std::make_unique<Def_av_shape_parser>(avdata->def_av_info),
-			std::make_unique<Base_av_race_parser>(avdata->base_av_info),
-			std::make_unique<Multiracial_parser>(
-					avdata->skins_table, data->skinvars),
-			std::make_unique<Bool_parser>(avdata->unselectable_skins),
-			std::make_unique<Int_pair_parser>(avdata->petra_table),
+			std::make_unique<Def_av_shape_parser>(avdata->def_av_info), std::make_unique<Base_av_race_parser>(avdata->base_av_info),
+			std::make_unique<Multiracial_parser>(avdata->skins_table, data->skinvars),
+			std::make_unique<Bool_parser>(avdata->unselectable_skins), std::make_unique<Int_pair_parser>(avdata->petra_table),
 			std::make_unique<Avatar_usecode_parser>(avdata->usecode_funs));
 	static_assert(sections.size() == parsers.size());
 	Read_data_file("avatar_data", sections, parsers);
@@ -573,34 +541,24 @@ Skin_data* Shapeinfo_lookup::GetSkinInfo(int skin, bool sex) {
 	return nullptr;
 }
 
-Skin_data* Shapeinfo_lookup::GetSkinInfoSafe(
-		int skin, bool sex, bool sishapes) {
+Skin_data* Shapeinfo_lookup::GetSkinInfoSafe(int skin, bool sex, bool sishapes) {
 	Skin_data* sk = GetSkinInfo(skin, sex);
-	if ((sk != nullptr)
-		&& (sishapes
-			|| (!IsSkinImported(sk->shape_num)
-				&& !IsSkinImported(sk->naked_shape)))) {
+	if ((sk != nullptr) && (sishapes || (!IsSkinImported(sk->shape_num) && !IsSkinImported(sk->naked_shape)))) {
 		return sk;
 	}
 	sk = GetSkinInfo(GetDefaultAvSkin()->default_skin, sex);
 	// Prevent unavoidable problems. *Should* never be needed.
-	assert(sk
-		   && (sishapes
-			   || (!IsSkinImported(sk->shape_num)
-				   && !IsSkinImported(sk->naked_shape))));
+	assert(sk && (sishapes || (!IsSkinImported(sk->shape_num) && !IsSkinImported(sk->naked_shape))));
 	return sk;
 }
 
 Skin_data* Shapeinfo_lookup::GetSkinInfoSafe(Actor* npc) {
 	const int  skin = npc->get_skin_color();
 	const bool sex  = npc->get_type_flag(Actor::tf_sex);
-	return GetSkinInfoSafe(
-			skin, sex, Shape_manager::get_instance()->have_si_shapes());
+	return GetSkinInfoSafe(skin, sex, Shape_manager::get_instance()->have_si_shapes());
 }
 
-Skin_data* Shapeinfo_lookup::ScrollSkins(
-		int skin, bool sex, bool sishapes, bool ignoresex, bool prev,
-		bool sel) {
+Skin_data* Shapeinfo_lookup::ScrollSkins(int skin, bool sex, bool sishapes, bool ignoresex, bool prev, bool sel) {
 	setup_avatar_data();
 	bool nsex   = sex;
 	int  nskin  = skin;
@@ -610,16 +568,12 @@ Skin_data* Shapeinfo_lookup::ScrollSkins(
 			nsex   = !nsex;
 			chskin = (nsex == avdata->base_av_info.default_female);
 		}
-		nskin = (nskin + ((prev != 0) ? Avatar_data::last_skin : 0) + chskin)
-				% (Avatar_data::last_skin + 1);
+		nskin = (nskin + ((prev != 0) ? Avatar_data::last_skin : 0) + chskin) % (Avatar_data::last_skin + 1);
 		if (sel && !IsSkinSelectable(nskin)) {
 			continue;
 		}
 		Skin_data* newskin = GetSkinInfo(nskin, nsex);
-		if ((newskin != nullptr)
-			&& (sishapes
-				|| (!IsSkinImported(newskin->shape_num)
-					&& !IsSkinImported(newskin->naked_shape)))) {
+		if ((newskin != nullptr) && (sishapes || (!IsSkinImported(newskin->shape_num) && !IsSkinImported(newskin->naked_shape)))) {
 			return newskin;
 		}
 	}

@@ -73,8 +73,7 @@ static const std::map<const char*, const char*> config_defaults{
 		{		  "config/video/gamma/blue",      "1.00"}
 };
 
-constexpr static const std::array BASE_Files{SHAPES_VGA, FACES_VGA, GUMPS_VGA,
-											 FONTS_VGA,  INITGAME,  USECODE};
+constexpr static const std::array BASE_Files{SHAPES_VGA, FACES_VGA, GUMPS_VGA, FONTS_VGA, INITGAME, USECODE};
 
 constexpr static const std::array BG_Files{ENDGAME};
 
@@ -102,7 +101,7 @@ void strcat_safe(char* dest, const char* src, size_t size_dest) {
 //
 class Path {
 	struct Directory {
-		char name[256];    // I hope no one needs path components this long
+		char       name[256];    // I hope no one needs path components this long
 		Directory* next{};
 
 		Directory() {
@@ -173,9 +172,7 @@ int Path::Addit(const char* p) {
 		d       = d->next;
 	}
 
-	for (i = 0;
-		 p[i] != 0 && p[i] != '\\' && p[i] != '/' && i < std::size(d->name) - 1;
-		 i++) {
+	for (i = 0; p[i] != 0 && p[i] != '\\' && p[i] != '/' && i < std::size(d->name) - 1; i++) {
 		d->name[i] = p[i];
 	}
 
@@ -274,8 +271,7 @@ extern "C" {
 //
 // Get the Game paths from the config file
 //
-__declspec(dllexport) void __cdecl GetExultGamePaths(
-		char* ExultDir, char* BGPath, char* SIPath, int MaxPath) {
+__declspec(dllexport) void __cdecl GetExultGamePaths(char* ExultDir, char* BGPath, char* SIPath, int MaxPath) {
 	MessageBoxDebug(nullptr, ExultDir, "ExultDir", MB_OK);
 	MessageBoxDebug(nullptr, BGPath, "BGPath", MB_OK);
 	MessageBoxDebug(nullptr, SIPath, "SIPath", MB_OK);
@@ -353,8 +349,7 @@ bool IsNullEmptyOrWhitespace(const char* s) {
 // Set Game paths in the config file
 //
 
-__declspec(dllexport) void __cdecl SetExultGamePaths(
-		char* ExultDir, char* BGPath, char* SIPath) {
+__declspec(dllexport) void __cdecl SetExultGamePaths(char* ExultDir, char* BGPath, char* SIPath) {
 	MessageBoxDebug(nullptr, ExultDir, "ExultDir", MB_OK);
 	MessageBoxDebug(nullptr, BGPath, "BGPath", MB_OK);
 	MessageBoxDebug(nullptr, SIPath, "SIPath", MB_OK);
@@ -386,9 +381,7 @@ __declspec(dllexport) void __cdecl SetExultGamePaths(
 
 		// Only write new path if it is actually valid or existing value is
 		// invalid
-		if (!IsNullEmptyOrWhitespace(BGPath)
-			&& (VerifyBGDirectory(BGPath)
-				|| !VerifyBGDirectory(existing_bgpath))) {
+		if (!IsNullEmptyOrWhitespace(BGPath) && (VerifyBGDirectory(BGPath) || !VerifyBGDirectory(existing_bgpath))) {
 			config.set("config/disk/game/blackgate/path", BGPath, true);
 			// Only write default if there isn't already a value set.
 		} else if (!config.key_exists("config/disk/game/blackgate/path")) {
@@ -398,14 +391,11 @@ __declspec(dllexport) void __cdecl SetExultGamePaths(
 		MessageBoxDebug(nullptr, p, "WriteConfig: SI", MB_OK);
 		// Only write new path if it is actually valid or existing value is
 		// invalid
-		if (!IsNullEmptyOrWhitespace(SIPath)
-			&& (VerifySIDirectory(SIPath)
-				|| !VerifySIDirectory(existing_sipath))) {
+		if (!IsNullEmptyOrWhitespace(SIPath) && (VerifySIDirectory(SIPath) || !VerifySIDirectory(existing_sipath))) {
 			config.set("config/disk/game/serpentisle/path", SIPath, true);
 			// Only write default if there isn't already a value set.
 		} else if (!config.key_exists("config/disk/game/serpentisle/path")) {
-			config.set(
-					"config/disk/game/serpentisle/path", "serpentisle", true);
+			config.set("config/disk/game/serpentisle/path", "serpentisle", true);
 		}
 		// Set Defaults
 		std::string s;
@@ -521,8 +511,7 @@ __declspec(dllexport) int __cdecl VerifySIDirectory(char* path) {
 }
 }
 
-BOOL APIENTRY DllMain(
-		HINSTANCE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
+BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
 	ignore_unused_variable_warning(hModule, lpReserved);
 	switch (ul_reason_for_call) {
 	case DLL_PROCESS_ATTACH:

@@ -33,12 +33,9 @@ public:
 	CombatStats_gump(int initx, int inity);
 
 	// Add object.
-	bool add(
-			Game_object* obj, int mx = -1, int my = -1, int sx = -1,
-			int sy = -1, bool dont_check = false,
-			bool combine = false) override {
-		ignore_unused_variable_warning(
-				obj, mx, my, sx, sy, dont_check, combine);
+	bool add(Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false)
+			override {
+		ignore_unused_variable_warning(obj, mx, my, sx, sy, dont_check, combine);
 		return false;    // Can't drop onto it.
 	}
 

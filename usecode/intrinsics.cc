@@ -86,9 +86,7 @@ extern Usecode_value no_ret;
 static Game_object* sailor = nullptr;    // The current barge captain.  Maybe
 //   this needs to be saved/restored.
 
-#define USECODE_INTRINSIC(NAME)                \
-	Usecode_value Usecode_internal::UI_##NAME( \
-			int num_parms, Usecode_value parms[12])
+#define USECODE_INTRINSIC(NAME) Usecode_value Usecode_internal::UI_##NAME(int num_parms, Usecode_value parms[12])
 
 USECODE_INTRINSIC(NOP) {
 	ignore_unused_variable_warning(num_parms, parms);
@@ -126,8 +124,7 @@ USECODE_INTRINSIC(delayed_execute_usecode_array) {
 	ignore_unused_variable_warning(num_parms);
 	// Delay = .20 sec.?
 	// +++++Special problem with inf. loop:
-	if (Game::get_game_type() == BLACK_GATE && frame->eventid == internal_exec
-		&& parms[1].get_array_size() == 3
+	if (Game::get_game_type() == BLACK_GATE && frame->eventid == internal_exec && parms[1].get_array_size() == 3
 		&& parms[1].get_elem(2).get_int_value() == 0x6f7) {
 		return no_ret;
 	}
@@ -213,8 +210,7 @@ USECODE_INTRINSIC(input_numeric_value) {
 	ignore_unused_variable_warning(num_parms);
 	// Ask for # (min, max, step, default).  Be sure to show conversation.
 	Usecode_value ret(gumpman->prompt_for_number(
-			parms[0].get_int_value(), parms[1].get_int_value(),
-			parms[2].get_int_value(), parms[3].get_int_value(), conv, nullptr));
+			parms[0].get_int_value(), parms[1].get_int_value(), parms[2].get_int_value(), parms[3].get_int_value(), conv, nullptr));
 	conv->clear_text_pending();    // Answered a question.
 	return ret;
 }
@@ -253,10 +249,7 @@ USECODE_INTRINSIC(get_item_shape) {
 	Game_object* item = get_item(parms[0]);
 	// Want the actual, not polymorph'd.
 	Actor* act = as_actor(item);
-	return Usecode_value(
-			item == nullptr
-					? 0
-					: (act ? act->get_shape_real() : item->get_shapenum()));
+	return Usecode_value(item == nullptr ? 0 : (act ? act->get_shape_real() : item->get_shapenum()));
 }
 
 USECODE_INTRINSIC(get_item_frame) {
@@ -360,10 +353,7 @@ USECODE_INTRINSIC(get_distance) {
 	// Distance from parm[0] -> parm[1].  Guessing how it's computed.
 	Game_object*  obj0 = get_item(parms[0]);
 	Game_object*  obj1 = get_item(parms[1]);
-	Usecode_value u(
-			(obj0 && obj1)
-					? obj0->get_outermost()->distance(obj1->get_outermost())
-					: 0);
+	Usecode_value u((obj0 && obj1) ? obj0->get_outermost()->distance(obj1->get_outermost()) : 0);
 	return u;
 }
 
@@ -401,13 +391,11 @@ USECODE_INTRINSIC(get_schedule_type) {
 		return Usecode_value(0);
 	}
 	Schedule* schedule = npc->get_schedule();
-	int       sched    = schedule ? schedule->get_actual_type(npc)
-								  : npc->get_schedule_type();
+	int       sched    = schedule ? schedule->get_actual_type(npc) : npc->get_schedule_type();
 	// Path_run_usecode?  (This is to fix
 	//   a bug in the Fawn Trial.)
 	//+++++Should be a better way to check.
-	if (Game::get_game_type() == SERPENT_ISLE && npc->get_action()
-		&& npc->get_action()->as_usecode_path()) {
+	if (Game::get_game_type() == SERPENT_ISLE && npc->get_action() && npc->get_action()->as_usecode_path()) {
 		// Give a 'fake' schedule.
 		sched = Schedule::walk_to_schedule;
 	}
@@ -425,8 +413,7 @@ USECODE_INTRINSIC(set_schedule_type) {
 		const int newsched = parms[1].get_int_value();
 		npc->set_schedule_type(newsched);
 		// Taking Avatar out of combat?
-		if (npc == gwin->get_main_actor() && gwin->in_combat()
-			&& newsched != Schedule::combat)
+		if (npc == gwin->get_main_actor() && gwin->in_combat() && newsched != Schedule::combat)
 		// End combat mode (for L.Field).
 		{
 			Audio::get_ptr()->stop_music();
@@ -490,8 +477,7 @@ USECODE_INTRINSIC(set_npc_prop) {
 		// NOTE: 3rd parm. is a delta!
 		const char* att = parms[1].get_str_value();
 		if (att) {
-			npc->set_attribute(
-					att, npc->get_attribute(att) + parms[2].get_int_value());
+			npc->set_attribute(att, npc->get_attribute(att) + parms[2].get_int_value());
 		} else {
 			const int prop  = parms[1].get_int_value();
 			int       delta = parms[2].get_int_value();
@@ -596,8 +582,7 @@ USECODE_INTRINSIC(create_new_egg) {
 	//   intermap(11): [dest_x, dest_y, dest_z, mapnum]
 
 	if (num_parms != 7) {
-		cerr << "create_new_egg: Expected 7 arguments, got " << num_parms
-			 << endl;
+		cerr << "create_new_egg: Expected 7 arguments, got " << num_parms << endl;
 		return Usecode_value(static_cast<Game_object*>(nullptr));
 	}
 
@@ -613,7 +598,7 @@ USECODE_INTRINSIC(create_new_egg) {
 	const int flags       = parms[5].get_int_value();
 
 	// Extract data array elements
-	int                      user_data[5]{};
+	int                  user_data[5]{};
 	const Usecode_value& data_param = parms[6];
 	if (data_param.is_array()) {
 		const int data_cnt = data_param.get_array_size();
@@ -642,8 +627,7 @@ USECODE_INTRINSIC(create_new_egg) {
 		const int schedule  = user_data[3];
 		const int alignment = user_data[4];
 		// Encode data1: [schedule<<8 | (count<<2) | alignment]
-		data1 = ((schedule & 0xff) << 8) | ((count & 0x3f) << 2)
-				| (alignment & 0x3);
+		data1 = ((schedule & 0xff) << 8) | ((count & 0x3f) << 2) | (alignment & 0x3);
 		// Encode data2/data3 for shape/frame
 		if (shape >= 1024 || monframe >= 64) {
 			// Extended format
@@ -754,19 +738,16 @@ USECODE_INTRINSIC(create_new_egg) {
 	// Bit 15: auto_reset flag
 	unsigned short itype = static_cast<unsigned short>(type & 0xf);
 	itype |= static_cast<unsigned short>((criteria & 0x7) << 4);
-	itype |= static_cast<unsigned short>((flags & 0x1) << 7);    // nocturnal
+	itype |= static_cast<unsigned short>((flags & 0x1) << 7);           // nocturnal
 	itype |= static_cast<unsigned short>(((flags >> 1) & 0x1) << 8);    // once
-	itype |= static_cast<unsigned short>(
-			((flags >> 2) & 0x1) << 9);    // hatched
+	itype |= static_cast<unsigned short>(((flags >> 2) & 0x1) << 9);    // hatched
 	itype |= static_cast<unsigned short>((distance & 0x1f) << 10);
-	itype |= static_cast<unsigned short>(
-			((flags >> 3) & 0x1) << 15);    // auto_reset
+	itype |= static_cast<unsigned short>(((flags >> 3) & 0x1) << 15);    // auto_reset
 
 	Game_object_shared obj = Egg_object::create_egg(
 			false,                       // not animated
 			shapenum, frame, 0, 0, 0,    // position set by update_last_created
-			itype, static_cast<unsigned char>(probability & 0xff),
-			static_cast<short>(data1), static_cast<short>(data2),
+			itype, static_cast<unsigned char>(probability & 0xff), static_cast<short>(data1), static_cast<short>(data2),
 			static_cast<short>(data3),
 			nullptr    // str1
 	);
@@ -821,12 +802,8 @@ USECODE_INTRINSIC(update_last_created) {
 		// arr is loc (x, y, z, map) if sz == 4,
 		//(x, y, z) for sz == 3 and (x, y) for sz == 2
 		const Tile_coord dest(
-				arr.get_elem(0).get_int_value(),
-				arr.get_elem(1).get_int_value(),
-				sz >= 3 ? arr.get_elem(2).get_int_value() : 0);
-		obj->move(
-				dest.tx, dest.ty, dest.tz,
-				sz < 4 ? -1 : arr.get_elem(3).get_int_value());
+				arr.get_elem(0).get_int_value(), arr.get_elem(1).get_int_value(), sz >= 3 ? arr.get_elem(2).get_int_value() : 0);
+		obj->move(dest.tx, dest.ty, dest.tz, sz < 4 ? -1 : arr.get_elem(3).get_int_value());
 	} else if (sz == 1) {
 		obj->remove_this();
 	}
@@ -912,8 +889,7 @@ USECODE_INTRINSIC(find_object) {
 		Game_object::find_nearby(
 				vec,
 				Tile_coord(
-						parms[0].get_elem(0).get_int_value(),
-						parms[0].get_elem(1).get_int_value(),
+						parms[0].get_elem(0).get_int_value(), parms[0].get_elem(1).get_int_value(),
 						parms[0].get_elem(2).get_int_value()),
 				shnum, 1, 0, qual, frnum);
 		if (vec.empty()) {
@@ -926,11 +902,8 @@ USECODE_INTRINSIC(find_object) {
 	if (oval == -359) {    // Find on map (?)
 		Game_object_vector vec;
 		const TileRect     scr = gwin->get_win_tile_rect();
-		Game_object::find_nearby(
-				vec, Tile_coord(scr.x + scr.w / 2, scr.y + scr.h / 2, 0), shnum,
-				scr.h / 2, 0, qual, frnum);
-		return vec.empty() ? Usecode_value(static_cast<Game_object*>(nullptr))
-						   : Usecode_value(vec[0]);
+		Game_object::find_nearby(vec, Tile_coord(scr.x + scr.w / 2, scr.y + scr.h / 2, 0), shnum, scr.h / 2, 0, qual, frnum);
+		return vec.empty() ? Usecode_value(static_cast<Game_object*>(nullptr)) : Usecode_value(vec[0]);
 	}
 	if (oval != -357) {    // Not the whole party?
 		// Find inside owner.
@@ -974,8 +947,7 @@ USECODE_INTRINSIC(add_party_items) {
 	ignore_unused_variable_warning(num_parms);
 	// Add items(num, item, ??quality?? (-359), frame (or -359), T/F).
 	// Returns array of NPC's (->'s) who got the items.
-	Usecode_value u(
-			add_party_items(parms[0], parms[1], parms[2], parms[3], parms[4]));
+	Usecode_value u(add_party_items(parms[0], parms[1], parms[2], parms[3], parms[4]));
 	return u;
 }
 
@@ -1005,32 +977,27 @@ USECODE_INTRINSIC(play_music) {
 #ifdef DEBUG
 	cout << "Music request in usecode" << endl;
 	cout << "Parameter data follows" << endl;
-	cout << "0: " << ((parms[0].get_int_value() >> 8) & 0xff) << " "
-		 << ((parms[0].get_int_value()) & 0xff) << endl;
-	cout << "1: " << ((parms[1].get_int_value() >> 8) & 0x01) << " "
-		 << ((parms[1].get_int_value()) & 0x01) << endl;
+	cout << "0: " << ((parms[0].get_int_value() >> 8) & 0xff) << " " << ((parms[0].get_int_value()) & 0xff) << endl;
+	cout << "1: " << ((parms[1].get_int_value() >> 8) & 0x01) << " " << ((parms[1].get_int_value()) & 0x01) << endl;
 #endif
 	const int track = parms[0].get_int_value() & 0xff;
 	if (track == 0xff) {                       // I think this is right:
 		Audio::get_ptr()->cancel_streams();    // Stop playing.
 	} else {
-		Audio::get_ptr()->start_music(
-				track, (parms[0].get_int_value() >> 8) & 0x01);
+		Audio::get_ptr()->start_music(track, (parms[0].get_int_value() >> 8) & 0x01);
 
 		// If a number but not an NPC, get out (for e.g.,
 		// SI function 0x1D1).
 		if (parms[1].is_int()
 			&& (parms[1].get_int_value() >= 0
-				|| (parms[1].get_int_value() != -356
-					&& parms[1].get_int_value() < -gwin->get_num_npcs()))) {
+				|| (parms[1].get_int_value() != -356 && parms[1].get_int_value() < -gwin->get_num_npcs()))) {
 			return no_ret;
 		}
 
 		// Show notes.
 		Game_object* obj = get_item(parms[1]);
 		if (obj && !obj->is_pos_invalid()) {
-			gwin->get_effects()->add_effect(
-					std::make_unique<Sprites_effect>(24, obj, 0, 0, -2, -2));
+			gwin->get_effects()->add_effect(std::make_unique<Sprites_effect>(24, obj, 0, 0, -2, -2));
 		}
 	}
 	return no_ret;
@@ -1045,11 +1012,10 @@ USECODE_INTRINSIC(npc_nearby) {
 	}
 	const Tile_coord pos = obj->get_tile();
 	Actor*           npc;
-	const bool       is_near
-			= gwin->get_win_tile_rect().has_world_point(pos.tx, pos.ty) &&
-			  // Guessing: true if non-NPC, false if NPC is dead, asleep or
-			  // paralyzed.
-			  ((npc = as_actor(obj)) == nullptr || npc->can_act());
+	const bool       is_near = gwin->get_win_tile_rect().has_world_point(pos.tx, pos.ty) &&
+						 // Guessing: true if non-NPC, false if NPC is dead, asleep or
+						 // paralyzed.
+						 ((npc = as_actor(obj)) == nullptr || npc->can_act());
 	Usecode_value u(is_near);
 	return u;
 }
@@ -1100,9 +1066,8 @@ USECODE_INTRINSIC(display_runes) {
 		Sign_gump sign(parms[0].get_int_value(), cnt);
 		for (int i = 0; i < cnt; i++) {
 			// Paint each line.
-			const Usecode_value& lval
-					= !i ? parms[1].get_elem0() : parms[1].get_elem(i);
-			const char* str = lval.get_str_value();
+			const Usecode_value& lval = !i ? parms[1].get_elem0() : parms[1].get_elem(i);
+			const char*          str  = lval.get_str_value();
 			sign.add_text(i, str);
 		}
 		int x;
@@ -1152,9 +1117,7 @@ USECODE_INTRINSIC(click_on_item) {
 			return Usecode_value(0);
 		}
 		// Get abs. tile coords. clicked on.
-		t = Tile_coord(
-				gwin->get_scrolltx() + x / c_tilesize,
-				gwin->get_scrollty() + y / c_tilesize, 0);
+		t = Tile_coord(gwin->get_scrolltx() + x / c_tilesize, gwin->get_scrollty() + y / c_tilesize, 0);
 		// Look for obj. in open gump.
 		Gump* gump = gumpman->find_gump(x, y);
 		if (gump) {
@@ -1201,8 +1164,7 @@ USECODE_INTRINSIC(set_intercept_item) {
 			// 3: (x, y, z) loc.
 			// 4: (obj, x, y, z) loc.
 			intercept_tile = new Tile_coord(
-					parms[0].get_elem(0 + off).get_int_value(),
-					parms[0].get_elem(1 + off).get_int_value(),
+					parms[0].get_elem(0 + off).get_int_value(), parms[0].get_elem(1 + off).get_int_value(),
 					sz >= 3 ? parms[0].get_elem(2 + off).get_int_value() : 0);
 		} break;
 		default: {
@@ -1334,9 +1296,7 @@ USECODE_INTRINSIC(move_object) {
 	modified_map  = true;
 	if (parms[0].get_int_value() == -357) {
 		// Move whole party.
-		gwin->teleport_party(
-				tile, false, map,
-				num_parms > 2 ? parms[2].get_int_value() : false);
+		gwin->teleport_party(tile, false, map, num_parms > 2 ? parms[2].get_int_value() : false);
 		return no_ret;
 	}
 	Game_object* obj = get_item(parms[0]);
@@ -1355,8 +1315,7 @@ USECODE_INTRINSIC(move_object) {
 				gwin->set_map(map);
 			}
 			gwin->center_view(tile);
-			Map_chunk::try_all_eggs(
-					ava, tile.tx, tile.ty, tile.tz, oldpos.tx, oldpos.ty);
+			Map_chunk::try_all_eggs(ava, tile.tx, tile.ty, tile.tz, oldpos.tx, oldpos.ty);
 		}
 		// Close?  Add to 'nearby' list.
 		else if (ava->distance(act) < gwin->get_game_width() / c_tilesize) {
@@ -1443,8 +1402,7 @@ USECODE_INTRINSIC(set_to_attack) {
 	} else if (tval.is_array() && (nelems = tval.get_array_size()) >= 3) {
 		// Tile return of click_on_item. Allowing size to be < 4 for safety.
 		const Tile_coord trg = Tile_coord(
-				tval.get_elem(1).get_int_value(),
-				tval.get_elem(2).get_int_value(),
+				tval.get_elem(1).get_int_value(), tval.get_elem(2).get_int_value(),
 				nelems >= 4 ? tval.get_elem(3).get_int_value() : 0);
 		from->set_attack_target(trg, shnum);
 		return Usecode_value(1);
@@ -1503,8 +1461,7 @@ USECODE_INTRINSIC(sit_down) {
 	if (!chair) {
 		return no_ret;
 	}
-	npc->set_schedule_type(
-			Schedule::sit, std::make_unique<Sit_schedule>(npc, chair));
+	npc->set_schedule_type(Schedule::sit, std::make_unique<Sit_schedule>(npc, chair));
 	return no_ret;
 }
 
@@ -1513,15 +1470,13 @@ USECODE_INTRINSIC(summon) {
 	// summon(shape, flag??).  Create monster of desired shape.
 
 	const int           shapenum = parms[0].get_int_value();
-	const Monster_info* info = ShapeID::get_info(shapenum).get_monster_info();
+	const Monster_info* info     = ShapeID::get_info(shapenum).get_monster_info();
 	if (!info) {
 		return Usecode_value(0);
 	}
 	const Tile_coord start = gwin->get_main_actor()->get_tile();
 	const Tile_coord dest  = Map_chunk::find_spot(
-            start, 5, shapenum, 0, 1, -1,
-            gwin->is_main_actor_inside() ? Map_chunk::inside
-										  : Map_chunk::outside);
+            start, 5, shapenum, 0, 1, -1, gwin->is_main_actor_inside() ? Map_chunk::inside : Map_chunk::outside);
 	if (dest.tx == -1) {
 		return Usecode_value(0);
 	}
@@ -1530,8 +1485,7 @@ USECODE_INTRINSIC(summon) {
 	if (npc && !npc->is_in_party()) {
 		align = npc->get_effective_alignment();
 	}
-	const Game_object_shared monst
-			= Monster_actor::create(shapenum, dest, Schedule::combat, align);
+	const Game_object_shared monst = Monster_actor::create(shapenum, dest, Schedule::combat, align);
 	return Usecode_value(monst.get());
 }
 
@@ -1596,9 +1550,8 @@ USECODE_INTRINSIC(display_map) {
 	Usecode_value v_357(-357);
 	Usecode_value v650(650);
 	Usecode_value v_359(-359);
-	const long    sextants
-			= count_objects(v_357, v650, v_359, v_359).get_int_value();
-	const bool loc = !gwin->is_main_actor_inside() && (sextants > 0);
+	const long    sextants = count_objects(v_357, v650, v_359, v_359).get_int_value();
+	const bool    loc      = !gwin->is_main_actor_inside() && (sextants > 0);
 	// Display map.
 	if (touchui != nullptr) {
 		touchui->hideGameControls();
@@ -1758,8 +1711,7 @@ USECODE_INTRINSIC(set_attack_mode) {
 	// set_attack_mode(npc, mode).
 	Actor* npc = as_actor(get_item(parms[0]));
 	if (npc) {
-		npc->set_attack_mode(
-				static_cast<Actor::Attack_mode>(parms[1].need_int_value()));
+		npc->set_attack_mode(static_cast<Actor::Attack_mode>(parms[1].need_int_value()));
 	}
 	return no_ret;
 }
@@ -1846,8 +1798,7 @@ USECODE_INTRINSIC(display_area) {
 		const int ty = parms[0].get_elem(1).get_int_value();
 		// int unknown = parms[0].get_elem(2).get_int_value();
 		//  Figure in tiles.
-		const int newmap
-				= size == 3 ? -1 : parms[0].get_elem(3).get_int_value();
+		const int newmap = size == 3 ? -1 : parms[0].get_elem(3).get_int_value();
 		const int oldmap = gwin->get_map()->get_num();
 		const int tw     = gwin->get_game_width() / c_tilesize;
 		const int th     = gwin->get_game_height() / c_tilesize;
@@ -1888,9 +1839,7 @@ USECODE_INTRINSIC(display_area) {
 		gwin->paint_map_at_tile(x, y, 320, 200, tx - tw / 2, ty - th / 2, 4);
 		// Paint sprite #10
 		//   over it, transparently.
-		sman->paint_shape(
-				topx + sprite->get_xleft(), topy + sprite->get_yabove(), sprite,
-				true);
+		sman->paint_shape(topx + sprite->get_xleft(), topy + sprite->get_yabove(), sprite, true);
 		gwin->set_in_dungeon(save_dungeon);
 		gwin->show();
 		// Wait for click.
@@ -2024,16 +1973,10 @@ USECODE_INTRINSIC(sprite_effect) {
 	const int sprite_num = parms[0].get_int_value();
 	// Validate sprite number is in valid range before creating effect
 	Shape_manager* sman = Shape_manager::get_instance();
-	if (sprite_num >= 0
-		&& sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
-		gwin->get_effects()->add_effect(
-				std::make_unique<Sprites_effect>(
-						sprite_num,
-						Tile_coord(
-								parms[1].get_int_value(),
-								parms[2].get_int_value(), 0),
-						parms[3].get_int_value(), parms[4].get_int_value(), 0,
-						parms[5].get_int_value(), parms[6].get_int_value()));
+	if (sprite_num >= 0 && sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
+		gwin->get_effects()->add_effect(std::make_unique<Sprites_effect>(
+				sprite_num, Tile_coord(parms[1].get_int_value(), parms[2].get_int_value(), 0), parms[3].get_int_value(),
+				parms[4].get_int_value(), 0, parms[5].get_int_value(), parms[6].get_int_value()));
 	}
 	return no_ret;
 }
@@ -2047,14 +1990,10 @@ USECODE_INTRINSIC(obj_sprite_effect) {
 		const int sprite_num = parms[1].get_int_value();
 		// Validate sprite number is in valid range before creating effect
 		Shape_manager* sman = Shape_manager::get_instance();
-		if (sprite_num >= 0
-			&& sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
-			gwin->get_effects()->add_effect(
-					std::make_unique<Sprites_effect>(
-							sprite_num, obj, -parms[2].get_int_value(),
-							-parms[3].get_int_value(), parms[4].get_int_value(),
-							parms[5].get_int_value(), parms[6].get_int_value(),
-							parms[7].get_int_value()));
+		if (sprite_num >= 0 && sprite_num < sman->get_file(SF_SPRITES_VGA).get_num_shapes()) {
+			gwin->get_effects()->add_effect(std::make_unique<Sprites_effect>(
+					sprite_num, obj, -parms[2].get_int_value(), -parms[3].get_int_value(), parms[4].get_int_value(),
+					parms[5].get_int_value(), parms[6].get_int_value(), parms[7].get_int_value()));
 		}
 	}
 	return no_ret;
@@ -2071,8 +2010,7 @@ USECODE_INTRINSIC(attack_object) {
 		return Usecode_value(0);
 	}
 	const Tile_coord tile(-1, -1, 0);
-	return Usecode_value(
-			Combat_schedule::attack_target(att, trg, tile, wshape));
+	return Usecode_value(Combat_schedule::attack_target(att, trg, tile, wshape));
 }
 
 USECODE_INTRINSIC(book_mode) {
@@ -2160,13 +2098,11 @@ USECODE_INTRINSIC(is_pc_female) {
 	return u;
 }
 
-static inline void Armageddon_death(
-		Actor* npc, bool barks, const TileRect& screen) {
+static inline void Armageddon_death(Actor* npc, bool barks, const TileRect& screen) {
 	// Leave a select few alive (like LB, Batlin).
 	if (npc && !npc->is_dead() && !npc->get_info().survives_armageddon()) {
-		constexpr static const std::array text{
-				"Aiiiieee!", "Noooo!", "#!?*#%!"};
-		const Tile_coord loc = npc->get_tile();
+		constexpr static const std::array text{"Aiiiieee!", "Noooo!", "#!?*#%!"};
+		const Tile_coord                  loc = npc->get_tile();
 		if (barks && screen.has_world_point(loc.tx, loc.ty)) {
 			npc->say(text[rand() % text.size()]);
 		}
@@ -2174,9 +2110,7 @@ static inline void Armageddon_death(
 		npc->lay_down(false);
 		// Originals set health to -10; marking it this way allows
 		// Actor::is_dying to return true in case it is needed.
-		npc->set_property(
-				static_cast<int>(Actor::health),
-				-npc->get_property(static_cast<int>(Actor::health)) / 3 - 1);
+		npc->set_property(static_cast<int>(Actor::health), -npc->get_property(static_cast<int>(Actor::health)) / 3 - 1);
 		// This makes the NPC stay there unresponsive and immune to damage.
 		npc->set_flag(Obj_flags::dead);
 	}
@@ -2214,8 +2148,7 @@ USECODE_INTRINSIC(lightning) {
 	ignore_unused_variable_warning(num_parms, parms);
 	// 1 sec. is long enough for 1 flash.
 	gwin->get_effects()->remove_usecode_lightning();
-	gwin->get_effects()->add_effect(
-			std::make_unique<Lightning_effect>(1000, 0, true));
+	gwin->get_effects()->add_effect(std::make_unique<Lightning_effect>(1000, 0, true));
 	return no_ret;
 }
 
@@ -2267,9 +2200,7 @@ USECODE_INTRINSIC(recall_virtue_stone) {
 		}
 		const Tile_coord t = vs->get_target_pos();
 		if (t.tx > 0 || t.ty > 0) {
-			gwin->teleport_party(
-					t, false, vs->get_target_map(),
-					num_parms > 1 ? parms[1].get_int_value() : false);
+			gwin->teleport_party(t, false, vs->get_target_map(), num_parms > 1 ? parms[1].get_int_value() : false);
 		}
 	}
 	return no_ret;
@@ -2308,102 +2239,29 @@ USECODE_INTRINSIC(set_orrery) {
 	 *  8 planet frames in each possible state.
 	 */
 	static const short offsets[10][8][2] = {
-			/* S0 */ {
-					  {2, -3},
-					  {3, -3},
-					  {1, -6},
-					  {6, -2},
-					  {7, -1},
-					  {8, 1},
-					  {-4, 8},
-					  {9, -2}  },
+			/* S0 */ { {2, -3},  {3, -3},  {1, -6},  {6, -2},  {7, -1},   {8, 1},  {-4, 8},   {9, -2}},
 			/* S1 */
-			{ {3, -1},
-					  {4, -1},
-					  {-5, -3},
-					  {3, 6},
-					  {7, 2},
-					  {4, 7},
-					  {-8, 4},
-					  {8, 5}   },
+			{ {3, -1},  {4, -1}, {-5, -3},   {3, 6},   {7, 2},   {4, 7},  {-8, 4},    {8, 5}},
 			/* S2 */
-			{  {3, 1},
-					  {3, 2},
-					  {-3, 4},
-					  {-5, 4},
-					  {2, 7},
-					  {-2, 8},
-					  {-9, 1},
-					  {2, 9}   },
+			{  {3, 1},   {3, 2},  {-3, 4},  {-5, 4},   {2, 7},  {-2, 8},  {-9, 1},    {2, 9}},
 			/* S3 */
-			{  {1, 3},
-					  {1, 4},
-					  {4, 3},
-					  {-5, -3},
-					  {-4, 6},
-					  {-7, 4},
-					  {-9, -1},
-					  {-4, 9}  },
+			{  {1, 3},   {1, 4},   {4, 3}, {-5, -3},  {-4, 6},  {-7, 4}, {-9, -1},   {-4, 9}},
 			/* S4 */
-			{ {-2, 3},
-					  {-2, 4},
-					  {5, -2},
-					  {5, -4},
-					  {-7, 2},
-					  {-8, 1},
-					  {-8, -4},
-					  {-8, 6}  },
+			{ {-2, 3},  {-2, 4},  {5, -2},  {5, -4},  {-7, 2},  {-8, 1}, {-8, -4},   {-8, 6}},
 			/* S5 */
-			{ {-4, 1},
-					  {-5, 1},
-					  {-5, -3},
-					  {6, 3},
-					  {-7, -2},
-					  {-7, -4},
-					  {-7, -6},
-					  {-10, 1} },
+			{ {-4, 1},  {-5, 1}, {-5, -3},   {6, 3}, {-7, -2}, {-7, -4}, {-7, -6},  {-10, 1}},
 			/* S6 */
-			{ {-4, 9},
-					  {-5, -1},
-					  {-3, 4},
-					  {-3, 6},
-					  {-6, -4},
-					  {-5, -6},
-					  {-7, -6},
-					  {-10, -2}},
+			{ {-4, 9}, {-5, -1},  {-3, 4},  {-3, 6}, {-6, -4}, {-5, -6}, {-7, -6}, {-10, -2}},
 			/* S7 */
-			{ {-4, 2},
-					  {-4, -3},
-					  {4, 3},
-					  {-6, 1},
-					  {-5, -5},
-					  {-3, -7},
-					  {-4, -8},
-					  {-8, -6} },
+			{ {-4, 2}, {-4, -3},   {4, 3},  {-6, 1}, {-5, -5}, {-3, -7}, {-4, -8},  {-8, -6}},
 			/* S8 */
-			{{-3, -3},
-					  {-3, -4},
-					  {5, -2},
-					  {-3, -5},
-					  {-1, -7},
-					  {0, -8},
-					  {-1, -9},
-					  {-5, -9} },
+			{{-3, -3}, {-3, -4},  {5, -2}, {-3, -5}, {-1, -7},  {0, -8}, {-1, -9},  {-5, -9}},
 			/* S9 */
-			{ {0, -4},
-					  {0, -5},
-					  {1, -6},
-					  {1, -6},
-					  {1, -7},
-					  {1, -8},
-					  {1, -9},
-					  {-1, -10}}
+			{ {0, -4},  {0, -5},  {1, -6},  {1, -6},  {1, -7},  {1, -8},  {1, -9}, {-1, -10}}
     };
 
 	const Tile_coord pos(
-			parms[0].get_elem(0).get_int_value(),
-			parms[0].get_elem(1).get_int_value(),
-			parms[0].get_elem(2).get_int_value());
+			parms[0].get_elem(0).get_int_value(), parms[0].get_elem(1).get_int_value(), parms[0].get_elem(2).get_int_value());
 	const int state = parms[1].get_int_value();
 	// Find Planet Britania.
 	Game_object* brit = Game_object::find_closest(pos, 765, 24);
@@ -2417,8 +2275,7 @@ USECODE_INTRINSIC(set_orrery) {
 		}
 		for (int frame = 0; frame <= 7; ++frame) {
 			const Game_object_shared p = gmap->create_ireg_object(988, frame);
-			p->move(pos.tx + offsets[state][frame][0],
-					pos.ty + offsets[state][frame][1], pos.tz);
+			p->move(pos.tx + offsets[state][frame][0], pos.ty + offsets[state][frame][1], pos.tz);
 		}
 	}
 	gwin->set_all_dirty();
@@ -2598,13 +2455,11 @@ USECODE_INTRINSIC(is_readied) {
 	const int shnum = parms[2].get_int_value();
 	const int frnum = parms[3].get_int_value();
 	// Spot defined in Actor class.
-	const int spot
-			= GAME_BG ? Ready_spot_from_BG(where) : Ready_spot_from_SI(where);
+	const int spot = GAME_BG ? Ready_spot_from_BG(where) : Ready_spot_from_SI(where);
 	if (spot >= 0 && spot <= ucont) {
 		// See if it's the right one.
 		Game_object* obj = npc->get_readied(spot);
-		if (obj && obj->get_shapenum() == shnum
-			&& (frnum == c_any_framenum || obj->get_framenum() == frnum)) {
+		if (obj && obj->get_shapenum() == shnum && (frnum == c_any_framenum || obj->get_framenum() == frnum)) {
 			return Usecode_value(1);
 		}
 	} else if (spot < 0) {
@@ -2642,8 +2497,7 @@ USECODE_INTRINSIC(get_readied) {
 	}
 	const int where = parms[1].get_int_value();
 	// Spot defined in Actor class.
-	const int spot
-			= GAME_BG ? Ready_spot_from_BG(where) : Ready_spot_from_SI(where);
+	const int spot = GAME_BG ? Ready_spot_from_BG(where) : Ready_spot_from_SI(where);
 	if (spot >= 0 && spot <= ucont) {
 		return Usecode_value(npc->get_readied(spot));
 	} else if (spot < 0) {
@@ -2674,9 +2528,7 @@ static int get_speech_face(int speech_track) {
 		if (obj && obj->get_shapenum() == 0x377 && obj->get_framenum() == 1) {
 			// Solid.
 			return 295;
-		} else if (
-				(obj = ava->get_readied(rfinger)) != nullptr
-				&& obj->get_shapenum() == 0x377 && obj->get_framenum() == 1) {
+		} else if ((obj = ava->get_readied(rfinger)) != nullptr && obj->get_shapenum() == 0x377 && obj->get_framenum() == 1) {
 			// Solid.
 			return 295;
 		}
@@ -2757,19 +2609,16 @@ USECODE_INTRINSIC(start_blocking_speech) {
 		do {
 			Delay();                   // Wait a fraction of a second.
 			Mouse::mouse()->hide();    // Turn off mouse.
-			Mouse::mouse_update = false;
-			SDL_Renderer* renderer
-					= SDL_GetRenderer(gwin->get_win()->get_screen_window());
-			SDL_Event event;
+			Mouse::mouse_update    = false;
+			SDL_Renderer* renderer = SDL_GetRenderer(gwin->get_win()->get_screen_window());
+			SDL_Event     event;
 			while (SDL_PollEvent(&event)) {
 				SDL_ConvertEventToRenderCoordinates(renderer, &event);
 				if (event.type == SDL_EVENT_MOUSE_MOTION) {
 					// Mouse scale factor
 					int mx;
 					int my;
-					gwin->get_win()->screen_to_game(
-							event.motion.x, event.motion.y,
-							gwin->get_fastmouse(), mx, my);
+					gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
 					Mouse::mouse()->move(mx, my);
 					Mouse::mouse_update = true;
 				}
@@ -2854,14 +2703,11 @@ USECODE_INTRINSIC(fire_projectile) {
 
 	Game_object* attacker = get_item(parms[0]);
 	// Get direction (0-7).
-	const int dir = parms[1].get_int_value();
-	const int missile
-			= parms[2].get_int_value();    // Sprite to use for missile.
-	const int attval = parms[3].get_int_value();    // Attack value.
-	const int wshape
-			= parms[4].get_int_value();    // What to use for weapon info.
-	const int ashape
-			= parms[5].get_int_value();    // What to use for ammo info.
+	const int dir     = parms[1].get_int_value();
+	const int missile = parms[2].get_int_value();    // Sprite to use for missile.
+	const int attval  = parms[3].get_int_value();    // Attack value.
+	const int wshape  = parms[4].get_int_value();    // What to use for weapon info.
+	const int ashape  = parms[5].get_int_value();    // What to use for ammo info.
 
 	const Tile_coord pos = attacker->get_missile_tile(dir);
 	const Tile_coord adj = pos.get_neighbor(dir % 8);
@@ -2874,9 +2720,7 @@ USECODE_INTRINSIC(fire_projectile) {
 	dest.ty += dist * dy;
 
 	// Fire missile.
-	gwin->get_effects()->add_effect(
-			std::make_unique<Projectile_effect>(
-					attacker, dest, wshape, ashape, missile, attval, 4));
+	gwin->get_effects()->add_effect(std::make_unique<Projectile_effect>(attacker, dest, wshape, ashape, missile, attval, 4));
 	return no_ret;
 }
 
@@ -2890,14 +2734,12 @@ USECODE_INTRINSIC(nap_time) {
 	// See if bed is occupied by an NPC.
 	if (Sleep_schedule::is_bed_occupied(bed, gwin->get_main_actor())) {
 		// Show party member's face.
-		const int party_cnt = partyman->get_count();
-		const int npcnum
-				= party_cnt ? partyman->get_member(rand() % party_cnt) : 356;
+		const int     party_cnt = partyman->get_count();
+		const int     npcnum    = party_cnt ? partyman->get_member(rand() % party_cnt) : 356;
 		Usecode_value actval(-npcnum);
 		Usecode_value frval(0);
 		show_npc_face(actval, frval);
-		conv->show_npc_message(
-				get_text_msg(first_bed_occupied + rand() % num_bed_occupied));
+		conv->show_npc_message(get_text_msg(first_bed_occupied + rand() % num_bed_occupied));
 		remove_npc_face(actval);
 		gwin->get_main_actor()->set_schedule_type(Schedule::follow_avatar);
 		return no_ret;
@@ -2953,7 +2795,7 @@ USECODE_INTRINSIC(path_run_usecode) {
 	// Think it should have Avatar walk path to loc, return 0
 	//  if he can't get there (and return), 1 if he can.
 	Usecode_value ava(gwin->get_main_actor());
-	const bool simode = num_parms > 4 ? parms[4].get_int_value() != 0 : GAME_SI;
+	const bool    simode = num_parms > 4 ? parms[4].get_int_value() != 0 : GAME_SI;
 	return Usecode_value(path_run_usecode(
 			ava, parms[0], parms[1], parms[2], parms[3],
 			// SI:  Look for free spot. (Guess).
@@ -3016,21 +2858,17 @@ USECODE_INTRINSIC(is_not_blocked) {
 	if (pval.get_array_size() < 3) {
 		return fail;
 	}
-	const Tile_coord tile(
-			pval.get_elem(0).get_int_value(), pval.get_elem(1).get_int_value(),
-			pval.get_elem(2).get_int_value());
-	const int shapenum = parms[1].get_int_value();
-	const int framenum = parms[2].get_int_value();
+	const Tile_coord tile(pval.get_elem(0).get_int_value(), pval.get_elem(1).get_int_value(), pval.get_elem(2).get_int_value());
+	const int        shapenum = parms[1].get_int_value();
+	const int        framenum = parms[2].get_int_value();
 	// Find out about given shape.
 	const Shape_info& info = ShapeID::get_info(shapenum);
 	const TileRect    footprint(
-            tile.tx - info.get_3d_xtiles(framenum) + 1,
-            tile.ty - info.get_3d_ytiles(framenum) + 1,
-            info.get_3d_xtiles(framenum), info.get_3d_ytiles(framenum));
+            tile.tx - info.get_3d_xtiles(framenum) + 1, tile.ty - info.get_3d_ytiles(framenum) + 1, info.get_3d_xtiles(framenum),
+            info.get_3d_ytiles(framenum));
 	int        new_lift;
 	const bool blocked = Map_chunk::is_blocked(
-			info.get_3d_height(), tile.tz, footprint.x, footprint.y,
-			footprint.w, footprint.h, new_lift, MOVE_ALL_TERRAIN, 1);
+			info.get_3d_height(), tile.tz, footprint.x, footprint.y, footprint.w, footprint.h, new_lift, MOVE_ALL_TERRAIN, 1);
 	// Okay?
 	if (!blocked && new_lift == tile.tz) {
 		return Usecode_value(1);
@@ -3054,13 +2892,11 @@ USECODE_INTRINSIC(direction_from) {
 
 static bool Is_moving_barge_flag(int fnum) {
 	if (Game::get_game_type() == BLACK_GATE) {
-		return fnum == static_cast<int>(Obj_flags::on_moving_barge)
-			   || fnum == static_cast<int>(Obj_flags::active_barge);
+		return fnum == static_cast<int>(Obj_flags::on_moving_barge) || fnum == static_cast<int>(Obj_flags::active_barge);
 	} else {    // SI.
 		return fnum == static_cast<int>(Obj_flags::si_on_moving_barge) ||
 			   // Ice raft needs this one:
-			   fnum == static_cast<int>(Obj_flags::on_moving_barge)
-			   || fnum == static_cast<int>(Obj_flags::active_barge);
+			   fnum == static_cast<int>(Obj_flags::on_moving_barge) || fnum == static_cast<int>(Obj_flags::active_barge);
 	}
 }
 
@@ -3090,15 +2926,11 @@ USECODE_INTRINSIC(get_item_flag) {
 	} else if (fnum == static_cast<int>(Obj_flags::immunities)) {
 		const Actor*        npc = obj->as_actor();
 		const Monster_info* inf = obj->get_info().get_monster_info();
-		return Usecode_value(
-				(inf != nullptr && inf->power_safe())
-				|| (npc && npc->check_gear_powers(Frame_flags::power_safe)));
+		return Usecode_value((inf != nullptr && inf->power_safe()) || (npc && npc->check_gear_powers(Frame_flags::power_safe)));
 	} else if (fnum == static_cast<int>(Obj_flags::cant_die)) {
 		const Actor*        npc = obj->as_actor();
 		const Monster_info* inf = obj->get_info().get_monster_info();
-		return Usecode_value(
-				(inf != nullptr && inf->death_safe())
-				|| (npc && npc->check_gear_powers(Frame_flags::death_safe)));
+		return Usecode_value((inf != nullptr && inf->death_safe()) || (npc && npc->check_gear_powers(Frame_flags::death_safe)));
 	} else if (fnum == Obj_flags::is_solid) {
 		// Verified. The previous version worked well because of a bug in both
 		// BG and SI gang-planck usecode, which checked the flag on the wrong
@@ -3106,8 +2938,7 @@ USECODE_INTRINSIC(get_item_flag) {
 		// block the gang-planck.
 		return Usecode_value(obj->get_info().is_solid());
 	} else if (fnum == static_cast<int>(Obj_flags::in_dungeon)) {
-		return Usecode_value(
-				obj == gwin->get_main_actor() && gwin->is_in_dungeon());
+		return Usecode_value(obj == gwin->get_main_actor() && gwin->is_in_dungeon());
 	} else if (fnum == Obj_flags::active_sailor) {
 		// Must be the sailor, as this is used to check for Ferryman.
 		return Usecode_value(sailor);
@@ -3224,10 +3055,7 @@ USECODE_INTRINSIC(set_path_failure) {
 	const int    eventid = parms[2].get_int_value();
 	Game_object* item    = get_item(parms[1]);
 	if (path_npc && item) {    // Set in path_run_usecode().
-		If_else_path_actor_action* action
-				= path_npc->get_action()
-						  ? path_npc->get_action()->as_usecode_path()
-						  : nullptr;
+		If_else_path_actor_action* action = path_npc->get_action() ? path_npc->get_action()->as_usecode_path() : nullptr;
 		if (action) {    // Set in in path action.
 			action->set_failure(new Usecode_actor_action(fun, item, eventid));
 		}
@@ -3322,9 +3150,7 @@ USECODE_INTRINSIC(view_tile) {
 	if (!parms[0].is_array() || parms[0].get_array_size() < 2) {
 		return no_ret;
 	} else {
-		t = Tile_coord(
-				parms[0].get_elem(0).get_int_value(),
-				parms[0].get_elem(1).get_int_value(), 0);
+		t = Tile_coord(parms[0].get_elem(0).get_int_value(), parms[0].get_elem(1).get_int_value(), 0);
 	}
 	gwin->center_view(t);
 	return no_ret;
@@ -3369,8 +3195,7 @@ USECODE_INTRINSIC(play_sound_effect2) {
 	Game_object* obj = get_item(parms[1]);
 	Object_sfx::Play(obj, parms[0].get_int_value(), 0);
 #ifdef DEBUG
-	cout << "Sound effect(2) " << parms[0].get_int_value()
-		 << " request in usecode" << endl;
+	cout << "Sound effect(2) " << parms[0].get_int_value() << " request in usecode" << endl;
 #endif
 	return no_ret;
 }
@@ -3436,16 +3261,14 @@ USECODE_INTRINSIC(set_npc_id) {
 USECODE_INTRINSIC(add_cont_items) {
 	ignore_unused_variable_warning(num_parms);
 	// Add items(num, item, ??quality?? (-359), frame (or -359), T/F).
-	return add_cont_items(
-			parms[0], parms[1], parms[2], parms[3], parms[4], parms[5]);
+	return add_cont_items(parms[0], parms[1], parms[2], parms[3], parms[4], parms[5]);
 }
 
 // Is this SI Only
 USECODE_INTRINSIC(remove_cont_items) {
 	ignore_unused_variable_warning(num_parms);
 	// Add items(num, item, ??quality?? (-359), frame (or -359), T/F).
-	return remove_cont_items(
-			parms[0], parms[1], parms[2], parms[3], parms[4], parms[5]);
+	return remove_cont_items(parms[0], parms[1], parms[2], parms[3], parms[4], parms[5]);
 }
 
 /*
@@ -3538,9 +3361,7 @@ USECODE_INTRINSIC(si_path_run_usecode) {
 			npc->clear_flag(Obj_flags::paralyzed);
 		}
 	}
-	path_run_usecode(
-			parms[0], parms[1], parms[4], parms[3], parms[2], true,
-			always != 0);
+	path_run_usecode(parms[0], parms[1], parms[4], parms[3], parms[2], true, always != 0);
 	return no_ret;
 }
 
@@ -3548,8 +3369,7 @@ USECODE_INTRINSIC(sib_path_run_usecode) {
 	ignore_unused_variable_warning(num_parms);
 	// exec(npc, loc(x,y,z), usecode#, itemref, eventid).
 	// Schedule Npc to walk to loc and then execute usecode.
-	return Usecode_value(path_run_usecode(
-			parms[0], parms[1], parms[2], parms[3], parms[4], false, false));
+	return Usecode_value(path_run_usecode(parms[0], parms[1], parms[2], parms[3], parms[4], false, false));
 }
 
 USECODE_INTRINSIC(error_message) {
@@ -3606,8 +3426,7 @@ USECODE_INTRINSIC(set_new_schedules) {
 	int num_errors = 0;
 
 	if (num_parms < 4) {
-		cerr << "set_new_schedules: insufficient parameters! Got " << num_parms
-			 << " parameters, need at least 4." << endl;
+		cerr << "set_new_schedules: insufficient parameters! Got " << num_parms << " parameters, need at least 4." << endl;
 		return no_ret;
 	}
 
@@ -3617,8 +3436,7 @@ USECODE_INTRINSIC(set_new_schedules) {
 		num_errors++;
 	}
 
-	const bool have_3d_positions
-			= num_parms > 4 && parms[4].need_int_value() != 0;
+	const bool   have_3d_positions   = num_parms > 4 && parms[4].need_int_value() != 0;
 	const size_t num_coords          = parms[3].get_array_size();
 	const size_t coords_per_schedule = have_3d_positions ? 3 : 2;
 	if (num_coords < count * coords_per_schedule) {
@@ -3627,9 +3445,8 @@ USECODE_INTRINSIC(set_new_schedules) {
 			 << coords_per_schedule
 			 << " elements per schedule are required (since 3d positions flag "
 				"is "
-			 << (have_3d_positions ? "true" : "false")
-			 << "); needed a minimum of	" << count * coords_per_schedule
-			 << ", got " << num_coords << "." << endl;
+			 << (have_3d_positions ? "true" : "false") << "); needed a minimum of	" << count * coords_per_schedule << ", got "
+			 << num_coords << "." << endl;
 		num_errors++;
 	}
 
@@ -3685,27 +3502,18 @@ USECODE_INTRINSIC(set_new_schedules) {
 		const int        time  = parms[1].need_int_value();
 		const int        sched = parms[2].need_int_value();
 		const Tile_coord tile{
-				static_cast<int>(parms[3].get_elem(0).get_int_value()),
-				static_cast<int>(parms[3].get_elem(1).get_int_value()),
-				have_3d_positions
-						? static_cast<int>(parms[3].get_elem(2).get_int_value())
-						: 0};
+				static_cast<int>(parms[3].get_elem(0).get_int_value()), static_cast<int>(parms[3].get_elem(1).get_int_value()),
+				have_3d_positions ? static_cast<int>(parms[3].get_elem(2).get_int_value()) : 0};
 		list.emplace_back(time, sched, tile);
 
 	} else {
-		for (auto timeIt = parms[1].cbegin(), schedIt = parms[2].cbegin(),
-				  locIt = parms[3].cbegin();
-			 timeIt != parms[1].cend() && schedIt != parms[2].cend()
-			 && locIt != parms[3].cend();
-			 ++timeIt, ++schedIt) {
+		for (auto timeIt = parms[1].cbegin(), schedIt = parms[2].cbegin(), locIt = parms[3].cbegin();
+			 timeIt != parms[1].cend() && schedIt != parms[2].cend() && locIt != parms[3].cend(); ++timeIt, ++schedIt) {
 			const int        time  = timeIt->get_int_value();
 			const int        sched = schedIt->get_int_value();
 			const Tile_coord tile{
-					static_cast<int>(locIt++->get_int_value()),
-					static_cast<int>(locIt++->get_int_value()),
-					have_3d_positions
-							? static_cast<int>(locIt++->get_int_value())
-							: 0};
+					static_cast<int>(locIt++->get_int_value()), static_cast<int>(locIt++->get_int_value()),
+					have_3d_positions ? static_cast<int>(locIt++->get_int_value()) : 0};
 			list.emplace_back(time, sched, tile);
 		}
 	}
@@ -3759,9 +3567,7 @@ USECODE_INTRINSIC(modify_schedule) {
 	const int tx    = parms[3].get_elem(0).get_int_value();
 	const int ty    = parms[3].get_elem(1).get_int_value();
 	// Optional z coordinate (defaults to 0 for backward compatibility).
-	const int tz = (parms[3].get_array_size() >= 3)
-						   ? parms[3].get_elem(2).get_int_value()
-						   : 0;
+	const int tz = (parms[3].get_array_size() >= 3) ? parms[3].get_elem(2).get_int_value() : 0;
 
 	actor->set_schedule_time_type(time, sched);
 	actor->set_schedule_time_location(time, tx, ty, tz);
@@ -4112,9 +3918,7 @@ USECODE_INTRINSIC(teleport_to_saved_pos) {
 			// Fix old games.  Send to Monitor.
 			saved_pos = Tile_coord(719, 2608, 1);
 		}
-		gwin->teleport_party(
-				saved_pos, false, saved_map,
-				num_parms > 1 ? parms[1].get_int_value() : false);
+		gwin->teleport_party(saved_pos, false, saved_map, num_parms > 1 ? parms[1].get_int_value() : false);
 	}
 	return no_ret;
 }
@@ -4160,8 +3964,7 @@ USECODE_INTRINSIC(printf) {
 		cout.write(fmt, spec - fmt);
 		if (*spec == '%') {
 			if (spec[1] == 's') {
-				const Usecode_value p
-						= i < count ? parms[0][i] : Usecode_value(0);
+				const Usecode_value p = i < count ? parms[0][i] : Usecode_value(0);
 				if (p.get_type() == Usecode_value::int_type) {
 					cout << p.get_int_value();
 				} else {
@@ -4228,11 +4031,8 @@ USECODE_INTRINSIC(is_dest_reachable) {
 		return ret;
 	}
 	const Tile_coord dest = Tile_coord(
-			parms[1].get_elem(0).get_int_value(),
-			parms[1].get_elem(1).get_int_value(),
-			parms[1].get_array_size() == 2
-					? 0
-					: parms[1].get_elem(2).get_int_value());
+			parms[1].get_elem(0).get_int_value(), parms[1].get_elem(1).get_int_value(),
+			parms[1].get_array_size() == 2 ? 0 : parms[1].get_elem(2).get_int_value());
 	ret = Usecode_value(is_dest_reachable(npc, dest));
 	return ret;
 }
@@ -4247,11 +4047,8 @@ USECODE_INTRINSIC(sib_is_dest_reachable) {
 		return ret;
 	}
 	const Tile_coord dest = Tile_coord(
-			parms[0].get_elem(0).get_int_value(),
-			parms[0].get_elem(1).get_int_value(),
-			parms[0].get_array_size() == 2
-					? 0
-					: parms[0].get_elem(2).get_int_value());
+			parms[0].get_elem(0).get_int_value(), parms[0].get_elem(1).get_int_value(),
+			parms[0].get_array_size() == 2 ? 0 : parms[0].get_elem(2).get_int_value());
 	ret = Usecode_value(is_dest_reachable(npc, dest));
 	return ret;
 }
@@ -4263,11 +4060,8 @@ USECODE_INTRINSIC(can_avatar_reach_pos) {
 		return ret;
 	}
 	const Tile_coord dest = Tile_coord(
-			parms[0].get_elem(0).get_int_value(),
-			parms[0].get_elem(1).get_int_value(),
-			parms[0].get_array_size() == 2
-					? 0
-					: parms[0].get_elem(2).get_int_value());
+			parms[0].get_elem(0).get_int_value(), parms[0].get_elem(1).get_int_value(),
+			parms[0].get_array_size() == 2 ? 0 : parms[0].get_elem(2).get_int_value());
 	ret = Usecode_value(is_dest_reachable(gwin->get_main_actor(), dest));
 	return ret;
 }

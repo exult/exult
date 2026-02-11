@@ -77,8 +77,7 @@ Game_object_weak bell_just_rung;
 
 int Game_object::get_usecode() const {
 	const Shape_info&         inf    = get_info();
-	const Frame_usecode_info* useinf = inf.get_frame_usecode(
-			get_framenum(), inf.has_quality() ? get_quality() : -1);
+	const Frame_usecode_info* useinf = inf.get_frame_usecode(get_framenum(), inf.has_quality() ? get_quality() : -1);
 	if (useinf) {
 		// Shape has frame- or quality-dependent usecode.
 		const std::string ucname = useinf->get_usecode_name();
@@ -101,8 +100,7 @@ bool Game_object::usecode_exists() const {
 }
 
 // Offset to each neighbor, dir=0-7.
-short Tile_coord::neighbors[16]
-		= {0, -1, 1, -1, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0, -1, -1};
+short              Tile_coord::neighbors[16] = {0, -1, 1, -1, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0, -1, -1};
 Game_object_shared Game_object::editing;
 // Bit 5=S, Bit6=reflect. on diag.
 unsigned char Game_object::rotate[8] = {0, 0, 48, 48, 16, 16, 32, 32};
@@ -135,14 +133,11 @@ int Game_object::get_map_num() const {    // Get map number this is in.
 Tile_coord Game_object::get_tile() const {
 	if (!chunk) {
 #ifdef DEBUG
-		cout << "Asking tile for obj. " << get_shapenum() << " not on map"
-			 << endl;
+		cout << "Asking tile for obj. " << get_shapenum() << " not on map" << endl;
 #endif
 		return Tile_coord(255 * c_tiles_per_chunk, 255 * c_tiles_per_chunk, 0);
 	}
-	return Tile_coord(
-			chunk->cx * c_tiles_per_chunk + tx,
-			chunk->cy * c_tiles_per_chunk + ty, lift);
+	return Tile_coord(chunk->cx * c_tiles_per_chunk + tx, chunk->cy * c_tiles_per_chunk + ty, lift);
 }
 
 /*
@@ -152,8 +147,7 @@ Tile_coord Game_object::get_tile() const {
 Tile_coord Game_object::get_center_tile() const {
 	if (!chunk) {
 #ifdef DEBUG
-		cout << "Asking center tile for obj. " << get_shapenum()
-			 << " not on map" << endl;
+		cout << "Asking center tile for obj. " << get_shapenum() << " not on map" << endl;
 #endif
 		return Tile_coord(255 * c_tiles_per_chunk, 255 * c_tiles_per_chunk, 0);
 	}
@@ -170,8 +164,7 @@ Tile_coord Game_object::get_missile_tile(int dir) const {
 	ignore_unused_variable_warning(dir);
 	if (!chunk) {
 #ifdef DEBUG
-		cout << "Asking missile tile for obj. " << get_shapenum()
-			 << " not on map" << endl;
+		cout << "Asking missile tile for obj. " << get_shapenum() << " not on map" << endl;
 #endif
 		return Tile_coord(255 * c_tiles_per_chunk, 255 * c_tiles_per_chunk, 0);
 	}
@@ -202,8 +195,7 @@ Tile_coord Game_object::get_missile_tile(int dir) const {
 	return Tile_coord(x, y, lift + dz);
 }
 
-static inline void delta_check(
-		int delta1, int size1, int size2, short& coord1, short& coord2) {
+static inline void delta_check(int delta1, int size1, int size2, short& coord1, short& coord2) {
 	if (delta1 < 0) {
 		if (coord1 + size1 > coord2) {
 			coord1 = coord2;
@@ -245,12 +237,8 @@ int Game_object::distance(const Game_object* o2) const {
 	const int         dx    = Tile_coord::delta(t1.tx, t2.tx);
 	const int         dy    = Tile_coord::delta(t1.ty, t2.ty);
 	const int         dz    = t1.tz - t2.tz;
-	delta_wrap_check(
-			dx, info1.get_3d_xtiles(f1) - 1, info2.get_3d_xtiles(f2) - 1, t1.tx,
-			t2.tx);
-	delta_wrap_check(
-			dy, info1.get_3d_ytiles(f1) - 1, info2.get_3d_ytiles(f2) - 1, t1.ty,
-			t2.ty);
+	delta_wrap_check(dx, info1.get_3d_xtiles(f1) - 1, info2.get_3d_xtiles(f2) - 1, t1.tx, t2.tx);
+	delta_wrap_check(dy, info1.get_3d_ytiles(f1) - 1, info2.get_3d_ytiles(f2) - 1, t1.ty, t2.ty);
 	delta_check(dz, info1.get_3d_height(), info2.get_3d_height(), t1.tz, t2.tz);
 	return t1.distance(t2);
 }
@@ -301,20 +289,13 @@ int Game_object::get_direction(const Tile_coord& t2) const {
 int Game_object::get_facing_direction(Game_object* o2) const {
 	const Tile_coord t1     = get_tile();
 	const TileRect   torect = o2->get_footprint();
-	if (torect.x + torect.w <= t1.tx && t1.ty >= torect.y
-		&& t1.ty < torect.y + torect.h) {
+	if (torect.x + torect.w <= t1.tx && t1.ty >= torect.y && t1.ty < torect.y + torect.h) {
 		return static_cast<int>(west);
-	} else if (
-			t1.tx < torect.x && t1.ty >= torect.y
-			&& t1.ty < torect.y + torect.h) {
+	} else if (t1.tx < torect.x && t1.ty >= torect.y && t1.ty < torect.y + torect.h) {
 		return static_cast<int>(east);
-	} else if (
-			torect.y + torect.h <= t1.ty && t1.tx >= torect.x
-			&& t1.tx < torect.w + torect.h) {
+	} else if (torect.y + torect.h <= t1.ty && t1.tx >= torect.x && t1.tx < torect.w + torect.h) {
 		return static_cast<int>(south);
-	} else if (
-			t1.ty < torect.y && t1.tx >= torect.x
-			&& t1.tx < torect.w + torect.h) {
+	} else if (t1.ty < torect.y && t1.tx >= torect.x && t1.tx < torect.w + torect.h) {
 		return static_cast<int>(north);
 	} else {
 		return get_direction(o2);
@@ -332,8 +313,7 @@ static bool Has_quantity(int shnum    // Shape number.
 
 static bool Has_hitpoints(int shnum) {
 	const Shape_info& info = ShapeID::get_info(shnum);
-	return (info.get_shape_class() == Shape_info::has_hp)
-		   || (info.get_shape_class() == Shape_info::container);
+	return (info.get_shape_class() == Shape_info::has_hp) || (info.get_shape_class() == Shape_info::container);
 
 	// containers have hitpoints too ('resistance')
 }
@@ -364,8 +344,7 @@ int Game_object::get_effective_range(const Weapon_info* winf, int reach) const {
 		}
 		reach = winf->get_range();
 	}
-	const int uses
-			= winf ? winf->get_uses() : static_cast<int>(Weapon_info::melee);
+	const int uses = winf ? winf->get_uses() : static_cast<int>(Weapon_info::melee);
 	if (!uses || uses == Weapon_info::ranged) {
 		return reach;
 	} else {
@@ -378,9 +357,7 @@ int Game_object::get_effective_range(const Weapon_info* winf, int reach) const {
  *  Output is ammount of ammo needed and -> to ammo
  *  object, if the argument is not null.
  */
-int Game_object::get_weapon_ammo(
-		int weapon, int family, int proj, bool ranged, Game_object** ammo,
-		bool recursive) {
+int Game_object::get_weapon_ammo(int weapon, int family, int proj, bool ranged, Game_object** ammo, bool recursive) {
 	if (ammo) {
 		*ammo = nullptr;
 	}
@@ -522,8 +499,7 @@ int Game_object::modify_quantity(
 			base = 24;
 		}
 		// Verified.
-		const int new_frame
-				= newquant > 12 ? 7 : (newquant > 6 ? 6 : newquant - 1);
+		const int new_frame = newquant > 12 ? 7 : (newquant > 6 ? 6 : newquant - 1);
 		change_frame(base + new_frame);
 	}
 
@@ -599,9 +575,7 @@ void Game_object::change_frame(int frnum) {
 	const int new_brightness = get_info().get_object_light(frnum);
 
 	// For objects on the ground
-	if (chunk
-		&& ((old_brightness == 0 && new_brightness > 0)
-			|| (old_brightness > 0 && new_brightness == 0))) {
+	if (chunk && ((old_brightness == 0 && new_brightness > 0) || (old_brightness > 0 && new_brightness == 0))) {
 		if (chunk->dungeon_levels && chunk->is_dungeon(get_tx(), get_ty())) {
 			chunk->dungeon_lights.erase(this);
 		} else {
@@ -609,8 +583,7 @@ void Game_object::change_frame(int frnum) {
 		}
 		// Add to appropriate light set if now emitting light
 		if (new_brightness > 0) {
-			if (chunk->dungeon_levels
-				&& chunk->is_dungeon(get_tx(), get_ty())) {
+			if (chunk->dungeon_levels && chunk->is_dungeon(get_tx(), get_ty())) {
 				chunk->dungeon_lights.insert(this);
 			} else {
 				chunk->non_dungeon_lights.insert(this);
@@ -648,8 +621,7 @@ bool Game_object::swap_positions(Game_object* obj2) {
 	const Shape_info& inf2   = obj2->get_info();
 	const int         frame1 = get_framenum();
 	const int         frame2 = obj2->get_framenum();
-	if (inf1.get_3d_xtiles(frame1) != inf2.get_3d_xtiles(frame2)
-		|| inf1.get_3d_ytiles(frame1) != inf2.get_3d_ytiles(frame2)) {
+	if (inf1.get_3d_xtiles(frame1) != inf2.get_3d_xtiles(frame2) || inf1.get_3d_ytiles(frame1) != inf2.get_3d_ytiles(frame2)) {
 		return false;    // Not the same size.
 	}
 	const Tile_coord   p1 = get_tile();
@@ -689,56 +661,36 @@ void Game_object::clear_dependencies() {
  *  Output: # found, appended to vec.
  */
 
-int Game_object::find_nearby_eggs(
-		Egg_vector& vec, const Tile_coord& pos, int shapenum, int delta,
-		int qual, int frnum) {
-	return Game_object::find_nearby(
-			vec, pos, shapenum, delta, 16, qual, frnum, Egg_cast_functor());
+int Game_object::find_nearby_eggs(Egg_vector& vec, const Tile_coord& pos, int shapenum, int delta, int qual, int frnum) {
+	return Game_object::find_nearby(vec, pos, shapenum, delta, 16, qual, frnum, Egg_cast_functor());
 }
 
-int Game_object::find_nearby_actors(
-		Actor_vector& vec, const Tile_coord& pos, int shapenum, int delta,
-		int mask) {
-	return Game_object::find_nearby(
-			vec, pos, shapenum, delta, mask | 8, c_any_qual, c_any_framenum,
-			Actor_cast_functor());
+int Game_object::find_nearby_actors(Actor_vector& vec, const Tile_coord& pos, int shapenum, int delta, int mask) {
+	return Game_object::find_nearby(vec, pos, shapenum, delta, mask | 8, c_any_qual, c_any_framenum, Actor_cast_functor());
 }
 
 int Game_object::find_nearby(
-		Game_object_vector& vec, const Tile_coord& pos, int shapenum, int delta,
-		int mask, int qual, int frnum, bool exclude_okay_to_take) {
-	return Game_object::find_nearby(
-			vec, pos, shapenum, delta, mask, qual, frnum,
-			Game_object_cast_functor(), exclude_okay_to_take);
+		Game_object_vector& vec, const Tile_coord& pos, int shapenum, int delta, int mask, int qual, int frnum,
+		bool exclude_okay_to_take) {
+	return Game_object::find_nearby(vec, pos, shapenum, delta, mask, qual, frnum, Game_object_cast_functor(), exclude_okay_to_take);
 }
 
-int Game_object::find_nearby_eggs(
-		Egg_vector& vec, int shapenum, int delta, int qual, int frnum) const {
-	return Game_object::find_nearby(
-			vec, get_tile(), shapenum, delta, 16, qual, frnum,
-			Egg_cast_functor());
+int Game_object::find_nearby_eggs(Egg_vector& vec, int shapenum, int delta, int qual, int frnum) const {
+	return Game_object::find_nearby(vec, get_tile(), shapenum, delta, 16, qual, frnum, Egg_cast_functor());
 }
 
-int Game_object::find_nearby_actors(
-		Actor_vector& vec, int shapenum, int delta, int mask) const {
-	return Game_object::find_nearby(
-			vec, get_tile(), shapenum, delta, mask | 8, c_any_qual,
-			c_any_framenum, Actor_cast_functor());
+int Game_object::find_nearby_actors(Actor_vector& vec, int shapenum, int delta, int mask) const {
+	return Game_object::find_nearby(vec, get_tile(), shapenum, delta, mask | 8, c_any_qual, c_any_framenum, Actor_cast_functor());
 }
 
-int Game_object::find_nearby(
-		Game_object_vector& vec, int shapenum, int delta, int mask, int qual,
-		int framenum) const {
-	return Game_object::find_nearby(
-			vec, get_tile(), shapenum, delta, mask, qual, framenum,
-			Game_object_cast_functor());
+int Game_object::find_nearby(Game_object_vector& vec, int shapenum, int delta, int mask, int qual, int framenum) const {
+	return Game_object::find_nearby(vec, get_tile(), shapenum, delta, mask, qual, framenum, Game_object_cast_functor());
 }
 
 /*
  *  Convert a vector to weak objects.
  */
-void Game_object::obj_vec_to_weak(
-		std::vector<Game_object_weak>& dest, Game_object_vector& src) {
+void Game_object::obj_vec_to_weak(std::vector<Game_object_weak>& dest, Game_object_vector& src) {
 	for (auto* obj : src) {
 		dest.push_back(weak_from_obj(obj));
 	}
@@ -828,9 +780,7 @@ TileRect Game_object::get_footprint() {
 	const int        xtiles = info.get_3d_xtiles(frame);
 	const int        ytiles = info.get_3d_ytiles(frame);
 	const Tile_coord t      = get_tile();
-	TileRect         foot(
-            (t.tx - xtiles + 1 + c_num_tiles) % c_num_tiles,
-            (t.ty - ytiles + 1 + c_num_tiles) % c_num_tiles, xtiles, ytiles);
+	TileRect foot((t.tx - xtiles + 1 + c_num_tiles) % c_num_tiles, (t.ty - ytiles + 1 + c_num_tiles) % c_num_tiles, xtiles, ytiles);
 	return foot;
 }
 
@@ -847,9 +797,8 @@ Block Game_object::get_block() const {
 	const int        ztiles = info.get_3d_height();
 	const Tile_coord t      = get_tile();
 	Block            vol(
-            (t.tx - xtiles + 1 + c_num_tiles) % c_num_tiles,
-            (t.ty - ytiles + 1 + c_num_tiles) % c_num_tiles, t.tz, xtiles,
-            ytiles, ztiles);
+            (t.tx - xtiles + 1 + c_num_tiles) % c_num_tiles, (t.ty - ytiles + 1 + c_num_tiles) % c_num_tiles, t.tz, xtiles, ytiles,
+            ztiles);
 	return vol;
 }
 
@@ -869,9 +818,7 @@ bool Game_object::blocks(const Tile_coord& tile) const {
 	}
 	// Occupies desired tile?
 	const int frame = get_framenum();
-	return tile.tx > t.tx - info.get_3d_xtiles(frame)
-		   && tile.ty > t.ty - info.get_3d_ytiles(frame)
-		   && tile.tz < t.tz + ztiles;
+	return tile.tx > t.tx - info.get_3d_xtiles(frame) && tile.ty > t.ty - info.get_3d_ytiles(frame) && tile.tz < t.tz + ztiles;
 }
 
 /*
@@ -883,8 +830,7 @@ bool Game_object::blocks(const Tile_coord& tile) const {
 Game_object* Game_object::find_blocking(Tile_coord tile    // Tile to check.
 ) {
 	tile.fixme();
-	Map_chunk* chunk = gmap->get_chunk(
-			tile.tx / c_tiles_per_chunk, tile.ty / c_tiles_per_chunk);
+	Map_chunk*      chunk = gmap->get_chunk(tile.tx / c_tiles_per_chunk, tile.ty / c_tiles_per_chunk);
 	Game_object*    obj;
 	Object_iterator next(chunk->get_objects());
 	while ((obj = next.get_next()) != nullptr) {
@@ -903,8 +849,7 @@ Game_object* Game_object::find_blocking(Tile_coord tile    // Tile to check.
 
 Game_object* Game_object::find_door(Tile_coord tile) {
 	tile.fixme();
-	Map_chunk* chunk = gmap->get_chunk(
-			tile.tx / c_tiles_per_chunk, tile.ty / c_tiles_per_chunk);
+	Map_chunk* chunk = gmap->get_chunk(tile.tx / c_tiles_per_chunk, tile.ty / c_tiles_per_chunk);
 	return chunk->find_door(tile);
 }
 
@@ -1031,9 +976,7 @@ void Game_object::paint_bbox(int pix) {
 	int         x, y;
 	gwin->get_shape_location(this, x, y);
 
-	info.paint_bbox(
-			x, y, get_framenum(), gwin->get_win()->get_ibuf(),
-			Shape_manager::get_special_pixel(pix));
+	info.paint_bbox(x, y, get_framenum(), gwin->get_win()->get_ibuf(), Shape_manager::get_special_pixel(pix));
 }
 
 /*
@@ -1054,9 +997,7 @@ void Game_object::activate(int event) {
 		bell_just_rung = weak_from_this();
 	}
 
-	ucmachine->call_usecode(
-			get_usecode(), this,
-			static_cast<Usecode_machine::Usecode_events>(event));
+	ucmachine->call_usecode(get_usecode(), this, static_cast<Usecode_machine::Usecode_events>(event));
 }
 
 /*
@@ -1071,8 +1012,7 @@ bool Game_object::edit() {
 		const Tile_coord  t    = get_tile();
 		const std::string name = get_name();
 		if (Object_out(
-					client_socket, Exult_server::obj, this, t.tx, t.ty, t.tz,
-					get_shapenum(), get_framenum(), get_quality(), name)
+					client_socket, Exult_server::obj, this, t.tx, t.ty, t.tz, get_shapenum(), get_framenum(), get_quality(), name)
 			!= -1) {
 			cout << "Sent object data to ExultStudio" << endl;
 			editing = shared_from_this();
@@ -1099,8 +1039,7 @@ void Game_object::update_from_studio(unsigned char* data, int datalen) {
 	int          frame;
 	int          quality;
 	std::string  name;
-	if (!Object_in(
-				data, datalen, obj, tx, ty, tz, shape, frame, quality, name)) {
+	if (!Object_in(data, datalen, obj, tx, ty, tz, shape, frame, quality, name)) {
 		cout << "Error decoding object" << endl;
 		return;
 	}
@@ -1131,8 +1070,7 @@ void Game_object::update_from_studio(unsigned char* data, int datalen) {
  *  The object is deleted.
  */
 
-void Game_object::remove_this(
-		Game_object_shared* keep    // Non-null to not delete.
+void Game_object::remove_this(Game_object_shared* keep    // Non-null to not delete.
 ) {
 	// Do this before all else.
 	if (keep) {
@@ -1234,11 +1172,10 @@ bool Game_object::add(
 
 bool Game_object::drop(Game_object* obj    // This may be deleted.
 ) {
-	const Shape_info& inf = get_info();
-	const int shapenum    = get_shapenum();    // It's possible if shapes match.
+	const Shape_info& inf      = get_info();
+	const int         shapenum = get_shapenum();    // It's possible if shapes match.
 	if (obj->get_shapenum() != shapenum || !inf.has_quantity()
-		|| (!inf.has_quantity_frames()
-			&& get_framenum() != obj->get_framenum())) {
+		|| (!inf.has_quantity_frames() && get_framenum() != obj->get_framenum())) {
 		return false;
 	}
 	const int objq        = obj->get_quantity();
@@ -1273,48 +1210,36 @@ static void Debug_lt(
 using std::setw;
 
 static inline std::ostream& operator<<(std::ostream& out, const TileRect& rc) {
-	out << "Rectangle { x = " << setw(4) << rc.x << ", y = " << setw(4) << rc.y
-		<< ", w = " << setw(4) << rc.w << ", h = " << setw(4) << rc.h << "}";
+	out << "Rectangle { x = " << setw(4) << rc.x << ", y = " << setw(4) << rc.y << ", w = " << setw(4) << rc.w
+		<< ", h = " << setw(4) << rc.h << "}";
 	return out;
 }
 
-static inline std::ostream& operator<<(
-		std::ostream& out, const Ordering_info& ord) {
+static inline std::ostream& operator<<(std::ostream& out, const Ordering_info& ord) {
 	out << "Ordering_info { area = " << ord.area << "," << endl;
-	out << "                tx     = " << setw(4) << ord.tx
-		<< ", ty    = " << setw(4) << ord.ty << ", tz   = " << setw(4) << ord.tz
+	out << "                tx     = " << setw(4) << ord.tx << ", ty    = " << setw(4) << ord.ty << ", tz   = " << setw(4) << ord.tz
 		<< "," << endl;
-	out << "                xs     = " << setw(4) << ord.xs
-		<< ", ys    = " << setw(4) << ord.ys << ", zs   = " << setw(4) << ord.zs
+	out << "                xs     = " << setw(4) << ord.xs << ", ys    = " << setw(4) << ord.ys << ", zs   = " << setw(4) << ord.zs
 		<< "," << endl;
-	out << "                xleft  = " << setw(4) << ord.xleft
-		<< ", yfar  = " << setw(4) << ord.yfar << ", zbot = " << setw(4)
+	out << "                xleft  = " << setw(4) << ord.xleft << ", yfar  = " << setw(4) << ord.yfar << ", zbot = " << setw(4)
 		<< ord.zbot << "," << endl;
-	out << "                xright = " << setw(4) << ord.xright
-		<< ", ynear = " << setw(4) << ord.ynear << ", ztop = " << setw(4)
+	out << "                xright = " << setw(4) << ord.xright << ", ynear = " << setw(4) << ord.ynear << ", ztop = " << setw(4)
 		<< ord.ztop << "}";
 	return out;
 }
 
 static int Trace_Compare(
-		int retv, int xcmp, int ycmp, int zcmp, bool xover, bool yover,
-		bool zover, const Ordering_info& inf1, const Ordering_info& inf2,
-		const char* file, int line) {
-	std::cerr << "Game_object::compare (@" << file << ":" << line
-			  << "): " << retv << std::endl;
+		int retv, int xcmp, int ycmp, int zcmp, bool xover, bool yover, bool zover, const Ordering_info& inf1,
+		const Ordering_info& inf2, const char* file, int line) {
+	std::cerr << "Game_object::compare (@" << file << ":" << line << "): " << retv << std::endl;
 	std::cerr << inf1 << std::endl;
 	std::cerr << inf2 << std::endl;
-	std::cerr << "xcmp  = " << xcmp << ", ycmp  = " << ycmp
-			  << ", zcmp  = " << zcmp << std::endl;
-	std::cerr << "xover = " << xover << ", yover = " << yover
-			  << ", zover = " << zover << std::endl;
+	std::cerr << "xcmp  = " << xcmp << ", ycmp  = " << ycmp << ", zcmp  = " << zcmp << std::endl;
+	std::cerr << "xover = " << xover << ", yover = " << yover << ", zover = " << zover << std::endl;
 	return retv;
 }
 
-#	define TRACE_COMPARE(x)                                          \
-		Trace_Compare(                                                \
-				x, xcmp, ycmp, zcmp, xover, yover, zover, inf1, inf2, \
-				__FILE__, __LINE__)
+#	define TRACE_COMPARE(x) Trace_Compare(x, xcmp, ycmp, zcmp, xover, yover, zover, inf1, inf2, __FILE__, __LINE__)
 #else
 #	define TRACE_COMPARE(x) (x)
 #endif
@@ -1380,8 +1305,7 @@ int Game_object::compare(
 	bool xover;
 	bool yover;
 	bool zover;    // True if dim's overlap.
-	Compare_ranges(
-			inf1.xleft, inf1.xright, inf2.xleft, inf2.xright, xcmp, xover);
+	Compare_ranges(inf1.xleft, inf1.xright, inf2.xleft, inf2.xright, xcmp, xover);
 	Compare_ranges(inf1.yfar, inf1.ynear, inf2.yfar, inf2.ynear, ycmp, yover);
 	Compare_ranges(inf1.zbot, inf1.ztop, inf2.zbot, inf2.ztop, zcmp, zover);
 	if (!xcmp && !ycmp && !zcmp) {
@@ -1544,17 +1468,14 @@ int Game_object::reduce_health(
 	const int hp = get_effective_obj_hp();
 	if (!hp ||    // Object is indestructible.
 				  // These damage types do not affect objects.
-		type == Weapon_data::lightning_damage
-		|| type == Weapon_data::ethereal_damage) {
+		type == Weapon_data::lightning_damage || type == Weapon_data::ethereal_damage) {
 		return 0;
 	}
-	if (get_info().is_explosive()
-		&& (type == Weapon_data::fire_damage || delta >= hp)) {
+	if (get_info().is_explosive() && (type == Weapon_data::fire_damage || delta >= hp)) {
 		// Cause chain reaction.
 		set_quality(1);    // Make it indestructible.
 		const Tile_coord offset(0, 0, get_info().get_3d_height() / 2);
-		eman->add_effect(std::make_unique<Explosion_effect>(
-				get_tile() + offset, this, 0, get_shapenum(), -1, attacker));
+		eman->add_effect(std::make_unique<Explosion_effect>(get_tile() + offset, this, 0, get_shapenum(), -1, attacker));
 		return delta;    // Will be destroyed in Explosion_effect.
 	}
 	if (delta < hp) {
@@ -1562,8 +1483,7 @@ int Game_object::reduce_health(
 	} else {
 		// object destroyed
 		eman->remove_text_effect(this);
-		ucmachine->call_usecode(
-				DestroyObjectsUsecode, this, Usecode_machine::weapon);
+		ucmachine->call_usecode(DestroyObjectsUsecode, this, Usecode_machine::weapon);
 	}
 	return delta;
 }
@@ -1623,17 +1543,12 @@ int Game_object::figure_hit_points(
 	if (explodes && !explosion) {    // Explosions shouldn't explode again.
 									 // Time to explode.
 		const Tile_coord offset(0, 0, get_info().get_3d_height() / 2);
-		eman->add_effect(std::make_unique<Explosion_effect>(
-				get_tile() + offset, nullptr, 0, weapon_shape, ammo_shape,
-				attacker));
+		eman->add_effect(std::make_unique<Explosion_effect>(get_tile() + offset, nullptr, 0, weapon_shape, ammo_shape, attacker));
 		return -1;
 	}
 
 	int       delta  = 0;
-	const int effstr = attacker && attacker->as_actor()
-							   ? attacker->as_actor()->get_effective_prop(
-										 Actor::strength)
-							   : 0;
+	const int effstr = attacker && attacker->as_actor() ? attacker->as_actor()->get_effective_prop(Actor::strength) : 0;
 	if (winf && (winf->get_powers() & Weapon_data::no_damage) == 0) {
 		delta = apply_damage(attacker, effstr, wpoints, type);
 	}
@@ -1648,9 +1563,7 @@ int Game_object::figure_hit_points(
 }
 
 void Game_object::play_hit_sfx(int weapon, bool ranged) {
-	const Weapon_info* winf
-			= weapon >= 0 ? ShapeID::get_info(weapon).get_weapon_info()
-						  : nullptr;
+	const Weapon_info* winf = weapon >= 0 ? ShapeID::get_info(weapon).get_weapon_info() : nullptr;
 	if (winf && winf->get_damage()) {
 		int sfx;
 		if (ranged) {
@@ -1681,14 +1594,12 @@ Game_object* Game_object::attacked(
 	if (shnum == 735 && ammo_shape == 722) {
 		// Arrows hitting archery practice target.
 		const int frnum    = get_framenum();
-		const int newframe = !frnum ? (3 * (rand() % 8) + 1)
-									: ((frnum % 3) != 0 ? frnum + 1 : frnum);
+		const int newframe = !frnum ? (3 * (rand() % 8) + 1) : ((frnum % 3) != 0 ? frnum + 1 : frnum);
 		change_frame(newframe);
 	}
 
 	const int oldhp = get_effective_obj_hp();
-	const int delta
-			= figure_hit_points(attacker, weapon_shape, ammo_shape, explosion);
+	const int delta = figure_hit_points(attacker, weapon_shape, ammo_shape, explosion);
 	const int newhp = get_effective_obj_hp();
 
 	if (combat_trace) {
@@ -1707,8 +1618,7 @@ Game_object* Game_object::attacked(
 		} else if (delta < 0) {
 			cout << " causing an explosion." << endl;
 		} else {
-			cout << " for " << delta << " hit points, leaving " << newhp
-				 << " remaining." << endl;
+			cout << " for " << delta << " hit points, leaving " << newhp << " remaining." << endl;
 		}
 	}
 	return this;
@@ -1755,8 +1665,7 @@ void Terrain_game_object::move(int newtx, int newty, int newlift, int newmap) {
  *  The object is deleted.
  */
 
-void Terrain_game_object::remove_this(
-		Game_object_shared* keep    // Non-null to not delete.
+void Terrain_game_object::remove_this(Game_object_shared* keep    // Non-null to not delete.
 ) {
 	if (chunk && !keep && !chunk->get_map()->is_caching_out()) {
 		// This code removes the terrain object if the object was deleted.
@@ -1802,8 +1711,7 @@ void Ifix_game_object::move(int newtx, int newty, int newlift, int newmap) {
  *  The object is deleted.
  */
 
-void Ifix_game_object::remove_this(
-		Game_object_shared* keep    // Non-null to not delete.
+void Ifix_game_object::remove_this(Game_object_shared* keep    // Non-null to not delete.
 ) {
 	if (chunk) {    // Mark superchunk as 'modified'.
 		const int cx = get_cx();

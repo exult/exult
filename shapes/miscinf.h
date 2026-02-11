@@ -67,9 +67,7 @@ struct Avatar_data;
  */
 class Shapeinfo_lookup {
 	using Readstrings = std::vector<std::string>;
-	static Skin_data* ScrollSkins(
-			int skin, bool sex, bool sishapes, bool ignoresex, bool prev,
-			bool sel);
+	static Skin_data* ScrollSkins(int skin, bool sex, bool sishapes, bool ignoresex, bool prev, bool sel);
 
 public:
 	static void reset();
@@ -85,40 +83,32 @@ public:
 	static int               GetMaleAvShape();
 	static int               GetFemaleAvShape();
 
-	static int GetNextSkin(
-			int skin, bool sex, bool sishapes, bool ignoresex = false) {
-		return (ScrollSkins(skin, sex, sishapes, ignoresex, false, false))
-				->skin_id;
+	static int GetNextSkin(int skin, bool sex, bool sishapes, bool ignoresex = false) {
+		return (ScrollSkins(skin, sex, sishapes, ignoresex, false, false))->skin_id;
 	}
 
-	static int GetPrevSkin(
-			int skin, bool sex, bool sishapes, bool ignoresex = false) {
-		return (ScrollSkins(skin, sex, sishapes, ignoresex, true, false))
-				->skin_id;
+	static int GetPrevSkin(int skin, bool sex, bool sishapes, bool ignoresex = false) {
+		return (ScrollSkins(skin, sex, sishapes, ignoresex, true, false))->skin_id;
 	}
 
-	static Skin_data* GetNextSelSkin(
-			Skin_data* sk, bool sishapes, bool ignoresex = false) {
-		return ScrollSkins(
-				sk->skin_id, sk->is_female, sishapes, ignoresex, false, true);
+	static Skin_data* GetNextSelSkin(Skin_data* sk, bool sishapes, bool ignoresex = false) {
+		return ScrollSkins(sk->skin_id, sk->is_female, sishapes, ignoresex, false, true);
 	}
 
-	static Skin_data* GetPrevSelSkin(
-			Skin_data* sk, bool sishapes, bool ignoresex = false) {
-		return ScrollSkins(
-				sk->skin_id, sk->is_female, sishapes, ignoresex, true, true);
+	static Skin_data* GetPrevSelSkin(Skin_data* sk, bool sishapes, bool ignoresex = false) {
+		return ScrollSkins(sk->skin_id, sk->is_female, sishapes, ignoresex, true, true);
 	}
 
 	static int                     GetNumSkins(bool sex);
 	static Avatar_default_skin*    GetDefaultAvSkin();
 	static std::vector<Skin_data>* GetSkinList();
 	static Skin_data*              GetSkinInfo(int skin, bool sex);
-	static Skin_data* GetSkinInfoSafe(int skin, bool sex, bool sishapes);
-	static Skin_data* GetSkinInfoSafe(Actor* npc);
-	static bool       IsSkinSelectable(int skin);
-	static bool       HasFaceReplacement(int npcid);
-	static int        GetFaceReplacement(int facenum);
-	static Usecode_function_data* GetAvUsecode(int type);
+	static Skin_data*              GetSkinInfoSafe(int skin, bool sex, bool sishapes);
+	static Skin_data*              GetSkinInfoSafe(Actor* npc);
+	static bool                    IsSkinSelectable(int skin);
+	static bool                    HasFaceReplacement(int npcid);
+	static int                     GetFaceReplacement(int facenum);
+	static Usecode_function_data*  GetAvUsecode(int type);
 
 	static int get_skinvar(const std::string& key);
 

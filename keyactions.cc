@@ -87,8 +87,7 @@ static Actor* Get_party_member(int num    // 0=avatar.
 ) {
 	int npc_num = 0;    // Default to Avatar
 	if (num > 0) {
-		npc_num = Game_window::get_instance()->get_party_man()->get_member(
-				num - 1);
+		npc_num = Game_window::get_instance()->get_party_man()->get_member(num - 1);
 	}
 	return Game_window::get_instance()->get_npc(npc_num);
 }
@@ -103,8 +102,7 @@ void ActionQuit(const int* params) {
 void ActionOldFileGump(const int* params) {
 	ignore_unused_variable_warning(params);
 	auto* fileio = new File_gump();
-	Game_window::get_instance()->get_gump_man()->do_modal_gump(
-			fileio, Mouse::hand);
+	Game_window::get_instance()->get_gump_man()->do_modal_gump(fileio, Mouse::hand);
 	delete fileio;
 }
 
@@ -112,8 +110,7 @@ void ActionOldFileGump(const int* params) {
 void ActionMenuGump(const int* params) {
 	ignore_unused_variable_warning(params);
 	auto* gmenu = new Gamemenu_gump();
-	Game_window::get_instance()->get_gump_man()->do_modal_gump(
-			gmenu, Mouse::hand);
+	Game_window::get_instance()->get_gump_man()->do_modal_gump(gmenu, Mouse::hand);
 	delete gmenu;
 }
 
@@ -121,8 +118,7 @@ void ActionMenuGump(const int* params) {
 void ActionMixerGump(const int* params) {
 	ignore_unused_variable_warning(params);
 	auto* mixer = new Mixer_gump();
-	Game_window::get_instance()->get_gump_man()->do_modal_gump(
-			mixer, Mouse::hand);
+	Game_window::get_instance()->get_gump_man()->do_modal_gump(mixer, Mouse::hand);
 	delete mixer;
 }
 
@@ -130,8 +126,7 @@ void ActionMixerGump(const int* params) {
 void ActionFileGump(const int* params) {
 	ignore_unused_variable_warning(params);
 	auto* fileio = new Newfile_gump();
-	Game_window::get_instance()->get_gump_man()->do_modal_gump(
-			fileio, Mouse::hand);
+	Game_window::get_instance()->get_gump_man()->do_modal_gump(fileio, Mouse::hand);
 	delete fileio;
 }
 
@@ -265,9 +260,7 @@ void ActionFullscreen(const int* params) {
 		msg = "Windowed mode.\nKeep?";
 	}
 	if (Countdown_gump::ask(msg, 20)) {
-		config->set(
-				"config/video/fullscreen",
-				gwin->get_win()->is_fullscreen() ? "yes" : "no", true);
+		config->set("config/video/fullscreen", gwin->get_win()->is_fullscreen() ? "yes" : "no", true);
 	} else {
 		setup_video(!gwin->get_win()->is_fullscreen(), TOGGLE_FULLSCREEN);
 	}
@@ -301,9 +294,7 @@ void ActionUseFood(const int* params) {
 // params[1] = event id.
 void ActionCallUsecode(const int* params) {
 	Usecode_machine* usecode = Game_window::get_instance()->get_usecode();
-	usecode->call_usecode(
-			params[0], nullptr,
-			static_cast<Usecode_machine::Usecode_events>(params[1]));
+	usecode->call_usecode(params[0], nullptr, static_cast<Usecode_machine::Usecode_events>(params[1]));
 
 	Mouse::mouse()->set_speed_cursor();
 }
@@ -355,10 +346,8 @@ void ActionInventory(const int* params) {
 
 			const int shapenum = actor->inventory_shapenum();
 			// Check if this actor's inventory page is open or not
-			if (!gump_man->find_gump(actor, shapenum)
-				&& actor->can_act_charmed()) {
-				gump_man->add_gump(
-						actor, shapenum, true);    // force showing inv.
+			if (!gump_man->find_gump(actor, shapenum) && actor->can_act_charmed()) {
+				gump_man->add_gump(actor, shapenum, true);    // force showing inv.
 				inventory_page = i;
 				return;
 			}
@@ -366,8 +355,7 @@ void ActionInventory(const int* params) {
 		inventory_page = (inventory_page + 1) % (party_count + 1);
 	} else {
 		inventory_page = params[0];
-		if (inventory_page < 0
-			|| inventory_page > gwin->get_party_man()->get_count()) {
+		if (inventory_page < 0 || inventory_page > gwin->get_party_man()->get_count()) {
 			return;
 		}
 	}
@@ -453,16 +441,14 @@ void ActionStats(const int* params) {
 		stats_page = (stats_page + 1) % (party_count + 1);
 	} else {
 		stats_page = params[0];
-		if (stats_page < 0
-			|| stats_page >= gwin->get_party_man()->get_count()) {
+		if (stats_page < 0 || stats_page >= gwin->get_party_man()->get_count()) {
 			stats_page = 0;
 		}
 	}
 
 	actor = Get_party_member(stats_page);
 	if (actor) {
-		gwin->get_gump_man()->add_gump(
-				actor, game->get_shape("gumps/statsdisplay"));
+		gwin->get_gump_man()->add_gump(actor, game->get_shape("gumps/statsdisplay"));
 	}
 
 	Mouse::mouse()->set_speed_cursor();
@@ -473,8 +459,7 @@ void ActionCombatStats(const int* params) {
 	ignore_unused_variable_warning(params);
 	Game_window* gwin = Game_window::get_instance();
 	const int    cnt  = gwin->get_party_man()->get_count();
-	gwin->get_gump_man()->add_gump(
-			nullptr, game->get_shape("gumps/cstats/1") + cnt);
+	gwin->get_gump_man()->add_gump(nullptr, game->get_shape("gumps/cstats/1") + cnt);
 }
 
 //  { ActionFaceStats, 0, "Change Face Stats State", normal_keys, NONE }
@@ -500,9 +485,7 @@ void ActionUseHealingItems(const int* params) {
 	Game_object* obj = gwin->find_object(x, y);
 	if (obj) {
 		Actor* target = obj->as_actor();
-		if (target
-			&& target->get_property(Actor::health)
-					   < target->get_property(Actor::strength)) {
+		if (target && target->get_property(Actor::health) < target->get_property(Actor::strength)) {
 			Game_object*     oldtarg;
 			Tile_coord*      oldtile;
 			Usecode_machine* ucmachine = gwin->get_usecode();
@@ -582,13 +565,10 @@ int get_walking_speed(const int* params) {
 	int          speed;
 	if (parm == 2) {
 		speed = Mouse::slow_speed_factor;
-	} else if (
-			gwin->in_combat()
-			|| (gwin->is_hostile_nearby() && !cheat.in_god_mode())) {
+	} else if (gwin->in_combat() || (gwin->is_hostile_nearby() && !cheat.in_god_mode())) {
 		speed = Mouse::medium_combat_speed_factor;
 	} else {
-		speed = parm == 1 ? Mouse::medium_speed_factor
-						  : Mouse::fast_speed_factor;
+		speed = parm == 1 ? Mouse::medium_speed_factor : Mouse::fast_speed_factor;
 	}
 	return 200 * gwin->get_std_delay() / speed;
 }
@@ -597,64 +577,56 @@ int get_walking_speed(const int* params) {
 void ActionWalkWest(const int* params) {
 	Game_window* gwin  = Game_window::get_instance();
 	const int    speed = get_walking_speed(params);
-	gwin->start_actor(
-			gwin->get_width() / 2 - 50, gwin->get_height() / 2, speed);
+	gwin->start_actor(gwin->get_width() / 2 - 50, gwin->get_height() / 2, speed);
 }
 
 //  { ActionWalkEast, 0, "Walk east", normal_keys, NONE },
 void ActionWalkEast(const int* params) {
 	Game_window* gwin  = Game_window::get_instance();
 	const int    speed = get_walking_speed(params);
-	gwin->start_actor(
-			gwin->get_width() / 2 + 50, gwin->get_height() / 2, speed);
+	gwin->start_actor(gwin->get_width() / 2 + 50, gwin->get_height() / 2, speed);
 }
 
 //  { ActionWalkNorth, 0, "Walk north", normal_keys, NONE },
 void ActionWalkNorth(const int* params) {
 	Game_window* gwin  = Game_window::get_instance();
 	const int    speed = get_walking_speed(params);
-	gwin->start_actor(
-			gwin->get_width() / 2, gwin->get_height() / 2 - 50, speed);
+	gwin->start_actor(gwin->get_width() / 2, gwin->get_height() / 2 - 50, speed);
 }
 
 //  { ActionWalkSouth, 0, "Walk south", normal_keys, NONE },
 void ActionWalkSouth(const int* params) {
 	Game_window* gwin  = Game_window::get_instance();
 	const int    speed = get_walking_speed(params);
-	gwin->start_actor(
-			gwin->get_width() / 2, gwin->get_height() / 2 + 50, speed);
+	gwin->start_actor(gwin->get_width() / 2, gwin->get_height() / 2 + 50, speed);
 }
 
 //  { ActionWalkNorthEast, 0, "Walk north-east", normal_keys, NONE },
 void ActionWalkNorthEast(const int* params) {
 	Game_window* gwin  = Game_window::get_instance();
 	const int    speed = get_walking_speed(params);
-	gwin->start_actor(
-			gwin->get_width() / 2 + 50, gwin->get_height() / 2 - 50, speed);
+	gwin->start_actor(gwin->get_width() / 2 + 50, gwin->get_height() / 2 - 50, speed);
 }
 
 //  { ActionWalkSouthEast, 0, "Walk south-east", normal_keys, NONE },
 void ActionWalkSouthEast(const int* params) {
 	Game_window* gwin  = Game_window::get_instance();
 	const int    speed = get_walking_speed(params);
-	gwin->start_actor(
-			gwin->get_width() / 2 + 50, gwin->get_height() / 2 + 50, speed);
+	gwin->start_actor(gwin->get_width() / 2 + 50, gwin->get_height() / 2 + 50, speed);
 }
 
 //  { ActionWalkNorthWest, 0, "Walk north-west", normal_keys, NONE },
 void ActionWalkNorthWest(const int* params) {
 	Game_window* gwin  = Game_window::get_instance();
 	const int    speed = get_walking_speed(params);
-	gwin->start_actor(
-			gwin->get_width() / 2 - 50, gwin->get_height() / 2 - 50, speed);
+	gwin->start_actor(gwin->get_width() / 2 - 50, gwin->get_height() / 2 - 50, speed);
 }
 
 //  { ActionWalkSouthWest, 0, "Walk south-west", normal_keys, NONE },
 void ActionWalkSouthWest(const int* params) {
 	Game_window* gwin  = Game_window::get_instance();
 	const int    speed = get_walking_speed(params);
-	gwin->start_actor(
-			gwin->get_width() / 2 - 50, gwin->get_height() / 2 + 50, speed);
+	gwin->start_actor(gwin->get_width() / 2 - 50, gwin->get_height() / 2 + 50, speed);
 }
 
 //  { ActionStopWalking, 0, "Stop Walking", cheat_keys, NONE },

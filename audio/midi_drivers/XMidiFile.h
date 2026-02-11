@@ -71,9 +71,7 @@ private:
 
 public:
 	XMidiFile() = delete;    // No default constructor
-	XMidiFile(
-			IDataSource* source, int pconvert,
-			std::string_view drivername = {});
+	XMidiFile(IDataSource* source, int pconvert, std::string_view drivername = {});
 	~XMidiFile();
 
 	int number_of_tracks() {
@@ -113,26 +111,17 @@ private:
 	// MT32 doesn't like too many simultaneous controller change events
 	void SpreadEvents();
 
-	int ConvertNote(
-			const int time, const unsigned char status, IDataSource* source,
-			const int size);
-	int ConvertEvent(
-			const int time, const unsigned char status, IDataSource* source,
-			const int size, first_state& fs);
-	int ConvertSystemMessage(
-			const int time, const unsigned char status, IDataSource* source);
+	int ConvertNote(const int time, const unsigned char status, IDataSource* source, const int size);
+	int ConvertEvent(const int time, const unsigned char status, IDataSource* source, const int size, first_state& fs);
+	int ConvertSystemMessage(const int time, const unsigned char status, IDataSource* source);
 	int CreateMT32SystemMessage(
-			const int time, uint32 address_base, uint16 address_offset,
-			uint32 len, const void* data = nullptr,
+			const int time, uint32 address_base, uint16 address_offset, uint32 len, const void* data = nullptr,
 			IDataSource* source = nullptr);
 
-	int ConvertFiletoList(
-			IDataSource* source, const bool is_xmi, first_state& fs);
+	int ConvertFiletoList(IDataSource* source, const bool is_xmi, first_state& fs);
 
 	int ExtractTracksFromXmi(IDataSource* source);
-	int ExtractTracksFromMid(
-			IDataSource* source, const uint32 ppqn, const int num_tracks,
-			const bool type1);
+	int ExtractTracksFromMid(IDataSource* source, const uint32 ppqn, const int num_tracks, const bool type1);
 
 	int ExtractTracks(IDataSource* source, std::string_view drivername);
 

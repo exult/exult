@@ -47,8 +47,7 @@ namespace Pentagram {
 			int    cur_type;
 		};
 
-		static inline int decode_ADPCM_4_sample(
-				uint8 sample, int& reference, int& scale);
+		static inline int decode_ADPCM_4_sample(uint8 sample, int& reference, int& scale);
 
 		static void decode_ADPCM_4(
 				uint8* inBuf,

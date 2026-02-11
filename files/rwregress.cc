@@ -43,26 +43,22 @@ int main() {
 	assert(static_cast<char>(Read1(iss)) == ' ');
 
 	const uint16 outread2 = little_endian::Read2(iss);
-	cout << static_cast<char>(outread2 & 0xff)
-		 << static_cast<char>((outread2 >> 8) & 0xff) << endl;
+	cout << static_cast<char>(outread2 & 0xff) << static_cast<char>((outread2 >> 8) & 0xff) << endl;
 	assert(static_cast<char>(outread2 & 0xff) == 'B');
 	assert(static_cast<char>((outread2 >> 8) & 0xff) == 'C');
 
 	assert(static_cast<char>(Read1(iss)) == ' ');
 
 	const uint16 outread2high = big_endian::Read2(iss);
-	cout << static_cast<char>((outread2high >> 8) & 0xff)
-		 << static_cast<char>(outread2high & 0xff) << endl;
+	cout << static_cast<char>((outread2high >> 8) & 0xff) << static_cast<char>(outread2high & 0xff) << endl;
 	assert(static_cast<char>(outread2high & 0xff) == 'E');
 	assert(static_cast<char>((outread2high >> 8) & 0xff) == 'D');
 
 	assert(static_cast<char>(Read1(iss)) == ' ');
 
 	const uint32 outread4 = little_endian::Read4(iss);
-	cout << static_cast<char>(outread4 & 0xff)
-		 << static_cast<char>((outread4 >> 8) & 0xff)
-		 << static_cast<char>((outread4 >> 16) & 0xff)
-		 << static_cast<char>((outread4 >> 24) & 0xff) << endl;
+	cout << static_cast<char>(outread4 & 0xff) << static_cast<char>((outread4 >> 8) & 0xff)
+		 << static_cast<char>((outread4 >> 16) & 0xff) << static_cast<char>((outread4 >> 24) & 0xff) << endl;
 	assert(static_cast<char>(outread4 & 0xff) == 'F');
 	assert(static_cast<char>((outread4 >> 8) & 0xff) == 'G');
 	assert(static_cast<char>((outread4 >> 16) & 0xff) == 'H');
@@ -71,10 +67,8 @@ int main() {
 	assert(static_cast<char>(Read1(iss)) == ' ');
 
 	const uint32 outread4high = big_endian::Read4(iss);
-	cout << static_cast<char>((outread4high >> 24) & 0xff)
-		 << static_cast<char>((outread4high >> 16) & 0xff)
-		 << static_cast<char>((outread4high >> 8) & 0xff)
-		 << static_cast<char>(outread4high & 0xff) << endl;
+	cout << static_cast<char>((outread4high >> 24) & 0xff) << static_cast<char>((outread4high >> 16) & 0xff)
+		 << static_cast<char>((outread4high >> 8) & 0xff) << static_cast<char>(outread4high & 0xff) << endl;
 	assert(static_cast<char>(outread4high & 0xff) == 'M');
 	assert(static_cast<char>((outread4high >> 8) & 0xff) == 'L');
 	assert(static_cast<char>((outread4high >> 16) & 0xff) == 'K');

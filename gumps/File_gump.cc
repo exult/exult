@@ -67,8 +67,7 @@ short                File_gump::texth = 13;
  */
 class Load_save_button : public Gump_button {
 public:
-	Load_save_button(Gump* par, int px, int py, int shapenum)
-			: Gump_button(par, shapenum, px, py) {}
+	Load_save_button(Gump* par, int px, int py, int shapenum) : Gump_button(par, shapenum, px, py) {}
 
 	// What to do when 'clicked':
 	bool activate(MouseButton button) override;
@@ -79,8 +78,7 @@ public:
  */
 class Quit_button : public Gump_button {
 public:
-	Quit_button(Gump* par, int px, int py)
-			: Gump_button(par, game->get_shape("gumps/quitbtn"), px, py) {}
+	Quit_button(Gump* par, int px, int py) : Gump_button(par, game->get_shape("gumps/quitbtn"), px, py) {}
 
 	// What to do when 'clicked':
 	bool activate(MouseButton button) override;
@@ -91,8 +89,7 @@ public:
  */
 class Sound_button : public Gump_button {
 public:
-	Sound_button(Gump* par, int px, int py, int shapenum, bool enabled)
-			: Gump_button(par, shapenum, px, py) {
+	Sound_button(Gump* par, int px, int py, int shapenum, bool enabled) : Gump_button(par, shapenum, px, py) {
 		set_pushed(enabled);
 	}
 
@@ -154,8 +151,7 @@ class Gump_text : public Gump_widget {
 	int   cursor;          // Index of char. cursor is before.
 public:
 	Gump_text(Gump* par, int shnum, int px, int py, int maxsz, int tx, int ty)
-			: Gump_widget(par, shnum, px, py), text(new char[maxsz + 1]),
-			  max_size(maxsz), length(0), textx(x + tx), texty(y + ty),
+			: Gump_widget(par, shnum, px, py), text(new char[maxsz + 1]), max_size(maxsz), length(0), textx(x + tx), texty(y + ty),
 			  cursor(0) {
 		text[0] = text[maxsz] = 0;
 		Shape_frame* shape    = ShapeID(shnum, 0, SF_GUMPS_VGA).get_shape();
@@ -216,8 +212,7 @@ void Gump_text::paint() {
 	sman->paint_text(2, text, parent->get_x() + textx, parent->get_y() + texty);
 	if (get_framenum()) {    // Focused?  Show cursor.
 		gwin->get_win()->fill8(
-				0, 1, sman->get_text_height(2),
-				parent->get_x() + textx + sman->get_text_width(2, text, cursor),
+				0, 1, sman->get_text_height(2), parent->get_x() + textx + sman->get_text_width(2, text, cursor),
 				parent->get_y() + texty + 1);
 	}
 	gwin->set_painted();
@@ -323,8 +318,7 @@ File_gump::File_gump() : Modal_gump(nullptr, game->get_shape("gumps/fileio")) {
 
 	int ty = texty;
 	for (size_t i = 0; i < names.size(); i++, ty += texth) {
-		names[i] = new Gump_text(
-				this, game->get_shape("gumps/fntext"), textx, ty, 30, 12, 2);
+		names[i] = new Gump_text(this, game->get_shape("gumps/fntext"), textx, ty, 30, 12, 2);
 		names[i]->set_text(gwin->get_save_name(i).c_str());
 	}
 	// First row of buttons:
@@ -332,14 +326,11 @@ File_gump::File_gump() : Modal_gump(nullptr, game->get_shape("gumps/fileio")) {
 	buttons[2]              = new Quit_button(this, btn_cols[2], btn_rows[0]);
 	// 2nd row.
 	buttons[3] = new Sound_button(
-			this, btn_cols[0], btn_rows[1], game->get_shape("gumps/musicbtn"),
-			Audio::get_ptr()->is_music_enabled());
+			this, btn_cols[0], btn_rows[1], game->get_shape("gumps/musicbtn"), Audio::get_ptr()->is_music_enabled());
 	buttons[4] = new Sound_button(
-			this, btn_cols[1], btn_rows[1], game->get_shape("gumps/speechbtn"),
-			Audio::get_ptr()->is_speech_enabled());
+			this, btn_cols[1], btn_rows[1], game->get_shape("gumps/speechbtn"), Audio::get_ptr()->is_speech_enabled());
 	buttons[5] = new Sound_button(
-			this, btn_cols[2], btn_rows[1], game->get_shape("gumps/soundbtn"),
-			Audio::get_ptr()->are_effects_enabled());
+			this, btn_cols[2], btn_rows[1], game->get_shape("gumps/soundbtn"), Audio::get_ptr()->are_effects_enabled());
 }
 
 /*
@@ -568,8 +559,7 @@ bool File_gump::mouse_up(
 		return Modal_gump::mouse_up(mx, my, button);
 	}
 	// Let text field handle it.
-	if (!pushed_text->mouse_clicked(mx, my)
-		|| pushed_text == focus) {    // Same field already selected?
+	if (!pushed_text->mouse_clicked(mx, my) || pushed_text == focus) {    // Same field already selected?
 		pushed_text->paint();
 		pushed_text = nullptr;
 		return true;
@@ -582,14 +572,10 @@ bool File_gump::mouse_up(
 	pushed_text = nullptr;
 	if (focus->get_length()) {    // Need load/save buttons?
 		if (!buttons[0]) {
-			buttons[0] = new Load_save_button(
-					this, btn_cols[0], btn_rows[0],
-					game->get_shape("gumps/loadbtn"));
+			buttons[0] = new Load_save_button(this, btn_cols[0], btn_rows[0], game->get_shape("gumps/loadbtn"));
 		}
 		if (!buttons[1]) {
-			buttons[1] = new Load_save_button(
-					this, btn_cols[1], btn_rows[0],
-					game->get_shape("gumps/savebtn"));
+			buttons[1] = new Load_save_button(this, btn_cols[1], btn_rows[0], game->get_shape("gumps/savebtn"));
 		}
 	} else if (!focus->get_length()) {
 		// No name yet.
@@ -665,9 +651,8 @@ bool File_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 	}
 
 	if (unicode < ' ') {
-		return Modal_gump::key_down(
-				chr, unicode);    // Ignore other special chars and let parent
-								  // class handle them
+		return Modal_gump::key_down(chr, unicode);    // Ignore other special chars and let parent
+													  // class handle them
 	}
 	if (unicode < 256 && isascii(unicode)) {
 		const int old_length = focus->get_length();
@@ -675,9 +660,7 @@ bool File_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 		// Added first character?  Need
 		//   'Save' button.
 		if (!old_length && focus->get_length() && !buttons[1]) {
-			buttons[1] = new Load_save_button(
-					this, btn_cols[1], btn_rows[0],
-					game->get_shape("gumps/savebtn"));
+			buttons[1] = new Load_save_button(this, btn_cols[1], btn_rows[0], game->get_shape("gumps/savebtn"));
 			buttons[1]->paint();
 		}
 		if (buttons[0]) {    // Can't load now.

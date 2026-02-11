@@ -48,8 +48,7 @@ Gump::Gump(
 		int initx, int inity,           // Coords. on screen.
 		int       shnum,                // Shape #.
 		ShapeFile shfile)
-		: Gump_Base(shnum, 0, shfile), container(cont), x(initx), y(inity),
-		  handles_kbd(false) {
+		: Gump_Base(shnum, 0, shfile), container(cont), x(initx), y(inity), handles_kbd(false) {
 	if (container) {
 		if (container->validGumpXY()) {
 			x = container->getGumpX();
@@ -66,8 +65,7 @@ Gump::Gump(
 		Container_game_object* cont,     // Container it represents.
 		int                    shnum,    // Shape #.
 		ShapeFile              shfile)
-		: Gump_Base(shnum, shnum == -1 ? -1 : 0, shfile), container(cont),
-		  handles_kbd(false) {
+		: Gump_Base(shnum, shnum == -1 ? -1 : 0, shfile), container(cont), handles_kbd(false) {
 	set_pos();
 }
 
@@ -76,11 +74,8 @@ Gump::Gump(
  */
 
 Gump::Gump(Container_game_object* cont, int initx, int inity, Gump* from)
-		: Gump_Base(
-				  from->get_shapenum(), from->get_framenum(),
-				  from->get_shapefile()),
-		  container(cont), x(initx), y(inity), object_area(from->object_area),
-		  handles_kbd(false) {
+		: Gump_Base(from->get_shapenum(), from->get_framenum(), from->get_shapefile()), container(cont), x(initx), y(inity),
+		  object_area(from->object_area), handles_kbd(false) {
 	// Clone widgets.
 	for (auto* elem : from->elems) {
 		add_elem(elem->clone(this));
@@ -131,8 +126,7 @@ void Gump::set_pos(int newx, int newy) {    // Set new spot on screen.
 	gwin->add_dirty(get_rect());
 }
 
-void Gump::set_object_area(
-		TileRect area, int checkx, int checky, bool set_check) {
+void Gump::set_object_area(TileRect area, int checkx, int checky, bool set_check) {
 	// Try to read container area and checkmark position from gump_info.txt
 	if (get_shapenum() >= 0 && get_shapefile() == SF_GUMPS_VGA) {
 		const Gump_info* info = Gump_info::get_gump_info(get_shapenum());
@@ -151,10 +145,9 @@ void Gump::set_object_area(
 	}
 
 	object_area = area;
-	if (set_check
-		&& std::none_of(elems.begin(), elems.end(), [](auto elem) -> bool {
-			   return dynamic_cast<Checkmark_button*>(elem) != nullptr;
-		   })) {
+	if (set_check && std::none_of(elems.begin(), elems.end(), [](auto elem) -> bool {
+			return dynamic_cast<Checkmark_button*>(elem) != nullptr;
+		})) {
 		elems.push_back(new Checkmark_button(this, checkx, checky));
 	}
 }
@@ -169,8 +162,7 @@ TileRect Gump::get_shape_rect(const Game_object* obj) const {
 		return TileRect(0, 0, 0, 0);
 	}
 	return TileRect(
-			x + object_area.x + obj->get_tx() - s->get_xleft(),
-			y + object_area.y + obj->get_ty() - s->get_yabove(), s->get_width(),
+			x + object_area.x + obj->get_tx() - s->get_xleft(), y + object_area.y + obj->get_ty() - s->get_yabove(), s->get_width(),
 			s->get_height());
 }
 
@@ -271,15 +263,13 @@ Gump_button* Gump::on_button(
 
 bool Gump::add(
 		Game_object* obj, int mx, int my,    // Mouse location.
-		int sx, int sy,     // Screen location of obj's hotspot.
-		bool dont_check,    // Skip volume check.
-		bool combine        // True to try to combine obj.  MAY
-							//   cause obj to be deleted.
+		int sx, int sy,                      // Screen location of obj's hotspot.
+		bool dont_check,                     // Skip volume check.
+		bool combine                         // True to try to combine obj.  MAY
+											 //   cause obj to be deleted.
 ) {
 	ignore_unused_variable_warning(combine);
-	if (!container
-		|| (!cheat.in_hack_mover() && !dont_check
-			&& !container->has_room(obj))) {
+	if (!container || (!cheat.in_hack_mover() && !dont_check && !container->has_room(obj))) {
 		return false;    // Full.
 	}
 	// Dropping on same thing?
@@ -405,13 +395,10 @@ void Gump::paint() {
 			continue;
 		}
 		const int objx = obj->get_tx() - shape->get_xleft() + 1 + object_area.x;
-		const int objy
-				= obj->get_ty() - shape->get_yabove() + 1 + object_area.y;
+		const int objy = obj->get_ty() - shape->get_yabove() + 1 + object_area.y;
 		// Does obj. appear to be placed?
 		if (!object_area.has_point(objx, objy)
-			|| !object_area.has_point(
-					objx + shape->get_xright() - 1,
-					objy + shape->get_ybelow() - 1)) {
+			|| !object_area.has_point(objx + shape->get_xright() - 1, objy + shape->get_ybelow() - 1)) {
 			// No.
 			int px = curx + shape->get_width();
 			int py = cury + shape->get_height();
@@ -421,8 +408,7 @@ void Gump::paint() {
 			if (py > endy) {
 				py = endy;
 			}
-			obj->set_shape_pos(
-					px - shape->get_xright(), py - shape->get_ybelow());
+			obj->set_shape_pos(px - shape->get_xright(), py - shape->get_ybelow());
 			// Mostly avoid overlap.
 			curx += shape->get_width() - 1;
 			if (curx >= endx) {
@@ -476,9 +462,7 @@ TileRect Gump::get_rect() const {
 		return TileRect(0, 0, 0, 0);
 	}
 
-	return TileRect(
-			x - s->get_xleft(), y - s->get_yabove(), s->get_width(),
-			s->get_height());
+	return TileRect(x - s->get_xleft(), y - s->get_yabove(), s->get_width(), s->get_height());
 }
 
 bool Gump::isOffscreen(bool partially) const {
@@ -490,12 +474,10 @@ bool Gump::isOffscreen(bool partially) const {
 	rect.shift(-iwin->get_start_x(), -iwin->get_start_y());
 
 	if (partially) {
-		return rect.x < 0 || rect.y < 0
-			   || (rect.x + rect.w) > iwin->get_full_width()
+		return rect.x < 0 || rect.y < 0 || (rect.x + rect.w) > iwin->get_full_width()
 			   || (rect.y + rect.h) > iwin->get_full_height();
 	} else {
-		return rect.x >= iwin->get_full_width()
-			   || rect.y >= iwin->get_full_height() || (rect.x + rect.w) <= 0
+		return rect.x >= iwin->get_full_width() || rect.y >= iwin->get_full_height() || (rect.x + rect.w) <= 0
 			   || (rect.y + rect.h) <= 0;
 	}
 }

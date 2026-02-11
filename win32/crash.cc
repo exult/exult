@@ -78,12 +78,9 @@ void DoCrash() {
 }
 #endif
 
-static BOOL CALLBACK Minidumpcallback(
-		PVOID, PMINIDUMP_CALLBACK_INPUT CallbackInput,
-		PMINIDUMP_CALLBACK_OUTPUT) {
+static BOOL CALLBACK Minidumpcallback(PVOID, PMINIDUMP_CALLBACK_INPUT CallbackInput, PMINIDUMP_CALLBACK_OUTPUT) {
 	// Exclude this thread from the minidump
-	if (CallbackInput->CallbackType == IncludeThreadCallback
-		&& CallbackInput->IncludeThread.ThreadId == GetCurrentThreadId()) {
+	if (CallbackInput->CallbackType == IncludeThreadCallback && CallbackInput->IncludeThread.ThreadId == GetCurrentThreadId()) {
 		return FALSE;
 	}
 	return TRUE;
@@ -114,31 +111,20 @@ static void HandlerWorkerThreadFunc() {
 		} break;
 
 		default:
-			std::cerr << "Signal: " << ExceptionRecord.ExceptionCode
-					  << std::endl
-					  << std::flush;
+			std::cerr << "Signal: " << ExceptionRecord.ExceptionCode << std::endl << std::flush;
 		}
 	} else {
 		switch (ExceptionRecord.ExceptionCode) {
 		case EXCEPTION_ACCESS_VIOLATION: {
 			std::cerr << "Access Violation ";
-			if (ExceptionRecord.NumberParameters > 1
-				&& ExceptionRecord.ExceptionInformation[0] == 0) {
-				std::cerr << "reading from "
-						  << PVOID(ExceptionRecord.ExceptionInformation[1])
-						  << std::endl;
+			if (ExceptionRecord.NumberParameters > 1 && ExceptionRecord.ExceptionInformation[0] == 0) {
+				std::cerr << "reading from " << PVOID(ExceptionRecord.ExceptionInformation[1]) << std::endl;
 			}
-			if (ExceptionRecord.NumberParameters > 1
-				&& ExceptionRecord.ExceptionInformation[0] == 1) {
-				std::cerr << "writing to "
-						  << PVOID(ExceptionRecord.ExceptionInformation[1])
-						  << std::endl;
+			if (ExceptionRecord.NumberParameters > 1 && ExceptionRecord.ExceptionInformation[0] == 1) {
+				std::cerr << "writing to " << PVOID(ExceptionRecord.ExceptionInformation[1]) << std::endl;
 			}
-			if (ExceptionRecord.NumberParameters > 1
-				&& ExceptionRecord.ExceptionInformation[0] == 8) {
-				std::cerr << "executing from "
-						  << PVOID(ExceptionRecord.ExceptionInformation[1])
-						  << std::endl;
+			if (ExceptionRecord.NumberParameters > 1 && ExceptionRecord.ExceptionInformation[0] == 8) {
+				std::cerr << "executing from " << PVOID(ExceptionRecord.ExceptionInformation[1]) << std::endl;
 			} else {
 			}
 		} break;
@@ -146,29 +132,19 @@ static void HandlerWorkerThreadFunc() {
 		// much means wnidows was unable to read a page from storage
 		case EXCEPTION_IN_PAGE_ERROR: {
 			std::cerr << "In Page Error ";
-			if (ExceptionRecord.NumberParameters > 1
-				&& ExceptionRecord.ExceptionInformation[0] == 0) {
-				std::cerr << "reading from "
-						  << PVOID(ExceptionRecord.ExceptionInformation[1])
-						  << std::endl;
+			if (ExceptionRecord.NumberParameters > 1 && ExceptionRecord.ExceptionInformation[0] == 0) {
+				std::cerr << "reading from " << PVOID(ExceptionRecord.ExceptionInformation[1]) << std::endl;
 			}
-			if (ExceptionRecord.NumberParameters > 1
-				&& ExceptionRecord.ExceptionInformation[0] == 1) {
-				std::cerr << "writing to "
-						  << PVOID(ExceptionRecord.ExceptionInformation[1])
-						  << std::endl;
+			if (ExceptionRecord.NumberParameters > 1 && ExceptionRecord.ExceptionInformation[0] == 1) {
+				std::cerr << "writing to " << PVOID(ExceptionRecord.ExceptionInformation[1]) << std::endl;
 			}
-			if (ExceptionRecord.NumberParameters > 1
-				&& ExceptionRecord.ExceptionInformation[0] == 8) {
-				std::cerr << "executing from "
-						  << PVOID(ExceptionRecord.ExceptionInformation[1])
-						  << std::endl;
+			if (ExceptionRecord.NumberParameters > 1 && ExceptionRecord.ExceptionInformation[0] == 8) {
+				std::cerr << "executing from " << PVOID(ExceptionRecord.ExceptionInformation[1]) << std::endl;
 			} else {
 			}
 		} break;
 		case EXCEPTION_FLT_DIVIDE_BY_ZERO: {
-			std::cerr << "Floating Point Divide by zero" << std::endl
-					  << std::flush;
+			std::cerr << "Floating Point Divide by zero" << std::endl << std::flush;
 		} break;
 		case EXCEPTION_INT_DIVIDE_BY_ZERO: {
 			std::cerr << "Integer  Divide by zero" << std::endl << std::flush;
@@ -189,40 +165,30 @@ static void HandlerWorkerThreadFunc() {
 			std::cerr << "Privledged Instruction" << std::endl << std::flush;
 		} break;
 		default: {
-			std::cerr << "Exception code 0x" << std::hex
-					  << ExceptionRecord.ExceptionCode << std::endl
-					  << std::flush;
+			std::cerr << "Exception code 0x" << std::hex << ExceptionRecord.ExceptionCode << std::endl << std::flush;
 		} break;
 		}
 
-		std::cerr << "Exception Address: " << ExceptionRecord.ExceptionAddress
-				  << std::endl
-				  << std::flush;
+		std::cerr << "Exception Address: " << ExceptionRecord.ExceptionAddress << std::endl << std::flush;
 
-		std::cerr << "Exception Flags: 0x" << std::hex
-				  << ExceptionRecord.ExceptionFlags << std::endl
-				  << std::flush;
+		std::cerr << "Exception Flags: 0x" << std::hex << ExceptionRecord.ExceptionFlags << std::endl << std::flush;
 
 		// Print the faulting module. If its not in exult.exe it might be hard
 		// to debug
 		HMODULE hmod;
-		if (GetModuleHandleExA(
-					GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-					LPCSTR(ExceptionRecord.ExceptionAddress), &hmod)) {
+		if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, LPCSTR(ExceptionRecord.ExceptionAddress), &hmod)) {
 			char modfn[MAX_PATH];
 			GetModuleFileNameA(hmod, modfn, MAX_PATH);
 			modfn[MAX_PATH - 1] = 0;
-			std::cerr << "Exception occurred within module " << modfn
-					  << std::endl;
+			std::cerr << "Exception occurred within module " << modfn << std::endl;
 		}
 	}
 
 	// CreateMidiDump
 	auto minidumpfn = get_system_path("<HOME>/minidump.dmp");
 	std::cerr << "Writing a minidump to: " << minidumpfn << std::endl;
-	HANDLE hminidumpfile = CreateFileA(
-			minidumpfn.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
-			FILE_ATTRIBUTE_NORMAL, nullptr);
+	HANDLE hminidumpfile
+			= CreateFileA(minidumpfn.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 	MINIDUMP_EXCEPTION_INFORMATION mdei;
 	MINIDUMP_CALLBACK_INFORMATION  mdci;
 	mdei.ThreadId = FaultingThreadId;
@@ -233,9 +199,7 @@ static void HandlerWorkerThreadFunc() {
 	mdei.ClientPointers    = FALSE;
 	mdci.CallbackRoutine   = Minidumpcallback;
 	mdci.CallbackParam     = nullptr;
-	MiniDumpWriteDump(
-			GetCurrentProcess(), GetCurrentProcessId(), hminidumpfile,
-			miniDump_Type, &mdei, nullptr, &mdci);
+	MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hminidumpfile, miniDump_Type, &mdei, nullptr, &mdci);
 
 	CloseHandle(hminidumpfile);
 
@@ -329,8 +293,7 @@ void WindowsInstallCrashHandler() {
 		std::string value = "normal";
 		if (config) {
 			// config setting can be "full" or "normal" or "".
-			config->value(
-					"config/debugging/windows/minidumptype", value, "normal");
+			config->value("config/debugging/windows/minidumptype", value, "normal");
 			if (value == "") {
 				value = "normal";
 			}
@@ -342,13 +305,10 @@ void WindowsInstallCrashHandler() {
 			// set the value to normal
 			else if (value != "normal") {
 				value = "normal";
-				config->set(
-						"config/debugging/windows/minidumptype", "normal",
-						true);
+				config->set("config/debugging/windows/minidumptype", "normal", true);
 			}
 		}
-		std::cout << "Installing Windows crash Handler with " << value
-				  << " minidumps" << std::endl;
+		std::cout << "Installing Windows crash Handler with " << value << " minidumps" << std::endl;
 		// Adds an Unhandled Exception Handler. This will replace the one
 		// installed by the runtime. This will catch all Win32 Exceptions that
 		// weren't handled by a Structured or Vectored Exception handler. In
@@ -366,8 +326,7 @@ void WindowsInstallCrashHandler() {
 		std::set_terminate(terminatehandler);
 
 	} else {
-		std::cout << "Debugger Attached, Not Installing Windows crash Handler"
-				  << std::endl;
+		std::cout << "Debugger Attached, Not Installing Windows crash Handler" << std::endl;
 	}
 	// DoCrash();
 }

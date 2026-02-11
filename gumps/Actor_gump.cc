@@ -86,8 +86,7 @@ int Actor_gump::find_closest(
 		const int  dy       = my - coords[i].y;
 		const long dsquared = dx * dx + dy * dy;
 		// Better than prev.?
-		if (dsquared < closest_squared
-			&& (!only_empty || !container->get_readied(i))) {
+		if (dsquared < closest_squared && (!only_empty || !container->get_readied(i))) {
 			closest_squared = dsquared;
 			closest         = i;
 		}
@@ -133,10 +132,10 @@ Actor_gump::Actor_gump(
 
 bool Actor_gump::add(
 		Game_object* obj, int mx, int my,    // Screen location of mouse.
-		int sx, int sy,     // Screen location of obj's hotspot.
-		bool dont_check,    // Skip volume check.
-		bool combine        // True to try to combine obj.  MAY
-							//   cause obj to be deleted.
+		int sx, int sy,                      // Screen location of obj's hotspot.
+		bool dont_check,                     // Skip volume check.
+		bool combine                         // True to try to combine obj.  MAY
+											 //   cause obj to be deleted.
 ) {
 	ignore_unused_variable_warning(sx, sy);
 	Game_object* cont = find_object(mx, my);
@@ -222,18 +221,14 @@ void Actor_gump::paint() {
 			const int sx = x + 36;
 			// Note this is the right finger slot shifted slightly
 			const int sy = y + 70;
-			ShapeID   sid(
-                    TWO_FINGER_BROWN_SHAPE, TWO_FINGER_BROWN_FRAME,
-                    SF_GUMPS_VGA);
+			ShapeID   sid(TWO_FINGER_BROWN_SHAPE, TWO_FINGER_BROWN_FRAME, SF_GUMPS_VGA);
 			sid.paint_shape(sx, sy);
 		}
 		if (actor->is_two_handed()) {
 			const int sx = x + 36;
 			// Note this is the right hand slot shifted slightly
 			const int sy = y + 55;
-			ShapeID   sid(
-                    TWO_HANDED_BROWN_SHAPE, TWO_HANDED_BROWN_FRAME,
-                    SF_GUMPS_VGA);
+			ShapeID   sid(TWO_HANDED_BROWN_SHAPE, TWO_HANDED_BROWN_FRAME, SF_GUMPS_VGA);
 			sid.paint_shape(sx, sy);
 		}
 	}

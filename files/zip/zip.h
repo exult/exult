@@ -77,8 +77,8 @@ struct tm_zip {
 };
 
 struct zip_fileinfo {
-	tm_zip tmz_date; /* date in understandable format           */
-	uLong  dosDate;  /* if dos_date == 0, tmu_date is used      */
+	tm_zip tmz_date;                  /* date in understandable format           */
+	uLong  dosDate;                   /* if dos_date == 0, tmu_date is used      */
 	/*    uLong       flag;        */ /* general purpose bit flag        2 bytes
 									   */
 
@@ -98,10 +98,8 @@ extern zipFile ZEXPORT zipOpen(const char* pathname, int append);
 */
 
 extern int ZEXPORT zipOpenNewFileInZip(
-		zipFile file, const char* filename, const zip_fileinfo* zipfi,
-		const void* extrafield_local, uInt size_extrafield_local,
-		const void* extrafield_global, uInt size_extrafield_global,
-		const char* comment, int method, int level);
+		zipFile file, const char* filename, const zip_fileinfo* zipfi, const void* extrafield_local, uInt size_extrafield_local,
+		const void* extrafield_global, uInt size_extrafield_global, const char* comment, int method, int level);
 /*
   Open a file in the ZIP for writing.
   filename : the filename in zip (if nullptr, '-' without quote will be used

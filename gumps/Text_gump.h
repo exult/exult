@@ -35,8 +35,7 @@ protected:
 
 public:
 	Text_gump(int shapenum, int fnt = 4)
-			: Gump(nullptr, shapenum), text(nullptr), textlen(0), curtop(0),
-			  curend(0), font(fnt), from_help(false) {}
+			: Gump(nullptr, shapenum), text(nullptr), textlen(0), curtop(0), curend(0), font(fnt), from_help(false) {}
 
 	~Text_gump() override {
 		delete[] text;

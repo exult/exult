@@ -64,8 +64,7 @@ public:
 		stop = nullptr;
 	}
 
-	T_Object_iterator(T_Object_list<T>& objects)
-			: T_Safe_object_iterator<T>(objects), first(objects.get_first()) {
+	T_Object_iterator(T_Object_list<T>& objects) : T_Safe_object_iterator<T>(objects), first(objects.get_first()) {
 		reset();
 	}
 
@@ -95,15 +94,12 @@ public:
 		this->stop = nullptr;
 	}
 
-	T_Nonflat_object_iterator(L chunk)
-			: T_Object_iterator<T>(chunk->get_objects()),
-			  nonflats(chunk->get_first_nonflat()) {
+	T_Nonflat_object_iterator(L chunk) : T_Object_iterator<T>(chunk->get_objects()), nonflats(chunk->get_first_nonflat()) {
 		reset();
 	}
 };
 
-using Nonflat_object_iterator
-		= T_Nonflat_object_iterator<Game_object, Map_chunk*>;
+using Nonflat_object_iterator = T_Nonflat_object_iterator<Game_object, Map_chunk*>;
 
 /*
  *  Iterate through a chunk's flat objects.
@@ -121,13 +117,9 @@ public:
 		stop = nullptr;
 	}
 
-	T_Flat_object_iterator(L chunk)
-			: T_Safe_object_iterator<T>(chunk->get_objects()) {
-		first   = chunk->get_objects().get_first() == chunk->get_first_nonflat()
-						  ? nullptr
-						  : chunk->get_objects().get_first();
-		stop_at = chunk->get_first_nonflat() ? chunk->get_first_nonflat()
-											 : chunk->get_objects().get_first();
+	T_Flat_object_iterator(L chunk) : T_Safe_object_iterator<T>(chunk->get_objects()) {
+		first   = chunk->get_objects().get_first() == chunk->get_first_nonflat() ? nullptr : chunk->get_objects().get_first();
+		stop_at = chunk->get_first_nonflat() ? chunk->get_first_nonflat() : chunk->get_objects().get_first();
 		reset();
 	}
 
@@ -159,13 +151,11 @@ public:
 	}
 
 	T_Object_iterator_backwards(L chunk)
-			: T_Safe_object_iterator<T>(chunk->get_objects()),
-			  first(chunk->get_objects().get_first()) {
+			: T_Safe_object_iterator<T>(chunk->get_objects()), first(chunk->get_objects().get_first()) {
 		reset();
 	}
 
-	T_Object_iterator_backwards(T_Object_list<T>& objects)
-			: T_Safe_object_iterator<T>(objects), first(objects.get_first()) {
+	T_Object_iterator_backwards(T_Object_list<T>& objects) : T_Safe_object_iterator<T>(objects), first(objects.get_first()) {
 		reset();
 	}
 
@@ -179,8 +169,7 @@ public:
 	}
 };
 
-using Object_iterator_backwards
-		= T_Object_iterator_backwards<Game_object, Map_chunk*>;
+using Object_iterator_backwards = T_Object_iterator_backwards<Game_object, Map_chunk*>;
 
 /*
  *  Iterate through a list of objects (recursively).
@@ -191,8 +180,7 @@ class D_Recursive_object_iterator {
 	D_Recursive_object_iterator<D>* child;
 	D                               elems;    // Goes through our elements.
 public:
-	D_Recursive_object_iterator(Object_list& objs)
-			: child(nullptr), elems(objs) {}
+	D_Recursive_object_iterator(Object_list& objs) : child(nullptr), elems(objs) {}
 
 	// Start at given object.
 	D_Recursive_object_iterator(Game_object* start);
@@ -202,8 +190,7 @@ public:
 /*
  *  Iterate forwards/backwards through a list of objects (recursively).
  */
-using Recursive_object_iterator_backwards
-		= D_Recursive_object_iterator<Object_iterator_backwards>;
-using Recursive_object_iterator = D_Recursive_object_iterator<Object_iterator>;
+using Recursive_object_iterator_backwards = D_Recursive_object_iterator<Object_iterator_backwards>;
+using Recursive_object_iterator           = D_Recursive_object_iterator<Object_iterator>;
 
 #endif

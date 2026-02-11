@@ -125,8 +125,7 @@ static void Write_text(
  */
 
 static void Usage() {
-	cerr << "Usage: textpack -[x|c] flexfile [textfile]" << endl
-		 << "    Missing [textfile] => stdin/stdout" << endl;
+	cerr << "Usage: textpack -[x|c] flexfile [textfile]" << endl << "    Missing [textfile] => stdin/stdout" << endl;
 	exit(1);
 }
 

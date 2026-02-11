@@ -95,8 +95,7 @@ static void get_singular_name(
 /*
  *  Extracts the second and fourth parts of the name string
  */
-static void get_plural_name(
-		const char* name, int quantity, string& output_name) {
+static void get_plural_name(const char* name, int quantity, string& output_name) {
 	char buf[20];
 
 	snprintf(buf, sizeof(buf), "%d ", quantity);    // Output the quantity
@@ -138,21 +137,17 @@ static void get_plural_name(
  *  Returns the string to be displayed when the item is clicked on
  */
 string Game_object::get_name() const {
-	const Shape_info& info = get_info();
-	const int qual = info.has_quality() && !info.is_npc() ? get_quality() : -1;
+	const Shape_info&      info  = get_info();
+	const int              qual  = info.has_quality() && !info.is_npc() ? get_quality() : -1;
 	const Frame_name_info* nminf = info.get_frame_name(get_framenum(), qual);
 	const int              shnum = get_shapenum();
 	const char*            name;
-	const char* shpname = (shnum >= 0 && shnum < get_num_item_names())
-								  ? get_item_name(shnum)
-								  : nullptr;
-	const int   type    = nminf ? nminf->get_type() : -255;
-	int         msgid;
+	const char*            shpname = (shnum >= 0 && shnum < get_num_item_names()) ? get_item_name(shnum) : nullptr;
+	const int              type    = nminf ? nminf->get_type() : -255;
+	int                    msgid;
 	if (type < 0 && type != -255) {    // This is a "catch all" default.
 		return "";                     // None.
-	} else if (
-			type == -255
-			|| (msgid = nminf->get_msgid()) >= get_num_misc_names()) {
+	} else if (type == -255 || (msgid = nminf->get_msgid()) >= get_num_misc_names()) {
 		name = shpname;
 	} else if (!type) {
 		name = get_misc_name(msgid);
@@ -172,8 +167,7 @@ string Game_object::get_name() const {
 				npcnum = get_live_npc_num();
 			}
 			Actor* npc = gwin->get_npc(npcnum);
-			if (npc && !npc->is_unused()
-				&& (!info.is_body_shape() || npc->get_flag(Obj_flags::met))) {
+			if (npc && !npc->is_unused() && (!info.is_body_shape() || npc->get_flag(Obj_flags::met))) {
 				other = npc->get_npc_name_string();
 				if (other.empty()) {    // No name.
 					defname = true;
@@ -185,9 +179,7 @@ string Game_object::get_name() const {
 			}
 		} else {
 			msg   = get_misc_name(msgid);
-			other = (othermsg >= 0 && othermsg < get_num_misc_names())
-							? get_misc_name(othermsg)
-							: (shpname ? shpname : "");
+			other = (othermsg >= 0 && othermsg < get_num_misc_names()) ? get_misc_name(othermsg) : (shpname ? shpname : "");
 		}
 		if (defname) {
 			if (othermsg >= 0 && othermsg < get_num_misc_names()) {

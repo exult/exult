@@ -39,8 +39,8 @@ Image_buffer::Image_buffer(
 		unsigned int h,
 		int          dpth    // Depth (bits/pixel).
 		)
-		: width(w), height(h), offset_x(0), offset_y(0), depth(dpth),
-		  bits(nullptr), line_width(w), clipx(0), clipy(0), clipw(w), cliph(h) {
+		: width(w), height(h), offset_x(0), offset_y(0), depth(dpth), bits(nullptr), line_width(w), clipx(0), clipy(0), clipw(w),
+		  cliph(h) {
 	switch (depth) {    // What depth?
 	case 8:
 		pixel_size = 1;
@@ -55,9 +55,7 @@ Image_buffer::Image_buffer(
 	}
 }
 
-void Image_buffer::draw_box(
-		int x, int y, int w, int h, int strokewidth, uint8 colfill,
-		uint8 colstroke) {
+void Image_buffer::draw_box(int x, int y, int w, int h, int strokewidth, uint8 colfill, uint8 colstroke) {
 	// Need to shrink by 1 so lines are drawn in the right places
 	w--;
 	h--;

@@ -130,17 +130,12 @@ SI_Game::SI_Game() {
 
 		add_resource("files/gameflx", gameflx, 0);
 
-		add_resource(
-				"config/defaultkeys", gameflx, EXULT_SI_FLX_DEFAULTKEYS_TXT);
+		add_resource("config/defaultkeys", gameflx, EXULT_SI_FLX_DEFAULTKEYS_TXT);
 		add_resource("config/bodies", gameflx, EXULT_SI_FLX_BODIES_TXT);
-		add_resource(
-				"config/paperdol_info", gameflx,
-				EXULT_SI_FLX_PAPERDOL_INFO_TXT);
+		add_resource("config/paperdol_info", gameflx, EXULT_SI_FLX_PAPERDOL_INFO_TXT);
 		add_resource("config/shape_info", gameflx, EXULT_SI_FLX_SHAPE_INFO_TXT);
-		add_resource(
-				"config/shape_files", gameflx, EXULT_SI_FLX_SHAPE_FILES_TXT);
-		add_resource(
-				"config/avatar_data", gameflx, EXULT_SI_FLX_AVATAR_DATA_TXT);
+		add_resource("config/shape_files", gameflx, EXULT_SI_FLX_SHAPE_FILES_TXT);
+		add_resource("config/avatar_data", gameflx, EXULT_SI_FLX_AVATAR_DATA_TXT);
 		add_resource("config/autonotes", gameflx, EXULT_SI_FLX_AUTONOTES_TXT);
 
 		add_resource("palettes/count", nullptr, 14);
@@ -226,58 +221,42 @@ SI_Game::SI_Game() {
 
 	if (font_config == "original" || font_config == "serif") {
 		fontManager.add_font("MENU_FONT", font_source, font_patch, 17, 1);
-		fontManager.add_font(
-				"SIINTRO_FONT", font_source, font_patch, 15, 0, vlead);
-		fontManager.add_font(
-				"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
+		fontManager.add_font("SIINTRO_FONT", font_source, font_patch, 15, 0, vlead);
+		fontManager.add_font("EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
 	} else {
 		fontManager.add_font("MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1);
 		fontManager.add_font("SIINTRO_FONT", INTRO_DAT, PATCH_INTRO, 14, 0, -5);
 		fontManager.add_font("EXULT_END_FONT", FONTS_VGA, PATCH_FONTS, 0, -2);
-		fontManager.add_font(
-				"EXULT_AT_FONT", File_spec(fname, EXULT_FLX_FONTS_ORIGINAL_VGA),
-				PATCH_ORIGINAL_FONTS, 14, -2);
+		fontManager.add_font("EXULT_AT_FONT", File_spec(fname, EXULT_FLX_FONTS_ORIGINAL_VGA), PATCH_ORIGINAL_FONTS, 14, -2);
 	}
 
 	// TODO: Come up with patches specific to SI Beta.
 	if (GAME_SI) {
 		Map_patch_collection& mp = gwin->get_map_patches();
 		// Egg by "PC pirate" in forest
-		mp.add(std::make_unique<Map_patch_remove>(
-				Object_spec(Tile_coord(647, 1899, 0), 275, 7, 1)));
+		mp.add(std::make_unique<Map_patch_remove>(Object_spec(Tile_coord(647, 1899, 0), 275, 7, 1)));
 		// Carpets above roof in Monitor
-		mp.add(std::make_unique<Map_patch_remove>(
-				Object_spec(Tile_coord(1035, 2572, 8), 483, 1, 0), true));
-		mp.add(std::make_unique<Map_patch_remove>(
-				Object_spec(Tile_coord(1034, 2571, 6), 483, 1, 0)));
-		mp.add(std::make_unique<Map_patch_remove>(
-				Object_spec(Tile_coord(1034, 2571, 5), 483, 1, 0), true));
+		mp.add(std::make_unique<Map_patch_remove>(Object_spec(Tile_coord(1035, 2572, 8), 483, 1, 0), true));
+		mp.add(std::make_unique<Map_patch_remove>(Object_spec(Tile_coord(1034, 2571, 6), 483, 1, 0)));
+		mp.add(std::make_unique<Map_patch_remove>(Object_spec(Tile_coord(1034, 2571, 5), 483, 1, 0), true));
 		// Neyobi under a fur:
 		mp.add(std::make_unique<Map_patch_modify>(
-				Object_spec(Tile_coord(1012, 873, 0), 867, 13, 0),
-				Object_spec(Tile_coord(1013, 873, 1), 867, 13, 0)));
+				Object_spec(Tile_coord(1012, 873, 0), 867, 13, 0), Object_spec(Tile_coord(1013, 873, 1), 867, 13, 0)));
 		// Bread on the prep table in Moonshade
-		mp.add(std::make_unique<Map_patch_remove>(
-				Object_spec(Tile_coord(2381, 1896, 2), 377, 1, 0)));
+		mp.add(std::make_unique<Map_patch_remove>(Object_spec(Tile_coord(2381, 1896, 2), 377, 1, 0)));
 		// Flour on Moonshade display table
-		mp.add(std::make_unique<Map_patch_remove>(
-				Object_spec(Tile_coord(2378, 1890, 2), 863, 16, 0)));
+		mp.add(std::make_unique<Map_patch_remove>(Object_spec(Tile_coord(2378, 1890, 2), 863, 16, 0)));
 		// Dough on Moonshade display table
-		mp.add(std::make_unique<Map_patch_remove>(
-				Object_spec(Tile_coord(2369, 1896, 2), 863, 17, 0)));
+		mp.add(std::make_unique<Map_patch_remove>(Object_spec(Tile_coord(2369, 1896, 2), 863, 17, 0)));
 		// Skullcrusher Mountains
 		//    music instruments in wall
-		mp.add(std::make_unique<Map_patch_remove>(
-				Object_spec(Tile_coord(35, 1942, 0), 690, 0, 0)));
-		mp.add(std::make_unique<Map_patch_remove>(
-				Object_spec(Tile_coord(35, 1954, 0), 692, 0, 0)));
+		mp.add(std::make_unique<Map_patch_remove>(Object_spec(Tile_coord(35, 1942, 0), 690, 0, 0)));
+		mp.add(std::make_unique<Map_patch_remove>(Object_spec(Tile_coord(35, 1954, 0), 692, 0, 0)));
 		// FIXME: eggs shouldn't spawn inside of walls
 		//    egg spawning spiders in wall
-		mp.add(std::make_unique<Map_patch_remove>(
-				Object_spec(Tile_coord(60, 1937, 0), 275, 0, 0)));
+		mp.add(std::make_unique<Map_patch_remove>(Object_spec(Tile_coord(60, 1937, 0), 275, 0, 0)));
 		// Fog weather egg under the dock before meeting Thoxa
-		mp.add(std::make_unique<Map_patch_remove>(
-				Object_spec(Tile_coord(406, 2548, 0), 275, 4, 0)));
+		mp.add(std::make_unique<Map_patch_remove>(Object_spec(Tile_coord(406, 2548, 0), 275, 4, 0)));
 	}
 }
 
@@ -309,8 +288,8 @@ void SI_Game::play_intro() {
 	std::shared_ptr<Font> sifont = fontManager.get_font("SIINTRO_FONT");
 	int                   vlead  = sifont->get_ver_lead();
 
-	const bool speech = audio->is_audio_enabled() && audio->is_speech_enabled();
-	const bool subtitles = !speech || Audio::get_ptr()->is_speech_with_subs();
+	const bool speech         = audio->is_audio_enabled() && audio->is_speech_enabled();
+	const bool subtitles      = !speech || Audio::get_ptr()->is_speech_with_subs();
 	bool       extended_intro = gwin->get_extended_intro();
 
 	auto select_fli = [&extended_intro](int orig_id, int ext_id) {
@@ -319,17 +298,12 @@ void SI_Game::play_intro() {
 		}
 		return playfli(INTRO_DAT, PATCH_INTRO, orig_id);
 	};
-	constexpr static const std::array original_intro_counts{
-			20, 20,  20, 50, 10,  75, 20, 20, 37, 55, 73, 220, 290, 50,
-			81, 200, 20, 61, 320, 20, 20, 61, 61, 61, 20, 300, 20};
-	constexpr static const std::array extended_intro_counts{
-			20, 20,  20, 25, 10,  25, 20, 20,  37,  55, 73, 220, 290, 50,
-			81, 200, 20, 61, 320, 20, 10, 115, 115, 91, 20, 300, 20};
-	static_assert(
-			original_intro_counts.size() == extended_intro_counts.size(),
-			"Missing array count in one of the arrays");
-	tcb::span selected_intro
-			= extended_intro ? extended_intro_counts : original_intro_counts;
+	constexpr static const std::array original_intro_counts{20, 20,  20, 50, 10,  75, 20, 20, 37, 55, 73, 220, 290, 50,
+															81, 200, 20, 61, 320, 20, 20, 61, 61, 61, 20, 300, 20};
+	constexpr static const std::array extended_intro_counts{20, 20,  20, 25, 10,  25, 20, 20,  37,  55, 73, 220, 290, 50,
+															81, 200, 20, 61, 320, 20, 10, 115, 115, 91, 20, 300, 20};
+	static_assert(original_intro_counts.size() == extended_intro_counts.size(), "Missing array count in one of the arrays");
+	tcb::span   selected_intro        = extended_intro ? extended_intro_counts : original_intro_counts;
 	const auto* selected_intro_counts = selected_intro.begin();
 
 	gwin->clear_screen(true);
@@ -373,17 +347,11 @@ void SI_Game::play_intro() {
 		if (extended_intro) {
 			const auto* midi_driver = audio->get_midi();
 			if (midi_driver->get_ogg_enabled()) {
-				audio->start_music(
-						EXULT_SI_FLX_EXT_INTRO_SI01_OGG, false,
-						MyMidiPlayer::Force_None, EXULT_SI_FLX);
+				audio->start_music(EXULT_SI_FLX_EXT_INTRO_SI01_OGG, false, MyMidiPlayer::Force_None, EXULT_SI_FLX);
 			} else if (midi_driver->is_mt32()) {
-				audio->start_music(
-						EXULT_SI_FLX_EXT_INTRO_R_XMI, false,
-						MyMidiPlayer::Force_None, EXULT_SI_FLX);
+				audio->start_music(EXULT_SI_FLX_EXT_INTRO_R_XMI, false, MyMidiPlayer::Force_None, EXULT_SI_FLX);
 			} else {
-				audio->start_music(
-						EXULT_SI_FLX_EXT_INTRO_A_XMI, false,
-						MyMidiPlayer::Force_None, EXULT_SI_FLX);
+				audio->start_music(EXULT_SI_FLX_EXT_INTRO_A_XMI, false, MyMidiPlayer::Force_None, EXULT_SI_FLX);
 			}
 		} else {
 			audio->start_music(R_SINTRO, 0, false);
@@ -440,13 +408,9 @@ void SI_Game::play_intro() {
 			}
 
 			if (jive) {
-				sifont->center_text(
-						ibuf, centerx, centery + 50 + vlead,
-						get_text_msg(dick_castle));
+				sifont->center_text(ibuf, centerx, centery + 50 + vlead, get_text_msg(dick_castle));
 			} else {
-				sifont->center_text(
-						ibuf, centerx, centery + 50 + vlead,
-						get_text_msg(lord_castle));
+				sifont->center_text(ibuf, centerx, centery + 50 + vlead, get_text_msg(lord_castle));
 			}
 
 			prev = num;
@@ -494,9 +458,7 @@ void SI_Game::play_intro() {
 			}
 
 			for (int i = 0; i < 3; i++) {
-				sifont->center_text(
-						ibuf, centerx, centery + 50 + vlead + 15 * i,
-						get_text_msg(bg_fellow + i));
+				sifont->center_text(ibuf, centerx, centery + 50 + vlead + 15 * i, get_text_msg(bg_fellow + i));
 			}
 
 			prev = num;
@@ -559,13 +521,9 @@ void SI_Game::play_intro() {
 			next = fli2.play(win, j, j, next);
 
 			if (jive) {
-				sifont->draw_text(
-						ibuf, centerx + 30, centery + 87 + vlead,
-						get_text_msg(yo_homes));
+				sifont->draw_text(ibuf, centerx + 30, centery + 87 + vlead, get_text_msg(yo_homes));
 			} else if (subtitles) {
-				sifont->draw_text(
-						ibuf, centerx + 30, centery + 87 + vlead,
-						get_text_msg(my_leige));
+				sifont->draw_text(ibuf, centerx + 30, centery + 87 + vlead, get_text_msg(my_leige));
 			}
 
 			win->ShowFillGuardBand();
@@ -578,8 +536,7 @@ void SI_Game::play_intro() {
 		win->ShowFillGuardBand();
 		wait_delay(0, 0, 1);
 
-		const char* const all_we[2]
-				= {get_text_msg(all_we0), get_text_msg(all_we0 + 1)};
+		const char* const all_we[2] = {get_text_msg(all_we0), get_text_msg(all_we0 + 1)};
 
 		if (speech && !jive) {
 			const U7multiobject voc_all_we(INTRO_DAT, PATCH_INTRO, 17);
@@ -592,12 +549,8 @@ void SI_Game::play_intro() {
 			next = fli2.play(win, j, j, next);
 
 			if (subtitles || jive) {
-				sifont->draw_text(
-						ibuf, centerx + 150 - sifont->get_text_width(all_we[0]),
-						centery + 74 + vlead, all_we[0]);
-				sifont->draw_text(
-						ibuf, centerx + 160 - sifont->get_text_width(all_we[1]),
-						centery + 87 + vlead, all_we[1]);
+				sifont->draw_text(ibuf, centerx + 150 - sifont->get_text_width(all_we[0]), centery + 74 + vlead, all_we[0]);
+				sifont->draw_text(ibuf, centerx + 160 - sifont->get_text_width(all_we[1]), centery + 87 + vlead, all_we[1]);
 			}
 
 			win->ShowFillGuardBand();
@@ -616,14 +569,9 @@ void SI_Game::play_intro() {
 		fli2.play(win, j, j, next);
 
 		if (subtitles || jive) {
-			const char* const and_a[2]
-					= {get_text_msg(and_a0), get_text_msg(and_a0 + 1)};
-			sifont->draw_text(
-					ibuf, centerx + 150 - sifont->get_text_width(and_a[0]),
-					centery + 74 + vlead, and_a[0]);
-			sifont->draw_text(
-					ibuf, centerx + 150 - sifont->get_text_width(and_a[1]),
-					centery + 87 + vlead, and_a[1]);
+			const char* const and_a[2] = {get_text_msg(and_a0), get_text_msg(and_a0 + 1)};
+			sifont->draw_text(ibuf, centerx + 150 - sifont->get_text_width(and_a[0]), centery + 74 + vlead, and_a[0]);
+			sifont->draw_text(ibuf, centerx + 150 - sifont->get_text_width(and_a[1]), centery + 87 + vlead, and_a[1]);
 		}
 
 		win->ShowFillGuardBand();
@@ -660,16 +608,10 @@ void SI_Game::play_intro() {
 			next = fli2.play(win, j, j, next);
 
 			if (jive) {
-				sifont->draw_text(
-						ibuf, topx + 40, centery + 74 + vlead,
-						get_text_msg(iree));
+				sifont->draw_text(ibuf, topx + 40, centery + 74 + vlead, get_text_msg(iree));
 			} else if (subtitles) {
-				sifont->draw_text(
-						ibuf, topx + 40, centery + 74 + vlead,
-						get_text_msg(indeed));
-				sifont->draw_text(
-						ibuf, topx + 40, centery + 87 + vlead,
-						get_text_msg(indeed + 1));
+				sifont->draw_text(ibuf, topx + 40, centery + 74 + vlead, get_text_msg(indeed));
+				sifont->draw_text(ibuf, topx + 40, centery + 87 + vlead, get_text_msg(indeed + 1));
 			}
 
 			win->ShowFillGuardBand();
@@ -716,13 +658,9 @@ void SI_Game::play_intro() {
 			next = fli3.play(win, j, j, next) + 20;
 
 			if (jive) {
-				sifont->draw_text(
-						ibuf, topx + 70, centery + 60 + vlead,
-						get_text_msg(jump_back));
+				sifont->draw_text(ibuf, topx + 70, centery + 60 + vlead, get_text_msg(jump_back));
 			} else if (subtitles) {
-				sifont->draw_text(
-						ibuf, topx + 70, centery + 60 + vlead,
-						get_text_msg(stand_back));
+				sifont->draw_text(ibuf, topx + 70, centery + 60 + vlead, get_text_msg(stand_back));
 			}
 
 			win->ShowFillGuardBand();
@@ -745,8 +683,7 @@ void SI_Game::play_intro() {
 
 		const Shape_file gshape(&gshape_ds);
 
-		cout << "Shape '" << name << "' in intro.dat has "
-			 << gshape.get_num_frames() << endl;
+		cout << "Shape '" << name << "' in intro.dat has " << gshape.get_num_frames() << endl;
 
 		if (speech && !jive) {
 			const U7multiobject voc_big_g(INTRO_DAT, PATCH_INTRO, 20);
@@ -773,47 +710,23 @@ void SI_Game::play_intro() {
 			}
 
 			if (j < 100 && jive) {
-				sifont->center_text(
-						ibuf, centerx, centery + 74 + vlead,
-						get_text_msg(batlin2));
-				sifont->center_text(
-						ibuf, centerx, centery + 87 + vlead,
-						get_text_msg(batlin2 + 1));
+				sifont->center_text(ibuf, centerx, centery + 74 + vlead, get_text_msg(batlin2));
+				sifont->center_text(ibuf, centerx, centery + 87 + vlead, get_text_msg(batlin2 + 1));
 			} else if (j < 200 && jive) {
-				sifont->center_text(
-						ibuf, centerx, centery + 74 + vlead,
-						get_text_msg(you_must));
-				sifont->center_text(
-						ibuf, centerx, centery + 87 + vlead,
-						get_text_msg(you_must + 1));
+				sifont->center_text(ibuf, centerx, centery + 74 + vlead, get_text_msg(you_must));
+				sifont->center_text(ibuf, centerx, centery + 87 + vlead, get_text_msg(you_must + 1));
 			} else if (j < 300 && jive) {
-				sifont->center_text(
-						ibuf, centerx, centery + 74 + vlead,
-						get_text_msg(soon_i));
-				sifont->center_text(
-						ibuf, centerx, centery + 87 + vlead,
-						get_text_msg(soon_i + 1));
+				sifont->center_text(ibuf, centerx, centery + 74 + vlead, get_text_msg(soon_i));
+				sifont->center_text(ibuf, centerx, centery + 87 + vlead, get_text_msg(soon_i + 1));
 			} else if (j < 100 && (subtitles)) {
-				sifont->center_text(
-						ibuf, centerx, centery + 74 + vlead,
-						get_text_msg(batlin));
-				sifont->center_text(
-						ibuf, centerx, centery + 87 + vlead,
-						get_text_msg(batlin + 1));
+				sifont->center_text(ibuf, centerx, centery + 74 + vlead, get_text_msg(batlin));
+				sifont->center_text(ibuf, centerx, centery + 87 + vlead, get_text_msg(batlin + 1));
 			} else if (j < 200 && (subtitles)) {
-				sifont->center_text(
-						ibuf, centerx, centery + 74 + vlead,
-						get_text_msg(you_shall));
-				sifont->center_text(
-						ibuf, centerx, centery + 87 + vlead,
-						get_text_msg(you_shall + 1));
+				sifont->center_text(ibuf, centerx, centery + 74 + vlead, get_text_msg(you_shall));
+				sifont->center_text(ibuf, centerx, centery + 87 + vlead, get_text_msg(you_shall + 1));
 			} else if (j < 300 && (subtitles)) {
-				sifont->center_text(
-						ibuf, centerx, centery + 74 + vlead,
-						get_text_msg(there_i));
-				sifont->center_text(
-						ibuf, centerx, centery + 87 + vlead,
-						get_text_msg(there_i + 1));
+				sifont->center_text(ibuf, centerx, centery + 74 + vlead, get_text_msg(there_i));
+				sifont->center_text(ibuf, centerx, centery + 87 + vlead, get_text_msg(there_i + 1));
 			}
 
 			win->ShowFillGuardBand();
@@ -863,16 +776,10 @@ void SI_Game::play_intro() {
 			next = fli5.play(win, j, j, next) + 30;
 
 			if (j < 20 && (subtitles || jive)) {
-				sifont->center_text(
-						ibuf, centerx, centery + 74 + vlead,
-						get_text_msg(tis_my));
+				sifont->center_text(ibuf, centerx, centery + 74 + vlead, get_text_msg(tis_my));
 			} else if (j > 22 && (subtitles || jive)) {
-				sifont->center_text(
-						ibuf, centerx, centery + 74 + vlead,
-						get_text_msg(tis_my + 1));
-				sifont->center_text(
-						ibuf, centerx, centery + 87 + vlead,
-						get_text_msg(tis_my + 2));
+				sifont->center_text(ibuf, centerx, centery + 74 + vlead, get_text_msg(tis_my + 1));
+				sifont->center_text(ibuf, centerx, centery + 87 + vlead, get_text_msg(tis_my + 2));
 			}
 
 			win->ShowFillGuardBand();
@@ -971,8 +878,7 @@ Shape_frame* SI_Game::get_menu_shape() {
 }
 
 void SI_Game::top_menu() {
-	Audio::get_ptr()->start_music(
-			28, true, MyMidiPlayer::Force_None, MAINSHP_FLX);
+	Audio::get_ptr()->start_music(28, true, MyMidiPlayer::Force_None, MAINSHP_FLX);
 	sman->paint_shape(topx, topy, get_menu_shape());
 	pal->load(MAINSHP_FLX, PATCH_MAINSHP, 26);
 	pal->fade_in(60);
@@ -996,15 +902,13 @@ struct ExCineEvent {
 	const char* patch;
 	int         index;
 
-	virtual bool play_it(Image_window* win, uint32 time)
-			= 0;    // Return true if screen updated
+	virtual bool play_it(Image_window* win, uint32 time) = 0;    // Return true if screen updated
 
 	bool can_play() {
 		return file != nullptr;
 	}
 
-	ExCineEvent(uint32 t, const char* f, const char* p, int i)
-			: time(t), file(f), patch(p), index(i) {}
+	ExCineEvent(uint32 t, const char* f, const char* p, int i) : time(t), file(f), patch(p), index(i) {}
 
 	virtual ~ExCineEvent() noexcept = default;
 };
@@ -1018,9 +922,9 @@ private:
 	int  start;     // First frame to play
 	int  count;     // Number of frames
 	bool repeat;    // Repeat?
-	int  cur;     // Frame currently being displayed (note, it's not the actual
-				  // frame)
-	int speed;    // Speed of playback (ms per frame)
+	int  cur;       // Frame currently being displayed (note, it's not the actual
+					// frame)
+	int speed;      // Speed of playback (ms per frame)
 
 	// Data info
 	std::unique_ptr<playfli> player;
@@ -1033,15 +937,11 @@ public:
 
 	void fade_out(int cycles);
 
-	ExCineFlic(
-			uint32 time, const char* file, const char* patch, int i, int s,
-			int c, bool r, int spd)
-			: ExCineEvent(time, file, patch, i), start(s), count(c), repeat(r),
-			  cur(-1), speed(spd), player(nullptr) {}
+	ExCineFlic(uint32 time, const char* file, const char* patch, int i, int s, int c, bool r, int spd)
+			: ExCineEvent(time, file, patch, i), start(s), count(c), repeat(r), cur(-1), speed(spd), player(nullptr) {}
 
 	ExCineFlic(uint32 time)
-			: ExCineEvent(time, nullptr, nullptr, 0), start(0), count(0),
-			  repeat(false), cur(0), speed(0), player(nullptr) {}
+			: ExCineEvent(time, nullptr, nullptr, 0), start(0), count(0), repeat(false), cur(0), speed(0), player(nullptr) {}
 };
 
 void ExCineFlic::load_flic() {
@@ -1097,8 +997,7 @@ private:
 public:
 	bool play_it(Image_window* win, uint32 t) override;
 
-	ExCineVoc(uint32 time, const char* file, const char* patch, int index)
-			: ExCineEvent(time, file, patch, index), played(false) {}
+	ExCineVoc(uint32 time, const char* file, const char* patch, int index) : ExCineEvent(time, file, patch, index), played(false) {}
 };
 
 bool ExCineVoc::play_it(Image_window* win, uint32 t) {
@@ -1126,8 +1025,7 @@ struct ExSubEvent {
 	std::shared_ptr<Font> sub_font;
 	int                   vlead = sub_font->get_ver_lead();
 
-	ExSubEvent(
-			uint32 t, const int first, const int cnt, std::shared_ptr<Font> fnt)
+	ExSubEvent(uint32 t, const int first, const int cnt, std::shared_ptr<Font> fnt)
 			: time(t), first_sub(first), num_subs(cnt), sub_font(fnt) {}
 
 	void show_sub(Image_buffer8* ibuf, int centerx, int centery) {
@@ -1144,18 +1042,14 @@ struct ExSubEvent {
 			break;
 		}
 		for (int ii = first_sub; ii < first_sub + num_subs; ii++, suby += 13) {
-			sub_font->draw_text(
-					ibuf,
-					centerx - sub_font->get_text_width(get_text_msg(ii)) / 2,
-					suby, get_text_msg(ii));
+			sub_font->draw_text(ibuf, centerx - sub_font->get_text_width(get_text_msg(ii)) / 2, suby, get_text_msg(ii));
 		}
 	}
 };
 
 std::vector<unsigned int> SI_Game::get_congratulations_messages() {
-	return {congrats_si + 0, congrats_si + 1, congrats_si + 2,
-			congrats_si + 3, congrats_si + 4, congrats_si + 5,
-			congrats_si + 6, congrats_si + 7, congrats_si + 8};
+	return {congrats_si + 0, congrats_si + 1, congrats_si + 2, congrats_si + 3, congrats_si + 4,
+			congrats_si + 5, congrats_si + 6, congrats_si + 7, congrats_si + 8};
 }
 
 //
@@ -1178,7 +1072,7 @@ void SI_Game::end_game(bool success, bool within_game) {
 
 	std::shared_ptr<Font> sifont = fontManager.get_font("SIINTRO_FONT");
 
-	const bool speech = audio->is_audio_enabled() && audio->is_speech_enabled();
+	const bool speech    = audio->is_audio_enabled() && audio->is_speech_enabled();
 	const bool subtitles = !speech || Audio::get_ptr()->is_speech_with_subs();
 
 	gwin->clear_screen(true);
@@ -1278,30 +1172,24 @@ void SI_Game::end_game(bool success, bool within_game) {
 	*/
 
 	// Flic List
-	std::array flics{
-			ExCineFlic(0, INTRO_DAT, PATCH_INTRO, 9, 0, 61, true, 75),
-			ExCineFlic(6350, INTRO_DAT, PATCH_INTRO, 10, 0, 156, false, 95),
-			ExCineFlic(21170, INTRO_DAT, PATCH_INTRO, 9, 0, 61, true, 75),
-			ExCineFlic(39800, INTRO_DAT, PATCH_INTRO, 11, 0, 4, true, 75),
-			ExCineFlic(48900, INTRO_DAT, PATCH_INTRO, 13, 0, 61, true, 75),
-			ExCineFlic(62500, INTRO_DAT, PATCH_INTRO, 12, 0, 61, true, 75),
-			ExCineFlic(70250, INTRO_DAT, PATCH_INTRO, 13, 0, 121, false, 75),
-			ExCineFlic(82300)};
+	std::array  flics{ExCineFlic(0, INTRO_DAT, PATCH_INTRO, 9, 0, 61, true, 75),
+                     ExCineFlic(6350, INTRO_DAT, PATCH_INTRO, 10, 0, 156, false, 95),
+                     ExCineFlic(21170, INTRO_DAT, PATCH_INTRO, 9, 0, 61, true, 75),
+                     ExCineFlic(39800, INTRO_DAT, PATCH_INTRO, 11, 0, 4, true, 75),
+                     ExCineFlic(48900, INTRO_DAT, PATCH_INTRO, 13, 0, 61, true, 75),
+                     ExCineFlic(62500, INTRO_DAT, PATCH_INTRO, 12, 0, 61, true, 75),
+                     ExCineFlic(70250, INTRO_DAT, PATCH_INTRO, 13, 0, 121, false, 75),
+                     ExCineFlic(82300)};
 	const int   last_flic = flics.size() - 1;
 	int         cur_flic  = -1;
 	ExCineFlic* flic      = nullptr;
 	ExCineFlic* pal_flic  = nullptr;
 
 	// Voc List
-	std::array vocs{
-			ExCineVoc(14700, INTRO_DAT, PATCH_INTRO, 22),
-			ExCineVoc(21300, INTRO_DAT, PATCH_INTRO, 23),
-			ExCineVoc(39800, INTRO_DAT, PATCH_INTRO, 24),
-			ExCineVoc(47700, INTRO_DAT, PATCH_INTRO, 25),
-			ExCineVoc(55400, INTRO_DAT, PATCH_INTRO, 26),
-			ExCineVoc(62500, INTRO_DAT, PATCH_INTRO, 27),
-			ExCineVoc(70250, INTRO_DAT, PATCH_INTRO, 28),
-			ExCineVoc(74750, INTRO_DAT, PATCH_INTRO, 29)};
+	std::array vocs{ExCineVoc(14700, INTRO_DAT, PATCH_INTRO, 22), ExCineVoc(21300, INTRO_DAT, PATCH_INTRO, 23),
+					ExCineVoc(39800, INTRO_DAT, PATCH_INTRO, 24), ExCineVoc(47700, INTRO_DAT, PATCH_INTRO, 25),
+					ExCineVoc(55400, INTRO_DAT, PATCH_INTRO, 26), ExCineVoc(62500, INTRO_DAT, PATCH_INTRO, 27),
+					ExCineVoc(70250, INTRO_DAT, PATCH_INTRO, 28), ExCineVoc(74750, INTRO_DAT, PATCH_INTRO, 29)};
 
 	const int last_voc = vocs.size() - 1;
 	int       cur_voc  = -1;
@@ -1418,8 +1306,7 @@ void SI_Game::end_game(bool success, bool within_game) {
 		}
 
 		// We've finished
-		if (cur_flic == last_flic && cur_voc == last_voc
-			&& cur_sub == last_sub) {
+		if (cur_flic == last_flic && cur_voc == last_voc && cur_sub == last_sub) {
 			// Do a fade out
 			if (pal_flic && pal_flic->can_play()) {
 				pal_flic->fade_out(100);
@@ -1484,11 +1371,8 @@ void SI_Game::show_quotes() {
 		play_scene("quotes");
 		return;
 	}
-	Audio::get_ptr()->start_music(
-			32, false, MyMidiPlayer::Force_None, MAINSHP_FLX);
-	TextScroller quotes(
-			MAINSHP_FLX, 0x10, fontManager.get_font("MENU_FONT"),
-			menushapes.extract_shape(0x14), true);
+	Audio::get_ptr()->start_music(32, false, MyMidiPlayer::Force_None, MAINSHP_FLX);
+	TextScroller quotes(MAINSHP_FLX, 0x10, fontManager.get_font("MENU_FONT"), menushapes.extract_shape(0x14), true);
 	quotes.run(gwin);
 }
 
@@ -1501,11 +1385,8 @@ void SI_Game::show_credits() {
 		return;
 	}
 	pal->load(MAINSHP_FLX, PATCH_MAINSHP, 26);
-	Audio::get_ptr()->start_music(
-			30, false, MyMidiPlayer::Force_None, MAINSHP_FLX);
-	TextScroller credits(
-			MAINSHP_FLX, 0x0E, fontManager.get_font("MENU_FONT"),
-			menushapes.extract_shape(0x14), true);
+	Audio::get_ptr()->start_music(30, false, MyMidiPlayer::Force_None, MAINSHP_FLX);
+	TextScroller credits(MAINSHP_FLX, 0x0E, fontManager.get_font("MENU_FONT"), menushapes.extract_shape(0x14), true);
 	if (credits.run(gwin)) {    // Watched through the entire sequence?
 		U7open_out("<SAVEGAME>/quotes.flg");
 	}
@@ -1515,10 +1396,8 @@ bool SI_Game::new_game(Vga_file& shapes) {
 	const int             menuy = topy + 110;
 	std::shared_ptr<Font> font  = fontManager.get_font("MENU_FONT");
 
-	if (Mouse::mouse()
-		&& !Mouse::use_touch_input) {    // If not primarily touch input
-		Mouse::mouse()
-				->show();    // Attempt to make the mouse visible initially
+	if (Mouse::mouse() && !Mouse::use_touch_input) {    // If not primarily touch input
+		Mouse::mouse()->show();                         // Attempt to make the mouse visible initially
 	}
 	Vga_file faces_vga;
 	faces_vga.load(FACES_VGA, PATCH_FACES);
@@ -1536,9 +1415,8 @@ bool SI_Game::new_game(Vga_file& shapes) {
 
 	// Skin info
 	Avatar_default_skin* defskin  = Shapeinfo_lookup::GetDefaultAvSkin();
-	Skin_data*           skindata = Shapeinfo_lookup::GetSkinInfoSafe(
-            defskin->default_skin, defskin->default_female, true);
-	SDL_Window* window = gwin->get_win()->get_screen_window();
+	Skin_data*           skindata = Shapeinfo_lookup::GetSkinInfoSafe(defskin->default_skin, defskin->default_female, true);
+	SDL_Window*          window   = gwin->get_win()->get_screen_window();
 #if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
 	if (!SDL_TextInputActive(window)) {
 		SDL_StartTextInput(window);
@@ -1552,23 +1430,14 @@ bool SI_Game::new_game(Vga_file& shapes) {
 			}
 			gwin->clear_screen();
 			sman->paint_shape(topx, topy, shapes.get_shape(0x2, 0));
-			sman->paint_shape(
-					topx + 10, menuy + 10,
-					shapes.get_shape(0xC, selected == 0));
-			sman->paint_shape(
-					topx + 10, menuy + 25,
-					shapes.get_shape(0x19, selected == 1));
+			sman->paint_shape(topx + 10, menuy + 10, shapes.get_shape(0xC, selected == 0));
+			sman->paint_shape(topx + 10, menuy + 25, shapes.get_shape(0x19, selected == 1));
 
-			Shape_frame* portrait = faces_vga.get_shape(
-					skindata->face_shape, skindata->face_frame);
+			Shape_frame* portrait = faces_vga.get_shape(skindata->face_shape, skindata->face_frame);
 			sman->paint_shape(topx + 300, menuy + 50, portrait);
 
-			sman->paint_shape(
-					topx + 10, topy + 180,
-					shapes.get_shape(0x8, selected == 2));
-			sman->paint_shape(
-					centerx + 10, topy + 180,
-					shapes.get_shape(0x7, selected == 3));
+			sman->paint_shape(topx + 10, topy + 180, shapes.get_shape(0x8, selected == 2));
+			sman->paint_shape(centerx + 10, topy + 180, shapes.get_shape(0x7, selected == 3));
 			if (selected == 0) {
 				snprintf(disp_name, max_len + 2, "%s_", npc_name);
 			} else {
@@ -1585,9 +1454,8 @@ bool SI_Game::new_game(Vga_file& shapes) {
 		} else if (Mouse::mouse() && Mouse::mouse()->is_onscreen()) {
 			gwin->get_win()->ShowFillGuardBand();
 		}
-		SDL_Renderer* renderer
-				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
-		SDL_Event event;
+		SDL_Renderer* renderer = SDL_GetRenderer(gwin->get_win()->get_screen_window());
+		SDL_Event     event;
 		while (SDL_PollEvent(&event)) {
 			Uint16 keysym_unicode = 0;
 			bool   isTextInput    = false;
@@ -1596,24 +1464,19 @@ bool SI_Game::new_game(Vga_file& shapes) {
 			if (event.type == SDL_EVENT_MOUSE_MOTION && Mouse::mouse()) {
 				int mx;
 				int my;
-				gwin->get_win()->screen_to_game(
-						event.motion.x, event.motion.y, gwin->get_fastmouse(),
-						mx, my);
+				gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
 				Mouse::mouse()->hide();
 				Mouse::mouse()->move(mx, my);
 				Mouse::mouse_update = true;
 				Mouse::mouse()->show();
 			}
-			if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN
-				|| event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
+			if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
 				const SDL_Rect rectName   = {topx + 10, menuy + 10, 130, 16};
 				const SDL_Rect rectSex    = {topx + 10, menuy + 25, 130, 16};
 				const SDL_Rect rectOnward = {topx + 10, topy + 180, 130, 16};
 				const SDL_Rect rectReturn = {centerx + 10, topy + 180, 130, 16};
 				SDL_Point      point;
-				gwin->get_win()->screen_to_game(
-						event.button.x, event.button.y, gwin->get_fastmouse(),
-						point.x, point.y);
+				gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), point.x, point.y);
 				if (SDL_GetRectEnclosingPoints(&point, 1, &rectName, nullptr)) {
 					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 0;
@@ -1621,17 +1484,14 @@ bool SI_Game::new_game(Vga_file& shapes) {
 						touchui->promptForName(npc_name);
 					}
 					redraw = true;
-				} else if (SDL_GetRectEnclosingPoints(
-								   &point, 1, &rectSex, nullptr)) {
+				} else if (SDL_GetRectEnclosingPoints(&point, 1, &rectSex, nullptr)) {
 					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 1;
 					} else if (selected == 1) {
-						skindata = Shapeinfo_lookup::GetNextSelSkin(
-								skindata, true, true);
+						skindata = Shapeinfo_lookup::GetNextSelSkin(skindata, true, true);
 					}
 					redraw = true;
-				} else if (SDL_GetRectEnclosingPoints(
-								   &point, 1, &rectOnward, nullptr)) {
+				} else if (SDL_GetRectEnclosingPoints(&point, 1, &rectOnward, nullptr)) {
 					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 2;
 					} else if (selected == 2) {
@@ -1639,8 +1499,7 @@ bool SI_Game::new_game(Vga_file& shapes) {
 						ok      = true;
 					}
 					redraw = true;
-				} else if (SDL_GetRectEnclosingPoints(
-								   &point, 1, &rectReturn, nullptr)) {
+				} else if (SDL_GetRectEnclosingPoints(&point, 1, &rectReturn, nullptr)) {
 					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 3;
 					} else if (selected == 3) {
@@ -1652,8 +1511,7 @@ bool SI_Game::new_game(Vga_file& shapes) {
 			} else if (event.type == TouchUI::eventType) {
 				if (event.user.code == TouchUI::EVENT_CODE_TEXT_INPUT) {
 					if (selected == 0 && event.user.data1 != nullptr) {
-						strncpy(npc_name, static_cast<char*>(event.user.data1),
-								max_len);
+						strncpy(npc_name, static_cast<char*>(event.user.data1), max_len);
 						npc_name[max_len] = '\0';
 						free(event.user.data1);
 						redraw = true;
@@ -1676,8 +1534,7 @@ bool SI_Game::new_game(Vga_file& shapes) {
 							npc_name[len + 1] = 0;
 						}
 					} else if (selected == 1) {
-						skindata = Shapeinfo_lookup::GetNextSelSkin(
-								skindata, true, true);
+						skindata = Shapeinfo_lookup::GetNextSelSkin(skindata, true, true);
 					} else if (selected == 2) {
 						editing = false;
 						ok      = true;
@@ -1687,14 +1544,12 @@ bool SI_Game::new_game(Vga_file& shapes) {
 					break;
 				case SDLK_LEFT:
 					if (selected == 1) {
-						skindata = Shapeinfo_lookup::GetPrevSelSkin(
-								skindata, true, true);
+						skindata = Shapeinfo_lookup::GetPrevSelSkin(skindata, true, true);
 					}
 					break;
 				case SDLK_RIGHT:
 					if (selected == 1) {
-						skindata = Shapeinfo_lookup::GetNextSelSkin(
-								skindata, true, true);
+						skindata = Shapeinfo_lookup::GetNextSelSkin(skindata, true, true);
 					}
 					break;
 				case SDLK_ESCAPE:
@@ -1731,9 +1586,7 @@ bool SI_Game::new_game(Vga_file& shapes) {
 					}
 					break;
 				default: {
-					if ((isTextInput && selected == 0)
-						|| (!isTextInput && keysym_unicode > +'~'
-							&& selected == 0)) {
+					if ((isTextInput && selected == 0) || (!isTextInput && keysym_unicode > +'~' && selected == 0)) {
 						const int len = strlen(npc_name);
 						char      chr = 0;
 						if ((keysym_unicode & 0xFF80) == 0) {
@@ -1763,8 +1616,7 @@ bool SI_Game::new_game(Vga_file& shapes) {
 
 	if (ok) {
 #ifdef DEBUG
-		std::cout << "Skin is: " << skindata->skin_id
-				  << " Sex is: " << skindata->is_female << std::endl;
+		std::cout << "Skin is: " << skindata->skin_id << " Sex is: " << skindata->is_female << std::endl;
 #endif
 		set_avskin(skindata->skin_id);
 		set_avname(npc_name);

@@ -65,17 +65,14 @@ bool is_text_file(const string& fname) {
 	const size_t len = fname.size();
 
 	// only if the filename is greater than 4 chars
-	return len > 4 && fname[len - 4] == '.'
-		   && (fname[len - 3] == 't' || fname[len - 3] == 'T')
-		   && (fname[len - 2] == 'x' || fname[len - 2] == 'X')
-		   && (fname[len - 1] == 't' || fname[len - 1] == 'T');
+	return len > 4 && fname[len - 4] == '.' && (fname[len - 3] == 't' || fname[len - 3] == 'T')
+		   && (fname[len - 2] == 'x' || fname[len - 2] == 'X') && (fname[len - 1] == 't' || fname[len - 1] == 'T');
 }
 
 bool is_null_entry(const string& fname) {
 	const size_t len = fname.size();
 
-	return len >= 4 && fname[len - 4] == 'N' && fname[len - 3] == 'U'
-		   && fname[len - 2] == 'L' && fname[len - 1] == 'L';
+	return len >= 4 && fname[len - 4] == 'N' && fname[len - 3] == 'U' && fname[len - 2] == 'L' && fname[len - 1] == 'L';
 }
 
 void set_mode(Arch_mode& mode, Arch_mode new_mode) {
@@ -94,9 +91,7 @@ void make_header_name(string& filename) {
 	while (i--) {
 		if (filename[i] == '.') {
 			filename[i] = '_';
-		} else if (
-				filename[i] == '/' || filename[i] == '\\'
-				|| filename[i] == ':') {
+		} else if (filename[i] == '/' || filename[i] == '\\' || filename[i] == ':') {
 			break;
 		}
 	}
@@ -363,25 +358,18 @@ int main(int argc, char** argv) {
 			// The beginning of the header
 			string temp = fname;
 			strip_path(temp);
-			header << "// Header for \"" << temp << "\" Created by expack"
-				   << std::endl
-				   << std::endl;
+			header << "// Header for \"" << temp << "\" Created by expack" << std::endl << std::endl;
 			header << "// DO NOT MODIFY" << std::endl << std::endl;
 			header << "#ifndef " << hprefix << "_INCLUDED" << std::endl;
-			header << "#define " << hprefix << "_INCLUDED" << std::endl
-				   << std::endl;
+			header << "#define " << hprefix << "_INCLUDED" << std::endl << std::endl;
 
 			// The files
 			for (unsigned int i = 0; i < file_names.size(); i++) {
-				const size_t fsize = file_names[i].empty()
-											 ? 0
-											 : get_file_size(file_names[i]);
+				const size_t fsize = file_names[i].empty() ? 0 : get_file_size(file_names[i]);
 				if (!file_names[i].empty() && fsize > 0) {
-					IFileDataSource ifs(
-							file_names[i].c_str(), is_text_file(file_names[i]));
+					IFileDataSource ifs(file_names[i].c_str(), is_text_file(file_names[i]));
 					if (!ifs.good()) {
-						cerr << "Error reading from file " << file_names[i]
-							 << endl;
+						cerr << "Error reading from file " << file_names[i] << endl;
 						exit(1);
 					}
 					writer.write_object(ifs);
@@ -390,8 +378,7 @@ int main(int argc, char** argv) {
 					strip_path(hline);
 					make_header_name(hline);
 					make_uppercase(hline);
-					header << "#define\t" << hprefix << "_" << hline << "\t\t"
-						   << i << std::endl;
+					header << "#define\t" << hprefix << "_" << hline << "\t\t" << i << std::endl;
 				} else {
 					writer.empty_object();
 				}
@@ -410,9 +397,7 @@ int main(int argc, char** argv) {
 		}
 		break;
 	default:
-		cout << "Usage:" << endl
-			 << argv[0] << " -[l|x|c] file [index]" << endl
-			 << argv[0] << " -i indexfile" << endl;
+		cout << "Usage:" << endl << argv[0] << " -[l|x|c] file [index]" << endl << argv[0] << " -i indexfile" << endl;
 		break;
 	}
 	return 0;

@@ -32,9 +32,7 @@ public:
 	// Find a path from sx,sy,sz to dx,dy,dz
 	// Return false if no path can be traced.
 	// Return true if path found
-	bool NewPath(
-			const Tile_coord& s, const Tile_coord& d,
-			const Pathfinder_client* client) override;
+	bool NewPath(const Tile_coord& s, const Tile_coord& d, const Pathfinder_client* client) override;
 
 	// Retrieve the coordinates of the next step on the path
 	bool GetNextStep(Tile_coord& n, bool& done) override;

@@ -91,8 +91,7 @@ namespace {
  */
 
 Schedule::Schedule(Actor* n)
-		: npc(n), blocked(-1, -1, -1), start_pos(n->get_tile()),
-		  street_maintenance_failures(0), street_maintenance_time(0) {
+		: npc(n), blocked(-1, -1, -1), start_pos(n->get_tile()), street_maintenance_failures(0), street_maintenance_time(0) {
 	prev_type = npc ? npc->get_schedule_type() : -1;
 }
 
@@ -102,16 +101,14 @@ Schedule::Schedule(Actor* n)
  */
 
 void Schedule::set_action_sequence(
-		Actor*            actor,         // Whom to activate.
-		const Tile_coord& dest,          // Where to walk to.
-		Actor_action*     when_there,    // What to do when he gets there.
-		bool from_off_screen,            // Have actor walk from off-screen.
-		int  delay                       // Msecs. to delay.
+		Actor*            actor,              // Whom to activate.
+		const Tile_coord& dest,               // Where to walk to.
+		Actor_action*     when_there,         // What to do when he gets there.
+		bool              from_off_screen,    // Have actor walk from off-screen.
+		int               delay               // Msecs. to delay.
 ) {
-	const bool persistant
-			= actor->get_npc_num() == 0 || actor->get_party_id() >= 0;
-	actor->set_action(Actor_action::create_action_sequence(
-					actor, dest, when_there, from_off_screen, persistant));
+	const bool persistant = actor->get_npc_num() == 0 || actor->get_party_id() >= 0;
+	actor->set_action(Actor_action::create_action_sequence(actor, dest, when_there, from_off_screen, persistant));
 	actor->start(250, delay);    // Get into time queue.
 }
 
@@ -121,8 +118,7 @@ void Schedule::set_action_sequence(
  *  Expects you to manually add the hammer as a client.
  */
 
-Game_object* Schedule::set_procure_item_action(
-		Actor* actor, Game_object* obj, int dist, int shnum, int frnum) {
+Game_object* Schedule::set_procure_item_action(Actor* actor, Game_object* obj, int dist, int shnum, int frnum) {
 	Game_window* gwin  = Game_window::get_instance();
 	const int    delay = gwin->get_std_delay();
 	if (obj && obj->get_shapenum() != shnum) {
@@ -135,8 +131,7 @@ Game_object* Schedule::set_procure_item_action(
 		}
 
 		// If on map, pick it up.
-		if (!obj->is_pos_invalid()
-			&& set_pickup_item_action(actor, obj, delay)) {
+		if (!obj->is_pos_invalid() && set_pickup_item_action(actor, obj, delay)) {
 			return obj;
 		}
 
@@ -178,22 +173,18 @@ Game_object* Schedule::set_procure_item_action(
 				create_fr = 0;
 			}
 		}
-		const Game_object_shared newobj
-				= std::make_shared<Ireg_game_object>(shnum, create_fr, 0, 0);
-		found = newobj.get();
+		const Game_object_shared newobj = std::make_shared<Ireg_game_object>(shnum, create_fr, 0, 0);
+		found                           = newobj.get();
 		actor->add(found, true);
 	}
 	return found;
 }
 
-bool Schedule::set_pickup_item_action(
-		Actor* actor, Game_object* obj, int delay) {
+bool Schedule::set_pickup_item_action(Actor* actor, Game_object* obj, int delay) {
 	Approach_object_pathfinder_client cost(actor, obj, 1);
-	Actor_action* pact = Path_walking_actor_action::create_path(
-			actor->get_tile(), obj->get_tile(), cost);
+	Actor_action*                     pact = Path_walking_actor_action::create_path(actor->get_tile(), obj->get_tile(), cost);
 	if (pact) {
-		actor->set_action(new Sequence_actor_action(
-				pact, new Pickup_actor_action(obj, delay)));
+		actor->set_action(new Sequence_actor_action(pact, new Pickup_actor_action(obj, delay)));
 		return true;
 	} else {
 		return false;
@@ -256,8 +247,7 @@ bool Schedule::try_respond_to_bell(int max_distance) {
 	// Find NPC with shortest path to bell
 	for (auto* nearby_npc : nearby_npcs) {
 		// Only NPCs with schedules that actively check for bells
-		if (nearby_npc->get_schedule_type() != Schedule::tend_shop
-			&& nearby_npc->get_schedule_type() != Schedule::waiter) {
+		if (nearby_npc->get_schedule_type() != Schedule::tend_shop && nearby_npc->get_schedule_type() != Schedule::waiter) {
 			continue;
 		}
 		if (nearby_npc->distance(bell.get()) > max_distance) {
@@ -298,11 +288,9 @@ bool Schedule::try_respond_to_bell(int max_distance) {
 		return false;
 	}
 
-	auto best = std::min_element(
-			candidates.begin(), candidates.end(),
-			[](const CandidateCost& a, const CandidateCost& b) {
-				return a.total_cost < b.total_cost;
-			});
+	auto best = std::min_element(candidates.begin(), candidates.end(), [](const CandidateCost& a, const CandidateCost& b) {
+		return a.total_cost < b.total_cost;
+	});
 
 	Actor* best_npc = best->npc;
 
@@ -316,8 +304,7 @@ bool Schedule::try_respond_to_bell(int max_distance) {
 	interrupted_for_bell = true;
 
 	Approach_object_pathfinder_client winner_cost(npc, bell.get(), 3);
-	Actor_action* path_to_bell = Path_walking_actor_action::create_path(
-			npc->get_tile(), bell_tile, winner_cost);
+	Actor_action* path_to_bell = Path_walking_actor_action::create_path(npc->get_tile(), bell_tile, winner_cost);
 
 	if (!path_to_bell) {
 		// Unexpected (path existed moments ago); let others retry
@@ -327,8 +314,7 @@ bool Schedule::try_respond_to_bell(int max_distance) {
 	}
 
 	npc->set_action(new Sequence_actor_action(
-			path_to_bell, new Face_pos_actor_action(bell.get(), 500),
-			new Frames_actor_action(nullptr, 0, 2000)));
+			path_to_bell, new Face_pos_actor_action(bell.get(), 500), new Frames_actor_action(nullptr, 0, 2000)));
 	npc->start(gwin->get_std_delay());
 	return true;
 }
@@ -364,13 +350,10 @@ bool Schedule::handle_bell_interrupt() {
 		} else {
 			// Not back yet; path there
 			Actor_pathfinder_client cost(npc, 0);
-			Actor_action* return_pact = Path_walking_actor_action::create_path(
-					npc->get_tile(), pre_interrupt_pos, cost);
+			Actor_action*           return_pact = Path_walking_actor_action::create_path(npc->get_tile(), pre_interrupt_pos, cost);
 
 			if (return_pact) {
-				npc->set_action(new Sequence_actor_action(
-						return_pact,
-						new Face_pos_actor_action(pre_interrupt_pos, 200)));
+				npc->set_action(new Sequence_actor_action(return_pact, new Face_pos_actor_action(pre_interrupt_pos, 200)));
 				npc->start(gwin->get_std_delay());
 			} else {
 				// Can't path back, just resume schedule here
@@ -400,13 +383,11 @@ bool Schedule::seek_foes() {
 	Actor*     foe           = nullptr;
 	const bool see_invisible = npc->can_see_invisible();
 	for (auto* actor : vec) {
-		if (actor->is_dead() || actor->get_flag(Obj_flags::asleep)
-			|| (!see_invisible && actor->get_flag(Obj_flags::invisible))
+		if (actor->is_dead() || actor->get_flag(Obj_flags::asleep) || (!see_invisible && actor->get_flag(Obj_flags::invisible))
 			|| !Fast_pathfinder_client::is_straight_path(npc, actor)) {
 			continue;    // Dead, asleep or invisible and can't see invisible.
 		}
-		if (Combat_schedule::is_enemy(
-					npc_align, actor->get_effective_alignment())) {
+		if (Combat_schedule::is_enemy(npc_align, actor->get_effective_alignment())) {
 			foe = actor;
 			break;
 		}
@@ -441,8 +422,7 @@ int Schedule::try_street_maintenance() {
 		return 0;    // Only want normal NPC's.
 	}
 	// At least 30secs. before next one.
-	street_maintenance_time
-			= curtime + 30000 + street_maintenance_failures * 5000;
+	street_maintenance_time   = curtime + 30000 + street_maintenance_failures * 5000;
 	const int            hour = gclock->get_hour();
 	const bool           bg   = GAME_BG;
 	tcb::span<const int> shapes;
@@ -461,9 +441,8 @@ int Schedule::try_street_maintenance() {
 		return 0;
 	}
 	// Get to within 1 tile.
-	Game_object* found = nullptr;    // Find one we can get to.
-	std::unique_ptr<Path_walking_actor_action>
-			pact;    // Gets ->action to walk there.
+	Game_object*                               found = nullptr;    // Find one we can get to.
+	std::unique_ptr<Path_walking_actor_action> pact;               // Gets ->action to walk there.
 	for (size_t i = 0; !found && i < shapes.size(); i++) {
 		Game_object_vector objs;    // Find nearby.
 		const int          cnt = npc->find_nearby(objs, shapes[i], 20, 0);
@@ -473,21 +452,18 @@ int Schedule::try_street_maintenance() {
 			const int    shnum = obj->get_shapenum();
 			if (!bg) {    // Serpent isle?
 				const int frnum = obj->get_framenum();
-				if ((shnum == 290 || shnum == 291)
-					&&    // Shutters?
-						  // Want closed during day.
+				if ((shnum == 290 || shnum == 291) &&    // Shutters?
+														 // Want closed during day.
 					(shapes.data() == day.data()) != (frnum <= 3)) {
 					continue;
 				}
 				// Serpent lamp posts can't toggle.
-				if ((shnum == 526 || shnum == 889)
-					&& (frnum == 0 || frnum == 1 || frnum == 4 || frnum == 5)) {
+				if ((shnum == 526 || shnum == 889) && (frnum == 0 || frnum == 1 || frnum == 4 || frnum == 5)) {
 					continue;
 				}
 			}
 			Approach_object_pathfinder_client cost(npc, obj, 1);
-			pact.reset(Path_walking_actor_action::create_path(
-							npcpos, obj->get_tile(), cost));
+			pact.reset(Path_walking_actor_action::create_path(npcpos, obj->get_tile(), cost));
 			if (pact) {
 				found = obj;
 				break;
@@ -499,10 +475,7 @@ int Schedule::try_street_maintenance() {
 		return 0;    // Failed.
 	}
 	// Set actor to walk there.
-	npc->set_schedule_type(
-			Schedule::street_maintenance,
-			std::make_unique<Street_maintenance_schedule>(
-					npc, pact.release(), found));
+	npc->set_schedule_type(Schedule::street_maintenance, std::make_unique<Street_maintenance_schedule>(npc, pact.release(), found));
 	// Warning: we are deleted here
 	return 1;
 }
@@ -524,8 +497,7 @@ bool Schedule::try_proximity_usecode(int odds) {
 		// Note: since we can get here from within usecode, lets not
 		// call the function directly but queue it instead.
 		auto* scr = new Usecode_script(npc);
-		(*scr) << Ucscript::dont_halt << Ucscript::usecode2
-			   << npc->get_usecode() << Usecode_machine::npc_proximity;
+		(*scr) << Ucscript::dont_halt << Ucscript::usecode2 << npc->get_usecode() << Usecode_machine::npc_proximity;
 		scr->start();
 		npc->start(gwin->get_std_delay(), 500 + rand() % 1000);
 		return true;
@@ -576,9 +548,7 @@ bool Schedule_with_objects::walk_to_random_item(int dist) {
 		const int  floor     = npc->get_lift() / 5;
 		spot.tz              = floor * 5;
 		const Tile_coord pos = Map_chunk::find_spot(spot, 1, npc);
-		if (pos.tx != -1
-			&& npc->walk_path_to_tile(
-					pos, gwin->get_std_delay(), 1000 + rand() % 1000)) {
+		if (pos.tx != -1 && npc->walk_path_to_tile(pos, gwin->get_std_delay(), 1000 + rand() % 1000)) {
 			return true;
 		}
 	}
@@ -589,8 +559,7 @@ bool Schedule_with_objects::walk_to_random_item(int dist) {
  *  Drop an item on a table.
  */
 
-bool Schedule_with_objects::drop_item(
-		Game_object* to_drop, Game_object* table) {
+bool Schedule_with_objects::drop_item(Game_object* to_drop, Game_object* table) {
 	Tile_coord     spot = npc->get_tile();
 	const TileRect foot = table->get_footprint();
 	// East/West of table?
@@ -601,13 +570,10 @@ bool Schedule_with_objects::drop_item(
 	}
 	const Shape_info& info = table->get_info();
 	spot.tz                = table->get_lift() + info.get_3d_height();
-	const Tile_coord pos   = Map_chunk::find_spot(
-            spot, 1, to_drop->get_shapenum(), to_drop->get_framenum());
-	if (pos.tx != -1 && pos.tz == spot.tz
-		&& foot.has_world_point(pos.tx, pos.ty)) {
+	const Tile_coord pos   = Map_chunk::find_spot(spot, 1, to_drop->get_shapenum(), to_drop->get_framenum());
+	if (pos.tx != -1 && pos.tz == spot.tz && foot.has_world_point(pos.tx, pos.ty)) {
 		// Passes test.
-		npc->set_action(new Pickup_actor_action(
-				to_drop, pos, 250, false, drop_sfx_id(), sfx_vol()));
+		npc->set_action(new Pickup_actor_action(to_drop, pos, 250, false, drop_sfx_id(), sfx_vol()));
 		--items_in_hand;
 		return true;
 	} else {
@@ -630,13 +596,11 @@ void Scripted_schedule::run(int id    // A Usecode function #.
  *  Lookup Usecode 'method'.
  */
 
-static int find_method(
-		Usecode_class_symbol* cls, const char* meth, bool noerr) {
+static int find_method(Usecode_class_symbol* cls, const char* meth, bool noerr) {
 	Usecode_symbol* ucsym = (*cls)[meth];
 	if (!ucsym) {
 		if (!noerr) {
-			cerr << "Failed to find method '" << meth << "' in class '"
-				 << cls->get_name() << "'." << endl;
+			cerr << "Failed to find method '" << meth << "' in class '" << cls->get_name() << "'." << endl;
 		}
 		return 0;
 	}
@@ -648,13 +612,11 @@ static int find_method(
  */
 
 Scripted_schedule::Scripted_schedule(Actor* n, int type)
-		: Schedule(n), inst(nullptr), now_what_id(0), im_dormant_id(0),
-		  ending_id(0), set_weapon_id(0), set_bed_id(0) {
+		: Schedule(n), inst(nullptr), now_what_id(0), im_dormant_id(0), ending_id(0), set_weapon_id(0), set_bed_id(0) {
 	const char*           nm  = Schedule_change::get_script_name(type);
 	Usecode_class_symbol* cls = ucmachine->get_class(nm);
 	if (!cls) {
-		cerr << "Could not find scripted schedule '" << nm
-			 << "'. Switching to 'Loiter' schedule instead." << endl;
+		cerr << "Could not find scripted schedule '" << nm << "'. Switching to 'Loiter' schedule instead." << endl;
 		npc->set_schedule_type(loiter);
 		return;
 	} else {
@@ -682,10 +644,8 @@ Scripted_schedule::~Scripted_schedule() {
  *  Create schedule to turn lamps on/off, open/close shutters.
  */
 
-Street_maintenance_schedule::Street_maintenance_schedule(
-		Actor* n, Actor_action* p, Game_object* o)
-		: Schedule(n), obj(weak_from_obj(o)), shapenum(o->get_shapenum()),
-		  framenum(o->get_framenum()), paction(p),
+Street_maintenance_schedule::Street_maintenance_schedule(Actor* n, Actor_action* p, Game_object* o)
+		: Schedule(n), obj(weak_from_obj(o)), shapenum(o->get_shapenum()), framenum(o->get_framenum()), paction(p),
 		  oldloc(n->get_schedule()->get_start_pos()) {}
 
 /*
@@ -705,16 +665,13 @@ void Street_maintenance_schedule::now_what() {
 	}
 	const Game_object_shared objptr = obj.lock();
 	if (objptr && npc->distance(objptr.get()) <= 2 &&    // We're there.
-		objptr->get_shapenum() == shapenum
-		&& objptr->get_framenum() == framenum) {
+		objptr->get_shapenum() == shapenum && objptr->get_framenum() == framenum) {
 #ifdef DEBUG
-		cout << npc->get_name() << " is about to perform street maintenance"
-			 << endl;
+		cout << npc->get_name() << " is about to perform street maintenance" << endl;
 #endif
 		const int        dir = npc->get_direction(objptr.get());
 		const std::array frames{
-				static_cast<signed char>(
-						npc->get_dir_framenum(dir, Actor::standing)),
+				static_cast<signed char>(npc->get_dir_framenum(dir, Actor::standing)),
 				static_cast<signed char>(npc->get_dir_framenum(dir, 3)),
 		};
 		signed char   standframe = frames[0];
@@ -730,17 +687,15 @@ void Street_maintenance_schedule::now_what() {
 			// Makes it last some 5-9 hours; quality seems to be within this
 			// range in the original.
 			const int qual = 30 + rand() % 27;
-			pact           = new Change_actor_action(
-                    objptr.get(), newshp, framenum, qual);
+			pact           = new Change_actor_action(objptr.get(), newshp, framenum, qual);
 		} else {    // Just call the correct usecode.
 			pact = new Activate_actor_action(objptr.get());
 		}
 
 		npc->set_action(new Sequence_actor_action(
 				new Frames_actor_action(frames.data(), frames.size()),
-				new Face_pos_actor_action(
-						objptr->get_tile(), gwin->get_std_delay()),
-				pact, new Frames_actor_action(&standframe, 1)));
+				new Face_pos_actor_action(objptr->get_tile(), gwin->get_std_delay()), pact,
+				new Frames_actor_action(&standframe, 1)));
 		npc->start(gwin->get_std_delay());
 		if (npc->can_speak()) {
 			switch (shapenum) {
@@ -813,8 +768,7 @@ int Street_maintenance_schedule::get_actual_type(Actor* /* npc */
 void Follow_avatar_schedule::now_what() {
 	const bool is_blocked = blocked.tx != -1;
 	blocked               = Tile_coord(-1, -1, -1);
-	if (npc->get_flag(Obj_flags::asleep) || npc->is_dead()
-		|| npc->get_flag(Obj_flags::paralyzed)
+	if (npc->get_flag(Obj_flags::asleep) || npc->is_dead() || npc->get_flag(Obj_flags::paralyzed)
 		|| gwin->main_actor_dont_move()) {    // Under Usecode control.
 		return;                               // Disabled.
 	}
@@ -839,8 +793,7 @@ void Follow_avatar_schedule::now_what() {
 	// Find a free spot within 3 tiles.
 	Map_chunk::Find_spot_where where = Map_chunk::anywhere;
 	// And try to be inside/outside.
-	where                 = gwin->is_main_actor_inside() ? Map_chunk::inside
-														 : Map_chunk::outside;
+	where                 = gwin->is_main_actor_inside() ? Map_chunk::inside : Map_chunk::outside;
 	const Tile_coord goal = Map_chunk::find_spot(leaderpos, 3, npc, 0, where);
 	if (goal.tx == -1) {    // No free spot?  Give up.
 		cout << npc->get_name() << " can't find free spot" << endl;
@@ -866,8 +819,7 @@ void Follow_avatar_schedule::now_what() {
 	const TileRect wrect = gwin->get_win_tile_rect();
 	if (wrect.has_world_point(pos.tx - pos.tz / 2, pos.ty - pos.tz / 2)) {
 		// Try walking off-screen.
-		ok = npc->walk_path_to_tile(
-				Tile_coord(-1, -1, -1), speed - speed / 4, 0);
+		ok = npc->walk_path_to_tile(Tile_coord(-1, -1, -1), speed - speed / 4, 0);
 	} else {    // Off screen already?
 		ok = npc->approach_another(av);
 	}
@@ -900,10 +852,8 @@ std::unique_ptr<Pace_schedule> Pace_schedule::create_vert(Actor* n) {
 	return std::make_unique<Pace_schedule>(n, 0, t);
 }
 
-void Pace_schedule::pace(
-		Actor* npc, char& which, int& phase, Tile_coord& blocked, int delay) {
-	const int dir
-			= npc->get_dir_facing();    // Use NPC facing for starting direction
+void Pace_schedule::pace(Actor* npc, char& which, int& phase, Tile_coord& blocked, int delay) {
+	const int dir = npc->get_dir_facing();    // Use NPC facing for starting direction
 	switch (phase) {
 	case 1: {
 		bool changedir = false;
@@ -930,8 +880,7 @@ void Pace_schedule::pace(
 			Game_object* obj = npc->find_blocking(blocked, dir);
 			if (obj) {
 				if (obj->as_actor()) {
-					if (npc->can_speak()
-						&& npc->get_schedule_type() != Schedule::horiz_pace
+					if (npc->can_speak() && npc->get_schedule_type() != Schedule::horiz_pace
 						&& npc->get_schedule_type() != Schedule::vert_pace) {
 						npc->say(first_move_aside, last_move_aside);
 						// Ask NPC to move aside.
@@ -969,15 +918,13 @@ void Pace_schedule::pace(
 	}
 	case 2:
 		phase++;
-		npc->change_frame(
-				npc->get_dir_framenum(npc->get_dir_facing(), Actor::standing));
+		npc->change_frame(npc->get_dir_framenum(npc->get_dir_facing(), Actor::standing));
 		npc->start(2 * delay, 2 * delay);
 		break;
 	case 3:
 	case 4: {
 		phase++;
-		npc->change_frame(
-				npc->get_dir_framenum((dir + 6) % 8, Actor::standing));
+		npc->change_frame(npc->get_dir_framenum((dir + 6) % 8, Actor::standing));
 		npc->start(2 * delay, 2 * delay);
 		break;
 	}
@@ -1133,12 +1080,10 @@ void Preach_schedule::now_what() {
 			pos.ty += 0;
 		}
 		Actor_pathfinder_client cost(npc, 0);
-		Actor_action*           pact = Path_walking_actor_action::create_path(
-                npc->get_tile(), pos, cost);
+		Actor_action*           pact = Path_walking_actor_action::create_path(npc->get_tile(), pos, cost);
 		if (pact) {
 			state = at_podium;
-			npc->set_action(new Sequence_actor_action(
-					pact, new Face_pos_actor_action(podium, 200)));
+			npc->set_action(new Sequence_actor_action(pact, new Face_pos_actor_action(podium, 200)));
 			npc->start(gwin->get_std_delay());
 			return;
 		}
@@ -1165,8 +1110,7 @@ void Preach_schedule::now_what() {
 		// Frames to choose from:
 		static const char choices[]{0, 8, 9};
 		for (size_t i = 0; i < cnt - 1; i++) {
-			frames[i] = npc->get_dir_framenum(
-					choices[rand() % (sizeof(choices))]);
+			frames[i] = npc->get_dir_framenum(choices[rand() % (sizeof(choices))]);
 		}
 		// Make last one standing.
 		frames[cnt - 1] = npc->get_dir_framenum(Actor::standing);
@@ -1180,11 +1124,7 @@ void Preach_schedule::now_what() {
 			scr->add(Ucscript::delay_ticks, 3);
 			scr->add(Ucscript::face_dir, member->get_dir_facing());
 			scr->add(Ucscript::npc_standing_frame);
-			scr->add(
-					Ucscript::say,
-					get_text_msg(
-							first_amen
-							+ rand() % (last_amen - first_amen + 1)));
+			scr->add(Ucscript::say, get_text_msg(first_amen + rand() % (last_amen - first_amen + 1)));
 			scr->add(Ucscript::delay_ticks, 2);
 			scr->add(Ucscript::npc_sit_frame);
 			scr->start();    // Start next tick.
@@ -1200,13 +1140,11 @@ void Preach_schedule::now_what() {
 		}
 		const Tile_coord        pos = member->get_tile();
 		Actor_pathfinder_client cost(npc, 1);
-		Actor_action*           pact = Path_walking_actor_action::create_path(
-                npc->get_tile(), pos, cost);
+		Actor_action*           pact = Path_walking_actor_action::create_path(npc->get_tile(), pos, cost);
 		if (!pact) {
 			return;
 		}
-		npc->set_action(new Sequence_actor_action(
-				pact, new Face_pos_actor_action(member, 200)));
+		npc->set_action(new Sequence_actor_action(pact, new Face_pos_actor_action(member, 200)));
 		state = talk_member;
 		return;
 	}
@@ -1226,8 +1164,7 @@ void Preach_schedule::now_what() {
 		pos.tx += 2;
 		pos.ty -= 1;
 		Actor_pathfinder_client cost(npc, 0);
-		Actor_action*           pact = Path_walking_actor_action::create_path(
-                npc->get_tile(), pos, cost);
+		Actor_action*           pact = Path_walking_actor_action::create_path(npc->get_tile(), pos, cost);
 		if (pact) {
 			npc->set_action(pact);
 			state = pray;
@@ -1237,11 +1174,11 @@ void Preach_schedule::now_what() {
 	case pray: {
 		auto* scr = new Usecode_script(npc);
 		(*scr) << Ucscript::face_dir << 6    // Face west.
-			   << Ucscript::npc_standing_frame << Ucscript::npc_bow_frame
-			   << Ucscript::delay_ticks << 3 << Ucscript::npc_kneel_frame;
+			   << Ucscript::npc_standing_frame << Ucscript::npc_bow_frame << Ucscript::delay_ticks << 3
+			   << Ucscript::npc_kneel_frame;
 		scr->add(Ucscript::say, get_text_msg(first_amen + rand() % 2));
-		(*scr) << Ucscript::delay_ticks << 5 << Ucscript::npc_bow_frame
-			   << Ucscript::delay_ticks << 3 << Ucscript::npc_standing_frame;
+		(*scr) << Ucscript::delay_ticks << 5 << Ucscript::npc_bow_frame << Ucscript::delay_ticks << 3
+			   << Ucscript::npc_standing_frame;
 		scr->start();    // Start next tick.
 		state = find_podium;
 		npc->start(2 * gwin->get_std_delay(), 4000);
@@ -1255,8 +1192,7 @@ void Preach_schedule::now_what() {
 }
 
 Patrol_schedule::Patrol_schedule(Actor* n)
-		: Schedule(n), pathnum(-1), dir(1), state(-1), center(0, 0, 0),
-		  whichdir(0), phase(1), pace_count(0), seek_combat(false),
+		: Schedule(n), pathnum(-1), dir(1), state(-1), center(0, 0, 0), whichdir(0), phase(1), pace_count(0), seek_combat(false),
 		  forever(false) {
 	if (num_path_eggs < 0) {
 		Shapes_vga_file& shapes = Shape_manager::get_instance()->get_shapes();
@@ -1278,8 +1214,7 @@ void Patrol_schedule::now_what() {
 	switch (state) {
 	case -1: {    // Initialization
 		Game_object_vector nearby;
-		npc->find_nearby(
-				nearby, PATH_SHAPE, 25, 0x10, c_any_qual, c_any_framenum);
+		npc->find_nearby(nearby, PATH_SHAPE, 25, 0x10, c_any_qual, c_any_framenum);
 		gotpath = !nearby.empty();
 		[[fallthrough]];
 	}
@@ -1288,8 +1223,7 @@ void Patrol_schedule::now_what() {
 			// SI seems to try switching to preprogrammed schedules
 			// first if no path.
 			if (GAME_SI) {
-				const Schedule_change* sched
-						= npc->find_schedule_at_time(gclock->get_hour() / 3);
+				const Schedule_change* sched = npc->find_schedule_at_time(gclock->get_hour() / 3);
 				if (sched != nullptr && sched->get_type() != Schedule::patrol) {
 					npc->update_schedule(gclock->get_hour() / 3);
 				} else {
@@ -1338,10 +1272,8 @@ void Patrol_schedule::now_what() {
 		Tile_coord d = path->get_tile();
 		if (!npc->walk_path_to_tile(d, speed, 2 * speed + rand() % 500)) {
 			// Look for free tile within 1 square.
-			d = Map_chunk::find_spot(
-					d, 1, npc->get_shapenum(), npc->get_framenum(), 1);
-			if (d.tx == -1
-				|| !npc->walk_path_to_tile(d, speed, rand() % 1000)) {
+			d = Map_chunk::find_spot(d, 1, npc->get_shapenum(), npc->get_framenum(), 1);
+			if (d.tx == -1 || !npc->walk_path_to_tile(d, speed, rand() % 1000)) {
 				// Failed.  Later.
 				npc->start(speed, 2000);
 				return;
@@ -1352,8 +1284,7 @@ void Patrol_schedule::now_what() {
 	}
 	case 1:                    // Walk to next path.
 		if (pathnum >= 0 &&    // Arrived at path?
-			static_cast<unsigned int>(pathnum) < paths.size()
-			&& (path = paths[pathnum]) != nullptr
+			static_cast<unsigned int>(pathnum) < paths.size() && (path = paths[pathnum]) != nullptr
 			&& (forever || npc->distance(path) < 2)) {
 			int delay = 2;
 			// Scripts for all actions. At worst, display standing frame
@@ -1408,11 +1339,9 @@ void Patrol_schedule::now_what() {
 				// random, then stands up again after a while.
 				// If anyone complains enough I will add it.
 				// -- Marzo Jan 22/2013
-				(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_bow_frame
-					   << Ucscript::delay_ticks << 4
-					   << Ucscript::npc_kneel_frame << Ucscript::delay_ticks
-					   << 20 << Ucscript::npc_bow_frame << Ucscript::delay_ticks
-					   << 4 << Ucscript::npc_standing_frame;
+				(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_bow_frame << Ucscript::delay_ticks << 4
+					   << Ucscript::npc_kneel_frame << Ucscript::delay_ticks << 20 << Ucscript::npc_bow_frame
+					   << Ucscript::delay_ticks << 4 << Ucscript::npc_standing_frame;
 				delay = 36;
 				break;
 			case 6:              // Loiter.
@@ -1433,8 +1362,7 @@ void Patrol_schedule::now_what() {
 				}
 				const int facing = npc->get_dir_facing();
 				for (int i = 0; i < 2; i++) {
-					(*scr) << Ucscript::delay_ticks << 2 << Ucscript::face_dir
-						   << (facing + face_dirs[i]) % 8;
+					(*scr) << Ucscript::delay_ticks << 2 << Ucscript::face_dir << (facing + face_dirs[i]) % 8;
 				}
 				delay = 8;
 				break;
@@ -1474,8 +1402,7 @@ void Patrol_schedule::now_what() {
 			case 13: {    // Hammer.
 						  // Try to use an existing hammer.
 				const Game_object_shared existing = hammer.lock();
-				hammer = weak_from_obj(set_procure_item_action(
-						npc, existing.get(), 15, 623, 0));
+				hammer                            = weak_from_obj(set_procure_item_action(npc, existing.get(), 15, 623, 0));
 				scr->start();    // Start next tick.
 				state = 6;
 				npc->start(speed, speed * delay);
@@ -1501,23 +1428,19 @@ void Patrol_schedule::now_what() {
 				// This is needed for SS Maze: it makes the party wait outside
 				// instead of endlessly looping at the maze's door.
 				if (GAME_SI && npc->get_ident() == 31) {
-					(*scr) << Ucscript::usecode2 << SSMazePartyWait
-						   << static_cast<int>(Usecode_machine::internal_exec);
+					(*scr) << Ucscript::usecode2 << SSMazePartyWait << static_cast<int>(Usecode_machine::internal_exec);
 				}
-				(*scr) << Ucscript::usecode2 << npc->get_usecode()
-					   << static_cast<int>(Usecode_machine::npc_proximity);
+				(*scr) << Ucscript::usecode2 << npc->get_usecode() << static_cast<int>(Usecode_machine::npc_proximity);
 				delay = 3;
 				break;
 			case 16:    // Bow to ground.
 				// Trying to differentiate this from 17, below.
-				(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_bow_frame
-					   << Ucscript::delay_ticks << 2;
+				(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_bow_frame << Ucscript::delay_ticks << 2;
 				delay = 8;
 				break;
 			case 17:    // Bow from ground.
 				// Trying to differentiate this from 16, above.
-				(*scr) << Ucscript::npc_bow_frame << Ucscript::delay_ticks << 2
-					   << Ucscript::npc_standing_frame;
+				(*scr) << Ucscript::npc_bow_frame << Ucscript::delay_ticks << 2 << Ucscript::npc_standing_frame;
 				delay = 8;
 				break;
 			case 20:    // Ready weapon
@@ -1531,13 +1454,11 @@ void Patrol_schedule::now_what() {
 				const int    dir = npc->get_dir_facing();
 				signed char  frames[14];    // Get frames to show.
 				Game_object* weap = npc->get_readied(rhand);
-				int          cnt  = npc->get_attack_frames(
-                        weap ? weap->get_shapenum() : 0, false, dir, frames);
-				frames[cnt++] = npc->get_dir_framenum(dir, Actor::ready_frame);
-				frames[cnt++] = npc->get_dir_framenum(dir, Actor::standing);
+				int          cnt  = npc->get_attack_frames(weap ? weap->get_shapenum() : 0, false, dir, frames);
+				frames[cnt++]     = npc->get_dir_framenum(dir, Actor::ready_frame);
+				frames[cnt++]     = npc->get_dir_framenum(dir, Actor::standing);
 				if (cnt) {
-					npc->set_action(
-							new Frames_actor_action(frames, cnt, speed));
+					npc->set_action(new Frames_actor_action(frames, cnt, speed));
 				}
 				delay = cnt;    // Get back into time queue.
 				break;
@@ -1553,8 +1474,7 @@ void Patrol_schedule::now_what() {
 			case 19:    // Release semaphore
 			default:
 #ifdef DEBUG
-				cout << "Unhandled path egg quality in patrol schedule: "
-					 << qual << endl;
+				cout << "Unhandled path egg quality in patrol schedule: " << qual << endl;
 #endif
 				break;
 			}
@@ -1594,8 +1514,7 @@ void Patrol_schedule::now_what() {
 			}
 			// Standing up animation.
 			auto* scr = new Usecode_script(npc);
-			(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_bow_frame
-				   << Ucscript::delay_ticks << 2
+			(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_bow_frame << Ucscript::delay_ticks << 2
 				   << Ucscript::npc_standing_frame;
 			scr->start();    // Start next tick.
 			npc->start(speed, speed * 7);
@@ -1618,8 +1537,7 @@ void Patrol_schedule::now_what() {
 		if (npc->get_tile().distance(center) < 1) {
 			pace_count++;
 			if (pace_count == 6) {
-				npc->change_frame(npc->get_dir_framenum(
-						npc->get_dir_facing(), Actor::standing));
+				npc->change_frame(npc->get_dir_framenum(npc->get_dir_facing(), Actor::standing));
 				npc->start(3 * speed, 3 * speed);
 				state = 0;
 				break;
@@ -1651,13 +1569,10 @@ void Patrol_schedule::now_what() {
 		const int repcnt = 1 + rand() % 3;
 
 		auto* scr = new Usecode_script(npc);
-		(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_ready_frame
-			   << Ucscript::delay_ticks << 2 << Ucscript::npc_raise1_frame
-			   << Ucscript::delay_ticks << 2 << Ucscript::sfx
-			   << Audio::game_sfx(45) << Ucscript::npc_out_frame
-			   << Ucscript::delay_ticks << 2 << Ucscript::repeat << -13
-			   << repcnt << Ucscript::delay_ticks << 2
-			   << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 2
+		(*scr) << Ucscript::delay_ticks << 2 << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 2
+			   << Ucscript::npc_raise1_frame << Ucscript::delay_ticks << 2 << Ucscript::sfx << Audio::game_sfx(45)
+			   << Ucscript::npc_out_frame << Ucscript::delay_ticks << 2 << Ucscript::repeat << -13 << repcnt
+			   << Ucscript::delay_ticks << 2 << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 2
 			   << Ucscript::npc_standing_frame;
 		const int delay = 11 * (repcnt + 1) + 6;
 		scr->start();    // Start next tick.
@@ -1689,9 +1604,7 @@ Talk_schedule::Talk_schedule(Actor* n, int fb, int lb, int eid)
 
 Talk_schedule::Talk_schedule(Actor* n)
 		: Schedule(n), firstbark(first_talk), lastbark(last_talk),
-		  eventid(GAME_BG ? Usecode_machine::double_click
-						  : Usecode_machine::chat),
-		  phase(0) {}
+		  eventid(GAME_BG ? Usecode_machine::double_click : Usecode_machine::chat), phase(0) {}
 
 /*
  *  Schedule change for 'talk':
@@ -1706,8 +1619,7 @@ void Talk_schedule::now_what() {
 		return;
 	}
 	// Don't talk to invisible avatar unless NPC can see invisible.
-	if (gwin->get_main_actor()->get_flag(Obj_flags::invisible)
-		&& !npc->can_see_invisible()) {
+	if (gwin->get_main_actor()->get_flag(Obj_flags::invisible) && !npc->can_see_invisible()) {
 		// Try a little later.
 		phase = 0;
 		npc->start(speed, 5000);
@@ -1723,8 +1635,7 @@ void Talk_schedule::now_what() {
 		}
 		// Aim for within 5 tiles.
 		Actor_pathfinder_client cost(npc, 5);
-		Actor_action*           pact = Approach_actor_action::create_path(
-                npc->get_tile(), gwin->get_main_actor(), 5, cost);
+		Actor_action*           pact = Approach_actor_action::create_path(npc->get_tile(), gwin->get_main_actor(), 5, cost);
 		if (!pact) {
 #ifdef DEBUG
 			cout << "Talk: Failed to find path for " << npc->get_name() << endl;
@@ -1733,8 +1644,7 @@ void Talk_schedule::now_what() {
 			npc->start(speed, 500);
 			return;
 		} else {
-			if (Fast_pathfinder_client::is_grabable(
-						npc, gwin->get_main_actor())) {
+			if (Fast_pathfinder_client::is_grabable(npc, gwin->get_main_actor())) {
 				if (rand() % 3 == 0) {
 					npc->say(firstbark, lastbark);
 				}
@@ -1757,8 +1667,8 @@ void Talk_schedule::now_what() {
 		// Step towards Avatar.
 		const Tile_coord pos  = npc->get_tile();
 		const Tile_coord dest = gwin->get_main_actor()->get_tile();
-		const int dx = dest.tx > pos.tx ? 1 : (dest.tx < pos.tx ? -1 : 0);
-		const int dy = dest.ty > pos.ty ? 1 : (dest.ty < pos.ty ? -1 : 0);
+		const int        dx   = dest.tx > pos.tx ? 1 : (dest.tx < pos.tx ? -1 : 0);
+		const int        dy   = dest.ty > pos.ty ? 1 : (dest.ty < pos.ty ? -1 : 0);
 		npc->walk_to_tile(pos + Tile_coord(dx, dy, 0), speed, 500);
 		phase = 3;
 		return;
@@ -1766,16 +1676,13 @@ void Talk_schedule::now_what() {
 	case 3: {    // Talk.
 		const int dist = npc->distance(gwin->get_main_actor());
 		// Got to be close & reachable.
-		if (dist > 5
-			|| !Fast_pathfinder_client::is_grabable(
-					npc, gwin->get_main_actor())) {
+		if (dist > 5 || !Fast_pathfinder_client::is_grabable(npc, gwin->get_main_actor())) {
 			phase = 0;
 			npc->start(speed, 500);
 			return;
 		}
 		// But first face Avatar.
-		npc->change_frame(npc->get_dir_framenum(
-				npc->get_direction(gwin->get_main_actor()), Actor::standing));
+		npc->change_frame(npc->get_dir_framenum(npc->get_direction(gwin->get_main_actor()), Actor::standing));
 		phase++;
 		npc->start(speed, 250);    // Wait another 1/4 sec.
 		break;
@@ -1798,8 +1705,7 @@ void Talk_schedule::now_what() {
  */
 
 Arrest_avatar_schedule::Arrest_avatar_schedule(Actor* n)
-		: Talk_schedule(
-				  n, first_arrest, last_arrest, Usecode_machine::double_click) {
+		: Talk_schedule(n, first_arrest, last_arrest, Usecode_machine::double_click) {
 	npc->set_usecode(ArrestUsecode);
 }
 
@@ -1848,11 +1754,8 @@ void Loiter_schedule::now_what() {
 	// Pure guess. Since only some schedules seem to call proximity
 	// usecode, I guess I should put it in here.
 	// Seems rare for pure loiter, quite frequent for tend shop.
-	if ((npc->get_schedule_type() == Schedule::loiter
-		 && !(GAME_SI && npc->get_shapenum() == 0x355)
-		 && try_proximity_usecode(12))
-		|| (npc->get_schedule_type() == Schedule::tend_shop
-			&& try_proximity_usecode(4))) {
+	if ((npc->get_schedule_type() == Schedule::loiter && !(GAME_SI && npc->get_shapenum() == 0x355) && try_proximity_usecode(12))
+		|| (npc->get_schedule_type() == Schedule::tend_shop && try_proximity_usecode(4))) {
 		return;
 	}
 
@@ -1866,8 +1769,7 @@ void Loiter_schedule::now_what() {
 	const int newx = center.tx - dist + rand() % (2 * dist);
 	const int newy = center.ty - dist + rand() % (2 * dist);
 	// Wait a bit.
-	npc->walk_to_tile(
-			newx, newy, center.tz, 2 * gwin->get_std_delay(), rand() % 2000);
+	npc->walk_to_tile(newx, newy, center.tz, 2 * gwin->get_std_delay(), rand() % 2000);
 }
 
 /*
@@ -1881,9 +1783,7 @@ void Graze_schedule::now_what() {
 		const int newx = center.tx - dist + rand() % (2 * dist);
 		const int newy = center.ty - dist + rand() % (2 * dist);
 		// Wait a bit.
-		npc->walk_to_tile(
-				newx, newy, center.tz, 2 * gwin->get_std_delay(),
-				rand() % 2000);
+		npc->walk_to_tile(newx, newy, center.tz, 2 * gwin->get_std_delay(), rand() % 2000);
 		phase++;
 		break;
 	}
@@ -1893,20 +1793,15 @@ void Graze_schedule::now_what() {
 			if (rand() % 12 == 0) {
 				const int        dir = npc->get_dir_facing();
 				const std::array frames{
-						static_cast<signed char>(
-								npc->get_dir_framenum(dir, 0xe)),
-						static_cast<signed char>(
-								npc->get_dir_framenum(dir, 0xf)),
-						static_cast<signed char>(
-								npc->get_dir_framenum(dir, Actor::standing)),
+						static_cast<signed char>(npc->get_dir_framenum(dir, 0xe)),
+						static_cast<signed char>(npc->get_dir_framenum(dir, 0xf)),
+						static_cast<signed char>(npc->get_dir_framenum(dir, Actor::standing)),
 				};
-				npc->set_action(
-						new Frames_actor_action(frames.data(), frames.size()));
+				npc->set_action(new Frames_actor_action(frames.data(), frames.size()));
 			}
 		} else {
 			npc->add_dirty();
-			npc->change_frame(npc->get_dir_framenum(
-					npc->get_dir_facing(), Actor::standing));
+			npc->change_frame(npc->get_dir_framenum(npc->get_dir_facing(), Actor::standing));
 			npc->add_dirty();
 		}
 		phase++;
@@ -1962,8 +1857,7 @@ void Kid_games_schedule::now_what() {
 
 	if (kid) {
 		Fast_pathfinder_client cost(npc, kid->get_tile(), 1);
-		Actor_action*          pact = Path_walking_actor_action::create_path(
-                pos, kid->get_tile(), cost);
+		Actor_action*          pact = Path_walking_actor_action::create_path(pos, kid->get_tile(), cost);
 		if (pact) {
 			npc->set_action(pact);
 			npc->start(100, 250);    // Run.
@@ -1990,8 +1884,7 @@ void Dance_schedule::now_what() {
 	dest.tx += -dist + rand() % (2 * dist);
 	dest.ty += -dist + rand() % (2 * dist);
 	const Tile_coord cur = npc->get_tile();
-	const int        dir = static_cast<int>(
-            Get_direction4(cur.ty - dest.ty, dest.tx - cur.tx));
+	const int        dir = static_cast<int>(Get_direction4(cur.ty - dest.ty, dest.tx - cur.tx));
 	// Pure guess. Since only some schedules seem to call proximity
 	// usecode, I guess I should put it in here.
 	// Seems quite rare.
@@ -2005,25 +1898,21 @@ void Dance_schedule::now_what() {
 	switch (danceroutine) {
 	default: {
 		// Spin in place using one of several frames.
-		constexpr static const std::array base_frames{
-				Actor::standing, Actor::up_frame, Actor::out_frame};
-		const signed char basefr
-				= base_frames[danceroutine % base_frames.size()];
-		nframes = 6;
-		frames  = new signed char[nframes];
+		constexpr static const std::array base_frames{Actor::standing, Actor::up_frame, Actor::out_frame};
+		const signed char                 basefr = base_frames[danceroutine % base_frames.size()];
+		nframes                                  = 6;
+		frames                                   = new signed char[nframes];
 		size_t i;
 		for (i = 0; i < nframes - 2; i++) {
 			frames[i] = npc->get_dir_framenum((dir + 2 * i) % 8, basefr);
 		}
-		frames[i] = npc->get_dir_framenum((dir + 2 * i) % 8, basefr);
-		frames[i + 1]
-				= npc->get_dir_framenum((dir + 2 * i) % 8, Actor::standing);
+		frames[i]     = npc->get_dir_framenum((dir + 2 * i) % 8, basefr);
+		frames[i + 1] = npc->get_dir_framenum((dir + 2 * i) % 8, Actor::standing);
 		break;
 	}
 	case 3: {    // Flap arms
 		// Seems to repeat a random number of times.
-		constexpr static const std::array flap_frames{
-				Actor::up_frame, Actor::out_frame};
+		constexpr static const std::array flap_frames{Actor::up_frame, Actor::out_frame};
 		nframes = 5 + 4 * (rand() % 4);
 		frames  = new signed char[nframes];
 		for (size_t i = 0; i < nframes - 1; i++) {
@@ -2034,8 +1923,7 @@ void Dance_schedule::now_what() {
 	}
 	case 4: {    // Punch
 		constexpr static const std::array swing_frames{
-				Actor::ready_frame, Actor::raise1_frame, Actor::reach1_frame,
-				Actor::strike1_frame, Actor::ready_frame};
+				Actor::ready_frame, Actor::raise1_frame, Actor::reach1_frame, Actor::strike1_frame, Actor::ready_frame};
 		nframes = swing_frames.size();
 		frames  = new signed char[nframes];
 		for (size_t i = 0; i < swing_frames.size(); i++) {
@@ -2048,17 +1936,15 @@ void Dance_schedule::now_what() {
 	Actor_action* walk = new Path_walking_actor_action(new Zombie());
 	walk->walk_to_tile(npc, cur, dest);
 	// Walk, then spin.
-	npc->set_action(new Sequence_actor_action(
-			walk, new Frames_actor_action(frames, nframes, speed)));
+	npc->set_action(new Sequence_actor_action(walk, new Frames_actor_action(frames, nframes, speed)));
 	delete[] frames;
 	npc->start(gwin->get_std_delay(), 500);    // Start in 1/2 sec.
 }
 
 void Tool_schedule::get_tool() {
-	const Game_object_shared newobj
-			= std::make_shared<Ireg_game_object>(toolshape, 0, 0, 0, 0);
-	Game_object* tool_obj = newobj.get();
-	tool                  = newobj;
+	const Game_object_shared newobj   = std::make_shared<Ireg_game_object>(toolshape, 0, 0, 0, 0);
+	Game_object*             tool_obj = newobj.get();
+	tool                              = newobj;
 	// Free up both hands.
 	Game_object* obj = npc->get_readied(rhand);
 	if (obj) {
@@ -2136,12 +2022,10 @@ void Farmer_schedule::now_what() {
 		crop = weak_from_obj(crop_obj);
 		if (crop_obj) {
 			Actor_pathfinder_client cost(npc, 2);
-			Actor_action* pact = Path_walking_actor_action::create_path(
-					npc->get_tile(), crop_obj->get_tile(), cost);
+			Actor_action*           pact = Path_walking_actor_action::create_path(npc->get_tile(), crop_obj->get_tile(), cost);
 			if (pact) {
 				state = attack_crop;
-				npc->set_action(new Sequence_actor_action(
-						pact, new Face_pos_actor_action(crop_obj, 200)));
+				npc->set_action(new Sequence_actor_action(pact, new Face_pos_actor_action(crop_obj, 200)));
 				break;
 			} else {
 				crop = Game_object_weak();
@@ -2153,8 +2037,7 @@ void Farmer_schedule::now_what() {
 	}
 	case attack_crop: {
 		const Game_object_shared crop_obj = crop.lock();
-		if (!crop_obj || crop_obj->is_pos_invalid()
-			|| npc->distance(crop_obj.get()) > 2) {
+		if (!crop_obj || crop_obj->is_pos_invalid() || npc->distance(crop_obj.get()) > 2) {
 			state = find_crop;
 			break;
 		}
@@ -2236,12 +2119,10 @@ void Miner_schedule::now_what() {
 			Game_object* ore_obj = ores[rand() % cnt];
 			ore                  = weak_from_obj(ore_obj);
 			Actor_pathfinder_client cost(npc, 2);
-			Actor_action* pact = Path_walking_actor_action::create_path(
-					npc->get_tile(), ore_obj->get_tile(), cost);
+			Actor_action*           pact = Path_walking_actor_action::create_path(npc->get_tile(), ore_obj->get_tile(), cost);
 			if (pact) {
 				state = attack_ore;
-				npc->set_action(new Sequence_actor_action(
-						pact, new Face_pos_actor_action(ore_obj, 200)));
+				npc->set_action(new Sequence_actor_action(pact, new Face_pos_actor_action(ore_obj, 200)));
 				break;
 			}
 		}
@@ -2252,20 +2133,17 @@ void Miner_schedule::now_what() {
 	}
 	case attack_ore: {
 		const Game_object_shared ore_obj = ore.lock();
-		if (!ore_obj || ore_obj->is_pos_invalid()
-			|| npc->distance(ore_obj.get()) > 2) {
+		if (!ore_obj || ore_obj->is_pos_invalid() || npc->distance(ore_obj.get()) > 2) {
 			state = find_ore;
 			break;
 		}
 		signed char frames[20];    // Use pick.
-		const int   dir = npc->get_direction(ore_obj.get());
-		int         cnt = npc->get_attack_frames(toolshape, false, dir, frames);
+		const int   dir        = npc->get_direction(ore_obj.get());
+		int         cnt        = npc->get_attack_frames(toolshape, false, dir, frames);
 		const int   attack_sfx = Audio::game_sfx(5);
 		if (cnt) {
 			frames[cnt++] = npc->get_dir_framenum(dir, Actor::standing);
-			npc->set_action(new Frames_actor_action(
-					frames, cnt, 200, nullptr, attack_sfx, sfx_vol(), 0,
-					ore_obj.get()));
+			npc->set_action(new Frames_actor_action(frames, cnt, 200, nullptr, attack_sfx, sfx_vol(), 0, ore_obj.get()));
 			state = ore_attacked;
 		} else {
 			state = wander;
@@ -2297,9 +2175,7 @@ void Miner_schedule::now_what() {
 					shnum = 760;
 					frnum = rand() % 10;
 				}
-				const Game_object_shared newobj
-						= std::make_shared<Ireg_game_object>(
-								shnum, frnum, 0, 0);
+				const Game_object_shared newobj = std::make_shared<Ireg_game_object>(shnum, frnum, 0, 0);
 				newobj->move(pos);
 				newobj->set_flag(Obj_flags::is_temporary);
 				state = find_ore;
@@ -2360,8 +2236,7 @@ void Hound_schedule::now_what() {
 	avpos.tx += rand() % 3 - 1;            // Vary a bit randomly.
 	avpos.ty += rand() % 3 - 1;
 	Fast_pathfinder_client cost(npc, avpos, newdist);
-	Actor_action*          pact
-			= Path_walking_actor_action::create_path(npcpos, avpos, cost);
+	Actor_action*          pact = Path_walking_actor_action::create_path(npcpos, avpos, cost);
 	if (pact) {
 		npc->set_action(pact);
 		npc->start(gwin->get_std_delay(), 50);
@@ -2397,11 +2272,8 @@ void Wander_schedule::now_what() {
 		pos.ty = center.ty - dist;
 	}
 	// Find a free spot.
-	const Tile_coord dest
-			= Map_chunk::find_spot(pos, 4, npc->get_shapenum(), 0, 1);
-	if (dest.tx == -1
-		|| !npc->walk_path_to_tile(
-				dest, gwin->get_std_delay(), rand() % 2000)) {
+	const Tile_coord dest = Map_chunk::find_spot(pos, 4, npc->get_shapenum(), 0, 1);
+	if (dest.tx == -1 || !npc->walk_path_to_tile(dest, gwin->get_std_delay(), rand() % 2000)) {
 		// Failed?  Try again a little later.
 		npc->start(250, rand() % 3000);
 	}
@@ -2422,8 +2294,7 @@ static void Stand_up(Actor* npc) {
  *  Create a sleep schedule.
  */
 
-Sleep_schedule::Sleep_schedule(Actor* n)
-		: Schedule(n), state(0), for_nap_time(false) {
+Sleep_schedule::Sleep_schedule(Actor* n) : Schedule(n), state(0), for_nap_time(false) {
 	floorloc.tx = -1;    // Set to invalid loc.
 	if (Game::get_game_type() == BLACK_GATE) {
 		spread0 = 3;
@@ -2508,8 +2379,7 @@ void Sleep_schedule::now_what() {
 		int best_dist = 100;
 		for (auto* newbed : beds) {
 			const int newdist = npc->distance(newbed);
-			if (newdist < best_dist && !is_bed_occupied(newbed, npc)
-				&& Fast_pathfinder_client::is_straight_path(npc, newbed)) {
+			if (newdist < best_dist && !is_bed_occupied(newbed, npc) && Fast_pathfinder_client::is_straight_path(npc, newbed)) {
 				best_dist = newdist;
 				bed_obj   = newbed->shared_from_this();
 			}
@@ -2530,23 +2400,18 @@ void Sleep_schedule::now_what() {
 		if (!bed_obj) {
 			static const int possible_dirs[] = {west, north};
 			Tile_coord       npc_pos         = npc->get_tile();
-			int              sleep_dir_frame
-					= npc->get_dir_framenum(west, Actor::sleep_frame);
+			int              sleep_dir_frame = npc->get_dir_framenum(west, Actor::sleep_frame);
 
 			for (int direction : possible_dirs) {
-				const int frame
-						= npc->get_dir_framenum(direction, Actor::sleep_frame);
+				const int frame = npc->get_dir_framenum(direction, Actor::sleep_frame);
 				// Use find_spot to locate a valid position for the sleep frame.
-				const Tile_coord spot = Map_chunk::find_spot(
-						npc_pos, 3, npc->get_shapenum(), frame, 0, direction);
+				const Tile_coord spot = Map_chunk::find_spot(npc_pos, 3, npc->get_shapenum(), frame, 0, direction);
 				if (spot.tx != -1) {
 					// Found a valid spot.
 					if (npc->distance(spot) > 1) {
 						// Need to walk there first.
 						Actor_pathfinder_client cost(npc, 0);
-						Actor_action*           pact
-								= Path_walking_actor_action::create_path(
-										npc_pos, spot, cost);
+						Actor_action*           pact = Path_walking_actor_action::create_path(npc_pos, spot, cost);
 						if (pact) {
 							npc->set_action(pact);
 							npc->start(200);
@@ -2574,8 +2439,7 @@ void Sleep_schedule::now_what() {
 			const int        frnum = top->get_framenum();
 			const Tile_coord tpos  = top->get_tile();
 			// Restrict to sheets on the same floor as the selected bed.
-			if (frnum >= spread0 && frnum <= spread1
-				&& floor == (tpos.tz / 5)) {
+			if (frnum >= spread0 && frnum <= spread1 && floor == (tpos.tz / 5)) {
 				bed_obj = top->shared_from_this();
 				bed     = Game_object_weak(bed_obj);
 				break;
@@ -2588,8 +2452,7 @@ void Sleep_schedule::now_what() {
 		bloc.ty -= info.get_3d_ytiles(bed_obj->get_framenum()) / 2;
 		// Get within 3 tiles.
 		Actor_pathfinder_client cost(npc, 3);
-		Actor_action*           pact = Path_walking_actor_action::create_path(
-                npc->get_tile(), bloc, cost);
+		Actor_action*           pact = Path_walking_actor_action::create_path(npc->get_tile(), bloc, cost);
 		if (pact) {
 			npc->set_action(pact);
 		}
@@ -2604,7 +2467,7 @@ void Sleep_schedule::now_what() {
 			break;
 		}
 		const int bedshape = bed_obj->get_shapenum();
-		const int dir = (bedshape == 696 || bedshape == 363) ? west : north;
+		const int dir      = (bedshape == 696 || bedshape == 363) ? west : north;
 		npc->change_frame(npc->get_dir_framenum(dir, Actor::sleep_frame));
 		// Get bed info.
 		const Shape_info& info   = bed_obj->get_info();
@@ -2624,14 +2487,11 @@ void Sleep_schedule::now_what() {
 		npc->force_sleep();
 		// With bedspread: place at bed's z-level (render order handled in
 		// Map_chunk::add_dependencies). Without: place on top of bed frame.
-		npc->move(
-				bedloc.tx + delta, bedloc.ty + delta,
-				bedloc.tz + (bedspread ? 0 : info.get_3d_height()));
+		npc->move(bedloc.tx + delta, bedloc.ty + delta, bedloc.tz + (bedspread ? 0 : info.get_3d_height()));
 		state = 2;
 		if (for_nap_time) {    // Usecode 622 handles sleeping.
 			// Calling it may delete us, though.
-			ucmachine->call_usecode(
-					SleepUsecode, bed_obj.get(), Usecode_machine::double_click);
+			ucmachine->call_usecode(SleepUsecode, bed_obj.get(), Usecode_machine::double_click);
 			return;    // So leave nothing to chance.
 		}
 		break;
@@ -2668,8 +2528,7 @@ void Sleep_schedule::ending(int new_type    // New schedule.
 	int                      dir     = 0;
 	const Game_object_shared bed_obj = bed.lock();
 	// Still in bed?
-	if (bed_obj && (npc->get_framenum() & 0xf) == Actor::sleep_frame
-		&& npc->distance(bed_obj.get()) < 8) {
+	if (bed_obj && (npc->get_framenum() & 0xf) == Actor::sleep_frame && npc->distance(bed_obj.get()) < 8) {
 		// Locate free spot.
 		if (floorloc.tx == -1) {
 			// Want spot on floor.
@@ -2679,33 +2538,26 @@ void Sleep_schedule::ending(int new_type    // New schedule.
 			// bed in Spark's house.
 			floorloc.tz -= floorloc.tz % 5;
 		}
-		Tile_coord pos = Map_chunk::find_spot(
-				floorloc, 6, npc->get_shapenum(),
-				static_cast<int>(Actor::standing), 0);
+		Tile_coord pos = Map_chunk::find_spot(floorloc, 6, npc->get_shapenum(), static_cast<int>(Actor::standing), 0);
 		if (pos.tx == -1) {    // Failed?  Allow change in lift.
-			pos = Map_chunk::find_spot(
-					floorloc, 6, npc->get_shapenum(),
-					static_cast<int>(Actor::standing), 1);
+			pos = Map_chunk::find_spot(floorloc, 6, npc->get_shapenum(), static_cast<int>(Actor::standing), 1);
 		}
 		floorloc = pos;
 		// Make bed.
 		const int frnum = bed_obj->get_framenum();
 		// Not if going into combat, or was awakened
-		if (!sleep_interrupted && new_type != static_cast<int>(combat)
-			&& frnum >= spread0 && frnum <= spread1 && !(frnum % 2)
+		if (!sleep_interrupted && new_type != static_cast<int>(combat) && frnum >= spread0 && frnum <= spread1 && !(frnum % 2)
 			&& !is_bed_occupied(
 					bed_obj.get(),
 					npc)) {    // And not if there is another occupant.
 			// Make the bed set itself after a small delay.
 			makebed   = true;
 			auto* scr = new Usecode_script(bed_obj.get());
-			(*scr) << Ucscript::finish << Ucscript::delay_ticks << 3
-				   << Ucscript::frame << frnum - 1;
+			(*scr) << Ucscript::finish << Ucscript::delay_ticks << 3 << Ucscript::frame << frnum - 1;
 			scr->start();
 			const Tile_coord bloc = bed_obj->get_center_tile();
 			// Treat as cartesian coords.
-			dir = static_cast<int>(Get_direction(
-					floorloc.ty - bloc.ty, bloc.tx - floorloc.tx));
+			dir = static_cast<int>(Get_direction(floorloc.ty - bloc.ty, bloc.tx - floorloc.tx));
 		}
 	}
 	if (floorloc.tx >= 0) {    // Get back on floor.
@@ -2716,11 +2568,9 @@ void Sleep_schedule::ending(int new_type    // New schedule.
 	if (makebed && !sleep_interrupted) {
 		// Animation for making bed.
 		auto* scr = new Usecode_script(npc);
-		(*scr) << Ucscript::dont_halt << Ucscript::face_dir << dir
-			   << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 1
-			   << Ucscript::npc_raise1_frame << Ucscript::delay_ticks << 1
-			   << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 1
-			   << Ucscript::npc_standing_frame;
+		(*scr) << Ucscript::dont_halt << Ucscript::face_dir << dir << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 1
+			   << Ucscript::npc_raise1_frame << Ucscript::delay_ticks << 1 << Ucscript::npc_ready_frame << Ucscript::delay_ticks
+			   << 1 << Ucscript::npc_standing_frame;
 		scr->start();
 	}
 	gwin->set_all_dirty();    // Update all, since Av. stands up.
@@ -2745,8 +2595,7 @@ Sit_schedule::Sit_schedule(
 		Actor*       n,
 		Game_object* ch    // Chair, or null to find one.
 		)
-		: Schedule(n), chair(weak_from_obj(ch)), sat(false),
-		  did_barge_usecode(false) {}
+		: Schedule(n), chair(weak_from_obj(ch)), sat(false), did_barge_usecode(false) {}
 
 /*
  *  Schedule change for 'sit':
@@ -2755,8 +2604,7 @@ Sit_schedule::Sit_schedule(
 void Sit_schedule::now_what() {
 	const int                frnum     = npc->get_framenum();
 	const Game_object_shared chair_obj = chair.lock();
-	if (chair_obj && (frnum & 0xf) == Actor::sit_frame
-		&& npc->distance(chair_obj.get()) <= 1) {
+	if (chair_obj && (frnum & 0xf) == Actor::sit_frame && npc->distance(chair_obj.get()) <= 1) {
 		// Already sitting.
 		// Seat on barge?
 		if (chair_obj->get_info().get_barge_type() != Shape_info::barge_seat) {
@@ -2787,15 +2635,12 @@ void Sit_schedule::now_what() {
 		// Special usecode for barge pieces:
 		// (Call with item=Avatar to avoid
 		//   running nearby barges.)
-		ucmachine->call_usecode(
-				BargeUsecode, gwin->get_main_actor(),
-				Usecode_machine::double_click);
+		ucmachine->call_usecode(BargeUsecode, gwin->get_main_actor(), Usecode_machine::double_click);
 		return;
 	}
 	// Wait a while if we got up.
 	Game_object* new_chair = chair_obj.get();
-	if (!set_action(
-				npc, new_chair, sat ? (1000 + rand() % 1000) : 0, &new_chair)) {
+	if (!set_action(npc, new_chair, sat ? (1000 + rand() % 1000) : 0, &new_chair)) {
 		npc->start(200, 1000);    // Failed?  Try again later.
 	} else {
 		sat = true;
@@ -2849,13 +2694,11 @@ class Sit_actor_action : public Frames_actor_action, public Game_singletons {
 		}
 		// See if spot is blocked.
 		Tile_coord pos = sitloc;    // Careful, .tz gets updated.
-		return Map_chunk::is_blocked(
-				pos, actor->get_info().get_3d_height(), MOVE_WALK, 0);
+		return Map_chunk::is_blocked(pos, actor->get_info().get_3d_height(), MOVE_WALK, 0);
 	}
 
 public:
-	Sit_actor_action(Game_object* o, Actor* actor)
-			: Frames_actor_action(init(o, actor), 2), chair(weak_from_obj(o)) {
+	Sit_actor_action(Game_object* o, Actor* actor) : Frames_actor_action(init(o, actor), 2), chair(weak_from_obj(o)) {
 		sitloc = chairloc = o->get_tile();
 		// Frame 0 faces N, 1 E, etc.
 		const int nsew = o->get_framenum() % 4;
@@ -2869,10 +2712,7 @@ public:
 
 	static bool is_occupied(Game_object* chair, Actor* actor) {
 		const int dir = 2 * (chair->get_framenum() % 4);
-		return is_occupied(
-				chair->get_tile()
-						+ Tile_coord(offsets[dir], offsets[dir + 1], 0),
-				actor);
+		return is_occupied(chair->get_tile() + Tile_coord(offsets[dir], offsets[dir + 1], 0), actor);
 	}
 
 	// Handle time event.
@@ -2931,10 +2771,7 @@ bool Sit_schedule::set_action(
 		for (auto& chair : chairs) {
 			if (!Sit_actor_action::is_occupied(chair, actor)) {
 				Path_walking_actor_action action(nullptr, 6);
-				const bool                reachable = action.walk_to_tile(
-                                               actor, actor->get_tile(),
-                                               chair->get_tile(), 1)
-									   != nullptr;
+				const bool reachable = action.walk_to_tile(actor, actor->get_tile(), chair->get_tile(), 1) != nullptr;
 				// Found an unused one.
 				if (reachable) {
 					chairobj = chair;
@@ -2961,8 +2798,7 @@ bool Sit_schedule::set_action(
  *  Desk work.
  */
 
-Desk_schedule::Desk_schedule(Actor* n)
-		: Schedule_with_objects(n), state(desk_setup) {}
+Desk_schedule::Desk_schedule(Actor* n) : Schedule_with_objects(n), state(desk_setup) {}
 
 /*
  *  Find tables.
@@ -2997,13 +2833,9 @@ bool Desk_schedule::walk_to_table() {
 		}
 		table = table_keep;
 		// This will find a random spot around the table:
-		const Tile_coord pos = Map_chunk::find_spot(
-				table_keep->get_tile(), 1, npc->get_shapenum(),
-				npc->get_framenum());
+		const Tile_coord pos = Map_chunk::find_spot(table_keep->get_tile(), 1, npc->get_shapenum(), npc->get_framenum());
 
-		if (pos.tx != -1
-			&& npc->walk_path_to_tile(
-					pos, gwin->get_std_delay(), 1000 + rand() % 1000)) {
+		if (pos.tx != -1 && npc->walk_path_to_tile(pos, gwin->get_std_delay(), 1000 + rand() % 1000)) {
 			return true;
 		}
 	}
@@ -3012,8 +2844,7 @@ bool Desk_schedule::walk_to_table() {
 }
 
 int Desk_schedule::find_items(Game_object_vector& vec, int dist) {
-	constexpr static const std::array desk_frames{0, 1, 2, 3,  4,  5,  6,
-												  7, 8, 9, 12, 13, 14, 15};
+	constexpr static const std::array desk_frames{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 15};
 	npc->find_nearby(vec, 675, dist, 0);
 	const int floor = npc->get_lift() / 5;    // Make sure it's on same floor.
 	vec.erase(
@@ -3021,11 +2852,7 @@ int Desk_schedule::find_items(Game_object_vector& vec, int dist) {
 					vec.begin(), vec.end(),
 					[floor](Game_object* item) {
 						return item->get_lift() / 5 != floor
-							   || std::find(
-										  desk_frames.cbegin(),
-										  desk_frames.cend(),
-										  item->get_framenum())
-										  == desk_frames.cend();
+							   || std::find(desk_frames.cbegin(), desk_frames.cend(), item->get_framenum()) == desk_frames.cend();
 					}),
 			vec.end());
 	return vec.size();
@@ -3098,9 +2925,7 @@ void Desk_schedule::now_what() {
 			items_in_hand += nitems;
 			for (int i = 0; i < nitems; ++i) {
 				int                      frame = Desk_item_frame();
-				const Game_object_shared item
-						= std::make_shared<Ireg_game_object>(
-								675, frame, 0, 0, 0);
+				const Game_object_shared item  = std::make_shared<Ireg_game_object>(675, frame, 0, 0, 0);
 				npc->add(item.get(), true);
 				add_object(item.get());
 			}
@@ -3127,8 +2952,7 @@ void Desk_schedule::now_what() {
 		// Not sitting?
 		if ((frnum & 0xf) != Actor::sit_frame) {
 			const Game_object_shared chair_keep = chair.lock();
-			if (!chair_keep
-				|| !Sit_schedule::set_action(npc, chair_keep.get(), 0)) {
+			if (!chair_keep || !Sit_schedule::set_action(npc, chair_keep.get(), 0)) {
 				chair = Game_object_weak();    // Look for any nearby chair.
 				state = desk_setup;
 				npc->start(200, 5000);    // Failed?  Try again later.
@@ -3141,19 +2965,13 @@ void Desk_schedule::now_what() {
 			state = get_desk_item;
 		} else {    // Stand up a second.
 			const std::array frames{
-					static_cast<signed char>(
-							npc->get_dir_framenum(Actor::standing)),
-					static_cast<signed char>(
-							npc->get_dir_framenum(Actor::reach1_frame)),
-					static_cast<signed char>(
-							npc->get_dir_framenum(Actor::standing)),
-					static_cast<signed char>(
-							npc->get_dir_framenum(Actor::bow_frame)),
-					static_cast<signed char>(
-							npc->get_dir_framenum(Actor::sit_frame)),
+					static_cast<signed char>(npc->get_dir_framenum(Actor::standing)),
+					static_cast<signed char>(npc->get_dir_framenum(Actor::reach1_frame)),
+					static_cast<signed char>(npc->get_dir_framenum(Actor::standing)),
+					static_cast<signed char>(npc->get_dir_framenum(Actor::bow_frame)),
+					static_cast<signed char>(npc->get_dir_framenum(Actor::sit_frame)),
 			};
-			npc->set_action(
-					new Frames_actor_action(frames.data(), frames.size()));
+			npc->set_action(new Frames_actor_action(frames.data(), frames.size()));
 			npc->start(250, 3000 + rand() % 2000);
 		}
 		break;
@@ -3162,8 +2980,7 @@ void Desk_schedule::now_what() {
 		Game_object* item = get_current_item();
 		if (item && npc->distance(item) <= 3) {
 			// Turn to face it.
-			npc->change_frame(npc->get_dir_framenum(
-					npc->get_direction(item), Actor::standing));
+			npc->change_frame(npc->get_dir_framenum(npc->get_direction(item), Actor::standing));
 			npc->set_action(new Pickup_actor_action(item, 250));
 			state = picked_up_item;
 		} else {
@@ -3186,15 +3003,13 @@ void Desk_schedule::now_what() {
 		// Turn to face it.
 		const Game_object_shared tbl = table.lock();
 		if (tbl) {
-			npc->change_frame(npc->get_dir_framenum(
-					npc->get_facing_direction(tbl.get()), Actor::standing));
+			npc->change_frame(npc->get_dir_framenum(npc->get_facing_direction(tbl.get()), Actor::standing));
 		}
 		if (!tbl || rand() % 3 == 0) {
 			state = sit_at_desk;                     // Back to desk.
 		} else if (items_in_hand && rand() % 6) {    // Put down an item.
 			Game_object_vector items;
-			items_in_hand
-					= npc->get_objects(items, 675, c_any_qual, c_any_framenum);
+			items_in_hand = npc->get_objects(items, 675, c_any_qual, c_any_framenum);
 			if (items_in_hand) {
 				Game_object* to_drop = items[rand() % items_in_hand];
 				if (drop_item(to_drop, tbl.get())) {
@@ -3208,18 +3023,12 @@ void Desk_schedule::now_what() {
 		} else {
 			const int        dir = npc->get_facing_direction(tbl.get());
 			const std::array frames{
-					static_cast<signed char>(
-							npc->get_dir_framenum(dir, Actor::standing)),
-					static_cast<signed char>(npc->get_dir_framenum(
-							dir, (rand() % 2) ? Actor::reach1_frame
-											  : Actor::reach2_frame)),
-					static_cast<signed char>(
-							npc->get_dir_framenum(dir, Actor::standing)),
+					static_cast<signed char>(npc->get_dir_framenum(dir, Actor::standing)),
+					static_cast<signed char>(npc->get_dir_framenum(dir, (rand() % 2) ? Actor::reach1_frame : Actor::reach2_frame)),
+					static_cast<signed char>(npc->get_dir_framenum(dir, Actor::standing)),
 			};
 			Actor_action* face = new Face_pos_actor_action(tbl.get(), 200);
-			npc->set_action(new Sequence_actor_action(
-					face,
-					new Frames_actor_action(frames.data(), frames.size())));
+			npc->set_action(new Sequence_actor_action(face, new Frames_actor_action(frames.data(), frames.size())));
 		}
 		npc->start(250, 1000 + rand() % 500);
 		break;
@@ -3381,11 +3190,9 @@ void Lab_schedule::now_what() {
 		if (!cauldron_obj) {
 			break;
 		}
-		Actor_action* pact = Path_walking_actor_action::create_path(
-				npcpos, cauldron_obj->get_tile(), cost);
+		Actor_action* pact = Path_walking_actor_action::create_path(npcpos, cauldron_obj->get_tile(), cost);
 		if (pact) {
-			npc->set_action(new Sequence_actor_action(
-					pact, new Face_pos_actor_action(cauldron_obj.get(), 200)));
+			npc->set_action(new Sequence_actor_action(pact, new Face_pos_actor_action(cauldron_obj.get(), 200)));
 			state = use_cauldron;
 		}
 		break;
@@ -3393,8 +3200,7 @@ void Lab_schedule::now_what() {
 	case use_cauldron: {
 		const int dir = npc->get_direction(cauldron_obj.get());
 		// Set random frame (skip last frame).
-		cauldron_obj->change_frame(
-				rand() % (cauldron_obj->get_num_frames() - 1));
+		cauldron_obj->change_frame(rand() % (cauldron_obj->get_num_frames() - 1));
 		npc->change_frame(npc->get_dir_framenum(dir, Actor::bow_frame));
 		const int r = rand() % 5;
 		state       = !r ? use_cauldron : (r <= 2 ? sit_down : walk_to_table);
@@ -3402,8 +3208,7 @@ void Lab_schedule::now_what() {
 	}
 	case sit_down: {
 		const Game_object_shared chair_obj = chair.lock();
-		if (!chair_obj
-			|| !Sit_schedule::set_action(npc, chair_obj.get(), 200)) {
+		if (!chair_obj || !Sit_schedule::set_action(npc, chair_obj.get(), 200)) {
 			state = start;
 		} else {
 			state = read_book;
@@ -3447,15 +3252,13 @@ void Lab_schedule::now_what() {
 		Tile_coord spot;    // Also get closest spot on table.
 		p.get(rand() % p.size(), spot, spot_on_table);
 		Actor_pathfinder_client cost0(npc, 0);
-		Actor_action*           pact
-				= Path_walking_actor_action::create_path(npcpos, spot, cost0);
+		Actor_action*           pact = Path_walking_actor_action::create_path(npcpos, spot, cost0);
 		if (!pact) {
 			break;    // Failed.
 		}
 		const Shape_info& info = table->get_info();
 		spot_on_table.tz += info.get_3d_height();
-		npc->set_action(new Sequence_actor_action(
-				pact, new Face_pos_actor_action(spot_on_table, 200)));
+		npc->set_action(new Sequence_actor_action(pact, new Face_pos_actor_action(spot_on_table, 200)));
 		state = use_potion;
 		break;
 	}
@@ -3467,16 +3270,13 @@ void Lab_schedule::now_what() {
 			gwin->add_dirty(potions[0]);
 			potions[0]->remove_this();
 		} else {    // Create potion if spot is empty.
-			const Tile_coord t
-					= Map_chunk::find_spot(spot_on_table, 0, 340, 0, 0);
+			const Tile_coord t = Map_chunk::find_spot(spot_on_table, 0, 340, 0, 0);
 			if (t.tx != -1 && t.tz == spot_on_table.tz) {
 				// create a potion randomly, but don't use the last frame
-				const int nframes = ShapeID(340, 0).get_num_frames() - 1;
-				const Game_object_shared p = gmap->create_ireg_object(
-						ShapeID::get_info(340), 340, rand() % nframes, 0, 0, 0);
+				const int                nframes = ShapeID(340, 0).get_num_frames() - 1;
+				const Game_object_shared p       = gmap->create_ireg_object(ShapeID::get_info(340), 340, rand() % nframes, 0, 0, 0);
 				p->move(t);
-				Audio::get_ptr()->play_sound_effect(
-						drop_sfx_id(), t, sfx_vol());
+				Audio::get_ptr()->play_sound_effect(drop_sfx_id(), t, sfx_vol());
 			}
 		}
 		signed char frames[2];
@@ -3506,9 +3306,7 @@ void Shy_schedule::now_what() {
 		if (rand() % 3) {    // Just wait.
 			npc->start(250, 1000 + rand() % 1000);
 		} else {    // Sometimes wander.
-			npc->walk_to_tile(Tile_coord(
-					npcpos.tx + rand() % 6 - 3, npcpos.ty + rand() % 6 - 3,
-					npcpos.tz));
+			npc->walk_to_tile(Tile_coord(npcpos.tx + rand() % 6 - 3, npcpos.ty + rand() % 6 - 3, npcpos.tz));
 		}
 		return;
 	}
@@ -3519,17 +3317,13 @@ void Shy_schedule::now_what() {
 	const int ady = dy < 0 ? -dy : dy;
 	// Which is farthest?
 	const int farthest = adx < ady ? ady : adx;
-	const int factor   = farthest < 2   ? 9
-						 : farthest < 4 ? 4
-						 : farthest < 7 ? 2
-										: 1;
+	const int factor   = farthest < 2 ? 9 : farthest < 4 ? 4 : farthest < 7 ? 2 : 1;
 	// Walk away.
 	Tile_coord       dest  = npcpos + Tile_coord(dx * factor, dy * factor, 0);
 	const Tile_coord delta = Tile_coord(rand() % 3, rand() % 3, 0);
 	dest                   = dest + delta;
 	Monster_pathfinder_client cost(npc, dest, 4);
-	Actor_action*             pact
-			= Path_walking_actor_action::create_path(npcpos, dest, cost);
+	Actor_action*             pact = Path_walking_actor_action::create_path(npcpos, dest, cost);
 	if (pact) {    // Found path?
 		npc->set_action(pact);
 		npc->start(200, 100 + rand() % 200);    // Start walking.
@@ -3572,9 +3366,7 @@ void Thief_schedule::now_what() {
 		const int        newx   = center.tx - dist + rand() % (2 * dist);
 		const int        newy   = center.ty - dist + rand() % (2 * dist);
 		// Wait a bit.
-		npc->walk_to_tile(
-				newx, newy, center.tz, 2 * gwin->get_std_delay(),
-				rand() % 4000);
+		npc->walk_to_tile(newx, newy, center.tz, 2 * gwin->get_std_delay(), rand() % 4000);
 		return;
 	}
 	if (npc->distance(gwin->get_main_actor()) <= 1) {
@@ -3589,8 +3381,7 @@ void Thief_schedule::now_what() {
 		// Get within 1 tile of Avatar.
 		const Tile_coord          dest = gwin->get_main_actor()->get_tile();
 		Monster_pathfinder_client cost(npc, dest, 1);
-		Actor_action*             pact = Path_walking_actor_action::create_path(
-                npc->get_tile(), dest, cost);
+		Actor_action*             pact = Path_walking_actor_action::create_path(npc->get_tile(), dest, cost);
 		if (pact) {    // Found path?
 			npc->set_action(pact);
 			npc->start(gwin->get_std_delay(), 1000 + rand() % 1000);
@@ -3605,8 +3396,7 @@ void Thief_schedule::now_what() {
  */
 
 Waiter_schedule::Waiter_schedule(Actor* n)
-		: Schedule_with_objects(n), startpos(n->get_tile()), customer(nullptr),
-		  cooking(false), state(waiter_setup) {}
+		: Schedule_with_objects(n), startpos(n->get_tile()), customer(nullptr), cooking(false), state(waiter_setup) {}
 
 static int waiter_shapes[] = {616, 628, 944};
 
@@ -3640,8 +3430,7 @@ static int Count_waiter_objects(Actor* npc) {
 	return cnt;
 }
 
-static int Get_waiter_objects(
-		Actor* npc, Game_object_vector& items, bool cooking = false) {
+static int Get_waiter_objects(Actor* npc, Game_object_vector& items, bool cooking = false) {
 	int cnt = 0;
 	if (cooking) {    // Find food, pot.
 		cnt += npc->get_objects(items, 377, c_any_qual, c_any_framenum);
@@ -3649,8 +3438,7 @@ static int Get_waiter_objects(
 	}
 	if (!cooking || !cnt) {
 		for (const int waiter_shape : waiter_shapes) {
-			cnt += npc->get_objects(
-					items, waiter_shape, c_any_qual, c_any_framenum);
+			cnt += npc->get_objects(items, waiter_shape, c_any_qual, c_any_framenum);
 		}
 	}
 	return cnt;
@@ -3668,13 +3456,11 @@ bool Waiter_schedule::find_unattended_plate() {
 		constexpr static const std::array shapes{717};
 		vector<Game_object*>              plates;
 		npc->find_closest(plates, shapes, 32);
-		const int floor
-				= npc->get_lift() / 5;    // Make sure it's on same floor.
+		const int floor = npc->get_lift() / 5;    // Make sure it's on same floor.
 
 		for (auto* plate : plates) {
 			Actor_vector custs;
-			if (plate->get_lift() / 5 == floor
-				&& plate->get_flag(Obj_flags::is_temporary)
+			if (plate->get_lift() / 5 == floor && plate->get_flag(Obj_flags::is_temporary)
 				&& !plate->find_nearby_actors(custs, c_any_shapenum, 2)) {
 				unattended_plates.push_back(weak_from_obj(plate));
 			}
@@ -3721,11 +3507,8 @@ bool Waiter_schedule::walk_to_work_spot(bool counter) {
 		prep_table                              = tables[index];
 		const Game_object_shared prep_table_obj = prep_table.lock();
 		if (prep_table_obj) {
-			const Tile_coord pos
-					= Map_chunk::find_spot(prep_table_obj->get_tile(), 1, npc);
-			if (pos.tx != -1
-				&& npc->walk_path_to_tile(
-						pos, gwin->get_std_delay(), 1000 + rand() % 1000)) {
+			const Tile_coord pos = Map_chunk::find_spot(prep_table_obj->get_tile(), 1, npc);
+			if (pos.tx != -1 && npc->walk_path_to_tile(pos, gwin->get_std_delay(), 1000 + rand() % 1000)) {
 				return true;
 			}
 		}
@@ -3736,8 +3519,7 @@ bool Waiter_schedule::walk_to_work_spot(bool counter) {
 	const int dist = 8;    // Bad luck?  Walk randomly.
 	const int newx = startpos.tx - dist + rand() % (2 * dist);
 	const int newy = startpos.ty - dist + rand() % (2 * dist);
-	npc->walk_to_tile(
-			newx, newy, startpos.tz, 2 * gwin->get_std_delay(), rand() % 2000);
+	npc->walk_to_tile(newx, newy, startpos.tz, 2 * gwin->get_std_delay(), rand() % 2000);
 	return false;
 }
 
@@ -3755,12 +3537,8 @@ bool Waiter_schedule::walk_to_customer(int min_delay    // Min. delay in msecs.
 			// (this happens with Hawk & others in SI).
 			customers.clear();
 		} else {
-			const Tile_coord dest
-					= Map_chunk::find_spot(customer->get_tile(), 3, npc);
-			if (dest.tx != -1
-				&& npc->walk_path_to_tile(
-						dest, gwin->get_std_delay(),
-						min_delay + rand() % 1000)) {
+			const Tile_coord dest = Map_chunk::find_spot(customer->get_tile(), 3, npc);
+			if (dest.tx != -1 && npc->walk_path_to_tile(dest, gwin->get_std_delay(), min_delay + rand() % 1000)) {
 				return true;    // Walking there.
 			}
 		}
@@ -3784,8 +3562,7 @@ void Waiter_schedule::find_tables(int shapenum, int dist, bool is_prep) {
 		const Game_object_weak table = weak_from_obj(table_obj);
 		Game_object_vector     chairs;    // No chairs by it?
 										  // TODO: check for nearby stove.
-		if (!table_obj->find_nearby(chairs, 873, 3, 0)
-			&& !table_obj->find_nearby(chairs, 292, 3, 0)) {
+		if (!table_obj->find_nearby(chairs, 873, 3, 0) && !table_obj->find_nearby(chairs, 292, 3, 0)) {
 			if (is_prep) {
 				prep_tables.push_back(table);
 			} else if (shapenum == 847) {
@@ -3816,8 +3593,7 @@ void Waiter_schedule::find_prep_tables() {
 	}
 }
 
-static Game_object* Find_customer_table(
-		Actor* customer, vector<Game_object_weak>& tables) {
+static Game_object* Find_customer_table(Actor* customer, vector<Game_object_weak>& tables) {
 	for (auto& it : tables) {
 		const Game_object_shared table = it.lock();
 		if (table && customer->distance(table.get()) < 3) {
@@ -3832,8 +3608,7 @@ static Game_object* Find_customer_plate(Actor* customer) {
 	Game_object*       plate = nullptr;
 
 	(void)customer->find_nearby(plates, 717, 1, 0);
-	const int floor
-			= customer->get_lift() / 5;    // Make sure it's on same floor.
+	const int floor = customer->get_lift() / 5;    // Make sure it's on same floor.
 	for (auto* it : plates) {
 		plate            = it;
 		const int platez = plate->get_lift();
@@ -3883,8 +3658,7 @@ Game_object* Waiter_schedule::create_customer_plate() {
 			const Shape_info& info = table->get_info();
 			spot.tz                = table->get_lift() + info.get_3d_height();
 			// Small plates:  frames 4, 5.  Seems random.
-			const Game_object_shared plate
-					= gmap->create_ireg_object(717, 4 + rand() % 2);
+			const Game_object_shared plate = gmap->create_ireg_object(717, 4 + rand() % 2);
 			plate->set_flag(Obj_flags::is_temporary);
 			plate->move(spot);
 			Audio::get_ptr()->play_sound_effect(drop_sfx_id(), spot, sfx_vol());
@@ -3916,8 +3690,8 @@ static void Ready_food(Actor* npc) {
 		// Acquire some food.
 		const int nfoods = ShapeID(377, 0).get_num_frames();
 		int       frame  = rand() % nfoods;
-		food_keep = std::make_shared<Ireg_game_object>(377, frame, 0, 0, 0);
-		food      = food_keep.get();
+		food_keep        = std::make_shared<Ireg_game_object>(377, frame, 0, 0, 0);
+		food             = food_keep.get();
 		food->set_flag(Obj_flags::is_temporary);
 		food->clear_flag(Obj_flags::okay_to_take);
 	}
@@ -3947,13 +3721,12 @@ Game_object* Waiter_schedule::find_serving_spot(Tile_coord& spot) {
 }
 
 static void Prep_animation(Actor* npc, Game_object* table) {
-	npc->change_frame(npc->get_dir_framenum(
-			npc->get_facing_direction(table), Actor::standing));
+	npc->change_frame(npc->get_dir_framenum(npc->get_facing_direction(table), Actor::standing));
 	auto* scr = new Usecode_script(npc);
 	(*scr) << Ucscript::face_dir << npc->get_dir_facing();
 	for (int cnt = 1 + rand() % 3; cnt; --cnt) {
-		(*scr) << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 1
-			   << Ucscript::npc_raise1_frame << Ucscript::delay_ticks << 1;
+		(*scr) << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 1 << Ucscript::npc_raise1_frame << Ucscript::delay_ticks
+			   << 1;
 	}
 	(*scr) << Ucscript::npc_standing_frame;
 	scr->start();    // Start next tick.
@@ -3985,8 +3758,7 @@ void Waiter_schedule::now_what() {
 	}
 	Game_object* food;
 
-	if (state == wait_at_counter
-		&& rand() % 4 == 0) {    // Check for lamps, etc.
+	if (state == wait_at_counter && rand() % 4 == 0) {    // Check for lamps, etc.
 		if (try_street_maintenance()) {
 			return;    // We no longer exist.
 		}
@@ -4062,8 +3834,7 @@ void Waiter_schedule::now_what() {
 	case give_plate: {
 		create_customer_plate();
 		auto* scr = new Usecode_script(npc);
-		(*scr) << Ucscript::face_dir << npc->get_dir_facing()
-			   << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 2
+		(*scr) << Ucscript::face_dir << npc->get_dir_facing() << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 2
 			   << Ucscript::npc_standing_frame;
 		scr->start();    // Start next tick.
 		state = took_order;
@@ -4072,21 +3843,18 @@ void Waiter_schedule::now_what() {
 		break;
 	}
 	case prep_food: {
-		if (cooking && items_in_hand < 4 && rand() % 2 == 0
-			&& walk_to_random_item(4)) {
+		if (cooking && items_in_hand < 4 && rand() % 2 == 0 && walk_to_random_item(4)) {
 			state = get_waiter_item;
 			break;
 		}
 		const Game_object_shared prep_table_obj = prep_table.lock();
 		Ready_food(npc);    // So we can drop it.
-		if ((!cooking || rand() % 3) && prep_table_obj
-			&& npc->distance(prep_table_obj.get()) <= 3) {
+		if ((!cooking || rand() % 3) && prep_table_obj && npc->distance(prep_table_obj.get()) <= 3) {
 			Game_object* to_drop = nullptr;
 			if (rand() % 3) {
 				Game_object_vector items;
 				items_in_hand = Get_waiter_objects(npc, items, true);
-				to_drop       = items_in_hand ? items[rand() % items_in_hand]
-											  : nullptr;
+				to_drop       = items_in_hand ? items[rand() % items_in_hand] : nullptr;
 			}
 			cooking = true;
 			if (to_drop) {
@@ -4110,9 +3878,7 @@ void Waiter_schedule::now_what() {
 	case bring_food:
 		if (customers_ordered.empty()) {    // All done serving them?
 			if (rand() % 3 == 0) {
-				gwin->get_usecode()->call_usecode(
-						npc->get_usecode(), npc,
-						Usecode_machine::npc_proximity);
+				gwin->get_usecode()->call_usecode(npc->get_usecode(), npc, Usecode_machine::npc_proximity);
 			}
 			if (walk_to_counter()) {
 				state = wait_at_counter;
@@ -4139,9 +3905,7 @@ void Waiter_schedule::now_what() {
 			state = get_waiter_item;
 			break;
 		} else if (prep_table_obj) {
-			npc->change_frame(npc->get_dir_framenum(
-					npc->get_facing_direction(prep_table_obj.get()),
-					Actor::standing));
+			npc->change_frame(npc->get_dir_framenum(npc->get_facing_direction(prep_table_obj.get()), Actor::standing));
 			if (rand() % 2) {
 				Prep_animation(npc, prep_table_obj.get());
 			}
@@ -4180,8 +3944,7 @@ void Waiter_schedule::now_what() {
 		food = npc->get_readied(lhand);
 		Tile_coord spot;
 		if (food && food->get_shapenum() == 377 && find_serving_spot(spot)) {
-			npc->change_frame(npc->get_dir_framenum(
-					npc->get_direction(customer), Actor::standing));
+			npc->change_frame(npc->get_dir_framenum(npc->get_direction(customer), Actor::standing));
 			const Game_object_shared food_keep = food->shared_from_this();
 			npc->remove(food);
 			food->set_invalid();
@@ -4191,8 +3954,7 @@ void Waiter_schedule::now_what() {
 				npc->say(first_waiter_serve, last_waiter_serve);
 			}
 			auto* scr = new Usecode_script(npc);
-			(*scr) << Ucscript::face_dir << npc->get_dir_facing()
-				   << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 2
+			(*scr) << Ucscript::face_dir << npc->get_dir_facing() << Ucscript::npc_ready_frame << Ucscript::delay_ticks << 2
 				   << Ucscript::npc_standing_frame;
 			scr->start();    // Start next tick.
 		}
@@ -4207,8 +3969,7 @@ void Waiter_schedule::now_what() {
 				Game_object_vector items;
 				items_in_hand = Get_waiter_objects(npc, items);
 				if (items_in_hand) {
-					Game_object* table
-							= Find_customer_table(customer, eating_tables);
+					Game_object* table   = Find_customer_table(customer, eating_tables);
 					Game_object* to_drop = items[rand() % items_in_hand];
 					if (table) {
 						(void)drop_item(to_drop, table);
@@ -4219,8 +3980,7 @@ void Waiter_schedule::now_what() {
 			Game_object_vector items;    // Look near by to pick up an item.
 			const int          cnt = Waiter_schedule::find_items(items, 4);
 			if (cnt) {
-				npc->set_action(
-						new Pickup_actor_action(items[rand() % cnt], 250));
+				npc->set_action(new Pickup_actor_action(items[rand() % cnt], 250));
 				++items_in_hand;
 			}
 		}
@@ -4232,10 +3992,7 @@ void Waiter_schedule::now_what() {
 		if (!unattended_plates.empty()) {
 			// Closest.
 			const Game_object_shared plate = unattended_plates.front().lock();
-			if (plate
-				&& npc->walk_path_to_tile(
-						plate->get_tile(), gwin->get_std_delay(),
-						500 + rand() % 1000, 2)) {
+			if (plate && npc->walk_path_to_tile(plate->get_tile(), gwin->get_std_delay(), 500 + rand() % 1000, 2)) {
 				state = cleanup_food;
 				break;
 			} else {
@@ -4256,11 +4013,10 @@ void Waiter_schedule::now_what() {
 				npc->start(gwin->get_std_delay(), 500 + rand() % 1000);
 				break;
 			}
-			Actor_action* act = new Pickup_actor_action(plate.get(), 250, true);
+			Actor_action* act  = new Pickup_actor_action(plate.get(), 250, true);
 			Game_object*  food = plate->find_closest(377, 2);
 			if (food) {
-				act = new Sequence_actor_action(
-						act, new Pickup_actor_action(food, 250, true));
+				act = new Sequence_actor_action(act, new Pickup_actor_action(food, 250, true));
 			}
 			npc->set_action(act);
 			state = walk_to_cleanup_food;
@@ -4331,15 +4087,11 @@ void Sew_schedule::now_what() {
 		if (!bale_obj) {    // Just skip this step.
 			break;
 		}
-		Actor_action* pact = Path_walking_actor_action::create_path(
-				npcpos, bale_obj->get_tile(), cost);
+		Actor_action* pact = Path_walking_actor_action::create_path(npcpos, bale_obj->get_tile(), cost);
 		if (pact) {
 			npc->set_action(new Sequence_actor_action(
-					pact, new Pickup_actor_action(bale_obj, 250),
-					new Frames_actor_action(0x02, 1, bale_obj),
-					new Pickup_actor_action(
-							bale_obj, bale_obj->get_tile(), 250, false,
-							drop_sfx_id(), sfx_vol())));
+					pact, new Pickup_actor_action(bale_obj, 250), new Frames_actor_action(0x02, 1, bale_obj),
+					new Pickup_actor_action(bale_obj, bale_obj->get_tile(), 250, false, drop_sfx_id(), sfx_vol())));
 		}
 		break;
 	}
@@ -4389,13 +4141,10 @@ void Sew_schedule::now_what() {
 			state = get_wool;
 			break;
 		}
-		const Tile_coord t
-				= Map_chunk::find_spot(spinwheel_obj->get_tile(), 1, 654, 0);
+		const Tile_coord t = Map_chunk::find_spot(spinwheel_obj->get_tile(), 1, 654, 0);
 		if (t.tx != -1) {    // Space to create thread?
-			const Game_object_shared newobj
-					= std::make_shared<Ireg_game_object>(
-							654, rand() % 10, 0, 0);
-			spindle = Game_object_weak(newobj);
+			const Game_object_shared newobj = std::make_shared<Ireg_game_object>(654, rand() % 10, 0, 0);
+			spindle                         = Game_object_weak(newobj);
 			newobj->move(t);
 			Audio::get_ptr()->play_sound_effect(drop_sfx_id(), t, sfx_vol());
 			gwin->add_dirty(newobj.get());
@@ -4417,25 +4166,20 @@ void Sew_schedule::now_what() {
 			break;
 		}
 		const Tile_coord lpos = loom_obj->get_tile() + Tile_coord(-2, 0, 0);
-		Actor_action*    pact
-				= Path_walking_actor_action::create_path(npcpos, lpos, cost);
+		Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, lpos, cost);
 		if (pact) {
 			auto**    a        = new Actor_action*[7];
 			const int loom_sfx = Audio::game_sfx(102);
 			a[0]               = pact;
 			a[1]               = new Face_pos_actor_action(loom_obj, 250);
 			a[2]               = new Group_actor_action(
-                    new Play_sfx_actor_action(loom_sfx, loom_obj, sfx_vol()),
-                    new Object_animate_actor_action(loom_obj, 1, 270));
+                    new Play_sfx_actor_action(loom_sfx, loom_obj, sfx_vol()), new Object_animate_actor_action(loom_obj, 1, 270));
 			a[3] = new Group_actor_action(
-					new Play_sfx_actor_action(loom_sfx, loom_obj, sfx_vol()),
-					new Object_animate_actor_action(loom_obj, 1, 270));
+					new Play_sfx_actor_action(loom_sfx, loom_obj, sfx_vol()), new Object_animate_actor_action(loom_obj, 1, 270));
 			a[4] = new Group_actor_action(
-					new Play_sfx_actor_action(loom_sfx, loom_obj, sfx_vol()),
-					new Object_animate_actor_action(loom_obj, 1, 270));
+					new Play_sfx_actor_action(loom_sfx, loom_obj, sfx_vol()), new Object_animate_actor_action(loom_obj, 1, 270));
 			a[5] = new Group_actor_action(
-					new Play_sfx_actor_action(loom_sfx, loom_obj, sfx_vol()),
-					new Object_animate_actor_action(loom_obj, 1, 270));
+					new Play_sfx_actor_action(loom_sfx, loom_obj, sfx_vol()), new Object_animate_actor_action(loom_obj, 1, 270));
 			a[6] = nullptr;
 			npc->set_action(new Sequence_actor_action(a));
 		}
@@ -4444,27 +4188,21 @@ void Sew_schedule::now_what() {
 	}
 	case get_cloth: {
 		const Game_object_shared loom_obj = loom.lock();
-		const Tile_coord         t        = loom_obj ? Map_chunk::find_spot(
-                                                loom_obj->get_tile(), 1, 851, 0)
-													 : Tile_coord(-1, -1, -1);
+		const Tile_coord         t = loom_obj ? Map_chunk::find_spot(loom_obj->get_tile(), 1, 851, 0) : Tile_coord(-1, -1, -1);
 		if (t.tx != -1) {    // Space to create it?
 			int framenum = 0;
 			if (GAME_SI) {
-				framenum
-						= 2 + (rand() % 2);    // SI only uses either red cloth.
+				framenum = 2 + (rand() % 2);    // SI only uses either red cloth.
 			} else {
 				framenum = rand() % 5;    // BG uses all 5 frames of cloth.
 			}
-			const Game_object_shared newobj
-					= std::make_shared<Ireg_game_object>(851, framenum, 0, 0);
-			cloth = Game_object_weak(newobj);
+			const Game_object_shared newobj = std::make_shared<Ireg_game_object>(851, framenum, 0, 0);
+			cloth                           = Game_object_weak(newobj);
 			newobj->move(t);
-			Audio::get_ptr()->play_sound_effect(
-					drop_sfx_id(), newobj.get(), sfx_vol());
+			Audio::get_ptr()->play_sound_effect(drop_sfx_id(), newobj.get(), sfx_vol());
 			gwin->add_dirty(newobj.get());
 			npc->set_action(new Sequence_actor_action(
-					new Frames_actor_action(0x20 | Actor::standing, 50),
-					new Pickup_actor_action(newobj.get(), 250)));
+					new Frames_actor_action(0x20 | Actor::standing, 50), new Pickup_actor_action(newobj.get(), 250)));
 		}
 		state = to_work_table;
 		break;
@@ -4477,30 +4215,23 @@ void Sew_schedule::now_what() {
 			state = done;
 			break;
 		}
-		const Tile_coord tpos
-				= work_table_obj->get_tile() + Tile_coord(1, -2, 0);
-		Actor_action* pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost);
+		const Tile_coord tpos = work_table_obj->get_tile() + Tile_coord(1, -2, 0);
+		Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost);
 		// Find where to put cloth.
 		const TileRect    foot = work_table_obj->get_footprint();
 		const Shape_info& info = work_table_obj->get_info();
-		const Tile_coord  cpos(
-                foot.x + foot.w / 2, foot.y + foot.h / 4,
-                work_table_obj->get_lift() + info.get_3d_height());
+		const Tile_coord  cpos(foot.x + foot.w / 2, foot.y + foot.h / 4, work_table_obj->get_lift() + info.get_3d_height());
 		if (pact) {
 			npc->set_action(new Sequence_actor_action(
 					pact, new Face_pos_actor_action(work_table_obj, 250),
-					new Pickup_actor_action(
-							cloth_obj.get(), cpos, 250, false, drop_sfx_id(),
-							sfx_vol())));
+					new Pickup_actor_action(cloth_obj.get(), cpos, 250, false, drop_sfx_id(), sfx_vol())));
 		}
 		state = set_to_sew;
 		break;
 	}
 	case set_to_sew: {
-		const Game_object_shared prev     = shears.lock();
-		Game_object*             acquired = set_procure_item_action(
-                npc, prev ? prev.get() : nullptr, 24, 698, 0);
+		const Game_object_shared prev       = shears.lock();
+		Game_object*             acquired   = set_procure_item_action(npc, prev ? prev.get() : nullptr, 24, 698, 0);
 		shears                              = weak_from_obj(acquired);
 		const Game_object_shared shears_obj = shears.lock();
 
@@ -4514,22 +4245,18 @@ void Sew_schedule::now_what() {
 			break;
 		}
 		Game_object*     work_table_obj = npc->find_closest(971);
-		const Tile_coord tpos
-				= work_table_obj->get_tile() + Tile_coord(1, -2, 0);
-		Actor_action* pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost);
-		signed char frames[5];
-		const int   nframes = npc->get_attack_frames(698, false, 6, frames);
-		const int   shnum   = GAME_SI ? 403 : (rand() % 2 ? 738 : 249);
-		const int   cframes = ShapeID(shnum, 0).get_num_frames();
-		const int   rand_cframes = (cframes > 0) ? (rand() % cframes) : 0;
+		const Tile_coord tpos           = work_table_obj->get_tile() + Tile_coord(1, -2, 0);
+		Actor_action*    pact           = Path_walking_actor_action::create_path(npcpos, tpos, cost);
+		signed char      frames[5];
+		const int        nframes      = npc->get_attack_frames(698, false, 6, frames);
+		const int        shnum        = GAME_SI ? 403 : (rand() % 2 ? 738 : 249);
+		const int        cframes      = ShapeID(shnum, 0).get_num_frames();
+		const int        rand_cframes = (cframes > 0) ? (rand() % cframes) : 0;
 
 		if (pact) {
 			npc->set_action(new Sequence_actor_action(
-					pact, new Frames_actor_action(frames, nframes),
-					new Frames_actor_action(frames, nframes),
-					new Change_actor_action(
-							cloth_obj.get(), shnum, rand_cframes, 50)));
+					pact, new Frames_actor_action(frames, nframes), new Frames_actor_action(frames, nframes),
+					new Change_actor_action(cloth_obj.get(), shnum, rand_cframes, 50)));
 		}
 
 		state = drop_remnants;
@@ -4546,8 +4273,7 @@ void Sew_schedule::now_what() {
 			} else {
 				rframes = 5 + (rand() % 5);
 			}
-			cloth_remnants_obj
-					= std::make_shared<Ireg_game_object>(851, rframes, 0, 0);
+			cloth_remnants_obj = std::make_shared<Ireg_game_object>(851, rframes, 0, 0);
 			cloth_remnants_obj->move(t);
 			Audio::get_ptr()->play_sound_effect(drop_sfx_id(), t, sfx_vol());
 			gwin->add_dirty(cloth_remnants_obj.get());
@@ -4570,26 +4296,19 @@ void Sew_schedule::now_what() {
 				npc->add_dirty();
 				break;
 			}
-			const Tile_coord tpos
-					= Map_chunk::find_spot(wares_table_obj->get_tile(), 1, npc);
-			Actor_action* pact = Path_walking_actor_action::create_path(
-					npcpos, tpos, cost);
+			const Tile_coord  tpos = Map_chunk::find_spot(wares_table_obj->get_tile(), 1, npc);
+			Actor_action*     pact = Path_walking_actor_action::create_path(npcpos, tpos, cost);
 			const TileRect    foot = wares_table_obj->get_footprint();
 			const Shape_info& info = wares_table_obj->get_info();
 			Tile_coord        drop(
-                    foot.x + (foot.w / 4) * 3, foot.y + (foot.h / 3) * 2,
-                    wares_table_obj->get_lift() + info.get_3d_height());
+                    foot.x + (foot.w / 4) * 3, foot.y + (foot.h / 3) * 2, wares_table_obj->get_lift() + info.get_3d_height());
 
 			if (pact) {
 				npc->set_action(new Sequence_actor_action(
-						pact, new Pickup_actor_action(
-									  shears_obj.get(), drop, 250, false,
-									  drop_sfx_id(), sfx_vol())));
+						pact, new Pickup_actor_action(shears_obj.get(), drop, 250, false, drop_sfx_id(), sfx_vol())));
 			} else {
 				delete pact;
-				npc->set_action(new Pickup_actor_action(
-						shears_obj.get(), drop, 250, false, drop_sfx_id(),
-						sfx_vol()));
+				npc->set_action(new Pickup_actor_action(shears_obj.get(), drop, 250, false, drop_sfx_id(), sfx_vol()));
 			}
 			break;
 		}
@@ -4599,13 +4318,10 @@ void Sew_schedule::now_what() {
 		const Game_object_shared cloth_obj = cloth.lock();
 		if (cloth_obj) {
 			Game_object*     work_table_obj = npc->find_closest(971);
-			const Tile_coord tpos
-					= work_table_obj->get_tile() + Tile_coord(1, -2, 0);
-			Actor_action* pact = Path_walking_actor_action::create_path(
-					npcpos, tpos, cost);
+			const Tile_coord tpos           = work_table_obj->get_tile() + Tile_coord(1, -2, 0);
+			Actor_action*    pact           = Path_walking_actor_action::create_path(npcpos, tpos, cost);
 			if (pact) {
-				npc->set_action(new Sequence_actor_action(
-						pact, new Pickup_actor_action(cloth_obj.get(), 250)));
+				npc->set_action(new Sequence_actor_action(pact, new Pickup_actor_action(cloth_obj.get(), 250)));
 			} else {
 				delete pact;
 				npc->set_action(new Pickup_actor_action(cloth_obj.get(), 250));
@@ -4629,23 +4345,18 @@ void Sew_schedule::now_what() {
 			}
 			break;
 		}
-		const Tile_coord tpos
-				= wares_table_obj->get_tile() + Tile_coord(0, 1, 0);
-		Actor_action* pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost);
+		const Tile_coord tpos = wares_table_obj->get_tile() + Tile_coord(0, 1, 0);
+		Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost);
 		// Find where to put cloth.
 		const TileRect    foot = wares_table_obj->get_footprint();
 		const Shape_info& info = wares_table_obj->get_info();
 		// Random spot on table but with a 1/4 foot margin.
-		const int rx = foot.x + (foot.w / 4) + (rand() % ((foot.w / 3) * 4));
-		const int ry = foot.y + (foot.h / 4) + (rand() % ((foot.h / 3) * 4));
-		const Tile_coord cpos(
-				rx, ry, wares_table_obj->get_lift() + info.get_3d_height());
+		const int        rx = foot.x + (foot.w / 4) + (rand() % ((foot.w / 3) * 4));
+		const int        ry = foot.y + (foot.h / 4) + (rand() % ((foot.h / 3) * 4));
+		const Tile_coord cpos(rx, ry, wares_table_obj->get_lift() + info.get_3d_height());
 		if (pact) {
 			npc->set_action(new Sequence_actor_action(
-					pact, new Pickup_actor_action(
-								  cloth_obj.get(), cpos, 250, true,
-								  drop_sfx_id(), sfx_vol())));
+					pact, new Pickup_actor_action(cloth_obj.get(), cpos, 250, true, drop_sfx_id(), sfx_vol())));
 		}
 		// cloth = Game_object_shared();    // Leave it be.
 		break;
@@ -4653,18 +4364,13 @@ void Sew_schedule::now_what() {
 	case remove_remnants: {
 		Game_object_shared cloth_remnants_obj = cloth_remnants.lock();
 		if (cloth_remnants_obj) {
-			const Tile_coord rpos
-					= cloth_remnants_obj->get_tile() + Tile_coord(0, 1, 0);
-			Actor_action* pact = Path_walking_actor_action::create_path(
-					npcpos, rpos, cost);
+			const Tile_coord rpos = cloth_remnants_obj->get_tile() + Tile_coord(0, 1, 0);
+			Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, rpos, cost);
 			if (pact) {
-				npc->set_action(new Sequence_actor_action(
-						pact, new Pickup_actor_action(
-									  cloth_remnants_obj.get(), 250)));
+				npc->set_action(new Sequence_actor_action(pact, new Pickup_actor_action(cloth_remnants_obj.get(), 250)));
 			} else {
 				delete pact;
-				npc->set_action(
-						new Pickup_actor_action(cloth_remnants_obj.get(), 250));
+				npc->set_action(new Pickup_actor_action(cloth_remnants_obj.get(), 250));
 			}
 		}
 		state = done;
@@ -4749,8 +4455,7 @@ void Sew_schedule::ending(int new_type    // New schedule.
  *  Dough gets set to quality 50 and dough placed in oven is quality 51
  */
 
-Bake_schedule::Bake_schedule(Actor* n)
-		: Schedule(n), clearing(false), state(find_leftovers) {}
+Bake_schedule::Bake_schedule(Actor* n) : Schedule(n), clearing(false), state(find_leftovers) {}
 
 void Bake_schedule::now_what() {
 	const Tile_coord              npcpos = npc->get_tile();
@@ -4776,8 +4481,7 @@ void Bake_schedule::now_what() {
 			// look for baking dough
 			Game_object_vector baking_dough;
 			const int          frnum(GAME_SI ? 18 : 2);
-			Actor::find_nearby(
-					baking_dough, npcpos, dough_shp, 20, 0, 51, frnum, false);
+			Actor::find_nearby(baking_dough, npcpos, dough_shp, 20, 0, 51, frnum, false);
 			if (!baking_dough.empty() && baking_dough[0] != dough_obj.get()) {
 				// found dough
 				dough_in_oven_obj = baking_dough[0]->shared_from_this();
@@ -4796,15 +4500,12 @@ void Bake_schedule::now_what() {
 			if (oven_obj) {
 				Game_object_vector food;
 				const Tile_coord   Opos = oven_obj->get_tile();
-				Actor::find_nearby(
-						food, Opos, 377, 2, 0, c_any_qual, c_any_framenum,
-						true);
+				Actor::find_nearby(food, Opos, 377, 2, 0, c_any_qual, c_any_framenum, true);
 				if (!food.empty()) {    // found food
 					dough_in_oven_obj = food[0]->shared_from_this();
 					dough_in_oven     = Game_object_weak(dough_in_oven_obj);
-					dough_in_oven_obj->clear_flag(
-							Obj_flags::okay_to_take);    // doesn't save
-														 // okay_to_take
+					dough_in_oven_obj->clear_flag(Obj_flags::okay_to_take);    // doesn't save
+																			   // okay_to_take
 					state = remove_from_oven;
 					break;
 				}
@@ -4813,28 +4514,20 @@ void Bake_schedule::now_what() {
 		if (!dough_obj) {    // Looking for unused dough on tables
 			Game_object_vector leftovers;
 			if (GAME_SI) {
-				Actor::find_nearby(
-						leftovers, npcpos, dough_shp, 20, 0, 50, 16, false);
-				Actor::find_nearby(
-						leftovers, npcpos, dough_shp, 20, 0, 50, 17, false);
-				Actor::find_nearby(
-						leftovers, npcpos, dough_shp, 20, 0, 50, 18, false);
+				Actor::find_nearby(leftovers, npcpos, dough_shp, 20, 0, 50, 16, false);
+				Actor::find_nearby(leftovers, npcpos, dough_shp, 20, 0, 50, 17, false);
+				Actor::find_nearby(leftovers, npcpos, dough_shp, 20, 0, 50, 18, false);
 			} else {
-				Actor::find_nearby(
-						leftovers, npcpos, dough_shp, 20, 0, 50, c_any_framenum,
-						false);
+				Actor::find_nearby(leftovers, npcpos, dough_shp, 20, 0, 50, c_any_framenum, false);
 			}
-			if (!leftovers.empty()
-				&& leftovers[0] != dough_in_oven_obj.get()) {    // found dough
+			if (!leftovers.empty() && leftovers[0] != dough_in_oven_obj.get()) {    // found dough
 				dough_obj = leftovers[0]->shared_from_this();
 				dough     = Game_object_weak(dough_obj);
-				dough_obj->clear_flag(
-						Obj_flags::okay_to_take);    // doesn't save
-													 // okay_to_take
+				dough_obj->clear_flag(Obj_flags::okay_to_take);    // doesn't save
+																   // okay_to_take
 				state              = make_dough;
 				delay              = 0;
-				Actor_action* pact = Path_walking_actor_action::create_path(
-						npcpos, dough_obj->get_tile(), cost2);
+				Actor_action* pact = Path_walking_actor_action::create_path(npcpos, dough_obj->get_tile(), cost2);
 				if (pact) {    // walk to dough if we can
 					npc->set_action(pact);
 				}
@@ -4858,8 +4551,7 @@ void Bake_schedule::now_what() {
 		flourbag                  = weak_from_obj(flourbag_obj);
 
 		const Tile_coord tpos = flourbag_obj->get_tile();
-		Actor_action*    pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost1);
+		Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost1);
 		if (pact) {
 			npc->set_action(pact);
 		} else {
@@ -4930,33 +4622,26 @@ void Bake_schedule::now_what() {
 		// Find where to put dough.
 		const TileRect    foot = worktable_obj->get_footprint();
 		const Shape_info& info = worktable_obj->get_info();
-		Tile_coord        cpos(
-                foot.x + rand() % foot.w, foot.y + rand() % foot.h,
-                worktable_obj->get_lift() + info.get_3d_height());
+		Tile_coord       cpos(foot.x + rand() % foot.w, foot.y + rand() % foot.h, worktable_obj->get_lift() + info.get_3d_height());
 		const Tile_coord tablepos = cpos;
 		cpos.tz                   = 0;
 
-		Actor_action* pact
-				= Path_walking_actor_action::create_path(npcpos, cpos, cost1);
+		Actor_action* pact = Path_walking_actor_action::create_path(npcpos, cpos, cost1);
 		if (pact) {
 			Game_object_shared dough_obj = dough.lock();
 			if (dough_obj) {
 				dough_obj->remove_this();
 			}
 			if (Game::get_game_type() == SERPENT_ISLE) {
-				dough_obj = std::make_shared<Ireg_game_object>(
-						dough_shp, 16, 0, 0);
+				dough_obj = std::make_shared<Ireg_game_object>(dough_shp, 16, 0, 0);
 			} else {
-				dough_obj = std::make_shared<Ireg_game_object>(
-						dough_shp, 0, 0, 0);
+				dough_obj = std::make_shared<Ireg_game_object>(dough_shp, 0, 0, 0);
 			}
 			dough = Game_object_weak(dough_obj);
 			npc->add(dough_obj.get(), true);
 			dough_obj->set_quality(50);    // doesn't save okay_to_take
 			npc->set_action(new Sequence_actor_action(
-					pact, new Pickup_actor_action(
-								  dough_obj.get(), tablepos, 250, false,
-								  drop_sfx_id(), sfx_vol())));
+					pact, new Pickup_actor_action(dough_obj.get(), tablepos, 250, false, drop_sfx_id(), sfx_vol())));
 		} else {
 			// not good... try again
 			delay = 2500;
@@ -4975,8 +4660,7 @@ void Bake_schedule::now_what() {
 			state = to_table;
 			break;
 		}
-		dough_obj->clear_flag(
-				Obj_flags::okay_to_take);    // doesn't save okay_to_take
+		dough_obj->clear_flag(Obj_flags::okay_to_take);    // doesn't save okay_to_take
 
 		const int   dir = npc->get_direction(dough_obj.get());
 		signed char fr[2];
@@ -4988,16 +4672,13 @@ void Bake_schedule::now_what() {
 		if (GAME_SI ? frame == 16 : frame == 0) {
 			npc->set_action(new Sequence_actor_action(
 					new Frames_actor_action(fr, 2, 500),
-					((GAME_SI) ? new Frames_actor_action(0x11, 250, dobj)
-							   : new Frames_actor_action(0x01, 250, dobj)),
+					((GAME_SI) ? new Frames_actor_action(0x11, 250, dobj) : new Frames_actor_action(0x01, 250, dobj)),
 					new Frames_actor_action(fr, 2, 500),
-					((GAME_SI) ? new Frames_actor_action(0x12, 250, dobj)
-							   : new Frames_actor_action(0x02, 250, dobj))));
+					((GAME_SI) ? new Frames_actor_action(0x12, 250, dobj) : new Frames_actor_action(0x02, 250, dobj))));
 		} else if (GAME_SI ? frame == 17 : frame == 1) {
 			npc->set_action(new Sequence_actor_action(
 					new Frames_actor_action(fr, 2, 500),
-					((GAME_SI) ? new Frames_actor_action(0x12, 250, dobj)
-							   : new Frames_actor_action(0x02, 250, dobj))));
+					((GAME_SI) ? new Frames_actor_action(0x12, 250, dobj) : new Frames_actor_action(0x02, 250, dobj))));
 		}
 
 		state = remove_from_oven;
@@ -5029,22 +4710,17 @@ void Bake_schedule::now_what() {
 			gwin->add_dirty(dough_in_oven_obj.get());
 			dough_in_oven_obj->set_shape(377);
 			dough_in_oven_obj->change_frame(rand() % 7);
-			dough_in_oven_obj->clear_flag(
-					Obj_flags::okay_to_take);    // doesn't save okay_to_take
+			dough_in_oven_obj->clear_flag(Obj_flags::okay_to_take);    // doesn't save okay_to_take
 			gwin->add_dirty(dough_in_oven_obj.get());
 		}
 
 		const Tile_coord tpos = oven_obj->get_tile() + Tile_coord(1, 1, 0);
-		Actor_action*    pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost1);
+		Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost1);
 		if (pact) {
-			npc->set_action(new Sequence_actor_action(
-					pact,
-					new Pickup_actor_action(dough_in_oven_obj.get(), 250)));
+			npc->set_action(new Sequence_actor_action(pact, new Pickup_actor_action(dough_in_oven_obj.get(), 250)));
 		} else {
 			// just pick it up
-			npc->set_action(
-					new Pickup_actor_action(dough_in_oven_obj.get(), 250));
+			npc->set_action(new Pickup_actor_action(dough_in_oven_obj.get(), 250));
 		}
 
 		state = display_wares;
@@ -5069,8 +4745,7 @@ void Bake_schedule::now_what() {
 				table_shp = 1003;
 				table_frm = 2;
 			}
-			Actor::find_nearby(
-					table, npcpos, table_shp, -1, 0, c_any_qual, table_frm);
+			Actor::find_nearby(table, npcpos, table_shp, -1, 0, c_any_qual, table_frm);
 			if (table.size() == 1) {
 				displaytable_obj = table[0];
 			} else if (table.size() > 1) {
@@ -5096,27 +4771,21 @@ void Bake_schedule::now_what() {
 		Tile_coord spot_on_table;
 		p.get(rand() % p.size(), spot, spot_on_table);
 		const Actor_pathfinder_client& COST = (GAME_SI ? cost1 : cost2);
-		Actor_action*                  pact
-				= Path_walking_actor_action::create_path(npcpos, spot, COST);
-		const Shape_info& info = displaytable_obj->get_info();
+		Actor_action*                  pact = Path_walking_actor_action::create_path(npcpos, spot, COST);
+		const Shape_info&              info = displaytable_obj->get_info();
 		spot_on_table.tz += info.get_3d_height();
 
 		// Place baked goods if spot is empty.
 		const Tile_coord t = Map_chunk::find_spot(spot_on_table, 0, 377, 0, 0);
 		if (t.tx != -1 && t.tz == spot_on_table.tz) {
 			npc->set_action(new Sequence_actor_action(
-					pact, new Pickup_actor_action(
-								  dough_in_oven_obj.get(), spot_on_table, 250,
-								  false, drop_sfx_id(), sfx_vol())));
+					pact, new Pickup_actor_action(dough_in_oven_obj.get(), spot_on_table, 250, false, drop_sfx_id(), sfx_vol())));
 			dough_in_oven = Game_object_weak();
 			state         = get_dough;
 		} else {
 			delete pact;
-			pact = Path_walking_actor_action::create_path(
-					npcpos, displaytable_obj->get_tile(), cost1);
-			npc->set_action(new Sequence_actor_action(
-					pact, new Face_pos_actor_action(
-								  displaytable_obj->get_tile(), 250)));
+			pact = Path_walking_actor_action::create_path(npcpos, displaytable_obj->get_tile(), cost1);
+			npc->set_action(new Sequence_actor_action(pact, new Face_pos_actor_action(displaytable_obj->get_tile(), 250)));
 			delay = 250;
 			state = clear_display;
 		}
@@ -5125,8 +4794,7 @@ void Bake_schedule::now_what() {
 	}
 	case clear_display: {    // Mark food for deletion by remove_food
 		Game_object_vector food;
-		Actor::find_nearby(
-				food, npcpos, 377, 4, 0, c_any_qual, c_any_framenum, true);
+		Actor::find_nearby(food, npcpos, 377, 4, 0, c_any_qual, c_any_framenum, true);
 		if (food.empty() && !clearing) {    // none of our food on the table
 											// so we can't clear it
 			const Game_object_shared dough_in_oven_obj = dough_in_oven.lock();
@@ -5148,8 +4816,7 @@ void Bake_schedule::now_what() {
 	case remove_food: {    // Delete food on display table one by one with a
 						   // slight delay
 		Game_object_vector food;
-		Actor::find_nearby(
-				food, npcpos, 377, 4, 0, c_any_qual, c_any_framenum, true);
+		Actor::find_nearby(food, npcpos, 377, 4, 0, c_any_qual, c_any_framenum, true);
 		if (!food.empty()) {
 			delay = 500;
 			state = clear_display;
@@ -5180,11 +4847,9 @@ void Bake_schedule::now_what() {
 			break;
 		}
 		const Tile_coord tpos = dough_obj->get_tile();
-		Actor_action*    pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost2);
+		Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost2);
 		if (pact) {
-			npc->set_action(new Sequence_actor_action(
-					pact, new Pickup_actor_action(dough_obj.get(), 250)));
+			npc->set_action(new Sequence_actor_action(pact, new Pickup_actor_action(dough_obj.get(), 250)));
 		} else {
 			// just pick it up
 			npc->set_action(new Pickup_actor_action(dough_obj.get(), 250));
@@ -5216,8 +4881,7 @@ void Bake_schedule::now_what() {
 			break;
 		}
 		const Tile_coord tpos = oven_obj->get_tile() + Tile_coord(1, 1, 0);
-		Actor_action*    pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost1);
+		Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost1);
 
 		// offsets for oven placement
 		int offX = +1;
@@ -5230,15 +4894,11 @@ void Bake_schedule::now_what() {
 		}
 		const TileRect    foot = oven_obj->get_footprint();
 		const Shape_info& info = oven_obj->get_info();
-		const Tile_coord  cpos(
-                foot.x + offX, foot.y + offY,
-                oven_obj->get_lift() + info.get_3d_height() + offZ);
+		const Tile_coord  cpos(foot.x + offX, foot.y + offY, oven_obj->get_lift() + info.get_3d_height() + offZ);
 
 		if (pact) {
 			npc->set_action(new Sequence_actor_action(
-					pact, new Pickup_actor_action(
-								  dough_obj.get(), cpos, 250, false,
-								  drop_sfx_id(), sfx_vol())));
+					pact, new Pickup_actor_action(dough_obj.get(), cpos, 250, false, drop_sfx_id(), sfx_vol())));
 
 			dough_obj->set_quality(51);    // doesn't save okay_to_take
 			dough_in_oven = dough;
@@ -5277,8 +4937,7 @@ void Bake_schedule::ending(int new_type) {
  *  Blacksmith.
  */
 
-Forge_schedule::Forge_schedule(Actor* n)
-		: Schedule(n), state(put_sword_on_firepit) {}
+Forge_schedule::Forge_schedule(Actor* n) : Schedule(n), state(put_sword_on_firepit) {}
 
 void Forge_schedule::now_what() {
 	const Tile_coord npcpos = npc->get_tile();
@@ -5295,17 +4954,13 @@ void Forge_schedule::now_what() {
 	if (firepit_obj) {
 		const TileRect    ffoot = firepit_obj->get_footprint();
 		const Shape_info& finfo = firepit_obj->get_info();
-		firepit_top             = Tile_coord(
-                ffoot.x + ffoot.w / 2 + 1, ffoot.y + ffoot.h / 2,
-                firepit_obj->get_lift() + finfo.get_3d_height());
+		firepit_top = Tile_coord(ffoot.x + ffoot.w / 2 + 1, ffoot.y + ffoot.h / 2, firepit_obj->get_lift() + finfo.get_3d_height());
 	}
 	Tile_coord anvil_top(-1, -1, -1);
 	if (anvil_obj) {
 		const TileRect    afoot = anvil_obj->get_footprint();
 		const Shape_info& ainfo = anvil_obj->get_info();
-		anvil_top               = Tile_coord(
-                afoot.x + 2, afoot.y,
-                anvil_obj->get_lift() + ainfo.get_3d_height());
+		anvil_top               = Tile_coord(afoot.x + 2, afoot.y, anvil_obj->get_lift() + ainfo.get_3d_height());
 	}
 	bool blank_on_firepit = false;
 	bool blank_on_anvil   = false;
@@ -5322,8 +4977,7 @@ void Forge_schedule::now_what() {
 	switch (state) {
 	case put_sword_on_firepit: {
 		// Get a blank if we don't have one
-		if (!blank_obj || !blank_obj.get()
-			|| blank_obj.get()->get_outermost() != npc) {
+		if (!blank_obj || !blank_obj.get() || blank_obj.get()->get_outermost() != npc) {
 			state = get_blank;
 			break;
 		}
@@ -5335,28 +4989,20 @@ void Forge_schedule::now_what() {
 		}
 
 		// If object is in inventory but not yet on firepit, place it there
-		if (!blank_on_firepit && blank_obj && blank_obj.get()
-			&& blank_obj.get()->get_outermost() == npc) {
+		if (!blank_on_firepit && blank_obj && blank_obj.get() && blank_obj.get()->get_outermost() == npc) {
 			const Tile_coord tpos = firepit_obj->get_tile();
-			Actor_action*    pact = Path_walking_actor_action::create_path(
-                    npcpos, tpos, cost);
+			Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost);
 
 			const TileRect    foot = firepit_obj->get_footprint();
 			const Shape_info& info = firepit_obj->get_info();
-			const Tile_coord  bpos(
-                    foot.x + foot.w / 2 + 1, foot.y + foot.h / 2,
-                    firepit_obj->get_lift() + info.get_3d_height());
+			const Tile_coord  bpos(foot.x + foot.w / 2 + 1, foot.y + foot.h / 2, firepit_obj->get_lift() + info.get_3d_height());
 
 			if (pact) {
 				npc->set_action(new Sequence_actor_action(
-						pact, new Pickup_actor_action(
-									  blank_obj.get(), bpos, 250, false,
-									  drop_sfx_id(), sfx_vol())));
+						pact, new Pickup_actor_action(blank_obj.get(), bpos, 250, false, drop_sfx_id(), sfx_vol())));
 			} else {
 				delete pact;
-				npc->set_action(new Pickup_actor_action(
-						blank_obj.get(), bpos, 250, false, drop_sfx_id(),
-						sfx_vol()));
+				npc->set_action(new Pickup_actor_action(blank_obj.get(), bpos, 250, false, drop_sfx_id(), sfx_vol()));
 			}
 		}
 		state = use_bellows;
@@ -5370,8 +5016,7 @@ void Forge_schedule::now_what() {
 			return;
 		}
 		const Tile_coord tpos = firepit_obj->get_tile() + Tile_coord(3, 0, 0);
-		Actor_action*    pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost);
+		Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost);
 		if (pact) {
 			npc->set_action(pact);
 		}
@@ -5381,9 +5026,8 @@ void Forge_schedule::now_what() {
 	case get_blank: {
 		// Get a blank if we don't have one
 		const Game_object_shared prev     = blank.lock();
-		Game_object*             acquired = set_procure_item_action(
-                npc, prev ? prev.get() : nullptr, 24, 668, c_any_framenum);
-		blank = weak_from_obj(acquired);
+		Game_object*             acquired = set_procure_item_action(npc, prev ? prev.get() : nullptr, 24, 668, c_any_framenum);
+		blank                             = weak_from_obj(acquired);
 
 		if (blank_obj.get()) {
 			if (blank_obj->get_framenum() == 4) {
@@ -5426,68 +5070,54 @@ void Forge_schedule::now_what() {
 			break;
 		}
 
-		const Tile_coord tpos = bellows_obj->get_tile() + Tile_coord(3, 0, 0);
-		Actor_action*    pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost);
-		const int bellows_sfx = Audio::game_sfx(47);
+		const Tile_coord tpos        = bellows_obj->get_tile() + Tile_coord(3, 0, 0);
+		Actor_action*    pact        = Path_walking_actor_action::create_path(npcpos, tpos, cost);
+		const int        bellows_sfx = Audio::game_sfx(47);
 
 		if (pact) {
 			auto** a = new Actor_action*[35];
 			a[0]     = pact;
 			a[1]     = new Face_pos_actor_action(bellows_obj, 250);
 			a[2]     = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-			a[3]     = new Play_sfx_actor_action(
-                    bellows_sfx, bellows_obj, sfx_vol());
-			a[4] = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
-			a[5] = new Group_actor_action(
-					new Frames_actor_action(0x20 | Actor::standing, 0),
-					new Frames_actor_action(0x01, 0, firepit_obj),
-					new Frames_actor_action(0x01, 0, blank_obj.get()));
+			a[3]     = new Play_sfx_actor_action(bellows_sfx, bellows_obj, sfx_vol());
+			a[4]     = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
+			a[5]     = new Group_actor_action(
+                    new Frames_actor_action(0x20 | Actor::standing, 0), new Frames_actor_action(0x01, 0, firepit_obj),
+                    new Frames_actor_action(0x01, 0, blank_obj.get()));
 			a[6] = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-			a[7] = new Play_sfx_actor_action(
-					bellows_sfx, bellows_obj, sfx_vol());
+			a[7] = new Play_sfx_actor_action(bellows_sfx, bellows_obj, sfx_vol());
 			a[8] = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
 			a[9] = new Group_actor_action(
-					new Frames_actor_action(0x20 | Actor::standing, 0),
-					new Frames_actor_action(0x02, 0, blank_obj.get()));
+					new Frames_actor_action(0x20 | Actor::standing, 0), new Frames_actor_action(0x02, 0, blank_obj.get()));
 			a[10] = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-			a[11] = new Play_sfx_actor_action(
-					bellows_sfx, bellows_obj, sfx_vol());
+			a[11] = new Play_sfx_actor_action(bellows_sfx, bellows_obj, sfx_vol());
 			a[12] = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
 			a[13] = new Group_actor_action(
-					new Frames_actor_action(0x20 | Actor::standing, 0),
-					new Frames_actor_action(0x02, 0, firepit_obj),
+					new Frames_actor_action(0x20 | Actor::standing, 0), new Frames_actor_action(0x02, 0, firepit_obj),
 					new Frames_actor_action(0x03, 0, blank_obj.get()));
 			a[14] = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-			a[15] = new Play_sfx_actor_action(
-					bellows_sfx, bellows_obj, sfx_vol());
+			a[15] = new Play_sfx_actor_action(bellows_sfx, bellows_obj, sfx_vol());
 			a[16] = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
 			a[17] = new Group_actor_action(
-					new Frames_actor_action(0x20 | Actor::standing, 0),
-					new Frames_actor_action(0x03, 0, firepit_obj),
+					new Frames_actor_action(0x20 | Actor::standing, 0), new Frames_actor_action(0x03, 0, firepit_obj),
 					new Frames_actor_action(0x04, 0, blank_obj.get()));
 			a[18] = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-			a[19] = new Play_sfx_actor_action(
-					bellows_sfx, bellows_obj, sfx_vol());
+			a[19] = new Play_sfx_actor_action(bellows_sfx, bellows_obj, sfx_vol());
 			a[20] = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
 			a[21] = new Frames_actor_action(0x20 | Actor::standing, 0);
 			a[22] = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-			a[23] = new Play_sfx_actor_action(
-					bellows_sfx, bellows_obj, sfx_vol());
+			a[23] = new Play_sfx_actor_action(bellows_sfx, bellows_obj, sfx_vol());
 			a[24] = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
 			a[25] = new Frames_actor_action(0x20 | Actor::standing, 0);
 			a[26] = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-			a[27] = new Play_sfx_actor_action(
-					bellows_sfx, bellows_obj, sfx_vol());
+			a[27] = new Play_sfx_actor_action(bellows_sfx, bellows_obj, sfx_vol());
 			a[28] = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
 			a[29] = new Frames_actor_action(0x20 | Actor::standing, 0);
 			a[30] = new Frames_actor_action(0x20 | Actor::bow_frame, 0);
-			a[31] = new Play_sfx_actor_action(
-					bellows_sfx, bellows_obj, sfx_vol());
+			a[31] = new Play_sfx_actor_action(bellows_sfx, bellows_obj, sfx_vol());
 			a[32] = new Object_animate_actor_action(bellows_obj, 3, 1, 300);
 			a[33] = new Group_actor_action(
-					new Frames_actor_action(0x20 | Actor::standing, 0),
-					new Frames_actor_action(0x00, 0, bellows_obj));
+					new Frames_actor_action(0x20 | Actor::standing, 0), new Frames_actor_action(0x00, 0, bellows_obj));
 			a[34] = nullptr;
 
 			npc->set_action(new Sequence_actor_action(a));
@@ -5499,9 +5129,8 @@ void Forge_schedule::now_what() {
 	}
 	case get_tongs: {
 		// Get tongs if we don't have one
-		const Game_object_shared prev     = tongs.lock();
-		Game_object*             acquired = set_procure_item_action(
-                npc, prev ? prev.get() : nullptr, 24, 994, 0);
+		const Game_object_shared prev      = tongs.lock();
+		Game_object*             acquired  = set_procure_item_action(npc, prev ? prev.get() : nullptr, 24, 994, 0);
 		tongs                              = weak_from_obj(acquired);
 		const Game_object_shared tongs_obj = tongs.lock();
 
@@ -5527,27 +5156,23 @@ void Forge_schedule::now_what() {
 		}
 
 		const Tile_coord tpos = anvil_obj->get_tile() + Tile_coord(0, 1, 0);
-		Actor_action*    pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost);
+		Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost);
 		npc->set_action(pact);
 
 		// If object is in inventory but not yet on anvil, place it there
-		if (!blank_on_anvil && blank_obj && blank_obj.get()
-			&& blank_obj.get()->get_outermost() == npc) {
+		if (!blank_on_anvil && blank_obj && blank_obj.get() && blank_obj.get()->get_outermost() == npc) {
 			state = sword_on_anvil;
 			break;
 		}
 
 		const Game_object_shared hammer_obj = hammer.lock();
-		if (blank_on_anvil && blank_obj->get_framenum() == 4 && hammer_obj.get()
-			&& npc->get_readied(lhand) == hammer_obj.get()) {
+		if (blank_on_anvil && blank_obj->get_framenum() == 4 && hammer_obj.get() && npc->get_readied(lhand) == hammer_obj.get()) {
 			state = use_hammer;
 			break;
 		}
 
 		const Game_object_shared tongs_obj = tongs.lock();
-		if (blank_on_anvil && blank_obj->get_framenum() == 1 && tongs_obj.get()
-			&& npc->get_readied(lhand) == tongs_obj.get()) {
+		if (blank_on_anvil && blank_obj->get_framenum() == 1 && tongs_obj.get() && npc->get_readied(lhand) == tongs_obj.get()) {
 			state = get_blank;
 			break;
 		}
@@ -5565,11 +5190,8 @@ void Forge_schedule::now_what() {
 
 		const TileRect    foot = anvil_obj->get_footprint();
 		const Shape_info& info = anvil_obj->get_info();
-		const Tile_coord  bpos(
-                foot.x + 2, foot.y,
-                anvil_obj->get_lift() + info.get_3d_height());
-		npc->set_action(new Pickup_actor_action(
-				blank_obj.get(), bpos, 250, false, drop_sfx_id(), sfx_vol()));
+		const Tile_coord  bpos(foot.x + 2, foot.y, anvil_obj->get_lift() + info.get_3d_height());
+		npc->set_action(new Pickup_actor_action(blank_obj.get(), bpos, 250, false, drop_sfx_id(), sfx_vol()));
 		state = place_tongs;
 		break;
 	}
@@ -5607,25 +5229,18 @@ void Forge_schedule::now_what() {
 
 			// Walk to a spot adjacent to the table
 			const Tile_coord tpos = table_obj->get_tile() + Tile_coord(0, 1, 0);
-			Actor_action*    pact = Path_walking_actor_action::create_path(
-                    npcpos, tpos, cost);
+			Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost);
 			// Compute a spot on top of the table to place the tongs
 			const TileRect    foot = table_obj->get_footprint();
 			const Shape_info& info = table_obj->get_info();
-			Tile_coord        drop(
-                    foot.x + foot.w / 2, foot.y + foot.h / 4 * 3,
-                    table_obj->get_lift() + info.get_3d_height());
+			Tile_coord        drop(foot.x + foot.w / 2, foot.y + foot.h / 4 * 3, table_obj->get_lift() + info.get_3d_height());
 
 			if (pact) {
 				npc->set_action(new Sequence_actor_action(
-						pact, new Pickup_actor_action(
-									  tongs_obj.get(), drop, 250, false,
-									  drop_sfx_id(), sfx_vol())));
+						pact, new Pickup_actor_action(tongs_obj.get(), drop, 250, false, drop_sfx_id(), sfx_vol())));
 			} else {
 				delete pact;
-				npc->set_action(new Pickup_actor_action(
-						tongs_obj.get(), drop, 250, false, drop_sfx_id(),
-						sfx_vol()));
+				npc->set_action(new Pickup_actor_action(tongs_obj.get(), drop, 250, false, drop_sfx_id(), sfx_vol()));
 			}
 			break;
 		}
@@ -5661,9 +5276,8 @@ void Forge_schedule::now_what() {
 		}
 
 		// Get hammer if we don't have one
-		const Game_object_shared prev     = hammer.lock();
-		Game_object*             acquired = set_procure_item_action(
-                npc, prev ? prev.get() : nullptr, 24, 623, 0);
+		const Game_object_shared prev       = hammer.lock();
+		Game_object*             acquired   = set_procure_item_action(npc, prev ? prev.get() : nullptr, 24, 623, 0);
 		hammer                              = weak_from_obj(acquired);
 		const Game_object_shared hammer_obj = hammer.lock();
 
@@ -5683,8 +5297,7 @@ void Forge_schedule::now_what() {
 			const TileRect   foot = anvil_obj->get_footprint();
 			const Tile_coord tpos(foot.x + foot.w / 2, foot.y + foot.h + 1, 0);
 
-			if (Actor_action* pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost)) {
+			if (Actor_action* pact = Path_walking_actor_action::create_path(npcpos, tpos, cost)) {
 				npc->set_action(pact);
 				npc->start(gwin->get_std_delay());
 				return;    // stay in use_hammer, will run again when idle
@@ -5699,18 +5312,15 @@ void Forge_schedule::now_what() {
 		const int hammer_sfx = Audio::game_sfx(45);
 
 		auto** a = new Actor_action*[9];
-		a[0]     = new Frames_actor_action(
-                frames, cnt, 250, nullptr, hammer_sfx, sfx_vol(), 0, anvil_obj);
-		a[1] = new Frames_actor_action(0x03, 0, blank_obj.get());
-		a[2] = new Frames_actor_action(0x02, 0, firepit_obj);
-		a[3] = new Frames_actor_action(
-				frames, cnt, 250, nullptr, hammer_sfx, sfx_vol(), 0, anvil_obj);
-		a[4] = new Frames_actor_action(0x02, 0, blank_obj.get());
-		a[5] = new Frames_actor_action(
-				frames, cnt, 250, nullptr, hammer_sfx, sfx_vol(), 0, anvil_obj);
-		a[6] = new Frames_actor_action(0x01, 0, blank_obj.get());
-		a[7] = new Frames_actor_action(0x00, 0, firepit_obj);
-		a[8] = nullptr;
+		a[0]     = new Frames_actor_action(frames, cnt, 250, nullptr, hammer_sfx, sfx_vol(), 0, anvil_obj);
+		a[1]     = new Frames_actor_action(0x03, 0, blank_obj.get());
+		a[2]     = new Frames_actor_action(0x02, 0, firepit_obj);
+		a[3]     = new Frames_actor_action(frames, cnt, 250, nullptr, hammer_sfx, sfx_vol(), 0, anvil_obj);
+		a[4]     = new Frames_actor_action(0x02, 0, blank_obj.get());
+		a[5]     = new Frames_actor_action(frames, cnt, 250, nullptr, hammer_sfx, sfx_vol(), 0, anvil_obj);
+		a[6]     = new Frames_actor_action(0x01, 0, blank_obj.get());
+		a[7]     = new Frames_actor_action(0x00, 0, firepit_obj);
+		a[8]     = nullptr;
 		npc->set_action(new Sequence_actor_action(a));
 		state = place_hammer;
 		break;
@@ -5732,26 +5342,18 @@ void Forge_schedule::now_what() {
 				state = get_tongs;
 				break;
 			}
-			const Tile_coord tpos
-					= Map_chunk::find_spot(table_obj->get_tile(), 1, npc);
-			Actor_action* pact = Path_walking_actor_action::create_path(
-					npcpos, tpos, cost);
+			const Tile_coord  tpos = Map_chunk::find_spot(table_obj->get_tile(), 1, npc);
+			Actor_action*     pact = Path_walking_actor_action::create_path(npcpos, tpos, cost);
 			const TileRect    foot = table_obj->get_footprint();
 			const Shape_info& info = table_obj->get_info();
-			Tile_coord        drop(
-                    foot.x + foot.w / 2, foot.y + foot.h / 3,
-                    table_obj->get_lift() + info.get_3d_height());
+			Tile_coord        drop(foot.x + foot.w / 2, foot.y + foot.h / 3, table_obj->get_lift() + info.get_3d_height());
 
 			if (pact) {
 				npc->set_action(new Sequence_actor_action(
-						pact, new Pickup_actor_action(
-									  hammer_obj.get(), drop, 250, false,
-									  drop_sfx_id(), sfx_vol())));
+						pact, new Pickup_actor_action(hammer_obj.get(), drop, 250, false, drop_sfx_id(), sfx_vol())));
 			} else {
 				delete pact;
-				npc->set_action(new Pickup_actor_action(
-						hammer_obj.get(), drop, 250, false, drop_sfx_id(),
-						sfx_vol()));
+				npc->set_action(new Pickup_actor_action(hammer_obj.get(), drop, 250, false, drop_sfx_id(), sfx_vol()));
 			}
 			break;
 		}
@@ -5768,9 +5370,8 @@ void Forge_schedule::now_what() {
 		}
 
 		// Get bucket if we don't have one
-		const Game_object_shared prev     = bucket.lock();
-		Game_object*             acquired = set_procure_item_action(
-                npc, prev ? prev.get() : nullptr, 24, 810, 0);
+		const Game_object_shared prev       = bucket.lock();
+		Game_object*             acquired   = set_procure_item_action(npc, prev ? prev.get() : nullptr, 24, 810, 0);
 		bucket                              = weak_from_obj(acquired);
 		const Game_object_shared bucket_obj = bucket.lock();
 
@@ -5790,18 +5391,14 @@ void Forge_schedule::now_what() {
 		Game_object* well_obj               = npc->find_closest(470);
 		well                                = weak_from_obj(well_obj);
 
-		const Tile_coord drop_spot
-				= Map_chunk::find_spot(trough_obj->get_tile(), 3, 810, 0);
-		if (bucket_obj && bucket_obj.get()
-			&& bucket_obj.get()->get_outermost() == npc) {
+		const Tile_coord drop_spot = Map_chunk::find_spot(trough_obj->get_tile(), 3, 810, 0);
+		if (bucket_obj && bucket_obj.get() && bucket_obj.get()->get_outermost() == npc) {
 			// Change bucket to full when there is no well nearby
 			if (!well_obj && bucket_obj->get_framenum() != 1) {
 				bucket_obj->change_frame(1);
 			}
 			if (drop_spot.tx != -1) {
-				npc->set_action(new Pickup_actor_action(
-						bucket_obj.get(), drop_spot, 250, false, drop_sfx_id(),
-						sfx_vol()));
+				npc->set_action(new Pickup_actor_action(bucket_obj.get(), drop_spot, 250, false, drop_sfx_id(), sfx_vol()));
 			} else {
 				// If no free spot found, just remove it
 				bucket_obj->remove_this();
@@ -5815,10 +5412,8 @@ void Forge_schedule::now_what() {
 		Game_object* trough_obj = npc->find_closest(719);
 		trough                  = weak_from_obj(trough_obj);
 		if (trough_obj) {
-			const Tile_coord tpos
-					= trough_obj->get_tile() + Tile_coord(0, 2, 0);
-			Actor_action* pact = Path_walking_actor_action::create_path(
-					npcpos, tpos, cost);
+			const Tile_coord tpos = trough_obj->get_tile() + Tile_coord(0, 2, 0);
+			Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost);
 			npc->set_action(pact);
 		}
 		const Game_object_shared bucket_obj = bucket.lock();
@@ -5854,8 +5449,7 @@ void Forge_schedule::now_what() {
 		if (!well_obj) {
 			npc->set_action(new Sequence_actor_action(
 					new Frames_actor_action(0x20 | Actor::bow_frame, dir),
-					new Frames_actor_action(
-							0x03, 5, trough_obj, splash_sfx, sfx_vol())));
+					new Frames_actor_action(0x03, 5, trough_obj, splash_sfx, sfx_vol())));
 			break;
 		}
 
@@ -5895,10 +5489,8 @@ void Forge_schedule::now_what() {
 		auto** a = new Actor_action*[4];
 		a[0]     = new Frames_actor_action(&npc_bow, 1, 250);
 		a[1]     = new Group_actor_action(
-                new Play_sfx_actor_action(steam_sfx, trough_obj, sfx_vol()),
-                new Effect_actor_action(9, trough_obj, -10, -15, 0, 0),
-                new Frames_actor_action(&troughframe, 1, 0, trough_obj),
-                new Frames_actor_action(0x00, 0, blank_obj.get()));
+                new Play_sfx_actor_action(steam_sfx, trough_obj, sfx_vol()), new Effect_actor_action(9, trough_obj, -10, -15, 0, 0),
+                new Frames_actor_action(&troughframe, 1, 0, trough_obj), new Frames_actor_action(0x00, 0, blank_obj.get()));
 		a[2] = new Frames_actor_action(&npc_stand, 1, 250);
 		a[3] = nullptr;
 
@@ -5911,8 +5503,7 @@ void Forge_schedule::now_what() {
 		well                  = weak_from_obj(well_obj);
 		if (well_obj) {
 			const Tile_coord tpos = well_obj->get_tile() + Tile_coord(-1, 1, 0);
-			Actor_action*    pact = Path_walking_actor_action::create_path(
-                    npcpos, tpos, cost);
+			Actor_action*    pact = Path_walking_actor_action::create_path(npcpos, tpos, cost);
 			npc->set_action(pact);
 		}
 
@@ -5933,11 +5524,9 @@ void Forge_schedule::now_what() {
 			return;
 		}
 
-		const Tile_coord tpos = well_obj->get_tile() + Tile_coord(-6, 0, 0);
-		Actor_action*    pact
-				= Path_walking_actor_action::create_path(npcpos, tpos, cost);
-		Actor_action* pact2
-				= Path_walking_actor_action::create_path(tpos, npcpos, cost);
+		const Tile_coord tpos  = well_obj->get_tile() + Tile_coord(-6, 0, 0);
+		Actor_action*    pact  = Path_walking_actor_action::create_path(npcpos, tpos, cost);
+		Actor_action*    pact2 = Path_walking_actor_action::create_path(tpos, npcpos, cost);
 
 		signed char npc_reach = npc->get_dir_framenum(1, Actor::reach1_frame);
 		signed char frames[12];
@@ -5960,91 +5549,55 @@ void Forge_schedule::now_what() {
 				a    = new Actor_action*[15];
 				a[0] = new Face_pos_actor_action(well2_obj, 250);
 				a[1] = new Frames_actor_action(&npc_reach, 1, 250);
-				a[2] = new Frames_actor_action(
-						0x01, 50, well2_obj, drop_sfx_id(), sfx_vol());
+				a[2] = new Frames_actor_action(0x01, 50, well2_obj, drop_sfx_id(), sfx_vol());
 				a[3] = pact;
 				a[4] = new Group_actor_action(
-						new Frames_actor_action(frames, cnt),
-						new Frames_actor_action(
-								0x02, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames, cnt), new Frames_actor_action(0x02, 5, well2_obj, well_sfx, sfx_vol()));
 				a[5] = new Group_actor_action(
-						new Frames_actor_action(frames, cnt),
-						new Frames_actor_action(
-								0x03, 5, well2_obj, well_sfx, sfx_vol()));
-				a[6] = new Play_sfx_actor_action(
-						splash_sfx, well_obj, sfx_vol());
+						new Frames_actor_action(frames, cnt), new Frames_actor_action(0x03, 5, well2_obj, well_sfx, sfx_vol()));
+				a[6] = new Play_sfx_actor_action(splash_sfx, well_obj, sfx_vol());
 				a[7] = new Group_actor_action(
-						new Frames_actor_action(frames2, cnt2),
-						new Frames_actor_action(
-								0x03, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames2, cnt2), new Frames_actor_action(0x03, 5, well2_obj, well_sfx, sfx_vol()));
 				a[8] = new Group_actor_action(
-						new Frames_actor_action(frames2, cnt2),
-						new Frames_actor_action(
-								0x04, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames2, cnt2), new Frames_actor_action(0x04, 5, well2_obj, well_sfx, sfx_vol()));
 				a[9] = new Group_actor_action(
-						new Frames_actor_action(frames2, cnt2),
-						new Frames_actor_action(
-								0x05, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames2, cnt2), new Frames_actor_action(0x05, 5, well2_obj, well_sfx, sfx_vol()));
 				a[10] = pact2;
 				a[11] = new Face_pos_actor_action(well2_obj, 250);
 				a[12] = new Frames_actor_action(&npc_reach, 1, 250);
-				a[13] = new Frames_actor_action(
-						0x00, 50, well2_obj, drop_sfx_id(), sfx_vol());
+				a[13] = new Frames_actor_action(0x00, 50, well2_obj, drop_sfx_id(), sfx_vol());
 				a[14] = nullptr;
 			} else {
 				a    = new Actor_action*[20];
 				a[0] = new Face_pos_actor_action(well2_obj, 250);
 				a[1] = new Frames_actor_action(&npc_reach, 1, 250);
-				a[2] = new Frames_actor_action(
-						0x01, 50, well2_obj, drop_sfx_id(), sfx_vol());
+				a[2] = new Frames_actor_action(0x01, 50, well2_obj, drop_sfx_id(), sfx_vol());
 				a[3] = pact;
 				a[4] = new Group_actor_action(
-						new Frames_actor_action(frames, cnt),
-						new Frames_actor_action(
-								0x02, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames, cnt), new Frames_actor_action(0x02, 5, well2_obj, well_sfx, sfx_vol()));
 				a[5] = new Group_actor_action(
-						new Frames_actor_action(frames, cnt),
-						new Frames_actor_action(
-								0x03, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames, cnt), new Frames_actor_action(0x03, 5, well2_obj, well_sfx, sfx_vol()));
 				a[6] = new Group_actor_action(
-						new Frames_actor_action(frames, cnt),
-						new Frames_actor_action(
-								0x04, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames, cnt), new Frames_actor_action(0x04, 5, well2_obj, well_sfx, sfx_vol()));
 				a[7] = new Group_actor_action(
-						new Frames_actor_action(frames, cnt),
-						new Frames_actor_action(
-								0x05, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames, cnt), new Frames_actor_action(0x05, 5, well2_obj, well_sfx, sfx_vol()));
 				a[8] = new Group_actor_action(
-						new Frames_actor_action(frames, cnt),
-						new Frames_actor_action(
-								0x06, 5, well2_obj, well_sfx, sfx_vol()));
-				a[9] = new Play_sfx_actor_action(
-						splash_sfx, well_obj, sfx_vol());
+						new Frames_actor_action(frames, cnt), new Frames_actor_action(0x06, 5, well2_obj, well_sfx, sfx_vol()));
+				a[9]  = new Play_sfx_actor_action(splash_sfx, well_obj, sfx_vol());
 				a[10] = new Group_actor_action(
-						new Frames_actor_action(frames2, cnt2),
-						new Frames_actor_action(
-								0x07, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames2, cnt2), new Frames_actor_action(0x07, 5, well2_obj, well_sfx, sfx_vol()));
 				a[11] = new Group_actor_action(
-						new Frames_actor_action(frames2, cnt2),
-						new Frames_actor_action(
-								0x08, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames2, cnt2), new Frames_actor_action(0x08, 5, well2_obj, well_sfx, sfx_vol()));
 				a[12] = new Group_actor_action(
-						new Frames_actor_action(frames2, cnt2),
-						new Frames_actor_action(
-								0x09, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames2, cnt2), new Frames_actor_action(0x09, 5, well2_obj, well_sfx, sfx_vol()));
 				a[13] = new Group_actor_action(
-						new Frames_actor_action(frames2, cnt2),
-						new Frames_actor_action(
-								0x0A, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames2, cnt2), new Frames_actor_action(0x0A, 5, well2_obj, well_sfx, sfx_vol()));
 				a[14] = new Group_actor_action(
-						new Frames_actor_action(frames2, cnt2),
-						new Frames_actor_action(
-								0x0B, 5, well2_obj, well_sfx, sfx_vol()));
+						new Frames_actor_action(frames2, cnt2), new Frames_actor_action(0x0B, 5, well2_obj, well_sfx, sfx_vol()));
 				a[15] = pact2;
 				a[16] = new Face_pos_actor_action(well2_obj, 250);
 				a[17] = new Frames_actor_action(&npc_reach, 1, 250);
-				a[18] = new Frames_actor_action(
-						0x00, 50, well2_obj, drop_sfx_id(), sfx_vol());
+				a[18] = new Frames_actor_action(0x00, 50, well2_obj, drop_sfx_id(), sfx_vol());
 				a[19] = nullptr;
 			}
 			npc->set_action(new Sequence_actor_action(a));
@@ -6163,8 +5716,7 @@ void Eat_schedule::now_what() {
 		Game_object_vector plates;    // First look for a nearby plate.
 		Game_object*       plate_obj = nullptr;
 		npc->find_nearby(plates, 717, 1, 0);
-		const int floor
-				= npc->get_lift() / 5;    // Make sure it's on same floor.
+		const int floor = npc->get_lift() / 5;    // Make sure it's on same floor.
 		for (auto* plate : plates) {
 			plate_obj = plate;
 			if (plate_obj->get_lift() / 5 == floor) {
@@ -6183,9 +5735,8 @@ void Eat_schedule::now_what() {
 			state = find_plate;
 			break;
 		}
-		const Tile_coord         t = plate_obj->get_tile();
-		const Game_object_shared food
-				= gmap->create_ireg_object(377, rand() % 31);
+		const Tile_coord         t    = plate_obj->get_tile();
+		const Game_object_shared food = gmap->create_ireg_object(377, rand() % 31);
 		food->move(t.tx, t.ty, t.tz + 1);
 		break;
 	}
@@ -6316,8 +5867,7 @@ void Walk_to_schedule::now_what() {
 	cout << "Finding path to schedule for " << npc->get_name() << endl;
 	// Create path to dest., delaying
 	//   0 to 1 seconds.
-	if (!npc->walk_path_to_tile(
-				from, to, gwin->get_std_delay(), first_delay + rand() % 1000)) {
+	if (!npc->walk_path_to_tile(from, to, gwin->get_std_delay(), first_delay + rand() % 1000)) {
 		// Wait 1 sec., then try again.
 #ifdef DEBUG
 		cout << "Failed to find path for " << npc->get_name() << endl;
@@ -6336,7 +5886,7 @@ void Walk_to_schedule::now_what() {
  */
 
 void Walk_to_schedule::im_dormant() {
-	npc->set_action(nullptr);    // Prevent segfault when opening/closing doors.
+	npc->set_action(nullptr);        // Prevent segfault when opening/closing doors.
 	Walk_to_schedule::now_what();    // Get there by any means.
 }
 
@@ -6361,8 +5911,7 @@ void Schedule_change::clear() {
  *  Set a schedule from a U7 'schedule.dat' entry.
  */
 
-void Schedule_change::set4(
-		const unsigned char* entry    // 4 bytes read from schedule.dat.
+void Schedule_change::set4(const unsigned char* entry    // 4 bytes read from schedule.dat.
 ) {
 	time                       = entry[0] & 7;
 	type                       = entry[0] >> 3;
@@ -6372,16 +5921,14 @@ void Schedule_change::set4(
 	const unsigned char y      = entry[2];
 	const int           sx     = schunk % c_num_schunks;
 	const int           sy     = schunk / c_num_schunks;
-	pos                        = Tile_coord(
-            sx * c_tiles_per_schunk + x, sy * c_tiles_per_schunk + y, 0);
+	pos                        = Tile_coord(sx * c_tiles_per_schunk + x, sy * c_tiles_per_schunk + y, 0);
 }
 
 /*
  *  Set a schedule from an Exult 'schedule.dat' entry (vers. -1).
  */
 
-void Schedule_change::set8(
-		const unsigned char* entry    // 8 bytes read from schedule.dat.
+void Schedule_change::set8(const unsigned char* entry    // 8 bytes read from schedule.dat.
 ) {
 	pos.tx = little_endian::Read2(entry);
 	pos.ty = little_endian::Read2(entry);
@@ -6395,8 +5942,7 @@ void Schedule_change::set8(
  *  Write out schedule for Exult's 'schedule.dat'.
  */
 
-void Schedule_change::write8(
-		unsigned char* entry    // 8 bytes to write to schedule.dat.
+void Schedule_change::write8(unsigned char* entry    // 8 bytes to write to schedule.dat.
 ) const {
 	little_endian::Write2(entry, pos.tx);
 	little_endian::Write2(entry, pos.ty);         // 4
@@ -6410,8 +5956,7 @@ void Schedule_change::write8(
  *  Set a schedule.
  */
 
-void Schedule_change::set(
-		int ax, int ay, int az, unsigned char stype, unsigned char stime) {
+void Schedule_change::set(int ax, int ay, int az, unsigned char stype, unsigned char stime) {
 	time = stime % 8;    // Matches original behavior.
 	type = stype;
 	pos  = Tile_coord(ax, ay, az);

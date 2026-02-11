@@ -29,8 +29,7 @@
  */
 class Image_buffer8 : public Image_buffer {
 	// Private ctor. for Image_window8.
-	Image_buffer8(unsigned int w, unsigned int h, Image_buffer*)
-			: Image_buffer(w, h, 8) {}
+	Image_buffer8(unsigned int w, unsigned int h, Image_buffer*) : Image_buffer(w, h, 8) {}
 
 public:
 	Image_buffer8(unsigned int w, unsigned int h) : Image_buffer(w, h, 8) {
@@ -46,8 +45,7 @@ public:
 	}
 
 	// Copy within itself.
-	void copy(int srcx, int srcy, int srcw, int srch, int destx, int desty)
-			override;
+	void copy(int srcx, int srcy, int srcw, int srch, int destx, int desty) override;
 	// Get rect. into another buf.
 	void get(Image_buffer* dest, int srcx, int srcy) override;
 	// Put rect. back.
@@ -61,41 +59,26 @@ public:
 	// Fill with given (8-bit) value.
 	void fill8(unsigned char pix) override;
 	// Fill rect. wth pixel.
-	void fill8(unsigned char pix, int srcw, int srch, int destx, int desty)
-			override;
+	void fill8(unsigned char pix, int srcw, int srch, int destx, int desty) override;
 	// Fill line with pixel.
-	void fill_hline8(
-			unsigned char pix, int srcw, int destx, int desty) override;
+	void fill_hline8(unsigned char pix, int srcw, int destx, int desty) override;
 	// Draw an arbitrary line from any point to any point inclusive. Accuracy
 	// not guarenteed
-	void draw_line8(
-			unsigned char val, int startx, int starty, int endx, int endy,
-			const Xform_palette* xform = nullptr) override;
+	void draw_line8(unsigned char val, int startx, int starty, int endx, int endy, const Xform_palette* xform = nullptr) override;
 	// Copy rectangle into here.
-	void copy8(
-			const unsigned char* src_pixels, int srcw, int srch, int destx,
-			int desty) override;
+	void copy8(const unsigned char* src_pixels, int srcw, int srch, int destx, int desty) override;
 	// Copy line to here.
-	void copy_hline8(
-			const unsigned char* src_pixels, int srcw, int destx,
-			int desty) override;
+	void copy_hline8(const unsigned char* src_pixels, int srcw, int destx, int desty) override;
 	// Copy with translucency table.
 	void copy_hline_translucent8(
-			const unsigned char* src_pixels, int srcw, int destx, int desty,
-			int first_translucent, int last_translucent,
+			const unsigned char* src_pixels, int srcw, int destx, int desty, int first_translucent, int last_translucent,
 			const Xform_palette* xforms) override;
 	// Apply translucency to a line.
-	void fill_hline_translucent8(
-			unsigned char val, int srcw, int destx, int desty,
-			const Xform_palette& xform) override;
+	void fill_hline_translucent8(unsigned char val, int srcw, int destx, int desty, const Xform_palette& xform) override;
 	// Apply translucency to a rectangle
-	void fill_translucent8(
-			unsigned char val, int srcw, int srch, int destx, int desty,
-			const Xform_palette& xform) override;
+	void fill_translucent8(unsigned char val, int srcw, int srch, int destx, int desty, const Xform_palette& xform) override;
 	// Copy rect. with transp. color.
-	void copy_transparent8(
-			const unsigned char* src_pixels, int srcw, int srch, int destx,
-			int desty) override;
+	void copy_transparent8(const unsigned char* src_pixels, int srcw, int srch, int destx, int desty) override;
 
 	// Get/put a single pixel.
 	unsigned char get_pixel8(int x, int y) override {
@@ -103,20 +86,16 @@ public:
 	}
 
 	void put_pixel8(unsigned char pix, int x, int y) override {
-		if (x >= clipx && x < clipx + clipw && y >= clipy
-			&& y < clipy + cliph) {
+		if (x >= clipx && x < clipx + clipw && y >= clipy && y < clipy + cliph) {
 			bits[y * line_width + x] = pix;
 		}
 	}
 
 	void paint_rle(int xoff, int yoff, const unsigned char* in);
-	void paint_rle_remapped(
-			int xoff, int yoff, const unsigned char* inptr,
-			const unsigned char*& trans);
+	void paint_rle_remapped(int xoff, int yoff, const unsigned char* inptr, const unsigned char*& trans);
 
 	void draw_beveled_box(
-			int x, int y, int w, int h, int depth, uint8 colfill, uint8 coltop,
-			uint8 coltr, uint8 colbottom, uint8 colbl,
+			int x, int y, int w, int h, int depth, uint8 colfill, uint8 coltop, uint8 coltr, uint8 colbottom, uint8 colbl,
 			std::optional<uint8> coltlbr = {}) override;
 };
 

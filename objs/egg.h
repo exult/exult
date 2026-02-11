@@ -36,9 +36,7 @@ using Egg_object_shared = std::shared_ptr<Egg_object>;
  */
 class Egglike_game_object : public Ireg_game_object {
 public:
-	Egglike_game_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft = 0)
+	Egglike_game_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft = 0)
 			: Ireg_game_object(shapenum, framenum, tilex, tiley, lft) {}
 
 	// Render.
@@ -70,10 +68,8 @@ public:
 
 	// Create egg from type and parameters
 	static Egg_object_shared create_egg(
-			bool animated, int shnum, int frnum, unsigned int tx,
-			unsigned int ty, unsigned int tz, unsigned short itype,
-			unsigned char prob, short data1, short data2, short data3,
-			const char* str1 = nullptr);
+			bool animated, int shnum, int frnum, unsigned int tx, unsigned int ty, unsigned int tz, unsigned short itype,
+			unsigned char prob, short data1, short data2, short data3, const char* str1 = nullptr);
 
 	enum Egg_types {    // Types of eggs:
 		monster  = 1,
@@ -132,17 +128,14 @@ public:
 	};
 
 	static Egg_object_shared create_egg(
-			const unsigned char* entry, int entlen, bool animated, int shnum,
-			int frnum, unsigned int tx, unsigned int ty, unsigned int tz);
+			const unsigned char* entry, int entlen, bool animated, int shnum, int frnum, unsigned int tx, unsigned int ty,
+			unsigned int tz);
 	// Create normal eggs.
 	Egg_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft, unsigned short itype, unsigned char prob,
-			short d1, short d2, short d3 = 0);
+			int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft, unsigned short itype,
+			unsigned char prob, short d1, short d2, short d3 = 0);
 	// Ctor. for fields:
-	Egg_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft, unsigned char ty);
+	Egg_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft, unsigned char ty);
 	~Egg_object() override;
 	virtual void set_area();    // Set up active area.
 
@@ -173,14 +166,12 @@ public:
 	bool         is_findable() override;
 	virtual void set(int crit, int dist);
 	// Can it be activated?
-	virtual bool is_active(
-			Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty);
+	virtual bool is_active(Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty);
 
 	// This is pretty much the opposite to is_active it is used to test if
 	// unhatch should be called largely because the avatar was in proximity and
 	// moved out.
-	virtual bool test_unhatch(
-			Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty);
+	virtual bool test_unhatch(Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty);
 
 	// returns true by subclasses if they want unhatched to be called
 	virtual bool can_unhatch() {
@@ -217,8 +208,7 @@ public:
 	virtual void hatch(Game_object* obj, bool must = false);
 	virtual void unhatch(Game_object* obj, bool must = false);
 	void         print_debug();
-	static void  set_weather(
-			 int weather, int len = 15, Game_object* egg = nullptr);
+	static void  set_weather(int weather, int len = 15, Game_object* egg = nullptr);
 	// Move to new abs. location.
 	void move(int newtx, int newty, int newlift, int newmap = -1) override;
 	// Remove/delete this object.
@@ -258,9 +248,7 @@ public:
 class Field_object : public Egg_object {
 	bool field_effect(Actor* actor);    // Apply field.
 public:
-	Field_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft, unsigned char ty);
+	Field_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft, unsigned char ty);
 	void paint() override;
 	// Run usecode function.
 	void activate(int event = 1) override;
@@ -293,18 +281,14 @@ public:
 
 class Mirror_object : public Egg_object {
 public:
-	Mirror_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft);
+	Mirror_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft);
 
 	// Run usecode function.
 	void activate(int event = 1) override;
 	void hatch(Game_object* obj, bool must = false) override;
 
 	// Can it be activated?
-	bool is_active(
-			Game_object* obj, int tx, int ty, int tz, int from_tx,
-			int from_ty) override;
+	bool is_active(Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty) override;
 
 	void set_area() override;    // Set up active area.
 

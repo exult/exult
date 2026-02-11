@@ -60,12 +60,8 @@ void Chunk_chooser::show(
 		const TileRect b          = info[selected].box;
 		// Draw yellow box.
 		cairo_set_line_width(drawgc, zoom_scale / 2.0);
-		cairo_set_source_rgb(
-				drawgc, ((drawfg >> 16) & 255) / 255.0,
-				((drawfg >> 8) & 255) / 255.0, (drawfg & 255) / 255.0);
-		cairo_rectangle(
-				drawgc, (b.x * zoom_scale) / 2, (b.y * zoom_scale) / 2,
-				(b.w * zoom_scale) / 2, (b.h * zoom_scale) / 2);
+		cairo_set_source_rgb(drawgc, ((drawfg >> 16) & 255) / 255.0, ((drawfg >> 8) & 255) / 255.0, (drawfg & 255) / 255.0);
+		cairo_rectangle(drawgc, (b.x * zoom_scale) / 2, (b.y * zoom_scale) / 2, (b.w * zoom_scale) / 2, (b.h * zoom_scale) / 2);
 		cairo_stroke(drawgc);
 	}
 }
@@ -138,8 +134,7 @@ void Chunk_chooser::render() {
 	while (index < total_cnt && y < winh) {
 		int       x     = border;
 		const int cliph = y + chunkh <= winh ? chunkh : (winh - y);
-		while (index < total_cnt
-			   && (x + chunkw + border <= winw || x == border)) {
+		while (index < total_cnt && (x + chunkw + border <= winw || x == border)) {
 			const int clipw = x + chunkw <= winw ? chunkw : (winw - x);
 			iwin->set_clip(x, y, clipw, cliph);
 			const int chunknum = group ? (*group)[index] : index;
@@ -185,12 +180,8 @@ unsigned char* Chunk_chooser::get_chunk(int chunknum) {
 	int                    server_socket = studio->get_server_socket();
 	Exult_server::Msg_type id;    // Expect immediate answer.
 	int                    datalen;
-	if (!studio->send_to_server(Exult_server::send_terrain, buf, ptr - buf)
-		|| !Exult_server::wait_for_response(server_socket, 100)
-		|| (datalen
-			= Exult_server::Receive_data(server_socket, id, buf, sizeof(buf)))
-				   == -1
-		|| id != Exult_server::send_terrain
+	if (!studio->send_to_server(Exult_server::send_terrain, buf, ptr - buf) || !Exult_server::wait_for_response(server_socket, 100)
+		|| (datalen = Exult_server::Receive_data(server_socket, id, buf, sizeof(buf))) == -1 || id != Exult_server::send_terrain
 		|| little_endian::Read2(newptr) != chunknum) {
 		// No server?  Get from file.
 		data                = new unsigned char[chunksz];
@@ -214,8 +205,7 @@ unsigned char* Chunk_chooser::get_chunk(int chunknum) {
 void Chunk_chooser::update_num_chunks(int new_num_chunks) {
 	num_chunks         = new_num_chunks;
 	GtkAdjustment* adj = gtk_range_get_adjustment(GTK_RANGE(vscroll));
-	gtk_adjustment_set_upper(
-			adj, ((128 + border) * ((num_chunks + per_row - 1) / per_row)));
+	gtk_adjustment_set_upper(adj, ((128 + border) * ((num_chunks + per_row - 1) / per_row)));
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 }
 
@@ -229,9 +219,8 @@ void Chunk_chooser::update_num_chunks(int new_num_chunks) {
 void Chunk_chooser::set_chunk(
 		const unsigned char* data,    // Message from server.
 		int                  datalen) {
-	const int tnum = little_endian::Read2(data);    // First the terrain #.
-	const int new_num_chunks
-			= little_endian::Read2(data);    // Always sends total.
+	const int tnum           = little_endian::Read2(data);    // First the terrain #.
+	const int new_num_chunks = little_endian::Read2(data);    // Always sends total.
 	datalen -= 4;
 	if (datalen != chunksz) {
 		cout << "Set_chunk:  Wrong data length" << endl;
@@ -340,23 +329,17 @@ void Chunk_chooser::setup_info(bool savepos    // Try to keep current position.
 	const int per_row_old = per_row;
 	per_row               = std::max((w - border) / (128 + border), 1);
 	GtkAdjustment* adj    = gtk_range_get_adjustment(GTK_RANGE(vscroll));
-	gtk_adjustment_set_upper(
-			adj, ((128 + border) * ((num_chunks + per_row - 1) / per_row)));
+	gtk_adjustment_set_upper(adj, ((128 + border) * ((num_chunks + per_row - 1) / per_row)));
 	gtk_adjustment_set_step_increment(adj, ZoomDown(16));
 	gtk_adjustment_set_page_increment(adj, h - border);
 	gtk_adjustment_set_page_size(adj, h - border);
 	if (savepos && selected >= 0) {
-		gtk_adjustment_set_value(
-				adj, ((128 + border) * (info[selected].num / per_row)));
+		gtk_adjustment_set_value(adj, ((128 + border) * (info[selected].num / per_row)));
 	} else if (savepos) {
-		gtk_adjustment_set_value(
-				adj, (gtk_adjustment_get_value(adj) * per_row_old / per_row));
+		gtk_adjustment_set_value(adj, (gtk_adjustment_get_value(adj) * per_row_old / per_row));
 	}
-	if (gtk_adjustment_get_value(adj)
-		> (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj))) {
-		gtk_adjustment_set_value(
-				adj, (gtk_adjustment_get_upper(adj)
-					  - gtk_adjustment_get_page_size(adj)));
+	if (gtk_adjustment_get_value(adj) > (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj))) {
+		gtk_adjustment_set_value(adj, (gtk_adjustment_get_upper(adj) - gtk_adjustment_get_page_size(adj)));
 	}
 	g_signal_emit_by_name(G_OBJECT(adj), "changed");
 }
@@ -375,9 +358,7 @@ gint Chunk_chooser::expose(
 	chooser->set_graphic_context(cairo);
 	GdkRectangle area = {0, 0, 0, 0};
 	gdk_cairo_get_clip_rectangle(cairo, &area);
-	chooser->show(
-			ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width),
-			ZoomDown(area.height));
+	chooser->show(ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width), ZoomDown(area.height));
 	chooser->set_graphic_context(nullptr);
 	return true;
 }
@@ -394,9 +375,7 @@ gint Chunk_chooser::drag_motion(
 	ignore_unused_variable_warning(widget);
 	auto* chooser = static_cast<Chunk_chooser*>(data);
 	if (!chooser->dragging && chooser->selected >= 0) {
-		chooser->start_drag(
-				U7_TARGET_CHUNKID_NAME, U7_TARGET_CHUNKID,
-				reinterpret_cast<GdkEvent*>(event));
+		chooser->start_drag(U7_TARGET_CHUNKID_NAME, U7_TARGET_CHUNKID, reinterpret_cast<GdkEvent*>(event));
 	}
 	return true;
 }
@@ -410,8 +389,7 @@ gint Chunk_chooser::mouse_press(
 	auto* chooser = static_cast<Chunk_chooser*>(data);
 
 #ifdef DEBUG
-	cout << "Chunks : Clicked to " << (event->x) << " * " << (event->y)
-		 << " by " << (event->button) << endl;
+	cout << "Chunks : Clicked to " << (event->x) << " * " << (event->y) << " by " << (event->button) << endl;
 #endif
 	if (event->button == 4) {
 		chooser->scroll(true);
@@ -424,9 +402,7 @@ gint Chunk_chooser::mouse_press(
 	// int old_selected = chooser->selected;
 	int i;    // Search through entries.
 	for (i = 0; i < chooser->info_cnt; i++) {
-		if (chooser->info[i].box.has_point(
-					ZoomDown(static_cast<int>(event->x)),
-					ZoomDown(static_cast<int>(event->y)))) {
+		if (chooser->info[i].box.has_point(ZoomDown(static_cast<int>(event->x)), ZoomDown(static_cast<int>(event->y)))) {
 			// Found the box?
 			//			if (i == old_selected)
 			//				return true;
@@ -444,9 +420,7 @@ gint Chunk_chooser::mouse_press(
 	if (i == chooser->info_cnt && event->button == 1) {
 		chooser->unselect(true);    // Nothing under mouse.
 	} else if (event->button == 3) {
-		gtk_menu_popup_at_pointer(
-				GTK_MENU(chooser->create_popup()),
-				reinterpret_cast<GdkEvent*>(event));
+		gtk_menu_popup_at_pointer(GTK_MENU(chooser->create_popup()), reinterpret_cast<GdkEvent*>(event));
 	}
 	return true;
 }
@@ -477,23 +451,19 @@ void Chunk_chooser::drag_data_get(
 		gpointer data    // ->Chunk_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET of Chunk for " << info << " and '"
-		 << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
+	cout << "In DRAG_DATA_GET of Chunk for " << info << " and '" << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
 		 << endl;
 	auto* chooser = static_cast<Chunk_chooser*>(data);
 	if (chooser->selected < 0
-		|| (info != U7_TARGET_CHUNKID && info != U7_TARGET_CHUNKID + 100
-			&& info != U7_TARGET_CHUNKID + 200)) {
+		|| (info != U7_TARGET_CHUNKID && info != U7_TARGET_CHUNKID + 100 && info != U7_TARGET_CHUNKID + 200)) {
 		return;    // Not sure about this.
 	}
 	guchar            buf[U7DND_DATA_LENGTH(1)];
 	const Chunk_info& shinfo = chooser->info[chooser->selected];
 	const int         len    = Store_u7_chunkid(buf, shinfo.num);
-	cout << "Setting selection data (" << shinfo.num << ')' << " (" << len
-		 << ") '" << buf << "'" << endl;
+	cout << "Setting selection data (" << shinfo.num << ')' << " (" << len << ") '" << buf << "'" << endl;
 	// Set data.
-	gtk_selection_data_set(
-			seldata, gtk_selection_data_get_target(seldata), 8, buf, len);
+	gtk_selection_data_set(seldata, gtk_selection_data_get_target(seldata), 8, buf, len);
 }
 
 /*
@@ -551,21 +521,16 @@ gint Chunk_chooser::drag_begin(
  */
 
 void Chunk_chooser::drag_data_received(
-		GtkWidget* widget, GdkDragContext* context, gint x, gint y,
-		GtkSelectionData* seldata, guint info, guint time,
+		GtkWidget* widget, GdkDragContext* context, gint x, gint y, GtkSelectionData* seldata, guint info, guint time,
 		gpointer udata    // -> Chunk_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, x, y, info, time);
 	auto* chooser = static_cast<Chunk_chooser*>(udata);
-	cout << "In DRAG_DATA_RECEIVED of Chunk for '"
-		 << gdk_atom_name(gtk_selection_data_get_data_type(seldata)) << "'"
-		 << endl;
+	cout << "In DRAG_DATA_RECEIVED of Chunk for '" << gdk_atom_name(gtk_selection_data_get_data_type(seldata)) << "'" << endl;
 	auto seltype = gtk_selection_data_get_data_type(seldata);
-	if (((seltype == gdk_atom_intern(U7_TARGET_CHUNKID_NAME, 0))
-		 || (seltype == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MIME, 0))
+	if (((seltype == gdk_atom_intern(U7_TARGET_CHUNKID_NAME, 0)) || (seltype == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MIME, 0))
 		 || (seltype == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_GENERIC, 0)))
-		&& Is_u7_chunkid(gtk_selection_data_get_data(seldata))
-		&& gtk_selection_data_get_format(seldata) == 8
+		&& Is_u7_chunkid(gtk_selection_data_get_data(seldata)) && gtk_selection_data_get_format(seldata) == 8
 		&& gtk_selection_data_get_length(seldata) > 0) {
 		int cnum;
 		Get_u7_chunkid(gtk_selection_data_get_data(seldata), cnum);
@@ -595,13 +560,9 @@ void Chunk_chooser::enable_drop() {
 	tents[0].info   = U7_TARGET_CHUNKID;
 	tents[1].info   = U7_TARGET_CHUNKID + 100;
 	tents[2].info   = U7_TARGET_CHUNKID + 200;
-	gtk_drag_dest_set(
-			draw, GTK_DEST_DEFAULT_ALL, tents, 3,
-			static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
+	gtk_drag_dest_set(draw, GTK_DEST_DEFAULT_ALL, tents, 3, static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
 
-	g_signal_connect(
-			G_OBJECT(draw), "drag-data-received",
-			G_CALLBACK(drag_data_received), this);
+	g_signal_connect(G_OBJECT(draw), "drag-data-received", G_CALLBACK(drag_data_received), this);
 }
 
 /*
@@ -647,12 +608,9 @@ void Chunk_chooser::scrolled(
 ) {
 	auto* chooser = static_cast<Chunk_chooser*>(data);
 #ifdef DEBUG
-	cout << "Chunks : VScrolled to " << gtk_adjustment_get_value(adj)
-		 << " of [ " << gtk_adjustment_get_lower(adj) << ", "
-		 << gtk_adjustment_get_upper(adj) << " ] by "
-		 << gtk_adjustment_get_step_increment(adj) << " ( "
-		 << gtk_adjustment_get_page_increment(adj) << ", "
-		 << gtk_adjustment_get_page_size(adj) << " )" << endl;
+	cout << "Chunks : VScrolled to " << gtk_adjustment_get_value(adj) << " of [ " << gtk_adjustment_get_lower(adj) << ", "
+		 << gtk_adjustment_get_upper(adj) << " ] by " << gtk_adjustment_get_step_increment(adj) << " ( "
+		 << gtk_adjustment_get_page_increment(adj) << ", " << gtk_adjustment_get_page_size(adj) << " )" << endl;
 #endif
 	const gint newindex = static_cast<gint>(gtk_adjustment_get_value(adj));
 	chooser->scroll(newindex);
@@ -675,8 +633,7 @@ void Chunk_chooser::enable_controls() {
 	gtk_widget_set_sensitive(loc_down, true);
 	gtk_widget_set_sensitive(loc_up, true);
 	if (!group) {
-		gtk_widget_set_sensitive(
-				move_down, info[selected].num < num_chunks - 1);
+		gtk_widget_set_sensitive(move_down, info[selected].num < num_chunks - 1);
 		gtk_widget_set_sensitive(move_up, info[selected].num > 0);
 	}
 }
@@ -736,14 +693,11 @@ Chunk_chooser::Chunk_chooser(
 		int w, int h,             // Dimensions.
 		Shape_group* g            // Filter, or null.
 		)
-		: Object_browser(g), Shape_draw(i, palbuf, gtk_drawing_area_new()),
-		  chunkfile(cfile), chunksz(c_tiles_per_chunk * c_tiles_per_chunk * 2),
-		  headersz(0), info(nullptr), info_cnt(0), locate_cx(-1), locate_cy(-1),
-		  drop_enabled(false), to_del(-1), sel_changed(nullptr), voffset(0),
-		  per_row(1) {
-	static char v2hdr[]
-			= {'\xff', '\xff', '\xff', '\xff', 'e', 'x', 'l', 't', 0, 0};
-	char v2buf[V2_CHUNK_HDR_SIZE];    // Check for V2 chunks.
+		: Object_browser(g), Shape_draw(i, palbuf, gtk_drawing_area_new()), chunkfile(cfile),
+		  chunksz(c_tiles_per_chunk * c_tiles_per_chunk * 2), headersz(0), info(nullptr), info_cnt(0), locate_cx(-1), locate_cy(-1),
+		  drop_enabled(false), to_del(-1), sel_changed(nullptr), voffset(0), per_row(1) {
+	static char v2hdr[] = {'\xff', '\xff', '\xff', '\xff', 'e', 'x', 'l', 't', 0, 0};
+	char        v2buf[V2_CHUNK_HDR_SIZE];    // Check for V2 chunks.
 	chunkfile.seekg(0);
 	chunkfile.read(v2buf, sizeof(v2buf));
 	if (!chunkfile.good()) {
@@ -771,50 +725,34 @@ Chunk_chooser::Chunk_chooser(
 	// A frame looks nice.
 	GtkWidget* frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
-	widget_set_margins(
-			frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_visible(frame, true);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, true, true, 0);
 
 	// NOTE:  draw is in Shape_draw.
 	// Indicate the events we want.
-	gtk_widget_set_events(
-			draw, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK
-						  | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON1_MOTION_MASK);
+	gtk_widget_set_events(draw, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON1_MOTION_MASK);
 	// Set "configure" handler.
-	g_signal_connect(
-			G_OBJECT(draw), "configure-event", G_CALLBACK(configure), this);
+	g_signal_connect(G_OBJECT(draw), "configure-event", G_CALLBACK(configure), this);
 	// Set "expose-event" - "draw" handler.
 	g_signal_connect(G_OBJECT(draw), "draw", G_CALLBACK(expose), this);
 	// Set mouse click handler.
-	g_signal_connect(
-			G_OBJECT(draw), "button-press-event", G_CALLBACK(mouse_press),
-			this);
-	g_signal_connect(
-			G_OBJECT(draw), "button-release-event", G_CALLBACK(Mouse_release),
-			this);
+	g_signal_connect(G_OBJECT(draw), "button-press-event", G_CALLBACK(mouse_press), this);
+	g_signal_connect(G_OBJECT(draw), "button-release-event", G_CALLBACK(Mouse_release), this);
 	// Mouse motion.
-	g_signal_connect(
-			G_OBJECT(draw), "drag-begin", G_CALLBACK(drag_begin), this);
-	g_signal_connect(
-			G_OBJECT(draw), "motion-notify-event", G_CALLBACK(drag_motion),
-			this);
-	g_signal_connect(
-			G_OBJECT(draw), "drag-data-get", G_CALLBACK(drag_data_get), this);
+	g_signal_connect(G_OBJECT(draw), "drag-begin", G_CALLBACK(drag_begin), this);
+	g_signal_connect(G_OBJECT(draw), "motion-notify-event", G_CALLBACK(drag_motion), this);
+	g_signal_connect(G_OBJECT(draw), "drag-data-get", G_CALLBACK(drag_data_get), this);
 	gtk_container_add(GTK_CONTAINER(frame), draw);
-	widget_set_margins(
-			draw, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(draw, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_size_request(draw, w, h);
 	gtk_widget_set_visible(draw, true);
 	// Want a scrollbar for the chunks.
-	GtkAdjustment* chunk_adj = GTK_ADJUSTMENT(
-			gtk_adjustment_new(0, 0, (128 + border) * num_chunks, 1, 4, 1.0));
-	vscroll = gtk_scrollbar_new(
-			GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT(chunk_adj));
+	GtkAdjustment* chunk_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, (128 + border) * num_chunks, 1, 4, 1.0));
+	vscroll                  = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT(chunk_adj));
 	gtk_box_pack_start(GTK_BOX(hbox), vscroll, false, true, 0);
 	// Set scrollbar handler.
-	g_signal_connect(
-			G_OBJECT(chunk_adj), "value-changed", G_CALLBACK(scrolled), this);
+	g_signal_connect(G_OBJECT(chunk_adj), "value-changed", G_CALLBACK(scrolled), this);
 	gtk_widget_set_visible(vscroll, true);
 	// Scroll events.
 	enable_draw_vscroll(draw);
@@ -828,14 +766,10 @@ Chunk_chooser::Chunk_chooser(
 	sbar     = gtk_statusbar_new();
 	sbar_sel = gtk_statusbar_get_context_id(GTK_STATUSBAR(sbar), "selection");
 	gtk_box_pack_start(GTK_BOX(hbox1), sbar, true, true, 0);
-	widget_set_margins(
-			sbar, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(sbar, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_visible(sbar, true);
 	// Add locate/move controls to bottom.
-	gtk_box_pack_start(
-			GTK_BOX(vbox),
-			create_controls(locate_controls | (!group ? move_controls : 0)),
-			false, false, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), create_controls(locate_controls | (!group ? move_controls : 0)), false, false, 0);
 }
 
 /*
@@ -912,9 +846,7 @@ void Chunk_chooser::unselect(bool need_render    // 1 to render and show.
 	enable_controls();    // Enable/disable controls.
 	if (info_cnt > 0) {
 		char buf[150];    // Show new selection.
-		g_snprintf(
-				buf, sizeof(buf), "Chunks %d to %d", info[0].num,
-				info[info_cnt - 1].num);
+		g_snprintf(buf, sizeof(buf), "Chunks %d to %d", info[0].num, info[info_cnt - 1].num);
 		gtk_statusbar_push(GTK_STATUSBAR(sbar), sbar_sel, buf);
 	}
 }
@@ -944,8 +876,7 @@ void Chunk_chooser::locate(int dir    // 1=downwards, -1=upwards, 0=from top.
 	little_endian::Write2(ptr, cy);
 	Write1(ptr, upwards ? 1 : 0);
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (!studio->send_to_server(
-				Exult_server::locate_terrain, data, ptr - data)) {
+	if (!studio->send_to_server(Exult_server::locate_terrain, data, ptr - data)) {
 		to_del = -1;    // In case we're deleting.
 	}
 }
@@ -975,8 +906,7 @@ void Chunk_chooser::locate_response(const unsigned char* data, int datalen) {
 			unsigned char* ptr = &data[0];
 			little_endian::Write2(ptr, tnum);
 			ExultStudio* studio = ExultStudio::get_instance();
-			studio->send_to_server(
-					Exult_server::delete_terrain, data, ptr - data);
+			studio->send_to_server(Exult_server::delete_terrain, data, ptr - data);
 		} else {
 			EStudio::Alert("Terrain %d not found.", tnum);
 		}
@@ -1034,8 +964,7 @@ void Chunk_chooser::insert_response(const unsigned char* data, int datalen) {
 	} else {
 		// Insert in our list.
 		auto* chunk_data = new unsigned char[chunksz];
-		if (dup && selected >= 0 && selected < num_chunks
-			&& chunklist[info[selected].num]) {
+		if (dup && selected >= 0 && selected < num_chunks && chunklist[info[selected].num]) {
 			memcpy(chunk_data, chunklist[info[selected].num], chunksz);
 		} else {
 			memset(chunk_data, 0, chunksz);

@@ -47,8 +47,7 @@ public:
 	friend class Combo_editor;
 	friend class Combo_chooser;
 
-	Combo_member(short x, short y, short z, short sh, short fr)
-			: tx(x), ty(y), tz(z), shapenum(sh), framenum(fr) {}
+	Combo_member(short x, short y, short z, short sh, short fr) : tx(x), ty(y), tz(z), shapenum(sh), framenum(fr) {}
 
 	// Return which makes better hot-spot.
 	friend int hot_spot_compare(Combo_member& c0, Combo_member& c1);
@@ -60,7 +59,7 @@ public:
 class Combo {
 	Shapes_vga_file*           shapes_file;    // Where shapes come from.
 	std::vector<Combo_member*> members;        // Members of this combination.
-	short hot_index;    // Index of obj. whose 'hot spot' we'll
+	short                      hot_index;      // Index of obj. whose 'hot spot' we'll
 	//   use.
 	short       starttx, startty;    // Offset represented by top-left.
 	std::string name;                // Name given by user.
@@ -76,8 +75,7 @@ public:
 	~Combo();
 
 	Combo_member* get(int i) {
-		return i >= 0 && static_cast<unsigned>(i) < members.size() ? members[i]
-																   : nullptr;
+		return i >= 0 && static_cast<unsigned>(i) < members.size() ? members[i] : nullptr;
 	}
 
 	// Add a new object.
@@ -88,7 +86,7 @@ public:
 	int  find(int mx, int my);    // Find at mouse position.
 	// Serialize:
 	std::unique_ptr<unsigned char[]> write(int& datalen);
-	const unsigned char* read(const unsigned char* buf, int bufsize);
+	const unsigned char*             read(const unsigned char* buf, int bufsize);
 };
 
 /*
@@ -109,10 +107,9 @@ public:
 	friend class Combo_chooser;
 	Combo_editor(Shapes_vga_file* svga, unsigned char* palbuf);
 	~Combo_editor() override;
-	static gboolean on_combo_draw_expose_event(
-			GtkWidget* widget, cairo_t* cairo, gpointer data);
-	void show(bool tf);    // Show/hide.
-	void render_area(GdkRectangle* area);
+	static gboolean on_combo_draw_expose_event(GtkWidget* widget, cairo_t* cairo, gpointer data);
+	void            show(bool tf);    // Show/hide.
+	void            render_area(GdkRectangle* area);
 
 	void reset_selected() {
 		selected = -1;
@@ -210,9 +207,7 @@ class Combo_chooser : public Object_browser, public Shape_draw {
 	void enable_controls();    // Enable/disable controls after sel.
 							   //   has changed.
 public:
-	Combo_chooser(
-			Vga_file* i, Flex_file_info* flinfo, unsigned char* palbuf, int w,
-			int h, Shape_group* g = nullptr);
+	Combo_chooser(Vga_file* i, Flex_file_info* flinfo, unsigned char* palbuf, int w, int h, Shape_group* g = nullptr);
 	~Combo_chooser() override;
 	// Turn off selection.
 	void unselect(bool need_render = true);
@@ -230,25 +225,20 @@ public:
 	void remove();                           // Remove selected.
 	void edit();                             // Edit selected.
 	// Configure when created/resized.
-	static gint configure(
-			GtkWidget* widget, GdkEventConfigure* event, gpointer data);
+	static gint configure(GtkWidget* widget, GdkEventConfigure* event, gpointer data);
 	// Blit to screen.
 	static gint expose(GtkWidget* widget, cairo_t* cairo, gpointer data);
 	// Handle mouse press.
-	static gint mouse_press(
-			GtkWidget* widget, GdkEventButton* event, gpointer data);
+	static gint mouse_press(GtkWidget* widget, GdkEventButton* event, gpointer data);
 	// Give dragged combo.
 	static void drag_data_get(
-			GtkWidget* widget, GdkDragContext* context,
-			GtkSelectionData* seldata, guint info, guint time, gpointer data);
-	static gint drag_begin(
-			GtkWidget* widget, GdkDragContext* context, gpointer data);
+			GtkWidget* widget, GdkDragContext* context, GtkSelectionData* seldata, guint info, guint time, gpointer data);
+	static gint drag_begin(GtkWidget* widget, GdkDragContext* context, gpointer data);
 	// Handle scrollbar.
 	static void scrolled(GtkAdjustment* adj, gpointer data);
 	void        move(bool upwards) override;    // Move current selected combo.
 	void        search(const char* srch, int dir) override;
-	static gint drag_motion(
-			GtkWidget* widget, GdkEventMotion* event, gpointer data);
+	static gint drag_motion(GtkWidget* widget, GdkEventMotion* event, gpointer data);
 };
 
 #endif /* INCL_COMBO_H */

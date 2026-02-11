@@ -59,9 +59,8 @@ public:
 
 class ManipBase {
 protected:
-	static const SDL_PixelFormatDetails*
-					 fmt;    // Format of dest. pixels (and src for rgb src).
-	static SDL_Color colors[256];    // Palette for source window.
+	static const SDL_PixelFormatDetails* fmt;            // Format of dest. pixels (and src for rgb src).
+	static SDL_Color                     colors[256];    // Palette for source window.
 
 	ManipBase(SDL_Color* c, const SDL_PixelFormatDetails* f) {
 		fmt = f;
@@ -80,20 +79,17 @@ public:
 template <typename color_d>
 class ManipBaseDest : public ManipBase {
 protected:
-	ManipBaseDest(SDL_Color* c, const SDL_PixelFormatDetails* f)
-			: ManipBase(c, f) {}
+	ManipBaseDest(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBase(c, f) {}
 
 public:
 	using uintD = typename color_d::T;
 
 	static uintD rgb(unsigned int r, unsigned int g, unsigned int b) {
-		return ((r >> (8 - fmt->Rbits)) << fmt->Rshift)
-			   | ((g >> (8 - fmt->Gbits)) << fmt->Gshift)
+		return ((r >> (8 - fmt->Rbits)) << fmt->Rshift) | ((g >> (8 - fmt->Gbits)) << fmt->Gshift)
 			   | ((b >> (8 - fmt->Bbits)) << fmt->Bshift);
 	}
 
-	static void split_dest(
-			uintD pix, unsigned int& r, unsigned int& g, unsigned int& b) {
+	static void split_dest(uintD pix, unsigned int& r, unsigned int& g, unsigned int& b) {
 		r = ((pix & fmt->Rmask) >> fmt->Rshift) << (8 - fmt->Rbits);
 		g = ((pix & fmt->Gmask) >> fmt->Gshift) << (8 - fmt->Gbits);
 		b = ((pix & fmt->Bmask) >> fmt->Bshift) << (8 - fmt->Bbits);
@@ -104,11 +100,9 @@ public:
 template <>
 class ManipBaseDest<color_555> : public ManipBase {
 protected:
-	ManipBaseDest(SDL_Color* c, const SDL_PixelFormatDetails* f)
-			: ManipBase(nullptr, f) {
+	ManipBaseDest(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBase(nullptr, f) {
 		if (c) {
-			if (fmt->Rmask == 0x7c00 && fmt->Gmask == 0x03e0
-				&& fmt->Bmask == 0x001f) {
+			if (fmt->Rmask == 0x7c00 && fmt->Gmask == 0x03e0 && fmt->Bmask == 0x001f) {
 				std::memcpy(colors, c, sizeof(colors));
 			} else {
 				SDL_Color*       dst = colors;
@@ -131,8 +125,7 @@ public:
 		return ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
 	}
 
-	static void split_dest(
-			uintD pix, unsigned int& r, unsigned int& g, unsigned int& b) {
+	static void split_dest(uintD pix, unsigned int& r, unsigned int& g, unsigned int& b) {
 		r = (pix >> 10) << 3;
 		g = (pix >> 5) << 3;
 		b = (pix) << 3;
@@ -143,11 +136,9 @@ public:
 template <>
 class ManipBaseDest<color_565> : public ManipBase {
 protected:
-	ManipBaseDest(SDL_Color* c, const SDL_PixelFormatDetails* f)
-			: ManipBase(nullptr, f) {
+	ManipBaseDest(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBase(nullptr, f) {
 		if (c) {
-			if (fmt->Rmask == 0xf800 && fmt->Gmask == 0x7e0
-				&& fmt->Bmask == 0x1f) {
+			if (fmt->Rmask == 0xf800 && fmt->Gmask == 0x7e0 && fmt->Bmask == 0x1f) {
 				std::memcpy(colors, c, sizeof(colors));
 			} else {
 				SDL_Color*       dst = colors;
@@ -170,8 +161,7 @@ public:
 		return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
 	}
 
-	static void split_dest(
-			uintD pix, unsigned int& r, unsigned int& g, unsigned int& b) {
+	static void split_dest(uintD pix, unsigned int& r, unsigned int& g, unsigned int& b) {
 		r = (pix >> 11) << 3;
 		g = (pix >> 5) << 2;
 		b = (pix) << 3;
@@ -182,16 +172,14 @@ public:
 template <>
 class ManipBaseDest<uint8> : public ManipBase {
 protected:
-	ManipBaseDest(SDL_Color* c, const SDL_PixelFormatDetails* f)
-			: ManipBase(c, f) {}
+	ManipBaseDest(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBase(c, f) {}
 
 public:
 	using uintD = color_8::T;
 
 	static int get_error(int r, int g, int b, int index) {
 		const SDL_Color& color = colors[index];
-		return std::abs(r - color.r) + std::abs(g - color.g)
-			   + std::abs(b - color.b);
+		return std::abs(r - color.r) + std::abs(g - color.g) + std::abs(b - color.b);
 	}
 
 	// This is god awful slow
@@ -208,8 +196,7 @@ public:
 		return best;
 	}
 
-	static void split_dest(
-			uintD pix, unsigned int& r, unsigned int& g, unsigned int& b) {
+	static void split_dest(uintD pix, unsigned int& r, unsigned int& g, unsigned int& b) {
 		const SDL_Color& color = colors[pix];
 		r                      = color.r;
 		g                      = color.g;
@@ -221,29 +208,21 @@ public:
 template <typename color_s, typename color_d>
 class ManipBaseSrc : public ManipBaseDest<color_d> {
 protected:
-	ManipBaseSrc(SDL_Color* c, const SDL_PixelFormatDetails* f)
-			: ManipBaseDest<color_d>(c, f) {}
+	ManipBaseSrc(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBaseDest<color_d>(c, f) {}
 
 public:
 	using uintS = typename color_s::T;
 
-	static void split_source(
-			uintS pix, unsigned int& r, unsigned int& g, unsigned int& b) {
-		r = ((pix & ManipBase::fmt->Rmask) >> ManipBase::fmt->Rshift)
-			<< (8 - ManipBase::fmt->Rbits);
-		g = ((pix & ManipBase::fmt->Gmask) >> ManipBase::fmt->Gshift)
-			<< (8 - ManipBase::fmt->Gbits);
-		b = ((pix & ManipBase::fmt->Bmask) >> ManipBase::fmt->Bshift)
-			<< (8 - ManipBase::fmt->Bbits);
+	static void split_source(uintS pix, unsigned int& r, unsigned int& g, unsigned int& b) {
+		r = ((pix & ManipBase::fmt->Rmask) >> ManipBase::fmt->Rshift) << (8 - ManipBase::fmt->Rbits);
+		g = ((pix & ManipBase::fmt->Gmask) >> ManipBase::fmt->Gshift) << (8 - ManipBase::fmt->Gbits);
+		b = ((pix & ManipBase::fmt->Bmask) >> ManipBase::fmt->Bshift) << (8 - ManipBase::fmt->Bbits);
 	}
 
 	static void split_source(uintS pix, uint8& r, uint8& g, uint8& b) {
-		r = ((pix & ManipBase::fmt->Rmask) >> ManipBase::fmt->Rshift)
-			<< (8 - ManipBase::fmt->Rbits);
-		g = ((pix & ManipBase::fmt->Gmask) >> ManipBase::fmt->Gshift)
-			<< (8 - ManipBase::fmt->Gbits);
-		b = ((pix & ManipBase::fmt->Bmask) >> ManipBase::fmt->Bshift)
-			<< (8 - ManipBase::fmt->Bbits);
+		r = ((pix & ManipBase::fmt->Rmask) >> ManipBase::fmt->Rshift) << (8 - ManipBase::fmt->Rbits);
+		g = ((pix & ManipBase::fmt->Gmask) >> ManipBase::fmt->Gshift) << (8 - ManipBase::fmt->Gbits);
+		b = ((pix & ManipBase::fmt->Bmask) >> ManipBase::fmt->Bshift) << (8 - ManipBase::fmt->Bbits);
 	}
 };
 
@@ -251,14 +230,12 @@ public:
 template <typename color_d>
 class ManipBaseSrc<color_555, color_d> : public ManipBaseDest<color_d> {
 protected:
-	ManipBaseSrc(SDL_Color* c, const SDL_PixelFormatDetails* f)
-			: ManipBaseDest<color_d>(c, f) {}
+	ManipBaseSrc(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBaseDest<color_d>(c, f) {}
 
 public:
 	using uintS = typename color_555::T;
 
-	static void split_source(
-			uintS pix, unsigned int& r, unsigned int& g, unsigned int& b) {
+	static void split_source(uintS pix, unsigned int& r, unsigned int& g, unsigned int& b) {
 		r = (pix >> 10) << 3;
 		g = (pix >> 5) << 3;
 		b = (pix) << 3;
@@ -275,14 +252,12 @@ public:
 template <typename color_d>
 class ManipBaseSrc<color_565, color_d> : public ManipBaseDest<color_d> {
 protected:
-	ManipBaseSrc(SDL_Color* c, const SDL_PixelFormatDetails* f)
-			: ManipBaseDest<color_d>(c, f) {}
+	ManipBaseSrc(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBaseDest<color_d>(c, f) {}
 
 public:
 	using uintS = typename color_565::T;
 
-	static void split_source(
-			uintS pix, unsigned int& r, unsigned int& g, unsigned int& b) {
+	static void split_source(uintS pix, unsigned int& r, unsigned int& g, unsigned int& b) {
 		r = (pix >> 11) << 3;
 		g = (pix >> 5) << 2;
 		b = (pix) << 3;
@@ -299,14 +274,12 @@ public:
 template <typename color_d>
 class ManipBaseSrc<color_8, color_d> : public ManipBaseDest<color_d> {
 protected:
-	ManipBaseSrc(SDL_Color* c, const SDL_PixelFormatDetails* f)
-			: ManipBaseDest<color_d>(c, f) {}
+	ManipBaseSrc(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBaseDest<color_d>(c, f) {}
 
 public:
 	using uintS = typename color_8::T;
 
-	static void split_source(
-			uintS pix, unsigned int& r, unsigned int& g, unsigned int& b) {
+	static void split_source(uintS pix, unsigned int& r, unsigned int& g, unsigned int& b) {
 		const SDL_Color& color = ManipBase::colors[pix];
 		r                      = color.r;
 		g                      = color.g;
@@ -325,8 +298,7 @@ public:
 template <typename color_s, typename color_d>
 class ManipStoD : public ManipBaseSrc<color_s, color_d> {
 public:
-	ManipStoD(SDL_Color* c, const SDL_PixelFormatDetails* f)
-			: ManipBaseSrc<color_s, color_d>(c, f) {}
+	ManipStoD(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBaseSrc<color_s, color_d>(c, f) {}
 
 	using uintS = typename color_s::T;
 	using uintD = typename color_d::T;
@@ -344,15 +316,12 @@ public:
 	}
 
 	template <unsigned int N, unsigned int M>
-	static inline void blend(
-			uintD& dest, unsigned int rs, unsigned int gs, unsigned int bs) {
+	static inline void blend(uintD& dest, unsigned int rs, unsigned int gs, unsigned int bs) {
 		unsigned int rd;
 		unsigned int gd;
 		unsigned int bd;
 		ManipBaseDest<color_d>::split_dest(dest, rd, gd, bd);
-		dest = ManipBaseDest<color_d>::rgb(
-				(rs * N + rd * (M - N)) / M, (gs * N + gd * (M - N)) / M,
-				(bs * N + bd * (M - N)) / M);
+		dest = ManipBaseDest<color_d>::rgb((rs * N + rd * (M - N)) / M, (gs * N + gd * (M - N)) / M, (bs * N + bd * (M - N)) / M);
 	}
 };
 
@@ -360,8 +329,7 @@ public:
 template <typename colorSD>
 class ManipStoD<colorSD, colorSD> : public ManipBaseSrc<colorSD, colorSD> {
 public:
-	ManipStoD(SDL_Color* c, const SDL_PixelFormatDetails* f)
-			: ManipBaseSrc<colorSD, colorSD>(c, f) {}
+	ManipStoD(SDL_Color* c, const SDL_PixelFormatDetails* f) : ManipBaseSrc<colorSD, colorSD>(c, f) {}
 
 	using uintS = typename colorSD::T;
 	using uintD = typename colorSD::T;
@@ -386,9 +354,7 @@ using Manip555to555 = ManipStoD<color_555, color_555>;
 using Manip565to565 = ManipStoD<color_565, color_565>;
 using Manip32to32   = ManipStoD<color_32, color_32>;
 
-inline void increase_area(
-		int& x, int& y, int& w, int& h, int left, int right, int top,
-		int bottom, int buf_width, int buf_height) {
+inline void increase_area(int& x, int& y, int& w, int& h, int left, int right, int top, int bottom, int buf_width, int buf_height) {
 	x -= left;
 	w += left + right;
 	y -= top;

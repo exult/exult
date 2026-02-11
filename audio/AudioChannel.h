@@ -40,10 +40,10 @@ namespace Pentagram {
 		AudioSample* sample = nullptr;
 
 		// Info for sampling
-		uint32 frame_evenodd = 0;    // which buffer is 'frame0'
-		uint32 frame0_size   = 0;    // Size of the frame0 buffer in samples
-		uint32 frame1_size   = 0;    // Size of the frame1 buffer in samples
-		uint32 position = 0;    // Position in frame0 buffer in source samples
+		uint32 frame_evenodd    = 0;    // which buffer is 'frame0'
+		uint32 frame0_size      = 0;    // Size of the frame0 buffer in samples
+		uint32 frame1_size      = 0;    // Size of the frame1 buffer in samples
+		uint32 position         = 0;    // Position in frame0 buffer in source samples
 		uint32 overall_position = 0;    // Overall position of playback
 		int    lvol = 0, rvol = 0;      // 0-256
 		int    distance    = 0;         // 0 - 256
@@ -73,8 +73,8 @@ namespace Pentagram {
 		}
 
 		void playSample(
-				AudioSample* sample, int loop, int priority, bool paused,
-				uint32 pitch_shift, int lvol, int rvol, sint32 instance_id);
+				AudioSample* sample, int loop, int priority, bool paused, uint32 pitch_shift, int lvol, int rvol,
+				sint32 instance_id);
 		void resampleAndMix(sint16* stream, uint32 bytes);
 
 		bool isPlaying() const {
@@ -164,13 +164,11 @@ namespace Pentagram {
 				updateCoefficients();
 			}
 
-			CubicInterpolator(int a0, int a1, int a2, int a3)
-					: x0(a0), x1(a1), x2(a2), x3(a3) {
+			CubicInterpolator(int a0, int a1, int a2, int a3) : x0(a0), x1(a1), x2(a2), x3(a3) {
 				updateCoefficients();
 			}
 
-			CubicInterpolator(int a1, int a2, int a3)
-					: x0(2 * a1 - a2), x1(a1), x2(a2), x3(a3) {
+			CubicInterpolator(int a1, int a2, int a3) : x0(2 * a1 - a2), x1(a1), x2(a2), x3(a3) {
 				// We use a simple linear interpolation for x0
 				updateCoefficients();
 			}

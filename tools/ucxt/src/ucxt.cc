@@ -113,14 +113,12 @@ int main(int argc, char** argv) {
 	if (!uc.output_redirect().empty()) {
 		auto pOutputstream = U7open_out(uc.output_redirect().c_str(), false);
 		if (!pOutputstream) {
-			cout << "error. failed to open " << uc.output_redirect()
-				 << " for writing. exiting." << endl;
+			cout << "error. failed to open " << uc.output_redirect() << " for writing. exiting." << endl;
 			exit(1);
 		}
 		auto& outputstream = *pOutputstream;
 		if (outputstream.fail()) {
-			cout << "error. failed to open " << uc.output_redirect()
-				 << " for writing. exiting." << endl;
+			cout << "error. failed to open " << uc.output_redirect() << " for writing. exiting." << endl;
 			exit(1);
 		}
 		coutbuf = cout.rdbuf();
@@ -200,8 +198,7 @@ void open_usecode_file(UCData& uc, const Configuration& config) {
 	string       mucc_l;
 	string       mucc_c;
 
-	if (uc.options.game_bg() || uc.options.game_fov() || uc.options.game_si()
-		|| uc.options.game_ss() || uc.options.game_sib()) {
+	if (uc.options.game_bg() || uc.options.game_fov() || uc.options.game_si() || uc.options.game_ss() || uc.options.game_sib()) {
 		string game;
 		if (gamemanager) {
 			ModManager* basegame = nullptr;
@@ -209,8 +206,7 @@ void open_usecode_file(UCData& uc, const Configuration& config) {
 				basegame = gamemanager->get_bg();
 				game     = "BG";
 				if (basegame && basegame->have_expansion()) {
-					cout << "Failed to locate BG usecode file but found FOV."
-						 << endl;
+					cout << "Failed to locate BG usecode file but found FOV." << endl;
 					uc.options._game = uc.options.GAME_FOV;
 					game             = "FOV";
 				}
@@ -221,8 +217,7 @@ void open_usecode_file(UCData& uc, const Configuration& config) {
 				basegame = gamemanager->get_si();
 				game     = "SI";
 				if (basegame->have_expansion()) {
-					cout << "Failed to locate SI usecode file but found SS."
-						 << endl;
+					cout << "Failed to locate SI usecode file but found SS." << endl;
 					uc.options._game = uc.options.GAME_SS;
 					game             = "SS";
 				}
@@ -234,8 +229,7 @@ void open_usecode_file(UCData& uc, const Configuration& config) {
 				game     = "SI Beta";
 			}
 			if (!basegame) {
-				cout << "Failed to locate " << game << " usecode file. Exiting."
-					 << endl;
+				cout << "Failed to locate " << game << " usecode file. Exiting." << endl;
 				exit(1);
 			}
 			basegame->setup_game_paths();
@@ -249,9 +243,7 @@ void open_usecode_file(UCData& uc, const Configuration& config) {
 		} else {
 			mucc_l = mucc_sil;
 			mucc_c = mucc_sic;
-			game   = uc.options.game_si()    ? "SI"
-					 : uc.options.game_sib() ? "SI Beta"
-											 : "SS";
+			game   = uc.options.game_si() ? "SI" : uc.options.game_sib() ? "SI Beta" : "SS";
 		}
 		if (uc.options.game_bg() || uc.options.game_fov()) {
 			ucspecial = "usecode.bg";
@@ -377,35 +369,28 @@ void usage() {
 		 << "\t\t-nc\t- don't look for exult's .xml config file" << endl
 		 << "\t\t-v \t- turns on verbose output mode" << endl
 		 << "\t\t-ofile\t- output to the specified file" << endl
-		 << "\t\t-ifile\t- load the usecode file specified by the filename"
-		 << endl
+		 << "\t\t-ifile\t- load the usecode file specified by the filename" << endl
 		 << "\t\t-gfile\t- load global flag names from specified file" << endl
-		 << "\t\t-ro\t- output the raw opcodes in addition to the -f format"
-		 << endl
+		 << "\t\t-ro\t- output the raw opcodes in addition to the -f format" << endl
 		 << "\t\t-ac\t- output automatically generated comments" << endl
-		 << "\t\t-uc\t- output automatically generated 'useless' comments"
-		 << endl
+		 << "\t\t-uc\t- output automatically generated 'useless' comments" << endl
 		 << "\t\t-b\t- only do 'basic' optimisations" << endl
-		 << "\t\t-dbg\t- output debugging information if present in USECODE."
-		 << endl
-		 << "\t\t-ext32\t- 'convert' function to ext32 format if not already."
-		 << endl
+		 << "\t\t-dbg\t- output debugging information if present in USECODE." << endl
+		 << "\t\t-ext32\t- 'convert' function to ext32 format if not already." << endl
 		 << "\tGame Specifier Flags (only one of these):" << endl
 		 << "\t\t-bg\t- select the black gate usecode file" << endl
 		 << "\t\t-fov\t- select the forge of virtue usecode file" << endl
 		 << "\t\t-si\t- select the serpent isle usecode file" << endl
 		 << "\t\t-ss\t- select the silver seed usecode file" << endl
 		 << "\t\t-sib\t- select the serpent isle beta usecode file" << endl
-		 << "\t\t-u8\t- select the ultima 8/pagan usecode file (experimental)"
-		 << endl
+		 << "\t\t-u8\t- select the ultima 8/pagan usecode file (experimental)" << endl
 		 << "\tOutput Format Flags (only one of these):" << endl
 		 << "\t\t-fl\t- output using brief \"list\" format" << endl
 		 << "\t\t-fa\t- output using \"assembler\" format (default)" << endl
 		 << "\t\t-fs\t- output using \"exult script\" format" << endl
 		 << "\t\t-fz\t- output using \"exult script\" format" << endl
 		 << "\t\t-ftt\t- output using the translation table xml format" << endl
-		 << "\t\t-ff\t- outputs all flags referenced in the usecode file"
-		 << endl
+		 << "\t\t-ff\t- outputs all flags referenced in the usecode file" << endl
 		 << "\t\t\t  sorted both by \"flags within a function\" and" << endl
 		 << "\t\t\t  \"functions using flag\"" << endl;
 	exit(1);

@@ -63,7 +63,7 @@ public:
 };
 
 vector<One_note*>    Notebook_gump::notes;
-bool                 Notebook_gump::initialized = false;    // Set when read in.
+bool                 Notebook_gump::initialized           = false;    // Set when read in.
 bool                 Notebook_gump::initialized_auto_text = false;
 Notebook_gump*       Notebook_gump::instance              = nullptr;
 vector<Notebook_top> Notebook_gump::page_info;
@@ -88,7 +88,7 @@ class One_note {
 	int    day = 0, hour = 0, minute = 0;    // Game time when note was written.
 	int    tx = 0, ty = 0;                   // Tile coord. where written.
 	string text;                             // Text, 0-delimited.
-	int    gflag = -1;    // >=0 if created automatically when
+	int    gflag = -1;                       // >=0 if created automatically when
 	//   the global flag was set.
 	bool is_new = false;    // Newly created at cur. time/place.
 public:
@@ -114,9 +114,7 @@ public:
 		gflag = gf;
 	}
 
-	void set(
-			int d, int h, int m, int x, int y, const string& txt, int gf = -1,
-			bool isnew = false) {
+	void set(int d, int h, int m, int x, int y, const string& txt, int gf = -1, bool isnew = false) {
 		set_time(d, h, m);
 		set_loc(x, y);
 		set_text(txt);
@@ -124,9 +122,7 @@ public:
 		is_new = isnew;
 	}
 
-	One_note(
-			int d, int h, int m, int x, int y, const string& txt = "",
-			int gf = -1, bool isnew = false) {
+	One_note(int d, int h, int m, int x, int y, const string& txt = "", int gf = -1, bool isnew = false) {
 		set(d, h, m, x, y, txt, gf, isnew);
 	}
 
@@ -155,8 +151,7 @@ public:
 
 void One_note::write(ostream& out) {
 	out << "<note>" << endl;
-	out << "<time> " << day << ':' << hour << ':' << minute << " </time>"
-		<< endl;
+	out << "<time> " << day << ':' << hour << ':' << minute << " </time>" << endl;
 	out << "<place> " << tx << ':' << ty << " </place>" << endl;
 	if (gflag >= 0) {
 		out << "<gflag> " << gflag << " </gflag>" << endl;
@@ -175,11 +170,9 @@ void One_note::write(ostream& out) {
 inline TileRect Get_text_area(bool right, bool startnote) {
 	const int ninf = 12;    // Space for note info.
 	if (!startnote) {
-		return right ? TileRect(rpagex, pagey, 122, 130)
-					 : TileRect(lpagex, pagey, 122, 130);
+		return right ? TileRect(rpagex, pagey, 122, 130) : TileRect(lpagex, pagey, 122, 130);
 	} else {
-		return right ? TileRect(rpagex, pagey + ninf, 122, 130 - ninf)
-					 : TileRect(lpagex, pagey + ninf, 122, 130 - ninf);
+		return right ? TileRect(rpagex, pagey + ninf, 122, 130 - ninf) : TileRect(lpagex, pagey + ninf, 122, 130 - ninf);
 	}
 }
 
@@ -189,9 +182,7 @@ inline TileRect Get_text_area(bool right, bool startnote) {
 class Notebook_page_button : public Gump_button {
 	int leftright;    // 0=left, 1=right.
 public:
-	Notebook_page_button(Gump* par, int px, int py, int lr)
-			: Gump_button(par, lr ? RIGHTPAGE : LEFTPAGE, px, py),
-			  leftright(lr) {}
+	Notebook_page_button(Gump* par, int px, int py, int lr) : Gump_button(par, lr ? RIGHTPAGE : LEFTPAGE, px, py), leftright(lr) {}
 
 	// What to do when 'clicked':
 	bool activate(MouseButton button) override;
@@ -248,10 +239,8 @@ void Notebook_gump::clear() {
 void Notebook_gump::add_new(const string& text, int gflag) {
 	Game_clock*      clk  = gwin->get_clock();
 	const Tile_coord t    = gwin->get_main_actor()->get_tile();
-	auto*            note = new One_note(
-            clk->get_day(), clk->get_hour(), clk->get_minute(), t.tx, t.ty,
-            text, gflag);
-	note->is_new = true;
+	auto*            note = new One_note(clk->get_day(), clk->get_hour(), clk->get_minute(), t.tx, t.ty, text, gflag);
+	note->is_new          = true;
 	notes.push_back(note);
 }
 
@@ -259,8 +248,7 @@ void Notebook_gump::add_new(const string& text, int gflag) {
  *  Create notebook gump.
  */
 
-Notebook_gump::Notebook_gump()
-		: Gump(nullptr, EXULT_FLX_NOTEBOOK_SHP, SF_EXULT_FLX) {
+Notebook_gump::Notebook_gump() : Gump(nullptr, EXULT_FLX_NOTEBOOK_SHP, SF_EXULT_FLX) {
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	// on iOS the Notebook gump needs to be aligned with the top
 	set_pos(5, -2);
@@ -352,9 +340,7 @@ bool Notebook_gump::paint_page(
 			h -= 12;
 			ampm = Strings::pm();
 		}
-		snprintf(
-				buf, sizeof(buf), "%s %d, %02d:%02d%s", Strings::Day(),
-				note->day, h ? h : 12, note->minute, ampm);
+		snprintf(buf, sizeof(buf), "%s %d, %02d:%02d%s", Strings::Day(), note->day, h ? h : 12, note->minute, ampm);
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 		const int fontnum = 4;
 		const int yoffset = 0;
@@ -371,15 +357,12 @@ bool Notebook_gump::paint_page(
 		}
 		// Use bright green for automatic text.
 		gwin->get_win()->fill8(
-				sman->get_special_pixel(
-						note->gflag >= 0 ? POISON_PIXEL : CHARMED_PIXEL),
-				box.w, 1, x + box.x, y + box.y - 3);
+				sman->get_special_pixel(note->gflag >= 0 ? POISON_PIXEL : CHARMED_PIXEL), box.w, 1, x + box.x, y + box.y - 3);
 	}
 	const char* str = note->text.c_str() + offset;
 	cursor.offset -= offset;
 	const int endoff = sman->paint_text_box(
-			font, str, x + box.x, y + box.y, box.w, box.h, vlead, false, false,
-			-1, find_cursor ? &cursor : nullptr);
+			font, str, x + box.x, y + box.y, box.w, box.h, vlead, false, false, -1, find_cursor ? &cursor : nullptr);
 	cursor.offset += offset;
 	if (endoff > 0) {    // All painted?
 		// Value returned is height.
@@ -388,9 +371,7 @@ bool Notebook_gump::paint_page(
 		str += -endoff;
 	}
 	if (find_cursor && cursor.x >= 0) {
-		gwin->get_win()->fill8(
-				sman->get_special_pixel(POISON_PIXEL), 1,
-				sman->get_text_height(font), cursor.x - 1, cursor.y - 1);
+		gwin->get_win()->fill8(sman->get_special_pixel(POISON_PIXEL), 1, sman->get_text_height(font), cursor.x - 1, cursor.y - 1);
 		curpage = pagenum;
 	}
 	offset = str - note->text.c_str();    // Return offset past end.
@@ -451,12 +432,10 @@ Gump_button* Notebook_gump::on_button(
 	if (notenum < 0) {
 		return nullptr;
 	}
-	int       offset = page_info[topleft].offset;
-	TileRect  box    = Get_text_area(false, offset == 0);    // Left page.
-	One_note* note   = notes[notenum];
-	int       coff   = sman->find_cursor(
-            font, note->text.c_str() + offset, x + box.x, y + box.y, box.w,
-            box.h, mx, my, vlead);
+	int         offset = page_info[topleft].offset;
+	TileRect    box    = Get_text_area(false, offset == 0);    // Left page.
+	One_note*   note   = notes[notenum];
+	int         coff   = sman->find_cursor(font, note->text.c_str() + offset, x + box.x, y + box.y, box.w, box.h, mx, my, vlead);
 	SDL_Window* window = gwin->get_win()->get_screen_window();
 	if (coff >= 0) {    // Found it?
 		curpage       = topleft;
@@ -479,9 +458,7 @@ Gump_button* Notebook_gump::on_button(
 		box = Get_text_area(true, offset == 0);    // Right page.
 		box.shift(x, y);                           // Window area.
 		coff = box.has_point(mx, my)
-					   ? sman->find_cursor(
-								 font, note->text.c_str() + offset, box.x,
-								 box.y, box.w, box.h, mx, my, vlead)
+					   ? sman->find_cursor(font, note->text.c_str() + offset, box.x, box.y, box.w, box.h, mx, my, vlead)
 					   : -1;
 		if (coff >= 0) {    // Found it?
 			curpage       = curpage | 1;
@@ -524,15 +501,13 @@ void Notebook_gump::paint() {
 		note   = notes[notenum];
 		offset = 0;
 	}
-	if (topleft + 1
-		>= static_cast<int>(page_info.size())) {    // Store right-page info.
+	if (topleft + 1 >= static_cast<int>(page_info.size())) {    // Store right-page info.
 		page_info.resize(topleft + 2);
 	}
 	page_info[topleft + 1].notenum = notenum;
 	page_info[topleft + 1].offset  = offset;
 	// Paint right page.
-	if (paint_page(
-				Get_text_area(true, offset == 0), note, offset, topleft + 1)) {
+	if (paint_page(Get_text_area(true, offset == 0), note, offset, topleft + 1)) {
 		// Finished note?
 		if (notenum == static_cast<int>(notes.size()) - 1) {
 			return;    // No more.
@@ -617,9 +592,7 @@ void Notebook_gump::down_arrow() {
 	const int my      = cursor.y + ht + ht / 2;
 	const int notenum = page_info[curpage].notenum;
 	One_note* note    = notes[notenum];
-	const int coff    = sman->find_cursor(
-            font, note->text.c_str() + offset, box.x, box.y, box.w, box.h, mx,
-            my, vlead);
+	const int coff    = sman->find_cursor(font, note->text.c_str() + offset, box.x, box.y, box.w, box.h, mx, my, vlead);
 	if (coff >= 0) {    // Found it?
 		cursor.offset = offset + coff;
 		paint();
@@ -652,9 +625,7 @@ void Notebook_gump::up_arrow() {
 	const int mx   = box.x + updnx + 1;
 	const int my   = cursor.y - ht / 2;
 	One_note* note = notes[notenum];
-	const int coff = sman->find_cursor(
-			font, note->text.c_str() + offset, box.x, box.y, box.w, box.h, mx,
-			my, vlead);
+	const int coff = sman->find_cursor(font, note->text.c_str() + offset, box.x, box.y, box.w, box.h, mx, my, vlead);
 	if (coff >= 0) {    // Found it?
 		cursor.offset = offset + coff;
 		paint();
@@ -770,8 +741,7 @@ bool Notebook_gump::handle_kbd_event(void* vev) {
 		if (word_exceeds_line_length(test_text, cursor.offset + 1, curpage)) {
 			// Find the start of the current word
 			int word_start = cursor.offset;
-			while (word_start > 0 && test_text[word_start - 1] != ' '
-				   && test_text[word_start - 1] != '\n') {
+			while (word_start > 0 && test_text[word_start - 1] != ' ' && test_text[word_start - 1] != '\n') {
 				word_start--;
 			}
 
@@ -849,10 +819,8 @@ void Notebook_gump::add_new_with_line_breaks(const string& text, int gflag) {
 	const Tile_coord t   = gwin->get_main_actor()->get_tile();
 
 	// Create a new note
-	One_note* note = new One_note(
-			clk->get_day(), clk->get_hour(), clk->get_minute(), t.tx, t.ty, "",
-			gflag);
-	note->is_new = true;
+	One_note* note = new One_note(clk->get_day(), clk->get_hour(), clk->get_minute(), t.tx, t.ty, "", gflag);
+	note->is_new   = true;
 
 	// Use existing line breaking logic from One_note
 	note->add_text_with_line_breaks(text);
@@ -943,8 +911,7 @@ void Notebook_gump::read_auto_text_file(const char* filename) {
 	if (gwin->get_allow_autonotes()) {
 		initialized_auto_text     = true;
 		IFileDataSource notesfile = [&]() -> IFileDataSource {
-			if (is_system_path_defined("<PATCH>")
-				&& U7exists(PATCH_AUTONOTES)) {
+			if (is_system_path_defined("<PATCH>") && U7exists(PATCH_AUTONOTES)) {
 				cout << "Loading patch autonotes" << endl;
 				return IFileDataSource(PATCH_AUTONOTES, true);
 			}
@@ -970,9 +937,8 @@ void Notebook_gump::read_auto_text() {
 				reader.get_global_section_strings(auto_text);
 			}
 		} else {
-			const str_int_pair& resource
-					= game->get_resource("config/autonotes");
-			IExultDataSource notesfile(resource.str, resource.num);
+			const str_int_pair& resource = game->get_resource("config/autonotes");
+			IExultDataSource    notesfile(resource.str, resource.num);
 			if (notesfile.good()) {
 				cout << "Loading default autonotes" << endl;
 				Text_msg_file_reader reader(notesfile);
@@ -982,15 +948,13 @@ void Notebook_gump::read_auto_text() {
 	}
 }
 
-bool Notebook_gump::word_exceeds_line_length(
-		const string& text, int offset, int curpage) {
+bool Notebook_gump::word_exceeds_line_length(const string& text, int offset, int curpage) {
 	// Find the end of the current word.
 	int word_end = offset;
 
 	// Find the start of the current word.
 	int word_start = word_end;
-	while (word_start > 0 && text[word_start - 1] != ' '
-		   && text[word_start - 1] != '\n') {
+	while (word_start > 0 && text[word_start - 1] != ' ' && text[word_start - 1] != '\n') {
 		--word_start;
 	}
 
@@ -1016,24 +980,20 @@ bool Notebook_gump::word_exceeds_line_length(
 	int current_line_width = sman->get_text_width(font, current_line.c_str());
 
 	// Get the width of the word
-	int word_width = sman->get_text_width(
-			font, text.substr(word_start, word_length).c_str());
+	int word_width = sman->get_text_width(font, text.substr(word_start, word_length).c_str());
 
 	// Always treat words with trailing
 	// punctuation as if the punctuation weren't there
-	bool has_punct
-			= (word_length > 1 && ispunct(text[word_start + word_length - 1]));
-	int base_word_width = word_width;
+	bool has_punct       = (word_length > 1 && ispunct(text[word_start + word_length - 1]));
+	int  base_word_width = word_width;
 
 	if (has_punct) {
 		// Get just the word without the trailing punctuation
-		base_word_width = sman->get_text_width(
-				font, text.substr(word_start, word_length - 1).c_str());
+		base_word_width = sman->get_text_width(font, text.substr(word_start, word_length - 1).c_str());
 	}
 
 	// Use base_word_width for consistency with add_text_with_line_breaks
-	return current_line_width + (has_punct ? base_word_width : word_width)
-		   > box.w;
+	return current_line_width + (has_punct ? base_word_width : word_width) > box.w;
 }
 
 void One_note::add_text_with_line_breaks(const std::string& input) {
@@ -1083,9 +1043,8 @@ void One_note::add_text_with_line_breaks(const std::string& input) {
 				// Build up the part character by character until it's almost at
 				// max width
 				for (size_t i = 0; i < remaining_word.length(); ++i) {
-					std::string test_part = part + remaining_word[i];
-					int         test_width
-							= sman->get_text_width(font, test_part.c_str());
+					std::string test_part  = part + remaining_word[i];
+					int         test_width = sman->get_text_width(font, test_part.c_str());
 
 					if (test_width >= max_width) {
 						break;
@@ -1123,24 +1082,19 @@ void One_note::add_text_with_line_breaks(const std::string& input) {
 		}
 
 		// Check for punctuation at the end of the word
-		bool has_punct
-				= (word.length() > 1 && ispunct(word[word.length() - 1]));
-		int base_word_width = word_width;
+		bool has_punct       = (word.length() > 1 && ispunct(word[word.length() - 1]));
+		int  base_word_width = word_width;
 
 		if (has_punct) {
 			// Get just the word without the trailing punctuation
-			base_word_width = sman->get_text_width(
-					font, word.substr(0, word.length() - 1).c_str());
+			base_word_width = sman->get_text_width(font, word.substr(0, word.length() - 1).c_str());
 		}
 
 		// Space width (if needed)
-		int space_width
-				= current_line_width > 0 ? sman->get_text_width(font, " ") : 0;
+		int space_width = current_line_width > 0 ? sman->get_text_width(font, " ") : 0;
 
 		// Check if adding this word would exceed max width
-		if (current_line_width > 0
-			&& current_line_width + space_width + base_word_width
-					   >= max_width) {
+		if (current_line_width > 0 && current_line_width + space_width + base_word_width >= max_width) {
 			// Line would be too long, start a new line
 			this->text += current_line + "\n";
 			current_line       = word;

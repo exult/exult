@@ -108,57 +108,42 @@ private:
 	std::vector<OrderedSection> ordered_sections;
 	bool                        subtitles;
 	bool                        speech_enabled;
-	bool                        parse_scene_section(
-								   const std::string& content, std::vector<SceneCommand>& commands);
-	bool parse_text_section(const std::string& content, TextSection& section);
-	bool load_text_from_flx(int index, std::string& out_text);
-	SkipAction check_break();
-	void       play_flic_with_audio(
-				  const std::vector<SceneCommand>& commands,
-				  std::vector<int>&                audio_ids);
-	void show_scrolling_text(const TextSection& section);
-	void show_delay_text(const TextSection& section);
-	void show_text_section(
-			const TextSection& section, std::vector<int>& active_audio_ids);
-	void wait_for_audio_completion();
-	void finish_scene();
-	void start_audio_by_type(
-			const AudioCommand& cmd, std::vector<int>& audio_ids,
-			std::map<int, std::vector<int>>& command_audio_ids,
-			size_t                           command_index);
-	void stop_audio_by_type(
-			const AudioCommand& cmd, const std::vector<int>& command_ids);
-	AudioCommand parse_audio_command(
-			const std::string& type_str, const std::vector<std::string>& parts);
+	bool                        parse_scene_section(const std::string& content, std::vector<SceneCommand>& commands);
+	bool                        parse_text_section(const std::string& content, TextSection& section);
+	bool                        load_text_from_flx(int index, std::string& out_text);
+	SkipAction                  check_break();
+	void                        play_flic_with_audio(const std::vector<SceneCommand>& commands, std::vector<int>& audio_ids);
+	void                        show_scrolling_text(const TextSection& section);
+	void                        show_delay_text(const TextSection& section);
+	void                        show_text_section(const TextSection& section, std::vector<int>& active_audio_ids);
+	void                        wait_for_audio_completion();
+	void                        finish_scene();
+	void                        start_audio_by_type(
+								   const AudioCommand& cmd, std::vector<int>& audio_ids, std::map<int, std::vector<int>>& command_audio_ids,
+								   size_t command_index);
+	void             stop_audio_by_type(const AudioCommand& cmd, const std::vector<int>& command_ids);
+	AudioCommand     parse_audio_command(const std::string& type_str, const std::vector<std::string>& parts);
 	std::vector<int> active_audio_ids;
-	bool             load_subtitle_from_file(
-						int index, int line_number, std::string& out_text,
-						int& out_alignment);
-	void display_subtitle(const SubtitleCommand& cmd);
+	bool             load_subtitle_from_file(int index, int line_number, std::string& out_text, int& out_alignment);
+	void             display_subtitle(const SubtitleCommand& cmd);
 
 	std::vector<std::pair<SubtitleCommand, uint32>> active_subtitles;
 
 	struct ParsedTextLine {
 		std::string text;
-		int alignment;    // 0=left, 1=center, 2=left-right, 3=right-left
+		int         alignment;    // 0=left, 1=center, 2=left-right, 3=right-left
 	};
 
 	ParsedTextLine parse_text_formatting(const std::string& line);
-	int            calculate_text_x_position(
-					   int alignment, const std::string& text,
-					   const std::shared_ptr<Font>& font, int screen_center);
+	int calculate_text_x_position(int alignment, const std::string& text, const std::shared_ptr<Font>& font, int screen_center);
 	std::shared_ptr<Font> get_font_by_type(int font_type);
 	void                  load_palette_by_color(int color);
-	void                  show_single_text_page(
-							 const TextEntry& entry, const TextSection& section);
-	void process_section_content(
-			const std::string& section_name, const std::string& content);
-	int prev_palette = -1;
+	void                  show_single_text_page(const TextEntry& entry, const TextSection& section);
+	void                  process_section_content(const std::string& section_name, const std::string& content);
+	int                   prev_palette = -1;
 
 public:
-	ScenePlayer(
-			Game_window* gw, const std::string& scene_name, bool use_subtitles,
-			bool use_speech);
+	ScenePlayer(Game_window* gw, const std::string& scene_name, bool use_subtitles, bool use_speech);
 	~ScenePlayer();
 
 	bool scene_available() const;

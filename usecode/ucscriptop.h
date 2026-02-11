@@ -26,22 +26,20 @@
  */
 namespace Ucscript {
 	enum Ucscript_ops {
-		cont = 0x01,         // Continue without painting.
-		nop1 = 0x02,         // Doesn't seem to do anything; present in BG funs
-							 // 0x710, 0x714
-		reset     = 0x0a,    // Resets script ip.
-		repeat    = 0x0b,    // Loop(offset, cnt).
-		repeat2   = 0x0c,    // Loop(offset, cnt1, cnt2).
-		nop2      = 0x21,    // Not sure about this.
-		dont_halt = 0x23,    // Not right?
-		wait_while_near
-				= 0x24,    // wait_while_near(dist). Halt on opcode for as long
+		cont = 0x01,               // Continue without painting.
+		nop1 = 0x02,               // Doesn't seem to do anything; present in BG funs
+								   // 0x710, 0x714
+		reset           = 0x0a,    // Resets script ip.
+		repeat          = 0x0b,    // Loop(offset, cnt).
+		repeat2         = 0x0c,    // Loop(offset, cnt1, cnt2).
+		nop2            = 0x21,    // Not sure about this.
+		dont_halt       = 0x23,    // Not right?
+		wait_while_near = 0x24,    // wait_while_near(dist). Halt on opcode for as long
 		// as avatar is within dist tiles.
-		delay_ticks   = 0x27,    // Delay(ticks).
-		delay_minutes = 0x28,    // Delay(minutes).
-		delay_hours   = 0x29,    // Delay nn game hours.
-		wait_while_far
-				= 0x2b,    // wait_while_far(dist). Halt on opcode for as long
+		delay_ticks    = 0x27,    // Delay(ticks).
+		delay_minutes  = 0x28,    // Delay(minutes).
+		delay_hours    = 0x29,    // Delay nn game hours.
+		wait_while_far = 0x2b,    // wait_while_far(dist). Halt on opcode for as long
 		// as avatar is further than dist tiles.
 		finish         = 0x2c,    // Finish script if killed.
 		remove         = 0x2d,    // Remove item & halt.

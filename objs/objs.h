@@ -72,12 +72,11 @@ using Game_object_shared_vector = std::vector<Game_object_shared>;
  *  A game object is a shape from shapes.vga along with info. about its
  *  position within its chunk.
  */
-class Game_object : public ShapeID,
-					public std::enable_shared_from_this<Game_object> {
+class Game_object : public ShapeID, public std::enable_shared_from_this<Game_object> {
 protected:
-	static Game_object_shared editing;    // Obj. being edited by ExultStudio.
+	static Game_object_shared editing;            // Obj. being edited by ExultStudio.
 	Map_chunk*                chunk = nullptr;    // Chunk we're in, or nullptr.
-	unsigned char             tx, ty;    // (X,Y) of shape within chunk, or if
+	unsigned char             tx, ty;             // (X,Y) of shape within chunk, or if
 	//   in a container, coords. within
 	//   gump's rectangle.
 
@@ -96,9 +95,9 @@ public:
 private:
 	Game_object_set dependencies;    // Objects which must be painted before
 	//   this can be rendered.
-	Game_object_set      dependors;    // Objects which must be painted after.
-	static unsigned char rotate[8];    // For getting rotated frame #.
-	std::vector<Object_client*> clients;    // Notify when deleted.
+	Game_object_set             dependors;    // Objects which must be painted after.
+	static unsigned char        rotate[8];    // For getting rotated frame #.
+	std::vector<Object_client*> clients;      // Notify when deleted.
 public:
 	uint32 render_seq = 0;    // Render sequence #.
 	friend class T_Object_list<Game_object>;
@@ -107,11 +106,8 @@ public:
 	friend class T_Object_iterator_backwards<Game_object, Map_chunk*>;
 	friend class Map_chunk;
 
-	Game_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft = 0)
-			: ShapeID(shapenum, framenum), tx(tilex), ty(tiley), lift(lft),
-			  quality(0) {}
+	Game_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft = 0)
+			: ShapeID(shapenum, framenum), tx(tilex), ty(tiley), lift(lft), quality(0) {}
 
 	// Copy constructor.
 	Game_object(const Game_object& obj2) = delete;
@@ -164,10 +160,9 @@ public:
 		quality = q;
 	}
 
-	int get_quantity() const;    // Like # of coins.
-	int get_effective_obj_hp(
-			int weapon_shape = 0) const;    // hitpoints for non-NPCs
-	virtual int  get_obj_hp() const;        // hitpoints for non-NPCs
+	int          get_quantity() const;                                // Like # of coins.
+	int          get_effective_obj_hp(int weapon_shape = 0) const;    // hitpoints for non-NPCs
+	virtual int  get_obj_hp() const;                                  // hitpoints for non-NPCs
 	virtual void set_obj_hp(int hp);
 	int          get_volume() const;    // Get space taken.
 	// Add/remove to/from quantity.
@@ -261,36 +256,22 @@ public:
 
 	template <typename VecType, typename Cast>
 	static int find_nearby(
-			VecType& vec, const Tile_coord& pos, int shapenum, int delta,
-			int mask, int qual, int framenum, const Cast& obj_cast,
+			VecType& vec, const Tile_coord& pos, int shapenum, int delta, int mask, int qual, int framenum, const Cast& obj_cast,
 			bool exclude_okay_to_take = false);
 
-	static int find_nearby_actors(
-			Actor_vector& vec, const Tile_coord& pos, int shapenum, int delta,
-			int mask = 8);
+	static int find_nearby_actors(Actor_vector& vec, const Tile_coord& pos, int shapenum, int delta, int mask = 8);
 	static int find_nearby_eggs(
-			Egg_vector& vec, const Tile_coord& pos, int shapenum, int delta,
-			int qual = c_any_qual, int frnum = c_any_framenum);
+			Egg_vector& vec, const Tile_coord& pos, int shapenum, int delta, int qual = c_any_qual, int frnum = c_any_framenum);
 	static int find_nearby(
-			Game_object_vector& vec, const Tile_coord& pos, int shapenum,
-			int delta, int mask, int qual = c_any_qual,
+			Game_object_vector& vec, const Tile_coord& pos, int shapenum, int delta, int mask, int qual = c_any_qual,
 			int frnum = c_any_framenum, bool exclude_okay_to_take = false);
-	static void obj_vec_to_weak(
-			std::vector<Game_object_weak>& dest, Game_object_vector& src);
-	int find_nearby_actors(
-			Actor_vector& vec, int shapenum, int delta, int mask = 8) const;
-	int find_nearby_eggs(
-			Egg_vector& vec, int shapenum, int delta, int qual = c_any_qual,
-			int frnum = c_any_framenum) const;
-	int find_nearby(
-			Game_object_vector& vec, int shapenum, int delta, int mask,
-			int qual = c_any_qual, int framenum = c_any_framenum) const;
-	Game_object* find_closest(
-			Game_object_vector& vec, tcb::span<const int> shapenums,
-			int dist = 24);
-	static Game_object* find_closest(
-			const Tile_coord& pos, tcb::span<const int> shapenums,
-			int dist = 24);
+	static void obj_vec_to_weak(std::vector<Game_object_weak>& dest, Game_object_vector& src);
+	int         find_nearby_actors(Actor_vector& vec, int shapenum, int delta, int mask = 8) const;
+	int         find_nearby_eggs(Egg_vector& vec, int shapenum, int delta, int qual = c_any_qual, int frnum = c_any_framenum) const;
+	int         find_nearby(
+					Game_object_vector& vec, int shapenum, int delta, int mask, int qual = c_any_qual, int framenum = c_any_framenum) const;
+	Game_object*        find_closest(Game_object_vector& vec, tcb::span<const int> shapenums, int dist = 24);
+	static Game_object* find_closest(const Tile_coord& pos, tcb::span<const int> shapenums, int dist = 24);
 
 	Game_object* find_closest(tcb::span<const int> shapenums, int dist = 24) {
 		return find_closest(get_tile(), shapenums, dist);
@@ -300,24 +281,22 @@ public:
 		return find_closest({&shapenum, 1}, dist);
 	}
 
-	static Game_object* find_closest(
-			const Tile_coord& pos, int shapenum, int dist = 24) {
+	static Game_object* find_closest(const Tile_coord& pos, int shapenum, int dist = 24) {
 		return find_closest(pos, {&shapenum, 1}, dist);
 	}
 
 	TileRect get_footprint();    // Get tile footprint.
 	Block    get_block() const;
-	bool blocks(const Tile_coord& tile) const;    // Do we block a given tile?
+	bool     blocks(const Tile_coord& tile) const;    // Do we block a given tile?
 	// Find object blocking given tile.
 	static Game_object* find_blocking(Tile_coord tile);
 	static Game_object* find_door(Tile_coord tile);
-	bool               is_closed_door() const;    // Checking for a closed door.
-	const Game_object* get_outermost()
-			const;                         // Get top 'owner' of this object.
-	Game_object* get_outermost();          // Get top 'owner' of this object.
-	void         say(const char* text);    // Put text up by item.
-	void         say(int msgnum);          // Show given text msg.
-	void         say(int from, int to);    // Show random msg. from 'text.flx'.
+	bool                is_closed_door() const;    // Checking for a closed door.
+	const Game_object*  get_outermost() const;     // Get top 'owner' of this object.
+	Game_object*        get_outermost();           // Get top 'owner' of this object.
+	void                say(const char* text);     // Put text up by item.
+	void                say(int msgnum);           // Show given text msg.
+	void                say(int from, int to);     // Show random msg. from 'text.flx'.
 	// Render.
 	virtual void paint();
 	void         paint_outline(Pixel_colors pix);
@@ -458,51 +437,39 @@ public:
 	}
 
 	// Count contained objs.
-	virtual int count_objects(
-			int shapenum, int qual = c_any_qual,
-			int framenum = c_any_framenum) {
+	virtual int count_objects(int shapenum, int qual = c_any_qual, int framenum = c_any_framenum) {
 		ignore_unused_variable_warning(shapenum, qual, framenum);
 		return 0;
 	}
 
 	// Get contained objs.
-	virtual int get_objects(
-			Game_object_vector& vec, int shapenum, int qual, int framenum) {
+	virtual int get_objects(Game_object_vector& vec, int shapenum, int qual, int framenum) {
 		ignore_unused_variable_warning(vec, shapenum, qual, framenum);
 		return 0;
 	}
 
 	// Add an object.
-	virtual bool add(
-			Game_object* obj, bool dont_check = false, bool combine = false,
-			bool noset = false);
+	virtual bool add(Game_object* obj, bool dont_check = false, bool combine = false, bool noset = false);
 
 	// Add to NPC 'ready' spot.
-	virtual bool add_readied(
-			Game_object* obj, int index, bool dont_check = false,
-			bool force_pos = false, bool noset = false) {
+	virtual bool add_readied(Game_object* obj, int index, bool dont_check = false, bool force_pos = false, bool noset = false) {
 		ignore_unused_variable_warning(index, force_pos);
 		return add(obj, dont_check, false, noset);
 	}
 
 	virtual int add_quantity(
-			int delta, int shapenum, int qual = c_any_qual,
-			int framenum = c_any_framenum, bool dontcreate = false,
+			int delta, int shapenum, int qual = c_any_qual, int framenum = c_any_framenum, bool dontcreate = false,
 			bool temporary = false) {
-		ignore_unused_variable_warning(
-				shapenum, qual, framenum, dontcreate, temporary);
+		ignore_unused_variable_warning(shapenum, qual, framenum, dontcreate, temporary);
 		return delta;
 	}
 
-	virtual int create_quantity(
-			int delta, int shapenum, int qual, int framenum,
-			bool temporary = false) {
+	virtual int create_quantity(int delta, int shapenum, int qual, int framenum, bool temporary = false) {
 		ignore_unused_variable_warning(shapenum, qual, framenum, temporary);
 		return delta;
 	}
 
-	virtual int remove_quantity(
-			int delta, int shapenum, int qual, int framenum) {
+	virtual int remove_quantity(int delta, int shapenum, int qual, int framenum) {
 		ignore_unused_variable_warning(shapenum, qual, framenum);
 		return delta;
 	}
@@ -536,17 +503,13 @@ public:
 		return false;
 	}
 
-	virtual Game_object* find_weapon_ammo(
-			int weapon, int needed = 1, bool recursive = false) {
+	virtual Game_object* find_weapon_ammo(int weapon, int needed = 1, bool recursive = false) {
 		ignore_unused_variable_warning(weapon, needed, recursive);
 		return nullptr;
 	}
 
-	virtual int get_effective_range(
-			const Weapon_info* winf = nullptr, int reach = -1) const;
-	int get_weapon_ammo(
-			int weapon, int family, int proj, bool ranged,
-			Game_object** ammo = nullptr, bool recursive = false);
+	virtual int get_effective_range(const Weapon_info* winf = nullptr, int reach = -1) const;
+	int  get_weapon_ammo(int weapon, int family, int proj, bool ranged, Game_object** ammo = nullptr, bool recursive = false);
 	void play_hit_sfx(int weapon, bool ranged);
 
 	virtual bool try_to_hit(Game_object* attacker, int attval) {
@@ -555,19 +518,11 @@ public:
 	}
 
 	// Under attack.
-	virtual Game_object* attacked(
-			Game_object* attacker, int weapon_shape = -1, int ammo_shape = -1,
-			bool explosion = false);
+	virtual Game_object* attacked(Game_object* attacker, int weapon_shape = -1, int ammo_shape = -1, bool explosion = false);
 	// Hit-point algorithm:
-	virtual int figure_hit_points(
-			Game_object* attacker, int weapon_shape = -1, int ammo_shape = -1,
-			bool explosion = false);
-	virtual int apply_damage(
-			Game_object* attacker, int str, int wpoints, int type, int bias = 0,
-			int* exp = nullptr);
-	virtual int reduce_health(
-			int delta, int damage_type, Game_object* attacker = nullptr,
-			int* exp = nullptr);
+	virtual int figure_hit_points(Game_object* attacker, int weapon_shape = -1, int ammo_shape = -1, bool explosion = false);
+	virtual int apply_damage(Game_object* attacker, int str, int wpoints, int type, int bias = 0, int* exp = nullptr);
+	virtual int reduce_health(int delta, int damage_type, Game_object* attacker = nullptr, int* exp = nullptr);
 
 	// Write out to IREG file.
 	virtual void write_ireg(ODataSource* out) {
@@ -615,11 +570,8 @@ class Terrain_game_object : public Game_object {
 	ShapeID prev_flat;
 
 public:
-	Terrain_game_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft = 0)
-			: Game_object(shapenum, framenum, tilex, tiley, lft),
-			  prev_flat(ShapeID(12, 0)) {}
+	Terrain_game_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft = 0)
+			: Game_object(shapenum, framenum, tilex, tiley, lft), prev_flat(ShapeID(12, 0)) {}
 
 	~Terrain_game_object() override = default;
 
@@ -643,9 +595,7 @@ public:
  */
 class Ifix_game_object : public Game_object {
 public:
-	Ifix_game_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft = 0)
+	Ifix_game_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft = 0)
 			: Game_object(shapenum, framenum, tilex, tiley, lft) {}
 
 	~Ifix_game_object() override = default;

@@ -34,23 +34,21 @@ using Game_object_weak = std::weak_ptr<Game_object>;
  *  A class for executing usecode at a scheduled time:
  */
 class Usecode_script : public Time_sensitive {
-	static int             count;          // Total # of these around.
-	static Usecode_script* first;          // ->chain of all of them.
-	Usecode_script *       next, *prev;    // Next/prev. in global chain.
-	Game_object_weak       obj;            // From objval.
-	Usecode_value*         code;           // Array of code to execute.
-	int                    cnt;            // Length of arrval.
-	int                    i;              // Current index.
-	int                    frame_index;    // For taking steps.
-	bool started;         // Whether or not this script has started.
-	bool no_halt;         // 1 to ignore halt().
-	bool must_finish;     // 1 to finish before deleting.
-	bool killed_barks;    // 1 to prevent barks from showing.
-	int  delay;           // Used for restoring.
+	static int             count;           // Total # of these around.
+	static Usecode_script* first;           // ->chain of all of them.
+	Usecode_script *       next, *prev;     // Next/prev. in global chain.
+	Game_object_weak       obj;             // From objval.
+	Usecode_value*         code;            // Array of code to execute.
+	int                    cnt;             // Length of arrval.
+	int                    i;               // Current index.
+	int                    frame_index;     // For taking steps.
+	bool                   started;         // Whether or not this script has started.
+	bool                   no_halt;         // 1 to ignore halt().
+	bool                   must_finish;     // 1 to finish before deleting.
+	bool                   killed_barks;    // 1 to prevent barks from showing.
+	int                    delay;           // Used for restoring.
 	// For restore:
-	Usecode_script(
-			Game_object* item, Usecode_value* cd, int findex, int nhalt,
-			int del);
+	Usecode_script(Game_object* item, Usecode_value* cd, int findex, int nhalt, int del);
 
 public:
 	Usecode_script(Game_object* o, Usecode_value* cd = nullptr);
@@ -92,12 +90,10 @@ public:
 	}
 
 	// Find for given item.
-	static Usecode_script* find(
-			const Game_object* srch, Usecode_script* last_found = nullptr);
-	static Usecode_script* find_active(
-			const Game_object* srch, Usecode_script* last_found = nullptr);
-	static void terminate(const Game_object* obj);
-	static void clear();    // Delete all.
+	static Usecode_script* find(const Game_object* srch, Usecode_script* last_found = nullptr);
+	static Usecode_script* find_active(const Game_object* srch, Usecode_script* last_found = nullptr);
+	static void            terminate(const Game_object* obj);
+	static void            clear();    // Delete all.
 	// Remove all whose objs. are too far.
 	static void purge(const Tile_coord& spot, int dist);
 	void        handle_event(unsigned long curtime, uintptr udata) override;

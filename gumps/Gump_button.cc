@@ -117,8 +117,7 @@ bool Gump_button::mouse_drag(int mx, int my) {
 		return false;
 	}
 	// not pushed and not dragging
-	if (dragging == MouseButton::Unknown
-		&& pushed_button == MouseButton::Unknown) {
+	if (dragging == MouseButton::Unknown && pushed_button == MouseButton::Unknown) {
 		return false;
 	}
 	// Starting Drag save the dragging button
@@ -135,13 +134,13 @@ bool Gump_button::mouse_drag(int mx, int my) {
 	return true;
 }
 
- void Gump_button::set_pushed(MouseButton button) {
+void Gump_button::set_pushed(MouseButton button) {
 	gwin->add_dirty(get_rect());
 	pushed_button = button;
 	gwin->add_dirty(get_rect());
 }
 
- void Gump_button::set_pushed(bool set) {
+void Gump_button::set_pushed(bool set) {
 	gwin->add_dirty(get_rect());
 	pushed_button = set ? MouseButton::Left : MouseButton::Unknown;
 	gwin->add_dirty(get_rect());
@@ -158,8 +157,7 @@ void Basic_button::paint() {
 	local_to_screen(px, py);
 
 	auto     clipsave = ib8->SaveClip();
-	TileRect newclip  = clipsave.Rect().intersect(
-            TileRect(px, py, width - 1, height - 1));
+	TileRect newclip  = clipsave.Rect().intersect(TileRect(px, py, width - 1, height - 1));
 	ib8->set_clip(newclip.x, newclip.y, newclip.w, newclip.h);
 
 	// pushed edge
@@ -180,16 +178,13 @@ void Basic_button::paint() {
 	// Bevel
 
 	ib8->draw_beveled_box(
-			px + offset + 1, py + offset + 1, width - 2, height - 2, 1,
-			Background, BevelHighlight, BevelHighlight, BevelLowlight,
+			px + offset + 1, py + offset + 1, width - 2, height - 2, 1, Background, BevelHighlight, BevelHighlight, BevelLowlight,
 			BevelDoubleLowlight, BevelCornerBoth);
 
 	// Top Right Highlight 1
-	ib8->put_pixel8(
-			BevelDoubleHighlight, px + width + offset - 3, py + offset + 1);
+	ib8->put_pixel8(BevelDoubleHighlight, px + width + offset - 3, py + offset + 1);
 	// Top Right Highlight 2
-	ib8->put_pixel8(
-			BevelDoubleHighlight, px + width + offset - 2, py + offset + 2);
+	ib8->put_pixel8(BevelDoubleHighlight, px + width + offset - 2, py + offset + 2);
 
 	// Top Right Highlight on Background
 	ib8->put_pixel8(BGHighlight, px + width + offset - 3, py + offset + 2);
@@ -198,17 +193,14 @@ void Basic_button::paint() {
 	clipsave.Restore();
 
 	// Outer Border (black)
-	ib8->draw_beveled_box(
-			px, py, width, height, 1, 0xFF, OuterBorder, OuterBorderCorner,
-			OuterBorder, OuterBorderCorner);
+	ib8->draw_beveled_box(px, py, width, height, 1, 0xFF, OuterBorder, OuterBorderCorner, OuterBorder, OuterBorderCorner);
 }
 
 TileRect Basic_button::get_draw_area(std::optional<bool> pushed) const {
 	int offset = pushed.value_or(is_pushed()) ? 1 : 0;
 
 	// allows drawing on the lower bevel but not the outer border
-	return TileRect(
-			2 + offset, 2 + offset, width - 3 - offset, height - 3 - offset);
+	return TileRect(2 + offset, 2 + offset, width - 3 - offset, height - 3 - offset);
 }
 
 TileRect Basic_button::get_rect() const {

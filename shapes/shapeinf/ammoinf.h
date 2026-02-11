@@ -44,12 +44,12 @@ private:
 	unsigned char    powers;           // Same as for weapons.
 	unsigned char    damage_type;      // Same as for weapons.
 	bool             m_no_blocking;    // Can move through walls.
-	unsigned char    drop_type;     // What to do to missile when it hits/misses
-	bool             m_autohit;     // Weapon always hits.
-	bool             m_lucky;       // Easier to hit with.
-	bool             m_returns;     // Boomerang, magic axe.
-	bool             homing;        // For Energy Mist/Death Vortex.
-	bool             m_explodes;    // Burst arrows.
+	unsigned char    drop_type;        // What to do to missile when it hits/misses
+	bool             m_autohit;        // Weapon always hits.
+	bool             m_lucky;          // Easier to hit with.
+	bool             m_returns;        // Boomerang, magic axe.
+	bool             homing;           // For Energy Mist/Death Vortex.
+	bool             m_explodes;       // Burst arrows.
 public:
 	enum Drop_types {    // Determines what happens when the missile misses
 		drop_normally = 0,

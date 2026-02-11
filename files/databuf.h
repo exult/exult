@@ -54,7 +54,7 @@ public:
 	virtual void   read(std::string&, size_t) = 0;
 
 	std::unique_ptr<unsigned char[]> readN(size_t N, bool nullterminate = false) {
-		auto ptr = std::make_unique<unsigned char[]>(N + (nullterminate?1:0));
+		auto ptr = std::make_unique<unsigned char[]>(N + (nullterminate ? 1 : 0));
 		read(ptr.get(), N);
 		if (nullterminate) {
 			ptr[N] = 0;
@@ -62,22 +62,22 @@ public:
 		return ptr;
 	}
 
-
 	virtual std::unique_ptr<IDataSource> makeSource(size_t) = 0;
 
 	virtual void   seek(size_t)         = 0;
 	virtual void   skip(std::streamoff) = 0;
 	virtual size_t getSize() const      = 0;
 	virtual size_t getPos() const       = 0;
+
 	size_t getAvail() const {
 		const size_t msize = getSize();
 		const size_t mpos  = getPos();
 		return msize >= mpos ? msize - mpos : 0;
 	}
 
-	virtual bool eof() const = 0;
-	virtual bool fail() const= 0;
-	virtual bool bad() const = 0;
+	virtual bool eof() const  = 0;
+	virtual bool fail() const = 0;
+	virtual bool bad() const  = 0;
 
 	virtual bool good() const {
 		return !bad() && !fail() && !eof();
@@ -111,9 +111,7 @@ protected:
 	size_t        size;
 
 public:
-	explicit IStreamDataSource(std::istream* data_stream)
-			: in(data_stream),
-			  size(data_stream ? get_file_size(*data_stream) : 0) {}
+	explicit IStreamDataSource(std::istream* data_stream) : in(data_stream), size(data_stream ? get_file_size(*data_stream) : 0) {}
 
 	uint32 peek() final {
 		return in->peek();
@@ -169,9 +167,11 @@ public:
 	virtual bool fail() const final {
 		return in->fail();
 	}
+
 	virtual bool bad() const final {
 		return in->bad();
 	}
+
 	bool eof() const final {
 		in->get();
 		const bool ret = in->eof();
@@ -198,8 +198,7 @@ class IFileDataSource : public IStreamDataSource {
 	std::unique_ptr<std::istream> pFin;
 
 public:
-	explicit IFileDataSource(const File_spec& spec, bool is_text = false)
-			: IStreamDataSource(nullptr) {
+	explicit IFileDataSource(const File_spec& spec, bool is_text = false) : IStreamDataSource(nullptr) {
 		if (U7exists(spec.name)) {
 			pFin = U7open_in(spec.name.c_str(), is_text);
 		} else {
@@ -208,8 +207,10 @@ public:
 			auto& fin = *pFin;
 			fin.seekg(0);
 		}
-		in   = pFin.get();
-		if (in) size = get_file_size(*in);
+		in = pFin.get();
+		if (in) {
+			size = get_file_size(*in);
+		}
 	}
 };
 
@@ -225,18 +226,15 @@ protected:
 
 public:
 	IBufferDataView(const void* data, size_t len)
-			: buf(static_cast<const unsigned char*>(data)), buf_ptr(buf),
-			  size(len), failed(false) {
+			: buf(static_cast<const unsigned char*>(data)), buf_ptr(buf), size(len), failed(false) {
 		// data can be nullptr if len is also 0
 		assert(data != nullptr || len == 0);
 	}
 
-	IBufferDataView(const std::unique_ptr<unsigned char[]>& data_, size_t len)
-			: IBufferDataView(data_.get(), len) {}
+	IBufferDataView(const std::unique_ptr<unsigned char[]>& data_, size_t len) : IBufferDataView(data_.get(), len) {}
 
 	// Prevent use after free.
-	IBufferDataView(std::unique_ptr<unsigned char[]>&& data_, size_t len)
-			= delete;
+	IBufferDataView(std::unique_ptr<unsigned char[]>&& data_, size_t len) = delete;
 
 	uint32 peek() final {
 		if (getAvail() < 1) {
@@ -308,9 +306,7 @@ public:
 			if (available < len) {
 				failed = true;
 			}
-			s = std::string(
-					reinterpret_cast<const char*>(buf_ptr),
-					std::min<size_t>(available, len));
+			s = std::string(reinterpret_cast<const char*>(buf_ptr), std::min<size_t>(available, len));
 		}
 		buf_ptr += len;
 	}
@@ -368,12 +364,9 @@ protected:
 	std::unique_ptr<unsigned char[]> data;
 
 public:
-	IBufferDataSource(void* data_, size_t len)
-			: IBufferDataView(data_, len),
-			  data(static_cast<unsigned char*>(data_)) {}
+	IBufferDataSource(void* data_, size_t len) : IBufferDataView(data_, len), data(static_cast<unsigned char*>(data_)) {}
 
-	IBufferDataSource(std::unique_ptr<unsigned char[]> data_, size_t len)
-			: IBufferDataView(data_, len), data(std::move(data_)) {}
+	IBufferDataSource(std::unique_ptr<unsigned char[]> data_, size_t len) : IBufferDataView(data_, len), data(std::move(data_)) {}
 
 	auto steal_data(size_t& len) {
 		len = size;
@@ -387,24 +380,19 @@ public:
  */
 class IExultDataSource : public IBufferDataSource {
 public:
-	IExultDataSource(const File_spec& fname, int index)
-			: IBufferDataSource(nullptr, 0) {
+	IExultDataSource(const File_spec& fname, int index) : IBufferDataSource(nullptr, 0) {
 		const U7object obj(fname, index);
 		data = obj.retrieve(size);
 		buf = buf_ptr = data.get();
 	}
 
-	IExultDataSource(
-			const File_spec& fname0, const File_spec& fname1, int index)
-			: IBufferDataSource(nullptr, 0) {
+	IExultDataSource(const File_spec& fname0, const File_spec& fname1, int index) : IBufferDataSource(nullptr, 0) {
 		const U7multiobject obj(fname0, fname1, index);
 		data = obj.retrieve(size);
 		buf = buf_ptr = data.get();
 	}
 
-	IExultDataSource(
-			const File_spec& fname0, const File_spec& fname1,
-			const File_spec& fname2, int index)
+	IExultDataSource(const File_spec& fname0, const File_spec& fname1, const File_spec& fname2, int index)
 			: IBufferDataSource(nullptr, 0) {
 		const U7multiobject obj(fname0, fname1, fname2, index);
 		data = obj.retrieve(size);
@@ -520,8 +508,7 @@ class OFileDataSource : public OStreamDataSource {
 	std::unique_ptr<std::ostream> fout;
 
 public:
-	explicit OFileDataSource(const File_spec& spec, bool is_text = false)
-			: OStreamDataSource(nullptr) {
+	explicit OFileDataSource(const File_spec& spec, bool is_text = false) : OStreamDataSource(nullptr) {
 		fout = U7open_out(spec.name.c_str(), is_text);
 		out  = fout.get();
 	}
@@ -537,18 +524,15 @@ protected:
 	std::size_t    size;
 
 public:
-	OBufferDataSpan(void* data, size_t len)
-			: buf(static_cast<unsigned char*>(data)), buf_ptr(buf), size(len) {
+	OBufferDataSpan(void* data, size_t len) : buf(static_cast<unsigned char*>(data)), buf_ptr(buf), size(len) {
 		// data can be nullptr if len is also 0
 		assert(data != nullptr || len == 0);
 	}
 
-	OBufferDataSpan(const std::unique_ptr<unsigned char[]>& data_, size_t len)
-			: OBufferDataSpan(data_.get(), len) {}
+	OBufferDataSpan(const std::unique_ptr<unsigned char[]>& data_, size_t len) : OBufferDataSpan(data_.get(), len) {}
 
 	// Prevent use after free.
-	OBufferDataSpan(std::unique_ptr<unsigned char[]>&& data_, size_t len)
-			= delete;
+	OBufferDataSpan(std::unique_ptr<unsigned char[]>&& data_, size_t len) = delete;
 
 	void write1(uint32 val) final {
 		Write1(buf_ptr, val);
@@ -607,20 +591,15 @@ class OBufferDataSource : public OBufferDataSpan {
 	std::unique_ptr<unsigned char[]> data;
 
 public:
-	explicit OBufferDataSource(size_t len)
-			: OBufferDataSpan(nullptr, 0),
-			  data(std::make_unique<unsigned char[]>(len)) {
+	explicit OBufferDataSource(size_t len) : OBufferDataSpan(nullptr, 0), data(std::make_unique<unsigned char[]>(len)) {
 		assert(len != 0);
 		buf_ptr = buf = data.get();
 		size          = len;
 	}
 
-	OBufferDataSource(std::unique_ptr<unsigned char[]> data_, size_t len)
-			: OBufferDataSpan(data_, len), data(std::move(data_)) {}
+	OBufferDataSource(std::unique_ptr<unsigned char[]> data_, size_t len) : OBufferDataSpan(data_, len), data(std::move(data_)) {}
 
-	OBufferDataSource(void* data_, size_t len)
-			: OBufferDataSpan(data_, len),
-			  data(static_cast<unsigned char*>(data_)) {}
+	OBufferDataSource(void* data_, size_t len) : OBufferDataSpan(data_, len), data(static_cast<unsigned char*>(data_)) {}
 };
 
 inline void IDataSource::copy_to(ODataSource& dest) {

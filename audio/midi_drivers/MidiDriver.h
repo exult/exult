@@ -86,25 +86,22 @@ protected:
 public:
 	//! Midi driver desription
 	struct MidiDriverDesc {
-		MidiDriverDesc(const char* const n, std::shared_ptr<MidiDriver> (*c)())
-				: name(n), createInstance(c) {}
+		MidiDriverDesc(const char* const n, std::shared_ptr<MidiDriver> (*c)()) : name(n), createInstance(c) {}
 
-		const char* const name;    //!< Name of the driver (for config, dialogs)
-		std::shared_ptr<MidiDriver> (
-				*createInstance)();    //!< Pointer to a function
-									   //!< to create
-									   //!< an instance
+		const char* const name;                             //!< Name of the driver (for config, dialogs)
+		std::shared_ptr<MidiDriver> (*createInstance)();    //!< Pointer to a function
+															//!< to create
+															//!< an instance
 	};
 
 	enum TimbreLibraryType {
-		TIMBRE_LIBRARY_U7VOICE_AD = 0,    // U7Voice for Adlib
-		TIMBRE_LIBRARY_U7VOICE_MT = 1,    // U7Voice for MT32
-		TIMBRE_LIBRARY_XMIDI_AD   = 2,    // XMIDI.AD
-		TIMBRE_LIBRARY_XMIDI_MT   = 3,    // XMIDI.MT
-		TIMBRE_LIBRARY_SYX_FILE   = 4,    // .SYX
-		TIMBRE_LIBRARY_XMIDI_FILE
-				= 5,    // Timbre is Sysex Data in MID/RMI/XMI file
-		TIMBRE_LIBRARY_FMOPL_SETGM = 6    // Special to set FMOPL into GM mode
+		TIMBRE_LIBRARY_U7VOICE_AD  = 0,    // U7Voice for Adlib
+		TIMBRE_LIBRARY_U7VOICE_MT  = 1,    // U7Voice for MT32
+		TIMBRE_LIBRARY_XMIDI_AD    = 2,    // XMIDI.AD
+		TIMBRE_LIBRARY_XMIDI_MT    = 3,    // XMIDI.MT
+		TIMBRE_LIBRARY_SYX_FILE    = 4,    // .SYX
+		TIMBRE_LIBRARY_XMIDI_FILE  = 5,    // Timbre is Sysex Data in MID/RMI/XMI file
+		TIMBRE_LIBRARY_FMOPL_SETGM = 6     // Special to set FMOPL into GM mode
 	};
 
 	//! Initialize the driver
@@ -130,10 +127,7 @@ public:
 	//! \param repeat If true, endlessly repeat the track
 	//! \param activate If true, set the sequence as active
 	//! \param vol The volume level to start playing the sequence at (0-255)
-	virtual void startSequence(
-			int seq_num, XMidiEventList* list, bool repeat, int vol,
-			int branch = -1)
-			= 0;
+	virtual void startSequence(int seq_num, XMidiEventList* list, bool repeat, int vol, int branch = -1) = 0;
 
 	//! Finish playing a sequence, and free the data
 	//! \param seq_num The Sequence number to stop
@@ -252,11 +246,9 @@ public:
 	//! Create an Instance of a MidiDriver
 	//! \param driverName Name of the prefered driver to create
 	//! \return The created MidiDriver instance
-	static std::shared_ptr<MidiDriver> createInstance(
-			const std::string& desired_driver, uint32 sample_rate, bool stereo);
+	static std::shared_ptr<MidiDriver> createInstance(const std::string& desired_driver, uint32 sample_rate, bool stereo);
 
-	static std::vector<ConfigSetting_widget::Definition> get_midi_driver_settings(
-			const std::string& name);
+	static std::vector<ConfigSetting_widget::Definition> get_midi_driver_settings(const std::string& name);
 
 	virtual std::vector<ConfigSetting_widget::Definition> GetSettings() {
 		return {};
@@ -265,8 +257,7 @@ public:
 protected:
 	std::string Name;
 	//! Get a configuration setting for the midi driver
-	std::string getConfigSetting(
-			const std::string& name, const std::string& defaultval);
+	std::string getConfigSetting(const std::string& name, const std::string& defaultval);
 
 	MidiDriver(std::string&& name) : Name(std::move(name)) {}
 };

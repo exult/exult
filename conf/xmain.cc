@@ -69,20 +69,17 @@ void test1() {
 
 	const std::string test_device("config/audio/midi/device");
 	config->value(test_device, n, -1);
-	cout << "Returned from reference, \"" << test_device << "\". Got '" << n
-		 << "'" << endl;
+	cout << "Returned from reference, \"" << test_device << "\". Got '" << n << "'" << endl;
 	assert(n == 5);
 
 	const std::string test_enabled("config/audio/midi/enabled");
 	config->value(test_enabled, r, "--nil--");
-	cout << "Returned from reference, \"" << test_enabled << "\". Got '" << r
-		 << "'" << endl;
+	cout << "Returned from reference, \"" << test_enabled << "\". Got '" << r << "'" << endl;
 	assert(r == "yes");
 
 	const std::string test_spaces("config/disk/u7path_with_spaces");
 	config->value(test_spaces, r, "--nil--");
-	cout << "Returned from reference, \"" << test_spaces << "\". Got '" << r
-		 << "'" << endl;
+	cout << "Returned from reference, \"" << test_spaces << "\". Got '" << r << "'" << endl;
 	assert(r == "d:\\ultima series\\ultima vii - the serpent isle");
 
 	config->set("config/something/something/else", "wibble", false);

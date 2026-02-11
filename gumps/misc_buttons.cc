@@ -35,8 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /*
  *  A checkmark for closing its parent:
  */
-Checkmark_button::Checkmark_button(Gump* par, int px, int py)
-		: Gump_button(par, game->get_shape("gumps/check"), px, py) {}
+Checkmark_button::Checkmark_button(Gump* par, int px, int py) : Gump_button(par, game->get_shape("gumps/check"), px, py) {}
 
 /*
  *  Handle click on a 'checkmark'.
@@ -55,8 +54,7 @@ bool Checkmark_button::activate(MouseButton button) {
  *  A 'heart' button for bringing up stats.
  */
 
-Heart_button::Heart_button(Gump* par, int px, int py)
-		: Gump_button(par, game->get_shape("gumps/heart"), px, py) {}
+Heart_button::Heart_button(Gump* par, int px, int py) : Gump_button(par, game->get_shape("gumps/heart"), px, py) {}
 
 /*
  *  Handle click on a heart.
@@ -66,8 +64,7 @@ bool Heart_button::activate(MouseButton button) {
 	if (button != MouseButton::Left) {
 		return false;
 	}
-	gumpman->add_gump(
-			parent->get_container(), game->get_shape("gumps/statsdisplay"));
+	gumpman->add_gump(parent->get_container(), game->get_shape("gumps/statsdisplay"));
 	return true;
 }
 
@@ -75,8 +72,7 @@ bool Heart_button::activate(MouseButton button) {
  *  A diskette for bringing up the 'save' box.
  */
 
-Disk_button::Disk_button(Gump* par, int px, int py)
-		: Gump_button(par, game->get_shape("gumps/disk"), px, py) {}
+Disk_button::Disk_button(Gump* par, int px, int py) : Gump_button(par, game->get_shape("gumps/disk"), px, py) {}
 
 /*
  *  Handle click on a diskette.
@@ -96,8 +92,7 @@ bool Disk_button::activate(MouseButton button) {
  *  The combat toggle button.
  */
 
-Combat_button::Combat_button(Gump* par, int px, int py)
-		: Gump_button(par, game->get_shape("gumps/combat"), px, py) {
+Combat_button::Combat_button(Gump* par, int px, int py) : Gump_button(par, game->get_shape("gumps/combat"), px, py) {
 	set_pushed(gwin->in_combat());
 }
 
@@ -128,8 +123,7 @@ void Combat_button::paint() {
  *  The halo button.
  */
 
-Halo_button::Halo_button(Gump* par, int px, int py, Actor* a)
-		: Gump_button(par, game->get_shape("gumps/halo"), px, py), actor(a) {
+Halo_button::Halo_button(Gump* par, int px, int py, Actor* a) : Gump_button(par, game->get_shape("gumps/halo"), px, py), actor(a) {
 	set_pushed(actor->is_combat_protected());
 }
 
@@ -166,8 +160,7 @@ bool Halo_button::activate(MouseButton button) {
  */
 
 Combat_mode_button::Combat_mode_button(Gump* par, int px, int py, Actor* a)
-		: Gump_button(par, game->get_shape("gumps/combatmode"), px, py),
-		  actor(a) {
+		: Gump_button(par, game->get_shape("gumps/combatmode"), px, py), actor(a) {
 	set_frame(static_cast<int>(actor->get_attack_mode()));
 }
 
@@ -183,8 +176,7 @@ bool Combat_mode_button::activate(MouseButton button) {
 	const int nframes = actor == gwin->get_main_actor() ? 10 : 9;
 	set_frame((get_framenum() + 1) % nframes);
 	// Flag that player set the mode.
-	actor->set_attack_mode(
-			static_cast<Actor::Attack_mode>(get_framenum()), true);
+	actor->set_attack_mode(static_cast<Actor::Attack_mode>(get_framenum()), true);
 	paint();
 	gwin->set_painted();
 	return true;

@@ -34,8 +34,7 @@
 #endif
 constexpr const uint32 UCSYMTBL_MAGIC0 = 0xffffffffu;
 constexpr const uint32 UCSYMTBL_MAGIC1
-		= (static_cast<uint32>('U') << 24) + (static_cast<uint32>('C') << 16)
-		  + (static_cast<uint32>('S') << 8) + 'Y';
+		= (static_cast<uint32>('U') << 24) + (static_cast<uint32>('C') << 16) + (static_cast<uint32>('S') << 8) + 'Y';
 #ifdef __clang__
 #	pragma GCC diagnostic pop
 #endif
@@ -63,8 +62,7 @@ private:
 	int         value;    // Function #.
 	int         extra;    // Extra symbol info.
 public:
-	Usecode_symbol(const char* nm, Symbol_kind k, int v, int e = -1)
-			: name(nm), kind(k), value(v), extra(e) {}
+	Usecode_symbol(const char* nm, Symbol_kind k, int v, int e = -1) : name(nm), kind(k), value(v), extra(e) {}
 
 	virtual ~Usecode_symbol() = default;
 
@@ -105,10 +103,7 @@ private:
 	void             setup_class_names(int start = 0);
 
 public:
-	Usecode_scope_symbol(
-			const char* nm = "_usecode_", Symbol_kind k = table_scope,
-			int v = -1)
-			: Usecode_symbol(nm, k, v) {}
+	Usecode_scope_symbol(const char* nm = "_usecode_", Symbol_kind k = table_scope, int v = -1) : Usecode_symbol(nm, k, v) {}
 
 	~Usecode_scope_symbol() override;
 	void            read(std::istream& in);
@@ -139,17 +134,14 @@ class Usecode_class_symbol : public Usecode_scope_symbol {
 	Ints_vector methods;     // List of method usecode #'s.
 	int         num_vars;    // # of class variables.
 public:
-	Usecode_class_symbol(const char* nm, Symbol_kind k, int v, int nvars = 0)
-			: Usecode_scope_symbol(nm, k, v), num_vars(nvars) {}
+	Usecode_class_symbol(const char* nm, Symbol_kind k, int v, int nvars = 0) : Usecode_scope_symbol(nm, k, v), num_vars(nvars) {}
 
 	void add_method_num(int val) {
 		methods.push_back(val);
 	}
 
 	int get_method_id(int i) {
-		return (i >= 0 && static_cast<unsigned>(i) < methods.size())
-					   ? methods[i]
-					   : -1;
+		return (i >= 0 && static_cast<unsigned>(i) < methods.size()) ? methods[i] : -1;
 	}
 
 	int get_num_vars() {

@@ -38,11 +38,9 @@ Ammo_info Ammo_info::default_info;
 const Ammo_info* Ammo_info::get_default() {
 	if (default_info.family_shape == 0) {
 		default_info.family_shape = default_info.sprite = -1;
-		default_info.damage = default_info.powers = default_info.damage_type
-				= default_info.drop_type          = 0;
-		default_info.m_no_blocking                = default_info.m_autohit
-				= default_info.m_lucky            = default_info.m_returns
-				= default_info.homing = default_info.m_explodes = false;
+		default_info.damage = default_info.powers = default_info.damage_type = default_info.drop_type = 0;
+		default_info.m_no_blocking = default_info.m_autohit = default_info.m_lucky = default_info.m_returns = default_info.homing
+				= default_info.m_explodes                                                                   = false;
 	}
 	return &default_info;
 }
@@ -89,9 +87,9 @@ bool Ammo_info::read(
 		set_invalid(true);
 		return true;
 	}
-	family_shape = little_endian::Read2(ptr);
-	sprite       = little_endian::Read2(ptr);    // How the missile looks like
-	damage       = Read1(ptr);
+	family_shape               = little_endian::Read2(ptr);
+	sprite                     = little_endian::Read2(ptr);    // How the missile looks like
+	damage                     = Read1(ptr);
 	const unsigned char flags0 = Read1(ptr);
 	m_lucky                    = ((flags0) & 1) != 0;
 	m_autohit                  = ((flags0 >> 1) & 1) != 0;

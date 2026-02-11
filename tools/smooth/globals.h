@@ -68,8 +68,7 @@ EXTERN glob_statics g_statics;
 
 typedef Uint32 colour_hex;
 
-typedef colour_hex (*pfnPluginApply)(
-		colour_hex ret_col, glob_variables* g_variables);
+typedef colour_hex (*pfnPluginApply)(colour_hex ret_col, glob_variables* g_variables);
 
 typedef struct pacman {
 	struct pacman* next;

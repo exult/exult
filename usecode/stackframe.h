@@ -33,9 +33,7 @@ using Game_object_shared = std::shared_ptr<Game_object>;
 
 class Stack_frame {
 public:
-	Stack_frame(
-			Usecode_function* fun, int event, Game_object* caller, int chain,
-			int depth);
+	Stack_frame(Usecode_function* fun, int event, Game_object* caller, int chain, int depth);
 	~Stack_frame();
 
 	Usecode_function* function;

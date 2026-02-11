@@ -37,46 +37,39 @@
 
 template <class Serial>
 void Stack_frame_io(
-		Serial& io, int& functionid, int& ip, int& call_chain, int& call_depth,
-		int& eventid, int& caller_item, int& num_args, int& num_vars) {
+		Serial& io, int& functionid, int& ip, int& call_chain, int& call_depth, int& eventid, int& caller_item, int& num_args,
+		int& num_vars) {
 	auto c = static_cast<unsigned char>(Exult_server::dbg_stackframe);
-	io << c << functionid << ip << call_chain << call_depth << eventid
-	   << caller_item << num_args << num_vars;
+	io << c << functionid << ip << call_chain << call_depth << eventid << caller_item << num_args << num_vars;
 	// locals!
 }
 
 int Stack_frame_out(
 		int fd,    // Socket.
-		int functionid, int ip, int call_chain, int call_depth, int eventid,
-		int caller_item, int num_args, int num_vars, Usecode_value* locals) {
+		int functionid, int ip, int call_chain, int call_depth, int eventid, int caller_item, int num_args, int num_vars,
+		Usecode_value* locals) {
 	static unsigned char buf[Exult_server::maxlength];
 	unsigned char*       ptr = &buf[0];
 	Serial_out           io(ptr);
-	Stack_frame_io<Serial_out>(
-			io, functionid, ip, call_chain, call_depth, eventid, caller_item,
-			num_args, num_vars);
+	Stack_frame_io<Serial_out>(io, functionid, ip, call_chain, call_depth, eventid, caller_item, num_args, num_vars);
 	OBufferDataSpan ds(buf, Exult_server::maxlength);
 	ds.seek(ptr - buf);
 	for (int i = 0; i < num_args + num_vars; i++) {
 		(void)locals[i].save(&ds);
 	}
 
-	return Exult_server::Send_data(
-			fd, Exult_server::usecode_debugging, buf, ds.getPos());
+	return Exult_server::Send_data(fd, Exult_server::usecode_debugging, buf, ds.getPos());
 	// locals!
 }
 
 bool Stack_frame_in(
 		const unsigned char* data,       // Data that was read.
 		int                  datalen,    // Length of data.
-		int& functionid, int& ip, int& call_chain, int& call_depth,
-		int& eventid, int& caller_item, int& num_args, int& num_vars,
+		int& functionid, int& ip, int& call_chain, int& call_depth, int& eventid, int& caller_item, int& num_args, int& num_vars,
 		Usecode_value*& locals) {
 	const unsigned char* ptr = data;
 	Serial_in            io(ptr);
-	Stack_frame_io<Serial_in>(
-			io, functionid, ip, call_chain, call_depth, eventid, caller_item,
-			num_args, num_vars);
+	Stack_frame_io<Serial_in>(io, functionid, ip, call_chain, call_depth, eventid, caller_item, num_args, num_vars);
 
 	IBufferDataView ds(data, datalen);
 	ds.seek(ptr - data);

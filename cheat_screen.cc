@@ -61,13 +61,11 @@ static const SDL_MouseID EXSDL_TOUCH_MOUSEID = SDL_TOUCH_MOUSEID;
 #	pragma GCC diagnostic pop
 #endif
 
-const char* CheatScreen::schedules[33] = {
-		"Combat",    "Hor. Pace",  "Ver. Pace",  "Talk",  "Dance",     "Eat",
-		"Farm",      "Tend Shop",  "Miner",      "Hound", "Stand",     "Loiter",
-		"Wander",    "Blacksmith", "Sleep",      "Wait",  "Major Sit", "Graze",
-		"Bake",      "Sew",        "Shy",        "Lab",   "Thief",     "Waiter",
-		"Special",   "Kid Games",  "Eat at Inn", "Duel",  "Preach",    "Patrol",
-		"Desk Work", "Follow Avt", "Move2Sched"};
+const char* CheatScreen::schedules[33]
+		= {"Combat", "Hor. Pace", "Ver. Pace", "Talk",      "Dance",      "Eat",       "Farm",    "Tend Shop", "Miner",
+		   "Hound",  "Stand",     "Loiter",    "Wander",    "Blacksmith", "Sleep",     "Wait",    "Major Sit", "Graze",
+		   "Bake",   "Sew",       "Shy",       "Lab",       "Thief",      "Waiter",    "Special", "Kid Games", "Eat at Inn",
+		   "Duel",   "Preach",    "Patrol",    "Desk Work", "Follow Avt", "Move2Sched"};
 
 const char* CheatScreen::flag_names[64] = {
 		"invisible",    // 0x00
@@ -162,8 +160,7 @@ void CheatScreen::show_screen() {
 	gwin                                 = Game_window::get_instance();
 	ibuf                                 = gwin->get_win()->get_ib8();
 	const str_int_pair& pal_tuple_static = game->get_resource("palettes/0");
-	const str_int_pair& pal_tuple_patch
-			= game->get_resource("palettes/patch/0");
+	const str_int_pair& pal_tuple_patch  = game->get_resource("palettes/patch/0");
 	pal.load(pal_tuple_static.str, pal_tuple_patch.str, pal_tuple_static.num);
 
 	// init fontcolor transform table, default does nothing
@@ -279,25 +276,19 @@ void CheatScreen::SharedPrompt() {
 	const int promptmes = maxy - 9;
 	const int offsetx   = 0;
 #endif
-	font->paint_text_fixedwidth(
-			ibuf, "Select->", offsetx, prompt, 8, fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, "Select->", offsetx, prompt, 8, fontcolor.colors);
 
 	// Special handling for arrows when not doing text input
 	const char* input = state.input;
-	if (state.GetMode() < CP_ChooseNPC && !input[1]
-		&& (*input == '<' || *input == '>' || *input == '^' || *input == 'V')) {
+	if (state.GetMode() < CP_ChooseNPC && !input[1] && (*input == '<' || *input == '>' || *input == '^' || *input == 'V')) {
 		PaintArrow(64 + offsetx, prompt, *input);
 		input = " ";
 	}
 	if (input && std::strlen(input)) {
-		font->paint_text_fixedwidth(
-				ibuf, input, 64 + offsetx, prompt, 8, fontcolor.colors);
-		font->paint_text_fixedwidth(
-				ibuf, "_", 64 + offsetx + int(std::strlen(input)) * 8, prompt,
-				8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, input, 64 + offsetx, prompt, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "_", 64 + offsetx + int(std::strlen(input)) * 8, prompt, 8, fontcolor.colors);
 	} else {
-		font->paint_text_fixedwidth(
-				ibuf, "_", 64 + offsetx, prompt, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "_", 64 + offsetx, prompt, 8, fontcolor.colors);
 	}
 	// Clear the input
 	if (state.GetMode() < CP_ChooseNPC) {
@@ -308,252 +299,170 @@ void CheatScreen::SharedPrompt() {
 	default:
 
 	case CP_Command:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Command.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Command.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_HitKey:
-		font->paint_text_fixedwidth(
-				ibuf, "Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_NotAvail:
-		font->paint_text_fixedwidth(
-				ibuf, "Not yet available. Hit a key.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Not yet available. Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_InvalidNPC:
-		font->paint_text_fixedwidth(
-				ibuf, "Invalid NPC. Hit a key", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Invalid NPC. Hit a key", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_InvalidCom:
-		font->paint_text_fixedwidth(
-				ibuf, "Invalid Command. Hit a key.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Invalid Command. Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_Canceled:
-		font->paint_text_fixedwidth(
-				ibuf, "Canceled. Hit a key.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Canceled. Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_ClockSet:
-		font->paint_text_fixedwidth(
-				ibuf, "Clock Set. Hit a key.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Clock Set. Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_InvalidTime:
-		font->paint_text_fixedwidth(
-				ibuf, "Invalid Time. Hit a key.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Invalid Time. Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_InvalidShape:
-		font->paint_text_fixedwidth(
-				ibuf, "Invalid Shape. Hit a key.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Invalid Shape. Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_InvalidValue:
-		font->paint_text_fixedwidth(
-				ibuf, "Invalid Value. Hit a key.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Invalid Value. Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_Created:
-		font->paint_text_fixedwidth(
-				ibuf, "Item Created. Hit a key.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Item Created. Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_ShapeSet:
-		font->paint_text_fixedwidth(
-				ibuf, "Shape Set. Hit a key.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Shape Set. Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_ValueSet:
-		font->paint_text_fixedwidth(
-				ibuf, "Clock Set. Hit a key.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Clock Set. Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_NameSet:
-		font->paint_text_fixedwidth(
-				ibuf, "Name Changed. Hit a key.", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Name Changed. Hit a key.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_WrongShapeFile:
-		font->paint_text_fixedwidth(
-				ibuf, "Wrong shape file. Must be SHAPES.VGA.", offsetx,
-				promptmes, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Wrong shape file. Must be SHAPES.VGA.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_ChooseNPC:
-		font->paint_text_fixedwidth(
-				ibuf, "Which NPC? (ESC to cancel.)", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Which NPC? (ESC to cancel.)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_EnterValue:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Value. (ESC to cancel.)", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Value. (ESC to cancel.)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_CustomValue:
 		if (state.custom_prompt) {
-			font->paint_text_fixedwidth(
-					ibuf, state.custom_prompt, offsetx, promptmes, 8,
-					fontcolor.colors);
+			font->paint_text_fixedwidth(ibuf, state.custom_prompt, offsetx, promptmes, 8, fontcolor.colors);
 		}
 		break;
 
 	case CP_EnterValueNoCancel:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Value.", offsetx, promptmes, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Value.", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_Minute:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Minute. (ESC to cancel.)", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Minute. (ESC to cancel.)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_Hour:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Hour. (ESC to cancel.)", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Hour. (ESC to cancel.)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_Day:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Day. (ESC to cancel.)", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Day. (ESC to cancel.)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_Shape:
 		snprintf(
-				buf, std::size(buf),
-				"Enter Shape Max %i (B=Browse or ESC=Cancel)",
-				Shape_manager::get_instance()->get_shapes().get_num_shapes()
-						- 1);
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
+				buf, std::size(buf), "Enter Shape Max %i (B=Browse or ESC=Cancel)",
+				Shape_manager::get_instance()->get_shapes().get_num_shapes() - 1);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_Activity:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Activity 0-31. (ESC to cancel.)", offsetx,
-				promptmes, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Activity 0-31. (ESC to cancel.)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_XCoord:
-		snprintf(
-				buf, sizeof(buf), "Enter X Coord. Max %i (ESC to cancel)",
-				c_num_tiles);
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
+		snprintf(buf, sizeof(buf), "Enter X Coord. Max %i (ESC to cancel)", c_num_tiles);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_YCoord:
-		snprintf(
-				buf, sizeof(buf), "Enter Y Coord. Max %i (ESC to cancel)",
-				c_num_tiles);
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
+		snprintf(buf, sizeof(buf), "Enter Y Coord. Max %i (ESC to cancel)", c_num_tiles);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_Lift:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Lift. (ESC to cancel)", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Lift. (ESC to cancel)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_GFlagNum: {
-		snprintf(
-				buf, sizeof(buf), "Enter Global Flag 0-%zu. (ESC to cancel)",
-				Usecode_machine::last_gflag);
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
+		snprintf(buf, sizeof(buf), "Enter Global Flag 0-%zu. (ESC to cancel)", Usecode_machine::last_gflag);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
 		break;
 	}
 
 	case CP_NFlagNum:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter NPC Flag 0-63. (ESC to cancel)", offsetx,
-				promptmes, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter NPC Flag 0-63. (ESC to cancel)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_TempNum:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Temperature 0-63. (ESC to cancel)", offsetx,
-				promptmes, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Temperature 0-63. (ESC to cancel)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_NLatitude:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Latitude. Max 113 (ESC to cancel)", offsetx,
-				promptmes, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Latitude. Max 113 (ESC to cancel)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_SLatitude:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Latitude. Max 193 (ESC to cancel)", offsetx,
-				promptmes, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Latitude. Max 193 (ESC to cancel)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_WLongitude:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Longitude. Max 93 (ESC to cancel)", offsetx,
-				promptmes, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Longitude. Max 93 (ESC to cancel)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_ELongitude:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter Longitude. Max 213 (ESC to cancel)", offsetx,
-				promptmes, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter Longitude. Max 213 (ESC to cancel)", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_Name:
-		font->paint_text_fixedwidth(
-				ibuf, "Enter a new Name...", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Enter a new Name...", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_NorthSouth:
-		font->paint_text_fixedwidth(
-				ibuf, "Latitude [N]orth or [S]outh?", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Latitude [N]orth or [S]outh?", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_WestEast:
-		font->paint_text_fixedwidth(
-				ibuf, "Longitude [W]est or [E]ast?", offsetx, promptmes, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Longitude [W]est or [E]ast?", offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_HexXCoord:
-		snprintf(
-				buf, sizeof(buf), "Enter X Coord. Max %04x (ESC to cancel)",
-				c_num_tiles);
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
+		snprintf(buf, sizeof(buf), "Enter X Coord. Max %04x (ESC to cancel)", c_num_tiles);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
 		break;
 
 	case CP_HexYCoord:
-		snprintf(
-				buf, sizeof(buf), "Enter Y Coord. Max %04x (ESC to cancel)",
-				c_num_tiles);
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
+		snprintf(buf, sizeof(buf), "Enter Y Coord. Max %04x (ESC to cancel)", c_num_tiles);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, promptmes, 8, fontcolor.colors);
 		break;
 	}
 }
@@ -568,9 +477,8 @@ static void resizeline(float& axis1, float delta1, float& axis2) {
 
 bool CheatScreen::SharedInput() {
 	SDL_Event     event;
-	SDL_Renderer* renderer
-			= SDL_GetRenderer(gwin->get_win()->get_screen_window());
-	SDL_Window* window = gwin->get_win()->get_screen_window();
+	SDL_Renderer* renderer = SDL_GetRenderer(gwin->get_win()->get_screen_window());
+	SDL_Window*   window   = gwin->get_win()->get_screen_window();
 	// Do repaint after 100 ms to allow for time dependant effects. 10 FPS seems
 	// more that adequate for Cheat Screen If anyone needs to do smooth animaion
 	// the can change this
@@ -587,11 +495,9 @@ bool CheatScreen::SharedInput() {
 
 		// How far finger needs to move for swipe to be interpreted as an a
 		// cursor key input)
-		bool do_swipe = std::abs(state.swipe_dx) > swipe_threshold
-						|| std::abs(state.swipe_dy) > swipe_threshold;
+		bool do_swipe = std::abs(state.swipe_dx) > swipe_threshold || std::abs(state.swipe_dy) > swipe_threshold;
 
-		if (!do_swipe && state.last_swipe
-			&& ((state.last_swipe + 200) < SDL_GetTicks())) {
+		if (!do_swipe && state.last_swipe && ((state.last_swipe + 200) < SDL_GetTicks())) {
 			// zero out swipe state if it's been longer that 200ms since last
 			// event recieved and it's shorter than the threshold
 			state.last_swipe = 0;
@@ -615,29 +521,21 @@ bool CheatScreen::SharedInput() {
 					// Swipe up the screen
 					if (state.swipe_dy < -swipe_threshold) {
 						simulate_key = SDLK_UP;
-						resizeline(
-								state.swipe_dy, +swipe_threshold,
-								state.swipe_dx);
+						resizeline(state.swipe_dy, +swipe_threshold, state.swipe_dx);
 						// Swipe Down the screen
 					} else if (state.swipe_dy > swipe_threshold) {
 						simulate_key = SDLK_DOWN;
-						resizeline(
-								state.swipe_dy, -swipe_threshold,
-								state.swipe_dx);
+						resizeline(state.swipe_dy, -swipe_threshold, state.swipe_dx);
 					}
 				} else {
 					// swipe right to left
 					if (state.swipe_dx < -swipe_threshold) {
 						simulate_key = SDLK_LEFT;
-						resizeline(
-								state.swipe_dx, +swipe_threshold,
-								state.swipe_dy);
+						resizeline(state.swipe_dx, +swipe_threshold, state.swipe_dy);
 						// Swipe left to right
 					} else if (state.swipe_dx > swipe_threshold) {
 						simulate_key = SDLK_RIGHT;
-						resizeline(
-								state.swipe_dx, -swipe_threshold,
-								state.swipe_dy);
+						resizeline(state.swipe_dx, -swipe_threshold, state.swipe_dy);
 					}
 				}
 			} else {
@@ -653,8 +551,7 @@ bool CheatScreen::SharedInput() {
 				case SDL_EVENT_FINGER_DOWN: {
 					CERR("SDL_EVENT_FINGER_DOWN");
 					buttons_down.insert(button_down_finger);
-					if ((!Mouse::use_touch_input)
-						&& (event.tfinger.fingerID != 0)) {
+					if ((!Mouse::use_touch_input) && (event.tfinger.fingerID != 0)) {
 						Mouse::use_touch_input = true;
 					}
 					break;
@@ -671,9 +568,7 @@ bool CheatScreen::SharedInput() {
 				} break;
 					// Finger swiping converts to cursor keys
 				case SDL_EVENT_FINGER_MOTION: {
-					gwin->get_win()->screen_to_game(
-							event.button.x, event.button.y,
-							gwin->get_fastmouse(), gx, gy);
+					gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 
 					static int numFingers = 0;
 					SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
@@ -705,13 +600,10 @@ bool CheatScreen::SharedInput() {
 				} break;
 				case SDL_EVENT_MOUSE_MOTION: {
 					CERR("SDL_EVENT_MOUSE_MOTION");
-					if (Mouse::use_touch_input
-						&& event.motion.which != EXSDL_TOUCH_MOUSEID) {
+					if (Mouse::use_touch_input && event.motion.which != EXSDL_TOUCH_MOUSEID) {
 						Mouse::use_touch_input = false;
 					}
-					gwin->get_win()->screen_to_game(
-							event.motion.x, event.motion.y,
-							gwin->get_fastmouse(), gx, gy);
+					gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 
 					Mouse::mouse()->move(gx, gy);
 					Mouse::mouse_update = true;
@@ -721,11 +613,8 @@ bool CheatScreen::SharedInput() {
 
 				case SDL_EVENT_MOUSE_BUTTON_DOWN: {
 					SDL_ConvertEventToRenderCoordinates(renderer, &event);
-					gwin->get_win()->screen_to_game(
-							event.button.x, event.button.y,
-							gwin->get_fastmouse(), gx, gy);
-					CERR("SDL_EVENT_MOUSE_BUTTON_DOWN( " << gx << " , " << gy
-														 << " )");
+					gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
+					CERR("SDL_EVENT_MOUSE_BUTTON_DOWN( " << gx << " , " << gy << " )");
 					buttons_down.insert(event.button.button);
 					if (event.button.button == 1) {
 						simulate_key = CheckHotspots(gx, gy);
@@ -736,17 +625,13 @@ bool CheatScreen::SharedInput() {
 								simulate_key = SDLK_RETURN;
 							}
 
-							CERR("window size( " << gwin->get_width() << " , "
-												 << gwin->get_height() << " )");
+							CERR("window size( " << gwin->get_width() << " , " << gwin->get_height() << " )");
 							// Touch on the cheat screen will bring up the
 							// keyboard but not if the tap was within a 20 pixel
 							// border on the edge of the game screen)
 							if (SDL_TextInputActive(window)) {
 								SDL_StopTextInput(window);
-							} else if (
-									gx > 20 && gy > 20
-									&& gx < (gwin->get_width() - 20)
-									&& gy < (gwin->get_height() - 20)) {
+							} else if (gx > 20 && gy > 20 && gx < (gwin->get_width() - 20) && gy < (gwin->get_height() - 20)) {
 								SDL_StartTextInput(window);
 							}
 						}
@@ -775,8 +660,7 @@ bool CheatScreen::SharedInput() {
 				event.key.key = simulate_key;
 				CERR("simmulate key " << event.key.key);
 				// Simulated keys automatically execute the command if possible
-				if (state.GetMode() >= CP_HitKey
-					&& state.GetMode() <= CP_WrongShapeFile) {
+				if (state.GetMode() >= CP_HitKey && state.GetMode() <= CP_WrongShapeFile) {
 					state.SetMode(CP_Command, true);
 				}
 			}
@@ -793,8 +677,7 @@ bool CheatScreen::SharedInput() {
 			if (key_sym == SDLK_ESCAPE) {
 				std::memset(state.input, 0, sizeof(state.input));
 				// If current mode is needing to press a key return to command
-				if (state.GetMode() >= CP_HitKey
-					&& state.GetMode() <= CP_WrongShapeFile) {
+				if (state.GetMode() >= CP_HitKey && state.GetMode() <= CP_WrongShapeFile) {
 					state.command = 0;
 					state.SetMode(CP_Command, true);
 					return false;
@@ -807,27 +690,22 @@ bool CheatScreen::SharedInput() {
 				}
 			}
 
-			if ((key_sym == SDLK_S) && (key_mod & SDL_KMOD_ALT)
-				&& (key_mod & SDL_KMOD_CTRL)) {
+			if ((key_sym == SDLK_S) && (key_mod & SDL_KMOD_ALT) && (key_mod & SDL_KMOD_CTRL)) {
 				make_screenshot(true);
 				return false;
 			}
 
 			if (state.GetMode() == CP_NorthSouth) {
-				if (!state.input[0]
-					&& (key_sym == SDLK_N || key_sym == SDLK_S)) {
+				if (!state.input[0] && (key_sym == SDLK_N || key_sym == SDLK_S)) {
 					state.input[0] = char(key_sym);
 					state.activate = true;
 				}
 			} else if (state.GetMode() == CP_WestEast) {
-				if (!state.input[0]
-					&& (key_sym == SDLK_W || key_sym == SDLK_E)) {
+				if (!state.input[0] && (key_sym == SDLK_W || key_sym == SDLK_E)) {
 					state.input[0] = char(key_sym);
 					state.activate = true;
 				}
-			} else if (
-					state.GetMode() >= CP_HexXCoord
-					&& state.GetMode() <= CP_HexYCoord) {    // Want hex input
+			} else if (state.GetMode() >= CP_HexXCoord && state.GetMode() <= CP_HexYCoord) {    // Want hex input
 				// Activate (if possible)
 				if (key_sym == SDLK_RETURN) {
 					state.activate = true;
@@ -842,19 +720,13 @@ bool CheatScreen::SharedInput() {
 					if (end == state.input + strlen(state.input)) {
 						if (key_sym == SDLK_LEFT && value != state.val_min) {
 							value = std::max(value - 1, state.val_min);
-						} else if (
-								key_sym == SDLK_RIGHT
-								&& value != state.val_max) {
+						} else if (key_sym == SDLK_RIGHT && value != state.val_max) {
 							value = std::min(value + 1, state.val_max);
 						}
 						if (value < 0) {
-							snprintf(
-									state.input, std::size(state.input), "-%lx",
-									-value);
+							snprintf(state.input, std::size(state.input), "-%lx", -value);
 						} else {
-							snprintf(
-									state.input, std::size(state.input), "%lx",
-									value);
+							snprintf(state.input, std::size(state.input), "%lx", value);
 						}
 					}
 					// End New
@@ -875,9 +747,7 @@ bool CheatScreen::SharedInput() {
 			} else if (state.GetMode() == CP_Name) {    // Want Text input
 				if (key_sym == SDLK_RETURN) {
 					state.activate = true;
-				} else if (
-						(unicode < 256 && std::isalnum(unicode))
-						|| unicode == ' ') {
+				} else if ((unicode < 256 && std::isalnum(unicode)) || unicode == ' ') {
 					const size_t curlen = std::strlen(state.input);
 					if (curlen < (std::size(state.input) - 1)) {
 						state.input[curlen]     = unicode;
@@ -892,8 +762,7 @@ bool CheatScreen::SharedInput() {
 			} else if (state.GetMode() >= CP_ChooseNPC) {    // Need to grab
 															 // numerical input
 				// Browse shape
-				if (state.GetMode() == CP_Shape && !state.input[0]
-					&& key_sym == SDLK_B) {
+				if (state.GetMode() == CP_Shape && !state.input[0] && key_sym == SDLK_B) {
 					cheat.shape_browser();
 					state.input[0] = 'b';
 					state.activate = true;
@@ -909,14 +778,10 @@ bool CheatScreen::SharedInput() {
 					if (end == state.input + strlen(state.input)) {
 						if (key_sym == SDLK_LEFT && value != state.val_min) {
 							value = std::max(value - 1, state.val_min);
-						} else if (
-								key_sym == SDLK_RIGHT
-								&& value != state.val_max) {
+						} else if (key_sym == SDLK_RIGHT && value != state.val_max) {
 							value = std::min(value + 1, state.val_max);
 						}
-						snprintf(
-								state.input, std::size(state.input) - 1, "%ld",
-								value);
+						snprintf(state.input, std::size(state.input) - 1, "%ld", value);
 					}
 				}
 				// Activate (if possible)
@@ -983,9 +848,8 @@ bool CheatScreen::SharedInput() {
 		if (gwin->show() || Mouse::mouse_update) {
 			Mouse::mouse()->blit_dirty();
 		}
-		Mouse::mouse()
-				->hide();    // Need to immediately turn off here to prevent
-							 // flickering after repaint of whole screen
+		Mouse::mouse()->hide();    // Need to immediately turn off here to prevent
+								   // flickering after repaint of whole screen
 	}
 	return false;
 }
@@ -1098,24 +962,17 @@ void CheatScreen::NormalDisplay() {
 	const int        curmap = gwin->get_map()->get_num();
 	const Tile_coord t      = gwin->get_main_actor()->get_tile();
 
-	font->paint_text_fixedwidth(
-			ibuf, "Advanced Option Cheat Screen", offsetx, offsety1, 8,
-			fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, "Advanced Option Cheat Screen", offsetx, offsety1, 8, fontcolor.colors);
 
 	if (Game::get_game_type() == BLACK_GATE) {
 		snprintf(buf, sizeof(buf), "Running \"Ultima VII: The Black Gate\"");
 	} else if (Game::get_game_type() == SERPENT_ISLE) {
-		snprintf(
-				buf, sizeof(buf),
-				"Running \"Ultima VII Part 2: Serpent Isle\"");
+		snprintf(buf, sizeof(buf), "Running \"Ultima VII Part 2: Serpent Isle\"");
 	} else {
-		snprintf(
-				buf, sizeof(buf), "Running Unknown Game Type %i",
-				Game::get_game_type());
+		snprintf(buf, sizeof(buf), "Running Unknown Game Type %i", Game::get_game_type());
 	}
 
-	font->paint_text_fixedwidth(
-			ibuf, buf, offsetx, offsety1 + 18, 8, fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 18, 8, fontcolor.colors);
 
 	strcpy(buf, "Exult Version " VERSION " Rev: ");
 	auto rev    = VersionGetGitRevision(true);
@@ -1123,40 +980,27 @@ void CheatScreen::NormalDisplay() {
 	rev.copy(buf + strlen(buf), rev.size());
 	// Need to null terminate after copy
 	buf[curlen + rev.size()] = 0;
-	font->paint_text_fixedwidth(
-			ibuf, buf, offsetx, offsety1 + 27, 8, fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 27, 8, fontcolor.colors);
 
-	font->paint_text_fixedwidth(
-			ibuf, "Compiled " __DATE__ " " __TIME__, offsetx, offsety1 + 36, 8,
-			fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, "Compiled " __DATE__ " " __TIME__, offsetx, offsety1 + 36, 8, fontcolor.colors);
 
 	snprintf(
-			buf, sizeof(buf), "Current time: %i:%02i %s  Day: %i",
-			((clock->get_hour() + 11) % 12) + 1, clock->get_minute(),
+			buf, sizeof(buf), "Current time: %i:%02i %s  Day: %i", ((clock->get_hour() + 11) % 12) + 1, clock->get_minute(),
 			clock->get_hour() < 12 ? "AM" : "PM", clock->get_day());
-	font->paint_text_fixedwidth(
-			ibuf, buf, offsetx, offsety3, 8, fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety3, 8, fontcolor.colors);
 
 	const int longi = ((t.tx - 0x3A5) / 10);
 	const int lati  = ((t.ty - 0x46E) / 10);
 	snprintf(
-			buf, sizeof(buf), "Coordinates %d %s %d %s, Map #%d", abs(lati),
-			(lati < 0 ? "North" : "South"), abs(longi),
+			buf, sizeof(buf), "Coordinates %d %s %d %s, Map #%d", abs(lati), (lati < 0 ? "North" : "South"), abs(longi),
 			(longi < 0 ? "West" : "East"), curmap);
-	font->paint_text_fixedwidth(
-			ibuf, buf, offsetx, 63 - offsety2, 8, fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 63 - offsety2, 8, fontcolor.colors);
 
-	snprintf(
-			buf, sizeof(buf), "Coords in hex (%04x, %04x, %02x)", t.tx, t.ty,
-			t.tz);
-	font->paint_text_fixedwidth(
-			ibuf, buf, offsetx, 72 - offsety2, 8, fontcolor.colors);
+	snprintf(buf, sizeof(buf), "Coords in hex (%04x, %04x, %02x)", t.tx, t.ty, t.tz);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 72 - offsety2, 8, fontcolor.colors);
 
-	snprintf(
-			buf, sizeof(buf), "Coords in dec (%04i, %04i, %02i)", t.tx, t.ty,
-			t.tz);
-	font->paint_text_fixedwidth(
-			ibuf, buf, offsetx, 81 - offsety2, 8, fontcolor.colors);
+	snprintf(buf, sizeof(buf), "Coords in dec (%04i, %04i, %02i)", t.tx, t.ty, t.tz);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 81 - offsety2, 8, fontcolor.colors);
 }
 
 void CheatScreen::NormalMenu() {
@@ -1193,33 +1037,23 @@ void CheatScreen::NormalMenu() {
 #endif
 
 	// GodMode
-	snprintf(
-			buf, sizeof(buf), "od Mode....: %3s",
-			cheat.in_god_mode() ? "On" : "Off");
+	snprintf(buf, sizeof(buf), "od Mode....: %3s", cheat.in_god_mode() ? "On" : "Off");
 	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_G, buf);
 
 	// Archwizzard Mode
-	snprintf(
-			buf, sizeof(buf), "izard Mode.: %3s",
-			cheat.in_wizard_mode() ? "On" : "Off");
+	snprintf(buf, sizeof(buf), "izard Mode.: %3s", cheat.in_wizard_mode() ? "On" : "Off");
 	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_W, buf);
 
 	// Infravision
-	snprintf(
-			buf, sizeof(buf), "nfravision.: %3s",
-			cheat.in_infravision() ? "On" : "Off");
+	snprintf(buf, sizeof(buf), "nfravision.: %3s", cheat.in_infravision() ? "On" : "Off");
 	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_I, buf);
 
 	// Hackmover
-	snprintf(
-			buf, sizeof(buf), "ack Mover..: %3s",
-			cheat.in_hack_mover() ? "Yes" : "No");
+	snprintf(buf, sizeof(buf), "ack Mover..: %3s", cheat.in_hack_mover() ? "Yes" : "No");
 	AddMenuItem(offsetx, maxy - offsety1 - 63, SDLK_H, buf);
 
 	// Eggs
-	snprintf(
-			buf, sizeof(buf), "ggs Visible: %3s",
-			gwin->paint_eggs ? "Yes" : "No");
+	snprintf(buf, sizeof(buf), "ggs Visible: %3s", gwin->paint_eggs ? "Yes" : "No");
 	AddMenuItem(offsetx, maxy - offsety1 - 54, SDLK_E, buf);
 
 	// Set Time
@@ -1240,9 +1074,7 @@ void CheatScreen::NormalMenu() {
 	// for small screens taking the liberty of leaving that out
 	// Time Rate
 	snprintf(buf, sizeof(buf), " Time Rate:%4i", clock->get_time_rate());
-	AddLeftRightMenuItem(
-			offsetx + 160, offsety4, buf, clock->get_time_rate() > 1,
-			clock->get_time_rate() < 20, true, false);
+	AddLeftRightMenuItem(offsetx + 160, offsety4, buf, clock->get_time_rate() > 1, clock->get_time_rate() < 20, true, false);
 #endif
 
 	SharedMenu();
@@ -1331,13 +1163,9 @@ void CheatScreen::NormalActivate() {
 
 		// Paperdolls
 	case SDLK_P:
-		if ((Game::get_game_type() == BLACK_GATE
-			 || Game::get_game_type() == EXULT_DEVEL_GAME)
-			&& sman->can_use_paperdolls()) {
+		if ((Game::get_game_type() == BLACK_GATE || Game::get_game_type() == EXULT_DEVEL_GAME) && sman->can_use_paperdolls()) {
 			sman->set_paperdoll_status(!sman->are_paperdolls_enabled());
-			config->set(
-					"config/gameplay/bg_paperdolls",
-					sman->are_paperdolls_enabled() ? "yes" : "no", true);
+			config->set("config/gameplay/bg_paperdolls", sman->are_paperdolls_enabled() ? "yes" : "no", true);
 		}
 		break;
 
@@ -1434,17 +1262,14 @@ void CheatScreen::ActivityDisplay() {
 
 	for (int i = 0; i < 11; i++) {
 		snprintf(buf, sizeof(buf), "%2i %s", i, schedules[i]);
-		font->paint_text_fixedwidth(
-				ibuf, buf, 0, i * offsety1, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, buf, 0, i * offsety1, 8, fontcolor.colors);
 
 		snprintf(buf, sizeof(buf), "%2i %s", i + 11, schedules[i + 11]);
-		font->paint_text_fixedwidth(
-				ibuf, buf, 112, i * offsety1, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, buf, 112, i * offsety1, 8, fontcolor.colors);
 
 		if (i != 10) {
 			snprintf(buf, sizeof(buf), "%2i %s", i + 22, schedules[i + 22]);
-			font->paint_text_fixedwidth(
-					ibuf, buf, 224, i * offsety1, 8, fontcolor.colors);
+			font->paint_text_fixedwidth(ibuf, buf, 224, i * offsety1, 8, fontcolor.colors);
 		}
 	}
 }
@@ -1454,25 +1279,21 @@ void CheatScreen::PaintArrow(int offsetx, int offsety, int type) {
 	// up arrow
 	if (type == '^') {
 		// Use an i as the stem of the arrow
-		font->paint_text_fixedwidth(
-				ibuf, "i", offsetx, offsety, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "i", offsetx, offsety, 8, fontcolor.colors);
 		// Draw a black line to narrow the stem
 		ibuf->draw_line8(0, offsetx + 4, offsety, offsetx + 4, offsety + 8);
 		// Draw point of arrow
-		font->paint_text_fixedwidth(
-				ibuf, "^", offsetx, offsety, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "^", offsetx, offsety, 8, fontcolor.colors);
 	}    // down arrow
 	else if (type == 'V') {
 		// Use an l as the stem of the arrow
-		font->paint_text_fixedwidth(
-				ibuf, "l", offsetx, offsety, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "l", offsetx, offsety, 8, fontcolor.colors);
 		// Draw black lines to narrow the stem
 		ibuf->draw_line8(0, offsetx + 2, offsety, offsetx + 2, offsety + 2);
 		ibuf->draw_line8(0, offsetx + 4, offsety, offsetx + 4, offsety + 6);
 
 		// Draw point of arrow
-		font->paint_text_fixedwidth(
-				ibuf, "m", offsetx, offsety + 2, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "m", offsetx, offsety + 2, 8, fontcolor.colors);
 
 		// Paint black lines to make it pointy
 		ibuf->draw_line8(0, offsetx + 0, offsety + 5, offsetx + 0, offsety + 8);
@@ -1482,26 +1303,22 @@ void CheatScreen::PaintArrow(int offsetx, int offsety, int type) {
 	}    // left arrow
 	else if (type == '<') {
 		// Stem of arrow
-		font->paint_text_fixedwidth(
-				ibuf, "-", offsetx + 1, offsety, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "-", offsetx + 1, offsety, 8, fontcolor.colors);
 		// Paint black line  to narrow the stem
 		ibuf->draw_line8(0, offsetx + 0, offsety + 4, offsetx + 7, offsety + 4);
 		// Point of  arrow
-		font->paint_text_fixedwidth(
-				ibuf, "<", offsetx, offsety, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "<", offsetx, offsety, 8, fontcolor.colors);
 		// Paint black line to make it pointier
 		ibuf->draw_line8(0, offsetx + 1, offsety + 4, offsetx + 4, offsety + 7);
 		ibuf->put_pixel8(0, offsetx + 5, offsety + 7);
 	}    // Right Arrow
 	else if (type == '>') {
 		// Stem of arrow
-		font->paint_text_fixedwidth(
-				ibuf, "-", offsetx, offsety, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "-", offsetx, offsety, 8, fontcolor.colors);
 		// Paint black line to narrow the stem
 		ibuf->draw_line8(0, offsetx + 0, offsety + 4, offsetx + 7, offsety + 4);
 		// Point of arrow
-		font->paint_text_fixedwidth(
-				ibuf, ">", offsetx + 2, offsety, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, ">", offsetx + 2, offsety, 8, fontcolor.colors);
 		// Paint black line to make it pointier
 		ibuf->draw_line8(0, offsetx + 7, offsety + 4, offsetx + 3, offsety + 7);
 	}
@@ -1608,35 +1425,30 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 		// on small screens we want lean and mean, so begone NormalDisplay
-		font->paint_text_fixedwidth(
-				ibuf, "Global Flags", 15, 0, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Global Flags", 15, 0, 8, fontcolor.colors);
 #else
 		NormalDisplay();
 #endif
 
 		// First the info
 		snprintf(buf, sizeof(buf), "Global Flag %i", num);
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, maxy - offsety1 - 99, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 99, 8, fontcolor.colors);
 
 		bool flagset = usecode->get_global_flag(num).value_or(false);
 		snprintf(buf, sizeof(buf), "Flag is %s", flagset ? "SET" : "UNSET");
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, maxy - offsety1 - 90, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 90, 8, fontcolor.colors);
 
 		// Now the Menu Column
 		if (!flagset) {
 			AddMenuItem(offsetx + 160, maxy - offsety1 - 99, SDLK_S, "et Flag");
 		} else {
-			AddMenuItem(
-					offsetx + 160, maxy - offsety1 - 99, SDLK_U, "nset Flag");
+			AddMenuItem(offsetx + 160, maxy - offsety1 - 99, SDLK_U, "nset Flag");
 		}
 
 		// Change Flag
 		AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_UP, " Change Flag");
 		AddLeftRightMenuItem(
-				offsetx, maxy - offsety1 - 63, "Scroll Flags", num > 0,
-				num < static_cast<int>(Usecode_machine::last_gflag), false,
+				offsetx, maxy - offsety1 - 63, "Scroll Flags", num > 0, num < static_cast<int>(Usecode_machine::last_gflag), false,
 				true);
 
 		SharedMenu();
@@ -1656,8 +1468,7 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 				num = std::min<size_t>(num + 1, Usecode_machine::last_gflag);
 			} else if (state.command == '^') {    // Change Flag
 				i = std::atoi(state.input);
-				if (i < 0
-					|| static_cast<size_t>(i) > Usecode_machine::last_gflag) {
+				if (i < 0 || static_cast<size_t>(i) > Usecode_machine::last_gflag) {
 					state.SetMode(CP_InvalidValue, false);
 				} else if (state.input[0]) {
 					num = i;
@@ -1802,82 +1613,55 @@ void CheatScreen::NPCDisplay(Actor* actor, int& num) {
 
 		// Now the info
 		const std::string namestr = actor->get_npc_name();
-		snprintf(
-				buf, sizeof(buf), "NPC %i - %s%s", num, namestr.c_str(),
-				actor->is_unused() ? " (Unused)" : "");
+		snprintf(buf, sizeof(buf), "NPC %i - %s%s", num, namestr.c_str(), actor->is_unused() ? " (Unused)" : "");
 		font->paint_text_fixedwidth(ibuf, buf, offsetx, 0, 8, fontcolor.colors);
 
 		snprintf(buf, sizeof(buf), "Loc (%04i, %04i, %02i)", t.tx, t.ty, t.tz);
 		font->paint_text_fixedwidth(ibuf, buf, offsetx, 9, 8, fontcolor.colors);
 
 		snprintf(
-				buf, sizeof(buf), "Shape %04i:%02i  %s", actor->get_shapenum(),
-				actor->get_framenum(),
+				buf, sizeof(buf), "Shape %04i:%02i  %s", actor->get_shapenum(), actor->get_framenum(),
 				actor->get_flag(Obj_flags::met) ? "Met" : "Not Met");
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, 18, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, 18, 8, fontcolor.colors);
 
-		snprintf(
-				buf, sizeof(buf), "Current Activity: %2i - %s",
-				actor->get_schedule_type(),
-				schedules[actor->get_schedule_type()]);
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, offsety1 + 36, 8, fontcolor.colors);
+		snprintf(buf, sizeof(buf), "Current Activity: %2i - %s", actor->get_schedule_type(), schedules[actor->get_schedule_type()]);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 36, 8, fontcolor.colors);
 
-		snprintf(
-				buf, sizeof(buf), "Experience: %i",
-				actor->get_property(Actor::exp));
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, offsety1 + 45, 8, fontcolor.colors);
+		snprintf(buf, sizeof(buf), "Experience: %i", actor->get_property(Actor::exp));
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 45, 8, fontcolor.colors);
 
 		snprintf(buf, sizeof(buf), "Level: %i", actor->get_level());
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx + 144, offsety1 + 45, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx + 144, offsety1 + 45, 8, fontcolor.colors);
 
 		snprintf(
-				buf, sizeof(buf), "Training: %2i  Health: %2i",
-				actor->get_property(Actor::training),
+				buf, sizeof(buf), "Training: %2i  Health: %2i", actor->get_property(Actor::training),
 				actor->get_property(Actor::health));
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, offsety1 + 54, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 54, 8, fontcolor.colors);
 
 		if (num != -1) {
 			int ucitemnum = 0x10000 - num;
 			if (!num) {
 				ucitemnum = 0xfe9c;
 			}
-			snprintf(
-					buf, sizeof(buf), "Usecode item %4x function %x", ucitemnum,
-					actor->get_usecode());
-			font->paint_text_fixedwidth(
-					ibuf, buf, offsetx, offsety1 + 63, 8, fontcolor.colors);
+			snprintf(buf, sizeof(buf), "Usecode item %4x function %x", ucitemnum, actor->get_usecode());
+			font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 63, 8, fontcolor.colors);
 		} else {
-			snprintf(
-					buf, sizeof(buf), "Usecode function %x",
-					actor->get_usecode());
-			font->paint_text_fixedwidth(
-					ibuf, buf, offsetx, offsety1 + 63, 8, fontcolor.colors);
+			snprintf(buf, sizeof(buf), "Usecode function %x", actor->get_usecode());
+			font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 63, 8, fontcolor.colors);
 		}
 
 		if (actor->get_flag(Obj_flags::charmed)) {
 			snprintf(
-					buf, sizeof(buf), "Alignment: %s (orig: %s)",
-					alignments[actor->get_effective_alignment()],
+					buf, sizeof(buf), "Alignment: %s (orig: %s)", alignments[actor->get_effective_alignment()],
 					alignments[actor->get_alignment()]);
 		} else {
-			snprintf(
-					buf, sizeof(buf), "Alignment: %s",
-					alignments[actor->get_alignment()]);
+			snprintf(buf, sizeof(buf), "Alignment: %s", alignments[actor->get_alignment()]);
 		}
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, offsety1 + 72, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 72, 8, fontcolor.colors);
 
 		if (actor->get_polymorph() != -1) {
-			snprintf(
-					buf, sizeof(buf), "Polymorphed from %04i",
-					actor->get_polymorph());
-			font->paint_text_fixedwidth(
-					ibuf, buf, offsetx, offsety1 + 81, 8, fontcolor.colors);
+			snprintf(buf, sizeof(buf), "Polymorphed from %04i", actor->get_polymorph());
+			font->paint_text_fixedwidth(ibuf, buf, offsetx, offsety1 + 81, 8, fontcolor.colors);
 		}
 	} else {
 		snprintf(buf, sizeof(buf), "NPC %i - Invalid NPC!", num);
@@ -1932,22 +1716,17 @@ void CheatScreen::NPCMenu(Actor* actor, int& num) {
 		AddMenuItem(offsetx + 160, maxy - offsety1 - 99, SDLK_S, "tats");
 
 		// Training Points
-		AddMenuItem(
-				offsetx + 160, maxy - offsety1 - 90, SDLK_2,
-				" Training Points");
+		AddMenuItem(offsetx + 160, maxy - offsety1 - 90, SDLK_2, " Training Points");
 
 		// Teleport
-		AddMenuItem(
-				offsetx + 160, maxy - offsety1 - 81, SDLK_T, "eleport to NPC");
+		AddMenuItem(offsetx + 160, maxy - offsety1 - 81, SDLK_T, "eleport to NPC");
 
 		// Palette Effect
-		AddMenuItem(
-				offsetx + 160, maxy - offsety1 - 72, SDLK_P, "alette Effect");
+		AddMenuItem(offsetx + 160, maxy - offsety1 - 72, SDLK_P, "alette Effect");
 
-		// 
+		//
 		// Walk to Avatar
-		AddMenuItem(
-				offsetx + 160, maxy - offsety1 - 63, SDLK_W, "alk to Avatar");
+		AddMenuItem(offsetx + 160, maxy - offsety1 - 63, SDLK_W, "alk to Avatar");
 	}
 
 	// Change NPC
@@ -1956,15 +1735,12 @@ void CheatScreen::NPCMenu(Actor* actor, int& num) {
 
 	// Scroll NPCs
 
-	AddLeftRightMenuItem(
-			offsetx3, offsety4, "Scroll NPCs", num > 0,
-			num < gwin->get_num_npcs(), false, true);
+	AddLeftRightMenuItem(offsetx3, offsety4, "Scroll NPCs", num > 0, num < gwin->get_num_npcs(), false, true);
 }
 
 void CheatScreen::NPCActivate(Actor* actor, int& num) {
-	int       i = std::atoi(state.input);
-	const int nshapes
-			= Shape_manager::get_instance()->get_shapes().get_num_shapes();
+	int       i       = std::atoi(state.input);
+	const int nshapes = Shape_manager::get_instance()->get_shapes().get_num_shapes();
 
 	state.SetMode(CP_Command, false);
 
@@ -2005,14 +1781,12 @@ void CheatScreen::NPCActivate(Actor* actor, int& num) {
 			break;
 
 		case SDLK_T:    // Teleport
-			
-			Game_window::get_instance()->teleport_party(
-					actor->get_tile(), false, actor->get_map_num());
+
+			Game_window::get_instance()->teleport_party(actor->get_tile(), false, actor->get_map_num());
 			break;
 
-		case SDLK_W:    // Walk to Avatar		
-			actor->approach_another(
-					Game_window::get_instance()->get_main_actor());
+		case SDLK_W:    // Walk to Avatar
+			actor->approach_another(Game_window::get_instance()->get_main_actor());
 			break;
 
 		case SDLK_E:    // Experience
@@ -2123,10 +1897,7 @@ bool CheatScreen::NPCCheck(Actor* actor, int& num) {
 		} else {
 			state.SetMode(CP_Shape);
 			state.val_min = 0;
-			state.val_max = Shape_manager::get_instance()
-									->get_shapes()
-									.get_num_shapes()
-							- 1;
+			state.val_max = Shape_manager::get_instance()->get_shapes().get_num_shapes() - 1;
 		}
 		break;
 
@@ -2242,52 +2013,36 @@ void CheatScreen::FlagMenu(Actor* actor) {
 	// Left Column
 
 	// Asleep
-	snprintf(
-			buf, sizeof(buf), " Asleep.%c",
-			actor->get_flag(Obj_flags::asleep) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Asleep.%c", actor->get_flag(Obj_flags::asleep) ? 'Y' : 'N');
 	AddMenuItem(offsetx, maxy - offsety1 - 108, SDLK_A, buf);
 
 	// Charmed
-	snprintf(
-			buf, sizeof(buf), " Charmd.%c",
-			actor->get_flag(Obj_flags::charmed) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Charmd.%c", actor->get_flag(Obj_flags::charmed) ? 'Y' : 'N');
 
 	AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_B, buf);
 
 	// Cursed
-	snprintf(
-			buf, sizeof(buf), " Cursed.%c",
-			actor->get_flag(Obj_flags::cursed) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Cursed.%c", actor->get_flag(Obj_flags::cursed) ? 'Y' : 'N');
 	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_C, buf);
 
 	// Paralyzed
-	snprintf(
-			buf, sizeof(buf), " Prlyzd.%c",
-			actor->get_flag(Obj_flags::paralyzed) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Prlyzd.%c", actor->get_flag(Obj_flags::paralyzed) ? 'Y' : 'N');
 	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_D, buf);
 
 	// Poisoned
-	snprintf(
-			buf, sizeof(buf), " Poisnd.%c",
-			actor->get_flag(Obj_flags::poisoned) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Poisnd.%c", actor->get_flag(Obj_flags::poisoned) ? 'Y' : 'N');
 	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_E, buf);
 
 	// Protected
-	snprintf(
-			buf, sizeof(buf), " Prtctd.%c",
-			actor->get_flag(Obj_flags::protection) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Prtctd.%c", actor->get_flag(Obj_flags::protection) ? 'Y' : 'N');
 	AddMenuItem(offsetx, maxy - offsety1 - 63, SDLK_F, buf);
 
 	// Tournament (Original is SI only -- allowing for BG in Exult)
-	snprintf(
-			buf, sizeof(buf), " Tourna.%c",
-			actor->get_flag(Obj_flags::tournament) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Tourna.%c", actor->get_flag(Obj_flags::tournament) ? 'Y' : 'N');
 	AddMenuItem(offsetx, maxy - offsety1 - 54, SDLK_G, buf);
 
 	// Polymorph
-	snprintf(
-			buf, sizeof(buf), " Polymo.%c",
-			actor->get_flag(Obj_flags::polymorph) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Polymo.%c", actor->get_flag(Obj_flags::polymorph) ? 'Y' : 'N');
 	AddMenuItem(offsetx, maxy - offsety1 - 45, SDLK_H, buf);
 	// Advanced Editor
 
@@ -2298,39 +2053,27 @@ void CheatScreen::FlagMenu(Actor* actor) {
 	// Center Column
 
 	// Party
-	snprintf(
-			buf, sizeof(buf), " Party..%c",
-			actor->get_flag(Obj_flags::in_party) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Party..%c", actor->get_flag(Obj_flags::in_party) ? 'Y' : 'N');
 	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 108, SDLK_I, buf);
 
 	// Invisible
-	snprintf(
-			buf, sizeof(buf), " Invsbl.%c",
-			actor->get_flag(Obj_flags::invisible) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Invsbl.%c", actor->get_flag(Obj_flags::invisible) ? 'Y' : 'N');
 	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 99, SDLK_J, buf);
 
 	// Fly
-	snprintf(
-			buf, sizeof(buf), " Fly....%c",
-			actor->get_type_flag(Actor::tf_fly) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Fly....%c", actor->get_type_flag(Actor::tf_fly) ? 'Y' : 'N');
 	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 90, SDLK_K, buf);
 
 	// Walk
-	snprintf(
-			buf, sizeof(buf), " Walk...%c",
-			actor->get_type_flag(Actor::tf_walk) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Walk...%c", actor->get_type_flag(Actor::tf_walk) ? 'Y' : 'N');
 	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 81, SDLK_L, buf);
 
 	// Swim
-	snprintf(
-			buf, sizeof(buf), " Swim...%c",
-			actor->get_type_flag(Actor::tf_swim) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Swim...%c", actor->get_type_flag(Actor::tf_swim) ? 'Y' : 'N');
 	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 72, SDLK_M, buf);
 
 	// Ethereal
-	snprintf(
-			buf, sizeof(buf), " Ethrel.%c",
-			actor->get_type_flag(Actor::tf_ethereal) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Ethrel.%c", actor->get_type_flag(Actor::tf_ethereal) ? 'Y' : 'N');
 	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 63, SDLK_N, buf);
 
 	// Protectee
@@ -2338,38 +2081,28 @@ void CheatScreen::FlagMenu(Actor* actor) {
 	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 54, SDLK_O, buf);
 
 	// Conjured
-	snprintf(
-			buf, sizeof(buf), " Conjrd.%c",
-			actor->get_type_flag(Actor::tf_conjured) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Conjrd.%c", actor->get_type_flag(Actor::tf_conjured) ? 'Y' : 'N');
 	AddMenuItem(offsetx1 + 104, maxy - offsety1 - 45, SDLK_P, buf);
 
 	// Naked (AV ONLY)
 	if (!actor->get_npc_num()) {
-		snprintf(
-				buf, sizeof(buf), " Naked..%c",
-				actor->get_flag(Obj_flags::naked) ? 'Y' : 'N');
+		snprintf(buf, sizeof(buf), " Naked..%c", actor->get_flag(Obj_flags::naked) ? 'Y' : 'N');
 		AddMenuItem(offsetx1 + 104, maxy - offsety1 - 36, SDLK_7, buf);
 	}
 
 	// Right Column
 
 	// Summoned
-	snprintf(
-			buf, sizeof(buf), " Summnd.%c",
-			actor->get_type_flag(Actor::tf_summonned) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Summnd.%c", actor->get_type_flag(Actor::tf_summonned) ? 'Y' : 'N');
 	AddMenuItem(offsetx1 + 208, maxy - offsety1 - 108, SDLK_Q, buf);
 
 	// Bleeding
-	snprintf(
-			buf, sizeof(buf), " Bleedn.%c",
-			actor->get_type_flag(Actor::tf_bleeding) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Bleedn.%c", actor->get_type_flag(Actor::tf_bleeding) ? 'Y' : 'N');
 	AddMenuItem(offsetx1 + 208, maxy - offsety1 - 99, SDLK_R, buf);
 
 	if (!actor->get_npc_num()) {    // Avatar
 		// Sex
-		snprintf(
-				buf, sizeof(buf), " Sex....%c",
-				actor->get_type_flag(Actor::tf_sex) ? 'F' : 'M');
+		snprintf(buf, sizeof(buf), " Sex....%c", actor->get_type_flag(Actor::tf_sex) ? 'F' : 'M');
 		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 90, SDLK_S, buf);
 
 		// Skin
@@ -2377,21 +2110,15 @@ void CheatScreen::FlagMenu(Actor* actor) {
 		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 81, SDLK_1, buf);
 
 		// Read
-		snprintf(
-				buf, sizeof(buf), " Read...%c",
-				actor->get_flag(Obj_flags::read) ? 'Y' : 'N');
+		snprintf(buf, sizeof(buf), " Read...%c", actor->get_flag(Obj_flags::read) ? 'Y' : 'N');
 		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 72, SDLK_4, buf);
 	} else {    // Not Avatar
 		// Met
-		snprintf(
-				buf, sizeof(buf), " Met....%c",
-				actor->get_flag(Obj_flags::met) ? 'Y' : 'N');
+		snprintf(buf, sizeof(buf), " Met....%c", actor->get_flag(Obj_flags::met) ? 'Y' : 'N');
 		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 90, SDLK_T, buf);
 
 		// NoCast
-		snprintf(
-				buf, sizeof(buf), " NoCast.%c",
-				actor->get_flag(Obj_flags::no_spell_casting) ? 'Y' : 'N');
+		snprintf(buf, sizeof(buf), " NoCast.%c", actor->get_flag(Obj_flags::no_spell_casting) ? 'Y' : 'N');
 		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 81, SDLK_U, buf);
 
 		// ID
@@ -2400,9 +2127,7 @@ void CheatScreen::FlagMenu(Actor* actor) {
 	}
 
 	// Freeze
-	snprintf(
-			buf, sizeof(buf), " Freeze.%c",
-			actor->get_flag(Obj_flags::freeze) ? 'Y' : 'N');
+	snprintf(buf, sizeof(buf), " Freeze.%c", actor->get_flag(Obj_flags::freeze) ? 'Y' : 'N');
 	AddMenuItem(offsetx1 + 208, maxy - offsety1 - 63, SDLK_W, buf);
 
 	// Party
@@ -2413,24 +2138,19 @@ void CheatScreen::FlagMenu(Actor* actor) {
 
 		// Warmth
 		snprintf(buf, sizeof(buf), "Warmth: %04i", actor->figure_warmth());
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx1 + 208, maxy - offsety1 - 45, 8,
-				fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx1 + 208, maxy - offsety1 - 45, 8, fontcolor.colors);
 	}
 
 	// Petra (AV SI ONLY)
 	if (!actor->get_npc_num()) {
-		snprintf(
-				buf, sizeof(buf), " Petra..%c",
-				actor->get_flag(Obj_flags::petra) ? 'Y' : 'N');
+		snprintf(buf, sizeof(buf), " Petra..%c", actor->get_flag(Obj_flags::petra) ? 'Y' : 'N');
 		AddMenuItem(offsetx1 + 208, maxy - offsety1 - 36, SDLK_5, buf);
 	}
 }
 
 void CheatScreen::FlagActivate(Actor* actor) {
-	int       i = std::atoi(state.input);
-	const int nshapes
-			= Shape_manager::get_instance()->get_shapes().get_num_shapes();
+	int       i       = std::atoi(state.input);
+	const int nshapes = Shape_manager::get_instance()->get_shapes().get_num_shapes();
 
 	state.SetMode(CP_Command, false);
 	switch (state.command) {
@@ -2643,8 +2363,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 
 	case SDLK_1:    // Skin color
 		actor->set_skin_color(Shapeinfo_lookup::GetNextSkin(
-				actor->get_skin_color(), actor->get_type_flag(Actor::tf_sex),
-						Shape_manager::get_instance()->have_si_shapes()));
+				actor->get_skin_color(), actor->get_type_flag(Actor::tf_sex), Shape_manager::get_instance()->have_si_shapes()));
 		break;
 
 	case SDLK_G:    // Tournament
@@ -2690,8 +2409,7 @@ void CheatScreen::FlagActivate(Actor* actor) {
 			state.SetMode(CP_InvalidShape, false);
 		} else if (i >= nshapes) {
 			state.SetMode(CP_InvalidShape, false);
-		} else if (
-				state.input[0] && (state.input[0] != '-' || state.input[1])) {
+		} else if (state.input[0] && (state.input[0] != '-' || state.input[1])) {
 			actor->set_polymorph(i);
 			state.SetMode(CP_ShapeSet);
 		}
@@ -2751,11 +2469,8 @@ bool CheatScreen::FlagCheck(Actor* actor) {
 	case SDLK_H:    // Polymorph
 		if (actor->get_polymorph() == -1) {
 			state.SetMode(CP_Shape);
-			state.val_min = 0;
-			state.val_max = Shape_manager::get_instance()
-									->get_shapes()
-									.get_num_shapes()
-							- 1;
+			state.val_min  = 0;
+			state.val_max  = Shape_manager::get_instance()->get_shapes().get_num_shapes() - 1;
 			state.input[0] = 0;
 		} else {
 			state.activate = true;
@@ -2936,9 +2651,7 @@ void CheatScreen::BusinessDisplay(Actor* actor) {
 
 	// Now the info
 	const std::string namestr = actor->get_npc_name();
-	snprintf(
-			buf, sizeof(buf), "NPC %i - %s", actor->get_npc_num(),
-			namestr.c_str());
+	snprintf(buf, sizeof(buf), "NPC %i - %s", actor->get_npc_num(), namestr.c_str());
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, 0, 8, fontcolor.colors);
 
 	snprintf(buf, sizeof(buf), "Loc (%04i, %04i, %02i)", t.tx, t.ty, t.tz);
@@ -2949,17 +2662,13 @@ void CheatScreen::BusinessDisplay(Actor* actor) {
 #else
 	const char activity_msg[] = "Current Activity:  %2i - %s";
 #endif
-	snprintf(
-			buf, sizeof(buf), activity_msg, actor->get_schedule_type(),
-			schedules[actor->get_schedule_type()]);
-	font->paint_text_fixedwidth(
-			ibuf, buf, offsetx2, offsety3, 8, fontcolor.colors);
+	snprintf(buf, sizeof(buf), activity_msg, actor->get_schedule_type(), schedules[actor->get_schedule_type()]);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx2, offsety3, 8, fontcolor.colors);
 
 	const Actor::Schedule_list* scheds = actor->get_schedules();
 
 	if (scheds != nullptr) {
-		font->paint_text_fixedwidth(
-				ibuf, "Schedules:", offsetx2, offsety2, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "Schedules:", offsetx2, offsety2, 8, fontcolor.colors);
 
 		int types[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 		int x[8]     = {0};
@@ -2973,31 +2682,19 @@ void CheatScreen::BusinessDisplay(Actor* actor) {
 			y[time]               = tile.ty;
 		}
 
-		font->paint_text_fixedwidth(
-				ibuf, "12 AM:", offsetx, 36 - offsety1, 8, fontcolor.colors);
-		font->paint_text_fixedwidth(
-				ibuf, " 3 AM:", offsetx, 44 - offsety1, 8, fontcolor.colors);
-		font->paint_text_fixedwidth(
-				ibuf, " 6 AM:", offsetx, 52 - offsety1, 8, fontcolor.colors);
-		font->paint_text_fixedwidth(
-				ibuf, " 9 AM:", offsetx, 60 - offsety1, 8, fontcolor.colors);
-		font->paint_text_fixedwidth(
-				ibuf, "12 PM:", offsetx, 68 - offsety1, 8, fontcolor.colors);
-		font->paint_text_fixedwidth(
-				ibuf, " 3 PM:", offsetx, 76 - offsety1, 8, fontcolor.colors);
-		font->paint_text_fixedwidth(
-				ibuf, " 6 PM:", offsetx, 84 - offsety1, 8, fontcolor.colors);
-		font->paint_text_fixedwidth(
-				ibuf, " 9 PM:", offsetx, 92 - offsety1, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "12 AM:", offsetx, 36 - offsety1, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, " 3 AM:", offsetx, 44 - offsety1, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, " 6 AM:", offsetx, 52 - offsety1, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, " 9 AM:", offsetx, 60 - offsety1, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "12 PM:", offsetx, 68 - offsety1, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, " 3 PM:", offsetx, 76 - offsety1, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, " 6 PM:", offsetx, 84 - offsety1, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, " 9 PM:", offsetx, 92 - offsety1, 8, fontcolor.colors);
 
 		for (int i = 0; i < 8; i++) {
 			if (types[i] != -1) {
-				snprintf(
-						buf, sizeof(buf), "%2i (%4i,%4i) - %s", types[i], x[i],
-						y[i], schedules[types[i]]);
-				font->paint_text_fixedwidth(
-						ibuf, buf, offsetx + 56, (36 - offsety1) + i * 8, 8,
-						fontcolor.colors);
+				snprintf(buf, sizeof(buf), "%2i (%4i,%4i) - %s", types[i], x[i], y[i], schedules[types[i]]);
+				font->paint_text_fixedwidth(ibuf, buf, offsetx + 56, (36 - offsety1) + i * 8, 8, fontcolor.colors);
 			}
 		}
 	}
@@ -3023,30 +2720,18 @@ void CheatScreen::BusinessMenu(Actor* actor) {
 			int y   = 96 - row * 8;
 			snprintf(buf, sizeof(buf), "%2i %cM:", h12, h / 12 ? 'P' : 'A');
 			nextx = offsetx;
-			nextx += 8
-					 + font->paint_text_fixedwidth(
-							 ibuf, buf, nextx, maxy - offsety - y, 8,
-							 fontcolor.colors);
-			nextx += 8
-					 + AddMenuItem(
-							 nextx, maxy - offsety - y, SDLK_A + row, " Set");
-			nextx += 8
-					 + AddMenuItem(
-							 nextx, maxy - offsety - y, SDLK_I + row,
-							 " Location");
+			nextx += 8 + font->paint_text_fixedwidth(ibuf, buf, nextx, maxy - offsety - y, 8, fontcolor.colors);
+			nextx += 8 + AddMenuItem(nextx, maxy - offsety - y, SDLK_A + row, " Set");
+			nextx += 8 + AddMenuItem(nextx, maxy - offsety - y, SDLK_I + row, " Location");
 			AddMenuItem(nextx, maxy - offsety - y, SDLK_1 + row, " Clear");
 		}
 		nextx = offsetx;
-		nextx += 8
-				 + AddMenuItem(
-						 nextx, maxy - offsety - 32, SDLK_S,
-						 "et Current Activity");
+		nextx += 8 + AddMenuItem(nextx, maxy - offsety - 32, SDLK_S, "et Current Activity");
 
 		AddMenuItem(nextx, maxy - offsety - 32, SDLK_R, "evert");
 
 	} else {
-		AddMenuItem(
-				offsetx, maxy - offsety - 96, SDLK_S, "et Current Activity");
+		AddMenuItem(offsetx, maxy - offsety - 96, SDLK_S, "et Current Activity");
 	}
 	SharedMenu();
 }
@@ -3268,52 +2953,36 @@ void CheatScreen::StatMenu(Actor* actor) {
 	// Left Column
 
 	// Dexterity
-	snprintf(
-			buf, sizeof(buf), "exterity....%3i",
-			actor->get_property(Actor::dexterity));
+	snprintf(buf, sizeof(buf), "exterity....%3i", actor->get_property(Actor::dexterity));
 	AddMenuItem(offsetx, maxy - offsety1 - 108, SDLK_D, buf);
 
 	// Food Level
-	snprintf(
-			buf, sizeof(buf), "ood Level...%3i",
-			actor->get_property(Actor::food_level));
+	snprintf(buf, sizeof(buf), "ood Level...%3i", actor->get_property(Actor::food_level));
 	AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_F, buf);
 
 	// Intelligence
-	snprintf(
-			buf, sizeof(buf), "ntellicence.%3i",
-			actor->get_property(Actor::intelligence));
+	snprintf(buf, sizeof(buf), "ntellicence.%3i", actor->get_property(Actor::intelligence));
 	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_I, buf);
 
 	// Strength
-	snprintf(
-			buf, sizeof(buf), "trength.....%3i",
-			actor->get_property(Actor::strength));
+	snprintf(buf, sizeof(buf), "trength.....%3i", actor->get_property(Actor::strength));
 	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_S, buf);
 
 	// Combat Skill
-	snprintf(
-			buf, sizeof(buf), "ombat Skill.%3i",
-			actor->get_property(Actor::combat));
+	snprintf(buf, sizeof(buf), "ombat Skill.%3i", actor->get_property(Actor::combat));
 	AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_C, buf);
 
 	// Hit Points
-	snprintf(
-			buf, sizeof(buf), "it Points...%3i",
-			actor->get_property(Actor::health));
+	snprintf(buf, sizeof(buf), "it Points...%3i", actor->get_property(Actor::health));
 	AddMenuItem(offsetx, maxy - offsety1 - 63, SDLK_H, buf);
 
 	// Magic
 	// Magic Points
-	snprintf(
-			buf, sizeof(buf), "agic Points.%3i",
-			actor->get_property(Actor::magic));
+	snprintf(buf, sizeof(buf), "agic Points.%3i", actor->get_property(Actor::magic));
 	AddMenuItem(offsetx, maxy - offsety1 - 54, SDLK_M, buf);
 
 	// Mana
-	snprintf(
-			buf, sizeof(buf), "ana Level...%3i",
-			actor->get_property(Actor::mana));
+	snprintf(buf, sizeof(buf), "ana Level...%3i", actor->get_property(Actor::mana));
 	AddMenuItem(offsetx, maxy - offsety1 - 45, SDLK_V, buf);
 
 	SharedMenu();
@@ -3477,23 +3146,16 @@ void CheatScreen::PalEffectMenu(Actor* actor) {
 	int pt = actor->get_palette_transform();
 	if (pt == 0) {
 		snprintf(buf, sizeof(buf), "Palette effect: None");
-	} else if (
-			(pt & ShapeID::PT_RampRemapAllFrom)
-			== ShapeID::PT_RampRemapAllFrom) {
-		snprintf(
-				buf, sizeof(buf), "Palette effect: Ramp Remap All To %i",
-				pt & 31);
+	} else if ((pt & ShapeID::PT_RampRemapAllFrom) == ShapeID::PT_RampRemapAllFrom) {
+		snprintf(buf, sizeof(buf), "Palette effect: Ramp Remap All To %i", pt & 31);
 	} else if ((pt & ShapeID::PT_RampRemap) == ShapeID::PT_RampRemap) {
-		snprintf(
-				buf, sizeof(buf), "Palette effect: Ramp Remap %i To %i",
-				(pt >> 5) & 31, pt & 31);
+		snprintf(buf, sizeof(buf), "Palette effect: Ramp Remap %i To %i", (pt >> 5) & 31, pt & 31);
 	} else if ((pt & ShapeID::PT_xForm) == ShapeID::PT_xForm) {
 		snprintf(buf, sizeof(buf), "Palette effect: XForm %i", pt & 31);
 	} else if (pt < 256) {
 		snprintf(buf, sizeof(buf), "Palette effect: Shift by %i", pt & 0xff);
 	}
-	font->paint_text_fixedwidth(
-			ibuf, buf, offsetx, maxy - offsety1 - 119, 8, fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 119, 8, fontcolor.colors);
 
 	if (state.command == 't') {
 		if (state.saved_value == 255) {
@@ -3502,8 +3164,7 @@ void CheatScreen::PalEffectMenu(Actor* actor) {
 			snprintf(buf, sizeof(buf), "From Ramp: %i", state.saved_value & 31);
 		}
 
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, maxy - offsety1 - 110, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 110, 8, fontcolor.colors);
 	}
 
 	// Left Column
@@ -3530,9 +3191,7 @@ void CheatScreen::PalEffectActivate(Actor* actor) {
 
 	switch (state.command) {
 	case 'x':    // XForm
-		actor->set_palette_transform(
-				ShapeID::PT_xForm
-				| i % int(Shape_manager::get_instance()->get_xforms_cnt()));
+		actor->set_palette_transform(ShapeID::PT_xForm | i % int(Shape_manager::get_instance()->get_xforms_cnt()));
 		break;
 
 	case 'f':    // from Ramp
@@ -3548,9 +3207,7 @@ void CheatScreen::PalEffectActivate(Actor* actor) {
 			state.SetMode(CP_InvalidValue, false);
 			break;
 		}
-		std::snprintf(
-				staticPrompttext, sizeof(staticPrompttext), prompttext,
-				numramps);
+		std::snprintf(staticPrompttext, sizeof(staticPrompttext), prompttext, numramps);
 		state.input[0]      = 0;
 		state.custom_prompt = staticPrompttext;
 		state.SetMode(CP_CustomValue);
@@ -3570,12 +3227,9 @@ void CheatScreen::PalEffectActivate(Actor* actor) {
 			break;
 		}
 		if (state.saved_value == 255) {
-			actor->set_palette_transform(
-					ShapeID::PT_RampRemapAllFrom | (i & 31));
+			actor->set_palette_transform(ShapeID::PT_RampRemapAllFrom | (i & 31));
 		} else {
-			actor->set_palette_transform(
-					ShapeID::PT_RampRemap | (i & 31)
-					| ((state.saved_value & 0xff) << 5));
+			actor->set_palette_transform(ShapeID::PT_RampRemap | (i & 31) | ((state.saved_value & 0xff) << 5));
 		}
 	} break;
 
@@ -3607,9 +3261,7 @@ bool CheatScreen::PalEffectCheck(Actor* actor) {
 		if (numramps) {
 			numramps--;
 		}
-		std::snprintf(
-				staticPrompttext, sizeof(staticPrompttext), prompttext,
-				numramps);
+		std::snprintf(staticPrompttext, sizeof(staticPrompttext), prompttext, numramps);
 		state.input[0]      = 0;
 		state.custom_prompt = staticPrompttext;
 		state.SetMode(CP_CustomValue);
@@ -3626,9 +3278,7 @@ bool CheatScreen::PalEffectCheck(Actor* actor) {
 		if (numxforms) {
 			numxforms--;
 		}
-		std::snprintf(
-				staticPrompttext, sizeof(staticPrompttext), prompttext,
-				numxforms);
+		std::snprintf(staticPrompttext, sizeof(staticPrompttext), prompttext, numxforms);
 		state.input[0]      = 0;
 		state.custom_prompt = staticPrompttext;
 		state.SetMode(CP_CustomValue);
@@ -3705,29 +3355,22 @@ CheatScreen::Cheat_Prompt CheatScreen::AdvancedFlagLoop(int num, Actor* actor) {
 		} else {
 			snprintf(buf, sizeof(buf), "NPC Flag %i", num);
 		}
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, maxy - offsety1 - 108, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 108, 8, fontcolor.colors);
 
-		snprintf(
-				buf, sizeof(buf), "Flag is %s",
-				actor->get_flag(num) ? "SET" : "UNSET");
-		font->paint_text_fixedwidth(
-				ibuf, buf, offsetx, maxy - offsety1 - 90, 8, fontcolor.colors);
+		snprintf(buf, sizeof(buf), "Flag is %s", actor->get_flag(num) ? "SET" : "UNSET");
+		font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 90, 8, fontcolor.colors);
 
 		// Now the Menu Column
 		if (!actor->get_flag(num)) {
 			AddMenuItem(offsetx + 160, maxy - offsety1 - 90, SDLK_S, "et Flag");
 		} else {
-			AddMenuItem(
-					offsetx + 160, maxy - offsety1 - 90, SDLK_U, "nset Flag");
+			AddMenuItem(offsetx + 160, maxy - offsety1 - 90, SDLK_U, "nset Flag");
 		}
 
 		// Change Flag
 		AddMenuItem(offsetx, maxy - offsety1 - 72, SDLK_UP, " Change Flag");
 
-		AddLeftRightMenuItem(
-				offsetx, maxy - offsety1 - 63, "Scroll Flags", num > 0,
-				num < 63, false, true);
+		AddLeftRightMenuItem(offsetx, maxy - offsety1 - 63, "Scroll Flags", num > 0, num < 63, false, true);
 
 		SharedMenu();
 
@@ -3887,44 +3530,31 @@ void CheatScreen::TeleportDisplay() {
 #endif
 
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
-	font->paint_text_fixedwidth(
-			ibuf, "Teleport Menu - Dangerous!", offsetx, 0, 8,
-			fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, "Teleport Menu - Dangerous!", offsetx, 0, 8, fontcolor.colors);
 #else
-	font->paint_text_fixedwidth(
-			ibuf, "Teleport Menu", offsetx, 0, 8, fontcolor.colors);
-	font->paint_text_fixedwidth(
-			ibuf, "Dangerous - use with care!", offsetx, 18, 8,
-			fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, "Teleport Menu", offsetx, 0, 8, fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, "Dangerous - use with care!", offsetx, 18, 8, fontcolor.colors);
 #endif
 
 	const int longi = ((t.tx - 0x3A5) / 10);
 	const int lati  = ((t.ty - 0x46E) / 10);
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	snprintf(
-			buf, sizeof(buf), "Coords %d %s %d %s, Map #%d of %d", abs(lati),
-			(lati < 0 ? "North" : "South"), abs(longi),
+			buf, sizeof(buf), "Coords %d %s %d %s, Map #%d of %d", abs(lati), (lati < 0 ? "North" : "South"), abs(longi),
 			(longi < 0 ? "West" : "East"), curmap, highest);
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, 9, 8, fontcolor.colors);
 #else
 	snprintf(
-			buf, sizeof(buf), "Coordinates   %d %s %d %s", abs(lati),
-			(lati < 0 ? "North" : "South"), abs(longi),
+			buf, sizeof(buf), "Coordinates   %d %s %d %s", abs(lati), (lati < 0 ? "North" : "South"), abs(longi),
 			(longi < 0 ? "West" : "East"));
 	font->paint_text_fixedwidth(ibuf, buf, offsetx, 63, 8, fontcolor.colors);
 #endif
 
-	snprintf(
-			buf, sizeof(buf), "Coords in hex (%04x, %04x, %02x)", t.tx, t.ty,
-			t.tz);
-	font->paint_text_fixedwidth(
-			ibuf, buf, offsetx, 72 - offsety1, 8, fontcolor.colors);
+	snprintf(buf, sizeof(buf), "Coords in hex (%04x, %04x, %02x)", t.tx, t.ty, t.tz);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 72 - offsety1, 8, fontcolor.colors);
 
-	snprintf(
-			buf, sizeof(buf), "Coords in dec (%04i, %04i, %02i)", t.tx, t.ty,
-			t.tz);
-	font->paint_text_fixedwidth(
-			ibuf, buf, offsetx, 81 - offsety1, 8, fontcolor.colors);
+	snprintf(buf, sizeof(buf), "Coords in dec (%04i, %04i, %02i)", t.tx, t.ty, t.tz);
+	font->paint_text_fixedwidth(ibuf, buf, offsetx, 81 - offsety1, 8, fontcolor.colors);
 
 #if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID) && !defined(TEST_MOBILE)
 	snprintf(buf, sizeof(buf), "On Map #%d of %d", curmap, highest);
@@ -3951,8 +3581,7 @@ void CheatScreen::TeleportMenu() {
 	// Geo
 	AddMenuItem(offsetx, maxy - offsety1 - 99, SDLK_G, "eographic Coordinates");
 	// Hex
-	AddMenuItem(
-			offsetx, maxy - offsety1 - 90, SDLK_H, "exadecimal Coordinates");
+	AddMenuItem(offsetx, maxy - offsety1 - 90, SDLK_H, "exadecimal Coordinates");
 
 	// Dec
 	AddMenuItem(offsetx, maxy - offsety1 - 81, SDLK_D, "ecimal Coordinates");
@@ -4144,8 +3773,7 @@ void CheatScreen::TeleportActivate(int& prev) {
 			state.SetMode(CP_InvalidNPC);
 		} else {
 			Actor* actor = gwin->get_npc(i);
-			Game_window::get_instance()->teleport_party(
-					actor->get_tile(), false, actor->get_map_num());
+			Game_window::get_instance()->teleport_party(actor->get_tile(), false, actor->get_map_num());
 		}
 		break;
 
@@ -4210,8 +3838,7 @@ bool CheatScreen::TeleportCheck() {
 	return true;
 }
 
-int CheatScreen::AddMenuItem(
-		int offsetx, int offsety, SDL_Keycode keycode, const char* label) {
+int CheatScreen::AddMenuItem(int offsetx, int offsety, SDL_Keycode keycode, const char* label) {
 	int keywidth = 8;
 	switch (keycode) {
 	case SDLK_UP:
@@ -4228,37 +3855,29 @@ int CheatScreen::AddMenuItem(
 		break;
 	case SDLK_ESCAPE:
 		keywidth = 24;
-		font->paint_text_fixedwidth(
-				ibuf, "ESC", offsetx + 8, offsety, 8, fontcolor.colors);
+		font->paint_text_fixedwidth(ibuf, "ESC", offsetx + 8, offsety, 8, fontcolor.colors);
 		break;
 	default:
 		if (std::isalnum(keycode)) {
 			char buf[] = {char(std::toupper(keycode)), 0};
 
-			font->paint_text_fixedwidth(
-					ibuf, buf, offsetx + 8, offsety, 8, fontcolor.colors);
+			font->paint_text_fixedwidth(ibuf, buf, offsetx + 8, offsety, 8, fontcolor.colors);
 		}
 		break;
 	}
-	font->paint_text_fixedwidth(
-			ibuf, "[", offsetx, offsety, 8, fontcolor.colors);
-	font->paint_text_fixedwidth(
-			ibuf, "]", offsetx + keywidth + 8, offsety, 8, fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, "[", offsetx, offsety, 8, fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, "]", offsetx + keywidth + 8, offsety, 8, fontcolor.colors);
 	int labelstart = 16 + keywidth;
-	int labelwidth = font->paint_text_fixedwidth(
-			ibuf, label, offsetx + labelstart, offsety, 8, fontcolor.colors);
+	int labelwidth = font->paint_text_fixedwidth(ibuf, label, offsetx + labelstart, offsety, 8, fontcolor.colors);
 	hotspots.push_back(Hotspot(keycode, offsetx, offsety, 16 + keywidth, 8));
 	if (state.highlight == keycode) {
-		ibuf->fill_translucent8(
-				0, 8 * (int(std::strlen(label)) + 2) + keywidth, 8, offsetx,
-				offsety, highlighttable);
+		ibuf->fill_translucent8(0, 8 * (int(std::strlen(label)) + 2) + keywidth, 8, offsetx, offsety, highlighttable);
 	}
 	return labelstart + labelwidth;
 }
 
 int CheatScreen::AddLeftRightMenuItem(
-		int offsetx, int offsety, const char* label, bool left, bool right,
-		bool leaveempty, bool fixedlabel) {
+		int offsetx, int offsety, const char* label, bool left, bool right, bool leaveempty, bool fixedlabel) {
 	// Change NPC
 
 	int right_offset = (left || leaveempty) ? 8 : 0;
@@ -4270,30 +3889,22 @@ int CheatScreen::AddLeftRightMenuItem(
 	}
 	if (right) {
 		PaintArrow(offsetx + 9 + right_offset, offsety, '>');
-		hotspots.push_back(Hotspot(
-				SDLK_RIGHT, offsetx + 9 + right_offset, offsety, 16, 8));
+		hotspots.push_back(Hotspot(SDLK_RIGHT, offsetx + 9 + right_offset, offsety, 16, 8));
 	}
 	if (left) {
-		hotspots.push_back(
-				Hotspot(SDLK_LEFT, offsetx - 8, offsety, 16 + xwidth, 8));
+		hotspots.push_back(Hotspot(SDLK_LEFT, offsetx - 8, offsety, 16 + xwidth, 8));
 	}
 
-	font->paint_text_fixedwidth(
-			ibuf, "[", offsetx, offsety, 8, fontcolor.colors);
-	font->paint_text_fixedwidth(
-			ibuf, "]", offsetx + totalspace + 8, offsety, 8, fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, "[", offsetx, offsety, 8, fontcolor.colors);
+	font->paint_text_fixedwidth(ibuf, "]", offsetx + totalspace + 8, offsety, 8, fontcolor.colors);
 	int labelstart = (fixedlabel ? 32 : (totalspace + 16));
-	int labelwidth = font->paint_text_fixedwidth(
-			ibuf, label, offsetx + labelstart, offsety, 8, fontcolor.colors);
+	int labelwidth = font->paint_text_fixedwidth(ibuf, label, offsetx + labelstart, offsety, 8, fontcolor.colors);
 
 	if (state.highlight == SDLK_LEFT && left) {
-		ibuf->fill_translucent8(
-				0, 8 + xwidth, 8, offsetx, offsety, highlighttable);
+		ibuf->fill_translucent8(0, 8 + xwidth, 8, offsetx, offsety, highlighttable);
 	} else if (state.highlight == SDLK_RIGHT && right) {
 		int extend = !left ? 16 : 0;
-		ibuf->fill_translucent8(
-				0, 16 + extend, 8, offsetx + 8 + right_offset - extend, offsety,
-				highlighttable);
+		ibuf->fill_translucent8(0, 16 + extend, 8, offsetx + 8 + right_offset - extend, offsety, highlighttable);
 	}
 
 	return labelstart + labelwidth;
@@ -4346,8 +3957,7 @@ void CheatScreen::WaitButtonsUp() {
 			const char msg_waiting[] = "Waiting for up events: ";
 			int        offsety       = 36;
 			offsetx                  = offsetx1 - 4 * std::size(msg_waiting);
-			offsetx += font->paint_text_fixedwidth(
-					ibuf, msg_waiting, offsetx, offsety, 8, fontcolor.colors);
+			offsetx += font->paint_text_fixedwidth(ibuf, msg_waiting, offsetx, offsety, 8, fontcolor.colors);
 
 			bool first       = true;
 			int  last_button = 0;
@@ -4377,14 +3987,11 @@ void CheatScreen::WaitButtonsUp() {
 				case 1:
 				case 2:
 				case 3: {
-					const char* button_names[]
-							= {"Left Mouse Button", "Middle Mouse Button",
-							   "Right Mouse Button"};
+					const char* button_names[] = {"Left Mouse Button", "Middle Mouse Button", "Right Mouse Button"};
 
 					// Don't show mouse buttons if also waiting for finger
 					// up
-					if (buttons_down.find(button_down_finger)
-						!= buttons_down.end()) {
+					if (buttons_down.find(button_down_finger) != buttons_down.end()) {
 						continue;
 					}
 
@@ -4397,11 +4004,9 @@ void CheatScreen::WaitButtonsUp() {
 					button_name         = buf;
 
 					// Only display keyname if there is one and it is in ASCII
-					if (keyname[0]
-						&& std::none_of(
-								keyname, keyname + strlen(keyname), [](char c) {
-									return static_cast<unsigned char>(c) >= 128;
-								})) {
+					if (keyname[0] && std::none_of(keyname, keyname + strlen(keyname), [](char c) {
+							return static_cast<unsigned char>(c) >= 128;
+						})) {
 						snprintf(buf, sizeof(buf), "Key %s", keyname);
 					} else {
 						snprintf(buf, sizeof(buf), "Unknown Key #%i", button);
@@ -4411,8 +4016,7 @@ void CheatScreen::WaitButtonsUp() {
 
 				if (!first) {
 					// Paint a comma at the end of the previous name
-					offsetx += font->paint_text_fixedwidth(
-							ibuf, ", ", offsetx, offsety, 8, fontcolor.colors);
+					offsetx += font->paint_text_fixedwidth(ibuf, ", ", offsetx, offsety, 8, fontcolor.colors);
 				}
 				first = false;
 
@@ -4428,19 +4032,15 @@ void CheatScreen::WaitButtonsUp() {
 				} else {
 				}
 
-				offsetx += font->paint_text_fixedwidth(
-						ibuf, button_name, offsetx, offsety, 8,
-						fontcolor.colors);
+				offsetx += font->paint_text_fixedwidth(ibuf, button_name, offsetx, offsety, 8, fontcolor.colors);
 			}
 
 			offsetx                = 0;
 			const char msg_press[] = "Press";
 			font->paint_text_fixedwidth(
-					ibuf, msg_press, offsetx + 160 - 8 * std::size(msg_press),
-					offsety5 + 9, 8, fontcolor.colors);
+					ibuf, msg_press, offsetx + 160 - 8 * std::size(msg_press), offsety5 + 9, 8, fontcolor.colors);
 
-			AddMenuItem(
-					offsetx + 160, offsety5 + 9, SDLK_ESCAPE, " to exit now");
+			AddMenuItem(offsetx + 160, offsety5 + 9, SDLK_ESCAPE, " to exit now");
 		}
 
 		EndFrame();

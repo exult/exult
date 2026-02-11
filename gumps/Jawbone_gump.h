@@ -34,10 +34,8 @@ public:
 	Game_object* find_object(int mx, int my) override;
 
 	// Add object.
-	bool add(
-			Game_object* obj, int mx = -1, int my = -1, int sx = -1,
-			int sy = -1, bool dont_check = false,
-			bool combine = false) override;
+	bool add(Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false)
+			override;
 
 	// Paint it and its contents.
 	void paint() override;

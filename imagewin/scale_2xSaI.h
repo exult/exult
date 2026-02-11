@@ -36,8 +36,7 @@
  **/
 
 template <class Source_pixel, class Dest_pixel, class Manip_pixels>
-inline Dest_pixel Interpolate_2xSaI(
-		Source_pixel colorA, Source_pixel colorB, const Manip_pixels& manip) {
+inline Dest_pixel Interpolate_2xSaI(Source_pixel colorA, Source_pixel colorB, const Manip_pixels& manip) {
 	unsigned int r0;
 	unsigned int r1;
 	unsigned int g0;
@@ -53,9 +52,7 @@ inline Dest_pixel Interpolate_2xSaI(
 }
 
 template <class Source_pixel, class Dest_pixel, class Manip_pixels>
-inline Dest_pixel OInterpolate_2xSaI(
-		Source_pixel colorA, Source_pixel colorB, Source_pixel colorC,
-		const Manip_pixels& manip) {
+inline Dest_pixel OInterpolate_2xSaI(Source_pixel colorA, Source_pixel colorB, Source_pixel colorC, const Manip_pixels& manip) {
 	unsigned int r0;
 	unsigned int r1;
 	unsigned int g0;
@@ -76,8 +73,7 @@ inline Dest_pixel OInterpolate_2xSaI(
 
 template <class Source_pixel, class Dest_pixel, class Manip_pixels>
 inline Dest_pixel QInterpolate_2xSaI(
-		Source_pixel colorA, Source_pixel colorB, Source_pixel colorC,
-		Source_pixel colorD, const Manip_pixels& manip) {
+		Source_pixel colorA, Source_pixel colorB, Source_pixel colorC, Source_pixel colorD, const Manip_pixels& manip) {
 	unsigned int r0;
 	unsigned int r1;
 	unsigned int g0;
@@ -101,8 +97,7 @@ inline Dest_pixel QInterpolate_2xSaI(
 }
 
 template <class Source_pixel>
-inline int GetResult1(
-		Source_pixel A, Source_pixel B, Source_pixel C, Source_pixel D) {
+inline int GetResult1(Source_pixel A, Source_pixel B, Source_pixel C, Source_pixel D) {
 	int x = 0;
 	int y = 0;
 	int r = 0;
@@ -126,8 +121,7 @@ inline int GetResult1(
 }
 
 template <class Source_pixel>
-inline int GetResult2(
-		Source_pixel A, Source_pixel B, Source_pixel C, Source_pixel D) {
+inline int GetResult2(Source_pixel A, Source_pixel B, Source_pixel C, Source_pixel D) {
 	int x = 0;
 	int y = 0;
 	int r = 0;
@@ -247,53 +241,41 @@ void Scale_2xSaI(
 
 			if ((colorA == colorD) && (colorB != colorC)) {
 				if (((colorA == colorE) && (colorB == colorL))
-					|| ((colorA == colorC) && (colorA == colorF)
-						&& (colorB != colorE) && (colorB == colorJ))) {
+					|| ((colorA == colorC) && (colorA == colorF) && (colorB != colorE) && (colorB == colorJ))) {
 					// product = colorA;
 					manip.copy(product, colorA);
 				} else {
 					// product = INTERPOLATE(colorA, colorB);
-					product = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							colorA, colorB, manip);
+					product = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(colorA, colorB, manip);
 				}
 
 				if (((colorA == colorG) && (colorC == colorO))
-					|| ((colorA == colorB) && (colorA == colorH)
-						&& (colorG != colorC) && (colorC == colorM))) {
+					|| ((colorA == colorB) && (colorA == colorH) && (colorG != colorC) && (colorC == colorM))) {
 					// product1 = colorA;
 					manip.copy(product1, colorA);
 				} else {
 					// product1 = INTERPOLATE(colorA, colorC);
-					product1 = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							colorA, colorC, manip);
+					product1 = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(colorA, colorC, manip);
 				}
 				// product2 = colorA;
 				manip.copy(product2, colorA);
 			} else if ((colorB == colorC) && (colorA != colorD)) {
 				if (((colorB == colorF) && (colorA == colorH))
-					|| ((colorB == colorE) && (colorB == colorD)
-						&& (colorA != colorF) && (colorA == colorI))) {
+					|| ((colorB == colorE) && (colorB == colorD) && (colorA != colorF) && (colorA == colorI))) {
 					// product = colorB;
 					manip.copy(product, colorB);
 				} else {
 					// product = INTERPOLATE(colorA, colorB);
-					product = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							colorA, colorB, manip);
+					product = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(colorA, colorB, manip);
 				}
 
 				if (((colorC == colorH) && (colorA == colorF))
-					|| ((colorC == colorG) && (colorC == colorD)
-						&& (colorA != colorH) && (colorA == colorI))) {
+					|| ((colorC == colorG) && (colorC == colorD) && (colorA != colorH) && (colorA == colorI))) {
 					// product1 = colorC;
 					manip.copy(product1, colorC);
 				} else {
 					// product1 = INTERPOLATE(colorA, colorC);
-					product1 = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							colorA, colorC, manip);
+					product1 = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(colorA, colorC, manip);
 				}
 				// product2 = colorB;
 				manip.copy(product2, colorB);
@@ -308,22 +290,14 @@ void Scale_2xSaI(
 				} else {
 					int r = 0;
 					// product1 = INTERPOLATE(colorA, colorC);
-					product1 = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							colorA, colorC, manip);
+					product1 = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(colorA, colorC, manip);
 					// product = INTERPOLATE(colorA, colorB);
-					product = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							colorA, colorB, manip);
+					product = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(colorA, colorB, manip);
 
-					r += GetResult1<Source_pixel>(
-							colorA, colorB, colorG, colorE);
-					r += GetResult2<Source_pixel>(
-							colorB, colorA, colorK, colorF);
-					r += GetResult2<Source_pixel>(
-							colorB, colorA, colorH, colorN);
-					r += GetResult1<Source_pixel>(
-							colorA, colorB, colorL, colorO);
+					r += GetResult1<Source_pixel>(colorA, colorB, colorG, colorE);
+					r += GetResult2<Source_pixel>(colorB, colorA, colorK, colorF);
+					r += GetResult2<Source_pixel>(colorB, colorA, colorH, colorN);
+					r += GetResult1<Source_pixel>(colorA, colorB, colorL, colorO);
 
 					if (r > 0) {
 						// product2 = colorA;
@@ -334,47 +308,34 @@ void Scale_2xSaI(
 					} else {
 						// product2 = Q_INTERPOLATE(colorA, colorB, colorC,
 						// colorD);
-						product2 = QInterpolate_2xSaI<
-								Source_pixel, Dest_pixel, Manip_pixels>(
-								colorA, colorB, colorC, colorD, manip);
+						product2
+								= QInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(colorA, colorB, colorC, colorD, manip);
 					}
 				}
 			} else {
 				// product2 = Q_INTERPOLATE(colorA, colorB, colorC, colorD);
-				product2 = QInterpolate_2xSaI<
-						Source_pixel, Dest_pixel, Manip_pixels>(
-						colorA, colorB, colorC, colorD, manip);
+				product2 = QInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(colorA, colorB, colorC, colorD, manip);
 
-				if ((colorA == colorC) && (colorA == colorF)
-					&& (colorB != colorE) && (colorB == colorJ)) {
+				if ((colorA == colorC) && (colorA == colorF) && (colorB != colorE) && (colorB == colorJ)) {
 					// product = colorA;
 					manip.copy(product, colorA);
-				} else if (
-						(colorB == colorE) && (colorB == colorD)
-						&& (colorA != colorF) && (colorA == colorI)) {
+				} else if ((colorB == colorE) && (colorB == colorD) && (colorA != colorF) && (colorA == colorI)) {
 					// product = colorB;
 					manip.copy(product, colorB);
 				} else {
 					// product = INTERPOLATE(colorA, colorB);
-					product = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							colorA, colorB, manip);
+					product = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(colorA, colorB, manip);
 				}
 
-				if ((colorA == colorB) && (colorA == colorH)
-					&& (colorG != colorC) && (colorC == colorM)) {
+				if ((colorA == colorB) && (colorA == colorH) && (colorG != colorC) && (colorC == colorM)) {
 					// product1 = colorA;
 					manip.copy(product1, colorA);
-				} else if (
-						(colorC == colorG) && (colorC == colorD)
-						&& (colorA != colorH) && (colorA == colorI)) {
+				} else if ((colorC == colorG) && (colorC == colorD) && (colorA != colorH) && (colorA == colorI)) {
 					// product1 = colorC;
 					manip.copy(product1, colorC);
 				} else {
 					// product1 = INTERPOLATE(colorA, colorC);
-					product1 = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							colorA, colorC, manip);
+					product1 = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(colorA, colorC, manip);
 				}
 			}
 
@@ -544,88 +505,54 @@ void Scale_Super2xSaI(
 					product1b = product2b;
 				} else {
 					// product2b = product1b = INTERPOLATE (color5, color6);
-					product1b = product2b = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color5, color6, manip);
+					product1b = product2b = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color6, manip);
 				}
 
 			} else {
-				if (color6 == color3 && color3 == colorA1 && color2 != colorA2
-					&& color3 != colorA0) {
+				if (color6 == color3 && color3 == colorA1 && color2 != colorA2 && color3 != colorA0) {
 					// product2b = Q_INTERPOLATE (color3, color3, color3,
 					// color2);
-					product2b = QInterpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color3, color3, color3, color2, manip);
-				} else if (
-						color5 == color2 && color2 == colorA2
-						&& colorA1 != color3 && color2 != colorA3) {
+					product2b = QInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color3, color3, color3, color2, manip);
+				} else if (color5 == color2 && color2 == colorA2 && colorA1 != color3 && color2 != colorA3) {
 					// product2b = Q_INTERPOLATE (color2, color2, color2,
 					// color3);
-					product2b = QInterpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color3, color2, color2, color2, manip);
+					product2b = QInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color3, color2, color2, color2, manip);
 				} else {
 					// product2b = INTERPOLATE (color2, color3);
-					product2b = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color2, color3, manip);
+					product2b = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color2, color3, manip);
 				}
 
-				if (color6 == color3 && color6 == colorB1 && color5 != colorB2
-					&& color6 != colorB0) {
+				if (color6 == color3 && color6 == colorB1 && color5 != colorB2 && color6 != colorB0) {
 					// product1b = Q_INTERPOLATE (color6, color6, color6,
 					// color5);
-					product1b = QInterpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color5, color6, color6, color6, manip);
-				} else if (
-						color5 == color2 && color5 == colorB2
-						&& colorB1 != color6 && color5 != colorB3) {
+					product1b = QInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color6, color6, color6, manip);
+				} else if (color5 == color2 && color5 == colorB2 && colorB1 != color6 && color5 != colorB3) {
 					// product1b = Q_INTERPOLATE (color6, color5, color5,
 					// color5);
-					product1b = QInterpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color6, color5, color5, color5, manip);
+					product1b = QInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color6, color5, color5, color5, manip);
 				} else {
 					// product1b = INTERPOLATE (color5, color6);
-					product1b = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color5, color6, manip);
+					product1b = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color6, manip);
 				}
 			}
 
-			if (color5 == color3 && color2 != color6 && color4 == color5
-				&& color5 != colorA2) {
+			if (color5 == color3 && color2 != color6 && color4 == color5 && color5 != colorA2) {
 				// product2a = INTERPOLATE (color2, color5);
-				product2a = Interpolate_2xSaI<
-						Source_pixel, Dest_pixel, Manip_pixels>(
-						color5, color2, manip);
-			} else if (
-					color5 == color1 && color6 == color5 && color4 != color2
-					&& color5 != colorA0) {
+				product2a = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color2, manip);
+			} else if (color5 == color1 && color6 == color5 && color4 != color2 && color5 != colorA0) {
 				// product2a = INTERPOLATE(color2, color5);
-				product2a = Interpolate_2xSaI<
-						Source_pixel, Dest_pixel, Manip_pixels>(
-						color5, color2, manip);
+				product2a = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color2, manip);
 			} else {
 				// product2a = color2;
 				manip.copy(product2a, color2);
 			}
 
-			if (color2 == color6 && color5 != color3 && color1 == color2
-				&& color2 != colorB2) {
+			if (color2 == color6 && color5 != color3 && color1 == color2 && color2 != colorB2) {
 				// product1a = INTERPOLATE (color2, color5);
-				product1a = Interpolate_2xSaI<
-						Source_pixel, Dest_pixel, Manip_pixels>(
-						color5, color2, manip);
-			} else if (
-					color4 == color2 && color3 == color2 && color1 != color5
-					&& color2 != colorB0) {
+				product1a = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color2, manip);
+			} else if (color4 == color2 && color3 == color2 && color1 != color5 && color2 != colorB0) {
 				// product1a = INTERPOLATE(color2, color5);
-				product1a = Interpolate_2xSaI<
-						Source_pixel, Dest_pixel, Manip_pixels>(
-						color5, color2, manip);
+				product1a = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color2, manip);
 			} else {
 				// product1a = color5;
 				manip.copy(product1a, color5);
@@ -789,29 +716,21 @@ void Scale_SuperEagle(
 				if ((color1 == color2) || (color6 == colorB2)) {
 					// product1a = INTERPOLATE (color2, color5);
 					// product1a = INTERPOLATE (color2, product1a);
-					product1a = QInterpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color2, color2, color2, color5, manip);
+					product1a = QInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color2, color2, color2, color5, manip);
 
 				} else {
 					// product1a = INTERPOLATE (color5, color6);
-					product1a = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color6, color5, manip);
+					product1a = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color6, color5, manip);
 				}
 
 				if ((color6 == colorS2) || (color2 == colorA1)) {
 					// product2b = INTERPOLATE (color2, color3);
 					// product2b = INTERPOLATE (color2, product2b);
-					product2b = QInterpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color2, color2, color2, color3, manip);
+					product2b = QInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color2, color2, color2, color3, manip);
 
 				} else {
 					// product2b = INTERPOLATE (color2, color3);
-					product2b = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color2, color3, manip);
+					product2b = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color2, color3, manip);
 				}
 			} else if (color5 == color3 && color2 != color6) {
 				// product2b = product1a = color5;
@@ -821,27 +740,19 @@ void Scale_SuperEagle(
 				if ((colorB1 == color5) || (color3 == colorS1)) {
 					// product1b = INTERPOLATE (color5, color6);
 					// product1b = INTERPOLATE (color5, product1b);
-					product1b = QInterpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color5, color5, color5, color6, manip);
+					product1b = QInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color5, color5, color6, manip);
 				} else {
 					// product1b = INTERPOLATE (color5, color6);
-					product1b = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color5, color6, manip);
+					product1b = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color6, manip);
 				}
 
 				if ((color3 == colorA2) || (color4 == color5)) {
 					// product2a = INTERPOLATE (color5, color2);
 					// product2a = INTERPOLATE (color5, product2a);
-					product2a = QInterpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color2, color5, color5, color5, manip);
+					product2a = QInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color2, color5, color5, color5, manip);
 				} else {
 					// product2a = INTERPOLATE (color2, color3);
-					product2a = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color3, color2, manip);
+					product2a = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color3, color2, manip);
 				}
 
 			} else if (color5 == color3 && color2 == color6) {
@@ -861,17 +772,13 @@ void Scale_SuperEagle(
 					manip.copy(product2a, color2);
 					product1b = product2a;
 					// product1a = product2b = INTERPOLATE (color5, color6);
-					product1a = product2b = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color5, color6, manip);
+					product1a = product2b = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color6, manip);
 				} else if (r < 0) {
 					// product2b = product1a = color5;
 					manip.copy(product1a, color5);
 					product2b = product1a;
 					// product1b = product2a = INTERPOLATE (color5, color6);
-					product1b = product2a = Interpolate_2xSaI<
-							Source_pixel, Dest_pixel, Manip_pixels>(
-							color5, color6, manip);
+					product1b = product2a = Interpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color6, manip);
 				} else {
 					// product2b = product1a = color5;
 					manip.copy(product1a, color5);
@@ -885,23 +792,15 @@ void Scale_SuperEagle(
 				// product2b = Q_INTERPOLATE (color3, color3, color3,
 				// product2b); product1a = Q_INTERPOLATE (color5, color5,
 				// color5, product1a);
-				product2b = OInterpolate_2xSaI<
-						Source_pixel, Dest_pixel, Manip_pixels>(
-						color3, color2, color6, manip);
-				product1a = OInterpolate_2xSaI<
-						Source_pixel, Dest_pixel, Manip_pixels>(
-						color5, color6, color2, manip);
+				product2b = OInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color3, color2, color6, manip);
+				product1a = OInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color5, color6, color2, manip);
 
 				// product2a = product1b = INTERPOLATE (color5, color3);
 				// product2a = Q_INTERPOLATE (color2, color2, color2,
 				// product2a); product1b = Q_INTERPOLATE (color6, color6,
 				// color6, product1b);
-				product2a = OInterpolate_2xSaI<
-						Source_pixel, Dest_pixel, Manip_pixels>(
-						color2, color5, color3, manip);
-				product1b = OInterpolate_2xSaI<
-						Source_pixel, Dest_pixel, Manip_pixels>(
-						color6, color5, color3, manip);
+				product2a = OInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color2, color5, color3, manip);
+				product1b = OInterpolate_2xSaI<Source_pixel, Dest_pixel, Manip_pixels>(color6, color5, color3, manip);
 			}
 
 			*dP                      = product1a;

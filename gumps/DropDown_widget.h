@@ -28,13 +28,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // A widget that appears as a text button widget and when clicked pops up a
 // stringlist the user can select from a choice This widget cannot act as a
 // combo box and does not support text input
-class DropDown_widget : public IterableGump_widget<
-								std::vector<std::shared_ptr<Gump_widget>>> {
+class DropDown_widget : public IterableGump_widget<std::vector<std::shared_ptr<Gump_widget>>> {
 	std::vector<std::shared_ptr<Gump_widget>> children;
 	std::vector<std::string>                  selections;
 	std::shared_ptr<class StringList_widget>  list;
 	std::chrono::steady_clock::time_point     delayed_close = {};
-	bool active;    // Set when list is being shown
+	bool                                      active;    // Set when list is being shown
 
 	int popup_sx;
 	int popup_sy;
@@ -49,9 +48,7 @@ class DropDown_widget : public IterableGump_widget<
 
 	class Button : public Text_button {
 	public:
-		Button(DropDown_widget* parent, int width, int height)
-				: Text_button(parent, std::string_view(), 0, 0, width, height) {
-		}
+		Button(DropDown_widget* parent, int width, int height) : Text_button(parent, std::string_view(), 0, 0, width, height) {}
 
 		void paint() override;
 
@@ -69,9 +66,7 @@ public:
 		return IterableGump_widget::Input_first();
 	}
 
-	DropDown_widget(
-			Gump_Base* parent, const std::vector<std::string>& selections,
-			int selection, int px, int py, int width);
+	DropDown_widget(Gump_Base* parent, const std::vector<std::string>& selections, int selection, int px, int py, int width);
 
 	// If selection is -1 the current option is not in the selected options and
 	// gettext shouldbe used to get the actual option
@@ -128,8 +123,7 @@ public:
 		if (delayed_close != std::chrono::steady_clock::time_point()) {
 			delayed_close = std::chrono::steady_clock::now();
 		} else {
-			delayed_close = std::chrono::steady_clock::now()
-							+ std::chrono::milliseconds(100);
+			delayed_close = std::chrono::steady_clock::now() + std::chrono::milliseconds(100);
 		}
 	}
 };

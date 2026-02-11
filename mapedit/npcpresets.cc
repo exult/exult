@@ -36,8 +36,7 @@ using std::vector;
 /*
  *  Create preset.
  */
-Npc_preset::Npc_preset(const char* nm, Npc_preset_file* f)
-		: name(nm), file(f), modified(false) {}
+Npc_preset::Npc_preset(const char* nm, Npc_preset_file* f) : name(nm), file(f), modified(false) {}
 
 /*
  *  Set a value in the preset.
@@ -74,47 +73,36 @@ void Npc_preset::write(ODataSource& out) {
 
 	// Write all field values
 	// Face and shape (-1 if not set)
-	const int face_num
-			= has_value("face") ? std::atoi(get_value("face").c_str()) : -1;
-	const int shape_num
-			= has_value("shape") ? std::atoi(get_value("shape").c_str()) : -1;
+	const int face_num  = has_value("face") ? std::atoi(get_value("face").c_str()) : -1;
+	const int shape_num = has_value("shape") ? std::atoi(get_value("shape").c_str()) : -1;
 	out.write4(face_num);
 	out.write4(shape_num);
 
 	// Properties (10 values)
 	for (int i = 0; i < 10; i++) {
 		const string key = "prop_" + std::to_string(i);
-		const int val = has_value(key) ? std::atoi(get_value(key).c_str()) : 0;
+		const int    val = has_value(key) ? std::atoi(get_value(key).c_str()) : 0;
 		out.write4(val);
 	}
 
 	// Alignment and attack mode
-	const int alignment = has_value("alignment")
-								  ? std::atoi(get_value("alignment").c_str())
-								  : 0;
-	const int attack_mode
-			= has_value("attack_mode")
-					  ? std::atoi(get_value("attack_mode").c_str())
-					  : 0;
+	const int alignment   = has_value("alignment") ? std::atoi(get_value("alignment").c_str()) : 0;
+	const int attack_mode = has_value("attack_mode") ? std::atoi(get_value("attack_mode").c_str()) : 0;
 	out.write2(alignment);
 	out.write2(attack_mode);
 
 	// Flags (3 flag groups: oflags, xflags, type_flags)
-	const unsigned long oflags
-			= has_value("oflags") ? std::stoul(get_value("oflags")) : 0;
-	const unsigned long xflags
-			= has_value("xflags") ? std::stoul(get_value("xflags")) : 0;
-	const unsigned long type_flags
-			= has_value("type_flags") ? std::stoul(get_value("type_flags")) : 0;
+	const unsigned long oflags     = has_value("oflags") ? std::stoul(get_value("oflags")) : 0;
+	const unsigned long xflags     = has_value("xflags") ? std::stoul(get_value("xflags")) : 0;
+	const unsigned long type_flags = has_value("type_flags") ? std::stoul(get_value("type_flags")) : 0;
 	out.write4(oflags);
 	out.write4(xflags);
 	out.write4(type_flags);
 
 	// Schedules (8 time slots, activity type only)
 	for (int i = 0; i < 8; i++) {
-		const string key = "sched_" + std::to_string(i);
-		const int    type
-				= has_value(key) ? std::atoi(get_value(key).c_str()) : -1;
+		const string key  = "sched_" + std::to_string(i);
+		const int    type = has_value(key) ? std::atoi(get_value(key).c_str()) : -1;
 		out.write2(type);
 	}
 }
@@ -174,8 +162,7 @@ void Npc_preset::read(IDataSource& in) {
 /*
  *  Create preset file.
  */
-Npc_preset_file::Npc_preset_file(const char* nm)
-		: filename(nm ? nm : ""), modified(false) {}
+Npc_preset_file::Npc_preset_file(const char* nm) : filename(nm ? nm : ""), modified(false) {}
 
 /*
  *  Delete.
@@ -346,14 +333,11 @@ void ExultStudio::setup_npc_presets_list() {
 		if (preset->has_value("face")) {
 			const int face_num = std::atoi(preset->get_value("face").c_str());
 			if (face_num >= 0 && facefile) {
-				GdkPixbuf* full_pixbuf
-						= shape_image(facefile->get_ifile(), face_num, 0, true);
+				GdkPixbuf* full_pixbuf = shape_image(facefile->get_ifile(), face_num, 0, true);
 				if (full_pixbuf) {
 					const int width  = gdk_pixbuf_get_width(full_pixbuf);
 					const int height = gdk_pixbuf_get_height(full_pixbuf);
-					face_pixbuf      = gdk_pixbuf_scale_simple(
-                            full_pixbuf, width * 0.3, height * 0.3,
-                            GDK_INTERP_BILINEAR);
+					face_pixbuf      = gdk_pixbuf_scale_simple(full_pixbuf, width * 0.3, height * 0.3, GDK_INTERP_BILINEAR);
 					g_object_unref(full_pixbuf);
 				}
 			}
@@ -363,14 +347,11 @@ void ExultStudio::setup_npc_presets_list() {
 		if (preset->has_value("shape")) {
 			const int shape_num = std::atoi(preset->get_value("shape").c_str());
 			if (shape_num > 0 && vgafile) {
-				GdkPixbuf* full_pixbuf
-						= shape_image(vgafile->get_ifile(), shape_num, 0, true);
+				GdkPixbuf* full_pixbuf = shape_image(vgafile->get_ifile(), shape_num, 0, true);
 				if (full_pixbuf) {
 					const int width  = gdk_pixbuf_get_width(full_pixbuf);
 					const int height = gdk_pixbuf_get_height(full_pixbuf);
-					shape_pixbuf     = gdk_pixbuf_scale_simple(
-                            full_pixbuf, width * 0.4, height * 0.4,
-                            GDK_INTERP_BILINEAR);
+					shape_pixbuf     = gdk_pixbuf_scale_simple(full_pixbuf, width * 0.4, height * 0.4, GDK_INTERP_BILINEAR);
 					g_object_unref(full_pixbuf);
 				}
 			}
@@ -378,9 +359,7 @@ void ExultStudio::setup_npc_presets_list() {
 
 		GtkTreeIter iter;
 		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(
-				store, &iter, 0, preset->get_name(), 1, face_pixbuf, 2,
-				shape_pixbuf, -1);
+		gtk_list_store_set(store, &iter, 0, preset->get_name(), 1, face_pixbuf, 2, shape_pixbuf, -1);
 
 		// Free pixbufs after adding to store (store takes a reference)
 		if (face_pixbuf) {
@@ -412,8 +391,8 @@ bool ExultStudio::npc_presets_modified() {
  *  Get the currently selected NPC preset name from the list.
  */
 static const char* get_selected_npc_preset_name(ExultStudio* studio) {
-	GtkTreeView* list = GTK_TREE_VIEW(studio->get_widget("npc_presets_list"));
-	GtkTreeSelection* sel = gtk_tree_view_get_selection(list);
+	GtkTreeView*      list = GTK_TREE_VIEW(studio->get_widget("npc_presets_list"));
+	GtkTreeSelection* sel  = gtk_tree_view_get_selection(list);
 	GtkTreeModel*     model;
 	GtkTreeIter       iter;
 
@@ -479,14 +458,11 @@ void ExultStudio::save_npc_to_preset(const char* preset_name) {
 	GtkContainer* flags_table = GTK_CONTAINER(get_widget("npc_flags_table"));
 	if (flags_table) {
 		GList* children = gtk_container_get_children(flags_table);
-		for (GList* list = children; list != nullptr;
-			 list        = g_list_next(list)) {
+		for (GList* list = children; list != nullptr; list = g_list_next(list)) {
 			GtkCheckButton* cbox;
 			unsigned long*  bits;
 			int             fnum;
-			if (Get_flag_cbox(
-						list, &oflags, &xflags, &type_flags, cbox, bits,
-						fnum)) {
+			if (Get_flag_cbox(list, &oflags, &xflags, &type_flags, cbox, bits, fnum)) {
 				if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cbox))) {
 					*bits |= (1 << fnum);
 				}
@@ -507,8 +483,7 @@ void ExultStudio::save_npc_to_preset(const char* preset_name) {
 
 		int sched_type = -1;
 		if (label) {
-			sched_type = reinterpret_cast<sintptr>(
-					g_object_get_data(G_OBJECT(label), "user_data"));
+			sched_type = reinterpret_cast<sintptr>(g_object_get_data(G_OBJECT(label), "user_data"));
 		}
 
 		char key[20];
@@ -572,8 +547,7 @@ void ExultStudio::load_npc_preset_to_npc(const char* preset_name) {
 		set_optmenu("npc_alignment", alignment, false);
 	}
 	if (preset->has_value("attack_mode")) {
-		const int attack_mode
-				= std::atoi(preset->get_value("attack_mode").c_str());
+		const int attack_mode = std::atoi(preset->get_value("attack_mode").c_str());
 		set_optmenu("npc_attack_mode", attack_mode, false);
 	}
 
@@ -589,21 +563,17 @@ void ExultStudio::load_npc_preset_to_npc(const char* preset_name) {
 		xflags = std::strtoul(preset->get_value("xflags").c_str(), nullptr, 10);
 	}
 	if (preset->has_value("type_flags")) {
-		type_flags = std::strtoul(
-				preset->get_value("type_flags").c_str(), nullptr, 10);
+		type_flags = std::strtoul(preset->get_value("type_flags").c_str(), nullptr, 10);
 	}
 
 	GtkContainer* flags_table = GTK_CONTAINER(get_widget("npc_flags_table"));
 	if (flags_table) {
 		GList* children = gtk_container_get_children(flags_table);
-		for (GList* list = children; list != nullptr;
-			 list        = g_list_next(list)) {
+		for (GList* list = children; list != nullptr; list = g_list_next(list)) {
 			GtkCheckButton* cbox;
 			unsigned long*  bits;
 			int             fnum;
-			if (Get_flag_cbox(
-						list, &oflags, &xflags, &type_flags, cbox, bits,
-						fnum)) {
+			if (Get_flag_cbox(list, &oflags, &xflags, &type_flags, cbox, bits, fnum)) {
 				const bool active = (*bits & (1 << fnum)) != 0;
 				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cbox), active);
 			}
@@ -627,14 +597,9 @@ void ExultStudio::load_npc_preset_to_npc(const char* preset_name) {
 
 		if (label) {
 			// Set user data
-			g_object_set_data(
-					G_OBJECT(label), "user_data",
-					reinterpret_cast<gpointer>(uintptr(sched_type)));
+			g_object_set_data(G_OBJECT(label), "user_data", reinterpret_cast<gpointer>(uintptr(sched_type)));
 			// Update label text
-			gtk_label_set_text(
-					label, sched_type >= 0 && sched_type < 32
-								   ? sched_names[sched_type]
-								   : "-----");
+			gtk_label_set_text(label, sched_type >= 0 && sched_type < 32 ? sched_names[sched_type] : "-----");
 		}
 	}
 }
@@ -661,8 +626,7 @@ void ExultStudio::apply_npc_preset() {
 	}
 
 	// Ask user for confirmation before applying
-	if (EStudio::Prompt("Apply this preset to the current NPC?", "Yes", "No")
-		!= 0) {
+	if (EStudio::Prompt("Apply this preset to the current NPC?", "Yes", "No") != 0) {
 		return;
 	}
 
@@ -691,18 +655,15 @@ void ExultStudio::export_npc_preset() {
 
 	// Create file chooser dialog for saving
 	GtkWidget* dialog = gtk_file_chooser_dialog_new(
-			"Export NPC Preset to File", GTK_WINDOW(get_widget("npc_window")),
-			GTK_FILE_CHOOSER_ACTION_SAVE, "_Cancel", GTK_RESPONSE_CANCEL,
-			"_Save", GTK_RESPONSE_ACCEPT, nullptr);
+			"Export NPC Preset to File", GTK_WINDOW(get_widget("npc_window")), GTK_FILE_CHOOSER_ACTION_SAVE, "_Cancel",
+			GTK_RESPONSE_CANCEL, "_Save", GTK_RESPONSE_ACCEPT, nullptr);
 
-	gtk_file_chooser_set_do_overwrite_confirmation(
-			GTK_FILE_CHOOSER(dialog), true);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), true);
 
 	// Set default folder to patch directory
 	if (is_system_path_defined("<PATCH>")) {
 		const std::string patchdir = get_system_path("<PATCH>");
-		gtk_file_chooser_set_current_folder(
-				GTK_FILE_CHOOSER(dialog), patchdir.c_str());
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), patchdir.c_str());
 	}
 
 	// Add filter for .pre files
@@ -745,15 +706,13 @@ void ExultStudio::export_npc_preset() {
 void ExultStudio::import_npc_presets() {
 	// Create file chooser dialog for opening
 	GtkWidget* dialog = gtk_file_chooser_dialog_new(
-			"Import NPC Presets File", GTK_WINDOW(get_widget("npc_window")),
-			GTK_FILE_CHOOSER_ACTION_OPEN, "_Cancel", GTK_RESPONSE_CANCEL,
-			"_Open", GTK_RESPONSE_ACCEPT, nullptr);
+			"Import NPC Presets File", GTK_WINDOW(get_widget("npc_window")), GTK_FILE_CHOOSER_ACTION_OPEN, "_Cancel",
+			GTK_RESPONSE_CANCEL, "_Open", GTK_RESPONSE_ACCEPT, nullptr);
 
 	// Set default folder to patch directory
 	if (is_system_path_defined("<PATCH>")) {
 		const std::string patchdir = get_system_path("<PATCH>");
-		gtk_file_chooser_set_current_folder(
-				GTK_FILE_CHOOSER(dialog), patchdir.c_str());
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), patchdir.c_str());
 	}
 
 	// Add filter for .pre files
@@ -786,8 +745,7 @@ void ExultStudio::import_npc_presets() {
 		Npc_preset* src = import_file->get(i);
 		if (src) {
 			// Append " imported" to the preset name
-			std::string imported_name
-					= std::string(src->get_name()) + " imported";
+			std::string imported_name = std::string(src->get_name()) + " imported";
 
 			// Check if preset already exists
 			Npc_preset* dest = npc_presets_file->find(imported_name.c_str());
@@ -824,8 +782,7 @@ void ExultStudio::clone_npc_preset() {
 
 	// Create a simple dialog to get new name
 	GtkWidget* dialog = gtk_message_dialog_new(
-			GTK_WINDOW(get_widget("npc_window")), GTK_DIALOG_MODAL,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
+			GTK_WINDOW(get_widget("npc_window")), GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
 			"Enter name for cloned preset:");
 	GtkWidget* content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	GtkWidget* entry   = gtk_entry_new();
@@ -834,9 +791,7 @@ void ExultStudio::clone_npc_preset() {
 	gtk_widget_show(entry);
 
 	const gint  response      = gtk_dialog_run(GTK_DIALOG(dialog));
-	const char* new_name_cstr = (response == GTK_RESPONSE_OK)
-										? gtk_entry_get_text(GTK_ENTRY(entry))
-										: nullptr;
+	const char* new_name_cstr = (response == GTK_RESPONSE_OK) ? gtk_entry_get_text(GTK_ENTRY(entry)) : nullptr;
 	string      new_name      = new_name_cstr ? new_name_cstr : "";
 	gtk_widget_destroy(dialog);
 
@@ -864,8 +819,7 @@ void ExultStudio::rename_npc_preset() {
 
 	// Create a simple dialog to get new name
 	GtkWidget* dialog = gtk_message_dialog_new(
-			GTK_WINDOW(get_widget("npc_window")), GTK_DIALOG_MODAL,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
+			GTK_WINDOW(get_widget("npc_window")), GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
 			"Enter new name for preset:");
 	GtkWidget* content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	GtkWidget* entry   = gtk_entry_new();
@@ -874,9 +828,7 @@ void ExultStudio::rename_npc_preset() {
 	gtk_widget_show(entry);
 
 	const gint  response      = gtk_dialog_run(GTK_DIALOG(dialog));
-	const char* new_name_cstr = (response == GTK_RESPONSE_OK)
-										? gtk_entry_get_text(GTK_ENTRY(entry))
-										: nullptr;
+	const char* new_name_cstr = (response == GTK_RESPONSE_OK) ? gtk_entry_get_text(GTK_ENTRY(entry)) : nullptr;
 	string      new_name      = new_name_cstr ? new_name_cstr : "";
 	gtk_widget_destroy(dialog);
 
@@ -966,14 +918,12 @@ C_EXPORT void on_npc_preset_delete_clicked(GtkButton* btn, gpointer user_data) {
 }
 
 C_EXPORT void on_npc_presets_list_row_activated(
-		GtkTreeView* treeview, GtkTreePath* path, GtkTreeViewColumn* col,
-		gpointer user_data) {
+		GtkTreeView* treeview, GtkTreePath* path, GtkTreeViewColumn* col, gpointer user_data) {
 	ignore_unused_variable_warning(treeview, path, col, user_data);
 	// Double-clicking does nothing
 }
 
-C_EXPORT void on_npc_presets_list_cursor_changed(
-		GtkTreeView* treeview, gpointer user_data) {
+C_EXPORT void on_npc_presets_list_cursor_changed(GtkTreeView* treeview, gpointer user_data) {
 	ignore_unused_variable_warning(treeview, user_data);
 	// Could enable/disable buttons based on selection here
 }

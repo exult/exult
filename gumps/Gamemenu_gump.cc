@@ -93,36 +93,27 @@ void Gamemenu_gump::createButtons() {
 	SetProceduralBackground(TileRect(0, 0, 100, yForRow(7)), -1);
 	if (!gwin->is_in_exult_menu()) {
 		buttons[id_load_save] = std::make_unique<Gamemenu_button>(
-				this, &Gamemenu_gump::loadsave, Strings::LoadSaveGame(), margin,
-				yForRow(y++), preferred_button_width, 11);
+				this, &Gamemenu_gump::loadsave, Strings::LoadSaveGame(), margin, yForRow(y++), preferred_button_width, 11);
 	}
 	buttons[id_video_options] = std::make_unique<Gamemenu_button>(
-			this, &Gamemenu_gump::video_options, Strings::VideoOptions(),
-			margin, yForRow(y++), preferred_button_width, 11);
+			this, &Gamemenu_gump::video_options, Strings::VideoOptions(), margin, yForRow(y++), preferred_button_width, 11);
 	buttons[id_audio_options] = std::make_unique<Gamemenu_button>(
-			this, &Gamemenu_gump::audio_options, Strings::AudioOptions(),
-			margin, yForRow(y++), preferred_button_width, 11);
+			this, &Gamemenu_gump::audio_options, Strings::AudioOptions(), margin, yForRow(y++), preferred_button_width, 11);
 	buttons[id_game_engine_options] = std::make_unique<Gamemenu_button>(
-			this, &Gamemenu_gump::game_engine_options, Strings::GameEngine(),
-			margin, yForRow(y++), preferred_button_width, 11);
+			this, &Gamemenu_gump::game_engine_options, Strings::GameEngine(), margin, yForRow(y++), preferred_button_width, 11);
 	buttons[id_game_display_options] = std::make_unique<Gamemenu_button>(
-			this, &Gamemenu_gump::game_display_options, Strings::GameDisplay(),
-			margin, yForRow(y++), preferred_button_width, 11);
+			this, &Gamemenu_gump::game_display_options, Strings::GameDisplay(), margin, yForRow(y++), preferred_button_width, 11);
 	buttons[id_input] = std::make_unique<Gamemenu_button>(
-			this, &Gamemenu_gump::input_options, Strings::GameInput(), margin,
-			yForRow(y++), preferred_button_width, 11);
+			this, &Gamemenu_gump::input_options, Strings::GameInput(), margin, yForRow(y++), preferred_button_width, 11);
 #if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
 	if (!gwin->is_in_exult_menu()) {
 		buttons[id_quit] = std::make_unique<Gamemenu_button>(
-				this, &Gamemenu_gump::quit_exult, Strings::Quit(), margin,
-				yForRow(y++), preferred_button_width, 11);
+				this, &Gamemenu_gump::quit_exult, Strings::Quit(), margin, yForRow(y++), preferred_button_width, 11);
 	}
 #endif
 
 	// Resize to fit the combined height of the buttons
-	SetProceduralBackground(
-			TileRect(0, yForRow(0) - margin, 100, yForRow(y) + margin), -1,
-			true);
+	SetProceduralBackground(TileRect(0, yForRow(0) - margin, 100, yForRow(y) + margin), -1, true);
 
 	// Resize to fit width of buttons
 	ResizeWidthToFitWidgets(tcb::span(buttons.data(), buttons.size()), margin);
@@ -208,8 +199,7 @@ void Gamemenu_gump::do_exult_menu() {
 	// Need to do a very small init of game data... palette, mouse, gumps
 	Gamemenu_gump gmenu;
 	// Does not return until gump can be deleted:
-	Game_window::get_instance()->get_gump_man()->do_modal_gump(
-			&gmenu, Mouse::hand);
+	Game_window::get_instance()->get_gump_man()->do_modal_gump(&gmenu, Mouse::hand);
 }
 
 Gump_button* Gamemenu_gump::on_button(int mx, int my) {

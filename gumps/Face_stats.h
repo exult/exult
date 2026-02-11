@@ -75,10 +75,8 @@ public:
 	// add dirty region, if dirty
 	void update_gump() override;
 
-	bool add(
-			Game_object* obj, int mx = -1, int my = -1, int sx = -1,
-			int sy = -1, bool dont_check = false,
-			bool combine = false) override;
+	bool add(Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false)
+			override;
 
 	Container_game_object* find_actor(int mx, int my) override;
 

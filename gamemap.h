@@ -59,22 +59,22 @@ class Game_map {
 	int num;    // Map #.  Index in gwin->maps.
 	// Flat chunk areas:
 	static std::vector<Chunk_terrain*>*  chunk_terrains;
-	static std::unique_ptr<std::istream> chunks;       // "u7chunks" file.
-	static bool                          v2_chunks;    // True if 3 bytes/entry.
-	static bool read_all_terrain;    // True if we've read them all.
-	static bool chunk_terrains_modified;
-	bool        didinit;
-	bool        map_modified;    // True if any map changes from
+	static std::unique_ptr<std::istream> chunks;              // "u7chunks" file.
+	static bool                          v2_chunks;           // True if 3 bytes/entry.
+	static bool                          read_all_terrain;    // True if we've read them all.
+	static bool                          chunk_terrains_modified;
+	bool                                 didinit;
+	bool                                 map_modified;    // True if any map changes from
 	//   map-editing.
 	// Chunk_terrain index for each chunk:
 	short terrain_map[c_num_chunks][c_num_chunks];
 	// A list of objects in each chunk:
-	std::unique_ptr<Map_chunk> objects[c_num_chunks][c_num_chunks];
-	bool  schunk_read[144];        // Flag for reading in each "ifix".
-	bool  schunk_modified[144];    // Flag for modified "ifix".
-	char* schunk_cache[144];
-	int   schunk_cache_sizes[144];
-	int   caching_out;    // >0 in 'cache_out_schunk'.
+	std::unique_ptr<Map_chunk>            objects[c_num_chunks][c_num_chunks];
+	bool                                  schunk_read[144];        // Flag for reading in each "ifix".
+	bool                                  schunk_modified[144];    // Flag for modified "ifix".
+	char*                                 schunk_cache[144];
+	int                                   schunk_cache_sizes[144];
+	int                                   caching_out;    // >0 in 'cache_out_schunk'.
 	std::unique_ptr<Map_patch_collection> map_patches;
 
 	Map_chunk*            create_chunk(int cx, int cy);
@@ -130,16 +130,12 @@ public:
 	}
 
 	bool is_chunk_read(int cx, int cy) {
-		return cx < c_num_chunks && cy < c_num_chunks
-			   && schunk_read
-					   [12 * (cy / c_chunks_per_schunk)
-						+ cx / c_chunks_per_schunk];
+		return cx < c_num_chunks && cy < c_num_chunks && schunk_read[12 * (cy / c_chunks_per_schunk) + cx / c_chunks_per_schunk];
 	}
 
 	void ensure_chunk_read(int cx, int cy) {
 		if (cx < c_num_chunks && cy < c_num_chunks) {
-			const int sc = 12 * (cy / c_chunks_per_schunk)
-						   + cx / c_chunks_per_schunk;
+			const int sc = 12 * (cy / c_chunks_per_schunk) + cx / c_chunks_per_schunk;
 			if (!schunk_read[sc]) {
 				get_superchunk_objects(sc);
 			}
@@ -147,10 +143,8 @@ public:
 	}
 
 	void set_ifix_modified(int cx, int cy) {
-		map_modified = true;
-		schunk_modified
-				[12 * (cy / c_chunks_per_schunk) + cx / c_chunks_per_schunk]
-				= true;
+		map_modified                                                                = true;
+		schunk_modified[12 * (cy / c_chunks_per_schunk) + cx / c_chunks_per_schunk] = true;
 	}
 
 	// Get objs. list for a chunk.
@@ -166,8 +160,7 @@ public:
 
 	// Get/create objs. list for a chunk.
 	Map_chunk* get_chunk(int cx, int cy) {
-		assert((cx >= 0) && (cx < c_num_chunks) && (cy >= 0)
-			   && (cy < c_num_chunks));
+		assert((cx >= 0) && (cx < c_num_chunks) && (cy >= 0) && (cy < c_num_chunks));
 		return get_chunk_unchecked(cx, cy);
 	}
 
@@ -198,7 +191,7 @@ public:
 	void  set_chunk_terrain(int cx, int cy, int chunknum);
 	char* get_mapped_name(const char* from, char* to);
 	// Get ifixxxx/iregxx name.
-	char* get_schunk_file_name(const char* prefix, int schunk, char* fname);
+	char*       get_schunk_file_name(const char* prefix, int schunk, char* fname);
 	static void write_chunk_terrains();
 	void        write_static();    // Write to 'static' directory.
 	// Write (static) map objects.
@@ -206,16 +199,12 @@ public:
 	// Get "ifix" objects for a superchunk.
 	void get_ifix_objects(int schunk);
 	// Get "ifix" objs. for given chunk.
-	void get_ifix_chunk_objects(
-			IDataSource* ifix, int vers, long filepos, int len, int cx, int cy);
-	static void write_attributes(
-			ODataSource*                              ireg,
-			std::vector<std::pair<const char*, int>>& attlist);
+	void        get_ifix_chunk_objects(IDataSource* ifix, int vers, long filepos, int len, int cx, int cy);
+	static void write_attributes(ODataSource* ireg, std::vector<std::pair<const char*, int>>& attlist);
 	// Write scheduled script for obj.
-	static void write_scheduled(
-			ODataSource* ireg, Game_object* obj, bool write_mark = false);
-	static int write_string(ODataSource* ireg, const char* str);
-	void       write_ireg();    // Write modified ireg files.
+	static void write_scheduled(ODataSource* ireg, Game_object* obj, bool write_mark = false);
+	static int  write_string(ODataSource* ireg, const char* str);
+	void        write_ireg();    // Write modified ireg files.
 	// Write moveable objects to file.
 	void write_ireg_objects(int schunk);
 	// Write moveable objects to datasource.
@@ -225,19 +214,16 @@ public:
 	// Read scheduled script(s) for obj.
 	void read_special_ireg(IDataSource* ireg, Game_object* obj);
 	void read_ireg_objects(
-			IDataSource* ireg, int scx, int scy,
-			Game_object*  container = nullptr,
-			unsigned long flags     = (1 << Obj_flags::okay_to_take));
-	Ireg_game_object_shared create_ireg_object(
-			const Shape_info& info, int shnum, int frnum, int tilex, int tiley,
-			int lift);
+			IDataSource* ireg, int scx, int scy, Game_object* container = nullptr,
+			unsigned long flags = (1 << Obj_flags::okay_to_take));
+	Ireg_game_object_shared create_ireg_object(const Shape_info& info, int shnum, int frnum, int tilex, int tiley, int lift);
 	Ireg_game_object_shared create_ireg_object(int shnum, int frnum);
 	Ifix_game_object_shared create_ifix_object(int shnum, int frnum);
 	// Get all superchunk objects.
 	void get_superchunk_objects(int schunk);
 	bool is_tile_occupied(const Tile_coord& tile);
 	// Locate chunk with desired terrain.
-	bool locate_terrain(int tnum, int& cx, int& cy, bool upwards = false);
+	bool        locate_terrain(int tnum, int& cx, int& cy, bool upwards = false);
 	static bool swap_terrains(int tnum);    // Swap adjacent terrain #'s.
 	// Insert new terrain after 'tnum'.
 	static bool insert_terrain(int tnum, bool dup = false);
@@ -247,10 +233,8 @@ public:
 	// Search entire game for unused.
 	void find_unused_shapes(unsigned char* found, int foundlen);
 	// Locate shape (for EStudio).
-	Game_object* locate_shape(
-			int shapenum, bool upwards, Game_object* start, int frnum,
-			int qual);
-	static bool write_minimap();
+	Game_object* locate_shape(int shapenum, bool upwards, Game_object* start, int frnum, int qual);
+	static bool  write_minimap();
 
 	// Do a cache out. (cx, cy) is the center
 	void cache_out(int cx, int cy);

@@ -29,35 +29,26 @@
 /// SetAndroidAutoLaunchFPtrs
 class GameDisplayOptions_gump {
 public:
-	static void SetAndroidAutoLaunchFPtrs(
-			void (*setter)(bool), bool (*getter)());
+	static void SetAndroidAutoLaunchFPtrs(void (*setter)(bool), bool (*getter)());
 };
 
 static bool getAutoLaunch() {
 	auto jniEnv = static_cast<JNIEnv*>(SDL_GetAndroidJNIEnv());
 
-	auto launcherclass = jniEnv->FindClass("info/exult/ExultLauncherActivity");
+	auto launcherclass               = jniEnv->FindClass("info/exult/ExultLauncherActivity");
 	auto exultLauncherActivityObject = jniEnv->CallStaticObjectMethod(
-			launcherclass, jniEnv->GetStaticMethodID(
-								   launcherclass, "instance",
-								   "()Linfo/exult/ExultLauncherActivity;"));
-	return jniEnv->CallBooleanMethod(
-				   exultLauncherActivityObject,
-				   jniEnv->GetMethodID(launcherclass, "getAutoLaunch", "()Z"))
+			launcherclass, jniEnv->GetStaticMethodID(launcherclass, "instance", "()Linfo/exult/ExultLauncherActivity;"));
+	return jniEnv->CallBooleanMethod(exultLauncherActivityObject, jniEnv->GetMethodID(launcherclass, "getAutoLaunch", "()Z"))
 		   != JNI_FALSE;
 }
 
 static void setAutoLaunch(bool autoLaunch) {
-	auto jniEnv        = static_cast<JNIEnv*>(SDL_GetAndroidJNIEnv());
-	auto launcherclass = jniEnv->FindClass("info/exult/ExultLauncherActivity");
+	auto jniEnv                      = static_cast<JNIEnv*>(SDL_GetAndroidJNIEnv());
+	auto launcherclass               = jniEnv->FindClass("info/exult/ExultLauncherActivity");
 	auto exultLauncherActivityObject = jniEnv->CallStaticObjectMethod(
-			launcherclass, jniEnv->GetStaticMethodID(
-								   launcherclass, "instance",
-								   "()Linfo/exult/ExultLauncherActivity;"));
+			launcherclass, jniEnv->GetStaticMethodID(launcherclass, "instance", "()Linfo/exult/ExultLauncherActivity;"));
 	jboolean arg = autoLaunch;
-	jniEnv->CallVoidMethod(
-			exultLauncherActivityObject,
-			jniEnv->GetMethodID(launcherclass, "setAutoLaunch", "(Z)V"), arg);
+	jniEnv->CallVoidMethod(exultLauncherActivityObject, jniEnv->GetMethodID(launcherclass, "setAutoLaunch", "(Z)V"), arg);
 }
 
 extern "C" JNIEXPORT int JNICALL ExultAndroid_main(int argc, char* argv[]) {
@@ -66,8 +57,7 @@ extern "C" JNIEXPORT int JNICALL ExultAndroid_main(int argc, char* argv[]) {
 	auto*                ndk_cout = std::cout.rdbuf(&exult_cout);
 	auto*                ndk_cerr = std::cerr.rdbuf(&exult_cerr);
 
-	GameDisplayOptions_gump::SetAndroidAutoLaunchFPtrs(
-			setAutoLaunch, getAutoLaunch);
+	GameDisplayOptions_gump::SetAndroidAutoLaunchFPtrs(setAutoLaunch, getAutoLaunch);
 
 	[[maybe_unused]] auto result = SDL_main(argc, argv);
 

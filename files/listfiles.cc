@@ -89,9 +89,7 @@ int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 			char* filename = new char[nLen + nLen2];
 			strcpy(filename, stripped_path);
 #	ifdef UNICODE
-			WideCharToMultiByte(
-					CP_ACP, 0, fileinfo.cFileName, -1, filename + nLen, nLen2,
-					nullptr, nullptr);
+			WideCharToMultiByte(CP_ACP, 0, fileinfo.cFileName, -1, filename + nLen, nLen2, nullptr, nullptr);
 #	else
 			std::strcat(filename, fileinfo.cFileName);
 #	endif
@@ -110,17 +108,13 @@ int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 		LPTSTR lpMsgBuf;
 		char*  str;
 		FormatMessage(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
-						| FORMAT_MESSAGE_IGNORE_INSERTS,
-				nullptr, GetLastError(),
-				MAKELANGID(
-						LANG_NEUTRAL, SUBLANG_DEFAULT),    // Default language
+				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
+				GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),    // Default language
 				reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, nullptr);
 #	ifdef UNICODE
 		nLen2 = _tcslen(lpMsgBuf) + 1;
 		str   = static_cast<char*>(_alloca(nLen));
-		WideCharToMultiByte(
-				CP_ACP, 0, lpMsgBuf, -1, str, nLen2, nullptr, nullptr);
+		WideCharToMultiByte(CP_ACP, 0, lpMsgBuf, -1, str, nLen2, nullptr, nullptr);
 #	else
 		str = lpMsgBuf;
 #	endif
@@ -158,8 +152,7 @@ int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 #		endif    // __GNUC__
 #	endif
 
-static int U7ListFilesImp(
-		const std::string& path, FileList& files, bool quiet) {
+static int U7ListFilesImp(const std::string& path, FileList& files, bool quiet) {
 	glob_t globres;
 	int    err = glob(path.c_str(), GLOB_NOSORT, nullptr, &globres);
 
@@ -188,9 +181,7 @@ int U7ListFiles(const std::string& mask, FileList& files, bool quiet) {
 	// glob() so that we pick up platform-specific paths and behaviors like
 	// this.
 	if (result != 0) {
-		result = U7ListFilesImp(
-				SDL_GetAndroidInternalStoragePath() + ("/" + path), files,
-				quiet);
+		result = U7ListFilesImp(SDL_GetAndroidInternalStoragePath() + ("/" + path), files, quiet);
 	}
 #	endif
 	return result;

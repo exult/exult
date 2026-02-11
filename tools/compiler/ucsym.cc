@@ -74,14 +74,13 @@ int Uc_symbol::gen_value(Basic_block* out) {
 
 int Uc_symbol::gen_call(
 		Basic_block* out, Uc_function* fun,
-		bool                 orig,        // Call original (not one from patch).
-		Uc_expression*       itemref,     // Non-nullptr for CALLE.
-		Uc_array_expression* parms,       // Parameter list.
-		bool                 retvalue,    // True if a function.
-		Uc_class* scope_vtbl    // For method calls using a different scope.
+		bool                 orig,         // Call original (not one from patch).
+		Uc_expression*       itemref,      // Non-nullptr for CALLE.
+		Uc_array_expression* parms,        // Parameter list.
+		bool                 retvalue,     // True if a function.
+		Uc_class*            scope_vtbl    // For method calls using a different scope.
 ) {
-	ignore_unused_variable_warning(
-			out, fun, orig, itemref, parms, retvalue, scope_vtbl);
+	ignore_unused_variable_warning(out, fun, orig, itemref, parms, retvalue, scope_vtbl);
 	return 0;
 }
 
@@ -121,9 +120,8 @@ int Uc_var_symbol::is_object_function(bool print_error) const {
 	if (print_error && Uc_location::get_shapefun_warn()) {
 		switch (is_obj_fun) {
 		case -2:
-			Uc_location::yywarning(
-					"Shape # is equal to fun. ID only for shapes < 0x400; use "
-					"UI_get_usecode_fun instead");
+			Uc_location::yywarning("Shape # is equal to fun. ID only for shapes < 0x400; use "
+								   "UI_get_usecode_fun instead");
 			break;
 		case 1:
 			Uc_location::yyerror(
@@ -132,12 +130,10 @@ int Uc_var_symbol::is_object_function(bool print_error) const {
 					name.c_str());
 			break;
 		case 2:
-			Uc_location::yyerror(
-					"Var '%s' contains a negative number", name.c_str());
+			Uc_location::yyerror("Var '%s' contains a negative number", name.c_str());
 			break;
 		case 3:
-			Uc_location::yyerror(
-					"Return of intrinsics are generally not fun. IDs");
+			Uc_location::yyerror("Return of intrinsics are generally not fun. IDs");
 			break;
 		}
 	}
@@ -312,11 +308,11 @@ Uc_expression* Uc_string_symbol::create_expression() {
 
 int Uc_intrinsic_symbol::gen_call(
 		Basic_block* out, Uc_function* fun,
-		bool                 orig,        // Call original (not one from patch).
-		Uc_expression*       itemref,     // Non-nullptr for CALLE.
-		Uc_array_expression* parms,       // Parameter list.
-		bool                 retvalue,    // True if a function.
-		Uc_class* scope_vtbl    // For method calls using a different scope.
+		bool                 orig,         // Call original (not one from patch).
+		Uc_expression*       itemref,      // Non-nullptr for CALLE.
+		Uc_array_expression* parms,        // Parameter list.
+		bool                 retvalue,     // True if a function.
+		Uc_class*            scope_vtbl    // For method calls using a different scope.
 ) {
 	ignore_unused_variable_warning(fun, orig, scope_vtbl);
 	int parmcnt = parms->gen_values(out);    // Want to push parm. values.
@@ -341,9 +337,8 @@ Uc_function_symbol::Uc_function_symbol(
 		int         num,    // Function #, or -1 to assign
 		//  1 + last_num.
 		std::vector<Uc_var_symbol*>& p, int shp, Function_kind kind)
-		: Uc_symbol(nm), parms(p), usecode_num(num), method_num(-1),
-		  shape_num(shp), externed(false), inherited(false), ret_type(no_ret),
-		  high_id(false), type(kind) {
+		: Uc_symbol(nm), parms(p), usecode_num(num), method_num(-1), shape_num(shp), externed(false), inherited(false),
+		  ret_type(no_ret), high_id(false), type(kind) {
 	high_id = is_int_32bit(usecode_num);
 }
 
@@ -356,8 +351,7 @@ Uc_function_symbol* Uc_function_symbol::create(
 		char* nm,
 		int   num,    // Function #, or -1 to assign
 		//  1 + last_num.
-		std::vector<Uc_var_symbol*>& p, bool is_extern, Uc_scope* scope,
-		Function_kind kind) {
+		std::vector<Uc_var_symbol*>& p, bool is_extern, Uc_scope* scope, Function_kind kind) {
 	// Checking num and kind for backward compatibility.
 	if (num < 0) {
 		// Treat as autonumber request.
@@ -367,16 +361,12 @@ Uc_function_symbol* Uc_function_symbol::create(
 		}
 	} else if (num < 0x400) {
 		if (kind == utility_fun) {
-			Uc_location::yywarning(
-					"Treating function '%s' as being a 'shape#()' function.",
-					nm);
+			Uc_location::yywarning("Treating function '%s' as being a 'shape#()' function.", nm);
 			kind = shape_fun;
 		}
 	} else if (num < 0x800) {
 		if (kind == utility_fun) {
-			Uc_location::yywarning(
-					"Treating function '%s' as being an 'object#()' function.",
-					nm);
+			Uc_location::yywarning("Treating function '%s' as being an 'object#()' function.", nm);
 			kind = object_fun;
 		}
 	}
@@ -389,8 +379,7 @@ Uc_function_symbol* Uc_function_symbol::create(
 	}
 
 	// Override function number if the function has been declared before this.
-	auto* sym = dynamic_cast<Uc_function_symbol*>(
-			scope ? scope->search(nm) : Uc_function::search_globals(nm));
+	auto* sym = dynamic_cast<Uc_function_symbol*>(scope ? scope->search(nm) : Uc_function::search_globals(nm));
 	if (sym) {
 		if (sym->get_function_type() != kind) {
 			std::string msg = "Incompatible declarations of function '";
@@ -422,8 +411,7 @@ Uc_function_symbol* Uc_function_symbol::create(
 			Uc_location::yyerror(Uc_location::preformatted, msg.c_str());
 		} else if (scope) {
 			if (!sym->is_inherited()) {
-				Uc_location::yyerror(
-						"Duplicate declaration of function '%s'.", nm);
+				Uc_location::yyerror("Duplicate declaration of function '%s'.", nm);
 			}
 		} else if (sym->is_externed() || is_extern) {
 			if (sym->get_num_parms() == p.size()) {
@@ -470,8 +458,7 @@ Uc_function_symbol* Uc_function_symbol::create(
 	sym = it->second;
 	if (sym->name != nm || sym->get_num_parms() != p.size()) {
 		Uc_location::yyerror(
-				"Function 0x%x already used for '%s' with %zu params.",
-				static_cast<unsigned int>(ucnum), sym->get_name(),
+				"Function 0x%x already used for '%s' with %zu params.", static_cast<unsigned int>(ucnum), sym->get_name(),
 				sym->get_num_parms());
 	} else {
 		auto get_param_type = [](const Uc_var_symbol* var) {
@@ -492,15 +479,14 @@ Uc_function_symbol* Uc_function_symbol::create(
 		const auto& parms = sym->get_parms();
 		for (size_t i = 0; i < p.size(); i++) {
 			if (p[i]->get_sym_type() != parms[i]->get_sym_type()
-				|| (p[i]->get_sym_type() == Uc_symbol::Class
-					&& p[i]->get_cls() != parms[i]->get_cls())
+				|| (p[i]->get_sym_type() == Uc_symbol::Class && p[i]->get_cls() != parms[i]->get_cls())
 				|| p[i]->get_struct() != parms[i]->get_struct()) {
 				Uc_location::yyerror(
 						"Mismatch between function '%s' and previous "
 						"declaration: parameter %zu is of different type: "
 						"type of '%s' is '%s' != type of '%s' is '%s'",
-						nm, i, p[i]->get_name(), get_param_type(p[i]).c_str(),
-						parms[i]->get_name(), get_param_type(parms[i]).c_str());
+						nm, i, p[i]->get_name(), get_param_type(p[i]).c_str(), parms[i]->get_name(),
+						get_param_type(parms[i]).c_str());
 			}
 		}
 		if (!is_extern) {
@@ -527,23 +513,20 @@ Uc_expression* Uc_function_symbol::create_expression() {
 
 int Uc_function_symbol::gen_call(
 		Basic_block* out, Uc_function* fun,
-		bool                 orig,        // Call original (not one from patch).
-		Uc_expression*       itemref,     // Non-nullptr for CALLE or method.
-		Uc_array_expression* aparms,      // Actual parameter list.
-		bool                 retvalue,    // True if a function.
-		Uc_class* scope_vtbl    // For method calls using a different scope.
+		bool                 orig,         // Call original (not one from patch).
+		Uc_expression*       itemref,      // Non-nullptr for CALLE or method.
+		Uc_array_expression* aparms,       // Actual parameter list.
+		bool                 retvalue,     // True if a function.
+		Uc_class*            scope_vtbl    // For method calls using a different scope.
 ) {
 	size_t parmcnt = aparms->gen_values(out);    // Want to push parm. values.
 	parmcnt += (method_num >= 0);                // Count 'this'.
 	if (parmcnt != parms.size()) {
-		Uc_location::yyerror(
-				"# parms. passed (%zu) doesn't match '%s' count (%zu)", parmcnt,
-				get_name(), parms.size());
+		Uc_location::yyerror("# parms. passed (%zu) doesn't match '%s' count (%zu)", parmcnt, get_name(), parms.size());
 	}
 	// See if expecting a return value from a function that has none.
 	if (retvalue && !has_ret()) {
-		Uc_location::yyerror(
-				"Function '%s' does not have a return value", get_name());
+		Uc_location::yyerror("Function '%s' does not have a return value", get_name());
 	}
 	if (orig) {
 		if (!itemref) {
@@ -563,8 +546,7 @@ int Uc_function_symbol::gen_call(
 			}
 		}
 		if (!itemref) {
-			Uc_location::yyerror(
-					"Class method '%s' requires a 'this'.", get_name());
+			Uc_location::yyerror("Class method '%s' requires a 'this'.", get_name());
 		} else {
 			itemref->gen_value(out);
 		}
@@ -584,7 +566,7 @@ int Uc_function_symbol::gen_call(
 			WriteOp(out, UC_CALL32);
 		}
 		WriteOpParam4(out, usecode_num);    // Use fun# directly.
-	} else if (itemref) {    // Doing CALLE?  Push item onto stack.
+	} else if (itemref) {                   // Doing CALLE?  Push item onto stack.
 		// The originals would need this.
 		fun->link(this);
 		itemref->gen_value(out);
@@ -612,8 +594,7 @@ int Uc_function_symbol::gen_call(
 	return 1;
 }
 
-bool String_compare::operator()(
-		const char* const& x, const char* const& y) const {
+bool String_compare::operator()(const char* const& x, const char* const& y) const {
 	return strcmp(x, y) < 0;
 }
 
@@ -682,13 +663,11 @@ int Uc_scope::add_function_symbol(Uc_function_symbol* fun, Uc_scope* parent) {
 					"from base class",
 					nm);
 		} else {
-			Uc_location::yyerror(
-					"Decl. of '%s' doesn't match previous decl", nm);
+			Uc_location::yyerror("Decl. of '%s' doesn't match previous decl", nm);
 		}
 	} else if (fun->usecode_num != fun2->usecode_num) {
 		if (fun2->externed || fun->externed || fun2->is_inherited()) {
-			if (!Uc_function_symbol::new_auto_num
-				&& Uc_function_symbol::last_num == fun->usecode_num) {
+			if (!Uc_function_symbol::new_auto_num && Uc_function_symbol::last_num == fun->usecode_num) {
 				--Uc_function_symbol::last_num;
 			}
 		} else {

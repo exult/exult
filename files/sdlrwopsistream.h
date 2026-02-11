@@ -30,13 +30,12 @@ public:
 	typedef typename traits_type::off_type off_type;
 
 	SdlRwopsIstream();
-	explicit SdlRwopsIstream(
-			const char* s, std::ios_base::openmode mode = std::ios_base::in);
+	explicit SdlRwopsIstream(const char* s, std::ios_base::openmode mode = std::ios_base::in);
 
 	SdlRwopsStreambuf* rdbuf() const;
 	bool               is_open() const;
-	void open(const char* s, std::ios_base::openmode mode = std::ios_base::in);
-	void close();
+	void               open(const char* s, std::ios_base::openmode mode = std::ios_base::in);
+	void               close();
 
 private:
 	SdlRwopsStreambuf m_streambuf;

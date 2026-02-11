@@ -50,8 +50,7 @@ class Ordering_info;
  *  Data cached for a chunk to speed up processing, but which doesn't need
  *  to be saved to disk:
  */
-class Chunk_cache : public Game_singletons,
-					public std::enable_shared_from_this<Chunk_cache> {
+class Chunk_cache : public Game_singletons, public std::enable_shared_from_this<Chunk_cache> {
 public:
 	// For each tile, 2 bits for each lift
 	// level for #objs blocking there, so
@@ -79,17 +78,12 @@ private:
 	blocked8z& new_blocked_level(int zlevel);
 
 	blocked8z& need_blocked_level(int zlevel) {
-		return (static_cast<unsigned>(zlevel) >= blocked.size()
-				|| !blocked[zlevel])
-					   ? new_blocked_level(zlevel)
-					   : blocked[zlevel];
+		return (static_cast<unsigned>(zlevel) >= blocked.size() || !blocked[zlevel]) ? new_blocked_level(zlevel) : blocked[zlevel];
 	}
 
 	// Set/unset blocked region.
-	void set_blocked(
-			int startx, int starty, int endx, int endy, int lift, int ztiles);
-	void clear_blocked(
-			int startx, int starty, int endx, int endy, int lift, int ztiles);
+	void set_blocked(int startx, int starty, int endx, int endy, int lift, int ztiles);
+	void clear_blocked(int startx, int starty, int endx, int endy, int lift, int ztiles);
 	// Add/remove object.
 	void update_object(Map_chunk* chunk, Game_object* obj, bool add);
 	// Set area within egg's influence.
@@ -107,40 +101,26 @@ private:
 	int get_lowest_blocked(int lift, int tx, int ty);
 	// Is a spot occupied or inaccessible
 	//   to an NPC?
-	bool is_blocked(
-			int height, int lift, int tx, int ty, int& new_lift,
-			const int move_flags, int max_drop = 1, int max_rise = -1);
+	bool is_blocked(int height, int lift, int tx, int ty, int& new_lift, const int move_flags, int max_drop = 1, int max_rise = -1);
 	// Activate eggs nearby.
 	void activate_eggs(
-			Game_object* obj, Map_chunk* chunk, int tx, int ty, int tz,
-			int from_tx, int from_ty, unsigned short eggbits, bool now);
+			Game_object* obj, Map_chunk* chunk, int tx, int ty, int tz, int from_tx, int from_ty, unsigned short eggbits, bool now);
 
-	void activate_eggs(
-			Game_object* obj, Map_chunk* chunk, int tx, int ty, int tz,
-			int from_tx, int from_ty, bool now) {
-		const unsigned short eggbits
-				= eggs[(ty % c_tiles_per_chunk) * c_tiles_per_chunk
-					   + (tx % c_tiles_per_chunk)];
+	void activate_eggs(Game_object* obj, Map_chunk* chunk, int tx, int ty, int tz, int from_tx, int from_ty, bool now) {
+		const unsigned short eggbits = eggs[(ty % c_tiles_per_chunk) * c_tiles_per_chunk + (tx % c_tiles_per_chunk)];
 		if (eggbits) {
-			activate_eggs(
-					obj, chunk, tx, ty, tz, from_tx, from_ty, eggbits, now);
+			activate_eggs(obj, chunk, tx, ty, tz, from_tx, from_ty, eggbits, now);
 		}
 	}
 
 	void unhatch_eggs(
-			Game_object* obj, Map_chunk* chunk, int tx, int ty, int tz,
-			int from_tx, int from_ty, unsigned short eggbits, bool now);
+			Game_object* obj, Map_chunk* chunk, int tx, int ty, int tz, int from_tx, int from_ty, unsigned short eggbits, bool now);
 
-	void unhatch_eggs(
-			Game_object* obj, Map_chunk* chunk, int tx, int ty, int tz,
-			int from_tx, int from_ty, bool now) {
+	void unhatch_eggs(Game_object* obj, Map_chunk* chunk, int tx, int ty, int tz, int from_tx, int from_ty, bool now) {
 		// unhatch needs eggbits at from location not to location
-		const unsigned short eggbits
-				= eggs[(from_ty % c_tiles_per_chunk) * c_tiles_per_chunk
-					   + (from_tx % c_tiles_per_chunk)];
+		const unsigned short eggbits = eggs[(from_ty % c_tiles_per_chunk) * c_tiles_per_chunk + (from_tx % c_tiles_per_chunk)];
 		if (eggbits) {
-			unhatch_eggs(
-					obj, chunk, tx, ty, tz, from_tx, from_ty, eggbits, now);
+			unhatch_eggs(obj, chunk, tx, ty, tz, from_tx, from_ty, eggbits, now);
 		}
 	}
 
@@ -153,9 +133,7 @@ public:
 
 	// Is there something on this tile?
 	inline bool is_tile_occupied(int tx, int ty, int tz) {
-		const auto* b8 = static_cast<unsigned>(tz / 8) < blocked.size()
-								 ? blocked[tz / 8].get()
-								 : nullptr;
+		const auto* b8 = static_cast<unsigned>(tz / 8) < blocked.size() ? blocked[tz / 8].get() : nullptr;
 		return b8 && (b8[ty * c_tiles_per_chunk + tx] & (3 << (2 * (tz % 8))));
 	}
 };
@@ -173,22 +151,20 @@ class Map_chunk : public Game_singletons {
 	// ->first nonflat in 'objects'.
 	// Counts of overlapping objects from
 	// chunks below, to right.
-	Game_object*  first_nonflat;
-	unsigned char from_below, from_right, from_below_right;
-	unsigned char ice_dungeon;    // For SI, chunk split into 4 quadrants
-	std::unique_ptr<unsigned char[]>
-			dungeon_levels;    // A 'dungeon' level value for each tile.
-	std::shared_ptr<Chunk_cache> cache;    // Data for chunks near player.
-	unsigned char                roof;     // 1 if a roof present.
+	Game_object*                     first_nonflat;
+	unsigned char                    from_below, from_right, from_below_right;
+	unsigned char                    ice_dungeon;       // For SI, chunk split into 4 quadrants
+	std::unique_ptr<unsigned char[]> dungeon_levels;    // A 'dungeon' level value for each tile.
+	std::shared_ptr<Chunk_cache>     cache;             // Data for chunks near player.
+	unsigned char                    roof;              // 1 if a roof present.
 	// # light sources in chunk.
 	std::set<Game_object*> dungeon_lights;
 	std::set<Game_object*> non_dungeon_lights;
 	unsigned char          cx, cy;      // Absolute chunk coords. of this.
 	bool                   selected;    // For 'select_chunks' mode.
-	void add_dungeon_levels(TileRect& tiles, unsigned int lift);
-	void add_dependencies(Game_object* newobj, Ordering_info& newinfo);
-	static Map_chunk* add_outside_dependencies(
-			int cx, int cy, Game_object* newobj, Ordering_info& newinfo);
+	void                   add_dungeon_levels(TileRect& tiles, unsigned int lift);
+	void                   add_dependencies(Game_object* newobj, Ordering_info& newinfo);
+	static Map_chunk*      add_outside_dependencies(int cx, int cy, Game_object* newobj, Ordering_info& newinfo);
 
 public:
 	friend class Npc_actor;
@@ -237,8 +213,7 @@ public:
 		return selected;
 	}
 
-	const std::set<Game_object*>& get_dungeon_lights()
-			const {    // Get #lights.
+	const std::set<Game_object*>& get_dungeon_lights() const {    // Get #lights.
 		return dungeon_lights;
 	}
 
@@ -272,9 +247,7 @@ public:
 	}
 
 	// Set/unset blocked region.
-	void set_blocked(
-			int startx, int starty, int endx, int endy, int lift, int ztiles,
-			bool set) {
+	void set_blocked(int startx, int starty, int endx, int endy, int lift, int ztiles, bool set) {
 		Chunk_cache* cache = need_cache();
 		if (set) {
 			cache->set_blocked(startx, starty, endx, endy, lift, ztiles);
@@ -295,25 +268,19 @@ public:
 	// Is a spot occupied or inaccessible
 	//  to an NPC?
 	bool is_blocked(
-			int height, int lift, int tx, int ty, int& new_lift,
-			const int move_flags, int max_drop = 1, int max_rise = -1) {
-		return cache->is_blocked(
-				height, lift, tx, ty, new_lift, move_flags, max_drop, max_rise);
+			int height, int lift, int tx, int ty, int& new_lift, const int move_flags, int max_drop = 1, int max_rise = -1) {
+		return cache->is_blocked(height, lift, tx, ty, new_lift, move_flags, max_drop, max_rise);
 	}
 
 	// Check range.
 	static bool is_blocked(
-			int height, int lift, int startx, int starty, int xtiles,
-			int ytiles, int& new_lift, const int move_flags, int max_drop,
+			int height, int lift, int startx, int starty, int xtiles, int ytiles, int& new_lift, const int move_flags, int max_drop,
 			int max_rise = -1);
 	// Check absolute tile.
-	static bool is_blocked(
-			Tile_coord& tile, int height, const int move_flags,
-			int max_drop = 1, int max_rise = -1);
+	static bool is_blocked(Tile_coord& tile, int height, const int move_flags, int max_drop = 1, int max_rise = -1);
 	// Check for > 1x1 object.
 	static bool is_blocked(
-			int xtiles, int ytiles, int ztiles, const Tile_coord& from,
-			Tile_coord& to, const int move_flags, int max_drop = 1,
+			int xtiles, int ytiles, int ztiles, const Tile_coord& from, Tile_coord& to, const int move_flags, int max_drop = 1,
 			int max_rise = -1);
 
 	// Check tile WITHIN chunk.
@@ -329,30 +296,22 @@ public:
 
 	// Find spot for an object.
 	static Tile_coord find_spot(
-			Tile_coord pos, int dist, int shapenum, int framenum,
-			int max_drop = 0, int dir = -1, Find_spot_where where = anywhere);
+			Tile_coord pos, int dist, int shapenum, int framenum, int max_drop = 0, int dir = -1, Find_spot_where where = anywhere);
 	// For approaching 'pos' by an object:
 	static Tile_coord find_spot(
-			const Tile_coord& pos, int dist, Game_object* obj, int max_drop = 0,
-			Find_spot_where where = anywhere);
+			const Tile_coord& pos, int dist, Game_object* obj, int max_drop = 0, Find_spot_where where = anywhere);
 
 	// Set area within egg's influence.
 	void set_egged(Egg_object* egg, TileRect& tiles, bool add) {
 		need_cache()->set_egged(egg, tiles, add);
 	}
 
-	void activate_eggs(
-			Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty,
-			bool now = false) {
-		need_cache()->activate_eggs(
-				obj, this, tx, ty, tz, from_tx, from_ty, now);
+	void activate_eggs(Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty, bool now = false) {
+		need_cache()->activate_eggs(obj, this, tx, ty, tz, from_tx, from_ty, now);
 	}
 
-	void unhatch_eggs(
-			Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty,
-			bool now = false) {
-		need_cache()->unhatch_eggs(
-				obj, this, tx, ty, tz, from_tx, from_ty, now);
+	void unhatch_eggs(Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty, bool now = false) {
+		need_cache()->unhatch_eggs(obj, this, tx, ty, tz, from_tx, from_ty, now);
 	}
 
 	// Find door blocking given tile.
@@ -360,13 +319,10 @@ public:
 		return need_cache()->find_door(t);
 	}
 
-	static int find_in_area(
-			std::vector<Game_object*>& vec, const TileRect& area, int shapenum,
-			int framenum);
+	static int find_in_area(std::vector<Game_object*>& vec, const TileRect& area, int shapenum, int framenum);
 	// Use this when teleported in.
-	static void try_all_eggs(
-			Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty);
-	void setup_dungeon_levels();    // Set up after IFIX objs. read.
+	static void try_all_eggs(Game_object* obj, int tx, int ty, int tz, int from_tx, int from_ty);
+	void        setup_dungeon_levels();    // Set up after IFIX objs. read.
 
 	inline bool has_dungeon() {    // Any tiles within dungeon?
 		return dungeon_levels != nullptr;
@@ -381,8 +337,7 @@ public:
 
 	// Is the dungeon an ICE dungeon.NOTE: This is a
 	// Hack and splits the chunk into 4 parts. Only if
-	inline bool is_ice_dungeon(
-			int tx, int ty) {    // all 4 are ice, will we have an ice dungeon
+	inline bool is_ice_dungeon(int tx, int ty) {    // all 4 are ice, will we have an ice dungeon
 		ignore_unused_variable_warning(tx, ty);
 		return ice_dungeon == 0x0F;    // 0 != ((ice_dungeon >> ( (tx>>3) +
 									   // 2*(ty>>3) ) )&1);
@@ -392,8 +347,7 @@ public:
 	void kill_cache();
 	// Get all objects and actors for use when writing memory cache.
 	// returns size require to save
-	int get_obj_actors(
-			std::vector<Game_object*>& removes, std::vector<Actor*>& actors);
+	int get_obj_actors(std::vector<Game_object*>& removes, std::vector<Actor*>& actors);
 
 	void write(ODataSource& out, bool v2);
 };

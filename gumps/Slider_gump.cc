@@ -33,17 +33,14 @@ using std::endl;
 
 Slider_gump::Slider_gump(
 		int mival, int mxval,    // Value range.
-		int step,                // Amt. to change by.
-		int defval,               // Default value.
-		bool allow_escape
-		)
+		int  step,               // Amt. to change by.
+		int  defval,             // Default value.
+		bool allow_escape)
 		: Modal_gump(nullptr, game->get_shape("gumps/slider")), allow_escape(allow_escape) {
 	widget = std::make_unique<Slider_widget>(
-			this, 24, 6,
-			ShapeID(game->get_shape("gumps/slider_left"), 0, SF_GUMPS_VGA),
+			this, 24, 6, ShapeID(game->get_shape("gumps/slider_left"), 0, SF_GUMPS_VGA),
 			ShapeID(game->get_shape("gumps/slider_right"), 0, SF_GUMPS_VGA),
-			ShapeID(game->get_shape("gumps/slider_diamond"), 0, SF_GUMPS_VGA),
-			mival, mxval, step, defval, 64);
+			ShapeID(game->get_shape("gumps/slider_diamond"), 0, SF_GUMPS_VGA), mival, mxval, step, defval, 64);
 
 	set_object_area(TileRect(0, 0, 0, 0), 22, 18);
 }

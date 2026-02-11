@@ -77,8 +77,7 @@ void ExultStudio::open_compile_window() {
 	if (!compilewin) {    // First time?
 		compilewin  = get_widget("compile_win");
 		compile_box = new Exec_box(
-				GTK_TEXT_VIEW(get_widget("compile_msgs")),
-				GTK_STATUSBAR(get_widget("compile_status")), Ucc_done, nullptr);
+				GTK_TEXT_VIEW(get_widget("compile_msgs")), GTK_STATUSBAR(get_widget("compile_status")), Ucc_done, nullptr);
 	}
 	gtk_widget_set_visible(compilewin, true);
 }

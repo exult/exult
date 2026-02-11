@@ -37,20 +37,19 @@ protected:
 	//   currently rendered.
 	int index0 = 0;    // Index of top-leftmost in
 	//   displayed list.
-	GtkWidget*          vscroll = nullptr;    // Vertical scrollbar.
-	GtkWidget*          hscroll = nullptr;    // Horizontal scrollbar.
-	GtkEventController* vscroll_ctlr
-			= nullptr;                       // Vertical scroll in browser.
-	Shape_group*     group;                  // Non-null to use filter.
-	GtkWidget*       popup = nullptr;        // Popup menu in draw area.
-	Shape_file_info* file_info;              // Our creator (or null).
-	GtkWidget*       find_text = nullptr;    // For searching.
-	GtkWidget *loc_down = nullptr, *loc_up = nullptr;    // 'Locate' buttons.
-	GtkWidget* loc_q = nullptr;    // 'Locate' quality/quantity.
-	GtkWidget* loc_f = nullptr;    // 'Locate' frame
+	GtkWidget*          vscroll      = nullptr;                   // Vertical scrollbar.
+	GtkWidget*          hscroll      = nullptr;                   // Horizontal scrollbar.
+	GtkEventController* vscroll_ctlr = nullptr;                   // Vertical scroll in browser.
+	Shape_group*        group;                                    // Non-null to use filter.
+	GtkWidget*          popup = nullptr;                          // Popup menu in draw area.
+	Shape_file_info*    file_info;                                // Our creator (or null).
+	GtkWidget*          find_text = nullptr;                      // For searching.
+	GtkWidget *         loc_down = nullptr, *loc_up = nullptr;    // 'Locate' buttons.
+	GtkWidget*          loc_q = nullptr;                          // 'Locate' quality/quantity.
+	GtkWidget*          loc_f = nullptr;                          // 'Locate' frame
 	// 'Move' buttons:
 	GtkWidget *move_down = nullptr, *move_up = nullptr;
-	int config_width = 0, config_height = 0;    // For storing prev. dims.
+	int        config_width = 0, config_height = 0;    // For storing prev. dims.
 
 	void        set_widget(GtkWidget* w);
 	static bool search_name(const char* nm, const char* srch);
@@ -116,9 +115,7 @@ public:
 
 	// Handle scroll events.
 	void        enable_draw_vscroll(GtkWidget* draw);
-	static void draw_vscrolled(
-			GtkEventControllerScroll* self, gdouble dx, gdouble dy,
-			gpointer data);
+	static void draw_vscrolled(GtkEventControllerScroll* self, gdouble dx, gdouble dy, gpointer data);
 
 protected:
 	GtkWidget* create_popup_internal(bool files);    // Popup menu.
@@ -153,8 +150,7 @@ public:
 // Callback for file-selector 'ok':
 using File_sel_okay_fun = void (*)(const char*, gpointer);
 void Create_file_selection(
-		const char* title, const char* path, const char* filtername,
-		const std::vector<std::string>& filters, GtkFileChooserAction action,
-		File_sel_okay_fun ok_handler, gpointer user_data);
+		const char* title, const char* path, const char* filtername, const std::vector<std::string>& filters,
+		GtkFileChooserAction action, File_sel_okay_fun ok_handler, gpointer user_data);
 
 #endif

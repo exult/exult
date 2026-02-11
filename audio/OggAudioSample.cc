@@ -40,11 +40,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace Pentagram {
 
-	ov_callbacks OggAudioSample::callbacks
-			= {&read_func, &seek_func, nullptr, &tell_func};
+	ov_callbacks OggAudioSample::callbacks = {&read_func, &seek_func, nullptr, &tell_func};
 
-	OggAudioSample::OggAudioSample(std::unique_ptr<IDataSource> oggdata_)
-			: AudioSample(nullptr, 0), oggdata(std::move(oggdata_)) {
+	OggAudioSample::OggAudioSample(std::unique_ptr<IDataSource> oggdata_) : AudioSample(nullptr, 0), oggdata(std::move(oggdata_)) {
 		frame_size         = 4096;
 		decompressor_size  = sizeof(OggDecompData);
 		decompressor_align = alignof(OggDecompData);
@@ -65,8 +63,7 @@ namespace Pentagram {
 		length = 0;
 	}
 
-	size_t OggAudioSample::read_func(
-			void* ptr, size_t size, size_t nmemb, void* datasource) {
+	size_t OggAudioSample::read_func(void* ptr, size_t size, size_t nmemb, void* datasource) {
 		auto* ids = static_cast<IDataSource*>(datasource);
 		// if (ids->eof()) return 0;
 		const size_t limit = ids->getAvail();
@@ -79,8 +76,7 @@ namespace Pentagram {
 		return nmemb;
 	}
 
-	int OggAudioSample::seek_func(
-			void* datasource, ogg_int64_t offset, int whence) {
+	int OggAudioSample::seek_func(void* datasource, ogg_int64_t offset, int whence) {
 		auto* ids = static_cast<IDataSource*>(datasource);
 		switch (whence) {
 		case SEEK_SET:
@@ -126,8 +122,7 @@ namespace Pentagram {
 		}
 
 		decomp->datasource->seek(0);
-		ov_open_callbacks(
-				decomp->datasource, &decomp->ov, nullptr, 0, callbacks);
+		ov_open_callbacks(decomp->datasource, &decomp->ov, nullptr, 0, callbacks);
 		decomp->bitstream = 0;
 
 		vorbis_info* info = ov_info(&decomp->ov, -1);
@@ -175,8 +170,7 @@ namespace Pentagram {
 		}
 	}
 
-	uint32 OggAudioSample::decompressFrame(
-			void* DecompData, void* samples) const {
+	uint32 OggAudioSample::decompressFrame(void* DecompData, void* samples) const {
 		auto* decomp = static_cast<OggDecompData*>(DecompData);
 
 		vorbis_info* info = ov_info(&decomp->ov, -1);
@@ -196,9 +190,7 @@ namespace Pentagram {
 		const int bigendianp = 1;
 #endif
 
-		const long count = ov_read(
-				&decomp->ov, static_cast<char*>(samples), frame_size,
-				bigendianp, 2, 1, &decomp->bitstream);
+		const long count = ov_read(&decomp->ov, static_cast<char*>(samples), frame_size, bigendianp, 2, 1, &decomp->bitstream);
 
 		// if (count == OV_EINVAL || count == 0) {
 		if (count <= 0) {

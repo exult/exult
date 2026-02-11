@@ -79,15 +79,15 @@ public:
 	};
 
 private:
-	static Shape_manager* instance;                // There shall be only one.
-	Shapes_vga_file       shapes;                  // Main 'shapes.vga' file.
-	Vga_file files[static_cast<int>(SF_COUNT)];    // The files we manage.
-	std::unique_ptr<Fonts_vga_file> fonts = nullptr;    // "fonts.vga" file.
-	std::vector<Xform_palette>      xforms;    // Transforms translucent colors
+	static Shape_manager*           instance;                             // There shall be only one.
+	Shapes_vga_file                 shapes;                               // Main 'shapes.vga' file.
+	Vga_file                        files[static_cast<int>(SF_COUNT)];    // The files we manage.
+	std::unique_ptr<Fonts_vga_file> fonts = nullptr;                      // "fonts.vga" file.
+	std::vector<Xform_palette>      xforms;                               // Transforms translucent colors
 	//   0xf4 through 0xfe.
-	Xform_palette* invis_xform;    // For showing invisible NPC's.
-	unsigned char  special_pixels[NPIXCOLORS];    // Special colors.
-	bool can_have_paperdolls = false;    // Set true if the SI paperdoll file
+	Xform_palette* invis_xform;                    // For showing invisible NPC's.
+	unsigned char  special_pixels[NPIXCOLORS];     // Special colors.
+	bool           can_have_paperdolls = false;    // Set true if the SI paperdoll file
 	//   is found when playing BG
 	bool paperdolls_enabled = false;    // True if paperdolls are on.
 	bool got_si_shapes      = false;    // Set true if the SI shapes file
@@ -105,13 +105,12 @@ public:
 		return instance;
 	}
 
-	void load();                  // Read in files.
-	bool load_gumps_minimal();    // Read in files needed to display gumps.
+	void load();                           // Read in files.
+	bool load_gumps_minimal();             // Read in files needed to display gumps.
 	void reload_shapes(int shape_kind);    // Reload a shape file.
 	void reload_fonts(
 			const File_spec& font_source,
-			const File_spec& font_patch
-			= PATCH_FONTS);    // Reload fonts from a different source.
+			const File_spec& font_patch = PATCH_FONTS);    // Reload fonts from a different source.
 	void reload_shape_info();
 
 	static unsigned char get_special_pixel(int pixel) {
@@ -157,9 +156,7 @@ public:
 	}
 
 	// Paint shape in window.
-	void paint_shape(
-			int xoff, int yoff, Shape_frame* shape, bool translucent = false,
-			unsigned char* trans = nullptr) {
+	void paint_shape(int xoff, int yoff, Shape_frame* shape, bool translucent = false, unsigned char* trans = nullptr) {
 		if (!shape || !shape->get_data()) {
 			CERR("nullptr SHAPE!!!");
 		} else if (!shape->is_rle()) {
@@ -169,8 +166,7 @@ public:
 		} else if (!translucent) {
 			shape->paint_rle(xoff, yoff);
 		} else {
-			shape->paint_rle_translucent(
-					xoff, yoff, xforms.data(), xforms.size());
+			shape->paint_rle_translucent(xoff, yoff, xforms.data(), xforms.size());
 		}
 	}
 
@@ -181,38 +177,29 @@ public:
 	}
 
 	// Paint outline around a shape.
-	inline void paint_outline(
-			int xoff, int yoff, Shape_frame* shape, int special_pixel) {
+	inline void paint_outline(int xoff, int yoff, Shape_frame* shape, int special_pixel) {
 		if (shape) {
-			shape->paint_rle_outline(
-					xoff, yoff, get_special_pixel(special_pixel));
+			shape->paint_rle_outline(xoff, yoff, get_special_pixel(special_pixel));
 		}
 	}
 
 	// Paint text using "fonts.vga".
 	int paint_text_box(
-			int fontnum, const char* text, int x, int y, int w, int h,
-			int vert_lead = 0, bool pbreak = false, bool center = false,
+			int fontnum, const char* text, int x, int y, int w, int h, int vert_lead = 0, bool pbreak = false, bool center = false,
 			int shading = -1, Cursor_info* cursor = nullptr);
 	int paint_text(int fontnum, const char* text, int xoff, int yoff);
-	int paint_text(
-			int fontnum, const char* text, int textlen, int xoff, int yoff);
-	int paint_text(
-			std::shared_ptr<Font> font, const char* text, int xoff, int yoff);
-	int paint_text(
-			std::shared_ptr<Font> font, const char* text, int textlen, int xoff,
-			int yoff);
+	int paint_text(int fontnum, const char* text, int textlen, int xoff, int yoff);
+	int paint_text(std::shared_ptr<Font> font, const char* text, int xoff, int yoff);
+	int paint_text(std::shared_ptr<Font> font, const char* text, int textlen, int xoff, int yoff);
 	// Get text width.
 	int get_text_width(int fontnum, const char* text);
 	int get_text_width(int fontnum, const char* text, int textlen);
 	// Get text height, baseline.
 	int get_text_height(int fontnum);
 	// Get text height including vertical leading (for line spacing).
-	int get_text_line_height(int fontnum);
-	int get_text_baseline(int fontnum);
-	int find_cursor(
-			int fontnum, const char* text, int x, int y, int w, int h, int cx,
-			int cy, int vert_lead);
+	int                   get_text_line_height(int fontnum);
+	int                   get_text_baseline(int fontnum);
+	int                   find_cursor(int fontnum, const char* text, int x, int y, int w, int h, int cx, int cy, int vert_lead);
 	std::shared_ptr<Font> get_font(int fontnum);
 
 	size_t get_xforms_cnt() const {
@@ -291,8 +278,7 @@ public:
 	}
 
 	ShapeID(int shnum, int frnum, ShapeFile shfile = SF_SHAPES_VGA)
-			: shapenum(shnum), framenum(frnum), palette_transform(0),
-			  shapefile(shfile) {}
+			: shapenum(shnum), framenum(frnum), palette_transform(0), shapefile(shfile) {}
 
 	void set_shape(int shnum) {    // Set shape, but keep old frame #.
 		shapenum = shnum;
@@ -347,18 +333,14 @@ public:
 		shapefile = shfile;
 	}
 
-	void paint_shape(
-			int xoff, int yoff,
-			std::optional<bool> force_trans = std::nullopt) const {
+	void paint_shape(int xoff, int yoff, std::optional<bool> force_trans = std::nullopt) const {
 		auto           cache      = cache_shape();
 		unsigned char* transtable = nullptr;
 		unsigned char  table[256];
 		if (palette_transform != 0) {
 			transtable = Get_palette_transform_table(table);
 		}
-		sman->paint_shape(
-				xoff, yoff, cache.shape,
-				force_trans ? *force_trans : cache.has_trans, transtable);
+		sman->paint_shape(xoff, yoff, cache.shape, force_trans ? *force_trans : cache.has_trans, transtable);
 	}
 
 	void paint_invisible(int xoff, int yoff) const {
@@ -408,8 +390,7 @@ class ImageBufferPaintable : public BackgroundPaintable {
 
 public:
 	// Construct from an existing Image_buffer
-	ImageBufferPaintable(std::unique_ptr<Image_buffer>&& buffer, int x, int y)
-			: buffer(std::move(buffer)), x(x), y(y) {}
+	ImageBufferPaintable(std::unique_ptr<Image_buffer>&& buffer, int x, int y) : buffer(std::move(buffer)), x(x), y(y) {}
 
 	// Construct from a screenshot of the current screen
 	ImageBufferPaintable();

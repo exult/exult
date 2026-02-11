@@ -187,9 +187,7 @@ TileRect Barge_object::get_tile_footprint() {
 	const Tile_coord pos = get_tile();
 	const int        xts = get_xtiles();
 	const int        yts = get_ytiles();
-	TileRect         foot(
-            (pos.tx - xts + 1 + c_num_tiles) % c_num_tiles,
-            (pos.ty - yts + 1 + c_num_tiles) % c_num_tiles, xts, yts);
+	TileRect         foot((pos.tx - xts + 1 + c_num_tiles) % c_num_tiles, (pos.ty - yts + 1 + c_num_tiles) % c_num_tiles, xts, yts);
 	return foot;
 }
 
@@ -208,8 +206,7 @@ inline void Barge_object::set_center() {
  +++++++++++Handle wrapping here+++++++++++
  */
 
-int Barge_object::okay_to_rotate(
-		const Tile_coord& pos    // New position (bottom-right).
+int Barge_object::okay_to_rotate(const Tile_coord& pos    // New position (bottom-right).
 ) {
 	const int lift = get_lift();
 	// Special case for carpet.
@@ -223,9 +220,7 @@ int Barge_object::okay_to_rotate(
 	int            new_lift;
 	if (newfoot.y < foot.y) {    // Got a piece above the old one?
 		// Check area.  (No dropping allowed.)
-		if (Map_chunk::is_blocked(
-					4, lift, newfoot.x, newfoot.y, newfoot.w,
-					foot.y - newfoot.y, new_lift, move_type, 0)
+		if (Map_chunk::is_blocked(4, lift, newfoot.x, newfoot.y, newfoot.w, foot.y - newfoot.y, new_lift, move_type, 0)
 			|| new_lift != lift) {
 			return 0;
 		}
@@ -233,17 +228,14 @@ int Barge_object::okay_to_rotate(
 	if (foot.y + foot.h < newfoot.y + newfoot.h) {
 		// A piece below old one.
 		if (Map_chunk::is_blocked(
-					4, lift, newfoot.x, foot.y + foot.h, newfoot.w,
-					newfoot.y + newfoot.h - (foot.y + foot.h), new_lift,
-					move_type, 0)
+					4, lift, newfoot.x, foot.y + foot.h, newfoot.w, newfoot.y + newfoot.h - (foot.y + foot.h), new_lift, move_type,
+					0)
 			|| new_lift != lift) {
 			return 0;
 		}
 	}
 	if (newfoot.x < foot.x) {    // Piece to the left?
-		if (Map_chunk::is_blocked(
-					4, lift, newfoot.x, newfoot.y, foot.x - newfoot.x,
-					newfoot.h, new_lift, move_type, 0)
+		if (Map_chunk::is_blocked(4, lift, newfoot.x, newfoot.y, foot.x - newfoot.x, newfoot.h, new_lift, move_type, 0)
 			|| new_lift != lift) {
 			return 0;
 		}
@@ -251,9 +243,8 @@ int Barge_object::okay_to_rotate(
 	if (foot.x + foot.w < newfoot.x + newfoot.w) {
 		// Piece to the right.
 		if (Map_chunk::is_blocked(
-					4, lift, foot.x + foot.w, newfoot.y,
-					newfoot.x + newfoot.w - (foot.x + foot.w), newfoot.h,
-					new_lift, move_type, 0)
+					4, lift, foot.x + foot.w, newfoot.y, newfoot.x + newfoot.w - (foot.x + foot.w), newfoot.h, new_lift, move_type,
+					0)
 			|| new_lift != lift) {
 			return 0;
 		}
@@ -303,17 +294,14 @@ void Barge_object::gather() {
 				continue;
 			}
 			const Tile_coord t = obj->get_tile();
-			if (!tiles.has_world_point(t.tx, t.ty)
-				|| obj->get_owner() == this) {
+			if (!tiles.has_world_point(t.tx, t.ty) || obj->get_owner() == this) {
 				continue;
 			}
 			const Shape_info& info = obj->get_info();
 			// Above barge, within 5-tiles up?
-			const bool isbarge
-					= info.is_barge_part() /*+++ || !info.get_weight() */;
+			const bool isbarge = info.is_barge_part() /*+++ || !info.get_weight() */;
 			if (t.tz + info.get_3d_height() > lift
-				&& ((isbarge && t.tz >= lift - 1)
-					|| (t.tz < lift + 5 && t.tz >= lift /*+++ + 1 */))) {
+				&& ((isbarge && t.tz >= lift - 1) || (t.tz < lift + 5 && t.tz >= lift /*+++ + 1 */))) {
 				objects.push_back(obj->shared_from_this());
 				const int btype = obj->get_info().get_barge_type();
 				if (btype == Shape_info::barge_raft) {
@@ -326,11 +314,9 @@ void Barge_object::gather() {
 	}
 	set_center();
 	// Test for boat.
-	Map_chunk* chunk = gmap->get_chunk_safely(
-			center.tx / c_tiles_per_chunk, center.ty / c_tiles_per_chunk);
+	Map_chunk* chunk = gmap->get_chunk_safely(center.tx / c_tiles_per_chunk, center.ty / c_tiles_per_chunk);
 	if (boat == -1 && chunk != nullptr) {
-		ShapeID flat = chunk->get_flat(
-				center.tx % c_tiles_per_chunk, center.ty % c_tiles_per_chunk);
+		ShapeID flat = chunk->get_flat(center.tx % c_tiles_per_chunk, center.ty % c_tiles_per_chunk);
 		if (flat.is_invalid()) {
 			boat = 0;
 		} else {
@@ -462,9 +448,7 @@ void Barge_object::turn_right() {
 		Game_object*      obj   = get_object(i);
 		const int         frame = obj->get_framenum();
 		const Shape_info& info  = obj->get_info();
-		positions[i]            = Rotate90r(
-                gwin, obj, info.get_3d_xtiles(frame), info.get_3d_ytiles(frame),
-                center);
+		positions[i]            = Rotate90r(gwin, obj, info.get_3d_xtiles(frame), info.get_3d_ytiles(frame), center);
 		Game_object_shared keep;
 		obj->remove_this(&keep);    // Remove object from world.
 		// Set to rotated frame.
@@ -495,9 +479,7 @@ void Barge_object::turn_left() {
 		Game_object*      obj   = get_object(i);
 		const int         frame = obj->get_framenum();
 		const Shape_info& info  = obj->get_info();
-		positions[i]            = Rotate90l(
-                gwin, obj, info.get_3d_xtiles(frame), info.get_3d_ytiles(frame),
-                center);
+		positions[i]            = Rotate90l(gwin, obj, info.get_3d_xtiles(frame), info.get_3d_ytiles(frame), center);
 		Game_object_shared keep;
 		obj->remove_this(&keep);    // Remove object from world.
 		// Set to rotated frame.
@@ -524,9 +506,7 @@ void Barge_object::turn_around() {
 		Game_object*      obj   = get_object(i);
 		const int         frame = obj->get_framenum();
 		const Shape_info& info  = obj->get_info();
-		positions[i]            = Rotate180(
-                gwin, obj, info.get_3d_xtiles(frame), info.get_3d_ytiles(frame),
-                center);
+		positions[i]            = Rotate180(gwin, obj, info.get_3d_xtiles(frame), info.get_3d_ytiles(frame), center);
 		Game_object_shared keep;
 		obj->remove_this(&keep);    // Remove object from world.
 		// Set to rotated frame.
@@ -541,8 +521,8 @@ void Barge_object::turn_around() {
  */
 
 void Barge_object::done() {
-	gathered = false;            // Clear for next time. (needed for SI turtle)
-	static int norecurse = 0;    // Don't recurse on the code below.
+	gathered             = false;    // Clear for next time. (needed for SI turtle)
+	static int norecurse = 0;        // Don't recurse on the code below.
 	if (norecurse > 0) {
 		return;
 	}
@@ -552,8 +532,7 @@ void Barge_object::done() {
 		const int cnt = objects.size();    // Look for open sail.
 		for (int i = 0; i < cnt; i++) {
 			Game_object* obj = objects[i].get();
-			if (obj->get_info().get_barge_type() == Shape_info::barge_sails
-				&& (obj->get_framenum() & 7) < 4) {
+			if (obj->get_info().get_barge_type() == Shape_info::barge_sails && (obj->get_framenum() & 7) < 4) {
 				obj->activate();
 				break;
 			}
@@ -579,8 +558,7 @@ int Barge_object::okay_to_land() {
 		Map_chunk* chunk = gmap->get_chunk(cx, cy);
 		for (int ty = tiles.y; ty < tiles.y + tiles.h; ty++) {
 			for (int tx = tiles.x; tx < tiles.x + tiles.w; tx++) {
-				if (chunk->get_highest_blocked(lift, tx, ty) != -1
-					|| chunk->get_flat(tx, ty).get_info().is_water()) {
+				if (chunk->get_highest_blocked(lift, tx, ty) != -1 || chunk->get_flat(tx, ty).get_info().is_water()) {
 					return 0;
 				}
 			}
@@ -654,9 +632,7 @@ void Barge_object::move(int newtx, int newty, int newlift, int newmap) {
 		Game_object*     obj = get_object(i);
 		const Tile_coord ot  = obj->get_tile();
 		// Watch for world-wrapping.
-		positions[i] = Tile_coord(
-				(ot.tx + dx + c_num_tiles) % c_num_tiles,
-				(ot.ty + dy + c_num_tiles) % c_num_tiles, ot.tz + dz);
+		positions[i] = Tile_coord((ot.tx + dx + c_num_tiles) % c_num_tiles, (ot.ty + dy + c_num_tiles) % c_num_tiles, ot.tz + dz);
 		Game_object_shared keep;
 		obj->remove_this(&keep);    // Remove object from world.
 		obj->set_invalid();         // So it gets added back right.
@@ -700,7 +676,7 @@ bool Barge_object::add(
 ) {
 	ignore_unused_variable_warning(dont_check, combine, noset);
 	objects.push_back(obj->shared_from_this());    // Add to list.
-	return false;    // We want it added to the chunk.
+	return false;                                  // We want it added to the chunk.
 }
 
 /*
@@ -782,10 +758,7 @@ bool Barge_object::edit() {
 		cheat.in_map_editor()) {
 		editing.reset();
 		const Tile_coord t = get_tile();
-		if (Barge_object_out(
-					client_socket, this, t.tx, t.ty, t.tz, get_shapenum(),
-					get_framenum(), xtiles, ytiles, dir)
-			!= -1) {
+		if (Barge_object_out(client_socket, this, t.tx, t.ty, t.tz, get_shapenum(), get_framenum(), xtiles, ytiles, dir) != -1) {
 			cout << "Sent barge data to ExultStudio" << endl;
 			editing = shared_from_this();
 		} else {
@@ -818,9 +791,7 @@ void Barge_object::update_from_studio(unsigned char* data, int datalen) {
 	int           xtiles;
 	int           ytiles;
 	int           dir;
-	if (!Barge_object_in(
-				data, datalen, barge, tx, ty, tz, shape, frame, xtiles, ytiles,
-				dir)) {
+	if (!Barge_object_in(data, datalen, barge, tx, ty, tz, shape, frame, xtiles, ytiles, dir)) {
 		cout << "Error decoding barge" << endl;
 		return;
 	}
@@ -859,8 +830,7 @@ void Barge_object::update_from_studio(unsigned char* data, int datalen) {
 			return;
 		}
 		if (client_socket >= 0) {
-			Exult_server::Send_data(
-					client_socket, Exult_server::user_responded);
+			Exult_server::Send_data(client_socket, Exult_server::user_responded);
 		}
 	}
 	barge->xtiles = xtiles;
@@ -905,15 +875,13 @@ bool Barge_object::step(
 		move_type = MOVE_WALK;
 	}
 	// No rising/dropping.
-	if (Map_chunk::is_blocked(
-				get_xtiles(), get_ytiles(), 4, cur, t, move_type, 0, 0)) {
+	if (Map_chunk::is_blocked(get_xtiles(), get_ytiles(), 4, cur, t, move_type, 0, 0)) {
 		return false;    // Done.
 	}
 	move(t.tx, t.ty, t.tz);    // Move it & its objects.
 	// Near an egg?
 	Map_chunk* nlist = gmap->get_chunk(get_cx(), get_cy());
-	nlist->activate_eggs(
-			gwin->get_main_actor(), t.tx, t.ty, t.tz, cur.tx, cur.ty);
+	nlist->activate_eggs(gwin->get_main_actor(), t.tx, t.ty, t.tz, cur.tx, cur.ty);
 	return true;    // Add back to queue for next time.
 }
 
@@ -929,8 +897,7 @@ void Barge_object::write_ireg(ODataSource* out) {
 	Write1(ptr, ytiles);
 	Write1(ptr, 0);    // Unknown.
 	// Flags (quality).  Taking B3 to indicate barge mode.
-	Write1(ptr,
-		   (dir << 1) | ((gwin->get_moving_barge() == this) ? (1 << 3) : 0));
+	Write1(ptr, (dir << 1) | ((gwin->get_moving_barge() == this) ? (1 << 3) : 0));
 	Write1(ptr, 0);    // (Quantity).
 	Write1(ptr, nibble_swap(get_lift()));
 	Write1(ptr, 0);    // Data2.

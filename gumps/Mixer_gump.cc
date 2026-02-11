@@ -214,29 +214,24 @@ Mixer_gump::Mixer_gump() : Modal_gump(nullptr, -1) {
 
 	if (initial_music_midi != -1) {
 		midislider = std::make_shared<Slider_widget>(
-				this,
-				label_margin + font->get_text_width(Strings::MIDIMusic_()),
-				yForRow(0) - 13, shidleft, shidright, shiddiamond, 0, 100, 1,
-				initial_music_midi, slider_width);
+				this, label_margin + font->get_text_width(Strings::MIDIMusic_()), yForRow(0) - 13, shidleft, shidright, shiddiamond,
+				0, 100, 1, initial_music_midi, slider_width);
 	}
 	if (initial_music_ogg != -1) {
 		oggslider = std::make_shared<Slider_widget>(
-				this, label_margin + font->get_text_width(Strings::OGGMusic_()),
-				yForRow(num_sliders - 3) - 13, shidleft, shidright, shiddiamond,
-				0, 100, 1, initial_music_ogg, slider_width);
+				this, label_margin + font->get_text_width(Strings::OGGMusic_()), yForRow(num_sliders - 3) - 13, shidleft, shidright,
+				shiddiamond, 0, 100, 1, initial_music_ogg, slider_width);
 	}
 
 	if (initial_sfx != -1) {
 		sfxslider = std::make_shared<Slider_widget>(
-				this, label_margin + font->get_text_width(Strings::SFX_()),
-				yForRow(num_sliders - 2) - 13, shidleft, shidright, shiddiamond,
-				0, 100, 1, initial_sfx, slider_width);
+				this, label_margin + font->get_text_width(Strings::SFX_()), yForRow(num_sliders - 2) - 13, shidleft, shidright,
+				shiddiamond, 0, 100, 1, initial_sfx, slider_width);
 	}
 	if (initial_speech != -1) {
 		speechslider = std::make_shared<Slider_widget>(
-				this, label_margin + font->get_text_width(Strings::Speech_()),
-				yForRow(num_sliders - 1) - 13, shidleft, shidright, shiddiamond,
-				0, 100, 1, initial_speech, slider_width);
+				this, label_margin + font->get_text_width(Strings::Speech_()), yForRow(num_sliders - 1) - 13, shidleft, shidright,
+				shiddiamond, 0, 100, 1, initial_speech, slider_width);
 	}
 	auto Shapediamond = shiddiamond.get_shape();
 	if (Shapediamond) {
@@ -244,18 +239,13 @@ Mixer_gump::Mixer_gump() : Modal_gump(nullptr, -1) {
 	}
 
 	// Ok
-	buttons[id_ok] = std::make_unique<Mixer_Textbutton>(
-			this, &Mixer_gump::close, Strings::OK(), 25, yForRow(num_sliders),
-			50);
+	buttons[id_ok] = std::make_unique<Mixer_Textbutton>(this, &Mixer_gump::close, Strings::OK(), 25, yForRow(num_sliders), 50);
 	// Help
-	buttons[id_help] = std::make_unique<Mixer_Textbutton>(
-			this, &Mixer_gump::help, Strings::HELP(), 50, yForRow(num_sliders),
-			50);
+	buttons[id_help] = std::make_unique<Mixer_Textbutton>(this, &Mixer_gump::help, Strings::HELP(), 50, yForRow(num_sliders), 50);
 
 	// Cancel
-	buttons[id_cancel] = std::make_unique<Mixer_Textbutton>(
-			this, &Mixer_gump::cancel, Strings::CANCEL(), 75,
-			yForRow(num_sliders), 50);
+	buttons[id_cancel]
+			= std::make_unique<Mixer_Textbutton>(this, &Mixer_gump::cancel, Strings::CANCEL(), 75, yForRow(num_sliders), 50);
 
 	// resize gump and reposition widgets
 	ResizeWidthToFitWidgets(tcb::span(&midislider, 4), 28);
@@ -295,28 +285,21 @@ void Mixer_gump::save_settings() {
 	config->write_back();
 }
 
-void Mixer_gump::PaintSlider(
-		Image_window8* iwin, Slider_widget* slider, const char* label,
-		bool use3dslidertrack) {
+void Mixer_gump::PaintSlider(Image_window8* iwin, Slider_widget* slider, const char* label, bool use3dslidertrack) {
 	auto rect = slider->get_rect();
 	font->paint_text_right_aligned(iwin->get_ib8(), label, rect.x, rect.y + 2);
 
 	if (use3dslidertrack) {
 		iwin->get_ib8()->draw_beveled_box(
-				rect.x + 12, rect.y + 2, slider_width, slider_height, 1,
-				slider_track_color, slider_track_color + 2,
-				slider_track_color + 4, slider_track_color - 2,
-				slider_track_color - 4);
+				rect.x + 12, rect.y + 2, slider_width, slider_height, 1, slider_track_color, slider_track_color + 2,
+				slider_track_color + 4, slider_track_color - 2, slider_track_color - 4);
 	} else {
-		iwin->get_ib8()->draw_box(
-				rect.x + 12, rect.y + 2, slider_width, slider_height, 0,
-				slider_track_color, 0xff);
+		iwin->get_ib8()->draw_box(rect.x + 12, rect.y + 2, slider_width, slider_height, 0, slider_track_color, 0xff);
 	}
 
 	slider->paint();
 
-	gumpman->paint_num(
-			slider->getselection(), rect.x + rect.w + 24, rect.y + 2, font);
+	gumpman->paint_num(slider->getselection(), rect.x + rect.w + 24, rect.y + 2, font);
 }
 
 void Mixer_gump::paint() {
@@ -329,49 +312,32 @@ void Mixer_gump::paint() {
 
 	Image_window8* iwin = gwin->get_win();
 
-	int disabled_text_pos
-			= x + std::max(procedural_background.w - slider_width - 68, 84);
+	int disabled_text_pos = x + std::max(procedural_background.w - slider_width - 68, 84);
 
 	// if have neither
 	if (!midislider && !oggslider) {
-		font->paint_text_right_aligned(
-				iwin->get_ib8(), Strings::Music_(), disabled_text_pos,
-				y + yForRow(0));
+		font->paint_text_right_aligned(iwin->get_ib8(), Strings::Music_(), disabled_text_pos, y + yForRow(0));
 
-		font->paint_text(
-				iwin->get_ib8(), Strings::disabled(), disabled_text_pos,
-				y + yForRow(0));
+		font->paint_text(iwin->get_ib8(), Strings::disabled(), disabled_text_pos, y + yForRow(0));
 	}
 	// midi Slider
 	if (midislider) {
-		PaintSlider(
-				iwin, midislider.get(),
-				oggslider ? Strings::MIDIMusic_() : Strings::Music_());
+		PaintSlider(iwin, midislider.get(), oggslider ? Strings::MIDIMusic_() : Strings::Music_());
 	}
 	if (oggslider) {
-		PaintSlider(
-				iwin, oggslider.get(),
-				midislider ? Strings::OGGMusic_() : Strings::Music_());
+		PaintSlider(iwin, oggslider.get(), midislider ? Strings::OGGMusic_() : Strings::Music_());
 	}
 	if (sfxslider) {
 		PaintSlider(iwin, sfxslider.get(), Strings::SFX_());
 	} else {
-		font->paint_text_right_aligned(
-				iwin->get_ib8(), Strings::SFX_(), disabled_text_pos,
-				y + yForRow(num_sliders - 2));
-		font->paint_text(
-				iwin->get_ib8(), Strings::disabled(), disabled_text_pos,
-				y + yForRow(num_sliders - 2));
+		font->paint_text_right_aligned(iwin->get_ib8(), Strings::SFX_(), disabled_text_pos, y + yForRow(num_sliders - 2));
+		font->paint_text(iwin->get_ib8(), Strings::disabled(), disabled_text_pos, y + yForRow(num_sliders - 2));
 	}
 	if (speechslider) {
 		PaintSlider(iwin, speechslider.get(), Strings::Speech_());
 	} else {
-		font->paint_text_right_aligned(
-				iwin->get_ib8(), Strings::Speech_(), disabled_text_pos,
-				y + yForRow(num_sliders - 1));
-		font->paint_text(
-				iwin->get_ib8(), Strings::disabled(), disabled_text_pos,
-				y + yForRow(num_sliders - 1));
+		font->paint_text_right_aligned(iwin->get_ib8(), Strings::Speech_(), disabled_text_pos, y + yForRow(num_sliders - 1));
+		font->paint_text(iwin->get_ib8(), Strings::disabled(), disabled_text_pos, y + yForRow(num_sliders - 1));
 	}
 
 	gwin->set_painted();
@@ -479,9 +445,8 @@ bool Mixer_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 		RAIIPointerClearer<decltype(inputslider)> clearer;
 
 		if (!inputslider) {
-			inputslider = GetSlider(
-					Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
-			clearer = inputslider;
+			inputslider = GetSlider(Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
+			clearer     = inputslider;
 		}
 		if (inputslider && inputslider->key_down(chr, unicode)) {
 			return true;
@@ -526,16 +491,9 @@ void Mixer_gump::OnSliderValueChanged(Slider_widget* sender, int newvalue) {
 			int cur = !midi->ogg_is_playing() ? midi->get_current_track() : -1;
 			// play preview song here if not already playing a track
 
-			if ((cur == -1
-				 || (gwin->is_background_track(cur)
-					 && !gwin->is_in_exult_menu()))
-				&& !sender->is_dragging()) {
-				if (!midi->start_music(
-							Audio::game_music(test_music_track), false,
-							MyMidiPlayer::Force_Midi)) {
-					SetPopupMessage(
-							Strings::Failedtoplaymiditesttrack()
-							+ (" #" + std::to_string(test_music_track)));
+			if ((cur == -1 || (gwin->is_background_track(cur) && !gwin->is_in_exult_menu())) && !sender->is_dragging()) {
+				if (!midi->start_music(Audio::game_music(test_music_track), false, MyMidiPlayer::Force_Midi)) {
+					SetPopupMessage(Strings::Failedtoplaymiditesttrack() + (" #" + std::to_string(test_music_track)));
 				}
 			}
 		}
@@ -546,16 +504,9 @@ void Mixer_gump::OnSliderValueChanged(Slider_widget* sender, int newvalue) {
 
 			int cur = midi->ogg_is_playing() ? midi->get_current_track() : -1;
 			// play preview song here if not already playing a track
-			if ((cur == -1
-				 || (gwin->is_background_track(cur)
-					 && !gwin->is_in_exult_menu()))
-				&& !sender->is_dragging()) {
-				if (!midi->start_music(
-							Audio::game_music(test_music_track), false,
-							MyMidiPlayer::Force_Ogg)) {
-					SetPopupMessage(
-							Strings::Failedtoplayoggtesttrack()
-							+ (" " + midi->GetOggFailed()));
+			if ((cur == -1 || (gwin->is_background_track(cur) && !gwin->is_in_exult_menu())) && !sender->is_dragging()) {
+				if (!midi->start_music(Audio::game_music(test_music_track), false, MyMidiPlayer::Force_Ogg)) {
+					SetPopupMessage(Strings::Failedtoplayoggtesttrack() + (" " + midi->GetOggFailed()));
 				}
 			}
 		}

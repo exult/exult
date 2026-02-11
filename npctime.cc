@@ -183,8 +183,7 @@ void Npc_timer_list::stop_bleeding() {
 }
 
 std::shared_ptr<Actor> Npc_timer_list::get_npc() const {
-	std::shared_ptr<Actor> npc_shared
-			= std::static_pointer_cast<Actor>(npc.lock());
+	std::shared_ptr<Actor> npc_shared = std::static_pointer_cast<Actor>(npc.lock());
 	return npc_shared;
 }
 
@@ -360,8 +359,7 @@ void Npc_poison_timer::handle_event(unsigned long curtime, uintptr udata) {
 		return;
 	}
 	// Long enough? Or cured? Or dead?
-	if (curtime >= end_time || !npc->get_flag(Obj_flags::poisoned)
-		|| npc->is_dead()) {
+	if (curtime >= end_time || !npc->get_flag(Obj_flags::poisoned) || npc->is_dead()) {
 		npc->clear_flag(Obj_flags::poisoned);
 		list->stop_poison();
 		return;
@@ -385,8 +383,7 @@ void Npc_sleep_timer::handle_event(unsigned long curtime, uintptr udata) {
 		return;
 	}
 	if (npc->get_property(static_cast<int>(Actor::health)) <= 0) {
-		if (npc->is_in_party()
-			|| gmap->is_chunk_read(npc->get_cx(), npc->get_cy())) {
+		if (npc->is_in_party() || gmap->is_chunk_read(npc->get_cx(), npc->get_cy())) {
 			// 1 in 6 every half minute = approx. 1 HP every 3 min.
 			if (rand() % 6 == 0) {
 				npc->mend_wounds(false);
@@ -394,18 +391,13 @@ void Npc_sleep_timer::handle_event(unsigned long curtime, uintptr udata) {
 		} else {
 			// If not nearby, and not in party, just set health and mana to
 			// full.
-			npc->set_property(
-					static_cast<int>(Actor::health),
-					npc->get_property(static_cast<int>(Actor::strength)));
-			npc->set_property(
-					static_cast<int>(Actor::mana),
-					npc->get_property(static_cast<int>(Actor::magic)));
+			npc->set_property(static_cast<int>(Actor::health), npc->get_property(static_cast<int>(Actor::strength)));
+			npc->set_property(static_cast<int>(Actor::mana), npc->get_property(static_cast<int>(Actor::magic)));
 		}
 	}
 	// Don't wake up someone beaten into unconsciousness.
 	// Long enough?  Or cured?
-	if (npc->get_property(static_cast<int>(Actor::health)) >= 1
-		&& (curtime >= end_time || !npc->get_flag(Obj_flags::asleep))) {
+	if (npc->get_property(static_cast<int>(Actor::health)) >= 1 && (curtime >= end_time || !npc->get_flag(Obj_flags::asleep))) {
 		// Avoid waking sleeping people.
 		if (npc->get_schedule_type() == Schedule::sleep) {
 			// This breaks Gorlab Swamp in SI/SS.
@@ -425,8 +417,7 @@ void Npc_sleep_timer::handle_event(unsigned long curtime, uintptr udata) {
 		return;
 	}
 	// Check again every half a game minute.
-	gwin->get_tqueue()->add(
-			curtime + (ticks_per_minute * gwin->get_std_delay()) / 2, this);
+	gwin->get_tqueue()->add(curtime + (ticks_per_minute * gwin->get_std_delay()) / 2, this);
 }
 
 /*
@@ -439,19 +430,16 @@ inline bool Wearing_ring(
 		int    frnum) {
 	// See if wearing ring.
 	auto is_this_ring = [&](Game_object* ring) {
-		return ring != nullptr && ring->get_shapenum() == shnum
-			   && ring->get_framenum() == frnum;
+		return ring != nullptr && ring->get_shapenum() == shnum && ring->get_framenum() == frnum;
 	};
-	return is_this_ring(actor->get_readied(lfinger))
-		   || is_this_ring(actor->get_readied(rfinger));
+	return is_this_ring(actor->get_readied(lfinger)) || is_this_ring(actor->get_readied(rfinger));
 }
 
 /*
  *  See if invisibility wore off.
  */
 
-void Npc_invisibility_timer::handle_event(
-		unsigned long curtime, uintptr udata) {
+void Npc_invisibility_timer::handle_event(unsigned long curtime, uintptr udata) {
 	ignore_unused_variable_warning(udata);
 	Actor_shared npc = list->get_npc();
 	if (!npc) {
@@ -534,8 +522,7 @@ void Npc_bleed_timer::handle_event(unsigned long curtime, uintptr udata) {
 		return;
 	}
 	// Long enough? Or cured? Or dormant? Or dead?
-	if (curtime >= end_time || !npc->get_type_flag(Actor::tf_bleeding)
-		|| npc->is_dead() || npc->is_dormant()) {
+	if (curtime >= end_time || !npc->get_type_flag(Actor::tf_bleeding) || npc->is_dead() || npc->is_dormant()) {
 		npc->clear_type_flag(Actor::tf_bleeding);
 		list->stop_bleeding();
 		return;

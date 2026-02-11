@@ -33,15 +33,13 @@ namespace NS_TIMIDITY {
 #		endif
 
 	struct Sample {
-		sint32 loop_start, loop_end, data_length, sample_rate, low_freq,
-				high_freq, root_freq;
+		sint32    loop_start, loop_end, data_length, sample_rate, low_freq, high_freq, root_freq;
 		sint32    envelope_rate[6], envelope_offset[6];
 		float     volume;
 		sample_t* data;
-		sint32    tremolo_sweep_increment, tremolo_phase_increment,
-				vibrato_sweep_increment, vibrato_control_ratio;
-		uint8 tremolo_depth, vibrato_depth, modes;
-		sint8 panning, note_to_use;
+		sint32    tremolo_sweep_increment, tremolo_phase_increment, vibrato_sweep_increment, vibrato_control_ratio;
+		uint8     tremolo_depth, vibrato_depth, modes;
+		sint8     panning, note_to_use;
 	};
 
 /* Bits in modes: */

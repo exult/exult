@@ -78,9 +78,7 @@ private:
 public:
 	KeyBinder();
 	/* Add keybinding */
-	void AddKeyBinding(
-			SDL_Keycode key, SDL_Keymod mod, const Action* action, int nparams,
-			const int* params);
+	void AddKeyBinding(SDL_Keycode key, SDL_Keymod mod, const Action* action, int nparams, const int* params);
 
 	/* Other methods */
 	void Flush() {

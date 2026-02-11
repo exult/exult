@@ -44,14 +44,11 @@ public:
 	friend class Shape_info;
 	Content_rules() = default;
 
-	Content_rules(
-			int sh, bool a, bool p = false, bool m = false, bool st = false,
-			bool inv = false) {
+	Content_rules(int sh, bool a, bool p = false, bool m = false, bool st = false, bool inv = false) {
 		set(sh, a, p, m, st, inv);
 	}
 
-	Content_rules(const Content_rules& other)
-			: Base_info(other), shape(other.shape), accept(other.accept) {
+	Content_rules(const Content_rules& other) : Base_info(other), shape(other.shape), accept(other.accept) {
 		info_flags = other.info_flags;
 	}
 
@@ -60,9 +57,7 @@ public:
 	// Write out.
 	void write(std::ostream& out, int shapenum, Exult_Game game);
 
-	void set(
-			int sh, bool a, bool p = false, bool m = false, bool st = false,
-			bool inv = false) {
+	void set(int sh, bool a, bool p = false, bool m = false, bool st = false, bool inv = false) {
 		shape  = sh;
 		accept = a;
 		set_patch(p);

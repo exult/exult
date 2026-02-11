@@ -107,9 +107,7 @@ void playfli::info(fliinfo* fi) const {
 	}
 }
 
-int playfli::play(
-		Image_window* win, int first_frame, int last_frame, unsigned long ticks,
-		int brightness) {
+int playfli::play(Image_window* win, int first_frame, int last_frame, unsigned long ticks, int brightness) {
 	const int xoffset   = (win->get_game_width() - fli_width) / 2;
 	const int yoffset   = (win->get_game_height() - fli_height) / 2;
 	bool      dont_show = false;
@@ -220,21 +218,15 @@ int playfli::play(
 					for (int p_count = 0; p_count < packets; p_count++) {
 						const int skip_count = fli_data.read1();
 						pix_pos += skip_count;
-						const int size_count
-								= static_cast<sint8>(fli_data.read1());
+						const int size_count = static_cast<sint8>(fli_data.read1());
 						if (size_count < 0) {
 							const int  pix_count = std::abs(size_count);
-							const auto data
-									= static_cast<uint8>(fli_data.read1());
-							fli_buf->fill_hline8(
-									data, pix_count, pix_pos,
-									skip_lines + line);
+							const auto data      = static_cast<uint8>(fli_data.read1());
+							fli_buf->fill_hline8(data, pix_count, pix_pos, skip_lines + line);
 							pix_pos += pix_count;
 						} else {
 							fli_data.read(pixbuf.data(), size_count);
-							fli_buf->copy_hline8(
-									pixbuf.data(), size_count, pix_pos,
-									skip_lines + line);
+							fli_buf->copy_hline8(pixbuf.data(), size_count, pix_pos, skip_lines + line);
 							pix_pos += size_count;
 						}
 					}
@@ -251,12 +243,10 @@ int playfli::play(
 					const int packets = fli_data.read1();
 					auto*     pix_pos = pixbuf.data();
 					for (int p_count = 0; p_count < packets; p_count++) {
-						const int size_count
-								= static_cast<sint8>(fli_data.read1());
+						const int size_count = static_cast<sint8>(fli_data.read1());
 						if (size_count > 0) {
-							const auto data
-									= static_cast<uint8>(fli_data.read1());
-							pix_pos = std::fill_n(pix_pos, size_count, data);
+							const auto data = static_cast<uint8>(fli_data.read1());
+							pix_pos         = std::fill_n(pix_pos, size_count, data);
 						} else {
 							const int pix_count = std::abs(size_count);
 							fli_data.read(pix_pos, pix_count);
@@ -288,8 +278,7 @@ int playfli::play(
 						} else {
 							// Set last pixel of current line (used if line
 							// width is odd)
-							fli_buf->put_pixel8(
-									packets & 0xff, fli_width - 1, line);
+							fli_buf->put_pixel8(packets & 0xff, fli_width - 1, line);
 						}
 						packets = fli_data.read2();
 					}
@@ -297,8 +286,7 @@ int playfli::play(
 					for (int p_count = 0; p_count < packets; p_count++) {
 						const int skip_count = fli_data.read1();
 						pix_pos += skip_count;
-						const int size_count
-								= static_cast<sint8>(fli_data.read1());
+						const int size_count = static_cast<sint8>(fli_data.read1());
 						if (size_count < 0) {
 							const uint16 data       = fli_data.read2();
 							auto*        pixptr     = pixbuf.data();
@@ -306,15 +294,11 @@ int playfli::play(
 							for (int i = 0; i < word_count; i++) {
 								little_endian::Write2(pixptr, data);
 							}
-							fli_buf->copy_hline8(
-									pixbuf.data(), 2 * word_count, pix_pos,
-									line);
+							fli_buf->copy_hline8(pixbuf.data(), 2 * word_count, pix_pos, line);
 							pix_pos += 2 * word_count;
 						} else {
 							fli_data.read(pixbuf.data(), 2 * size_count);
-							fli_buf->copy_hline8(
-									pixbuf.data(), 2 * size_count, pix_pos,
-									line);
+							fli_buf->copy_hline8(pixbuf.data(), 2 * size_count, pix_pos, line);
 							pix_pos += 2 * size_count;
 						}
 					}
@@ -332,8 +316,7 @@ int playfli::play(
 			}
 
 			default:
-				std::cerr << "FLIC ERROR: Invalid chunk type: "
-						  << static_cast<int>(chunk_type) << endl;
+				std::cerr << "FLIC ERROR: Invalid chunk type: " << static_cast<int>(chunk_type) << endl;
 				break;
 			}
 		}
@@ -350,9 +333,7 @@ int playfli::play(
 		}
 
 		// Speed related frame skipping detection
-		const bool skip_frame
-				= Game_window::get_instance()->get_frame_skipping()
-				  && SDL_GetTicks() >= ticks;
+		const bool skip_frame = Game_window::get_instance()->get_frame_skipping() && SDL_GetTicks() >= ticks;
 
 		win->put(fli_buf.get(), xoffset, yoffset);
 
@@ -361,10 +342,9 @@ int playfli::play(
 		}
 
 		if (fli_magic == 0xaf11) {
-			ticks += fli_speed
-					 * 10;         // FLC format: convert from 1/70th second
-		} else {                   // fli_magic == 0xaf12
-			ticks += fli_speed;    // FLI format: already in milliseconds
+			ticks += fli_speed * 10;    // FLC format: convert from 1/70th second
+		} else {                        // fli_magic == 0xaf12
+			ticks += fli_speed;         // FLI format: already in milliseconds
 		}
 
 		win->FillGuardband();

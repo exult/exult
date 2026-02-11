@@ -96,8 +96,7 @@ public:
 	virtual int gen_assign(Basic_block* out);
 	// Generate function/procedure call.
 	virtual int gen_call(
-			Basic_block* out, Uc_function* fun, bool orig, Uc_expression* item,
-			Uc_array_expression* parms, bool retvalue,
+			Basic_block* out, Uc_function* fun, bool orig, Uc_expression* item, Uc_array_expression* parms, bool retvalue,
 			Uc_class* scope_vtbl = nullptr);
 
 	virtual int get_string_offset() {    // Get offset in text_data.
@@ -140,8 +139,7 @@ protected:
 public:
 	friend class Uc_scope;
 
-	Uc_var_symbol(const char* nm, int off, int obj = -1)
-			: Uc_symbol(nm), offset(off), is_obj_fun(obj) {}
+	Uc_var_symbol(const char* nm, int off, int obj = -1) : Uc_symbol(nm), offset(off), is_obj_fun(obj) {}
 
 	int get_offset() {
 		return offset;
@@ -179,8 +177,7 @@ protected:
 public:
 	friend class Uc_scope;
 
-	Uc_struct_var_symbol(const char* nm, Uc_struct_symbol* t, int off)
-			: Uc_var_symbol(nm, off), type(t) {}
+	Uc_struct_var_symbol(const char* nm, Uc_struct_symbol* t, int off) : Uc_var_symbol(nm, off), type(t) {}
 
 	/*
 		int get_sym_type() const override
@@ -199,8 +196,7 @@ protected:
 	Uc_class* cls;
 
 public:
-	Uc_class_inst_symbol(const char* nm, Uc_class* c, int off)
-			: Uc_var_symbol(nm, off), cls(c) {}
+	Uc_class_inst_symbol(const char* nm, Uc_class* c, int off) : Uc_var_symbol(nm, off), cls(c) {}
 
 	Uc_expression* create_expression() override;
 
@@ -241,8 +237,7 @@ protected:
 public:
 	friend class Uc_scope;
 
-	Uc_static_struct_var_symbol(const char* nm, int off, Uc_struct_symbol* t)
-			: Uc_static_var_symbol(nm, off), type(t) {}
+	Uc_static_struct_var_symbol(const char* nm, int off, Uc_struct_symbol* t) : Uc_static_var_symbol(nm, off), type(t) {}
 
 	/*
 		int get_sym_type() const override
@@ -261,8 +256,7 @@ protected:
 	Uc_class* cls;
 
 public:
-	Uc_static_class_symbol(const char* nm, Uc_class* c, int off)
-			: Uc_static_var_symbol(nm, off), cls(c) {}
+	Uc_static_class_symbol(const char* nm, Uc_class* c, int off) : Uc_static_var_symbol(nm, off), cls(c) {}
 
 	Uc_expression* create_expression() override;
 
@@ -285,8 +279,7 @@ protected:
 public:
 	friend class Uc_scope;
 
-	Uc_alias_symbol(const char* nm, Uc_var_symbol* v)
-			: Uc_var_symbol(nm, v->get_offset()), var(v) {}
+	Uc_alias_symbol(const char* nm, Uc_var_symbol* v) : Uc_var_symbol(nm, v->get_offset()), var(v) {}
 
 	// Gen. code to put result on stack.
 	int gen_value(Basic_block* out) override {
@@ -339,9 +332,7 @@ protected:
 public:
 	friend class Uc_scope;
 
-	Uc_struct_alias_symbol(
-			const char* nm, Uc_var_symbol* v, Uc_struct_symbol* t)
-			: Uc_alias_symbol(nm, v), type(t) {}
+	Uc_struct_alias_symbol(const char* nm, Uc_var_symbol* v, Uc_struct_symbol* t) : Uc_alias_symbol(nm, v), type(t) {}
 
 	/*
 		int get_sym_type() const override
@@ -362,8 +353,7 @@ protected:
 public:
 	friend class Uc_scope;
 
-	Uc_class_alias_symbol(const char* nm, Uc_var_symbol* v, Uc_class* c)
-			: Uc_alias_symbol(nm, v), cls(c) {}
+	Uc_class_alias_symbol(const char* nm, Uc_var_symbol* v, Uc_class* c) : Uc_alias_symbol(nm, v), cls(c) {}
 
 	int get_sym_type() const override {
 		return Uc_symbol::Class;
@@ -471,8 +461,7 @@ protected:
 public:
 	friend class Uc_scope;
 
-	Uc_class_struct_var_symbol(const char* nm, Uc_struct_symbol* t, int off)
-			: Uc_class_var_symbol(nm, off), type(t) {}
+	Uc_class_struct_var_symbol(const char* nm, Uc_struct_symbol* t, int off) : Uc_class_var_symbol(nm, off), type(t) {}
 
 	// int get_sym_type() const override
 	//   { return Uc_symbol::Member_struct; }
@@ -489,8 +478,7 @@ class Uc_const_int_symbol : public Uc_symbol {
 	UsecodeOps opcode;
 
 public:
-	Uc_const_int_symbol(const char* nm, int v, UsecodeOps op = UC_PUSHI)
-			: Uc_symbol(nm), opcode(op) {
+	Uc_const_int_symbol(const char* nm, int v, UsecodeOps op = UC_PUSHI) : Uc_symbol(nm), opcode(op) {
 		if (opcode == UC_PUSHB) {
 			value = static_cast<char>(v & 0xff);
 		} else if (opcode == UC_PUSHI) {
@@ -549,8 +537,7 @@ class Uc_intrinsic_symbol : public Uc_symbol {
 	int intrinsic_num;    // Intrinsic #.
 	int num_parms;        // # parms. +++++Not used/set yet.
 public:
-	Uc_intrinsic_symbol(const char* nm, int n)
-			: Uc_symbol(nm), intrinsic_num(n), num_parms(0) {}
+	Uc_intrinsic_symbol(const char* nm, int n) : Uc_symbol(nm), intrinsic_num(n), num_parms(0) {}
 
 	int get_intrinsic_num() {
 		return intrinsic_num;
@@ -562,8 +549,7 @@ public:
 
 	// Generate function/procedure call.
 	int gen_call(
-			Basic_block* out, Uc_function* fun, bool orig, Uc_expression* item,
-			Uc_array_expression* parms, bool retvalue,
+			Basic_block* out, Uc_function* fun, bool orig, Uc_expression* item, Uc_array_expression* parms, bool retvalue,
 			Uc_class* scope_vtbl = nullptr) override;
 };
 
@@ -614,12 +600,9 @@ private:
 
 public:
 	friend class Uc_scope;
-	Uc_function_symbol(
-			const char* nm, int num, std::vector<Uc_var_symbol*>& p,
-			int shp = 0, Function_kind kind = utility_fun);
+	Uc_function_symbol(const char* nm, int num, std::vector<Uc_var_symbol*>& p, int shp = 0, Function_kind kind = utility_fun);
 	static Uc_function_symbol* create(
-			char* nm, int num, std::vector<Uc_var_symbol*>& p,
-			bool is_extern = false, Uc_scope* scope = nullptr,
+			char* nm, int num, std::vector<Uc_var_symbol*>& p, bool is_extern = false, Uc_scope* scope = nullptr,
 			Function_kind kind = utility_fun);
 
 	const std::vector<Uc_var_symbol*>& get_parms() {
@@ -674,8 +657,7 @@ public:
 	Uc_expression* create_expression() override;
 	// Generate function/procedure call.
 	int gen_call(
-			Basic_block* out, Uc_function* fun, bool orig, Uc_expression* item,
-			Uc_array_expression* parms, bool retvalue,
+			Basic_block* out, Uc_function* fun, bool orig, Uc_expression* item, Uc_array_expression* parms, bool retvalue,
 			Uc_class* scope_vtbl = nullptr) override;
 
 	static void set_last_num(int n) {
@@ -767,8 +749,7 @@ public:
 	}
 
 	// Add a function decl.
-	int add_function_symbol(
-			Uc_function_symbol* fun, Uc_scope* parent = nullptr);
+	int  add_function_symbol(Uc_function_symbol* fun, Uc_scope* parent = nullptr);
 	bool is_dup(const char* nm);    // Already declared?
 };
 

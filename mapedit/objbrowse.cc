@@ -33,8 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 using EStudio::Add_menu_item;
 using EStudio::Create_arrow_button;
 
-Object_browser::Object_browser(Shape_group* grp, Shape_file_info* fi)
-		: group(grp), file_info(fi) {
+Object_browser::Object_browser(Shape_group* grp, Shape_file_info* fi) : group(grp), file_info(fi) {
 	widget = nullptr;
 }
 
@@ -42,8 +41,7 @@ Object_browser::~Object_browser() {
 	if (popup) {
 		gtk_widget_destroy(popup);
 	}
-	if ((G_IS_OBJECT(vscroll_ctlr))
-		&& (G_OBJECT(vscroll_ctlr)->ref_count > 0)) {
+	if ((G_IS_OBJECT(vscroll_ctlr)) && (G_OBJECT(vscroll_ctlr)->ref_count > 0)) {
 		g_object_unref(vscroll_ctlr);
 	}
 }
@@ -94,10 +92,9 @@ GtkWidget* Object_browser::get_widget() {
 }
 
 void Object_browser::on_browser_group_add(GtkMenuItem* item, gpointer udata) {
-	auto* chooser = static_cast<Object_browser*>(udata);
-	auto* grp     = static_cast<Shape_group*>(
-            g_object_get_data(G_OBJECT(item), "user_data"));
-	const int id = chooser->get_selected_id();
+	auto*     chooser = static_cast<Object_browser*>(udata);
+	auto*     grp     = static_cast<Shape_group*>(g_object_get_data(G_OBJECT(item), "user_data"));
+	const int id      = chooser->get_selected_id();
 	if (id >= 0) {       // Selected shape?
 		grp->add(id);    // Add & redisplay open windows.
 		ExultStudio::get_instance()->update_group_windows(grp);
@@ -111,10 +108,8 @@ void Object_browser::on_browser_group_add(GtkMenuItem* item, gpointer udata) {
 void Object_browser::add_group_submenu(GtkWidget* popup) {
 	// Use our group, or assume we're in
 	//   the main window.
-	Shape_group_file* groups
-			= group ? group->get_file()
-					: ExultStudio::get_instance()->get_cur_groups();
-	const int gcnt = groups ? groups->size() : 0;
+	Shape_group_file* groups = group ? group->get_file() : ExultStudio::get_instance()->get_cur_groups();
+	const int         gcnt   = groups ? groups->size() : 0;
 	if (gcnt > 1 ||    // Groups besides ours?
 		(gcnt == 1 && !group)) {
 		GtkWidget* mitem      = Add_menu_item(popup, "Add to group...");
@@ -125,9 +120,7 @@ void Object_browser::add_group_submenu(GtkWidget* popup) {
 			if (grp == group) {
 				continue;    // Skip ourself.
 			}
-			GtkWidget* gitem = Add_menu_item(
-					group_menu, grp->get_name(),
-					G_CALLBACK(Object_browser::on_browser_group_add), this);
+			GtkWidget* gitem = Add_menu_item(group_menu, grp->get_name(), G_CALLBACK(Object_browser::on_browser_group_add), this);
 			// Store group on menu item.
 			g_object_set_data(G_OBJECT(gitem), "user_data", grp);
 		}
@@ -139,25 +132,17 @@ void Object_browser::add_group_submenu(GtkWidget* popup) {
  */
 
 void Create_file_selection(
-		const char* title, const char* path, const char* filtername,
-		const std::vector<std::string>& filters, GtkFileChooserAction action,
-		File_sel_okay_fun ok_handler, gpointer user_data) {
-	const char* stock_accept
-			= (action == GTK_FILE_CHOOSER_ACTION_OPEN) ? "_Open" : "_Save";
-	GtkFileChooser* fsel = GTK_FILE_CHOOSER(gtk_file_chooser_dialog_new(
-			title, nullptr, action, "_Cancel", GTK_RESPONSE_CANCEL,
-			stock_accept, GTK_RESPONSE_ACCEPT, nullptr));
-	GtkWidget*      btn  = gtk_dialog_get_widget_for_response(
-            GTK_DIALOG(fsel), GTK_RESPONSE_CANCEL);
-	GtkWidget* img = gtk_image_new_from_icon_name(
-			"window-close", GTK_ICON_SIZE_BUTTON);
+		const char* title, const char* path, const char* filtername, const std::vector<std::string>& filters,
+		GtkFileChooserAction action, File_sel_okay_fun ok_handler, gpointer user_data) {
+	const char*     stock_accept = (action == GTK_FILE_CHOOSER_ACTION_OPEN) ? "_Open" : "_Save";
+	GtkFileChooser* fsel         = GTK_FILE_CHOOSER(gtk_file_chooser_dialog_new(
+            title, nullptr, action, "_Cancel", GTK_RESPONSE_CANCEL, stock_accept, GTK_RESPONSE_ACCEPT, nullptr));
+	GtkWidget*      btn          = gtk_dialog_get_widget_for_response(GTK_DIALOG(fsel), GTK_RESPONSE_CANCEL);
+	GtkWidget*      img          = gtk_image_new_from_icon_name("window-close", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(btn), img);
-	btn = gtk_dialog_get_widget_for_response(
-			GTK_DIALOG(fsel), GTK_RESPONSE_ACCEPT);
+	btn = gtk_dialog_get_widget_for_response(GTK_DIALOG(fsel), GTK_RESPONSE_ACCEPT);
 	img = gtk_image_new_from_icon_name(
-			(action == GTK_FILE_CHOOSER_ACTION_OPEN) ? "document-open"
-													 : "document-save",
-			GTK_ICON_SIZE_BUTTON);
+			(action == GTK_FILE_CHOOSER_ACTION_OPEN) ? "document-open" : "document-save", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(btn), img);
 	gtk_window_set_modal(GTK_WINDOW(fsel), true);
 	if (action == GTK_FILE_CHOOSER_ACTION_SAVE) {
@@ -213,9 +198,7 @@ void Object_browser::on_browser_file_revert(GtkMenuItem* item, gpointer udata) {
 	if (!chooser->file_info) {
 		return;    // No file?
 	}
-	char* msg = g_strdup_printf(
-			"Okay to throw away any changes to '%s'?",
-			chooser->file_info->get_basename());
+	char* msg = g_strdup_printf("Okay to throw away any changes to '%s'?", chooser->file_info->get_basename());
 	if (EStudio::Prompt(msg, "Yes", "No") != 0) {
 		return;
 	}
@@ -231,8 +214,7 @@ void Object_browser::on_browser_file_revert(GtkMenuItem* item, gpointer udata) {
  *  Set up popup menu for shape browser.
  */
 
-GtkWidget* Object_browser::create_popup_internal(
-		bool files    // Include 'files'.
+GtkWidget* Object_browser::create_popup_internal(bool files    // Include 'files'.
 ) {
 	if (popup) {    // Clean out old.
 		gtk_widget_destroy(popup);
@@ -243,10 +225,8 @@ GtkWidget* Object_browser::create_popup_internal(
 		GtkWidget* mitem     = Add_menu_item(popup, "File...");
 		GtkWidget* file_menu = gtk_menu_new();
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(mitem), file_menu);
-		Add_menu_item(
-				file_menu, "Save", G_CALLBACK(on_browser_file_save), this);
-		Add_menu_item(
-				file_menu, "Revert", G_CALLBACK(on_browser_file_revert), this);
+		Add_menu_item(file_menu, "Save", G_CALLBACK(on_browser_file_save), this);
+		Add_menu_item(file_menu, "Revert", G_CALLBACK(on_browser_file_revert), this);
 	}
 	if (selected >= 0) {    // Item selected?  Add groups.
 		add_group_submenu(popup);
@@ -266,17 +246,14 @@ static void on_find_down(GtkButton* button, gpointer user_data) {
 static void on_find_up(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button);
 	auto* chooser = static_cast<Object_browser*>(user_data);
-	chooser->search(
-			gtk_entry_get_text(GTK_ENTRY(chooser->get_find_text())), -1);
+	chooser->search(gtk_entry_get_text(GTK_ENTRY(chooser->get_find_text())), -1);
 }
 
-static gboolean on_find_key(
-		GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
+static gboolean on_find_key(GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
 	ignore_unused_variable_warning(entry);
 	if (event->keyval == GDK_KEY_Return) {
 		auto* chooser = static_cast<Object_browser*>(user_data);
-		chooser->search(
-				gtk_entry_get_text(GTK_ENTRY(chooser->get_find_text())), 1);
+		chooser->search(gtk_entry_get_text(GTK_ENTRY(chooser->get_find_text())), 1);
 		return true;
 	}
 	return false;    // Let parent handle it.
@@ -313,19 +290,16 @@ static void on_move_up(GtkButton* button, gpointer user_data) {
  *      which call various virtual methods.
  */
 
-GtkWidget* Object_browser::create_controls(
-		int controls    // Browser_control flags.
+GtkWidget* Object_browser::create_controls(int controls    // Browser_control flags.
 ) {
 	GtkWidget* topframe = gtk_frame_new(nullptr);
-	widget_set_margins(
-			topframe, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(topframe, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_visible(topframe, true);
 
 	// Everything goes in here.
 	GtkWidget* tophbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_set_homogeneous(GTK_BOX(tophbox), false);
-	widget_set_margins(
-			tophbox, 1 * HMARGIN, 1 * HMARGIN, 1 * VMARGIN, 1 * VMARGIN);
+	widget_set_margins(tophbox, 1 * HMARGIN, 1 * HMARGIN, 1 * VMARGIN, 1 * VMARGIN);
 	gtk_widget_set_visible(tophbox, true);
 	gtk_container_add(GTK_CONTAINER(topframe), tophbox);
 	/*
@@ -333,8 +307,7 @@ GtkWidget* Object_browser::create_controls(
 	 */
 	if (controls & static_cast<int>(find_controls)) {
 		GtkWidget* frame = gtk_frame_new("Find");
-		widget_set_margins(
-				frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+		widget_set_margins(frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 		gtk_widget_set_visible(frame, true);
 		gtk_box_pack_start(GTK_BOX(tophbox), frame, false, false, 0);
 
@@ -347,8 +320,7 @@ GtkWidget* Object_browser::create_controls(
 		gtk_editable_set_editable(GTK_EDITABLE(find_text), true);
 		gtk_entry_set_visibility(GTK_ENTRY(find_text), true);
 		gtk_widget_set_can_focus(GTK_WIDGET(find_text), true);
-		widget_set_margins(
-				find_text, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+		widget_set_margins(find_text, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 		gtk_widget_set_visible(find_text, true);
 		gtk_box_pack_start(GTK_BOX(hbox2), find_text, false, false, 0);
 		gtk_widget_set_size_request(find_text, 110, -1);
@@ -358,29 +330,22 @@ GtkWidget* Object_browser::create_controls(
 		gtk_widget_set_visible(hbox3, true);
 		gtk_box_pack_start(GTK_BOX(hbox2), hbox3, false, false, 0);
 
-		GtkWidget* find_down = Create_arrow_button(
-				GTK_ARROW_DOWN, G_CALLBACK(on_find_down), this);
-		widget_set_margins(
-				find_down, 1 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+		GtkWidget* find_down = Create_arrow_button(GTK_ARROW_DOWN, G_CALLBACK(on_find_down), this);
+		widget_set_margins(find_down, 1 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 		gtk_box_pack_start(GTK_BOX(hbox3), find_down, true, true, 0);
 
-		GtkWidget* find_up = Create_arrow_button(
-				GTK_ARROW_UP, G_CALLBACK(on_find_up), this);
-		widget_set_margins(
-				find_up, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+		GtkWidget* find_up = Create_arrow_button(GTK_ARROW_UP, G_CALLBACK(on_find_up), this);
+		widget_set_margins(find_up, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 		gtk_box_pack_start(GTK_BOX(hbox3), find_up, true, true, 0);
 
-		g_signal_connect(
-				G_OBJECT(find_text), "key-press-event", G_CALLBACK(on_find_key),
-				this);
+		g_signal_connect(G_OBJECT(find_text), "key-press-event", G_CALLBACK(on_find_key), this);
 	}
 	/*
 	 *  The 'Locate' controls.
 	 */
 	if (controls & static_cast<int>(locate_controls)) {
 		GtkWidget* frame = gtk_frame_new("Locate");
-		widget_set_margins(
-				frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+		widget_set_margins(frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 		gtk_widget_set_visible(frame, true);
 		gtk_box_pack_start(GTK_BOX(tophbox), frame, false, false, 0);
 
@@ -393,21 +358,17 @@ GtkWidget* Object_browser::create_controls(
 		gtk_widget_set_visible(bbox, true);
 		gtk_box_pack_start(GTK_BOX(lbox), bbox, true, true, 0);
 
-		loc_down = Create_arrow_button(
-				GTK_ARROW_DOWN, G_CALLBACK(on_loc_down), this);
-		widget_set_margins(
-				loc_down, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+		loc_down = Create_arrow_button(GTK_ARROW_DOWN, G_CALLBACK(on_loc_down), this);
+		widget_set_margins(loc_down, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 		gtk_box_pack_start(GTK_BOX(bbox), loc_down, true, true, 0);
 
 		loc_up = Create_arrow_button(GTK_ARROW_UP, G_CALLBACK(on_loc_up), this);
-		widget_set_margins(
-				loc_up, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+		widget_set_margins(loc_up, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 		gtk_box_pack_start(GTK_BOX(bbox), loc_up, true, true, 0);
 
 		if (controls & static_cast<int>(locate_frame)) {
 			GtkWidget* lbl = gtk_label_new(" F:");
-			widget_set_margins(
-					lbl, 0 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+			widget_set_margins(lbl, 0 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 			gtk_label_set_xalign(GTK_LABEL(lbl), 0.9);
 			gtk_label_set_yalign(GTK_LABEL(lbl), 0.5);
 			gtk_box_pack_start(GTK_BOX(lbox), lbl, true, true, 0);
@@ -417,16 +378,14 @@ GtkWidget* Object_browser::create_controls(
 			gtk_editable_set_editable(GTK_EDITABLE(loc_f), true);
 			gtk_entry_set_visibility(GTK_ENTRY(loc_f), true);
 			gtk_widget_set_can_focus(GTK_WIDGET(loc_f), true);
-			widget_set_margins(
-					loc_f, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+			widget_set_margins(loc_f, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 			gtk_widget_set_visible(loc_f, true);
 			gtk_box_pack_start(GTK_BOX(lbox), loc_f, true, true, 0);
 			gtk_widget_set_size_request(loc_f, 64, -1);
 		}
 		if (controls & static_cast<int>(locate_quality)) {
 			GtkWidget* lbl = gtk_label_new(" Q:");
-			widget_set_margins(
-					lbl, 0 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+			widget_set_margins(lbl, 0 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 			gtk_label_set_xalign(GTK_LABEL(lbl), 0.9);
 			gtk_label_set_yalign(GTK_LABEL(lbl), 0.5);
 			gtk_box_pack_start(GTK_BOX(lbox), lbl, true, true, 0);
@@ -436,8 +395,7 @@ GtkWidget* Object_browser::create_controls(
 			gtk_editable_set_editable(GTK_EDITABLE(loc_q), true);
 			gtk_entry_set_visibility(GTK_ENTRY(loc_q), true);
 			gtk_widget_set_can_focus(GTK_WIDGET(loc_q), true);
-			widget_set_margins(
-					loc_q, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+			widget_set_margins(loc_q, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 			gtk_widget_set_visible(loc_q, true);
 			gtk_box_pack_start(GTK_BOX(lbox), loc_q, true, true, 0);
 			gtk_widget_set_size_request(loc_q, 64, -1);
@@ -448,8 +406,7 @@ GtkWidget* Object_browser::create_controls(
 	 */
 	if (controls & static_cast<int>(move_controls)) {
 		GtkWidget* frame = gtk_frame_new("Move");
-		widget_set_margins(
-				frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+		widget_set_margins(frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 		gtk_widget_set_visible(frame, true);
 		gtk_box_pack_start(GTK_BOX(tophbox), frame, false, false, 0);
 
@@ -458,16 +415,12 @@ GtkWidget* Object_browser::create_controls(
 		gtk_widget_set_visible(bbox, true);
 		gtk_container_add(GTK_CONTAINER(frame), bbox);
 
-		move_down = Create_arrow_button(
-				GTK_ARROW_DOWN, G_CALLBACK(on_move_down), this);
-		widget_set_margins(
-				move_down, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+		move_down = Create_arrow_button(GTK_ARROW_DOWN, G_CALLBACK(on_move_down), this);
+		widget_set_margins(move_down, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 		gtk_box_pack_start(GTK_BOX(bbox), move_down, true, true, 0);
 
-		move_up = Create_arrow_button(
-				GTK_ARROW_UP, G_CALLBACK(on_move_up), this);
-		widget_set_margins(
-				move_up, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+		move_up = Create_arrow_button(GTK_ARROW_UP, G_CALLBACK(on_move_up), this);
+		widget_set_margins(move_up, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 		gtk_box_pack_start(GTK_BOX(bbox), move_up, true, true, 0);
 	}
 	return topframe;
@@ -480,8 +433,8 @@ void Object_browser::draw_vscrolled(       // For scroll events.
 		gpointer data                      // ->Object_browser.
 ) {
 	ignore_unused_variable_warning(self, dx);
-	auto*          browser = static_cast<Object_browser*>(data);
-	GtkAdjustment* adj = gtk_range_get_adjustment(GTK_RANGE(browser->vscroll));
+	auto*          browser   = static_cast<Object_browser*>(data);
+	GtkAdjustment* adj       = gtk_range_get_adjustment(GTK_RANGE(browser->vscroll));
 	const gdouble  adj_value = gtk_adjustment_get_value(adj);
 #if defined(MACOSX) && !defined(XWIN)
 	const gdouble new_unit = 1.0;
@@ -491,20 +444,15 @@ void Object_browser::draw_vscrolled(       // For scroll events.
 #endif    // MACOSX && !XWIN
 	const gdouble new_value = (dy * new_unit) + adj_value;
 #ifdef DEBUG
-	std::cout << "Objects : Wheeled to " << dy << " at "
-			  << gtk_adjustment_get_value(adj) << " -> " << new_value
-			  << " of [ " << gtk_adjustment_get_lower(adj) << ", "
-			  << gtk_adjustment_get_upper(adj) << " ] by "
-			  << gtk_adjustment_get_step_increment(adj) << " ( "
-			  << gtk_adjustment_get_page_increment(adj) << ", "
+	std::cout << "Objects : Wheeled to " << dy << " at " << gtk_adjustment_get_value(adj) << " -> " << new_value << " of [ "
+			  << gtk_adjustment_get_lower(adj) << ", " << gtk_adjustment_get_upper(adj) << " ] by "
+			  << gtk_adjustment_get_step_increment(adj) << " ( " << gtk_adjustment_get_page_increment(adj) << ", "
 			  << gtk_adjustment_get_page_size(adj) << " )" << std::endl;
 #endif
 	gtk_adjustment_set_value(adj, new_value);
 }
 
 void Object_browser::enable_draw_vscroll(GtkWidget* draw) {
-	vscroll_ctlr = GTK_EVENT_CONTROLLER(gtk_event_controller_scroll_new(
-			draw, GTK_EVENT_CONTROLLER_SCROLL_VERTICAL));
-	g_signal_connect(
-			G_OBJECT(vscroll_ctlr), "scroll", G_CALLBACK(draw_vscrolled), this);
+	vscroll_ctlr = GTK_EVENT_CONTROLLER(gtk_event_controller_scroll_new(draw, GTK_EVENT_CONTROLLER_SCROLL_VERTICAL));
+	g_signal_connect(G_OBJECT(vscroll_ctlr), "scroll", G_CALLBACK(draw_vscrolled), this);
 }

@@ -71,11 +71,10 @@ namespace endian_internal { namespace detail {
 #	define ENDIANIO_CONST_CONSTEXPR __forceinline constexpr
 #	define ENDIANIO_PURE_CONSTEXPR  __forceinline constexpr
 #elif defined(__GNUG__)
-#	define ENDIANIO_INLINE    [[gnu::always_inline]] inline
-#	define ENDIANIO_CONSTEXPR [[gnu::always_inline]] constexpr
-#	define ENDIANIO_CONST_CONSTEXPR \
-		[[using gnu: const, always_inline]] constexpr
-#	define ENDIANIO_PURE_CONSTEXPR [[using gnu: pure, always_inline]] constexpr
+#	define ENDIANIO_INLINE          [[gnu::always_inline]] inline
+#	define ENDIANIO_CONSTEXPR       [[gnu::always_inline]] constexpr
+#	define ENDIANIO_CONST_CONSTEXPR [[using gnu: const, always_inline]] constexpr
+#	define ENDIANIO_PURE_CONSTEXPR  [[using gnu: pure, always_inline]] constexpr
 #else
 #	define ENDIANIO_INLINE          inline
 #	define ENDIANIO_CONSTEXPR       constexpr
@@ -89,19 +88,15 @@ namespace endian_internal { namespace detail {
 #	pragma intrinsic(_byteswap_ushort)
 #	pragma intrinsic(_byteswap_ulong)
 #	pragma intrinsic(_byteswap_uint64)
-#	if (defined(_M_ARM64) || defined(_M_ARM64EC)            \
-		 || defined(_M_HYBRID_X86_ARM64))                    \
-			&& !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
-			&& !defined(__INTEL_COMPILER) && !defined(__clang__)
+#	if (defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)) && !defined(_M_CEE_PURE) \
+			&& !defined(__CUDACC__) && !defined(__INTEL_COMPILER) && !defined(__clang__)
 #		define HAS_NEON_INTRINSICS 1
 #		include <arm64_neon.h>
 #	else
 #		define HAS_NEON_INTRINSICS 0
 #	endif
-#	if ((defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) \
-		 || (defined(_M_X64) && !defined(_M_ARM64EC)))       \
-			&& !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
-			&& !defined(__INTEL_COMPILER)
+#	if ((defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))) \
+			&& !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
 #		define HAS_POPCNT_INTRINSICS 1
 #	else
 #		define HAS_POPCNT_INTRINSICS 0
@@ -111,17 +106,13 @@ namespace endian_internal { namespace detail {
 namespace endian_internal { namespace detail {
 	// is_detected and related (ported from Library Fundamentals v2).
 	namespace inner {
-		template <
-				typename Default, typename AlwaysVoid,
-				template <typename...> class Op, typename... Args>
+		template <typename Default, typename AlwaysVoid, template <typename...> class Op, typename... Args>
 		struct detector {
 			using value_t = std::false_type;
 			using type    = Default;
 		};
 
-		template <
-				typename Default, template <typename...> class Op,
-				typename... Args>
+		template <typename Default, template <typename...> class Op, typename... Args>
 		struct detector<Default, std::void_t<Op<Args...>>, Op, Args...> {
 			using value_t = std::true_type;
 			using type    = Op<Args...>;
@@ -138,8 +129,7 @@ namespace endian_internal { namespace detail {
 	}    // namespace inner
 
 	template <template <typename...> class Op, typename... Args>
-	using is_detected = typename inner::detector<
-			inner::nonesuch, void, Op, Args...>::value_t;
+	using is_detected = typename inner::detector<inner::nonesuch, void, Op, Args...>::value_t;
 
 	template <template <typename...> class Op, typename... Args>
 	constexpr bool is_detected_v = is_detected<Op, Args...>::value;
@@ -149,27 +139,22 @@ namespace endian_internal { namespace detail {
 
 	namespace functions {
 		template <typename T>
-		using read = decltype(std::declval<T>().read(
-				std::declval<char*>(), std::declval<std::streamsize>()));
+		using read = decltype(std::declval<T>().read(std::declval<char*>(), std::declval<std::streamsize>()));
 
 		template <typename T>
-		using write = decltype(std::declval<T>().write(
-				std::declval<const char*>(), std::declval<std::streamsize>()));
+		using write = decltype(std::declval<T>().write(std::declval<const char*>(), std::declval<std::streamsize>()));
 	}    // namespace functions
 
 	// Robust SFINAE idiom by Jonathan Boccara
 	// https://www.fluentcpp.com/2019/08/23/how-to-make-sfinae-pretty-and-robust/
 	template <typename T>
-	using has_read_function_t
-			= std::enable_if_t<exists<functions::read, T>, bool>;
+	using has_read_function_t = std::enable_if_t<exists<functions::read, T>, bool>;
 
 	template <typename T>
-	using has_write_function_t
-			= std::enable_if_t<exists<functions::write, T>, bool>;
+	using has_write_function_t = std::enable_if_t<exists<functions::write, T>, bool>;
 
 	template <typename T>
-	using is_an_integer_t = std::enable_if_t<
-			std::is_integral_v<T> && !std::is_same_v<T, bool>, bool>;
+	using is_an_integer_t = std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool>, bool>;
 
 	template <typename T>
 	struct is_byte_type_impl : std::integral_constant<bool, false> {};
@@ -178,24 +163,20 @@ namespace endian_internal { namespace detail {
 	struct is_byte_type_impl<char> : std::integral_constant<bool, true> {};
 
 	template <>
-	struct is_byte_type_impl<unsigned char>
-			: std::integral_constant<bool, true> {};
+	struct is_byte_type_impl<unsigned char> : std::integral_constant<bool, true> {};
 
 	template <>
 	struct is_byte_type_impl<std::byte> : std::integral_constant<bool, true> {};
 
 	template <typename T>
-	using is_byte_type_t = std::enable_if_t<
-			is_byte_type_impl<std::remove_cv_t<T>>::value, bool>;
+	using is_byte_type_t = std::enable_if_t<is_byte_type_impl<std::remove_cv_t<T>>::value, bool>;
 
 	// Porting is_constant_evaluated from c++20
-#if defined(__cpp_lib_is_constant_evaluated) \
-		&& __cpp_lib_is_constant_evaluated >= 201811L
+#if defined(__cpp_lib_is_constant_evaluated) && __cpp_lib_is_constant_evaluated >= 201811L
 	[[nodiscard]] ENDIANIO_CONST_CONSTEXPR bool is_constant_evaluated() noexcept {
 		return std::is_constant_evaluated();
 	}
-#elif __has_builtin(__builtin_is_constant_evaluated) \
-		|| (defined(_MSC_VER) && _MSC_VER >= 1925)
+#elif __has_builtin(__builtin_is_constant_evaluated) || (defined(_MSC_VER) && _MSC_VER >= 1925)
 	[[nodiscard]] ENDIANIO_CONST_CONSTEXPR bool is_constant_evaluated() noexcept {
 		return __builtin_is_constant_evaluated();
 	}
@@ -218,8 +199,7 @@ namespace endian_internal { namespace detail {
 			return uint64_t{};
 		} else {
 			static_assert(
-					Size == sizeof(uint8_t) || Size == sizeof(uint16_t)
-					|| Size == sizeof(uint32_t) || Size == sizeof(uint64_t));
+					Size == sizeof(uint8_t) || Size == sizeof(uint16_t) || Size == sizeof(uint32_t) || Size == sizeof(uint64_t));
 		}
 	}
 
@@ -234,16 +214,12 @@ namespace endian_internal { namespace detail {
 	overloaded(Ts...) -> overloaded<Ts...>;
 
 #if defined(__cpp_lib_byteswap) && __cpp_lib_byteswap >= 202110L
-	template <
-			typename Int,
-			std::enable_if_t<std::is_integral_v<Int>, bool> = true>
+	template <typename Int, std::enable_if_t<std::is_integral_v<Int>, bool> = true>
 	ENDIANIO_CONST_CONSTEXPR Int byteswap(Int value) noexcept {
 		return std::byteswap(value);
 	}
 #else
-	template <
-			typename UInt,
-			std::enable_if_t<std::is_unsigned_v<UInt>, bool> = true>
+	template <typename UInt, std::enable_if_t<std::is_unsigned_v<UInt>, bool> = true>
 	ENDIANIO_CONST_CONSTEXPR UInt byteswap_impl(UInt value) noexcept {
 		if constexpr (sizeof(UInt) == 1) {
 			return value;
@@ -273,9 +249,7 @@ namespace endian_internal { namespace detail {
 					}
 #		endif
 			};
-			if constexpr (
-					sizeof(UInt) == 2 || sizeof(UInt) == 4
-					|| sizeof(UInt) == 8) {
+			if constexpr (sizeof(UInt) == 2 || sizeof(UInt) == 4 || sizeof(UInt) == 8) {
 				return builtin_byteswap(value);
 			}
 			if constexpr (sizeof(UInt) == 16) {
@@ -283,9 +257,7 @@ namespace endian_internal { namespace detail {
 				return __builtin_bswap128(value);
 #		else
 				return (builtin_byteswap(static_cast<uint64_t>(value >> 64))
-						| (static_cast<UInt>(builtin_byteswap(
-								   static_cast<uint64_t>(value)))
-						   << 64));
+						| (static_cast<UInt>(builtin_byteswap(static_cast<uint64_t>(value))) << 64));
 #		endif
 			}
 		}
@@ -301,16 +273,14 @@ namespace endian_internal { namespace detail {
 			diff -= size_t{2} * CHAR_BIT;
 			UInt byte1 = val & mask1;
 			UInt byte2 = val & mask2;
-			val = (val ^ byte1 ^ byte2 ^ (byte1 << diff) ^ (byte2 >> diff));
+			val        = (val ^ byte1 ^ byte2 ^ (byte1 << diff) ^ (byte2 >> diff));
 			mask1 <<= CHAR_BIT;
 			mask2 >>= CHAR_BIT;
 		}
 		return val;
 	}
 
-	template <
-			typename Int,
-			std::enable_if_t<std::is_integral_v<Int>, bool> = true>
+	template <typename Int, std::enable_if_t<std::is_integral_v<Int>, bool> = true>
 	ENDIANIO_CONST_CONSTEXPR Int byteswap(Int value) noexcept {
 		using UInt = select_unsigned_for_t<Int>;
 		if constexpr (std::is_same_v<UInt, std::remove_cv_t<Int>>) {
@@ -322,9 +292,7 @@ namespace endian_internal { namespace detail {
 #endif
 
 	struct EndianBaseImpl {
-		template <
-				endian FromEndian, typename Int, typename Byte,
-				is_an_integer_t<Int> = true, is_byte_type_t<Byte> = true>
+		template <endian FromEndian, typename Int, typename Byte, is_an_integer_t<Int> = true, is_byte_type_t<Byte> = true>
 		ENDIANIO_CONSTEXPR static Int Read(Byte*&& source) {
 			Int val;
 			std::memcpy(&val, std::move(source), sizeof(Int));
@@ -334,9 +302,7 @@ namespace endian_internal { namespace detail {
 			return val;
 		}
 
-		template <
-				endian FromEndian, typename Int, typename Byte,
-				is_an_integer_t<Int> = true, is_byte_type_t<Byte> = true>
+		template <endian FromEndian, typename Int, typename Byte, is_an_integer_t<Int> = true, is_byte_type_t<Byte> = true>
 		ENDIANIO_CONSTEXPR static Int Read(Byte*& source) {
 			Int val;
 			std::memcpy(&val, source, sizeof(Int));
@@ -347,9 +313,7 @@ namespace endian_internal { namespace detail {
 			return val;
 		}
 
-		template <
-				endian FromEndian, typename Int, typename Stream,
-				has_read_function_t<Stream> = true>
+		template <endian FromEndian, typename Int, typename Stream, has_read_function_t<Stream> = true>
 		ENDIANIO_INLINE static auto Read(Stream& in) {
 			using UC = typename Stream::char_type;
 			alignas(alignof(Int)) std::array<UC, sizeof(Int)> buffer;
@@ -357,9 +321,7 @@ namespace endian_internal { namespace detail {
 			return Read<FromEndian, Int>(buffer.data());
 		}
 
-		template <
-				endian FromEndian, typename Int, typename Stream,
-				has_read_function_t<Stream> = true>
+		template <endian FromEndian, typename Int, typename Stream, has_read_function_t<Stream> = true>
 		ENDIANIO_INLINE static auto Read(Stream* in) {
 			using UC = typename Stream::char_type;
 			alignas(alignof(Int)) std::array<UC, sizeof(Int)> buffer;
@@ -367,9 +329,7 @@ namespace endian_internal { namespace detail {
 			return Read<FromEndian, Int>(buffer.data());
 		}
 
-		template <
-				endian ToEndian, typename Int, typename Byte,
-				is_an_integer_t<Int> = true, is_byte_type_t<Byte> = true>
+		template <endian ToEndian, typename Int, typename Byte, is_an_integer_t<Int> = true, is_byte_type_t<Byte> = true>
 		ENDIANIO_CONSTEXPR static void Write(Byte*&& dest, Int val) {
 			if constexpr (ToEndian != endian::native) {
 				val = byteswap(val);
@@ -377,9 +337,7 @@ namespace endian_internal { namespace detail {
 			std::memcpy(std::move(dest), &val, sizeof(Int));
 		}
 
-		template <
-				endian ToEndian, typename Int, typename Byte,
-				is_an_integer_t<Int> = true, is_byte_type_t<Byte> = true>
+		template <endian ToEndian, typename Int, typename Byte, is_an_integer_t<Int> = true, is_byte_type_t<Byte> = true>
 		ENDIANIO_CONSTEXPR static void Write(Byte*& dest, Int val) {
 			if constexpr (ToEndian != endian::native) {
 				val = byteswap(val);
@@ -388,9 +346,7 @@ namespace endian_internal { namespace detail {
 			std::advance(dest, sizeof(Int));
 		}
 
-		template <
-				endian ToEndian, typename Int, typename Stream,
-				has_write_function_t<Stream> = true>
+		template <endian ToEndian, typename Int, typename Stream, has_write_function_t<Stream> = true>
 		ENDIANIO_INLINE static auto Write(Stream& out, Int val) {
 			using UC = typename Stream::char_type;
 			alignas(alignof(Int)) std::array<UC, sizeof(Int)> buffer;
@@ -398,9 +354,7 @@ namespace endian_internal { namespace detail {
 			out.write(buffer.data(), sizeof(Int));
 		}
 
-		template <
-				endian ToEndian, typename Int, typename Stream,
-				has_write_function_t<Stream> = true>
+		template <endian ToEndian, typename Int, typename Stream, has_write_function_t<Stream> = true>
 		ENDIANIO_INLINE static auto Write(Stream* out, Int val) {
 			using UC = typename Stream::char_type;
 			alignas(alignof(Int)) std::array<UC, sizeof(Int)> buffer;
@@ -493,39 +447,28 @@ namespace endian_internal { namespace detail {
 	};
 }}    // namespace endian_internal::detail
 
-using big_endian = endian_internal::detail::endian_base<
-		endian_internal::detail::endian::big>;
-using little_endian = endian_internal::detail::endian_base<
-		endian_internal::detail::endian::little>;
-using native_endian = endian_internal::detail::endian_base<
-		endian_internal::detail::endian::native>;
+using big_endian    = endian_internal::detail::endian_base<endian_internal::detail::endian::big>;
+using little_endian = endian_internal::detail::endian_base<endian_internal::detail::endian::little>;
+using native_endian = endian_internal::detail::endian_base<endian_internal::detail::endian::native>;
 
 template <typename Src>
 ENDIANIO_CONSTEXPR static auto Read1(Src&& in) {
-	return endian_internal::detail::EndianBaseImpl::Read<
-			endian_internal::detail::endian::native, uint8_t>(
-			std::forward<Src>(in));
+	return endian_internal::detail::EndianBaseImpl::Read<endian_internal::detail::endian::native, uint8_t>(std::forward<Src>(in));
 }
 
 template <typename Src>
 ENDIANIO_CONSTEXPR static auto Read1s(Src&& in) {
-	return endian_internal::detail::EndianBaseImpl::Read<
-			endian_internal::detail::endian::native, int8_t>(
-			std::forward<Src>(in));
+	return endian_internal::detail::EndianBaseImpl::Read<endian_internal::detail::endian::native, int8_t>(std::forward<Src>(in));
 }
 
 template <typename Dst>
 ENDIANIO_CONSTEXPR static void Write1(Dst&& out, uint8_t val) {
-	endian_internal::detail::EndianBaseImpl::Write<
-			endian_internal::detail::endian::native>(
-			std::forward<Dst>(out), val);
+	endian_internal::detail::EndianBaseImpl::Write<endian_internal::detail::endian::native>(std::forward<Dst>(out), val);
 }
 
 template <typename Dst>
 ENDIANIO_CONSTEXPR static void Write1s(Dst&& out, int8_t val) {
-	endian_internal::detail::EndianBaseImpl::Write<
-			endian_internal::detail::endian::native>(
-			std::forward<Dst>(out), val);
+	endian_internal::detail::EndianBaseImpl::Write<endian_internal::detail::endian::native>(std::forward<Dst>(out), val);
 }
 
 #if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
@@ -539,12 +482,10 @@ ENDIANIO_CONSTEXPR uint32_t bitcount(uint32_t val) {
 #else
 namespace endian_internal { namespace detail {
 	ENDIANIO_CONSTEXPR uint32_t bitcount_fallback(uint32_t val) {
-		val = val
-			  - ((val >> 1) & static_cast<uint32_t>(0x5555'5555'5555'5555ull));
+		val = val - ((val >> 1) & static_cast<uint32_t>(0x5555'5555'5555'5555ull));
 		val = (val & static_cast<uint32_t>(0x3333'3333'3333'3333ull))
 			  + ((val >> 2) & static_cast<uint32_t>(0x3333'3333'3333'3333ull));
-		val = (val + (val >> 4))
-			  & static_cast<uint32_t>(0x0F0F'0F0F'0F0F'0F0Full);
+		val = (val + (val >> 4)) & static_cast<uint32_t>(0x0F0F'0F0F'0F0F'0F0Full);
 		// Multiply by one in each byte, so that it will have the sum of all
 		// source bytes in the highest byte
 		val = val * static_cast<uint32_t>(0x0101'0101ull);

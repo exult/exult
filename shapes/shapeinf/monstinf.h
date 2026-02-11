@@ -437,8 +437,7 @@ public:
 		return reach;
 	}
 
-	void set_stats(
-			int str, int dex, int intel, int cmb, int armour, int wpn, int rch);
+	void set_stats(int str, int dex, int intel, int cmb, int armour, int wpn, int rch);
 
 	int get_equip_offset() const {
 		return equip_offset;

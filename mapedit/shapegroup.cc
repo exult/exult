@@ -62,9 +62,8 @@ Shape_group::Shape_group(
 		return;
 	}
 	// Add shapes for builtin group.
-	ExultStudio* es = ExultStudio::get_instance();
-	auto*        vgafile
-			= static_cast<Shapes_vga_file*>(es->get_vgafile()->get_ifile());
+	ExultStudio* es      = ExultStudio::get_instance();
+	auto*        vgafile = static_cast<Shapes_vga_file*>(es->get_vgafile()->get_ifile());
 	// Read info. the first time.
 	if (vgafile->read_info(es->get_game_type(), true)) {
 		es->set_shapeinfo_modified();
@@ -104,8 +103,7 @@ Shape_group::Shape_group(
 			break;
 		case weapons_group:
 			for (i = 0; i < cnt; i++) {
-				if (vgafile->get_info(i).has_weapon_info()
-					&& !vgafile->get_info(i).has_monster_info()) {
+				if (vgafile->get_info(i).has_weapon_info() && !vgafile->get_info(i).has_monster_info()) {
 					add(i);
 				}
 			}
@@ -301,12 +299,11 @@ Shape_group_file::Shape_group_file(const char* nm    // Basename.
 		const int cnt = flex->number_of_objects();
 		for (int i = 0; i < cnt; i++) {
 			// Get each group.
-			std::size_t len;
-			auto        buf   = flex->retrieve(i, len);
-			const char* gname = reinterpret_cast<const char*>(
-					buf.get());    // Starts with name.
-			const unsigned char* ptr = buf.get() + strlen(gname) + 1;
-			const size_t sz = little_endian::Read2(ptr);    // Get # entries.
+			std::size_t          len;
+			auto                 buf   = flex->retrieve(i, len);
+			const char*          gname = reinterpret_cast<const char*>(buf.get());    // Starts with name.
+			const unsigned char* ptr   = buf.get() + strlen(gname) + 1;
+			const size_t         sz    = little_endian::Read2(ptr);    // Get # entries.
 			assert((len - (ptr - buf.get())) / 2 == sz);
 			auto* grp = new Shape_group(gname, this);
 			grp->reserve(sz);
@@ -369,8 +366,7 @@ Shape_group* Shape_group_file::get_builtin(
 		const char* nm           // Label on menu item.
 ) {
 	int       type;
-	const int grpdelta
-			= Shape_group::last_builtin_group - Shape_group::first_group;
+	const int grpdelta = Shape_group::last_builtin_group - Shape_group::first_group;
 	if (menindex < grpdelta) {
 		type = menindex + Shape_group::ammo_group;
 	} else {
@@ -476,20 +472,17 @@ static int Get_tree_row(
 /*
  *  Group buttons:
  */
-C_EXPORT void on_groups_add_clicked(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_groups_add_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	ExultStudio::get_instance()->add_group();
 }
 
-C_EXPORT void on_groups_duplicate_clicked(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_groups_duplicate_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	ExultStudio::get_instance()->duplicate_group();
 }
 
-C_EXPORT void on_groups_del_clicked(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_groups_del_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	ExultStudio::get_instance()->del_group();
 }
@@ -504,8 +497,7 @@ C_EXPORT void on_groups_import_clicked(GtkButton* button, gpointer user_data) {
 	ExultStudio::get_instance()->import_groups();
 }
 
-C_EXPORT gboolean on_groups_new_name_key_press(
-		GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
+C_EXPORT gboolean on_groups_new_name_key_press(GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
 	ignore_unused_variable_warning(entry, user_data);
 	if (event->keyval == GDK_KEY_Return) {
 		ExultStudio::get_instance()->add_group();
@@ -514,14 +506,12 @@ C_EXPORT gboolean on_groups_new_name_key_press(
 	return false;    // Let parent handle it.
 }
 
-C_EXPORT void on_open_builtin_group_clicked(
-		GtkButton* button, gpointer user_data) {
+C_EXPORT void on_open_builtin_group_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	ExultStudio::get_instance()->open_builtin_group_window();
 }
 
-C_EXPORT void on_duplicate_builtin_group_clicked(
-		GtkButton* button, gpointer user_data) {
+C_EXPORT void on_duplicate_builtin_group_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	ExultStudio::get_instance()->duplicate_builtin_group();
 }
@@ -540,29 +530,22 @@ C_EXPORT void on_group_list_cursor_changed(GtkTreeView* tview) {
 	ExultStudio::get_instance()->setup_group_controls();
 }
 
-void on_group_list_row_inserted(
-		GtkTreeModel* model, GtkTreePath* path, GtkTreeIter* iter,
-		gpointer user_data) {
+void on_group_list_row_inserted(GtkTreeModel* model, GtkTreePath* path, GtkTreeIter* iter, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	ExultStudio::get_instance()->groups_changed(model, path, iter);
 }
 
-void on_group_list_row_changed(
-		GtkTreeModel* model, GtkTreePath* path, GtkTreeIter* iter,
-		gpointer user_data) {
+void on_group_list_row_changed(GtkTreeModel* model, GtkTreePath* path, GtkTreeIter* iter, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	ExultStudio::get_instance()->groups_changed(model, path, iter, true);
 }
 
-void on_group_list_row_deleted(
-		GtkTreeModel* model, GtkTreePath* path, gpointer user_data) {
+void on_group_list_row_deleted(GtkTreeModel* model, GtkTreePath* path, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	ExultStudio::get_instance()->groups_changed(model, path, nullptr);
 }
 
-C_EXPORT void on_group_list_row_activated(
-		GtkTreeView* treeview, GtkTreePath* path, GtkTreeViewColumn* column,
-		gpointer user_data) {
+C_EXPORT void on_group_list_row_activated(GtkTreeView* treeview, GtkTreePath* path, GtkTreeViewColumn* column, gpointer user_data) {
 	ignore_unused_variable_warning(treeview, path, column, user_data);
 	ExultStudio::get_instance()->open_group_window();
 }
@@ -599,45 +582,28 @@ void ExultStudio::setup_groups() {
 	gulong        delsig = 0;
 	gulong        chgsig = 0;
 	if (!oldmod) {    // Create model first time.
-		model = gtk_tree_store_new(
-				GRP_NUM_COLUMNS, G_TYPE_STRING, G_TYPE_POINTER);
+		model = gtk_tree_store_new(GRP_NUM_COLUMNS, G_TYPE_STRING, G_TYPE_POINTER);
 		gtk_tree_view_set_model(tview, GTK_TREE_MODEL(model));
 		g_object_unref(model);
 		// Create column.
 		GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
 		g_object_set(renderer, "xalign", 0.0, nullptr);
-		const gint col_offset = gtk_tree_view_insert_column_with_attributes(
-				tview, -1, "Names", renderer, "text", GRP_FILE_COLUMN, nullptr);
-		GtkTreeViewColumn* column
-				= gtk_tree_view_get_column(tview, col_offset - 1);
+		const gint col_offset
+				= gtk_tree_view_insert_column_with_attributes(tview, -1, "Names", renderer, "text", GRP_FILE_COLUMN, nullptr);
+		GtkTreeViewColumn* column = gtk_tree_view_get_column(tview, col_offset - 1);
 		gtk_tree_view_column_set_clickable(column, true);
-		addsig = g_signal_connect(
-				G_OBJECT(model), "row-inserted",
-				G_CALLBACK(on_group_list_row_inserted), this);
+		addsig = g_signal_connect(G_OBJECT(model), "row-inserted", G_CALLBACK(on_group_list_row_inserted), this);
 		// Store signal id with model.
-		g_object_set_data_full(
-				G_OBJECT(model), "row-inserted", new gulong(addsig),
-				gulong_deleter);
-		delsig = g_signal_connect(
-				G_OBJECT(model), "row-deleted",
-				G_CALLBACK(on_group_list_row_deleted), this);
-		g_object_set_data_full(
-				G_OBJECT(model), "row-deleted", new gulong(delsig),
-				gulong_deleter);
-		chgsig = g_signal_connect(
-				G_OBJECT(model), "row-changed",
-				G_CALLBACK(on_group_list_row_changed), this);
-		g_object_set_data_full(
-				G_OBJECT(model), "row-changed", new gulong(delsig),
-				gulong_deleter);
+		g_object_set_data_full(G_OBJECT(model), "row-inserted", new gulong(addsig), gulong_deleter);
+		delsig = g_signal_connect(G_OBJECT(model), "row-deleted", G_CALLBACK(on_group_list_row_deleted), this);
+		g_object_set_data_full(G_OBJECT(model), "row-deleted", new gulong(delsig), gulong_deleter);
+		chgsig = g_signal_connect(G_OBJECT(model), "row-changed", G_CALLBACK(on_group_list_row_changed), this);
+		g_object_set_data_full(G_OBJECT(model), "row-changed", new gulong(delsig), gulong_deleter);
 	} else {
 		model  = GTK_TREE_STORE(oldmod);
-		addsig = *static_cast<gulong*>(
-				g_object_get_data(G_OBJECT(model), "row-inserted"));
-		delsig = *static_cast<gulong*>(
-				g_object_get_data(G_OBJECT(model), "row-deleted"));
-		chgsig = *static_cast<gulong*>(
-				g_object_get_data(G_OBJECT(model), "row-changed"));
+		addsig = *static_cast<gulong*>(g_object_get_data(G_OBJECT(model), "row-inserted"));
+		delsig = *static_cast<gulong*>(g_object_get_data(G_OBJECT(model), "row-deleted"));
+		chgsig = *static_cast<gulong*>(g_object_get_data(G_OBJECT(model), "row-changed"));
 	}
 	// Block this signal during creation.
 	g_signal_handler_block(model, addsig);
@@ -658,9 +624,7 @@ void ExultStudio::setup_groups() {
 	for (int i = 0; i < cnt; i++) {
 		Shape_group* grp = groups->get(i);
 		gtk_tree_store_append(model, &iter, nullptr);
-		gtk_tree_store_set(
-				model, &iter, GRP_FILE_COLUMN, grp->get_name(),
-				GRP_GROUP_COLUMN, grp, -1);
+		gtk_tree_store_set(model, &iter, GRP_FILE_COLUMN, grp->get_name(), GRP_GROUP_COLUMN, grp, -1);
 	}
 	g_signal_handler_unblock(model, addsig);
 	g_signal_handler_unblock(model, delsig);
@@ -713,8 +677,7 @@ void ExultStudio::add_group() {
 		auto*       grp = new Shape_group(nm, groups);
 		GtkTreeIter iter;
 		gtk_tree_store_append(model, &iter, nullptr);
-		gtk_tree_store_set(
-				model, &iter, GRP_FILE_COLUMN, nm, GRP_GROUP_COLUMN, grp, -1);
+		gtk_tree_store_set(model, &iter, GRP_FILE_COLUMN, nm, GRP_GROUP_COLUMN, grp, -1);
 	}
 	set_entry("groups_new_name", "");
 }
@@ -743,8 +706,7 @@ void ExultStudio::duplicate_group() {
 
 	// Create a simple dialog to get new name
 	GtkWidget* dialog = gtk_message_dialog_new(
-			GTK_WINDOW(get_widget("main_window")), GTK_DIALOG_MODAL,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
+			GTK_WINDOW(get_widget("main_window")), GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
 			"Enter name for cloned group:");
 	GtkWidget* content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	GtkWidget* entry   = gtk_entry_new();
@@ -753,9 +715,7 @@ void ExultStudio::duplicate_group() {
 	gtk_widget_show(entry);
 
 	const gint  response      = gtk_dialog_run(GTK_DIALOG(dialog));
-	const char* new_name_cstr = (response == GTK_RESPONSE_OK)
-										? gtk_entry_get_text(GTK_ENTRY(entry))
-										: nullptr;
+	const char* new_name_cstr = (response == GTK_RESPONSE_OK) ? gtk_entry_get_text(GTK_ENTRY(entry)) : nullptr;
 	string      new_name      = new_name_cstr ? new_name_cstr : "";
 	gtk_widget_destroy(dialog);
 
@@ -775,9 +735,7 @@ void ExultStudio::duplicate_group() {
 	GtkTreeStore* store = GTK_TREE_STORE(model);
 	GtkTreeIter   newiter;
 	gtk_tree_store_append(store, &newiter, nullptr);
-	gtk_tree_store_set(
-			store, &newiter, GRP_FILE_COLUMN, new_name.c_str(),
-			GRP_GROUP_COLUMN, duplicate, -1);
+	gtk_tree_store_set(store, &newiter, GRP_FILE_COLUMN, new_name.c_str(), GRP_GROUP_COLUMN, duplicate, -1);
 }
 
 void ExultStudio::del_group() {
@@ -809,8 +767,7 @@ void ExultStudio::del_group() {
 	// Close the group's windows.
 	vector<GtkWindow*> toclose;
 	for (auto* widg : group_windows) {
-		auto* chooser = static_cast<Object_browser*>(
-				g_object_get_data(G_OBJECT(widg), "browser"));
+		auto* chooser = static_cast<Object_browser*>(g_object_get_data(G_OBJECT(widg), "browser"));
 		if (chooser->get_group() == grp) {
 			// A match?
 			toclose.push_back(widg);
@@ -846,18 +803,15 @@ void ExultStudio::export_group() {
 
 	// Create file chooser dialog for saving
 	GtkWidget* dialog = gtk_file_chooser_dialog_new(
-			"Export Group to File", GTK_WINDOW(get_widget("main_window")),
-			GTK_FILE_CHOOSER_ACTION_SAVE, "_Cancel", GTK_RESPONSE_CANCEL,
-			"_Save", GTK_RESPONSE_ACCEPT, nullptr);
+			"Export Group to File", GTK_WINDOW(get_widget("main_window")), GTK_FILE_CHOOSER_ACTION_SAVE, "_Cancel",
+			GTK_RESPONSE_CANCEL, "_Save", GTK_RESPONSE_ACCEPT, nullptr);
 
-	gtk_file_chooser_set_do_overwrite_confirmation(
-			GTK_FILE_CHOOSER(dialog), true);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), true);
 
 	// Set default folder to patch directory
 	if (is_system_path_defined("<PATCH>")) {
 		const std::string patchdir = get_system_path("<PATCH>");
-		gtk_file_chooser_set_current_folder(
-				GTK_FILE_CHOOSER(dialog), patchdir.c_str());
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), patchdir.c_str());
 	}
 
 	// Add filter for .grp files
@@ -875,12 +829,10 @@ void ExultStudio::export_group() {
 	// Suggest filename based on group name
 	string suggested = grp->get_name();
 	suggested += ".grp";
-	gtk_file_chooser_set_current_name(
-			GTK_FILE_CHOOSER(dialog), suggested.c_str());
+	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), suggested.c_str());
 
 	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-		char* filename
-				= gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 
 		try {
 			OFileDataSource out(filename);
@@ -912,15 +864,13 @@ void ExultStudio::import_groups() {
 
 	// Create file chooser dialog
 	GtkWidget* dialog = gtk_file_chooser_dialog_new(
-			"Import Groups File", GTK_WINDOW(get_widget("main_window")),
-			GTK_FILE_CHOOSER_ACTION_OPEN, "_Cancel", GTK_RESPONSE_CANCEL,
-			"_Open", GTK_RESPONSE_ACCEPT, nullptr);
+			"Import Groups File", GTK_WINDOW(get_widget("main_window")), GTK_FILE_CHOOSER_ACTION_OPEN, "_Cancel",
+			GTK_RESPONSE_CANCEL, "_Open", GTK_RESPONSE_ACCEPT, nullptr);
 
 	// Set default folder to patch directory
 	if (is_system_path_defined("<PATCH>")) {
 		const std::string patchdir = get_system_path("<PATCH>");
-		gtk_file_chooser_set_current_folder(
-				GTK_FILE_CHOOSER(dialog), patchdir.c_str());
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), patchdir.c_str());
 	}
 
 	// Add filter for .grp files
@@ -936,8 +886,7 @@ void ExultStudio::import_groups() {
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 
 	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-		char* filename
-				= gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 
 		try {
 			// Get maximum entry number for current file
@@ -959,19 +908,18 @@ void ExultStudio::import_groups() {
 
 			Shape_group_file* groups = curfile->get_groups();
 			GtkTreeView*      tview  = GTK_TREE_VIEW(get_widget("group_list"));
-			GtkTreeStore*     store
-					= GTK_TREE_STORE(gtk_tree_view_get_model(tview));
+			GtkTreeStore*     store  = GTK_TREE_STORE(gtk_tree_view_get_model(tview));
 
 			int imported_count = 0;
 			int skipped_groups = 0;
 
 			for (int i = 0; i < cnt; i++) {
 				// Get each group from import file
-				std::size_t len;
-				auto        buf   = import_flex.retrieve(i, len);
-				const char* gname = reinterpret_cast<const char*>(buf.get());
-				const unsigned char* ptr = buf.get() + strlen(gname) + 1;
-				const size_t         sz  = little_endian::Read2(ptr);
+				std::size_t          len;
+				auto                 buf   = import_flex.retrieve(i, len);
+				const char*          gname = reinterpret_cast<const char*>(buf.get());
+				const unsigned char* ptr   = buf.get() + strlen(gname) + 1;
+				const size_t         sz    = little_endian::Read2(ptr);
 
 				if ((len - (ptr - buf.get())) / 2 != sz) {
 					continue;    // Skip malformed entry
@@ -981,8 +929,7 @@ void ExultStudio::import_groups() {
 				bool has_invalid = false;
 				if (max_entry >= 0) {    // Only validate if we have a max_entry
 					for (size_t j = 0; j < sz; j++) {
-						const int entry_num
-								= little_endian::Read2s(ptr + j * 2);
+						const int entry_num = little_endian::Read2s(ptr + j * 2);
 						if (entry_num > max_entry || entry_num < 0) {
 							has_invalid = true;
 							break;    // No need to check further
@@ -1017,9 +964,7 @@ void ExultStudio::import_groups() {
 				// Add to the tree view
 				GtkTreeIter iter;
 				gtk_tree_store_append(store, &iter, nullptr);
-				gtk_tree_store_set(
-						store, &iter, GRP_FILE_COLUMN, testname.c_str(),
-						GRP_GROUP_COLUMN, imported, -1);
+				gtk_tree_store_set(store, &iter, GRP_FILE_COLUMN, testname.c_str(), GRP_GROUP_COLUMN, imported, -1);
 
 				imported_count++;
 			}
@@ -1027,18 +972,15 @@ void ExultStudio::import_groups() {
 			// Build result message
 			string msg;
 			if (imported_count > 0) {
-				msg = "Imported " + std::to_string(imported_count)
-					  + " group(s).";
+				msg = "Imported " + std::to_string(imported_count) + " group(s).";
 			}
 			if (skipped_groups > 0) {
 				if (!msg.empty()) {
 					msg += "\n";
 				}
-				msg += "Skipped " + std::to_string(skipped_groups)
-					   + " group(s) with invalid entry numbers.\n";
+				msg += "Skipped " + std::to_string(skipped_groups) + " group(s) with invalid entry numbers.\n";
 				if (max_entry >= 0) {
-					msg += "Maximum entry number for this file is "
-						   + std::to_string(max_entry) + ".";
+					msg += "Maximum entry number for this file is " + std::to_string(max_entry) + ".";
 				}
 			}
 			if (imported_count == 0 && skipped_groups == 0) {
@@ -1093,8 +1035,7 @@ void ExultStudio::groups_changed(
 /*
  *  Npc window's close button.
  */
-C_EXPORT gboolean on_group_window_delete_event(
-		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
+C_EXPORT gboolean on_group_window_delete_event(GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(event, user_data);
 	ExultStudio::get_instance()->close_group_window(widget);
 	return true;
@@ -1102,10 +1043,10 @@ C_EXPORT gboolean on_group_window_delete_event(
 
 C_EXPORT void on_group_up_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data, button);
-	auto*        chooser = static_cast<Shape_chooser*>(g_object_get_data(
-            G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
-	Shape_group* grp     = chooser->get_group();
-	const int    i       = chooser->get_selected();
+	auto* chooser
+			= static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
+	Shape_group* grp = chooser->get_group();
+	const int    i   = chooser->get_selected();
 	if (grp && i > 0) {    // Moving item up.
 		grp->swap(i - 1);
 		ExultStudio::get_instance()->update_group_windows(grp);
@@ -1114,13 +1055,12 @@ C_EXPORT void on_group_up_clicked(GtkToggleButton* button, gpointer user_data) {
 	}
 }
 
-C_EXPORT void on_group_down_clicked(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_group_down_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data, button);
-	auto*        chooser = static_cast<Shape_chooser*>(g_object_get_data(
-            G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
-	Shape_group* grp     = chooser->get_group();
-	const int    i       = chooser->get_selected();
+	auto* chooser
+			= static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
+	Shape_group* grp = chooser->get_group();
+	const int    i   = chooser->get_selected();
 	if (grp && i >= 0 && i < grp->size() - 1) {    // Moving down.
 		grp->swap(i);
 		ExultStudio::get_instance()->update_group_windows(grp);
@@ -1129,13 +1069,12 @@ C_EXPORT void on_group_down_clicked(
 	}
 }
 
-C_EXPORT void on_group_shape_remove_clicked(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_group_shape_remove_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
-	auto*        chooser = static_cast<Object_browser*>(g_object_get_data(
-            G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
-	Shape_group* grp     = chooser->get_group();
-	const int    i       = chooser->get_selected();
+	auto* chooser
+			= static_cast<Object_browser*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(button))), "browser"));
+	Shape_group* grp = chooser->get_group();
+	const int    i   = chooser->get_selected();
 	if (grp && i >= 0) {
 		chooser->reset_selected();
 		grp->del(i);
@@ -1251,9 +1190,7 @@ void ExultStudio::duplicate_builtin_group() {
 	GtkTreeStore* store = GTK_TREE_STORE(gtk_tree_view_get_model(tview));
 	GtkTreeIter   newiter;
 	gtk_tree_store_append(store, &newiter, nullptr);
-	gtk_tree_store_set(
-			store, &newiter, GRP_FILE_COLUMN, testname.c_str(),
-			GRP_GROUP_COLUMN, duplicate, -1);
+	gtk_tree_store_set(store, &newiter, GRP_FILE_COLUMN, testname.c_str(), GRP_GROUP_COLUMN, duplicate, -1);
 
 	g_free(label);
 }
@@ -1266,18 +1203,15 @@ void ExultStudio::open_group_window(Shape_group* grp) {
 	GError*      error = nullptr;
 	GtkBuilder*  xml   = gtk_builder_new();
 	const gchar* objects[]
-			= {"group_window_goup_img", "group_window_godown_img",
-			   "group_window_remove_img", "group_window", nullptr};
-	if (!gtk_builder_add_objects_from_file(
-				xml, glade_path, const_cast<gchar**>(objects), &error)) {
+			= {"group_window_goup_img", "group_window_godown_img", "group_window_remove_img", "group_window", nullptr};
+	if (!gtk_builder_add_objects_from_file(xml, glade_path, const_cast<gchar**>(objects), &error)) {
 		g_warning("Couldn't load group window: %s", error->message);
 		g_error_free(error);
 		exit(1);
 	}
 	gtk_builder_connect_signals(xml, nullptr);
-	GtkWidget*      grpwin = get_widget(xml, "group_window");
-	Object_browser* chooser
-			= curfile->create_browser(vgafile, palbuf.get(), grp);
+	GtkWidget*      grpwin  = get_widget(xml, "group_window");
+	Object_browser* chooser = curfile->create_browser(vgafile, palbuf.get(), grp);
 	// Set xml as data on window.
 	g_object_set_data(G_OBJECT(grpwin), "xml", xml);
 	g_object_set_data(G_OBJECT(grpwin), "browser", chooser);
@@ -1290,20 +1224,15 @@ void ExultStudio::open_group_window(Shape_group* grp) {
 	auto* backup_name     = new std::string(grp->get_name());
 	auto* backup_modified = new bool(grp->get_file()->is_modified());
 
-	g_object_set_data_full(
-			G_OBJECT(grpwin), "backup_shapes", backup_shapes,
-			[](gpointer data) {
-				delete static_cast<std::vector<int>*>(data);
-			});
-	g_object_set_data_full(
-			G_OBJECT(grpwin), "backup_name", backup_name, [](gpointer data) {
-				delete static_cast<std::string*>(data);
-			});
-	g_object_set_data_full(
-			G_OBJECT(grpwin), "backup_modified", backup_modified,
-			[](gpointer data) {
-				delete static_cast<bool*>(data);
-			});
+	g_object_set_data_full(G_OBJECT(grpwin), "backup_shapes", backup_shapes, [](gpointer data) {
+		delete static_cast<std::vector<int>*>(data);
+	});
+	g_object_set_data_full(G_OBJECT(grpwin), "backup_name", backup_name, [](gpointer data) {
+		delete static_cast<std::string*>(data);
+	});
+	g_object_set_data_full(G_OBJECT(grpwin), "backup_modified", backup_modified, [](gpointer data) {
+		delete static_cast<bool*>(data);
+	});
 
 	// Set window title, name field.
 	string title("Exult Group:  ");
@@ -1316,12 +1245,9 @@ void ExultStudio::open_group_window(Shape_group* grp) {
 	// Attach browser.
 	GtkWidget* browser_box = get_widget(xml, "group_shapes");
 	gtk_widget_set_visible(browser_box, true);
-	gtk_box_pack_start(
-			GTK_BOX(browser_box), chooser->get_widget(), true, true, 0);
+	gtk_box_pack_start(GTK_BOX(browser_box), chooser->get_widget(), true, true, 0);
 	// Auto-connect doesn't seem to work.
-	g_signal_connect(
-			G_OBJECT(grpwin), "delete-event",
-			G_CALLBACK(on_group_window_delete_event), this);
+	g_signal_connect(G_OBJECT(grpwin), "delete-event", G_CALLBACK(on_group_window_delete_event), this);
 	group_windows.push_back(GTK_WINDOW(grpwin));
 	gtk_widget_set_visible(grpwin, true);
 }
@@ -1338,10 +1264,8 @@ void ExultStudio::close_group_window(GtkWidget* grpwin) {
 			break;
 		}
 	}
-	auto* xml = static_cast<GtkBuilder*>(
-			g_object_get_data(G_OBJECT(grpwin), "xml"));
-	auto* chooser = static_cast<Object_browser*>(
-			g_object_get_data(G_OBJECT(grpwin), "browser"));
+	auto* xml     = static_cast<GtkBuilder*>(g_object_get_data(G_OBJECT(grpwin), "xml"));
+	auto* chooser = static_cast<Object_browser*>(g_object_get_data(G_OBJECT(grpwin), "browser"));
 	delete chooser;
 	gtk_widget_destroy(grpwin);
 	g_object_unref(G_OBJECT(xml));
@@ -1388,12 +1312,10 @@ bool ExultStudio::groups_modified() {
  *  Update all windows showing a given group.
  */
 
-void ExultStudio::update_group_windows(
-		Shape_group* grp    // Group, or 0 for all.
+void ExultStudio::update_group_windows(Shape_group* grp    // Group, or 0 for all.
 ) {
 	for (auto* win : group_windows) {
-		auto* chooser = static_cast<Object_browser*>(
-				g_object_get_data(G_OBJECT(win), "browser"));
+		auto* chooser = static_cast<Object_browser*>(g_object_get_data(G_OBJECT(win), "browser"));
 		if (!grp || chooser->get_group() == grp) {
 			// A match?
 			chooser->setup_info();
@@ -1406,11 +1328,9 @@ void ExultStudio::update_group_windows(
  *  Apply changes from the group window.
  */
 static void apply_group_window_changes(GtkWidget* grpwin) {
-	ExultStudio* studio = ExultStudio::get_instance();
-	auto*        xml    = static_cast<GtkBuilder*>(
-            g_object_get_data(G_OBJECT(grpwin), "xml"));
-	auto* chooser = static_cast<Object_browser*>(
-			g_object_get_data(G_OBJECT(grpwin), "browser"));
+	ExultStudio* studio  = ExultStudio::get_instance();
+	auto*        xml     = static_cast<GtkBuilder*>(g_object_get_data(G_OBJECT(grpwin), "xml"));
+	auto*        chooser = static_cast<Object_browser*>(g_object_get_data(G_OBJECT(grpwin), "browser"));
 
 	if (!xml || !chooser) {
 		return;
@@ -1441,8 +1361,7 @@ static void apply_group_window_changes(GtkWidget* grpwin) {
 	grp->set_modified();
 
 	// Update the backup to reflect current state
-	auto* backup_shapes = static_cast<std::vector<int>*>(
-			g_object_get_data(G_OBJECT(grpwin), "backup_shapes"));
+	auto* backup_shapes = static_cast<std::vector<int>*>(g_object_get_data(G_OBJECT(grpwin), "backup_shapes"));
 	if (backup_shapes) {
 		backup_shapes->clear();
 		for (int i = 0; i < grp->size(); i++) {
@@ -1450,15 +1369,13 @@ static void apply_group_window_changes(GtkWidget* grpwin) {
 		}
 	}
 
-	auto* backup_name = static_cast<std::string*>(
-			g_object_get_data(G_OBJECT(grpwin), "backup_name"));
+	auto* backup_name = static_cast<std::string*>(g_object_get_data(G_OBJECT(grpwin), "backup_name"));
 	if (backup_name) {
 		*backup_name = grp->get_name();
 	}
 
 	// Update the backup modified state
-	auto* backup_modified = static_cast<bool*>(
-			g_object_get_data(G_OBJECT(grpwin), "backup_modified"));
+	auto* backup_modified = static_cast<bool*>(g_object_get_data(G_OBJECT(grpwin), "backup_modified"));
 	if (backup_modified) {
 		*backup_modified = grp->get_file()->is_modified();
 	}
@@ -1499,15 +1416,13 @@ C_EXPORT void on_group_cancel_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	GtkWidget* grpwin = gtk_widget_get_toplevel(GTK_WIDGET(button));
 
-	auto* chooser = static_cast<Object_browser*>(
-			g_object_get_data(G_OBJECT(grpwin), "browser"));
+	auto* chooser = static_cast<Object_browser*>(g_object_get_data(G_OBJECT(grpwin), "browser"));
 
 	if (chooser) {
 		Shape_group* grp = chooser->get_group();
 		if (grp) {
 			// Restore the original shape IDs from backup
-			auto* backup_shapes = static_cast<std::vector<int>*>(
-					g_object_get_data(G_OBJECT(grpwin), "backup_shapes"));
+			auto* backup_shapes = static_cast<std::vector<int>*>(g_object_get_data(G_OBJECT(grpwin), "backup_shapes"));
 			if (backup_shapes) {
 				// Clear current shapes and restore from backup
 				while (grp->size() > 0) {
@@ -1519,15 +1434,13 @@ C_EXPORT void on_group_cancel_clicked(GtkButton* button, gpointer user_data) {
 			}
 
 			// Restore the original name from backup
-			auto* backup_name = static_cast<std::string*>(
-					g_object_get_data(G_OBJECT(grpwin), "backup_name"));
+			auto* backup_name = static_cast<std::string*>(g_object_get_data(G_OBJECT(grpwin), "backup_name"));
 			if (backup_name) {
 				grp->set_name(const_cast<char*>(backup_name->c_str()));
 			}
 
 			// Restore the original modified state
-			auto* backup_modified = static_cast<bool*>(
-					g_object_get_data(G_OBJECT(grpwin), "backup_modified"));
+			auto* backup_modified = static_cast<bool*>(g_object_get_data(G_OBJECT(grpwin), "backup_modified"));
 			if (backup_modified) {
 				if (*backup_modified) {
 					grp->get_file()->set_modified();

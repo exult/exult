@@ -159,8 +159,7 @@ protected:
 	Uc_expression* index;
 
 public:
-	Uc_arrayelem_expression(Uc_var_symbol* a, Uc_expression* i)
-			: array(a), index(i) {}
+	Uc_arrayelem_expression(Uc_var_symbol* a, Uc_expression* i) : array(a), index(i) {}
 
 	~Uc_arrayelem_expression() override {
 		delete index;
@@ -177,8 +176,7 @@ public:
  */
 class Uc_static_arrayelem_expression : public Uc_arrayelem_expression {
 public:
-	Uc_static_arrayelem_expression(Uc_var_symbol* a, Uc_expression* i)
-			: Uc_arrayelem_expression(a, i) {}
+	Uc_static_arrayelem_expression(Uc_var_symbol* a, Uc_expression* i) : Uc_arrayelem_expression(a, i) {}
 
 	~Uc_static_arrayelem_expression() override {
 		delete index;
@@ -195,8 +193,7 @@ public:
  */
 class Uc_class_arrayelem_expression : public Uc_arrayelem_expression {
 public:
-	Uc_class_arrayelem_expression(Uc_var_symbol* a, Uc_expression* i)
-			: Uc_arrayelem_expression(a, i) {}
+	Uc_class_arrayelem_expression(Uc_var_symbol* a, Uc_expression* i) : Uc_arrayelem_expression(a, i) {}
 
 	~Uc_class_arrayelem_expression() override {
 		delete index;
@@ -229,11 +226,9 @@ public:
 class Uc_binary_expression : public Uc_expression {
 	UsecodeOps     opcode;          // Should be the UC_<opcode>
 	Uc_expression *left, *right;    // Operands to add, sub, etc.
-	UsecodeOps intop;    // If we want to use pushb or pushi32 instead of pushi.
+	UsecodeOps     intop;           // If we want to use pushb or pushi32 instead of pushi.
 public:
-	Uc_binary_expression(
-			UsecodeOps o, Uc_expression* l, Uc_expression* r,
-			UsecodeOps iop = UC_PUSHI)
+	Uc_binary_expression(UsecodeOps o, Uc_expression* l, Uc_expression* r, UsecodeOps iop = UC_PUSHI)
 			: opcode(o), left(l), right(r), intop(iop) {}
 
 	// Gen. code to put result on stack.
@@ -250,8 +245,7 @@ class Uc_unary_expression : public Uc_expression {
 	Uc_expression* operand;
 
 public:
-	Uc_unary_expression(UsecodeOps o, Uc_expression* r)
-			: opcode(o), operand(r) {}
+	Uc_unary_expression(UsecodeOps o, Uc_expression* r) : opcode(o), operand(r) {}
 
 	// Gen. code to put result on stack.
 	void gen_value(Basic_block* out) override;
@@ -346,8 +340,7 @@ class Uc_string_prefix_expression : public Uc_expression {
 	int          offset;    // Offset in function's data area.
 							//   This is -1 if not found yet.
 public:
-	Uc_string_prefix_expression(Uc_function* f, char* pre)
-			: fun(f), prefix(pre), offset(-1) {}
+	Uc_string_prefix_expression(Uc_function* f, char* pre) : fun(f), prefix(pre), offset(-1) {}
 
 	// Gen. code to put result on stack.
 	void gen_value(Basic_block* out) override;
@@ -424,17 +417,12 @@ class Uc_call_expression : public Uc_expression {
 	Uc_class* meth_scope;
 
 public:
-	Uc_call_expression(
-			Uc_symbol* s, Uc_array_expression* prms, Uc_function* fun,
-			bool orig = false)
-			: sym(s), ind(nullptr), original(orig), itemref(nullptr),
-			  parms(prms), function(fun), return_value(true),
+	Uc_call_expression(Uc_symbol* s, Uc_array_expression* prms, Uc_function* fun, bool orig = false)
+			: sym(s), ind(nullptr), original(orig), itemref(nullptr), parms(prms), function(fun), return_value(true),
 			  meth_scope(nullptr) {}
 
-	Uc_call_expression(
-			Uc_expression* i, Uc_array_expression* prms, Uc_function* fun)
-			: sym(nullptr), ind(i), original(false), itemref(nullptr),
-			  parms(prms), function(fun), return_value(true),
+	Uc_call_expression(Uc_expression* i, Uc_array_expression* prms, Uc_function* fun)
+			: sym(nullptr), ind(i), original(false), itemref(nullptr), parms(prms), function(fun), return_value(true),
 			  meth_scope(nullptr) {}
 
 	~Uc_call_expression() override {

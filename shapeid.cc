@@ -70,8 +70,7 @@ static void override_vleads() {
 	Pentagram::tolower(font_config);
 	if (font_config == "original"
 		|| (font_config == "disabled" && Game::get_game_type() == BLACK_GATE
-			&& (Game::get_game_language() == Game_Language::GERMAN
-				|| Game::get_game_language() == Game_Language::FRENCH))) {
+			&& (Game::get_game_language() == Game_Language::GERMAN || Game::get_game_language() == Game_Language::FRENCH))) {
 		vlead_override[0] = -5;
 		vlead_override[7] = -5;
 	}
@@ -120,10 +119,8 @@ void Shape_manager::read_shape_info() {
 	// Read in shape information.
 	shapes.read_info(Game::get_game_type(), Game::is_editing());
 	// Fixup Avatar shapes (1024-1035 in default SI).
-	const Shape_info& male
-			= shapes.get_info(Shapeinfo_lookup::GetMaleAvShape());
-	const Shape_info& female
-			= shapes.get_info(Shapeinfo_lookup::GetFemaleAvShape());
+	const Shape_info& male   = shapes.get_info(Shapeinfo_lookup::GetMaleAvShape());
+	const Shape_info& female = shapes.get_info(Shapeinfo_lookup::GetFemaleAvShape());
 
 	vector<Skin_data>* skins = Shapeinfo_lookup::GetSkinList();
 	for (auto& skin : *skins) {
@@ -167,14 +164,12 @@ void Shape_manager::load() {
 
 	files[SF_GUMPS_VGA].load(GUMPS_VGA, PATCH_GUMPS, true);
 
-	if (!files[SF_PAPERDOL_VGA].load(
-				*Shapeinfo_lookup::GetPaperdollSources())) {
+	if (!files[SF_PAPERDOL_VGA].load(*Shapeinfo_lookup::GetPaperdollSources())) {
 		if (GAME_SI) {
 			gwin->abort("Can't open 'paperdol.vga' file.");
 		} else if (GAME_BG) {    // NOT for devel. games.
 			std::cerr << "Couldn't open SI 'paperdol.vga'." << std::endl
-					  << "Support for SI Paperdolls in BG is disabled."
-					  << std::endl;
+					  << "Support for SI Paperdolls in BG is disabled." << std::endl;
 		}
 		can_have_paperdolls = false;
 	} else {
@@ -190,25 +185,21 @@ void Shape_manager::load() {
 		vector<pair<int, int>>* imports;
 		if (can_have_paperdolls) {    // Do this only if SI paperdol.vga was
 									  // found.
-			source = pair<string, int>(
-					string("<SERPENT_STATIC>/gumps.vga"), -1);
+			source = pair<string, int>(string("<SERPENT_STATIC>/gumps.vga"), -1);
 			// Gump shapes to import from SI.
 			imports = Shapeinfo_lookup::GetImportedGumpShapes();
 
 			if (!imports->empty()) {
-				can_have_paperdolls
-						= files[SF_GUMPS_VGA].import_shapes(source, *imports);
+				can_have_paperdolls = files[SF_GUMPS_VGA].import_shapes(source, *imports);
 			} else {
 				can_have_paperdolls = false;
 			}
 
 			if (can_have_paperdolls) {
-				std::cout << "Support for SI Paperdolls is enabled."
-						  << std::endl;
+				std::cout << "Support for SI Paperdolls is enabled." << std::endl;
 			} else {
 				std::cerr << "Couldn't open SI 'gumps.vga'." << std::endl
-						  << "Support for SI Paperdolls in BG is disabled."
-						  << std::endl;
+						  << "Support for SI Paperdolls in BG is disabled." << std::endl;
 			}
 		}
 
@@ -222,22 +213,18 @@ void Shape_manager::load() {
 		}
 
 		if (got_si_shapes) {
-			std::cout << "Support for SI Multiracial Avatars is enabled."
-					  << std::endl;
+			std::cout << "Support for SI Multiracial Avatars is enabled." << std::endl;
 		} else {
 			std::cerr << "Couldn't open SI 'shapes.vga'." << std::endl
-					  << "Support for SI Multiracial Avatars is disabled."
-					  << std::endl;
+					  << "Support for SI Multiracial Avatars is disabled." << std::endl;
 		}
 	}
 
 	files[SF_SPRITES_VGA].load(SPRITES_VGA, PATCH_SPRITES);
 	if (GAME_SIB) {
 		// Lets try to import shape 0 of sprites.vga from BG or SI.
-		const pair<string, int> sourcebg(
-				string("<ULTIMA7_STATIC>/sprites.vga"), -1);
-		const pair<string, int> sourcesi(
-				string("<SERPENT_STATIC>/sprites.vga"), -1);
+		const pair<string, int> sourcebg(string("<ULTIMA7_STATIC>/sprites.vga"), -1);
+		const pair<string, int> sourcesi(string("<SERPENT_STATIC>/sprites.vga"), -1);
 
 		vector<pair<int, int>> imports;
 		imports.emplace_back(0, 0);
@@ -250,10 +237,7 @@ void Shape_manager::load() {
 			Shape*        shp      = files[SF_SPRITES_VGA].new_shape(0);
 			unsigned char whitepix = 118;
 			for (int ii = 0; ii < 28; ii++) {
-				shp->add_frame(
-						std::make_unique<Shape_frame>(
-								&whitepix, 1, 1, 0, 0, false),
-						ii);
+				shp->add_frame(std::make_unique<Shape_frame>(&whitepix, 1, 1, 0, 0, false), ii);
 			}
 		}
 	}
@@ -300,19 +284,11 @@ void Shape_manager::load() {
 	fonts->init(font_source, font_patch, vlead_override, num_vlead_overrides);
 
 	// Get translucency tables.
-	unique_ptr<unsigned char[]>
-			ptr;    // We will delete THIS at the end, not blends!
+	unique_ptr<unsigned char[]> ptr;    // We will delete THIS at the end, not blends!
 	// ++++TODO: Make this file editable in ES.
 	{
-		const auto& blendsflexspec
-				= GAME_BG ? File_spec(
-									BUNDLE_CHECK(
-											BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX),
-									EXULT_BG_FLX_BLENDS_DAT)
-						  : File_spec(
-									BUNDLE_CHECK(
-											BUNDLE_EXULT_SI_FLX, EXULT_SI_FLX),
-									EXULT_SI_FLX_BLENDS_DAT);
+		const auto& blendsflexspec = GAME_BG ? File_spec(BUNDLE_CHECK(BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX), EXULT_BG_FLX_BLENDS_DAT)
+											 : File_spec(BUNDLE_CHECK(BUNDLE_EXULT_SI_FLX, EXULT_SI_FLX), EXULT_SI_FLX_BLENDS_DAT);
 		const U7multiobject in(BLENDS, blendsflexspec, PATCH_BLENDS, 0);
 		size_t              len;
 		ptr = in.retrieve(len);
@@ -325,12 +301,9 @@ void Shape_manager::load() {
 		// They are "good" enough, but there is probably room for
 		// improvement.
 		static unsigned char hard_blends[4 * 17]
-				= {208, 216, 224, 192, 136, 44,  148, 198, 248, 252, 80,  211,
-				   144, 148, 252, 247, 64,  216, 64,  201, 204, 60,  84,  140,
-				   144, 40,  192, 128, 96,  40,  16,  128, 100, 108, 116, 192,
-				   68,  132, 28,  128, 255, 208, 48,  64,  28,  52,  255, 128,
-				   8,   68,  0,   128, 255, 8,   8,   118, 255, 244, 248, 128,
-				   56,  40,  32,  128, 228, 224, 214, 82};
+				= {208, 216, 224, 192, 136, 44,  148, 198, 248, 252, 80,  211, 144, 148, 252, 247, 64,  216, 64,  201, 204, 60, 84,
+				   140, 144, 40,  192, 128, 96,  40,  16,  128, 100, 108, 116, 192, 68,  132, 28,  128, 255, 208, 48,  64,  28, 52,
+				   255, 128, 8,   68,  0,   128, 255, 8,   8,   118, 255, 244, 248, 128, 56,  40,  32,  128, 228, 224, 214, 82};
 		blends  = hard_blends;
 		nblends = 17;
 	} else {
@@ -343,8 +316,7 @@ void Shape_manager::load() {
 	if (U7exists(XFORMTBL) || U7exists(PATCH_XFORMS)) {
 		// Read in translucency tables.
 		U7multifile  xformfile(XFORMTBL, PATCH_XFORMS);
-		const size_t nobjs = std::min(
-				xformfile.number_of_objects(), nblends);    // Limit by blends.
+		const size_t nobjs = std::min(xformfile.number_of_objects(), nblends);    // Limit by blends.
 		for (size_t i = 0; i < nobjs; i++) {
 			auto ds = xformfile.retrieve(i);
 			if (!ds.good()) {
@@ -354,16 +326,14 @@ void Shape_manager::load() {
 					xforms[nxforms - 1 - i].colors[j] = static_cast<uint8>(j);
 				}
 			} else {
-				ds.read(xforms[nxforms - 1 - i].colors,
-						sizeof(xforms[0].colors));
+				ds.read(xforms[nxforms - 1 - i].colors, sizeof(xforms[0].colors));
 			}
 		}
 	} else {    // Create algorithmically.
 		gwin->get_pal()->load(PALETTES_FLX, PATCH_PALETTES, 0);
 		for (size_t i = 0; i < nxforms; i++) {
 			gwin->get_pal()->create_trans_table(
-					blends[4 * i + 0] / 4, blends[4 * i + 1] / 4,
-					blends[4 * i + 2] / 4, blends[4 * i + 3], xforms[i].colors);
+					blends[4 * i + 0] / 4, blends[4 * i + 1] / 4, blends[4 * i + 2] / 4, blends[4 * i + 3], xforms[i].colors);
 		}
 	}
 
@@ -386,8 +356,7 @@ bool Shape_manager::load_gumps_minimal() {
 	}
 
 	try {
-		if (!files[SF_EXULT_FLX].load(
-					BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX))) {
+		if (!files[SF_EXULT_FLX].load(BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX))) {
 			std::cerr << "Couldn't open 'exult.flx'." << std::endl;
 			return false;
 		}
@@ -439,8 +408,7 @@ void Shape_manager::reload_shapes(int shape_kind    // Type from u7drag.h.
 			font_patch  = PATCH_ORIGINAL_FONTS;
 		}
 		override_vleads();
-		fonts->init(
-				font_source, font_patch, vlead_override, num_vlead_overrides);
+		fonts->init(font_source, font_patch, vlead_override, num_vlead_overrides);
 		break;
 	}
 	case U7_SHAPE_FACES:
@@ -461,12 +429,10 @@ void Shape_manager::reload_shapes(int shape_kind    // Type from u7drag.h.
 /*
  *  Reload fonts from a different source.
  */
-void Shape_manager::reload_fonts(
-		const File_spec& font_source, const File_spec& font_patch) {
+void Shape_manager::reload_fonts(const File_spec& font_source, const File_spec& font_patch) {
 	if (fonts) {
 		override_vleads();
-		fonts->init(
-				font_source, font_patch, vlead_override, num_vlead_overrides);
+		fonts->init(font_source, font_patch, vlead_override, num_vlead_overrides);
 	}
 }
 
@@ -490,39 +456,28 @@ Shape_manager::~Shape_manager() {
  *  Text-drawing methods:
  */
 int Shape_manager::paint_text_box(
-		int fontnum, const char* text, int x, int y, int w, int h,
-		int vert_lead, bool pbreak, bool center, int shading,
+		int fontnum, const char* text, int x, int y, int w, int h, int vert_lead, bool pbreak, bool center, int shading,
 		Cursor_info* cursor) {
 	if (shading >= 0) {
 		gwin->get_win()->fill_translucent8(0, w, h, x, y, xforms[shading]);
 	}
-	return fonts->paint_text_box(
-			gwin->get_win()->get_ib8(), fontnum, text, x, y, w, h, vert_lead,
-			pbreak, center, cursor);
+	return fonts->paint_text_box(gwin->get_win()->get_ib8(), fontnum, text, x, y, w, h, vert_lead, pbreak, center, cursor);
 }
 
-int Shape_manager::paint_text(
-		int fontnum, const char* text, int xoff, int yoff) {
-	return fonts->paint_text(
-			gwin->get_win()->get_ib8(), fontnum, text, xoff, yoff);
+int Shape_manager::paint_text(int fontnum, const char* text, int xoff, int yoff) {
+	return fonts->paint_text(gwin->get_win()->get_ib8(), fontnum, text, xoff, yoff);
 }
 
-int Shape_manager::paint_text(
-		int fontnum, const char* text, int textlen, int xoff, int yoff) {
-	return fonts->paint_text(
-			gwin->get_win()->get_ib8(), fontnum, text, textlen, xoff, yoff);
+int Shape_manager::paint_text(int fontnum, const char* text, int textlen, int xoff, int yoff) {
+	return fonts->paint_text(gwin->get_win()->get_ib8(), fontnum, text, textlen, xoff, yoff);
 }
 
-int Shape_manager::paint_text(
-		std::shared_ptr<Font> font, const char* text, int xoff, int yoff) {
+int Shape_manager::paint_text(std::shared_ptr<Font> font, const char* text, int xoff, int yoff) {
 	return font->paint_text(gwin->get_win()->get_ib8(), text, xoff, yoff);
 }
 
-int Shape_manager::paint_text(
-		std::shared_ptr<Font> font, const char* text, int textlen, int xoff,
-		int yoff) {
-	return font->paint_text(
-			gwin->get_win()->get_ib8(), text, textlen, xoff, yoff);
+int Shape_manager::paint_text(std::shared_ptr<Font> font, const char* text, int textlen, int xoff, int yoff) {
+	return font->paint_text(gwin->get_win()->get_ib8(), text, textlen, xoff, yoff);
 }
 
 int Shape_manager::get_text_width(int fontnum, const char* text) {
@@ -545,9 +500,7 @@ int Shape_manager::get_text_baseline(int fontnum) {
 	return fonts->get_text_baseline(fontnum);
 }
 
-int Shape_manager::find_cursor(
-		int fontnum, const char* text, int x, int y, int w, int h, int cx,
-		int cy, int vert_lead) {
+int Shape_manager::find_cursor(int fontnum, const char* text, int x, int y, int w, int h, int cx, int cy, int vert_lead) {
 	return fonts->find_cursor(fontnum, text, x, y, w, h, cx, cy, vert_lead);
 }
 
@@ -555,14 +508,13 @@ std::shared_ptr<Font> Shape_manager::get_font(int fontnum) {
 	return fonts->get_font(fontnum);
 }
 
-Shape_manager::Cached_shape Shape_manager::cache_shape(
-		int shape_kind, int shapenum, int framenum) {
+Shape_manager::Cached_shape Shape_manager::cache_shape(int shape_kind, int shapenum, int framenum) {
 	Cached_shape cache{nullptr, false};
 	if (framenum == -1) {
 		return cache;
 	}
 	using cache_key = std::pair<int, int>;
-	auto iter = shape_cache[shape_kind].find(cache_key(shapenum, framenum));
+	auto iter       = shape_cache[shape_kind].find(cache_key(shapenum, framenum));
 	if (iter != shape_cache[shape_kind].cend()) {
 		return iter->second;
 	}
@@ -596,8 +548,7 @@ int ShapeID::get_num_frames() const {
 		if (!sman->files[static_cast<int>(shapefile)].is_good()) {
 			return 0;
 		}
-		return sman->files[static_cast<int>(shapefile)].get_num_frames(
-				shapenum);
+		return sman->files[static_cast<int>(shapefile)].get_num_frames(shapenum);
 	}
 	std::cerr << "Error! Wrong ShapeFile!" << std::endl;
 	return 0;
@@ -651,8 +602,7 @@ uint8* ShapeID::Get_palette_transform_table(uint8 table[256]) const {
 ImageBufferPaintable::ImageBufferPaintable() : x(0), y(0) {
 	auto gwin = Game_window::get_instance();
 	auto iwin = gwin->get_win();
-	buffer    = iwin->create_buffer(
-            iwin->get_full_width(), iwin->get_full_height());
+	buffer    = iwin->create_buffer(iwin->get_full_width(), iwin->get_full_height());
 	iwin->get(buffer.get(), x, y);
 }
 

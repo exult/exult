@@ -65,13 +65,12 @@ void Virtue_stone_object::write_ireg(ODataSource* out) {
 	// Get superchunk index.
 	const int sx = pos.tx / c_tiles_per_schunk;
 	const int sy = pos.ty / c_tiles_per_schunk;
-	Write1(ptr, sy * 12 + sx);    // Write superchunk #.
-	Write1(ptr, static_cast<unsigned char>(
-						pos.tz));    // Finally, lift in entry[7].??Guess+++
-	Write1(ptr, 0);                  // Entry[8] unknown.
-	Write1(ptr, nibble_swap(get_lift()));    // Stone's lift in entry[9].
-	Write1(ptr, map);    // Entry[10].  Unknown; using to store map.
-	Write1(ptr, 0);      // Entry[11].  Unknown.
+	Write1(ptr, sy * 12 + sx);                          // Write superchunk #.
+	Write1(ptr, static_cast<unsigned char>(pos.tz));    // Finally, lift in entry[7].??Guess+++
+	Write1(ptr, 0);                                     // Entry[8] unknown.
+	Write1(ptr, nibble_swap(get_lift()));               // Stone's lift in entry[9].
+	Write1(ptr, map);                                   // Entry[10].  Unknown; using to store map.
+	Write1(ptr, 0);                                     // Entry[11].  Unknown.
 	out->write(reinterpret_cast<char*>(buf), ptr - buf);
 }
 

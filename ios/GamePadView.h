@@ -52,12 +52,11 @@ typedef enum {
 
 @interface GamePadButton : UIView
 
-@property(nonatomic, assign, unsafe_unretained) id<GamePadButtonDelegate>
-												delegate;
-@property(nonatomic, retain) UIColor*           textColor;
-@property(nonatomic, retain) NSArray*           images;
-@property(nonatomic, retain) NSString*          title;
-@property(nonatomic, assign) BOOL               pressed;
-@property(nonatomic, retain) NSArray*           keyCodes;
-@property(nonatomic, assign) GamePadButtonStyle style;
+@property(nonatomic, assign, unsafe_unretained) id<GamePadButtonDelegate> delegate;
+@property(nonatomic, retain) UIColor*                                     textColor;
+@property(nonatomic, retain) NSArray*                                     images;
+@property(nonatomic, retain) NSString*                                    title;
+@property(nonatomic, assign) BOOL                                         pressed;
+@property(nonatomic, retain) NSArray*                                     keyCodes;
+@property(nonatomic, assign) GamePadButtonStyle                           style;
 @end

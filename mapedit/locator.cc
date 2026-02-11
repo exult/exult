@@ -57,19 +57,16 @@ void ExultStudio::open_locator_window() {
  */
 C_EXPORT void on_loc_close_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
-	auto* loc = static_cast<Locator*>(g_object_get_data(
-			G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
+	auto* loc = static_cast<Locator*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
 	loc->show(false);
 }
 
 /*
  *  Locator window's X button.
  */
-C_EXPORT gboolean on_loc_window_delete_event(
-		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
+C_EXPORT gboolean on_loc_window_delete_event(GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(event, user_data);
-	auto* loc = static_cast<Locator*>(
-			g_object_get_data(G_OBJECT(widget), "user_data"));
+	auto* loc = static_cast<Locator*>(g_object_get_data(G_OBJECT(widget), "user_data"));
 	loc->show(false);
 	return true;
 }
@@ -83,9 +80,7 @@ C_EXPORT gboolean on_loc_draw_configure_event(
 		gpointer           data    // ->Shape_chooser
 ) {
 	ignore_unused_variable_warning(event, data);
-	auto* loc = static_cast<Locator*>(g_object_get_data(
-			G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
-			"user_data"));
+	auto* loc = static_cast<Locator*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))), "user_data"));
 	loc->configure(widget);
 	return true;
 }
@@ -97,9 +92,7 @@ gboolean Locator::on_loc_draw_expose_event(
 		GtkWidget* widget,    // The view window.
 		cairo_t* cairo, gpointer data) {
 	ignore_unused_variable_warning(widget, data);
-	auto* loc = static_cast<Locator*>(g_object_get_data(
-			G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
-			"user_data"));
+	auto* loc = static_cast<Locator*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))), "user_data"));
 	loc->set_graphic_context(cairo);
 	GdkRectangle area = {0, 0, 0, 0};
 	gdk_cairo_get_clip_rectangle(cairo, &area);
@@ -117,9 +110,7 @@ C_EXPORT gboolean on_loc_draw_button_press_event(
 		gpointer        data    // ->Chunk_chooser.
 ) {
 	ignore_unused_variable_warning(data);
-	auto* loc = static_cast<Locator*>(g_object_get_data(
-			G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
-			"user_data"));
+	auto* loc = static_cast<Locator*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))), "user_data"));
 	return loc->mouse_press(event);
 }
 
@@ -129,9 +120,7 @@ C_EXPORT gboolean on_loc_draw_button_release_event(
 		gpointer        data    // ->Chunk_chooser.
 ) {
 	ignore_unused_variable_warning(data);
-	auto* loc = static_cast<Locator*>(g_object_get_data(
-			G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
-			"user_data"));
+	auto* loc = static_cast<Locator*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))), "user_data"));
 	return loc->mouse_release(event);
 }
 
@@ -141,9 +130,7 @@ C_EXPORT gboolean on_loc_draw_motion_notify_event(
 		gpointer        data    // ->Chunk_chooser.
 ) {
 	ignore_unused_variable_warning(data);
-	auto* loc = static_cast<Locator*>(g_object_get_data(
-			G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
-			"user_data"));
+	auto* loc = static_cast<Locator*>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(widget))), "user_data"));
 	return loc->mouse_motion(event);
 }
 
@@ -158,9 +145,7 @@ Locator::Locator() {
 	g_object_set_data(G_OBJECT(win), "user_data", this);
 	draw = studio->get_widget("loc_draw");
 	// Indicate the events we want.
-	gtk_widget_set_events(
-			draw, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK
-						  | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON1_MOTION_MASK);
+	gtk_widget_set_events(draw, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON1_MOTION_MASK);
 	// Set up scales.
 	GtkWidget* scale = studio->get_widget("loc_hscale");
 	hadj             = gtk_range_get_adjustment(GTK_RANGE(scale));
@@ -174,14 +159,10 @@ Locator::Locator() {
 	gtk_adjustment_set_page_size(vadj, 2);
 	g_signal_emit_by_name(G_OBJECT(hadj), "changed");
 	g_signal_emit_by_name(G_OBJECT(vadj), "changed");
-	g_signal_connect(
-			G_OBJECT(studio->get_widget("loc_draw")), "draw",
-			G_CALLBACK(on_loc_draw_expose_event), this);
+	g_signal_connect(G_OBJECT(studio->get_widget("loc_draw")), "draw", G_CALLBACK(on_loc_draw_expose_event), this);
 	// Set scrollbar handlers.
-	g_signal_connect(
-			G_OBJECT(hadj), "value-changed", G_CALLBACK(hscrolled), this);
-	g_signal_connect(
-			G_OBJECT(vadj), "value-changed", G_CALLBACK(vscrolled), this);
+	g_signal_connect(G_OBJECT(hadj), "value-changed", G_CALLBACK(hscrolled), this);
+	g_signal_connect(G_OBJECT(vadj), "value-changed", G_CALLBACK(vscrolled), this);
 }
 
 /*
@@ -257,20 +238,17 @@ void Locator::render(GdkRectangle* area    // nullptr for whole draw area.
 	for (i = 0; i < c_num_schunks - 1; i++) {
 		const int rowht = (drawh - cur) / (c_num_schunks - i);
 		cur += rowht;
-		cairo_set_source_rgb(
-				drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
+		cairo_set_source_rgb(drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
 		cairo_move_to(drawgc, 0, cur);
 		cairo_line_to(drawgc, draww, cur);
 		cairo_stroke(drawgc);
 		if (i == c_num_schunks / 2 - 1) {
 			// Make middle one 3 pixels.
-			cairo_set_source_rgb(
-					drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
+			cairo_set_source_rgb(drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
 			cairo_move_to(drawgc, 0, cur - 1);
 			cairo_line_to(drawgc, draww, cur - 1);
 			cairo_stroke(drawgc);
-			cairo_set_source_rgb(
-					drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
+			cairo_set_source_rgb(drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
 			cairo_move_to(drawgc, 0, cur + 1);
 			cairo_line_to(drawgc, draww, cur + 1);
 			cairo_stroke(drawgc);
@@ -280,20 +258,17 @@ void Locator::render(GdkRectangle* area    // nullptr for whole draw area.
 	for (i = 0; i < c_num_schunks - 1; i++) {
 		const int colwd = (draww - cur) / (c_num_schunks - i);
 		cur += colwd;
-		cairo_set_source_rgb(
-				drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
+		cairo_set_source_rgb(drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
 		cairo_move_to(drawgc, cur, 0);
 		cairo_line_to(drawgc, cur, drawh);
 		cairo_stroke(drawgc);
 		if (i == c_num_schunks / 2 - 1) {
 			// Make middle one 3 pixels.:
-			cairo_set_source_rgb(
-					drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
+			cairo_set_source_rgb(drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
 			cairo_move_to(drawgc, cur - 1, 0);
 			cairo_line_to(drawgc, cur - 1, drawh);
 			cairo_stroke(drawgc);
-			cairo_set_source_rgb(
-					drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
+			cairo_set_source_rgb(drawgc, 192.0 / 255.0, 192.0 / 255.0, 192.0 / 255.0);
 			cairo_move_to(drawgc, cur + 1, 0);
 			cairo_line_to(drawgc, cur + 1, drawh);
 			cairo_stroke(drawgc);
@@ -365,8 +340,7 @@ void Locator::vscrolled(       // For vertical scrollbar.
 ) {
 	auto*     loc   = static_cast<Locator*>(data);
 	const int oldty = loc->ty;
-	loc->ty         = static_cast<gint>(gtk_adjustment_get_value(adj))
-			  * c_tiles_per_chunk;
+	loc->ty         = static_cast<gint>(gtk_adjustment_get_value(adj)) * c_tiles_per_chunk;
 	if (loc->ty != oldty)    // (Already equal if this event came
 							 //   from Exult msg.).
 	{
@@ -381,8 +355,7 @@ void Locator::hscrolled(       // For horizontal scrollbar.
 ) {
 	auto*     loc   = static_cast<Locator*>(data);
 	const int oldtx = loc->tx;
-	loc->tx         = static_cast<gint>(gtk_adjustment_get_value(adj))
-			  * c_tiles_per_chunk;
+	loc->tx         = static_cast<gint>(gtk_adjustment_get_value(adj)) * c_tiles_per_chunk;
 	if (loc->tx != oldtx)    // (Already equal if this event came
 							 //   from Exult msg.).
 	{
@@ -404,8 +377,7 @@ void Locator::send_location() {
 	little_endian::Write4(ptr, tys);
 	little_endian::Write4(ptr, static_cast<uint32>(-1));    // Don't change.
 	cout << "Locator::send_location" << endl;
-	ExultStudio::get_instance()->send_to_server(
-			Exult_server::view_pos, &data[0], ptr - data);
+	ExultStudio::get_instance()->send_to_server(Exult_server::view_pos, &data[0], ptr - data);
 }
 
 /*
@@ -420,8 +392,7 @@ void Locator::query_location() {
 	little_endian::Write4(ptr, static_cast<uint32>(-1));
 	little_endian::Write4(ptr, static_cast<uint32>(-1));
 	little_endian::Write4(ptr, static_cast<uint32>(-1));
-	ExultStudio::get_instance()->send_to_server(
-			Exult_server::view_pos, &data[0], ptr - data);
+	ExultStudio::get_instance()->send_to_server(Exult_server::view_pos, &data[0], ptr - data);
 }
 
 /*
@@ -476,8 +447,7 @@ void Locator::goto_mouse(
 			g_source_remove(send_location_timer);
 		}
 		if (delay_send) {    // Send in 1/3 sec. if no more motion.
-			send_location_timer
-					= g_timeout_add(333, delayed_send_location, this);
+			send_location_timer = g_timeout_add(333, delayed_send_location, this);
 		} else {
 			send_location();
 			send_location_timer = -1;
@@ -486,8 +456,7 @@ void Locator::goto_mouse(
 		GdkRectangle  dirty;
 		GtkAllocation alloc_1 = {0, 0, 0, 0};
 		gtk_widget_get_allocation(draw, &alloc_1);
-		newbox.x      = (cx * alloc_1.width) / c_num_chunks,
-		newbox.y      = (cy * alloc_1.height) / c_num_chunks;
+		newbox.x = (cx * alloc_1.width) / c_num_chunks, newbox.y = (cy * alloc_1.height) / c_num_chunks;
 		newbox.width  = oldbox.width;
 		newbox.height = oldbox.height;
 		gdk_rectangle_union(&oldbox, &newbox, &dirty);
@@ -518,9 +487,7 @@ gboolean Locator::mouse_press(GdkEventButton* event) {
 		return true;
 	}
 	// On (or close to) view box?
-	if (mx < viewbox.x - 3 || my < viewbox.y - 3
-		|| mx > viewbox.x + viewbox.width + 6
-		|| my > viewbox.y + viewbox.height + 6) {
+	if (mx < viewbox.x - 3 || my < viewbox.y - 3 || mx > viewbox.x + viewbox.width + 6 || my > viewbox.y + viewbox.height + 6) {
 		return false;
 	}
 	dragging  = true;

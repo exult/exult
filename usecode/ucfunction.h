@@ -36,9 +36,9 @@ public:
 	//   it existed).
 	int len;    // Length.
 
-	bool extended;    // is this an 'extented' function? (aka 32 bit function)
-	unsigned char*             code;       // The code.
-	std::vector<Usecode_value> statics;    // Local statics.
+	bool                       extended;    // is this an 'extented' function? (aka 32 bit function)
+	unsigned char*             code;        // The code.
+	std::vector<Usecode_value> statics;     // Local statics.
 	// Create from file.
 	Usecode_function(std::istream& file);
 

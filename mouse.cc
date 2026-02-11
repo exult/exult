@@ -97,8 +97,7 @@ void Mouse::MakeCurrent() {
 
 Mouse::Mouse(Game_window* gw    // Where to draw.
 			 )
-		: gwin(gw), iwin(gwin->get_win()), box(0, 0, 0, 0), dirty(0, 0, 0, 0),
-		  cur_framenum(0), cur(nullptr),
+		: gwin(gw), iwin(gwin->get_win()), box(0, 0, 0, 0), dirty(0, 0, 0, 0), cur_framenum(0), cur(nullptr),
 		  avatar_speed(100 * gwin->get_std_delay() / slow_speed_factor) {
 	float fx, fy;
 	SDL_GetMouseState(&fx, &fy);
@@ -118,8 +117,7 @@ Mouse::Mouse(Game_window* gw    // Where to draw.
 Mouse::Mouse(
 		Game_window* gw,    // Where to draw.
 		IDataSource& shapes)
-		: gwin(gw), iwin(gwin->get_win()), box(0, 0, 0, 0), dirty(0, 0, 0, 0),
-		  cur_framenum(0), cur(nullptr),
+		: gwin(gw), iwin(gwin->get_win()), box(0, 0, 0, 0), dirty(0, 0, 0, 0), cur_framenum(0), cur(nullptr),
 		  avatar_speed(100 * gwin->get_std_delay() / slow_speed_factor) {
 	float fx, fy;
 	SDL_GetMouseState(&fx, &fy);
@@ -378,15 +376,10 @@ void Mouse::set_speed_cursor() {
 		// Create a speed rectangle that's half of the game window dimensions
 		// but with a minimum size of 200x200
 		const TileRect game_rect = gwin->get_game_rect();
-		const int      rect_size = std::max(
-                std::min(200, std::min(game_rect.w, game_rect.h)),
-                std::min(game_rect.w, game_rect.h) / 2);
-		const TileRect speed_rect(
-				ax - rect_size / 2, ay - rect_size / 2, rect_size, rect_size);
-		const bool in_speed_rect
-				= (mousex >= speed_rect.x
-				   && mousex < speed_rect.x + speed_rect.w
-				   && mousey >= speed_rect.y
+		const int rect_size = std::max(std::min(200, std::min(game_rect.w, game_rect.h)), std::min(game_rect.w, game_rect.h) / 2);
+		const TileRect speed_rect(ax - rect_size / 2, ay - rect_size / 2, rect_size, rect_size);
+		const bool     in_speed_rect
+				= (mousex >= speed_rect.x && mousex < speed_rect.x + speed_rect.w && mousey >= speed_rect.y
 				   && mousey < speed_rect.y + speed_rect.h);
 
 		float speed_section = 1.0f;
@@ -394,10 +387,8 @@ void Mouse::set_speed_cursor() {
 			// Calculate speed_section based on the dynamic rectangle size
 			const int half_size = rect_size / 2;
 			speed_section
-					= max(max(-static_cast<float>(dx) / half_size,
-							  static_cast<float>(dx) / half_size),
-						  max(static_cast<float>(dy) / half_size,
-							  -static_cast<float>(dy) / half_size));
+					= max(max(-static_cast<float>(dx) / half_size, static_cast<float>(dx) / half_size),
+						  max(static_cast<float>(dy) / half_size, -static_cast<float>(dy) / half_size));
 		}
 
 		const bool      nearby_hostile        = gwin->is_hostile_nearby() && !cheat.in_god_mode();
@@ -419,8 +410,7 @@ void Mouse::set_speed_cursor() {
 			// But respect combat/hostile conditions just like inside the
 			// rectangle
 			if (gwin->in_combat()) {
-				cursor = get_medium_combat_arrow(
-						dir);    // No long combat arrows exist
+				cursor       = get_medium_combat_arrow(dir);    // No long combat arrows exist
 				avatar_speed = base_speed / medium_combat_speed_factor;
 			} else if (nearby_hostile || has_active_nohalt_scr) {
 				cursor       = get_medium_arrow(dir);
@@ -437,9 +427,7 @@ void Mouse::set_speed_cursor() {
 				cursor = get_short_arrow(dir);
 			}
 			avatar_speed = base_speed / slow_speed_factor;
-		} else if (
-				speed_section < 0.8f || gwin->in_combat() || nearby_hostile
-				|| has_active_nohalt_scr) {
+		} else if (speed_section < 0.8f || gwin->in_combat() || nearby_hostile || has_active_nohalt_scr) {
 			if (gwin->in_combat()) {
 				cursor = get_medium_combat_arrow(dir);
 			} else {

@@ -41,14 +41,12 @@ namespace Obj_flags {
 		bg_dont_render     = 16,    // In BG: also completely invisible.
 		si_on_moving_barge = 17,    // SI's version of 10?
 		is_temporary       = 18,    // Is temporary
-		active_sailor
-				= 20,    // "Flag" used to store an object for later use in
+		active_sailor      = 20,    // "Flag" used to store an object for later use in
 		//   usecode. Generally used by various barges.
 		okay_to_land = 21,    // Used for flying-carpet.
 		bg_dont_move = 22,    // Exult-only: BG version of dont_move flag
-		dont_render
-				= 22,       // Exult-only: Non-BG version of bg_dont_render flag
-		in_dungeon = 23,    // Pretty sure.  If set, you won't
+		dont_render  = 22,    // Exult-only: Non-BG version of bg_dont_render flag
+		in_dungeon   = 23,    // Pretty sure.  If set, you won't
 		//   be accused of stealing food.
 		is_solid = 24,    // Used by gangplank usecode to determine if an object
 		//   is solid based on TFA data.

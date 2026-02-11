@@ -60,12 +60,7 @@ class Yesno_button : public Gump_button {
 	int isyes;    // 1 for 'yes', 0 for 'no'.
 public:
 	Yesno_button(Gump* par, int px, int py, int yes)
-			: Gump_button(
-					  par,
-					  yes ? game->get_shape("gumps/yesbtn")
-						  : game->get_shape("gumps/nobtn"),
-					  px, py),
-			  isyes(yes) {}
+			: Gump_button(par, yes ? game->get_shape("gumps/yesbtn") : game->get_shape("gumps/nobtn"), px, py), isyes(yes) {}
 
 	// What to do when 'clicked':
 	bool activate(MouseButton button) override;
@@ -88,8 +83,7 @@ bool Yesno_button::activate(MouseButton button) {
  */
 
 Yesno_gump::Yesno_gump(const std::string& txt, const char* font)
-		: Modal_gump(nullptr, game->get_shape("gumps/yesnobox")), text(txt),
-		  fontname(font), answer(-1) {
+		: Modal_gump(nullptr, game->get_shape("gumps/yesnobox")), text(txt), fontname(font), answer(-1) {
 	set_object_area(TileRect(6, 5, 116, 32));
 	add_elem(new Yesno_button(this, yesx, yesnoy, 1));
 	add_elem(new Yesno_button(this, nox, yesnoy, 0));
@@ -105,8 +99,7 @@ void Yesno_gump::paint() {
 	paint_elems();    // Paint buttons.
 	// Paint text.
 	fontManager.get_font(fontname)->paint_text_box(
-			gwin->get_win()->get_ib8(), text.c_str(), x + object_area.x,
-			y + object_area.y, object_area.w, object_area.h, 2);
+			gwin->get_win()->get_ib8(), text.c_str(), x + object_area.x, y + object_area.y, object_area.w, object_area.h, 2);
 	gwin->set_painted();
 }
 
@@ -148,8 +141,7 @@ bool Yesno_gump::ask(
 	return answer;
 }
 
-Countdown_gump::Countdown_gump(
-		const std::string& txt, int timeout, const char* font)
+Countdown_gump::Countdown_gump(const std::string& txt, int timeout, const char* font)
 		: Yesno_gump(std::string(), font), text_fmt(txt), timer(timeout) {
 	answer     = false;
 	start_time = SDL_GetTicks();
@@ -164,9 +156,7 @@ bool Countdown_gump::run() {
 	}
 
 	char* new_text = new char[text_fmt.size() + 32];
-	snprintf(
-			new_text, text_fmt.size() + 32, "%s %i...", text_fmt.c_str(),
-			remaining / 1000);
+	snprintf(new_text, text_fmt.size() + 32, "%s %i...", text_fmt.c_str(), remaining / 1000);
 	text = new_text;
 	delete[] new_text;
 

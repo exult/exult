@@ -46,11 +46,8 @@ class SliderWidget_button : public Gump_button {
 	bool is_left;
 
 public:
-	SliderWidget_button(
-			Slider_widget* par, int px, int py, ShapeID shape, bool left)
-			: Gump_button(
-					  par, shape.get_shapenum(), px, py, shape.get_shapefile()),
-			  is_left(left) {}
+	SliderWidget_button(Slider_widget* par, int px, int py, ShapeID shape, bool left)
+			: Gump_button(par, shape.get_shapenum(), px, py, shape.get_shapefile()), is_left(left) {}
 
 	// What to do when 'clicked':
 	bool activate(MouseButton button) override {
@@ -69,11 +66,9 @@ public:
 // #define SW_FORCE_AUTO_LOG_SLIDERS 1
 
 Slider_widget::Slider_widget(
-		Gump_Base* par, int px, int py, ShapeID sidLeft, ShapeID sidRight,
-		ShapeID sidDiamond, int mival, int mxval, int step, int defval,
-		int width, bool logarithmic)
-		: Gump_widget(par, -1, px, py, -1), logarithmic(logarithmic),
-		  min_val(mival), max_val(mxval), step_val(step), val(defval),
+		Gump_Base* par, int px, int py, ShapeID sidLeft, ShapeID sidRight, ShapeID sidDiamond, int mival, int mxval, int step,
+		int defval, int width, bool logarithmic)
+		: Gump_widget(par, -1, px, py, -1), logarithmic(logarithmic), min_val(mival), max_val(mxval), step_val(step), val(defval),
 		  prev_dragx(INT32_MIN) {
 	auto lshape = sidLeft.get_shape();
 	auto rshape = sidRight.get_shape();
@@ -83,14 +78,12 @@ Slider_widget::Slider_widget(
 	xmax        = xmin + width - dshape->get_width();
 	xdist       = xmax - xmin;
 	// rightbtnx   = xmax + dshape->get_xright();//+rshape->get_xleft();
-	rightbtnx
-			= leftbtnx + lshape->get_xright() + width + rshape->get_xleft() + 1;
-	btny = lshape->get_height() - 1;
+	rightbtnx = leftbtnx + lshape->get_xright() + width + rshape->get_xleft() + 1;
+	btny      = lshape->get_height() - 1;
 	// centre the diamond between button height
 	// int buttontop    = btny + lshape->get_yabove();
 	int buttonbottom = btny + lshape->get_ybelow();
-	diamondy         = buttonbottom - dshape->get_ybelow()
-			   - (lshape->get_height() - dshape->get_height()) / 2;
+	diamondy         = buttonbottom - dshape->get_ybelow() - (lshape->get_height() - dshape->get_height()) / 2;
 	//+dshape->get_ybelow();
 
 	diamond = sidDiamond;
@@ -106,12 +99,10 @@ Slider_widget::Slider_widget(
 	callback = dynamic_cast<ICallback*>(par);
 
 #ifdef DEBUG
-	cout << "SliderWidget:  " << min_val << " to " << max_val << " by " << step
-		 << endl;
+	cout << "SliderWidget:  " << min_val << " to " << max_val << " by " << step << endl;
 #endif
 	left  = std::make_unique<SelfManaged<SliderWidget_button>>(this, leftbtnx, btny, sidLeft, true);
-	right = std::make_unique<SelfManaged<SliderWidget_button>>(
-			this, rightbtnx, btny, sidRight, false);
+	right = std::make_unique<SelfManaged<SliderWidget_button>>(this, rightbtnx, btny, sidRight, false);
 	// Init. to middle value.
 	if (defval < min_val) {
 		defval = min_val;
@@ -132,10 +123,7 @@ void Slider_widget::set_val(int newval, bool recalcdiamond) {
 			val      = 0;
 			diamondx = xmin;
 		} else {
-			diamondx = xmin
-					   + lineartolog(
-							   (val - min_val) * xdist / (max_val - min_val),
-							   xdist);
+			diamondx = xmin + lineartolog((val - min_val) * xdist / (max_val - min_val), xdist);
 		}
 	}
 	if (callback) {
@@ -176,13 +164,11 @@ TileRect Slider_widget::get_rect() const {
 	TileRect leftrect  = left->get_rect();
 	TileRect rightrect = right->get_rect();
 
-	auto     dshape = diamond.get_shape();
-	TileRect diamondrect
-			= dshape ? TileRect(
-							   diamondx + dshape->get_xleft(),
-							   diamondy + dshape->get_yabove(),
-							   dshape->get_width(), dshape->get_width())
-					 : TileRect(diamondx, diamondy, 8, 8);
+	auto     dshape      = diamond.get_shape();
+	TileRect diamondrect = dshape ? TileRect(
+											diamondx + dshape->get_xleft(), diamondy + dshape->get_yabove(), dshape->get_width(),
+											dshape->get_width())
+								  : TileRect(diamondx, diamondy, 8, 8);
 
 	local_to_screen(diamondrect.x, diamondrect.y);
 	return leftrect.add(rightrect).add(diamondrect);
@@ -204,7 +190,7 @@ void Slider_widget::paint() {
 }
 
 bool Slider_widget::run() {
-	Gump_button* pushed=nullptr;
+	Gump_button* pushed = nullptr;
 	if (left->is_pushed()) {
 		pushed = left.get();
 	} else if (right->is_pushed()) {
@@ -212,22 +198,18 @@ bool Slider_widget::run() {
 	}
 
 	if (pushed) {
-	
 		if (next_auto_push_time == 0) {
 			// First time pushed, set 0.5 second delay for auto repeat
 			next_auto_push_time = SDL_GetTicks() + 500;
-		}
-		else if (SDL_GetTicks() >= next_auto_push_time) {
-			next_auto_push_time
-					+= 50;    // 0.05 second delay for next repeat
+		} else if (SDL_GetTicks() >= next_auto_push_time) {
+			next_auto_push_time += 50;    // 0.05 second delay for next repeat
 			// Simulate click
 			pushed->activate(MouseButton::Left);
 
 			return true;
 		}
- 
-	} 
-	else {
+
+	} else {
 		// No pushed buttons reset the timer
 		next_auto_push_time = 0;
 	}
@@ -273,8 +255,7 @@ bool Slider_widget::mouse_down(
 			return Gump_widget::mouse_down(mx, my, button);
 		}
 		diamondx  = lx;
-		int delta = logtolinear(diamondx - xmin, xdist) * (max_val - min_val)
-					/ xdist;
+		int delta = logtolinear(diamondx - xmin, xdist) * (max_val - min_val) / xdist;
 		// Round down to nearest step.
 		delta -= delta % step_val;
 		set_val(min_val + delta, false);
@@ -302,8 +283,7 @@ bool Slider_widget::mouse_up(
 	}
 	if (button != MouseButton::Left || !is_dragging()) {
 		// pass to buttons
-		if (left->mouse_down(mx, my, button)
-			|| right->mouse_down(mx, my, button)) {
+		if (left->mouse_down(mx, my, button) || right->mouse_down(mx, my, button)) {
 			return true;
 		}
 
@@ -374,8 +354,7 @@ bool Slider_widget::mouse_drag(
 	DEBUG_VAL(xdist);
 	DEBUG_VAL(xmax);
 	DEBUG_VAL(xmin);
-	int delta
-			= logtolinear(diamondx - xmin, xdist) * (max_val - min_val) / xdist;
+	int delta = logtolinear(diamondx - xmin, xdist) * (max_val - min_val) / xdist;
 	DEBUG_VAL(delta);
 	DEBUG_VAL(diamondx);
 	DEBUG_VAL(max_val);

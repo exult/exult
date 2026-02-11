@@ -133,8 +133,7 @@ public:
 
 #define MAX_GAMES 100
 
-static inline bool handle_menu_click(
-		int id, int& first, int last_page, int pagesize) {
+static inline bool handle_menu_click(int id, int& first, int last_page, int pagesize) {
 	switch (id) {
 	case -8:
 		first = 0;
@@ -153,9 +152,7 @@ static inline bool handle_menu_click(
 	}
 }
 
-int maximum_size(
-		std::shared_ptr<Font> font, tcb::span<const char* const> options,
-		int centerx) {
+int maximum_size(std::shared_ptr<Font> font, tcb::span<const char* const> options, int centerx) {
 	ignore_unused_variable_warning(centerx);
 	int max_width = 0;
 	for (const auto* option : options) {
@@ -169,12 +166,9 @@ int maximum_size(
 }
 
 void create_scroller_menu(
-		MenuList* menu, std::shared_ptr<Font> fonton,
-		std::shared_ptr<Font> font, int first, int pagesize, int num_choices,
+		MenuList* menu, std::shared_ptr<Font> fonton, std::shared_ptr<Font> font, int first, int pagesize, int num_choices,
 		int xpos, int ypos) {
-	const std::array menuscroller{
-			Strings::FIRST(), Strings::PREVIOUS(), Strings::NEXT(),
-			Strings::LAST()};
+	const std::array menuscroller{Strings::FIRST(), Strings::PREVIOUS(), Strings::NEXT(), Strings::LAST()};
 	assert(menuscroller.size() == 4);
 	const int max_width = maximum_size(font, menuscroller, xpos);
 	xpos                = xpos - max_width * 3 / 2;
@@ -184,11 +178,9 @@ void create_scroller_menu(
 
 	for (size_t i = 0; i < menuscroller.size(); i++) {
 		// Check to see if this entry is needed at all:
-		if ((i >= 2 || first != 0) && (i != 0 || first != pagesize)
-			&& (i < 2 || lastpage != first)
+		if ((i >= 2 || first != 0) && (i != 0 || first != pagesize) && (i < 2 || lastpage != first)
 			&& (i != 3 || lastpage != first + pagesize)) {
-			auto* entry = new MenuTextEntry(
-					fonton, font, menuscroller[i], xpos, ypos);
+			auto* entry = new MenuTextEntry(fonton, font, menuscroller[i], xpos, ypos);
 			// These commands have negative ids:
 			entry->set_id(i - 8);
 			menu->add_entry(entry);
@@ -213,11 +205,7 @@ void ExultMenu::calc_win() {
 	centerx  = gwin->get_width() / 2;
 	centery  = gwin->get_height() / 2;
 	auto fnt = font ? font : fontManager.get_font("CREDITS_FONT");
-	pagesize = std::max(
-			1, 2
-					   * ((gwin->get_win()->get_full_height()
-						   - 5 * fnt->get_text_height() - 15)
-						  / 45));
+	pagesize = std::max(1, 2 * ((gwin->get_win()->get_full_height() - 5 * fnt->get_text_height() - 15) / 45));
 }
 
 void ExultMenu::setup() {
@@ -229,8 +217,7 @@ void ExultMenu::setup() {
 		mm = gamemanager->get_game(0);
 	}
 	if (!mm) {
-		std::cerr << "No games found. Unable to show gumps in Exult menu."
-				  << std::endl;
+		std::cerr << "No games found. Unable to show gumps in Exult menu." << std::endl;
 		return;
 	}
 	// ModManager mm_exult_menu_game (*mm);
@@ -271,36 +258,25 @@ std::unique_ptr<MenuList> ExultMenu::create_main_menu(int first) {
 	int          ypos = 15 + gwin->get_win()->get_start_y();
 	Shape_frame* fr   = exult_flx.get_shape(EXULT_FLX_SFX_ICON_SHP, 0);
 	if (fr == nullptr) {
-		std::cerr << "Exult.flx file is corrupted. Please reinstall Exult."
-				  << std::endl;
+		std::cerr << "Exult.flx file is corrupted. Please reinstall Exult." << std::endl;
 		throw quit_exception();
 	}
-	int xpos = (gwin->get_win()->get_full_width() / 2 + fr->get_width()) / 2;
+	int                      xpos        = (gwin->get_win()->get_full_width() / 2 + fr->get_width()) / 2;
 	std::vector<ModManager>& game_list   = gamemanager->get_game_list();
 	const int                num_choices = game_list.size();
-	const int                last
-			= num_choices > first + pagesize ? first + pagesize : num_choices;
+	const int                last        = num_choices > first + pagesize ? first + pagesize : num_choices;
 	for (int i = first; i < last; i++) {
-		const int menux = xpos + (i % 2) * gwin->get_win()->get_full_width() / 2
-						  + gwin->get_win()->get_start_x();
+		const int         menux     = xpos + (i % 2) * gwin->get_win()->get_full_width() / 2 + gwin->get_win()->get_start_x();
 		const ModManager& exultgame = game_list[i];
-		const bool        have_sfx
-				= Audio::have_config_sfx(exultgame.get_cfgname())
-				  || Audio::have_roland_sfx(exultgame.get_game_type())
-				  || Audio::have_sblaster_sfx(exultgame.get_game_type())
-				  || Audio::have_midi_sfx();
+		const bool have_sfx = Audio::have_config_sfx(exultgame.get_cfgname()) || Audio::have_roland_sfx(exultgame.get_game_type())
+							  || Audio::have_sblaster_sfx(exultgame.get_game_type()) || Audio::have_midi_sfx();
 
-		Shape_frame* sfxicon
-				= exult_flx.get_shape(EXULT_FLX_SFX_ICON_SHP, have_sfx ? 1 : 0);
-		auto* entry = new MenuGameEntry(
-				fonton, font, exultgame.get_menu_string().c_str(), sfxicon,
-				menux, ypos);
+		Shape_frame* sfxicon = exult_flx.get_shape(EXULT_FLX_SFX_ICON_SHP, have_sfx ? 1 : 0);
+		auto*        entry   = new MenuGameEntry(fonton, font, exultgame.get_menu_string().c_str(), sfxicon, menux, ypos);
 		entry->set_id(i);
 		menu->add_entry(entry);
 		if (exultgame.has_mods()) {
-			auto* mod_entry = new MenuTextEntry(
-					navfonton, navfont, Strings::SHOWMODS(), menux,
-					ypos + entry->get_height() + 4);
+			auto* mod_entry = new MenuTextEntry(navfonton, navfont, Strings::SHOWMODS(), menux, ypos + entry->get_height() + 4);
 			mod_entry->set_id(i + MAX_GAMES);
 			menu->add_entry(mod_entry);
 		}
@@ -310,8 +286,7 @@ std::unique_ptr<MenuList> ExultMenu::create_main_menu(int first) {
 	}
 
 	create_scroller_menu(
-			menu.get(), navfonton, navfont, first, pagesize, num_choices,
-			centerx,
+			menu.get(), navfonton, navfont, first, pagesize, num_choices, centerx,
 			gwin->get_win()->get_end_y() - 5 * font->get_text_height());
 
 	const std::array menuchoices{
@@ -324,10 +299,9 @@ std::unique_ptr<MenuList> ExultMenu::create_main_menu(int first) {
 	};
 	const int max_width = maximum_size(font, menuchoices, centerx);
 	xpos                = centerx - max_width * (menuchoices.size() - 1) / 2;
-	ypos = gwin->get_win()->get_end_y() - 3 * font->get_text_height();
+	ypos                = gwin->get_win()->get_end_y() - 3 * font->get_text_height();
 	for (size_t i = 0; i < menuchoices.size(); i++) {
-		auto* entry
-				= new MenuTextEntry(fonton, font, menuchoices[i], xpos, ypos);
+		auto* entry = new MenuTextEntry(fonton, font, menuchoices[i], xpos, ypos);
 		// These commands have negative ids:
 		entry->set_id(i - 4);
 		menu->add_entry(entry);
@@ -337,8 +311,7 @@ std::unique_ptr<MenuList> ExultMenu::create_main_menu(int first) {
 	return menu;
 }
 
-std::unique_ptr<MenuList> ExultMenu::create_mods_menu(
-		ModManager* selgame, int first) {
+std::unique_ptr<MenuList> ExultMenu::create_mods_menu(ModManager* selgame, int first) {
 	auto menu = std::make_unique<MenuList>();
 
 	int ypos = 15 + gwin->get_win()->get_start_y();
@@ -346,23 +319,18 @@ std::unique_ptr<MenuList> ExultMenu::create_mods_menu(
 
 	std::vector<ModInfo>& mod_list    = selgame->get_mod_list();
 	const int             num_choices = mod_list.size();
-	const int             last
-			= num_choices > first + pagesize ? first + pagesize : num_choices;
+	const int             last        = num_choices > first + pagesize ? first + pagesize : num_choices;
 	for (int i = first; i < last; i++) {
-		const int menux = xpos + (i % 2) * gwin->get_win()->get_full_width() / 2
-						  + gwin->get_win()->get_start_x();
+		const int      menux    = xpos + (i % 2) * gwin->get_win()->get_full_width() / 2 + gwin->get_win()->get_start_x();
 		const ModInfo& exultmod = mod_list[i];
-		auto*          entry    = new MenuGameEntry(
-                fonton, font, exultmod.get_menu_string().c_str(), nullptr,
-                menux, ypos);
+		auto*          entry    = new MenuGameEntry(fonton, font, exultmod.get_menu_string().c_str(), nullptr, menux, ypos);
 		entry->set_id(i);
 		entry->set_enabled(exultmod.is_mod_compatible());
 		menu->add_entry(entry);
 
 		if (!exultmod.is_mod_compatible()) {
 			auto* incentry = new MenuGameEntry(
-					navfonton, navfont, Strings::WRONGEXULTVERSION(), nullptr,
-					menux, ypos + entry->get_height() + 4);
+					navfonton, navfont, Strings::WRONGEXULTVERSION(), nullptr, menux, ypos + entry->get_height() + 4);
 			// Accept no clicks:
 			incentry->set_enabled(false);
 			menu->add_entry(incentry);
@@ -373,17 +341,15 @@ std::unique_ptr<MenuList> ExultMenu::create_mods_menu(
 	}
 
 	create_scroller_menu(
-			menu.get(), navfonton, navfont, first, pagesize, num_choices,
-			centerx,
+			menu.get(), navfonton, navfont, first, pagesize, num_choices, centerx,
 			gwin->get_win()->get_end_y() - 5 * font->get_text_height());
 
 	const std::array menuchoices{Strings::RETURNTOMAINMENU()};
 	const int        max_width = maximum_size(font, menuchoices, centerx);
-	xpos = centerx - max_width * (menuchoices.size() - 1) / 2;
-	ypos = gwin->get_win()->get_end_y() - 3 * font->get_text_height();
+	xpos                       = centerx - max_width * (menuchoices.size() - 1) / 2;
+	ypos                       = gwin->get_win()->get_end_y() - 3 * font->get_text_height();
 	for (size_t i = 0; i < menuchoices.size(); i++) {
-		auto* entry
-				= new MenuTextEntry(fonton, font, menuchoices[i], xpos, ypos);
+		auto* entry = new MenuTextEntry(fonton, font, menuchoices[i], xpos, ypos);
 		// These commands have negative ids:
 		entry->set_id(i - 4);
 		menu->add_entry(entry);
@@ -410,8 +376,7 @@ BaseGameInfo* ExultMenu::show_mods_menu(ModManager* selgame) {
 
 	Shape_frame* exultlogo = exult_flx.get_shape(EXULT_FLX_EXULT_LOGO_SHP, 1);
 	if (exultlogo == nullptr) {
-		std::cerr << "Exult.flx file is corrupted. Please reinstall Exult."
-				  << std::endl;
+		std::cerr << "Exult.flx file is corrupted. Please reinstall Exult." << std::endl;
 		throw quit_exception();
 	}
 	int logox;
@@ -423,10 +388,8 @@ BaseGameInfo* ExultMenu::show_mods_menu(ModManager* selgame) {
 		// Interferes with the menu.
 		sman->paint_shape(logox, logoy, exultlogo);
 		font->draw_text(
-				gwin->get_win()->get_ib8(),
-				gwin->get_win()->get_end_x() - font->get_text_width(VERSION),
-				gwin->get_win()->get_end_y() - font->get_text_height() - 5,
-				VERSION);
+				gwin->get_win()->get_ib8(), gwin->get_win()->get_end_x() - font->get_text_width(VERSION),
+				gwin->get_win()->get_end_y() - font->get_text_height() - 5, VERSION);
 		const int choice = menu->handle_events(gwin);
 		switch (choice) {
 		case -10:    // The incompatibility notice; do nothing
@@ -446,8 +409,7 @@ BaseGameInfo* ExultMenu::show_mods_menu(ModManager* selgame) {
 				gpal->fade_out(c_fade_out_time);
 				sel_mod = selgame->get_mod(choice);
 				break;
-			} else if (handle_menu_click(
-							   choice, first_mod, last_page, pagesize)) {
+			} else if (handle_menu_click(choice, first_mod, last_page, pagesize)) {
 				menu = create_mods_menu(selgame, first_mod);
 				gwin->clear_screen(true);
 			}
@@ -475,35 +437,23 @@ BaseGameInfo* ExultMenu::run() {
 	if (!gamemanager->get_game_count()) {
 // OS Specific messages
 #ifdef SDL_PLATFORM_IOS
-		const char* game_missing_msg
-				= Strings::PleaseaddthegamesinFileSharing();
+		const char* game_missing_msg = Strings::PleaseaddthegamesinFileSharing();
 		const char* close_screen_msg = Strings::Touchscreenforhelp_();
 #else
-		const char* game_missing_msg
-				= Strings::Pleaseedittheconfigurationfile_();
+		const char* game_missing_msg = Strings::Pleaseedittheconfigurationfile_();
 		const char* close_screen_msg = Strings::PressESCtoexit_();
 #endif
 		// Create our message and programatically center it.
 		const char* const message[8] = {
-				Strings::no_games(0),
-				Strings::no_games(1),
-				Strings::no_games(2),
-				Strings::no_games(3),
-				game_missing_msg,
-				"",
-				"",
+				Strings::no_games(0), Strings::no_games(1), Strings::no_games(2), Strings::no_games(3), game_missing_msg, "", "",
 				close_screen_msg,
 		};
-		const int total_lines
-				= sizeof(message)
-				  / sizeof(message[0]);    // While this method is no longer
-										   // "proper" it fits the rest of the
-										   // coding style.
+		const int total_lines = sizeof(message) / sizeof(message[0]);    // While this method is no longer
+																		 // "proper" it fits the rest of the
+																		 // coding style.
 		const int topy = centery - (total_lines * 10) / 2;
 		for (int line_num = 0; line_num < total_lines; line_num++) {
-			font->center_text(
-					gwin->get_win()->get_ib8(), centerx, topy + (line_num * 10),
-					message[line_num]);
+			font->center_text(gwin->get_win()->get_ib8(), centerx, topy + (line_num * 10), message[line_num]);
 		}
 		gpal->apply();
 		while (!wait_delay(200)) {
@@ -522,24 +472,20 @@ BaseGameInfo* ExultMenu::run() {
 		throw quit_exception(1);
 #endif
 	}
-	IExultDataSource mouse_data(
-			BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_POINTERS_SHP);
-	Mouse mouse(gwin, mouse_data);
+	IExultDataSource mouse_data(BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_POINTERS_SHP);
+	Mouse            mouse(gwin, mouse_data);
 
 	// Must check this or it will crash as midi
 	// may not be initialised
 	if (Audio::get_ptr()->is_audio_enabled()) {
 		// Make sure timbre library is correct!
 		// Audio::get_ptr()->get_midi()->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_GM);
-		Audio::get_ptr()->start_music(
-				EXULT_FLX_MEDITOWN_MID, true, MyMidiPlayer::Force_None,
-				EXULT_FLX);
+		Audio::get_ptr()->start_music(EXULT_FLX_MEDITOWN_MID, true, MyMidiPlayer::Force_None, EXULT_FLX);
 	}
 
 	Shape_frame* exultlogo = exult_flx.get_shape(EXULT_FLX_EXULT_LOGO_SHP, 0);
 	if (exultlogo == nullptr) {
-		std::cerr << "Exult.flx file is corrupted. Please reinstall Exult."
-				  << std::endl;
+		std::cerr << "Exult.flx file is corrupted. Please reinstall Exult." << std::endl;
 		throw quit_exception();
 	}
 	int logox = centerx - exultlogo->get_width() / 2;
@@ -563,10 +509,8 @@ BaseGameInfo* ExultMenu::run() {
 		// Interferes with the menu.
 		sman->paint_shape(logox, logoy, exultlogo);
 		font->draw_text(
-				gwin->get_win()->get_ib8(),
-				gwin->get_win()->get_end_x() - font->get_text_width(VERSION),
-				gwin->get_win()->get_end_y() - font->get_text_height() - 5,
-				VERSION);
+				gwin->get_win()->get_ib8(), gwin->get_win()->get_end_x() - font->get_text_width(VERSION),
+				gwin->get_win()->get_end_y() - font->get_text_height() - 5, VERSION);
 		const int choice = menu->handle_events(gwin);
 
 		switch (choice) {
@@ -580,9 +524,7 @@ BaseGameInfo* ExultMenu::run() {
 			if (Audio::get_ptr()->is_audio_enabled()) {
 				// Make sure timbre library is correct!
 				// Audio::get_ptr()->get_midi()->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_GM);
-				Audio::get_ptr()->start_music(
-						EXULT_FLX_MEDITOWN_MID, true, MyMidiPlayer::Force_None,
-						EXULT_FLX);
+				Audio::get_ptr()->start_music(EXULT_FLX_MEDITOWN_MID, true, MyMidiPlayer::Force_None, EXULT_FLX);
 			}
 
 			calc_win();
@@ -594,8 +536,7 @@ BaseGameInfo* ExultMenu::run() {
 		case -3: {    // Exult Credits
 			gpal->fade_out(c_fade_out_time);
 			TextScroller credits(
-					BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX),
-					EXULT_FLX_CREDITS_TXT, fontManager.get_font("CREDITS_FONT"),
+					BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_CREDITS_TXT, fontManager.get_font("CREDITS_FONT"),
 					exult_flx.extract_shape(EXULT_FLX_EXTRAS_SHP));
 			credits.run(gwin);
 			gwin->clear_screen(true);
@@ -604,8 +545,7 @@ BaseGameInfo* ExultMenu::run() {
 		case -2: {    // Exult Quotes
 			gpal->fade_out(c_fade_out_time);
 			TextScroller quotes(
-					BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX),
-					EXULT_FLX_QUOTES_TXT, fontManager.get_font("CREDITS_FONT"),
+					BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_QUOTES_TXT, fontManager.get_font("CREDITS_FONT"),
 					exult_flx.extract_shape(EXULT_FLX_EXTRAS_SHP));
 			quotes.run(gwin);
 			gwin->clear_screen(true);
@@ -633,12 +573,10 @@ BaseGameInfo* ExultMenu::run() {
 			} else if (choice >= MAX_GAMES && choice < 2 * MAX_GAMES) {
 				// Show the mods for the game:
 				gpal->fade_out(c_fade_out_time / 2);
-				sel_game = show_mods_menu(
-						gamemanager->get_game(choice - MAX_GAMES));
+				sel_game = show_mods_menu(gamemanager->get_game(choice - MAX_GAMES));
 				gwin->clear_screen(true);
 				gpal->apply();
-			} else if (handle_menu_click(
-							   choice, first_game, last_page, pagesize)) {
+			} else if (handle_menu_click(choice, first_game, last_page, pagesize)) {
 				menu = create_main_menu(first_game);
 				gwin->clear_screen(true);
 			}

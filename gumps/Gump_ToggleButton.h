@@ -31,11 +31,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class Gump_ToggleButton : public Gump_button {
 public:
-	Gump_ToggleButton(
-			Gump* par, int px, int py, int shapenum, int selectionnum,
-			int numsel)
-			: Gump_button(par, shapenum, px, py, SF_EXULT_FLX),
-			  numselections(numsel) {
+	Gump_ToggleButton(Gump* par, int px, int py, int shapenum, int selectionnum, int numsel)
+			: Gump_button(par, shapenum, px, py, SF_EXULT_FLX), numselections(numsel) {
 		set_frame(2 * selectionnum);
 	}
 
@@ -60,10 +57,8 @@ private:
 class Gump_ToggleTextButton : public Text_button {
 public:
 	Gump_ToggleTextButton(
-			Gump_Base* par, const std::vector<std::string>& s, int selectionnum,
-			int px, int py, int width, int height = 0)
-			: Text_button(par, "", px, py, width, height),
-			  selections(s) {
+			Gump_Base* par, const std::vector<std::string>& s, int selectionnum, int px, int py, int width, int height = 0)
+			: Text_button(par, "", px, py, width, height), selections(s) {
 		set_frame(selectionnum);
 
 		// call init for all of the strings to ensure the widget is wide enough
@@ -82,11 +77,8 @@ public:
 		init();
 	}
 
-	Gump_ToggleTextButton(
-			Gump_Base* par, std::vector<std::string>&& s, int selectionnum,
-			int px, int py, int width, int height = 0)
-			: Text_button(par, "", px, py, width, height),
-			  selections(std::move(s)) {
+	Gump_ToggleTextButton(Gump_Base* par, std::vector<std::string>&& s, int selectionnum, int px, int py, int width, int height = 0)
+			: Text_button(par, "", px, py, width, height), selections(std::move(s)) {
 		set_frame(selectionnum);
 		// call init for all of the strings to ensure the widget is wide enough
 		// for all of them
@@ -128,14 +120,12 @@ public:
 
 	template <typename... Ts>
 	CallbackToggleTextButton(Parent* par, CallbackType&& callback, Ts&&... args)
-			: Gump_ToggleTextButton(par, std::forward<Ts>(args)...),
-			  parent(par), on_toggle(std::forward<CallbackType>(callback)) {}
+			: Gump_ToggleTextButton(par, std::forward<Ts>(args)...), parent(par), on_toggle(std::forward<CallbackType>(callback)) {}
 
 	template <typename... Ts>
-	CallbackToggleTextButton(
-			Parent* par, CallbackType2&& callback, Ts&&... args)
-			: Gump_ToggleTextButton(par, std::forward<Ts>(args)...),
-			  parent(par), on_toggle2(std::forward<CallbackType2>(callback)) {}
+	CallbackToggleTextButton(Parent* par, CallbackType2&& callback, Ts&&... args)
+			: Gump_ToggleTextButton(par, std::forward<Ts>(args)...), parent(par),
+			  on_toggle2(std::forward<CallbackType2>(callback)) {}
 
 	void toggle(int state) override {
 		if (on_toggle) {
@@ -152,6 +142,5 @@ private:
 	CallbackType  on_toggle  = nullptr;
 	CallbackType2 on_toggle2 = nullptr;
 };
-
 
 #endif

@@ -42,9 +42,7 @@
 
 constexpr static auto NO_OPENMODE = static_cast<std::ios_base::openmode>(0);
 
-SdlRwopsStreambuf::SdlRwopsStreambuf()
-		: m_context(nullptr), m_openMode(NO_OPENMODE),
-		  m_currentMode(NO_OPENMODE) {
+SdlRwopsStreambuf::SdlRwopsStreambuf() : m_context(nullptr), m_openMode(NO_OPENMODE), m_currentMode(NO_OPENMODE) {
 	setg(nullptr, nullptr, nullptr);
 	setp(nullptr, nullptr);
 }
@@ -60,8 +58,7 @@ bool SdlRwopsStreambuf::is_open() const {
 	return m_context;
 }
 
-SdlRwopsStreambuf* SdlRwopsStreambuf::open(
-		const char* s, std::ios_base::openmode mode) {
+SdlRwopsStreambuf* SdlRwopsStreambuf::open(const char* s, std::ios_base::openmode mode) {
 	if (m_context) {
 		return nullptr;
 	}
@@ -104,12 +101,10 @@ SdlRwopsStreambuf* SdlRwopsStreambuf::open(
 	case std::ios_base::in | std::ios_base::out | std::ios_base::binary:
 		mdstr = "r+b";
 		break;
-	case std::ios_base::in | std::ios_base::out | std::ios_base::trunc
-			| std::ios_base::binary:
+	case std::ios_base::in | std::ios_base::out | std::ios_base::trunc | std::ios_base::binary:
 		mdstr = "w+b";
 		break;
-	case std::ios_base::in | std::ios_base::out | std::ios_base::app
-			| std::ios_base::binary:
+	case std::ios_base::in | std::ios_base::out | std::ios_base::app | std::ios_base::binary:
 	case std::ios_base::in | std::ios_base::app | std::ios_base::binary:
 		mdstr = "a+b";
 		break;
@@ -137,9 +132,8 @@ SdlRwopsStreambuf* SdlRwopsStreambuf::close() {
 		return nullptr;
 	}
 
-	std::unique_ptr<SDL_IOStream, bool (*)(SDL_IOStream*)> h(
-			m_context, SDL_CloseIO);
-	auto rt = this;
+	std::unique_ptr<SDL_IOStream, bool (*)(SDL_IOStream*)> h(m_context, SDL_CloseIO);
+	auto                                                   rt = this;
 	if (sync()) {
 		rt = nullptr;
 	}
@@ -161,8 +155,7 @@ typename SdlRwopsStreambuf::int_type SdlRwopsStreambuf::underflow() {
 	bool initial = false;
 	if (!(m_currentMode & std::ios_base::in)) {
 		setp(nullptr, nullptr);
-		setg(m_buffer, m_buffer + sizeof(m_buffer),
-			 m_buffer + sizeof(m_buffer));
+		setg(m_buffer, m_buffer + sizeof(m_buffer), m_buffer + sizeof(m_buffer));
 		m_currentMode = std::ios_base::in;
 		initial       = true;
 	}
@@ -171,9 +164,8 @@ typename SdlRwopsStreambuf::int_type SdlRwopsStreambuf::underflow() {
 	if (gptr() == nullptr) {
 		setg(&buf1, &buf1 + 1, &buf1 + 1);
 	}
-	const std::size_t unget_sz
-			= initial ? 0 : std::min<std::size_t>((egptr() - eback()) / 2, 4);
-	int_type c = traits_type::eof();
+	const std::size_t unget_sz = initial ? 0 : std::min<std::size_t>((egptr() - eback()) / 2, 4);
+	int_type          c        = traits_type::eof();
 	if (gptr() == egptr()) {
 		std::memmove(eback(), egptr() - unget_sz, unget_sz * sizeof(char_type));
 		std::size_t nmemb = egptr() - eback() - unget_sz;
@@ -197,8 +189,7 @@ typename SdlRwopsStreambuf::int_type SdlRwopsStreambuf::pbackfail(int_type c) {
 			gbump(-1);
 			return traits_type::not_eof(c);
 		}
-		if ((m_openMode & std::ios_base::out)
-			|| traits_type::eq(traits_type::to_char_type(c), gptr()[-1])) {
+		if ((m_openMode & std::ios_base::out) || traits_type::eq(traits_type::to_char_type(c), gptr()[-1])) {
 			gbump(-1);
 			*gptr() = traits_type::to_char_type(c);
 			return c;
@@ -238,8 +229,7 @@ typename SdlRwopsStreambuf::int_type SdlRwopsStreambuf::overflow(int_type c) {
 	return traits_type::not_eof(c);
 }
 
-typename SdlRwopsStreambuf::pos_type SdlRwopsStreambuf::seekoff(
-		off_type off, std::ios_base::seekdir dir, std::ios_base::openmode) {
+typename SdlRwopsStreambuf::pos_type SdlRwopsStreambuf::seekoff(off_type off, std::ios_base::seekdir dir, std::ios_base::openmode) {
 	const int width = 1;
 	if (!m_context || sync()) {
 		return pos_type(off_type(-1));
@@ -265,8 +255,7 @@ typename SdlRwopsStreambuf::pos_type SdlRwopsStreambuf::seekoff(
 	return r;
 }
 
-typename SdlRwopsStreambuf::pos_type SdlRwopsStreambuf::seekpos(
-		pos_type sp, std::ios_base::openmode) {
+typename SdlRwopsStreambuf::pos_type SdlRwopsStreambuf::seekpos(pos_type sp, std::ios_base::openmode) {
 	if (!m_context || sync()) {
 		return pos_type(off_type(-1));
 	}
@@ -291,8 +280,7 @@ int SdlRwopsStreambuf::sync() {
 		// Consider closing and re-opening the file to simulate a flush.
 		const SDL_PropertiesID props = SDL_GetIOProperties(m_context);
 		if (props) {
-			FILE* fp = static_cast<FILE*>(SDL_GetPointerProperty(
-					props, SDL_PROP_IOSTREAM_STDIO_FILE_POINTER, nullptr));
+			FILE* fp = static_cast<FILE*>(SDL_GetPointerProperty(props, SDL_PROP_IOSTREAM_STDIO_FILE_POINTER, nullptr));
 			if (fp) {
 				fflush(fp);
 			}

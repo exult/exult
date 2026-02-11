@@ -78,10 +78,7 @@ const int* Audio::bg2si_songs = nullptr;
 inline char* formatTicks() {
 	static char formattedTicks[32];
 	uint64      ticks = SDL_GetTicks();
-	snprintf(
-			formattedTicks, 32, "[ %5u.%03u ] ",
-			static_cast<uint32>(ticks / 1000),
-			static_cast<uint32>(ticks % 1000));
+	snprintf(formattedTicks, 32, "[ %5u.%03u ] ", static_cast<uint32>(ticks / 1000), static_cast<uint32>(ticks % 1000));
 	return formattedTicks;
 }
 #endif
@@ -116,9 +113,8 @@ AudioSample* SFX_cache_manager::request(Flex* sfx_file, int id) {
 		garbage_collect();
 
 		size_t wavlen;    // Read .wav file.
-		auto   wavbuf = sfx_file->retrieve(id, wavlen);
-		loaded->second
-				= AudioSample::createAudioSample(std::move(wavbuf), wavlen);
+		auto   wavbuf  = sfx_file->retrieve(id, wavlen);
+		loaded->second = AudioSample::createAudioSample(std::move(wavbuf), wavlen);
 	}
 
 	if (!loaded->second) {
@@ -230,8 +226,7 @@ Audio::Audio() {
 	config->set("config/audio/enabled", audio_enabled ? "yes" : "no", false);
 
 	config->value("config/audio/effects/sfx_volume", sfx_volume, sfx_volume);
-	config->value(
-			"config/audio/speech/speech_volume", speech_volume, speech_volume);
+	config->value("config/audio/speech/speech_volume", speech_volume, speech_volume);
 	config->set("config/audio/effects/sfx_volume", sfx_volume, false);
 	config->set("config/audio/speech/speech_volume", speech_volume, false);
 
@@ -272,8 +267,7 @@ void Audio::Init(int _samplerate, int _channels) {
 		return;
 	}
 
-	mixer = std::make_unique<AudioMixer>(
-			_samplerate, _channels == 2, MIXER_CHANNELS);
+	mixer = std::make_unique<AudioMixer>(_samplerate, _channels == 2, MIXER_CHANNELS);
 
 	COUT("Audio initialisation OK");
 
@@ -387,10 +381,9 @@ void Audio::Init_sfx() {
 #endif
 	if (!have_config_sfx(Game::get_gametitle(), &flex)) {
 		if (have_roland_sfx(game, &flex) || have_sblaster_sfx(game, &flex)) {
-			const string d
-					= "config/disk/game/" + Game::get_gametitle() + "/waves";
-			size_t      sep = flex.rfind('/');
-			std::string pflex;
+			const string d   = "config/disk/game/" + Game::get_gametitle() + "/waves";
+			size_t       sep = flex.rfind('/');
+			std::string  pflex;
 			if (sep != string::npos) {
 				sep++;
 				pflex = flex.substr(sep);
@@ -399,8 +392,7 @@ void Audio::Init_sfx() {
 			}
 			config->set(d.c_str(), pflex, true);
 		} else {
-			cerr << "Digital SFX's file specified: " << flex
-				 << "... but file not found, and fallbacks are missing" << endl;
+			cerr << "Digital SFX's file specified: " << flex << "... but file not found, and fallbacks are missing" << endl;
 			return;
 		}
 	}
@@ -412,8 +404,7 @@ Audio::~Audio() {
 	Deinit();
 }
 
-sint32 Audio::copy_and_play_speech(
-		const uint8* sound_data, uint32 len, bool wait, int volume) {
+sint32 Audio::copy_and_play_speech(const uint8* sound_data, uint32 len, bool wait, int volume) {
 	if (!speech_enabled) {
 		return -1;
 	}
@@ -424,8 +415,7 @@ sint32 Audio::copy_and_play_speech(
 	return speech_id = play(std::move(new_sound_data), len, wait, volume);
 }
 
-sint32 Audio::copy_and_play_sfx(
-		const uint8* sound_data, uint32 len, bool wait, int volume) {
+sint32 Audio::copy_and_play_sfx(const uint8* sound_data, uint32 len, bool wait, int volume) {
 	auto new_sound_data = std::make_unique<uint8[]>(len);
 	std::memcpy(new_sound_data.get(), sound_data, len);
 	volume = (volume * sfx_volume) / 100;
@@ -433,20 +423,16 @@ sint32 Audio::copy_and_play_sfx(
 	return play(std::move(new_sound_data), len, wait, volume);
 }
 
-sint32 Audio::play(
-		std::unique_ptr<uint8[]> sound_data, uint32 len, bool wait,
-		int volume) {
+sint32 Audio::play(std::unique_ptr<uint8[]> sound_data, uint32 len, bool wait, int volume) {
 	ignore_unused_variable_warning(wait);
 	if (!audio_enabled || !len) {
 		return -1;
 	}
 
-	AudioSample* audio_sample
-			= AudioSample::createAudioSample(std::move(sound_data), len);
+	AudioSample* audio_sample = AudioSample::createAudioSample(std::move(sound_data), len);
 
 	if (audio_sample) {
-		sint32 id = mixer->playSample(
-				audio_sample, 0, 128, false, 65536, volume, volume);
+		sint32 id = mixer->playSample(audio_sample, 0, 128, false, 65536, volume, volume);
 		audio_sample->Release();
 		return id;
 	}
@@ -479,11 +465,10 @@ void Audio::resume_audio() {
 	mixer->setPausedAll(false);
 }
 
-sint32 Audio::playSpeechfile(
-		const char* fname, const char* fpatch, bool wait, int volume) {
+sint32 Audio::playSpeechfile(const char* fname, const char* fpatch, bool wait, int volume) {
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: File play in " << fname
-		 << " patch " << fpatch << " volume " << volume << endl;
+	cout << formatTicks() << "Audio subsystem request: File play in " << fname << " patch " << fpatch << " volume " << volume
+		 << endl;
 #endif
 	if (!audio_enabled) {
 		return -1;
@@ -506,17 +491,12 @@ bool Audio::playing() {
 	return false;
 }
 
-bool Audio::start_music(
-		int num, bool continuous, MyMidiPlayer::ForceType force,
-		const std::string& flex) {
+bool Audio::start_music(int num, bool continuous, MyMidiPlayer::ForceType force, const std::string& flex) {
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: Music start " << num
-		 << " in flex " << flex << endl;
+	cout << formatTicks() << "Audio subsystem request: Music start " << num << " in flex " << flex << endl;
 #endif
 	if (audio_enabled && music_enabled && mixer && mixer->getMidiPlayer()) {
-		return mixer->getMidiPlayer()->start_music(
-				num, music_looping == LoopingType::Never ? false : continuous,
-				force, flex);
+		return mixer->getMidiPlayer()->start_music(num, music_looping == LoopingType::Never ? false : continuous, force, flex);
 	}
 	return false;
 }
@@ -525,18 +505,12 @@ void Audio::change_repeat(bool newrepeat) {
 	mixer->getMidiPlayer()->set_repeat(newrepeat);
 }
 
-bool Audio::start_music(
-		const std::string& fname, int num, bool continuous,
-		MyMidiPlayer::ForceType force) {
+bool Audio::start_music(const std::string& fname, int num, bool continuous, MyMidiPlayer::ForceType force) {
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: Music start " << num
-		 << " in file " << fname << endl;
+	cout << formatTicks() << "Audio subsystem request: Music start " << num << " in file " << fname << endl;
 #endif
 	if (audio_enabled && music_enabled && mixer && mixer->getMidiPlayer()) {
-		return mixer->getMidiPlayer()->start_music(
-				fname, num,
-				music_looping == LoopingType::Never ? false : continuous,
-				force);
+		return mixer->getMidiPlayer()->start_music(fname, num, music_looping == LoopingType::Never ? false : continuous, force);
 	}
 	return false;
 }
@@ -571,8 +545,7 @@ bool Audio::start_speech(int num, bool wait) {
 	}
 
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: Speech start " << num
-		 << " in " << filename << " and " << patchfile << endl;
+	cout << formatTicks() << "Audio subsystem request: Speech start " << num << " in " << filename << " and " << patchfile << endl;
 #endif
 	const U7multiobject sample(filename, patchfile, num);
 
@@ -635,11 +608,9 @@ int Audio::wait_for_speech(std::function<int(Uint32 ms)> waitfunc) {
 /*
  *	This returns a 'unique' ID, but only for .wav SFX's (for now).
  */
-int Audio::play_sound_effect(
-		int num, int volume, int balance, int repeat, int distance) {
+int Audio::play_sound_effect(int num, int volume, int balance, int repeat, int distance) {
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: Sound Effect play "
-		 << num << " volume " << volume << " balance " << balance
+	cout << formatTicks() << "Audio subsystem request: Sound Effect play " << num << " volume " << volume << " balance " << balance
 		 << " distance " << distance << endl;
 #endif
 	if (!audio_enabled || !effects_enabled) {
@@ -673,16 +644,14 @@ int Audio::play_wave_sfx(
 		int repeat,     // Keep playing.
 		int distance) {
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: Wave play " << num
-		 << " volume " << volume << " balance " << balance << " distance "
-		 << distance << endl;
+	cout << formatTicks() << "Audio subsystem request: Wave play " << num << " volume " << volume << " balance " << balance
+		 << " distance " << distance << endl;
 #endif
 	if (!effects_enabled || !sfx_file || !mixer) {
 		return -1;    // no .wav sfx available
 	}
 
-	if (num < 0
-		|| static_cast<unsigned>(num) >= sfx_file->number_of_objects()) {
+	if (num < 0 || static_cast<unsigned>(num) >= sfx_file->number_of_objects()) {
 		cerr << "SFX " << num << " is out of range" << endl;
 		return -1;
 	}
@@ -694,15 +663,13 @@ int Audio::play_wave_sfx(
 
 	volume = (volume * sfx_volume) / 100;
 
-	const int instance_id = mixer->playSample(
-			wave, repeat, 0, true, AUDIO_DEF_PITCH, volume, volume);
+	const int instance_id = mixer->playSample(wave, repeat, 0, true, AUDIO_DEF_PITCH, volume, volume);
 	if (instance_id < 0) {
 		CERR("No channel was available to play sfx '" << num << "'");
 		return -1;
 	}
 
-	CERR("Playing SFX: " << num << " with real volume " << std::hex << volume
-						 << std::dec);
+	CERR("Playing SFX: " << num << " with real volume " << std::hex << volume << std::dec);
 
 	mixer->set2DPosition(instance_id, distance, balance);
 	mixer->setPaused(instance_id, false);
@@ -716,13 +683,10 @@ int Audio::play_wave_sfx(
 /*
  *	This returns a 'unique' ID, but only for .wav SFX's (for now).
  */
-int Audio::play_sound_effect(
-		const File_spec& sfxfile, int num, int volume, int balance, int repeat,
-		int distance) {
+int Audio::play_sound_effect(const File_spec& sfxfile, int num, int volume, int balance, int repeat, int distance) {
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: Sound Effect play "
-		 << num << " in " << sfxfile.name << " volume " << volume << " balance "
-		 << balance << " distance " << distance << endl;
+	cout << formatTicks() << "Audio subsystem request: Sound Effect play " << num << " in " << sfxfile.name << " volume " << volume
+		 << " balance " << balance << " distance " << distance << endl;
 #endif
 	if (!audio_enabled || !effects_enabled) {
 		return -1;
@@ -743,8 +707,7 @@ int Audio::play_wave_sfx(
 		int repeat,     // Keep playing.
 		int distance) {
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: Sound Effect play "
-		 << num << " volume " << volume << " balance " << balance
+	cout << formatTicks() << "Audio subsystem request: Sound Effect play " << num << " volume " << volume << " balance " << balance
 		 << " distance " << distance << endl;
 #endif
 	if (!effects_enabled || !mixer || !U7exists(sfxfile.name)) {
@@ -752,8 +715,7 @@ int Audio::play_wave_sfx(
 	}
 	IExultDataSource ds(sfxfile, num);
 	if (!ds.good()) {
-		cerr << "SFX " << num << " from {" << sfxfile.name << ", "
-			 << sfxfile.index << "} is out of range" << endl;
+		cerr << "SFX " << num << " from {" << sfxfile.name << ", " << sfxfile.index << "} is out of range" << endl;
 		return -1;
 	}
 
@@ -762,22 +724,18 @@ int Audio::play_wave_sfx(
 	auto*  wave   = AudioSample::createAudioSample(std::move(wavbuf), wavlen);
 
 	volume                = (volume * sfx_volume) / 100;
-	const int instance_id = mixer->playSample(
-			wave, repeat, 0, true, AUDIO_DEF_PITCH, volume, volume);
+	const int instance_id = mixer->playSample(wave, repeat, 0, true, AUDIO_DEF_PITCH, volume, volume);
 	// Either AudioMixer::playSample called IncRef through
 	// AudioChannel::playSample and the sample will be played, or the sample was
 	// not queued for playback. In either case we need to Release the sample to
 	// avoid a memory leak.
 	wave->Release();
 	if (instance_id < 0) {
-		CERR("No channel was available to play sfx '"
-			 << num << "' from {" << sfxfile.name << ", " << sfxfile.index
-			 << "}");
+		CERR("No channel was available to play sfx '" << num << "' from {" << sfxfile.name << ", " << sfxfile.index << "}");
 		return -1;
 	}
 
-	CERR("Playing SFX: " << num << " from {" << sfxfile.name << ", "
-						 << sfxfile.index << "}");
+	CERR("Playing SFX: " << num << " from {" << sfxfile.name << ", " << sfxfile.index << "}");
 
 	mixer->set2DPosition(instance_id, distance, balance);
 	mixer->setPaused(instance_id, false);
@@ -797,16 +755,13 @@ static int slow_sqrt(int i)
 }
 */
 
-void Audio::get_2d_position_for_tile(
-		const Tile_coord& tile, int& distance, int& balance) {
+void Audio::get_2d_position_for_tile(const Tile_coord& tile, int& distance, int& balance) {
 	distance = 0;
 	balance  = 0;
 
 	Game_window*     gwin = Game_window::get_instance();
 	const TileRect   size = gwin->get_win_tile_rect();
-	const Tile_coord apos(
-			size.x + size.w / 2, size.y + size.h / 2,
-			gwin->get_camera_actor()->get_lift());
+	const Tile_coord apos(size.x + size.w / 2, size.y + size.h / 2, gwin->get_camera_actor()->get_lift());
 
 	const int sqr_dist = apos.square_distance_screen_space(tile);
 	if (sqr_dist > MAX_SOUND_FALLOFF * MAX_SOUND_FALLOFF) {
@@ -818,19 +773,16 @@ void Audio::get_2d_position_for_tile(
 	// distance = slow_sqrt(sqr_dist) * 256 / MAX_SOUND_FALLOFF;
 	distance = sqr_dist * 256 / (MAX_SOUND_FALLOFF * MAX_SOUND_FALLOFF);
 
-	balance = (Tile_coord::delta(apos.tx, tile.tx) * 2 - tile.tz - apos.tz) * 32
-			  / 5;
+	balance = (Tile_coord::delta(apos.tx, tile.tx) * 2 - tile.tz - apos.tz) * 32 / 5;
 }
 
-int Audio::play_sound_effect(
-		int num, const Game_object* obj, int volume, int repeat) {
+int Audio::play_sound_effect(int num, const Game_object* obj, int volume, int repeat) {
 	const Game_object* outer = obj->get_outermost();
 	const Tile_coord   tile  = outer->get_center_tile();
 	return play_sound_effect(num, tile, volume, repeat);
 }
 
-int Audio::play_sound_effect(
-		int num, const Tile_coord& tile, int volume, int repeat) {
+int Audio::play_sound_effect(int num, const Tile_coord& tile, int volume, int repeat) {
 	int distance;
 	int balance;
 	get_2d_position_for_tile(tile, distance, balance);
@@ -866,8 +818,7 @@ int Audio::update_sound_effect(int chan, const Tile_coord& tile) {
 
 void Audio::stop_sound_effect(int chan) {
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: Sound Effect stop "
-		 << chan << endl;
+	cout << formatTicks() << "Audio subsystem request: Sound Effect stop " << chan << endl;
 #endif
 	if (!mixer) {
 		return;
@@ -886,8 +837,7 @@ void Audio::stop_sound_effect(int chan) {
 
 void Audio::stop_sound_effects() {
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: Sound Effect stop all"
-		 << endl;
+	cout << formatTicks() << "Audio subsystem request: Sound Effect stop all" << endl;
 #endif
 	if (sfxs) {
 		sfxs->flush(mixer.get());

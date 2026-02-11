@@ -76,9 +76,7 @@ C_EXPORT void on_cont_cancel_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	GtkWindow*   parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(btn)));
-	if (studio->is_cont_window_dirty()
-		&& !studio->prompt_for_discard(
-				studio->cont_window_dirty, "Container", parent)) {
+	if (studio->is_cont_window_dirty() && !studio->prompt_for_discard(studio->cont_window_dirty, "Container", parent)) {
 		return;    // User chose not to discard
 	}
 	studio->close_cont_window();
@@ -92,14 +90,12 @@ C_EXPORT void on_cont_show_gump_clicked(GtkButton* btn, gpointer user_data) {
 	cout << "In on_cont_show_gump_clicked()" << endl;
 	unsigned char data[Exult_server::maxlength];
 	// Get container address.
-	auto           addr = reinterpret_cast<uintptr>(g_object_get_data(
-            G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
-	unsigned char* ptr  = &data[0];
+	auto addr = reinterpret_cast<uintptr>(g_object_get_data(G_OBJECT(gtk_widget_get_toplevel(GTK_WIDGET(btn))), "user_data"));
+	unsigned char* ptr = &data[0];
 	Serial_out     io(ptr);
 	io << addr;
 
-	ExultStudio::get_instance()->send_to_server(
-			Exult_server::cont_show_gump, data, ptr - data);
+	ExultStudio::get_instance()->send_to_server(Exult_server::cont_show_gump, data, ptr - data);
 	cout << "Sent container data to server" << endl;
 }
 
@@ -114,13 +110,10 @@ C_EXPORT void on_cont_rotate_clicked(GtkButton* btn, gpointer user_data) {
 /*
  *  Container window's close button.
  */
-C_EXPORT gboolean on_cont_window_delete_event(
-		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
+C_EXPORT gboolean on_cont_window_delete_event(GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (studio->is_cont_window_dirty()
-		&& !studio->prompt_for_discard(
-				studio->cont_window_dirty, "Container", GTK_WINDOW(widget))) {
+	if (studio->is_cont_window_dirty() && !studio->prompt_for_discard(studio->cont_window_dirty, "Container", GTK_WINDOW(widget))) {
 		return true;    // Block window close
 	}
 	studio->close_cont_window();
@@ -130,8 +123,7 @@ C_EXPORT gboolean on_cont_window_delete_event(
 /*
  *  Container shape/frame # changed, so update shape displayed.
  */
-C_EXPORT gboolean on_cont_pos_changed(
-		GtkWidget* widget, GdkEventFocus* event, gpointer user_data) {
+C_EXPORT gboolean on_cont_pos_changed(GtkWidget* widget, GdkEventFocus* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	//++++Maybe later, change pos. immediately?
 	return true;
@@ -151,12 +143,9 @@ void ExultStudio::open_cont_window(
 			cont_single = new Shape_single(
 					get_widget("cont_shape"), get_widget("cont_name"),
 					[](int shnum) -> bool {
-						return (shnum >= c_first_obj_shape)
-							   && (shnum < c_max_shapes);
+						return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
 					},
-					get_widget("cont_frame"), U7_SHAPE_SHAPES,
-					vgafile->get_ifile(), palbuf.get(),
-					get_widget("cont_draw"));
+					get_widget("cont_frame"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("cont_draw"));
 		}
 	}
 	// Init. cont address to null.
@@ -192,8 +181,7 @@ void ExultStudio::close_cont_window() {
 int ExultStudio::init_cont_window(unsigned char* data, int datalen) {
 	// Check for unsaved changes before opening new container
 	if (contwin && gtk_widget_get_visible(contwin)) {
-		if (!prompt_for_discard(
-					cont_window_dirty, "Container", GTK_WINDOW(contwin))) {
+		if (!prompt_for_discard(cont_window_dirty, "Container", GTK_WINDOW(contwin))) {
 			return 0;    // User canceled
 		}
 	}
@@ -214,15 +202,12 @@ int ExultStudio::init_cont_window(unsigned char* data, int datalen) {
 	unsigned char          res;
 	bool                   invis;
 	bool                   can_take;
-	if (!Container_in(
-				data, datalen, addr, tx, ty, tz, shape, frame, quality, name,
-				res, invis, can_take)) {
+	if (!Container_in(data, datalen, addr, tx, ty, tz, shape, frame, quality, name, res, invis, can_take)) {
 		cout << "Error decoding container" << endl;
 		return 0;
 	}
 	// Store address with window.
-	g_object_set_data(
-			G_OBJECT(contwin), "user_data", reinterpret_cast<gpointer>(addr));
+	g_object_set_data(G_OBJECT(contwin), "user_data", reinterpret_cast<gpointer>(addr));
 	// Store name. (Not allowed to change.)
 	set_entry("cont_name", name.c_str(), false);
 	// Shape/frame, quality.
@@ -239,11 +224,9 @@ int ExultStudio::init_cont_window(unsigned char* data, int datalen) {
 	// Set limit on frame #.
 	GtkWidget* btn = get_widget("cont_frame");
 	if (btn) {
-		GtkAdjustment* adj
-				= gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(btn));
-		const int nframes = vgafile->get_ifile()->get_num_frames(shape);
-		gtk_adjustment_set_upper(
-				adj, (nframes - 1) | 32);    // So we can rotate.
+		GtkAdjustment* adj     = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(btn));
+		const int      nframes = vgafile->get_ifile()->get_num_frames(shape);
+		gtk_adjustment_set_upper(adj, (nframes - 1) | 32);    // So we can rotate.
 		g_signal_emit_by_name(G_OBJECT(adj), "changed");
 	}
 
@@ -261,11 +244,10 @@ int ExultStudio::init_cont_window(unsigned char* data, int datalen) {
 int ExultStudio::save_cont_window() {
 	cout << "In save_cont_window()" << endl;
 	// Get container address.
-	auto* addr = static_cast<Container_game_object*>(
-			g_object_get_data(G_OBJECT(contwin), "user_data"));
-	const int           tx = get_spin("cont_x");
-	const int           ty = get_spin("cont_y");
-	const int           tz = get_spin("cont_z");
+	auto*               addr = static_cast<Container_game_object*>(g_object_get_data(G_OBJECT(contwin), "user_data"));
+	const int           tx   = get_spin("cont_x");
+	const int           ty   = get_spin("cont_y");
+	const int           tz   = get_spin("cont_z");
 	const std::string   name(get_text_entry("cont_name"));
 	const int           shape    = get_spin("cont_shape");
 	const int           frame    = get_spin("cont_frame");
@@ -274,10 +256,7 @@ int ExultStudio::save_cont_window() {
 	const bool          invis    = get_toggle("cont_invisible");
 	const bool          can_take = get_toggle("cont_okay_to_take");
 
-	if (Container_out(
-				server_socket, addr, tx, ty, tz, shape, frame, quality, name,
-				res, invis, can_take)
-		== -1) {
+	if (Container_out(server_socket, addr, tx, ty, tz, shape, frame, quality, name, res, invis, can_take) == -1) {
 		cout << "Error sending container data to server" << endl;
 		return 0;
 	}

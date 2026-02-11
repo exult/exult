@@ -85,8 +85,7 @@ private:
 #ifdef ENABLE_MIDISFX
 	int midi_state = -1;
 #endif
-	bool have_config_pack, have_roland_pack, have_blaster_pack, have_midi_pack,
-			have_custom_pack;
+	bool        have_config_pack, have_roland_pack, have_blaster_pack, have_midi_pack, have_custom_pack;
 	std::string sfx_custompack;
 	std::string configpack, rolandpack, blasterpack, midipack;
 
@@ -102,7 +101,6 @@ public:
 	// Paint it and its contents.
 	void paint() override;
 	void close() override;
-
 
 	void toggle(Gump_button* btn, int state);
 	void rebuild_buttons();

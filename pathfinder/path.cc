@@ -49,9 +49,7 @@ public:
 	// Get next neighbor.
 	int operator()(Tile_coord& newt) noexcept {
 		if (index < 8) {
-			newt = Tile_coord(
-					tile.tx + coords[2 * index],
-					tile.ty + coords[2 * index + 1], tile.tz);
+			newt = Tile_coord(tile.tx + coords[2 * index], tile.ty + coords[2 * index + 1], tile.tz);
 			index++;
 			// Handle world-wrapping.
 			newt.tx = (newt.tx + c_num_tiles) % c_num_tiles;
@@ -65,8 +63,7 @@ public:
 /*
  *  Statics:
  */
-int Neighbor_iterator::coords[16]
-		= {-1, -1, 0, -1, 1, -1, -1, 0, 1, 0, -1, 1, 0, 1, 1, 1};
+int Neighbor_iterator::coords[16] = {-1, -1, 0, -1, 1, -1, -1, 0, 1, 0, -1, 1, 0, 1, 1, 1};
 
 /*
  *  A node for our search:
@@ -81,8 +78,7 @@ class Search_node {
 								   //   nullptr if not in 'open' set.
 public:
 	Search_node(const Tile_coord& t, short scost, short gcost, Search_node* p)
-			: tile(t), start_cost(scost), goal_cost(gcost), parent(p),
-			  priority_next(nullptr) {
+			: tile(t), start_cost(scost), goal_cost(gcost), parent(p), priority_next(nullptr) {
 		total_cost = gcost + scost;
 	}
 
@@ -289,9 +285,7 @@ public:
 
 	void add_back(Search_node* nd) {    // Add an existing node back to 'open'.
 		const int    total_cost = nd->get_total_cost();
-		Search_node* last       = total_cost < static_cast<int>(open.size())
-										  ? open[total_cost]
-										  : nullptr;
+		Search_node* last       = total_cost < static_cast<int>(open.size()) ? open[total_cost] : nullptr;
 		nd->add_to_chain(last);    // Add node to this chain.
 		add_open(total_cost, last);
 		if (total_cost < best) {
@@ -310,9 +304,7 @@ public:
 			return;    // Nothing to do.
 		}
 		const int    total_cost = nd->get_total_cost();
-		Search_node* last       = total_cost < static_cast<int>(open.size())
-										  ? open[total_cost]
-										  : nullptr;
+		Search_node* last       = total_cost < static_cast<int>(open.size()) ? open[total_cost] : nullptr;
 		if (last) {
 			nd->remove_from_chain(last);
 			// Store updated 'last'.
@@ -331,8 +323,7 @@ public:
 	}
 
 	Search_node* pop() {    // Pop best from priority queue.
-		Search_node* last
-				= best < static_cast<int>(open.size()) ? open[best] : nullptr;
+		Search_node* last = best < static_cast<int>(open.size()) ? open[best] : nullptr;
 		if (!last) {
 			return nullptr;
 		}
@@ -386,10 +377,8 @@ std::pair<std::vector<Tile_coord>, bool> Find_path(
 	Search_node* node;    // Try 'best' node each iteration.
 	while ((node = nodes.pop()) != nullptr) {
 		if (tracing) {
-			cout << "Goal: (" << goal.tx << ", " << goal.ty << ", " << goal.tz
-				 << "), Node: (" << node->get_tile().tx << ", "
-				 << node->get_tile().ty << ", " << node->get_tile().tz << ")"
-				 << endl;
+			cout << "Goal: (" << goal.tx << ", " << goal.ty << ", " << goal.tz << "), Node: (" << node->get_tile().tx << ", "
+				 << node->get_tile().ty << ", " << node->get_tile().tz << ")" << endl;
 		}
 		const Tile_coord curtile = node->get_tile();
 		if (client->at_goal(curtile, goal)) {

@@ -118,8 +118,7 @@ void Flex::index_file() {
 		f.offset = data->read4() + start_pos;
 		f.size   = data->read4();
 #if DEBUGFLEX
-		cout << "Item " << c << ": " << f.size << " bytes @ " << f.offset
-			 << endl;
+		cout << "Item " << c << ": " << f.size << " bytes @ " << f.offset << endl;
 #endif
 		object_list.push_back(f);
 	}
@@ -193,10 +192,7 @@ void Flex_writer::flush() {
 void Flex_writer::finish_object() {
 	// Location past end of section.
 	const size_t pos = dout.getPos();
-	little_endian::Write4(
-			tptr, static_cast<uint32>(
-						  cur_start - start_pos));    // Store start of section.
-	little_endian::Write4(
-			tptr, static_cast<uint32>(pos - cur_start));    // Store length.
+	little_endian::Write4(tptr, static_cast<uint32>(cur_start - start_pos));    // Store start of section.
+	little_endian::Write4(tptr, static_cast<uint32>(pos - cur_start));          // Store length.
 	cur_start = pos;
 }

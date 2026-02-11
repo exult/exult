@@ -29,8 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  Create book display.
  */
 
-Book_gump::Book_gump(int fnt, int gump)
-		: Text_gump(gump < 0 ? game->get_shape("gumps/book") : gump, fnt) {}
+Book_gump::Book_gump(int fnt, int gump) : Text_gump(gump < 0 ? game->get_shape("gumps/book") : gump, fnt) {}
 
 /*
  *  Paint book.  Updates curend.

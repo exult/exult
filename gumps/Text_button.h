@@ -34,9 +34,7 @@ protected:
 	void                  init();
 
 public:
-	Text_button(
-			Gump_Base* p, const std::string_view& str, int x, int y, int w = 0,
-			int h = 0, std::shared_ptr<Font> font = {});
+	Text_button(Gump_Base* p, const std::string_view& str, int x, int y, int w = 0, int h = 0, std::shared_ptr<Font> font = {});
 	void paint() override;
 };
 

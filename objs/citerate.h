@@ -41,10 +41,8 @@ class Chunk_intersect_iterator {
 	int curcx, curcy;    // Next chunk to return.
 public:
 	Chunk_intersect_iterator(const TileRect& t)
-			: tiles(t), startcx(t.x / c_tiles_per_chunk),
-			  stopcx(INCR_CHUNK((t.x + t.w - 1) / c_tiles_per_chunk)),
-			  stopcy(INCR_CHUNK((t.y + t.h - 1) / c_tiles_per_chunk)),
-			  curcy(t.y / c_tiles_per_chunk) {
+			: tiles(t), startcx(t.x / c_tiles_per_chunk), stopcx(INCR_CHUNK((t.x + t.w - 1) / c_tiles_per_chunk)),
+			  stopcy(INCR_CHUNK((t.y + t.h - 1) / c_tiles_per_chunk)), curcy(t.y / c_tiles_per_chunk) {
 		curcx = startcx;
 		tiles.shift(-curcx * c_tiles_per_chunk, -curcy * c_tiles_per_chunk);
 		start_tx = tiles.x;

@@ -51,14 +51,13 @@ const int REAGENTS = 842;    // Shape #.
 /*
  *  Defines in 'gumps.vga':
  */
-#define SPELLBOOK   (GAME_BG ? 43 : 38)
-#define SPELLS      (GAME_BG ? 33 : 28)    // First group of 9 spells.
-#define TURNINGPAGE (GAME_BG ? 41 : 36)    // Animation?? (4 frames).
-#define BOOKMARK    (GAME_BG ? 42 : 37)    // Red ribbon, 5 frames.
-#define LEFTPAGE    (GAME_BG ? 44 : 39)    // At top-left of left page.
-#define RIGHTPAGE   (GAME_BG ? 45 : 40)    // At top-right of right page.
-#define SCROLLSPELLS \
-	game->get_shape("gumps/scroll_spells")    // First group of scroll spells
+#define SPELLBOOK    (GAME_BG ? 43 : 38)
+#define SPELLS       (GAME_BG ? 33 : 28)                       // First group of 9 spells.
+#define TURNINGPAGE  (GAME_BG ? 41 : 36)                       // Animation?? (4 frames).
+#define BOOKMARK     (GAME_BG ? 42 : 37)                       // Red ribbon, 5 frames.
+#define LEFTPAGE     (GAME_BG ? 44 : 39)                       // At top-left of left page.
+#define RIGHTPAGE    (GAME_BG ? 45 : 40)                       // At top-right of right page.
+#define SCROLLSPELLS game->get_shape("gumps/scroll_spells")    // First group of scroll spells
 
 /*
  *  And in 'text.flx' (indices are offset from 0x500):
@@ -96,9 +95,7 @@ inline int Get_spell_gump_shape(
 class Page_button : public Gump_button {
 	int leftright;    // 0=left, 1=right.
 public:
-	Page_button(Gump* par, int px, int py, int lr)
-			: Gump_button(par, lr ? RIGHTPAGE : LEFTPAGE, px, py),
-			  leftright(lr) {}
+	Page_button(Gump* par, int px, int py, int lr) : Gump_button(par, lr ? RIGHTPAGE : LEFTPAGE, px, py), leftright(lr) {}
 
 	// What to do when 'clicked':
 	bool activate(MouseButton button) override;
@@ -153,14 +150,13 @@ void Bookmark_button::set() {
 	const TileRect&   object_area = sgump->object_area;
 	const int         spwidth     = sgump->spwidth;    // Spell width.
 	Spellbook_object* book        = sgump->book;
-	const int         page        = sgump->page;    // Page (circle) we're on.
+	const int         page        = sgump->page;           // Page (circle) we're on.
 	const int         bmpage      = book->bookmark / 8;    // Bookmark's page.
-	const int         s = book->bookmark % 8;    // Get # within circle.
+	const int         s           = book->bookmark % 8;    // Get # within circle.
 	// Which side for bookmark?
 	const bool left = bmpage == page ? (s < 4) : bmpage < page;
 	// Figure coords.
-	x                   = left ? object_area.x + spwidth / 2
-							   : object_area.x + object_area.w - spwidth / 2 - 2;
+	x                   = left ? object_area.x + spwidth / 2 : object_area.x + object_area.w - spwidth / 2 - 2;
 	Shape_frame* bshape = get_shape();
 	x += bshape->get_xleft();
 	y = object_area.y - 14 + bshape->get_yabove();
@@ -195,8 +191,7 @@ bool Bookmark_button::activate(MouseButton button) {
 class Spell_button : public Gump_button {
 	int spell;    // Spell # (0 - 71).
 public:
-	Spell_button(Gump* par, int px, int py, int sp, int shnum, int frnum)
-			: Gump_button(par, shnum, px, py), spell(sp) {
+	Spell_button(Gump* par, int px, int py, int sp, int shnum, int frnum) : Gump_button(par, shnum, px, py), spell(sp) {
 		set_frame(frnum);    // Frame # is circle.
 	}
 
@@ -272,8 +267,7 @@ void Spellbook_gump::set_avail() {
  *  Create spellbook display.
  */
 
-Spellbook_gump::Spellbook_gump(Spellbook_object* b)
-		: Spelltype_gump(SPELLBOOK), page(0), turning_page(0), book(b) {
+Spellbook_gump::Spellbook_gump(Spellbook_object* b) : Spelltype_gump(SPELLBOOK), page(0), turning_page(0), book(b) {
 	handles_kbd = true;
 	set_object_area(TileRect(36, 28, 102, 66), 23, 42);
 
@@ -301,17 +295,14 @@ Spellbook_gump::Spellbook_gump(Spellbook_object* b)
 		const int           spindex = c * 8;
 		const unsigned char cflags  = book->circles[c];
 		for (int s = 0; s < 8; s++) {
-			if ((cflags & (1 << s)) || cheat.in_wizard_mode()
-				|| cheat.in_map_editor()) {
+			if ((cflags & (1 << s)) || cheat.in_wizard_mode() || cheat.in_map_editor()) {
 				const int spnum = spindex + s;
 				spells[spnum]   = new Spell_button(
                         this,
                         s < 4 ? object_area.x + spshape->get_xleft() + 1
-								: object_area.x + object_area.w
-                                        - spshape->get_xright() - 2,
-                        object_area.y + spshape->get_yabove()
-                                + (spheight + vertspace) * (s % 4),
-                        spnum, spells0 + spnum % 8, spnum / 8);
+								: object_area.x + object_area.w - spshape->get_xright() - 2,
+                        object_area.y + spshape->get_yabove() + (spheight + vertspace) * (s % 4), spnum, spells0 + spnum % 8,
+                        spnum / 8);
 			} else {
 				spells[spindex + s] = nullptr;
 			}
@@ -473,9 +464,8 @@ void Spellbook_gump::paint() {
 		if (spells[spindex + s]) {
 			Gump_button* spell = spells[spindex + s];
 			paint_button(spell);
-			if (GAME_BG && page == 0
-				&& !cheat.in_map_editor()) {    // No quantities for 0th circle
-												// in BG.
+			if (GAME_BG && page == 0 && !cheat.in_map_editor()) {    // No quantities for 0th circle
+																	 // in BG.
 				continue;
 			}
 			const int num = avail[spindex + s];
@@ -488,10 +478,7 @@ void Spellbook_gump::paint() {
 				} else {
 					std::strcpy(text, "add");
 				}
-				sman->paint_text(
-						5, text,
-						x + spell->x + numx - sman->get_text_width(5, text),
-						y + spell->y + numy);
+				sman->paint_text(5, text, x + spell->x + numx - sman->get_text_width(5, text), y + spell->y + numy);
 				continue;
 			}
 #endif
@@ -506,21 +493,14 @@ void Spellbook_gump::paint() {
 			} else {    // prevent garbage text
 				std::strcpy(text, "");
 			}
-			sman->paint_text(
-					5, text,
-					x + spell->x + numx - sman->get_text_width(5, text),
-					y + spell->y + numy);
+			sman->paint_text(5, text, x + spell->x + numx - sman->get_text_width(5, text), y + spell->y + numy);
 		}
 	}
 	if (page > 0 || GAME_SI) {    // Paint circle.
 		const char* circ = get_misc_name(CIRCLE);
 		const char* cnum = get_misc_name(CIRCLENUM + page);
-		sman->paint_text(
-				5, cnum, x + 40 + (44 - sman->get_text_width(5, cnum)) / 2,
-				y + 20);
-		sman->paint_text(
-				5, circ, x + 92 + (44 - sman->get_text_width(5, circ)) / 2,
-				y + 20);
+		sman->paint_text(5, cnum, x + 40 + (44 - sman->get_text_width(5, cnum)) / 2, y + 20);
+		sman->paint_text(5, circ, x + 92 + (44 - sman->get_text_width(5, circ)) / 2, y + 20);
 	}
 	if (book->bookmark >= 0) {    // Bookmark?
 		paint_button(bookmark);
@@ -611,8 +591,7 @@ bool Spellbook_gump::handle_kbd_event(void* vev) {
  */
 
 Spellscroll_gump::Spellscroll_gump(Game_object* s)
-		: Spelltype_gump(game->get_shape("gumps/spell_scroll")), scroll(s),
-		  spell(nullptr) {
+		: Spelltype_gump(game->get_shape("gumps/spell_scroll")), scroll(s), spell(nullptr) {
 	set_object_area(TileRect(30, 29, 50, 29), 24, 56);
 
 	// Get dims. of a spell.
@@ -622,8 +601,7 @@ Spellscroll_gump::Spellscroll_gump(Game_object* s)
 	const int spellnum   = scroll->get_quality();
 	if (spellnum >= 0 && spellnum < 8 * 9) {
 		spell = new Spell_button(
-				this, object_area.x + 4 + spshape->get_xleft(),
-				object_area.y + 4 + spshape->get_yabove(), spellnum,
+				this, object_area.x + 4 + spshape->get_xleft(), object_area.y + 4 + spshape->get_yabove(), spellnum,
 				SCROLLSPELLS + spellnum / 8, spellnum % 8);
 	}
 }

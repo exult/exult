@@ -27,14 +27,13 @@ class Usecode_value;
 
 extern int Stack_frame_out(
 		int fd,    // Socket.
-		int functionid, int ip, int call_chain, int call_depth, int eventid,
-		int caller_item, int num_args, int num_vars, Usecode_value* locals);
+		int functionid, int ip, int call_chain, int call_depth, int eventid, int caller_item, int num_args, int num_vars,
+		Usecode_value* locals);
 
 extern bool Stack_frame_in(
 		const unsigned char* data,       // Data that was read.
 		int                  datalen,    // Length of data.
-		int& functionid, int& ip, int& call_chain, int& call_depth,
-		int& eventid, int& caller_item, int& num_args, int& num_vars,
+		int& functionid, int& ip, int& call_chain, int& call_depth, int& eventid, int& caller_item, int& num_args, int& num_vars,
 		Usecode_value*& locals);
 
 #endif

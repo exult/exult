@@ -58,18 +58,17 @@ protected:
 	std::string usecode_name;        // Name of usecode fun explicitly assigned.
 	bool        unused;              // If npc_num > 0, this NPC is unused
 	//   in the game.
-	short npc_num;           // # in Game_window::npcs list, or -1.
-	short face_num;          // Which shape for conversations.
-	short party_id;          // Index in party, or -1.
-	int   properties[12];    // Properties set/used in 'usecode'.
-	std::unique_ptr<Actor_attributes>
-					 atts;             // Generic atts. (for new games/mods).
-	unsigned char    temperature;      // Measure of coldness (0-63).
-	short            shape_save;       // Our old shape, or -1.
-	short            oppressor;        // NPC ID (>= 0) of oppressor, or -1.
-	Game_object_weak target;           // Who/what we're attacking.
-	short            casting_mode;     // For displaying casting frames.
-	int              casting_shape;    // Shape of casting frames.
+	short                             npc_num;           // # in Game_window::npcs list, or -1.
+	short                             face_num;          // Which shape for conversations.
+	short                             party_id;          // Index in party, or -1.
+	int                               properties[12];    // Properties set/used in 'usecode'.
+	std::unique_ptr<Actor_attributes> atts;              // Generic atts. (for new games/mods).
+	unsigned char                     temperature;       // Measure of coldness (0-63).
+	short                             shape_save;        // Our old shape, or -1.
+	short                             oppressor;         // NPC ID (>= 0) of oppressor, or -1.
+	Game_object_weak                  target;            // Who/what we're attacking.
+	short                             casting_mode;      // For displaying casting frames.
+	int                               casting_shape;     // Shape of casting frames.
 	// These 2 are set by the Usecode function 'set_to_attack':
 	Game_object_weak target_object;
 	Tile_coord       target_tile;
@@ -93,10 +92,9 @@ public:
 		not_casting  = 0,    // The NPC is not casting.
 		init_casting = 1,    // When set, the next usecode script will
 		// display casting frames (shape 859).
-		show_casting_frames
-				= 2    // Used for displaying the casting frames.
-					   // Also flags that the when the script finishes, the
-					   // casting frames should be disabled.
+		show_casting_frames = 2    // Used for displaying the casting frames.
+								   // Also flags that the when the script finishes, the
+								   // casting frames should be disabled.
 	};
 
 protected:
@@ -115,25 +113,25 @@ protected:
 	Tile_coord    old_schedule_loc;    // Location (x,y) of old Shedule
 	unsigned char next_schedule;       // Used so correct schedule type
 	//   will be saved
-	std::unique_ptr<Schedule> schedule;    // Current schedule.
-	int   restored_schedule;               // Just restored schedule type.
-	bool  dormant;                         // I.e., off-screen.
-	bool  hit;                             // Just hit in combat.
-	bool  combat_protected;                // 'Halo' on paperdoll screen.
-	bool  user_set_attack;                 // True if player set attack_mode.
-	short alignment;                       // 'Feelings' towards Ava. See below.
-	short charmalign;                      // Alignment of charmed NPC.
-	std::array<Game_object*, 18> spots;    // Where things can go.  See 'Spots'
+	std::unique_ptr<Schedule>    schedule;             // Current schedule.
+	int                          restored_schedule;    // Just restored schedule type.
+	bool                         dormant;              // I.e., off-screen.
+	bool                         hit;                  // Just hit in combat.
+	bool                         combat_protected;     // 'Halo' on paperdoll screen.
+	bool                         user_set_attack;      // True if player set attack_mode.
+	short                        alignment;            // 'Feelings' towards Ava. See below.
+	short                        charmalign;           // Alignment of charmed NPC.
+	std::array<Game_object*, 18> spots;                // Where things can go.  See 'Spots'
 	//   below for description.
-	bool two_handed;           // Carrying a two-handed item.
-	bool two_fingered;         // Carrying gauntlets (both fingers)
-	bool use_scabbard;         // Carrying an item in scabbard (belt, back 2h,
-							   // shield).
-	bool          use_neck;    // Carrying cloak (amulet, cloak)
+	bool two_handed;                // Carrying a two-handed item.
+	bool two_fingered;              // Carrying gauntlets (both fingers)
+	bool use_scabbard;              // Carrying an item in scabbard (belt, back 2h,
+									// shield).
+	bool          use_neck;         // Carrying cloak (amulet, cloak)
 	int           light_sources;    // # of light sources readied.
 	unsigned char usecode_dir;      // Direction (0-7) for usecode anim.
 
-	unsigned type_flags : 32;    // 32 flags used in movement among other things
+	unsigned       type_flags : 32;    // 32 flags used in movement among other things
 	unsigned char  gear_immunities;    // Damage immunities granted by gear.
 	unsigned short gear_powers;        // Other powers granted by gear.
 
@@ -142,20 +140,17 @@ protected:
 	int                        skin_color;
 	Actor_action*              action;            // Controls current animation.
 	std::vector<Actor_action*> deletedactions;    // Halted actions.
-	int frame_time;    // Time between frames in msecs.  0 if
+	int                        frame_time;        // Time between frames in msecs.  0 if
 	//   actor not moving.
 	int step_index;    // Index into walking frames, 1 1st.
 	int qsteps;        // # steps since last quake.
 
-	std::unique_ptr<Npc_timer_list>
-			 timers;         // Timers for poison, hunger, etc.
-	TileRect weapon_rect;    // Screen area weapon was drawn in.
-	long     rest_time;      // # msecs. of not doing anything.
-	void     init();         // Clear stuff during construction.
+	std::unique_ptr<Npc_timer_list> timers;         // Timers for poison, hunger, etc.
+	TileRect                        weapon_rect;    // Screen area weapon was drawn in.
+	long                            rest_time;      // # msecs. of not doing anything.
+	void                            init();         // Clear stuff during construction.
 	// Move and change frame.
-	void movef(
-			Map_chunk* old_chunk, Map_chunk* new_chunk, int new_sx, int new_sy,
-			int new_frame, int new_lift);
+	void movef(Map_chunk* old_chunk, Map_chunk* new_chunk, int new_sx, int new_sy, int new_frame, int new_lift);
 	bool is_really_blocked(Tile_coord& t, bool force);
 	// Empty one hand
 	bool empty_hand(Game_object* obj, Game_object_shared* keep);
@@ -169,8 +164,7 @@ public:
 	Actor(const std::string& nm, int shapenum, int num = -1, int uc = -1);
 	~Actor() override;
 	// Blocked moving onto tile 't'?
-	bool is_blocked(
-			Tile_coord& t, Tile_coord* f = nullptr, const int move_flags = 0);
+	bool         is_blocked(Tile_coord& t, Tile_coord* f = nullptr, const int move_flags = 0);
 	Game_object* find_blocking(const Tile_coord& tile, int dir);
 
 	void swap_ammo(Game_object* newammo);
@@ -179,7 +173,7 @@ public:
 	bool ready_best_shield();    // Find best shield and ready it.
 	void empty_hands();          // Make sure both hands are empty.
 	// Force repaint of area taken.
-	int get_effective_weapon_shape() const;    // For displaying casting frames.
+	int  get_effective_weapon_shape() const;    // For displaying casting frames.
 	bool add_dirty(bool figure_rect = false);
 	void change_frame(int frnum) override;    // Change frame & set to repaint.
 	bool figure_weapon_pos(int& weapon_x, int& weapon_y, int& weapon_frame);
@@ -198,8 +192,7 @@ public:
 	}
 
 	// Get attack frames.
-	int get_attack_frames(
-			int weapon, bool projectile, int dir, signed char* frames) const;
+	int get_attack_frames(int weapon, bool projectile, int dir, signed char* frames) const;
 
 	enum Alignment {    // Describes alignment field.
 		neutral = 0,    // See [I]nspect NPC screen in SI for names.
@@ -211,16 +204,11 @@ public:
 	// Spots where items are carried.
 	int free_hand() const {    // Get index of a free hand, or -1.
 		// PREFER right hand.
-		return two_handed
-					   ? -1
-					   : (!spots[rhand] ? rhand : (!spots[lhand] ? lhand : -1));
+		return two_handed ? -1 : (!spots[rhand] ? rhand : (!spots[lhand] ? lhand : -1));
 	}
 
 	int free_finger() const {    // Get index of a free finger, or -1.
-		return two_fingered
-					   ? -1
-					   : (!spots[lfinger] ? lfinger
-										  : (!spots[rfinger] ? rfinger : -1));
+		return two_fingered ? -1 : (!spots[lfinger] ? lfinger : (!spots[rfinger] ? rfinger : -1));
 	}
 
 	inline bool is_two_handed() const {
@@ -428,24 +416,17 @@ public:
 	void       purge_deleted_actions();
 	Tile_coord get_dest() const;    // Get destination.
 	// Walk to a desired spot.
-	void walk_to_tile(
-			const Tile_coord& dest, int speed = 250, int delay = 0,
-			int maxblk = 3);
+	void walk_to_tile(const Tile_coord& dest, int speed = 250, int delay = 0, int maxblk = 3);
 
-	void walk_to_tile(
-			int tx, int ty, int tz, int speed = 250, int delay = 0,
-			int maxblk = 3) {
+	void walk_to_tile(int tx, int ty, int tz, int speed = 250, int delay = 0, int maxblk = 3) {
 		walk_to_tile(Tile_coord(tx, ty, tz), speed, delay, maxblk);
 	}
 
 	// Get there, avoiding obstacles.
 	int walk_path_to_tile(
-			const Tile_coord& src, const Tile_coord& dest, int speed = 250,
-			int delay = 0, int dist = 0, int maxblk = 3);
+			const Tile_coord& src, const Tile_coord& dest, int speed = 250, int delay = 0, int dist = 0, int maxblk = 3);
 
-	int walk_path_to_tile(
-			const Tile_coord& dest, int speed = 250, int delay = 0,
-			int dist = 0, int maxblk = 3) {
+	int walk_path_to_tile(const Tile_coord& dest, int speed = 250, int delay = 0, int dist = 0, int maxblk = 3) {
 		return walk_path_to_tile(get_tile(), dest, speed, delay, dist, maxblk);
 	}
 
@@ -457,9 +438,7 @@ public:
 	// Approach another from offscreen.
 	int approach_another(const Actor* other, bool wait = false);
 	// Get info. about tile to step onto.
-	static void get_tile_info(
-			Actor* actor, Game_window* gwin, Map_chunk* nlist, int tx, int ty,
-			bool& water, bool& poison);
+	static void get_tile_info(Actor* actor, Game_window* gwin, Map_chunk* nlist, int tx, int ty, bool& water, bool& poison);
 	// Set combat opponent.
 	void set_target(Game_object* obj, bool start_combat = false);
 
@@ -470,8 +449,7 @@ public:
 	// Works out if an object fits in a spot
 	bool fits_in_spot(Game_object* obj, int spot);
 	// The prefered slot for an object
-	void get_prefered_slots(
-			Game_object* obj, int& prefered, int& alt1, int& alt2) const;
+	void get_prefered_slots(Game_object* obj, int& prefered, int& alt1, int& alt2) const;
 	// Find where to put object.
 	int  find_best_spot(Game_object* obj);
 	int  get_prev_schedule_type() const;    // Get previous schedule.
@@ -482,13 +460,10 @@ public:
 	}
 
 	// Set new schedule.
-	void set_schedule_type(
-			int                       new_schedule_type,
-			std::unique_ptr<Schedule> newsched = nullptr);
+	void set_schedule_type(int new_schedule_type, std::unique_ptr<Schedule> newsched = nullptr);
 	// Change to new schedule at loc
-	virtual void set_schedule_and_loc(
-			int new_schedule_type, const Tile_coord& dest, int delay = -1);
-	bool teleport_offscreen_to_schedule(const Tile_coord& dest, int dist);
+	virtual void set_schedule_and_loc(int new_schedule_type, const Tile_coord& dest, int delay = -1);
+	bool         teleport_offscreen_to_schedule(const Tile_coord& dest, int dist);
 
 	int get_schedule_type() const {
 		return schedule_type;
@@ -514,8 +489,7 @@ public:
 	virtual void switched_chunks(Map_chunk*, Map_chunk*) {}
 
 	// Update schedule for new 3-hour time.
-	virtual void update_schedule(
-			int hour3, int delay = -1, Tile_coord* pos = nullptr) {
+	virtual void update_schedule(int hour3, int delay = -1, Tile_coord* pos = nullptr) {
 		ignore_unused_variable_warning(hour3, delay, pos);
 	}
 
@@ -540,19 +514,11 @@ public:
 	void set_property(int prop, int val);
 	bool try_to_hit(Game_object* attacker, int attval) override;
 	// Under attack.
-	Game_object* attacked(
-			Game_object* attacker, int weapon_shape = 0, int ammo_shape = 0,
-			bool explosion = false) override;
-	int figure_hit_points(
-			Game_object* attacker, int weapon_shape = -1, int ammo_shape = -1,
-			bool explosion = false) override;
-	int apply_damage(
-			Game_object* attacker, int str, int wpoints, int type, int bias = 0,
-			int* exp = nullptr) override;
+	Game_object* attacked(Game_object* attacker, int weapon_shape = 0, int ammo_shape = 0, bool explosion = false) override;
+	int figure_hit_points(Game_object* attacker, int weapon_shape = -1, int ammo_shape = -1, bool explosion = false) override;
+	int apply_damage(Game_object* attacker, int str, int wpoints, int type, int bias = 0, int* exp = nullptr) override;
 	// Lose HP's and check for death.
-	int reduce_health(
-			int delta, int damage_type, Game_object* attacker = nullptr,
-			int* exp = nullptr) override;
+	int  reduce_health(int delta, int damage_type, Game_object* attacker = nullptr, int* exp = nullptr) override;
 	void fight_back(Game_object* attacker);
 
 	bool get_attack_target(Game_object*& obj, Tile_coord& t) const {
@@ -576,18 +542,15 @@ public:
 		attack_weapon = w;
 	}
 
-	int get_effective_range(
-			const Weapon_info* winf = nullptr, int reach = -1) const override;
-	Game_object* find_weapon_ammo(
-			int weapon, int needed = 1, bool recursive = false) override;
+	int          get_effective_range(const Weapon_info* winf = nullptr, int reach = -1) const override;
+	Game_object* find_weapon_ammo(int weapon, int needed = 1, bool recursive = false) override;
 	Game_object* find_best_ammo(int family, int needed = 1);
 	bool         usecode_attack();
 	int          get_property(int prop) const;
 	int          get_effective_prop(int prop) const;
 
 	bool is_dying() const {    // Dead when health below -1/3 str.
-		return properties[static_cast<int>(health)]
-			   < -(properties[static_cast<int>(strength)] / 3);
+		return properties[static_cast<int>(health)] < -(properties[static_cast<int>(strength)] / 3);
 	}
 
 	bool is_knocked_out() const {
@@ -735,18 +698,13 @@ public:
 	// Remove an object.
 	void remove(Game_object* obj) override;
 	// Add an object.
-	bool add(
-			Game_object* obj, bool dont_check = false, bool combine = false,
-			bool noset = false) override;
+	bool add(Game_object* obj, bool dont_check = false, bool combine = false, bool noset = false) override;
 	// Add to NPC 'readied' spot.
-	bool add_readied(
-			Game_object* obj, int index, bool dont_check = false,
-			bool force_pos = false, bool noset = false) override;
-	int          find_readied(Game_object* obj) override;
+	bool add_readied(Game_object* obj, int index, bool dont_check = false, bool force_pos = false, bool noset = false) override;
+	int  find_readied(Game_object* obj) override;
 	Game_object* get_readied(int index) const override;
-	void         call_readied_usecode(
-					int index, Game_object* obj, int eventid) override;
-	int get_max_weight() const override;    // Get max. weight allowed.
+	void         call_readied_usecode(int index, Game_object* obj, int eventid) override;
+	int          get_max_weight() const override;    // Get max. weight allowed.
 	// Change member shape.
 	void change_member_shape(Game_object* obj, int newshape) override;
 	// Move out of the way.
@@ -768,8 +726,7 @@ public:
 	}
 
 	// Get total weapon value.
-	virtual const Weapon_info* get_weapon(
-			int& points, int& shape, Game_object*& obj) const;
+	virtual const Weapon_info* get_weapon(int& points, int& shape, Game_object*& obj) const;
 
 	const Weapon_info* get_weapon(int& points) const {
 		int          sh;
@@ -779,16 +736,16 @@ public:
 
 	static bool roll_to_win(int attacker, int defender);
 	// Hit-point algorithm:
-	bool can_act();
-	bool can_act_charmed();    // checks for charmed and charmed_more_difficult
-	void set_charmed_combat();
-	virtual void fall_down();
-	virtual void lay_down(bool die);
-	void         bleed(int first_frame, int last_frame, Tile_coord loc) const;
-	void         bleed() const;
-	virtual void die(Game_object* attacker);    // We're dead.
-	Actor*       resurrect(Dead_body* body);    // Bring back to life.
-	Game_object_shared clone();    // Create another nearby to this.
+	bool               can_act();
+	bool               can_act_charmed();    // checks for charmed and charmed_more_difficult
+	void               set_charmed_combat();
+	virtual void       fall_down();
+	virtual void       lay_down(bool die);
+	void               bleed(int first_frame, int last_frame, Tile_coord loc) const;
+	void               bleed() const;
+	virtual void       die(Game_object* attacker);    // We're dead.
+	Actor*             resurrect(Dead_body* body);    // Bring back to life.
+	Game_object_shared clone();                       // Create another nearby to this.
 	void               mend_wounds(bool mendmana);    // Restore HP's and MP's.
 	// Read from file.
 	void read(IDataSource* nfile, int num, bool has_usecode, bool& fix_unused);
@@ -802,11 +759,11 @@ public:
 		return 0;
 	}
 
-	void write(ODataSource* nfile);    // Write out (to 'npc.dat').
+	void write(ODataSource* nfile);                    // Write out (to 'npc.dat').
 	void write_contents(ODataSource* out) override;    // Write contents
-	void set_actor_shape();           // Set shape based on sex, skin color
-	void set_polymorph(int shape);    // Set a polymorph shape
-	void set_polymorph_default();     // Set the default shape
+	void set_actor_shape();                            // Set shape based on sex, skin color
+	void set_polymorph(int shape);                     // Set a polymorph shape
+	void set_polymorph_default();                      // Set the default shape
 
 	// Get the polymorph shape
 	int get_polymorph() const {
@@ -887,8 +844,7 @@ using Actor_shared = std::shared_ptr<Actor>;
  */
 class Main_actor : public Actor {
 public:
-	Main_actor(const std::string& nm, int shapenum, int num = -1, int uc = -1)
-			: Actor(nm, shapenum, num, uc) {
+	Main_actor(const std::string& nm, int shapenum, int num = -1, int uc = -1) : Actor(nm, shapenum, num, uc) {
 		frames = &avatar_frames[0];
 	}
 
@@ -946,12 +902,9 @@ public:
 	}
 
 	// Move and change frame.
-	void movef(
-			Map_chunk* old_chunk, Map_chunk* new_chunk, int new_sx, int new_sy,
-			int new_frame, int new_lift);
+	void movef(Map_chunk* old_chunk, Map_chunk* new_chunk, int new_sx, int new_sy, int new_frame, int new_lift);
 	// Update schedule for new 3-hour time.
-	void update_schedule(
-			int hour3, int delay = -1, Tile_coord* pos = nullptr) override;
+	void             update_schedule(int hour3, int delay = -1, Tile_coord* pos = nullptr) override;
 	Schedule_change* find_schedule_at_time(int hour3) override;
 	// Render.
 	void paint() override;
@@ -985,11 +938,8 @@ using Npc_actor_shared = std::shared_ptr<Npc_actor>;
 class Dead_body : public Container_game_object {
 	short npc_num;    // # of NPC it came from, or -1.
 public:
-	Dead_body(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft, int n)
-			: Container_game_object(shapenum, framenum, tilex, tiley, lft),
-			  npc_num(n) {}
+	Dead_body(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft, int n)
+			: Container_game_object(shapenum, framenum, tilex, tiley, lft), npc_num(n) {}
 
 	Dead_body* as_body() override {
 		return this;
@@ -1002,11 +952,8 @@ public:
 	int get_live_npc_num() const override;
 
 	// Under attack.
-	Game_object* attacked(
-			Game_object* attacker, int weapon_shape = 0, int ammo_shape = 0,
-			bool explosion = false) override {
-		ignore_unused_variable_warning(
-				attacker, weapon_shape, ammo_shape, explosion);
+	Game_object* attacked(Game_object* attacker, int weapon_shape = 0, int ammo_shape = 0, bool explosion = false) override {
+		ignore_unused_variable_warning(attacker, weapon_shape, ammo_shape, explosion);
 		return this;    // Not affected.
 	}
 

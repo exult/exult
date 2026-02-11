@@ -119,8 +119,7 @@ void UCData::parse_params(const unsigned int argc, char** argv) {
 		else if (argv[i][0] != '-') {
 			char* stopstr;
 			/* Disassembly mode */
-			auto search_func
-					= static_cast<unsigned int>(strtoul(argv[i], &stopstr, 16));
+			auto search_func = static_cast<unsigned int>(strtoul(argv[i], &stopstr, 16));
 			if (stopstr - argv[i] < static_cast<int>(strlen(argv[i])))
 			/* Invalid number */
 			{ /* Do Nothing */
@@ -131,34 +130,23 @@ void UCData::parse_params(const unsigned int argc, char** argv) {
 				}
 				options.mode_dis = true;
 			}
-		} else if (
-				(string(argv[i]).size() > 2)
-				&& string(argv[i]).substr(0, 2) == "-o") {
-			_output_redirect
-					= string(argv[i]).substr(2, string(argv[i]).size() - 2);
+		} else if ((string(argv[i]).size() > 2) && string(argv[i]).substr(0, 2) == "-o") {
+			_output_redirect = string(argv[i]).substr(2, string(argv[i]).size() - 2);
 			if (options.verbose) {
 				cout << "Outputting to filename: " << _output_redirect << endl;
 			}
-		} else if (
-				(string(argv[i]).size() > 2)
-				&& string(argv[i]).substr(0, 2) == "-i") {
-			_input_usecode_file
-					= string(argv[i]).substr(2, string(argv[i]).size() - 2);
+		} else if ((string(argv[i]).size() > 2) && string(argv[i]).substr(0, 2) == "-i") {
+			_input_usecode_file = string(argv[i]).substr(2, string(argv[i]).size() - 2);
 			if (options.verbose) {
 				cout << "Inputting from file: " << _input_usecode_file << endl;
 			}
-		} else if (
-				(string(argv[i]).size() > 2)
-				&& string(argv[i]).substr(0, 2) == "-g") {
-			_global_flags_file
-					= string(argv[i]).substr(2, string(argv[i]).size() - 2);
+		} else if ((string(argv[i]).size() > 2) && string(argv[i]).substr(0, 2) == "-g") {
+			_global_flags_file = string(argv[i]).substr(2, string(argv[i]).size() - 2);
 			if (options.verbose) {
-				cout << "Reading flag names from file: " << _global_flags_file
-					 << endl;
+				cout << "Reading flag names from file: " << _global_flags_file << endl;
 			}
 		} else {
-			cout << "unsupported parameter " << argv[i]
-				 << " detected. countinuing." << endl;
+			cout << "unsupported parameter " << argv[i] << " detected. countinuing." << endl;
 		}
 	}
 }
@@ -186,8 +174,7 @@ void UCData::disassamble(ostream& o) {
 	}
 
 	if (options.output_list) {
-		o << "Function       offset    size  data  code"
-		  << (options.ucdebug ? " funcname" : "") << endl;
+		o << "Function       offset    size  data  code" << (options.ucdebug ? " funcname" : "") << endl;
 	}
 
 	if (options.output_trans_table) {
@@ -211,20 +198,15 @@ void UCData::disassamble(ostream& o) {
 	if (options.output_ucs && UCFunc::num_global_statics > 0) {
 		o << "// Global static variables" << endl;
 		for (int i = 1; i <= UCFunc::num_global_statics; i++) {
-			o << UCFunc::STATICNAME << ' ' << UCFunc::GLOBALSTATICPREFIX
-			  << std::setw(4) << i << ';' << endl;
+			o << UCFunc::STATICNAME << ' ' << UCFunc::GLOBALSTATICPREFIX << std::setw(4) << i << ';' << endl;
 		}
 		o << endl;
 	}
 
-	Usecode_class_symbol* cls = nullptr;
-	bool _foundfunc           = false;    // did we find and print the function?
+	Usecode_class_symbol* cls        = nullptr;
+	bool                  _foundfunc = false;    // did we find and print the function?
 	for (unsigned int i = 0; i < _funcs.size(); i++) {
-		if (options.mode_all
-			|| (options.mode_dis
-				&& count(
-						search_funcs.begin(), search_funcs.end(),
-						_funcs[i]->_funcid))) {
+		if (options.mode_all || (options.mode_dis && count(search_funcs.begin(), search_funcs.end(), _funcs[i]->_funcid))) {
 			_foundfunc         = true;
 			bool _func_printed = false;    // to test if we've actually printed
 										   // a function ouput
@@ -254,17 +236,14 @@ void UCData::disassamble(ostream& o) {
 						indent = 1;
 						for (int i = initvar; i < cls->get_num_vars(); i++) {
 							tab_indent(indent, o)
-									<< UCFunc::VARNAME << ' '
-									<< UCFunc::CLASSVARPREFIX << std::setw(4)
-									<< i << ';' << endl;
+									<< UCFunc::VARNAME << ' ' << UCFunc::CLASSVARPREFIX << std::setw(4) << i << ';' << endl;
 						}
 					}
 				} else if (cls) {
 					indent = 1;
 				}
 				_funcs[i]->parse_ucs(_funcmap, uc_intrinsics, options, _symtbl);
-				_func_printed = _funcs[i]->output_ucs(
-						o, _funcmap, uc_intrinsics, options, indent, _symtbl);
+				_func_printed = _funcs[i]->output_ucs(o, _funcmap, uc_intrinsics, options, indent, _symtbl);
 				if (!cls) {
 					o << endl;
 				}
@@ -278,8 +257,7 @@ void UCData::disassamble(ostream& o) {
 
 			// if we haven't printed one by now, we'll print an asm output.
 			if (options.output_asm || (!_func_printed)) {
-				_funcs[i]->output_asm(
-						o, _funcmap, uc_intrinsics, options, _symtbl);
+				_funcs[i]->output_asm(o, _funcmap, uc_intrinsics, options, _symtbl);
 			}
 		}
 	}
@@ -293,8 +271,7 @@ void UCData::disassamble(ostream& o) {
 	}
 
 	if (options.output_list) {
-		std::cerr << endl
-				  << "Functions: " << setbase(10) << _funcs.size() << endl;
+		std::cerr << endl << "Functions: " << setbase(10) << _funcs.size() << endl;
 	}
 
 	if (options.output_trans_table) {
@@ -323,22 +300,16 @@ void UCData::dump_flags(ostream& o) {
 
 	// *BLEH* ugly!
 	for (auto* func : _funcs) {
-		for (auto op = func->_opcodes.begin(); op != func->_opcodes.end();
-			 ++op) {
+		for (auto op = func->_opcodes.begin(); op != func->_opcodes.end(); ++op) {
 			if (op->_id == 0x42) {
-				flags.emplace_back(
-						func->_funcid, op->_offset, op->_params_parsed[0],
-						FlagData::GETFLAG);
+				flags.emplace_back(func->_funcid, op->_offset, op->_params_parsed[0], FlagData::GETFLAG);
 			} else if (op->_id == 0x43) {
-				flags.emplace_back(
-						func->_funcid, op->_offset, op->_params_parsed[0],
-						FlagData::SETFLAG);
+				flags.emplace_back(func->_funcid, op->_offset, op->_params_parsed[0], FlagData::SETFLAG);
 			}
 		}
 	}
 
-	o << "Number of flags found: " << setbase(10) << flags.size() << endl
-	  << endl;
+	o << "Number of flags found: " << setbase(10) << flags.size() << endl << endl;
 
 	// output per function
 	{
@@ -359,8 +330,7 @@ void UCData::dump_flags(ostream& o) {
 			} else if (flag.access() == FlagData::SETFLAG) {
 				o << "pop   ";
 			}
-			o << setw(4) << flag.flag() << "  " << setw(4) << flag.offset()
-			  << endl;
+			o << setw(4) << flag.flag() << "  " << setw(4) << flag.offset() << endl;
 		}
 	}
 
@@ -383,8 +353,7 @@ void UCData::dump_flags(ostream& o) {
 			} else if (flag.access() == FlagData::SETFLAG) {
 				o << "pop   ";
 			}
-			o << setw(4) << flag.func() << "  " << setw(4) << flag.offset()
-			  << endl;
+			o << setw(4) << flag.func() << "  " << setw(4) << flag.offset() << endl;
 		}
 	}
 }
@@ -404,8 +373,7 @@ void UCData::load_globals(ostream& o) {
 	try {
 		auto pGflags = U7open_in(_global_flags_file.c_str(), false);
 		if (!pGflags) {
-			cout << "error. failed to open " << _global_flags_file
-				 << ". exiting." << endl;
+			cout << "error. failed to open " << _global_flags_file << ". exiting." << endl;
 			exit(1);
 		}
 		auto&                                gflags  = *pGflags;
@@ -442,8 +410,7 @@ void UCData::load_globals(ostream& o) {
 		}
 		o << endl << "};" << endl << endl;
 	} catch (const std::exception& err) {
-		cout << "error. failed to open " << _global_flags_file << ". exiting."
-			 << endl;
+		cout << "error. failed to open " << _global_flags_file << ". exiting." << endl;
 		exit(1);
 	}
 }
@@ -506,11 +473,9 @@ void UCData::load_funcs(ostream& o) {
 			kind = Usecode_symbol::fun_defined;
 		}
 		_funcmap.insert(FuncMapPair(
-				func->_funcid,
-				UCFuncSet(
-						funcid, func->_num_args, func->return_var, func->aborts,
-						func->_cls != nullptr, func->funcname, kind,
-						func->_varmap)));
+				func->_funcid, UCFuncSet(
+									   funcid, func->_num_args, func->return_var, func->aborts, func->_cls != nullptr,
+									   func->funcname, kind, func->_varmap)));
 	}
 	/*
 	for(auto i : _funcmap)
@@ -534,8 +499,7 @@ void UCData::analyse_classes() {
 			Usecode_class_symbol* base = _symtbl->get_class(j);
 			// If "base" has more variables or more methods than "cls", it can't
 			// be a base class of "cls".
-			if (!base || base->get_num_vars() > cls->get_num_vars()
-				|| base->get_num_methods() > cls->get_num_methods()) {
+			if (!base || base->get_num_vars() > cls->get_num_vars() || base->get_num_methods() > cls->get_num_methods()) {
 				continue;
 			}
 			// Assume this is a base class.
@@ -572,7 +536,6 @@ void UCData::output_extern_header(ostream& o) {
 		//(*func)->output_ucs_funcname(o << "extern ", _funcmap,
 		//(*func)->_funcid, (*func)->_num_args, (*func)->return_var) << ';' <<
 		// endl;
-		func->output_ucs_funcname(o << "extern ", _funcmap, _symtbl)
-				<< ';' << endl;
+		func->output_ucs_funcname(o << "extern ", _funcmap, _symtbl) << ';' << endl;
 	}
 }

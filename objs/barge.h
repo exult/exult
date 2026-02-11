@@ -34,9 +34,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  don't have to be reimplemented.
  */
 class Barge_object : public Container_game_object, public Time_sensitive {
-	static Game_object_shared editing;    // Egg being edited by ExultStudio.
-	std::vector<Game_object_shared> objects;    // All objects in/on barge.
-	int perm_count;    // Counts permanent parts of barge,
+	static Game_object_shared       editing;       // Egg being edited by ExultStudio.
+	std::vector<Game_object_shared> objects;       // All objects in/on barge.
+	int                             perm_count;    // Counts permanent parts of barge,
 	//   which proceed those placed on it.
 	unsigned char xtiles, ytiles;     // Tiles covered (when vertical).
 	unsigned char dir;                // Direction: 0=N, 1=E, 2=S, 3=W.
@@ -63,13 +63,10 @@ class Barge_object : public Container_game_object, public Time_sensitive {
 	void finish_move(Tile_coord* positions, int newmap = -1);
 
 public:
-	Barge_object(
-			int shapenum, int framenum, unsigned int shapex,
-			unsigned int shapey, unsigned int lft, int xt, int yt, int d)
-			: Container_game_object(shapenum, framenum, shapex, shapey, lft),
-			  perm_count(0), xtiles(xt), ytiles(yt), dir(d), complete(false),
-			  gathered(false), ice_raft(false), first_step(true),
-			  taking_2nd_step(false), boat(-1), frame_time(0), path(nullptr) {}
+	Barge_object(int shapenum, int framenum, unsigned int shapex, unsigned int shapey, unsigned int lft, int xt, int yt, int d)
+			: Container_game_object(shapenum, framenum, shapex, shapey, lft), perm_count(0), xtiles(xt), ytiles(yt), dir(d),
+			  complete(false), gathered(false), ice_raft(false), first_step(true), taking_2nd_step(false), boat(-1), frame_time(0),
+			  path(nullptr) {}
 
 	TileRect get_tile_footprint();
 
@@ -126,9 +123,7 @@ public:
 	// Remove an object.
 	void remove(Game_object* obj) override;
 	// Add an object.
-	bool add(
-			Game_object* obj, bool dont_check = false, bool combine = false,
-			bool noset = false) override;
+	bool add(Game_object* obj, bool dont_check = false, bool combine = false, bool noset = false) override;
 	bool contains(Game_object* obj);
 	// Drop another onto this.
 	bool drop(Game_object* obj) override;

@@ -53,9 +53,7 @@ static inline int get_time_palette(int hour, bool dungeon) {
 	}
 }
 
-static inline int get_final_palette(
-		int pal, bool cloudy, bool foggy, int light, bool special,
-		bool infravision, bool invisible) {
+static inline int get_final_palette(int pal, bool cloudy, bool foggy, int light, bool special, bool infravision, bool invisible) {
 	if (invisible) {
 		return PALETTE_INVISIBLE;
 	}
@@ -93,34 +91,25 @@ void Game_clock::set_time_palette(bool force) {
 
 	// This is the information we will need to determine what palette/transition
 	// we want.
-	const bool invis = main_actor && main_actor->get_flag(Obj_flags::invisible);
-	const bool infra = gwin->in_infravision();
-	const bool invis_change = invis && (force || !old_invisible);
-	const bool infra_change
-			= !main_actor || (infra && (force || !old_infravision));
-	const int new_dungeon = gwin->is_in_dungeon();
-	int       new_palette = get_time_palette(hour + 1, new_dungeon != 0);
-	int       old_palette = get_time_palette(
-            hour, (dungeon != 255 ? dungeon : new_dungeon) != 0);
-	const bool cloudy = overcast > 0;
-	const bool foggy  = fog > 0;
-	const bool weather_change
-			= force || (cloudy != was_overcast) || (foggy != was_foggy);
-	const bool light_sensitive = force || is_dark_palette(new_palette)
-								 || is_dark_palette(old_palette);
-	const bool light_change
-			= light_sensitive
-			  && (force || (light_source_level != old_light_level)
-				  || (gwin->is_special_light() != old_special_light)
-				  || (new_dungeon != dungeon));
+	const bool invis           = main_actor && main_actor->get_flag(Obj_flags::invisible);
+	const bool infra           = gwin->in_infravision();
+	const bool invis_change    = invis && (force || !old_invisible);
+	const bool infra_change    = !main_actor || (infra && (force || !old_infravision));
+	const int  new_dungeon     = gwin->is_in_dungeon();
+	int        new_palette     = get_time_palette(hour + 1, new_dungeon != 0);
+	int        old_palette     = get_time_palette(hour, (dungeon != 255 ? dungeon : new_dungeon) != 0);
+	const bool cloudy          = overcast > 0;
+	const bool foggy           = fog > 0;
+	const bool weather_change  = force || (cloudy != was_overcast) || (foggy != was_foggy);
+	const bool light_sensitive = force || is_dark_palette(new_palette) || is_dark_palette(old_palette);
+	const bool light_change    = light_sensitive
+							  && (force || (light_source_level != old_light_level)
+								  || (gwin->is_special_light() != old_special_light) || (new_dungeon != dungeon));
 
 	// These are the final palettes we will use for checking.
-	new_palette = get_final_palette(
-			new_palette, cloudy, foggy, light_source_level,
-			gwin->is_special_light(), infra, invis);
+	new_palette = get_final_palette(new_palette, cloudy, foggy, light_source_level, gwin->is_special_light(), infra, invis);
 	old_palette = get_final_palette(
-			old_palette, was_overcast, was_foggy, old_light_level,
-			old_special_light, old_infravision, old_invisible);
+			old_palette, was_overcast, was_foggy, old_light_level, old_special_light, old_infravision, old_invisible);
 
 	// Always update these variables.
 	was_overcast      = cloudy;
@@ -147,9 +136,8 @@ void Game_clock::set_time_palette(bool force) {
 		// TODO: Maybe implement smoother transition from
 		// weather to/from dawn/sunrise/sundown/dusk.
 		// Right now, it works like the original.
-		transition = std::make_unique<Palette_transition>(
-				old_palette, new_palette, hour, minute, ticks, 1, 20, hour,
-				minute, ticks);
+		transition
+				= std::make_unique<Palette_transition>(old_palette, new_palette, hour, minute, ticks, 1, 20, hour, minute, ticks);
 		return;
 	}
 	if (light_change) {
@@ -165,8 +153,7 @@ void Game_clock::set_time_palette(bool force) {
 	}
 	if (force || old_palette != new_palette) {    // Do we have a transition?
 		transition = std::make_unique<Palette_transition>(
-				old_palette, new_palette, hour, minute, ticks, ticks_per_minute,
-				60, hour, 0, 0);
+				old_palette, new_palette, hour, minute, ticks, ticks_per_minute, 60, hour, 0, 0);
 	} else {
 		apply_palette(new_palette);
 	}

@@ -47,9 +47,7 @@ using std::endl;
  *  Create.
  */
 
-Party_manager::Party_manager()
-		: party{}, party_count(0), dead_party{}, dead_party_count(0), valid{},
-		  validcnt(0) {}
+Party_manager::Party_manager() : party{}, party_count(0), dead_party{}, dead_party_count(0), valid{}, validcnt(0) {}
 
 /*
  *  Add NPC to party.
@@ -57,8 +55,7 @@ Party_manager::Party_manager()
  *  Output: false if no room or already a member.
  */
 
-bool Party_manager::add_to_party(
-		Actor* npc    // (Should not be the Avatar.)
+bool Party_manager::add_to_party(Actor* npc    // (Should not be the Avatar.)
 ) {
 	const size_t maxparty = party.size();
 	if (!npc || party_count == maxparty || npc->is_in_party()) {
@@ -138,8 +135,7 @@ int Party_manager::in_dead_party(Actor* npc) const {
  *  Output: false if no room or already a member.
  */
 
-bool Party_manager::add_to_dead_party(
-		Actor* npc    // (Should not be the Avatar.)
+bool Party_manager::add_to_dead_party(Actor* npc    // (Should not be the Avatar.)
 ) {
 	const size_t maxparty = dead_party.size();
 	if (!npc || dead_party_count == maxparty || in_dead_party(npc) >= 0) {
@@ -280,22 +276,19 @@ static const int right_offsets[4][2] = {
  *  control of the user.
  */
 
-void Party_manager::get_followers(
-		int dir    // Direction (0-7) Avatar just stepped.
+void Party_manager::get_followers(int dir    // Direction (0-7) Avatar just stepped.
 ) {
 	validcnt = 0;    // Get party members to control.
 	for (size_t i = 0; i < party_count; i++) {
 		Actor* npc = gwin->get_npc(party[i]);
-		if (!npc || npc->get_flag(Obj_flags::asleep)
-			|| npc->get_flag(Obj_flags::paralyzed) || npc->is_dead()) {
+		if (!npc || npc->get_flag(Obj_flags::asleep) || npc->get_flag(Obj_flags::paralyzed) || npc->is_dead()) {
 			continue;    // Not available.
 		}
 		const int sched = npc->get_schedule_type();
 		// Skip if in combat or set to 'wait'.
 		if (sched != Schedule::combat && sched != Schedule::wait &&
 			// Loiter added for SI.
-			sched != Schedule::loiter
-			&& !npc->in_queue()) {    // Already walking?
+			sched != Schedule::loiter && !npc->in_queue()) {    // Already walking?
 			valid[validcnt++] = npc;
 		}
 	}
@@ -323,30 +316,16 @@ void Party_manager::move_followers(
 		return;    // Nothing to do.
 	}
 	const int dir4 = dir / 2;    // 0-3 now.
-	Actor*    lnpc = (lnum == -1 || static_cast<unsigned>(lnum) >= validcnt)
-							 ? nullptr
-							 : valid[lnum];
-	Actor*    rnpc = (rnum == -1 || static_cast<unsigned>(rnum) >= validcnt)
-							 ? nullptr
-							 : valid[rnum];
+	Actor*    lnpc = (lnum == -1 || static_cast<unsigned>(lnum) >= validcnt) ? nullptr : valid[lnum];
+	Actor*    rnpc = (rnum == -1 || static_cast<unsigned>(rnum) >= validcnt) ? nullptr : valid[rnum];
 	int       ldir = -1;
 	int       rdir = -1;
 	// Have each take a step.
 	if (lnpc) {
-		ldir
-				= step(lnpc, npc, dir,
-					   pos
-							   + Tile_coord(
-									   left_offsets[dir4][0],
-									   left_offsets[dir4][1], 0));
+		ldir = step(lnpc, npc, dir, pos + Tile_coord(left_offsets[dir4][0], left_offsets[dir4][1], 0));
 	}
 	if (rnpc) {
-		rdir
-				= step(rnpc, npc, dir,
-					   pos
-							   + Tile_coord(
-									   right_offsets[dir4][0],
-									   right_offsets[dir4][1], 0));
+		rdir = step(rnpc, npc, dir, pos + Tile_coord(right_offsets[dir4][0], right_offsets[dir4][1], 0));
 	}
 	if (ldir >= 0 && !lnpc->is_dead()) {
 		move_followers(lnpc, lnum, ldir);
@@ -551,8 +530,7 @@ inline bool Is_step_okay(
 		Actor*     leader,    // NPC he's following.
 		Tile_coord to         // Tile to step to.
 ) {
-	if (npc->is_pos_invalid()
-		|| npc->is_blocked(to)) {    // (To.tz is updated.)
+	if (npc->is_pos_invalid() || npc->is_blocked(to)) {    // (To.tz is updated.)
 		return false;
 	}
 	int difftz = to.tz - leader->get_lift();
@@ -601,10 +579,7 @@ int Party_manager::step(
 		;
 	// Could have died from stepping on
 	//   something.
-	else if (
-			npc->is_dead()
-			|| !Take_best_step(
-					npc, leader, pos, frame, npc->get_direction(dest))) {
+	else if (npc->is_dead() || !Take_best_step(npc, leader, pos, frame, npc->get_direction(dest))) {
 		// Failed to take a step.
 		cout << npc->get_name() << " failed to take a step" << endl;
 		frames->decrement(step_index);

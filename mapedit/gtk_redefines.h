@@ -35,14 +35,9 @@ inline To safe_pointer_cast(From pointer) {
 	constexpr const size_t SizeFrom = sizeof(From);
 	// NOLINTNEXTLINE(bugprone-sizeof-expression)
 	constexpr const size_t SizeTo = sizeof(To);
-	static_assert(
-			std::is_pointer_v<From> && std::is_pointer_v<To>
-					&& SizeFrom == SizeTo,
-			"Pointer sizes do not match");
+	static_assert(std::is_pointer_v<From> && std::is_pointer_v<To> && SizeFrom == SizeTo, "Pointer sizes do not match");
 	To output;
-	std::memcpy(
-			static_cast<void*>(&output), static_cast<void*>(&pointer),
-			SizeFrom);
+	std::memcpy(static_cast<void*>(&output), static_cast<void*>(&pointer), SizeFrom);
 	return output;
 }
 
@@ -68,9 +63,7 @@ inline T1* gtk_cast(T2* obj) {
 #	if defined(G_DISABLE_CAST_CHECKS) || defined(__OPTIMIZE__)
 #		define _G_TYPE_CIC(ip, gt, ct) gtk_cast<ct>(ip)
 #	else /* G_DISABLE_CAST_CHECKS */
-#		define _G_TYPE_CIC(ip, gt, ct)              \
-			gtk_cast<ct>(g_type_check_instance_cast( \
-					gtk_cast<GTypeInstance>(ip), gt))
+#		define _G_TYPE_CIC(ip, gt, ct) gtk_cast<ct>(g_type_check_instance_cast(gtk_cast<GTypeInstance>(ip), gt))
 #	endif /* G_DISABLE_CAST_CHECKS */
 #endif     /* defined(_G_TYPE_CIC) */
 
@@ -79,8 +72,7 @@ inline T1* gtk_cast(T2* obj) {
 #	if defined(G_DISABLE_CAST_CHECKS) || defined(__OPTIMIZE__)
 #		define _G_TYPE_CCC(cp, gt, ct) gtk_cast<ct>(cp)
 #	else /* G_DISABLE_CAST_CHECKS */
-#		define _G_TYPE_CCC(cp, gt, ct) \
-			gtk_cast<ct>(g_type_check_class_cast(gtk_cast<GTypeClass>(cp), gt))
+#		define _G_TYPE_CCC(cp, gt, ct) gtk_cast<ct>(g_type_check_class_cast(gtk_cast<GTypeClass>(cp), gt))
 #	endif /* G_DISABLE_CAST_CHECKS */
 #endif     /* defined(_G_TYPE_CCC) */
 
@@ -96,22 +88,17 @@ inline T1* gtk_cast(T2* obj) {
 
 #ifdef _G_TYPE_IGC
 #	undef _G_TYPE_IGC
-#	define _G_TYPE_IGC(ip, gt, ct) \
-		gtk_cast<ct>(gtk_cast<GTypeInstance>(ip)->g_class)
+#	define _G_TYPE_IGC(ip, gt, ct) gtk_cast<ct>(gtk_cast<GTypeInstance>(ip)->g_class)
 #endif /* _G_TYPE_IGC */
 
 #ifdef _G_TYPE_IGI
 #	undef _G_TYPE_IGI
-#	define _G_TYPE_IGI(ip, gt, ct)         \
-		gtk_cast<ct>(g_type_interface_peek( \
-				gtk_cast<GTypeInstance>(ip)->g_class, gt))
+#	define _G_TYPE_IGI(ip, gt, ct) gtk_cast<ct>(g_type_interface_peek(gtk_cast<GTypeInstance>(ip)->g_class, gt))
 #endif /* _G_TYPE_IGI */
 
 #ifdef _G_TYPE_CIFT
 #	undef _G_TYPE_CIFT
-#	define _G_TYPE_CIFT(ip, ft)                  \
-		g_type_check_instance_is_fundamentally_a( \
-				gtk_cast<GTypeInstance>(ip), ft)
+#	define _G_TYPE_CIFT(ip, ft) g_type_check_instance_is_fundamentally_a(gtk_cast<GTypeInstance>(ip), ft)
 #endif /* _G_TYPE_CIFT */
 
 #ifdef _G_TYPE_CIT
@@ -163,30 +150,25 @@ inline T1* gtk_cast(T2* obj) {
 
 #ifdef G_TYPE_MAKE_FUNDAMENTAL
 #	undef G_TYPE_MAKE_FUNDAMENTAL
-#	define G_TYPE_MAKE_FUNDAMENTAL(x) \
-		static_cast<GType>((x) << G_TYPE_FUNDAMENTAL_SHIFT)
+#	define G_TYPE_MAKE_FUNDAMENTAL(x) static_cast<GType>((x) << G_TYPE_FUNDAMENTAL_SHIFT)
 #endif /* G_TYPE_MAKE_FUNDAMENTAL */
 
 #if defined(g_list_previous) || defined(g_list_next)
 #	undef g_list_previous
 #	undef g_list_next
-#	define g_list_previous(list) \
-		((list) ? gtk_cast<GList>(list)->prev : nullptr)
-#	define g_list_next(list) ((list) ? gtk_cast<GList>(list)->next : nullptr)
+#	define g_list_previous(list) ((list) ? gtk_cast<GList>(list)->prev : nullptr)
+#	define g_list_next(list)     ((list) ? gtk_cast<GList>(list)->next : nullptr)
 #endif /* defined(g_list_previous) || defined(g_list_next) */
 
 #ifdef g_signal_connect
 #	undef g_signal_connect
-#	define g_signal_connect(instance, detailed_signal, c_handler, data)     \
-		g_signal_connect_data(                                               \
-				(instance), (detailed_signal), (c_handler), (data), nullptr, \
-				static_cast<GConnectFlags>(0))
+#	define g_signal_connect(instance, detailed_signal, c_handler, data) \
+		g_signal_connect_data((instance), (detailed_signal), (c_handler), (data), nullptr, static_cast<GConnectFlags>(0))
 #endif /* g_signal_connect */
 
 #ifdef g_utf8_next_char
 #	undef g_utf8_next_char
-#	define g_utf8_next_char(p) \
-		((p) + g_utf8_skip[*safe_pointer_cast<const guchar*>(p)])
+#	define g_utf8_next_char(p) ((p) + g_utf8_skip[*safe_pointer_cast<const guchar*>(p)])
 #endif /* g_utf8_next_char */
 
 #ifdef G_LOG_DOMAIN

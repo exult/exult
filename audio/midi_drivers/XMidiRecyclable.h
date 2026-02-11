@@ -91,8 +91,7 @@ public:
 		// functions It will never ned to be created by a call to FreeThis.
 		// Can't free something if it wasn't created
 		if (!MutexSpecialization::Mutex) {
-			MutexSpecialization::Mutex
-					= std::make_unique<std::recursive_mutex>();
+			MutexSpecialization::Mutex = std::make_unique<std::recursive_mutex>();
 		}
 		return std::unique_lock(*MutexSpecialization::Mutex);
 	}
@@ -131,9 +130,7 @@ private:
 				return nullptr;
 			}
 			instance.count--;
-			return std::exchange<T*>(
-					instance.Head,
-					std::exchange<T*>(instance.Head->next, nullptr));
+			return std::exchange<T*>(instance.Head, std::exchange<T*>(instance.Head->next, nullptr));
 		}
 
 		// Destructor should clean up the allocated memory on program exit when
@@ -154,8 +151,7 @@ public:
 
 // needed explicit instantiation declaration to supress warnings from clang
 template <>
-XMidiRecyclable<XMidiEvent>::FreeList
-		XMidiRecyclable<XMidiEvent>::FreeList::instance;
+XMidiRecyclable<XMidiEvent>::FreeList XMidiRecyclable<XMidiEvent>::FreeList::instance;
 
 template <>
 std::unique_ptr<std::recursive_mutex> XMidiRecyclable<XMidiEvent>::Mutex;

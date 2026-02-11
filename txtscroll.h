@@ -39,13 +39,9 @@ private:
 
 public:
 	// reading from legacy U7multiobject
-	TextScroller(
-			const char* archive, int index, std::shared_ptr<Font> font,
-			Shape* shp, bool translate_menu_chars = false);
+	TextScroller(const char* archive, int index, std::shared_ptr<Font> font, Shape* shp, bool translate_menu_chars = false);
 	// reading from an in-memory string
-	TextScroller(
-			const std::string& text_content, std::shared_ptr<Font> font,
-			Shape* shp, bool translate_menu_chars = false);
+	TextScroller(const std::string& text_content, std::shared_ptr<Font> font, Shape* shp, bool translate_menu_chars = false);
 	~TextScroller();
 
 	bool run(Game_window* gwin);

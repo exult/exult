@@ -92,8 +92,7 @@ void Uc_expression::add_to(Uc_array_expression* arr) {
  *  Output: true if successful, with result returned in 'val'.
  */
 
-bool Uc_expression::eval_const(
-		int& val    // Value returned here.
+bool Uc_expression::eval_const(int& val    // Value returned here.
 ) {
 	val = 0;
 	return false;
@@ -129,8 +128,7 @@ int Uc_fun_name_expression::is_object_function(bool error) const {
 		return 0;
 	}
 	if (error) {
-		Uc_location::yyerror(
-				"'%s' must be 'shape#' or 'object#'", fun->get_name());
+		Uc_location::yyerror("'%s' must be 'shape#' or 'object#'", fun->get_name());
 	}
 	return 1;
 }
@@ -321,8 +319,7 @@ void Uc_binary_expression::gen_value(Basic_block* out) {
  *  Output: true if successful, with result returned in 'val'.
  */
 
-bool Uc_binary_expression::eval_const(
-		int& val    // Value returned here.
+bool Uc_binary_expression::eval_const(int& val    // Value returned here.
 ) {
 	int val1;
 	int val2;    // Get each side.
@@ -410,8 +407,7 @@ void Uc_unary_expression::gen_value(Basic_block* out) {
  *  Output: true if successful, with result returned in 'val'.
  */
 
-bool Uc_unary_expression::eval_const(
-		int& val    // Value returned here.
+bool Uc_unary_expression::eval_const(int& val    // Value returned here.
 ) {
 	int val1;    // Get each side.
 	if (!operand->eval_const(val1)) {
@@ -452,9 +448,7 @@ void Uc_int_expression::gen_value(Basic_block* out) {
 int Uc_int_expression::is_object_function(bool error) const {
 	if (value < 0) {
 		if (error) {
-			Uc_location::yyerror(
-					"Invalid fun. ID (%d): can't call negative function",
-					value);
+			Uc_location::yyerror("Invalid fun. ID (%d): can't call negative function", value);
 		}
 		return 2;
 	} else if (value < 0x800) {
@@ -466,9 +460,7 @@ int Uc_int_expression::is_object_function(bool error) const {
 		return -1;    // Can't determine.
 	} else if (sym->get_function_type() == Uc_function_symbol::utility_fun) {
 		if (error) {
-			Uc_location::yyerror(
-					"'%s' (fun. ID %d)  must be 'shape#' or 'object#'",
-					sym->get_name(), value);
+			Uc_location::yyerror("'%s' (fun. ID %d)  must be 'shape#' or 'object#'", sym->get_name(), value);
 		}
 		return 1;
 	}
@@ -481,8 +473,7 @@ int Uc_int_expression::is_object_function(bool error) const {
  *  Output: true if successful, with result returned in 'val'.
  */
 
-bool Uc_int_expression::eval_const(
-		int& val    // Value returned here.
+bool Uc_int_expression::eval_const(int& val    // Value returned here.
 ) {
 	val = value;
 	return true;
@@ -667,16 +658,14 @@ int Uc_call_expression::is_object_function(bool error) const {
 		// *Could* be, if not a high shape.
 		// Let's say it is, but issue a warning.
 		if (error && Uc_location::get_shapefun_warn()) {
-			Uc_location::yywarning(
-					"Shape # is equal to fun. ID only for shapes < 0x400; use "
-					"UI_get_usecode_fun instead");
+			Uc_location::yywarning("Shape # is equal to fun. ID only for shapes < 0x400; use "
+								   "UI_get_usecode_fun instead");
 		}
 		return -2;
 	}
 	// For now, no other intrinsics return a valid fun ID.
 	if (error) {
-		Uc_location::yyerror(
-				"Return of intrinsic '%s' is not fun. ID", fun->get_name());
+		Uc_location::yyerror("Return of intrinsic '%s' is not fun. ID", fun->get_name());
 	}
 	return 3;
 }
@@ -692,15 +681,14 @@ void Uc_call_expression::check_params() {
 		// Intrinsics; do nothing for now.
 		return;
 	}
-	const vector<Uc_var_symbol*>& protoparms = fun->get_parms();
-	const vector<Uc_expression*>& callparms  = parms->get_exprs();
-	const unsigned long ignore_this = fun->get_method_num() >= 0 ? 1 : 0;
-	const unsigned long parmscnt    = callparms.size() + ignore_this;
+	const vector<Uc_var_symbol*>& protoparms  = fun->get_parms();
+	const vector<Uc_expression*>& callparms   = parms->get_exprs();
+	const unsigned long           ignore_this = fun->get_method_num() >= 0 ? 1 : 0;
+	const unsigned long           parmscnt    = callparms.size() + ignore_this;
 	if (parmscnt != protoparms.size()) {
 		const unsigned long protoparmcnt = protoparms.size() - ignore_this;
 		Uc_location::yyerror(
-				"# parms. passed (%lu) doesn't match '%s' count (%lu)",
-				parmscnt - ignore_this, sym->get_name(), protoparmcnt);
+				"# parms. passed (%lu) doesn't match '%s' count (%lu)", parmscnt - ignore_this, sym->get_name(), protoparmcnt);
 		return;
 	}
 	for (unsigned long i = ignore_this; i < parmscnt; i++) {
@@ -713,13 +701,11 @@ void Uc_call_expression::check_params() {
 						"Error in parm. #%lu: cannot convert class to "
 						"non-class",
 						i + 1);
-			} else if (!expr->get_cls()->is_class_compatible(
-							   cls->get_cls()->get_name())) {
+			} else if (!expr->get_cls()->is_class_compatible(cls->get_cls()->get_name())) {
 				Uc_location::yyerror(
 						"Error in parm. #%lu: class '%s' cannot be converted "
 						"into class '%s'",
-						i + 1, expr->get_cls()->get_name(),
-						cls->get_cls()->get_name());
+						i + 1, expr->get_cls()->get_name(), cls->get_cls()->get_name());
 			}
 		} else {
 			if (cls) {
@@ -737,9 +723,8 @@ void Uc_call_expression::check_params() {
  */
 
 void Uc_call_expression::gen_value(Basic_block* out) {
-	if (ind) {    // Indirect?
-		const size_t parmcnt
-				= parms->gen_values(out);    // Want to push parm. values.
+	if (ind) {                                            // Indirect?
+		const size_t parmcnt = parms->gen_values(out);    // Want to push parm. values.
 		if (!itemref) {
 			Uc_item_expression item;
 			item.gen_value(out);
@@ -758,9 +743,7 @@ void Uc_call_expression::gen_value(Basic_block* out) {
 	if (!sym) {
 		return;    // Already failed once.
 	}
-	if (!sym->gen_call(
-				out, function, original, itemref, parms, return_value,
-				meth_scope)) {
+	if (!sym->gen_call(out, function, original, itemref, parms, return_value, meth_scope)) {
 		error("'%s' isn't a function or intrinsic", sym->get_name());
 		sym = nullptr;    // Avoid repeating error if in loop.
 	}
@@ -789,18 +772,14 @@ void Uc_class_expression::gen_assign(Basic_block* out) {
 /*
  *  Ensure that the correct number of arguments are pushed to constructor.
  */
-Uc_new_expression::Uc_new_expression(Uc_var_symbol* v, Uc_array_expression* p)
-		: Uc_class_expression(v), parms(p) {
+Uc_new_expression::Uc_new_expression(Uc_var_symbol* v, Uc_array_expression* p) : Uc_class_expression(v), parms(p) {
 	Uc_class* cls          = var->get_cls();
 	const int pushed_parms = parms->get_exprs().size();
 	if (cls->get_num_vars() > pushed_parms) {
 		const int missing = cls->get_num_vars() - pushed_parms;
-		yywarning(
-				"%d argument%s missing in constructor of class '%s'", missing,
-				(missing > 1) ? "s" : "", cls->get_name());
+		yywarning("%d argument%s missing in constructor of class '%s'", missing, (missing > 1) ? "s" : "", cls->get_name());
 	} else if (cls->get_num_vars() < pushed_parms) {
-		yyerror("Too many arguments in constructor of class '%s'",
-				cls->get_name());
+		yyerror("Too many arguments in constructor of class '%s'", cls->get_name());
 	}
 	// Ensure that all data members get initialized.
 	for (int i = pushed_parms; i < cls->get_num_vars(); i++) {

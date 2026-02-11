@@ -60,9 +60,7 @@ public:
 	void destroyMidiDriver() override;
 	int  maxSequences() override;
 
-	void startSequence(
-			int seq_num, XMidiEventList* list, bool repeat, int vol,
-			int branch = -1) override;
+	void   startSequence(int seq_num, XMidiEventList* list, bool repeat, int vol, int branch = -1) override;
 	void   finishSequence(int seq_num) override;
 	void   pauseSequence(int seq_num) override;
 	void   unpauseSequence(int seq_num) override;
@@ -140,7 +138,7 @@ protected:
 private:
 	enum Messages {
 		LLMD_MSG_NONE              = 0,
-		LLMD_MSG_UNKNOWN           = 1<<30,
+		LLMD_MSG_UNKNOWN           = 1 << 30,
 		LLMD_MSG_PLAY              = 1,
 		LLMD_MSG_FINISH            = 2,
 		LLMD_MSG_PAUSE             = 3,
@@ -205,10 +203,7 @@ private:
 			} set_repeat;
 		} data;
 
-		ComMessage(
-				Messages T, int seq,
-				std::function<void(decltype(data)&)> data_setter
-				= std::function<void(decltype(data)&)>())
+		ComMessage(Messages T, int seq, std::function<void(decltype(data)&)> data_setter = std::function<void(decltype(data)&)>())
 				: type(T), sequence(seq) {
 			std::memset(&data, 0, sizeof(data));
 			if (data_setter) {
@@ -221,15 +216,15 @@ private:
 
 	// Communications
 	std::queue<ComMessage>                       messages;
-	std::unique_ptr<std::recursive_timed_mutex>        mutex;
+	std::unique_ptr<std::recursive_timed_mutex>  mutex;
 	std::unique_ptr<std::condition_variable_any> cond;
-	sint32 peekComMessageType(std::chrono::milliseconds timeout = {});
-	void sendComMessage(const ComMessage& message);
-	
+	sint32                                       peekComMessageType(std::chrono::milliseconds timeout = {});
+	void                                         sendComMessage(const ComMessage& message);
+
 	// Wait till playback thread has handled all pending commands. Default timeout is 1 minute.
 	// If the 10 secomd timeout expires there is something seriously wrong as typically commands
 	// should be handled in fractions of a second.
-	// Don't treat it as fatal but Midi playback is probably non functional if the default 
+	// Don't treat it as fatal but Midi playback is probably non functional if the default
 	// timeout expires.
 	// Returns false if timeout expired
 	bool waitTillNoComMessages(std::chrono::milliseconds timeout = std::chrono::seconds(10));
@@ -242,9 +237,7 @@ private:
 
 	// anyone can use our lock if needed
 public:
-	std::unique_lock<std::recursive_timed_mutex> LockMutex(
-			std::chrono::milliseconds   timeout
-			= std::chrono::milliseconds::max()) {
+	std::unique_lock<std::recursive_timed_mutex> LockMutex(std::chrono::milliseconds timeout = std::chrono::milliseconds::max()) {
 		// create mutex if it doesn't yet exist.
 		// Shouldn't happen
 		// No one should be calling this before initialization of a midi driver
@@ -260,7 +253,8 @@ public:
 			if (mutex->try_lock_for(timeout)) {
 				return std::unique_lock(*mutex, std::adopt_lock);
 			} else {
-				return std::unique_lock(*mutex, std::try_to_lock);;
+				return std::unique_lock(*mutex, std::try_to_lock);
+				;
 			}
 		}
 
@@ -275,8 +269,7 @@ private:
 	// good luck to anyone who plays Exult for 8 straight days continuously An
 	// overflow here may stop playback of any tracks currently playing when the
 	// oveflow occurs, but new tracks should play normally
-	std::chrono::duration<uint32, std::ratio<1, 6000>> xmidi_clock
-			= decltype(xmidi_clock)(0);
+	std::chrono::duration<uint32, std::ratio<1, 6000>> xmidi_clock = decltype(xmidi_clock)(0);
 	// Any current delay we must observe before starting a new track
 	decltype(xmidi_clock) start_track_delay_until = decltype(xmidi_clock)(0);
 	// The delay to use between stopping and starting tracks. 1500 ticks is
@@ -292,13 +285,11 @@ private:
 	std::chrono::milliseconds next_sysex;
 
 	// Time lastevent was sent at
-	std::chrono::steady_clock::time_point time_last_send
-			= std::chrono::steady_clock::time_point::min();
+	std::chrono::steady_clock::time_point time_last_send = std::chrono::steady_clock::time_point::min();
 
 	// If no events were sent in the last threshold time, sample production
 	//    will be skipped
-	std::chrono::milliseconds no_produce_threshold
-			= std::chrono::milliseconds(2000);
+	std::chrono::milliseconds no_produce_threshold = std::chrono::milliseconds(2000);
 	// Software Synth only Data
 	uint32 total_seconds;          // xmidi_clock = total_seconds*6000
 	uint32 samples_this_second;    //		+
@@ -356,9 +347,7 @@ private:
 	void setPatchBank(int bank, int patch);
 	void loadRhythm(const MT32Rhythm& rhythm, int note);
 	void loadRhythmTemp(int temp);
-	void sendMT32SystemMessage(
-			uint32 address_base, uint16 address_offset, uint32 len,
-			const void* data);
+	void sendMT32SystemMessage(uint32 address_base, uint16 address_offset, uint32 len, const void* data);
 
 	// Shared Methods
 
@@ -384,10 +373,8 @@ private:
 	void destroySoftwareSynth();
 
 	// XMidiSequenceHandler implementation
-	void sequenceSendEvent(uint16 sequence_id, uint32 message) override;
-	void sequenceSendSysEx(
-			uint16 sequence_id, uint8 status, const uint8* msg,
-			uint16 length) override;
+	void   sequenceSendEvent(uint16 sequence_id, uint32 message) override;
+	void   sequenceSendSysEx(uint16 sequence_id, uint8 status, const uint8* msg, uint16 length) override;
 	uint32 getTickCount(uint16 sequence_id) override;
 	void   handleCallbackTrigger(uint16 sequence_id, uint8 data) override;
 
@@ -399,10 +386,9 @@ private:
 	//! Set global volume of this driver
 	//! \param vol The new volume level for the sequence (0-100)
 	void setGlobalVolume(int vol) override {
-		sendComMessage(ComMessage(
-				LLMD_MSG_SET_GLOBAL_VOLUME, -1, [vol](auto& data) noexcept {
-					data.volume.level = vol;
-				}));
+		sendComMessage(ComMessage(LLMD_MSG_SET_GLOBAL_VOLUME, -1, [vol](auto& data) noexcept {
+			data.volume.level = vol;
+		}));
 	}
 
 	//! Get global volume of this driver

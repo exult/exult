@@ -33,9 +33,8 @@
 
 // Only include gitinfo.h if it exists and none of the macros have already been
 // defined
-#if __has_include(                                                  \
-		"gitinfo.h") && !defined(GIT_REVISION) && !defined(GIT_TAG) \
-		&& !defined(GIT_REMOTE_BRANCH) && !defined(GIT_REMOTE_URL)
+#if __has_include( \
+		"gitinfo.h") && !defined(GIT_REVISION) && !defined(GIT_TAG) && !defined(GIT_REMOTE_BRANCH) && !defined(GIT_REMOTE_URL)
 #	include "gitinfo.h"
 #else
 constexpr static const char* GIT_TAG[] = {""};
@@ -63,13 +62,9 @@ namespace {
 		// NOLINTNEXTLINE(bugprone-sizeof-expression)
 		constexpr const size_t SizeTo = sizeof(To);
 		static_assert(
-				std::is_pointer<From>::value && std::is_pointer<To>::value
-						&& SizeFrom == SizeTo,
-				"Pointer sizes do not match");
+				std::is_pointer<From>::value && std::is_pointer<To>::value && SizeFrom == SizeTo, "Pointer sizes do not match");
 		To output;
-		std::memcpy(
-				static_cast<void*>(&output), static_cast<void*>(&pointer),
-				SizeFrom);
+		std::memcpy(static_cast<void*>(&output), static_cast<void*>(&pointer), SizeFrom);
 		return output;
 	}
 }    // namespace
@@ -187,23 +182,20 @@ void getVersionInfo(std::ostream& out) {
 	out << "Build Architecture: ";
 
 	// AMD64 x86_64
-#if defined(__amd64__) || defined(__amd64) || defined(__amd64__) \
-		|| defined(__amd64) || defined(_M_X64) || defined(_M_AMD64)
+#if defined(__amd64__) || defined(__amd64) || defined(__amd64__) || defined(__amd64) || defined(_M_X64) || defined(_M_AMD64)
 	out << "x86_64";
 #	define WANT_CPUID
 	// ARM THUMB
 #elif defined(__thumb__) || defined(__TARGET_ARCH_THUMB) || defined(_M_ARMT)
 	out << "ARM Thumb";
-#elif defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_ARM) \
-		|| defined(_M_ARM) || defined(__arm)
+#elif defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_ARM) || defined(_M_ARM) || defined(__arm)
 	out << "ARM";
 	// ARM64
 #elif defined(__aarch64__) || defined(_M_ARM64)
 	out << "ARM64";
 
 	// X86
-#elif defined(i386) || defined(__i386) || defined(__i386__) || defined(__i386) \
-		|| defined(_M_IX86) || defined(__386)
+#elif defined(i386) || defined(__i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86) || defined(__386)
 	out << "x86";
 #	define WANT_CPUID
 #elif defined(__riscv)
@@ -227,10 +219,8 @@ void getVersionInfo(std::ostream& out) {
 	// try to store date and time in fixed sized static const arrays so memory
 	// layout does not change between builds of the same code revision by the
 	// same compiler
-	static const char datestr[std::max<int>(std::size("" __DATE__), 32)]
-			= "" __DATE__;
-	static const char timestr[std::max<int>(std::size("" __TIME__), 32)]
-			= "" __TIME__;
+	static const char datestr[std::max<int>(std::size("" __DATE__), 32)] = "" __DATE__;
+	static const char timestr[std::max<int>(std::size("" __TIME__), 32)] = "" __TIME__;
 	out << "Built at: " << datestr << " " << timestr << '\n';
 #endif
 
@@ -330,10 +320,9 @@ void getVersionInfo(std::ostream& out) {
 #elif defined(__GNUC__)
 #	define COMPILER "GCC " __VERSION__
 #elif defined(_MSC_FULL_VER)
-#	define COMPILER                                                       \
-		"Microsoft C/C++ Compiler " << (_MSC_FULL_VER / 10'000'000) << '.' \
-									<< ((_MSC_FULL_VER / 100'000) % 100)   \
-									<< '.' << ((_MSC_FULL_VER % 100'000))
+#	define COMPILER                                                                                                   \
+		"Microsoft C/C++ Compiler " << (_MSC_FULL_VER / 10'000'000) << '.' << ((_MSC_FULL_VER / 100'000) % 100) << '.' \
+									<< ((_MSC_FULL_VER % 100'000))
 #else
 #	define COMPILER "unknown compiler"
 #endif
@@ -383,24 +372,18 @@ void getVersionInfo(std::ostream& out) {
 					out << "NT";
 				} else if (info.dwMajorVersion == 4) {
 					out << "NT4";
-				} else if (
-						info.dwMajorVersion == 5 && info.dwMinorVersion == 0) {
+				} else if (info.dwMajorVersion == 5 && info.dwMinorVersion == 0) {
 					out << 2000;
-				} else if (
-						info.dwMajorVersion == 5 && info.dwMinorVersion == 1) {
+				} else if (info.dwMajorVersion == 5 && info.dwMinorVersion == 1) {
 					out << "XP";
-				} else if (
-						info.dwMajorVersion == 5 && info.dwMinorVersion == 2) {
+				} else if (info.dwMajorVersion == 5 && info.dwMinorVersion == 2) {
 					// Only workstation release with version 5.2 was XP x64
 					out << "XP";
-				} else if (
-						info.dwMajorVersion == 6 && info.dwMinorVersion == 0) {
+				} else if (info.dwMajorVersion == 6 && info.dwMinorVersion == 0) {
 					out << "Vista";
-				} else if (
-						info.dwMajorVersion == 6 && info.dwMinorVersion == 1) {
+				} else if (info.dwMajorVersion == 6 && info.dwMinorVersion == 1) {
 					out << "7";
-				} else if (
-						info.dwMajorVersion == 6 && info.dwMinorVersion == 2) {
+				} else if (info.dwMajorVersion == 6 && info.dwMinorVersion == 2) {
 					out << "8";
 				} else {
 					// Note: Without the proper manifest file, GetVersionEx will
@@ -427,20 +410,15 @@ void getVersionInfo(std::ostream& out) {
 					out << "NT Server";
 				} else if (info.dwMajorVersion == 4) {
 					out << "NT4 Server";
-				} else if (
-						info.dwMajorVersion == 5 && info.dwMinorVersion == 0) {
+				} else if (info.dwMajorVersion == 5 && info.dwMinorVersion == 0) {
 					out << "2000 Server";
-				} else if (
-						info.dwMajorVersion == 5 && info.dwMinorVersion == 2) {
+				} else if (info.dwMajorVersion == 5 && info.dwMinorVersion == 2) {
 					out << " Windows Server 2003";
-				} else if (
-						info.dwMajorVersion == 6 && info.dwMinorVersion == 0) {
+				} else if (info.dwMajorVersion == 6 && info.dwMinorVersion == 0) {
 					out << "Windows Server 2008";
-				} else if (
-						info.dwMajorVersion == 6 && info.dwMinorVersion == 1) {
+				} else if (info.dwMajorVersion == 6 && info.dwMinorVersion == 1) {
 					out << "Windows Server 2008 R2";
-				} else if (
-						info.dwMajorVersion == 6 && info.dwMinorVersion == 2) {
+				} else if (info.dwMajorVersion == 6 && info.dwMinorVersion == 2) {
 					out << "Windows Server 2012";
 				} else {
 					// Note: Without the proper manifest file, GetVersionEx will
@@ -487,23 +465,19 @@ void getVersionInfo(std::ostream& out) {
 				out << "Me";
 			}
 		}
-		out << " Version " << info.dwMajorVersion << "." << info.dwMinorVersion
-			<< " Build " << LOWORD(info.dwBuildNumber) << " ";
+		out << " Version " << info.dwMajorVersion << "." << info.dwMinorVersion << " Build " << LOWORD(info.dwBuildNumber) << " ";
 
 		// This function only exists in XP or newer but I see no reason to break
 		// compatibility with older windows version here so using it dynamically
-		void(WINAPI * fpGetNativeSystemInfo)(LPSYSTEM_INFO lpSystemInfo)
-				= nullptr;
-		HMODULE kernel32 = GetModuleHandleA("KERNEL32");
+		void(WINAPI * fpGetNativeSystemInfo)(LPSYSTEM_INFO lpSystemInfo) = nullptr;
+		HMODULE kernel32                                                 = GetModuleHandleA("KERNEL32");
 		if (kernel32 != nullptr) {
 			using LPNativeSystemInfo = decltype(fpGetNativeSystemInfo);
-			fpGetNativeSystemInfo    = safe_pointer_cast<LPNativeSystemInfo>(
-                    GetProcAddress(kernel32, "GetNativeSystemInfo"));
+			fpGetNativeSystemInfo    = safe_pointer_cast<LPNativeSystemInfo>(GetProcAddress(kernel32, "GetNativeSystemInfo"));
 			// We default to GetSystemInfo (win2000 req) if we couldn't get
 			// GetNativeSystemInfo
 			if (fpGetNativeSystemInfo == nullptr) {
-				fpGetNativeSystemInfo = safe_pointer_cast<LPNativeSystemInfo>(
-						GetProcAddress(kernel32, "GetSystemInfo"));
+				fpGetNativeSystemInfo = safe_pointer_cast<LPNativeSystemInfo>(GetProcAddress(kernel32, "GetSystemInfo"));
 			}
 		}
 
@@ -570,10 +544,7 @@ namespace {
 #		include <cpuid.h>
 
 	bool CPUID(uint32_t leaf, uint32_t subleaf, std::array<uint32_t, 4>& regs) {
-		return __get_cpuid_count(
-					   leaf, subleaf, &regs[CPUID_EAX], &regs[CPUID_EBX],
-					   &regs[CPUID_ECX], &regs[CPUID_EDX])
-			   != 0;
+		return __get_cpuid_count(leaf, subleaf, &regs[CPUID_EAX], &regs[CPUID_EBX], &regs[CPUID_ECX], &regs[CPUID_EDX]) != 0;
 	}
 #	elif __has_include(<intrin.h>)
 // MSVC should have this
@@ -1252,108 +1223,102 @@ bool OutputCPUID(std::ostream* out) {
 	// feature
 	// levels
 	if constexpr (sizeof(void*) == 8) {
-		constexpr const bool need_v2 = need_popcnt && need_sse3 && need_ssse3
-									   && need_sse4_1 && need_sse4_2
-									   && need_lahfsahf;
-		const bool v2 = [&]() {
-			// CMPXCHG16B
-			if ((regs[CPUID_ECX] & (1 << 28)) == 0u) {
-				return false;
-			}
-			// LAHF-SAHF
-			if ((regs_ex[CPUID_ECX] & 1) == 0u) {
-				return false;
-			}    // POPCNT
-			if ((regs[CPUID_ECX] & (1 << 23)) == 0u) {
-				return false;
-			}
-			// SSE3
-			if ((regs[CPUID_ECX] & 1) == 0u) {
-				return false;
-			}
-			// SSE4_1
-			if ((regs[CPUID_ECX] & (1 << 19)) == 0u) {
-				return false;
-			}
-			// SSE4_2
-			if ((regs[CPUID_ECX] & (1 << 22)) == 0u) {
-				return false;
-			}
-			// SSSE3
-			if ((regs[CPUID_ECX] & (1 << 9)) == 0u) {
-				return false;
-			}
-			return true;
+		constexpr const bool need_v2 = need_popcnt && need_sse3 && need_ssse3 && need_sse4_1 && need_sse4_2 && need_lahfsahf;
+		const bool           v2      = [&]() {
+            // CMPXCHG16B
+            if ((regs[CPUID_ECX] & (1 << 28)) == 0u) {
+                return false;
+            }
+            // LAHF-SAHF
+            if ((regs_ex[CPUID_ECX] & 1) == 0u) {
+                return false;
+            }    // POPCNT
+            if ((regs[CPUID_ECX] & (1 << 23)) == 0u) {
+                return false;
+            }
+            // SSE3
+            if ((regs[CPUID_ECX] & 1) == 0u) {
+                return false;
+            }
+            // SSE4_1
+            if ((regs[CPUID_ECX] & (1 << 19)) == 0u) {
+                return false;
+            }
+            // SSE4_2
+            if ((regs[CPUID_ECX] & (1 << 22)) == 0u) {
+                return false;
+            }
+            // SSSE3
+            if ((regs[CPUID_ECX] & (1 << 9)) == 0u) {
+                return false;
+            }
+            return true;
 		}();
 
-		constexpr const bool need_v3 = need_avx && need_avx2 && need_movbe
-									   && need_fma && need_bmi2 && need_bmi1
-									   && need_lzcnt;
-		const bool v3 = [&]() {
-			// AVX
-			if (!(regs[CPUID_ECX] & (1 << 28))) {
-				return false;
-			}
-			// AVX2
-			if (!(regs_efb[CPUID_EBX] & (1 << 5))) {
-				return false;
-			}
-			// BMI1
-			if (!(regs_efb[CPUID_EBX] & (1 << 3))) {
-				return false;
-			}
-			// BMI2
-			if (!(regs_efb[CPUID_EBX] & (1 << 8))) {
-				return false;
-			}
-			// F16C
-			if (!(regs[CPUID_ECX] & (1 << 29))) {
-				return false;
-			}
-			// FMA
-			if (!(regs[CPUID_ECX] & (1 << 12))) {
-				return false;
-			}
-			// LZCNT
-			if (!(regs_ex[CPUID_ECX] & (1 << 5))) {
-				return false;
-			}
-			// MOVBE
-			if (!(regs[CPUID_ECX] & (1 << 22))) {
-				return false;
-			}
-			// OSXSAVE
-			if (!(regs[CPUID_ECX] & (1 << 27))) {
-				return false;
-			}
-			return v2;
+		constexpr const bool need_v3 = need_avx && need_avx2 && need_movbe && need_fma && need_bmi2 && need_bmi1 && need_lzcnt;
+		const bool           v3      = [&]() {
+            // AVX
+            if (!(regs[CPUID_ECX] & (1 << 28))) {
+                return false;
+            }
+            // AVX2
+            if (!(regs_efb[CPUID_EBX] & (1 << 5))) {
+                return false;
+            }
+            // BMI1
+            if (!(regs_efb[CPUID_EBX] & (1 << 3))) {
+                return false;
+            }
+            // BMI2
+            if (!(regs_efb[CPUID_EBX] & (1 << 8))) {
+                return false;
+            }
+            // F16C
+            if (!(regs[CPUID_ECX] & (1 << 29))) {
+                return false;
+            }
+            // FMA
+            if (!(regs[CPUID_ECX] & (1 << 12))) {
+                return false;
+            }
+            // LZCNT
+            if (!(regs_ex[CPUID_ECX] & (1 << 5))) {
+                return false;
+            }
+            // MOVBE
+            if (!(regs[CPUID_ECX] & (1 << 22))) {
+                return false;
+            }
+            // OSXSAVE
+            if (!(regs[CPUID_ECX] & (1 << 27))) {
+                return false;
+            }
+            return v2;
 		}();
 
-		constexpr const bool need_v4 = need_avx512cd && need_avx512vl
-									   && need_avx512f && need_avx512dq
-									   && need_avx512bw;
-		const bool v4 = [&]() {
-			// avx512-cd
-			if (!(regs_efb[CPUID_EBX] & (1 << 28))) {
-				return false;
-				// avx512-vl
-			}
-			if (!(regs_efb[CPUID_EBX] & (1U << 31))) {
-				return false;
-				// avx512-bw
-			}
-			if (!(regs_efb[CPUID_EBX] & (1 << 30))) {
-				return false;
-				// avx512-f
-			}
-			if (!(regs_efb[CPUID_EBX] & (1 << 16))) {
-				return false;
-				// avx512-dq
-			}
-			if (!(regs_efb[CPUID_EBX] & (1 << 17))) {
-				return false;
-			}
-			return v3;
+		constexpr const bool need_v4 = need_avx512cd && need_avx512vl && need_avx512f && need_avx512dq && need_avx512bw;
+		const bool           v4      = [&]() {
+            // avx512-cd
+            if (!(regs_efb[CPUID_EBX] & (1 << 28))) {
+                return false;
+                // avx512-vl
+            }
+            if (!(regs_efb[CPUID_EBX] & (1U << 31))) {
+                return false;
+                // avx512-bw
+            }
+            if (!(regs_efb[CPUID_EBX] & (1 << 30))) {
+                return false;
+                // avx512-f
+            }
+            if (!(regs_efb[CPUID_EBX] & (1 << 16))) {
+                return false;
+                // avx512-dq
+            }
+            if (!(regs_efb[CPUID_EBX] & (1 << 17))) {
+                return false;
+            }
+            return v3;
 		}();
 
 		if (v4) {

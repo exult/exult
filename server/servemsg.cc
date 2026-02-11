@@ -52,8 +52,7 @@ namespace Exult_server {
 	 *  Output: -1 if error.
 	 */
 
-	int Send_data(
-			int socket, Msg_type id, const unsigned char* data, int datalen) {
+	int Send_data(int socket, Msg_type id, const unsigned char* data, int datalen) {
 #ifdef USE_EXULTSTUDIO
 		unsigned char buf[maxlength + hdrlength];
 		buf[0] = magic & 0xff;    // Store magic (low-byte first).

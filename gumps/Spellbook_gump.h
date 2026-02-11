@@ -67,7 +67,7 @@ public:
 	void         do_spell(int spell) override;        // Perform spell.
 	void         change_page(int delta);              // Page forward/backward.
 	void         select_spell(int spell) override;    // Set bookmark.
-	Game_object* get_owner() override;    // Get object this belongs to.
+	Game_object* get_owner() override;                // Get object this belongs to.
 	// Is a given point on a button?
 	Gump_button* on_button(int mx, int my) override;
 	// Paint button.

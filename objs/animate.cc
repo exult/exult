@@ -48,15 +48,11 @@ using std::rand;
 
 using namespace Pentagram;
 
-static inline bool Get_sfx_out_of_range(
-		Game_window* gwin, const Tile_coord& opos) {
+static inline bool Get_sfx_out_of_range(Game_window* gwin, const Tile_coord& opos) {
 	const TileRect   size = gwin->get_win_tile_rect();
-	const Tile_coord apos(
-			size.x + size.w / 2, size.y + size.h / 2,
-			gwin->get_camera_actor()->get_lift());
+	const Tile_coord apos(size.x + size.w / 2, size.y + size.h / 2, gwin->get_camera_actor()->get_lift());
 
-	return apos.square_distance_screen_space(opos)
-		   > (MAX_SOUND_FALLOFF * MAX_SOUND_FALLOFF);
+	return apos.square_distance_screen_space(opos) > (MAX_SOUND_FALLOFF * MAX_SOUND_FALLOFF);
 }
 
 /*
@@ -78,18 +74,15 @@ void Object_sfx::Play(Game_object* obj, int sfx, int delay) {
 
 		if (!halt && osfx->channel == -1 && sfx > -1) {    // First time?
 			// Start playing.
-			const int volume
-					= AUDIO_MAX_VOLUME;    // Set volume based on distance.
-			osfx->channel = Audio::get_ptr()->play_sound_effect(
-					sfx, osfx->last_pos, volume, 0);
+			const int volume = AUDIO_MAX_VOLUME;    // Set volume based on distance.
+			osfx->channel    = Audio::get_ptr()->play_sound_effect(sfx, osfx->last_pos, volume, 0);
 		}
 		delay = 100;
 	}
 	gwin->get_tqueue()->add(Game::get_ticks() + delay, osfx, gwin);
 }
 
-Object_sfx::Object_sfx(Game_object* o, int s)
-		: obj(weak_from_obj(o)), sfx(s), channel(-1) {}
+Object_sfx::Object_sfx(Game_object* o, int s) : obj(weak_from_obj(o)), sfx(s), channel(-1) {}
 
 void Object_sfx::stop_playing() {
 	if (channel >= 0) {
@@ -144,7 +137,7 @@ void Object_sfx::handle_event(
 	if (!halt && channel == -1 && sfx > -1) {    // First time?
 		// Start playing.
 		const int volume = AUDIO_MAX_VOLUME;    // Set volume based on distance.
-		channel = Audio::get_ptr()->play_sound_effect(sfx, last_pos, volume, 0);
+		channel          = Audio::get_ptr()->play_sound_effect(sfx, last_pos, volume, 0);
 	} else if (channel != -1) {
 		if (halt) {
 			Audio::get_ptr()->stop_sound_effect(channel);
@@ -155,8 +148,7 @@ void Object_sfx::handle_event(
 	}
 
 	if (channel != -1) {
-		gwin->get_tqueue()->add(
-				curtime + delay - (curtime % delay), this, udata);
+		gwin->get_tqueue()->add(curtime + delay - (curtime % delay), this, udata);
 	} else {
 		stop();
 	}
@@ -175,10 +167,7 @@ void Shape_sfx::stop() {
 }
 
 inline void Shape_sfx::set_looping() {
-	looping = sfxinf ? (sfxinf->get_sfx_range() == 1
-						&& sfxinf->get_chance() == 100
-						&& !sfxinf->play_horly_ticks())
-					 : false;
+	looping = sfxinf ? (sfxinf->get_sfx_range() == 1 && sfxinf->get_chance() == 100 && !sfxinf->play_horly_ticks()) : false;
 }
 
 /*
@@ -250,10 +239,9 @@ void Shape_sfx::update(bool play) {
 
 	dir = 0;
 	// set volume based on Distance and SFX volume
-	const int volume = static_cast<int>(
-			AUDIO_MAX_VOLUME * (sfxinf->get_volume() / 100.0));
-	const Game_object* outer = obj->get_outermost();
-	const bool halt = Get_sfx_out_of_range(gwin, outer->get_center_tile());
+	const int          volume = static_cast<int>(AUDIO_MAX_VOLUME * (sfxinf->get_volume() / 100.0));
+	const Game_object* outer  = obj->get_outermost();
+	const bool         halt   = Get_sfx_out_of_range(gwin, outer->get_center_tile());
 
 	if (play && halt) {
 		play = false;
@@ -262,15 +250,13 @@ void Shape_sfx::update(bool play) {
 	for (size_t i = 0; i < channel.size(); i++) {
 		if (play && channel[i] == -1 && sfxnum[i] > -1) {    // First time?
 			// Start playing.
-			channel[i] = Audio::get_ptr()->play_sound_effect(
-					sfxnum[i], obj, volume, rep[i]);
+			channel[i] = Audio::get_ptr()->play_sound_effect(sfxnum[i], obj, volume, rep[i]);
 		} else if (channel[i] != -1) {
 			if (halt) {
 				Audio::get_ptr()->stop_sound_effect(channel[i]);
 				channel[i] = -1;
 			} else {
-				channel[i] = Audio::get_ptr()->update_sound_effect(
-						channel[i], obj);
+				channel[i] = Audio::get_ptr()->update_sound_effect(channel[i], obj);
 			}
 		}
 	}
@@ -345,8 +331,7 @@ void Frame_animator::Initialize() {
 	const int rotflag = obj->get_framenum() & (1 << 5);
 
 	const ShapeID shp(last_shape, last_frame);
-	aniinf = obj->get_info().get_animation_info_safe(
-			last_shape, shp.get_num_frames());
+	aniinf        = obj->get_info().get_animation_info_safe(last_shape, shp.get_num_frames());
 	const int cnt = aniinf->get_frame_count();
 	if (cnt < 0) {
 		nframes = shp.get_num_frames();
@@ -410,7 +395,7 @@ int Frame_animator::get_next_frame() {
 	case Animation_info::FA_TIMESYNCHED: {
 		const unsigned int ticks = Game::get_ticks();
 		const int          delay = 100;
-		currpos = (ticks / (delay * aniinf->get_frame_delay())) + created;
+		currpos                  = (ticks / (delay * aniinf->get_frame_delay())) + created;
 		currpos %= nframes;
 		framenum = first_frame + currpos;
 		break;
@@ -493,8 +478,7 @@ void Frame_animator::handle_event(
 	// Add back to queue for next time.
 	if (animating) {
 		// Ensure all animations are synched
-		gwin->get_tqueue()->add(
-				curtime + delay - (curtime % delay), this, udata);
+		gwin->get_tqueue()->add(curtime + delay - (curtime % delay), this, udata);
 	}
 }
 
@@ -531,8 +515,7 @@ void Sfx_animator::handle_event(
 	}
 	// Add back to queue for next time.
 	if (animating) {
-		gwin->get_tqueue()->add(
-				curtime + delay - (curtime % delay), this, udata);
+		gwin->get_tqueue()->add(curtime + delay - (curtime % delay), this, udata);
 	}
 }
 
@@ -540,8 +523,7 @@ void Sfx_animator::handle_event(
  *  Create a field frame animator.
  */
 
-Field_frame_animator::Field_frame_animator(Game_object* o)
-		: Frame_animator(o), activated(true) {}
+Field_frame_animator::Field_frame_animator(Game_object* o) : Frame_animator(o), activated(true) {}
 
 /*
  *  Animation.
@@ -590,9 +572,7 @@ void Wiggle_animator::handle_event(
  *  Create at given position.
  */
 
-Animated_object::Animated_object(
-		int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-		unsigned int lft)
+Animated_object::Animated_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft)
 		: Terrain_game_object(shapenum, framenum, tilex, tiley, lft) {
 	animator = Animator::create(this);
 }
@@ -618,9 +598,7 @@ void Animated_object::paint() {
  *  Create at given position.
  */
 
-Animated_ireg_object::Animated_ireg_object(
-		int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-		unsigned int lft)
+Animated_ireg_object::Animated_ireg_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft)
 		: Ireg_game_object(shapenum, framenum, tilex, tiley, lft) {
 	animator = Animator::create(this);
 }
@@ -657,9 +635,7 @@ void Animated_ireg_object::write_ireg(ODataSource* out) {
  *  Create at given position.
  */
 
-Animated_ifix_object::Animated_ifix_object(
-		int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-		unsigned int lft)
+Animated_ifix_object::Animated_ifix_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft)
 		: Ifix_game_object(shapenum, framenum, tilex, tiley, lft) {
 	animator = Animator::create(this);
 }

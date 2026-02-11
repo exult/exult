@@ -124,11 +124,11 @@ class Game_window {
 	int           theft_warnings;        // # times warned in current chunk.
 	short         theft_cx, theft_cy;    // Chunk where warnings occurred.
 	// Gameplay objects:
-	Barge_object* moving_barge;          // ->cart/ship that's moving, or 0.
-	Main_actor*   main_actor;            // Main sprite to move around.
-	Actor*        camera_actor;          // What to center view around.
-	std::vector<Actor_shared> npcs;      // Array of NPC's + the Avatar.
-	std::vector<Dead_body*>   bodies;    // Corresponding Dead_body's.
+	Barge_object*             moving_barge;    // ->cart/ship that's moving, or 0.
+	Main_actor*               main_actor;      // Main sprite to move around.
+	Actor*                    camera_actor;    // What to center view around.
+	std::vector<Actor_shared> npcs;            // Array of NPC's + the Avatar.
+	std::vector<Dead_body*>   bodies;          // Corresponding Dead_body's.
 	// Rendering info:
 	int      scrolltx, scrollty;    // Top-left tile of screen.
 	TileRect scroll_bounds;         // Walking outside this scrolls.
@@ -143,8 +143,8 @@ class Game_window {
 	int  step_tile_delta;         // multiplier for the delta in start_actor_alt
 	int  allow_right_pathfind;    // If moving with right click is allowed
 	bool scroll_with_mouse;       // scroll game view with mousewheel
-	bool alternate_drop;    // don't split stacks, can be inverted with a CTRL
-							// key modifier
+	bool alternate_drop;          // don't split stacks, can be inverted with a CTRL
+								  // key modifier
 	bool         allow_autonotes;
 	bool         allow_enhancements;
 	bool         in_exult_menu;      // used for menu options
@@ -184,10 +184,8 @@ public:
 	 *  Class maintenance:
 	 */
 	Game_window(
-			int width, int height, bool fullscreen, int gwidth, int gheight,
-			int scale = 1, int scaler = 0,
-			Image_window::FillMode fillmode = Image_window::AspectCorrectCentre,
-			unsigned int           fillsclr = 0);
+			int width, int height, bool fullscreen, int gwidth, int gheight, int scale = 1, int scaler = 0,
+			Image_window::FillMode fillmode = Image_window::AspectCorrectCentre, unsigned int fillsclr = 0);
 	~Game_window();
 
 	// Get the one game window.
@@ -235,15 +233,12 @@ public:
 	}
 
 	inline TileRect get_full_rect() const {    // Get window's rectangle.
-		return TileRect(
-				win->get_start_x(), win->get_start_y(), win->get_full_width(),
-				win->get_full_height());
+		return TileRect(win->get_start_x(), win->get_start_y(), win->get_full_width(), win->get_full_height());
 	}
 
 	TileRect get_win_tile_rect() const {    // Get it in tiles, rounding up.
 		return TileRect(
-				get_scrolltx(), get_scrollty(),
-				(win->get_game_width() + c_tilesize - 1) / c_tilesize,
+				get_scrolltx(), get_scrollty(), (win->get_game_width() + c_tilesize - 1) / c_tilesize,
 				(win->get_game_height() + c_tilesize - 1) / c_tilesize);
 	}
 
@@ -260,10 +255,8 @@ public:
 
 	// Resize event occurred.
 	void resized(
-			unsigned int neww, unsigned int newh, bool newfs,
-			unsigned int newgw, unsigned int newgh, unsigned int newsc,
-			unsigned int newsclr, Image_window::FillMode newfill,
-			unsigned int newfillsclr);
+			unsigned int neww, unsigned int newh, bool newfs, unsigned int newgw, unsigned int newgh, unsigned int newsc,
+			unsigned int newsclr, Image_window::FillMode newfill, unsigned int newfillsclr);
 
 	void get_focus();    // Get/lose focus.
 	void lose_focus();
@@ -456,10 +449,9 @@ public:
 		return clock;
 	}
 
-	bool is_background_track(
-			int num) const;        // ripped out of Background_noise
-	Game_map* get_map(int num);    // Read in additional map.
-	void      set_map(int num);    // Make map #num the current map.
+	bool      is_background_track(int num) const;    // ripped out of Background_noise
+	Game_map* get_map(int num);                      // Read in additional map.
+	void      set_map(int num);                      // Make map #num the current map.
 	/*
 	 *  ExultStudio support:
 	 */
@@ -599,10 +591,9 @@ public:
 	void       call_guards(Actor* witness = nullptr, bool theft = false);
 	void       stop_arresting();
 	void       attack_avatar(int create_guards = 0, int align = 0);
-	bool       is_hostile_nearby()
-			const;    // detects if hostiles are nearby for movement speed
-	bool failed_copy_protection();
-	void got_bad_feeling(int odds);
+	bool       is_hostile_nearby() const;    // detects if hostiles are nearby for movement speed
+	bool       failed_copy_protection();
+	void       got_bad_feeling(int odds);
 
 	/*
 	 *  Rendering:
@@ -634,9 +625,7 @@ public:
 	}
 
 	// Paint scene at given tile.
-	void paint_map_at_tile(
-			int x, int y, int w, int h, int toptx, int topty,
-			int skip_above = 31);
+	void paint_map_at_tile(int x, int y, int w, int h, int toptx, int topty, int skip_above = 31);
 	// Paint area of image.
 	void paint(int x, int y, int w, int h);
 
@@ -649,9 +638,7 @@ public:
 	void paint_dirty();
 
 	void set_all_dirty() {    // Whole window.
-		dirty = TileRect(
-				win->get_start_x(), win->get_start_y(), win->get_full_width(),
-				win->get_full_height());
+		dirty = TileRect(win->get_start_x(), win->get_start_y(), win->get_full_width(), win->get_full_height());
 	}
 
 	void add_dirty(const TileRect& r) {    // Add rectangle to dirty area.
@@ -699,9 +686,7 @@ public:
 
 	// Get screen area of shape at pt.
 	TileRect get_shape_rect(const Shape_frame* s, int x, int y) const {
-		return TileRect(
-				x - s->get_xleft(), y - s->get_yabove(), s->get_width(),
-				s->get_height());
+		return TileRect(x - s->get_xleft(), y - s->get_yabove(), s->get_width(), s->get_height());
 	}
 
 	// Get screen area used by object.
@@ -725,28 +710,20 @@ public:
 	void init_files(bool cycle = true);    // Load all files
 
 	// From Gamedat
-	void get_saveinfo(
-			std::unique_ptr<Shape_file>& map, SaveGame_Details*& details,
-			SaveGame_Party*& party);
+	void get_saveinfo(std::unique_ptr<Shape_file>& map, SaveGame_Details*& details, SaveGame_Party*& party);
 	// From Savegame
-	bool get_saveinfo(
-			int num, char*& name, std::unique_ptr<Shape_file>& map,
-			SaveGame_Details*& details, SaveGame_Party*& party);
-	void read_saveinfo(
-			IDataSource* in, SaveGame_Details*& details,
-			SaveGame_Party*& party);
+	bool get_saveinfo(int num, char*& name, std::unique_ptr<Shape_file>& map, SaveGame_Details*& details, SaveGame_Party*& party);
+	void read_saveinfo(IDataSource* in, SaveGame_Details*& details, SaveGame_Party*& party);
 
 private:
 #ifdef HAVE_ZIP_SUPPORT
 	bool get_saveinfo_zip(
-			const char* fname, char*& name, std::unique_ptr<Shape_file>& map,
-			SaveGame_Details*& details, SaveGame_Party*& party);
+			const char* fname, char*& name, std::unique_ptr<Shape_file>& map, SaveGame_Details*& details, SaveGame_Party*& party);
 #endif
 	void restore_flex_files(IDataSource& in, const char* basepath);
 
 public:
-	void write_saveinfo(
-			bool screenshot = true);    // Write the save info to gamedat
+	void write_saveinfo(bool screenshot = true);    // Write the save info to gamedat
 
 	// Get saved-game name.
 	inline const std::string& get_save_name(size_t i) const {
@@ -810,16 +787,12 @@ public:
 		return allow_right_pathfind;
 	}
 
-	void teleport_party(
-			const Tile_coord& t, bool skip_eggs = false, int newmap = -1,
-			bool no_status_check = true);
-	bool activate_item(
-			int shnum, int frnum = c_any_framenum,
-			int qual = c_any_qual);    // Activate item in party.
+	void teleport_party(const Tile_coord& t, bool skip_eggs = false, int newmap = -1, bool no_status_check = true);
+	bool activate_item(int shnum, int frnum = c_any_framenum,
+					   int qual = c_any_qual);    // Activate item in party.
 	// Find object (x, y) is in.
 	Game_object* find_object(int x, int y);
-	void         find_nearby_objects(
-					Game_object_map_xy& mobjxy, int x, int y, Gump* gump = nullptr);
+	void         find_nearby_objects(Game_object_map_xy& mobjxy, int x, int y, Gump* gump = nullptr);
 
 	// Show names of items clicked on.
 	void show_items(int x, int y, bool ctrl = false);

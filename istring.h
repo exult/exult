@@ -36,7 +36,7 @@ namespace Pentagram {
 	inline void tolower(char* str) {
 		while (*str) {
 			char& c = *str++;
-			c = std::tolower(c);
+			c       = std::tolower(c);
 		}
 	}
 

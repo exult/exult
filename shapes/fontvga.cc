@@ -70,8 +70,7 @@ constexpr static const std::array vlead{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
  */
 
 void Fonts_vga_file::init(
-		const File_spec& font_source, const File_spec& font_patch,
-		const int* vlead_overrides, int num_overrides) {
+		const File_spec& font_source, const File_spec& font_patch, const int* vlead_overrides, int num_overrides) {
 	FlexFile     sfonts(font_source);
 	FlexFile     pfonts(font_patch);
 	const size_t sn       = sfonts.number_of_objects();
@@ -80,11 +79,8 @@ void Fonts_vga_file::init(
 	fonts.resize(numfonts);
 
 	for (size_t i = 0; i < numfonts; i++) {
-		const int vl = (vlead_overrides && static_cast<int>(i) < num_overrides)
-							   ? vlead_overrides[i]
-							   : (i < vlead.size() ? vlead[i] : 0);
-		fonts[i]     = std::make_shared<Font>(
-                font_source, font_patch, i, i < hlead.size() ? hlead[i] : 0,
-                vl);
+		const int vl
+				= (vlead_overrides && static_cast<int>(i) < num_overrides) ? vlead_overrides[i] : (i < vlead.size() ? vlead[i] : 0);
+		fonts[i] = std::make_shared<Font>(font_source, font_patch, i, i < hlead.size() ? hlead[i] : 0, vl);
 	}
 }

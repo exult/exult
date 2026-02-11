@@ -122,66 +122,49 @@ void SoundTester::test_sound() {
 			constexpr int msg_end = 0x89A;
 #endif
 			for (int msgid = 0x890; msgid <= msg_end; ++msgid) {
-				font->paint_text_fixedwidth(
-						ibuf, get_text_msg(msgid - msg_file_start), left, line,
-						width);
+				font->paint_text_fixedwidth(ibuf, get_text_msg(msgid - msg_file_start), left, line, width);
 				line += height;
 			}
 
 			{
 				std::ostringstream oss;
-				oss << (active == 0 ? "->" : "  ") << " " << Strings::Music()
-					<< " " << (active == 0 ? '<' : ' ')
-					<< ((player && player->is_track_playing(song)) ? '*' : ' ')
-					<< std::setw(3) << song
-					<< ((player && player->is_track_playing(song)) ? '*' : ' ')
-					<< (active == 0 ? '>' : ' ')
+				oss << (active == 0 ? "->" : "  ") << " " << Strings::Music() << " " << (active == 0 ? '<' : ' ')
+					<< ((player && player->is_track_playing(song)) ? '*' : ' ') << std::setw(3) << song
+					<< ((player && player->is_track_playing(song)) ? '*' : ' ') << (active == 0 ? '>' : ' ')
 					<< (repeat ? Strings::Repeat() : "");
 				line += height * 2;
-				font->paint_text_fixedwidth(
-						ibuf, oss.str().c_str(), left, line, width);
+				font->paint_text_fixedwidth(ibuf, oss.str().c_str(), left, line, width);
 			}
 			line += height;
 			if (player && player->get_current_track() != -1) {
-				formattime(
-						buf, sizeof(buf), player->get_track_position(),
-						player->get_track_length());
+				formattime(buf, sizeof(buf), player->get_track_position(), player->get_track_length());
 				font->paint_text_fixedwidth(ibuf, buf, left, line, width);
 			}
 			line += height;
 			{
 				std::ostringstream oss;
-				oss << (active == 1 ? "->" : "  ") << " " << Strings::Sfx()
-					<< "   " << (active == 1 ? '<' : ' ') << " " << std::setw(3)
-					<< sfx << " " << (active == 1 ? '>' : ' ');
-				font->paint_text_fixedwidth(
-						ibuf, oss.str().c_str(), left, line, width);
+				oss << (active == 1 ? "->" : "  ") << " " << Strings::Sfx() << "   " << (active == 1 ? '<' : ' ') << " "
+					<< std::setw(3) << sfx << " " << (active == 1 ? '>' : ' ');
+				font->paint_text_fixedwidth(ibuf, oss.str().c_str(), left, line, width);
 			}
 			line += height;
 			if (sfx_id != -1 && mixer->isPlaying(sfx_id)) {
-				formattime(
-						buf, sizeof(buf), mixer->GetPlaybackPosition(sfx_id),
-						mixer->GetPlaybackLength(sfx_id));
+				formattime(buf, sizeof(buf), mixer->GetPlaybackPosition(sfx_id), mixer->GetPlaybackLength(sfx_id));
 				font->paint_text_fixedwidth(ibuf, buf, left, line, width);
 			}
 			line += height;
 
 			{
 				std::ostringstream oss;
-				oss << (active == 2 ? "->" : "  ") << " " << Strings::Voice()
-					<< " " << (active == 2 ? '<' : ' ') << " " << std::setw(3)
-					<< voice << " " << (active == 2 ? '>' : ' ');
-				font->paint_text_fixedwidth(
-						ibuf, oss.str().c_str(), left, line, width);
+				oss << (active == 2 ? "->" : "  ") << " " << Strings::Voice() << " " << (active == 2 ? '<' : ' ') << " "
+					<< std::setw(3) << voice << " " << (active == 2 ? '>' : ' ');
+				font->paint_text_fixedwidth(ibuf, oss.str().c_str(), left, line, width);
 			}
 			line += height;
 			if (audio->is_speech_playing()) {
 				int speech_id = audio->get_speech_id();
 				if (speech_id != -1) {
-					formattime(
-							buf, sizeof(buf),
-							mixer->GetPlaybackPosition(speech_id),
-							mixer->GetPlaybackLength(speech_id));
+					formattime(buf, sizeof(buf), mixer->GetPlaybackPosition(speech_id), mixer->GetPlaybackLength(speech_id));
 					font->paint_text_fixedwidth(ibuf, buf, left, line, width);
 				}
 			}
@@ -216,14 +199,11 @@ void SoundTester::test_sound() {
 						break;
 #ifdef DEBUG
 					case SDLK_D: {
-						std::string flex = player && player->is_adlib()
-												   ? MAINMUS_AD
-												   : MAINMUS;
+						std::string flex = player && player->is_adlib() ? MAINMUS_AD : MAINMUS;
 
-						std::unique_ptr<IDataSource> mid_data
-								= open_music_flex(flex, song);
-						int convert = XMIDIFILE_CONVERT_NOCONVERSION;
-						std::string_view driver_name{};
+						std::unique_ptr<IDataSource> mid_data = open_music_flex(flex, song);
+						int                          convert  = XMIDIFILE_CONVERT_NOCONVERSION;
+						std::string_view             driver_name{};
 
 						if (player) {
 							convert     = player->setup_timbre_for_track(flex);
@@ -231,13 +211,10 @@ void SoundTester::test_sound() {
 						}
 
 						if (mid_data && mid_data->good()) {
-							XMidiFile midfile(
-									mid_data.get(), convert, driver_name);
-							for (int i = 0; i < midfile.number_of_tracks();
-								 i++) {
+							XMidiFile midfile(mid_data.get(), convert, driver_name);
+							for (int i = 0; i < midfile.number_of_tracks(); i++) {
 								std::cout << " track " << i << std::endl;
-								midfile.GetEventList(i)->events->DumpText(
-										std::cout);
+								midfile.GetEventList(i)->events->DumpText(std::cout);
 							}
 						}
 					} break;
@@ -251,8 +228,7 @@ void SoundTester::test_sound() {
 						}
 						break;
 					case SDLK_S:
-						if ((event.key.mod & SDL_KMOD_ALT)
-							&& (event.key.mod & SDL_KMOD_CTRL)) {
+						if ((event.key.mod & SDL_KMOD_ALT) && (event.key.mod & SDL_KMOD_CTRL)) {
 							make_screenshot(true);
 						} else {
 							if (active == 0) {
@@ -327,21 +303,16 @@ void SoundTester::test_sound() {
 	gwin->show();
 }
 
-size_t SoundTester::formattime(
-		char* buffer, size_t buffersize, uint32 position, uint32 length) {
+size_t SoundTester::formattime(char* buffer, size_t buffersize, uint32 position, uint32 length) {
 	int seconds = position / 1000;
 
-	size_t count = snprintf(
-			buffer, buffersize, "%01d:%02d.%03d", seconds / 60, seconds % 60,
-			position % 1000);
+	size_t count = snprintf(buffer, buffersize, "%01d:%02d.%03d", seconds / 60, seconds % 60, position % 1000);
 	buffersize -= count;
 	buffer += count;
 	if (buffersize > 0) {
 		seconds = length / 1000;
 
-		count += snprintf(
-				buffer, buffersize, " / %01d:%02d.%03d", seconds / 60,
-				seconds % 60, length % 1000);
+		count += snprintf(buffer, buffersize, " / %01d:%02d.%03d", seconds / 60, seconds % 60, length % 1000);
 	}
 	return count;
 }

@@ -87,7 +87,6 @@ public:
 	void paint() override;
 	void close() override;
 
-
 	void toggle(Gump_button* btn, int state);
 	void rebuild_buttons();
 	void rebuild_dynamic_buttons();
@@ -114,10 +113,7 @@ public:
 	}
 
 	void set_fill_scaler(int f_scaler) {
-		fill_scaler
-				= (f_scaler == Image_window::SDLScaler  ? 2
-				   : f_scaler == Image_window::bilinear ? 1
-														: 0);
+		fill_scaler = (f_scaler == Image_window::SDLScaler ? 2 : f_scaler == Image_window::bilinear ? 1 : 0);
 	}
 
 	void set_fill_mode(Image_window::FillMode f_mode) {
@@ -165,16 +161,14 @@ public:
 		} else if (state == 3) {
 			fill_mode = startup_fill_mode;
 		} else {
-			fill_mode = static_cast<Image_window::FillMode>(
-					(state << 1) | (has_ac ? 1 : 0));
+			fill_mode = static_cast<Image_window::FillMode>((state << 1) | (has_ac ? 1 : 0));
 		}
 		rebuild_dynamic_buttons();
 	}
 
 	void toggle_aspect_correction(int state) {
 		has_ac    = state != 0;
-		fill_mode = static_cast<Image_window::FillMode>(
-				(fill_mode & ~1) | (has_ac ? 1 : 0));
+		fill_mode = static_cast<Image_window::FillMode>((fill_mode & ~1) | (has_ac ? 1 : 0));
 	}
 
 	void toggle_share_settings(int state) {
@@ -182,7 +176,6 @@ public:
 	}
 
 	Gump_button* on_button(int mx, int my) override;
-
 };
 
 #endif

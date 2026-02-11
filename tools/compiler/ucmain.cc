@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 	bool                        want_sym_table = true;
 	static const char*          optstring      = "o:I:sbc:uW:";
 	Uc_function::Intrinsic_type ty             = Uc_function::unset;
-	opterr = 0;    // Don't let getopt() print errs.
+	opterr                                     = 0;    // Don't let getopt() print errs.
 	Uc_location::set_color_output(isatty(fileno(stderr)));
 	int optchr;
 	while ((optchr = getopt(argc, argv, optstring)) != -1) {
@@ -84,9 +84,7 @@ int main(int argc, char** argv) {
 			} else if (optarg == "auto"sv) {
 				Uc_location::set_color_output(isatty(fileno(stderr)));
 			} else {
-				std::cout << "Invalid argument to -c: '" << optarg
-						  << "' expected one of 'always', 'never', or 'auto'"
-						  << std::endl;
+				std::cout << "Invalid argument to -c: '" << optarg << "' expected one of 'always', 'never', or 'auto'" << std::endl;
 				return 1;
 			}
 			break;
@@ -99,13 +97,9 @@ int main(int argc, char** argv) {
 		case 'W':
 			if (optarg == "goto"sv || optarg == "no-goto"sv) {
 				Uc_location::set_goto_warn(optarg == "goto"sv);
-			} else if (
-					optarg == "integer-coercion"sv
-					|| optarg == "no-integer-coercion"sv) {
+			} else if (optarg == "integer-coercion"sv || optarg == "no-integer-coercion"sv) {
 				Uc_location::set_integer_warn(optarg == "integer-coercion"sv);
-			} else if (
-					optarg == "shape-to-function"sv
-					|| optarg == "no-shape-to-function"sv) {
+			} else if (optarg == "shape-to-function"sv || optarg == "no-shape-to-function"sv) {
 				Uc_location::set_shapefun_warn(optarg == "shape-to-function"sv);
 			} else {
 				std::cout << "Invalid argument to -W: '" << optarg
@@ -131,7 +125,7 @@ int main(int argc, char** argv) {
 		yyin = fopen(argv[optind], "r");
 		if (!outname) {    // No -o option?
 			// Set up output name.
-			outname = strncpy(outbuf, src, sizeof(outbuf) - 5);
+			outname                    = strncpy(outbuf, src, sizeof(outbuf) - 5);
 			outbuf[sizeof(outbuf) - 5] = 0;
 			char* dot                  = strrchr(outname, '.');
 			if (!dot) {
@@ -159,13 +153,11 @@ int main(int argc, char** argv) {
 	// Open output.
 	std::ofstream out(outname, ios::binary | ios::out);
 	if (!out.good()) {
-		std::cout << "Could not open output file '" << outname << "'!"
-				  << std::endl;
+		std::cout << "Could not open output file '" << outname << "'!" << std::endl;
 		return 1;
 	}
 	if (want_sym_table) {
-		little_endian::Write4(
-				out, UCSYMTBL_MAGIC0);    // Start with symbol table.
+		little_endian::Write4(out, UCSYMTBL_MAGIC0);    // Start with symbol table.
 		little_endian::Write4(out, UCSYMTBL_MAGIC1);
 		auto* symtbl = new Usecode_symbol_table;
 		for (auto* unit : units) {

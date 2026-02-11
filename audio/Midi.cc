@@ -51,10 +51,7 @@ using std::string;
 inline char* formatTicks() {
 	static char formattedTicks[32];
 	uint64      ticks = SDL_GetTicks();
-	snprintf(
-			formattedTicks, 32, "[ %5u.%03u ] ",
-			static_cast<uint32>(ticks / 1000),
-			static_cast<uint32>(ticks % 1000));
+	snprintf(formattedTicks, 32, "[ %5u.%03u ] ", static_cast<uint32>(ticks / 1000), static_cast<uint32>(ticks % 1000));
 	return formattedTicks;
 }
 #endif
@@ -117,11 +114,9 @@ std::unique_ptr<IDataSource> open_music_flex(const std::string& flex, int num) {
 	}
 }
 
-bool MyMidiPlayer::start_music(
-		int num, bool repeat, ForceType force, std::string flex) {
+bool MyMidiPlayer::start_music(int num, bool repeat, ForceType force, std::string flex) {
 	// Check output for no output device
-	if (force == Force_None && (!ogg_enabled) && !midi_driver
-		&& !init_device(true)) {
+	if (force == Force_None && (!ogg_enabled) && !midi_driver && !init_device(true)) {
 		return false;
 	}
 	if (force == Force_Midi && !can_play_midi()) {
@@ -144,8 +139,7 @@ bool MyMidiPlayer::start_music(
 			return true;
 		}
 		// Midi driver is playing?
-		if (force != Force_Ogg && midi_driver
-			&& midi_driver->isSequencePlaying(SEQ_NUM_MUSIC)) {
+		if (force != Force_Ogg && midi_driver && midi_driver->isSequencePlaying(SEQ_NUM_MUSIC)) {
 			return true;
 		}
 	}
@@ -156,8 +150,7 @@ bool MyMidiPlayer::start_music(
 	}
 
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: MIDI Music track # "
-		 << num << " in flex " << flex << endl;
+	cout << formatTicks() << "Audio subsystem request: MIDI Music track # " << num << " in flex " << flex << endl;
 #endif
 
 	stop_music();
@@ -179,9 +172,7 @@ bool MyMidiPlayer::start_music(
 		// No midi driver or bg track and we can't play it properly so don't
 		// fall through or force ogg
 		if (force == Force_Ogg || !midi_driver
-			|| (!is_mt32()
-				&& Game_window::get_instance()->is_background_track(num)
-				&& flex == MAINMUS)) {
+			|| (!is_mt32() && Game_window::get_instance()->is_background_track(num) && flex == MAINMUS)) {
 			return false;
 		}
 	}
@@ -212,9 +203,7 @@ bool MyMidiPlayer::start_music(
 		return false;
 	}
 
-	XMidiFile midfile(
-			mid_data.get(), setup_timbre_for_track(flex),
-			midi_driver->getName());
+	XMidiFile midfile(mid_data.get(), setup_timbre_for_track(flex), midi_driver->getName());
 
 	// Now give the xmidi object to the midi device
 
@@ -226,12 +215,10 @@ bool MyMidiPlayer::start_music(
 	return false;
 }
 
-bool MyMidiPlayer::start_music(
-		std::string fname, int num, bool repeat, ForceType force) {
+bool MyMidiPlayer::start_music(std::string fname, int num, bool repeat, ForceType force) {
 	// No output device
 	// Check output for no output device
-	if (force == Force_None && (!ogg_enabled) && !midi_driver
-		&& !init_device(true)) {
+	if (force == Force_None && (!ogg_enabled) && !midi_driver && !init_device(true)) {
 		return false;
 	}
 	if (force == Force_Midi && !can_play_midi()) {
@@ -252,8 +239,7 @@ bool MyMidiPlayer::start_music(
 	repeating     = repeat;
 
 #ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: MIDI Music track # "
-		 << num << " in file " << fname << endl;
+	cout << formatTicks() << "Audio subsystem request: MIDI Music track # " << num << " in file " << fname << endl;
 #endif
 
 	// OGG Handling
@@ -294,8 +280,7 @@ bool MyMidiPlayer::start_music(
 		return false;
 	}
 
-	XMidiFile midfile(
-			&mid_data, setup_timbre_for_track(fname), midi_driver->getName());
+	XMidiFile midfile(&mid_data, setup_timbre_for_track(fname), midi_driver->getName());
 
 	// Now give the xmidi object to the midi device
 	XMidiEventList* eventlist = midfile.GetEventList(num);
@@ -372,8 +357,7 @@ int MyMidiPlayer::setup_timbre_for_track(std::string& str) {
 	// A 'Fake' MT32 Device ie Device with MT32 patchmaps but does not support
 	// SYSEX
 	if (music_conversion == XMIDIFILE_CONVERT_GM_TO_MT32
-		|| (music_conversion == XMIDIFILE_CONVERT_NOCONVERSION
-			&& midi_driver->noTimbreSupport())) {
+		|| (music_conversion == XMIDIFILE_CONVERT_NOCONVERSION && midi_driver->noTimbreSupport())) {
 		if (timbre_lib == TIMBRE_LIB_GM) {
 			return XMIDIFILE_CONVERT_GM_TO_MT32;
 		} else {
@@ -408,8 +392,7 @@ void MyMidiPlayer::load_timbres() {
 	}
 
 	// Not in a mode that uses Timbres
-	if (!midi_driver->isFMSynth() && !midi_driver->isMT32()
-		&& music_conversion != XMIDIFILE_CONVERT_NOCONVERSION) {
+	if (!midi_driver->isFMSynth() && !midi_driver->isMT32() && music_conversion != XMIDIFILE_CONVERT_NOCONVERSION) {
 		return;
 	}
 
@@ -422,9 +405,7 @@ void MyMidiPlayer::load_timbres() {
 		u7voice = U7VOICE_FLX;
 	}
 	// Serpent Isle
-	else if (
-			Game::get_game_type() == SERPENT_ISLE
-			&& timbre_lib == TIMBRE_LIB_MAINMENU) {
+	else if (Game::get_game_type() == SERPENT_ISLE && timbre_lib == TIMBRE_LIB_MAINMENU) {
 		u7voice = MAINMENU_TIM;
 	}
 
@@ -466,8 +447,7 @@ void MyMidiPlayer::load_timbres() {
 		}
 	}
 
-	if (timbre_lib_filename == filename && timbre_lib_index == index
-		&& timbre_lib_game == Game::get_game_type()) {
+	if (timbre_lib_filename == filename && timbre_lib_index == index && timbre_lib_game == Game::get_game_type()) {
 		return;
 	}
 
@@ -582,8 +562,7 @@ void MyMidiPlayer::set_music_conversion(int conv) {
 		stop_music();
 	}
 
-	std::string convert_key
-			= "config/audio/midi/convert_" + midi_driver->getName();
+	std::string convert_key = "config/audio/midi/convert_" + midi_driver->getName();
 
 	music_conversion = conv;
 
@@ -593,8 +572,7 @@ void MyMidiPlayer::set_music_conversion(int conv) {
 		break;
 	case XMIDIFILE_CONVERT_NOCONVERSION:
 		config->set(convert_key, "mt32", true);
-		if ((!ogg_enabled || !ogg_is_playing()) && !midi_driver->isFMSynth()
-			&& !midi_driver->isMT32()) {
+		if ((!ogg_enabled || !ogg_is_playing()) && !midi_driver->isFMSynth() && !midi_driver->isMT32()) {
 			load_timbres();
 		}
 		break;
@@ -630,11 +608,9 @@ void MyMidiPlayer::set_effects_conversion(int conv) {
 }
 #endif
 
-void MyMidiPlayer::set_midi_driver(
-		const std::string& desired_driver, bool use_oggs) {
+void MyMidiPlayer::set_midi_driver(const std::string& desired_driver, bool use_oggs) {
 	// Don't kill the device if we don't need to
-	if ((midi_driver_name != desired_driver
-		 && (!ogg_enabled || !ogg_is_playing()))
+	if ((midi_driver_name != desired_driver && (!ogg_enabled || !ogg_is_playing()))
 		||    // if ogg is playing we don't care about drivers
 		ogg_enabled != use_oggs) {
 		stop_music();
@@ -689,8 +665,7 @@ bool MyMidiPlayer::init_device(bool timbre_load) {
 
 	std::cout << "Timbers Precached: ";
 
-	if (LowLevelMidiDriver::precacheTimbresOnStartup
-		&& LowLevelMidiDriver::precacheTimbresOnPlay) {
+	if (LowLevelMidiDriver::precacheTimbresOnStartup && LowLevelMidiDriver::precacheTimbresOnPlay) {
 		std::cout << "On startup and play" << std::endl;
 	} else if (LowLevelMidiDriver::precacheTimbresOnStartup) {
 		std::cout << "On startup only" << std::endl;
@@ -748,19 +723,16 @@ bool MyMidiPlayer::init_device(bool timbre_load) {
 		midi_driver_name = s;
 	}
 
-	std::cout << "OGG Vorbis Digital Music: "
-			  << (ogg_enabled ? "Enabled" : "Disabled") << std::endl;
+	std::cout << "OGG Vorbis Digital Music: " << (ogg_enabled ? "Enabled" : "Disabled") << std::endl;
 
 	Pentagram::AudioMixer* mixer = Pentagram::AudioMixer::get_instance();
-	midi_driver                  = MidiDriver::createInstance(
-            s, mixer->getSampleRate(), mixer->getStereo());
+	midi_driver                  = MidiDriver::createInstance(s, mixer->getSampleRate(), mixer->getStereo());
 
 	// Load Volume settings
 
 	if (midi_driver) {
-		std::string volume_key
-				= "config/audio/midi/volume_" + midi_driver->getName();
-		int vol = midi_driver->getGlobalVolume();
+		std::string volume_key = "config/audio/midi/volume_" + midi_driver->getName();
+		int         vol        = midi_driver->getGlobalVolume();
 		config->value(volume_key, vol, vol);
 		config->set(volume_key, vol, false);
 		midi_driver->setGlobalVolume(vol);
@@ -788,9 +760,7 @@ bool MyMidiPlayer::init_device(bool timbre_load) {
 	if (s == "gs") {
 		music_conversion = XMIDIFILE_CONVERT_MT32_TO_GS;
 		// Only allow MT32 if driver created and it allows it
-	} else if (
-			s == "mt32"
-			&& (midi_driver && midi_driver->isRealMT32Supported())) {
+	} else if (s == "mt32" && (midi_driver && midi_driver->isRealMT32Supported())) {
 		music_conversion = XMIDIFILE_CONVERT_NOCONVERSION;
 	} else if (s == "none") {
 		music_conversion = XMIDIFILE_CONVERT_NOCONVERSION;
@@ -834,8 +804,7 @@ bool MyMidiPlayer::init_device(bool timbre_load) {
 
 bool MyMidiPlayer::is_mt32() const {
 	return midi_driver
-		   && (midi_driver->isMT32()
-			   || get_music_conversion() == XMIDIFILE_CONVERT_NOCONVERSION
+		   && (midi_driver->isMT32() || get_music_conversion() == XMIDIFILE_CONVERT_NOCONVERSION
 			   || get_music_conversion() == XMIDIFILE_CONVERT_GM_TO_MT32)
 		   && !midi_driver->isFMSynth();
 }
@@ -872,8 +841,7 @@ void MyMidiPlayer::produceSamples(sint16* stream, uint32 bytes) {
 	// valid. Deallocating the this pointer while it is being used will crash
 	// exult if you're lucky.
 	auto keepalive = midi_driver;
-	if (keepalive && keepalive->isInitialized()
-		&& keepalive->isSampleProducer()) {
+	if (keepalive && keepalive->isInitialized() && keepalive->isSampleProducer()) {
 		keepalive->produceSamples(stream, bytes);
 	}
 }
@@ -881,8 +849,7 @@ void MyMidiPlayer::produceSamples(sint16* stream, uint32 bytes) {
 #ifdef ENABLE_MIDISFX
 void MyMidiPlayer::start_sound_effect(int num) {
 #	ifdef DEBUG
-	cout << formatTicks() << "Audio subsystem request: MIDI SFX sound effect # "
-		 << num << endl;
+	cout << formatTicks() << "Audio subsystem request: MIDI SFX sound effect # " << num << endl;
 #	endif
 
 	int real_num = num;
@@ -919,11 +886,9 @@ void MyMidiPlayer::start_sound_effect(int num) {
 
 	std::unique_ptr<IExultDataSource> mid_data;
 	if (is_system_path_defined("<BUNDLE>")) {
-		mid_data = std::make_unique<IExultDataSource>(
-				"<DATA>/midisfx.flx", "<BUNDLE>/midisfx.flx", real_num);
+		mid_data = std::make_unique<IExultDataSource>("<DATA>/midisfx.flx", "<BUNDLE>/midisfx.flx", real_num);
 	} else {
-		mid_data = std::make_unique<IExultDataSource>(
-				"<DATA>/midisfx.flx", real_num);
+		mid_data = std::make_unique<IExultDataSource>("<DATA>/midisfx.flx", real_num);
 	}
 
 	if (!mid_data->good()) {
@@ -932,8 +897,7 @@ void MyMidiPlayer::start_sound_effect(int num) {
 
 	// Read the data into the XMIDI class
 	// It's already GM, so dont convert
-	XMidiFile midfile(
-			mid_data.get(), effects_conversion, midi_driver->getName());
+	XMidiFile midfile(mid_data.get(), effects_conversion, midi_driver->getName());
 
 	// Now give the xmidi object to the midi device
 	XMidiEventList* eventlist = midfile.GetEventList(0);
@@ -952,8 +916,7 @@ void MyMidiPlayer::stop_sound_effects() {
 }
 #endif
 
-bool MyMidiPlayer::ogg_play_track(
-		const std::string& filename, int num, bool repeat) {
+bool MyMidiPlayer::ogg_play_track(const std::string& filename, int num, bool repeat) {
 	string ogg_name;
 	string basepath = "<MUSIC>/";
 
@@ -1052,8 +1015,7 @@ bool MyMidiPlayer::ogg_play_track(
 	}
 
 	const bool flex_source = ogg_name == filename;
-	auto       ds          = [&ogg_name, &basepath, num, flex_source,
-               this]() -> std::unique_ptr<IDataSource> {
+	auto       ds          = [&ogg_name, &basepath, num, flex_source, this]() -> std::unique_ptr<IDataSource> {
         if (flex_source) {
             oggfailed += ':';
             oggfailed += std::to_string(num);
@@ -1061,9 +1023,7 @@ bool MyMidiPlayer::ogg_play_track(
         }
         if (U7exists("<PATCH>/music/" + ogg_name)) {
             ogg_name = get_system_path("<PATCH>/music/" + ogg_name);
-        } else if (
-                is_system_path_defined("<BUNDLE>")
-                && U7exists("<BUNDLE>/music/" + ogg_name)) {
+        } else if (is_system_path_defined("<BUNDLE>") && U7exists("<BUNDLE>/music/" + ogg_name)) {
             ogg_name = get_system_path("<BUNDLE>/music/" + ogg_name);
         } else {
             ogg_name = get_system_path(basepath + ogg_name);
@@ -1088,8 +1048,7 @@ bool MyMidiPlayer::ogg_play_track(
 	}
 
 	if (!Pentagram::OggAudioSample::isThis(ds.get())) {
-		std::cerr << "Failed to play OGG Music Track " << ogg_name
-				  << ". Reason: "
+		std::cerr << "Failed to play OGG Music Track " << ogg_name << ". Reason: "
 				  << "Not readable as an an Ogg" << std::endl;
 		oggfailed = ogg_name;
 		return false;
@@ -1103,12 +1062,10 @@ bool MyMidiPlayer::ogg_play_track(
 	}
 
 	ds->seek(0);
-	Pentagram::AudioSample* ogg_sample
-			= new Pentagram::OggAudioSample(std::move(ds));
+	Pentagram::AudioSample* ogg_sample = new Pentagram::OggAudioSample(std::move(ds));
 
 	int vol         = (ogg_volume * 255) / 100;
-	ogg_instance_id = mixer->playSample(
-			ogg_sample, repeat ? -1 : 0, INT_MAX, false, 65536, vol, vol);
+	ogg_instance_id = mixer->playSample(ogg_sample, repeat ? -1 : 0, INT_MAX, false, 65536, vol, vol);
 
 	ogg_sample->Release();
 
@@ -1184,9 +1141,7 @@ void MyMidiPlayer::SetMidiMusicVolume(int vol, bool savetoconfig) {
 
 	midi_driver->setGlobalVolume(vol);
 	if (savetoconfig) {
-		config->set(
-				"config/audio/midi/volume_" + midi_driver->getName(),
-				std::to_string(vol), true);
+		config->set("config/audio/midi/volume_" + midi_driver->getName(), std::to_string(vol), true);
 	}
 }
 

@@ -37,13 +37,11 @@ public:
 	~Conversation() override;
 
 private:
-	std::array<Npc_face_info*, 2> face_info{
-			nullptr, nullptr};    // NPC's on-screen faces in convers.
-	int      num_faces       = 0;
-	int      last_face_shown = 0;    // Index of last npc face shown.
-	TileRect avatar_face
-			= {0, 0, 0, 0};              // Area take by Avatar in conversation.
-	TileRect* conv_choices = nullptr;    // Choices during a conversation.
+	std::array<Npc_face_info*, 2> face_info{nullptr, nullptr};    // NPC's on-screen faces in convers.
+	int                           num_faces       = 0;
+	int                           last_face_shown = 0;               // Index of last npc face shown.
+	TileRect                      avatar_face     = {0, 0, 0, 0};    // Area take by Avatar in conversation.
+	TileRect*                     conv_choices    = nullptr;         // Choices during a conversation.
 
 	std::vector<std::string>             answers;
 	std::deque<std::vector<std::string>> answer_stack;
@@ -96,8 +94,7 @@ public:
 	static bool noface;
 
 private:
-	void set_face_rect(
-			Npc_face_info* info, Npc_face_info* prev, int screenw, int screenh);
+	void set_face_rect(Npc_face_info* info, Npc_face_info* prev, int screenw, int screenh);
 	void show_avatar_choices(int num_choices, char** choices);
 	void add_answer(const char* str);
 	void remove_answer(const char* str);

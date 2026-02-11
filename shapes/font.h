@@ -62,8 +62,7 @@ private:
 public:
 	Font();
 	Font(const File_spec& fname0, int index, int hlead = 0, int vlead = 1);
-	Font(const File_spec& fname0, const File_spec& fname1, int index,
-		 int hlead = 0, int vlead = 1);
+	Font(const File_spec& fname0, const File_spec& fname1, int index, int hlead = 0, int vlead = 1);
 	Font(Font&&) noexcept            = default;
 	Font& operator=(Font&&) noexcept = default;
 	~Font() noexcept                 = default;
@@ -85,43 +84,29 @@ public:
 	 *  @param vleah    Vertical lead of the font.
 	 *  @return 0 on success
 	 */
-	int load(
-			const File_spec& fname0, const File_spec& fname1, int index,
-			int hlead = 0, int vlead = 1);
+	int load(const File_spec& fname0, const File_spec& fname1, int index, int hlead = 0, int vlead = 1);
 	// Text rendering:
 	int paint_text_box(
-			Image_buffer8* win, const char* text, int x, int y, int w, int h,
-			int vert_lead = 0, bool pbreak = false, bool center = false,
-			Cursor_info* cursor = nullptr, unsigned char* trans = nullptr);
-	int paint_text(
-			Image_buffer8* win, const char* text, int xoff, int yoff,
-			unsigned char* trans = nullptr);
+			Image_buffer8* win, const char* text, int x, int y, int w, int h, int vert_lead = 0, bool pbreak = false,
+			bool center = false, Cursor_info* cursor = nullptr, unsigned char* trans = nullptr);
+	int paint_text(Image_buffer8* win, const char* text, int xoff, int yoff, unsigned char* trans = nullptr);
 
-	int paint_text_right_aligned(
-			Image_buffer8* win, const char* text, int xoff, int yoff,
-			unsigned char* trans = nullptr) {
+	int paint_text_right_aligned(Image_buffer8* win, const char* text, int xoff, int yoff, unsigned char* trans = nullptr) {
 		return paint_text(win, text, xoff - get_text_width(text), yoff, trans);
 	}
 
-	int paint_text(
-			Image_buffer8* win, const char* text, int textlen, int xoff,
-			int yoff, unsigned char* trans = nullptr);
+	int paint_text(Image_buffer8* win, const char* text, int textlen, int xoff, int yoff, unsigned char* trans = nullptr);
 	int paint_text_box_fixedwidth(
-			Image_buffer8* win, const char* text, int x, int y, int w, int h,
-			int char_width, int vert_lead = 0, int pbreak = 0,
+			Image_buffer8* win, const char* text, int x, int y, int w, int h, int char_width, int vert_lead = 0, int pbreak = 0,
 			unsigned char* trans = nullptr);
+	int paint_text_fixedwidth(Image_buffer8* win, const char* text, int xoff, int yoff, int width, unsigned char* trans = nullptr);
 	int paint_text_fixedwidth(
-			Image_buffer8* win, const char* text, int xoff, int yoff, int width,
-			unsigned char* trans = nullptr);
-	int paint_text_fixedwidth(
-			Image_buffer8* win, const char* text, int textlen, int xoff,
-			int yoff, int width, unsigned char* trans = nullptr);
+			Image_buffer8* win, const char* text, int textlen, int xoff, int yoff, int width, unsigned char* trans = nullptr);
 	// Get text width.
 	int get_text_width(const char* text);
 	int get_text_width(const char* text, int textlen);
 	// Get dimensions of text box for multiline string
-	void get_text_box_dims(
-			const char* text, int& width, int& height, int vert_lead = 0);
+	void get_text_box_dims(const char* text, int& width, int& height, int vert_lead = 0);
 	// Get text height, baseline, and vertical lead.
 	int get_text_height();
 	int get_text_baseline();
@@ -130,27 +115,18 @@ public:
 		return ver_lead;
 	}
 
-	int find_cursor(
-			const char* text, int x, int y, int w, int h, int cx, int cy,
-			int vert_lead);
+	int find_cursor(const char* text, int x, int y, int w, int h, int cx, int cy, int vert_lead);
 	int find_xcursor(const char* text, int textlen, int cx);
 
-	int draw_text(
-			Image_buffer8* win, int x, int y, const char* s,
-			unsigned char* trans = nullptr) {
+	int draw_text(Image_buffer8* win, int x, int y, const char* s, unsigned char* trans = nullptr) {
 		return paint_text(win, s, x, y, trans);
 	}
 
-	int draw_text_box(
-			Image_buffer8* win, int x, int y, int w, int h, const char* s,
-			unsigned char* trans = nullptr) {
-		return paint_text_box(
-				win, s, x, y, w, h, 0, false, false, nullptr, trans);
+	int draw_text_box(Image_buffer8* win, int x, int y, int w, int h, const char* s, unsigned char* trans = nullptr) {
+		return paint_text_box(win, s, x, y, w, h, 0, false, false, nullptr, trans);
 	}
 
-	int center_text(
-			Image_buffer8* iwin, int x, int y, const char* s,
-			unsigned char* trans = nullptr);
+	int center_text(Image_buffer8* iwin, int x, int y, const char* s, unsigned char* trans = nullptr);
 };
 
 /*
@@ -158,18 +134,13 @@ public:
  */
 class FontManager {
 private:
-	std::unordered_map<const char*, std::shared_ptr<Font>, hashstr, eqstr>
-			fonts;
+	std::unordered_map<const char*, std::shared_ptr<Font>, hashstr, eqstr> fonts;
 
 public:
 	~FontManager();
-	void add_font(
-			const char* name, const File_spec& fname0, int index, int hlead = 0,
-			int vlead = 1);
-	void add_font(
-			const char* name, const File_spec& fname0, const File_spec& fname1,
-			int index, int hlead = 0, int vlead = 1);
-	void                  remove_font(const char* name);
+	void add_font(const char* name, const File_spec& fname0, int index, int hlead = 0, int vlead = 1);
+	void add_font(const char* name, const File_spec& fname0, const File_spec& fname1, int index, int hlead = 0, int vlead = 1);
+	void remove_font(const char* name);
 	std::shared_ptr<Font> get_font(const char* name);
 
 	void reset();

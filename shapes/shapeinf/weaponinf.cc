@@ -51,11 +51,10 @@ const Weapon_info* Weapon_info::get_default() {
 		default_info.actor_frames  = 3;
 		default_info.powers        = 0;
 		default_info.damage_type   = 0;
-		default_info.m_autohit = default_info.m_lucky = default_info.m_explodes
-				= default_info.m_no_blocking = default_info.m_delete_depleted
-				= default_info.m_returns = default_info.m_need_target = false;
-		default_info.rotation_speed                                   = 0;
-		default_info.usecode                                          = 0;
+		default_info.m_autohit = default_info.m_lucky = default_info.m_explodes = default_info.m_no_blocking
+				= default_info.m_delete_depleted = default_info.m_returns = default_info.m_need_target = false;
+		default_info.rotation_speed                                                                    = 0;
+		default_info.usecode                                                                           = 0;
 		default_info.sfx = default_info.hitsfx = -1;
 	}
 	return &default_info;
@@ -120,8 +119,7 @@ bool Weapon_info::read(
 	ammo = little_endian::Read2(ptr);    // This is ammo family, or a neg. #.
 	// Shape to strike with, or projectile
 	//   shape if shoot/throw.
-	projectile = little_endian::Read2(
-			ptr);    // What a projectile fired will look like.
+	projectile                 = little_endian::Read2(ptr);    // What a projectile fired will look like.
 	damage                     = Read1(ptr);
 	const unsigned char flags0 = Read1(ptr);
 	m_lucky                    = (flags0 & 1) != 0;

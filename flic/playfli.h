@@ -70,9 +70,7 @@ private:
 
 public:
 	template <typename... T>
-	explicit playfli(T&&... args)
-			: fli_data(std::forward<T>(args)...),
-			  palette(std::make_unique<Palette>()) {
+	explicit playfli(T&&... args) : fli_data(std::forward<T>(args)...), palette(std::make_unique<Palette>()) {
 		initfli();
 	}
 
@@ -82,9 +80,7 @@ public:
 	playfli& operator=(playfli&&) noexcept = default;
 	~playfli() noexcept                    = default;
 	void info(fliinfo* fi = nullptr) const;
-	int  play(
-			 Image_window* win, int first_frame = 0, int last_frame = -1,
-			 unsigned long ticks = 0, int brightness = 100);
+	int  play(Image_window* win, int first_frame = 0, int last_frame = -1, unsigned long ticks = 0, int brightness = 100);
 	void put_buffer(Image_window* win) const;
 
 	inline Palette* get_palette() {

@@ -70,8 +70,7 @@ constexpr static int Count_digits10(unsigned val) {
 }
 
 ConfigSetting_widget::ConfigSetting_widget(
-		Gump_Base* parent, int px, int py, int butonwidth, const Definition& s,
-		std::shared_ptr<Font> font, int line_gap)
+		Gump_Base* parent, int px, int py, int butonwidth, const Definition& s, std::shared_ptr<Font> font, int line_gap)
 		: IterableGump_widget(parent, -1, px, py, -1), setting(s), font(font) {
 	if (setting.additional < 0) {
 		setting.additional = 0;
@@ -88,17 +87,14 @@ ConfigSetting_widget::ConfigSetting_widget(
 		if (label.empty()) {
 			label = Strings::Default();
 		}
-		setting.choices.push_back(
-				{std::move(label), setting.default_value,
-				 setting.default_value});
+		setting.choices.push_back({std::move(label), setting.default_value, setting.default_value});
 	}
 
 	// Add in the empty choice if not required or have additional settings
 	emptychoice = setting.find_choice("");
 	if (emptychoice == -1 && (!setting.required || setting.additional > 0)) {
 		emptychoice = setting.choices.size();
-		setting.choices.push_back(ConfigSetting_widget::Definition::Choice{
-				Strings::Unset(), "", ""});
+		setting.choices.push_back(ConfigSetting_widget::Definition::Choice{Strings::Unset(), "", ""});
 	}
 
 	// convert choices into string vector
@@ -110,10 +106,8 @@ ConfigSetting_widget::ConfigSetting_widget(
 	}
 	int offset_y  = 0;
 	missingchoice = -1;
-	int widget_x
-			= font->get_text_width(setting.label.c_str())
-			  + Count_digits10(setting.additional) * font->get_text_width("0")
-			  + Modal_gump::label_margin;
+	int widget_x  = font->get_text_width(setting.label.c_str()) + Count_digits10(setting.additional) * font->get_text_width("0")
+				   + Modal_gump::label_margin;
 	for (int i = -1; i < setting.additional; i++) {
 		std::string      config_key;
 		std::string_view default_value;
@@ -154,26 +148,21 @@ ConfigSetting_widget::ConfigSetting_widget(
 		// create widget
 		switch (setting.setting_type) {
 		case Definition::dropdown: {
-			children[i + 1] = std::make_unique<
-					CallbackButtonBase<ConfigSetting_widget, DropDown_widget>>(
-					this, &ConfigSetting_widget::onselectionmb, sv_choices,
-					current_index, widget_x, offset_y, butonwidth);
+			children[i + 1] = std::make_unique<CallbackButtonBase<ConfigSetting_widget, DropDown_widget>>(
+					this, &ConfigSetting_widget::onselectionmb, sv_choices, current_index, widget_x, offset_y, butonwidth);
 
 			break;
 		}
 		case Definition::list: {
 			Modal_gump::ProceduralColours colours = {};
-			children[i + 1] = std::make_unique<CallbackButtonBase<
-					ConfigSetting_widget, StringList_widget>>(
-					this, &ConfigSetting_widget::onselectionmb, sv_choices,
-					current_index, widget_x, offset_y, colours, butonwidth, 0);
+			children[i + 1]                       = std::make_unique<CallbackButtonBase<ConfigSetting_widget, StringList_widget>>(
+                    this, &ConfigSetting_widget::onselectionmb, sv_choices, current_index, widget_x, offset_y, colours, butonwidth,
+                    0);
 			break;
 		}
 		case Definition::button: {
-			children[i + 1] = std::make_unique<
-					SelfManaged<CallbackToggleTextButton<ConfigSetting_widget>>>(
-					this, &ConfigSetting_widget::onselection, sv_choices,
-					current_index, widget_x, offset_y, butonwidth, 0);
+			children[i + 1] = std::make_unique<SelfManaged<CallbackToggleTextButton<ConfigSetting_widget>>>(
+					this, &ConfigSetting_widget::onselection, sv_choices, current_index, widget_x, offset_y, butonwidth, 0);
 
 			break;
 		}
@@ -224,12 +213,9 @@ void ConfigSetting_widget::paint() {
 	// If a label is longer than 64 chars, someone is doing something wrong and
 	// this code will truncate the string as needed
 	char         m[64];
-	const size_t len = setting.label.copy(
-			m, std::size(m) - (Count_digits10(setting.additional) + 3), 0);
+	const size_t len = setting.label.copy(m, std::size(m) - (Count_digits10(setting.additional) + 3), 0);
 
-	for (int i = -1;
-		 i < setting.additional && (i < 0 || size_t(i) < children.size());
-		 i++) {
+	for (int i = -1; i < setting.additional && (i < 0 || size_t(i) < children.size()); i++) {
 		auto& child = children[i + 1];
 
 		// Paint the label for the child
@@ -265,9 +251,7 @@ void ConfigSetting_widget::paint() {
 }
 
 void ConfigSetting_widget::revert() {
-	for (int i = -1;
-		 i <= setting.additional && (i < 0 || size_t(i) < children.size());
-		 i++) {
+	for (int i = -1; i <= setting.additional && (i < 0 || size_t(i) < children.size()); i++) {
 		auto& child = children[i + 1];
 
 		// set selection on child to initial value
@@ -278,9 +262,7 @@ void ConfigSetting_widget::revert() {
 }
 
 void ConfigSetting_widget::setdefault() {
-	for (int i = -1;
-		 i <= setting.additional && (i < 0 || size_t(i) < children.size());
-		 i++) {
+	for (int i = -1; i <= setting.additional && (i < 0 || size_t(i) < children.size()); i++) {
 		auto& child = children[i + 1];
 
 		// set selection on child to default value
@@ -295,9 +277,7 @@ void ConfigSetting_widget::setdefault() {
 }
 
 void ConfigSetting_widget::save_to_config(bool write_file) {
-	for (int i = -1;
-		 i < setting.additional && (i < 0 || size_t(i) < children.size());
-		 i++) {
+	for (int i = -1; i < setting.additional && (i < 0 || size_t(i) < children.size()); i++) {
 		auto& child = children[i + 1];
 
 		int sel = child->getselection();
@@ -357,9 +337,7 @@ std::string ConfigSetting_widget::Validate() {
 	bool have      = false;
 	bool collision = false;
 
-	for (int i = -1;
-		 i < setting.additional && (i < 0 || size_t(i) < children.size());
-		 i++) {
+	for (int i = -1; i < setting.additional && (i < 0 || size_t(i) < children.size()); i++) {
 		auto& child = children[i + 1];
 
 		int sel = child->getselection();
@@ -375,40 +353,29 @@ std::string ConfigSetting_widget::Validate() {
 	}
 
 	if (setting.unique && collision) {
-		return Strings::Allvaluesfor() + (" " + setting.label + " ")
-			   + Strings::settingmustbeunique_();
+		return Strings::Allvaluesfor() + (" " + setting.label + " ") + Strings::settingmustbeunique_();
 	} else if (setting.required && !have) {
-		return Strings::AtleastOnevaluefor() + (" " + setting.label + " ")
-			   + Strings::settingmustbeset_();
+		return Strings::AtleastOnevaluefor() + (" " + setting.label + " ") + Strings::settingmustbeset_();
 	}
 
 	return std::string();
 }
 
-int ConfigSetting_widget::Definition::find_choice(
-		std::string_view value, bool case_insensitive) const {
-	auto found = std::find_if(
-			choices.begin(), choices.end(),
-			[value, case_insensitive](const Choice& choice) {
-				if (case_insensitive) {
-					if ((!Pentagram::strncasecmp(
-								 choice.value.c_str(), value.data(),
-								 value.size())
-						 && value.size() == choice.value.size())
-						|| (!choice.alternative.empty()
-							&& !Pentagram::strncasecmp(
-									choice.alternative.c_str(), value.data(),
-									value.size())
-							&& value.size() == choice.alternative.size())) {
-						return true;
-					}
-				} else {
-					if (choice.value == value || choice.alternative == value) {
-						return true;
-					}
-				}
-				return false;
-			});
+int ConfigSetting_widget::Definition::find_choice(std::string_view value, bool case_insensitive) const {
+	auto found = std::find_if(choices.begin(), choices.end(), [value, case_insensitive](const Choice& choice) {
+		if (case_insensitive) {
+			if ((!Pentagram::strncasecmp(choice.value.c_str(), value.data(), value.size()) && value.size() == choice.value.size())
+				|| (!choice.alternative.empty() && !Pentagram::strncasecmp(choice.alternative.c_str(), value.data(), value.size())
+					&& value.size() == choice.alternative.size())) {
+				return true;
+			}
+		} else {
+			if (choice.value == value || choice.alternative == value) {
+				return true;
+			}
+		}
+		return false;
+	});
 
 	if (found != choices.end()) {
 		return found - choices.begin();
@@ -418,17 +385,12 @@ int ConfigSetting_widget::Definition::find_choice(
 }
 
 void ConfigSetting_widget::Definition::sort_choices() {
-	std::sort(
-			choices.begin(), choices.end(),
-			[](const Choice& left, const Choice& right) {
-				return Pentagram::strcasecmp(
-							   left.label.c_str(), right.label.c_str())
-					   < 0;
-			});
+	std::sort(choices.begin(), choices.end(), [](const Choice& left, const Choice& right) {
+		return Pentagram::strcasecmp(left.label.c_str(), right.label.c_str()) < 0;
+	});
 }
 
-void ConfigSetting_widget::Definition::add_filenames_to_choices(
-		const std::string& mask, bool strip_directory) {
+void ConfigSetting_widget::Definition::add_filenames_to_choices(const std::string& mask, bool strip_directory) {
 	FileList files;
 	U7ListFiles(mask, files, true);
 

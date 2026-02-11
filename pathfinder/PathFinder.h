@@ -41,9 +41,7 @@ public:
 	// Figure cost for a single step.
 	virtual int get_step_cost(const Tile_coord& from, Tile_coord& to) const = 0;
 	// Estimate cost between two points.
-	virtual int estimate_cost(
-			const Tile_coord& from, const Tile_coord& to) const
-			= 0;
+	virtual int estimate_cost(const Tile_coord& from, const Tile_coord& to) const = 0;
 	// Is tile at the goal?
 	virtual bool at_goal(const Tile_coord& tile, const Tile_coord& goal) const;
 
@@ -67,11 +65,8 @@ public:
 	// Find a path from sx,sy,sz to dx,dy,dz
 	// Return false if no path can be traced.
 	// Return true if path found
-	PathFinder() = default;
-	virtual bool NewPath(
-			const Tile_coord& s, const Tile_coord& d,
-			const Pathfinder_client* client)
-			= 0;
+	PathFinder()                                                                                    = default;
+	virtual bool NewPath(const Tile_coord& s, const Tile_coord& d, const Pathfinder_client* client) = 0;
 
 	// Retrieve starting point (set by subclasses).
 	Tile_coord get_src() {

@@ -30,24 +30,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "misc_buttons.h"
 #include "objiter.h"
 
-const int toothx[19] = {34, 32, 31, 31, 28, 31, 27, 31, 40, 50,
-						57, 63, 72, 70, 75, 82, 83, 87, 0};
+const int toothx[19] = {34, 32, 31, 31, 28, 31, 27, 31, 40, 50, 57, 63, 72, 70, 75, 82, 83, 87, 0};
 
-const int toothy[19] = {19, 30, 37, 44, 52, 57, 66, 77, 82, 84,
-						80, 71, 69, 61, 50, 42, 36, 32, 0};
+const int toothy[19] = {19, 30, 37, 44, 52, 57, 66, 77, 82, 84, 80, 71, 69, 61, 50, 42, 36, 32, 0};
 
 Jawbone_gump::Jawbone_gump(
 		Jawbone_object* cont,    // Jawbone it represents.
 		int initx, int inity     // Coords. on screen.
 		)
-		: Gump(cont, initx, inity, game->get_shape("gumps/jawbone")),
-		  jawbone(cont) {
+		: Gump(cont, initx, inity, game->get_shape("gumps/jawbone")), jawbone(cont) {
 	set_object_area(TileRect(0, 0, 138, 116), 26, 97);
 }
 
-bool Jawbone_gump::add(
-		Game_object* obj, int mx, int my, int sx, int sy, bool dont_check,
-		bool combine) {
+bool Jawbone_gump::add(Game_object* obj, int mx, int my, int sx, int sy, bool dont_check, bool combine) {
 	ignore_unused_variable_warning(mx, my, sx, sy);
 	// Jawbone_object handles all the checks required
 	return jawbone->add(obj, dont_check, combine);
@@ -121,8 +116,7 @@ bool Jawbone_gump::on_tooth(int sx, int sy, int index) {
 
 	const TileRect r = gwin->get_shape_rect(shape, 0, 0);
 
-	return r.has_point(sx - objx, sy - objy)
-		   && shape->has_point(sx - objx, sy - objy);
+	return r.has_point(sx - objx, sy - objy) && shape->has_point(sx - objx, sy - objy);
 }
 
 void Jawbone_gump::set_to_spot(Game_object* obj, int sx, int sy) {
@@ -134,6 +128,5 @@ void Jawbone_gump::set_to_spot(Game_object* obj, int sx, int sy) {
 	const int h = shape->get_height();
 
 	// Set object's position.
-	obj->set_shape_pos(
-			sx + shape->get_xleft() - w / 2, sy + shape->get_yabove() - h / 2);
+	obj->set_shape_pos(sx + shape->get_xleft() - w / 2, sy + shape->get_yabove() - h / 2);
 }

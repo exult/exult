@@ -52,12 +52,10 @@ public:
 	// Paint it and its contents.
 	void paint() override;
 	// Handle events:
-	bool key_down(SDL_Keycode chr, SDL_Keycode unicode)
-			override;    // Character typed.
+	bool        key_down(SDL_Keycode chr, SDL_Keycode unicode) override;    // Character typed.
 	static bool ask(
 			const char* txt, Paintable* paint = nullptr,
-			const char* font
-			= "SMALL_BLACK_FONT");    // Ask question, get answer.
+			const char* font = "SMALL_BLACK_FONT");    // Ask question, get answer.
 };
 
 class Countdown_gump : public Yesno_gump {
@@ -72,8 +70,7 @@ public:
 
 	static bool ask(
 			const char* txt, int timeout,
-			const char* font
-			= "SMALL_BLACK_FONT");    // Ask question, get answer, timeout to no
-									  // after timeout seconds
+			const char* font = "SMALL_BLACK_FONT");    // Ask question, get answer, timeout to no
+													   // after timeout seconds
 };
 #endif

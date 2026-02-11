@@ -54,15 +54,13 @@ using std::string;
 unsigned char Palette::border[3] = {0, 0, 0};
 
 Palette::Palette()
-		: win(Game_window::get_instance()->get_win()), palette(-1),
-		  brightness(100), max_val(63), border255(false), faded_out(false),
-		  fades_enabled(true) {
+		: win(Game_window::get_instance()->get_win()), palette(-1), brightness(100), max_val(63), border255(false),
+		  faded_out(false), fades_enabled(true) {
 	memset(pal1, 0, 768);
 	memset(pal2, 0, 768);
 }
 
-Palette::Palette(Palette* pal)
-		: win(Game_window::get_instance()->get_win()), max_val(63) {
+Palette::Palette(Palette* pal) : win(Game_window::get_instance()->get_win()), max_val(63) {
 	take(pal);
 }
 
@@ -124,8 +122,7 @@ void Palette::set(
 		bool repaint) {
 	border255 = (pal_num >= 0 && pal_num <= 12) && pal_num != 9;
 
-	if ((palette == pal_num || pal_num == -1)
-		&& (brightness == new_brightness || new_brightness == -1)) {
+	if ((palette == pal_num || pal_num == -1) && (brightness == new_brightness || new_brightness == -1)) {
 		// Already set.
 		return;
 	}
@@ -197,8 +194,7 @@ void Palette::apply(bool repaint) {
  *  @param xfname   xform file name.
  *  @param xindex   xform index.
  */
-void Palette::loadxform(
-		const unsigned char* buf, const char* xfname, int& xindex) {
+void Palette::loadxform(const unsigned char* buf, const char* xfname, int& xindex) {
 	const U7object xform(xfname, xindex);
 	size_t         xlen;
 	auto           xbuf = xform.retrieve(xlen);
@@ -220,8 +216,7 @@ void Palette::loadxform(
  *  @param xfname   xform file name.
  *  @param xindex   xform index.
  */
-void Palette::set_loaded(
-		const U7multiobject& pal, const char* xfname, int xindex) {
+void Palette::set_loaded(const U7multiobject& pal, const char* xfname, int xindex) {
 	size_t               len;
 	auto                 xfbuf = pal.retrieve(len);
 	const unsigned char* buf   = xfbuf.get();
@@ -261,8 +256,7 @@ void Palette::set_loaded(
  *  @param xfname   Optional xform file name.
  *  @param xindex   Optional xform index.
  */
-void Palette::load(
-		const File_spec& fname0, int index, const char* xfname, int xindex) {
+void Palette::load(const File_spec& fname0, int index, const char* xfname, int xindex) {
 	const U7multiobject pal(fname0, index);
 	set_loaded(pal, xfname, xindex);
 }
@@ -276,9 +270,7 @@ void Palette::load(
  *  @param xfname   Optional xform file name.
  *  @param xindex   Optional xform index.
  */
-void Palette::load(
-		const File_spec& fname0, const File_spec& fname1, int index,
-		const char* xfname, int xindex) {
+void Palette::load(const File_spec& fname0, const File_spec& fname1, int index, const char* xfname, int xindex) {
 	const U7multiobject pal(fname0, fname1, index);
 	set_loaded(pal, xfname, xindex);
 }
@@ -294,8 +286,7 @@ void Palette::load(
  *  @param xindex   Optional xform index.
  */
 void Palette::load(
-		const File_spec& fname0, const File_spec& fname1,
-		const File_spec& fname2, int index, const char* xfname, int xindex) {
+		const File_spec& fname0, const File_spec& fname1, const File_spec& fname2, int index, const char* xfname, int xindex) {
 	const U7multiobject pal(fname0, fname1, fname2, index);
 	set_loaded(pal, xfname, xindex);
 }
@@ -330,8 +321,7 @@ void Palette::fade_in(int cycles) {
 			win->set_palette(fade_pal, max_val, brightness);
 
 			// Frame skipping on slow systems
-			if (i == cycles || ticks >= SDL_GetTicks()
-				|| !Game_window::get_instance()->get_frame_skipping()) {
+			if (i == cycles || ticks >= SDL_GetTicks() || !Game_window::get_instance()->get_frame_skipping()) {
 				win->show();
 			}
 			while (ticks >= SDL_GetTicks())
@@ -385,8 +375,7 @@ void Palette::fade_out(int cycles) {
 
 			win->set_palette(fade_pal, max_val, brightness);
 			// Frame skipping on slow systems
-			if (i == 0 || ticks >= SDL_GetTicks()
-				|| !Game_window::get_instance()->get_frame_skipping()) {
+			if (i == 0 || ticks >= SDL_GetTicks() || !Game_window::get_instance()->get_frame_skipping()) {
 				win->show();
 			}
 			while (ticks >= SDL_GetTicks())
@@ -427,8 +416,7 @@ int Palette::find_color(int r, int g, int b, int last) const {
 void Palette::create_palette_map(const Palette* to, unsigned char* buf) const {
 	// Assume buf has 256 elements
 	for (int i = 0; i < 256; i++) {
-		buf[i] = to->find_color(
-				pal1[3 * i], pal1[3 * i + 1], pal1[3 * i + 2], 256);
+		buf[i] = to->find_color(pal1[3 * i], pal1[3 * i + 1], pal1[3 * i + 2], 256);
 	}
 }
 
@@ -436,8 +424,7 @@ void Palette::create_palette_map(const Palette* to, unsigned char* buf) const {
  *  Creates a palette in-between two palettes.
  */
 
-std::unique_ptr<Palette> Palette::create_intermediate(
-		const Palette& to, int nsteps, int pos) const {
+std::unique_ptr<Palette> Palette::create_intermediate(const Palette& to, int nsteps, int pos) const {
 	auto newpal = std::make_unique<Palette>();
 	if (fades_enabled) {
 		for (int c = 0; c < 768; c++) {
@@ -472,16 +459,10 @@ void Palette::create_trans_table(
 		unsigned char* table     // 256 indices are stored here.
 ) const {
 	for (int i = 0; i < 256; i++) {
-		const int newr
-				= (static_cast<int>(br) * alpha) / 255
-				  + (static_cast<int>(pal1[i * 3]) * (255 - alpha)) / 255;
-		const int newg
-				= (static_cast<int>(bg) * alpha) / 255
-				  + (static_cast<int>(pal1[i * 3 + 1]) * (255 - alpha)) / 255;
-		const int newb
-				= (static_cast<int>(bb) * alpha) / 255
-				  + (static_cast<int>(pal1[i * 3 + 2]) * (255 - alpha)) / 255;
-		table[i] = find_color(newr, newg, newb);
+		const int newr = (static_cast<int>(br) * alpha) / 255 + (static_cast<int>(pal1[i * 3]) * (255 - alpha)) / 255;
+		const int newg = (static_cast<int>(bg) * alpha) / 255 + (static_cast<int>(pal1[i * 3 + 1]) * (255 - alpha)) / 255;
+		const int newb = (static_cast<int>(bb) * alpha) / 255 + (static_cast<int>(pal1[i * 3 + 2]) * (255 - alpha)) / 255;
+		table[i]       = find_color(newr, newg, newb);
 	}
 }
 
@@ -541,12 +522,7 @@ const Palette::Ramp* Palette::get_ramps(unsigned int& num_ramps) {
 			// so 48 is equiv to 192 in 8 bit)
 			// Special handling for palette cycling ranges so they behave better
 			if ((c < palette_cycling[0] && std::abs(brightness - last) > 48)
-				|| c
-						   == *std::find(
-								   palette_cycling,
-								   palette_cycling + std::size(palette_cycling)
-										   - 1,
-								   c)) {
+				|| c == *std::find(palette_cycling, palette_cycling + std::size(palette_cycling) - 1, c)) {
 				// set the end point of the previous ramp
 				ramps[r].end = c - 1;
 				r++;
@@ -614,8 +590,7 @@ uint8 Palette::remap_colour_to_ramp(uint8 colindex, unsigned int newramp) {
 	int offset = 0;
 	for (unsigned int r = 0; r < num_ramps; r++) {
 		if (ramps[r].start <= colindex && ramps[r].end >= colindex) {
-			offset = ((colindex - ramps[r].start) * 256)
-					 / (ramps[r].end - ramps[r].start);
+			offset = ((colindex - ramps[r].start) * 256) / (ramps[r].end - ramps[r].start);
 			break;
 		}
 	}
@@ -646,11 +621,8 @@ void Palette::Generate_remap_xformtable(uint8 table[256], const int* remaps) {
 		int  fromsize = fromramp.end - fromramp.start;
 		int  tosize   = toramp.end - toramp.start;
 		if (fromramp.start) {
-			for (std::uint_fast16_t c = fromramp.start; c <= fromramp.end;
-				 c++) {
-				int offset = fromsize
-									 ? ((c - fromramp.start) * 256) / (fromsize)
-									 : 0;
+			for (std::uint_fast16_t c = fromramp.start; c <= fromramp.end; c++) {
+				int offset = fromsize ? ((c - fromramp.start) * 256) / (fromsize) : 0;
 
 				table[c] = toramp.start + (offset * tosize) / 256;
 			}
@@ -658,37 +630,31 @@ void Palette::Generate_remap_xformtable(uint8 table[256], const int* remaps) {
 	}
 }
 
-Palette_transition::Palette_transition(
-		int from, int to, int ch, int cm, int ct, int r, int nsteps, int sh,
-		int smin, int stick)
-		: current(nullptr), step(0), max_steps(nsteps), start_hour(sh),
-		  start_minute(smin), start_ticks(stick), rate(r) {
+Palette_transition::Palette_transition(int from, int to, int ch, int cm, int ct, int r, int nsteps, int sh, int smin, int stick)
+		: current(nullptr), step(0), max_steps(nsteps), start_hour(sh), start_minute(smin), start_ticks(stick), rate(r) {
 	start.load(PALETTES_FLX, PATCH_PALETTES, from);
 	end.load(PALETTES_FLX, PATCH_PALETTES, to);
 	set_step(ch, cm, ct);
 }
 
 Palette_transition::Palette_transition(
-		Palette* from, int to, int ch, int cm, int ct, int r, int nsteps,
-		int sh, int smin, int stick)
-		: start(from), current(nullptr), step(0), max_steps(nsteps),
-		  start_hour(sh), start_minute(smin), start_ticks(stick), rate(r) {
+		Palette* from, int to, int ch, int cm, int ct, int r, int nsteps, int sh, int smin, int stick)
+		: start(from), current(nullptr), step(0), max_steps(nsteps), start_hour(sh), start_minute(smin), start_ticks(stick),
+		  rate(r) {
 	end.load(PALETTES_FLX, PATCH_PALETTES, to);
 	set_step(ch, cm, ct);
 }
 
 Palette_transition::Palette_transition(
-		Palette* from, Palette* to, int ch, int cm, int ct, int r, int nsteps,
-		int sh, int smin, int stick)
-		: start(from), end(to), current(nullptr), step(0), max_steps(nsteps),
-		  start_hour(sh), start_minute(smin), start_ticks(stick), rate(r) {
+		Palette* from, Palette* to, int ch, int cm, int ct, int r, int nsteps, int sh, int smin, int stick)
+		: start(from), end(to), current(nullptr), step(0), max_steps(nsteps), start_hour(sh), start_minute(smin),
+		  start_ticks(stick), rate(r) {
 	set_step(ch, cm, ct);
 }
 
 bool Palette_transition::set_step(int hour, int min, int tick) {
 	int       new_step = ticks_per_minute * (60 * hour + min) + tick;
-	const int old_step
-			= ticks_per_minute * (60 * start_hour + start_minute) + start_ticks;
+	const int old_step = ticks_per_minute * (60 * start_hour + start_minute) + start_ticks;
 	new_step -= old_step;
 	while (new_step < 0) {
 		new_step += 60 * ticks_per_minute;

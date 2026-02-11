@@ -51,8 +51,7 @@ using std::endl;
  */
 
 Exec_process::Exec_process()
-		: child_stdin(-1), child_stdout(-1), child_stderr(-1), child_pid(-1),
-		  stdout_tag(-1), stderr_tag(-1), reader(nullptr),
+		: child_stdin(-1), child_stdout(-1), child_stderr(-1), child_pid(-1), stdout_tag(-1), stderr_tag(-1), reader(nullptr),
 		  reader_data(nullptr) {}
 
 /*
@@ -86,8 +85,7 @@ void Exec_process::kill_child() {
 	if (stderr_tag >= 0) {
 		g_source_remove(stderr_tag);
 	}
-	child_pid = child_stdin = child_stdout = child_stderr = stdout_tag
-			= stderr_tag                                  = -1;
+	child_pid = child_stdin = child_stdout = child_stderr = stdout_tag = stderr_tag = -1;
 }
 
 /*
@@ -178,12 +176,10 @@ bool Exec_process::exec(
 	int stdin_pipe[2];
 	int stdout_pipe[2];
 	int stderr_pipe[2];
-	stdin_pipe[0] = stdin_pipe[1] = stdout_pipe[0] = stdout_pipe[1]
-			= stderr_pipe[0] = stderr_pipe[1] = -1;
+	stdin_pipe[0] = stdin_pipe[1] = stdout_pipe[0] = stdout_pipe[1] = stderr_pipe[0] = stderr_pipe[1] = -1;
 	kill_child();    // Kill running process.
 	// Create pipes.
-	if (pipe(stdin_pipe) != 0 || pipe(stdout_pipe) != 0
-		|| pipe(stderr_pipe) != 0) {
+	if (pipe(stdin_pipe) != 0 || pipe(stdout_pipe) != 0 || pipe(stderr_pipe) != 0) {
 		// Error.
 		Close_pipes(stdin_pipe, stdout_pipe, stderr_pipe);
 		return false;
@@ -194,9 +190,7 @@ bool Exec_process::exec(
 		return false;
 	}
 	if (child_pid == 0) {    // Are we the child?
-		if (dup_wrapper(stdin_pipe, 0, true)
-			|| dup_wrapper(stdout_pipe, 1, false)
-			|| dup_wrapper(stderr_pipe, 2, false)) {
+		if (dup_wrapper(stdin_pipe, 0, true) || dup_wrapper(stdout_pipe, 1, false) || dup_wrapper(stderr_pipe, 2, false)) {
 			Close_pipes(stdin_pipe, stdout_pipe, stderr_pipe);
 			return false;
 		}
@@ -210,16 +204,11 @@ bool Exec_process::exec(
 	close(stdout_pipe[1]);
 	child_stderr = stderr_pipe[0];
 	close(stderr_pipe[1]);
-	cout << "Child_stdout is " << child_stdout << ", Child_stderr is "
-		 << child_stderr << endl;
+	cout << "Child_stdout is " << child_stdout << ", Child_stderr is " << child_stderr << endl;
 	GIOChannel* gio_out = g_io_channel_unix_new(child_stdout);
 	GIOChannel* gio_err = g_io_channel_unix_new(child_stderr);
-	stdout_tag          = g_io_add_watch(
-            gio_out, static_cast<GIOCondition>(G_IO_IN | G_IO_HUP | G_IO_ERR),
-            Read_from_child, this);
-	stderr_tag = g_io_add_watch(
-			gio_err, static_cast<GIOCondition>(G_IO_IN | G_IO_HUP | G_IO_ERR),
-			Read_from_child, this);
+	stdout_tag          = g_io_add_watch(gio_out, static_cast<GIOCondition>(G_IO_IN | G_IO_HUP | G_IO_ERR), Read_from_child, this);
+	stderr_tag          = g_io_add_watch(gio_err, static_cast<GIOCondition>(G_IO_IN | G_IO_HUP | G_IO_ERR), Read_from_child, this);
 	g_io_channel_unref(gio_out);
 	g_io_channel_unref(gio_err);
 	return true;

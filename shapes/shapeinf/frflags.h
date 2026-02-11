@@ -79,15 +79,12 @@ public:
 	friend class Shape_info;
 	Frame_flags_info() = default;
 
-	Frame_flags_info(
-			short fr, short q, unsigned int fl, bool p = false, bool m = false,
-			bool s = false, bool inv = false) {
+	Frame_flags_info(short fr, short q, unsigned int fl, bool p = false, bool m = false, bool s = false, bool inv = false) {
 		set(fr, q, fl, p, m, s, inv);
 	}
 
 	Frame_flags_info(const Frame_flags_info& other)
-			: Base_info(other), frame(other.frame), quality(other.quality),
-			  m_flags(other.m_flags) {
+			: Base_info(other), frame(other.frame), quality(other.quality), m_flags(other.m_flags) {
 		info_flags = other.info_flags;
 	}
 
@@ -96,9 +93,7 @@ public:
 	// Write out.
 	void write(std::ostream& out, int shapenum, Exult_Game game);
 
-	void set(
-			short fr, short q, unsigned int fl, bool p = false, bool m = false,
-			bool s = false, bool inv = false) {
+	void set(short fr, short q, unsigned int fl, bool p = false, bool m = false, bool s = false, bool inv = false) {
 		frame   = fr;
 		quality = q;
 		m_flags = fl;

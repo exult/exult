@@ -31,19 +31,16 @@ class Gump_button : public Gump_widget {
 private:
 	MouseButton pushed_button;    // MouseButton::Unknown if in unpushed state.
 
-	bool self_managed;    // Self managed button handles it's own input.
-						  // on_button will return nullptr if self managed
+	bool self_managed;                              // Self managed button handles it's own input.
+													// on_button will return nullptr if self managed
 	MouseButton dragging = MouseButton::Unknown;    // Button beingg held while
 													// dragging mouse
 
 public:
 	friend class Gump;
 
-	Gump_button(
-			Gump_Base* par, int shnum, int px, int py,
-			ShapeFile shfile = SF_GUMPS_VGA, bool self_managed = false)
-			: Gump_widget(par, shnum, px, py, 0, shfile),
-			  pushed_button(MouseButton::Unknown), self_managed(self_managed) {}
+	Gump_button(Gump_Base* par, int shnum, int px, int py, ShapeFile shfile = SF_GUMPS_VGA, bool self_managed = false)
+			: Gump_widget(par, shnum, px, py, 0, shfile), pushed_button(MouseButton::Unknown), self_managed(self_managed) {}
 
 	// Only respond to this is we are not self managed
 	Gump_button* on_button(int mx, int my) override {
@@ -52,11 +49,7 @@ public:
 
 	// Want input focus if self managed and pushed or dragging
 	Gump_widget* Input_first() override {
-		return self_managed
-							   && (pushed_button != MouseButton::Unknown
-								   || dragging != MouseButton::Unknown)
-					   ? this
-					   : nullptr;
+		return self_managed && (pushed_button != MouseButton::Unknown || dragging != MouseButton::Unknown) ? this : nullptr;
 	}
 
 	// What to do when 'clicked':
@@ -101,12 +94,11 @@ public:
 	}
 };
 
-
 // A Basic Recolorable Button class to be used by Subclasses to draw a button in the style of Text_button
-// 
+//
 class Basic_button : public Gump_button {
-	public:
-		uint8 OuterBorder;
+public:
+	uint8 OuterBorder;
 	uint8 OuterBorderCorner;
 	uint8 PushedEdgeCorner;
 	uint8 PushedEdgeTop;
@@ -114,7 +106,7 @@ class Basic_button : public Gump_button {
 
 	uint8 BevelHighlight;
 	uint8 BevelLowlight;
-	uint8 BevelCornerBoth ;
+	uint8 BevelCornerBoth;
 	uint8 BevelDoubleHighlight;
 	uint8 InnerBorderTRCorner;
 	uint8 BevelDoubleLowlight;
@@ -123,38 +115,34 @@ class Basic_button : public Gump_button {
 	uint8 BGHighlight;
 
 	//! @brief Recolor the button
-	//! @param newBackground Palette index of the background colour to derive all other colours from. Must have 4 palette indices available above this getting darker and 3 palette indices below getting lighter
-	void Recolor(int newBackground = 140, int newOuterBorder = 0)
-	{
-		Background               = newBackground;
-		OuterBorder             = newOuterBorder;
-		OuterBorderCorner      = 0xff;
+	//! @param newBackground Palette index of the background colour to derive all other colours from. Must have 4 palette indices
+	//! available above this getting darker and 3 palette indices below getting lighter
+	void Recolor(int newBackground = 140, int newOuterBorder = 0) {
+		Background        = newBackground;
+		OuterBorder       = newOuterBorder;
+		OuterBorderCorner = 0xff;
 
-		PushedEdgeCorner      = newBackground+4;
-		PushedEdgeTop  = newBackground+3;
-		PushedEdgeLeft = newBackground+3;
+		PushedEdgeCorner = newBackground + 4;
+		PushedEdgeTop    = newBackground + 3;
+		PushedEdgeLeft   = newBackground + 3;
 
-		BevelHighlight = newBackground-2;
-		BevelLowlight  = newBackground+3;
+		BevelHighlight       = newBackground - 2;
+		BevelLowlight        = newBackground + 3;
 		BevelCornerBoth      = newBackground + 1;
-		BevelDoubleHighlight   = newBackground-3;
-		InnerBorderTRCorner = newBackground-2;
-		BevelDoubleLowlight = newBackground+4;
+		BevelDoubleHighlight = newBackground - 3;
+		InnerBorderTRCorner  = newBackground - 2;
+		BevelDoubleLowlight  = newBackground + 4;
 
-		 BGHighlight = newBackground-1;
-
+		BGHighlight = newBackground - 1;
 	}
 
-	protected:
+protected:
 	int width;
 	int height;
 
 public:
-	Basic_button(
-			Gump_Base* par, int px, int py, int w, int h,
-			bool self_managed = false)
-			: Gump_button(par, -1, px, py, SF_OTHER, self_managed), width(w),
-			  height(h) {
+	Basic_button(Gump_Base* par, int px, int py, int w, int h, bool self_managed = false)
+			: Gump_button(par, -1, px, py, SF_OTHER, self_managed), width(w), height(h) {
 		// need to set frame to -1 to disable the shape
 		set_frame(-1);
 		// Set the default color
@@ -163,7 +151,8 @@ public:
 
 	void paint() override;
 
-	//! @brief  Get the area subclasses are allowed to draw into. The draw area is only the top surface of the button excluding the bevel
+	//! @brief  Get the area subclasses are allowed to draw into. The draw area is only the top surface of the button excluding the
+	//! bevel
 	//! @return draw area rectangle in local coordinates
 	virtual TileRect get_draw_area(std::optional<bool> pushed = std::nullopt) const;
 
@@ -183,11 +172,8 @@ public:
 	using CallbackParams = std::tuple<Args...>;
 
 	template <typename... Ts>
-	CallbackButtonBase(
-			Parent* par, CallbackType&& callback, CallbackParams&& params,
-			Ts&&... args)
-			: Base(par, std::forward<Ts>(args)...), parent(par),
-			  on_click(std::forward<CallbackType>(callback)),
+	CallbackButtonBase(Parent* par, CallbackType&& callback, CallbackParams&& params, Ts&&... args)
+			: Base(par, std::forward<Ts>(args)...), parent(par), on_click(std::forward<CallbackType>(callback)),
 			  parameters(std::forward<CallbackParams>(params)) {}
 
 	bool activate(Gump_Base::MouseButton button) override {
@@ -211,21 +197,18 @@ private:
 template <typename Parent, typename Base>
 class CallbackButtonBase<Parent, Base> : public Base {
 public:
-	using CallbackType  = void (Parent::*)();
-	using CallbackType2 = void (Parent::*)(
-			Gump_widget* sender, Gump_Base::MouseButton button);
+	using CallbackType   = void (Parent::*)();
+	using CallbackType2  = void (Parent::*)(Gump_widget* sender, Gump_Base::MouseButton button);
 	using CallbackParams = std::tuple<>;
 
 	template <typename... Ts>
 	CallbackButtonBase(Parent* par, CallbackType&& callback, Ts&&... args)
-			: Base(par, std::forward<Ts>(args)...), parent(par),
-			  on_click(std::forward<CallbackType>(callback)) {}
+			: Base(par, std::forward<Ts>(args)...), parent(par), on_click(std::forward<CallbackType>(callback)) {}
 
 	// Construct with a callback that has arguments for sender and MouseButton
 	template <typename... Ts>
 	CallbackButtonBase(Parent* par, CallbackType2&& callback, Ts&&... args)
-			: Base(par, std::forward<Ts>(args)...), parent(par),
-			  on_click2(std::forward<CallbackType2>(callback)) {}
+			: Base(par, std::forward<Ts>(args)...), parent(par), on_click2(std::forward<CallbackType2>(callback)) {}
 
 	bool activate(Gump_Base::MouseButton button) override {
 		if (on_click && button == Gump_Base::MouseButton::Left) {
@@ -251,12 +234,10 @@ using CallbackButton = CallbackButtonBase<Parent, Gump_button, Args...>;
 // A self managed button expects to handle it's own mouse button events and on_button will return
 // nullptr
 template <typename Base>
-class SelfManaged
-		: public Base {
+class SelfManaged : public Base {
 public:
 	template <typename... Ts>
-	SelfManaged(Ts&&... args)
-			: Base(std::forward<Ts>(args)...) {
+	SelfManaged(Ts&&... args) : Base(std::forward<Ts>(args)...) {
 		this->set_self_managed(true);
 	}
 };

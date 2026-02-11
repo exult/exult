@@ -86,8 +86,7 @@ using namespace std;
 #		pragma GCC diagnostic ignored "-Wold-style-cast"
 #	endif    // __GNUC__
 static int U7deflateInit2(z_stream* stream, int level) {
-	return deflateInit2(
-			stream, level, Z_DEFLATED, -MAX_WBITS, DEF_MEM_LEVEL, 0);
+	return deflateInit2(stream, level, Z_DEFLATED, -MAX_WBITS, DEF_MEM_LEVEL, 0);
 }
 #	ifdef __GNUC__
 #		pragma GCC diagnostic pop
@@ -126,9 +125,9 @@ struct curfile_info {
 
 struct zip_internal {
 	FILE*           filezip;
-	linkedlist_data central_dir; /* datablock with central dir in construction*/
-	int in_opened_file_inzip;    /* 1 if a file in the zip is currently writ.*/
-	curfile_info ci;             /* info on the file curretly writing */
+	linkedlist_data central_dir;          /* datablock with central dir in construction*/
+	int             in_opened_file_inzip; /* 1 if a file in the zip is currently writ.*/
+	curfile_info    ci;                   /* info on the file curretly writing */
 
 	uLong begin_pos; /* position of the beginning of the zipfile */
 	uLong number_entry;
@@ -157,8 +156,7 @@ static void init_linkedlist(linkedlist_data* ll) {
 	ll->first_block = ll->last_block = nullptr;
 }
 
-static int add_data_in_datablock(
-		linkedlist_data* ll, const void* buf, uLong len) {
+static int add_data_in_datablock(linkedlist_data* ll, const void* buf, uLong len) {
 	linkedlist_datablock_internal* ldi;
 	const unsigned char*           from_copy;
 
@@ -268,8 +266,7 @@ extern zipFile ZEXPORT zipOpen(const char* pathname, int append) {
 	try {
 		ziinit = std::make_unique<zip_internal>();
 	} catch (std::bad_alloc&) {
-		std::cerr << "zipOpen: make_unique<zip_internal> failed"
-				  << std::endl;
+		std::cerr << "zipOpen: make_unique<zip_internal> failed" << std::endl;
 		return {};
 	}
 
@@ -305,10 +302,8 @@ extern zipFile ZEXPORT zipOpen(const char* pathname, int append) {
 }
 
 extern int ZEXPORT zipOpenNewFileInZip(
-		zipFile file, const char* filename, const zip_fileinfo* zipfi,
-		const void* extrafield_local, uInt size_extrafield_local,
-		const void* extrafield_global, uInt size_extrafield_global,
-		const char* comment, int method, int level) {
+		zipFile file, const char* filename, const zip_fileinfo* zipfi, const void* extrafield_local, uInt size_extrafield_local,
+		const void* extrafield_global, uInt size_extrafield_global, const char* comment, int method, int level) {
 	uInt size_filename;
 	uInt size_comment;
 	uInt i;
@@ -346,8 +341,7 @@ extern int ZEXPORT zipOpenNewFileInZip(
 		if (zipfi->dosDate != 0) {
 			file->ci.dosDate = zipfi->dosDate;
 		} else {
-			file->ci.dosDate = ziplocal_TmzDateToDosDate(
-					&zipfi->tmz_date, zipfi->dosDate);
+			file->ci.dosDate = ziplocal_TmzDateToDosDate(&zipfi->tmz_date, zipfi->dosDate);
 		}
 	}
 
@@ -367,61 +361,48 @@ extern int ZEXPORT zipOpenNewFileInZip(
 	file->ci.stream_initialised   = 0;
 	file->ci.pos_in_buffered_data = 0;
 	file->ci.pos_local_header     = ftell(file->filezip);
-	file->ci.size_centralheader   = SIZECENTRALHEADER + size_filename
-								  + size_extrafield_global + size_comment;
-	file->ci.central_header = new char[file->ci.size_centralheader];
+	file->ci.size_centralheader   = SIZECENTRALHEADER + size_filename + size_extrafield_global + size_comment;
+	file->ci.central_header       = new char[file->ci.size_centralheader];
 
 	ziplocal_putValue_inmemory(file->ci.central_header, CENTRALHEADERMAGIC, 4);
 	/* version info */
 	ziplocal_putValue_inmemory(file->ci.central_header + 4, VERSIONMADEBY, 2);
 	ziplocal_putValue_inmemory(file->ci.central_header + 6, 20, 2);
 	ziplocal_putValue_inmemory(file->ci.central_header + 8, file->ci.flag, 2);
-	ziplocal_putValue_inmemory(
-			file->ci.central_header + 10, file->ci.method, 2);
-	ziplocal_putValue_inmemory(
-			file->ci.central_header + 12, file->ci.dosDate, 4);
+	ziplocal_putValue_inmemory(file->ci.central_header + 10, file->ci.method, 2);
+	ziplocal_putValue_inmemory(file->ci.central_header + 12, file->ci.dosDate, 4);
 	ziplocal_putValue_inmemory(file->ci.central_header + 16, 0, 4); /*crc*/
-	ziplocal_putValue_inmemory(
-			file->ci.central_header + 20, 0, 4); /*compr size*/
-	ziplocal_putValue_inmemory(
-			file->ci.central_header + 24, 0, 4); /*uncompr size*/
+	ziplocal_putValue_inmemory(file->ci.central_header + 20, 0, 4); /*compr size*/
+	ziplocal_putValue_inmemory(file->ci.central_header + 24, 0, 4); /*uncompr size*/
 	ziplocal_putValue_inmemory(file->ci.central_header + 28, size_filename, 2);
-	ziplocal_putValue_inmemory(
-			file->ci.central_header + 30, size_extrafield_global, 2);
+	ziplocal_putValue_inmemory(file->ci.central_header + 30, size_extrafield_global, 2);
 	ziplocal_putValue_inmemory(file->ci.central_header + 32, size_comment, 2);
-	ziplocal_putValue_inmemory(
-			file->ci.central_header + 34, 0, 2); /*disk nm start*/
+	ziplocal_putValue_inmemory(file->ci.central_header + 34, 0, 2); /*disk nm start*/
 
 	if (zipfi == nullptr) {
 		ziplocal_putValue_inmemory(file->ci.central_header + 36, 0, 2);
 	} else {
-		ziplocal_putValue_inmemory(
-				file->ci.central_header + 36, zipfi->internal_fa, 2);
+		ziplocal_putValue_inmemory(file->ci.central_header + 36, zipfi->internal_fa, 2);
 	}
 
 	if (zipfi == nullptr) {
 		ziplocal_putValue_inmemory(file->ci.central_header + 38, 0, 4);
 	} else {
-		ziplocal_putValue_inmemory(
-				file->ci.central_header + 38, zipfi->external_fa, 4);
+		ziplocal_putValue_inmemory(file->ci.central_header + 38, zipfi->external_fa, 4);
 	}
 
-	ziplocal_putValue_inmemory(
-			file->ci.central_header + 42, file->ci.pos_local_header, 4);
+	ziplocal_putValue_inmemory(file->ci.central_header + 42, file->ci.pos_local_header, 4);
 
 	for (i = 0; i < size_filename; i++) {
 		*(file->ci.central_header + SIZECENTRALHEADER + i) = *(filename + i);
 	}
 
 	for (i = 0; i < size_extrafield_global; i++) {
-		*(file->ci.central_header + SIZECENTRALHEADER + size_filename + i)
-				= *(static_cast<const char*>(extrafield_global) + i);
+		*(file->ci.central_header + SIZECENTRALHEADER + size_filename + i) = *(static_cast<const char*>(extrafield_global) + i);
 	}
 
 	for (i = 0; i < size_comment; i++) {
-		*(file->ci.central_header + SIZECENTRALHEADER + size_filename
-		  + size_extrafield_global + i)
-				= *(filename + i);
+		*(file->ci.central_header + SIZECENTRALHEADER + size_filename + size_extrafield_global + i) = *(filename + i);
 	}
 	if (file->ci.central_header == nullptr) {
 		return ZIP_INTERNALERROR;
@@ -431,8 +412,7 @@ extern int ZEXPORT zipOpenNewFileInZip(
 	err = ziplocal_putValue(file->filezip, LOCALHEADERMAGIC, 4);
 
 	if (err == ZIP_OK) {
-		err = ziplocal_putValue(
-				file->filezip, 20, 2); /* version needed to extract */
+		err = ziplocal_putValue(file->filezip, 20, 2); /* version needed to extract */
 	}
 	if (err == ZIP_OK) {
 		err = ziplocal_putValue(file->filezip, file->ci.flag, 2);
@@ -450,12 +430,10 @@ extern int ZEXPORT zipOpenNewFileInZip(
 		err = ziplocal_putValue(file->filezip, 0, 4); /* crc 32, unknown */
 	}
 	if (err == ZIP_OK) {
-		err = ziplocal_putValue(
-				file->filezip, 0, 4); /* compressed size, unknown */
+		err = ziplocal_putValue(file->filezip, 0, 4); /* compressed size, unknown */
 	}
 	if (err == ZIP_OK) {
-		err = ziplocal_putValue(
-				file->filezip, 0, 4); /* uncompressed size, unknown */
+		err = ziplocal_putValue(file->filezip, 0, 4); /* uncompressed size, unknown */
 	}
 
 	if (err == ZIP_OK) {
@@ -473,8 +451,7 @@ extern int ZEXPORT zipOpenNewFileInZip(
 	}
 
 	if ((err == ZIP_OK) && (size_extrafield_local > 0)) {
-		if (fwrite(extrafield_local, size_extrafield_local, 1, file->filezip)
-			!= 1) {
+		if (fwrite(extrafield_local, size_extrafield_local, 1, file->filezip) != 1) {
 			err = ZIP_ERRNO;
 		}
 	}
@@ -516,13 +493,11 @@ extern int ZEXPORT zipWriteInFileInZip(zipFile file, voidpc buf, unsigned len) {
 
 	file->ci.stream.next_in  = static_cast<const Bytef*>(buf);
 	file->ci.stream.avail_in = len;
-	file->ci.crc32 = crc32(file->ci.crc32, static_cast<const Bytef*>(buf), len);
+	file->ci.crc32           = crc32(file->ci.crc32, static_cast<const Bytef*>(buf), len);
 
 	while ((err == ZIP_OK) && (file->ci.stream.avail_in > 0)) {
 		if (file->ci.stream.avail_out == 0) {
-			if (fwrite(file->ci.buffered_data, file->ci.pos_in_buffered_data, 1,
-					   file->filezip)
-				!= 1) {
+			if (fwrite(file->ci.buffered_data, file->ci.pos_in_buffered_data, 1, file->filezip) != 1) {
 				err = ZIP_ERRNO;
 			}
 			file->ci.pos_in_buffered_data = 0;
@@ -533,8 +508,7 @@ extern int ZEXPORT zipWriteInFileInZip(zipFile file, voidpc buf, unsigned len) {
 		if (file->ci.method == Z_DEFLATED) {
 			const uLong uTotalOutBefore = file->ci.stream.total_out;
 			err                         = deflate(&file->ci.stream, Z_NO_FLUSH);
-			file->ci.pos_in_buffered_data
-					+= (file->ci.stream.total_out - uTotalOutBefore);
+			file->ci.pos_in_buffered_data += (file->ci.stream.total_out - uTotalOutBefore);
 
 		} else {
 			uInt copy_this;
@@ -575,9 +549,7 @@ extern int ZEXPORT zipCloseFileInZip(zipFile file) {
 		while (err == ZIP_OK) {
 			uLong uTotalOutBefore;
 			if (file->ci.stream.avail_out == 0) {
-				if (fwrite(file->ci.buffered_data,
-						   file->ci.pos_in_buffered_data, 1, file->filezip)
-					!= 1) {
+				if (fwrite(file->ci.buffered_data, file->ci.pos_in_buffered_data, 1, file->filezip) != 1) {
 					err = ZIP_ERRNO;
 				}
 				file->ci.pos_in_buffered_data = 0;
@@ -586,8 +558,7 @@ extern int ZEXPORT zipCloseFileInZip(zipFile file) {
 			}
 			uTotalOutBefore = file->ci.stream.total_out;
 			err             = deflate(&file->ci.stream, Z_FINISH);
-			file->ci.pos_in_buffered_data
-					+= (file->ci.stream.total_out - uTotalOutBefore);
+			file->ci.pos_in_buffered_data += (file->ci.stream.total_out - uTotalOutBefore);
 		}
 	}
 
@@ -596,9 +567,7 @@ extern int ZEXPORT zipCloseFileInZip(zipFile file) {
 	}
 
 	if ((file->ci.pos_in_buffered_data > 0) && (err == ZIP_OK)) {
-		if (fwrite(file->ci.buffered_data, file->ci.pos_in_buffered_data, 1,
-				   file->filezip)
-			!= 1) {
+		if (fwrite(file->ci.buffered_data, file->ci.pos_in_buffered_data, 1, file->filezip) != 1) {
 			err = ZIP_ERRNO;
 		}
 	}
@@ -608,37 +577,27 @@ extern int ZEXPORT zipCloseFileInZip(zipFile file) {
 		file->ci.stream_initialised = 0;
 	}
 
-	ziplocal_putValue_inmemory(
-			file->ci.central_header + 16, file->ci.crc32, 4); /*crc*/
-	ziplocal_putValue_inmemory(
-			file->ci.central_header + 20, file->ci.stream.total_out,
-			4); /*compr size*/
-	ziplocal_putValue_inmemory(
-			file->ci.central_header + 24, file->ci.stream.total_in,
-			4); /*uncompr size*/
+	ziplocal_putValue_inmemory(file->ci.central_header + 16, file->ci.crc32, 4);            /*crc*/
+	ziplocal_putValue_inmemory(file->ci.central_header + 20, file->ci.stream.total_out, 4); /*compr size*/
+	ziplocal_putValue_inmemory(file->ci.central_header + 24, file->ci.stream.total_in, 4);  /*uncompr size*/
 
 	if (err == ZIP_OK) {
-		err = add_data_in_datablock(
-				&file->central_dir, file->ci.central_header,
-				file->ci.size_centralheader);
+		err = add_data_in_datablock(&file->central_dir, file->ci.central_header, file->ci.size_centralheader);
 	}
 	delete[] file->ci.central_header;
 
 	if (err == ZIP_OK) {
 		const long cur_pos_inzip = ftell(file->filezip);
-		if (fseek(file->filezip, file->ci.pos_local_header + 14, SEEK_SET)
-			!= 0) {
+		if (fseek(file->filezip, file->ci.pos_local_header + 14, SEEK_SET) != 0) {
 			err = ZIP_ERRNO;
 		}
 
 		if (err == ZIP_OK) {
-			err = ziplocal_putValue(
-					file->filezip, file->ci.crc32, 4); /* crc 32, unknown */
+			err = ziplocal_putValue(file->filezip, file->ci.crc32, 4); /* crc 32, unknown */
 		}
 
 		if (err == ZIP_OK) { /* compressed size, unknown */
-			err = ziplocal_putValue(
-					file->filezip, file->ci.stream.total_out, 4);
+			err = ziplocal_putValue(file->filezip, file->ci.stream.total_out, 4);
 		}
 
 		if (err == ZIP_OK) { /* uncompressed size, unknown */
@@ -680,9 +639,7 @@ extern int ZEXPORT zipClose(zipFile file, const char* global_comment) {
 		linkedlist_datablock_internal* ldi = file->central_dir.first_block;
 		while (ldi != nullptr) {
 			if ((err == ZIP_OK) && (ldi->filled_in_this_block > 0)) {
-				if (fwrite(ldi->data, ldi->filled_in_this_block, 1,
-						   file->filezip)
-					!= 1) {
+				if (fwrite(ldi->data, ldi->filled_in_this_block, 1, file->filezip) != 1) {
 					err = ZIP_ERRNO;
 				}
 			}
@@ -729,8 +686,7 @@ extern int ZEXPORT zipClose(zipFile file, const char* global_comment) {
 	}
 
 	if ((err == ZIP_OK) && (size_global_comment > 0)) {
-		if (fwrite(global_comment, size_global_comment, 1, file->filezip)
-			!= 1) {
+		if (fwrite(global_comment, size_global_comment, 1, file->filezip) != 1) {
 			err = ZIP_ERRNO;
 		}
 	}

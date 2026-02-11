@@ -64,13 +64,11 @@ private:
 
 public:
 	// Create from scratch.
-	Ordering_info(const Game_window* gwin, const Game_object* obj)
-			: area(gwin->get_shape_rect(obj)), info(obj->get_info()) {
+	Ordering_info(const Game_window* gwin, const Game_object* obj) : area(gwin->get_shape_rect(obj)), info(obj->get_info()) {
 		init(obj);
 	}
 
-	Ordering_info(const Game_window* gwin, const Game_object* obj, TileRect& a)
-			: area(a), info(obj->get_info()) {
+	Ordering_info(const Game_window* gwin, const Game_object* obj, TileRect& a) : area(a), info(obj->get_info()) {
 		ignore_unused_variable_warning(gwin);
 		init(obj);
 	}

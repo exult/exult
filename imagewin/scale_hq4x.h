@@ -81,198 +81,115 @@
 #	define PIXEL10_10 Interp1<PTYPES>(to + dline_pixels, c[5], c[1], manip);
 #	define PIXEL10_11 Interp1<PTYPES>(to + dline_pixels, c[5], c[4], manip);
 #	define PIXEL10_13 Interp1<PTYPES>(to + dline_pixels, c[4], c[5], manip);
-#	define PIXEL10_21 \
-		Interp2<PTYPES>(to + dline_pixels, c[4], c[5], c[2], manip);
+#	define PIXEL10_21 Interp2<PTYPES>(to + dline_pixels, c[4], c[5], c[2], manip);
 #	define PIXEL10_32 Interp3<PTYPES>(to + dline_pixels, c[5], c[2], manip);
 #	define PIXEL10_50 Interp5<PTYPES>(to + dline_pixels, c[4], c[5], manip);
-#	define PIXEL10_60 \
-		Interp6<PTYPES>(to + dline_pixels, c[5], c[4], c[2], manip);
-#	define PIXEL10_61 \
-		Interp6<PTYPES>(to + dline_pixels, c[5], c[4], c[1], manip);
+#	define PIXEL10_60 Interp6<PTYPES>(to + dline_pixels, c[5], c[4], c[2], manip);
+#	define PIXEL10_61 Interp6<PTYPES>(to + dline_pixels, c[5], c[4], c[1], manip);
 #	define PIXEL10_81 Interp8<PTYPES>(to + dline_pixels, c[5], c[4], manip);
 #	define PIXEL10_83 Interp8<PTYPES>(to + dline_pixels, c[4], c[2], manip);
 
-#	define PIXEL11_0 StoreRGB<PTYPES>(to + dline_pixels + 1, c[5], manip);
-#	define PIXEL11_30 \
-		Interp3<PTYPES>(to + dline_pixels + 1, c[5], c[1], manip);
-#	define PIXEL11_31 \
-		Interp3<PTYPES>(to + dline_pixels + 1, c[5], c[4], manip);
-#	define PIXEL11_32 \
-		Interp3<PTYPES>(to + dline_pixels + 1, c[5], c[2], manip);
-#	define PIXEL11_70 \
-		Interp7<PTYPES>(to + dline_pixels + 1, c[5], c[4], c[2], manip);
+#	define PIXEL11_0  StoreRGB<PTYPES>(to + dline_pixels + 1, c[5], manip);
+#	define PIXEL11_30 Interp3<PTYPES>(to + dline_pixels + 1, c[5], c[1], manip);
+#	define PIXEL11_31 Interp3<PTYPES>(to + dline_pixels + 1, c[5], c[4], manip);
+#	define PIXEL11_32 Interp3<PTYPES>(to + dline_pixels + 1, c[5], c[2], manip);
+#	define PIXEL11_70 Interp7<PTYPES>(to + dline_pixels + 1, c[5], c[4], c[2], manip);
 
-#	define PIXEL12_0 StoreRGB<PTYPES>(to + dline_pixels + 2, c[5], manip);
-#	define PIXEL12_30 \
-		Interp3<PTYPES>(to + dline_pixels + 2, c[5], c[3], manip);
-#	define PIXEL12_31 \
-		Interp3<PTYPES>(to + dline_pixels + 2, c[5], c[2], manip);
-#	define PIXEL12_32 \
-		Interp3<PTYPES>(to + dline_pixels + 2, c[5], c[6], manip);
-#	define PIXEL12_70 \
-		Interp7<PTYPES>(to + dline_pixels + 2, c[5], c[6], c[2], manip);
+#	define PIXEL12_0  StoreRGB<PTYPES>(to + dline_pixels + 2, c[5], manip);
+#	define PIXEL12_30 Interp3<PTYPES>(to + dline_pixels + 2, c[5], c[3], manip);
+#	define PIXEL12_31 Interp3<PTYPES>(to + dline_pixels + 2, c[5], c[2], manip);
+#	define PIXEL12_32 Interp3<PTYPES>(to + dline_pixels + 2, c[5], c[6], manip);
+#	define PIXEL12_70 Interp7<PTYPES>(to + dline_pixels + 2, c[5], c[6], c[2], manip);
 
-#	define PIXEL13_0 StoreRGB<PTYPES>(to + dline_pixels + 3, c[5], manip);
-#	define PIXEL13_10 \
-		Interp1<PTYPES>(to + dline_pixels + 3, c[5], c[3], manip);
-#	define PIXEL13_12 \
-		Interp1<PTYPES>(to + dline_pixels + 3, c[5], c[6], manip);
-#	define PIXEL13_14 \
-		Interp1<PTYPES>(to + dline_pixels + 3, c[6], c[5], manip);
-#	define PIXEL13_21 \
-		Interp2<PTYPES>(to + dline_pixels + 3, c[6], c[5], c[2], manip);
-#	define PIXEL13_31 \
-		Interp3<PTYPES>(to + dline_pixels + 3, c[5], c[2], manip);
-#	define PIXEL13_50 \
-		Interp5<PTYPES>(to + dline_pixels + 3, c[6], c[5], manip);
-#	define PIXEL13_60 \
-		Interp6<PTYPES>(to + dline_pixels + 3, c[5], c[6], c[2], manip);
-#	define PIXEL13_61 \
-		Interp6<PTYPES>(to + dline_pixels + 3, c[5], c[6], c[3], manip);
-#	define PIXEL13_82 \
-		Interp8<PTYPES>(to + dline_pixels + 3, c[5], c[6], manip);
-#	define PIXEL13_83 \
-		Interp8<PTYPES>(to + dline_pixels + 3, c[6], c[2], manip);
+#	define PIXEL13_0  StoreRGB<PTYPES>(to + dline_pixels + 3, c[5], manip);
+#	define PIXEL13_10 Interp1<PTYPES>(to + dline_pixels + 3, c[5], c[3], manip);
+#	define PIXEL13_12 Interp1<PTYPES>(to + dline_pixels + 3, c[5], c[6], manip);
+#	define PIXEL13_14 Interp1<PTYPES>(to + dline_pixels + 3, c[6], c[5], manip);
+#	define PIXEL13_21 Interp2<PTYPES>(to + dline_pixels + 3, c[6], c[5], c[2], manip);
+#	define PIXEL13_31 Interp3<PTYPES>(to + dline_pixels + 3, c[5], c[2], manip);
+#	define PIXEL13_50 Interp5<PTYPES>(to + dline_pixels + 3, c[6], c[5], manip);
+#	define PIXEL13_60 Interp6<PTYPES>(to + dline_pixels + 3, c[5], c[6], c[2], manip);
+#	define PIXEL13_61 Interp6<PTYPES>(to + dline_pixels + 3, c[5], c[6], c[3], manip);
+#	define PIXEL13_82 Interp8<PTYPES>(to + dline_pixels + 3, c[5], c[6], manip);
+#	define PIXEL13_83 Interp8<PTYPES>(to + dline_pixels + 3, c[6], c[2], manip);
 
-#	define PIXEL20_0 StoreRGB<PTYPES>(to + 2 * dline_pixels, c[5], manip);
-#	define PIXEL20_10 \
-		Interp1<PTYPES>(to + 2 * dline_pixels, c[5], c[7], manip);
-#	define PIXEL20_12 \
-		Interp1<PTYPES>(to + 2 * dline_pixels, c[5], c[4], manip);
-#	define PIXEL20_14 \
-		Interp1<PTYPES>(to + 2 * dline_pixels, c[4], c[5], manip);
-#	define PIXEL20_21 \
-		Interp2<PTYPES>(to + 2 * dline_pixels, c[4], c[5], c[8], manip);
-#	define PIXEL20_31 \
-		Interp3<PTYPES>(to + 2 * dline_pixels, c[5], c[8], manip);
-#	define PIXEL20_50 \
-		Interp5<PTYPES>(to + 2 * dline_pixels, c[4], c[5], manip);
-#	define PIXEL20_60 \
-		Interp6<PTYPES>(to + 2 * dline_pixels, c[5], c[4], c[8], manip);
-#	define PIXEL20_61 \
-		Interp6<PTYPES>(to + 2 * dline_pixels, c[5], c[4], c[7], manip);
-#	define PIXEL20_82 \
-		Interp8<PTYPES>(to + 2 * dline_pixels, c[5], c[4], manip);
-#	define PIXEL20_83 \
-		Interp8<PTYPES>(to + 2 * dline_pixels, c[4], c[8], manip);
+#	define PIXEL20_0  StoreRGB<PTYPES>(to + 2 * dline_pixels, c[5], manip);
+#	define PIXEL20_10 Interp1<PTYPES>(to + 2 * dline_pixels, c[5], c[7], manip);
+#	define PIXEL20_12 Interp1<PTYPES>(to + 2 * dline_pixels, c[5], c[4], manip);
+#	define PIXEL20_14 Interp1<PTYPES>(to + 2 * dline_pixels, c[4], c[5], manip);
+#	define PIXEL20_21 Interp2<PTYPES>(to + 2 * dline_pixels, c[4], c[5], c[8], manip);
+#	define PIXEL20_31 Interp3<PTYPES>(to + 2 * dline_pixels, c[5], c[8], manip);
+#	define PIXEL20_50 Interp5<PTYPES>(to + 2 * dline_pixels, c[4], c[5], manip);
+#	define PIXEL20_60 Interp6<PTYPES>(to + 2 * dline_pixels, c[5], c[4], c[8], manip);
+#	define PIXEL20_61 Interp6<PTYPES>(to + 2 * dline_pixels, c[5], c[4], c[7], manip);
+#	define PIXEL20_82 Interp8<PTYPES>(to + 2 * dline_pixels, c[5], c[4], manip);
+#	define PIXEL20_83 Interp8<PTYPES>(to + 2 * dline_pixels, c[4], c[8], manip);
 
-#	define PIXEL21_0 StoreRGB<PTYPES>(to + 2 * dline_pixels + 1, c[5], manip);
-#	define PIXEL21_30 \
-		Interp3<PTYPES>(to + 2 * dline_pixels + 1, c[5], c[7], manip);
-#	define PIXEL21_31 \
-		Interp3<PTYPES>(to + 2 * dline_pixels + 1, c[5], c[8], manip);
-#	define PIXEL21_32 \
-		Interp3<PTYPES>(to + 2 * dline_pixels + 1, c[5], c[4], manip);
-#	define PIXEL21_70 \
-		Interp7<PTYPES>(to + 2 * dline_pixels + 1, c[5], c[4], c[8], manip);
+#	define PIXEL21_0  StoreRGB<PTYPES>(to + 2 * dline_pixels + 1, c[5], manip);
+#	define PIXEL21_30 Interp3<PTYPES>(to + 2 * dline_pixels + 1, c[5], c[7], manip);
+#	define PIXEL21_31 Interp3<PTYPES>(to + 2 * dline_pixels + 1, c[5], c[8], manip);
+#	define PIXEL21_32 Interp3<PTYPES>(to + 2 * dline_pixels + 1, c[5], c[4], manip);
+#	define PIXEL21_70 Interp7<PTYPES>(to + 2 * dline_pixels + 1, c[5], c[4], c[8], manip);
 
-#	define PIXEL22_0 StoreRGB<PTYPES>(to + 2 * dline_pixels + 2, c[5], manip);
-#	define PIXEL22_30 \
-		Interp3<PTYPES>(to + 2 * dline_pixels + 2, c[5], c[9], manip);
-#	define PIXEL22_31 \
-		Interp3<PTYPES>(to + 2 * dline_pixels + 2, c[5], c[6], manip);
-#	define PIXEL22_32 \
-		Interp3<PTYPES>(to + 2 * dline_pixels + 2, c[5], c[8], manip);
-#	define PIXEL22_70 \
-		Interp7<PTYPES>(to + 2 * dline_pixels + 2, c[5], c[6], c[8], manip);
+#	define PIXEL22_0  StoreRGB<PTYPES>(to + 2 * dline_pixels + 2, c[5], manip);
+#	define PIXEL22_30 Interp3<PTYPES>(to + 2 * dline_pixels + 2, c[5], c[9], manip);
+#	define PIXEL22_31 Interp3<PTYPES>(to + 2 * dline_pixels + 2, c[5], c[6], manip);
+#	define PIXEL22_32 Interp3<PTYPES>(to + 2 * dline_pixels + 2, c[5], c[8], manip);
+#	define PIXEL22_70 Interp7<PTYPES>(to + 2 * dline_pixels + 2, c[5], c[6], c[8], manip);
 
-#	define PIXEL23_0 StoreRGB<PTYPES>(to + 2 * dline_pixels + 3, c[5], manip);
-#	define PIXEL23_10 \
-		Interp1<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[9], manip);
-#	define PIXEL23_11 \
-		Interp1<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[6], manip);
-#	define PIXEL23_13 \
-		Interp1<PTYPES>(to + 2 * dline_pixels + 3, c[6], c[5], manip);
-#	define PIXEL23_21 \
-		Interp2<PTYPES>(to + 2 * dline_pixels + 3, c[6], c[5], c[8], manip);
-#	define PIXEL23_32 \
-		Interp3<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[8], manip);
-#	define PIXEL23_50 \
-		Interp5<PTYPES>(to + 2 * dline_pixels + 3, c[6], c[5], manip);
-#	define PIXEL23_60 \
-		Interp6<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[6], c[8], manip);
-#	define PIXEL23_61 \
-		Interp6<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[6], c[9], manip);
-#	define PIXEL23_81 \
-		Interp8<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[6], manip);
-#	define PIXEL23_83 \
-		Interp8<PTYPES>(to + 2 * dline_pixels + 3, c[6], c[8], manip);
+#	define PIXEL23_0  StoreRGB<PTYPES>(to + 2 * dline_pixels + 3, c[5], manip);
+#	define PIXEL23_10 Interp1<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[9], manip);
+#	define PIXEL23_11 Interp1<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[6], manip);
+#	define PIXEL23_13 Interp1<PTYPES>(to + 2 * dline_pixels + 3, c[6], c[5], manip);
+#	define PIXEL23_21 Interp2<PTYPES>(to + 2 * dline_pixels + 3, c[6], c[5], c[8], manip);
+#	define PIXEL23_32 Interp3<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[8], manip);
+#	define PIXEL23_50 Interp5<PTYPES>(to + 2 * dline_pixels + 3, c[6], c[5], manip);
+#	define PIXEL23_60 Interp6<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[6], c[8], manip);
+#	define PIXEL23_61 Interp6<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[6], c[9], manip);
+#	define PIXEL23_81 Interp8<PTYPES>(to + 2 * dline_pixels + 3, c[5], c[6], manip);
+#	define PIXEL23_83 Interp8<PTYPES>(to + 2 * dline_pixels + 3, c[6], c[8], manip);
 
-#	define PIXEL30_0 StoreRGB<PTYPES>(to + 3 * dline_pixels, c[5], manip);
-#	define PIXEL30_11 \
-		Interp1<PTYPES>(to + 3 * dline_pixels, c[5], c[8], manip);
-#	define PIXEL30_12 \
-		Interp1<PTYPES>(to + 3 * dline_pixels, c[5], c[4], manip);
-#	define PIXEL30_20 \
-		Interp2<PTYPES>(to + 3 * dline_pixels, c[5], c[8], c[4], manip);
-#	define PIXEL30_50 \
-		Interp5<PTYPES>(to + 3 * dline_pixels, c[8], c[4], manip);
-#	define PIXEL30_80 \
-		Interp8<PTYPES>(to + 3 * dline_pixels, c[5], c[7], manip);
-#	define PIXEL30_81 \
-		Interp8<PTYPES>(to + 3 * dline_pixels, c[5], c[8], manip);
-#	define PIXEL30_82 \
-		Interp8<PTYPES>(to + 3 * dline_pixels, c[5], c[4], manip);
+#	define PIXEL30_0  StoreRGB<PTYPES>(to + 3 * dline_pixels, c[5], manip);
+#	define PIXEL30_11 Interp1<PTYPES>(to + 3 * dline_pixels, c[5], c[8], manip);
+#	define PIXEL30_12 Interp1<PTYPES>(to + 3 * dline_pixels, c[5], c[4], manip);
+#	define PIXEL30_20 Interp2<PTYPES>(to + 3 * dline_pixels, c[5], c[8], c[4], manip);
+#	define PIXEL30_50 Interp5<PTYPES>(to + 3 * dline_pixels, c[8], c[4], manip);
+#	define PIXEL30_80 Interp8<PTYPES>(to + 3 * dline_pixels, c[5], c[7], manip);
+#	define PIXEL30_81 Interp8<PTYPES>(to + 3 * dline_pixels, c[5], c[8], manip);
+#	define PIXEL30_82 Interp8<PTYPES>(to + 3 * dline_pixels, c[5], c[4], manip);
 
-#	define PIXEL31_0 StoreRGB<PTYPES>(to + 3 * dline_pixels + 1, c[5], manip);
-#	define PIXEL31_10 \
-		Interp1<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[7], manip);
-#	define PIXEL31_11 \
-		Interp1<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[8], manip);
-#	define PIXEL31_13 \
-		Interp1<PTYPES>(to + 3 * dline_pixels + 1, c[8], c[5], manip);
-#	define PIXEL31_21 \
-		Interp2<PTYPES>(to + 3 * dline_pixels + 1, c[8], c[5], c[4], manip);
-#	define PIXEL31_32 \
-		Interp3<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[4], manip);
-#	define PIXEL31_50 \
-		Interp5<PTYPES>(to + 3 * dline_pixels + 1, c[8], c[5], manip);
-#	define PIXEL31_60 \
-		Interp6<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[8], c[4], manip);
-#	define PIXEL31_61 \
-		Interp6<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[8], c[7], manip);
-#	define PIXEL31_81 \
-		Interp8<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[8], manip);
-#	define PIXEL31_83 \
-		Interp8<PTYPES>(to + 3 * dline_pixels + 1, c[8], c[4], manip);
+#	define PIXEL31_0  StoreRGB<PTYPES>(to + 3 * dline_pixels + 1, c[5], manip);
+#	define PIXEL31_10 Interp1<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[7], manip);
+#	define PIXEL31_11 Interp1<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[8], manip);
+#	define PIXEL31_13 Interp1<PTYPES>(to + 3 * dline_pixels + 1, c[8], c[5], manip);
+#	define PIXEL31_21 Interp2<PTYPES>(to + 3 * dline_pixels + 1, c[8], c[5], c[4], manip);
+#	define PIXEL31_32 Interp3<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[4], manip);
+#	define PIXEL31_50 Interp5<PTYPES>(to + 3 * dline_pixels + 1, c[8], c[5], manip);
+#	define PIXEL31_60 Interp6<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[8], c[4], manip);
+#	define PIXEL31_61 Interp6<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[8], c[7], manip);
+#	define PIXEL31_81 Interp8<PTYPES>(to + 3 * dline_pixels + 1, c[5], c[8], manip);
+#	define PIXEL31_83 Interp8<PTYPES>(to + 3 * dline_pixels + 1, c[8], c[4], manip);
 
-#	define PIXEL32_0 StoreRGB<PTYPES>(to + 3 * dline_pixels + 2, c[5], manip);
-#	define PIXEL32_10 \
-		Interp1<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[9], manip);
-#	define PIXEL32_12 \
-		Interp1<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[8], manip);
-#	define PIXEL32_14 \
-		Interp1<PTYPES>(to + 3 * dline_pixels + 2, c[8], c[5], manip);
-#	define PIXEL32_21 \
-		Interp2<PTYPES>(to + 3 * dline_pixels + 2, c[8], c[5], c[6], manip);
-#	define PIXEL32_31 \
-		Interp3<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[6], manip);
-#	define PIXEL32_50 \
-		Interp5<PTYPES>(to + 3 * dline_pixels + 2, c[8], c[5], manip);
-#	define PIXEL32_60 \
-		Interp6<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[8], c[6], manip);
-#	define PIXEL32_61 \
-		Interp6<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[8], c[9], manip);
-#	define PIXEL32_82 \
-		Interp8<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[8], manip);
-#	define PIXEL32_83 \
-		Interp8<PTYPES>(to + 3 * dline_pixels + 2, c[8], c[6], manip);
+#	define PIXEL32_0  StoreRGB<PTYPES>(to + 3 * dline_pixels + 2, c[5], manip);
+#	define PIXEL32_10 Interp1<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[9], manip);
+#	define PIXEL32_12 Interp1<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[8], manip);
+#	define PIXEL32_14 Interp1<PTYPES>(to + 3 * dline_pixels + 2, c[8], c[5], manip);
+#	define PIXEL32_21 Interp2<PTYPES>(to + 3 * dline_pixels + 2, c[8], c[5], c[6], manip);
+#	define PIXEL32_31 Interp3<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[6], manip);
+#	define PIXEL32_50 Interp5<PTYPES>(to + 3 * dline_pixels + 2, c[8], c[5], manip);
+#	define PIXEL32_60 Interp6<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[8], c[6], manip);
+#	define PIXEL32_61 Interp6<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[8], c[9], manip);
+#	define PIXEL32_82 Interp8<PTYPES>(to + 3 * dline_pixels + 2, c[5], c[8], manip);
+#	define PIXEL32_83 Interp8<PTYPES>(to + 3 * dline_pixels + 2, c[8], c[6], manip);
 
-#	define PIXEL33_0 StoreRGB<PTYPES>(to + 3 * dline_pixels + 3, c[5], manip);
-#	define PIXEL33_11 \
-		Interp1<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[6], manip);
-#	define PIXEL33_12 \
-		Interp1<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[8], manip);
-#	define PIXEL33_20 \
-		Interp2<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[8], c[6], manip);
-#	define PIXEL33_50 \
-		Interp5<PTYPES>(to + 3 * dline_pixels + 3, c[8], c[6], manip);
-#	define PIXEL33_80 \
-		Interp8<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[9], manip);
-#	define PIXEL33_81 \
-		Interp8<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[6], manip);
-#	define PIXEL33_82 \
-		Interp8<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[8], manip);
+#	define PIXEL33_0  StoreRGB<PTYPES>(to + 3 * dline_pixels + 3, c[5], manip);
+#	define PIXEL33_11 Interp1<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[6], manip);
+#	define PIXEL33_12 Interp1<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[8], manip);
+#	define PIXEL33_20 Interp2<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[8], c[6], manip);
+#	define PIXEL33_50 Interp5<PTYPES>(to + 3 * dline_pixels + 3, c[8], c[6], manip);
+#	define PIXEL33_80 Interp8<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[9], manip);
+#	define PIXEL33_81 Interp8<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[6], manip);
+#	define PIXEL33_82 Interp8<PTYPES>(to + 3 * dline_pixels + 3, c[5], c[8], manip);
 
 template <class Dest_pixel, class Manip_pixels>
 void Scale_Hq4x(
@@ -324,9 +241,7 @@ void Scale_Hq4x(
 		}
 
 		for (i = srcx; i < stopx; i++) {
-			int pattern = hqx_init(
-					w, c, yuv, from, i, sline_pixels, prevline, nextline,
-					manip);
+			int pattern = hqx_init(w, c, yuv, from, i, sline_pixels, prevline, nextline, manip);
 			switch (pattern) {
 			case 0:
 			case 1:

@@ -58,7 +58,7 @@ protected:
 
 public:
 	constexpr static const size_t max_num_gflags = 32768;
-	constexpr static const size_t last_gflag = max_num_gflags - 1;
+	constexpr static const size_t last_gflag     = max_num_gflags - 1;
 
 	friend class Usecode_script;
 	// Create Usecode_internal.
@@ -83,9 +83,9 @@ public:
 	};
 
 	enum Global_flag_names {
-		si_did_first_scene  = 0x03,    // After Iolo's talk at the start of SI.
-		failed_copy_protect = 0x38,
-		did_first_scene     = 0x3b,    // Went through 1st scene with Iolo.
+		si_did_first_scene    = 0x03,    // After Iolo's talk at the start of SI.
+		failed_copy_protect   = 0x38,
+		did_first_scene       = 0x3b,    // Went through 1st scene with Iolo.
 		have_trinsic_password = 0x3d,
 		found_stable_key      = 0x3c,
 		left_trinsic          = 0x57,
@@ -133,9 +133,8 @@ public:
 	}
 
 	void set_num_global_flags(size_t n) {
-		size_t newsize = ((n + gflags_page_size - 1) / gflags_page_size)
-						 * gflags_page_size;
-		newsize = std::clamp(newsize, gflags_page_size, max_num_gflags);
+		size_t newsize = ((n + gflags_page_size - 1) / gflags_page_size) * gflags_page_size;
+		newsize        = std::clamp(newsize, gflags_page_size, max_num_gflags);
 		gflags.resize(newsize, 0);
 	}
 
@@ -158,8 +157,8 @@ public:
 	}
 
 	// Start speech, or show text.
-	virtual void do_speech(int num) = 0;
-	virtual bool in_usecode()       = 0;    // Currently in a usecode function?
+	virtual void do_speech(int num)                                      = 0;
+	virtual bool in_usecode()                                            = 0;    // Currently in a usecode function?
 	virtual bool in_usecode_for(Game_object* item, Usecode_events event) = 0;
 
 	Keyring* getKeyring() const {
@@ -167,17 +166,15 @@ public:
 	}
 
 	// Call desired function.
-	virtual int call_usecode(int id, Game_object* item, Usecode_events event)
-			= 0;
-	virtual bool call_method(Usecode_value* inst, int id, Game_object* item)
-			= 0;
-	virtual int         find_function(const char* nm, bool noerr = false) = 0;
-	virtual const char* find_function_name(int funcid)                    = 0;
-	virtual Usecode_class_symbol* get_class(int n)                        = 0;
-	virtual Usecode_class_symbol* get_class(const char* nm)               = 0;
-	virtual int                   get_shape_fun(int n)                    = 0;
-	virtual void write() = 0;    // Write out 'gamedat/usecode.dat'.
-	virtual void read()  = 0;    // Read in 'gamedat/usecode.dat'.
+	virtual int                   call_usecode(int id, Game_object* item, Usecode_events event) = 0;
+	virtual bool                  call_method(Usecode_value* inst, int id, Game_object* item)   = 0;
+	virtual int                   find_function(const char* nm, bool noerr = false)             = 0;
+	virtual const char*           find_function_name(int funcid)                                = 0;
+	virtual Usecode_class_symbol* get_class(int n)                                              = 0;
+	virtual Usecode_class_symbol* get_class(const char* nm)                                     = 0;
+	virtual int                   get_shape_fun(int n)                                          = 0;
+	virtual void                  write() = 0;    // Write out 'gamedat/usecode.dat'.
+	virtual void                  read()  = 0;    // Read in 'gamedat/usecode.dat'.
 
 	void init_conversation();
 	int  get_num_faces_on_screen() const;

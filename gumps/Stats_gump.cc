@@ -34,8 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  Some gump shape numbers:
  */
 
-const int ASLEEP = 0, POISONED = 1, CHARMED = 2, HUNGRY = 3, PROTECTED = 4,
-		  CURSED = 5, PARALYZED = 6;
+const int ASLEEP = 0, POISONED = 1, CHARMED = 2, HUNGRY = 3, PROTECTED = 4, CURSED = 5, PARALYZED = 6;
 
 /*
  *  Statics:
@@ -54,13 +53,8 @@ class Stats_extra_gump : public Stats_gump {
 	Actor::Atts_vector atts;
 
 public:
-	Stats_extra_gump(
-			Container_game_object* cont, int initx, int inity,
-			Actor::Atts_vector& allatts, int first, int ord)
-			: Stats_gump(
-					  cont, initx, inity, EXULT_FLX_STATS_EXTRA_SHP,
-					  SF_EXULT_FLX),
-			  order(ord) {
+	Stats_extra_gump(Container_game_object* cont, int initx, int inity, Actor::Atts_vector& allatts, int first, int ord)
+			: Stats_gump(cont, initx, inity, EXULT_FLX_STATS_EXTRA_SHP, SF_EXULT_FLX), order(ord) {
 		int cnt = allatts.size() - first;
 		if (cnt > num_extra_spots) {
 			cnt = num_extra_spots;
@@ -96,10 +90,7 @@ void Stats_extra_gump::paint() {
 	char        buf[20];
 	snprintf(buf, sizeof(buf), "(%d)", order + 1);
 	nm += buf;
-	sman->paint_text(
-			2, nm.c_str(),
-			x + namex + (namew - sman->get_text_width(2, nm.c_str())) / 2,
-			y + namey);
+	sman->paint_text(2, nm.c_str(), x + namex + (namew - sman->get_text_width(2, nm.c_str())) / 2, y + namey);
 	const int cnt = atts.size();
 	for (int i = 0; i < cnt; ++i) {
 		std::string attnm(atts[i].first);
@@ -119,9 +110,8 @@ static int Show_atts(
 		int x, int y,    // Pos. on screen.
 		int framenum) {
 	Shape_manager* sman = Shape_manager::get_instance();
-	const ShapeID  sid(
-            game->get_shape("gumps/statatts"), framenum, SF_GUMPS_VGA);
-	Shape_frame* s = sid.get_shape();
+	const ShapeID  sid(game->get_shape("gumps/statatts"), framenum, SF_GUMPS_VGA);
+	Shape_frame*   s = sid.get_shape();
 	sman->paint_shape(x + s->get_xleft(), y + s->get_ybelow(), s, false);
 	return s->get_width() + 2;
 }
@@ -134,9 +124,7 @@ Stats_gump::Stats_gump(Container_game_object* cont, int initx, int inity)
 	set_object_area(TileRect(0, 0, 0, 0), 22, 124);
 }
 
-Stats_gump::Stats_gump(
-		Container_game_object* cont, int initx, int inity, int shnum,
-		ShapeFile shfile)
+Stats_gump::Stats_gump(Container_game_object* cont, int initx, int inity, int shnum, ShapeFile shfile)
 		: Gump(cont, initx, inity, shnum, shfile) {
 	set_object_area(TileRect(0, 0, 0, 0), 22, 124);
 }
@@ -156,8 +144,7 @@ Stats_gump* Stats_gump::create(Game_object* npc_obj, int x, int y) {
 	// Create going backwards.
 	for (int i = num - 1; i >= 0; --i) {
 		const int first = i * num_extra_spots;
-		auto*     egmp  = new Stats_extra_gump(
-                npc, x - 5 * (i + 1), y - 5 * (i + 1), atts, first, i + 1);
+		auto*     egmp  = new Stats_extra_gump(npc, x - 5 * (i + 1), y - 5 * (i + 1), atts, first, i + 1);
 		gumpman->add_gump(egmp);
 	}
 	return new Stats_gump(npc, x, y);
@@ -191,10 +178,7 @@ void Stats_gump::paint() {
 	paint_elems();
 	// Show statistics.
 	const std::string nm = act->get_name();
-	sman->paint_text(
-			2, nm.c_str(),
-			x + namex + (namew - sman->get_text_width(2, nm.c_str())) / 2,
-			y + namey);
+	sman->paint_text(2, nm.c_str(), x + namex + (namew - sman->get_text_width(2, nm.c_str())) / 2, y + namey);
 	if (gwin->failed_copy_protection()) {
 		const int   oinkx = 96;
 		const char* oink  = get_text_msg(0x6F0 - msg_file_start);    // "Oink"
@@ -202,28 +186,16 @@ void Stats_gump::paint() {
 			sman->paint_text(2, oink, x + oinkx, y + texty[i]);
 		}
 	} else {
-		gman->paint_num(
-				act->get_effective_prop(Actor::strength), x + textx,
-				y + texty[0]);
-		gman->paint_num(
-				act->get_effective_prop(Actor::dexterity), x + textx,
-				y + texty[1]);
-		gman->paint_num(
-				act->get_effective_prop(Actor::intelligence), x + textx,
-				y + texty[2]);
-		gman->paint_num(
-				act->get_effective_prop(Actor::combat), x + textx,
-				y + texty[3]);
-		gman->paint_num(
-				act->get_property(Actor::magic), x + textx, y + texty[4]);
-		gman->paint_num(
-				act->get_property(Actor::health), x + textx, y + texty[5]);
-		gman->paint_num(
-				act->get_property(Actor::mana), x + textx, y + texty[6]);
+		gman->paint_num(act->get_effective_prop(Actor::strength), x + textx, y + texty[0]);
+		gman->paint_num(act->get_effective_prop(Actor::dexterity), x + textx, y + texty[1]);
+		gman->paint_num(act->get_effective_prop(Actor::intelligence), x + textx, y + texty[2]);
+		gman->paint_num(act->get_effective_prop(Actor::combat), x + textx, y + texty[3]);
+		gman->paint_num(act->get_property(Actor::magic), x + textx, y + texty[4]);
+		gman->paint_num(act->get_property(Actor::health), x + textx, y + texty[5]);
+		gman->paint_num(act->get_property(Actor::mana), x + textx, y + texty[6]);
 		gman->paint_num(act->get_property(Actor::exp), x + textx, y + texty[7]);
 		gman->paint_num(act->get_level(), x + textx, y + texty[8]);
-		gman->paint_num(
-				act->get_property(Actor::training), x + textx, y + texty[9]);
+		gman->paint_num(act->get_property(Actor::training), x + textx, y + texty[9]);
 	}
 	// Now show atts. at bottom.
 	const int attsy  = 130;

@@ -178,8 +178,7 @@ void Server_init() {
 		perror("Failed to open map-editor socket");
 	} else {
 #		ifdef HAVE_GETADDRINFOX
-		if (bind(listen_socket, ai->ai_addr, ai->ai_addrlen) == -1
-			|| listen(listen_socket, 1) == -1)
+		if (bind(listen_socket, ai->ai_addr, ai->ai_addrlen) == -1 || listen(listen_socket, 1) == -1)
 #		else
 		sockaddr_un addr;
 		addr.sun_family = AF_UNIX;
@@ -190,11 +189,8 @@ void Server_init() {
 			return;
 		}
 		strncpy(addr.sun_path, servename.c_str(), sizeof(addr.sun_path) - 1);
-		addr.sun_path[sizeof(addr.sun_path) - 1]
-				= '\0';    // Ensure null termination
-		if (bind(listen_socket, reinterpret_cast<sockaddr*>(&addr),
-				 sizeof(addr.sun_family) + strlen(addr.sun_path) + 1)
-					== -1
+		addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';    // Ensure null termination
+		if (bind(listen_socket, reinterpret_cast<sockaddr*>(&addr), sizeof(addr.sun_family) + strlen(addr.sun_path) + 1) == -1
 			|| listen(listen_socket, 1) == -1)
 #		endif
 		{
@@ -203,9 +199,7 @@ void Server_init() {
 			listen_socket = -1;
 		} else {    // Set to be non-blocking.
 			cout << "Listening on socket " << listen_socket << endl;
-			if (fcntl(listen_socket, F_SETFL,
-					  fcntl(listen_socket, F_GETFL) | O_NONBLOCK)
-				== -1) {
+			if (fcntl(listen_socket, F_SETFL, fcntl(listen_socket, F_GETFL) | O_NONBLOCK) == -1) {
 				perror("Failed to set socket non-blocking");
 			}
 		}
@@ -248,20 +242,18 @@ extern void Set_dragged_combo(int cnt, int xtl, int ytl, int rtl, int btl);
 extern void Set_dragged_npc(int npcnum);
 extern void Set_dragged_chunk(int chunknum);
 
-static void Handle_client_message(
-		int& fd    // Socket to client.  May be closed.
+static void Handle_client_message(int& fd    // Socket to client.  May be closed.
 ) {
 	unsigned char          data[Exult_server::maxlength];
 	Exult_server::Msg_type id;
-	const int datalen = Exult_server::Receive_data(fd, id, data, sizeof(data));
+	const int              datalen = Exult_server::Receive_data(fd, id, data, sizeof(data));
 	if (datalen < 0) {
 		return;
 	}
 	const unsigned char* ptr               = &data[0];
 	Game_window*         gwin              = Game_window::get_instance();
 	auto                 unhandled_message = [](Exult_server::Msg_type id) {
-        cout << "Unhandled message received from Exult Studio (id = " << id
-             << ")" << endl;
+        cout << "Unhandled message received from Exult Studio (id = " << id << ")" << endl;
 	};
 	switch (id) {
 	case Exult_server::obj:
@@ -281,10 +273,8 @@ static void Handle_client_message(
 		break;
 	case Exult_server::info:
 		Game_info_out(
-				client_socket, Exult_server::version, cheat.get_edit_lift(),
-				gwin->skip_lift, cheat.in_map_editor(), cheat.show_tile_grid(),
-				gwin->was_map_modified(),
-				static_cast<int>(cheat.get_edit_mode()));
+				client_socket, Exult_server::version, cheat.get_edit_lift(), gwin->skip_lift, cheat.in_map_editor(),
+				cheat.show_tile_grid(), gwin->was_map_modified(), static_cast<int>(cheat.get_edit_mode()));
 		break;
 	case Exult_server::write_map:
 		gwin->write_map();    // Send feedback?+++++
@@ -326,8 +316,7 @@ static void Handle_client_message(
 		little_endian::Write2(wptr, cy);
 		wptr++;    // Skip 'up' flag.
 		Write1(wptr, okay ? 1 : 0);
-		Exult_server::Send_data(
-				client_socket, Exult_server::locate_terrain, data, wptr - data);
+		Exult_server::Send_data(client_socket, Exult_server::locate_terrain, data, wptr - data);
 		break;
 	}
 	case Exult_server::swap_terrain: {
@@ -335,8 +324,7 @@ static void Handle_client_message(
 		const bool     okay = Game_map::swap_terrains(tnum);
 		unsigned char* wptr = &data[2];
 		Write1(wptr, okay ? 1 : 0);
-		Exult_server::Send_data(
-				client_socket, Exult_server::swap_terrain, data, wptr - data);
+		Exult_server::Send_data(client_socket, Exult_server::swap_terrain, data, wptr - data);
 		break;
 	}
 	case Exult_server::insert_terrain: {
@@ -345,8 +333,7 @@ static void Handle_client_message(
 		const bool     okay = Game_map::insert_terrain(tnum, dup);
 		unsigned char* wptr = &data[3];
 		Write1(wptr, okay ? 1 : 0);
-		Exult_server::Send_data(
-				client_socket, Exult_server::insert_terrain, data, wptr - data);
+		Exult_server::Send_data(client_socket, Exult_server::insert_terrain, data, wptr - data);
 		break;
 	}
 	case Exult_server::delete_terrain: {
@@ -354,8 +341,7 @@ static void Handle_client_message(
 		const bool     okay = Game_map::delete_terrain(tnum);
 		unsigned char* wptr = &data[2];
 		Write1(wptr, okay ? 1 : 0);
-		Exult_server::Send_data(
-				client_socket, Exult_server::delete_terrain, data, wptr - data);
+		Exult_server::Send_data(client_socket, Exult_server::delete_terrain, data, wptr - data);
 		break;
 	}
 	case Exult_server::send_terrain: {
@@ -366,18 +352,16 @@ static void Handle_client_message(
 		Chunk_terrain* ter = Game_map::get_terrain(tnum);
 		// Serialize it.
 		wptr += ter->write_flats(wptr, Game_map::is_v2_chunks());
-		Exult_server::Send_data(
-				client_socket, Exult_server::send_terrain, data, wptr - data);
+		Exult_server::Send_data(client_socket, Exult_server::send_terrain, data, wptr - data);
 		break;
 	}
 	case Exult_server::terrain_editing_mode: {
 		// 1=on, 0=off, -1=undo.
 		const int onoff = little_endian::Read2s(ptr);
 		// skip_lift==0 <==> terrain-editing.
-		gwin->skip_lift           = onoff == 1 ? 0 : 256;
-		const char* const msgs[3] = {
-				Strings::TerrainEditingAborted(), Strings::TerrainEditingDone(),
-				Strings::TerrainEditingEnabled()};
+		gwin->skip_lift = onoff == 1 ? 0 : 256;
+		const char* const msgs[3]
+				= {Strings::TerrainEditingAborted(), Strings::TerrainEditingDone(), Strings::TerrainEditingEnabled()};
 		if (onoff == 0) {    // End/commit.
 			Game_map::commit_terrain_edits();
 		} else if (onoff == -1) {
@@ -414,10 +398,8 @@ static void Handle_client_message(
 			const Tile_coord coord(tx, ty, tz);
 			gwin->center_view(coord);
 		} else if (
-				tx / c_tiles_per_chunk
-						!= gwin->get_scrolltx() / c_tiles_per_chunk
-				|| ty / c_tiles_per_chunk
-						   != gwin->get_scrollty() / c_tiles_per_chunk) {
+				tx / c_tiles_per_chunk != gwin->get_scrolltx() / c_tiles_per_chunk
+				|| ty / c_tiles_per_chunk != gwin->get_scrollty() / c_tiles_per_chunk) {
 			// Only set if chunk changed (backward compatibility).
 			const Tile_coord coord(tx, ty, tz);
 			gwin->center_view(coord);
@@ -451,8 +433,7 @@ static void Handle_client_message(
 		size_t        sz = 1024u / 8;    // Gets bits for unused shapes.
 		sz               = sz > sizeof(data) ? sizeof(data) : sz;
 		gwin->get_map()->find_unused_shapes(data, sz);
-		Exult_server::Send_data(
-				client_socket, Exult_server::unused_shapes, data, sz);
+		Exult_server::Send_data(client_socket, Exult_server::unused_shapes, data, sz);
 		break;
 	}
 	case Exult_server::drag_combo: {
@@ -490,8 +471,7 @@ static void Handle_client_message(
 		unsigned char* wptr  = &data[6];    // Send back reply.
 		wptr++;                             // Skip 'up' flag.
 		Write1(wptr, okay ? 1 : 0);
-		Exult_server::Send_data(
-				client_socket, Exult_server::locate_shape, data, wptr - data);
+		Exult_server::Send_data(client_socket, Exult_server::locate_shape, data, wptr - data);
 		break;
 	}
 	case Exult_server::cut:    // Cut/copy.
@@ -504,8 +484,7 @@ static void Handle_client_message(
 		unsigned char* wptr = &data[0];
 		little_endian::Write2(wptr, gwin->get_num_npcs());
 		little_endian::Write2(wptr, gwin->get_unused_npc());
-		Exult_server::Send_data(
-				client_socket, Exult_server::npc_unused, data, wptr - data);
+		Exult_server::Send_data(client_socket, Exult_server::npc_unused, data, wptr - data);
 		break;
 	}
 	case Exult_server::npc_info: {
@@ -522,8 +501,7 @@ static void Handle_client_message(
 		} else {
 			little_endian::Write2(wptr, static_cast<unsigned short>(-1));
 		}
-		Exult_server::Send_data(
-				client_socket, Exult_server::npc_info, data, wptr - data);
+		Exult_server::Send_data(client_socket, Exult_server::npc_info, data, wptr - data);
 		break;
 	}
 	case Exult_server::locate_npc:
@@ -553,16 +531,15 @@ static void Handle_client_message(
 		cheat.set_edit_chunknum(little_endian::Read2s(ptr));
 		break;
 	case Exult_server::game_pos: {
-		const Tile_coord pos  = gwin->get_main_actor()->get_tile();
-		Game_map*        gmap = gwin->get_map();
-		const int mapnum = gmap ? gmap->get_num() : 0;    // Current map number.
-		unsigned char* wptr = &data[0];
+		const Tile_coord pos    = gwin->get_main_actor()->get_tile();
+		Game_map*        gmap   = gwin->get_map();
+		const int        mapnum = gmap ? gmap->get_num() : 0;    // Current map number.
+		unsigned char*   wptr   = &data[0];
 		little_endian::Write2(wptr, pos.tx);
 		little_endian::Write2(wptr, pos.ty);
 		little_endian::Write2(wptr, pos.tz);
 		little_endian::Write2(wptr, mapnum);
-		Exult_server::Send_data(
-				client_socket, Exult_server::game_pos, data, wptr - data);
+		Exult_server::Send_data(client_socket, Exult_server::game_pos, data, wptr - data);
 		break;
 	}
 	case Exult_server::goto_map: {
@@ -570,8 +547,7 @@ static void Handle_client_message(
 		const int        num = little_endian::Read2(ptr);
 		gwin->teleport_party(pos, true, num);
 		std::ostringstream msg;
-		msg << Strings::MapNumber() << std::hex << std::setfill('0')
-			<< std::setw(2) << num;
+		msg << Strings::MapNumber() << std::hex << std::setfill('0') << std::setw(2) << num;
 		gwin->get_effects()->center_text(msg.str().c_str());
 		break;
 	}
@@ -591,16 +567,13 @@ static void Handle_client_message(
 			act->show_inventory();
 		} else {
 			// Avoid all frame-usecode and force-usecode subtleties.
-			const int gump
-					= ShapeID::get_info(obj->get_shapenum()).get_gump_shape();
+			const int gump = ShapeID::get_info(obj->get_shapenum()).get_gump_shape();
 			if (gump >= 0) {
-				Gump_manager* gump_man
-						= Game_window::get_instance()->get_gump_man();
+				Gump_manager* gump_man = Game_window::get_instance()->get_gump_man();
 				gump_man->add_gump(obj, gump);
 			} else if (obj->get_info().is_container_locked()) {
 				// Container is locked, showing first gump.
-				Gump_manager* gump_man
-						= Game_window::get_instance()->get_gump_man();
+				Gump_manager* gump_man = Game_window::get_instance()->get_gump_man();
 				gump_man->add_gump(obj, 1);
 			} else {
 				cerr << "The selected container has no gump!" << endl;
@@ -669,8 +642,7 @@ static void Handle_client_message(
 								"them in Exult's Audio settings.";
 				} else {
 					audio->stop_sound_effects();
-					audio->play_sound_effect(
-							track, volume, 0, repeat ? -1 : 0, 0);
+					audio->play_sound_effect(track, volume, 0, repeat ? -1 : 0, 0);
 				}
 				break;
 			case 2:    // Voice
@@ -697,9 +669,7 @@ static void Handle_client_message(
 		} else {
 			Write1(wptr, 1);    // 1 = success
 		}
-		Exult_server::Send_data(
-				client_socket, Exult_server::play_audio, response,
-				wptr - response);
+		Exult_server::Send_data(client_socket, Exult_server::play_audio, response, wptr - response);
 		break;
 	}
 	case Exult_server::stop_audio: {
@@ -735,8 +705,8 @@ static void Handle_client_message(
 		Actor*    main_actor = gwin->get_main_actor();
 		const int lift       = main_actor ? main_actor->get_lift() : 0;
 		const int liftpixels = 4 * lift;
-		int       tx = gwin->get_scrolltx() + (x + liftpixels) / c_tilesize;
-		int       ty = gwin->get_scrollty() + (y + liftpixels) / c_tilesize;
+		int       tx         = gwin->get_scrolltx() + (x + liftpixels) / c_tilesize;
+		int       ty         = gwin->get_scrollty() + (y + liftpixels) / c_tilesize;
 		// Wrap coordinates.
 		tx = (tx + c_num_tiles) % c_num_tiles;
 		ty = (ty + c_num_tiles) % c_num_tiles;
@@ -749,9 +719,7 @@ static void Handle_client_message(
 		little_endian::Write2(wptr, ty);
 		little_endian::Write2(wptr, lift);
 		little_endian::Write2(wptr, mapnum);
-		Exult_server::Send_data(
-				client_socket, Exult_server::get_user_click, response_data,
-				wptr - response_data);
+		Exult_server::Send_data(client_socket, Exult_server::get_user_click, response_data, wptr - response_data);
 		break;
 	}
 	case Exult_server::locate_egg: {
@@ -802,16 +770,14 @@ static void Handle_client_message(
 						}
 						// Match criteria: shape 275, frame 6, type 9 (path),
 						// quality matches.
-						if (egg->get_shapenum() == 275
-							&& egg->get_framenum() == 6
-							&& egg->get_type() == Egg_object::path
+						if (egg->get_shapenum() == 275 && egg->get_framenum() == 6 && egg->get_type() == Egg_object::path
 							&& egg->get_quality() == qual) {
 							// Check distance constraint if origin provided.
 							if (use_constraint) {
 								const Tile_coord egg_pos = egg->get_tile();
-								const int        dx   = egg_pos.tx - origin_x;
-								const int        dy   = egg_pos.ty - origin_y;
-								const int        dist = dx * dx + dy * dy;
+								const int        dx      = egg_pos.tx - origin_x;
+								const int        dy      = egg_pos.ty - origin_y;
+								const int        dist    = dx * dx + dy * dy;
 								// 256 tiles = 65536 squared distance.
 								if (dist > 65536) {
 									continue;    // Too far, keep searching.
@@ -882,11 +848,8 @@ void Server_delay(Message_handler handle_message) {
 	Uint32 expiration = DELAY_TOTAL_MS + SDL_GetTicks();
 	for (;;) {
 		SDL_PumpEvents();
-		if ((SDL_PeepEvents(
-					 nullptr, 0, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST)
-			 != 0)
-			|| (static_cast<Sint32>(SDL_GetTicks())
-				>= static_cast<Sint32>(expiration))) {
+		if ((SDL_PeepEvents(nullptr, 0, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) != 0)
+			|| (static_cast<Sint32>(SDL_GetTicks()) >= static_cast<Sint32>(expiration))) {
 			return;
 		}
 
@@ -911,11 +874,9 @@ void Server_delay(Message_handler handle_message) {
 					close(client_socket);
 				}
 				client_socket = accept(listen_socket, nullptr, nullptr);
-				cout << "Accept returned client_socket = " << client_socket
-					 << endl;
+				cout << "Accept returned client_socket = " << client_socket << endl;
 				// Non-blocking.
-				fcntl(client_socket, F_SETFL,
-					  fcntl(client_socket, F_GETFL) | O_NONBLOCK);
+				fcntl(client_socket, F_SETFL, fcntl(client_socket, F_GETFL) | O_NONBLOCK);
 				Set_highest_fd();
 			}
 			if (client_socket >= 0 && FD_ISSET(client_socket, &rfds)) {

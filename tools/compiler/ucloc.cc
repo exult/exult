@@ -73,19 +73,15 @@ void Uc_location::set_cur(const char* s, int l) {
 	}
 }
 
-void Uc_location::assemble_message(
-		const char* msg, const char* source_file, int line_num, bool is_error) {
+void Uc_location::assemble_message(const char* msg, const char* source_file, int line_num, bool is_error) {
 	// For colorization.
-	constexpr static const std::string_view error_prefix
-			= "\033[1;31merror:\033[0m ";
-	constexpr static const std::string_view warning_prefix
-			= "\033[1;35mwarning:\033[0m ";
-	constexpr static const std::string_view source_prefix = "\033[1m";
-	constexpr static const std::string_view line_prefix   = "\033[1;34m";
-	constexpr static const std::string_view reset_style   = "\033[0m";
+	constexpr static const std::string_view error_prefix   = "\033[1;31merror:\033[0m ";
+	constexpr static const std::string_view warning_prefix = "\033[1;35mwarning:\033[0m ";
+	constexpr static const std::string_view source_prefix  = "\033[1m";
+	constexpr static const std::string_view line_prefix    = "\033[1;34m";
+	constexpr static const std::string_view reset_style    = "\033[0m";
 	if (color_output) {
-		cout << source_prefix << source_file << ":" << reset_style
-			 << line_prefix << line_num << ": " << reset_style;
+		cout << source_prefix << source_file << ":" << reset_style << line_prefix << line_num << ": " << reset_style;
 		if (is_error) {
 			cout << error_prefix;
 		} else {

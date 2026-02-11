@@ -29,8 +29,7 @@ class Vga_file;
 class Shape_frame;
 class Image_buffer8;
 
-using Drop_callback
-		= void (*)(int filenum, int shapenum, int framenum, void* udata);
+using Drop_callback = void (*)(int filenum, int shapenum, int framenum, void* udata);
 
 #include "studio.h"
 
@@ -79,17 +78,16 @@ public:
 
 	virtual void draw_shape(Shape_frame* shape, int x, int y);
 	void         draw_shape(int shapenum, int framenum, int x, int y);
-	void         draw_shape_outline(
-					int shapenum, int framenum, int x, int y, unsigned char color);
-	void draw_shape_centered(int shapenum, int framenum, int& x, int& y);
+	void         draw_shape_outline(int shapenum, int framenum, int x, int y, unsigned char color);
+	void         draw_shape_centered(int shapenum, int framenum, int& x, int& y);
 	virtual void render();    // Update what gets shown.
 	void         set_background_color(guint32 c);
 
 	void configure();    // Configure when created/resized.
 	// Handler for drop.
 	static void drag_data_received(
-			GtkWidget* widget, GdkDragContext* context, gint x, gint y,
-			GtkSelectionData* seldata, guint info, guint time, gpointer udata);
+			GtkWidget* widget, GdkDragContext* context, gint x, gint y, GtkSelectionData* seldata, guint info, guint time,
+			gpointer udata);
 	gulong enable_drop(Drop_callback callback, void* udata);
 	void   set_drag_icon(GdkDragContext* context, Shape_frame* shape);
 	// Start/end dragging from here.
@@ -120,33 +118,29 @@ protected:
 								  //     GtkSpinButton / GtkEntry.
 	int    vganum;                // For a Drag and Drop enabled Shape_single :
 	bool   hide;                  // Whether the Shape should be hidden.
-	gulong shape_connect;    // The Shape Widget g_signal_connect changed ID
-	gulong frame_connect;    // The Frame Widget g_signal_connect changed ID
-	gulong draw_connect;     // The Draw  Widget g_signal_connect draw ID
-	gulong drop_connect;     // The Draw  Widget g_signal_connect drop ID
-	gulong hide_connect;     // The Hide  Widget g_signal_connect changed ID
+	gulong shape_connect;         // The Shape Widget g_signal_connect changed ID
+	gulong frame_connect;         // The Frame Widget g_signal_connect changed ID
+	gulong draw_connect;          // The Draw  Widget g_signal_connect draw ID
+	gulong drop_connect;          // The Draw  Widget g_signal_connect drop ID
+	gulong hide_connect;          // The Hide  Widget g_signal_connect changed ID
 
 public:
 	Shape_single(
-			GtkWidget* shp,        // The ShapeID   holding GtkWidget.
-			GtkWidget* shpnm,      // The ShapeName holding GtkWidget.
-			bool (*shvld)(int),    // The ShapeUD   validating lambda.
-			GtkWidget* frm,        // The FrameID   holding GtkWidget.
-			int        vgnum,      // The D&D U7_SHAPE_xxx VGA file category.
-			Vga_file*  vg,         // The VGA File for the Shape_draw ctor.
-			const unsigned char*
-					   palbuf,    // The Palette for the Shape_draw ctor.
-			GtkWidget* drw,       // The GtkDrawingArea for the Shape_draw ctor.
-			bool       hdd = false);    // Whether the Shape should be hidden.
+			GtkWidget* shp,                 // The ShapeID   holding GtkWidget.
+			GtkWidget* shpnm,               // The ShapeName holding GtkWidget.
+			bool (*shvld)(int),             // The ShapeUD   validating lambda.
+			GtkWidget*           frm,       // The FrameID   holding GtkWidget.
+			int                  vgnum,     // The D&D U7_SHAPE_xxx VGA file category.
+			Vga_file*            vg,        // The VGA File for the Shape_draw ctor.
+			const unsigned char* palbuf,    // The Palette for the Shape_draw ctor.
+			GtkWidget*           drw,       // The GtkDrawingArea for the Shape_draw ctor.
+			bool                 hdd = false);              // Whether the Shape should be hidden.
 	~Shape_single() override;
 	static void     on_shape_changed(GtkWidget* widget, gpointer user_data);
 	static void     on_frame_changed(GtkWidget* widget, gpointer user_data);
-	static gboolean on_draw_expose_event(
-			GtkWidget* widget, cairo_t* cairo, gpointer user_data);
-	static void on_shape_dropped(
-			int filenum, int shapenum, int framenum, gpointer user_data);
-	static void on_state_changed(
-			GtkWidget* widget, GtkStateFlags flags, gpointer user_data);
+	static gboolean on_draw_expose_event(GtkWidget* widget, cairo_t* cairo, gpointer user_data);
+	static void     on_shape_dropped(int filenum, int shapenum, int framenum, gpointer user_data);
+	static void     on_state_changed(GtkWidget* widget, GtkStateFlags flags, gpointer user_data);
 
 	virtual Shape_shape_single* get_shape_shape_single() {
 		return nullptr;
@@ -189,27 +183,24 @@ protected:
 
 public:
 	Shape_gump_single(
-			GtkWidget* shp,        // The ShapeID   holding GtkWidget.
-			GtkWidget* shpnm,      // The ShapeName holding GtkWidget.
-			bool (*shvld)(int),    // The ShapeUD   validating lambda.
-			GtkWidget* frm,        // The FrameID   holding GtkWidget.
-			int        vgnum,      // The D&D U7_SHAPE_xxx VGA file category.
-			Vga_file*  vg,         // The VGA File for the Shape_draw ctor.
-			const unsigned char*
-					   palbuf,    // The Palette for the Shape_draw ctor.
-			GtkWidget* drw,       // The GtkDrawingArea for the Shape_draw ctor.
-			bool       hdd = false);    // Whether the Shape should be hidden.
+			GtkWidget* shp,                 // The ShapeID   holding GtkWidget.
+			GtkWidget* shpnm,               // The ShapeName holding GtkWidget.
+			bool (*shvld)(int),             // The ShapeUD   validating lambda.
+			GtkWidget*           frm,       // The FrameID   holding GtkWidget.
+			int                  vgnum,     // The D&D U7_SHAPE_xxx VGA file category.
+			Vga_file*            vg,        // The VGA File for the Shape_draw ctor.
+			const unsigned char* palbuf,    // The Palette for the Shape_draw ctor.
+			GtkWidget*           drw,       // The GtkDrawingArea for the Shape_draw ctor.
+			bool                 hdd = false);              // Whether the Shape should be hidden.
 	~Shape_gump_single() override;
-	static gboolean on_draw_expose_event(
-			GtkWidget* widget, cairo_t* cairo, gpointer user_data);
+	static gboolean on_draw_expose_event(GtkWidget* widget, cairo_t* cairo, gpointer user_data);
 
 	Shape_gump_single* get_shape_gump_single() override {
 		return this;
 	}
 
 	static void on_widget_changed(GtkWidget* widget, gpointer user_data);
-	static void on_widget_state(
-			GtkWidget* widget, GtkStateFlags flags, gpointer user_data);
+	static void on_widget_state(GtkWidget* widget, GtkStateFlags flags, gpointer user_data);
 };
 
 /*
@@ -232,16 +223,15 @@ protected:
 
 public:
 	Shape_shape_single(
-			GtkWidget* shp,        // The ShapeID   holding GtkWidget.
-			GtkWidget* shpnm,      // The ShapeName holding GtkWidget.
-			bool (*shvld)(int),    // The ShapeUD   validating lambda.
-			GtkWidget* frm,        // The FrameID   holding GtkWidget.
-			int        vgnum,      // The D&D U7_SHAPE_xxx VGA file category.
-			Vga_file*  vg,         // The VGA File for the Shape_draw ctor.
-			const unsigned char*
-					   palbuf,    // The Palette for the Shape_draw ctor.
-			GtkWidget* drw,       // The GtkDrawingArea for the Shape_draw ctor.
-			bool       hdd = false);    // Whether the Shape should be hidden.
+			GtkWidget* shp,                 // The ShapeID   holding GtkWidget.
+			GtkWidget* shpnm,               // The ShapeName holding GtkWidget.
+			bool (*shvld)(int),             // The ShapeUD   validating lambda.
+			GtkWidget*           frm,       // The FrameID   holding GtkWidget.
+			int                  vgnum,     // The D&D U7_SHAPE_xxx VGA file category.
+			Vga_file*            vg,        // The VGA File for the Shape_draw ctor.
+			const unsigned char* palbuf,    // The Palette for the Shape_draw ctor.
+			GtkWidget*           drw,       // The GtkDrawingArea for the Shape_draw ctor.
+			bool                 hdd = false);              // Whether the Shape should be hidden.
 	~Shape_shape_single() override;
 	void draw_shape(Shape_frame* shape, int x, int y) override;
 
@@ -250,8 +240,7 @@ public:
 	}
 
 	static void on_widget_changed(GtkWidget* widget, gpointer user_data);
-	static void on_widget_state(
-			GtkWidget* widget, GtkStateFlags flags, gpointer user_data);
+	static void on_widget_state(GtkWidget* widget, GtkStateFlags flags, gpointer user_data);
 };
 
 #endif

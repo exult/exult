@@ -34,8 +34,8 @@
 #include "chunks.h"
 #include "effects.h"
 #include "gamemap.h"
-#include "gamewin.h"
 #include "gamerend.h"
+#include "gamewin.h"
 #include "ignore_unused_variable_warning.h"
 #include "mouse.h"
 #include "paths.h"
@@ -49,16 +49,12 @@ using std::endl;
 /*
  *  Create for a given (newly created) object.
  */
-Dragging_info::Dragging_info(
-		Game_object_shared newobj    // Object NOT in world.  This is
-		//   dropped, or deleted.
-		)
-		: obj(std::move(newobj)), is_new(true), gump(nullptr), button(nullptr),
-		  old_pos(-1, -1, -1), old_foot(0, 0, 0, 0), old_lift(-1),
-		  quantity(obj->get_quantity()), readied_index(-1), mousex(-1),
-		  mousey(-1), paintx(-1000), painty(-1000),
-		  mouse_shape(Mouse::mouse()->get_shape()), rect(0, 0, 0, 0),
-		  okay(true), possible_theft(false) {
+Dragging_info::Dragging_info(Game_object_shared newobj    // Object NOT in world.  This is
+							 //   dropped, or deleted.
+							 )
+		: obj(std::move(newobj)), is_new(true), gump(nullptr), button(nullptr), old_pos(-1, -1, -1), old_foot(0, 0, 0, 0),
+		  old_lift(-1), quantity(obj->get_quantity()), readied_index(-1), mousex(-1), mousey(-1), paintx(-1000), painty(-1000),
+		  mouse_shape(Mouse::mouse()->get_shape()), rect(0, 0, 0, 0), okay(true), possible_theft(false) {
 	rect = gwin->get_shape_rect(obj.get());
 	rect.enlarge(8);    // Make a little bigger.
 }
@@ -70,11 +66,9 @@ Dragging_info::Dragging_info(
 Dragging_info::Dragging_info(
 		int x, int y    // Mouse position.
 		)
-		: obj(nullptr), is_new(false), gump(nullptr), button(nullptr),
-		  old_pos(-1, -1, -1), old_foot(0, 0, 0, 0), old_lift(-1), quantity(0),
-		  readied_index(-1), mousex(x), mousey(y), paintx(-1000), painty(-1000),
-		  mouse_shape(Mouse::mouse()->get_shape()), rect(0, 0, 0, 0),
-		  okay(false), possible_theft(false) {
+		: obj(nullptr), is_new(false), gump(nullptr), button(nullptr), old_pos(-1, -1, -1), old_foot(0, 0, 0, 0), old_lift(-1),
+		  quantity(0), readied_index(-1), mousex(x), mousey(y), paintx(-1000), painty(-1000),
+		  mouse_shape(Mouse::mouse()->get_shape()), rect(0, 0, 0, 0), okay(false), possible_theft(false) {
 	// First see if it's a gump.
 	gump                 = gumpman->find_gump(x, y);
 	Game_object* to_drag = nullptr;
@@ -102,14 +96,11 @@ Dragging_info::Dragging_info(
 			// Dragging whole gump.
 			paintx = gump->get_x();
 			painty = gump->get_y();
-			cout << "(x,y) rel. to gump is (" << (x - paintx) << ", "
-				 << (y - painty) << ")" << endl;
+			cout << "(x,y) rel. to gump is (" << (x - paintx) << ", " << (y - painty) << ")" << endl;
 		} else {    // the gump isn't draggable
 			return;
 		}
-	} else if (
-			x > 0 && y > 0 && x < gwin->get_width()
-			&& y < gwin->get_height()) {    // Not found in gump?
+	} else if (x > 0 && y > 0 && x < gwin->get_width() && y < gwin->get_height()) {    // Not found in gump?
 		to_drag = gwin->find_object(x, y);
 		if (!to_drag) {
 			return;
@@ -144,8 +135,7 @@ bool Dragging_info::start(
 	}
 	if (obj) {
 		// Don't want to move walls.
-		if (!cheat.in_hack_mover() && !obj->is_dragable()
-			&& !obj->get_owner()) {
+		if (!cheat.in_hack_mover() && !obj->is_dragable() && !obj->get_owner()) {
 			Mouse::mouse()->flash_shape(Mouse::tooheavy);
 			Audio::get_ptr()->play_sound_effect(Audio::game_sfx(76));
 			obj  = nullptr;
@@ -155,9 +145,7 @@ bool Dragging_info::start(
 		}
 		Game_object* owner = obj->get_outermost();
 		if (owner == obj.get()) {
-			if (!cheat.in_hack_mover()
-				&& !Fast_pathfinder_client::is_grabable(
-						gwin->get_main_actor(), obj.get())) {
+			if (!cheat.in_hack_mover() && !Fast_pathfinder_client::is_grabable(gwin->get_main_actor(), obj.get())) {
 				Mouse::mouse()->flash_shape(Mouse::redx);
 				obj  = nullptr;
 				okay = false;
@@ -170,8 +158,7 @@ bool Dragging_info::start(
 	// the mouse pointer over it.
 	gwin->get_effects()->remove_text_effects();
 	// Store original pos. on screen.
-	rect = gump ? (obj ? gump->get_shape_rect(obj.get()) : gump->get_dirty())
-				: gwin->get_shape_rect(obj.get());
+	rect = gump ? (obj ? gump->get_shape_rect(obj.get()) : gump->get_dirty()) : gwin->get_shape_rect(obj.get());
 	if (gump) {    // Remove from actual position.
 		if (obj) {
 			Container_game_object* owner = gump->get_cont_or_actor(x, y);
@@ -179,9 +166,7 @@ bool Dragging_info::start(
 			Game_object* owner_obj  = gump->get_owner()->get_outermost();
 			Main_actor*  main_actor = gwin->get_main_actor();
 			// Check the range
-			if (!cheat.in_hack_mover()
-				&& !Fast_pathfinder_client::is_grabable(
-						main_actor, owner_obj)) {
+			if (!cheat.in_hack_mover() && !Fast_pathfinder_client::is_grabable(main_actor, owner_obj)) {
 				obj  = nullptr;
 				gump = nullptr;
 				okay = false;
@@ -201,15 +186,12 @@ bool Dragging_info::start(
 	}
 
 	// include bbox in rect if bbox renderimg is enabled
-	if (obj && gwin->get_render()->get_bbox_index() != -1)
-	{
-		const auto &info = obj->get_info();
-		int  bbx_w = (info.get_3d_xtiles(obj->get_framenum()) * c_tilesize)
-					+ (info.get_3d_height() * c_tilesize/2)+1;
-		int bbx_h = (info.get_3d_ytiles(obj->get_framenum()) * c_tilesize)
-					+ (info.get_3d_height() * c_tilesize / 2)+1;
+	if (obj && gwin->get_render()->get_bbox_index() != -1) {
+		const auto& info  = obj->get_info();
+		int         bbx_w = (info.get_3d_xtiles(obj->get_framenum()) * c_tilesize) + (info.get_3d_height() * c_tilesize / 2) + 1;
+		int         bbx_h = (info.get_3d_ytiles(obj->get_framenum()) * c_tilesize) + (info.get_3d_height() * c_tilesize / 2) + 1;
 
-		TileRect bbox_rect(rect.x - bbx_w, rect.y - bbx_h, bbx_w+1, bbx_h+1);
+		TileRect bbox_rect(rect.x - bbx_w, rect.y - bbx_h, bbx_w + 1, bbx_h + 1);
 		rect = rect.add(bbox_rect);
 	}
 	// Make a little bigger.
@@ -271,23 +253,18 @@ void Dragging_info::paint() {
 			int bbox = gwin->get_render()->get_bbox_index();
 
 			// paint bbox back
-			if (bbox != -1)
-			{
+			if (bbox != -1) {
 				obj->get_info().paint_bbox(
-					paintx, painty, obj->get_framenum(),
-					Game_window::get_instance()->get_win()->get_ib8(),
-					bbox, 2);
+						paintx, painty, obj->get_framenum(), Game_window::get_instance()->get_win()->get_ib8(), bbox, 2);
 			}
 
 			obj->paint_shape(paintx, painty);
-			
-			// paint bbox front			
+
+			// paint bbox front
 			if (bbox != -1) {
 				obj->get_info().paint_bbox(
-						paintx, painty, obj->get_framenum(),
-						Game_window::get_instance()->get_win()->get_ib8(), bbox,
-						1);
-			}						
+						paintx, painty, obj->get_framenum(), Game_window::get_instance()->get_win()->get_ib8(), bbox, 1);
+			}
 		}
 	} else if (gump) {
 		gump->paint();
@@ -409,8 +386,7 @@ bool Dragging_info::drop_on_gump(
 		return false;
 	}
 	// Check the range
-	if (owner_obj && !cheat.in_hack_mover()
-		&& !Fast_pathfinder_client::is_grabable(main_actor, owner_obj)) {
+	if (owner_obj && !cheat.in_hack_mover() && !Fast_pathfinder_client::is_grabable(main_actor, owner_obj)) {
 		// Object was not grabable
 		Mouse::mouse()->flash_shape(Mouse::outofrange);
 		return false;
@@ -463,9 +439,7 @@ bool Dragging_info::drop_on_map(
 		return false;
 	}
 
-	int       max_lift = cheat.in_hack_mover()
-								 ? 255
-								 : gwin->get_main_actor()->get_lift() + 5;
+	int       max_lift = cheat.in_hack_mover() ? 255 : gwin->get_main_actor()->get_lift() + 5;
 	const int skip     = gwin->get_render_skip_lift();
 	if (max_lift >= skip) {    // Don't drop where we cannot see.
 		max_lift = skip - 1;
@@ -490,9 +464,7 @@ bool Dragging_info::drop_on_map(
 			possible_theft = true;
 		}
 		// Try to place on 'found'.
-		else if (
-				(lift = found->get_lift() + found->get_info().get_3d_height())
-				<= max_lift) {
+		else if ((lift = found->get_lift() + found->get_info().get_3d_height()) <= max_lift) {
 			dropped = gwin->drop_at_lift(to_drop, posx, posy, lift);
 		} else if (
 				// Object is too tall to drop on.
@@ -551,15 +523,13 @@ bool Dragging_info::drop(
 	// or if alternate drop is enabled (ctrl inverts).
 
 	const bool* keystate = SDL_GetKeyboardState(nullptr);
-	const bool  drop
-			= (keystate[SDL_SCANCODE_LCTRL] || keystate[SDL_SCANCODE_RCTRL])
-					  ? gwin->get_alternate_drop()
-					  : !gwin->get_alternate_drop();
-	const bool temp = obj->get_flag(Obj_flags::is_temporary);
+	const bool  drop     = (keystate[SDL_SCANCODE_LCTRL] || keystate[SDL_SCANCODE_RCTRL]) ? gwin->get_alternate_drop()
+																						  : !gwin->get_alternate_drop();
+	const bool  temp     = obj->get_flag(Obj_flags::is_temporary);
 
 	bool escaped = false;
 	if (quantity > 1 && (!on_gump || on_gump != gump) && drop) {
-		quantity = gumpman->prompt_for_number(0, quantity, 1, quantity,nullptr, &escaped);
+		quantity = gumpman->prompt_for_number(0, quantity, 1, quantity, nullptr, &escaped);
 	}
 
 	if (quantity <= 0 || escaped) {
@@ -567,9 +537,8 @@ bool Dragging_info::drop(
 	}
 	if (quantity < obj->get_quantity()) {
 		// Need to drop a copy.
-		to_drop_shared = gmap->create_ireg_object(
-				obj->get_shapenum(), obj->get_framenum());
-		to_drop = to_drop_shared.get();
+		to_drop_shared = gmap->create_ireg_object(obj->get_shapenum(), obj->get_framenum());
+		to_drop        = to_drop_shared.get();
 		to_drop->modify_quantity(quantity - 1);
 		if (okay_to_move) {    // Make sure copy is okay to take.
 			to_drop->set_flag(Obj_flags::okay_to_take);
@@ -579,23 +548,18 @@ bool Dragging_info::drop(
 		}
 	}
 	// Drop it.
-	if (!(on_gump ? drop_on_gump(x, y, to_drop, on_gump)
-				  : drop_on_map(x, y, to_drop))) {
+	if (!(on_gump ? drop_on_gump(x, y, to_drop, on_gump) : drop_on_map(x, y, to_drop))) {
 		return false;
 	}
 	// Make a 'dropped' sound.
 	Audio::get_ptr()->play_sound_effect(Audio::game_sfx(74));
 	if (!gump) {    // Do eggs where it came from.
-		gmap->get_chunk(oldcx, oldcy)
-				->activate_eggs(
-						obj.get(), old_pos.tx, old_pos.ty, old_pos.tz,
-						old_pos.tx, old_pos.ty);
+		gmap->get_chunk(oldcx, oldcy)->activate_eggs(obj.get(), old_pos.tx, old_pos.ty, old_pos.tz, old_pos.tx, old_pos.ty);
 	}
 	// Special:  BlackSword in SI.
 	else if (readied_index >= 0 && obj->get_shapenum() == 806) {
 		// Do 'unreadied' usecode.
-		gump->get_cont_or_actor(x, y)->call_readied_usecode(
-				readied_index, obj.get(), Usecode_machine::unreadied);
+		gump->get_cont_or_actor(x, y)->call_readied_usecode(readied_index, obj.get(), Usecode_machine::unreadied);
 	}
 	// On a barge?
 	Barge_object* barge = gwin->get_moving_barge();
@@ -603,8 +567,7 @@ bool Dragging_info::drop(
 		barge->set_to_gather();    // Refigure what's on barge.
 	}
 	// Check for theft.
-	if (!okay_to_move && !cheat.in_hack_mover() && possible_theft
-		&& !gwin->is_in_dungeon()) {
+	if (!okay_to_move && !cheat.in_hack_mover() && possible_theft && !gwin->is_in_dungeon()) {
 		gwin->theft();
 	}
 	if (to_drop == obj.get()) {    // Whole thing?
@@ -713,19 +676,16 @@ int Game_window::drop_at_lift(
 		move_flags = MOVE_WALK;
 	}
 	if (Map_chunk::is_blocked(
-				info.get_3d_height(), at_lift, tx - xtiles + 1, ty - ytiles + 1,
-				xtiles, ytiles, lift, move_flags, max_drop)) {
+				info.get_3d_height(), at_lift, tx - xtiles + 1, ty - ytiles + 1, xtiles, ytiles, lift, move_flags, max_drop)) {
 		return 0;
 	}
 
 	// Needs to be reachable, except when it is just lower, so the object can
 	// fall down.
 	if (!cheat.in_hack_mover()) {
-		bool grabbable = Fast_pathfinder_client::is_grabable(
-				main_actor, Tile_coord(tx, ty, lift));
+		bool grabbable = Fast_pathfinder_client::is_grabable(main_actor, Tile_coord(tx, ty, lift));
 		if (!grabbable && main_actor->get_lift() > lift) {
-			grabbable = Fast_pathfinder_client::is_grabable(
-					main_actor, Tile_coord(tx, ty, main_actor->get_lift()));
+			grabbable = Fast_pathfinder_client::is_grabable(main_actor, Tile_coord(tx, ty, main_actor->get_lift()));
 		}
 		if (!grabbable) {
 			return 0;
@@ -736,21 +696,16 @@ int Game_window::drop_at_lift(
 	to_drop->move(tx, ty, lift);
 	const TileRect rect = get_shape_rect(to_drop);
 	// Avoid dropping behind walls.
-	if (Is_inaccessible(this, to_drop, rect.x + 2, rect.y + 2)
-		&& Is_inaccessible(this, to_drop, rect.x + rect.w - 3, rect.y + 2)
+	if (Is_inaccessible(this, to_drop, rect.x + 2, rect.y + 2) && Is_inaccessible(this, to_drop, rect.x + rect.w - 3, rect.y + 2)
 		&& Is_inaccessible(this, to_drop, rect.x + 2, rect.y + rect.h - 3)
-		&& Is_inaccessible(
-				this, to_drop, rect.x + rect.w - 3, rect.y + rect.h - 3)
-		&& Is_inaccessible(
-				this, to_drop, rect.x + (rect.w >> 1),
-				rect.y + (rect.h >> 1))) {
+		&& Is_inaccessible(this, to_drop, rect.x + rect.w - 3, rect.y + rect.h - 3)
+		&& Is_inaccessible(this, to_drop, rect.x + (rect.w >> 1), rect.y + (rect.h >> 1))) {
 		Game_object_shared keep;
 		to_drop->remove_this(&keep);
 		return -1;
 	}
 #ifdef DEBUG
-	cout << "Dropping object at (" << tx << ", " << ty << ", " << lift << ")"
-		 << endl;
+	cout << "Dropping object at (" << tx << ", " << ty << ", " << lift << ")" << endl;
 #endif
 	// On an egg?
 	chunk->activate_eggs(to_drop, tx, ty, lift, tx, ty);

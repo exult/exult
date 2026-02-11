@@ -49,32 +49,23 @@ class Editing_file {
 	int         framenum;        // Frame number.
 	int         tiles;           // If > 0, #8x8 tiles per row or col.
 	bool        bycolumns;       // If true tile by column first.
-	bool is_shp;    // If true, file is SHP format (whole shape), else PNG
+	bool        is_shp;          // If true, file is SHP format (whole shape), else PNG
 					// (single frame).
 
 	// Private constructor for tiled
-	Editing_file(
-			const char* vganm, const char* pnm, time_t m, int sh, int ts,
-			bool bycol, int /*unused*/)
-			: vga_basename(vganm), pathname(pnm), mtime(m), shapenum(sh),
-			  framenum(0), tiles(ts), bycolumns(bycol), is_shp(false) {}
+	Editing_file(const char* vganm, const char* pnm, time_t m, int sh, int ts, bool bycol, int /*unused*/)
+			: vga_basename(vganm), pathname(pnm), mtime(m), shapenum(sh), framenum(0), tiles(ts), bycolumns(bycol), is_shp(false) {}
 
 public:
 	friend class Shape_chooser;
 
 	// Create for single frame (PNG) or whole shape (SHP):
-	Editing_file(
-			const char* vganm, const char* pnm, time_t m, int sh, int fr,
-			bool shp)
-			: vga_basename(vganm), pathname(pnm), mtime(m), shapenum(sh),
-			  framenum(fr), tiles(0), bycolumns(false), is_shp(shp) {}
+	Editing_file(const char* vganm, const char* pnm, time_t m, int sh, int fr, bool shp)
+			: vga_basename(vganm), pathname(pnm), mtime(m), shapenum(sh), framenum(fr), tiles(0), bycolumns(false), is_shp(shp) {}
 
 	// Factory method for tiled (PNG only):
-	static std::unique_ptr<Editing_file> create_tiled(
-			const char* vganm, const char* pnm, time_t m, int sh, int ts,
-			bool bycol) {
-		return std::unique_ptr<Editing_file>(
-				new Editing_file(vganm, pnm, m, sh, ts, bycol, 0));
+	static std::unique_ptr<Editing_file> create_tiled(const char* vganm, const char* pnm, time_t m, int sh, int ts, bool bycol) {
+		return std::unique_ptr<Editing_file>(new Editing_file(vganm, pnm, m, sh, ts, bycol, 0));
 	}
 };
 
@@ -109,26 +100,26 @@ class Shape_row {
 class Shape_chooser : public Object_browser, public Shape_draw {
 	Shapes_vga_file*         shapes_file;    // Non-null if 'shapes.vga'.
 	GtkWidget*               sbar;           // Status bar.
-	guint                    sbar_sel;     // Status bar context for selection.
-	GtkWidget*               fspin;        // Spin button for frame #.
-	GtkAdjustment*           frame_adj;    // Adjustment for frame spin btn.
-	int                      framenum0;    // Default frame # to display.
-	std::vector<Shape_entry> info;         // Pos. of each shape/frame.
+	guint                    sbar_sel;       // Status bar context for selection.
+	GtkWidget*               fspin;          // Spin button for frame #.
+	GtkAdjustment*           frame_adj;      // Adjustment for frame spin btn.
+	int                      framenum0;      // Default frame # to display.
+	std::vector<Shape_entry> info;           // Pos. of each shape/frame.
 	std::vector<Shape_row>   rows;
-	unsigned                 row0;    // Row # at top of window.
-	int  row0_voffset;                // Vert. pos. (in pixels) of top row.
-	long total_height;                // In pixels, for all rows.
-	int  last_shape;                  // Last shape visible in window.
-	bool frames_mode;                 // Show all frames horizontally.
-	int  hoffset;                     // Horizontal offset in pixels (when in
-									  //   frames_mode).
-	int voffset;                      // Vertical offset in pixels.
-	int status_id;                    // Statusbar msg. ID.
-	void (*sel_changed)();            // Called when selection changes.
+	unsigned                 row0;            // Row # at top of window.
+	int                      row0_voffset;    // Vert. pos. (in pixels) of top row.
+	long                     total_height;    // In pixels, for all rows.
+	int                      last_shape;      // Last shape visible in window.
+	bool                     frames_mode;     // Show all frames horizontally.
+	int                      hoffset;         // Horizontal offset in pixels (when in
+											  //   frames_mode).
+	int voffset;                              // Vertical offset in pixels.
+	int status_id;                            // Statusbar msg. ID.
+	void (*sel_changed)();                    // Called when selection changes.
 	// List of files being edited by an
 	//   external program (Gimp, etc.)
 	static std::vector<std::unique_ptr<Editing_file>> editing_files;
-	static int check_editing_timer;    // For monitoring files being edited.
+	static int                                        check_editing_timer;    // For monitoring files being edited.
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
 	void tell_server_shape();    // Tell Exult what shape is selected.
@@ -158,9 +149,7 @@ public:
 	void       setup_hscrollbar(int newmax);
 	GtkWidget* create_popup() override;    // Popup menu.
 public:
-	Shape_chooser(
-			Vga_file* i, unsigned char* palbuf, int w, int h,
-			Shape_group* g = nullptr, Shape_file_info* fi = nullptr);
+	Shape_chooser(Vga_file* i, unsigned char* palbuf, int w, int h, Shape_group* g = nullptr, Shape_file_info* fi = nullptr);
 	~Shape_chooser() override;
 
 	void set_shapes_file(Shapes_vga_file* sh) {
@@ -188,24 +177,20 @@ public:
 	}
 
 	unsigned get_num_cols(unsigned rownum) {
-		return ((rownum < rows.size() - 1) ? rows[rownum + 1].index0
-										   : info.size())
-			   - rows[rownum].index0;
+		return ((rownum < rows.size() - 1) ? rows[rownum + 1].index0 : info.size()) - rows[rownum].index0;
 	}
 
 	// Configure when created/resized.
 	gint configure(GdkEventConfigure* event);
 	// Blit to screen.
 	static gint     expose(GtkWidget* widget, cairo_t* cairo, gpointer data);
-	static gboolean on_new_shape_font_color_draw_expose_event(
-			GtkWidget* widget, cairo_t* cairo, gpointer data);
+	static gboolean on_new_shape_font_color_draw_expose_event(GtkWidget* widget, cairo_t* cairo, gpointer data);
 	// Handle mouse press.
 	gint mouse_press(GtkWidget* widget, GdkEventButton* event);
 	// Export current frame as a PNG.
 	time_t export_png(const char* fname);
 	// Export given image as a PNG.
-	time_t export_png(
-			const char* fname, Image_buffer8& img, int xoff, int yoff);
+	time_t export_png(const char* fname, Image_buffer8& img, int xoff, int yoff);
 	// Export frames tiled.
 	time_t export_tiled_png(const char* fname, int tiles, bool bycols);
 	void   edit_shape_info();    // Edit selected shape's info.
@@ -233,25 +218,19 @@ public:
 	void        del_frame();
 	// Give dragged shape.
 	static void drag_data_get(
-			GtkWidget* widget, GdkDragContext* context,
-			GtkSelectionData* seldata, guint info, guint time, gpointer data);
-	static gint drag_begin(
-			GtkWidget* widget, GdkDragContext* context, gpointer data);
+			GtkWidget* widget, GdkDragContext* context, GtkSelectionData* seldata, guint info, guint time, gpointer data);
+	static gint drag_begin(GtkWidget* widget, GdkDragContext* context, gpointer data);
 	// Handle scrollbar.
 	static void vscrolled(GtkAdjustment* adj, gpointer data);
 	static void hscrolled(GtkAdjustment* adj, gpointer data);
 	// Handle spin-button for frames.
 	static void frame_changed(GtkAdjustment* adj, gpointer data);
 	static void all_frames_toggled(GtkToggleButton* btn, gpointer user_data);
-	static gint drag_motion(
-			GtkWidget* widget, GdkEventMotion* event, gpointer data);
+	static gint drag_motion(GtkWidget* widget, GdkEventMotion* event, gpointer data);
 	// Menu items:
-	static void on_shapes_popup_info_activate(
-			GtkMenuItem* item, gpointer udata);
-	static void on_shapes_popup_edit_activate(
-			GtkMenuItem* item, gpointer udata);
-	static void on_shapes_popup_edtiles_activate(
-			GtkMenuItem* item, gpointer udata);
+	static void on_shapes_popup_info_activate(GtkMenuItem* item, gpointer udata);
+	static void on_shapes_popup_edit_activate(GtkMenuItem* item, gpointer udata);
+	static void on_shapes_popup_edtiles_activate(GtkMenuItem* item, gpointer udata);
 };
 
 #endif

@@ -78,17 +78,15 @@ namespace NS_TIMIDITY {
 	struct Voice {
 		uint8   status, channel, note, velocity;
 		Sample* sample;
-		sint32  orig_frequency, frequency, sample_offset, sample_increment,
-				envelope_volume, envelope_target, envelope_increment,
-				tremolo_sweep, tremolo_sweep_position, tremolo_phase,
-				tremolo_phase_increment, vibrato_sweep, vibrato_sweep_position;
+		sint32  orig_frequency, frequency, sample_offset, sample_increment, envelope_volume, envelope_target, envelope_increment,
+				tremolo_sweep, tremolo_sweep_position, tremolo_phase, tremolo_phase_increment, vibrato_sweep,
+				vibrato_sweep_position;
 
 		final_volume_t left_mix, right_mix;
 
 		float  left_amp, right_amp, tremolo_volume;
 		sint32 vibrato_sample_increment[VIBRATO_SAMPLE_INCREMENTS];
-		int    vibrato_phase, vibrato_control_ratio, vibrato_control_counter,
-				envelope_stage, control_counter, panning, panned;
+		int    vibrato_phase, vibrato_control_ratio, vibrato_control_counter, envelope_stage, control_counter, panning, panned;
 	};
 
 /* Voice status options: */
@@ -117,8 +115,7 @@ namespace NS_TIMIDITY {
 
 	extern int  play_midi(MidiEvent* el, sint32 events, sint32 samples);
 	extern int  play_midi_file(char* fn);
-	extern void dumb_pass_playing_list(
-			int number_of_files, char* list_of_files[]);
+	extern void dumb_pass_playing_list(int number_of_files, char* list_of_files[]);
 
 #		ifdef NS_TIMIDITY
 }

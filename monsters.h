@@ -41,14 +41,12 @@ class Monster_actor : public Npc_actor {
 	void               equip(const Monster_info* inf, bool temporary);
 
 public:
-	Monster_actor(
-			const std::string& nm, int shapenum, int num = -1, int uc = -1);
+	Monster_actor(const std::string& nm, int shapenum, int num = -1, int uc = -1);
 	~Monster_actor() override;
 	// Create an instance.
 	static Game_object_shared create(int shnum);
 	static Game_object_shared create(
-			int shnum, Tile_coord pos, int sched = -1,
-			int align = static_cast<int>(Actor::neutral), bool temporary = true,
+			int shnum, Tile_coord pos, int sched = -1, int align = static_cast<int>(Actor::neutral), bool temporary = true,
 			bool equipment = true);
 
 	// Methods to retrieve them all:
@@ -57,8 +55,7 @@ public:
 	}
 
 	Monster_actor* get_next_in_world() {
-		return next_monster ? static_cast<Monster_actor*>(next_monster.get())
-							: nullptr;
+		return next_monster ? static_cast<Monster_actor*>(next_monster.get()) : nullptr;
 	}
 
 	static void delete_all();    // Delete all monsters.
@@ -81,20 +78,17 @@ public:
 	// Move to new abs. location.
 	void move(int newtx, int newty, int newlift, int newmap = -1) override;
 	// Add an object.
-	bool add(
-			Game_object* obj, bool dont_check = false, bool combine = false,
-			bool noset = false) override;
-	int get_armor_points() const override;    // Get total armor value.
-											  // Get total weapon value.
-	const Weapon_info* get_weapon(
-			int& points, int& shape, Game_object*& obj) const override;
+	bool add(Game_object* obj, bool dont_check = false, bool combine = false, bool noset = false) override;
+	int  get_armor_points() const override;    // Get total armor value.
+											   // Get total weapon value.
+	const Weapon_info* get_weapon(int& points, int& shape, Game_object*& obj) const override;
 
 	bool is_monster() const override {
 		return true;
 	}
 
 	void die(Game_object* attacker) override;    // We're dead.
-	void write(ODataSource* nfile);    // Write out (to 'monsnpc.dat').
+	void write(ODataSource* nfile);              // Write out (to 'monsnpc.dat').
 };
 
 #endif

@@ -41,12 +41,9 @@ protected:
 	int_type overflow(int_type c = traits_type::eof()) override;
 	pos_type seekoff(
 			off_type off, std::ios_base::seekdir dir,
-			std::ios_base::openmode which
-			= std::ios_base::in | std::ios_base::out) override;
-	pos_type seekpos(
-			pos_type sp, std::ios_base::openmode which
-						 = std::ios_base::in | std::ios_base::out) override;
-	int sync() override;
+			std::ios_base::openmode which = std::ios_base::in | std::ios_base::out) override;
+	pos_type seekpos(pos_type sp, std::ios_base::openmode which = std::ios_base::in | std::ios_base::out) override;
+	int      sync() override;
 
 private:
 	char                    m_buffer[8];

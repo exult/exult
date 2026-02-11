@@ -19,17 +19,17 @@
  */
 
 #ifndef EFFECTS_H
-#	define EFFECTS_H 1
+#define EFFECTS_H 1
 
-#	include "rect.h"
-#	include "shapeid.h"
-#	include "singles.h"
-#	include "tiles.h"
-#	include "tqueue.h"
+#include "rect.h"
+#include "shapeid.h"
+#include "singles.h"
+#include "tiles.h"
+#include "tqueue.h"
 
-#	include <list>
-#	include <memory>
-#	include <string>
+#include <list>
+#include <memory>
+#include <string>
 
 class Xform_palette;
 class PathFinder;
@@ -47,10 +47,9 @@ using Game_object_weak = std::weak_ptr<Game_object>;
  *  Manage special effects.
  */
 class Effects_manager {
-	Game_window* gwin;    // Handy pointer.
-	std::list<std::unique_ptr<Special_effect>>
-			effects;    // Sprite effects, projectiles, etc.
-	std::list<std::unique_ptr<Text_effect>> texts;    // Text snippets.
+	Game_window*                               gwin;       // Handy pointer.
+	std::list<std::unique_ptr<Special_effect>> effects;    // Sprite effects, projectiles, etc.
+	std::list<std::unique_ptr<Text_effect>>    texts;      // Text snippets.
 public:
 	Effects_manager(Game_window* g) : gwin(g) {}
 
@@ -122,12 +121,8 @@ protected:
 	bool pause_while_faded(unsigned long time, uintptr udata);
 
 public:
-	Sprites_effect(
-			int num, const Tile_coord& p, int dx = 0, int dy = 0, int delay = 0,
-			int frm = 0, int rps = -1);
-	Sprites_effect(
-			int num, Game_object* it, int xf, int yf, int dx, int dy,
-			int frm = 0, int rps = -1);
+	Sprites_effect(int num, const Tile_coord& p, int dx = 0, int dy = 0, int delay = 0, int frm = 0, int rps = -1);
+	Sprites_effect(int num, Game_object* it, int xf, int yf, int dx, int dy, int frm = 0, int rps = -1);
 	// For Time_sensitive:
 	void handle_event(unsigned long time, uintptr udata) override;
 	// Render.
@@ -147,12 +142,11 @@ class Explosion_effect : public Sprites_effect {
 	int              projectile;    // The projectile, for e.g., burst arrows
 	int              exp_sfx;       // Explosion SFX.
 	Game_object_weak attacker;      // Who is responsible for the explosion;
-	// otherwise, explosion and delayed blast spells
-	// would not trigger a response from target
+									// otherwise, explosion and delayed blast spells
+									// would not trigger a response from target
 public:
 	Explosion_effect(
-			const Tile_coord& p, Game_object* exp, int delay = 0, int weap = -1,
-			int proj = -1, Game_object* att = nullptr);
+			const Tile_coord& p, Game_object* exp, int delay = 0, int weap = -1, int proj = -1, Game_object* att = nullptr);
 	void handle_event(unsigned long time, uintptr udata) override;
 };
 
@@ -180,16 +174,13 @@ class Projectile_effect : public Special_effect {
 	void init(const Tile_coord& s, const Tile_coord& d);
 
 public:
-	Projectile_effect(
-			Game_object* att, Game_object* to, int weap, int proj, int spr,
-			int attpts = 60, int spd = -1);
+	Projectile_effect(Game_object* att, Game_object* to, int weap, int proj, int spr, int attpts = 60, int spd = -1);
 	// For missile traps:
 	Projectile_effect(
-			Game_object* att, const Tile_coord& d, int weap, int proj, int spr,
-			int attpts = 60, int spd = -1, bool retpath = false);
+			Game_object* att, const Tile_coord& d, int weap, int proj, int spr, int attpts = 60, int spd = -1,
+			bool retpath = false);
 	Projectile_effect(
-			const Tile_coord& s, Game_object* to, int weap, int proj, int spr,
-			int attpts = 60, int spd = -1, bool retpath = false);
+			const Tile_coord& s, Game_object* to, int weap, int proj, int spr, int attpts = 60, int spd = -1, bool retpath = false);
 	~Projectile_effect() override;
 	// For Time_sensitive:
 	void handle_event(unsigned long time, uintptr udata) override;
@@ -210,23 +201,21 @@ public:
  */
 class Homing_projectile : public Special_effect {
 	ShapeID          sprite;
-	int              weapon;      // The weapon's shape number.
-	Game_object_weak attacker;    // Who is responsible for the attack.
-	Actor*           target;      // We'll follow this around if not nullptr.
-	Tile_coord       pos;         // Current position.
-	Tile_coord       dest;    // Destination pos for when there is no target.
-	bool             stationary;    // If the effect should seek new targets.
-	int              frames;        // # frames.
-	uint32           stop_time;     // Time in 1/1000 secs. to stop.
+	int              weapon;              // The weapon's shape number.
+	Game_object_weak attacker;            // Who is responsible for the attack.
+	Actor*           target;              // We'll follow this around if not nullptr.
+	Tile_coord       pos;                 // Current position.
+	Tile_coord       dest;                // Destination pos for when there is no target.
+	bool             stationary;          // If the effect should seek new targets.
+	int              frames;              // # frames.
+	uint32           stop_time;           // Time in 1/1000 secs. to stop.
 	uint32           next_damage_time;    // When to check for NPC's beneath us.
 	int              sfx;
 	int              channel;
 	int              add_dirty();
 
 public:
-	Homing_projectile(
-			int shnum, Game_object* att, Game_object* trg, const Tile_coord& sp,
-			const Tile_coord& tp);
+	Homing_projectile(int shnum, Game_object* att, Game_object* trg, const Tile_coord& sp, const Tile_coord& tp);
 	// For Time_sensitive:
 	void handle_event(unsigned long time, uintptr udata) override;
 	// Render.
@@ -313,8 +302,7 @@ class Lightning_effect : public Weather_effect {
 
 public:
 	Lightning_effect(int duration, int delay = 0, bool uc = false)
-			: Weather_effect(duration, delay, -1), flashing(false),
-			  fromusecode(uc) {}
+			: Weather_effect(duration, delay, -1), flashing(false), fromusecode(uc) {}
 
 	bool from_usecode() const {
 		return fromusecode;
@@ -391,9 +379,7 @@ class Clouds_effect : public Weather_effect {
 	bool                                overcast;
 
 public:
-	Clouds_effect(
-			int duration, int delay = 0, Game_object* egg = nullptr,
-			int n = -1);
+	Clouds_effect(int duration, int delay = 0, Game_object* egg = nullptr, int n = -1);
 	// Execute when due.
 	void handle_event(unsigned long curtime, uintptr udata) override;
 	// Render.

@@ -140,8 +140,7 @@ public:
 		android_autolaunch = state;
 	}
 
-	static void SetAndroidAutoLaunchFPtrs(
-			void (*setter)(bool), bool (*getter)());
+	static void SetAndroidAutoLaunchFPtrs(void (*setter)(bool), bool (*getter)());
 
 	Gump_button* on_button(int mx, int my) override;
 };

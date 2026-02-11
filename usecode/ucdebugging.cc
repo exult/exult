@@ -37,20 +37,18 @@ Breakpoint::Breakpoint(bool once) {
 
 AnywhereBreakpoint::AnywhereBreakpoint() : Breakpoint(true) {}
 
-LocationBreakpoint::LocationBreakpoint(int functionid, int ip, bool once)
-		: Breakpoint(once) {
+LocationBreakpoint::LocationBreakpoint(int functionid, int ip, bool once) : Breakpoint(once) {
 	this->functionid = functionid;
 	this->ip         = ip;
 }
 
 bool LocationBreakpoint::check(Stack_frame* frame) const {
-	return (frame->function->id == functionid)
-		   && (static_cast<int>(frame->ip - frame->code) == ip);
+	return (frame->function->id == functionid) && (static_cast<int>(frame->ip - frame->code) == ip);
 }
 
 void LocationBreakpoint::serialize(int fd) const {
 	unsigned char d[13];
-	d[0] = static_cast<unsigned char>(Exult_server::dbg_set_location_bp);
+	d[0]                = static_cast<unsigned char>(Exult_server::dbg_set_location_bp);
 	unsigned char* dptr = &d[1];
 	little_endian::Write4(dptr, functionid);
 	little_endian::Write4(dptr, ip);
@@ -64,8 +62,7 @@ StepoverBreakpoint::StepoverBreakpoint(Stack_frame* frame) : Breakpoint(true) {
 }
 
 bool StepoverBreakpoint::check(Stack_frame* frame) const {
-	return (frame->call_chain == call_chain && frame->call_depth <= call_depth)
-		   || (frame->call_chain < call_chain);
+	return (frame->call_chain == call_chain && frame->call_depth <= call_depth) || (frame->call_chain < call_chain);
 }
 
 FinishBreakpoint::FinishBreakpoint(Stack_frame* frame) : Breakpoint(true) {
@@ -74,8 +71,7 @@ FinishBreakpoint::FinishBreakpoint(Stack_frame* frame) : Breakpoint(true) {
 }
 
 bool FinishBreakpoint::check(Stack_frame* frame) const {
-	return (frame->call_chain == call_chain && frame->call_depth < call_depth)
-		   || (frame->call_chain < call_chain);
+	return (frame->call_chain == call_chain && frame->call_depth < call_depth) || (frame->call_chain < call_chain);
 }
 
 int Breakpoints::lastID = 0;

@@ -34,9 +34,7 @@ class Game_render {
 	int bbox_palindex = -1;
 
 public:
-	void paint_terrain_only(
-			int start_chunkx, int start_chunky, int stop_chunkx,
-			int stop_chunky);
+	void paint_terrain_only(int start_chunkx, int start_chunky, int stop_chunkx, int stop_chunky);
 	// Render the map & objects.
 	int paint_map(int x, int y, int w, int h);
 	// Paint "flat" scenery in a chunk.
@@ -51,10 +49,8 @@ public:
 	// Paint an obj. after dependencies.
 	void paint_object(Game_object* obj);
 	// Render dungeon blackness
-	void paint_blackness(
-			int start_chunkx, int start_chunky, int stop_chunkx,
-			int stop_chunky, int index = 0);
-	int get_light_strength(const Game_object* obj, const Game_object* av) const;
+	void paint_blackness(int start_chunkx, int start_chunky, int stop_chunkx, int stop_chunky, int index = 0);
+	int  get_light_strength(const Game_object* obj, const Game_object* av) const;
 
 	void increment_bbox_index();
 

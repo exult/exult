@@ -73,12 +73,9 @@ namespace Exult_server {
 		// gamedat dir it's also setup so the file is deleted when the server
 		// shuts down
 		hPortFile = CreateFile(
-				filename, writing ? GENERIC_WRITE : GENERIC_READ,
-				FILE_SHARE_READ | sharedel | (!writing ? FILE_SHARE_WRITE : 0),
+				filename, writing ? GENERIC_WRITE : GENERIC_READ, FILE_SHARE_READ | sharedel | (!writing ? FILE_SHARE_WRITE : 0),
 				nullptr, writing ? CREATE_ALWAYS : OPEN_EXISTING,
-				FILE_ATTRIBUTE_TEMPORARY
-						| (writing ? FILE_FLAG_DELETE_ON_CLOSE : 0),
-				nullptr);
+				FILE_ATTRIBUTE_TEMPORARY | (writing ? FILE_FLAG_DELETE_ON_CLOSE : 0), nullptr);
 		return hPortFile != INVALID_HANDLE_VALUE;
 	}
 
@@ -129,13 +126,10 @@ namespace Exult_server {
 		sockaddr_in service;
 		service.sin_family      = AF_INET;
 		service.sin_addr.s_addr = inet_addr("127.0.0.1");
-		service.sin_port
-				= 0;    // Random port so we can have multiple instances of
-						// exult studio and exult running... in theory
+		service.sin_port        = 0;    // Random port so we can have multiple instances of
+								 // exult studio and exult running... in theory
 
-		if (bind(gServerSocket, reinterpret_cast<SOCKADDR*>(&service),
-				 sizeof(service))
-			== SOCKET_ERROR) {
+		if (bind(gServerSocket, reinterpret_cast<SOCKADDR*>(&service), sizeof(service)) == SOCKET_ERROR) {
 			cerr << "bind() failed." << std::endl;
 			close_pipe();
 			return false;
@@ -149,9 +143,7 @@ namespace Exult_server {
 		}
 
 		int socksize = sizeof(service);
-		getsockname(
-				gServerSocket, reinterpret_cast<SOCKADDR*>(&service),
-				&socksize);
+		getsockname(gServerSocket, reinterpret_cast<SOCKADDR*>(&service), &socksize);
 
 		if (!OpenPortFile(path, true)) {
 			cerr << "Error creating temporary file in gamedat dir for port "
@@ -164,8 +156,7 @@ namespace Exult_server {
 		DWORD numWriten;
 		WriteFile(hPortFile, &service.sin_port, 2, &numWriten, nullptr);
 
-		cout << "Opened socket for Exult Server on port "
-			 << ntohs(service.sin_port) << endl;
+		cout << "Opened socket for Exult Server on port " << ntohs(service.sin_port) << endl;
 
 		return true;
 	}
@@ -251,15 +242,12 @@ namespace Exult_server {
 		CloseHandle(hPortFile);
 		hPortFile = INVALID_HANDLE_VALUE;
 		if (numRead != 2) {
-			cerr << "Error read temporary file in gamedat dir with port number."
-				 << endl;
+			cerr << "Error read temporary file in gamedat dir with port number." << endl;
 			close_pipe();
 			return false;
 		}
 
-		if (connect(gDataSocket, reinterpret_cast<SOCKADDR*>(&service),
-					sizeof(service))
-			== SOCKET_ERROR) {
+		if (connect(gDataSocket, reinterpret_cast<SOCKADDR*>(&service), sizeof(service)) == SOCKET_ERROR) {
 			cerr << "Failed to connect." << std::endl;
 			close_pipe();
 			return false;
@@ -316,8 +304,7 @@ namespace Exult_server {
 		ver.dwOSVersionInfoSize = sizeof(ver);
 		GetVersionEx(&ver);
 		// Lumping WinME with the rest of them.
-		return ver.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS
-			   && ver.dwMajorVersion == 4;
+		return ver.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS && ver.dwMajorVersion == 4;
 	}
 
 }    // namespace Exult_server

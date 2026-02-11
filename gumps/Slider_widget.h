@@ -29,8 +29,7 @@ public:
 	// Interface to recieve Messages from a Slider Widget
 	class ICallback {
 	public:
-		virtual void OnSliderValueChanged(Slider_widget* sender, int newvalue)
-				= 0;
+		virtual void OnSliderValueChanged(Slider_widget* sender, int newvalue) = 0;
 
 		virtual ~ICallback() {}
 	};
@@ -44,9 +43,8 @@ public:
 	//! /param width. How wide the sliding region should be.
 	//!  determines how far apart the left and right buttons should be
 	Slider_widget(
-			Gump_Base* par, int px, int py, ShapeID sidLeft, ShapeID sidRight,
-			ShapeID sidDiamond, int mival, int mxval, int step, int defval,
-			int width = 64, bool logarithmic = false);
+			Gump_Base* par, int px, int py, ShapeID sidLeft, ShapeID sidRight, ShapeID sidDiamond, int mival, int mxval, int step,
+			int defval, int width = 64, bool logarithmic = false);
 
 	// By default the callback is set to par by the construcor if par implements
 	// ISlider_widget_callback but if not the callback can be set here
@@ -67,7 +65,7 @@ private:
 	int leftbtnx, rightbtnx, btny;
 	int xmin, xmax, xdist;
 
-	ShapeID      diamond;    // Diamond
+	ShapeID                      diamond;    // Diamond
 	std::unique_ptr<Gump_button> left, right;
 
 public:
@@ -98,8 +96,7 @@ public:
 	bool mouse_down(int mx, int my, MouseButton button) override;
 	bool mouse_up(int mx, int my, MouseButton button) override;
 	bool mouse_drag(int mx, int my) override;
-	bool key_down(SDL_Keycode chr, SDL_Keycode unicode)
-			override;    // Character typed.
+	bool key_down(SDL_Keycode chr, SDL_Keycode unicode) override;    // Character typed.
 
 	bool mousewheel_up(int mx, int my) override;
 	bool mousewheel_down(int mx, int my) override;

@@ -36,8 +36,8 @@
 class IDataSource;
 
 class Text_msg_file_reader {
-	using Section_data  = std::vector<std::optional<std::string_view>>;
-	using Text_msg_data = std::map<std::string_view, Section_data, std::less<>>;
+	using Section_data   = std::vector<std::optional<std::string_view>>;
+	using Text_msg_data  = std::map<std::string_view, Section_data, std::less<>>;
 	using Text_msg_first = std::map<std::string_view, uint32, std::less<>>;
 	std::string    contents;
 	Section_data   global_section;
@@ -63,8 +63,7 @@ public:
 		return global_first;
 	}
 
-	uint32 get_global_section_strings(
-			std::vector<std::optional<std::string>>& strings) const {
+	uint32 get_global_section_strings(std::vector<std::optional<std::string>>& strings) const {
 		strings.clear();
 		for (const auto& s : global_section) {
 			strings.emplace_back(s);
@@ -72,8 +71,7 @@ public:
 		return global_first;
 	}
 
-	[[nodiscard]] const Section_data* get_section(
-			std::string_view sectionName, int& firstMsg) const {
+	[[nodiscard]] const Section_data* get_section(std::string_view sectionName, int& firstMsg) const {
 		auto section = items.find(sectionName);
 		if (section != items.end()) {
 			firstMsg = firsts.at(sectionName);
@@ -83,9 +81,7 @@ public:
 		return nullptr;
 	}
 
-	uint32 get_section_strings(
-			std::string_view          sectionName,
-			std::vector<std::string>& strings) const {
+	uint32 get_section_strings(std::string_view sectionName, std::vector<std::string>& strings) const {
 		strings.clear();
 		if (has_section(sectionName)) {
 			for (const auto& s : items.at(sectionName)) {
@@ -96,9 +92,7 @@ public:
 		return 0;
 	}
 
-	uint32 get_section_strings(
-			std::string_view                         sectionName,
-			std::vector<std::optional<std::string>>& strings) const {
+	uint32 get_section_strings(std::string_view sectionName, std::vector<std::optional<std::string>>& strings) const {
 		strings.clear();
 		if (has_section(sectionName)) {
 			for (const auto& s : items.at(sectionName)) {
@@ -120,8 +114,6 @@ public:
 	[[nodiscard]] std::optional<int> get_version() const;
 };
 
-void Write_msg_file_section(
-		std::ostream& out, const char* section,
-		std::vector<std::string>& items);
+void Write_msg_file_section(std::ostream& out, const char* section, std::vector<std::string>& items);
 
 #endif

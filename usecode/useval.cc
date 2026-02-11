@@ -183,8 +183,7 @@ int Usecode_value::find_elem(const Usecode_value& val) {
  *  Output: This.
  */
 
-Usecode_value& Usecode_value::concat(
-		Usecode_value& val2    // Concat. val2 onto end.
+Usecode_value& Usecode_value::concat(Usecode_value& val2    // Concat. val2 onto end.
 ) {
 	if (type != array_type) {    // Not an array?  Create one.
 		// Current value becomes 1st elem.
@@ -194,8 +193,7 @@ Usecode_value& Usecode_value::concat(
 	if (val2.type != array_type) {    // Appending a single value?
 		arrayval.push_back(val2);
 	} else {    // Appending an array.
-		arrayval.insert(
-				arrayval.end(), val2.arrayval.cbegin(), val2.arrayval.cend());
+		arrayval.insert(arrayval.end(), val2.arrayval.cbegin(), val2.arrayval.cend());
 	}
 	return *this;
 }
@@ -231,9 +229,7 @@ int Usecode_value::add_values(int index, Usecode_value& val2) {
 	if (index + size2 > size) {
 		arrayval.resize(index + size2);
 	}
-	std::copy(
-			val2.arrayval.cbegin(), val2.arrayval.cend(),
-			arrayval.begin() + index);
+	std::copy(val2.arrayval.cbegin(), val2.arrayval.cend(), arrayval.begin() + index);
 	return size2;    // Return # added.
 }
 
@@ -333,8 +329,7 @@ struct safe_divide : Op<T> {
 		// Watch for division by zero. Originals do this, but they return
 		// 32768 in all cases.
 		if (y == 0) {
-			return x < 0 ? std::numeric_limits<T>::min()
-						 : std::numeric_limits<T>::max();
+			return x < 0 ? std::numeric_limits<T>::min() : std::numeric_limits<T>::max();
 		} else {
 			return Op<T>::operator()(x, y);
 		}
@@ -421,8 +416,7 @@ bool Usecode_value::save(ODataSource* out) {
 		break;
 	}
 	case array_type:
-		out->write2(
-				arrayval.size());    // first length, then length Usecode_values
+		out->write2(arrayval.size());    // first length, then length Usecode_values
 		for (auto& elem : arrayval) {
 			if (!elem.save(out)) {
 				return false;

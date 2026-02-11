@@ -50,8 +50,7 @@ using std::isspace;
 #	define CTRACE(X)
 #endif
 
-void Configuration::value(
-		const string& key, string& ret, const std::string& defaultvalue) const {
+void Configuration::value(const string& key, string& ret, const std::string& defaultvalue) const {
 	const XMLnode* sub = xmltree->subtree(key);
 	if (sub) {
 		ret = sub->value();
@@ -60,8 +59,7 @@ void Configuration::value(
 	}
 }
 
-void Configuration::value(
-		const string& key, bool& ret, bool defaultvalue) const {
+void Configuration::value(const string& key, bool& ret, bool defaultvalue) const {
 	const XMLnode* sub = xmltree->subtree(key);
 	if (sub) {
 		ret = (to_uppercase(sub->value()) == "YES");
@@ -84,8 +82,7 @@ bool Configuration::key_exists(const string& key) const {
 	return sub != nullptr;
 }
 
-void Configuration::set(
-		const string& key, const string& value, bool write_out) {
+void Configuration::set(const string& key, const string& value, bool write_out) {
 	// Break k up into '/' separated elements.
 	// start advancing walk, one element at a time, creating nodes
 	// as needed.
@@ -148,10 +145,8 @@ bool Configuration::read_config_string(const string& s) {
 static inline bool is_path_absolute(const string& path) {
 #ifdef _WIN32
 	const auto is_win32_abs_path = [](const string& path) {
-		return (path.find(".\\") == 0) || (path.find("..\\") == 0)
-			   || (path[0] == '\\')
-			   || (std::isalpha(path[0]) && path[1] == ':'
-				   && (path[2] == '/' || path[2] == '\\'));
+		return (path.find(".\\") == 0) || (path.find("..\\") == 0) || (path[0] == '\\')
+			   || (std::isalpha(path[0]) && path[1] == ':' && (path[2] == '/' || path[2] == '\\'));
 	};
 #else
 	const auto is_win32_abs_path = [](const string& path) {
@@ -160,12 +155,10 @@ static inline bool is_path_absolute(const string& path) {
 	};
 #endif
 
-	return (path.find("./") == 0) || (path.find("../") == 0) || (path[0] == '/')
-		   || is_win32_abs_path(path);
+	return (path.find("./") == 0) || (path.find("../") == 0) || (path[0] == '/') || is_win32_abs_path(path);
 }
 
-bool Configuration::read_config_file(
-		const string& input_filename, const string& root) {
+bool Configuration::read_config_file(const string& input_filename, const string& root) {
 	string fname;
 
 	CTRACE("Configuration::read_config_file");
@@ -175,8 +168,7 @@ bool Configuration::read_config_file(
 	// a slash or with two dots and a slash.
 	// Or if it's not a relative path.
 	if (!is_path_absolute(get_system_path(input_filename))) {
-#if (defined(XWIN) || defined(MACOSX) || defined(_WIN32) \
-	 || defined(SDL_PLATFORM_IOS))
+#if (defined(XWIN) || defined(MACOSX) || defined(_WIN32) || defined(SDL_PLATFORM_IOS))
 		fname = "<CONFIG>/";
 #	if (defined(XWIN) && !defined(MACOSX) && !defined(SDL_PLATFORM_IOS))
 		fname += ".";
@@ -190,11 +182,9 @@ bool Configuration::read_config_file(
 #if defined(_WIN32)
 		// Note: this first check misses some cases of path equality, but it
 		// does eliminates some spurious warnings.
-		if (fname != input_filename && U7exists(input_filename.c_str())
-			&& get_system_path("<HOME>") != ".") {
+		if (fname != input_filename && U7exists(input_filename.c_str()) && get_system_path("<HOME>") != ".") {
 			if (!U7exists(fname.c_str())) {
-				cerr << "Warning: configuration file '" << input_filename
-					 << "' is being copied to file '" << fname
+				cerr << "Warning: configuration file '" << input_filename << "' is being copied to file '" << fname
 					 << "' and will no longer be used." << endl;
 				try {
 					const size_t pos = fname.find_last_of("/\\");
@@ -205,13 +195,11 @@ bool Configuration::read_config_file(
 					}
 					U7copy(input_filename.c_str(), fname.c_str());
 				} catch (exult_exception& /*e*/) {
-					cerr << "File copy FAILED. Old settings will be lost"
-						 << endl;
+					cerr << "File copy FAILED. Old settings will be lost" << endl;
 				}
 			} else {
-				cerr << "Warning: configuration file '" << input_filename
-					 << "' is being ignored in favor of file '" << fname << "'."
-					 << endl;
+				cerr << "Warning: configuration file '" << input_filename << "' is being ignored in favor of file '" << fname
+					 << "'." << endl;
 			}
 		}
 #endif    // _WIN32
@@ -220,8 +208,7 @@ bool Configuration::read_config_file(
 }
 
 // read config from file, without pre-processing the filename
-bool Configuration::read_abs_config_file(
-		const string& input_filename, const string& root) {
+bool Configuration::read_abs_config_file(const string& input_filename, const string& root) {
 	filename = input_filename;
 
 	CTRACE("Configuration::read_abs_config_file");
@@ -291,8 +278,7 @@ void Configuration::write_back() {
 	ofile << dump() << endl;
 }
 
-std::vector<string> Configuration::listkeys(
-		const string& key, bool longformat) {
+std::vector<string> Configuration::listkeys(const string& key, bool longformat) {
 	std::vector<string> vs;
 	const XMLnode*      sub = xmltree->subtree(key);
 	if (sub) {

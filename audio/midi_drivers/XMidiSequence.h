@@ -35,9 +35,7 @@ public:
 	//! \param repeat Specifies if repeating is enabled or disabled
 	//! \param volume Volume level to play at
 	//! \param branch The Branch index to start playing at
-	XMidiSequence(
-			XMidiSequenceHandler* handler, uint16 seq_id,
-			XMidiEventList* events, bool repeat, int volume, int branch);
+	XMidiSequence(XMidiSequenceHandler* handler, uint16 seq_id, XMidiEventList* events, bool repeat, int volume, int branch);
 
 	//! Destructor
 	~XMidiSequence();
@@ -131,15 +129,15 @@ public:
 	}
 
 private:
-	XMidiSequenceHandler* handler;    //!< The handler the events are sent to
+	XMidiSequenceHandler* handler;        //!< The handler the events are sent to
 	uint16                sequence_id;    //!< The sequence id of this sequence
-	XMidiEventList* evntlist;    //!< The Midi event list that is being played
-	XMidiEvent*     event;       //!< The next event to be played
-	bool            repeat;      //!< Specifies if repeating is enabled
-	XMidiNoteStack  notes_on;    //!< Note stack of notes currently playing, and
-								 //!< time to stop
-	uint32 last_tick;            //!< The tick of the previously played notes
-	uint32 start;                //!< XMidi Clock (in 1/6000 seconds)
+	XMidiEventList*       evntlist;       //!< The Midi event list that is being played
+	XMidiEvent*           event;          //!< The next event to be played
+	bool                  repeat;         //!< Specifies if repeating is enabled
+	XMidiNoteStack        notes_on;       //!< Note stack of notes currently playing, and
+										  //!< time to stop
+	uint32 last_tick;                     //!< The tick of the previously played notes
+	uint32 start;                         //!< XMidi Clock (in 1/6000 seconds)
 	uint32 length;
 	int    loop_num;     //!< The level of the loop we are currently in
 	int    vol_multi;    //!< Volume multiplier (0-255)
@@ -182,19 +180,18 @@ private:
 	};
 
 	struct ChannelShadow {
-		static const uint16               centre_default = 0x2000;
-		constexpr static const CoarseFine cf_centre_default
-				= {centre_default >> 7, centre_default & 127};
+		static const uint16               centre_default    = 0x2000;
+		constexpr static const CoarseFine cf_centre_default = {centre_default >> 7, centre_default & 127};
 
 		int pitchWheel = cf_centre_default.combined();
 		int program    = -1;
 
 		// Controllers
-		CoarseFine bank      = {0, 0};               // 0
-		CoarseFine modWheel  = cf_centre_default;    // 1
-		CoarseFine footpedal = {0, 0};               // 4
-		CoarseFine volume    = {80, 0};    // MT32EMU seems to default this to
-										   // 80, so I'm going to do the same
+		CoarseFine bank      = {0, 0};                // 0
+		CoarseFine modWheel  = cf_centre_default;     // 1
+		CoarseFine footpedal = {0, 0};                // 4
+		CoarseFine volume    = {80, 0};               // MT32EMU seems to default this to
+													  // 80, so I'm going to do the same
 		CoarseFine pan        = cf_centre_default;    // 9
 		CoarseFine balance    = cf_centre_default;    // 10
 		CoarseFine expression = {127, 0};             // 11
@@ -218,11 +215,9 @@ private:
 	//! \param ctrl control code
 	//! \param i the channel being modified
 	//! \param controller the controller array being modified
-	void sendController(
-			MidiController ctrl, int channel, int (&controller)[2]) const;
+	void sendController(MidiController ctrl, int channel, int (&controller)[2]) const;
 
-	void sendController(
-			MidiController ctrl, int channel, CoarseFine& cf) const {
+	void sendController(MidiController ctrl, int channel, CoarseFine& cf) const {
 		int vals[2] = {cf.coarse, cf.fine};
 		sendController(ctrl, channel, vals);
 	}
@@ -263,6 +258,5 @@ private:
 
 // needed explicit instantiation declaration to supress warnings from clang
 template <>
-XMidiRecyclable<XMidiSequence>::FreeList
-		XMidiRecyclable<XMidiSequence>::FreeList::instance;
+XMidiRecyclable<XMidiSequence>::FreeList XMidiRecyclable<XMidiSequence>::FreeList::instance;
 #endif    // XMIDISEQUENCE_H_INCLUDED

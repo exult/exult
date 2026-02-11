@@ -31,9 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // It will create the appropriate widget
 // It will paint labels and zebra striping
 //
-class ConfigSetting_widget
-		: public IterableGump_widget<
-				  std::vector<std::unique_ptr<Gump_widget>>> {
+class ConfigSetting_widget : public IterableGump_widget<std::vector<std::unique_ptr<Gump_widget>>> {
 public:
 	class IValueWidget {
 	public:
@@ -41,12 +39,10 @@ public:
 	};
 
 	template <typename T>
-	class ValueWidget : public CallbackButtonBase<ConfigSetting_widget, T>,
-						public IValueWidget {
+	class ValueWidget : public CallbackButtonBase<ConfigSetting_widget, T>, public IValueWidget {
 		template <typename... Ts>
 		ValueWidget(ConfigSetting_widget* par, Ts&&... args)
-				: CallbackButtonBase<ConfigSetting_widget, T>(
-						  par, std::forward<Ts>(args)...) {
+				: CallbackButtonBase<ConfigSetting_widget, T>(par, std::forward<Ts>(args)...) {
 			auto* button = dynamic_cast<Gump_button*>(this);
 			if (button) {
 				button->set_self_managed(true);
@@ -63,16 +59,16 @@ public:
 		std::string config_setting;
 
 		int  additional;    // No theoretical maximum to this
-		bool required;    //  At least one setting must be set to a valid choice
-		bool unique;      //  if max_count >1 then if this is set each value
+		bool required;      //  At least one setting must be set to a valid choice
+		bool unique;        //  if max_count >1 then if this is set each value
 						//  should be unique. Shows warning on apply
 
 		enum SettingType {
 			dropdown = 0,    // Setting should be displayed as a dropdown using
 							 // DropDown_widget
-			list   = 1,    // Setting should be displayed as a StringList_widget
-			button = 2,    // Setting should be displayed as a
-						   // Gump_ToggleTextButton
+			list   = 1,      // Setting should be displayed as a StringList_widget
+			button = 2,      // Setting should be displayed as a
+							 // Gump_ToggleTextButton
 		} setting_type;
 
 	private:
@@ -81,8 +77,8 @@ public:
 	public:
 		struct Choice {
 			std::string label;
-			std::string value;    // Preferred Setting Value this is the value
-								  // that will be saved to exult.cfg
+			std::string value;          // Preferred Setting Value this is the value
+										// that will be saved to exult.cfg
 			std::string alternative;    // Alternative Setting Value from
 										// exult.cfg, will not be saved to
 										// exult.cfg If there is no alternative,
@@ -94,23 +90,17 @@ public:
 		// unless the user is always allowed to select these Do not set these to
 		// empty strings
 		std::vector<Choice> choices;
-		int                 find_choice(
-								std::string_view value, bool case_insensitive = true) const;
-		void sort_choices();
+		int                 find_choice(std::string_view value, bool case_insensitive = true) const;
+		void                sort_choices();
 
-		void add_filenames_to_choices(
-				const std::string& mask, bool strip_directory = true);
+		void add_filenames_to_choices(const std::string& mask, bool strip_directory = true);
 
 		// Default value for this setting.
 		std::string default_value;
 
-		Definition(
-				std::string&& label, std::string&& config_key,
-				unsigned additional, bool required, bool unique,
-				SettingType type)
-				: label(std::move(label)),
-				  config_setting(std::move(config_key)), additional(additional),
-				  required(required), unique(unique), setting_type(type) {}
+		Definition(std::string&& label, std::string&& config_key, unsigned additional, bool required, bool unique, SettingType type)
+				: label(std::move(label)), config_setting(std::move(config_key)), additional(additional), required(required),
+				  unique(unique), setting_type(type) {}
 	};
 
 private:
@@ -128,8 +118,7 @@ private:
 public:
 	ConfigSetting_widget() = delete;
 	ConfigSetting_widget(
-			Gump_Base* parent, int px, int py, int button_width,
-			const Definition& setting, std::shared_ptr<Font> font,
+			Gump_Base* parent, int px, int py, int button_width, const Definition& setting, std::shared_ptr<Font> font,
 			int line_gap);
 
 	void shift_buttons_x(int offset);

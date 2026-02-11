@@ -73,10 +73,8 @@ int main(int argc, char* argv[]) {
 		exit(0);
 	}
 
-	constexpr const unsigned all_functions
-			= std::numeric_limits<unsigned>::max();
-	constexpr const unsigned only_index
-			= std::numeric_limits<unsigned>::max() - 1u;
+	constexpr const unsigned all_functions = std::numeric_limits<unsigned>::max();
+	constexpr const unsigned only_index    = std::numeric_limits<unsigned>::max() - 1u;
 
 	unsigned number;
 	bool     put = false;
@@ -197,10 +195,9 @@ int main(int argc, char* argv[]) {
 					printf("Wrong size in object\n");
 					exit(0);
 				}
-				fseek(fi, ftell(fi), SEEK_SET); /* These two fseeks force my */
-				for (unsigned i = 0; i < fs;
-					 i++) {               /* Borland C++ 5.02 to read */
-					fputc(fgetc(fo), fi); /* write. Without them they */
+				fseek(fi, ftell(fi), SEEK_SET);     /* These two fseeks force my */
+				for (unsigned i = 0; i < fs; i++) { /* Borland C++ 5.02 to read */
+					fputc(fgetc(fo), fi);           /* write. Without them they */
 				}
 				fclose(fo);                     /* don't work as I think */
 				fseek(fi, ftell(fi), SEEK_SET); /* they should (the writing */

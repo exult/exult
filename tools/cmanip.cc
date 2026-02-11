@@ -93,11 +93,9 @@ void read_params(const int argc, char* argv[]) {
 
 		/* Adds the value (argv[i+2]) to the key (argv[i+1]) in the conf file.
 		 */
-		if ((s == "add") || (s == "create") || (s == "mk") || (s == "new")
-			|| (s == "-a") || (s == "modify")) {
+		if ((s == "add") || (s == "create") || (s == "mk") || (s == "new") || (s == "-a") || (s == "modify")) {
 			if (i + 2 >= argc) {
-				cout << "error: insufficient parameters supplied for '" << s
-					 << "'" << endl;
+				cout << "error: insufficient parameters supplied for '" << s << "'" << endl;
 				usage(1);
 			}
 
@@ -111,12 +109,9 @@ void read_params(const int argc, char* argv[]) {
 		/* Removes the key (argv[i+1]) from the conf file.
 			FIXME: Currently only sets it to 'null', since there is no 'remove'
 		   ability in Configuration. */
-		else if (
-				(s == "rem") || (s == "remove") || (s == "rm") || (s == "mk")
-				|| (s == "del") || (s == "-r")) {
+		else if ((s == "rem") || (s == "remove") || (s == "rm") || (s == "mk") || (s == "del") || (s == "-r")) {
 			if (i + 1 >= argc) {
-				cout << "error: insufficient parameters supplied for '" << s
-					 << "'" << endl;
+				cout << "error: insufficient parameters supplied for '" << s << "'" << endl;
 				usage(1);
 			}
 
@@ -128,12 +123,9 @@ void read_params(const int argc, char* argv[]) {
 		}
 		/* Added by Artaxerxes. Extracts the values for a given path. Do not
 		   change anything. Just read.*/
-		else if (
-				(s == "extract") || (s == "read") || (s == "rd") || (s == "see")
-				|| (s == "get") || (s == "-x")) {
+		else if ((s == "extract") || (s == "read") || (s == "rd") || (s == "see") || (s == "get") || (s == "-x")) {
 			if (i + 1 >= argc) {
-				cout << "error: insufficient parameters supplied for '" << s
-					 << "'" << endl;
+				cout << "error: insufficient parameters supplied for '" << s << "'" << endl;
 				usage(1);
 			}
 
@@ -162,16 +154,14 @@ void process_ops() {
 				string s;
 				assert(config != nullptr);
 				config->value(i->second[0].c_str(), s, "---nil---");
-				cerr << "Original value of " << i->second[0] << " was " << s
-					 << endl;
+				cerr << "Original value of " << i->second[0] << " was " << s << endl;
 			}
 
 			assert(config != nullptr);
 			config->set(i->second[0].c_str(), i->second[1].c_str(), false);
 
 			if (verbose) {
-				cerr << "Added " << i->second[1] << " to " << i->second[0]
-					 << endl;
+				cerr << "Added " << i->second[1] << " to " << i->second[0] << endl;
 			}
 		}
 		if (i->first == DoRem) {
@@ -180,8 +170,7 @@ void process_ops() {
 				string s;
 				assert(config != nullptr);
 				config->value(i->second[0].c_str(), s, "---nil---");
-				cerr << "Original value was " << i->second[0] << " was " << s
-					 << endl;
+				cerr << "Original value was " << i->second[0] << " was " << s << endl;
 			}
 
 			assert(config != nullptr);
@@ -197,8 +186,7 @@ void process_ops() {
 				string s;
 				assert(config != nullptr);
 				config->value(i->second[0].c_str(), s, "unknown");
-				cerr << "Return value for " << i->second[0] << " is " << s
-					 << endl;
+				cerr << "Return value for " << i->second[0] << " is " << s << endl;
 			}
 
 			assert(config != nullptr);
@@ -220,13 +208,7 @@ int main(int argc, char* argv[]) {
 	if (verbose) {
 		cerr << "Operations:" << endl;
 		for (auto& i : dolist) {
-			cerr << '\t'
-				 << ((i.first == DoAdd)
-							 ? "add"
-							 : ((i.first == DoRem)
-										? "rem"
-										: ((i.first == DoGet) ? "get"
-															  : "unknown")))
+			cerr << '\t' << ((i.first == DoAdd) ? "add" : ((i.first == DoRem) ? "rem" : ((i.first == DoGet) ? "get" : "unknown")))
 				 << '\t';
 			for (auto& j : i.second) {
 				cerr << j << '\t';

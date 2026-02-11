@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "Slider_widget.h"
 
 class Slider_button;
+
 /*
  *  A slider for choosing a number.
  */
@@ -33,7 +34,7 @@ protected:
 	bool                           allow_escape = false;
 
 public:
-	Slider_gump(int mival, int mxval, int step, int defval,bool allow_escape);
+	Slider_gump(int mival, int mxval, int step, int defval, bool allow_escape);
 
 	int get_val() {    // Get last value set.
 		return widget->getselection();
@@ -54,8 +55,7 @@ public:
 	bool mouse_down(int mx, int my, MouseButton button) override;
 	bool mouse_up(int mx, int my, MouseButton button) override;
 	bool mouse_drag(int mx, int my) override;
-	bool key_down(SDL_Keycode chr, SDL_Keycode unicode)
-			override;    // Character typed.
+	bool key_down(SDL_Keycode chr, SDL_Keycode unicode) override;    // Character typed.
 
 	bool mousewheel_up(int mx, int my) override;
 	bool mousewheel_down(int mx, int my) override;

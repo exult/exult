@@ -36,8 +36,7 @@ using std::istream;
 int Armor_info::get_base_strength() const {
 	// ++++The strength values are utter guesses.
 	int strength = prot;
-	if (immune
-		!= 0u) {    // Double strength for any immunities? Give bonus for each?
+	if (immune != 0u) {    // Double strength for any immunities? Give bonus for each?
 		strength *= 2;
 	}
 	return strength;

@@ -20,7 +20,6 @@
 
 #include <array>
 
-
 // sfx with ??? are converted to sfx #135 so you can tell
 // it's wrong. Some I suspect to be something so it's not set 135
 const int bgconv[] = {

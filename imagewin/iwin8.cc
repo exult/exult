@@ -58,12 +58,9 @@ GammaTable<uint8> Image_window8::GammaBlue(256);
 GammaTable<uint8> Image_window8::GammaGreen(256);
 
 Image_window8::Image_window8(
-		unsigned int w, unsigned int h, unsigned int gwidth,
-		unsigned int gheight, int scl, bool fs, int sclr,
+		unsigned int w, unsigned int h, unsigned int gwidth, unsigned int gheight, int scl, bool fs, int sclr,
 		Image_window::FillMode fillmode, unsigned int fillsclr)
-		: Image_window(
-				  new Image_buffer8(0, 0, nullptr), w, h, gwidth, gheight, scl,
-				  fs, sclr, fillmode, fillsclr) {
+		: Image_window(new Image_buffer8(0, 0, nullptr), w, h, gwidth, gheight, scl, fs, sclr, fillmode, fillsclr) {
 	ib8 = static_cast<Image_buffer8*>(ibuf);
 }
 
@@ -87,8 +84,7 @@ inline unsigned char Get_color8(
 		unsigned char val, int maxval,
 		int brightness    // 100=normal.
 ) {
-	const uint32 c
-			= (static_cast<uint32>(val) * brightness * 255L) / (100 * maxval);
+	const uint32 c = (static_cast<uint32>(val) * brightness * 255L) / (100 * maxval);
 	return c <= 255L ? static_cast<unsigned char>(c) : 255;
 }
 
@@ -104,22 +100,17 @@ void Image_window8::set_palette(
 	// Get the colors.
 	SDL_Color colors2[256];
 	for (int i = 0; i < 256; i++) {
-		colors2[i].r = colors[i * 3]
-				= GammaRed[Get_color8(rgbs[3 * i], maxval, brightness)];
-		colors2[i].g = colors[i * 3 + 1]
-				= GammaGreen[Get_color8(rgbs[3 * i + 1], maxval, brightness)];
-		colors2[i].b = colors[i * 3 + 2]
-				= GammaBlue[Get_color8(rgbs[3 * i + 2], maxval, brightness)];
+		colors2[i].r = colors[i * 3] = GammaRed[Get_color8(rgbs[3 * i], maxval, brightness)];
+		colors2[i].g = colors[i * 3 + 1] = GammaGreen[Get_color8(rgbs[3 * i + 1], maxval, brightness)];
+		colors2[i].b = colors[i * 3 + 2] = GammaBlue[Get_color8(rgbs[3 * i + 2], maxval, brightness)];
 	}
 	if (paletted_surface) {
-		if (SDL_Palette* paletted_surface_palette
-			= SDL_GetSurfacePalette(paletted_surface)) {
+		if (SDL_Palette* paletted_surface_palette = SDL_GetSurfacePalette(paletted_surface)) {
 			SDL_SetPaletteColors(paletted_surface_palette, colors2, 0, 256);
 		}
 	}
 	if (paletted_surface != draw_surface && draw_surface) {
-		if (SDL_Palette* draw_surface_palette
-			= SDL_GetSurfacePalette(draw_surface)) {
+		if (SDL_Palette* draw_surface_palette = SDL_GetSurfacePalette(draw_surface)) {
 			SDL_SetPaletteColors(draw_surface_palette, colors2, 0, 256);
 		}
 	}
@@ -155,14 +146,12 @@ void Image_window8::rotate_colors(
 			colors2[i].b = colors[i * 3 + 2];
 		}
 		if (paletted_surface) {
-			if (SDL_Palette* paletted_surface_palette
-				= SDL_GetSurfacePalette(paletted_surface)) {
+			if (SDL_Palette* paletted_surface_palette = SDL_GetSurfacePalette(paletted_surface)) {
 				SDL_SetPaletteColors(paletted_surface_palette, colors2, 0, 256);
 			}
 		}
 		if (paletted_surface != draw_surface && draw_surface) {
-			if (SDL_Palette* draw_surface_palette
-				= SDL_GetSurfacePalette(draw_surface)) {
+			if (SDL_Palette* draw_surface_palette = SDL_GetSurfacePalette(draw_surface)) {
 				SDL_SetPaletteColors(draw_surface_palette, colors2, 0, 256);
 			}
 		}
@@ -194,9 +183,7 @@ unique_ptr<unsigned char[]> Image_window8::mini_screenshot() {
 			int b = 0;
 			for (i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
-					const int pix = pixels
-							[pitch * (j + y + (get_game_height() - h) / 2) + i
-							 + x + (get_game_width() - w) / 2];
+					const int pix = pixels[pitch * (j + y + (get_game_height() - h) / 2) + i + x + (get_game_width() - w) / 2];
 					r += colors[3 * pix + 0];
 					g += colors[3 * pix + 1];
 					b += colors[3 * pix + 2];
@@ -210,9 +197,7 @@ unique_ptr<unsigned char[]> Image_window8::mini_screenshot() {
 			int bestdist  = INT_MAX;
 			int bestindex = -1;
 			for (i = 0; i < 224; i++) {
-				const int dist = pow2(colors[3 * i + 0] - r)
-								 + pow2(colors[3 * i + 1] - g)
-								 + pow2(colors[3 * i + 2] - b);
+				const int dist = pow2(colors[3 * i + 0] - r) + pow2(colors[3 * i + 1] - g) + pow2(colors[3 * i + 2] - b);
 				if (dist < bestdist) {
 					bestdist  = dist;
 					bestindex = i;

@@ -28,9 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace Pentagram {
 
-	RawAudioSample::RawAudioSample(
-			std::unique_ptr<uint8[]> buffer_, uint32 size_, uint32 rate_,
-			bool signeddata_, bool stereo_)
+	RawAudioSample::RawAudioSample(std::unique_ptr<uint8[]> buffer_, uint32 size_, uint32 rate_, bool signeddata_, bool stereo_)
 			: AudioSample(std::move(buffer_), size_), signeddata(signeddata_) {
 		sample_rate        = rate_;
 		bits               = 8;
@@ -53,8 +51,7 @@ namespace Pentagram {
 		decomp->~RawDecompData();
 	}
 
-	uint32 RawAudioSample::decompressFrame(
-			void* DecompData, void* samples) const {
+	uint32 RawAudioSample::decompressFrame(void* DecompData, void* samples) const {
 		auto* decomp = static_cast<RawDecompData*>(DecompData);
 
 		if (decomp->pos == buffer_limit) {
@@ -72,8 +69,7 @@ namespace Pentagram {
 			return 0;
 		}
 
-		if ((!signeddata && bits == 8)
-			|| (signeddata && bits == 16 && !byte_swap)) {
+		if ((!signeddata && bits == 8) || (signeddata && bits == 16 && !byte_swap)) {
 			// 8 bit unsigned, or 16 Bit signed
 			std::memcpy(samples, buffer.get() + decomp->pos, count);
 		} else if (bits == 8) {

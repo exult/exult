@@ -59,9 +59,7 @@ using std::unique_ptr;
 using std::vector;
 
 // Legacy constructor
-TextScroller::TextScroller(
-		const char* archive, int index, std::shared_ptr<Font> fnt, Shape* shp,
-		bool translate_menu)
+TextScroller::TextScroller(const char* archive, int index, std::shared_ptr<Font> fnt, Shape* shp, bool translate_menu)
 		: font(fnt), shapes(shp), translate_menu_chars(translate_menu) {
 	auto txtobj = [&]() {
 		// Hack to patch MAINSHP_FLX.
@@ -82,9 +80,7 @@ TextScroller::TextScroller(
 }
 
 // Modern constructor for in-memory text
-TextScroller::TextScroller(
-		const std::string& text_content, std::shared_ptr<Font> fnt, Shape* shp,
-		bool translate_menu)
+TextScroller::TextScroller(const std::string& text_content, std::shared_ptr<Font> fnt, Shape* shp, bool translate_menu)
 		: font(fnt), shapes(shp), translate_menu_chars(translate_menu) {
 	std::istringstream stream(text_content);
 	load_from_stream(stream);
@@ -114,13 +110,10 @@ static void translate_menu_font_chars(std::string& line) {
 
 	// Determine which characters to translate based on game language
 	char from1, from2;
-	if (Game::get_game_type() == BLACK_GATE
-		&& Game::get_game_language() == Game_Language::GERMAN) {
+	if (Game::get_game_type() == BLACK_GATE && Game::get_game_language() == Game_Language::GERMAN) {
 		from1 = 0x03;
 		from2 = 0x04;
-	} else if (
-			Game::get_game_type() == BLACK_GATE
-			&& Game::get_game_language() == Game_Language::FRENCH) {
+	} else if (Game::get_game_type() == BLACK_GATE && Game::get_game_language() == Game_Language::FRENCH) {
 		from1 = 0x0F;
 		from2 = 0x1F;
 	} else {
@@ -156,8 +149,7 @@ void TextScroller::load_from_stream(std::istream& stream) {
 	}
 }
 
-int TextScroller::show_line(
-		Game_window* gwin, int left, int right, int y, int index) {
+int TextScroller::show_line(Game_window* gwin, int left, int right, int y, int index) {
 	Shape_manager* sman = Shape_manager::get_instance();
 
 	// The texts used in the main menu contains backslashed sequences that
@@ -289,8 +281,7 @@ bool TextScroller::run(Game_window* gwin) {
 			while (SDL_PollEvent(&event)) {
 				switch (event.type) {
 				case SDL_EVENT_KEY_DOWN:
-					if (event.key.key == SDLK_RSHIFT
-						|| event.key.key == SDLK_LSHIFT) {
+					if (event.key.key == SDLK_RSHIFT || event.key.key == SDLK_LSHIFT) {
 						incr = 0;
 					} else {
 						looping = false;

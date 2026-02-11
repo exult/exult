@@ -127,9 +127,7 @@ Game* Game::create_game(BaseGameInfo* mygame) {
 	config->set("config/gameplay/bg_paperdolls", str, true);
 	char buf[256];
 	if (!mygame->get_mod_title().empty()) {
-		snprintf(
-				buf, sizeof(buf), " with the '%s' modification.",
-				mygame->get_mod_title().c_str());
+		snprintf(buf, sizeof(buf), " with the '%s' modification.", mygame->get_mod_title().c_str());
 	} else {
 		buf[0] = 0;
 	}
@@ -177,9 +175,7 @@ Game_Language Game::get_game_message_language() {
 		if (i == 0) {
 			config->value("config/gameplay/language", value, "");
 		} else if (get_game_type() != NONE) {
-			config->value(
-					"config/disk/game/" + Game::get_gametitle() + "/language",
-					value, "");
+			config->value("config/disk/game/" + Game::get_gametitle() + "/language", value, "");
 		} else {
 			continue;
 		}
@@ -206,12 +202,10 @@ void Game::setup_text() {
 	std::string font_config;
 	config->value("config/gameplay/fonts", font_config, "original");
 	Pentagram::tolower(font_config);
-	bool use_special_chars
-			= (font_config == "original" || font_config == "serif");
+	bool use_special_chars = (font_config == "original" || font_config == "serif");
 
 	Setup_text(
-			get_game_type() == SERPENT_ISLE, has_expansion(),
-			get_game_type() == SERPENT_ISLE && is_si_beta(),
+			get_game_type() == SERPENT_ISLE, has_expansion(), get_game_type() == SERPENT_ISLE && is_si_beta(),
 			get_game_message_language(), use_special_chars);
 }
 
@@ -266,26 +260,17 @@ void Game::setup_fonts() {
 
 		if (font_config == "original" || font_config == "serif") {
 			fontManager.add_font("MENU_FONT", font_source, font_patch, 16, 1);
-			fontManager.add_font(
-					"GUARDIAN_FONT", font_source, font_patch, 11, -2);
+			fontManager.add_font("GUARDIAN_FONT", font_source, font_patch, 11, -2);
 			fontManager.add_font("END2_FONT", font_source, font_patch, 12, -1);
-			fontManager.add_font(
-					"END3_FONT", font_source, font_patch, 13, -2, vlead);
-			fontManager.add_font(
-					"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
+			fontManager.add_font("END3_FONT", font_source, font_patch, 13, -2, vlead);
+			fontManager.add_font("EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
 		} else {
-			fontManager.add_font(
-					"MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1, 1);
-			fontManager.add_font(
-					"GUARDIAN_FONT", MAINSHP_FLX, PATCH_MAINSHP, 3, -2);
+			fontManager.add_font("MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1, 1);
+			fontManager.add_font("GUARDIAN_FONT", MAINSHP_FLX, PATCH_MAINSHP, 3, -2);
 			fontManager.add_font("END2_FONT", ENDGAME, PATCH_ENDGAME, 4, -1);
 			fontManager.add_font("END3_FONT", ENDGAME, PATCH_ENDGAME, 5, -2);
-			fontManager.add_font(
-					"EXULT_END_FONT", font_source, font_patch, 0, -2);
-			fontManager.add_font(
-					"EXULT_AT_FONT",
-					File_spec(fname, EXULT_FLX_FONTS_ORIGINAL_VGA),
-					PATCH_ORIGINAL_FONTS, 14, -2);
+			fontManager.add_font("EXULT_END_FONT", font_source, font_patch, 0, -2);
+			fontManager.add_font("EXULT_AT_FONT", File_spec(fname, EXULT_FLX_FONTS_ORIGINAL_VGA), PATCH_ORIGINAL_FONTS, 14, -2);
 		}
 	}
 
@@ -297,20 +282,13 @@ void Game::setup_fonts() {
 
 		if (font_config == "original" || font_config == "serif") {
 			fontManager.add_font("MENU_FONT", font_source, font_patch, 17, 1);
-			fontManager.add_font(
-					"SIINTRO_FONT", font_source, font_patch, 15, 0, vlead);
-			fontManager.add_font(
-					"EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
+			fontManager.add_font("SIINTRO_FONT", font_source, font_patch, 15, 0, vlead);
+			fontManager.add_font("EXULT_END_FONT", font_source, font_patch, 14, -2, vlead);
 		} else {
 			fontManager.add_font("MENU_FONT", MAINSHP_FLX, PATCH_MAINSHP, 9, 1);
-			fontManager.add_font(
-					"SIINTRO_FONT", INTRO_DAT, PATCH_INTRO, 14, 0, -5);
-			fontManager.add_font(
-					"EXULT_END_FONT", font_source, font_patch, 0, -2);
-			fontManager.add_font(
-					"EXULT_AT_FONT",
-					File_spec(fname, EXULT_FLX_FONTS_ORIGINAL_VGA),
-					PATCH_ORIGINAL_FONTS, 14, -2);
+			fontManager.add_font("SIINTRO_FONT", INTRO_DAT, PATCH_INTRO, 14, 0, -5);
+			fontManager.add_font("EXULT_END_FONT", font_source, font_patch, 0, -2);
+			fontManager.add_font("EXULT_AT_FONT", File_spec(fname, EXULT_FLX_FONTS_ORIGINAL_VGA), PATCH_ORIGINAL_FONTS, 14, -2);
 		}
 	}
 }
@@ -328,9 +306,8 @@ void Game::show_congratulations(Palette* pal0) {
 	win->fill8(0);
 
 	std::shared_ptr<Font> exultendfont = fontManager.get_font("EXULT_END_FONT");
-	const int             line_height
-			= exultendfont->get_text_height() + exultendfont->get_ver_lead();
-	const int starty = (gwin->get_height() - line_height * 8) / 2;
+	const int             line_height  = exultendfont->get_text_height() + exultendfont->get_ver_lead();
+	const int             starty       = (gwin->get_height() - line_height * 8) / 2;
 
 	// Check if we need special @ handling for disabled fonts
 	std::string font_config;
@@ -417,12 +394,10 @@ void Game::show_congratulations(Palette* pal0) {
 				total_time %= 672;
 				const int day = total_time / 24;
 				total_time %= 24;
-				const int hour = total_time;
-				auto      get_token =
-						[&tokens](int value, TokenTypes one, TokenTypes many) {
-							return std::to_string(value)
-								   + tokens[value == 1 ? one : many];
-						};
+				const int hour      = total_time;
+				auto      get_token = [&tokens](int value, TokenTypes one, TokenTypes many) {
+                    return std::to_string(value) + tokens[value == 1 ? one : many];
+				};
 				// At least two of month, day, or hour is not zero because hour
 				// cannot be zero if day and month are both zero.
 				if (month > 0) {
@@ -463,11 +438,9 @@ void Game::show_congratulations(Palette* pal0) {
 				displayMessage += '.';
 			}
 			message = displayMessage.c_str();
-			draw_with_at_fallback(
-					get_centered_x(message), starty + line_height * i, message);
+			draw_with_at_fallback(get_centered_x(message), starty + line_height * i, message);
 		} else {
-			draw_with_at_fallback(
-					get_centered_x(message), starty + line_height * i, message);
+			draw_with_at_fallback(get_centered_x(message), starty + line_height * i, message);
 		}
 	}
 
@@ -527,9 +500,7 @@ const str_int_pair& Game::get_resource(const char* name) {
 		return resources[name];
 	} else {
 		char buf[250];
-		snprintf(
-				buf, sizeof(buf),
-				"Game::get_resource: Illegal resource requested: '%s'", name);
+		snprintf(buf, sizeof(buf), "Game::get_resource: Illegal resource requested: '%s'", name);
 		throw exult_exception(buf);
 	}
 }
@@ -587,8 +558,7 @@ bool Game::read_game_xml(const char* name1) {
 	xml                  = new Configuration;
 	const string namestr = get_system_path(nm);
 	xml->read_abs_config_file(namestr);
-	std::cout << "Reading game configuration from '" << namestr.c_str() << "'."
-			  << std::endl;
+	std::cout << "Reading game configuration from '" << namestr.c_str() << "'." << std::endl;
 	return true;
 }
 
@@ -614,11 +584,9 @@ bool Game::show_menu(bool skip) {
 	bool menu_endgame        = true;
 	bool show_display_string = true;
 	if (gamemanager != nullptr) {
-		ModManager* current_game_mgr
-				= gamemanager->find_game(Game::get_gametitle());
+		ModManager* current_game_mgr = gamemanager->find_game(Game::get_gametitle());
 		if (current_game_mgr != nullptr && !Game::get_modtitle().empty()) {
-			ModInfo* mod_info
-					= current_game_mgr->get_mod(Game::get_modtitle(), false);
+			ModInfo* mod_info = current_game_mgr->get_mod(Game::get_modtitle(), false);
 			if (mod_info != nullptr) {
 				if (mod_info->has_force_skip_splash_set()) {
 					force_skip_splash = mod_info->get_force_skip_splash();
@@ -639,8 +607,7 @@ bool Game::show_menu(bool skip) {
 		}
 	}
 
-	constexpr static const std::array menuchoices{0x04, 0x05, 0x08, 0x06,
-												  0x11, 0x12, 0x07};
+	constexpr static const std::array menuchoices{0x04, 0x05, 0x08, 0x06, 0x11, 0x12, 0x07};
 	static const std::regex           whiteSpace(R"regex([\r\n\t ]+)regex");
 
 	const Vga_file exult_flx(BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX));
@@ -665,22 +632,19 @@ bool Game::show_menu(bool skip) {
 
 				// Skip 0x06 (Credits), 0x11 (Quotes), 0x12 (End Game)
 				// if mods disable these in their cfg
-				if ((!menu_credits && i == 3) || (!menu_quotes && i == 4)
-					|| (!menu_endgame && i == 5)) {
+				if ((!menu_credits && i == 3) || (!menu_quotes && i == 4) || (!menu_endgame && i == 5)) {
 					skip_option = true;
 				}
 
 				if (skip_option) {
 					continue;
 				}
-				if ((i != 4 && i != 5)
-					|| (i == 4 && U7exists("<SAVEGAME>/quotes.flg"))
+				if ((i != 4 && i != 5) || (i == 4 && U7exists("<SAVEGAME>/quotes.flg"))
 					|| (i == 5 && U7exists("<SAVEGAME>/endgame.flg"))) {
 					Shape_frame* f0 = menushapes.get_shape(menuchoices[i], 0);
 					Shape_frame* f1 = menushapes.get_shape(menuchoices[i], 1);
 					assert(f0 != nullptr && f1 != nullptr);
-					auto* entry
-							= new MenuEntry(f1, f0, centerx, menuy + offset);
+					auto* entry = new MenuEntry(f1, f0, centerx, menuy + offset);
 					entry->set_id(i);
 					menu->add_entry(entry);
 					offset += f1->get_ybelow() + 3;
@@ -692,28 +656,21 @@ bool Game::show_menu(bool skip) {
 		bool created = false;
 
 		if (gamemanager != nullptr) {
-			ModManager* current_game_mgr
-					= gamemanager->find_game(Game::get_gametitle());
+			ModManager* current_game_mgr = gamemanager->find_game(Game::get_gametitle());
 			if (current_game_mgr != nullptr && !Game::get_modtitle().empty()) {
-				ModInfo* mod_info = current_game_mgr->get_mod(
-						Game::get_modtitle(), false);
+				ModInfo* mod_info = current_game_mgr->get_mod(Game::get_modtitle(), false);
 				if (mod_info == nullptr) {
 					// This should be impossible to reach.
-					throw exult_exception(
-							"Error: current mod is somehow NULL?");
+					throw exult_exception("Error: current mod is somehow NULL?");
 				}
 				// Replace carriage returns, line feeds, and spaces with spaces
 				// to draw on one line, merging consecutive spaces into one.
-				string display_text = std::regex_replace(
-						mod_info->get_menu_string(), whiteSpace, " ");
+				string display_text = std::regex_replace(mod_info->get_menu_string(), whiteSpace, " ");
 				if (show_display_string) {
-					std::shared_ptr<Font> font
-							= fontManager.get_font("MENU_FONT");
-					const int tw = font->get_text_width(display_text.c_str());
-					const int th = font->get_text_height();
-					font->draw_text(
-							ibuf, gwin->get_width() - tw - 5,
-							gwin->get_height() - th - 5, display_text.c_str());
+					std::shared_ptr<Font> font = fontManager.get_font("MENU_FONT");
+					const int             tw   = font->get_text_width(display_text.c_str());
+					const int             th   = font->get_text_height();
+					font->draw_text(ibuf, gwin->get_width() - tw - 5, gwin->get_height() - th - 5, display_text.c_str());
 				}
 			}
 		}
@@ -802,11 +759,9 @@ bool Game::show_menu(bool skip) {
 void Game::journey_failed_text() {
 	std::shared_ptr<Font> font = fontManager.get_font("MENU_FONT");
 	// "You must start a new game first."
-	font->center_text(
-			ibuf, centerx, centery + 30, get_text_msg(0x74A - msg_file_start));
+	font->center_text(ibuf, centerx, centery + 30, get_text_msg(0x74A - msg_file_start));
 	//"Press ESC to return."
-	font->center_text(
-			ibuf, centerx, centery + 42, get_text_msg(0x74B - msg_file_start));
+	font->center_text(ibuf, centerx, centery + 42, get_text_msg(0x74B - msg_file_start));
 	pal->fade_in(50);
 	while (!wait_delay(10))
 		;
@@ -822,9 +777,7 @@ int Game::waitforspeech() {
 	//
 	// but first grey out the screen
 
-	win->fill_translucent8(
-			0, gwin->get_game_width(), gwin->get_game_height(), 0, 0,
-			Game_singletons::sman->get_xform(8));
+	win->fill_translucent8(0, gwin->get_game_width(), gwin->get_game_height(), 0, 0, Game_singletons::sman->get_xform(8));
 
 	gwin->show(true);
 
@@ -898,8 +851,7 @@ int wait_delay(int ms, int startcol, int ncol, int rotspd) {
 		loops = ms / static_cast<long>(delay);
 	}
 	Game_window* gwin      = Game_window::get_instance();
-	const int    rot_speed = rotspd
-						  << (gwin->get_win()->fast_palette_rotate() ? 0 : 1);
+	const int    rot_speed = rotspd << (gwin->get_win()->fast_palette_rotate() ? 0 : 1);
 
 	static unsigned long last_rotate = 0;
 
@@ -923,8 +875,7 @@ int wait_delay(int ms, int startcol, int ncol, int rotspd) {
 				case SDLK_SCROLLLOCK:
 					break;
 				case SDLK_S:
-					if ((event.key.mod & SDL_KMOD_ALT)
-						&& (event.key.mod & SDL_KMOD_CTRL)) {
+					if ((event.key.mod & SDL_KMOD_ALT) && (event.key.mod & SDL_KMOD_CTRL)) {
 						make_screenshot(true);
 					}
 					break;

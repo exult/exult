@@ -122,8 +122,7 @@ private:
 	struct Hotspot : TileRect {
 		SDL_Keycode keycode;
 
-		Hotspot(SDL_Keycode keycode, int x, int y, int w, int h)
-				: TileRect(x, y, w, h), keycode(keycode) {}
+		Hotspot(SDL_Keycode keycode, int x, int y, int w, int h) : TileRect(x, y, w, h), keycode(keycode) {}
 	};
 
 	std::vector<Hotspot> hotspots;
@@ -167,8 +166,7 @@ private:
 
 		ClearState() = delete;
 
-		ClearState(T& obj, bool now = true, bool on_destruct = true)
-				: ptr(&obj) {
+		ClearState(T& obj, bool now = true, bool on_destruct = true) : ptr(&obj) {
 			if (now) {
 				*ptr = T();
 			}
@@ -261,8 +259,7 @@ private:
 	//! @param keycode Keycode used to activate the menuitem
 	//! @param label Label of the Menu item
 	//! @return Width in pixels of the menu item
-	int AddMenuItem(
-			int offsetx, int offsety, SDL_Keycode keycode, const char* label);
+	int AddMenuItem(int offsetx, int offsety, SDL_Keycode keycode, const char* label);
 
 	//! @brief Add a menuitem for left and right cursor keys
 	//! @param offsetx X coord for the menu item
@@ -276,8 +273,7 @@ private:
 	//! position if arrows are mising and !leaveempty
 	//! @return Width in pixels of the menu item
 	int AddLeftRightMenuItem(
-			int offsetx, int offsety, const char* label, bool left, bool right,
-			bool leaveempty, bool fixedlabel = false);
+			int offsetx, int offsety, const char* label, bool left, bool right, bool leaveempty, bool fixedlabel = false);
 
 	int  highest_map = INT_MIN;
 	int  Get_highest_map();

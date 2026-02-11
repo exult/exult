@@ -37,11 +37,10 @@ Bytes   Description
  */
 
 namespace Exult_server {
-	const unsigned short magic = 0xf381;
-	const int            maxlength
-			= 16 * 16 * 3 + 50;    // Big enough to hold a 'terrain'.
-	const int hdrlength = 5;
-	const int version   = 0;    // Sent with 'info' message.
+	const unsigned short magic     = 0xf381;
+	const int            maxlength = 16 * 16 * 3 + 50;    // Big enough to hold a 'terrain'.
+	const int            hdrlength = 5;
+	const int            version   = 0;    // Sent with 'info' message.
 
 	enum Msg_type {
 		say            = 0,    // For testing.  Data is text.

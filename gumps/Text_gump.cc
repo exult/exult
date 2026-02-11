@@ -40,8 +40,7 @@ void Text_gump::add_text(const char* str) {
 		newtext = text;
 		if (newtext[textlen - 1] != '*') {
 			// Scrolls in SI break page with embedded 0x00
-			if (GAME_SI && get_shapenum() == game->get_shape("gumps/scroll")
-				&& !from_help) {
+			if (GAME_SI && get_shapenum() == game->get_shape("gumps/scroll") && !from_help) {
 				newtext += "*";
 			} else {
 				newtext += "~";
@@ -66,7 +65,7 @@ int Text_gump::paint_page(const TileRect& box, int start) {
 	const int vlead      = 1;
 	const int textheight = sman->get_text_height(font) + vlead;
 	char*     str        = text + start;
-	curend = start;    // Initialize curend to the starting position
+	curend               = start;    // Initialize curend to the starting position
 
 	char* lineBreak     = nullptr;
 	char* pageBreakStar = nullptr;
@@ -82,8 +81,7 @@ int Text_gump::paint_page(const TileRect& box, int start) {
 			extraBreak = strstr(str, " ~~");
 			if (extraBreak) {
 				// If " ~~" is preceded by "~~", ignore it.
-				if (extraBreak - text >= 2 && *(extraBreak - 2) == '~'
-					&& *(extraBreak - 1) == '~') {
+				if (extraBreak - text >= 2 && *(extraBreak - 2) == '~' && *(extraBreak - 1) == '~') {
 					extraBreak = nullptr;
 				}
 			}
@@ -111,17 +109,14 @@ int Text_gump::paint_page(const TileRect& box, int start) {
 		const char eolchr = *eol;
 		*eol              = '\0';
 
-		int endoff = sman->paint_text_box(
-				font, str, x + box.x, y + box.y + ypos, box.w, box.h - ypos,
-				vlead);
+		int endoff = sman->paint_text_box(font, str, x + box.x, y + box.y + ypos, box.w, box.h - ypos, vlead);
 		// Restore the character at eol.
 		*eol = eolchr;
 
 		if (endoff > 0) {
 			// Check for a page‑break marker
 			if (epage && get_shapenum() == game->get_shape("gumps/scroll")) {
-				if (GAME_SI && start == 0 && ypos <= 5 * textheight
-					&& !from_help) {
+				if (GAME_SI && start == 0 && ypos <= 5 * textheight && !from_help) {
 					// ignore page breaks on the first 5 lines of a scroll
 					str    = pageBreakStar + 1;
 					curend = str - text;
@@ -147,11 +142,8 @@ int Text_gump::paint_page(const TileRect& box, int start) {
 
 					// Use same check for both page break markers
 					if ((pageBreakStar > eol + 1 && pageBreakStar < earliest)
-						|| (extraBreak > eol + (epage == extraBreak ? 3 : 1)
-							&& extraBreak < earliest)) {
-						earliest = (pageBreakStar && pageBreakStar < earliest)
-										   ? pageBreakStar
-										   : extraBreak;
+						|| (extraBreak > eol + (epage == extraBreak ? 3 : 1) && extraBreak < earliest)) {
+						earliest = (pageBreakStar && pageBreakStar < earliest) ? pageBreakStar : extraBreak;
 					}
 
 					// Temporarily replace the character at 'earliest' with
@@ -162,28 +154,24 @@ int Text_gump::paint_page(const TileRect& box, int start) {
 					// To avoid drawing on top of already painted text, we
 					// use an off-screen y coordinate (e.g. -1000).
 					int peekHeight = sman->paint_text_box(
-							font, eol + (epage == extraBreak ? 3 : 1),
-							x + box.x,
+							font, eol + (epage == extraBreak ? 3 : 1), x + box.x,
 							-1000,    // off-screen y coordinate for
 									  // measurement only
 							box.w, available, vlead);
 					// Restore the character we replaced.
 					*earliest = saved;
 
-					if (peekHeight > 0
-						&& peekHeight
-								   <= available
-											  + 5)    // Add 5 pixels tolerance
+					if (peekHeight > 0 && peekHeight <= available + 5)    // Add 5 pixels tolerance
 					{
 						// The entire upcoming text fits in the available
 						// space. Consume most of the extraBreak/pageBreakStar
 						// marker and add an extra line spacing.
 						eol += (epage == extraBreak ? 2 : 1);
-						ypos += endoff;    // update vertical offset
-						str    = eol;      // continue painting after the marker
+						ypos += endoff;         // update vertical offset
+						str    = eol;           // continue painting after the marker
 						curend = str - text;    // Update curend
-						continue;    // next iteration: the peeked block
-									 // will be painted on this page only
+						continue;               // next iteration: the peeked block
+												// will be painted on this page only
 					} else {
 						// The upcoming block does not fully fit;
 						// consume the marker and break so that it will be

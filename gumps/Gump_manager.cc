@@ -70,9 +70,7 @@ Gump_manager::Gump_manager() {
 
 	config->value("config/gameplay/gumps_dont_pause_game", str, "no");
 	dont_pause_game = str == "yes";
-	config->set(
-			"config/gameplay/gumps_dont_pause_game",
-			dont_pause_game ? "yes" : "no", true);
+	config->set("config/gameplay/gumps_dont_pause_game", dont_pause_game ? "yes" : "no", true);
 }
 
 /*
@@ -152,17 +150,13 @@ Gump* Gump_manager::find_gump(
 ) {
 	Gump_list* gmp;    // See if already open.
 	for (gmp = open_gumps; gmp; gmp = gmp->next) {
-		if (gmp->gump->get_owner() == owner
-			&& (shapenum == c_any_shapenum
-				|| gmp->gump->get_shapenum() == shapenum)) {
+		if (gmp->gump->get_owner() == owner && (shapenum == c_any_shapenum || gmp->gump->get_shapenum() == shapenum)) {
 			return gmp->gump;
 		}
 	}
 
 	Gump* dragged = gwin->get_dragging_gump();
-	if (dragged && dragged->get_owner() == owner
-		&& (shapenum == c_any_shapenum
-			|| dragged->get_shapenum() == shapenum)) {
+	if (dragged && dragged->get_owner() == owner && (shapenum == c_any_shapenum || dragged->get_shapenum() == shapenum)) {
 		return dragged;
 	}
 
@@ -266,24 +260,21 @@ void Gump_manager::add_gump(
 	bool paperdoll = false;
 
 	// overide for paperdolls
-	if (actorgump
-		&& (sman->can_use_paperdolls() && sman->are_paperdolls_enabled())) {
+	if (actorgump && (sman->can_use_paperdolls() && sman->are_paperdolls_enabled())) {
 		paperdoll = true;
 	}
 
 	Gump* dragged = gwin->get_dragging_gump();
 
 	// If we are dragging the same, just return
-	if (dragged && dragged->get_owner() == obj
-		&& dragged->get_shapenum() == shapenum) {
+	if (dragged && dragged->get_owner() == obj && dragged->get_shapenum() == shapenum) {
 		return;
 	}
 
 	static int cnt = 0;    // For staggering them.
 	Gump_list* gmp;        // See if already open.
 	for (gmp = open_gumps; gmp; gmp = gmp->next) {
-		if (gmp->gump->get_owner() == obj
-			&& gmp->gump->get_shapenum() == shapenum) {
+		if (gmp->gump->get_owner() == obj && gmp->gump->get_shapenum() == shapenum) {
 			break;
 		}
 	}
@@ -307,8 +298,7 @@ void Gump_manager::add_gump(
 	const ShapeID s_id(shapenum, 0, paperdoll ? SF_PAPERDOL_VGA : SF_GUMPS_VGA);
 	Shape_frame*  shape = s_id.get_shape();
 
-	if (x + shape->get_xright() > gwin->get_width()
-		|| y + shape->get_ybelow() > gwin->get_height()) {
+	if (x + shape->get_xright() > gwin->get_width() || y + shape->get_ybelow() > gwin->get_height()) {
 		cnt = 0;
 		x   = gwin->get_width() / 10;
 		y   = gwin->get_width() / 10;
@@ -326,8 +316,7 @@ void Gump_manager::add_gump(
 		} else if (shapenum == game->get_shape("gumps/spellbook")) {
 			new_gump = new Spellbook_gump(static_cast<Spellbook_object*>(obj));
 		} else if (shapenum == game->get_shape("gumps/jawbone")) {
-			new_gump
-					= new Jawbone_gump(static_cast<Jawbone_object*>(obj), x, y);
+			new_gump = new Jawbone_gump(static_cast<Jawbone_object*>(obj), x, y);
 		} else if (shapenum == game->get_shape("gumps/spell_scroll")) {
 			new_gump = new Spellscroll_gump(obj);
 		}
@@ -336,16 +325,14 @@ void Gump_manager::add_gump(
 			new_gump = new Container_gump(obj->as_container(), x, y, shapenum);
 		}
 	} else if (
-			Game::get_game_type() == SERPENT_ISLE
-			&& shapenum >= game->get_shape("gumps/cstats/1")
+			Game::get_game_type() == SERPENT_ISLE && shapenum >= game->get_shape("gumps/cstats/1")
 			&& shapenum <= game->get_shape("gumps/cstats/6")) {
 		new_gump = new CombatStats_gump(x, y);
 	}
 
 	if (!new_gump) {
 		// We failed; so bail out (we did nothing but waste time)
-		CERR("Failed to create gump: " << obj << ", " << shapenum << ", "
-									   << actorgump);
+		CERR("Failed to create gump: " << obj << ", " << shapenum << ", " << actorgump);
 		return;
 	}
 
@@ -399,8 +386,7 @@ void Gump_manager::close_all_gumps(bool pers) {
 	if (removed) {
 		gwin->paint();
 	}
-	if (touchui != nullptr && !modal_gump_count && non_persistent_count == 0
-		&& !gwin->is_in_exult_menu()) {
+	if (touchui != nullptr && !modal_gump_count && non_persistent_count == 0 && !gwin->is_in_exult_menu()) {
 		touchui->showGameControls();
 	}
 }
@@ -526,8 +512,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	int           gy;
 	SDL_Keycode   keysym_unicode = 0;
 	SDL_Keycode   chr            = 0;
-	SDL_Renderer* renderer
-			= SDL_GetRenderer(gwin->get_win()->get_screen_window());
+	SDL_Renderer* renderer       = SDL_GetRenderer(gwin->get_win()->get_screen_window());
 
 	switch (event.type) {
 	case SDL_EVENT_FINGER_DOWN: {
@@ -540,79 +525,58 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	}
 	case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
-		gwin->get_win()->screen_to_game(
-				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
+		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 
 #ifdef DEBUG
-		cout << "(x,y) rel. to gump is (" << (gx - gump->get_x()) << ", "
-			 << (gy - gump->get_y()) << ")" << endl;
+		cout << "(x,y) rel. to gump is (" << (gx - gump->get_x()) << ", " << (gy - gump->get_y()) << ")" << endl;
 #endif
 		if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
 			break;
 		}
 		if (event.button.button == 1) {
-			gump->mouse_down(
-					gx, gy, SDL_MouseButton_to_Gump(event.button.button));
+			gump->mouse_down(gx, gy, SDL_MouseButton_to_Gump(event.button.button));
 		} else if (event.button.button == 2) {
-			if (!gump->mouse_down(
-						gx, gy, SDL_MouseButton_to_Gump(event.button.button))
-				&& gwin->get_mouse3rd()) {
+			if (!gump->mouse_down(gx, gy, SDL_MouseButton_to_Gump(event.button.button)) && gwin->get_mouse3rd()) {
 				gump->key_down(SDLK_RETURN, SDLK_RETURN);
 			}
 		} else if (event.button.button == 3) {
 			rightclick = true;
-			gump->mouse_down(
-					gx, gy, SDL_MouseButton_to_Gump(event.button.button));
+			gump->mouse_down(gx, gy, SDL_MouseButton_to_Gump(event.button.button));
 		} else {
-			gump->mouse_down(
-					gx, gy, SDL_MouseButton_to_Gump(event.button.button));
+			gump->mouse_down(gx, gy, SDL_MouseButton_to_Gump(event.button.button));
 		}
 		break;
 	case SDL_EVENT_MOUSE_BUTTON_UP:
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
-		gwin->get_win()->screen_to_game(
-				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
+		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 		if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
 			break;
 		}
 		if (event.button.button != 3) {
-			gump->mouse_up(
-					gx, gy, SDL_MouseButton_to_Gump(event.button.button));
+			gump->mouse_up(gx, gy, SDL_MouseButton_to_Gump(event.button.button));
 		} else if (rightclick) {
 			rightclick = false;
-			if (!gump->mouse_up(
-						gx, gy, SDL_MouseButton_to_Gump(event.button.button))
-				&& gumpman->can_right_click_close()) {
+			if (!gump->mouse_up(gx, gy, SDL_MouseButton_to_Gump(event.button.button)) && gumpman->can_right_click_close()) {
 				return false;
 			}
 		}
 		break;
 	case SDL_EVENT_FINGER_MOTION: {
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
-		gwin->get_win()->screen_to_game(
-				event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
+		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 		static int   numFingers = 0;
-		SDL_Finger** fingers
-				= SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
+		SDL_Finger** fingers    = SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
 		if (fingers) {
 			SDL_free(fingers);
 		}
 		if (numFingers > 1) {
 			if (event.tfinger.dy < 0) {
-				if (!gump->mouse_down(
-							gx, gy,
-							SDL_MouseButton_to_Gump(event.button.button))) {
-					gump->mousewheel_up(
-							Mouse::mouse()->get_mousex(),
-							Mouse::mouse()->get_mousey());
+				if (!gump->mouse_down(gx, gy, SDL_MouseButton_to_Gump(event.button.button))) {
+					gump->mousewheel_up(Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
 				}
 			} else if (event.tfinger.dy > 0) {
-				if (!gump->mouse_down(
-							gx, gy,
-							SDL_MouseButton_to_Gump(event.button.button))) {
-					gump->mousewheel_down(
-							Mouse::mouse()->get_mousex(),
-							Mouse::mouse()->get_mousey());
+				if (!gump->mouse_down(gx, gy, SDL_MouseButton_to_Gump(event.button.button))) {
+					gump->mousewheel_down(Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
 				}
 			}
 		}
@@ -621,22 +585,18 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	// Mousewheel scrolling with SDL2.
 	case SDL_EVENT_MOUSE_WHEEL: {
 		if (event.wheel.y > 0) {
-			gump->mousewheel_up(
-					Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
+			gump->mousewheel_up(Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
 		} else if (event.wheel.y < 0) {
-			gump->mousewheel_down(
-					Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
+			gump->mousewheel_down(Mouse::mouse()->get_mousex(), Mouse::mouse()->get_mousey());
 		}
 		break;
 	}
 	case SDL_EVENT_MOUSE_MOTION:
-		if (Mouse::use_touch_input
-			&& event.motion.which != EXSDL_TOUCH_MOUSEID) {
+		if (Mouse::use_touch_input && event.motion.which != EXSDL_TOUCH_MOUSEID) {
 			Mouse::use_touch_input = false;
 		}
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
-		gwin->get_win()->screen_to_game(
-				event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
+		gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 
 		Mouse::mouse()->move(gx, gy);
 		Mouse::mouse_update = true;
@@ -654,15 +614,12 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 	case SDL_EVENT_TEXT_INPUT:
 		Translate_keyboard(event, chr, keysym_unicode, true);
 		{
-			if ((chr == SDLK_S) && (event.key.mod & SDL_KMOD_ALT)
-				&& (event.key.mod & SDL_KMOD_CTRL)) {
+			if ((chr == SDLK_S) && (event.key.mod & SDL_KMOD_ALT) && (event.key.mod & SDL_KMOD_CTRL)) {
 				make_screenshot(true);
 				return true;
 			}
 			// Alt-x for quit
-			if ((chr == SDLK_X)
-				&& ((event.key.mod & SDL_KMOD_ALT)
-					|| event.key.mod & SDL_KMOD_GUI)) {
+			if ((chr == SDLK_X) && ((event.key.mod & SDL_KMOD_ALT) || event.key.mod & SDL_KMOD_GUI)) {
 				if (okay_to_quit()) {
 					return false;
 				}
@@ -682,8 +639,7 @@ bool Gump_manager::handle_modal_gump_event(Modal_gump* gump, SDL_Event& event) {
 		if (event.type == TouchUI::eventType) {
 			if (event.user.code == TouchUI::EVENT_CODE_TEXT_INPUT) {
 				if (event.user.data1 != nullptr) {
-					const char* text
-							= static_cast<const char*>(event.user.data1);
+					const char* text = static_cast<const char*>(event.user.data1);
 					if (text) {
 						gump->text_input(text);
 					}
@@ -774,8 +730,7 @@ bool Gump_manager::do_modal_gump(
 		if (!gwin->is_in_exult_menu()) {
 			touchui->showButtonControls();
 		}
-		if ((non_persistent_count == 0 || gumpman->gumps_dont_pause_game())
-			&& !modal_gump_count && !gwin->is_in_exult_menu()
+		if ((non_persistent_count == 0 || gumpman->gumps_dont_pause_game()) && !modal_gump_count && !gwin->is_in_exult_menu()
 			&& !ucmachine->get_num_faces_on_screen()) {
 			touchui->showGameControls();
 		}
@@ -788,7 +743,7 @@ bool Gump_manager::do_modal_gump(
  *  Prompt for a numeric value using a slider.
  *
  *  Output: Value,
- * 
+ *
  *  Set escaped to a pointer to bool to allow the user to escape the prompt.
  *  If so, the bool will be set to true if the user escaped, false otherwise.
  */
@@ -797,7 +752,7 @@ int Gump_manager::prompt_for_number(
 		int minval, int maxval,    // Range.
 		int        step,
 		int        defval,    // Default to start with.
-		Paintable* paint,      // Should be the conversation.
+		Paintable* paint,     // Should be the conversation.
 		bool*      escaped    // If non-null, allow user to escape and will be set indicating if user escaped
 ) {
 	auto*      slider = new Slider_gump(minval, maxval, step, defval, escaped != nullptr);
@@ -805,7 +760,7 @@ int Gump_manager::prompt_for_number(
 	if (escaped) {
 		*escaped = !ok;
 	}
-	const int  ret    = slider->get_val();
+	const int ret = slider->get_val();
 	delete slider;
 	return ret;
 }

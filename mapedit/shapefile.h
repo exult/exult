@@ -54,8 +54,7 @@ public:
 
 	// We will own files and groups.
 	Shape_file_info(const char* bnm, const char* pnm, Shape_group_file* g)
-			: basename(bnm), pathname(pnm), groups(g), modified(false),
-			  browser(nullptr) {}
+			: basename(bnm), pathname(pnm), groups(g), modified(false), browser(nullptr) {}
 
 	virtual ~Shape_file_info();
 
@@ -80,15 +79,13 @@ public:
 	}
 
 	// Call this to create group browser.
-	virtual Object_browser* create_browser(
-			Shape_file_info* vgafile, unsigned char* palbuf, Shape_group* g) {
+	virtual Object_browser* create_browser(Shape_file_info* vgafile, unsigned char* palbuf, Shape_group* g) {
 		ignore_unused_variable_warning(vgafile, palbuf, g);
 		return nullptr;
 	}
 
 	// Call for main browser.
-	virtual Object_browser* get_browser(
-			Shape_file_info* vgafile, unsigned char* palbuf);
+	virtual Object_browser* get_browser(Shape_file_info* vgafile, unsigned char* palbuf);
 
 	virtual std::istream* get_file() {
 		return nullptr;
@@ -114,9 +111,7 @@ class Image_file_info : public Shape_file_info {
 	Vga_file* ifile;    // Contains the images.
 public:
 	// We will own ifile.
-	Image_file_info(
-			const char* bnm, const char* pnm, Vga_file* i, Shape_group_file* g)
-			: Shape_file_info(bnm, pnm, g), ifile(i) {}
+	Image_file_info(const char* bnm, const char* pnm, Vga_file* i, Shape_group_file* g) : Shape_file_info(bnm, pnm, g), ifile(i) {}
 
 	~Image_file_info() override;
 
@@ -124,13 +119,10 @@ public:
 		return ifile;
 	}
 
-	Object_browser* create_browser(
-			Shape_file_info* vgafile, unsigned char* palbuf,
-			Shape_group* g = nullptr) override;
-	void        flush() override;    // Write if modified.
-	bool        revert() override;
-	static void write_file(
-			const char* pathname, Shape** shapes, int nshapes, bool single);
+	Object_browser* create_browser(Shape_file_info* vgafile, unsigned char* palbuf, Shape_group* g = nullptr) override;
+	void            flush() override;    // Write if modified.
+	bool            revert() override;
+	static void     write_file(const char* pathname, Shape** shapes, int nshapes, bool single);
 };
 
 /*
@@ -140,9 +132,7 @@ class Chunks_file_info : public Shape_file_info {
 	std::unique_ptr<std::istream> file;    // For 'chunks'; ifile is nullptr.
 public:
 	// We will own file.
-	Chunks_file_info(
-			const char* bnm, const char* pnm, std::unique_ptr<std::istream> f,
-			Shape_group_file* g)
+	Chunks_file_info(const char* bnm, const char* pnm, std::unique_ptr<std::istream> f, Shape_group_file* g)
 			: Shape_file_info(bnm, pnm, g), file(std::move(f)) {}
 
 	~Chunks_file_info() override;
@@ -151,10 +141,8 @@ public:
 		return file.get();
 	}
 
-	Object_browser* create_browser(
-			Shape_file_info* vgafile, unsigned char* palbuf,
-			Shape_group* g = nullptr) override;
-	void flush() override;    // Write if modified.
+	Object_browser* create_browser(Shape_file_info* vgafile, unsigned char* palbuf, Shape_group* g = nullptr) override;
+	void            flush() override;    // Write if modified.
 };
 
 /*
@@ -177,14 +165,11 @@ class Npcs_file_info : public Shape_file_info {
 	std::vector<Estudio_npc> npcs;    // Shared NPC info.
 public:
 	// We will own file.
-	Npcs_file_info(const char* bnm, const char* pnm, Shape_group_file* g)
-			: Shape_file_info(bnm, pnm, g) {
+	Npcs_file_info(const char* bnm, const char* pnm, Shape_group_file* g) : Shape_file_info(bnm, pnm, g) {
 		setup();
 	}
 
-	Object_browser* create_browser(
-			Shape_file_info* vgafile, unsigned char* palbuf,
-			Shape_group* g = nullptr) override;
+	Object_browser* create_browser(Shape_file_info* vgafile, unsigned char* palbuf, Shape_group* g = nullptr) override;
 
 	std::vector<Estudio_npc>& get_npcs() {
 		return npcs;
@@ -198,15 +183,13 @@ public:
  *  Flex file (used for combos, palettes):
  */
 class Flex_file_info : public Shape_file_info {
-	Flex* flex;    // nullptr if just 1 entry.
-	std::vector<std::unique_ptr<unsigned char[]>>
-					 entries;       // Entries stored here.
-	std::vector<int> lengths;       // Lengths here.
-	bool             write_flat;    // Write flat file if just 1 entry.
+	Flex*                                         flex;          // nullptr if just 1 entry.
+	std::vector<std::unique_ptr<unsigned char[]>> entries;       // Entries stored here.
+	std::vector<int>                              lengths;       // Lengths here.
+	bool                                          write_flat;    // Write flat file if just 1 entry.
 public:
 	// We will own flex.
-	Flex_file_info(
-			const char* bnm, const char* pnm, Flex* fl, Shape_group_file* g);
+	Flex_file_info(const char* bnm, const char* pnm, Flex* fl, Shape_group_file* g);
 	// Create for single-palette.
 	Flex_file_info(const char* bnm, const char* pnm, unsigned size);
 
@@ -220,9 +203,7 @@ public:
 	void swap(unsigned i);      // Swap entries i, i+1.
 	void remove(unsigned i);    // Remove i'th entry.
 	~Flex_file_info() override;
-	Object_browser* create_browser(
-			Shape_file_info* vgafile, unsigned char* palbuf,
-			Shape_group* g = nullptr) override;
+	Object_browser* create_browser(Shape_file_info* vgafile, unsigned char* palbuf, Shape_group* g = nullptr) override;
 
 	Flex* get_flex() override {
 		return flex;

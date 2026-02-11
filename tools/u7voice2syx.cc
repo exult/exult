@@ -123,10 +123,10 @@ const uint32 system_base = 0x100000;    // Note, these are 7 bit!
 #define system_mem_offset(setting) offsetof(systemArea, setting)
 
 struct systemArea {
-	char masterTune;     // MASTER TUNE 0-127 432.1-457.6Hz
-	char reverbMode;     // REVERB MODE 0-3 (room, hall, plate, tap delay)
-	char reverbTime;     // REVERB TIME 0-7 (1-8)
-	char reverbLevel;    // REVERB LEVEL 0-7 (1-8)
+	char masterTune;            // MASTER TUNE 0-127 432.1-457.6Hz
+	char reverbMode;            // REVERB MODE 0-3 (room, hall, plate, tap delay)
+	char reverbTime;            // REVERB TIME 0-7 (1-8)
+	char reverbLevel;           // REVERB LEVEL 0-7 (1-8)
 	char reserveSettings[9];    // PARTIAL RESERVE (PART 1) 0-32
 	char chanAssign[9];         // MIDI CHANNEL (PART1) 0-16 (1-16,OFF)
 	char masterVol;             // MASTER VOLUME 0-100
@@ -135,9 +135,8 @@ struct systemArea {
 //
 // Display  Consts
 //
-const uint32 display_base = 0x200000;    // Note, these are 7 bit!
-const uint32 display_mem_size
-		= 0x14;    // Display is 20 ASCII characters (32-127)
+const uint32 display_base     = 0x200000;    // Note, these are 7 bit!
+const uint32 display_mem_size = 0x14;        // Display is 20 ASCII characters (32-127)
 
 // Display messages                  0123456789ABCDEF0123
 const char display_black_gate[]   = " U7: The Black Gate ";
@@ -158,8 +157,7 @@ const uint32 all_dev_reset_base = 0x7f0000;
 //
 
 // The key num that the data below belongs to (subtract 24 to get memory num)
-uint8 U7PercussionNotes[]
-		= {28, 33, 74, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 0};
+uint8 U7PercussionNotes[] = {28, 33, 74, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 0};
 
 // The RhythmSetup data
 RhythmSetupData U7PercussionData[] = {
@@ -182,9 +180,7 @@ RhythmSetupData U7PercussionData[] = {
 
 // If data is nullptr, then it is assumed that sysex_buffer already contains the
 // data address_base is 7-bit, while address_offset is 8 bit!
-std::size_t fill_sysex_buffer(
-		uint32 address_base, uint16 address_offset, uint32 len,
-		const void* data = nullptr) {
+std::size_t fill_sysex_buffer(uint32 address_base, uint16 address_offset, uint32 len, const void* data = nullptr) {
 	// SysEx status
 	sysex_buffer[0] = static_cast<char>(0xF0);
 
@@ -231,14 +227,11 @@ int main(int argc, char* argv[]) {
 	std::size_t num_to_write;
 
 	char              name[11];
-	const char* const filenames[]
-			= {"u7voice.flx", "u7intro.tim", "mainmenu.tim"};
-	const char* const outnames[]
-			= {"u7voice.syx", "u7intro.syx", "mainmenu.syx"};
-	const bool bgsi[] = {true, true, false};
+	const char* const filenames[] = {"u7voice.flx", "u7intro.tim", "mainmenu.tim"};
+	const char* const outnames[]  = {"u7voice.syx", "u7intro.syx", "mainmenu.syx"};
+	const bool        bgsi[]      = {true, true, false};
 
-	std::cout << "U7 Timbre Flex To MT-32 syx converter" << std::endl
-			  << std::endl;
+	std::cout << "U7 Timbre Flex To MT-32 syx converter" << std::endl << std::endl;
 
 	for (int num = 0; num < 3; num++) {
 		const char* filename = filenames[num];
@@ -246,8 +239,7 @@ int main(int argc, char* argv[]) {
 
 		try {
 			if (!U7exists(filename)) {
-				std::cerr << "Unable to find file \"" << filename
-						  << "\". You can find it in the \"";
+				std::cerr << "Unable to find file \"" << filename << "\". You can find it in the \"";
 				if (bgsi[num]) {
 					std::cerr << "Black Gate";
 				} else {
@@ -275,12 +267,10 @@ int main(int argc, char* argv[]) {
 			std::cout << num_timbres << " custom timbres..." << std::endl;
 
 			if (ds.getSize() != 247 * num_timbres + 1) {
-				throw exult_exception(
-						"File size didn't match timbre count. Wont convert.");
+				throw exult_exception("File size didn't match timbre count. Wont convert.");
 			}
 
-			std::cout << "Opening " << outname << " for writing..."
-					  << std::endl;
+			std::cout << "Opening " << outname << " for writing..." << std::endl;
 			auto pSysex_file = U7open_out(outname, false);
 			if (!pSysex_file) {
 				throw exult_exception(std::string("Failed to open ") + outname);
@@ -303,13 +293,9 @@ int main(int argc, char* argv[]) {
 			// Change the display
 
 			if (bgsi[num]) {
-				num_to_write = fill_sysex_buffer(
-						display_base, 0, display_mem_size,
-						display_beginning_bg);
+				num_to_write = fill_sysex_buffer(display_base, 0, display_mem_size, display_beginning_bg);
 			} else {
-				num_to_write = fill_sysex_buffer(
-						display_base, 0, display_mem_size,
-						display_beginning_si);
+				num_to_write = fill_sysex_buffer(display_base, 0, display_mem_size, display_beginning_si);
 			}
 
 			// Write Display
@@ -318,22 +304,19 @@ int main(int argc, char* argv[]) {
 			// Now do each timbre and patch
 			for (i = 0; i < num_timbres; i++) {
 				ds.read(sysex_buffer + 8, timbre_mem_size);
-				patch_num = ds.read1()
-							- 1;    // Patch is 1-128 when we want 0-127
+				patch_num = ds.read1() - 1;    // Patch is 1-128 when we want 0-127
 
 				std::memcpy(name, sysex_buffer + 8, 10);
 				name[10] = 0;
 
 				// Some info
-				std::cout << "Timbre " << i << " (patch " << patch_num
-						  << "): " << name << std::endl;
+				std::cout << "Timbre " << i << " (patch " << patch_num << "): " << name << std::endl;
 
 				//
 				// Timbre
 				//
 
-				num_to_write = fill_sysex_buffer(
-						timbre_base, timbre_mem_offset(i), timbre_mem_size);
+				num_to_write = fill_sysex_buffer(timbre_base, timbre_mem_offset(i), timbre_mem_size);
 
 				// Write it
 				sysex_file.write(sysex_buffer, num_to_write);
@@ -348,9 +331,7 @@ int main(int argc, char* argv[]) {
 				// Set the timbre num
 				patch_data.timbre_num = i;
 
-				num_to_write = fill_sysex_buffer(
-						patch_base, patch_mem_offset(patch_num), patch_mem_size,
-						&patch_data);
+				num_to_write = fill_sysex_buffer(patch_base, patch_mem_offset(patch_num), patch_mem_size, &patch_data);
 
 				// Write it
 				sysex_file.write(sysex_buffer, num_to_write);
@@ -374,9 +355,7 @@ int main(int argc, char* argv[]) {
 				const int count = j - i;
 
 				num_to_write = fill_sysex_buffer(
-						rhythm_base,
-						rhythm_mem_offset_note(U7PercussionNotes[i]),
-						rhythm_mem_size * count, &U7PercussionData[i]);
+						rhythm_base, rhythm_mem_offset_note(U7PercussionNotes[i]), rhythm_mem_size * count, &U7PercussionData[i]);
 
 				// Write Reset
 				sysex_file.write(sysex_buffer, num_to_write);
@@ -394,8 +373,7 @@ int main(int argc, char* argv[]) {
 			sa.reserveSettings[7] = 0;
 
 			num_to_write = fill_sysex_buffer(
-					system_base, system_mem_offset(reserveSettings[0]),
-					sizeof(sa.reserveSettings), &sa.reserveSettings[0]);
+					system_base, system_mem_offset(reserveSettings[0]), sizeof(sa.reserveSettings), &sa.reserveSettings[0]);
 
 			// Write Reset
 			sysex_file.write(sysex_buffer, num_to_write);
@@ -407,12 +385,9 @@ int main(int argc, char* argv[]) {
 			// Change the display to something more appropriate
 
 			if (bgsi[num]) {
-				num_to_write = fill_sysex_buffer(
-						display_base, 0, display_mem_size, display_black_gate);
+				num_to_write = fill_sysex_buffer(display_base, 0, display_mem_size, display_black_gate);
 			} else {
-				num_to_write = fill_sysex_buffer(
-						display_base, 0, display_mem_size,
-						display_serpent_isle);
+				num_to_write = fill_sysex_buffer(display_base, 0, display_mem_size, display_serpent_isle);
 			}
 
 			// Write the 'real' Display

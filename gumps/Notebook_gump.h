@@ -50,22 +50,19 @@ class Notebook_gump : public Gump {
 	static Notebook_gump*            instance;
 	static bool                      initialized;
 	static bool                      initialized_auto_text;
-	static std::vector<std::string> auto_text;    // Auto-text for global flags.
-	int         curnote = 0;    // Current note # being edited.
-	int         curpage = 0;    // Current page # (from 0).
-	Cursor_info cursor;         // Cursor loc. within current note.
-	int         updnx = 0;      // X-coord. for up/down arrows.
+	static std::vector<std::string>  auto_text;      // Auto-text for global flags.
+	int                              curnote = 0;    // Current note # being edited.
+	int                              curpage = 0;    // Current page # (from 0).
+	Cursor_info                      cursor;         // Cursor loc. within current note.
+	int                              updnx = 0;      // X-coord. for up/down arrows.
 	// Page turners:
 	Gump_button *leftpage, *rightpage;
 	// Add new note.
 	static void add_new(const std::string& text, int gflag = -1);
-	bool        paint_page(
-				   const TileRect& box, One_note* note, int& offset, int pagenum);
+	bool        paint_page(const TileRect& box, One_note* note, int& offset, int pagenum);
 
 	bool need_next_page() const {
-		return curpage % 2 == 1
-			   && curpage < static_cast<int>(page_info.size()) - 1
-			   && page_info[curpage + 1].offset > 0
+		return curpage % 2 == 1 && curpage < static_cast<int>(page_info.size()) - 1 && page_info[curpage + 1].offset > 0
 			   && cursor.offset >= page_info[curpage + 1].offset;
 	}
 
@@ -99,8 +96,7 @@ public:
 		if (!initialized_auto_text) {
 			read_auto_text();
 		}
-		if (gflag < static_cast<int>(auto_text.size())
-			&& !auto_text[gflag].empty()) {
+		if (gflag < static_cast<int>(auto_text.size()) && !auto_text[gflag].empty()) {
 			add_gflag_text(gflag, auto_text[gflag]);
 		}
 	}
@@ -109,8 +105,7 @@ public:
 		return false;
 	}
 
-	bool word_exceeds_line_length(
-			const std::string& text, int offset, int curpage);
+	bool        word_exceeds_line_length(const std::string& text, int offset, int curpage);
 	void        add_new_with_line_breaks(const std::string& text, int gflag);
 	std::string get_next_line(const std::string& text);
 	static void initialize();

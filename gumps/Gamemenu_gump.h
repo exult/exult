@@ -54,7 +54,6 @@ public:
 		done = true;
 	}
 
-
 	void quit(bool return_to_menu = false);
 
 	void quit_exult() {
@@ -72,7 +71,7 @@ public:
 	void game_engine_options();
 	void input_options();
 
-	static void do_exult_menu();
+	static void  do_exult_menu();
 	Gump_button* on_button(int mx, int my) override;
 };
 

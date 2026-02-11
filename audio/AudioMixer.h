@@ -47,8 +47,7 @@ namespace Pentagram {
 		void reset();
 
 		sint32 playSample(
-				AudioSample* sample, int loop, int priority,
-				bool paused = false, uint32 pitch_shift = AUDIO_DEF_PITCH,
+				AudioSample* sample, int loop, int priority, bool paused = false, uint32 pitch_shift = AUDIO_DEF_PITCH,
 				int lvol = AUDIO_MAX_VOLUME, int rvol = AUDIO_MAX_VOLUME);
 		bool   isPlaying(sint32 instance_id) const;
 		bool   isPlaying(AudioSample* sample) const;
@@ -101,9 +100,8 @@ namespace Pentagram {
 
 		std::unique_ptr<SDLAudioDevice> device;
 
-		void        init_midi();
-		static void sdlAudioCallback(
-				void* userdata, SDL_AudioStream* stream, int len, int maxlen);
+		void             init_midi();
+		static void      sdlAudioCallback(void* userdata, SDL_AudioStream* stream, int len, int maxlen);
 		SDL_AudioStream* stream;
 
 		void MixAudio(sint16* stream, uint32 bytes);

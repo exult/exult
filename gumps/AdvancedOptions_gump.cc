@@ -34,11 +34,9 @@ public:
 };
 
 AdvancedOptions_gump::AdvancedOptions_gump(
-		std::vector<ConfigSetting_widget::Definition>* settings,
-		std::string&& title, std::string&& helpurl,
+		std::vector<ConfigSetting_widget::Definition>* settings, std::string&& title, std::string&& helpurl,
 		std::function<void()> applycallback)
-		: Modal_gump(nullptr, -1), title(std::move(title)),
-		  helpurl(std::move(helpurl)), applycallback(std::move(applycallback)) {
+		: Modal_gump(nullptr, -1), title(std::move(title)), helpurl(std::move(helpurl)), applycallback(std::move(applycallback)) {
 	elems.reserve(5);
 	TileRect rect = TileRect(0, 0, 200, 186);
 	SetProceduralBackground(rect, -1, true);
@@ -49,15 +47,13 @@ AdvancedOptions_gump::AdvancedOptions_gump(
 	// destructor is called
 	int scrollw = rect.w - 16;
 	scroll      = new Scrollable_widget(
-            this, label_margin - 2, scrolly, scrollw, rect.h - scrolly - 16, 2,
-            Scrollable_widget::ScrollbarType::Auto, true,
+            this, label_margin - 2, scrolly, scrollw, rect.h - scrolly - 16, 2, Scrollable_widget::ScrollbarType::Auto, true,
             procedural_colours.Shadow);
 	elems.push_back(scroll);
 
 	int max_width = 0;
 	for (auto& setting : *settings) {
-		auto csw = std::make_shared<ConfigSetting_widget>(
-				this, 0, 0, button_w, setting, font, 2);
+		auto csw  = std::make_shared<ConfigSetting_widget>(this, 0, 0, button_w, setting, font, 2);
 		max_width = std::max(max_width, csw->get_rect().w);
 
 		scroll->add_child(std::move(csw));
@@ -83,18 +79,15 @@ AdvancedOptions_gump::AdvancedOptions_gump(
 	const int id_ok      = elems.size();
 	elems.push_back(
 			apply = new CallbackTextButton<AdvancedOptions_gump>(
-					this, &AdvancedOptions_gump::on_apply, Strings::APPLY(),
-					rect.w / 2 - 25 - 50 - button_gap, buttony, 50));
+					this, &AdvancedOptions_gump::on_apply, Strings::APPLY(), rect.w / 2 - 25 - 50 - button_gap, buttony, 50));
 	// Help
 	elems.push_back(
 			help = new CallbackTextButton<AdvancedOptions_gump>(
-					this, &AdvancedOptions_gump::on_help, Strings::HELP(),
-					rect.w / 2 + 25 + button_gap, buttony, 50));
+					this, &AdvancedOptions_gump::on_help, Strings::HELP(), rect.w / 2 + 25 + button_gap, buttony, 50));
 	// Cancel
 	elems.push_back(
 			cancel = new CallbackTextButton<AdvancedOptions_gump>(
-					this, &AdvancedOptions_gump::on_cancel, Strings::CANCEL(),
-					rect.w / 2 - 25, buttony, 50));
+					this, &AdvancedOptions_gump::on_cancel, Strings::CANCEL(), rect.w / 2 - 25, buttony, 50));
 
 	// resize to fit everything
 	ResizeWidthToFitWidgets(tcb::span(elems.data(), elems.size()), 2);
@@ -234,8 +227,7 @@ void AdvancedOptions_gump::paint() {
 	int titley = 1;
 	local_to_screen(titlex, titley);
 	// Draw Title
-	font->paint_text_box(
-			ib, title.c_str(), titlex, titley, procedural_background.w, 30);
+	font->paint_text_box(ib, title.c_str(), titlex, titley, procedural_background.w, 30);
 
 	Image_buffer::ClipRectSave clip(ib);
 	TileRect                   newclip = clip.Rect().intersect(get_rect());
@@ -263,9 +255,7 @@ void AdvancedOptions_gump::on_apply() {
 			std::string validation_message = csw->Validate();
 			if (!validation_message.empty()) {
 				validation_message += Strings::Applyanyway();
-				if (!Yesno_gump::ask(
-							validation_message.c_str(), nullptr,
-							"TINY_BLACK_FONT")) {
+				if (!Yesno_gump::ask(validation_message.c_str(), nullptr, "TINY_BLACK_FONT")) {
 					return;
 				}
 			}

@@ -100,10 +100,9 @@ public:
 		return rendered_flats ? rendered_flats : render_flats();
 	}
 
-	void render_all(
-			int cx, int cy, int pass);    // Render terrain-editing mode.
+	void render_all(int cx, int cy, int pass);    // Render terrain-editing mode.
 	// Write out to chunk.
-	int write_flats(unsigned char* chunk_data, bool v2_chunks);
+	int  write_flats(unsigned char* chunk_data, bool v2_chunks);
 	bool need_extended_shapes() const;
 };
 

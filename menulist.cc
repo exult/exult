@@ -45,11 +45,8 @@
 MenuEntry::MenuEntry(Shape_frame* on, Shape_frame* off, int xpos, int ypos) {
 	frame_on             = on;
 	frame_off            = off;
-	const int max_width  = on->get_width() > off->get_width() ? on->get_width()
-															  : off->get_width();
-	const int max_height = on->get_height() > off->get_height()
-								   ? on->get_height()
-								   : off->get_height();
+	const int max_width  = on->get_width() > off->get_width() ? on->get_width() : off->get_width();
+	const int max_height = on->get_height() > off->get_height() ? on->get_height() : off->get_height();
 	x                    = xpos;
 	y1 = y   = ypos;
 	x1       = xpos - max_width / 2;
@@ -71,21 +68,17 @@ void MenuEntry::paint(Game_window* gwin) {
 	} else {
 		shape = frame_off;
 	}
-	Shape_manager::get_instance()->paint_shape(
-			x - shape->get_width() / 2, y, shape);
+	Shape_manager::get_instance()->paint_shape(x - shape->get_width() / 2, y, shape);
 	gwin->get_win()->show(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
 }
 
 bool MenuEntry::handle_event(SDL_Event& event) {
-	return (event.type == SDL_EVENT_KEY_DOWN
-			&& (event.key.key == SDLK_RETURN || event.key.key == SDLK_KP_ENTER))
+	return (event.type == SDL_EVENT_KEY_DOWN && (event.key.key == SDLK_RETURN || event.key.key == SDLK_KP_ENTER))
 		   || event.type == SDL_EVENT_MOUSE_BUTTON_UP;
 }
 
 // MenuTextEntry: a selectable menu entry (a button)
-MenuTextEntry::MenuTextEntry(
-		std::shared_ptr<Font> fnton, std::shared_ptr<Font> fnt, const char* txt,
-		int xpos, int ypos)
+MenuTextEntry::MenuTextEntry(std::shared_ptr<Font> fnton, std::shared_ptr<Font> fnt, const char* txt, int xpos, int ypos)
 		: MenuTextObject(fnt, fnton, txt), enabled(true) {
 	const int max_width  = font->get_text_width(text.c_str());
 	const int max_height = font->get_text_height();
@@ -110,24 +103,19 @@ void MenuTextEntry::paint(Game_window* gwin) {
 	} else {
 		fnt = font;
 	}
-	fnt->paint_text_box(
-			gwin->get_win()->get_ib8(), text.c_str(), x1, y1, x2 - x1, y2 - y1,
-			0, false, true, nullptr);
+	fnt->paint_text_box(gwin->get_win()->get_ib8(), text.c_str(), x1, y1, x2 - x1, y2 - y1, 0, false, true, nullptr);
 	gwin->get_win()->show(x1, y1, x2 - x1, y2 - y1);
 }
 
 bool MenuTextEntry::handle_event(SDL_Event& event) {
-	return (((event.type == SDL_EVENT_KEY_DOWN
-			  && (event.key.key == SDLK_RETURN
-				  || event.key.key == SDLK_KP_ENTER))
+	return (((event.type == SDL_EVENT_KEY_DOWN && (event.key.key == SDLK_RETURN || event.key.key == SDLK_KP_ENTER))
 			 || event.type == SDL_EVENT_MOUSE_BUTTON_UP))
 		   && enabled;
 }
 
 // MenuGameEntry: a selectable menu entry (a button)
 MenuGameEntry::MenuGameEntry(
-		std::shared_ptr<Font> fnton, std::shared_ptr<Font> fnt, const char* txt,
-		Shape_frame* sfx, int xpos, int ypos)
+		std::shared_ptr<Font> fnton, std::shared_ptr<Font> fnt, const char* txt, Shape_frame* sfx, int xpos, int ypos)
 		: MenuTextEntry(fnton, fnt, txt, xpos, ypos) {
 	sfxicon       = sfx;
 	int max_width = 0;
@@ -172,11 +160,8 @@ void MenuGameEntry::paint(Game_window* gwin) {
 	dirty = false;
 
 	if (sfxicon) {
-		Shape_manager::get_instance()->paint_shape(
-				x1 - sfxicon->get_width() - 3, y, sfxicon);
-		gwin->get_win()->show(
-				x1 - sfxicon->get_width() - 3, y, sfxicon->get_width(),
-				sfxicon->get_height());
+		Shape_manager::get_instance()->paint_shape(x1 - sfxicon->get_width() - 3, y, sfxicon);
+		gwin->get_win()->show(x1 - sfxicon->get_width() - 3, y, sfxicon->get_width(), sfxicon->get_height());
 	}
 
 	std::shared_ptr<Font> fnt;
@@ -185,24 +170,18 @@ void MenuGameEntry::paint(Game_window* gwin) {
 	} else {
 		fnt = font;
 	}
-	fnt->paint_text_box(
-			gwin->get_win()->get_ib8(), text.c_str(), x1, y1, x2 - x1, y2 - y1,
-			0, false, true, nullptr);
+	fnt->paint_text_box(gwin->get_win()->get_ib8(), text.c_str(), x1, y1, x2 - x1, y2 - y1, 0, false, true, nullptr);
 	gwin->get_win()->show(x1, y1, x2 - x1, y2 - y1);
 }
 
 bool MenuGameEntry::handle_event(SDL_Event& event) {
-	return (((event.type == SDL_EVENT_KEY_DOWN
-			  && (event.key.key == SDLK_RETURN
-				  || event.key.key == SDLK_KP_ENTER))
+	return (((event.type == SDL_EVENT_KEY_DOWN && (event.key.key == SDLK_RETURN || event.key.key == SDLK_KP_ENTER))
 			 || event.type == SDL_EVENT_MOUSE_BUTTON_UP))
 		   && is_enabled();
 }
 
 // MenuTextChoice: a multiple-choice menu entry
-MenuTextChoice::MenuTextChoice(
-		std::shared_ptr<Font> fnton, std::shared_ptr<Font> fnt, const char* txt,
-		int xpos, int ypos)
+MenuTextChoice::MenuTextChoice(std::shared_ptr<Font> fnton, std::shared_ptr<Font> fnt, const char* txt, int xpos, int ypos)
 		: MenuTextObject(fnt, fnton, txt) {
 	const int max_width  = font->get_text_width(text.c_str());
 	const int max_height = font->get_text_height();
@@ -239,10 +218,8 @@ void MenuTextChoice::paint(Game_window* gwin) {
 	gwin->get_win()->show(x1, y1, x1 + fnt->get_text_width(text.c_str()), y2);
 
 	if (choice >= 0) {
-		gwin->get_win()->fill8(
-				0, max_choice_width, font->get_text_height(), x + 32, y);
-		font->draw_text(
-				gwin->get_win()->get_ib8(), x + 32, y, choices[choice].c_str());
+		gwin->get_win()->fill8(0, max_choice_width, font->get_text_height(), x + 32, y);
+		font->draw_text(gwin->get_win()->get_ib8(), x + 32, y, choices[choice].c_str());
 		gwin->get_win()->show(x + 32, y, x + 32 + max_choice_width, y2);
 	}
 }
@@ -347,21 +324,17 @@ int MenuList::handle_events(Game_window* gwin) {
 			Mouse::mouse()->blit_dirty();
 		}
 		bool          mouse_updated = false;
-		SDL_Renderer* renderer
-				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
-		SDL_Event event;
+		SDL_Renderer* renderer      = SDL_GetRenderer(gwin->get_win()->get_screen_window());
+		SDL_Event     event;
 		while (SDL_PollEvent(&event)) {
 			SDL_ConvertEventToRenderCoordinates(renderer, &event);
 			int gx;
 			int gy;
 			if (event.type == SDL_EVENT_MOUSE_MOTION) {
-				if (Mouse::use_touch_input
-					&& event.motion.which != EXSDL_TOUCH_MOUSEID) {
+				if (Mouse::use_touch_input && event.motion.which != EXSDL_TOUCH_MOUSEID) {
 					Mouse::use_touch_input = false;
 				}
-				gwin->get_win()->screen_to_game(
-						event.motion.x, event.motion.y, gwin->get_fastmouse(),
-						gx, gy);
+				gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), gx, gy);
 				if (!mouse_updated) {
 					Mouse::mouse()->hide();
 				}
@@ -372,9 +345,7 @@ int MenuList::handle_events(Game_window* gwin) {
 				// mouse->blit_dirty();
 			} else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 				if (!mouse_visible) {
-					gwin->get_win()->screen_to_game(
-							event.button.x, event.button.y,
-							gwin->get_fastmouse(), gx, gy);
+					gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 
 					// if invisible, redraw mouse
 					set_selection(gx, gy);
@@ -383,9 +354,7 @@ int MenuList::handle_events(Game_window* gwin) {
 					mouse_updated = false;
 				}
 			} else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
-				gwin->get_win()->screen_to_game(
-						event.button.x, event.button.y, gwin->get_fastmouse(),
-						gx, gy);
+				gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), gx, gy);
 				auto& entry = entries[selection];
 				if (entry->is_mouse_over(gx, gy)) {
 					exit_loop = entry->handle_event(event);
@@ -402,8 +371,7 @@ int MenuList::handle_events(Game_window* gwin) {
 					break;
 				case SDLK_Q:
 				case SDLK_X:
-					if (event.key.mod & SDL_KMOD_ALT
-						|| event.key.mod & SDL_KMOD_GUI) {
+					if (event.key.mod & SDL_KMOD_ALT || event.key.mod & SDL_KMOD_GUI) {
 						return -1;
 					}
 					break;
@@ -432,8 +400,7 @@ int MenuList::handle_events(Game_window* gwin) {
 					}
 					continue;
 				case SDLK_S:
-					if ((event.key.mod & SDL_KMOD_ALT)
-						&& (event.key.mod & SDL_KMOD_CTRL)) {
+					if ((event.key.mod & SDL_KMOD_ALT) && (event.key.mod & SDL_KMOD_CTRL)) {
 						make_screenshot(true);
 					}
 					[[fallthrough]];
@@ -447,8 +414,7 @@ int MenuList::handle_events(Game_window* gwin) {
 			} else if (event.type == SDL_EVENT_QUIT) {
 				return -1;
 			} else if (event.type == SDL_EVENT_FINGER_DOWN) {
-				if ((!Mouse::use_touch_input)
-					&& (event.tfinger.fingerID != 0)) {
+				if ((!Mouse::use_touch_input) && (event.tfinger.fingerID != 0)) {
 					Mouse::use_touch_input = true;
 					gwin->set_painted();
 				}

@@ -71,8 +71,7 @@ namespace NS_TIMIDITY {
 
 #		ifndef ATTR_PRINTF
 #			ifdef __GNUC__
-#				define ATTR_PRINTF(x, y) \
-					__attribute__((format(printf, (x), (y))))
+#				define ATTR_PRINTF(x, y) __attribute__((format(printf, (x), (y))))
 #			else
 #				define ATTR_PRINTF(x, y)
 #			endif
@@ -86,8 +85,7 @@ namespace NS_TIMIDITY {
 		void (*pass_playing_list)(int number_of_files, char* list_of_files[]);
 		void (*close)();
 		int (*read)(sint32* valp);
-		int (*cmsg)(int type, int verbosity_level, const char* fmt, ...)
-				ATTR_PRINTF(3, 4);
+		int (*cmsg)(int type, int verbosity_level, const char* fmt, ...) ATTR_PRINTF(3, 4);
 
 		void (*refresh)();
 		void (*reset)();

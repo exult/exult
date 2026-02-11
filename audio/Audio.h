@@ -91,17 +91,16 @@ private:
 	static Audio*     self;
 	static const int* bg2si_songs;    // Converts BG songs to SI songs.
 	static const int* bg2si_sfxs;     // Converts BG sfx's to SI sfx's.
-	bool              truthful_ = false;
-	bool speech_enabled = true, music_enabled = true, effects_enabled = true,
-		 speech_with_subs                            = false;
-	int                                speech_volume = 100;
-	int                                sfx_volume    = 100;
-	std::unique_ptr<SFX_cache_manager> sfxs;    // SFX and voice cache manager
-	bool                               initialized = false;
+	bool              truthful_      = false;
+	bool              speech_enabled = true, music_enabled = true, effects_enabled = true, speech_with_subs = false;
+	int               speech_volume = 100;
+	int               sfx_volume    = 100;
+	std::unique_ptr<SFX_cache_manager>     sfxs;    // SFX and voice cache manager
+	bool                                   initialized = false;
 	std::unique_ptr<Pentagram::AudioMixer> mixer;
 	sint32                                 speech_id = -1;
 	bool                                   audio_enabled;
-	std::unique_ptr<Flex> sfx_file;    // Holds .wav sound effects.
+	std::unique_ptr<Flex>                  sfx_file;    // Holds .wav sound effects.
 	// You never allocate an Audio object directly, you rather access it using
 	// get_ptr()
 	Audio();
@@ -111,8 +110,8 @@ private:
 
 public:
 	friend class Tired_of_compiler_warnings;
-	static void   Init();
-	static void   Destroy();
+	static void Init();
+	static void Destroy();
 
 	static Audio* get_ptr() {
 		return self;
@@ -139,47 +138,29 @@ public:
 	void pause_audio();
 	void resume_audio();
 
-	sint32 copy_and_play_speech(
-			const uint8* sound_data, uint32 len, bool, int volume = 255);
-	sint32 copy_and_play_sfx(
-			const uint8* sound_data, uint32 len, bool, int volume = 255);
-	sint32 play(
-			std::unique_ptr<uint8[]> sound_data, uint32 len, bool wait,
-			int volume = 255);
-	sint32 playSpeechfile(
-			const char* fname, const char* fpatch, bool wait, int volume = 255);
-	bool playing();
-	bool start_music(
-			int num, bool continuous = false,
-			MyMidiPlayer::ForceType force = MyMidiPlayer::Force_None,
-			const std::string&      flex  = MAINMUS);
+	sint32 copy_and_play_speech(const uint8* sound_data, uint32 len, bool, int volume = 255);
+	sint32 copy_and_play_sfx(const uint8* sound_data, uint32 len, bool, int volume = 255);
+	sint32 play(std::unique_ptr<uint8[]> sound_data, uint32 len, bool wait, int volume = 255);
+	sint32 playSpeechfile(const char* fname, const char* fpatch, bool wait, int volume = 255);
+	bool   playing();
+	bool   start_music(
+			  int num, bool continuous = false, MyMidiPlayer::ForceType force = MyMidiPlayer::Force_None,
+			  const std::string& flex = MAINMUS);
 	void change_repeat(bool newrepeat);
 	bool start_music(
-			const std::string& fname, int num, bool continuous = false,
-			MyMidiPlayer::ForceType force = MyMidiPlayer::Force_None);
+			const std::string& fname, int num, bool continuous = false, MyMidiPlayer::ForceType force = MyMidiPlayer::Force_None);
 	void stop_music();
-	int  play_sound_effect(
-			 int num, int volume = AUDIO_MAX_VOLUME, int balance = 0,
-			 int repeat = 0, int distance = 0);
-	int play_wave_sfx(
-			int num, int volume = AUDIO_MAX_VOLUME, int balance = 0,
-			int repeat = 0, int distance = 0);
-	int play_sound_effect(
-			int num, const Game_object* obj, int volume = AUDIO_MAX_VOLUME,
-			int repeat = 0);
-	int play_sound_effect(
-			int num, const Tile_coord& tile, int volume = AUDIO_MAX_VOLUME,
-			int repeat = 0);
+	int  play_sound_effect(int num, int volume = AUDIO_MAX_VOLUME, int balance = 0, int repeat = 0, int distance = 0);
+	int  play_wave_sfx(int num, int volume = AUDIO_MAX_VOLUME, int balance = 0, int repeat = 0, int distance = 0);
+	int  play_sound_effect(int num, const Game_object* obj, int volume = AUDIO_MAX_VOLUME, int repeat = 0);
+	int  play_sound_effect(int num, const Tile_coord& tile, int volume = AUDIO_MAX_VOLUME, int repeat = 0);
 	// These two do not cache the SFX, and play it directly from the file.
 	int play_sound_effect(
-			const File_spec& sfxfile, int num, int volume = AUDIO_MAX_VOLUME,
-			int balance = 0, int repeat = 0, int distance = 0);
+			const File_spec& sfxfile, int num, int volume = AUDIO_MAX_VOLUME, int balance = 0, int repeat = 0, int distance = 0);
 	int play_wave_sfx(
-			const File_spec& sfxfile, int num, int volume = AUDIO_MAX_VOLUME,
-			int balance = 0, int repeat = 0, int distance = 0);
+			const File_spec& sfxfile, int num, int volume = AUDIO_MAX_VOLUME, int balance = 0, int repeat = 0, int distance = 0);
 
-	static void get_2d_position_for_tile(
-			const Tile_coord& tile, int& distance, int& balance);
+	static void get_2d_position_for_tile(const Tile_coord& tile, int& distance, int& balance);
 
 	int update_sound_effect(int chan, const Game_object* obj);
 	int update_sound_effect(int chan, const Tile_coord& tile);
@@ -196,9 +177,7 @@ public:
 		return speech_id;
 	}
 
-	int wait_for_speech(
-			std::function<int(Uint32 ms)> waitfunc
-			= std::function<int(Uint32 ms)>());
+	int wait_for_speech(std::function<int(Uint32 ms)> waitfunc = std::function<int(Uint32 ms)>());
 
 	bool is_speech_enabled() const {
 		return initialized && audio_enabled && speech_enabled;
@@ -264,8 +243,7 @@ public:
 	static bool have_roland_sfx(Exult_Game game, std::string* out = nullptr);
 	static bool have_sblaster_sfx(Exult_Game game, std::string* out = nullptr);
 	static bool have_midi_sfx(std::string* out = nullptr);
-	static bool have_config_sfx(
-			const std::string& game, std::string* out = nullptr);
+	static bool have_config_sfx(const std::string& game, std::string* out = nullptr);
 	static void channel_complete_callback(int chan);
 
 	bool is_track_playing(int num) const;

@@ -101,8 +101,7 @@ inline std::string ReadStr(std::istream& in) {
 	return retval;
 }
 
-inline void WriteStr(
-		std::ostream& out, const std::string& str, bool final = false) {
+inline void WriteStr(std::ostream& out, const std::string& str, bool final = false) {
 	out << str;
 	if (final) {
 		out << std::endl;
@@ -126,10 +125,8 @@ inline size_t get_file_size(std::istream& in) {
 // Sets factories for creating istreams/ostreams.  Intended to be called once
 // during initialization before using any U7open...() calls and is not
 // guaranteed to be thread-safe.
-using U7IstreamFactory = std::function<std::unique_ptr<std::istream>(
-		const char* s, std::ios_base::openmode mode)>;
-using U7OstreamFactory = std::function<std::unique_ptr<std::ostream>(
-		const char* s, std::ios_base::openmode mode)>;
+using U7IstreamFactory = std::function<std::unique_ptr<std::istream>(const char* s, std::ios_base::openmode mode)>;
+using U7OstreamFactory = std::function<std::unique_ptr<std::ostream>(const char* s, std::ios_base::openmode mode)>;
 void U7set_istream_factory(U7IstreamFactory factory);
 void U7set_ostream_factory(U7OstreamFactory factory);
 
@@ -162,7 +159,7 @@ inline bool U7exists(const std::string& fname) {
 	return U7exists(fname.c_str());
 }
 
-int U7mkdir(const char* dirname, int mode=0755, bool parents=false);
+int U7mkdir(const char* dirname, int mode = 0755, bool parents = false);
 
 int U7rmdir(const char* dirname, bool recursive);
 
@@ -180,16 +177,15 @@ int U7chdir(const char* dirname);
 
 void U7copy(const char* src, const char* dest);
 
-bool is_system_path_defined(const std::string& path);
-void store_system_paths();
-void reset_system_paths();
-void clear_system_path(const std::string& key);
-void add_system_path(const std::string& key, const std::string& value);
-void clone_system_path(const std::string& new_key, const std::string& old_key);
+bool        is_system_path_defined(const std::string& path);
+void        store_system_paths();
+void        reset_system_paths();
+void        clear_system_path(const std::string& key);
+void        add_system_path(const std::string& key, const std::string& value);
+void        clone_system_path(const std::string& new_key, const std::string& old_key);
 std::string get_system_path(const std::string& path);
 
-#define BUNDLE_CHECK(x, y) \
-	((is_system_path_defined("<BUNDLE>") && U7exists((x))) ? (x) : (y))
+#define BUNDLE_CHECK(x, y) ((is_system_path_defined("<BUNDLE>") && U7exists((x))) ? (x) : (y))
 
 void        to_uppercase(std::string& str);
 std::string to_uppercase(const std::string& str);

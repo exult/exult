@@ -91,6 +91,7 @@ public:
 		Actor* operator*() {
 			return partyman->get_actor(num);
 		}
+
 		Actor* operator->() {
 			return partyman->get_actor(num);
 		}

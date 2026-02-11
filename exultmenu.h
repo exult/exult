@@ -47,9 +47,8 @@ private:
 	int                       pagesize;
 	void                      calc_win();
 	std::unique_ptr<MenuList> create_main_menu(int first = 0);
-	std::unique_ptr<MenuList> create_mods_menu(
-			ModManager* selgame, int first = 0);
-	BaseGameInfo* show_mods_menu(ModManager* selgame);
+	std::unique_ptr<MenuList> create_mods_menu(ModManager* selgame, int first = 0);
+	BaseGameInfo*             show_mods_menu(ModManager* selgame);
 
 public:
 	ExultMenu(Game_window* gw);

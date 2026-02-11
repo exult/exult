@@ -65,8 +65,7 @@ class Stat_bar : public Gump_button {
 	int max_val;
 
 public:
-	Stat_bar(
-			Gump* par, int px, int py, Actor* a, int s, int m, unsigned char c);
+	Stat_bar(Gump* par, int px, int py, Actor* a, int s, int m, unsigned char c);
 	void double_clicked(int x, int y) override;
 	void paint() override;
 
@@ -90,10 +89,9 @@ public:
 	}
 };
 
-Stat_bar::Stat_bar(
-		Gump* par, int px, int py, Actor* a, int s, int m, unsigned char c)
-		: Gump_button(par, EXULT_FLX_HP_BAR_SHP, px, py, SF_EXULT_FLX),
-		  actor(a), prop(s), prop_max(m), colour(c), val(-256), max_val(-256) {
+Stat_bar::Stat_bar(Gump* par, int px, int py, Actor* a, int s, int m, unsigned char c)
+		: Gump_button(par, EXULT_FLX_HP_BAR_SHP, px, py, SF_EXULT_FLX), actor(a), prop(s), prop_max(m), colour(c), val(-256),
+		  max_val(-256) {
 	gwin->add_dirty(get_rect());
 	val     = actor->get_effective_prop(prop);
 	max_val = actor->get_effective_prop(prop_max);
@@ -135,8 +133,7 @@ void Stat_bar::paint() {
  */
 
 void Stat_bar::update_widget() {
-	if (val != actor->get_effective_prop(prop)
-		|| max_val != actor->get_effective_prop(prop_max)) {
+	if (val != actor->get_effective_prop(prop) || max_val != actor->get_effective_prop(prop_max)) {
 		gwin->add_dirty(get_rect());
 	}
 
@@ -183,14 +180,10 @@ public:
 
 Portrait_button::Portrait_button(Gump* par, int px, int py, Actor* a)
 		: Face_button(par, px + 14, py - 20, a), hp(nullptr), mana(nullptr) {
-	hp = new Stat_bar(
-			par, px + 4, py - 10, a, Actor::health, Actor::strength,
-			PALETTE_INDEX_RED);
+	hp = new Stat_bar(par, px + 4, py - 10, a, Actor::health, Actor::strength, PALETTE_INDEX_RED);
 
 	if (actor->get_effective_prop(Actor::magic) > 0) {
-		mana = new Stat_bar(
-				par, px + 4, py - 5, a, Actor::mana, Actor::magic,
-				PALETTE_INDEX_BLUE);
+		mana = new Stat_bar(par, px + 4, py - 5, a, Actor::mana, Actor::magic, PALETTE_INDEX_BLUE);
 	}
 
 	hit      = actor->was_hit();
@@ -245,15 +238,10 @@ void Portrait_button::update_widget() {
 		mana->update_widget();
 	}
 
-	if (hit != actor->was_hit() || pois != actor->get_flag(Obj_flags::poisoned)
-		|| prot != actor->get_flag(Obj_flags::protection)
-		|| para != actor->get_flag(Obj_flags::paralyzed)
-		|| charm != actor->get_flag(Obj_flags::charmed)
-		|| curse != actor->get_flag(Obj_flags::cursed)
-		|| freezing != actor->get_flag(Obj_flags::freeze)
-		|| hungry
-				   != (actor->get_property(static_cast<int>(Actor::food_level))
-					   <= 9)
+	if (hit != actor->was_hit() || pois != actor->get_flag(Obj_flags::poisoned) || prot != actor->get_flag(Obj_flags::protection)
+		|| para != actor->get_flag(Obj_flags::paralyzed) || charm != actor->get_flag(Obj_flags::charmed)
+		|| curse != actor->get_flag(Obj_flags::cursed) || freezing != actor->get_flag(Obj_flags::freeze)
+		|| hungry != (actor->get_property(static_cast<int>(Actor::food_level)) <= 9)
 		|| asleep != actor->get_flag(Obj_flags::asleep)) {
 		TileRect r = get_rect();
 		gwin->add_dirty(r);
@@ -264,9 +252,9 @@ void Portrait_button::update_widget() {
 		charm    = actor->get_flag(Obj_flags::charmed);
 		curse    = actor->get_flag(Obj_flags::cursed);
 		freezing = actor->get_flag(Obj_flags::freeze);
-		hungry = actor->get_property(static_cast<int>(Actor::food_level)) <= 9;
-		asleep = actor->get_flag(Obj_flags::asleep);
-		r      = get_rect();
+		hungry   = actor->get_property(static_cast<int>(Actor::food_level)) <= 9;
+		asleep   = actor->get_flag(Obj_flags::asleep);
+		r        = get_rect();
 		gwin->add_dirty(r);
 	}
 }
@@ -508,8 +496,7 @@ void Face_stats::create_buttons() {
 			if (black_bar_width > (PORTRAIT_WIDTH * 2)) {
 				posx = gamex + 5;
 			} else if (black_bar_width > PORTRAIT_WIDTH) {
-				posx = black_bar_width + gamex - black_bar_width / 2
-					   - PORTRAIT_WIDTH / 2;
+				posx = black_bar_width + gamex - black_bar_width / 2 - PORTRAIT_WIDTH / 2;
 			} else {
 				posx = black_bar_width + gamex - PORTRAIT_WIDTH;
 			}
@@ -523,8 +510,7 @@ void Face_stats::create_buttons() {
 		if (sman->can_use_paperdolls() || act->get_info().get_npc_paperdoll()) {
 			posx += width;
 			posy += height;
-			party[i + 1] = new Portrait_button(
-					this, posx, posy, gwin->get_npc(npc_nums[i + 1]));
+			party[i + 1] = new Portrait_button(this, posx, posy, gwin->get_npc(npc_nums[i + 1]));
 		} else {
 			party[i + 1] = nullptr;
 		}
@@ -559,10 +545,10 @@ bool Face_stats::has_point(int x, int y) const {
 
 bool Face_stats::add(
 		Game_object* obj, int mx, int my,    // Mouse location.
-		int sx, int sy,     // Screen location of obj's hotspot.
-		bool dont_check,    // Skip volume check.
-		bool combine        // True to try to combine obj.  MAY
-							//   cause obj to be deleted.
+		int sx, int sy,                      // Screen location of obj's hotspot.
+		bool dont_check,                     // Skip volume check.
+		bool combine                         // True to try to combine obj.  MAY
+											 //   cause obj to be deleted.
 ) {
 	if (sx < 0 && sy < 0 && my < 0 && mx < 0) {
 		return false;

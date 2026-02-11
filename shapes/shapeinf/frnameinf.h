@@ -46,15 +46,13 @@ public:
 	friend class Shape_info;
 	Frame_name_info() = default;
 
-	Frame_name_info(
-			short f, short q, short ty, int msg, int ot, bool p = false,
-			bool m = false, bool s = false, bool inv = false) {
+	Frame_name_info(short f, short q, short ty, int msg, int ot, bool p = false, bool m = false, bool s = false, bool inv = false) {
 		set(f, q, ty, msg, ot, p, m, s, inv);
 	}
 
 	Frame_name_info(const Frame_name_info& other)
-			: Base_info(other), frame(other.frame), quality(other.quality),
-			  type(other.type), msgid(other.msgid), othermsg(other.othermsg) {
+			: Base_info(other), frame(other.frame), quality(other.quality), type(other.type), msgid(other.msgid),
+			  othermsg(other.othermsg) {
 		info_flags = other.info_flags;
 	}
 
@@ -63,9 +61,7 @@ public:
 	// Write out.
 	void write(std::ostream& out, int shapenum, Exult_Game game);
 
-	void set(
-			short f, short q, short ty, int msg, int ot, bool p = false,
-			bool m = false, bool s = false, bool inv = false) {
+	void set(short f, short q, short ty, int msg, int ot, bool p = false, bool m = false, bool s = false, bool inv = false) {
 		frame    = f;
 		quality  = q;
 		type     = ty;

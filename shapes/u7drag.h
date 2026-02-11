@@ -56,8 +56,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //	Store/get shapeid.
 int  Store_u7_shapeid(unsigned char* data, int file, int shape, int frame);
-void Get_u7_shapeid(
-		const unsigned char* data, int& file, int& shape, int& frame);
+void Get_u7_shapeid(const unsigned char* data, int& file, int& shape, int& frame);
 bool Is_u7_shapeid(const unsigned char* data);
 
 //	Target information for dragging a chunk:
@@ -87,25 +86,19 @@ struct U7_combo_data {
 	int tx, ty, tz, shape, frame;
 };
 
-int Store_u7_comboid(
-		unsigned char* data, int xtiles, int ytiles, int tiles_right,
-		int tiles_below, int cnt, U7_combo_data* ents);
+int  Store_u7_comboid(unsigned char* data, int xtiles, int ytiles, int tiles_right, int tiles_below, int cnt, U7_combo_data* ents);
 void Get_u7_comboid(
-		const unsigned char* data, int& xtiles, int& ytiles, int& tiles_right,
-		int& tiles_below, int& cnt, U7_combo_data*& ents);
+		const unsigned char* data, int& xtiles, int& ytiles, int& tiles_right, int& tiles_below, int& cnt, U7_combo_data*& ents);
 bool Is_u7_comboid(const unsigned char* data);
 
 // Put these here since they are shared between XWin and Win32
 
-using Move_shape_handler_fun = void (*)(
-		int shape, int frame, int x, int y, int prevx, int prevy, bool show);
-using Move_combo_handler_fun = void (*)(
-		int xtiles, int ytiles, int tiles_right, int tiles_below, int x, int y,
-		int prevx, int prevy, bool show);
+using Move_shape_handler_fun = void (*)(int shape, int frame, int x, int y, int prevx, int prevy, bool show);
+using Move_combo_handler_fun
+		= void (*)(int xtiles, int ytiles, int tiles_right, int tiles_below, int x, int y, int prevx, int prevy, bool show);
 using Drop_shape_handler_fun = void (*)(int shape, int frame, int x, int y);
 using Drop_chunk_handler_fun = void (*)(int chunk, int x, int y);
 using Drop_npc_handler_fun   = void (*)(int npc, int x, int y);
-using Drop_combo_handler_fun
-		= void (*)(int cnt, U7_combo_data* combo, int x, int y);
+using Drop_combo_handler_fun = void (*)(int cnt, U7_combo_data* combo, int x, int y);
 
 #endif

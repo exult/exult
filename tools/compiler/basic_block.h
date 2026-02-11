@@ -167,12 +167,9 @@ public:
 	}
 #ifdef DEBUG    // For debugging.
 	void write_text() const {
-		std::cout << std::setw(2) << std::setfill('0') << get_real_opcode()
-				  << ' ';
+		std::cout << std::setw(2) << std::setfill('0') << get_real_opcode() << ' ';
 		for (const char param : params) {
-			std::cout << std::setw(2) << std::setfill('0')
-					  << static_cast<int>(static_cast<unsigned char>(param))
-					  << ' ';
+			std::cout << std::setw(2) << std::setfill('0') << static_cast<int>(static_cast<unsigned char>(param)) << ' ';
 		}
 		if (is_jump) {
 			std::cout << "<offset>";
@@ -201,8 +198,7 @@ public:
 	}
 
 	bool is_return() const {
-		return opcode == UC_RET || opcode == UC_RET2 || opcode == UC_RETV
-			   || opcode == UC_RETZ;
+		return opcode == UC_RET || opcode == UC_RET2 || opcode == UC_RETV || opcode == UC_RETZ;
 	}
 
 	bool is_abort() const {
@@ -236,17 +232,15 @@ class Basic_block {
 
 protected:
 	std::set<Basic_block*> predecessors;    // Blocks that came before this.
-	int index = 0;    // Block index in the fun_blocks array *or*
+	int                    index = 0;       // Block index in the fun_blocks array *or*
 	// -1 for the starting ("phantom") block.
 
-	Basic_block* taken
-			= nullptr;    // For conditional jumps, block taken to by true
+	Basic_block* taken = nullptr;    // For conditional jumps, block taken to by true
 	// condition (fall-through); for unconditional jumps, block
 	// to jump to; for all others, the next (fall-through) block.
 	int taken_index = -1;    // Index in the fun_blocks array, filled after
 	// cleaning up unreachable blocks.
-	Basic_block* ntaken
-			= nullptr;    // For conditional jumps, block taken to by false
+	Basic_block* ntaken = nullptr;    // For conditional jumps, block taken to by false
 	// condition (jump); for all others, this is zero.
 	int ntaken_index = -1;    // Index in the fun_blocks array, filled after
 	// cleaning up unreachable blocks.
@@ -268,9 +262,7 @@ public:
 		instructions.reserve(100);
 	}
 
-	Basic_block(
-			int ind, Basic_block* t = nullptr, Basic_block* n = nullptr,
-			UsecodeOps ins = UC_INVALID)
+	Basic_block(int ind, Basic_block* t = nullptr, Basic_block* n = nullptr, UsecodeOps ins = UC_INVALID)
 			: index(ind), taken(t), ntaken(n), jmp_op(new Opcode(ins)) {
 		if (index != -1) {
 			instructions.reserve(100);
@@ -304,8 +296,7 @@ public:
 	}
 
 	UsecodeOps get_last_instruction() const {
-		return !instructions.empty() ? instructions.back()->get_opcode()
-									 : UC_INVALID;
+		return !instructions.empty() ? instructions.back()->get_opcode() : UC_INVALID;
 	}
 
 	void set_32bit_jump() {
@@ -363,8 +354,7 @@ public:
 			return false;
 		}
 		const auto opcode = jmp_op->get_opcode();
-		return opcode == UC_LOOPTOP || opcode == UC_LOOPTOPS
-			   || opcode == UC_LOOPTOPTHV;
+		return opcode == UC_LOOPTOP || opcode == UC_LOOPTOPS || opcode == UC_LOOPTOPTHV;
 	}
 
 	bool is_converse_case_block() const {
@@ -397,8 +387,7 @@ public:
 	}
 
 	UsecodeOps get_return_opcode() const {
-		return ends_in_return() ? instructions.back()->get_opcode()
-								: UC_INVALID;
+		return ends_in_return() ? instructions.back()->get_opcode() : UC_INVALID;
 	}
 
 	bool is_simple_return_block() const {
@@ -406,8 +395,7 @@ public:
 	}
 
 	bool is_simple_abort_block() const {
-		return is_end_block() && instructions.size() == 1
-			   && instructions.back()->is_abort();
+		return is_end_block() && instructions.size() == 1 && instructions.back()->is_abort();
 	}
 
 	bool is_childless() const {
@@ -483,8 +471,7 @@ public:
 		ntaken = dest;
 	}
 
-	void set_targets(
-			UsecodeOps op, Basic_block* t = nullptr, Basic_block* n = nullptr) {
+	void set_targets(UsecodeOps op, Basic_block* t = nullptr, Basic_block* n = nullptr) {
 		clear_jump();
 		if (op != UC_INVALID) {
 			jmp_op = new Opcode(op);
@@ -556,9 +543,7 @@ public:
 
 	void merge_taken() {
 		Basic_block* safetaken = taken;
-		instructions.insert(
-				instructions.end(), safetaken->instructions.begin(),
-				safetaken->instructions.end());
+		instructions.insert(instructions.end(), safetaken->instructions.begin(), safetaken->instructions.end());
 		delete jmp_op;
 		jmp_op = safetaken->jmp_op;
 		set_taken(safetaken->taken);
@@ -578,9 +563,8 @@ public:
 	}
 #ifdef DEBUG    // For debugging.
 	void check() const {
-		std::cout << std::hex << std::setw(8) << std::setfill('0') << this
-				  << '\t' << std::setw(8) << std::setfill('0') << taken << '\t'
-				  << std::setw(8) << std::setfill('0') << ntaken << '\t';
+		std::cout << std::hex << std::setw(8) << std::setfill('0') << this << '\t' << std::setw(8) << std::setfill('0') << taken
+				  << '\t' << std::setw(8) << std::setfill('0') << ntaken << '\t';
 		for (const auto* instruction : instructions) {
 			instruction->write_text();
 		}

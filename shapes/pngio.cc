@@ -65,14 +65,12 @@ int Import_png8(
 		return 0;
 	}
 	unsigned char sigbuf[8];    // Make sure it's a .png.
-	if (fread(sigbuf, 1, sizeof(sigbuf), fp) != sizeof(sigbuf)
-		|| png_sig_cmp(sigbuf, 0, sizeof(sigbuf))) {
+	if (fread(sigbuf, 1, sizeof(sigbuf), fp) != sizeof(sigbuf) || png_sig_cmp(sigbuf, 0, sizeof(sigbuf))) {
 		fclose(fp);
 		return 0;
 	}
 	// Initialize.
-	png_structp png = png_create_read_struct(
-			PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png) {
 		fclose(fp);
 		return 0;
@@ -93,8 +91,7 @@ int Import_png8(
 	int         depth;
 	int         color;
 	int         interlace;
-	png_get_IHDR(
-			png, info, &w, &h, &depth, &color, &interlace, nullptr, nullptr);
+	png_get_IHDR(png, info, &w, &h, &depth, &color, &interlace, nullptr, nullptr);
 	width  = static_cast<int>(w);
 	height = static_cast<int>(h);
 	if (color != PNG_COLOR_TYPE_PALETTE) {
@@ -121,8 +118,7 @@ int Import_png8(
 	png_int_32 pngxoff;
 	png_int_32 pngyoff;    // Get offsets.
 	int        utype;
-	if (png_get_oFFs(png, info, &pngxoff, &pngyoff, &utype)
-		&& utype == PNG_OFFSET_PIXEL) {
+	if (png_get_oFFs(png, info, &pngxoff, &pngyoff, &utype) && utype == PNG_OFFSET_PIXEL) {
 		xoff = pngxoff;
 		yoff = pngyoff;
 	} else {
@@ -131,8 +127,7 @@ int Import_png8(
 	png_bytep     trans;    // Get transparency info.
 	int           num_trans;
 	png_color_16p trans_values;
-	if (transp_index < 0 || transp_index > 255 || pal_size == 0
-		|| !png_get_tRNS(png, info, &trans, &num_trans, &trans_values)) {
+	if (transp_index < 0 || transp_index > 255 || pal_size == 0 || !png_get_tRNS(png, info, &trans, &num_trans, &trans_values)) {
 		num_trans = 0;
 	}
 	// Get updated info.
@@ -164,8 +159,7 @@ int Import_png8(
 			}
 		}
 		if (i < pal_size - 1) {    // Remove trans. color from palette.
-			memmove(palette + 3 * i, palette + 3 * (i + 1),
-					3 * pal_size - 3 * (i + 1));
+			memmove(palette + 3 * i, palette + 3 * (i + 1), 3 * pal_size - 3 * (i + 1));
 		}
 		pal_size--;
 	}
@@ -203,8 +197,7 @@ int Export_png8(
 		return 0;
 	}
 	// Initialize.
-	png_structp png = png_create_write_struct(
-			PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png) {
 		fclose(fp);
 		return 0;
@@ -218,8 +211,7 @@ int Export_png8(
 	}
 	png_init_io(png, fp);    // Init. for reading.
 	png_set_IHDR(
-			png, info, width, height, 8, PNG_COLOR_TYPE_PALETTE,
-			PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+			png, info, width, height, 8, PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
 			PNG_FILTER_TYPE_DEFAULT);
 	bool dotransp_to_0 = transp_to_0;
 	if (transp_index == 0) {
@@ -290,14 +282,12 @@ int Import_png32(
 		return 0;
 	}
 	unsigned char sigbuf[8];    // Make sure it's a .png.
-	if (fread(sigbuf, 1, sizeof(sigbuf), fp) != sizeof(sigbuf)
-		|| png_sig_cmp(sigbuf, 0, sizeof(sigbuf))) {
+	if (fread(sigbuf, 1, sizeof(sigbuf), fp) != sizeof(sigbuf) || png_sig_cmp(sigbuf, 0, sizeof(sigbuf))) {
 		fclose(fp);
 		return 0;
 	}
 	// Initialize.
-	png_structp png = png_create_read_struct(
-			PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png) {
 		fclose(fp);
 		return 0;
@@ -318,15 +308,13 @@ int Import_png32(
 	int         depth;
 	int         color;
 	int         interlace;
-	png_get_IHDR(
-			png, info, &w, &h, &depth, &color, &interlace, nullptr, nullptr);
+	png_get_IHDR(png, info, &w, &h, &depth, &color, &interlace, nullptr, nullptr);
 	width  = static_cast<int>(w);
 	height = static_cast<int>(h);
 	png_int_32 pngxoff;
 	png_int_32 pngyoff;    // Get offsets.
 	int        utype;
-	if (png_get_oFFs(png, info, &pngxoff, &pngyoff, &utype)
-		&& utype == PNG_OFFSET_PIXEL) {
+	if (png_get_oFFs(png, info, &pngxoff, &pngyoff, &utype) && utype == PNG_OFFSET_PIXEL) {
 		xoff = pngxoff;
 		yoff = pngyoff;
 	} else {
@@ -373,7 +361,7 @@ int Import_png32(
 
 int Export_png32(
 		const char* pngname, int width, int height,    // Image dimensions.
-		int rowbytes,    // # bytes/row.  (Should be
+		int rowbytes,                                  // # bytes/row.  (Should be
 		//   4*width.)
 		int xoff, int yoff,    // (X,Y) offsets from top-left of
 		//   image.
@@ -385,8 +373,7 @@ int Export_png32(
 		return 0;
 	}
 	// Initialize.
-	png_structp png = png_create_write_struct(
-			PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png) {
 		fclose(fp);
 		return 0;
@@ -400,8 +387,7 @@ int Export_png32(
 	}
 	png_init_io(png, fp);    // Init. for reading.
 	png_set_IHDR(
-			png, info, width, height, 8, PNG_COLOR_TYPE_RGB_ALPHA,
-			PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+			png, info, width, height, 8, PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
 			PNG_FILTER_TYPE_DEFAULT);
 	png_set_oFFs(png, info, xoff, yoff, PNG_OFFSET_PIXEL);
 	// Write out info.

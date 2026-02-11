@@ -114,13 +114,12 @@ private:
 		ADLIB_RYTHM   = 1
 	};
 
-	void midi_write_adlib(unsigned int reg, unsigned char val);
-	void midi_fm_instrument(int voice, xinstrument& inst);
-	int  midi_calc_volume(int chan, int vel);
-	void midi_update_volume(int chan);
-	void midi_fm_volume(int voice, int volume);
-	void midi_fm_playnote(
-			int voice, int note, int volume, int pitchbend, int pan);
+	void          midi_write_adlib(unsigned int reg, unsigned char val);
+	void          midi_fm_instrument(int voice, xinstrument& inst);
+	int           midi_calc_volume(int chan, int vel);
+	void          midi_update_volume(int chan);
+	void          midi_fm_volume(int voice, int volume);
+	void          midi_fm_playnote(int voice, int note, int volume, int pitchbend, int pan);
 	void          midi_fm_endnote(int voice);
 	unsigned char adlib_data[256];
 

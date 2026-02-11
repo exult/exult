@@ -59,12 +59,8 @@ public:
 		Force_Ogg
 	};
 
-	bool start_music(
-			int num, bool repeat = false, ForceType force = Force_None,
-			std::string flex = MAINMUS);
-	bool start_music(
-			std::string fname, int num, bool repeat = false,
-			ForceType force = Force_None);
+	bool start_music(int num, bool repeat = false, ForceType force = Force_None, std::string flex = MAINMUS);
+	bool start_music(std::string fname, int num, bool repeat = false, ForceType force = Force_None);
 	void stop_music(bool quitting = false);
 
 	bool is_track_playing(int num);

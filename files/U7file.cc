@@ -49,9 +49,7 @@ U7multifile::U7multifile(const File_spec& spec0, const File_spec& spec1) {
 /// @param spec0    First file specification (usually <STATIC>).
 /// @param spec1    Second file specification.
 /// @param spec2    Third file specification (usually <PATCH>).
-U7multifile::U7multifile(
-		const File_spec& spec0, const File_spec& spec1,
-		const File_spec& spec2) {
+U7multifile::U7multifile(const File_spec& spec0, const File_spec& spec1, const File_spec& spec2) {
 	files.emplace_back(spec0);
 	files.emplace_back(spec1);
 	files.emplace_back(spec2);
@@ -95,8 +93,7 @@ reverse_wrapper<T> reverse(T&& iterable) {
 	return reverse_wrapper<T>{std::forward<T>(iterable)};
 }
 
-std::unique_ptr<unsigned char[]> U7multifile::retrieve(
-		uint32 objnum, std::size_t& len, bool& patch) const {
+std::unique_ptr<unsigned char[]> U7multifile::retrieve(uint32 objnum, std::size_t& len, bool& patch) const {
 	for (const auto& file : reverse(files)) {
 		auto buf = file.retrieve(objnum, len, patch);
 		if (buf && len > 0) {

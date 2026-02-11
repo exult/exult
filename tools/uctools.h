@@ -67,7 +67,7 @@ struct opcode_desc {
 
 // Opcode table
 constexpr const std::array opcode_table{
-		opcode_desc{nullptr,  0,                          0, 0, 0                    }, // 00
+		opcode_desc{             nullptr,  0,                          0, 0, 0}, // 00
 		opcode_desc{             nullptr,  0,                          0, 0, 0}, // 01
 		opcode_desc{              "loop", 10,                   op_sloop, 0, 0}, // 02
 		opcode_desc{             nullptr,  0,                          0, 0, 0}, // 03
@@ -116,8 +116,7 @@ constexpr const std::array opcode_table{
 		opcode_desc{          "initloop",  0,                          0, 0, 0}, // 2e
 		opcode_desc{             "addsv",  2,                  op_varref, 0, 0}, // 2f
 		opcode_desc{                "in",  0,                          0, 2, 1}, // 30
-		opcode_desc{
-					"conv_something",  4, op_immed_and_relative_jump, 0, 0    }, // 31
+		opcode_desc{    "conv_something",  4, op_immed_and_relative_jump, 0, 0}, // 31
 		opcode_desc{              "retz",  0,                          0, 0, 0}, // 32
 		opcode_desc{               "say",  0,                          0, 0, 0}, // 33
 		opcode_desc{             nullptr,  0,                          0, 0, 0}, // 34

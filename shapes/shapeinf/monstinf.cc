@@ -122,24 +122,18 @@ bool Monster_info::read(
 
 const Monster_info* Monster_info::get_default() {
 	if (default_info.strength == 0u) {    // First time?
-		default_info.strength               = default_info.dexterity
-				= default_info.intelligence = default_info.combat = 10;
-		default_info.alignment = 0;    // Neutral.
+		default_info.strength = default_info.dexterity = default_info.intelligence = default_info.combat = 10;
+		default_info.alignment                                                                           = 0;    // Neutral.
 		default_info.armor = default_info.weapon = 0;
 		default_info.reach                       = 3;
-		default_info.flags        = (1 << static_cast<int>(walk));
-		default_info.equip_offset = 0;
-		default_info.immune = default_info.vulnerable = default_info.m_byte13
-				= 0;
-		default_info.m_can_be_invisible       = default_info.m_can_summon
-				= default_info.m_can_teleport = default_info.m_cant_bleed
-				= default_info.m_cant_die     = default_info.m_cant_yell
-				= default_info.m_poison_safe  = default_info.m_charm_safe
-				= default_info.m_sleep_safe   = default_info.m_paralysis_safe
-				= default_info.m_curse_safe   = default_info.m_power_safe
-				= default_info.m_death_safe   = default_info.m_int_b1
-				= default_info.m_splits       = false;
-		default_info.m_attackmode             = 2;
+		default_info.flags                       = (1 << static_cast<int>(walk));
+		default_info.equip_offset                = 0;
+		default_info.immune = default_info.vulnerable = default_info.m_byte13 = 0;
+		default_info.m_can_be_invisible = default_info.m_can_summon = default_info.m_can_teleport = default_info.m_cant_bleed
+				= default_info.m_cant_die = default_info.m_cant_yell = default_info.m_poison_safe = default_info.m_charm_safe
+				= default_info.m_sleep_safe = default_info.m_paralysis_safe = default_info.m_curse_safe = default_info.m_power_safe
+				= default_info.m_death_safe = default_info.m_int_b1 = default_info.m_splits = false;
+		default_info.m_attackmode                                                           = 2;
 	}
 	return &default_info;
 }
@@ -148,10 +142,9 @@ const Monster_info* Monster_info::get_default() {
  *  Set all the stats.
  */
 
-void Monster_info::set_stats(
-		int str, int dex, int intel, int cmb, int armour, int wpn, int rch) {
-	if (strength != str || dexterity != dex || intelligence != intel
-		|| combat != cmb || armor != armour || weapon != wpn || reach != rch) {
+void Monster_info::set_stats(int str, int dex, int intel, int cmb, int armour, int wpn, int rch) {
+	if (strength != str || dexterity != dex || intelligence != intel || combat != cmb || armor != armour || weapon != wpn
+		|| reach != rch) {
 		set_modified(true);
 	}
 	strength     = str;

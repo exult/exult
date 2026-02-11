@@ -44,13 +44,10 @@ public:
 	friend class Shape_info;
 	Warmth_info() = default;
 
-	Warmth_info(
-			short f, char w, bool p = false, bool m = false, bool s = false,
-			bool inv = false)
+	Warmth_info(short f, char w, bool p = false, bool m = false, bool s = false, bool inv = false)
 			: Base_info(m, p, inv, s), frame(f), warmth(w) {}
 
-	Warmth_info(const Warmth_info& other)
-			: Base_info(other), frame(other.frame), warmth(other.warmth) {
+	Warmth_info(const Warmth_info& other) : Base_info(other), frame(other.frame), warmth(other.warmth) {
 		info_flags = other.info_flags;
 	}
 
@@ -80,8 +77,7 @@ public:
 	}
 
 	bool operator<(const Warmth_info& other) const {
-		return static_cast<unsigned short>(frame)
-			   < static_cast<unsigned short>(other.frame);
+		return static_cast<unsigned short>(frame) < static_cast<unsigned short>(other.frame);
 	}
 
 	bool operator==(const Warmth_info& other) const {

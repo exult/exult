@@ -43,14 +43,12 @@ int Uc_class::last_num = -1;
  *  Create.
  */
 
-Uc_class::Uc_class(char* nm)
-		: name(nm), scope(nullptr), num_vars(0), base_class(nullptr) {
+Uc_class::Uc_class(char* nm) : name(nm), scope(nullptr), num_vars(0), base_class(nullptr) {
 	num = ++last_num;
 }
 
 Uc_class::Uc_class(char* nm, Uc_class* base)
-		: name(nm), scope(&base->scope), num_vars(base->num_vars),
-		  methods(base->methods), base_class(base) {
+		: name(nm), scope(&base->scope), num_vars(base->num_vars), methods(base->methods), base_class(base) {
 	num = ++last_num;
 	for (auto* method : methods) {
 		method->set_inherited();
@@ -111,8 +109,7 @@ Uc_var_symbol* Uc_class::add_alias(char* nm, Uc_var_symbol* var) {
  *  Output: New sym, or nullptr if already declared.
  */
 
-Uc_var_symbol* Uc_class::add_alias(
-		char* nm, Uc_var_symbol* v, Uc_struct_symbol* struc) {
+Uc_var_symbol* Uc_class::add_alias(char* nm, Uc_var_symbol* v, Uc_struct_symbol* struc) {
 	if (scope.is_dup(nm)) {
 		return nullptr;
 	}
@@ -137,9 +134,7 @@ void Uc_class::add_method(Uc_function* m) {
 				method = m;
 				return;
 			} else {
-				Uc_location::yyerror(
-						"Duplicate decl. of virtual member function '%s'.",
-						m->get_name());
+				Uc_location::yyerror("Duplicate decl. of virtual member function '%s'.", m->get_name());
 				return;
 			}
 		}
@@ -165,8 +160,7 @@ void Uc_class::gen(std::ostream& out) {
  */
 
 Usecode_symbol* Uc_class::create_sym() {
-	auto* cs = new Usecode_class_symbol(
-			name.c_str(), Usecode_symbol::class_scope, num, num_vars);
+	auto* cs = new Usecode_class_symbol(name.c_str(), Usecode_symbol::class_scope, num, num_vars);
 	for (auto* m : methods) {
 		cs->add_sym(m->create_sym());
 		cs->add_method_num(m->get_usecode_num());

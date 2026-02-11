@@ -85,9 +85,7 @@ void Args::process(int argc, char** argv) {
 				if (options[j].option == argv[i]) {
 					// We want the _next_ argument
 					if (++i >= argc) {
-						cerr << "Data not specified for argument '"
-							 << options[j].option << "'. Using default."
-							 << endl;
+						cerr << "Data not specified for argument '" << options[j].option << "'. Using default." << endl;
 						break;
 					}
 					*(options[j].sval) = argv[i];
@@ -99,9 +97,7 @@ void Args::process(int argc, char** argv) {
 				if (options[j].option == argv[i]) {
 					// We want the _next_ argument
 					if (++i >= argc) {
-						cerr << "Data not specified for argument '"
-							 << options[j].option << "'. Using default."
-							 << endl;
+						cerr << "Data not specified for argument '" << options[j].option << "'. Using default." << endl;
 						break;
 					}
 					*(options[j].ival) = strtol(argv[i], nullptr, 10);
@@ -113,9 +109,7 @@ void Args::process(int argc, char** argv) {
 				if (options[j].option == argv[i]) {
 					// We want the _next_ argument
 					if (++i >= argc) {
-						cerr << "Data not specified for argument '"
-							 << options[j].option << "'. Using default."
-							 << endl;
+						cerr << "Data not specified for argument '" << options[j].option << "'. Using default." << endl;
 						break;
 					}
 					*(options[j].uval) = strtoul(argv[i], nullptr, 10);

@@ -26,9 +26,7 @@ class IterableGump_widget : public Gump_widget {
 public:
 	using iterator = typename T_iterable::iterator;
 
-	IterableGump_widget(
-			Gump_Base* parent, int shnum, int px, int py, int frnum = 0,
-			ShapeFile shfile = SF_GUMPS_VGA)
+	IterableGump_widget(Gump_Base* parent, int shnum, int px, int py, int frnum = 0, ShapeFile shfile = SF_GUMPS_VGA)
 			: Gump_widget(parent, shnum, px, py, frnum, shfile) {}
 
 	Gump_widget* Input_first() override {
@@ -54,8 +52,7 @@ public:
 	virtual iterator begin() = 0;
 	virtual iterator end()   = 0;
 
-	void paintSorted(
-			Sort_Order sort, Sort_Order& next, Sort_Order& highest) override {
+	void paintSorted(Sort_Order sort, Sort_Order& next, Sort_Order& highest) override {
 		Gump_widget::paintSorted(sort, next, highest);
 
 		if (sort_order == Sort_Order::hidden) {
@@ -74,19 +71,16 @@ public:
 		return result;
 	}
 
-	Gump_widget* findSorted(
-			int sx, int sy, Sort_Order sort, Sort_Order& next,
-			Sort_Order& highest, Gump_widget* before) override {
+	Gump_widget* findSorted(int sx, int sy, Sort_Order sort, Sort_Order& next, Sort_Order& highest, Gump_widget* before) override {
 		if (this == before) {
 			return nullptr;
 		}
-		auto result
-				= Gump_widget::findSorted(sx, sy, sort, next, highest, before);
+		auto result = Gump_widget::findSorted(sx, sy, sort, next, highest, before);
 
 		for (auto& child : *this) {
 			if (!child) {
 				continue;
-			}	
+			}
 			if (&*child == before) {
 				break;
 			}

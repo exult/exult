@@ -75,18 +75,18 @@ class Npc_chooser : public Object_browser, public Shape_draw {
 	int                    framenum0;    // Default frame # to display.
 	std::vector<Npc_entry> info;         // Pos. of each shape/frame.
 	std::vector<Npc_row>   rows;
-	unsigned               row0;    // Row # at top of window.
-	int  row0_voffset;              // Vert. pos. (in pixels) of top row.
-	long total_height;              // In pixels, for all rows.
-	int  last_npc;                  // Last shape visible in window.
-	bool frames_mode;               // Show all frames horizontally.
-	int  hoffset;                   // Horizontal offset in pixels (when in
-									//   frames_mode).
-	int  voffset;                   // Vertical offset in pixels.
-	int  status_id;                 // Statusbar msg. ID.
-	int  red;                       // Index of color red in palbuf.
-	bool drop_enabled;              // So we only do it once.
-	void (*sel_changed)();          // Called when selection changes.
+	unsigned               row0;            // Row # at top of window.
+	int                    row0_voffset;    // Vert. pos. (in pixels) of top row.
+	long                   total_height;    // In pixels, for all rows.
+	int                    last_npc;        // Last shape visible in window.
+	bool                   frames_mode;     // Show all frames horizontally.
+	int                    hoffset;         // Horizontal offset in pixels (when in
+											//   frames_mode).
+	int  voffset;                           // Vertical offset in pixels.
+	int  status_id;                         // Statusbar msg. ID.
+	int  red;                               // Index of color red in palbuf.
+	bool drop_enabled;                      // So we only do it once.
+	void (*sel_changed)();                  // Called when selection changes.
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
 	void select(int new_sel);    // Show new selection.
@@ -113,9 +113,7 @@ class Npc_chooser : public Object_browser, public Shape_draw {
 	void       setup_hscrollbar(int newmax);
 	GtkWidget* create_popup() override;    // Popup menu.
 public:
-	Npc_chooser(
-			Vga_file* i, unsigned char* palbuf, int w, int h,
-			Shape_group* g = nullptr, Shape_file_info* fi = nullptr);
+	Npc_chooser(Vga_file* i, unsigned char* palbuf, int w, int h, Shape_group* g = nullptr, Shape_file_info* fi = nullptr);
 	~Npc_chooser() override;
 
 	void set_framenum0(int f) {
@@ -125,7 +123,7 @@ public:
 	int                       get_count();    // Get # shapes we can display.
 	std::vector<Estudio_npc>& get_npcs();
 	void                      search(const char* srch, int dir) override;
-	void locate(bool upwards) override;    // Locate NPC on game map.
+	void                      locate(bool upwards) override;    // Locate NPC on game map.
 	// Turn off selection.
 	void unselect(bool need_render = true);
 	void update_npc(int num);
@@ -140,9 +138,7 @@ public:
 	}
 
 	unsigned get_num_cols(unsigned rownum) {
-		return ((rownum < rows.size() - 1) ? rows[rownum + 1].index0
-										   : info.size())
-			   - rows[rownum].index0;
+		return ((rownum < rows.size() - 1) ? rows[rownum + 1].index0 : info.size()) - rows[rownum].index0;
 	}
 
 	// Configure when created/resized.
@@ -153,15 +149,13 @@ public:
 	gint mouse_press(GtkWidget* widget, GdkEventButton* event);
 	// Give dragged shape.
 	static void drag_data_get(
-			GtkWidget* widget, GdkDragContext* context,
-			GtkSelectionData* seldata, guint info, guint time, gpointer data);
+			GtkWidget* widget, GdkDragContext* context, GtkSelectionData* seldata, guint info, guint time, gpointer data);
 	void        edit_npc();
-	static gint drag_begin(
-			GtkWidget* widget, GdkDragContext* context, gpointer data);
+	static gint drag_begin(GtkWidget* widget, GdkDragContext* context, gpointer data);
 	// Handler for drop.
 	static void drag_data_received(
-			GtkWidget* widget, GdkDragContext* context, gint x, gint y,
-			GtkSelectionData* seldata, guint info, guint time, gpointer udata);
+			GtkWidget* widget, GdkDragContext* context, gint x, gint y, GtkSelectionData* seldata, guint info, guint time,
+			gpointer udata);
 	void enable_drop();
 	// Handle scrollbar.
 	static void vscrolled(GtkAdjustment* adj, gpointer data);
@@ -169,8 +163,7 @@ public:
 	// Handle spin-button for frames.
 	static void frame_changed(GtkAdjustment* adj, gpointer data);
 	static void all_frames_toggled(GtkToggleButton* btn, gpointer user_data);
-	static gint drag_motion(
-			GtkWidget* widget, GdkEventMotion* event, gpointer data);
+	static gint drag_motion(GtkWidget* widget, GdkEventMotion* event, gpointer data);
 };
 
 #endif

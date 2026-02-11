@@ -113,8 +113,8 @@ public:
 	// Get neighbor in given dir (0-7).
 	inline Tile_coord get_neighbor(int dir) const {
 		return Tile_coord(
-				(tx + neighbors[2 * dir] + c_num_tiles) % c_num_tiles,
-				(ty + neighbors[2 * dir + 1] + c_num_tiles) % c_num_tiles, tz);
+				(tx + neighbors[2 * dir] + c_num_tiles) % c_num_tiles, (ty + neighbors[2 * dir + 1] + c_num_tiles) % c_num_tiles,
+				tz);
 	}
 
 	void fixme() {
@@ -130,10 +130,7 @@ public:
 	// Ret. (to - from) with wrapping.
 	static int delta(int from, int to) {
 		const int diff = to - from;
-		return diff >= c_num_tiles / 2
-					   ? (diff - c_num_tiles)
-					   : (diff <= -c_num_tiles / 2 ? (diff + c_num_tiles)
-												   : diff);
+		return diff >= c_num_tiles / 2 ? (diff - c_num_tiles) : (diff <= -c_num_tiles / 2 ? (diff + c_num_tiles) : diff);
 	}
 };
 

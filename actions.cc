@@ -101,13 +101,13 @@ Actor_action* Actor_action::walk_to_tile(
  */
 
 Actor_action* Actor_action::create_action_sequence(
-		Actor*            actor,         // Whom to activate.
-		const Tile_coord& dest,          // Where to walk to.
-		Actor_action*     when_there,    // What to do when he gets there.
-		bool from_off_screen,            // Have actor walk from off-screen.
-		bool persistant    // Whether or not to keep retrying. Since NPCs
-						   // move around, this causes them to be ignored
-						   // as obstacles under many conditions.
+		Actor*            actor,              // Whom to activate.
+		const Tile_coord& dest,               // Where to walk to.
+		Actor_action*     when_there,         // What to do when he gets there.
+		bool              from_off_screen,    // Have actor walk from off-screen.
+		bool              persistant          // Whether or not to keep retrying. Since NPCs
+											  // move around, this causes them to be ignored
+											  // as obstacles under many conditions.
 ) {
 	Actor_action* act    = when_there;
 	Tile_coord    actloc = actor->get_tile();
@@ -118,9 +118,8 @@ Actor_action* Actor_action::create_action_sequence(
 		// A persistence of 30 allows sitting on LB's ship from far away without
 		// party members teleporting.
 		const int     persistence = persistant ? 30 : 0;
-		Actor_action* w
-				= new Path_walking_actor_action(new Astar(), 3, persistence);
-		Actor_action* w2 = w->walk_to_tile(actor, actloc, dest, 0, persistant);
+		Actor_action* w           = new Path_walking_actor_action(new Astar(), 3, persistence);
+		Actor_action* w2          = w->walk_to_tile(actor, actloc, dest, 0, persistant);
 		if (w2 != w) {
 			delete w;
 		}
@@ -161,8 +160,7 @@ Path_walking_actor_action::Path_walking_actor_action(
 	}
 	const Tile_coord src  = path->get_src();
 	const Tile_coord dest = path->get_dest();
-	original_dir          = static_cast<int>(
-            Get_direction4(src.ty - dest.ty, dest.tx - src.tx));
+	original_dir          = static_cast<int>(Get_direction4(src.ty - dest.ty, dest.tx - src.tx));
 }
 
 /**
@@ -222,9 +220,8 @@ int Path_walking_actor_action::handle_event(Actor* actor) {
 				door_ptr->activate();
 				door_ptr->set_quality(savequal);
 			}
-			door_sequence_complete
-					= true;           // Set the flag to prevent re-activation
-			handling_door = false;    // Reset the handling flag
+			door_sequence_complete = true;     // Set the flag to prevent re-activation
+			handling_door          = false;    // Reset the handling flag
 		}
 		return speed;    // Come back in a moment.
 	}
@@ -255,9 +252,7 @@ int Path_walking_actor_action::handle_event(Actor* actor) {
 				// Try to create a new path -- the old one might be blocked
 				// due to (say) the previously 'non-blocking' NPC now being
 				// in a blocking state.
-				if (walk_to_tile(
-							actor, actor->get_tile(), path->get_dest(), 0,
-							true)) {
+				if (walk_to_tile(actor, actor->get_tile(), path->get_dest(), 0, true)) {
 					// Got new path.
 					blocked = 0;
 					return speed;
@@ -277,9 +272,7 @@ int Path_walking_actor_action::handle_event(Actor* actor) {
 		// try to create a new path -- the old one might be blocked
 		// due to (say) the previously 'non-blocking' NPC now being
 		// in a blocking state.
-		if (!persistence
-			|| !walk_to_tile(
-					actor, actor->get_tile(), path->get_dest(), 0, true)) {
+		if (!persistence || !walk_to_tile(actor, actor->get_tile(), path->get_dest(), 0, true)) {
 			speed = newspeed;
 			return 0;    // Not moving.
 		} else {
@@ -298,9 +291,8 @@ int Path_walking_actor_action::handle_event(Actor* actor) {
 	if (done) {    // In case we're deleted.
 		reached_end = true;
 	}
-	const Tile_coord cur    = actor->get_tile();
-	const int        newdir = static_cast<int>(
-            Get_direction4(cur.ty - tile.ty, tile.tx - cur.tx));
+	const Tile_coord cur        = actor->get_tile();
+	const int        newdir     = static_cast<int>(Get_direction4(cur.ty - tile.ty, tile.tx - cur.tx));
 	Frames_sequence* frames     = actor->get_frames(newdir);
 	int&             step_index = actor->get_step_index();
 	if (!step_index) {    // First time?  Init.
@@ -335,8 +327,7 @@ int Path_walking_actor_action::handle_event(Actor* actor) {
 	reached_end = false;
 	frames->decrement(step_index);    // We didn't take the step.
 	// Blocked by a door?
-	if (actor->distance(tile) <= 2 && !cheat.in_map_editor()
-		&&    // And NOT map-editing?
+	if (actor->distance(tile) <= 2 && !cheat.in_map_editor() &&    // And NOT map-editing?
 		actor->is_sentient()) {
 		Game_object* door = Game_object::find_door(tile);
 		if (door != nullptr && door->is_closed_door() &&
@@ -446,10 +437,10 @@ void Path_walking_actor_action::stop(Actor* actor) {
 
 Actor_action* Path_walking_actor_action::walk_to_tile(
 		Actor*            npc,
-		const Tile_coord& src,     // tx=-1 or ty=-1 means don't care.
-		const Tile_coord& dest,    // Same here.
-		int               dist,    // Distance to get to within dest.
-		bool ignnpc    // If pathfinder should ignore NPCs in many cases.
+		const Tile_coord& src,      // tx=-1 or ty=-1 means don't care.
+		const Tile_coord& dest,     // Same here.
+		int               dist,     // Distance to get to within dest.
+		bool              ignnpc    // If pathfinder should ignore NPCs in many cases.
 ) {
 	blocked        = 0;        // Clear 'blocked' count.
 	reached_end    = false;    // Starting new path.
@@ -498,8 +489,7 @@ Actor_action* Path_walking_actor_action::walk_to_tile(
 		}
 	}
 	// Reset direction (but not index).
-	original_dir = static_cast<int>(
-			Get_direction4(src.ty - dest.ty, dest.tx - src.tx));
+	original_dir = static_cast<int>(Get_direction4(src.ty - dest.ty, dest.tx - src.tx));
 	return this;
 }
 
@@ -534,8 +524,7 @@ Approach_actor_action::Approach_actor_action(
 		bool         for_proj    // Check for projectile path.
 		)
 		: Path_walking_actor_action(p, 0),    // (Stop if blocked.)
-		  dest_obj(weak_from_obj(d)), goal_dist(gdist),
-		  orig_dest_pos(d->get_tile()), cur_step(0), for_projectile(for_proj) {
+		  dest_obj(weak_from_obj(d)), goal_dist(gdist), orig_dest_pos(d->get_tile()), cur_step(0), for_projectile(for_proj) {
 	// Get length of path.
 	const int nsteps = path->get_num_steps();
 	// cout << "Approach nsteps is " << nsteps << "." << endl;
@@ -576,7 +565,7 @@ Approach_actor_action* Approach_actor_action::create_path(
  */
 
 int Approach_actor_action::handle_event(Actor* actor) {
-	const int delay = Path_walking_actor_action::handle_event(actor);
+	const int                delay    = Path_walking_actor_action::handle_event(actor);
 	const Game_object_shared dest_ptr = dest_obj.lock();
 	if (!dest_ptr || !delay || deleted) {    // Done or blocked.
 		return 0;
@@ -587,15 +576,12 @@ int Approach_actor_action::handle_event(Actor* actor) {
 	}
 	if (++cur_step == check_step) {    // Time to check.
 #ifdef DEBUG
-		cout << actor->get_name() << " approach: Dist. to dest is "
-			 << actor->distance(dest_ptr.get()) << endl;
+		cout << actor->get_name() << " approach: Dist. to dest is " << actor->distance(dest_ptr.get()) << endl;
 #endif
 		if (dest_ptr->distance(orig_dest_pos) > 2) {
 			return 0;    // Moved too much, so stop.
 		}
-		if (for_projectile
-			&& Fast_pathfinder_client::is_straight_path(
-					actor, dest_ptr.get())) {
+		if (for_projectile && Fast_pathfinder_client::is_straight_path(actor, dest_ptr.get())) {
 			return 0;    // Can fire projectile.
 		}
 		// Figure next check.
@@ -612,8 +598,7 @@ int Approach_actor_action::handle_event(Actor* actor) {
  *  Create if-then-else path.
  */
 
-If_else_path_actor_action::If_else_path_actor_action(
-		Actor* actor, const Tile_coord& dest, Actor_action* s, Actor_action* f)
+If_else_path_actor_action::If_else_path_actor_action(Actor* actor, const Tile_coord& dest, Actor_action* s, Actor_action* f)
 		: Path_walking_actor_action(nullptr, 6),    // Maxblk = 6.
 		  succeeded(false), failed(false), done(false), success(s), failure(f) {
 	if (!walk_to_tile(actor, actor->get_tile(), dest)) {
@@ -720,8 +705,7 @@ int Move_actor_action::handle_event(Actor* actor) {
 /**
  *  Activate an actor at a given time.
  */
-Activate_actor_action::Activate_actor_action(Game_object* o)
-		: obj(weak_from_obj(o)) {}
+Activate_actor_action::Activate_actor_action(Game_object* o) : obj(weak_from_obj(o)) {}
 
 /**
  *  Handle a time event.
@@ -741,8 +725,7 @@ int Activate_actor_action::handle_event(Actor* actor) {
 /**
  *  Create usecode action.
  */
-Usecode_actor_action::Usecode_actor_action(int f, Game_object* i, int ev)
-		: fun(f), item(weak_from_obj(i)), eventid(ev) {}
+Usecode_actor_action::Usecode_actor_action(int f, Game_object* i, int ev) : fun(f), item(weak_from_obj(i)), eventid(ev) {}
 
 /**
  *  Handle a time event.
@@ -755,9 +738,7 @@ int Usecode_actor_action::handle_event(Actor* actor) {
 	Game_window*             gwin     = Game_window::get_instance();
 	const Game_object_shared item_ptr = item.lock();
 	if (item_ptr) {
-		gwin->get_usecode()->call_usecode(
-				fun, item_ptr.get(),
-				static_cast<Usecode_machine::Usecode_events>(eventid));
+		gwin->get_usecode()->call_usecode(fun, item_ptr.get(), static_cast<Usecode_machine::Usecode_events>(eventid));
 		gwin->set_all_dirty();    // Clean up screen.
 	}
 	return 0;    // That's all.
@@ -776,8 +757,7 @@ Frames_actor_action::Frames_actor_action(
 		int                vol,    // Volume
 		int                rep,    // Repeat count
 		Game_object*       src)          // Custom sound source
-		: index(0), speed(spd), obj(weak_from_obj(o)), sound_id(sfx),
-		  volume(vol), repeat(rep), sound_src(weak_from_obj(src)) {
+		: index(0), speed(spd), obj(weak_from_obj(o)), sound_id(sfx), volume(vol), repeat(rep), sound_src(weak_from_obj(src)) {
 	frames.resize(c);
 	std::copy_n(f, c, frames.begin());
 	use_actor = (o == nullptr);
@@ -795,8 +775,8 @@ Frames_actor_action::Frames_actor_action(
 		int          vol,    // Volume
 		int          rep,    // Repeat count
 		Game_object* src)    // Custom sound source
-		: frames{f}, index(0), speed(spd), obj(weak_from_obj(o)), sound_id(sfx),
-		  volume(vol), repeat(rep), sound_src(weak_from_obj(src)) {
+		: frames{f}, index(0), speed(spd), obj(weak_from_obj(o)), sound_id(sfx), volume(vol), repeat(rep),
+		  sound_src(weak_from_obj(src)) {
 	use_actor = (o == nullptr);
 }
 
@@ -898,8 +878,7 @@ Object_animate_actor_action::Object_animate_actor_action(
 	nframes = o->get_num_frames();
 }
 
-Object_animate_actor_action::Object_animate_actor_action(
-		Game_object* o, int nfr, int cy, int spd)
+Object_animate_actor_action::Object_animate_actor_action(Game_object* o, int nfr, int cy, int spd)
 		: obj(weak_from_obj(o)), nframes(nfr), cycles(cy), speed(spd) {}
 
 /**
@@ -923,19 +902,14 @@ int Object_animate_actor_action::handle_event(Actor* actor) {
 /**
  *  Pick up/put down an object.
  */
-Pickup_actor_action::Pickup_actor_action(
-		Game_object* o, int spd, bool del, int sfx, int vol, int rep)
-		: obj(weak_from_obj(o)), pickup(1), speed(spd), cnt(0),
-		  objpos(o->get_tile()), dir(0), temp(false), to_del(del),
+Pickup_actor_action::Pickup_actor_action(Game_object* o, int spd, bool del, int sfx, int vol, int rep)
+		: obj(weak_from_obj(o)), pickup(1), speed(spd), cnt(0), objpos(o->get_tile()), dir(0), temp(false), to_del(del),
 		  sound_id(sfx), volume(vol), repeat(rep), play_sfx(sfx >= 0) {}
 
 // To put down an object:
-Pickup_actor_action::Pickup_actor_action(
-		Game_object* o, const Tile_coord& opos, int spd, bool t, int sfx,
-		int vol, int rep)
-		: obj(weak_from_obj(o)), pickup(0), speed(spd), cnt(0), objpos(opos),
-		  dir(0), temp(t), to_del(false), sound_id(sfx), volume(vol),
-		  repeat(rep), play_sfx(sfx >= 0) {}
+Pickup_actor_action::Pickup_actor_action(Game_object* o, const Tile_coord& opos, int spd, bool t, int sfx, int vol, int rep)
+		: obj(weak_from_obj(o)), pickup(0), speed(spd), cnt(0), objpos(opos), dir(0), temp(t), to_del(false), sound_id(sfx),
+		  volume(vol), repeat(rep), play_sfx(sfx >= 0) {}
 
 /**
  *  Pick up an item (or put it down).
@@ -957,11 +931,8 @@ int Pickup_actor_action::handle_event(Actor* actor) {
 		break;
 	case 1: {    // Bend down.
 		const int tz = pickup ? obj_ptr->get_lift() : objpos.tz;
-		frnum        = (tz >= actor->get_lift() + 2)
-							   ? ((rand() % 2) ? Actor::reach1_frame
-											   : Actor::reach2_frame)
-							   : Actor::bow_frame;
-		frnum        = actor->get_dir_framenum(dir, frnum);
+		frnum = (tz >= actor->get_lift() + 2) ? ((rand() % 2) ? Actor::reach1_frame : Actor::reach2_frame) : Actor::bow_frame;
+		frnum = actor->get_dir_framenum(dir, frnum);
 		cnt++;
 		if (pickup) {
 			if (actor->distance(obj_ptr.get()) > 8) {
@@ -972,8 +943,7 @@ int Pickup_actor_action::handle_event(Actor* actor) {
 			// Play sound effect
 			if (play_sfx) {
 				Audio* audio = Audio::get_ptr();
-				audio->play_sound_effect(
-						sound_id, obj_ptr.get(), volume, repeat);
+				audio->play_sound_effect(sound_id, obj_ptr.get(), volume, repeat);
 			}
 			if (to_del) {
 				obj_ptr->remove_this();    // Delete it.
@@ -987,8 +957,7 @@ int Pickup_actor_action::handle_event(Actor* actor) {
 			// Play sound effect
 			if (play_sfx) {
 				Audio* audio = Audio::get_ptr();
-				audio->play_sound_effect(
-						sound_id, obj_ptr.get(), volume, repeat);
+				audio->play_sound_effect(sound_id, obj_ptr.get(), volume, repeat);
 			}
 			if (temp) {
 				obj_ptr->set_flag(Obj_flags::is_temporary);
@@ -1011,11 +980,9 @@ int Pickup_actor_action::handle_event(Actor* actor) {
  *  Action to turn towards a position or an object.
  */
 
-Face_pos_actor_action::Face_pos_actor_action(const Tile_coord& p, int spd)
-		: speed(spd), pos(p) {}
+Face_pos_actor_action::Face_pos_actor_action(const Tile_coord& p, int spd) : speed(spd), pos(p) {}
 
-Face_pos_actor_action::Face_pos_actor_action(Game_object* o, int spd)
-		: speed(spd), pos(o->get_tile()) {}
+Face_pos_actor_action::Face_pos_actor_action(Game_object* o, int spd) : speed(spd), pos(o->get_tile()) {}
 
 /**
  *  Just turn to face a tile.
@@ -1059,10 +1026,8 @@ int Change_actor_action::handle_event(Actor* actor) {
  *  Action to play an effect
  */
 
-Effect_actor_action::Effect_actor_action(
-		int type, Game_object* obj, int dx, int dy, int d, int frm, int reps)
-		: effect_type(type), object(weak_from_obj(obj)), deltax(dx), deltay(dy),
-		  delay(d), starting_frame(frm), repetitions(reps) {}
+Effect_actor_action::Effect_actor_action(int type, Game_object* obj, int dx, int dy, int d, int frm, int reps)
+		: effect_type(type), object(weak_from_obj(obj)), deltax(dx), deltay(dy), delay(d), starting_frame(frm), repetitions(reps) {}
 
 int Effect_actor_action::handle_event(Actor* actor) {
 	ignore_unused_variable_warning(actor);
@@ -1072,9 +1037,8 @@ int Effect_actor_action::handle_event(Actor* actor) {
 		Game_window*     gwin    = Game_window::get_instance();
 		Effects_manager* effects = gwin->get_effects();
 
-		effects->add_effect(std::make_unique<Sprites_effect>(
-				effect_type, obj.get(), deltax, deltay, delay, starting_frame,
-				repetitions));
+		effects->add_effect(
+				std::make_unique<Sprites_effect>(effect_type, obj.get(), deltax, deltay, delay, starting_frame, repetitions));
 	}
 	return 0;
 }
@@ -1083,10 +1047,8 @@ int Effect_actor_action::handle_event(Actor* actor) {
  *  Action to play a sound effect.
  */
 
-Play_sfx_actor_action::Play_sfx_actor_action(
-		int sfx_id, Game_object* obj, int vol, int rep)
-		: sound_id(sfx_id), object(weak_from_obj(obj)), volume(vol),
-		  repeat(rep) {}
+Play_sfx_actor_action::Play_sfx_actor_action(int sfx_id, Game_object* obj, int vol, int rep)
+		: sound_id(sfx_id), object(weak_from_obj(obj)), volume(vol), repeat(rep) {}
 
 int Play_sfx_actor_action::handle_event(Actor* actor) {
 	ignore_unused_variable_warning(actor);

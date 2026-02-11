@@ -37,9 +37,8 @@ class StringList_widget : public Gump_widget {
 
 public:
 	StringList_widget(
-			Gump_Base* par, const std::vector<std::string>& s, int selectionnum,
-			int px, int py, Modal_gump::ProceduralColours colours,
-			int width = 0, int height = 0, std::shared_ptr<Font> font = {});
+			Gump_Base* par, const std::vector<std::string>& s, int selectionnum, int px, int py,
+			Modal_gump::ProceduralColours colours, int width = 0, int height = 0, std::shared_ptr<Font> font = {});
 
 	void paint() override;
 

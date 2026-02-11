@@ -77,7 +77,6 @@ bool Table::is_table(IDataSource* in) {
 			in->seek(pos);
 			return false;
 		}
-
 	}
 
 	in->seek(pos);

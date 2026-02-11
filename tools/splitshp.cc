@@ -209,8 +209,7 @@ void merge_frames(char* shapefile, char** framefiles, int numframefiles) {
 
 		if (file_size != shape_size) {    // 8x8 tile
 			if (i > 0 && !tiles) {
-				cout << "Error: can't mix 8x8 tiles and non-tile shapes!"
-					 << endl;
+				cout << "Error: can't mix 8x8 tiles and non-tile shapes!" << endl;
 				exit(1);
 			}
 
@@ -229,8 +228,7 @@ void merge_frames(char* shapefile, char** framefiles, int numframefiles) {
 			delete[] data;
 		} else {
 			if (tiles) {
-				cout << "Error: can't mix 8x8 tiles and non-tile shapes!"
-					 << endl;
+				cout << "Error: can't mix 8x8 tiles and non-tile shapes!" << endl;
 				exit(1);
 			}
 
@@ -272,8 +270,7 @@ void merge_frames(char* shapefile, char** framefiles, int numframefiles) {
 
 int main(int argc, char* argv[]) {
 	if (argc < 2) {
-		cout << "Usage: To split: splitshp [shape file]" << endl
-			 << "     or to pack: splitshp [shape file] [frame files]" << endl;
+		cout << "Usage: To split: splitshp [shape file]" << endl << "     or to pack: splitshp [shape file] [frame files]" << endl;
 		return 0;
 	}
 

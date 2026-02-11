@@ -148,8 +148,7 @@ void Shape_info::copy(const Shape_info& inf2, bool skip_dolls) {
 	monstinf = inf2.monstinf ? new Monster_info(*inf2.monstinf) : nullptr;
 	if (!skip_dolls || !npcpaperdoll) {
 		delete npcpaperdoll;
-		npcpaperdoll = inf2.npcpaperdoll ? new Paperdoll_npc(*inf2.npcpaperdoll)
-										 : nullptr;
+		npcpaperdoll = inf2.npcpaperdoll ? new Paperdoll_npc(*inf2.npcpaperdoll) : nullptr;
 	}
 	if (!skip_dolls || objpaperdoll.empty()) {
 		copy_vector_info(inf2.objpaperdoll, objpaperdoll);
@@ -215,8 +214,7 @@ const Monster_info* Shape_info::get_monster_info_safe() const {
 	return monstinf ? monstinf : Monster_info::get_default();
 }
 
-const Animation_info* Shape_info::get_animation_info_safe(
-		int shnum, int nframes) {
+const Animation_info* Shape_info::get_animation_info_safe(int shnum, int nframes) {
 	ignore_unused_variable_warning(shnum);
 	if (!aniinf) {
 		aniinf = Animation_info::create_from_tfa(0, nframes);
@@ -384,36 +382,27 @@ void Shape_info::add_warmth_info(Warmth_info& add) {
 	add_vector_info(add, warminf);
 }
 
-const Frame_name_info* Shape_info::get_frame_name(
-		int frame, int quality) const {
-	return Search_vector_data_double_wildcards(
-			nameinf, frame, quality, &Frame_name_info::frame,
-			&Frame_name_info::quality);
+const Frame_name_info* Shape_info::get_frame_name(int frame, int quality) const {
+	return Search_vector_data_double_wildcards(nameinf, frame, quality, &Frame_name_info::frame, &Frame_name_info::quality);
 }
 
-const Frame_usecode_info* Shape_info::get_frame_usecode(
-		int frame, int quality) const {
-	return Search_vector_data_double_wildcards(
-			frucinf, frame, quality, &Frame_usecode_info::frame,
-			&Frame_usecode_info::quality);
+const Frame_usecode_info* Shape_info::get_frame_usecode(int frame, int quality) const {
+	return Search_vector_data_double_wildcards(frucinf, frame, quality, &Frame_usecode_info::frame, &Frame_usecode_info::quality);
 }
 
 int Shape_info::get_effective_hps(int frame, int quality) const {
-	const Effective_hp_info* inf = Search_vector_data_double_wildcards(
-			hpinf, frame, quality, &Effective_hp_info::frame,
-			&Effective_hp_info::quality);
+	const Effective_hp_info* inf
+			= Search_vector_data_double_wildcards(hpinf, frame, quality, &Effective_hp_info::frame, &Effective_hp_info::quality);
 	return inf ? inf->hps : 0;    // Default to indestructible.
 }
 
 int Shape_info::get_object_flags(int frame, int qual) const {
-	const Frame_flags_info* inf = Search_vector_data_double_wildcards(
-			frflagsinf, frame, qual, &Frame_flags_info::frame,
-			&Frame_flags_info::quality);
+	const Frame_flags_info* inf
+			= Search_vector_data_double_wildcards(frflagsinf, frame, qual, &Frame_flags_info::frame, &Frame_flags_info::quality);
 	return inf ? inf->m_flags : 0;    // Default to no flagss.
 }
 
-const Paperdoll_item* Shape_info::get_item_paperdoll(
-		int frame, int spot) const {
+const Paperdoll_item* Shape_info::get_item_paperdoll(int frame, int spot) const {
 	if (objpaperdoll.empty()) {
 		return nullptr;    // No paperdoll.
 	}
@@ -448,8 +437,7 @@ const Paperdoll_item* Shape_info::get_item_paperdoll(
 }
 
 bool Shape_info::is_shape_accepted(int shape) const {
-	const Content_rules* inf = Search_vector_data_single_wildcard(
-			cntrules, shape, &Content_rules::shape);
+	const Content_rules* inf = Search_vector_data_single_wildcard(cntrules, shape, &Content_rules::shape);
 #ifdef DEBUG
 	if (inf && !inf->accept) {
 		cerr << "Shape '" << shape << "' was REJECTED" << endl;
@@ -465,8 +453,7 @@ int Shape_info::get_object_light(int frame) const {
 	}
 	// First honor explicit entries from shape_info.txt %%section light_data,
 	// even if the shape isn't originally set as a light source.
-	const Light_info* inf = Search_vector_data_single_wildcard(
-			lightinf, (frame & 31), &Light_info::frame);
+	const Light_info* inf = Search_vector_data_single_wildcard(lightinf, (frame & 31), &Light_info::frame);
 	if (inf) {
 		return inf->light;
 	}
@@ -481,8 +468,7 @@ int Shape_info::get_object_light(int frame) const {
 }
 
 int Shape_info::get_object_warmth(int frame) const {
-	const Warmth_info* inf = Search_vector_data_single_wildcard(
-			warminf, (frame & 31), &Warmth_info::frame);
+	const Warmth_info* inf = Search_vector_data_single_wildcard(warminf, (frame & 31), &Warmth_info::frame);
 	return inf ? inf->warmth : 0;    // Default to no warmth.
 }
 
@@ -557,9 +543,7 @@ int Shape_info::get_rotated_frame(
 	}
 }
 
-void Shape_info::paint_bbox(
-		int x, int y, int framenum, Image_buffer* ibuf,
-		int stroke, int mask) const {
+void Shape_info::paint_bbox(int x, int y, int framenum, Image_buffer* ibuf, int stroke, int mask) const {
 	int xs = get_3d_xtiles(framenum);
 	int ys = get_3d_ytiles(framenum);
 	int zs = get_3d_height();
@@ -592,35 +576,32 @@ void Shape_info::paint_bbox(
 	// [2] is draw mask, 1 is front facing, 2 is back facing, 3 both
 	int lines[][3] = {
 			// Bottom rect
-			{0, 1,3},
-			{1, 6,2},
-			{6, 2,2},
-			{2, 0,3},
+			{0, 1, 3},
+			{1, 6, 2},
+			{6, 2, 2},
+			{2, 0, 3},
 			// Uprights
-			{0, 3,1},
-			{1, 4,3},
-			{6, 7,2},
-			{2, 5,3},
+			{0, 3, 1},
+			{1, 4, 3},
+			{6, 7, 2},
+			{2, 5, 3},
 			// Top Rect
-			{3, 4,1},
-			{4, 7,3},
-			{7, 5,3},
-			{5, 3,1},
+			{3, 4, 1},
+			{4, 7, 3},
+			{7, 5, 3},
+			{5, 3, 1},
 	};
-
 
 	for (auto& line : lines) {
 		int vx[2];
 		int vy[2];
 
 		for (int i = 0; i < 2; i++) {
-			vx[i] = verts[line[i]][0] * c_tilesize - 1
-					- verts[line[i]][2] * c_tilesize / 2;
-			vy[i] = verts[line[i]][1] * c_tilesize - 1
-					- verts[line[i]][2] * c_tilesize / 2;
+			vx[i] = verts[line[i]][0] * c_tilesize - 1 - verts[line[i]][2] * c_tilesize / 2;
+			vy[i] = verts[line[i]][1] * c_tilesize - 1 - verts[line[i]][2] * c_tilesize / 2;
 		}
-		if (mask & line[2])
-		ibuf->draw_line8(
-				stroke, x + vx[0], y + vy[0], x + vx[1], y + vy[1], nullptr);
+		if (mask & line[2]) {
+			ibuf->draw_line8(stroke, x + vx[0], y + vy[0], x + vx[1], y + vy[1], nullptr);
+		}
 	}
 }

@@ -38,8 +38,7 @@ bool Gump_widget::on_widget(
 	int lx = mx, ly = my;
 	screen_to_local(lx, ly);
 	Shape_frame* cshape = get_shape();
-	return (cshape != nullptr) ? cshape->has_point(lx, ly)
-							   : get_rect().has_point(mx, my);
+	return (cshape != nullptr) ? cshape->has_point(lx, ly) : get_rect().has_point(mx, my);
 }
 
 /*
@@ -71,9 +70,7 @@ TileRect Gump_widget::get_rect() const {
 		return TileRect(0, 0, 0, 0);
 	}
 
-	return TileRect(
-			sx - s->get_xleft(), sy - s->get_yabove(), s->get_width(),
-			s->get_height());
+	return TileRect(sx - s->get_xleft(), sy - s->get_yabove(), s->get_width(), s->get_height());
 }
 
 void Gump_widget::set_pos(int newx, int newy) {
@@ -85,8 +82,7 @@ void Gump_widget::set_pos(int newx, int newy) {
 	gwin->add_dirty(get_rect());
 }
 
-void Gump_widget::paintSorted(
-		Sort_Order sort, Sort_Order& next, Sort_Order& highest) {
+void Gump_widget::paintSorted(Sort_Order sort, Sort_Order& next, Sort_Order& highest) {
 	if (sort_order > highest) {
 		highest = sort_order;
 	}
@@ -105,9 +101,7 @@ void Gump_widget::paintSorted(
 	}
 }
 
-Gump_widget* Gump_widget::findSorted(
-		int sx, int sy, Sort_Order sort, Sort_Order& next, Sort_Order& highest,
-		Gump_widget* before) {
+Gump_widget* Gump_widget::findSorted(int sx, int sy, Sort_Order sort, Sort_Order& next, Sort_Order& highest, Gump_widget* before) {
 	if (this == before) {
 		return nullptr;
 	}
@@ -117,8 +111,7 @@ Gump_widget* Gump_widget::findSorted(
 	if (sort_order > sort && (sort_order < next || sort_order < highest)) {
 		next = sort_order;
 	}
-	if (sort_order == sort && on_widget(sx, sy)
-		&& sort_order != Sort_Order::hidden) {
+	if (sort_order == sort && on_widget(sx, sy) && sort_order != Sort_Order::hidden) {
 		return this;
 	}
 	return nullptr;

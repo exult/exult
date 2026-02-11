@@ -68,8 +68,8 @@ protected:
 	std::list<Game_object_weak> opponents;          // Possible opponents.
 	Game_object*                practice_target;    // Only for duel schedule.
 	Game_object*                weapon;
-	int               weapon_shape;    // Weapon's shape in shapes.vga.
-	Spellbook_object* spellbook;       // If readied.
+	int                         weapon_shape;    // Weapon's shape in shapes.vga.
+	Spellbook_object*           spellbook;       // If readied.
 	// Ranges in tiles.
 	//   0 means not applicable.
 	bool          no_blocking;       // Weapon/ammo goes through walls.
@@ -81,9 +81,9 @@ protected:
 	unsigned int  teleport_time;    // Next time we can teleport.
 	unsigned int  summon_time;
 	unsigned int  invisible_time;
-	unsigned int  dex_points;       // Need these to attack.
-	unsigned int strike_blocked;    // # failures to get a clear path to strike.
-	int          alignment;         // So we can tell if it changed.
+	unsigned int  dex_points;        // Need these to attack.
+	unsigned int  strike_blocked;    // # failures to get a clear path to strike.
+	int           alignment;         // So we can tell if it changed.
 
 	void         start_battle();    // Play music at start of battle.
 	bool         teleport();        // For monsters that can.
@@ -97,14 +97,14 @@ protected:
 	std::list<Game_object_weak>::iterator find_random_opponent();
 	std::list<Game_object_weak>::iterator find_attacked_opponent();
 	std::list<Game_object_weak>::iterator find_protected_attacker();
-	Game_object* find_foe(int mode);    // Find a new opponent.
-	Game_object* find_foe();
+	Game_object*                          find_foe(int mode);    // Find a new opponent.
+	Game_object*                          find_foe();
 	// Back off when being attacked.
-	static void back_off(Actor* npc, Game_object* attacker);
-	void        approach_foe(bool for_projectile = false);    // Approach foe.
-	void        wander_for_attack();
-	void        start_strike();
-	void        run_away();
+	static void       back_off(Actor* npc, Game_object* attacker);
+	void              approach_foe(bool for_projectile = false);    // Approach foe.
+	void              wander_for_attack();
+	void              start_strike();
+	void              run_away();
 	Spellbook_object* readied_spellbook();
 
 public:
@@ -112,13 +112,13 @@ public:
 	static void monster_died();    // Checks for victory.
 	static void stop_attacking_npc(Game_object* npc);
 	static void stop_attacking_invisible(Game_object* npc);
-	void        now_what() override;    // Npc calls this when it's done
-	void im_dormant() override;         // Npc calls this when it goes dormant.
+	void        now_what() override;      // Npc calls this when it's done
+	void        im_dormant() override;    // Npc calls this when it goes dormant.
 	static void start_music_combat(Combat_song song, bool continuous);
 	static void danger_music();
-	void ending(int newtype) override;    // Switching to another schedule.
-	void set_weapon(bool removed = false) override;    // Set weapon info.
-	void set_hand_to_hand();
+	void        ending(int newtype) override;                 // Switching to another schedule.
+	void        set_weapon(bool removed = false) override;    // Set weapon info.
+	void        set_hand_to_hand();
 
 	bool has_started_battle() const {
 		return started_battle;
@@ -128,9 +128,7 @@ public:
 		state = s;
 	}
 
-	static bool attack_target(
-			Game_object* attacker, Game_object* target, const Tile_coord& tile,
-			int weapon, bool combat = false);
+	static bool attack_target(Game_object* attacker, Game_object* target, const Tile_coord& tile, int weapon, bool combat = false);
 	static bool is_enemy(int align, int other);
 };
 

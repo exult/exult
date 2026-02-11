@@ -53,15 +53,11 @@ struct Flex_header {
 	uint32 padding[FLEX_HEADER_PADDING];
 
 	Flex_vers get_vers() const {
-		return (magic2 & ~FLEX_VERSION_MASK) == EXULT_FLEX_MAGIC2
-					   ? static_cast<Flex_vers>(magic2 & FLEX_VERSION_MASK)
-					   : orig;
+		return (magic2 & ~FLEX_VERSION_MASK) == EXULT_FLEX_MAGIC2 ? static_cast<Flex_vers>(magic2 & FLEX_VERSION_MASK) : orig;
 	}
 
 	bool        read(IDataSource* in);
-	static void write(
-			ODataSource* out, const char* title, size_t count,
-			Flex_vers vers = orig);
+	static void write(ODataSource* out, const char* title, size_t count, Flex_vers vers = orig);
 	static bool is_flex(IDataSource* in);
 };
 
@@ -123,15 +119,13 @@ class Flex_writer {
 	OStreamDataSource&       dout;     // Or this, if non-0.
 	const size_t             count;    // # entries.
 	const size_t             start_pos;
-	size_t                   cur_start;    // Start of cur. entry being written.
-	std::unique_ptr<uint8[]> table;        // Table of offsets & lengths.
-	uint8*                   tptr;         // ->into table.
-	void finish_object();                  // Finished writing out a section.
+	size_t                   cur_start;          // Start of cur. entry being written.
+	std::unique_ptr<uint8[]> table;              // Table of offsets & lengths.
+	uint8*                   tptr;               // ->into table.
+	void                     finish_object();    // Finished writing out a section.
 
 public:
-	Flex_writer(
-			OStreamDataSource& o, const char* title, size_t cnt,
-			Flex_header::Flex_vers vers = Flex_header::orig);
+	Flex_writer(OStreamDataSource& o, const char* title, size_t cnt, Flex_header::Flex_vers vers = Flex_header::orig);
 	Flex_writer(const Flex_writer&) noexcept            = delete;
 	Flex_writer& operator=(const Flex_writer&) noexcept = delete;
 	Flex_writer(Flex_writer&&) noexcept                 = default;
@@ -173,22 +167,19 @@ public:
 	}
 
 	template <typename Object, typename... Ts>
-	auto write_object(Object& obj, Ts&&... ts)
-			-> decltype(obj.write(dout, std::forward<Ts>(ts)...), std::declval<void>()) {
+	auto write_object(Object& obj, Ts&&... ts) -> decltype(obj.write(dout, std::forward<Ts>(ts)...), std::declval<void>()) {
 		obj.write(dout, std::forward<Ts>(ts)...);
 		finish_object();
 	}
 
 	template <typename Object, typename... Ts>
-	auto write_object(Object* obj, Ts&&... ts)
-			-> decltype(obj->write(dout, std::forward<Ts>(ts)...), std::declval<void>()) {
+	auto write_object(Object* obj, Ts&&... ts) -> decltype(obj->write(dout, std::forward<Ts>(ts)...), std::declval<void>()) {
 		obj->write(dout, std::forward<Ts>(ts)...);
 		finish_object();
 	}
 
 	template <typename Writer, typename... Ts>
-	auto write_object(Writer&& write, Ts&&... ts)
-			-> decltype(write(dout, std::forward<Ts>(ts)...), std::declval<void>()) {
+	auto write_object(Writer&& write, Ts&&... ts) -> decltype(write(dout, std::forward<Ts>(ts)...), std::declval<void>()) {
 		std::forward<Writer>(write)(dout, std::forward<Ts>(ts)...);
 		finish_object();
 	}

@@ -110,16 +110,14 @@ static inline int remap_index(bool remap, int index, bool sibeta) {
 	}
 }
 
-static inline const char* get_text_internal(
-		const vector<string>& src, unsigned num) {
+static inline const char* get_text_internal(const vector<string>& src, unsigned num) {
 	if (num >= src.size()) {
 		return "Missing String";
 	}
 	return src[num].c_str();
 }
 
-static inline void add_text_internal(
-		vector<string>& src, unsigned num, const char* name) {
+static inline void add_text_internal(vector<string>& src, unsigned num, const char* name) {
 	if (num >= src.size()) {
 		src.resize(num + 1);
 	}
@@ -192,9 +190,7 @@ void Set_misc_name(unsigned num, const char* name) {
 	add_text_internal(misc_names, num, name);
 }
 
-static void Merge_message_strings(
-		const vector<std::optional<string>>& msglist, int first_msg,
-		int msg_start) {
+static void Merge_message_strings(const vector<std::optional<string>>& msglist, int first_msg, int msg_start) {
 	const size_t total_msgs = msglist.size() - msg_start;
 	text_msgs.resize(std::max(total_msgs, text_msgs.size()));
 	for (unsigned i = first_msg; i < total_msgs; i++) {
@@ -213,8 +209,7 @@ static void Merge_message_strings(
  */
 
 static void Setup_item_names(
-		IDataSource& items, std::vector<File_spec>& exultmsgs, bool si,
-		bool expansion, bool sibeta, bool use_special_chars) {
+		IDataSource& items, std::vector<File_spec>& exultmsgs, bool si, bool expansion, bool sibeta, bool use_special_chars) {
 	vector<std::optional<string>> msglist;
 	int                           num_item_names = 0;
 	int                           num_text_msgs  = 0;
@@ -249,12 +244,11 @@ static void Setup_item_names(
 		if (msgs.good()) {
 			// Exult msgs. too?
 			Text_msg_file_reader reader(msgs, use_special_chars);
-			int first_msg = reader.get_global_section_strings(msglist);
+			int                  first_msg = reader.get_global_section_strings(msglist);
 			if (first_msg >= msg_file_start) {
 				first_msg -= msg_file_start;
 				if (first_msg < num_text_msgs) {
-					cerr << "Exult msg. # " << first_msg
-						 << " conflicts with 'text.flx'" << endl;
+					cerr << "Exult msg. # " << first_msg << " conflicts with 'text.flx'" << endl;
 					first_msg = num_text_msgs;
 				}
 				Merge_message_strings(msglist, first_msg, msg_file_start);
@@ -291,9 +285,8 @@ static void Setup_item_names(
 					text_msgs[i - num_item_names] = std::move(newitem);
 				}
 			} else {
-				const size_t new_index = remap_index(
-						doremap, i - num_item_names - num_text_msgs, sibeta);
-				misc_names[new_index] = std::move(newitem);
+				const size_t new_index = remap_index(doremap, i - num_item_names - num_text_msgs, sibeta);
+				misc_names[new_index]  = std::move(newitem);
 			}
 		}
 	}
@@ -330,9 +323,7 @@ static void Setup_text(
 	}
 	// If no text mesages were loaded retry with the default exult ones
 	if (text_msgs.empty()) {
-		throw exult_exception(
-				"Failed to load any messages from exultmsg", __FILE__,
-				__LINE__);
+		throw exult_exception("Failed to load any messages from exultmsg", __FILE__, __LINE__);
 	}
 
 	// Now read in textmsg.txt
@@ -341,8 +332,7 @@ static void Setup_text(
 		reader.get_section_strings(SHAPES_SECT, item_names);
 		reader.get_section_strings(MISC_SECT, misc_names);
 
-		Merge_message_strings(
-				msglist, reader.get_section_strings(MSGS_SECT, msglist), 0);
+		Merge_message_strings(msglist, reader.get_section_strings(MSGS_SECT, msglist), 0);
 	}
 }
 
@@ -350,16 +340,13 @@ static void Setup_text(
  *  Setup item names and text messages.
  */
 
-void Setup_text(
-		bool si, bool expansion, bool sibeta, Game_Language language,
-		bool use_special_chars) {
+void Setup_text(bool si, bool expansion, bool sibeta, Game_Language language, bool use_special_chars) {
 	Free_text();
 	const bool             is_patch = is_system_path_defined("<PATCH>");
 	std::vector<File_spec> exultmsgs;
 	exultmsgs.reserve(4);
 	// Always read exultmsg.txt from exult.flx
-	exultmsgs.push_back(File_spec(
-			BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_EXULTMSG_TXT));
+	exultmsgs.push_back(File_spec(BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_EXULTMSG_TXT));
 	// Then load the language specific exultmsg from exult.flx
 	int         exultflx_msg_lang_index = -1;
 	const char* patch_exultmsg_lang     = nullptr;
@@ -384,9 +371,7 @@ void Setup_text(
 	}
 	// Then load the language specific exultmsg from exult.flx
 	if (exultflx_msg_lang_index != -1) {
-		exultmsgs.push_back(File_spec(
-				BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX),
-				exultflx_msg_lang_index));
+		exultmsgs.push_back(File_spec(BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), exultflx_msg_lang_index));
 	}
 
 	if (is_patch) {
@@ -419,8 +404,7 @@ void Setup_text(
 			return IFileDataSource(TEXT_FLX);
 		}();
 
-		Setup_item_names(
-				textflx, exultmsgs, si, expansion, sibeta, use_special_chars);
+		Setup_item_names(textflx, exultmsgs, si, expansion, sibeta, use_special_chars);
 	}
 }
 

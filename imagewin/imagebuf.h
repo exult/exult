@@ -90,18 +90,13 @@ private:
 
 protected:
 	bool clip_x(int& srcx, int& width, int& destx, int desty) {
-		return desty < clipy || desty >= clipy + cliph
-					   ? false
-					   : clip_internal(srcx, width, destx, clipx, clipw);
+		return desty < clipy || desty >= clipy + cliph ? false : clip_internal(srcx, width, destx, clipx, clipw);
 	}
 
 	// Clip rectangle.
-	bool clip(
-			int& srcx, int& srcy, int& width, int& height, int& destx,
-			int& desty) {
+	bool clip(int& srcx, int& srcy, int& width, int& height, int& destx, int& desty) {
 		// Start with x-dim.
-		return clip_internal(srcx, width, destx, clipx, clipw)
-			   && clip_internal(srcy, height, desty, clipy, cliph);
+		return clip_internal(srcx, width, destx, clipx, clipw) && clip_internal(srcy, height, desty, clipy, cliph);
 	}
 
 	Image_buffer(unsigned int w, unsigned int h, int dpth);
@@ -129,12 +124,13 @@ public:
 		const TileRect& Rect() const {
 			return clip;
 		}
-		void Restore()
-		{
+
+		void Restore() {
 			if (buf) {
 				buf->set_clip(clip.x, clip.y, clip.w, clip.h);
 			}
 		}
+
 		void Clear() {
 			buf = nullptr;
 		}
@@ -210,8 +206,7 @@ public:
 
 	// Is rect. visible within clip?
 	bool is_visible(int x, int y, int w, int h) {
-		return x < clipx + clipw && y < clipy + cliph && x + w > clipx
-			   && y + h > clipy;
+		return x < clipx + clipw && y < clipy + cliph && x + w > clipx && y + h > clipy;
 	}
 
 	/*
@@ -220,48 +215,28 @@ public:
 	// Fill with given (8-bit) value.
 	virtual void fill8(unsigned char val) = 0;
 	// Fill rect. with pixel.
-	virtual void fill8(
-			unsigned char val, int srcw, int srch, int destx, int desty)
-			= 0;
+	virtual void fill8(unsigned char val, int srcw, int srch, int destx, int desty) = 0;
 	// Fill horizontal line with pixel.
-	virtual void fill_hline8(unsigned char val, int srcw, int destx, int desty)
-			= 0;
+	virtual void fill_hline8(unsigned char val, int srcw, int destx, int desty) = 0;
 	// Draw an arbitrary line from any point to any point. Accuracy not
 	// guarenteed
-	virtual void draw_line8(
-			unsigned char val, int startx, int starty, int endx, int endy,
-			const Xform_palette* xform = nullptr)
+	virtual void draw_line8(unsigned char val, int startx, int starty, int endx, int endy, const Xform_palette* xform = nullptr)
 			= 0;
 	// Copy rectangle into here.
-	virtual void copy8(
-			const unsigned char* src_pixels, int srcw, int srch, int destx,
-			int desty)
-			= 0;
+	virtual void copy8(const unsigned char* src_pixels, int srcw, int srch, int destx, int desty) = 0;
 	// Copy line to here.
-	virtual void copy_hline8(
-			const unsigned char* src_pixels, int srcw, int destx, int desty)
-			= 0;
+	virtual void copy_hline8(const unsigned char* src_pixels, int srcw, int destx, int desty) = 0;
 	// Copy with translucency table.
 	virtual void copy_hline_translucent8(
-			const unsigned char* src_pixels, int srcw, int destx, int desty,
-			int first_translucent, int last_translucent,
+			const unsigned char* src_pixels, int srcw, int destx, int desty, int first_translucent, int last_translucent,
 			const Xform_palette* xforms)
 			= 0;
 	// Apply translucency to a line.
-	virtual void fill_hline_translucent8(
-			unsigned char val, int srcw, int destx, int desty,
-			const Xform_palette& xform)
-			= 0;
+	virtual void fill_hline_translucent8(unsigned char val, int srcw, int destx, int desty, const Xform_palette& xform) = 0;
 	// Apply translucency to a rectangle
-	virtual void fill_translucent8(
-			unsigned char val, int srcw, int srch, int destx, int desty,
-			const Xform_palette& xform)
-			= 0;
+	virtual void fill_translucent8(unsigned char val, int srcw, int srch, int destx, int desty, const Xform_palette& xform) = 0;
 	// Copy rect. with transp. color.
-	virtual void copy_transparent8(
-			const unsigned char* src_pixels, int srcw, int srch, int destx,
-			int desty)
-			= 0;
+	virtual void copy_transparent8(const unsigned char* src_pixels, int srcw, int srch, int destx, int desty) = 0;
 
 	// Get/put a single pixel.
 	virtual unsigned char get_pixel8(int x, int y) = 0;
@@ -273,9 +248,7 @@ public:
 	 */
 	virtual std::unique_ptr<Image_buffer> create_another(int w, int h) = 0;
 	// Copy within itself.
-	virtual void copy(
-			int srcx, int srcy, int srcw, int srch, int destx, int desty)
-			= 0;
+	virtual void copy(int srcx, int srcy, int srcw, int srch, int destx, int desty) = 0;
 	// Get rect. into another buf.
 	virtual void get(Image_buffer* dest, int srcx, int srcy) = 0;
 	// Put rect. back.

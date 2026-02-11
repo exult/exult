@@ -33,23 +33,23 @@ class Game_window;
  */
 class Mouse {
 protected:
-	Shape_file                    pointers;    // Pointers from 'pointers.shp'.
-	Game_window*                  gwin;        // Where to draw.
-	Image_window8*                iwin;        // From gwin.
-	std::unique_ptr<Image_buffer> backup;    // Stores image below mouse shape.
-	TileRect                      box;       // Area backed up.
-	TileRect                      dirty;     // Dirty area from mouse move.
-	int          mousex, mousey;             // Last place where mouse was.
-	int          cur_framenum;               // Frame # of current shape.
-	Shape_frame* cur;                        // Current shape.
-	bool         onscreen;           // true if mouse is drawn on screen.
-	static short short_arrows[8];    // Frame #'s of short arrows, indexed
+	Shape_file                    pointers;           // Pointers from 'pointers.shp'.
+	Game_window*                  gwin;               // Where to draw.
+	Image_window8*                iwin;               // From gwin.
+	std::unique_ptr<Image_buffer> backup;             // Stores image below mouse shape.
+	TileRect                      box;                // Area backed up.
+	TileRect                      dirty;              // Dirty area from mouse move.
+	int                           mousex, mousey;     // Last place where mouse was.
+	int                           cur_framenum;       // Frame # of current shape.
+	Shape_frame*                  cur;                // Current shape.
+	bool                          onscreen;           // true if mouse is drawn on screen.
+	static short                  short_arrows[8];    // Frame #'s of short arrows, indexed
 	//   by direction (0-7, 0=east).
-	static short med_arrows[8];             // Medium arrows.
-	static short long_arrows[8];            // Frame #'s of long arrows.
-	static short short_combat_arrows[8];    // Short red arrows
-	static short med_combat_arrows[8];      // Medium red arrows
-	void set_shape0(int framenum);          // Set shape without checking first.
+	static short med_arrows[8];               // Medium arrows.
+	static short long_arrows[8];              // Frame #'s of long arrows.
+	static short short_combat_arrows[8];      // Short red arrows
+	static short med_combat_arrows[8];        // Medium red arrows
+	void         set_shape0(int framenum);    // Set shape without checking first.
 
 	// Offset when fast mouse is enabled. Static so the values persists when a
 	// new mouse object is created when switching menus
@@ -173,9 +173,8 @@ public:
 	}
 
 protected:
-	void set_location(
-			int x, int y);    // Set to given location. This generally shouldn't
-							  // be used. move should be used instead
+	void set_location(int x, int y);    // Set to given location. This generally shouldn't
+										// be used. move should be used instead
 public:
 	// Flash desired shape for 1/2 sec.
 	void flash_shape(Mouse_shapes flash);

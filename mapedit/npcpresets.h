@@ -31,11 +31,10 @@ class ODataSource;
  *  A preset that stores NPC number for quick reference.
  */
 class Npc_preset {
-	std::string      name;    // Name of this preset.
-	Npc_preset_file* file;    // Where this comes from.
-	bool             modified;
-	std::map<std::string, std::string>
-			data;    // Key-value pairs (mainly npc_number)
+	std::string                        name;    // Name of this preset.
+	Npc_preset_file*                   file;    // Where this comes from.
+	bool                               modified;
+	std::map<std::string, std::string> data;    // Key-value pairs (mainly npc_number)
 
 public:
 	friend class Npc_preset_file;
@@ -101,8 +100,7 @@ public:
 	}
 
 	Npc_preset* get(int i) {
-		return i >= 0 && i < static_cast<int>(presets.size()) ? presets[i]
-															  : nullptr;
+		return i >= 0 && i < static_cast<int>(presets.size()) ? presets[i] : nullptr;
 	}
 
 	Npc_preset*             find(const char* nm);

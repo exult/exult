@@ -67,7 +67,7 @@ using std::strlen;
 using std::unique_ptr;
 
 std::vector<std::unique_ptr<Editing_file>> Shape_chooser::editing_files;
-int Shape_chooser::check_editing_timer = -1;
+int                                        Shape_chooser::check_editing_timer = -1;
 
 #define IS_FLAT(shnum) ((shnum) < c_first_obj_shape)
 
@@ -94,12 +94,9 @@ void Shape_chooser::show(
 		const TileRect b          = info[selected].box;
 		// Draw yellow box.
 		cairo_set_line_width(drawgc, zoom_scale / 2.0);
-		cairo_set_source_rgb(
-				drawgc, ((drawfg >> 16) & 255) / 255.0,
-				((drawfg >> 8) & 255) / 255.0, (drawfg & 255) / 255.0);
+		cairo_set_source_rgb(drawgc, ((drawfg >> 16) & 255) / 255.0, ((drawfg >> 8) & 255) / 255.0, (drawfg & 255) / 255.0);
 		cairo_rectangle(
-				drawgc, ((b.x - hoffset) * zoom_scale) / 2,
-				((b.y - voffset) * zoom_scale) / 2, (b.w * zoom_scale) / 2,
+				drawgc, ((b.x - hoffset) * zoom_scale) / 2, ((b.y - voffset) * zoom_scale) / 2, (b.w * zoom_scale) / 2,
 				(b.h * zoom_scale) / 2);
 		cairo_stroke(drawgc);
 	}
@@ -157,8 +154,7 @@ void Shape_chooser::render() {
 	int curr_y = -row0_voffset;
 	// int total_cnt = get_count();
 	//    filter (group).
-	for (unsigned rownum = row0; curr_y < winh && rownum < rows.size();
-		 ++rownum) {
+	for (unsigned rownum = row0; curr_y < winh && rownum < rows.size(); ++rownum) {
 		const Shape_row& row  = rows[rownum];
 		unsigned         cols = get_num_cols(rownum);
 		for (unsigned index = row.index0; cols; --cols, ++index) {
@@ -168,9 +164,7 @@ void Shape_chooser::render() {
 			if (shape) {
 				const int sx = info[index].box.x - hoffset;
 				const int sy = info[index].box.y - voffset;
-				shape->paint(
-						iwin, sx + shape->get_xleft(),
-						sy + shape->get_yabove());
+				shape->paint(iwin, sx + shape->get_xleft(), sy + shape->get_yabove());
 				last_shape = shapenum;
 			}
 		}
@@ -229,10 +223,7 @@ static int Get_x_offset(Shape* shape, int framenum) {
 
 void Shape_chooser::setup_info(bool savepos    // Try to keep current position.
 ) {
-	const unsigned oldind
-			= (selected >= 0  ? selected
-			   : rows.empty() ? 0
-							  : rows[row0].index0);
+	const unsigned oldind = (selected >= 0 ? selected : rows.empty() ? 0 : rows[row0].index0);
 	info.resize(0);
 	rows.resize(0);
 	row0 = row0_voffset = 0;
@@ -339,8 +330,7 @@ void Shape_chooser::setup_frames_info() {
 		int x              = 0;
 		int sw;
 		int sh;
-		for (int framenum = 0; framenum < nframes;
-			 framenum++, x += sw + border) {
+		for (int framenum = 0; framenum < nframes; framenum++, x += sw + border) {
 			Shape_frame* frame = shape->get_frame(framenum);
 			if (!frame) {
 				sw = 0;
@@ -405,8 +395,7 @@ void Shape_chooser::goto_index(unsigned index    // Desired index in 'info'.
 	const Shape_entry& inf  = info[index];    // Already in view?
 	const unsigned     midx = inf.box.x + inf.box.w / 2;
 	const unsigned     midy = inf.box.y + inf.box.h / 2;
-	const TileRect     winrect(
-            hoffset, voffset, ZoomDown(config_width), ZoomDown(config_height));
+	const TileRect     winrect(hoffset, voffset, ZoomDown(config_width), ZoomDown(config_height));
 	if (winrect.has_point(midx, midy)) {
 		return;
 	}
@@ -508,9 +497,7 @@ gint Shape_chooser::expose(
 	chooser->set_graphic_context(cairo);
 	GdkRectangle area = {0, 0, 0, 0};
 	gdk_cairo_get_clip_rectangle(cairo, &area);
-	chooser->show(
-			ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width),
-			ZoomDown(area.height));
+	chooser->show(ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width), ZoomDown(area.height));
 	chooser->set_graphic_context(nullptr);
 	return true;
 }
@@ -527,9 +514,7 @@ gint Shape_chooser::drag_motion(
 	ignore_unused_variable_warning(widget);
 	auto* chooser = static_cast<Shape_chooser*>(data);
 	if (!chooser->dragging && chooser->selected >= 0) {
-		chooser->start_drag(
-				U7_TARGET_SHAPEID_NAME, U7_TARGET_SHAPEID,
-				reinterpret_cast<GdkEvent*>(event));
+		chooser->start_drag(U7_TARGET_SHAPEID_NAME, U7_TARGET_SHAPEID, reinterpret_cast<GdkEvent*>(event));
 	}
 	return true;
 }
@@ -543,8 +528,7 @@ gint Shape_chooser::mouse_press(
 	gtk_widget_grab_focus(widget);
 
 #ifdef DEBUG
-	cout << "Shapes : Clicked to " << (event->x) << " * " << (event->y)
-		 << " by " << (event->button) << endl;
+	cout << "Shapes : Clicked to " << (event->x) << " * " << (event->y) << " by " << (event->button) << endl;
 #endif
 	if (event->button == 4) {
 		if (row0 > 0) {
@@ -587,8 +571,7 @@ gint Shape_chooser::mouse_press(
 		}
 	}
 	if (event->button == 3) {
-		gtk_menu_popup_at_pointer(
-				GTK_MENU(create_popup()), reinterpret_cast<GdkEvent*>(event));
+		gtk_menu_popup_at_pointer(GTK_MENU(create_popup()), reinterpret_cast<GdkEvent*>(event));
 	}
 	return true;
 }
@@ -619,8 +602,7 @@ static gint Mouse_release(
 /*
  *  Keystroke in draw-area.
  */
-C_EXPORT gboolean on_draw_key_press(
-		GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
+C_EXPORT gboolean on_draw_key_press(GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
 	ignore_unused_variable_warning(entry);
 	auto* chooser = static_cast<Shape_chooser*>(user_data);
 	switch (event->keyval) {
@@ -694,10 +676,7 @@ time_t Shape_chooser::export_png(
 	struct stat fs;    // Write out to the .png.
 	// (Rotate transp. pixel to 0 for the
 	//   Gimp's sake.)
-	if (!Export_png8(
-				fname, transp, w, h, w, xoff, yoff, img.get_bits(), &pal[0],
-				256, true)
-		|| stat(fname, &fs) != 0) {
+	if (!Export_png8(fname, transp, w, h, w, xoff, yoff, img.get_bits(), &pal[0], 256, true) || stat(fname, &fs) != 0) {
 		Alert("Error creating '%s'", fname);
 		return 0;
 	}
@@ -723,8 +702,7 @@ time_t Shape_chooser::export_tiled_png(
 	assert(IS_FLAT(shnum) && file_info == studio->get_vgafile());
 	Shape* shape = ifile->extract_shape(shnum);
 	assert(shape != nullptr);
-	cout << "Writing " << fname << " tiled"
-		 << (bycols ? ", by cols" : ", by rows") << " first" << endl;
+	cout << "Writing " << fname << " tiled" << (bycols ? ", by cols" : ", by rows") << " first" << endl;
 	const int nframes = shape->get_num_frames();
 	// Figure #tiles in other dim.
 	const int dim1_cnt = (nframes + tiles - 1) / tiles;
@@ -744,8 +722,7 @@ time_t Shape_chooser::export_tiled_png(
 		if (!frame) {
 			continue;    // We'll just leave empty ones blank.
 		}
-		if (frame->is_rle() || frame->get_width() != c_tilesize
-			|| frame->get_height() != c_tilesize) {
+		if (frame->is_rle() || frame->get_width() != c_tilesize || frame->get_height() != c_tilesize) {
 			Alert("Can only tile %dx%d flat shapes", c_tilesize, c_tilesize);
 			return 0;
 		}
@@ -758,9 +735,7 @@ time_t Shape_chooser::export_tiled_png(
 			x = f % tiles;
 			y = f / tiles;
 		}
-		frame->paint(
-				&img, x * c_tilesize + frame->get_xleft(),
-				y * c_tilesize + frame->get_yabove());
+		frame->paint(&img, x * c_tilesize + frame->get_xleft(), y * c_tilesize + frame->get_yabove());
 	}
 	// Write out to the .png.
 	return export_png(fname, img, 0, 0);
@@ -811,16 +786,15 @@ void Shape_chooser::edit_shape(
 
 	// Check if user wants SHP or PNG format
 	const char* filetype = studio->get_edit_filetype();
-	bool use_shp = (filetype != nullptr && strcmp(filetype, ".SHP") == 0);
-	const char* ext_str = use_shp ? ".shp" : ".png";
+	bool        use_shp  = (filetype != nullptr && strcmp(filetype, ".SHP") == 0);
+	const char* ext_str  = use_shp ? ".shp" : ".png";
 
 	// Sanitize basename to prevent path traversal
 	const char* basename = file_info->get_basename();
 	string      safe_basename;
 	for (const char* p = basename; *p; ++p) {
 		// Only allow alphanumeric, underscore, hyphen, and dot
-		if ((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z')
-			|| (*p >= '0' && *p <= '9') || *p == '_' || *p == '-'
+		if ((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || (*p >= '0' && *p <= '9') || *p == '_' || *p == '-'
 			|| *p == '.') {
 			safe_basename += *p;
 		}
@@ -831,12 +805,9 @@ void Shape_chooser::edit_shape(
 
 	char* ext;
 	if (!tiles) {    // Create name from file,shape,frame.
-		ext = g_strdup_printf(
-				"/%s.s%d_f%d%s", safe_basename.c_str(), shnum, frnum, ext_str);
+		ext = g_strdup_printf("/%s.s%d_f%d%s", safe_basename.c_str(), shnum, frnum, ext_str);
 	} else {    // Tiled.
-		ext = g_strdup_printf(
-				"/%s.s%d_%c%d%s", safe_basename.c_str(), shnum,
-				(bycols ? 'c' : 'r'), tiles, ext_str);
+		ext = g_strdup_printf("/%s.s%d_%c%d%s", safe_basename.c_str(), shnum, (bycols ? 'c' : 'r'), tiles, ext_str);
 	}
 	filestr += ext;
 	g_free(ext);
@@ -846,15 +817,13 @@ void Shape_chooser::edit_shape(
 	// Normalize path separators and remove any ".." components
 	size_t pos = 0;
 	while ((pos = canonical_path.find("..")) != string::npos) {
-		cerr << "Path traversal attempt detected in: " << canonical_path
-			 << endl;
+		cerr << "Path traversal attempt detected in: " << canonical_path << endl;
 		return;    // Reject paths with ".."
 	}
 
 	// Ensure final path starts with base directory
 	if (canonical_path.find(base_dir) != 0) {
-		cerr << "Path validation failed: " << canonical_path << " not within "
-			 << base_dir << endl;
+		cerr << "Path validation failed: " << canonical_path << " not within " << base_dir << endl;
 		return;
 	}
 
@@ -882,9 +851,7 @@ void Shape_chooser::edit_shape(
 			}
 		}
 		// Store info. about file.
-		editing_files.push_back(std::make_unique<Editing_file>(
-				file_info->get_basename(), fname, mtime, shnum, frnum,
-				use_shp));
+		editing_files.push_back(std::make_unique<Editing_file>(file_info->get_basename(), fname, mtime, shnum, frnum, use_shp));
 	} else {
 		// Tiled editing only supported for PNG
 		if (use_shp) {
@@ -895,8 +862,7 @@ void Shape_chooser::edit_shape(
 		if (!mtime) {
 			return;
 		}
-		editing_files.push_back(Editing_file::create_tiled(
-				file_info->get_basename(), fname, mtime, shnum, tiles, bycols));
+		editing_files.push_back(Editing_file::create_tiled(file_info->get_basename(), fname, mtime, shnum, tiles, bycols));
 	}
 	string cmd(studio->get_image_editor());
 	cmd += ' ';
@@ -933,16 +899,13 @@ void Shape_chooser::edit_shape(
 	STARTUPINFO         si;
 	std::memset(&si, 0, sizeof(si));
 	si.cb         = sizeof(si);
-	const int ret = CreateProcess(
-			nullptr, &cmd[0], nullptr, nullptr, false, 0, nullptr, nullptr, &si,
-			&pi);
+	const int ret = CreateProcess(nullptr, &cmd[0], nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi);
 	if (!ret) {
 		Alert("Can't launch '%s'", studio->get_image_editor());
 	}
 #endif
 	if (check_editing_timer == -1) {    // Monitor files every 6 seconds.
-		check_editing_timer = g_timeout_add(
-				6000, Shape_chooser::check_editing_files_cb, nullptr);
+		check_editing_timer = g_timeout_add(6000, Shape_chooser::check_editing_files_cb, nullptr);
 	}
 }
 
@@ -1052,9 +1015,7 @@ static void Convert_indexed_image(
 	for (i = 0; i < count; i++) {
 		const unsigned char pix = *pixels;
 		if (map[pix] == -1) {    // New one?
-			map[pix] = Find_closest_color(
-					newpal, oldpal[3 * pix], oldpal[3 * pix + 1],
-					oldpal[3 * pix + 2]);
+			map[pix] = Find_closest_color(newpal, oldpal[3 * pix], oldpal[3 * pix + 1], oldpal[3 * pix + 2]);
 		}
 		Write1(pixels, map[pix]);
 	}
@@ -1088,9 +1049,7 @@ static void Import_png(
 	unsigned char* pixels;
 	unsigned char* oldpal;
 	// Import, with 255 = transp. index.
-	if (!Import_png8(
-				fname, 255, w, h, rowsize, xoff, yoff, pixels, oldpal,
-				palsize)) {
+	if (!Import_png8(fname, 255, w, h, rowsize, xoff, yoff, pixels, oldpal, palsize)) {
 		return;    // Just return if error, for now.
 	}
 	// Convert to game palette.
@@ -1103,8 +1062,7 @@ static void Import_png(
 	if (flat) {
 		xleft = yabove = c_tilesize;
 		if (w != c_tilesize || h != c_tilesize || rowsize != c_tilesize) {
-			char* msg = g_strdup_printf(
-					"Shape %d must be %dx%d", shapenum, c_tilesize, c_tilesize);
+			char* msg = g_strdup_printf("Shape %d must be %dx%d", shapenum, c_tilesize, c_tilesize);
 			studio->prompt(msg, "Continue");
 			g_free(msg);
 			delete[] pixels;
@@ -1114,9 +1072,7 @@ static void Import_png(
 		xleft  = w + xoff - 1;
 		yabove = h + yoff - 1;
 	}
-	shape->set_frame(
-			make_unique<Shape_frame>(pixels, w, h, xleft, yabove, !flat),
-			framenum);
+	shape->set_frame(make_unique<Shape_frame>(pixels, w, h, xleft, yabove, !flat), framenum);
 	delete[] pixels;
 	finfo->set_modified();
 }
@@ -1142,8 +1098,7 @@ static void Import_png_tiles(
 		return;
 	}
 	const int nframes = shape->get_num_frames();
-	cout << "Reading " << fname << " tiled"
-		 << (bycols ? ", by cols" : ", by rows") << " first" << endl;
+	cout << "Reading " << fname << " tiled" << (bycols ? ", by cols" : ", by rows") << " first" << endl;
 	// Figure #tiles in other dim.
 	const int dim0_cnt = tiles;
 	const int dim1_cnt = (nframes + dim0_cnt - 1) / dim0_cnt;
@@ -1165,9 +1120,7 @@ static void Import_png_tiles(
 	unsigned char* pixels;
 	unsigned char* oldpal;
 	// Import, with 255 = transp. index.
-	if (!Import_png8(
-				fname, 255, w, h, rowsize, xoff, yoff, pixels, oldpal,
-				palsize)) {
+	if (!Import_png8(fname, 255, w, h, rowsize, xoff, yoff, pixels, oldpal, palsize)) {
 		Alert("Error reading '%s'", fname);
 		return;
 	}
@@ -1175,8 +1128,7 @@ static void Import_png_tiles(
 	Convert_indexed_image(pixels, h * rowsize, oldpal, palsize, pal);
 	delete[] oldpal;
 	if (w < needw || h < needh) {
-		Alert("File '%s' image is too small.  %dx%d required.", fname, needw,
-			  needh);
+		Alert("File '%s' image is too small.  %dx%d required.", fname, needw, needh);
 		delete[] pixels;
 		return;
 	}
@@ -1199,11 +1151,7 @@ static void Import_png_tiles(
 			ptr += c_tilesize;
 			src += w;
 		}
-		shape->set_frame(
-				make_unique<Shape_frame>(
-						&buf[0], c_tilesize, c_tilesize, c_tilesize, c_tilesize,
-						false),
-				frnum);
+		shape->set_frame(make_unique<Shape_frame>(&buf[0], c_tilesize, c_tilesize, c_tilesize, c_tilesize, false), frnum);
 	}
 	delete[] pixels;
 	finfo->set_modified();
@@ -1232,9 +1180,7 @@ void Shape_chooser::read_back_edited(Editing_file* ed) {
 			}
 			const int len = ds.read4();
 			int       first;
-			if (((size % (c_tilesize * c_tilesize)) != 0)
-				&& (len != size || (first = ds.read4()) > size
-					|| (first % 4) != 0)) {
+			if (((size % (c_tilesize * c_tilesize)) != 0) && (len != size || (first = ds.read4()) > size || (first % 4) != 0)) {
 				cerr << "Invalid SHP file: " << ed->pathname << endl;
 				return;
 			}
@@ -1255,8 +1201,7 @@ void Shape_chooser::read_back_edited(Editing_file* ed) {
 			shape->set_modified();
 			finfo->set_modified();
 		} catch (const std::exception& e) {
-			cerr << "Error reading SHP file " << ed->pathname << ": "
-				 << e.what() << endl;
+			cerr << "Error reading SHP file " << ed->pathname << ": " << e.what() << endl;
 			return;
 		}
 	} else {
@@ -1271,13 +1216,9 @@ void Shape_chooser::read_back_edited(Editing_file* ed) {
 			pal[i] = palbuf[i] * 4;
 		}
 		if (!ed->tiles) {
-			Import_png(
-					ed->pathname.c_str(), finfo, pal, ed->shapenum,
-					ed->framenum);
+			Import_png(ed->pathname.c_str(), finfo, pal, ed->shapenum, ed->framenum);
 		} else {
-			Import_png_tiles(
-					ed->pathname.c_str(), finfo, pal, ed->shapenum, ed->tiles,
-					ed->bycolumns);
+			Import_png_tiles(ed->pathname.c_str(), finfo, pal, ed->shapenum, ed->tiles, ed->bycolumns);
 		}
 	}
 }
@@ -1306,14 +1247,12 @@ void Shape_chooser::export_frame(const char* fname, gpointer user_data) {
 	auto* chooser = static_cast<Shape_chooser*>(user_data);
 	// Add .png extension if not present
 	string filename(fname);
-	if (filename.length() < 4
-		|| filename.substr(filename.length() - 4) != ".png") {
+	if (filename.length() < 4 || filename.substr(filename.length() - 4) != ".png") {
 		filename += ".png";
 	}
 	const char* final_fname = filename.c_str();
 	if (U7exists(final_fname)) {
-		char* msg = g_strdup_printf(
-				"'%s' already exists.  Overwrite?", final_fname);
+		char*     msg    = g_strdup_printf("'%s' already exists.  Overwrite?", final_fname);
 		const int answer = Prompt(msg, "Yes", "No");
 		g_free(msg);
 		if (answer != 0) {
@@ -1382,8 +1321,7 @@ void Shape_chooser::export_shape(const char* fname, gpointer user_data) {
 	auto* chooser = static_cast<Shape_chooser*>(user_data);
 	// Add .shp extension if not present
 	string filename(fname);
-	if (filename.length() < 4
-		|| filename.substr(filename.length() - 4) != ".shp") {
+	if (filename.length() < 4 || filename.substr(filename.length() - 4) != ".shp") {
 		filename += ".shp";
 	}
 	const int shnum = chooser->info[chooser->selected].shapenum;
@@ -1419,9 +1357,7 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 			unsigned char* pixels;
 			unsigned char* oldpal;
 			// Import, with 255 = transp. index.
-			if (!Import_png8(
-						fullname, 255, w, h, rowsize, xoff, yoff, pixels,
-						oldpal, palsize)) {
+			if (!Import_png8(fullname, 255, w, h, rowsize, xoff, yoff, pixels, oldpal, palsize)) {
 				delete[] fullname;
 				return;    // Just return if error, for now.
 			}
@@ -1461,9 +1397,7 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 		unsigned char* pixels;
 		unsigned char* oldpal;
 		// Import, with 255 = transp. index.
-		if (!Import_png8(
-					fullname, 255, w, h, rowsize, xoff, yoff, pixels, oldpal,
-					palsize)) {
+		if (!Import_png8(fullname, 255, w, h, rowsize, xoff, yoff, pixels, oldpal, palsize)) {
 			delete[] fullname;
 			return;    // Just return if error, for now.
 		}
@@ -1472,8 +1406,7 @@ void Shape_chooser::import_all_pngs(const char* fname, int shnum) {
 		delete[] oldpal;
 		const int xleft  = w + xoff - 1;
 		const int yabove = h + yoff - 1;
-		auto      frame
-				= make_unique<Shape_frame>(pixels, w, h, xleft, yabove, true);
+		auto      frame  = make_unique<Shape_frame>(pixels, w, h, xleft, yabove, true);
 		if (i < ifile->get_num_frames(shnum)) {
 			shape->set_frame(std::move(frame), i);
 		} else {
@@ -1513,8 +1446,7 @@ void Shape_chooser::import_shape(const char* fname, gpointer user_data) {
 		}
 		ExultStudio* studio = ExultStudio::get_instance();
 		// Low shape in 'shapes.vga'?
-		const bool flat = IS_FLAT(chooser->info[chooser->selected].shapenum)
-						  && chooser->file_info == studio->get_vgafile();
+		const bool      flat = IS_FLAT(chooser->info[chooser->selected].shapenum) && chooser->file_info == studio->get_vgafile();
 		IFileDataSource ds(fname);
 		const int       size = ds.getSize();
 		// Check to see if it is a valid shape file, Flat to Flat, RLE to RLE.
@@ -1525,8 +1457,7 @@ void Shape_chooser::import_shape(const char* fname, gpointer user_data) {
 		} else {
 			const int len = ds.read4();
 			int       first;
-			if (len != size || (first = ds.read4()) > size
-				|| (first % 4) != 0) {
+			if (len != size || (first = ds.read4()) > size || (first % 4) != 0) {
 				return;
 			}
 		}
@@ -1599,10 +1530,7 @@ void Shape_chooser::new_frame() {
 	if (w > 2 && h > 2) {
 		img.fill8(2, w - 2, h - 2, 1, 1);
 	}
-	shape->add_frame(
-			make_unique<Shape_frame>(
-					img.get_bits(), w, h, xleft, yabove, !flat),
-			frnum + 1);
+	shape->add_frame(make_unique<Shape_frame>(img.get_bits(), w, h, xleft, yabove, !flat), frnum + 1);
 	file_info->set_modified();
 	Object_browser* browser = studio->get_browser();
 	if (browser) {
@@ -1621,20 +1549,17 @@ void Shape_chooser::new_frame() {
 C_EXPORT void on_new_shape_okay_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	GtkWidget* win     = gtk_widget_get_toplevel(GTK_WIDGET(button));
-	auto*      chooser = static_cast<Shape_chooser*>(
-            g_object_get_data(G_OBJECT(win), "user_data"));
+	auto*      chooser = static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(win), "user_data"));
 	chooser->create_new_shape();
 	gtk_widget_set_visible(win, false);
 }
 
 // Toggled 'From font' button:
-C_EXPORT void on_new_shape_font_toggled(
-		GtkToggleButton* btn, gpointer user_data) {
+C_EXPORT void on_new_shape_font_toggled(GtkToggleButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	const bool on      = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(btn));
 	GtkWidget* win     = gtk_widget_get_toplevel(GTK_WIDGET(btn));
-	auto*      chooser = static_cast<Shape_chooser*>(
-            g_object_get_data(G_OBJECT(win), "user_data"));
+	auto*      chooser = static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(win), "user_data"));
 	chooser->from_font_toggled(on);
 }
 
@@ -1644,23 +1569,19 @@ gboolean Shape_chooser::on_new_shape_font_color_draw_expose_event(
 		gpointer   data    // -> Shape_chooser.
 ) {
 	ignore_unused_variable_warning(data);
-	ExultStudio* studio  = ExultStudio::get_instance();
-	const int    index   = studio->get_spin("new_shape_font_color");
-	auto*        chooser = static_cast<Shape_chooser*>(
-            g_object_get_data(G_OBJECT(widget), "user_data"));
-	const guint32 color = chooser->get_color(index);
-	GdkRectangle  area  = {0, 0, 0, 0};
+	ExultStudio*  studio  = ExultStudio::get_instance();
+	const int     index   = studio->get_spin("new_shape_font_color");
+	auto*         chooser = static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(widget), "user_data"));
+	const guint32 color   = chooser->get_color(index);
+	GdkRectangle  area    = {0, 0, 0, 0};
 	gdk_cairo_get_clip_rectangle(cairo, &area);
-	cairo_set_source_rgb(
-			cairo, ((color >> 16) & 255) / 255.0, ((color >> 8) & 255) / 255.0,
-			(color & 255) / 255.0);
+	cairo_set_source_rgb(cairo, ((color >> 16) & 255) / 255.0, ((color >> 8) & 255) / 255.0, (color & 255) / 255.0);
 	cairo_rectangle(cairo, area.x, area.y, area.width, area.height);
 	cairo_fill(cairo);
 	return true;
 }
 
-C_EXPORT void on_new_shape_font_color_changed(
-		GtkSpinButton* button, gpointer user_data) {
+C_EXPORT void on_new_shape_font_color_changed(GtkSpinButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	// Show new color.
@@ -1691,8 +1612,7 @@ void Shape_chooser::from_font_toggled(bool on) {
 	studio->set_sensitive("new_shape_font_color", true);
 	studio->set_sensitive("new_shape_font_height", true);
 	Create_file_selection(
-			"Choose font file", "<PATCH>", "Fonts",
-			{"*.ttf", "*.ttc", "*.otf", "*.otc", "*.pcf", "*.fnt", "*.fon"},
+			"Choose font file", "<PATCH>", "Fonts", {"*.ttf", "*.ttc", "*.otf", "*.otc", "*.pcf", "*.fnt", "*.fon"},
 			GTK_FILE_CHOOSER_ACTION_OPEN, font_file_chosen, nullptr);
 }
 
@@ -1708,13 +1628,12 @@ void Shape_chooser::new_shape() {
 	// Get current selection.
 	const int      shnum = selected >= 0 ? info[selected].shapenum : 0;
 	GtkWidget*     spin  = studio->get_widget("new_shape_num");
-	GtkAdjustment* adj = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(spin));
+	GtkAdjustment* adj   = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(spin));
 	gtk_adjustment_set_upper(adj, c_max_shapes - 1);
 	Vga_file* ifile = file_info->get_ifile();
 	int       shstart;    // Find an unused shape.
 	for (shstart = shnum; shstart <= gtk_adjustment_get_upper(adj); shstart++) {
-		if (shstart >= ifile->get_num_shapes()
-			|| !ifile->get_num_frames(shstart)) {
+		if (shstart >= ifile->get_num_shapes() || !ifile->get_num_frames(shstart)) {
 			break;
 		}
 	}
@@ -1755,9 +1674,7 @@ void Shape_chooser::new_shape() {
 	// Store our pointer in color drawer.
 	GtkWidget* draw = studio->get_widget("new_shape_font_color_draw");
 	g_object_set_data(G_OBJECT(draw), "user_data", this);
-	g_signal_connect(
-			G_OBJECT(draw), "draw",
-			G_CALLBACK(on_new_shape_font_color_draw_expose_event), this);
+	g_signal_connect(G_OBJECT(draw), "draw", G_CALLBACK(on_new_shape_font_color_draw_expose_event), this);
 	gtk_widget_set_visible(win, true);
 }
 
@@ -1820,10 +1737,7 @@ void Shape_chooser::create_new_shape() {
 		// Include some transparency.
 		img.fill8(255, w / 2, h / 2, w / 4, h / 4);
 		for (int i = 0; i < nframes; i++) {
-			shape->add_frame(
-					make_unique<Shape_frame>(
-							img.get_bits(), w, h, xleft, yabove, !flat),
-					i);
+			shape->add_frame(make_unique<Shape_frame>(img.get_bits(), w, h, xleft, yabove, !flat), i);
 		}
 	}
 	file_info->set_modified();
@@ -1880,13 +1794,11 @@ void Shape_chooser::drag_data_get(
 		gpointer data    // ->Shape_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET of Shape for " << info << " and '"
-		 << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
+	cout << "In DRAG_DATA_GET of Shape for " << info << " and '" << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
 		 << endl;
 	auto* chooser = static_cast<Shape_chooser*>(data);
 	if (chooser->selected < 0
-		|| (info != U7_TARGET_SHAPEID && info != U7_TARGET_SHAPEID + 100
-			&& info != U7_TARGET_SHAPEID + 200)) {
+		|| (info != U7_TARGET_SHAPEID && info != U7_TARGET_SHAPEID + 100 && info != U7_TARGET_SHAPEID + 200)) {
 		return;    // Not sure about this.
 	}
 	guchar buf[U7DND_DATA_LENGTH(3)];
@@ -1895,14 +1807,11 @@ void Shape_chooser::drag_data_get(
 		file = U7_SHAPE_SHAPES;    // Just assume it's shapes.vga.
 	}
 	const Shape_entry& shinfo = chooser->info[chooser->selected];
-	const int          len
-			= Store_u7_shapeid(buf, file, shinfo.shapenum, shinfo.framenum);
-	cout << "Setting selection data (" << shinfo.shapenum << '/'
-		 << shinfo.framenum << ')' << " (" << len << ") '" << buf << "'"
+	const int          len    = Store_u7_shapeid(buf, file, shinfo.shapenum, shinfo.framenum);
+	cout << "Setting selection data (" << shinfo.shapenum << '/' << shinfo.framenum << ')' << " (" << len << ") '" << buf << "'"
 		 << endl;
 	// Set data.
-	gtk_selection_data_set(
-			seldata, gtk_selection_data_get_target(seldata), 8, buf, len);
+	gtk_selection_data_set(seldata, gtk_selection_data_get_target(seldata), 8, buf, len);
 }
 
 /*
@@ -1926,8 +1835,7 @@ gint Shape_chooser::drag_begin(
 	}
 	// Get ->shape.
 	const Shape_entry& shinfo = chooser->info[chooser->selected];
-	Shape_frame*       shape
-			= chooser->ifile->get_shape(shinfo.shapenum, shinfo.framenum);
+	Shape_frame*       shape  = chooser->ifile->get_shape(shinfo.shapenum, shinfo.framenum);
 	if (!shape) {
 		return false;
 	}
@@ -1946,8 +1854,7 @@ gint Shape_chooser::drag_begin(
  *  Scroll to a new shape/frame.
  */
 
-void Shape_chooser::scroll_row_vertical(
-		unsigned newrow    // Abs. index of row to show.
+void Shape_chooser::scroll_row_vertical(unsigned newrow    // Abs. index of row to show.
 ) {
 	if (newrow >= rows.size()) {
 		return;
@@ -2034,8 +1941,7 @@ void Shape_chooser::setup_vscrollbar() {
  *  Adjust horizontal scroll amounts.
  */
 
-void Shape_chooser::setup_hscrollbar(
-		int newmax    // New max., or -1 to leave alone.
+void Shape_chooser::setup_hscrollbar(int newmax    // New max., or -1 to leave alone.
 ) {
 	GtkAdjustment* adj = gtk_range_get_adjustment(GTK_RANGE(hscroll));
 	if (newmax > 0) {
@@ -2063,12 +1969,9 @@ void Shape_chooser::vscrolled(    // For vertical scrollbar.
 ) {
 	auto* chooser = static_cast<Shape_chooser*>(data);
 #ifdef DEBUG
-	cout << "Shapes : VScrolled to " << gtk_adjustment_get_value(adj)
-		 << " of [ " << gtk_adjustment_get_lower(adj) << ", "
-		 << gtk_adjustment_get_upper(adj) << " ] by "
-		 << gtk_adjustment_get_step_increment(adj) << " ( "
-		 << gtk_adjustment_get_page_increment(adj) << ", "
-		 << gtk_adjustment_get_page_size(adj) << " )" << endl;
+	cout << "Shapes : VScrolled to " << gtk_adjustment_get_value(adj) << " of [ " << gtk_adjustment_get_lower(adj) << ", "
+		 << gtk_adjustment_get_upper(adj) << " ] by " << gtk_adjustment_get_step_increment(adj) << " ( "
+		 << gtk_adjustment_get_page_increment(adj) << ", " << gtk_adjustment_get_page_size(adj) << " )" << endl;
 #endif
 	const gint newindex = static_cast<gint>(gtk_adjustment_get_value(adj));
 	chooser->scroll_vertical(newindex);
@@ -2080,12 +1983,9 @@ void Shape_chooser::hscrolled(    // For horizontal scrollbar.
 ) {
 	auto* chooser = static_cast<Shape_chooser*>(data);
 #ifdef DEBUG
-	cout << "Shapes : HScrolled to " << gtk_adjustment_get_value(adj)
-		 << " of [ " << gtk_adjustment_get_lower(adj) << ", "
-		 << gtk_adjustment_get_upper(adj) << " ] by "
-		 << gtk_adjustment_get_step_increment(adj) << " ( "
-		 << gtk_adjustment_get_page_increment(adj) << ", "
-		 << gtk_adjustment_get_page_size(adj) << " )" << endl;
+	cout << "Shapes : HScrolled to " << gtk_adjustment_get_value(adj) << " of [ " << gtk_adjustment_get_lower(adj) << ", "
+		 << gtk_adjustment_get_upper(adj) << " ] by " << gtk_adjustment_get_step_increment(adj) << " ( "
+		 << gtk_adjustment_get_page_increment(adj) << ", " << gtk_adjustment_get_page_size(adj) << " )" << endl;
 #endif
 	chooser->hoffset = static_cast<gint>(gtk_adjustment_get_value(adj));
 	chooser->render();
@@ -2133,8 +2033,7 @@ void Shape_chooser::all_frames_toggled(GtkToggleButton* btn, gpointer data) {
 	int shnum = -1;
 	if (chooser->info.size() != 0) {
 		// The old index is no longer valid, so we need to remember the shape.
-		indx  = chooser->selected >= 0 ? chooser->selected
-									   : chooser->rows[chooser->row0].index0;
+		indx  = chooser->selected >= 0 ? chooser->selected : chooser->rows[chooser->row0].index0;
 		shnum = chooser->info[indx].shapenum;
 	}
 	chooser->reset_selected();
@@ -2152,20 +2051,17 @@ void Shape_chooser::all_frames_toggled(GtkToggleButton* btn, gpointer data) {
  *  Handle popup menu items.
  */
 
-void Shape_chooser::on_shapes_popup_info_activate(
-		GtkMenuItem* item, gpointer udata) {
+void Shape_chooser::on_shapes_popup_info_activate(GtkMenuItem* item, gpointer udata) {
 	ignore_unused_variable_warning(item);
 	static_cast<Shape_chooser*>(udata)->edit_shape_info();
 }
 
-void Shape_chooser::on_shapes_popup_edit_activate(
-		GtkMenuItem* item, gpointer udata) {
+void Shape_chooser::on_shapes_popup_edit_activate(GtkMenuItem* item, gpointer udata) {
 	ignore_unused_variable_warning(item);
 	static_cast<Shape_chooser*>(udata)->edit_shape();
 }
 
-void Shape_chooser::on_shapes_popup_edtiles_activate(
-		GtkMenuItem* item, gpointer udata) {
+void Shape_chooser::on_shapes_popup_edtiles_activate(GtkMenuItem* item, gpointer udata) {
 	ignore_unused_variable_warning(item);
 	auto* ch = static_cast<Shape_chooser*>(udata);
 	if (ch->selected < 0) {
@@ -2180,7 +2076,7 @@ void Shape_chooser::on_shapes_popup_edtiles_activate(
 	Vga_file*      ifile   = ch->file_info->get_ifile();
 	const int      nframes = ifile->get_num_frames(shnum);
 	GtkWidget*     spin    = studio->get_widget("export_tiles_count");
-	GtkAdjustment* adj = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(spin));
+	GtkAdjustment* adj     = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(spin));
 	gtk_adjustment_set_lower(adj, 1);
 	gtk_adjustment_set_upper(adj, nframes);
 	gtk_widget_set_visible(win, true);
@@ -2189,45 +2085,42 @@ void Shape_chooser::on_shapes_popup_edtiles_activate(
 static void on_shapes_popup_import(GtkMenuItem* item, gpointer udata) {
 	ignore_unused_variable_warning(item);
 	Create_file_selection(
-			"Import frame from a .png file", "<PATCH>", "PNG Images", {"*.png"},
-			GTK_FILE_CHOOSER_ACTION_OPEN, Shape_chooser::import_frame, udata);
+			"Import frame from a .png file", "<PATCH>", "PNG Images", {"*.png"}, GTK_FILE_CHOOSER_ACTION_OPEN,
+			Shape_chooser::import_frame, udata);
 }
 
 static void on_shapes_popup_export(GtkMenuItem* item, gpointer udata) {
 	ignore_unused_variable_warning(item);
 	Create_file_selection(
-			"Export frame to a .png file", "<PATCH>", "PNG Images", {"*.png"},
-			GTK_FILE_CHOOSER_ACTION_SAVE, Shape_chooser::export_frame, udata);
+			"Export frame to a .png file", "<PATCH>", "PNG Images", {"*.png"}, GTK_FILE_CHOOSER_ACTION_SAVE,
+			Shape_chooser::export_frame, udata);
 }
 
 static void on_shapes_popup_export_all(GtkMenuItem* item, gpointer udata) {
 	ignore_unused_variable_warning(item);
 	Create_file_selection(
-			"Choose the base .png file name for all frames", "<PATCH>", nullptr,
-			{}, GTK_FILE_CHOOSER_ACTION_SAVE, Shape_chooser::export_all_frames,
-			udata);
+			"Choose the base .png file name for all frames", "<PATCH>", nullptr, {}, GTK_FILE_CHOOSER_ACTION_SAVE,
+			Shape_chooser::export_all_frames, udata);
 }
 
 static void on_shapes_popup_import_all(GtkMenuItem* item, gpointer udata) {
 	ignore_unused_variable_warning(item);
 	Create_file_selection(
-			"Choose the one of the .png sprites to import", "<PATCH>",
-			"PNG Images", {"*.png"}, GTK_FILE_CHOOSER_ACTION_OPEN,
+			"Choose the one of the .png sprites to import", "<PATCH>", "PNG Images", {"*.png"}, GTK_FILE_CHOOSER_ACTION_OPEN,
 			Shape_chooser::import_all_frames, udata);
 }
 
 static void on_shapes_popup_export_shape(GtkMenuItem* item, gpointer udata) {
 	ignore_unused_variable_warning(item);
 	Create_file_selection(
-			"Choose the shp file name", "<PATCH>", "Shape files", {"*.shp"},
-			GTK_FILE_CHOOSER_ACTION_SAVE, Shape_chooser::export_shape, udata);
+			"Choose the shp file name", "<PATCH>", "Shape files", {"*.shp"}, GTK_FILE_CHOOSER_ACTION_SAVE,
+			Shape_chooser::export_shape, udata);
 }
 
 static void on_shapes_popup_import_shape(GtkMenuItem* item, gpointer udata) {
 	ignore_unused_variable_warning(item);
 	Create_file_selection(
-			"Choose the shp file to import", "<PATCH>", "Shape files",
-			{"*.shp"}, GTK_FILE_CHOOSER_ACTION_OPEN,
+			"Choose the shp file to import", "<PATCH>", "Shape files", {"*.shp"}, GTK_FILE_CHOOSER_ACTION_OPEN,
 			Shape_chooser::import_shape, udata);
 }
 
@@ -2244,15 +2137,13 @@ static void on_shapes_popup_new_shape(GtkMenuItem* item, gpointer udata) {
 /*
  *  Callback for edit-tiles 'okay'.
  */
-C_EXPORT void on_export_tiles_okay_clicked(
-		GtkButton* button, gpointer user_data) {
+C_EXPORT void on_export_tiles_okay_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
-	GtkWidget* win     = gtk_widget_get_toplevel(GTK_WIDGET(button));
-	auto*      chooser = static_cast<Shape_chooser*>(
-            g_object_get_data(G_OBJECT(win), "user_data"));
-	ExultStudio* studio = ExultStudio::get_instance();
-	const int    tiles  = studio->get_spin("export_tiles_count");
-	const bool   bycol  = studio->get_toggle("tiled_by_columns");
+	GtkWidget*   win     = gtk_widget_get_toplevel(GTK_WIDGET(button));
+	auto*        chooser = static_cast<Shape_chooser*>(g_object_get_data(G_OBJECT(win), "user_data"));
+	ExultStudio* studio  = ExultStudio::get_instance();
+	const int    tiles   = studio->get_spin("export_tiles_count");
+	const bool   bycol   = studio->get_toggle("tiled_by_columns");
 	chooser->edit_shape(tiles, bycol);
 	gtk_widget_set_visible(win, false);
 }
@@ -2321,13 +2212,11 @@ void Shape_chooser::search(
 		const Shape_info& info = shapes_file->get_info(shnum);
 		if (info.has_frame_name_info()) {
 			bool                                found = false;
-			const std::vector<Frame_name_info>& nminf
-					= info.get_frame_name_info();
+			const std::vector<Frame_name_info>& nminf = info.get_frame_name_info();
 			for (const auto& it : nminf) {
 				const int type  = it.get_type();
 				const int msgid = it.get_msgid();
-				if (type == -255 || type == -1 || msgid >= get_num_misc_names()
-					|| !get_misc_name(msgid)) {
+				if (type == -255 || type == -1 || msgid >= get_num_misc_names() || !get_misc_name(msgid)) {
 					continue;    // Keep looking.
 				}
 				if (search_name(get_misc_name(msgid), srch.c_str())) {
@@ -2376,60 +2265,37 @@ GtkWidget* Shape_chooser::create_popup() {
 	ExultStudio* studio = ExultStudio::get_instance();
 	create_popup_internal(true);    // Create popup with groups, files.
 	if (selected >= 0) {            // Add editing choices.
-		Add_menu_item(
-				popup, "Info...", G_CALLBACK(on_shapes_popup_info_activate),
-				this);
+		Add_menu_item(popup, "Info...", G_CALLBACK(on_shapes_popup_info_activate), this);
 		if (studio->get_image_editor()) {
-			Add_menu_item(
-					popup, "Edit...", G_CALLBACK(on_shapes_popup_edit_activate),
-					this);
-			if (IS_FLAT(info[selected].shapenum)
-				&& file_info == studio->get_vgafile()) {
-				Add_menu_item(
-						popup, "Edit tiled...",
-						G_CALLBACK(on_shapes_popup_edtiles_activate), this);
+			Add_menu_item(popup, "Edit...", G_CALLBACK(on_shapes_popup_edit_activate), this);
+			if (IS_FLAT(info[selected].shapenum) && file_info == studio->get_vgafile()) {
+				Add_menu_item(popup, "Edit tiled...", G_CALLBACK(on_shapes_popup_edtiles_activate), this);
 			}
 		}
 		// Separator.
 		Add_menu_item(popup);
 		// Add/del.
-		Add_menu_item(
-				popup, "New frame", G_CALLBACK(on_shapes_popup_new_frame),
-				this);
+		Add_menu_item(popup, "New frame", G_CALLBACK(on_shapes_popup_new_frame), this);
 		// Export/import.
-		Add_menu_item(
-				popup, "Export frame...", G_CALLBACK(on_shapes_popup_export),
-				this);
-		Add_menu_item(
-				popup, "Import frame...", G_CALLBACK(on_shapes_popup_import),
-				this);
+		Add_menu_item(popup, "Export frame...", G_CALLBACK(on_shapes_popup_export), this);
+		Add_menu_item(popup, "Import frame...", G_CALLBACK(on_shapes_popup_import), this);
 		// Separator.
 		Add_menu_item(popup);
 		// Export/import all frames.
-		Add_menu_item(
-				popup, "Export all frames...",
-				G_CALLBACK(on_shapes_popup_export_all), this);
-		Add_menu_item(
-				popup, "Import all frames...",
-				G_CALLBACK(on_shapes_popup_import_all), this);
+		Add_menu_item(popup, "Export all frames...", G_CALLBACK(on_shapes_popup_export_all), this);
+		Add_menu_item(popup, "Import all frames...", G_CALLBACK(on_shapes_popup_import_all), this);
 	}
 	if (ifile->is_flex()) {    // Multiple-shapes file (.vga)?
 		if (selected >= 0) {
 			// Separator.
 			Add_menu_item(popup);
 			// Export/import shape.
-			Add_menu_item(
-					popup, "Export shape...",
-					G_CALLBACK(on_shapes_popup_export_shape), this);
-			Add_menu_item(
-					popup, "Import shape...",
-					G_CALLBACK(on_shapes_popup_import_shape), this);
+			Add_menu_item(popup, "Export shape...", G_CALLBACK(on_shapes_popup_export_shape), this);
+			Add_menu_item(popup, "Import shape...", G_CALLBACK(on_shapes_popup_import_shape), this);
 		}
 		// Separator.
 		Add_menu_item(popup);
-		Add_menu_item(
-				popup, "New shape", G_CALLBACK(on_shapes_popup_new_shape),
-				this);
+		Add_menu_item(popup, "New shape", G_CALLBACK(on_shapes_popup_new_shape), this);
 	}
 	return popup;
 }
@@ -2443,10 +2309,9 @@ Shape_chooser::Shape_chooser(
 		unsigned char* palbuf,    // Palette, 3*256 bytes (rgb triples).
 		int w, int h,             // Dimensions.
 		Shape_group* g, Shape_file_info* fi)
-		: Object_browser(g, fi), Shape_draw(i, palbuf, gtk_drawing_area_new()),
-		  shapes_file(nullptr), framenum0(0), info(0), rows(0), row0(0),
-		  row0_voffset(0), total_height(0), frames_mode(false), hoffset(0),
-		  voffset(0), status_id(-1), sel_changed(nullptr) {
+		: Object_browser(g, fi), Shape_draw(i, palbuf, gtk_drawing_area_new()), shapes_file(nullptr), framenum0(0), info(0),
+		  rows(0), row0(0), row0_voffset(0), total_height(0), frames_mode(false), hoffset(0), voffset(0), status_id(-1),
+		  sel_changed(nullptr) {
 	rows.reserve(40);
 
 	// Put things in a vert. box.
@@ -2463,66 +2328,46 @@ Shape_chooser::Shape_chooser(
 	// A frame looks nice.
 	GtkWidget* frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
-	widget_set_margins(
-			frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_visible(frame, true);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, true, true, 0);
 
 	// NOTE:  draw is in Shape_draw.
 	// Indicate the events we want.
 	gtk_widget_set_events(
-			draw, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK
-						  | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON1_MOTION_MASK
-						  | GDK_KEY_PRESS_MASK);
+			draw,
+			GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON1_MOTION_MASK | GDK_KEY_PRESS_MASK);
 	// Set "configure" handler.
-	g_signal_connect(
-			G_OBJECT(draw), "configure-event", G_CALLBACK(Configure_chooser),
-			this);
+	g_signal_connect(G_OBJECT(draw), "configure-event", G_CALLBACK(Configure_chooser), this);
 	// Set "expose-event" - "draw" handler.
 	g_signal_connect(G_OBJECT(draw), "draw", G_CALLBACK(expose), this);
 	// Keystroke.
-	g_signal_connect(
-			G_OBJECT(draw), "key-press-event", G_CALLBACK(on_draw_key_press),
-			this);
+	g_signal_connect(G_OBJECT(draw), "key-press-event", G_CALLBACK(on_draw_key_press), this);
 	gtk_widget_set_can_focus(GTK_WIDGET(draw), true);
 	// Set mouse click handler.
-	g_signal_connect(
-			G_OBJECT(draw), "button-press-event", G_CALLBACK(Mouse_press),
-			this);
-	g_signal_connect(
-			G_OBJECT(draw), "button-release-event", G_CALLBACK(Mouse_release),
-			this);
+	g_signal_connect(G_OBJECT(draw), "button-press-event", G_CALLBACK(Mouse_press), this);
+	g_signal_connect(G_OBJECT(draw), "button-release-event", G_CALLBACK(Mouse_release), this);
 	// Mouse motion.
-	g_signal_connect(
-			G_OBJECT(draw), "drag-begin", G_CALLBACK(drag_begin), this);
-	g_signal_connect(
-			G_OBJECT(draw), "motion-notify-event", G_CALLBACK(drag_motion),
-			this);
-	g_signal_connect(
-			G_OBJECT(draw), "drag-data-get", G_CALLBACK(drag_data_get), this);
+	g_signal_connect(G_OBJECT(draw), "drag-begin", G_CALLBACK(drag_begin), this);
+	g_signal_connect(G_OBJECT(draw), "motion-notify-event", G_CALLBACK(drag_motion), this);
+	g_signal_connect(G_OBJECT(draw), "drag-data-get", G_CALLBACK(drag_data_get), this);
 	gtk_container_add(GTK_CONTAINER(frame), draw);
-	widget_set_margins(
-			draw, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(draw, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_size_request(draw, w, h);
 	gtk_widget_set_visible(draw, true);
 	// Want vert. scrollbar for the shapes.
-	GtkAdjustment* shape_adj = GTK_ADJUSTMENT(
-			gtk_adjustment_new(0, 0, std::ceil(get_count() / 4.0), 1, 1, 1));
-	vscroll = gtk_scrollbar_new(
-			GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT(shape_adj));
+	GtkAdjustment* shape_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, std::ceil(get_count() / 4.0), 1, 1, 1));
+	vscroll                  = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT(shape_adj));
 	gtk_box_pack_start(GTK_BOX(hbox), vscroll, false, true, 0);
 	// Set scrollbar handler.
-	g_signal_connect(
-			G_OBJECT(shape_adj), "value-changed", G_CALLBACK(vscrolled), this);
+	g_signal_connect(G_OBJECT(shape_adj), "value-changed", G_CALLBACK(vscrolled), this);
 	gtk_widget_set_visible(vscroll, true);
 	// Horizontal scrollbar.
 	shape_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 1600, 8, 16, 16));
-	hscroll   = gtk_scrollbar_new(
-            GTK_ORIENTATION_HORIZONTAL, GTK_ADJUSTMENT(shape_adj));
+	hscroll   = gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, GTK_ADJUSTMENT(shape_adj));
 	gtk_box_pack_start(GTK_BOX(vbox), hscroll, false, true, 0);
 	// Set scrollbar handler.
-	g_signal_connect(
-			G_OBJECT(shape_adj), "value-changed", G_CALLBACK(hscrolled), this);
+	g_signal_connect(G_OBJECT(shape_adj), "value-changed", G_CALLBACK(hscrolled), this);
 	//++++  gtk_widget_set_visible(hscroll, false);   // Only shown in 'frames'
 	// mode.
 	// Scroll events.
@@ -2537,41 +2382,29 @@ Shape_chooser::Shape_chooser(
 	sbar     = gtk_statusbar_new();
 	sbar_sel = gtk_statusbar_get_context_id(GTK_STATUSBAR(sbar), "selection");
 	gtk_box_pack_start(GTK_BOX(hbox1), sbar, true, true, 0);
-	widget_set_margins(
-			sbar, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(sbar, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_visible(sbar, true);
 	GtkWidget* label = gtk_label_new("Frame:");
 	gtk_box_pack_start(GTK_BOX(hbox1), label, false, false, 0);
-	widget_set_margins(
-			label, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(label, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_visible(label, true);
 	// A spin button for frame#.
 	frame_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 16, 1, 0, 0.0));
 	fspin     = gtk_spin_button_new(GTK_ADJUSTMENT(frame_adj), 1, 0);
-	g_signal_connect(
-			G_OBJECT(frame_adj), "value-changed", G_CALLBACK(frame_changed),
-			this);
+	g_signal_connect(G_OBJECT(frame_adj), "value-changed", G_CALLBACK(frame_changed), this);
 	gtk_box_pack_start(GTK_BOX(hbox1), fspin, false, false, 0);
-	widget_set_margins(
-			fspin, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(fspin, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_sensitive(fspin, false);
 	gtk_widget_set_visible(fspin, true);
 	// A toggle for 'All Frames'.
 	GtkWidget* allframes = gtk_toggle_button_new_with_label("Frames");
 	gtk_box_pack_start(GTK_BOX(hbox1), allframes, false, false, 0);
-	widget_set_margins(
-			allframes, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(allframes, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_visible(allframes, true);
-	g_signal_connect(
-			G_OBJECT(allframes), "toggled", G_CALLBACK(all_frames_toggled),
-			this);
+	g_signal_connect(G_OBJECT(allframes), "toggled", G_CALLBACK(all_frames_toggled), this);
 	// Add search controls to bottom.
 	gtk_box_pack_start(
-			GTK_BOX(vbox),
-			create_controls(
-					find_controls | locate_controls | locate_quality
-					| locate_frame),
-			false, false, 0);
+			GTK_BOX(vbox), create_controls(find_controls | locate_controls | locate_quality | locate_frame), false, false, 0);
 }
 
 /*
@@ -2615,18 +2448,14 @@ void Shape_chooser::update_statusbar() {
 	if (selected >= 0) {
 		const int shapenum = info[selected].shapenum;
 		const int nframes  = ifile->get_num_frames(shapenum);
-		g_snprintf(
-				buf, sizeof(buf), "Shape %d (0x%03x, %d frames)", shapenum,
-				shapenum, nframes);
+		g_snprintf(buf, sizeof(buf), "Shape %d (0x%03x, %d frames)", shapenum, shapenum, nframes);
 		ExultStudio* studio = ExultStudio::get_instance();
 		if (shapes_file) {
 			const char* nm;
 			if ((nm = studio->get_shape_name(shapenum))) {
 				const string utf8nm(convertToUTF8(nm));
 				const int    len = strlen(buf);
-				g_snprintf(
-						buf + len, sizeof(buf) - len, ":  '%s'",
-						utf8nm.c_str());
+				g_snprintf(buf + len, sizeof(buf) - len, ":  '%s'", utf8nm.c_str());
 			}
 			if (shapes_file->read_info(studio->get_game_type(), true)) {
 				studio->set_shapeinfo_modified();
@@ -2634,8 +2463,7 @@ void Shape_chooser::update_statusbar() {
 			const int              frnum = info[selected].framenum;
 			const Shape_info&      inf   = shapes_file->get_info(shapenum);
 			const Frame_name_info* nminf;
-			if (inf.has_frame_name_info()
-				&& (nminf = inf.get_frame_name(frnum, -1)) != nullptr) {
+			if (inf.has_frame_name_info() && (nminf = inf.get_frame_name(frnum, -1)) != nullptr) {
 				const int type  = nminf->get_type();
 				const int msgid = nminf->get_msgid();
 				if (type >= 0 && msgid < get_num_misc_names()) {
@@ -2654,13 +2482,8 @@ void Shape_chooser::update_statusbar() {
 							otmsgstr = "<NPC Name>";
 						} else {
 							const int otmsg = nminf->get_othermsg();
-							otmsgstr
-									= otmsg == -255
-											  ? nm
-											  : (otmsg == -1 || otmsg >= get_num_misc_names()
-														 ? ""
-														 : get_misc_name(
-																   otmsg));
+							otmsgstr        = otmsg == -255 ? nm
+															: (otmsg == -1 || otmsg >= get_num_misc_names() ? "" : get_misc_name(otmsg));
 							if (!otmsgstr) {
 								otmsgstr = "";
 							}
@@ -2676,14 +2499,10 @@ void Shape_chooser::update_statusbar() {
 						}
 						const string utf8prf(convertToUTF8(prefix));
 						const string utf8suf(convertToUTF8(suffix));
-						g_snprintf(
-								buf + len, sizeof(buf) - len, "  -  '%s%s'",
-								utf8prf.c_str(), utf8suf.c_str());
+						g_snprintf(buf + len, sizeof(buf) - len, "  -  '%s%s'", utf8prf.c_str(), utf8suf.c_str());
 					} else {
 						const string utf8msg(convertToUTF8(msgstr));
-						g_snprintf(
-								buf + len, sizeof(buf) - len, "  -  '%s'",
-								utf8msg.c_str());
+						g_snprintf(buf + len, sizeof(buf) - len, "  -  '%s'", utf8msg.c_str());
 					}
 				}
 			}
@@ -2691,9 +2510,7 @@ void Shape_chooser::update_statusbar() {
 		status_id = gtk_statusbar_push(GTK_STATUSBAR(sbar), sbar_sel, buf);
 	} else if (!info.empty() && !group) {
 		const int first_shape = info[rows[row0].index0].shapenum;
-		g_snprintf(
-				buf, sizeof(buf), "Shapes %d to %d (0x%03x to 0x%03x)",
-				first_shape, last_shape, first_shape, last_shape);
+		g_snprintf(buf, sizeof(buf), "Shapes %d to %d (0x%03x to 0x%03x)", first_shape, last_shape, first_shape, last_shape);
 		status_id = gtk_statusbar_push(GTK_STATUSBAR(sbar), sbar_sel, buf);
 	} else {
 		status_id = -1;

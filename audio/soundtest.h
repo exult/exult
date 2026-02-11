@@ -28,8 +28,7 @@ class SoundTester {
 
 public:
 	void   test_sound();
-	size_t formattime(
-			char* buffer, size_t buffersize, uint32 position, uint32 length);
+	size_t formattime(char* buffer, size_t buffersize, uint32 position, uint32 length);
 };
 
 #endif

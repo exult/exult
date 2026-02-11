@@ -108,15 +108,13 @@ extern int Container_out(
 		int                          fd,      // Socket.
 		const Container_game_object* addr,    // Address.
 		int tx, int ty, int tz,               // Absolute tile coords.
-		int shape, int frame, int quality, std::string name,
-		unsigned char resistance, bool invisible, bool okay_to_take);
+		int shape, int frame, int quality, std::string name, unsigned char resistance, bool invisible, bool okay_to_take);
 extern bool Container_in(
 		const unsigned char*    data,       // Data that was read.
 		int                     datalen,    // Length of data.
 		Container_game_object*& addr,       // Address.
 		int& tx, int& ty, int& tz,          // Absolute tile coords.
-		int& shape, int& frame, int& quality, std::string& name,
-		unsigned char& resistance, bool& invisible, bool& okay_to_take);
+		int& shape, int& frame, int& quality, std::string& name, unsigned char& resistance, bool& invisible, bool& okay_to_take);
 
 class Barge_object;
 
@@ -138,18 +136,15 @@ extern int Egg_object_out(
 		int               fd,      // Socket.
 		const Egg_object* addr,    // Address.
 		int tx, int ty, int tz,    // Absolute tile coords.
-		int shape, int frame, int type, int criteria, int probability,
-		int distance, bool nocturnal, bool once, bool hatched, bool auto_reset,
-		int data1, int data2, int data3, std::string str1);
+		int shape, int frame, int type, int criteria, int probability, int distance, bool nocturnal, bool once, bool hatched,
+		bool auto_reset, int data1, int data2, int data3, std::string str1);
 extern bool Egg_object_in(
 		const unsigned char* data,       // Data that was read.
 		int                  datalen,    // Length of data.
 		Egg_object*&         addr,       // Address.
 		int& tx, int& ty, int& tz,       // Absolute tile coords.
-		int& shape, int& frame, int& type, int& criteria, int& probability,
-		int& distance, bool& nocturnal, bool& once, bool& hatched,
-		bool& auto_reset, int& data1, int& data2, int& data3,
-		std::string& str1);
+		int& shape, int& frame, int& type, int& criteria, int& probability, int& distance, bool& nocturnal, bool& once,
+		bool& hatched, bool& auto_reset, int& data1, int& data2, int& data3, std::string& str1);
 
 struct Serial_schedule {    // For passing a schedule change.
 	short time;             // 0-7 (3-hour period).
@@ -163,8 +158,7 @@ int Npc_actor_out(
 		int          fd,           // Socket.
 		const Actor* addr,         // Address.
 		int tx, int ty, int tz,    // Absolute tile coords.
-		int shape, int frame, int face, std::string name, short npc_num,
-		short ident, int usecode, std::string usecodefun,
+		int shape, int frame, int face, std::string name, short npc_num, short ident, int usecode, std::string usecodefun,
 		int (&properties)[12],    // 12 entries.
 		short attack_mode, short alignment,
 		unsigned long    oflags,           // Object flags.
@@ -178,8 +172,7 @@ bool Npc_actor_in(
 		int                  datalen,    // Length of data.
 		Actor*&              addr,       // Address.
 		int& tx, int& ty, int& tz,       // Absolute tile coords.
-		int& shape, int& frame, int& face, std::string& name, short& npc_num,
-		short& ident, int& usecode, std::string& usecodefun,
+		int& shape, int& frame, int& face, std::string& name, short& npc_num, short& ident, int& usecode, std::string& usecodefun,
 		int (&properties)[12],    // Must have room for 12.
 		short& attack_mode, short& alignment,
 		unsigned long&   oflags,           // Object flags.

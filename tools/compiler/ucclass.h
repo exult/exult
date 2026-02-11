@@ -54,15 +54,14 @@ public:
 		return num;
 	}
 
-	Uc_var_symbol* add_symbol(char* nm);    // Add class variable.
-	Uc_var_symbol* add_symbol(
-			char* nm, Uc_struct_symbol* s);    // Add class struct.
+	Uc_var_symbol* add_symbol(char* nm);                         // Add class variable.
+	Uc_var_symbol* add_symbol(char* nm, Uc_struct_symbol* s);    // Add class struct.
 	// Add alias to current scope.
 	Uc_var_symbol* add_alias(char* nm, Uc_var_symbol* var);
 	// Add struct alias to current scope.
-	Uc_var_symbol* add_alias(char* nm, Uc_var_symbol* var, Uc_struct_symbol* s);
-	void           add_method(Uc_function* m);
-	void           gen(std::ostream& out) override;    // Generate Usecode.
+	Uc_var_symbol*  add_alias(char* nm, Uc_var_symbol* var, Uc_struct_symbol* s);
+	void            add_method(Uc_function* m);
+	void            gen(std::ostream& out) override;    // Generate Usecode.
 	Usecode_symbol* create_sym() override;
 
 	bool is_class() const override {

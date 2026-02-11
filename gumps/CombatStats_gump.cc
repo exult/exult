@@ -41,8 +41,7 @@ static const int rowy[7] = {15, 29, 42, 73, 87, 93, 106};
 /*
  *  Create stats display.
  */
-CombatStats_gump::CombatStats_gump(int initx, int inity)
-		: Gump(nullptr, initx, inity, game->get_shape("gumps/cstats/1")) {
+CombatStats_gump::CombatStats_gump(int initx, int inity) : Gump(nullptr, initx, inity, game->get_shape("gumps/cstats/1")) {
 	set_object_area(TileRect(0, 0, 0, 0), 23, 83);
 
 	party_size = gwin->get_party(party, 1);
@@ -53,10 +52,8 @@ CombatStats_gump::CombatStats_gump(int initx, int inity)
 	int i;    // Blame MSVC
 	for (i = 0; i < party_size; i++) {
 		add_elem(new Halo_button(this, colx + i * coldx, rowy[4], party[i]));
-		add_elem(new Combat_mode_button(
-				this, colx + i * coldx + 1, rowy[3], party[i]));
-		add_elem(new Face_button(
-				this, colx + i * coldx - 13, rowy[0], party[i]));
+		add_elem(new Combat_mode_button(this, colx + i * coldx + 1, rowy[3], party[i]));
+		add_elem(new Face_button(this, colx + i * coldx - 13, rowy[0], party[i]));
 	}
 }
 
@@ -81,17 +78,11 @@ void CombatStats_gump::paint() {
 	} else {
 		// stats for all party members
 		for (int i = 0; i < party_size; i++) {
-			gman->paint_num(
-					party[i]->get_effective_prop(Actor::combat),
-					x + colx + i * coldx, y + rowy[1]);
-			gman->paint_num(
-					party[i]->get_property(Actor::health), x + colx + i * coldx,
-					y + rowy[2]);
+			gman->paint_num(party[i]->get_effective_prop(Actor::combat), x + colx + i * coldx, y + rowy[1]);
+			gman->paint_num(party[i]->get_property(Actor::health), x + colx + i * coldx, y + rowy[2]);
 		}
 		// magic stats only for Avatar
-		gman->paint_num(
-				party[0]->get_property(Actor::magic), x + colx, y + rowy[5]);
-		gman->paint_num(
-				party[0]->get_property(Actor::mana), x + colx, y + rowy[6]);
+		gman->paint_num(party[0]->get_property(Actor::magic), x + colx, y + rowy[5]);
+		gman->paint_num(party[0]->get_property(Actor::mana), x + colx, y + rowy[6]);
 	}
 }

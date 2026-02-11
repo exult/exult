@@ -61,8 +61,7 @@ void add_vector_info(const T& inf, std::vector<T>& vec) {
 		bool st  = it->have_static();
 		bool inv = it->is_invalid();
 		it->set(inf);    // Replace information.
-		if (st && inv && !inf.is_invalid() && !inf.from_patch()
-			&& !inf.was_modified()) {
+		if (st && inv && !inf.is_invalid() && !inf.from_patch() && !inf.was_modified()) {
 			it->set_modified(false);
 		}
 	}
@@ -106,8 +105,7 @@ void clean_vector(std::vector<T>& vec) {
 }
 
 template <class T, typename U>
-inline const T* Search_vector_data_single_wildcard(
-		const std::vector<T>& vec, int src, U T::* dat) {
+inline const T* Search_vector_data_single_wildcard(const std::vector<T>& vec, int src, U T::* dat) {
 	if (vec.empty()) {    // Not found.
 		return nullptr;
 	}
@@ -133,8 +131,7 @@ inline const T* Search_vector_data_single_wildcard(
 
 template <class T>
 inline const T* Search_vector_data_double_wildcards(
-		const std::vector<T>& vec, int frame, int quality, short T::* fr,
-		short T::* qual) {
+		const std::vector<T>& vec, int frame, int quality, short T::* fr, short T::* qual) {
 	if (vec.empty()) {
 		return nullptr;    // No name.
 	}
@@ -234,11 +231,8 @@ inline void Write_count(std::ostream& out, int cnt) {
 	}
 }
 
-template <
-		typename Base, typename... Args,
-		std::enable_if_t<(std::is_base_of_v<Base, Args> && ...), bool> = false>
-std::array<std::unique_ptr<Base>, sizeof...(Args)> make_unique_array(
-		std::unique_ptr<Args>&&... args) {
+template <typename Base, typename... Args, std::enable_if_t<(std::is_base_of_v<Base, Args> && ...), bool> = false>
+std::array<std::unique_ptr<Base>, sizeof...(Args)> make_unique_array(std::unique_ptr<Args>&&... args) {
 	return {std::unique_ptr<Base>(std::move(args))...};
 }
 
@@ -249,9 +243,7 @@ class Base_reader {
 protected:
 	bool haveversion;
 
-	virtual void read_data(
-			std::istream& in, size_t index, int version, bool patch,
-			Exult_Game game, bool binary) {
+	virtual void read_data(std::istream& in, size_t index, int version, bool patch, Exult_Game game, bool binary) {
 		ignore_unused_variable_warning(in, index, version, patch, game, binary);
 	}
 
@@ -277,9 +269,7 @@ public:
 	virtual ~Base_reader()                     = default;
 
 	// Text data file.
-	void parse(
-			std::vector<std::string>& strings, int version, bool patch,
-			Exult_Game game) {
+	void parse(std::vector<std::string>& strings, int version, bool patch, Exult_Game game) {
 		for (size_t j = 0; j < strings.size(); j++) {
 			if (!strings[j].empty()) {
 				std::istringstream strin(strings[j], std::ios::in);
@@ -315,8 +305,7 @@ public:
 		*/
 		const bool  bg = game == BLACK_GATE;
 		const char* flexfile
-				= bg ? BUNDLE_CHECK(BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX)
-					 : BUNDLE_CHECK(BUNDLE_EXULT_SI_FLX, EXULT_SI_FLX);
+				= bg ? BUNDLE_CHECK(BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX) : BUNDLE_CHECK(BUNDLE_EXULT_SI_FLX, EXULT_SI_FLX);
 		const U7object     txtobj(flexfile, resource);
 		std::size_t        len;
 		auto               txt = txtobj.retrieve(len);
@@ -340,9 +329,7 @@ public:
 template <class Info>
 class Null_functor {
 public:
-	void operator()(
-			std::istream& in, int version, bool patch, Exult_Game game,
-			Info& info) {
+	void operator()(std::istream& in, int version, bool patch, Exult_Game game, Info& info) {
 		ignore_unused_variable_warning(in, info, version, patch, game);
 	}
 };
@@ -350,9 +337,7 @@ public:
 template <int flag, class Info>
 class Patch_flags_functor {
 public:
-	void operator()(
-			std::istream& in, int version, bool patch, Exult_Game game,
-			Info& info) {
+	void operator()(std::istream& in, int version, bool patch, Exult_Game game, Info& info) {
 		ignore_unused_variable_warning(in, version, game);
 		if (patch) {
 			info.frompatch_flags |= flag;
@@ -363,9 +348,7 @@ public:
 /*
  *  Generic functor-based reader class for maps.
  */
-template <
-		class Info, class Functor, class Transform = Null_functor<Info>,
-		class ReadID = ID_reader_functor>
+template <class Info, class Functor, class Transform = Null_functor<Info>, class ReadID = ID_reader_functor>
 class Functor_multidata_reader : public Base_reader {
 protected:
 	std::map<int, Info>& info;
@@ -373,9 +356,7 @@ protected:
 	Transform            postread;
 	ReadID               idread;
 
-	void read_data(
-			std::istream& in, size_t index, int version, bool patch,
-			Exult_Game game, bool binary) override {
+	void read_data(std::istream& in, size_t index, int version, bool patch, Exult_Game game, bool binary) override {
 		int id = idread(in, index, version, binary);
 		if (id >= 0) {
 			Info& inf = info[id];
@@ -385,8 +366,7 @@ protected:
 	}
 
 public:
-	Functor_multidata_reader(std::map<int, Info>& nfo, bool h = false)
-			: Base_reader(h), info(nfo) {}
+	Functor_multidata_reader(std::map<int, Info>& nfo, bool h = false) : Base_reader(h), info(nfo) {}
 };
 
 /*
@@ -399,17 +379,14 @@ protected:
 	Functor   reader;
 	Transform postread;
 
-	void read_data(
-			std::istream& in, size_t index, int version, bool patch,
-			Exult_Game game, bool binary) override {
+	void read_data(std::istream& in, size_t index, int version, bool patch, Exult_Game game, bool binary) override {
 		ignore_unused_variable_warning(index, binary);
 		reader(in, version, patch, game, info);
 		postread(in, version, patch, game, info);
 	}
 
 public:
-	Functor_data_reader(Info& nfo, bool h = false)
-			: Base_reader(h), info(nfo) {}
+	Functor_data_reader(Info& nfo, bool h = false) : Base_reader(h), info(nfo) {}
 };
 
 /*
@@ -418,9 +395,7 @@ public:
 template <typename T, class Info, T Info::* data>
 class Text_reader_functor {
 public:
-	bool operator()(
-			std::istream& in, int version, bool patch, Exult_Game game,
-			Info& info) {
+	bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Info& info) {
 		ignore_unused_variable_warning(version, patch, game);
 		info.*data = ReadInt(in);
 		return true;
@@ -430,9 +405,7 @@ public:
 template <typename T, class Info, T Info::* data1, T Info::* data2>
 class Text_pair_reader_functor {
 public:
-	bool operator()(
-			std::istream& in, int version, bool patch, Exult_Game game,
-			Info& info) {
+	bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Info& info) {
 		ignore_unused_variable_warning(version, patch, game);
 		info.*data1 = ReadInt(in, -1);
 		info.*data2 = ReadInt(in, -1);
@@ -443,9 +416,7 @@ public:
 template <typename T, class Info, T Info::* data, int bit>
 class Bit_text_reader_functor {
 public:
-	bool operator()(
-			std::istream& in, int version, bool patch, Exult_Game game,
-			Info& info) {
+	bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Info& info) {
 		ignore_unused_variable_warning(version, patch, game);
 		// For backwards compatibility.
 		const bool biton = ReadInt(in, 1) != 0;
@@ -461,9 +432,7 @@ public:
 template <typename T, class Info, T Info::* data>
 class Bit_field_text_reader_functor {
 public:
-	bool operator()(
-			std::istream& in, int version, bool patch, Exult_Game game,
-			Info& info) {
+	bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Info& info) {
 		ignore_unused_variable_warning(version, patch, game);
 		int size  = 8 * sizeof(T);    // Bit count.
 		int bit   = 0;
@@ -484,9 +453,7 @@ public:
 template <typename T, class Info, T Info::* data, unsigned pad>
 class Binary_reader_functor {
 public:
-	bool operator()(
-			std::istream& in, int version, bool patch, Exult_Game game,
-			Info& info) {
+	bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Info& info) {
 		ignore_unused_variable_warning(version, patch, game);
 		in.read(reinterpret_cast<char*>(&(info.*data)), sizeof(T));
 		if (pad) {    // Skip some bytes.
@@ -496,14 +463,10 @@ public:
 	}
 };
 
-template <
-		typename T1, typename T2, class Info, T1 Info::* data1,
-		T2 Info::* data2, unsigned pad>
+template <typename T1, typename T2, class Info, T1 Info::* data1, T2 Info::* data2, unsigned pad>
 class Binary_pair_reader_functor {
 public:
-	bool operator()(
-			std::istream& in, int version, bool patch, Exult_Game game,
-			Info& info) {
+	bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Info& info) {
 		ignore_unused_variable_warning(version, patch, game);
 		in.read(reinterpret_cast<char*>(&(info.*data1)), sizeof(T1));
 		in.read(reinterpret_cast<char*>(&(info.*data2)), sizeof(T2));
@@ -517,9 +480,7 @@ public:
 template <typename T, class Info, T* Info::* data>
 class Class_reader_functor {
 public:
-	bool operator()(
-			std::istream& in, int version, bool patch, Exult_Game game,
-			Info& info) {
+	bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Info& info) {
 		T* cls = new T();
 		cls->set_patch(patch);    // Set patch flag.
 		if (!cls->read(in, version, game)) {
@@ -547,9 +508,7 @@ public:
 template <typename T, class Info, std::vector<T> Info::* data>
 class Vector_reader_functor {
 public:
-	bool operator()(
-			std::istream& in, int version, bool patch, Exult_Game game,
-			Info& info) {
+	bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Info& info) {
 		T cls;
 		if (!patch) {
 			cls.set_static(true);
@@ -572,8 +531,7 @@ void Read_text_data_file(
 		// What to use to parse data.
 		const tcb::span<std::unique_ptr<Base_reader>>& parsers,
 		// The names of the sections
-		const tcb::span<std::string_view>& sections, bool editing,
-		Exult_Game game, int resource);
+		const tcb::span<std::string_view>& sections, bool editing, Exult_Game game, int resource);
 
 /*
  *  Generic base data-agnostic writer class.
@@ -662,8 +620,7 @@ protected:
 	}
 
 public:
-	Functor_multidata_writer(
-			const char* s, std::map<int, Info>& nfo, int n, int v = -1)
+	Functor_multidata_writer(const char* s, std::map<int, Info>& nfo, int n, int v = -1)
 			: Base_writer(s, v), info(nfo), numshapes(n) {
 		check();
 	}
@@ -689,8 +646,7 @@ protected:
 	}
 
 public:
-	Functor_data_writer(const char* s, Info& nfo, int v = -1)
-			: Base_writer(s, v), info(nfo) {
+	Functor_data_writer(const char* s, Info& nfo, int v = -1) : Base_writer(s, v), info(nfo) {
 		check();
 	}
 };
@@ -781,12 +737,10 @@ public:
 		int bit   = 0;
 		T   flags = info.*data;
 		while (bit < size) {
-			out << static_cast<bool>((flags & (static_cast<T>(1) << bit)) != 0)
-				<< '/';
+			out << static_cast<bool>((flags & (static_cast<T>(1) << bit)) != 0) << '/';
 			bit++;
 		}
-		out << static_cast<bool>((flags & (static_cast<T>(1) << size)) != 0)
-			<< std::endl;
+		out << static_cast<bool>((flags & (static_cast<T>(1) << size)) != 0) << std::endl;
 	}
 
 	bool operator()(Info& info) {
@@ -813,9 +767,7 @@ public:
 	}
 };
 
-template <
-		int flag, typename T1, typename T2, class Info, T1 Info::* data1,
-		T2 Info::* data2, int pad>
+template <int flag, typename T1, typename T2, class Info, T1 Info::* data1, T2 Info::* data2, int pad>
 class Binary_pair_writer_functor {
 	Flag_check_functor<flag, Info> check;
 
@@ -903,9 +855,8 @@ public:
  *  Writes text data file according to passed writer functions.
  */
 void Write_text_data_file(
-		const char* fname,    // Name of file to read, sans extension
-		const tcb::span<std::unique_ptr<Base_writer>>&
-				writers,    // What to use to write data.
+		const char*                                    fname,      // Name of file to read, sans extension
+		const tcb::span<std::unique_ptr<Base_writer>>& writers,    // What to use to write data.
 		int version, Exult_Game game);
 
 #endif

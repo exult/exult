@@ -96,7 +96,7 @@ enum class MidiController {
 	XCallbackTrigger     = 0x77,    // XMIDI Callback Trigger
 	XSequenceBranchIndex = 0x78,    // XMIDI Sequence Branch Index
 	ResetControllers     = 0x79,    // Immediately reset all controllers
-	AllNotesOff = 0x7B,    // Immediately stop all notes excluding sustained
+	AllNotesOff          = 0x7B,    // Immediately stop all notes excluding sustained
 };
 
 #include "XMidiRecyclable.h"
@@ -183,8 +183,8 @@ struct XMidiEvent : public XMidiRecyclable<XMidiEvent> {
 		struct {
 			int         duration;     // Duration of note (120 Hz)
 			XMidiEvent* next_note;    // The next note on the stack
-			uint32 note_time;    // Time note stops playing (6000th of second)
-			uint8  actualvel;    // Actual velocity of playing note
+			uint32      note_time;    // Time note stops playing (6000th of second)
+			uint8       actualvel;    // Actual velocity of playing note
 		} note_on;
 
 		struct {
@@ -305,8 +305,7 @@ struct XMidiEvent : public XMidiRecyclable<XMidiEvent> {
 				out << "Controller XBank Change " << int(data[1]);
 				break;
 			case MidiController::XIndirectCtrlPrefix:
-				out << "Controller XIndirect Controller Prefix "
-					<< int(data[1]);
+				out << "Controller XIndirect Controller Prefix " << int(data[1]);
 				break;
 			case MidiController::XForLoop:
 				out << "Controller XFor Loop " << int(data[1]);
@@ -338,8 +337,7 @@ struct XMidiEvent : public XMidiRecyclable<XMidiEvent> {
 
 		case MidiStatus::Sysex: {
 			auto systex_buffer = ex.sysex_data.as_span();
-			out << "sysex " << systex_buffer.size_bytes() << " bytes "
-				<< std::hex;
+			out << "sysex " << systex_buffer.size_bytes() << " bytes " << std::hex;
 
 			// Hex dump
 			for (auto c : systex_buffer) {
@@ -354,8 +352,7 @@ struct XMidiEvent : public XMidiRecyclable<XMidiEvent> {
 
 			// default should never happen
 		default:
-			out << "Status_" << int(getStatusType()) << " " << int(data[0])
-				<< " " << int(data[1]);
+			out << "Status_" << int(getStatusType()) << " " << int(data[0]) << " " << int(data[1]);
 			break;
 		}
 
@@ -394,7 +391,6 @@ struct XMidiEvent : public XMidiRecyclable<XMidiEvent> {
 
 // needed explicit instantiation declaration to supress warnings from clang
 template <>
-XMidiRecyclable<XMidiEvent>::FreeList
-		XMidiRecyclable<XMidiEvent>::FreeList::instance;
+XMidiRecyclable<XMidiEvent>::FreeList XMidiRecyclable<XMidiEvent>::FreeList::instance;
 
 #endif    // XMIDIEVENT_H_INCLUDED

@@ -28,34 +28,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <algorithm>
 
-Modal_gump::Modal_gump(
-		Container_game_object* cont, int initx, int inity, int shnum,
-		ShapeFile shfile, std::shared_ptr<Font> font)
+Modal_gump::Modal_gump(Container_game_object* cont, int initx, int inity, int shnum, ShapeFile shfile, std::shared_ptr<Font> font)
 		: Gump(cont, initx, inity, shnum, shfile), done(false), pushed(nullptr),
-		  font(font ? std::move(font)
-					: fontManager.get_font("SMALL_BLACK_FONT")),
-		  drag_mx(INT_MIN), drag_my(INT_MIN), no_dragging(false),
-		  procedural_background(0, 0, 0, 0) {
+		  font(font ? std::move(font) : fontManager.get_font("SMALL_BLACK_FONT")), drag_mx(INT_MIN), drag_my(INT_MIN),
+		  no_dragging(false), procedural_background(0, 0, 0, 0) {
 	GetDragType();
 }
 
 // Create centered.
 
-Modal_gump::Modal_gump(
-		Container_game_object* cont, int shnum, ShapeFile shfile,
-		std::shared_ptr<Font> font)
+Modal_gump::Modal_gump(Container_game_object* cont, int shnum, ShapeFile shfile, std::shared_ptr<Font> font)
 		: Gump(cont, shnum, shfile), done(false), pushed(nullptr),
-		  font(font ? std::move(font)
-					: fontManager.get_font("SMALL_BLACK_FONT")),
-		  drag_mx(INT_MIN), drag_my(INT_MIN), no_dragging(false),
-		  procedural_background(0, 0, 0, 0) {
+		  font(font ? std::move(font) : fontManager.get_font("SMALL_BLACK_FONT")), drag_mx(INT_MIN), drag_my(INT_MIN),
+		  no_dragging(false), procedural_background(0, 0, 0, 0) {
 	GetDragType();
 }
 
 bool Modal_gump::run() {
 	// Need a repaint is displaying a popup message and it has expired
-	if (!popup_message.empty()
-		&& popup_message_timeout <= std::chrono::steady_clock::now()) {
+	if (!popup_message.empty() && popup_message_timeout <= std::chrono::steady_clock::now()) {
 		std::cout << "need to clear popup message" << std::endl;
 		popup_message.clear();
 		return true;
@@ -64,22 +55,19 @@ bool Modal_gump::run() {
 }
 
 bool Modal_gump::mouse_down(int mx, int my, MouseButton button) {
-	if ((pushed = on_button(mx, my))) { 
+	if ((pushed = on_button(mx, my))) {
 		if (pushed->push(button)) {
 			return true;
 		}
 		pushed = nullptr;
 	}
 
-	if (is_draggable()
-		&& button == MouseButton::Left)    //&&(has_point(mx, my))
+	if (is_draggable() && button == MouseButton::Left)    //&&(has_point(mx, my))
 	{
 		auto dt = GetDragType();
-		if (dt == DragType::Always
-			|| (dt == DragType::Offscreen && isOffscreen())) {
+		if (dt == DragType::Always || (dt == DragType::Offscreen && isOffscreen())) {
 #ifdef EXTRA_DEBUG
-			std::cout << "start draggging modal gump " << mx << " " << my
-					  << std::endl;
+			std::cout << "start draggging modal gump " << mx << " " << my << std::endl;
 #endif
 			drag_mx    = mx;
 			drag_my    = my;
@@ -92,7 +80,6 @@ bool Modal_gump::mouse_down(int mx, int my, MouseButton button) {
 }
 
 bool Modal_gump::mouse_up(int mx, int my, MouseButton button) {
-
 	// handle checkmark button and other old style buttons
 	if (pushed) {
 		pushed->unpush(button);
@@ -101,25 +88,21 @@ bool Modal_gump::mouse_up(int mx, int my, MouseButton button) {
 		}
 		pushed = nullptr;
 		return true;
-		
 	}
-	if (is_draggable() && button == MouseButton::Left && drag_mx != INT_MIN
-		&& drag_my != INT_MIN) {
+	if (is_draggable() && button == MouseButton::Left && drag_mx != INT_MIN && drag_my != INT_MIN) {
 		int delta_x = mx - drag_mx;
 		int delta_y = my - drag_my;
 		set_pos(get_x() + delta_x, get_y() + delta_y);
 		if (isOffscreen(false)) {
 			set_pos(lastgood_x, lastgood_y);
 
-			std::cout << "modal gump dragged off screen returning to "
-					  << lastgood_x << " " << lastgood_y << std::endl;
+			std::cout << "modal gump dragged off screen returning to " << lastgood_x << " " << lastgood_y << std::endl;
 		} else {
 			lastgood_x = get_x();
 			lastgood_y = get_y();
 		}
 #ifdef EXTRA_DEBUG
-		std::cout << "stop draggging modal gump " << mx << " " << my << " "
-				  << delta_x << " " << delta_y << std::endl;
+		std::cout << "stop draggging modal gump " << mx << " " << my << " " << delta_x << " " << delta_y << std::endl;
 #endif
 		drag_mx = INT_MIN;
 		drag_my = INT_MIN;
@@ -133,7 +116,7 @@ bool Modal_gump::mouse_up(int mx, int my, MouseButton button) {
 		pushed = nullptr;
 		return true;
 	}
-	return Gump::mouse_up(mx,my,button);
+	return Gump::mouse_up(mx, my, button);
 }
 
 bool Modal_gump::mouse_drag(int mx, int my) {
@@ -147,8 +130,7 @@ bool Modal_gump::mouse_drag(int mx, int my) {
 		set_pos(get_x() + delta_x, get_y() + delta_y);
 		if (isOffscreen(false)) {
 			set_pos(lastgood_x, lastgood_y);
-			std::cout << "modal gump dragged off screen returning to "
-					  << lastgood_x << " " << lastgood_y << std::endl;
+			std::cout << "modal gump dragged off screen returning to " << lastgood_x << " " << lastgood_y << std::endl;
 		} else if (!isOffscreen(true)) {
 			lastgood_x = get_x();
 			lastgood_y = get_y();
@@ -157,8 +139,7 @@ bool Modal_gump::mouse_drag(int mx, int my) {
 		drag_my = my;
 
 #ifdef EXTRA_DEBUG
-		std::cout << "draggging modal gump " << mx << " " << my << " "
-				  << delta_x << " " << delta_y << std::endl;
+		std::cout << "draggging modal gump " << mx << " " << my << " " << delta_x << " " << delta_y << std::endl;
 #endif
 		return true;
 	}
@@ -172,14 +153,11 @@ Modal_gump::DragType Modal_gump::GetDragType() {
 		// Read from config, default to offscreen
 		dragType = DragType::Offscreen;
 		std::string value;
-		config->value(
-				"config/gameplay/modal_gump_dragging", value, "offscreen");
+		config->value("config/gameplay/modal_gump_dragging", value, "offscreen");
 		SetDragType(
-				!Pentagram::strcasecmp(value.c_str(), "always")
-						? DragType::Always
-				: !Pentagram::strcasecmp(value.c_str(), "never")
-						? DragType::Never
-						: DragType::Offscreen);
+				!Pentagram::strcasecmp(value.c_str(), "always")  ? DragType::Always
+				: !Pentagram::strcasecmp(value.c_str(), "never") ? DragType::Never
+																 : DragType::Offscreen);
 	}
 
 	return dragType;
@@ -201,28 +179,23 @@ void Modal_gump::SetDragType(DragType newtype) {
 	config->set("config/gameplay/modal_gump_dragging", value, true);
 }
 
-void Modal_gump::SetProceduralBackground(
-		TileRect backsize, int Checkbg_paletteramp,
-		bool centre_gump_on_screen) {
-	checkmark_background
-			= ShapeID(EXULT_FLX_CHECKMARK_BACKGROUND_SHP, 0, SF_EXULT_FLX);
+void Modal_gump::SetProceduralBackground(TileRect backsize, int Checkbg_paletteramp, bool centre_gump_on_screen) {
+	checkmark_background = ShapeID(EXULT_FLX_CHECKMARK_BACKGROUND_SHP, 0, SF_EXULT_FLX);
 
 	if (Checkbg_paletteramp >= 0 && Checkbg_paletteramp <= 16) {
-		checkmark_background.set_palette_transform(
-				PT_RampRemapAllFrom | Checkbg_paletteramp);
+		checkmark_background.set_palette_transform(PT_RampRemapAllFrom | Checkbg_paletteramp);
 	}
 
-	bool resizing = procedural_background && procedural_background != backsize;
+	bool resizing         = procedural_background && procedural_background != backsize;
 	procedural_background = backsize;
 	// Enlarge by 2 for the 3d edge and black border
 	procedural_background.enlarge(2);
 
 	// create checkmark button
 	// if don't already have one or we are resizing
-	auto existing
-			= std::find_if(elems.begin(), elems.end(), [](auto elem) -> bool {
-				  return dynamic_cast<Checkmark_button*>(elem) != nullptr;
-			  });
+	auto existing = std::find_if(elems.begin(), elems.end(), [](auto elem) -> bool {
+		return dynamic_cast<Checkmark_button*>(elem) != nullptr;
+	});
 
 	//
 	if (resizing || existing == elems.end()) {
@@ -288,17 +261,12 @@ void Modal_gump::paint() {
 		local_to_screen(backrect.x, backrect.y);
 
 		checkmark_background.paint_shape(backrect.x, backrect.y + backrect.h);
-		checkmark_background.paint_shape(
-				backrect.x + backrect.w, backrect.y + backrect.h);
+		checkmark_background.paint_shape(backrect.x + backrect.w, backrect.y + backrect.h);
 
-		ib->draw_box(
-				backrect.x, backrect.y, backrect.w, backrect.h, 1, 0xFF,
-				procedural_colours.border);
+		ib->draw_box(backrect.x, backrect.y, backrect.w, backrect.h, 1, 0xFF, procedural_colours.border);
 		ib->draw_beveled_box(
-				backrect.x + 1, backrect.y + 1, backrect.w - 2, backrect.h - 2,
-				1, procedural_colours.Background, procedural_colours.Highlight,
-				procedural_colours.Highlight2, procedural_colours.Shadow,
-				procedural_colours.Shadow);
+				backrect.x + 1, backrect.y + 1, backrect.w - 2, backrect.h - 2, 1, procedural_colours.Background,
+				procedural_colours.Highlight, procedural_colours.Highlight2, procedural_colours.Shadow, procedural_colours.Shadow);
 	} else {
 		// Not a procedurally drawn gump but the popup message code needs
 		// backrect filled
@@ -319,9 +287,7 @@ void Modal_gump::paint() {
 		int messagey = backrect.y - messageh;
 		int boxx     = std::min(backrect.x, messagex - 2);
 		int boxw     = std::max(messagew + 4, backrect.w);
-		ib->draw_box(
-				boxx, messagey, boxw, messageh, 0,
-				procedural_colours.Background, 0xff);
+		ib->draw_box(boxx, messagey, boxw, messageh, 0, procedural_colours.Background, 0xff);
 		font->paint_text(ib, popup_message.c_str(), messagex, messagey + 4);
 	}
 
@@ -358,7 +324,7 @@ TileRect Modal_gump::get_rect() const {
 TileRect Modal_gump::get_usable_area() const {
 	if (!procedural_background) {
 		return TileRect();
-	} 
+	}
 	TileRect r = procedural_background;
 	r.enlarge(-2);
 	return r;
@@ -369,8 +335,7 @@ TileRect Modal_gump::get_usable_area() const {
 void Modal_gump::SetPopupMessage(const std::string& message, int mstimeout) {
 	std::cout << "Adding popup message to gump: " << message << std::endl;
 	popup_message         = message;
-	popup_message_timeout = std::chrono::steady_clock::now()
-			+= std::chrono::milliseconds(mstimeout);
+	popup_message_timeout = std::chrono::steady_clock::now() += std::chrono::milliseconds(mstimeout);
 
 	gwin->set_all_dirty();
 }
@@ -393,8 +358,7 @@ int Modal_gump::get_button_pos_for_label(const char* label) {
 void Modal_gump::ResizeWidthToFitText(const char* text) {
 	int width = 0, height;
 	font->get_text_box_dims(text, width, height);
-	procedural_background.w
-			= std::max(procedural_background.w, width + label_margin * 2);
+	procedural_background.w = std::max(procedural_background.w, width + label_margin * 2);
 
 	set_pos();
 }

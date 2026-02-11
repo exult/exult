@@ -45,15 +45,12 @@ public:
 	friend class Shape_info;
 	Effective_hp_info() = default;
 
-	Effective_hp_info(
-			short f, short q, char h, bool p = false, bool m = false,
-			bool s = false, bool inv = false) {
+	Effective_hp_info(short f, short q, char h, bool p = false, bool m = false, bool s = false, bool inv = false) {
 		set(f, q, h, p, m, s, inv);
 	}
 
 	Effective_hp_info(const Effective_hp_info& other)
-			: Base_info(other), frame(other.frame), quality(other.quality),
-			  hps(other.hps) {
+			: Base_info(other), frame(other.frame), quality(other.quality), hps(other.hps) {
 		info_flags = other.info_flags;
 	}
 
@@ -62,9 +59,7 @@ public:
 	// Write out.
 	void write(std::ostream& out, int shapenum, Exult_Game game);
 
-	void set(
-			short f, short q, char h, bool p = false, bool m = false,
-			bool s = false, bool inv = false) {
+	void set(short f, short q, char h, bool p = false, bool m = false, bool s = false, bool inv = false) {
 		frame   = f;
 		quality = q;
 		hps     = h;

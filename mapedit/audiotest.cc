@@ -29,14 +29,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *  GTK callback handlers for audio testing dialog.
  */
 
-C_EXPORT void on_play_audio_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_play_audio_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->play_audio_dialog();
 }
 
-C_EXPORT void on_audio_type_combo_changed(
-		GtkComboBox* combo, gpointer user_data) {
+C_EXPORT void on_audio_type_combo_changed(GtkComboBox* combo, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	const int    type         = gtk_combo_box_get_active(combo);
 	ExultStudio* studio       = ExultStudio::get_instance();
@@ -46,14 +44,12 @@ C_EXPORT void on_audio_type_combo_changed(
 		// Disable repeat checkbox for voice (type == 2)
 		gtk_widget_set_sensitive(repeat_check, type != 2);
 		if (type == 2) {
-			gtk_toggle_button_set_active(
-					GTK_TOGGLE_BUTTON(repeat_check), false);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(repeat_check), false);
 		}
 	}
 }
 
-C_EXPORT void on_play_audio_play_clicked(
-		GtkButton* button, gpointer user_data) {
+C_EXPORT void on_play_audio_play_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 
@@ -66,19 +62,15 @@ C_EXPORT void on_play_audio_play_clicked(
 		return;
 	}
 
-	const int type = gtk_combo_box_get_active(GTK_COMBO_BOX(type_combo));
-	const int track
-			= gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(track_spin));
-	const int volume
-			= gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(volume_spin));
-	const bool repeat
-			= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(repeat_check));
+	const int  type   = gtk_combo_box_get_active(GTK_COMBO_BOX(type_combo));
+	const int  track  = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(track_spin));
+	const int  volume = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(volume_spin));
+	const bool repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(repeat_check));
 
 	studio->play_audio(type, track, volume, repeat);
 }
 
-C_EXPORT void on_play_audio_stop_clicked(
-		GtkButton* button, gpointer user_data) {
+C_EXPORT void on_play_audio_stop_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	ExultStudio::get_instance()->stop_audio();
 }

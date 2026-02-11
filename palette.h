@@ -54,8 +54,8 @@ class Palette {
 	bool           border255;
 	bool           faded_out;    // true if faded palette to black.
 	bool           fades_enabled;
-	void set_loaded(const U7multiobject& pal, const char* xfname, int xindex);
-	void loadxform(const unsigned char* buf, const char* xfname, int& xindex);
+	void           set_loaded(const U7multiobject& pal, const char* xfname, int xindex);
+	void           loadxform(const unsigned char* buf, const char* xfname, int& xindex);
 
 	static unsigned char border[3];
 
@@ -73,9 +73,7 @@ public:
 	void flash_red();    // Flash red for a moment.
 	// Set desired palette.
 	void set(int pal_num, int new_brightness = -1, bool repaint = true);
-	void set(
-			const unsigned char palnew[768], int new_brightness = -1,
-			bool repaint = true, bool border255 = false);
+	void set(const unsigned char palnew[768], int new_brightness = -1, bool repaint = true, bool border255 = false);
 
 	int get_brightness() const {    // Percentage:  100 = normal.
 		return brightness;
@@ -91,15 +89,10 @@ public:
 	}
 
 	void apply(bool repaint = true);
+	void load(const File_spec& fname0, int index, const char* xfname = nullptr, int xindex = -1);
+	void load(const File_spec& fname0, const File_spec& fname1, int index, const char* xfname = nullptr, int xindex = -1);
 	void load(
-			const File_spec& fname0, int index, const char* xfname = nullptr,
-			int xindex = -1);
-	void load(
-			const File_spec& fname0, const File_spec& fname1, int index,
-			const char* xfname = nullptr, int xindex = -1);
-	void load(
-			const File_spec& fname0, const File_spec& fname1,
-			const File_spec& fname2, int index, const char* xfname = nullptr,
+			const File_spec& fname0, const File_spec& fname1, const File_spec& fname2, int index, const char* xfname = nullptr,
 			int xindex = -1);
 	void set_brightness(int bright);
 
@@ -111,16 +104,13 @@ public:
 		return max_val;
 	}
 
-	void fade_in(int cycles);
-	void fade_out(int cycles);
-	int  find_color(int r, int g, int b, int last = 0xe0) const;
-	void create_palette_map(const Palette* to, unsigned char* buf) const;
-	std::unique_ptr<Palette> create_intermediate(
-			const Palette& to, int nsteps, int pos) const;
-	void create_trans_table(
-			unsigned char br, unsigned bg, unsigned bb, int alpha,
-			unsigned char* table) const;
-	void show();
+	void                     fade_in(int cycles);
+	void                     fade_out(int cycles);
+	int                      find_color(int r, int g, int b, int last = 0xe0) const;
+	void                     create_palette_map(const Palette* to, unsigned char* buf) const;
+	std::unique_ptr<Palette> create_intermediate(const Palette& to, int nsteps, int pos) const;
+	void                     create_trans_table(unsigned char br, unsigned bg, unsigned bb, int alpha, unsigned char* table) const;
+	void                     show();
 
 	void set_color(int nr, int r, int g, int b);
 
@@ -198,15 +188,9 @@ class Palette_transition {
 	int                      rate;
 
 public:
-	Palette_transition(
-			int from, int to, int ch, int cm, int ct, int, int nsteps, int sh,
-			int smin, int stick);
-	Palette_transition(
-			Palette* from, Palette* to, int ch, int cm, int ct, int r,
-			int nsteps, int sh, int smin, int stick);
-	Palette_transition(
-			Palette* from, int to, int ch, int cm, int ct, int r, int nsteps,
-			int sh, int smin, int stick);
+	Palette_transition(int from, int to, int ch, int cm, int ct, int, int nsteps, int sh, int smin, int stick);
+	Palette_transition(Palette* from, Palette* to, int ch, int cm, int ct, int r, int nsteps, int sh, int smin, int stick);
+	Palette_transition(Palette* from, int to, int ch, int cm, int ct, int r, int nsteps, int sh, int smin, int stick);
 
 	int get_step() const {
 		return step;

@@ -33,8 +33,7 @@ static inline bool Point_in_strip(int start, int end, int pt) noexcept {
 	// Does the strip wrap around the world?
 	if (end >= c_num_tiles) {
 		// Yes. Check both halves of it.
-		if ((pt < start || pt >= c_num_tiles)
-			&& (pt < 0 || pt >= (end % c_num_tiles))) {
+		if ((pt < start || pt >= c_num_tiles) && (pt < 0 || pt >= (end % c_num_tiles))) {
 			return false;
 		}
 	}
@@ -53,8 +52,7 @@ public:          // Let's make it all public.
 	int x, y;    // Position.
 	int w, h;    // Dimensions.
 
-	TileRect(int xin, int yin, int win, int hin) noexcept
-			: x(xin), y(yin), w(win), h(hin) {}
+	TileRect(int xin, int yin, int win, int hin) noexcept : x(xin), y(yin), w(win), h(hin) {}
 
 	TileRect() noexcept = default;    // An uninitialized one.
 
@@ -101,8 +99,7 @@ public:          // Let's make it all public.
 
 	// Does it intersect another?
 	bool intersects(const TileRect& r2) const noexcept {
-		return x < r2.x + r2.w && r2.x < x + w && y < r2.y + r2.h
-			   && r2.y < y + h;
+		return x < r2.x + r2.w && r2.x < x + w && y < r2.y + r2.h && r2.y < y + h;
 	}
 
 	void shift(int deltax, int deltay) noexcept {
@@ -118,8 +115,7 @@ public:          // Let's make it all public.
 		return *this;
 	}
 
-	int distance(
-			int px, int py) const noexcept    // Get distance from a point (max.
+	int distance(int px, int py) const noexcept    // Get distance from a point (max.
 	//   dist. along x or y coord.)
 	{
 		const int xdist = px <= x ? (x - px) : (px - x - w + 1);
@@ -150,20 +146,17 @@ public:
 	int x, y, z;    // Position.
 	int w, d, h;    // Dimensions.
 
-	Block(int xin, int yin, int zin, int win, int din, int hin) noexcept
-			: x(xin), y(yin), z(zin), w(win), d(din), h(hin) {}
+	Block(int xin, int yin, int zin, int win, int din, int hin) noexcept : x(xin), y(yin), z(zin), w(win), d(din), h(hin) {}
 
 	Block() noexcept = default;    // An uninitialized one.
 
 	// Is this point in it?
 	bool has_point(int px, int py, int pz) const noexcept {
-		return px >= x && px < x + w && py >= y && py < y + d && pz >= z
-			   && pz < z + h;
+		return px >= x && px < x + w && py >= y && py < y + d && pz >= z && pz < z + h;
 	}
 
 	bool has_world_point(int px, int py, int pz) const noexcept {
-		return Point_in_strip(x, w, px) && Point_in_strip(y, d, py) && pz >= z
-			   && pz < z + h;
+		return Point_in_strip(x, w, px) && Point_in_strip(y, d, py) && pz >= z && pz < z + h;
 	}
 };
 #endif

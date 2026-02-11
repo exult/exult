@@ -26,18 +26,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class Scrollablebutton : public CallbackButton<Scrollable_widget> {
 public:
 	template <typename... Ts>
-	Scrollablebutton(Scrollable_widget* par, Ts&&... args)
-			: CallbackButtonBase(par, std::forward<Ts>(args)...) {
+	Scrollablebutton(Scrollable_widget* par, Ts&&... args) : CallbackButtonBase(par, std::forward<Ts>(args)...) {
 		set_self_managed(true);
 	}
 };
 
 Scrollable_widget::Scrollable_widget(
-		Gump_Base* parent, int x, int y, int iw, int ih, int border_size,
-		ScrollbarType type, bool nopagebuttons, int scrollbg)
+		Gump_Base* parent, int x, int y, int iw, int ih, int border_size, ScrollbarType type, bool nopagebuttons, int scrollbg)
 		: Gump_widget(parent, -1, x, y), border_size(border_size), type(type),
-		  slider_shape(EXULT_FLX_SAV_SLIDER_SHP, 0, SF_EXULT_FLX),
-		  sliderw(slider_shape.get_shape()->get_width()),
+		  slider_shape(EXULT_FLX_SAV_SLIDER_SHP, 0, SF_EXULT_FLX), sliderw(slider_shape.get_shape()->get_width()),
 		  sliderh(slider_shape.get_shape()->get_height()), scrollbg(scrollbg) {
 	int scrollbutton_x = iw + 2 * border_size;
 	height             = ih + 2 * border_size;
@@ -46,16 +43,14 @@ Scrollable_widget::Scrollable_widget(
 	int ypos = 0;
 	if (!nopagebuttons) {
 		children[id_page_up] = std::make_shared<Scrollablebutton>(
-				this, &Scrollable_widget::page_up, EXULT_FLX_SAV_UPUP_SHP,
-				scrollbutton_x, 0, SF_EXULT_FLX);
+				this, &Scrollable_widget::page_up, EXULT_FLX_SAV_UPUP_SHP, scrollbutton_x, 0, SF_EXULT_FLX);
 		children[id_page_up]->set_pos(
 				scrollbutton_x + children[id_page_up]->get_shape()->get_xleft(),
 				ypos + children[id_page_up]->get_shape()->get_yabove());
 		ypos += children[id_page_up]->get_shape()->get_height();
 	}
 	children[id_line_up] = std::make_shared<Scrollablebutton>(
-			this, &Scrollable_widget::line_up, EXULT_FLX_SAV_UP_SHP,
-			scrollbutton_x, ypos, SF_EXULT_FLX);
+			this, &Scrollable_widget::line_up, EXULT_FLX_SAV_UP_SHP, scrollbutton_x, ypos, SF_EXULT_FLX);
 	children[id_line_up]->set_pos(
 			scrollbutton_x + children[id_line_up]->get_shape()->get_xleft(),
 			ypos + children[id_line_up]->get_shape()->get_yabove());
@@ -66,27 +61,22 @@ Scrollable_widget::Scrollable_widget(
 	ypos               = height;
 	if (!nopagebuttons) {
 		children[id_page_down] = std::make_shared<Scrollablebutton>(
-				this, &Scrollable_widget::page_down, EXULT_FLX_SAV_DOWNDOWN_SHP,
-				scrollbutton_x, height, SF_EXULT_FLX);
+				this, &Scrollable_widget::page_down, EXULT_FLX_SAV_DOWNDOWN_SHP, scrollbutton_x, height, SF_EXULT_FLX);
 		ypos = ypos - children[id_page_down]->get_shape()->get_height();
 		children[id_page_down]->set_pos(
-				scrollbutton_x
-						+ children[id_page_down]->get_shape()->get_xleft(),
+				scrollbutton_x + children[id_page_down]->get_shape()->get_xleft(),
 				ypos + children[id_page_down]->get_shape()->get_yabove());
 	}
 
 	children[id_line_down] = std::make_shared<Scrollablebutton>(
-			this, &Scrollable_widget::line_down, EXULT_FLX_SAV_DOWN_SHP,
-			scrollbutton_x, ypos, SF_EXULT_FLX);
+			this, &Scrollable_widget::line_down, EXULT_FLX_SAV_DOWN_SHP, scrollbutton_x, ypos, SF_EXULT_FLX);
 	ypos = ypos - children[id_line_down]->get_shape()->get_height();
 
 	children[id_line_down]->set_pos(
 			scrollbutton_x + children[id_line_up]->get_shape()->get_xleft(),
 			ypos + children[id_line_up]->get_shape()->get_yabove());
-	children[id_scrolling] = pane
-			= std::make_shared<Scrolling_pane>(this, border_size, 0);
-	scrollrect = TileRect(
-			scroll_start_x, scroll_start_y, sliderw, ypos - scroll_start_y);
+	children[id_scrolling] = pane = std::make_shared<Scrolling_pane>(this, border_size, 0);
+	scrollrect                    = TileRect(scroll_start_x, scroll_start_y, sliderw, ypos - scroll_start_y);
 	// Call run to update scrollbar state
 	run();
 }
@@ -98,29 +88,26 @@ bool Scrollable_widget::run() {
 	scroll_max = std::max(0, Get_ChildHeight() - GetUsableArea().h);
 
 	// Hide/show scrolbar elements as needed
-	if ((scroll_max == 0 && type == ScrollbarType::Auto)
-		|| type == ScrollbarType::None) {
+	if ((scroll_max == 0 && type == ScrollbarType::Auto) || type == ScrollbarType::None) {
 		for (int i = id_first_button; i <= id_last_button; i++) {
 			auto& button = children[i];
 			if (button) {
-				repaint |= std::exchange(button->sort_order, Sort_Order::hidden)
-						   != Sort_Order::hidden;
+				repaint |= std::exchange(button->sort_order, Sort_Order::hidden) != Sort_Order::hidden;
 			}
 		}
 		repaint |= std::exchange(pane->scroll_offset, 0) != 0;
 		// Recalculate width for no scrollbar
-		width = scrollrect.x;
+		width        = scrollrect.x;
 		scrollrect.w = 0;
 	} else {
 		for (int i = id_first_button; i <= id_last_button; i++) {
 			auto& button = children[i];
 			if (button) {
-				repaint |= std::exchange(button->sort_order, Sort_Order::normal)
-						   != Sort_Order::normal;
+				repaint |= std::exchange(button->sort_order, Sort_Order::normal) != Sort_Order::normal;
 			}
 		}
 		// recalculate width for scrollbar
-		width = scrollrect.x + children[id_line_up]->get_shape()->get_width();
+		width        = scrollrect.x + children[id_line_up]->get_shape()->get_width();
 		scrollrect.w = sliderw;
 	}
 	for (auto& child : children) {
@@ -151,12 +138,10 @@ bool Scrollable_widget::mouse_down(int mx, int my, MouseButton button) {
 	}
 	screen_to_local(mx, my);
 	// Check for scroller
-	if (scroll_enabled() && mx >= scrollrect.x
-		&& mx < scrollrect.x + scrollrect.w && my >= scrollrect.y
+	if (scroll_enabled() && mx >= scrollrect.x && mx < scrollrect.x + scrollrect.w && my >= scrollrect.y
 		&& my < scrollrect.y + scrollrect.h) {
 		// Now work out the position
-		const int pos = ((scrollrect.h - sliderh) * get_scroll_offset())
-						/ std::max(1, GetScrollMax());
+		const int pos = ((scrollrect.h - sliderh) * get_scroll_offset()) / std::max(1, GetScrollMax());
 		;
 
 		// Pressed above it
@@ -286,8 +271,7 @@ void Scrollable_widget::paint() {
 
 	if (scroll_enabled()) {
 		// paint scrollbar children
-		tcb::span<std::shared_ptr<Gump_widget>> sbchildren(
-				children.data() + id_first, id_button_count);
+		tcb::span<std::shared_ptr<Gump_widget>> sbchildren(children.data() + id_first, id_button_count);
 		Gump_widget::paintSorted(sbchildren);
 
 		// paint scroll background and slider
@@ -297,8 +281,7 @@ void Scrollable_widget::paint() {
 		ibuf->draw_box(sx, sy, scrollrect.w, scrollrect.h, 0, scrollbg, 0xff);
 
 		// Now work out the position
-		const int pos = ((scrollrect.h - sliderh) * get_scroll_offset())
-						/ std::max(1, GetScrollMax());
+		const int pos = ((scrollrect.h - sliderh) * get_scroll_offset()) / std::max(1, GetScrollMax());
 
 		slider_shape.paint_shape(sx, sy + pos);
 
@@ -387,18 +370,16 @@ void Scrollable_widget::expand(int deltax, int deltay) {
 	height += deltay;
 	scrollrect.x += deltax;
 	scrollrect.h += deltay;
-	
+
 	// Move scrolbar widgets
 
-	for (int index = id_first_button; index <= id_last_button; index++)
-	{
+	for (int index = id_first_button; index <= id_last_button; index++) {
 		auto widget = children[index];
-		if (widget) {		
-		widget->set_pos(widget->get_x() + deltax, widget->get_y()+(index>=id_page_down?deltay:0));
+		if (widget) {
+			widget->set_pos(widget->get_x() + deltax, widget->get_y() + (index >= id_page_down ? deltay : 0));
 		}
-	}	
+	}
 }
 
-Scrollable_widget::Scrolling_pane::Scrolling_pane(
-		Gump_Base* parent, int px, int py)
+Scrollable_widget::Scrolling_pane::Scrolling_pane(Gump_Base* parent, int px, int py)
 		: IterableGump_widget(parent, -1, px, py, 0), scroll_offset(y) {}

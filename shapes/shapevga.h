@@ -39,17 +39,17 @@
  *  The "shapes.vga" file:
  */
 class Shapes_vga_file : public Vga_file {
-	std::map<int, Shape_info> info;     // Extra info. about each shape.
-	Shape_info                zinfo;    // A fake one (all 0's).
+	std::map<int, Shape_info> info;                 // Extra info. about each shape.
+	Shape_info                zinfo;                // A fake one (all 0's).
 	bool                      info_read = false;    // True when info is set.
-	void Read_Shapeinf_text_data_file(bool editing, Exult_Game game_type);
-	void Read_Bodies_text_data_file(bool editing, Exult_Game game_type);
-	void Read_Paperdoll_text_data_file(bool editing, Exult_Game game_type);
-	void Read_Gumpinf_text_data_file(bool editing, Exult_Game game_type);
-	void Write_Shapeinf_text_data_file(Exult_Game game_type);
-	void Write_Bodies_text_data_file(Exult_Game game_type);
-	void Write_Paperdoll_text_data_file(Exult_Game game_type);
-	void Write_Gumpinf_text_data_file(Exult_Game game_type);
+	void                      Read_Shapeinf_text_data_file(bool editing, Exult_Game game_type);
+	void                      Read_Bodies_text_data_file(bool editing, Exult_Game game_type);
+	void                      Read_Paperdoll_text_data_file(bool editing, Exult_Game game_type);
+	void                      Read_Gumpinf_text_data_file(bool editing, Exult_Game game_type);
+	void                      Write_Shapeinf_text_data_file(Exult_Game game_type);
+	void                      Write_Bodies_text_data_file(Exult_Game game_type);
+	void                      Write_Paperdoll_text_data_file(Exult_Game game_type);
+	void                      Write_Gumpinf_text_data_file(Exult_Game game_type);
 
 	friend class ExultStudio;
 

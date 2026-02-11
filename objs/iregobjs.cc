@@ -83,13 +83,11 @@ void Ireg_game_object::move(int newtx, int newty, int newlift, int newmap) {
  *  The object is deleted.
  */
 
-void Ireg_game_object::remove_this(
-		Game_object_shared* keep    // Non-null to not delete.
+void Ireg_game_object::remove_this(Game_object_shared* keep    // Non-null to not delete.
 ) {
 	// Do this before all else.
 	if (!keep) {
-		cheat.clear_this_grabbed_actor(
-				this->as_actor());    // Could be an actor
+		cheat.clear_this_grabbed_actor(this->as_actor());    // Could be an actor
 	} else {
 		*keep = shared_from_this();
 	}
@@ -164,8 +162,7 @@ void Ireg_game_object::write_ireg(ODataSource* out) {
 	uint8             value = get_quality();
 	if (info.has_quality_flags()) {
 		// Store 'quality_flags'.
-		value = (get_flag(Obj_flags::invisible) ? 1 : 0)
-				+ (get_flag(Obj_flags::okay_to_take) ? (1 << 3) : 0);
+		value = (get_flag(Obj_flags::invisible) ? 1 : 0) + (get_flag(Obj_flags::okay_to_take) ? (1 << 3) : 0);
 	}
 	// Special case for 'quantity' items:
 	else if (get_flag(Obj_flags::okay_to_take) && info.has_quantity()) {

@@ -71,8 +71,7 @@ public:
 	/// @param spec Specification of the data source.
 	/// @param objnum   Index of object in the data object.
 	/// the object comes from the patch dir.
-	U7object(File_spec spec, int objnum)
-			: identifier(std::move(spec)), objnumber(objnum) {}
+	U7object(File_spec spec, int objnum) : identifier(std::move(spec)), objnumber(objnum) {}
 
 	~U7object() noexcept                 = default;
 	U7object(const U7object&)            = default;
@@ -91,7 +90,7 @@ public:
 	// TODO: This may need to be overriden by U7multiobject, in case the
 	// patching files have more objects than the base.
 	size_t                           number_of_objects();
-	std::unique_ptr<unsigned char[]> retrieve(std::size_t& len,bool nullterminate=false) const;
+	std::unique_ptr<unsigned char[]> retrieve(std::size_t& len, bool nullterminate = false) const;
 };
 
 /**
@@ -116,12 +115,8 @@ private:
 public:
 	U7multiobject(const File_spec& file0, int objnum);
 	U7multiobject(const File_spec& file0, const File_spec& file1, int objnum);
-	U7multiobject(
-			const File_spec& file0, const File_spec& file1,
-			const File_spec& file2, int objnum);
-	U7multiobject(
-			const File_spec& file0, const File_spec& file1,
-			const File_spec& file2, const File_spec& file3, int objnum);
+	U7multiobject(const File_spec& file0, const File_spec& file1, const File_spec& file2, int objnum);
+	U7multiobject(const File_spec& file0, const File_spec& file1, const File_spec& file2, const File_spec& file3, int objnum);
 	U7multiobject(const std::vector<File_spec>& files, int objnum);
 	~U7multiobject() noexcept = default;
 	U7multiobject(const U7multiobject&);
@@ -129,8 +124,7 @@ public:
 	U7multiobject(U7multiobject&&)            = default;
 	U7multiobject& operator=(U7multiobject&&) = default;
 
-	std::unique_ptr<unsigned char[]> retrieve(
-			std::size_t& len, bool nullterminate = false) const;
+	std::unique_ptr<unsigned char[]> retrieve(std::size_t& len, bool nullterminate = false) const;
 };
 
 #endif

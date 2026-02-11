@@ -60,9 +60,7 @@ static inline void fill_block(Buffer_Type* trg, const Buffer_Type& col, int n) {
 
 // copy block of size n * n
 template <class Dest_pixel, class Buffer_Type, class Manip_pixels>
-static inline void copy_block(
-		Dest_pixel* trg, int dline_pixels, const Buffer_Type* src, int n,
-		const Manip_pixels& manip) {
+static inline void copy_block(Dest_pixel* trg, int dline_pixels, const Buffer_Type* src, int n, const Manip_pixels& manip) {
 	for (int y = 0; y < n; ++y, trg += dline_pixels - n) {
 		for (int x = 0; x < n; ++x) {
 			*trg++ = src->copy(manip);
@@ -92,8 +90,7 @@ struct RGBColor {
 		fix();
 	}
 
-	RGBColor<Manip_pixels, tol>& operator=(
-			const RGBColor<Manip_pixels, tol>& other) {
+	RGBColor<Manip_pixels, tol>& operator=(const RGBColor<Manip_pixels, tol>& other) {
 		if (this != &other) {
 			r  = other.r;
 			g  = other.g;
@@ -115,14 +112,12 @@ struct RGBColor {
 
 	// See http://www.compuphase.com/cmetric.htm
 	int dist(const RGBColor<Manip_pixels, tol>& other) const {
-		return std::abs(static_cast<int>(dr - other.dr))
-			   + std::abs(static_cast<int>(dg - other.dg))
+		return std::abs(static_cast<int>(dr - other.dr)) + std::abs(static_cast<int>(dg - other.dg))
 			   + std::abs(static_cast<int>(db - other.db));
 	}
 
 	bool equals(const RGBColor<Manip_pixels, tol>& other) const {
-		return std::abs(static_cast<int>(dr - other.dr)) <= (tol * 9)
-			   && std::abs(static_cast<int>(dg - other.dg)) <= (tol * 16)
+		return std::abs(static_cast<int>(dr - other.dr)) <= (tol * 9) && std::abs(static_cast<int>(dg - other.dg)) <= (tol * 16)
 			   && std::abs(static_cast<int>(db - other.db)) <= (tol * 4);
 	}
 
@@ -163,23 +158,15 @@ Input area naming convention:
 	 ----------------
 */
 
-template <
-		class Scaler, class OutputMatrix, class Buffer_Type, class Manip_pixels>
+template <class Scaler, class OutputMatrix, class Buffer_Type, class Manip_pixels>
 static FORCE_INLINE    // perf: quite worth it!
 		void
 		scalePixel(
-				const Buffer_Type& a1, const Buffer_Type& b1,
-				const Buffer_Type& c1, const Buffer_Type& a0,
-				const Buffer_Type& a, const Buffer_Type& b,
-				const Buffer_Type& c, const Buffer_Type& c4,
-				const Buffer_Type& d0, const Buffer_Type& d,
-				const Buffer_Type& e, const Buffer_Type& f,
-				const Buffer_Type& f4, const Buffer_Type& g0,
-				const Buffer_Type& g, const Buffer_Type& h,
-				const Buffer_Type& i, const Buffer_Type& i4,
-				const Buffer_Type& g5, const Buffer_Type& h5,
-				const Buffer_Type& i5, OutputMatrix& out,
-				const Manip_pixels& manip) {
+				const Buffer_Type& a1, const Buffer_Type& b1, const Buffer_Type& c1, const Buffer_Type& a0, const Buffer_Type& a,
+				const Buffer_Type& b, const Buffer_Type& c, const Buffer_Type& c4, const Buffer_Type& d0, const Buffer_Type& d,
+				const Buffer_Type& e, const Buffer_Type& f, const Buffer_Type& f4, const Buffer_Type& g0, const Buffer_Type& g,
+				const Buffer_Type& h, const Buffer_Type& i, const Buffer_Type& i4, const Buffer_Type& g5, const Buffer_Type& h5,
+				const Buffer_Type& i5, OutputMatrix& out, const Manip_pixels& manip) {
 	ignore_unused_variable_warning(a1, a0, manip);
 	const int    weight            = 4;
 	const double detectSteepWeight = 2.2;
@@ -188,52 +175,37 @@ static FORCE_INLINE    // perf: quite worth it!
 		return;
 	}
 
-	const int hf = e.dist(c) + e.dist(g) + i.dist(h5) + i.dist(f4)
-				   + weight * h.dist(f);
-	const int ei = h.dist(d) + h.dist(i5) + f.dist(i4) + f.dist(b)
-				   + weight * e.dist(i);
+	const int hf = e.dist(c) + e.dist(g) + i.dist(h5) + i.dist(f4) + weight * h.dist(f);
+	const int ei = h.dist(d) + h.dist(i5) + f.dist(i4) + f.dist(b) + weight * e.dist(i);
 
 	const Buffer_Type& px = e.dist(f) <= e.dist(h) ? f : h;
 
 #	if XBR_VARIANT == 4
 	const double detectDirectionWeight = 3.6;
-	const int    dh = d0.dist(g) + g.dist(h5) + a.dist(e) + e.dist(i)
-				   + weight * d.dist(h);
-	const int eg = b.dist(d) + d.dist(g0) + f.dist(h) + h.dist(g5)
-				   + weight * e.dist(g);
+	const int    dh                    = d0.dist(g) + g.dist(h5) + a.dist(e) + e.dist(i) + weight * d.dist(h);
+	const int    eg                    = b.dist(d) + d.dist(g0) + f.dist(h) + h.dist(g5) + weight * e.dist(g);
 
-	const int ec = d.dist(b) + b.dist(c1) + h.dist(f) + f.dist(c4)
-				   + weight * e.dist(c);
-	const int bf = a.dist(e) + e.dist(i) + b1.dist(c) + c.dist(f4)
-				   + weight * b.dist(f);
+	const int ec = d.dist(b) + b.dist(c1) + h.dist(f) + f.dist(c4) + weight * e.dist(c);
+	const int bf = a.dist(e) + e.dist(i) + b1.dist(c) + c.dist(f4) + weight * b.dist(f);
 
 	const bool doBlendLine =
 			// make sure there is no second blending in an adjacent rotation for
 			// this pixel
-			((eg < dh || e.equals(d) || e.equals(h))
-			 && (ec < bf || e.equals(b) || e.equals(f)) &&
+			((eg < dh || e.equals(d) || e.equals(h)) && (ec < bf || e.equals(b) || e.equals(f)) &&
 			 // for L-shapes: blend corner only (handles insular pixels and
 			 // "mario mushroom eyes")
-			 !(g.equals(h) && h.equals(i) && i.equals(f) && f.equals(c)
-			   && !e.equals(i)))
+			 !(g.equals(h) && h.equals(i) && i.equals(f) && f.equals(c) && !e.equals(i)))
 			||
 			// U-shape
-			(d.equals(h) && h.equals(f) && a.equals(e) && e.equals(c)
-			 && !h.equals(e))
-			|| (h.equals(f) && f.equals(b) && g.equals(e) && e.equals(a)
-				&& !f.equals(e))
-			|| detectDirectionWeight * hf < ei;
+			(d.equals(h) && h.equals(f) && a.equals(e) && e.equals(c) && !h.equals(e))
+			|| (h.equals(f) && f.equals(b) && g.equals(e) && e.equals(a) && !f.equals(e)) || detectDirectionWeight * hf < ei;
 #	elif XBR_VARIANT == 3
-	const bool doBlendLine = (!f.equals(b) && !f.equals(c))
-							 || (!h.equals(d) && !h.equals(g))
-							 || (e.equals(i)
-								 && ((!f.equals(f4) && !f.equals(i4))
-									 || (!h.equals(h5) && !h.equals(i5))))
+	const bool doBlendLine = (!f.equals(b) && !f.equals(c)) || (!h.equals(d) && !h.equals(g))
+							 || (e.equals(i) && ((!f.equals(f4) && !f.equals(i4)) || (!h.equals(h5) && !h.equals(i5))))
 							 || e.equals(g) || e.equals(c);
 #	elif XBR_VARIANT == 2
-	const bool doBlendLine = (!f.equals(b) && !h.equals(d))
-							 || (e.equals(i) && !f.equals(i4) && !h.equals(i5))
-							 || e.equals(g) || e.equals(c);
+	const bool doBlendLine
+			= (!f.equals(b) && !h.equals(d)) || (e.equals(i) && !f.equals(i4) && !h.equals(i5)) || e.equals(g) || e.equals(c);
 #	elif XBR_VARIANT == 1
 	const bool doBlendLine = true;
 #	endif
@@ -279,9 +251,7 @@ static inline void fill_rgbcolor_row(
 }
 
 template <class Buffer_Type>
-static inline void cycle_buffers(
-		Buffer_Type*& b1, Buffer_Type*& b2, Buffer_Type*& b3, Buffer_Type*& b4,
-		Buffer_Type*& b5) {
+static inline void cycle_buffers(Buffer_Type*& b1, Buffer_Type*& b2, Buffer_Type*& b3, Buffer_Type*& b4, Buffer_Type*& b5) {
 	std::swap(b1, b2);
 	std::swap(b2, b3);
 	std::swap(b3, b4);
@@ -323,8 +293,7 @@ void Scale_xBR(
 	}
 
 	const int from_x     = srcx >= 2 ? srcx - 2 : 0;
-	const int to_x       = (srcx + srcw + 2 <= sline_pixels) ? (srcx + srcw + 2)
-															 : sline_pixels;
+	const int to_x       = (srcx + srcw + 2 <= sline_pixels) ? (srcx + srcw + 2) : sline_pixels;
 	int       from_width = to_x - from_x;
 	if (sline_pixels < from_width) {
 		from_width = sline_pixels;
@@ -340,8 +309,7 @@ void Scale_xBR(
 	if (srcy >= 1) {
 		fill_rgbcolor_row(ptr1, rgb_row_minus_1 + from_x, from_width, manip);
 		if (srcy > 1) {
-			fill_rgbcolor_row(
-					ptr0, rgb_row_minus_2 + from_x, from_width, manip);
+			fill_rgbcolor_row(ptr0, rgb_row_minus_2 + from_x, from_width, manip);
 		}
 	}
 	if (srcy + 1 < sheight) {
@@ -351,8 +319,7 @@ void Scale_xBR(
 	for (int y = srcy; y < srcy + srch; ++y, ptr4 += sline_pixels) {
 		Dest_pixel* out = dest + Scaler::scale * (y * dline_pixels + srcx);
 
-		const RGBColor<Manip_pixels, 2>* sa2
-				= rgb_row_current + srcx;    // center
+		const RGBColor<Manip_pixels, 2>* sa2 = rgb_row_current + srcx;    // center
 		const RGBColor<Manip_pixels, 2>* sa0;
 		const RGBColor<Manip_pixels, 2>* sa1;
 		const RGBColor<Manip_pixels, 2>* sa3;
@@ -380,8 +347,7 @@ void Scale_xBR(
 			fill_rgbcolor_row(ptr4, rgb_row_plus_2 + from_x, from_width, manip);
 		}
 
-		for (int x = srcx; x < srcx + srcw;
-			 ++x, ++sa0, ++sa1, ++sa2, ++sa3, ++sa4, out += Scaler::scale) {
+		for (int x = srcx; x < srcx + srcw; ++x, ++sa0, ++sa1, ++sa2, ++sa3, ++sa4, out += Scaler::scale) {
 			const RGBColor<Manip_pixels, 2>* a0;
 			const RGBColor<Manip_pixels, 2>* d0;
 			const RGBColor<Manip_pixels, 2>* g0;
@@ -480,35 +446,25 @@ void Scale_xBR(
 			fill_block(buffer, *e, Scaler::scale);
 			// perf: no disadvantage compared to hand written assign!
 
-			OutputMatrix<RGBColor<Manip_pixels, 2>, Scaler::scale, ROT_0> om0(
-					buffer, Scaler::scale);
+			OutputMatrix<RGBColor<Manip_pixels, 2>, Scaler::scale, ROT_0> om0(buffer, Scaler::scale);
 			scalePixel<Scaler>(
-					*a1, *b1, *c1, *a0, *a, *b, *c, *c4, *d0, *d, *e, *f, *f4,
-					*g0, *g, *h, *i, *i4, *g5, *h5, *i5, om0, manip);
+					*a1, *b1, *c1, *a0, *a, *b, *c, *c4, *d0, *d, *e, *f, *f4, *g0, *g, *h, *i, *i4, *g5, *h5, *i5, om0, manip);
 
-			OutputMatrix<RGBColor<Manip_pixels, 2>, Scaler::scale, ROT_90> om90(
-					buffer, Scaler::scale);
+			OutputMatrix<RGBColor<Manip_pixels, 2>, Scaler::scale, ROT_90> om90(buffer, Scaler::scale);
 			scalePixel<Scaler>(
-					*g0, *d0, *a0, *g5, *g, *d, *a, *a1, *h5, *h, *e, *b, *b1,
-					*i5, *i, *f, *c, *c1, *i4, *f4, *c4, om90, manip);
+					*g0, *d0, *a0, *g5, *g, *d, *a, *a1, *h5, *h, *e, *b, *b1, *i5, *i, *f, *c, *c1, *i4, *f4, *c4, om90, manip);
 
-			OutputMatrix<RGBColor<Manip_pixels, 2>, Scaler::scale, ROT_180>
-					om180(buffer, Scaler::scale);
+			OutputMatrix<RGBColor<Manip_pixels, 2>, Scaler::scale, ROT_180> om180(buffer, Scaler::scale);
 			scalePixel<Scaler>(
-					*i5, *h5, *g5, *i4, *i, *h, *g, *g0, *f4, *f, *e, *d, *d0,
-					*c4, *c, *b, *a, *a0, *c1, *b1, *a1, om180, manip);
+					*i5, *h5, *g5, *i4, *i, *h, *g, *g0, *f4, *f, *e, *d, *d0, *c4, *c, *b, *a, *a0, *c1, *b1, *a1, om180, manip);
 
-			OutputMatrix<RGBColor<Manip_pixels, 2>, Scaler::scale, ROT_270>
-					om270(buffer, Scaler::scale);
+			OutputMatrix<RGBColor<Manip_pixels, 2>, Scaler::scale, ROT_270> om270(buffer, Scaler::scale);
 			scalePixel<Scaler>(
-					*c4, *f4, *i4, *c1, *c, *f, *i, *i5, *b1, *b, *e, *h, *h5,
-					*a1, *a, *d, *g, *g5, *a0, *d0, *g0, om270, manip);
+					*c4, *f4, *i4, *c1, *c, *f, *i, *i5, *b1, *b, *e, *h, *h5, *a1, *a, *d, *g, *g5, *a0, *d0, *g0, om270, manip);
 
 			copy_block(out, dline_pixels, buffer, Scaler::scale, manip);
 		}
-		cycle_buffers(
-				rgb_row_minus_2, rgb_row_minus_1, rgb_row_current,
-				rgb_row_plus_1, rgb_row_plus_2);
+		cycle_buffers(rgb_row_minus_2, rgb_row_minus_1, rgb_row_current, rgb_row_plus_1, rgb_row_plus_2);
 	}
 }
 

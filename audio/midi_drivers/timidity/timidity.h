@@ -57,8 +57,7 @@ namespace NS_TIMIDITY {
 
 	int         Timidity_Init_Simple(int rate, int samples, sint32 encoding);
 	void        Timidity_DeInit();
-	extern void Timidity_FinalInit(
-			const bool patches[128], const bool drums[128]);
+	extern void Timidity_FinalInit(const bool patches[128], const bool drums[128]);
 	extern void Timidity_PlayEvent(unsigned char status, int a, int b);
 	extern void Timidity_GenerateSamples(void* stream, int samples);
 
@@ -210,9 +209,7 @@ namespace NS_TIMIDITY {
 	   need to do some conversions. */
 
 #		define XCHG_SHORT(x) ((((x) & 0xFF) << 8) | (((x) >> 8) & 0xFF))
-#		define XCHG_LONG(x)                              \
-			((((x) & 0xFF) << 24) | (((x) & 0xFF00) << 8) \
-			 | (((x) & 0xFF0000) >> 8) | (((x) >> 24) & 0xFF))
+#		define XCHG_LONG(x)  ((((x) & 0xFF) << 24) | (((x) & 0xFF00) << 8) | (((x) & 0xFF0000) >> 8) | (((x) >> 24) & 0xFF))
 
 #		ifdef TIMIDITY_LITTLE_ENDIAN
 #			define LE_SHORT(x) x
@@ -260,10 +257,8 @@ using final_volume_t = sint32;
 #			define FSCALE(a, b)    ldexp((a), (b))
 #			define FSCALENEG(a, b) ldexp((a), -(b))
 #		else
-#			define FSCALE(a, b) \
-				static_cast<float>((a) * static_cast<double>(1 << (b)))
-#			define FSCALENEG(a, b) \
-				static_cast<float>((a) * (1.0L / static_cast<double>(1 << (b))))
+#			define FSCALE(a, b)    static_cast<float>((a) * static_cast<double>(1 << (b)))
+#			define FSCALENEG(a, b) static_cast<float>((a) * (1.0L / static_cast<double>(1 << (b))))
 #		endif
 
 /* Vibrato and tremolo Choices of the Day */

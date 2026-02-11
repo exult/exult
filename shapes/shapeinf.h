@@ -60,9 +60,7 @@ template <typename T, class Info, T Info::* data>
 class Bit_field_text_reader_functor;
 template <typename T, class Info, T Info::* data, unsigned pad>
 class Binary_reader_functor;
-template <
-		typename T1, typename T2, class Info, T1 Info::* data1,
-		T2 Info::* data2, unsigned pad>
+template <typename T1, typename T2, class Info, T1 Info::* data1, T2 Info::* data2, unsigned pad>
 class Binary_pair_reader_functor;
 template <typename T, class Info, T* Info::* data>
 class Class_reader_functor;
@@ -90,9 +88,7 @@ template <int flag, typename T, class Info, T Info::* data>
 class Bit_field_text_writer_functor;
 template <int flag, typename T, class Info, T Info::* data, int pad>
 class Binary_writer_functor;
-template <
-		int flag, typename T1, typename T2, class Info, T1 Info::* data1,
-		T2 Info::* data2, int pad>
+template <int flag, typename T1, typename T2, class Info, T1 Info::* data1, T2 Info::* data2, int pad>
 class Binary_pair_writer_functor;
 template <typename T, class Info, T* Info::* data>
 class Class_writer_functor;
@@ -153,7 +149,6 @@ class Shape_info {
 protected:
 	static bool allow_enhancements;
 
-
 	// For some non-class data (see Data_flag_names enum).
 	unsigned int modified_flags  = 0;
 	unsigned int frompatch_flags = 0;
@@ -163,11 +158,10 @@ protected:
 	unsigned char tfa[3]            = {0};    // From "tfa.dat".+++++Keep for
 	//   debugging, for now.
 	// 3D dimensions in tiles:
-	unsigned char  dims[3] = {0};             //   (x, y, z)
-	unsigned char  weight = 0, volume = 0;    // From "wgtvol.dat".
-	unsigned char  shpdims[2] = {0};          // From "shpdims.dat".
-	unsigned char* weapon_offsets
-			= nullptr;    // From "wihh.dat": pixel offsets
+	unsigned char  dims[3] = {0};               //   (x, y, z)
+	unsigned char  weight = 0, volume = 0;      // From "wgtvol.dat".
+	unsigned char  shpdims[2]     = {0};        // From "shpdims.dat".
+	unsigned char* weapon_offsets = nullptr;    // From "wihh.dat": pixel offsets
 	//   for drawing weapon in hand
 	Armor_info*     armor        = nullptr;    // From armor.dat.
 	Weapon_info*    weapon       = nullptr;    // From weapon.dat, if a weapon.
@@ -189,22 +183,19 @@ protected:
 	std::vector<Warmth_info>        warminf;
 	std::vector<Content_rules>      cntrules;
 	int                             on_hit_usecode = -1;
-	short                           gump_shape = -1;    // From container.dat.
-	short          gump_font    = -1;    // From container.dat v2+.
-	short          monster_food = -1;
-	unsigned short shape_flags  = 0;
-	unsigned char  mountain_top = 0;
-	unsigned char  barge_type   = 0;
-	unsigned char  actor_flags  = 0;
-	signed char    field_type   = -1;
-	unsigned char  ready_type
-			= 0xff;    // From "ready.dat": where item can be worn.
-	unsigned char alt_ready1
-			= 0xff;    // Alternate spot where item can be worn.
-	unsigned char alt_ready2
-			= 0xff;    // Second alternate spot where item can be worn.
-	bool spell_flag    = false;    // Flagged as spell in 'ready.dat'.
-	bool occludes_flag = false;    // Flagged in 'occlude.dat'.  Roof.
+	short                           gump_shape     = -1;    // From container.dat.
+	short                           gump_font      = -1;    // From container.dat v2+.
+	short                           monster_food   = -1;
+	unsigned short                  shape_flags    = 0;
+	unsigned char                   mountain_top   = 0;
+	unsigned char                   barge_type     = 0;
+	unsigned char                   actor_flags    = 0;
+	signed char                     field_type     = -1;
+	unsigned char                   ready_type     = 0xff;     // From "ready.dat": where item can be worn.
+	unsigned char                   alt_ready1     = 0xff;     // Alternate spot where item can be worn.
+	unsigned char                   alt_ready2     = 0xff;     // Second alternate spot where item can be worn.
+	bool                            spell_flag     = false;    // Flagged as spell in 'ready.dat'.
+	bool                            occludes_flag  = false;    // Flagged in 'occlude.dat'.  Roof.
 
 	void set_tfa_data() {    // Set fields from tfa.
 		dims[0] = static_cast<unsigned char>(1 + (tfa[2] & 7));
@@ -214,8 +205,7 @@ protected:
 
 	// Set/clear tfa bit.
 	void set_tfa(int i, int bit, bool tf) {
-		tfa[i] = static_cast<unsigned char>(
-				tf ? (tfa[i] | (1 << bit)) : (tfa[i] & ~(1 << bit)));
+		tfa[i] = static_cast<unsigned char>(tf ? (tfa[i] | (1 << bit)) : (tfa[i] & ~(1 << bit)));
 	}
 
 public:
@@ -278,9 +268,7 @@ public:
 	friend class Bit_field_text_reader_functor;
 	template <typename T, class Info, T Info::* data, unsigned pad>
 	friend class Binary_reader_functor;
-	template <
-			typename T1, typename T2, class Info, T1 Info::* data1,
-			T2 Info::* data2, unsigned pad>
+	template <typename T1, typename T2, class Info, T1 Info::* data1, T2 Info::* data2, unsigned pad>
 	friend class Binary_pair_reader_functor;
 	template <typename T, class Info, T* Info::* data>
 	friend class Class_reader_functor;
@@ -300,8 +288,7 @@ public:
 	friend class Flag_check_functor;
 	template <int flag, typename T, class Info, T Info::* data>
 	friend class Text_writer_functor;
-	template <
-			int flag, typename T, class Info, T Info::* data1, T Info::* data2>
+	template <int flag, typename T, class Info, T Info::* data1, T Info::* data2>
 	friend class Text_pair_writer_functor;
 	template <int flag, typename T, class Info, T Info::* data, int bit>
 	friend class Bit_text_writer_functor;
@@ -309,9 +296,7 @@ public:
 	friend class Bit_field_text_writer_functor;
 	template <int flag, typename T, class Info, T Info::* data, int pad>
 	friend class Binary_writer_functor;
-	template <
-			int flag, typename T1, typename T2, class Info, T1 Info::* data1,
-			T2 Info::* data2, int pad>
+	template <int flag, typename T1, typename T2, class Info, T1 Info::* data1, T2 Info::* data2, int pad>
 	friend class Binary_pair_writer_functor;
 	template <typename T, class Info, T* Info::* data>
 	friend class Class_writer_functor;
@@ -485,8 +470,8 @@ public:
 	std::vector<Effective_hp_info>& set_effective_hp_info(bool tf);
 	void                            clean_invalid_hp_info();
 	void                            clear_effective_hp_info();
-	void add_effective_hp_info(Effective_hp_info& add);
-	int  get_effective_hps(int frame, int quality) const;
+	void                            add_effective_hp_info(Effective_hp_info& add);
+	int                             get_effective_hps(int frame, int quality) const;
 
 	bool has_frame_name_info() const;
 
@@ -509,8 +494,8 @@ public:
 	std::vector<Frame_usecode_info>& set_frame_usecode_info(bool tf);
 	void                             clean_invalid_usecode_info();
 	void                             clear_frame_usecode_info();
-	void                      add_frame_usecode_info(Frame_usecode_info& add);
-	const Frame_usecode_info* get_frame_usecode(int frame, int quality) const;
+	void                             add_frame_usecode_info(Frame_usecode_info& add);
+	const Frame_usecode_info*        get_frame_usecode(int frame, int quality) const;
 
 	bool has_frame_flags() const;
 
@@ -605,8 +590,7 @@ public:
 	}
 
 	void set_gump_data(int sh, int fnt) {
-		if (gump_shape != static_cast<short>(sh)
-			|| gump_font != static_cast<short>(sh)) {
+		if (gump_shape != static_cast<short>(sh) || gump_font != static_cast<short>(sh)) {
 			modified_flags |= gump_shape_flag;
 			gump_shape = static_cast<short>(sh);
 			gump_font  = static_cast<short>(fnt);
@@ -978,8 +962,7 @@ public:
 	}
 
 	// Sets x to 255 if there is no weapon offset
-	void get_weapon_offset(
-			int frame, unsigned char& x, unsigned char& y) const {
+	void get_weapon_offset(int frame, unsigned char& x, unsigned char& y) const {
 		if (!weapon_offsets) {
 			x = 255;
 			y = 255;
@@ -995,15 +978,13 @@ public:
 
 	// Paint bbox for the given frame at the x,y location on screen,
 	// mask specifies which lines to draw, 1 for front, 2 for back, 3 for both
-	void paint_bbox(
-			int x, int y, int framenum, Image_buffer* ibuf, int stroke, int mask = 3) const;
+	void paint_bbox(int x, int y, int framenum, Image_buffer* ibuf, int stroke, int mask = 3) const;
 
 	static void set_allow_enhancements(bool newval) {
 		allow_enhancements = newval;
 	}
 
-	static bool get_allow_enhancements()
-	{
+	static bool get_allow_enhancements() {
 		return allow_enhancements;
 	}
 };

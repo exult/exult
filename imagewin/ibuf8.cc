@@ -106,8 +106,7 @@ void Image_buffer8::put(
 		Image_buffer* src,      // Copy from here.
 		int destx, int desty    // Copy to here.
 ) {
-	Image_buffer8::copy8(
-			src->bits, src->get_width(), src->get_height(), destx, desty);
+	Image_buffer8::copy8(src->bits, src->get_width(), src->get_height(), destx, desty);
 }
 
 /*
@@ -150,8 +149,7 @@ void Image_buffer8::fill8(unsigned char pix) {
  *  Fill a rectangle with an 8-bit value.
  */
 
-void Image_buffer8::fill8(
-		unsigned char pix, int srcw, int srch, int destx, int desty) {
+void Image_buffer8::fill8(unsigned char pix, int srcw, int srch, int destx, int desty) {
 	int srcx = 0;
 	int srcy = 0;
 	// Constrain to window's space.
@@ -172,8 +170,7 @@ void Image_buffer8::fill8(
  *  Fill a line with a given 8-bit value.
  */
 
-void Image_buffer8::fill_hline8(
-		unsigned char pix, int srcw, int destx, int desty) {
+void Image_buffer8::fill_hline8(unsigned char pix, int srcw, int destx, int desty) {
 	int srcx = 0;
 	// Constrain to window's space.
 	if (!clip_x(srcx, srcw, destx, desty)) {
@@ -185,8 +182,7 @@ void Image_buffer8::fill_hline8(
 
 // this function is used to clip a line so dimension 0 is clipped to range
 // [startc,endc] the order of points doesn't matter
-static bool clipline(
-		int* start0, int* end0, int* start1, int* end1, int startc, int endc) {
+static bool clipline(int* start0, int* end0, int* start1, int* end1, int startc, int endc) {
 	// Order points so start is before end
 	if (*end0 < *start0) {
 		std::swap(end0, start0);
@@ -232,19 +228,15 @@ static bool clipline(
 	return true;
 }
 
-constexpr static int point_side_of_line(
-		int startx, int starty, int endx, int endy, int pointx, int pointy) {
-	return (endx - startx) * (pointy - starty)
-		   - (endy - starty) * (pointx - startx);
+constexpr static int point_side_of_line(int startx, int starty, int endx, int endy, int pointx, int pointy) {
+	return (endx - startx) * (pointy - starty) - (endy - starty) * (pointx - startx);
 }
 
 constexpr static bool isoob(int x, int y, int cx, int cw, int cy, int ch) {
 	return x < cx || x > cx + cw || y < cy || y > cy + ch;
 }
 
-void Image_buffer8::draw_line8(
-		unsigned char val, int startx, int starty, int endx, int endy,
-		const Xform_palette* xform) {
+void Image_buffer8::draw_line8(unsigned char val, int startx, int starty, int endx, int endy, const Xform_palette* xform) {
 	// 16:16 fixed point
 	typedef uint32 fixedu1616;
 
@@ -255,25 +247,21 @@ void Image_buffer8::draw_line8(
 	cw--;
 	ch--;
 	// check if entirely outside clip region
-	if ((startx > cx + cw && endx > cx + cw) || (endx < cx && startx < cx)
-		|| (starty > cy + ch && endy > cy + ch) || (endy < cy && starty < cy)) {
+	if ((startx > cx + cw && endx > cx + cw) || (endx < cx && startx < cx) || (starty > cy + ch && endy > cy + ch)
+		|| (endy < cy && starty < cy)) {
 		// do nothing
 		return;
 	}
 
 	// If both points are oob it might be off screen but not always so make sure
-	if (isoob(startx, starty, cx, cw, cy, ch)
-		&& isoob(endx, endy, cx, cw, cy, ch)) {
+	if (isoob(startx, starty, cx, cw, cy, ch) && isoob(endx, endy, cx, cw, cy, ch)) {
 		// Check what side of the line each clip point is
 		// if all the same sign then the line is off screen
 
 		int tl = point_side_of_line(startx, starty, endx, endy, clipx, clipy);
-		int tr = point_side_of_line(
-				startx, starty, endx, endy, clipx + clipw, clipy);
-		int bl = point_side_of_line(
-				startx, starty, endx, endy, clipx, clipy + cliph);
-		int br = point_side_of_line(
-				startx, starty, endx, endy, clipx + clipw, clipy + cliph);
+		int tr = point_side_of_line(startx, starty, endx, endy, clipx + clipw, clipy);
+		int bl = point_side_of_line(startx, starty, endx, endy, clipx, clipy + cliph);
+		int br = point_side_of_line(startx, starty, endx, endy, clipx + clipw, clipy + cliph);
 
 		// negative upbove or left of all points
 		if (tl < 0 && tr < 0 && br < 0 && bl < 0) {
@@ -329,11 +317,8 @@ void Image_buffer8::draw_line8(
 	int delta1 = end1 - start1;
 
 	// change in dim1 for each increment of dim0
-	const fixedu1616 slope
-			= (delta1 << 16)
-			  / std::max(
-					  delta0,
-					  1);    // prevent div by zero if line is only 1 pixel long
+	const fixedu1616 slope = (delta1 << 16) / std::max(delta0,
+													   1);    // prevent div by zero if line is only 1 pixel long
 
 	// relative dim1 of current pixel. offset by rounding error from when
 	// calculating slope to ensure endpoint pixel is actually drawn
@@ -424,11 +409,11 @@ void Image_buffer8::copy_hline_translucent8(
 		const unsigned char* src_pixels,    // Source rectangle pixels.
 		int                  srcw,          // Width to copy.
 		int destx, int desty,
-		int first_translucent,         // Palette index of 1st trans. color.
-		int last_translucent,          // Index of last trans. color.
-		const Xform_palette* xforms    // Transformers.  Need same # as
-									   //   (last_translucent -
-									   //    first_translucent + 1).
+		int                  first_translucent,    // Palette index of 1st trans. color.
+		int                  last_translucent,     // Index of last trans. color.
+		const Xform_palette* xforms                // Transformers.  Need same # as
+												   //   (last_translucent -
+												   //    first_translucent + 1).
 ) {
 	int srcx = 0;
 	// Constrain to window's space.
@@ -511,10 +496,10 @@ void Image_buffer8::copy_transparent8(
 	if (!clip(srcx, srcy, srcw, srch, destx, desty)) {
 		return;
 	}
-	unsigned char*       to   = bits + desty * line_width + destx;
-	const unsigned char* from = src_pixels + srcy * src_width + srcx;
-	const int to_next         = line_width - srcw;    // # pixels to next line.
-	const int from_next       = src_width - srcw;
+	unsigned char*       to        = bits + desty * line_width + destx;
+	const unsigned char* from      = src_pixels + srcy * src_width + srcx;
+	const int            to_next   = line_width - srcw;    // # pixels to next line.
+	const int            from_next = src_width - srcw;
 	while (srch--) {    // Do each line.
 		for (int cnt = srcw; cnt; cnt--, to++) {
 			const int chr = Read1(from);
@@ -538,13 +523,12 @@ void Image_buffer8::paint_rle(int xoff, int yoff, const unsigned char* inptr) {
 		// Get length of scan line.
 		const int encoded = scanlen & 1;    // Is it encoded?
 		scanlen           = scanlen >> 1;
-		int       scanx = xoff + static_cast<sint16>(little_endian::Read2(in));
-		const int scany = yoff + static_cast<sint16>(little_endian::Read2(in));
+		int       scanx   = xoff + static_cast<sint16>(little_endian::Read2(in));
+		const int scany   = yoff + static_cast<sint16>(little_endian::Read2(in));
 
 		// Is there somthing on screen?
 		bool on_screen = true;
-		if (scanx >= right || scany >= bottom || scany < clipy
-			|| scanx + scanlen < clipx) {
+		if (scanx >= right || scany >= bottom || scany < clipy || scanx + scanlen < clipx) {
 			on_screen = false;
 		}
 
@@ -567,8 +551,8 @@ void Image_buffer8::paint_rle(int xoff, int yoff, const unsigned char* inptr) {
 
 				// Is there anything to put on the screen?
 				if (skip < scanlen) {
-					unsigned char* dest = bits + scany * line_width + scanx;
-					const unsigned char* end = in + scanlen - skip;
+					unsigned char*       dest = bits + scany * line_width + scanx;
+					const unsigned char* end  = in + scanlen - skip;
 					while (in < end) {
 						Write1(dest, Read1(in));
 					}
@@ -685,9 +669,7 @@ void Image_buffer8::paint_rle(int xoff, int yoff, const unsigned char* inptr) {
 }
 
 // Slightly Optimized RLE Painter
-void Image_buffer8::paint_rle_remapped(
-		int xoff, int yoff, const unsigned char* inptr,
-		const unsigned char*& trans) {
+void Image_buffer8::paint_rle_remapped(int xoff, int yoff, const unsigned char* inptr, const unsigned char*& trans) {
 	const uint8* in = inptr;
 	int          scanlen;
 	const int    right  = clipx + clipw;
@@ -697,13 +679,12 @@ void Image_buffer8::paint_rle_remapped(
 		// Get length of scan line.
 		const int encoded = scanlen & 1;    // Is it encoded?
 		scanlen           = scanlen >> 1;
-		int       scanx = xoff + static_cast<sint16>(little_endian::Read2(in));
-		const int scany = yoff + static_cast<sint16>(little_endian::Read2(in));
+		int       scanx   = xoff + static_cast<sint16>(little_endian::Read2(in));
+		const int scany   = yoff + static_cast<sint16>(little_endian::Read2(in));
 
 		// Is there somthing on screen?
 		bool on_screen = true;
-		if (scanx >= right || scany >= bottom || scany < clipy
-			|| scanx + scanlen < clipx) {
+		if (scanx >= right || scany >= bottom || scany < clipy || scanx + scanlen < clipx) {
 			on_screen = false;
 		}
 
@@ -726,8 +707,8 @@ void Image_buffer8::paint_rle_remapped(
 
 				// Is there anything to put on the screen?
 				if (skip < scanlen) {
-					unsigned char* dest = bits + scany * line_width + scanx;
-					const unsigned char* end = in + scanlen - skip;
+					unsigned char*       dest = bits + scany * line_width + scanx;
+					const unsigned char* end  = in + scanlen - skip;
 					while (in < end) {
 						Write1(dest, trans[Read1(in)]);
 					}
@@ -844,9 +825,8 @@ void Image_buffer8::paint_rle_remapped(
 }
 
 void Image_buffer8::draw_beveled_box(
-		int x, int y, int w, int h, int depth, uint8 colfill, uint8 coltop,
-		uint8 coltr, uint8 colbottom,
-		uint8 colbl,std::optional<uint8> coltlbr) {
+		int x, int y, int w, int h, int depth, uint8 colfill, uint8 coltop, uint8 coltr, uint8 colbottom, uint8 colbl,
+		std::optional<uint8> coltlbr) {
 	// Need to shrink by 1 so lines are drawn in the right places
 	w--;
 	h--;

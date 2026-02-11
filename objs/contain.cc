@@ -56,18 +56,14 @@ using std::ostream;
 /*
  *  Determines if a shape can be added/found inside a container.
  */
-static inline bool Can_be_added(
-		const Container_game_object* cont, int shapenum,
-		bool allow_locked = false) {
+static inline bool Can_be_added(const Container_game_object* cont, int shapenum, bool allow_locked = false) {
 	const Shape_info& continfo = cont->get_info();
 	const Shape_info& add_info = ShapeID::get_info(shapenum);
-	return cont->get_shapenum() != shapenum    // Shape can't be inside itself.
-		   && (allow_locked
-			   || !continfo.is_container_locked())    // Locked container.
-		   && continfo.is_shape_accepted(shapenum)    // Shape can't be inside.
-		   && (add_info.is_spell()
-			   || !add_info.is_on_fire());    // Object is on fire, and can't be
-											  // inside others
+	return cont->get_shapenum() != shapenum                        // Shape can't be inside itself.
+		   && (allow_locked || !continfo.is_container_locked())    // Locked container.
+		   && continfo.is_shape_accepted(shapenum)                 // Shape can't be inside.
+		   && (add_info.is_spell() || !add_info.is_on_fire());     // Object is on fire, and can't be
+																   // inside others
 }
 
 // Max. we'll hold.  (Guessing).
@@ -124,13 +120,11 @@ bool Container_game_object::add(
 			|| info.is_container_locked())) {        // Locked container.
 		return false;
 	}
-	if (!info.is_shape_accepted(
-				obj->get_shapenum())) {    // Shape can't be inside.
+	if (!info.is_shape_accepted(obj->get_shapenum())) {    // Shape can't be inside.
 		return false;
 	}
 	const Shape_info& add_info = obj->get_info();
-	if (!dont_check && !cheat.in_map_editor() && !cheat.in_hack_mover()
-		&& (!add_info.is_spell() && add_info.is_on_fire())) {
+	if (!dont_check && !cheat.in_map_editor() && !cheat.in_hack_mover() && (!add_info.is_spell() && add_info.is_on_fire())) {
 		return false;
 	}
 
@@ -147,9 +141,7 @@ bool Container_game_object::add(
 		const int         quant = obj->get_quantity();
 		// Combine, but don't add.
 		const int newquant = add_quantity(
-				quant, obj->get_shapenum(),
-				info.has_quality() ? obj->get_quality() : c_any_qual,
-				obj->get_framenum(), true);
+				quant, obj->get_shapenum(), info.has_quality() ? obj->get_quality() : c_any_qual, obj->get_framenum(), true);
 		if (newquant == 0) {    // All added?
 			const int shape_num = obj->get_shapenum();
 			obj->remove_this();
@@ -186,8 +178,7 @@ bool Container_game_object::add(
  *  Change shape of a member.
  */
 
-void Container_game_object::change_member_shape(
-		Game_object* obj, int newshape) {
+void Container_game_object::change_member_shape(Game_object* obj, int newshape) {
 	const int oldvol = obj->get_volume();
 	obj->set_shape(newshape);
 	// Update total volume.
@@ -249,10 +240,9 @@ int Container_game_object::add_quantity(
 			delta -= cant_add;
 		}
 	}
-	const Shape_info& info  = ShapeID::get_info(shapenum);
-	const bool has_quantity = info.has_quantity();    // Quantity-type shape?
-	const bool has_quantity_frame
-			= has_quantity ? info.has_quantity_frames() : false;
+	const Shape_info& info               = ShapeID::get_info(shapenum);
+	const bool        has_quantity       = info.has_quantity();    // Quantity-type shape?
+	const bool        has_quantity_frame = has_quantity ? info.has_quantity_frames() : false;
 	// Note:  quantity is ignored for
 	//   figuring volume.
 	Game_object* obj;
@@ -261,30 +251,23 @@ int Container_game_object::add_quantity(
 		Object_iterator next(objects);
 		while (delta && (obj = next.get_next()) != nullptr) {
 			if (has_quantity && obj->get_shapenum() == shapenum
-				&& (framenum == c_any_framenum || has_quantity_frame
-					|| obj->get_framenum() == framenum)) {
+				&& (framenum == c_any_framenum || has_quantity_frame || obj->get_framenum() == framenum)) {
 				delta = obj->modify_quantity(delta);
 			}
 			// Adding key to SI keyring?
-			else if (
-					GAME_SI && shapenum == 641 && obj->get_shapenum() == 485
-					&& delta == 1) {
+			else if (GAME_SI && shapenum == 641 && obj->get_shapenum() == 485 && delta == 1) {
 				delta -= Add2keyring(qual, framenum);
 			}
 		}
 		next.reset();    // Now try recursively.
 		while ((obj = next.get_next()) != nullptr) {
-			delta = obj->add_quantity(
-					delta, shapenum, qual, framenum, true, temporary);
+			delta = obj->add_quantity(delta, shapenum, qual, framenum, true, temporary);
 		}
 	}
 	if (!delta || dontcreate) {    // All added?
 		return delta + cant_add;
 	} else {
-		return cant_add
-			   + create_quantity(
-					   delta, shapenum, qual,
-					   framenum == c_any_framenum ? 0 : framenum, temporary);
+		return cant_add + create_quantity(delta, shapenum, qual, framenum == c_any_framenum ? 0 : framenum, temporary);
 	}
 }
 
@@ -315,8 +298,7 @@ int Container_game_object::create_quantity(
 		qual = c_any_qual;            // Then don't set it.
 	}
 	while (delta) {    // Create them here first.
-		Game_object_shared newobj
-				= gmap->create_ireg_object(shp_info, shnum, frnum, 0, 0, 0);
+		Game_object_shared newobj = gmap->create_ireg_object(shp_info, shnum, frnum, 0, 0, 0);
 		if (!add(newobj.get())) {
 			newobj.reset();
 			break;
@@ -373,10 +355,8 @@ int Container_game_object::remove_quantity(
 		// Might be deleting obj.
 		next     = obj == last ? nullptr : obj->get_next();
 		bool del = false;    // Gets 'deleted' flag.
-		if (obj->get_shapenum() == shapenum
-			&& (qual == c_any_qual || obj->get_quality() == qual)
-			&& (framenum == c_any_framenum
-				|| (obj->get_framenum() & 31) == framenum)) {
+		if (obj->get_shapenum() == shapenum && (qual == c_any_qual || obj->get_quality() == qual)
+			&& (framenum == c_any_framenum || (obj->get_framenum() & 31) == framenum)) {
 			delta = -obj->modify_quantity(-delta, &del);
 		}
 
@@ -406,9 +386,7 @@ Game_object* Container_game_object::find_item(
 	Game_object*    obj;
 	Object_iterator next(objects);
 	while ((obj = next.get_next()) != nullptr) {
-		if (obj->get_shapenum() == shapenum
-			&& (framenum == c_any_framenum
-				|| (obj->get_framenum() & 31) == framenum)
+		if (obj->get_shapenum() == shapenum && (framenum == c_any_framenum || (obj->get_framenum() & 31) == framenum)
 			&& (qual == c_any_qual || obj->get_quality() == qual)) {
 			return obj;
 		}
@@ -433,9 +411,7 @@ bool Container_game_object::show_gump(int event) {
 	int               gump;
 	if (cheat.in_map_editor()) {
 		return true;    // Do nothing.
-	} else if (inf.has_object_flag(
-					   get_framenum(), inf.has_quality() ? get_quality() : -1,
-					   Frame_flags::fp_force_usecode)) {
+	} else if (inf.has_object_flag(get_framenum(), inf.has_quality() ? get_quality() : -1, Frame_flags::fp_force_usecode)) {
 		// Run normal usecode fun.
 		return false;
 	} else if ((gump = inf.get_gump_shape()) >= 0) {
@@ -465,9 +441,7 @@ void Container_game_object::activate(int event) {
 	}
 	if (!show_gump(event)) {
 		// Try to run normal usecode fun.
-		ucmachine->call_usecode(
-				get_usecode(), this,
-				static_cast<Usecode_machine::Usecode_events>(event));
+		ucmachine->call_usecode(get_usecode(), this, static_cast<Usecode_machine::Usecode_events>(event));
 	}
 }
 
@@ -483,10 +457,8 @@ bool Container_game_object::edit() {
 		const Tile_coord  t    = get_tile();
 		const std::string name = get_name();
 		if (Container_out(
-					client_socket, this, t.tx, t.ty, t.tz, get_shapenum(),
-					get_framenum(), get_quality(), name, get_obj_hp(),
-					get_flag(Obj_flags::invisible),
-					get_flag(Obj_flags::okay_to_take))
+					client_socket, this, t.tx, t.ty, t.tz, get_shapenum(), get_framenum(), get_quality(), name, get_obj_hp(),
+					get_flag(Obj_flags::invisible), get_flag(Obj_flags::okay_to_take))
 			!= -1) {
 			cout << "Sent object data to ExultStudio" << endl;
 			editing = shared_from_this();
@@ -509,8 +481,7 @@ bool Container_game_object::edit_basic_properties() {
  *  Message to update from ExultStudio.
  */
 
-void Container_game_object::update_from_studio(
-		unsigned char* data, int datalen) {
+void Container_game_object::update_from_studio(unsigned char* data, int datalen) {
 #ifdef USE_EXULTSTUDIO
 	Container_game_object* obj;
 	int                    tx;
@@ -523,9 +494,7 @@ void Container_game_object::update_from_studio(
 	bool                   invis;
 	bool                   can_take;
 	std::string            name;
-	if (!Container_in(
-				data, datalen, obj, tx, ty, tz, shape, frame, quality, name,
-				res, invis, can_take)) {
+	if (!Container_in(data, datalen, obj, tx, ty, tz, shape, frame, quality, name, res, invis, can_take)) {
 		cout << "Error decoding object" << endl;
 		return;
 	}
@@ -589,8 +558,7 @@ int Container_game_object::get_weight() {
  *  Output: false to reject, true to accept.
  */
 
-bool Container_game_object::drop(
-		Game_object* obj    // May be deleted if combined.
+bool Container_game_object::drop(Game_object* obj    // May be deleted if combined.
 ) {
 	if (!get_owner()) {    // Only accept if inside another.
 		return false;
@@ -616,8 +584,7 @@ int Container_game_object::count_objects(
 	while ((obj = next.get_next()) != nullptr) {
 		if ((shapenum == c_any_shapenum || obj->get_shapenum() == shapenum) &&
 			// Watch for reflection.
-			(framenum == c_any_framenum
-			 || (obj->get_framenum() & 31) == framenum)
+			(framenum == c_any_framenum || (obj->get_framenum() & 31) == framenum)
 			&& (qual == c_any_qual || obj->get_quality() == qual)) {
 			// Check quantity.
 			const int quant = obj->get_quantity();
@@ -643,11 +610,9 @@ int Container_game_object::get_objects(
 	Game_object*    obj;
 	Object_iterator next(objects);
 	while ((obj = next.get_next()) != nullptr) {
-		if ((shapenum == c_any_shapenum || obj->get_shapenum() == shapenum)
-			&& (qual == c_any_qual || obj->get_quality() == qual) &&
+		if ((shapenum == c_any_shapenum || obj->get_shapenum() == shapenum) && (qual == c_any_qual || obj->get_quality() == qual) &&
 			// Watch for reflection.
-			(framenum == c_any_framenum
-			 || (obj->get_framenum() & 31) == framenum)) {
+			(framenum == c_any_framenum || (obj->get_framenum() & 31) == framenum)) {
 			vec.push_back(obj);
 		}
 		// Search recursively.
@@ -685,8 +650,7 @@ void Container_game_object::write_ireg(ODataSource* out) {
 	Write1(ptr, nibble_swap(get_lift()));                   // Lift
 	Write1(ptr, static_cast<unsigned char>(resistance));    // Resistance.
 	// Flags:  B0=invis. B3=okay_to_take.
-	Write1(ptr, (get_flag(Obj_flags::invisible) ? 1 : 0)
-						+ (get_flag(Obj_flags::okay_to_take) ? (1 << 3) : 0));
+	Write1(ptr, (get_flag(Obj_flags::invisible) ? 1 : 0) + (get_flag(Obj_flags::okay_to_take) ? (1 << 3) : 0));
 	out->write(reinterpret_cast<char*>(buf), ptr - buf);
 	write_contents(out);    // Write what's contained within.
 	// Write scheduled usecode.
@@ -780,8 +744,7 @@ void Container_game_object::delete_contents() {
 	}
 }
 
-void Container_game_object::remove_this(
-		Game_object_shared* keep    // Non-null to not delete.
+void Container_game_object::remove_this(Game_object_shared* keep    // Non-null to not delete.
 ) {
 	// Needs to be saved, as it is invalidated below but needed
 	// shortly after.

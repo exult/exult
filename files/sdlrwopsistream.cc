@@ -20,8 +20,7 @@
 
 SdlRwopsIstream::SdlRwopsIstream() : std::istream(&m_streambuf) {}
 
-SdlRwopsIstream::SdlRwopsIstream(const char* s, std::ios_base::openmode mode)
-		: std::istream(&m_streambuf) {
+SdlRwopsIstream::SdlRwopsIstream(const char* s, std::ios_base::openmode mode) : std::istream(&m_streambuf) {
 	if (m_streambuf.open(s, mode | std::ios_base::in) == nullptr) {
 		setstate(std::ios_base::failbit);
 	}

@@ -51,9 +51,8 @@ void Usecode_scope_symbol::read(istream& in) {
 	for (int i = 0; i < cnt; ++i) {
 		char nm[256];
 		in.getline(nm, sizeof(nm), 0);
-		auto kind = static_cast<Usecode_symbol::Symbol_kind>(
-				little_endian::Read2(in));
-		const int       val = little_endian::Read4(in);
+		auto            kind = static_cast<Usecode_symbol::Symbol_kind>(little_endian::Read2(in));
+		const int       val  = little_endian::Read4(in);
 		Usecode_symbol* sym;
 		if (kind == Usecode_symbol::class_scope) {
 			auto* s = new Usecode_class_symbol(nm, kind, val);
@@ -208,8 +207,7 @@ bool Usecode_scope_symbol::is_object_fun(int val) {
 		return val < 0x800;
 	}
 	Usecode_symbol* sym = it->second;
-	return sym
-		   && (sym->get_kind() == shape_fun || sym->get_kind() == object_fun);
+	return sym && (sym->get_kind() == shape_fun || sym->get_kind() == object_fun);
 }
 
 /*
@@ -240,8 +238,7 @@ void Usecode_class_symbol::write(ostream& out) {
 
 bool Usecode_symbol_table::has_symbol_table(std::istream& in) {
 	// Test for symbol table.
-	if (little_endian::Read4(in) == UCSYMTBL_MAGIC0
-		&& little_endian::Read4(in) == UCSYMTBL_MAGIC1) {
+	if (little_endian::Read4(in) == UCSYMTBL_MAGIC0 && little_endian::Read4(in) == UCSYMTBL_MAGIC1) {
 		return true;
 	} else {
 		in.seekg(0);

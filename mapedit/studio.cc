@@ -107,9 +107,8 @@ Configuration* config            = nullptr;
 GameManager*   gamemanager       = nullptr;
 
 // Mode menu items:
-constexpr static const std::array mode_names{
-		"move1",           "paint1",         "paint_with_chunks1",
-		"pick_for_combo1", "select_chunks1", "pick_for_edit1"};
+constexpr static const std::array mode_names{"move1",           "paint1",         "paint_with_chunks1",
+											 "pick_for_combo1", "select_chunks1", "pick_for_edit1"};
 
 enum ExultFileTypes {
 	ShapeArchive = 1,
@@ -141,8 +140,7 @@ static void Filelist_selection(GtkTreeView* treeview, GtkTreePath* path) {
 	GtkTreeModel* model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
 
 	gtk_tree_model_get_iter(model, &iter, path);
-	gtk_tree_model_get(
-			model, &iter, FILE_COLUMN, &text, DATA_COLUMN, &type, -1);
+	gtk_tree_model_get(model, &iter, FILE_COLUMN, &text, DATA_COLUMN, &type, -1);
 	printf("%s %d\n", text, type);
 
 	ExultStudio* studio = ExultStudio::get_instance();
@@ -167,17 +165,13 @@ static void Filelist_selection(GtkTreeView* treeview, GtkTreePath* path) {
 
 			// Check if prompting is disabled via config
 			std::string prompt_setting;
-			config->value(
-					"config/estudio/prompt/npcs_listview", prompt_setting,
-					"yes");
+			config->value("config/estudio/prompt/npcs_listview", prompt_setting, "yes");
 			if (prompt_setting != "no") {
-				const int answer = EStudio::Prompt(
-						"To view NPCs Exult Studio must be connected to Exult.",
-						"Ok, never warn again", "Ok");
+				const int answer
+						= EStudio::Prompt("To view NPCs Exult Studio must be connected to Exult.", "Ok, never warn again", "Ok");
 				if (answer == 0) {
 					// User chose "Ok, never warn again"
-					config->set(
-							"config/estudio/prompt/npcs_listview", "no", true);
+					config->set("config/estudio/prompt/npcs_listview", "no", true);
 				}
 			}
 			return;
@@ -229,56 +223,47 @@ C_EXPORT void on_save_all1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ExultStudio::get_instance()->save_all();
 }
 
-C_EXPORT void on_new_shapes_file_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_new_shapes_file_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->new_shape_file(false);
 }
 
-C_EXPORT void on_new_shape_file_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_new_shape_file_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->new_shape_file(true);
 }
 
-C_EXPORT void on_save_map_menu_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_save_map_menu_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->write_map();
 }
 
-C_EXPORT void on_read_map_menu_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_read_map_menu_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->read_map();
 }
 
-C_EXPORT void on_write_minimap_menu_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_write_minimap_menu_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->write_minimap();
 }
 
-C_EXPORT void on_save_shape_info1_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_save_shape_info1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->write_shape_info();
 }
 
-C_EXPORT void on_reload_usecode_menu_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_reload_usecode_menu_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->reload_usecode();
 }
 
-C_EXPORT void on_compile_usecode_menu_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_compile_usecode_menu_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->compile();
 }
 
-C_EXPORT void on_fix_old_shape_info_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_fix_old_shape_info_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio*     studio = ExultStudio::get_instance();
 	Shape_file_info* vga    = studio->get_vgafile();
@@ -324,34 +309,29 @@ C_EXPORT void on_fix_old_shape_info_activate(
 	studio->write_shape_info(true);
 }
 
-C_EXPORT void on_save_groups1_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_save_groups1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->save_groups();
 }
 
-C_EXPORT void on_save_combos1_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_save_combos1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->save_combos();
 }
 
-C_EXPORT void on_save_presets1_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_save_presets1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	studio->save_shape_presets();
 	studio->save_npc_presets();
 }
 
-C_EXPORT void on_reload_css_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_reload_css_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->reload_css();
 }
 
-C_EXPORT void on_preferences_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_preferences_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->open_preferences();
 }
@@ -373,20 +353,16 @@ C_EXPORT void on_paste1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ExultStudio::get_instance()->send_to_server(Exult_server::paste);
 }
 
-C_EXPORT void on_properties1_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_properties1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	unsigned char o = 0;    // 0=npc/egg properties.
-	ExultStudio::get_instance()->send_to_server(
-			Exult_server::edit_selected, &o, 1);
+	ExultStudio::get_instance()->send_to_server(Exult_server::edit_selected, &o, 1);
 }
 
-C_EXPORT void on_basic_properties1_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_basic_properties1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	unsigned char o = 1;    // 1=basic object properties.
-	ExultStudio::get_instance()->send_to_server(
-			Exult_server::edit_selected, &o, 1);
+	ExultStudio::get_instance()->send_to_server(Exult_server::edit_selected, &o, 1);
 }
 
 C_EXPORT void on_move1_activate(GtkMenuItem* menuitem, gpointer user_data) {
@@ -404,52 +380,43 @@ C_EXPORT void on_paint1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	}
 }
 
-C_EXPORT void on_paint_with_chunks1_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_paint_with_chunks1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem))) {
 		ExultStudio::get_instance()->set_edit_mode(2);
 	}
 }
 
-C_EXPORT void on_pick_for_combo1_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_pick_for_combo1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem))) {
 		ExultStudio::get_instance()->set_edit_mode(3);
 	}
 }
 
-C_EXPORT void on_select_chunks1_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_select_chunks1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem))) {
 		ExultStudio::get_instance()->set_edit_mode(4);
 	}
 }
 
-C_EXPORT void on_pick_for_edit1_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_pick_for_edit1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem))) {
 		ExultStudio::get_instance()->set_edit_mode(5);
 	}
 }
 
-C_EXPORT void on_unused_shapes1_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_unused_shapes1_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
-	if (EStudio::Prompt(
-				"Finding unused shapes may take several minutes\nProceed?",
-				"Yes", "No")
-		!= 0) {
+	if (EStudio::Prompt("Finding unused shapes may take several minutes\nProceed?", "Yes", "No") != 0) {
 		return;
 	}
 	ExultStudio::get_instance()->send_to_server(Exult_server::unused_shapes);
 }
 
-void ExultStudio::on_connect_button_toggled(
-		GtkToggleButton* button, gpointer user_data) {
+void ExultStudio::on_connect_button_toggled(GtkToggleButton* button, gpointer user_data) {
 	auto* studio = static_cast<ExultStudio*>(user_data);
 	if (gtk_toggle_button_get_active(button)) {
 		studio->connect_to_server();
@@ -458,18 +425,14 @@ void ExultStudio::on_connect_button_toggled(
 	}
 }
 
-void ExultStudio::on_play_button_toggled(
-		GtkToggleButton* button, gpointer user_data) {
+void ExultStudio::on_play_button_toggled(GtkToggleButton* button, gpointer user_data) {
 	auto* studio = static_cast<ExultStudio*>(user_data);
 	if (!studio->is_server_connected()) {
 		g_signal_handlers_block_matched(
-				G_OBJECT(button), G_SIGNAL_MATCH_ID,
-				studio->play_button_signal_id, 0, nullptr, nullptr, nullptr);
-		gtk_toggle_button_set_active(
-				button, !gtk_toggle_button_get_active(button));
+				G_OBJECT(button), G_SIGNAL_MATCH_ID, studio->play_button_signal_id, 0, nullptr, nullptr, nullptr);
+		gtk_toggle_button_set_active(button, !gtk_toggle_button_get_active(button));
 		g_signal_handlers_unblock_matched(
-				G_OBJECT(button), G_SIGNAL_MATCH_ID,
-				studio->play_button_signal_id, 0, nullptr, nullptr, nullptr);
+				G_OBJECT(button), G_SIGNAL_MATCH_ID, studio->play_button_signal_id, 0, nullptr, nullptr, nullptr);
 		return;
 	}
 	const bool playing = gtk_toggle_button_get_active(button);
@@ -477,39 +440,30 @@ void ExultStudio::on_play_button_toggled(
 	studio->update_play_button(playing);
 }
 
-C_EXPORT void on_tile_grid_button_toggled(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_tile_grid_button_toggled(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
-	ExultStudio::get_instance()->set_tile_grid(
-			gtk_toggle_button_get_active(button));
+	ExultStudio::get_instance()->set_tile_grid(gtk_toggle_button_get_active(button));
 }
 
-C_EXPORT void on_bbox_color_combo_changed(
-		GtkComboBox* combo, gpointer user_data) {
+C_EXPORT void on_bbox_color_combo_changed(GtkComboBox* combo, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	const int index = gtk_combo_box_get_active(combo);
 	ExultStudio::get_instance()->set_bounding_box(index);
 }
 
-C_EXPORT void on_edit_lift_spin_changed(
-		GtkSpinButton* button, gpointer user_data) {
+C_EXPORT void on_edit_lift_spin_changed(GtkSpinButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
-	ExultStudio::get_instance()->set_edit_lift(
-			gtk_spin_button_get_value_as_int(button));
+	ExultStudio::get_instance()->set_edit_lift(gtk_spin_button_get_value_as_int(button));
 }
 
-C_EXPORT void on_hide_lift_spin_changed(
-		GtkSpinButton* button, gpointer user_data) {
+C_EXPORT void on_hide_lift_spin_changed(GtkSpinButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
-	ExultStudio::get_instance()->set_hide_lift(
-			gtk_spin_button_get_value_as_int(button));
+	ExultStudio::get_instance()->set_hide_lift(gtk_spin_button_get_value_as_int(button));
 }
 
-C_EXPORT void on_edit_terrain_button_toggled(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_edit_terrain_button_toggled(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
-	ExultStudio::get_instance()->set_edit_terrain(
-			gtk_toggle_button_get_active(button));
+	ExultStudio::get_instance()->set_edit_terrain(gtk_toggle_button_get_active(button));
 }
 
 /*
@@ -521,16 +475,14 @@ C_EXPORT gboolean on_main_window_configure_event(
 	ignore_unused_variable_warning(widget, event, data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	// Configure "Hide lift" spin range.
-	studio->set_spin(
-			"hide_lift_spin", studio->get_spin("hide_lift_spin"), 1, 255);
+	studio->set_spin("hide_lift_spin", studio->get_spin("hide_lift_spin"), 1, 255);
 	return false;
 }
 
 /*
  *  Main window's close button.
  */
-C_EXPORT gboolean on_main_window_delete_event(
-		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
+C_EXPORT gboolean on_main_window_delete_event(GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	if (!ExultStudio::get_instance()->okay_to_close()) {
 		return true;    // Can't quit.
@@ -556,8 +508,7 @@ C_EXPORT void on_main_window_quit(GtkMenuItem* menuitem, gpointer user_data) {
 /*
  *  Main window got focus.
  */
-C_EXPORT gboolean on_main_window_focus_in_event(
-		GtkWidget* widget, GdkEventFocus* event, gpointer user_data) {
+C_EXPORT gboolean on_main_window_focus_in_event(GtkWidget* widget, GdkEventFocus* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	Shape_chooser::check_editing_files();
 	return false;
@@ -568,55 +519,31 @@ C_EXPORT gboolean on_main_window_focus_in_event(
  */
 
 ExultStudio::ExultStudio(int argc, char** argv)
-		: glade_path(nullptr), css_path(nullptr), css_provider(nullptr),
-		  static_path(nullptr), image_editor(nullptr), edit_filetype(nullptr),
-		  default_game(nullptr), background_color(0x808080), shape_scale(0),
-		  shape_bilinear(false), shape_info_modified(false),
-		  shape_names_modified(false), npc_modified(false), files(nullptr),
-		  presets_file(nullptr), npc_presets_file(nullptr), curfile(nullptr),
-		  vgafile(nullptr), facefile(nullptr), fontfile(nullptr),
-		  gumpfile(nullptr), spritefile(nullptr), paperdolfile(nullptr),
-		  browser(nullptr), bargewin(nullptr), barge_ctx(0), barge_status_id(0),
-		  eggwin(nullptr), egg_monster_single(nullptr),
-		  egg_missile_single(nullptr), egg_ctx(0), egg_status_id(0),
-		  npcwin(nullptr), npc_single(nullptr), npc_face_single(nullptr),
-		  npc_face_changed_handler(0), npc_ctx(0), npc_status_id(0),
-		  objwin(nullptr), obj_single(nullptr), contwin(nullptr),
-		  cont_single(nullptr), shapewin(nullptr), shape_single(nullptr),
-		  gump_single(nullptr), body_single(nullptr), explosion_single(nullptr),
-		  weapon_family_single(nullptr), weapon_projectile_single(nullptr),
-		  ammo_family_single(nullptr), ammo_sprite_single(nullptr),
-		  cntrules_shape_single(nullptr), frameflags_frame_single(nullptr),
-		  effhps_frame_single(nullptr), framenames_frame_single(nullptr),
-		  frameusecode_frame_single(nullptr),
-		  objpaperdoll_wframe_single(nullptr),
-		  objpaperdoll_spotframe_single(nullptr),
-		  brightness_frame_single(nullptr), warmth_frame_single(nullptr),
-		  npcpaperdoll_aframe_single(nullptr),
-		  npcpaperdoll_atwohanded_single(nullptr),
-		  npcpaperdoll_astaff_single(nullptr),
-		  npcpaperdoll_bframe_single(nullptr),
-		  npcpaperdoll_hframe_single(nullptr),
-		  npcpaperdoll_hhelm_single(nullptr),
-		  objpaperdoll_frame0_single(nullptr),
-		  objpaperdoll_frame1_single(nullptr),
-		  objpaperdoll_frame2_single(nullptr),
-		  objpaperdoll_frame3_single(nullptr), current_shape_frame(-1),
-		  suppress_frame_field_signal(false), shape_window_initializing(false),
-		  npc_window_initializing(false), cont_window_initializing(false),
-		  obj_window_initializing(false), barge_window_initializing(false),
-		  egg_window_initializing(false), equipwin(nullptr), locwin(nullptr),
-		  combowin(nullptr), compilewin(nullptr), compile_box(nullptr),
-		  ucbrowsewin(nullptr), gameinfowin(nullptr), game_type(BLACK_GATE),
-		  expansion(false), sibeta(false), curr_game(-1), curr_mod(-1),
-		  server_socket(-1), server_input_tag(-1), waiting_for_server(nullptr),
-		  connect_button(nullptr), connect_button_handler_id(0),
-		  connect_button_signal_id(0), play_button(nullptr),
-		  play_button_handler_id(0), play_button_signal_id(0),
-		  temp_shape_info(nullptr), shape_window_dirty(false),
-		  npc_window_dirty(false), cont_window_dirty(false),
-		  obj_window_dirty(false), barge_window_dirty(false),
-		  egg_window_dirty(false) {
+		: glade_path(nullptr), css_path(nullptr), css_provider(nullptr), static_path(nullptr), image_editor(nullptr),
+		  edit_filetype(nullptr), default_game(nullptr), background_color(0x808080), shape_scale(0), shape_bilinear(false),
+		  shape_info_modified(false), shape_names_modified(false), npc_modified(false), files(nullptr), presets_file(nullptr),
+		  npc_presets_file(nullptr), curfile(nullptr), vgafile(nullptr), facefile(nullptr), fontfile(nullptr), gumpfile(nullptr),
+		  spritefile(nullptr), paperdolfile(nullptr), browser(nullptr), bargewin(nullptr), barge_ctx(0), barge_status_id(0),
+		  eggwin(nullptr), egg_monster_single(nullptr), egg_missile_single(nullptr), egg_ctx(0), egg_status_id(0), npcwin(nullptr),
+		  npc_single(nullptr), npc_face_single(nullptr), npc_face_changed_handler(0), npc_ctx(0), npc_status_id(0), objwin(nullptr),
+		  obj_single(nullptr), contwin(nullptr), cont_single(nullptr), shapewin(nullptr), shape_single(nullptr),
+		  gump_single(nullptr), body_single(nullptr), explosion_single(nullptr), weapon_family_single(nullptr),
+		  weapon_projectile_single(nullptr), ammo_family_single(nullptr), ammo_sprite_single(nullptr),
+		  cntrules_shape_single(nullptr), frameflags_frame_single(nullptr), effhps_frame_single(nullptr),
+		  framenames_frame_single(nullptr), frameusecode_frame_single(nullptr), objpaperdoll_wframe_single(nullptr),
+		  objpaperdoll_spotframe_single(nullptr), brightness_frame_single(nullptr), warmth_frame_single(nullptr),
+		  npcpaperdoll_aframe_single(nullptr), npcpaperdoll_atwohanded_single(nullptr), npcpaperdoll_astaff_single(nullptr),
+		  npcpaperdoll_bframe_single(nullptr), npcpaperdoll_hframe_single(nullptr), npcpaperdoll_hhelm_single(nullptr),
+		  objpaperdoll_frame0_single(nullptr), objpaperdoll_frame1_single(nullptr), objpaperdoll_frame2_single(nullptr),
+		  objpaperdoll_frame3_single(nullptr), current_shape_frame(-1), suppress_frame_field_signal(false),
+		  shape_window_initializing(false), npc_window_initializing(false), cont_window_initializing(false),
+		  obj_window_initializing(false), barge_window_initializing(false), egg_window_initializing(false), equipwin(nullptr),
+		  locwin(nullptr), combowin(nullptr), compilewin(nullptr), compile_box(nullptr), ucbrowsewin(nullptr), gameinfowin(nullptr),
+		  game_type(BLACK_GATE), expansion(false), sibeta(false), curr_game(-1), curr_mod(-1), server_socket(-1),
+		  server_input_tag(-1), waiting_for_server(nullptr), connect_button(nullptr), connect_button_handler_id(0),
+		  connect_button_signal_id(0), play_button(nullptr), play_button_handler_id(0), play_button_signal_id(0),
+		  temp_shape_info(nullptr), shape_window_dirty(false), npc_window_dirty(false), cont_window_dirty(false),
+		  obj_window_dirty(false), barge_window_dirty(false), egg_window_dirty(false) {
 #ifdef _WIN32
 	// Enable the GTK+ 3 OLE Drag and Drop
 	g_setenv("GDK_WIN32_USE_EXPERIMENTAL_OLE2_DND", "1", 0);
@@ -624,9 +551,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	// Initialize the various subsystems
 	self = this;
 	gtk_init(&argc, &argv);
-	g_object_set(
-			gtk_settings_get_default(), "gtk-application-prefer-dark-theme",
-			true, nullptr);
+	g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", true, nullptr);
 #ifdef _WIN32
 	bool portable = false;
 #endif
@@ -635,7 +560,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	const char*        xmldir = nullptr;    // Default:  Look here for .glade.
 	const char*        cssdir = nullptr;    // Default:  Look here for .css.
 	string             game;                // Game to look up in .exult.cfg.
-	string             modtitle;    // Mod title to look up in <MODS>/*.cfg.
+	string             modtitle;            // Mod title to look up in <MODS>/*.cfg.
 	string             alt_cfg;
 	static const char* optstring = "hsc:g:m:px:y:z:";
 	opterr                       = 0;    // Don't let getopt() print errs.
@@ -644,15 +569,15 @@ ExultStudio::ExultStudio(int argc, char** argv)
 #ifdef HAVE_GETOPT_LONG
 		static const option optarray[] = {
 				{    "help",       no_argument, nullptr, 'h'},
-				{  "silent",       no_argument, nullptr, 's'},
+                {  "silent",       no_argument, nullptr, 's'},
 				{  "config", required_argument, nullptr, 'c'},
-				{    "game", required_argument, nullptr, 'g'},
+                {    "game", required_argument, nullptr, 'g'},
 				{     "mod", required_argument, nullptr, 'm'},
-				{"portable",       no_argument, nullptr, 'p'},
+                {"portable",       no_argument, nullptr, 'p'},
 				{  "xmldir", required_argument, nullptr, 'x'},
-				{  "cssdir", required_argument, nullptr, 'y'},
+                {  "cssdir", required_argument, nullptr, 'y'},
 				{    "zoom", required_argument, nullptr, 'z'},
-				{   nullptr,                 0, nullptr,   0}
+                {   nullptr,                 0, nullptr,   0}
         };
 		return getopt_long(argc, argv, optstring, optarray, nullptr);
 #else
@@ -701,9 +626,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 			} else {
 				shape_bilinear = false;
 			}
-			shape_scale
-					= (static_cast<int>(std::strtoul(optarg, nullptr, 10))
-					   / 50);
+			shape_scale = (static_cast<int>(std::strtoul(optarg, nullptr, 10)) / 50);
 			if (shape_scale < 2) {
 				shape_scale = 2;
 			} else if (shape_scale > 32) {
@@ -742,8 +665,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 			cerr << "                    [--xmldir|-x <gladedir>] [--cssdir|-y "
 					"<cssdir>]"
 				 << endl
-				 << "        --help                   Show this information"
-				 << endl
+				 << "        --help                   Show this information" << endl
 				 << "        --silent                 Do not display the state "
 					"of the games"
 				 << endl
@@ -838,10 +760,8 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	}
 #endif
 	cout << endl
-		 << "ExultStudio compiled with GTK+ " << GTK_MAJOR_VERSION << "."
-		 << GTK_MINOR_VERSION << "." << GTK_MICRO_VERSION
-		 << " running with GTK+ " << gtk_major_version << "."
-		 << gtk_minor_version << "." << gtk_micro_version << endl
+		 << "ExultStudio compiled with GTK+ " << GTK_MAJOR_VERSION << "." << GTK_MINOR_VERSION << "." << GTK_MICRO_VERSION
+		 << " running with GTK+ " << gtk_major_version << "." << gtk_minor_version << "." << gtk_micro_version << endl
 		 << endl;
 	setup_program_paths();
 #ifdef _WIN32
@@ -861,13 +781,11 @@ ExultStudio::ExultStudio(int argc, char** argv)
 		config->value("config/estudio/shape_bilinear", shape_bilinear, false);
 		if (shape_scale > 2) {
 			cout << "Scaling Shapes by " << (shape_scale * 50) << "% using "
-				 << (shape_bilinear ? "Bilinear." : "Nearest (by config).")
-				 << endl;
+				 << (shape_bilinear ? "Bilinear." : "Nearest (by config).") << endl;
 		}
 	} else if (shape_scale > 2) {
 		cout << "Scaling Shapes by " << (shape_scale * 50) << "% using "
-			 << (shape_bilinear ? "Bilinear." : "Nearest (by command line).")
-			 << endl;
+			 << (shape_bilinear ? "Bilinear." : "Nearest (by command line).") << endl;
 	}
 	// Setup virtual directories
 	string data_path;
@@ -894,9 +812,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	}
 #if !defined(_WIN32) && !defined(MACOSX)
 	string iconstr = datastr + "/../icons/";
-	gtk_icon_theme_append_search_path(
-			gtk_icon_theme_get_for_screen(gdk_screen_get_default()),
-			iconstr.c_str());
+	gtk_icon_theme_append_search_path(gtk_icon_theme_get_for_screen(gdk_screen_get_default()), iconstr.c_str());
 #endif
 	path += "/exult_studio.glade";
 	// Load the Glade interface
@@ -912,9 +828,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 		for (GSList* l = objects; l; l = l->next) {
 			auto* obj = static_cast<GObject*>(l->data);
 			if (GTK_IS_WIDGET(obj) && GTK_IS_BUILDABLE(obj)) {
-				gtk_widget_set_name(
-						GTK_WIDGET(obj),
-						gtk_buildable_get_name(GTK_BUILDABLE(obj)));
+				gtk_widget_set_name(GTK_WIDGET(obj), gtk_buildable_get_name(GTK_BUILDABLE(obj)));
 			}
 		}
 		g_slist_free(objects);
@@ -945,8 +859,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	cout << "Looking for CSS at '" << csspath << "'... ";
 	if (U7exists(csspath)) {
 		cout << "loading." << endl;
-		if (!gtk_css_provider_load_from_path(
-					css_provider, csspath.c_str(), &error)) {
+		if (!gtk_css_provider_load_from_path(css_provider, csspath.c_str(), &error)) {
 			cerr << "Couldn't load css file: " << error->message << endl;
 			cerr << "ExultStudio proceeds without it. "
 				 << "You can fix it and reload it in 'File > Reload > Style "
@@ -958,8 +871,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 		cout << "but it wasn't there." << endl;
 	}
 	gtk_style_context_add_provider_for_screen(
-			gdk_screen_get_default(), GTK_STYLE_PROVIDER(css_provider),
-			GTK_STYLE_PROVIDER_PRIORITY_USER);
+			gdk_screen_get_default(), GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 	css_path = g_strdup(csspath.c_str());
 
 	mainnotebook = GTK_NOTEBOOK(get_widget("notebook3"));
@@ -974,18 +886,14 @@ ExultStudio::ExultStudio(int argc, char** argv)
 	connect_button = get_widget("connect_button");
 	play_button    = get_widget("play_button");
 	if (connect_button) {
-		connect_button_handler_id = g_signal_connect(
-				G_OBJECT(connect_button), "toggled",
-				G_CALLBACK(ExultStudio::on_connect_button_toggled), this);
-		connect_button_signal_id
-				= g_signal_lookup("toggled", GTK_TYPE_TOGGLE_BUTTON);
+		connect_button_handler_id
+				= g_signal_connect(G_OBJECT(connect_button), "toggled", G_CALLBACK(ExultStudio::on_connect_button_toggled), this);
+		connect_button_signal_id = g_signal_lookup("toggled", GTK_TYPE_TOGGLE_BUTTON);
 	}
 	if (play_button) {
-		play_button_handler_id = g_signal_connect(
-				G_OBJECT(play_button), "toggled",
-				G_CALLBACK(ExultStudio::on_play_button_toggled), this);
-		play_button_signal_id
-				= g_signal_lookup("toggled", GTK_TYPE_TOGGLE_BUTTON);
+		play_button_handler_id
+				= g_signal_connect(G_OBJECT(play_button), "toggled", G_CALLBACK(ExultStudio::on_play_button_toggled), this);
+		play_button_signal_id = g_signal_lookup("toggled", GTK_TYPE_TOGGLE_BUTTON);
 	}
 	// Set initial state for menus and toolbar - disconnected
 	update_menu_items(false);
@@ -998,9 +906,7 @@ ExultStudio::ExultStudio(int argc, char** argv)
 		gtk_window_resize(GTK_WINDOW(app), w, h);
 	}
 	gtk_widget_set_visible(app, true);
-	g_signal_connect(
-			G_OBJECT(app), "key-press-event", G_CALLBACK(on_app_key_press),
-			this);
+	g_signal_connect(G_OBJECT(app), "key-press-event", G_CALLBACK(on_app_key_press), this);
 	// Background color for shape browser.
 	int bcolor;
 	config->value("config/estudio/background_color", bcolor, 0x808080);
@@ -1171,8 +1077,7 @@ bool ExultStudio::okay_to_close() {
 	h_at_close = alloc.height;
 
 	if (need_to_save()) {
-		const int choice
-				= prompt("File(s) modified.  Save?", "Yes", "No", "Cancel");
+		const int choice = prompt("File(s) modified.  Save?", "Yes", "No", "Cancel");
 		if (choice == 2) {    // Cancel?
 			return false;
 		}
@@ -1188,8 +1093,7 @@ bool ExultStudio::okay_to_close() {
  */
 
 inline bool Window_has_focus(GtkWindow* win) {
-	return gtk_window_get_focus(win) != nullptr
-		   && gtk_widget_has_focus(GTK_WIDGET(gtk_window_get_focus(win)));
+	return gtk_window_get_focus(win) != nullptr && gtk_widget_has_focus(GTK_WIDGET(gtk_window_get_focus(win)));
 }
 
 /*
@@ -1202,8 +1106,7 @@ bool ExultStudio::has_focus() {
 		return true;    // Main window.
 	}
 	// Group windows:
-	return std::any_of(
-			group_windows.cbegin(), group_windows.cend(), Window_has_focus);
+	return std::any_of(group_windows.cbegin(), group_windows.cend(), Window_has_focus);
 }
 
 /*
@@ -1221,8 +1124,7 @@ void ExultStudio::set_browser(const char* name, Object_browser* obj) {
 	gtk_frame_set_label(GTK_FRAME(browser_frame), name);
 	gtk_widget_set_visible(browser_box, true);
 	if (browser) {
-		gtk_box_pack_start(
-				GTK_BOX(browser_box), browser->get_widget(), true, true, 0);
+		gtk_box_pack_start(GTK_BOX(browser_box), browser->get_widget(), true, true, 0);
 	}
 }
 
@@ -1245,8 +1147,7 @@ Object_browser* ExultStudio::create_browser(const char* fname) {
  */
 
 const char* ExultStudio::get_shape_name(int shnum) {
-	return shnum >= 0 && shnum < get_num_item_names() ? get_item_name(shnum)
-													  : nullptr;
+	return shnum >= 0 && shnum < get_num_item_names() ? get_item_name(shnum) : nullptr;
 }
 
 /*
@@ -1363,18 +1264,15 @@ void ExultStudio::new_game() {
 		return;
 	}
 	Create_file_selection(
-			"Choose new game directory", "<SAVEHOME>", nullptr, {},
-			GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER, on_choose_new_game_dir,
+			"Choose new game directory", "<SAVEHOME>", nullptr, {}, GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER, on_choose_new_game_dir,
 			this);
 }
 
-C_EXPORT void on_gameselect_ok_clicked(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_gameselect_ok_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	// Get selected game:
-	GtkTreeView* treeview
-			= GTK_TREE_VIEW(studio->get_widget("gameselect_gamelist"));
+	GtkTreeView*       treeview = GTK_TREE_VIEW(studio->get_widget("gameselect_gamelist"));
 	GtkTreePath*       path;
 	GtkTreeViewColumn* col;
 	gtk_tree_view_get_cursor(treeview, &path, &col);
@@ -1399,10 +1297,9 @@ C_EXPORT void on_gameselect_ok_clicked(
 			return;
 		}
 		// Get the mod's Exult menu string.
-		GtkTextBuffer* buff = gtk_text_view_get_buffer(
-				GTK_TEXT_VIEW(studio->get_widget("gameselect_menustring")));
-		GtkTextIter startpos;
-		GtkTextIter endpos;
+		GtkTextBuffer* buff = gtk_text_view_get_buffer(GTK_TEXT_VIEW(studio->get_widget("gameselect_menustring")));
+		GtkTextIter    startpos;
+		GtkTextIter    endpos;
 		gtk_text_buffer_get_bounds(buff, &startpos, &endpos);
 		gchar*       modmenu = gtk_text_iter_get_text(&startpos, &endpos);
 		const string modmenustr(convertFromUTF8(modmenu, "ASCII"));
@@ -1466,8 +1363,7 @@ C_EXPORT void on_gameselect_ok_clicked(
 /*
  *  A different game was chosen.
  */
-C_EXPORT void on_gameselect_gamelist_cursor_changed(
-		GtkTreeView* treeview, gpointer user_data) {
+C_EXPORT void on_gameselect_gamelist_cursor_changed(GtkTreeView* treeview, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	// Get selection info:
 	GtkTreePath*       path;
@@ -1495,8 +1391,7 @@ C_EXPORT void on_gameselect_gamelist_cursor_changed(
 	GtkTreeStore* model  = GTK_TREE_STORE(oldmod);
 	{
 		GtkTreePath* nullpath = gtk_tree_path_new();
-		gtk_tree_view_set_cursor(
-				GTK_TREE_VIEW(mod_tree), nullpath, nullptr, false);
+		gtk_tree_view_set_cursor(GTK_TREE_VIEW(mod_tree), nullpath, nullptr, false);
 		gtk_tree_path_free(nullpath);
 		gtk_tree_store_clear(model);
 	}
@@ -1505,9 +1400,7 @@ C_EXPORT void on_gameselect_gamelist_cursor_changed(
 	GtkTreeIter           iter;
 
 	gtk_tree_store_append(model, &iter, nullptr);
-	gtk_tree_store_set(
-			model, &iter, 0, "(unmodded game -- default if no mod is selected)",
-			1, -1, -1);
+	gtk_tree_store_set(model, &iter, 0, "(unmodded game -- default if no mod is selected)", 1, -1, -1);
 
 	for (size_t j = 0; j < mods.size(); j++) {
 		const ModInfo&          currmod = mods[j];
@@ -1545,8 +1438,7 @@ void fill_game_tree(GtkTreeView* treeview, int curr_game) {
 		gtk_tree_store_append(model, &iter, nullptr);
 		gtk_tree_store_set(model, &iter, 0, title.c_str(), 1, j, -1);
 		if (j == size_t(curr_game)) {
-			gtk_tree_selection_select_iter(
-					gtk_tree_view_get_selection(treeview), &iter);
+			gtk_tree_selection_select_iter(gtk_tree_view_get_selection(treeview), &iter);
 			path = gtk_tree_model_get_path(oldmod, &iter);
 		}
 	}
@@ -1565,13 +1457,9 @@ void ExultStudio::open_game_dialog(bool createmod) {
 	GtkWidget* win = get_widget("game_selection");
 	gtk_window_set_modal(GTK_WINDOW(win), true);
 
-	g_signal_connect(
-			G_OBJECT(get_widget("gameselect_ok")), "clicked",
-			G_CALLBACK(on_gameselect_ok_clicked), nullptr);
+	g_signal_connect(G_OBJECT(get_widget("gameselect_ok")), "clicked", G_CALLBACK(on_gameselect_ok_clicked), nullptr);
 
-	GtkWidget* dlg_list[2]
-			= {get_widget("gameselect_gamelist"),
-			   get_widget("gameselect_modlist")};
+	GtkWidget* dlg_list[2] = {get_widget("gameselect_gamelist"), get_widget("gameselect_modlist")};
 
 	/* create the store for both trees */
 	for (auto* widg : dlg_list) {
@@ -1589,13 +1477,9 @@ void ExultStudio::open_game_dialog(bool createmod) {
 
 			/* column for game names */
 			g_object_set(renderer, "xalign", 0.0, nullptr);
-			col_offset = gtk_tree_view_insert_column_with_attributes(
-					tree, -1, "Column1", renderer, "text", FOLDER_COLUMN,
-					nullptr);
-			GtkTreeViewColumn* column
-					= gtk_tree_view_get_column(tree, col_offset - 1);
-			gtk_tree_view_column_set_clickable(
-					GTK_TREE_VIEW_COLUMN(column), true);
+			col_offset = gtk_tree_view_insert_column_with_attributes(tree, -1, "Column1", renderer, "text", FOLDER_COLUMN, nullptr);
+			GtkTreeViewColumn* column = gtk_tree_view_get_column(tree, col_offset - 1);
+			gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), true);
 		}
 		{
 			GtkTreePath* nullpath = gtk_tree_path_new();
@@ -1606,9 +1490,7 @@ void ExultStudio::open_game_dialog(bool createmod) {
 	}
 
 	if (!createmod) {
-		g_signal_connect(
-				G_OBJECT(dlg_list[0]), "cursor-changed",
-				G_CALLBACK(on_gameselect_gamelist_cursor_changed), nullptr);
+		g_signal_connect(G_OBJECT(dlg_list[0]), "cursor-changed", G_CALLBACK(on_gameselect_gamelist_cursor_changed), nullptr);
 		set_visible("modlist_frame", true);
 		set_visible("modinfo_frame", false);
 	} else {
@@ -1665,10 +1547,8 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 			dlg += "browse for a different game, ";
 		}
 		dlg += "create a new game or exit?";
-		const int choice
-				= (gamemanager->get_game_count() > 0)
-						  ? prompt(dlg.c_str(), "Browse", "Create New", "Quit")
-						  : (prompt(dlg.c_str(), "Create New", "Quit") + 1);
+		const int choice = (gamemanager->get_game_count() > 0) ? prompt(dlg.c_str(), "Browse", "Create New", "Quit")
+															   : (prompt(dlg.c_str(), "Create New", "Quit") + 1);
 		if (choice == 0) {
 			open_game_dialog(false);
 			return;
@@ -1684,7 +1564,7 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 		curr_game = gamemanager->find_game_index(basegame->get_cfgname());
 	}
 	BaseGameInfo* gameinfo = nullptr;
-	curr_mod = modname.empty() ? -1 : basegame->find_mod_index(modname);
+	curr_mod               = modname.empty() ? -1 : basegame->find_mod_index(modname);
 	if (curr_mod > -1) {
 		gameinfo = basegame->get_mod(curr_mod);
 	} else {
@@ -1725,11 +1605,9 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	browser             = nullptr;
 	shape_info_modified = shape_names_modified = npc_modified = false;
 	for (auto* win : group_windows) {
-		GtkWidget* grpwin = GTK_WIDGET(win);
-		auto*      xml    = static_cast<GtkBuilder*>(
-                g_object_get_data(G_OBJECT(grpwin), "xml"));
-		auto* chooser = static_cast<Object_browser*>(
-				g_object_get_data(G_OBJECT(grpwin), "browser"));
+		GtkWidget* grpwin  = GTK_WIDGET(win);
+		auto*      xml     = static_cast<GtkBuilder*>(g_object_get_data(G_OBJECT(grpwin), "xml"));
+		auto*      chooser = static_cast<Object_browser*>(g_object_get_data(G_OBJECT(grpwin), "browser"));
 		delete chooser;
 		gtk_widget_destroy(grpwin);
 		g_object_unref(G_OBJECT(xml));
@@ -1755,8 +1633,7 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	if (!palbuf || !len) {
 		// No palette file, so create fake.
 		// Just in case.
-		palbuf = make_unique<unsigned char[]>(
-				3 * 256);    // How about all white?
+		palbuf = make_unique<unsigned char[]>(3 * 256);    // How about all white?
 		memset(palbuf.get(), 63, 3 * 256);
 	}
 	// Set background color.
@@ -1772,14 +1649,12 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	if (game_type == SERPENT_ISLE) {
 		paperdolfile = open_shape_file("paperdol.vga");
 	}
-	Setup_text(
-			game_type == SERPENT_ISLE, expansion, sibeta,
-			gameinfo->get_game_language());    // Read in shape names.
+	Setup_text(game_type == SERPENT_ISLE, expansion, sibeta,
+			   gameinfo->get_game_language());    // Read in shape names.
 	misc_name_map.clear();
 	for (int i = 0; i < get_num_misc_names(); i++) {
 		if (get_misc_name(i) != nullptr) {
-			misc_name_map.insert(
-					std::pair<string, int>(string(get_misc_name(i)), i));
+			misc_name_map.insert(std::pair<string, int>(string(get_misc_name(i)), i));
 		}
 	}
 	setup_file_list();           // Set up file-list window.
@@ -1788,8 +1663,7 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	// Load or create presets file for this game
 	delete presets_file;
 	presets_file             = nullptr;
-	const string preset_path = get_system_path("<PATCH>") + "/"
-							   + Shape_preset_file::get_default_filename();
+	const string preset_path = get_system_path("<PATCH>") + "/" + Shape_preset_file::get_default_filename();
 	if (U7exists(preset_path)) {
 		presets_file = Shape_preset_file::read_file(preset_path.c_str());
 	}
@@ -1800,8 +1674,7 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
 	// Load or create NPC presets file for this game
 	delete npc_presets_file;
 	npc_presets_file             = nullptr;
-	const string npc_preset_path = get_system_path("<PATCH>") + "/"
-								   + Npc_preset_file::get_default_filename();
+	const string npc_preset_path = get_system_path("<PATCH>") + "/" + Npc_preset_file::get_default_filename();
 	if (U7exists(npc_preset_path)) {
 		npc_presets_file = Npc_preset_file::read_file(npc_preset_path.c_str());
 	}
@@ -1817,8 +1690,7 @@ void ExultStudio::set_game_path(const string& gamename, const string& modname) {
  *  Unified prompt for discarding unsaved changes.
  *  Returns true if should proceed (discarded or not dirty), false if canceled.
  */
-bool ExultStudio::prompt_for_discard(
-		bool& dirty_flag, const char* entity_name, GtkWindow* parent) {
+bool ExultStudio::prompt_for_discard(bool& dirty_flag, const char* entity_name, GtkWindow* parent) {
 	if (!dirty_flag) {
 		return true;    // Not dirty, proceed
 	}
@@ -1841,11 +1713,8 @@ bool ExultStudio::prompt_for_discard(
 	}
 
 	char prompt[256];
-	snprintf(
-			prompt, sizeof(prompt), "%s has unsaved changes. Discard them?",
-			entity_name);
-	const int answer = EStudio::Prompt(
-			prompt, "Yes, never ask again", "Yes", "No", parent);
+	snprintf(prompt, sizeof(prompt), "%s has unsaved changes. Discard them?", entity_name);
+	const int answer = EStudio::Prompt(prompt, "Yes, never ask again", "Yes", "No", parent);
 
 	if (answer == 0) {
 		// User chose "Yes, never ask again"
@@ -1879,8 +1748,7 @@ bool ExultStudio::prompt_for_discard(
  *  @param num_excluded       Number of entries in excluded_names array
  */
 void ExultStudio::connect_widget_signals(
-		GtkWidget* widget, GCallback callback, gpointer user_data,
-		const char* const* excluded_names, int num_excluded) {
+		GtkWidget* widget, GCallback callback, gpointer user_data, const char* const* excluded_names, int num_excluded) {
 	if (!widget) {
 		return;
 	}
@@ -1889,8 +1757,7 @@ void ExultStudio::connect_widget_signals(
 	const char* widget_name = gtk_widget_get_name(widget);
 	if (widget_name && excluded_names) {
 		for (int i = 0; i < num_excluded; i++) {
-			if (excluded_names[i]
-				&& strcmp(widget_name, excluded_names[i]) == 0) {
+			if (excluded_names[i] && strcmp(widget_name, excluded_names[i]) == 0) {
 				return;    // Skip this widget and its children
 			}
 		}
@@ -1898,8 +1765,7 @@ void ExultStudio::connect_widget_signals(
 
 	// Connect appropriate signal based on widget type
 	if (GTK_IS_SPIN_BUTTON(widget) || GTK_IS_SCALE(widget)) {
-		g_signal_connect(
-				G_OBJECT(widget), "value-changed", callback, user_data);
+		g_signal_connect(G_OBJECT(widget), "value-changed", callback, user_data);
 	} else if (GTK_IS_ENTRY(widget)) {
 		g_signal_connect(G_OBJECT(widget), "changed", callback, user_data);
 	} else if (GTK_IS_TOGGLE_BUTTON(widget)) {
@@ -1913,21 +1779,15 @@ void ExultStudio::connect_widget_signals(
 		// Process notebook pages without connecting to the notebook itself
 		const int n_pages = gtk_notebook_get_n_pages(GTK_NOTEBOOK(widget));
 		for (int i = 0; i < n_pages; i++) {
-			GtkWidget* page
-					= gtk_notebook_get_nth_page(GTK_NOTEBOOK(widget), i);
+			GtkWidget* page = gtk_notebook_get_nth_page(GTK_NOTEBOOK(widget), i);
 			if (page) {
-				connect_widget_signals(
-						page, callback, user_data, excluded_names,
-						num_excluded);
+				connect_widget_signals(page, callback, user_data, excluded_names, num_excluded);
 			}
 		}
 	} else if (GTK_IS_CONTAINER(widget)) {
 		GList* children = gtk_container_get_children(GTK_CONTAINER(widget));
-		for (GList* iter = children; iter != nullptr;
-			 iter        = g_list_next(iter)) {
-			connect_widget_signals(
-					GTK_WIDGET(iter->data), callback, user_data, excluded_names,
-					num_excluded);
+		for (GList* iter = children; iter != nullptr; iter = g_list_next(iter)) {
+			connect_widget_signals(GTK_WIDGET(iter->data), callback, user_data, excluded_names, num_excluded);
 		}
 		g_list_free(children);
 	}
@@ -2063,17 +1923,13 @@ void ExultStudio::update_chunk_groups_for_swap(int tnum) {
 }
 
 /*  Note:  Args after extcnt are in (name, file_type) pairs.    */
-void add_to_tree(
-		GtkTreeStore* model, const char* folderName, const char* files,
-		ExultFileTypes file_type, int extra_cnt, ...) {
+void add_to_tree(GtkTreeStore* model, const char* folderName, const char* files, ExultFileTypes file_type, int extra_cnt, ...) {
 	dirent*     entry;
 	GtkTreeIter iter;
 
 	// First, we add the folder
 	gtk_tree_store_append(model, &iter, nullptr);
-	gtk_tree_store_set(
-			model, &iter, FOLDER_COLUMN, folderName, FILE_COLUMN, nullptr,
-			DATA_COLUMN, -1, -1);
+	gtk_tree_store_set(model, &iter, FOLDER_COLUMN, folderName, FILE_COLUMN, nullptr, DATA_COLUMN, -1, -1);
 
 	// Scan the files which are separated by commas
 	GtkTreeIter child_iter;
@@ -2104,14 +1960,11 @@ void add_to_tree(
 				char*     fname = entry->d_name;
 				const int flen  = strlen(fname);
 				// Ignore case of extension.
-				if (!strcmp(fname, ".") || !strcmp(fname, "..")
-					|| strcasecmp(fname + flen - strlen(ext), ext) != 0) {
+				if (!strcmp(fname, ".") || !strcmp(fname, "..") || strcasecmp(fname + flen - strlen(ext), ext) != 0) {
 					continue;
 				}
 				gtk_tree_store_append(model, &child_iter, &iter);
-				gtk_tree_store_set(
-						model, &child_iter, FOLDER_COLUMN, nullptr, FILE_COLUMN,
-						fname, DATA_COLUMN, file_type, -1);
+				gtk_tree_store_set(model, &child_iter, FOLDER_COLUMN, nullptr, FILE_COLUMN, fname, DATA_COLUMN, file_type, -1);
 			}
 			closedir(dir);
 		}
@@ -2121,8 +1974,7 @@ void add_to_tree(
 				char*     fname = entry->d_name;
 				const int flen  = strlen(fname);
 				// Ignore case of extension.
-				if (!strcmp(fname, ".") || !strcmp(fname, "..")
-					|| strcasecmp(fname + flen - strlen(ext), ext) != 0) {
+				if (!strcmp(fname, ".") || !strcmp(fname, "..") || strcasecmp(fname + flen - strlen(ext), ext) != 0) {
 					continue;
 				}
 				// Filter out 'font0000.vga' file as it is apparently
@@ -2132,16 +1984,14 @@ void add_to_tree(
 				}
 				// Skip fonts_original.vga and fonts_serif.vga - handled
 				// separately.
-				if (!strcasecmp(fname, "fonts_original.vga")
-					|| !strcasecmp(fname, "fonts_serif.vga")) {
+				if (!strcasecmp(fname, "fonts_original.vga") || !strcasecmp(fname, "fonts_serif.vga")) {
 					continue;
 				}
 				// See if also in 'patch'.
 				string fullpath(ppath);
 				string lowfname(fname);
 				for (auto& chr : lowfname) {
-					chr = static_cast<char>(
-							std::tolower(static_cast<unsigned char>(chr)));
+					chr = static_cast<char>(std::tolower(static_cast<unsigned char>(chr)));
 				}
 				fullpath += "/";
 				fullpath += lowfname;
@@ -2149,9 +1999,7 @@ void add_to_tree(
 					continue;
 				}
 				gtk_tree_store_append(model, &child_iter, &iter);
-				gtk_tree_store_set(
-						model, &child_iter, FOLDER_COLUMN, nullptr, FILE_COLUMN,
-						fname, DATA_COLUMN, file_type, -1);
+				gtk_tree_store_set(model, &child_iter, FOLDER_COLUMN, nullptr, FILE_COLUMN, fname, DATA_COLUMN, file_type, -1);
 			}
 			closedir(dir);
 		}
@@ -2165,9 +2013,7 @@ void add_to_tree(
 		char*     nm = va_arg(ap, char*);
 		const int ty = va_arg(ap, int);
 		gtk_tree_store_append(model, &child_iter, &iter);
-		gtk_tree_store_set(
-				model, &child_iter, FOLDER_COLUMN, nullptr, FILE_COLUMN, nm,
-				DATA_COLUMN, ty, -1);
+		gtk_tree_store_set(model, &child_iter, FOLDER_COLUMN, nullptr, FILE_COLUMN, nm, DATA_COLUMN, ty, -1);
 	}
 	va_end(ap);
 }
@@ -2185,10 +2031,8 @@ void ExultStudio::setup_file_list() {
 	if (oldmod) {
 		model = GTK_TREE_STORE(oldmod);
 	} else {    // Create the first time.
-		model = gtk_tree_store_new(
-				NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
-		gtk_tree_view_set_model(
-				GTK_TREE_VIEW(file_list), GTK_TREE_MODEL(model));
+		model = gtk_tree_store_new(NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
+		gtk_tree_view_set_model(GTK_TREE_VIEW(file_list), GTK_TREE_MODEL(model));
 		g_object_unref(model);
 		gint               col_offset;
 		GtkCellRenderer*   renderer = gtk_cell_renderer_text_new();
@@ -2197,23 +2041,18 @@ void ExultStudio::setup_file_list() {
 		/* column for folder names */
 		g_object_set(renderer, "xalign", 0.0, nullptr);
 		col_offset = gtk_tree_view_insert_column_with_attributes(
-				GTK_TREE_VIEW(file_list), -1, "Folders", renderer, "text",
-				FOLDER_COLUMN, nullptr);
-		column = gtk_tree_view_get_column(
-				GTK_TREE_VIEW(file_list), col_offset - 1);
+				GTK_TREE_VIEW(file_list), -1, "Folders", renderer, "text", FOLDER_COLUMN, nullptr);
+		column = gtk_tree_view_get_column(GTK_TREE_VIEW(file_list), col_offset - 1);
 		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), true);
 		/* column for file names */
 		col_offset = gtk_tree_view_insert_column_with_attributes(
-				GTK_TREE_VIEW(file_list), -1, "Files", renderer, "text",
-				FILE_COLUMN, nullptr);
-		column = gtk_tree_view_get_column(
-				GTK_TREE_VIEW(file_list), col_offset - 1);
+				GTK_TREE_VIEW(file_list), -1, "Files", renderer, "text", FILE_COLUMN, nullptr);
+		column = gtk_tree_view_get_column(GTK_TREE_VIEW(file_list), col_offset - 1);
 		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), true);
 	}
 	{
 		GtkTreePath* nullpath = gtk_tree_path_new();
-		gtk_tree_view_set_cursor(
-				GTK_TREE_VIEW(file_list), nullpath, nullptr, false);
+		gtk_tree_view_set_cursor(GTK_TREE_VIEW(file_list), nullpath, nullptr, false);
 		gtk_tree_path_free(nullpath);
 		gtk_tree_store_clear(model);
 	}
@@ -2221,40 +2060,29 @@ void ExultStudio::setup_file_list() {
 	// If in patch, they'll be picked up by the normal directory scan.
 	const bool has_patch_fonts_original = U7exists(PATCH_ORIGINAL_FONTS);
 	const bool has_patch_fonts_serif    = U7exists(PATCH_SERIF_FONTS);
-	const int  fonts_extra_cnt          = (!has_patch_fonts_original ? 1 : 0)
-								+ (!has_patch_fonts_serif ? 1 : 0);
+	const int  fonts_extra_cnt          = (!has_patch_fonts_original ? 1 : 0) + (!has_patch_fonts_serif ? 1 : 0);
 	if (!has_patch_fonts_original && !has_patch_fonts_serif) {
 		add_to_tree(
-				model, "Shape Files", "*.vga,*.shp", ShapeArchive,
-				1 + fonts_extra_cnt, "combos.flx", ComboArchive,
-				"FONTS_ORIGINAL.VGA", ShapeArchive, "FONTS_SERIF.VGA",
-				ShapeArchive);
+				model, "Shape Files", "*.vga,*.shp", ShapeArchive, 1 + fonts_extra_cnt, "combos.flx", ComboArchive,
+				"FONTS_ORIGINAL.VGA", ShapeArchive, "FONTS_SERIF.VGA", ShapeArchive);
 	} else if (!has_patch_fonts_original) {
 		add_to_tree(
-				model, "Shape Files", "*.vga,*.shp", ShapeArchive,
-				1 + fonts_extra_cnt, "combos.flx", ComboArchive,
+				model, "Shape Files", "*.vga,*.shp", ShapeArchive, 1 + fonts_extra_cnt, "combos.flx", ComboArchive,
 				"FONTS_ORIGINAL.VGA", ShapeArchive);
 	} else if (!has_patch_fonts_serif) {
 		add_to_tree(
-				model, "Shape Files", "*.vga,*.shp", ShapeArchive,
-				1 + fonts_extra_cnt, "combos.flx", ComboArchive,
+				model, "Shape Files", "*.vga,*.shp", ShapeArchive, 1 + fonts_extra_cnt, "combos.flx", ComboArchive,
 				"FONTS_SERIF.VGA", ShapeArchive);
 	} else {
 		// Both are in patch, no extras needed for font files.
-		add_to_tree(
-				model, "Shape Files", "*.vga,*.shp", ShapeArchive, 1,
-				"combos.flx", ComboArchive);
+		add_to_tree(model, "Shape Files", "*.vga,*.shp", ShapeArchive, 1, "combos.flx", ComboArchive);
 	}
-	add_to_tree(
-			model, "Map Files", "u7chunks", ChunksArchive, 1, "NPCs",
-			NpcsArchive);
+	add_to_tree(model, "Map Files", "u7chunks", ChunksArchive, 1, "NPCs", NpcsArchive);
 	add_to_tree(model, "Palette Files", "*.pal,palettes.flx", PaletteFile, 0);
 
 	// Expand all entries.
 	gtk_tree_view_expand_all(GTK_TREE_VIEW(file_list));
-	gtk_tree_selection_set_mode(
-			gtk_tree_view_get_selection(GTK_TREE_VIEW(file_list)),
-			GTK_SELECTION_SINGLE);
+	gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(file_list)), GTK_SELECTION_SINGLE);
 }
 
 /*
@@ -2305,25 +2133,20 @@ bool ExultStudio::need_to_save() {
 		return true;
 	}
 	// Ask Exult about the map.
-	if (is_server_connected()
-		&& Send_data(server_socket, Exult_server::info) != -1) {
+	if (is_server_connected() && Send_data(server_socket, Exult_server::info) != -1) {
 		// Should get immediate answer.
 		unsigned char          data[Exult_server::maxlength];
 		Exult_server::Msg_type id;
 		Exult_server::wait_for_response(server_socket, 100);
-		const int len = Exult_server::Receive_data(
-				server_socket, id, data, sizeof(data));
-		int  vers;
-		int  edlift;
-		int  hdlift;
-		int  edmode;
-		bool editing;
-		bool grid;
-		bool mod;
-		if (id == Exult_server::info
-			&& Game_info_in(
-					data, len, vers, edlift, hdlift, editing, grid, mod, edmode)
-			&& mod) {
+		const int len = Exult_server::Receive_data(server_socket, id, data, sizeof(data));
+		int       vers;
+		int       edlift;
+		int       hdlift;
+		int       edmode;
+		bool      editing;
+		bool      grid;
+		bool      mod;
+		if (id == Exult_server::info && Game_info_in(data, len, vers, edlift, hdlift, editing, grid, mod, edmode) && mod) {
 			return true;
 		}
 	}
@@ -2380,8 +2203,7 @@ void ExultStudio::write_shape_info(bool force    // If set, always write.
 			unsigned char  buf[Exult_server::maxlength];
 			unsigned char* ptr    = &buf[0];
 			ExultStudio*   studio = ExultStudio::get_instance();
-			studio->send_to_server(
-					Exult_server::reload_shapes_info, buf, ptr - buf);
+			studio->send_to_server(Exult_server::reload_shapes_info, buf, ptr - buf);
 		}
 	}
 	shape_info_modified = false;
@@ -2431,8 +2253,7 @@ void ExultStudio::set_bounding_box(int index) {
 	// Map index to palette indices
 	// None, White, Black, Red, Orange, Yellow, Green, Blue, Purple
 	const int bbox_indices[] = {-1, 15, 0, 22, 38, 5, 64, 80, 94};
-	const int palette_index
-			= (index >= 0 && index < 9) ? bbox_indices[index] : -1;
+	const int palette_index  = (index >= 0 && index < 9) ? bbox_indices[index] : -1;
 
 	unsigned char  data[Exult_server::maxlength];
 	unsigned char* ptr = &data[0];
@@ -2470,8 +2291,7 @@ void ExultStudio::set_edit_terrain(gboolean terrain    // True/false
 ) {
 	unsigned char  data[Exult_server::maxlength];
 	unsigned char* ptr = &data[0];
-	little_endian::Write2(
-			ptr, terrain ? 1 : 0);    // NOTE:  Pass -1 to abort.  But I
+	little_endian::Write2(ptr, terrain ? 1 : 0);    // NOTE:  Pass -1 to abort.  But I
 	//   haven't got an interface yet.
 	send_to_server(Exult_server::terrain_editing_mode, data, ptr - data);
 	if (!terrain) {
@@ -2485,8 +2305,7 @@ void ExultStudio::set_edit_terrain(gboolean terrain    // True/false
 		set_sensitive("hide_lift_spin", false);
 		// Check if prompting is disabled via config
 		std::string prompt_setting;
-		config->value(
-				"config/estudio/prompt/terrain_warning", prompt_setting, "yes");
+		config->value("config/estudio/prompt/terrain_warning", prompt_setting, "yes");
 		if (prompt_setting != "no") {
 			const int answer = EStudio::Prompt(
 					"Changing chunks in one place applies these changes to "
@@ -2494,8 +2313,7 @@ void ExultStudio::set_edit_terrain(gboolean terrain    // True/false
 					"Ok, never warn again", "Ok");
 			if (answer == 0) {
 				// User chose "Ok, never warn again"
-				config->set(
-						"config/estudio/prompt/terrain_warning", "no", true);
+				config->set("config/estudio/prompt/terrain_warning", "no", true);
 			}
 		}
 	}
@@ -2540,14 +2358,12 @@ void ExultStudio::show_unused_shapes(
 	int          pos = 0;
 	GtkEditable* ed  = GTK_EDITABLE(text);
 	Insert_text(ed, "The following shapes were not found.\n", pos);
-	Insert_text(
-			ed, "Note that some may be created by usecode (script)\n\n", pos);
+	Insert_text(ed, "Note that some may be created by usecode (script)\n\n", pos);
 	// Ignore flats (<0x96).
 	for (int i = c_first_obj_shape; i < nshapes; i++) {
 		if (!(data[i / 8] & (1 << (i % 8)))) {
-			const char* nm = get_shape_name(i);
-			char*       msg
-					= g_strdup_printf("  Shape %4d:    %s\n", i, nm ? nm : "");
+			const char* nm  = get_shape_name(i);
+			char*       msg = g_strdup_printf("  Shape %4d:    %s\n", i, nm ? nm : "");
 			Insert_text(ed, msg, pos);
 			g_free(msg);
 		}
@@ -2561,13 +2377,11 @@ void ExultStudio::show_unused_shapes(
  *  Output: ->file info (may already have existed), or 0 if error.
  */
 
-Shape_file_info* ExultStudio::open_shape_file(
-		const char* basename    // Base name of file to open.
+Shape_file_info* ExultStudio::open_shape_file(const char* basename    // Base name of file to open.
 ) {
 	Shape_file_info* info = files->create(basename);
 	if (!info) {
-		EStudio::Alert(
-				"'%s' not found in static or patch directories", basename);
+		EStudio::Alert("'%s' not found in static or patch directories", basename);
 	}
 	return info;
 }
@@ -2579,9 +2393,8 @@ Shape_file_info* ExultStudio::open_shape_file(
 void ExultStudio::new_shape_file(bool single    // Not a FLEX file.
 ) {
 	Create_file_selection(
-			single ? "Write new .shp file" : "Write new .vga file", "<PATCH>",
-			single ? "Shape files" : "VGA files", {single ? "*.shp" : "*.vga"},
-			GTK_FILE_CHOOSER_ACTION_SAVE, create_shape_file,
+			single ? "Write new .shp file" : "Write new .vga file", "<PATCH>", single ? "Shape files" : "VGA files",
+			{single ? "*.shp" : "*.vga"}, GTK_FILE_CHOOSER_ACTION_SAVE, create_shape_file,
 			reinterpret_cast<gpointer>(uintptr_t(single)));
 }
 
@@ -2601,8 +2414,7 @@ void ExultStudio::create_shape_file(
 			const int     h = c_tilesize;
 			unsigned char pixels[w * h];    // Create an 8x8 shape.
 			memset(pixels, 1, w * h);       // Just use color #1.
-			Shape shape(
-					make_unique<Shape_frame>(pixels, w, h, w - 1, h - 1, true));
+			Shape  shape(make_unique<Shape_frame>(pixels, w, h, w - 1, h - 1, true));
 			Shape* ptr = &shape;
 			Image_file_info::write_file(pathname, &ptr, 1, true);
 		} else {
@@ -2641,8 +2453,7 @@ void ExultStudio::set_toggle(const char* name, bool val, bool sensitive) {
  *  Get an 8-bit set of flags from a group of toggles.
  */
 
-unsigned int ExultStudio::get_bit_toggles(
-		tcb::span<const char* const> names    // Names for bit 0, 1, 2,...
+unsigned int ExultStudio::get_bit_toggles(tcb::span<const char* const> names    // Names for bit 0, 1, 2,...
 ) {
 	unsigned int bits = 0;
 	for (size_t i = 0; i < names.size(); i++) {
@@ -2717,9 +2528,7 @@ void ExultStudio::set_spin(
 ) {
 	GtkWidget* btn = get_widget(name);
 	if (btn) {
-		gtk_spin_button_set_adjustment(
-				GTK_SPIN_BUTTON(btn),
-				GTK_ADJUSTMENT(gtk_adjustment_new(0, low, high, 1, 10, 0)));
+		gtk_spin_button_set_adjustment(GTK_SPIN_BUTTON(btn), GTK_ADJUSTMENT(gtk_adjustment_new(0, low, high, 1, 10, 0)));
 	}
 }
 
@@ -2732,9 +2541,7 @@ void ExultStudio::set_spin(
 ) {
 	GtkWidget* btn = get_widget(name);
 	if (btn) {
-		gtk_spin_button_set_adjustment(
-				GTK_SPIN_BUTTON(btn),
-				GTK_ADJUSTMENT(gtk_adjustment_new(0, low, high, 1, 10, 0)));
+		gtk_spin_button_set_adjustment(GTK_SPIN_BUTTON(btn), GTK_ADJUSTMENT(gtk_adjustment_new(0, low, high, 1, 10, 0)));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), val);
 	}
 }
@@ -2787,12 +2594,10 @@ const gchar* ExultStudio::get_text_entry(const char* name) {
  *  Find and set a text field to a number.
  */
 
-void ExultStudio::set_entry(
-		const char* name, int val, bool hex, bool sensitive) {
+void ExultStudio::set_entry(const char* name, int val, bool hex, bool sensitive) {
 	GtkWidget* field = get_widget(name);
 	if (field) {
-		char* txt = hex ? g_strdup_printf("0x%x", val)
-						: g_strdup_printf("%d", val);
+		char* txt = hex ? g_strdup_printf("0x%x", val) : g_strdup_printf("%d", val);
 		gtk_entry_set_text(GTK_ENTRY(field), txt);
 		g_free(txt);
 		gtk_widget_set_sensitive(field, sensitive);
@@ -2816,8 +2621,7 @@ void ExultStudio::set_entry(const char* name, const char* val, bool sensitive) {
  *  Output: Msg. ID, or 0.
  */
 
-guint ExultStudio::set_statusbar(
-		const char* name, int context, const char* msg) {
+guint ExultStudio::set_statusbar(const char* name, int context, const char* msg) {
 	GtkWidget* sbar = get_widget(name);
 	if (sbar) {
 		return gtk_statusbar_push(GTK_STATUSBAR(sbar), context, msg);
@@ -2885,20 +2689,17 @@ void ExultStudio::set_sensitive(const char* name, bool tf) {
  */
 static int prompt_choice = 0;    // Gets prompt choice.
 
-C_EXPORT void on_prompt3_yes_clicked(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_prompt3_yes_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	prompt_choice = 0;
 }
 
-C_EXPORT void on_prompt3_no_clicked(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_prompt3_no_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	prompt_choice = 1;
 }
 
-C_EXPORT void on_prompt3_cancel_clicked(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_prompt3_cancel_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	prompt_choice = 2;
 }
@@ -2919,8 +2720,7 @@ int ExultStudio::prompt(
 	static GtkWidget* dlg = nullptr;
 	if (!dlg) {    // First time?
 		dlg             = get_widget("prompt3_dialog");
-		GtkWidget* draw = gtk_image_new_from_icon_name(
-				"exult_warning", GTK_ICON_SIZE_DIALOG);
+		GtkWidget* draw = gtk_image_new_from_icon_name("exult_warning", GTK_ICON_SIZE_DIALOG);
 		GtkWidget* hbox = get_widget("prompt3_hbox");
 		gtk_widget_set_visible(draw, true);
 		gtk_box_pack_start(GTK_BOX(hbox), draw, false, false, 12);
@@ -2981,10 +2781,9 @@ namespace EStudio {
 			const char* choice0,    // 1st choice.
 			const char* choice1,    // 2nd choice, or nullptr.
 			const char* choice2,    // 3rd choice, or nullptr.
-			GtkWindow*  parent    // Parent window, or nullptr for auto-detect.
+			GtkWindow*  parent      // Parent window, or nullptr for auto-detect.
 	) {
-		return ExultStudio::get_instance()->prompt(
-				msg, choice0, choice1, choice2, parent);
+		return ExultStudio::get_instance()->prompt(msg, choice0, choice1, choice2, parent);
 	}
 
 	/*
@@ -3014,11 +2813,8 @@ namespace EStudio {
 			gpointer    func_data,    // Data passed to func().
 			GSList*     group         // If a radio menu item is wanted.
 	) {
-		GtkWidget* mitem = group ? (label ? gtk_radio_menu_item_new_with_label(
-													group, label)
-										  : gtk_radio_menu_item_new(group))
-								 : (label ? gtk_menu_item_new_with_label(label)
-										  : gtk_menu_item_new());
+		GtkWidget* mitem = group ? (label ? gtk_radio_menu_item_new_with_label(group, label) : gtk_radio_menu_item_new(group))
+								 : (label ? gtk_menu_item_new_with_label(label) : gtk_menu_item_new());
 		gtk_widget_set_visible(mitem, true);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), mitem);
 		if (!label) {    // Want separator?
@@ -3040,9 +2836,7 @@ namespace EStudio {
 			gpointer     func_data    // Passed to 'clicked'.
 	) {
 		GtkWidget* btn = gtk_button_new();
-		GtkWidget* img = gtk_image_new_from_icon_name(
-				dir == GTK_ARROW_UP ? "go-up" : "go-down",
-				GTK_ICON_SIZE_BUTTON);
+		GtkWidget* img = gtk_image_new_from_icon_name(dir == GTK_ARROW_UP ? "go-up" : "go-down", GTK_ICON_SIZE_BUTTON);
 		gtk_button_set_image(GTK_BUTTON(btn), img);
 		gtk_widget_set_visible(btn, true);
 		g_signal_connect(G_OBJECT(btn), "clicked", clicked, func_data);
@@ -3089,8 +2883,7 @@ C_EXPORT void on_prefs_okay_clicked(GtkButton* button, gpointer user_data) {
  *  'Reset' was hit in prompts section.
  */
 
-C_EXPORT void on_prefs_prompts_reset_clicked(
-		GtkButton* button, gpointer user_data) {
+C_EXPORT void on_prefs_prompts_reset_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 
 	// Reset all prompt settings to "yes"
@@ -3109,11 +2902,9 @@ C_EXPORT void on_prefs_prompts_reset_clicked(
  *  'Okay' was hit in the color selector.
  */
 
-C_EXPORT void on_prefs_background_choose_clicked(
-		GtkButton* button, gpointer user_data) {
+C_EXPORT void on_prefs_background_choose_clicked(GtkButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
-	GtkColorChooserDialog* colorsel = GTK_COLOR_CHOOSER_DIALOG(
-			gtk_color_chooser_dialog_new("Background color", nullptr));
+	GtkColorChooserDialog* colorsel = GTK_COLOR_CHOOSER_DIALOG(gtk_color_chooser_dialog_new("Background color", nullptr));
 	g_object_set(colorsel, "show-editor", true, nullptr);
 	gtk_window_set_modal(GTK_WINDOW(colorsel), true);
 	// Get color.
@@ -3133,10 +2924,7 @@ C_EXPORT void on_prefs_background_choose_clicked(
 		studio->set_background_color((r << 16) + (g << 8) + b);
 		// Show new color.
 		GtkWidget* backgrnd = studio->get_widget("prefs_background");
-		g_object_set_data(
-				G_OBJECT(backgrnd), "user_data",
-				reinterpret_cast<gpointer>(
-						uintptr(studio->get_background_color())));
+		g_object_set_data(G_OBJECT(backgrnd), "user_data", reinterpret_cast<gpointer>(uintptr(studio->get_background_color())));
 		gtk_widget_queue_draw(backgrnd);
 	}
 	gtk_widget_destroy(GTK_WIDGET(colorsel));
@@ -3150,21 +2938,17 @@ gboolean ExultStudio::on_prefs_background_expose_event(
 		gpointer   data    // -> ExultStudio.
 ) {
 	ignore_unused_variable_warning(widget, data);
-	auto         color = static_cast<guint32>(reinterpret_cast<uintptr>(
-            g_object_get_data(G_OBJECT(widget), "user_data")));
+	auto         color = static_cast<guint32>(reinterpret_cast<uintptr>(g_object_get_data(G_OBJECT(widget), "user_data")));
 	GdkRectangle area  = {0, 0, 0, 0};
 	gdk_cairo_get_clip_rectangle(cairo, &area);
-	cairo_set_source_rgb(
-			cairo, ((color >> 16) & 255) / 255.0, ((color >> 8) & 255) / 255.0,
-			(color & 255) / 255.0);
+	cairo_set_source_rgb(cairo, ((color >> 16) & 255) / 255.0, ((color >> 8) & 255) / 255.0, (color & 255) / 255.0);
 	cairo_rectangle(cairo, area.x, area.y, area.width, area.height);
 	cairo_fill(cairo);
 	return true;
 }
 
 // X at top of window.
-C_EXPORT gboolean on_prefs_window_delete_event(
-		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
+C_EXPORT gboolean on_prefs_window_delete_event(GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(event, user_data);
 	gtk_widget_set_visible(widget, false);
 	return true;
@@ -3193,17 +2977,12 @@ void ExultStudio::open_preferences() {
 	set_entry("prefs_image_editor", image_editor ? image_editor : "");
 	set_entry("prefs_default_game", default_game ? default_game : "");
 	// Set image type combobox: 0 = .PNG, 1 = .SHP
-	int ftype_index
-			= (edit_filetype && strcmp(edit_filetype, ".SHP") == 0) ? 1 : 0;
+	int ftype_index = (edit_filetype && strcmp(edit_filetype, ".SHP") == 0) ? 1 : 0;
 	set_optmenu("prefs_image_type", ftype_index);
 	GtkWidget* backgrnd = get_widget("prefs_background");
-	g_object_set_data(
-			G_OBJECT(backgrnd), "user_data",
-			reinterpret_cast<gpointer>(uintptr(background_color)));
+	g_object_set_data(G_OBJECT(backgrnd), "user_data", reinterpret_cast<gpointer>(uintptr(background_color)));
 	GtkWidget* win = get_widget("prefs_window");
-	g_signal_connect(
-			G_OBJECT(get_widget("prefs_background")), "draw",
-			G_CALLBACK(on_prefs_background_expose_event), this);
+	g_signal_connect(G_OBJECT(get_widget("prefs_background")), "draw", G_CALLBACK(on_prefs_background_expose_event), this);
 	gtk_widget_set_visible(win, true);
 }
 
@@ -3227,8 +3006,7 @@ void ExultStudio::save_preferences() {
 	default_game = g_strdup(text);
 	config->set("config/estudio/default_game", default_game, true);
 	GtkWidget* backgrnd = get_widget("prefs_background");
-	set_background_color(reinterpret_cast<uintptr>(
-			g_object_get_data(G_OBJECT(backgrnd), "user_data")));
+	set_background_color(reinterpret_cast<uintptr>(g_object_get_data(G_OBJECT(backgrnd), "user_data")));
 	config->set("config/estudio/background_color", background_color, true);
 	// Set background color.
 	palbuf[3 * 255]     = (background_color >> 18) & 0x3f;
@@ -3270,8 +3048,7 @@ static gint Reconnect(gpointer data    // ->ExultStudio.
 static bool send_to_server_error_reported = false;
 static bool gamedat_socket_error_reported = false;
 
-bool ExultStudio::send_to_server(
-		Exult_server::Msg_type id, unsigned char* data, int datalen) {
+bool ExultStudio::send_to_server(Exult_server::Msg_type id, unsigned char* data, int datalen) {
 	if (Send_data(server_socket, id, data, datalen) == -1) {
 		if (!send_to_server_error_reported) {
 			cerr << "Error sending to server" << endl;
@@ -3330,8 +3107,7 @@ void ExultStudio::read_from_server() {
 #endif
 	unsigned char          data[Exult_server::maxlength];
 	Exult_server::Msg_type id;
-	const int              datalen
-			= Exult_server::Receive_data(server_socket, id, data, sizeof(data));
+	const int              datalen = Exult_server::Receive_data(server_socket, id, data, sizeof(data));
 	if (datalen < 0 || datalen > static_cast<int>(sizeof(data))) {
 		cout << "Error reading from server" << endl;
 		if (server_socket == -1) {    // Socket closed?
@@ -3431,8 +3207,7 @@ void ExultStudio::read_from_server() {
 		cerr << "Warning: got a usecode debugging message! (ignored)" << endl;
 		break;
 	default:
-		cerr << "Warning: received unhandled message " << id
-			 << "; this message is being ignored." << endl;
+		cerr << "Warning: received unhandled message " << id << "; this message is being ignored." << endl;
 		break;
 	}
 }
@@ -3478,9 +3253,8 @@ bool ExultStudio::connect_to_server() {
 		return false;
 	}
 	strncpy(addr.sun_path, servename.c_str(), sizeof(addr.sun_path) - 1);
-	addr.sun_path[sizeof(addr.sun_path) - 1]
-			= '\0';    // Ensure null termination
-	server_socket = socket(PF_LOCAL, SOCK_STREAM, 0);
+	addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';    // Ensure null termination
+	server_socket                            = socket(PF_LOCAL, SOCK_STREAM, 0);
 	if (server_socket < 0) {
 		perror("Failed to open map-editor socket");
 		update_connect_button(false);
@@ -3491,9 +3265,7 @@ bool ExultStudio::connect_to_server() {
 	//	fcntl(server_socket, F_SETFL,
 	//				fcntl(server_socket, F_GETFL) | O_NONBLOCK);
 	cout << "Trying to connect to server at '" << addr.sun_path << "'" << endl;
-	if (connect(server_socket, reinterpret_cast<sockaddr*>(&addr),
-				sizeof(addr.sun_family) + strlen(addr.sun_path) + 1)
-		== -1) {
+	if (connect(server_socket, reinterpret_cast<sockaddr*>(&addr), sizeof(addr.sun_family) + strlen(addr.sun_path) + 1) == -1) {
 		perror("Socket connect");
 		close(server_socket);
 		server_socket = -1;
@@ -3502,9 +3274,7 @@ bool ExultStudio::connect_to_server() {
 		return false;
 	}
 	GIOChannel* gio  = g_io_channel_unix_new(server_socket);
-	server_input_tag = g_io_add_watch(
-			gio, static_cast<GIOCondition>(G_IO_IN | G_IO_HUP | G_IO_ERR),
-			Read_from_server, this);
+	server_input_tag = g_io_add_watch(gio, static_cast<GIOCondition>(G_IO_IN | G_IO_HUP | G_IO_ERR), Read_from_server, this);
 	g_io_channel_unref(gio);
 #else
 	// Close existing socket.
@@ -3517,9 +3287,7 @@ bool ExultStudio::connect_to_server() {
 	}
 	server_socket = server_input_tag = -1;
 
-	if (Exult_server::try_connect_to_server(
-				get_system_path(EXULT_SERVER).c_str())
-		> 0) {
+	if (Exult_server::try_connect_to_server(get_system_path(EXULT_SERVER).c_str()) > 0) {
 		server_input_tag = g_timeout_add(50, Read_from_server, this);
 	} else {
 		update_connect_button(false);
@@ -3566,8 +3334,7 @@ void ExultStudio::update_menu_items(bool connected) {
 
 	// Set all Edit menu items sensitivity
 	if (edit_menu) {
-		GList* edit_children
-				= gtk_container_get_children(GTK_CONTAINER(edit_menu));
+		GList* edit_children = gtk_container_get_children(GTK_CONTAINER(edit_menu));
 		for (GList* l = edit_children; l != nullptr; l = l->next) {
 			gtk_widget_set_sensitive(GTK_WIDGET(l->data), connected);
 		}
@@ -3576,8 +3343,7 @@ void ExultStudio::update_menu_items(bool connected) {
 
 	// Set all Mode menu items sensitivity
 	if (mode_menu) {
-		GList* mode_children
-				= gtk_container_get_children(GTK_CONTAINER(mode_menu));
+		GList* mode_children = gtk_container_get_children(GTK_CONTAINER(mode_menu));
 		for (GList* l = mode_children; l != nullptr; l = l->next) {
 			gtk_widget_set_sensitive(GTK_WIDGET(l->data), connected);
 		}
@@ -3586,8 +3352,7 @@ void ExultStudio::update_menu_items(bool connected) {
 
 	// Set all Map menu items sensitivity
 	if (map_menu) {
-		GList* map_children
-				= gtk_container_get_children(GTK_CONTAINER(map_menu));
+		GList* map_children = gtk_container_get_children(GTK_CONTAINER(map_menu));
 		for (GList* l = map_children; l != nullptr; l = l->next) {
 			gtk_widget_set_sensitive(GTK_WIDGET(l->data), connected);
 		}
@@ -3597,8 +3362,7 @@ void ExultStudio::update_menu_items(bool connected) {
 	// Set Tools menu items - all inactive except "Compile Usecode"
 	if (tools_menu) {
 		GtkWidget* compile_usecode = get_widget("compileusecode1");
-		GList*     tools_children
-				= gtk_container_get_children(GTK_CONTAINER(tools_menu));
+		GList*     tools_children  = gtk_container_get_children(GTK_CONTAINER(tools_menu));
 		for (GList* l = tools_children; l != nullptr; l = l->next) {
 			GtkWidget* item = GTK_WIDGET(l->data);
 			// Keep "Compile Usecode" always active
@@ -3654,17 +3418,12 @@ void ExultStudio::update_connect_button(bool connected) {
 		return;
 	}
 
-	gtk_button_set_label(
-			GTK_BUTTON(button), connected ? "Disconnect" : "Connect");
+	gtk_button_set_label(GTK_BUTTON(button), connected ? "Disconnect" : "Connect");
 
 	// Update button state without triggering the signal
-	g_signal_handlers_block_matched(
-			G_OBJECT(button), G_SIGNAL_MATCH_ID, connect_button_signal_id, 0,
-			nullptr, nullptr, nullptr);
+	g_signal_handlers_block_matched(G_OBJECT(button), G_SIGNAL_MATCH_ID, connect_button_signal_id, 0, nullptr, nullptr, nullptr);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), connected);
-	g_signal_handlers_unblock_matched(
-			G_OBJECT(button), G_SIGNAL_MATCH_ID, connect_button_signal_id, 0,
-			nullptr, nullptr, nullptr);
+	g_signal_handlers_unblock_matched(G_OBJECT(button), G_SIGNAL_MATCH_ID, connect_button_signal_id, 0, nullptr, nullptr, nullptr);
 }
 
 void ExultStudio::update_play_button(bool playing) {
@@ -3679,23 +3438,15 @@ void ExultStudio::update_play_button(bool playing) {
 	gtk_button_set_label(GTK_BUTTON(button), playing ? "Edit" : "Play");
 
 	if (playing) {
-		gtk_image_set_from_icon_name(
-				GTK_IMAGE(image), "media-playback-pause-symbolic",
-				GTK_ICON_SIZE_BUTTON);
+		gtk_image_set_from_icon_name(GTK_IMAGE(image), "media-playback-pause-symbolic", GTK_ICON_SIZE_BUTTON);
 	} else {
-		gtk_image_set_from_icon_name(
-				GTK_IMAGE(image), "media-playback-start-symbolic",
-				GTK_ICON_SIZE_BUTTON);
+		gtk_image_set_from_icon_name(GTK_IMAGE(image), "media-playback-start-symbolic", GTK_ICON_SIZE_BUTTON);
 	}
 
 	// Update button state without triggering the signal
-	g_signal_handlers_block_matched(
-			G_OBJECT(button), G_SIGNAL_MATCH_ID, play_button_signal_id, 0,
-			nullptr, nullptr, nullptr);
+	g_signal_handlers_block_matched(G_OBJECT(button), G_SIGNAL_MATCH_ID, play_button_signal_id, 0, nullptr, nullptr, nullptr);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), playing);
-	g_signal_handlers_unblock_matched(
-			G_OBJECT(button), G_SIGNAL_MATCH_ID, play_button_signal_id, 0,
-			nullptr, nullptr, nullptr);
+	g_signal_handlers_unblock_matched(G_OBJECT(button), G_SIGNAL_MATCH_ID, play_button_signal_id, 0, nullptr, nullptr, nullptr);
 }
 
 /*
@@ -3715,9 +3466,7 @@ void ExultStudio::info_received(
 	Game_info_in(data, len, vers, edlift, hdlift, editing, grid, mod, edmode);
 	if (vers != Exult_server::version) {
 		// Wrong version of Exult.
-		EStudio::Alert(
-				"Expected ExultServer version %d, but got %d",
-				Exult_server::version, vers);
+		EStudio::Alert("Expected ExultServer version %d, but got %d", Exult_server::version, vers);
 		disconnect_from_server();
 		return;
 	}
@@ -3782,12 +3531,10 @@ BaseGameInfo* ExultStudio::get_game() const {
 
 // List partially copied from Firefox and from GLib's config.charset.
 constexpr static const std::array encodings{
-		"ASCII",       "CP437",       "CP850",      "ISO-8859-1",  "CP1252",
-		"ISO-8859-15", "ISO-8859-2",  "CP1250",     "ISO-8859-3",  "ISO-8859-4",
-		"CP1257",      "ISO-8859-13", "ISO-8859-5", "CP1251",      "KOI8-R",
-		"CP866",       "KOI8-U",      "ISO-8859-6", "CP1256",      "ISO-8859-7",
-		"CP1253",      "ISO-8859-8",  "CP1255",     "ISO-8859-9",  "CP1254",
-		"ISO-8859-10", "ISO-8859-11", "CP874",      "ISO-8859-14",
+		"ASCII",      "CP437",       "CP850",       "ISO-8859-1",  "CP1252",      "ISO-8859-15", "ISO-8859-2", "CP1250",
+		"ISO-8859-3", "ISO-8859-4",  "CP1257",      "ISO-8859-13", "ISO-8859-5",  "CP1251",      "KOI8-R",     "CP866",
+		"KOI8-U",     "ISO-8859-6",  "CP1256",      "ISO-8859-7",  "CP1253",      "ISO-8859-8",  "CP1255",     "ISO-8859-9",
+		"CP1254",     "ISO-8859-10", "ISO-8859-11", "CP874",       "ISO-8859-14",
 };
 
 static inline int Find_Encoding_Index(const char* enc) {
@@ -3807,22 +3554,19 @@ static inline const char* Get_Encoding(int index) {
 	}
 }
 
-C_EXPORT void on_set_game_information_activate(
-		GtkMenuItem* menuitem, gpointer user_data) {
+C_EXPORT void on_set_game_information_activate(GtkMenuItem* menuitem, gpointer user_data) {
 	ignore_unused_variable_warning(menuitem, user_data);
 	ExultStudio::get_instance()->set_game_information();
 }
 
-C_EXPORT void on_gameinfo_apply_clicked(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_gameinfo_apply_clicked(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	const char*  enc    = Get_Encoding(studio->get_optmenu("gameinfo_charset"));
 
-	GtkTextBuffer* buff = gtk_text_view_get_buffer(
-			GTK_TEXT_VIEW(studio->get_widget("gameinfo_menustring")));
-	GtkTextIter startpos;
-	GtkTextIter endpos;
+	GtkTextBuffer* buff = gtk_text_view_get_buffer(GTK_TEXT_VIEW(studio->get_widget("gameinfo_menustring")));
+	GtkTextIter    startpos;
+	GtkTextIter    endpos;
 	gtk_text_buffer_get_bounds(buff, &startpos, &endpos);
 	gchar* modmenu = gtk_text_iter_get_text(&startpos, &endpos);
 	// Titles need to be displayable in Exult menu, hence should not
@@ -3853,8 +3597,7 @@ C_EXPORT void on_gameinfo_apply_clicked(
 	gtk_widget_set_visible(win, false);
 }
 
-C_EXPORT void on_gameinfo_charset_changed(
-		GtkToggleButton* button, gpointer user_data) {
+C_EXPORT void on_gameinfo_charset_changed(GtkToggleButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(button, user_data);
 	ExultStudio::get_instance()->show_charset();
 }
@@ -3864,66 +3607,62 @@ C_EXPORT void on_gameinfo_charset_changed(
  */
 
 void ExultStudio::show_charset() {
-	const char*       enc = Get_Encoding(get_optmenu("gameinfo_charset"));
-	static const char half_charset[]
-			= {" \t00\t01\t02\t03\t04\t05\t06\t07\t08\t09\t0A\t0B\t0C\t0D\t0E\t"
-			   "0F\n"
-			   "00\t \t\x01\t\x02\t\x03\t\x04\t\x05\t\x06\t\x07\t\x08\t \t "
-			   "\t\x0B\t\x0C\t \t\x0E\t\x0F\n"
-			   "10\t\x10\t\x11\t\x12\t\x13\t\x14\t\x15\t\x16\t\x17\t\x18\t\x19"
-			   "\t\x1A\t\x1B\t\x1C\t\x1D\t\x1E\t\x1F\n"
-			   "20\t\x20\t\x21\t\x22\t\x23\t\x24\t\x25\t\x26\t\x27\t\x28\t\x29"
-			   "\t\x2A\t\x2B\t\x2C\t\x2D\t\x2E\t\x2F\n"
-			   "30\t\x30\t\x31\t\x32\t\x33\t\x34\t\x35\t\x36\t\x37\t\x38\t\x39"
-			   "\t\x3A\t\x3B\t\x3C\t\x3D\t\x3E\t\x3F\n"
-			   "40\t\x40\t\x41\t\x42\t\x43\t\x44\t\x45\t\x46\t\x47\t\x48\t\x49"
-			   "\t\x4A\t\x4B\t\x4C\t\x4D\t\x4E\t\x4F\n"
-			   "50\t\x50\t\x51\t\x52\t\x53\t\x54\t\x55\t\x56\t\x57\t\x58\t\x59"
-			   "\t\x5A\t\x5B\t\x5C\t\x5D\t\x5E\t\x5F\n"
-			   "60\t\x60\t\x61\t\x62\t\x63\t\x64\t\x65\t\x66\t\x67\t\x68\t\x69"
-			   "\t\x6A\t\x6B\t\x6C\t\x6D\t\x6E\t\x6F\n"
-			   "70\t\x70\t\x71\t\x72\t\x73\t\x74\t\x75\t\x76\t\x77\t\x78\t\x79"
-			   "\t\x7A\t\x7B\t\x7C\t\x7D\t\x7E\t\x7F\n\0"};
-	static const char full_charset[]
-			= {" \t00\t01\t02\t03\t04\t05\t06\t07\t08\t09\t0A\t0B\t0C\t0D\t0E\t"
-			   "0F\n"
-			   "00\t \t\x01\t\x02\t\x03\t\x04\t\x05\t\x06\t\x07\t\x08\t \t "
-			   "\t\x0B\t\x0C\t \t\x0E\t\x0F\n"
-			   "10\t\x10\t\x11\t\x12\t\x13\t\x14\t\x15\t\x16\t\x17\t\x18\t\x19"
-			   "\t\x1A\t\x1B\t\x1C\t\x1D\t\x1E\t\x1F\n"
-			   "20\t\x20\t\x21\t\x22\t\x23\t\x24\t\x25\t\x26\t\x27\t\x28\t\x29"
-			   "\t\x2A\t\x2B\t\x2C\t\x2D\t\x2E\t\x2F\n"
-			   "30\t\x30\t\x31\t\x32\t\x33\t\x34\t\x35\t\x36\t\x37\t\x38\t\x39"
-			   "\t\x3A\t\x3B\t\x3C\t\x3D\t\x3E\t\x3F\n"
-			   "40\t\x40\t\x41\t\x42\t\x43\t\x44\t\x45\t\x46\t\x47\t\x48\t\x49"
-			   "\t\x4A\t\x4B\t\x4C\t\x4D\t\x4E\t\x4F\n"
-			   "50\t\x50\t\x51\t\x52\t\x53\t\x54\t\x55\t\x56\t\x57\t\x58\t\x59"
-			   "\t\x5A\t\x5B\t\x5C\t\x5D\t\x5E\t\x5F\n"
-			   "60\t\x60\t\x61\t\x62\t\x63\t\x64\t\x65\t\x66\t\x67\t\x68\t\x69"
-			   "\t\x6A\t\x6B\t\x6C\t\x6D\t\x6E\t\x6F\n"
-			   "70\t\x70\t\x71\t\x72\t\x73\t\x74\t\x75\t\x76\t\x77\t\x78\t\x79"
-			   "\t\x7A\t\x7B\t\x7C\t\x7D\t\x7E\t\x7F\n"
-			   "80\t\x80\t\x81\t\x82\t\x83\t\x84\t\x85\t\x86\t\x87\t\x88\t\x89"
-			   "\t\x8A\t\x8B\t\x8C\t\x8D\t\x8E\t\x8F\n"
-			   "90\t\x90\t\x91\t\x92\t\x93\t\x94\t\x95\t\x96\t\x97\t\x98\t\x99"
-			   "\t\x9A\t\x9B\t\x9C\t\x9D\t\x9E\t\x9F\n"
-			   "A0\t\xA0\t\xA1\t\xA2\t\xA3\t\xA4\t\xA5\t\xA6\t\xA7\t\xA8\t\xA9"
-			   "\t\xAA\t\xAB\t\xAC\t\xAD\t\xAE\t\xAF\n"
-			   "B0\t\xB0\t\xB1\t\xB2\t\xB3\t\xB4\t\xB5\t\xB6\t\xB7\t\xB8\t\xB9"
-			   "\t\xBA\t\xBB\t\xBC\t\xBD\t\xBE\t\xBF\n"
-			   "C0\t\xC0\t\xC1\t\xC2\t\xC3\t\xC4\t\xC5\t\xC6\t\xC7\t\xC8\t\xC9"
-			   "\t\xCA\t\xCB\t\xCC\t\xCD\t\xCE\t\xCF\n"
-			   "D0\t\xD0\t\xD1\t\xD2\t\xD3\t\xD4\t\xD5\t\xD6\t\xD7\t\xD8\t\xD9"
-			   "\t\xDA\t\xDB\t\xDC\t\xDD\t\xDE\t\xDF\n"
-			   "E0\t\xE0\t\xE1\t\xE2\t\xE3\t\xE4\t\xE5\t\xE6\t\xE7\t\xE8\t\xE9"
-			   "\t\xEA\t\xEB\t\xEC\t\xED\t\xEE\t\xEF\n"
-			   "F0\t\xF0\t\xF1\t\xF2\t\xF3\t\xF4\t\xF5\t\xF6\t\xF7\t\xF8\t\xF9"
-			   "\t\xFA\t\xFB\t\xFC\t\xFD\t\xFE\t\xFF\n\0"};
+	const char*       enc            = Get_Encoding(get_optmenu("gameinfo_charset"));
+	static const char half_charset[] = {" \t00\t01\t02\t03\t04\t05\t06\t07\t08\t09\t0A\t0B\t0C\t0D\t0E\t"
+										"0F\n"
+										"00\t \t\x01\t\x02\t\x03\t\x04\t\x05\t\x06\t\x07\t\x08\t \t "
+										"\t\x0B\t\x0C\t \t\x0E\t\x0F\n"
+										"10\t\x10\t\x11\t\x12\t\x13\t\x14\t\x15\t\x16\t\x17\t\x18\t\x19"
+										"\t\x1A\t\x1B\t\x1C\t\x1D\t\x1E\t\x1F\n"
+										"20\t\x20\t\x21\t\x22\t\x23\t\x24\t\x25\t\x26\t\x27\t\x28\t\x29"
+										"\t\x2A\t\x2B\t\x2C\t\x2D\t\x2E\t\x2F\n"
+										"30\t\x30\t\x31\t\x32\t\x33\t\x34\t\x35\t\x36\t\x37\t\x38\t\x39"
+										"\t\x3A\t\x3B\t\x3C\t\x3D\t\x3E\t\x3F\n"
+										"40\t\x40\t\x41\t\x42\t\x43\t\x44\t\x45\t\x46\t\x47\t\x48\t\x49"
+										"\t\x4A\t\x4B\t\x4C\t\x4D\t\x4E\t\x4F\n"
+										"50\t\x50\t\x51\t\x52\t\x53\t\x54\t\x55\t\x56\t\x57\t\x58\t\x59"
+										"\t\x5A\t\x5B\t\x5C\t\x5D\t\x5E\t\x5F\n"
+										"60\t\x60\t\x61\t\x62\t\x63\t\x64\t\x65\t\x66\t\x67\t\x68\t\x69"
+										"\t\x6A\t\x6B\t\x6C\t\x6D\t\x6E\t\x6F\n"
+										"70\t\x70\t\x71\t\x72\t\x73\t\x74\t\x75\t\x76\t\x77\t\x78\t\x79"
+										"\t\x7A\t\x7B\t\x7C\t\x7D\t\x7E\t\x7F\n\0"};
+	static const char full_charset[] = {" \t00\t01\t02\t03\t04\t05\t06\t07\t08\t09\t0A\t0B\t0C\t0D\t0E\t"
+										"0F\n"
+										"00\t \t\x01\t\x02\t\x03\t\x04\t\x05\t\x06\t\x07\t\x08\t \t "
+										"\t\x0B\t\x0C\t \t\x0E\t\x0F\n"
+										"10\t\x10\t\x11\t\x12\t\x13\t\x14\t\x15\t\x16\t\x17\t\x18\t\x19"
+										"\t\x1A\t\x1B\t\x1C\t\x1D\t\x1E\t\x1F\n"
+										"20\t\x20\t\x21\t\x22\t\x23\t\x24\t\x25\t\x26\t\x27\t\x28\t\x29"
+										"\t\x2A\t\x2B\t\x2C\t\x2D\t\x2E\t\x2F\n"
+										"30\t\x30\t\x31\t\x32\t\x33\t\x34\t\x35\t\x36\t\x37\t\x38\t\x39"
+										"\t\x3A\t\x3B\t\x3C\t\x3D\t\x3E\t\x3F\n"
+										"40\t\x40\t\x41\t\x42\t\x43\t\x44\t\x45\t\x46\t\x47\t\x48\t\x49"
+										"\t\x4A\t\x4B\t\x4C\t\x4D\t\x4E\t\x4F\n"
+										"50\t\x50\t\x51\t\x52\t\x53\t\x54\t\x55\t\x56\t\x57\t\x58\t\x59"
+										"\t\x5A\t\x5B\t\x5C\t\x5D\t\x5E\t\x5F\n"
+										"60\t\x60\t\x61\t\x62\t\x63\t\x64\t\x65\t\x66\t\x67\t\x68\t\x69"
+										"\t\x6A\t\x6B\t\x6C\t\x6D\t\x6E\t\x6F\n"
+										"70\t\x70\t\x71\t\x72\t\x73\t\x74\t\x75\t\x76\t\x77\t\x78\t\x79"
+										"\t\x7A\t\x7B\t\x7C\t\x7D\t\x7E\t\x7F\n"
+										"80\t\x80\t\x81\t\x82\t\x83\t\x84\t\x85\t\x86\t\x87\t\x88\t\x89"
+										"\t\x8A\t\x8B\t\x8C\t\x8D\t\x8E\t\x8F\n"
+										"90\t\x90\t\x91\t\x92\t\x93\t\x94\t\x95\t\x96\t\x97\t\x98\t\x99"
+										"\t\x9A\t\x9B\t\x9C\t\x9D\t\x9E\t\x9F\n"
+										"A0\t\xA0\t\xA1\t\xA2\t\xA3\t\xA4\t\xA5\t\xA6\t\xA7\t\xA8\t\xA9"
+										"\t\xAA\t\xAB\t\xAC\t\xAD\t\xAE\t\xAF\n"
+										"B0\t\xB0\t\xB1\t\xB2\t\xB3\t\xB4\t\xB5\t\xB6\t\xB7\t\xB8\t\xB9"
+										"\t\xBA\t\xBB\t\xBC\t\xBD\t\xBE\t\xBF\n"
+										"C0\t\xC0\t\xC1\t\xC2\t\xC3\t\xC4\t\xC5\t\xC6\t\xC7\t\xC8\t\xC9"
+										"\t\xCA\t\xCB\t\xCC\t\xCD\t\xCE\t\xCF\n"
+										"D0\t\xD0\t\xD1\t\xD2\t\xD3\t\xD4\t\xD5\t\xD6\t\xD7\t\xD8\t\xD9"
+										"\t\xDA\t\xDB\t\xDC\t\xDD\t\xDE\t\xDF\n"
+										"E0\t\xE0\t\xE1\t\xE2\t\xE3\t\xE4\t\xE5\t\xE6\t\xE7\t\xE8\t\xE9"
+										"\t\xEA\t\xEB\t\xEC\t\xED\t\xEE\t\xEF\n"
+										"F0\t\xF0\t\xF1\t\xF2\t\xF3\t\xF4\t\xF5\t\xF6\t\xF7\t\xF8\t\xF9"
+										"\t\xFA\t\xFB\t\xFC\t\xFD\t\xFE\t\xFF\n\0"};
 
-	const string   codechars(convertToUTF8(
-            ((strcmp(enc, "ASCII") == 0) ? half_charset : full_charset), enc));
-	GtkTextBuffer* buff = gtk_text_view_get_buffer(
-			GTK_TEXT_VIEW(get_widget("gameinfo_codepage_display")));
+	const string   codechars(convertToUTF8(((strcmp(enc, "ASCII") == 0) ? half_charset : full_charset), enc));
+	GtkTextBuffer* buff = gtk_text_view_get_buffer(GTK_TEXT_VIEW(get_widget("gameinfo_codepage_display")));
 	gtk_text_buffer_set_text(buff, codechars.c_str(), -1);
 }
 
@@ -3937,9 +3676,7 @@ void ExultStudio::set_game_information() {
 		gtk_window_set_modal(GTK_WINDOW(win), true);
 		gameinfowin = win;
 
-		g_signal_connect(
-				G_OBJECT(get_widget("gameinfo_apply")), "clicked",
-				G_CALLBACK(on_gameinfo_apply_clicked), nullptr);
+		g_signal_connect(G_OBJECT(get_widget("gameinfo_apply")), "clicked", G_CALLBACK(on_gameinfo_apply_clicked), nullptr);
 	}
 
 	// game_encoding should equal gameinfo->get_codepage().
@@ -3950,12 +3687,10 @@ void ExultStudio::set_game_information() {
 	show_charset();
 
 	BaseGameInfo*  gameinfo = get_game();
-	GtkTextBuffer* buff     = gtk_text_view_get_buffer(
-            GTK_TEXT_VIEW(get_widget("gameinfo_menustring")));
+	GtkTextBuffer* buff     = gtk_text_view_get_buffer(GTK_TEXT_VIEW(get_widget("gameinfo_menustring")));
 	// Titles need to be displayable in Exult menu, hence should not
 	// have any extra characters.
-	const string title(
-			convertToUTF8(gameinfo->get_menu_string().c_str(), "ASCII"));
+	const string title(convertToUTF8(gameinfo->get_menu_string().c_str(), "ASCII"));
 	gtk_text_buffer_set_text(buff, title.c_str(), -1);
 
 	gtk_widget_set_visible(gameinfowin, true);
@@ -3967,14 +3702,12 @@ void ExultStudio::set_game_information() {
  */
 static void convertToUnicodeCallback(    // Called in the direction Codepage ->
 										 // UTF8
-		const void* context, UConverterToUnicodeArgs* toArgs,
-		const char* codeUnits, int32_t length, UConverterCallbackReason reason,
-		UErrorCode* err) {
+		const void* context, UConverterToUnicodeArgs* toArgs, const char* codeUnits, int32_t length,
+		UConverterCallbackReason reason, UErrorCode* err) {
 	ignore_unused_variable_warning(context, codeUnits, length);
-	if (reason == UCNV_ILLEGAL
-		|| reason == UCNV_UNASSIGNED) {    // Illegal : ASCII unexpected
-										   // code 80..ff, Unassigned : all non
-										   // defined
+	if (reason == UCNV_ILLEGAL || reason == UCNV_UNASSIGNED) {    // Illegal : ASCII unexpected
+																  // code 80..ff, Unassigned : all non
+																  // defined
 		*err = U_ZERO_ERROR;
 		UChar toSubSource[]{'?'};
 		ucnv_cbToUWriteUChars(toArgs, toSubSource, 1, 0, err);
@@ -3983,8 +3716,7 @@ static void convertToUnicodeCallback(    // Called in the direction Codepage ->
 
 static void convertFromUnicodeCallback(    // Called in the direction UTF8 ->
 										   // Codepage
-		const void* context, UConverterFromUnicodeArgs* fromArgs,
-		const UChar* codeUnits, int32_t length, UChar32 codePoint,
+		const void* context, UConverterFromUnicodeArgs* fromArgs, const UChar* codeUnits, int32_t length, UChar32 codePoint,
 		UConverterCallbackReason reason, UErrorCode* err) {
 	ignore_unused_variable_warning(context, codeUnits, length, codePoint);
 	if (reason == UCNV_UNASSIGNED) {    // Unassigned : all non defined
@@ -4018,18 +3750,14 @@ static bool setupUtfConverter(const char* utf) {
 			UtfConverter = nullptr;
 			return false;
 		}
-		ucnv_setToUCallBack(
-				UtfConverter, convertToUnicodeCallback, nullptr, nullptr,
-				nullptr, &status);
+		ucnv_setToUCallBack(UtfConverter, convertToUnicodeCallback, nullptr, nullptr, nullptr, &status);
 		if (!U_SUCCESS(status)) {
 			ucnv_close(UtfConverter);
 			UtfName      = nullptr;
 			UtfConverter = nullptr;
 			return false;
 		}
-		ucnv_setFromUCallBack(
-				UtfConverter, convertFromUnicodeCallback, nullptr, nullptr,
-				nullptr, &status);
+		ucnv_setFromUCallBack(UtfConverter, convertFromUnicodeCallback, nullptr, nullptr, nullptr, &status);
 		if (!U_SUCCESS(status)) {
 			ucnv_close(UtfConverter);
 			UtfName      = nullptr;
@@ -4055,18 +3783,14 @@ static bool setupEncConverter(const char* enc) {
 			EncConverter = nullptr;
 			return false;
 		}
-		ucnv_setToUCallBack(
-				EncConverter, convertToUnicodeCallback, nullptr, nullptr,
-				nullptr, &status);
+		ucnv_setToUCallBack(EncConverter, convertToUnicodeCallback, nullptr, nullptr, nullptr, &status);
 		if (!U_SUCCESS(status)) {
 			ucnv_close(EncConverter);
 			EncName      = nullptr;
 			EncConverter = nullptr;
 			return false;
 		}
-		ucnv_setFromUCallBack(
-				EncConverter, convertFromUnicodeCallback, nullptr, nullptr,
-				nullptr, &status);
+		ucnv_setFromUCallBack(EncConverter, convertFromUnicodeCallback, nullptr, nullptr, nullptr, &status);
 		if (!U_SUCCESS(status)) {
 			ucnv_close(EncConverter);
 			EncName      = nullptr;
@@ -4129,22 +3853,14 @@ std::string convertFromUTF8(const char* src_str, const char* enc) {
 	static unsigned char FromCP437[256] = {
 			// 0     1     2     3     4     5     6     7     8     9     a b
 			// c     d     e     f
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a,
-			0x0b, 0x0c, 0x0d, 0x0e, 0x0f,    // 0
-			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a,
-			0x1b, 0x1c, 0x1d, 0x1e, 0x1f,    // 1
-			0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a,
-			0x2b, 0x2c, 0x2d, 0x2e, 0x2f,    // 2
-			0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a,
-			0x3b, 0x3c, 0x3d, 0x3e, 0x3f,    // 3
-			0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a,
-			0x4b, 0x4c, 0x4d, 0x4e, 0x4f,    // 4
-			0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a,
-			0x5b, 0x5c, 0x5d, 0x5e, 0x5f,    // 5
-			0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a,
-			0x6b, 0x6c, 0x6d, 0x6e, 0x6f,    // 6
-			0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a,
-			0x7b, 0x7c, 0x7d, 0x7e, 0x7f,    // 7
+			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,    // 0
+			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,    // 1
+			0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,    // 2
+			0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,    // 3
+			0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,    // 4
+			0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,    // 5
+			0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,    // 6
+			0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f,    // 7
 			// 80 -> 01 Ç:C cedilla,    81 -> 02 ü:u diaeresis,  82 -> 03 é:e
 			// acute,      83 -> 04 â:a circumflex,
 			// 84 -> 05 ä:a diaeresis,  85 -> 06 à:a grave, 87 -> 07 ç:c
@@ -4153,30 +3869,22 @@ std::string convertFromUTF8(const char* src_str, const char* enc) {
 			// grave,      8b -> 0e ï:i diaeresis,
 			// 8c -> 0f î:i circumflex, 8d -> 10 ì:i grave,      8e -> 11 Ä:A
 			// diaeresis.
-			0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x86, 0x07, 0x08, 0x0b, 0x0c,
-			0x0e, 0x0f, 0x10, 0x11, 0x8f,    // 8
+			0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x86, 0x07, 0x08, 0x0b, 0x0c, 0x0e, 0x0f, 0x10, 0x11, 0x8f,    // 8
 			// 90 -> 12 É:E acute E, 93 -> 13 ô:o circumflex,
 			// 94 -> 14 ö:o diaeresis,                           96 -> 15 û:u
 			// circumflex, 97 -> 16 ù:u grave,
 			//                          99 -> 17 Ö:O diaeresis,  9a -> 18 Ü:U
 			//                          diaeresis.
-			0x12, 0x91, 0x92, 0x13, 0x14, 0x95, 0x15, 0x16, 0x98, 0x17, 0x18,
-			0x9b, 0x9c, 0x9d, 0x9e, 0x9f,    // 9
+			0x12, 0x91, 0x92, 0x13, 0x14, 0x95, 0x15, 0x16, 0x98, 0x17, 0x18, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f,    // 9
 			// a0 -> 19 á:a acute,      a1 -> 1d í:i acute,      a2 -> 1e ó:o
 			// acute,      a3 -> 1f ú:u acute.
-			0x19, 0x1d, 0x1e, 0x1f, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa,
-			0xab, 0xac, 0xad, 0xae, 0xaf,    // a
-			0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba,
-			0xbb, 0xbc, 0xbd, 0xbe, 0xbf,    // b
-			0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca,
-			0xcb, 0xcc, 0xcd, 0xce, 0xcf,    // c
-			0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda,
-			0xdb, 0xdc, 0xdd, 0xde, 0xdf,    // d
+			0x19, 0x1d, 0x1e, 0x1f, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf,    // a
+			0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xbf,    // b
+			0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf,    // c
+			0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf,    // d
 			//                          e1 -> 1c ß:s sharp.
-			0xe0, 0x1c, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea,
-			0xeb, 0xec, 0xed, 0xee, 0xef,    // e
-			0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa,
-			0xfb, 0xfc, 0xfd, 0xfe, 0xff    // f
+			0xe0, 0x1c, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, 0xef,    // e
+			0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff     // f
 	};
 
 	if (is_7bit) {
@@ -4225,8 +3933,7 @@ std::string convertToUTF8(const char* src_str, const char* enc) {
 			// 88 <- 08 ê:e circumflex, 89 <- 0b ë:e diaeresis,
 			// 8a <- 0c è:e grave,                               8b <- 0e ï:i
 			// diaeresis,  8c <- 0f î:i circumflex.
-			0x00, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x87, 0x88, 0x09, 0x0a,
-			0x89, 0x8a, 0x0d, 0x8b, 0x8c,    // 0
+			0x00, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x87, 0x88, 0x09, 0x0a, 0x89, 0x8a, 0x0d, 0x8b, 0x8c,    // 0
 			// 8d <- 10 ì:i grave,      8e <- 11 Ä:A diaeresis,  90 <- 12 É:E
 			// acute E,    93 <- 13 ô:o circumflex,
 			// 94 <- 14 ö:o diaeresis,  96 <- 15 û:u circumflex, 97 <- 16 ù:u
@@ -4234,36 +3941,21 @@ std::string convertToUTF8(const char* src_str, const char* enc) {
 			// 9a <- 18 Ü:U diaeresis,  a0 <- 19 á:a acute,
 			// e1 <- 1c ß:s sharp,      a1 <- 1d í:i acute,      a2 <- 1e ó:o
 			// acute,      a3 <- 1f ú:u acute.
-			0x8d, 0x8e, 0x90, 0x93, 0x94, 0x96, 0x97, 0x99, 0x9a, 0xa0, 0x1a,
-			0x1b, 0xe1, 0xa1, 0xa2, 0xa3,    // 1
-			0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a,
-			0x2b, 0x2c, 0x2d, 0x2e, 0x2f,    // 2
-			0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a,
-			0x3b, 0x3c, 0x3d, 0x3e, 0x3f,    // 3
-			0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a,
-			0x4b, 0x4c, 0x4d, 0x4e, 0x4f,    // 4
-			0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a,
-			0x5b, 0x5c, 0x5d, 0x5e, 0x5f,    // 5
-			0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a,
-			0x6b, 0x6c, 0x6d, 0x6e, 0x6f,    // 6
-			0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a,
-			0x7b, 0x7c, 0x7d, 0x7e, 0x7f,    // 7
-			0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a,
-			0x8b, 0x8c, 0x8d, 0x8e, 0x8f,    // 8
-			0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a,
-			0x9b, 0x9c, 0x9d, 0x9e, 0x9f,    // 9
-			0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa,
-			0xab, 0xac, 0xad, 0xae, 0xaf,    // a
-			0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba,
-			0xbb, 0xbc, 0xbd, 0xbe, 0xbf,    // b
-			0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca,
-			0xcb, 0xcc, 0xcd, 0xce, 0xcf,    // c
-			0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda,
-			0xdb, 0xdc, 0xdd, 0xde, 0xdf,    // d
-			0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea,
-			0xeb, 0xec, 0xed, 0xee, 0xef,    // e
-			0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa,
-			0xfb, 0xfc, 0xfd, 0xfe, 0xff    // f
+			0x8d, 0x8e, 0x90, 0x93, 0x94, 0x96, 0x97, 0x99, 0x9a, 0xa0, 0x1a, 0x1b, 0xe1, 0xa1, 0xa2, 0xa3,    // 1
+			0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,    // 2
+			0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,    // 3
+			0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,    // 4
+			0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,    // 5
+			0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,    // 6
+			0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f,    // 7
+			0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f,    // 8
+			0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f,    // 9
+			0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf,    // a
+			0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xbf,    // b
+			0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf,    // c
+			0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf,    // d
+			0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, 0xef,    // e
+			0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff     // f
 	};
 
 	string cvt_str;
@@ -4333,10 +4025,8 @@ void ExultStudio::on_zoom_up(GtkButton* btn, gpointer user_data) {
 	}
 	string zvalue = std::to_string(50 * studio->shape_scale) + "%";
 	gtk_label_set_text(GTK_LABEL(studio->shape_zlabel), zvalue.c_str());
-	gtk_widget_set_sensitive(
-			studio->shape_zup, (studio->shape_scale < 32 ? true : false));
-	gtk_widget_set_sensitive(
-			studio->shape_zdown, (studio->shape_scale > 2 ? true : false));
+	gtk_widget_set_sensitive(studio->shape_zup, (studio->shape_scale < 32 ? true : false));
+	gtk_widget_set_sensitive(studio->shape_zdown, (studio->shape_scale > 2 ? true : false));
 	if (studio->browser) {
 		studio->browser->setup_info(true);
 		studio->browser->render();
@@ -4356,18 +4046,15 @@ void ExultStudio::on_zoom_down(GtkButton* btn, gpointer user_data) {
 	}
 	string zvalue = std::to_string(50 * studio->shape_scale) + "%";
 	gtk_label_set_text(GTK_LABEL(studio->shape_zlabel), zvalue.c_str());
-	gtk_widget_set_sensitive(
-			studio->shape_zup, (studio->shape_scale < 32 ? true : false));
-	gtk_widget_set_sensitive(
-			studio->shape_zdown, (studio->shape_scale > 2 ? true : false));
+	gtk_widget_set_sensitive(studio->shape_zup, (studio->shape_scale < 32 ? true : false));
+	gtk_widget_set_sensitive(studio->shape_zdown, (studio->shape_scale > 2 ? true : false));
 	if (studio->browser) {
 		studio->browser->setup_info(true);
 		studio->browser->render();
 	}
 }
 
-gboolean ExultStudio::on_app_key_press(
-		GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
+gboolean ExultStudio::on_app_key_press(GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
 	ignore_unused_variable_warning(entry, user_data);
 	auto* studio = ExultStudio::get_instance();
 	switch (event->keyval) {
@@ -4390,58 +4077,47 @@ gboolean ExultStudio::on_app_key_press(
 void ExultStudio::create_zoom_controls() {
 	GtkWidget* zbox   = get_widget("menubar_box");
 	GtkWidget* zframe = gtk_frame_new(nullptr);
-	widget_set_margins(
-			zframe, 2 * HMARGIN, 0 * HMARGIN, 0 * VMARGIN, 0 * VMARGIN);
+	widget_set_margins(zframe, 2 * HMARGIN, 0 * HMARGIN, 0 * VMARGIN, 0 * VMARGIN);
 	gtk_widget_set_visible(zframe, true);
 	gtk_box_pack_start(GTK_BOX(zbox), zframe, false, false, 0);
 
 	GtkWidget* zbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	widget_set_margins(
-			zbox2, 0 * HMARGIN, 0 * HMARGIN, 0 * VMARGIN, 0 * VMARGIN);
+	widget_set_margins(zbox2, 0 * HMARGIN, 0 * HMARGIN, 0 * VMARGIN, 0 * VMARGIN);
 	gtk_box_set_homogeneous(GTK_BOX(zbox2), false);
 	gtk_widget_set_visible(zbox2, true);
 	gtk_container_add(GTK_CONTAINER(zframe), zbox2);
 
 	GtkWidget* zname = gtk_label_new("Zoom");
 	gtk_widget_set_visible(GTK_WIDGET(zname), true);
-	widget_set_margins(
-			zname, 4 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(zname, 4 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_box_pack_start(GTK_BOX(zbox2), zname, false, false, 0);
 	gtk_widget_set_visible(zname, true);
 
 	string zvalue = std::to_string(50 * shape_scale) + "%";
 	shape_zlabel  = gtk_label_new(zvalue.c_str());
 	gtk_widget_set_visible(GTK_WIDGET(shape_zlabel), true);
-	widget_set_margins(
-			shape_zlabel, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(shape_zlabel, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_box_pack_start(GTK_BOX(zbox2), shape_zlabel, false, false, 0);
 	gtk_widget_set_size_request(shape_zlabel, 50, -1);
 	gtk_label_set_justify(GTK_LABEL(shape_zlabel), GTK_JUSTIFY_RIGHT);
 	gtk_widget_set_visible(shape_zlabel, true);
 
-	shape_zdown = EStudio::Create_arrow_button(
-			GTK_ARROW_DOWN, G_CALLBACK(ExultStudio::on_zoom_down), this);
-	widget_set_margins(
-			shape_zdown, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	shape_zdown = EStudio::Create_arrow_button(GTK_ARROW_DOWN, G_CALLBACK(ExultStudio::on_zoom_down), this);
+	widget_set_margins(shape_zdown, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_sensitive(shape_zdown, (shape_scale > 2 ? true : false));
 	gtk_box_pack_start(GTK_BOX(zbox2), shape_zdown, true, true, 0);
 	gtk_widget_set_visible(shape_zdown, true);
 
-	shape_zup = EStudio::Create_arrow_button(
-			GTK_ARROW_UP, G_CALLBACK(ExultStudio::on_zoom_up), this);
-	widget_set_margins(
-			shape_zup, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	shape_zup = EStudio::Create_arrow_button(GTK_ARROW_UP, G_CALLBACK(ExultStudio::on_zoom_up), this);
+	widget_set_margins(shape_zup, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_sensitive(shape_zup, (shape_scale < 32 ? true : false));
 	gtk_box_pack_start(GTK_BOX(zbox2), shape_zup, true, true, 0);
 	gtk_widget_set_visible(shape_zup, true);
 
 	GtkWidget* zcheck = gtk_check_button_new_with_label("Bilinear");
-	widget_set_margins(
-			zcheck, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(zcheck, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_box_pack_start(GTK_BOX(zbox2), zcheck, true, true, 0);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(zcheck), shape_bilinear);
 	gtk_widget_set_visible(zcheck, true);
-	g_signal_connect(
-			G_OBJECT(zcheck), "toggled",
-			G_CALLBACK(ExultStudio::on_zoom_bilinear), this);
+	g_signal_connect(G_OBJECT(zcheck), "toggled", G_CALLBACK(ExultStudio::on_zoom_bilinear), this);
 }

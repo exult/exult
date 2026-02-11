@@ -76,18 +76,18 @@ private:
 	short projectile;    // Projectile shape, or
 	//  -1 = no projectile shown.
 	//  -3 = use weapon shape as sprite shape.
-	bool m_autohit;            // Weapon always hits.
-	bool m_lucky;              // Easier to hit with.
-	bool m_explodes;           // Explodes on impact.
-	bool m_no_blocking;        // Can move through walls.
-	bool m_delete_depleted;    // Delete ammo == -2 weapon when quality reaches
-							   // 0.
-	bool  m_returns;           // Boomerang, magic axe.
-	bool  m_need_target;       // If false, can be used to attack a tile.
-	short missile_speed;       // # of steps taken by the missile each cycle.
-	short rotation_speed;      // Added to frame # each cycle (misslies only).
-	int   usecode;             // Usecode function, or 0.
-	unsigned char uses;        // 0 = hand-hand, 1 = poor throwable,
+	bool m_autohit;                  // Weapon always hits.
+	bool m_lucky;                    // Easier to hit with.
+	bool m_explodes;                 // Explodes on impact.
+	bool m_no_blocking;              // Can move through walls.
+	bool m_delete_depleted;          // Delete ammo == -2 weapon when quality reaches
+									 // 0.
+	bool          m_returns;         // Boomerang, magic axe.
+	bool          m_need_target;     // If false, can be used to attack a tile.
+	short         missile_speed;     // # of steps taken by the missile each cycle.
+	short         rotation_speed;    // Added to frame # each cycle (misslies only).
+	int           usecode;           // Usecode function, or 0.
+	unsigned char uses;              // 0 = hand-hand, 1 = poor throwable,
 	//   2 = good throwable, 3 = missile-firing.
 	unsigned char range;          // Distance weapon can be used.
 	short         sfx, hitsfx;    // Sound when using/hit, or -1.

@@ -165,10 +165,9 @@ const short Newfile_gump::fieldgap   = 1;      // Gap between fields
 const short Newfile_gump::fieldcount = 14;     // Number of fields
 const short Newfile_gump::textx      = 12;     // X Offset in field
 const short Newfile_gump::texty      = 2;      // Y Offset in field
-const short Newfile_gump::textw
-		= 190;    // Maximum allowable width of text (pixels)
-const short Newfile_gump::iconx = 2;    // X Offset in field
-const short Newfile_gump::icony = 2;    // Y Offset in field
+const short Newfile_gump::textw      = 190;    // Maximum allowable width of text (pixels)
+const short Newfile_gump::iconx      = 2;      // X Offset in field
+const short Newfile_gump::icony      = 2;      // Y Offset in field
 
 // Scrollbar and Slider Info
 const short Newfile_gump::scrollx = 212;    // X Offset
@@ -193,37 +192,28 @@ using Newfile_Textbutton = CallbackTextButton<Newfile_gump>;
  */
 
 Newfile_gump::Newfile_gump()
-		: Modal_gump(
-				  nullptr, gwin->get_width() / 2 - 160,
-				  gwin->get_height() / 2 - 100, EXULT_FLX_SAVEGUMP_SHP,
-				  SF_EXULT_FLX) {
+		: Modal_gump(nullptr, gwin->get_width() / 2 - 160, gwin->get_height() / 2 - 100, EXULT_FLX_SAVEGUMP_SHP, SF_EXULT_FLX) {
 	set_object_area(TileRect(0, 0, 320, 200), -6, 178);    //+++++ ???
 
 	newname[0] = 0;
 
 	gwin->get_tqueue()->pause(SDL_GetTicks());
-	back = gwin->get_win()->create_buffer(
-			gwin->get_width(), gwin->get_height());
+	back = gwin->get_win()->create_buffer(gwin->get_width(), gwin->get_height());
 	gwin->get_win()->get(back.get(), 0, 0);
 
 	// Cancel
-	buttons[id_close] = std::make_unique<Newfile_Textbutton>(
-			this, &Newfile_gump::close, Strings::CANCEL(), btn_cols[3],
-			btn_rows[0], 59);
+	buttons[id_close]
+			= std::make_unique<Newfile_Textbutton>(this, &Newfile_gump::close, Strings::CANCEL(), btn_cols[3], btn_rows[0], 59);
 
 	// Scrollers.
 	buttons[id_page_up] = std::make_unique<Newfile_button>(
-			this, &Newfile_gump::page_up, EXULT_FLX_SAV_UPUP_SHP, btn_cols[4],
-			btn_rows[1], SF_EXULT_FLX);
+			this, &Newfile_gump::page_up, EXULT_FLX_SAV_UPUP_SHP, btn_cols[4], btn_rows[1], SF_EXULT_FLX);
 	buttons[id_line_up] = std::make_unique<Newfile_button>(
-			this, &Newfile_gump::line_up, EXULT_FLX_SAV_UP_SHP, btn_cols[4],
-			btn_rows[2], SF_EXULT_FLX);
+			this, &Newfile_gump::line_up, EXULT_FLX_SAV_UP_SHP, btn_cols[4], btn_rows[2], SF_EXULT_FLX);
 	buttons[id_line_down] = std::make_unique<Newfile_button>(
-			this, &Newfile_gump::line_down, EXULT_FLX_SAV_DOWN_SHP, btn_cols[4],
-			btn_rows[3], SF_EXULT_FLX);
+			this, &Newfile_gump::line_down, EXULT_FLX_SAV_DOWN_SHP, btn_cols[4], btn_rows[3], SF_EXULT_FLX);
 	buttons[id_page_down] = std::make_unique<Newfile_button>(
-			this, &Newfile_gump::page_down, EXULT_FLX_SAV_DOWNDOWN_SHP,
-			btn_cols[4], btn_rows[4], SF_EXULT_FLX);
+			this, &Newfile_gump::page_down, EXULT_FLX_SAV_DOWNDOWN_SHP, btn_cols[4], btn_rows[4], SF_EXULT_FLX);
 
 	LoadSaveGameDetails();
 	if (touchui != nullptr) {
@@ -241,9 +231,7 @@ Newfile_gump::~Newfile_gump() {
 	FreeSaveGameDetails();
 	if (touchui != nullptr) {
 		touchui->showButtonControls();
-		if (!gumpman->gump_mode()
-			|| (!gumpman->modal_gump_mode()
-				&& gumpman->gumps_dont_pause_game())) {
+		if (!gumpman->gump_mode() || (!gumpman->modal_gump_mode() && gumpman->gumps_dont_pause_game())) {
 			touchui->showGameControls();
 		}
 	}
@@ -347,8 +335,7 @@ void Newfile_gump::delete_file() {
 	filename    = nullptr;
 	is_readable = false;
 
-	cout << "Deleted Save game #" << selected << " ("
-		 << games[selected].filename << ") successfully." << endl;
+	cout << "Deleted Save game #" << selected << " (" << games[selected].filename << ") successfully." << endl;
 
 	// Reset everything
 	selected = -3;
@@ -413,24 +400,19 @@ void Newfile_gump::PaintSaveName(int line) {
 		text = newname;
 	}
 
-	sman->paint_text(
-			2, text, x + fieldx + textx,
-			y + fieldy + texty + line * (fieldh + fieldgap));
+	sman->paint_text(2, text, x + fieldx + textx, y + fieldy + texty + line * (fieldh + fieldgap));
 
 	// Being Edited? If so paint cursor
 	if (selected == actual_game && cursor != -1) {
 		gwin->get_win()->fill8(
-				0, 1, sman->get_text_height(2),
-				x + fieldx + textx + sman->get_text_width(2, text, cursor),
+				0, 1, sman->get_text_height(2), x + fieldx + textx + sman->get_text_width(2, text, cursor),
 				y + fieldy + texty + line * (fieldh + fieldgap));
 	}
 
 	// If selected, show selected icon
 	if (selected == actual_game) {
 		ShapeID icon(EXULT_FLX_SAV_SELECTED_SHP, 0, SF_EXULT_FLX);
-		icon.paint_shape(
-				x + fieldx + iconx,
-				y + fieldy + icony + line * (fieldh + fieldgap));
+		icon.paint_shape(x + fieldx + iconx, y + fieldy + icony + line * (fieldh + fieldgap));
 	}
 }
 
@@ -478,8 +460,7 @@ void Newfile_gump::paint() {
 	}
 
 	// Need to ensure that the avatar's shape actually exists
-	if (party && !sman->have_si_shapes()
-		&& Shapeinfo_lookup::IsSkinImported(party[0].shape)) {
+	if (party && !sman->have_si_shapes() && Shapeinfo_lookup::IsSkinImported(party[0].shape)) {
 		// Female if odd, male if even
 		if (party[0].shape % 2) {
 			party[0].shape = Shapeinfo_lookup::GetFemaleAvShape();
@@ -492,16 +473,12 @@ void Newfile_gump::paint() {
 		int i;
 
 		for (i = 0; i < 4 && i < details->party_size; i++) {
-			ShapeID shape(
-					party[i].shape, 16,
-					static_cast<ShapeFile>(party[i].shape_file));
+			ShapeID shape(party[i].shape, 16, static_cast<ShapeFile>(party[i].shape_file));
 			shape.paint_shape(x + 249 + i * 23, y + 169);
 		}
 
 		for (i = 4; i < 8 && i < details->party_size; i++) {
-			ShapeID shape(
-					party[i].shape, 16,
-					static_cast<ShapeFile>(party[i].shape_file));
+			ShapeID shape(party[i].shape, 16, static_cast<ShapeFile>(party[i].shape_file));
 			shape.paint_shape(x + 249 + (i - 4) * 23, y + 198);
 		}
 
@@ -521,17 +498,12 @@ void Newfile_gump::paint() {
 				"%s: %i%s %s %04i\n"
 				"%s: %02i:%02i",
 
-				Strings::Avatar(), party[0].name, Strings::Exp(), party[0].exp,
-				Strings::Hp(), party[0].health, Strings::Str(), party[0].str,
-				Strings::Dxt(), party[0].dext, Strings::Int(), party[0].intel,
-				Strings::Trn(), party[0].training, Strings::GameDay(),
-				details->game_day, Strings::GameTime(), details->game_hour,
-				details->game_minute, Strings::SaveCount(), details->save_count,
-				Strings::Date(), details->real_day,
-				Strings::ordinal_numeral_suffix(details->real_day),
-				Strings::month_Abbreviation(details->real_month - 1),
-				details->real_year, Strings::Time(), details->real_hour,
-				details->real_minute);
+				Strings::Avatar(), party[0].name, Strings::Exp(), party[0].exp, Strings::Hp(), party[0].health, Strings::Str(),
+				party[0].str, Strings::Dxt(), party[0].dext, Strings::Int(), party[0].intel, Strings::Trn(), party[0].training,
+				Strings::GameDay(), details->game_day, Strings::GameTime(), details->game_hour, details->game_minute,
+				Strings::SaveCount(), details->save_count, Strings::Date(), details->real_day,
+				Strings::ordinal_numeral_suffix(details->real_day), Strings::month_Abbreviation(details->real_month - 1),
+				details->real_year, Strings::Time(), details->real_hour, details->real_minute);
 		info[std::size(info) - 1] = 0;
 
 		if (filename) {
@@ -545,9 +517,7 @@ void Newfile_gump::paint() {
 				}
 			}
 
-			snprintf(
-					info + cursize, std::size(info) - cursize - 1, "\n%s: %s",
-					Strings::File(), filename + offset);
+			snprintf(info + cursize, std::size(info) - cursize - 1, "\n%s: %s", Strings::File(), filename + offset);
 			info[std::size(info) - 1] = 0;
 		}
 
@@ -565,30 +535,18 @@ void Newfile_gump::paint() {
 					break;
 				}
 			}
-			snprintf(
-					info, std::size(info), "\n%s: %s", Strings::File(),
-					filename + offset);
+			snprintf(info, std::size(info), "\n%s: %s", Strings::File(), filename + offset);
 			info[std::size(info) - 1] = 0;
 			sman->paint_text_box(4, info, x + infox, y + infoy, infow, infoh);
 		}
 
 		if (!is_readable) {
 			sman->paint_text(
-					2, "Unreadable",
-					x + infox
-							+ (infow - sman->get_text_width(2, "Unreadable"))
-									  / 2,
-					y + infoy + (infoh - 18) / 2);
-			sman->paint_text(
-					2, "Savegame",
-					x + infox
-							+ (infow - sman->get_text_width(2, "Savegame")) / 2,
-					y + infoy + (infoh) / 2);
+					2, "Unreadable", x + infox + (infow - sman->get_text_width(2, "Unreadable")) / 2, y + infoy + (infoh - 18) / 2);
+			sman->paint_text(2, "Savegame", x + infox + (infow - sman->get_text_width(2, "Savegame")) / 2, y + infoy + (infoh) / 2);
 		} else {
 			sman->paint_text(
-					4, "No Info",
-					x + infox
-							+ (infow - sman->get_text_width(4, "No Info")) / 2,
+					4, "No Info", x + infox + (infow - sman->get_text_width(4, "No Info")) / 2,
 					y + infoy + (infoh - sman->get_text_height(4)) / 2);
 		}
 	}
@@ -630,8 +588,7 @@ bool Newfile_gump::mouse_down(
 	const int gy = my - y;
 
 	// Check for scroller
-	if (gx >= scrollx && gx < scrollx + sliderw && gy >= scrolly
-		&& gy < scrolly + scrollh) {
+	if (gx >= scrollx && gx < scrollx + sliderw && gy >= scrolly && gy < scrolly + scrollh) {
 		int num_pos = (2 + num_games) - fieldcount;
 		if (num_pos < 1) {
 			num_pos = 1;
@@ -679,8 +636,7 @@ bool Newfile_gump::mouse_down(
 	}
 
 	last_selected = selected;
-	if (hit + list_position >= num_games || hit + list_position < -2
-		|| selected == hit + list_position) {
+	if (hit + list_position >= num_games || hit + list_position < -2 || selected == hit + list_position) {
 		return Modal_gump::mouse_down(mx, my, button);
 	}
 
@@ -724,25 +680,22 @@ bool Newfile_gump::mouse_down(
 	}
 
 	if (!buttons[id_load] && want_load) {
-		buttons[id_load] = std::make_unique<Newfile_Textbutton>(
-				this, &Newfile_gump::load, Strings::LOAD(), btn_cols[1],
-				btn_rows[0], 39);
+		buttons[id_load]
+				= std::make_unique<Newfile_Textbutton>(this, &Newfile_gump::load, Strings::LOAD(), btn_cols[1], btn_rows[0], 39);
 	} else if (buttons[id_load] && !want_load) {
 		buttons[id_load].reset();
 	}
 
 	if (!buttons[id_save] && want_save) {
-		buttons[id_save] = std::make_unique<Newfile_Textbutton>(
-				this, &Newfile_gump::save, Strings::SAVE(), btn_cols[0],
-				btn_rows[0], 40);
+		buttons[id_save]
+				= std::make_unique<Newfile_Textbutton>(this, &Newfile_gump::save, Strings::SAVE(), btn_cols[0], btn_rows[0], 40);
 	} else if (buttons[id_save] && !want_save) {
 		buttons[id_save].reset();
 	}
 
 	if (!buttons[id_delete] && want_delete) {
 		buttons[id_delete] = std::make_unique<Newfile_Textbutton>(
-				this, &Newfile_gump::delete_file, Strings::DELETE(),
-				btn_cols[2], btn_rows[0], 59);
+				this, &Newfile_gump::delete_file, Strings::DELETE(), btn_cols[2], btn_rows[0], 59);
 	} else if (buttons[id_delete] && !want_delete) {
 		buttons[id_delete].reset();
 	}
@@ -776,9 +729,7 @@ bool Newfile_gump::mouse_up(
 		pushed = nullptr;
 		result = true;
 	}
-	if (touchui != nullptr
-		&& ((selected == -2 && last_selected != -4)
-			|| (selected >= 0 && selected == last_selected))) {
+	if (touchui != nullptr && ((selected == -2 && last_selected != -4) || (selected >= 0 && selected == last_selected))) {
 		touchui->promptForName(newname);
 		result = true;
 	}
@@ -870,9 +821,8 @@ bool Newfile_gump::text_input(const char* text) {
 	cursor = static_cast<int>(strlen(text));
 
 	if (newname[id_load] && !buttons[id_save]) {
-		buttons[id_save] = std::make_unique<Newfile_Textbutton>(
-				this, &Newfile_gump::save, Strings::SAVE(), btn_cols[0],
-				btn_rows[0], 40);
+		buttons[id_save]
+				= std::make_unique<Newfile_Textbutton>(this, &Newfile_gump::save, Strings::SAVE(), btn_cols[0], btn_rows[0], 40);
 		buttons[id_save]->paint();
 	}
 
@@ -961,9 +911,8 @@ bool Newfile_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 
 	default:
 		if (unicode < ' ') {
-			return Modal_gump::key_down(
-					chr, unicode);    // Ignore other special chars and let
-									  // parent class handle them
+			return Modal_gump::key_down(chr, unicode);    // Ignore other special chars and let
+														  // parent class handle them
 		}
 
 		if (unicode < 256 && isascii(unicode)) {
@@ -971,8 +920,7 @@ bool Newfile_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 				// Added first character?  Need 'Save' button.
 				if (newname[0] && !buttons[id_save]) {
 					buttons[id_save] = std::make_unique<Newfile_Textbutton>(
-							this, &Newfile_gump::save, Strings::SAVE(),
-							btn_cols[0], btn_rows[0], 40);
+							this, &Newfile_gump::save, Strings::SAVE(), btn_cols[0], btn_rows[0], 40);
 					buttons[id_save]->paint();
 				}
 
@@ -1046,8 +994,7 @@ int Newfile_gump::AddCharacter(char c) {
 	strcpy(text, newname);
 	text[cursor + 1] = 0;
 	text[cursor]     = c;
-	strncpy(text + cursor + 1, newname + cursor,
-			MAX_SAVEGAME_NAME_LEN - cursor - 1);
+	strncpy(text + cursor + 1, newname + cursor, MAX_SAVEGAME_NAME_LEN - cursor - 1);
 
 	// Now check the width of the text
 	if (sman->get_text_width(2, text) >= textw) {
@@ -1079,9 +1026,9 @@ void Newfile_gump::LoadSaveGameDetails() {
 		cur_details->save_count = 0;
 	}
 
-	cur_details->party_size = partyman->get_count() + 1;
-	cur_details->game_day  = static_cast<short>(gclock->get_total_hours() / 24);
-	cur_details->game_hour = gclock->get_hour();
+	cur_details->party_size  = partyman->get_count() + 1;
+	cur_details->game_day    = static_cast<short>(gclock->get_total_hours() / 24);
+	cur_details->game_hour   = gclock->get_hour();
 	cur_details->game_minute = gclock->get_minute();
 
 	const time_t t        = time(nullptr);
@@ -1132,11 +1079,7 @@ void Newfile_gump::LoadSaveGameDetails() {
 	// Now read save game details
 	char mask[256];
 
-	snprintf(
-			mask, sizeof(mask), SAVENAME2,
-			GAME_BG   ? "bg"
-			: GAME_SI ? "si"
-					  : "dev");
+	snprintf(mask, sizeof(mask), SAVENAME2, GAME_BG ? "bg" : GAME_SI ? "si" : "dev");
 
 	FileList filenames;
 	U7ListFiles(mask, filenames);
@@ -1160,9 +1103,8 @@ void Newfile_gump::LoadSaveGameDetails() {
 	// Reand and cache all details
 	first_free = -1;
 	for (i = 0; i < num_games; i++) {
-		games[i].readable = gwin->get_saveinfo(
-				games[i].num, games[i].savename, games[i].screenshot,
-				games[i].details, games[i].party);
+		games[i].readable
+				= gwin->get_saveinfo(games[i].num, games[i].savename, games[i].screenshot, games[i].details, games[i].party);
 
 		if (first_free == -1 && i != games[i].num) {
 			first_free = i;
@@ -1182,8 +1124,7 @@ void Newfile_gump::LoadSaveGameDetails() {
 #ifdef DEBUG
 	cout << "Listing " << num_games << " Save games" << endl;
 	for (i = 0; i < num_games; i++) {
-		cout << i << " = " << games[i].num << " : " << games[i].filename
-			 << " : " << games[i].savename << endl;
+		cout << i << " = " << games[i].num << " : " << games[i].filename << " : " << games[i].savename << endl;
 	}
 
 	cout << "First Free Game " << first_free << endl;
@@ -1225,8 +1166,7 @@ Newfile_gump::SaveInfo::~SaveInfo() {
 void Newfile_gump::SaveInfo::SetSeqNumber() {
 	int i;
 
-	for (i = strlen(filename) - 1;
-		 !isdigit(static_cast<unsigned char>(filename[i])); i--)
+	for (i = strlen(filename) - 1; !isdigit(static_cast<unsigned char>(filename[i])); i--)
 		;
 	for (; isdigit(static_cast<unsigned char>(filename[i])); i--)
 		;
@@ -1290,6 +1230,5 @@ int Newfile_gump::SaveInfo::CompareThis(const SaveInfo* other) const {
 
 // Compare Games Static
 int Newfile_gump::SaveInfo::CompareGames(const void* a, const void* b) {
-	return static_cast<const Newfile_gump::SaveInfo*>(a)->CompareThis(
-			static_cast<const Newfile_gump::SaveInfo*>(b));
+	return static_cast<const Newfile_gump::SaveInfo*>(a)->CompareThis(static_cast<const Newfile_gump::SaveInfo*>(b));
 }

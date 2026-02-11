@@ -58,17 +58,16 @@ private:
 	SoundTester*  tester;
 	CheatScreen*  cscreen;
 
-	bool            god_mode;
-	bool            wizard_mode;
-	bool            map_editor;
-	bool            tile_grid;
-	Map_editor_mode edit_mode;
-	int             edit_lift;
-	int             edit_shape, edit_frame;    // What to 'paint' with.
-	int             edit_chunknum;             // For painting with chunks.
-	std::vector<Game_object_shared>
-			selected;    // Selected objects (map-editing).
-	std::vector<Game_object_shared> clipboard;    // Cut/copy/paste objects.
+	bool                            god_mode;
+	bool                            wizard_mode;
+	bool                            map_editor;
+	bool                            tile_grid;
+	Map_editor_mode                 edit_mode;
+	int                             edit_lift;
+	int                             edit_shape, edit_frame;    // What to 'paint' with.
+	int                             edit_chunknum;             // For painting with chunks.
+	std::vector<Game_object_shared> selected;                  // Selected objects (map-editing).
+	std::vector<Game_object_shared> clipboard;                 // Cut/copy/paste objects.
 	bool                            infravision;
 	bool                            pickpocket;
 	bool                            grab_actor;
@@ -259,7 +258,6 @@ public:
 		npc_numbers = num;
 	}
 
-
 	enum class FoodUse {
 		Manual    = 0,
 		Automatic = 1,
@@ -270,14 +268,12 @@ private:
 	FoodUse food_use = FoodUse::Manual;
 
 public:
-	FoodUse GetFoodUse(bool saved=false) {
-
-		return enabled||saved?food_use:FoodUse::Manual;
+	FoodUse GetFoodUse(bool saved = false) {
+		return enabled || saved ? food_use : FoodUse::Manual;
 	}
 
 	void SetFoodUse(FoodUse newuse, bool writeout);
 };
-
 
 extern Cheat cheat;
 

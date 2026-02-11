@@ -53,9 +53,7 @@ public:
 
 	// Report iterator problem.
 	void report_problem() const {
-		std::cerr
-				<< "Danger! Danger! Object list modified while being iterated."
-				<< std::endl;
+		std::cerr << "Danger! Danger! Object list modified while being iterated." << std::endl;
 		std::cerr.flush();
 	}
 
@@ -98,8 +96,7 @@ public:
 			report_problem();
 		}
 		if (nobj.get() == before) {
-			std::cerr << "Danger! Danger! Object being placed before itself."
-					  << std::endl;
+			std::cerr << "Danger! Danger! Object being placed before itself." << std::endl;
 			std::cerr.flush();
 			return;
 		}

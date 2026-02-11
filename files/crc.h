@@ -3,6 +3,6 @@
 
 #include "common_types.h"
 
-uint32 crc32(const char* filename, bool quiet=false);
+uint32 crc32(const char* filename, bool quiet = false);
 
 #endif

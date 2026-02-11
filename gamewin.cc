@@ -163,8 +163,7 @@ class Background_noise : public Time_sensitive {
 	// 1 outside, 2 dungeon, 3 nighttime, 4 rainstorm,
 	// 5 snowstorm, 6 for danger nearby
 public:
-	Background_noise(Game_window* gw)
-			: repeats(0), last_sound(-1), gwin(gw), laststate(Invalid) {
+	Background_noise(Game_window* gw) : repeats(0), last_sound(-1), gwin(gw), laststate(Invalid) {
 		gwin->get_tqueue()->add(5000, this);
 	}
 
@@ -178,8 +177,7 @@ public:
 		// Lumping music 16 as if it were a combat music in order to simplify
 		// the check.
 		return (num >= Audio::game_music(9) && num <= Audio::game_music(12))
-			   || (num >= Audio::game_music(15)
-				   && num <= Audio::game_music(18));
+			   || (num >= Audio::game_music(15) && num <= Audio::game_music(18));
 	}
 };
 
@@ -212,18 +210,15 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 	// The background sfx tracks only play for Digital Music, MT32emu,
 	// MT32/FakeMT32 FMOpl is not sounding acceptable even though the original
 	// used it.
-	const bool play_bg_tracks
-			= player && (player->get_ogg_enabled() || player->is_mt32());
+	const bool play_bg_tracks = player && (player->get_ogg_enabled() || player->is_mt32());
 
 	if (player) {
-		delay = 1000;    // Quickly get back to this function check
+		delay                = 1000;    // Quickly get back to this function check
 		const int curr_track = player->get_current_track();
-		if ((curr_track == -1 || laststate != currentstate)
-			&& Audio::get_ptr()->is_music_enabled()) {
+		if ((curr_track == -1 || laststate != currentstate) && Audio::get_ptr()->is_music_enabled()) {
 			// Conditions: not playing music, playing a background music
 			if (curr_track == -1 || gwin->is_background_track(curr_track)
-				|| ((currentstate == Dungeon)
-					&& !is_combat_music(curr_track))) {
+				|| ((currentstate == Dungeon) && !is_combat_music(curr_track))) {
 				// Not already playing music
 				int tracknum = 255;
 
@@ -263,9 +258,7 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 	// possible when the game has been restored
 	// and the Audio option was changed from OGG/MT32 to something else
 	if (player && !play_bg_tracks
-		&& ((player->get_current_track() >= 4
-			 && player->get_current_track() <= 7)
-			|| player->get_current_track() == 52)) {
+		&& ((player->get_current_track() >= 4 && player->get_current_track() <= 7) || player->get_current_track() == 52)) {
 		player->stop_music();
 	}
 	Main_actor* ava = gwin->get_main_actor();
@@ -280,16 +273,13 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
 			if (nighttime) {
 				sound = bgnight[rand() % sizeof(bgnight)];
 				// only play daytime sfx when no music track is playing
-			} else if (
-					!play_bg_tracks
-					&& (!player || player->get_current_track() == -1)) {
+			} else if (!play_bg_tracks && (!player || player->get_current_track() == -1)) {
 				sound = bgday[rand() % sizeof(bgday)];
 			}
 			last_sound = sound;
 		}
 		if (sound >= 0 && sound != 255) {
-			Audio::get_ptr()->play_sound_effect(
-					Audio::game_sfx(sound), AUDIO_MAX_VOLUME - 64);
+			Audio::get_ptr()->play_sound_effect(Audio::game_sfx(sound), AUDIO_MAX_VOLUME - 64);
 			repeats++;    // Count it.
 			if (rand() % (repeats + 1) == 0) {
 				// Repeat.
@@ -312,41 +302,27 @@ void Background_noise::handle_event(unsigned long curtime, uintptr udata) {
  */
 
 Game_window::Game_window(
-		int width, int height, bool fullscreen, int gwidth, int gheight,
-		int scale, int scaler, Image_window::FillMode fillmode,
+		int width, int height, bool fullscreen, int gwidth, int gheight, int scale, int scaler, Image_window::FillMode fillmode,
 		unsigned int fillsclr    // Window dimensions.
 		)
-		: dragging(nullptr), effects(new Effects_manager(this)),
-		  map(new Game_map(0)), render(new Game_render),
-		  gump_man(new Gump_manager), party_man(new Party_manager),
-		  win(nullptr), npc_prox(new Npc_proximity_handler(this)), pal(nullptr),
-		  tqueue(new Time_queue()),
-		  background_noise(new Background_noise(this)), usecode(nullptr),
-		  combat(false), focus(true), ice_dungeon(false), painted(false),
-		  ambient_light(false), infravision_active(false), skip_above_actor(31),
-		  in_dungeon(0), num_npcs1(0), std_delay(c_std_delay), time_stopped(0),
-		  special_light(0), theft_warnings(0), theft_cx(255), theft_cy(255),
-		  moving_barge(nullptr), main_actor(nullptr), camera_actor(nullptr),
-		  npcs(0), bodies(0), scrolltx(0), scrollty(0), dirty(0, 0, 0, 0),
-		  save_names{}, mouse3rd(false), fastmouse(false),
-		  double_click_closes_gumps(false), text_bg(false), step_tile_delta(8),
-		  allow_right_pathfind(2), scroll_with_mouse(false),
-		  alternate_drop(false), allow_autonotes(false),
-		  allow_enhancements(false), in_exult_menu(false),
-		  extended_intro(false), load_palette_timer(0), plasma_start_color(0),
-		  plasma_cycle_range(0), skip_lift(255), paint_eggs(false),
-		  armageddon(false), walk_in_formation(false), debug(0), blits(0),
-		  scrolltx_l(0), scrollty_l(0), scrolltx_lp(0), scrollty_lp(0),
-		  scrolltx_lo(0), scrollty_lo(0), avposx_ld(0), avposy_ld(0),
-		  lerping_enabled(0) {
+		: dragging(nullptr), effects(new Effects_manager(this)), map(new Game_map(0)), render(new Game_render),
+		  gump_man(new Gump_manager), party_man(new Party_manager), win(nullptr), npc_prox(new Npc_proximity_handler(this)),
+		  pal(nullptr), tqueue(new Time_queue()), background_noise(new Background_noise(this)), usecode(nullptr), combat(false),
+		  focus(true), ice_dungeon(false), painted(false), ambient_light(false), infravision_active(false), skip_above_actor(31),
+		  in_dungeon(0), num_npcs1(0), std_delay(c_std_delay), time_stopped(0), special_light(0), theft_warnings(0), theft_cx(255),
+		  theft_cy(255), moving_barge(nullptr), main_actor(nullptr), camera_actor(nullptr), npcs(0), bodies(0), scrolltx(0),
+		  scrollty(0), dirty(0, 0, 0, 0), save_names{}, mouse3rd(false), fastmouse(false), double_click_closes_gumps(false),
+		  text_bg(false), step_tile_delta(8), allow_right_pathfind(2), scroll_with_mouse(false), alternate_drop(false),
+		  allow_autonotes(false), allow_enhancements(false), in_exult_menu(false), extended_intro(false), load_palette_timer(0),
+		  plasma_start_color(0), plasma_cycle_range(0), skip_lift(255), paint_eggs(false), armageddon(false),
+		  walk_in_formation(false), debug(0), blits(0), scrolltx_l(0), scrollty_l(0), scrolltx_lp(0), scrollty_lp(0),
+		  scrolltx_lo(0), scrollty_lo(0), avposx_ld(0), avposy_ld(0), lerping_enabled(0) {
 	game_window = this;    // Set static ->.
 	clock       = new Game_clock(tqueue);
 	shape_man   = new Shape_manager();    // Create the single instance.
 	maps.push_back(map);                  // Map #0.
 	// Create window.
-	win = new Image_window8(
-			width, height, gwidth, gheight, scale, fullscreen, scaler, fillmode,
-			fillsclr);
+	win = new Image_window8(width, height, gwidth, gheight, scale, fullscreen, scaler, fillmode, fillsclr);
 	win->set_title("Exult Ultima VII Engine");
 	pal = new Palette();
 	Game_singletons::init(this);    // Everything but 'usecode' exists.
@@ -405,27 +381,19 @@ Game_window::Game_window(
 	config->value("config/gameplay/formation", str, "yes");
 	// Assume "yes" on anything but "no".
 	walk_in_formation = str != "no";
-	config->set(
-			"config/gameplay/formation", walk_in_formation ? "yes" : "no",
-			false);
+	config->set("config/gameplay/formation", walk_in_formation ? "yes" : "no", false);
 
 	config->value("config/gameplay/smooth_scrolling", lerping_enabled, 0);
 	config->set("config/gameplay/smooth_scrolling", lerping_enabled, false);
 	config->value("config/gameplay/alternate_drop", str, "no");
 	alternate_drop = str == "yes";
-	config->set(
-			"config/gameplay/alternate_drop", alternate_drop ? "yes" : "no",
-			false);
+	config->set("config/gameplay/alternate_drop", alternate_drop ? "yes" : "no", false);
 	config->value("config/gameplay/allow_autonotes", str, "no");
 	allow_autonotes = str == "yes";
-	config->set(
-			"config/gameplay/allow_autonotes", allow_autonotes ? "yes" : "no",
-			false);
+	config->set("config/gameplay/allow_autonotes", allow_autonotes ? "yes" : "no", false);
 	config->value("config/gameplay/enhancements", str, "yes");
 	allow_enhancements = str == "yes";
-	config->set(
-			"config/gameplay/enhancements", allow_enhancements ? "yes" : "no",
-			false);
+	config->set("config/gameplay/enhancements", allow_enhancements ? "yes" : "no", false);
 	Shape_info::set_allow_enhancements(allow_enhancements);
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 	const string default_scroll_with_mouse = "no";
@@ -444,13 +412,9 @@ Game_window::Game_window(
 #endif
 
 	// scroll with mouse
-	config->value(
-			"config/gameplay/scroll_with_mouse", str,
-			default_scroll_with_mouse);
+	config->value("config/gameplay/scroll_with_mouse", str, default_scroll_with_mouse);
 	scroll_with_mouse = str == "yes";
-	config->set(
-			"config/gameplay/scroll_with_mouse",
-			scroll_with_mouse ? "yes" : "no", false);
+	config->set("config/gameplay/scroll_with_mouse", scroll_with_mouse ? "yes" : "no", false);
 
 	// Item menu
 	config->value("config/touch/item_menu", str, default_item_menu);
@@ -472,13 +436,10 @@ Game_window::Game_window(
 	// Touch pathfind
 	config->value("config/touch/touch_pathfind", str, default_touch_pathfind);
 	touch_pathfind = str == "yes";
-	config->set(
-			"config/touch/touch_pathfind", touch_pathfind ? "yes" : "no",
-			false);
+	config->set("config/touch/touch_pathfind", touch_pathfind ? "yes" : "no", false);
 
 	// Shortcut bar
-	config->value(
-			"config/shortcutbar/use_shortcutbar", str, default_shortcutbar);
+	config->value("config/shortcutbar/use_shortcutbar", str, default_shortcutbar);
 	if (str == "no") {
 		use_shortcutbar = 0;
 	} else if (str == "yes") {
@@ -512,17 +473,13 @@ Game_window::Game_window(
 
 	config->value("config/shortcutbar/hide_missing_items", str, "yes");
 	sb_hide_missing = str != "no";
-	config->set(
-			"config/shortcutbar/hide_missing_items",
-			sb_hide_missing ? "yes" : "no", false);
+	config->set("config/shortcutbar/hide_missing_items", sb_hide_missing ? "yes" : "no", false);
 	config->write_back();
 
 	// default to SI extended intro
 	config->value("config/gameplay/extended_intro", str, "yes");
 	extended_intro = str == "yes";
-	config->set(
-			"config/gameplay/extended_intro", extended_intro ? "yes" : "no",
-			false);
+	config->set("config/gameplay/extended_intro", extended_intro ? "yes" : "no", false);
 }
 
 /*
@@ -530,9 +487,7 @@ Game_window::Game_window(
  */
 void Game_window::clear_screen(bool update) {
 	win->BeginPaintIntoGuardBand(nullptr, nullptr, nullptr, nullptr);
-	win->fill8(
-			0, win->get_full_width(), win->get_full_height(),
-			win->get_start_x(), win->get_start_y());
+	win->fill8(0, win->get_full_width(), win->get_full_height(), win->get_start_x(), win->get_start_y());
 
 	win->EndPaintIntoGuardBand();
 	// update screen
@@ -583,11 +538,9 @@ void Game_window::abort(const char* msg, ...) {
 	throw quit_exception(-1);
 }
 
-bool Game_window::is_background_track(
-		int num) const {    // ripped out of Background_noise
+bool Game_window::is_background_track(int num) const {    // ripped out of Background_noise
 	// Have to do it this way because of SI.
-	return num == Audio::game_music(4) || num == Audio::game_music(5)
-		   || num == Audio::game_music(6) || num == Audio::game_music(7)
+	return num == Audio::game_music(4) || num == Audio::game_music(5) || num == Audio::game_music(6) || num == Audio::game_music(7)
 		   || num == Audio::game_music(8) || num == Audio::game_music(52);
 }
 
@@ -629,8 +582,7 @@ void Game_window::init_files(bool cycle) {
 		try {
 			keybinder->LoadFromFile(keyfilename.c_str());
 		} catch (file_open_exception&) {
-			cerr << "Key mappings file '" << keyfilename
-				 << "' not found, falling back to default mappings." << endl;
+			cerr << "Key mappings file '" << keyfilename << "' not found, falling back to default mappings." << endl;
 			keybinder->LoadDefaults();
 		}
 	}
@@ -649,8 +601,7 @@ void Game_window::init_files(bool cycle) {
  *  Read any map. (This is for "multimap" games, not U7.)
  */
 
-Game_map* Game_window::get_map(
-		int num    // Should be > 0.
+Game_map* Game_window::get_map(int num    // Should be > 0.
 ) {
 	if (num >= static_cast<int>(maps.size())) {
 		maps.resize(num + 1);
@@ -711,10 +662,8 @@ bool Game_window::is_moving() const {
  */
 
 bool Game_window::main_actor_dont_move() const {
-	return !cheat.in_map_editor() && main_actor != nullptr
-		   &&    // Not if map-editing.
-		   ((main_actor->get_flag(Obj_flags::dont_move))
-			|| (main_actor->get_flag(Obj_flags::dont_render)));
+	return !cheat.in_map_editor() && main_actor != nullptr &&    // Not if map-editing.
+		   ((main_actor->get_flag(Obj_flags::dont_move)) || (main_actor->get_flag(Obj_flags::dont_render)));
 }
 
 /*
@@ -737,8 +686,7 @@ bool Game_window::in_infravision() const {
  *  Add time for a light spell.
  */
 
-void Game_window::add_special_light(
-		int units    // Light=500, GreatLight=5000.
+void Game_window::add_special_light(int units    // Light=500, GreatLight=5000.
 ) {
 	if (!special_light) {    // Nothing in effect now?
 		special_light = clock->get_total_minutes();
@@ -751,10 +699,9 @@ void Game_window::add_special_light(
  *  Set 'stop time' value.
  */
 
-void Game_window::set_time_stopped(
-		long delay    // Delay in ticks (1/1000
-					  // secs.), -1 to stop
-					  // indefinitely, or 0 to end.
+void Game_window::set_time_stopped(long delay    // Delay in ticks (1/1000
+												 // secs.), -1 to stop
+												 // indefinitely, or 0 to end.
 ) {
 	if (delay == -1) {
 		time_stopped = -1;
@@ -803,8 +750,7 @@ void Game_window::toggle_combat() {
 			newsched = Schedule::combat;
 		}
 		const int sched = person->get_schedule_type();
-		if (sched != newsched && sched != Schedule::wait
-			&& sched != Schedule::loiter) {
+		if (sched != newsched && sched != Schedule::wait && sched != Schedule::loiter) {
 			person->set_schedule_type(newsched);
 		}
 	}
@@ -822,8 +768,7 @@ void Game_window::toggle_combat() {
 		for (int i = 0; i < cnt; i++) {
 			// Did Usecode set to flee?
 			Actor* act = all[i];
-			if (act->get_attack_mode() == Actor::flee
-				&& !act->did_user_set_attack()) {
+			if (act->get_attack_mode() == Actor::flee && !act->did_user_set_attack()) {
 				act->set_attack_mode(Actor::nearest);
 			}
 			// And avoid attacking party members,
@@ -858,8 +803,7 @@ void Game_window::add_npc(
 	assert(num == npc->get_npc_num());
 	assert(num <= static_cast<int>(npcs.size()));
 	if (num == static_cast<int>(npcs.size())) {    // Add at end.
-		npcs.push_back(
-				std::static_pointer_cast<Actor>(npc->shared_from_this()));
+		npcs.push_back(std::static_pointer_cast<Actor>(npc->shared_from_this()));
 	} else {
 		// Better be unused.
 		assert(!npcs[num] || npcs[num]->is_unused());
@@ -938,12 +882,9 @@ int Game_window::get_unused_npc() {
  */
 
 void Game_window::resized(
-		unsigned int neww, unsigned int newh, bool newfs, unsigned int newgw,
-		unsigned int newgh, unsigned int newsc, unsigned int newsclr,
-		Image_window::FillMode newfill, unsigned int newfillsclr) {
-	win->resized(
-			neww, newh, newfs, newgw, newgh, newsc, newsclr, newfill,
-			newfillsclr);
+		unsigned int neww, unsigned int newh, bool newfs, unsigned int newgw, unsigned int newgh, unsigned int newsc,
+		unsigned int newsclr, Image_window::FillMode newfill, unsigned int newfillsclr) {
+	win->resized(neww, newh, newfs, newgw, newgh, newsc, newsclr, newfill, newfillsclr);
 	pal->apply(false);
 	Shape_frame::set_to_render(win->get_ib8());
 	if (!main_actor) {    // In case we're before start.
@@ -1023,9 +964,9 @@ bool Game_window::locate_shape(
 		int  qual         // Quality/quantity.
 ) {
 	// Get (first) selected object.
-	const std::vector<Game_object_shared>& sel = cheat.get_selected();
-	Game_object*       start = !sel.empty() ? (sel[0]).get() : nullptr;
-	std::ostringstream msg;
+	const std::vector<Game_object_shared>& sel   = cheat.get_selected();
+	Game_object*                           start = !sel.empty() ? (sel[0]).get() : nullptr;
+	std::ostringstream                     msg;
 	msg << Strings::SearchingForShape() << shapenum;
 	effects->center_text(msg.str().c_str());
 	paint();
@@ -1062,8 +1003,7 @@ inline void Send_location(Game_window* gwin) {
 		little_endian::Write4(ptr, gwin->get_width() / c_tilesize);
 		little_endian::Write4(ptr, gwin->get_height() / c_tilesize);
 		little_endian::Write4(ptr, gwin->get_win()->get_scale_factor());
-		Exult_server::Send_data(
-				client_socket, Exult_server::view_pos, &data[0], ptr - data);
+		Exult_server::Send_data(client_socket, Exult_server::view_pos, &data[0], ptr - data);
 	}
 #else
 	ignore_unused_variable_warning(gwin);
@@ -1115,11 +1055,9 @@ void Game_window::set_scrolls(int newscrolltx, int newscrollty) {
 	// Set scroll box.
 	// Let's try 2x2 tiles.
 	scroll_bounds.w = scroll_bounds.h = 2;
-	scroll_bounds.x
-			= scrolltx + (get_width() / c_tilesize - scroll_bounds.w) / 2;
+	scroll_bounds.x                   = scrolltx + (get_width() / c_tilesize - scroll_bounds.w) / 2;
 	// OFFSET HERE
-	scroll_bounds.y
-			= scrollty + ((get_height()) / c_tilesize - scroll_bounds.h) / 2;
+	scroll_bounds.y = scrollty + ((get_height()) / c_tilesize - scroll_bounds.h) / 2;
 
 	Barge_object* old_active_barge = moving_barge;
 	map->read_map_data();    // This pulls in objects.
@@ -1148,8 +1086,7 @@ void Game_window::set_scrolls(int newscrolltx, int newscrollty) {
  *  center_view.)
  */
 
-void Game_window::set_scrolls(
-		Tile_coord cent    // Want center here.
+void Game_window::set_scrolls(Tile_coord cent    // Want center here.
 ) {
 	// Figure in tiles.
 	// OFFSET HERE
@@ -1175,8 +1112,7 @@ void Game_window::center_view(const Tile_coord& t) {
 void Game_window::set_camera_actor(Actor* a) {
 	if (a == main_actor &&    // Setting back to main actor?
 		camera_actor &&       // Change in chunk?
-		(camera_actor->get_cx() != main_actor->get_cx()
-		 || camera_actor->get_cy() != main_actor->get_cy())) {
+		(camera_actor->get_cx() != main_actor->get_cx() || camera_actor->get_cy() != main_actor->get_cy())) {
 		// Cache out temp. objects.
 		emulate_cache(camera_actor->get_chunk(), main_actor->get_chunk());
 	}
@@ -1201,16 +1137,14 @@ bool Game_window::scroll_if_needed(Tile_coord t) {
 	if (Tile_coord::gte(DECR_TILE(scroll_bounds.x), tx)) {
 		view_left();
 		scrolled = true;
-	} else if (Tile_coord::gte(
-					   tx, (scroll_bounds.x + scroll_bounds.w) % c_num_tiles)) {
+	} else if (Tile_coord::gte(tx, (scroll_bounds.x + scroll_bounds.w) % c_num_tiles)) {
 		view_right();
 		scrolled = true;
 	}
 	if (Tile_coord::gte(DECR_TILE(scroll_bounds.y), ty)) {
 		view_up();
 		scrolled = true;
-	} else if (Tile_coord::gte(
-					   ty, (scroll_bounds.y + scroll_bounds.h) % c_num_tiles)) {
+	} else if (Tile_coord::gte(ty, (scroll_bounds.y + scroll_bounds.h) % c_num_tiles)) {
 		view_down();
 		scrolled = true;
 	}
@@ -1247,8 +1181,7 @@ TileRect Game_window::get_shape_rect(const Game_object* obj) const {
 	if (!s) {
 		// This is probably fatal.
 #ifdef DEBUG
-		std::cerr << "DEATH! get_shape() returned a nullptr pointer: "
-				  << __FILE__ << ":" << __LINE__ << std::endl;
+		std::cerr << "DEATH! get_shape() returned a nullptr pointer: " << __FILE__ << ":" << __LINE__ << std::endl;
 		std::cerr << "Betcha it's a little doggie." << std::endl;
 #endif
 		return TileRect(0, 0, 0, 0);
@@ -1264,16 +1197,14 @@ TileRect Game_window::get_shape_rect(const Game_object* obj) const {
 	if (t.ty < -c_num_tiles / 2) {
 		t.ty += c_num_tiles;
 	}
-	return get_shape_rect(
-			s, t.tx * c_tilesize - 1 - lftpix, t.ty * c_tilesize - 1 - lftpix);
+	return get_shape_rect(s, t.tx * c_tilesize - 1 - lftpix, t.ty * c_tilesize - 1 - lftpix);
 }
 
 /*
  *  Get screen location of given tile.
  */
 
-inline void Get_shape_location(
-		Tile_coord t, int scrolltx, int scrollty, int& x, int& y) {
+inline void Get_shape_location(Tile_coord t, int scrolltx, int scrollty, int& x, int& y) {
 	const int lft = 4 * t.tz;
 	t.tx += 1 - scrolltx;
 	t.ty += 1 - scrollty;
@@ -1388,9 +1319,7 @@ bool Game_window::init_gamedat(bool create) {
 		}
 	}
 	//++++Maybe just test for IDENTITY+++:
-	else if (
-			(U7exists(U7NBUF_DAT) || !U7exists(NPC_DAT))
-			&& !Game::is_editing()) {
+	else if ((U7exists(U7NBUF_DAT) || !U7exists(NPC_DAT)) && !Game::is_editing()) {
 		return false;
 	} else {
 		auto pIdentity_file = U7open_in(IDENTITY);
@@ -1405,8 +1334,7 @@ bool Game_window::init_gamedat(bool create) {
 			;
 		*ptr = 0;
 		cout << "Gamedat identity " << gamedat_identity << endl;
-		const string static_identity
-				= get_game_identity(INITGAME, Game::get_gametitle());
+		const string static_identity = get_game_identity(INITGAME, Game::get_gametitle());
 		if (static_identity != gamedat_identity) {
 			return false;
 		}
@@ -1434,9 +1362,7 @@ void Game_window::write(bool nopaint) {
 
 	if (!nopaint) {
 		win->fill_translucent8(0, width, height, 0, 0, shape_man->get_xform(8));
-		shape_man->paint_text(
-				0, Strings::SavingGame(), centre_x - text_width / 2,
-				centre_y - text_height);
+		shape_man->paint_text(0, Strings::SavingGame(), centre_x - text_width / 2, centre_y - text_height);
 		show(true);
 	}
 	for (auto* map : maps) {
@@ -1495,9 +1421,7 @@ void Game_window::write_gwin() {
 	MyMidiPlayer* player = Audio::get_ptr()->get_midi();
 	if (player) {
 		gout.write4(static_cast<uint32>(player->get_current_track()));
-		gout.write4(
-				static_cast<uint32>(player->is_repeating())
-				| player->get_egg_count() << 16);
+		gout.write4(static_cast<uint32>(player->is_repeating()) | player->get_egg_count() << 16);
 	} else {
 		gout.write4(static_cast<uint32>(-1));
 		gout.write4(0);
@@ -1555,8 +1479,7 @@ void Game_window::read_gwin() {
 		return;
 	}
 	MyMidiPlayer* midi = Audio::get_ptr()->get_midi();
-	if (!is_background_track(track_num)
-		|| (midi && (midi->get_ogg_enabled() || midi->is_mt32()))) {
+	if (!is_background_track(track_num) || (midi && (midi->get_ogg_enabled() || midi->is_mt32()))) {
 		Audio::get_ptr()->start_music(track_num, repeat & 0x1);
 		if (midi) {
 			midi->set_egg_count(static_cast<uint16>(repeat >> 16));
@@ -1651,10 +1574,9 @@ void Game_window::view_right() {
 	const int w = get_width();
 	const int h = get_height();
 	// Get current rightmost chunk.
-	const int old_rcx = ((scrolltx + (w - 1) / c_tilesize) / c_tiles_per_chunk)
-						% c_num_chunks;
-	scrolltx        = INCR_TILE(scrolltx);
-	scroll_bounds.x = INCR_TILE(scroll_bounds.x);
+	const int old_rcx = ((scrolltx + (w - 1) / c_tilesize) / c_tiles_per_chunk) % c_num_chunks;
+	scrolltx          = INCR_TILE(scrolltx);
+	scroll_bounds.x   = INCR_TILE(scroll_bounds.x);
 	if (gump_man->showing_gumps()) {    // Gump on screen?
 		paint();
 		return;
@@ -1667,8 +1589,7 @@ void Game_window::view_right() {
 	dirty.x -= c_tilesize;    // Shift dirty rect.
 	dirty = clip_to_win(dirty);
 	// New chunk?
-	const int new_rcx = ((scrolltx + (w - 1) / c_tilesize) / c_tiles_per_chunk)
-						% c_num_chunks;
+	const int new_rcx = ((scrolltx + (w - 1) / c_tilesize) / c_tiles_per_chunk) % c_num_chunks;
 	if (new_rcx != old_rcx) {
 		Send_location(this);
 	}
@@ -1700,10 +1621,9 @@ void Game_window::view_down() {
 	const int w = get_width();
 	const int h = get_height();
 	// Get current bottomost chunk.
-	const int old_bcy = ((scrollty + (h - 1) / c_tilesize) / c_tiles_per_chunk)
-						% c_num_chunks;
-	scrollty        = INCR_TILE(scrollty);
-	scroll_bounds.y = INCR_TILE(scroll_bounds.y);
+	const int old_bcy = ((scrollty + (h - 1) / c_tilesize) / c_tiles_per_chunk) % c_num_chunks;
+	scrollty          = INCR_TILE(scrollty);
+	scroll_bounds.y   = INCR_TILE(scroll_bounds.y);
 	if (gump_man->showing_gumps()) {    // Gump on screen?
 		paint();
 		return;
@@ -1714,8 +1634,7 @@ void Game_window::view_down() {
 	dirty.y -= c_tilesize;    // Shift dirty rect.
 	dirty = clip_to_win(dirty);
 	// New chunk?
-	const int new_bcy = ((scrollty + (h - 1) / c_tilesize) / c_tiles_per_chunk)
-						% c_num_chunks;
+	const int new_bcy = ((scrollty + (h - 1) / c_tilesize) / c_tiles_per_chunk) % c_num_chunks;
 	if (new_bcy != old_bcy) {
 		Send_location(this);
 	}
@@ -1770,8 +1689,7 @@ void Game_window::start_actor_alt(
 
 	for (dir = 0; dir < 8; dir++) {
 		Tile_coord dest = start.get_neighbor(dir);
-		blocked[dir]    = main_actor->is_blocked(
-                dest, &start, main_actor->get_type_flags());
+		blocked[dir]    = main_actor->is_blocked(dest, &start, main_actor->get_type_flags());
 		if (checkdrop && abs(start.tz - dest.tz) > 1) {
 			blocked[dir] = true;
 		}
@@ -1784,10 +1702,7 @@ void Game_window::start_actor_alt(
 	} else if (blocked[dir] && !blocked[(dir + 7) % 8]) {
 		dir = (dir + 7) % 8;
 	} else if (blocked[dir]) {
-		Game_object* block = main_actor->is_moving()
-									 ? nullptr
-									 : main_actor->find_blocking(
-											   start.get_neighbor(dir), dir);
+		Game_object* block = main_actor->is_moving() ? nullptr : main_actor->find_blocking(start.get_neighbor(dir), dir);
 		// We already know the blocking object isn't the avatar, so don't
 		// double check it here.
 		if (!block || !block->move_aside(main_actor, dir)) {
@@ -1795,8 +1710,7 @@ void Game_window::start_actor_alt(
 			if (main_actor->get_lift() % 5) {    // Up on something?
 				// See if we're stuck in the air.
 				const int savetz = start.tz;
-				if (!Map_chunk::is_blocked(start, 1, MOVE_WALK, 100)
-					&& start.tz < savetz) {
+				if (!Map_chunk::is_blocked(start, 1, MOVE_WALK, 100) && start.tz < savetz) {
 					main_actor->move(start.tx, start.ty, start.tz);
 				}
 			}
@@ -1804,8 +1718,7 @@ void Game_window::start_actor_alt(
 		}
 	}
 
-	const int delta = step_tile_delta
-					  * c_tilesize;    // Bigger # here avoids jerkiness,
+	const int delta = step_tile_delta * c_tilesize;    // Bigger # here avoids jerkiness,
 	// but causes probs. with followers.
 	switch (dir) {
 	case north:
@@ -1881,9 +1794,7 @@ void Game_window::start_actor(
 	if (main_actor->Actor::get_flag(Obj_flags::asleep)) {
 		return;    // Zzzzz....
 	}
-	if (!cheat.in_map_editor()
-		&& (main_actor->in_usecode_control()
-			|| main_actor->get_flag(Obj_flags::paralyzed))) {
+	if (!cheat.in_map_editor() && (main_actor->in_usecode_control() || main_actor->get_flag(Obj_flags::paralyzed))) {
 		return;
 	}
 	if (gump_man->gump_mode() && !gump_man->gumps_dont_pause_game()) {
@@ -1894,19 +1805,15 @@ void Game_window::start_actor(
 		// Want to move center there.
 		const int lift       = main_actor->get_lift();
 		const int liftpixels = 4 * lift;    // Figure abs. tile.
-		int       tx = get_scrolltx() + (winx + liftpixels) / c_tilesize;
-		int       ty = get_scrollty() + (winy + liftpixels) / c_tilesize;
+		int       tx         = get_scrolltx() + (winx + liftpixels) / c_tilesize;
+		int       ty         = get_scrollty() + (winy + liftpixels) / c_tilesize;
 		// Wrap:
 		tx                     = (tx + c_num_tiles) % c_num_tiles;
 		ty                     = (ty + c_num_tiles) % c_num_tiles;
 		const Tile_coord atile = moving_barge->get_center();
 		const Tile_coord btile = moving_barge->get_tile();
 		// Go faster than walking.
-		moving_barge->travel_to_tile(
-				Tile_coord(
-						tx + btile.tx - atile.tx, ty + btile.ty - atile.ty,
-						btile.tz),
-				speed / 2);
+		moving_barge->travel_to_tile(Tile_coord(tx + btile.tx - atile.tx, ty + btile.ty - atile.ty, btile.tz), speed / 2);
 	} else {
 		/*
 		main_actor->walk_to_tile(tx, ty, lift, speed, 0);
@@ -1914,8 +1821,7 @@ void Game_window::start_actor(
 		*/
 		// Set schedule.
 		const int sched = main_actor->get_schedule_type();
-		if (sched != Schedule::follow_avatar && sched != Schedule::combat
-			&& !main_actor->get_flag(Obj_flags::asleep)) {
+		if (sched != Schedule::follow_avatar && sched != Schedule::combat && !main_actor->get_flag(Obj_flags::asleep)) {
 			main_actor->set_schedule_type(Schedule::follow_avatar);
 			// If the avatar was *not* in combat or follow avatar schedules,
 			// then we need to reset the schedules of party members when the
@@ -1924,8 +1830,7 @@ void Game_window::start_actor(
 			for (int i = 0; i < cnt; i++) {
 				Actor* npc = get_npc(party_man->get_member(i));
 				// Not sure how much of this is needed, but in any case...
-				if (npc == nullptr || npc->get_flag(Obj_flags::asleep)
-					|| npc->is_dead()) {
+				if (npc == nullptr || npc->get_flag(Obj_flags::asleep) || npc->is_dead()) {
 					continue;
 				}
 				npc->set_schedule_type(Schedule::follow_avatar);
@@ -1944,11 +1849,9 @@ void Game_window::start_actor_along_path(
 		int winx, int winy,    // Mouse position to aim for.
 		int speed              // Msecs. between frames.
 ) {
-	if (main_actor->Actor::get_flag(Obj_flags::asleep)
-		|| main_actor->Actor::get_flag(Obj_flags::paralyzed)
-		|| main_actor->get_schedule_type() == Schedule::sleep
-		|| moving_barge) {    // For now, don't do barges.
-		return;               // Zzzzz....
+	if (main_actor->Actor::get_flag(Obj_flags::asleep) || main_actor->Actor::get_flag(Obj_flags::paralyzed)
+		|| main_actor->get_schedule_type() == Schedule::sleep || moving_barge) {    // For now, don't do barges.
+		return;                                                                     // Zzzzz....
 	}
 	// Animation in progress?
 	if (!cheat.in_map_editor() && main_actor->in_usecode_control()) {
@@ -1958,8 +1861,7 @@ void Game_window::start_actor_along_path(
 	const int        lift       = main_actor->get_lift();
 	const int        liftpixels = 4 * lift;    // Figure abs. tile.
 	const Tile_coord dest(
-			get_scrolltx() + (winx + liftpixels) / c_tilesize,
-			get_scrollty() + (winy + liftpixels) / c_tilesize, lift);
+			get_scrolltx() + (winx + liftpixels) / c_tilesize, get_scrollty() + (winy + liftpixels) / c_tilesize, lift);
 	if (!main_actor->walk_path_to_tile(dest, speed)) {
 		cout << "Couldn't find path for Avatar." << endl;
 		if (touch_pathfind) {
@@ -1967,8 +1869,7 @@ void Game_window::start_actor_along_path(
 		}
 	} else {
 		if (touch_pathfind) {
-			get_effects()->add_effect(
-					std::make_unique<Sprites_effect>(18, dest, 0, 0, 0, 0));
+			get_effects()->add_effect(std::make_unique<Sprites_effect>(18, dest, 0, 0, 0, 0));
 		}
 		main_actor->get_followers();
 	}
@@ -2007,8 +1908,7 @@ void Game_window::teleport_party(
 	int       i;
 	const int cnt = party_man->get_count();
 	if (!skip_eggs) {
-		main_actor->get_chunk()->unhatch_eggs(
-				main_actor, t.tx, t.ty, t.tz, oldpos.tx, oldpos.ty);
+		main_actor->get_chunk()->unhatch_eggs(main_actor, t.tx, t.ty, t.tz, oldpos.tx, oldpos.ty);
 	}
 	if (newmap != -1) {
 		set_map(newmap);
@@ -2022,12 +1922,10 @@ void Game_window::teleport_party(
 	for (i = 0; i < cnt; i++) {
 		const int party_member = party_man->get_member(i);
 		Actor*    person       = get_npc(party_member);
-		if (person && !person->is_dead()
-			&& person->get_schedule_type() != Schedule::wait
+		if (person && !person->is_dead() && person->get_schedule_type() != Schedule::wait
 			&& (person->can_act() || no_status_check)) {
 			person->set_action(nullptr);
-			const Tile_coord t1 = Map_chunk::find_spot(
-					t, 8, person->get_shapenum(), person->get_framenum(), 1);
+			const Tile_coord t1 = Map_chunk::find_spot(t, 8, person->get_shapenum(), person->get_framenum(), 1);
 			if (t1.tx != -1) {
 				person->move(t1, newmap);
 				person->change_frame(person->get_dir_framenum(Actor::standing));
@@ -2036,8 +1934,7 @@ void Game_window::teleport_party(
 	}
 	main_actor->get_followers();
 	if (!skip_eggs) {    // Check all eggs around new spot.
-		Map_chunk::try_all_eggs(
-				main_actor, t.tx, t.ty, t.tz, oldpos.tx, oldpos.ty);
+		Map_chunk::try_all_eggs(main_actor, t.tx, t.ty, t.tz, oldpos.tx, oldpos.ty);
 	}
 	//	teleported = 1;
 }
@@ -2092,8 +1989,7 @@ bool Game_window::activate_item(
 	// Special case: Archwizard mode spellbook - create a temporary one with
 	// all spells.
 	if (shnum == 761 && cheat.in_wizard_mode()) {
-		unsigned char all_spells[9]
-				= {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+		unsigned char    all_spells[9] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 		Spellbook_object wizard_spellbook(761, 0, 0, 0, 0, all_spells, 255);
 		wizard_spellbook.activate();
 		return true;
@@ -2112,24 +2008,15 @@ Game_object* Game_window::find_object(
 		int x, int y    // Pos. on screen.
 ) {
 #ifdef DEBUG
-	cout << "Clicked at tile (" << get_scrolltx() + x / c_tilesize << ", "
-		 << get_scrollty() + y / c_tilesize << ")" << endl;
+	cout << "Clicked at tile (" << get_scrolltx() + x / c_tilesize << ", " << get_scrollty() + y / c_tilesize << ")" << endl;
 #endif
 	const int not_above = get_render_skip_lift();
 	// Figure chunk #'s.
-	const int start_cx
-			= ((scrolltx + x / c_tilesize) / c_tiles_per_chunk) % c_num_chunks;
-	const int start_cy
-			= ((scrollty + y / c_tilesize) / c_tiles_per_chunk) % c_num_chunks;
+	const int start_cx = ((scrolltx + x / c_tilesize) / c_tiles_per_chunk) % c_num_chunks;
+	const int start_cy = ((scrollty + y / c_tilesize) / c_tiles_per_chunk) % c_num_chunks;
 	// Check 1 chunk down & right too.
-	const int stop_cx = (2
-						 + (scrolltx + (x + 4 * not_above) / c_tilesize)
-								   / c_tiles_per_chunk)
-						% c_num_chunks;
-	const int stop_cy = (2
-						 + (scrollty + (y + 4 * not_above) / c_tilesize)
-								   / c_tiles_per_chunk)
-						% c_num_chunks;
+	const int stop_cx = (2 + (scrolltx + (x + 4 * not_above) / c_tilesize) / c_tiles_per_chunk) % c_num_chunks;
+	const int stop_cy = (2 + (scrollty + (y + 4 * not_above) / c_tilesize) / c_tiles_per_chunk) % c_num_chunks;
 
 	Game_object* best  = nullptr;    // Find 'best' one.
 	bool         trans = true;       // Try to avoid 'transparent' objs.
@@ -2143,9 +2030,7 @@ Game_object* Game_window::find_object(
 			Object_iterator next(olist->get_objects());
 			Game_object*    obj;
 			while ((obj = next.get_next()) != nullptr) {
-				if (obj->get_lift() >= not_above
-					|| !get_shape_rect(obj).has_world_point(x, y)
-					|| !obj->is_findable()) {
+				if (obj->get_lift() >= not_above || !get_shape_rect(obj).has_world_point(x, y) || !obj->is_findable()) {
 					continue;
 				}
 				// Check the shape itself.
@@ -2164,8 +2049,7 @@ Game_object* Game_window::find_object(
 					// This fixes clicking the Y shapes instead of the Y
 					// depression in SI. This has the effect of also making
 					// the Y depressions not draggable.
-					if (GAME_SI && obj->get_shapenum() == 0xd1
-						&& obj->get_framenum() == 17) {
+					if (GAME_SI && obj->get_shapenum() == 0xd1 && obj->get_framenum() == 17) {
 						ftrans = true;    // Pretend it is transparent
 					}
 					if (!ftrans || trans) {
@@ -2179,8 +2063,7 @@ Game_object* Game_window::find_object(
 	return best;
 }
 
-void Game_window::find_nearby_objects(
-		Game_object_map_xy& mobjxy, int x, int y, Gump* gump) {
+void Game_window::find_nearby_objects(Game_object_map_xy& mobjxy, int x, int y, Gump* gump) {
 	// Find object at each pixel
 	for (int iy = y - 10; iy < (y + 10); iy++) {
 		for (int ix = x - 10; ix < (x + 10); ix++) {
@@ -2198,9 +2081,7 @@ void Game_window::find_nearby_objects(
 				if (cl == Shape_info::unusable || cl == Shape_info::building) {
 					continue;
 				}
-				if ((cl == Shape_info::hatchable || cl == Shape_info::barge
-					 || info.is_barge_part())
-					&& !cheat.in_map_editor()) {
+				if ((cl == Shape_info::hatchable || cl == Shape_info::barge || info.is_barge_part()) && !cheat.in_map_editor()) {
 					continue;
 				}
 				if (info.is_transparent()) {
@@ -2251,8 +2132,7 @@ void Game_window::show_items(
 		if (!mobjxy.empty() && Notebook_gump::get_instance() == nullptr) {
 			// Make sure menu is visible on the screen
 			Itemmenu_gump itemgump(&mobjxy, x, y);
-			Game_window::get_instance()->get_gump_man()->do_modal_gump(
-					&itemgump, Mouse::hand);
+			Game_window::get_instance()->get_gump_man()->do_modal_gump(&itemgump, Mouse::hand);
 			obj = nullptr;
 		}
 	}
@@ -2274,27 +2154,21 @@ void Game_window::show_items(
 
 	// Do we have an NPC?
 	Actor* npc = obj ? obj->as_actor() : nullptr;
-	if (npc && cheat.number_npcs()
-		&& (npc->get_npc_num() > 0 || npc == main_actor)) {
+	if (npc && cheat.number_npcs() && (npc->get_npc_num() > 0 || npc == main_actor)) {
 		char              str[64];
 		const std::string namestr = Get_object_name(obj);
-		snprintf(
-				str, sizeof(str), "(%i) %s", npc->get_npc_num(),
-				namestr.c_str());
+		snprintf(str, sizeof(str), "(%i) %s", npc->get_npc_num(), namestr.c_str());
 		effects->add_text(str, obj);
 	} else if (obj) {
 		// Show name.
 		std::string namestr = Get_object_name(obj);
-		if (Game_window::get_instance()->failed_copy_protection()
-			&& (npc == main_actor || !npc)) {    // Avatar and items
+		if (Game_window::get_instance()->failed_copy_protection() && (npc == main_actor || !npc)) {    // Avatar and items
 			namestr = Strings::Oink();
 		}
 		// Combat and an NPC?
 		if (in_combat() && Combat::mode != Combat::original && npc) {
 			char buf[128];
-			snprintf(
-					buf, sizeof(buf), " (%d)",
-					npc->get_property(Actor::health));
+			snprintf(buf, sizeof(buf), " (%d)", npc->get_property(Actor::health));
 			namestr += buf;
 		}
 		effects->add_text(namestr.c_str(), obj);
@@ -2302,14 +2176,11 @@ void Game_window::show_items(
 		// Show flat, but not when editing ter.
 		const ShapeID id = get_flat(x, y);
 		char          str[20];
-		snprintf(
-				str, sizeof(str), "Flat %d:%d", id.get_shapenum(),
-				id.get_framenum());
+		snprintf(str, sizeof(str), "Flat %d:%d", id.get_shapenum(), id.get_framenum());
 		effects->add_text(str, x, y);
 	}
 	// If it's an actor and we want to grab the actor, grab it.
-	if (npc && cheat.grabbing_actor()
-		&& (npc->get_npc_num() || npc == main_actor)) {
+	if (npc && cheat.grabbing_actor() && (npc->get_npc_num() || npc == main_actor)) {
 		cheat.set_grabbed_actor(npc);
 	}
 
@@ -2319,27 +2190,20 @@ void Game_window::show_items(
 		shnum                   = obj->get_shapenum();
 		const int         frnum = obj->get_framenum();
 		const Shape_info& info  = obj->get_info();
-		cout << "Object " << shnum << ':' << frnum
-			 << " has 3d tiles (x, y, z): " << info.get_3d_xtiles(frnum) << ", "
+		cout << "Object " << shnum << ':' << frnum << " has 3d tiles (x, y, z): " << info.get_3d_xtiles(frnum) << ", "
 			 << info.get_3d_ytiles(frnum) << ", " << info.get_3d_height();
 		Actor* npc = obj->as_actor();
 		if (npc) {
-			cout << ", sched = " << npc->get_schedule_type()
-				 << ", real align = " << npc->get_alignment()
-				 << ", eff. align = " << npc->get_effective_alignment()
-				 << ", npcnum = " << npc->get_npc_num();
+			cout << ", sched = " << npc->get_schedule_type() << ", real align = " << npc->get_alignment()
+				 << ", eff. align = " << npc->get_effective_alignment() << ", npcnum = " << npc->get_npc_num();
 		}
 		cout << endl;
 		if (obj->get_chunk()) {
 			const Tile_coord t = obj->get_tile();
-			cout << "tx = " << t.tx << ", ty = " << t.ty << ", tz = " << t.tz
-				 << ", ";
+			cout << "tx = " << t.tx << ", ty = " << t.ty << ", tz = " << t.tz << ", ";
 		}
-		cout << "quality = " << obj->get_quality()
-			 << ", okay_to_take = " << obj->get_flag(Obj_flags::okay_to_take)
-			 << ", flag0x1d = " << obj->get_flag(0x1d)
-			 << ", hp = " << obj->get_obj_hp()
-			 << ", weight = " << obj->get_weight()
+		cout << "quality = " << obj->get_quality() << ", okay_to_take = " << obj->get_flag(Obj_flags::okay_to_take)
+			 << ", flag0x1d = " << obj->get_flag(0x1d) << ", hp = " << obj->get_obj_hp() << ", weight = " << obj->get_weight()
 			 << ", volume = " << obj->get_volume() << endl;
 		cout << "obj = " << obj << endl;
 		if (obj->get_flag(Obj_flags::asleep)) {
@@ -2351,20 +2215,16 @@ void Game_window::show_items(
 	} else {    // Obj==0
 		const ShapeID id = get_flat(x, y);
 		shnum            = id.get_shapenum();
-		cout << "Clicked on flat shape " << shnum << ':' << id.get_framenum()
-			 << endl;
+		cout << "Clicked on flat shape " << shnum << ':' << id.get_framenum() << endl;
 
 #	ifdef CHUNK_OBJ_DUMP
-		Map_chunk* chunk = map->get_chunk_safely(
-				x / c_tiles_per_chunk, y / c_tiles_per_chunk);
+		Map_chunk* chunk = map->get_chunk_safely(x / c_tiles_per_chunk, y / c_tiles_per_chunk);
 		if (chunk) {
 			Object_iterator it(chunk->get_objects());
 			Game_object*    each;
 			cout << "Chunk Contents: " << endl;
 			while ((each = it.get_next()) != nullptr) {
-				cout << "    " << each->get_name() << ":"
-					 << each->get_shapenum() << ":" << each->get_framenum()
-					 << endl;
+				cout << "    " << each->get_name() << ":" << each->get_shapenum() << ":" << each->get_framenum() << endl;
 			}
 		}
 #	endif
@@ -2411,8 +2271,7 @@ void Game_window::paused_combat_select(
 	}
 	Game_object* obj = find_object(x, y);
 	Actor*       npc = obj ? obj->as_actor() : nullptr;
-	if (!npc || !npc->is_in_party() || npc->get_flag(Obj_flags::asleep)
-		|| npc->is_dead() || npc->get_flag(Obj_flags::paralyzed)
+	if (!npc || !npc->is_in_party() || npc->get_flag(Obj_flags::asleep) || npc->is_dead() || npc->get_flag(Obj_flags::paralyzed)
 		|| !npc->can_act_charmed()) {
 		return;    // Want an active party member.
 	}
@@ -2431,9 +2290,7 @@ void Game_window::paused_combat_select(
 		// Needs work if lift > 0.
 		const int        lift       = npc->get_lift();
 		const int        liftpixels = 4 * lift;
-		const Tile_coord dest(
-				scrolltx + (x + liftpixels) / c_tilesize,
-				scrollty + (y + liftpixels) / c_tilesize, lift);
+		const Tile_coord dest(scrolltx + (x + liftpixels) / c_tilesize, scrollty + (y + liftpixels) / c_tilesize, lift);
 		// Aim within 1 tile.
 		if (!npc->walk_path_to_tile(dest, std_delay, 0, 1)) {
 			Mouse::mouse()->flash_shape(Mouse::blocked);
@@ -2498,8 +2355,7 @@ void Game_window::double_clicked(
 	// If gump manager didn't handle it, we search the world for an object
 	if (!gump) {
 		obj = find_object(x, y);
-		if (!avatar_can_act && obj && obj->as_actor()
-			&& obj->as_actor() == main_actor->as_actor()) {
+		if (!avatar_can_act && obj && obj->as_actor() && obj->as_actor() == main_actor->as_actor()) {
 			ActionFileGump(nullptr);
 			return;
 		}
@@ -2515,8 +2371,7 @@ void Game_window::double_clicked(
 		return;    // Nothing found or avatar disabled.
 	}
 	if (combat && !gump &&    // In combat?
-		!Combat::is_paused() && main_actor_can_act_charmed()
-		&& (!gump_man->gump_mode() || gump_man->gumps_dont_pause_game())) {
+		!Combat::is_paused() && main_actor_can_act_charmed() && (!gump_man->gump_mode() || gump_man->gumps_dont_pause_game())) {
 		Actor*                        npc  = obj->as_actor();
 		const Shape_info&             info = obj->get_info();
 		const Shape_info::Shape_class cls  = info.get_shape_class();
@@ -2594,8 +2449,7 @@ void Game_window::schedule_npcs(
 		}
 		// Don't want companions leaving.
 		if (npc->get_schedule_type() != Schedule::wait
-			&& (npc->get_schedule_type() != Schedule::combat
-				|| npc->get_target() == nullptr)) {
+			&& (npc->get_schedule_type() != Schedule::combat || npc->get_target() == nullptr)) {
 			npc->update_schedule(hour / 3, hour % 3 == 0 ? -1 : 0);
 		}
 	}
@@ -2668,18 +2522,15 @@ Actor* Game_window::find_witness(
 		// Witnesses must either match desired alignment or they must be
 		// local guards and the alignment must be neutral. This makes guards
 		// assist neutral and chaotic NPCs.
-		if (npc->get_effective_alignment() != align
-			|| (npc->get_shapenum() == gshape && align != Actor::neutral)) {
+		if (npc->get_effective_alignment() != align || (npc->get_shapenum() == gshape && align != Actor::neutral)) {
 			continue;
 		}
 		const int dist = npc->distance(main_actor);
-		if (dist >= closest_witness_dist
-			|| !Fast_pathfinder_client::is_grabable(npc, main_actor)) {
+		if (dist >= closest_witness_dist || !Fast_pathfinder_client::is_grabable(npc, main_actor)) {
 			continue;
 		}
 		// Looking toward Avatar?
-		auto sched = static_cast<Schedule::Schedule_types>(
-				npc->get_schedule_type());
+		auto      sched   = static_cast<Schedule::Schedule_types>(npc->get_schedule_type());
 		const int dir     = npc->get_direction(main_actor);
 		const int facing  = npc->get_dir_facing();
 		const int dirdiff = (dir - facing + 8) % 8;
@@ -2733,8 +2584,7 @@ void Game_window::theft() {
 	// Face avatar.
 	witness->change_frame(witness->get_dir_framenum(dir, Actor::standing));
 	// If not in combat, change to hound schedule.
-	auto sched = static_cast<Schedule::Schedule_types>(
-			witness->get_schedule_type());
+	auto sched = static_cast<Schedule::Schedule_types>(witness->get_schedule_type());
 	if (sched != Schedule::combat && sched != Schedule::hound) {
 		witness->set_schedule_type(Schedule::hound);
 	}
@@ -2765,8 +2615,7 @@ void Game_window::call_guards(
 		return;
 	}
 	const int gshape = get_guard_shape();
-	const int align
-			= witness ? witness->get_effective_alignment() : Actor::neutral;
+	const int align  = witness ? witness->get_effective_alignment() : Actor::neutral;
 	if (witness || (witness = find_witness(closest, align)) != nullptr) {
 		if (witness->is_goblin()) {
 			if (gshape < 0) {
@@ -2791,14 +2640,12 @@ void Game_window::call_guards(
 		return;
 	}
 
-	const Tile_coord dest
-			= Map_chunk::find_spot(main_actor->get_tile(), 5, gshape, 0, 1);
+	const Tile_coord dest = Map_chunk::find_spot(main_actor->get_tile(), 5, gshape, 0, 1);
 	if (dest.tx != -1) {
 		// Show guard running up.
 		// Create it off-screen.
 		const int        numguards = 1 + rand() % 3;
-		const Tile_coord offscreen(
-				main_actor->get_tile() + Tile_coord(128, 128, 0));
+		const Tile_coord offscreen(main_actor->get_tile() + Tile_coord(128, 128, 0));
 		// Start in combat if avatar is fighting.
 		// FIXME: Disabled for now, as causes guards to attack
 		// avatar if you break glass, when they should arrest
@@ -2807,17 +2654,14 @@ void Game_window::call_guards(
 											  :*/
 				Schedule::arrest_avatar;
 		for (int i = 0; i < numguards; i++) {
-			const Game_object_shared new_guard = Monster_actor::create(
-					gshape, offscreen, sched, Actor::chaotic);
-			auto* guard = static_cast<Monster_actor*>(new_guard.get());
+			const Game_object_shared new_guard = Monster_actor::create(gshape, offscreen, sched, Actor::chaotic);
+			auto*                    guard     = static_cast<Monster_actor*>(new_guard.get());
 			add_nearby_npc(guard);
 			guard->approach_another(main_actor);
 		}
 		// Guaranteed way to do it.
 		MyMidiPlayer* player = Audio::get_ptr()->get_midi();
-		if (player
-			&& !Background_noise::is_combat_music(
-					player->get_current_track())) {
+		if (player && !Background_noise::is_combat_music(player->get_current_track())) {
 			Audio::get_ptr()->start_music(Audio::game_music(10), true);
 		}
 	}
@@ -2840,8 +2684,7 @@ void Game_window::stop_arresting() {
 	Actor_vector nearby;    // See if someone is nearby.
 	main_actor->find_nearby_actors(nearby, gshape, 20, 0x28);
 	for (auto& npc : nearby) {
-		if (!npc->is_in_party()
-			&& npc->get_schedule_type() == Schedule::arrest_avatar) {
+		if (!npc->is_in_party() && npc->get_schedule_type() == Schedule::arrest_avatar) {
 			npc->set_schedule_type(Schedule::wander);
 			// Prevent guard from becoming hostile.
 			npc->set_alignment(Actor::neutral);
@@ -2864,8 +2707,7 @@ void Game_window::attack_avatar(
 		while (create_guards--) {
 			// Create it off-screen.
 			const Game_object_shared new_guard = Monster_actor::create(
-					gshape, main_actor->get_tile() + Tile_coord(128, 128, 0),
-					Schedule::combat, Actor::chaotic);
+					gshape, main_actor->get_tile() + Tile_coord(128, 128, 0), Schedule::combat, Actor::chaotic);
 			auto* guard = static_cast<Monster_actor*>(new_guard.get());
 			add_nearby_npc(guard);
 			guard->set_target(main_actor, true);
@@ -2879,9 +2721,7 @@ void Game_window::attack_avatar(
 	main_actor->find_nearby_actors(nearby, c_any_shapenum, 20, 0x28);
 	for (auto& npc : nearby) {
 		if (npc->can_act() && !npc->is_in_party() && npc->is_sentient()
-			&& ((npc->get_shapenum() == gshape && !in_dungeon)
-				|| align == npc->get_effective_alignment())
-			&&
+			&& ((npc->get_shapenum() == gshape && !in_dungeon) || align == npc->get_effective_alignment()) &&
 			// Only if can get there.
 			Fast_pathfinder_client::is_grabable(npc, main_actor)) {
 			npc->set_target(main_actor, true);
@@ -2892,8 +2732,7 @@ void Game_window::attack_avatar(
 	}
 	// Guaranteed way to do it.
 	MyMidiPlayer* player = Audio::get_ptr()->get_midi();
-	if (player
-		&& !Background_noise::is_combat_music(player->get_current_track())) {
+	if (player && !Background_noise::is_combat_music(player->get_current_track())) {
 		Audio::get_ptr()->start_music(Audio::game_music(10), true);
 	}
 }
@@ -2971,8 +2810,7 @@ void Game_window::setup_game(bool map_editing) {
 		try {
 			Notebook_gump::read_auto_text_file(autonotesfilename.c_str());
 		} catch (file_open_exception&) {
-			cerr << "Autonotes file '" << autonotesfilename
-				 << "' not found, falling back to default autonotes." << endl;
+			cerr << "Autonotes file '" << autonotesfilename << "' not found, falling back to default autonotes." << endl;
 			Notebook_gump::read_auto_text();
 		}
 	}
@@ -3038,13 +2876,9 @@ void Game_window::setup_game(bool map_editing) {
 	}
 	// During the first scene do not show the UI elements,
 	// unless the Avatar is free to move (possibly in mods).
-	if ((GAME_BG
-		 && !usecode->get_global_flag_bool(Usecode_machine::did_first_scene))
-		|| (GAME_SI
-			&& !usecode->get_global_flag_bool(
-					Usecode_machine::si_did_first_scene))
-		|| (main_actor_dont_move() && !main_actor_can_act()
-			&& !main_actor_can_act_charmed())) {
+	if ((GAME_BG && !usecode->get_global_flag_bool(Usecode_machine::did_first_scene))
+		|| (GAME_SI && !usecode->get_global_flag_bool(Usecode_machine::si_did_first_scene))
+		|| (main_actor_dont_move() && !main_actor_can_act() && !main_actor_can_act_charmed())) {
 		if (touchui != nullptr) {
 			touchui->hideGameControls();
 		}
@@ -3101,9 +2935,7 @@ void Game_window::emulate_cache(Map_chunk* olist, Map_chunk* nlist) {
 	Game_map* omap = olist->get_map();
 	Game_map* nmap = nlist->get_map();
 	// Cancel scripts 4 chunks from this.
-	Usecode_script::purge(
-			Tile_coord(newx * c_tiles_per_chunk, newy * c_tiles_per_chunk, 0),
-			4 * c_tiles_per_chunk);
+	Usecode_script::purge(Tile_coord(newx * c_tiles_per_chunk, newy * c_tiles_per_chunk, 0), 4 * c_tiles_per_chunk);
 	int nearby[5][5];    // Chunks within 3.
 	int x;
 	int y;
@@ -3152,9 +2984,7 @@ void Game_window::emulate_cache(Map_chunk* olist, Map_chunk* nlist) {
 			if (nearby[x][y] != 0) {
 				continue;
 			}
-			Map_chunk* list = omap->get_chunk_safely(
-					(old_minx + x) % c_num_chunks,
-					(old_miny + y) % c_num_chunks);
+			Map_chunk* list = omap->get_chunk_safely((old_minx + x) % c_num_chunks, (old_miny + y) % c_num_chunks);
 			if (!list) {
 				continue;
 			}
@@ -3172,8 +3002,7 @@ void Game_window::emulate_cache(Map_chunk* olist, Map_chunk* nlist) {
 	for (auto* remove : removes) {
 #ifdef DEBUG
 		const Tile_coord t = remove->get_tile();
-		cout << "Culling object: " << remove->get_name() << '(' << remove
-			 << ")@" << t.tx << "," << t.ty << "," << t.tz << endl;
+		cout << "Culling object: " << remove->get_name() << '(' << remove << ")@" << t.tx << "," << t.ty << "," << t.tz << endl;
 #endif
 		remove->delete_contents();    // first delete item's contents
 		remove->remove_this(nullptr);
@@ -3204,10 +3033,8 @@ bool Game_window::emulate_is_move_allowed(int tx, int ty) {
 	}
 
 	// Is it within 1 superchunk range?
-	return (!difx || difx == 1 || difx == c_num_schunks
-			|| difx == c_num_schunks - 1)
-		   && (!dify || dify == 1 || dify == c_num_schunks
-			   || dify == c_num_schunks - 1);
+	return (!difx || difx == 1 || difx == c_num_schunks || difx == c_num_schunks - 1)
+		   && (!dify || dify == 1 || dify == c_num_schunks || dify == c_num_schunks - 1);
 }
 
 // create mini-screenshot (96x60) for use in savegames
@@ -3218,8 +3045,7 @@ unique_ptr<Shape_file> Game_window::create_mini_screenshot() {
 	unique_ptr<unsigned char[]> img(win->mini_screenshot());
 	unique_ptr<Shape_file>      sh;
 	if (img) {
-		sh = make_unique<Shape_file>(
-				make_unique<Shape_frame>(std::move(img), 96, 60, 0, 0, true));
+		sh = make_unique<Shape_file>(make_unique<Shape_frame>(std::move(img), 96, 60, 0, 0, true));
 	}
 
 	set_all_dirty();
@@ -3247,8 +3073,7 @@ void Game_window::setup_load_palette() {
 	}
 
 	// Put up the plasma to the screen
-	plasma(win->get_full_width(), win->get_full_height(), win->get_start_x(),
-		   win->get_start_y(), plasma_start_color,
+	plasma(win->get_full_width(), win->get_full_height(), win->get_start_x(), win->get_start_y(), plasma_start_color,
 		   plasma_start_color + plasma_cycle_range - 1);
 
 	// Load the palette
@@ -3295,11 +3120,9 @@ bool Game_window::is_hostile_nearby() const {
 
 	bool nearby_hostile = false;
 	for (auto& actor : nearby) {
-		if (!actor->is_dead() && actor->get_schedule()
-			&& actor->get_effective_alignment() >= Actor::evil
+		if (!actor->is_dead() && actor->get_schedule() && actor->get_effective_alignment() >= Actor::evil
 			&& ((actor->get_schedule_type() == Schedule::combat
-				 && static_cast<Combat_schedule*>(actor->get_schedule())
-							->has_started_battle())
+				 && static_cast<Combat_schedule*>(actor->get_schedule())->has_started_battle())
 				|| actor->get_schedule_type() == Schedule::arrest_avatar)) {
 			/* TODO- I think invisibles still trigger the
 			 * slowdown, verify this. */
@@ -3312,8 +3135,7 @@ bool Game_window::is_hostile_nearby() const {
 
 bool Game_window::failed_copy_protection() {
 	const bool confused    = main_actor->get_flag(Obj_flags::confused);
-	const bool failureFlag = usecode->get_global_flag_bool(
-			Usecode_machine::failed_copy_protect);
+	const bool failureFlag = usecode->get_global_flag_bool(Usecode_machine::failed_copy_protect);
 	return (GAME_SI && confused) || (GAME_BG && failureFlag);
 }
 

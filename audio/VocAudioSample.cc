@@ -35,9 +35,7 @@ using std::max;
 
 namespace Pentagram {
 
-	VocAudioSample::VocAudioSample(
-			std::unique_ptr<uint8[]> buffer_, uint32 size_)
-			: AudioSample(std::move(buffer_), size_) {
+	VocAudioSample::VocAudioSample(std::unique_ptr<uint8[]> buffer_, uint32 size_) : AudioSample(std::move(buffer_), size_) {
 		bool last_chunk = false;
 
 		size_t data_offset     = 0x1a;
@@ -188,8 +186,7 @@ namespace Pentagram {
 	// Code grabbed from VDMS
 	//
 
-	inline int VocAudioSample::decode_ADPCM_4_sample(
-			uint8 sample, int& reference, int& scale) {
+	inline int VocAudioSample::decode_ADPCM_4_sample(uint8 sample, int& reference, int& scale) {
 		static const int scaleMap[8] = {-2, -1, 0, 0, 1, 1, 1, 1};
 
 		if (sample & 0x08) {
@@ -215,15 +212,13 @@ namespace Pentagram {
 		if (reference < 0) {
 			reference = inBuf[0] & 0xff;    // use the first byte in the buffer
 											// as the reference byte
-			bufSize--;    // remember to skip the reference byte
+			bufSize--;                      // remember to skip the reference byte
 			inBuf++;
 		}
 
 		for (int i = 0; i < bufSize; i++) {
-			outBuf[i * 2 + 0]
-					= decode_ADPCM_4_sample(inBuf[i] >> 4, reference, scale);
-			outBuf[i * 2 + 1]
-					= decode_ADPCM_4_sample(inBuf[i] >> 0, reference, scale);
+			outBuf[i * 2 + 0] = decode_ADPCM_4_sample(inBuf[i] >> 4, reference, scale);
+			outBuf[i * 2 + 1] = decode_ADPCM_4_sample(inBuf[i] >> 0, reference, scale);
 		}
 	}
 
@@ -294,8 +289,7 @@ namespace Pentagram {
 		return true;
 	}
 
-	uint32 VocAudioSample::decompressFrame(
-			void* DecompData, void* samples) const {
+	uint32 VocAudioSample::decompressFrame(void* DecompData, void* samples) const {
 		auto* decomp = static_cast<VocDecompData*>(DecompData);
 
 		// At end of stream??
@@ -333,8 +327,7 @@ namespace Pentagram {
 				bytes_used++;
 			}
 			decode_ADPCM_4(
-					buffer.get() + decomp->pos, bytes_used,
-					static_cast<uint8*>(samples), decomp->adpcm_reference,
+					buffer.get() + decomp->pos, bytes_used, static_cast<uint8*>(samples), decomp->adpcm_reference,
 					decomp->adpcm_scale);
 		} else {
 			bytes_used = num_samples;

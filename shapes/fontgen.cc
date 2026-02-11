@@ -106,9 +106,8 @@ static bool Gen_font_shape_win32(
 		// Get each glyph.
 		GLYPHMETRICS metrics;
 
-		const unsigned int buffsize = GetGlyphOutline(
-				dc, ii, GGO_BITMAP, &metrics, 0, nullptr, &matrix);
-		int offset = 0;    // Starting row, col.
+		const unsigned int buffsize = GetGlyphOutline(dc, ii, GGO_BITMAP, &metrics, 0, nullptr, &matrix);
+		int                offset   = 0;    // Starting row, col.
 
 		const wchar_t chr = ii;
 		if (buffsize == GDI_ERROR || buffsize == 0) {
@@ -127,20 +126,13 @@ static bool Gen_font_shape_win32(
 			memset(pixels, bg, size.cy * size.cx);
 
 			// Not sure about dims here+++++
-			shape->set_frame(
-					make_unique<Shape_frame>(
-							pixels, size.cx, size.cy, offset, offset, true),
-					chr);
+			shape->set_frame(make_unique<Shape_frame>(pixels, size.cx, size.cy, offset, offset, true), chr);
 			delete[] pixels;
 		} else {
 			auto* buffer = new uint32[buffsize];
-			if (GetGlyphOutline(
-						dc, chr, GGO_BITMAP, &metrics, buffsize, buffer,
-						&matrix)
-				== GDI_ERROR) {
+			if (GetGlyphOutline(dc, chr, GGO_BITMAP, &metrics, buffsize, buffer, &matrix) == GDI_ERROR) {
 				delete[] buffer;
-				shape->set_frame(
-						make_unique<Shape_frame>(&bg, 1, 1, 0, 0, true), chr);
+				shape->set_frame(make_unique<Shape_frame>(&bg, 1, 1, 0, 0, true), chr);
 				continue;
 			}
 			int sw = metrics.gmBlackBoxX;
@@ -178,14 +170,12 @@ static bool Gen_font_shape_win32(
 			delete[] buffer;
 
 			if (shadow >= 0) {
-				Gen_shadow(
-						pixels, sw, sh, fg, static_cast<unsigned char>(shadow));
+				Gen_shadow(pixels, sw, sh, fg, static_cast<unsigned char>(shadow));
 			}
 			// Not sure about dims here+++++
 			shape->set_frame(
 					make_unique<Shape_frame>(
-							pixels, sw, sh, offset - metrics.gmptGlyphOrigin.x,
-							offset + metrics.gmptGlyphOrigin.y, true),
+							pixels, sw, sh, offset - metrics.gmptGlyphOrigin.x, offset + metrics.gmptGlyphOrigin.y, true),
 					chr);
 			delete[] pixels;
 		}
@@ -208,14 +198,10 @@ int CALLBACK EnumFontFamProc(
 	if (!lParam) {
 		return 0;
 	}
-	if (!_strcmpi(
-				reinterpret_cast<const char*>(lParam),
-				reinterpret_cast<const char*>(lpelf->elfFullName))) {
+	if (!_strcmpi(reinterpret_cast<const char*>(lParam), reinterpret_cast<const char*>(lpelf->elfFullName))) {
 		return 0;
 	}
-	if (!_strcmpi(
-				reinterpret_cast<const char*>(lParam),
-				reinterpret_cast<const char*>(lpelf->elfStyle))) {
+	if (!_strcmpi(reinterpret_cast<const char*>(lParam), reinterpret_cast<const char*>(lpelf->elfStyle))) {
 		return 0;
 	}
 	return 1;
@@ -253,25 +239,20 @@ static bool Gen_font_shape_win32(
 	if (font == nullptr && stylename) {
 		snprintf(logfont.lfFaceName, LF_FACESIZE, "%s %s", famname, stylename);
 
-		if (!EnumFontFamilies(
-					dc, logfont.lfFaceName,
-					reinterpret_cast<FONTENUMPROC>(&EnumFontFamProc), 0)) {
+		if (!EnumFontFamilies(dc, logfont.lfFaceName, reinterpret_cast<FONTENUMPROC>(&EnumFontFamProc), 0)) {
 			font = CreateFontIndirect(&logfont);
 		}
 	}
 	if (font == nullptr && stylename) {
 		snprintf(logfont.lfFaceName, LF_FACESIZE, "%s%s", famname, stylename);
-		if (!EnumFontFamilies(
-					dc, logfont.lfFaceName,
-					reinterpret_cast<FONTENUMPROC>(&EnumFontFamProc), 0)) {
+		if (!EnumFontFamilies(dc, logfont.lfFaceName, reinterpret_cast<FONTENUMPROC>(&EnumFontFamProc), 0)) {
 			font = CreateFontIndirect(&logfont);
 		}
 	}
 	if (font == nullptr) {
 		snprintf(logfont.lfFaceName, LF_FACESIZE, "%s", famname);
 		if (!EnumFontFamilies(
-					dc, logfont.lfFaceName,
-					reinterpret_cast<FONTENUMPROC>(&EnumFontFamProc),
+					dc, logfont.lfFaceName, reinterpret_cast<FONTENUMPROC>(&EnumFontFamProc),
 					reinterpret_cast<LPARAM>(stylename))) {
 			font = CreateFontIndirect(&logfont);
 		}
@@ -287,8 +268,7 @@ static bool Gen_font_shape_win32(
 	SelectObject(dc, bmp);
 	SelectObject(dc, font);
 
-	const bool ret = Gen_font_shape_win32(
-			dc, font, shape, nframes, pixels_ht, fg, bg, shadow);
+	const bool ret = Gen_font_shape_win32(dc, font, shape, nframes, pixels_ht, fg, bg, shadow);
 	DeleteObject(bmp);
 	DeleteObject(font);
 	DeleteDC(dc);
@@ -337,8 +317,7 @@ bool Gen_font_shape(
 
 		// Try to get windows to load it for us
 #	if defined(_WIN32) && defined(USE_WIN32_FONTGEN)
-		return Gen_font_shape_win32(
-				shape, fontfile, nullptr, nframes, pixels_ht, fg, bg, shadow);
+		return Gen_font_shape_win32(shape, fontfile, nullptr, nframes, pixels_ht, fg, bg, shadow);
 #	else
 		return false;
 #	endif
@@ -347,22 +326,16 @@ bool Gen_font_shape(
 #	if defined(_WIN32) && defined(USE_WIN32_FONTGEN)
 	static HANDLE(WINAPI * AddFontResourceExA)(LPCSTR, DWORD, PVOID);
 	if (AddFontResourceExA == nullptr) {
-		static_assert(
-				sizeof(HANDLE) == sizeof(FARPROC),
-				"sizeof(FARPROC) is not equal to sizeof(HANDLE)!");
-		const FARPROC handle
-				= GetProcAddress(LoadLibrary("GDI32"), "AddFontResourceExA");
+		static_assert(sizeof(HANDLE) == sizeof(FARPROC), "sizeof(FARPROC) is not equal to sizeof(HANDLE)!");
+		const FARPROC handle = GetProcAddress(LoadLibrary("GDI32"), "AddFontResourceExA");
 		std::memcpy(&AddFontResourceExA, &handle, sizeof(HANDLE));
 	}
-	if (AddFontResourceExA != nullptr
-		&& AddFontResourceExA(fontfile, FR_PRIVATE, nullptr) != nullptr) {
+	if (AddFontResourceExA != nullptr && AddFontResourceExA(fontfile, FR_PRIVATE, nullptr) != nullptr) {
 		// if (face->family_name)
 		// MessageBox(nullptr,face->family_name,"face->family_name",MB_OK); if
 		// (face->style_name)
 		// MessageBox(nullptr,face->style_name,"face->style_name",MB_OK);
-		if (Gen_font_shape_win32(
-					shape, face->family_name, face->style_name, nframes,
-					pixels_ht, fg, bg, shadow)) {
+		if (Gen_font_shape_win32(shape, face->family_name, face->style_name, nframes, pixels_ht, fg, bg, shadow)) {
 			FT_Done_FreeType(library);
 			return true;
 		}
@@ -381,18 +354,16 @@ bool Gen_font_shape(
 		error = FT_Load_Char(face, chr, FT_LOAD_RENDER | FT_LOAD_MONOCHROME);
 		if (error) {
 			//+++++Do we need to store an empty frame?
-			shape->set_frame(
-					make_unique<Shape_frame>(&bg, 1, 1, 0, 0, true), chr);
+			shape->set_frame(make_unique<Shape_frame>(&bg, 1, 1, 0, 0, true), chr);
 			continue;
 		}
 		const int w      = glyph->bitmap.width;
 		const int h      = glyph->bitmap.rows;
 		int       sw     = w;
-		int       sh     = h;    // Shape width/height.
-		int       offset = 0;    // Starting row, col.
-		if (!sw) {               // 0 width (like for a space)?
-			sw = static_cast<int>(glyph->metrics.horiAdvance)
-				 / 64;    // Guessin...
+		int       sh     = h;                                          // Shape width/height.
+		int       offset = 0;                                          // Starting row, col.
+		if (!sw) {                                                     // 0 width (like for a space)?
+			sw = static_cast<int>(glyph->metrics.horiAdvance) / 64;    // Guessin...
 		}
 		if (!sh) {
 			sh = static_cast<int>(glyph->metrics.vertAdvance) / 64;
@@ -423,10 +394,7 @@ bool Gen_font_shape(
 		}
 		// Not sure about dims here+++++
 		shape->set_frame(
-				make_unique<Shape_frame>(
-						pixels, sw, sh, glyph->bitmap_left + offset,
-						glyph->bitmap_top + offset, true),
-				chr);
+				make_unique<Shape_frame>(pixels, sw, sh, glyph->bitmap_left + offset, glyph->bitmap_top + offset, true), chr);
 		delete[] pixels;
 	}
 	FT_Done_FreeType(library);

@@ -65,10 +65,7 @@ Game_object* is_party_item(
 }
 
 void ShortcutBar_gump::check_for_updates(int shnum) {
-	if (shnum == 761
-		|| (GAME_SI
-			&& (shnum == 485
-				|| shnum == 555))) {    // spellbook, keyring, jawbone
+	if (shnum == 761 || (GAME_SI && (shnum == 485 || shnum == 555))) {    // spellbook, keyring, jawbone
 		has_changed = true;
 	}
 }
@@ -85,8 +82,7 @@ void ShortcutBar_gump::update_gump() {
 // Hide the gump without destroying it
 void ShortcutBar_gump::HideGump() {
 	if (g_shortcutBar) {
-		gumpman->remove_gump(
-				g_shortcutBar);
+		gumpman->remove_gump(g_shortcutBar);
 	}
 }
 
@@ -130,18 +126,15 @@ void ShortcutBar_gump::createButtons() {
 	memset(buttonItems, 0, sizeof(buttonItems));
 	const bool trlucent = gwin->get_shortcutbar_type() == 1 && starty >= 0;
 	// disk
-	buttonItems[0].shapeId = new ShapeID(
-			EXULT_FLX_SB_DISK_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
-	buttonItems[0].name = "disk";
-	buttonItems[0].type = SB_ITEM_DISK;
+	buttonItems[0].shapeId = new ShapeID(EXULT_FLX_SB_DISK_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
+	buttonItems[0].name    = "disk";
+	buttonItems[0].type    = SB_ITEM_DISK;
 
 	// peace/combat
 	if (gwin->in_combat()) {
-		buttonItems[1].shapeId = new ShapeID(
-				EXULT_FLX_SB_COMBAT_SHP, trlucent ? 3 : 2, SF_EXULT_FLX);
+		buttonItems[1].shapeId = new ShapeID(EXULT_FLX_SB_COMBAT_SHP, trlucent ? 3 : 2, SF_EXULT_FLX);
 	} else {
-		buttonItems[1].shapeId = new ShapeID(
-				EXULT_FLX_SB_COMBAT_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
+		buttonItems[1].shapeId = new ShapeID(EXULT_FLX_SB_COMBAT_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
 	}
 	buttonItems[1].name = "toggle combat";
 	buttonItems[1].type = SB_ITEM_TOGGLE_COMBAT;
@@ -149,11 +142,9 @@ void ShortcutBar_gump::createButtons() {
 	// map
 	if (trlucent) {
 		if (GAME_SI) {
-			buttonItems[2].shapeId
-					= new ShapeID(EXULT_FLX_SB_MAPS_SHP, 1, SF_EXULT_FLX);
+			buttonItems[2].shapeId = new ShapeID(EXULT_FLX_SB_MAPS_SHP, 1, SF_EXULT_FLX);
 		} else {
-			buttonItems[2].shapeId
-					= new ShapeID(EXULT_FLX_SB_MAPS_SHP, 0, SF_EXULT_FLX);
+			buttonItems[2].shapeId = new ShapeID(EXULT_FLX_SB_MAPS_SHP, 0, SF_EXULT_FLX);
 		}
 	} else {
 		buttonItems[2].shapeId = new ShapeID(178, 0, SF_SHAPES_VGA);
@@ -165,36 +156,30 @@ void ShortcutBar_gump::createButtons() {
 	if (GAME_SI) {
 		if (is_party_item(761)) {
 			if (trlucent) {
-				buttonItems[3].shapeId = new ShapeID(
-						EXULT_FLX_SB_SPELLBOOK_SHP, 2, SF_EXULT_FLX);
+				buttonItems[3].shapeId = new ShapeID(EXULT_FLX_SB_SPELLBOOK_SHP, 2, SF_EXULT_FLX);
 			} else {
 				buttonItems[3].shapeId = new ShapeID(761, 0, SF_SHAPES_VGA);
 			}
 		} else {
 			if (gwin->sb_hide_missing_items()) {
-				buttonItems[3].shapeId = new ShapeID(
-						EXULT_FLX_TRANSPARENTMENU_SHP, 0, SF_EXULT_FLX);
+				buttonItems[3].shapeId = new ShapeID(EXULT_FLX_TRANSPARENTMENU_SHP, 0, SF_EXULT_FLX);
 			} else {
-				buttonItems[3].shapeId = new ShapeID(
-						EXULT_FLX_SB_SPELLBOOK_SHP, 3, SF_EXULT_FLX);
+				buttonItems[3].shapeId     = new ShapeID(EXULT_FLX_SB_SPELLBOOK_SHP, 3, SF_EXULT_FLX);
 				buttonItems[3].translucent = true;
 			}
 		}
 	} else {
 		if (is_party_item(761)) {
 			if (trlucent) {
-				buttonItems[3].shapeId = new ShapeID(
-						EXULT_FLX_SB_SPELLBOOK_SHP, 0, SF_EXULT_FLX);
+				buttonItems[3].shapeId = new ShapeID(EXULT_FLX_SB_SPELLBOOK_SHP, 0, SF_EXULT_FLX);
 			} else {
 				buttonItems[3].shapeId = new ShapeID(761, 0, SF_SHAPES_VGA);
 			}
 		} else {
 			if (gwin->sb_hide_missing_items()) {
-				buttonItems[3].shapeId = new ShapeID(
-						EXULT_FLX_TRANSPARENTMENU_SHP, 0, SF_EXULT_FLX);
+				buttonItems[3].shapeId = new ShapeID(EXULT_FLX_TRANSPARENTMENU_SHP, 0, SF_EXULT_FLX);
 			} else {
-				buttonItems[3].shapeId = new ShapeID(
-						EXULT_FLX_SB_SPELLBOOK_SHP, 1, SF_EXULT_FLX);
+				buttonItems[3].shapeId     = new ShapeID(EXULT_FLX_SB_SPELLBOOK_SHP, 1, SF_EXULT_FLX);
 				buttonItems[3].translucent = true;
 			}
 		}
@@ -204,8 +189,7 @@ void ShortcutBar_gump::createButtons() {
 
 	// backpack
 	if (trlucent) {
-		buttonItems[4].shapeId
-				= new ShapeID(EXULT_FLX_SB_BACKPACK_SHP, 0, SF_EXULT_FLX);
+		buttonItems[4].shapeId = new ShapeID(EXULT_FLX_SB_BACKPACK_SHP, 0, SF_EXULT_FLX);
 	} else {
 		buttonItems[4].shapeId = new ShapeID(801, 0, SF_SHAPES_VGA);
 	}
@@ -214,14 +198,12 @@ void ShortcutBar_gump::createButtons() {
 
 	// key/keyring
 	if (GAME_SI && is_party_item(485)) {
-		buttonItems[5].shapeId = new ShapeID(
-				EXULT_FLX_SB_KEYRING_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
-		buttonItems[5].name = "keyring";
-		buttonItems[5].type = SB_ITEM_KEYRING;
+		buttonItems[5].shapeId = new ShapeID(EXULT_FLX_SB_KEYRING_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
+		buttonItems[5].name    = "keyring";
+		buttonItems[5].type    = SB_ITEM_KEYRING;
 	} else {
 		if (trlucent) {
-			buttonItems[5].shapeId
-					= new ShapeID(EXULT_FLX_SB_KEY_SHP, 0, SF_EXULT_FLX);
+			buttonItems[5].shapeId = new ShapeID(EXULT_FLX_SB_KEY_SHP, 0, SF_EXULT_FLX);
 		} else {
 			buttonItems[5].shapeId = new ShapeID(641, 28, SF_SHAPES_VGA);
 		}
@@ -231,8 +213,7 @@ void ShortcutBar_gump::createButtons() {
 
 	// notebook
 	if (trlucent) {
-		buttonItems[6].shapeId
-				= new ShapeID(EXULT_FLX_SB_NOTEBOOK_SHP, 0, SF_EXULT_FLX);
+		buttonItems[6].shapeId = new ShapeID(EXULT_FLX_SB_NOTEBOOK_SHP, 0, SF_EXULT_FLX);
 	} else {
 		buttonItems[6].shapeId = new ShapeID(642, 7, SF_SHAPES_VGA);
 	}
@@ -240,15 +221,13 @@ void ShortcutBar_gump::createButtons() {
 	buttonItems[6].type = SB_ITEM_NOTEBOOK;
 
 	// target
-	buttonItems[7].shapeId = new ShapeID(
-			EXULT_FLX_SB_TARGET_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
-	buttonItems[7].name = "target";
-	buttonItems[7].type = SB_ITEM_TARGET;
+	buttonItems[7].shapeId = new ShapeID(EXULT_FLX_SB_TARGET_SHP, trlucent ? 1 : 0, SF_EXULT_FLX);
+	buttonItems[7].name    = "target";
+	buttonItems[7].type    = SB_ITEM_TARGET;
 
 	// feed
 	if (trlucent) {
-		buttonItems[8].shapeId
-				= new ShapeID(EXULT_FLX_SB_FOOD_SHP, 0, SF_EXULT_FLX);
+		buttonItems[8].shapeId = new ShapeID(EXULT_FLX_SB_FOOD_SHP, 0, SF_EXULT_FLX);
 	} else if (GAME_SI) {
 		buttonItems[8].shapeId = new ShapeID(23, 3, SF_GUMPS_VGA);
 	} else {
@@ -262,19 +241,15 @@ void ShortcutBar_gump::createButtons() {
 		Game_object* jawbone;
 		if ((jawbone = is_party_item(555))) {
 			if (trlucent) {
-				buttonItems[9].shapeId = new ShapeID(
-						EXULT_FLX_SB_JAWBONE_SHP, 0, SF_EXULT_FLX);
+				buttonItems[9].shapeId = new ShapeID(EXULT_FLX_SB_JAWBONE_SHP, 0, SF_EXULT_FLX);
 			} else {
-				buttonItems[9].shapeId = new ShapeID(
-						555, jawbone->get_framenum(), SF_SHAPES_VGA);
+				buttonItems[9].shapeId = new ShapeID(555, jawbone->get_framenum(), SF_SHAPES_VGA);
 			}
 		} else {
 			if (gwin->sb_hide_missing_items()) {
-				buttonItems[9].shapeId = new ShapeID(
-						EXULT_FLX_TRANSPARENTMENU_SHP, 0, SF_EXULT_FLX);
+				buttonItems[9].shapeId = new ShapeID(EXULT_FLX_TRANSPARENTMENU_SHP, 0, SF_EXULT_FLX);
 			} else {
-				buttonItems[9].shapeId = new ShapeID(
-						EXULT_FLX_SB_JAWBONE_SHP, 1, SF_EXULT_FLX);
+				buttonItems[9].shapeId     = new ShapeID(EXULT_FLX_SB_JAWBONE_SHP, 1, SF_EXULT_FLX);
 				buttonItems[9].translucent = true;
 			}
 		}
@@ -289,10 +264,9 @@ void ShortcutBar_gump::createButtons() {
 	const int barItemWidth = (320 / numButtons);
 
 	for (int i = 0; i < numButtons; i++, x += barItemWidth) {
-		Shape_frame* frame = buttonItems[i].shapeId->get_shape();
-		const int    dX
-				= frame->get_xleft() + (barItemWidth - frame->get_width()) / 2;
-		const int dY = frame->get_yabove() + (height - frame->get_height()) / 2;
+		Shape_frame* frame  = buttonItems[i].shapeId->get_shape();
+		const int    dX     = frame->get_xleft() + (barItemWidth - frame->get_width()) / 2;
+		const int    dY     = frame->get_yabove() + (height - frame->get_height()) / 2;
 		buttonItems[i].mx   = x + dX;
 		buttonItems[i].my   = starty + dY;
 		buttonItems[i].rect = TileRect(x, starty, barItemWidth, height);
@@ -324,8 +298,7 @@ void ShortcutBar_gump::deleteButtons() {
  * There must be only one shortcut bar in the game.
  */
 ShortcutBar_gump::ShortcutBar_gump(int placex, int placey)
-		: Gump(nullptr, placex, placey, EXULT_FLX_TRANSPARENTMENU_SHP,
-			   SF_EXULT_FLX) {
+		: Gump(nullptr, placex, placey, EXULT_FLX_TRANSPARENTMENU_SHP, SF_EXULT_FLX) {
 	/*static bool init = false;
 	assert(init == 0); // Protect against re-entry
 	init = true;*/
@@ -365,8 +338,7 @@ void ShortcutBar_gump::paint() {
 		sman->paint_shape(x, y, item.shapeId->get_shape(), item.translucent);
 		// when the bar is on the game screen it may need an outline
 		if (gwin->get_outline_color() < NPIXCOLORS && starty >= 0) {
-			sman->paint_outline(
-					x, y, item.shapeId->get_shape(), gwin->get_outline_color());
+			sman->paint_outline(x, y, item.shapeId->get_shape(), gwin->get_outline_color());
 		}
 	}
 
@@ -377,8 +349,7 @@ int ShortcutBar_gump::handle_event(SDL_Event* event) {
 	Game_window* gwin          = Game_window::get_instance();
 	static bool  handle_events = true;
 	// When the Save/Load menu is open, or the notebook, don't handle events
-	if (gumpman->modal_gump_mode() || gwin->get_usecode()->in_usecode()
-		|| g_waiting_for_click || Notebook_gump::get_instance()) {
+	if (gumpman->modal_gump_mode() || gwin->get_usecode()->in_usecode() || g_waiting_for_click || Notebook_gump::get_instance()) {
 		// do not register a mouse up event on notebook checkmark
 		if (Notebook_gump::get_instance()) {
 			handle_events = false;
@@ -386,21 +357,16 @@ int ShortcutBar_gump::handle_event(SDL_Event* event) {
 		return 0;
 	}
 
-	if ((event->type == SDL_EVENT_MOUSE_BUTTON_DOWN
-		 || event->type == SDL_EVENT_MOUSE_BUTTON_UP)
-		&& handle_events) {
+	if ((event->type == SDL_EVENT_MOUSE_BUTTON_DOWN || event->type == SDL_EVENT_MOUSE_BUTTON_UP) && handle_events) {
 		int x;
 		int y;
-		gwin->get_win()->screen_to_game(
-				event->button.x, event->button.y, gwin->get_fastmouse(), x, y);
+		gwin->get_win()->screen_to_game(event->button.x, event->button.y, gwin->get_fastmouse(), x, y);
 		Gump*        on_gump = gumpman->find_gump(x, y);
 		Gump_button* button;
-		if (x >= startx && x <= (locx + width) && y >= starty
-			&& y <= (starty + height)) {
+		if (x >= startx && x <= (locx + width) && y >= starty && y <= (starty + height)) {
 			// do not register a mouse up event when closing a gump via
 			// checkmark over the bar
-			if (on_gump && (button = on_gump->on_button(x, y))
-				&& button->is_checkmark()) {
+			if (on_gump && (button = on_gump->on_button(x, y)) && button->is_checkmark()) {
 				handle_events = false;
 				return 0;
 			} else if (on_gump) {
@@ -509,8 +475,7 @@ void ShortcutBar_gump::sdl_mouse_up(SDL_Event* event, int mx, int my) {
 }
 
 void ShortcutBar_gump::onItemClicked(int index, bool doubleClicked) {
-	printf("Item %s is %sclicked\n", buttonItems[index].name,
-		   doubleClicked ? "double " : "");
+	printf("Item %s is %sclicked\n", buttonItems[index].name, doubleClicked ? "double " : "");
 
 	switch (buttonItems[index].type) {
 	case SB_ITEM_DISK: {

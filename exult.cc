@@ -165,30 +165,25 @@ int current_scaleval = 1;
 static int  exult_main(const char* runpath);
 static void Init();
 static int  Play();
-static bool Get_click(
-		int& x, int& y, char* chr, bool drag_ok, bool rotate_colors = false);
+static bool Get_click(int& x, int& y, char* chr, bool drag_ok, bool rotate_colors = false);
 static void set_scaleval(int new_scaleval);
 #ifdef USE_EXULTSTUDIO
-static void Move_dragged_shape(
-		int shape, int frame, int x, int y, int prevx, int prevy, bool show);
+static void Move_dragged_shape(int shape, int frame, int x, int y, int prevx, int prevy, bool show);
 static void Move_dragged_combo(
-		int xtiles, int ytiles, int tiles_right, int tiles_below, int x, int y,
-		int prevx, int prevy, bool show);
+		int xtiles, int ytiles, int tiles_right, int tiles_below, int x, int y, int prevx, int prevy, bool show);
 static void Drop_dragged_shape(int shape, int frame, int x, int y);
 static void Drop_dragged_chunk(int chunknum, int x, int y);
 static void Drop_dragged_npc(int npcnum, int x, int y);
 static void Drop_dragged_combo(int cnt, U7_combo_data* combo, int x, int y);
-static void Move_grid(
-		int x, int y, int prevx, int prevy, bool ireg, int xtiles, int ytiles,
-		int tiles_right, int tiles_below);
-static int drag_prevx = -1, drag_prevy = -1;
-static int drag_shfile = -1;
-static int drag_shpnum = -1, drag_shfnum = -1;
-static int drag_cbcnt    = -1;
-static int drag_cbxtiles = -1, drag_cbytiles = -1;
-static int drag_cbrtiles = -1, drag_cbbtiles = -1;
-static int drag_npcnum = -1;
-static int drag_cnknum = -1;
+static void Move_grid(int x, int y, int prevx, int prevy, bool ireg, int xtiles, int ytiles, int tiles_right, int tiles_below);
+static int  drag_prevx = -1, drag_prevy = -1;
+static int  drag_shfile = -1;
+static int  drag_shpnum = -1, drag_shfnum = -1;
+static int  drag_cbcnt    = -1;
+static int  drag_cbxtiles = -1, drag_cbytiles = -1;
+static int  drag_cbrtiles = -1, drag_cbbtiles = -1;
+static int  drag_npcnum = -1;
+static int  drag_cnknum = -1;
 #endif
 static void BuildGameMap(BaseGameInfo* game, int mapnum);
 static void Handle_events();
@@ -216,16 +211,16 @@ static bool   arg_verify_files = false;    // Verify a game's files.
 static string arg_installmod  = {};
 static string arg_installdata = {};
 
-static bool                 dragging = false;    // Object or gump being moved.
-static bool                 dragged  = false;    // Flag for when obj. moved.
+static bool                 dragging      = false;    // Object or gump being moved.
+static bool                 dragged       = false;    // Flag for when obj. moved.
 static bool                 right_on_gump = false;    // Right clicked on gump?
 static int                  show_items_x = 0, show_items_y = 0;
 static unsigned int         show_items_time    = 0;
 static bool                 show_items_clicked = false;
 static int                  left_down_x = 0, left_down_y = 0;
 static int                  joy_aim_x = 0, joy_aim_y = 0;
-Mouse::Avatar_Speed_Factors joy_speed_factor = Mouse::medium_speed_factor;
-static Uint32 last_speed_cursor = 0;    // When we last updated the mouse cursor
+Mouse::Avatar_Speed_Factors joy_speed_factor  = Mouse::medium_speed_factor;
+static Uint32               last_speed_cursor = 0;    // When we last updated the mouse cursor
 #if defined _WIN32
 void do_cleanup_output() {
 	cleanup_output("std");
@@ -252,24 +247,20 @@ int main(int argc, char* argv[]) {
 	// cross-platform support.  Standalone utilities continue to default
 	// to the default std::fstream-based file I/O to avoid taking an SDL
 	// dependency.
-	U7set_istream_factory(
-			[](const char*             s,
-			   std::ios_base::openmode mode) -> std::unique_ptr<std::istream> {
-				auto file = std::make_unique<std::ifstream>(s, mode);
-				if (file->good()) {
-					return file;
-				}
-				return std::make_unique<SdlRwopsIstream>(s, mode);
-			});
-	U7set_ostream_factory(
-			[](const char*             s,
-			   std::ios_base::openmode mode) -> std::unique_ptr<std::ostream> {
-				auto file = std::make_unique<std::ofstream>(s, mode);
-				if (file->good()) {
-					return file;
-				}
-				return std::make_unique<SdlRwopsOstream>(s, mode);
-			});
+	U7set_istream_factory([](const char* s, std::ios_base::openmode mode) -> std::unique_ptr<std::istream> {
+		auto file = std::make_unique<std::ifstream>(s, mode);
+		if (file->good()) {
+			return file;
+		}
+		return std::make_unique<SdlRwopsIstream>(s, mode);
+	});
+	U7set_ostream_factory([](const char* s, std::ios_base::openmode mode) -> std::unique_ptr<std::ostream> {
+		auto file = std::make_unique<std::ofstream>(s, mode);
+		if (file->good()) {
+			return file;
+		}
+		return std::make_unique<SdlRwopsOstream>(s, mode);
+	});
 #ifdef SDL_PLATFORM_IOS
 	const char* launchFlag = iOS_GetLaunchGameFlag();
 
@@ -333,25 +324,20 @@ int main(int argc, char* argv[]) {
 #endif
 
 	if (needhelp) {
-		cerr << "Usage: exult [--help|-h] [-v|--version] [-c configfile]"
-			 << endl
+		cerr << "Usage: exult [--help|-h] [-v|--version] [-c configfile]" << endl
 			 << "             [--bg|--fov|--si|--ss|--sib|--game <game>] "
 				"[--mod <mod>]"
 			 << endl
-			 << "             [--nomenu] [--buildmap 0|1|2] [--mapnum <num>]"
-			 << endl
-			 << "             [--nocrc] [--edit] [--write-xml] [--reset-video]"
-			 << endl
+			 << "             [--nomenu] [--buildmap 0|1|2] [--mapnum <num>]" << endl
+			 << "             [--nocrc] [--edit] [--write-xml] [--reset-video]" << endl
 			 << "--help\t\tShow this information" << endl
 			 << "--version\tShow version info" << endl
 			 << " -c configfile\tSpecify alternate config file" << endl
-			 << "--bg\t\tSkip menu and run Black Gate (prefers original game)"
-			 << endl
+			 << "--bg\t\tSkip menu and run Black Gate (prefers original game)" << endl
 			 << "--fov\t\tSkip menu and run Black Gate with Forge of Virtue "
 				"expansion"
 			 << endl
-			 << "--si\t\tSkip menu and run Serpent Isle (prefers original game)"
-			 << endl
+			 << "--si\t\tSkip menu and run Serpent Isle (prefers original game)" << endl
 			 << "--ss\t\tSkip menu and run Serpent Isle with Silver Seed "
 				"expansion"
 			 << endl
@@ -374,10 +360,8 @@ int main(int argc, char* argv[]) {
 			 << "\t\tOnly valid if used together with '--bg', '--fov', '--si', "
 				"'--ss', '--sib'"
 			 << endl
-			 << "\t\tor '--game <game>'; you may optionally specify a mod with"
-			 << endl
-			 << "\t\t'--mod <mod>' (WARNING: requires big amounts of RAM, HD"
-			 << endl
+			 << "\t\tor '--game <game>'; you may optionally specify a mod with" << endl
+			 << "\t\t'--mod <mod>' (WARNING: requires big amounts of RAM, HD" << endl
 			 << "\t\tspace and time!)" << endl
 			 << "--mapnum <N>\tThis must be used with '--buildmap'. Selects "
 				"which map"
@@ -399,16 +383,13 @@ int main(int argc, char* argv[]) {
 				"way)"
 			 << endl;
 #endif
-		cerr << "--write-xml\tWrite 'patch/exultgame.xml'" << endl
-			 << "--reset-video\tResets to the default video settings" << endl;
+		cerr << "--write-xml\tWrite 'patch/exultgame.xml'" << endl << "--reset-video\tResets to the default video settings" << endl;
 
 		exit(1);
 	}
-	const unsigned gameparam
-			= static_cast<unsigned>(run_bg) + static_cast<unsigned>(run_si)
-			  + static_cast<unsigned>(run_fov) + static_cast<unsigned>(run_ss)
-			  + static_cast<unsigned>(run_sib)
-			  + static_cast<unsigned>(arg_gamename != "default");
+	const unsigned gameparam = static_cast<unsigned>(run_bg) + static_cast<unsigned>(run_si) + static_cast<unsigned>(run_fov)
+							   + static_cast<unsigned>(run_ss) + static_cast<unsigned>(run_sib)
+							   + static_cast<unsigned>(arg_gamename != "default");
 	if (gameparam > 1) {
 		cerr << "Error: You may only specify one of --bg, --fov, --si, --ss, "
 				"--sib or --game!"
@@ -452,16 +433,13 @@ int main(int argc, char* argv[]) {
 	} else if (arg_verify_files && arg_modname != "default") {
 		cerr << "Error: You cannot combine --mod with --verify-files!" << endl;
 		exit(1);
-	} else if (
-			arg_verify_files
-			&& (!arg_installmod.empty() || !arg_installdata.empty())) {
+	} else if (arg_verify_files && (!arg_installmod.empty() || !arg_installdata.empty())) {
 		cerr << "Error: You cannot combine  --verify-files with --installmod "
 				"or --installdata!"
 			 << endl;
 		exit(1);
 	} else if (!arg_installmod.empty() && !arg_installdata.empty()) {
-		cerr << "Error: You cannot combine  --installmod with --installdata!"
-			 << endl;
+		cerr << "Error: You cannot combine  --installmod with --installdata!" << endl;
 		exit(1);
 	} else if (!arg_installmod.empty() && arg_modname != "default") {
 		cerr << "Error: You cannot combine  --installmod with --mod!" << endl;
@@ -587,8 +565,7 @@ int exult_main(const char* runpath) {
 	std::cout << "Exult path settings:" << std::endl;
 #if defined(MACOSX) || defined(SDL_PLATFORM_IOS)
 	if (is_system_path_defined("<APP_BUNDLE_RES>")) {
-		std::cout << "Bundled Data  : " << get_system_path("<BUNDLE>")
-				  << std::endl;
+		std::cout << "Bundled Data  : " << get_system_path("<BUNDLE>") << std::endl;
 	}
 #endif
 	std::cout << "Data          : " << get_system_path("<DATA>") << std::endl;
@@ -718,31 +695,23 @@ static void SetIcon() {
 		iconpal[i].g = ExultIcon::header_data_cmap[i][1];
 		iconpal[i].b = ExultIcon::header_data_cmap[i][2];
 	}
-	SDL_Surface* iconsurface = SDL_CreateSurface(
-			ExultIcon::width, ExultIcon::height,
-			SDL_GetPixelFormatForMasks(32, 0, 0, 0, 0));
+	SDL_Surface* iconsurface = SDL_CreateSurface(ExultIcon::width, ExultIcon::height, SDL_GetPixelFormatForMasks(32, 0, 0, 0, 0));
 	if (iconsurface == nullptr) {
 		cout << "Error creating icon surface: " << SDL_GetError() << std::endl;
 		return;
 	}
-	const SDL_PixelFormatDetails* iconsurface_format
-			= SDL_GetPixelFormatDetails(iconsurface->format);
-	SDL_Palette* iconsurface_palette = SDL_GetSurfacePalette(iconsurface);
+	const SDL_PixelFormatDetails* iconsurface_format  = SDL_GetPixelFormatDetails(iconsurface->format);
+	SDL_Palette*                  iconsurface_palette = SDL_GetSurfacePalette(iconsurface);
 	for (int y = 0; y < static_cast<int>(ExultIcon::height); ++y) {
 		for (int x = 0; x < static_cast<int>(ExultIcon::width); ++x) {
-			const int idx = ExultIcon::header_data[(y * ExultIcon::height) + x];
-			const Uint32 pix = SDL_MapRGB(
-					iconsurface_format, iconsurface_palette, iconpal[idx].r,
-					iconpal[idx].g, iconpal[idx].b);
+			const int    idx = ExultIcon::header_data[(y * ExultIcon::height) + x];
+			const Uint32 pix = SDL_MapRGB(iconsurface_format, iconsurface_palette, iconpal[idx].r, iconpal[idx].g, iconpal[idx].b);
 			const SDL_Rect destRect = {x, y, 1, 1};
 			SDL_FillSurfaceRect(iconsurface, &destRect, pix);
 		}
 	}
 	SDL_SetSurfaceColorKey(
-			iconsurface, true,
-			SDL_MapRGB(
-					iconsurface_format, iconsurface_palette, iconpal[0].r,
-					iconpal[0].g, iconpal[0].b));
+			iconsurface, true, SDL_MapRGB(iconsurface_format, iconsurface_palette, iconpal[0].r, iconpal[0].g, iconpal[0].b));
 	SDL_SetWindowIcon(gwin->get_win()->get_screen_window(), iconsurface);
 	SDL_DestroySurface(iconsurface);
 #endif
@@ -752,12 +721,9 @@ void Open_game_controller(SDL_JoystickID joystick_index) {
 	SDL_Gamepad* input_device = SDL_OpenGamepad(joystick_index);
 	if (input_device) {
 		SDL_GetGamepadJoystick(input_device);
-		std::cout << "Game controller attached and open: \""
-				  << SDL_GetGamepadName(input_device) << '"' << std::endl;
+		std::cout << "Game controller attached and open: \"" << SDL_GetGamepadName(input_device) << '"' << std::endl;
 	} else {
-		std::cout
-				<< "Game controller attached, but it failed to open. Error: \""
-				<< SDL_GetError() << '"' << std::endl;
+		std::cout << "Game controller attached, but it failed to open. Error: \"" << SDL_GetError() << '"' << std::endl;
 	}
 }
 
@@ -850,21 +816,18 @@ static void Init() {
 	// Load games and mods; also stores system paths:
 	gamemanager = new GameManager();
 
-	if (arg_buildmap < 0 && !arg_verify_files && arg_installdata.empty()
-		&& arg_installmod.empty()) {
+	if (arg_buildmap < 0 && !arg_verify_files && arg_installdata.empty() && arg_installmod.empty()) {
 		string gr;
 		string gg;
 		string gb;
 		config->value("config/video/gamma/red", gr, "1.0");
 		config->value("config/video/gamma/green", gg, "1.0");
 		config->value("config/video/gamma/blue", gb, "1.0");
-		Image_window8::set_gamma(
-				atof(gr.c_str()), atof(gg.c_str()), atof(gb.c_str()));
+		Image_window8::set_gamma(atof(gr.c_str()), atof(gg.c_str()), atof(gb.c_str()));
 		string fullscreenstr;    // Check config. for fullscreen mode.
 		config->value("config/video/fullscreen", fullscreenstr, "no");
 		const bool fullscreen = (fullscreenstr == "yes");
-		config->set(
-				"config/video/fullscreen", fullscreen ? "yes" : "no", false);
+		config->set("config/video/fullscreen", fullscreen ? "yes" : "no", false);
 
 		int border_red;
 		int border_green;
@@ -966,11 +929,8 @@ static void Init() {
 			if (newgame != nullptr) {
 				newgame->setup_game_paths();
 			}
-			std::cout << "\nInstallmod: want to install mods in zip "
-					  << arg_installmod << std::endl;
-			int code = ModManager::InstallModZip(
-					arg_installmod, dynamic_cast<ModManager*>(newgame),
-					gamemanager);
+			std::cout << "\nInstallmod: want to install mods in zip " << arg_installmod << std::endl;
+			int code = ModManager::InstallModZip(arg_installmod, dynamic_cast<ModManager*>(newgame), gamemanager);
 
 			if (code < 0) {
 				std::cerr << "InstallMod: Failed to install one or more mods "
@@ -986,31 +946,26 @@ static void Init() {
 			exit(code);
 		}
 		if (!arg_installdata.empty()) {
-			std::cout << "\nInstallData: want to extract zip \""
-					  << arg_installdata << "\" to <DATA>" << std::endl;
+			std::cout << "\nInstallData: want to extract zip \"" << arg_installdata << "\" to <DATA>" << std::endl;
 
 			IFileDataSource ds(arg_installdata);
 			if (!ds.good()) {
-				std::cerr << "InstallData: Failed to open file \""
-						  << arg_installdata << "\" for reading" << std::endl;
+				std::cerr << "InstallData: Failed to open file \"" << arg_installdata << "\" for reading" << std::endl;
 				exit(-2);
 			}
 
 			unzFile unzipfile = unzOpen(&ds);
 			if (!unzipfile) {
-				std::cerr << "InstallData: Failed to open \"" << arg_installdata
-						  << "\" as a zip file" << std::endl;
+				std::cerr << "InstallData: Failed to open \"" << arg_installdata << "\" as a zip file" << std::endl;
 				exit(-3);
 			}
 
 			int error = unzExtractAllToPath(unzipfile, "<DATA>");
 			if (error < 0) {
-				std::cerr << "InstallData: Failed to extract zip file \""
-						  << arg_installdata
-						  << "\" to <DATA>. Error code:" << error << std::endl;
+				std::cerr << "InstallData: Failed to extract zip file \"" << arg_installdata << "\" to <DATA>. Error code:" << error
+						  << std::endl;
 			} else {
-				std::cerr << "InstallData: Sucesssfully installed \""
-						  << arg_installdata << "\" into <DATA>" << std::endl;
+				std::cerr << "InstallData: Sucesssfully installed \"" << arg_installdata << "\" into <DATA>" << std::endl;
 			}
 
 			exit(error);
@@ -1036,71 +991,46 @@ static void Init() {
 			int ix;
 			int compVers = SDL_VERSION, linkVers = SDL_GetVersion();
 
-			cout << "SDL Initialized, Exult compiled against SDL "
-				 << SDL_VERSIONNUM_MAJOR(compVers) << "."
-				 << SDL_VERSIONNUM_MINOR(compVers) << "."
-				 << SDL_VERSIONNUM_MICRO(compVers)
-				 << ", Exult running against SDL "
-				 << SDL_VERSIONNUM_MAJOR(linkVers) << "."
-				 << SDL_VERSIONNUM_MINOR(linkVers) << "."
-				 << SDL_VERSIONNUM_MICRO(linkVers) << endl;
+			cout << "SDL Initialized, Exult compiled against SDL " << SDL_VERSIONNUM_MAJOR(compVers) << "."
+				 << SDL_VERSIONNUM_MINOR(compVers) << "." << SDL_VERSIONNUM_MICRO(compVers) << ", Exult running against SDL "
+				 << SDL_VERSIONNUM_MAJOR(linkVers) << "." << SDL_VERSIONNUM_MINOR(linkVers) << "." << SDL_VERSIONNUM_MICRO(linkVers)
+				 << endl;
 			cout << "SDL Video :" << endl;
 			cout << "    Hint VIDEO_DRIVER is '"
-				 << (SDL_GetHint(SDL_HINT_VIDEO_DRIVER)
-							 ? SDL_GetHint(SDL_HINT_VIDEO_DRIVER)
-							 : "(null)")
-				 << "', Current Video Driver is '"
-				 << (SDL_GetCurrentVideoDriver() ? SDL_GetCurrentVideoDriver()
-												 : "(null)")
-				 << "'" << endl;
+				 << (SDL_GetHint(SDL_HINT_VIDEO_DRIVER) ? SDL_GetHint(SDL_HINT_VIDEO_DRIVER) : "(null)")
+				 << "', Current Video Driver is '" << (SDL_GetCurrentVideoDriver() ? SDL_GetCurrentVideoDriver() : "(null)") << "'"
+				 << endl;
 			for (ix = 0; ix < SDL_GetNumVideoDrivers(); ix++) {
-				cout << "    [ " << ix << " ] Video Driver is '"
-					 << SDL_GetVideoDriver(ix) << "'" << endl;
+				cout << "    [ " << ix << " ] Video Driver is '" << SDL_GetVideoDriver(ix) << "'" << endl;
 			}
 			SDL_DisplayID* display_ids = SDL_GetDisplays(nullptr);
 			for (ix = 0; display_ids[ix]; ix++) {
-				const SDL_DisplayMode* currMode
-						= SDL_GetCurrentDisplayMode(display_ids[ix]);
-				int    nbpp;
-				Uint32 Rmask;
-				Uint32 Gmask;
-				Uint32 Bmask;
-				Uint32 Amask;
-				SDL_GetMasksForPixelFormat(
-						currMode->format, &nbpp, &Rmask, &Gmask, &Bmask,
-						&Amask);
-				cout << "    [ " << ix << " ] Video Display Mode [ ID is "
-					 << display_ids[ix] << " ] is '" << currMode->w << "x"
-					 << currMode->h << "' at '" << currMode->refresh_rate
-					 << "Hz' for " << nbpp << " bpp" << endl;
+				const SDL_DisplayMode* currMode = SDL_GetCurrentDisplayMode(display_ids[ix]);
+				int                    nbpp;
+				Uint32                 Rmask;
+				Uint32                 Gmask;
+				Uint32                 Bmask;
+				Uint32                 Amask;
+				SDL_GetMasksForPixelFormat(currMode->format, &nbpp, &Rmask, &Gmask, &Bmask, &Amask);
+				cout << "    [ " << ix << " ] Video Display Mode [ ID is " << display_ids[ix] << " ] is '" << currMode->w << "x"
+					 << currMode->h << "' at '" << currMode->refresh_rate << "Hz' for " << nbpp << " bpp" << endl;
 			}
 			SDL_free(display_ids);
-			const char* rname = SDL_GetRendererName(
-					SDL_GetRenderer(gwin->get_win()->get_screen_window()));
+			const char* rname = SDL_GetRendererName(SDL_GetRenderer(gwin->get_win()->get_screen_window()));
 			cout << "    Hint RENDER_DRIVER is '"
-				 << (SDL_GetHint(SDL_HINT_RENDER_DRIVER)
-							 ? SDL_GetHint(SDL_HINT_RENDER_DRIVER)
-							 : "(null)")
-				 << "', Current Render Driver is '"
-				 << (rname ? rname : "(null)") << "'" << endl;
+				 << (SDL_GetHint(SDL_HINT_RENDER_DRIVER) ? SDL_GetHint(SDL_HINT_RENDER_DRIVER) : "(null)")
+				 << "', Current Render Driver is '" << (rname ? rname : "(null)") << "'" << endl;
 			for (ix = 0; ix < SDL_GetNumRenderDrivers(); ix++) {
-				cout << "    [ " << ix << " ] Video Renderer is '"
-					 << (SDL_GetRenderDriver(ix) ? SDL_GetRenderDriver(ix)
-												 : "(null)")
+				cout << "    [ " << ix << " ] Video Renderer is '" << (SDL_GetRenderDriver(ix) ? SDL_GetRenderDriver(ix) : "(null)")
 					 << "'" << endl;
 			}
 			cout << "SDL Audio :" << endl;
 			cout << "    Hint AUDIO_DRIVER is '"
-				 << (SDL_GetHint(SDL_HINT_AUDIO_DRIVER)
-							 ? SDL_GetHint(SDL_HINT_AUDIO_DRIVER)
-							 : "(null)")
-				 << "', Current Audio Driver is '"
-				 << (SDL_GetCurrentAudioDriver() ? SDL_GetCurrentAudioDriver()
-												 : "(null)")
-				 << "'" << endl;
+				 << (SDL_GetHint(SDL_HINT_AUDIO_DRIVER) ? SDL_GetHint(SDL_HINT_AUDIO_DRIVER) : "(null)")
+				 << "', Current Audio Driver is '" << (SDL_GetCurrentAudioDriver() ? SDL_GetCurrentAudioDriver() : "(null)") << "'"
+				 << endl;
 			for (ix = 0; ix < SDL_GetNumAudioDrivers(); ix++) {
-				cout << "    [ " << ix << " ] Audio Driver is '"
-					 << SDL_GetAudioDriver(ix) << "'" << endl;
+				cout << "    [ " << ix << " ] Audio Driver is '" << SDL_GetAudioDriver(ix) << "'" << endl;
 			}
 			SDL_AudioDeviceID* devices;
 			int                num_devices;
@@ -1108,16 +1038,11 @@ static void Init() {
 			for (ix = 0; ix < num_devices; ix++) {
 				SDL_AudioSpec as;
 				int           frames = 0;
-				cout << "    [ " << ix << " ] Audio Device [ ID is "
-					 << devices[ix] << " ] is [recording] '"
-					 << (SDL_GetAudioDeviceName(devices[ix])
-								 ? SDL_GetAudioDeviceName(devices[ix])
-								 : "(null)")
-					 << "'";
+				cout << "    [ " << ix << " ] Audio Device [ ID is " << devices[ix] << " ] is [recording] '"
+					 << (SDL_GetAudioDeviceName(devices[ix]) ? SDL_GetAudioDeviceName(devices[ix]) : "(null)") << "'";
 				if (!SDL_GetAudioDeviceFormat(devices[ix], &as, &frames)) {
-					cout << ", " << static_cast<int>(as.channels)
-						 << " channel(s) at '" << as.freq << "Hz', " << frames
-						 << " frames" << endl;
+					cout << ", " << static_cast<int>(as.channels) << " channel(s) at '" << as.freq << "Hz', " << frames << " frames"
+						 << endl;
 				} else {
 					cout << endl;
 				}
@@ -1127,16 +1052,11 @@ static void Init() {
 			for (ix = 0; ix < num_devices; ix++) {
 				SDL_AudioSpec as;
 				int           frames = 0;
-				cout << "    [ " << ix << " ] Audio Device [ ID is "
-					 << devices[ix] << " ] is [playback] '"
-					 << (SDL_GetAudioDeviceName(devices[ix])
-								 ? SDL_GetAudioDeviceName(devices[ix])
-								 : "(null)")
-					 << "'";
+				cout << "    [ " << ix << " ] Audio Device [ ID is " << devices[ix] << " ] is [playback] '"
+					 << (SDL_GetAudioDeviceName(devices[ix]) ? SDL_GetAudioDeviceName(devices[ix]) : "(null)") << "'";
 				if (!SDL_GetAudioDeviceFormat(devices[ix], &as, &frames)) {
-					cout << ", " << static_cast<int>(as.channels)
-						 << " channel(s) at '" << as.freq << "Hz', " << frames
-						 << " frames" << endl;
+					cout << ", " << static_cast<int>(as.channels) << " channel(s) at '" << as.freq << "Hz', " << frames << " frames"
+						 << endl;
 				} else {
 					cout << endl;
 				}
@@ -1159,11 +1079,9 @@ static void Init() {
 		bool force_skip_splash   = false;
 		bool force_digital_music = false;
 		if (gamemanager != nullptr) {
-			ModManager* current_game_mgr
-					= gamemanager->find_game(Game::get_gametitle());
+			ModManager* current_game_mgr = gamemanager->find_game(Game::get_gametitle());
 			if (current_game_mgr != nullptr && !Game::get_modtitle().empty()) {
-				ModInfo* mod_info = current_game_mgr->get_mod(
-						Game::get_modtitle(), false);
+				ModInfo* mod_info = current_game_mgr->get_mod(Game::get_modtitle(), false);
 				if (mod_info != nullptr) {
 					if (mod_info->has_force_skip_splash_set()) {
 						force_skip_splash = mod_info->get_force_skip_splash();
@@ -1183,13 +1101,9 @@ static void Init() {
 		}
 
 		// Make sure we have a proper palette before playing the intro.
-		gwin->get_pal()->load(
-				BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX),
-				EXULT_FLX_EXULT0_PAL);
+		gwin->get_pal()->load(BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX), EXULT_FLX_EXULT0_PAL);
 		gwin->get_pal()->apply();
-		if ((!skip_splash && !force_skip_splash)
-			&& (Game::get_game_type() != EXULT_DEVEL_GAME
-				|| U7exists(INTRO_DAT))) {
+		if ((!skip_splash && !force_skip_splash) && (Game::get_game_type() != EXULT_DEVEL_GAME || U7exists(INTRO_DAT))) {
 			if (midi) {
 				midi->set_timbre_lib(MyMidiPlayer::TIMBRE_LIB_INTRO);
 			}
@@ -1239,8 +1153,8 @@ static int Play() {
 			Mouse::mouse()->hide();    // Turn off mouse.
 			gwin->read();              // Restart
 									   /////gwin->setup_game();
-			//// setup_game is already being called from inside
-			//// of gwin->read(), so no need to call it here, I hope...
+									   //// setup_game is already being called from inside
+									   //// of gwin->read(), so no need to call it here, I hope...
 		}
 	} while (quitting_time == QUIT_TIME_RESTART);
 
@@ -1270,8 +1184,7 @@ static void Paint_with_shape(
 	// int x = event.button.x/scale, y = event.button.y/scale;
 	int x;
 	int y;
-	gwin->get_win()->screen_to_game(
-			event.button.x, event.button.y, false, x, y);
+	gwin->get_win()->screen_to_game(event.button.x, event.button.y, false, x, y);
 
 	const int tx = (gwin->get_scrolltx() + x / c_tilesize);
 	const int ty = (gwin->get_scrollty() + y / c_tilesize);
@@ -1311,8 +1224,7 @@ static void Paint_with_chunk(
 	static int lastcy = -1;
 	int        x;
 	int        y;
-	gwin->get_win()->screen_to_game(
-			event.button.x, event.button.y, false, x, y);
+	gwin->get_win()->screen_to_game(event.button.x, event.button.y, false, x, y);
 	const int cx = (gwin->get_scrolltx() + x / c_tilesize) / c_tiles_per_chunk;
 	const int cy = (gwin->get_scrollty() + y / c_tilesize) / c_tiles_per_chunk;
 	if (dragging) {    // See if moving to a new chunk.
@@ -1338,8 +1250,7 @@ static void Select_chunks(
 	static int lastcy = -1;
 	int        x;
 	int        y;
-	gwin->get_win()->screen_to_game(
-			event.button.x, event.button.y, false, x, y);
+	gwin->get_win()->screen_to_game(event.button.x, event.button.y, false, x, y);
 	const int cx = (gwin->get_scrolltx() + x / c_tilesize) / c_tiles_per_chunk;
 	const int cy = (gwin->get_scrollty() + y / c_tilesize) / c_tiles_per_chunk;
 	if (dragging) {    // See if moving to a new chunk.
@@ -1372,8 +1283,7 @@ static void Select_for_combo(
 	static Game_object* last_obj = nullptr;
 	int                 x;
 	int                 y;
-	gwin->get_win()->screen_to_game(
-			event.button.x, event.button.y, false, x, y);
+	gwin->get_win()->screen_to_game(event.button.x, event.button.y, false, x, y);
 	// int tx = (gwin->get_scrolltx() + x/c_tilesize)%c_num_tiles;
 	// int ty = (gwin->get_scrollty() + y/c_tilesize)%c_num_tiles;
 	Game_object* obj = gwin->find_object(x, y);
@@ -1397,11 +1307,8 @@ static void Select_for_combo(
 	// only send the data if we are in combo mode
 	if (cheat.get_edit_mode() == Cheat::combo_pick
 		&& Object_out(
-				   client_socket,
-				   toggle ? Exult_server::combo_toggle
-						  : Exult_server::combo_pick,
-				   nullptr, t.tx, t.ty, t.tz, id.get_shapenum(),
-				   id.get_framenum(), 0, name)
+				   client_socket, toggle ? Exult_server::combo_toggle : Exult_server::combo_pick, nullptr, t.tx, t.ty, t.tz,
+				   id.get_shapenum(), id.get_framenum(), 0, name)
 				   == -1) {
 		cout << "Error sending shape to ExultStudio" << endl;
 	}
@@ -1450,8 +1357,7 @@ static void Handle_events() {
 #ifdef DEBUG
 		if (last_fps == 0 || ticks >= last_fps + 10000) {
 			const double fps = (gwin->blits * 1000.0) / (ticks - last_fps);
-			cerr << "***#ticks = " << ticks - last_fps
-				 << ", blits = " << gwin->blits << ", ";
+			cerr << "***#ticks = " << ticks - last_fps << ", blits = " << gwin->blits << ", ";
 			cerr << "FPS:  " << fps << endl;
 			last_fps    = ticks;
 			gwin->blits = 0;
@@ -1471,8 +1377,7 @@ static void Handle_events() {
 		// Moved this out of the animation loop, since we want movement to be
 		// more responsive. Also, if the step delta is only 1 tile,
 		// always check every loop
-		if ((!gwin->is_moving() || gwin->get_step_tile_delta() == 1)
-			&& gwin->main_actor_can_act_charmed()) {
+		if ((!gwin->is_moving() || gwin->get_step_tile_delta() == 1) && gwin->main_actor_can_act_charmed()) {
 			int       x  = Mouse::mouse()->get_mousex();
 			int       y  = Mouse::mouse()->get_mousey();
 			const int ms = SDL_GetMouseState(nullptr, nullptr);
@@ -1504,8 +1409,7 @@ static void Handle_events() {
 
 		if (joy_aim_x != 0 || joy_aim_y != 0) {
 			// Calculate the player speed
-			const int speed = 200 * gwin->get_std_delay()
-							  / static_cast<int>(joy_speed_factor);
+			const int speed = 200 * gwin->get_std_delay() / static_cast<int>(joy_speed_factor);
 
 			// [re]start moving
 			gwin->start_actor(joy_aim_x, joy_aim_y, speed);
@@ -1523,8 +1427,7 @@ static void Handle_events() {
 			}
 
 			// Force a reset if position changed
-			if (last_x != gwin->get_scrolltx()
-				|| last_y != gwin->get_scrollty()) {
+			if (last_x != gwin->get_scrolltx() || last_y != gwin->get_scrollty()) {
 				// printf ("%i: %i -> %i, %i -> %i\n", ticks, last_x,
 				// gwin->get_scrolltx(), last_y, gwin->get_scrollty());
 				gwin->lerp_reset();
@@ -1562,9 +1465,7 @@ static void Handle_events() {
 	}
 }
 
-bool Translate_keyboard(
-		const SDL_Event& event, SDL_Keycode& chr, SDL_Keycode& unicode,
-		bool numpad) {
+bool Translate_keyboard(const SDL_Event& event, SDL_Keycode& chr, SDL_Keycode& unicode, bool numpad) {
 	unicode = 0;
 
 	if (event.type == SDL_EVENT_TEXT_INPUT) {
@@ -1572,38 +1473,23 @@ bool Translate_keyboard(
 		chr = SDLK_UNKNOWN;
 		if ((event.text.text[0] & 0x80) == 0x00) {
 			unicode = event.text.text[0];
+		} else if ((event.text.text[0] & 0xE0) == 0xC0 && (event.text.text[1] & 0xC0) == 0x80) {
+			unicode = ((event.text.text[0] & 0x1F) << 6) | ((event.text.text[1] & 0x3F));
 		} else if (
-				(event.text.text[0] & 0xE0) == 0xC0
+				(event.text.text[0] & 0xF0) == 0xE0 && (event.text.text[1] & 0xC0) == 0x80 && (event.text.text[2] & 0xC0) == 0x80) {
+			unicode = ((event.text.text[0] & 0x0F) << 12) | ((event.text.text[1] & 0x3F) << 6) | ((event.text.text[2] & 0x3F));
+		} else if (
+				(event.text.text[0] & 0xF8) == 0xF0 && (event.text.text[1] & 0xC0) == 0x80 && (event.text.text[1] & 0xC0) == 0x80
 				&& (event.text.text[1] & 0xC0) == 0x80) {
-			unicode = ((event.text.text[0] & 0x1F) << 6)
-					  | ((event.text.text[1] & 0x3F));
-		} else if (
-				(event.text.text[0] & 0xF0) == 0xE0
-				&& (event.text.text[1] & 0xC0) == 0x80
-				&& (event.text.text[2] & 0xC0) == 0x80) {
-			unicode = ((event.text.text[0] & 0x0F) << 12)
-					  | ((event.text.text[1] & 0x3F) << 6)
-					  | ((event.text.text[2] & 0x3F));
-		} else if (
-				(event.text.text[0] & 0xF8) == 0xF0
-				&& (event.text.text[1] & 0xC0) == 0x80
-				&& (event.text.text[1] & 0xC0) == 0x80
-				&& (event.text.text[1] & 0xC0) == 0x80) {
-			unicode = ((event.text.text[0] & 0x07) << 18)
-					  | ((event.text.text[1] & 0x3F) << 12)
-					  | ((event.text.text[2] & 0x3F) << 6)
+			unicode = ((event.text.text[0] & 0x07) << 18) | ((event.text.text[1] & 0x3F) << 12) | ((event.text.text[2] & 0x3F) << 6)
 					  | ((event.text.text[3] & 0x3F));
 		} else {    // Invalid UTF-8
 			unicode = 0;
 		}
-	} else if (
-			event.type == SDL_EVENT_KEY_DOWN
-			|| event.type == SDL_EVENT_KEY_UP) {
+	} else if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
 		// Handle Shift all variants, Simulate NumLock set
 		chr     = event.key.key;
-		unicode = SDL_GetKeyFromScancode(
-				event.key.scancode,
-				(event.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)), false);
+		unicode = SDL_GetKeyFromScancode(event.key.scancode, (event.key.mod & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS)), false);
 		unicode = (unicode & SDLK_SCANCODE_MASK ? 0 : unicode);
 	} else {
 		return false;
@@ -1735,11 +1621,9 @@ bool Translate_keyboard(
 			break;
 		}
 	}
-	return (event.key.key != SDLK_LSHIFT && event.key.key != SDLK_RSHIFT
-			&& event.key.key != SDLK_CAPSLOCK && event.key.key != SDLK_RCTRL
-			&& event.key.key != SDLK_LCTRL && event.key.key != SDLK_RALT
-			&& event.key.key != SDLK_LALT && event.key.key != SDLK_LGUI
-			&& event.key.key != SDLK_RGUI && event.key.key != SDLK_MODE
+	return (event.key.key != SDLK_LSHIFT && event.key.key != SDLK_RSHIFT && event.key.key != SDLK_CAPSLOCK
+			&& event.key.key != SDLK_RCTRL && event.key.key != SDLK_LCTRL && event.key.key != SDLK_RALT
+			&& event.key.key != SDLK_LALT && event.key.key != SDLK_LGUI && event.key.key != SDLK_RGUI && event.key.key != SDLK_MODE
 			&& event.key.key != SDLK_NUMLOCKCLEAR);
 }
 
@@ -1757,8 +1641,7 @@ static void Handle_event(SDL_Event& event) {
 	Gump_manager* gump_man = gwin->get_gump_man();
 	Gump*         gump     = nullptr;
 
-	SDL_Renderer* renderer
-			= SDL_GetRenderer(gwin->get_win()->get_screen_window());
+	SDL_Renderer* renderer = SDL_GetRenderer(gwin->get_win()->get_screen_window());
 	// For detecting double-clicks.
 	static uint32 last_b1_click     = 0;
 	static uint32 last_b3_click     = 0;
@@ -1767,17 +1650,14 @@ static void Handle_event(SDL_Event& event) {
 	case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
 		// Ignore axis changes on anything but a specific thumb-stick
 		// on the game-controller.
-		if (event.gaxis.axis != SDL_GAMEPAD_AXIS_LEFTX
-			&& event.gaxis.axis != SDL_GAMEPAD_AXIS_LEFTY) {
+		if (event.gaxis.axis != SDL_GAMEPAD_AXIS_LEFTX && event.gaxis.axis != SDL_GAMEPAD_AXIS_LEFTY) {
 			break;
 		}
 
 		SDL_Gamepad* input_device = SDL_GetGamepadFromID(event.gaxis.which);
-		if (input_device && !dont_move_mode && avatar_can_act
-			&& gwin->main_actor_can_act_charmed()) {
+		if (input_device && !dont_move_mode && avatar_can_act && gwin->main_actor_can_act_charmed()) {
 			auto get_normalized_axis = [input_device](SDL_GamepadAxis axis) {
-				return SDL_GetGamepadAxis(input_device, axis)
-					   / static_cast<float>(SDL_JOYSTICK_AXIS_MAX);
+				return SDL_GetGamepadAxis(input_device, axis) / static_cast<float>(SDL_JOYSTICK_AXIS_MAX);
 			};
 			// Collect both of the controller thumb-stick's axis values.
 			// The input-event only carries one axis, and each thumb-stick
@@ -1812,9 +1692,8 @@ static void Handle_event(SDL_Event& event) {
 
 			// Pick a player's speed-factor, depending on how much the
 			// input-stick is being pushed in a direction.
-			const float joy_axis_length
-					= std::sqrt((axis_x * axis_x) + (axis_y * axis_y));
-			joy_speed_factor = Mouse::fast_speed_factor;
+			const float joy_axis_length = std::sqrt((axis_x * axis_x) + (axis_y * axis_y));
+			joy_speed_factor            = Mouse::fast_speed_factor;
 			if (joy_axis_length < axis_length_move_medium) {
 				joy_speed_factor = Mouse::slow_speed_factor;
 			} else if (joy_axis_length < axis_length_move_fast) {
@@ -1835,19 +1714,16 @@ static void Handle_event(SDL_Event& event) {
 				// Declare a position to aim for, in window coordinates,
 				// relative to the center of the window (where the player is).
 				const float aim_distance = 50.f;
-				const int   aim_dx
-						= static_cast<int>(std::lround(aim_distance * axis_x));
-				const int aim_dy
-						= static_cast<int>(std::lround(aim_distance * axis_y));
-				joy_aim_x = (gwin->get_width() / 2) + aim_dx;
-				joy_aim_y = (gwin->get_height() / 2) + aim_dy;
+				const int   aim_dx       = static_cast<int>(std::lround(aim_distance * axis_x));
+				const int   aim_dy       = static_cast<int>(std::lround(aim_distance * axis_y));
+				joy_aim_x                = (gwin->get_width() / 2) + aim_dx;
+				joy_aim_y                = (gwin->get_height() / 2) + aim_dy;
 			}
 		}
 		break;
 	}
 	case SDL_EVENT_FINGER_DOWN: {
-		if ((!Mouse::use_touch_input)
-			&& (event.tfinger.touchID != EXSDL_MOUSE_TOUCHID)) {
+		if ((!Mouse::use_touch_input) && (event.tfinger.touchID != EXSDL_MOUSE_TOUCHID)) {
 			Mouse::use_touch_input = true;
 			gwin->set_painted();
 		}
@@ -1865,15 +1741,13 @@ static void Handle_event(SDL_Event& event) {
 		}
 		int x;
 		int y;
-		gwin->get_win()->screen_to_game(
-				event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
+		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
 		if (event.button.button == 1) {
 			Gump_button* button;
 			// Allow dragging only either if the avatar can act or if map edit
 			// or hackmove is on.
 			if (avatar_can_act || cheat.in_hack_mover()
-				|| ((gump = gump_man->find_gump(x, y, false))
-					&& (button = gump->on_button(x, y))
+				|| ((gump = gump_man->find_gump(x, y, false)) && (button = gump->on_button(x, y))
 					&& button->is_checkmark())) {    // also allow closing
 													 // parent gump when
 													 // clicking on checkmark
@@ -1882,26 +1756,17 @@ static void Handle_event(SDL_Event& event) {
 					// Paint if shift-click.
 					if (cheat.get_edit_shape() >= 0 &&
 						// But always if painting.
-						(cheat.get_edit_mode() == Cheat::paint
-						 || (SDL_GetModState() & SDL_KMOD_SHIFT))) {
+						(cheat.get_edit_mode() == Cheat::paint || (SDL_GetModState() & SDL_KMOD_SHIFT))) {
 						Paint_with_shape(event, false);
 						break;
-					} else if (
-							cheat.get_edit_chunknum() >= 0
-							&& cheat.get_edit_mode() == Cheat::paint_chunks) {
+					} else if (cheat.get_edit_chunknum() >= 0 && cheat.get_edit_mode() == Cheat::paint_chunks) {
 						Paint_with_chunk(event, false);
 						break;
 					} else if (cheat.get_edit_mode() == Cheat::select_chunks) {
-						Select_chunks(
-								event, false,
-								(SDL_GetModState() & SDL_KMOD_CTRL) != 0);
+						Select_chunks(event, false, (SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 						break;
-					} else if (
-							cheat.get_edit_mode() == Cheat::combo_pick
-							|| cheat.get_edit_mode() == Cheat::edit_pick) {
-						Select_for_combo(
-								event, false,
-								(SDL_GetModState() & SDL_KMOD_CTRL) != 0);
+					} else if (cheat.get_edit_mode() == Cheat::combo_pick || cheat.get_edit_mode() == Cheat::edit_pick) {
+						Select_for_combo(event, false, (SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 						break;
 					}
 					// Don't drag if not in 'move' mode.
@@ -1928,8 +1793,7 @@ static void Handle_event(SDL_Event& event) {
 		// Right click. Only walk if avatar can act.
 		if (event.button.button == 3) {
 			if (!dragging &&    // Causes crash if dragging.
-				gump_man->can_right_click_close() && gump_man->gump_mode()
-				&& gump_man->find_gump(x, y, false)) {
+				gump_man->can_right_click_close() && gump_man->gump_mode() && gump_man->find_gump(x, y, false)) {
 				gump          = nullptr;
 				right_on_gump = true;
 			} else if (avatar_can_act && gwin->main_actor_can_act_charmed()) {
@@ -1946,8 +1810,7 @@ static void Handle_event(SDL_Event& event) {
 			break;
 		}
 		static int   numFingers = 0;
-		SDL_Finger** fingers
-				= SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
+		SDL_Finger** fingers    = SDL_GetTouchFingers(event.tfinger.touchID, &numFingers);
 		if (fingers) {
 			SDL_free(fingers);
 		}
@@ -1999,15 +1862,13 @@ static void Handle_event(SDL_Event& event) {
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		int x;
 		int y;
-		gwin->get_win()->screen_to_game(
-				event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
+		gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
 
 		if (event.button.button == 3) {
 			const uint32 curtime = SDL_GetTicks();
 			// If showing gumps, ignore all double-right-click results
 			if (gump_man->gump_mode()) {
-				if (right_on_gump
-					&& (gump = gump_man->find_gump(x, y, false))) {
+				if (right_on_gump && (gump = gump_man->find_gump(x, y, false))) {
 					const TileRect dirty = gump->get_dirty();
 					gwin->add_dirty(dirty);
 					gump_man->close_gump(gump);
@@ -2017,20 +1878,15 @@ static void Handle_event(SDL_Event& event) {
 			} else if (avatar_can_act) {
 				// Last right click not within .5 secs (not a doubleclick or
 				// rapid right clicking)?
-				if (gwin->get_allow_right_pathfind() == 1
-					&& curtime - last_b3_click > 500
-					&& gwin->main_actor_can_act_charmed()) {
-					gwin->start_actor_along_path(
-							x, y, Mouse::mouse()->avatar_speed);
+				if (gwin->get_allow_right_pathfind() == 1 && curtime - last_b3_click > 500 && gwin->main_actor_can_act_charmed()) {
+					gwin->start_actor_along_path(x, y, Mouse::mouse()->avatar_speed);
 				}
 
 				// Last right click within .5 secs (doubleclick)?
 				else if (
-						gwin->get_allow_right_pathfind() == 2
-						&& curtime - last_b3_click < 500
+						gwin->get_allow_right_pathfind() == 2 && curtime - last_b3_click < 500
 						&& gwin->main_actor_can_act_charmed()) {
-					gwin->start_actor_along_path(
-							x, y, Mouse::mouse()->avatar_speed);
+					gwin->start_actor_along_path(x, y, Mouse::mouse()->avatar_speed);
 				}
 
 				else {
@@ -2052,8 +1908,7 @@ static void Handle_event(SDL_Event& event) {
 				break;
 			}
 			// Last click within .5 secs?
-			if (curtime - last_b1_click < 500 && left_down_x - 1 <= x
-				&& x <= left_down_x + 1 && left_down_y - 1 <= y
+			if (curtime - last_b1_click < 500 && left_down_x - 1 <= x && x <= left_down_x + 1 && left_down_y - 1 <= y
 				&& y <= left_down_y + 1) {
 				dragging = dragged = false;
 				// This function handles the trouble of deciding what to
@@ -2068,30 +1923,25 @@ static void Handle_event(SDL_Event& event) {
 			}
 
 			if (!click_handled && (curtime - last_b1down_click > 500)) {
-				if (touchui != nullptr && Combat::is_paused()
-					&& gwin->in_combat()) {
+				if (touchui != nullptr && Combat::is_paused() && gwin->in_combat()) {
 					gwin->paused_combat_select(x, y);
 					break;
 				}
-				if (gwin->get_touch_pathfind() && avatar_can_act
-					&& gwin->main_actor_can_act_charmed() && !dragging
+				if (gwin->get_touch_pathfind() && avatar_can_act && gwin->main_actor_can_act_charmed() && !dragging
 					&& !gump_man->find_gump(x, y, false)) {
-					gwin->start_actor_along_path(
-							x, y, Mouse::mouse()->avatar_speed);
+					gwin->start_actor_along_path(x, y, Mouse::mouse()->avatar_speed);
 					dragging = dragged = false;
 					break;
 				}
 			}
 
-			if (!click_handled && avatar_can_act && left_down_x - 1 <= x
-				&& x <= left_down_x + 1 && left_down_y - 1 <= y
+			if (!click_handled && avatar_can_act && left_down_x - 1 <= x && x <= left_down_x + 1 && left_down_y - 1 <= y
 				&& y <= left_down_y + 1) {
 				show_items_x = x;
 				show_items_y = y;
 				// Identify item(s) clicked on.
 				if (cheat.in_map_editor()) {
-					gwin->show_items(
-							x, y, (SDL_GetModState() & SDL_KMOD_CTRL) != 0);
+					gwin->show_items(x, y, (SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 				} else {
 					show_items_time    = curtime + 500;
 					show_items_clicked = true;
@@ -2105,12 +1955,10 @@ static void Handle_event(SDL_Event& event) {
 		SDL_ConvertEventToRenderCoordinates(renderer, &event);
 		int mx;
 		int my;
-		if (Mouse::use_touch_input
-			&& event.motion.which != EXSDL_TOUCH_MOUSEID) {
+		if (Mouse::use_touch_input && event.motion.which != EXSDL_TOUCH_MOUSEID) {
 			Mouse::use_touch_input = false;
 		}
-		gwin->get_win()->screen_to_game(
-				event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
+		gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
 
 		Mouse::mouse()->move(mx, my);
 		if (!dragging) {
@@ -2118,9 +1966,7 @@ static void Handle_event(SDL_Event& event) {
 			Mouse::mouse()->set_speed_cursor();
 		}
 		Mouse::mouse_update = true;    // Need to blit mouse.
-		if (right_on_gump
-			&& !(gump_man->can_right_click_close() && gump_man->gump_mode()
-				 && gump_man->find_gump(mx, my, false))) {
+		if (right_on_gump && !(gump_man->can_right_click_close() && gump_man->gump_mode() && gump_man->find_gump(mx, my, false))) {
 			right_on_gump = false;
 		}
 
@@ -2129,26 +1975,17 @@ static void Handle_event(SDL_Event& event) {
 #ifdef USE_EXULTSTUDIO    // Painting?
 			if (cheat.in_map_editor()) {
 				if (cheat.get_edit_shape() >= 0
-					&& (cheat.get_edit_mode() == Cheat::paint
-						|| (SDL_GetModState() & SDL_KMOD_SHIFT))) {
+					&& (cheat.get_edit_mode() == Cheat::paint || (SDL_GetModState() & SDL_KMOD_SHIFT))) {
 					Paint_with_shape(event, true);
 					break;
-				} else if (
-						cheat.get_edit_chunknum() >= 0
-						&& cheat.get_edit_mode() == Cheat::paint_chunks) {
+				} else if (cheat.get_edit_chunknum() >= 0 && cheat.get_edit_mode() == Cheat::paint_chunks) {
 					Paint_with_chunk(event, true);
 					break;
 				} else if (cheat.get_edit_mode() == Cheat::select_chunks) {
-					Select_chunks(
-							event, true,
-							(SDL_GetModState() & SDL_KMOD_CTRL) != 0);
+					Select_chunks(event, true, (SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 					break;
-				} else if (
-						cheat.get_edit_mode() == Cheat::combo_pick
-						|| cheat.get_edit_mode() == Cheat::edit_pick) {
-					Select_for_combo(
-							event, true,
-							(SDL_GetModState() & SDL_KMOD_CTRL) != 0);
+				} else if (cheat.get_edit_mode() == Cheat::combo_pick || cheat.get_edit_mode() == Cheat::edit_pick) {
+					Select_for_combo(event, true, (SDL_GetModState() & SDL_KMOD_CTRL) != 0);
 					break;
 				}
 			}
@@ -2164,13 +2001,10 @@ static void Handle_event(SDL_Event& event) {
 #ifdef USE_EXULTSTUDIO    // Painting?
 		else if (
 				cheat.in_map_editor() && cheat.get_edit_shape() >= 0
-				&& (cheat.get_edit_mode() == Cheat::paint
-					|| (SDL_GetModState() & SDL_KMOD_SHIFT))) {
+				&& (cheat.get_edit_mode() == Cheat::paint || (SDL_GetModState() & SDL_KMOD_SHIFT))) {
 			static int prevx = -1;
 			static int prevy = -1;
-			Move_dragged_shape(
-					cheat.get_edit_shape(), cheat.get_edit_frame(),
-					event.motion.x, event.motion.y, prevx, prevy, false);
+			Move_dragged_shape(cheat.get_edit_shape(), cheat.get_edit_frame(), event.motion.x, event.motion.y, prevx, prevy, false);
 			prevx = event.motion.x;
 			prevy = event.motion.y;
 		}
@@ -2215,23 +2049,18 @@ static void Handle_event(SDL_Event& event) {
 		x = int(fx);
 		y = int(fy);
 #	ifdef DEBUG
-		cout << "(EXULT) SDL_EVENT_DROP_"
-			 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
-			 << " Event, type = " << event.drop.type << ", file ("
-			 << strlen(event.drop.data) << ") = '" << event.drop.data
+		cout << "(EXULT) SDL_EVENT_DROP_" << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
+			 << " Event, type = " << event.drop.type << ", file (" << strlen(event.drop.data) << ") = '" << event.drop.data
 			 << "', at x = " << x << ", y = " << y << endl;
 #	endif
-		const unsigned char* data
-				= reinterpret_cast<const unsigned char*>(event.drop.data);
+		const unsigned char* data = reinterpret_cast<const unsigned char*>(event.drop.data);
 		if (Is_u7_shapeid(data) == true) {
 			// Get shape info.
 			int file, shape, frame;
 			Get_u7_shapeid(data, file, shape, frame);
-			cout << "(EXULT) SDL_EVENT_DROP_"
-				 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
-				 << " Event, Shape: file = " << data << ", shape = " << shape
-				 << ", frame = " << frame << ", at x = " << x << ", y = " << y
-				 << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_" << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
+				 << " Event, Shape: file = " << data << ", shape = " << shape << ", frame = " << frame << ", at x = " << x
+				 << ", y = " << y << endl;
 			if (shape >= 0) {    // Dropping a shape?
 				if (file == U7_SHAPE_SHAPES) {
 					// For now, just allow "shapes.vga".
@@ -2243,10 +2072,8 @@ static void Handle_event(SDL_Event& event) {
 			// A whole chunk.
 			int chunknum;
 			Get_u7_chunkid(data, chunknum);
-			cout << "(EXULT) SDL_EVENT_DROP_"
-				 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
-				 << " Event, Chunk: num = " << chunknum << ", at x = " << x
-				 << ", y = " << y << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_" << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
+				 << " Event, Chunk: num = " << chunknum << ", at x = " << x << ", y = " << y << endl;
 			if (chunknum >= 0) {    // A whole chunk.
 				Drop_dragged_chunk(chunknum, x, y);
 			}
@@ -2254,39 +2081,28 @@ static void Handle_event(SDL_Event& event) {
 		} else if (Is_u7_npcid(data) == true) {
 			int npcnum;
 			Get_u7_npcid(data, npcnum);
-			cout << "(EXULT) SDL_EVENT_DROP_"
-				 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
-				 << " Event, Npc: num = " << npcnum << ", at x = " << x
-				 << ", y = " << y << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_" << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
+				 << " Event, Npc: num = " << npcnum << ", at x = " << x << ", y = " << y << endl;
 			if (npcnum >= 0) {    // An NPC.
 				Drop_dragged_npc(npcnum, x, y);
 			}
 			drag_npcnum = -1;
 		} else if (Is_u7_comboid(data) == true) {
-			int combo_xtiles, combo_ytiles, combo_tiles_right,
-					combo_tiles_below, combo_cnt;
+			int            combo_xtiles, combo_ytiles, combo_tiles_right, combo_tiles_below, combo_cnt;
 			U7_combo_data* combo;
-			Get_u7_comboid(
-					data, combo_xtiles, combo_ytiles, combo_tiles_right,
-					combo_tiles_below, combo_cnt, combo);
+			Get_u7_comboid(data, combo_xtiles, combo_ytiles, combo_tiles_right, combo_tiles_below, combo_cnt, combo);
 			std::unique_ptr<U7_combo_data[]> combo_owner(combo);
-			cout << "(EXULT) SDL_EVENT_DROP_"
-				 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
-				 << " Event, Combo: xtiles = " << combo_xtiles
-				 << ", ytiles = " << combo_ytiles
-				 << ", tiles_right = " << combo_tiles_right
-				 << ", tiles_below = " << combo_tiles_below
-				 << ", count = " << combo_cnt << ", at x = " << x
-				 << ", y = " << y << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_" << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
+				 << " Event, Combo: xtiles = " << combo_xtiles << ", ytiles = " << combo_ytiles
+				 << ", tiles_right = " << combo_tiles_right << ", tiles_below = " << combo_tiles_below << ", count = " << combo_cnt
+				 << ", at x = " << x << ", y = " << y << endl;
 			if (combo_cnt >= 0 && combo) {
 				Drop_dragged_combo(combo_cnt, combo, x, y);
 			}
 			drag_cbcnt = -1;
 		}
 #	ifdef DEBUG
-		cout << "(EXULT) SDL_EVENT_DROP_"
-			 << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE")
-			 << " Event complete" << endl;
+		cout << "(EXULT) SDL_EVENT_DROP_" << (event.type == SDL_EVENT_DROP_TEXT ? "TEXT" : "FILE") << " Event complete" << endl;
 #	endif
 #endif
 		break;
@@ -2300,23 +2116,20 @@ static void Handle_event(SDL_Event& event) {
 		x = int(fx);
 		y = int(fy);
 #	ifdef DEBUG
-		cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, type = " << event.drop.type
-			 << ", at x = " << x << ", y = " << y << endl;
+		cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, type = " << event.drop.type << ", at x = " << x << ", y = " << y << endl;
 #	endif
 		drag_prevx = -1;
 		drag_prevy = -1;
 		if (drag_shpnum != -1) {
 			int file = drag_shfile, shape = drag_shpnum, frame = drag_shfnum;
 #	ifdef DEBUG
-			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Shape: file = " << file
-				 << ", shape = " << shape << ", frame = " << frame
+			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Shape: file = " << file << ", shape = " << shape << ", frame = " << frame
 				 << ", at x = " << x << ", y = " << y << endl;
 #	endif
 			if (shape >= 0) {    // Moving a shape?
 				if (file == U7_SHAPE_SHAPES) {
 					// For now, just allow "shapes.vga".
-					Move_dragged_shape(
-							shape, frame, x, y, drag_prevx, drag_prevy, true);
+					Move_dragged_shape(shape, frame, x, y, drag_prevx, drag_prevy, true);
 				}
 			}
 		} else if (drag_cbcnt != -1) {
@@ -2325,37 +2138,26 @@ static void Handle_event(SDL_Event& event) {
 			int combo_tiles_below = drag_cbbtiles;
 			int combo_cnt         = drag_cbcnt;
 #	ifdef DEBUG
-			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Combo: xtiles = "
-				 << combo_xtiles << ", ytiles = " << combo_ytiles
-				 << ", tiles_right = " << combo_tiles_right
-				 << ", tiles_below = " << combo_tiles_below
-				 << ", count = " << combo_cnt << ", at x = " << x
-				 << ", y = " << y << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Combo: xtiles = " << combo_xtiles << ", ytiles = " << combo_ytiles
+				 << ", tiles_right = " << combo_tiles_right << ", tiles_below = " << combo_tiles_below << ", count = " << combo_cnt
+				 << ", at x = " << x << ", y = " << y << endl;
 #	endif
 			if (combo_cnt >= 0) {
 				Move_dragged_combo(
-						combo_xtiles, combo_ytiles, combo_tiles_right,
-						combo_tiles_below, x, y, drag_prevx, drag_prevy, true);
+						combo_xtiles, combo_ytiles, combo_tiles_right, combo_tiles_below, x, y, drag_prevx, drag_prevy, true);
 			}
 		} else if (drag_cnknum != -1) {
 #	ifdef DEBUG
-			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Chunk: num = "
-				 << drag_cnknum << ", at x = " << x << ", y = " << y << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_BEGIN Event, Chunk: num = " << drag_cnknum << ", at x = " << x << ", y = " << y << endl;
 #	endif
 			int cx, cy;
 			gwin->get_win()->screen_to_game(x, y, false, cx, cy);
-			cx = ((gwin->get_scrolltx() + (cx / c_tilesize))
-				  / c_tiles_per_chunk)
-				 * c_tiles_per_chunk;
-			cy = ((gwin->get_scrollty() + (cy / c_tilesize))
-				  / c_tiles_per_chunk)
-				 * c_tiles_per_chunk;
+			cx = ((gwin->get_scrolltx() + (cx / c_tilesize)) / c_tiles_per_chunk) * c_tiles_per_chunk;
+			cy = ((gwin->get_scrollty() + (cy / c_tilesize)) / c_tiles_per_chunk) * c_tiles_per_chunk;
 			cx = ((cx - gwin->get_scrolltx()) * c_tilesize) + c_chunksize;
 			cy = ((cy - gwin->get_scrollty()) * c_tilesize) + c_chunksize;
 			gwin->get_win()->game_to_screen(cx, cy, false, x, y);
-			Move_grid(
-					x, y, drag_prevx, drag_prevy, false, c_tiles_per_chunk,
-					c_tiles_per_chunk, 0, 0);
+			Move_grid(x, y, drag_prevx, drag_prevy, false, c_tiles_per_chunk, c_tiles_per_chunk, 0, 0);
 			gwin->show();
 		}
 		drag_prevx = x;
@@ -2384,81 +2186,56 @@ static void Handle_event(SDL_Event& event) {
 			y = -1;
 		}
 #	ifdef DEBUG
-		cout << "(EXULT) SDL_EVENT_DROP_"
-			 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
-													   : "COMPLETE")
-			 << " Event, type = " << event.drop.type << ", at x = " << x
-			 << ", y = " << y << endl;
+		cout << "(EXULT) SDL_EVENT_DROP_" << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION" : "COMPLETE")
+			 << " Event, type = " << event.drop.type << ", at x = " << x << ", y = " << y << endl;
 #	endif
 		if (drag_shpnum != -1) {
 			int file = drag_shfile, shape = drag_shpnum, frame = drag_shfnum;
 #	ifdef DEBUG
-			cout << "(EXULT) SDL_EVENT_DROP_"
-				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
-														   : "COMPLETE")
-				 << " Event, Shape: file = " << file << ", shape = " << shape
-				 << ", frame = " << frame << ", at x = " << x << ", y = " << y
-				 << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_" << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION" : "COMPLETE")
+				 << " Event, Shape: file = " << file << ", shape = " << shape << ", frame = " << frame << ", at x = " << x
+				 << ", y = " << y << endl;
 #	endif
 			if (shape >= 0) {    // Moving a shape?
 				if (file == U7_SHAPE_SHAPES) {
 					// For now, just allow "shapes.vga".
-					Move_dragged_shape(
-							shape, frame, x, y, drag_prevx, drag_prevy, true);
+					Move_dragged_shape(shape, frame, x, y, drag_prevx, drag_prevy, true);
 				}
 			}
 		} else if (drag_cbcnt != -1) {
 			int combo_xtiles = drag_cbxtiles, combo_ytiles = drag_cbytiles;
-			int combo_tiles_right = drag_cbrtiles,
-				combo_tiles_below = drag_cbbtiles;
-			int combo_cnt         = drag_cbcnt;
+			int combo_tiles_right = drag_cbrtiles, combo_tiles_below = drag_cbbtiles;
+			int combo_cnt = drag_cbcnt;
 #	ifdef DEBUG
-			cout << "(EXULT) SDL_EVENT_DROP_"
-				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
-														   : "COMPLETE")
-				 << " Event, Combo: xtiles = " << combo_xtiles
-				 << ", ytiles = " << combo_ytiles
-				 << ", tiles_right = " << combo_tiles_right
-				 << ", tiles_below = " << combo_tiles_below
-				 << ", count = " << combo_cnt << ", at x = " << x
-				 << ", y = " << y << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_" << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION" : "COMPLETE")
+				 << " Event, Combo: xtiles = " << combo_xtiles << ", ytiles = " << combo_ytiles
+				 << ", tiles_right = " << combo_tiles_right << ", tiles_below = " << combo_tiles_below << ", count = " << combo_cnt
+				 << ", at x = " << x << ", y = " << y << endl;
 #	endif
 			if (combo_cnt >= 0) {
 				Move_dragged_combo(
-						combo_xtiles, combo_ytiles, combo_tiles_right,
-						combo_tiles_below, x, y, drag_prevx, drag_prevy, true);
+						combo_xtiles, combo_ytiles, combo_tiles_right, combo_tiles_below, x, y, drag_prevx, drag_prevy, true);
 			}
 		} else if (drag_cnknum != -1) {
 #	ifdef DEBUG
-			cout << "(EXULT) SDL_EVENT_DROP_"
-				 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
-														   : "COMPLETE")
-				 << " Event, Chunk: num = " << drag_cnknum << ", at x = " << x
-				 << ", y = " << y << endl;
+			cout << "(EXULT) SDL_EVENT_DROP_" << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION" : "COMPLETE")
+				 << " Event, Chunk: num = " << drag_cnknum << ", at x = " << x << ", y = " << y << endl;
 #	endif
 			int cx, cy;
 			gwin->get_win()->screen_to_game(x, y, false, cx, cy);
-			cx = ((gwin->get_scrolltx() + (cx / c_tilesize))
-				  / c_tiles_per_chunk)
-				 * c_tiles_per_chunk;
-			cy = ((gwin->get_scrollty() + (cy / c_tilesize))
-				  / c_tiles_per_chunk)
-				 * c_tiles_per_chunk;
+			cx = ((gwin->get_scrolltx() + (cx / c_tilesize)) / c_tiles_per_chunk) * c_tiles_per_chunk;
+			cy = ((gwin->get_scrollty() + (cy / c_tilesize)) / c_tiles_per_chunk) * c_tiles_per_chunk;
 			cx = ((cx - gwin->get_scrolltx()) * c_tilesize) + c_chunksize;
 			cy = ((cy - gwin->get_scrollty()) * c_tilesize) + c_chunksize;
 			gwin->get_win()->game_to_screen(cx, cy, false, x, y);
-			Move_grid(
-					x, y, drag_prevx, drag_prevy, false, c_tiles_per_chunk,
-					c_tiles_per_chunk, 0, 0);
+			Move_grid(x, y, drag_prevx, drag_prevy, false, c_tiles_per_chunk, c_tiles_per_chunk, 0, 0);
 			gwin->show();
 		}
 		drag_prevx = x;
 		drag_prevy = y;
 #	ifdef DEBUG
-		cout << "(EXULT) SDL_EVENT_DROP_"
-			 << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION"
-													   : "COMPLETE")
-			 << " Event complete" << endl;
+		cout << "(EXULT) SDL_EVENT_DROP_" << (event.type == SDL_EVENT_DROP_POSITION ? "POSITION" : "COMPLETE") << " Event complete"
+			 << endl;
 #	endif
 #endif
 		break;
@@ -2488,11 +2265,10 @@ static bool Get_click(
 		bool  drag_ok,         // Okay to drag/close while here.
 		bool  rotate_colors    // If the palette colors should rotate.
 ) {
-	dragging            = false;    // Init.
-	uint32 last_rotate  = 0;
-	g_waiting_for_click = true;
-	SDL_Renderer* renderer
-			= SDL_GetRenderer(gwin->get_win()->get_screen_window());
+	dragging               = false;    // Init.
+	uint32 last_rotate     = 0;
+	g_waiting_for_click    = true;
+	SDL_Renderer* renderer = SDL_GetRenderer(gwin->get_win()->get_screen_window());
 	while (true) {
 		SDL_Event event;
 		Delay();    // Wait a fraction of a second.
@@ -2503,8 +2279,7 @@ static bool Get_click(
 		Mouse::mouse_update = false;
 
 		if (rotate_colors) {
-			const int rot_speed
-					= 100 << (gwin->get_win()->fast_palette_rotate() ? 0 : 1);
+			const int rot_speed = 100 << (gwin->get_win()->fast_palette_rotate() ? 0 : 1);
 			if (ticks > last_rotate + rot_speed) {
 				// (Blits in simulated 8-bit mode.)
 				gwin->get_win()->rotate_colors(0xfc, 3, 0);
@@ -2529,31 +2304,25 @@ static bool Get_click(
 			SDL_ConvertEventToRenderCoordinates(renderer, &event);
 			switch (event.type) {
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
-				SDL_SetWindowMouseGrab(
-						gwin->get_win()->get_screen_window(), true);
+				SDL_SetWindowMouseGrab(gwin->get_win()->get_screen_window(), true);
 				if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
 					break;
 				}
 				if (event.button.button == 3) {
 					rightclick = true;
 				} else if (drag_ok && event.button.button == 1) {
-					gwin->get_win()->screen_to_game(
-							event.button.x, event.button.y,
-							gwin->get_fastmouse(), x, y);
+					gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
 					dragging = gwin->start_dragging(x, y);
 					dragged  = false;
 				}
 				break;
 			case SDL_EVENT_MOUSE_BUTTON_UP:
-				SDL_SetWindowMouseGrab(
-						gwin->get_win()->get_screen_window(), false);
+				SDL_SetWindowMouseGrab(gwin->get_win()->get_screen_window(), false);
 				if (g_shortcutBar && g_shortcutBar->handle_event(&event)) {
 					break;
 				}
 				if (event.button.button == 1) {
-					gwin->get_win()->screen_to_game(
-							event.button.x, event.button.y,
-							gwin->get_fastmouse(), x, y);
+					gwin->get_win()->screen_to_game(event.button.x, event.button.y, gwin->get_fastmouse(), x, y);
 					const bool drg   = dragging;
 					const bool drged = dragged;
 					dragging = dragged = false;
@@ -2577,9 +2346,7 @@ static bool Get_click(
 			case SDL_EVENT_MOUSE_MOTION: {
 				int mx;
 				int my;
-				gwin->get_win()->screen_to_game(
-						event.motion.x, event.motion.y, gwin->get_fastmouse(),
-						mx, my);
+				gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
 
 				Mouse::mouse()->move(mx, my);
 				Mouse::mouse_update = true;
@@ -2611,14 +2378,12 @@ static bool Get_click(
 					if (keybinder->IsMotionEvent(event)) {
 						break;
 					}
-					if ((c == SDLK_S) && (event.key.mod & SDL_KMOD_ALT)
-						&& (event.key.mod & SDL_KMOD_CTRL)) {
+					if ((c == SDLK_S) && (event.key.mod & SDL_KMOD_ALT) && (event.key.mod & SDL_KMOD_CTRL)) {
 						make_screenshot(true);
 						break;
 					}
 					if (chr) {    // Looking for a character?
-						*chr = (event.key.mod & SDL_KMOD_SHIFT) ? toupper(c)
-																: c;
+						*chr                = (event.key.mod & SDL_KMOD_SHIFT) ? toupper(c) : c;
 						g_waiting_for_click = false;
 						return true;
 					}
@@ -2655,12 +2420,12 @@ static bool Get_click(
  */
 
 bool Get_click(
-		int& x, int& y,                 // Location returned (if not ESC).
-		Mouse::Mouse_shapes shape,      // Mouse shape to use.
-		char*               chr,        // Char. returned if not null.
-		bool                drag_ok,    // Okay to drag/close while here.
-		Paintable*          paint,      // Paint this over everything else.
-		bool rotate_colors              // If the palette colors should rotate.
+		int& x, int& y,                      // Location returned (if not ESC).
+		Mouse::Mouse_shapes shape,           // Mouse shape to use.
+		char*               chr,             // Char. returned if not null.
+		bool                drag_ok,         // Okay to drag/close while here.
+		Paintable*          paint,           // Paint this over everything else.
+		bool                rotate_colors    // If the palette colors should rotate.
 ) {
 	if (chr) {
 		*chr = 0;    // Init.
@@ -2700,23 +2465,19 @@ void Wait_for_arrival(
 	Actor_action* orig_action  = actor->get_action();
 	const uint32  stop_time    = SDL_GetTicks() + maxticks;
 	bool          timeout      = false;
-	while (actor->is_moving() && actor->get_action() == orig_action
-		   && actor->get_tile() != dest && !timeout) {
+	while (actor->is_moving() && actor->get_action() == orig_action && actor->get_tile() != dest && !timeout) {
 		Delay();    // Wait a fraction of a second.
 
 		Mouse::mouse()->hide();    // Turn off mouse.
 		Mouse::mouse_update = false;
 
-		SDL_Renderer* renderer
-				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
-		SDL_Event event;
+		SDL_Renderer* renderer = SDL_GetRenderer(gwin->get_win()->get_screen_window());
+		SDL_Event     event;
 		while (SDL_PollEvent(&event)) {
 			SDL_ConvertEventToRenderCoordinates(renderer, &event);
 			switch (event.type) {
 			case SDL_EVENT_MOUSE_MOTION:
-				gwin->get_win()->screen_to_game(
-						event.motion.x, event.motion.y, gwin->get_fastmouse(),
-						mx, my);
+				gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
 
 				Mouse::mouse()->move(mx, my);
 				Mouse::mouse_update = true;
@@ -2758,15 +2519,14 @@ void Wait_for_arrival(
 
 static void Shift_wizards_eye(int mx, int my) {
 	// Figure dir. from center.
-	const int        cx  = gwin->get_width() / 2;
-	const int        cy  = gwin->get_height() / 2;
-	const int        dy  = cy - my;
-	const int        dx  = mx - cx;
-	const Direction  dir = Get_direction_NoWrap(dy, dx);
-	static const int deltas[16]
-			= {0, -1, 1, -1, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0, -1, -1};
-	const int dirx = deltas[2 * dir];
-	const int diry = deltas[2 * dir + 1];
+	const int        cx         = gwin->get_width() / 2;
+	const int        cy         = gwin->get_height() / 2;
+	const int        dy         = cy - my;
+	const int        dx         = mx - cx;
+	const Direction  dir        = Get_direction_NoWrap(dy, dx);
+	static const int deltas[16] = {0, -1, 1, -1, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0, -1, -1};
+	const int        dirx       = deltas[2 * dir];
+	const int        diry       = deltas[2 * dir + 1];
 	if (dirx == 1) {
 		gwin->view_right();
 	} else if (dirx == -1) {
@@ -2808,10 +2568,9 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 		Delay();    // Wait a fraction of a second.
 
 		Mouse::mouse()->hide();    // Turn off mouse.
-		Mouse::mouse_update = false;
-		SDL_Renderer* renderer
-				= SDL_GetRenderer(gwin->get_win()->get_screen_window());
-		SDL_Event event;
+		Mouse::mouse_update    = false;
+		SDL_Renderer* renderer = SDL_GetRenderer(gwin->get_win()->get_screen_window());
+		SDL_Event     event;
 		while (SDL_PollEvent(&event)) {
 			SDL_ConvertEventToRenderCoordinates(renderer, &event);
 			switch (event.type) {
@@ -2831,13 +2590,10 @@ void Wizard_eye(long msecs    // Length of time in milliseconds.
 			case SDL_EVENT_MOUSE_MOTION: {
 				int mx;
 				int my;
-				gwin->get_win()->screen_to_game(
-						event.motion.x, event.motion.y, gwin->get_fastmouse(),
-						mx, my);
+				gwin->get_win()->screen_to_game(event.motion.x, event.motion.y, gwin->get_fastmouse(), mx, my);
 
 				Mouse::mouse()->move(mx, my);
-				Mouse::mouse()->set_shape(Mouse::mouse()->get_short_arrow(
-						Get_direction_NoWrap(cy - my, mx - cx)));
+				Mouse::mouse()->set_shape(Mouse::mouse()->get_short_arrow(Get_direction_NoWrap(cy - my, mx - cx)));
 				Mouse::mouse_update = true;
 				break;
 			}
@@ -2942,15 +2698,11 @@ void decrease_scaleval() {
 void set_scaleval(int new_scaleval) {
 	const int  scaler     = gwin->get_win()->get_scaler();
 	const bool fullscreen = gwin->get_win()->is_fullscreen();
-	if (new_scaleval >= 1 && !fullscreen && scaler == Image_window::point
-		&& cheat.in_map_editor()) {
+	if (new_scaleval >= 1 && !fullscreen && scaler == Image_window::point && cheat.in_map_editor()) {
 		current_scaleval = new_scaleval;
 		bool share_settings;
-		config->value(
-				"config/video/share_video_settings", share_settings, true);
-		const string& vidStr = (fullscreen || share_settings)
-									   ? "config/video"
-									   : "config/video/window";
+		config->value("config/video/share_video_settings", share_settings, true);
+		const string& vidStr = (fullscreen || share_settings) ? "config/video" : "config/video/window";
 		int           resx;
 		int           resy;
 		config->value(vidStr + "/display/width", resx);
@@ -2958,9 +2710,7 @@ void set_scaleval(int new_scaleval) {
 
 		// for Studio zooming we set game area to auto, fill quality to point,
 		// fill mode to fill and increase/decrease the scale value
-		gwin->resized(
-				resx, resy, fullscreen, 0, 0, current_scaleval, scaler,
-				Image_window::Fill, Image_window::point);
+		gwin->resized(resx, resy, fullscreen, 0, 0, current_scaleval, scaler, Image_window::Fill, Image_window::point);
 	}
 }
 
@@ -2974,9 +2724,7 @@ void make_screenshot(bool silent) {
 
 	// look for the next available exult???.pcx or .png file
 	for (int i = 0; i < 1000 && !namefound; i++) {
-		snprintf(
-				fn, strsize, "%s/exult%03i." EXULT_IMAGE_SUFFIX,
-				savegamepath.c_str(), i);
+		snprintf(fn, strsize, "%s/exult%03i." EXULT_IMAGE_SUFFIX, savegamepath.c_str(), i);
 		FILE* f = fopen(fn, "rb");
 		if (f) {
 			fclose(f);
@@ -2987,8 +2735,7 @@ void make_screenshot(bool silent) {
 
 	if (!namefound) {
 		if (!silent) {
-			eman->center_text(get_text_msg(
-					0x740 - msg_file_start));    // "Too many screenshots"
+			eman->center_text(get_text_msg(0x740 - msg_file_start));    // "Too many screenshots"
 		}
 	} else {
 		SDL_IOStream* dst = SDL_IOFromFile(fn, "wb");
@@ -2996,13 +2743,11 @@ void make_screenshot(bool silent) {
 		if (gwin->get_win()->screenshot(dst)) {
 			cout << "Screenshot saved in " << fn << endl;
 			if (!silent) {
-				eman->center_text(get_text_msg(
-						0x741 - msg_file_start));    // "Screenshot"
+				eman->center_text(get_text_msg(0x741 - msg_file_start));    // "Screenshot"
 			}
 		} else {
 			if (!silent) {
-				eman->center_text(get_text_msg(
-						0x742 - msg_file_start));    // "Screenshot failed"
+				eman->center_text(get_text_msg(0x742 - msg_file_start));    // "Screenshot failed"
 			}
 		}
 	}
@@ -3081,21 +2826,16 @@ void BuildGameMap(BaseGameInfo* game, int mapnum) {
 		const string savegamepath = get_system_path("<SAVEGAME>");
 		for (int x = 0; x < c_num_chunks / c_chunks_per_schunk; x++) {
 			for (int y = 0; y < c_num_chunks / c_chunks_per_schunk; y++) {
-				gwin->paint_map_at_tile(
-						0, 0, w, h, x * c_tiles_per_schunk,
-						y * c_tiles_per_schunk, maplift);
+				gwin->paint_map_at_tile(0, 0, w, h, x * c_tiles_per_schunk, y * c_tiles_per_schunk, maplift);
 				const size_t strsize = savegamepath.size() + 20;
 				char*        fn      = new char[strsize];
-				snprintf(
-						fn, strsize, "%s/u7map%02x." EXULT_IMAGE_SUFFIX,
-						savegamepath.c_str(), (12 * y) + x);
+				snprintf(fn, strsize, "%s/u7map%02x." EXULT_IMAGE_SUFFIX, savegamepath.c_str(), (12 * y) + x);
 				SDL_IOStream* dst = SDL_IOFromFile(fn, "wb");
 				cerr << x << "," << y << ": ";
 				gwin->get_win()->screenshot(dst);
 			}
 		}
-		cout << "--buildmap saved the map screenshots in " << savegamepath
-			 << endl;
+		cout << "--buildmap saved the map screenshots in " << savegamepath << endl;
 		Audio::Destroy();
 		exit(0);
 	}
@@ -3108,9 +2848,8 @@ void BuildGameMap(BaseGameInfo* game, int mapnum) {
  *  video_init does save before trying to open the Game_window just in case
  */
 void setup_video(
-		bool fullscreen, int setup_video_type, int resx, int resy, int gw,
-		int gh, int scaleval, int scaler, Image_window::FillMode fillmode,
-		int fill_scaler) {
+		bool fullscreen, int setup_video_type, int resx, int resy, int gw, int gh, int scaleval, int scaler,
+		Image_window::FillMode fillmode, int fill_scaler) {
 	string fmode_string;
 	string sclr;
 	string scalerName;
@@ -3131,9 +2870,7 @@ void setup_video(
 	}
 	bool share_settings;
 	config->value("config/video/share_video_settings", share_settings, true);
-	const string vidStr(
-			(fullscreen || share_settings) ? "config/video"
-										   : "config/video/window");
+	const string vidStr((fullscreen || share_settings) ? "config/video" : "config/video/window");
 	if (read_config) {
 #ifdef DEBUG
 		cout << "Reading video menu adjustable configuration options" << endl;
@@ -3181,20 +2918,16 @@ void setup_video(
 		config->value(vidStr + "/scale", scaleval, sc);
 		scaler = Image_window::get_scaler_for_name(sclr.c_str());
 		// Ensure a default scaler if a wrong scaler name is set
-		if (scaler == Image_window::NoScaler
-			|| scaler == Image_window::SDLScaler) {
+		if (scaler == Image_window::NoScaler || scaler == Image_window::SDLScaler) {
 			scaler = Image_window::get_scaler_for_name(default_scaler.c_str());
 		}
 		// Ensure proper values for scaleval based on scaler.
 		if (scaler == Image_window::Hq3x || scaler == Image_window::_3xBR) {
 			scaleval = 3;
-		} else if (
-				scaler == Image_window::Hq4x || scaler == Image_window::_4xBR) {
+		} else if (scaler == Image_window::Hq4x || scaler == Image_window::_4xBR) {
 			scaleval = 4;
 		} else if (
-				scaler != Image_window::point
-				&& scaler != Image_window::SDLScaler
-				&& scaler != Image_window::interlaced
+				scaler != Image_window::point && scaler != Image_window::SDLScaler && scaler != Image_window::interlaced
 				&& scaler != Image_window::bilinear) {
 			scaleval = 2;
 		}
@@ -3202,8 +2935,7 @@ void setup_video(
 		int dh = resy * scaleval;
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID)
 		// Default display is desktop
-		const SDL_DisplayMode* dispmode
-				= SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+		const SDL_DisplayMode* dispmode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
 		if (dispmode) {
 			dw = dispmode->w;
 			dh = dispmode->h;
@@ -3222,10 +2954,8 @@ void setup_video(
 		if (fillmode == 0) {
 			fillmode = Image_window::AspectCorrectFit;
 		}
-		config->value(
-				vidStr + "/fill_scaler", fill_scaler_str, default_fill_scaler);
-		fill_scaler
-				= Image_window::get_scaler_for_name(fill_scaler_str.c_str());
+		config->value(vidStr + "/fill_scaler", fill_scaler_str, default_fill_scaler);
+		fill_scaler = Image_window::get_scaler_for_name(fill_scaler_str.c_str());
 		if (fill_scaler == Image_window::NoScaler) {
 			fill_scaler = Image_window::bilinear;
 		}
@@ -3235,12 +2965,9 @@ void setup_video(
 		fillScalerName = Image_window::get_name_for_scaler(fill_scaler);
 		Image_window::fillmode_to_string(fillmode, fmode_string);
 #ifdef DEBUG
-		cout << "Setting video menu adjustable configuration options " << resx
-			 << " resX, " << resy << " resY, " << gw << " gameW, " << gh
-			 << " gameH, " << scaleval << " scale, " << scalerName
-			 << " scaler, " << fmode_string << " fill mode, " << fillScalerName
-			 << " fill scaler, " << (fullscreen ? "full screen" : "window")
-			 << endl;
+		cout << "Setting video menu adjustable configuration options " << resx << " resX, " << resy << " resY, " << gw << " gameW, "
+			 << gh << " gameH, " << scaleval << " scale, " << scalerName << " scaler, " << fmode_string << " fill mode, "
+			 << fillScalerName << " fill scaler, " << (fullscreen ? "full screen" : "window") << endl;
 #endif
 		config->set((vidStr + "/display/width").c_str(), resx, false);
 		config->set((vidStr + "/display/height").c_str(), resy, false);
@@ -3253,19 +2980,13 @@ void setup_video(
 	}
 	if (video_init) {
 #ifdef DEBUG
-		cout << "Initializing Game_window to " << resx << " resX, " << resy
-			 << " resY, " << gw << " gameW, " << gh << " gameH, " << scaleval
-			 << " scale, " << scalerName << " scaler, " << fmode_string
-			 << " fill mode, " << fillScalerName << " fill scaler, "
-			 << (fullscreen ? "full screen" : "window") << endl;
+		cout << "Initializing Game_window to " << resx << " resX, " << resy << " resY, " << gw << " gameW, " << gh << " gameH, "
+			 << scaleval << " scale, " << scalerName << " scaler, " << fmode_string << " fill mode, " << fillScalerName
+			 << " fill scaler, " << (fullscreen ? "full screen" : "window") << endl;
 #endif
-		config->set(
-				"config/video/share_video_settings",
-				share_settings ? "yes" : "no", false);
+		config->set("config/video/share_video_settings", share_settings ? "yes" : "no", false);
 		config->write_back();
-		gwin = new Game_window(
-				resx, resy, fullscreen, gw, gh, scaleval, scaler, fillmode,
-				fill_scaler);
+		gwin = new Game_window(resx, resy, fullscreen, gw, gh, scaleval, scaler, fillmode, fill_scaler);
 		// Ensure proper clipping:
 		gwin->get_win()->clear_clip();
 	} else if (change_gwin) {
@@ -3275,27 +2996,20 @@ void setup_video(
 			scalerName     = Image_window::get_name_for_scaler(scaler);
 			fillScalerName = Image_window::get_name_for_scaler(fill_scaler);
 		}
-		cout << "Changing Game_window to " << resx << " resX, " << resy
-			 << " resY, " << gw << " gameW, " << gh << " gameH, " << scaleval
-			 << " scale, " << scalerName << " scaler, " << fmode_string
-			 << " fill mode, " << fillScalerName << " fill scaler, "
-			 << (fullscreen ? "full screen" : "window") << endl;
+		cout << "Changing Game_window to " << resx << " resX, " << resy << " resY, " << gw << " gameW, " << gh << " gameH, "
+			 << scaleval << " scale, " << scalerName << " scaler, " << fmode_string << " fill mode, " << fillScalerName
+			 << " fill scaler, " << (fullscreen ? "full screen" : "window") << endl;
 #endif
-		gwin->resized(
-				resx, resy, fullscreen, gw, gh, scaleval, scaler, fillmode,
-				fill_scaler);
+		gwin->resized(resx, resy, fullscreen, gw, gh, scaleval, scaler, fillmode, fill_scaler);
 	}
 	if (menu_init) {
 #ifdef DEBUG
 		Image_window::fillmode_to_string(fillmode, fmode_string);
 		scalerName     = Image_window::get_name_for_scaler(scaler);
 		fillScalerName = Image_window::get_name_for_scaler(fill_scaler);
-		cout << "Initializing video options menu settings " << resx << " resX, "
-			 << resy << " resY, " << gw << " gameW, " << gh << " gameH, "
-			 << scaleval << " scale, " << scalerName << " scaler, "
-			 << fmode_string << " fill mode, " << fillScalerName
-			 << " fill scaler, " << (fullscreen ? "full screen" : "window")
-			 << endl;
+		cout << "Initializing video options menu settings " << resx << " resX, " << resy << " resY, " << gw << " gameW, " << gh
+			 << " gameH, " << scaleval << " scale, " << scalerName << " scaler, " << fmode_string << " fill mode, "
+			 << fillScalerName << " fill scaler, " << (fullscreen ? "full screen" : "window") << endl;
 #endif
 		VideoOptions_gump* videoGump = VideoOptions_gump::get_instance();
 		videoGump->set_scaling(scaleval - 1);
@@ -3347,9 +3061,8 @@ static void Move_grid(
 		// Repaint over old area.
 		const int pad = 8;
 		TileRect  r(
-                (ptx - xtiles + 1) * c_tilesize - pad,
-                (pty - ytiles + 1) * c_tilesize - pad,
-                xtiles * c_tilesize + 2 * pad, ytiles * c_tilesize + 2 * pad);
+                (ptx - xtiles + 1) * c_tilesize - pad, (pty - ytiles + 1) * c_tilesize - pad, xtiles * c_tilesize + 2 * pad,
+                ytiles * c_tilesize + 2 * pad);
 		r = gwin->clip_to_win(r);
 		gwin->add_dirty(r);
 		gwin->paint_dirty();
@@ -3361,19 +3074,14 @@ static void Move_grid(
 	tx -= xtiles - 1;    // Get top-left of footprint.
 	ty -= ytiles - 1;
 	// Let's try a green outline.
-	const int pix
-			= Shape_manager::get_instance()->get_special_pixel(POISON_PIXEL);
+	const int      pix = Shape_manager::get_instance()->get_special_pixel(POISON_PIXEL);
 	Image_window8* win = gwin->get_win();
 	win->set_clip(0, 0, win->get_game_width(), win->get_game_height());
 	for (int Y = 0; Y <= ytiles; Y++) {
-		win->fill8(
-				pix, xtiles * c_tilesize, 1, tx * c_tilesize,
-				(ty + Y) * c_tilesize);
+		win->fill8(pix, xtiles * c_tilesize, 1, tx * c_tilesize, (ty + Y) * c_tilesize);
 	}
 	for (int X = 0; X <= xtiles; X++) {
-		win->fill8(
-				pix, 1, ytiles * c_tilesize, (tx + X) * c_tilesize,
-				ty * c_tilesize);
+		win->fill8(pix, 1, ytiles * c_tilesize, (tx + X) * c_tilesize, ty * c_tilesize);
 	}
 	win->clear_clip();
 	gwin->set_painted();
@@ -3401,9 +3109,7 @@ static void Move_dragged_shape(
 	const int ytiles = info.get_3d_ytiles(frame);
 	const int sclass = info.get_shape_class();
 	// Is it an ireg (changeable) obj?
-	const bool ireg
-			= (sclass != Shape_info::unusable
-			   && sclass != Shape_info::building);
+	const bool ireg = (sclass != Shape_info::unusable && sclass != Shape_info::building);
 	Move_grid(x, y, prevx, prevy, ireg, xtiles, ytiles, 0, 0);
 	if (show) {
 		gwin->show();
@@ -3421,9 +3127,7 @@ static void Move_dragged_combo(
 		int prevx, int prevy,             // Prev. coords, or -1.
 		bool show                         // Blit window.
 ) {
-	Move_grid(
-			x, y, prevx, prevy, false, xtiles, ytiles, tiles_right,
-			tiles_below);
+	Move_grid(x, y, prevx, prevy, false, xtiles, ytiles, tiles_right, tiles_below);
 	if (show) {
 		gwin->show();
 	}
@@ -3443,8 +3147,7 @@ static Game_object_shared Create_object(
 	ireg = (sclass != Shape_info::unusable && sclass != Shape_info::building);
 	Game_object_shared newobj;
 	if (ireg) {
-		newobj = gwin->get_map()->create_ireg_object(
-				info, shape, frame, 0, 0, 0);
+		newobj = gwin->get_map()->create_ireg_object(info, shape, frame, 0, 0, 0);
 	} else {
 		newobj = gwin->get_map()->create_ifix_object(shape, frame);
 	}
@@ -3467,17 +3170,16 @@ static void Drop_dragged_shape(
 	gwin->get_win()->screen_to_game(x, y, false, x, y);
 	const ShapeID sid(shape, frame);
 	if (gwin->skip_lift == 0) {    // Editing terrain?
-		int        tx = (gwin->get_scrolltx() + x / c_tilesize) % c_num_tiles;
-		int        ty = (gwin->get_scrollty() + y / c_tilesize) % c_num_tiles;
-		const int  cx = tx / c_tiles_per_chunk;
-		const int  cy = ty / c_tiles_per_chunk;
-		Map_chunk* chunk   = gwin->get_map()->get_chunk(cx, cy);
-		Chunk_terrain* ter = chunk->get_terrain();
+		int            tx    = (gwin->get_scrolltx() + x / c_tilesize) % c_num_tiles;
+		int            ty    = (gwin->get_scrollty() + y / c_tilesize) % c_num_tiles;
+		const int      cx    = tx / c_tiles_per_chunk;
+		const int      cy    = ty / c_tiles_per_chunk;
+		Map_chunk*     chunk = gwin->get_map()->get_chunk(cx, cy);
+		Chunk_terrain* ter   = chunk->get_terrain();
 		tx %= c_tiles_per_chunk;
 		ty %= c_tiles_per_chunk;
 		const ShapeID curid = ter->get_flat(tx, ty);
-		if (sid.get_shapenum() != curid.get_shapenum()
-			|| sid.get_framenum() != curid.get_framenum()) {
+		if (sid.get_shapenum() != curid.get_shapenum() || sid.get_framenum() != curid.get_framenum()) {
 			ter->set_flat(tx, ty, sid);
 			Game_map::set_chunk_terrains_modified();
 			gwin->set_all_dirty();    // ++++++++For now.++++++++++
@@ -3593,8 +3295,7 @@ void Drop_dragged_combo(
 			continue;
 		}
 		bool                     ireg;    // Create object.
-		const Game_object_shared newobj
-				= Create_object(elem.shape, elem.frame, ireg);
+		const Game_object_shared newobj = Create_object(elem.shape, elem.frame, ireg);
 		newobj->set_invalid();    // Not in world.
 		newobj->move(ntx, nty, ntz);
 		// Add to selection.

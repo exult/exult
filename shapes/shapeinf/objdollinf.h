@@ -49,19 +49,17 @@ private:
 						 // not
 	bool gender;         // Is this object gender specific
 
-	short shape;    // The shape (if -1 use world shape and frame)
+	short                shape;    // The shape (if -1 use world shape and frame)
 	std::array<short, 4> frame;    // The paperdoll frame and alternates.
 public:
 	friend class Shape_info;
 	Paperdoll_item() = default;
 
 	Paperdoll_item(
-			short w, short sp, short ty, bool tr, bool g, short sh, short fr0,
-			short fr1, short fr2, short fr3, bool p = false, bool m = false,
-			bool s = false, bool inv = false)
-			: Base_info(m, p, inv, s), world_frame(w), spot(sp), type(ty),
-			  translucent(tr), gender(g), shape(sh), frame{fr0, fr1, fr2, fr3} {
-	}
+			short w, short sp, short ty, bool tr, bool g, short sh, short fr0, short fr1, short fr2, short fr3, bool p = false,
+			bool m = false, bool s = false, bool inv = false)
+			: Base_info(m, p, inv, s), world_frame(w), spot(sp), type(ty), translucent(tr), gender(g), shape(sh),
+			  frame{fr0, fr1, fr2, fr3} {}
 
 	// Read in from file.
 	bool read(std::istream& in, int version, Exult_Game game);
@@ -143,8 +141,7 @@ public:
 		}
 	}
 
-	void set_paperdoll_frames(
-			short f0, short f1 = -1, short f2 = -1, short f3 = -1) {
+	void set_paperdoll_frames(short f0, short f1 = -1, short f2 = -1, short f3 = -1) {
 		set_paperdoll_frame(0, f0);
 		set_paperdoll_frame(1, f1);
 		set_paperdoll_frame(2, f2);
@@ -154,8 +151,7 @@ public:
 	bool operator<(const Paperdoll_item& other) const {
 		auto wf1 = static_cast<unsigned short>(world_frame);
 		auto wf2 = static_cast<unsigned short>(other.world_frame);
-		return (wf1 < wf2)
-			   || (world_frame == other.world_frame && spot < other.spot);
+		return (wf1 < wf2) || (world_frame == other.world_frame && spot < other.spot);
 	}
 
 	bool operator==(const Paperdoll_item& other) const {

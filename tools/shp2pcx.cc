@@ -51,14 +51,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	define qtohl(x) (x)
 #	define qtohs(x) (x)
 #else
-#	define qtohl(x)                                   \
-		((uint32)((((uint32)(x) & 0x000000ffU) << 24)  \
-				  | (((uint32)(x) & 0x0000ff00U) << 8) \
-				  | (((uint32)(x) & 0x00ff0000U) >> 8) \
+#	define qtohl(x)                                                                                                            \
+		((uint32)((((uint32)(x) & 0x000000ffU) << 24) | (((uint32)(x) & 0x0000ff00U) << 8) | (((uint32)(x) & 0x00ff0000U) >> 8) \
 				  | (((uint32)(x) & 0xff000000U) >> 24)))
-#	define qtohs(x)                            \
-		((uint16)((((uint16)(x) & 0x00ff) << 8) \
-				  | (((uint16)(x) & 0xff00) >> 8)))
+#	define qtohs(x) ((uint16)((((uint16)(x) & 0x00ff) << 8) | (((uint16)(x) & 0xff00) >> 8)))
 #endif
 #define htoql(x) qtohl(x)
 #define htoqs(x) qtohs(x)
@@ -232,8 +228,7 @@ u7shape* load_shape(char* filename) {
 				const int offsetX = read2signed(fp);
 				const int offsetY = read2signed(fp);
 
-				const int temp_int = (frame->leftY + offsetY) * frame->width
-									 + (frame->leftX + offsetX);
+				const int temp_int = (frame->leftY + offsetY) * frame->width + (frame->leftX + offsetX);
 
 				uint8* pixptr = frame->pixels;
 				pixptr        = pixptr + temp_int;
@@ -290,8 +285,7 @@ u7shape* load_shape(char* filename) {
 		for (int srcy = 0; srcy < frame->height; srcy++, dsty++) {
 			const int dstx = max_leftX - frame->leftX;
 			const int srcx = 0;
-			memcpy(frame->pixels + dsty * width + dstx,
-				   pixptr + srcy * frame->width + srcx, frame->width);
+			memcpy(frame->pixels + dsty * width + dstx, pixptr + srcy * frame->width + srcx, frame->width);
 		}
 
 		delete[] pixptr;
@@ -367,8 +361,7 @@ void save_8(FILE* dst, int width, int height, int pitch, uint8* buffer) {
 	}
 }
 
-void save_image(
-		uint8* pixels, uint8* palette, int width, int height, char* filename) {
+void save_image(uint8* pixels, uint8* palette, int width, int height, char* filename) {
 	int        pitch;
 	PCX_Header header;
 
@@ -440,9 +433,7 @@ int main(int argc, char* argv[]) {
 		char outfilename[255];
 		snprintf(outfilename, sizeof(outfilename), "%s%02i.pcx", outprefix, i);
 		cout << "Writing frame " << i << " to " << outfilename << "..." << endl;
-		save_image(
-				sh->frames[i].pixels, palette, sh->width, sh->height,
-				outfilename);
+		save_image(sh->frames[i].pixels, palette, sh->width, sh->height, outfilename);
 	}
 
 	delete sh;

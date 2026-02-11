@@ -85,8 +85,7 @@ void ucxtInit::init(const Configuration& config, const UCOptions& options) {
 	}
 }
 
-string ucxtInit::get_datadir(
-		const Configuration& config, const UCOptions& options) {
+string ucxtInit::get_datadir(const Configuration& config, const UCOptions& options) {
 	string datadir;
 
 	// just to handle if people are going to compile with makefile.unix,
@@ -101,8 +100,7 @@ string ucxtInit::get_datadir(
 	}
 #endif
 
-	if (!datadir.empty() && datadir[datadir.size() - 1] != '/'
-		&& datadir[datadir.size() - 1] != '\\') {
+	if (!datadir.empty() && datadir[datadir.size() - 1] != '/' && datadir[datadir.size() - 1] != '\\') {
 		datadir += '/';
 	}
 	if (options.verbose) {
@@ -140,11 +138,8 @@ void ucxtInit::misc() {
 		}
 
 		// once we've got it, add it to the map
-		const pair<unsigned int, bool> tsm_tmp(
-				static_cast<unsigned int>(strtol(k.second.c_str(), nullptr, 0)),
-				munge_offset);
-		type_size_map.insert(
-				pair<string, pair<unsigned int, bool>>(k.first, tsm_tmp));
+		const pair<unsigned int, bool> tsm_tmp(static_cast<unsigned int>(strtol(k.second.c_str(), nullptr, 0)), munge_offset);
+		type_size_map.insert(pair<string, pair<unsigned int, bool>>(k.first, tsm_tmp));
 	}
 }
 
@@ -161,9 +156,7 @@ void ucxtInit::opcodes() {
 			opdata.getsubkeys(ktl, key);
 
 			if (!ktl.empty()) {
-				const unsigned int i = static_cast<unsigned int>(
-						strtol(key.substr(key.find_first_of('0')).c_str(),
-							   nullptr, 0));
+				const unsigned int i = static_cast<unsigned int>(strtol(key.substr(key.find_first_of('0')).c_str(), nullptr, 0));
 				opcode_table_data[i] = UCOpcodeData(i, ktl);
 			}
 		}
@@ -173,16 +166,14 @@ void ucxtInit::opcodes() {
 		execute a 'jump' statement */
 	for (auto& op : opcode_table_data) {
 		for (unsigned int i = 0; i < op.param_sizes.size(); i++) {
-			if (op.param_sizes[i].second) {    // this is a calculated offset
-				opcode_jumps.emplace_back(
-						op.opcode, i + 1);    // parameters are stored as base 1
+			if (op.param_sizes[i].second) {                     // this is a calculated offset
+				opcode_jumps.emplace_back(op.opcode, i + 1);    // parameters are stored as base 1
 			}
 		}
 	}
 }
 
-void ucxtInit::intrinsics(
-		const string& intrinsic_data, const string& intrinsic_root) {
+void ucxtInit::intrinsics(const string& intrinsic_data, const string& intrinsic_root) {
 	Configuration intdata(datadir + intrinsic_data, intrinsic_root);
 
 	Configuration::KeyTypeList ktl;
@@ -190,9 +181,7 @@ void ucxtInit::intrinsics(
 	intdata.getsubkeys(ktl, intrinsic_root);
 
 	for (auto& k : ktl) {
-		uc_intrinsics.insert(pair<unsigned int, string>(
-				static_cast<unsigned int>(strtol(k.first.c_str(), nullptr, 0)),
-				k.second));
+		uc_intrinsics.insert(pair<unsigned int, string>(static_cast<unsigned int>(strtol(k.first.c_str(), nullptr, 0)), k.second));
 	}
 }
 
@@ -260,9 +249,7 @@ std::vector<std::string> str2vec(const std::string& s) {
 	return vs;
 }
 
-void map_type_size(
-		const std::vector<std::string>&             param_types,
-		std::vector<std::pair<unsigned int, bool>>& param_sizes) {
+void map_type_size(const std::vector<std::string>& param_types, std::vector<std::pair<unsigned int, bool>>& param_sizes) {
 	for (const auto& param_type : param_types) {
 		auto tsm(type_size_map.find(param_type));
 		if (tsm == type_size_map.end()) {

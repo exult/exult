@@ -35,33 +35,30 @@ const int ticks_per_minute = 25;
  *  Keep track of time, and of the palette for a given time.
  */
 class Game_clock : public Time_sensitive {
-	Time_queue* tqueue;                 // The time queue.
-	short       hour, minute, ticks;    // Time (0-23, 0-59).
-	int         day;                    // Keep track of days played.
-	int         light_source_level;     // Last set light source level.
-	int         old_light_level;        // Last set light source level.
-	bool        old_special_light;      // Last set light source level.
-	bool        old_infravision;        // If infravision was on last time.
-	bool        old_invisible;          // If invisibility was on last time.
-	int         dungeon;                // Last set 'in_dungeon' value.
-	int         overcast;    // >0 if day is overcast (e.g., from a storm).
-	bool        was_overcast;
-	int         fog;    // >0 if there is fog.
-	bool        was_foggy;
-	std::unique_ptr<Palette_transition>
-				   transition;    // For smooth palette transitions.
-	unsigned short time_rate;
-	void           set_time_palette(bool force);
-	void           set_light_source_level(int lev);
-	void           check_hunger() const;
+	Time_queue*                         tqueue;                 // The time queue.
+	short                               hour, minute, ticks;    // Time (0-23, 0-59).
+	int                                 day;                    // Keep track of days played.
+	int                                 light_source_level;     // Last set light source level.
+	int                                 old_light_level;        // Last set light source level.
+	bool                                old_special_light;      // Last set light source level.
+	bool                                old_infravision;        // If infravision was on last time.
+	bool                                old_invisible;          // If invisibility was on last time.
+	int                                 dungeon;                // Last set 'in_dungeon' value.
+	int                                 overcast;               // >0 if day is overcast (e.g., from a storm).
+	bool                                was_overcast;
+	int                                 fog;    // >0 if there is fog.
+	bool                                was_foggy;
+	std::unique_ptr<Palette_transition> transition;    // For smooth palette transitions.
+	unsigned short                      time_rate;
+	void                                set_time_palette(bool force);
+	void                                set_light_source_level(int lev);
+	void                                check_hunger() const;
 
 public:
 	Game_clock(Time_queue* tq)
-			: tqueue(tq), hour(6), minute(0), ticks(0), day(0),
-			  light_source_level(0), old_light_level(0),
-			  old_special_light(false), old_infravision(false),
-			  old_invisible(false), dungeon(255), overcast(0),
-			  was_overcast(false), fog(0), was_foggy(false), time_rate(1) {}
+			: tqueue(tq), hour(6), minute(0), ticks(0), day(0), light_source_level(0), old_light_level(0), old_special_light(false),
+			  old_infravision(false), old_invisible(false), dungeon(255), overcast(0), was_overcast(false), fog(0),
+			  was_foggy(false), time_rate(1) {}
 
 	int get_hour() const {
 		return hour;

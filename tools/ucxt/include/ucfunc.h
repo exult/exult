@@ -31,24 +31,19 @@
 class UCFuncSet {
 public:
 	UCFuncSet(
-			unsigned int new_funcid, unsigned int new_num_args,
-			bool new_return_var, bool new_aborts, bool new_class_fun,
-			const std::string&                   new_funcname,
-			Usecode_symbol::Symbol_kind          new_kind,
-			std::map<unsigned int, std::string>& new_varmap)
-			: funcid(new_funcid), num_args(new_num_args),
-			  return_var(new_return_var), aborts(new_aborts),
-			  class_fun(new_class_fun), funcname(new_funcname), kind(new_kind),
-			  varmap(new_varmap) {}
+			unsigned int new_funcid, unsigned int new_num_args, bool new_return_var, bool new_aborts, bool new_class_fun,
+			const std::string& new_funcname, Usecode_symbol::Symbol_kind new_kind, std::map<unsigned int, std::string>& new_varmap)
+			: funcid(new_funcid), num_args(new_num_args), return_var(new_return_var), aborts(new_aborts), class_fun(new_class_fun),
+			  funcname(new_funcname), kind(new_kind), varmap(new_varmap) {}
 
-	unsigned int funcid;        // the id of the function
-	unsigned int num_args;      // the number of arguments
-	bool         return_var;    // if true, the function returns a variable
-	bool         aborts;        // true if the function may not return
-	bool         class_fun;     // true if this is a class member function
-	std::string  funcname;      // the name of the function, if it has one
-	Usecode_symbol::Symbol_kind          kind;      // Type of function.
-	std::map<unsigned int, std::string>& varmap;    // Variable names
+	unsigned int                         funcid;        // the id of the function
+	unsigned int                         num_args;      // the number of arguments
+	bool                                 return_var;    // if true, the function returns a variable
+	bool                                 aborts;        // true if the function may not return
+	bool                                 class_fun;     // true if this is a class member function
+	std::string                          funcname;      // the name of the function, if it has one
+	Usecode_symbol::Symbol_kind          kind;          // Type of function.
+	std::map<unsigned int, std::string>& varmap;        // Variable names
 };
 
 using FuncMap     = std::map<unsigned int, UCFuncSet>;
@@ -70,9 +65,7 @@ public:
 		PUSH = true
 	};
 
-	FlagData(
-			const long func, const unsigned int offset, const unsigned int flag,
-			const bool access)
+	FlagData(const long func, const unsigned int offset, const unsigned int flag, const bool access)
 			: _func(func), _offset(offset), _flag(flag), _access(access) {}
 
 	long func() const {
@@ -181,8 +174,7 @@ public:
 	void gc() {
 		for (auto j = _uccs.begin(); j != _uccs.end();) {
 #ifdef DEBUG_GOTOSET
-			std::cout << "OP: " << opcode_table_data[j->first->_id].ucs_nmo
-					  << '\t' << j->second;
+			std::cout << "OP: " << opcode_table_data[j->first->_id].ucs_nmo << '\t' << j->second;
 #endif
 			if (j->second) {
 				/* ok, we need to take into consideration that the
@@ -238,65 +230,44 @@ class UCFunc {
 public:
 	UCFunc() = default;
 
-	bool output_list(
-			std::ostream& o, unsigned int funcno, const UCOptions& options);
+	bool output_list(std::ostream& o, unsigned int funcno, const UCOptions& options);
 
 	bool output_ucs(
-			std::ostream& o, const FuncMap& funcmap,
-			const std::map<unsigned int, std::string>& intrinsics,
-			const UCOptions& options, int new_indent,
-			Usecode_symbol_table* symtbl);
+			std::ostream& o, const FuncMap& funcmap, const std::map<unsigned int, std::string>& intrinsics,
+			const UCOptions& options, int new_indent, Usecode_symbol_table* symtbl);
+	std::ostream& output_ucs_funcname(std::ostream& o, const FuncMap& funcmap, Usecode_symbol_table* symtbl);
 	std::ostream& output_ucs_funcname(
-			std::ostream& o, const FuncMap& funcmap,
-			Usecode_symbol_table* symtbl);
-	std::ostream& output_ucs_funcname(
-			std::ostream& o, const FuncMap& funcmap, unsigned int funcid,
-			unsigned int numargs, Usecode_symbol_table* symtbl);
+			std::ostream& o, const FuncMap& funcmap, unsigned int funcid, unsigned int numargs, Usecode_symbol_table* symtbl);
 	void output_ucs_node(
-			std::ostream& o, const FuncMap& funcmap, UCNode* ucn,
-			const std::map<unsigned int, std::string>& intrinsics,
-			unsigned int indent, const UCOptions& options,
-			Usecode_symbol_table* symtbl);
+			std::ostream& o, const FuncMap& funcmap, UCNode* ucn, const std::map<unsigned int, std::string>& intrinsics,
+			unsigned int indent, const UCOptions& options, Usecode_symbol_table* symtbl);
 	void output_ucs_data(
-			std::ostream& o, const FuncMap& funcmap,
-			const std::map<unsigned int, std::string>& intrinsics,
-			const UCOptions& options, unsigned int indent,
-			Usecode_symbol_table* symtbl);
+			std::ostream& o, const FuncMap& funcmap, const std::map<unsigned int, std::string>& intrinsics,
+			const UCOptions& options, unsigned int indent, Usecode_symbol_table* symtbl);
 	void output_ucs_opcode(
-			std::ostream& o, const FuncMap& funcmap,
-			const std::vector<UCOpcodeData>& optab, const UCc& op,
-			const std::map<unsigned int, std::string>& intrinsics,
-			unsigned int indent, Usecode_symbol_table* symtbl);
+			std::ostream& o, const FuncMap& funcmap, const std::vector<UCOpcodeData>& optab, const UCc& op,
+			const std::map<unsigned int, std::string>& intrinsics, unsigned int indent, Usecode_symbol_table* symtbl);
 
 	void parse_ucs(
-			const FuncMap&                             funcmap,
-			const std::map<unsigned int, std::string>& intrinsics,
-			const UCOptions& options, Usecode_symbol_table* symtbl);
+			const FuncMap& funcmap, const std::map<unsigned int, std::string>& intrinsics, const UCOptions& options,
+			Usecode_symbol_table* symtbl);
 	void parse_ucs_pass1(std::vector<UCNode*>& nodes);
 	void parse_ucs_pass2(
-			std::vector<GotoSet>& gotoset, const FuncMap& funcmap,
-			const std::map<unsigned int, std::string>& intrinsics,
+			std::vector<GotoSet>& gotoset, const FuncMap& funcmap, const std::map<unsigned int, std::string>& intrinsics,
 			const UCOptions& options, Usecode_symbol_table* symtbl);
 	std::vector<UCc*> parse_ucs_pass2a(
-			std::vector<std::pair<UCc*, bool>>::reverse_iterator current,
-			std::vector<std::pair<UCc*, bool>>& vec, int opsneeded,
-			const FuncMap&                             funcmap,
-			const std::map<unsigned int, std::string>& intrinsics,
-			const UCOptions& options, Usecode_symbol_table* symtbl);
-	void parse_ucs_pass3(
-			std::vector<GotoSet>&                      gotoset,
-			const std::map<unsigned int, std::string>& intrinsics);
+			std::vector<std::pair<UCc*, bool>>::reverse_iterator current, std::vector<std::pair<UCc*, bool>>& vec, int opsneeded,
+			const FuncMap& funcmap, const std::map<unsigned int, std::string>& intrinsics, const UCOptions& options,
+			Usecode_symbol_table* symtbl);
+	void parse_ucs_pass3(std::vector<GotoSet>& gotoset, const std::map<unsigned int, std::string>& intrinsics);
 
 	bool output_asm(
-			std::ostream& o, const FuncMap& funcmap,
-			const std::map<unsigned int, std::string>& intrinsics,
+			std::ostream& o, const FuncMap& funcmap, const std::map<unsigned int, std::string>& intrinsics,
 			const UCOptions& options, Usecode_symbol_table* symtbl);
 	void output_asm_data(std::ostream& o);
 	void output_asm_opcode(
-			std::ostream& o, const FuncMap& funcmap,
-			const std::vector<UCOpcodeData>&           optab,
-			const std::map<unsigned int, std::string>& intrinsics,
-			const UCc& op, const UCOptions& options,
+			std::ostream& o, const FuncMap& funcmap, const std::vector<UCOpcodeData>& optab,
+			const std::map<unsigned int, std::string>& intrinsics, const UCc& op, const UCOptions& options,
 			Usecode_symbol_table* symtbl);
 	void output_raw_opcodes(std::ostream& o, const UCc& op);
 
@@ -306,11 +277,10 @@ public:
 
 	std::vector<GotoSet> gotoset;
 
-	std::streampos _offset   = 0;    // offset to start of function
-	unsigned int   _funcid   = 0;    // the id of the function
-	unsigned int   _funcsize = 0;    // the size of the function (bytes)
-	std::streampos _bodyoffset
-			= 0;    // the file position after the header is read
+	std::streampos _offset     = 0;    // offset to start of function
+	unsigned int   _funcid     = 0;    // the id of the function
+	unsigned int   _funcsize   = 0;    // the size of the function (bytes)
+	std::streampos _bodyoffset = 0;    // the file position after the header is read
 
 	unsigned int _datasize = 0;    // the size of the data block
 
@@ -319,23 +289,21 @@ public:
 	// contains the entire data segment in offset from start of segment, and
 	// string data pairs
 
-	std::streampos _codeoffset
-			= 0;    // the offset to the start of the code segment
+	std::streampos _codeoffset = 0;    // the offset to the start of the code segment
 
-	unsigned int _num_args    = 0;    // the number of arguments
-	unsigned int _num_locals  = 0;    // the number of local variables
-	unsigned int _num_externs = 0;    // the number of external function id's
-	int          _num_statics
-			= 0;    // the number of static variables defined in the function
-	std::vector<unsigned int> _externs;    // the external function id's
+	unsigned int              _num_args    = 0;    // the number of arguments
+	unsigned int              _num_locals  = 0;    // the number of local variables
+	unsigned int              _num_externs = 0;    // the number of external function id's
+	int                       _num_statics = 0;    // the number of static variables defined in the function
+	std::vector<unsigned int> _externs;            // the external function id's
 
 	std::vector<UCc> _opcodes;
 
-	bool         return_var = false;    // does the function return a variable?
-	bool         aborts     = false;    // true if the function may not return.
-	bool         debugging_info   = false;
-	unsigned int debugging_offset = 0;
-	std::string  funcname;
+	bool                  return_var       = false;    // does the function return a variable?
+	bool                  aborts           = false;    // true if the function may not return.
+	bool                  debugging_info   = false;
+	unsigned int          debugging_offset = 0;
+	std::string           funcname;
 	Usecode_symbol*       _sym = nullptr;
 	Usecode_class_symbol* _cls = nullptr;    // Class member functions
 
@@ -348,7 +316,7 @@ public:
 	UCNode node;
 
 	// A few static variables.
-	static int num_global_statics;    // the number of global static variables
+	static int                                 num_global_statics;    // the number of global static variables
 	static const std::string                   VARPREFIX;
 	static const std::string                   CLASSVARPREFIX;
 	static const std::string                   STATICPREFIX;
@@ -362,9 +330,7 @@ public:
 	static std::map<unsigned int, std::string> FlagMap;
 };
 
-void readbin_U7UCFunc(
-		std::istream& f, UCFunc& ucf, const UCOptions& options,
-		Usecode_symbol_table* symtbl);
+void readbin_U7UCFunc(std::istream& f, UCFunc& ucf, const UCOptions& options, Usecode_symbol_table* symtbl);
 void readbin_U8UCFunc(std::istream& f, UCFunc& ucf);
 
 std::ostream& tab_indent(const unsigned int indent, std::ostream& o);

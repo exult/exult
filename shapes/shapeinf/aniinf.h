@@ -58,9 +58,7 @@ public:
 	static Animation_info* create_from_tfa(int type, int nframes);
 	Animation_info() = default;
 
-	Animation_info(
-			AniType t, int count = -1, int rec = 0, int freeze = 100,
-			int delay = 1, int sfxi = 0) {
+	Animation_info(AniType t, int count = -1, int rec = 0, int freeze = 100, int delay = 1, int sfxi = 0) {
 		set(t, count, rec, freeze, delay, sfxi);
 	}
 
@@ -69,9 +67,7 @@ public:
 	// Write out.
 	void write(std::ostream& out, int shapenum, Exult_Game game);
 
-	void set(
-			AniType t, int count = -1, int rec = 0, int freeze = 100,
-			int delay = 1, int sfxi = 0) {
+	void set(AniType t, int count = -1, int rec = 0, int freeze = 100, int delay = 1, int sfxi = 0) {
 		type         = t;
 		frame_count  = count;
 		frame_delay  = delay;

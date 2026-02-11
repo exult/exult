@@ -67,13 +67,11 @@ public:
 
 	// Set simple path to destination.
 	virtual Actor_action* walk_to_tile(
-			Actor* npc, const Tile_coord& src, const Tile_coord& dest,
-			int dist = 0, bool ignnpc = false);
+			Actor* npc, const Tile_coord& src, const Tile_coord& dest, int dist = 0, bool ignnpc = false);
 	// Set action to walk to dest, then
 	//   exec. another action when there.
 	static Actor_action* create_action_sequence(
-			Actor* actor, const Tile_coord& dest, Actor_action* when_there,
-			bool from_off_screen = false, bool persistant = false);
+			Actor* actor, const Tile_coord& dest, Actor_action* when_there, bool from_off_screen = false, bool persistant = false);
 
 	// Get destination, or ret. 0.
 	virtual bool get_dest(Tile_coord& dest) const {
@@ -137,20 +135,16 @@ private:
 	}
 
 public:
-	Path_walking_actor_action(
-			PathFinder* p = nullptr, int maxblk = 3, int pers = 0);
+	Path_walking_actor_action(PathFinder* p = nullptr, int maxblk = 3, int pers = 0);
 	~Path_walking_actor_action() override;
-	static Path_walking_actor_action* create_path(
-			const Tile_coord& src, const Tile_coord& dest,
-			const Pathfinder_client& cost);
+	static Path_walking_actor_action* create_path(const Tile_coord& src, const Tile_coord& dest, const Pathfinder_client& cost);
 	// Handle time event.
 	int  handle_event(Actor* actor) override;
 	bool open_door(Actor* actor, Game_object* door);
 	void stop(Actor* actor) override;    // Stop moving.
 	// Set simple path to destination.
 	Actor_action* walk_to_tile(
-			Actor* npc, const Tile_coord& src, const Tile_coord& dest,
-			int dist = 0, bool ignnpc = false) override;
+			Actor* npc, const Tile_coord& src, const Tile_coord& dest, int dist = 0, bool ignnpc = false) override;
 	// Get destination, or ret. 0.
 	bool get_dest(Tile_coord& dest) const override;
 	// Check for Astar.
@@ -178,12 +172,8 @@ class Approach_actor_action : public Path_walking_actor_action {
 	int              check_step;        // Check at this step.
 	bool             for_projectile;    // Check for proj. path.
 public:
-	Approach_actor_action(
-			PathFinder* p, Game_object* d, int gdist = -1,
-			bool for_proj = false);
-	static Approach_actor_action* create_path(
-			const Tile_coord& src, Game_object* dest, int gdist,
-			Pathfinder_client& cost);
+	Approach_actor_action(PathFinder* p, Game_object* d, int gdist = -1, bool for_proj = false);
+	static Approach_actor_action* create_path(const Tile_coord& src, Game_object* dest, int gdist, Pathfinder_client& cost);
 	// Handle time event.
 	int handle_event(Actor* actor) override;
 };
@@ -197,9 +187,7 @@ class If_else_path_actor_action : public Path_walking_actor_action {
 	Actor_action *success, *failure;
 
 public:
-	If_else_path_actor_action(
-			Actor* actor, const Tile_coord& dest, Actor_action* s,
-			Actor_action* f = nullptr);
+	If_else_path_actor_action(Actor* actor, const Tile_coord& dest, Actor_action* s, Actor_action* f = nullptr);
 	~If_else_path_actor_action() override;
 	void set_failure(Actor_action* f);
 
@@ -261,13 +249,11 @@ class Frames_actor_action : public Actor_action {
 
 public:
 	Frames_actor_action(
-			const signed char* f, int c, int spd = 200,
-			Game_object* o = nullptr, int sfx = -1, int vol = 255, int rep = 0,
+			const signed char* f, int c, int spd = 200, Game_object* o = nullptr, int sfx = -1, int vol = 255, int rep = 0,
 			Game_object* src = nullptr);
 
 	Frames_actor_action(
-			signed char f, int spd = 200, Game_object* o = nullptr,
-			int sfx = -1, int vol = 255, int rep = 0,
+			signed char f, int spd = 200, Game_object* o = nullptr, int sfx = -1, int vol = 255, int rep = 0,
 			Game_object* src = nullptr);
 
 	// Handle time event.
@@ -306,13 +292,10 @@ class Sequence_actor_action : public Actor_action {
 							   //   actions.
 public:
 	// Create with allocated list.
-	Sequence_actor_action(Actor_action** act, int spd = 100)
-			: actions(act), index(0), speed(spd) {}
+	Sequence_actor_action(Actor_action** act, int spd = 100) : actions(act), index(0), speed(spd) {}
 
 	// Create with up to 4.
-	Sequence_actor_action(
-			Actor_action* a0, Actor_action* a1, Actor_action* a2 = nullptr,
-			Actor_action* a3 = nullptr);
+	Sequence_actor_action(Actor_action* a0, Actor_action* a1, Actor_action* a2 = nullptr, Actor_action* a3 = nullptr);
 
 	int get_speed() const override {
 		return speed;
@@ -369,13 +352,10 @@ class Pickup_actor_action : public Actor_action {
 	bool             play_sfx;    // Whether to play a sound effect
 public:
 	// To pick up an object:
-	Pickup_actor_action(
-			Game_object* o, int spd = 250, bool del = false, int sfx = -1,
-			int vol = 255, int rep = 0);
+	Pickup_actor_action(Game_object* o, int spd = 250, bool del = false, int sfx = -1, int vol = 255, int rep = 0);
 	// Put down an object:
 	Pickup_actor_action(
-			Game_object* o, const Tile_coord& opos, int spd = 250,
-			bool t = false, int sfx = -1, int vol = 255, int rep = 0);
+			Game_object* o, const Tile_coord& opos, int spd = 250, bool t = false, int sfx = -1, int vol = 255, int rep = 0);
 	int handle_event(Actor* actor) override;
 
 	int get_speed() const override {
@@ -431,9 +411,7 @@ private:
 	int              repetitions;       // Repetitions
 
 public:
-	Effect_actor_action(
-			int type, Game_object* obj, int dx = 0, int dy = 0, int d = 0,
-			int frm = 0, int reps = 0);
+	Effect_actor_action(int type, Game_object* obj, int dx = 0, int dy = 0, int d = 0, int frm = 0, int reps = 0);
 
 	int handle_event(Actor* actor) override;
 
@@ -458,8 +436,7 @@ private:
 	int              repeat;      // Repeat count (0 = once)
 
 public:
-	Play_sfx_actor_action(
-			int sfx_id, Game_object* obj, int vol = 255, int rep = 0);
+	Play_sfx_actor_action(int sfx_id, Game_object* obj, int vol = 255, int rep = 0);
 
 	int handle_event(Actor* actor) override;
 
@@ -483,8 +460,7 @@ private:
 
 public:
 	// Constructor takes a vector of actions (takes ownership)
-	Group_actor_action(std::vector<Actor_action*>&& acts)
-			: actions(std::move(acts)), max_delay(0) {}
+	Group_actor_action(std::vector<Actor_action*>&& acts) : actions(std::move(acts)), max_delay(0) {}
 
 	// Constructors for convenience with 2-5 actions
 	Group_actor_action(Actor_action* a1, Actor_action* a2) {
@@ -498,18 +474,14 @@ public:
 		actions.push_back(a3);
 	}
 
-	Group_actor_action(
-			Actor_action* a1, Actor_action* a2, Actor_action* a3,
-			Actor_action* a4) {
+	Group_actor_action(Actor_action* a1, Actor_action* a2, Actor_action* a3, Actor_action* a4) {
 		actions.push_back(a1);
 		actions.push_back(a2);
 		actions.push_back(a3);
 		actions.push_back(a4);
 	}
 
-	Group_actor_action(
-			Actor_action* a1, Actor_action* a2, Actor_action* a3,
-			Actor_action* a4, Actor_action* a5) {
+	Group_actor_action(Actor_action* a1, Actor_action* a2, Actor_action* a3, Actor_action* a4, Actor_action* a5) {
 		actions.push_back(a1);
 		actions.push_back(a2);
 		actions.push_back(a3);

@@ -37,8 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Game_object* Map_patch::find() {
 	Game_object_vector vec;    // Pass mask=0xb0 to get any object.
-	Game_object::find_nearby(
-			vec, spec.loc, spec.shapenum, 0, 0xb0, spec.quality, spec.framenum);
+	Game_object::find_nearby(vec, spec.loc, spec.shapenum, 0, 0xb0, spec.quality, spec.framenum);
 	return vec.empty() ? nullptr : vec.front();
 }
 

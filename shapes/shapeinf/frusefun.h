@@ -47,15 +47,13 @@ public:
 	friend class Shape_info;
 	Frame_usecode_info() = default;
 
-	Frame_usecode_info(
-			short f, short q, int ui, const char* nm, bool p = false,
-			bool m = false, bool s = false, bool inv = false) {
+	Frame_usecode_info(short f, short q, int ui, const char* nm, bool p = false, bool m = false, bool s = false, bool inv = false) {
 		set(f, q, ui, nm, p, m, s, inv);
 	}
 
 	Frame_usecode_info(const Frame_usecode_info& other)
-			: Base_info(other), frame(other.frame), quality(other.quality),
-			  usecode(other.usecode), usecode_name(other.usecode_name) {
+			: Base_info(other), frame(other.frame), quality(other.quality), usecode(other.usecode),
+			  usecode_name(other.usecode_name) {
 		info_flags = other.info_flags;
 	}
 
@@ -64,9 +62,7 @@ public:
 	// Write out.
 	void write(std::ostream& out, int shapenum, Exult_Game game);
 
-	void set(
-			short f, short q, int ui, const char* nm, bool p = false,
-			bool m = false, bool s = false, bool inv = false) {
+	void set(short f, short q, int ui, const char* nm, bool p = false, bool m = false, bool s = false, bool inv = false) {
 		frame        = f;
 		quality      = q;
 		usecode      = ui;
@@ -100,8 +96,7 @@ public:
 	}
 
 	void set_usecode(int ui, const char* nm) {
-		if (usecode != ui || (!nm && usecode_name.length())
-			|| (nm && usecode_name != nm)) {
+		if (usecode != ui || (!nm && usecode_name.length()) || (nm && usecode_name != nm)) {
 			set_modified(true);
 			usecode = ui;
 			if (nm) {

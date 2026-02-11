@@ -33,11 +33,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef __GNUG__
 #	define FORMAT_STRING(p) p
 #	ifdef __clang__
-#		define PRINTF_FORMAT(fmtarg, firstvararg) \
-			__attribute__((__format__(printf, fmtarg, firstvararg)))
+#		define PRINTF_FORMAT(fmtarg, firstvararg) __attribute__((__format__(printf, fmtarg, firstvararg)))
 #	else
-#		define PRINTF_FORMAT(fmtarg, firstvararg) \
-			__attribute__((__format__(gnu_printf, fmtarg, firstvararg)))
+#		define PRINTF_FORMAT(fmtarg, firstvararg) __attribute__((__format__(gnu_printf, fmtarg, firstvararg)))
 #	endif
 #elif defined(_MSC_VER)
 #	if _MSC_VER >= 1400
@@ -59,21 +57,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 class Uc_location {
 	static std::vector<char*> source_names;    // All filenames.
 
-	static char* cur_source;      // Source filename.
-	static int   cur_line;        // Line #.
-	static int   num_errors;      // Total #.
-	static bool  strict_mode;     // If all blocks are required to have braces
-	static bool  color_output;    // If output should be colorized.
-	static bool  goto_warn;       // If should warn about goto
-	static bool  integer_warn;    // If should warn about coercing to negatives
-	static bool  shapefun_warn;   // If should warn about shape as function ID
+	static char* cur_source;       // Source filename.
+	static int   cur_line;         // Line #.
+	static int   num_errors;       // Total #.
+	static bool  strict_mode;      // If all blocks are required to have braces
+	static bool  color_output;     // If output should be colorized.
+	static bool  goto_warn;        // If should warn about goto
+	static bool  integer_warn;     // If should warn about coercing to negatives
+	static bool  shapefun_warn;    // If should warn about shape as function ID
 
 	char* source;
 	int   line;
 
-	static void assemble_message(
-			const char* msg, const char* source_file, int line_num,
-			bool is_error);
+	static void assemble_message(const char* msg, const char* source_file, int line_num, bool is_error);
 
 public:
 	struct preformatted_t {};
@@ -153,11 +149,9 @@ public:
 	PRINTF_FORMAT(3, 4)
 	void warning(std::string& buffer, FORMAT_STRING(const char* format), ...);
 	PRINTF_FORMAT(2, 3)
-	static void yyerror(
-			std::string& buffer, FORMAT_STRING(const char* format), ...);
+	static void yyerror(std::string& buffer, FORMAT_STRING(const char* format), ...);
 	PRINTF_FORMAT(2, 3)
-	static void yywarning(
-			std::string& buffer, FORMAT_STRING(const char* format), ...);
+	static void yywarning(std::string& buffer, FORMAT_STRING(const char* format), ...);
 
 	static int get_num_errors() {
 		return num_errors;

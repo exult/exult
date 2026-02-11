@@ -26,9 +26,7 @@
 #include <cmath>
 #include <iostream>
 
-extern "C" JNIEXPORT void JNICALL
-		Java_info_exult_ExultActivity_setVirtualJoystick(
-				JNIEnv* env, jobject self, jfloat x, jfloat y) {
+extern "C" JNIEXPORT void JNICALL Java_info_exult_ExultActivity_setVirtualJoystick(JNIEnv* env, jobject self, jfloat x, jfloat y) {
 	ignore_unused_variable_warning(env, self);
 	auto  axisX   = static_cast<Sint32>(std::round(x * SDL_JOYSTICK_AXIS_MAX));
 	auto  axisY   = static_cast<Sint32>(std::round(y * SDL_JOYSTICK_AXIS_MAX));
@@ -38,24 +36,19 @@ extern "C" JNIEXPORT void JNICALL
 			std::clamp(axisY, SDL_JOYSTICK_AXIS_MIN, SDL_JOYSTICK_AXIS_MAX));
 }
 
-extern "C" JNIEXPORT void JNICALL
-		Java_info_exult_ExultActivity_sendEscapeKeypress(
-				JNIEnv* env, jobject self) {
+extern "C" JNIEXPORT void JNICALL Java_info_exult_ExultActivity_sendEscapeKeypress(JNIEnv* env, jobject self) {
 	ignore_unused_variable_warning(env, self);
 	auto* touchUI = TouchUI_Android::getInstance();
 	touchUI->sendEscapeKeypress();
 }
 
-extern "C" JNIEXPORT void JNICALL
-		Java_info_exult_ExultActivity_sendPauseKeypress(
-				JNIEnv* env, jobject self) {
+extern "C" JNIEXPORT void JNICALL Java_info_exult_ExultActivity_sendPauseKeypress(JNIEnv* env, jobject self) {
 	ignore_unused_variable_warning(env, self);
 	auto* touchUI = TouchUI_Android::getInstance();
 	touchUI->sendPauseKeypress();
 }
 
-extern "C" JNIEXPORT void JNICALL Java_info_exult_ExultActivity_setName(
-		JNIEnv* env, jobject self, jstring javaName) {
+extern "C" JNIEXPORT void JNICALL Java_info_exult_ExultActivity_setName(JNIEnv* env, jobject self, jstring javaName) {
 	ignore_unused_variable_warning(self);
 	const char* name = env->GetStringUTFChars(javaName, nullptr);
 	TouchUI::onTextInput(name);
@@ -96,26 +89,18 @@ void TouchUI_Android::sendPauseKeypress() {
 }
 
 TouchUI_Android::TouchUI_Android() {
-	m_instance    = this;
-	m_jniEnv      = static_cast<JNIEnv*>(SDL_GetAndroidJNIEnv());
-	auto* jclass  = m_jniEnv->FindClass("info/exult/ExultActivity");
-	auto* jmethod = m_jniEnv->GetStaticMethodID(
-			jclass, "instance", "()Linfo/exult/ExultActivity;");
-	m_exultActivityObject = m_jniEnv->CallStaticObjectMethod(jclass, jmethod);
-	m_showGameControlsMethod = m_jniEnv->GetMethodID(
-			jclass, "showGameControls", "(Ljava/lang/String;)V");
-	m_hideGameControlsMethod
-			= m_jniEnv->GetMethodID(jclass, "hideGameControls", "()V");
-	m_showButtonControlsMethod = m_jniEnv->GetMethodID(
-			jclass, "showButtonControls", "(Ljava/lang/String;)V");
-	m_hideButtonControlsMethod
-			= m_jniEnv->GetMethodID(jclass, "hideButtonControls", "()V");
-	m_showPauseControlsMethod
-			= m_jniEnv->GetMethodID(jclass, "showPauseControls", "()V");
-	m_hidePauseControlsMethod
-			= m_jniEnv->GetMethodID(jclass, "hidePauseControls", "()V");
-	m_promptForNameMethod = m_jniEnv->GetMethodID(
-			jclass, "promptForName", "(Ljava/lang/String;)V");
+	m_instance                 = this;
+	m_jniEnv                   = static_cast<JNIEnv*>(SDL_GetAndroidJNIEnv());
+	auto* jclass               = m_jniEnv->FindClass("info/exult/ExultActivity");
+	auto* jmethod              = m_jniEnv->GetStaticMethodID(jclass, "instance", "()Linfo/exult/ExultActivity;");
+	m_exultActivityObject      = m_jniEnv->CallStaticObjectMethod(jclass, jmethod);
+	m_showGameControlsMethod   = m_jniEnv->GetMethodID(jclass, "showGameControls", "(Ljava/lang/String;)V");
+	m_hideGameControlsMethod   = m_jniEnv->GetMethodID(jclass, "hideGameControls", "()V");
+	m_showButtonControlsMethod = m_jniEnv->GetMethodID(jclass, "showButtonControls", "(Ljava/lang/String;)V");
+	m_hideButtonControlsMethod = m_jniEnv->GetMethodID(jclass, "hideButtonControls", "()V");
+	m_showPauseControlsMethod  = m_jniEnv->GetMethodID(jclass, "showPauseControls", "()V");
+	m_hidePauseControlsMethod  = m_jniEnv->GetMethodID(jclass, "hidePauseControls", "()V");
+	m_promptForNameMethod      = m_jniEnv->GetMethodID(jclass, "promptForName", "(Ljava/lang/String;)V");
 
 	SDL_VirtualJoystickTouchpadDesc virtual_touchpad = {
 			1, {0, 0, 0}
@@ -133,13 +118,11 @@ TouchUI_Android::TouchUI_Android() {
 	desc.sensors                    = &virtual_sensor;
 	SDL_JoystickID joystickDeviceID = SDL_AttachVirtualJoystick(&desc);
 	if (!joystickDeviceID) {
-		std::cerr << "SDL_AttachVirtualJoystick failed: " << SDL_GetError()
-				  << std::endl;
+		std::cerr << "SDL_AttachVirtualJoystick failed: " << SDL_GetError() << std::endl;
 	} else {
 		m_joystick = SDL_OpenJoystick(joystickDeviceID);
 		if (m_joystick == nullptr) {
-			std::cerr << "SDL_OpenJoystick failed for virtual joystick: "
-					  << SDL_GetError() << std::endl;
+			std::cerr << "SDL_OpenJoystick failed for virtual joystick: " << SDL_GetError() << std::endl;
 			SDL_DetachVirtualJoystick(joystickDeviceID);
 		}
 	}
@@ -163,16 +146,14 @@ TouchUI_Android::~TouchUI_Android() {
 
 void TouchUI_Android::promptForName(const char* name) {
 	auto* javaName = m_jniEnv->NewStringUTF(name);
-	m_jniEnv->CallVoidMethod(
-			m_exultActivityObject, m_promptForNameMethod, javaName);
+	m_jniEnv->CallVoidMethod(m_exultActivityObject, m_promptForNameMethod, javaName);
 }
 
 void TouchUI_Android::showGameControls() {
 	std::string dpadLocation;
 	config->value("config/touch/dpad_location", dpadLocation, "right");
 	auto* javaDpadLocation = m_jniEnv->NewStringUTF(dpadLocation.c_str());
-	m_jniEnv->CallVoidMethod(
-			m_exultActivityObject, m_showGameControlsMethod, javaDpadLocation);
+	m_jniEnv->CallVoidMethod(m_exultActivityObject, m_showGameControlsMethod, javaDpadLocation);
 }
 
 void TouchUI_Android::hideGameControls() {
@@ -183,9 +164,7 @@ void TouchUI_Android::showButtonControls() {
 	std::string dpadLocation;
 	config->value("config/touch/dpad_location", dpadLocation, "right");
 	auto* javaDpadLocation = m_jniEnv->NewStringUTF(dpadLocation.c_str());
-	m_jniEnv->CallVoidMethod(
-			m_exultActivityObject, m_showButtonControlsMethod,
-			javaDpadLocation);
+	m_jniEnv->CallVoidMethod(m_exultActivityObject, m_showButtonControlsMethod, javaDpadLocation);
 }
 
 void TouchUI_Android::hideButtonControls() {

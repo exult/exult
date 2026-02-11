@@ -39,9 +39,7 @@ public:
 	//! \param status The Status Byte of the SysEx event
 	//! \param msg The SysEx data (including terminator byte)
 	//! \param length The number of bytes of SysEx data to send
-	virtual void sequenceSendSysEx(
-			uint16 sequence_id, uint8 status, const uint8* msg, uint16 length)
-			= 0;
+	virtual void sequenceSendSysEx(uint16 sequence_id, uint8 status, const uint8* msg, uint16 length) = 0;
 
 	//! An event sent from a sequence to play
 	//! \param sequence_id The id of the sequence requesting the tick count

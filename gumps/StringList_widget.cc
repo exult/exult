@@ -20,11 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "gamewin.h"
 
 StringList_widget::StringList_widget(
-		Gump_Base* par, const std::vector<std::string>& s, int selectionnum,
-		int px, int py, Modal_gump::ProceduralColours colours, int w, int h,
-		std::shared_ptr<Font> f)
-		: Gump_widget(par, -1, px, py, selectionnum), font(std::move(f)),
-		  selections(s), width(w), height(h), colours(colours) {
+		Gump_Base* par, const std::vector<std::string>& s, int selectionnum, int px, int py, Modal_gump::ProceduralColours colours,
+		int w, int h, std::shared_ptr<Font> f)
+		: Gump_widget(par, -1, px, py, selectionnum), font(std::move(f)), selections(s), width(w), height(h), colours(colours) {
 	if (!font) {
 		font = fontManager.get_font("SMALL_BLACK_FONT");
 	}
@@ -48,22 +46,18 @@ void StringList_widget::paint() {
 
 	// draw beveled_box with highlight and shadow swapped
 	ib->draw_beveled_box(
-			sx, sy, width, height, 1, colours.Background, colours.Shadow,
-			colours.Shadow, colours.Highlight, colours.Highlight2);
+			sx, sy, width, height, 1, colours.Background, colours.Shadow, colours.Shadow, colours.Highlight, colours.Highlight2);
 
 	Image_buffer8::ClipRectSave clipsave(ib);
 
 	for (int line = 0; line < int(selections.size()); line++) {
 		int      liney   = sy + line * lineheight + 1;
-		TileRect newclip = clipsave.Rect().intersect(
-				TileRect(sx, liney, width, lineheight));
+		TileRect newclip = clipsave.Rect().intersect(TileRect(sx, liney, width, lineheight));
 		ib->set_clip(newclip.x, newclip.y, newclip.w, newclip.h);
 
 		// if we are selected draw background highlight
 		if (getselection() == line) {
-			ib->draw_box(
-					sx + 1, liney, width - 2, lineheight, 0, colours.Highlight,
-					0xff);
+			ib->draw_box(sx + 1, liney, width - 2, lineheight, 0, colours.Highlight, 0xff);
 		}
 
 		// draw separator line

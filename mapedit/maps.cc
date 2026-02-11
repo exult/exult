@@ -57,8 +57,7 @@ static void on_map_activate(GtkMenuItem* item, gpointer udata) {
 	unsigned char  data[50];
 	unsigned char* ptr = &data[0];
 	little_endian::Write2(ptr, reinterpret_cast<uintptr>(udata));
-	ExultStudio::get_instance()->send_to_server(
-			Exult_server::goto_map, &data[0], ptr - data);
+	ExultStudio::get_instance()->send_to_server(Exult_server::goto_map, &data[0], ptr - data);
 }
 
 C_EXPORT void on_main_map_activate(GtkMenuItem* item, gpointer udata) {
@@ -103,13 +102,11 @@ static bool Copy_static_file(
 	char destname[128];
 	// Check length to prevent buffer overflow
 	if (strlen(pname) >= sizeof(destname) - 20) {    // -20 for map dir suffix
-		std::cerr << "Name too long for Get_mapped_name: " << pname
-				  << std::endl;
+		std::cerr << "Name too long for Get_mapped_name: " << pname << std::endl;
 		return false;
 	}
 	if (strlen(sname) >= sizeof(srcname) - 20) {
-		std::cerr << "Name too long for Get_mapped_name: " << sname
-				  << std::endl;
+		std::cerr << "Name too long for Get_mapped_name: " << sname << std::endl;
 		return false;
 	}
 	Get_mapped_name(pname, tomap, destname);
@@ -135,8 +132,7 @@ C_EXPORT void on_newmap_ok_clicked(GtkMenuItem* menuitem, gpointer user_data) {
 	GtkWidget*   win    = studio->get_widget("newmap_dialog");
 	const int    num    = studio->get_spin("newmap_num");
 
-	if (U7exists(Get_mapped_name("<PATCH>/", num, fname))
-		|| U7exists(Get_mapped_name("<STATIC>/", num, sname))) {
+	if (U7exists(Get_mapped_name("<PATCH>/", num, fname)) || U7exists(Get_mapped_name("<STATIC>/", num, sname))) {
 		EStudio::Alert("Map %02x already exists", num);
 		return;    // Leave dialog open.
 	}
@@ -162,12 +158,10 @@ C_EXPORT void on_newmap_ok_clicked(GtkMenuItem* menuitem, gpointer user_data) {
 		for (int schunk = 0; schunk < 12 * 12; schunk++) {
 			Get_mapped_name(U7IREG, frommap, fname);
 			const size_t fnamelen = strlen(fname);
-			snprintf(
-					fname + fnamelen, sizeof(fname) - fnamelen, "%02x", schunk);
+			snprintf(fname + fnamelen, sizeof(fname) - fnamelen, "%02x", schunk);
 			Get_mapped_name(U7IREG, num, tname);
 			const size_t tnamelen = strlen(tname);
-			snprintf(
-					tname + tnamelen, sizeof(tname) - tnamelen, "%02x", schunk);
+			snprintf(tname + tnamelen, sizeof(tname) - tnamelen, "%02x", schunk);
 			if (U7exists(fname)) {
 				if (!EStudio::Copy_file(fname, tname)) {
 					break;
@@ -184,13 +178,11 @@ C_EXPORT void on_newmap_ok_clicked(GtkMenuItem* menuitem, gpointer user_data) {
  */
 
 void ExultStudio::setup_maps_list() {
-	GtkWidget* maps
-			= gtk_menu_item_get_submenu(GTK_MENU_ITEM(get_widget("map1")));
-	GList* items
-			= g_list_first(gtk_container_get_children(GTK_CONTAINER(maps)));
-	GList*  each   = g_list_last(items);
-	GSList* group  = nullptr;
-	int     curmap = 0;
+	GtkWidget* maps   = gtk_menu_item_get_submenu(GTK_MENU_ITEM(get_widget("map1")));
+	GList*     items  = g_list_first(gtk_container_get_children(GTK_CONTAINER(maps)));
+	GList*     each   = g_list_last(items);
+	GSList*    group  = nullptr;
+	int        curmap = 0;
 
 	while (each) {
 		GtkMenuItem* item  = GTK_MENU_ITEM(each->data);
@@ -205,8 +197,7 @@ void ExultStudio::setup_maps_list() {
 			break;
 		}
 		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item))) {
-			curmap = reinterpret_cast<sintptr>(
-					g_object_get_data(G_OBJECT(item), "user_data"));
+			curmap = reinterpret_cast<sintptr>(g_object_get_data(G_OBJECT(item), "user_data"));
 		}
 		GList* prev = g_list_previous(each);
 		gtk_container_remove(GTK_CONTAINER(maps), GTK_WIDGET(item));
@@ -217,8 +208,7 @@ void ExultStudio::setup_maps_list() {
 		char name[40];
 		snprintf(name, sizeof(name), "Map #%02x", num);
 		auto*      ptrnum = reinterpret_cast<gpointer>(uintptr(num));
-		GtkWidget* item   = Add_menu_item(
-                maps, name, G_CALLBACK(on_map_activate), ptrnum, group);
+		GtkWidget* item   = Add_menu_item(maps, name, G_CALLBACK(on_map_activate), ptrnum, group);
 		g_object_set_data(G_OBJECT(item), "user_data", ptrnum);
 		if (curmap == num) {
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), true);

@@ -42,10 +42,9 @@ class Uc_function : public Uc_design_unit {
 	// Intrinsics, indexed by number:
 	static std::vector<Uc_intrinsic_symbol*> intrinsics;
 	// Some intrinsic numbers:
-	static int add_answer, remove_answer, push_answers, pop_answers, show_face,
-			remove_face, get_item_shape, get_usecode_fun;
-	static int          num_global_statics;
-	Uc_scope            top;            // Top-level scope.
+	static int add_answer, remove_answer, push_answers, pop_answers, show_face, remove_face, get_item_shape, get_usecode_fun;
+	static int num_global_statics;
+	Uc_scope   top;                     // Top-level scope.
 	Uc_function_symbol* proto;          // Function declaration.
 	Uc_scope*           cur_scope;      // Current scope.
 	int                 num_parms;      // # parameters.
@@ -161,9 +160,7 @@ public:
 
 	static Uc_intrinsic_symbol* get_intrinsic(int i) {
 		setup_intrinsics();
-		return (i >= 0 && static_cast<unsigned>(i) < intrinsics.size())
-					   ? intrinsics[i]
-					   : nullptr;
+		return (i >= 0 && static_cast<unsigned>(i) < intrinsics.size()) ? intrinsics[i] : nullptr;
 	}
 
 	static Uc_intrinsic_symbol* get_add_answer() {
@@ -198,16 +195,12 @@ public:
 		return get_intrinsic(get_item_shape);
 	}
 
-	Uc_var_symbol* add_symbol(
-			const char* nm, bool bind_offset);    // Add var. to current scope.
-	Uc_var_symbol* add_symbol(
-			const char* nm, Uc_class* c,
-			bool bind_offset);    // Add var. to current scope.
-	Uc_var_symbol* add_symbol(
-			const char* nm, Uc_struct_symbol* s,
-			bool bind_offset);    // Add var. to current scope.
-	Uc_var_symbol* add_symbol(
-			Uc_var_symbol* var);    // Add var. to current scope.
+	Uc_var_symbol* add_symbol(const char* nm, bool bind_offset);    // Add var. to current scope.
+	Uc_var_symbol* add_symbol(const char* nm, Uc_class* c,
+							  bool bind_offset);    // Add var. to current scope.
+	Uc_var_symbol* add_symbol(const char* nm, Uc_struct_symbol* s,
+							  bool bind_offset);      // Add var. to current scope.
+	Uc_var_symbol* add_symbol(Uc_var_symbol* var);    // Add var. to current scope.
 	// Add alias to current scope.
 	Uc_var_symbol* add_alias(char* nm, Uc_var_symbol* var);
 	// Add class alias to current scope.
@@ -215,19 +208,15 @@ public:
 	// Add struct alias to current scope.
 	Uc_var_symbol* add_alias(char* nm, Uc_var_symbol* var, Uc_struct_symbol* s);
 	void           add_static(char* nm);    // Add static var. to current scope.
-	void           add_static(
-					  char*             nm,
-					  Uc_struct_symbol* type);    // Add static struct to current scope.
-	void add_static(
-			char* nm, Uc_class* c);    // Add static cls. to current scope.
+	void           add_static(char*             nm,
+							  Uc_struct_symbol* type);    // Add static struct to current scope.
+	void           add_static(char* nm, Uc_class* c);     // Add static cls. to current scope.
 
-	int add_function_symbol(
-			Uc_function_symbol* fun, Uc_scope* parent = nullptr) {
+	int add_function_symbol(Uc_function_symbol* fun, Uc_scope* parent = nullptr) {
 		return cur_scope->add_function_symbol(fun, parent);
 	}
 
-	static int add_global_function_symbol(
-			Uc_function_symbol* fun, Uc_scope* parent = nullptr) {
+	static int add_global_function_symbol(Uc_function_symbol* fun, Uc_scope* parent = nullptr) {
 		return globals.add_function_symbol(fun, parent);
 	}
 
@@ -242,14 +231,13 @@ public:
 	// Add string constant.
 	Uc_symbol* add_string_symbol(char* nm, char* text);
 	// Add int constant.
-	Uc_symbol* add_int_const_symbol(char* nm, int value, int opcode = UC_PUSHI);
-	static Uc_symbol* add_global_int_const_symbol(
-			char* nm, int val, int opcode = UC_PUSHI);
-	static void add_global_static(char* nm);
-	static void add_global_static(char* nm, Uc_struct_symbol* type);
-	static void add_global_static(char* nm, Uc_class* c);
-	int         add_string(char* text);
-	int         find_string_prefix(Uc_location& loc, const char* text);
+	Uc_symbol*        add_int_const_symbol(char* nm, int value, int opcode = UC_PUSHI);
+	static Uc_symbol* add_global_int_const_symbol(char* nm, int val, int opcode = UC_PUSHI);
+	static void       add_global_static(char* nm);
+	static void       add_global_static(char* nm, Uc_struct_symbol* type);
+	static void       add_global_static(char* nm, Uc_class* c);
+	int               add_string(char* text);
+	int               find_string_prefix(Uc_location& loc, const char* text);
 
 	// Start/end loop.
 	void add_label(char* nm) {

@@ -9,7 +9,7 @@
 constexpr static const std::array push_table{
 		opcode_desc{   "true", 0, 0x13, 0, 0},
         opcode_desc{  "false", 0, 0x14, 0, 0},
-		opcode_desc{"itemref", 0, 0x3e, 0, 0},
+        opcode_desc{"itemref", 0, 0x3e, 0, 0},
 		opcode_desc{"eventid", 0, 0x48, 0, 0}
 };
 
@@ -17,8 +17,7 @@ constexpr static const std::array pop_table{
 		opcode_desc{"eventid", 0, 0x4b, 0, 0}
 };
 
-constexpr static const std::array compiler_table{
-		".argc", ".extern", ".externsize", ".localc"};
+constexpr static const std::array compiler_table{".argc", ".extern", ".externsize", ".localc"};
 
 #define MAX_LABELS   3500
 #define TOKEN_LENGTH 25600
@@ -116,8 +115,7 @@ void check_data_label_16(int label) {
 	}
 }
 
-int find_intrinsic(
-		tcb::span<const std::string_view> func_table, const char* name) {
+int find_intrinsic(tcb::span<const std::string_view> func_table, const char* name) {
 	for (size_t i = 0; i < func_table.size(); i++) {
 		if (name == func_table[i]) {
 			return i;
@@ -130,12 +128,10 @@ int find_intrinsic(
 void read_token(FILE* fi) {
 	int i = 0;
 	int c = 32;
-	while (((c == ' ') || (c == '\t') || (c == '\n') || (c == ','))
-		   && !feof(fi)) {
+	while (((c == ' ') || (c == '\t') || (c == '\n') || (c == ',')) && !feof(fi)) {
 		c = fgetc(fi);
 	}
-	while ((c != ' ') && (c != '\t') && (c != '\n') && (c != ',')
-		   && !feof(fi)) {
+	while ((c != ' ') && (c != '\t') && (c != '\n') && (c != ',') && !feof(fi)) {
 		if (i >= TOKEN_LENGTH - 1) {
 			fprintf(stderr, "Error: token too long!\n");
 			exit(-1);
@@ -299,8 +295,7 @@ int main(int argc, char* argv[]) {
 						continue;
 					}
 					if (!strcasecmp(opcode_table[i].mnemonic, token)) {
-						if (opcode_table[i].nbytes == 0
-							&& opcode_table[i].type == 0) {
+						if (opcode_table[i].nbytes == 0 && opcode_table[i].type == 0) {
 							emit_byte(i);
 						} else {
 							opcodetype = opcode_table[i].type;
@@ -324,10 +319,8 @@ int main(int argc, char* argv[]) {
 								if (token2 != nullptr) {
 									*token2++ = 0;
 									if (token[0] != '_') {
-										if (sscanf(token, "UNKNOWN_%4x", &word)
-											!= 1) {
-											word = find_intrinsic(
-													func_table, token);
+										if (sscanf(token, "UNKNOWN_%4x", &word) != 1) {
+											word = find_intrinsic(func_table, token);
 										}
 									} else {
 										read_token(fi);
@@ -359,8 +352,7 @@ int main(int argc, char* argv[]) {
 							case op_varref:
 								emit_byte(i);
 								read_token(fi);
-								if (!memcmp(token,
-											"extern:", sizeof("extern:") - 1)) {
+								if (!memcmp(token, "extern:", sizeof("extern:") - 1)) {
 									sscanf(token, "extern:[%x]", &word);
 								} else {
 									sscanf(token, "[%x]", &word);
@@ -376,9 +368,7 @@ int main(int argc, char* argv[]) {
 							case op_push:
 								read_token(fi);
 								for (i = 0; i < pushsize; i++) {
-									if (!strcasecmp(
-												push_table[i].mnemonic,
-												token)) {
+									if (!strcasecmp(push_table[i].mnemonic, token)) {
 										emit_byte(push_table[i].type);
 										break;
 									}
@@ -392,8 +382,7 @@ int main(int argc, char* argv[]) {
 							case op_pop:
 								read_token(fi);
 								for (i = 0; i < popsize; i++) {
-									if (!strcasecmp(
-												pop_table[i].mnemonic, token)) {
+									if (!strcasecmp(pop_table[i].mnemonic, token)) {
 										emit_byte(pop_table[i].type);
 										break;
 									}

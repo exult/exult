@@ -63,9 +63,7 @@ public:
 	int      last_text_height;    // Height of last text painted.
 	string   cur_text;            // Current text being shown.
 
-	Npc_face_info(ShapeID& sid, int num)
-			: shape(sid), face_num(num), text_pending(false),
-			  no_show_face(false), large_face(false) {}
+	Npc_face_info(ShapeID& sid, int num) : shape(sid), face_num(num), text_pending(false), no_show_face(false), large_face(false) {}
 };
 
 Conversation::~Conversation() {
@@ -150,14 +148,11 @@ void Conversation::init_faces() {
 	last_face_shown = -1;
 }
 
-void Conversation::set_face_rect(
-		Npc_face_info* info, Npc_face_info* prev, int screenw, int screenh) {
+void Conversation::set_face_rect(Npc_face_info* info, Npc_face_info* prev, int screenw, int screenh) {
 	const int text_height = sman->get_text_line_height(0);
 	// Figure starting y-coord.
 	// Get character's portrait.
-	Shape_frame* face   = info->shape.get_shapenum() >= 0
-								  ? info->shape.get_shape()
-								  : nullptr;
+	Shape_frame* face   = info->shape.get_shapenum() >= 0 ? info->shape.get_shape() : nullptr;
 	int          face_w = 32;
 	int          face_h = 32;
 	if (face) {
@@ -193,13 +188,10 @@ void Conversation::set_face_rect(
 		starty = 1;
 		extrah = 4;
 	}
-	info->face_rect = gwin->clip_to_win(
-			TileRect(startx, starty, face_w + extraw, face_h + extrah));
+	info->face_rect      = gwin->clip_to_win(TileRect(startx, starty, face_w + extraw, face_h + extrah));
 	const TileRect& fbox = info->face_rect;
 	// This is where NPC text will go.
-	info->text_rect = gwin->clip_to_win(TileRect(
-			fbox.x + fbox.w + 3, fbox.y + 3, screenw - fbox.x - fbox.w - 6,
-			4 * text_height));
+	info->text_rect = gwin->clip_to_win(TileRect(fbox.x + fbox.w + 3, fbox.y + 3, screenw - fbox.x - fbox.w - 6, 4 * text_height));
 	// No room?  (Serpent?)
 	if (info->large_face) {
 		// Show in lower center.
@@ -291,8 +283,7 @@ void Conversation::change_face_frame(int frame, int slot) {
 	last_face_shown     = slot;
 	Npc_face_info* info = face_info[slot];
 	// These are needed in case conversation is done.
-	if (info->shape.get_shapenum() < 0
-		|| frame > info->shape.get_num_frames()) {
+	if (info->shape.get_shapenum() < 0 || frame > info->shape.get_num_frames()) {
 		return;    // Invalid frame.
 	}
 
@@ -393,8 +384,7 @@ void Conversation::show_npc_message(const char* msg) {
 		gwin->get_tqueue()->resume(SDL_GetTicks());
 	}
 	Npc_face_info* info = face_info[last_face_shown];
-	const int      font
-			= info->large_face ? 7 : 0;    // Use red for Guardian, snake.
+	const int      font = info->large_face ? 7 : 0;    // Use red for Guardian, snake.
 	info->cur_text      = "";
 	const TileRect& box = info->text_rect;
 	//	gwin->paint(box);        // Clear what was there before.
@@ -402,9 +392,7 @@ void Conversation::show_npc_message(const char* msg) {
 	gwin->paint();
 	int height;    // Break at punctuation.
 	/* NOTE:  The original centers text for Guardian, snake.    */
-	while ((height = sman->paint_text_box(
-					font, msg, box.x, box.y, box.w, box.h, -1, true,
-					info->large_face, gwin->get_text_bg()))
+	while ((height = sman->paint_text_box(font, msg, box.x, box.y, box.w, box.h, -1, true, info->large_face, gwin->get_text_bg()))
 		   < 0) {
 		// More to do?
 		info->cur_text = string(msg, -height);
@@ -510,13 +498,11 @@ void Conversation::show_avatar_choices(int num_choices, char** choices) {
 	mbox        = mbox.intersect(sbox);
 	avatar_face = mbox;    // Repaint entire width.
 	// Set to where to draw sentences.
-	TileRect tbox(
-			mbox.x + mbox.w + 8, mbox.y + 4, sbox.w - mbox.x - mbox.w - 16,
-			5 * line_height);    // Try 5 lines.
+	TileRect tbox(mbox.x + mbox.w + 8, mbox.y + 4, sbox.w - mbox.x - mbox.w - 16,
+				  5 * line_height);    // Try 5 lines.
 	tbox = tbox.intersect(sbox);
 	// Draw portrait.
-	sman->paint_shape(
-			mbox.x + face->get_xleft(), mbox.y + face->get_yabove(), face);
+	sman->paint_shape(mbox.x + face->get_xleft(), mbox.y + face->get_yabove(), face);
 	delete[] conv_choices;    // Set up new list of choices.
 	conv_choices        = new TileRect[num_choices + 1];
 	const int text_bg   = gwin->get_text_bg();
@@ -539,8 +525,7 @@ void Conversation::show_avatar_choices(int num_choices, char** choices) {
 		// Draw shading with line_height, shifted down to align with text.
 		if (text_bg >= 0) {
 			gwin->get_win()->fill_translucent8(
-					0, width + space_width, line_height, tbox.x + x,
-					tbox.y + y + bg_offset, sman->get_xform(text_bg));
+					0, width + space_width, line_height, tbox.x + x, tbox.y + y + bg_offset, sman->get_xform(text_bg));
 		}
 		x += width + space_width;
 	}
@@ -622,8 +607,7 @@ void Conversation::paint_faces(bool text    // Show text too.
 		if (!finfo) {
 			continue;
 		}
-		Shape_frame* face
-				= finfo->face_num >= 0 ? finfo->shape.get_shape() : nullptr;
+		Shape_frame* face = finfo->face_num >= 0 ? finfo->shape.get_shape() : nullptr;
 
 		if (face && !finfo->no_show_face) {
 			const int face_xleft  = face->get_xleft();
@@ -658,8 +642,7 @@ void Conversation::paint_faces(bool text    // Show text too.
 			// Use red for Guardian, snake.
 			const int font = finfo->large_face ? 7 : 0;
 			sman->paint_text_box(
-					font, finfo->cur_text.c_str(), box.x, box.y, box.w, box.h,
-					-1, true, finfo->large_face, gwin->get_text_bg());
+					font, finfo->cur_text.c_str(), box.x, box.y, box.w, box.h, -1, true, finfo->large_face, gwin->get_text_bg());
 		}
 	}
 }

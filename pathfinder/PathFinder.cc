@@ -27,8 +27,7 @@
  *  before the pathfinder should quit.
  */
 
-int Pathfinder_client::get_max_cost(
-		int cost_to_goal    // From estimate_cost(start, goal).
+int Pathfinder_client::get_max_cost(int cost_to_goal    // From estimate_cost(start, goal).
 ) const {
 	const int max_cost = 3 * cost_to_goal;
 	// (Raised from 64 on 9/4/2000).
@@ -39,8 +38,6 @@ int Pathfinder_client::get_max_cost(
  *  Is tile at goal?
  */
 
-bool Pathfinder_client::at_goal(
-		const Tile_coord& tile, const Tile_coord& goal) const {
-	return tile.tx == goal.tx && tile.ty == goal.ty
-		   && (goal.tz == -1 || tile.tz == goal.tz);
+bool Pathfinder_client::at_goal(const Tile_coord& tile, const Tile_coord& goal) const {
+	return tile.tx == goal.tx && tile.ty == goal.ty && (goal.tz == -1 || tile.tz == goal.tz);
 }

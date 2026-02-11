@@ -137,8 +137,7 @@ void ShapeBrowser::browse_shapes() {
 
 	Palette             pal;
 	const str_int_pair& pal_tuple_static = game->get_resource("palettes/0");
-	const str_int_pair& pal_tuple_patch
-			= game->get_resource("palettes/patch/0");
+	const str_int_pair& pal_tuple_patch  = game->get_resource("palettes/patch/0");
 	pal.load(pal_tuple_static.str, pal_tuple_patch.str, pal_tuple_static.num);
 
 	Xform_palette fontcolor;
@@ -179,8 +178,7 @@ void ShapeBrowser::browse_shapes() {
 	bool        bounding_box        = false;
 	SDL_Event   event;
 
-	auto get_patch_sources = [&](const char* main_file)
-			-> std::vector<std::pair<std::string, int>> {
+	auto get_patch_sources = [&](const char* main_file) -> std::vector<std::pair<std::string, int>> {
 		std::vector<std::pair<std::string, int>> sources;
 		sources.emplace_back(main_file, -1);    // Main file
 
@@ -221,9 +219,8 @@ void ShapeBrowser::browse_shapes() {
 				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
 				fname = game->get_resource(buf).str;
 
-				std::vector<std::pair<std::string, int>> sources
-						= get_patch_sources(fname);
-				shapes = new Vga_file();
+				std::vector<std::pair<std::string, int>> sources = get_patch_sources(fname);
+				shapes                                           = new Vga_file();
 				shapes->load(sources);
 			}
 			return shapes->get_shape(shape, frame);
@@ -238,9 +235,8 @@ void ShapeBrowser::browse_shapes() {
 				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
 				fname = game->get_resource(buf).str;
 
-				std::vector<std::pair<std::string, int>> sources
-						= get_patch_sources(fname);
-				shapes = new Vga_file();
+				std::vector<std::pair<std::string, int>> sources = get_patch_sources(fname);
+				shapes                                           = new Vga_file();
 				shapes->load(sources);
 			}
 			return shapes->get_num_shapes();
@@ -255,9 +251,8 @@ void ShapeBrowser::browse_shapes() {
 				snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
 				fname = game->get_resource(buf).str;
 
-				std::vector<std::pair<std::string, int>> sources
-						= get_patch_sources(fname);
-				shapes = new Vga_file();
+				std::vector<std::pair<std::string, int>> sources = get_patch_sources(fname);
+				shapes                                           = new Vga_file();
 				shapes->load(sources);
 			}
 			return shapes->get_num_frames(shape);
@@ -272,9 +267,8 @@ void ShapeBrowser::browse_shapes() {
 	}
 
 	if (!shapes && current_file > 0) {
-		std::vector<std::pair<std::string, int>> sources
-				= get_patch_sources(fname);
-		shapes = new Vga_file();
+		std::vector<std::pair<std::string, int>> sources = get_patch_sources(fname);
+		shapes                                           = new Vga_file();
 		shapes->load(sources);
 	}
 
@@ -289,66 +283,47 @@ void ShapeBrowser::browse_shapes() {
 				char xfrsc[256];
 				snprintf(xfrsc, sizeof(xfrsc), "xforms/%d", current_xform);
 				const str_int_pair& xform_tuple = game->get_resource(xfrsc);
-				pal.load(
-						pal_tuple.str, patch_tuple.str, pal_tuple.num,
-						xform_tuple.str, xform_tuple.num);
+				pal.load(pal_tuple.str, patch_tuple.str, pal_tuple.num, xform_tuple.str, xform_tuple.num);
 			} else {
 				pal.load(pal_tuple.str, patch_tuple.str, pal_tuple.num);
 			}
 
 			pal.apply();
 
-			font->paint_text_fixedwidth(
-					ibuf, Strings::ShowKeys(), 2, maxy - 50, 8,
-					fontcolor.colors);
+			font->paint_text_fixedwidth(ibuf, Strings::ShowKeys(), 2, maxy - 50, 8, fontcolor.colors);
 
 			{
 				std::ostringstream oss;
 				oss << Strings::VgaFile() << fname << "'";
-				font->paint_text_fixedwidth(
-						ibuf, oss.str().c_str(), 2, maxy - 30, 8,
-						fontcolor.colors);
+				font->paint_text_fixedwidth(ibuf, oss.str().c_str(), 2, maxy - 30, 8, fontcolor.colors);
 			}
 
 			num_shapes = get_num_shapes();
 			{
 				std::ostringstream oss;
-				oss << Strings::Shape() << std::setw(2) << current_shape << "/"
-					<< (num_shapes - 1);
-				font->paint_text_fixedwidth(
-						ibuf, oss.str().c_str(), 2, maxy - 20, 8,
-						fontcolor.colors);
+				oss << Strings::Shape() << std::setw(2) << current_shape << "/" << (num_shapes - 1);
+				font->paint_text_fixedwidth(ibuf, oss.str().c_str(), 2, maxy - 20, 8, fontcolor.colors);
 			}
 
 			num_frames = get_num_frames(current_shape);
 			{
 				std::ostringstream oss;
-				oss << Strings::Frame() << std::setw(2) << current_frame << "/"
-					<< (num_frames - 1);
-				font->paint_text_fixedwidth(
-						ibuf, oss.str().c_str(), 162, maxy - 20, 8,
-						fontcolor.colors);
+				oss << Strings::Frame() << std::setw(2) << current_frame << "/" << (num_frames - 1);
+				font->paint_text_fixedwidth(ibuf, oss.str().c_str(), 162, maxy - 20, 8, fontcolor.colors);
 			}
 
 			{
 				std::ostringstream oss;
-				oss << Strings::Palette() << pal_tuple.str << ", "
-					<< pal_tuple.num;
-				font->paint_text_fixedwidth(
-						ibuf, oss.str().c_str(), 2, maxy - 10, 8,
-						fontcolor.colors);
+				oss << Strings::Palette() << pal_tuple.str << ", " << pal_tuple.num;
+				font->paint_text_fixedwidth(ibuf, oss.str().c_str(), 2, maxy - 10, 8, fontcolor.colors);
 			}
 
 			if (num_frames) {
-				Shape_frame* frame
-						= get_shape_frame(current_shape, current_frame);
+				Shape_frame* frame = get_shape_frame(current_shape, current_frame);
 
 				if (frame) {
-					snprintf(
-							buf, sizeof(buf), "%d x %d", frame->get_width(),
-							frame->get_height());
-					font->paint_text_fixedwidth(
-							ibuf, buf, 2, 22, 8, fontcolor.colors);
+					snprintf(buf, sizeof(buf), "%d x %d", frame->get_width(), frame->get_height());
+					font->paint_text_fixedwidth(ibuf, buf, 2, 22, 8, fontcolor.colors);
 
 					// Coords for shape to be drawn (centre of the screen)
 					const int x = gwin->get_width() / 2;
@@ -357,55 +332,36 @@ void ShapeBrowser::browse_shapes() {
 					// draw outline if not drawing bbox
 					if (current_file != 0 || !bounding_box) {
 						gwin->get_win()->fill8(
-								255, frame->get_width() + 4,
-								frame->get_height() + 4,
-								x - frame->get_xleft() - 2,
+								255, frame->get_width() + 4, frame->get_height() + 4, x - frame->get_xleft() - 2,
 								y - frame->get_yabove() - 2);
 						gwin->get_win()->fill8(
-								0, frame->get_width() + 2,
-								frame->get_height() + 2,
-								x - frame->get_xleft() - 1,
+								0, frame->get_width() + 2, frame->get_height() + 2, x - frame->get_xleft() - 1,
 								y - frame->get_yabove() - 1);
 					}
 
 					// Stuff that should only be drawn for object shapes in
 					// shapes.vga
 					if (current_file == 0) {
-						const Shape_info& info
-								= ShapeID::get_info(current_shape);
+						const Shape_info& info = ShapeID::get_info(current_shape);
 
 						{
 							std::ostringstream oss;
-							oss << Strings::Class() << std::setw(2)
-								<< info.get_shape_class()
-								<< Strings::ReadyType() << std::hex
-								<< std::setfill('0') << std::setw(2)
-								<< static_cast<int>(info.get_ready_type())
-								<< std::dec << Strings::ThreeD()
-								<< info.get_3d_xtiles(current_frame) << "x"
-								<< info.get_3d_ytiles(current_frame) << "x"
-								<< info.get_3d_height();
-							font->paint_text_fixedwidth(
-									ibuf, oss.str().c_str(), 2, 12, 8,
-									fontcolor.colors);
+							oss << Strings::Class() << std::setw(2) << info.get_shape_class() << Strings::ReadyType() << std::hex
+								<< std::setfill('0') << std::setw(2) << static_cast<int>(info.get_ready_type()) << std::dec
+								<< Strings::ThreeD() << info.get_3d_xtiles(current_frame) << "x"
+								<< info.get_3d_ytiles(current_frame) << "x" << info.get_3d_height();
+							font->paint_text_fixedwidth(ibuf, oss.str().c_str(), 2, 12, 8, fontcolor.colors);
 						}
-						if (current_shape < get_num_item_names()
-							&& get_item_name(current_shape)) {
-							font->paint_text_fixedwidth(
-									ibuf, get_item_name(current_shape), 2, 2, 8,
-									fontcolor.colors);
+						if (current_shape < get_num_item_names() && get_item_name(current_shape)) {
+							font->paint_text_fixedwidth(ibuf, get_item_name(current_shape), 2, 2, 8, fontcolor.colors);
 						}
 						if (bounding_box) {
-							info.paint_bbox(
-									x, y, current_frame,
-									gwin->get_win()->get_ibuf(), 255, 2);
+							info.paint_bbox(x, y, current_frame, gwin->get_win()->get_ibuf(), 255, 2);
 						}
 						// draw shape
 						sman->paint_shape(x, y, frame, true);
 						if (bounding_box) {
-							info.paint_bbox(
-									x, y, current_frame,
-									gwin->get_win()->get_ibuf(), 255, 1);
+							info.paint_bbox(x, y, current_frame, gwin->get_win()->get_ibuf(), 255, 1);
 						}
 
 					} else {
@@ -414,13 +370,10 @@ void ShapeBrowser::browse_shapes() {
 					}
 
 				} else {
-					font->draw_text(
-							ibuf, centerx - 20, centery - 5,
-							Strings::NoShape());
+					font->draw_text(ibuf, centerx - 20, centery - 5, Strings::NoShape());
 				}
 			} else {
-				font->draw_text(
-						ibuf, centerx - 20, centery - 5, Strings::NoShape());
+				font->draw_text(ibuf, centerx - 20, centery - 5, Strings::NoShape());
 			}
 
 			pal.apply();
@@ -444,9 +397,8 @@ void ShapeBrowser::browse_shapes() {
 					snprintf(buf, sizeof(buf), "files/shapes/%d", current_file);
 					fname = game->get_resource(buf).str;
 
-					std::vector<std::pair<std::string, int>> sources
-							= get_patch_sources(fname);
-					shapes = new Vga_file();
+					std::vector<std::pair<std::string, int>> sources = get_patch_sources(fname);
+					shapes                                           = new Vga_file();
 					shapes->load(sources);
 				} else {
 					fname = "shapes.vga";
@@ -470,8 +422,7 @@ void ShapeBrowser::browse_shapes() {
 				break;
 				// Shapes
 			case SDLK_S:
-				if ((event.key.mod & SDL_KMOD_ALT)
-					&& (event.key.mod & SDL_KMOD_CTRL)) {
+				if ((event.key.mod & SDL_KMOD_ALT) && (event.key.mod & SDL_KMOD_CTRL)) {
 					make_screenshot(true);
 				} else {
 					handle_key(shift, current_shape, num_shapes);
@@ -523,8 +474,7 @@ void ShapeBrowser::browse_shapes() {
 
 bool ShapeBrowser::get_shape(int& shape, int& frame) {
 	Shape_manager* sman = Shape_manager::get_instance();
-	if (current_shape >= sman->get_shapes().get_num_shapes()
-		|| current_file != 0) {
+	if (current_shape >= sman->get_shapes().get_num_shapes() || current_file != 0) {
 		return false;
 	} else {
 		shape = current_shape;

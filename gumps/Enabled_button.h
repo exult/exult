@@ -26,9 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class Enabled_button : public Text_button {
 public:
-	Enabled_button(
-			Gump* par, int selectionnum, int px, int py, int width,
-			int height = 0);
+	Enabled_button(Gump* par, int selectionnum, int px, int py, int width, int height = 0);
 
 	bool push(MouseButton button) override;
 	void unpush(MouseButton button) override;
@@ -51,8 +49,7 @@ public:
 
 	template <typename... Ts>
 	CallbackEnabledButton(Parent* par, CallbackType&& callback, Ts&&... args)
-			: Enabled_button(par, std::forward<Ts>(args)...), parent(par),
-			  on_toggle(std::forward<CallbackType>(callback)) {}
+			: Enabled_button(par, std::forward<Ts>(args)...), parent(par), on_toggle(std::forward<CallbackType>(callback)) {}
 
 	void toggle(int state) override {
 		(parent->*on_toggle)(state);

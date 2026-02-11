@@ -55,7 +55,7 @@ void Actor::read(
 		bool         has_usecode,    // 1 if a 'type1' NPC.
 		bool&        fix_unused      // Old savegame, so 'unused' isn't
 									 //   valid.  Possibly set here.
-		// June9,02:  +++++Fix_unused should go away in a few months.
+									 // June9,02:  +++++Fix_unused should go away in a few months.
 ) {
 	npc_num = num;
 
@@ -70,8 +70,7 @@ void Actor::read(
 	// Read & set shape #, frame #.
 	unsigned short shnum = nfile->read2();
 
-	if (num == 0 && Game::get_game_type() != BLACK_GATE
-		&& (shnum & 0x3ff) < 12) {
+	if (num == 0 && Game::get_game_type() != BLACK_GATE && (shnum & 0x3ff) < 12) {
 		set_shape((shnum & 0x3ff) | 0x400);
 	} else {
 		set_shape(shnum & 0x3ff);
@@ -111,10 +110,7 @@ void Actor::read(
 		usecode = 0x400 + npc_num;
 	}
 	// Watch for new NPC's added.
-	else if (
-			usecode_name_used
-			|| (!has_usecode && !usecode_assigned && usecode != 0x400 + npc_num)
-			|| usecode == 0xfff) {
+	else if (usecode_name_used || (!has_usecode && !usecode_assigned && usecode != 0x400 + npc_num) || usecode == 0xfff) {
 		usecode = -1;    // Let's try this.
 	}
 	// Guessing:  !!  (Want to get signed.)
@@ -133,8 +129,7 @@ void Actor::read(
 #endif
 	}
 
-	const bool has_contents
-			= fix_first ? (iflag1 && !unused) : (iflag1 & 1) != 0;
+	const bool has_contents = fix_first ? (iflag1 && !unused) : (iflag1 & 1) != 0;
 	// Read first set of flags
 	const int rflags = nfile->read2();
 
@@ -371,8 +366,7 @@ void Actor::read(
 			set_shape(shnum);    // 16 Bit Shape Number
 		}
 
-		shnum = static_cast<sint16>(
-				nfile->read2());    // 16 Bit Polymorph Shape Number
+		shnum = static_cast<sint16>(nfile->read2());    // 16 Bit Polymorph Shape Number
 		if (get_flag(Obj_flags::polymorph)) {
 			// Try to fix messed-up flag.
 			if (shnum != get_shapenum()) {
@@ -488,8 +482,7 @@ void Actor::read(
 	set_invalid();                // Not in world yet.
 	if (olist && !is_dead() &&    // Valid & alive?  Put into chunk list.
 		!unused) {
-		move((scx + cx) * c_tiles_per_chunk + tilex,
-			 (scy + cy) * c_tiles_per_chunk + tiley, get_lift(), map_num);
+		move((scx + cx) * c_tiles_per_chunk + tilex, (scy + cy) * c_tiles_per_chunk + tiley, get_lift(), map_num);
 		if (this == gwin->get_main_actor()) {
 			gwin->set_map(map_num);
 		}
@@ -502,16 +495,13 @@ void Actor::read(
 		// Maybe we should restore it to full health?
 		const Monster_info* minf = get_info().get_monster_info();
 		if (minf && minf->cant_die()) {
-			set_property(
-					static_cast<int>(Actor::health),
-					get_property(static_cast<int>(Actor::strength)));
+			set_property(static_cast<int>(Actor::health), get_property(static_cast<int>(Actor::strength)));
 		}
 	}
 
 	// Only do ready best weapon if we are in BG, this is the first time
 	// and we are the Avatar or Iolo
-	if (Game::get_game_type() == BLACK_GATE && Game::get_avname()
-		&& (num == 0 || num == 1)) {
+	if (Game::get_game_type() == BLACK_GATE && Game::get_avname() && (num == 0 || num == 1)) {
 		ready_best_weapon();
 	}
 	// Force Avatar and all party members to be good
@@ -528,11 +518,9 @@ void Actor::read(
 		cout << name;
 	}
 
-	cout << ", shape = " << get_shapenum() << ", frame = " << get_framenum()
-		 << ", usecode = " << usefun << endl;
+	cout << ", shape = " << get_shapenum() << ", frame = " << get_framenum() << ", usecode = " << usefun << endl;
 
-	cout << "Chunk coords are (" << scx + cx << ", " << scy + cy
-		 << "), lift is " << get_lift() << endl;
+	cout << "Chunk coords are (" << scx + cx << ", " << scy + cy << "), lift is " << get_lift() << endl;
 
 	cout << "Type Flags: ";
 	if (get_type_flag(tf_fly)) {
@@ -567,9 +555,8 @@ void Actor::write(ODataSource* nfile    // Generally 'npc.dat'.
 	int           i;
 	unsigned char buf4[4];    // Write coords., shape, frame.
 
-	const int old_shape
-			= get_shapenum();       // Backup shape because we might change it
-	set_shape(get_shape_real());    // Change the shape out non polymorph one
+	const int old_shape = get_shapenum();    // Backup shape because we might change it
+	set_shape(get_shape_real());             // Change the shape out non polymorph one
 	const int shapenum = get_shapenum();
 	const int framenum = get_framenum();
 	buf4[0]            = ((get_cx() % 16) << 4) | get_tx();
@@ -699,8 +686,7 @@ void Actor::write(ODataSource* nfile    // Generally 'npc.dat'.
 	nfile->write1(iout);
 
 	nfile->write1(get_schedule_type());
-	const unsigned char amode = attack_mode | (combat_protected ? (1 << 4) : 0)
-								| (user_set_attack ? (1 << 5) : 0);
+	const unsigned char amode = attack_mode | (combat_protected ? (1 << 4) : 0) | (user_set_attack ? (1 << 5) : 0);
 	nfile->write1(amode);
 	nfile->write1(get_effective_alignment());    // Effective alignment
 	// Exult is using the 2 unknown bytes to store magic, mana for all

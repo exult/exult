@@ -112,12 +112,9 @@ struct unz_file_info {
    If iCaseSenisivity = 0, case sensitivity is defaut of your operating system
 	(like 1 on Unix, 2 on Windows)
 */
-extern int ZEXPORT unzStringFileNameCompare(
-		const char* fileName1, const char* fileName2, int iCaseSensitivity);
+extern int ZEXPORT unzStringFileNameCompare(const char* fileName1, const char* fileName2, int iCaseSensitivity);
 
 extern unzFile ZEXPORT unzOpen(IDataSource* datasource);
-
-
 
 /*
   Write info about the ZipFile in the *pglobal_info structure.
@@ -130,8 +127,7 @@ extern int ZEXPORT unzGetGlobalInfo(unz_s* file, unz_global_info* pglobal_info);
   uSizeBuf is the size of the szComment buffer.
   return the number of byte copied or an error code <0
 */
-extern int ZEXPORT
-		unzGetGlobalComment(unz_s* file, char* szComment, uLong uSizeBuf);
+extern int ZEXPORT unzGetGlobalComment(unz_s* file, char* szComment, uLong uSizeBuf);
 
 /***************************************************************************/
 /* Unzip package allow you browse the directory of the zipfile */
@@ -156,8 +152,7 @@ extern int ZEXPORT unzGoToNextFile(unz_s* file);
   UNZ_OK if the file is found. It becomes the current file.
   UNZ_END_OF_LIST_OF_FILE if the file is not found
 */
-extern int ZEXPORT unzLocateFile(
-		unz_s* file, const char* szFileName, int iCaseSensitivity);
+extern int ZEXPORT unzLocateFile(unz_s* file, const char* szFileName, int iCaseSensitivity);
 
 /*
   Get Info about the current file
@@ -171,13 +166,11 @@ extern int ZEXPORT unzLocateFile(
   szComment (commentBufferSize is the size of the buffer)
 */
 extern int ZEXPORT unzGetCurrentFileInfo(
-		unz_s* file, unz_file_info* pfile_info, char* szFileName,
-		uLong fileNameBufferSize, void* extraField, uLong extraFieldBufferSize,
-		char* szComment, uLong commentBufferSize);
+		unz_s* file, unz_file_info* pfile_info, char* szFileName, uLong fileNameBufferSize, void* extraField,
+		uLong extraFieldBufferSize, char* szComment, uLong commentBufferSize);
 extern int ZEXPORT unzGetCurrentFileInfo(
-		unz_s* file, unz_file_info* pfile_info, std::string& fileName,
-		void* extraField, uLong extraFieldBufferSize, char* szComment,
-		uLong commentBufferSize);
+		unz_s* file, unz_file_info* pfile_info, std::string& fileName, void* extraField, uLong extraFieldBufferSize,
+		char* szComment, uLong commentBufferSize);
 
 /***************************************************************************/
 /* for reading the content of the current zipfile, you can open it, read data

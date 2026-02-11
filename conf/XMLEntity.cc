@@ -126,8 +126,7 @@ string XMLnode::dump(int depth) {
 
 /* Output's a 'nicer' dump of the xmltree, one <tag> value </tag> per line
 	the indent characters are specified by indentstr */
-void XMLnode::dump(
-		ostream& o, const string& indentstr, const unsigned int depth) const {
+void XMLnode::dump(ostream& o, const string& indentstr, const unsigned int depth) const {
 	// indent
 	for (unsigned int i = 0; i < depth; i++) {
 		o << indentstr;
@@ -232,8 +231,7 @@ void XMLnode::remove(const std::string& key, bool valueonly) {
 	CERR("Walking the XML tree failed to find the node.");
 }
 
-void XMLnode::listkeys(
-		const string& key, vector<string>& vs, bool longformat) const {
+void XMLnode::listkeys(const string& key, vector<string>& vs, bool longformat) const {
 	string s(key);
 	s += "/";
 
@@ -274,9 +272,8 @@ string encode_entity(const string& s) {
 }
 
 static string decode_entity(const string& s, std::size_t& pos) {
-	const std::size_t       old_pos = pos;
-	const string::size_type entity_name_len
-			= s.find_first_of("; \t\r\n", pos) - pos - 1;
+	const std::size_t       old_pos         = pos;
+	const string::size_type entity_name_len = s.find_first_of("; \t\r\n", pos) - pos - 1;
 
 	/* Call me paranoid... but I don't think having an end-of-line or similar
 		inside a &...; expression is 'good', valid though it may be. */
@@ -384,9 +381,7 @@ void XMLnode::xmlparse(const string& s, std::size_t& pos) {
 /* Returns a list of key->value pairs that are found under the provided
    'basekey'. Ignores comments (<!-- ... --> and doesn't return them. Returns
    true if search is 'finished' */
-bool XMLnode::searchpairs(
-		KeyTypeList& ktl, const string& basekey, const string& currkey,
-		const unsigned int pos) {
+bool XMLnode::searchpairs(KeyTypeList& ktl, const string& basekey, const string& currkey, const unsigned int pos) {
 	/* If our 'current key' is longer then the key we're serching for
 		we've obviously gone too deep in this branch, and we won't find
 		it here. */

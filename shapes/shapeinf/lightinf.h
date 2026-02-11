@@ -38,13 +38,10 @@ public:
 	friend class Shape_info;
 	Light_info() = default;
 
-	Light_info(
-			short f, char l, bool p = false, bool m = false, bool s = false,
-			bool inv = false)
+	Light_info(short f, char l, bool p = false, bool m = false, bool s = false, bool inv = false)
 			: Base_info(m, p, inv, s), frame(f), light(l) {}
 
-	Light_info(const Light_info& other)
-			: Base_info(other), frame(other.frame), light(other.light) {
+	Light_info(const Light_info& other) : Base_info(other), frame(other.frame), light(other.light) {
 		info_flags = other.info_flags;
 	}
 
@@ -74,8 +71,7 @@ public:
 	}
 
 	bool operator<(const Light_info& other) const {
-		return static_cast<unsigned short>(frame)
-			   < static_cast<unsigned short>(other.frame);
+		return static_cast<unsigned short>(frame) < static_cast<unsigned short>(other.frame);
 	}
 
 	bool operator==(const Light_info& other) const {

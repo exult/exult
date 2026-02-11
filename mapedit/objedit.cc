@@ -75,9 +75,7 @@ C_EXPORT void on_obj_cancel_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
 	GtkWindow*   parent = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(btn)));
-	if (studio->is_obj_window_dirty()
-		&& !studio->prompt_for_discard(
-				studio->obj_window_dirty, "Object", parent)) {
+	if (studio->is_obj_window_dirty() && !studio->prompt_for_discard(studio->obj_window_dirty, "Object", parent)) {
 		return;    // User chose not to discard
 	}
 	studio->close_obj_window();
@@ -94,13 +92,10 @@ C_EXPORT void on_obj_rotate_clicked(GtkButton* btn, gpointer user_data) {
 /*
  *  Object window's close button.
  */
-C_EXPORT gboolean on_obj_window_delete_event(
-		GtkWidget* widget, GdkEvent* event, gpointer user_data) {
+C_EXPORT gboolean on_obj_window_delete_event(GtkWidget* widget, GdkEvent* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	ExultStudio* studio = ExultStudio::get_instance();
-	if (studio->is_obj_window_dirty()
-		&& !studio->prompt_for_discard(
-				studio->obj_window_dirty, "Object", GTK_WINDOW(widget))) {
+	if (studio->is_obj_window_dirty() && !studio->prompt_for_discard(studio->obj_window_dirty, "Object", GTK_WINDOW(widget))) {
 		return true;    // Block window close
 	}
 	studio->close_obj_window();
@@ -110,8 +105,7 @@ C_EXPORT gboolean on_obj_window_delete_event(
 /*
  *  Object shape/frame # changed, so update shape displayed.
  */
-C_EXPORT gboolean on_obj_pos_changed(
-		GtkWidget* widget, GdkEventFocus* event, gpointer user_data) {
+C_EXPORT gboolean on_obj_pos_changed(GtkWidget* widget, GdkEventFocus* event, gpointer user_data) {
 	ignore_unused_variable_warning(widget, event, user_data);
 	//++++Maybe later, change pos. immediately?
 	return true;
@@ -131,11 +125,9 @@ void ExultStudio::open_obj_window(
 			obj_single = new Shape_single(
 					get_widget("obj_shape"), get_widget("obj_name"),
 					[](int shnum) -> bool {
-						return (shnum >= c_first_obj_shape)
-							   && (shnum < c_max_shapes);
+						return (shnum >= c_first_obj_shape) && (shnum < c_max_shapes);
 					},
-					get_widget("obj_frame"), U7_SHAPE_SHAPES,
-					vgafile->get_ifile(), palbuf.get(), get_widget("obj_draw"));
+					get_widget("obj_frame"), U7_SHAPE_SHAPES, vgafile->get_ifile(), palbuf.get(), get_widget("obj_draw"));
 		}
 	}
 	// Init. obj address to null.
@@ -171,8 +163,7 @@ void ExultStudio::close_obj_window() {
 int ExultStudio::init_obj_window(unsigned char* data, int datalen) {
 	// Check for unsaved changes before opening new object
 	if (objwin && gtk_widget_get_visible(objwin)) {
-		if (!prompt_for_discard(
-					obj_window_dirty, "Object", GTK_WINDOW(objwin))) {
+		if (!prompt_for_discard(obj_window_dirty, "Object", GTK_WINDOW(objwin))) {
 			return 0;    // User canceled
 		}
 	}
@@ -190,14 +181,12 @@ int ExultStudio::init_obj_window(unsigned char* data, int datalen) {
 	int          frame;
 	int          quality;
 	std::string  name;
-	if (!Object_in(
-				data, datalen, addr, tx, ty, tz, shape, frame, quality, name)) {
+	if (!Object_in(data, datalen, addr, tx, ty, tz, shape, frame, quality, name)) {
 		cout << "Error decoding object" << endl;
 		return 0;
 	}
 	// Store address with window.
-	g_object_set_data(
-			G_OBJECT(objwin), "user_data", reinterpret_cast<gpointer>(addr));
+	g_object_set_data(G_OBJECT(objwin), "user_data", reinterpret_cast<gpointer>(addr));
 	// Store name. (Not allowed to change.)
 	const std::string locname(convertToUTF8(name.c_str()));
 	set_entry("obj_name", locname.c_str(), false);
@@ -215,11 +204,9 @@ int ExultStudio::init_obj_window(unsigned char* data, int datalen) {
 	// Set limit on frame #.
 	GtkWidget* btn = get_widget("obj_frame");
 	if (btn) {
-		GtkAdjustment* adj
-				= gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(btn));
-		const int nframes = vgafile->get_ifile()->get_num_frames(shape);
-		gtk_adjustment_set_upper(
-				adj, (nframes - 1) | 32);    // So we can rotate.
+		GtkAdjustment* adj     = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(btn));
+		const int      nframes = vgafile->get_ifile()->get_num_frames(shape);
+		gtk_adjustment_set_upper(adj, (nframes - 1) | 32);    // So we can rotate.
 		g_signal_emit_by_name(G_OBJECT(adj), "changed");
 	}
 
@@ -237,11 +224,10 @@ int ExultStudio::init_obj_window(unsigned char* data, int datalen) {
 int ExultStudio::save_obj_window() {
 	cout << "In save_obj_window()" << endl;
 	// Get object address.
-	auto* addr = static_cast<Game_object*>(
-			g_object_get_data(G_OBJECT(objwin), "user_data"));
-	const int         tx = get_spin("obj_x");
-	const int         ty = get_spin("obj_y");
-	const int         tz = get_spin("obj_z");
+	auto*             addr = static_cast<Game_object*>(g_object_get_data(G_OBJECT(objwin), "user_data"));
+	const int         tx   = get_spin("obj_x");
+	const int         ty   = get_spin("obj_y");
+	const int         tz   = get_spin("obj_z");
 	const std::string name(get_text_entry("obj_name"));
 	const std::string locname(convertFromUTF8(name.c_str()));
 	//	int shape = get_num_entry("obj_shape");
@@ -251,10 +237,7 @@ int ExultStudio::save_obj_window() {
 	const int frame   = get_spin("obj_frame");
 	const int quality = get_spin("obj_quality");
 
-	if (Object_out(
-				server_socket, Exult_server::obj, addr, tx, ty, tz, shape,
-				frame, quality, locname)
-		== -1) {
+	if (Object_out(server_socket, Exult_server::obj, addr, tx, ty, tz, shape, frame, quality, locname) == -1) {
 		cout << "Error sending object data to server" << endl;
 		return 0;
 	}

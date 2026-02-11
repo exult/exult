@@ -62,12 +62,8 @@ class Shape_frame {
 public:
 	Shape_frame() = default;
 	// Create frame from data.
-	Shape_frame(
-			unsigned char* pixels, int w, int h, int xoff, int yoff,
-			bool setrle);
-	Shape_frame(
-			std::unique_ptr<unsigned char[]> pixels, int w, int h, int xoff,
-			int yoff, bool setrle);
+	Shape_frame(unsigned char* pixels, int w, int h, int xoff, int yoff, bool setrle);
+	Shape_frame(std::unique_ptr<unsigned char[]> pixels, int w, int h, int xoff, int yoff, bool setrle);
 	std::unique_ptr<Shape_frame> reflect();    // Create new frame, reflected.
 
 	static void set_to_render(Image_buffer8* w) {
@@ -87,24 +83,16 @@ public:
 	void write(ODataSource& out) const;    // Write out.
 	void save(ODataSource* shape_source) const;
 	// Convert raw image to RLE.
-	static std::unique_ptr<unsigned char[]> encode_rle(
-			unsigned char* pixels, int w, int h, int xoff, int yoff,
-			int& datalen);
+	static std::unique_ptr<unsigned char[]> encode_rle(unsigned char* pixels, int w, int h, int xoff, int yoff, int& datalen);
 	// Read in shape/frame.
-	unsigned int read(
-			IDataSource* shapes, uint32 shapeoff, uint32 shapelen, int frnum);
+	unsigned int read(IDataSource* shapes, uint32 shapeoff, uint32 shapelen, int frnum);
 	// Paint into given buffer.
 	void paint_rle(Image_buffer8* win, int xoff, int yoff);
-	void paint_rle_remapped(
-			Image_buffer8* win, int xoff, int yoff, const unsigned char* trans);
+	void paint_rle_remapped(Image_buffer8* win, int xoff, int yoff, const unsigned char* trans);
 	void paint(Image_buffer8* win, int xoff, int yoff);
-	void paint_rle_translucent(
-			Image_buffer8* win, int xoff, int yoff, const Xform_palette* xforms,
-			int xfcnt);
-	void paint_rle_transformed(
-			Image_buffer8* win, int xoff, int yoff, const Xform_palette& xform);
-	void paint_rle_outline(
-			Image_buffer8* win, int xoff, int yoff, unsigned char color);
+	void paint_rle_translucent(Image_buffer8* win, int xoff, int yoff, const Xform_palette* xforms, int xfcnt);
+	void paint_rle_transformed(Image_buffer8* win, int xoff, int yoff, const Xform_palette& xform);
+	void paint_rle_outline(Image_buffer8* win, int xoff, int yoff, unsigned char color);
 
 	// Paint to screen.
 	void paint_rle(int px, int py) {
@@ -119,8 +107,7 @@ public:
 		paint(scrwin, px, py);
 	}
 
-	void paint_rle_translucent(
-			int px, int py, const Xform_palette* xforms, int xfcnt) {
+	void paint_rle_translucent(int px, int py, const Xform_palette* xforms, int xfcnt) {
 		paint_rle_translucent(scrwin, px, py, xforms, xfcnt);
 	}
 
@@ -180,23 +167,19 @@ public:
  */
 class Shape {
 protected:
-	std::vector<std::unique_ptr<Shape_frame>>
-				 frames;            // List of ->'s to frames.
-	unsigned int num_frames = 0;    // # of frames (not counting reflects).
-	bool         modified   = false;
-	bool         from_patch = false;
+	std::vector<std::unique_ptr<Shape_frame>> frames;            // List of ->'s to frames.
+	unsigned int                              num_frames = 0;    // # of frames (not counting reflects).
+	bool                                      modified   = false;
+	bool                                      from_patch = false;
 	// Create reflected frame.
 	Shape_frame* reflect(
-			const std::vector<std::pair<std::unique_ptr<IDataSource>, bool>>&
-					shapes,
-			int shapenum, int framenum, const std::vector<int>& counts);
+			const std::vector<std::pair<std::unique_ptr<IDataSource>, bool>>& shapes, int shapenum, int framenum,
+			const std::vector<int>& counts);
 	void create_frames_list(int nframes);
 	// Read in shape/frame.
 	Shape_frame* read(
-			const std::vector<std::pair<std::unique_ptr<IDataSource>, bool>>&
-					shapes,
-			int shapenum, int framenum, const std::vector<int>& counts,
-			int src = -1);
+			const std::vector<std::pair<std::unique_ptr<IDataSource>, bool>>& shapes, int shapenum, int framenum,
+			const std::vector<int>& counts, int src = -1);
 	// Store shape that was read.
 	Shape_frame* store_frame(std::unique_ptr<Shape_frame> frame, int framenum);
 
@@ -239,13 +222,9 @@ public:
 	}
 
 	Shape_frame* get(
-			const std::vector<std::pair<std::unique_ptr<IDataSource>, bool>>&
-					shapes,
-			int shnum, int frnum, const std::vector<int>& counts,
-			int src = -1) {
-		return (size_t(frnum) < frames.size() && frames[frnum])
-					   ? frames[frnum].get()
-					   : read(shapes, shnum, frnum, counts, src);
+			const std::vector<std::pair<std::unique_ptr<IDataSource>, bool>>& shapes, int shnum, int frnum,
+			const std::vector<int>& counts, int src = -1) {
+		return (size_t(frnum) < frames.size() && frames[frnum]) ? frames[frnum].get() : read(shapes, shnum, frnum, counts, src);
 	}
 
 	int get_num_frames() const {
@@ -253,9 +232,7 @@ public:
 	}
 
 	Shape_frame* get_frame(int framenum) const {
-		return 0 <= framenum && size_t(framenum) < frames.size()
-					   ? frames[framenum].get()
-					   : nullptr;
+		return 0 <= framenum && size_t(framenum) < frames.size() ? frames[framenum].get() : nullptr;
 	}
 
 	auto begin() {
@@ -298,8 +275,7 @@ class Shape_file final : public Shape {
 public:
 	explicit Shape_file(const char* nm);
 
-	explicit Shape_file(std::unique_ptr<Shape_frame> fr)
-			: Shape(std::move(fr)) {}
+	explicit Shape_file(std::unique_ptr<Shape_frame> fr) : Shape(std::move(fr)) {}
 
 	explicit Shape_file(IDataSource* shape_source);
 	Shape_file()                                       = default;
@@ -329,24 +305,21 @@ protected:
 
 	std::vector<std::pair<std::unique_ptr<IDataSource>, bool>> shape_sources;
 	std::vector<std::pair<std::unique_ptr<IDataSource>, bool>> imported_sources;
-	std::map<int, imported_map> imported_shape_table;
-	int                         u7drag_type = -1;    // # from u7drag.h, or -1.
-	std::vector<int>   shape_cnts;         // Total # of shapes in each file.
-	std::vector<int>   imported_cnts;      // Total # of shapes in each file.
-	std::vector<Shape> shapes;             // List of ->'s to shapes' lists
-	std::vector<Shape> imported_shapes;    // List of ->'s to shapes' lists
-	bool               flex = true;        // This is the normal case (all .vga
-										   //   files).  If false, file is a
-	//   single shape, like 'pointers.shp'.
-	// In this case, all frames are pre-
-	//   loaded.
+	std::map<int, imported_map>                                imported_shape_table;
+	int                                                        u7drag_type = -1;    // # from u7drag.h, or -1.
+	std::vector<int>                                           shape_cnts;          // Total # of shapes in each file.
+	std::vector<int>                                           imported_cnts;       // Total # of shapes in each file.
+	std::vector<Shape>                                         shapes;              // List of ->'s to shapes' lists
+	std::vector<Shape>                                         imported_shapes;     // List of ->'s to shapes' lists
+	bool                                                       flex = true;         // This is the normal case (all .vga
+																					//   files).  If false, file is a
+																					//   single shape, like 'pointers.shp'.
+																					// In this case, all frames are pre-
+																					//   loaded.
 
 public:
-	explicit Vga_file(
-			const char* nm, int u7drag = -1, const char* nm2 = nullptr);
-	explicit Vga_file(
-			const std::vector<std::pair<std::string, int>>& sources,
-			int                                             u7drag = -1);
+	explicit Vga_file(const char* nm, int u7drag = -1, const char* nm2 = nullptr);
+	explicit Vga_file(const std::vector<std::pair<std::string, int>>& sources, int u7drag = -1);
 	Vga_file();
 
 	int get_u7drag_type() const {
@@ -354,17 +327,10 @@ public:
 	}
 
 	IDataSource* U7load(
-			const std::pair<std::string, int>& resource,
-			std::vector<std::pair<std::unique_ptr<IDataSource>, bool>>& shps);
-	bool load(
-			const char* nm, const char* nm2 = nullptr,
-			bool resetimports = false);
-	bool load(
-			const std::vector<std::pair<std::string, int>>& sources,
-			bool resetimports = false);
-	bool import_shapes(
-			const std::pair<std::string, int>&      source,
-			const std::vector<std::pair<int, int>>& imports);
+			const std::pair<std::string, int>& resource, std::vector<std::pair<std::unique_ptr<IDataSource>, bool>>& shps);
+	bool load(const char* nm, const char* nm2 = nullptr, bool resetimports = false);
+	bool load(const std::vector<std::pair<std::string, int>>& sources, bool resetimports = false);
+	bool import_shapes(const std::pair<std::string, int>& source, const std::vector<std::pair<int, int>>& imports);
 	bool is_shape_imported(int shnum);
 	bool get_imported_shape_data(int shnum, imported_map& data);
 	void reset();
@@ -398,16 +364,14 @@ public:
 				return nullptr;
 			}
 			r = imported_shapes[data.pointer_offset].get(
-					imported_sources, data.realshape, framenum, imported_cnts,
-					data.source_offset);
+					imported_sources, data.realshape, framenum, imported_cnts, data.source_offset);
 		} else {
 			assert(!shapes.empty());    // Because if shapes is nullptr
 			// here, we won't die on the deref
 			// but we will return rubbish.
 			// I've put this assert in _before_ you know...
 			// So this isn't the first time we've had trouble here
-			r = shapes[shapenum].get(
-					shape_sources, shapenum, framenum, shape_cnts, -1);
+			r = shapes[shapenum].get(shape_sources, shapenum, framenum, shape_cnts, -1);
 		}
 		return r;
 	}

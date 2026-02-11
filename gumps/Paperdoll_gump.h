@@ -35,12 +35,12 @@ class Paperdoll_npc;
 
 class Paperdoll_gump : public Gump {
 protected:
-	Heart_button*  heart_button;    // For bringing up stats.
-	Disk_button*   disk_button;     // For bringing up 'save' box. (Avatar Only)
-	Combat_button* combat_button;        // Combat Toggle (Avatar Only)
-	Cstats_button* cstats_button;        // Combat Stats (Not BG)
-	Halo_button*   halo_button;          // Halo (protection) (BG Only)
-	Combat_mode_button* cmode_button;    // Combat Modes (BG Only)
+	Heart_button*       heart_button;     // For bringing up stats.
+	Disk_button*        disk_button;      // For bringing up 'save' box. (Avatar Only)
+	Combat_button*      combat_button;    // Combat Toggle (Avatar Only)
+	Cstats_button*      cstats_button;    // Combat Stats (Not BG)
+	Halo_button*        halo_button;      // Halo (protection) (BG Only)
+	Combat_mode_button* cmode_button;     // Combat Modes (BG Only)
 
 	// Non Statics
 
@@ -51,8 +51,7 @@ protected:
 	void set_to_spot(Game_object* obj, int index);
 
 public:
-	Paperdoll_gump(
-			Container_game_object* cont, int initx, int inity, int shnum);
+	Paperdoll_gump(Container_game_object* cont, int initx, int inity, int shnum);
 
 	~Paperdoll_gump() override;
 
@@ -63,10 +62,8 @@ public:
 	Game_object* find_object(int mx, int my) override;
 
 	// Add object.
-	bool add(
-			Game_object* obj, int mx = -1, int my = -1, int sx = -1,
-			int sy = -1, bool dont_check = false,
-			bool combine = false) override;
+	bool add(Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false)
+			override;
 
 	// Paint it and its contents.
 	void paint() override;
@@ -76,14 +73,11 @@ public:
 	//
 
 	// Generic Paint Object Method
-	void paint_object(
-			const TileRect& box, const Paperdoll_npc* info, int spot, int sx,
-			int sy, int frame = 0, int itemtype = -1);
+	void paint_object(const TileRect& box, const Paperdoll_npc* info, int spot, int sx, int sy, int frame = 0, int itemtype = -1);
 
 	// Generic Paint Object Method for something that is armed dependant
 	void paint_object_arms(
-			const TileRect& box, const Paperdoll_npc* info, int spot, int sx,
-			int sy, int start = 0, int itemtype = -1);
+			const TileRect& box, const Paperdoll_npc* info, int spot, int sx, int sy, int start = 0, int itemtype = -1);
 
 	// Special 'Constant' Paint Methods
 	void paint_body(const TileRect& box, const Paperdoll_npc* info);
@@ -100,13 +94,11 @@ public:
 
 	// Generic Check Object Method
 	Game_object* check_object(
-			int mx, int my, const Paperdoll_npc* info, int spot, int sx, int sy,
-			int frame = 0, int itemtype = -1);
+			int mx, int my, const Paperdoll_npc* info, int spot, int sx, int sy, int frame = 0, int itemtype = -1);
 
 	// Generic Check Object Method for something that is armed dependant
 	Game_object* check_object_arms(
-			int mx, int my, const Paperdoll_npc* info, int spot, int sx, int sy,
-			int start = 0, int itemtype = -1);
+			int mx, int my, const Paperdoll_npc* info, int spot, int sx, int sy, int start = 0, int itemtype = -1);
 
 	// Special 'Constant' Check Methods
 	bool check_body(int mx, int my, const Paperdoll_npc* info);

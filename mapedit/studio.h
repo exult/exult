@@ -98,9 +98,7 @@ class Combo_editor;
 class Exec_box;
 class BaseGameInfo;
 // Callback for msgs.
-using Msg_callback = void (*)(
-		Exult_server::Msg_type id, const unsigned char* data, int datalen,
-		void* client);
+using Msg_callback = void (*)(Exult_server::Msg_type id, const unsigned char* data, int datalen, void* client);
 
 #ifndef _WIN32
 #	define C_EXPORT extern "C"
@@ -122,27 +120,26 @@ private:
 	guint32             background_color;
 	static ExultStudio* self;
 	// Shape scaling
-	int        shape_scale;       // Zoom half-units : 100% is 2, 150% is 3 ...
-	bool       shape_bilinear;    // True is Bilinear, False is Nearest.
-	GtkWidget* shape_zlabel;      // Zoom shape label, set to 50 * shape_scale.
-	GtkWidget* shape_zup;         // Zoom up arrow.
-	GtkWidget* shape_zdown;       // Zoom down arrow.
-	static gboolean on_app_key_press(
-			GtkEntry* entry, GdkEventKey* event, gpointer user_data);
+	int             shape_scale;       // Zoom half-units : 100% is 2, 150% is 3 ...
+	bool            shape_bilinear;    // True is Bilinear, False is Nearest.
+	GtkWidget*      shape_zlabel;      // Zoom shape label, set to 50 * shape_scale.
+	GtkWidget*      shape_zup;         // Zoom up arrow.
+	GtkWidget*      shape_zdown;       // Zoom down arrow.
+	static gboolean on_app_key_press(GtkEntry* entry, GdkEventKey* event, gpointer user_data);
 	// Modified one of the .dat's?
 	bool                             shape_info_modified, shape_names_modified;
 	bool                             npc_modified;
-	Shape_file_set*                  files;            // All the shape files.
-	std::vector<GtkWindow*>          group_windows;    // All 'group' windows.
-	Shape_preset_file*               presets_file;     // Shape presets.
+	Shape_file_set*                  files;               // All the shape files.
+	std::vector<GtkWindow*>          group_windows;       // All 'group' windows.
+	Shape_preset_file*               presets_file;        // Shape presets.
 	Npc_preset_file*                 npc_presets_file;    // NPC presets.
-	Shape_file_info*                 curfile;     // Current browser file info.
-	Shape_file_info*                 vgafile;     // Main 'shapes.vga'.
-	Shape_file_info*                 facefile;    // 'faces.vga'.
-	Shape_file_info*                 fontfile;    // 'font.vga'.
-	Shape_file_info*                 gumpfile;    // 'gumps.vga'.
-	Shape_file_info*                 spritefile;      // 'sprites.vga'.
-	Shape_file_info*                 paperdolfile;    // 'paperdol.vga'.
+	Shape_file_info*                 curfile;             // Current browser file info.
+	Shape_file_info*                 vgafile;             // Main 'shapes.vga'.
+	Shape_file_info*                 facefile;            // 'faces.vga'.
+	Shape_file_info*                 fontfile;            // 'font.vga'.
+	Shape_file_info*                 gumpfile;            // 'gumps.vga'.
+	Shape_file_info*                 spritefile;          // 'sprites.vga'.
+	Shape_file_info*                 paperdolfile;        // 'paperdol.vga'.
 	Object_browser*                  browser;
 	std::unique_ptr<unsigned char[]> palbuf;    // 3*256 rgb's, each 0-63.
 	// Barge editor:
@@ -173,15 +170,12 @@ private:
 	Shape_single *weapon_family_single, *weapon_projectile_single;
 	Shape_single *ammo_family_single, *ammo_sprite_single;
 	Shape_single* cntrules_shape_single;
-	Shape_single *frameflags_frame_single, *effhps_frame_single,
-			*framenames_frame_single, *frameusecode_frame_single;
+	Shape_single *frameflags_frame_single, *effhps_frame_single, *framenames_frame_single, *frameusecode_frame_single;
 	Shape_single *objpaperdoll_wframe_single, *objpaperdoll_spotframe_single;
 	Shape_single *brightness_frame_single, *warmth_frame_single;
-	Shape_single *npcpaperdoll_aframe_single, *npcpaperdoll_atwohanded_single,
-			*npcpaperdoll_astaff_single, *npcpaperdoll_bframe_single,
-			*npcpaperdoll_hframe_single, *npcpaperdoll_hhelm_single;
-	Shape_single *objpaperdoll_frame0_single, *objpaperdoll_frame1_single,
-			*objpaperdoll_frame2_single, *objpaperdoll_frame3_single;
+	Shape_single *npcpaperdoll_aframe_single, *npcpaperdoll_atwohanded_single, *npcpaperdoll_astaff_single,
+			*npcpaperdoll_bframe_single, *npcpaperdoll_hframe_single, *npcpaperdoll_hhelm_single;
+	Shape_single *objpaperdoll_frame0_single, *objpaperdoll_frame1_single, *objpaperdoll_frame2_single, *objpaperdoll_frame3_single;
 
 	// Cache for frame-specific modifications
 	struct Frame_cache {
@@ -189,10 +183,10 @@ private:
 		int wihx, wihy;        // Weapon offset
 	};
 
-	std::map<int, Frame_cache> shape_frame_cache;    // frame# -> cached data
-	int  current_shape_frame;    // Currently displayed frame
-	bool suppress_frame_field_signal;
-	bool shape_window_initializing;    // True during window setup
+	std::map<int, Frame_cache> shape_frame_cache;      // frame# -> cached data
+	int                        current_shape_frame;    // Currently displayed frame
+	bool                       suppress_frame_field_signal;
+	bool                       shape_window_initializing;    // True during window setup
 
 	// NPC window dirty tracking
 	struct Npc_backup {
@@ -247,13 +241,11 @@ private:
 	GtkWidget*  connect_button;
 	gulong      connect_button_handler_id;
 	gulong      connect_button_signal_id;
-	static void on_connect_button_toggled(
-			GtkToggleButton* button, gpointer user_data);
+	static void on_connect_button_toggled(GtkToggleButton* button, gpointer user_data);
 	GtkWidget*  play_button;
 	gulong      play_button_handler_id;
 	gulong      play_button_signal_id;
-	static void on_play_button_toggled(
-			GtkToggleButton* button, gpointer user_data);
+	static void on_play_button_toggled(GtkToggleButton* button, gpointer user_data);
 
 public:
 	Shape_info* temp_shape_info;    // Backup for preset undo
@@ -364,30 +356,29 @@ public:
 	void            create_new_game(const char* dir);
 	void            new_game();
 	Object_browser* create_browser(const char* fname);
-	void            set_game_path(
-					   const std::string& gamename, const std::string& modname = "");
-	void setup_file_list();
-	void save_all();        // Write out everything.
-	bool need_to_save();    // Anything modified?
-	void write_map();
-	void read_map();
-	void write_shape_info(bool force = false);
-	void reload_usecode();
-	void write_minimap();
-	void update_connect_button(bool connected);
-	void update_menu_items(bool connected);
-	void play_audio_dialog();
-	void play_audio(int type, int track, int volume, bool repeat);
-	void stop_audio();
-	void set_play(gboolean play);
-	void update_play_button(bool playing);
-	void set_tile_grid(gboolean grid);
-	void set_bounding_box(int index);
-	void set_edit_lift(int lift);
-	void set_hide_lift(int lift);
-	void set_edit_terrain(gboolean terrain);
-	void set_edit_mode(int md);
-	void show_unused_shapes(const unsigned char* data, int datalen);
+	void            set_game_path(const std::string& gamename, const std::string& modname = "");
+	void            setup_file_list();
+	void            save_all();        // Write out everything.
+	bool            need_to_save();    // Anything modified?
+	void            write_map();
+	void            read_map();
+	void            write_shape_info(bool force = false);
+	void            reload_usecode();
+	void            write_minimap();
+	void            update_connect_button(bool connected);
+	void            update_menu_items(bool connected);
+	void            play_audio_dialog();
+	void            play_audio(int type, int track, int volume, bool repeat);
+	void            stop_audio();
+	void            set_play(gboolean play);
+	void            update_play_button(bool playing);
+	void            set_tile_grid(gboolean grid);
+	void            set_bounding_box(int index);
+	void            set_edit_lift(int lift);
+	void            set_hide_lift(int lift);
+	void            set_edit_terrain(gboolean terrain);
+	void            set_edit_mode(int md);
+	void            show_unused_shapes(const unsigned char* data, int datalen);
 	// Open/create shape files:
 	Shape_file_info* open_shape_file(const char* basename);
 	void             new_shape_file(bool single);
@@ -401,9 +392,7 @@ public:
 	void export_group();
 	void import_groups();
 	void del_group();
-	void groups_changed(
-			GtkTreeModel* model, GtkTreePath* path, GtkTreeIter* loc,
-			bool value = false);
+	void groups_changed(GtkTreeModel* model, GtkTreePath* path, GtkTreeIter* loc, bool value = false);
 	void open_group_window();
 	void open_builtin_group_window();
 	void open_group_window(Shape_group* grp);
@@ -478,9 +467,8 @@ public:
 	void       close_equip_window();
 	void       new_equip_record();
 	void       set_shape_notebook_frame(int frnum);
-	void       init_shape_notebook(
-				  const Shape_info& info, GtkWidget* book, int shnum, int frnum);
-	void save_shape_notebook(Shape_info& info, int shnum, int frnum);
+	void       init_shape_notebook(const Shape_info& info, GtkWidget* book, int shnum, int frnum);
+	void       save_shape_notebook(Shape_info& info, int shnum, int frnum);
 
 	bool is_frame_field_signal_suppressed() const {
 		return suppress_frame_field_signal;
@@ -490,17 +478,13 @@ public:
 		suppress_frame_field_signal = suppressed;
 	}
 
-	void open_shape_window(
-			int shnum, int frnum, Shape_file_info* file_info,
-			const char* shname, Shape_info* info = nullptr);
+	void open_shape_window(int shnum, int frnum, Shape_file_info* file_info, const char* shname, Shape_info* info = nullptr);
 	void save_shape_window();
 	void close_shape_window();
 	void create_zoom_controls();
 
 	// Unified discard prompt helper for windows
-	bool prompt_for_discard(
-			bool& dirty_flag, const char* entity_name,
-			GtkWindow* parent = nullptr);
+	bool prompt_for_discard(bool& dirty_flag, const char* entity_name, GtkWindow* parent = nullptr);
 
 	static void on_zoom_bilinear(GtkToggleButton* btn, gpointer user_data);
 	static void on_zoom_up(GtkButton* btn, gpointer user_data);
@@ -529,9 +513,7 @@ public:
 	void set_game_information();
 	void show_charset();
 
-	bool send_to_server(
-			Exult_server::Msg_type id, unsigned char* data = nullptr,
-			int datalen = 0);
+	bool send_to_server(Exult_server::Msg_type id, unsigned char* data = nullptr, int datalen = 0);
 	void read_from_server();
 	bool connect_to_server();
 	void disconnect_from_server();
@@ -539,16 +521,15 @@ public:
 	void info_received(unsigned char* data, int datalen);
 	void set_edit_menu(bool sel, bool clip);
 	// Preferences.
-	static gboolean on_prefs_background_expose_event(
-			GtkWidget* widget, cairo_t* cairo, gpointer data);
-	void open_preferences();
-	void save_preferences();
+	static gboolean on_prefs_background_expose_event(GtkWidget* widget, cairo_t* cairo, gpointer data);
+	void            open_preferences();
+	void            save_preferences();
 	// GTK/CSS utils:
 	void reload_css();
 	// GTK/Glade utils:
-	bool get_toggle(const char* name);
-	void set_toggle(const char* name, bool val, bool sensitive = true);
-	void set_bit_toggles(tcb::span<const char* const> names, unsigned int bits);
+	bool         get_toggle(const char* name);
+	void         set_toggle(const char* name, bool val, bool sensitive = true);
+	void         set_bit_toggles(tcb::span<const char* const> names, unsigned int bits);
 	unsigned int get_bit_toggles(tcb::span<const char* const> names);
 	int          get_optmenu(const char* name);
 	void         set_optmenu(const char* name, int val, bool sensitive = true);
@@ -559,23 +540,22 @@ public:
 	int          get_num_entry(const char* name);
 	static int   get_num_entry(GtkWidget* field, int if_empty);
 	const gchar* get_text_entry(const char* name);
-	void         set_entry(
-					const char* name, int val, bool hex = false, bool sensitive = true);
-	void  set_entry(const char* name, const char* val, bool sensitive = true);
-	guint set_statusbar(const char* name, int context, const char* msg);
-	void  remove_statusbar(const char* name, int context, guint msgid);
-	void  set_button(const char* name, const char* text);
-	void  set_visible(const char* name, bool vis);
-	void  set_sensitive(const char* name, bool tf);
-	int   prompt(
-			  const char* msg, const char* choice0, const char* choice1 = nullptr,
-			  const char* choice2 = nullptr, GtkWindow* parent = nullptr);
+	void         set_entry(const char* name, int val, bool hex = false, bool sensitive = true);
+	void         set_entry(const char* name, const char* val, bool sensitive = true);
+	guint        set_statusbar(const char* name, int context, const char* msg);
+	void         remove_statusbar(const char* name, int context, guint msgid);
+	void         set_button(const char* name, const char* text);
+	void         set_visible(const char* name, bool vis);
+	void         set_sensitive(const char* name, bool tf);
+	int          prompt(
+					 const char* msg, const char* choice0, const char* choice1 = nullptr, const char* choice2 = nullptr,
+					 GtkWindow* parent = nullptr);
 	int find_palette_color(int r, int g, int b);
 
 	// Dirty tracking utilities
 	void connect_widget_signals(
-			GtkWidget* widget, GCallback callback, gpointer user_data,
-			const char* const* excluded_names = nullptr, int num_excluded = 0);
+			GtkWidget* widget, GCallback callback, gpointer user_data, const char* const* excluded_names = nullptr,
+			int num_excluded = 0);
 
 	Exult_Game get_game_type() const {
 		return game_type;
@@ -683,16 +663,14 @@ public:
 // Utilities:
 namespace EStudio {
 	int Prompt(
-			const char* msg, const char* choice0, const char* choice1 = nullptr,
-			const char* choice2 = nullptr, GtkWindow* parent = nullptr);
+			const char* msg, const char* choice0, const char* choice1 = nullptr, const char* choice2 = nullptr,
+			GtkWindow* parent = nullptr);
 	void       Alert(const char* msg, ...) ATTR_PRINTF(1, 2);
 	GtkWidget* Add_menu_item(
-			GtkWidget* menu, const char* label = nullptr,
-			GCallback func = nullptr, gpointer func_data = nullptr,
+			GtkWidget* menu, const char* label = nullptr, GCallback func = nullptr, gpointer func_data = nullptr,
 			GSList* group = nullptr);
-	GtkWidget* Create_arrow_button(
-			GtkArrowType dir, GCallback clicked, gpointer func_data);
-	bool Copy_file(const char* src, const char* dest);
+	GtkWidget* Create_arrow_button(GtkArrowType dir, GCallback clicked, gpointer func_data);
+	bool       Copy_file(const char* src, const char* dest);
 }    // namespace EStudio
 
 inline int ZoomUp(int size) {
@@ -710,15 +688,13 @@ inline int ZoomGet() {
 std::string convertToUTF8(const char* src_str, const char* enc);
 
 inline std::string convertToUTF8(const char* src_str) {
-	return convertToUTF8(
-			src_str, ExultStudio::get_instance()->get_encoding().c_str());
+	return convertToUTF8(src_str, ExultStudio::get_instance()->get_encoding().c_str());
 }
 
 std::string convertFromUTF8(const char* src_str, const char* enc);
 
 inline std::string convertFromUTF8(const char* src_str) {
-	return convertFromUTF8(
-			src_str, ExultStudio::get_instance()->get_encoding().c_str());
+	return convertFromUTF8(src_str, ExultStudio::get_instance()->get_encoding().c_str());
 }
 
 // Reset gump info loaded flag when switching games
@@ -726,9 +702,8 @@ void reset_gump_info_loaded();
 
 // Helper function from npcedit.cc for reading flag checkboxes
 bool Get_flag_cbox(
-		GList* list, unsigned long* oflags, unsigned long* xflags,
-		unsigned long* type_flags, GtkCheckButton*& cbox, unsigned long*& bits,
-		int& fnum);
+		GList* list, unsigned long* oflags, unsigned long* xflags, unsigned long* type_flags, GtkCheckButton*& cbox,
+		unsigned long*& bits, int& fnum);
 
 // Schedule names from npcedit.cc
 extern const char* sched_names[32];

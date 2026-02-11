@@ -107,19 +107,16 @@ void Npc_proximity_handler::handle_event(unsigned long curtime, uintptr udata) {
 							  // See if still on visible screen.
 	const TileRect   tiles = gwin->get_win_tile_rect().enlarge(10);
 	const Tile_coord t     = npc->get_tile();
-	if (!tiles.has_world_point(t.tx, t.ty) ||    // No longer visible?
-												 // Not on current map?
-		npc->get_map() != gwin->get_map()
-		|| npc->is_dead()) {    // Or no longer living?
+	if (!tiles.has_world_point(t.tx, t.ty) ||                     // No longer visible?
+																  // Not on current map?
+		npc->get_map() != gwin->get_map() || npc->is_dead()) {    // Or no longer living?
 		npc->clear_nearby();
 		return;
 	}
-	auto sched
-			= static_cast<Schedule::Schedule_types>(npc->get_schedule_type());
+	auto sched = static_cast<Schedule::Schedule_types>(npc->get_schedule_type());
 	// Sleep schedule?
-	if (npc->get_schedule() && sched == Schedule::sleep && !npc->is_in_party()
-		&& !Bg_dont_wake(gwin, npc) && npc->distance(gwin->get_main_actor()) < 6
-		&& Fast_pathfinder_client::is_straight_path(npc, gwin->get_main_actor())
+	if (npc->get_schedule() && sched == Schedule::sleep && !npc->is_in_party() && !Bg_dont_wake(gwin, npc)
+		&& npc->distance(gwin->get_main_actor()) < 6 && Fast_pathfinder_client::is_straight_path(npc, gwin->get_main_actor())
 		&& (rand() % 3) == 0) {
 		// Trick:  Stand, but stay in
 		//   sleep_schedule.
@@ -152,8 +149,7 @@ void Npc_proximity_handler::wait(int secs    // # of seconds.
  *  Fill a list with all the nearby NPC's.
  */
 
-void Npc_proximity_handler::get_all(
-		Actor_vector& alist    // They're appended to this.
+void Npc_proximity_handler::get_all(Actor_vector& alist    // They're appended to this.
 ) {
 	Time_queue_iterator next(gwin->get_tqueue(), this);
 	Time_sensitive*     obj;

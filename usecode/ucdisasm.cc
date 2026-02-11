@@ -48,15 +48,13 @@ int Usecode_internal::get_opcode_length(int opcode) {
 
 void Usecode_internal::uc_trace_disasm(Stack_frame* frame) {
 	uc_trace_disasm(
-			frame->locals, frame->num_args + frame->num_vars,
-			frame->function->statics, frame->data, frame->externs, frame->code,
+			frame->locals, frame->num_args + frame->num_vars, frame->function->statics, frame->data, frame->externs, frame->code,
 			frame->ip);
 }
 
 void Usecode_internal::uc_trace_disasm(
-		Usecode_value* locals, int num_locals,
-		std::vector<Usecode_value>& locstatics, const uint8* data,
-		const uint8* externals, const uint8* code, const uint8* ip) {
+		Usecode_value* locals, int num_locals, std::vector<Usecode_value>& locstatics, const uint8* data, const uint8* externals,
+		const uint8* code, const uint8* ip) {
 	ignore_unused_variable_warning(num_locals);
 	const int func_ip = static_cast<int>(ip - code);
 	const int opcode  = Read1(ip);
@@ -124,8 +122,7 @@ void Usecode_internal::uc_trace_disasm(
 		case op_relative_jump:
 			// Print jump desination
 			offset = little_endian::Read2(ip);
-			std::printf(
-					"\t%04X", (offset + func_ip + 1 + pdesc->nbytes) & 0xFFFF);
+			std::printf("\t%04X", (offset + func_ip + 1 + pdesc->nbytes) & 0xFFFF);
 			break;
 		case op_relative_jump32:
 			offset = little_endian::Read4s(ip);
@@ -140,9 +137,7 @@ void Usecode_internal::uc_trace_disasm(
 			little_endian::Read2(ip);
 			varref = little_endian::Read2(ip);
 			offset = little_endian::Read2(ip);
-			std::printf(
-					"\t[%04X], %04X\t= ", varref,
-					(offset + func_ip + 1 + pdesc->nbytes) & 0xFFFF);
+			std::printf("\t[%04X], %04X\t= ", varref, (offset + func_ip + 1 + pdesc->nbytes) & 0xFFFF);
 			locals[varref].print(cout, true);    // print value (short format)
 			break;
 		case op_sloop32:
@@ -154,24 +149,18 @@ void Usecode_internal::uc_trace_disasm(
 			little_endian::Read2(ip);
 			varref = little_endian::Read2(ip);
 			offset = little_endian::Read4s(ip);
-			std::printf(
-					"\t[%04X], %04X\t= ", varref,
-					offset + func_ip + 1 + pdesc->nbytes);
+			std::printf("\t[%04X], %04X\t= ", varref, offset + func_ip + 1 + pdesc->nbytes);
 			locals[varref].print(cout, true);    // print value (short format)
 			break;
 		case op_immed_and_relative_jump:
 			immed  = little_endian::Read2(ip);
 			offset = little_endian::Read2(ip);
-			std::printf(
-					"\t%04hXH, %04X", immed,
-					(offset + func_ip + 1 + pdesc->nbytes) & 0xFFFF);
+			std::printf("\t%04hXH, %04X", immed, (offset + func_ip + 1 + pdesc->nbytes) & 0xFFFF);
 			break;
 		case op_immedreljump32:
 			immed  = little_endian::Read2(ip);
 			offset = little_endian::Read4s(ip);
-			std::printf(
-					"\t%04hXH, %04X", immed,
-					offset + func_ip + 1 + pdesc->nbytes);
+			std::printf("\t%04hXH, %04X", immed, offset + func_ip + 1 + pdesc->nbytes);
 			break;
 		case op_call: {
 			const unsigned short func = little_endian::Read2(ip);
@@ -186,15 +175,12 @@ void Usecode_internal::uc_trace_disasm(
 			} else {
 				func_table = bg_intrinsic_table;
 			}
-			std::printf(
-					"\t_%s@%d\t; %04X", func_table[func].data(), immed, func);
+			std::printf("\t_%s@%d\t; %04X", func_table[func].data(), immed, func);
 		} break;
 		case op_extcall: {
 			// Print extern call
 			offset = little_endian::Read2(ip);
-			std::printf(
-					"\t[%04X]\t\t; %04XH", offset,
-					externals[2 * offset] + 256 * externals[2 * offset + 1]);
+			std::printf("\t[%04X]\t\t; %04XH", offset, externals[2 * offset] + 256 * externals[2 * offset + 1]);
 			break;
 		}
 		case op_varref:

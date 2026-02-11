@@ -42,9 +42,7 @@ public:
 	friend class Spellbook_gump;
 	friend class Spellscroll_gump;
 
-	Gump_widget(
-			Gump_Base* parent, int shnum, int px, int py, int frnum = 0,
-			ShapeFile shfile = SF_GUMPS_VGA)
+	Gump_widget(Gump_Base* parent, int shnum, int px, int py, int frnum = 0, ShapeFile shfile = SF_GUMPS_VGA)
 			: Gump_Base(shnum, frnum, shfile), parent(parent), x(px), y(py) {}
 
 	virtual Gump_widget* clone(Gump* par) {
@@ -153,8 +151,7 @@ public:
 	static void paintSorted(T& container) {
 		Sort_Order next;
 		Sort_Order highest = Sort_Order::ontop;
-		for (int s = int(Sort_Order::lowest); s <= int(highest);
-			 s     = int(next)) {
+		for (int s = int(Sort_Order::lowest); s <= int(highest); s = int(next)) {
 			next = Sort_Order(s + 1);
 			for (auto& widget : container) {
 				if (widget) {
@@ -165,23 +162,20 @@ public:
 	}
 
 	template <typename T>
-	static Gump_widget* findSorted(
-			int sx, int sy, T& container, Gump_widget* before) {
+	static Gump_widget* findSorted(int sx, int sy, T& container, Gump_widget* before) {
 		Sort_Order next;
 		Sort_Order highest = Sort_Order::ontop;
-		for (int s = int(Sort_Order::lowest); s <= int(highest);
-			 s     = int(next)) {
+		for (int s = int(Sort_Order::lowest); s <= int(highest); s = int(next)) {
 			next = Sort_Order(s + 1);
 			for (auto& child : container) {
 				if (!child) {
 					continue;
-				}	
+				}
 				if (&*child == before) {
 					break;
 				}
 
-				Gump_widget* found = child->findSorted(
-						sx, sy, Sort_Order(s), next, highest, before);
+				Gump_widget* found = child->findSorted(sx, sy, Sort_Order(s), next, highest, before);
 				if (found) {
 					return found;
 				}
@@ -194,16 +188,13 @@ public:
 	/// Paint self if our sort order matches and call call on children
 	/// Also gather next and highest sort orders
 	/// see IterableGump_widget::paintSorted() for example
-	virtual void paintSorted(
-			Sort_Order sort, Sort_Order& next, Sort_Order& highest);
+	virtual void paintSorted(Sort_Order sort, Sort_Order& next, Sort_Order& highest);
 
 	// Rerturn self if we have the point and our sort order matches the input,
 	// if wedon't match call on our children
 	/// Also gather next and highest sort orders
 	/// see IterableGump_widget::findSorted() for example
-	virtual Gump_widget* findSorted(
-			int sx, int sy, Sort_Order sort, Sort_Order& next,
-			Sort_Order& highest, Gump_widget* before);
+	virtual Gump_widget* findSorted(int sx, int sy, Sort_Order sort, Sort_Order& next, Sort_Order& highest, Gump_widget* before);
 };
 
 #endif

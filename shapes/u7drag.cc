@@ -37,8 +37,7 @@ static const size_t FileUriLen = strlen(FILE_URI);
 /*
  *  Check and skip the URI introducer.
  */
-static bool verify_is_uri(
-		const unsigned char*& data, const char* searched_uri) {
+static bool verify_is_uri(const unsigned char*& data, const char* searched_uri) {
 	const size_t urilen = strlen(searched_uri);
 	if (memcmp(data, searched_uri, urilen) == 0) {
 		data += urilen;
@@ -64,8 +63,7 @@ int Store_u7_shapeid(
 		int            frame     // 0-0xff.
 ) {
 	return snprintf(
-			reinterpret_cast<char*>(data), U7DND_DATA_LENGTH(3),
-			FILE_URI "/%s.%d.%d.%d", U7_TARGET_SHAPEID_NAME, file, shape,
+			reinterpret_cast<char*>(data), U7DND_DATA_LENGTH(3), FILE_URI "/%s.%d.%d.%d", U7_TARGET_SHAPEID_NAME, file, shape,
 			frame);
 }
 
@@ -101,9 +99,7 @@ int Store_u7_chunkid(
 		unsigned char* data,
 		int            cnum    // 0-0xffff.
 ) {
-	return snprintf(
-			reinterpret_cast<char*>(data), U7DND_DATA_LENGTH(1),
-			FILE_URI "/%s.%d", U7_TARGET_CHUNKID_NAME, cnum);
+	return snprintf(reinterpret_cast<char*>(data), U7DND_DATA_LENGTH(1), FILE_URI "/%s.%d", U7_TARGET_CHUNKID_NAME, cnum);
 }
 
 /*
@@ -136,9 +132,7 @@ int Store_u7_npcid(
 		unsigned char* data,
 		int            npcnum    // 0-0xffff.
 ) {
-	return snprintf(
-			reinterpret_cast<char*>(data), U7DND_DATA_LENGTH(1),
-			FILE_URI "/%s.%d", U7_TARGET_NPCID_NAME, npcnum);
+	return snprintf(reinterpret_cast<char*>(data), U7DND_DATA_LENGTH(1), FILE_URI "/%s.%d", U7_TARGET_NPCID_NAME, npcnum);
 }
 
 /*
@@ -170,27 +164,23 @@ bool Is_u7_npcid(const unsigned char* data) {
 
 int Store_u7_comboid(
 		unsigned char* data,
-		int            xtiles,    // 0-0xffff : X - Footprint in tiles.
-		int            ytiles,    // 0-0xffff : Y - Footprint in tiles.
-		int tiles_right,       // 0-0xffff : Tiles to the right of the hot-spot.
-		int tiles_below,       // 0-0xffff : Tiles below the hot-spot.
-		int cnt,               // 0-0xffff : Number of members.
-		U7_combo_data* ents    // The members, with locations relative - can be
-							   // negative - to hot-spot.
+		int            xtiles,         // 0-0xffff : X - Footprint in tiles.
+		int            ytiles,         // 0-0xffff : Y - Footprint in tiles.
+		int            tiles_right,    // 0-0xffff : Tiles to the right of the hot-spot.
+		int            tiles_below,    // 0-0xffff : Tiles below the hot-spot.
+		int            cnt,            // 0-0xffff : Number of members.
+		U7_combo_data* ents            // The members, with locations relative - can be
+									   // negative - to hot-spot.
 ) {
-	unsigned char* ptr
-			= data
-			  + snprintf(
-					  reinterpret_cast<char*>(data), U7DND_DATA_LENGTH(5),
-					  FILE_URI "/%s.%d.%d.%d.%d.%d", U7_TARGET_COMBOID_NAME,
-					  xtiles, ytiles, tiles_right, tiles_below, cnt);
+	unsigned char* ptr = data
+						 + snprintf(
+								 reinterpret_cast<char*>(data), U7DND_DATA_LENGTH(5), FILE_URI "/%s.%d.%d.%d.%d.%d",
+								 U7_TARGET_COMBOID_NAME, xtiles, ytiles, tiles_right, tiles_below, cnt);
 	for (int i = 0; i < cnt; i++) {
 		ptr = ptr
 			  + snprintf(
-					  reinterpret_cast<char*>(ptr),
-					  U7DND_DATA_LENGTH(5 + (5 * cnt)) - (ptr - data),
-					  ".%d.%d.%d.%d.%d", ents[i].tx, ents[i].ty, ents[i].tz,
-					  ents[i].shape, ents[i].frame);
+					  reinterpret_cast<char*>(ptr), U7DND_DATA_LENGTH(5 + (5 * cnt)) - (ptr - data), ".%d.%d.%d.%d.%d", ents[i].tx,
+					  ents[i].ty, ents[i].tz, ents[i].shape, ents[i].frame);
 	}
 	return ptr - data;
 }
@@ -205,23 +195,21 @@ int Store_u7_comboid(
 
 void Get_u7_comboid(
 		const unsigned char* data,
-		int&                 xtiles,    // 0-0xffff : X - Footprint in tiles.
-		int&                 ytiles,    // 0-0xffff : Y - Footprint in tiles.
-		int& tiles_right,    // 0-0xffff : Tiles to the right of the hot-spot.
-		int& tiles_below,    // 0-0xffff : Tiles below the hot-spot.
-		int& cnt,            // 0-0xffff : Number of members.
-		U7_combo_data*& ents    // The members, with locations relative - can be
-								// negative - to hot-spot.
+		int&                 xtiles,         // 0-0xffff : X - Footprint in tiles.
+		int&                 ytiles,         // 0-0xffff : Y - Footprint in tiles.
+		int&                 tiles_right,    // 0-0xffff : Tiles to the right of the hot-spot.
+		int&                 tiles_below,    // 0-0xffff : Tiles below the hot-spot.
+		int&                 cnt,            // 0-0xffff : Number of members.
+		U7_combo_data*&      ents            // The members, with locations relative - can be
+											 // negative - to hot-spot.
 ) {
 	const char* ptr = strchr(reinterpret_cast<const char*>(data), '.');
 	int         n;
-	sscanf(ptr, ".%d.%d.%d.%d.%d%n", &xtiles, &ytiles, &tiles_right,
-		   &tiles_below, &cnt, &n);
+	sscanf(ptr, ".%d.%d.%d.%d.%d%n", &xtiles, &ytiles, &tiles_right, &tiles_below, &cnt, &n);
 	ptr += n;
 	ents = new U7_combo_data[cnt];
 	for (int i = 0; i < cnt; i++) {
-		sscanf(ptr, ".%d.%d.%d.%d.%d%n", &ents[i].tx, &ents[i].ty, &ents[i].tz,
-			   &ents[i].shape, &ents[i].frame, &n);
+		sscanf(ptr, ".%d.%d.%d.%d.%d%n", &ents[i].tx, &ents[i].ty, &ents[i].tz, &ents[i].shape, &ents[i].frame, &n);
 		ptr += n;
 	}
 }

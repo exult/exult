@@ -113,9 +113,8 @@ void Game_window::read_npcs() {
 				if (!okay || sid.get_num_frames() < 16) {
 					break;    // Watch for corrupted file.
 				}
-				const Game_object_shared new_monster
-						= Monster_actor::create(shnum);
-				auto* act = static_cast<Monster_actor*>(new_monster.get());
+				const Game_object_shared new_monster = Monster_actor::create(shnum);
+				auto*                    act         = static_cast<Monster_actor*>(new_monster.get());
 				act->read(&nfile, -1, false, fix_unused);
 				act->set_schedule_loc(act->get_tile());
 				act->restore_schedule();
@@ -166,8 +165,7 @@ void Game_window::write_npcs() {
 		OFileDataSource nfile(MONSNPCS);
 		int             cnt = 0;
 		nfile.write2(0);    // Write 0 as a place holder.
-		for (Monster_actor* mact = Monster_actor::get_first_in_world(); mact;
-			 mact                = mact->get_next_in_world()) {
+		for (Monster_actor* mact = Monster_actor::get_first_in_world(); mact; mact = mact->get_next_in_world()) {
 			if (!mact->is_dead()) {    // Alive?
 				mact->write(&nfile);
 				cnt++;
@@ -189,9 +187,9 @@ void Game_window::write_npcs() {
 
 std::unique_ptr<short[]> Set_to_read_schedules(
 		IStreamDataSource& sfile,
-		int&               num_npcs,    // # npc's returnes.
-		int&               entsize,     // Entry size returned.
-		int& num_script_names           // # of usecode script names ret'd.
+		int&               num_npcs,           // # npc's returnes.
+		int&               entsize,            // Entry size returned.
+		int&               num_script_names    // # of usecode script names ret'd.
 ) {
 	entsize          = 4;    // 4 is U7's size.
 	num_script_names = 0;
@@ -216,9 +214,7 @@ std::unique_ptr<short[]> Set_to_read_schedules(
  *  Read one NPC's schedule.
  */
 
-void Read_a_schedule(
-		IStreamDataSource& sfile, int index, Actor* npc, int entsize,
-		const short* offsets) {
+void Read_a_schedule(IStreamDataSource& sfile, int index, Actor* npc, int entsize, const short* offsets) {
 	const int cnt = offsets[index] - offsets[index - 1];
 	// Read schedules into this array.
 	Actor::Schedule_list list(cnt);
@@ -244,12 +240,10 @@ void Read_a_schedule(
  */
 
 void Game_window::read_schedules() {
-	std::unique_ptr<IFileDataSource> sfile
-			= std::make_unique<IFileDataSource>(GSCHEDULE);
+	std::unique_ptr<IFileDataSource> sfile = std::make_unique<IFileDataSource>(GSCHEDULE);
 	if (!sfile->good()) {
 #ifdef DEBUG
-		cerr << "Couldn't open " << GSCHEDULE << ". Falling back to "
-			 << SCHEDULE_DAT << "." << endl;
+		cerr << "Couldn't open " << GSCHEDULE << ". Falling back to " << SCHEDULE_DAT << "." << endl;
 #endif
 		sfile = std::make_unique<IFileDataSource>(SCHEDULE_DAT);
 		if (!sfile->good()) {
@@ -263,8 +257,7 @@ void Game_window::read_schedules() {
 	int  num_npcs = 0;
 	int  entsize;
 	int  num_script_names;
-	auto offsets = Set_to_read_schedules(
-			*sfile, num_npcs, entsize, num_script_names);
+	auto offsets = Set_to_read_schedules(*sfile, num_npcs, entsize, num_script_names);
 	Schedule_change::clear();
 	vector<std::string>& script_names = Schedule_change::get_script_names();
 	if (num_script_names) {
@@ -300,11 +293,10 @@ void Game_window::write_schedules() {
 	num = npcs.size();
 
 	OFileDataSource            sfile(GSCHEDULE);
-	const vector<std::string>& script_names
-			= Schedule_change::get_script_names();
+	const vector<std::string>& script_names = Schedule_change::get_script_names();
 
 	sfile.write4(static_cast<unsigned int>(-2));    // Exult version #.
-	sfile.write4(num);    // # of NPC's, not include Avatar.
+	sfile.write4(num);                              // # of NPC's, not include Avatar.
 	sfile.write2(static_cast<uint16>(script_names.size()));
 	sfile.write2(0);    // First offset
 
@@ -351,8 +343,7 @@ void Game_window::revert_schedules(Actor* npc) {
 	int  num_npcs;
 	int  entsize;
 	int  num_script_names;
-	auto offsets
-			= Set_to_read_schedules(sfile, num_npcs, entsize, num_script_names);
+	auto offsets = Set_to_read_schedules(sfile, num_npcs, entsize, num_script_names);
 	if (num_script_names) {
 		const int sz = sfile.read2();
 		sfile.skip(sz);

@@ -41,9 +41,7 @@
 #include "imagebuf.h"
 #include "shapeid.h"
 
-extern bool Translate_keyboard(
-		const SDL_Event& event, SDL_Keycode& code, SDL_Keycode& unicode,
-		bool numpad);
+extern bool Translate_keyboard(const SDL_Event& event, SDL_Keycode& code, SDL_Keycode& unicode, bool numpad);
 
 class Gump;
 class Game_object;
@@ -90,7 +88,7 @@ public:
 	}
 
 	Gump* find_gump(int x, int y, bool pers = true);    // Find gump x,y is in
-	Gump* find_gump(const Game_object* obj);    // Find gump that object is in
+	Gump* find_gump(const Game_object* obj);            // Find gump that object is in
 	// Find gump for object obj:
 	Gump* find_gump(const Game_object* owner, int shapenum);
 
@@ -115,11 +113,8 @@ public:
 	void set_gumps_dont_pause_game(bool p);
 
 	bool okay_to_quit(Paintable* paint = nullptr);
-	int  prompt_for_number(
-			 int minval, int maxval, int step, int def,
-			 Paintable* paint = nullptr, bool* escaped = nullptr);
-	bool do_modal_gump(
-			Modal_gump*, Mouse::Mouse_shapes, Paintable* paint = nullptr);
+	int  prompt_for_number(int minval, int maxval, int step, int def, Paintable* paint = nullptr, bool* escaped = nullptr);
+	bool do_modal_gump(Modal_gump*, Mouse::Mouse_shapes, Paintable* paint = nullptr);
 	void paint_num(int num, int x, int y, std::shared_ptr<Font> font = nullptr);
 
 	Gump_manager();

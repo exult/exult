@@ -38,8 +38,7 @@ using std::vector;
 /*
  *  Create preset.
  */
-Shape_preset::Shape_preset(const char* nm, Shape_preset_file* f)
-		: name(nm), file(f), modified(false) {}
+Shape_preset::Shape_preset(const char* nm, Shape_preset_file* f) : name(nm), file(f), modified(false) {}
 
 /*
  *  Set a value in the preset.
@@ -105,8 +104,7 @@ void Shape_preset::read(IDataSource& in) {
 /*
  *  Create preset file.
  */
-Shape_preset_file::Shape_preset_file(const char* nm)
-		: filename(nm ? nm : ""), modified(false) {}
+Shape_preset_file::Shape_preset_file(const char* nm) : filename(nm ? nm : ""), modified(false) {}
 
 /*
  *  Delete.
@@ -275,20 +273,16 @@ void ExultStudio::setup_presets_list() {
 
 		// Try to get shape number if it exists
 		if (preset->has_value("shape_number")) {
-			const int shape_num
-					= std::atoi(preset->get_value("shape_number").c_str());
+			const int shape_num = std::atoi(preset->get_value("shape_number").c_str());
 
 			// Get shape preview image
 			if (vgafile && shape_num >= 0) {
-				GdkPixbuf* full_pixbuf
-						= shape_image(vgafile->get_ifile(), shape_num, 0, true);
+				GdkPixbuf* full_pixbuf = shape_image(vgafile->get_ifile(), shape_num, 0, true);
 				if (full_pixbuf) {
 					// Scale to half size
 					const int width  = gdk_pixbuf_get_width(full_pixbuf);
 					const int height = gdk_pixbuf_get_height(full_pixbuf);
-					shape_pixbuf     = gdk_pixbuf_scale_simple(
-                            full_pixbuf, width / 2, height / 2,
-                            GDK_INTERP_BILINEAR);
+					shape_pixbuf     = gdk_pixbuf_scale_simple(full_pixbuf, width / 2, height / 2, GDK_INTERP_BILINEAR);
 					g_object_unref(full_pixbuf);
 				}
 			}
@@ -299,9 +293,7 @@ void ExultStudio::setup_presets_list() {
 
 		GtkTreeIter iter;
 		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(
-				store, &iter, 0, preset->get_name(), 1, shape_pixbuf, 2,
-				shape_num_str, -1);
+		gtk_list_store_set(store, &iter, 0, preset->get_name(), 1, shape_pixbuf, 2, shape_num_str, -1);
 
 		// Free the pixbuf after adding to store (store takes a reference)
 		if (shape_pixbuf) {
@@ -407,8 +399,7 @@ void ExultStudio::load_preset_to_shape(const char* preset_name) {
 	if (preset->has_value("shape_number")) {
 		GtkWidget* widget = get_widget("shinfo_shape");
 		if (widget) {
-			const int shape_num
-					= std::atoi(preset->get_value("shape_number").c_str());
+			const int shape_num = std::atoi(preset->get_value("shape_number").c_str());
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), shape_num);
 			// Trigger the shape change to load all shape data
 			gtk_widget_activate(widget);
@@ -437,8 +428,7 @@ void ExultStudio::apply_preset() {
 		return;
 	}
 
-	const int preset_shape_num
-			= std::atoi(preset->get_value("shape_number").c_str());
+	const int preset_shape_num  = std::atoi(preset->get_value("shape_number").c_str());
 	const int current_shape_num = get_num_entry("shinfo_shape");
 
 	// Silently fail if preset shape == current shape
@@ -447,14 +437,12 @@ void ExultStudio::apply_preset() {
 	}
 
 	// Ask user for confirmation before applying
-	if (EStudio::Prompt("Apply this preset to the current shape?", "Yes", "No")
-		!= 0) {
+	if (EStudio::Prompt("Apply this preset to the current shape?", "Yes", "No") != 0) {
 		return;
 	}
 
 	// Get the shape info for the current shape
-	auto* info = static_cast<Shape_info*>(
-			g_object_get_data(G_OBJECT(shapewin), "user_data"));
+	auto* info = static_cast<Shape_info*>(g_object_get_data(G_OBJECT(shapewin), "user_data"));
 	if (!info) {
 		return;
 	}
@@ -487,8 +475,7 @@ void ExultStudio::apply_preset() {
 	// Re-initialize the shape notebook with the copied data
 	const int frnum = get_num_entry("shinfo_frame");
 	if (current_shape_num >= 0 && frnum >= 0) {
-		init_shape_notebook(
-				*info, get_widget("shinfo_notebook"), current_shape_num, frnum);
+		init_shape_notebook(*info, get_widget("shinfo_notebook"), current_shape_num, frnum);
 	}
 }
 
@@ -509,18 +496,15 @@ void ExultStudio::export_preset() {
 
 	// Create file chooser dialog for saving
 	GtkWidget* dialog = gtk_file_chooser_dialog_new(
-			"Export Preset to File", GTK_WINDOW(get_widget("shape_window")),
-			GTK_FILE_CHOOSER_ACTION_SAVE, "_Cancel", GTK_RESPONSE_CANCEL,
-			"_Save", GTK_RESPONSE_ACCEPT, nullptr);
+			"Export Preset to File", GTK_WINDOW(get_widget("shape_window")), GTK_FILE_CHOOSER_ACTION_SAVE, "_Cancel",
+			GTK_RESPONSE_CANCEL, "_Save", GTK_RESPONSE_ACCEPT, nullptr);
 
-	gtk_file_chooser_set_do_overwrite_confirmation(
-			GTK_FILE_CHOOSER(dialog), true);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), true);
 
 	// Set default folder to patch directory
 	if (is_system_path_defined("<PATCH>")) {
 		const std::string patchdir = get_system_path("<PATCH>");
-		gtk_file_chooser_set_current_folder(
-				GTK_FILE_CHOOSER(dialog), patchdir.c_str());
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), patchdir.c_str());
 	}
 
 	// Add filter for .pre files
@@ -563,15 +547,13 @@ void ExultStudio::export_preset() {
 void ExultStudio::import_presets() {
 	// Create file chooser dialog for opening
 	GtkWidget* dialog = gtk_file_chooser_dialog_new(
-			"Import Presets File", GTK_WINDOW(get_widget("shape_window")),
-			GTK_FILE_CHOOSER_ACTION_OPEN, "_Cancel", GTK_RESPONSE_CANCEL,
-			"_Open", GTK_RESPONSE_ACCEPT, nullptr);
+			"Import Presets File", GTK_WINDOW(get_widget("shape_window")), GTK_FILE_CHOOSER_ACTION_OPEN, "_Cancel",
+			GTK_RESPONSE_CANCEL, "_Open", GTK_RESPONSE_ACCEPT, nullptr);
 
 	// Set default folder to patch directory
 	if (is_system_path_defined("<PATCH>")) {
 		const std::string patchdir = get_system_path("<PATCH>");
-		gtk_file_chooser_set_current_folder(
-				GTK_FILE_CHOOSER(dialog), patchdir.c_str());
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), patchdir.c_str());
 	}
 
 	// Add filter for .pre files
@@ -604,8 +586,7 @@ void ExultStudio::import_presets() {
 		Shape_preset* src = import_file->get(i);
 		if (src) {
 			// Append " imported" to the preset name
-			std::string imported_name
-					= std::string(src->get_name()) + " imported";
+			std::string imported_name = std::string(src->get_name()) + " imported";
 
 			// Check if preset already exists
 			Shape_preset* dest = presets_file->find(imported_name.c_str());
@@ -642,8 +623,7 @@ void ExultStudio::clone_preset() {
 
 	// Create a simple dialog to get new name
 	GtkWidget* dialog = gtk_message_dialog_new(
-			GTK_WINDOW(get_widget("shape_window")), GTK_DIALOG_MODAL,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
+			GTK_WINDOW(get_widget("shape_window")), GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
 			"Enter name for cloned preset:");
 	GtkWidget* content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	GtkWidget* entry   = gtk_entry_new();
@@ -652,9 +632,7 @@ void ExultStudio::clone_preset() {
 	gtk_widget_show(entry);
 
 	const gint  response      = gtk_dialog_run(GTK_DIALOG(dialog));
-	const char* new_name_cstr = (response == GTK_RESPONSE_OK)
-										? gtk_entry_get_text(GTK_ENTRY(entry))
-										: nullptr;
+	const char* new_name_cstr = (response == GTK_RESPONSE_OK) ? gtk_entry_get_text(GTK_ENTRY(entry)) : nullptr;
 	string      new_name      = new_name_cstr ? new_name_cstr : "";
 	gtk_widget_destroy(dialog);
 
@@ -682,8 +660,7 @@ void ExultStudio::rename_preset() {
 
 	// Create a simple dialog to get new name
 	GtkWidget* dialog = gtk_message_dialog_new(
-			GTK_WINDOW(get_widget("shape_window")), GTK_DIALOG_MODAL,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
+			GTK_WINDOW(get_widget("shape_window")), GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
 			"Enter new name for preset:");
 	GtkWidget* content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 	GtkWidget* entry   = gtk_entry_new();
@@ -692,9 +669,7 @@ void ExultStudio::rename_preset() {
 	gtk_widget_show(entry);
 
 	const gint  response      = gtk_dialog_run(GTK_DIALOG(dialog));
-	const char* new_name_cstr = (response == GTK_RESPONSE_OK)
-										? gtk_entry_get_text(GTK_ENTRY(entry))
-										: nullptr;
+	const char* new_name_cstr = (response == GTK_RESPONSE_OK) ? gtk_entry_get_text(GTK_ENTRY(entry)) : nullptr;
 	string      new_name      = new_name_cstr ? new_name_cstr : "";
 	gtk_widget_destroy(dialog);
 
@@ -721,10 +696,9 @@ void ExultStudio::apply_preset_from_shape() {
 	}
 
 	// Get the source shape number from the spin button
-	GtkWidget* spin_widget = get_widget("preset_apply_shape_spin");
-	const int  source_shape
-			= gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spin_widget));
-	const int current_shape = get_num_entry("shinfo_shape");
+	GtkWidget* spin_widget   = get_widget("preset_apply_shape_spin");
+	const int  source_shape  = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spin_widget));
+	const int  current_shape = get_num_entry("shinfo_shape");
 
 	// Silently fail if source shape == current shape
 	if (source_shape == current_shape) {
@@ -733,17 +707,13 @@ void ExultStudio::apply_preset_from_shape() {
 
 	// Ask user for confirmation before applying
 	char msg[128];
-	snprintf(
-			msg, sizeof(msg),
-			"Apply shape #%d properties to the current shape #%d?",
-			source_shape, current_shape);
+	snprintf(msg, sizeof(msg), "Apply shape #%d properties to the current shape #%d?", source_shape, current_shape);
 	if (EStudio::Prompt(msg, "Yes", "No") != 0) {
 		return;
 	}
 
 	// Get the shape info for the current shape
-	auto* info = static_cast<Shape_info*>(
-			g_object_get_data(G_OBJECT(shapewin), "user_data"));
+	auto* info = static_cast<Shape_info*>(g_object_get_data(G_OBJECT(shapewin), "user_data"));
 	if (!info) {
 		return;
 	}
@@ -777,8 +747,7 @@ void ExultStudio::apply_preset_from_shape() {
 	// Re-initialize the shape notebook with the copied data
 	const int frnum = get_num_entry("shinfo_frame");
 	if (current_shape >= 0 && frnum >= 0) {
-		init_shape_notebook(
-				*info, get_widget("shinfo_notebook"), current_shape, frnum);
+		init_shape_notebook(*info, get_widget("shinfo_notebook"), current_shape, frnum);
 	}
 }
 
@@ -855,9 +824,7 @@ C_EXPORT void on_preset_delete_clicked(GtkButton* btn, gpointer user_data) {
 	ExultStudio::get_instance()->del_preset();
 }
 
-C_EXPORT void on_presets_list_row_activated(
-		GtkTreeView* treeview, GtkTreePath* path, GtkTreeViewColumn* col,
-		gpointer user_data) {
+C_EXPORT void on_presets_list_row_activated(GtkTreeView* treeview, GtkTreePath* path, GtkTreeViewColumn* col, gpointer user_data) {
 	ignore_unused_variable_warning(treeview, path, col, user_data);
 	ExultStudio* studio      = ExultStudio::get_instance();
 	const char*  preset_name = get_selected_preset_name(studio);
@@ -867,14 +834,12 @@ C_EXPORT void on_presets_list_row_activated(
 	}
 }
 
-C_EXPORT void on_presets_list_cursor_changed(
-		GtkTreeView* treeview, gpointer user_data) {
+C_EXPORT void on_presets_list_cursor_changed(GtkTreeView* treeview, gpointer user_data) {
 	ignore_unused_variable_warning(treeview, user_data);
 	// Could enable/disable buttons based on selection here
 }
 
-C_EXPORT void on_preset_apply_from_shape_clicked(
-		GtkButton* btn, gpointer user_data) {
+C_EXPORT void on_preset_apply_from_shape_clicked(GtkButton* btn, gpointer user_data) {
 	ignore_unused_variable_warning(btn, user_data);
 	ExultStudio::get_instance()->apply_preset_from_shape();
 }

@@ -30,11 +30,9 @@ public:
 		const std::vector<unsigned char>& params = std::vector<unsigned char>())
 			: _id(id), _offset(offset), _params(params) {}
 
-	UCc(const unsigned int id, const std::string& miscstr)
-			: _id(id), _miscstr(miscstr) {}
+	UCc(const unsigned int id, const std::string& miscstr) : _id(id), _miscstr(miscstr) {}
 
-	UCc(const std::vector<unsigned int>& params_parsed)
-			: _params_parsed(params_parsed) {}
+	UCc(const std::vector<unsigned int>& params_parsed) : _params_parsed(params_parsed) {}
 
 	unsigned int               _id = 0;
 	std::string                _miscstr;
@@ -101,8 +99,7 @@ public:
 	bool mode_all = false;
 	bool mode_dis = false;
 
-	bool force_ext32
-			= false;    // force ext32 function format output for all functions
+	bool force_ext32 = false;    // force ext32 function format output for all functions
 
 	// private:
 	enum {

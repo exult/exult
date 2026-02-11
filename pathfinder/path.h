@@ -26,7 +26,6 @@
 
 class Pathfinder_client;
 
-std::pair<std::vector<Tile_coord>, bool> Find_path(
-		const Tile_coord&, const Tile_coord&, const Pathfinder_client* client);
+std::pair<std::vector<Tile_coord>, bool> Find_path(const Tile_coord&, const Tile_coord&, const Pathfinder_client* client);
 
 #endif

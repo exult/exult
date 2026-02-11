@@ -31,11 +31,10 @@ class ODataSource;
  *  A preset that stores complete shape configuration data.
  */
 class Shape_preset {
-	std::string        name;    // Name of this preset.
-	Shape_preset_file* file;    // Where this comes from.
-	bool               modified;
-	std::map<std::string, std::string>
-			data;    // Key-value pairs for all shape data
+	std::string                        name;    // Name of this preset.
+	Shape_preset_file*                 file;    // Where this comes from.
+	bool                               modified;
+	std::map<std::string, std::string> data;    // Key-value pairs for all shape data
 
 public:
 	friend class Shape_preset_file;
@@ -102,8 +101,7 @@ public:
 	}
 
 	Shape_preset* get(int i) {
-		return i >= 0 && i < static_cast<int>(presets.size()) ? presets[i]
-															  : nullptr;
+		return i >= 0 && i < static_cast<int>(presets.size()) ? presets[i] : nullptr;
 	}
 
 	Shape_preset* find(const char* nm);

@@ -23,17 +23,14 @@
 
 #include <iostream>
 
-AndroidLog_streambuf::AndroidLog_streambuf(int priority, const char* tag)
-		: m_priority{priority}, m_tag{tag} {
+AndroidLog_streambuf::AndroidLog_streambuf(int priority, const char* tag) : m_priority{priority}, m_tag{tag} {
 	jnithread = std::this_thread::get_id();
 
-	m_jniEnv      = static_cast<JNIEnv*>(SDL_GetAndroidJNIEnv());
-	auto* jclass  = m_jniEnv->FindClass("info/exult/ExultActivity");
-	auto* jmethod = m_jniEnv->GetStaticMethodID(
-			jclass, "instance", "()Linfo/exult/ExultActivity;");
+	m_jniEnv               = static_cast<JNIEnv*>(SDL_GetAndroidJNIEnv());
+	auto* jclass           = m_jniEnv->FindClass("info/exult/ExultActivity");
+	auto* jmethod          = m_jniEnv->GetStaticMethodID(jclass, "instance", "()Linfo/exult/ExultActivity;");
 	m_exultActivityObject  = m_jniEnv->CallStaticObjectMethod(jclass, jmethod);
-	m_writeToConsoleMethod = m_jniEnv->GetMethodID(
-			jclass, "writeToConsole", "(Ljava/lang/String;)V");
+	m_writeToConsoleMethod = m_jniEnv->GetMethodID(jclass, "writeToConsole", "(Ljava/lang/String;)V");
 }
 
 std::streambuf::int_type AndroidLog_streambuf::overflow(int_type ch) {
@@ -43,8 +40,7 @@ std::streambuf::int_type AndroidLog_streambuf::overflow(int_type ch) {
 		// Can only call into jni if we are on the main thread
 		if (jnithread == std::this_thread::get_id()) {
 			jstring jline_buf = m_jniEnv->NewStringUTF(m_lineBuf.c_str());
-			m_jniEnv->CallVoidMethod(
-					m_exultActivityObject, m_writeToConsoleMethod, jline_buf);
+			m_jniEnv->CallVoidMethod(m_exultActivityObject, m_writeToConsoleMethod, jline_buf);
 		}
 		m_lineBuf.clear();
 	} else {

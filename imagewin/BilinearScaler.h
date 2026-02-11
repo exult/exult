@@ -26,14 +26,11 @@ namespace Pentagram { namespace BilinearScaler {
 	class Scaler : public ArbScaler {
 	public:
 		Scaler();
-		virtual bool ScaleArbitrary()
-				const;    //< supports arbitrary scaling of any degree
+		virtual bool ScaleArbitrary() const;    //< supports arbitrary scaling of any degree
 
-		const char* ScalerName()
-				const override;    //< Name Of the Scaler (1 word)
-		const char* ScalerDesc() const override;    //< Desciption of the Scaler
-		const char* ScalerCopyright()
-				const override;    //< Scaler Copyright info
+		const char* ScalerName() const override;         //< Name Of the Scaler (1 word)
+		const char* ScalerDesc() const override;         //< Desciption of the Scaler
+		const char* ScalerCopyright() const override;    //< Scaler Copyright info
 	};
 
 }}    // namespace Pentagram::BilinearScaler

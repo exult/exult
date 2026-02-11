@@ -50,8 +50,7 @@ class Gump_widget;
 // Base Class shared by Gumps and Widgetss
 class Gump_Base : public ShapeID, public Paintable {
 public:
-	Gump_Base(int shnum, int frnum, ShapeFile shfile)
-			: ShapeID(shnum, frnum, shfile) {}
+	Gump_Base(int shnum, int frnum, ShapeFile shfile) : ShapeID(shnum, frnum, shfile) {}
 
 	virtual int  get_x() const               = 0;
 	virtual int  get_y() const               = 0;
@@ -100,9 +99,8 @@ public:
 		return false;
 	}
 
-	virtual bool key_down(
-			SDL_Keycode chr,
-			SDL_Keycode unicode) {    // Key pressed
+	virtual bool key_down(SDL_Keycode chr,
+						  SDL_Keycode unicode) {    // Key pressed
 		ignore_unused_variable_warning(chr, unicode);
 		return false;
 	}
@@ -131,14 +129,13 @@ public:
 class Gump : nonreplicatable, public Gump_Base {
 protected:
 	Gump() = delete;
-	Container_game_object* container;    // What this gump shows.
-	int                    x, y;         // Location on screen.
-	TileRect object_area{};              // Area to paint objects in, rel. to
+	Container_game_object* container;        // What this gump shows.
+	int                    x, y;             // Location on screen.
+	TileRect               object_area{};    // Area to paint objects in, rel. to
 	using Gump_elems = std::vector<Gump_widget*>;
 	Gump_elems elems;          // Includes 'checkmark'.
 	bool       handles_kbd;    // Kbd can be handled by gump.
-	void       set_object_area(
-				  TileRect area, int checkx, int checky, bool set_check = true);
+	void       set_object_area(TileRect area, int checkx, int checky, bool set_check = true);
 
 	void set_object_area(const TileRect& area) {
 		set_object_area(area, 0, 0, false);
@@ -150,11 +147,9 @@ protected:
 
 public:
 	friend class Gump_model;
-	Gump(Container_game_object* cont, int initx, int inity, int shnum,
-		 ShapeFile shfile = SF_GUMPS_VGA);
+	Gump(Container_game_object* cont, int initx, int inity, int shnum, ShapeFile shfile = SF_GUMPS_VGA);
 	// Create centered.
-	Gump(Container_game_object* cont, int shnum,
-		 ShapeFile shfile = SF_GUMPS_VGA);
+	Gump(Container_game_object* cont, int shnum, ShapeFile shfile = SF_GUMPS_VGA);
 	// Clone.
 	Gump(Container_game_object* cont, int initx, int inity, Gump* from);
 	~Gump() override;
@@ -209,8 +204,7 @@ public:
 	Gump_button* on_button(int mx, int my) override;
 	// Paint button.
 	virtual bool add(
-			Game_object* obj, int mx = -1, int my = -1, int sx = -1,
-			int sy = -1, bool dont_check = false, bool combine = false);
+			Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false);
 	virtual void remove(Game_object* obj);
 	// Paint it and its contents.
 	virtual void paint_elems();
@@ -270,25 +264,18 @@ class Container_gump : public Gump {
 	void initialize(int shnum);    // Initialize object_area.
 
 public:
-	Container_gump(
-			Container_game_object* cont, int initx, int inity, int shnum,
-			ShapeFile shfile = SF_GUMPS_VGA)
+	Container_gump(Container_game_object* cont, int initx, int inity, int shnum, ShapeFile shfile = SF_GUMPS_VGA)
 			: Gump(cont, initx, inity, shnum, shfile) {
 		initialize(shnum);
 	}
 
 	// Create centered.
-	Container_gump(
-			Container_game_object* cont, int shnum,
-			ShapeFile shfile = SF_GUMPS_VGA)
-			: Gump(cont, shnum, shfile) {
+	Container_gump(Container_game_object* cont, int shnum, ShapeFile shfile = SF_GUMPS_VGA) : Gump(cont, shnum, shfile) {
 		initialize(shnum);
 	}
 
 	// This one is for cloning.
-	Container_gump(
-			Container_game_object* cont, int initx, int inity, Gump* from)
-			: Gump(cont, initx, inity, this) {
+	Container_gump(Container_game_object* cont, int initx, int inity, Gump* from) : Gump(cont, initx, inity, this) {
 		ignore_unused_variable_warning(from);
 	}
 

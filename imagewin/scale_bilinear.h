@@ -33,10 +33,10 @@ using COMPONENT = unsigned int;
 // the last one we got
 template <class Source_pixel, class Manip_pixels>
 inline void fill_rgb_row(
-		Source_pixel* from,
-		int           src_width,    // number of pixels to read from 'from'
-		COMPONENT*    row,
-		int           width,    // number of pixels to write into 'row'
+		Source_pixel*       from,
+		int                 src_width,    // number of pixels to read from 'from'
+		COMPONENT*          row,
+		int                 width,    // number of pixels to write into 'row'
 		const Manip_pixels& manip) {
 	COMPONENT* copy_start = row + src_width * 3;
 	COMPONENT* all_stop   = row + width * 3;
@@ -100,9 +100,7 @@ void Scale_2xBilinear(
 		Dest_pixel*   to_orig   = to;
 
 		if (y + 1 < sheight) {
-			fill_rgb_row(
-					from + sline_pixels, from_width, rgb_row_next, srcw + 1,
-					manip);
+			fill_rgb_row(from + sline_pixels, from_width, rgb_row_next, srcw + 1, manip);
 		} else {
 			fill_rgb_row(from, from_width, rgb_row_next, srcw + 1, manip);
 		}
@@ -132,17 +130,13 @@ void Scale_2xBilinear(
 			*to++ = manip.rgb(*ar, *ag, *ab);
 
 			// upper right
-			*to++ = manip.rgb(
-					(*ar + *br) >> 1, (*ag + *bg) >> 1, (*ab + *bb) >> 1);
+			*to++ = manip.rgb((*ar + *br) >> 1, (*ag + *bg) >> 1, (*ab + *bb) >> 1);
 
 			// lower left
-			*to_odd++ = manip.rgb(
-					(*ar + *cr) >> 1, (*ag + *cg) >> 1, (*ab + *cb) >> 1);
+			*to_odd++ = manip.rgb((*ar + *cr) >> 1, (*ag + *cg) >> 1, (*ab + *cb) >> 1);
 
 			// lower right
-			*to_odd++ = manip.rgb(
-					(*ar + *br + *cr + *dr) >> 2, (*ag + *bg + *cg + *dg) >> 2,
-					(*ab + *bb + *cb + *db) >> 2);
+			*to_odd++ = manip.rgb((*ar + *br + *cr + *dr) >> 2, (*ag + *bg + *cg + *dg) >> 2, (*ab + *bb + *cb + *db) >> 2);
 
 			// 'b' becomes 'a', 'd' becomes 'c'
 			ar = br;
@@ -208,9 +202,7 @@ void Scale_2xBilinearPlus(
 		Dest_pixel*   to_orig   = to;
 
 		if (y + 1 < sheight) {
-			fill_rgb_row(
-					from + sline_pixels, from_width, rgb_row_next, srcw + 1,
-					manip);
+			fill_rgb_row(from + sline_pixels, from_width, rgb_row_next, srcw + 1, manip);
 		} else {
 			fill_rgb_row(from, from_width, rgb_row_next, srcw + 1, manip);
 		}
@@ -240,31 +232,23 @@ void Scale_2xBilinearPlus(
 			//*to++ = manip.rgb(*ar, *ag, *ab);
 #ifdef USE_ORIGINAL_BILINEAR_PLUS
 			*to++ = manip.rgb(
-					(((*ar) << 2) + ((*ar)) + (*cr + *br + *br)) >> 3,
-					(((*ag) << 2) + ((*ag)) + (*cg + *bg + *bg)) >> 3,
+					(((*ar) << 2) + ((*ar)) + (*cr + *br + *br)) >> 3, (((*ag) << 2) + ((*ag)) + (*cg + *bg + *bg)) >> 3,
 					(((*ab) << 2) + ((*ab)) + (*cb + *bb + *bb)) >> 3);
 #else
 			*to++ = manip.rgb(
-					(((*ar) << 3) + ((*ar) << 1) + (*cr + *br + *br + *cr))
-							>> 4,
-					(((*ag) << 3) + ((*ag) << 1) + (*cg + *bg + *bg + *cg))
-							>> 4,
-					(((*ab) << 3) + ((*ab) << 1) + (*cb + *bb + *bb + *cb))
-							>> 4);
+					(((*ar) << 3) + ((*ar) << 1) + (*cr + *br + *br + *cr)) >> 4,
+					(((*ag) << 3) + ((*ag) << 1) + (*cg + *bg + *bg + *cg)) >> 4,
+					(((*ab) << 3) + ((*ab) << 1) + (*cb + *bb + *bb + *cb)) >> 4);
 #endif
 
 			// upper right
-			*to++ = manip.rgb(
-					(*ar + *br) >> 1, (*ag + *bg) >> 1, (*ab + *bb) >> 1);
+			*to++ = manip.rgb((*ar + *br) >> 1, (*ag + *bg) >> 1, (*ab + *bb) >> 1);
 
 			// lower left
-			*to_odd++ = manip.rgb(
-					(*ar + *cr) >> 1, (*ag + *cg) >> 1, (*ab + *cb) >> 1);
+			*to_odd++ = manip.rgb((*ar + *cr) >> 1, (*ag + *cg) >> 1, (*ab + *cb) >> 1);
 
 			// lower right
-			*to_odd++ = manip.rgb(
-					(*ar + *br + *cr + *dr) >> 2, (*ag + *bg + *cg + *dg) >> 2,
-					(*ab + *bb + *cb + *db) >> 2);
+			*to_odd++ = manip.rgb((*ar + *br + *cr + *dr) >> 2, (*ag + *bg + *cg + *dg) >> 2, (*ab + *bb + *cb + *db) >> 2);
 
 			// 'b' becomes 'a', 'd' becomes 'c'
 			ar = br;

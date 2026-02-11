@@ -39,17 +39,17 @@ class U7object;
 class Palette_edit : public Object_browser {
 	Flex_file_info*            flex_info;        // Where file data is stored.
 	int                        width, height;    // Dimensions of image.
-	GtkWidget*                 draw;        // GTK draw area to display them in.
-	cairo_t*                   drawgc;      // For drawing in 'draw'.
-	guint32                    drawfg;      // Foreground color.
-	std::vector<ExultRgbCmap*> palettes;    // The palettes to display.
-	int                        cur_pal;     // Index of current palette.
-	GtkColorChooserDialog*     colorsel;    // Open color chooser.
-	GtkWidget*                 sbar;        // Status bar.
-	GtkWidget*                 pspin;       // Spin button for palette #.
-	GtkAdjustment*             palnum_adj;    // For palette #.
-	guint                      sbar_sel;    // Status bar context for selection.
-	TileRect                   selected_box;    // Location of selected color.
+	GtkWidget*                 draw;             // GTK draw area to display them in.
+	cairo_t*                   drawgc;           // For drawing in 'draw'.
+	guint32                    drawfg;           // Foreground color.
+	std::vector<ExultRgbCmap*> palettes;         // The palettes to display.
+	int                        cur_pal;          // Index of current palette.
+	GtkColorChooserDialog*     colorsel;         // Open color chooser.
+	GtkWidget*                 sbar;             // Status bar.
+	GtkWidget*                 pspin;            // Spin button for palette #.
+	GtkAdjustment*             palnum_adj;       // For palette #.
+	guint                      sbar_sel;         // Status bar context for selection.
+	TileRect                   selected_box;     // Location of selected color.
 	GtkWidget *                insert_btn, *remove_btn, *up_btn, *down_btn;
 	// Blit onto screen.
 	void show(int x, int y, int w, int h) override;
@@ -88,19 +88,15 @@ public:
 	void add_palette();
 	void remove_palette();
 	// Configure when created/resized.
-	static gint configure(
-			GtkWidget* widget, GdkEventConfigure* event, gpointer data);
+	static gint configure(GtkWidget* widget, GdkEventConfigure* event, gpointer data);
 	// Blit to screen.
 	static gint expose(GtkWidget* widget, cairo_t* cairo, gpointer data);
 	// Handle mouse press.
-	static gint mouse_press(
-			GtkWidget* widget, GdkEventButton* event, gpointer data);
+	static gint mouse_press(GtkWidget* widget, GdkEventButton* event, gpointer data);
 	// Give dragged palette.
 	static void drag_data_get(
-			GtkWidget* widget, GdkDragContext* context,
-			GtkSelectionData* seldata, guint info, guint time, gpointer data);
-	static gint drag_begin(
-			GtkWidget* widget, GdkDragContext* context, gpointer data);
+			GtkWidget* widget, GdkDragContext* context, GtkSelectionData* seldata, guint info, guint time, gpointer data);
+	static gint drag_begin(GtkWidget* widget, GdkDragContext* context, gpointer data);
 	static void palnum_changed(GtkAdjustment* adj, gpointer data);
 	static void export_palette(const char* fname, gpointer user_data);
 	static void import_palette(const char* fname, gpointer user_data);

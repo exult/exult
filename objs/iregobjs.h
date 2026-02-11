@@ -55,11 +55,8 @@ protected:
 	int      highshape = -1;
 
 public:
-	Ireg_game_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft = 0)
-			: Game_object(shapenum, framenum, tilex, tiley, lft), flags(0),
-			  flags2(0) {}
+	Ireg_game_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft = 0)
+			: Game_object(shapenum, framenum, tilex, tiley, lft), flags(0), flags2(0) {}
 
 	// Create fake entry.
 	Ireg_game_object() : flags(0), flags2(0) {}

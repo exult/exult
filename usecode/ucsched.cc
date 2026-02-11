@@ -57,11 +57,9 @@ Usecode_script* Usecode_script::first = nullptr;
  *  Create for a 'restore'.
  */
 
-Usecode_script::Usecode_script(
-		Game_object* item, Usecode_value* cd, int findex, int nhalt, int del)
-		: next(nullptr), prev(nullptr), obj(weak_from_obj(item)), code(cd),
-		  i(0), frame_index(findex), started(false), no_halt(nhalt != 0),
-		  must_finish(false), killed_barks(false), delay(del) {
+Usecode_script::Usecode_script(Game_object* item, Usecode_value* cd, int findex, int nhalt, int del)
+		: next(nullptr), prev(nullptr), obj(weak_from_obj(item)), code(cd), i(0), frame_index(findex), started(false),
+		  no_halt(nhalt != 0), must_finish(false), killed_barks(false), delay(del) {
 	cnt = code->get_array_size();
 }
 
@@ -73,9 +71,8 @@ Usecode_script::Usecode_script(
 		Game_object*   o,
 		Usecode_value* cd    // May be nullptr for empty script.
 		)
-		: next(nullptr), prev(nullptr), obj(weak_from_obj(o)), code(cd), cnt(0),
-		  i(0), frame_index(0), started(false), no_halt(false),
-		  must_finish(false), killed_barks(false), delay(0) {
+		: next(nullptr), prev(nullptr), obj(weak_from_obj(o)), code(cd), cnt(0), i(0), frame_index(0), started(false),
+		  no_halt(false), must_finish(false), killed_barks(false), delay(0) {
 	if (!code) {    // Empty?
 		code = new Usecode_value(0, nullptr);
 	} else {
@@ -235,7 +232,7 @@ Usecode_script* Usecode_script::find_active(
 void Usecode_script::terminate(const Game_object* obj) {
 	Usecode_script* next = nullptr;
 	for (Usecode_script* each = first; each; each = next) {
-		next = each->next;    // Get next in case we delete 'each'.
+		next                              = each->next;    // Get next in case we delete 'each'.
 		const Game_object_shared each_obj = each->obj.lock();
 		if (each_obj.get() == obj) {
 			each->halt();
@@ -263,9 +260,9 @@ void Usecode_script::purge(
 		const Tile_coord& spot,
 		int               dist    // In tiles.
 ) {
-	Usecode_script* next = nullptr;
-	Game_window*    gwin = Game_window::get_instance();
-	auto* usecode        = static_cast<Usecode_internal*>(gwin->get_usecode());
+	Usecode_script* next    = nullptr;
+	Game_window*    gwin    = Game_window::get_instance();
+	auto*           usecode = static_cast<Usecode_internal*>(gwin->get_usecode());
 	for (Usecode_script* each = first; each; each = next) {
 		next = each->next;    // Get next in case we delete 'each'.
 							  // Only purge if not yet started.
@@ -282,8 +279,7 @@ void Usecode_script::purge(
 	}
 }
 
-inline void Usecode_script::activate_egg(
-		Usecode_internal* usecode, Game_object* e) {
+inline void Usecode_script::activate_egg(Usecode_internal* usecode, Game_object* e) {
 	ignore_unused_variable_warning(usecode);
 	if (!e || !e->is_egg()) {
 		return;
@@ -291,8 +287,7 @@ inline void Usecode_script::activate_egg(
 	Egg_object* egg  = e->as_egg();
 	const int   type = egg->get_type();
 	// Guess:  Only certain types:
-	if (type == Egg_object::monster || type == Egg_object::button
-		|| type == Egg_object::missile) {
+	if (type == Egg_object::monster || type == Egg_object::button || type == Egg_object::missile) {
 		egg->hatch(Usecode_internal::gwin->get_main_actor(), true);
 	}
 }
@@ -313,8 +308,7 @@ void Usecode_script::handle_event(
 	auto* usecode = reinterpret_cast<Usecode_internal*>(udata);
 #ifdef DEBUG
 	if (intrinsic_trace) {
-		cout << "Executing script (" << i << ":" << cnt << ") for " << o
-			 << ", time: " << curtime << endl;
+		cout << "Executing script (" << i << ":" << cnt << ") for " << o << ", time: " << curtime << endl;
 	}
 #endif
 	const int delay = exec(usecode, false);
@@ -335,8 +329,7 @@ void Usecode_script::handle_event(
 
 static inline bool IsActorNear(Actor* avatar, Game_object* obj, int maxdist) {
 	return obj->get_tile().distance_2d(avatar->get_tile()) <= maxdist
-		   && (obj->get_info().get_shape_class() != Shape_info::hatchable
-			   || obj->get_lift() == avatar->get_lift());
+		   && (obj->get_info().get_shape_class() != Shape_info::hatchable || obj->get_lift() == avatar->get_lift());
 }
 
 /*
@@ -349,15 +342,12 @@ int Usecode_script::exec(
 		Usecode_internal* usecode,
 		bool              finish    // If set, keep going to end.
 ) {
-	Game_window* gwin  = Usecode_internal::gwin;
-	int          delay = gwin->get_std_delay();    // Start with default delay.
-	bool         do_another = true;                // Flag to keep going.
+	Game_window* gwin       = Usecode_internal::gwin;
+	int          delay      = gwin->get_std_delay();    // Start with default delay.
+	bool         do_another = true;                     // Flag to keep going.
 	int          opcode;
 	// If a 1 follows, keep going.
-	for (;
-		 i < cnt
-		 && ((opcode = code->get_elem(i).get_int_value()) == 0x1 || do_another);
-		 i++) {
+	for (; i < cnt && ((opcode = code->get_elem(i).get_int_value()) == 0x1 || do_another); i++) {
 		const Game_object_shared optr = obj.lock();
 		if (!optr) {
 			i = cnt;
@@ -411,16 +401,14 @@ int Usecode_script::exec(
 		}
 		case Ucscript::wait_while_near: {
 			const int dist = code->get_elem(++i).get_int_value();
-			if (!finish
-				&& IsActorNear(gwin->get_main_actor(), optr.get(), dist)) {
+			if (!finish && IsActorNear(gwin->get_main_actor(), optr.get(), dist)) {
 				i -= 2;    // Stay in this opcode.
 			}
 			break;
 		}
 		case Ucscript::wait_while_far: {
 			const int dist = code->get_elem(++i).get_int_value();
-			if (!finish
-				&& !IsActorNear(gwin->get_main_actor(), optr.get(), dist)) {
+			if (!finish && !IsActorNear(gwin->get_main_actor(), optr.get(), dist)) {
 				i -= 2;    // Stay in this opcode.
 			}
 			break;
@@ -482,8 +470,7 @@ int Usecode_script::exec(
 			break;
 		}
 		case frame:    // Set frame.
-			usecode->set_item_frame(
-					optr.get(), code->get_elem(++i).get_int_value());
+			usecode->set_item_frame(optr.get(), code->get_elem(++i).get_int_value());
 			break;
 		case egg:    // Guessing:  activate egg.
 			activate_egg(usecode, optr.get());
@@ -507,8 +494,7 @@ int Usecode_script::exec(
 		case next_frame: {
 			const int nframes = optr->get_num_frames();
 			if (nframes > 0) {
-				usecode->set_item_frame(
-						optr.get(), (1 + optr->get_framenum()) % nframes);
+				usecode->set_item_frame(optr.get(), (1 + optr->get_framenum()) % nframes);
 			}
 			break;
 		}
@@ -521,8 +507,7 @@ int Usecode_script::exec(
 			const int nframes = optr->get_num_frames();
 			if (nframes > 0) {
 				const int pframe = optr->get_framenum() - 1;
-				usecode->set_item_frame(
-						optr.get(), (pframe + nframes) % nframes);
+				usecode->set_item_frame(optr.get(), (pframe + nframes) % nframes);
 			}
 			break;
 		}
@@ -539,9 +524,7 @@ int Usecode_script::exec(
 			const int val = code->get_elem(++i).get_int_value();
 			// Height change (verified).
 			++i;
-			const int dz = size_t(i) < code->get_array_size()
-								   ? code->get_elem(i).get_int_value()
-								   : 0;
+			const int dz = size_t(i) < code->get_array_size() ? code->get_elem(i).get_int_value() : 0;
 			// Watch for buggy SI usecode!
 			const int destz = optr->get_lift() + dz;
 			if (destz < 0 || dz > 15 || dz < -15) {
@@ -569,8 +552,7 @@ int Usecode_script::exec(
 			} else {
 				++i;
 				const bool in_range = size_t(i) < code->get_array_size();
-				const int  value
-						= in_range ? code->get_elem(i).get_int_value() : 0;
+				const int  value    = in_range ? code->get_elem(i).get_int_value() : 0;
 				if (in_range && (value == 0 || value == 1)) {
 					continuous = value != 0;
 				} else {
@@ -590,8 +572,7 @@ int Usecode_script::exec(
 			if (fun >= 0 && fun < 0x100) {
 				++i;
 				const bool in_range = size_t(i) < code->get_array_size();
-				const int  value
-						= in_range ? code->get_elem(i).get_int_value() : 0;
+				const int  value    = in_range ? code->get_elem(i).get_int_value() : 0;
 				if (!in_range || value != 0) {
 					// If this is not a 0, or not in range, then lets put the
 					// element back.
@@ -608,8 +589,7 @@ int Usecode_script::exec(
 				break;
 			}
 			// Watch for eggs:
-			Usecode_internal::Usecode_events ev
-					= Usecode_internal::internal_exec;
+			Usecode_internal::Usecode_events ev = Usecode_internal::internal_exec;
 			if (optr
 				&& optr->is_egg()
 				// Fixes the Blacksword's 'Fire' power in BG:
@@ -627,9 +607,7 @@ int Usecode_script::exec(
 		case Ucscript::usecode2: {    // Call(fun, eventid).
 			const Usecode_value& val  = code->get_elem(++i);
 			const int            evid = code->get_elem(++i).get_int_value();
-			usecode->call_usecode(
-					val.get_int_value(), optr.get(),
-					static_cast<Usecode_internal::Usecode_events>(evid));
+			usecode->call_usecode(val.get_int_value(), optr.get(), static_cast<Usecode_internal::Usecode_events>(evid));
 			break;
 		}
 		case speech: {    // Play speech track.
@@ -658,9 +636,7 @@ int Usecode_script::exec(
 			if (npc) {
 				npc->set_usecode_dir(dir);
 			}
-			usecode->set_item_frame(
-					optr.get(),
-					optr->get_dir_framenum(dir, optr->get_framenum()), 1, 1);
+			usecode->set_item_frame(optr.get(), optr->get_dir_framenum(dir, optr->get_framenum()), 1, 1);
 			frame_index = 0;    // Reset walking frame index.
 			break;
 		}
@@ -717,8 +693,7 @@ int Usecode_script::exec(
 			} else {
 				const boost::io::ios_flags_saver flags(cout);
 				const boost::io::ios_fill_saver  fill(cout);
-				cout << "Und sched. opcode " << hex << "0x" << setfill('0')
-					 << setw(2) << opcode << endl;
+				cout << "Und sched. opcode " << hex << "0x" << setfill('0') << setw(2) << opcode << endl;
 			}
 			break;
 		}
@@ -773,8 +748,7 @@ void Usecode_script::step(
 
 int Usecode_script::save(ODataSource* out) const {
 	// Get delay to when due.
-	const long when = Game_window::get_instance()->get_tqueue()->find_delay(
-			this, SDL_GetTicks());
+	const long when = Game_window::get_instance()->get_tqueue()->find_delay(this, SDL_GetTicks());
 	if (when < 0) {
 		return -1;
 	}
@@ -820,8 +794,8 @@ Usecode_script* Usecode_script::restore(
 	const int frame_index = in->read2();
 	const int no_halt     = in->read2();
 	const int delay       = in->read4();
-	auto*     scr = new Usecode_script(item, code, frame_index, no_halt, delay);
-	scr->i        = curindex;    // Set index.
+	auto*     scr         = new Usecode_script(item, code, frame_index, no_halt, delay);
+	scr->i                = curindex;    // Set index.
 	return scr;
 }
 

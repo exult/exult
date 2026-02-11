@@ -68,8 +68,7 @@ Shape_file_info::~Shape_file_info() {
  *  Output: ->browser.
  */
 
-Object_browser* Shape_file_info::get_browser(
-		Shape_file_info* vgafile, unsigned char* palbuf) {
+Object_browser* Shape_file_info::get_browser(Shape_file_info* vgafile, unsigned char* palbuf) {
 	if (browser) {
 		return browser;    // Okay.
 	}
@@ -98,14 +97,12 @@ Object_browser* Image_file_info::create_browser(
 ) {
 	auto* chooser = new Shape_chooser(ifile, palbuf, 400, 64, g, this);
 	// Fonts?  Show 'A' as the default.
-	if (strcasecmp(basename.c_str(), "fonts.vga") == 0
-		|| strcasecmp(basename.c_str(), "fonts_original.vga") == 0
+	if (strcasecmp(basename.c_str(), "fonts.vga") == 0 || strcasecmp(basename.c_str(), "fonts_original.vga") == 0
 		|| strcasecmp(basename.c_str(), "fonts_serif.vga") == 0) {
 		chooser->set_framenum0('A');
 	}
 	if (this == vgafile) {    // Main 'shapes.vga' file?
-		chooser->set_shapes_file(
-				static_cast<Shapes_vga_file*>(vgafile->get_ifile()));
+		chooser->set_shapes_file(static_cast<Shapes_vga_file*>(vgafile->get_ifile()));
 	}
 	return chooser;
 }
@@ -245,10 +242,8 @@ bool Npcs_file_info::read_npc(unsigned num) {
 	const unsigned char*   newptr;
 	newptr = ptr = &buf[0];
 	little_endian::Write2(ptr, num);
-	if (!studio->send_to_server(Exult_server::npc_info, buf, ptr - buf)
-		|| !Exult_server::wait_for_response(server_socket, 100)
-		|| Exult_server::Receive_data(server_socket, id, buf, sizeof(buf)) == -1
-		|| id != Exult_server::npc_info
+	if (!studio->send_to_server(Exult_server::npc_info, buf, ptr - buf) || !Exult_server::wait_for_response(server_socket, 100)
+		|| Exult_server::Receive_data(server_socket, id, buf, sizeof(buf)) == -1 || id != Exult_server::npc_info
 		|| little_endian::Read2(newptr) != num) {
 		return false;
 	}
@@ -256,8 +251,7 @@ bool Npcs_file_info::read_npc(unsigned num) {
 	npcs[num].shapenum = little_endian::Read2(newptr);    // -1 if unused.
 	if (npcs[num].shapenum >= 0) {
 		npcs[num].unused = Read1(newptr) != 0;
-		const string utf8name(
-				convertToUTF8(reinterpret_cast<const char*>(newptr)));
+		const string utf8name(convertToUTF8(reinterpret_cast<const char*>(newptr)));
 		npcs[num].name = utf8name;
 	} else {
 		npcs[num].unused = true;
@@ -279,10 +273,8 @@ void Npcs_file_info::setup() {
 	unsigned char          buf[Exult_server::maxlength];
 	Exult_server::Msg_type id;
 	int                    num_npcs;
-	if (Send_data(server_socket, Exult_server::npc_unused) == -1
-		|| !Exult_server::wait_for_response(server_socket, 100)
-		|| Exult_server::Receive_data(server_socket, id, buf, sizeof(buf)) == -1
-		|| id != Exult_server::npc_unused) {
+	if (Send_data(server_socket, Exult_server::npc_unused) == -1 || !Exult_server::wait_for_response(server_socket, 100)
+		|| Exult_server::Receive_data(server_socket, id, buf, sizeof(buf)) == -1 || id != Exult_server::npc_unused) {
 		cerr << "Error sending data to server." << endl;
 		return;
 	}
@@ -298,11 +290,8 @@ void Npcs_file_info::setup() {
 	for (int i = 0; i < num_npcs; ++i) {
 		newptr = ptr = &buf[0];
 		little_endian::Write2(ptr, i);
-		if (!studio->send_to_server(Exult_server::npc_info, buf, ptr - buf)
-			|| !Exult_server::wait_for_response(server_socket, 100)
-			|| Exult_server::Receive_data(server_socket, id, buf, sizeof(buf))
-					   == -1
-			|| id != Exult_server::npc_info
+		if (!studio->send_to_server(Exult_server::npc_info, buf, ptr - buf) || !Exult_server::wait_for_response(server_socket, 100)
+			|| Exult_server::Receive_data(server_socket, id, buf, sizeof(buf)) == -1 || id != Exult_server::npc_info
 			|| little_endian::Read2(newptr) != i) {
 			npcs.resize(0);
 			cerr << "Error getting info for NPC #" << i << endl;
@@ -311,8 +300,7 @@ void Npcs_file_info::setup() {
 		npcs[i].shapenum = little_endian::Read2(newptr);    // -1 if unused.
 		if (npcs[i].shapenum >= 0) {
 			npcs[i].unused = Read1(newptr) != 0;
-			const string utf8name(
-					convertToUTF8(reinterpret_cast<const char*>(newptr)));
+			const string utf8name(convertToUTF8(reinterpret_cast<const char*>(newptr)));
 			npcs[i].name = utf8name;
 		} else {
 			npcs[i].unused = true;
@@ -385,10 +373,9 @@ unsigned char* Flex_file_info::get(unsigned i, size_t& len) {
  */
 
 void Flex_file_info::set(
-		unsigned i,
-		unique_ptr<unsigned char[]>
-				newentry,    // Allocated data that we'll own.
-		int     entlen       // Length.
+		unsigned                    i,
+		unique_ptr<unsigned char[]> newentry,    // Allocated data that we'll own.
+		int                         entlen       // Length.
 ) {
 	if (i > entries.size()) {
 		return;
@@ -432,8 +419,7 @@ Object_browser* Flex_file_info::create_browser(
 		Shape_group*     g           // Group, or 0.
 ) {
 	const char* bname = basename.c_str();
-	if (strcasecmp(bname, "palettes.flx") == 0
-		|| strcasecmp(".pal", bname + strlen(bname) - 4) == 0) {
+	if (strcasecmp(bname, "palettes.flx") == 0 || strcasecmp(".pal", bname + strlen(bname) - 4) == 0) {
 		return new Palette_edit(this);
 	}
 	return new Combo_chooser(vgafile->get_ifile(), this, palbuf, 400, 64, g);
@@ -553,8 +539,7 @@ static bool Create_file(
  *  Output: ->file info, or 0 if error.
  */
 
-Shape_file_info* Shape_file_set::create(
-		const char* basename    // Like 'shapes.vga'.
+Shape_file_info* Shape_file_set::create(const char* basename    // Like 'shapes.vga'.
 ) {
 	// Already have it open?
 	for (auto* file : files) {
@@ -566,25 +551,21 @@ Shape_file_info* Shape_file_set::create(
 	if (strcasecmp(basename, "fonts_original.vga") == 0) {
 		string group_name(basename);
 		group_name += ".grp";
-		auto*       groups   = new Shape_group_file(group_name.c_str());
-		const char* exultflx = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
+		auto*                                    groups   = new Shape_group_file(group_name.c_str());
+		const char*                              exultflx = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
 		std::vector<std::pair<std::string, int>> sources;
 		sources.emplace_back(exultflx, EXULT_FLX_FONTS_ORIGINAL_VGA);
 		sources.emplace_back(PATCH_ORIGINAL_FONTS, -1);    // Patch file
-		return append(new Image_file_info(
-				basename, exultflx, new Vga_file(sources, U7_SHAPE_FONTS),
-				groups));
+		return append(new Image_file_info(basename, exultflx, new Vga_file(sources, U7_SHAPE_FONTS), groups));
 	} else if (strcasecmp(basename, "fonts_serif.vga") == 0) {
 		string group_name(basename);
 		group_name += ".grp";
-		auto*       groups   = new Shape_group_file(group_name.c_str());
-		const char* exultflx = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
+		auto*                                    groups   = new Shape_group_file(group_name.c_str());
+		const char*                              exultflx = BUNDLE_CHECK(BUNDLE_EXULT_FLX, EXULT_FLX);
 		std::vector<std::pair<std::string, int>> sources;
 		sources.emplace_back(exultflx, EXULT_FLX_FONTS_SERIF_VGA);
 		sources.emplace_back(PATCH_SERIF_FONTS, -1);    // Patch file
-		return append(new Image_file_info(
-				basename, exultflx, new Vga_file(sources, U7_SHAPE_FONTS),
-				groups));
+		return append(new Image_file_info(basename, exultflx, new Vga_file(sources, U7_SHAPE_FONTS), groups));
 	}
 	// Look in 'static', 'patch'.
 	const string sstr    = string("<STATIC>/") + basename;
@@ -604,40 +585,24 @@ Shape_file_info* Shape_file_set::create(
 	group_name += ".grp";
 	auto* groups = new Shape_group_file(group_name.c_str());
 	if (strcasecmp(basename, "shapes.vga") == 0) {
-		return append(new Image_file_info(
-				basename, fullname,
-				new Shapes_vga_file(spath, U7_SHAPE_SHAPES, ppath), groups));
+		return append(new Image_file_info(basename, fullname, new Shapes_vga_file(spath, U7_SHAPE_SHAPES, ppath), groups));
 	} else if (strcasecmp(basename, "gumps.vga") == 0) {
-		return append(new Image_file_info(
-				basename, fullname, new Vga_file(spath, U7_SHAPE_GUMPS, ppath),
-				groups));
+		return append(new Image_file_info(basename, fullname, new Vga_file(spath, U7_SHAPE_GUMPS, ppath), groups));
 	} else if (strcasecmp(basename, "faces.vga") == 0) {
-		return append(new Image_file_info(
-				basename, fullname, new Vga_file(spath, U7_SHAPE_FACES, ppath),
-				groups));
+		return append(new Image_file_info(basename, fullname, new Vga_file(spath, U7_SHAPE_FACES, ppath), groups));
 	} else if (strcasecmp(basename, "sprites.vga") == 0) {
-		return append(new Image_file_info(
-				basename, fullname,
-				new Vga_file(spath, U7_SHAPE_SPRITES, ppath), groups));
+		return append(new Image_file_info(basename, fullname, new Vga_file(spath, U7_SHAPE_SPRITES, ppath), groups));
 	} else if (strcasecmp(basename, "paperdol.vga") == 0) {
-		return append(new Image_file_info(
-				basename, fullname,
-				new Vga_file(spath, U7_SHAPE_PAPERDOL, ppath), groups));
+		return append(new Image_file_info(basename, fullname, new Vga_file(spath, U7_SHAPE_PAPERDOL, ppath), groups));
 	} else if (strcasecmp(basename, "fonts.vga") == 0) {
-		return append(new Image_file_info(
-				basename, fullname, new Vga_file(spath, U7_SHAPE_FONTS, ppath),
-				groups));
+		return append(new Image_file_info(basename, fullname, new Vga_file(spath, U7_SHAPE_FONTS, ppath), groups));
 	} else if (strcasecmp(basename, "u7chunks") == 0) {
 		auto file = U7open_in(fullname);
-		return append(new Chunks_file_info(
-				basename, fullname, std::move(file), groups));
+		return append(new Chunks_file_info(basename, fullname, std::move(file), groups));
 	} else if (strcasecmp(basename, "npcs") == 0) {
 		return append(new Npcs_file_info(basename, fullname, groups));
-	} else if (
-			strcasecmp(basename, "combos.flx") == 0
-			|| strcasecmp(basename, "palettes.flx") == 0) {
-		return append(new Flex_file_info(
-				basename, fullname, new FlexFile(fullname), groups));
+	} else if (strcasecmp(basename, "combos.flx") == 0 || strcasecmp(basename, "palettes.flx") == 0) {
+		return append(new Flex_file_info(basename, fullname, new FlexFile(fullname), groups));
 	} else if (strcasecmp(".pal", basename + strlen(basename) - 4) == 0) {
 		// Single palette?
 		auto pIn = U7open_in(fullname);
@@ -654,8 +619,7 @@ Shape_file_info* Shape_file_set::create(
 		// Get image file for this path.
 		auto* ifile = new Vga_file(spath, U7_SHAPE_UNK, ppath);
 		if (ifile->is_good()) {
-			return append(
-					new Image_file_info(basename, fullname, ifile, groups));
+			return append(new Image_file_info(basename, fullname, ifile, groups));
 		} else {
 			delete groups;
 		}

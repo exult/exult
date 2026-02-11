@@ -22,8 +22,7 @@
 #ifndef INCL_SCALE_HQNX_H
 #define INCL_SCALE_HQNX_H 1
 
-#if defined(USE_HQ2X_SCALER) || defined(USE_HQ3X_SCALER) \
-		|| defined(USE_HQ4X_SCALER)
+#if defined(USE_HQ2X_SCALER) || defined(USE_HQ3X_SCALER) || defined(USE_HQ4X_SCALER)
 
 #	include <cstdlib>
 
@@ -54,8 +53,7 @@ inline void Interp1(Dest_pixel* pc, int c1, int c2, const Manip_pixels& manip) {
 }
 
 template <class Dest_pixel, class Manip_pixels>
-inline void Interp2(
-		Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
+inline void Interp2(Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
 	StoreRGB(pc, (c1 * 2 + c2 + c3) >> 2, manip);
 }
 
@@ -65,23 +63,18 @@ inline void Interp3(Dest_pixel* pc, int c1, int c2, const Manip_pixels& manip) {
 
 	StoreRGB(
 			pc,
-			((((c1 & 0x00FF00) * 7 + (c2 & 0x00FF00)) & 0x0007F800)
-			 + (((c1 & 0xFF00FF) * 7 + (c2 & 0xFF00FF)) & 0x07F807F8))
-					>> 3,
+			((((c1 & 0x00FF00) * 7 + (c2 & 0x00FF00)) & 0x0007F800) + (((c1 & 0xFF00FF) * 7 + (c2 & 0xFF00FF)) & 0x07F807F8)) >> 3,
 			manip);
 }
 
 template <class Dest_pixel, class Manip_pixels>
-inline void Interp4(
-		Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
+inline void Interp4(Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
 	//*((int*)pc) = (c1*2+(c2+c3)*7)/16;
 
 	StoreRGB(
 			pc,
-			((((c1 & 0x00FF00) * 2 + ((c2 & 0x00FF00) + (c3 & 0x00FF00)) * 7)
-			  & 0x000FF000)
-			 + (((c1 & 0xFF00FF) * 2 + ((c2 & 0xFF00FF) + (c3 & 0xFF00FF)) * 7)
-				& 0x0FF00FF0))
+			((((c1 & 0x00FF00) * 2 + ((c2 & 0x00FF00) + (c3 & 0x00FF00)) * 7) & 0x000FF000)
+			 + (((c1 & 0xFF00FF) * 2 + ((c2 & 0xFF00FF) + (c3 & 0xFF00FF)) * 7) & 0x0FF00FF0))
 					>> 4,
 			manip);
 }
@@ -92,31 +85,25 @@ inline void Interp5(Dest_pixel* pc, int c1, int c2, const Manip_pixels& manip) {
 }
 
 template <class Dest_pixel, class Manip_pixels>
-inline void Interp6(
-		Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
+inline void Interp6(Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
 	// StoreRGB(pc, (c1*5+c2*2+c3)/8);
 
 	StoreRGB(
 			pc,
-			((((c1 & 0x00FF00) * 5 + (c2 & 0x00FF00) * 2 + (c3 & 0x00FF00))
-			  & 0x0007F800)
-			 + (((c1 & 0xFF00FF) * 5 + (c2 & 0xFF00FF) * 2 + (c3 & 0xFF00FF))
-				& 0x07F807F8))
+			((((c1 & 0x00FF00) * 5 + (c2 & 0x00FF00) * 2 + (c3 & 0x00FF00)) & 0x0007F800)
+			 + (((c1 & 0xFF00FF) * 5 + (c2 & 0xFF00FF) * 2 + (c3 & 0xFF00FF)) & 0x07F807F8))
 					>> 3,
 			manip);
 }
 
 template <class Dest_pixel, class Manip_pixels>
-inline void Interp7(
-		Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
+inline void Interp7(Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
 	// StoreRGB(pc, (c1*6+c2+c3)/8);
 
 	StoreRGB(
 			pc,
-			((((c1 & 0x00FF00) * 6 + (c2 & 0x00FF00) + (c3 & 0x00FF00))
-			  & 0x0007F800)
-			 + (((c1 & 0xFF00FF) * 6 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF))
-				& 0x07F807F8))
+			((((c1 & 0x00FF00) * 6 + (c2 & 0x00FF00) + (c3 & 0x00FF00)) & 0x0007F800)
+			 + (((c1 & 0xFF00FF) * 6 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF)) & 0x07F807F8))
 					>> 3,
 			manip);
 }
@@ -134,31 +121,25 @@ inline void Interp8(Dest_pixel* pc, int c1, int c2, const Manip_pixels& manip) {
 }
 
 template <class Dest_pixel, class Manip_pixels>
-inline void Interp9(
-		Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
+inline void Interp9(Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
 	// StoreRGB(pc, (c1*2+(c2+c3)*3)/8);
 
 	StoreRGB(
 			pc,
-			((((c1 & 0x00FF00) * 2 + ((c2 & 0x00FF00) + (c3 & 0x00FF00)) * 3)
-			  & 0x0007F800)
-			 + (((c1 & 0xFF00FF) * 2 + ((c2 & 0xFF00FF) + (c3 & 0xFF00FF)) * 3)
-				& 0x07F807F8))
+			((((c1 & 0x00FF00) * 2 + ((c2 & 0x00FF00) + (c3 & 0x00FF00)) * 3) & 0x0007F800)
+			 + (((c1 & 0xFF00FF) * 2 + ((c2 & 0xFF00FF) + (c3 & 0xFF00FF)) * 3) & 0x07F807F8))
 					>> 3,
 			manip);
 }
 
 template <class Dest_pixel, class Manip_pixels>
-inline void Interp10(
-		Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
+inline void Interp10(Dest_pixel* pc, int c1, int c2, int c3, const Manip_pixels& manip) {
 	// StoreRGB(pc, (c1*14+c2+c3)/16);
 
 	StoreRGB(
 			pc,
-			((((c1 & 0x00FF00) * 14 + (c2 & 0x00FF00) + (c3 & 0x00FF00))
-			  & 0x000FF000)
-			 + (((c1 & 0xFF00FF) * 14 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF))
-				& 0x0FF00FF0))
+			((((c1 & 0x00FF00) * 14 + (c2 & 0x00FF00) + (c3 & 0x00FF00)) & 0x000FF000)
+			 + (((c1 & 0xFF00FF) * 14 + (c2 & 0xFF00FF) + (c3 & 0xFF00FF)) & 0x0FF00FF0))
 					>> 4,
 			manip);
 }
@@ -166,15 +147,14 @@ inline void Interp10(
 #	define PTYPES Dest_pixel, Manip_pixels
 
 inline bool Diff(int YUV1, int YUV2) {
-	return (std::abs((YUV1 & Ymask) - (YUV2 & Ymask)) > trY)
-		   || (std::abs((YUV1 & Umask) - (YUV2 & Umask)) > trU)
+	return (std::abs((YUV1 & Ymask) - (YUV2 & Ymask)) > trY) || (std::abs((YUV1 & Umask) - (YUV2 & Umask)) > trU)
 		   || (std::abs((YUV1 & Vmask) - (YUV2 & Vmask)) > trV);
 }
 
 template <class Manip_pixels>
 inline int hqx_init(
-		int* w, int* c, int* yuv, const unsigned char* from, int x,
-		int sline_pixels, int prevline, int nextline, Manip_pixels& manip) {
+		int* w, int* c, int* yuv, const unsigned char* from, int x, int sline_pixels, int prevline, int nextline,
+		Manip_pixels& manip) {
 	auto RGBtoYUV = [](unsigned int r, unsigned int g, unsigned int b) {
 		const int Y = (r + g + b) >> 2;
 		const int u = 128 + ((r - b) >> 2);

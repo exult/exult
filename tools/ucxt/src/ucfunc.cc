@@ -80,8 +80,7 @@ std::map<unsigned int, std::string> UCFunc::FlagMap;
 int UCFunc::num_global_statics = 0;
 
 string demunge_ocstring(
-		UCFunc& ucf, const FuncMap& funcmap, const string& asmstr,
-		const map<unsigned int, string>& intrinsics, const UCc& op,
+		UCFunc& ucf, const FuncMap& funcmap, const string& asmstr, const map<unsigned int, string>& intrinsics, const UCc& op,
 		bool ucs_output, Usecode_symbol_table* symtbl);
 
 /* Assumption the 'var's are in their 'zeroed' state on initialization,
@@ -120,15 +119,12 @@ ostream& tab_indent(const unsigned int indent, ostream& o) {
 }
 
 /* Outputs the short function data 'list' format, returns true upon success */
-bool UCFunc::output_list(
-		ostream& o, unsigned int funcno, const UCOptions& options) {
+bool UCFunc::output_list(ostream& o, unsigned int funcno, const UCOptions& options) {
 	const boost::io::ios_flags_saver flags(o);
 	const boost::io::ios_fill_saver  fill(o);
-	o << "#" << std::setbase(10) << std::setw(4) << funcno << std::setbase(16)
-	  << ": " << (return_var ? '&' : ' ') << std::setw(4) << _funcid << "H  "
-	  << std::setw(8) << _offset << "  " << std::setw(4) << _funcsize << "  "
-	  << std::setw(4) << _datasize << "  " << std::setw(4) << codesize()
-	  << "  ";
+	o << "#" << std::setbase(10) << std::setw(4) << funcno << std::setbase(16) << ": " << (return_var ? '&' : ' ') << std::setw(4)
+	  << _funcid << "H  " << std::setw(8) << _offset << "  " << std::setw(4) << _funcsize << "  " << std::setw(4) << _datasize
+	  << "  " << std::setw(4) << codesize() << "  ";
 
 	if (options.ucdebug) {
 		auto iter = _data.find(0);
@@ -144,9 +140,8 @@ bool UCFunc::output_list(
 
 /* Outputs the usecode-script formatted usecode, returns true upon success */
 bool UCFunc::output_ucs(
-		ostream& o, const FuncMap& funcmap,
-		const map<unsigned int, string>& intrinsics, const UCOptions& options,
-		int new_indent, Usecode_symbol_table* symtbl) {
+		ostream& o, const FuncMap& funcmap, const map<unsigned int, string>& intrinsics, const UCOptions& options, int new_indent,
+		Usecode_symbol_table* symtbl) {
 	unsigned int indent = new_indent;
 
 	if (!_externs.empty()) {
@@ -156,13 +151,9 @@ bool UCFunc::output_ucs(
 	for (const unsigned int ext : _externs) {
 		auto fmp = funcmap.find(ext);
 		if (fmp != funcmap.cend()) {
-			output_ucs_funcname(
-					tab_indent(indent, o) << "extern ", funcmap, ext,
-					fmp->second.num_args, symtbl)
-					<< ';' << endl;
+			output_ucs_funcname(tab_indent(indent, o) << "extern ", funcmap, ext, fmp->second.num_args, symtbl) << ';' << endl;
 		} else {
-			std::cerr << "Error: data for extern " << ext << "was not found."
-					  << std::endl;
+			std::cerr << "Error: data for extern " << ext << "was not found." << std::endl;
 		}
 	}
 
@@ -171,9 +162,7 @@ bool UCFunc::output_ucs(
 	}
 
 	// output the function name
-	output_ucs_funcname(
-			tab_indent(indent, o), funcmap, _funcid, _num_args, symtbl)
-			<< endl;
+	output_ucs_funcname(tab_indent(indent, o), funcmap, _funcid, _num_args, symtbl) << endl;
 	// start of func
 	tab_indent(indent++, o) << '{' << endl;
 
@@ -189,8 +178,7 @@ bool UCFunc::output_ucs(
 	}
 
 	for (int i = 0; i < _num_statics; i++) {
-		tab_indent(indent, o) << STATICNAME << ' ' << STATICPREFIX
-							  << std::setw(4) << i << ';' << endl;
+		tab_indent(indent, o) << STATICNAME << ' ' << STATICPREFIX << std::setw(4) << i << ';' << endl;
 	}
 
 	if (_num_locals > 0) {
@@ -207,8 +195,7 @@ bool UCFunc::output_ucs(
 /* outputs the general 'function name' in long format. For function
 	declarations and externs */
 ostream& UCFunc::output_ucs_funcname(
-		ostream& o, const FuncMap& funcmap, unsigned int funcid,
-		unsigned int numargs, Usecode_symbol_table* symtbl) {
+		ostream& o, const FuncMap& funcmap, unsigned int funcid, unsigned int numargs, Usecode_symbol_table* symtbl) {
 	ignore_unused_variable_warning(symtbl);
 	auto fmp = funcmap.find(funcid);
 	// do we return a variable
@@ -224,8 +211,7 @@ ostream& UCFunc::output_ucs_funcname(
 	// symtbl)
 	if (!fmp->second.funcname.empty()) {
 		if (fmp->second.funcname[0] == '&') {
-			o << fmp->second.funcname.substr(
-					1, fmp->second.funcname.size() - 1);
+			o << fmp->second.funcname.substr(1, fmp->second.funcname.size() - 1);
 		} else {
 			o << fmp->second.funcname;
 		}
@@ -263,36 +249,30 @@ ostream& UCFunc::output_ucs_funcname(
 	return o;
 }
 
-ostream& UCFunc::output_ucs_funcname(
-		ostream& o, const FuncMap& funcmap, Usecode_symbol_table* symtbl) {
+ostream& UCFunc::output_ucs_funcname(ostream& o, const FuncMap& funcmap, Usecode_symbol_table* symtbl) {
 	return output_ucs_funcname(o, funcmap, _funcid, _num_args, symtbl);
 }
 
 void UCFunc::output_ucs_data(
-		ostream& o, const FuncMap& funcmap,
-		const map<unsigned int, string>& intrinsics, const UCOptions& options,
+		ostream& o, const FuncMap& funcmap, const map<unsigned int, string>& intrinsics, const UCOptions& options,
 		unsigned int indent, Usecode_symbol_table* symtbl) {
 	vector<unsigned int> labeltmp(1);
 	for (auto i = gotoset.begin(); i != gotoset.end(); ++i) {
 		// we don't want to output the first "jump" (the start of the function)
 		if (i != gotoset.begin()) {
 			labeltmp[0] = i->offset();
-			tab_indent(indent - 1, o) << demunge_ocstring(
-					*this, funcmap, "label%f*_%1:", intrinsics, UCc(labeltmp),
-					true, symtbl) << endl;
+			tab_indent(indent - 1, o) << demunge_ocstring(*this, funcmap, "label%f*_%1:", intrinsics, UCc(labeltmp), true, symtbl)
+									  << endl;
 		}
 
 		for (auto& j : (*i)()) {
 			const UCc& ucc = *(j.first);
 
 			if (options.uselesscomment) {
-				tab_indent(indent, o)
-						<< "// Offset: " << std::setw(4) << ucc._offset << endl;
+				tab_indent(indent, o) << "// Offset: " << std::setw(4) << ucc._offset << endl;
 			}
 
-			output_ucs_opcode(
-					o, funcmap, opcode_table_data, ucc, intrinsics, indent,
-					symtbl);
+			output_ucs_opcode(o, funcmap, opcode_table_data, ucc, intrinsics, indent, symtbl);
 		}
 		// if(i!=gotoset.begin()) --indent; //decrement it again to skip the
 		// label statement.
@@ -300,12 +280,9 @@ void UCFunc::output_ucs_data(
 }
 
 void UCFunc::output_ucs_opcode(
-		ostream& o, const FuncMap& funcmap, const vector<UCOpcodeData>& optab,
-		const UCc& op, const map<unsigned int, string>& intrinsics,
-		unsigned int indent, Usecode_symbol_table* symtbl) {
-	tab_indent(indent, o) << demunge_ocstring(
-			*this, funcmap, optab[op._id].ucs_nmo, intrinsics, op, true,
-			symtbl);
+		ostream& o, const FuncMap& funcmap, const vector<UCOpcodeData>& optab, const UCc& op,
+		const map<unsigned int, string>& intrinsics, unsigned int indent, Usecode_symbol_table* symtbl) {
+	tab_indent(indent, o) << demunge_ocstring(*this, funcmap, optab[op._id].ucs_nmo, intrinsics, op, true, symtbl);
 	if (!optab[op._id].flag_nosemicolon) {
 		o << ';';
 	}
@@ -314,9 +291,7 @@ void UCFunc::output_ucs_opcode(
 #ifdef DEBUG_PRINT
 	for (auto* i : op._popped) {
 		if (!i->_popped.empty()) {
-			output_ucs_opcode(
-					o, funcmap, opcode_table_data, *i, intrinsics, indent + 1,
-					symtbl);
+			output_ucs_opcode(o, funcmap, opcode_table_data, *i, intrinsics, indent + 1, symtbl);
 		} else {
 			//			tab_indent(indent+1, o) << demunge_ocstring(*this,
 			// funcmap, optab[(*i)->_id].ucs_nmo, **i, symtbl) << endl;
@@ -327,24 +302,20 @@ void UCFunc::output_ucs_opcode(
 }
 
 void UCFunc::output_ucs_node(
-		ostream& o, const FuncMap& funcmap, UCNode* ucn,
-		const map<unsigned int, string>& intrinsics, unsigned int indent,
+		ostream& o, const FuncMap& funcmap, UCNode* ucn, const map<unsigned int, string>& intrinsics, unsigned int indent,
 		const UCOptions& options, Usecode_symbol_table* symtbl) {
 	if (!ucn->nodelist.empty()) {
 		tab_indent(indent, o) << '{' << endl;
 	}
 
 	if (ucn->ucc != nullptr) {
-		output_asm_opcode(
-				tab_indent(indent, o), funcmap, opcode_table_data, intrinsics,
-				*(ucn->ucc), options, symtbl);
+		output_asm_opcode(tab_indent(indent, o), funcmap, opcode_table_data, intrinsics, *(ucn->ucc), options, symtbl);
 	}
 
 	if (!ucn->nodelist.empty()) {
 		for (auto* i : ucn->nodelist) {
 			// tab_indent(indent, o);
-			output_ucs_node(
-					o, funcmap, i, intrinsics, indent + 1, options, symtbl);
+			output_ucs_node(o, funcmap, i, intrinsics, indent + 1, options, symtbl);
 		}
 	}
 
@@ -366,8 +337,8 @@ inline void gc_gotoset(vector<GotoSet>& gotoset) {
 }
 
 void UCFunc::parse_ucs(
-		const FuncMap& funcmap, const map<unsigned int, string>& intrinsics,
-		const UCOptions& options, Usecode_symbol_table* symtbl) {
+		const FuncMap& funcmap, const map<unsigned int, string>& intrinsics, const UCOptions& options,
+		Usecode_symbol_table* symtbl) {
 	for (auto& opcode : _opcodes) {
 		node.nodelist.push_back(new UCNode(&opcode));
 	}
@@ -385,8 +356,7 @@ void UCFunc::parse_ucs(
 		cout << std::setw(4) << i.offset() << endl;
 
 		for (auto& j : i()) {
-			cout << '\t' << std::setw(4) << j.first->_offset << '\t'
-				 << j.first->_id << endl;
+			cout << '\t' << std::setw(4) << j.first->_offset << '\t' << j.first->_id << endl;
 		}
 	}
 #endif
@@ -433,72 +403,53 @@ void UCFunc::parse_ucs_pass1(vector<UCNode*>& nodes) {
    Elements that are parameters are flagged for removal
    (Gotoset::()[i]->second=true) from the original GotoSet. */
 void UCFunc::parse_ucs_pass2(
-		vector<GotoSet>& gotoset, const FuncMap& funcmap,
-		const map<unsigned int, string>& intrinsics, const UCOptions& options,
+		vector<GotoSet>& gotoset, const FuncMap& funcmap, const map<unsigned int, string>& intrinsics, const UCOptions& options,
 		Usecode_symbol_table* symtbl) {
 	for (auto& i : gotoset) {
-		parse_ucs_pass2a(
-				i().rbegin(), i(), 0, funcmap, intrinsics, options, symtbl);
+		parse_ucs_pass2a(i().rbegin(), i(), 0, funcmap, intrinsics, options, symtbl);
 	}
 }
 
 vector<UCc*> UCFunc::parse_ucs_pass2a(
-		vector<pair<UCc*, bool>>::reverse_iterator current,
-		vector<pair<UCc*, bool>>& vec, int opsneeded, const FuncMap& funcmap,
-		const map<unsigned int, string>& intrinsics, const UCOptions& options,
-		Usecode_symbol_table* symtbl) {
+		vector<pair<UCc*, bool>>::reverse_iterator current, vector<pair<UCc*, bool>>& vec, int opsneeded, const FuncMap& funcmap,
+		const map<unsigned int, string>& intrinsics, const UCOptions& options, Usecode_symbol_table* symtbl) {
 	vector<UCc*> vucc;
 	int          opsfound = 0;
 
 #ifdef DEBUG_PARSE2
-	output_asm_opcode(
-			tab_indent(4, cout), funcmap, opcode_table_data, intrinsics,
-			*(current->first), options, symtbl);
+	output_asm_opcode(tab_indent(4, cout), funcmap, opcode_table_data, intrinsics, *(current->first), options, symtbl);
 #endif
 
 	for (; vec.rend() != current; current++) {
 #ifdef DEBUG_PARSE2
-		output_asm_opcode(
-				tab_indent(3, cout), funcmap, opcode_table_data, intrinsics,
-				*(current->first), options, symtbl);
+		output_asm_opcode(tab_indent(3, cout), funcmap, opcode_table_data, intrinsics, *(current->first), options, symtbl);
 #endif
 
 		if (!current->second) {
-			if ((opcode_table_data[current->first->_id].num_pop != 0)
-				|| (opcode_table_data[current->first->_id].flag_call_effect)
+			if ((opcode_table_data[current->first->_id].num_pop != 0) || (opcode_table_data[current->first->_id].flag_call_effect)
 				|| (opcode_table_data[current->first->_id].flag_new_effect)
 				|| (opcode_table_data[current->first->_id].flag_method_effect)
-				|| (opcode_table_data[current->first->_id]
-							.flag_function_effect)) {
+				|| (opcode_table_data[current->first->_id].flag_function_effect)) {
 				// if(opcode_table_data[current->first->_id].num_pop<0x7F)
 				{
 #ifdef DEBUG_PARSE2
 					output_asm_opcode(
-							tab_indent(
-									3, cout << "0x" << std::setw(2)
-											<< current->first->_id << "-"),
-							funcmap, opcode_table_data, intrinsics,
-							*(current->first), options, symtbl);
-					tab_indent(
-							3, cout << "0x" << std::setw(2)
-									<< current->first->_id << "-")
-							<< opcode_table_data[current->first->_id].num_pop
-							<< endl;
+							tab_indent(3, cout << "0x" << std::setw(2) << current->first->_id << "-"), funcmap, opcode_table_data,
+							intrinsics, *(current->first), options, symtbl);
+					tab_indent(3, cout << "0x" << std::setw(2) << current->first->_id << "-")
+							<< opcode_table_data[current->first->_id].num_pop << endl;
 #endif
 
 					int num_args = 0;
 
-					if (opcode_table_data[current->first->_id]
-								.flag_new_effect) {
+					if (opcode_table_data[current->first->_id].flag_new_effect) {
 						assert(symtbl);
 #ifdef DEBUG_PARSE2a
-						cout << "NEW EFFECT: "
-							 << current->first->_params_parsed[0] << '\t';
+						cout << "NEW EFFECT: " << current->first->_params_parsed[0] << '\t';
 #endif
 
-						const unsigned int offset
-								= current->first->_params_parsed[0];
-						Usecode_class_symbol* cls = symtbl->get_class(offset);
+						const unsigned int    offset = current->first->_params_parsed[0];
+						Usecode_class_symbol* cls    = symtbl->get_class(offset);
 						if (cls != nullptr) {
 							num_args = cls->get_num_vars();
 						} else {
@@ -508,12 +459,10 @@ vector<UCc*> UCFunc::parse_ucs_pass2a(
 #ifdef DEBUG_PARSE2a
 						cout << num_args << endl;
 #endif
-					} else if (opcode_table_data[current->first->_id]
-									   .flag_method_effect) {
+					} else if (opcode_table_data[current->first->_id].flag_method_effect) {
 						assert(symtbl);
 #ifdef DEBUG_PARSE2a
-						cout << "NEW METHOD: "
-							 << current->first->_params_parsed[0] << '\t';
+						cout << "NEW METHOD: " << current->first->_params_parsed[0] << '\t';
 #endif
 						if (current->first->_params_parsed.size() == 1) {
 							// FIXME: Hack for partial UC_CALLM support.
@@ -529,13 +478,10 @@ vector<UCc*> UCFunc::parse_ucs_pass2a(
 							cout << current->first->_params_parsed[1] << '\t';
 #endif
 
-							const unsigned int offset
-									= current->first->_params_parsed[1];
-							Usecode_class_symbol* cls
-									= symtbl->get_class(offset);
+							const unsigned int    offset = current->first->_params_parsed[1];
+							Usecode_class_symbol* cls    = symtbl->get_class(offset);
 							assert(cls);
-							const int method = cls->get_method_id(
-									current->first->_params_parsed[0]);
+							const int method = cls->get_method_id(current->first->_params_parsed[0]);
 							assert(method >= 0);
 							auto fmp = funcmap.find(method);
 							assert(fmp != funcmap.end());
@@ -548,63 +494,42 @@ vector<UCc*> UCFunc::parse_ucs_pass2a(
 							cout << "all" << endl;
 						}
 #endif
-					} else if (
-							opcode_table_data[current->first->_id].num_pop
-							> 0x7F) {
+					} else if (opcode_table_data[current->first->_id].num_pop > 0x7F) {
 #ifdef DEBUG_PARSE2a
-						cout << "CALL EFFECT: "
-							 << opcode_table_data[current->first->_id].num_pop
-							 << '\t';
+						cout << "CALL EFFECT: " << opcode_table_data[current->first->_id].num_pop << '\t';
 #endif
 
-						const unsigned int offset
-								= 0x100
-								  - opcode_table_data[current->first->_id]
-											.num_pop;
-						num_args = current->first
-										   ->_params_parsed[(offset & 0x1f) - 1]
-								   + (offset >> 5);
+						const unsigned int offset = 0x100 - opcode_table_data[current->first->_id].num_pop;
+						num_args                  = current->first->_params_parsed[(offset & 0x1f) - 1] + (offset >> 5);
 
 #ifdef DEBUG_PARSE2a
 						cout << num_args << endl;
 #endif
 
-					} else if (opcode_table_data[current->first->_id]
-									   .flag_function_effect) {
+					} else if (opcode_table_data[current->first->_id].flag_function_effect) {
 						assert(!current->first->_params_parsed.empty());
-						auto fmp = funcmap.find(
-								current->first->_params_parsed[0]);
+						auto fmp = funcmap.find(current->first->_params_parsed[0]);
 						assert(fmp != funcmap.end());
 #ifdef DEBUG_PARSE2
-						cout << "CALL:     " << fmp->second.funcid << '\t'
-							 << fmp->second.num_args << endl;
+						cout << "CALL:     " << fmp->second.funcid << '\t' << fmp->second.num_args << endl;
 #endif
 
-						num_args = fmp->second.num_args
-								   + opcode_table_data[current->first->_id]
-											 .num_pop;
-					} else if (opcode_table_data[current->first->_id]
-									   .flag_call_effect) {
+						num_args = fmp->second.num_args + opcode_table_data[current->first->_id].num_pop;
+					} else if (opcode_table_data[current->first->_id].flag_call_effect) {
 						assert(!current->first->_params_parsed.empty());
-						assert(_externs.size()
-							   >= current->first->_params_parsed[0]);
-						auto fmp = funcmap.find(
-								_externs[current->first->_params_parsed[0]]);
+						assert(_externs.size() >= current->first->_params_parsed[0]);
+						auto fmp = funcmap.find(_externs[current->first->_params_parsed[0]]);
 						assert(fmp != funcmap.end());
 #ifdef DEBUG_PARSE2
-						cout << "CALL EXTERN:" << fmp->second.funcid << '\t'
-							 << fmp->second.num_args << endl;
+						cout << "CALL EXTERN:" << fmp->second.funcid << '\t' << fmp->second.num_args << endl;
 #endif
 
 						num_args = fmp->second.num_args;
 					} else {
 #ifdef DEBUG_PARSE2
-						cout << "Non-CALL: \t"
-							 << opcode_table_data[current->first->_id].num_pop
-							 << endl;
+						cout << "Non-CALL: \t" << opcode_table_data[current->first->_id].num_pop << endl;
 #endif
-						num_args = opcode_table_data[current->first->_id]
-										   .num_pop;
+						num_args = opcode_table_data[current->first->_id].num_pop;
 					}
 
 					// FIXME: Hack for partial UC_CALLM support.
@@ -614,16 +539,12 @@ vector<UCc*> UCFunc::parse_ucs_pass2a(
 						   value */
 						auto ret(current);
 
-						ret->first->_popped = parse_ucs_pass2a(
-								++current, vec, num_args, funcmap, intrinsics,
-								options, symtbl);
-						auto nargs = static_cast<unsigned>(num_args);
-						if (num_args < 0
-							|| nargs <= ret->first->_popped.size()) {
+						ret->first->_popped = parse_ucs_pass2a(++current, vec, num_args, funcmap, intrinsics, options, symtbl);
+						auto nargs          = static_cast<unsigned>(num_args);
+						if (num_args < 0 || nargs <= ret->first->_popped.size()) {
 							ret->first->_missing_args = 0;
 						} else {
-							ret->first->_missing_args
-									= nargs - ret->first->_popped.size();
+							ret->first->_missing_args = nargs - ret->first->_popped.size();
 						}
 
 						assert(current != ret);
@@ -633,14 +554,10 @@ vector<UCc*> UCFunc::parse_ucs_pass2a(
 						assert(current == ret);
 #ifdef DEBUG_PARSE2a
 						output_asm_opcode(
-								tab_indent(1, cout), funcmap, opcode_table_data,
-								intrinsics, *(ret->first), options, symtbl);
+								tab_indent(1, cout), funcmap, opcode_table_data, intrinsics, *(ret->first), options, symtbl);
 
 						for (auto* i : ret->first->_popped) {
-							output_asm_opcode(
-									tab_indent(2, cout), funcmap,
-									opcode_table_data, intrinsics, *i, options,
-									symtbl);
+							output_asm_opcode(tab_indent(2, cout), funcmap, opcode_table_data, intrinsics, *i, options, symtbl);
 						}
 #endif
 					}
@@ -655,9 +572,8 @@ vector<UCc*> UCFunc::parse_ucs_pass2a(
 				else if (opcode_table_data[current->first->_id].num_push != 0) {
 #ifdef DEBUG_PARSE2
 					output_asm_opcode(
-							tab_indent(4, cout << "P-"), funcmap,
-							opcode_table_data, intrinsics, *(current->first),
-							options, symtbl);
+							tab_indent(4, cout << "P-"), funcmap, opcode_table_data, intrinsics, *(current->first), options,
+							symtbl);
 #endif
 
 					opsfound += opcode_table_data[current->first->_id].num_push;
@@ -665,8 +581,7 @@ vector<UCc*> UCFunc::parse_ucs_pass2a(
 					current->second = true;
 				}
 				// if it's a call to a class method that returns a variable...
-				else if (opcode_table_data[current->first->_id]
-								 .flag_method_effect) {
+				else if (opcode_table_data[current->first->_id].flag_method_effect) {
 					if (current->first->_params_parsed.size() == 1) {
 						// FIXME: Hack for partial UC_CALLM support.
 						// TODO: Try to come up with a way to get this
@@ -676,19 +591,16 @@ vector<UCc*> UCFunc::parse_ucs_pass2a(
 						vucc.push_back(current->first);
 						current->second = true;
 					} else {
-						const unsigned int offset
-								= current->first->_params_parsed[1];
-						Usecode_class_symbol* cls = symtbl->get_class(offset);
-						const int             method = cls->get_method_id(
-                                current->first->_params_parsed[0]);
-						auto fmp = funcmap.find(method);
+						const unsigned int    offset = current->first->_params_parsed[1];
+						Usecode_class_symbol* cls    = symtbl->get_class(offset);
+						const int             method = cls->get_method_id(current->first->_params_parsed[0]);
+						auto                  fmp    = funcmap.find(method);
 						assert(fmp != funcmap.end());
 						if (fmp->second.return_var) {
 #ifdef DEBUG_PARSE2
 							output_asm_opcode(
-									tab_indent(4, cout << "C-"), funcmap,
-									opcode_table_data, intrinsics,
-									*(current->first), options, symtbl);
+									tab_indent(4, cout << "C-"), funcmap, opcode_table_data, intrinsics, *(current->first), options,
+									symtbl);
 #endif
 
 							opsfound += 1;
@@ -698,17 +610,15 @@ vector<UCc*> UCFunc::parse_ucs_pass2a(
 					}
 				}
 				// if it's a call to a function that returns a variable...
-				else if (opcode_table_data[current->first->_id]
-								 .flag_function_effect) {
+				else if (opcode_table_data[current->first->_id].flag_function_effect) {
 					auto fmp = funcmap.find(current->first->_params_parsed[0]);
 					assert(fmp != funcmap.end());
 
 					if (fmp->second.return_var) {
 #ifdef DEBUG_PARSE2
 						output_asm_opcode(
-								tab_indent(4, cout << "C-"), funcmap,
-								opcode_table_data, intrinsics,
-								*(current->first), options, symtbl);
+								tab_indent(4, cout << "C-"), funcmap, opcode_table_data, intrinsics, *(current->first), options,
+								symtbl);
 #endif
 
 						opsfound += 1;
@@ -718,18 +628,15 @@ vector<UCc*> UCFunc::parse_ucs_pass2a(
 				}
 				// if it's a call to an extern function that returns a
 				// variable...
-				else if (opcode_table_data[current->first->_id]
-								 .flag_call_effect) {
-					auto fmp = funcmap.find(
-							_externs[current->first->_params_parsed[0]]);
+				else if (opcode_table_data[current->first->_id].flag_call_effect) {
+					auto fmp = funcmap.find(_externs[current->first->_params_parsed[0]]);
 					assert(fmp != funcmap.end());
 
 					if (fmp->second.return_var) {
 #ifdef DEBUG_PARSE2
 						output_asm_opcode(
-								tab_indent(4, cout << "C-"), funcmap,
-								opcode_table_data, intrinsics,
-								*(current->first), options, symtbl);
+								tab_indent(4, cout << "C-"), funcmap, opcode_table_data, intrinsics, *(current->first), options,
+								symtbl);
 #endif
 
 						opsfound += 1;
@@ -762,8 +669,7 @@ vector<UCc*> UCFunc::parse_ucs_pass2a(
 
 /* The 'optimisation' phase. Attempting to remove as many goto...labels as
  * possible. */
-void UCFunc::parse_ucs_pass3(
-		vector<GotoSet>& gotoset, const map<unsigned int, string>& intrinsics) {
+void UCFunc::parse_ucs_pass3(vector<GotoSet>& gotoset, const map<unsigned int, string>& intrinsics) {
 	ignore_unused_variable_warning(gotoset, intrinsics);
 }
 
@@ -771,9 +677,7 @@ bool UCFunc::output_tt(std::ostream& o) {
 	o << "\t<0x" << setw(4) << _funcid << ">" << endl;
 
 	for (auto& i : _data) {
-		o << "\t\t<0x" << setw(4) << i.first << ">" << endl
-		  << "\t\t`" << i.second << "`" << endl
-		  << "\t\t</>" << endl;
+		o << "\t\t<0x" << setw(4) << i.first << ">" << endl << "\t\t`" << i.second << "`" << endl << "\t\t</>" << endl;
 	}
 	o << "\t</>" << endl;
 
@@ -782,14 +686,12 @@ bool UCFunc::output_tt(std::ostream& o) {
 
 /* calculates the relative offset jump location, used in opcodes jmp && jne */
 inline int calc16reloffset(const UCc& op, unsigned int param) {
-	return op._offset + static_cast<sint16>(param & 0xFFFF) + 1
-		   + static_cast<int>(op._params.size());
+	return op._offset + static_cast<sint16>(param & 0xFFFF) + 1 + static_cast<int>(op._params.size());
 }
 
 /* calculates the relative offset jump location, used in opcodes jmp && jne */
 inline int calc32reloffset(const UCc& op, unsigned int param) {
-	return op._offset + static_cast<sint32>(param) + 1
-		   + static_cast<int>(op._params.size());
+	return op._offset + static_cast<sint32>(param) + 1 + static_cast<int>(op._params.size());
 }
 
 void ucc_parse_parambytes(UCc& ucop, const UCOpcodeData& otd) {
@@ -806,50 +708,33 @@ void ucc_parse_parambytes(UCc& ucop, const UCOpcodeData& otd) {
 		assert(ssize != 0);
 
 		if (ssize == 1) {
-			ucop._params_parsed.push_back(
-					static_cast<unsigned int>(ucop._params[first++]));
+			ucop._params_parsed.push_back(static_cast<unsigned int>(ucop._params[first++]));
 		} else if (ssize == 2) {
 			if (offset_munge) {
 				auto calcvar = static_cast<unsigned int>(ucop._params[first++]);
-				calcvar
-						+= ((static_cast<unsigned int>(ucop._params[first++]))
-							<< 8);
+				calcvar += ((static_cast<unsigned int>(ucop._params[first++])) << 8);
 				const unsigned int reloffset = calc16reloffset(ucop, calcvar);
 				ucop._params_parsed.push_back(reloffset);
 				ucop._jump_offsets.push_back(reloffset);
 			} else {
 				auto calcvar = static_cast<unsigned int>(ucop._params[first++]);
-				calcvar
-						+= ((static_cast<unsigned int>(ucop._params[first++]))
-							<< 8);
+				calcvar += ((static_cast<unsigned int>(ucop._params[first++])) << 8);
 				ucop._params_parsed.push_back(calcvar);
 			}
 		} else if (ssize == 4) {
 			if (offset_munge) {
 				auto calcvar = static_cast<unsigned int>(ucop._params[first++]);
-				calcvar
-						+= ((static_cast<unsigned int>(ucop._params[first++]))
-							<< 8);
-				calcvar
-						+= ((static_cast<unsigned int>(ucop._params[first++]))
-							<< 16);
-				calcvar
-						+= ((static_cast<unsigned int>(ucop._params[first++]))
-							<< 24);
+				calcvar += ((static_cast<unsigned int>(ucop._params[first++])) << 8);
+				calcvar += ((static_cast<unsigned int>(ucop._params[first++])) << 16);
+				calcvar += ((static_cast<unsigned int>(ucop._params[first++])) << 24);
 				const unsigned int reloffset = calc32reloffset(ucop, calcvar);
 				ucop._params_parsed.push_back(reloffset);
 				ucop._jump_offsets.push_back(reloffset);
 			} else {
 				auto calcvar = static_cast<unsigned int>(ucop._params[first++]);
-				calcvar
-						+= ((static_cast<unsigned int>(ucop._params[first++]))
-							<< 8);
-				calcvar
-						+= ((static_cast<unsigned int>(ucop._params[first++]))
-							<< 16);
-				calcvar
-						+= ((static_cast<unsigned int>(ucop._params[first++]))
-							<< 24);
+				calcvar += ((static_cast<unsigned int>(ucop._params[first++])) << 8);
+				calcvar += ((static_cast<unsigned int>(ucop._params[first++])) << 16);
+				calcvar += ((static_cast<unsigned int>(ucop._params[first++])) << 24);
 				ucop._params_parsed.push_back(calcvar);
 			}
 		} else {
@@ -860,36 +745,30 @@ void ucc_parse_parambytes(UCc& ucop, const UCOpcodeData& otd) {
 
 /* prints the "assembler" output of the usecode. returns true if successful*/
 bool UCFunc::output_asm(
-		ostream& o, const FuncMap& funcmap,
-		const map<unsigned int, string>& intrinsics, const UCOptions& options,
+		ostream& o, const FuncMap& funcmap, const map<unsigned int, string>& intrinsics, const UCOptions& options,
 		Usecode_symbol_table* symtbl) {
 	if (options.verbose) {
 		cout << "Printing function..." << endl;
 	}
 
-	o << "\t; Function at file offset " << std::setw(8) << _offset << "H"
-	  << endl;
+	o << "\t; Function at file offset " << std::setw(8) << _offset << "H" << endl;
 	o << "\t.funcnumber  " << std::setw(4) << _funcid << "H" << endl;
 	if (ext32) {
 		o << "\t.ext32" << endl;
 	}
 	o << "\t.data" << endl;
-	o << "\t.msize       " << ((ext32) ? setw(8) : setw(4)) << _funcsize << "H"
-	  << endl;
-	o << "\t.dsize       " << ((ext32) ? setw(8) : setw(4)) << _datasize << "H"
-	  << endl;
+	o << "\t.msize       " << ((ext32) ? setw(8) : setw(4)) << _funcsize << "H" << endl;
+	o << "\t.dsize       " << ((ext32) ? setw(8) : setw(4)) << _datasize << "H" << endl;
 
 	if (debugging_info) {
-		o << "\t  .dbgoffset " << std::setw(4) << debugging_offset << "H"
-		  << endl;
+		o << "\t  .dbgoffset " << std::setw(4) << debugging_offset << "H" << endl;
 	}
 
 	if (!_data.empty()) {
 		output_asm_data(o);
 	}
 
-	o << "\t; Code segment at file offset " << std::setw(8) << _codeoffset
-	  << "H" << endl;
+	o << "\t; Code segment at file offset " << std::setw(8) << _codeoffset << "H" << endl;
 	o << "\t.code" << endl;
 	o << "\t.argc        " << std::setw(4) << _num_args << "H" << endl;
 	o << "\t.localc      " << std::setw(4) << _num_locals << "H" << endl;
@@ -900,9 +779,7 @@ bool UCFunc::output_asm(
 	}
 
 	for (auto& opcode : _opcodes) {
-		output_asm_opcode(
-				o, funcmap, opcode_table_data, intrinsics, opcode, options,
-				symtbl);
+		output_asm_opcode(o, funcmap, opcode_table_data, intrinsics, opcode, options, symtbl);
 	}
 
 	return true;
@@ -925,8 +802,7 @@ void UCFunc::output_asm_data(ostream& o) {
 				o << "\tdb\t'";
 			}
 
-			if (cc == '\r' || cc == '\n' || cc == '\t' || cc == '\\'
-				|| cc == '\'') {
+			if (cc == '\r' || cc == '\n' || cc == '\t' || cc == '\\' || cc == '\'') {
 				if (!((j + 1) % nochars) || !((j + 2) % nochars)) {
 					o << "'" << endl;
 					o << "\tdb\t'";
@@ -986,9 +862,8 @@ void UCFunc::output_raw_opcodes(ostream& o, const UCc& op) {
 }
 
 void UCFunc::output_asm_opcode(
-		ostream& o, const FuncMap& funcmap, const vector<UCOpcodeData>& optab,
-		const map<unsigned int, string>& intrinsics, const UCc& op,
-		const UCOptions& options, Usecode_symbol_table* symtbl) {
+		ostream& o, const FuncMap& funcmap, const vector<UCOpcodeData>& optab, const map<unsigned int, string>& intrinsics,
+		const UCc& op, const UCOptions& options, Usecode_symbol_table* symtbl) {
 	// offset
 	o << std::setw(4) << op._offset << ':';
 
@@ -998,14 +873,10 @@ void UCFunc::output_asm_opcode(
 		o << '\t';
 	}
 
-	o << demunge_ocstring(
-			*this, funcmap, optab[op._id].asm_nmo, intrinsics, op, false,
-			symtbl);
+	o << demunge_ocstring(*this, funcmap, optab[op._id].asm_nmo, intrinsics, op, false, symtbl);
 
 	if (options.autocomment) {
-		o << demunge_ocstring(
-				*this, funcmap, optab[op._id].asm_comment, intrinsics, op,
-				false, symtbl);
+		o << demunge_ocstring(*this, funcmap, optab[op._id].asm_comment, intrinsics, op, false, symtbl);
 	}
 
 	o << endl;
@@ -1038,8 +909,7 @@ inline unsigned int charnum2uint(const char c) {
 }
 
 template <int radix, int width>
-static void print_number(
-		char c, std::stringstream& str, const vector<unsigned int>& params) {
+static void print_number(char c, std::stringstream& str, const vector<unsigned int>& params) {
 	const unsigned int t = charnum2uint(c);
 	if (t != 0) {
 		assert(params.size() >= t);
@@ -1052,8 +922,7 @@ static void print_number(
 }
 
 string demunge_ocstring(
-		UCFunc& ucf, const FuncMap& funcmap, const string& asmstr,
-		const map<unsigned int, string>& intrinsics, const UCc& op,
+		UCFunc& ucf, const FuncMap& funcmap, const string& asmstr, const map<unsigned int, string>& intrinsics, const UCc& op,
 		bool ucs_output, Usecode_symbol_table* symtbl) {
 	std::stringstream str;
 	str << std::setfill('0') << std::setbase(16);
@@ -1178,9 +1047,7 @@ string demunge_ocstring(
 						if ((s[i] == '\"') || (s[i] == '\\')) {
 							s.insert(i, "\\");
 							++i;
-						} else if (
-								(s[i] == '\r') || (s[i] == '\n')
-								|| (s[i] == '\t')) {
+						} else if ((s[i] == '\r') || (s[i] == '\n') || (s[i] == '\t')) {
 							s.insert(i, "\\");
 							++i;
 							if (s[i] == '\r') {
@@ -1207,9 +1074,8 @@ string demunge_ocstring(
 				auto iter = intrinsics.find(params[t - 1]);
 				if (iter == intrinsics.end()) {
 					const boost::io::ios_flags_saver flags(str);
-					const int width = (params[t - 1] > 0xFFU) ? 4 : 2;
-					str << "UI_UNKNOWN_" << std::hex << std::setw(width)
-						<< std::setfill('0') << params[t - 1];
+					const int                        width = (params[t - 1] > 0xFFU) ? 4 : 2;
+					str << "UI_UNKNOWN_" << std::hex << std::setw(width) << std::setfill('0') << params[t - 1];
 					break;
 				}
 				str << iter->second;
@@ -1245,8 +1111,7 @@ string demunge_ocstring(
 					assert(params.size() >= t);
 					assert(t != 0);
 
-					Usecode_class_symbol* cls
-							= symtbl->get_class(params[t - 1]);
+					Usecode_class_symbol* cls = symtbl->get_class(params[t - 1]);
 					assert(cls);
 
 					i++;
@@ -1307,9 +1172,7 @@ string demunge_ocstring(
 
 					for (; it != op._popped.end();) {
 						str << demunge_ocstring(
-								ucf, funcmap,
-								opcode_table_data[(*it)->_id].ucs_nmo,
-								intrinsics, **it, ucs_output, symtbl);
+								ucf, funcmap, opcode_table_data[(*it)->_id].ucs_nmo, intrinsics, **it, ucs_output, symtbl);
 						if (++it != op._popped.end() || op._missing_args != 0) {
 							str << ", ";
 						}
@@ -1328,9 +1191,7 @@ string demunge_ocstring(
 					} else {
 						const UCc& ucc(*op._popped[t - 1]);
 						str << demunge_ocstring(
-								ucf, funcmap,
-								opcode_table_data[ucc._id].ucs_nmo, intrinsics,
-								ucc, ucs_output, symtbl);
+								ucf, funcmap, opcode_table_data[ucc._id].ucs_nmo, intrinsics, ucc, ucs_output, symtbl);
 					}
 				}
 				break;
@@ -1349,8 +1210,7 @@ string demunge_ocstring(
 					assert(params.size() >= t);
 					const int paramval = static_cast<sint16>(params[t - 1]);
 					if (paramval < 0) {
-						str << UCFunc::GLOBALSTATICPREFIX << std::setw(4)
-							<< -paramval;
+						str << UCFunc::GLOBALSTATICPREFIX << std::setw(4) << -paramval;
 					} else {
 						str << UCFunc::STATICPREFIX << std::setw(4) << paramval;
 					}
@@ -1378,8 +1238,7 @@ string demunge_ocstring(
 						if (it != ucf._varmap.end()) {
 							str << it->second;
 						} else {
-							str << UCFunc::VARPREFIX << std::setw(4)
-								<< paramval;
+							str << UCFunc::VARPREFIX << std::setw(4) << paramval;
 						}
 					} else {
 						str << UCFunc::THISVAR;
@@ -1442,9 +1301,7 @@ string demunge_ocstring(
 	return str.str();
 }
 
-void readbin_U7UCFunc(
-		std::istream& f, UCFunc& ucf, const UCOptions& options,
-		Usecode_symbol_table* symtbl) {
+void readbin_U7UCFunc(std::istream& f, UCFunc& ucf, const UCOptions& options, Usecode_symbol_table* symtbl) {
 	//	#define DEBUG_READ_PAIR(X, Y) cout << '\t' << X << '\t' << Y << endl;
 	// offset to start of function
 	ucf._offset = f.tellg();
@@ -1565,8 +1422,7 @@ void readbin_U7UCFunc(
 			which are stored in the file as 16bit shorts, with the exception of
 			an ext32 function header, where the _datasize is a 32bit structure
 		 */
-		unsigned int code_size = ucf._funcsize - ucf._datasize
-								 - ((4 + ucf._num_externs) * SIZEOF_USHORT);
+		unsigned int code_size = ucf._funcsize - ucf._datasize - ((4 + ucf._num_externs) * SIZEOF_USHORT);
 		if (ucf.ext32) {
 			code_size -= 2;
 		}
@@ -1620,21 +1476,16 @@ void readbin_U7UCFunc(
 				// Don't override name from symbol table
 				if (!ucf._sym) {
 					std::stringstream str;
-					str << ucf._data.find(ucop._params_parsed[0])->second
-						<< "_";
+					str << ucf._data.find(ucop._params_parsed[0])->second << "_";
 					str << std::setfill('0') << std::setbase(16);
 					str.setf(ios::uppercase);
 					str << std::setw(4) << ucf._funcid;
 					ucf.funcname = str.str();
 					auto it      = ucf._data.find(ucf.debugging_offset);
-					for (unsigned int i = 0; i < ucf._num_args + ucf._num_locals
-											 && it != ucf._data.end();
-						 ++it, i++) {
+					for (unsigned int i = 0; i < ucf._num_args + ucf._num_locals && it != ucf._data.end(); ++it, i++) {
 						std::string varname = it->second;
 						if (!varname.empty()) {
-							if (std::isdigit(
-										static_cast<unsigned char>(
-												varname[0]))) {
+							if (std::isdigit(static_cast<unsigned char>(varname[0]))) {
 								string temp = UCFunc::VARPREFIX;
 								temp += varname;
 								varname.swap(temp);
@@ -1651,8 +1502,7 @@ void readbin_U7UCFunc(
 				appropriate static variable counter */
 			if (otd.flag_staticref) {
 				// TODO: Move variable reference index to u7opcodes.data
-				int sref = static_cast<sint16>(
-						ucop._params_parsed[otd.flag_loop ? 3 : 0]);
+				int sref = static_cast<sint16>(ucop._params_parsed[otd.flag_loop ? 3 : 0]);
 				if (sref < 0) {
 					sref = -sref;
 					if (sref > UCFunc::num_global_statics) {
@@ -1667,12 +1517,10 @@ void readbin_U7UCFunc(
 			ucf._opcodes.push_back(ucop);
 
 #ifdef DEBUG_READ
-			cout << std::setw(4) << code_size << "\t" << std::setw(4)
-				 << code_offset << "\t" << std::setw(4) << ucop._offset << "\t"
+			cout << std::setw(4) << code_size << "\t" << std::setw(4) << code_offset << "\t" << std::setw(4) << ucop._offset << "\t"
 				 << std::setw(2) << ucop._id << "\t";
 			for (unsigned char _param : ucop._params) {
-				cout << std::setw(2) << static_cast<unsigned int>(_param)
-					 << ',';
+				cout << std::setw(2) << static_cast<unsigned int>(_param) << ',';
 			}
 			cout << endl;
 #endif

@@ -68,9 +68,9 @@ public:
 	using ScalerType = int;
 
 	enum FillMode {
-		Fill = 1,    ///< Game area fills all of the display surface
-		Fit = 2,    ///< Game area is stretched to the closest edge, maintaining
-					///< 1:1 pixel aspect
+		Fill = 1,                ///< Game area fills all of the display surface
+		Fit  = 2,                ///< Game area is stretched to the closest edge, maintaining
+								 ///< 1:1 pixel aspect
 		AspectCorrectFit = 3,    ///< Game area is stretched to the closest
 								 ///< edge, with 1:1.2 pixel aspect
 		FitAspectCorrect    = 3,
@@ -91,8 +91,7 @@ public:
 		// And so on....
 
 		// Arbitrarty scaling support => (x<<16)|y
-		Centre_640x480 = (640 << 16)
-						 | 480    ///< Scale to specific dimentions and centre
+		Centre_640x480 = (640 << 16) | 480    ///< Scale to specific dimentions and centre
 	};
 
 	struct ScalerInfo {
@@ -172,9 +171,7 @@ public:
 	// If (inter_surface.wh == display_surface.wh || strech_scaler == scaler ||
 	// scale == 1)
 	//   inter_surface wont be used
-	static bool get_draw_dims(
-			int sw, int sh, int scale, FillMode fillmode, int& gw, int& gh,
-			int& iw, int& ih);
+	static bool get_draw_dims(int sw, int sh, int scale, FillMode fillmode, int& gw, int& gh, int& iw, int& ih);
 
 	static FillMode string_to_fillmode(const char* str);
 	static bool     fillmode_to_string(FillMode fmode, std::string& str);
@@ -187,12 +184,12 @@ protected:
 	bool          fullscreen;      // Rendering fullscreen.
 	int           game_width;
 	int           game_height;
-	int saved_game_width;     // Normally this is the same as game_width and is
-							  // used by the PaintIntoGuardBand code so it can
-							  // change and restore the value of game_width
-	int saved_game_height;    // Normally this is the same as game_height and is
-							  // used by the PaintIntoGuardBand code so it can
-							  // change and restore the value of game_height
+	int           saved_game_width;    // Normally this is the same as game_width and is
+									   // used by the PaintIntoGuardBand code so it can
+									   // change and restore the value of game_width
+	int saved_game_height;             // Normally this is the same as game_height and is
+									   // used by the PaintIntoGuardBand code so it can
+									   // change and restore the value of game_height
 	int inter_width;
 	int inter_height;
 
@@ -213,10 +210,9 @@ protected:
 
 	SDL_Surface* paletted_surface;    // Surface that palette is set on (Example
 									  // res)
-	SDL_Surface*
-			display_surface;    // Final surface that is displayed  (1024x1024)
-	SDL_Surface* inter_surface;    // Post scaled/pre stretch surface  (960x600)
-	SDL_Surface* draw_surface;     // Pre scaled surface               (320x200)
+	SDL_Surface* display_surface;     // Final surface that is displayed  (1024x1024)
+	SDL_Surface* inter_surface;       // Post scaled/pre stretch surface  (960x600)
+	SDL_Surface* draw_surface;        // Pre scaled surface               (320x200)
 
 	/*
 	 *   Scaled blits:
@@ -340,15 +336,11 @@ public:
 
 	// Create with given buffer.
 	Image_window(
-			Image_buffer* ib, int w, int h, int gamew, int gameh, int scl = 1,
-			bool fs = false, int sclr = point,
+			Image_buffer* ib, int w, int h, int gamew, int gameh, int scl = 1, bool fs = false, int sclr = point,
 			FillMode fmode = AspectCorrectCentre, int fillsclr = point)
-			: ibuf(ib), scale(scl), scaler(sclr), uses_palette(true),
-			  fullscreen(fs), game_width(gamew), game_height(gameh),
-			  saved_game_width(gamew), saved_game_height(gameh),
-			  fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
-			  screen_renderer(nullptr), screen_texture(nullptr),
-			  paletted_surface(nullptr), display_surface(nullptr),
+			: ibuf(ib), scale(scl), scaler(sclr), uses_palette(true), fullscreen(fs), game_width(gamew), game_height(gameh),
+			  saved_game_width(gamew), saved_game_height(gameh), fill_mode(fmode), fill_scaler(fillsclr), screen_window(nullptr),
+			  screen_renderer(nullptr), screen_texture(nullptr), paletted_surface(nullptr), display_surface(nullptr),
 			  inter_surface(nullptr), draw_surface(nullptr) {
 		static_init();
 		create_surface(w, h);
@@ -449,10 +441,8 @@ public:
 	std::unique_ptr<Image_buffer> create_buffer(int w, int h);
 	// Resize event occurred.
 	void resized(
-			unsigned int neww, unsigned int newh, bool newfs,
-			unsigned int newgw, unsigned int newgh, int newsc,
-			int newscaler = point, FillMode fmode = AspectCorrectCentre,
-			int fillsclr = point);
+			unsigned int neww, unsigned int newh, bool newfs, unsigned int newgw, unsigned int newgh, int newsc,
+			int newscaler = point, FillMode fmode = AspectCorrectCentre, int fillsclr = point);
 
 	void show() {    // Repaint entire window.
 		show(get_start_x(), get_start_y(), get_full_width(), get_full_height());
@@ -464,8 +454,7 @@ public:
 	void toggle_fullscreen();
 
 	// Set palette.
-	virtual void set_palette(
-			const unsigned char* rgbs, int maxval, int brightness = 100) {
+	virtual void set_palette(const unsigned char* rgbs, int maxval, int brightness = 100) {
 		ignore_unused_variable_warning(rgbs, maxval, brightness);
 	}
 
@@ -541,46 +530,34 @@ public:
 	}
 
 	// Copy rectangle into here.
-	void copy8(
-			const unsigned char* src_pixels, int srcw, int srch, int destx,
-			int desty) {
+	void copy8(const unsigned char* src_pixels, int srcw, int srch, int destx, int desty) {
 		ibuf->copy8(src_pixels, srcw, srch, destx, desty);
 	}
 
 	// Copy line to here.
-	void copy_hline8(
-			const unsigned char* src_pixels, int srcw, int destx, int desty) {
+	void copy_hline8(const unsigned char* src_pixels, int srcw, int destx, int desty) {
 		ibuf->copy_hline8(src_pixels, srcw, destx, desty);
 	}
 
 	// Copy with translucency table.
 	void copy_hline_translucent8(
-			const unsigned char* src_pixels, int srcw, int destx, int desty,
-			int first_translucent, int last_translucent,
+			const unsigned char* src_pixels, int srcw, int destx, int desty, int first_translucent, int last_translucent,
 			const Xform_palette* xforms) {
-		ibuf->copy_hline_translucent8(
-				src_pixels, srcw, destx, desty, first_translucent,
-				last_translucent, xforms);
+		ibuf->copy_hline_translucent8(src_pixels, srcw, destx, desty, first_translucent, last_translucent, xforms);
 	}
 
 	// Apply translucency to a line.
-	void fill_hline_translucent8(
-			unsigned char val, int srcw, int destx, int desty,
-			const Xform_palette& xform) {
+	void fill_hline_translucent8(unsigned char val, int srcw, int destx, int desty, const Xform_palette& xform) {
 		ibuf->fill_hline_translucent8(val, srcw, destx, desty, xform);
 	}
 
 	// Apply translucency to a rectangle
-	virtual void fill_translucent8(
-			unsigned char val, int srcw, int srch, int destx, int desty,
-			const Xform_palette& xform) {
+	virtual void fill_translucent8(unsigned char val, int srcw, int srch, int destx, int desty, const Xform_palette& xform) {
 		ibuf->fill_translucent8(val, srcw, srch, destx, desty, xform);
 	}
 
 	// Copy rect. with transp. color.
-	void copy_transparent8(
-			const unsigned char* src_pixels, int srcw, int srch, int destx,
-			int desty) {
+	void copy_transparent8(const unsigned char* src_pixels, int srcw, int srch, int destx, int desty) {
 		ibuf->copy_transparent8(src_pixels, srcw, srch, destx, desty);
 	}
 

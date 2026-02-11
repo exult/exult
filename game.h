@@ -54,8 +54,7 @@ private:
 	static Game_Language language;
 	static bool          expansion, sibeta;
 	using shapes_map = std::unordered_map<const char*, int, hashstr, eqstr>;
-	using rsc_map
-			= std::unordered_map<const char*, str_int_pair, hashstr, eqstr>;
+	using rsc_map    = std::unordered_map<const char*, str_int_pair, hashstr, eqstr>;
 	shapes_map          shapes;
 	rsc_map             resources;
 	Configuration*      xml = nullptr; /* Shapes/resources from XML file. */
@@ -116,8 +115,7 @@ public:
 
 	// Get a code represeting gametype, language, xp and beta state
 	static uint32 Get_unique_gamecode() {
-		return game_type ^ expansion << 31 ^ sibeta << 30
-			   ^ uint32(language) << 24;
+		return game_type ^ expansion << 31 ^ sibeta << 30 ^ uint32(language) << 24;
 	}
 
 	static const char* get_avname();
@@ -138,22 +136,22 @@ public:
 		return modtitle;
 	}
 
-	virtual void         play_intro()                             = 0;
-	virtual void         end_game(bool success, bool within_game) = 0;
-	virtual void         top_menu()                               = 0;
-	virtual void         show_quotes()                            = 0;
-	virtual void         show_credits()                           = 0;
-	virtual bool         new_game(Vga_file& shapes)               = 0;
-	virtual int          get_start_tile_x()                       = 0;
-	virtual int          get_start_tile_y()                       = 0;
-	virtual void         show_journey_failed()                    = 0;
-	virtual Shape_frame* get_menu_shape()                         = 0;
-	void                 show_congratulations(Palette* pal0);
+	virtual void                      play_intro()                             = 0;
+	virtual void                      end_game(bool success, bool within_game) = 0;
+	virtual void                      top_menu()                               = 0;
+	virtual void                      show_quotes()                            = 0;
+	virtual void                      show_credits()                           = 0;
+	virtual bool                      new_game(Vga_file& shapes)               = 0;
+	virtual int                       get_start_tile_x()                       = 0;
+	virtual int                       get_start_tile_y()                       = 0;
+	virtual void                      show_journey_failed()                    = 0;
+	virtual Shape_frame*              get_menu_shape()                         = 0;
+	void                              show_congratulations(Palette* pal0);
 	virtual std::vector<unsigned int> get_congratulations_messages() = 0;
 
-	void add_shape(const char* name, int shapenum);
-	int  get_shape(const char* name);
-	void add_resource(const char* name, const char* str, int num);
+	void                add_shape(const char* name, int shapenum);
+	int                 get_shape(const char* name);
+	void                add_resource(const char* name, const char* str, int num);
 	const str_int_pair& get_resource(const char* name);
 	void                write_game_xml();
 	bool                read_game_xml(const char* name1 = nullptr);
@@ -180,8 +178,8 @@ public:
 	int waitforspeech();
 };
 
-extern Game* game;
-extern int wait_delay(int ms, int startcol = 0, int ncol = 0, int rotspd = 100);
+extern Game*      game;
+extern int        wait_delay(int ms, int startcol = 0, int ncol = 0, int rotspd = 100);
 extern Exult_Game exult_menu(Game_window* gwin);
 
 #endif

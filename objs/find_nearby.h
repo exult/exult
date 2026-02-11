@@ -41,13 +41,11 @@ enum class FindMask {
 };
 
 inline FindMask operator&(FindMask left, FindMask right) {
-	return static_cast<FindMask>(
-			static_cast<int>(left) & static_cast<int>(right));
+	return static_cast<FindMask>(static_cast<int>(left) & static_cast<int>(right));
 }
 
 inline FindMask operator|(FindMask left, FindMask right) {
-	return static_cast<FindMask>(
-			static_cast<int>(left) | static_cast<int>(right));
+	return static_cast<FindMask>(static_cast<int>(left) | static_cast<int>(right));
 }
 
 inline bool operator!(FindMask val) {
@@ -82,15 +80,12 @@ int Game_object::find_nearby(
 		if (FlagIsSet(mask, FindMask::AnyNPC) && !info.is_npc()) {
 			return false;
 		}
-		if (FlagIsSet(mask, FindMask::LiveNPC)
-			&& (!info.is_npc() || obj->get_flag(Obj_flags::dead))) {
+		if (FlagIsSet(mask, FindMask::LiveNPC) && (!info.is_npc() || obj->get_flag(Obj_flags::dead))) {
 			return false;
 		}
 		const Shape_info::Shape_class sclass = info.get_shape_class();
 		// Egg/barge?
-		if (FlagNotSet(mask, FindMask::EggLike)
-			&& (sclass == Shape_info::hatchable
-				|| sclass == Shape_info::barge)) {
+		if (FlagNotSet(mask, FindMask::EggLike) && (sclass == Shape_info::hatchable || sclass == Shape_info::barge)) {
 			return false;
 		}
 		if (FlagNotSet(mask, FindMask::Transparent) && info.is_transparent()) {
@@ -112,16 +107,14 @@ int Game_object::find_nearby(
 	if (delta < 0) {    // +++++Until we check all old callers.
 		delta = 24;
 	}
-	if (shapenum > 0
-		&& mask_ == FindMask::AnyNPC) {    // Ignore mask=4 if shape given!
+	if (shapenum > 0 && mask_ == FindMask::AnyNPC) {    // Ignore mask=4 if shape given!
 		mask_ = FindMask::Normal;
 	}
 	int            vecsize = vec.size();
 	Game_window*   gwin    = Game_window::get_instance();
 	Game_map*      gmap    = gwin->get_map();
 	const TileRect bounds(
-			(pos.tx - delta + c_num_tiles) % c_num_tiles,
-			(pos.ty - delta + c_num_tiles) % c_num_tiles, 1 + 2 * delta,
+			(pos.tx - delta + c_num_tiles) % c_num_tiles, (pos.ty - delta + c_num_tiles) % c_num_tiles, 1 + 2 * delta,
 			1 + 2 * delta);
 	// Stay within world.
 	Chunk_intersect_iterator next_chunk(bounds);
@@ -158,8 +151,7 @@ int Game_object::find_nearby(
 			if (!Check_mask(obj, mask_)) {
 				continue;
 			}
-			if (exclude_okay_to_take
-				&& obj->get_flag(Obj_flags::okay_to_take)) {
+			if (exclude_okay_to_take && obj->get_flag(Obj_flags::okay_to_take)) {
 				continue;
 			}
 			const Tile_coord t = obj->get_tile();

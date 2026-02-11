@@ -45,9 +45,7 @@ int         get_num_misc_names();
 const char* get_misc_name(unsigned num);
 void        Set_misc_name(unsigned num, const char* name);
 
-void Setup_text(
-		bool si, bool expansion, bool sibeta, Game_Language language,
-		bool use_special_chars = false);
+void Setup_text(bool si, bool expansion, bool sibeta, Game_Language language, bool use_special_chars = false);
 void Free_text();
 void Write_text_file();
 

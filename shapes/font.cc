@@ -65,8 +65,7 @@ static const char* Pass_space(const char* text) {
  */
 
 static const char* Pass_word(const char* text) {
-	while (*text && (*text != '^')
-		   && (!Is_space(*text) || (*text == '\f') || (*text == '\v'))) {
+	while (*text && (*text != '^') && (!Is_space(*text) || (*text == '\f') || (*text == '\v'))) {
 		text++;
 	}
 	return text;
@@ -94,9 +93,9 @@ int Font::paint_text_box(
 		bool           center,             // Center each line.
 		Cursor_info*   cursor,             // We set x, y if not nullptr.
 		unsigned char* trans) {
-	const char* start = text;    // Remember the start.
-	auto        clipsave       = win->SaveClip();	
-	auto        newclip = clipsave.Rect().intersect(TileRect(x, y, w, h));
+	const char* start    = text;    // Remember the start.
+	auto        clipsave = win->SaveClip();
+	auto        newclip  = clipsave.Rect().intersect(TileRect(x, y, w, h));
 	win->set_clip(newclip.x, newclip.y, newclip.w, newclip.h);
 
 	const int   endx           = x + w;    // Figure where to stop.
@@ -146,11 +145,7 @@ int Font::paint_text_box(
 				const int nsp = w / space_width;
 				lines[cur_line].append(nsp, ' ');
 				if (cursor && coff > text - start && coff < wrd - start) {
-					cursor->set_found(
-							curx
-									+ static_cast<uint32>(coff - (text - start))
-											  * space_width,
-							cury, cur_line);
+					cursor->set_found(curx + static_cast<uint32>(coff - (text - start)) * space_width, cury, cur_line);
 				}
 				curx += nsp * space_width;
 			}
@@ -176,11 +171,8 @@ int Font::paint_text_box(
 		const char* ewrd = Pass_word(text);
 		int         width;
 		if (ucase_next) {
-			const char c = static_cast<char>(
-					toupper(static_cast<unsigned char>(*text)));
-			width = get_text_width(&c, 1u)
-					+ get_text_width(
-							text + 1, static_cast<uint32>(ewrd - text - 1));
+			const char c = static_cast<char>(toupper(static_cast<unsigned char>(*text)));
+			width        = get_text_width(&c, 1u) + get_text_width(text + 1, static_cast<uint32>(ewrd - text - 1));
 		} else {
 			width = get_text_width(text, static_cast<uint32>(ewrd - text));
 		}
@@ -197,25 +189,18 @@ int Font::paint_text_box(
 			}
 		}
 		if (cursor && coff >= text - start && coff < ewrd - start) {
-			cursor->set_found(
-					curx
-							+ get_text_width(
-									text,
-									static_cast<uint32>(coff - (text - start))),
-					cury, cur_line);
+			cursor->set_found(curx + get_text_width(text, static_cast<uint32>(coff - (text - start))), cury, cur_line);
 		}
 		// Store word.
 		if (ucase_next) {
-			lines[cur_line].push_back(static_cast<char>(
-					toupper(static_cast<unsigned char>(*text))));
+			lines[cur_line].push_back(static_cast<char>(toupper(static_cast<unsigned char>(*text))));
 			++text;
 		}
 		lines[cur_line].append(text, ewrd - text);
 		curx += width;
 		text = ewrd;    // Continue past the word.
 		// Keep loc. of punct. endings.
-		if (text[-1] == '.' || text[-1] == '?' || text[-1] == '!'
-			|| text[-1] == ',' || text[-1] == '"') {
+		if (text[-1] == '.' || text[-1] == '?' || text[-1] == '!' || text[-1] == ',' || text[-1] == '"') {
 			last_punct_end    = text;
 			last_punct_line   = cur_line;
 			last_punct_offset = static_cast<int>(lines[cur_line].length());
@@ -278,14 +263,12 @@ int Font::paint_text(
 	if (font_shapes) {
 		int chr;
 		while ((chr = *text++) != 0) {
-			Shape_frame* shape
-					= font_shapes->get_frame(static_cast<unsigned char>(chr));
+			Shape_frame* shape = font_shapes->get_frame(static_cast<unsigned char>(chr));
 			if (!shape || !shape->is_rle()) {
 				auto oldflags = std::cerr.flags();
 
-				std::cerr << " unable to find rle frame for character '"
-						  << char(chr) << "' 0x" << std::hex << chr
-						  << " in font" << std::endl;
+				std::cerr << " unable to find rle frame for character '" << char(chr) << "' 0x" << std::hex << chr << " in font"
+						  << std::endl;
 				std::cerr.flags(oldflags);
 
 				continue;
@@ -319,14 +302,12 @@ int Font::paint_text(
 	if (font_shapes) {
 		while (textlen--) {
 			int          chr;
-			Shape_frame* shape = font_shapes->get_frame(
-					static_cast<unsigned char>(chr = *text++));
+			Shape_frame* shape = font_shapes->get_frame(static_cast<unsigned char>(chr = *text++));
 			if (!shape || !shape->is_rle()) {
 				auto oldflags = std::cerr.flags();
 
-				std::cerr << " unable to find rle frame for character '"
-						  << char(chr) << "' 0x" << std::hex << chr
-						  << " in font" << std::endl;
+				std::cerr << " unable to find rle frame for character '" << char(chr) << "' 0x" << std::hex << chr << " in font"
+						  << std::endl;
 				std::cerr.flags(oldflags);
 
 				continue;
@@ -439,16 +420,14 @@ int Font::paint_text_box_fixedwidth(
 
 		// Store word.
 		if (ucase_next) {
-			lines[cur_line].push_back(static_cast<char>(
-					toupper(static_cast<unsigned char>(*text))));
+			lines[cur_line].push_back(static_cast<char>(toupper(static_cast<unsigned char>(*text))));
 			++text;
 		}
 		lines[cur_line].append(text, ewrd - text);
 		curx += width;
 		text = ewrd;    // Continue past the word.
 		// Keep loc. of punct. endings.
-		if (text[-1] == '.' || text[-1] == '?' || text[-1] == '!'
-			|| text[-1] == ',' || text[-1] == '"') {
+		if (text[-1] == '.' || text[-1] == '?' || text[-1] == '!' || text[-1] == ',' || text[-1] == '"') {
 			last_punct_end    = text;
 			last_punct_line   = cur_line;
 			last_punct_offset = static_cast<int>(lines[cur_line].length());
@@ -502,13 +481,11 @@ int Font::paint_text_fixedwidth(
 	int chr;
 	yoff += get_text_baseline();
 	while ((chr = *text++) != 0) {
-		Shape_frame* shape
-				= font_shapes->get_frame(static_cast<unsigned char>(chr));
+		Shape_frame* shape = font_shapes->get_frame(static_cast<unsigned char>(chr));
 		if (!shape || !shape->is_rle()) {
 			auto oldflags = std::cerr.flags();
 
-			std::cerr << " unable to find rle frame for character '"
-					  << char(chr) << "' 0x" << std::hex << chr << " in font"
+			std::cerr << " unable to find rle frame for character '" << char(chr) << "' 0x" << std::hex << chr << " in font"
 					  << std::endl;
 			std::cerr.flags(oldflags);
 
@@ -545,12 +522,10 @@ int Font::paint_text_fixedwidth(
 	yoff += get_text_baseline();
 	while (textlen--) {
 		int          chr;
-		Shape_frame* shape = font_shapes->get_frame(
-				static_cast<unsigned char>(chr = *text++));
+		Shape_frame* shape = font_shapes->get_frame(static_cast<unsigned char>(chr = *text++));
 		if (!shape || !shape->is_rle()) {
 			auto oldflags = std::cerr.flags();
-			std::cerr << " unable to find rle frame for character '"
-					  << char(chr) << "' 0x" << std::hex << chr << " in font"
+			std::cerr << " unable to find rle frame for character '" << char(chr) << "' 0x" << std::hex << chr << " in font"
 					  << std::endl;
 
 			std::cerr.flags(oldflags);
@@ -576,8 +551,7 @@ int Font::get_text_width(const char* text) {
 	if (font_shapes) {
 		short chr;
 		while ((chr = *text++) != 0) {
-			Shape_frame* shape
-					= font_shapes->get_frame(static_cast<unsigned char>(chr));
+			Shape_frame* shape = font_shapes->get_frame(static_cast<unsigned char>(chr));
 			if (shape && shape->is_rle()) {
 				width += shape->get_width() + hor_lead;
 			}
@@ -597,8 +571,7 @@ int Font::get_text_width(
 	int width = 0;
 	if (font_shapes) {
 		while (textlen--) {
-			Shape_frame* shape = font_shapes->get_frame(
-					static_cast<unsigned char>(*text++));
+			Shape_frame* shape = font_shapes->get_frame(static_cast<unsigned char>(*text++));
 			if (shape && shape->is_rle()) {
 				width += shape->get_width() + hor_lead;
 			}
@@ -607,8 +580,7 @@ int Font::get_text_width(
 	return width;
 }
 
-void Font::get_text_box_dims(
-		const char* text, int& width, int& height, int vert_lead) {
+void Font::get_text_box_dims(const char* text, int& width, int& height, int vert_lead) {
 	width         = 0;
 	height        = 0;
 	int cur_width = 0;
@@ -622,8 +594,7 @@ void Font::get_text_box_dims(
 				width     = std::max(width, cur_width);
 				cur_width = 0;
 			}
-			Shape_frame* shape
-					= font_shapes->get_frame(static_cast<unsigned char>(chr));
+			Shape_frame* shape = font_shapes->get_frame(static_cast<unsigned char>(chr));
 			if (shape && shape->is_rle()) {
 				cur_width += shape->get_width() + hor_lead;
 			}
@@ -696,8 +667,7 @@ int Font::find_cursor(
 			continue;
 		case ' ':    // Space.
 		case '\t':
-			if (cy >= cury && cy < cury + height && cx >= curx
-				&& cx < curx + space_width) {
+			if (cy >= cury && cy < cury + height && cx >= curx && cx < curx + space_width) {
 				return static_cast<int>(text - start);
 			}
 			++text;
@@ -722,11 +692,8 @@ int Font::find_cursor(
 		const char* ewrd = Pass_word(text);
 		int         width;
 		if (ucase_next) {
-			const char c = static_cast<char>(
-					toupper(static_cast<unsigned char>(*text)));
-			width = get_text_width(&c, 1u)
-					+ get_text_width(
-							text + 1, static_cast<uint32>(ewrd - text - 1));
+			const char c = static_cast<char>(toupper(static_cast<unsigned char>(*text)));
+			width        = get_text_width(&c, 1u) + get_text_width(text + 1, static_cast<uint32>(ewrd - text - 1));
 		} else {
 			width = get_text_width(text, static_cast<uint32>(ewrd - text));
 		}
@@ -743,10 +710,8 @@ int Font::find_cursor(
 				break;    // No more room.
 			}
 		}
-		if (cy >= cury && cy < cury + height && cx >= curx
-			&& cx < curx + width) {
-			const int woff = find_xcursor(
-					text, static_cast<int>(ewrd - text), cx - curx);
+		if (cy >= cury && cy < cury + height && cx >= curx && cx < curx + width) {
+			const int woff = find_xcursor(text, static_cast<int>(ewrd - text), cx - curx);
 			if (woff >= 0) {
 				return static_cast<int>(text - start) + woff;
 			}
@@ -758,8 +723,7 @@ int Font::find_cursor(
 		cx >= curx && cx < x + w) {
 		return static_cast<int>(text - start);
 	}
-	return -static_cast<int>(
-			text - start);    // Failed, so indicate where we are.
+	return -static_cast<int>(text - start);    // Failed, so indicate where we are.
 }
 
 /*
@@ -776,8 +740,7 @@ int Font::find_xcursor(
 	const char* start = text;
 	int         curx  = 0;
 	while (textlen--) {
-		Shape_frame* shape
-				= font_shapes->get_frame(static_cast<unsigned char>(*text++));
+		Shape_frame* shape = font_shapes->get_frame(static_cast<unsigned char>(*text++));
 		if (shape && shape->is_rle()) {
 			const int w = shape->get_width() + hor_lead;
 			if (cx >= curx && cx < curx + w) {
@@ -795,9 +758,7 @@ Font::Font(const File_spec& fname0, int index, int hlead, int vlead) {
 	load(fname0, index, hlead, vlead);
 }
 
-Font::Font(
-		const File_spec& fname0, const File_spec& fname1, int index, int hlead,
-		int vlead) {
+Font::Font(const File_spec& fname0, const File_spec& fname1, int index, int hlead, int vlead) {
 	load(fname0, fname1, index, hlead, vlead);
 }
 
@@ -839,16 +800,13 @@ int Font::load(const File_spec& fname0, int index, int hlead, int vlead) {
 	return load_internal(data, hlead, vlead);
 }
 
-int Font::load(
-		const File_spec& fname0, const File_spec& fname1, int index, int hlead,
-		int vlead) {
+int Font::load(const File_spec& fname0, const File_spec& fname1, int index, int hlead, int vlead) {
 	clean_up();
 	IExultDataSource data(fname0, fname1, index);
 	return load_internal(data, hlead, vlead);
 }
 
-int Font::center_text(
-		Image_buffer8* win, int x, int y, const char* s, unsigned char* trans) {
+int Font::center_text(Image_buffer8* win, int x, int y, const char* s, unsigned char* trans) {
 	return draw_text(win, x - get_text_width(s) / 2, y, s, trans);
 }
 
@@ -890,9 +848,7 @@ FontManager::~FontManager() {
  *  @param hleah    Horizontal lead of the font.
  *  @param vleah    Vertical lead of the font.
  */
-void FontManager::add_font(
-		const char* name, const File_spec& fname0, int index, int hlead,
-		int vlead) {
+void FontManager::add_font(const char* name, const File_spec& fname0, int index, int hlead, int vlead) {
 	remove_font(name);
 
 	auto font = std::make_shared<Font>(fname0, index, hlead, vlead);
@@ -909,9 +865,7 @@ void FontManager::add_font(
  *  @param hleah    Horizontal lead of the font.
  *  @param vleah    Vertical lead of the font.
  */
-void FontManager::add_font(
-		const char* name, const File_spec& fname0, const File_spec& fname1,
-		int index, int hlead, int vlead) {
+void FontManager::add_font(const char* name, const File_spec& fname0, const File_spec& fname1, int index, int hlead, int vlead) {
 	remove_font(name);
 
 	auto font = std::make_shared<Font>(fname0, fname1, index, hlead, vlead);

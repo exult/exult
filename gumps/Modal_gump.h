@@ -36,13 +36,11 @@ protected:
 
 public:
 	Modal_gump(
-			Container_game_object* cont, int initx, int inity, int shnum,
-			ShapeFile shfile = SF_GUMPS_VGA, std::shared_ptr<Font> font = {});
+			Container_game_object* cont, int initx, int inity, int shnum, ShapeFile shfile = SF_GUMPS_VGA,
+			std::shared_ptr<Font> font = {});
 
 	// Create centered.
-	Modal_gump(
-			Container_game_object* cont, int shnum,
-			ShapeFile shfile = SF_GUMPS_VGA, std::shared_ptr<Font> font = {});
+	Modal_gump(Container_game_object* cont, int shnum, ShapeFile shfile = SF_GUMPS_VGA, std::shared_ptr<Font> font = {});
 
 	bool is_done() {
 		return done;
@@ -133,9 +131,7 @@ protected:
 	//! set shnum to -1 in the constructor Argument
 	//! and then call this funcion in the constructor. Do not call
 	//! Gump::set_object_area() to create the checkmark button
-	void SetProceduralBackground(
-			TileRect backrect, int Checkbg_paletteramp = -1,
-			bool centre_gump_on_screen = true);
+	void SetProceduralBackground(TileRect backrect, int Checkbg_paletteramp = -1, bool centre_gump_on_screen = true);
 
 	// Get the usable area of a gump with procedurally drawn background
 	// This is the same as backrect passed to SetProceduralBackground
@@ -161,8 +157,7 @@ public:
 	//! @param margin Right margin of gump
 	//! @param right_align If true right align the widgets
 	template <typename WidgetPointer>
-	void ResizeWidthToFitWidgets(
-			tcb::span<WidgetPointer> widgets, int margin = 4) {
+	void ResizeWidthToFitWidgets(tcb::span<WidgetPointer> widgets, int margin = 4) {
 		if (!procedural_background) {
 			return;
 		}
@@ -195,9 +190,7 @@ public:
 		for (auto& widget : widgets) {
 			if (widget) {
 				auto rect = widget->get_rect();
-				widget->set_pos(
-						usable_width - rect.w - margin + x_origin,
-						widget->get_y());
+				widget->set_pos(usable_width - rect.w - margin + x_origin, widget->get_y());
 			}
 		}
 	}
@@ -211,8 +204,7 @@ public:
 	//! @param min_gap Minimum gap between the widgets/
 	//! @param margin Left and right margin
 	template <typename WidgetPointer>
-	void HorizontalArrangeWidgets(
-			tcb::span<WidgetPointer> widgets, int min_gap = 8) {
+	void HorizontalArrangeWidgets(tcb::span<WidgetPointer> widgets, int min_gap = 8) {
 		if (!procedural_background) {
 			return;
 		}

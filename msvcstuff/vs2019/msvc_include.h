@@ -25,8 +25,7 @@
 
 // Disable some warnings
 #pragma warning(disable : 4786)    // Debug Len > 255
-#pragma warning( \
-		disable : 4355)    // 'this' : used in base member initializer list
+#pragma warning(disable : 4355)    // 'this' : used in base member initializer list
 
 #ifndef ENABLE_EXTRA_WARNINGS
 #	define _CRT_NONSTDC_NO_WARNINGS        1
@@ -105,8 +104,7 @@ inline int strncasecmp(const char* s1, const char* s2, size_t n) {
 	return _strnicmp(s1, s2, n);
 }
 
-
-// if we have getopt from vcpkg indicate it is available 
+// if we have getopt from vcpkg indicate it is available
 #if __has_include(<getopt.h>)
 #	define HAVE_GETOPT_LONG 1
 #endif

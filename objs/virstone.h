@@ -35,11 +35,8 @@ class Virtue_stone_object : public Ireg_game_object {
 	Tile_coord pos;    // Position it teleports to.
 	int        map;    // Map to teleport to.
 public:
-	Virtue_stone_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft)
-			: Ireg_game_object(shapenum, framenum, tilex, tiley, lft),
-			  pos(0, 0, 0), map(0) {}
+	Virtue_stone_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft)
+			: Ireg_game_object(shapenum, framenum, tilex, tiley, lft), pos(0, 0, 0), map(0) {}
 
 	Virtue_stone_object* as_virtstone() override {
 		return this;
@@ -53,9 +50,7 @@ public:
 		pos = t;
 	}
 
-	void set_target_pos(
-			unsigned char tilex, unsigned char tiley, unsigned char schunk,
-			unsigned char lift);
+	void set_target_pos(unsigned char tilex, unsigned char tiley, unsigned char schunk, unsigned char lift);
 
 	Tile_coord get_target_pos() {
 		return pos;

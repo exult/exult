@@ -43,8 +43,7 @@ public:
 	friend class Spellbook_gump;
 	// Create from ireg. data.
 	Spellbook_object(
-			int shapenum, int framenum, unsigned int shapex,
-			unsigned int shapey, unsigned int lft, unsigned char* c,
+			int shapenum, int framenum, unsigned int shapex, unsigned int shapey, unsigned int lft, unsigned char* c,
 			unsigned char bmark);
 
 	Spellbook_object* as_spellbook() override {
@@ -73,13 +72,11 @@ public:
 	}
 
 	// Do the spell.
-	bool do_spell(
-			Actor* act, int spell, bool can_do = false, bool in_combat = false);
+	bool do_spell(Actor* act, int spell, bool can_do = false, bool in_combat = false);
 
 	// Do bookmarked spell.
 	bool do_spell(Actor* act, bool in_combat = false) {
-		return bookmark >= 0 ? do_spell(act, bookmark, false, in_combat)
-							 : false;
+		return bookmark >= 0 ? do_spell(act, bookmark, false, in_combat) : false;
 	}
 
 	static void execute_spell(Actor* act, int spell, bool in_combat = false);

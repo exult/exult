@@ -25,9 +25,7 @@ namespace Pentagram {
 
 	class RawAudioSample : public AudioSample {
 	public:
-		RawAudioSample(
-				std::unique_ptr<uint8[]> buffer, uint32 size, uint32 rate,
-				bool signeddata, bool stereo);
+		RawAudioSample(std::unique_ptr<uint8[]> buffer, uint32 size, uint32 rate, bool signeddata, bool stereo);
 		void   initDecompressor(void* DecompData) const override;
 		uint32 decompressFrame(void* DecompData, void* samples) const override;
 		void   freeDecompressor(void* DecompData) const override;

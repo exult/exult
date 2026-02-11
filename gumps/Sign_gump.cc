@@ -99,8 +99,7 @@ void Sign_gump::add_text(int line, const std::string& txt) {
 			} else if (ch == '|') {
 				lines[line] += ' ';
 			} else {
-				lines[line] += static_cast<char>(
-						std::toupper(static_cast<unsigned char>(ch)));
+				lines[line] += static_cast<char>(std::toupper(static_cast<unsigned char>(ch)));
 			}
 		}
 	} else {
@@ -138,11 +137,7 @@ void Sign_gump::paint() {
 			continue;
 		}
 		sman->paint_text(
-				font, lines[i].c_str(),
-				x + object_area.x
-						+ (object_area.w
-						   - sman->get_text_width(font, lines[i].c_str()))
-								  / 2,
+				font, lines[i].c_str(), x + object_area.x + (object_area.w - sman->get_text_width(font, lines[i].c_str())) / 2,
 				ypos);
 		ypos += lheight;
 	}

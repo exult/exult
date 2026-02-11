@@ -178,8 +178,7 @@ static int Find_runs(
 				x++;
 				pixels++;
 				run += 2;    // So we don't have to shift.
-			} while (x < w && *pixels != 255
-					 && (x == w - 1 || pixels[0] != pixels[1]));
+			} while (x < w && *pixels != 255 && (x == w - 1 || pixels[0] != pixels[1]));
 		}
 		// Store run length.
 		runs[runcnt++] = run;
@@ -339,8 +338,7 @@ unique_ptr<unsigned char[]> Shape_frame::encode_rle(
 	datalen = out - buf.data();       // Create buffer of correct size.
 #ifdef DEBUG
 	if (datalen > w * h * 2 + 16 * h) {
-		cout << "create_rle: datalen: " << datalen << " w: " << w << " h: " << h
-			 << endl;
+		cout << "create_rle: datalen: " << datalen << " w: " << w << " h: " << h << endl;
 	}
 #endif
 	auto data = make_unique<unsigned char[]>(datalen);
@@ -360,8 +358,7 @@ Shape_frame::Shape_frame(
 		int xoff, int yoff,       // Xleft, yabove.
 		bool setrle               // Run-length-encode.
 		)
-		: xleft(xoff), xright(w - xoff - 1), yabove(yoff), ybelow(h - yoff - 1),
-		  rle(setrle) {
+		: xleft(xoff), xright(w - xoff - 1), yabove(yoff), ybelow(h - yoff - 1), rle(setrle) {
 	if (!rle) {
 		assert(w == c_tilesize && h == c_tilesize);
 		datalen = c_num_tile_bytes;
@@ -382,8 +379,7 @@ Shape_frame::Shape_frame(
 		int xoff, int yoff,                    // Xleft, yabove.
 		bool setrle                            // Run-length-encode.
 		)
-		: xleft(xoff), xright(w - xoff - 1), yabove(yoff), ybelow(h - yoff - 1),
-		  rle(setrle) {
+		: xleft(xoff), xright(w - xoff - 1), yabove(yoff), ybelow(h - yoff - 1), rle(setrle) {
 	if (!rle) {
 		assert(w == c_tilesize && h == c_tilesize);
 		datalen = c_num_tile_bytes;
@@ -416,8 +412,7 @@ unsigned int Shape_frame::read(
 	const uint32 hdrlen = shapes->read4();
 	// it's a rle shape if dlen equals the filesize, or if the filesize is 16bit
 	// aligned and dlen equals filesize-1
-	if (dlen == shapelen
-		|| (shapelen && !(shapelen & 1) && dlen == shapelen - 1)) {
+	if (dlen == shapelen || (shapelen && !(shapelen & 1) && dlen == shapelen - 1)) {
 		rle = true;    // It's run-length-encoded.
 		// Figure # frames.
 		const int nframes = (hdrlen - 4) / 4;
@@ -429,8 +424,7 @@ unsigned int Shape_frame::read(
 		uint32 framelen;
 		if (framenum == 0) {
 			frameoff = hdrlen;
-			framelen = nframes > 1 ? shapes->read4() - frameoff
-								   : dlen - frameoff;
+			framelen = nframes > 1 ? shapes->read4() - frameoff : dlen - frameoff;
 		} else {
 			shapes->skip((framenum - 1) * 4);
 			frameoff = shapes->read4();
@@ -494,8 +488,7 @@ void Shape_frame::paint_rle(
 
 	const int w = get_width();
 	const int h = get_height();
-	if (w >= c_tilesize
-		|| h >= c_tilesize) {    // Big enough to check?  Off screen?
+	if (w >= c_tilesize || h >= c_tilesize) {    // Big enough to check?  Off screen?
 		if (!win->is_visible(xoff - xleft, yoff - yabove, w, h)) {
 			return;
 		}
@@ -516,8 +509,7 @@ void Shape_frame::paint_rle_remapped(
 
 	const int w = get_width();
 	const int h = get_height();
-	if (w >= c_tilesize
-		|| h >= c_tilesize) {    // Big enough to check?  Off screen?
+	if (w >= c_tilesize || h >= c_tilesize) {    // Big enough to check?  Off screen?
 		if (!win->is_visible(xoff - xleft, yoff - yabove, w, h)) {
 			return;
 		}
@@ -537,9 +529,7 @@ void Shape_frame::paint(
 	if (rle) {
 		paint_rle(win, xoff, yoff);
 	} else {
-		win->copy8(
-				data.get(), c_tilesize, c_tilesize, xoff - c_tilesize,
-				yoff - c_tilesize);
+		win->copy8(data.get(), c_tilesize, c_tilesize, xoff - c_tilesize, yoff - c_tilesize);
 	}
 }
 
@@ -557,8 +547,7 @@ void Shape_frame::paint_rle_translucent(
 
 	const int w = get_width();
 	const int h = get_height();
-	if (w >= c_tilesize
-		|| h >= c_tilesize) {    // Big enough to check?  Off screen?
+	if (w >= c_tilesize || h >= c_tilesize) {    // Big enough to check?  Off screen?
 		if (!win->is_visible(xoff - xleft, yoff - yabove, w, h)) {
 			return;
 		}
@@ -574,9 +563,7 @@ void Shape_frame::paint_rle_translucent(
 		const short scanx = little_endian::Read2(in);
 		const short scany = little_endian::Read2(in);
 		if (!encoded) {    // Raw data?
-			win->copy_hline_translucent8(
-					in, scanlen, xoff + scanx, yoff + scany, xfstart, 0xfe,
-					xforms);
+			win->copy_hline_translucent8(in, scanlen, xoff + scanx, yoff + scany, xfstart, 0xfe, xforms);
 			in += scanlen;
 			continue;
 		}
@@ -588,16 +575,12 @@ void Shape_frame::paint_rle_translucent(
 			if (repeat) {
 				const unsigned char pix = Read1(in);
 				if (pix >= xfstart && pix <= 0xfe) {
-					win->fill_hline_translucent8(
-							pix, bcnt, xoff + scanx + b, yoff + scany,
-							xforms[pix - xfstart]);
+					win->fill_hline_translucent8(pix, bcnt, xoff + scanx + b, yoff + scany, xforms[pix - xfstart]);
 				} else {
 					win->fill_hline8(pix, bcnt, xoff + scanx + b, yoff + scany);
 				}
 			} else {    // Get that # of bytes.
-				win->copy_hline_translucent8(
-						in, bcnt, xoff + scanx + b, yoff + scany, xfstart, 0xfe,
-						xforms);
+				win->copy_hline_translucent8(in, bcnt, xoff + scanx + b, yoff + scany, xfstart, 0xfe, xforms);
 				in += bcnt;
 			}
 			b += bcnt;
@@ -619,8 +602,7 @@ void Shape_frame::paint_rle_transformed(
 
 	const int w = get_width();
 	const int h = get_height();
-	if (w >= c_tilesize
-		|| h >= c_tilesize) {    // Big enough to check?  Off screen?
+	if (w >= c_tilesize || h >= c_tilesize) {    // Big enough to check?  Off screen?
 		if (!win->is_visible(xoff - xleft, yoff - yabove, w, h)) {
 			return;
 		}
@@ -635,8 +617,7 @@ void Shape_frame::paint_rle_transformed(
 		const short scany = little_endian::Read2(in);
 		if (!encoded) {    // Raw data?
 			// (Note: 1st parm is ignored).
-			win->fill_hline_translucent8(
-					0, scanlen, xoff + scanx, yoff + scany, xform);
+			win->fill_hline_translucent8(0, scanlen, xoff + scanx, yoff + scany, xform);
 			in += scanlen;
 			continue;
 		}
@@ -646,8 +627,7 @@ void Shape_frame::paint_rle_transformed(
 			const int repeat = bcnt & 1;
 			bcnt             = bcnt >> 1;    // Get count.
 			in += repeat ? 1 : bcnt;
-			win->fill_hline_translucent8(
-					0, bcnt, xoff + scanx + b, yoff + scany, xform);
+			win->fill_hline_translucent8(0, bcnt, xoff + scanx + b, yoff + scany, xform);
 			b += bcnt;
 		}
 	}
@@ -666,8 +646,7 @@ void Shape_frame::paint_rle_outline(
 
 	const int w = get_width();
 	const int h = get_height();
-	if (w >= c_tilesize
-		|| h >= c_tilesize) {    // Big enough to check?  Off screen?
+	if (w >= c_tilesize || h >= c_tilesize) {    // Big enough to check?  Off screen?
 		if (!win->is_visible(xoff - xleft, yoff - yabove, w, h)) {
 			return;
 		}
@@ -821,11 +800,10 @@ void Shape_frame::set_offset(int new_xright, int new_ybelow) {
  */
 
 Shape_frame* Shape::reflect(
-		const vector<pair<unique_ptr<IDataSource>, bool>>&
-						   shapes,      // shapes data source to read.
-		int                shapenum,    // Shape #.
-		int                framenum,    // Frame # without the 'reflect' bit.
-		const vector<int>& counts) {
+		const vector<pair<unique_ptr<IDataSource>, bool>>& shapes,      // shapes data source to read.
+		int                                                shapenum,    // Shape #.
+		int                                                framenum,    // Frame # without the 'reflect' bit.
+		const vector<int>&                                 counts) {
 	// Get normal frame.
 	Shape_frame* normal = get(shapes, shapenum, framenum, counts);
 	if (!normal) {
@@ -875,12 +853,11 @@ inline void Shape::create_frames_list(int nframes) {
  */
 
 Shape_frame* Shape::read(
-		const vector<pair<unique_ptr<IDataSource>, bool>>&
-						   shapes,      // Shapes data source to read.
-		int                shapenum,    // Shape #.
-		int                framenum,    // Frame # within shape.
-		const vector<int>& counts,      // Number of shapes in files.
-		int                src) {
+		const vector<pair<unique_ptr<IDataSource>, bool>>& shapes,      // Shapes data source to read.
+		int                                                shapenum,    // Shape #.
+		int                                                framenum,    // Frame # within shape.
+		const vector<int>&                                 counts,      // Number of shapes in files.
+		int                                                src) {
 	IDataSource* shp = nullptr;
 	// Figure offset in "shapes.vga".
 	uint32 shapeoff = 0x80 + shapenum * 8;
@@ -996,12 +973,10 @@ Shape_frame* Shape::store_frame(
 		int                     framenum    // It's frame #.
 ) {
 	if (framenum < 0) {    // Something fishy?
-		cerr << "Shape::store_frame:  framenum < 0 (" << framenum
-			 << " >= " << frames.size() << ")" << endl;
+		cerr << "Shape::store_frame:  framenum < 0 (" << framenum << " >= " << frames.size() << ")" << endl;
 		return nullptr;
 	} else if (size_t(framenum) >= frames.size()) {    // Something fishy?
-		cerr << "Shape::store_frame:  framenum >= frames.size() (" << framenum
-			 << " >= " << frames.size() << ")" << endl;
+		cerr << "Shape::store_frame:  framenum >= frames.size() (" << framenum << " >= " << frames.size() << ")" << endl;
 		return nullptr;
 	}
 	if (frames.empty()) {    // First one?
@@ -1074,8 +1049,7 @@ void Shape::add_frame(
 		unique_ptr<Shape_frame> frame,      // Must be allocated.
 		int                     framenum    // Insert here.
 ) {
-	assert(framenum >= 0
-		   && static_cast<unsigned>(framenum) <= num_frames);    // Can append.
+	assert(framenum >= 0 && static_cast<unsigned>(framenum) <= num_frames);    // Can append.
 	frames.emplace(frames.begin() + framenum, std::move(frame));
 	num_frames++;
 	modified = true;
@@ -1184,9 +1158,7 @@ bool Vga_file::load(const char* nm, const char* nm2, bool resetimports) {
 	return load(src, resetimports);
 }
 
-IDataSource* Vga_file::U7load(
-		const pair<string, int>&                     resource,
-		vector<pair<unique_ptr<IDataSource>, bool>>& shps) {
+IDataSource* Vga_file::U7load(const pair<string, int>& resource, vector<pair<unique_ptr<IDataSource>, bool>>& shps) {
 	unique_ptr<IDataSource> source;
 	bool                    is_patch = false;
 	if (resource.second < 0) {
@@ -1195,7 +1167,7 @@ IDataSource* Vga_file::U7load(
 		is_patch = !resource.first.compare(0, 7, "<PATCH>");
 	} else {
 		// It is a resource.
-		source = make_unique<IExultDataSource>(resource.first, resource.second);
+		source   = make_unique<IExultDataSource>(resource.first, resource.second);
 		is_patch = false;
 	}
 	if (!source->good()) {
@@ -1208,8 +1180,7 @@ IDataSource* Vga_file::U7load(
 	}
 }
 
-bool Vga_file::load(
-		const vector<pair<string, int>>& sources, bool resetimports) {
+bool Vga_file::load(const vector<pair<string, int>>& sources, bool resetimports) {
 	reset();
 	if (resetimports) {
 		reset_imports();
@@ -1263,9 +1234,7 @@ bool Vga_file::get_imported_shape_data(int shnum, imported_map& data) {
 	return false;
 }
 
-bool Vga_file::import_shapes(
-		const pair<string, int>&      source,
-		const vector<pair<int, int>>& imports) {
+bool Vga_file::import_shapes(const pair<string, int>& source, const vector<pair<int, int>>& imports) {
 	reset_imports();
 	IDataSource* ds = U7load(source, imported_sources);
 	if (ds) {

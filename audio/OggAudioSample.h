@@ -50,16 +50,15 @@ namespace Pentagram {
 		OggAudioSample(std::unique_ptr<IDataSource> oggdata);
 		OggAudioSample(std::unique_ptr<uint8[]> buffer, uint32 size);
 
-		void   initDecompressor(void* DecompData) const override;
-		uint32 decompressFrame(void* DecompData, void* samples) const override;
-		void   freeDecompressor(void* DecompData) const override;
-		void   rewind(void* DecompData) const override;
+		void                initDecompressor(void* DecompData) const override;
+		uint32              decompressFrame(void* DecompData, void* samples) const override;
+		void                freeDecompressor(void* DecompData) const override;
+		void                rewind(void* DecompData) const override;
 		static ov_callbacks callbacks;
 
-		static size_t read_func(
-				void* ptr, size_t size, size_t nmemb, void* datasource);
-		static int  seek_func(void* datasource, ogg_int64_t offset, int whence);
-		static long tell_func(void* datasource);
+		static size_t read_func(void* ptr, size_t size, size_t nmemb, void* datasource);
+		static int    seek_func(void* datasource, ogg_int64_t offset, int whence);
+		static long   tell_func(void* datasource);
 
 		static bool isThis(IDataSource* oggdata);
 

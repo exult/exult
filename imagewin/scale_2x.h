@@ -41,8 +41,7 @@ void Scale2x_noblur(
 );
 
 template <class Dest_pixel>
-static inline void cycle_buffers(
-		Dest_pixel*& b1, Dest_pixel*& b2, Dest_pixel*& b3) {
+static inline void cycle_buffers(Dest_pixel*& b1, Dest_pixel*& b2, Dest_pixel*& b3) {
 	std::swap(b1, b2);
 	std::swap(b2, b3);
 }
@@ -151,26 +150,22 @@ void Scale2x_noblur(
 		}
 		// Middle pixels.
 		while (src1 < limit_x) {
-			if (src1[-1] == src0[0] && src2[0] != src0[0]
-				&& src1[1] != src0[0]) {
+			if (src1[-1] == src0[0] && src2[0] != src0[0] && src1[1] != src0[0]) {
 				dest0[0] = src0[0];
 			} else {
 				dest0[0] = src1[0];
 			}
-			if (src1[1] == src0[0] && src2[0] != src0[0]
-				&& src1[-1] != src0[0]) {
+			if (src1[1] == src0[0] && src2[0] != src0[0] && src1[-1] != src0[0]) {
 				dest0[1] = src0[0];
 			} else {
 				dest0[1] = src1[0];
 			}
-			if (src1[-1] == src2[0] && src0[0] != src2[0]
-				&& src1[1] != src2[0]) {
+			if (src1[-1] == src2[0] && src0[0] != src2[0] && src1[1] != src2[0]) {
 				dest1[0] = src2[0];
 			} else {
 				dest1[0] = src1[0];
 			}
-			if (src1[1] == src2[0] && src0[0] != src2[0]
-				&& src1[-1] != src2[0]) {
+			if (src1[1] == src2[0] && src0[0] != src2[0] && src1[-1] != src2[0]) {
 				dest1[1] = src2[0];
 			} else {
 				dest1[1] = src1[0];
@@ -278,26 +273,22 @@ void Scale2x_noblur(
 		}
 		// Middle pixels.
 		while (src1 < limit_x) {
-			if (src1[-1] == src0[0] && src2[0] != src0[0]
-				&& src1[1] != src0[0]) {
+			if (src1[-1] == src0[0] && src2[0] != src0[0] && src1[1] != src0[0]) {
 				dest0[0] = manip.copy(src0[0]);
 			} else {
 				dest0[0] = manip.copy(src1[0]);
 			}
-			if (src1[1] == src0[0] && src2[0] != src0[0]
-				&& src1[-1] != src0[0]) {
+			if (src1[1] == src0[0] && src2[0] != src0[0] && src1[-1] != src0[0]) {
 				dest0[1] = manip.copy(src0[0]);
 			} else {
 				dest0[1] = manip.copy(src1[0]);
 			}
-			if (src1[-1] == src2[0] && src0[0] != src2[0]
-				&& src1[1] != src2[0]) {
+			if (src1[-1] == src2[0] && src0[0] != src2[0] && src1[1] != src2[0]) {
 				dest1[0] = manip.copy(src2[0]);
 			} else {
 				dest1[0] = manip.copy(src1[0]);
 			}
-			if (src1[1] == src2[0] && src0[0] != src2[0]
-				&& src1[-1] != src2[0]) {
+			if (src1[1] == src2[0] && src0[0] != src2[0] && src1[-1] != src2[0]) {
 				dest1[1] = manip.copy(src2[0]);
 			} else {
 				dest1[1] = manip.copy(src1[0]);

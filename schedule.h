@@ -50,7 +50,7 @@ protected:
 	int        street_maintenance_failures;     // # times failed to find path.
 	long       street_maintenance_time;         // Time (msecs) when last tried.
 	bool       interrupted_for_bell = false;    // Currently responding to bell.
-	Tile_coord pre_interrupt_pos;    // Position before bell interrupt.
+	Tile_coord pre_interrupt_pos;               // Position before bell interrupt.
 
 	// Handle the bell interrupt state machine. Returns true if still
 	// interrupted.
@@ -122,15 +122,12 @@ public:
 	// Set actor to walk somewhere, then
 	//   do something.
 	static void set_action_sequence(
-			Actor* actor, const Tile_coord& dest, Actor_action* when_there,
-			bool from_off_screen = false, int delay = 0);
-	static Game_object* set_procure_item_action(
-			Actor* actor, Game_object* obj, int dist, int shnum, int frnum);
-	static bool set_pickup_item_action(
-			Actor* actor, Game_object* obj, int delay);
+			Actor* actor, const Tile_coord& dest, Actor_action* when_there, bool from_off_screen = false, int delay = 0);
+	static Game_object* set_procure_item_action(Actor* actor, Game_object* obj, int dist, int shnum, int frnum);
+	static bool         set_pickup_item_action(Actor* actor, Game_object* obj, int delay);
 	static Game_object* find_nearest(Actor* actor, Game_object_vector& nearby);
-	int          try_street_maintenance();    // Handle street-lamps, shutters.
-	virtual void now_what() = 0;              // Npc calls this when it's done
+	int                 try_street_maintenance();    // Handle street-lamps, shutters.
+	virtual void        now_what() = 0;              // Npc calls this when it's done
 	//   with its last task.
 	virtual void im_dormant();    // Npc calls this when it goes from
 
@@ -165,8 +162,8 @@ public:
  *	A schedule that creates objects that need to be cleaned up after.
  */
 class Schedule_with_objects : public Schedule {
-	std::vector<Game_object_weak> created;    // Items we created.
-	Game_object_weak current_item;            // One we're using/walking to.
+	std::vector<Game_object_weak> created;         // Items we created.
+	Game_object_weak              current_item;    // One we're using/walking to.
 protected:
 	Game_object* get_current_item() {
 		return current_item.lock().get();
@@ -270,16 +267,13 @@ class Pace_schedule : public Schedule {
 	Tile_coord loc;      // The starting position of the schedule
 	int        phase;    // Current phase
 public:
-	Pace_schedule(Actor* n, char dir, const Tile_coord& pos)
-			: Schedule(n), which(dir), loc(pos), phase(0) {}
+	Pace_schedule(Actor* n, char dir, const Tile_coord& pos) : Schedule(n), which(dir), loc(pos), phase(0) {}
 
 	// Create common schedules:
 	static std::unique_ptr<Pace_schedule> create_horiz(Actor* n);
 	static std::unique_ptr<Pace_schedule> create_vert(Actor* n);
-	static void                           pace(
-									  Actor* npc, char& which, int& phase, Tile_coord& blocked,
-									  int delay);
-	void now_what() override;    // Now what should NPC do?
+	static void                           pace(Actor* npc, char& which, int& phase, Tile_coord& blocked, int delay);
+	void                                  now_what() override;    // Now what should NPC do?
 };
 
 /*
@@ -329,18 +323,18 @@ class Patrol_schedule : public Schedule {
 	};
 
 	static int                num_path_eggs;
-	std::vector<Game_object*> paths;       // Each 'path' object.
-	int                       pathnum;     // # of next we're heading towards.
-	int                       dir;         // 1 or -1;
-	int                       state;       // The patrol state.
-	Tile_coord                center;      // For 'loiter' and 'pace' path eggs.
-	char                      whichdir;    // For 'pace' path eggs.
-	int                       phase;       // For 'pace' path eggs.
-	int                       pace_count;    // For 'pace' path eggs.
-	Game_object_weak          hammer;        // For 'hammer' path eggs.
-	Game_object_weak          book;          // For 'read' path eggs.
-	bool seek_combat;    // The NPC should seek enemies while patrolling.
-	bool forever;        // If should keep executing last path egg.
+	std::vector<Game_object*> paths;          // Each 'path' object.
+	int                       pathnum;        // # of next we're heading towards.
+	int                       dir;            // 1 or -1;
+	int                       state;          // The patrol state.
+	Tile_coord                center;         // For 'loiter' and 'pace' path eggs.
+	char                      whichdir;       // For 'pace' path eggs.
+	int                       phase;          // For 'pace' path eggs.
+	int                       pace_count;     // For 'pace' path eggs.
+	Game_object_weak          hammer;         // For 'hammer' path eggs.
+	Game_object_weak          book;           // For 'read' path eggs.
+	bool                      seek_combat;    // The NPC should seek enemies while patrolling.
+	bool                      forever;        // If should keep executing last path egg.
 public:
 	Patrol_schedule(Actor* n);
 	void now_what() override;              // Now what should NPC do?
@@ -432,8 +426,7 @@ protected:
 	void             get_tool();
 
 public:
-	Tool_schedule(Actor* n, int shnum)
-			: Loiter_schedule(n, 12), toolshape(shnum) {}
+	Tool_schedule(Actor* n, int shnum) : Loiter_schedule(n, 12), toolshape(shnum) {}
 
 	void now_what() override = 0;         // Now what should NPC do?
 	void ending(int newtype) override;    // Switching to another schedule.
@@ -456,9 +449,7 @@ class Farmer_schedule : public Tool_schedule {
 	} state;
 
 public:
-	Farmer_schedule(Actor* n)
-			: Tool_schedule(n, 618), grow_cnt(0), frame_group0(-1),
-			  state(start) {}
+	Farmer_schedule(Actor* n) : Tool_schedule(n, 618), grow_cnt(0), frame_group0(-1), state(start) {}
 
 	void now_what() override;    // Now what should NPC do?
 
@@ -544,9 +535,7 @@ public:
 	void        now_what() override;      // Now what should NPC do?
 	void        im_dormant() override;    // Just went dormant.
 	static bool is_occupied(Game_object* chairobj, Actor* actor);
-	static bool set_action(
-			Actor* actor, Game_object* chairobj = nullptr, int delay = 0,
-			Game_object** chair_found = nullptr);
+	static bool set_action(Actor* actor, Game_object* chairobj = nullptr, int delay = 0, Game_object** chair_found = nullptr);
 };
 
 /*
@@ -639,16 +628,15 @@ public:
  *  Wait tables.
  */
 class Waiter_schedule : public Schedule_with_objects {
-	Tile_coord          startpos;      // Starting position.
-	Actor*              customer;      // Current customer.
-	Game_object_weak    prep_table;    // Table we're working at.
-	bool                cooking;
-	std::vector<Actor*> customers;                // List of customers.
-	std::vector<Actor*> customers_ordered;        // Taken orders from these.
-	std::vector<Game_object_weak> prep_tables;    // Prep. tables.
-	std::vector<Game_object_weak> counters;       // Places to hang out.
-	std::vector<Game_object_weak>
-			eating_tables;    // Tables with chairs around them.
+	Tile_coord                    startpos;      // Starting position.
+	Actor*                        customer;      // Current customer.
+	Game_object_weak              prep_table;    // Table we're working at.
+	bool                          cooking;
+	std::vector<Actor*>           customers;            // List of customers.
+	std::vector<Actor*>           customers_ordered;    // Taken orders from these.
+	std::vector<Game_object_weak> prep_tables;          // Prep. tables.
+	std::vector<Game_object_weak> counters;             // Places to hang out.
+	std::vector<Game_object_weak> eating_tables;        // Tables with chairs around them.
 	std::vector<Game_object_weak> unattended_plates;
 
 	enum {
@@ -753,19 +741,19 @@ class Bake_schedule : public Schedule {
 	bool             clearing;
 
 	enum {
-		find_leftovers,    // Look for misplaced dough already made by this
-						   // schedule
-		to_flour,          // Looks for flourbag and walks to it if found
-		get_flour,         // Bend over flourbag and change the frame to zero if
-						   // nonzero
-		to_table,          // Walk over to worktable and create flour
-		make_dough,        // Changes flour to flat dough then dough ball
+		find_leftovers,      // Look for misplaced dough already made by this
+							 // schedule
+		to_flour,            // Looks for flourbag and walks to it if found
+		get_flour,           // Bend over flourbag and change the frame to zero if
+							 // nonzero
+		to_table,            // Walk over to worktable and create flour
+		make_dough,          // Changes flour to flat dough then dough ball
 		remove_from_oven,    // Changes dough in oven to food %7 and picks it up
 		display_wares,       // Walk to displaytable. Put food on it. If table
 							 // full, go to
 		// clear_display which eventualy comes back here to place food
 		clear_display,    // Mark food for deletion by remove_food
-		remove_food,    // Delete food on display table one by one with a slight
+		remove_food,      // Delete food on display table one by one with a slight
 						// delay
 		get_dough,     // Walk to work table and pick up dough
 		put_in_oven    // Walk to oven and put dough on in.
@@ -860,8 +848,7 @@ class Walk_to_schedule : public Schedule {
 	void walk_off_screen(TileRect& screen, Tile_coord& goal);
 
 public:
-	Walk_to_schedule(
-			Actor* n, const Tile_coord& d, int new_sched, int delay = -1);
+	Walk_to_schedule(Actor* n, const Tile_coord& d, int new_sched, int delay = -1);
 	void now_what() override;      // Now what should NPC do?
 	void im_dormant() override;    // Just went dormant.
 	// For Usecode intrinsic.
@@ -873,17 +860,15 @@ public:
  */
 class Schedule_change {
 	static std::vector<std::string> script_names;    // For Scripted_schedule's.
-	unsigned char time = 0;       // Time*3hours when this takes effect.
-	unsigned char type = 0;       // Schedule_type value.
-	unsigned char days = 0x7f;    // A bit for each day (0-6).  We don't
+	unsigned char                   time = 0;        // Time*3hours when this takes effect.
+	unsigned char                   type = 0;        // Schedule_type value.
+	unsigned char                   days = 0x7f;     // A bit for each day (0-6).  We don't
 	//   yet use this.
 	Tile_coord pos;    // Location.
 public:
 	Schedule_change() = default;
 
-	Schedule_change(
-			unsigned char time_, unsigned char type_, const Tile_coord& pos_)
-			: time(time_), type(type_), pos(pos_) {}
+	Schedule_change(unsigned char time_, unsigned char type_, const Tile_coord& pos_) : time(time_), type(type_), pos(pos_) {}
 
 	static void clear();
 
@@ -891,8 +876,8 @@ public:
 		return script_names;
 	}
 
-	void set4(const unsigned char* ent);    // Create from 4-byte entry.
-	void set8(const unsigned char* ent);    // Create from Exult entry (v. -1).
+	void set4(const unsigned char* ent);      // Create from 4-byte entry.
+	void set8(const unsigned char* ent);      // Create from Exult entry (v. -1).
 	void write8(unsigned char* ent) const;    // Write out 8-byte Exult entry.
 	void set(int ax, int ay, int az, unsigned char stype, unsigned char stime);
 
@@ -909,10 +894,7 @@ public:
 	}
 
 	static const char* get_script_name(int ty) {
-		return ty >= Schedule::first_scripted_schedule
-					   ? script_names[ty - Schedule::first_scripted_schedule]
-								 .c_str()
-					   : nullptr;
+		return ty >= Schedule::first_scripted_schedule ? script_names[ty - Schedule::first_scripted_schedule].c_str() : nullptr;
 	}
 };
 

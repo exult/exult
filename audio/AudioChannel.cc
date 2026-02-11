@@ -58,8 +58,7 @@ namespace Pentagram {
 // floating point, we approximate that by 27/32
 #define RANGE_REDUX(x) (((x) * 27) >> 5)
 
-	AudioChannel::AudioChannel(uint32 sample_rate_, bool stereo_)
-			: sample_rate(sample_rate_), stereo(stereo_) {}
+	AudioChannel::AudioChannel(uint32 sample_rate_, bool stereo_) : sample_rate(sample_rate_), stereo(stereo_) {}
 
 	AudioChannel::~AudioChannel() {
 		if (sample && playdata) {
@@ -76,22 +75,17 @@ namespace Pentagram {
 	inline char* formatTicks() {
 		static char formattedTicks[32];
 		uint64      ticks = SDL_GetTicks();
-		snprintf(
-				formattedTicks, 32, "[ %5u.%03u ] ",
-				static_cast<uint32>(ticks / 1000),
-				static_cast<uint32>(ticks % 1000));
+		snprintf(formattedTicks, 32, "[ %5u.%03u ] ", static_cast<uint32>(ticks / 1000), static_cast<uint32>(ticks % 1000));
 		return formattedTicks;
 	}
 #endif
 
 	void AudioChannel::playSample(
-			AudioSample* sample_, int loop_, int priority_, bool paused_,
-			uint32 pitch_shift_, int lvol_, int rvol_, sint32 instance_id_) {
+			AudioSample* sample_, int loop_, int priority_, bool paused_, uint32 pitch_shift_, int lvol_, int rvol_,
+			sint32 instance_id_) {
 #ifdef DEBUG
-		std::cout << formatTicks() << "AudioChannel::playSample, volume left "
-				  << lvol_ << " right " << rvol_ << " sample rate "
-				  << sample_->getRate() << " Hz -> " << sample_rate << " Hz"
-				  << std::endl;
+		std::cout << formatTicks() << "AudioChannel::playSample, volume left " << lvol_ << " right " << rvol_ << " sample rate "
+				  << sample_->getRate() << " Hz -> " << sample_rate << " Hz" << std::endl;
 #endif
 		stop();
 		sample = sample_;
@@ -119,12 +113,10 @@ namespace Pentagram {
 			return ((val + maxalign - 1) / maxalign) * maxalign;
 		};
 		// Persistent data for the decompressor
-		const size_t decompressor_size
-				= round_up(sample->getDecompressorDataSize());
+		const size_t decompressor_size  = round_up(sample->getDecompressorDataSize());
 		const size_t frame_size         = round_up(sample->getFrameSize());
 		const size_t decompressor_align = sample->getDecompressorAlignment();
-		const size_t new_size
-				= decompressor_size + frame_size * 2 + decompressor_align;
+		const size_t new_size           = decompressor_size + frame_size * 2 + decompressor_align;
 
 		// Setup buffers
 		if (new_size > playdata_size) {
@@ -184,36 +176,26 @@ namespace Pentagram {
 			// 8 bit resampling
 			if (sample->getBits() == 8) {
 				if (!sample->isStereo() && stereo) {
-					resampleFrameM8toS(
-							stream, bytes);    // Mono Sample to Stereo Output
+					resampleFrameM8toS(stream, bytes);    // Mono Sample to Stereo Output
 				} else if (!sample->isStereo() && !stereo) {
-					resampleFrameM8toM(
-							stream, bytes);    // Mono Sample to Stereo Output
+					resampleFrameM8toM(stream, bytes);    // Mono Sample to Stereo Output
 				} else if (sample->isStereo() && !stereo) {
-					resampleFrameS8toM(
-							stream, bytes);    // Stereo Sample to Mono Output
+					resampleFrameS8toM(stream, bytes);    // Stereo Sample to Mono Output
 				} else {
-					resampleFrameS8toS(
-							stream, bytes);    // Stereo Sample to Stereo Output
+					resampleFrameS8toS(stream, bytes);    // Stereo Sample to Stereo Output
 				}
 			} else if (sample->getBits() == 16) {
 				if (!sample->isStereo() && stereo) {
-					resampleFrameM16toS(
-							stream, bytes);    // Mono Sample to Stereo Output
+					resampleFrameM16toS(stream, bytes);    // Mono Sample to Stereo Output
 				} else if (!sample->isStereo() && !stereo) {
-					resampleFrameM16toM(
-							stream, bytes);    // Mono Sample to Mono Output
+					resampleFrameM16toM(stream, bytes);    // Mono Sample to Mono Output
 				} else if (sample->isStereo() && !stereo) {
-					resampleFrameS16toM(
-							stream, bytes);    // Stereo Sample to Mono Output
+					resampleFrameS16toM(stream, bytes);    // Stereo Sample to Mono Output
 				} else {
-					resampleFrameS16toS(
-							stream, bytes);    // Stereo Sample to Stereo Output
+					resampleFrameS16toS(stream, bytes);    // Stereo Sample to Stereo Output
 				}
 			}
-			overall_position
-					+= (position - startpos)
-					   / (sample->getBits() / (sample->isStereo() ? 4 : 8));
+			overall_position += (position - startpos) / (sample->getBits() / (sample->isStereo() ? 4 : 8));
 			// We ran out of data
 			if (bytes || (position == frame0_size)) {
 				// No more data
@@ -242,8 +224,7 @@ namespace Pentagram {
 		if (!sample) {
 			return UINT32_MAX;
 		}
-		return ((sample->getPlaybackLength()) * UINT64_C(1000))
-			   / sample->getRate();
+		return ((sample->getPlaybackLength()) * UINT64_C(1000)) / sample->getRate();
 	}
 
 	uint32 AudioChannel::getPlaybackPosition() const {
@@ -448,9 +429,7 @@ namespace Pentagram {
 			if (fp_pos < 0x10000) {
 				do {
 					// Do the interpolation
-					int result = ((interp_l.interpolate(fp_pos) * lvol
-								   + interp_r.interpolate(fp_pos) * rvol))
-								 / 512;
+					int result = ((interp_l.interpolate(fp_pos) * lvol + interp_r.interpolate(fp_pos) * rvol)) / 512;
 
 					result += *stream;
 
@@ -514,10 +493,8 @@ namespace Pentagram {
 			if (fp_pos < 0x10000) {
 				do {
 					// Do the interpolation
-					int lresult = *(stream + 0)
-								  + (interp_l.interpolate(fp_pos) * lvol) / 256;
-					int rresult = *(stream + 1)
-								  + (interp_r.interpolate(fp_pos) * rvol) / 256;
+					int lresult = *(stream + 0) + (interp_l.interpolate(fp_pos) * lvol) / 256;
+					int rresult = *(stream + 1) + (interp_r.interpolate(fp_pos) * rvol) / 256;
 
 					// Enforce range in case of an "overshot". Shouldn't happen
 					// since we scale down already, but safe is safe.
@@ -718,9 +695,7 @@ namespace Pentagram {
 			if (fp_pos < 0x10000) {
 				do {
 					// Do the interpolation
-					int result = ((interp_l.interpolate(fp_pos) * lvol
-								   + interp_r.interpolate(fp_pos) * rvol))
-								 / 512;
+					int result = ((interp_l.interpolate(fp_pos) * lvol + interp_r.interpolate(fp_pos) * rvol)) / 512;
 
 					result += *stream;
 
@@ -784,10 +759,8 @@ namespace Pentagram {
 			if (fp_pos < 0x10000) {
 				do {
 					// Do the interpolation
-					int lresult = *(stream + 0)
-								  + (interp_l.interpolate(fp_pos) * lvol) / 256;
-					int rresult = *(stream + 1)
-								  + (interp_r.interpolate(fp_pos) * rvol) / 256;
+					int lresult = *(stream + 0) + (interp_l.interpolate(fp_pos) * lvol) / 256;
+					int rresult = *(stream + 1) + (interp_r.interpolate(fp_pos) * rvol) / 256;
 
 					// Enforce range in case of an "overshot". Shouldn't happen
 					// since we scale down already, but safe is safe.

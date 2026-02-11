@@ -64,12 +64,9 @@ void Npc_chooser::show(
 		const TileRect b          = info[selected].box;
 		// Draw yellow box.
 		cairo_set_line_width(drawgc, zoom_scale / 2.0);
-		cairo_set_source_rgb(
-				drawgc, ((drawfg >> 16) & 255) / 255.0,
-				((drawfg >> 8) & 255) / 255.0, (drawfg & 255) / 255.0);
+		cairo_set_source_rgb(drawgc, ((drawfg >> 16) & 255) / 255.0, ((drawfg >> 8) & 255) / 255.0, (drawfg & 255) / 255.0);
 		cairo_rectangle(
-				drawgc, ((b.x - hoffset) * zoom_scale) / 2,
-				((b.y - voffset) * zoom_scale) / 2, (b.w * zoom_scale) / 2,
+				drawgc, ((b.x - hoffset) * zoom_scale) / 2, ((b.y - voffset) * zoom_scale) / 2, (b.w * zoom_scale) / 2,
 				(b.h * zoom_scale) / 2);
 		cairo_stroke(drawgc);
 	}
@@ -110,8 +107,7 @@ void Npc_chooser::render() {
 	int curr_y = -row0_voffset;
 	// int total_cnt = get_count();
 	//    filter (group).
-	for (unsigned rownum = row0; curr_y < winh && rownum < rows.size();
-		 ++rownum) {
+	for (unsigned rownum = row0; curr_y < winh && rownum < rows.size(); ++rownum) {
 		const Npc_row& row  = rows[rownum];
 		unsigned       cols = get_num_cols(rownum);
 		for (unsigned index = row.index0; cols; --cols, ++index) {
@@ -122,13 +118,9 @@ void Npc_chooser::render() {
 			if (shape) {
 				const int sx = info[index].box.x - hoffset;
 				const int sy = info[index].box.y - voffset;
-				shape->paint(
-						iwin, sx + shape->get_xleft(),
-						sy + shape->get_yabove());
+				shape->paint(iwin, sx + shape->get_xleft(), sy + shape->get_yabove());
 				if (npcs[npcnum].unused) {
-					shape->paint_rle_outline(
-							iwin, sx + shape->get_xleft(),
-							sy + shape->get_yabove(), red);
+					shape->paint_rle_outline(iwin, sx + shape->get_xleft(), sy + shape->get_yabove(), red);
 				}
 				last_npc = npcnum;
 			}
@@ -188,9 +180,7 @@ static int Get_x_offset(Shape* shape, int framenum) {
 
 void Npc_chooser::setup_info(bool savepos    // Try to keep current position.
 ) {
-	const unsigned oldind
-			= (selected >= 0 ? selected
-							 : (row0 < rows.size() ? rows[row0].index0 : 0));
+	const unsigned oldind = (selected >= 0 ? selected : (row0 < rows.size() ? rows[row0].index0 : 0));
 	info.resize(0);
 	rows.resize(0);
 	row0 = row0_voffset = 0;
@@ -321,8 +311,7 @@ void Npc_chooser::setup_frames_info() {
 		int x              = 0;
 		int sw;
 		int sh;
-		for (int framenum = 0; framenum < nframes;
-			 framenum++, x += sw + border) {
+		for (int framenum = 0; framenum < nframes; framenum++, x += sw + border) {
 			Shape_frame* frame = shape->get_frame(framenum);
 			if (!frame) {
 				sw = 0;
@@ -355,8 +344,8 @@ void Npc_chooser::scroll_to_frame() {
 		vector<Estudio_npc>& npcs     = get_npcs();
 		const int            selnpc   = info[selected].npcnum;
 		const int            selframe = info[selected].framenum;
-		Shape*    shape = ifile->extract_shape(npcs[selnpc].shapenum);
-		const int xoff  = Get_x_offset(shape, selframe);
+		Shape*               shape    = ifile->extract_shape(npcs[selnpc].shapenum);
+		const int            xoff     = Get_x_offset(shape, selframe);
 		if (xoff < hoffset) {    // Left of visual area?
 			hoffset = xoff > border ? xoff - border : 0;
 		} else {
@@ -388,8 +377,7 @@ void Npc_chooser::goto_index(unsigned index    // Desired index in 'info'.
 	const Npc_entry& inf  = info[index];    // Already in view?
 	const unsigned   midx = inf.box.x + inf.box.w / 2;
 	const unsigned   midy = inf.box.y + inf.box.h / 2;
-	const TileRect   winrect(
-            hoffset, voffset, ZoomDown(config_width), ZoomDown(config_height));
+	const TileRect   winrect(hoffset, voffset, ZoomDown(config_width), ZoomDown(config_height));
 	if (winrect.has_point(midx, midy)) {
 		return;
 	}
@@ -489,9 +477,7 @@ gint Npc_chooser::expose(
 	chooser->set_graphic_context(cairo);
 	GdkRectangle area = {0, 0, 0, 0};
 	gdk_cairo_get_clip_rectangle(cairo, &area);
-	chooser->show(
-			ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width),
-			ZoomDown(area.height));
+	chooser->show(ZoomDown(area.x), ZoomDown(area.y), ZoomDown(area.width), ZoomDown(area.height));
 	chooser->set_graphic_context(nullptr);
 	return true;
 }
@@ -508,9 +494,7 @@ gint Npc_chooser::drag_motion(
 	ignore_unused_variable_warning(widget);
 	auto* chooser = static_cast<Npc_chooser*>(data);
 	if (!chooser->dragging && chooser->selected >= 0) {
-		chooser->start_drag(
-				U7_TARGET_NPCID_NAME, U7_TARGET_NPCID,
-				reinterpret_cast<GdkEvent*>(event));
+		chooser->start_drag(U7_TARGET_NPCID_NAME, U7_TARGET_NPCID, reinterpret_cast<GdkEvent*>(event));
 	}
 	return true;
 }
@@ -524,8 +508,7 @@ gint Npc_chooser::mouse_press(
 	gtk_widget_grab_focus(widget);
 
 #ifdef DEBUG
-	cout << "Npcs : Clicked to " << (event->x) << " * " << (event->y) << " by "
-		 << (event->button) << endl;
+	cout << "Npcs : Clicked to " << (event->x) << " * " << (event->y) << " by " << (event->button) << endl;
 #endif
 	if (event->button == 4) {
 		if (row0 > 0) {
@@ -568,8 +551,7 @@ gint Npc_chooser::mouse_press(
 		}
 	}
 	if (event->button == 3) {
-		gtk_menu_popup_at_pointer(
-				GTK_MENU(create_popup()), reinterpret_cast<GdkEvent*>(event));
+		gtk_menu_popup_at_pointer(GTK_MENU(create_popup()), reinterpret_cast<GdkEvent*>(event));
 	}
 	return true;
 }
@@ -600,8 +582,7 @@ static gint Mouse_release(
 /*
  *  Keystroke in draw-area.
  */
-C_EXPORT gboolean on_npc_draw_key_press(
-		GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
+C_EXPORT gboolean on_npc_draw_key_press(GtkEntry* entry, GdkEventKey* event, gpointer user_data) {
 	ignore_unused_variable_warning(entry, event, user_data);
 	// Npc_chooser *chooser = static_cast<Npc_chooser *>(user_data);
 	return false;    // Let parent handle it.
@@ -655,23 +636,18 @@ void Npc_chooser::drag_data_get(
 		gpointer data    // ->Npc_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, time);
-	cout << "In DRAG_DATA_GET of Npc for " << info << " and '"
-		 << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
+	cout << "In DRAG_DATA_GET of Npc for " << info << " and '" << gdk_atom_name(gtk_selection_data_get_target(seldata)) << "'"
 		 << endl;
 	auto* chooser = static_cast<Npc_chooser*>(data);
-	if (chooser->selected < 0
-		|| (info != U7_TARGET_NPCID && info != U7_TARGET_NPCID + 100
-			&& info != U7_TARGET_NPCID + 200)) {
+	if (chooser->selected < 0 || (info != U7_TARGET_NPCID && info != U7_TARGET_NPCID + 100 && info != U7_TARGET_NPCID + 200)) {
 		return;    // Not sure about this.
 	}
 	guchar    buf[U7DND_DATA_LENGTH(1)];
 	const int npcnum = chooser->info[chooser->selected].npcnum;
 	const int len    = Store_u7_npcid(buf, npcnum);
-	cout << "Setting selection data (" << npcnum << ')' << " (" << len << ") '"
-		 << buf << "'" << endl;
+	cout << "Setting selection data (" << npcnum << ')' << " (" << len << ") '" << buf << "'" << endl;
 	// Set data.
-	gtk_selection_data_set(
-			seldata, gtk_selection_data_get_target(seldata), 8, buf, len);
+	gtk_selection_data_set(seldata, gtk_selection_data_get_target(seldata), 8, buf, len);
 }
 
 /*
@@ -710,21 +686,16 @@ gint Npc_chooser::drag_begin(
  */
 
 void Npc_chooser::drag_data_received(
-		GtkWidget* widget, GdkDragContext* context, gint x, gint y,
-		GtkSelectionData* seldata, guint info, guint time,
+		GtkWidget* widget, GdkDragContext* context, gint x, gint y, GtkSelectionData* seldata, guint info, guint time,
 		gpointer udata    // -> Npc_chooser.
 ) {
 	ignore_unused_variable_warning(widget, context, x, y, info, time);
 	auto* chooser = static_cast<Npc_chooser*>(udata);
-	cout << "In DRAG_DATA_RECEIVED of Npc for '"
-		 << gdk_atom_name(gtk_selection_data_get_data_type(seldata)) << "'"
-		 << endl;
+	cout << "In DRAG_DATA_RECEIVED of Npc for '" << gdk_atom_name(gtk_selection_data_get_data_type(seldata)) << "'" << endl;
 	auto seltype = gtk_selection_data_get_data_type(seldata);
-	if (((seltype == gdk_atom_intern(U7_TARGET_NPCID_NAME, 0))
-		 || (seltype == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MIME, 0))
+	if (((seltype == gdk_atom_intern(U7_TARGET_NPCID_NAME, 0)) || (seltype == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_MIME, 0))
 		 || (seltype == gdk_atom_intern(U7_TARGET_DROPTEXT_NAME_GENERIC, 0)))
-		&& Is_u7_npcid(gtk_selection_data_get_data(seldata))
-		&& gtk_selection_data_get_format(seldata) == 8
+		&& Is_u7_npcid(gtk_selection_data_get_data(seldata)) && gtk_selection_data_get_format(seldata) == 8
 		&& gtk_selection_data_get_length(seldata) > 0) {
 		int npcnum;
 		Get_u7_npcid(gtk_selection_data_get_data(seldata), npcnum);
@@ -754,21 +725,16 @@ void Npc_chooser::enable_drop() {
 	tents[0].info   = U7_TARGET_NPCID;
 	tents[1].info   = U7_TARGET_NPCID + 100;
 	tents[2].info   = U7_TARGET_NPCID + 200;
-	gtk_drag_dest_set(
-			draw, GTK_DEST_DEFAULT_ALL, tents, 3,
-			static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
+	gtk_drag_dest_set(draw, GTK_DEST_DEFAULT_ALL, tents, 3, static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_MOVE));
 
-	g_signal_connect(
-			G_OBJECT(draw), "drag-data-received",
-			G_CALLBACK(drag_data_received), this);
+	g_signal_connect(G_OBJECT(draw), "drag-data-received", G_CALLBACK(drag_data_received), this);
 }
 
 /*
  *  Scroll to a new shape/frame.
  */
 
-void Npc_chooser::scroll_row_vertical(
-		unsigned newrow    // Abs. index of row to show.
+void Npc_chooser::scroll_row_vertical(unsigned newrow    // Abs. index of row to show.
 ) {
 	if (newrow >= rows.size()) {
 		return;
@@ -855,8 +821,7 @@ void Npc_chooser::setup_vscrollbar() {
  *  Adjust horizontal scroll amounts.
  */
 
-void Npc_chooser::setup_hscrollbar(
-		int newmax    // New max., or -1 to leave alone.
+void Npc_chooser::setup_hscrollbar(int newmax    // New max., or -1 to leave alone.
 ) {
 	GtkAdjustment* adj = gtk_range_get_adjustment(GTK_RANGE(hscroll));
 	if (newmax > 0) {
@@ -884,12 +849,9 @@ void Npc_chooser::vscrolled(    // For vertical scrollbar.
 ) {
 	auto* chooser = static_cast<Npc_chooser*>(data);
 #ifdef DEBUG
-	cout << "Npcs : VScrolled to " << gtk_adjustment_get_value(adj) << " of [ "
-		 << gtk_adjustment_get_lower(adj) << ", "
-		 << gtk_adjustment_get_upper(adj) << " ] by "
-		 << gtk_adjustment_get_step_increment(adj) << " ( "
-		 << gtk_adjustment_get_page_increment(adj) << ", "
-		 << gtk_adjustment_get_page_size(adj) << " )" << endl;
+	cout << "Npcs : VScrolled to " << gtk_adjustment_get_value(adj) << " of [ " << gtk_adjustment_get_lower(adj) << ", "
+		 << gtk_adjustment_get_upper(adj) << " ] by " << gtk_adjustment_get_step_increment(adj) << " ( "
+		 << gtk_adjustment_get_page_increment(adj) << ", " << gtk_adjustment_get_page_size(adj) << " )" << endl;
 #endif
 	const gint newindex = static_cast<gint>(gtk_adjustment_get_value(adj));
 	chooser->scroll_vertical(newindex);
@@ -901,12 +863,9 @@ void Npc_chooser::hscrolled(    // For horizontal scrollbar.
 ) {
 	auto* chooser = static_cast<Npc_chooser*>(data);
 #ifdef DEBUG
-	cout << "Npcs : HScrolled to " << gtk_adjustment_get_value(adj) << " of [ "
-		 << gtk_adjustment_get_lower(adj) << ", "
-		 << gtk_adjustment_get_upper(adj) << " ] by "
-		 << gtk_adjustment_get_step_increment(adj) << " ( "
-		 << gtk_adjustment_get_page_increment(adj) << ", "
-		 << gtk_adjustment_get_page_size(adj) << " )" << endl;
+	cout << "Npcs : HScrolled to " << gtk_adjustment_get_value(adj) << " of [ " << gtk_adjustment_get_lower(adj) << ", "
+		 << gtk_adjustment_get_upper(adj) << " ] by " << gtk_adjustment_get_step_increment(adj) << " ( "
+		 << gtk_adjustment_get_page_increment(adj) << ", " << gtk_adjustment_get_page_size(adj) << " )" << endl;
 #endif
 	chooser->hoffset = static_cast<gint>(gtk_adjustment_get_value(adj));
 	chooser->render();
@@ -925,8 +884,7 @@ void Npc_chooser::frame_changed(
 	if (chooser->selected >= 0) {
 		Npc_entry&           npcinfo = chooser->info[chooser->selected];
 		vector<Estudio_npc>& npcs    = chooser->get_npcs();
-		const int            nframes
-				= chooser->ifile->get_num_frames(npcs[npcinfo.npcnum].shapenum);
+		const int            nframes = chooser->ifile->get_num_frames(npcs[npcinfo.npcnum].shapenum);
 		if (newframe >= nframes) {    // Just checking
 			return;
 		}
@@ -956,9 +914,7 @@ void Npc_chooser::all_frames_toggled(GtkToggleButton* btn, gpointer data) {
 		gtk_widget_set_visible(chooser->hscroll, false);
 	}
 	// The old index is no longer valid, so we need to remember the shape.
-	int       indx   = chooser->selected >= 0
-							   ? chooser->selected
-							   : static_cast<int>(chooser->rows[chooser->row0].index0);
+	int       indx   = chooser->selected >= 0 ? chooser->selected : static_cast<int>(chooser->rows[chooser->row0].index0);
 	const int npcnum = chooser->info[indx].npcnum;
 	chooser->reset_selected();
 	chooser->setup_info();
@@ -1004,8 +960,7 @@ void Npc_chooser::search(
 	const int stop = dir == -1 ? -1 : static_cast<int>(info.size());
 	for (i = start; i != stop; i += dir) {
 		const unsigned npcnum = info[i].npcnum;
-		const char*    nm
-				= npcnum < npcs.size() ? npcs[npcnum].name.c_str() : nullptr;
+		const char*    nm     = npcnum < npcs.size() ? npcs[npcnum].name.c_str() : nullptr;
 		if (nm && search_name(nm, srch)) {
 			break;    // Found it.
 		}
@@ -1056,8 +1011,7 @@ GtkWidget* Npc_chooser::create_popup() {
 	// Create popup with groups, but not files.
 	create_popup_internal(false);
 	if (selected >= 0) {    // Add editing choices.
-		Add_menu_item(
-				popup, "Edit...", G_CALLBACK(on_npc_popup_edit_activate), this);
+		Add_menu_item(popup, "Edit...", G_CALLBACK(on_npc_popup_edit_activate), this);
 	}
 	return popup;
 }
@@ -1071,10 +1025,9 @@ Npc_chooser::Npc_chooser(
 		unsigned char* palbuf,    // Palette, 3*256 bytes (rgb triples).
 		int w, int h,             // Dimensions.
 		Shape_group* g, Shape_file_info* fi)
-		: Object_browser(g, fi), Shape_draw(i, palbuf, gtk_drawing_area_new()),
-		  framenum0(0), info(0), rows(0), row0(0), row0_voffset(0),
-		  total_height(0), frames_mode(false), hoffset(0), voffset(0),
-		  status_id(-1), drop_enabled(false), sel_changed(nullptr) {
+		: Object_browser(g, fi), Shape_draw(i, palbuf, gtk_drawing_area_new()), framenum0(0), info(0), rows(0), row0(0),
+		  row0_voffset(0), total_height(0), frames_mode(false), hoffset(0), voffset(0), status_id(-1), drop_enabled(false),
+		  sel_changed(nullptr) {
 	rows.reserve(40);
 
 	// Put things in a vert. box.
@@ -1091,66 +1044,46 @@ Npc_chooser::Npc_chooser(
 	// A frame looks nice.
 	GtkWidget* frame = gtk_frame_new(nullptr);
 	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
-	widget_set_margins(
-			frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(frame, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_visible(frame, true);
 	gtk_box_pack_start(GTK_BOX(hbox), frame, true, true, 0);
 
 	// NOTE:  draw is in Shape_draw.
 	// Indicate the events we want.
 	gtk_widget_set_events(
-			draw, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK
-						  | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON1_MOTION_MASK
-						  | GDK_KEY_PRESS_MASK);
+			draw,
+			GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON1_MOTION_MASK | GDK_KEY_PRESS_MASK);
 	// Set "configure" handler.
-	g_signal_connect(
-			G_OBJECT(draw), "configure-event", G_CALLBACK(Configure_chooser),
-			this);
+	g_signal_connect(G_OBJECT(draw), "configure-event", G_CALLBACK(Configure_chooser), this);
 	// Set "expose-event" - "draw" handler.
 	g_signal_connect(G_OBJECT(draw), "draw", G_CALLBACK(expose), this);
 	// Keystroke.
-	g_signal_connect(
-			G_OBJECT(draw), "key-press-event",
-			G_CALLBACK(on_npc_draw_key_press), this);
+	g_signal_connect(G_OBJECT(draw), "key-press-event", G_CALLBACK(on_npc_draw_key_press), this);
 	gtk_widget_set_can_focus(GTK_WIDGET(draw), true);
 	// Set mouse click handler.
-	g_signal_connect(
-			G_OBJECT(draw), "button-press-event", G_CALLBACK(Mouse_press),
-			this);
-	g_signal_connect(
-			G_OBJECT(draw), "button-release-event", G_CALLBACK(Mouse_release),
-			this);
+	g_signal_connect(G_OBJECT(draw), "button-press-event", G_CALLBACK(Mouse_press), this);
+	g_signal_connect(G_OBJECT(draw), "button-release-event", G_CALLBACK(Mouse_release), this);
 	// Mouse motion.
-	g_signal_connect(
-			G_OBJECT(draw), "drag-begin", G_CALLBACK(drag_begin), this);
-	g_signal_connect(
-			G_OBJECT(draw), "motion-notify-event", G_CALLBACK(drag_motion),
-			this);
-	g_signal_connect(
-			G_OBJECT(draw), "drag-data-get", G_CALLBACK(drag_data_get), this);
+	g_signal_connect(G_OBJECT(draw), "drag-begin", G_CALLBACK(drag_begin), this);
+	g_signal_connect(G_OBJECT(draw), "motion-notify-event", G_CALLBACK(drag_motion), this);
+	g_signal_connect(G_OBJECT(draw), "drag-data-get", G_CALLBACK(drag_data_get), this);
 	gtk_container_add(GTK_CONTAINER(frame), draw);
-	widget_set_margins(
-			draw, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(draw, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_size_request(draw, w, h);
 	gtk_widget_set_visible(draw, true);
 	// Want vert. scrollbar for the shapes.
-	GtkAdjustment* shape_adj = GTK_ADJUSTMENT(
-			gtk_adjustment_new(0, 0, std::ceil(get_count() / 4.0), 1, 1, 1));
-	vscroll = gtk_scrollbar_new(
-			GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT(shape_adj));
+	GtkAdjustment* shape_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, std::ceil(get_count() / 4.0), 1, 1, 1));
+	vscroll                  = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT(shape_adj));
 	gtk_box_pack_start(GTK_BOX(hbox), vscroll, false, true, 0);
 	// Set scrollbar handler.
-	g_signal_connect(
-			G_OBJECT(shape_adj), "value-changed", G_CALLBACK(vscrolled), this);
+	g_signal_connect(G_OBJECT(shape_adj), "value-changed", G_CALLBACK(vscrolled), this);
 	gtk_widget_set_visible(vscroll, true);
 	// Horizontal scrollbar.
 	shape_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 1600, 8, 16, 16));
-	hscroll   = gtk_scrollbar_new(
-            GTK_ORIENTATION_HORIZONTAL, GTK_ADJUSTMENT(shape_adj));
+	hscroll   = gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL, GTK_ADJUSTMENT(shape_adj));
 	gtk_box_pack_start(GTK_BOX(vbox), hscroll, false, true, 0);
 	// Set scrollbar handler.
-	g_signal_connect(
-			G_OBJECT(shape_adj), "value-changed", G_CALLBACK(hscrolled), this);
+	g_signal_connect(G_OBJECT(shape_adj), "value-changed", G_CALLBACK(hscrolled), this);
 	//++++  gtk_widget_set_visible(hscroll, false);   // Only shown in 'frames'
 	// mode.
 	// Scroll events.
@@ -1165,38 +1098,28 @@ Npc_chooser::Npc_chooser(
 	sbar     = gtk_statusbar_new();
 	sbar_sel = gtk_statusbar_get_context_id(GTK_STATUSBAR(sbar), "selection");
 	gtk_box_pack_start(GTK_BOX(hbox1), sbar, true, true, 0);
-	widget_set_margins(
-			sbar, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(sbar, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_visible(sbar, true);
 	GtkWidget* label = gtk_label_new("Frame:");
 	gtk_box_pack_start(GTK_BOX(hbox1), label, false, false, 0);
-	widget_set_margins(
-			label, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(label, 2 * HMARGIN, 1 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_visible(label, true);
 	// A spin button for frame#.
 	frame_adj = GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, 16, 1, 0, 0.0));
 	fspin     = gtk_spin_button_new(GTK_ADJUSTMENT(frame_adj), 1, 0);
-	g_signal_connect(
-			G_OBJECT(frame_adj), "value-changed", G_CALLBACK(frame_changed),
-			this);
+	g_signal_connect(G_OBJECT(frame_adj), "value-changed", G_CALLBACK(frame_changed), this);
 	gtk_box_pack_start(GTK_BOX(hbox1), fspin, false, false, 0);
-	widget_set_margins(
-			fspin, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(fspin, 1 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_sensitive(fspin, false);
 	gtk_widget_set_visible(fspin, true);
 	// A toggle for 'All Frames'.
 	GtkWidget* allframes = gtk_toggle_button_new_with_label("Frames");
 	gtk_box_pack_start(GTK_BOX(hbox1), allframes, false, false, 0);
-	widget_set_margins(
-			allframes, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
+	widget_set_margins(allframes, 2 * HMARGIN, 2 * HMARGIN, 2 * VMARGIN, 2 * VMARGIN);
 	gtk_widget_set_visible(allframes, true);
-	g_signal_connect(
-			G_OBJECT(allframes), "toggled", G_CALLBACK(all_frames_toggled),
-			this);
+	g_signal_connect(G_OBJECT(allframes), "toggled", G_CALLBACK(all_frames_toggled), this);
 	// Add search controls to bottom.
-	gtk_box_pack_start(
-			GTK_BOX(vbox), create_controls(find_controls | locate_controls),
-			false, false, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), create_controls(find_controls | locate_controls), false, false, 0);
 	red = ExultStudio::get_instance()->find_palette_color(63, 5, 5);
 }
 
@@ -1241,14 +1164,10 @@ void Npc_chooser::update_statusbar() {
 	if (selected >= 0) {
 		const int          npcnum = info[selected].npcnum;
 		const Estudio_npc& npc    = get_npcs()[npcnum];
-		g_snprintf(
-				buf, sizeof(buf), "Npc %d:  '%s'%s", npcnum, npc.name.c_str(),
-				npc.unused ? " (unused)" : "");
+		g_snprintf(buf, sizeof(buf), "Npc %d:  '%s'%s", npcnum, npc.name.c_str(), npc.unused ? " (unused)" : "");
 		status_id = gtk_statusbar_push(GTK_STATUSBAR(sbar), sbar_sel, buf);
 	} else if (!info.empty() && !group) {
-		g_snprintf(
-				buf, sizeof(buf), "NPCs %d to %d",
-				info[rows[row0].index0].npcnum, last_npc);
+		g_snprintf(buf, sizeof(buf), "NPCs %d to %d", info[rows[row0].index0].npcnum, last_npc);
 		status_id = gtk_statusbar_push(GTK_STATUSBAR(sbar), sbar_sel, buf);
 	} else {
 		status_id = -1;

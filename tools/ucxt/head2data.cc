@@ -27,8 +27,7 @@ using std::string_view;
 
 using namespace std::string_view_literals;
 
-void gen_intrinsic_table(
-		ofstream& o, const tcb::span<const string_view>& table) {
+void gen_intrinsic_table(ofstream& o, const tcb::span<const string_view>& table) {
 	o << "<intrinsics>" << endl;
 	for (size_t i = 0; i < table.size(); i++) {
 		o << "\t<0x" << setw(2) << i << "> " << table[i];

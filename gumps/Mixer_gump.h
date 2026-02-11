@@ -38,8 +38,7 @@ private:
 		id_count
 	};
 
-	std::shared_ptr<Slider_widget> midislider, oggslider, sfxslider,
-			speechslider, inputslider;
+	std::shared_ptr<Slider_widget> midislider, oggslider, sfxslider, speechslider, inputslider;
 
 	std::shared_ptr<Slider_widget> GetSlider(int sx, int sy);
 
@@ -56,12 +55,12 @@ private:
 									// if disabled
 	int initial_speech = -1;        // Initial speech volume when gump created.
 									// -1 if disabled
-	uint8 slider_track_color;    // Palette index to use to draw slider track,
-								 // set in Constructor based on procedural
-								 // background colour. This will usually be 143
-	int slider_width  = 120;     // Width of the sliders
-	int slider_height = 7;    // Slider track height. This value is set to match
-							  // the height of the diamond in the constructor
+	uint8 slider_track_color;       // Palette index to use to draw slider track,
+									// set in Constructor based on procedural
+									// background colour. This will usually be 143
+	int slider_width  = 120;        // Width of the sliders
+	int slider_height = 7;          // Slider track height. This value is set to match
+									// the height of the diamond in the constructor
 
 public:
 	Mixer_gump();
@@ -84,12 +83,9 @@ protected:
 	bool mouse_drag(int mx, int my) override;
 	bool mousewheel_up(int mx, int my) override;
 	bool mousewheel_down(int mx, int my) override;
-	bool key_down(SDL_Keycode chr, SDL_Keycode unicode)
-			override;    // Character typed.
+	bool key_down(SDL_Keycode chr, SDL_Keycode unicode) override;    // Character typed.
 
-	void PaintSlider(
-			Image_window8* iwin, Slider_widget* slider, const char* label,
-			bool use3dslidertrack=true);
+	void PaintSlider(Image_window8* iwin, Slider_widget* slider, const char* label, bool use3dslidertrack = true);
 	//
 	// Implementation of Slider_widget::ICallback
 	//
@@ -97,7 +93,7 @@ protected:
 	void OnSliderValueChanged(Slider_widget* sender, int newvalue) override;
 
 	Gump_button* on_button(int mx, int my) override;
-	bool run() override;
+	bool         run() override;
 };
 
 #endif

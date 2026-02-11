@@ -26,27 +26,19 @@ class Jawbone_object : public Container_game_object {
 	friend class Jawbone_gump;
 
 public:
-	Jawbone_object(
-			int shapenum, int framenum, unsigned int tilex, unsigned int tiley,
-			unsigned int lft, char res = 0)
-			: Container_game_object(shapenum, framenum, tilex, tiley, lft, res),
-			  toothcount(0) {}
+	Jawbone_object(int shapenum, int framenum, unsigned int tilex, unsigned int tiley, unsigned int lft, char res = 0)
+			: Container_game_object(shapenum, framenum, tilex, tiley, lft, res), toothcount(0) {}
 
 	Jawbone_object() = default;
 
 	// Add an object.
-	bool add(
-			Game_object* obj, bool dont_check = false, bool combine = false,
-			bool noset = false) override;
+	bool add(Game_object* obj, bool dont_check = false, bool combine = false, bool noset = false) override;
 	// Remove an object.
 	void remove(Game_object* obj) override;
 
 	// Under attack. -> do nothing
-	Game_object* attacked(
-			Game_object* attacker, int weapon_shape = -1, int ammo_shape = -1,
-			bool explosion = false) override {
-		ignore_unused_variable_warning(
-				attacker, weapon_shape, ammo_shape, explosion);
+	Game_object* attacked(Game_object* attacker, int weapon_shape = -1, int ammo_shape = -1, bool explosion = false) override {
+		ignore_unused_variable_warning(attacker, weapon_shape, ammo_shape, explosion);
 		return this;
 	}
 

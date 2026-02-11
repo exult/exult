@@ -61,17 +61,13 @@ class Time_queue;
  */
 struct Queue_entry {
 	// Queue_entry *next, *prev;    // Next, prev. in queue.
-	Time_sensitive* handler;    // Object to activate.
-	std::shared_ptr<Time_sensitive>
-			sp_handler;    // Shared pointer to object to activate
-	uintptr udata;         // Data to pass to handler.
-	uint32  time;          // Time when this is due.
-	uint32  pause_added
-			= 0;    // pause_time when this was added (0 if not paused)
+	Time_sensitive*                 handler;            // Object to activate.
+	std::shared_ptr<Time_sensitive> sp_handler;         // Shared pointer to object to activate
+	uintptr                         udata;              // Data to pass to handler.
+	uint32                          time;               // Time when this is due.
+	uint32                          pause_added = 0;    // pause_time when this was added (0 if not paused)
 
-	inline void set(
-			uint32 t, Time_sensitive* h, uintptr ud,
-			std::shared_ptr<Time_sensitive> sp, uint32 pause_t = 0) {
+	inline void set(uint32 t, Time_sensitive* h, uintptr ud, std::shared_ptr<Time_sensitive> sp, uint32 pause_t = 0) {
 		time        = t;
 		handler     = h;
 		udata       = ud;
@@ -153,10 +149,9 @@ public:
 class Time_queue_iterator {
 	Time_queue::Temporal_sequence::iterator iter;
 	Time_queue*                             tqueue;
-	Time_sensitive* this_obj;    // Only return entries for this obj.
+	Time_sensitive*                         this_obj;    // Only return entries for this obj.
 public:
-	Time_queue_iterator(Time_queue* tq, Time_sensitive* obj)
-			: iter(tq->data.begin()), tqueue(tq), this_obj(obj) {}
+	Time_queue_iterator(Time_queue* tq, Time_sensitive* obj) : iter(tq->data.begin()), tqueue(tq), this_obj(obj) {}
 
 	bool operator()(Time_sensitive*& obj, uintptr& data);
 };

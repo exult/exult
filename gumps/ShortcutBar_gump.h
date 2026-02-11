@@ -54,17 +54,16 @@ enum ShortcutBarButtonItemType {
 	SB_ITEM_FEED
 };
 
-Game_object* is_party_item(
-		int shnum, int frnum = c_any_framenum, int qual = c_any_qual);
+Game_object* is_party_item(int shnum, int frnum = c_any_framenum, int qual = c_any_qual);
 
 struct ShortcutBarButtonItem {
 	const char*               name;
 	ShortcutBarButtonItemType type;
 	ShapeID*                  shapeId;
-	TileRect                  rect;    // Shortcut bar button click area
-	int  mx, my;                       // Coordinates where shape is to be drawn
-	bool pushed;
-	bool translucent;
+	TileRect                  rect;      // Shortcut bar button click area
+	int                       mx, my;    // Coordinates where shape is to be drawn
+	bool                      pushed;
+	bool                      translucent;
 };
 
 #define MAX_SHORTCUT_BAR_ITEMS 10

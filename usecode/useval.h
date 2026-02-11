@@ -20,18 +20,18 @@
  */
 
 #ifndef USEVAL_H
-#	define USEVAL_H 1
+#define USEVAL_H 1
 
-#	include "databuf.h"
-#	include "objs.h"
+#include "databuf.h"
+#include "objs.h"
 
-#	include <cassert>
-#	include <cstdlib>
-#	include <cstring>
-#	include <iostream>
-#	include <new>
-#	include <string>    // STL string
-#	include <vector>    // STL container
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <new>
+#include <string>    // STL string
+#include <vector>    // STL container
 
 class Usecode_class_symbol;
 
@@ -96,8 +96,7 @@ private:
 	}
 
 	template <typename T, typename U>
-	void replace(
-			T& var, U&& newval, Val_type newtype, bool newundefined = false) {
+	void replace(T& var, U&& newval, Val_type newtype, bool newundefined = false) {
 		if (type == newtype) {
 			var = std::forward<U>(newval);
 		} else {
@@ -111,8 +110,7 @@ private:
 	template <typename T, typename U>
 	void replaceFrom(T var, U&& newval, Val_type newtype) {
 		const bool newundefined = newval.undefined;
-		replace(this->*var, std::forward<U>(newval).*var, newtype,
-				newundefined);
+		replace(this->*var, std::forward<U>(newval).*var, newtype, newundefined);
 	}
 
 	template <typename T>
@@ -135,8 +133,7 @@ private:
 			replaceFrom(&Usecode_value::clssym, std::forward<T>(v2), newtype);
 			break;
 		case class_obj_type:
-			replaceFrom(
-					&Usecode_value::clsrefval, std::forward<T>(v2), newtype);
+			replaceFrom(&Usecode_value::clsrefval, std::forward<T>(v2), newtype);
 			break;
 		}
 	}
@@ -149,31 +146,23 @@ public:
 
 	explicit Usecode_value(int ival) : intval(ival), undefined(false) {}
 
-	explicit Usecode_value(const std::string& s)
-			: type(string_type), strval(s), undefined(false) {}
+	explicit Usecode_value(const std::string& s) : type(string_type), strval(s), undefined(false) {}
 
-	explicit Usecode_value(std::string&& s) noexcept
-			: type(string_type), strval(std::move(s)), undefined(false) {}
+	explicit Usecode_value(std::string&& s) noexcept : type(string_type), strval(std::move(s)), undefined(false) {}
 
 	// Create array with 1st element.
-	Usecode_value(int size, Usecode_value* elem0)
-			: type(array_type), arrayval(size), undefined(false) {
+	Usecode_value(int size, Usecode_value* elem0) : type(array_type), arrayval(size), undefined(false) {
 		if (elem0) {
 			arrayval[0] = *elem0;
 		}
 	}
 
 	explicit Usecode_value(Game_object* ptr)
-			: type(pointer_type),
-			  ptrval(ptr != nullptr ? ptr->shared_from_this()
-									: Game_object_shared()),
-			  undefined(false) {}
+			: type(pointer_type), ptrval(ptr != nullptr ? ptr->shared_from_this() : Game_object_shared()), undefined(false) {}
 
-	explicit Usecode_value(Game_object_shared ptr)
-			: type(pointer_type), ptrval(std::move(ptr)), undefined(false) {}
+	explicit Usecode_value(Game_object_shared ptr) : type(pointer_type), ptrval(std::move(ptr)), undefined(false) {}
 
-	explicit Usecode_value(Usecode_class_symbol* ptr)
-			: type(class_sym_type), clssym(ptr), undefined(false) {}
+	explicit Usecode_value(Usecode_class_symbol* ptr) : type(class_sym_type), clssym(ptr), undefined(false) {}
 
 	~Usecode_value();
 
@@ -205,9 +194,7 @@ public:
 	}
 
 	Usecode_value& operator=(Game_object* ptr) noexcept {
-		replace(ptrval,
-				ptr != nullptr ? ptr->shared_from_this() : Game_object_shared(),
-				pointer_type);
+		replace(ptrval, ptr != nullptr ? ptr->shared_from_this() : Game_object_shared(), pointer_type);
 		return *this;
 	}
 
@@ -269,13 +256,11 @@ public:
 	}
 
 	long get_int_value() const {    // Get integer value.
-#	ifdef DEBUG
-		if (type == pointer_type
-			|| (type == int_type && (intval > 0x10000 || intval < -0x10000))) {
-			std::cerr << "Probable attempt at getting int value of pointer!!"
-					  << std::endl;
+#ifdef DEBUG
+		if (type == pointer_type || (type == int_type && (intval > 0x10000 || intval < -0x10000))) {
+			std::cerr << "Probable attempt at getting int value of pointer!!" << std::endl;
 		}
-#	endif
+#endif
 		return (type == int_type) ? intval : 0;
 	}
 
@@ -286,12 +271,8 @@ public:
 	// Get string value.
 	const char* get_str_value() const {
 		static const char* emptystr = "";
-		return (type == string_type)
-					   ? strval.c_str()
-					   : ((undefined
-						   || (type == array_type && arrayval.empty()))
-								  ? emptystr
-								  : nullptr);
+		return (type == string_type) ? strval.c_str()
+									 : ((undefined || (type == array_type && arrayval.empty())) ? emptystr : nullptr);
 	}
 
 	long need_int_value() const {
@@ -301,11 +282,7 @@ public:
 				   : ((type == array_type && get_array_size())
 							  ? arrayval[0].need_int_value()
 							  // Pointer = ref.
-							  : (type == pointer_type
-										 ? (reinterpret_cast<uintptr>(
-													ptrval.get())
-											& 0x7ffffff)
-										 : get_int_value()));
+							  : (type == pointer_type ? (reinterpret_cast<uintptr>(ptrval.get()) & 0x7ffffff) : get_int_value()));
 	}
 
 	// Add array element. (No checking!)
@@ -338,15 +315,13 @@ public:
 	// Get array elem. 0, or this.
 	Usecode_value& get_elem0() {
 		static Usecode_value zval(0);
-		return (type == array_type) ? (get_array_size() ? arrayval[0] : zval)
-									: *this;
+		return (type == array_type) ? (get_array_size() ? arrayval[0] : zval) : *this;
 	}
 
 	// Get array elem. 0, or this.
 	const Usecode_value& get_elem0() const {
 		static const Usecode_value zval(0);
-		return (type == array_type) ? (get_array_size() ? arrayval[0] : zval)
-									: *this;
+		return (type == array_type) ? (get_array_size() ? arrayval[0] : zval) : *this;
 	}
 
 	iterator begin() {
@@ -428,8 +403,7 @@ public:
 	void           append(int* vals, int cnt);    // Append integer values.
 	// Add value(s) to an array.
 	int  add_values(int index, Usecode_value& val2);
-	void print(std::ostream& out, bool shortformat = false)
-			const;    // Print in ASCII.
+	void print(std::ostream& out, bool shortformat = false) const;    // Print in ASCII.
 	// Save/restore.
 	bool save(ODataSource* out);
 	bool restore(IDataSource* in);
@@ -440,9 +414,7 @@ public:
 	Usecode_value& nth_class_var(int n) {
 		// Note:  Elem. 0 is the ->class.
 		static Usecode_value zval(0);
-		return (type == class_obj_type && n + 1 < clsrefval.cnt)
-					   ? clsrefval.elems[n + 1]
-					   : zval;
+		return (type == class_obj_type && n + 1 < clsrefval.cnt) ? clsrefval.elems[n + 1] : zval;
 	}
 
 	int get_class_var_count() {

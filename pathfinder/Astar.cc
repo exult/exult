@@ -29,9 +29,7 @@
  *
  *  Output: true if successful, else false.
  */
-bool Astar::NewPath(
-		const Tile_coord& s, const Tile_coord& d,
-		const Pathfinder_client* client) {
+bool Astar::NewPath(const Tile_coord& s, const Tile_coord& d, const Pathfinder_client* client) {
 	auto [new_path, success] = Find_path(s, d, client);
 
 	src        = s;    // Store start, destination.

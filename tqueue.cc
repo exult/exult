@@ -58,16 +58,14 @@ void Time_queue::clear() {
  *  Add an entry to the queue.
  */
 
-void Time_queue::add(
-		uint32 t, std::shared_ptr<Time_sensitive> obj, uintptr ud) {
+void Time_queue::add(uint32 t, std::shared_ptr<Time_sensitive> obj, uintptr ud) {
 	obj->queue_cnt++;    // It's going in, no matter what.
 	Queue_entry newent;
 	uint32      added_pause_time = 0;
 	if (paused && !obj->always) {    // Paused?
 		// Messy, but we need to fix time.
 		t -= SDL_GetTicks() - pause_time;
-		added_pause_time
-				= pause_time;    // Track which pause cycle this belongs to
+		added_pause_time = pause_time;    // Track which pause cycle this belongs to
 	}
 	newent.set(t, nullptr, ud, obj, added_pause_time);
 	auto insertionPoint = std::upper_bound(data.begin(), data.end(), newent);
@@ -85,8 +83,7 @@ void Time_queue::add(
 	if (paused && !obj->always) {    // Paused?
 		// Messy, but we need to fix time.
 		t -= SDL_GetTicks() - pause_time;
-		added_pause_time
-				= pause_time;    // Track which pause cycle this belongs to
+		added_pause_time = pause_time;    // Track which pause cycle this belongs to
 	}
 	newent.set(t, obj, ud, nullptr, added_pause_time);
 	auto insertionPoint = std::upper_bound(data.begin(), data.end(), newent);
@@ -104,11 +101,10 @@ bool operator<(const Queue_entry& q1, const Queue_entry& q2) {
  */
 
 bool Time_queue::remove(Time_sensitive* obj) {
-	auto toRemove
-			= std::find_if(data.begin(), data.end(), [obj](const auto& el) {
-				  return el.handler == obj || el.sp_handler.get() == obj;
-			  });
-	auto found = toRemove != data.end();
+	auto toRemove = std::find_if(data.begin(), data.end(), [obj](const auto& el) {
+		return el.handler == obj || el.sp_handler.get() == obj;
+	});
+	auto found    = toRemove != data.end();
 	if (found) {
 		toRemove->handler->queue_cnt--;
 		data.erase(toRemove);
@@ -117,11 +113,10 @@ bool Time_queue::remove(Time_sensitive* obj) {
 }
 
 bool Time_queue::remove(std::shared_ptr<Time_sensitive> obj) {
-	auto toRemove
-			= std::find_if(data.begin(), data.end(), [obj](const auto& el) {
-				  return el.handler == obj.get() || el.sp_handler == obj;
-			  });
-	auto found = toRemove != data.end();
+	auto toRemove = std::find_if(data.begin(), data.end(), [obj](const auto& el) {
+		return el.handler == obj.get() || el.sp_handler == obj;
+	});
+	auto found    = toRemove != data.end();
 	if (found) {
 		toRemove->handler->queue_cnt--;
 		data.erase(toRemove);
@@ -136,7 +131,7 @@ bool Time_queue::remove(std::shared_ptr<Time_sensitive> obj) {
  */
 
 bool Time_queue::remove(Time_sensitive* obj, uintptr udata) {
-	auto       it = std::find_if(data.begin(), data.end(), [&](const auto& el) {
+	auto       it    = std::find_if(data.begin(), data.end(), [&](const auto& el) {
         return el.handler == obj && el.udata == udata;
     });
 	const bool found = it != data.end();
@@ -148,9 +143,8 @@ bool Time_queue::remove(Time_sensitive* obj, uintptr udata) {
 }
 
 bool Time_queue::remove(std::shared_ptr<Time_sensitive> obj, uintptr udata) {
-	auto       it = std::find_if(data.begin(), data.end(), [&](const auto& el) {
-        return (el.handler == obj.get() || el.sp_handler == obj)
-               && el.udata == udata;
+	auto       it    = std::find_if(data.begin(), data.end(), [&](const auto& el) {
+        return (el.handler == obj.get() || el.sp_handler == obj) && el.udata == udata;
     });
 	const bool found = it != data.end();
 	if (found) {
@@ -270,8 +264,7 @@ void Time_queue::activate_mapedit(uint32 curtime    // Current time.
 		return;
 	}
 
-	const Main_actor* const avatar
-			= Game_window::get_instance()->get_main_actor();
+	const Main_actor* const avatar = Game_window::get_instance()->get_main_actor();
 	for (auto it = data.begin(); it != data.end() && !(curtime < it->time);) {
 		auto next = it;
 		++next;    // Get ->next in case we erase.
@@ -324,13 +317,9 @@ bool Time_queue_iterator::operator()(
 		uintptr&         data    // Data that was added with it.
 ) {
 	auto remain = iter;
-	iter        = this_obj == nullptr
-						  ? remain
-						  : std::find_if(
-                             iter, tqueue->data.end(), [&](const auto& el) {
-                                 return el.handler == this_obj
-                                        || el.sp_handler.get() == this_obj;
-                             });
+	iter        = this_obj == nullptr ? remain : std::find_if(iter, tqueue->data.end(), [&](const auto& el) {
+        return el.handler == this_obj || el.sp_handler.get() == this_obj;
+    });
 	if (iter == tqueue->data.end()) {
 		return false;
 	}

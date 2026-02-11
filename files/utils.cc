@@ -29,6 +29,7 @@
 #include "fnames.h"
 #include "ignore_unused_variable_warning.h"
 #include "listfiles.h"
+
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -84,15 +85,13 @@ static void switch_slashes(string& name);
 static bool base_to_uppercase(string& str, int count);
 
 // Global factories for instantiating file streams
-static U7IstreamFactory istream_factory
-		= [](const char* s, std::ios_base::openmode mode) {
-			  return std::make_unique<std::ifstream>(s, mode);
-		  };
+static U7IstreamFactory istream_factory = [](const char* s, std::ios_base::openmode mode) {
+	return std::make_unique<std::ifstream>(s, mode);
+};
 
-static U7OstreamFactory ostream_factory
-		= [](const char* s, std::ios_base::openmode mode) {
-			  return std::make_unique<std::ofstream>(s, mode);
-		  };
+static U7OstreamFactory ostream_factory = [](const char* s, std::ios_base::openmode mode) {
+	return std::make_unique<std::ofstream>(s, mode);
+};
 
 // Ugly hack for supporting different paths
 
@@ -119,8 +118,7 @@ static string remove_trailing_slash(const string& value) {
 	string new_path = value;
 	if (is_path_separator(new_path.back())) {
 #ifdef EXTRA_DEBUG
-		std::cerr << "Warning, trailing slash in path: \"" << new_path << "\""
-				  << std::endl;
+		std::cerr << "Warning, trailing slash in path: \"" << new_path << "\"" << std::endl;
 #endif
 		new_path.resize(new_path.size() - 1);
 	}
@@ -131,9 +129,7 @@ static string remove_trailing_slash(const string& value) {
 void add_system_path(const string& key, const string& value) {
 	if (!value.empty()) {
 		if (value.find(key) != string::npos) {
-			std::cerr << "Error: system path '" << key
-					  << "' is being defined in terms of itself: '" << value
-					  << "'." << std::endl;
+			std::cerr << "Error: system path '" << key << "' is being defined in terms of itself: '" << value << "'." << std::endl;
 			exit(1);
 		} else {
 			path_map[key] = remove_trailing_slash(value);
@@ -190,8 +186,7 @@ string get_system_path(const string& path) {
 			pos2 = new_path.find('<');
 		} else {
 #ifdef DEBUG
-			std::cerr << "Unrecognized system path '" << syspath
-					  << "' in path '" << path << "'." << std::endl;
+			std::cerr << "Unrecognized system path '" << syspath << "' in path '" << path << "'." << std::endl;
 #endif
 			break;
 		}
@@ -209,8 +204,7 @@ string get_system_path(const string& path) {
 #ifdef _WIN32
 	if (new_path.back() == '/' || new_path.back() == '\\') {
 #	ifdef EXTRA_DEBUG
-		std::cerr << "Warning, trailing slash in path: \"" << new_path << "\""
-				  << std::endl;
+		std::cerr << "Warning, trailing slash in path: \"" << new_path << "\"" << std::endl;
 #	endif
 		new_path += '.';
 	}
@@ -387,9 +381,8 @@ DIR* U7opendir(const char* fname    // May be converted to upper-case.
 		// TODO: If SDL ever adds directories to rwops use it instead
 
 		if (!dir) {
-			string internalpath
-					= SDL_GetAndroidInternalStoragePath() + ("/" + name);
-			dir = opendir(internalpath.c_str());
+			string internalpath = SDL_GetAndroidInternalStoragePath() + ("/" + name);
+			dir                 = opendir(internalpath.c_str());
 		}
 #endif
 		if (dir) {
@@ -423,8 +416,7 @@ void U7remove(const char* fname    // May be converted to upper-case.
 			if (istream_factory) {
 				in = istream_factory(name.c_str(), std::ios_base::in);
 			} else {
-				in = std::make_unique<std::ifstream>(
-						name.c_str(), std::ios_base::in);
+				in = std::make_unique<std::ifstream>(name.c_str(), std::ios_base::in);
 			}
 		} catch (std::exception&) {
 		}
@@ -499,18 +491,18 @@ bool U7exists(const char* fname    // May be converted to upper-case.
 
 int U7mkdir(
 		const char* dirname,    // May be converted to upper-case.
-		int         mode,
-		bool        parents) {
+		int mode, bool parents) {
 	string name = get_system_path(dirname);
 	// remove any trailing slashes
 	const string::size_type pos = name.find_last_not_of('/');
 	if (pos != string::npos) {
 		name.resize(pos + 1);
 	}
-	if (parents)
-	{
+	if (parents) {
 		std::string parent(get_directory_from_path(name));
-		if (!parent.empty() )U7mkdir(parent.c_str(), mode, true);
+		if (!parent.empty()) {
+			U7mkdir(parent.c_str(), mode, true);
+		}
 	}
 #if defined(_WIN32) && defined(UNICODE)
 	const char* n     = name.c_str();
@@ -530,21 +522,19 @@ int U7mkdir(
 int U7rmdir(const char* dirname, bool recursive) {
 	string name = get_system_path(dirname);
 
-	if (recursive)
-	{
+	if (recursive) {
 		// Get contents if recrusive
 		FileList files;
 		U7ListFiles(name + "/*", files, true);
 
 		for (const auto& filename : files) {
 			// Get filename
-			std::string_view fn    = get_filename_from_path(filename);
+			std::string_view fn = get_filename_from_path(filename);
 
 			// skip . and .. directory entries
 			if (fn == "." || fn == "..") {
 				continue;
 			}
-
 
 			// is it a directory? if so rmdir it recursively
 			auto* dir = U7opendir(filename.c_str());
@@ -554,8 +544,7 @@ int U7rmdir(const char* dirname, bool recursive) {
 					return -1;
 				}
 			} else {
-				if (!std::remove(filename.c_str()))
-				{
+				if (!std::remove(filename.c_str())) {
 					return -1;
 				}
 			}
@@ -569,9 +558,7 @@ int U7rmdir(const char* dirname, bool recursive) {
 class shell32_wrapper {
 protected:
 	HMODULE hLib;
-	using SHGetFolderPathFunc = HRESULT(WINAPI*)(
-			HWND hwndOwner, int nFolder, HANDLE hToken, DWORD dwFlags,
-			LPTSTR pszPath);
+	using SHGetFolderPathFunc = HRESULT(WINAPI*)(HWND hwndOwner, int nFolder, HANDLE hToken, DWORD dwFlags, LPTSTR pszPath);
 	SHGetFolderPathFunc SHGetFolderPath;
 
 	/*
@@ -588,8 +575,7 @@ protected:
 	template <typename Dest>
 	Dest get_function(const char* func) {
 		static_assert(
-				sizeof(Dest) == sizeof(decltype(GetProcAddress(hLib, func))),
-				"sizeof(FARPROC) is not equal to sizeof(Dest)!");
+				sizeof(Dest) == sizeof(decltype(GetProcAddress(hLib, func))), "sizeof(FARPROC) is not equal to sizeof(Dest)!");
 		Dest    fptr;
 		FARPROC optr = GetProcAddress(hLib, func);
 		std::memcpy(&fptr, &optr, sizeof(optr));
@@ -600,8 +586,7 @@ public:
 	shell32_wrapper() {
 		hLib = LoadLibrary("shell32.dll");
 		if (hLib != nullptr) {
-			SHGetFolderPath
-					= get_function<SHGetFolderPathFunc>("SHGetFolderPathA");
+			SHGetFolderPath = get_function<SHGetFolderPathFunc>("SHGetFolderPathA");
 			/*
 			SHGetKnownFolderPath =
 			get_function<SHGetKnownFolderPathFunc>("SHGetKnownFolderPath");
@@ -624,15 +609,12 @@ public:
 		else */
 		if (SHGetFolderPath != nullptr) {
 			CHAR    szPath[MAX_PATH];
-			HRESULT code = SHGetFolderPath(
-					nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, szPath);
+			HRESULT code = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, szPath);
 			if (code == E_INVALIDARG) {
 				return string();
 			} else if (code == S_FALSE) {    // E_FAIL for Unicode version.
 				// Lets try creating it through the API flag:
-				code = SHGetFolderPath(
-						nullptr, CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE,
-						nullptr, 0, szPath);
+				code = SHGetFolderPath(nullptr, CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE, nullptr, 0, szPath);
 			}
 			if (code == E_INVALIDARG) {
 				return string();
@@ -697,8 +679,7 @@ void redirect_output(const char* prefix) {
 		return false;
 #		endif
 	};
-	auto redirect_stream = [](FILE* stream, const char* device, HANDLE handle,
-							  DWORD& type, int mode, size_t size) {
+	auto redirect_stream = [](FILE* stream, const char* device, HANDLE handle, DWORD& type, int mode, size_t size) {
 		// Only redirect if the stream is not already being redirected.
 		if (handle != INVALID_HANDLE_VALUE && type == FILE_TYPE_UNKNOWN) {
 			// Flush the output in case anything is queued
@@ -714,13 +695,11 @@ void redirect_output(const char* prefix) {
 	};
 	auto redirect_stdout = [&](const char* device) {
 		// Line buffered
-		return redirect_stream(
-				stdout, device, stdout_handle, stdout_type, _IOLBF, BUFSIZ);
+		return redirect_stream(stdout, device, stdout_handle, stdout_type, _IOLBF, BUFSIZ);
 	};
 	auto redirect_stderr = [&](const char* device) {
 		// No buffering
-		return redirect_stream(
-				stderr, device, stderr_handle, stderr_type, _IONBF, 0);
+		return redirect_stream(stderr, device, stderr_handle, stderr_type, _IONBF, 0);
 	};
 	const unsynch_from_stdio resyncher;
 	if (attach_console()) {
@@ -756,12 +735,10 @@ void cleanup_output(const char* prefix) {
 	const string folderPath           = Get_home() + "/" + prefix;
 	auto         clear_empty_redirect = [&](FILE* stream, const char* suffix) {
         // Get the Win32 HANDLE Of the stream
-        HANDLE handle
-                = reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(stream)));
+        HANDLE handle = reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(stream)));
         fflush(stream);
         // Only try to delete the stream if it is an actual file
-        if (handle != INVALID_HANDLE_VALUE
-            && GetFileType(handle) == FILE_TYPE_DISK && ftell(stream) == 0) {
+        if (handle != INVALID_HANDLE_VALUE && GetFileType(handle) == FILE_TYPE_DISK && ftell(stream) == 0) {
             fclose(stream);
             const string stream_path = folderPath + suffix;
             remove(stream_path.c_str());
@@ -835,8 +812,7 @@ void setup_app_bundle_resource() {
 			std::move(CFBundleCopyBundleURL(CFBundleGetMainBundle()))};
 	if (bundleUrl) {
 		unsigned char bundlebuf[MAXPATHLEN];
-		if (CFURLGetFileSystemRepresentation(
-					bundleUrl.get(), true, bundlebuf, sizeof(bundlebuf))) {
+		if (CFURLGetFileSystemRepresentation(bundleUrl.get(), true, bundlebuf, sizeof(bundlebuf))) {
 			string bundlepath(reinterpret_cast<const char*>(bundlebuf));
 #	ifdef MACOSX
 			bundlepath += "/Contents/Info.plist";
@@ -844,13 +820,11 @@ void setup_app_bundle_resource() {
 			bundlepath += "/Info.plist";
 #	endif
 			if (U7exists(bundlepath)) {
-				std::unique_ptr<std::remove_pointer<CFURLRef>::type, CFDeleter>
-						fileUrl{std::move(CFBundleCopyResourcesDirectoryURL(
-								CFBundleGetMainBundle()))};
+				std::unique_ptr<std::remove_pointer<CFURLRef>::type, CFDeleter> fileUrl{
+						std::move(CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle()))};
 				if (fileUrl) {
 					unsigned char buf[MAXPATHLEN];
-					if (CFURLGetFileSystemRepresentation(
-								fileUrl.get(), true, buf, sizeof(buf))) {
+					if (CFURLGetFileSystemRepresentation(fileUrl.get(), true, buf, sizeof(buf))) {
 						string path(reinterpret_cast<const char*>(buf));
 						add_system_path("<APP_BUNDLE_RES>", path);
 					}
@@ -947,9 +921,7 @@ void setup_data_dir(const std::string& data_path, const char* runpath) {
 	// We've tried them all...
 	std::cerr << "Could not find 'exult.flx' anywhere." << std::endl;
 	std::cerr << "Please make sure Exult is correctly installed," << std::endl;
-	std::cerr
-			<< "and the Exult data path is specified in the configuration file."
-			<< std::endl;
+	std::cerr << "and the Exult data path is specified in the configuration file." << std::endl;
 	std::cerr << "(See the README file for more information)" << std::endl;
 	exit(-1);
 }
@@ -971,8 +943,7 @@ static string Get_config_dir(const string& home_dir) {
 #endif
 }
 
-static string Get_savehome_dir(
-		const string& home_dir, const string& config_dir) {
+static string Get_savehome_dir(const string& home_dir, const string& config_dir) {
 #ifdef SDL_PLATFORM_IOS
 	ignore_unused_variable_warning(home_dir);
 	string savehome_dir(config_dir);
@@ -999,8 +970,7 @@ static string Get_savehome_dir(
 #endif
 }
 
-static string Get_gamehome_dir(
-		const string& home_dir, const string& config_dir) {
+static string Get_gamehome_dir(const string& home_dir, const string& config_dir) {
 #ifdef SDL_PLATFORM_IOS
 	ignore_unused_variable_warning(home_dir);
 	string gamehome_dir(config_dir);
@@ -1172,18 +1142,16 @@ int Find_next_map(
 	char fname[128];
 
 	for (int i = start; maxtry; --maxtry, ++i) {
-		if (U7exists(Get_mapped_name("<STATIC>/", i, fname))
-			|| U7exists(Get_mapped_name("<PATCH>/", i, fname))) {
+		if (U7exists(Get_mapped_name("<STATIC>/", i, fname)) || U7exists(Get_mapped_name("<PATCH>/", i, fname))) {
 			return i;
 		}
 	}
 	return -1;
 }
 
-std::string_view get_filename_from_path(std::string_view path)
-{
+std::string_view get_filename_from_path(std::string_view path) {
 	// find last slash or backslash
-	auto             slash = path.find_last_of("\\/");
+	auto slash = path.find_last_of("\\/");
 	if (slash != std::string_view::npos) {
 		// return the substring after the slash
 		return path.substr(slash + 1);

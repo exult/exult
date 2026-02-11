@@ -50,8 +50,7 @@ class Slime_actor : public Monster_actor {
 	void update_frames(Tile_coord src, Tile_coord dest);
 
 public:
-	Slime_actor(const std::string& nm, int shapenum, int num = -1, int uc = -1)
-			: Monster_actor(nm, shapenum, num, uc) {}
+	Slime_actor(const std::string& nm, int shapenum, int num = -1, int uc = -1) : Monster_actor(nm, shapenum, num, uc) {}
 
 	// Step onto an (adjacent) tile.
 	bool step(Tile_coord t, int frame, bool force = false) override;
@@ -95,8 +94,7 @@ void Monster_actor::link_in() {
 
 void Monster_actor::link_out() {
 	if (next_monster) {
-		(static_cast<Monster_actor*>(next_monster.get()))->prev_monster
-				= prev_monster;
+		(static_cast<Monster_actor*>(next_monster.get()))->prev_monster = prev_monster;
 	}
 	if (prev_monster) {
 		prev_monster->next_monster = next_monster;
@@ -116,8 +114,7 @@ Monster_actor::Monster_actor(
 		const std::string& nm, int shapenum,
 		int num,    // Generally -1.
 		int uc)
-		: Npc_actor(nm, shapenum, num, uc), next_monster(nullptr),
-		  prev_monster(nullptr), animator(nullptr) {
+		: Npc_actor(nm, shapenum, num, uc), next_monster(nullptr), prev_monster(nullptr), animator(nullptr) {
 	// Check for animated shape.
 	const Shape_info& info = get_info();
 	if (info.is_animated() || info.has_sfx()) {
@@ -140,8 +137,7 @@ Monster_actor::~Monster_actor() {
 void Monster_actor::equip(const Monster_info* inf, bool temporary) {
 	// Get equipment.
 	const int equip_offset = inf->equip_offset;
-	if (equip_offset == 0
-		|| equip_offset - 1 >= Monster_info::get_equip_cnt()) {
+	if (equip_offset == 0 || equip_offset - 1 >= Monster_info::get_equip_cnt()) {
 		return;
 	}
 	vector<Equip_record>& equip = Monster_info::equip;
@@ -170,18 +166,14 @@ void Monster_actor::equip(const Monster_info* inf, bool temporary) {
 			// matches behavior of the original games, where some items (like
 			// gold coins) can be any amount in this range.
 			int amount = 1 + (rand() % elem.quantity);
-			create_quantity(
-					amount, elem.shapenum, c_any_qual, frnum, temporary);
+			create_quantity(amount, elem.shapenum, c_any_qual, frnum, temporary);
 		} else {
-			create_quantity(
-					elem.quantity, elem.shapenum, c_any_qual, frnum, temporary);
+			create_quantity(elem.quantity, elem.shapenum, c_any_qual, frnum, temporary);
 		}
 		const int ammo = winfo != nullptr ? winfo->get_ammo_consumed() : -1;
 		if (ammo >= 0) {
 			// Weapon requires ammo.
-			create_quantity(
-					(1 + (rand() % 10)) + (1 + (rand() % 10)), ammo, c_any_qual,
-					0, temporary);
+			create_quantity((1 + (rand() % 10)) + (1 + (rand() % 10)), ammo, c_any_qual, 0, temporary);
 		}
 	}
 	if (inf->cant_yell()) {
@@ -219,8 +211,7 @@ void Monster_actor::equip(const Monster_info* inf, bool temporary) {
 				container_info{802,   0}, // Bag
 		};
 		const auto [shape, qual]     = containers[rand() % containers.size()];
-		Game_object_shared container = gmap->create_ireg_object(
-				ShapeID::get_info(shape), shape, 0, 0, 0, 0);
+		Game_object_shared container = gmap->create_ireg_object(ShapeID::get_info(shape), shape, 0, 0, 0, 0);
 
 		// Set temporary
 		if (temporary) {
@@ -283,9 +274,8 @@ Game_object_shared Monster_actor::create(
 		inf = Monster_info::get_default();
 	}
 	Game_object_shared new_monster = create(shnum);
-	auto*              monster = static_cast<Monster_actor*>(new_monster.get());
-	monster->set_alignment(
-			align == static_cast<int>(Actor::neutral) ? inf->alignment : align);
+	auto*              monster     = static_cast<Monster_actor*>(new_monster.get());
+	monster->set_alignment(align == static_cast<int>(Actor::neutral) ? inf->alignment : align);
 	// Movement flags
 	if ((inf->flags >> Monster_info::fly) & 1) {
 		monster->set_type_flag(Actor::tf_fly);
@@ -311,10 +301,8 @@ Game_object_shared Monster_actor::create(
 	monster->set_property(Actor::strength, str);
 	// Max. health = strength.
 	monster->set_property(Actor::health, str);
-	monster->set_property(
-			Actor::dexterity, Randomize_initial_stat(inf->dexterity));
-	monster->set_property(
-			Actor::intelligence, Randomize_initial_stat(inf->intelligence));
+	monster->set_property(Actor::dexterity, Randomize_initial_stat(inf->dexterity));
+	monster->set_property(Actor::intelligence, Randomize_initial_stat(inf->intelligence));
 	monster->set_property(Actor::combat, Randomize_initial_stat(inf->combat));
 
 	static const char monster_mode_odds[5][4] = {
@@ -339,8 +327,7 @@ Game_object_shared Monster_actor::create(
 			break;
 		}
 	}
-	monster->set_attack_mode(
-			monster_modes[static_cast<int>(inf->m_attackmode)][i]);
+	monster->set_attack_mode(monster_modes[static_cast<int>(inf->m_attackmode)][i]);
 
 	// Set temporary
 	if (temporary) {
@@ -446,8 +433,7 @@ bool Monster_actor::step(
  *  The object is deleted.
  */
 
-void Monster_actor::remove_this(
-		Game_object_shared* keep    // Non-null to not delete.
+void Monster_actor::remove_this(Game_object_shared* keep    // Non-null to not delete.
 ) {
 	if (!keep) {       // +++++Experiment
 		link_out();    // Remove from list.
@@ -546,8 +532,7 @@ static void Get_slime_neighbors(
 	// Offsets to neighbors 2 tiles away.
 	static const int offsets[8] = {0, -2, 2, 0, 0, 2, -2, 0};
 	for (int dir = 0; dir < 4; dir++) {
-		neighbors[dir]
-				= pos + Tile_coord(offsets[2 * dir], offsets[2 * dir + 1], 0);
+		neighbors[dir] = pos + Tile_coord(offsets[2 * dir], offsets[2 * dir + 1], 0);
 	}
 }
 
@@ -602,9 +587,7 @@ void Slime_actor::update_frames(
 				const int ndir = (dir + 2) % 4;
 				// Turn off bit (1<<ndir)*2, and set
 				//   bit 0 randomly.
-				slime->change_frame(
-						(slime->get_framenum() & ~(((1 << ndir) * 2) | 1))
-						| (rand() % 2));
+				slime->change_frame((slime->get_framenum() & ~(((1 << ndir) * 2) | 1)) | (rand() % 2));
 			}
 		}
 	}
@@ -618,9 +601,7 @@ void Slime_actor::update_frames(
 				const int ndir = (dir + 2) % 4;
 				// Turn on bit (1<<ndir)*2, and set
 				//   bit 0 randomly.
-				slime->change_frame(
-						(slime->get_framenum() & ~1) | ((1 << ndir) * 2)
-						| (rand() % 2));
+				slime->change_frame((slime->get_framenum() & ~1) | ((1 << ndir) * 2) | (rand() % 2));
 			}
 		}
 		change_frame(frnum | (rand() % 2));
@@ -658,8 +639,7 @@ bool Slime_actor::step(
  *  The object is deleted.
  */
 
-void Slime_actor::remove_this(
-		Game_object_shared* keep    // Non-null to not delete.
+void Slime_actor::remove_this(Game_object_shared* keep    // Non-null to not delete.
 ) {
 	const Tile_coord   pos = get_tile();
 	Game_object_shared keep_this;

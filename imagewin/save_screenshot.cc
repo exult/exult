@@ -80,8 +80,7 @@ static void png_error_SDL(png_structp ctx, png_const_charp str) {
 	SDL_SetError("libpng: %s\n", str);
 }
 
-static void png_write_SDL(
-		png_structp png_ptr, png_bytep data, png_size_t length) {
+static void png_write_SDL(png_structp png_ptr, png_bytep data, png_size_t length) {
 	SDL_IOStream* rw = static_cast<SDL_IOStream*>(png_get_io_ptr(png_ptr));
 	SDL_WriteIO(rw, data, sizeof(png_byte) * length);
 }
@@ -96,16 +95,12 @@ static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 	const int    width  = surface->w - 2 * guardband;
 	const int    height = surface->h - 2 * guardband;
 	const int    pitch  = surface->pitch;
-	auto*        pixels = static_cast<png_bytep>(surface->pixels) + guardband
-				   + pitch * guardband;
+	auto*        pixels = static_cast<png_bytep>(surface->pixels) + guardband + pitch * guardband;
 
 	/* err_ptr, err_fn, warn_fn */
-	png_ptr = png_create_write_struct(
-			PNG_LIBPNG_VER_STRING, nullptr, png_error_SDL, nullptr);
+	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, png_error_SDL, nullptr);
 	if (!png_ptr) {
-		SDL_SetError(
-				"Unable to png_create_write_struct on %s\n",
-				PNG_LIBPNG_VER_STRING);
+		SDL_SetError("Unable to png_create_write_struct on %s\n", PNG_LIBPNG_VER_STRING);
 		return false;
 	}
 	info_ptr = png_create_info_struct(png_ptr);
@@ -125,15 +120,11 @@ static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 	png_set_write_fn(png_ptr, dst, png_write_SDL, nullptr);
 
 	/* Prepare chunks */
-	colortype = PNG_COLOR_MASK_COLOR;
-	const SDL_PixelFormatDetails* surface_format
-			= SDL_GetPixelFormatDetails(surface->format);
-	if ((surface_format->bytes_per_pixel > 0)
-		&& (surface_format->bytes_per_pixel <= 8)
-		&& (pal = SDL_GetSurfacePalette(surface))) {
+	colortype                                    = PNG_COLOR_MASK_COLOR;
+	const SDL_PixelFormatDetails* surface_format = SDL_GetPixelFormatDetails(surface->format);
+	if ((surface_format->bytes_per_pixel > 0) && (surface_format->bytes_per_pixel <= 8) && (pal = SDL_GetSurfacePalette(surface))) {
 		colortype |= PNG_COLOR_MASK_PALETTE;
-		pal_ptr = static_cast<png_colorp>(
-				malloc(pal->ncolors * sizeof(png_color)));
+		pal_ptr = static_cast<png_colorp>(malloc(pal->ncolors * sizeof(png_color)));
 		for (i = 0; i < pal->ncolors; i++) {
 			pal_ptr[i].red   = pal->colors[i].r;
 			pal_ptr[i].green = pal->colors[i].g;
@@ -141,14 +132,13 @@ static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 		}
 		png_set_PLTE(png_ptr, info_ptr, pal_ptr, pal->ncolors);
 		free(pal_ptr);
-	} else if (
-			(surface_format->bytes_per_pixel > 3) || (surface_format->Amask)) {
+	} else if ((surface_format->bytes_per_pixel > 3) || (surface_format->Amask)) {
 		colortype |= PNG_COLOR_MASK_ALPHA;
 	}
 
 	png_set_IHDR(
-			png_ptr, info_ptr, width, height, 8, colortype, PNG_INTERLACE_NONE,
-			PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+			png_ptr, info_ptr, width, height, 8, colortype, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+			PNG_FILTER_TYPE_DEFAULT);
 
 	/* Write everything */
 	png_write_info(png_ptr, info_ptr);
@@ -171,14 +161,10 @@ static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 #		define qtohl(x) (x)
 #		define qtohs(x) (x)
 #	else
-#		define qtohl(x)                                   \
-			((Uint32)((((Uint32)(x) & 0x000000ffU) << 24)  \
-					  | (((Uint32)(x) & 0x0000ff00U) << 8) \
-					  | (((Uint32)(x) & 0x00ff0000U) >> 8) \
-					  | (((Uint32)(x) & 0xff000000U) >> 24)))
-#		define qtohs(x)                            \
-			((Uint16)((((Uint16)(x) & 0x00ff) << 8) \
-					  | (((Uint16)(x) & 0xff00) >> 8)))
+#		define qtohl(x)                                                                       \
+			((Uint32)((((Uint32)(x) & 0x000000ffU) << 24) | (((Uint32)(x) & 0x0000ff00U) << 8) \
+					  | (((Uint32)(x) & 0x00ff0000U) >> 8) | (((Uint32)(x) & 0xff000000U) >> 24)))
+#		define qtohs(x) ((Uint16)((((Uint16)(x) & 0x00ff) << 8) | (((Uint16)(x) & 0xff00) >> 8)))
 #	endif
 #	define htoql(x) qtohl(x)
 #	define htoqs(x) qtohs(x)
@@ -222,17 +208,14 @@ static void writeline(SDL_IOStream* dst, Uint8* buffer, int bytes) {
 	}
 }
 
-static void save_8(
-		SDL_IOStream* dst, int width, int height, int pitch, Uint8* buffer) {
+static void save_8(SDL_IOStream* dst, int width, int height, int pitch, Uint8* buffer) {
 	for (int row = 0; row < height; ++row) {
 		writeline(dst, buffer, width);
 		buffer += pitch;
 	}
 }
 
-static void save_24(
-		SDL_IOStream* dst, int width, int height, int pitch,
-		const Uint8* buffer) {
+static void save_24(SDL_IOStream* dst, int width, int height, int pitch, const Uint8* buffer) {
 	auto* line = new Uint8[width];
 
 	for (int y = 0; y < height; ++y) {
@@ -253,17 +236,15 @@ static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 	int    width  = surface->w - 2 * guardband;
 	int    height = surface->h - 2 * guardband;
 	int    pitch  = surface->pitch;
-	auto*  pixels = static_cast<Uint8*>(surface->pixels) + guardband
-				   + pitch * guardband;
+	auto*  pixels = static_cast<Uint8*>(surface->pixels) + guardband + pitch * guardband;
 
 	PCX_Header header;
 	header.manufacturer = 0x0a;
 	header.version      = 5;
 	header.compression  = 1;
 
-	const SDL_PixelFormatDetails* surface_format
-			= SDL_GetPixelFormatDetails(surface->format);
-	const SDL_Palette* surface_palette = SDL_GetSurfacePalette(surface);
+	const SDL_PixelFormatDetails* surface_format  = SDL_GetPixelFormatDetails(surface->format);
+	const SDL_Palette*            surface_palette = SDL_GetSurfacePalette(surface);
 	if (surface_palette && surface_format->bits_per_pixel == 8) {
 		colors = surface_palette->ncolors;
 		cmap   = new Uint8[3 * colors];
@@ -324,8 +305,7 @@ static bool save_image(SDL_Surface* surface, SDL_IOStream* dst, int guardband) {
 
 #endif    // HAVE_PNG_H
 
-bool SaveIMG_RW(
-		SDL_Surface* saveme, SDL_IOStream* dst, bool freedst, int guardband) {
+bool SaveIMG_RW(SDL_Surface* saveme, SDL_IOStream* dst, bool freedst, int guardband) {
 	SDL_Surface* surface;
 	bool         found_error = false;
 
@@ -341,38 +321,31 @@ bool SaveIMG_RW(
 	constexpr const Uint32 Gmask = 0x0000FF00U;
 	constexpr const Uint32 Bmask = 0x00FF0000U;
 #endif
-	const SDL_PixelFormatDetails* saveme_format
-			= SDL_GetPixelFormatDetails(saveme->format);
+	const SDL_PixelFormatDetails* saveme_format = SDL_GetPixelFormatDetails(saveme->format);
 	if (dst) {
 		if (SDL_GetSurfacePalette(saveme)) {
 			if (saveme_format->bits_per_pixel == 8) {
 				surface = saveme;
 			} else {
 				found_error = true;
-				cout << saveme_format->bits_per_pixel
-					 << "bpp PCX files not supported" << endl;
+				cout << saveme_format->bits_per_pixel << "bpp PCX files not supported" << endl;
 			}
 		} else if (
-				(saveme_format->bits_per_pixel == 24)
-				&& (saveme_format->Rmask == Rmask)
-				&& (saveme_format->Gmask == Gmask)
+				(saveme_format->bits_per_pixel == 24) && (saveme_format->Rmask == Rmask) && (saveme_format->Gmask == Gmask)
 				&& (saveme_format->Bmask == Bmask)) {
 			surface = saveme;
 		} else {
 			SDL_Rect bounds;
 
 			/* Convert to 24 bits per pixel */
-			surface = SDL_CreateSurface(
-					saveme->w, saveme->h,
-					SDL_GetPixelFormatForMasks(24, Rmask, Gmask, Bmask, 0));
+			surface = SDL_CreateSurface(saveme->w, saveme->h, SDL_GetPixelFormatForMasks(24, Rmask, Gmask, Bmask, 0));
 
 			if (surface != nullptr) {
 				bounds.x = 0;
 				bounds.y = 0;
 				bounds.w = saveme->w;
 				bounds.h = saveme->h;
-				if (!SDL_BlitSurfaceUnchecked(
-							saveme, &bounds, surface, &bounds)) {
+				if (!SDL_BlitSurfaceUnchecked(saveme, &bounds, surface, &bounds)) {
 					SDL_DestroySurface(surface);
 					cout << "Couldn't convert image to 24 bpp for screenshot";
 					found_error = true;
