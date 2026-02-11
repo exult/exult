@@ -33,14 +33,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	include <array>
 #	include <cerrno>
 
-const MidiDriver::MidiDriverDesc UnixSeqMidiDriver::desc
-		= MidiDriver::MidiDriverDesc("UnixSeq", createInstance);
+const MidiDriver::MidiDriverDesc UnixSeqMidiDriver::desc = MidiDriver::MidiDriverDesc("UnixSeq", createInstance);
 
 constexpr const int              SeqMidiPutC = 5;
 constexpr const std::string_view SeqDevice   = "/dev/sequencer";
 
-UnixSeqMidiDriver::UnixSeqMidiDriver()
-		: LowLevelMidiDriver(std::string(desc.name)) {
+UnixSeqMidiDriver::UnixSeqMidiDriver() : LowLevelMidiDriver(std::string(desc.name)) {
 	// see if the config file specifies an alternate midi device
 	devname = getConfigSetting("unixseqdevice", SeqDevice.data());
 }
@@ -104,8 +102,7 @@ void UnixSeqMidiDriver::send(uint32 b) {
 		Write1(out, 0);
 		break;
 	default:
-		perr << "UnixSeqMidiDriver: Unknown Command: " << std::hex
-			 << static_cast<int>(b) << std::dec << std::endl;
+		perr << "UnixSeqMidiDriver: Unknown Command: " << std::hex << static_cast<int>(b) << std::dec << std::endl;
 		break;
 	}
 
@@ -114,8 +111,7 @@ void UnixSeqMidiDriver::send(uint32 b) {
 	assert(count == size);
 }
 
-void UnixSeqMidiDriver::send_sysex(
-		uint8 status, const uint8* msg, uint16 length) {
+void UnixSeqMidiDriver::send_sysex(uint8 status, const uint8* msg, uint16 length) {
 	if (length > 511) {
 		perr << "UnixSeqMidiDriver: "
 			 << "Cannot send SysEx block - data too large" << std::endl;

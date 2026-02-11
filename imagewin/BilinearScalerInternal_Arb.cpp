@@ -24,19 +24,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace Pentagram { namespace BilinearScaler {
 
-	template <
-			class uintX, class Manip, class uintS,
-			typename limit_t = std::nullptr_t>
+	template <class uintX, class Manip, class uintS, typename limit_t = std::nullptr_t>
 	// This takes a 2x2 block and generates the scaled pixels between the texels
 	// The fixed point inputs control how many pixels to generate
 	// and the needed filtering coefficents
 	BSI_FORCE_INLINE uint8* Interpolate2x2BlockByAny(
-			const uint8* const tl, const uint8* const bl, const uint8* const tr,
-			const uint8* const br, uint8*& blockline_start, uint8*& next_block,
-			fixedu1616& pos_y, fixedu1616& pos_x, fixedu1616& end_y,
-			const fixedu1616 end_x, const fixedu1616 add_y,
-			const fixedu1616 add_x, const fixedu1616 block_start_x,
-			const uint_fast32_t pitch, const limit_t limit = nullptr) {
+			const uint8* const tl, const uint8* const bl, const uint8* const tr, const uint8* const br, uint8*& blockline_start,
+			uint8*& next_block, fixedu1616& pos_y, fixedu1616& pos_x, fixedu1616& end_y, const fixedu1616 end_x,
+			const fixedu1616 add_y, const fixedu1616 add_x, const fixedu1616 block_start_x, const uint_fast32_t pitch,
+			const limit_t limit = nullptr) {
 		uint8*     pixel = blockline_start;
 		fixedu1616 posy = pos_y, posx = pos_x;
 		while (posy < end_y && IsUnclipped(blockline_start, limit)) {
@@ -47,9 +43,7 @@ namespace Pentagram { namespace BilinearScaler {
 			pixel = blockline_start;
 			blockline_start += pitch;
 			while (posx < end_x && IsUnclipped(pixel, limit)) {
-				Interpolate2x2BlockTo1<uintX, Manip, uintS>(
-						tl, bl, tr, br, (end_x - posx) >> 8,
-						(end_y - posy) >> 8, pixel, limit);
+				Interpolate2x2BlockTo1<uintX, Manip, uintS>(tl, bl, tr, br, (end_x - posx) >> 8, (end_y - posy) >> 8, pixel, limit);
 				pixel += sizeof(uintX);
 				posx += add_x;
 			};
@@ -70,9 +64,8 @@ namespace Pentagram { namespace BilinearScaler {
 	// to calculate filtering coefficients for each destination pixel
 	template <class uintX, class Manip, class uintS>
 	bool BilinearScalerInternal_Arb(
-			SDL_Surface* tex, uint_fast32_t sx, uint_fast32_t sy,
-			uint_fast32_t sw, uint_fast32_t sh, uint8* pixel, uint_fast32_t dw,
-			uint_fast32_t dh, uint_fast32_t pitch, bool clamp_src) {
+			SDL_Surface* tex, uint_fast32_t sx, uint_fast32_t sy, uint_fast32_t sw, uint_fast32_t sh, uint8* pixel,
+			uint_fast32_t dw, uint_fast32_t dh, uint_fast32_t pitch, bool clamp_src) {
 		uint_fast32_t tex_w = tex->w, tex_h = tex->h;
 
 		const uint_fast8_t blockwidth = 2;
@@ -91,16 +84,14 @@ namespace Pentagram { namespace BilinearScaler {
 		int numxloops = (sw - 1) / blockwidth;
 
 		// Source buffer pointers
-		const int    tpitch = tex->pitch / sizeof(uintS);
-		const uintS* texel
-				= static_cast<uintS*>(tex->pixels) + (sy * tpitch + sx);
+		const int    tpitch    = tex->pitch / sizeof(uintS);
+		const uintS* texel     = static_cast<uintS*>(tex->pixels) + (sy * tpitch + sx);
 		const uintS* xloop_end = texel + 1 + (numxloops * blockwidth);
 		const uintS* yloop_end = texel + (numyloops * linesperxloop) * tpitch;
 
 		// Absolute limit of the source buffer. Must not read at or beyondthis
-		const uintS* srclimit
-				= static_cast<uintS*>(tex->pixels) + (tex_h * tpitch);
-		int tex_diff = (tpitch * 4) - sw;
+		const uintS* srclimit = static_cast<uintS*>(tex->pixels) + (tex_h * tpitch);
+		int          tex_diff = (tpitch * 4) - sw;
 
 		// 2*5 Source RGBA Pixel block being scaled. Alpha values are
 		// currently ignored. abcde are a column and fghij are the other column.
@@ -165,8 +156,7 @@ namespace Pentagram { namespace BilinearScaler {
 		// actually has the neeeded width to safely read the entire line
 		// unclipped widths not multple of blockwidth always need clipping
 		bool clip_x = true;
-		if ((sx + blockwidth + 1 + numxloops * blockwidth) < tex_w && !clamp_src
-			&& !(sw % blockwidth)) {
+		if ((sx + blockwidth + 1 + numxloops * blockwidth) < tex_w && !clamp_src && !(sw % blockwidth)) {
 			clip_x = false;
 			numxloops++;
 			xloop_end = texel + 1 + (numxloops * blockwidth);
@@ -178,8 +168,7 @@ namespace Pentagram { namespace BilinearScaler {
 		// if request no clamping, check to see if y remains in the bounds of
 		// the texture. If it does we can disable clipping on y
 		// heights not multple of linesperxloop always need clipping
-		if ((sy + blockheight + numyloops * linesperxloop) < tex_h && !clamp_src
-			&& !(sh % linesperxloop)) {
+		if ((sy + blockheight + numyloops * linesperxloop) < tex_h && !clamp_src && !(sh % linesperxloop)) {
 			numyloops++;
 			clip_y    = false;
 			yloop_end = texel + (numyloops * linesperxloop) * tpitch;
@@ -226,23 +215,19 @@ namespace Pentagram { namespace BilinearScaler {
 				// a f
 				// b g
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						a, b, f, g, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						a, b, f, g, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 				// b g
 				// c h
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						b, c, g, h, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						b, c, g, h, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 				// c h
 				// d i
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						c, d, h, i, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						c, d, h, i, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 				// d i
 				// e j
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						d, e, i, j, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						d, e, i, j, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 
 				end_y -= 4 << 16;
 				block_start_x = pos_x;
@@ -265,23 +250,19 @@ namespace Pentagram { namespace BilinearScaler {
 				// f a
 				// g b
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						f, g, a, b, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						f, g, a, b, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 				//  g b
 				//  h c
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						g, h, b, c, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						g, h, b, c, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 				// h c
 				// i d
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						h, i, c, d, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						h, i, c, d, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 				// i d
 				// j e
 				pixel = Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						i, j, d, e, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						i, j, d, e, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 				end_y -= 4 << 16;
 				block_start_x = pos_x;
 				end_x += 1 << 16;
@@ -307,23 +288,19 @@ namespace Pentagram { namespace BilinearScaler {
 				// a f
 				// b g
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						a, b, f, g, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						a, b, f, g, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 				// b g
 				// c h
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						b, c, g, h, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						b, c, g, h, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 				// c h
 				// d i
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						c, d, h, i, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						c, d, h, i, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 				// d i
 				// e j
 				pixel = Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						d, e, i, j, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch);
+						d, e, i, j, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch);
 
 				block_start_x = pos_x;
 				end_x += 1 << 16;
@@ -342,26 +319,22 @@ namespace Pentagram { namespace BilinearScaler {
 					// f f
 					// g g
 					Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-							f, g, f, g, blockline_start, next_block, pos_y,
-							pos_x, end_y, end_x, add_y, add_x, block_start_x,
+							f, g, f, g, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x,
 							pitch);
 					// g g
 					// h h
 					Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-							g, h, g, h, blockline_start, next_block, pos_y,
-							pos_x, end_y, end_x, add_y, add_x, block_start_x,
+							g, h, g, h, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x,
 							pitch);
 					// h h
 					// i i
 					Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-							h, i, h, i, blockline_start, next_block, pos_y,
-							pos_x, end_y, end_x, add_y, add_x, block_start_x,
+							h, i, h, i, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x,
 							pitch);
 					// i i
 					// j j
 					pixel = Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-							i, j, i, j, blockline_start, next_block, pos_y,
-							pos_x, end_y, end_x, add_y, add_x, block_start_x,
+							i, j, i, j, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x,
 							pitch);
 					end_y -= 4 << 16;
 					end_x += 1 << 16;
@@ -389,11 +362,9 @@ namespace Pentagram { namespace BilinearScaler {
 
 			// If no clamping was requested and we have pixels available, allow
 			// reading beyond the source rect
-			if (numyloops * linesperxloop + lines_remaining + sy < tex_h
-				&& !clamp_src) {
+			if (numyloops * linesperxloop + lines_remaining + sy < tex_h && !clamp_src) {
 				// It doesn't matter if this is bigger than linesperxloop
-				lines_remaining = std::max<uint_fast16_t>(
-						255, tex_h - sy - numyloops * linesperxloop);
+				lines_remaining = std::max<uint_fast16_t>(255, tex_h - sy - numyloops * linesperxloop);
 			}
 
 			// Read column 0 of block but clipped to clipping lines
@@ -409,8 +380,7 @@ namespace Pentagram { namespace BilinearScaler {
 			while (texel != xloop_end) {
 				pos_y = block_start_y;
 
-				ReadTexelsV<Manip>(
-						lines_remaining, texel, tpitch, f, g, h, i, j);
+				ReadTexelsV<Manip>(lines_remaining, texel, tpitch, f, g, h, i, j);
 				texel++;
 
 				blockline_start = next_block ? next_block : pixel;
@@ -419,27 +389,23 @@ namespace Pentagram { namespace BilinearScaler {
 				// a f
 				// b g
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						a, b, f, g, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						a, b, f, g, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 				// b g
 				// c h
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						b, c, g, h, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						b, c, g, h, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 				// c h
 				// d i
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						c, d, h, i, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						c, d, h, i, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 
 				// d i
 				// e j
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						d, e, i, j, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						d, e, i, j, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 
 				end_y -= 4 << 16;
@@ -447,8 +413,7 @@ namespace Pentagram { namespace BilinearScaler {
 				end_x += 1 << 16;
 				pos_y = block_start_y;
 
-				ReadTexelsV<Manip>(
-						lines_remaining, texel, tpitch, a, b, c, d, e);
+				ReadTexelsV<Manip>(lines_remaining, texel, tpitch, a, b, c, d, e);
 				texel++;
 
 				blockline_start = next_block ? next_block : pixel;
@@ -457,26 +422,22 @@ namespace Pentagram { namespace BilinearScaler {
 				// f a
 				// g b
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						f, g, a, b, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						f, g, a, b, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 				//  g b
 				//  h c
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						g, h, b, c, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						g, h, b, c, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 				// h c
 				// i d
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						h, i, c, d, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						h, i, c, d, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 				// i d
 				// j e
 				pixel = Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						i, j, d, e, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						i, j, d, e, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 
 				end_y -= 4 << 16;
@@ -495,8 +456,7 @@ namespace Pentagram { namespace BilinearScaler {
 					// column and do not exceed bounds
 					texel--;
 				}
-				ReadTexelsV<Manip>(
-						lines_remaining, texel, tpitch, f, g, h, i, j);
+				ReadTexelsV<Manip>(lines_remaining, texel, tpitch, f, g, h, i, j);
 				texel++;
 
 				blockline_start = next_block ? next_block : pixel;
@@ -505,26 +465,22 @@ namespace Pentagram { namespace BilinearScaler {
 				// a f
 				// b g
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						a, b, f, g, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						a, b, f, g, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 				// b g
 				// c h
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						b, c, g, h, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						b, c, g, h, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 				// c h
 				// d i
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						c, d, h, i, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						c, d, h, i, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 				// d i
 				// e j
 				Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-						d, e, i, j, blockline_start, next_block, pos_y, pos_x,
-						end_y, end_x, add_y, add_x, block_start_x, pitch,
+						d, e, i, j, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
 						dst_limit);
 
 				end_y -= 4 << 16;
@@ -539,27 +495,23 @@ namespace Pentagram { namespace BilinearScaler {
 					// f f
 					// g g
 					Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-							f, g, f, g, blockline_start, next_block, pos_y,
-							pos_x, end_y, end_x, add_y, add_x, block_start_x,
-							pitch, dst_limit);
+							f, g, f, g, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
+							dst_limit);
 					// g g
 					// h h
 					Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-							g, h, g, h, blockline_start, next_block, pos_y,
-							pos_x, end_y, end_x, add_y, add_x, block_start_x,
-							pitch, dst_limit);
+							g, h, g, h, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
+							dst_limit);
 					// h h
 					// i i
 					Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-							h, i, h, i, blockline_start, next_block, pos_y,
-							pos_x, end_y, end_x, add_y, add_x, block_start_x,
-							pitch, dst_limit);
+							h, i, h, i, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
+							dst_limit);
 					// i i
 					// j j
 					Interpolate2x2BlockByAny<uintX, Manip, uintS>(
-							i, j, i, j, blockline_start, next_block, pos_y,
-							pos_x, end_y, end_x, add_y, add_x, block_start_x,
-							pitch, dst_limit);
+							i, j, i, j, blockline_start, next_block, pos_y, pos_x, end_y, end_x, add_y, add_x, block_start_x, pitch,
+							dst_limit);
 				}
 			}
 		}

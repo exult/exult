@@ -9,8 +9,7 @@
 
 // global variables
 #define MAX_RANDOM 256
-colour_hex col[256]
-			  [MAX_RANDOM + 2];    // # randoms, source color, random colors
+colour_hex   col[256][MAX_RANDOM + 2];    // # randoms, source color, random colors
 int          glob_idx = 0;
 glob_statics my_g_stat;
 

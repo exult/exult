@@ -25,19 +25,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace Pentagram { namespace BilinearScaler {
 
-	template <
-			class uintX, class Manip, class uintS,
-			typename limit_t = std::nullptr_t>
+	template <class uintX, class Manip, class uintS, typename limit_t = std::nullptr_t>
 	// Generate 2x2 pixels from source 2x2 block scaling up by 2x
 	BSI_FORCE_INLINE void Interpolate2x2BlockBy2x(
-			const uint8* const tl, const uint8* const bl, const uint8* const tr,
-			const uint8* const br, uint8*& pixel, const uint_fast32_t pitch,
-			const limit_t limit = nullptr) {
-		Interpolate2x2BlockTo2x1<uintX, Manip, uintS>(
-				tl, bl, tr, br, 256, 128, 256, pixel, limit);
+			const uint8* const tl, const uint8* const bl, const uint8* const tr, const uint8* const br, uint8*& pixel,
+			const uint_fast32_t pitch, const limit_t limit = nullptr) {
+		Interpolate2x2BlockTo2x1<uintX, Manip, uintS>(tl, bl, tr, br, 256, 128, 256, pixel, limit);
 		pixel += pitch;
-		Interpolate2x2BlockTo2x1<uintX, Manip, uintS>(
-				tl, bl, tr, br, 256, 128, 128, pixel, limit);
+		Interpolate2x2BlockTo2x1<uintX, Manip, uintS>(tl, bl, tr, br, 256, 128, 128, pixel, limit);
 		pixel += pitch;
 	}
 
@@ -48,9 +43,8 @@ namespace Pentagram { namespace BilinearScaler {
 	// filtering coefficents
 	template <class uintX, class Manip, class uintS>
 	bool BilinearScalerInternal_2x(
-			SDL_Surface* tex, uint_fast32_t sx, uint_fast32_t sy,
-			uint_fast32_t sw, uint_fast32_t sh, uint8* pixel, uint_fast32_t dw,
-			uint_fast32_t dh, uint_fast32_t pitch, bool clamp_src) {
+			SDL_Surface* tex, uint_fast32_t sx, uint_fast32_t sy, uint_fast32_t sw, uint_fast32_t sh, uint8* pixel,
+			uint_fast32_t dw, uint_fast32_t dh, uint_fast32_t pitch, bool clamp_src) {
 		uint_fast32_t      tex_w = tex->w, tex_h = tex->h;
 		const uint_fast8_t blockwidth = 2;
 		// This is the number of lines advanced per xloop
@@ -71,16 +65,14 @@ namespace Pentagram { namespace BilinearScaler {
 		int numxloops = (sw - 1) / blockwidth;
 
 		// Source buffer pointers
-		const int    tpitch = tex->pitch / sizeof(uintS);
-		const uintS* texel
-				= static_cast<uintS*>(tex->pixels) + (sy * tpitch + sx);
+		const int    tpitch    = tex->pitch / sizeof(uintS);
+		const uintS* texel     = static_cast<uintS*>(tex->pixels) + (sy * tpitch + sx);
 		const uintS* xloop_end = texel + 1 + (numxloops * blockwidth);
 		const uintS* yloop_end = texel + (numyloops * linesperxloop) * tpitch;
 
 		// Absolute limit of the source buffer. Must not read at or beyondthis
-		const uintS* srclimit
-				= static_cast<uintS*>(tex->pixels) + (tex_h * tpitch);
-		int tex_diff = (tpitch * 4) - sw;
+		const uintS* srclimit = static_cast<uintS*>(tex->pixels) + (tex_h * tpitch);
+		int          tex_diff = (tpitch * 4) - sw;
 
 		// 2*5 Source RGBA Pixel block being scaled. Alpha values are
 		// currently ignored. abcde are a column and fghij are the other column.
@@ -100,8 +92,7 @@ namespace Pentagram { namespace BilinearScaler {
 		// actually has the neeeded width to safely read the entire line
 		// unclipped widths not multple of blockwidth always need clipping
 		bool clip_x = true;
-		if ((sx + blockwidth + 1 + numxloops * blockwidth) < tex_w && !clamp_src
-			&& !(sw % blockwidth)) {
+		if ((sx + blockwidth + 1 + numxloops * blockwidth) < tex_w && !clamp_src && !(sw % blockwidth)) {
 			clip_x = false;
 			numxloops++;
 			xloop_end = texel + 1 + (numxloops * blockwidth);
@@ -113,8 +104,7 @@ namespace Pentagram { namespace BilinearScaler {
 		// if request no clamping, check to see if y remains in the bounds of
 		// the texture. If it does we can disable clipping on y
 		// heights not multple of linesperxloop always need clipping
-		if ((sy + blockheight + numyloops * linesperxloop) < tex_h && !clamp_src
-			&& !(sh % linesperxloop)) {
+		if ((sy + blockheight + numyloops * linesperxloop) < tex_h && !clamp_src && !(sh % linesperxloop)) {
 			numyloops++;
 			clip_y    = false;
 			yloop_end = texel + (numyloops * linesperxloop) * tpitch;
@@ -149,14 +139,10 @@ namespace Pentagram { namespace BilinearScaler {
 				// as right
 				// Generate all dest pixels for The 4 inputsource pixels
 
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						a, b, f, g, pixel, pitch);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						b, c, g, h, pixel, pitch);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						c, d, h, i, pixel, pitch);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						d, e, i, j, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(a, b, f, g, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(b, c, g, h, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(c, d, h, i, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(d, e, i, j, pixel, pitch);
 
 				pixel -= pitch * destblockheight;
 				pixel += sizeof(uintX) * destblockwidth;
@@ -171,14 +157,10 @@ namespace Pentagram { namespace BilinearScaler {
 				// as right Generate all dest pixels for The 4 input source
 				// pixels
 
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						f, g, a, b, pixel, pitch);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						g, h, b, c, pixel, pitch);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						h, i, c, d, pixel, pitch);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						i, j, d, e, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(f, g, a, b, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(g, h, b, c, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(h, i, c, d, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(i, j, d, e, pixel, pitch);
 
 				// Move the pixel pointer to the start of the next block
 				pixel -= pitch * destblockheight;
@@ -197,14 +179,10 @@ namespace Pentagram { namespace BilinearScaler {
 
 				// Interpolate abcde as left and fghij as right
 				//
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						a, b, f, g, pixel, pitch);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						b, c, g, h, pixel, pitch);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						c, d, h, i, pixel, pitch);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						d, e, i, j, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(a, b, f, g, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(b, c, g, h, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(c, d, h, i, pixel, pitch);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(d, e, i, j, pixel, pitch);
 
 				// Move the pixel pointer to the start of the next block
 				pixel -= pitch * destblockheight;
@@ -212,14 +190,10 @@ namespace Pentagram { namespace BilinearScaler {
 
 				// odd widths do not need the second column
 				if (!(sw & 1)) {
-					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-							f, g, f, g, pixel, pitch);
-					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-							g, h, g, h, pixel, pitch);
-					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-							h, i, h, i, pixel, pitch);
-					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-							i, j, i, j, pixel, pitch);
+					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(f, g, f, g, pixel, pitch);
+					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(g, h, g, h, pixel, pitch);
+					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(h, i, h, i, pixel, pitch);
+					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(i, j, i, j, pixel, pitch);
 					// Move the pixel pointer to the start of the next block
 					pixel -= pitch * destblockheight;
 					pixel += sizeof(uintX) * destblockwidth;
@@ -243,11 +217,9 @@ namespace Pentagram { namespace BilinearScaler {
 
 			// If no clamping was requested and we have pixels available, allow
 			// reading beyond the source rect
-			if (numyloops * linesperxloop + lines_remaining + sy < tex_h
-				&& !clamp_src) {
+			if (numyloops * linesperxloop + lines_remaining + sy < tex_h && !clamp_src) {
 				// It doesn't matter if this is bigger than linesperxloop
-				lines_remaining = std::max<uint_fast16_t>(
-						255, tex_h - sy - numyloops * linesperxloop);
+				lines_remaining = std::max<uint_fast16_t>(255, tex_h - sy - numyloops * linesperxloop);
 			}
 
 			// Read column 0 of block but clipped to clipping lines
@@ -259,34 +231,24 @@ namespace Pentagram { namespace BilinearScaler {
 
 			// Src Loop X
 			while (texel != xloop_end) {
-				ReadTexelsV<Manip>(
-						lines_remaining, texel, tpitch, f, g, h, i, j);
+				ReadTexelsV<Manip>(lines_remaining, texel, tpitch, f, g, h, i, j);
 				texel++;
 
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						a, b, f, g, pixel, pitch, dst_limit);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						b, c, g, h, pixel, pitch, dst_limit);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						c, d, h, i, pixel, pitch, dst_limit);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						d, e, i, j, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(a, b, f, g, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(b, c, g, h, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(c, d, h, i, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(d, e, i, j, pixel, pitch, dst_limit);
 				// Move the pixel pointer to the start of the next block
 				pixel -= pitch * destblockheight;
 				pixel += sizeof(uintX) * 2;
 
-				ReadTexelsV<Manip>(
-						lines_remaining, texel, tpitch, a, b, c, d, e);
+				ReadTexelsV<Manip>(lines_remaining, texel, tpitch, a, b, c, d, e);
 				texel++;
 
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						f, g, a, b, pixel, pitch, dst_limit);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						g, h, b, c, pixel, pitch, dst_limit);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						h, i, c, d, pixel, pitch, dst_limit);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						i, j, d, e, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(f, g, a, b, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(g, h, b, c, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(h, i, c, d, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(i, j, d, e, pixel, pitch, dst_limit);
 				// Move the pixel pointer to the start of the next block
 				pixel -= pitch * destblockheight;
 				pixel += sizeof(uintX) * destblockwidth;
@@ -301,31 +263,22 @@ namespace Pentagram { namespace BilinearScaler {
 					// column and do not exceed bounds
 					texel--;
 				}
-				ReadTexelsV<Manip>(
-						lines_remaining, texel, tpitch, f, g, h, i, j);
+				ReadTexelsV<Manip>(lines_remaining, texel, tpitch, f, g, h, i, j);
 				texel++;
 
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						a, b, f, g, pixel, pitch, dst_limit);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						b, c, g, h, pixel, pitch, dst_limit);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						c, d, h, i, pixel, pitch, dst_limit);
-				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-						d, e, i, j, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(a, b, f, g, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(b, c, g, h, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(c, d, h, i, pixel, pitch, dst_limit);
+				Interpolate2x2BlockBy2x<uintX, Manip, uintS>(d, e, i, j, pixel, pitch, dst_limit);
 				// Move the pixel pointer to the start of the next block
 				pixel -= pitch * destblockheight;
 				pixel += sizeof(uintX) * destblockwidth;
 
 				if (!(sw & 1)) {
-					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-							f, g, f, g, pixel, pitch, dst_limit);
-					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-							g, h, g, h, pixel, pitch, dst_limit);
-					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-							h, i, h, i, pixel, pitch, dst_limit);
-					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(
-							i, j, i, j, pixel, pitch, dst_limit);
+					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(f, g, f, g, pixel, pitch, dst_limit);
+					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(g, h, g, h, pixel, pitch, dst_limit);
+					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(h, i, h, i, pixel, pitch, dst_limit);
+					Interpolate2x2BlockBy2x<uintX, Manip, uintS>(i, j, i, j, pixel, pitch, dst_limit);
 				}
 			}
 		}

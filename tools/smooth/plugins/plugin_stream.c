@@ -130,66 +130,49 @@ int has_around(colour_hex col_name) {
 	// we check the 8 directions
 
 	long int a0 = my_getpixel(
-			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel,
-			(192 + my_g_var.global_x - 1) % 192,
+			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel, (192 + my_g_var.global_x - 1) % 192,
 			(192 + my_g_var.global_y - 1) % 192);
-	long int a = my_g_stat.image_in_palette->colors[a0].r * 256 * 256
-				 + my_g_stat.image_in_palette->colors[a0].g * 256
+	long int a = my_g_stat.image_in_palette->colors[a0].r * 256 * 256 + my_g_stat.image_in_palette->colors[a0].g * 256
 				 + my_g_stat.image_in_palette->colors[a0].b;
 	long int b0 = my_getpixel(
-			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel,
-			(192 + my_g_var.global_x) % 192,
+			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel, (192 + my_g_var.global_x) % 192,
 			(192 + my_g_var.global_y - 1) % 192);
-	long int b = my_g_stat.image_in_palette->colors[b0].r * 256 * 256
-				 + my_g_stat.image_in_palette->colors[b0].g * 256
+	long int b = my_g_stat.image_in_palette->colors[b0].r * 256 * 256 + my_g_stat.image_in_palette->colors[b0].g * 256
 				 + my_g_stat.image_in_palette->colors[b0].b;
 	long int c0 = my_getpixel(
-			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel,
-			(192 + my_g_var.global_x + 1) % 192,
+			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel, (192 + my_g_var.global_x + 1) % 192,
 			(192 + my_g_var.global_y - 1) % 192);
-	long int c = my_g_stat.image_in_palette->colors[c0].r * 256 * 256
-				 + my_g_stat.image_in_palette->colors[c0].g * 256
+	long int c = my_g_stat.image_in_palette->colors[c0].r * 256 * 256 + my_g_stat.image_in_palette->colors[c0].g * 256
 				 + my_g_stat.image_in_palette->colors[c0].b;
 	long int d0 = my_getpixel(
-			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel,
-			(192 + my_g_var.global_x - 1) % 192,
+			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel, (192 + my_g_var.global_x - 1) % 192,
 			(192 + my_g_var.global_y) % 192);
-	long int d = my_g_stat.image_in_palette->colors[d0].r * 256 * 256
-				 + my_g_stat.image_in_palette->colors[d0].g * 256
+	long int d = my_g_stat.image_in_palette->colors[d0].r * 256 * 256 + my_g_stat.image_in_palette->colors[d0].g * 256
 				 + my_g_stat.image_in_palette->colors[d0].b;
 	long int e0 = my_getpixel(
-			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel,
-			(192 + my_g_var.global_x + 1) % 192,
+			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel, (192 + my_g_var.global_x + 1) % 192,
 			(192 + my_g_var.global_y) % 192);
-	long int e = my_g_stat.image_in_palette->colors[e0].r * 256 * 256
-				 + my_g_stat.image_in_palette->colors[e0].g * 256
+	long int e = my_g_stat.image_in_palette->colors[e0].r * 256 * 256 + my_g_stat.image_in_palette->colors[e0].g * 256
 				 + my_g_stat.image_in_palette->colors[e0].b;
 	long int f0 = my_getpixel(
-			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel,
-			(192 + my_g_var.global_x - 1) % 192,
+			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel, (192 + my_g_var.global_x - 1) % 192,
 			(192 + my_g_var.global_y + 1) % 192);
-	long int f = my_g_stat.image_in_palette->colors[f0].r * 256 * 256
-				 + my_g_stat.image_in_palette->colors[f0].g * 256
+	long int f = my_g_stat.image_in_palette->colors[f0].r * 256 * 256 + my_g_stat.image_in_palette->colors[f0].g * 256
 				 + my_g_stat.image_in_palette->colors[f0].b;
 	long int g0 = my_getpixel(
-			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel,
-			(192 + my_g_var.global_x) % 192,
+			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel, (192 + my_g_var.global_x) % 192,
 			(192 + my_g_var.global_y + 1) % 192);
-	long int g = my_g_stat.image_in_palette->colors[g0].r * 256 * 256
-				 + my_g_stat.image_in_palette->colors[g0].g * 256
+	long int g = my_g_stat.image_in_palette->colors[g0].r * 256 * 256 + my_g_stat.image_in_palette->colors[g0].g * 256
 				 + my_g_stat.image_in_palette->colors[g0].b;
 	long int h0 = my_getpixel(
-			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel,
-			(192 + my_g_var.global_x + 1) % 192,
+			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel, (192 + my_g_var.global_x + 1) % 192,
 			(192 + my_g_var.global_y + 1) % 192);
-	long int h = my_g_stat.image_in_palette->colors[h0].r * 256 * 256
-				 + my_g_stat.image_in_palette->colors[h0].g * 256
+	long int h = my_g_stat.image_in_palette->colors[h0].r * 256 * 256 + my_g_stat.image_in_palette->colors[h0].g * 256
 				 + my_g_stat.image_in_palette->colors[h0].b;
 
 	long int val = col_name;
 
-	return a == val || b == val || c == val || d == val || e == val || f == val
-		   || g == val || h == val;
+	return a == val || b == val || c == val || d == val || e == val || f == val || g == val || h == val;
 }
 
 colour_hex plugin_apply(colour_hex colour, glob_variables* g_var) {
@@ -204,9 +187,8 @@ colour_hex plugin_apply(colour_hex colour, glob_variables* g_var) {
 	my_g_var.global_y  = g_var->global_y;
 	my_g_var.image_out = g_var->image_out;
 
-	Uint8 col_num = my_getpixel(
-			my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel,
-			my_g_var.global_x, my_g_var.global_y);
+	Uint8 col_num
+			= my_getpixel(my_g_stat.image_in, my_g_stat.image_in_format->bytes_per_pixel, my_g_var.global_x, my_g_var.global_y);
 
 	// find the colour in big table
 	int loc_idx = 0;
@@ -215,37 +197,21 @@ colour_hex plugin_apply(colour_hex colour, glob_variables* g_var) {
 	}
 
 	if (loc_idx >= glob_idx) {
-		fprintf(stderr,
-				"WARNING: loc_idx >= glob_idx. This should never happen\n");
+		fprintf(stderr, "WARNING: loc_idx >= glob_idx. This should never happen\n");
 		return colour;    // colour is not in table, so we don't treat it. This
 						  // should never happen.
 	}
 
 	if (col[loc_idx][0] == 1 || has_around(col[loc_idx][2])) {
 		unsigned int calc_value
-				= (1
-				   * calculate(
-						   col_num, my_g_stat.image_in_format->bytes_per_pixel,
-						   my_g_var.global_x, (my_g_var.global_y - 1)))
-				  + (2
-					 * calculate(
-							 col_num,
-							 my_g_stat.image_in_format->bytes_per_pixel,
-							 (my_g_var.global_x + 1), my_g_var.global_y))
-				  + (4
-					 * calculate(
-							 col_num,
-							 my_g_stat.image_in_format->bytes_per_pixel,
-							 my_g_var.global_x, (my_g_var.global_y + 1)))
+				= (1 * calculate(col_num, my_g_stat.image_in_format->bytes_per_pixel, my_g_var.global_x, (my_g_var.global_y - 1)))
+				  + (2 * calculate(col_num, my_g_stat.image_in_format->bytes_per_pixel, (my_g_var.global_x + 1), my_g_var.global_y))
+				  + (4 * calculate(col_num, my_g_stat.image_in_format->bytes_per_pixel, my_g_var.global_x, (my_g_var.global_y + 1)))
 				  + (8
-					 * calculate(
-							 col_num,
-							 my_g_stat.image_in_format->bytes_per_pixel,
-							 (my_g_var.global_x - 1), my_g_var.global_y));
+					 * calculate(col_num, my_g_stat.image_in_format->bytes_per_pixel, (my_g_var.global_x - 1), my_g_var.global_y));
 
 		if (my_g_stat.debug > 4) {
-			printf("calc_value is %u at (%d,%d) -- col_num = %u\n", calc_value,
-				   my_g_var.global_x, my_g_var.global_y, col_num);
+			printf("calc_value is %u at (%d,%d) -- col_num = %u\n", calc_value, my_g_var.global_x, my_g_var.global_y, col_num);
 		}
 		return col[loc_idx][calc_value + 3];    // the first 3 cells are
 												// star, slave and trigger

@@ -103,38 +103,32 @@ namespace FMOpl_Pentagram {
 #	define ENV_MOD_AR 0x02
 
 	/* -------------------- tables --------------------- */
-	constexpr static const std::array slot_array{
-			0,  2,  4,  1,  3,  5,  -1, -1, 6,  8,  10, 7,  9,  11, -1, -1,
-			12, 14, 16, 13, 15, 17, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+	constexpr static const std::array slot_array{0,  2,  4,  1,  3,  5,  -1, -1, 6,  8,  10, 7,  9,  11, -1, -1,
+												 12, 14, 16, 13, 15, 17, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 	static_assert(slot_array.size() == 32);
 
 	static std::array<uint32, 8 * 16> KSL_TABLE;
 
 	constexpr static const std::array KSL_TABLE_SEED{
 			/* OCT 0 */
-			0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000,
-			0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000,
+			0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000,
 			/* OCT 1 */
-			0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000,
-			0.750, 1.125, 1.500, 1.875, 2.250, 2.625, 3.000,
+			0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.750, 1.125, 1.500, 1.875, 2.250, 2.625, 3.000,
 			/* OCT 2 */
-			0.000, 0.000, 0.000, 0.000, 0.000, 1.125, 1.875, 2.625, 3.000,
-			3.750, 4.125, 4.500, 4.875, 5.250, 5.625, 6.000,
+			0.000, 0.000, 0.000, 0.000, 0.000, 1.125, 1.875, 2.625, 3.000, 3.750, 4.125, 4.500, 4.875, 5.250, 5.625, 6.000,
 			/* OCT 3 */
-			0.000, 0.000, 0.000, 1.875, 3.000, 4.125, 4.875, 5.625, 6.000,
-			6.750, 7.125, 7.500, 7.875, 8.250, 8.625, 9.000,
+			0.000, 0.000, 0.000, 1.875, 3.000, 4.125, 4.875, 5.625, 6.000, 6.750, 7.125, 7.500, 7.875, 8.250, 8.625, 9.000,
 			/* OCT 4 */
-			0.000, 0.000, 3.000, 4.875, 6.000, 7.125, 7.875, 8.625, 9.000,
-			9.750, 10.125, 10.500, 10.875, 11.250, 11.625, 12.000,
+			0.000, 0.000, 3.000, 4.875, 6.000, 7.125, 7.875, 8.625, 9.000, 9.750, 10.125, 10.500, 10.875, 11.250, 11.625, 12.000,
 			/* OCT 5 */
-			0.000, 3.000, 6.000, 7.875, 9.000, 10.125, 10.875, 11.625, 12.000,
-			12.750, 13.125, 13.500, 13.875, 14.250, 14.625, 15.000,
+			0.000, 3.000, 6.000, 7.875, 9.000, 10.125, 10.875, 11.625, 12.000, 12.750, 13.125, 13.500, 13.875, 14.250, 14.625,
+			15.000,
 			/* OCT 6 */
-			0.000, 6.000, 9.000, 10.875, 12.000, 13.125, 13.875, 14.625, 15.000,
-			15.750, 16.125, 16.500, 16.875, 17.250, 17.625, 18.000,
+			0.000, 6.000, 9.000, 10.875, 12.000, 13.125, 13.875, 14.625, 15.000, 15.750, 16.125, 16.500, 16.875, 17.250, 17.625,
+			18.000,
 			/* OCT 7 */
-			0.000, 9.000, 12.000, 13.875, 15.000, 16.125, 16.875, 17.625,
-			18.000, 18.750, 19.125, 19.500, 19.875, 20.250, 20.625, 21.000};
+			0.000, 9.000, 12.000, 13.875, 15.000, 16.125, 16.875, 17.625, 18.000, 18.750, 19.125, 19.500, 19.875, 20.250, 20.625,
+			21.000};
 	static_assert(KSL_TABLE.size() == KSL_TABLE_SEED.size());
 
 	/* sustain level table (3db per step) */
@@ -142,9 +136,7 @@ namespace FMOpl_Pentagram {
 
 	static std::array<int, 16> SL_TABLE;
 
-	constexpr static const std::array SL_TABLE_SEED{0u,  1u,  2u,  3u, 4u,  5u,
-													6u,  7u,  8u,  9u, 10u, 11u,
-													12u, 13u, 14u, 31u};
+	constexpr static const std::array SL_TABLE_SEED{0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 31u};
 	static_assert(SL_TABLE.size() == SL_TABLE_SEED.size());
 
 #	define TL_MAX (EG_ENT * 2) /* limit(tl + ksr + envelope) + sinwave */
@@ -168,11 +160,10 @@ namespace FMOpl_Pentagram {
 
 /* multiple table */
 #	define ML(a) static_cast<uint32>((a) * 2)
-	constexpr static const std::array MUL_TABLE{
-			/* 1/2, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15 */
-			ML(0.50),  ML(1.00),  ML(2.00),  ML(3.00), ML(4.00),  ML(5.00),
-			ML(6.00),  ML(7.00),  ML(8.00),  ML(9.00), ML(10.00), ML(10.00),
-			ML(12.00), ML(12.00), ML(15.00), ML(15.00)};
+	constexpr static const std::array MUL_TABLE{/* 1/2, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15 */
+												ML(0.50),  ML(1.00),  ML(2.00),  ML(3.00), ML(4.00),  ML(5.00),
+												ML(6.00),  ML(7.00),  ML(8.00),  ML(9.00), ML(10.00), ML(10.00),
+												ML(12.00), ML(12.00), ML(15.00), ML(15.00)};
 	static_assert(MUL_TABLE.size() == 16);
 #	undef ML
 
@@ -217,8 +208,7 @@ namespace FMOpl_Pentagram {
 	/* --------------------- rebuild tables ------------------- */
 
 #	define SC_KSL(mydb) (static_cast<uint32>((mydb) / (EG_STEP / 2)))
-#	define SC_SL(db) \
-		(static_cast<int>((db) * ((3 / EG_STEP) * (1 << ENV_BITS))) + EG_DST)
+#	define SC_SL(db)    (static_cast<int>((db) * ((3 / EG_STEP) * (1 << ENV_BITS))) + EG_DST)
 
 	void OPLBuildTables(uint32 ENV_BITS_PARAM, uint32 EG_ENT_PARAM) {
 		ENV_BITS = ENV_BITS_PARAM;
@@ -368,8 +358,7 @@ namespace FMOpl_Pentagram {
 			}
 		}
 		/* calcrate envelope */
-		return SLOT->TLL + ENV_CURVE[SLOT->evc >> ENV_BITS]
-			   + (SLOT->ams ? ams : 0);
+		return SLOT->TLL + ENV_CURVE[SLOT->evc >> ENV_BITS] + (SLOT->ams ? ams : 0);
 	}
 
 	/* set algorythm connection */
@@ -417,8 +406,7 @@ namespace FMOpl_Pentagram {
 		const int ksl  = v >> 6; /* 0 / 1.5 / 3 / 6 db/OCT */
 
 		SLOT->ksl = ksl ? 3 - ksl : 31;
-		SLOT->TL  = static_cast<int>(
-                (v & 0x3f) * (0.75 / EG_STEP)); /* 0.75db step */
+		SLOT->TL  = static_cast<int>((v & 0x3f) * (0.75 / EG_STEP)); /* 0.75db step */
 
 		if (!(OPL->mode & 0x80)) { /* not CSM latch total level */
 			SLOT->TLL = SLOT->TL + (CH->ksl_base >> SLOT->ksl);
@@ -465,10 +453,7 @@ namespace FMOpl_Pentagram {
 
 	/* operator output calcrator */
 
-#	define OP_OUT(slot, env, con)                               \
-		slot->wavetable                                          \
-				[(((slot)->Cnt + (con)) >> (24 - SIN_ENT_SHIFT)) \
-				 & (SIN_ENT - 1)][env]
+#	define OP_OUT(slot, env, con) slot->wavetable[(((slot)->Cnt + (con)) >> (24 - SIN_ENT_SHIFT)) & (SIN_ENT - 1)][env]
 
 	/* ---------- calcrate one of channel ---------- */
 	inline void OPL_CALC_CH(OPL_CH* CH) {
@@ -488,11 +473,9 @@ namespace FMOpl_Pentagram {
 			}
 			/* connection */
 			if (CH->FB) {
-				const int feedback1
-						= (CH->op1_out[0] + CH->op1_out[1]) >> CH->FB;
-				CH->op1_out[1] = CH->op1_out[0];
-				*CH->connect1 += CH->op1_out[0]
-						= OP_OUT(SLOT, env_out, feedback1);
+				const int feedback1             = (CH->op1_out[0] + CH->op1_out[1]) >> CH->FB;
+				CH->op1_out[1]                  = CH->op1_out[0];
+				*CH->connect1 += CH->op1_out[0] = OP_OUT(SLOT, env_out, feedback1);
 			} else {
 				*CH->connect1 += OP_OUT(SLOT, env_out, 0);
 			}
@@ -528,8 +511,7 @@ namespace FMOpl_Pentagram {
 		// that's equivalent to int(OPL->rnd.getRandomBit() * EG_ENT/16). We
 		// know that EG_ENT is 4096, or 1024, or 128, so we can safely avoid any
 		// FP ops.
-		const int whitenoise
-				= int((std::rand() & 1) * (WHITE_NOISE_db / EG_STEP));
+		const int whitenoise = int((std::rand() & 1) * (WHITE_NOISE_db / EG_STEP));
 
 		int tone8;
 
@@ -550,9 +532,8 @@ namespace FMOpl_Pentagram {
 			}
 			/* connection */
 			if (CH[6].FB) {
-				const int feedback1
-						= (CH[6].op1_out[0] + CH[6].op1_out[1]) >> CH[6].FB;
-				CH[6].op1_out[1] = CH[6].op1_out[0];
+				const int feedback1 = (CH[6].op1_out[0] + CH[6].op1_out[1]) >> CH[6].FB;
+				CH[6].op1_out[1]    = CH[6].op1_out[0];
 				feedback2 = CH[6].op1_out[0] = OP_OUT(SLOT, env_out, feedback1);
 			} else {
 				feedback2 = OP_OUT(SLOT, env_out, 0);
@@ -636,8 +617,7 @@ namespace FMOpl_Pentagram {
 		for (int i = 4; i <= 60; i++) {
 			double rate = OPL->freqbase; /* frequency rate */
 			if (i < 60) {
-				rate *= 1.0
-						+ (i & 3) * 0.25; /* b0-1 : x1 , x1.25 , x1.5 , x1.75 */
+				rate *= 1.0 + (i & 3) * 0.25; /* b0-1 : x1 , x1.25 , x1.5 , x1.75 */
 			}
 			rate *= 1 << ((i >> 2) - 1); /* b2-5 : shift bit */
 			rate *= static_cast<double>(EG_ENT << ENV_BITS);
@@ -660,9 +640,7 @@ namespace FMOpl_Pentagram {
 		ENV_CURVE = new int[2 * EG_ENT + 1];
 		/* make total level table */
 		for (uint32 t = 0; t < EG_ENT - 1; t++) {
-			const double rate
-					= ((1 << TL_BITS) - 1)
-					  / pow(10.0, EG_STEP * t / 20); /* dB -> voltage */
+			const double rate    = ((1 << TL_BITS) - 1) / pow(10.0, EG_STEP * t / 20); /* dB -> voltage */
 			TL_TABLE[t]          = static_cast<int>(rate);
 			TL_TABLE[TL_MAX + t] = -TL_TABLE[t];
 		}
@@ -682,24 +660,18 @@ namespace FMOpl_Pentagram {
 			/* degree 0   -  90    , degree 180 -  90 : plus section */
 			SIN_TABLE[s] = SIN_TABLE[SIN_ENT / 2 - s] = &TL_TABLE[j];
 			/* degree 180 - 270    , degree 360 - 270 : minus section */
-			SIN_TABLE[SIN_ENT / 2 + s] = SIN_TABLE[SIN_ENT - s]
-					= &TL_TABLE[TL_MAX + j];
+			SIN_TABLE[SIN_ENT / 2 + s] = SIN_TABLE[SIN_ENT - s] = &TL_TABLE[TL_MAX + j];
 		}
 		for (uint32 s = 0; s < SIN_ENT; s++) {
-			SIN_TABLE[SIN_ENT * 1 + s]
-					= s < (SIN_ENT / 2) ? SIN_TABLE[s] : &TL_TABLE[EG_ENT];
+			SIN_TABLE[SIN_ENT * 1 + s] = s < (SIN_ENT / 2) ? SIN_TABLE[s] : &TL_TABLE[EG_ENT];
 			SIN_TABLE[SIN_ENT * 2 + s] = SIN_TABLE[s % (SIN_ENT / 2)];
-			SIN_TABLE[SIN_ENT * 3 + s] = (s / (SIN_ENT / 4)) & 1
-												 ? &TL_TABLE[EG_ENT]
-												 : SIN_TABLE[SIN_ENT * 2 + s];
+			SIN_TABLE[SIN_ENT * 3 + s] = (s / (SIN_ENT / 4)) & 1 ? &TL_TABLE[EG_ENT] : SIN_TABLE[SIN_ENT * 2 + s];
 		}
 
 		/* envelope counter -> envelope output table */
 		for (uint32 i = 0; i < EG_ENT; i++) {
 			/* ATTACK curve */
-			const double pom
-					= pow((static_cast<double>(EG_ENT - 1 - i) / EG_ENT), 8)
-					  * EG_ENT;
+			const double pom = pow((static_cast<double>(EG_ENT - 1 - i) / EG_ENT), 8) * EG_ENT;
 			/* if (pom >= EG_ENT) pom = EG_ENT-1; */
 			ENV_CURVE[i] = static_cast<int>(pom);
 			/* DECAY ,RELEASE curve */
@@ -709,22 +681,16 @@ namespace FMOpl_Pentagram {
 		ENV_CURVE[EG_OFF >> ENV_BITS] = EG_ENT - 1;
 		/* make LFO ams table */
 		for (uint32 i = 0; i < AMS_ENT; i++) {
-			const double pom
-					= (1.0 + sin(2 * M_PI * i / AMS_ENT)) / 2;      /* sin */
-			AMS_TABLE[i] = static_cast<int>((1.0 / EG_STEP) * pom); /* 1dB   */
-			AMS_TABLE[AMS_ENT + i]
-					= static_cast<int>((4.8 / EG_STEP) * pom); /* 4.8dB */
+			const double pom       = (1.0 + sin(2 * M_PI * i / AMS_ENT)) / 2; /* sin */
+			AMS_TABLE[i]           = static_cast<int>((1.0 / EG_STEP) * pom); /* 1dB   */
+			AMS_TABLE[AMS_ENT + i] = static_cast<int>((4.8 / EG_STEP) * pom); /* 4.8dB */
 		}
 		/* make LFO vibrate table */
 		for (uint32 i = 0; i < VIB_ENT; i++) {
 			/* 100cent = 1seminote = 6% ?? */
-			const double pom
-					= VIB_RATE * 0.06
-					  * sin(2 * M_PI * i / VIB_ENT); /* +-100sect step */
-			VIB_TABLE[i]
-					= static_cast<int>(VIB_RATE + (pom * 0.07)); /* +- 7cent */
-			VIB_TABLE[VIB_ENT + i]
-					= static_cast<int>(VIB_RATE + (pom * 0.14)); /* +-14cent */
+			const double pom       = VIB_RATE * 0.06 * sin(2 * M_PI * i / VIB_ENT); /* +-100sect step */
+			VIB_TABLE[i]           = static_cast<int>(VIB_RATE + (pom * 0.07));     /* +- 7cent */
+			VIB_TABLE[VIB_ENT + i] = static_cast<int>(VIB_RATE + (pom * 0.14));     /* +-14cent */
 		}
 		return 1;
 	}
@@ -758,28 +724,20 @@ namespace FMOpl_Pentagram {
 		int fn;
 
 		/* frequency base */
-		OPL->freqbase
-				= (OPL->rate)
-						  ? (static_cast<double>(OPL->clock) / OPL->rate) / 72
-						  : 0;
+		OPL->freqbase = (OPL->rate) ? (static_cast<double>(OPL->clock) / OPL->rate) / 72 : 0;
 		/* Timer base time */
 		OPL->TimerBase = 1.0 / (static_cast<double>(OPL->clock) / 72.0);
 		/* make time tables */
 		init_timetables(OPL, OPL_ARRATE, OPL_DRRATE);
 		/* make fnumber -> increment counter table */
 		for (fn = 0; fn < 1024; fn++) {
-			OPL->FN_TABLE[fn] = static_cast<uint32>(
-					OPL->freqbase * fn * FREQ_RATE * (1 << 7) / 2);
+			OPL->FN_TABLE[fn] = static_cast<uint32>(OPL->freqbase * fn * FREQ_RATE * (1 << 7) / 2);
 		}
 		/* LFO freq.table */
 		OPL->amsIncr = static_cast<int>(
-				OPL->rate ? static_cast<double>(AMS_ENT) * (1 << AMS_SHIFT)
-									/ OPL->rate * 3.7 * (OPL->clock / 3600000.0)
-						  : 0);
+				OPL->rate ? static_cast<double>(AMS_ENT) * (1 << AMS_SHIFT) / OPL->rate * 3.7 * (OPL->clock / 3600000.0) : 0);
 		OPL->vibIncr = static_cast<int>(
-				OPL->rate ? static_cast<double>(VIB_ENT) * (1 << VIB_SHIFT)
-									/ OPL->rate * 6.4 * (OPL->clock / 3600000.0)
-						  : 0);
+				OPL->rate ? static_cast<double>(VIB_ENT) * (1 << VIB_SHIFT) / OPL->rate * 6.4 * (OPL->clock / 3600000.0) : 0);
 	}
 
 	/* ---------- write a OPL registers ---------- */
@@ -822,18 +780,16 @@ namespace FMOpl_Pentagram {
 					OPL_STATUSMASK_SET(OPL, ((~v) & 0x78) | 0x01);
 					/* timer 2 */
 					if (OPL->st[1] != st2) {
-						const double interval
-								= st2 ? (OPL->T[1] * OPL->TimerBase) : 0.0;
-						OPL->st[1] = st2;
+						const double interval = st2 ? (OPL->T[1] * OPL->TimerBase) : 0.0;
+						OPL->st[1]            = st2;
 						if (OPL->TimerHandler) {
 							(OPL->TimerHandler)(OPL->TimerParam + 1, interval);
 						}
 					}
 					/* timer 1 */
 					if (OPL->st[0] != st1) {
-						const double interval
-								= st1 ? (OPL->T[0] * OPL->TimerBase) : 0.0;
-						OPL->st[0] = st1;
+						const double interval = st1 ? (OPL->T[0] * OPL->TimerBase) : 0.0;
+						OPL->st[0]            = st1;
 						if (OPL->TimerHandler) {
 							(OPL->TimerHandler)(OPL->TimerParam + 0, interval);
 						}
@@ -883,8 +839,7 @@ namespace FMOpl_Pentagram {
 						/* BD key on/off */
 						if (rkey & 0x10) {
 							if (v & 0x10) {
-								OPL->P_CH[6].op1_out[0]
-										= OPL->P_CH[6].op1_out[1] = 0;
+								OPL->P_CH[6].op1_out[0] = OPL->P_CH[6].op1_out[1] = 0;
 								OPL_KEYON(&OPL->P_CH[6].SLOT[SLOT1]);
 								OPL_KEYON(&OPL->P_CH[6].SLOT[SLOT2]);
 							} else {
@@ -1202,8 +1157,7 @@ namespace FMOpl_Pentagram {
 	}
 
 	/* ----------  Option handlers ----------       */
-	void OPLSetTimerHandler(
-			FM_OPL* OPL, OPL_TIMERHANDLER TimerHandler, int channelOffset) {
+	void OPLSetTimerHandler(FM_OPL* OPL, OPL_TIMERHANDLER TimerHandler, int channelOffset) {
 		OPL->TimerHandler = TimerHandler;
 		OPL->TimerParam   = channelOffset;
 	}
@@ -1213,8 +1167,7 @@ namespace FMOpl_Pentagram {
 		OPL->IRQParam   = param;
 	}
 
-	void OPLSetUpdateHandler(
-			FM_OPL* OPL, OPL_UPDATEHANDLER UpdateHandler, int param) {
+	void OPLSetUpdateHandler(FM_OPL* OPL, OPL_UPDATEHANDLER UpdateHandler, int param) {
 		OPL->UpdateHandler = UpdateHandler;
 		OPL->UpdateParam   = param;
 	}
@@ -1258,8 +1211,7 @@ namespace FMOpl_Pentagram {
 		} else { /* Timer A */
 			OPL_STATUS_SET(OPL, 0x40);
 			/* CSM mode key,TL controll */
-			if (OPL->mode
-				& 0x80) { /* CSM mode total level latch and auto key on */
+			if (OPL->mode & 0x80) { /* CSM mode total level latch and auto key on */
 				int ch;
 				if (OPL->UpdateHandler) {
 					OPL->UpdateHandler(OPL->UpdateParam, 0);
@@ -1271,9 +1223,7 @@ namespace FMOpl_Pentagram {
 		}
 		/* reload timer */
 		if (OPL->TimerHandler) {
-			(OPL->TimerHandler)(
-					OPL->TimerParam + c,
-					static_cast<double>(OPL->T[c]) * OPL->TimerBase);
+			(OPL->TimerHandler)(OPL->TimerParam + c, static_cast<double>(OPL->T[c]) * OPL->TimerBase);
 		}
 		return OPL->status >> 7;
 	}

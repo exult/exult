@@ -28,16 +28,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 using namespace MT32Emu;
 
-const MidiDriver::MidiDriverDesc MT32EmuMidiDriver::desc
-		= MidiDriver::MidiDriverDesc("MT32Emu", createInstance);
+const MidiDriver::MidiDriverDesc MT32EmuMidiDriver::desc = MidiDriver::MidiDriverDesc("MT32Emu", createInstance);
 
 /*
  *	This file open proc redirects writes to a writable directory
  *	and looks in this and other directories for the MT32 data.
  */
 
-static bool openROMFile(
-		FileStream& file, const std::string& filename, bool writable) {
+static bool openROMFile(FileStream& file, const std::string& filename, bool writable) {
 	std::string basedir;
 	if (!writable) {
 		// May be in bundle.
@@ -69,8 +67,7 @@ static const ROMImage* getROM(FileStream& file, const std::string& filename) {
 int MT32EmuMidiDriver::open() {
 	// Must be stereo
 	if (!stereo) {
-		std::cerr << "Audio output is not stereo. MT32Emu cannot be used."
-				  << std::endl;
+		std::cerr << "Audio output is not stereo. MT32Emu cannot be used." << std::endl;
 		return 1;
 	}
 
@@ -86,15 +83,13 @@ int MT32EmuMidiDriver::open() {
 	if (!controlROMImage) {
 		FileStream part1;
 		FileStream part2;
-		if (openROMFile(part1, "MT32A.BIN", false)
-			&& openROMFile(part2, "MT32B.BIN", false)) {
+		if (openROMFile(part1, "MT32A.BIN", false) && openROMFile(part2, "MT32B.BIN", false)) {
 			auto pOut = U7open_out("<SAVEHOME>/data/MT32_CONTROL.ROM", false);
 			if (pOut) {
 				auto&        out   = *pOut;
 				const Bit8u* data1 = part1.getData();
 				const Bit8u* data2 = part2.getData();
-				for (size_t ii = 0;
-					 ii < std::min(part1.getSize(), part2.getSize()); ii++) {
+				for (size_t ii = 0; ii < std::min(part1.getSize(), part2.getSize()); ii++) {
 					out.put(static_cast<char>(data1[ii]));
 					out.put(static_cast<char>(data2[ii]));
 				}
@@ -103,8 +98,7 @@ int MT32EmuMidiDriver::open() {
 		}
 	}
 	if (!controlROMImage) {
-		std::cerr << "Failed to open Control rom file. MT32Emu cannot be used."
-				  << std::endl;
+		std::cerr << "Failed to open Control rom file. MT32Emu cannot be used." << std::endl;
 		return 2;
 	}
 
@@ -115,8 +109,7 @@ int MT32EmuMidiDriver::open() {
 		pcmROMImage = getROM(pcmROMFile, "MT32_PCM.ROM");
 	}
 	if (!pcmROMImage) {
-		std::cerr << "Failed to open PCM rom file. MT32Emu cannot be used."
-				  << std::endl;
+		std::cerr << "Failed to open PCM rom file. MT32Emu cannot be used." << std::endl;
 		ROMImage::freeROMImage(controlROMImage);
 		return 3;
 	}
@@ -124,8 +117,7 @@ int MT32EmuMidiDriver::open() {
 	mt32 = new Synth(nullptr);
 
 	if (!mt32->open(*controlROMImage, *pcmROMImage)) {
-		std::cerr << "Failed to open emulated MT32. MT32Emu cannot be used."
-				  << std::endl;
+		std::cerr << "Failed to open emulated MT32. MT32Emu cannot be used." << std::endl;
 		ROMImage::freeROMImage(controlROMImage);
 		ROMImage::freeROMImage(pcmROMImage);
 		delete mt32;
@@ -133,8 +125,7 @@ int MT32EmuMidiDriver::open() {
 		return 4;
 	}
 	if (mt32->getStereoOutputSampleRate() != sample_rate) {
-		if (SampleRateConverter::getSupportedOutputSampleRate(sample_rate)
-			== 0) {
+		if (SampleRateConverter::getSupportedOutputSampleRate(sample_rate) == 0) {
 			std::cerr << "LibMT32Emu was not compiled with a Sample Rate "
 						 "Converter. MT32Emu cannot be used."
 					  << std::endl;
@@ -145,8 +136,7 @@ int MT32EmuMidiDriver::open() {
 			return 5;
 		}
 
-		mt32src = new SampleRateConverter(
-				*mt32, sample_rate, SamplerateConversionQuality_GOOD);
+		mt32src = new SampleRateConverter(*mt32, sample_rate, SamplerateConversionQuality_GOOD);
 	}
 	//  Must use DELAY_SHORT_MESSAGES_ONLY or IMMEDIATE to allow immediate
 	//  processing of sysex
@@ -173,8 +163,7 @@ void MT32EmuMidiDriver::send(uint32 b) {
 	mt32->playMsg(b);
 }
 
-void MT32EmuMidiDriver::send_sysex(
-		uint8 status, const uint8* msg, uint16 length) {
+void MT32EmuMidiDriver::send_sysex(uint8 status, const uint8* msg, uint16 length) {
 	if (!msg || !length) {
 		return;
 	}
@@ -186,8 +175,7 @@ void MT32EmuMidiDriver::send_sysex(
 	mt32->playSysexWithoutFraming(msg, length - 1);
 }
 
-void MT32EmuMidiDriver::lowLevelProduceSamples(
-		sint16* samples, uint32 num_samples) {
+void MT32EmuMidiDriver::lowLevelProduceSamples(sint16* samples, uint32 num_samples) {
 	if (mt32src) {
 		mt32src->getOutputSamples(samples, num_samples);
 	} else {

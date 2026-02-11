@@ -37,14 +37,12 @@ namespace Pentagram {
 
 	public:
 		static bool Scale(
-				SDL_Surface* tex, sint32 sx, sint32 sy, sint32 sw, sint32 sh,
-				uint8* pixel, sint32 dw, sint32 dh, sint32 pitch,
+				SDL_Surface* tex, sint32 sx, sint32 sy, sint32 sw, sint32 sh, uint8* pixel, sint32 dw, sint32 dh, sint32 pitch,
 				bool clamp_src) {
 			ignore_unused_variable_warning(clamp_src);
 			// Source buffer pointers
-			const int tpitch = tex->pitch / sizeof(uintS);
-			uintS*    texel
-					= static_cast<uintS*>(tex->pixels) + (sy * tpitch + sx);
+			const int tpitch    = tex->pitch / sizeof(uintS);
+			uintS*    texel     = static_cast<uintS*>(tex->pixels) + (sy * tpitch + sx);
 			uintS*    tline_end = texel + sw;
 			uintS*    tex_end   = texel + sh * tpitch;
 			const int tex_diff  = tpitch - sw;
@@ -302,11 +300,9 @@ namespace Pentagram {
 		Scale8To555 = PointScalerInternal<uint16, Manip8to555, uint8>::Scale;
 		Scale8To565 = PointScalerInternal<uint16, Manip8to565, uint8>::Scale;
 
-		Scale16To16 = PointScalerInternal<uint16, Manip16to16, uint16>::Scale;
-		Scale555To555
-				= PointScalerInternal<uint16, Manip555to555, uint16>::Scale;
-		Scale565To565
-				= PointScalerInternal<uint16, Manip565to565, uint16>::Scale;
+		Scale16To16   = PointScalerInternal<uint16, Manip16to16, uint16>::Scale;
+		Scale555To555 = PointScalerInternal<uint16, Manip555to555, uint16>::Scale;
+		Scale565To565 = PointScalerInternal<uint16, Manip565to565, uint16>::Scale;
 	}
 
 	uint32 PointScaler::ScaleBits() const {

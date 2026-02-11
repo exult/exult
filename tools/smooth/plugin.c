@@ -22,10 +22,8 @@ char* plug_error(void) {
 	if (FAILED(hRes)) {
 		static TCHAR lpMsgBuf[256];
 		FormatMessage(
-				FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-				NULL, GetLastError(),
-				MAKELANGID(
-						LANG_NEUTRAL, SUBLANG_DEFAULT),    // Default language
+				FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(),
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),    // Default language
 				lpMsgBuf, 256, NULL);
 		return lpMsgBuf;
 	} else {

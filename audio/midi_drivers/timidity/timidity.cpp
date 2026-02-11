@@ -63,9 +63,7 @@ namespace NS_TIMIDITY {
 		static int rcf_count = 0;
 
 		if (rcf_count > 50) {
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL,
-					"Probable source loop in configuration files");
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Probable source loop in configuration files");
 			return -1;
 		}
 
@@ -90,9 +88,7 @@ namespace NS_TIMIDITY {
 			}
 			if (!strcmp(w[0], "dir")) {
 				if (w.size() < 2) {
-					ctl->cmsg(
-							CMSG_ERROR, VERB_NORMAL,
-							"%s: line %d: No directory given\n", name, line);
+					ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: line %d: No directory given\n", name, line);
 					close_file(fp);
 					return -2;
 				}
@@ -101,9 +97,7 @@ namespace NS_TIMIDITY {
 				}
 			} else if (!strcmp(w[0], "source")) {
 				if (w.size() < 2) {
-					ctl->cmsg(
-							CMSG_ERROR, VERB_NORMAL,
-							"%s: line %d: No file name given\n", name, line);
+					ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: line %d: No file name given\n", name, line);
 					close_file(fp);
 					return -2;
 				}
@@ -126,19 +120,13 @@ namespace NS_TIMIDITY {
 				def_instr_name[255] = '\0';
 			} else if (!strcmp(w[0], "drumset")) {
 				if (w.size() < 2) {
-					ctl->cmsg(
-							CMSG_ERROR, VERB_NORMAL,
-							"%s: line %d: No drum set number given\n", name,
-							line);
+					ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: line %d: No drum set number given\n", name, line);
 					close_file(fp);
 					return -2;
 				}
 				int i = atoi(w[1]);
 				if (i < 0 || i > 127) {
-					ctl->cmsg(
-							CMSG_ERROR, VERB_NORMAL,
-							"%s: line %d: Drum set must be between 0 and 127\n",
-							name, line);
+					ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: line %d: Drum set must be between 0 and 127\n", name, line);
 					close_file(fp);
 					return -2;
 				}
@@ -149,9 +137,7 @@ namespace NS_TIMIDITY {
 				bank = drumset[i];
 			} else if (!strcmp(w[0], "bank")) {
 				if (w.size() < 2) {
-					ctl->cmsg(
-							CMSG_ERROR, VERB_NORMAL,
-							"%s: line %d: No bank number given\n", name, line);
+					ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: line %d: No bank number given\n", name, line);
 					close_file(fp);
 					return -2;
 				}
@@ -171,20 +157,14 @@ namespace NS_TIMIDITY {
 				}
 				bank = tonebank[i];
 			} else {
-				if ((w.size() < 2)
-					|| !std::isdigit(static_cast<unsigned char>(*w[0]))) {
-					ctl->cmsg(
-							CMSG_ERROR, VERB_NORMAL,
-							"%s: line %d: syntax error\n", name, line);
+				if ((w.size() < 2) || !std::isdigit(static_cast<unsigned char>(*w[0]))) {
+					ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: line %d: syntax error\n", name, line);
 					close_file(fp);
 					return -2;
 				}
 				int i = atoi(w[0]);
 				if (i < 0 || i > 127) {
-					ctl->cmsg(
-							CMSG_ERROR, VERB_NORMAL,
-							"%s: line %d: Program must be between 0 and 127\n",
-							name, line);
+					ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: line %d: Program must be between 0 and 127\n", name, line);
 					close_file(fp);
 					return -2;
 				}
@@ -200,29 +180,21 @@ namespace NS_TIMIDITY {
 				if (bank->tone[i].name) {
 					free(bank->tone[i].name);
 				}
-				strcpy((bank->tone[i].name
-						= safe_Malloc<char>(strlen(w[1]) + 1)),
-					   w[1]);
-				bank->tone[i].note = bank->tone[i].amp = bank->tone[i].pan
-						= bank->tone[i].strip_loop
-						= bank->tone[i].strip_envelope
-						= bank->tone[i].strip_tail = -1;
+				strcpy((bank->tone[i].name = safe_Malloc<char>(strlen(w[1]) + 1)), w[1]);
+				bank->tone[i].note = bank->tone[i].amp = bank->tone[i].pan = bank->tone[i].strip_loop = bank->tone[i].strip_envelope
+						= bank->tone[i].strip_tail                                                    = -1;
 
 				for (unsigned j = 2; j < w.size(); j++) {
 					char* cp = strchr(w[j], '=');
 					if (!cp) {
-						ctl->cmsg(
-								CMSG_ERROR, VERB_NORMAL,
-								"%s: line %d: bad patch option %s\n", name,
-								line, w[j]);
+						ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: line %d: bad patch option %s\n", name, line, w[j]);
 						close_file(fp);
 						return -2;
 					}
 					*cp++ = 0;
 					if (!strcmp(w[j], "amp")) {
 						int k = atoi(cp);
-						if ((k < 0 || k > MAX_AMPLIFICATION)
-							|| !std::isdigit(static_cast<unsigned char>(*cp))) {
+						if ((k < 0 || k > MAX_AMPLIFICATION) || !std::isdigit(static_cast<unsigned char>(*cp))) {
 							ctl->cmsg(
 									CMSG_ERROR, VERB_NORMAL,
 									"%s: line %d: amplification must be "
@@ -235,8 +207,7 @@ namespace NS_TIMIDITY {
 						bank->tone[i].amp = k;
 					} else if (!strcmp(w[j], "note")) {
 						int k = atoi(cp);
-						if ((k < 0 || k > 127)
-							|| !std::isdigit(static_cast<unsigned char>(*cp))) {
+						if ((k < 0 || k > 127) || !std::isdigit(static_cast<unsigned char>(*cp))) {
 							ctl->cmsg(
 									CMSG_ERROR, VERB_NORMAL,
 									"%s: line %d: note must be between 0 and "
@@ -257,10 +228,7 @@ namespace NS_TIMIDITY {
 						} else {
 							k = ((atoi(cp) + 100) * 100) / 157;
 						}
-						if ((k < 0 || k > 127)
-							|| (k == 0 && *cp != '-'
-								&& !std::isdigit(
-										static_cast<unsigned char>(*cp)))) {
+						if ((k < 0 || k > 127) || (k == 0 && *cp != '-' && !std::isdigit(static_cast<unsigned char>(*cp)))) {
 							ctl->cmsg(
 									CMSG_ERROR, VERB_NORMAL,
 									"%s: line %d: panning must be left, right, "
@@ -276,10 +244,7 @@ namespace NS_TIMIDITY {
 						} else if (!strcmp(cp, "loop")) {
 							bank->tone[i].strip_loop = 0;
 						} else {
-							ctl->cmsg(
-									CMSG_ERROR, VERB_NORMAL,
-									"%s: line %d: keep must be env or loop\n",
-									name, line);
+							ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: line %d: keep must be env or loop\n", name, line);
 							close_file(fp);
 							return -2;
 						}
@@ -300,10 +265,7 @@ namespace NS_TIMIDITY {
 							return -2;
 						}
 					} else {
-						ctl->cmsg(
-								CMSG_ERROR, VERB_NORMAL,
-								"%s: line %d: bad patch option %s\n", name,
-								line, w[j]);
+						ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: line %d: bad patch option %s\n", name, line, w[j]);
 						close_file(fp);
 						return -2;
 					}
@@ -326,12 +288,8 @@ namespace NS_TIMIDITY {
 		config->value("config/audio/midi/timiditycfg", configfile, CONFIG_FILE);
 
 		if ((read_config_file(configfile.c_str()) < 0)
-			&& ((!is_system_path_defined("<BUNDLE>"))
-				|| (read_config_file(
-							get_system_path("<BUNDLE>/" CONFIG_FILE).c_str())
-					< 0))
-			&& (read_config_file(get_system_path("<DATA>/" CONFIG_FILE).c_str())
-				< 0)) {
+			&& ((!is_system_path_defined("<BUNDLE>")) || (read_config_file(get_system_path("<BUNDLE>/" CONFIG_FILE).c_str()) < 0))
+			&& (read_config_file(get_system_path("<DATA>/" CONFIG_FILE).c_str()) < 0)) {
 			return -1;
 		}
 
@@ -400,9 +358,7 @@ namespace NS_TIMIDITY {
 		init_tables();
 
 		if (ctl->open(0, 0)) {
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL, "Couldn't open %s\n",
-					ctl->id_name);
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Couldn't open %s\n", ctl->id_name);
 			return -1;
 		}
 

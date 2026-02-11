@@ -33,15 +33,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 using namespace std;
 
-const MidiDriver::MidiDriverDesc CoreMidiDriver::desc
-		= MidiDriver::MidiDriverDesc("CoreMidi", createInstance);
+const MidiDriver::MidiDriverDesc CoreMidiDriver::desc = MidiDriver::MidiDriverDesc("CoreMidi", createInstance);
 
-CoreMidiDriver::CoreMidiDriver()
-		: LowLevelMidiDriver(std::string(desc.name)), mClient(0), mOutPort(0),
-		  mDest(0) {
+CoreMidiDriver::CoreMidiDriver() : LowLevelMidiDriver(std::string(desc.name)), mClient(0), mOutPort(0), mDest(0) {
 	OSStatus err = noErr;
-	err          = MIDIClientCreate(
-            CFSTR("CoreMidi Driver for macOS"), nullptr, nullptr, &mClient);
+	err          = MIDIClientCreate(CFSTR("CoreMidi Driver for macOS"), nullptr, nullptr, &mClient);
 	if (err != noErr) {
 		perr << "CoreMidi Driver initialization failed: " << err << std::endl;
 	}
@@ -67,18 +63,14 @@ int CoreMidiDriver::open() {
 
 	// List device ID and names of CoreMidi destinations
 	// kMIDIPropertyDisplayName is not compatible with OS X SDK < 10.4
-	std::cout << "CoreMidi driver found " << dests
-			  << " destinations:" << std::endl;
+	std::cout << "CoreMidi driver found " << dests << " destinations:" << std::endl;
 	for (ItemCount i = 0; i < dests; i++) {
 		MIDIEndpointRef dest     = MIDIGetDestination(i);
 		std::string     destname = "Unknown / Invalid";
 		if (dest != 0u) {
 			CFStringRef midiname = nullptr;
-			if (MIDIObjectGetStringProperty(
-						dest, kMIDIPropertyDisplayName, &midiname)
-				== noErr) {
-				const char* s = CFStringGetCStringPtr(
-						midiname, kCFStringEncodingMacRoman);
+			if (MIDIObjectGetStringProperty(dest, kMIDIPropertyDisplayName, &midiname) == noErr) {
+				const char* s = CFStringGetCStringPtr(midiname, kCFStringEncodingMacRoman);
 				if (s != nullptr) {
 					destname = std::string(s);
 				}
@@ -99,18 +91,15 @@ int CoreMidiDriver::open() {
 			// Bail out if we simply don't have any midi devices.
 			return 3;
 		}
-		std::cout << "CoreMidi destination " << deviceId
-				  << " not available, trying destination 0 instead."
-				  << std::endl;
+		std::cout << "CoreMidi destination " << deviceId << " not available, trying destination 0 instead." << std::endl;
 		deviceId = 0;
 	}
 
-	if (deviceId < 0 || dests < static_cast<ItemCount>(deviceId)
-		|| mClient == 0u) {
+	if (deviceId < 0 || dests < static_cast<ItemCount>(deviceId) || mClient == 0u) {
 		return 3;
 	}
 	mDest = MIDIGetDestination(deviceId);
-	err = MIDIOutputPortCreate(mClient, CFSTR("exult_output_port"), &mOutPort);
+	err   = MIDIOutputPortCreate(mClient, CFSTR("exult_output_port"), &mOutPort);
 
 	if (err != noErr) {
 		return 1;
@@ -163,8 +152,7 @@ void CoreMidiDriver::send(uint32 message) {
 		packet->length = 2;
 		break;
 	default:
-		perr << "CoreMIDI driver encountered unsupported status byte: 0x" << hex
-			 << setw(2) << status_byte << endl;
+		perr << "CoreMIDI driver encountered unsupported status byte: 0x" << hex << setw(2) << status_byte << endl;
 		packet->length = 3;
 		break;
 	}
@@ -178,11 +166,9 @@ void CoreMidiDriver::send_sysex(uint8 status, const uint8* msg, uint16 length) {
 	assert(mOutPort != 0);
 	assert(mDest != 0);
 
-	std::aligned_storage_t<
-			sizeof(MIDIPacketList) + 128, alignof(MIDIPacketList)>
-				buf;
-	auto*       packetList = new (&buf) MIDIPacketList;
-	MIDIPacket* packet     = packetList->packet;
+	std::aligned_storage_t<sizeof(MIDIPacketList) + 128, alignof(MIDIPacketList)> buf;
+	auto*                                                                         packetList = new (&buf) MIDIPacketList;
+	MIDIPacket*                                                                   packet     = packetList->packet;
 
 	assert(sizeof(packet->data) + 128 >= length + 2);
 
@@ -215,7 +201,7 @@ void CoreMidiDriver::increaseThreadPriority() {
 
 std::vector<ConfigSetting_widget::Definition> CoreMidiDriver::GetSettings() {
 	ConfigSetting_widget::Definition midi_device{
-			Strings::CoreMIDIDevice(),                            // label
+			Strings::CoreMIDIDevice(),                    // label
 			"config/audio/midi/coremidi_device",          // config_setting
 			0,                                            // additional
 			false,                                        // required
@@ -235,11 +221,8 @@ std::vector<ConfigSetting_widget::Definition> CoreMidiDriver::GetSettings() {
 		std::string     destname = "Unknown / Invalid";
 		if (dest != 0u) {
 			CFStringRef midiname = nullptr;
-			if (MIDIObjectGetStringProperty(
-						dest, kMIDIPropertyDisplayName, &midiname)
-				== noErr) {
-				const char* s = CFStringGetCStringPtr(
-						midiname, kCFStringEncodingMacRoman);
+			if (MIDIObjectGetStringProperty(dest, kMIDIPropertyDisplayName, &midiname) == noErr) {
+				const char* s = CFStringGetCStringPtr(midiname, kCFStringEncodingMacRoman);
 				if (s != nullptr) {
 					std::string id = std::to_string(int(i));
 					midi_device.choices.push_back({s, id, id});

@@ -49,8 +49,7 @@ namespace NS_TIMIDITY {
 	/* Some functions get aggravated if not even the standard banks are
 	 available. */
 	static ToneBank standard_tonebank, standard_drumset;
-	ToneBank *      tonebank[128] = {&standard_tonebank},
-			 *drumset[128]        = {&standard_drumset};
+	ToneBank *      tonebank[128] = {&standard_tonebank}, *drumset[128] = {&standard_drumset};
 
 	/* This is a special instrument, used for all melodic programs */
 	Instrument* default_instrument = nullptr;
@@ -96,8 +95,7 @@ int fast_decay = 0;
 		r = (rate & 0x3f) << r; /* 6.9 fixed point */
 
 		/* 15.15 fixed point. */
-		return (((r * 44100) / play_mode->rate) * control_ratio)
-			   << ((fast_decay) ? 10 : 9);
+		return (((r * 44100) / play_mode->rate) * control_ratio) << ((fast_decay) ? 10 : 9);
 	}
 
 	static sint32 convert_envelope_offset(uint8 offset) {
@@ -113,8 +111,7 @@ int fast_decay = 0;
 			return 0;
 		}
 
-		return ((control_ratio * SWEEP_TUNING) << SWEEP_SHIFT)
-			   / (play_mode->rate * sweep);
+		return ((control_ratio * SWEEP_TUNING) << SWEEP_SHIFT) / (play_mode->rate * sweep);
 	}
 
 	static sint32 convert_vibrato_sweep(uint8 sweep, sint32 vib_control_ratio) {
@@ -123,8 +120,7 @@ int fast_decay = 0;
 		}
 
 		return static_cast<sint32>(
-				FSCALE(static_cast<double>(vib_control_ratio) * SWEEP_TUNING,
-					   SWEEP_SHIFT)
+				FSCALE(static_cast<double>(vib_control_ratio) * SWEEP_TUNING, SWEEP_SHIFT)
 				/ static_cast<double>(play_mode->rate * sweep));
 
 		/* this was overflowing with seashore.pat
@@ -134,14 +130,12 @@ int fast_decay = 0;
 	}
 
 	static sint32 convert_tremolo_rate(uint8 rate) {
-		return ((SINE_CYCLE_LENGTH * control_ratio * rate) << RATE_SHIFT)
-			   / (TREMOLO_RATE_TUNING * play_mode->rate);
+		return ((SINE_CYCLE_LENGTH * control_ratio * rate) << RATE_SHIFT) / (TREMOLO_RATE_TUNING * play_mode->rate);
 	}
 
 	static sint32 convert_vibrato_rate(uint8 rate) {
 		/* Return a suitable vibrato_control_ratio value */
-		return (VIBRATO_RATE_TUNING * play_mode->rate)
-			   / (rate * 2 * VIBRATO_SAMPLE_INCREMENTS);
+		return (VIBRATO_RATE_TUNING * play_mode->rate) / (rate * 2 * VIBRATO_SAMPLE_INCREMENTS);
 	}
 
 	static void reverse_data(sint16* sp, sint32 ls, sint32 le) {
@@ -167,8 +161,7 @@ int fast_decay = 0;
 
 	 TODO: do reverse loops right */
 	static Instrument* load_instrument(
-			char* name, int percussion, int panning, int amp, int note_to_use,
-			int strip_loop, int strip_envelope, int strip_tail) {
+			char* name, int percussion, int panning, int amp, int note_to_use, int strip_loop, int strip_envelope, int strip_tail) {
 		ignore_unused_variable_warning(percussion);
 		Instrument* ip;
 		Sample*     sp;
@@ -205,23 +198,18 @@ int fast_decay = 0;
 		}
 
 		if (noluck) {
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL, "Instrument `%s' can't be found.",
-					name);
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Instrument `%s' can't be found.", name);
 			return nullptr;
 		}
 
-		ctl->cmsg(
-				CMSG_INFO, VERB_NOISY, "Loading instrument %s",
-				current_filename);
+		ctl->cmsg(CMSG_INFO, VERB_NOISY, "Loading instrument %s", current_filename);
 
 		/* Read some headers and do cursory sanity checks. There are loads
 		 of magic offsets. This could be rewritten... */
 
 		if ((239 != fread(tmp, 1, 239, fp))
-			|| (memcmp(tmp, "GF1PATCH110\0ID#000002", 22) != 0
-				&& memcmp(tmp, "GF1PATCH100\0ID#000002", 22) != 0)) /* don't
-				   know what the differences are */
+			|| (memcmp(tmp, "GF1PATCH110\0ID#000002", 22) != 0 && memcmp(tmp, "GF1PATCH100\0ID#000002", 22) != 0)) /* don't
+																  know what the differences are */
 		{
 			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: not an instrument", name);
 			close_file(fp);
@@ -231,18 +219,14 @@ int fast_decay = 0;
 		if (tmp[82] != 1 && tmp[82] != 0) /* instruments. To some patch makers,
 			 0 means 1 */
 		{
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL,
-					"Can't handle patches with %d instruments", tmp[82]);
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Can't handle patches with %d instruments", tmp[82]);
 			close_file(fp);
 			return nullptr;
 		}
 
 		if (tmp[151] != 1 && tmp[151] != 0) /* layers. What's a layer? */
 		{
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL,
-					"Can't handle instruments with %d layers", tmp[151]);
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Can't handle instruments with %d layers", tmp[151]);
 			close_file(fp);
 			return nullptr;
 		}
@@ -273,8 +257,7 @@ int fast_decay = 0;
 
 			if (1 != fread(&fractions, 1, 1, fp)) {
 			fail:
-				ctl->cmsg(
-						CMSG_ERROR, VERB_NORMAL, "Error reading sample %d", i);
+				ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Error reading sample %d", i);
 				for (j = 0; j < i; j++) {
 					free(ip->sample[j].data);
 				}
@@ -309,34 +292,27 @@ int fast_decay = 0;
 			}
 
 			if (!tmp[13] || !tmp[14]) {
-				sp->tremolo_sweep_increment = sp->tremolo_phase_increment
-						= sp->tremolo_depth = 0;
+				sp->tremolo_sweep_increment = sp->tremolo_phase_increment = sp->tremolo_depth = 0;
 				ctl->cmsg(CMSG_INFO, VERB_DEBUG, " * no tremolo");
 			} else {
 				sp->tremolo_sweep_increment = convert_tremolo_sweep(tmp[12]);
 				sp->tremolo_phase_increment = convert_tremolo_rate(tmp[13]);
 				sp->tremolo_depth           = tmp[14];
 				ctl->cmsg(
-						CMSG_INFO, VERB_DEBUG,
-						" * tremolo: sweep %d, phase %d, depth %d",
-						sp->tremolo_sweep_increment,
+						CMSG_INFO, VERB_DEBUG, " * tremolo: sweep %d, phase %d, depth %d", sp->tremolo_sweep_increment,
 						sp->tremolo_phase_increment, sp->tremolo_depth);
 			}
 
 			if (!tmp[16] || !tmp[17]) {
-				sp->vibrato_sweep_increment = sp->vibrato_control_ratio
-						= sp->vibrato_depth = 0;
+				sp->vibrato_sweep_increment = sp->vibrato_control_ratio = sp->vibrato_depth = 0;
 				ctl->cmsg(CMSG_INFO, VERB_DEBUG, " * no vibrato");
 			} else {
 				sp->vibrato_control_ratio   = convert_vibrato_rate(tmp[16]);
-				sp->vibrato_sweep_increment = convert_vibrato_sweep(
-						tmp[15], sp->vibrato_control_ratio);
-				sp->vibrato_depth = tmp[17];
+				sp->vibrato_sweep_increment = convert_vibrato_sweep(tmp[15], sp->vibrato_control_ratio);
+				sp->vibrato_depth           = tmp[17];
 				ctl->cmsg(
-						CMSG_INFO, VERB_DEBUG,
-						" * vibrato: sweep %d, ctl %d, depth %d",
-						sp->vibrato_sweep_increment, sp->vibrato_control_ratio,
-						sp->vibrato_depth);
+						CMSG_INFO, VERB_DEBUG, " * vibrato: sweep %d, ctl %d, depth %d", sp->vibrato_sweep_increment,
+						sp->vibrato_control_ratio, sp->vibrato_depth);
 			}
 
 			READ_CHAR(sp->modes);
@@ -362,16 +338,9 @@ int fast_decay = 0;
 			}
 
 			/* Strip any loops and envelopes we're permitted to */
-			if ((strip_loop == 1)
-				&& (sp->modes
-					& (MODES_SUSTAIN | MODES_LOOPING | MODES_PINGPONG
-					   | MODES_REVERSE))) {
-				ctl->cmsg(
-						CMSG_INFO, VERB_DEBUG,
-						" - Removing loop and/or sustain");
-				sp->modes
-						&= ~(MODES_SUSTAIN | MODES_LOOPING | MODES_PINGPONG
-							 | MODES_REVERSE);
+			if ((strip_loop == 1) && (sp->modes & (MODES_SUSTAIN | MODES_LOOPING | MODES_PINGPONG | MODES_REVERSE))) {
+				ctl->cmsg(CMSG_INFO, VERB_DEBUG, " - Removing loop and/or sustain");
+				sp->modes &= ~(MODES_SUSTAIN | MODES_LOOPING | MODES_PINGPONG | MODES_REVERSE);
 			}
 
 			if (strip_envelope == 1) {
@@ -381,30 +350,23 @@ int fast_decay = 0;
 				sp->modes &= ~MODES_ENVELOPE;
 			} else if (strip_envelope != 0) {
 				/* Have to make a guess. */
-				if (!(sp->modes
-					  & (MODES_LOOPING | MODES_PINGPONG | MODES_REVERSE))) {
+				if (!(sp->modes & (MODES_LOOPING | MODES_PINGPONG | MODES_REVERSE))) {
 					/* No loop? Then what's there to sustain? No envelope needed
 					 either... */
 					sp->modes &= ~(MODES_SUSTAIN | MODES_ENVELOPE);
-					ctl->cmsg(
-							CMSG_INFO, VERB_DEBUG,
-							" - No loop, removing sustain and envelope");
+					ctl->cmsg(CMSG_INFO, VERB_DEBUG, " - No loop, removing sustain and envelope");
 				} else if (!memcmp(tmp, "??????", 6) || tmp[11] >= 100) {
 					/* Envelope rates all maxed out? Envelope end at a high
 					 "offset"? That's a weird envelope. Take it out. */
 					sp->modes &= ~MODES_ENVELOPE;
-					ctl->cmsg(
-							CMSG_INFO, VERB_DEBUG,
-							" - Weirdness, removing envelope");
+					ctl->cmsg(CMSG_INFO, VERB_DEBUG, " - Weirdness, removing envelope");
 				} else if (!(sp->modes & MODES_SUSTAIN)) {
 					/* No sustain? Then no envelope.  I don't know if this is
 					 justified, but patches without sustain usually don't need
 					 the envelope either... at least the Gravis ones. They're
 					 mostly drums.  I think. */
 					sp->modes &= ~MODES_ENVELOPE;
-					ctl->cmsg(
-							CMSG_INFO, VERB_DEBUG,
-							" - No sustain, removing envelope");
+					ctl->cmsg(CMSG_INFO, VERB_DEBUG, " - No sustain, removing envelope");
 				}
 			}
 
@@ -470,8 +432,7 @@ int fast_decay = 0;
 				/* The GUS apparently plays reverse loops by reversing the
 				 whole sample. We do the same because the GUS does not SUCK. */
 
-				ctl->cmsg(
-						CMSG_WARNING, VERB_NORMAL, "Reverse loop in %s", name);
+				ctl->cmsg(CMSG_WARNING, VERB_NORMAL, "Reverse loop in %s", name);
 				reverse_data(sp->data, 0, sp->data_length / 2);
 
 				t              = sp->loop_start;
@@ -508,9 +469,7 @@ int fast_decay = 0;
 					}
 				}
 				sp->volume = static_cast<float>(32768.0 / maxamp);
-				ctl->cmsg(
-						CMSG_INFO, VERB_DEBUG, " * volume comp: %f",
-						sp->volume);
+				ctl->cmsg(CMSG_INFO, VERB_DEBUG, " * volume comp: %f", sp->volume);
 			}
 #	else
 		if (amp != -1) {
@@ -520,8 +479,7 @@ int fast_decay = 0;
 		}
 #	endif
 
-			sp->data_length
-					/= 2; /* These are in bytes. Convert into samples. */
+			sp->data_length /= 2; /* These are in bytes. Convert into samples. */
 			sp->loop_start /= 2;
 			sp->loop_end /= 2;
 
@@ -574,55 +532,40 @@ int fast_decay = 0;
 		ToneBank* bank   = ((dr) ? drumset[b] : tonebank[b]);
 		if (!bank) {
 			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL,
-					"Huh. Tried to load instruments in non-existent %s %d",
-					(dr) ? "drumset" : "tone bank", b);
+					CMSG_ERROR, VERB_NORMAL, "Huh. Tried to load instruments in non-existent %s %d", (dr) ? "drumset" : "tone bank",
+					b);
 			return 0;
 		}
 		for (i = 0; i < 128; i++) {
 			if (bank->tone[i].instrument == MAGIC_LOAD_INSTRUMENT) {
 				if (!(bank->tone[i].name)) {
 					ctl->cmsg(
-							CMSG_WARNING, (b != 0) ? VERB_VERBOSE : VERB_NORMAL,
-							"No instrument mapped to %s %d, program %d%s",
-							(dr) ? "drum set" : "tone bank", b, i,
-							(b != 0) ? ""
-									 : " - this instrument will not be heard");
+							CMSG_WARNING, (b != 0) ? VERB_VERBOSE : VERB_NORMAL, "No instrument mapped to %s %d, program %d%s",
+							(dr) ? "drum set" : "tone bank", b, i, (b != 0) ? "" : " - this instrument will not be heard");
 					if (b != 0) {
 						/* Mark the corresponding instrument in the default
 						 bank / drumset for loading (if it isn't already) */
 						if (!dr) {
 							if (!(standard_tonebank.tone[i].instrument)) {
-								standard_tonebank.tone[i].instrument
-										= MAGIC_LOAD_INSTRUMENT;
+								standard_tonebank.tone[i].instrument = MAGIC_LOAD_INSTRUMENT;
 							}
 						} else {
 							if (!(standard_drumset.tone[i].instrument)) {
-								standard_drumset.tone[i].instrument
-										= MAGIC_LOAD_INSTRUMENT;
+								standard_drumset.tone[i].instrument = MAGIC_LOAD_INSTRUMENT;
 							}
 						}
 					}
 					bank->tone[i].instrument = nullptr;
 					errors++;
 				} else if (!(bank->tone[i].instrument = load_instrument(
-									 bank->tone[i].name, (dr) ? 1 : 0,
-									 bank->tone[i].pan, bank->tone[i].amp,
-									 (bank->tone[i].note != -1)
-											 ? bank->tone[i].note
-											 : ((dr) ? i : -1),
-									 (bank->tone[i].strip_loop != -1)
-											 ? bank->tone[i].strip_loop
-											 : ((dr) ? 1 : -1),
-									 (bank->tone[i].strip_envelope != -1)
-											 ? bank->tone[i].strip_envelope
-											 : ((dr) ? 1 : -1),
+									 bank->tone[i].name, (dr) ? 1 : 0, bank->tone[i].pan, bank->tone[i].amp,
+									 (bank->tone[i].note != -1) ? bank->tone[i].note : ((dr) ? i : -1),
+									 (bank->tone[i].strip_loop != -1) ? bank->tone[i].strip_loop : ((dr) ? 1 : -1),
+									 (bank->tone[i].strip_envelope != -1) ? bank->tone[i].strip_envelope : ((dr) ? 1 : -1),
 									 bank->tone[i].strip_tail))) {
 					ctl->cmsg(
-							CMSG_ERROR, VERB_NORMAL,
-							"Couldn't load instrument %s (%s %d, program %d)",
-							bank->tone[i].name, (dr) ? "drum set" : "tone bank",
-							b, i);
+							CMSG_ERROR, VERB_NORMAL, "Couldn't load instrument %s (%s %d, program %d)", bank->tone[i].name,
+							(dr) ? "drum set" : "tone bank", b, i);
 					errors++;
 				}
 			}

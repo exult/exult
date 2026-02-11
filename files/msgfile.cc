@@ -134,8 +134,8 @@ static const std::unordered_map<std::string_view, std::string> utf8_to_font_asci
 		{"\xC3\xB1",  "n"}, // ñ -> n
 		{"\xC3\x93",  "O"}, // Ó -> O
 		{"\xC3\x9A",  "U"}, // Ú -> U
-		// {"\xC3\xBF",  ""}, // ¿ -> in this case no conversion
-		// {"\xC2\xA1",  ""}, // ¡ -> in this case no conversion
+							   // {"\xC3\xBF",  ""}, // ¿ -> in this case no conversion
+							   // {"\xC2\xA1",  ""}, // ¡ -> in this case no conversion
 };
 
 /*

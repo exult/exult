@@ -51,9 +51,7 @@ namespace NS_TIMIDITY {
 
 		if (stage > 5) {
 			/* Envelope ran out. */
-			int tmp
-					= (voice[v].status
-					   == VOICE_DIE); /* Already displayed as dead */
+			int tmp         = (voice[v].status == VOICE_DIE); /* Already displayed as dead */
 			voice[v].status = VOICE_FREE;
 			if (!tmp) {
 				ctl->note(v);
@@ -62,8 +60,7 @@ namespace NS_TIMIDITY {
 		}
 
 		if (voice[v].sample->modes & MODES_ENVELOPE) {
-			if (voice[v].status == VOICE_ON
-				|| voice[v].status == VOICE_SUSTAINED) {
+			if (voice[v].status == VOICE_ON || voice[v].status == VOICE_SUSTAINED) {
 				if (stage > 2) {
 					/* Freeze envelope until note turns off. Trumpets want this.
 					 */
@@ -74,8 +71,7 @@ namespace NS_TIMIDITY {
 		}
 		voice[v].envelope_stage = stage + 1;
 
-		if (voice[v].envelope_volume
-			== voice[v].sample->envelope_offset[stage]) {
+		if (voice[v].envelope_volume == voice[v].sample->envelope_offset[stage]) {
 			return recompute_envelope(v);
 		}
 		voice[v].envelope_target    = voice[v].sample->envelope_offset[stage];
@@ -95,10 +91,8 @@ namespace NS_TIMIDITY {
 				ramp *= voice[v].tremolo_volume;
 			}
 			if (voice[v].sample->modes & MODES_ENVELOPE) {
-				lamp *= static_cast<float>(
-						vol_table[voice[v].envelope_volume >> 23]);
-				ramp *= static_cast<float>(
-						vol_table[voice[v].envelope_volume >> 23]);
+				lamp *= static_cast<float>(vol_table[voice[v].envelope_volume >> 23]);
+				ramp *= static_cast<float>(vol_table[voice[v].envelope_volume >> 23]);
 			}
 
 			auto la = static_cast<sint32>(FSCALE(lamp, AMP_BITS));
@@ -119,8 +113,7 @@ namespace NS_TIMIDITY {
 				lamp *= voice[v].tremolo_volume;
 			}
 			if (voice[v].sample->modes & MODES_ENVELOPE) {
-				lamp *= static_cast<float>(
-						vol_table[voice[v].envelope_volume >> 23]);
+				lamp *= static_cast<float>(vol_table[voice[v].envelope_volume >> 23]);
 			}
 
 			auto la = static_cast<sint32>(FSCALE(lamp, AMP_BITS));
@@ -136,10 +129,8 @@ namespace NS_TIMIDITY {
 	static int update_envelope(int v) {
 		voice[v].envelope_volume += voice[v].envelope_increment;
 		/* Why is there no ^^ operator?? */
-		if (((voice[v].envelope_increment < 0)
-			 && (voice[v].envelope_volume <= voice[v].envelope_target))
-			|| ((voice[v].envelope_increment > 0)
-				&& (voice[v].envelope_volume >= voice[v].envelope_target))) {
+		if (((voice[v].envelope_increment < 0) && (voice[v].envelope_volume <= voice[v].envelope_target))
+			|| ((voice[v].envelope_increment > 0) && (voice[v].envelope_volume >= voice[v].envelope_target))) {
 			voice[v].envelope_volume = voice[v].envelope_target;
 			if (recompute_envelope(v)) {
 				return 1;
@@ -170,11 +161,7 @@ namespace NS_TIMIDITY {
 		voice[v].tremolo_phase -= SINE_CYCLE_LENGTH<<RATE_SHIFT;  */
 
 		voice[v].tremolo_volume = static_cast<float>(
-				1.0
-				- FSCALENEG(
-						(sine(voice[v].tremolo_phase >> RATE_SHIFT) + 1.0)
-								* depth * TREMOLO_AMPLITUDE_TUNING,
-						17));
+				1.0 - FSCALENEG((sine(voice[v].tremolo_phase >> RATE_SHIFT) + 1.0) * depth * TREMOLO_AMPLITUDE_TUNING, 17));
 
 		/* I'm not sure about the +1.0 there -- it makes tremoloed voices'
 		 volumes on average the lower the higher the tremolo amplitude. */

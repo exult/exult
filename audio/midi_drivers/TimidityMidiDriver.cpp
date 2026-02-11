@@ -25,8 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #	include "timidity/timidity.h"
 
-const MidiDriver::MidiDriverDesc TimidityMidiDriver::desc
-		= MidiDriver::MidiDriverDesc("Timidity", createInstance);
+const MidiDriver::MidiDriverDesc TimidityMidiDriver::desc = MidiDriver::MidiDriverDesc("Timidity", createInstance);
 
 int TimidityMidiDriver::open() {
 	sint32 encoding = PE_16BIT | PE_SIGNED;
@@ -50,12 +49,10 @@ void TimidityMidiDriver::close() {
 }
 
 void TimidityMidiDriver::send(uint32 b) {
-	NS_TIMIDITY::Timidity_PlayEvent(
-			b & 0xFF, (b >> 8) & 0x7F, (b >> 16) & 0x7F);
+	NS_TIMIDITY::Timidity_PlayEvent(b & 0xFF, (b >> 8) & 0x7F, (b >> 16) & 0x7F);
 }
 
-void TimidityMidiDriver::lowLevelProduceSamples(
-		sint16* samples, uint32 num_samples) {
+void TimidityMidiDriver::lowLevelProduceSamples(sint16* samples, uint32 num_samples) {
 	NS_TIMIDITY::Timidity_GenerateSamples(samples, num_samples);
 }
 

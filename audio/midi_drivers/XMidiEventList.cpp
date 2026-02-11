@@ -34,8 +34,7 @@ using std::string;
 
 // XMidiRecyclable<XMidiEventList> FreeList
 template <>
-XMidiRecyclable<XMidiEventList>::FreeList
-		XMidiRecyclable<XMidiEventList>::FreeList::instance{};
+XMidiRecyclable<XMidiEventList>::FreeList XMidiRecyclable<XMidiEventList>::FreeList::instance{};
 
 //
 // XMidiEventList stuff
@@ -237,8 +236,7 @@ uint32 XMidiEventList::getLength() {
 		length = std::max<uint32>(length, ev->time);
 
 		if (ev->getStatusType() == MidiStatus::NoteOn) {
-			length = std::max<uint32>(
-					length, ev->time + ev->ex.note_on.duration);
+			length = std::max<uint32>(length, ev->time + ev->ex.note_on.duration);
 		}
 	}
 	return length;

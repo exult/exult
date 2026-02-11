@@ -48,7 +48,7 @@ namespace NS_TIMIDITY {
 #	ifdef DEFAULT_TIMIDITY_PATH
 	/* The paths in this list will be tried whenever we're reading a file */
 	static PathList  defaultpathlist = {DEFAULT_TIMIDITY_PATH, nullptr};
-	static PathList* pathlist = &defaultpathlist; /* This is a linked list */
+	static PathList* pathlist        = &defaultpathlist; /* This is a linked list */
 #	else
 static PathList* pathlist = nullptr;
 #	endif
@@ -113,9 +113,7 @@ static PathList* pathlist = nullptr;
 	 them through a decompressor. */
 	FILE* open_file(const char* name, int decompress, int noise_mode) {
 		if (!name || !(*name)) {
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL,
-					"Attempted to open nameless file.");
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Attempted to open nameless file.");
 			return nullptr;
 		}
 
@@ -131,9 +129,7 @@ static PathList* pathlist = nullptr;
 		}
 
 		if (noise_mode && (errno != ENOENT)) {
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL, "%s: %s", current_filename,
-					strerror(errno));
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: %s", current_filename, strerror(errno));
 			return nullptr;
 		}
 
@@ -152,23 +148,17 @@ static PathList* pathlist = nullptr;
 #	ifndef SDL_PLATFORM_WIN32
 					if (current_filename[l - 1] != PATH_SEP)
 #	else
-				if (current_filename[l - 1] != '\\'
-					&& current_filename[l - 1] != '/')
+				if (current_filename[l - 1] != '\\' && current_filename[l - 1] != '/')
 #	endif
 						strcat(current_filename, PATH_STRING);
 				}
 				strcat(current_filename, name);
-				ctl->cmsg(
-						CMSG_INFO, VERB_DEBUG, "Trying to open %s",
-						current_filename);
-				if ((fp
-					 = try_to_open(current_filename, decompress, noise_mode))) {
+				ctl->cmsg(CMSG_INFO, VERB_DEBUG, "Trying to open %s", current_filename);
+				if ((fp = try_to_open(current_filename, decompress, noise_mode))) {
 					return fp;
 				}
 				if (noise_mode && (errno != ENOENT)) {
-					ctl->cmsg(
-							CMSG_ERROR, VERB_NORMAL, "%s: %s", current_filename,
-							strerror(errno));
+					ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: %s", current_filename, strerror(errno));
 					return nullptr;
 				}
 				plp = plp->next;
@@ -204,9 +194,7 @@ static PathList* pathlist = nullptr;
 			len -= c;
 			char tmp[1024];
 			if (c != fread(tmp, 1, c, fp)) {
-				ctl->cmsg(
-						CMSG_ERROR, VERB_NORMAL, "%s: skip: %s",
-						current_filename, strerror(errno));
+				ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: skip: %s", current_filename, strerror(errno));
 			}
 		}
 	}
@@ -223,9 +211,7 @@ static PathList* pathlist = nullptr;
 		} else if ((p = malloc(count))) {
 			return p;
 		} else {
-			ctl->cmsg(
-					CMSG_FATAL, VERB_NORMAL, "Sorry. Couldn't malloc %u bytes.",
-					static_cast<unsigned>(count));
+			ctl->cmsg(CMSG_FATAL, VERB_NORMAL, "Sorry. Couldn't malloc %u bytes.", static_cast<unsigned>(count));
 		}
 
 		ctl->close();

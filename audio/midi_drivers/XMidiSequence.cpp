@@ -26,8 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // XMidiRecyclable<XMidiSequence> FreeList
 template <>
-XMidiRecyclable<XMidiSequence>::FreeList
-		XMidiRecyclable<XMidiSequence>::FreeList::instance{};
+XMidiRecyclable<XMidiSequence>::FreeList XMidiRecyclable<XMidiSequence>::FreeList::instance{};
 
 // Define this to stop the Midisequencer from attempting to
 // catch up time if it has missed over 1200 ticks or 1/5th of a second
@@ -41,21 +40,16 @@ XMidiRecyclable<XMidiSequence>::FreeList
 #define NON_CRIT_ADJUSTMENT 60
 
 XMidiSequence::XMidiSequence(
-		XMidiSequenceHandler* Handler, uint16 seq_id, XMidiEventList* events,
-		bool Repeat, int volume, int branch)
-		: handler(Handler), sequence_id(seq_id), evntlist(events),
-		  event(nullptr), repeat(Repeat), last_tick(0), start(0xFFFFFFFF),
-		  loop_num(-1), vol_multi(volume), vol_changed(true), paused(false),
-		  speed(100) {
+		XMidiSequenceHandler* Handler, uint16 seq_id, XMidiEventList* events, bool Repeat, int volume, int branch)
+		: handler(Handler), sequence_id(seq_id), evntlist(events), event(nullptr), repeat(Repeat), last_tick(0), start(0xFFFFFFFF),
+		  loop_num(-1), vol_multi(volume), vol_changed(true), paused(false), speed(100) {
 	std::memset(loop_event, 0, sizeof(loop_event));
 	std::memset(loop_count, 0, sizeof(loop_count));
 	event = evntlist->events;
 
 	for (int i = 0; i < 16; i++) {
 		shadows[i].reset();
-		handler->sequenceSendEvent(
-				sequence_id, i | int(MidiStatus::Controller)
-									 | (int(MidiController::XBankChange) << 8));
+		handler->sequenceSendEvent(sequence_id, i | int(MidiStatus::Controller) | (int(MidiController::XBankChange) << 8));
 	}
 
 	// Jump to branch
@@ -85,18 +79,11 @@ XMidiSequence::~XMidiSequence() {
 void XMidiSequence::finish() {
 	for (int i = 0; i < 16; i++) {
 		// Manually turn off sustain
-		handler->sequenceSendEvent(
-				sequence_id, i | int(MidiStatus::Controller)
-									 | (int(MidiController::Sustain) << 8));
+		handler->sequenceSendEvent(sequence_id, i | int(MidiStatus::Controller) | (int(MidiController::Sustain) << 8));
 		// send all notes off
-		handler->sequenceSendEvent(
-				sequence_id, i | int(MidiStatus::Controller)
-									 | (int(MidiController::AllNotesOff) << 8));
+		handler->sequenceSendEvent(sequence_id, i | int(MidiStatus::Controller) | (int(MidiController::AllNotesOff) << 8));
 		// rese3t controllers
-		handler->sequenceSendEvent(
-				sequence_id,
-				i | int(MidiStatus::Controller)
-						| (int(MidiController::ResetControllers) << 8));
+		handler->sequenceSendEvent(sequence_id, i | int(MidiStatus::Controller) | (int(MidiController::ResetControllers) << 8));
 	}
 
 	for (int i = 0; i < 16; i++) {
@@ -113,8 +100,7 @@ int XMidiSequence::playEvent() {
 
 	// Handle note off's here
 	while ((note = notes_on.PopTime(getRealTime())) != nullptr) {
-		handler->sequenceSendEvent(
-				sequence_id, note->status + (note->data[0] << 8));
+		handler->sequenceSendEvent(sequence_id, note->status + (note->data[0] << 8));
 	}
 	UpdateVolume();
 
@@ -146,9 +132,7 @@ int XMidiSequence::playEvent() {
 			// time this event at NON_CRIT_ADJUSTMENT or halfway between last
 			// and next which is smaller we do not want any simultaneous events
 			// if we can avoid them
-			nc_ticks = std::min(
-					NON_CRIT_ADJUSTMENT,
-					(event->next->time - static_cast<int>(last_tick)) / 2);
+			nc_ticks = std::min(NON_CRIT_ADJUSTMENT, (event->next->time - static_cast<int>(last_tick)) / 2);
 		} else {
 			nc_ticks = NON_CRIT_ADJUSTMENT;
 		}
@@ -180,13 +164,11 @@ int XMidiSequence::playEvent() {
 
 	// Handle note off's here too
 	while ((note = notes_on.PopTime(getRealTime())) != nullptr) {
-		handler->sequenceSendEvent(
-				sequence_id, note->status + (note->data[0] << 8));
+		handler->sequenceSendEvent(sequence_id, note->status + (note->data[0] << 8));
 	}
 
 	// XMidi For Loop
-	if (event->getStatusType() == MidiStatus::Controller
-		&& MidiController(event->data[0]) == MidiController::XForLoop) {
+	if (event->getStatusType() == MidiStatus::Controller && MidiController(event->data[0]) == MidiController::XForLoop) {
 		if (loop_num < XMIDI_MAX_FOR_LOOP_COUNT - 1) {
 			loop_num++;
 		} else {
@@ -197,9 +179,7 @@ int XMidiSequence::playEvent() {
 		loop_event[loop_num] = event;
 
 	}    // XMidi Next/Break
-	else if (
-			event->getStatusType() == MidiStatus::Controller
-			&& MidiController(event->data[0]) == MidiController::XNextBreak) {
+	else if (event->getStatusType() == MidiStatus::Controller && MidiController(event->data[0]) == MidiController::XNextBreak) {
 		if (loop_num != -1) {
 			if (event->data[1] < 64) {
 				loop_num--;
@@ -219,8 +199,7 @@ int XMidiSequence::playEvent() {
 	}    // XMidi Callback Trigger
 	else if (
 			event->getStatusType() == MidiStatus::Controller
-			&& MidiController(event->data[0])
-					   == MidiController::XCallbackTrigger) {
+			&& MidiController(event->data[0]) == MidiController::XCallbackTrigger) {
 		handler->handleCallbackTrigger(sequence_id, event->data[1]);
 	}    // Not SysEx
 	else if (event->status < int(MidiStatus::Sysex)) {
@@ -228,9 +207,7 @@ int XMidiSequence::playEvent() {
 	}
 	// Ignore sysex events on anything but track 0
 	else if (event->getChannel() == 0) {
-		handler->sequenceSendSysEx(
-				sequence_id, event->status, event->ex.sysex_data.buffer(),
-				event->ex.sysex_data.len);
+		handler->sequenceSendSysEx(sequence_id, event->status, event->ex.sysex_data.buffer(), event->ex.sysex_data.len);
 	}
 
 	// If we've got another note, play that next
@@ -305,15 +282,12 @@ sint32 XMidiSequence::timeTillNext() {
 	if (speed > 0 && event && !paused) {
 		sint32 aim = ((event->time - last_tick) * 5000) / speed;
 #ifdef NON_CRIT_ADJUSTMENT
-		if (!event->is_time_critical()
-			&& (event->time - last_tick) > NON_CRIT_ADJUSTMENT) {
+		if (!event->is_time_critical() && (event->time - last_tick) > NON_CRIT_ADJUSTMENT) {
 			int ticks = NON_CRIT_ADJUSTMENT;
 			if (event->next) {
 				// time this event at NON_CRIT_ADJUSTMENT or halfway between
 				// last and next which is smaller
-				ticks = std::min(
-						ticks,
-						(event->next->time - static_cast<int>(last_tick)) / 2);
+				ticks = std::min(ticks, (event->next->time - static_cast<int>(last_tick)) / 2);
 			} else {
 				ticks = NON_CRIT_ADJUSTMENT;
 			}
@@ -419,17 +393,14 @@ void XMidiSequence::sendEvent() {
 	if (type == MidiStatus::Controller) {
 		// Channel volume
 		if (event->data[0] == 7) {
-			int actualvolume
-					= (event->data[1] * vol_multi * handler->getGlobalVolume())
-					  / 25500;
-			data = event->data[0] | (actualvolume << 8);
+			int actualvolume = (event->data[1] * vol_multi * handler->getGlobalVolume()) / 25500;
+			data             = event->data[0] | (actualvolume << 8);
 		}
 	} else if (type == MidiStatus::Aftertouch) {
 		notes_on.SetAftertouch(event);
 	}
 
-	if ((type != MidiStatus::NoteOn || event->data[1])
-		&& type != MidiStatus::NoteOff) {
+	if ((type != MidiStatus::NoteOn || event->data[1]) && type != MidiStatus::NoteOff) {
 		if (type == MidiStatus::NoteOn) {
 			if (!event->data[1]) {
 				return;
@@ -437,32 +408,23 @@ void XMidiSequence::sendEvent() {
 
 			notes_on.Remove(event);
 
-			handler->sequenceSendEvent(
-					sequence_id, event->status | (data << 8));
+			handler->sequenceSendEvent(sequence_id, event->status | (data << 8));
 			event->ex.note_on.actualvel = event->data[1];
 
-			notes_on.Push(
-					event, ((event->ex.note_on.duration - 1) * 5000 / speed)
-								   + getStart());
+			notes_on.Push(event, ((event->ex.note_on.duration - 1) * 5000 / speed) + getStart());
 		}
 		// Only send IF the channel has been marked enabled
 		else {
-			handler->sequenceSendEvent(
-					sequence_id, event->status | (data << 8));
+			handler->sequenceSendEvent(sequence_id, event->status | (data << 8));
 		}
 	}
 }
 
-void XMidiSequence::sendController(
-		MidiController ctrl, int i, int (&controller)[2]) const {
-	handler->sequenceSendEvent(
-			sequence_id, i | int(MidiStatus::Controller) | (int(ctrl) << 8)
-								 | (controller[0] << 16));
+void XMidiSequence::sendController(MidiController ctrl, int i, int (&controller)[2]) const {
+	handler->sequenceSendEvent(sequence_id, i | int(MidiStatus::Controller) | (int(ctrl) << 8) | (controller[0] << 16));
 	handler->sequenceSendEvent(
 			sequence_id,
-			i | int(MidiStatus::Controller)
-					| ((int(ctrl) + int(MidiController::FineOffset)) << 8)
-					| (controller[1] << 16));
+			i | int(MidiStatus::Controller) | ((int(ctrl) + int(MidiController::FineOffset)) << 8) | (controller[1] << 16));
 }
 
 void XMidiSequence::applyShadow(int i) {
@@ -474,16 +436,11 @@ void XMidiSequence::applyShadow(int i) {
 	// std::memset(static_cast<void*>( & def), 0xff, sizeof(def));
 
 	// Send Reset all controllers first to reset everything to default.
-	handler->sequenceSendEvent(
-			sequence_id,
-			i | int(MidiStatus::Controller)
-					| (int(MidiController::ResetControllers) << 8));
+	handler->sequenceSendEvent(sequence_id, i | int(MidiStatus::Controller) | (int(MidiController::ResetControllers) << 8));
 
 	// Pitch Wheel
 	if (shadows[i].pitchWheel != def.pitchWheel) {
-		handler->sequenceSendEvent(
-				sequence_id,
-				i | int(MidiStatus::PitchWheel) | (shadows[i].pitchWheel << 8));
+		handler->sequenceSendEvent(sequence_id, i | int(MidiStatus::PitchWheel) | (shadows[i].pitchWheel << 8));
 	}
 
 	// Modulation Wheel
@@ -497,17 +454,11 @@ void XMidiSequence::applyShadow(int i) {
 	}
 
 	// Volume - we always send this
-	int actualvolume = (shadows[i].volume.coarse * vol_multi
-						* handler->getGlobalVolume())
-					   / 25500;
+	int actualvolume = (shadows[i].volume.coarse * vol_multi * handler->getGlobalVolume()) / 25500;
 	handler->sequenceSendEvent(
-			sequence_id, i | int(MidiStatus::Controller)
-								 | (int(MidiController::Volume) << 8)
-								 | (actualvolume << 16));
+			sequence_id, i | int(MidiStatus::Controller) | (int(MidiController::Volume) << 8) | (actualvolume << 16));
 	handler->sequenceSendEvent(
-			sequence_id, i | int(MidiStatus::Controller)
-								 | (int(MidiController::VolumeFine) << 8)
-								 | (shadows[i].volume.fine << 16));
+			sequence_id, i | int(MidiStatus::Controller) | (int(MidiController::VolumeFine) << 8) | (shadows[i].volume.fine << 16));
 
 	// Pan
 	if (shadows[i].pan != def.pan) {
@@ -526,32 +477,24 @@ void XMidiSequence::applyShadow(int i) {
 
 	// Sustain - Always send
 	handler->sequenceSendEvent(
-			sequence_id, i | int(MidiStatus::Controller)
-								 | (int(MidiController::Sustain) << 8)
-								 | (shadows[i].sustain << 16));
+			sequence_id, i | int(MidiStatus::Controller) | (int(MidiController::Sustain) << 8) | (shadows[i].sustain << 16));
 
 	// Effects (Reverb)
 	if (shadows[i].effects != def.effects) {
 		handler->sequenceSendEvent(
-				sequence_id, i | int(MidiStatus::Controller)
-									 | (int(MidiController::Effect) << 8)
-									 | (shadows[i].effects << 16));
+				sequence_id, i | int(MidiStatus::Controller) | (int(MidiController::Effect) << 8) | (shadows[i].effects << 16));
 	}
 
 	// Chorus
 	if (shadows[i].chorus != def.chorus) {
 		handler->sequenceSendEvent(
-				sequence_id, i | int(MidiStatus::Controller)
-									 | (int(MidiController::Chorus) << 8)
-									 | (shadows[i].chorus << 16));
+				sequence_id, i | int(MidiStatus::Controller) | (int(MidiController::Chorus) << 8) | (shadows[i].chorus << 16));
 	}
 
 	// XMidi Bank
 	if (shadows[i].xbank != def.xbank) {
 		handler->sequenceSendEvent(
-				sequence_id, i | int(MidiStatus::Controller)
-									 | (int(MidiController::XBankChange) << 8)
-									 | (shadows[i].xbank << 16));
+				sequence_id, i | int(MidiStatus::Controller) | (int(MidiController::XBankChange) << 8) | (shadows[i].xbank << 16));
 	}
 
 	// Bank Select
@@ -560,9 +503,7 @@ void XMidiSequence::applyShadow(int i) {
 	}
 
 	if (shadows[i].program != -1) {
-		handler->sequenceSendEvent(
-				sequence_id,
-				i | int(MidiStatus::Program) | (shadows[i].program << 8));
+		handler->sequenceSendEvent(sequence_id, i | int(MidiStatus::Program) | (shadows[i].program << 8));
 	}
 }
 
@@ -575,9 +516,7 @@ void XMidiSequence::UpdateVolume() {
 			uint32 message = i;
 			message |= int(MidiStatus::Controller);
 			message |= 7 << 8;
-			int actualvolume = (shadows[i].volume.coarse * vol_multi
-								* handler->getGlobalVolume())
-							   / 25500;
+			int actualvolume = (shadows[i].volume.coarse * vol_multi * handler->getGlobalVolume()) / 25500;
 			message |= actualvolume << 16;
 			handler->sequenceSendEvent(sequence_id, message);
 		}
@@ -587,14 +526,11 @@ void XMidiSequence::UpdateVolume() {
 
 void XMidiSequence::loseChannel(int i) {
 	// If the channel matches, send a note off for any note and release sustain
-	handler->sequenceSendEvent(
-			sequence_id, int(MidiStatus::Controller) | i
-								 | int(MidiController::Sustain) << 8);
+	handler->sequenceSendEvent(sequence_id, int(MidiStatus::Controller) | i | int(MidiController::Sustain) << 8);
 	XMidiEvent* note = notes_on.GetNotes();
 	while (note) {
 		if (note->getChannel() == i) {
-			handler->sequenceSendEvent(
-					sequence_id, note->status + (note->data[0] << 8));
+			handler->sequenceSendEvent(sequence_id, note->status + (note->data[0] << 8));
 		}
 		note = note->ex.note_on.next_note;
 	}
@@ -607,9 +543,7 @@ void XMidiSequence::gainChannel(int i) {
 	XMidiEvent* note = notes_on.GetNotes();
 	while (note) {
 		if (note->getChannel() == i) {
-			handler->sequenceSendEvent(
-					sequence_id, note->status | (note->data[0] << 8)
-										 | (note->ex.note_on.actualvel << 16));
+			handler->sequenceSendEvent(sequence_id, note->status | (note->data[0] << 8) | (note->ex.note_on.actualvel << 16));
 		}
 		note = note->ex.note_on.next_note;
 	}

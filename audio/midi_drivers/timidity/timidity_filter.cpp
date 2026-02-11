@@ -73,8 +73,7 @@ namespace NS_TIMIDITY {
 		auto xind = static_cast<float>((2 * n - 1) * (2 * n - 1));
 		for (int i = 0; i < n; i++) {
 			auto xi = static_cast<float>(i + 0.5);
-			w[i] = ino(static_cast<float>(beta * sqrt(1. - 4 * xi * xi / xind)))
-				   / ino(beta);
+			w[i]    = ino(static_cast<float>(beta * sqrt(1. - 4 * xi * xi / xind))) / ino(beta);
 		}
 	}
 
@@ -85,14 +84,11 @@ namespace NS_TIMIDITY {
 		for (int i = 0; i < ORDER2; i++) {
 			auto xi    = static_cast<float>(i + 0.5);
 			auto omega = static_cast<float>(PI * xi);
-			g[i]       = static_cast<float>(
-                    sin(static_cast<double>(omega * fc)) / omega);
+			g[i]       = static_cast<float>(sin(static_cast<double>(omega * fc)) / omega);
 		}
 
-		auto att  = 40.; /* attenuation  in  db */
-		auto beta = static_cast<float>(
-				exp(log(0.58417 * (att - 20.96)) * 0.4)
-				+ 0.07886 * (att - 20.96));
+		auto  att  = 40.; /* attenuation  in  db */
+		auto  beta = static_cast<float>(exp(log(0.58417 * (att - 20.96)) * 0.4) + 0.07886 * (att - 20.96));
 		float w[ORDER2];
 		kaiser(w, ORDER2, beta);
 
@@ -107,9 +103,7 @@ namespace NS_TIMIDITY {
 	 * Note that we simulate leading and trailing 0 at the border of the
 	 * data buffer
 	 */
-	static void filter(
-			sample_t* result, const sample_t* data, sint32 length,
-			const float coef[]) {
+	static void filter(sample_t* result, const sample_t* data, sint32 length, const float coef[]) {
 		sint16 peak = 0;
 
 		/* Simulate leading 0 at the begining of the buffer */
@@ -118,9 +112,7 @@ namespace NS_TIMIDITY {
 			sint32 sample_window = sample - ORDER2;
 
 			for (sint32 i = 0; i < ORDER; i++) {
-				sum += static_cast<float>(
-						coef[i]
-						* ((sample_window < 0) ? 0.0 : data[sample_window++]));
+				sum += static_cast<float>(coef[i] * ((sample_window < 0) ? 0.0 : data[sample_window++]));
 			}
 
 			/* Saturation ??? */
@@ -136,8 +128,7 @@ namespace NS_TIMIDITY {
 		}
 
 		/* The core of the buffer  */
-		for (sint32 sample = ORDER2; sample < length - ORDER + ORDER2;
-			 sample++) {
+		for (sint32 sample = ORDER2; sample < length - ORDER + ORDER2; sample++) {
 			float  sum           = 0.0;
 			sint32 sample_window = sample - ORDER2;
 
@@ -158,16 +149,12 @@ namespace NS_TIMIDITY {
 		}
 
 		/* Simulate 0 at the end of the buffer */
-		for (sint32 sample = length - ORDER + ORDER2; sample < length;
-			 sample++) {
+		for (sint32 sample = length - ORDER + ORDER2; sample < length; sample++) {
 			float  sum           = 0.0;
 			sint32 sample_window = sample - ORDER2;
 
 			for (sint32 i = 0; i < ORDER; i++) {
-				sum += static_cast<float>(
-						coef[i]
-						* ((sample_window >= length) ? 0.0
-													 : data[sample_window++]));
+				sum += static_cast<float>(coef[i] * ((sample_window >= length) ? 0.0 : data[sample_window++]));
 			}
 
 			/* Saturation ??? */
@@ -183,9 +170,7 @@ namespace NS_TIMIDITY {
 		}
 
 		if (peak) {
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL, "Saturation %2.3f %%.",
-					100.0 * peak / static_cast<float>(length));
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "Saturation %2.3f %%.", 100.0 * peak / static_cast<float>(length));
 		}
 	}
 
@@ -199,9 +184,7 @@ namespace NS_TIMIDITY {
 		float fir_symetric[ORDER];
 		float fir_coef[ORDER2];
 
-		ctl->cmsg(
-				CMSG_INFO, VERB_NOISY, "Antialiasing: Fsample=%iKHz",
-				sp->sample_rate);
+		ctl->cmsg(CMSG_INFO, VERB_NOISY, "Antialiasing: Fsample=%iKHz", sp->sample_rate);
 
 		/* No oversampling  */
 		if (output_rate >= sp->sample_rate) {
@@ -210,24 +193,20 @@ namespace NS_TIMIDITY {
 
 		/* cutoff frequency [0..1.0] FREQ_CUT/SAMP_FREQ*/
 		float freq_cut = static_cast<float>(output_rate) / sp->sample_rate;
-		ctl->cmsg(
-				CMSG_INFO, VERB_NOISY, "Antialiasing: cutoff=%f%%",
-				freq_cut * 100.);
+		ctl->cmsg(CMSG_INFO, VERB_NOISY, "Antialiasing: cutoff=%f%%", freq_cut * 100.);
 
 		designfir(fir_coef, freq_cut);
 
 		/* Make the filter symetric */
 		for (int i = 0; i < ORDER2; i++) {
-			fir_symetric[ORDER - 1 - i] = fir_symetric[i]
-					= fir_coef[ORDER2 - 1 - i];
+			fir_symetric[ORDER - 1 - i] = fir_symetric[i] = fir_coef[ORDER2 - 1 - i];
 		}
 
 		/* We apply the filter we have designed on a copy of the patch */
 		auto* temp = safe_Malloc<sample_t>(sp->data_length);
 		memcpy(temp, sp->data, sp->data_length);
 
-		filter(sp->data, temp, sp->data_length / sizeof(sample_t),
-			   fir_symetric);
+		filter(sp->data, temp, sp->data_length / sizeof(sample_t), fir_symetric);
 
 		free(temp);
 	}

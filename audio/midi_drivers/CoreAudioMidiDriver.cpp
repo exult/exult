@@ -38,8 +38,7 @@ class CoreAudioException : public exult_exception {
 
 public:
 	CoreAudioException(OSStatus err, unsigned long line)
-			: exult_exception("CoreAudio initialization failed"), _err(err),
-			  _line(line) {}
+			: exult_exception("CoreAudio initialization failed"), _err(err), _line(line) {}
 
 	OSStatus get_err() const {
 		return _err;
@@ -59,26 +58,20 @@ public:
 		} while (false)
 #	define RequireNoErr(error) RequireNoErr_Inner(error, __LINE__)
 
-const MidiDriver::MidiDriverDesc CoreAudioMidiDriver::desc
-		= MidiDriver::MidiDriverDesc("CoreAudio", createInstance);
+const MidiDriver::MidiDriverDesc CoreAudioMidiDriver::desc = MidiDriver::MidiDriverDesc("CoreAudio", createInstance);
 
-CoreAudioMidiDriver::CoreAudioMidiDriver()
-		: LowLevelMidiDriver(std::string(desc.name)), _auGraph(nullptr) {}
+CoreAudioMidiDriver::CoreAudioMidiDriver() : LowLevelMidiDriver(std::string(desc.name)), _auGraph(nullptr) {}
 
 #	ifdef SDL_PLATFORM_IOS
 constexpr static const AudioComponentDescription dev_desc{
-		kAudioUnitType_Output, kAudioUnitSubType_RemoteIO,
-		kAudioUnitManufacturer_Apple, 0, 0};
+		kAudioUnitType_Output, kAudioUnitSubType_RemoteIO, kAudioUnitManufacturer_Apple, 0, 0};
 constexpr static const AudioComponentDescription midi_desc{
-		kAudioUnitType_MusicDevice, kAudioUnitSubType_MIDISynth,
-		kAudioUnitManufacturer_Apple, 0, 0};
+		kAudioUnitType_MusicDevice, kAudioUnitSubType_MIDISynth, kAudioUnitManufacturer_Apple, 0, 0};
 #	else
 constexpr static const AudioComponentDescription dev_desc{
-		kAudioUnitType_Output, kAudioUnitSubType_DefaultOutput,
-		kAudioUnitManufacturer_Apple, 0, 0};
+		kAudioUnitType_Output, kAudioUnitSubType_DefaultOutput, kAudioUnitManufacturer_Apple, 0, 0};
 constexpr static const AudioComponentDescription midi_desc{
-		kAudioUnitType_MusicDevice, kAudioUnitSubType_DLSSynth,
-		kAudioUnitManufacturer_Apple, 0, 0};
+		kAudioUnitType_MusicDevice, kAudioUnitSubType_DLSSynth, kAudioUnitManufacturer_Apple, 0, 0};
 #	endif
 
 int CoreAudioMidiDriver::open() {
@@ -99,8 +92,7 @@ int CoreAudioMidiDriver::open() {
 		RequireNoErr(AUGraphAddNode(_auGraph, &midi_desc, &synthNode));
 
 		// Connect the softsynth to the default output
-		RequireNoErr(
-				AUGraphConnectNodeInput(_auGraph, synthNode, 0, outputNode, 0));
+		RequireNoErr(AUGraphConnectNodeInput(_auGraph, synthNode, 0, outputNode, 0));
 
 		// Open and initialize the whole graph
 		RequireNoErr(AUGraphOpen(_auGraph));
@@ -112,9 +104,7 @@ int CoreAudioMidiDriver::open() {
 #	ifdef SDL_PLATFORM_IOS
 		// on iOS we make sure there is a soundfont loaded for CoreAudio to work
 		if (!config->key_exists("config/audio/midi/coreaudio_soundfont")) {
-			config->set(
-					"config/audio/midi/coreaudio_soundfont",
-					"gs_instruments.dls", true);
+			config->set("config/audio/midi/coreaudio_soundfont", "gs_instruments.dls", true);
 		}
 #	endif
 		// Load custom soundfont, if specified
@@ -140,22 +130,17 @@ int CoreAudioMidiDriver::open() {
 						soundfont = f;
 					}
 				}
-				std::cout << "Loading SoundFont '" << soundfont << "'"
-						  << std::endl;
+				std::cout << "Loading SoundFont '" << soundfont << "'" << std::endl;
 				if (!soundfont.empty() && U7exists(soundfont.c_str())) {
 					OSErr    err = noErr;
 					CFURLRef url = CFURLCreateFromFileSystemRepresentation(
-							kCFAllocatorDefault,
-							reinterpret_cast<const UInt8*>(soundfont.c_str()),
-							soundfont.size(), FALSE);
+							kCFAllocatorDefault, reinterpret_cast<const UInt8*>(soundfont.c_str()), soundfont.size(), FALSE);
 					if (url != nullptr) {
 						err = AudioUnitSetProperty(
-								_synth, kMusicDeviceProperty_SoundBankURL,
-								kAudioUnitScope_Global, 0, &url, sizeof(url));
+								_synth, kMusicDeviceProperty_SoundBankURL, kAudioUnitScope_Global, 0, &url, sizeof(url));
 						CFRelease(url);
 					} else {
-						std::cout << "Failed to allocate CFURLRef from '"
-								  << soundfont << "'" << std::endl;
+						std::cout << "Failed to allocate CFURLRef from '" << soundfont << "'" << std::endl;
 						// after trying and failing to load a soundfont it's
 						// better to fail initializing the CoreAudio driver or
 						// it might crash
@@ -164,17 +149,14 @@ int CoreAudioMidiDriver::open() {
 					if (err == noErr) {
 						std::cout << "Loaded!" << std::endl;
 					} else {
-						std::cout << "Error loading SoundFont '" << soundfont
-								  << "'" << std::endl;
+						std::cout << "Error loading SoundFont '" << soundfont << "'" << std::endl;
 						// after trying and failing to load a soundfont it's
 						// better to fail initializing the CoreAudio driver or
 						// it might crash
 						return 1;
 					}
 				} else {
-					std::cout << "Path to SoundFont '" << soundfont
-							  << "' not found. Continuing without."
-							  << std::endl;
+					std::cout << "Path to SoundFont '" << soundfont << "' not found. Continuing without." << std::endl;
 				}
 			}
 		}
@@ -183,8 +165,7 @@ int CoreAudioMidiDriver::open() {
 		RequireNoErr(AUGraphStart(_auGraph));
 	} catch (const CoreAudioException& error) {
 #	ifdef DEBUG
-		std::cerr << error.what() << " at " << __FILE__ << ":"
-				  << error.get_line() << " with error code "
+		std::cerr << error.what() << " at " << __FILE__ << ":" << error.get_line() << " with error code "
 				  << static_cast<int>(error.get_err()) << std::endl;
 #	endif
 		if (_auGraph != nullptr) {
@@ -215,13 +196,9 @@ void CoreAudioMidiDriver::send(uint32 message) {
 	uint32 enabled  = 1;
 	uint32 disabled = 0;
 	assert(_auGraph != nullptr);
-	AudioUnitSetProperty(
-			_synth, kAUMIDISynthProperty_EnablePreload, kAudioUnitScope_Global,
-			0, &enabled, sizeof(enabled));
+	AudioUnitSetProperty(_synth, kAUMIDISynthProperty_EnablePreload, kAudioUnitScope_Global, 0, &enabled, sizeof(enabled));
 	MusicDeviceMIDIEvent(_synth, uint32(0xC0 | status_byte), first_byte, 0, 0);
-	AudioUnitSetProperty(
-			_synth, kAUMIDISynthProperty_EnablePreload, kAudioUnitScope_Global,
-			0, &disabled, sizeof(disabled));
+	AudioUnitSetProperty(_synth, kAUMIDISynthProperty_EnablePreload, kAudioUnitScope_Global, 0, &disabled, sizeof(disabled));
 	auto cmd = static_cast<uint32>(status_byte & 0xF0);
 	switch (cmd) {
 	case 0x80:
@@ -251,14 +228,12 @@ void CoreAudioMidiDriver::send(uint32 message) {
 				  << std::endl;
 		break;
 	default:
-		std::cout << "CoreAudioMidiDriver: Unknown send() command 0x"
-				  << std::hex << cmd << std::dec << std::endl;
+		std::cout << "CoreAudioMidiDriver: Unknown send() command 0x" << std::hex << cmd << std::dec << std::endl;
 		break;
 	}
 }
 
-void CoreAudioMidiDriver::send_sysex(
-		uint8 status, const uint8* msg, uint16 length) {
+void CoreAudioMidiDriver::send_sysex(uint8 status, const uint8* msg, uint16 length) {
 	uint8 buf[384];
 
 	assert(sizeof(buf) >= static_cast<size_t>(length) + 2);
@@ -284,10 +259,9 @@ void CoreAudioMidiDriver::increaseThreadPriority() {
 	pthread_setschedparam(self, policy, &param);
 }
 
-std::vector<ConfigSetting_widget::Definition> CoreAudioMidiDriver::
-		GetSettings() {
+std::vector<ConfigSetting_widget::Definition> CoreAudioMidiDriver::GetSettings() {
 	ConfigSetting_widget::Definition soundfont{
-			Strings::Soundfont(),                                  // label
+			Strings::Soundfont(),                         // label
 			"config/audio/midi/coreaudio_soundfont",      // config_setting
 			0,                                            // additional
 			false,                                        // required

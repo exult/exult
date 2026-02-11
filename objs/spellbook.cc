@@ -64,7 +64,7 @@ const int wh = 1024;    // Worm's hart.
 // Black Gate:
 unsigned short Spellbook_object::bg_reagents[9 * 8]
 		= {0, 0, 0, 0, 0, 0, 0, 0,    // Linear spells require no reagents.
-		   // Circle 1:
+									  // Circle 1:
 		   gr | gn | mr, gr | gn, ns | ss, gr | ss, sa | ss, sa, ns, gr | gn,
 		   // Circle 2:
 		   bm | sa, bp | mr, bp | sa, mr | sa, gr | gn | mr, gr | gn | sa, bp | bm | mr, bm | ns | mr | sa | bp | ss,

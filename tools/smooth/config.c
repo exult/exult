@@ -38,8 +38,7 @@ FILE* open_config(const char* configfile) {
 	} else {
 		FILE* f = fopen(configfile, "ra");
 		if (f == NULL) {
-			fprintf(stderr, "ERROR: Couldn't open config file %s\n",
-					configfile);
+			fprintf(stderr, "ERROR: Couldn't open config file %s\n", configfile);
 			return NULL;
 		}
 		return f;
@@ -105,9 +104,7 @@ int read_config(FILE* f) {
 					(*init)(&g_statics);
 					hdl_list = add_handle(a_hdl, hdl_list);
 				}
-			} else if (
-					line[0] == '#' || line[0] == '\n' || line[0] == '\r'
-					|| line[0] == ';') {
+			} else if (line[0] == '#' || line[0] == '\n' || line[0] == '\r' || line[0] == ';') {
 				if (g_statics.debug > 3) {
 					printf("skipping: %s", line);
 					fflush(stdout);
@@ -133,16 +130,12 @@ int read_config(FILE* f) {
 					unsigned b;
 					if (sscanf(line, "%02x%02x%02x", &r, &g, &b) != 3) {
 						// prevent buffer overflow problem
-						fprintf(stderr,
-								"ERROR: couldn't read the slave value of %s\n",
-								line);
+						fprintf(stderr, "ERROR: couldn't read the slave value of %s\n", line);
 						fflush(stderr);
 						return -1;
 					} else {
 						// get index of (r,g,b) from palette
-						int idx = SDL_MapRGB(
-								g_statics.image_in_format,
-								g_statics.image_in_palette, r, g, b);
+						int idx = SDL_MapRGB(g_statics.image_in_format, g_statics.image_in_palette, r, g, b);
 						// some reporting
 						if (g_statics.debug > 3) {
 							printf("slave is %02x%02x%02x "

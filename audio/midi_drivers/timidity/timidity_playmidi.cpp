@@ -70,8 +70,7 @@ namespace NS_TIMIDITY {
 	static sint32     sample_count, current_sample;
 
 	static void adjust_amplification() {
-		master_volume
-				= static_cast<float>(amplification) / static_cast<float>(100.0);
+		master_volume = static_cast<float>(amplification) / static_cast<float>(100.0);
 	}
 
 	static void reset_voices() {
@@ -83,8 +82,7 @@ namespace NS_TIMIDITY {
 
 	/* Process the Reset All Controllers event */
 	static void reset_controllers(int c) {
-		channel[c].volume
-				= 90; /* Some standard says, although the SCC docs say 0. */
+		channel[c].volume      = 90;  /* Some standard says, although the SCC docs say 0. */
 		channel[c].expression  = 127; /* SCC-1 does this. */
 		channel[c].sustain     = 0;
 		channel[c].pitchbend   = 0x2000;
@@ -182,25 +180,20 @@ namespace NS_TIMIDITY {
 				if (pb < 0) {
 					i = -i;
 				}
-				channel[voice[v].channel].pitchfactor = static_cast<float>(
-						bend_fine[(i >> 5) & 0xFF] * bend_coarse[i >> 13]);
+				channel[voice[v].channel].pitchfactor = static_cast<float>(bend_fine[(i >> 5) & 0xFF] * bend_coarse[i >> 13]);
 			}
 			if (pb > 0) {
-				voice[v].frequency = static_cast<sint32>(
-						channel[voice[v].channel].pitchfactor
-						* static_cast<double>(voice[v].orig_frequency));
+				voice[v].frequency
+						= static_cast<sint32>(channel[voice[v].channel].pitchfactor * static_cast<double>(voice[v].orig_frequency));
 			} else {
-				voice[v].frequency = static_cast<sint32>(
-						static_cast<double>(voice[v].orig_frequency)
-						/ channel[voice[v].channel].pitchfactor);
+				voice[v].frequency
+						= static_cast<sint32>(static_cast<double>(voice[v].orig_frequency) / channel[voice[v].channel].pitchfactor);
 			}
 		}
 
 		a = FSCALE(
-				(static_cast<double>(voice[v].sample->sample_rate)
-				 * static_cast<double>(voice[v].frequency))
-						/ (static_cast<double>(voice[v].sample->root_freq)
-						   * static_cast<double>(play_mode->rate)),
+				(static_cast<double>(voice[v].sample->sample_rate) * static_cast<double>(voice[v].frequency))
+						/ (static_cast<double>(voice[v].sample->root_freq) * static_cast<double>(play_mode->rate)),
 				FRACTION_BITS);
 
 		if (sign) {
@@ -215,51 +208,33 @@ namespace NS_TIMIDITY {
 
 		/* TODO: use fscale */
 
-		tempamp
-				= (voice[v].velocity * channel[voice[v].channel].volume
-				   * channel[voice[v].channel].expression); /* 21 bits */
+		tempamp = (voice[v].velocity * channel[voice[v].channel].volume * channel[voice[v].channel].expression); /* 21 bits */
 
 		if (!(play_mode->encoding & PE_MONO)) {
 			if (voice[v].panning > 60 && voice[v].panning < 68) {
 				voice[v].panned = PANNED_CENTER;
 
-				voice[v].left_amp = FSCALENEG(
-						static_cast<double>(tempamp) * voice[v].sample->volume
-								* master_volume,
-						21);
+				voice[v].left_amp = FSCALENEG(static_cast<double>(tempamp) * voice[v].sample->volume * master_volume, 21);
 			} else if (voice[v].panning < 5) {
 				voice[v].panned = PANNED_LEFT;
 
-				voice[v].left_amp = FSCALENEG(
-						static_cast<double>(tempamp) * voice[v].sample->volume
-								* master_volume,
-						20);
+				voice[v].left_amp = FSCALENEG(static_cast<double>(tempamp) * voice[v].sample->volume * master_volume, 20);
 			} else if (voice[v].panning > 123) {
 				voice[v].panned = PANNED_RIGHT;
 
 				voice[v].left_amp = /* left_amp will be used */
-						FSCALENEG(
-								static_cast<double>(tempamp)
-										* voice[v].sample->volume
-										* master_volume,
-								20);
+						FSCALENEG(static_cast<double>(tempamp) * voice[v].sample->volume * master_volume, 20);
 			} else {
 				voice[v].panned = PANNED_MYSTERY;
 
-				voice[v].left_amp = FSCALENEG(
-						static_cast<double>(tempamp) * voice[v].sample->volume
-								* master_volume,
-						27);
+				voice[v].left_amp  = FSCALENEG(static_cast<double>(tempamp) * voice[v].sample->volume * master_volume, 27);
 				voice[v].right_amp = voice[v].left_amp * (voice[v].panning);
 				voice[v].left_amp *= static_cast<float>(127 - voice[v].panning);
 			}
 		} else {
 			voice[v].panned = PANNED_CENTER;
 
-			voice[v].left_amp = FSCALENEG(
-					static_cast<double>(tempamp) * voice[v].sample->volume
-							* master_volume,
-					21);
+			voice[v].left_amp = FSCALENEG(static_cast<double>(tempamp) * voice[v].sample->volume * master_volume, 21);
 		}
 	}
 
@@ -268,22 +243,17 @@ namespace NS_TIMIDITY {
 		int         j;
 
 		if (ISDRUMCHANNEL(e->channel)) {
-			if (!(ip
-				  = drumset[channel[e->channel].bank]->tone[e->a].instrument)) {
+			if (!(ip = drumset[channel[e->channel].bank]->tone[e->a].instrument)) {
 				if (!(ip = drumset[0]->tone[e->a].instrument)) {
 					return; /* No instrument? Then we can't play. */
 				}
 			}
 			if (ip->samples != 1) {
-				ctl->cmsg(
-						CMSG_WARNING, VERB_VERBOSE,
-						"Strange: percussion instrument with %d samples!",
-						ip->samples);
+				ctl->cmsg(CMSG_WARNING, VERB_VERBOSE, "Strange: percussion instrument with %d samples!", ip->samples);
 			}
 
 			if (ip->sample->note_to_use) { /* Do we have a fixed pitch? */
-				voice[i].orig_frequency
-						= freq_table[static_cast<int>(ip->sample->note_to_use)];
+				voice[i].orig_frequency = freq_table[static_cast<int>(ip->sample->note_to_use)];
 			} else {
 				voice[i].orig_frequency = freq_table[e->a & 0x7F];
 			}
@@ -293,19 +263,14 @@ namespace NS_TIMIDITY {
 		} else {
 			if (channel[e->channel].program == SPECIAL_PROGRAM) {
 				ip = default_instrument;
-			} else if (!(ip = tonebank[channel[e->channel].bank]
-									  ->tone[channel[e->channel].program]
-									  .instrument)) {
-				if (!(ip = tonebank[0]
-								   ->tone[channel[e->channel].program]
-								   .instrument)) {
+			} else if (!(ip = tonebank[channel[e->channel].bank]->tone[channel[e->channel].program].instrument)) {
+				if (!(ip = tonebank[0]->tone[channel[e->channel].program].instrument)) {
 					return; /* No instrument? Then we can't play. */
 				}
 			}
 
 			if (ip->sample->note_to_use) { /* Fixed-pitch instrument? */
-				voice[i].orig_frequency
-						= freq_table[static_cast<int>(ip->sample->note_to_use)];
+				voice[i].orig_frequency = freq_table[static_cast<int>(ip->sample->note_to_use)];
 			} else {
 				voice[i].orig_frequency = freq_table[e->a & 0x7F];
 			}
@@ -319,15 +284,14 @@ namespace NS_TIMIDITY {
 		voice[i].sample_offset    = 0;
 		voice[i].sample_increment = 0; /* make sure it isn't negative */
 
-		voice[i].tremolo_phase = 0;
-		voice[i].tremolo_phase_increment
-				= voice[i].sample->tremolo_phase_increment;
-		voice[i].tremolo_sweep = voice[i].sample->tremolo_sweep_increment;
-		voice[i].tremolo_sweep_position = 0;
+		voice[i].tremolo_phase           = 0;
+		voice[i].tremolo_phase_increment = voice[i].sample->tremolo_phase_increment;
+		voice[i].tremolo_sweep           = voice[i].sample->tremolo_sweep_increment;
+		voice[i].tremolo_sweep_position  = 0;
 
-		voice[i].vibrato_sweep = voice[i].sample->vibrato_sweep_increment;
-		voice[i].vibrato_sweep_position = 0;
-		voice[i].vibrato_control_ratio = voice[i].sample->vibrato_control_ratio;
+		voice[i].vibrato_sweep           = voice[i].sample->vibrato_sweep_increment;
+		voice[i].vibrato_sweep_position  = 0;
+		voice[i].vibrato_control_ratio   = voice[i].sample->vibrato_control_ratio;
 		voice[i].vibrato_control_counter = voice[i].vibrato_phase = 0;
 		for (j = 0; j < VIBRATO_SAMPLE_INCREMENTS; j++) {
 			voice[i].vibrato_sample_increment[j] = 0;
@@ -370,10 +334,7 @@ namespace NS_TIMIDITY {
 		while (i--) {
 			if (voice[i].status == VOICE_FREE) {
 				lowest = i; /* Can't get a lower volume than silence */
-			} else if (
-					voice[i].channel == e->channel
-					&& (voice[i].note == e->a
-						|| channel[voice[i].channel].mono)) {
+			} else if (voice[i].channel == e->channel && (voice[i].note == e->a || channel[voice[i].channel].mono)) {
 				kill_note(i);
 			}
 		}
@@ -387,11 +348,9 @@ namespace NS_TIMIDITY {
 		/* Look for the decaying note with the lowest volume */
 		i = voices;
 		while (i--) {
-			if ((voice[i].status != VOICE_ON)
-				&& (voice[i].status != VOICE_DIE)) {
+			if ((voice[i].status != VOICE_ON) && (voice[i].status != VOICE_DIE)) {
 				v = voice[i].left_mix;
-				if ((voice[i].panned == PANNED_MYSTERY)
-					&& (voice[i].right_mix > v)) {
+				if ((voice[i].panned == PANNED_MYSTERY) && (voice[i].right_mix > v)) {
 					v = voice[i].right_mix;
 				}
 				if (v < lv) {
@@ -435,8 +394,7 @@ namespace NS_TIMIDITY {
 	static void note_off(MidiEvent* e) {
 		int i = voices;
 		while (i--) {
-			if (voice[i].status == VOICE_ON && voice[i].channel == e->channel
-				&& voice[i].note == e->a) {
+			if (voice[i].status == VOICE_ON && voice[i].channel == e->channel && voice[i].note == e->a) {
 				if (channel[e->channel].sustain) {
 					voice[i].status = VOICE_SUSTAINED;
 					ctl->note(i);
@@ -468,8 +426,7 @@ namespace NS_TIMIDITY {
 	static void all_sounds_off(int c) {
 		int i = voices;
 		while (i--) {
-			if (voice[i].channel == c && voice[i].status != VOICE_FREE
-				&& voice[i].status != VOICE_DIE) {
+			if (voice[i].channel == c && voice[i].status != VOICE_FREE && voice[i].status != VOICE_DIE) {
 				kill_note(i);
 			}
 		}
@@ -478,8 +435,7 @@ namespace NS_TIMIDITY {
 	static void adjust_pressure(MidiEvent* e) {
 		int i = voices;
 		while (i--) {
-			if (voice[i].status == VOICE_ON && voice[i].channel == e->channel
-				&& voice[i].note == e->a) {
+			if (voice[i].status == VOICE_ON && voice[i].channel == e->channel && voice[i].note == e->a) {
 				voice[i].velocity = e->b;
 				recompute_amp(i);
 				apply_envelope_to_amp(i);
@@ -491,9 +447,7 @@ namespace NS_TIMIDITY {
 	static void adjust_panning(int c) {
 		int i = voices;
 		while (i--) {
-			if ((voice[i].channel == c)
-				&& (voice[i].status == VOICE_ON
-					|| voice[i].status == VOICE_SUSTAINED)) {
+			if ((voice[i].channel == c) && (voice[i].status == VOICE_ON || voice[i].status == VOICE_SUSTAINED)) {
 				voice[i].panning = channel[c].panning;
 				recompute_amp(i);
 				apply_envelope_to_amp(i);
@@ -522,9 +476,7 @@ namespace NS_TIMIDITY {
 	static void adjust_volume(int c) {
 		int i = voices;
 		while (i--) {
-			if (voice[i].channel == c
-				&& (voice[i].status == VOICE_ON
-					|| voice[i].status == VOICE_SUSTAINED)) {
+			if (voice[i].channel == c && (voice[i].status == VOICE_ON || voice[i].status == VOICE_SUSTAINED)) {
 				recompute_amp(i);
 				apply_envelope_to_amp(i);
 			}
@@ -543,8 +495,7 @@ namespace NS_TIMIDITY {
 				break;
 
 			case ME_PITCHWHEEL:
-				channel[current_event->channel].pitchbend
-						= current_event->a + current_event->b * 128;
+				channel[current_event->channel].pitchbend   = current_event->a + current_event->b * 128;
 				channel[current_event->channel].pitchfactor = 0;
 				break;
 
@@ -691,8 +642,7 @@ namespace NS_TIMIDITY {
 
 	static void do_compute_data(sint32 count) {
 		int i;
-		memset(buffer_pointer, 0,
-			   (play_mode->encoding & PE_MONO) ? (count * 4) : (count * 8));
+		memset(buffer_pointer, 0, (play_mode->encoding & PE_MONO) ? (count * 4) : (count * 8));
 		for (i = 0; i < voices; i++) {
 			if (voice[i].status != VOICE_FREE) {
 				mix_voice(buffer_pointer, i, count);
@@ -737,8 +687,7 @@ namespace NS_TIMIDITY {
 		if (count > 0) {
 			do_compute_data(count);
 			buffered_count += count;
-			buffer_pointer
-					+= (play_mode->encoding & PE_MONO) ? count : count * 2;
+			buffer_pointer += (play_mode->encoding & PE_MONO) ? count : count * 2;
 		}
 		return TM_RC_NONE;
 	}
@@ -776,20 +725,16 @@ namespace NS_TIMIDITY {
 					/* Effects affecting a single channel */
 
 				case ME_PITCH_SENS:
-					channel[current_event->channel].pitchsens
-							= current_event->a;
+					channel[current_event->channel].pitchsens   = current_event->a;
 					channel[current_event->channel].pitchfactor = 0;
 					break;
 
 				case ME_PITCHWHEEL:
-					channel[current_event->channel].pitchbend
-							= current_event->a + current_event->b * 128;
+					channel[current_event->channel].pitchbend   = current_event->a + current_event->b * 128;
 					channel[current_event->channel].pitchfactor = 0;
 					/* Adjust pitch for notes already playing */
 					adjust_pitchbend(current_event->channel);
-					ctl->pitch_bend(
-							current_event->channel,
-							channel[current_event->channel].pitchbend);
+					ctl->pitch_bend(current_event->channel, channel[current_event->channel].pitchbend);
 					break;
 
 				case ME_MAINVOLUME:
@@ -807,8 +752,7 @@ namespace NS_TIMIDITY {
 					break;
 
 				case ME_EXPRESSION:
-					channel[current_event->channel].expression
-							= current_event->a;
+					channel[current_event->channel].expression = current_event->a;
 					adjust_volume(current_event->channel);
 					ctl->expression(current_event->channel, current_event->a);
 					break;
@@ -818,8 +762,7 @@ namespace NS_TIMIDITY {
 						/* Change drum set */
 						channel[current_event->channel].bank = current_event->a;
 					} else {
-						channel[current_event->channel].program
-								= current_event->a;
+						channel[current_event->channel].program = current_event->a;
 					}
 					ctl->program(current_event->channel, current_event->a);
 					break;
@@ -851,16 +794,9 @@ namespace NS_TIMIDITY {
 
 				case ME_EOT:
 					/* Give the last notes a couple of seconds to decay  */
-					ctl->cmsg(
-							CMSG_INFO, VERB_VERBOSE,
-							"Playing time: ~%d seconds",
-							current_sample / play_mode->rate + 2);
-					ctl->cmsg(
-							CMSG_INFO, VERB_VERBOSE, "Notes cut: %d",
-							cut_notes);
-					ctl->cmsg(
-							CMSG_INFO, VERB_VERBOSE, "Notes lost totally: %d",
-							lost_notes);
+					ctl->cmsg(CMSG_INFO, VERB_VERBOSE, "Playing time: ~%d seconds", current_sample / play_mode->rate + 2);
+					ctl->cmsg(CMSG_INFO, VERB_VERBOSE, "Notes cut: %d", cut_notes);
+					ctl->cmsg(CMSG_INFO, VERB_VERBOSE, "Notes lost totally: %d", lost_notes);
 					midi_playing = 0;
 					return TM_RC_TUNE_END;
 				}
@@ -1080,8 +1016,7 @@ namespace NS_TIMIDITY {
 			do_compute_data(AUDIO_BUFFER_SIZE);
 			samples -= AUDIO_BUFFER_SIZE;
 			s32tobuf(stream, common_buffer, channels * AUDIO_BUFFER_SIZE);
-			stream = AUDIO_BUFFER_SIZE * sample_size
-					 + static_cast<uint8*>(stream);
+			stream         = AUDIO_BUFFER_SIZE * sample_size + static_cast<uint8*>(stream);
 			buffer_pointer = common_buffer;
 			buffered_count = 0;
 		}

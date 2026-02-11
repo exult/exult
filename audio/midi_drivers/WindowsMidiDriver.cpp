@@ -23,8 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifdef USE_WINDOWS_MIDI
 
-const MidiDriver::MidiDriverDesc WindowsMidiDriver::desc
-		= MidiDriver::MidiDriverDesc("Windows", createInstance);
+const MidiDriver::MidiDriverDesc WindowsMidiDriver::desc = MidiDriver::MidiDriverDesc("Windows", createInstance);
 
 using std::endl;
 
@@ -89,8 +88,7 @@ int WindowsMidiDriver::open() {
 #	ifdef WIN32_USE_DUAL_MIDIDRIVERS
 		if (!Pentagram::strncasecmp(caps.szPname, "SB Live! Synth A", 16)) {
 			dev_num = i;
-		} else if (!Pentagram::strncasecmp(
-						   caps.szPname, "SB Live! Synth B", 16)) {
+		} else if (!Pentagram::strncasecmp(caps.szPname, "SB Live! Synth B", 16)) {
 			dev_num2 = i;
 		}
 #	endif
@@ -105,9 +103,7 @@ int WindowsMidiDriver::open() {
 	pout << "Using device " << dev_num << ": " << caps.szPname << endl;
 
 	_streamEvent         = CreateEvent(nullptr, true, true, nullptr);
-	const UINT mmsys_err = midiOutOpen(
-			&midi_port, dev_num, reinterpret_cast<uintptr>(_streamEvent), 0,
-			CALLBACK_EVENT);
+	const UINT mmsys_err = midiOutOpen(&midi_port, dev_num, reinterpret_cast<uintptr>(_streamEvent), 0, CALLBACK_EVENT);
 
 #	ifdef WIN32_USE_DUAL_MIDIDRIVERS
 	if (dev_num2 != -2 && mmsys_err != MMSYSERR_NOERROR) {
@@ -160,8 +156,7 @@ void WindowsMidiDriver::send(uint32 message) {
 #	endif
 }
 
-void WindowsMidiDriver::send_sysex(
-		uint8 status, const uint8* msg, uint16 length) {
+void WindowsMidiDriver::send_sysex(uint8 status, const uint8* msg, uint16 length) {
 #	ifdef WIN32_USE_DUAL_MIDIDRIVERS
 	// Hack for multiple devices. Not exactly 'fast'
 	if (midi_port2 != nullptr) {
@@ -190,8 +185,7 @@ void WindowsMidiDriver::send_sysex(
 	}
 
 	if (_streamBuffer) {
-		const MMRESULT result = midiOutUnprepareHeader(
-				midi_port, &_streamHeader, sizeof(_streamHeader));
+		const MMRESULT result = midiOutUnprepareHeader(midi_port, &_streamHeader, sizeof(_streamHeader));
 		if (doMCIError(result)) {
 			// check_error(result);
 			perr << "Error: Could not send SysEx - midiOutUnprepareHeader "
@@ -216,12 +210,10 @@ void WindowsMidiDriver::send_sysex(
 	_streamHeader.dwUser          = 0;
 	_streamHeader.dwFlags         = 0;
 
-	MMRESULT result = midiOutPrepareHeader(
-			midi_port, &_streamHeader, sizeof(_streamHeader));
+	MMRESULT result = midiOutPrepareHeader(midi_port, &_streamHeader, sizeof(_streamHeader));
 	if (doMCIError(result)) {
 		// check_error(result);
-		perr << "Error: Could not send SysEx - midiOutPrepareHeader failed."
-			 << std::endl;
+		perr << "Error: Could not send SysEx - midiOutPrepareHeader failed." << std::endl;
 		return;
 	}
 
@@ -229,8 +221,7 @@ void WindowsMidiDriver::send_sysex(
 	result = midiOutLongMsg(midi_port, &_streamHeader, sizeof(_streamHeader));
 	if (doMCIError(result)) {
 		// check_error(result);
-		perr << "Error: Could not send SysEx - midiOutLongMsg failed."
-			 << std::endl;
+		perr << "Error: Could not send SysEx - midiOutLongMsg failed." << std::endl;
 		SetEvent(_streamEvent);
 		return;
 	}
@@ -257,8 +248,7 @@ std::vector<ConfigSetting_widget::Definition> WindowsMidiDriver::GetSettings() {
 
 	for (signed long i = -1; i < dev_count; i++) {
 		midiOutGetDevCaps(static_cast<UINT>(i), &caps, sizeof(caps));
-		ConfigSetting_widget::Definition::Choice choice{
-				caps.szPname, caps.szPname, std::to_string(i)};
+		ConfigSetting_widget::Definition::Choice choice{caps.szPname, caps.szPname, std::to_string(i)};
 		if (i == -1) {
 			choice.value.swap(choice.alternative);
 		}

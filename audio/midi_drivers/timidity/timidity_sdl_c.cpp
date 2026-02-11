@@ -65,8 +65,7 @@ namespace NS_TIMIDITY {
 	static int  ctl_open(int using_stdin, int using_stdout);
 	static void ctl_close();
 	static int  ctl_read(sint32* valp);
-	static int  cmsg(int type, int verbosity_level, const char* fmt, ...)
-			ATTR_PRINTF(3, 4);
+	static int  cmsg(int type, int verbosity_level, const char* fmt, ...) ATTR_PRINTF(3, 4);
 
 	/**********************************/
 	/* export the interface functions */
@@ -115,8 +114,7 @@ namespace NS_TIMIDITY {
 
 	static int cmsg(int type, int verbosity_level, const char* fmt, ...) {
 		va_list ap;
-		if ((type == CMSG_TEXT || type == CMSG_INFO || type == CMSG_WARNING)
-			&& ctl.verbosity < verbosity_level) {
+		if ((type == CMSG_TEXT || type == CMSG_INFO || type == CMSG_WARNING) && ctl.verbosity < verbosity_level) {
 			return 0;
 		}
 		va_start(ap, fmt);

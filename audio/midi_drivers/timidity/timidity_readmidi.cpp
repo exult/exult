@@ -50,23 +50,19 @@ namespace NS_TIMIDITY {
 
 	/* These would both fit into 32 bits, but they are often added in
 	   large multiples, so it's simpler to have two roomy ints */
-	static sint32 sample_increment,
-			sample_correction; /*samples per MIDI delta-t*/
+	static sint32 sample_increment, sample_correction; /*samples per MIDI delta-t*/
 
 	/* Computes how many (fractional) samples one MIDI delta-time unit contains
 	 */
 	static void compute_sample_increment(sint32 tempo, sint32 divisions) {
 		double a;
-		a = static_cast<double>(tempo) * static_cast<double>(play_mode->rate)
-			* (65536.0 / 1000000.0) / static_cast<double>(divisions);
+		a = static_cast<double>(tempo) * static_cast<double>(play_mode->rate) * (65536.0 / 1000000.0)
+			/ static_cast<double>(divisions);
 
 		sample_correction = static_cast<sint32>(a) & 0xFFFF;
 		sample_increment  = static_cast<sint32>(a) >> 16;
 
-		ctl->cmsg(
-				CMSG_INFO, VERB_DEBUG,
-				"Samples per delta-t: %d (correction %d)", sample_increment,
-				sample_correction);
+		ctl->cmsg(CMSG_INFO, VERB_DEBUG, "Samples per delta-t: %d (correction %d)", sample_increment, sample_correction);
 	}
 
 	/* Read variable-length number (7 bits per byte, MSB first) */
@@ -129,9 +125,7 @@ namespace NS_TIMIDITY {
 			at += getvl();
 			uint8 me;
 			if (fread(&me, 1, 1, fp) != 1) {
-				ctl->cmsg(
-						CMSG_ERROR, VERB_NORMAL, "%s: read_midi_event: %s",
-						current_filename, strerror(errno));
+				ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: read_midi_event: %s", current_filename, strerror(errno));
 				return nullptr;
 			}
 
@@ -147,10 +141,8 @@ namespace NS_TIMIDITY {
 
 				sint32 len = getvl();
 				if (type > 0 && type < 16) {
-					static const char* label[]
-							= {"Text event: ", "Text: ",       "Copyright: ",
-							   "Track name: ", "Instrument: ", "Lyric: ",
-							   "Marker: ",     "Cue point: "};
+					static const char* label[] = {"Text event: ", "Text: ",  "Copyright: ", "Track name: ",
+												  "Instrument: ", "Lyric: ", "Marker: ",    "Cue point: "};
 					dumpstring(len, label[(type > 7) ? 0 : type]);
 				} else {
 					switch (type) {
@@ -170,10 +162,7 @@ namespace NS_TIMIDITY {
 						MIDIEVENT(at, ME_TEMPO, c, a, b);
 					}
 					default:
-						ctl->cmsg(
-								CMSG_INFO, VERB_DEBUG,
-								"(Meta event type 0x%02x, length %d)", type,
-								len);
+						ctl->cmsg(CMSG_INFO, VERB_DEBUG, "(Meta event type 0x%02x, length %d)", type, len);
 						skip(fp, len);
 						break;
 					}
@@ -249,10 +238,7 @@ namespace NS_TIMIDITY {
 							break;
 						case 32:
 							if (b != 0) {
-								ctl->cmsg(
-										CMSG_INFO, VERB_DEBUG,
-										"(Strange: tone bank change 0x20%02x)",
-										b);
+								ctl->cmsg(CMSG_INFO, VERB_DEBUG, "(Strange: tone bank change 0x20%02x)", b);
 							} else {
 								control = ME_TONE_BANK;
 							}
@@ -281,13 +267,11 @@ namespace NS_TIMIDITY {
 										CMSG_INFO, VERB_DEBUG,
 										"(Data entry (MSB) for NRPN %02x,%02x: "
 										"%d)",
-										rpn_msb[lastchan], rpn_lsb[lastchan],
-										b);
+										rpn_msb[lastchan], rpn_lsb[lastchan], b);
 								break;
 							}
 
-							switch ((rpn_msb[lastchan] << 8)
-									| rpn_lsb[lastchan]) {
+							switch ((rpn_msb[lastchan] << 8) | rpn_lsb[lastchan]) {
 							case 0x0000: /* Pitch bend sensitivity */
 								control = ME_PITCH_SENS;
 								break;
@@ -301,16 +285,13 @@ namespace NS_TIMIDITY {
 										CMSG_INFO, VERB_DEBUG,
 										"(Data entry (MSB) for RPN %02x,%02x: "
 										"%d)",
-										rpn_msb[lastchan], rpn_lsb[lastchan],
-										b);
+										rpn_msb[lastchan], rpn_lsb[lastchan], b);
 								break;
 							}
 							break;
 
 						default:
-							ctl->cmsg(
-									CMSG_INFO, VERB_DEBUG, "(Control %d: %d)",
-									a, b);
+							ctl->cmsg(CMSG_INFO, VERB_DEBUG, "(Control %d: %d)", a, b);
 							break;
 						}
 						if (control != 255) {
@@ -333,10 +314,7 @@ namespace NS_TIMIDITY {
 					MIDIEVENT(at, ME_PITCHWHEEL, lastchan, a, b);
 
 				default:
-					ctl->cmsg(
-							CMSG_ERROR, VERB_NORMAL,
-							"*** Can't happen: status 0x%02X, channel 0x%02X",
-							laststatus, lastchan);
+					ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "*** Can't happen: status 0x%02X, channel 0x%02X", laststatus, lastchan);
 					break;
 				}
 			}
@@ -369,16 +347,12 @@ namespace NS_TIMIDITY {
 		/* Check the formalities */
 
 		if ((fread(tmp, 1, 4, fp) != 4) || (fread(&len, 4, 1, fp) != 1)) {
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL, "%s: Can't read track header.",
-					current_filename);
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: Can't read track header.", current_filename);
 			return -1;
 		}
 		len = BE_LONG(len);
 		if (memcmp(tmp, "MTrk", 4) != 0) {
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL, "%s: Corrupt MIDI file.",
-					current_filename);
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: Corrupt MIDI file.", current_filename);
 			return -2;
 		}
 
@@ -425,8 +399,7 @@ namespace NS_TIMIDITY {
 	 events, marking used instruments for loading. Convert event times to
 	 samples: handle tempo changes. Strip unnecessary events from the list.
 	 Free the linked list. */
-	static MidiEvent* groom_list(
-			sint32 divisions, sint32* eventsp, sint32* samplesp) {
+	static MidiEvent* groom_list(sint32 divisions, sint32* eventsp, sint32* samplesp) {
 		MidiEvent*     groomed_list;
 		MidiEvent*     lp;
 		MidiEventList* meep;
@@ -451,22 +424,18 @@ namespace NS_TIMIDITY {
 
 		sint32 our_event_count = 0;
 		sint32 sample_cum      = 0;
-		sint32 st = at = 0;
-		sint32 counting_time
-				= 2; /* We strip any silence before the first NOTE ON. */
+		sint32 st = at       = 0;
+		sint32 counting_time = 2; /* We strip any silence before the first NOTE ON. */
 
 		for (sint32 i = 0; i < event_count; i++) {
 			sint32 skip_this_event = 0;
 			ctl->cmsg(
-					CMSG_INFO, VERB_DEBUG_SILLY,
-					"%6d: ch %2d: event %d (%d,%d)", meep->event.time,
-					meep->event.channel + 1, meep->event.type, meep->event.a,
-					meep->event.b);
+					CMSG_INFO, VERB_DEBUG_SILLY, "%6d: ch %2d: event %d (%d,%d)", meep->event.time, meep->event.channel + 1,
+					meep->event.type, meep->event.a, meep->event.b);
 
 			sint32 new_value;
 			if (meep->event.type == ME_TEMPO) {
-				tempo = meep->event.channel + meep->event.b * 256
-						+ meep->event.a * 65536;
+				tempo = meep->event.channel + meep->event.b * 256 + meep->event.a * 65536;
 				compute_sample_increment(tempo, divisions);
 				skip_this_event = 1;
 			} else if ((quietchannels & (1 << meep->event.channel))) {
@@ -479,9 +448,7 @@ namespace NS_TIMIDITY {
 														 drumset? */
 							new_value = meep->event.a;
 						} else {
-							ctl->cmsg(
-									CMSG_WARNING, VERB_VERBOSE,
-									"Drum set %d is undefined", meep->event.a);
+							ctl->cmsg(CMSG_WARNING, VERB_VERBOSE, "Drum set %d is undefined", meep->event.a);
 							new_value = meep->event.a = 0;
 						}
 						if (current_set[meep->event.channel] != new_value) {
@@ -491,10 +458,8 @@ namespace NS_TIMIDITY {
 						}
 					} else {
 						new_value = meep->event.a;
-						if ((current_program[meep->event.channel]
-							 != SPECIAL_PROGRAM)
-							&& (current_program[meep->event.channel]
-								!= new_value)) {
+						if ((current_program[meep->event.channel] != SPECIAL_PROGRAM)
+							&& (current_program[meep->event.channel] != new_value)) {
 							current_program[meep->event.channel] = new_value;
 						} else {
 							skip_this_event = 1;
@@ -508,27 +473,16 @@ namespace NS_TIMIDITY {
 					}
 					if (ISDRUMCHANNEL(meep->event.channel)) {
 						/* Mark this instrument to be loaded */
-						if (!(drumset[current_set[meep->event.channel]]
-									  ->tone[meep->event.a]
-									  .instrument)) {
-							drumset[current_set[meep->event.channel]]
-									->tone[meep->event.a]
-									.instrument
-									= MAGIC_LOAD_INSTRUMENT;
+						if (!(drumset[current_set[meep->event.channel]]->tone[meep->event.a].instrument)) {
+							drumset[current_set[meep->event.channel]]->tone[meep->event.a].instrument = MAGIC_LOAD_INSTRUMENT;
 						}
 					} else {
-						if (current_program[meep->event.channel]
-							== SPECIAL_PROGRAM) {
+						if (current_program[meep->event.channel] == SPECIAL_PROGRAM) {
 							break;
 						}
 						/* Mark this instrument to be loaded */
-						if (!(tonebank[current_bank[meep->event.channel]]
-									  ->tone[current_program[meep->event
-																	 .channel]]
-									  .instrument)) {
-							tonebank[current_bank[meep->event.channel]]
-									->tone[current_program[meep->event.channel]]
-									.instrument
+						if (!(tonebank[current_bank[meep->event.channel]]->tone[current_program[meep->event.channel]].instrument)) {
+							tonebank[current_bank[meep->event.channel]]->tone[current_program[meep->event.channel]].instrument
 									= MAGIC_LOAD_INSTRUMENT;
 						}
 					}
@@ -543,9 +497,7 @@ namespace NS_TIMIDITY {
 													  bank? */
 						new_value = meep->event.a;
 					} else {
-						ctl->cmsg(
-								CMSG_WARNING, VERB_VERBOSE,
-								"Tone bank %d is undefined", meep->event.a);
+						ctl->cmsg(CMSG_WARNING, VERB_VERBOSE, "Tone bank %d is undefined", meep->event.a);
 						new_value = meep->event.a = 0;
 					}
 					if (current_bank[meep->event.channel] != new_value) {
@@ -608,21 +560,15 @@ namespace NS_TIMIDITY {
 
 		if ((fread(tmp, 1, 4, fp) != 4) || (fread(&len, 4, 1, fp) != 1)) {
 			if (ferror(fp)) {
-				ctl->cmsg(
-						CMSG_ERROR, VERB_NORMAL, "%s: %s", current_filename,
-						strerror(errno));
+				ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: %s", current_filename, strerror(errno));
 			} else {
-				ctl->cmsg(
-						CMSG_ERROR, VERB_NORMAL, "%s: Not a MIDI file!",
-						current_filename);
+				ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: Not a MIDI file!", current_filename);
 			}
 			return nullptr;
 		}
 		len = BE_LONG(len);
 		if (memcmp(tmp, "MThd", 4) != 0 || len < 6) {
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL, "%s: Not a MIDI file!",
-					current_filename);
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: Not a MIDI file!", current_filename);
 			return nullptr;
 		}
 
@@ -645,22 +591,14 @@ namespace NS_TIMIDITY {
 		}
 
 		if (len > 6) {
-			ctl->cmsg(
-					CMSG_WARNING, VERB_NORMAL,
-					"%s: MIDI file header size %d bytes", current_filename,
-					len);
+			ctl->cmsg(CMSG_WARNING, VERB_NORMAL, "%s: MIDI file header size %d bytes", current_filename, len);
 			skip(fp, len - 6); /* skip the excess */
 		}
 		if (format < 0 || format > 2) {
-			ctl->cmsg(
-					CMSG_ERROR, VERB_NORMAL, "%s: Unknown MIDI file format %d",
-					current_filename, format);
+			ctl->cmsg(CMSG_ERROR, VERB_NORMAL, "%s: Unknown MIDI file format %d", current_filename, format);
 			return nullptr;
 		}
-		ctl->cmsg(
-				CMSG_INFO, VERB_VERBOSE,
-				"Format: %d  Tracks: %d  Divisions: %d", format, tracks,
-				divisions);
+		ctl->cmsg(CMSG_INFO, VERB_VERBOSE, "Format: %d  Tracks: %d  Divisions: %d", format, tracks, divisions);
 
 		/* Put a do-nothing event first in the list for easier processing */
 		evlist             = safe_Malloc<MidiEventList>();

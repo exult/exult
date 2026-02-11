@@ -30,8 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 unsigned char pal[768];
 
 int coleq(int c1, int c2) {
-	return (pal[c1 * 3] == pal[c2 * 3]) && (pal[c1 * 3 + 1] == pal[c2 * 3 + 1])
-		   && (pal[c1 * 3 + 2] == pal[c2 * 3 + 2]);
+	return (pal[c1 * 3] == pal[c2 * 3]) && (pal[c1 * 3 + 1] == pal[c2 * 3 + 1]) && (pal[c1 * 3 + 2] == pal[c2 * 3 + 2]);
 }
 
 int unique(int c1) {
@@ -92,75 +91,44 @@ int main(int argc, char** argv) {
 			found = 0;
 			for (diff = 1; diff < 16 && !found; diff++) {
 				for (d1 = -diff; d1 <= diff && !found; d1++) {
-					if ((int)pal[c1 * 3] + d1 < 0
-						|| (int)pal[c1 * 3] + d1 > 63) {
+					if ((int)pal[c1 * 3] + d1 < 0 || (int)pal[c1 * 3] + d1 > 63) {
 						continue;
 					}
 					/* printf("d1=%i ", d1); */
 					md2 = abs(diff - abs(d1));
 					for (d2 = -md2; d2 <= md2 && !found; d2++) {
-						if ((int)pal[c1 * 3 + 1] + d2 < 0
-							|| (int)pal[c1 * 3 + 1] + d2 > 63) {
+						if ((int)pal[c1 * 3 + 1] + d2 < 0 || (int)pal[c1 * 3 + 1] + d2 > 63) {
 							continue;
 						}
 						/* printf("d2=%i ", d2); */
 						d3 = -abs(diff - abs(d1) - abs(d2));
 						/* printf("d3=%i ", d3); */
-						if (((int)pal[c1 * 3 + 2]) + d3 >= 0
-							&& ((int)pal[c1 * 3 + 2]) + d3 <= 63) {
-							pal[c1 * 3]
-									= (unsigned char)((int)pal[c1 * 3] + d1);
-							pal[c1 * 3 + 1]
-									= (unsigned char)((int)pal[c1 * 3 + 1]
-													  + d2);
-							pal[c1 * 3 + 2]
-									= (unsigned char)((int)pal[c1 * 3 + 2]
-													  + d3);
-							printf("trying %i: %i %i %i\n", c1, pal[c1 * 3],
-								   pal[c1 * 3 + 1], pal[c1 * 3 + 2]);
+						if (((int)pal[c1 * 3 + 2]) + d3 >= 0 && ((int)pal[c1 * 3 + 2]) + d3 <= 63) {
+							pal[c1 * 3]     = (unsigned char)((int)pal[c1 * 3] + d1);
+							pal[c1 * 3 + 1] = (unsigned char)((int)pal[c1 * 3 + 1] + d2);
+							pal[c1 * 3 + 2] = (unsigned char)((int)pal[c1 * 3 + 2] + d3);
+							printf("trying %i: %i %i %i\n", c1, pal[c1 * 3], pal[c1 * 3 + 1], pal[c1 * 3 + 2]);
 							found = unique(c1);
 							if (!found) {
-								pal[c1 * 3] = (unsigned char)((int)pal[c1 * 3]
-															  - d1);
-								pal[c1 * 3 + 1]
-										= (unsigned char)((int)pal[c1 * 3 + 1]
-														  - d2);
-								pal[c1 * 3 + 2]
-										= (unsigned char)((int)pal[c1 * 3 + 2]
-														  - d3);
+								pal[c1 * 3]     = (unsigned char)((int)pal[c1 * 3] - d1);
+								pal[c1 * 3 + 1] = (unsigned char)((int)pal[c1 * 3 + 1] - d2);
+								pal[c1 * 3 + 2] = (unsigned char)((int)pal[c1 * 3 + 2] - d3);
 							}
 						}
 
 						if (!found) {
 							d3 = abs(diff - abs(d1) - abs(d2));
 							/* printf("d3=%i ", d3); */
-							if ((int)pal[c1 * 3 + 2] + d3 >= 0
-								&& (int)pal[c1 * 3 + 2] + d3 <= 63) {
-								pal[c1 * 3] = (unsigned char)((int)pal[c1 * 3]
-															  + d1);
-								pal[c1 * 3 + 1]
-										= (unsigned char)((int)pal[c1 * 3 + 1]
-														  + d2);
-								pal[c1 * 3 + 2]
-										= (unsigned char)((int)pal[c1 * 3 + 2]
-														  + d3);
-								printf("trying %i: %i %i %i\n", c1, pal[c1 * 3],
-									   pal[c1 * 3 + 1], pal[c1 * 3 + 2]);
+							if ((int)pal[c1 * 3 + 2] + d3 >= 0 && (int)pal[c1 * 3 + 2] + d3 <= 63) {
+								pal[c1 * 3]     = (unsigned char)((int)pal[c1 * 3] + d1);
+								pal[c1 * 3 + 1] = (unsigned char)((int)pal[c1 * 3 + 1] + d2);
+								pal[c1 * 3 + 2] = (unsigned char)((int)pal[c1 * 3 + 2] + d3);
+								printf("trying %i: %i %i %i\n", c1, pal[c1 * 3], pal[c1 * 3 + 1], pal[c1 * 3 + 2]);
 								found = unique(c1);
 								if (!found) {
-									pal[c1 * 3]
-											= (unsigned char)((int)pal[c1 * 3]
-															  - d1);
-									pal[c1 * 3 + 1]
-											= (unsigned char)((int)
-																	  pal[c1 * 3
-																		  + 1]
-															  - d2);
-									pal[c1 * 3 + 2]
-											= (unsigned char)((int)
-																	  pal[c1 * 3
-																		  + 2]
-															  - d3);
+									pal[c1 * 3]     = (unsigned char)((int)pal[c1 * 3] - d1);
+									pal[c1 * 3 + 1] = (unsigned char)((int)pal[c1 * 3 + 1] - d2);
+									pal[c1 * 3 + 2] = (unsigned char)((int)pal[c1 * 3 + 2] - d3);
 								}
 							}
 						}

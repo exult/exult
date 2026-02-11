@@ -28,13 +28,11 @@
 
 // #include <cstring>
 
-const MidiDriver::MidiDriverDesc FluidSynthMidiDriver::desc
-		= MidiDriver::MidiDriverDesc("FluidSynth", createInstance);
+const MidiDriver::MidiDriverDesc FluidSynthMidiDriver::desc = MidiDriver::MidiDriverDesc("FluidSynth", createInstance);
 
 // MidiDriver method implementations
 
-std::vector<ConfigSetting_widget::Definition> FluidSynthMidiDriver::
-		GetSettings() {
+std::vector<ConfigSetting_widget::Definition> FluidSynthMidiDriver::GetSettings() {
 	ConfigSetting_widget::Definition soundfont{
 			Strings::Soundfont(),                         // label
 			"config/audio/midi/fluidsynth_soundfont",     // config_setting
@@ -160,9 +158,7 @@ int FluidSynthMidiDriver::open() {
 
 	if (soundfonts.empty()) {
 		char default_soundfont[512];
-		if (getStr("synth.default-soundfont", default_soundfont,
-				   sizeof(default_soundfont))
-					== FLUID_OK
+		if (getStr("synth.default-soundfont", default_soundfont, sizeof(default_soundfont)) == FLUID_OK
 			&& default_soundfont[0] != 0) {
 			// try whether the FluidSynth default soundfont is in our paths
 			if (!U7exists(default_soundfont)) {
@@ -209,15 +205,13 @@ int FluidSynthMidiDriver::open() {
 	// fluid_synth_set_interp_method(_synth, -1, FLUID_INTERP_LINEAR);
 	// fluid_synth_set_reverb_on(_synth, 0);
 	// fluid_synth_set_chorus_on(_synth, 0);
-	perr << "Compiled with " << FLUID_VERSION
-		 << ", using library: " << fluid_version_str() << std::endl;
+	perr << "Compiled with " << FLUID_VERSION << ", using library: " << fluid_version_str() << std::endl;
 
 	int numloaded = 0;
 	for (auto& soundfont : soundfonts) {
 		const int soundFont = fluid_synth_sfload(_synth, soundfont.c_str(), 1);
 		if (soundFont == -1) {
-			perr << "Failed loading sound font '" << soundfont << "'"
-				 << std::endl;
+			perr << "Failed loading sound font '" << soundfont << "'" << std::endl;
 		} else {
 			perr << "Loaded sound font '" << soundfont << "'" << std::endl;
 			_soundFont.push(soundFont);
@@ -225,8 +219,7 @@ int FluidSynthMidiDriver::open() {
 		}
 	}
 	if (numloaded == 0) {
-		perr << "Failed to load any custom sound fonts; giving up."
-			 << std::endl;
+		perr << "Failed to load any custom sound fonts; giving up." << std::endl;
 		return -3;
 	}
 
@@ -277,18 +270,15 @@ void FluidSynthMidiDriver::send(uint32 b) {
 	case 0xF0:    // SysEx
 		// We should never get here! SysEx information has to be
 		// sent via high-level semantic methods.
-		perr << "FluidSynthMidiDriver: Receiving SysEx command on a send() call"
-			 << std::endl;
+		perr << "FluidSynthMidiDriver: Receiving SysEx command on a send() call" << std::endl;
 		break;
 	default:
-		perr << "FluidSynthMidiDriver: Unknown send() command 0x" << std::hex
-			 << cmd << std::dec << std::endl;
+		perr << "FluidSynthMidiDriver: Unknown send() command 0x" << std::hex << cmd << std::dec << std::endl;
 		break;
 	}
 }
 
-void FluidSynthMidiDriver::lowLevelProduceSamples(
-		sint16* samples, uint32 num_samples) {
+void FluidSynthMidiDriver::lowLevelProduceSamples(sint16* samples, uint32 num_samples) {
 	fluid_synth_write_s16(_synth, num_samples, samples, 0, 2, samples, 1, 2);
 }
 

@@ -100,8 +100,7 @@ int main(int argc, char** argv) {
 		clean_up(-1);
 	}
 	// make sure we can close it properly
-	if (close_config(config)
-		== EOF) {    // shouldn't happen, but you never know
+	if (close_config(config) == EOF) {    // shouldn't happen, but you never know
 		perror("");
 		clean_up(-1);
 	}

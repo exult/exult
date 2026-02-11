@@ -43,23 +43,16 @@ namespace NS_TIMIDITY {
 
 #	ifdef LINEAR_INTERPOLATION
 #		if defined(LOOKUP_HACK) && defined(LOOKUP_INTERPOLATION)
-#			define RESAMPLATION                                 \
-				v1      = src[ofs >> FRACTION_BITS];             \
-				v2      = src[(ofs >> FRACTION_BITS) + 1];       \
-				*dest++ = static_cast<sample_t>(                 \
-						v1                                       \
-						+ (iplookup                              \
-								   [(((v2 - v1) << 5) & 0x03FE0) \
-									| ((ofs & FRACTION_MASK)     \
-									   >> (FRACTION_BITS - 5))]));
+#			define RESAMPLATION                           \
+				v1      = src[ofs >> FRACTION_BITS];       \
+				v2      = src[(ofs >> FRACTION_BITS) + 1]; \
+				*dest++ = static_cast<sample_t>(           \
+						v1 + (iplookup[(((v2 - v1) << 5) & 0x03FE0) | ((ofs & FRACTION_MASK) >> (FRACTION_BITS - 5))]));
 #		else
-#			define RESAMPLATION                               \
-				v1      = src[ofs >> FRACTION_BITS];           \
-				v2      = src[(ofs >> FRACTION_BITS) + 1];     \
-				*dest++ = static_cast<sample_t>(               \
-						v1                                     \
-						+ (((v2 - v1) * (ofs & FRACTION_MASK)) \
-						   >> FRACTION_BITS));
+#			define RESAMPLATION                           \
+				v1      = src[ofs >> FRACTION_BITS];       \
+				v2      = src[(ofs >> FRACTION_BITS) + 1]; \
+				*dest++ = static_cast<sample_t>(v1 + (((v2 - v1) * (ofs & FRACTION_MASK)) >> FRACTION_BITS));
 #		endif
 #		define INTERPVARS \
 			sample_t v1;   \
@@ -323,16 +316,13 @@ namespace NS_TIMIDITY {
 		}
 
 		double a = FSCALE(
-				(static_cast<double>(vp->sample->sample_rate)
-				 * static_cast<double>(vp->frequency))
-						/ (static_cast<double>(vp->sample->root_freq)
-						   * static_cast<double>(play_mode->rate)),
+				(static_cast<double>(vp->sample->sample_rate) * static_cast<double>(vp->frequency))
+						/ (static_cast<double>(vp->sample->root_freq) * static_cast<double>(play_mode->rate)),
 				FRACTION_BITS);
 
 		int pb = static_cast<int>(
-				(sine(vp->vibrato_phase
-					  * (SINE_CYCLE_LENGTH / (2 * VIBRATO_SAMPLE_INCREMENTS)))
-				 * static_cast<double>(depth) * VIBRATO_AMPLITUDE_TUNING));
+				(sine(vp->vibrato_phase * (SINE_CYCLE_LENGTH / (2 * VIBRATO_SAMPLE_INCREMENTS))) * static_cast<double>(depth)
+				 * VIBRATO_AMPLITUDE_TUNING));
 
 		if (pb < 0) {
 			pb = -pb;
@@ -608,9 +598,7 @@ namespace NS_TIMIDITY {
 
 		if (vp->vibrato_control_ratio) {
 			if ((modes & MODES_LOOPING)
-				&& ((modes & MODES_ENVELOPE)
-					|| (vp->status == VOICE_ON
-						|| vp->status == VOICE_SUSTAINED))) {
+				&& ((modes & MODES_ENVELOPE) || (vp->status == VOICE_ON || vp->status == VOICE_SUSTAINED))) {
 				if (modes & MODES_PINGPONG) {
 					return rs_vib_bidir(vp, *countptr);
 				} else {
@@ -621,9 +609,7 @@ namespace NS_TIMIDITY {
 			}
 		} else {
 			if ((modes & MODES_LOOPING)
-				&& ((modes & MODES_ENVELOPE)
-					|| (vp->status == VOICE_ON
-						|| vp->status == VOICE_SUSTAINED))) {
+				&& ((modes & MODES_ENVELOPE) || (vp->status == VOICE_ON || vp->status == VOICE_SUSTAINED))) {
 				if (modes & MODES_PINGPONG) {
 					return rs_bidir(vp, *countptr);
 				} else {
@@ -636,18 +622,14 @@ namespace NS_TIMIDITY {
 	}
 
 	void pre_resample(Sample* sp) {
-		sint16*           src = sp->data;
-		static const char note_name[12][3]
-				= {"C",  "C#", "D",  "D#", "E",  "F",
-				   "F#", "G",  "G#", "A",  "A#", "B"};
+		sint16*           src              = sp->data;
+		static const char note_name[12][3] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 
 		ctl->cmsg(
-				CMSG_INFO, VERB_NOISY, " * pre-resampling for note %d (%s%d)",
-				sp->note_to_use, note_name[sp->note_to_use % 12],
+				CMSG_INFO, VERB_NOISY, " * pre-resampling for note %d (%s%d)", sp->note_to_use, note_name[sp->note_to_use % 12],
 				(sp->note_to_use & 0x7F) / 12);
 
-		double a = (static_cast<double>(sp->sample_rate)
-					* freq_table[static_cast<int>(sp->note_to_use)])
+		double a = (static_cast<double>(sp->sample_rate) * freq_table[static_cast<int>(sp->note_to_use)])
 				   / (static_cast<double>(sp->root_freq) * play_mode->rate);
 		if (a <= 0) {
 			return;
@@ -680,20 +662,14 @@ namespace NS_TIMIDITY {
                     v2
                     + (xdiff / 6.0)
                               * (-2 * v1 - 3 * v2 + 6 * v3 - v4
-                                 + xdiff
-                                           * (3 * (v1 - 2 * v2 + v3)
-                                              + xdiff
-                                                        * (-v1 + 3 * (v2 - v3)
-                                                           + v4))));
+                                 + xdiff * (3 * (v1 - 2 * v2 + v3) + xdiff * (-v1 + 3 * (v2 - v3) + v4))));
 			ofs += incr;
 		}
 
 		if (ofs & FRACTION_MASK) {
 			sint16 v1 = src[ofs >> FRACTION_BITS];
 			sint16 v2 = src[(ofs >> FRACTION_BITS) + 1];
-			*dest++   = static_cast<uint16>(
-                    v1
-                    + (((v2 - v1) * (ofs & FRACTION_MASK)) >> FRACTION_BITS));
+			*dest++   = static_cast<uint16>(v1 + (((v2 - v1) * (ofs & FRACTION_MASK)) >> FRACTION_BITS));
 		} else {
 			*dest++ = src[ofs >> FRACTION_BITS];
 		}

@@ -30,8 +30,7 @@ namespace Pentagram { namespace BilinearScaler {
 	class BilinearScalerInternal {
 	public:
 		static bool ScaleBilinear(
-				SDL_Surface* tex, sint32 sx, sint32 sy, sint32 sw, sint32 sh,
-				uint8* pixel, sint32 dw, sint32 dh, sint32 pitch,
+				SDL_Surface* tex, sint32 sx, sint32 sy, sint32 sw, sint32 sh, uint8* pixel, sint32 dw, sint32 dh, sint32 pitch,
 				bool clamp_src) {
 			//
 			// Clip the source rect to the size of tex and adjust dest rect
@@ -58,8 +57,7 @@ namespace Pentagram { namespace BilinearScaler {
 			bool result = false;
 			// 2x Scaling
 			if (!result && (sw * 2 == dw) && (sh * 2 == dh)) {
-				result = BilinearScalerInternal_2x<uintX, Manip, uintS>(
-						tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
+				result = BilinearScalerInternal_2x<uintX, Manip, uintS>(tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
 			}
 			// 2 X 2.4 Y aka Aspect Correcting 2x
 			// This has some implicit requirements.
@@ -69,21 +67,17 @@ namespace Pentagram { namespace BilinearScaler {
 			// if source height is a multiple of 5 and 2.4 multipled by a
 			// multiple of 5 is always a multiple of 12
 			if (!result && (sw * 2 == dw) && (dh * 5 == sh * 12)) {
-				result = BilinearScalerInternal_X2Y24<uintX, Manip, uintS>(
-						tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
+				result = BilinearScalerInternal_X2Y24<uintX, Manip, uintS>(tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
 			}
 			// 1 X 1.2 Y aka Aspect Correction with no scaling
 			// Same as above there is implicit requiements except dh must be a
 			// multiple of 6
-			if (!result && (sw == dw) && (dh * 5 == sh * 6) && !(sh % 5)
-				&& !(sw % 4)) {
-				result = BilinearScalerInternal_X1Y12<uintX, Manip, uintS>(
-						tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
+			if (!result && (sw == dw) && (dh * 5 == sh * 6) && !(sh % 5) && !(sw % 4)) {
+				result = BilinearScalerInternal_X1Y12<uintX, Manip, uintS>(tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
 			}
 			// Arbitrary has no restrictions
 			if (!result) {
-				return BilinearScalerInternal_Arb<uintX, Manip, uintS>(
-						tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
+				return BilinearScalerInternal_Arb<uintX, Manip, uintS>(tex, sx, sy, sw, sh, pixel, dw, dh, pitch, clamp_src);
 			}
 
 			return result;
@@ -91,26 +85,18 @@ namespace Pentagram { namespace BilinearScaler {
 	};
 
 	Scaler::Scaler() {
-		Scale8To8  = nullptr;
-		Scale8To32 = BilinearScalerInternal<
-				uint32_t, Manip8to32, uint8>::ScaleBilinear;
-		Scale32To32 = BilinearScalerInternal<
-				uint32_t, Manip32to32, uint32_t>::ScaleBilinear;
+		Scale8To8   = nullptr;
+		Scale8To32  = BilinearScalerInternal<uint32_t, Manip8to32, uint8>::ScaleBilinear;
+		Scale32To32 = BilinearScalerInternal<uint32_t, Manip32to32, uint32_t>::ScaleBilinear;
 
 #ifdef COMPILE_ALL_BILINEAR_SCALERS
-		Scale8To565 = BilinearScalerInternal<
-				uint16, Manip8to565, uint8>::ScaleBilinear;
-		Scale8To16 = BilinearScalerInternal<
-				uint16, Manip8to16, uint8>::ScaleBilinear;
-		Scale8To555 = BilinearScalerInternal<
-				uint16, Manip8to555, uint8>::ScaleBilinear;
+		Scale8To565 = BilinearScalerInternal<uint16, Manip8to565, uint8>::ScaleBilinear;
+		Scale8To16  = BilinearScalerInternal<uint16, Manip8to16, uint8>::ScaleBilinear;
+		Scale8To555 = BilinearScalerInternal<uint16, Manip8to555, uint8>::ScaleBilinear;
 
-		Scale16To16 = BilinearScalerInternal<
-				uint16, Manip16to16, uint16>::ScaleBilinear;
-		Scale555To555 = BilinearScalerInternal<
-				uint16, Manip555to555, uint16>::ScaleBilinear;
-		Scale565To565 = BilinearScalerInternal<
-				uint16, Manip565to565, uint16>::ScaleBilinear;
+		Scale16To16   = BilinearScalerInternal<uint16, Manip16to16, uint16>::ScaleBilinear;
+		Scale555To555 = BilinearScalerInternal<uint16, Manip555to555, uint16>::ScaleBilinear;
+		Scale565To565 = BilinearScalerInternal<uint16, Manip565to565, uint16>::ScaleBilinear;
 #endif
 	}
 

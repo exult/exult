@@ -127,7 +127,7 @@ namespace Exult_server {
 		service.sin_family      = AF_INET;
 		service.sin_addr.s_addr = inet_addr("127.0.0.1");
 		service.sin_port        = 0;    // Random port so we can have multiple instances of
-								 // exult studio and exult running... in theory
+										// exult studio and exult running... in theory
 
 		if (bind(gServerSocket, reinterpret_cast<SOCKADDR*>(&service), sizeof(service)) == SOCKET_ERROR) {
 			cerr << "bind() failed." << std::endl;
