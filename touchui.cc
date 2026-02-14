@@ -20,6 +20,8 @@
 
 #include "touchui.h"
 
+#include "gamewin.h"
+
 #include <cstring>
 #include <limits>
 
@@ -45,6 +47,19 @@ void TouchUI::startTextInput(SDL_Window* window) {
 	SDL_SetNumberProperty(props, SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_NONE);
 	SDL_StartTextInputWithProperties(window, props);
 	SDL_DestroyProperties(props);
+}
+
+void TouchUI::setTextInputArea(SDL_Window* window, int gx1, int gy1, int gx2, int gy2) {
+	Game_window* gwin = Game_window::get_instance();
+	int          sx1, sy1, sx2, sy2;
+	gwin->get_win()->game_to_screen(gx1, gy1, false, sx1, sy1);
+	gwin->get_win()->game_to_screen(gx2, gy2, false, sx2, sy2);
+	SDL_Renderer* renderer = SDL_GetRenderer(window);
+	float         wx1, wy1, wx2, wy2;
+	SDL_RenderCoordinatesToWindow(renderer, sx1, sy1, &wx1, &wy1);
+	SDL_RenderCoordinatesToWindow(renderer, sx2, sy2, &wx2, &wy2);
+	SDL_Rect windowRect = {static_cast<int>(wx1), static_cast<int>(wy1), static_cast<int>(wx2 - wx1), static_cast<int>(wy2 - wy1)};
+	SDL_SetTextInputArea(window, &windowRect, 0);
 }
 
 TouchUI::TouchUI() {

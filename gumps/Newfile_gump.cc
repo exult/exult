@@ -201,15 +201,7 @@ void Newfile_gump::SetTextInputArea(SDL_Window* window) {
 	const int text_gy  = y + fieldy + texty + line * (fieldh + fieldgap);
 	const int text_gx2 = text_gx + textw;
 	const int text_gy2 = text_gy + fieldh;
-	int       sx1, sy1, sx2, sy2;
-	gwin->get_win()->game_to_screen(text_gx, text_gy, false, sx1, sy1);
-	gwin->get_win()->game_to_screen(text_gx2, text_gy2, false, sx2, sy2);
-	SDL_Renderer* renderer = SDL_GetRenderer(window);
-	float         wx1, wy1, wx2, wy2;
-	SDL_RenderCoordinatesToWindow(renderer, sx1, sy1, &wx1, &wy1);
-	SDL_RenderCoordinatesToWindow(renderer, sx2, sy2, &wx2, &wy2);
-	SDL_Rect windowRect = {static_cast<int>(wx1), static_cast<int>(wy1), static_cast<int>(wx2 - wx1), static_cast<int>(wy2 - wy1)};
-	SDL_SetTextInputArea(window, &windowRect, 0);
+	TouchUI::setTextInputArea(window, text_gx, text_gy, text_gx2, text_gy2);
 }
 
 Newfile_gump::Newfile_gump()

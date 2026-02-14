@@ -47,6 +47,7 @@ public:
 
 	static void onTextInput(const char* text);
 	static void startTextInput(SDL_Window* window);
+	static void setTextInputArea(SDL_Window* window, int gx1, int gy1, int gx2, int gy2);
 
 	TouchUI();
 	virtual ~TouchUI()                           = default;
