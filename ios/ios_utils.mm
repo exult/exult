@@ -64,7 +64,6 @@ namespace {
 @property(nonatomic, retain) GamePadButton* btn2;
 @property(nonatomic, assign) SDL_Scancode   recurringKeycode;
 
-- (void)promptForName:(NSString*)name;
 - (void)showPauseControls;
 - (void)hidePauseControls;
 
@@ -348,54 +347,6 @@ static NSString* const kGlyphPlay  = @"\u25B6\uFE0F";    // ▶
 	SDL_PushEvent(&event);
 }
 
-- (void)promptForName:(NSString*)name {
-	UIWindow* alertWindow = nil;
-	if (@available(iOS 13.0, *)) {
-		UIWindow* keyWin = getKeyWindow();
-		if (keyWin.windowScene) {
-			alertWindow = [[UIWindow alloc] initWithWindowScene:keyWin.windowScene];
-		}
-	}
-	if (alertWindow == nil) {
-		alertWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-	}
-	alertWindow.windowLevel        = UIWindowLevelAlert;
-	alertWindow.rootViewController = [[UIViewController alloc] init];
-	[alertWindow makeKeyAndVisible];
-
-	UIAlertController* alert = [UIAlertController alertControllerWithTitle:@""
-																   message:@""
-															preferredStyle:UIAlertControllerStyleAlert];
-
-	UIAlertAction* ok = [UIAlertAction actionWithTitle:@"OK"
-												 style:UIAlertActionStyleDefault
-											   handler:^(UIAlertAction* action) {
-												 ignore_unused_variable_warning(action);
-												 UITextField* textField = alert.textFields.firstObject;
-												 TouchUI::onTextInput(textField.text.UTF8String);
-												 alertWindow.hidden = YES;
-												 [alert dismissViewControllerAnimated:YES completion:nil];
-											   }];
-
-	UIAlertAction* cancel = [UIAlertAction actionWithTitle:@"Cancel"
-													 style:UIAlertActionStyleDefault
-												   handler:^(UIAlertAction* action) {
-													 ignore_unused_variable_warning(action);
-													 alertWindow.hidden = YES;
-													 [alert dismissViewControllerAnimated:YES completion:nil];
-												   }];
-	[alert addAction:ok];
-	[alert addAction:cancel];
-	[alert addTextFieldWithConfigurationHandler:^(UITextField* textField) {
-	  textField.placeholder = @"";
-	  if (name != nullptr) {
-		  [textField setText:name];
-	  }
-	}];
-
-	[alertWindow.rootViewController presentViewController:alert animated:YES completion:nil];
-}
-
 - (CGRect)calcRectForDPad {
 	UIWindow*         window     = getKeyWindow();
 	UIViewController* controller = window.rootViewController;
@@ -580,14 +531,6 @@ namespace {
 TouchUI_iOS::TouchUI_iOS() {
 	if (gDefaultManager == nil) {
 		gDefaultManager = [[UIManager alloc] init];
-	}
-}
-
-void TouchUI_iOS::promptForName(const char* name) {
-	if (name == nullptr) {
-		[gDefaultManager promptForName:nil];
-	} else {
-		[gDefaultManager promptForName:[NSString stringWithUTF8String:name]];
 	}
 }
 

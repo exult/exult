@@ -26,7 +26,6 @@ class TouchUI_Android final : public TouchUI {
 public:
 	TouchUI_Android();
 	~TouchUI_Android() final;
-	void promptForName(const char* name) final;
 	void showGameControls() final;
 	void hideGameControls() final;
 	void showButtonControls() final;
@@ -51,7 +50,6 @@ private:
 	jmethodID               m_showPauseControlsMethod;
 	jmethodID               m_hidePauseControlsMethod;
 	SDL_Joystick*           m_joystick;
-	jmethodID               m_promptForNameMethod;
 };
 
 #endif

@@ -100,7 +100,6 @@ TouchUI_Android::TouchUI_Android() {
 	m_hideButtonControlsMethod = m_jniEnv->GetMethodID(jclass, "hideButtonControls", "()V");
 	m_showPauseControlsMethod  = m_jniEnv->GetMethodID(jclass, "showPauseControls", "()V");
 	m_hidePauseControlsMethod  = m_jniEnv->GetMethodID(jclass, "hidePauseControls", "()V");
-	m_promptForNameMethod      = m_jniEnv->GetMethodID(jclass, "promptForName", "(Ljava/lang/String;)V");
 
 	SDL_VirtualJoystickTouchpadDesc virtual_touchpad = {
 			1, {0, 0, 0}
@@ -142,11 +141,6 @@ TouchUI_Android::~TouchUI_Android() {
 			SDL_free(joysticks);
 		}
 	}
-}
-
-void TouchUI_Android::promptForName(const char* name) {
-	auto* javaName = m_jniEnv->NewStringUTF(name);
-	m_jniEnv->CallVoidMethod(m_exultActivityObject, m_promptForNameMethod, javaName);
 }
 
 void TouchUI_Android::showGameControls() {

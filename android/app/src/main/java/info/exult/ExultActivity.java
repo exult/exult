@@ -247,33 +247,6 @@ public class ExultActivity extends SDLActivity {
 
 	public native void sendPauseKeypress();
 
-	public void promptForName(String name) {
-		runOnUiThread(() -> {
-			Context             context     = getContext();
-			AlertDialog.Builder nameBuilder = new AlertDialog.Builder(context);
-			nameBuilder.setTitle("Name");
-			EditText nameEditText = new EditText(context);
-			nameEditText.setInputType(InputType.TYPE_CLASS_TEXT);
-			nameBuilder.setView(nameEditText);
-			nameBuilder.setPositiveButton(
-					"OK", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							setName(nameEditText.getText().toString());
-						}
-					});
-			nameBuilder.setNegativeButton(
-					"Cancel", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-						}
-					});
-
-			nameBuilder.show();
-		});
-	}
-
 	private int dpToPx(int dp) {
 		final float density = getResources().getDisplayMetrics().density;
 		return (int)(dp * density + 0.5f);

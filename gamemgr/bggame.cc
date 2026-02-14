@@ -2041,6 +2041,7 @@ bool BG_Game::new_game(Vga_file& shapes) {
 
 	if (touchui != nullptr) {
 		if (!SDL_TextInputActive(window)) {
+			SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "1");
 			TouchUI::startTextInput(window);
 		}
 	}
