@@ -2038,11 +2038,12 @@ bool BG_Game::new_game(Vga_file& shapes) {
 														// visible initially
 	}
 	SDL_Window* window = gwin->get_win()->get_screen_window();
-#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
-	if (!SDL_TextInputActive(window)) {
-		TouchUI::startTextInput(window);
+
+	if (touchui != nullptr) {
+		if (!SDL_TextInputActive(window)) {
+			TouchUI::startTextInput(window);
+		}
 	}
-#endif
 	do {
 		Delay();
 		if (redraw) {
@@ -2122,7 +2123,6 @@ bool BG_Game::new_game(Vga_file& shapes) {
 							TouchUI::startTextInput(window);
 						} else {
 							SDL_StopTextInput(window);
-							SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
 						}
 					}
 					redraw = true;
@@ -2250,6 +2250,7 @@ bool BG_Game::new_game(Vga_file& shapes) {
 	if (SDL_TextInputActive(window)) {
 		SDL_StopTextInput(window);
 	}
+	SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
 	// Hide mouse on way out to clear the mouse's dirty box
 	if (Mouse::mouse()) {
 		Mouse::mouse()->hide();

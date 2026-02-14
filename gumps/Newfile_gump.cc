@@ -247,6 +247,7 @@ Newfile_gump::~Newfile_gump() {
 		if (!gumpman->gump_mode() || (!gumpman->modal_gump_mode() && gumpman->gumps_dont_pause_game())) {
 			touchui->showGameControls();
 		}
+		SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
 	}
 }
 
@@ -758,7 +759,6 @@ bool Newfile_gump::mouse_up(
 			SetTextInputArea(window);
 			TouchUI::startTextInput(window);
 		} else {
-			SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
 			SDL_StopTextInput(window);
 		}
 		result = true;

@@ -1416,11 +1416,12 @@ bool SI_Game::new_game(Vga_file& shapes) {
 	Avatar_default_skin* defskin  = Shapeinfo_lookup::GetDefaultAvSkin();
 	Skin_data*           skindata = Shapeinfo_lookup::GetSkinInfoSafe(defskin->default_skin, defskin->default_female, true);
 	SDL_Window*          window   = gwin->get_win()->get_screen_window();
-#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
-	if (!SDL_TextInputActive(window)) {
-		TouchUI::startTextInput(window);
+	if (touchui != nullptr) {
+		if (!SDL_TextInputActive(window)) {
+			TouchUI::startTextInput(window);
+			SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "1");
+		}
 	}
-#endif
 	do {
 		Delay();
 		if (redraw) {
@@ -1488,8 +1489,10 @@ bool SI_Game::new_game(Vga_file& shapes) {
 						selected = 0;
 					} else if (selected == 0 && touchui != nullptr) {
 						if (!SDL_TextInputActive(window)) {
+							SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "1");
 							TouchUI::startTextInput(window);
 						} else {
+							SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
 							SDL_StopTextInput(window);
 						}
 					}
@@ -1618,6 +1621,7 @@ bool SI_Game::new_game(Vga_file& shapes) {
 	if (SDL_TextInputActive(window)) {
 		SDL_StopTextInput(window);
 	}
+	SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
 	// Hide mouse on way out to clear the mouse's dirty box
 	if (Mouse::mouse()) {
 		Mouse::mouse()->hide();
