@@ -199,6 +199,10 @@ void CheatScreen::show_screen() {
 	SDL_Window* window = gwin->get_win()->get_screen_window();
 	if (touchui != nullptr) {
 		touchui->hideGameControls();
+		// Set the text input area to be just to the right of the prompt, and 10 pixels high.
+		const int prompt_y = 81;
+		const int input_x  = 64 + 15;
+		TouchUI::setTextInputArea(window, input_x, prompt_y, maxx, prompt_y + 10);
 		TouchUI::startTextInput(window);
 	}
 
@@ -1674,16 +1678,16 @@ void CheatScreen::NPCMenu(Actor* actor, int& num) {
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
 	const int offsetx  = 15;
 	const int offsety1 = 74;
-	// const int offsetx2 = 15;
-	// const int offsety2 = 72;
+	const int offsetx2 = -145;
+	const int offsety2 = 65;
 	const int offsetx3 = 175;
 	const int offsety3 = 63;
 	const int offsety4 = 72;
 #else
 	const int offsetx  = 0;
 	const int offsety1 = 0;
-	// const int offsetx2 = 0;
-	// const int offsety2 = maxy - 36;
+	const int offsetx2 = 0;
+	const int offsety2 = 0;
 	const int offsetx3 = offsetx + 160;
 	const int offsety3 = maxy - 45;
 	const int offsety4 = maxy - 36;
@@ -1724,9 +1728,8 @@ void CheatScreen::NPCMenu(Actor* actor, int& num) {
 		// Palette Effect
 		AddMenuItem(offsetx + 160, maxy - offsety1 - 72, SDLK_P, "alette Effect");
 
-		//
 		// Walk to Avatar
-		AddMenuItem(offsetx + 160, maxy - offsety1 - 63, SDLK_W, "alk to Avatar");
+		AddMenuItem(offsetx2 + 160, maxy - offsety2 - 63, SDLK_W, "alk to Avatar");
 	}
 
 	// Change NPC
