@@ -46,6 +46,7 @@ public:
 	};
 
 	static void onTextInput(const char* text);
+	static void startTextInput(SDL_Window* window);
 
 	TouchUI();
 	virtual ~TouchUI()                           = default;

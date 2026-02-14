@@ -39,6 +39,14 @@ void TouchUI::onTextInput(const char* text) {
 	SDL_PushEvent(&event);
 }
 
+void TouchUI::startTextInput(SDL_Window* window) {
+	SDL_PropertiesID props = SDL_CreateProperties();
+	SDL_SetBooleanProperty(props, SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN, false);
+	SDL_SetNumberProperty(props, SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER, SDL_CAPITALIZE_NONE);
+	SDL_StartTextInputWithProperties(window, props);
+	SDL_DestroyProperties(props);
+}
+
 TouchUI::TouchUI() {
 	TouchUI::eventType = SDL_RegisterEvents(1);
 }

@@ -191,6 +191,27 @@ using Newfile_Textbutton = CallbackTextButton<Newfile_gump>;
  *  Create the load/save box.
  */
 
+bool Newfile_gump::is_draggable() const {
+	return touchui == nullptr && Modal_gump::is_draggable();
+}
+
+void Newfile_gump::SetTextInputArea(SDL_Window* window) {
+	const int line     = selected - list_position;
+	const int text_gx  = x + fieldx + textx;
+	const int text_gy  = y + fieldy + texty + line * (fieldh + fieldgap);
+	const int text_gx2 = text_gx + textw;
+	const int text_gy2 = text_gy + fieldh;
+	int       sx1, sy1, sx2, sy2;
+	gwin->get_win()->game_to_screen(text_gx, text_gy, false, sx1, sy1);
+	gwin->get_win()->game_to_screen(text_gx2, text_gy2, false, sx2, sy2);
+	SDL_Renderer* renderer = SDL_GetRenderer(window);
+	float         wx1, wy1, wx2, wy2;
+	SDL_RenderCoordinatesToWindow(renderer, sx1, sy1, &wx1, &wy1);
+	SDL_RenderCoordinatesToWindow(renderer, sx2, sy2, &wx2, &wy2);
+	SDL_Rect windowRect = {static_cast<int>(wx1), static_cast<int>(wy1), static_cast<int>(wx2 - wx1), static_cast<int>(wy2 - wy1)};
+	SDL_SetTextInputArea(window, &windowRect, 0);
+}
+
 Newfile_gump::Newfile_gump()
 		: Modal_gump(nullptr, gwin->get_width() / 2 - 160, gwin->get_height() / 2 - 100, EXULT_FLX_SAVEGUMP_SHP, SF_EXULT_FLX) {
 	set_object_area(TileRect(0, 0, 320, 200), -6, 178);    //+++++ ???
@@ -700,6 +721,15 @@ bool Newfile_gump::mouse_down(
 		buttons[id_delete].reset();
 	}
 
+	// If on-screen keyboard is already active, update the text input
+	// area to match the newly selected row.
+	if (touchui != nullptr && cursor >= 0) {
+		SDL_Window* window = gwin->get_win()->get_screen_window();
+		if (SDL_TextInputActive(window)) {
+			SetTextInputArea(window);
+		}
+	}
+
 	paint();    // Repaint.
 	gwin->set_painted();
 	return true;
@@ -730,7 +760,15 @@ bool Newfile_gump::mouse_up(
 		result = true;
 	}
 	if (touchui != nullptr && ((selected == -2 && last_selected != -4) || (selected >= 0 && selected == last_selected))) {
-		touchui->promptForName(newname);
+		SDL_Window* window = gwin->get_win()->get_screen_window();
+		if (!SDL_TextInputActive(window)) {
+			SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "1");
+			SetTextInputArea(window);
+			TouchUI::startTextInput(window);
+		} else {
+			SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
+			SDL_StopTextInput(window);
+		}
 		result = true;
 	}
 	// reset so the prompt doesn't pop up on closing
@@ -913,6 +951,14 @@ bool Newfile_gump::key_down(SDL_Keycode chr, SDL_Keycode unicode) {
 		if (unicode < ' ') {
 			return Modal_gump::key_down(chr, unicode);    // Ignore other special chars and let
 														  // parent class handle them
+		}
+
+		// When text input is active (on-screen keyboard), SDL sends
+		// both KEY_DOWN and TEXT_INPUT events for the same character.
+		// Skip the KEY_DOWN duplicate (chr != SDLK_UNKNOWN) and only
+		// handle TEXT_INPUT (chr == SDLK_UNKNOWN).
+		if (chr != SDLK_UNKNOWN && SDL_TextInputActive(gwin->get_win()->get_screen_window())) {
+			break;
 		}
 
 		if (unicode < 256 && isascii(unicode)) {

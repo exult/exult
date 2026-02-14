@@ -199,7 +199,7 @@ void CheatScreen::show_screen() {
 	SDL_Window* window = gwin->get_win()->get_screen_window();
 	if (touchui != nullptr) {
 		touchui->hideGameControls();
-		SDL_StartTextInput(window);
+		TouchUI::startTextInput(window);
 	}
 
 	// Pause the game
@@ -632,7 +632,7 @@ bool CheatScreen::SharedInput() {
 							if (SDL_TextInputActive(window)) {
 								SDL_StopTextInput(window);
 							} else if (gx > 20 && gy > 20 && gx < (gwin->get_width() - 20) && gy < (gwin->get_height() - 20)) {
-								SDL_StartTextInput(window);
+								TouchUI::startTextInput(window);
 							}
 						}
 					}

@@ -2040,7 +2040,7 @@ bool BG_Game::new_game(Vga_file& shapes) {
 	SDL_Window* window = gwin->get_win()->get_screen_window();
 #if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
 	if (!SDL_TextInputActive(window)) {
-		SDL_StartTextInput(window);
+		TouchUI::startTextInput(window);
 	}
 #endif
 	do {
@@ -2083,7 +2083,26 @@ bool BG_Game::new_game(Vga_file& shapes) {
 			gwin->get_win()->ShowFillGuardBand();
 		}
 		SDL_Renderer* renderer = SDL_GetRenderer(gwin->get_win()->get_screen_window());
-		SDL_Event     event;
+		if (touchui != nullptr) {
+			// Name text is drawn at (topx + 60, menuy + 10) in game coords.
+			// menuy = topy + 110, so the name field Y = topy + 120.
+			// Convert game coords to render coords, then to window coords.
+			int name_gx  = topx + 60;
+			int name_gy  = menuy + 10;
+			int name_gx2 = name_gx + 130;
+			int name_gy2 = name_gy + 12;
+			int sx1, sy1, sx2, sy2;
+			gwin->get_win()->game_to_screen(name_gx, name_gy, false, sx1, sy1);
+			gwin->get_win()->game_to_screen(name_gx2, name_gy2, false, sx2, sy2);
+			// Convert render coordinates to window coordinates
+			float wx1, wy1, wx2, wy2;
+			SDL_RenderCoordinatesToWindow(renderer, sx1, sy1, &wx1, &wy1);
+			SDL_RenderCoordinatesToWindow(renderer, sx2, sy2, &wx2, &wy2);
+			SDL_Rect windowRect
+					= {static_cast<int>(wx1), static_cast<int>(wy1), static_cast<int>(wx2 - wx1), static_cast<int>(wy2 - wy1)};
+			SDL_SetTextInputArea(window, &windowRect, 0);
+		}
+		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
 			Uint16 keysym_unicode = 0;
 			bool   isTextInput    = false;
@@ -2110,7 +2129,13 @@ bool BG_Game::new_game(Vga_file& shapes) {
 					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 0;
 					} else if (selected == 0 && touchui != nullptr) {
-						touchui->promptForName(npc_name);
+						if (!SDL_TextInputActive(window)) {
+							SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "1");
+							TouchUI::startTextInput(window);
+						} else {
+							SDL_StopTextInput(window);
+							SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
+						}
 					}
 					redraw = true;
 				} else if (SDL_GetRectEnclosingPoints(&point, 1, &rectSex, nullptr)) {
