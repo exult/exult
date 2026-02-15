@@ -1,5 +1,10 @@
-#	Gumpsinformation for Serpent Isle.
-#	Has two sections: one for container area and one for checkmark position.
+#	Gumps information for Serpent Isle.
+#	Sections: container_area, checkmark_pos, special, snap_zones
+#
+#	container_area: Defines the object placement area within gumps
+#	checkmark_pos: Position of the close button for each gump
+#	special: Gumps that cannot be containers or lack close buttons
+#	snap_zones: Optional guided placement zones for dynamic containers
 #
 
 %%section version
@@ -7,10 +12,23 @@
 %%endsection
 
 %%section container_area
-# Sets the Object area of each gump.
+# Sets the object placement area for each gump.
 # Gump::set_object_area uses this to override the default values defined in the c++ code
-# Format:
-# :Shape in Gumps.vga/position X/position Y/Area W/Area H
+#
+# Format: :gump_shape/x/y/width/height/debug_flags
+#         (debug_flags is optional - omit the field entirely if not needed)
+#
+# gump_shape  = Shape number in gumps.vga
+# x/y         = Top-left corner of the container area (relative to gump origin)
+# width/height= Size of the container area (not bottom-right corner)
+# debug_flags = Optional bitmask for debug visualization (omit field or use 0 for disabled)
+#               0x01 (1)  = Border outline
+#               0x02 (2)  = Major grid lines
+#               0x04 (4)  = Minor grid lines
+#               0x08 (8)  = Snap zone borders
+#               0x10 (16) = Snap zone crosshairs
+#               0x20 (32) = Console logging
+#               0x3F (63) = All features enabled
 
 # box
 :0/46/28/74/32
@@ -178,4 +196,25 @@
 :73
 :74
 :91
+%%endsection
+
+%%section snap_zones
+# Defines guided placement zones for ritual containers.
+# When an item is dropped in a zone, it automatically snaps to the target position.
+#
+# Format: :gump_shape/zone_id/zone_x/zone_y/zone_w/zone_h/snap_x/snap_y/priority/zone_type
+#
+# gump_shape = Shape number in gumps.vga
+# zone_id    = Unique identifier for this zone (descriptive, e.g., "north_candle")
+# zone_x/y   = Top-left corner of detection area (relative to container_area)
+# zone_w/h   = Width/height of detection area (defines the snap zone size)
+# snap_x/y   = Target position where items snap to (relative to container_area)
+# priority   = Selection priority for overlapping zones (higher = checked first)
+# zone_type  = Category label (e.g., "candle", "reagent", "focus") - informational only
+#
+# Example - Pentagram ritual container (uncomment and modify as needed):
+# :111/north_candle/20/0/20/20/30/10/3/candle
+# :111/south_candle/55/110/20/20/65/120/3/candle
+# :111/center_focus/55/55/20/20/65/65/4/focus
+#
 %%endsection

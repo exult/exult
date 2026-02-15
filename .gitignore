@@ -311,3 +311,7 @@ data/fonts_original.vga
 data/fonts_original_vga.h
 data/fonts_serif.vga
 data/fonts_serif_vga.h
+.github
+.gradle/
+android/app/build/
+android/lib/build/

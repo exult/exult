@@ -28,6 +28,7 @@
 #include "Audio.h"
 #include "CombatStats_gump.h"
 #include "Configuration.h"
+#include "Dynamic_container_gump.h"
 #include "Gump.h"
 #include "Jawbone_gump.h"
 #include "Paperdoll_gump.h"
@@ -47,6 +48,8 @@
 #include "spellbook.h"
 #include "touchui.h"
 #include "ucmachine.h"
+
+#include <iostream>    // debug by tgw - to be removed when dynamic gumps working
 
 #ifdef __GNUC__
 #	pragma GCC diagnostic push
@@ -322,7 +325,16 @@ void Gump_manager::add_gump(
 		}
 		// If we have an object, we can force a container gump.
 		if (!new_gump && obj->as_container()) {
-			new_gump = new Container_gump(obj->as_container(), x, y, shapenum);
+			// Check if this gump shape has container_area in gump_info.txt
+			if (Dynamic_container_gump::has_config(shapenum)) {
+				std::cerr << "[GumpManager] Using Dynamic_container_gump for shape "
+				          << shapenum << std::endl;
+				new_gump = new Dynamic_container_gump(
+						obj->as_container(), x, y, shapenum);
+			} else {
+				new_gump
+						= new Container_gump(obj->as_container(), x, y, shapenum);
+			}
 		}
 	} else if (
 			Game::get_game_type() == SERPENT_ISLE && shapenum >= game->get_shape("gumps/cstats/1")
