@@ -402,6 +402,8 @@ class Usecode_internal : public Usecode_machine {
 	USECODE_INTRINSIC_DECL(create_barge_object);
 	USECODE_INTRINSIC_DECL(in_usecode_path);
 	USECODE_INTRINSIC_DECL(play_scene);
+	USECODE_INTRINSIC_DECL(get_item_gump_position);
+	USECODE_INTRINSIC_DECL(set_item_gump_position);
 
 	/*
 	 *  Other private methods:

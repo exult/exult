@@ -148,6 +148,7 @@ GUMPS_OBJS:= \
 	gumps/Book_gump.o \
 	gumps/GameEngineOptions_gump.o \
 	gumps/CombatStats_gump.o \
+	gumps/Dynamic_container_gump.o \
 	gumps/Enabled_button.o \
 	gumps/Face_button.o \
 	gumps/Face_stats.o \

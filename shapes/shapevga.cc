@@ -389,9 +389,12 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 	if (Gump_info::was_any_modified()) {
 		return;
 	}
-	std::array sections{"container_area"sv, "checkmark_pos"sv, "special"sv};
+	std::array sections{
+			"container_area"sv, "checkmark_pos"sv, "special"sv, "snap_zones"sv};
 
 	// Functor for reading container area
+	// Format: :shape/x/y/w/h[/debug_flags]
+	// debug_flags is optional, defaults to GUMP_DEBUG_ALL (0x3F)
 	struct Container_area_functor {
 		bool operator()(std::istream& in, int version, bool patch, Exult_Game game, Gump_info& ginfo) const {
 			ignore_unused_variable_warning(version, patch, game);
@@ -399,6 +402,10 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 			ginfo.container_y = ReadInt(in);
 			ginfo.container_w = ReadInt(in);
 			ginfo.container_h = ReadInt(in);
+			// Optional debug_flags field (default: all enabled)
+			if (in.peek() != '\n' && in.peek() != '\r' && !in.eof()) {
+				ginfo.debug_flags = ReadInt(in, GUMP_DEBUG_ALL);
+			}
 			ginfo.has_area    = true;
 			if (patch) {
 				ginfo.set_container_from_patch(true);
@@ -434,16 +441,68 @@ void Shapes_vga_file::Read_Gumpinf_text_data_file(bool editing, Exult_Game game_
 		}
 	};
 
+	// Functor for reading snap zones
+	// Format: :shape/zone_id/zone_x/zone_y/zone_w/zone_h/snap_x/snap_y/priority/zone_type
+	struct Snap_zones_functor {
+		bool operator()(
+				std::istream& in, int version, bool patch, Exult_Game game,
+				Gump_info& ginfo) const {
+			ignore_unused_variable_warning(version, game);
+			Snap_zone zone;
+			// Read zone_id (string until /)
+			std::getline(in, zone.zone_id, '/');
+			zone.zone_x   = ReadInt(in);
+			zone.zone_y   = ReadInt(in);
+			zone.zone_w   = ReadInt(in);
+			zone.zone_h   = ReadInt(in);
+			zone.snap_x   = ReadInt(in);
+			zone.snap_y   = ReadInt(in);
+			zone.priority = ReadInt(in);
+			// Read zone_type (rest of line - no delimiter, reads until newline)
+			std::getline(in, zone.zone_type);
+			// Remove any trailing whitespace/newlines
+			while (!zone.zone_type.empty()
+				   && (zone.zone_type.back() == '\r'
+					   || zone.zone_type.back() == '\n'
+					   || zone.zone_type.back() == ' ')) {
+				zone.zone_type.pop_back();
+			}
+			// Debug: log parsed zone
+			std::cerr << "[SnapZone] Parsed: id='" << zone.zone_id
+					  << "' zone=(" << zone.zone_x << "," << zone.zone_y
+					  << "," << zone.zone_w << "," << zone.zone_h << ")"
+					  << " snap=(" << zone.snap_x << "," << zone.snap_y << ")"
+					  << " priority=" << zone.priority
+					  << " type='" << zone.zone_type << "'" << std::endl;
+			// Validate zone dimensions
+			if (zone.zone_w > 0 && zone.zone_h > 0) {
+				ginfo.snap_zones.push_back(zone);
+				std::cerr << "[SnapZone] Added to gump" << std::endl;
+			} else {
+				std::cerr << "[SnapZone] REJECTED - invalid dimensions" << std::endl;
+			}
+			if (patch) {
+				ginfo.set_snapzones_from_patch(true);
+			}
+			return true;
+		}
+	};
+
 	// The template parameters are: <Info, Functor>  (Info comes FIRST!)
 	// The constructor takes: std::map<int, Info>&
-	using Container_area_reader = Functor_multidata_reader<Gump_info, Container_area_functor>;
-	using Checkmark_pos_reader  = Functor_multidata_reader<Gump_info, Checkmark_pos_functor>;
-	using Special_reader        = Functor_multidata_reader<Gump_info, Special_functor>;
+	using Container_area_reader
+			= Functor_multidata_reader<Gump_info, Container_area_functor>;
+	using Checkmark_pos_reader
+			= Functor_multidata_reader<Gump_info, Checkmark_pos_functor>;
+	using Special_reader = Functor_multidata_reader<Gump_info, Special_functor>;
+	using Snap_zones_reader
+			= Functor_multidata_reader<Gump_info, Snap_zones_functor>;
 
 	std::array readers = make_unique_array<Base_reader>(
 			std::make_unique<Container_area_reader>(Gump_info::gump_info_map),
 			std::make_unique<Checkmark_pos_reader>(Gump_info::gump_info_map),
-			std::make_unique<Special_reader>(Gump_info::gump_info_map));
+			std::make_unique<Special_reader>(Gump_info::gump_info_map),
+			std::make_unique<Snap_zones_reader>(Gump_info::gump_info_map));
 	static_assert(sections.size() == readers.size());
 
 	const int flxres = game_type == BLACK_GATE ? EXULT_BG_FLX_GUMP_INFO_TXT : EXULT_SI_FLX_GUMP_INFO_TXT;

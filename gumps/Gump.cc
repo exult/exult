@@ -339,18 +339,26 @@ void Gump::paint_elems() {
 void check_elem_positions(Object_list& objects) {
 	int             prevx = -1;
 	int             prevy = -1;
+	int             count = 0;
 	Game_object*    obj;
 	Object_iterator next(objects);
 	// See if all have the same position, indicating from a new game.
 	while ((obj = next.get_next()) != nullptr) {
 		const int tx = obj->get_tx();
 		const int ty = obj->get_ty();
+		count++;
 		if (prevx == -1) {
 			prevx = tx;
 			prevy = ty;
 		} else if (tx != prevx || ty != prevy) {
-			return;
+			return;    // Different positions, already placed
 		}
+	}
+	// Only reset to 255,255 if all objects have same position AND
+	// there are multiple objects (new game detection).
+	// Single objects with a set position should not be reset.
+	if (count <= 1) {
+		return;    // Single object or empty - don't reset
 	}
 	next.reset();
 	while ((obj = next.get_next()) != nullptr) {

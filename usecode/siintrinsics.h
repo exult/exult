@@ -251,8 +251,8 @@ USECODE_INTRINSIC_PTR(get_random),                               // 0x00
 		USECODE_INTRINSIC_PTR(game_day),                 // 0xdb (Exult)
 		USECODE_INTRINSIC_PTR(play_scene),               // 0xdc (Exult)
 		USECODE_INTRINSIC_PTR(create_new_egg),           // 0xdd (Exult)
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xde
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xdf
+		USECODE_INTRINSIC_PTR(get_item_gump_position),   // 0xde (Exult)
+		USECODE_INTRINSIC_PTR(set_item_gump_position),   // 0xdf (Exult)
 		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe0
 		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe1
 		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe2

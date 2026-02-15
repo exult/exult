@@ -4099,3 +4099,88 @@ USECODE_INTRINSIC(in_usecode_path) {
 
 	return Usecode_value(0);
 }
+
+USECODE_INTRINSIC(get_item_gump_position) {
+	ignore_unused_variable_warning(num_parms);
+	// get_item_gump_position(item) - Returns [x, y] position of item within
+	// its container's gump, or empty array if item is not in an open gump.
+	// This is useful for verifying item placement in custom container gumps
+	// (e.g., pentagram spell layouts).
+
+	Game_object* item = get_item(parms[0]);
+	if (!item) {
+		// Return empty array if no valid item.
+		return Usecode_value(0, static_cast<Usecode_value*>(nullptr));
+	}
+
+	// Get the item's owner (container).
+	Game_object* owner = item->get_owner();
+	if (!owner) {
+		// Item is not in a container.
+		return Usecode_value(0, static_cast<Usecode_value*>(nullptr));
+	}
+
+	// Find the gump displaying this container.
+	Gump* gump = gumpman->find_gump(owner);
+	if (!gump) {
+		// Container gump is not open.
+		return Usecode_value(0, static_cast<Usecode_value*>(nullptr));
+	}
+
+	// Get the item's position within the gump (tx, ty are used for gump
+	// positioning when item is in a container).
+	const int gump_x = item->get_tx();
+	const int gump_y = item->get_ty();
+
+	// Build and return the [x, y] array.
+	Usecode_value xval(gump_x);
+	Usecode_value yval(gump_y);
+	Usecode_value arr(2, nullptr);
+	arr.put_elem(0, xval);
+	arr.put_elem(1, yval);
+	return arr;
+}
+
+USECODE_INTRINSIC(set_item_gump_position) {
+	ignore_unused_variable_warning(num_parms);
+	// set_item_gump_position(item, x, y) - Sets the position of an item within
+	// its container's gump. Returns 1 on success, 0 on failure.
+	// This allows repositioning items for snapping to specific locations
+	// (e.g., pentagram points) without requiring drag-and-drop precision.
+
+	Game_object* item = get_item(parms[0]);
+	if (!item) {
+		return Usecode_value(0);
+	}
+
+	const int new_x = parms[1].get_int_value();
+	const int new_y = parms[2].get_int_value();
+
+	// Validate coordinates are non-negative.
+	if (new_x < 0 || new_y < 0) {
+		return Usecode_value(0);
+	}
+
+	// Get the item's owner (container).
+	Game_object* owner = item->get_owner();
+	if (!owner) {
+		// Item is not in a container.
+		return Usecode_value(0);
+	}
+
+	// Find the gump displaying this container.
+	Gump* gump = gumpman->find_gump(owner);
+	if (!gump) {
+		// Container gump is not open.
+		return Usecode_value(0);
+	}
+
+	// Set the item's position within the gump.
+	item->set_shape_pos(static_cast<unsigned int>(new_x),
+						static_cast<unsigned int>(new_y));
+
+	// Mark the gump area as dirty for repaint.
+	gwin->set_all_dirty();
+
+	return Usecode_value(1);
+}

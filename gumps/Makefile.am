@@ -69,6 +69,8 @@ libgumps_la_SOURCES = \
 	Gump_ToggleButton.h	\
 	CombatStats_gump.cc	\
 	CombatStats_gump.h	\
+	Dynamic_container_gump.cc	\
+	Dynamic_container_gump.h	\
 	gump_types.h	\
 	Face_button.cc	\
 	Face_button.h	\
