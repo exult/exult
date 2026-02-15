@@ -11,6 +11,7 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		28FD15000DC6FC520079059D /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 28FD14FF0DC6FC520079059D /* OpenGLES.framework */; };
 		8A057F9227A8362E00948459 /* CoreAudioMidiDriver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A057F8427A835AF00948459 /* CoreAudioMidiDriver.cpp */; };
+		8A123C352F41EA3600155333 /* Dynamic_container_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8A123C342F41EA3600155333 /* Dynamic_container_gump.cc */; };
 		8A1C58211FE7D91B00738E40 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A1C581B1FE7D91B00738E40 /* libz.tbd */; };
 		8A1FC4272571C747007B86DD /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8340BF1F8977FB000696C7 /* CoreMotion.framework */; };
 		8A2C52511DE6E1810016E16A /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A7F1F8E1DE5BDD40066F6FC /* CoreFoundation.framework */; };
@@ -346,6 +347,8 @@
 		8A057F8427A835AF00948459 /* CoreAudioMidiDriver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CoreAudioMidiDriver.cpp; sourceTree = "<group>"; };
 		8A057F9127A835AF00948459 /* CoreAudioMidiDriver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CoreAudioMidiDriver.h; sourceTree = "<group>"; };
 		8A0C19E11D6D9F1800B9105A /* sibetaintrinsics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sibetaintrinsics.h; sourceTree = "<group>"; };
+		8A123C332F41EA3600155333 /* Dynamic_container_gump.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Dynamic_container_gump.h; path = ../gumps/Dynamic_container_gump.h; sourceTree = SOURCE_ROOT; };
+		8A123C342F41EA3600155333 /* Dynamic_container_gump.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Dynamic_container_gump.cc; path = ../gumps/Dynamic_container_gump.cc; sourceTree = SOURCE_ROOT; };
 		8A1C581B1FE7D91B00738E40 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		8A2515082E3DA1D500CCE820 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = SDL/Xcode/SDL/SDL.xcodeproj; sourceTree = "<group>"; };
 		8A33B5C92C2051B800075AF4 /* Slider_widget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Slider_widget.h; path = ../gumps/Slider_widget.h; sourceTree = "<group>"; };
@@ -1401,6 +1404,8 @@
 				8A33B5E12C2051B800075AF4 /* StringList_widget.cc */,
 				8A33B5E32C2051B800075AF4 /* StringList_widget.h */,
 				8A33B5E42C2051B800075AF4 /* IterableGump_widget.h */,
+				8A123C332F41EA3600155333 /* Dynamic_container_gump.h */,
+				8A123C342F41EA3600155333 /* Dynamic_container_gump.cc */,
 				8A33B5E52C2051B800075AF4 /* Scrollable_widget.cc */,
 				8A33B5E72C2051B800075AF4 /* Scrollable_widget.h */,
 				8A33B5E82C2051B800075AF4 /* DropDown_widget.cc */,
@@ -1941,6 +1946,7 @@
 				8A33B5E62C2051B800075AF4 /* Scrollable_widget.cc in Sources */,
 				8A33B5E22C2051B800075AF4 /* StringList_widget.cc in Sources */,
 				8A33B5E02C2051B800075AF4 /* Slider_widget.cc in Sources */,
+				8A123C352F41EA3600155333 /* Dynamic_container_gump.cc in Sources */,
 				E700DE241A6E344D006C8BE4 /* ibuf8.cc in Sources */,
 				8A9A03B029F42948000AF341 /* FluidSynthMidiDriver.cpp in Sources */,
 				E700DD511A6E3121006C8BE4 /* bodyinf.cc in Sources */,
