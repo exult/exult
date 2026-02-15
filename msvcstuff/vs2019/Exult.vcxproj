@@ -439,6 +439,7 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClCompile Include="..\..\gumps\AudioOptions_gump.cc" />
     <ClCompile Include="..\..\gumps\Book_gump.cc" />
     <ClCompile Include="..\..\gumps\CombatStats_gump.cc" />
+    <ClCompile Include="..\..\gumps\Dynamic_container_gump.cc" />
     <ClCompile Include="..\..\gumps\Enabled_button.cc" />
     <ClCompile Include="..\..\gumps\Face_button.cc" />
     <ClCompile Include="..\..\gumps\Face_stats.cc" />
@@ -663,6 +664,7 @@ for /f "tokens=* delims=" %%u in ('git ls-remote --get-url') do echo #define GIT
     <ClInclude Include="..\..\gumps\AudioOptions_gump.h" />
     <ClInclude Include="..\..\gumps\Book_gump.h" />
     <ClInclude Include="..\..\gumps\CombatStats_gump.h" />
+    <ClInclude Include="..\..\gumps\Dynamic_container_gump.h" />
     <ClInclude Include="..\..\gumps\Enabled_button.h" />
     <ClInclude Include="..\..\gumps\Face_button.h" />
     <ClInclude Include="..\..\gumps\Face_stats.h" />
