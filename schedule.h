@@ -819,13 +819,15 @@ public:
 /*
  *  Eat without a server
  */
-class Eat_schedule : public Schedule {
+class Eat_schedule : public Loiter_schedule {
 	Game_object_weak plate;
 
 	enum {
 		eat,           // eat food and say food barks
 		find_plate,    // make sure there is a plate, create one if not
-		serve_food     // put food on the plate
+		serve_food,    // put food on the plate
+		sitting,       // sit down before eating
+		wander         // wander around when there is no plate
 	} state;
 
 public:

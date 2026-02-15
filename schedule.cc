@@ -5661,12 +5661,10 @@ void Forge_schedule::ending(int new_type    // New schedule.
  *  The original seems to pathfind to a plate, then place the food on
  *  the plate, sit down, and then eat it if the food is close enough.
  *  They only seemed to eat one food item and then sit there doing nothing.
- *  If there is no plate, they will wander around in a loiter like
- *  schedule saying 0x410-0x413 randomly until a plate becomes available.
+ *  If there is no plate, they will switch to loitering until a plate becomes available.
  *  When eating, there are no barks.
- *  TODO: Add plate pathfinding
  */
-Eat_schedule::Eat_schedule(Actor* n) : Schedule(n), state(find_plate) {}
+Eat_schedule::Eat_schedule(Actor* n) : Loiter_schedule(n, 8), state(find_plate) {}
 
 /*
  *  Just went dormant.
@@ -5679,14 +5677,7 @@ void Eat_schedule::im_dormant() {
 }
 
 void Eat_schedule::now_what() {
-	int       delay = 5000 + rand() % 12000;
-	const int frnum = npc->get_framenum();
-	if ((frnum & 0xf) != Actor::sit_frame) {
-		if (!Sit_schedule::set_action(npc)) {    // First have to sit down.
-			npc->start(250, 5000);               // Try again in a while.
-		}
-		return;
-	}
+	int delay = 5000 + rand() % 12000;
 	switch (state) {
 	case eat: {
 		Game_object_vector foods;    // Food nearby?
@@ -5705,12 +5696,13 @@ void Eat_schedule::now_what() {
 				gwin->add_dirty(food);
 				food->remove_this();
 			}
+			if (npc->can_speak() && rand() % 4) {
+				npc->say(first_munch, last_munch);
+			}
 		}    // loops back to itself since npc can be pushed
 		break;    // out of their chair and not eat right away
 	}
 	case find_plate: {
-		state = serve_food;
-		delay = 0;
 		// make sure moved plate doesn't get food sent to it
 		plate = Game_object_weak();
 		Game_object_vector plates;    // First look for a nearby plate.
@@ -5725,11 +5717,17 @@ void Eat_schedule::now_what() {
 				plate_obj = nullptr;
 			}
 		}
-		plate = weak_from_obj(plate_obj);
+		if (plate_obj) {
+			plate = weak_from_obj(plate_obj);
+			state = serve_food;
+			delay = 0;
+		} else {
+			state = wander;    // No plate; loiter until we retry.
+		}
 		break;
 	}
 	case serve_food: {
-		state                              = eat;
+		state                              = sitting;
 		const Game_object_shared plate_obj = plate.lock();
 		if (!plate_obj) {
 			state = find_plate;
@@ -5740,6 +5738,23 @@ void Eat_schedule::now_what() {
 		food->move(t.tx, t.ty, t.tz + 1);
 		break;
 	}
+	case sitting: {
+		const int frnum = npc->get_framenum();
+		if ((frnum & 0xf) != Actor::sit_frame) {
+			if (!Sit_schedule::set_action(npc)) {
+				npc->start(250, 500);    // Try again in a while.
+			}
+			return;
+		}
+		state = eat;
+		break;
+	}
+	case wander:
+		Loiter_schedule::now_what();
+		if (rand() % 2 == 0) {
+			state = find_plate;
+		}
+		return;
 	}
 	npc->start(250, delay);
 }
@@ -5754,6 +5769,9 @@ void Eat_schedule::ending(int new_type) {    // new schedule type
 			if (food) {
 				gwin->add_dirty(food);
 				food->remove_this();
+				if (npc->can_speak()) {
+					npc->say(first_munch, last_munch);
+				}
 			}
 		}
 	}
