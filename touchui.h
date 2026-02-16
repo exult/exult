@@ -50,14 +50,14 @@ public:
 	static void setTextInputArea(SDL_Window* window, int gx1, int gy1, int gx2, int gy2);
 
 	TouchUI();
-	virtual ~TouchUI()                           = default;
-	virtual void showGameControls()              = 0;
-	virtual void hideGameControls()              = 0;
-	virtual void showButtonControls()            = 0;
-	virtual void hideButtonControls()            = 0;
-	virtual void showPauseControls()             = 0;
-	virtual void hidePauseControls()             = 0;
-	virtual void onDpadLocationChanged()         = 0;
+	virtual ~TouchUI()                   = default;
+	virtual void showGameControls()      = 0;
+	virtual void hideGameControls()      = 0;
+	virtual void showButtonControls()    = 0;
+	virtual void hideButtonControls()    = 0;
+	virtual void showPauseControls()     = 0;
+	virtual void hidePauseControls()     = 0;
+	virtual void onDpadLocationChanged() = 0;
 };
 
 #endif
