@@ -122,7 +122,7 @@
 0x563:Du musst auf die Schlangeninsel #You must go to the Serpent Isle
 0x564:und mir Clerasil besorgen. #to learn the secret of Acne Medication
 0x565:Ich will gut aussehen, wenn #Soon I and my horde of muppets will
-0x566:Britannia zerstöre!
+0x566:ich Britannia zerstöre!
 0x567:So etwas hatte ich schon befürchtet. 
 0x568:Ich muss den Avatar durch die Pforten
 0x569:zur Schlangeninsel schicken.
@@ -500,3 +500,91 @@
 0x741: Screenshot
 0x742: Screenshot fehlgeschlagen
 0x743: Gamma gesetzt auf
+
+# game.cc
+0x74A: Du musst zuerst ein neues Spiel starten.
+0x74B: Drücke ESC um zurückzukehren.
+
+# gamewin.cc
+# NPC ...
+0x750:  existiert nicht.
+# NPC ...
+0x751:  ist nicht auf der Karte.
+0x752: Suche nach Form 
+0x753: Nicht gefunden
+0x754: Speichere Spiel
+
+# gamemap.cc
+0x760: Scanning superchunk 
+0x761: Encoding chunks
+0x762: Creating minimap 
+
+# server.cc
+0x770: Terrain-Editing Aborted
+0x771: Terrain-Editing Done
+0x772: Terrain-Editing Enabled
+0x773: Map #
+
+#keys.cc - Action description strings
+#VOLUME_MIXER
+0x800:Lautstärkeregler
+#QUIT
+0x801:Beenden
+#SAVE_RESTORE
+0x802:Speichern/Laden
+#QUICKSAVE
+0x803:Schnellspeichern
+#QUICKRESTORE
+0x804:Schnellladen
+#ABOUT
+0x805:Über Exult
+#HELP
+0x806:Liste Tasten
+#CLOSE_GUMPS
+0x807:Schließe Gumps
+#CLOSE_OR_MENU
+0x808:Game menu
+#SCREENSHOT
+0x809:Mache Screenshot
+#GAME_MENU
+0x80a:Game Menu
+#OLD_FILE_GUMP
+0x80b:Speichern/Laden
+#SCALEVAL_INCREASE
+0x80c:Skalenwert erhöhen
+#SCALEVAL_DECREASE
+0x80d:Skalenwert verringern
+#BRIGHTER
+0x80e:Helligkeit erhöhen
+#DARKER
+0x80f:Helligkeit verringern
+#TOGGLE_FULLSCREEN
+0x810:Vollbild ein/aus
+#USEITEM
+0x811:Benutze Gegenstand
+#USEFOOD
+0x812:Ernähren
+#CALL_USECODE
+0x813:Usecode aufrufen
+#TOGGLE_COMBAT
+0x814:Kampf ein/aus
+#PAUSE_COMBAT
+0x815:Kampf pausieren
+#TARGET_MODE
+0x816:Zielmodus
+#INVENTORY
+0x817:Inventar anzeigen
+#TRY_KEYS
+0x818:Tasten testen
+#STATS
+0x819:Stats anzeigen
+#COMBAT_STATS
+0x81a:Kampf Stats anzeigen
+#FACE_STATS
+0x81b:Change Face Stats State
+#USE_HEALING_ITEMS
+0x81c:Bandagen oder Heiltränke benutzen
+#SHOW_SI_INTRO
+0x81d:Alternatives SI intro anzeigen
+#SHOW_ENDGAME
+0x81e:Endsequenz anzeigen
