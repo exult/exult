@@ -23,6 +23,7 @@
 #include "conversation.h"
 
 #include "Face_stats.h"
+#include "Gump_manager.h"
 #include "ShortcutBar_gump.h"
 #include "actors.h"
 #include "data/exult_bg_flx.h"
@@ -133,7 +134,7 @@ void Conversation::init_faces() {
 		delete finfo;
 		finfo = nullptr;
 		if (!gwin->main_actor_dont_move()) {
-			if (touchui != nullptr) {
+			if (touchui != nullptr && !gumpman->gump_mode()) {
 				touchui->showGameControls();
 			}
 			if (!Face_stats::Visible()) {

@@ -281,7 +281,7 @@ Notebook_gump* Notebook_gump::create() {
 			touchui->hideGameControls();
 			SDL_Window* window = gwin->get_win()->get_screen_window();
 			if (!SDL_TextInputActive(window)) {
-				SDL_StartTextInput(window);
+				TouchUI::startTextInput(window);
 			}
 		}
 	}
@@ -444,7 +444,7 @@ Gump_button* Notebook_gump::on_button(
 		paint();
 		updnx = cursor.x - x - lpagex;
 		if (!SDL_TextInputActive(window)) {
-			SDL_StartTextInput(window);
+			TouchUI::startTextInput(window);
 		}
 	} else {
 		offset += -coff;    // New offset.
@@ -467,7 +467,7 @@ Gump_button* Notebook_gump::on_button(
 			paint();
 			updnx = cursor.x - x - rpagex;
 			if (!SDL_TextInputActive(window)) {
-				SDL_StartTextInput(window);
+				TouchUI::startTextInput(window);
 			}
 		}
 	}

@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class Shape_file;
 class Image_buffer;
+struct SDL_Window;
 
 #define MAX_SAVEGAME_NAME_LEN 0x50
 
@@ -186,6 +187,7 @@ protected:
 	void FreeSaveGameDetails();    // Frees all the savegame details
 
 	void PaintSaveName(int line);
+	void SetTextInputArea(SDL_Window* window);
 
 public:
 	Newfile_gump();
@@ -220,6 +222,8 @@ public:
 
 	// Paint it and its contents.
 	void paint() override;
+
+	bool is_draggable() const override;
 
 	void close() override {
 		done = true;

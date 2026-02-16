@@ -258,8 +258,8 @@ public:
 
 	// Turning off clang format so it doesn't mess up the comments
 	// clang-format off
-	 
-	 
+
+
 	//! Draw a box with a fake 3d beveled edge
 	//! /param x X coord of top left
 	//! /param y Y coord of top left
@@ -291,6 +291,7 @@ public:
 	virtual void draw_box(
 			int x, int y, int w, int h, int strokewidth, uint8 colfill,
 			uint8 colstroke);
+	// clang-format on
 };
 
 #endif

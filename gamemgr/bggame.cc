@@ -2038,11 +2038,15 @@ bool BG_Game::new_game(Vga_file& shapes) {
 														// visible initially
 	}
 	SDL_Window* window = gwin->get_win()->get_screen_window();
-#if !defined(SDL_PLATFORM_IOS) && !defined(ANDROID)
+
 	if (!SDL_TextInputActive(window)) {
-		SDL_StartTextInput(window);
+		if (touchui != nullptr) {
+			SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "1");
+			TouchUI::startTextInput(window);
+		} else {
+			SDL_StartTextInput(window);
+		}
 	}
-#endif
 	do {
 		Delay();
 		if (redraw) {
@@ -2083,7 +2087,14 @@ bool BG_Game::new_game(Vga_file& shapes) {
 			gwin->get_win()->ShowFillGuardBand();
 		}
 		SDL_Renderer* renderer = SDL_GetRenderer(gwin->get_win()->get_screen_window());
-		SDL_Event     event;
+		if (touchui != nullptr) {
+			int name_gx  = topx + 60;
+			int name_gy  = menuy + 10;
+			int name_gx2 = name_gx + 130;
+			int name_gy2 = name_gy + 12;
+			TouchUI::setTextInputArea(window, name_gx, name_gy, name_gx2, name_gy2);
+		}
+		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
 			Uint16 keysym_unicode = 0;
 			bool   isTextInput    = false;
@@ -2110,7 +2121,12 @@ bool BG_Game::new_game(Vga_file& shapes) {
 					if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 						selected = 0;
 					} else if (selected == 0 && touchui != nullptr) {
-						touchui->promptForName(npc_name);
+						if (!SDL_TextInputActive(window)) {
+							SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "1");
+							TouchUI::startTextInput(window);
+						} else {
+							SDL_StopTextInput(window);
+						}
 					}
 					redraw = true;
 				} else if (SDL_GetRectEnclosingPoints(&point, 1, &rectSex, nullptr)) {
@@ -2237,6 +2253,7 @@ bool BG_Game::new_game(Vga_file& shapes) {
 	if (SDL_TextInputActive(window)) {
 		SDL_StopTextInput(window);
 	}
+	SDL_SetHint(SDL_HINT_RETURN_KEY_HIDES_IME, "0");
 	// Hide mouse on way out to clear the mouse's dirty box
 	if (Mouse::mouse()) {
 		Mouse::mouse()->hide();
