@@ -1,53 +1,60 @@
 # These messages are used in the Exult engine, and follow the
-# game-specific ones.
-0x500:Stell den Stuhl zurück!
+# game-specific ones. 
+# Translation consistent with existing inofficial fan-translations
+# and complies with the new German spelling rules of 2006 (1996).
+0x500:Stellt den Stuhl zurück!
 0x501:Dieb!!
-0x502:Du Schurke!!
+0x502:Ihr Schurke!!
 0x503:Nicht lustig!
 0x504:Wer hat meinen Stuhl bewegt??
 0x505:Du siehst aus, als würde es dir gut gehn.
 0x506:Alles klar?
-0x507:Bereit für das Dessert?
+0x507:Bereit für den Nachtisch?
 0x508:Guten Appetit!
 0x509:Spezialität des Hauses!
-0x50a:Avatar!  Benimm dich!
-0x50b:Hast Du bemerkt, daß schon jemand im Bett liegt?
-0x50c:Der Benutzer dieses Bettes wird wohl gerade keinen Wert auf Gesellschaft legen.
+0x50a:Aber Avatar! Also wirklich! Benehmt Euch!
+0x50b:Äh, Ihr habt aber schon bemerkt, dass das Bett bereits belegt ist, oder?
+0x50c:Der Benutzer dieses Bettes legt möglicherweise gerade keinen Wert auf Gesellschaft.
 0x50d:So einfach wirst du mich nicht los!
 0x50e:Ah, hier bist du!
 0x50f:Hab dich gefunden!
+
 # Intro messages
 0x510:mit der Hilfe
 0x511:des Exult Teams
 0x512:Unter Exult laufend
+
 # Ending Messages
 #0x513:DAS ENDE VON ULTIMA VII
 #0x514:DAS ENDE VON BRITANNIA...
 0x515:NEIN! Das darfst du nicht!
 0x516:Ich verfluche dich!  Sei verflucht!
 0x517:Die Schwarze Pforte ist zerstört!
-0x518:Der Wächter konnte aufgehalten werden!
+0x518:Der Guardian konnte aufgehalten werden!
+
 # End1
-0x519:Avatar! Glaubst du, daß du mich
+0x519:Avatar! Glaubst du, dass du mich
 0x51A:besiegt hast? Denk nochmal nach!
 0x51B:Du kannst Britannia nicht mehr
 0x51C:verlassen. Ich hingegen kann jede
 0x51D:Welt betreten! Hmmm...
 0x51E:vielleicht mache ich deine armselige
 0x51F:Erde zu meinem NÄCHSTEN Ziel!
+
 0x520:
 # End2
 0x521:Es wird Monate dauern, bis Britannia
 0x522:sich von dieser entscheidenden
 0x523:Schlacht um die Schwarze Pforte
-0x524:und von den Intrigen des Wächters
+0x524:und von den Intrigen des Guardian
 0x525:erholen wird. Doch das
 0x526:Gute hat das Böse besiegt!
 0x527:Als Du nach Britain zurückkehrst,
-0x528:verkündet Lord British, daß die
+0x528:verkündet Lord British, dass die
 0x529:Gemeinschaft ihrer Macht enthoben
 0x52A:und alle ihre Niederlassungen in
 0x52B:Britannia zerstört werden sollten.
+
 # End3
 0x52C:Deine Frustration, Britannia nicht
 0x52D:verlassen zu können, wird von der
@@ -58,28 +65,701 @@
 0x532:Sparks Vater ist durch die
 0x533:Beseitigung der heuchlerischen
 0x534:Gemeinschaft gerächt.
+
 # End4
 0x535:Zudem es dir momentan nicht möglich
 0x536:ist, etwas gegen die Drohung des
-0x537:Wächters auszurichten, beunruhigt
+0x537:Guardian auszurichten, beunruhigt
 0x538:dich auch noch ein anderer Gedanke...
 0x539:Was ist aus dem Satan Batlin
 0x53A:geworden, dem es auf irgendeine
 0x53B:Weise gelang, seiner Strafe durch
 0x53C:Flucht zu entgehen?
+
 # End5
 0x53D:Doch davon erzählt eine andere
 0x53E:Geschichte... Eine Geschichte,
 0x53F:die dich zu Serpent Isle, einem
 0x540:Ort namens Schlangeninsel,
 0x541:führen wird ...
+
 #Congratulations
 0x542:Herzlichen Glückwunsch! Du hast
 0x543:Ultima VII gemeistert! Du brauchtest
 0x544: und |nur |genau | Jahr| Jahre| Monat| Monate| Tag| Tage| Stunde| Stunden|negative Zeit!
-0x545:Bitte schreibe Lord British und 
-0x546:erzähle @RichardGarriott auf
-0x547:Twitter von deiner großartigen und
-0x548:bewundernswerten Leistung!
-0x549:Er wird sich über Post aus
+0x545:Bitte schreibe doch Lord British auf
+0x546:Twitter unter @RichardGarriott und
+0x547:berichte ihm von deiner großartigen 
+0x548:und bewundernswerten Leistung! Er
+0x549:wird sich über Nachricht aus
 0x54A:Deutschland freuen!
+
+#SI Intro
+0x54B:Lord Britishs Schloss
+0x54C:Dick Britishs Schloss
+0x54D:Achtzehn Monate nachdem die
+0x54E:Schwarze Pforte zerstört und die
+0x54F:Gemeinschaft enttarnt wurde:
+0x550:Mein Lehnsherr
+0x551:Was geht, Alter?
+0x552:Alles, was wir bei Batlin fanden,
+0x553:war diese magische Schriftrolle...
+0x554:und eine Karte, die einen Weg zu 
+0x555:dem Ort namens Schlangeninsel zeigt.
+0x556:Wohlan.
+0x557:Legt sie auf den Tisch!
+0x558:Lässig. Schmeiß' sie einfach da auf den Tisch!
+0x559:Gebt Acht!
+0x55A:Weg da!
+0x55B:Batlin! Für den unwahrscheinlichen
+0x55C:Fall, dass es dem Avatar gelingt,
+0x55D:die Schwarze Pforte zu zerstören,  
+0x55E:folge der arglosen Gwenno zur 
+0x55F:Schlangeninsel. Dort erkläre ich Dir, 
+0x560:wie wir Britannia zerstören werden!
+0x561:Batlin! Du musst wissen, dass ich
+0x562:aussehe, wie einer aus der Muppet-Show
+0x563:Du musst auf die Schlangeninsel
+0x564:und mir Clerasil besorgen.
+0x565:Ich will gut aussehen, wenn
+0x566:ich Britannia zerstöre!
+0x567:So etwas hatte ich schon befürchtet. 
+0x568:Ich muss den Avatar durch die Pforten
+0x569:zur Schlangeninsel schicken.
+
+#SI end
+0x56A:Es ist vollbracht.
+0x56B:Das Gleichgewicht ist wieder hergestellt.
+0x56C:Die Schlangeninsel, Britannia, Erde, 
+0x56D:das ganze Universum, alle gerettet.
+0x56E:Sorgt Euch nicht um Euren Freund, Dupre.
+0x56F:Er ist nun eins mit uns.
+0x570:Lebt wohl und
+0x571:Habt Dank, Avatar
+0x572:Sieh an, sieh an, Avatar. Wieder einmal hast
+0x573:Du es geschafft, meine Pläne zu vereiteln.
+0x574:Indem Du das Gleichgewicht wiederhergestellt 
+0x575:hast, wo einst nur Chaos herrschte, hast Du 
+0x576:deine verfluchte Welt gerettet.
+0x577:Aber jetzt bist Du hier... 
+0x578:am Rande der Ewigkeit. 
+0x579:Wohin willst Du jetzt?
+0x57A:Zurück nach Britannia?
+0x57B:Zur Erde?
+0x57C:Vielleicht begleitest Du mich 
+0x57D:auf eine ganz andere Welt? Wir 
+0x57E:haben noch eine Rechnung zu begleichen.
+0x57F:Du hast das Gleichgewicht
+0x580:auf der Schlangeninsel
+0x581: und |nur |genau | Jahr| Jahre| Monat| Monate| Tag| Tage| Stunde| Stunden|negative Zeit!
+0x582:Unglücklicherweise bist Du dem Guardian in die Hände gefallen!
+0x583:Bitte schreibe doch Lord British, 
+0x584:@RichardGarriott auf Twitter,
+0x585:und berichte ihm von deinem Schicksal!
+0x586:
+0x587:
+
+#message for Automatic feeding
+0x590:Keine Nahrung mehr
+
+# GumpStrings
+0x591:OK
+0x592:ABBRECHEN
+0x593:HILFE
+0x594:ANWENDEN
+0x595:Ja
+0x596:Nein
+0x597:Abbrechen
+0x599:deaktiviert
+0x59A:Deaktiviert
+0x59B:Aktiviert
+0x59C:Standard
+0x59D:Willst Du das Spiel wirklich beenden?
+
+# Mixer_gump.cc
+0x5A0:Midi Test Track konnte nicht abgespielt werden
+0x5A1:Ogg Test Track konnte nicht abgespielt werden
+0x5A2:Musik: 
+0x5A3:MIDI Musik: 
+0x5A4:OGG Musik: 
+0x5A5:SFX: 
+0x5A6:Sprache: 
+
+#GameDisplayOptions_gump.cc
+0x5B0:Links
+0x5B1:Zentriert
+0x5B2:Rechts
+
+0x5B3:Vertikal
+0x5B4:Transparent
+0x5B5:Schwarz
+0x5B6:Grün
+0x5B7:Weiß
+0x5B8:Gelb
+0x5B9:Blau
+0x5BA:Rot
+0x5BB:Lila
+0x5BC:Steingrau
+0x5BD:Dunkellila
+0x5BE:strahlend Gelb
+0x5BF:Hellblau
+
+0x5C0:Hellgrün
+0x5C1:Dunkelrot
+0x5C2:Orange
+0x5C3:Hellgrau
+0x5C4:Blassblau
+0x5C5:Dunkelgrün
+0x5C6:strahlend Weiß
+0x5C7:Dunkelgrau
+
+0x5C8:Statusleisten:
+0x5C9:Shortcut-Leiste verwenden :
+0x5CA:    Farbige Umrisse verwenden :
+0x5CB:    Fehlende Gegenstände ausblenden:
+0x5CC:Text-Hintergrund:
+0x5CD:Flüssiges Scrollen:
+0x5CE:Intro überspringen:
+0x5CF:Geskriptete Anfangsszene überspringen:
+0x5D0:Erweitertes SI-Intro verwenden:
+0x5D1:Paperdolls:
+0x5D2:Android Autostart:
+0x5D3:Sprache:
+0x5D4:Englisch
+0x5D5:Französisch
+0x5D6:Deutsch
+0x5D7:Spanisch
+0x5D8:Eingebettete Schriften:
+0x5D9:Original
+0x5DA:Serif
+0x5DB:Deaktiviert
+
+# Gamemenu_gump.cc
+0x5E0:Spiel laden/speichern
+0x5E1:Video Optionen
+0x5E2:Audio Optionen
+0x5E3:Spielanzeige
+0x5E4:Spiele-Engine
+0x5E5:Spielinteraktion
+0x5E6:Beenden
+
+#AdvancedOptions_gump.cc
+0x5F0:Trotzdem anwenden?
+
+#ConfigSetting_widget.cc
+0x5f8:(Default)
+0x5F9:(Unset)
+0x5FA:Alle Werte für
+0x5FB:Einstellungen müssen eindeutig sein.
+0x5FC:Mindestens ein Wert für
+0x5FD:Einstellungen muss gesetzt werden.
+
+#AudioOptions_gump.cc
+0x600:LAUTSTÄRKE-REGLER
+0x601:EINSTELLUNGEN
+0x602:Erweiterte Einstellungen für
+0x603:Midi Treiber.
+0x604:Mono
+0x605:Stereo
+0x606:Digital
+0x607:Nur Untertitel
+0x608:Nur Sprache
+0x609:Sprache + Untertitel
+0x60A:Niemals
+0x60B:eingeschränkt
+0x60C:Auto
+0x60D:Endlosschleife
+0x60E:Roland MT-32
+0x60F:Sound Blaster
+0x610:Custom
+0x611:Der Mod
+0x612:benötigt Digitale Musik
+0x613:Trotzdem deaktivieren?
+0x614:Audio:
+0x615:    Sample Rate
+0x616:    Lautsprecher
+0x617:Musik:
+0x618:    Looping
+0x619:    digitale Musik
+0x61A:    Midi Treiber
+0x61B:SFX:
+0x61C:    pack ##
+0x61D:Sprache:
+0x61E:    conversion ##
+
+#GameEngineOptions_gump.cc
+0x620:Normal
+0x621:Schwierig
+0x622:Trivial  (-3)
+0x623:Leicht   (-2)
+0x624:Leichter (-1)
+0x625:Schwieriger (+1)
+0x626:Alptraum (+2)
+0x627:Hölle (+3)
+0x628:Manuell
+0x629:Automatisch
+0x62A:Notizen automatisch machen:
+0x62B:Gumps pausieren das Spiel:
+0x62C:Ziehen & Ablegen Alternative:
+0x62D:Geschwindigkeit:
+0x62E:Kampf - Zeige Treffer:
+0x62F:Kampf - Leertaste pausiert:
+0x630:Kampf - Verzauberung - Schwierigkeit:
+0x631:Kampf - Schwierigkeit:
+0x632:Cheats:
+0x633:Ernährung der Gruppe:
+0x634:Verbesserungen:
+
+#InputOptions_gump.cc
+0x640:Einfach
+0x641:Doppel
+0x644:None
+0x645:Links
+0x646:Rechts
+0x647:Doppelklick schließt Gumps:
+0x648:Rechtsklick schließt Gumps:
+0x649:Mit Rechtsklick Pfad finden:
+0x64A:Spielansicht mit der Maus scrollen:
+0x64B:Mittlere Maustaste verwenden:
+0x64C:Fullscreen Fast Mouse: ##
+0x64D:Hilfemenü für Gegenstände:
+0x64E:D-Pad Bildschirmposition:
+0x64F:Mit langem Druck Pfad finden:
+
+#ItemMenu_gump.cc
+0x650:Inventar anzeigen
+0x651:Sprechen mit
+0x652:Inhalt anzeigen
+0x653:Interagieren mit
+0x654:Aufnehmen
+0x655:Bewegen zu
+0x656:Nichts tun
+
+#Notebook_gump.cc
+0x658:Tag
+0x659:vm
+0x65A:nm
+
+#Newfile_gump.cc
+#Info Box Strings
+0x660:Avatar
+0x661:Exp ##
+0x662:Hp ##
+0x663:Str ##
+0x664:Dxt ##
+0x665:Int ##
+0x666:Trn ##
+0x667:Spieltag
+0x668:Spielzeit
+0x669:Anzahl der Speicherungen
+0x66A:Datum
+0x66B:Zeit
+0x66C:Datei
+#Buttons
+0x66D:LADEN
+0x66E:SPEICHERN
+0x66F:LÖSCHEN
+
+#Month Abbreviations
+0x670:Jan
+0x671:Feb
+0x672:März
+0x673:April
+0x674:Mai
+0x675:Juni
+0x676:Juli
+0x677:Aug
+0x678:Sept
+0x679:Okt
+0x67A:Nov
+0x67B:Dez
+#ordinal_numeral Suffixes for days
+0x67C:.
+0x67D:.
+0x67E:.
+0x67F:.
+
+#VideoOptions_gump.cc
+0x680:Auto
+0x683:Füllen
+0x684:Anpassen
+0x685:Zentriert
+0x686:Benutzerdefiniert
+0x687:Skalierte Größe kleiner als 320x200.
+0x688:Exult ist evtl. unbenutzbar.
+0x689:Dennoch anwenden?
+0x68A:Einstellungen übernommen.
+0x68B:Beibehalten?
+0x68C:Vollbild:
+0x68D:Anzeigegröße:
+0x68E:Fenstergröße:
+0x68F:Auflösung:
+0x690:Skalierer:
+0x691:Skalierung:
+0x692:Spielbereich:
+0x693:Texturfilter:
+0x694:Füllmethode:
+0x695:AR Korrektur:
+0x696:Gleiche Einstellungen für
+0x697:Fenster und Vollbild:
+
+#imagewin.cc scaler displaynames 
+0x69A:Point
+0x69B:Interlaced
+0x69C:Bilinear
+0x69D:BilinearPlus
+
+
+#MidiDriver setting labels
+0x6A0:Hall-Effekt
+0x6A1:Chorus-Effekt
+0x6A2:Gerätetyp
+0x6A3:General Midi
+0x6A4:GS127
+0x6A5:Imitierte MT32
+0x6A6:Echte MT32
+0x6A7:Soundfont
+0x6A8:Win32 MIDI Device
+0x6A9:ALSA PORT
+0x6AA:CoreMIDI Device
+
+#Exult Menu
+0x6B0:ERSTES
+0x6B1:VORHERIGES
+0x6B2:NÄCHSTES
+0x6B3:LETZTES
+0x6B4:MODS ANZEIGEN
+0x6B5:SETUP
+0x6B6:DANKSAGUNGEN
+0x6B7:ZITATE
+0x6B8:HILFE
+0x6B9:BEENDEN 
+0x6BA:FALSCHE EXULT VERSION
+0x6BB:ZURÜCK ZUM HAUPTMENÜ
+0x6BC:Willkommen bei Exult
+0x6BD:
+0x6BE:Zum Spielen werden die Originaldateien von 
+0X6Bf:"Die Schwarze Pforte" und/oder "Schlangeninsel" benötigt.
+0X6C0:Bitte passe die Konfigurationsdatei an.
+0X6C1:Drücke ESC zum Verlassen.
+0X6C2:Spiele in Dateifreigabe hinzufügen
+0X6C3:Für Hilfe den Bildschirm berühren
+
+#Misc
+# SI copy protection failed
+0x6F0:Grunz!
+0x6F1:Grunz
+
+# keyactions.cc
+0x6FA: Speichern fehlgeschlagen!
+0x6FB: Spiel gespeichert
+0x6FC: Spiel wiederherstellen fehlgeschlagen!
+0x6FD: Spiel wiederhergestellt
+0x6FE: Objekt erstellt
+
+# cheat.cc screen messages
+0x700: God Mode aktiviert
+0x701: God Mode deaktiviert
+0x702: Archwizard Mode aktiviert
+0x703: Archwizard Mode deaktiviert
+0x704: Karteneditor Modus aktiviert
+0x705: Karteneditor Modus deaktiviert
+0x706: Infravision aktiviert
+0x707: Infravision deaktiviert
+0x708: Taschendiebstahl aktiviert
+0x709: Taschendiebstahl deaktiviert
+0x70A: Hack-Mover aktiviert
+0x70B: Hack-Mover deaktiviert
+0x70C: Avatar ist jetzt männlich
+0x70D: Avatar ist jetzt weiblich
+0x70E: Eggs Anzeige aktiviert
+0x70F: Eggs Anzeige deaktiviert
+0x710: Level erhöht!
+0x711: Maximaler Level erreicht
+0x712: Spielinterne Uhr erhöht auf 
+0x713: Teleport!!!
+0x714: Karte nicht gefunden
+0x715: Zu Karte #
+0x716: 100 Goldstücke hinzugefügt
+0x717: Objekt erschaffen
+0x718: Kein Platz
+0x719: Nur Objekte aus 'shapes.vga' möglich
+0x71A: Objekt gelöscht
+0x71B: Gruppe geheilt
+0x71C: NPC Tool Actor Grabbing aktiviert ##
+0x71D: NPC Tool Actor Grabbing deaktiviert ##
+0x71E: NPC Nummern aktiviert
+0x71F: NPC Nummern deaktiviert
+
+# combat.cc
+0x730: Kampf wieder aufgenommen
+0x731: Kampf pausiert
+
+# exult.cc
+0x740: Zu viele Screenshots
+0x741: Screenshot
+0x742: Screenshot fehlgeschlagen
+0x743: Gamma gesetzt auf
+
+# game.cc
+0x74A: Du musst zuerst ein neues Spiel starten.
+0x74B: Drücke ESC um zurückzukehren.
+
+# gamewin.cc
+# NPC ...
+0x750:  existiert nicht.
+# NPC ...
+0x751:  ist nicht auf der Karte.
+0x752: Suche nach Form 
+0x753: Nicht gefunden
+0x754: Speichere Spiel
+
+# gamemap.cc
+0x760: Scanne Superchunk 
+0x761: Enkodiere Chunks
+0x762: Erstelle Minikarte 
+
+# server.cc
+0x770: Geländebearbeitung abgebrochen
+0x771: Geländebearbeitung abgeschlossen
+0x772: Geländebearbeitung aktiviert
+0x773: Karte #
+
+#keys.cc - Action description strings
+#VOLUME_MIXER
+0x800:Lautstärkeregler
+#QUIT
+0x801:Beenden
+#SAVE_RESTORE
+0x802:Speichern/Laden
+#QUICKSAVE
+0x803:Schnellspeichern
+#QUICKRESTORE
+0x804:Schnellladen
+#ABOUT
+0x805:Über Exult
+#HELP
+0x806:Liste Tasten
+#CLOSE_GUMPS
+0x807:Schließe Gumps
+#CLOSE_OR_MENU
+0x808:Spielmenü
+#SCREENSHOT
+0x809:Mache Screenshot
+#GAME_MENU
+0x80a:Spielmenü
+#OLD_FILE_GUMP
+0x80b:Speichern/Laden
+#SCALEVAL_INCREASE
+0x80c:Skalenwert erhöhen
+#SCALEVAL_DECREASE
+0x80d:Skalenwert verringern
+#BRIGHTER
+0x80e:Helligkeit erhöhen
+#DARKER
+0x80f:Helligkeit verringern
+#TOGGLE_FULLSCREEN
+0x810:Vollbild ein/aus
+#USEITEM
+0x811:Benutze Gegenstand
+#USEFOOD
+0x812:Ernähren
+#CALL_USECODE
+0x813:Usecode aufrufen
+#TOGGLE_COMBAT
+0x814:Kampf ein/aus
+#PAUSE_COMBAT
+0x815:Kampf pausieren
+#TARGET_MODE
+0x816:Zielmodus
+#INVENTORY
+0x817:Inventar anzeigen
+#TRY_KEYS
+0x818:Tasten testen
+#STATS
+0x819:Stats anzeigen
+#COMBAT_STATS
+0x81a:Kampf Stats anzeigen
+#FACE_STATS
+0x81b:Change Face Stats State ##
+#USE_HEALING_ITEMS
+0x81c:Bandagen oder Heiltränke benutzen
+#SHOW_SI_INTRO
+0x81d:Alternatives SI Intro anzeigen
+#SHOW_ENDGAME
+0x81e:Endsequenz anzeigen
+#SCROLL_LEFT
+0x81f:Scrolle links
+#SCROLL_RIGHT
+0x820:Scrolle rechts
+#SCROLL_UP
+0x821:Scrolle auf
+#SCROLL_DOWN
+0x822:Scrolle ab
+#WALK_WEST
+0x823:Gehe nach Westen
+#WALK_EAST
+0x824:Gehe nach Osten
+#WALK_NORTH
+0x825:Gehe nach Norden
+#WALK_SOUTH
+0x826:Gehe nach Süden
+#WALK_NORTH_EAST
+0x827:Gehe nach Nord-Osten
+#WALK_SOUTH_EAST
+0x828:Gehe nach Süd-Osten
+#WALK_NORTH_WEST
+0x829:Gehe nach Nord-Westen
+#WALK_SOUTH_WEST
+0x82a:Gehe nach Süd-Westen
+#CENTER_SCREEN
+0x82b:Bildschirm zentrieren
+#SHAPE_BROWSER
+0x82c:Form Browser
+#SHAPE_BROWSER_HELP
+0x82d:List Form Browser Tasten
+#CREATE_ITEM
+0x82e:Erstelle letzte Form
+#DELETE_OBJECT
+0x82f:Lösche Objekt
+#TOGGLE_EGGS
+0x830:Egg-Anzeige ein/aus
+#TOGGLE_GOD_MODE
+0x831:God Mode ein/aus
+#CHANGE_GENDER
+0x832:Geschlecht wechseln
+#CHEAT_HELP
+0x833:Liste Cheat-Tasten
+#TOGGLE_INFRAVISION
+0x834:Infravision ein/aus
+#TOGGLE_HACK_MOVER
+0x835:Hack-Mover ein/aus
+#MAP_TELEPORT
+0x836:Karten-Teleport
+#CURSOR_TELEPORT
+0x837:Teleport zu Cursor
+#TARGET_MODE_TELEPORT
+0x838:Bring up cursor to teleport ##
+#NEXT_MAP_TELEPORT
+0x839:Teleport zur nächsten Karte
+#NEXT_TIME_PERIOD
+0x83a:Nächste Zeitperiode
+#TOGGLE_WIZARD_MODE
+0x83b:Archwizard Mode ein/aus
+#PARTY_HEAL
+0x83c:Gruppe heilen
+#PARTY_INCREASE_LEVEL
+0x83d:Gruppenlevel erhöhen
+#CHEAT_SCREEN
+0x83e:Cheat-Bildschirm
+#PICK_POCKET
+0x83f:Taschendiebstahl ein/aus
+#NPC_NUMBERS
+0x840:NPC Nummern ein/aus
+#GRAB_ACTOR
+0x841:Grab NPC for Cheat Screen
+#PLAY_MUSIC
+0x842:Lied spielen
+#TOGGLE_NAKED
+0x843:Nacktmodus ein/aus
+#TOGGLE_PETRA
+0x844:Petra Modus ein/aus
+#CHANGE_SKIN
+0x845:HAutfarbe ändern
+#NOTEBOOK
+0x846:Notizbuch anzeigen
+#SOUND_TESTER
+0x847:Ton testen
+#TEST
+0x848:Test
+#MAPEDIT_HELP
+0x849:Liste der Tasten des Karteneditors
+#TOGGLE_MAP_EDITOR
+0x84a:Karteneditor Modus ein/aus
+#SKIPLIFT_DECREMENT
+0x84b:Skiplift verringern
+#CUT
+0x84c:Ausgewählte Objekte ausschneiden
+#COPY
+0x84d:Ausgewählte Objekte kopieren
+#PASTE
+0x84e:Ausgewählte Objekte einfügen
+#DELETE_SELECTED
+0x84f:Auswahl löschen
+#MOVE_SELECTED
+0x850:Auswahl bewegen
+#CYCLE_FRAMES_NEXT
+0x851:Nächste Frames durchlaufen
+#CYCLE_FRAMES_PREV
+0x852:Vorherige Frames durchlaufen
+#ROTATE_FRAMES
+0x853:Frames drehen
+#WRITE_MINIMAP
+0x854:Minikarte schreiben
+#REPAINT
+0x855:Bildschirm neu zeichnen
+#TOGGLE_BBOXES
+0x856:Begrenzungsrahmen  ein/aus
+
+## untranslated below here
+
+#Shape Browser Help
+
+#The Entire block starting at 0x860 until the terminator will be displayed in order in the Shape Browser Help
+0x860:Esc - Exits the shape browser
+0x861:down - Increase shape by 1
+0x862:R - toggle palette rotation
+0x863:S - Increase shape by 1
+0x864:up - Decrease shape by 1
+0x865:Shift-S - Decrease shape by 1
+0x866:Page down - Increase shape by 20
+0x867:J - Increase shape by 20
+0x868:Page up - Decrease shape by 20
+0x869:Shift-J - Decrease shape by 20
+0x86A:right - Increase frame by 1
+0x86B:F - Increase frame by 1
+0x86C:left - Decrease frame by 1
+0x86D:Shift-F - Decrease frame by 1
+0x86E:V - Increase vga file by 1
+0x86F:Shift-V - Decrease vga file by 1
+0x870:P - Increase palette by 1
+0x871:Shift-P - Decrease palette by 1
+0x872:X - Increase xform by 1
+0x873:Shift-X - Decrease xform by 1
+0x874:B - Toggle 3d Bounding Boxes
+# this line is the block terminator and must remain an empty string
+0x875:
+
+#If the following lines have their index changed, keys.cc must be updated
+0x87D:Error: No key assigned
+0x87E: or 
+0x87F: - when pressed in game will create the last shape viewed in shapes.vga.
+
+# soundtester.cc
+0x890: Sound Tester
+0x891: ------------
+0x892:
+0x893:    Up/I - Previous Type
+0x894:  Down/K - Next Type
+0x895:  Left/J - Previous Number
+0x896: Right/L - Next Number
+0x897:   Enter - Play it
+0x898:     ESC - Leave
+0x899:       R - Repeat Music
+0x89A:       S - Stop Music
+0x89B:       D - Dump Music Track
+0x89C: Music
+0x89D: SFX
+0x89E: Voice
+0x89F: - Repeat
+
+# browser.cc
+0x8B0: Show [K]eys
+0x8B1: VGA File: '
+0x8B2: Shape: 
+0x8B3: Frame: 
+0x8B4: Palette: 
+0x8B5: class: 
+0x8B6:   ready_type: 0x
+0x8B7:  3d: 
+0x8B8: No Shape
