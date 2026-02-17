@@ -54,15 +54,27 @@ class ExultGameContent extends ExultContent {
 
 	@Override
 	public boolean isInstalled() {
-		// Determine installed variant by CRC of mainshp.flx inside installed
-		// static folder.
+		// A game is installed if mainshp.flx exists in the static folder,
+		// regardless of whether its CRC matches a known variant.
+		try {
+			java.nio.file.Path mainshp = m_installPath.resolve("mainshp.flx");
+			return Files.exists(mainshp) && !Files.isDirectory(mainshp);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Returns true if the installed mainshp.flx has a CRC matching the
+	 * expected value for this content row, or if no expected CRC is set.
+	 * Returns false if there is a CRC mismatch or the file does not exist.
+	 */
+	public boolean isCrcMatch() {
 		try {
 			java.nio.file.Path mainshp = m_installPath.resolve("mainshp.flx");
 			if (!Files.exists(mainshp) || Files.isDirectory(mainshp)) {
 				return false;
 			}
-			// If this row has an expected CRC, compare; otherwise treat
-			// presence as installed.
 			if (m_expectedCrc32 != null) {
 				long actual = computeCrc32(mainshp);
 				return (actual & 0xffffffffL)

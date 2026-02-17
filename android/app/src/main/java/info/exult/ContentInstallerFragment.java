@@ -136,43 +136,34 @@ public abstract class ContentInstallerFragment
 							}
 							final String shortName = m_crcToGameName.get(crc);
 							if (shortName == null) {
-								requireActivity().runOnUiThread(
-										()
-												-> showErrorDialog(
-														"Unknown game CRC 0x"
-														+ Long.toHexString(crc)
-														+ (". Unable to "
-														   + "determine "
-														   + "game.")));
+								requireActivity().runOnUiThread(() -> {
+									new AlertDialog.Builder(getView().getContext())
+											.setTitle("Install Game")
+											.setMessage(
+													"Unknown game CRC. "
+													+ "Unable to determine "
+													+ "game.\n\nAssuming "
+													+ "modified game. Is it a "
+													+ "Black Gate or Serpent "
+													+ "Isle game?")
+											.setNeutralButton("Cancel", null)
+											.setNegativeButton(
+													"Black Gate",
+													(d, w) -> proceedInstallGame(
+															uri,
+															"forgeofvirtue",
+															crc))
+											.setPositiveButton(
+													"Serpent Isle",
+													(d, w) -> proceedInstallGame(
+															uri, "silverseed",
+															crc))
+											.show();
+								});
 								return;
 							}
 
-							ExultContent content = new ExultGameContent(
-									shortName, getContext(), crc);
-							// Block install if the shortname folder already has
-							// any variant installed
-							if (content instanceof ExultGameContent
-								&& ((ExultGameContent)content)
-										   .isAnyVariantInstalledInFolder()) {
-								requireActivity().runOnUiThread(
-										()
-												-> showErrorDialog(
-														"A game is already "
-														+ "installed in folder "
-														+ "'" + shortName
-														+ ("'. Please "
-														   + "uninstall it "
-														   + "first.")));
-								return;
-							}
-
-							content.install(
-									uri, m_progressReporter,
-									(successful, details) -> {
-										handleContentDone(
-												REQUEST_INSTALL_GAME,
-												successful, details);
-									});
+							proceedInstallGame(uri, shortName, crc);
 						} catch (Exception e) {
 							Log.d("ContentInstaller",
 								  "Install Game failed: " + e);
@@ -361,12 +352,20 @@ public abstract class ContentInstallerFragment
 				patchButton.setMinWidth(
 						(int)(getResources().getDisplayMetrics().density * 88));
 			}
+			// Pre-compute which game rows should be visible (Games tab
+			// only). For shortnames with a CRC match, show only the
+			// matched row; otherwise show only the fallback row.
+			int totalRows = contentLayout.getChildCount()
+							- (shouldShowCustomModButton() ? 2 : 0)
+							- (shouldShowInstallGameButton() ? 1 : 0);
+			java.util.Map<Integer, Boolean> visibleGameRows
+					= showOnlyInstalledEntries()
+							  ? computeVisibleGameRows(
+										contentLayout, totalRows)
+							  : null;
+
 			// Reuse the existing activity variable defined above
-			for (int i = 0;
-				 i < contentLayout.getChildCount()
-							 - (shouldShowCustomModButton() ? 2 : 0)
-							 - (shouldShowInstallGameButton() ? 1 : 0);
-				 ++i) {
+			for (int i = 0; i < totalRows; ++i) {
 				// Note: -1 to skip the button we just added
 				View   viewInContentLayout = contentLayout.getChildAt(i);
 				String name = (String)viewInContentLayout.getTag(R.id.name);
@@ -379,10 +378,17 @@ public abstract class ContentInstallerFragment
 					continue;
 				}
 
-				if (showOnlyInstalledEntries() && !content.isInstalled()) {
+				if (visibleGameRows != null) {
+					// Games tab: use pre-computed visibility
+					if (!visibleGameRows.containsKey(i)) {
+						viewInContentLayout.setVisibility(View.GONE);
+						continue;
+					}
+					viewInContentLayout.setVisibility(View.VISIBLE);
+				} else if (showOnlyInstalledEntries()
+						   && !content.isInstalled()) {
 					viewInContentLayout.setVisibility(View.GONE);
-					continue;    // don't wire listeners/mappings for hidden
-								 // rows
+					continue;
 				} else {
 					viewInContentLayout.setVisibility(View.VISIBLE);
 				}
@@ -397,6 +403,13 @@ public abstract class ContentInstallerFragment
 					continue;
 				}
 				contentCheckBox.setChecked(true);
+				// Label as "(modified)" when CRC does not match
+				if (visibleGameRows != null
+					&& Boolean.TRUE.equals(
+							visibleGameRows.get(i))) {
+					contentCheckBox.setText(
+							getModifiedLabel(name));
+				}
 			}
 		}
 
@@ -689,6 +702,68 @@ public abstract class ContentInstallerFragment
 		return null;
 	}
 
+	/**
+	 * For Games tab: determines which row indices should be visible.
+	 * Groups rows by shortname. If any row's CRC matches the installed
+	 * mainshp.flx, only that row is shown. If no CRC matches (modified
+	 * game), only the first row for that shortname is shown.
+	 *
+	 * @return map of visible row index -> true if modified (no CRC
+	 *         match), false if CRC matched
+	 */
+	private java.util.Map<Integer, Boolean> computeVisibleGameRows(
+			ViewGroup contentLayout, int rowCount) {
+		java.util.Map<String, Integer> firstRowForName
+				= new java.util.LinkedHashMap<>();
+		java.util.Map<String, Integer> matchedRowForName
+				= new java.util.HashMap<>();
+		java.util.Set<String> installedNames = new java.util.HashSet<>();
+
+		for (int i = 0; i < rowCount; i++) {
+			View   row  = contentLayout.getChildAt(i);
+			String name = (String)row.getTag(R.id.name);
+			if (name == null)
+				continue;
+
+			ExultContent content = buildContentFromView(name, row);
+			if (content == null || !content.isInstalled())
+				continue;
+
+			installedNames.add(name);
+
+			if (!firstRowForName.containsKey(name)) {
+				firstRowForName.put(name, i);
+			}
+
+			if (content instanceof ExultGameContent
+				&& ((ExultGameContent)content).isCrcMatch()
+				&& !matchedRowForName.containsKey(name)) {
+				matchedRowForName.put(name, i);
+			}
+		}
+
+		java.util.Map<Integer, Boolean> visible
+				= new java.util.HashMap<>();
+		for (String name : installedNames) {
+			Integer matched = matchedRowForName.get(name);
+			if (matched != null) {
+				visible.put(matched, false);
+			} else {
+				visible.put(firstRowForName.get(name), true);
+			}
+		}
+		return visible;
+	}
+
+	private static String getModifiedLabel(String shortName) {
+		if ("serpentisle".equals(shortName)
+			|| "silverseed".equals(shortName)
+			|| "serpentbeta".equals(shortName)) {
+			return "Serpent Isle (modified)";
+		}
+		return "Black Gate (modified)";
+	}
+
 	private void refreshContentList() {
 		View root = getView();
 		if (root == null)
@@ -711,6 +786,12 @@ public abstract class ContentInstallerFragment
 		if (rows < 0)
 			rows = 0;
 
+		// Pre-compute which game rows should be visible
+		java.util.Map<Integer, Boolean> visibleGameRows
+				= showOnlyInstalledEntries()
+						  ? computeVisibleGameRows(contentLayout, rows)
+						  : null;
+
 		for (int i = 0; i < rows; ++i) {
 			View   row  = contentLayout.getChildAt(i);
 			String name = (String)row.getTag(R.id.name);
@@ -721,8 +802,15 @@ public abstract class ContentInstallerFragment
 			if (content == null)
 				continue;
 
-			// In Games tab, hide rows that are not installed
-			if (showOnlyInstalledEntries() && !content.isInstalled()) {
+			// In Games tab, use pre-computed visibility
+			if (visibleGameRows != null) {
+				if (!visibleGameRows.containsKey(i)) {
+					row.setVisibility(View.GONE);
+					continue;
+				}
+				row.setVisibility(View.VISIBLE);
+			} else if (showOnlyInstalledEntries()
+					   && !content.isInstalled()) {
 				row.setVisibility(View.GONE);
 				continue;
 			} else {
@@ -739,6 +827,12 @@ public abstract class ContentInstallerFragment
 				m_requestCodeToCheckbox.put(requestCode, cb);
 				cb.setOnClickListener(this);
 				cb.setChecked(content.isInstalled());
+				// Label as "(modified)" when CRC does not match
+				if (visibleGameRows != null
+					&& Boolean.TRUE.equals(
+							visibleGameRows.get(i))) {
+					cb.setText(getModifiedLabel(name));
+				}
 			} else {
 				// Still wire click listener if not a CheckBox for any reason
 				row.setOnClickListener(this);
@@ -827,6 +921,43 @@ public abstract class ContentInstallerFragment
 	 */
 	private void showUrlInputDialog(int requestCode) {
 		contentDownloader.showUrlInputDialog(requestCode);
+	}
+
+	private void proceedInstallGame(Uri uri, String shortName, Long crc) {
+		new Thread(() -> {
+			try {
+				ExultContent content
+						= new ExultGameContent(shortName, getContext(), crc);
+				// Block install if the shortname folder already has
+				// any variant installed
+				if (content instanceof ExultGameContent
+					&& ((ExultGameContent)content)
+							   .isAnyVariantInstalledInFolder()) {
+					requireActivity().runOnUiThread(
+							()
+									-> showErrorDialog(
+											"A game is already "
+											+ "installed in folder "
+											+ "'" + shortName
+											+ ("'. Please "
+											   + "uninstall it "
+											   + "first.")));
+					return;
+				}
+
+				content.install(
+						uri, m_progressReporter,
+						(successful, details) -> {
+							handleContentDone(
+									REQUEST_INSTALL_GAME, successful,
+									details);
+						});
+			} catch (Exception e) {
+				Log.d("ContentInstaller", "Install Game failed: " + e);
+				requireActivity().runOnUiThread(
+						() -> showErrorDialog(e.getMessage()));
+			}
+		}).start();
 	}
 
 	private void showErrorDialog(String msg) {
