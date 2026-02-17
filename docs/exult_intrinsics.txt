@@ -1383,6 +1383,46 @@ obj->set_item_frame_rot(int frame)
     obj      The object whose frame is to be changed.
     frame    The desired value for the frame.
 
+int[] UI_get_item_gump_position(object item)                             [Exult]
+
+    Returns the coordinates of an item within its currently open container gump.
+    This allows usecode to inspect where items are positioned in the container's
+    display area.
+
+  Parameters:
+    item    The item object whose position is desired.
+
+  Return:
+    An array [x, y] containing the item's coordinates within the container gump
+    if the item is valid, currently in a container, and the container gump is
+    open. Returns an empty array otherwise.
+
+  Notes:
+    The returned coordinates are relative to the container's display area, not
+    the screen. This intrinsic is useful for checking item placement in custom
+    container systems or ritual-based gameplay mechanics.
+
+int UI_set_item_gump_position(object item, int x, int y)                 [Exult]
+
+    Programmatically repositions an item within its container gump to specific
+    coordinates. This allows usecode to arrange items in precise positions for
+    rituals, puzzles, or custom container layouts.
+
+  Parameters:
+    item    The item object to reposition.
+    x       The horizontal coordinate within the container's display area.
+    y       The vertical coordinate within the container's display area.
+
+  Return:
+    Returns 1 on success, 0 on failure. Failure occurs if the item is invalid,
+    not in a container, the container gump is not open, or if negative
+    coordinates are provided.
+
+  Notes:
+    Coordinates must be non-negative. The positioning is relative to the
+    container's display area. After setting a position, the display is
+    automatically refreshed to show the new arrangement.
+
 int UI_get_item_quality(object obj)
 int obj->get_item_quality()
 
