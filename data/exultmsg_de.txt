@@ -120,7 +120,7 @@
 0x561:Batlin! Du musst wissen, dass ich
 0x562:aussehe, wie einer aus der Muppet-Show
 0x563:Du musst auf die Schlangeninsel
-0x564:und mir Clerasil besorgen.
+0x564:und mir Clearasil besorgen.
 0x565:Ich will gut aussehen, wenn
 0x566:ich Britannia zerstöre!
 0x567:So etwas hatte ich schon befürchtet. 
@@ -149,8 +149,8 @@
 0x57C:Vielleicht begleitest Du mich 
 0x57D:auf eine ganz andere Welt? Wir 
 0x57E:haben noch eine Rechnung zu begleichen.
-0x57F:Du hast das Gleichgewicht
-0x580:auf der Schlangeninsel
+0x57F:Das Gleichgewicht auf der Schlangeninsel
+0x580:ist wiederhergestellt. Du brauchtest
 0x581: und |nur |genau | Jahr| Jahre| Monat| Monate| Tag| Tage| Stunde| Stunden|negative Zeit!
 0x582:Unglücklicherweise bist Du dem Guardian in die Hände gefallen!
 0x583:Bitte schreibe doch Lord British, 
@@ -179,11 +179,11 @@
 # Mixer_gump.cc
 0x5A0:Midi Test Track konnte nicht abgespielt werden
 0x5A1:Ogg Test Track konnte nicht abgespielt werden
-0x5A2:Musik: 
-0x5A3:MIDI Musik: 
-0x5A4:OGG Musik: 
-0x5A5:SFX: 
-0x5A6:Sprache: 
+0x5A2:Musik:
+0x5A3:MIDI Musik:
+0x5A4:OGG Musik:
+0x5A5:SFX:
+0x5A6:Sprache:
 
 #GameDisplayOptions_gump.cc
 0x5B0:Links
