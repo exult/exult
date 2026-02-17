@@ -27,7 +27,7 @@
 #include "contain.h"
 #include "game.h"
 #include "gamewin.h"
-#include "shapeinf/gumpinf.h"
+#include "gumpinf.h"
 #include "objiter.h"
 
 #include <algorithm>
