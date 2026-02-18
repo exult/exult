@@ -1325,14 +1325,10 @@ int Game_object::compare(
 			return TRACE_COMPARE(1);
 		}
 		// Fix small object on top of large: at same base Z, smaller
-		// footprint should be drawn first (behind the larger object).
+		// height should be drawn first (behind the larger object).
 		if (inf1.tz == inf2.tz) {
-			const int area1 = inf1.xs * inf1.ys;
-			const int area2 = inf2.xs * inf2.ys;
-			if (area1 < area2) {
-				return TRACE_COMPARE(-1);    // inf1 smaller, draw first.
-			} else if (area2 < area1) {
-				return TRACE_COMPARE(1);    // inf2 smaller, draw inf1 last.
+			if (inf1.zs - inf2.zs > 1) {
+				return TRACE_COMPARE(1);    // inf1 larger, draw last.
 			}
 		}
 	}
