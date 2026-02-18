@@ -283,9 +283,9 @@
 0x619:    digitale Musik
 0x61A:    Midi Treiber
 0x61B:SFX:
-0x61C:    pack ##
+0x61C:    Pack ##
 0x61D:Sprache:
-0x61E:    conversion ##
+0x61E:    Umwandlung ##
 
 #GameEngineOptions_gump.cc
 0x620:Normal
@@ -321,7 +321,7 @@
 0x649:Mit Rechtsklick Pfad finden:
 0x64A:Spielansicht mit der Maus scrollen:
 0x64B:Mittlere Maustaste verwenden:
-0x64C:Fullscreen Fast Mouse: ##
+0x64C:Maus bei Vollbild beschleunigen:
 0x64D:Hilfemenü für Gegenstände:
 0x64E:D-Pad Bildschirmposition:
 0x64F:Mit langem Druck Pfad finden:
@@ -343,12 +343,12 @@
 #Newfile_gump.cc
 #Info Box Strings
 0x660:Avatar
-0x661:Exp ##
-0x662:Hp ##
-0x663:Str ##
-0x664:Dxt ##
-0x665:Int ##
-0x666:Trn ##
+0x661:Erf
+0x662:LP
+0x663:Stä
+0x664:Dex
+0x665:Int
+0x666:Trn
 0x667:Spieltag
 0x668:Spielzeit
 0x669:Anzahl der Speicherungen
@@ -486,8 +486,8 @@
 0x719: Nur Objekte aus 'shapes.vga' möglich
 0x71A: Objekt gelöscht
 0x71B: Gruppe geheilt
-0x71C: NPC Tool Actor Grabbing aktiviert ##
-0x71D: NPC Tool Actor Grabbing deaktiviert ##
+0x71C: NPC-Tool autom. NPC Auswahl aktiviert
+0x71D: NPC-Tool autom. NPC Auswahl deaktiviert
 0x71E: NPC Nummern aktiviert
 0x71F: NPC Nummern deaktiviert
 
@@ -581,7 +581,7 @@
 #COMBAT_STATS
 0x81a:Kampf Stats anzeigen
 #FACE_STATS
-0x81b:Change Face Stats State ##
+0x81b:Anzeige Porträt Stats wechseln
 #USE_HEALING_ITEMS
 0x81c:Bandagen oder Heiltränke benutzen
 #SHOW_SI_INTRO
@@ -639,7 +639,7 @@
 #CURSOR_TELEPORT
 0x837:Teleport zu Cursor
 #TARGET_MODE_TELEPORT
-0x838:Bring up cursor to teleport ##
+0x838:Ziel-Cursor für Teleport nutzen
 #NEXT_MAP_TELEPORT
 0x839:Teleport zur nächsten Karte
 #NEXT_TIME_PERIOD
