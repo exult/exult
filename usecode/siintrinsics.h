@@ -235,53 +235,53 @@ USECODE_INTRINSIC_PTR(get_random),                               // 0x00
 		USECODE_INTRINSIC_PTR(display_map_ex),         // 0xcc (Exult)
 		USECODE_INTRINSIC_PTR(book_mode_ex),           // 0xcd (Exult)
 		// Here, Exult supports BG intrinsics for users of UCC.
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xce
-		USECODE_INTRINSIC_PTR(center_view),              // 0xcf
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xd0
-		USECODE_INTRINSIC_PTR(is_dest_reachable),        // 0xd1
-		USECODE_INTRINSIC_PTR(set_npc_name),             // 0xd2
-		USECODE_INTRINSIC_PTR(set_usecode_fun),          // 0xd3
-		USECODE_INTRINSIC_PTR(has_spell),                // 0xd4
-		USECODE_INTRINSIC_PTR(remove_spell),             // 0xd5
-		USECODE_INTRINSIC_PTR(create_barge_object),      // 0xd6
-		USECODE_INTRINSIC_PTR(in_usecode_path),          // 0xd7
-		USECODE_INTRINSIC_PTR(start_blocking_speech),    // 0xd8
-		USECODE_INTRINSIC_PTR(close_gumps2),             // 0xd9
-		USECODE_INTRINSIC_PTR(close_gump2),              // 0xda
-		USECODE_INTRINSIC_PTR(game_day),                 // 0xdb (Exult)
-		USECODE_INTRINSIC_PTR(play_scene),               // 0xdc (Exult)
-		USECODE_INTRINSIC_PTR(create_new_egg),           // 0xdd (Exult)
-		USECODE_INTRINSIC_PTR(get_item_gump_position),   // 0xde (Exult)
-		USECODE_INTRINSIC_PTR(set_item_gump_position),   // 0xdf (Exult)
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe0
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe1
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe2
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe3
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe4
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe5
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe6
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe7
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe8
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xe9
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xea
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xeb
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xec
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xed
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xee
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xef
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xf0
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xf1
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xf2
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xf3
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xf4
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xf5
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xf6
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xf7
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xf8
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xf9
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xfa
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xfb
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xfc
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xfd
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xfe
-		USECODE_INTRINSIC_PTR(UNKNOWN),                  // 0xff
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xce
+		USECODE_INTRINSIC_PTR(center_view),               // 0xcf
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xd0
+		USECODE_INTRINSIC_PTR(is_dest_reachable),         // 0xd1
+		USECODE_INTRINSIC_PTR(set_npc_name),              // 0xd2
+		USECODE_INTRINSIC_PTR(set_usecode_fun),           // 0xd3
+		USECODE_INTRINSIC_PTR(has_spell),                 // 0xd4
+		USECODE_INTRINSIC_PTR(remove_spell),              // 0xd5
+		USECODE_INTRINSIC_PTR(create_barge_object),       // 0xd6
+		USECODE_INTRINSIC_PTR(in_usecode_path),           // 0xd7
+		USECODE_INTRINSIC_PTR(start_blocking_speech),     // 0xd8
+		USECODE_INTRINSIC_PTR(close_gumps2),              // 0xd9
+		USECODE_INTRINSIC_PTR(close_gump2),               // 0xda
+		USECODE_INTRINSIC_PTR(game_day),                  // 0xdb (Exult)
+		USECODE_INTRINSIC_PTR(play_scene),                // 0xdc (Exult)
+		USECODE_INTRINSIC_PTR(create_new_egg),            // 0xdd (Exult)
+		USECODE_INTRINSIC_PTR(get_item_gump_position),    // 0xde (Exult)
+		USECODE_INTRINSIC_PTR(set_item_gump_position),    // 0xdf (Exult)
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe0
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe1
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe2
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe3
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe4
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe5
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe6
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe7
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe8
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xe9
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xea
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xeb
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xec
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xed
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xee
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xef
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf0
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf1
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf2
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf3
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf4
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf5
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf6
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf7
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf8
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xf9
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xfa
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xfb
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xfc
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xfd
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xfe
+		USECODE_INTRINSIC_PTR(UNKNOWN),                   // 0xff

@@ -4176,8 +4176,7 @@ USECODE_INTRINSIC(set_item_gump_position) {
 	}
 
 	// Set the item's position within the gump.
-	item->set_shape_pos(static_cast<unsigned int>(new_x),
-						static_cast<unsigned int>(new_y));
+	item->set_shape_pos(static_cast<unsigned int>(new_x), static_cast<unsigned int>(new_y));
 
 	// Mark the gump area as dirty for repaint.
 	gwin->set_all_dirty();

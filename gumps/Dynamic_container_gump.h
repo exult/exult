@@ -38,10 +38,10 @@ struct Snap_zone;
  */
 class Dynamic_container_gump : public Container_gump {
 private:
-	bool                        debug_enabled;       // Whether to show debug overlay
-	int                         debug_flags_;        // Bitmask of Gump_debug_flags
-	mutable int                 paint_log_count;     // Tracks paint calls to log
-	const std::vector<Snap_zone>* snap_zones_;       // Pointer to snap zones (owned by Gump_info)
+	bool                          debug_enabled;      // Whether to show debug overlay
+	int                           debug_flags_;       // Bitmask of Gump_debug_flags
+	mutable int                   paint_log_count;    // Tracks paint calls to log
+	const std::vector<Snap_zone>* snap_zones_;        // Pointer to snap zones (owned by Gump_info)
 
 	/**
 	 * Paint debug grid overlay showing container area.
@@ -70,12 +70,7 @@ public:
 	 * @param shapenum   Gump shape number from gumps.vga
 	 * @param debug      Whether to enable debug grid display
 	 */
-	Dynamic_container_gump(
-			Container_game_object* cont,
-			int                    initx,
-			int                    inity,
-			int                    shapenum,
-			bool                   debug = false);
+	Dynamic_container_gump(Container_game_object* cont, int initx, int inity, int shapenum, bool debug = false);
 
 	~Dynamic_container_gump() override = default;
 
@@ -87,14 +82,8 @@ public:
 	/**
 	 * Add an object to the gump with extensive debug logging.
 	 */
-	bool add(
-			Game_object* obj,
-			int          mx        = -1,
-			int          my        = -1,
-			int          sx        = -1,
-			int          sy        = -1,
-			bool         dont_check = false,
-			bool         combine    = false) override;
+	bool add(Game_object* obj, int mx = -1, int my = -1, int sx = -1, int sy = -1, bool dont_check = false, bool combine = false)
+			override;
 
 	/**
 	 * Paint the gump, including background and debug grid if enabled.

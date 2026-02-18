@@ -35,16 +35,8 @@
 #include <limits>
 #include <vector>
 
-Dynamic_container_gump::Dynamic_container_gump(
-		Container_game_object* cont,
-		int                    initx,
-		int                    inity,
-		int                    shapenum,
-		bool                   debug)
-		: Container_gump(cont, initx, inity, shapenum),
-		  debug_enabled(debug),
-		  debug_flags_(GUMP_DEBUG_ALL),
-		  paint_log_count(0),
+Dynamic_container_gump::Dynamic_container_gump(Container_game_object* cont, int initx, int inity, int shapenum, bool debug)
+		: Container_gump(cont, initx, inity, shapenum), debug_enabled(debug), debug_flags_(GUMP_DEBUG_ALL), paint_log_count(0),
 		  snap_zones_(nullptr) {
 	// Load snap zones and debug flags from gump_info if available
 	const Gump_info* info = Gump_info::get_gump_info(shapenum);
@@ -61,20 +53,15 @@ Dynamic_container_gump::Dynamic_container_gump(
 
 	// Debug: show what we're working with
 	if (debug_flags_ & GUMP_DEBUG_CONSOLE) {
-		std::cerr << "[DynamicGump] Created for shape " << shapenum 
-		          << ", debug=" << debug_enabled
-		          << ", debug_flags=0x" << std::hex << debug_flags_ << std::dec
-		          << ", object_area=(" << object_area.x << "," << object_area.y
-		          << "," << object_area.w << "," << object_area.h << ")"
-		          << ", snap_zones=" << (snap_zones_ ? snap_zones_->size() : 0)
-		          << std::endl;
+		std::cerr << "[DynamicGump] Created for shape " << shapenum << ", debug=" << debug_enabled << ", debug_flags=0x" << std::hex
+				  << debug_flags_ << std::dec << ", object_area=(" << object_area.x << "," << object_area.y << "," << object_area.w
+				  << "," << object_area.h << ")"
+				  << ", snap_zones=" << (snap_zones_ ? snap_zones_->size() : 0) << std::endl;
 	}
 }
 
-Gump* Dynamic_container_gump::clone(
-		Container_game_object* cont, int initx, int inity) {
-	auto* cloned = new Dynamic_container_gump(
-			cont, initx, inity, get_shapenum(), debug_enabled);
+Gump* Dynamic_container_gump::clone(Container_game_object* cont, int initx, int inity) {
+	auto* cloned = new Dynamic_container_gump(cont, initx, inity, get_shapenum(), debug_enabled);
 	// Snap zones pointer will be set in constructor from Gump_info
 	return cloned;
 }
@@ -94,7 +81,7 @@ void Dynamic_container_gump::paint_debug_grid() const {
 	// Draw object area border (white - color 15)
 	if (debug_flags_ & GUMP_DEBUG_BORDER) {
 		const unsigned char border_color = 15;    // White
-		
+
 		// Top border
 		win->fill8(border_color, object_area.w, 1, box_x, box_y);
 		// Bottom border
@@ -113,14 +100,12 @@ void Dynamic_container_gump::paint_debug_grid() const {
 
 	// Major grid: White vertical grid lines (every 10 pixels starting at 0)
 	if (debug_flags_ & GUMP_DEBUG_GRID_MAJOR) {
-		for (int gx = box_x + grid_spacing; gx < box_x + object_area.w;
-			 gx += grid_spacing) {
+		for (int gx = box_x + grid_spacing; gx < box_x + object_area.w; gx += grid_spacing) {
 			win->fill8(white_color, 1, object_area.h, gx, box_y);
 		}
 
 		// White horizontal grid lines (every 10 pixels starting at 0)
-		for (int gy = box_y + grid_spacing; gy < box_y + object_area.h;
-			 gy += grid_spacing) {
+		for (int gy = box_y + grid_spacing; gy < box_y + object_area.h; gy += grid_spacing) {
 			win->fill8(white_color, object_area.w, 1, box_x, gy);
 		}
 	}
@@ -149,29 +134,29 @@ const Snap_zone* Dynamic_container_gump::find_snap_zone(int rel_x, int rel_y) co
 	// Collect all zones that contain this point
 	std::vector<const Snap_zone*> candidates;
 	for (const auto& zone : *snap_zones_) {
-		if (rel_x >= zone.zone_x && rel_x < zone.zone_x + zone.zone_w
-			&& rel_y >= zone.zone_y && rel_y < zone.zone_y + zone.zone_h) {
+		if (rel_x >= zone.zone_x && rel_x < zone.zone_x + zone.zone_w && rel_y >= zone.zone_y
+			&& rel_y < zone.zone_y + zone.zone_h) {
 			candidates.push_back(&zone);
 		}
 	}
 
 	if (candidates.empty()) {
-		return nullptr;  // No zone contains this point
+		return nullptr;    // No zone contains this point
 	}
 
 	if (candidates.size() == 1) {
 		// Only one zone - no conflict
 		if (log_enabled) {
-			std::cerr << "Snap: Single zone '" << candidates[0]->zone_id
-					  << "' owns point (" << rel_x << "," << rel_y << ")" << std::endl;
+			std::cerr << "Snap: Single zone '" << candidates[0]->zone_id << "' owns point (" << rel_x << "," << rel_y << ")"
+					  << std::endl;
 		}
 		return candidates[0];
 	}
 
 	// Multiple zones overlap - use axis-aligned split to determine ownership
 	if (log_enabled) {
-		std::cerr << "Snap: Multiple zones (" << candidates.size() 
-				  << ") contain point (" << rel_x << "," << rel_y << ")" << std::endl;
+		std::cerr << "Snap: Multiple zones (" << candidates.size() << ") contain point (" << rel_x << "," << rel_y << ")"
+				  << std::endl;
 	}
 
 	// Start with highest priority zone
@@ -189,22 +174,19 @@ const Snap_zone* Dynamic_container_gump::find_snap_zone(int rel_x, int rel_y) co
 		}
 
 		// Calculate overlap rectangle
-		const int overlap_x = std::max(owner->zone_x, other->zone_x);
-		const int overlap_y = std::max(owner->zone_y, other->zone_y);
-		const int overlap_x2 = std::min(
-				owner->zone_x + owner->zone_w, other->zone_x + other->zone_w);
-		const int overlap_y2 = std::min(
-				owner->zone_y + owner->zone_h, other->zone_y + other->zone_h);
-		const int overlap_w = overlap_x2 - overlap_x;
-		const int overlap_h = overlap_y2 - overlap_y;
+		const int overlap_x  = std::max(owner->zone_x, other->zone_x);
+		const int overlap_y  = std::max(owner->zone_y, other->zone_y);
+		const int overlap_x2 = std::min(owner->zone_x + owner->zone_w, other->zone_x + other->zone_w);
+		const int overlap_y2 = std::min(owner->zone_y + owner->zone_h, other->zone_y + other->zone_h);
+		const int overlap_w  = overlap_x2 - overlap_x;
+		const int overlap_h  = overlap_y2 - overlap_y;
 
 		if (overlap_w <= 0 || overlap_h <= 0) {
-			continue;  // No actual overlap
+			continue;    // No actual overlap
 		}
 
 		// Check if point is in overlap region
-		if (rel_x >= overlap_x && rel_x < overlap_x2 && rel_y >= overlap_y
-			&& rel_y < overlap_y2) {
+		if (rel_x >= overlap_x && rel_x < overlap_x2 && rel_y >= overlap_y && rel_y < overlap_y2) {
 			// Point is in overlap - use axis-aligned split
 			const int overlap_center_x = overlap_x + overlap_w / 2;
 			const int overlap_center_y = overlap_y + overlap_h / 2;
@@ -215,16 +197,14 @@ const Snap_zone* Dynamic_container_gump::find_snap_zone(int rel_x, int rel_y) co
 					// Point is on right side of split
 					owner = (other->zone_x > owner->zone_x) ? other : owner;
 					if (log_enabled) {
-						std::cerr << "  Vertical split at x=" << overlap_center_x
-								  << ", point on right, owner: '" << owner->zone_id
+						std::cerr << "  Vertical split at x=" << overlap_center_x << ", point on right, owner: '" << owner->zone_id
 								  << "'" << std::endl;
 					}
 				} else {
 					// Point is on left side of split
 					owner = (other->zone_x < owner->zone_x) ? other : owner;
 					if (log_enabled) {
-						std::cerr << "  Vertical split at x=" << overlap_center_x
-								  << ", point on left, owner: '" << owner->zone_id
+						std::cerr << "  Vertical split at x=" << overlap_center_x << ", point on left, owner: '" << owner->zone_id
 								  << "'" << std::endl;
 					}
 				}
@@ -234,16 +214,14 @@ const Snap_zone* Dynamic_container_gump::find_snap_zone(int rel_x, int rel_y) co
 					// Point is on bottom side of split
 					owner = (other->zone_y > owner->zone_y) ? other : owner;
 					if (log_enabled) {
-						std::cerr << "  Horizontal split at y=" << overlap_center_y
-								  << ", point on bottom, owner: '" << owner->zone_id
-								  << "'" << std::endl;
+						std::cerr << "  Horizontal split at y=" << overlap_center_y << ", point on bottom, owner: '"
+								  << owner->zone_id << "'" << std::endl;
 					}
 				} else {
 					// Point is on top side of split
 					owner = (other->zone_y < owner->zone_y) ? other : owner;
 					if (log_enabled) {
-						std::cerr << "  Horizontal split at y=" << overlap_center_y
-								  << ", point on top, owner: '" << owner->zone_id
+						std::cerr << "  Horizontal split at y=" << overlap_center_y << ", point on top, owner: '" << owner->zone_id
 								  << "'" << std::endl;
 					}
 				}
@@ -294,18 +272,17 @@ void Dynamic_container_gump::paint_snap_zones() const {
 
 		// Draw zone border
 		if (debug_flags_ & GUMP_DEBUG_SNAP_BORDER) {
-			win->fill8(color, zone.zone_w, 1, zx, zy);                          // Top
-			win->fill8(color, zone.zone_w, 1, zx, zy + zone.zone_h - 1);        // Bottom
-			win->fill8(color, 1, zone.zone_h, zx, zy);                          // Left
-			win->fill8(color, 1, zone.zone_h, zx + zone.zone_w - 1, zy);        // Right
+			win->fill8(color, zone.zone_w, 1, zx, zy);                      // Top
+			win->fill8(color, zone.zone_w, 1, zx, zy + zone.zone_h - 1);    // Bottom
+			win->fill8(color, 1, zone.zone_h, zx, zy);                      // Left
+			win->fill8(color, 1, zone.zone_h, zx + zone.zone_w - 1, zy);    // Right
 		}
 
 		// Draw snap target crosshair
 		if (debug_flags_ & GUMP_DEBUG_SNAP_CROSS) {
 			const int tx = box_x + zone.snap_x;
 			const int ty = box_y + zone.snap_y;
-			if (tx >= box_x && tx < box_x + object_area.w
-				&& ty >= box_y && ty < box_y + object_area.h) {
+			if (tx >= box_x && tx < box_x + object_area.w && ty >= box_y && ty < box_y + object_area.h) {
 				// Horizontal line of crosshair
 				if (tx > box_x) {
 					win->fill8(color, 3, 1, tx - 1, ty);
@@ -319,23 +296,17 @@ void Dynamic_container_gump::paint_snap_zones() const {
 	}
 }
 
-bool Dynamic_container_gump::add(
-		Game_object* obj, int mx, int my, int sx, int sy, bool dont_check,
-		bool combine) {
+bool Dynamic_container_gump::add(Game_object* obj, int mx, int my, int sx, int sy, bool dont_check, bool combine) {
 	const bool log_enabled = (debug_flags_ & GUMP_DEBUG_CONSOLE) != 0;
-	
+
 	if (log_enabled) {
 		std::cerr << "[DynamicGump::add] ========== ADD CALLED ==========" << std::endl;
 		std::cerr << "[DynamicGump::add] gump shape=" << get_shapenum() << std::endl;
 		std::cerr << "[DynamicGump::add] gump pos: x=" << get_x() << ", y=" << get_y() << std::endl;
-		std::cerr << "[DynamicGump::add] object_area: x=" << object_area.x 
-		          << ", y=" << object_area.y 
-		          << ", w=" << object_area.w 
-		          << ", h=" << object_area.h << std::endl;
-		std::cerr << "[DynamicGump::add] Input: mx=" << mx << ", my=" << my 
-		          << ", sx=" << sx << ", sy=" << sy << std::endl;
-		std::cerr << "[DynamicGump::add] snap_zones available: " 
-		          << (has_snap_zones() ? "yes" : "no") << std::endl;
+		std::cerr << "[DynamicGump::add] object_area: x=" << object_area.x << ", y=" << object_area.y << ", w=" << object_area.w
+				  << ", h=" << object_area.h << std::endl;
+		std::cerr << "[DynamicGump::add] Input: mx=" << mx << ", my=" << my << ", sx=" << sx << ", sy=" << sy << std::endl;
+		std::cerr << "[DynamicGump::add] snap_zones available: " << (has_snap_zones() ? "yes" : "no") << std::endl;
 	}
 
 	// Check for snap zone if we have valid screen coordinates
@@ -345,46 +316,40 @@ bool Dynamic_container_gump::add(
 		// Calculate relative position within object_area
 		int rel_x = sx - get_x() - object_area.x;
 		int rel_y = sy - get_y() - object_area.y;
-		
+
 		const Snap_zone* zone = find_snap_zone(rel_x, rel_y);
 		if (zone) {
 			if (log_enabled) {
-				std::cerr << "[DynamicGump::add] SNAP ZONE FOUND: " << zone->zone_id
-				          << " (type=" << zone->zone_type << ", priority=" << zone->priority << ")"
-				          << std::endl;
-				std::cerr << "[DynamicGump::add] Snapping from (" << rel_x << "," << rel_y 
-				          << ") to (" << zone->snap_x << "," << zone->snap_y << ")" << std::endl;
+				std::cerr << "[DynamicGump::add] SNAP ZONE FOUND: " << zone->zone_id << " (type=" << zone->zone_type
+						  << ", priority=" << zone->priority << ")" << std::endl;
+				std::cerr << "[DynamicGump::add] Snapping from (" << rel_x << "," << rel_y << ") to (" << zone->snap_x << ","
+						  << zone->snap_y << ")" << std::endl;
 			}
-			
+
 			// Convert snap target back to screen coordinates
 			snap_sx = get_x() + object_area.x + zone->snap_x;
 			snap_sy = get_y() + object_area.y + zone->snap_y;
 		}
 	}
-	
+
 	if (log_enabled && obj) {
-		std::cerr << "[DynamicGump::add] obj shape=" << obj->get_shapenum() 
-		          << ", frame=" << obj->get_framenum() << std::endl;
-		std::cerr << "[DynamicGump::add] obj BEFORE: tx=" << obj->get_tx() 
-		          << ", ty=" << obj->get_ty() << std::endl;
-		
+		std::cerr << "[DynamicGump::add] obj shape=" << obj->get_shapenum() << ", frame=" << obj->get_framenum() << std::endl;
+		std::cerr << "[DynamicGump::add] obj BEFORE: tx=" << obj->get_tx() << ", ty=" << obj->get_ty() << std::endl;
+
 		Shape_frame* shape = obj->get_shape();
 		if (shape) {
-			std::cerr << "[DynamicGump::add] shape dims: xleft=" << shape->get_xleft()
-			          << ", xright=" << shape->get_xright()
-			          << ", yabove=" << shape->get_yabove()
-			          << ", ybelow=" << shape->get_ybelow()
-			          << ", w=" << shape->get_width()
-			          << ", h=" << shape->get_height() << std::endl;
+			std::cerr << "[DynamicGump::add] shape dims: xleft=" << shape->get_xleft() << ", xright=" << shape->get_xright()
+					  << ", yabove=" << shape->get_yabove() << ", ybelow=" << shape->get_ybelow() << ", w=" << shape->get_width()
+					  << ", h=" << shape->get_height() << std::endl;
 		}
 	}
-	
+
 	// Calculate what the position SHOULD be (using snapped coordinates if available)
 	if (log_enabled && snap_sx != -1 && snap_sy != -1 && mx != -1 && my != -1 && snap_sx != -2 && snap_sy != -2) {
 		int calc_x = snap_sx - get_x() - object_area.x;
 		int calc_y = snap_sy - get_y() - object_area.y;
 		std::cerr << "[DynamicGump::add] Calculated relative pos: (" << calc_x << "," << calc_y << ")" << std::endl;
-		
+
 		if (obj) {
 			Shape_frame* shape = obj->get_shape();
 			if (shape) {
@@ -405,98 +370,89 @@ bool Dynamic_container_gump::add(
 					std::cerr << "[DynamicGump::add] CLAMPING Y: " << calc_y << " -> " << new_y << std::endl;
 					calc_y = new_y;
 				}
-				std::cerr << "[DynamicGump::add] Final calculated pos after clamping: (" << calc_x << "," << calc_y << ")" << std::endl;
+				std::cerr << "[DynamicGump::add] Final calculated pos after clamping: (" << calc_x << "," << calc_y << ")"
+						  << std::endl;
 			}
 		}
 	}
-	
+
 	// Call parent add with snapped coordinates
 	if (!obj) {
 		return false;
 	}
 	bool result = Container_gump::add(obj, mx, my, snap_sx, snap_sy, dont_check, combine);
-	
+
 	if (log_enabled) {
 		std::cerr << "[DynamicGump::add] Parent add returned: " << (result ? "true" : "false") << std::endl;
-		
+
 		if (obj) {
-			std::cerr << "[DynamicGump::add] obj AFTER: tx=" << obj->get_tx() 
-			          << ", ty=" << obj->get_ty() << std::endl;
-			
+			std::cerr << "[DynamicGump::add] obj AFTER: tx=" << obj->get_tx() << ", ty=" << obj->get_ty() << std::endl;
+
 			// Check if position is valid for object_area
 			Shape_frame* shape = obj->get_shape();
 			if (shape) {
-				int objx = obj->get_tx() - shape->get_xleft() + 1 + object_area.x;
-				int objy = obj->get_ty() - shape->get_yabove() + 1 + object_area.y;
+				int  objx    = obj->get_tx() - shape->get_xleft() + 1 + object_area.x;
+				int  objy    = obj->get_ty() - shape->get_yabove() + 1 + object_area.y;
 				bool in_area = object_area.has_point(objx, objy)
-				            && object_area.has_point(
-				                   objx + shape->get_xright() - 1,
-				                   objy + shape->get_ybelow() - 1);
-				std::cerr << "[DynamicGump::add] Paint check: objx=" << objx << ", objy=" << objy 
-				          << ", in_area=" << (in_area ? "YES" : "NO - WILL BE REPOSITIONED!") << std::endl;
+							   && object_area.has_point(objx + shape->get_xright() - 1, objy + shape->get_ybelow() - 1);
+				std::cerr << "[DynamicGump::add] Paint check: objx=" << objx << ", objy=" << objy
+						  << ", in_area=" << (in_area ? "YES" : "NO - WILL BE REPOSITIONED!") << std::endl;
 			}
 		}
 		std::cerr << "[DynamicGump::add] ========== ADD END ==========" << std::endl;
 	}
-	
+
 	// Reset paint counter so we log the next few paints after add
 	paint_log_count = 0;
-	
+
 	return result;
 }
 
 void Dynamic_container_gump::paint() {
 	paint_log_count++;
-	
+
 	// Only log the first few paint calls after an add to avoid spam
 	const bool log_enabled = (debug_flags_ & GUMP_DEBUG_CONSOLE) != 0;
-	bool should_log = log_enabled && (paint_log_count <= 3);
-	
+	bool       should_log  = log_enabled && (paint_log_count <= 3);
+
 	if (should_log) {
 		std::cerr << "[DynamicGump::paint] ========== PAINT #" << paint_log_count << " ==========" << std::endl << std::flush;
 		std::cerr << "[DynamicGump::paint] gump shape=" << get_shapenum() << std::endl << std::flush;
 		std::cerr << "[DynamicGump::paint] gump pos: x=" << get_x() << ", y=" << get_y() << std::endl << std::flush;
-		std::cerr << "[DynamicGump::paint] object_area: x=" << object_area.x 
-		          << ", y=" << object_area.y 
-		          << ", w=" << object_area.w 
-		          << ", h=" << object_area.h << std::endl << std::flush;
-		
+		std::cerr << "[DynamicGump::paint] object_area: x=" << object_area.x << ", y=" << object_area.y << ", w=" << object_area.w
+				  << ", h=" << object_area.h << std::endl
+				  << std::flush;
+
 		// Log all object positions BEFORE paint
 		Container_game_object* cont = get_container();
 		if (cont) {
 			Object_list& objects = cont->get_objects();
 			if (!objects.is_empty()) {
 				std::cerr << "[DynamicGump::paint] Objects BEFORE Container_gump::paint():" << std::endl << std::flush;
-				Game_object* obj;
+				Game_object*    obj;
 				Object_iterator next(objects);
 				while ((obj = next.get_next()) != nullptr) {
 					Shape_frame* shape = obj->get_shape();
 					if (shape) {
-						int objx = obj->get_tx() - shape->get_xleft() + 1 + object_area.x;
-						int objy = obj->get_ty() - shape->get_yabove() + 1 + object_area.y;
+						int  objx   = obj->get_tx() - shape->get_xleft() + 1 + object_area.x;
+						int  objy   = obj->get_ty() - shape->get_yabove() + 1 + object_area.y;
 						bool pt1_ok = object_area.has_point(objx, objy);
-						bool pt2_ok = object_area.has_point(
-							objx + shape->get_xright() - 1,
-							objy + shape->get_ybelow() - 1);
-						std::cerr << "  - shape=" << obj->get_shapenum() 
-						          << " tx=" << obj->get_tx() << " ty=" << obj->get_ty()
-						          << " objx=" << objx << " objy=" << objy
-						          << " pt1_in=" << (pt1_ok ? "Y" : "N")
-						          << " pt2_in=" << (pt2_ok ? "Y" : "N")
-						          << " xleft=" << shape->get_xleft()
-						          << " xright=" << shape->get_xright()
-						          << " yabove=" << shape->get_yabove()
-						          << " ybelow=" << shape->get_ybelow()
-						          << std::endl << std::flush;
+						bool pt2_ok = object_area.has_point(objx + shape->get_xright() - 1, objy + shape->get_ybelow() - 1);
+						std::cerr << "  - shape=" << obj->get_shapenum() << " tx=" << obj->get_tx() << " ty=" << obj->get_ty()
+								  << " objx=" << objx << " objy=" << objy << " pt1_in=" << (pt1_ok ? "Y" : "N")
+								  << " pt2_in=" << (pt2_ok ? "Y" : "N") << " xleft=" << shape->get_xleft()
+								  << " xright=" << shape->get_xright() << " yabove=" << shape->get_yabove()
+								  << " ybelow=" << shape->get_ybelow() << std::endl
+								  << std::flush;
 					}
 				}
 			}
 		}
 	}
-	
+
 	// Call parent paint
 	Container_gump::paint();
-	
+
 	if (should_log) {
 		// Log all object positions AFTER paint
 		Container_game_object* cont = get_container();
@@ -504,12 +460,12 @@ void Dynamic_container_gump::paint() {
 			Object_list& objects = cont->get_objects();
 			if (!objects.is_empty()) {
 				std::cerr << "[DynamicGump::paint] Objects AFTER Container_gump::paint():" << std::endl << std::flush;
-				Game_object* obj;
+				Game_object*    obj;
 				Object_iterator next(objects);
 				while ((obj = next.get_next()) != nullptr) {
-					std::cerr << "  - shape=" << obj->get_shapenum() 
-					          << " tx=" << obj->get_tx() << " ty=" << obj->get_ty()
-					          << std::endl << std::flush;
+					std::cerr << "  - shape=" << obj->get_shapenum() << " tx=" << obj->get_tx() << " ty=" << obj->get_ty()
+							  << std::endl
+							  << std::flush;
 				}
 			}
 		}

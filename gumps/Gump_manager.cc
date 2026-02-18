@@ -327,13 +327,10 @@ void Gump_manager::add_gump(
 		if (!new_gump && obj->as_container()) {
 			// Check if this gump shape has container_area in gump_info.txt
 			if (Dynamic_container_gump::has_config(shapenum)) {
-				std::cerr << "[GumpManager] Using Dynamic_container_gump for shape "
-				          << shapenum << std::endl;
-				new_gump = new Dynamic_container_gump(
-						obj->as_container(), x, y, shapenum);
+				std::cerr << "[GumpManager] Using Dynamic_container_gump for shape " << shapenum << std::endl;
+				new_gump = new Dynamic_container_gump(obj->as_container(), x, y, shapenum);
 			} else {
-				new_gump
-						= new Container_gump(obj->as_container(), x, y, shapenum);
+				new_gump = new Container_gump(obj->as_container(), x, y, shapenum);
 			}
 		}
 	} else if (
