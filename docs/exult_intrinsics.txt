@@ -1383,7 +1383,7 @@ obj->set_item_frame_rot(int frame)
     obj      The object whose frame is to be changed.
     frame    The desired value for the frame.
 
-int[] UI_get_item_gump_position(object item)                             [Exult]
+int UI_get_item_gump_position(object item)                               [Exult]
 
     Returns the coordinates of an item within its currently open container gump.
     This allows usecode to inspect where items are positioned in the container's
