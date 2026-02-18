@@ -411,6 +411,9 @@ bool Dynamic_container_gump::add(
 	}
 	
 	// Call parent add with snapped coordinates
+	if (!obj) {
+		return false;
+	}
 	bool result = Container_gump::add(obj, mx, my, snap_sx, snap_sy, dont_check, combine);
 	
 	if (log_enabled) {
