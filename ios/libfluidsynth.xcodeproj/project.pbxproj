@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8AC4333B2F467C9E00730A0A /* fluid_coreaudio.c in Sources */ = {isa = PBXBuildFile; fileRef = 8AC433372F467C9E00730A0A /* fluid_coreaudio.c */; };
+		8AC4336D2F46870700730A0A /* fluid_coreaudio_avaudiosession.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AC4336C2F46870700730A0A /* fluid_coreaudio_avaudiosession.m */; };
 		8ADA289B2E94092000C1012D /* fluid_filerenderer.c in Sources */ = {isa = PBXBuildFile; fileRef = 8ADA28982E94092000C1012D /* fluid_filerenderer.c */; };
 		8ADA289C2E94092000C1012D /* fluid_ladspa.c in Sources */ = {isa = PBXBuildFile; fileRef = 8ADA28992E94092000C1012D /* fluid_ladspa.c */; };
 		8ADA289D2E94092000C1012D /* fluid_cmd.c in Sources */ = {isa = PBXBuildFile; fileRef = 8ADA28972E94092000C1012D /* fluid_cmd.c */; };
@@ -54,7 +56,6 @@
 		8ADA28FB2E9409EB00C1012D /* fluid_hash.c in Sources */ = {isa = PBXBuildFile; fileRef = 8ADA28F12E9409EB00C1012D /* fluid_hash.c */; };
 		8ADA28FC2E9409EB00C1012D /* fluid_settings.c in Sources */ = {isa = PBXBuildFile; fileRef = 8ADA28F52E9409EB00C1012D /* fluid_settings.c */; };
 		8ADA28FD2E9409EB00C1012D /* fluid_sys.c in Sources */ = {isa = PBXBuildFile; fileRef = 8ADA28F62E9409EB00C1012D /* fluid_sys.c */; };
-		8ADA28FE2E9409EB00C1012D /* fluid_sys_embedded.c in Sources */ = {isa = PBXBuildFile; fileRef = 8ADA28F82E9409EB00C1012D /* fluid_sys_embedded.c */; };
 		8ADA28FF2E9409EB00C1012D /* fluid_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8ADA28F02E9409EB00C1012D /* fluid_file.cpp */; };
 		8ADA29002E9409EB00C1012D /* fluid_list.c in Sources */ = {isa = PBXBuildFile; fileRef = 8ADA28F22E9409EB00C1012D /* fluid_list.c */; };
 		8ADA29012E9409EB00C1012D /* fluid_ringbuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 8ADA28F42E9409EB00C1012D /* fluid_ringbuffer.c */; };
@@ -64,6 +65,8 @@
 
 /* Begin PBXFileReference section */
 		8A9A012E29F32EEF000AF341 /* libfluidsynth.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libfluidsynth.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		8AC433372F467C9E00730A0A /* fluid_coreaudio.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_coreaudio.c; path = fluidsynth/src/drivers/fluid_coreaudio.c; sourceTree = "<group>"; };
+		8AC4336C2F46870700730A0A /* fluid_coreaudio_avaudiosession.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = fluid_coreaudio_avaudiosession.m; path = fluidsynth/src/drivers/fluid_coreaudio_avaudiosession.m; sourceTree = "<group>"; };
 		8ADA28972E94092000C1012D /* fluid_cmd.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_cmd.c; path = fluidsynth/src/bindings/fluid_cmd.c; sourceTree = "<group>"; };
 		8ADA28982E94092000C1012D /* fluid_filerenderer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_filerenderer.c; path = fluidsynth/src/bindings/fluid_filerenderer.c; sourceTree = "<group>"; };
 		8ADA28992E94092000C1012D /* fluid_ladspa.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_ladspa.c; path = fluidsynth/src/bindings/fluid_ladspa.c; sourceTree = "<group>"; };
@@ -111,12 +114,10 @@
 		8ADA28F02E9409EB00C1012D /* fluid_file.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = fluid_file.cpp; path = fluidsynth/src/utils/fluid_file.cpp; sourceTree = "<group>"; };
 		8ADA28F12E9409EB00C1012D /* fluid_hash.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_hash.c; path = fluidsynth/src/utils/fluid_hash.c; sourceTree = "<group>"; };
 		8ADA28F22E9409EB00C1012D /* fluid_list.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_list.c; path = fluidsynth/src/utils/fluid_list.c; sourceTree = "<group>"; };
-		8ADA28F32E9409EB00C1012D /* fluid_locked_atomics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fluid_locked_atomics.h; path = fluidsynth/src/utils/fluid_locked_atomics.h; sourceTree = "<group>"; };
 		8ADA28F42E9409EB00C1012D /* fluid_ringbuffer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_ringbuffer.c; path = fluidsynth/src/utils/fluid_ringbuffer.c; sourceTree = "<group>"; };
 		8ADA28F52E9409EB00C1012D /* fluid_settings.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_settings.c; path = fluidsynth/src/utils/fluid_settings.c; sourceTree = "<group>"; };
 		8ADA28F62E9409EB00C1012D /* fluid_sys.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_sys.c; path = fluidsynth/src/utils/fluid_sys.c; sourceTree = "<group>"; };
 		8ADA28F72E9409EB00C1012D /* fluid_sys_cpp11.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = fluid_sys_cpp11.cpp; path = fluidsynth/src/utils/fluid_sys_cpp11.cpp; sourceTree = "<group>"; };
-		8ADA28F82E9409EB00C1012D /* fluid_sys_embedded.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_sys_embedded.c; path = fluidsynth/src/utils/fluid_sys_embedded.c; sourceTree = "<group>"; };
 		8ADA29042E940AB600C1012D /* fluid_mdriver.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fluid_mdriver.c; path = fluidsynth/src/drivers/fluid_mdriver.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -145,6 +146,8 @@
 				8ADA28992E94092000C1012D /* fluid_ladspa.c */,
 				8ADA289A2E94092000C1012D /* fluid_rtkit.c */,
 				8ADA289F2E94094900C1012D /* fluid_adriver.c */,
+				8AC4336C2F46870700730A0A /* fluid_coreaudio_avaudiosession.m */,
+				8AC433372F467C9E00730A0A /* fluid_coreaudio.c */,
 				8ADA28A02E94094900C1012D /* fluid_coremidi.c */,
 				8ADA29042E940AB600C1012D /* fluid_mdriver.c */,
 				8ADA28A32E94095F00C1012D /* fluid_cb2amp.cpp */,
@@ -188,12 +191,10 @@
 				8ADA28F02E9409EB00C1012D /* fluid_file.cpp */,
 				8ADA28F12E9409EB00C1012D /* fluid_hash.c */,
 				8ADA28F22E9409EB00C1012D /* fluid_list.c */,
-				8ADA28F32E9409EB00C1012D /* fluid_locked_atomics.h */,
 				8ADA28F42E9409EB00C1012D /* fluid_ringbuffer.c */,
 				8ADA28F52E9409EB00C1012D /* fluid_settings.c */,
 				8ADA28F62E9409EB00C1012D /* fluid_sys.c */,
 				8ADA28F72E9409EB00C1012D /* fluid_sys_cpp11.cpp */,
-				8ADA28F82E9409EB00C1012D /* fluid_sys_embedded.c */,
 			);
 			name = "Source Files";
 			sourceTree = "<group>";
@@ -290,6 +291,7 @@
 			files = (
 				8ADA28D92E9409A000C1012D /* fluid_sfont.c in Sources */,
 				8ADA28DA2E9409A000C1012D /* fluid_sffile.c in Sources */,
+				8AC4333B2F467C9E00730A0A /* fluid_coreaudio.c in Sources */,
 				8ADA28E72E9409B900C1012D /* fluid_gen.c in Sources */,
 				8ADA28E82E9409B900C1012D /* fluid_tuning.c in Sources */,
 				8ADA28E92E9409B900C1012D /* fluid_voice.c in Sources */,
@@ -309,7 +311,6 @@
 				8ADA28FB2E9409EB00C1012D /* fluid_hash.c in Sources */,
 				8ADA28FC2E9409EB00C1012D /* fluid_settings.c in Sources */,
 				8ADA28FD2E9409EB00C1012D /* fluid_sys.c in Sources */,
-				8ADA28FE2E9409EB00C1012D /* fluid_sys_embedded.c in Sources */,
 				8ADA28FF2E9409EB00C1012D /* fluid_file.cpp in Sources */,
 				8ADA29002E9409EB00C1012D /* fluid_list.c in Sources */,
 				8ADA29012E9409EB00C1012D /* fluid_ringbuffer.c in Sources */,
@@ -328,6 +329,7 @@
 				8ADA29052E940AB600C1012D /* fluid_mdriver.c in Sources */,
 				8ADA28AB2E94095F00C1012D /* fluid_pan.cpp in Sources */,
 				8ADA28B92E94097300C1012D /* fluid_seq_queue.cpp in Sources */,
+				8AC4336D2F46870700730A0A /* fluid_coreaudio_avaudiosession.m in Sources */,
 				8ADA28BA2E94097300C1012D /* fluid_midi.c in Sources */,
 				8ADA28BB2E94097300C1012D /* fluid_midi_router.c in Sources */,
 				8ADA28BC2E94097300C1012D /* fluid_seq.c in Sources */,
@@ -383,6 +385,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SYMROOT = build;
 			};
 			name = Debug;
@@ -422,6 +425,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SYMROOT = build;
 			};
 			name = Release;

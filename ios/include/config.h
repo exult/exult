@@ -41,6 +41,9 @@
 
 #define USE_FMOPL_MIDI
 
+/* Enable Midi Sfx */
+#define ENABLE_MIDISFX
+
 /* Enable fluidsynth midi */
 #define USE_FLUIDSYNTH_MIDI 1
 
@@ -58,7 +61,7 @@
 /* MT32EMU Version */
 #	define MT32EMU_VERSION_MAJOR 2
 #	define MT32EMU_VERSION_MINOR 7
-#	define MT32EMU_VERSION_PATCH 2
+#	define MT32EMU_VERSION_PATCH 3
 #	define MT32EMU_VERSION                                                    \
 		"$(MT32EMU_VERSION_MAJOR).$(MT32EMU_VERSION_MINOR).$(MT32EMU_VERSION_" \
 		"PATCH)"
@@ -79,6 +82,9 @@
 #endif
 
 /* FluidSynth defines */
+
+/* Using FluidSynth CoreAudio */
+#define COREAUDIO_SUPPORT 1
 
 /* OS abstraction to use. */
 #define OSAL_cpp11 1
@@ -109,6 +115,15 @@
 
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
+
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#define HAVE_NETINET_IN_H 1
+
+/* Define to 1 if you have the <netinet/tcp.h> header file. */
+#define HAVE_NETINET_TCP_H 1
+
+/* Define to 1 if you have the <signal.h> header file. */
+#define HAVE_SIGNAL_H 1
 
 /* Define if the compiler supports VLA */
 #define SUPPORTS_VLA 1
@@ -146,16 +161,28 @@
 /* Define to 1 if you have the <stdio.h> header file. */
 #define HAVE_STDIO_H 1
 
+/* Define to 1 if you have the <stdlib.h> header file. */
+#define HAVE_STDLIB_H 1
+
 /* Define to 1 if you have the <stdarg.h> header file. */
 #define HAVE_STDARG_H 1
 
 /* Define to 1 if you have the <pthread.h> header file. */
 #define HAVE_PTHREAD_H 1
 
-/* end of FluidSynth defines */
+/* Define to 1 if you have the <sys/socket.h> header file. */
+#define HAVE_SYS_SOCKET_H 1
 
-/* Enable Midi Sfx */
-/* #undef ENABLE_MIDISFX */
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#define HAVE_SYS_STAT_H 1
+
+/* Define to 1 if you have the <getopt.h> header file. */
+#define HAVE_GETOPT_H 1
+
+/* Define to 1 if you have the ANSI C header files. */
+#define STDC_HEADERS 1
+
+/* end of FluidSynth defines */
 
 /* Enable timidity midi */
 /*#define USE_TIMIDITY_MIDI 1*/
