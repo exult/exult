@@ -1,166 +1,457 @@
-# List of flags, found by Alun Bestor (?), Marzo, SB-X and Malignant Maynor
-# lists ALL known flags, regardless of whether they make sense in the autonotes
+# List of flags, found by Alun Bestor (?), Marzo, SB-X and Malignant Maynor.
+# Adapted from https://github.com/marzojr/u7-usecode fov/include/globals.uc.
+# Lists ALL known flags, regardless of whether they make sense in the autonotes.
 
+0x0:SEEN_TETRA
+0x1:SEEN_SPHERE
+0x2:SEEN_CUBE
+0x3:I've broken the tetrahedron generator.
+0x4:BROKE_SPHERE
+0x5:BROKE_CUBE
+0x6:JOIN_FELLOWSHIP
+0x7:TIMELORD_SAID_PENUMBRA
+0x8:TIMELORD_SAID_BRION
+0x9:SEEN_BLACKGATE
+0xA:SAW_PASSION_PLAY
+0xB:AVATAR_INVENTORY
+0xC:AVATAR_WAIT
+0xD:AVATAR_SINGLE_FILE
+0xE:AVATAR_FORM_UP
+0xF:AVATAR_ATTACK
+0x10:AVATAR_RETREAT
+0x11:AVATAR_HELP
+0x12:TIMELORD_SAID_SPHERE
+0x13:TIMELORD_SAID_CUBE
+0x14:MET_IOLO
+0x15:MET_SPARK
+0x16:MET_SHAMINO
+0x17:MET_DUPRE
+0x18:In Cove I met my former companion Jaana.
+0x19:MET_TRELLEK
+0x1A:MET_SENTRI
+0x1B:Julia, my old friend, is living in Minoc. Perhaps she will join me.
+0x1C:MET_KATRINA
+0x1D:MET_TSERAMED
+0x1E:Oops, this armageddon spell is more dangerous than I thought. Hello? Anyone around?
+0x1F:WHEEL_1
+0x20:WHEEL_2
+0x21:WHEEL_3
+0x22:RAT_1
+0x23:RAT_2
+0x24:RAT_3
+0x25:RAT_4
+0x26:DEAD_AGAIN
+0x27:HELP_USED
+0x28:Jaana is the healer of Cove.
+0x29:SET_JAANA_TIMER
+0x2A:FINN_1
+0x2B:FINN_2
+0x2C:FINN_3
+0x2D:FINN_4
+0x2E:FINN_5
+0x2F:FINN_6
+0x30:FINN_7
+0x31:FINN_8
+0x32:BAT_1
+0x33:BAT_2
+0x34:BAT_3
+0x35:BAT_4
+0x36:BAT_5
+0x37:BAT_6
+0x38:FAILED_BATLIN
+0x39:I am inside the Generator and suddenly can't cast spells anymore.
+0x3A:NEAR_SHELTER
 
-#Used the armageddon spell
-0x1E: Oops, this armageddon spell is more dangerous than I thought. Hello? Anyone around?
-
-
-# Trinsic murder investigation
-
-0x4C:The mayor of Trinsic is called Finnigan. he wants me to investigate a ritual murder.
-0x3c:What's this? A body! And a key? Could this be a clue?
-0x42:Because of the murder in Trinsic, all gates are locked. I need a password to get out.
+# Trinsic
+0x3B:START_GAME
+0x3C:What's this? A body! And a key? Could this be a clue?
 0x3D:Now I know the password I need to leave Trinsic. It's Blackbird!
-0x44:I finished the investigation of the gruesome murder in Trinsic.
-0x40:There is a ship named Crown Jewel which was anchored in Trinsic when the murder happened.
-0x43:A man with a hook was in Trinsic.
-0x5A:I just arrived and already have a quest: Investigate the stables.
 0x3E:Searched Christopher's house, the key I found unlocked a chest with a medallion, a scroll, and gold inside.
 0x3F:Christopher had an argument with Klog!
-0x59:I refused the mayor and will not investigate the murder.
-0x48:I told the mayor Finnigan about the key I found on the body
-0x5B:I found enough clues to report to Finnigan!
-0x5D:I've reported some clues, but apparently need to find out more.
+0x40:There is a ship named Crown Jewel which was anchored in Trinsic when the murder happened.
+0x41:KLOG_SAID_COMPANIONS
+0x42:Because of the murder in Trinsic, all gates are locked. I need a password to get out.
+0x43:A man with a hook was in Trinsic.
+0x44:I finished the investigation of the gruesome murder in Trinsic.
 0x45:I received half the payment for the murder investigation, the rest will come when I catch the culprit.
+0x46:TOLD_SPARK_NAME
+0x47:TOLD_SPARK_AVATAR
+0x48:I told the mayor Finnigan about the key I found on the body.
+0x49:SPARK_ASKED_TO_JOIN
+0x4A:GARGAN_SAID_SAILED
+0x4B:MET_PETRE
+0x4C:The mayor of Trinsic is called Finnigan. he wants me to investigate a ritual murder.
+0x4D:MET_GILBERTO
+0x4E:MET_JOHNSON
+0x4F:MET_KLOG
+0x50:MET_ELLEN
+0x51:MET_APOLLONIA
+0x52:Chantu of Trinsic is a solemn fellow in healer's robes.
+0x53:MET_DELL
+0x54:MET_MARKUS
+0x55:MET_GARGAN
+0x56:MET_CAROLINE
 0x57:Off we go exploring outside Trinsic.
+0x58:SOLD_BLUEFIN
+0x59:I refused the mayor and will not investigate the murder.
+0x5A:I just arrived and already have a quest: Investigate the stables.
+0x5B:I found enough clues to report to Finnigan!
+0x5C:IOLO_BARKED
+0x5D:I've reported some clues, but apparently need to find out more.
+0x5E:QUESTION_ONE
+0x5F:QUESTION_TWO
+0x60:QUESTION_THREE
+0x61:QUESTION_FOUR
+0x62:QUESTION_FIVE
+0x63:QUESTION_SIX
+0x64:CHEST_CONTENTS
 
-
-# Who the player has met.
-
+# Britain
+0x65:LEARNED_ABOUT_BLACKROCK
+0x66:Lord British tells me that magic doesn't work anymore, but he thinks that I might still be able to cast magic. He put a spellbook for me with my other equipment. Hmm, what does he mean with equipment?
+0x67:COSTUME_QUEST
+0x68:GOT_COSTUME
+0x69:MIRANDA_SAID_MAX
+0x6A:BILL_QUEST
+0x6B:SHAMINO_SAID_AMBER
+0x6C:SHAMINO_SAID_MAGIC
+0x6D:AMBER_SAID_SHAMINO
+0x6E:AMBER_SAID_SETTLE
+0x6F:CHUCKLES_GAVE_SCROLL
+0x70:BENNIE_GAVE_MUTTON
+0x71:BOOTS_SAID_MEAT
+0x72:MEAT_QUEST
+0x73:CHUCKLES_SAID_GAME
+0x74:BATLIN_PACKAGE
+0x75:NELL_SAID_FIANCE
+0x76:NELL_SAID_CHARLES
+0x77:NELL_DISTRUSTS
+0x78:TOLD_NELL_NAME
+0x79:TOLD_NELL_AVATAR
+0x7A:NELL_SAID_CHILD
+0x7B:CHARLES_SAID_JEANETTE
+0x7C:CHARLES_SAID_NELL
+0x7D:JEANETTE_SAID_CHARLES
+0x7E:JEANETTE_SAID_CONSIDER
+0x7F:PATTERSON_SAID_BROWNIE
+0x80:I heard that Patterson is having an affair.
+0x81:JUDITH_SUSPICIOUS
+0x82:NANNA_SAID_CLASS
+0x83:TOLD_LUCY_NAME
+0x84:TOLD_LUCY_AVATAR
+0x85:Jeanette has a crush on Willy the Baker.
+0x86:JEWEL_FIRST_TIME
+0x87:EA_GONE_TO_MINOC
+0x88:EA_GONE_TO_VESPER
+0x89:CHARLES_MAD
+0x8A:MILLIE_SAID_VOICE
+0x8B:MILLIE_SAID_RETREAT
+0x8C:I was told about the Inner Voice.
+0x8D:INVITED_TO_JOIN
+0x8E:CHEST_QUEST
+0x8F:PACKAGE_QUEST
+0x90:GOT_MEDALLION
+0x91:CEREMONY_DONE
+0x92:CYNTHIA_SAID_SHE_CARES
+0x93:AVATAR_SENT_TO_PROOF
+0x94:FIGG_GIVES_APPLES
+0x95:MACK_TOLD_STORY
+0x96:TEST_GIVEN
+0x97:CHEST_QUEST_DONE
 0x98:I've met my old friend Lord British again.
 0x99:My old friend Nystul seems to have lost his marbles.
 0x9A:Chuckles, Lord British's court jester, wants to play a silly game with me.
-0xAA:Candice, a nice woman, works at the royal museum.
-0xB5:Willy is the baker of Britain and makes the sweetest bread.
-0xBB:Gordon sells fish and chips from his wagon in Britain.
+0x9B:MET_BATLIN
+0x9C:MET_RAYMUNDO
+0x9D:MET_JESSE
+0x9E:MET_STUART
+0x9F:MET_AMBER
+0xA0:MET_KRISTY
+0xA1:MET_MAX
+0xA2:MET_NICHOLAS
+0xA3:MET_NANNA
 0xA4:Csil aka Abrams is a wise and honest healer in Britain.
-0x110:Gladstone of Mino is a glassblower and sculptor.
-0x22A:Camille is a hard working farm woman and widow. She runs her farm in Paws with her son Tobias.
-0x269:Menion is a blacksmith I met in Serpent's Hold.
-0x204:Elad is the healer of Moonglow with a yearning for adventures.
-0x247:In Terfin I met Inmalinem.
-0x52:Chantu of Trinsic is a solemn fellow in healer's robes.
-0x01FB:I've met my old friend Mariah in Moonglow.
-
-# Talking to LB
-
+0xA5:MET_ZELLA
+0xA6:MET_LUCY
+0xA7:MET_GREG
+0xA8:MET_NENO
+0xA9:MET_JUDITH
+0xAA:Candice, a nice woman, works at the royal museum.
+0xAB:MET_CYNTHIA
+0xAC:MET_PATTERSON
+0xAD:MET_CARROCIO
+0xAE:MET_FIGG
+0xAF:MET_JAMES
+0xB0:MET_JEANETTE
+0xB1:MET_KESSLER
+0xB2:MET_DENBY
+0xB3:MET_FRED
+0xB4:MET_KELLY
+0xB5:Willy is the baker of Britain and makes the sweetest bread.
+0xB6:MET_GAYE
+0xB7:MET_COOP
+0xB8:MET_GRAYSON
+0xB9:MET_DIANE
+0xBA:MET_CLINT
+0xBB:Gordon sells fish and chips from his wagon in Britain.
+0xBC:MET_SEAN
+0xBD:MET_BROWNIE
+0xBE:MET_MACK
+0xBF:MET_SNAZ
+0xC0:MET_MILLIE
+0xC1:MET_GEOFFREY
+0xC2:MET_WISLEM
+0xC3:MET_SHERRY
+0xC4:MET_BOOTS
+0xC5:MET_BENNIE
+0xC6:MET_WESTON
+0xC7:MET_MIRANDA
+0xC8:MET_INWISLOKLEM
+0xC9:MET_NELL
+0xCA:MET_CHARLES
+0xCB:Willy hired me to bake bread.
 0xCC:Lord British investigated Weston's imprionment and lets him go free. 
 0xCD:A man named Weston is imprisoned atop Britain's castle. His imprisonment may be unjust. I must talk to my friend Lord British about this.
-0xDD:Lord British gave me his Orb of the moon, but warned me that the moongates are no longer stable.
-0x66:Lord British tells me that magic doesn't work anymore, but he thinks that I might still be able to cast magic. He put a spellbook for me with my other equipment. Hmm, what does he mean with equipment?
+0xCE:BROWNIE_HIRED
+0xCF:MACK_HIRED
+0xD0:PAID_CARROCIO
 0xD1:There has also been a ritualistic murder in Britain some years ago. I need to investigate this!
+0xD2:SOLD_SHARKTOOTH
 0xD3:Even though magic doesn't work reliably anymore, Lord British can still heal me and sometimes even resurrect a member of my party. This might come in handy at times.
-0x65:LEARNED_ABOUT_BLACKROCK - allows you to ask Rudyom about it?
-0xD4:ASKED_LB_ABOUT_GUARDIAN - stops you ever asking him again (yes, plaster over those plot-holes)
-0x30D:LB_REWARDED_FOR_FV - Received Lord British's reward for completing the Forge of Virtue
+0xD4:ASKED_LB_ABOUT_GUARDIAN
+0xD5:TOLD_SHAMINO
+0xD6:REFUSED_PACKAGE
+0xD7:DIDNT_GET_PACKAGE
+0xD8:BENNIE_SERVED_ONCE
+0xD9:WATCH_GIVEN
+0xDA:Batlin has gone missing after I talked to him with the cube in my belongings.
+0xDB:SENTRI_JOINED
+0xDC:CYNTHIA_SAID_EXCHANGE
+0xDD:Lord British gave me his Orb of the moon, but warned me that the moongates are no longer stable.
 
-
-# Flags used in conversation with Julia
-
-0x1B:Julia, my old friend, is living in Minoc. Perhaps she will join me.
-0x101:Unfortunately I had to leave Julia behind. She's no longer in my party.
-0x108:I've asked Julia to join my party and it was her pleasure!
-0x121:Julia thinks Spark is cute and well mannered.
-
-
-# serpents hold flags
-
-0x26E:In Serpent's Hold, I met Horffe who is head of security. He reminds me of someone else.
-0x271:Lady Tory of Serpent's Hold reminds of someone named Deanna.
-0x272:Lady Leigh of Serpent's Hold, reminds me of a certain doctor.
-0x25E:Someone defaced the statue of my friend Lord British in Serpent's Hold. Sir John-Paul wants me to find out who it was.
-0x261:Sir Pendaran was the one who defaced the statue of Lord British in Serpent's Hold.
-0x277:Lady Tory's baby son Riky was kidnapped by harpies. I must save him.
-0x278:I saved baby Riky from the harpies!
-0x27A:Lady Leigh told me that she's a healer.
-0x259:CAN_EXAMINE_STONE_CHIPS
-0x25E:DOING_STATUE_QUEST
-0x25F:EXAMINED_CHIPS
-
-
-# Terfin flags
-
-0x244:KNOWNS_ABOUT_CONFLICTS
-0x23D:KNOWS_SILAMO_UNHAPPY
-
-
-# FoV flags:
-
-0x2FE: I mentioned the earthquake to Lord British, and he tells me that the Isle of Fire, where I defeated Exodus, has risen. He also told me of three shrines he erected there. He offers me use of his ship, the Golden Ankh, anchored at Vesper, to visit this island.
-0x30C:I managed to banish Exodus' dark core to the ethereal void!
-0x30E:SCROLL_OF_INFINITY
-0x310:An exiled and blind man named Erethian lives on the Isle of Fire.
-0x313:On the Isle of Fire, I met a demon called Arcadion, trapped in a mirror. He wants me to free him.
-0x032F:With the gem I broke the mirror to free the demon Arcadion, but instead he is now imprisoned in the gem.
-0x330:I bound the demon Arcadion to the blackrock sword
-0x331:I'm not helping a demon!
-0x332:I mistrust Erethian and have agreed to help the demon Arcadion.
-0x32D:Improved the blackrock sword.
-0x337:Blacksmithing is hard work. Finally managed to forge the blackrock sword.
-0x333:TALKED_ARCADION_WITH_GEM
-0x333:ACCEPTED_GEM_POWER
-0x334:ARCADION_SLAVE
-0x335:REFUSED_GEM_POWER
-0x338:TALKED_ABOUT_BINDING_GEM
-0x343:BEGIN_BOND
-0x344:FINISHED_BOND
-0x318:Wisdom test passed
-0x327:Love test passed 
-0x341:Courage test passed 
-
-
-# Broken the tetrahedron generator that screws up magic. This affects most conversations with wizards.
-0x03:I've broken the tetrahedron generator.
-0x04:BROKE_CUBE
-0x134:ORB_FIXED_TIMELORD
-
-
-# Flags used by the Owen's Monument quest
-
-0xF7:COMPLETED_OWENS_QUEST
-0x10B:LEARNED_ABOUT_PLANS
-0xFD:OWENS_PLANS_ARE_UNSAFE
-
-
-# Miscellaneous flags for NPCs in Paws
-
-0x212:I've been told that there was a theft in Paws.
-0x213:Feridwyn accused Tobias of the theft in Paws.
-0x218:Found Garritt was the thief in Paws.
-0x234:Camille has run out to say that her son is innocent of the theft in Paws.
-0x21A:Camille gave me wheat to deliver to Thurston.
-0x21D:I delivered the Camille's wheat to Thurston.
-
-
-#Some Cove flags:
-
-0x18:In Cove I met my former companion Jaana.
-0xEF:I don't know why I did it but I asked Jaana for her name. I must be getting old.
-0xE4:KNOWS_COVE_GOSSIP
-0x28:Jaana is the healer of Cove.
-0xE0:HEARD_ABOUT_NATASSIA
-0x6A:HAS_MIRANDAS_BILL
+# Cove
+0xDE:BILL_QUEST_DONE
+0xDF:RUDYOM_GAVE_IWAN
+0xE0:DE_MARIA_TOLD_STORY
+0xE1:NASTASIA_SAID_JULIUS
+0xE2:JULIUS_QUEST
+0xE3:LORD_HEATHER_SAID_NASTASIA
+0xE4:LORD_HEATHER_SAID_LOVERS
+0xE5:SEEN_IWAN
+0xE6:HAS_KISSED
+0xE7:MET_RUDYOM
+0xE8:MET_NASTASSIA
+0xE9:MET_RAYBURT
 0xEA:MET_LORD_HEATHER
-0xE3:KNOWS_DEMARIA_KNOWS
-0xDE:LOCK_LAKE_BILL_SIGNED
+0xEB:MET_PAMELA
+0xEC:MET_ZINAIDA
+0xED:MET_DE_MARIA
+0xEE:RAYBURT_SAID_NAME
+0xEF:I don't know why I did it but I asked Jaana for her name. I must be getting old.
+0xF0:PAMELA_SAID_NAME
+0xF1:ZINAIDA_SAID_NAME
+0xF2:DE_MARIA_SAID_NAME
+0xF3:LORD_HEATHER_SAID_NAME
 
+# Minoc
+0xF4:JAKHER_SAID_GYPSIES
+0xF5:JAKHER_SAID_KARENNA_ATTRACTIVE
+0xF6:KARENNA_SAID_JAKHER_IS_CUTE
+0xF7:MAYOR_CANCELLED_STATUE
+0xF8:JAKHER_SAID_BROTHER
+0xF9:OWEN_SAID_CROWN
+0xFA:OWEN_SAID_HOOK
+0xFB:OWEN_TOOK_GOLD
+0xFC:OWEN_GAVE_GOLD
+0xFD:OWENS_PLANS_ARE_UNSAFE
+0xFE:MINOC_MURDERS
+0xFF:SEARA_SAID_SASHA
+0x100:A gypsy told me my future. I really need to find the Time Lord, and the Wisps know how to contact him.
+0x101:Unfortunately I had to leave Julia behind. She's no longer in my party.
+0x102:PACKAGE_DELIVERED
+0x103:PACKAGE_OPENED
+0x104:RUTH_SAID_HOOK
+0x105:EA_GONE_TO_PAWS
+0x106:ZORN_GAVE_HELMET
+0x107:FODUS_SAID_SILVERFLUID
+0x108:I've asked Julia to join my party and it was her pleasure!
+0x109:PACKAGE_QUEST_DONE
+0x10A:WILLIAM_SAID_MURDERS
+0x10B:KARL_TOLD_ABOUT_PLANS
+0x10C:MET_ELYNOR
+0x10D:MET_GREGOR
+0x10E:MET_MARGARETA
+0x10F:MET_SASHA
+0x110:Gladstone of Mino is a glassblower and sculptor.
+0x111:MET_XANTHIA
+0x112:MET_ZORN
+0x113:MET_SEARA
+0x114:MET_KARL
+0x115:MET_OWEN
+0x116:MET_BURNSIDE
+0x117:MET_RUTHERFORD
+0x118:MET_WILLIAM
+0x119:MET_KARENNA
+0x11A:MET_JAKHER
+0x11B:MET_JERGI
+0x11C:MET_MIKOS
+0x11D:MET_FODUS
+0x11E:SCROLL_GONE
+0x11F:Oh no, another murder. This time in Minoc's sawmill. Something is wrong here.
+0x120:KARL_SAID_FOLLOW
+0x121:Julia thinks Spark is cute and well mannered.
+0x122:SEEN_SECOND_MURDER
+0x123:OWEN_SAID_NAME
+0x124:KARL_SAID_NAME
+0x125:XANTHIA_CANDELABRA
 
-#Some Yew flags, used in reimplementation of Perrin and Reyna
-#for the end of the Keyring Quest:
-
-0x145:MET_PERRIN
-0x13B:KNOWS_REYNA_LOVES_ANIMALS
-0x146:MET_REYNA
+# Empath Abbey & Yew
+0x126:HOOK_POST
+0x127:The Time Lord told me about the evil Guardian and his plan to enter Britannia through a black moongate at the time of the Astronomical Alignment.
 0x128:ASKED_REYNA_ABOUT_MOTHER
-0x163:KNOWS_REYNA_JOB
-0x13A:REYNA_EMERGENCY
+0x129:JULIUS_QUEST_DONE
+0x12A:SIGN_DOC
+0x12B:DOC_SIGNED
+0x12C:IN_JAIL
+0x12D:ENCHANTED_HOURGLASS
+0x12E:TAV_EXPLAIN
+0x12F:KREG_INVISIBLE
+0x130:SARALEK_TRELLEK
+0x131:TRELLEK_PERMIT
+0x132:ASK_SARALEK
+0x133:The wisps won't help me for free. They have asked me to deliver them the notebook of Alagner, the wisest Britannian, who lives on the island of New Magincia.
+0x134:WISP_SAID_EAST
+0x135:DREL_SAID_HOOK
+0x136:TOLD_TRELLEK_NAME
+0x137:TOLD_TRELLEK_AVATAR
+0x138:EMP_WISPS
 0x139:GAVE_REYNA_FLOWERS
+0x13A:REYNA_EMERGENCY
+0x13B:KNOWS_REYNA_LOVES_ANIMALS
+0x13C:MET_EMP
+0x13D:MET_SARALEK
+0x13E:MET_TAVENOR
+0x13F:MET_SALAMON
+0x140:MET_NICODEMUS
+0x141:MET_THAD
+0x142:MET_BRADMAN
+0x143:MET_SIR_JEFF
+0x144:MET_TIERY
+0x145:MET_PERRIN
+0x146:MET_REYNA
+0x147:MET_TAYLOR
+0x148:MET_KREG
+0x149:MET_GHARL
+0x14A:MET_DREL
+0x14B:MET_SMITH
+0x14C:MET_AIMI
+0x14D:MET_PENNI
+0x14E:MET_BEN
+0x14F:MET_GOTH
+0x150:Finally, I have talked to the wisps. Only with the whistle the nice emp Trellek gave me, was I able to talk to them.
+0x151:TRELLEK_SHOULD_JOIN
+0x152:TSERAMED_TOLD
+0x153:GAVE_ARROWS
+0x154:GAVE_HONEY
+0x155:TALK_TRELLEK
+0x156:GOT_WHISTLE
+0x157:Delivered the cursed notebook to the wisps. In return they delivered me the message from the Time Lord, and told me how to reach him at the Shrine of Spirituality.
+0x158:SARALEK_LIED
+0x159:KREG_DIS
+0x15A:REYNAGARDEN
+0x15B:AIMI_TOLD_NAME
+0x15C:MOMS_FLOWERS
+0x15D:TSERAMED_HATES_YOU
+0x15E:TSERAMED_THINKS_MAGE
+0x15F:TSERAMED_INTRO
+0x160:TSERAMED_TRADE
+0x161:TSERAMED_KNOWS_AVATAR
+0x162:TSERAMED_SAID_PREF
+0x163:REYNA_TOLD_JOB
 
+# Jhelom
+0x164:HONOR_FLAG_RETURNED
+0x165:AVATAR_BET_ON_SPRELLIC
+0x166:BETS_SPRELLIC_DIES
+0x167:FALSE_FLAG
+0x168:FALSE_FLAG_GIVEN
+0x169:SPRELLIC_DUELS
+0x16A:DUELS_SHUT_OFF
+0x16B:EA_GONE_TO_BRITAIN
+0x16C:AVATAR_SHOWED_DAGGER
+0x16D:DUPRE_IN_PARTY
+0x16E:AVATAR_HEARD_OF_SPRELLIC
+0x16F:AVATAR_PAID_WINNINGS
+0x170:AVATAR_CHAMPION
+0x171:MET_DE_SNEL
+0x172:MET_JOSEPH
+0x173:MET_KLIFTIN
+0x174:MET_OPHELIA
+0x175:MET_DAPHNE
+0x176:MET_SPRELLIC
+0x177:MET_VOKES
+0x178:MET_SYRIA
+0x179:MET_TIMMONS
+0x17A:AVATAR_WON_WINNINGS
+0x17B:KLIFTIN_SEWS
 
-# Seance flags; I have NO idea why they didn't go with just
-# ONE flag instead...
+# New Magincia
+0x17C:ALAGNER_QUEST
+0x17D:HENRY_ASKED_FIND_LOCKET
+0x17E:MAGENTA_FOUND_LOCKET
+0x17F:AVATAR_HAS_LOCKET
+0x180:THREE_STRANGERS
+0x181:RUSSELL_SAID_CROWN
+0x182:RUSSELL_SAID_HOOK
+0x183:BORIS_LIED_TO_AVATAR
+0x184:ROBIN_SELL_CONSTANCE
+0x185:ROBIN_LOST_LOCKET
+0x186:HEARD_SPRELLIC_TALE
+0x187:TOLD_SAM_NAME
+0x188:TOLD_SAM_AVATAR
+0x189:MET_ALAGNER
+0x18A:MET_RUSSELL
+0x18B:MET_BORIS
+0x18C:MET_MAGENTA
+0x18D:MET_HENRY
+0x18E:MET_CONSTANCE
+0x18F:MET_ROBIN
+0x190:MET_BATTLES
+0x191:MET_LEAVELL
+0x192:MET_SAM
+0x193:SOLD_WHITE_GULL
+0x194:SEEN_NEW_MAGINCIA_MURDER
+0x195:BILL_NOT_PAID
 
+# Skara Brae
+0x196:CAINE_GAVE_ANSWER
+0x197:ISLAND_DOCK
+0x198:FIND_SACRIFICE
+0x199:ASKED_FERRYMAN_SACRIFICE
+0x19A:ASKED_MARKHAM_SACRIFICE
+0x19B:ASKED_PAULETTE_SACRIFICE
+0x19C:ASKED_QUENTON_SACRIFICE
+0x19D:ASKED_ROWENA_SACRIFICE
+0x19E:ASKED_TRENT_SACRIFICE
+0x19F:ASKED_FORSYTHE_SACRIFICE
+0x1A0:ASKED_MORDRA_SACRIFICE
+0x1A1:ASKED_CAINE_SACRIFICE
+0x1A2:FOUND_SACRIFICE
+0x1A3:WELL_DESTROYED
+0x1A4:CRY_PAULETTE
+0x1A5:TRENT_AWARE
+0x1A6:REUNITED
+0x1A7:MUSIC_BOX
+0x1A8:CAGE_MADE
+0x1A9:BOX_FIRST_TIME
+0x1AA:HORANCE_GONE
+0x1AB:GAVE_STAFF
+0x1AC:WELL_QUEST
+0x1AD:DONE_HORANCE
+0x1AE:TAKE_ROWENA_HOME
+0x1AF:HORANCE_TRAPPED
+0x1B0:SKARABRAED_ONE
+0x1B1:MADE_FORMULA
 0x1B2:SEANCE_CAINE
 0x1B3:SEANCE_FERRYMAN
 0x1B4:SEANCE_MARKHAM
@@ -171,22 +462,404 @@
 0x1B9:SEANCE_PAULETTE
 0x1BA:SEANCE_QUENTON
 0x1BB:SEANCE_FORSYTHE
+0x1BC:CAINE_QUEST
+0x1BD:FORSYTHE_FINE
+0x1BE:ROWENA_FINE
+0x1BF:FORMULA
+0x1C0:MORDRA_FORMULA
+0x1C1:CAME_FROM_DEFAULT
+0x1C2:MET_CAINE
+0x1C3:MET_FERRYMAN
+0x1C4:MET_MARKHAM
+0x1C5:MET_LICHE
+0x1C6:MET_HORANCE
+0x1C7:MET_TRENT
+0x1C8:MET_MORDRA
+0x1C9:MET_ROWENA
+0x1CA:MET_PAULETTE
+0x1CB:MET_QUENTON
+0x1CC:MET_FORSYTHE
+0x1CD:LOCKET_RETURNED
+0x1CE:LEFT_WHILE_TRENT_WORKING
+0x1CF:MAKING_CAGE
+0x1D0:FORMULA_CREATED
+0x1D1:WELL_REFUSED
 
+# Shrine of Spirituality
+0x1D2:HOURGLASS_QUEST
+0x1D3:TIME_LORD_GAVE_MISSION
+0x1D4:MET_TIME_LORD
 
-# Random flags
+# Moonglow
+0x1D5:RECTOL
+0x1D6:CUBTOL
+0x1D7:CUBMOR
+0x1D8:BALTEL
+0x1D9:GOT_FOOD
+0x1DA:ZELDA_LOVE
+0x1DB:BRION_ZELDA
+0x1DC:NELSON_ZELDA
+0x1DD:BRION_CRY
+0x1DE:ADDOM_PENUMBRA
+0x1DF:BLACKROCK_QUEST
+0x1E0:RING_QUEST
+0x1E1:RING_ENCHANTED
+0x1E2:BLACKROCK_DONE
+0x1E3:ZELDA_RESPOND
+0x1E4:NELSON_STAND
+0x1E5:NELSON_MARK
+0x1E6:NELSON_QUILL
+0x1E7:NELSON_BOOK
+0x1E8:BRION_CHEESE
+0x1E9:BRION_MAGNIFY
+0x1EA:BRION_KITE
+0x1EB:BRION_SHOWN
+0x1EC:NEL_SHOWN
+0x1ED:GOT_CRYSTAL
+0x1EE:SAI_DNO
+0x1EF:EA_GONE_TO_TERFIN
+0x1F0:TAKE_VIEWER
+0x1F1:TOLD_CHAD_NAME
+0x1F2:TOLD_CHAD_GENDER
+0x1F3:TOLD_CHAD_AVATAR
+0x1F4:TOLD_EFFREM_NAME
+0x1F5:NPC_SAID_VOICE
+0x1F6:BRION_SAID_NES
+0x1F7:MET_BRION
+0x1F8:MET_PENUMBRA
+0x1F9:MET_NELSON
+0x1FA:MET_ZELDA
+0x1FB:I've met my old friend Mariah in Moonglow.
+0x1FC:MET_RANKIN
+0x1FD:MET_BALAYNA
+0x1FE:MET_TOLEMAC
+0x1FF:MET_CUB
+0x200:MET_MORZ
+0x201:MET_JILLIAN
+0x202:MET_EFFREM
+0x203:MET_CHAD
+0x204:Elad is the healer of Moonglow with a yearning for adventures.
+0x205:MET_PHEARCY
+0x206:MET_ADDOM
+0x207:MET_FRANK
+0x208:MET_CARLYN
+0x209:BRION_TOLD_NAME
+0x20A:ACCU_TOLD
+0x20B:RANKIN_TOLD_NAME
+0x20C:BALAYNA_LUNCHED
+0x20D:BALAYNA_DEAD
+0x20E:VIAL_GIVEN
+0x20F:FIND_MERCHANT
+0x210:BALAYNA_OVER
 
-0x04:BROKE_SPHERE
-0x11F:Oh no, another murder. This time in Minoc's sawmill. Something is wrong here.
-0x100:A gypsy told me my future. I really need to find the Time Lord, and the Wisps know how to contact him.
-0x150:Finally, I have talked to the wisps. Only with the whistle the nice emp Trellek gave me, was I able to talk to them.
-0x133:The wisps won't help me for free. They have asked me to deliver them the notebook of Alagner, the wisest Britannian, who lives on the island of New Magincia.
-0x157:Delivered the cursed notebook to the wisps. In return they delivered me the message from the Time Lord, and told me how to reach him at the Shrine of Spirituality.
-0x127:The Time Lord told me about the evil Guardian and his plan to enter Britannia through a black moongate at the time of the Astronomical Alignment.
-0xDA:Batlin has gone missing after I talked to him with the cube in my belongings.
-0x80:I heard that Patterson is having an affair.
-0x8C:I was told about the Inner Voice.
-0x85:Jeanette has a crush on Willy the Baker.
-0xCB:Willy hired me to bake bread.
+# Paws
+0x211:GOT_HOURGLASS
+0x212:I've been told that there was a theft in Paws.
+0x213:Feridwyn accused Tobias of the theft in Paws.
+0x214:MORFIN_TAUNTED_AVATAR
+0x215:MERRICK_TAUNTED_AVATAR
+0x216:THURSTON_LOVES_POLLY
+0x217:EA_GONE_TO_JHELOM
+0x218:Found Garritt was the thief in Paws.
+0x219:AVATAR_SAID_WONT_TELL
+0x21A:Camille gave me wheat to deliver to Thurston.
+0x21B:POLLY_SHY
+0x21C:STREET_TROUBLE
+0x21D:I delivered the Camille's wheat to Thurston.
+0x21E:MERRICK_APOLOGIZED
+0x21F:MET_THURSTON
+0x220:MET_FERIDWYN
+0x221:MET_BRITA
+0x222:MET_ALINA
+0x223:MET_MERRICK
+0x224:MET_GARRITT
+0x225:MET_MORFIN
+0x226:MET_BEVERLEA
+0x227:MET_KOMOR
+0x228:MET_FENN
+0x229:MET_ANDREW
+0x22A:Camille is a hard working farm woman and widow. She runs her farm in Paws with her son Tobias.
+0x22B:MET_TOBIAS
+0x22C:MET_POLLY
+0x22D:TOLD_MERRICK_NAME
+0x22E:TOLD_MERRICK_NONE
+0x22F:TOLD_MORFIN_NAME
+0x230:TOLD_MORFIN_NONE
+0x231:THURSTON_COURTING
+0x232:BEVERLEA_SOLD_HOURGLASS
+0x233:MORFIN_CREEP
+0x234:Camille has run out to say that her son is innocent of the theft in Paws.
+0x235:MORFIN_APOLOGIZED
+0x236:PAWS_SETUP
+0x237:MORFIN_GAVE_KEY
+
+# Terfin
+0x238:DRAX_KNOWS
+0x239:DRAX_INAMO
+0x23A:TOLD_INAMO_DEAD
+0x23B:DRAX_SAID_SULTAN
+0x23C:IN_FOR_QUAN
+0x23D:KNOWS_SILAMO_UNHAPPY
+0x23E:QUAEVEN_CONVERT
+0x23F:FOUND_NOTE
+0x240:SARPLING_SPILLED
+0x241:QUAN_SARP
+0x242:PLOT_TOLD
+0x243:EA_GONE_TO_SERPENTS_HOLD
+0x244:KNOWNS_ABOUT_CONFLICTS
+0x245:MET_DRAX
+0x246:MET_INFORLEM
+0x247:In Terfin I met Inmalinem.
+0x248:MET_TEREGUS
+0x249:MET_RUNEB
+0x24A:MET_QUAN
+0x24B:MET_QUAEVEN
+0x24C:MET_SILAMO
+0x24D:MET_SARPLING
+0x24E:MET_FORBRAK
+0x24F:MET_BETRA
+0x250:SARPLING_TOLD_NAME
+0x251:BETRA_TOLD_NAME
+0x252:EVIDENCE_SHOWN
+0x253:DESTRUCT_RUMOR
+0x254:TEREGUS_TOLD_NAME
+0x255:RUNEB_TOLD_NAME
+
+# Spektran
+0x256:MET_MARTINGO
+0x257:HARPY_AWAKENED
+0x258:SOLD_BANANA
+
+# Serpent's Hold
+0x259:GOT_CHIPS
+0x25A:TOLD_JORDAN_NAME
+0x25B:TOLD_JORDAN_AVATAR
+0x25C:JORDAN_HEARD_JEHANNE
+0x25D:JEHANNE_TOLD
+0x25E:Someone defaced the statue of my friend Lord British in Serpent's Hold. Sir John-Paul wants me to find out who it was.
+0x25F:EXAMINED_CHIPS
+0x260:AVATAR_REFUSED
+0x261:Sir Pendaran was the one who defaced the statue of Lord British in Serpent's Hold.
+0x262:HORFFE_BLAMED
+0x263:JOHN_PAUL_ASKED
+0x264:EA_GONE_TO_BUCCANEERS_DEN
+0x265:ACCUSED_HORFFE
+0x266:TOLD_RICHTER_NAME
+0x267:TOLD_RICHTER_AVATAR
+0x268:CHIPS_EXAMINED
+0x269:Menion is a blacksmith I met in Serpent's Hold.
+0x26A:MET_PENDARAN
+0x26B:MET_JEHANNE
+0x26C:MET_JOHN_PAUL
+0x26D:MET_RICHTER
+0x26E:In Serpent's Hold, I met Horffe who is head of security. He reminds me of someone else.
+0x26F:MET_JORDAN
+0x270:MET_DENTON
+0x271:Lady Tory of Serpent's Hold reminds of someone named Deanna.
+0x272:Lady Leigh of Serpent's Hold, reminds me of a certain doctor.
+0x273:MET_IAN
+0x274:SOLD_CONSTELLATION
+0x275:DENTON_TOLD_NAME
+0x276:PENDARAN_ADMITS
+0x277:ady Tory's baby son Riky was kidnapped by harpies. I must save him.
+0x278:I saved baby Riky from the harpies!
+0x279:RICHTER_REPORT
+0x27A:Lady Leigh told me that she's a healer.
+0x27B:RICHTER_TOLD_NAME
+0x27C:JEHANNE_TOLD_NAME
+
+# Vesper
+0x27D:CATHERINE_CAUGHT
+0x27E:YVELLA_WORRY
+0x27F:BOUGHT_MUCH
+0x280:BLORN_TELL
+0x281:BLORN_GIVE
+0x282:LAP_TELL
+0x283:YONGI_BLORN
+0x284:EA_GONE_TO_MOONGLOW
+0x285:CATHERINE_REPORTED
+0x286:TOLD_YVELLA_NAME
+0x287:TOLD_YVELLA_AVATAR
+0x288:MET_CADOR
+0x289:MET_MARA
+0x28A:MET_ZAKSAM
+0x28B:MET_ELDROTH
+0x28C:MET_YONGI
+0x28D:MET_BLORN
+0x28E:MET_AUSTON
+0x28F:MET_LIANA
+0x290:MET_LAP
+0x291:MET_YVELLA
+0x292:MET_CATHERINE
+0x293:MET_FOR
+0x294:MET_ANSIKART
+0x295:MET_WIS
+0x296:MET_ANMANIVAS
+0x297:MET_FORANAMO
+0x298:MET_AURVID
+
+# Buccaneer's Den
+0x299:AGREE_TO_AVENGE
+0x29A:TOLD_MARTINE_NAME
+0x29B:TOLD_MARTINE_AVATAR
+0x29C:HAD_MARTINE
+0x29D:HAD_WENCH
+0x29E:HAD_ROBERTO
+0x29F:TOLD_WENCH_NAME
+0x2A0:TOLD_WENCH_AVATAR
+0x2A1:TOLD_ROBERTO_NAME
+0x2A2:TOLD_ROBERTO_AVATAR
+0x2A3:TOLD_BLACKTOOTH_NAME
+0x2A4:TOLD_BLACKTOOTH_AVATAR
+0x2A5:BLACKTOOTH_SAID_MISSES_MOE
+0x2A6:BLACKTOOTH_QUEST_DONE
+0x2A7:MOLE_SAID_SORRY
+0x2A8:EA_HERE
+0x2A9:MET_DANAG
+0x2AA:MET_WENCH
+0x2AB:MET_GLENNO
+0x2AC:MET_MARTINE
+0x2AD:MET_ROBERTO
+0x2AE:MET_SINTAG
+0x2AF:MET_BLACKTOOTH
+0x2B0:MET_MOLE
+0x2B1:MET_LUCKY
+0x2B2:MET_BUDO
+0x2B3:MET_GORDY
+0x2B4:MET_MANDY
+0x2B5:MET_SMITHY
+0x2B6:SOLD_LUSTY_WENCH
+0x2B7:HOOK_DEN
+
+# Travelling Show
+0x2B8:MET_PAUL
+0x2B9:MET_MERYL
+0x2BA:MET_DUSTIN
+
+# Misc
+0x2BB:MET_GORN
+0x2BC:MET_OWINGS
+0x2BD:MET_MALLOY
+0x2BE:MET_GROD
+0x2BF:MET_PAPA
+0x2C0:Met Mama.
+0x2C1:MET_BOY
+0x2C2:MET_SULLIVAN
+0x2C3:MET_ANTON
+0x2C4:MET_EIKO
+0x2C5:MET_AMANDA
+0x2C6:MET_KISSME
+0x2C7:MET_BROTHERS
+0x2C8:MET_CAIRBRE
+0x2C9:MET_KALLIBRUS
+0x2CA:MET_WAYNE
+0x2CB:MET_COSMO
+0x2CC:MET_IRIALE
+0x2CD:MET_LASHER
+0x2CE:MET_GAROK
+0x2CF:MET_ISKANDER
+0x2D0:LASHER_SAID_FORGET_IT
+0x2D1:LASHER_WILL_HELP
+0x2D2:GORN_TRICKED
+0x2D3:HUNTING_BEES
+0x2D4:JIG_IS_UP
+0x2D5:TOLD_ISKANDER_NAME
+0x2D6:TOLD_ISKANDER_AVATAR
+0x2D7:COSMO_SAID_OPHELIA
+0x2D8:MALLOY_FRUSTRATED
+0x2D9:MALLOY_FOOT_IN_HAT
+0x2DA:MALLOY_HAT_CRUSHED
+0x2DB:ISKANDER_QUEST
+0x2DC:KALIDETHMAD
+0x2DD:VENGEANCE_OFF
+0x2DE:AMANDA_SETTLED
+0x2DF:GAVE_AMULET
+0x2E0:FOR_THE_MEN
+0x2E1:ANTON_FREE
+0x2E2:SULLIVAN_FREE
+0x2E3:MAGICAL_SILENCE
+0x2E4:LEFT_DOOR_ACTIVE
+0x2E5:CENTER_DOOR_ACTIVE
+0x2E6:RIGHT_DOOR_ACTIVE
+0x2E7:SATIN_GOOD
+0x2E8:INSIDE_PUT_THE_AVATAR_TO_BED
+0x2E9:BAD_AVATAR
+0x2EA:IOLO_PISSED
+0x2EB:DUPRE_PISSED
+0x2EC:SHAMINO_PISSED
 0x2ED:I've cast Magic Storm.
-0x39:I am inside the Generator and suddenly can'T cast spells anymore.
-0x2C0:Met Mama
+
+# FoV
+0x2EE:ERETHIAN_IS_DEAD
+0x2EF:USED_KILL_DRACOTHRAXUS
+0x2F1:CREATED_GOLEM_BODY_1
+0x2F2:CREATED_GOLEM_BODY_2
+0x2F3:CREATED_GOLEM_BODY_3
+0x2F4:CREATED_GOLEM_BODY_4
+0x2F5:CREATED_GOLEM_BODY_5
+0x2F6:CREATED_GOLEM_BODY_6
+0x2F7:CREATED_GOLEM_BODY_7
+0x2F8:CREATED_GOLEM_BODY_8
+0x2F9:CREATED_GOLEM_BODY_9
+0x2FA:CREATED_GOLEM_BODY_A
+0x2FB:CREATED_GOLEM_BODY_B
+0x2FC:CREATED_GOLEM_BODY_C
+0x2FE:I mentioned the earthquake to Lord British, and he tells me that the Isle of Fire, where I defeated Exodus, has risen. He also told me of three shrines he erected there. He offers me use of his ship, the Golden Ankh, anchored at Vesper, to visit this island.
+0x2FF:ISLE_OF_FIRE_TREMORS
+0x301:PSYCHE_PROBED_AVATAR
+0x30C:I managed to banish Exodus' dark core to the ethereal void!
+0x30D:Received Lord British's reward for investigating the Isle of Fire.
+0x30E:SCROLL_OF_INFINITY
+0x30F:TALKED_TALISMAN_OF_INFINITY
+0x310:An exiled and blind man named Erethian lives on the Isle of Fire.
+0x311:MET_DRACOTHRAXUS
+0x312:HAVE_BLANK_BLACKSWORD
+0x313:On the Isle of Fire, I met a demon called Arcadion, trapped in a mirror. He wants me to free him.
+0x314:TALKED_ABOUT_BOLLUX
+0x315:MET_BOLLUX
+0x316:MET_SHRINE_OF_TRUTH
+0x317:CAN_TALK_SHRINE_OF_PRINCIPLE
+0x318:DID_SHRINE_OF_TRUTH
+0x319:PLACED_SECOND_TALISMAN
+0x31A:MET_SHRINE_OF_LOVE
+0x31B:ADJHAR_IS_ALIVE
+0x31C:BOLLUX_IS_DEAD
+0x31D:KNOW_BOLLUX_NAME
+0x31E:AGREED_TO_HEAL_BOLLUX
+0x31F:KNOWS_ABOUT_STONE_OF_CASTAMBRE
+0x321:CAN_HARVEST_NEW_HEART
+0x322:ADJHAR_READ_BOOK
+0x323:HAVE_GOLEM_BOOK
+0x324:UNSET_GOLEM_FLAG
+0x325:PAGE_FELL_FROM_BOOK
+0x326:REVIVING_GOLEM
+0x327:DID_SHRINE_OF_LOVE
+0x328:GOT_TALISMAN_OF_LOVE
+0x329:MET_SHRINE_OF_COURAGE
+0x32A:ERETHIAN_IS_ANGRY
+0x32B:ERETHIAN_TURNED_GARGOYLE
+0x32C:ERETHIAN_TURNED_DRAGON
+0x32D:Improved the blackrock sword.
+0x32E:FINISHED_BLADE
+0x32F:With the gem I broke the mirror to free the demon Arcadion, but instead he is now imprisoned in the gem.
+0x330:I bound the demon Arcadion to the blackrock sword
+0x331:I'm not helping a demon!
+0x332:I mistrust Erethian and have agreed to help the demon Arcadion.
+0x333:TALKED_ARCADION_WITH_GEM
+0x333:ACCEPTED_GEM_POWER
+0x334:ARCADION_SLAVE
+0x335:REFUSED_GEM_POWER
+0x336:DEFEATED_DRACOTHRAXUS
+0x337:Blacksmithing is hard work. Finally managed to forge the blackrock sword.
+0x338:TALKED_ABOUT_BINDING_GEM
+0x339:TALKED_ABOUT_SHADE_BLADE
+0x33B:SUMMONING_RITUAL_DONE
+0x33C:PLACED_SECOND_LENS
+0x33D:OPENED_WALLS_2
+0x33E:OPENED_WALLS_1
+0x33F:PLACED_FIRST_LENS
+0x340:PLACED_THIRD_TALISMAN
+0x341:DID_SHRINE_OF_COURAGE
+0x342:PLACED_ONE_TALISMAN
+0x343:BEGIN_BOND
+0x344:FINISHED_BOND

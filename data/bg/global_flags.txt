@@ -1,3 +1,6 @@
+# List of flags, found by Alun Bestor (?), Marzo, SB-X and Malignant Maynor.
+# Adapted from https://github.com/marzojr/u7-usecode fov/include/globals.uc.
+
 0x0:SEEN_TETRA
 0x1:SEEN_SPHERE
 0x2:SEEN_CUBE

@@ -1,723 +1,850 @@
-# List of flags, found by Marzo, SB-X, Malignant Manor and Knight Captain
-# lists ALL known flags, regardless of whether they make sense in the autonotes
-
-
-# Companions_have_equipment
-0x0F:STEFANO_HAS_BELONGINGS 
-0x10:GWENNO_HAS_BELONGINGS 
-0x11:SELINA_HAS_BELONGINGS 
-0x13:BOYDON_HAS_BELONGINGS 
-0x15:PETRA_HAS_BELONGINGS 
-0x16:WILFRED_HAS_BELONGINGS 
-0x17:DUPRE_HAS_BELONGINGS 
-0x18:SHAMINO_HAS_BELONGINGS 
-0x19:IOLO_HAS_BELONGINGS 
-
-
-# Copy_protection_duplicate_prevention
-
-0x1A:ASKED_9TH_CIRCLE 
-0x1B:ASKED_ARMOR_MATERIALS 
-0x1C:ASKED_BEASTS 
-0x1D:ASKED_REAGENTS 
-0x1E:ASKED_MASS_DEATH 
-0x1F:ASKED_GINSING 
-0x20:ASKED_CREATE_AUTOMATA 
-0x21:ASKED_REASONS_FOR_WRITING 
-0x22:ASKED_OPHIDIAN_WRITING 
-0x23:ASKED_OTHER_LANDMARKS 
-0x24:ASKED_CITIES_ESTABLISHED 
-0x25:ASKED_PRINCIPLES_OF_BALANCE 
-0x26:ASKED_CLANS_OF_MONITOR 
-0x27:ASKED_WEAPON_TYPES 
-0x28:ASKED_WORDS_OF_POWER 
-
-# Monitor_townplot
-
-0x32:FIRST_TALK_WITH_MARSTEN 
-0x2D:TOLD_MARSTEN_SERVES_LORD_BRITISH 
-0xA5:RENOUNCED_BRITISH 
-
-0x42:ASKED_LUTHER_ABOUT_BULLY 
-0xAE:LUCILLA_SAYS_LUTHER_REPULSIVE 
-0xAF:CALLED_LUTHER_BRAGGART 
-0xB0:CALLED_LUTHER_REPULSIVE 
-0xB1:CALLED_LUTHER_BULLY 
-0x43:LUTHER_CHALLENDE 
-0x41:DEFEATED_LUTHER 
-
-0x7F:KNOWS_ABOUT_MONITOR_CLANS 
-
-0x83:MONITOR_TRAINING 
-0x84:TRAINING_FLAG_SET 
-0x85:LEAVING_LIST_FIELD 
-
-0x8F:ASK_LUCILLA_ABOUT_ANDRAL 
-
-0xBE:CREAMATED_PIKEMAN
-
-0x97:Asked_Harnna_Too_Much "Set by 9AE after requesting some information. Checked by Harnna."
-
-# Xenka_subplot
-
-0x60:AVATAR_GOT_SHORT_STICK "Avatar has been chosen to sacrifice himself."
-0x61:DUPRE_IS_TOAST "Dupre has sacrificed himself."
-
-
-# Find_Batlin_subplot
-
-0x58:ASKED_ANDRAL_ABOUT_ROBBERY 
-0x8D:ASKED_STANDARR_ABOUT_BRUNT 
-0x8E:KNOWS_BATLIS_WAS_IN_MONITOR 
-0xA8:ASKED_SHAZZANA_ABOUT_SAILOR 
-
-
-# Monitor_sex_subplots
-
-0x3D:BRENDANN_PROPOSAL 
-0x3F:BRENDANN_TATTOO_COMPLIMENT 
-
-0x53:COURTED_LUCILLA 
-0x54:ACCEPTEC_LUCILLA_PROPOSAL 
-0x55:KNOWS_OF_LUCILLA_AND_SPEKTOR 
-
-0x8A:GAINED_GWANI_CLOAK 
-
-
-# Monitor_traitor_subplot
-
-0xA4:ASKED_TEMPLAR_ABOUT_GOBLINS 
-0xBA:ASKED_STANDARR_ABOUT_QUESTS 
-0xB6:KNOW_OF_MONITOR_THIEF 
-0x4E:KNOWS_KRAYG_WALKS_ON_WOODS 
-0xA6:ASKED_KRAYG_ABOUT_RUINS 
-0xB8:TRIED_SIMONS_ALE 
-0x44:GOBLIN_SIMON_DEAD 
-0x5F:Got_Clue_Brown_Bottle "Appears to be set by Harnna and Lucilla, maybe others.”
-0x45:HaveBrownBottleAndClue
-0xC0:KNOWS_GOBLINS_HIDEOUT 
-0x2C:HAVE_HELM_OF_MONITOR 
-# Didn't investigate enough:
-0xB3:TELL_SPEKTOR_ABOUT_TRAITOR 
-0x93:KNOW_MARSTEN_IS_TRAITOR 
-0x94:KNOW_SPEKTOR_IS_TRAITOR 
-0x38:PROVED_MARSTEN_IS_TRAITOR 
-0x92:PROVED_SPEKTOR_IS_TRAITOR 
-0xB4:SPEKTOR_ADMITS_HIS_CRIMES 
-0xC1:HAVE_SPEKTOR_KEY 
-0xC6:FOUND_CANTRAS_FATHER 
-0xC7:TOLD_HARNNA_FOUND_SCROLL 
-
-
-# Kidnapping_of_Cantra_subplot
-
-0x8c:Vision of Cantra
-0x79:KNOWS_CANTRA_IS_MISSING 
-0x5B:WILL_FIND_CANTRA 
-0x47:CURED_CANTRA      # Flag when Cantra is cured.
-0x96:TOLD_CANTRA_IS_ALIVE 
-
-# Knights_Test_subplot
-
-0x33:CAN_ASK_ABOUT_TEST 
-0xBC:ASKED_CANTRA_ABOUT_TEST 
-0x3B:KNOW_TEST_SECRETS 
-0x3C:KNOWS_MARSTEN_GIVES_PERMISSION 
-0x2F:LORD_MARSTEN_GAVE_PERMISSION 
-0x80:ASKED_SHMED_ABOUT_TEST 
-0x82:BEGAN_KNIGHTS_TEST 
-0x4A:SLAIN_WOLF 
-0x7D:GAVE_WOLF_TO_CELIA 
-0x7E:HAVE_WOLF_CLOAK 
-0x91:GAVE_WOLF_TO_LUCILLA 
-0xBF:MONITOR_BANQUET_STARTED 
-0x48:AVATAR_IS_KNIGHT 
-
-
-# Lydia_Poison_subplot
-
-0x98:POISONED_BY_LYDIA 
-0x35:CAN_ASK_LYDIA_ABOUT_POISON 
-0xCA:LYDIA_CONFESSES 
-0x5A:CURED_LYDIA_POISON 
-0x76:KNOWS_ABOUT_VARO_LEAVES 
-
-
-# Free_Iolo_subplot
-
-0xA9:KNOWS_IOLO_IMPRISONED 
-0xAA:TALKED_TO_IMPRISONED_IOLO 
-0xB5:MARSTEN_WONT_RELEASE_IOLO 
-0xB9:PAID_IOLO_FINE 
-0xC4:BRENDANN_GAVE_JAIL_KEY 
-0xCD:MARSTEN_GAVE_JAIL_KEY 
-
-
-# Sleeping_Bull_townplot
-
-0x0C:ASKED_ANDRAL_ABOUT_INN 
-
-
-# Moonshade_townplot
-
-# Gustacios_experiment_subplot
-
-0x11C:HAVE_1ST_ENERGY_GLOBE "Got energy globe for lighting experiment."
-0x121:SEEN_RED_LIGHTNING 
-0x122:SEEN_YELLOW_LIGHTNING 
-0x123:SEEN_GREEN_LIGHTNING 
-0xE4:FEDABIBLIO_ANALYSES_RESULTS 
-0xF0:CRYSTAL_BALL_WILL_SHOW_EDRIN 
-0x128:SAW_EDRIN_TRANSFORM 
-0xF2:KNOW_ALE_IS_EDRIN 
-0x11D:HAVE_2ND_ENERGY_GLOBE "Got energy globe for Ale to Edrin conversion."
-0x14A:HAVE_BIRD_CAGE 
-0xE6:RESTORED_EDRIN 
-0xE5:HAVE_MIRROR_OF_TRUTH 
-
-
-# Rotoluncia_subplot
-
-0xD7:HAVE_TALKING_SCROLL 
-0xE9:SCROLL_SPEAKS 
-0xEC:CAN_USE_FILBERCIOS_BARGE 
-
-
-# Pothos_subplot
-
-0xD9:POTHOS_RETURNED 
-0xDC:KNOWS_POTHOS_SECRET 
-0xE8:WILL_HELP_POTHOS 
-0xDD:HELPED_POTHOS 
-0x145:KNOWS_ERSTAM_PASSWORD Iskatradeeth "Told password by Pothos. Only checked by Pothos."
-
-
-# Spellbook_subplot
-
-0xDE:NEED_FRESH_MANDRAKE  Talked with Fedabiblio about spell books
-0x26C:CORRECT_SALT_TIDES 
-0x26e:Asked Baraccus about swamps
-0x26D:HAVE_FRESH_MANDRAKE 
-0xDB:HAVE_NEW_SPELLBOOK 
-
-
-# Gorlab_swamp_townplot
-
-0xF3:EDRIN_DREAMS_OF_SIRANUSH 
-0x213:EDRIN_KNOWS_SIRANUSH_IS_REAL 
-
-0x11E:Showed_Stockings_to_Melino “Take thyself from my sight and never return!”
-0x103:Asked_Bucia_Too_Much "If you ask too many questions she will have to go back to work."
-
-# The quotes are from http:# www.it-he.org
-# Bane_flags
-
-0x04:BANES_RELEASED 
-0xD3:WANTONESS_BANE_DEAD "Haha! I am Dupre: bane of drunkenness!"
-0xD5:INSANITY_BANE_DEAD "I am Iolo! Bane of shooting-the-Avatar-through-the-heart-with-the-triple-crossbow!"
-0xD4:ANARCHY_BANE_DEAD "Kneel before Shamino: bane of rapidly diminishing consequence"..."
-0xFF:KNOWS_OF_SOUL_GEMS 
-0x12D:SEEKING_SOUL_TRAP_SECRET 
-
-# Shamino Plots
-0x12B:SHAMINO_RESURRECTED_BY_MONKS 
-0x135:AFTER_FREEDOM_NEWS 
-0x13A:SHAMINO_TELEPORTED_BY_MONKS 
-
-0x14B:HAVE_CHILL_SPELL 
-
-0x14E:CLEARED_FAWN_TOWER 
-
-0x25B:BEATRIX_PROTECTION 
-0x25C:BEATRIX_FORGAVE_SHAMINO
-
-# Find_Gwenno_subplot
-
-0x26A:GWENNO_IS_DEAD 
-0xA7:ASKED_SPEKTOR_ABOUT_GWENNO 
-0x25F:FREED_GWENNOS_BODY 
-0x262:TALKED_TO_GWANI_ABOUT_GWENNO 
-0x264:BAYANDA_GAVE_BUCKET 
-# Iolo and Gwenno are alive: sane and talked to each other:
-0x275:IOLO_GWENNO_REUNITED 
-
-
-0x22B:TALKED_TO_CHAOS_HIEROPHANT 
-0x279:TALKED_TO_GREAT_HIEROPHANT 
-
-# Serpent_Speech
-
-0x2DC:SERPENT_GWANI_HORN_SPEECH 
-# GES talked about banes after Gwenno got resurrected:
-0x2DD:SERPENT_GWENNO_BANE_SPEECH 
-0x2df:Serpent speech about wizard and key
-0x2e1:Serpent "free Gwenno" speech (Picked up Gwani horn)
-
-# Bard_songs   Songs (Byrin and Iolo):
-
-0x1D3:HEARD_BEATRIX_SONG 
-0x1D4:HEARD_MOUNTAIN_SONG 
-0x1D5:HEARD_GWANI_SONG 
-0x1D6:HEARD_FOREST_MASTER_SONG 
-0x1D7:HEARD_DREAM_SONG 
-0x1D8:HEARD_WHITE_DRAGON_SONG 
-
-
-# Teleport_storm_objects
-
-0x06:EQUIPMENT_EXCHANGED 
-0x78:IOLO_MADE_EQUIPMENT_LIST 
-0xB7:DUPRE_MADE_EQUIPMENT_LIST 
-0x2A2:SHAMINO_MADE_EQUIPMENT_LIST 
-
-#CAN_ASK about items
-
-0x104:ShowedEggToBucia
-0x106:KnowSeleniaBoughtFishnetStockings
-0x108:CanAskHawkAboutPineCone
-0x10A:CanAskAboutBlueEgg "Can ask Hawk or Erstam about blue egg."
-0x10B:CanAskFedabiblioAboutPineCone?
-0x10C:CanAskFedabiblioAboutEgg
-0x10E:CanAskFedabiblioAboutSkull
-0x10F:CanAskTopoAboutUrn
-0x111:CanAskDucioAboutApparatus
-0x112:CanAskFedabiblioAboutPumice
-0x113:CanAskDucioAboutLostRing
-0x114:CanAskMagesAboutSlippers
-0x115:KnowMagesDontOwnSlippers
-0x116:CanAskDucioAboutHairbrush
-0x117:CanAskAboutHand "Can ask Erstam or Mortegro about bloody or severed hand"
-0x118:CanAskErnestoAboutShield
-0x119:? KnowStoneheartIllegal
-
-# Talking to Harnna about items allows you to ask others about them:
-0x99:ASK_BRENDANN_ABOUT_STOCKINGS 
-0x9A:ASK_CALADIN_ABOUT_URN 
-0x9B:ASK_KRAYG_ABOUT_PUMICE 
-0x9C:ASK_LUCILLA_ABOUT_LOSTRING 
-0x9D:ASK_CELLIA_ABOUT_FURCAP 
-0x9E:ASK_KRAYG_ABOUT_SLIPPERS 
-0x9F:ASK_STANDARR_ABOUT_BREASTPLATE 
-0xA0:ASK_TEMPLAR_ABOUT_HAIRBRUSH 
-0xA1:ASK_SIMON_ABOUT_STRANGEWINE 
-0xA2:ASK_SPEKTOR_ABOUT_STRANGECOINS 
-0xA3:ASK_RENFRY_ABOUT_HAND 
-
-# Flags for the teleport storm items:
-0x27A:STORM_PINECONE "Pinecone is on list of strange objects"
-0x283:STORM_BLUE_EGG "Blue egg is on list of strange objects"
-0x28B:STORM_RUDDY_ROCK "Stoneheart is on list of strange objects"
-0x27D:STORM_LAB_APPARATUS "Strange apparatus is on list of strange objects"
-0x27E:STORM_PUMICE "Pumice is on list of strange objects (as a rock)"
-0x284:STORM_GOBLIN_BRUSH "A crude brush is on list of strange objects"
-0x27F:STORM_WEDDING_RING "A finely crafted ring is on list of strange objects"
-0x27B:STORM_STOCKINGS "Stockings are on list of strange objects"
-0x288:STORM_BEAR_SKULL "Animal skull is on list of strange objects"
-0x28A:STORM_MONITOR_SHIELD "Monitorian shield is on list of strange objects"
-0x285:STORM_ICEWINE "Ice wine is on list of strange objects"
-0x27C:STORM_URN "Urn is on list of strange objects (as a vase)"
-0x281:STORM_SLIPPERS "Slippers is on list of strange objects"
-0x287:STORM_FILARI "Filari is on list of strange objects (as strange baubles)"
-0x289:STORM_SEVERED_HAND "Bloody hand is on list of strange objects"
-0x280:STORM_FUR_CAP "Woman's fur cap is on list of strange objects"
-0x282:STORM_BREAST_PLATE "Enameled breastplate is on list of strange objects"
-
-# Flags identifying the teleport storm items:
-0x28C:KNOWS_PINECONE_OWNER 
-0x295:KNOWS_BLUE_EGG_OWNER 
-0x29D:KNOWS_STONEHEART_ORIGIN 
-0x110:HAS_CLUE_LAB_APPARATUS 
-0x28F:KNOWS_LAB_APPARATUS_OWNER 
-0x290:KNOWS_PUMICE_ORIGIN 
-0x296:KNOWS_GOBLIN_BRUSH_ORIGIN 
-0x14C:HAS_CLUE_RING 
-0x291:KNOWS_RING_OWNER 
-0x28D:KNOWS_MOONSILK_OWNER 
-0x29A:KNOWS_BEAR_SKULL_ORIGIN 
-0xAC:HAS_CLUE_MONITOR_SIHELD 
-0x29C:KNOWS_MONITOR_SHIELD_ORIGIN 
-0x297:KNOWS_ICEWINE_ORIGIN 
-0x28E:KNOWS_URN_ORIGIN 
-0x293:KNOWS_SLIPPERS_OWNER 
-0x299:KNOWS_FILARI_OWNER 
-0x29B:KNOWS_SEVERED_HAND_OWNER 
-0x2A0:HAS_CLUE_FURCAP 
-0x292:KNOWS_FURCAP_OWNER 
-0x294:KNOWS_BREAST_PLATE_OWNER 
-
-# Items which have been gotten back:
-0xB2:HAS_DUPRE_SHIELD 
-
-# Items which have been returned:
-0x90:REFUSED_TO_RETURN_URN 
-0x4C:RETURNED_URN_TO_CALADIN 
-0x34B:GAVE_FURCAP_BACK (New flag in SI Fixes Mod to fix bug with fur cap) 
+# List of flags, found by Marzo, SB-X, Malignant Manor and Knight Captain.
+# Adapted from https://github.com/marzojr/u7-usecode ss/include/globals.uc.
+# Lists ALL known flags, regardless of whether they make sense in the autonotes.
+
+0x0:SHAMINOS_KEEP_BARRIERS_GONE
+0x1:SATIN_GOOD
+#0x2	not-in-usecode
+0x3:STARTING_SPEECH
+0x4:"Haha! I am Dupre: bane of drunkenness!" "I am Iolo! Bane of shooting-the-Avatar-through-the-heart-with-the-triple-crossbow!" "Kneel before Shamino: bane of rapidly diminishing consequence"
+0x5:CAN_SAIL_SHIPS
+0x6:EQUIPMENT_EXCHANGED
+0x7:TEMP_FLAG_1
+0x8:TEMP_FLAG_2
+0x9:TEMP_FLAG_3
+0xA:TEMP_FLAG_4
+0xB:ASKED_ANDRAL_ABOUT_FAWN
+0xC:ASKED_ANDRAL_ABOUT_INN
+0xD:FAR_SIGHT_CAMERA_RESET
+0xE:CALL_GUARDS_THIEVING
+
+# Former Companions with Equipment
+0xF:STEFANO_HAS_BELONGINGS
+0x10:GWENNO_HAS_BELONGINGS
+0x11:SELINA_HAS_BELONGINGS
+#0x12	not-in-usecode
+0x13:BOYDON_HAS_BELONGINGS
+#0x14	not-in-usecode
+0x15:PETRA_HAS_BELONGINGS
+0x16:WILFRED_HAS_BELONGINGS
+0x17:DUPRE_HAS_BELONGINGS
+0x18:SHAMINO_HAS_BELONGINGS
+0x19:IOLO_HAS_BELONGINGS
+
+#Copy Protection
+0x1A:ASKED_9TH_CIRCLE
+0x1B:ASKED_ARMOR_MATERIALS
+0x1C:ASKED_BEASTS
+0x1D:ASKED_REAGENTS
+0x1E:ASKED_MASS_DEATH
+0x1F:ASKED_GINSENG
+0x20:ASKED_CREATE_AUTOMATA
+0x21:ASKED_REASONS_FOR_WRITING
+0x22:ASKED_OPHIDIAN_WRITING
+0x23:ASKED_OTHER_LANDMARKS
+0x24:ASKED_CITIES_ESTABLISHED
+0x25:ASKED_PRINCIPLES_OF_BALANCE
+0x26:ASKED_CLANS_OF_MONITOR
+0x27:ASKED_WEAPON_TYPES
+0x28:ASKED_WORDS_OF_POWER
+
+# 0x29	not-in-usecode
+0x2A:USING_FAR_SIGHT_MAGIC
+
+# Monitor
+#0x2B not-in-usecode, Beta: entrytariffpaid
+0x2C:HAVE_HELM_OF_MONITOR
+0x2D:TOLD_MARSTEN_SERVES_LORD_BRITISH
+#0x2E: not-in-usecode Beta: marstensaidpomdirgun
+0x2F:LORD_MARSTEN_GAVE_PERMISSION
+#0x30	not-in-usecode Beta: marstensaidgoblins
+#0x31	not-in-usecode Beta: timeforfuneral
+0x32:FIRST_TALK_WITH_MARSTEN
+0x33:CAN_ASK_ABOUT_TEST
+#0x34 not-in-usecode Beta: talkedmarstenpost
+0x35:CAN_ASK_LYDIA_ABOUT_POISON
+0x36:CAN_ACCUSE_MARSTEN
+#0x37 not-in-usecode Beta: lydiaunderarrest
+0x38:PROVED_MARSTEN_IS_TRAITOR
+#0x39	not-in-usecode Beta: foundspektorpotion
+#0x3A	not-in-usecode Beta: spektorsaidharnna
+0x3B:KNOW_TEST_SECRETS
+0x3C:KNOWS_MARSTEN_GIVES_PERMISSION
+0x3D:BRENDANN_PROPOSAL
+0x3E:HAVE_WOLF_TATTOO
+0x3F:BRENDANN_TATTOO_COMPLIMENT
+#0x40 not-in-usecode Beta: postbrendannmet
+0x41:DEFEATED_LUTHER
+0x42:ASKED_LUTHER_ABOUT_BULLY
+0x43:LUTHER_CHALLENGED
+0x44:GOBLIN_SIMON_DEAD
+0x45:FOUND_BROWN_BOTTLE
+0x46:KNOWS_ABOUT_GOBLIN_RAID
+0x47:CURED_CANTRA
+0x48:AVATAR_IS_KNIGHT
+#0x49	not-in-usecode Beta: ceremonyfirsthalf
+0x4A:SLAIN_WOLF
+#0x4B	not-in-usecode Beta: invitedtoinductin
+0x4C:RETURNED_URN_TO_CALADIN
+#0x4D	not-in-usecode Beta: lucillasaidargus
+0x4E:KNOWS_KRAYG_WALKS_ON_WOODS
+#0x4F not-in-usecode Beta: lydiasaidselina
+#0x50 not-in-usecode Beta: pickedbearcommand
+#0x51 not-in-usecode Beta: pickedwolfcommand
+#0x52 not-in-usecode Beta: pickedleopardcommand
+0x53:COURTED_LUCILLA
+0x54:ACCEPTED_LUCILLA_PROPOSAL
+0x55:KNOWS_OF_LUCILLA_AND_SPEKTOR
+0x56:HEARD_BATLIN_IS_THIEF
+0x57:HEARD_ABOUT_CREMATION
+0x58:ASKED_ANDRAL_ABOUT_ROBBERY
+0x59:HEARD_ABOUT_WILFRED
+0x5A:CURED_LYDIA_POISON
+0x5B:WILL_FIND_CANTRA
+#0x5C not-in-usecode Beta: toldharnnamonks
+#0x5D not-in-usecode Beta: metpostshazzana
+#0x5E not-in-usecode Beta: dupreatwolves
+0x5F:KNOW_BROWN_BOTTLE_IS_FAWNISH_ALE
+0x60:I have been chosen to sacrifice myelfself.
+0x61:Dupre has sacrificed himself.
+#0x62 not-in-usecode Beta: duprefights
+#0x63 not-in-usecode Beta: firstsaved
+#0x64 not-in-usecode Beta: secondsaved
+#0x65 not-in-usecode Beta: wolf9dead
+#0x66 not-in-usecode Beta: wolf10dead
+#0x67 not-in-usecode Beta: wolf11dead
+#0x68 not-in-usecode Beta: wolf12dead
+0x69:TALKED_KRAYG_ABOUT_TRAITOR_MARSTEN
+#0x6A not-in-usecode Beta: standarrdead
+#0x6B not-in-usecode Beta: shazzanadead
+#0x6C not-in-usecode Beta: harnnadead
+#0x6D not-in-usecode Beta: brendanndead
+#0x6E not-in-usecode Beta: lucilladead
+#0x6F not-in-usecode Beta: renfrydead
+#0x70 not-in-usecode Beta: kraygdead
+#0x71 not-in-usecode Beta: shmeddead
+0x72:CALADIN_IS_DEAD
+#0x73 not-in-usecode Beta: lutherdead
+#0x74 not-in-usecode Beta: templardead
+#0x75 not-in-usecode Beta: lydiadead
+0x76:KNOWS_ABOUT_VARO_LEAVES
+#0x77 not-in-usecode Beta: senttomarsten
+0x78:IOLO_MADE_EQUIPMENT_LIST
+0x79:KNOWS_CANTRA_IS_MISSING
+0x7A:STORM_FISHNET_STOCKINGS_SELINA
+0x7B:STORM_FISHNET_STOCKINGS
+0x7C:KNOWS_FISHNET_STOCKINGS_ORIGIN
+0x7D:GAVE_WOLF_TO_CELIA
+0x7E:HAVE_WOLF_CLOAK
+0x7F:KNOWS_ABOUT_MONITOR_CLANS
+0x80:ASKED_SHMED_ABOUT_TEST
+#0x81 not-in-usecode Beta: shownshmedevidence
+0x82:BEGAN_KNIGHTS_TEST
+0x83:MONITOR_TRAINING
+0x84:TRAINING_FLAG_SET
+0x85:LEAVING_LIST_FIELD
+#0x86	not-in-usecode
+#0x87	not-in-usecode
+#0x88	not-in-usecode
+#0x89	not-in-usecode
+0x8A:GAINED_GWANI_CLOAK
+0x8B:VIEWING_CANTRA_ABDUCTION
+0x8C:KNOW_BATLIN_HAS_CANTRA
+0x8D:ASKED_STANDARR_ABOUT_BRUNT
+0x8E:KNOWS_BATLIN_WAS_IN_MONITOR
+0x8F:ASK_LUCILLA_ABOUT_ANDRAL
+0x90:REFUSED_TO_RETURN_URN
+0x91:GAVE_WOLF_TO_LUCILLA
+0x92:PROVED_SPEKTOR_IS_TRAITOR
+0x93:KNOW_MARSTEN_IS_TRAITOR
+0x94:KNOW_SPEKTOR_IS_TRAITOR
+0x95:HARNNA_TALKED_CRYSTAL_BALL
+0x96:TOLD_CANTRA_IS_ALIVE
+0x97:ASKED_HARNNA_TOO_MUCH
+0x98:POISONED_BY_LYDIA
+0x99:ASK_BRENDANN_ABOUT_STOCKINGS
+0x9A:ASK_CALADIN_ABOUT_URN
+0x9B:ASK_KRAYG_ABOUT_PUMICE
+0x9C:ASK_LUCILLA_ABOUT_LOST_RING
+0x9D:ASK_CELLIA_ABOUT_FUR_CAP
+0x9E:ASK_KRAYG_ABOUT_SLIPPERS
+0x9F:ASK_STANDARR_ABOUT_BREASTPLATE
+0xA0:ASK_TEMPLAR_ABOUT_HAIRBRUSH
+0xA1:ASK_SIMON_ABOUT_STRANGE_WINE
+0xA2:ASK_SPEKTOR_ABOUT_STRANGE_COINS
+0xA3:ASK_RENFRY_ABOUT_HAND
+0xA4:ASKED_TEMPLAR_ABOUT_GOBLINS
+0xA5:RENOUNCED_BRITISH
+0xA6:ASKED_KRAYG_ABOUT_RUINS
+0xA7:ASKED_SPEKTOR_ABOUT_GWENNO
+0xA8:ASKED_SHAZZANA_ABOUT_SAILOR
+0xA9:KNOWS_IOLO_IMPRISONED
+0xAA:TALKED_TO_IMPRISONED_IOLO
+#0xAB	not-in-usecode Beta: askluthercommonshield
+0xAC:HAS_CLUE_MONITOR_SHIELD
+0xAD:BRENDANN_CALLED_LUTHER_BRAGGART
+0xAE:LUCILLA_SAYS_LUTHER_REPULSIVE
+0xAF:CALLED_LUTHER_BRAGGART
+0xB0:CALLED_LUTHER_REPULSIVE
+0xB1:CALLED_LUTHER_BULLY
+0xB2:HAS_DUPRE_SHIELD
+0xB3:TELL_SPEKTOR_ABOUT_TRAITOR
+0xB4:SPEKTOR_ADMITS_HIS_CRIMES
+0xB5:MARSTEN_WONT_RELEASE_IOLO
+0xB6:KNOW_OF_MONITOR_THIEF
+0xB7:DUPRE_MADE_EQUIPMENT_LIST
+0xB8:TRIED_SIMONS_ALE
+0xB9:PAID_IOLO_FINE
+0xBA:ASKED_STANDARR_ABOUT_QUESTS
+0xBB:KNOWS_CALADIN_IS_TRAINER
+0xBC:ASKED_CANTRA_ABOUT_TEST
+0xBD:TOLD_MARSTEN_ABOUT_IOLO
+0xBE:CREMATED_PIKEMAN
+0xBF:MONITOR_BANQUET_STARTED
+0xC0:KNOWS_GOBLINS_HIDEOUT
+0xC1:HAVE_SPEKTOR_KEY
+0xC2:AVATAR_IS_POISONED
+#0xC3 not-in-usecode
+0xC4:BRENDANN_GAVE_JAIL_KEY
+0xC5:KNOWS_SHMED_IS_TRAITOR
+0xC6:FOUND_CANTRAS_FATHER
+0xC7:TOLD_HARNNA_FOUND_SCROLL
+0xC8:CREATED_BROWN_BOTTLE
+0xC9:PIBB_IS_DEAD
+0xCA:LYDIA_CONFESSES
+0xCB:HARNNA_SPOKE_ABOUT_POX
+0xCC:POMDIRGUN_IS_DEAD
+0xCD:MARSTEN_GAVE_JAIL_KEY
+
+# Banes
+0xCE:I've fixed the black sword with the flux analyzer.
+0xCF:ARCADION_IN_SWORD
+0xD0:ANARCHY_BANE_IN_SWORD
+0xD1:WANTONNESS_BANE_IN_SWORD
+0xD2:INSANITY_BANE_IN_SWORD
+0xD3:WANTONNESS_BANE_DEAD
+0xD4:ANARCHY_BANE_DEAD
+0xD5:INSANITY_BANE_DEAD
+
+# Moonshade
+0xD6:MET_ERNESTO
+0xD7:HAVE_TALKING_SCROLL
+0xD8:According to Rocco the Blue Boar has simple, clean rooms. No ruffians allowed.
+0xD9:POTHOS_RETURNED
+0xDA:Filbercio has agreed to meet with you, and will summon you.
+0xDB:HAVE_NEW_SPELLBOOK
+0xDC:KNOWS_POTHOS_SECRET
+0xDD:HELPED_POTHOS
+0xDE:Talked with Fedabiblio about spell books. I need to collect fresh mandrake roots.
+0xDF:Mosh says Columna stole her beauty comb.
+0xE0:Julia gave me the catacombs key.
+0xE1:Mosh gave Magic Harp.
+0xE2:CAUGHT_WITH_FRIGIDAZZI
+0xE3:FINISHED_LIGHTNING_EXPERIMENT
+0xE4:FEDABIBLIO_ANALYSES_RESULTS
+0xE5:HAVE_MIRROR_OF_TRUTH
+0xE6:RESTORED_EDRIN
+0xE7:ANDRIO_SPOKE_ABOUT_DELIN
+0xE8:WILL_HELP_POTHOS
+0xE9:SCROLL_SPEAKS
+0xEA:KNOWS_ROTOLUNCIA_IS_KIDNAPPER
+0xEB:AUTOMATON_SPOKE_ABOUT_KIDNAP
+0xEC:CAN_USE_FILBERCIOS_BARGE
+0xED:Heard about passage to Furnace.
+0xEE:COLUMNA_SPOKE_ABOUT_MOSH
+0xEF:AVATAR_BELIEVES_MOSH
+0xF0:CRYSTAL_BALL_WILL_SHOW_EDRIN
+0xF1:Released Fedabiblio from stone statue.
+0xF2:KNOW_ALE_IS_EDRIN
+0xF3:EDRIN_DREAMS_OF_SIRANUSH
+0xF4:KNOWS_ANDRIO_SCARED
+0xF5:KNOWS_FEDABIBLIO_IS_STATUE
+0xF6:OBTAINED_SCROLL_OF_SERPENT
+#0xF7	not-in-usecode Beta: gustgavetooth
+#0xF8	not-in-usecode Beta: filgavetooth
+#0xF9	not-in-usecode Beta: roccogavenote
+0xFA:STEFANO_GAVE_TEETH
+0xFB:STEFANO_SPOKE_ROCK_SERPENT
+0xFC:Got permission to commit crime from Julia.
+0xFD:GOT_COMB_OF_BEAUTY
+0xFE:DUCIO_SPOKE_ABOUT_GUSTACIO
+0xFF:KNOWS_OF_SOUL_GEMS
+0x100:Fedabiblio ggave me the key from Captain Hawk.
+#0x101	not-in-usecode
+#0x102	not-in-usecode
+0x103:ASKED_BUCIA_TOO_MUCH
+0x104:BLUE_EGG_IS_ROTTEN
+#0x105	not-in-usecode
+0x106:HAS_CLUE_FISHNET_STOCKINGS
+#0x107	not-in-usecode
+0x108:ASKED_BUCIA_ABOUT_PINECONE
+#0x109	not-in-usecode
+0x10A:ASKED_FEDABIBLIO_ABOUT_BLUE_EGG
+0x10B:HAS_CLUE_PINECONE
+0x10C:HAS_CLUE_BLUE_EGG
+#0x10D	not-in-usecode Beta: fedaknowscat
+0x10E:HAS_CLUE_BEAR_SKULL
+0x10F:HAS_CLUE_URN
+0x110:HAS_CLUE_LAB_APPARATUS
+0x111:KNOWS_DUCIO_IS_ARTISAN
+0x112:HAS_CLUE_PUMICE
+0x113:HAS_CLUE_LOST_RING
+0x114:HAS_BAD_CLUE_SLIPPERS
+0x115:HAS_CLUE_SLIPPERS
+0x116:HAS_CLUE_STRANGE_BRUSH
+0x117:HAS_CLUE_BLOODY_HAND
+0x118:HAS_CLUE_SHIELD
+0x119:BUCIA_SPOKE_STONEHEART
+0x11A:HAS_CLUE_RUDDY_ROCK
+0x11B:KNOWS_CELENNIA_DISAPPEARED
+0x11C:Got energy globe for lighting experiment.
+0x11D:Got energy globe for Ale to Edrin conversion.
+0x11E:MELINO_HATES_AVATAR
+0x11F:WONT_HELP_POTHOS
+0x120:ERNESTO_IS_DEAD
+0x121:SEEN_RED_LIGHTNING
+0x122:SEEN_YELLOW_LIGHTNING
+0x123:SEEN_GREEN_LIGHTNING
+#0x124	not-in-usecode
+0x125:GOT_FRIGIDAZZI_DATE
+#0x126	not-in-usecode
+0x127:TORRISSIO_HATES_AVATAR
+0x128:SAW_EDRIN_TRANSFORM
+0x129:Mortegro performed seance to contact Christopher.
+0x12A:I've read the book describing how the magiccompass works.
+0x12B:SHAMINO_RESURRECTED_BY_MONKS
+#0x12C	not-in-usecode
+0x12D:SEEKING_SOUL_TRAP_SECRET
+0x12E:Pothos explained the Mountains of Freedom prison.
+0x12F:Flindo agreed to arrange a meeting with the Filbercio.
+0x130:FLINDO_SECURED_MAGELORD_AUDIENCE
+0x131:Mortegro performed seance to contact Gwenno.
+0x132:Mortegro tells me that he perfoms seances.
+0x133:I was kidnapped by Rotoluncia.
+0x134:Iolo was kidnapped by Rotoluncia.
+0x135:AFTER_FREEDOM_NEWS
+0x136:Returned Philanderer's Friend to Torrissio, in exchange for information on Worm Gems.
+0x137:Stefano has given me the key to his old house, to find the blackock Serpent.
+#0x138	not-in-usecode
+0x139:Petra complained about Rocco being dead, and says her existence is pointless.
+0x13A:SHAMINO_TELEPORTED_BY_MONKS
+0x13B:Torrissio stole the fishnet stockings from me.
+0x13C:I refused to return fishnet stockings to Torrissio.
+0x13D:Pothos told me the mantra to call the turtle.
+0x13E:GOT_DATE_WITH_BUCIA
+0x13F:Mortegro has been named as a suspect in Iolo's kidnapping.
+0x140:SHOULD_TELL_JULIA_OF_KIDNAP
+0x141:SHOULD_TELL_FILBERCIO_OF_KIDNAP
+0x142:TORRISSIO_KIDNAP_SUSPECT
+0x143:PAID_JULIA_FOR_INVESTIGATION
+0x144:JULIA_ISNT_INVESTIGATING_KIDNAP
+0x145:KNOWS_ERSTAM_PASSWORD
+0x146:GOT_MAGELORD_SUMMONS
+0x147:KNOWS_ABOUT_PHILANDERERS_FRIEND
+0x148:FIGHT_ROTOLUNCIA
+0x149:THOXA_REVIVED_STEFANO
+0x14A:HAVE_BIRD_CAGE
+0x14B:HAVE_CHILL_SPELL
 
 # Fawn
-0x14F:WelcomeToFawn "Spoke to the Lady of Fawn about why you're there."
-0x172:FawnConspiracyExposed
-0x150:OfferedToDeliverDelphyniaLetter "Gave Delphynia a letter from Ruggs, and agreed to deliver one from her back to him."
-0x151:GotMapFromScots "Got a free map from the geographer Scots."
-0x152:OfferedToDeliverRuggsLetter "Agreed to deliver a letter from Ruggs to Delphynia."
-0x15C:WelcomedByJorvin "Set when first talking to Jorvin, if Iolo played the lute he finds in Fawn."
-0x15D:KnowOfFawnAssassin "Can ask Jorvin or Kalen about assassin. Set when killing Kalen, and in 0x8ab."
-0x167:WontHelpRuggs
-0x16E:OracleSaysInnocent "Oracle just says defendant is innocent."
-0x16F:OracleSaysTrialIsCorrupt "Oracle says the trial is corrupt."
-0x173:DupreAccused "Dupre will stand trial in Fawn."
-0x174:IoloAccused "Iolo will stand trial in Fawn."
-0x175:ShaminoAccused "Shamino will stand trial in Fawn."
-0x18B:OlonAskedIoloToSing
-0x18E:CanAskZulithAboutSpying "Set when noticing Zulith following the party."
-0x18F:AskedZulithAboutSpying "You can now ask Alyssand about Zulith."
-0x190:IoloPlayedInFawn "Wait, sailor! I shall sing thee mine heart's one song..."
-0x1A2:UsedShopDiscount "Avatar bought something from Delin with his half-price discount."
-0x1A3:DeliveredRuggsLetter
-0x1A4:HaveGauntlets "Returned by Alyssand"
-0x1A5:HaveVaroLeaves "Got from Delphynia."
-0x1A8:FoundAccusedInFawn "Told by Alyssand where your companion is being held."
-0x1B4:AlyssandFlirted "Causes her to demand a kiss when you expose the trial as a fraud."
+0x14C:HAS_CLUE_RING
+0x14D:DELIN_MAD_AT_AVATAR
+0x14E:CLEARED_FAWN_TOWER
+0x14F:FIRST_FAWN_GUARD_ENCOUNTER
+0x150:Gave Delphynia a letter from Ruggs, and agreed to deliver one from her back to him.
+0x151:Got a free map from the geographer Scots.
+0x152:greed to deliver a letter from Ruggs to Delphynia.
+#0x153	not-in-usecode
+#0x154	not-in-usecode
+0x155:KNOWS_JENDON_MET_GWENNO
+0x156:ASKED_JENDON_DAEMON_ARTIFACTS
+0x157:DELIN_SAID_MOONSHADE
+0x158:ASK_DELIN_ABOUT_BATLIN
+#0x159#not-in-usecode
+#0x15A not-in-usecode
+0x15B:JORVIN_KNOWS_AVATAR_NOT_MONITORIAN
+0x15C:HAVE_YELINDA_AUDIENCE
+0x15D:KALEN_IS_DEAD
+0x15E:KYLISTA_CAUGHT
+0x15F:Leon explains the Fellowship.
+0x160:Leon explains the inner voice.
+0x161:Leon explains trust.
+0x162:Leon explains unity.
+0x163:Leon explains worthiness.
+0x164:OLON_SPOKE_STORMS
+0x165:OLON_NEEDS_DRINK
+0x166:PRESSED_EARTHQUAKE_SWITCH
+0x167:REFUSED_RUGGS_LETTER
+0x168:FIRST_RUGGS_ENCOUNTER
+0x169:SCOTS_SAID_FELLOWSHIP
+0x16A:SCOTS_SAID_LEON
+0x16B:PRESSED_ORACLE_SPEAK_SWITCH
+0x16C:PRESSED_ORACLE_SWITCH1
+0x16D:PRESSED_ORACLE_SWITCH2
+0x16E:Oracle just says defendant is innocent.
+0x16F:Oracle says the trial is corrupt.
+0x170:FAWN_TRIAL_ONGOING
+0x171:FAWN_TRIAL_RECESS
+0x172:FAWN_TRIAL_DONE
+0x173:Dupre will stand trial in Fawn.
+0x174:Iolo will stand trial in Fawn.
+0x175:Shamino will stand trial in Fawn.
+0x176:FAWN_TRIAL_ALYSSAND_SPOKE
+0x177:FAWN_TRIAL_DELIN_SPOKE
+0x178:FAWN_TRIAL_DELPHYNIA_SPOKE
+0x179:FAWN_TRIAL_JENDON_SPOKE
+0x17A:FAWN_TRIAL_JORVIN_SPOKE
+0x17B:FAWN_TRIAL_VOLDIN_SPOKE
+0x17C:FAWN_TRIAL_KYLISTA_SPOKE
+0x17D:FAWN_TRIAL_LEON_JOTH_SPOKE
+0x17E:FAWN_TRIAL_OLON_SPOKE
+0x17F:FAWN_TRIAL_RUGGS_GARTH_SPOKE
+0x180:FAWN_TRIAL_SCOTS_SPOKE
+0x181:FAWN_TRIAL_YELINDA_SPOKE
+0x182:FAWN_TRIAL_ZULITH_SPOKE
+#0x183	ot-in-usecode
+#0x184	not-in-usecode
+#0x185	not-in-usecode
+#0x186	not-in-usecode
+0x187:GOT_FAWN_TRIAL_SUMMONS
+#0x188	not-in-usecode
+0x189:KNOW_FAWN_MEANING
+0x18A:YELINDA_SPOKE_ORACLE
+0x18B:IOLO_SINGS_FAWN
+0x18C:FAWN_INITIAL_STORM
+0x18D:DELIN_SPOKE_FRELI
+0x18E:ZULITH_TAILING_PARTY
+0x18F:ZULITH_CAUGHT_TAILING
+0x190:IOLO_HAS_SUNG_FAWN
+0x191:HAS_CLUE_PINECONE_OLON
+0x192:HAS_CLUE_MOONSILK_STOCKINGS
+0x193:ASK_DELPHYNIA_APPARATUS
+0x194:ASK_DELPHYNIA_PUMICE
+0x195:ASK_DELIN_FUR_CAP
+0x196:ASK_DELIN_SLIPPERS
+0x197:ASK_DELPHYNIA_BLUE_EGG
+0x198:ASK_JORVIN_STRANGE_HAIRBRUSH
+0x199:HAS_CLUE_DEAD_CAT
+0x19A:JENDON_SPOKE_STRANGE_COINS
+0x19B:ASK_JORVIN_SKULL
+0x19C:ASK_JORVIN_SHIELD
+0x19D:ASK_DELPHYNIA_GLOWING_ROCK
+0x19E:ASK_ALYSSAND_FISHNET_STOCKINGS
+0x19F:JENDON_SPOKE_MONITOR
+0x1A0:ASKED_JENDON_TOO_MUCH
+0x1A1:Got a one time discount at Delin's shop after delivering a letter from Freli to him.
+0x1A2:I bought something from Delin with his half-price discount.
+0x1A3:DELIVERED_RUGGS_LETTER
+0x1A4:GOT_GAUNTLETS_BACK
+0x1A5:DELPHYNIA_SPOKE_VARO_LEAVES
+0x1A6:CAUGHT_VOLDIN
+0x1A7:HAS_DELPHYNIA_LETTER
+0x1A8:Told by Alyssand where my accused friend is being held and gave me a key to access the jail.
+0x1A9:ASK_ONLON_GWANI
+0x1AA:JENDON_SPOKE_STRANGE_OBJECTS
+0x1AB:FAWN_TRIAL_ASK_JENDON_SAVAGES
+0x1AC:FAWN_TRIAL_ASK_DELIN_FUR_CAP
+0x1AD:FAWN_TRIAL_ASK_JENDON_STRANGE_OBJECTS
+0x1AE:FAWN_TRIAL_ASK_DELPHYNIA_VARO_LEAVES
+0x1AF:FAWN_TRIAL_ASK_ALYSSAND_RING
+0x1B0:FAWN_TRIAL_ZULITH_SPOKE_BEFORE
+0x1B1:KNOW_YELINDAS_DIAMOND_NECKLACE
+0x1B2:ZULITH_SPOKE_RING
+0x1B3:Alyssand asked me to join her cause.
+0x1B4:ALYSSAND_LIKES_AVATAR
+0x1B5:AUDIENCE_WITH_YELINDA
+0x1B6:JORVIN_SUMMONS_AVATAR
 
+# Mad Mage
+0x1B7:Agreed to bring Erstam a pheonix egg.
+0x1B8:Brought pheonix egg back to Erstam.
+0x1B9:Boydon wants to join party, but I have to ask Erstam for permission.
+0x1BA:Erstam gave permission for Boydon to join party.
+0x1BB:BOYDON_LIVES
+0x1BC:HAVE_PHOENIX_EGG
+0x1BD:AVATAR_HAS_JAWBONE
+0x1BE:ERSTAM_SPOKE_TELEPORTATION
+0x1BF:Told Esrtam the password so he'll talk to me.
+0x1C0:A living head named Boydon has greeted the party.
+0x1C1:VASEL_SPOKE_JAWBONE
+0x1C2:Told Erstam I've found the jawbone, and recieved a serpent's tooth (Leading to Moonshade).
+0x1C3:Erstam gave another serpent's tooth as a token of appreciation (leading to Erstam's island).
+0x1C4:Erstam gave me a third serpent's tooth (leading to Monk Island).
+0x1C5:ERSTAM_EXPERIMENT_FINISHED
+0x1C6:ERSTAM_DONE_IMMORTALITY
+0x1C7:Erstam explains how to answer the riddle of life and death.
+0x1C8:ERSTAM_SPOKE_DISTURB
+0x1C9:Erstam gave me the key to his storeroom.
 
-# Erstram
-0x1B7:StartPheonixQuest "Agreed to bring Erstam a pheonix egg... and sent to the quest immediately!"
-0x1B8:BroughtPheonixEgg "Brought pheonix egg back to Erstam."
-0x1B9:MayBoydonJoin "Boydon wants to join party. Avatar must ask Erstam"
-0x1BA:BoydonMayJoin "Erstam gave permission for Boydon to join party."
-0x1BD:HaveSerpentJawbone
-0x1BE:KnowOfTeleportation "Set when asking 0x423 about the topic. Adds answers in 0x423 and 0x424."
-0x1BF:Iskatradeeth "Gave password to Erstam so he'll talk to you."
-0x1C0:BoydonSpeaks "Boydon has greeted the party."
-0x1C2:FoundJawbone "Told Erstam you've found the jawbone, and recieved a serpent's tooth."
-0x1C3:HaveAnotherTooth(toErstam) "Erstam gave another serpent's tooth as a token of appreciation."
-0x1C4:AndAnotherTooth(toAnotherPlace?) "Erstam gave you a third serpent's tooth."
-0x1C7:RiddleOfLifeAndDeath "Erstam explains how to answer the riddle."
+# Sleeping Bull
+0x1CA:ASK_TEMPLAR_ARGUS
+0x1CB:Travelling on a ship to Moonshade.
+0x1CC:Journeyed on the Arabella to Moonshade.
+0x1CD:Captain Hawk was imprisoned by the pikemen.
+0x1CE:Given opportunity to pay fine for Captain Hawk.
+0x1CF:ASK_SELINA_KEY
+#0x1D0	not-in-usecode Beta: hawkfree
+0x1D1:I've paid for the release of Captain Hawk.
+#0x1D2	not-in-usecode Beta: flindocontacts
+0x1D3:HEARD_BEATRIX_SONG
+0x1D4:HEARD_MOUNTAIN_SONG
+0x1D5:HEARD_GWANI_SONG
+0x1D6:HEARD_FOREST_MASTER_SONG
+0x1D7:HEARD_DREAM_SONG
+0x1D8:HEARD_WHITE_DRAGON_SONG
+0x1D9:HEARD_ARGUS_ACCUSATIONS
+#0x1DA not-in-usecode Beta: move_boulder
+#0x1DB not-in-usecode Beta: chopped_wood
+#0x1DC not-in-usecode Beta: scrub_pots
+#0x1DD not-in-usecode Beta: clean_chimney
+#0x1DE not-in-usecode Beta: avatardidchores
+#0x1DF not-in-usecode Beta: knowswardrobe
+0x1E0:MASTER_SWITCH_IS_ACTIVE
+0x1E1:Wilfred has joined the party.
+0x1E2:Wilfred fled from a fight.
+0x1E3:Asked Wilfred to leave the party.
+0x1E4:DEVRA_SPOKE_OF_ANGUS_DISAPPEARANCE
+0x1E5:SELINA_GAVE_KEY
+0x1E6:I reached the bank and Selina has disappeared.
+0x1E7:On the way to the bank I took a wrong turn and Selina told me to get back on the correct path.
+0x1E8:UNLOCKED_MINT
+0x1E9:RETURNED_SLIPPERS
+0x1EA:I've been ambushed at the bank.
 
+# Furnace
+0x1EB:Didn't go through the gate with Iolo in the logic test.
+0x1EC:Pushed the right button in the ethic test.
+0x1ED:Didn't follow Dupre in the virtue test.
+0x1EE:CLONE_SHAMINO_PRESSED_SEX_BUTTON
+0x1EF:TURNED_DOWN_TEST_OF_PURITY
+0x1F0:AVATAR_DENIED_LIFE
+0x1F1:AVATAR_DENIED_FAMILY
+0x1F2:AVATAR_DENIED_HOME
+0x1F3:BEGUN_WORM_TEST
+0x1F4:KILLED_FIRST_WORM
+0x1F5:KILLED_FOUR_WORMS
+0x1F6:KILLED_SEVEN_WORMS
+0x1F7:KILLED_NINE_WORMS
+0x1F8:PASSED_WORM_TEST
+0x1F9:I've found the serpent staff.
+0x1FA:Zhelkas explained the test of purity.
+0x1FB:STARTED_TEST_OF_PURITY
+0x1FC:I've cast the chill spell to keep us cool.
+0x1FD:I've introduced myself as the Avatar
+0x1FE:Gargoyles have asked me to enter their realm and seek the pillars.
+0x1FF:Zhelkas opened the exit of Furnace.
+0x200:Told to get the goblet of replenishing water.
+0x201:I've brought the goblet of replenishing water to Zhelkas.
+0x202:REACHED_CLONE_SHAMINO_TEST
+0x203:TRIED_CLONE_IOLO_TEST
+0x204:TRIED_CLONE_SHAMINO_TEST
+0x205:TRIED_CLONE_DUPRE_TEST
+0x206:Found a hall of sleeping daemons, reminiscent of the Emps in Britannia.
+0x207:GOT_SERPENT_RING
+0x208:ARENA_BATTLE_STARTED
+0x209:AUTO1_IS_DEAD
+0x20A:AUTO2_IS_DEAD
+0x20B:AUTO3_IS_DEAD
+0x20C:AUTO4_IS_DEAD
+
+# Gorlab swamp and Dream Realm
+0x20D:TURNED_SIRANUSH_DOWN
+0x20E:SIRANUSH_SPOKE_ARTIFACT_OF_COURAGE
+0x20F:SIRANUSH_SPOKE_ARTIFACT_OF_LOVE
+0x210:SIRANUSH_SPOKE_ARTIFACT_OF_TRUTH
+0x211:FINISHED_DREAM_QUEST
+0x212:Gave comb of Beauty to Yelinda
+0x213:EDRIN_KNOWS_SIRANUSH_IS_REAL
+
+#Temples
+0x214:AVATAR_REFUSED_MORTEGRO
+0x215:AVATAR_FREED_MORTEGRO
+0x216:MORTEGRO_THANKED_AVATAR
+0x217:ETHICALITY_PASSED_FIRST_TEST
+0x218:ETHICALITY_PASSED_SECOND_TEST
+0x219:ETHICALITY_PASSED_THIRD_TEST
+0x21A:TEST_NEVER_YIELDED
+0x21B:PASSED_TEST_OF_ETHICALITY
+0x21C:TEST_SAVED_MAN_ON_FIRE
+0x21D:TEST_LEFT_MONEY
+0x21E:BATLIN_IN_TEST_OF_ETHICALITY
+0x21F:TEST_REFUSED_TO_YIELD
+0x220:GOT_WATER_OF_DISCIPLINE
+0x221:GOT_WATER_OF_ETHICALITY
+0x222:GOT_WATER_OF_LOGIC
+0x223:GOT_WATER_OF_EMOTION
+0x224:GOT_WATER_OF_ENTHUSIASM
+0x225:GOT_WATER_OF_TOLERANCE
+0x226:Talked with Petra about Acid
+0x227:I've readthe book Body Transference
+0x228:AVATAR_WAS_MALE
+0x229:TRIED_TO_ENTER_ONCE
+0x22A:TRIED_TO_ENTER_TWICE
+0x22B:TALKED_TO_CHAOS_HIEROPHANT
+0x22C:DOING_ANTI_SHAMINO_VISION
+0x22D:DID_ANTI_SHAMINO_VISION
+0x22E:PUZZLE_PICKED_RED_FIRST
+0x22F:PUZZLE_PICKED_RED_FOURTH
+0x230:PUZZLE_PICKED_YELLOW_SECOND
+0x231:PUZZLE_PICKED_BLUE_THIRD
+0x232:PUZZLE_PICKED_WHITE_LAST
+0x233:SOLVED_MURDER_PUZZLE
+
+# Mountains of Freedom
+0x234:GOT_BLACK_SWORD
+#0x235	not-in-usecode Beta: metlorthondo
+0x236:TELDRONO_IS_CHICKEN
+0x237:TELDRONO_IS_BEAR
+0x238:PRESSED_BOTH_SWITCHES
+0x239:AVATAR_ESCAPED_FREEDOM
+0x23A:ARCADION_IS_FREE
+0x23B:MET_FREEDOM_CARETAKER
+
+# Skullcrusher
+0x23C:Picked up flux analyzer.
+0x23D:Picked up Philanderer's Friend.
+0x23E:CHAOS_PLACED_BLACKROCK_SERPENT_CHAOS
+0x23F:PLACED_SOUL_PRISM_ANARCHY
+0x240:PLACED_SOUL_PRISM_WANTONNESS
+0x241:PLACED_SOUL_PRISM_MADNESS
+0x242:PLACED_DUPRES_ASHES
+0x243:PLACED_RUNE_FIRST_I
+0x244:PLACED_RUNE_SECOND_S
+0x245:PLACED_RUNE_THIRD_C
+0x246:PLACED_RUNE_FOURTH_G
+0x247:PLACED_RUNE_FIFTH_I
+0x248:VASCULIO_AWAKENS
+#0x249	not-in-usecode Beta: seendallas
+0x24A:XENKA_WILL_COME
+0x24B:BLASTED_DOORS_TO_CHAOS_SHRINE
+0x24C:GOT_ISLE_OF_CRYPTS_TOOTH
+
+# Spinebreaker
+0x24D:Have Serpent Sceptre.
+0x24E:Selina is dead.
+0x24F:Looked into Moon's Eye
+0x250:DID_SPINEBREAKER_VISION
+0x251:Passed test of order.
+0x252:Read The Structure of Order
+0x253:BRUNT_TALKS_TO_AVATAR
+0x254:PALOS_TALKS_TO_AVATAR
+0x255:DEADEYE_TALKS_TO_AVATAR
+0x256:OPENED_DOOR_TO_BRUNT
+0x257:OPENED_DOOR_TO_PALOS
+0x258:OPENED_DOOR_TO_DEADEYE
+0x259:AVATAR_IN_BEDROOM
+#0x25A	not-in-usecode
+0x25B:BEATRIX_PROTECTION
+0x25C:BEATRIX_FORGAVE_SHAMINO
+
+# Gwani
+0x25D:HOUND_TRACKED_BATLIN
+0x25E:Gave amulet of Baiyanda to Yenani.
+0x25F:FREED_GWENNOS_BODY
+0x260:AVATAR_SAVED_NEYOBI
+0x261:I was told that Hazard kills Gwani and stole Baiyanda's amulet.
+0x262:TALKED_TO_GWANI_ABOUT_GWENNO
+0x263:HAZARD_IS_DEAD
+0x264:BAIYANDA_GAVE_BUCKET
+0x265:KNOW_SKULLCRUSHER_PASSWORD
+#0x266	not-in-usecode
+
+# Monk Isle
+0x267:SEEKING_SCROLL_OF_SERPENT
+0x268:KNOWS_OF_WORM_GEMS
+0x269:KNOWS_IMBALANCE_CURE
+0x26A:GWENNO_IS_DEAD
+0x26B:KNOWS_ABOUT_XENKA
+0x26C:CORRECT_SALT_TIDES
+0x26D:HAVE_FRESH_MANDRAKE
+0x26E:KNOWS_ABOUT_SALT_TIDES
+0x26F:AVATAR_IS_DEAD
+0x270:Xenka has returned to Monk Isle.
+0x271:XENKA_RETURN_TRIGGER
+0x272:DOING_XENKA_RETURN
+0x273:SHOW_PETRA_VISION
+0x274:KARNAX_HAS_SCROLL_OF_SERPENT
+0x275:IOLO_GWENNO_REUNITED
+0x276:XENKA_GAVE_FINAL_QUEST
+
+# Isle of Crypts
+#0x277	not-in-usecode
+0x278:Order Hierophant says I need his staff and can find it in Furnace.
+0x279:TALKED_TO_GREAT_HIEROPHANT
+
+# Teleport Storms
+0x27A:Pinecone is on list of strange objects
+0x27B:Stockings are on list of strange objects
+0x27C:A vase is on list of strange objects
+0x27D:Strange apparatus is on list of strange objects
+0x27E:Pumice is on list of strange objects (as a rock)
+0x27F:A finely crafted ring is on list of strange objects
+0x280:Woman's fur cap is on list of strange objects
+0x281:Slippers is on list of strange objects
+0x282:Enameled breastplate is on list of strange objects
+0x283:Blue egg is on list of strange objects
+0x284:A crude brush is on list of strange objects
+0x285:Ice wine is on list of strange objects
+#0x286	not in usecode, Beta: GOTDEADCAT
+0x287:Odd baubles are on list of strange objects
+0x288:Animal skull is on list of strange objects
+0x289:Bloody hand is on list of strange objects
+0x28A:Green and white shield is on list of strange objects
+0x28B:Ruddy rock is on list of strange objects
+0x28C:KNOWS_PINECONE_OWNER
+0x28D:KNOWS_MOONSILK_OWNER
+0x28E:KNOWS_URN_ORIGIN
+0x28F:KNOWS_LAB_APPARATUS_OWNER
+0x290:KNOWS_PUMICE_ORIGIN
+0x291:KNOWS_RING_OWNER
+0x292:KNOWS_FUR_CAP_OWNER
+0x293:KNOWS_SLIPPERS_OWNER
+0x294:KNOWS_BREAST_PLATE_OWNER
+0x295:KNOWS_BLUE_EGG_OWNER
+0x296:KNOWS_GOBLIN_BRUSH_ORIGIN
+0x297:KNOWS_ICEWINE_ORIGIN
+0x298:KNOWS_DEAD_CAT_ORIGIN
+0x299:KNOWS_FILARI_OWNER
+0x29A:KNOWS_BEAR_SKULL_ORIGIN
+0x29B:KNOWS_SEVERED_HAND_OWNER
+0x29C:KNOWS_MONITOR_SHIELD_ORIGIN
+0x29D:KNOWS_STONEHEART_ORIGIN
+0x29E:KNOWS_PUMICE_LAVA
+0x29F:HEARD_ABOUT_FURNACE
+0x2A0:HAS_CLUE_FUR_CAP
+0x2A1:KNOWS_FRIGIDAZZI_IS_FAVORITE
+0x2A2:SHAMINO_MADE_EQUIPMENT_LIST
+0x2A3:SHAMINO_GAVE_HINTS
+
+# Sunrise Isle
+0x2A4:TOP_SCALES_BALANCED
+0x2A5:BOTTOM_SCALES_BALANCED
+0x2A6:BALANCE_BLACKROCK_SERPENT_ORDER
+0x2A7:BALANCE_BLACKROCK_SERPENT_BALANCE
+0x2A8:BALANCE_BLACKROCK_SERPENT_CHAOS
+0x2A9:PLACED_FIRE_GEM
+0x2AA:PLACED_ICE_DIAMOND
+0x2AB:PLACED_ARTIFACT_FLOWER
+0x2AC:PLACED_ARTIFACT_TORCH
+0x2AD:PLACED_ARTIFACT_GOLDEN_CHAIN
+0x2AE:PLACED_ARTIFACT_DAGGER
+0x2AF:PLACED_ARTIFACT_ABACUS
+0x2B0:PLACED_ARTIFACT_HEART
+0x2B1:GOT_ORDER_SERPENT_EYE
+0x2B2:MELT_ICE_WALLS
+0x2B3:BUILT_LAVA_BRIDGE
+0x2B4:PLACED_FIRST_ICE_CUBE
+0x2B5:PLACED_SECOND_ICE_CUBE
+0x2B6:PLACED_FIRST_FIRE_CUBE
+0x2B7:PLACED_SECOND_FIRE_CUBE
+0x2B8:PLACED_ALL_SERPENTS
+
+# Northern Forest
+0x2B9:Beryl tells me to meet with the Forest Master.
+0x2BA:Accepted quest from Morghrim to get his orb back.
+0x2BB:Returned the Heart of Elerian to Morghrim.
+0x2BC:Met with Beryl privately and she told me about Draygan.
+0x2BD:BERYL_MET_AVATAR
+0x2BE:BERYL_WILL_MEET_AVATAR
+0x2BF:Prepared a sleep arrow for Draygan and brought it to Beryl.
+0x2C0:Got King's Savior plant and recieved further instructions from Beryl.
+#0x2C1	not-in-usecode
+
+# Thoxa
+0x2C2:THOXA_SPOKE_POWER
+0x2C3:THOXA_SPOKE_COMPANIONS
+
+# Inn
+0x2C4:INN_FLIPPED_FIRST_SWITCH
+0x2C5:INN_FLIPPED_SECOND_SWITCH
+0x2C6:INN_FLIPPED_THIRD_SWITCH
+0x2C7:INN_FLIPPED_FOURTH_SWITCH
+0x2C8:INN_HEALED_PARTY
+0x2C9:DONE_INN_SWITCHES
+0x2CA:INN_PARTY_FEELS_GREAT
+0x2CB:INN_PARTY_FEELS_JOY
+
+# Temple of Emotion
+0x2CC:CREATED_LODESTONE_OF_HAPPINESS
+0x2CD:Placed lodestone of hate.
+0x2CE:Placed lodestone of happiness.
+0x2CF:Placed lodestone of despair.
+0x2D0:Placed lodestone of love.
+
+# Party
+0x2D1:INSIDE_PUT_THE_AVATAR_TO_BED
+#0x2D2	not-in-usecode Beta: badavatar
+0x2D3:IOLO_LEAVES_THIEF_AVATAR
+0x2D4:DUPRE_LEAVES_THIEF_AVATAR
+0x2D5:SHAMINO_LEAVES_THIEF_AVATAR
+#0x2D6	not-in-usecode
+#0x2D7	not-in-usecode
+#0x2D8	not-in-usecode
+
+# Great Earth Serpent Speeches
+0x2D9:BALANCE_ASKS_WHO_AVATAR_IS
+0x2DA:BALANCE_SAY_MET_BEFORE
+0x2DB:DREAM_REALM_COMPLETE
+0x2DC:SERPENT_GWANI_HORN_SPEECH
+0x2DD:SERPENT_GWENNO_BANE_SPEECH
+0x2DE:TOLD_TO_PLACE_ASHES
+0x2DF:TOLD_TO_KILL_VASCULIO
+#0x2E0	not-in-usecode
+0x2E1:TOLD_TO_FREE_GWENNO
+0x2E2:BATLIN_FLED_SHAMINOS_KEEP
+0x2E3:TOLD_TO_SLAY_STATUE
+0x2E4:TOLD_PLACE_EYES
+0x2E5:AVATAR_IS_WORTHY
+0x2E6:MISSING_BLACKROCK_SERPENTS
+0x2E7:MISSING_HIEROPHANT_ARTIFACTS
 
 # Silver Seed
-#0x2fb:Have_Amulet_of_Balance
-0x2fb:Karnax gave you the Amulet of Balance, which was uncovered near their Serpent Gate.
-0x2ee:Used Amulet of Balance for the first time
-0x2f4:Surok says he is busy
-0x300:Have keyring
-#0x30D:Met_Isstanar (Flag is required because he is a shape not an NPC)
-0x30D:You met Isstanar, the leader of Serpent’s Fang.
-0x2CD:Placed lodestone of hate
-0x2CE:Placed lodestone of happiness
-0x2CF:Placed lodestone of despair
-0x2D0:Placed lodestone of love
-0x2F5:Red orb burned out
-0x2F6:Purple orb burned out
-0x2F7:Blue orb burned out
-0x2F8:Yellow orb burned out
-#0x2FC:Have_Silver_Seed
-0x2FC:You have picked up the Silver Seed from beneath Serpent’s Fang.
-#0x2FD:Karnax_witnessed_Seed_Planting
+0x2E8:WEARING_BELT_OF_STRENGTH
+0x2E9:EXPERIENCE_FROM_BELT_OF_STRENGTH
+0x2EA:TRAP_SWITCH_1_DONE
+0x2EB:TRAP_SWITCH_2_DONE
+0x2EC:TRAP_SWITCH_3_DONE
+0x2ED:TRAP_MAGIC_LOCK_DOOR_1
+0x2EE:I used Amulet of Balance for the first time.
+0x2EF:TRAP_MAGIC_LOCK_DOOR_2
+0x2F0:TRAP_MAGIC_LOCK_DOOR_3
+0x2F1:PRESSURE_PLATE_1_DONE
+0x2F2:PRESSURE_PLATE_2_DONE
+0x2F3:PRESSURE_PLATE_3_DONE
+0x2F4:Surok says he is too busy to answer more.
+0x2F5:Red orb burned out.
+0x2F6:Purple orb burned out.
+0x2F7:Blue orb burned out.
+0x2F8:Yellow orb burned out.
+0x2F9:GOT_GAUNTLETS_OF_QUICKNESS
+0x2FA:Yurel will trade me the ball he stole from the pedestal for some cheese.
+0x2FB:Karnax gave methe Amulet of Balance, which was uncovered near their Serpent Gate.
+0x2FC:I have picked up the Silver Seed from beneath Serpent’s Fang.
 0x2FD:Karnax witnessed you planting the Silver Seed.
-#0x2FE:Cask_has_Moved
 0x2FE:The cask is pulled out in Serpent's Fang basement, exposing stairs below.
-#0x313:Planted_Silver_Seed
-0x313:You have planted the Silver Seed and the Silver Tree stands tall. You are now fully recognized as the Champion of Balance by the people of Serpent’s Fang.
-#0x30E:Have_Purple_Orb
-0x30E:Yurel gave you the purple orb he brought into the maze.
-#0x2FA:Know_Yurel_Loves_Cheese
-0x2FA:Cheese Yurel will trade you the ball he stole from the pedestal for some cheese.
-#0x2FF:Rope_on_Well
-0x2FF:You have attached the rope found in the Abandoned Outpost to the well, allowing you to climb down.
-#0x300:Have_Keyring
-0x300:Isstanar has given you the magic keyring, which allows you to try every key you have at once.
-0x302:Wearing_Gauntlets_of_Quickness “Set when putting on the Gauntlets, unset when unequipped.”
-0x303:Holding_Erinons_Axe “Set when equipped with the Axe, unset when unequipped.”
-0x304:Experience_from_Axe “Set when you first equip the Axe and gain 500 experience points. If set, re-equipping does not gain 500 more.”
-0x315:Experience_from_Ring “Set when you first equip the Ring of Reagents and gain 500 experience points. If set, re-equipping does not gain 500 more.”
-#0x305:Was_Asked_Liars_Riddle
+0x2FF:I have attached the rope found in the Abandoned Outpost to the well, allowing me to climb down.
+0x300:Isstanar has given me the magic keyring, which allows me to try every key I have at once.
+0x301	not-in-usecode
+0x302:WEARING_GAUNTLETS_OF_QUICKNESS
+0x303:HOLDING_ERINONS_AXE
+0x304:EXPERIENCE_FROM_ERINONS_AXE
 0x305:Draxinar’s first riddle: How many of these mystics were liars?
-#0x306:Was_Asked_Earrings_Riddle
 0x306:Draxinar’s second riddle: How many unseen earrings needed to insure a matched pair?
-#0x307:Was_Asked_Longtooth_Riddle
 0x307:Draxinar’s third riddle: How many creatures has Longtooth stumped with his riddles?
-#0x308:Was_Asked_Cloth_Riddle
 0x308:Draxinar’s fourth riddle: How many pieces of cloth to make five dresses with the same pattern?
-#0x309:Solved_Liars_Riddle
-0x309:You correctly answered Draxinar’s first riddle.
-#0x30A:Solved_Earrings_Riddle
-0x30A:ou correctly answered Draxinar’s second riddle.
-#0x30B:Solved_Longtooth_Riddle
-0x30B:You correctly answered Draxinar’s third riddle.
-#0x30C:Solved_Cloth_Riddle
-0x30C:You correctly answered Draxinar’s last riddle.
-#0x30F:Met_Rieya
-0x30F:You met Rieya outside of the Abandoned Outpost.
-#0x310:Met_Drusilla
-0x310:You met Drusilla outside of Issik’s Maze.
-#0x311:Met_Solaria
-0x311:You met Solaria outside of Aram-Dol’s Lair, northeast of Serpent’s Fang.
-
-
-#others
-
-0x03:STARTING_SPEECH
-0x100:HaveHawksKey "Fedabiblio gives Avatar the key from Captain Hawk."
-0x11F:RefuseToHelpPothos "Avatar approached Pothos about his father."
-0x125:InvitedByFrigidazzi
-0x129:ChristopherSeance "Mortegro performed seance to contact Christopher."
-0x12A:CanUseMagicCompass "You've read the book describing how the compass works."
-0x12E:KnowOfFreedom "Pothos explained the Mountains of Freedom prison."
-0x12F:FlindoWillArrangeMeeting "Flindo agreed to arrange a meeting with the Filbercio."
-0x130:FlindoArrangedMeeting "Set when you get the meeting with Filbercio. Flindo complains if you ask about it again."
-0x131:GwennoSeance "Mortegro performed seance to contact Gwenno."
-0x132:KnowOfSeance "Mortegro tells you he perfoms seances."
-0x134:IoloKidnapped "Set when Iolo is kidnapped by Rotoluncia."
-0x136:ReturnedTorrissioWand "Returned Philanderer's Friend to Torrissio, in exchange for information on Worm Gems."
-0x137:FindRockSerpent "Stefano has given you the key to his old house, to find the Rock Serpent."
-0x139:PetraIsSad "Petra complained about Rocco being dead, and says her existence is pointless."
-0x13B:ReturnedStockings? "Torrissio steals the fishnet stockings from you."
-0x13C:NoReturnStockings "Refused to return fishnet stockings to Torrissio."
-0x13D:Got password from Pothos. Set false after using turtle.
-0x13F:AccuseMortregro "Mortegro has been named as a suspect in Iolo's kidnapping."
-0x140:AskJuliaAboutKidnap
-0x141:CanAskFilbercioAboutKidnap
-0x142:SuspectTorrisioOfKidnap (Andrio suspects him)
-0x143:PaidJuliaToInvestigateKidnap
-0x144:ToldJuliaAboutKidnap
-0x147:KnowOfTorrisioWand "Can ask people about the Philanderer's Friend"
-0x149:StefanoDied "Set false when speaking to him after he is resurrected."
-0x15B:AskedJorvinAboutPikemen "Jorvin asks if you are a pikeman if this is not set."
-0x15F:AskedLeonAboutFellowship "Leon explains the Fellowship."
-0x160:AskedLeonAboutInnerVoice "Leon explains the Fellowship."
-0x161:AskedLeonAboutTrust "Leon explains the Fellowship."
-0x162:AskedLeonAboutUnity "Leon explains the Fellowship."
-0x163:AskedLeonAboutWorthiness "Leon explains the Fellowship."
-0x164:CanAskOlonAboutStorms "He's drunk enough to let you ask him about the storms. This depends on the return value of 0x942."
-0x169:AskedScotsAboutFellowship "Adds Fellowship response to Leon."
-0x16A:AskedScotsAboutLeon
-0x171:FawnTrialRecess "Set when the defendant is named, and cleared when the trial starts."
-0x189:AskedYelindaAboutFawn
-0x18A:AskedYelindaAboutOracle
-0x18D:AskedDelinAboutFreli "Adds Delin to Freli's list of responses."
-0x191:AskOlonAboutPinecone "Mentioned by Jendon."
-0x192:AskAlyssandAboutMoonsilkStockings "Mentioned by Jendon."
-0x193:AskDelphyniaAboutApparatus "Mentioned by Jendon."
-0x194:AskDelphyniaAboutPumice "Mentioned by Jendon."
-0x195:AskDelinAboutFurCap "Jendon."
-0x196:AskDelinAboutSlippers "Jendon."
-0x197:AskDelphyniaAboutEgg "Jendon."
-0x198:AskJorvinAboutHairbrush "Jendon."
-0x19A:AskDelinAboutCoins "Jendon. Never checked!"
-0x19B:AskJorvinAboutSkull "Jendon."
-0x19C:AskJorvinAboutShield "Plain Shield mentioned by Jendon."
-0x19D:AskDelphyniaAboutRock "Flaming rock mentioned by Jendon."
-0x19E:AskAlyssandAboutFishnetStockings "Jendon."
-0x19F:AskedJendonAboutMonitor
-0x1A9:AskOlonAboutGwani "Jendon."
-0x1AE:BoughtVaroLeaves "Checked in 0x7fc, adding to Fawn Trial accusations."
-0x1B1:FoundYelindaAfterDestruction "Told by 0x43b where Yelinda is. Checked in 0x36a."
-0x1C1:KnowOfJawbone "Adds jawbone answer to Erstam."
-0x1C5:ErstamsExperiments "Adds experiments answer to Erstam."
-0x1C6:ErstamSeeksImmortality "Adds immortality answer to Erstam."
-0x1C8:DisturbErstam "Adds Disturb? answer to Erstam."
-0x1C9:HaveStoreroomKey "Erstam gave Avatar the key to his storeroom."
-0x1CB:RidingShip "Travelling on a ship. Don't allow use of gangplank."
-0x1CC:TravelledToMoonshade "Journeyed on the Arabella to Moonshade."
-0x1CD:KnowOfHawk "Captain Hawk was mentioned by someone as being imprisoned. Checked in 0xE4/Pikemen."
-0x1CE:CanPayBullTowerRansom "Given opportunity to pay fine for Captain Hawk."
-0x1CF:ResumeFalseQuest "Set when asking Selina about key or resume quest. Never checked."
-0x1D1:PaidBullTowerRansom
-0x1E1:WilfredInParty "Wilfred has joined the party."
-0x1E2:WilfredRunsAway
-0x1E3:WilfredKicked "Asked Wilfred to leave the party."
-0x1E4:AngusClues? "Set by 0x429. Never checked."
-0x1E5:HaveBankKey "Started quest with Selina, and given key."
-0x1E6:SelinaLeft "Avatar reached the bank and Selina has disappeared."
-0x1E7:LookForBankAgain "Set true after apologizing to Selina for going the wrong way. Set false when going the wrong way."
-0x1E9:ReturnedSlippers
-0x1EA:AmbushedAtBank "Avatar reached the bank."
-0x1EE:FailedEthicalityTest
-0x1F9:Picked up Serpent Staff
-0x1FB:FinishedGargoyleTest "Teleported back to pillars."
-0x1FD:GreetedGargoyles "Introduced yourself as The Avatar"
-0x1FE:HelpGargoyles "Gargoyles have asked you to enter their realm and seek the pillars."
-0x1FF:LeaveFurnace
-0x200:PassedGargoyleTest "Told to get the goblet of replenishing water."
-0x201:ReturnedGoblet "Found and brought the goblet to Zhelkas."
-0x206:SleepingEmps "Found a hall of sleeping daemons, reminiscent of the Emps in Britannia."
-0x207:HaveRingFromZhelkas
-0x20E:FindArtifactOfCourage "Set with $20f and $210 by 0x4b6. Never checked."
-0x20F:FindArtifactOfLove "Set with $20e and $210 by 0x4b6. Never checked."
-0x210:FindArtifactOfTruth "Set with $20e and $20f by 0x4b6. Never checked."
-0x211:CompletedQuestOfArtifacts "Checked by Harnna."
-0x212:ReturnedCombOfBeauty "Gave comb of Beauty to Yelinda."
-0x217:StartSecondEthicalityTest "Doing second Test of Ethicality"
-0x21A:StartFirstEthicalityTest "Began the Test of Ethicality"
-0x21E:StartFinalEthicalityTest "Doing final Test of Ethicality"
-0x226:talked with Petra about Acid
-0x227:Read Body Transference
-0x23C:Picked up flux analyzer
-0x23D:Picked up Philanderer's Friend
-0x242:HealedChaosSerpent
-0x248:Read Parting Verses
-0x24D:Have Serpent Sceptre
-0x24E:Selina is dead
-0x24F:Looked into Moon's Eye
-0x251:Passed test of order
-0x252:Read The Structure of Order
-0x25E:ReturnedGwaniAmulet "Gave amulet of Baiyanda to Yenani."
-0x261:NeedGwaniAmulet "Avatar knows that Hazard stole amulet of Baiyanda."
-0x268:AskDucioAboutWormGem "Ducio will make worm gems if set."
-0x271:Monks leave pews (They say Xenka calls, bells ring, ect.)
-0x2A1:KnowOfFrigidazzi "Told about Frigidazzi by Bucia."
-0x2B9:KnowAboutKingsSavior "Beryl tells you to meet with the Forest Master."
-0x2BA:OfferedToReturnOrb "Accepted quest from Morghrim to get his orb back."
-0x2BB:ReturnedOrbToMorghrim "Returned the Heart of Elerian to Morghrim."
-0x2BD:SpokeToBerylAboutDraygan "Met with Beryl privately and she told you about Draygan."
-0x2BE:DrayganAttention "Set whenever Draygan warns you or Beryl. Cleared when speaking to Beryl privately. May be related to pathfinding."
-0x2BF:BroughtSleepArrow "Prepared a sleep arrow for Draygan and brought it to Beryl."
-0x2C0:BroughtKingsSavior "Got King's Savior plant and recieved further instructions from Beryl."
-0x2c3:Have Hourglass
-0x318:Batlin dies (No know function yet. My guess is Guardian's speech about Batlin failing him)
-0x56:AskAndralAboutTheft "Set by Renfry when asked about theft, and mentioning a sage. Never checked."
-0x57:KnowAboutCremating "Set by Renfry when asked about the Dead. Never checked."
-0x59:AndralSpokeOfWilfred "Mentioned Wilfred will take care of Batlin. Never checked."
-0xAD:Talked with Brendann about a traitor. LutherIsABraggart
-0xCB:AskLydiaAboutPoisonUnused "Set by Harnna. Never checked."
-0xCF:Arcadion in gem (Unsets when you free him)
-0xD8:AskedRoccoAboutRooms "The Blue Boar has simple, clean rooms. No ruffians allowed."
-0xDA:MeetFilbercio "Filbercio has agreed to meet with you, and will summon you."
-0xDF:AskAboutMosh "Mosh says Columna stole her beauty comb."
-0xE0:HaveKeyToCatacombs "Julia gave catacombs key to Avatar."
-0xE1:HaveMagicHarp "Mosh gave Magic Harp to Avatar."
-0xE7:HaveScrollToDelin "From Freli"
-0xEB:HaveTorissiosWand"
-0xed:KnowOfCatacombs "Avatar knows about passage to Furnace."
-0xEE:AskedColumnaAboutMosh
-0xF1:FreedFedabiblio "Released Fedabiblio from stone statue."
-0xF6:HaveSerpentScroll
-0xFC:HaveCrimeCertificate "Got permission to commit crime from Julia."
-0xFE:KnowOfFluxAnalyzer
-
-
-# Unuseable, temporary flags
-#0x07:TEMP_FLAG_1 (Temporary flag, used for a great many things)
-#0x08:TEMP_FLAG_2 (Temporary flag, used for a great many things)
-#0x09:TEMP_FLAG_3 (Temporary flag, used for a great many things)
-#0x0A:TEMP_FLAG_4 (Temporary flag, used for a great many things)
-
-# Unsure
-#0x00:? set in Dog function
-#0x01:? set in FilbercioBarge function
-#0x05:? CanUseShips "Set true in Func0918 (something in Teleport Vale?)"
-#0x120:RangerDied (or player died?) # ?? in ranger code, if event is 7 and itemref is 1 clear itemref's flag 1d, reduce health?
-#0x133: ? Checked by Rotoluncia to determine which threat she gives you, after kidnapping Iolo. Set near the end of the function.
-#0x13E:? AskedBuciaManyQuestions set false when asking Bucia about information
-#0x146: ? set and checked in 0x8ff, which is called when saying Bye to people in Moonshade
-#0x14D:FindFreli? "Told by Delin to find Freli with Fedabiblio. Set and cleared by Delin."
-#0x165:? "If set, Olon won't speak to you until a timer reaches 3. Probably after he gets a drink. 'Go away, I'm not drunk enough yet.'"
-#0x166:? "Set when an earthquake is created by 0x357."
-#0x16B:exclusive to 0x357
-#0x16C:exclusive to 0x357
-#0x16D:exclusive to 0x357
-#0x176: ? FawnTrial
-#0x177:? FawnTrial
-#0x178:? FawnTrial
-#0x179:? FawnTrial
-#0x17A:? FawnTrial
-#0x17B:? FawnTrial
-#0x17C: ? FawnTrial
-#0x17D:? FawnTrial
-#0x17E: ? FawnTrial
-#0x17F:? FawnTrial
-#0x180:? FawnTrial
-#0x181:? FawnTrial
-#0x182:? FawnTrial
-#0x187: ? set in 0x400, clearned in 0x7dc
-#0x18C:? Olon will ask "Art thou a bard?" Set in 0x6bc upon a music change and the beginning of a storm.
-#0x1A0: ? checked when buying from someone, # set when talking to Hawk
-#0x1A1:DelinShopDiscount? "Get a one time discount at Delin's shop after delivering a letter from Freli to him. $E7 and $14D are cleared when this is set."
-#0x1A6:FoundOracleControls? "Set by util/0x6e0. Forgot which NPC uses it. -_-;"
-#0x1A7:? checked in 0x43b, adds "letter" answer
-#0x1AA:?AskedJendonAboutStrangeObjects "checked in 0x7fb"
-#0x1AB:? Told about Gwani in 0x7fb. Checked in 0x7fc to add "savages" answer.
-#0x1AC:? 0x7fb mentioned serpent ruins, add answer "ancient runes" to 0x7fc
-#0x1AD:? 0x7fb mentioned strange objects, add answer to 0x7fc
-#0x1AF: ?SeenWithAlyssand/AlyssandToTestify "Set by 0x7fc if Alyssand is there. Checked in 0x7fc."
-#0x1B0:? somebody is called to witness twice at the trial
-#0x1B2: ?ReturnedEngangementRing "Told Alyssand about ring."
-#0x1B3:AskedToJoinTheCause? "Asked by Alyssand."
-#0x1B5:? Checked by 0x437. Set if NPC 0xFFFD/-3 is nearby and has flag 6 set true.
-#0x1B6: ? Set in 0x8aa, checked by 0x435.
-#0x1BB: ? CreatedBoydon
-#0x1BC: ? KnowOfPheonixEgg
-#0x1D9:AskArgusAboutDuelAndBribes? "set by 0x42d"
-#0x1E0: ? set true or false in 0x314, checked in 0x314
-#0x1E8:? something to do with fighting Selina
-#0x1EB:PassedLogicTest? "Didn't go through the gate with Iolo in the test of Zhelkas."
-#0x1EC:PassedEthicalityTest? "Pushed the right button in the test of Zhelkas."
-#0x1ED:PassedVirtueTest? "Didn't follow Dupre in the test of Zhelkas."
-#0x1F0: ? something about logic test
-#0x1F1:? something about logic test
-#0x1F2:? something about logic test
-#0x1F3:StartedVirtueTest?
-#0x1F4:StartedAttackingWorms?
-#0x1F5: ? set and checked with $1f4
-#0x1F6: ? set and checked with $1f5
-#0x1F7: ? set with $1f6
-#0x1F8: ? checked with $1f7 and set with $1f7 and $1ed
-#0x1FA:ExplainedLogicTest? "Zhelkas explained the test of logic."
-#0x1FC:UsingFreezeSpell? "Keeps you cool at Furnace."
-#0x20D: ? something about dream crystal and edrin
-#0x218: ? related to test of ethicality
-#0x219: ? set when completed test of ethicality
-#0x21B: ? CompleteEthicalityTest
-#0x21C: ? CompleteFirstEthicalityTest "Succeeded in first part of the test"
-#0x21D: ? CompleteSecondEthicalityTest "Succeeded in second part of the test"
-#0x21F: ? CompleteEthicalityTest
-#0x26F: ? something in test of ethicality
-#0x270: ? XenkaReturned "XenkaMonk has returned to Monk Isle"
-#0x278:? NeedSerpentStaff "Order Hierophant says Avatar needs his staff."
-#0x29E:? KnowPumiceIsFromFieryDungeon? (290)
-#0x29F:? if $29e and $29f is set, $290 is set
-#0x2A3:? Set in 0x7ae if Shamino's quality is 7, and checked after you pass an illusionary wall and enter a cave near the start of the game, slightly changing what he says
-#0x2A6:exclusive to 0x71f
-#0x2A7:exclusive to 0x71f
-#0x2A8:exclusive to 0x71f
-#0x2A9:exclusive to 0x71e
-#0x2A:? "Various"
-#0x2AA:exclusive to 0x71e
-#0x2B4:exclusive to 0x724
-#0x2B5:exclusive to 0x724
-#0x2B6:exclusive to 0x724
-#0x2B7:exclusive to 0x724
-#0x2BC:Something related to attacking Draygan
-#0x2C2: ? labeled as Flicken opens gate but is set on the opening scene with karnax and thoxa
-#0x2C7:? Something to do with the Test of Virtue?
-#0x2D9:HaveMirrorOfTruth? (check e5)
-#0x3E:? "used in many places"
-#0x46: ? related to Helm of Monitor/Globins
-#0x5C:IdentifiedAleOfSimon?
-#0x8B:? "Set by 0x207, cleared by Cantra."
-#0xBD:FreeIolo? "Set by Marsten when explaining who Iolo is."
-#0xC2:Poisoned2? "Set if some flag is 0x1f. Can only request healing if Poisoned is also set."
-#0xC5:ShmedAttacks? "if not set, he first confesses; then he attacks the party; when he dies, he confesses if $4a/CompletedTestOfKnighthood is set and $c5 is set"
-#0xC9:PikemanDied? (or player died?) "Pikeman with id 0x0E died" # ? in pikeman, if npc num is 0xe, and event is 0x7 and flag is false,# npc flag 1d is cleared # health is reduced ? #flag is set to true
-#0xCE:UsedFluxAnalyser? "Set by 0x1c8. You've upgraded the Demon Sword with this."
-#0xD0: ? vanquish
-#0xD1: ? vanquish
-#0xD2: ? vanquish
-
-
-# Never Set
-0x0B:CantAskAndralAboutFawn "Never set. Can only ask Andral about Fawn if false."
-0x127:SoldStockings "Checked by Torrissio. Never set."
-0x15E:KnowOracleIsFake "If set, Kylista will attack you when you talk to her. It is never set, however."
-0x199:Ask43AAboutDeadCat "Adds dead cat response. Never set. Negated by $298."
-0x1CA:KnowOfArgus? "Adds Argus (with $AvatarKnighted) to conversation of 0x44f. Never set."
-0x1EF:RefusedGargoyleTest? "Checked by Zhelkas. Never set."
-0x36:CanAccuseMarsten "Let's you accuse Marsten of something. Never set."
-0x69:MarstenDead? "Checked by Krayg. Never set."
-0x72:CaladinDead? "Checked by 0x8EF. Never set."
-0x7A:HaveFishnetStockings? "Checked by Selina. Never set."
-0x7C:ReturnedFishnetStockings? "Sometimes used with 7b or 19e, by Bucia, Alyssand, Jendon, and Harnna. Never set."
-0xCC:PomdirgunIsDead "You killed the goblin king. Never set."
-0xD6: ? added with other flags in 8ff, never set
-0x301:(not in Usecode)
-0x312:(not-in-usecode)
+0x309:I solved Draxinar’s first riddle.
+0x30A:I solved Draxinar’s second riddle.
+0x30B:I solved Draxinar’s third riddle.
+0x30C:I solved Draxinar’s fourth riddle.
+0x30D:Met Isstanar, the leader of Serpent’s Fang.
+0x30E:Yurel gave me the purple orb he brought into the maze.
+0x30F:Met Rieya outside of the Abandoned Outpost
+0x310:Met Drusilla outside of Issik’s Maze.
+0x311:Met Solaria outside of Aram-Dol’s Lair, northeast of Serpent’s Fang.
+#0x312	not-in-usecode
+0x313:I have planted the Silver Seed and the Silver Tree stands tall. I am now fully recognized as the Champion of Balance by the people of Serpent’s Fang.
+0x314:USED_IRON_MAIDEN
+0x315:EXPERIENCE_FROM_RING_OF_REAGENTS
+#0x316	not-in-usecode
+#0x317	not-in-usecode
+0x318:BANE_MOONSHADE_DECORATION_CLEANUP
