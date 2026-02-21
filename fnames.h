@@ -179,6 +179,9 @@
 #define GUMP_INFO       "<STATIC>/gump_info.txt"
 #define PATCH_GUMP_INFO "<PATCH>/gump_info.txt"
 
+#define GLOBAL_FLAGS       "global_flags.txt"
+#define PATCH_GLOBAL_FLAGS "<PATCH>/global_flags.txt"
+
 #define EXULT_SERVER "<GAMEDAT>/exultserver"
 
 #define NUM_FONTS (20)
