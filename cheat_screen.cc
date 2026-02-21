@@ -34,6 +34,10 @@
 #include "chunks.h"
 #include "exult.h"
 #include "files/U7file.h"    // IWYU pragma: keep
+#include "files/databuf.h"
+#include "files/msgfile.h"
+#include "files/utils.h"
+#include "fnames.h"
 #include "font.h"
 #include "game.h"
 #include "gameclk.h"
@@ -1405,6 +1409,24 @@ CheatScreen::Cheat_Prompt CheatScreen::TimeSetLoop() {
 // Global Flags
 //
 
+void CheatScreen::load_global_flag_names() {
+	global_flag_names_loaded = true;
+	if (is_system_path_defined("<PATCH>") && U7exists(PATCH_GLOBAL_FLAGS)) {
+		IFileDataSource flagsfile(PATCH_GLOBAL_FLAGS, true);
+		if (flagsfile.good()) {
+			Text_msg_file_reader reader(flagsfile);
+			reader.get_global_section_strings(global_flag_names);
+		}
+	} else {
+		const str_int_pair& resource = game->get_resource("files/global_flags");
+		IExultDataSource    flagsfile(resource.str, resource.num);
+		if (flagsfile.good()) {
+			Text_msg_file_reader reader(flagsfile);
+			reader.get_global_section_strings(global_flag_names);
+		}
+	}
+}
+
 CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 	bool looping = true;
 #if defined(SDL_PLATFORM_IOS) || defined(ANDROID) || defined(TEST_MOBILE)
@@ -1438,15 +1460,27 @@ CheatScreen::Cheat_Prompt CheatScreen::GlobalFlagLoop(int num) {
 		snprintf(buf, sizeof(buf), "Global Flag %i", num);
 		font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 99, 8, fontcolor.colors);
 
+		// Load global flag names if not yet loaded
+		if (!global_flag_names_loaded) {
+			load_global_flag_names();
+		}
+		// Display the flag name if available
+		if (num >= 0 && num < static_cast<int>(global_flag_names.size()) && !global_flag_names[num].empty()) {
+			snprintf(buf, sizeof(buf), "%s", global_flag_names[num].c_str());
+		} else {
+			snprintf(buf, sizeof(buf), "(unnamed)");
+		}
+		font->paint_text_fixedwidth(ibuf, buf, offsetx + 130, maxy - offsety1 - 99, 8, fontcolor.colors);
+
 		bool flagset = usecode->get_global_flag(num).value_or(false);
 		snprintf(buf, sizeof(buf), "Flag is %s", flagset ? "SET" : "UNSET");
 		font->paint_text_fixedwidth(ibuf, buf, offsetx, maxy - offsety1 - 90, 8, fontcolor.colors);
 
 		// Now the Menu Column
 		if (!flagset) {
-			AddMenuItem(offsetx + 160, maxy - offsety1 - 99, SDLK_S, "et Flag");
+			AddMenuItem(offsetx + 130, maxy - offsety1 - 90, SDLK_S, "et Flag");
 		} else {
-			AddMenuItem(offsetx + 160, maxy - offsety1 - 99, SDLK_U, "nset Flag");
+			AddMenuItem(offsetx + 130, maxy - offsety1 - 90, SDLK_U, "nset Flag");
 		}
 
 		// Change Flag
