@@ -105,7 +105,8 @@ EXULT_BG_FLX_OBJECTS = \
 	bg/container.dat \
 	bg/autonotes.txt \
 	bg/intro_hand.shp \
-	bg/gump_info.txt 
+	bg/gump_info.txt \
+	bg/global_flags.txt
 
 EXULT_BG_INTROSFX_MT32_OBJECTS = \
 	bg/introsfx_mt.in \
@@ -159,7 +160,8 @@ EXULT_SI_FLX_OBJECTS = \
 	si/ext_intro_sanctum1.flc \
 	si/ext_intro_sanctum2.flc \
 	si/ext_intro_sanctum3.flc \
-	si/gump_info.txt 
+	si/gump_info.txt \
+	si/global_flags.txt
 
 EXULT_BG_PAPERDOL_VGA_OBJECTS = \
 	bg/amulets.shp \
