@@ -395,7 +395,9 @@ EXULT_BG_FLX_OBJECTS := \
 	data/bg/autonotes.txt \
 	data/bg/intro_hand.shp \
 	data/bg/introsfx_mt32.flx \
-	data/bg/introsfx_sb.flx
+	data/bg/introsfx_sb.flx \
+	data/bg/gump_info.txt \
+	data/bg/global_flags.txt
 
 EXULT_BG_INTROSFX_MT32 := data/bg/introsfx_mt32.flx data/bg/introsfx_mt32.h
 EXULT_BG_INTROSFX_MT32_OBJECTS = \
@@ -451,7 +453,9 @@ EXULT_SI_FLX_OBJECTS := \
 	data/si/ext_intro_si01.ogg \
 	data/si/ext_intro_sanctum1.flc \
 	data/si/ext_intro_sanctum2.flc \
-	data/si/ext_intro_sanctum3.flc
+	data/si/ext_intro_sanctum3.flc \
+	data/si/gump_info.txt \
+	data/si/global_flags.txt
 
 EXULT_BG_PAPERDOL_VGA := data/bg/bg_paperdol.vga data/bg/bg_paperdol_vga.h
 EXULT_BG_PAPERDOL_VGA_OBJECTS := \
