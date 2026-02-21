@@ -41,6 +41,7 @@
 #include "effects.h"
 #include "egg.h"
 #include "exult.h"
+#include "fnames.h"
 #include "game.h"
 #include "gamemap.h"
 #include "gamewin.h"
@@ -50,6 +51,7 @@
 #include "miscinf.h"
 #include "monsters.h"
 #include "mouse.h"
+#include "msgfile.h"
 #include "opcodes.h"
 #include "party.h"
 #include "schedule.h"
@@ -62,6 +64,7 @@
 #include "ucsymtbl.h"
 #include "usefuns.h"
 #include "useval.h"
+#include "utils.h"
 
 #if (defined(USE_EXULTSTUDIO) && defined(USECODE_DEBUGGER))
 #	include "debugmsg.h"
@@ -2612,11 +2615,38 @@ int Usecode_internal::run() {
 				if (bool flagvalue = popi() != 0; !set_global_flag(offset, flagvalue)) {
 					FLAG_ERROR(offset);
 				} else {
+#ifdef DEBUG
+					{
+						static std::vector<std::string> flag_names;
+						static bool                     flag_names_loaded = false;
+						if (!flag_names_loaded) {
+							flag_names_loaded = true;
+							if (is_system_path_defined("<PATCH>") && U7exists(PATCH_GLOBAL_FLAGS)) {
+								IFileDataSource flagsfile(PATCH_GLOBAL_FLAGS, true);
+								if (flagsfile.good()) {
+									Text_msg_file_reader reader(flagsfile);
+									reader.get_global_section_strings(flag_names);
+								}
+							} else {
+								const str_int_pair& resource = game->get_resource("files/global_flags");
+								IExultDataSource    flagsfile(resource.str, resource.num);
+								if (flagsfile.good()) {
+									Text_msg_file_reader reader(flagsfile);
+									reader.get_global_section_strings(flag_names);
+								}
+							}
+						}
+						const char* action = flagvalue ? "Set" : "Unset";
+						if (offset >= 0 && offset < static_cast<int>(flag_names.size()) && !flag_names[offset].empty()) {
+							cout << action << " global flag: 0x" << std::hex << offset << std::dec << " (" << offset << " - "
+								 << flag_names[offset] << ")" << endl;
+						} else {
+							cout << action << " global flag: 0x" << std::hex << offset << std::dec << " (" << offset << ")" << endl;
+						}
+					}
+#endif
 					if (flagvalue) {
 						Notebook_gump::add_gflag_text(offset);
-#ifdef DEBUG
-						cout << "Setting global flag: " << offset << endl;
-#endif
 					}
 					// ++++KLUDGE for Monk Isle:
 					if (offset == doing_xenka_return && GAME_SI) {

@@ -38,6 +38,7 @@
 
 #include <climits>
 #include <memory>
+#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -52,6 +53,10 @@ class CheatScreen {
 	static const char* schedules[33];
 	static const char* flag_names[64];
 	static const char* alignments[4];
+
+	std::vector<std::string> global_flag_names;
+	bool                     global_flag_names_loaded = false;
+	void                     load_global_flag_names();
 
 public:
 	CheatScreen() : highlighttable(), hovertable(), buttons_down() {}
