@@ -3996,9 +3996,9 @@ void ExultStudio::open_shape_window(
 	delete frameusecode_frame_single;
 	frameusecode_frame_single = nullptr;
 	delete objpaperdoll_wframe_single;
-	objpaperdoll_spotframe_single = nullptr;
-	delete objpaperdoll_spotframe_single;
 	objpaperdoll_wframe_single = nullptr;
+	delete objpaperdoll_spotframe_single;
+	objpaperdoll_spotframe_single = nullptr;
 	delete brightness_frame_single;
 	brightness_frame_single = nullptr;
 	delete warmth_frame_single;
