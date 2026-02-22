@@ -1045,11 +1045,14 @@ void Egg_object::paint() {
 	} else {
 		Egglike_game_object::paint();
 	}
-	// Paint the egg's activation area outline when toggled on.
+	// Paint the egg's activation area outline when toggled on,
+	// or always when this egg is being edited in ExultStudio.
 	// paint_egg_areas: -1 = all, 0 = off, >0 = specific Egg_types.
-	if (gwin->paint_egg_areas != 0 && area.w > 0 && area.h > 0 && (gwin->paint_egg_areas == -1 || gwin->paint_egg_areas == type)) {
-		// Use egg shape colour (80) plus any palette transform.
-		const int pix = 80 + get_palette_transform();
+	const bool is_editing = (editing && editing.get() == this);
+	if (area.w > 0 && area.h > 0
+		&& (is_editing || (gwin->paint_egg_areas != 0 && (gwin->paint_egg_areas == -1 || gwin->paint_egg_areas == type)))) {
+		// Green for the egg being edited, otherwise egg shape colour.
+		const int pix = is_editing ? Shape_manager::get_special_pixel(POISON_PIXEL) : 80 + get_palette_transform();
 		int       lx, ty;
 		auto      shaperect = gwin->get_shape_rect(this);
 		// Centre-point of egg on screen.
@@ -1131,6 +1134,19 @@ bool Egg_object::edit_basic_properties() {
 }
 
 /*
+ *  Clear editing state (e.g., when egg editor is closed/cancelled).
+ */
+
+void Egg_object::clear_editing() {
+	if (editing) {
+		Game_window* gwin = Game_window::get_instance();
+		gwin->add_dirty(editing.get());
+		editing.reset();
+		gwin->set_all_dirty();
+	}
+}
+
+/*
  *  Message to update from ExultStudio.
  */
 
@@ -1163,11 +1179,16 @@ void Egg_object::update_from_studio(unsigned char* data, int datalen) {
 		return;
 	}
 	if (oldegg && oldegg != editing.get()) {
-		cout << "Egg from ExultStudio is not being edited" << endl;
-		return;
+		if (editing) {
+			oldegg = static_cast<Egg_object*>(editing.get());
+		} else {
+			cout << "Egg from ExultStudio is not being edited" << endl;
+			return;
+		}
 	}
-	// Keeps NPC alive until end of function
-	const Game_object_shared keep = std::move(editing);
+	// Keep old egg alive until end of function.
+	const Game_object_shared keep = editing;
+	editing.reset();
 	if (!oldegg) {    // Creating a new one?  Get loc.
 		if (!Get_click(x, y, Mouse::greenselect, nullptr)) {
 			if (client_socket >= 0) {
@@ -1252,10 +1273,13 @@ void Egg_object::update_from_studio(unsigned char* data, int datalen) {
 
 	if (oldegg) {
 		oldegg->remove_this();
+		// Keep editing the new egg so the green area overlay persists.
+		editing = egg;
 	}
 	Map_chunk* echunk = egg->get_chunk();
 	echunk->remove_egg(egg.get());    // Got to add it back.
 	echunk->add_egg(egg.get());
+	gwin->set_all_dirty();    // Refresh display with updated egg area.
 	cout << "Egg updated" << endl;
 #else
 	ignore_unused_variable_warning(data, datalen);
