@@ -46,6 +46,8 @@
 #define PATCH_FONTS          "<PATCH>/fonts.vga"
 #define PATCH_ORIGINAL_FONTS "<PATCH>/fonts_original.vga"
 #define PATCH_SERIF_FONTS    "<PATCH>/fonts_serif.vga"
+#define PATCH_BG_PAPERDOL    "<PATCH>/bg_paperdol.vga"
+#define PATCH_BG_MR_FACES    "<PATCH>/bg_mr_faces.vga"
 #define SPRITES_VGA          "<STATIC>/sprites.vga"
 #define PATCH_SPRITES        "<PATCH>/sprites.vga"
 #define MAINSHP_FLX          "<STATIC>/mainshp.flx"

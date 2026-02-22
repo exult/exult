@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "chunklst.h"
 #include "combo.h"
 #include "exceptions.h"
+#include "exult_bg_flx.h"
 #include "exult_flx.h"
 #include "fnames.h"
 #include "ignore_unused_variable_warning.h"
@@ -566,14 +567,41 @@ Shape_file_info* Shape_file_set::create(const char* basename    // Like 'shapes.
 		sources.emplace_back(exultflx, EXULT_FLX_FONTS_SERIF_VGA);
 		sources.emplace_back(PATCH_SERIF_FONTS, -1);    // Patch file
 		return append(new Image_file_info(basename, exultflx, new Vga_file(sources, U7_SHAPE_FONTS), groups));
+	} else if (strcasecmp(basename, "bg_paperdol.vga") == 0) {
+		string group_name(basename);
+		group_name += ".grp";
+		auto*                                    groups     = new Shape_group_file(group_name.c_str());
+		const char*                              exultbgflx = BUNDLE_CHECK(BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX);
+		std::vector<std::pair<std::string, int>> sources;
+		sources.emplace_back(exultbgflx, EXULT_BG_FLX_BG_PAPERDOL_VGA);
+		sources.emplace_back(PATCH_BG_PAPERDOL, -1);    // Patch file
+		return append(new Image_file_info(basename, exultbgflx, new Vga_file(sources, U7_SHAPE_PAPERDOL), groups));
+	} else if (strcasecmp(basename, "bg_mr_faces.vga") == 0) {
+		string group_name(basename);
+		group_name += ".grp";
+		auto*                                    groups     = new Shape_group_file(group_name.c_str());
+		const char*                              exultbgflx = BUNDLE_CHECK(BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX);
+		std::vector<std::pair<std::string, int>> sources;
+		sources.emplace_back(exultbgflx, EXULT_BG_FLX_BG_MR_FACES_VGA);
+		sources.emplace_back(PATCH_BG_MR_FACES, -1);    // Patch file
+		return append(new Image_file_info(basename, exultbgflx, new Vga_file(sources, U7_SHAPE_FACES), groups));
 	}
 	// Look in 'static', 'patch'.
 	const string sstr    = string("<STATIC>/") + basename;
 	const string pstr    = string("<PATCH>/") + basename;
 	const char*  spath   = sstr.c_str();
 	const char*  ppath   = pstr.c_str();
-	const bool   sexists = U7exists(spath);
+	bool         sexists = U7exists(spath);
 	bool         pexists = U7exists(ppath);
+	// For paperdol.vga, also check <SERPENT_STATIC> (BG uses SI's paperdol).
+	string serpent_sstr;
+	if (!sexists && strcasecmp(basename, "paperdol.vga") == 0) {
+		serpent_sstr = string("<SERPENT_STATIC>/") + basename;
+		if (U7exists(serpent_sstr.c_str())) {
+			spath   = serpent_sstr.c_str();
+			sexists = true;
+		}
+	}
 	if (!sexists && !pexists) {    // Neither place.  Try to create.
 		if (!(pexists = Create_file(basename, ppath))) {
 			return nullptr;
@@ -593,6 +621,17 @@ Shape_file_info* Shape_file_set::create(const char* basename    // Like 'shapes.
 	} else if (strcasecmp(basename, "sprites.vga") == 0) {
 		return append(new Image_file_info(basename, fullname, new Vga_file(spath, U7_SHAPE_SPRITES, ppath), groups));
 	} else if (strcasecmp(basename, "paperdol.vga") == 0) {
+		// For BG, build multi-source: SI's paperdol + bg_paperdol from
+		// exult_bg.flx + patch, mirroring Paperdoll_source_parser.
+		ExultStudio* studio = ExultStudio::get_instance();
+		if (studio && studio->get_game_type() == BLACK_GATE && !serpent_sstr.empty()) {
+			std::vector<std::pair<std::string, int>> sources;
+			sources.emplace_back(spath, -1);    // SI's paperdol.vga
+			const char* exultbgflx = BUNDLE_CHECK(BUNDLE_EXULT_BG_FLX, EXULT_BG_FLX);
+			sources.emplace_back(exultbgflx, EXULT_BG_FLX_BG_PAPERDOL_VGA);
+			sources.emplace_back(PATCH_PAPERDOL, -1);    // Patch file
+			return append(new Image_file_info(basename, fullname, new Vga_file(sources, U7_SHAPE_PAPERDOL), groups));
+		}
 		return append(new Image_file_info(basename, fullname, new Vga_file(spath, U7_SHAPE_PAPERDOL, ppath), groups));
 	} else if (strcasecmp(basename, "fonts.vga") == 0) {
 		return append(new Image_file_info(basename, fullname, new Vga_file(spath, U7_SHAPE_FONTS, ppath), groups));
