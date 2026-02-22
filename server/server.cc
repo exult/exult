@@ -265,6 +265,9 @@ static void Handle_client_message(int& fd    // Socket to client.  May be closed
 	case Exult_server::egg:
 		Egg_object::update_from_studio(&data[0], datalen);
 		break;
+	case Exult_server::cancel:
+		Egg_object::clear_editing();
+		break;
 	case Exult_server::container:
 		Container_game_object::update_from_studio(&data[0], datalen);
 		break;

@@ -195,6 +195,7 @@ public:
 	bool edit_basic_properties();    // Edit basic properties in ExultStudio.
 	// Saved from ExultStudio.
 	static void update_from_studio(unsigned char* data, int datalen);
+	static void clear_editing();    // Clear editing state and repaint.
 
 	virtual void hatch_now(Game_object* obj, bool must) {
 		ignore_unused_variable_warning(obj, must);

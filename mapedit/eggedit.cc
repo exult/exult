@@ -255,6 +255,11 @@ void ExultStudio::open_egg_window(
 
 void ExultStudio::close_egg_window() {
 	if (eggwin) {
+		// Tell the game engine to clear the editing state
+		// so the green egg area overlay stops painting.
+		if (g_object_get_data(G_OBJECT(eggwin), "user_data") != nullptr) {
+			Send_data(get_server_socket(), Exult_server::cancel);
+		}
 		gtk_widget_set_visible(eggwin, false);
 	}
 }
