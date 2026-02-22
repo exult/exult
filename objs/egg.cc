@@ -254,58 +254,6 @@ public:
 	}
 
 	void paint() override {
-#ifdef DEBUG
-		if (gwin->paint_eggs) {
-			// paint outline of jukebox egg area
-			// 80 is the norm colour of the jukebox egg shapebut also apply the
-			// palette shift if we hve one
-			const int pix = 80 + get_palette_transform();
-			int       rx;
-			int       by;
-			int       lx;
-			int       ty;
-			auto      shaperect = gwin->get_shape_rect(this);
-			// Centrepoint of egg on screen
-			int ex = shaperect.x + shaperect.w / 2;
-			int ey = shaperect.y + shaperect.h / 2;
-			// draw area at lift of player
-			gwin->get_shape_location(Tile_coord(area.x - 1, area.y - 1, gwin->get_main_actor()->get_lift()), lx, ty);
-			rx = lx + area.w * c_tilesize;
-			by = ty + area.h * c_tilesize;
-			// Horiz. line along top, bottom.
-			gwin->get_win()->draw_line8(pix, lx, ty, rx, ty);
-			gwin->get_win()->draw_line8(pix, lx, by, rx, by);
-			// Vert. line to left, right.
-			gwin->get_win()->draw_line8(pix, lx, ty, lx, by);
-			gwin->get_win()->draw_line8(pix, rx, ty, rx, by);
-			// Egg to corners
-			gwin->get_win()->draw_line8(pix, ex, ey, rx, ty);
-			gwin->get_win()->draw_line8(pix, ex, ey, rx, by);
-			gwin->get_win()->draw_line8(pix, ex, ey, lx, by);
-			gwin->get_win()->draw_line8(pix, ex, ey, lx, ty);
-			// Egg to midpoints
-			gwin->get_win()->draw_line8(pix, ex, ey, (lx + rx) / 2, ty);
-			gwin->get_win()->draw_line8(pix, ex, ey, rx, (ty + by) / 2);
-			gwin->get_win()->draw_line8(pix, ex, ey, (lx + rx) / 2, by);
-			gwin->get_win()->draw_line8(pix, ex, ey, lx, (ty + by) / 2);
-
-			auto footprint = gwin->get_main_actor()->get_footprint();
-			gwin->get_shape_location(gwin->get_main_actor(), footprint.x, footprint.y);
-			footprint.x -= c_tilesize;
-			footprint.y -= c_tilesize;
-			footprint.h *= c_tilesize;
-			footprint.w *= c_tilesize;
-
-			gwin->get_win()->draw_line8(40, footprint.x, footprint.y, footprint.x + footprint.w, footprint.y);
-			gwin->get_win()->draw_line8(
-					40, footprint.x + footprint.w, footprint.y, footprint.x + footprint.w, footprint.y + footprint.h);
-			gwin->get_win()->draw_line8(
-					40, footprint.x + footprint.w, footprint.y + footprint.h, footprint.x, footprint.y + footprint.h);
-			gwin->get_win()->draw_line8(
-					40, footprint.x + footprint.w, footprint.y + footprint.h, footprint.x, footprint.y + footprint.h);
-			gwin->get_win()->draw_line8(40, footprint.x, footprint.y, footprint.x, footprint.y + footprint.h);
-		}
-#endif    // DEBUG
 		Egg_object::paint();
 	}
 };
@@ -1096,6 +1044,36 @@ void Egg_object::paint() {
 		Ireg_game_object::paint();     // Always paint these.
 	} else {
 		Egglike_game_object::paint();
+	}
+	// Paint the egg's activation area outline when toggled on.
+	// paint_egg_areas: -1 = all, 0 = off, >0 = specific Egg_types.
+	if (gwin->paint_egg_areas != 0 && area.w > 0 && area.h > 0 && (gwin->paint_egg_areas == -1 || gwin->paint_egg_areas == type)) {
+		// Use egg shape colour (80) plus any palette transform.
+		const int pix = 80 + get_palette_transform();
+		int       lx, ty;
+		auto      shaperect = gwin->get_shape_rect(this);
+		// Centre-point of egg on screen.
+		const int ex = shaperect.x + shaperect.w / 2;
+		const int ey = shaperect.y + shaperect.h / 2;
+		// Draw area at lift of player.
+		gwin->get_shape_location(Tile_coord(area.x - 1, area.y - 1, gwin->get_main_actor()->get_lift()), lx, ty);
+		const int rx = lx + area.w * c_tilesize;
+		const int by = ty + area.h * c_tilesize;
+		// Rectangle outline: top, bottom, left, right.
+		gwin->get_win()->draw_line8(pix, lx, ty, rx, ty);
+		gwin->get_win()->draw_line8(pix, lx, by, rx, by);
+		gwin->get_win()->draw_line8(pix, lx, ty, lx, by);
+		gwin->get_win()->draw_line8(pix, rx, ty, rx, by);
+		// Lines from egg to corners.
+		gwin->get_win()->draw_line8(pix, ex, ey, lx, ty);
+		gwin->get_win()->draw_line8(pix, ex, ey, rx, ty);
+		gwin->get_win()->draw_line8(pix, ex, ey, lx, by);
+		gwin->get_win()->draw_line8(pix, ex, ey, rx, by);
+		// Lines from egg to midpoints.
+		gwin->get_win()->draw_line8(pix, ex, ey, (lx + rx) / 2, ty);
+		gwin->get_win()->draw_line8(pix, ex, ey, rx, (ty + by) / 2);
+		gwin->get_win()->draw_line8(pix, ex, ey, (lx + rx) / 2, by);
+		gwin->get_win()->draw_line8(pix, ex, ey, lx, (ty + by) / 2);
 	}
 }
 

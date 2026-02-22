@@ -176,6 +176,7 @@ public:
 	int skip_lift;    // Skip objects with lift >= this.  0
 	//   means 'terrain-editing' mode.
 	bool   paint_eggs;
+	int    paint_egg_areas;      // Show egg activation areas (-1=all, 0=off, >0=Egg_types filter).
 	bool   armageddon;           // Spell was cast.
 	bool   walk_in_formation;    // Use Party_manager for walking.
 	int    debug;

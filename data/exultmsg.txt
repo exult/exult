@@ -477,6 +477,18 @@
 0x71D: NPC Tool Actor Grabbing Disabled
 0x71E: NPC Numbers Enabled
 0x71F: NPC Numbers Disabled
+0x720: Egg areas: All types
+0x721: Egg areas: Off
+0x722: Egg areas: Monster
+0x723: Egg areas: Jukebox
+0x724: Egg areas: Sound effects
+0x725: Egg areas: Voice
+0x726: Egg areas: Usecode
+0x727: Egg areas: Missile
+0x728: Egg areas: Teleport
+0x729: Egg areas: Weather
+0x72A: Egg areas: Button
+0x72B: Egg areas: Intermap
 
 # combat.cc
 0x730: Combat resumed
@@ -687,6 +699,8 @@
 0x855:Repaint screen
 #TOGGLE_BBOXES
 0x856:Toggle bounding boxes
+#TOGGLE_EGG_AREAS
+0x857:Toggle egg area display
 
 
 #Shape Browser Help
