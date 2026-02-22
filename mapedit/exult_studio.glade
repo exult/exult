@@ -1020,6 +1020,50 @@
       </row>
     </data>
   </object>
+  <object class="GtkListStore" id="egg_area_liststore">
+    <columns>
+      <!-- column-name egg_area -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">None</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">All</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Monster</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Jukebox</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Sound effects</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Voice</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Usecode</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Missile</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Teleport</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Weather</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Button</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Intermap</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkListStore" id="bbox_color_liststore">
     <columns>
       <!-- column-name bbox_color -->
@@ -3130,6 +3174,68 @@
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkFrame" id="frame_egg_area">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">fill</property>
+                        <property name="margin-start">2</property>
+                        <property name="margin-end">2</property>
+                        <property name="margin-top">0</property>
+                        <property name="margin-bottom">0</property>
+                        <property name="hexpand">False</property>
+                        <property name="vexpand">False</property>
+                        <property name="label-xalign">0</property>
+                        <child>
+                          <object class="GtkBox" id="egg_area_hbox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">4</property>
+                            <property name="margin-end">4</property>
+                            <property name="margin-top">2</property>
+                            <property name="margin-bottom">2</property>
+                            <property name="orientation">horizontal</property>
+                            <property name="spacing">6</property>
+                            <child>
+                              <object class="GtkLabel" id="label_egg_area">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="halign">end</property>
+                                <property name="valign">center</property>
+                                <property name="label" translatable="yes">Egg area  </property>
+                              </object>
+                              <packing>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkComboBox" id="egg_area_combo">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="valign">center</property>
+                                <property name="wrap-width">1</property>
+                                <property name="model">egg_area_liststore</property>
+                                <property name="active">0</property>
+                                <signal name="changed" handler="on_egg_area_combo_changed" swapped="no"/>
+                                <child>
+                                  <object class="GtkCellRendererText" id="egg_area_renderer"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
                       <object class="GtkFrame" id="frame49">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -3268,7 +3374,7 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="position">4</property>
+                        <property name="position">6</property>
                       </packing>
                     </child>
                     <child>
@@ -3303,7 +3409,7 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="position">6</property>
+                        <property name="position">7</property>
                       </packing>
                     </child>
                   </object>

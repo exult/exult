@@ -101,6 +101,7 @@ namespace Exult_server {
 		get_user_click     = 53,    // Request map click, returns tile coords.
 		locate_egg         = 54,    // Locate egg by quality/path number.
 		locate_intermap    = 55,    // Locate intermap destination (x,y,z,map).
+		show_egg_areas     = 56,    // Set egg area display mode.
 		usecode_debugging  = 128
 	};
 
