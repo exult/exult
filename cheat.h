@@ -186,6 +186,7 @@ public:
 	}
 
 	void toggle_eggs() const;
+	void toggle_egg_areas() const;
 	void change_gender() const;
 
 	void toggle_Petra() const;

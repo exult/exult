@@ -153,6 +153,54 @@ namespace {
 			return get_text_msg(0x70F - msg_file_start);
 		}
 
+		static auto EggAreasAll() {
+			return get_text_msg(0x720 - msg_file_start);
+		}
+
+		static auto EggAreasOff() {
+			return get_text_msg(0x721 - msg_file_start);
+		}
+
+		static auto EggAreasMonster() {
+			return get_text_msg(0x722 - msg_file_start);
+		}
+
+		static auto EggAreasJukebox() {
+			return get_text_msg(0x723 - msg_file_start);
+		}
+
+		static auto EggAreasSoundsfx() {
+			return get_text_msg(0x724 - msg_file_start);
+		}
+
+		static auto EggAreasVoice() {
+			return get_text_msg(0x725 - msg_file_start);
+		}
+
+		static auto EggAreasUsecode() {
+			return get_text_msg(0x726 - msg_file_start);
+		}
+
+		static auto EggAreasMissile() {
+			return get_text_msg(0x727 - msg_file_start);
+		}
+
+		static auto EggAreasTeleport() {
+			return get_text_msg(0x728 - msg_file_start);
+		}
+
+		static auto EggAreasWeather() {
+			return get_text_msg(0x729 - msg_file_start);
+		}
+
+		static auto EggAreasButton() {
+			return get_text_msg(0x72A - msg_file_start);
+		}
+
+		static auto EggAreasIntermap() {
+			return get_text_msg(0x72B - msg_file_start);
+		}
+
 		static auto LevelUp() {
 			return get_text_msg(0x710 - msg_file_start);
 		}
@@ -634,6 +682,69 @@ void Cheat::toggle_eggs() const {
 		eman->center_text(Strings::EggsDisplayEnabled());
 	} else {
 		eman->center_text(Strings::EggsDisplayDisabled());
+	}
+	gwin->paint();
+}
+
+void Cheat::toggle_egg_areas() const {
+	if (!enabled) {
+		return;
+	}
+
+	// Cycle: off(0) -> all(-1) -> monster(1) -> jukebox(2) -> soundsfx(3)
+	//   -> voice(4) -> usecode(5) -> missile(6) -> teleport(7)
+	//   -> weather(8) -> button(10) -> intermap(11) -> off(0)
+	// Skip path(9) since path eggs have no activation area.
+	switch (gwin->paint_egg_areas) {
+	case 0:    // off -> all
+		gwin->paint_egg_areas = -1;
+		gwin->paint_eggs      = true;
+		eman->center_text(Strings::EggAreasAll());
+		break;
+	case -1:    // all -> monster
+		gwin->paint_egg_areas = 1;
+		eman->center_text(Strings::EggAreasMonster());
+		break;
+	case 1:    // monster -> jukebox
+		gwin->paint_egg_areas = 2;
+		eman->center_text(Strings::EggAreasJukebox());
+		break;
+	case 2:    // jukebox -> soundsfx
+		gwin->paint_egg_areas = 3;
+		eman->center_text(Strings::EggAreasSoundsfx());
+		break;
+	case 3:    // soundsfx -> voice
+		gwin->paint_egg_areas = 4;
+		eman->center_text(Strings::EggAreasVoice());
+		break;
+	case 4:    // voice -> usecode
+		gwin->paint_egg_areas = 5;
+		eman->center_text(Strings::EggAreasUsecode());
+		break;
+	case 5:    // usecode -> missile
+		gwin->paint_egg_areas = 6;
+		eman->center_text(Strings::EggAreasMissile());
+		break;
+	case 6:    // missile -> teleport
+		gwin->paint_egg_areas = 7;
+		eman->center_text(Strings::EggAreasTeleport());
+		break;
+	case 7:    // teleport -> weather
+		gwin->paint_egg_areas = 8;
+		eman->center_text(Strings::EggAreasWeather());
+		break;
+	case 8:    // weather -> button (skip path=9)
+		gwin->paint_egg_areas = 10;
+		eman->center_text(Strings::EggAreasButton());
+		break;
+	case 10:    // button -> intermap
+		gwin->paint_egg_areas = 11;
+		eman->center_text(Strings::EggAreasIntermap());
+		break;
+	default:    // intermap/unknown -> off
+		gwin->paint_egg_areas = 0;
+		eman->center_text(Strings::EggAreasOff());
+		break;
 	}
 	gwin->paint();
 }

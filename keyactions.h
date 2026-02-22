@@ -78,6 +78,7 @@ void ActionMoveSelected(const int* params);
 void ActionCycleFrames(const int* params);
 void ActionRotateFrames(const int* params);
 void ActionToggleEggs(const int* params);
+void ActionToggleEggAreas(const int* params);
 void ActionGodMode(const int* params);
 void ActionGender(const int* params);
 void ActionCheatHelp(const int* params);

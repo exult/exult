@@ -709,6 +709,12 @@ void ActionToggleEggs(const int* params) {
 	cheat.toggle_eggs();
 }
 
+//  { ActionToggleEggAreas, 0, "Toggle egg area display", cheat_keys, NONE },
+void ActionToggleEggAreas(const int* params) {
+	ignore_unused_variable_warning(params);
+	cheat.toggle_egg_areas();
+}
+
 //  { ActionGodMode, 1, "Toggle god mode", cheat_keys, NONE },
 // params[0] = -1 for toggle, 0 for off, 1 for on
 void ActionGodMode(const int* params) {
