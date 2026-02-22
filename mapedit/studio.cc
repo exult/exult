@@ -451,6 +451,12 @@ C_EXPORT void on_bbox_color_combo_changed(GtkComboBox* combo, gpointer user_data
 	ExultStudio::get_instance()->set_bounding_box(index);
 }
 
+C_EXPORT void on_egg_area_combo_changed(GtkComboBox* combo, gpointer user_data) {
+	ignore_unused_variable_warning(user_data);
+	const int index = gtk_combo_box_get_active(combo);
+	ExultStudio::get_instance()->set_egg_area(index);
+}
+
 C_EXPORT void on_edit_lift_spin_changed(GtkSpinButton* button, gpointer user_data) {
 	ignore_unused_variable_warning(user_data);
 	ExultStudio::get_instance()->set_edit_lift(gtk_spin_button_get_value_as_int(button));
@@ -2326,6 +2332,24 @@ void ExultStudio::set_bounding_box(int index) {
 }
 
 /*
+ *  Tell Exult to set egg area display mode.
+ */
+
+void ExultStudio::set_egg_area(int index) {
+	// Map combo index to paint_egg_areas values:
+	// 0=None(0), 1=All(-1), 2=Monster(1), 3=Jukebox(2), 4=Soundsfx(3),
+	// 5=Voice(4), 6=Usecode(5), 7=Missile(6), 8=Teleport(7),
+	// 9=Weather(8), 10=Button(10), 11=Intermap(11)
+	const int area_values[] = {0, -1, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11};
+	const int area_mode     = (index >= 0 && index < 12) ? area_values[index] : 0;
+
+	unsigned char  data[Exult_server::maxlength];
+	unsigned char* ptr = &data[0];
+	little_endian::Write2s(ptr, area_mode);
+	send_to_server(Exult_server::show_egg_areas, data, ptr - data);
+}
+
+/*
  *  Tell Exult to edit at a given lift.
  */
 
@@ -3442,6 +3466,8 @@ void ExultStudio::update_menu_items(bool connected) {
 	// Set toolbar widgets sensitivity
 	GtkWidget* play_btn      = get_widget("play_button");
 	GtkWidget* tile_grid     = get_widget("tile_grid_button");
+	GtkWidget* egg_area      = get_widget("egg_area_combo");
+	GtkWidget* egg_area_lbl  = get_widget("label_egg_area");
 	GtkWidget* bbox_color    = get_widget("bbox_color_combo");
 	GtkWidget* bbox_label    = get_widget("label_bbox");
 	GtkWidget* edit_lift     = get_widget("edit_lift_spin");
@@ -3454,6 +3480,12 @@ void ExultStudio::update_menu_items(bool connected) {
 	}
 	if (tile_grid) {
 		gtk_widget_set_sensitive(tile_grid, connected);
+	}
+	if (egg_area) {
+		gtk_widget_set_sensitive(egg_area, connected);
+	}
+	if (egg_area_lbl) {
+		gtk_widget_set_sensitive(egg_area_lbl, connected);
 	}
 	if (bbox_color) {
 		gtk_widget_set_sensitive(bbox_color, connected);

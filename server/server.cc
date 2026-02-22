@@ -593,6 +593,15 @@ static void Handle_client_message(int& fd    // Socket to client.  May be closed
 		gwin->set_all_dirty();
 		break;
 	}
+	case Exult_server::show_egg_areas: {
+		const int mode        = little_endian::Read2s(ptr);
+		gwin->paint_egg_areas = mode;
+		if (mode != 0 && !gwin->paint_eggs) {
+			gwin->paint_eggs = true;
+		}
+		gwin->set_all_dirty();
+		break;
+	}
 	case Exult_server::play_audio: {
 		const int  type   = Read1(ptr);    // 0=music, 1=sfx, 2=voice
 		const int  track  = little_endian::Read2(ptr);
