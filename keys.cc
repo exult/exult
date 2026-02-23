@@ -148,7 +148,7 @@ const struct Action {
 		{         "CREATE_ITEM",        ActionCreateShape,           nullptr, 0x82E,   Action::cheat_keys,         NONE, false,  true,  true, false},
 		{       "DELETE_OBJECT",       ActionDeleteObject,           nullptr, 0x82F,   Action::cheat_keys,         NONE, false,  true,  true, false},
 		{         "TOGGLE_EGGS",         ActionToggleEggs,           nullptr, 0x830,   Action::cheat_keys,         NONE, false,  true,  true, false},
-		{    "TOGGLE_EGG_AREAS",    ActionToggleEggAreas,           nullptr, 0x857,   Action::cheat_keys,         NONE, false,  true,  true, false},
+		{    "TOGGLE_EGG_AREAS",     ActionToggleEggAreas,           nullptr, 0x857,   Action::cheat_keys,         NONE, false,  true,  true, false},
 		{     "TOGGLE_GOD_MODE",            ActionGodMode,           nullptr, 0x831,   Action::cheat_keys,         NONE, false,  true,  true, false},
 		{       "CHANGE_GENDER",             ActionGender,           nullptr, 0x832,   Action::cheat_keys,         NONE, false,  true,  true, false},
 		{          "CHEAT_HELP",          ActionCheatHelp,           nullptr, 0x833,   Action::cheat_keys,         NONE, false,  true,  true, false},
