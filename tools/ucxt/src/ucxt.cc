@@ -198,79 +198,81 @@ void open_usecode_file(UCData& uc, const Configuration& config) {
 	string       mucc_l;
 	string       mucc_c;
 
-	if (uc.options.game_bg() || uc.options.game_fov() || uc.options.game_si() || uc.options.game_ss() || uc.options.game_sib()) {
-		string game;
-		if (gamemanager) {
-			ModManager* basegame = nullptr;
-			if (uc.options.game_bg()) {
-				basegame = gamemanager->get_bg();
-				game     = "BG";
-				if (basegame && basegame->have_expansion()) {
-					cout << "Failed to locate BG usecode file but found FOV." << endl;
-					uc.options._game = uc.options.GAME_FOV;
-					game             = "FOV";
+	if (uc.input_usecode_file().empty()) {
+		if (uc.options.game_bg() || uc.options.game_fov() || uc.options.game_si() || uc.options.game_ss()
+			|| uc.options.game_sib()) {
+			string game;
+			if (gamemanager) {
+				ModManager* basegame = nullptr;
+				if (uc.options.game_bg()) {
+					basegame = gamemanager->get_bg();
+					game     = "BG";
+					if (basegame && basegame->have_expansion()) {
+						cout << "Failed to locate BG usecode file but found FOV." << endl;
+						uc.options._game = uc.options.GAME_FOV;
+						game             = "FOV";
+					}
+				} else if (uc.options.game_fov()) {
+					basegame = gamemanager->get_fov();
+					game     = "FOV";
+				} else if (uc.options.game_si()) {
+					basegame = gamemanager->get_si();
+					game     = "SI";
+					if (basegame->have_expansion()) {
+						cout << "Failed to locate SI usecode file but found SS." << endl;
+						uc.options._game = uc.options.GAME_SS;
+						game             = "SS";
+					}
+				} else if (uc.options.game_ss()) {
+					basegame = gamemanager->get_ss();
+					game     = "SS";
+				} else if (uc.options.game_sib()) {
+					basegame = gamemanager->get_sib();
+					game     = "SI Beta";
 				}
-			} else if (uc.options.game_fov()) {
-				basegame = gamemanager->get_fov();
-				game     = "FOV";
-			} else if (uc.options.game_si()) {
-				basegame = gamemanager->get_si();
-				game     = "SI";
-				if (basegame->have_expansion()) {
-					cout << "Failed to locate SI usecode file but found SS." << endl;
-					uc.options._game = uc.options.GAME_SS;
-					game             = "SS";
+				if (!basegame) {
+					cout << "Failed to locate " << game << " usecode file. Exiting." << endl;
+					exit(1);
 				}
-			} else if (uc.options.game_ss()) {
-				basegame = gamemanager->get_ss();
-				game     = "SS";
-			} else if (uc.options.game_sib()) {
-				basegame = gamemanager->get_sib();
-				game     = "SI Beta";
+				basegame->setup_game_paths();
+				path    = "<STATIC>";
+				mucc_sl = "";
+				mucc_sc = "";
+			} else if (uc.options.game_bg() || uc.options.game_fov()) {
+				mucc_l = mucc_bgl;
+				mucc_c = mucc_bgc;
+				game   = uc.options.game_bg() ? "BG" : "FOV";
+			} else {
+				mucc_l = mucc_sil;
+				mucc_c = mucc_sic;
+				game   = uc.options.game_si() ? "SI" : uc.options.game_sib() ? "SI Beta" : "SS";
 			}
-			if (!basegame) {
-				cout << "Failed to locate " << game << " usecode file. Exiting." << endl;
-				exit(1);
+			if (uc.options.game_bg() || uc.options.game_fov()) {
+				ucspecial = "usecode.bg";
+			} else {
+				ucspecial = "usecode.si";
 			}
-			basegame->setup_game_paths();
-			path    = "<STATIC>";
-			mucc_sl = "";
-			mucc_sc = "";
-		} else if (uc.options.game_bg() || uc.options.game_fov()) {
-			mucc_l = mucc_bgl;
-			mucc_c = mucc_bgc;
-			game   = uc.options.game_bg() ? "BG" : "FOV";
+			if (uc.options.verbose) {
+				cout << "Configuring for " << game << "." << endl;
+			}
+		} else if (uc.options.game_u8()) {
+			if (uc.options.verbose) {
+				cout << "Configuring for u8." << endl;
+			}
+			path      = std::move(u8path);
+			ucspecial = "usecode.u8";
+			mucc_l    = mucc_u8l;
+			mucc_c    = mucc_u8c;
+			mucc_sl   = "usecode";
+			mucc_sc   = "USECODE";
+			mucc_ul   = "eusecode.flx";
+			mucc_uc   = "EUSECODE.FLX";
 		} else {
-			mucc_l = mucc_sil;
-			mucc_c = mucc_sic;
-			game   = uc.options.game_si() ? "SI" : uc.options.game_sib() ? "SI Beta" : "SS";
+			cerr << "Error: uc.game() was not set to GAME_U7 or GAME_SI or GAME_U8 this can't happen" << endl;
+			assert(false);
+			exit(1);    // just incase someone decides to compile without
+						// asserts;
 		}
-		if (uc.options.game_bg() || uc.options.game_fov()) {
-			ucspecial = "usecode.bg";
-		} else {
-			ucspecial = "usecode.si";
-		}
-		if (uc.options.verbose) {
-			cout << "Configuring for " << game << "." << endl;
-		}
-	} else if (uc.options.game_u8()) {
-		if (uc.options.verbose) {
-			cout << "Configuring for u8." << endl;
-		}
-		path      = std::move(u8path);
-		ucspecial = "usecode.u8";
-		mucc_l    = mucc_u8l;
-		mucc_c    = mucc_u8c;
-		mucc_sl   = "usecode";
-		mucc_sc   = "USECODE";
-		mucc_ul   = "eusecode.flx";
-		mucc_uc   = "EUSECODE.FLX";
-	} else {
-		cerr << "Error: uc.game() was not set to GAME_U7 or GAME_SI or GAME_U8 "
-				"this can't happen"
-			 << endl;
-		assert(false);
-		exit(1);    // just incase someone decides to compile without asserts;
 	}
 
 	/* The four mystical usecode configurations: */
