@@ -22,18 +22,19 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "ucsym.h"
 #ifdef HAVE_CONFIG_H
 #	include <config.h>
 #endif
+
+#include "ucfun.h"
 
 #include "basic_block.h"
 #include "endianio.h"
 #include "opcodes.h"
 #include "span.h"
 #include "ucexpr.h" /* Needed only for Write2(). */
-#include "ucfun.h"
 #include "ucstmt.h"
+#include "ucsym.h"
 #include "ucsymtbl.h"
 
 #include <array>
@@ -55,12 +56,21 @@ using std::vector;
 
 using namespace std::string_view_literals;
 
-Uc_scope                     Uc_function::globals(nullptr);    // Stores intrinic symbols.
 vector<Uc_intrinsic_symbol*> Uc_function::intrinsics;
-int                          Uc_function::num_global_statics = 0;
-int Uc_function::add_answer = -1, Uc_function::remove_answer = -1, Uc_function::push_answers = -1, Uc_function::pop_answers = -1,
-	Uc_function::show_face = -1, Uc_function::remove_face = -1, Uc_function::get_item_shape = -1, Uc_function::get_usecode_fun = -1;
+
+Uc_scope Uc_function::globals(nullptr);    // Stores intrinic symbols.
+
 Uc_function::Intrinsic_type Uc_function::intrinsic_type = Uc_function::unset;
+
+int Uc_function::num_global_statics = 0;
+int Uc_function::add_answer         = -1;
+int Uc_function::remove_answer      = -1;
+int Uc_function::push_answers       = -1;
+int Uc_function::pop_answers        = -1;
+int Uc_function::show_face          = -1;
+int Uc_function::remove_face        = -1;
+int Uc_function::get_item_shape     = -1;
+int Uc_function::get_usecode_fun    = -1;
 
 /*
  *  Create function, and add to global symbol table.
@@ -692,17 +702,18 @@ void Uc_function::gen(std::ostream& out) {
 		statement->gen(this, fun_blocks, current, endblock, label_blocks, break_continue);
 	}
 	assert(initial->no_parents() && endblock->is_childless());
+	std::set<Basic_block*> freed_blocks;
 	while (!fun_blocks.empty() && fun_blocks.back()->no_parents()) {
 		Basic_block* blk = fun_blocks.back();
 		fun_blocks.pop_back();
-		delete blk;
+		freed_blocks.insert(blk);
 	}
 	for (auto iter = fun_blocks.begin(); iter != fun_blocks.end();) {
 		Basic_block* block = *iter;
 		if (block->is_empty_block() && block->get_taken() != nullptr) {
 			block->link_through_block();
 			iter = fun_blocks.erase(iter);
-			delete block;
+			freed_blocks.insert(block);
 			continue;
 		}
 		++iter;
@@ -778,6 +789,10 @@ void Uc_function::gen(std::ostream& out) {
 		delete fun_block;
 	}
 	fun_blocks.clear();
+	for (auto* blk : freed_blocks) {
+		delete blk;
+	}
+	freed_blocks.clear();
 	delete initial;
 	delete endblock;
 	const int codelen   = code.size();    // Get its length.
@@ -848,8 +863,8 @@ constexpr const std::array sibeta_intrinsic_table{
 
 void Uc_function::set_intrinsics() {
 	if (intrinsic_type == unset) {
-		Uc_location::yywarning("Use '#game \"[blackgate|serpentisle|serpentbeta]\" to specify "
-							   "intrinsics to use (default = blackgate).");
+		Uc_location::yywarning(
+				"Use '#game \"[blackgate|serpentisle|serpentbeta]\" to specify intrinsics to use (default = blackgate).");
 		intrinsic_type = bg;
 	}
 	tcb::span<const std::string_view> table;
