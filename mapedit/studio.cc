@@ -2339,9 +2339,9 @@ void ExultStudio::set_egg_area(int index) {
 	// Map combo index to paint_egg_areas values:
 	// 0=None(0), 1=All(-1), 2=Monster(1), 3=Jukebox(2), 4=Soundsfx(3),
 	// 5=Voice(4), 6=Usecode(5), 7=Missile(6), 8=Teleport(7),
-	// 9=Weather(8), 10=Button(10), 11=Intermap(11)
-	const int area_values[] = {0, -1, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11};
-	const int area_mode     = (index >= 0 && index < 12) ? area_values[index] : 0;
+	// 9=Weather(8), 10=Button(10), 11=Intermap(11), 12=Selection(-2)
+	const int area_values[] = {0, -1, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, -2};
+	const int area_mode     = (index >= 0 && index < 13) ? area_values[index] : 0;
 
 	unsigned char  data[Exult_server::maxlength];
 	unsigned char* ptr = &data[0];

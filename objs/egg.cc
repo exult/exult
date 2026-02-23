@@ -1047,10 +1047,13 @@ void Egg_object::paint() {
 	}
 	// Paint the egg's activation area outline when toggled on,
 	// or always when this egg is being edited in ExultStudio.
-	// paint_egg_areas: -1 = all, 0 = off, >0 = specific Egg_types.
-	const bool is_editing = (editing && editing.get() == this);
+	// paint_egg_areas: -2 = selection, -1 = all, 0 = off, >0 = specific Egg_types.
+	const bool is_editing       = (editing && editing.get() == this);
+	const bool is_selected_mode = (gwin->paint_egg_areas == -2 && cheat.is_selected(this));
 	if (area.w > 0 && area.h > 0
-		&& (is_editing || (gwin->paint_egg_areas != 0 && (gwin->paint_egg_areas == -1 || gwin->paint_egg_areas == type)))) {
+		&& (is_editing || is_selected_mode
+			|| (gwin->paint_egg_areas != 0 && gwin->paint_egg_areas != -2
+				&& (gwin->paint_egg_areas == -1 || gwin->paint_egg_areas == type)))) {
 		// Green for the egg being edited, otherwise egg shape colour.
 		const int pix = is_editing ? Shape_manager::get_special_pixel(POISON_PIXEL) : 80 + get_palette_transform();
 		int       lx, ty;

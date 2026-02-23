@@ -676,6 +676,7 @@ void Cheat::toggle_eggs() const {
 	if (gwin->paint_eggs) {
 		eman->center_text(Strings::EggsDisplayEnabled());
 	} else {
+		gwin->paint_egg_areas = 0;
 		eman->center_text(Strings::EggsDisplayDisabled());
 	}
 	gwin->paint();
@@ -885,7 +886,13 @@ void Cheat::append_selected(Game_object* obj) {
  */
 void Cheat::toggle_selected(Game_object* obj) {
 	if (!obj->get_owner()) {
-		gwin->add_dirty(obj);
+		// In selection egg-area mode, egg areas extend well beyond the
+		// shape rect, so repaint everything to clear/draw them.
+		if (gwin->paint_egg_areas == -2 && obj->as_egg()) {
+			gwin->set_all_dirty();
+		} else {
+			gwin->add_dirty(obj);
+		}
 	} else {
 		gwin->set_all_dirty();
 	}
@@ -913,11 +920,17 @@ void Cheat::clear_selected() {
 	if (selected.empty()) {
 		return;
 	}
-	for (auto& obj : selected) {
-		if (!obj->get_owner()) {
-			gwin->add_dirty(obj.get());
-		} else {
-			gwin->set_all_dirty();
+	// In selection egg-area mode, egg areas extend well beyond individual
+	// shape rects, so just repaint everything.
+	if (gwin->paint_egg_areas == -2) {
+		gwin->set_all_dirty();
+	} else {
+		for (auto& obj : selected) {
+			if (!obj->get_owner()) {
+				gwin->add_dirty(obj.get());
+			} else {
+				gwin->set_all_dirty();
+			}
 		}
 	}
 	selected.clear();
