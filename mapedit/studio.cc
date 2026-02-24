@@ -141,7 +141,9 @@ static void Filelist_selection(GtkTreeView* treeview, GtkTreePath* path) {
 
 	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_model_get(model, &iter, FILE_COLUMN, &text, DATA_COLUMN, &type, -1);
+#ifdef DEBUG
 	printf("%s %d\n", text, type);
+#endif
 
 	ExultStudio* studio = ExultStudio::get_instance();
 	switch (type) {

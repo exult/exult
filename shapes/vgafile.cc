@@ -898,7 +898,9 @@ Shape_frame* Shape::read(
 	}
 	// The shape was not found anywhere, so leave.
 	if (shp == nullptr) {
+#ifdef DEBUG
 		std::cerr << "Shape num out of range: " << shapenum << std::endl;
+#endif
 		return nullptr;
 	}
 	// Read it in and get frame count.

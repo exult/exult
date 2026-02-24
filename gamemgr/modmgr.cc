@@ -458,9 +458,11 @@ ModManager::ModManager(const string& name, const string& menu, bool needtitle, b
 
 	const string mainshp     = static_dir + "/mainshp.flx";
 	const uint32 crc         = crc32(mainshp.c_str(), true);
-	auto         unknown_crc = [crc](const char* game) {
-        cerr << "Warning: Unknown CRC for mainshp.flx: 0x" << std::hex << crc << std::dec << std::endl;
-        cerr << "Note: Guessing hacked " << game << std::endl;
+	auto         unknown_crc = [crc, silent](const char* game) {
+        if (!silent) {
+            cerr << "Warning: Unknown CRC for mainshp.flx: 0x" << std::hex << crc << std::dec << std::endl;
+            cerr << "Note: Guessing hacked " << game << std::endl;
+        }
 	};
 	string new_title;
 	if (static_identity == "ULTIMA7") {
