@@ -60,6 +60,7 @@
 		8AC797C81C8D0E4F001AF014 /* zip.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8AC797C61C8D0E4F001AF014 /* zip.cc */; };
 		8AD4A9311A92B9DB0004762D /* InputOptions_gump.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8AD4A92F1A92B9DB0004762D /* InputOptions_gump.cc */; };
 		8ADA282A2E92E48A00C1012D /* libfluidsynth.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8ADA28232E92E47D00C1012D /* libfluidsynth.a */; platformFilter = ios; };
+		8ADDD0812F50A80500BEE005 /* libFreetype2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8ADDD0802F50A7F300BEE005 /* libFreetype2.a */; };
 		8ADFFDF625DE791000FC4D3A /* verify.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8ADFFDF425DE791000FC4D3A /* verify.cc */; };
 		8AE8B9BE2E400B740094DF3C /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AE8B9BC2E400B4F0094DF3C /* SDL3.framework */; };
 		8AE8B9BF2E400B740094DF3C /* SDL3.framework in Embedd SDL3 Framework */ = {isa = PBXBuildFile; fileRef = 8AE8B9BC2E400B4F0094DF3C /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -301,6 +302,13 @@
 			remoteGlobalIDString = 8A9A012E29F32EEF000AF341;
 			remoteInfo = fluidsynth;
 		};
+		8ADDD07F2F50A7F300BEE005 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8ADDD07B2F50A7F300BEE005 /* libfreetype.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6382B1B10FB0FC5100ECAC02;
+			remoteInfo = Freetype2;
+		};
 		8AE567782E51059900DC14BD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 8A2515082E3DA1D500CCE820 /* SDL.xcodeproj */;
@@ -407,6 +415,7 @@
 		8AD4A92F1A92B9DB0004762D /* InputOptions_gump.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InputOptions_gump.cc; path = ../gumps/InputOptions_gump.cc; sourceTree = "<group>"; };
 		8AD4A9301A92B9DB0004762D /* InputOptions_gump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InputOptions_gump.h; path = ../gumps/InputOptions_gump.h; sourceTree = "<group>"; };
 		8ADA28142E92E06900C1012D /* libfluidsynth.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = libfluidsynth.xcodeproj; sourceTree = "<group>"; };
+		8ADDD07B2F50A7F300BEE005 /* libfreetype.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = libfreetype.xcodeproj; sourceTree = "<group>"; };
 		8ADFFDF425DE791000FC4D3A /* verify.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = verify.cc; path = ../verify.cc; sourceTree = "<group>"; };
 		8ADFFDF525DE791000FC4D3A /* verify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = verify.h; path = ../verify.h; sourceTree = "<group>"; };
 		8AE8B9BC2E400B4F0094DF3C /* SDL3.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL3.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -862,6 +871,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8ADDD0812F50A80500BEE005 /* libFreetype2.a in Frameworks */,
 				8ADA282A2E92E48A00C1012D /* libfluidsynth.a in Frameworks */,
 				8A599C2224605925006E3252 /* libmt32emu.a in Frameworks */,
 				E738C8551A6FFF71003A950D /* libogg.a in Frameworks */,
@@ -998,6 +1008,14 @@
 			isa = PBXGroup;
 			children = (
 				8ADA28232E92E47D00C1012D /* libfluidsynth.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8ADDD07C2F50A7F300BEE005 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8ADDD0802F50A7F300BEE005 /* libFreetype2.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1696,6 +1714,7 @@
 				E738C84F1A6FFF65003A950D /* libvorbis.xcodeproj */,
 				8ADA28142E92E06900C1012D /* libfluidsynth.xcodeproj */,
 				8A2515082E3DA1D500CCE820 /* SDL.xcodeproj */,
+				8ADDD07B2F50A7F300BEE005 /* libfreetype.xcodeproj */,
 			);
 			name = Libs;
 			sourceTree = "<group>";
@@ -1776,6 +1795,10 @@
 					ProjectRef = 8ADA28142E92E06900C1012D /* libfluidsynth.xcodeproj */;
 				},
 				{
+					ProductGroup = 8ADDD07C2F50A7F300BEE005 /* Products */;
+					ProjectRef = 8ADDD07B2F50A7F300BEE005 /* libfreetype.xcodeproj */;
+				},
+				{
 					ProductGroup = 8A599C1D246058A9006E3252 /* Products */;
 					ProjectRef = 8A599C1C246058A9006E3252 /* libmt32emu.xcodeproj */;
 				},
@@ -1813,6 +1836,13 @@
 			fileType = archive.ar;
 			path = libfluidsynth.a;
 			remoteRef = 8ADA28222E92E47D00C1012D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8ADDD0802F50A7F300BEE005 /* libFreetype2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFreetype2.a;
+			remoteRef = 8ADDD07F2F50A7F300BEE005 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		8AE567792E51059900DC14BD /* SDL3.framework */ = {
@@ -2223,6 +2253,7 @@
 					./libmt32em/mt32emu/src/srchelper/srctools/include,
 					./fluidsynth/include,
 					"./fluidlite/include/**",
+					./freetype/include,
 				);
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
@@ -2286,6 +2317,7 @@
 					./libmt32em/mt32emu/src/srchelper/srctools/include,
 					./fluidsynth/include,
 					"./fluidlite/include/**",
+					./freetype/include,
 				);
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";

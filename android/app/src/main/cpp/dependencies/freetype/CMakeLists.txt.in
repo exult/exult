@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION @CMAKE_MINIMUM_REQUIRED_VERSION@)
+project(@DEPENDENCY@)
+
+include(ExternalProject)
+
+ExternalProject_Add(
+  @DEPENDENCY@
+  GIT_REPOSITORY    https://gitlab.freedesktop.org/freetype/freetype.git
+  GIT_TAG           "VER-2-14-1"
+  INSTALL_DIR       @DEPENDENCIES_INSTALL_DIR@
+  CMAKE_ARGS        @DEPENDENCIES_CMAKE_DEFAULT_ARGS@ -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+)
